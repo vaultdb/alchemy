@@ -1,1 +1,4 @@
-SELECT patient_id, timestamp_, icd9 LIKE '414%' FROM mi_cohort_diagnoses ORDER BY patient_id
+SELECT patient_id, timestamp_, LOWER(medication) LIKE '%aspirin%'
+FROM (SELECT patient_id, medication, timestamp_
+FROM mi_cohort_medications) AS t
+ORDER BY patient_id, timestamp_

@@ -8,5 +8,8 @@ int64[1] run@v(int64[v] a, int64[v] b) {
 
     secure int64[1] dst;
 	dst[0] = tupleCount;
+
+	int dstIdx = 1;
+	setArrElements(dst, dstIdx);
 	return dst;
 }

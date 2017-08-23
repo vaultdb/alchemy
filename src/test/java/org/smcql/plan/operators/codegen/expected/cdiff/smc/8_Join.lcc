@@ -11,14 +11,17 @@ typedef char = int8;
 
 secure int1 applyFilter(secure int192 lTuple, secure int192 rTuple) {
 	secure int1 ret = 0;
-	ret = 1;
+	
+	if (lTuple$0~64$ == rTuple$0~64$ && (rTuple$64~128$ - lTuple$64~128$)/86400000 >= 15 && (rTuple$64~128$ - lTuple$64~128$)/86400000 <= 56 && lTuple$128~192$ + 1 == rTuple$128~192$) {
+		ret = 1;
+	}
 	
 	return ret;
 }
 
 int64[l*r] run@l@r(int192[l] lhs, int192[r] rhs) {
 	     	
-	int lTupleCount, rTupleCount;
+	secure int lTupleCount, rTupleCount;
 	getArrElements(lhs, lTupleCount);
 	getArrElements(rhs, rTupleCount);
 		    
@@ -47,6 +50,7 @@ int64[l*r] run@l@r(int192[l] lhs, int192[r] rhs) {
 	}
 
 	setArrElements(dst, dstIdx);
+
 	return dst;
 
 }

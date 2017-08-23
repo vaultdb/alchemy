@@ -29,6 +29,14 @@ public class Aggregate extends Operator {
 			if(inSchema.getSecureField(i).isSliceAble())
 				sliceKeys.add(inSchema.getSecureField(i));
 		
+		for(AggregateCall aggCall : agg.getAggCallList()) {
+			List<Integer> args  =  aggCall.getArgList();
+			for(Integer i : args) {
+				if(inSchema.getSecureField(i).isSliceAble())
+					sliceKeys.add(inSchema.getSecureField(i));
+			}
+		}
+		
 		return sliceKeys;
 	}
 	

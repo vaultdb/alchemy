@@ -61,9 +61,11 @@ int64[v] run@v@w(int64[v] a, int64[w] b) {
 
 
 		 
-         setArrElements(dst, dstHead + 1);
+         
 	 if(tupleCount == 0) {
 	          setArrElements(dst, tupleCount);
-         }
+         } else {
+		setArrElements(dst, dstHead + 1);
+	  }
 	 return dst;
 }

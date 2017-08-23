@@ -5,6 +5,9 @@ secure int1 lessThan(int129  lhs, int129 rhs) {
     if(lhs$0~64$ < rhs$0~64$) {
         res = 1;
     }
+    else if(lhs$0~64$ == rhs$0~64$ && lhs$64~128$ < rhs$64~128$) { 
+        res = 1;
+    }
     return res;
 }
 

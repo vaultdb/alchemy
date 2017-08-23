@@ -37,11 +37,7 @@ public class SliceKeyTest extends BaseTest {
 
 		SecureRelDataTypeField srcAttribute = Utilities.lookUpAttribute("diagnoses", "patient_id");
 		expectedSliceKey.add(srcAttribute);
-
-		SecureRelDataTypeField medsAttr = Utilities.lookUpAttribute("medications", "patient_id");
-		expectedSliceKey.add(medsAttr);
 	
-		
 		expectedSliceKeys.put(testName, expectedSliceKey);
 	}
 	
@@ -91,21 +87,15 @@ public class SliceKeyTest extends BaseTest {
 	
 	private void testCase(String testName) throws Exception {		
 		String sql = super.readSQL(testName);
-		
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
-		
 		Operator root = secRoot.getPlanRoot();
-		
 		
 		List<SecureRelDataTypeField> sliceKeys = root.getSliceAttributes();
 		List<SecureRelDataTypeField> expectedSliceKeysList = expectedSliceKeys.get(testName);
 		
-
-		
 		System.out.println("Expected: " + expectedSliceKeysList);
 		System.out.println("Observed: " + sliceKeys);
 		
-		assertTrue(expectedSliceKeysList == null && sliceKeys == null || expectedSliceKeysList.size() == sliceKeys.size());
 		assertEquals(expectedSliceKeysList.size(), sliceKeys.size());
 
 		for(int i = 0; i < expectedSliceKeysList.size(); ++i) {

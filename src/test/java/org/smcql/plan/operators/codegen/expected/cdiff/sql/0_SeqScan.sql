@@ -1,1 +1,3 @@
-SELECT patient_id, timestamp_, icd9 FROM cdiff_cohort_diagnoses ORDER BY patient_id, timestamp_
+SELECT patient_id, timestamp_, icd9 = '008.45'
+FROM cdiff_cohort_diagnoses
+ORDER BY patient_id, timestamp_
