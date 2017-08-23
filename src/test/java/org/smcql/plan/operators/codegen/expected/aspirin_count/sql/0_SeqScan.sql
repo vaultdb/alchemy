@@ -1,0 +1,1 @@
+SELECT patient_id, timestamp_, lower(medication) LIKE '%aspirin%' FROM mi_cohort_medications ORDER BY patient_id

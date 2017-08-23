@@ -1,0 +1,62 @@
+package org.smcql.generated.cdiff.WindowAggregate3;
+
+typedef char = int8;
+void sort@l@s(int@s[l] toSort, int1 isAscending) = native sortLib.sort;
+
+secure int192 writeValues(int184 srcTuple, int rowNum) {
+	int192 dstTuple;
+    dstTuple$0~64$ = srcTuple$0~64$;
+        dstTuple$64~128$ = srcTuple$64~128$;
+        dstTuple$128~184$ = srcTuple$128~184$;
+        
+	dstTuple$128~192$ = rowNum;
+    return dstTuple;
+}
+
+secure int1 applyFilter(secure int184 tuple) {
+	secure int1 ret = 0;
+	secure int56 _temp0 = tuple$128~184$;
+
+	if (_temp0$0~8$ == 48 && _temp0$8~16$ == 48 && _temp0$16~24$ == 56 && _temp0$24~32$ == 46 && _temp0$32~40$ == 52 && _temp0$40~48$ == 53) {
+		ret = 1;
+	}
+	
+	return ret;
+}
+
+// sorting taken care of externally for win agg by psql planner
+int192[l] run@l(int184[l] src, int184[l] rhs) { 
+    secure int192[secure l] dst;
+    secure int rn = 1;
+    secure int184 prev = src[0];
+    int64 prevWin = prev$0~64$;
+
+    dst[0] = writeValues(src[0], rn);
+    int tupleCount;
+    getArrElements(src, tupleCount);
+    int dstIdx = 0;
+	secure int1 filter = 0;
+    
+    bfor(l-1) (secure int i = 1; i < tupleCount; i = i + 1) {
+    	int184 current = src[i];
+        int64 currentWin = current$0~64$;
+		
+		filter = applyFilter(src[i]);
+		if (filter == 1) {
+			if(currentWin == prevWin) {
+	    		rn = rn + 1;
+        	}
+	 		else {
+	    		rn = 1;
+        	}
+        	
+        	dst[dstIdx] = writeValues(src[i], rn);
+  	 		dstIdx = dstIdx + 1;
+	 		prevWin = currentWin;
+		}
+	}
+   
+   	setArrElements(dst, dstIdx);
+
+   	return dst;
+}

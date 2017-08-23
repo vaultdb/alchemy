@@ -1,0 +1,54 @@
+package org.smcql.generated.comorbidity.Sort3;
+
+void sortWithPayload@n@s@t(int@s[n] toSort, int@t[n] tuples, int1 isAscending) = native sortLib.sortWithPayload;
+typedef char = int8;
+
+#define LIMIT 10
+
+// for sort key
+int64 extractKey(int96 src) {
+    int64 dst;
+
+    dst$0~64$ = src$32~96$;
+
+    return dst;
+ }
+
+
+int96[LIMIT] run@n@m(int96[n] a, int96[m] b) { 
+   secure int tupleCount;
+   secure int nulls;
+   getArrElements(a, tupleCount);
+   nulls = n - tupleCount;
+    
+   secure int96[secure LIMIT] toSort = a;
+   secure int64[secure LIMIT] sortKey;
+   int1 signal = 0;
+
+
+
+   int i;
+   bfor (LIMIT) (i=0; i<tupleCount; i=i+1) {
+         sortKey[i] = extractKey(toSort[i]);
+   }
+
+   bfor(LIMIT)(i=tupleCount; i < LIMIT; i=i+1) {
+       sortKey[i] = 0; 
+   }
+
+
+
+   sortWithPayload(sortKey, toSort, signal);
+
+
+
+   
+
+
+   return toSort;
+}
+
+
+
+
+

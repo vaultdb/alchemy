@@ -1,0 +1,1 @@
+SELECT major_icd9,COUNT(*) FROM cdiff_cohort_diagnoses GROUP BY major_icd9 ORDER BY major_icd9

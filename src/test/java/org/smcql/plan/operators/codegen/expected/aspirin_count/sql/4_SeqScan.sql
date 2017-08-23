@@ -1,0 +1,1 @@
+SELECT patient_id, timestamp_, icd9 LIKE '414%' FROM mi_cohort_diagnoses ORDER BY patient_id
