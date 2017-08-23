@@ -22,7 +22,7 @@ public class SliceKeyTest extends BaseTest {
 
 		expectedSliceKeys  = new HashMap<String, List<SecureRelDataTypeField> >();
 				
-		setupAspirinRate();
+		setupAspirinCount();
 		setupCDiff();
 		setupComorbidity();
 	}
@@ -30,9 +30,9 @@ public class SliceKeyTest extends BaseTest {
 	
 
 
-	private void setupAspirinRate() throws Exception {
+	private void setupAspirinCount() throws Exception {
 		
-		String testName = "aspirin_rate";
+		String testName = "aspirin-count";
 		List<SecureRelDataTypeField> expectedSliceKey = new ArrayList<SecureRelDataTypeField>();
 
 		SecureRelDataTypeField srcAttribute = Utilities.lookUpAttribute("diagnoses", "patient_id");
@@ -72,7 +72,7 @@ public class SliceKeyTest extends BaseTest {
 
 	
 	@Test
-	public void testAspirinRate() throws Exception {
+	public void testAspirinCount() throws Exception {
 			testCase("aspirin-count");
 	}
 	
@@ -105,15 +105,11 @@ public class SliceKeyTest extends BaseTest {
 		System.out.println("Expected: " + expectedSliceKeysList);
 		System.out.println("Observed: " + sliceKeys);
 		
+		assertTrue(expectedSliceKeysList == null && sliceKeys == null || expectedSliceKeysList.size() == sliceKeys.size());
 		assertEquals(expectedSliceKeysList.size(), sliceKeys.size());
-		
-		//java.util.Collections.sort(sliceKeys);
-		//java.util.Collections.sort(expectedSliceKeysList);
-		
+
 		for(int i = 0; i < expectedSliceKeysList.size(); ++i) {
-			assertEquals(expectedSliceKeysList.get(i), sliceKeys.get(i));
+			assertTrue(expectedSliceKeysList.get(i).toString().equals(sliceKeys.get(i).toString()));
 		}
-		
-		
 	}
 }

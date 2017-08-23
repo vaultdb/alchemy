@@ -235,8 +235,11 @@ public class Utilities {
 		
 		SecureSchemaLookup lookup = SecureSchemaLookup.getInstance();
 		SecurityPolicy policy = lookup.getPolicy(table, attr);
-		return new SecureRelDataTypeField(fieldType, policy);
 		
+		SecureRelDataTypeField result = new SecureRelDataTypeField(fieldType, policy);
+		result.setStoredAttribute(attr);
+		result.setStoredTable(table);
+		return result;
 	}
 
 }

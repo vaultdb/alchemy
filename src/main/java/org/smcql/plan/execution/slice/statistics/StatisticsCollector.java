@@ -1,18 +1,10 @@
 package org.smcql.plan.execution.slice.statistics;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.calcite.rel.logical.LogicalFilter;
-import org.smcql.codegen.smc.operator.support.RexNodeUtilities;
 import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;
-import org.smcql.db.data.field.IntField;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
-import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.plan.slice.SliceKeyDefinition;
 import org.smcql.util.Utilities;
@@ -20,17 +12,22 @@ import org.smcql.util.Utilities;
 public class StatisticsCollector {
 	
 	// performed once per secure leaf
-	public static SliceStatistics collect(SliceKeyDefinition s) throws Exception {
-		//assert(s.getAttributes().size() == 1);			
-		SecureRelDataTypeField keyField = s.getAttributes().get(0);
-		
-		//String table = keyField.getStoredTable();
+	public static SliceStatistics collect(SliceKeyDefinition s) throws Exception {	
+		SecureRelDataTypeField keyField = s.getAttributes().get(0);		
 		String attribute = keyField.getStoredAttribute();
 		
+		if (attribute == null)
+			return new SliceStatistics(s);
 		
-		
-		//assert(keyField.getFilters().size() == 1); 
 		List<String> predicates = s.getFilters();
+		
+		if (predicates.size() == 0) {
+			String table = keyField.getStoredTable();
+			String query = "SELECT " + table + "." + attribute + ",site.id, COUNT(*) cnt FROM " + table + ", site GROUP BY " + table + "." + attribute + ", site.id";
+			SecureRelRecordType schema = Utilities.getOutSchemaFromString(query);
+			return getResults(query, schema, s);
+		}
+		
 		String query = "SELECT * FROM (\n";
 		SecureRelRecordType schema = null;
 		for (int i=0; i<predicates.size(); i++) {

@@ -71,6 +71,6 @@ public class SecureOperatorTreeTest extends BaseTest {
 		
 		String testTree = root.printTree();
 		logger.log(Level.INFO, "Resolved secure tree to:\n " + testTree);
-		//assertEquals(expectedTree, testTree);
+		assertEquals(expectedTree, testTree);
 	}
 }
