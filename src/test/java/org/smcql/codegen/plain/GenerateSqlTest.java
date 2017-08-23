@@ -10,10 +10,8 @@ import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.pretty.SqlPrettyWriter;
 import org.smcql.BaseTest;
 import org.smcql.codegen.sql.SqlGenerator;
-import org.smcql.plan.SecureRelRoot;
 
 
-// TODO: just use RelAlgebra to rebuild this from scratch as needed
 public class GenerateSqlTest  extends  BaseTest {
 	
 	protected void setUp() throws Exception {
@@ -21,24 +19,21 @@ public class GenerateSqlTest  extends  BaseTest {
 	}
 	
 	public void testAsprinCount() throws Exception {
-		 String expected =  "SELECT COUNT(DISTINCT patient_id) AS rx_cnt\n"
+		 String expected =  "SELECT COUNT(DISTINCT patient_id) AS rx_cnt, LOWER(mi_cohort_medications.medication) LIKE '%aspirin%' AND mi_cohort_diagnoses.icd9 LIKE '414%' AND mi_cohort_diagnoses.timestamp_ <= mi_cohort_medications.timestamp_\n"
 				 + "FROM mi_cohort_diagnoses\n"
-				 + "INNER JOIN mi_cohort_medications ON mi_cohort_diagnoses.patient_id = mi_cohort_medications.patient_id\n"
-				 + "WHERE LOWER(mi_cohort_medications.medication) LIKE '%aspirin%' AND mi_cohort_diagnoses.icd9 LIKE '414%' AND mi_cohort_diagnoses.timestamp_ <= mi_cohort_medications.timestamp_";
-		 
+				 + "INNER JOIN mi_cohort_medications ON mi_cohort_diagnoses.patient_id = mi_cohort_medications.patient_id";		 
 		 runTest("aspirin-count", expected);		
 	}
 	
 	
 	public void testCDiff() throws Exception {
-		String expected =  "SELECT DISTINCT patient_id\n"
+		String expected =  "SELECT DISTINCT patient_id, CAST((t0.timestamp_ - t2.timestamp_) DAY AS INTEGER) /INT 86400000 >= 15 AND CAST((t0.timestamp_ - t2.timestamp_) DAY AS INTEGER) /INT 86400000 <= 56 AND t0.r + 1 = t2.r\n"
 				 + "FROM (SELECT patient_id, timestamp_, ROW_NUMBER() AS r\n"
 				 + "FROM cdiff_cohort_diagnoses\n"
 				 + "WHERE icd9 = '008.45') AS t0\n"
 				 + "INNER JOIN (SELECT patient_id, timestamp_, ROW_NUMBER() AS r\n"
 				 + "FROM cdiff_cohort_diagnoses\n"
-				 + "WHERE icd9 = '008.45') AS t2 ON t0.patient_id = t2.patient_id\n"
-				 + "WHERE CAST((t0.timestamp_ - t2.timestamp_) DAY AS INTEGER) /INT 86400000 >= 15 AND CAST((t0.timestamp_ - t2.timestamp_) DAY AS INTEGER) /INT 86400000 <= 56 AND t0.r + 1 = t2.r";
+				 + "WHERE icd9 = '008.45') AS t2 ON t0.patient_id = t2.patient_id";
 		
 		runTest("cdiff", expected);
 	}
@@ -58,7 +53,6 @@ public class GenerateSqlTest  extends  BaseTest {
 		
 		root = parser.parseSQL(sql);
 		relRoot = parser.compile(root);
-		//relRoot = parser.optimize(relRoot);
 				
 		System.out.println("Generating on:\n " + sql);
 
@@ -67,16 +61,10 @@ public class GenerateSqlTest  extends  BaseTest {
 		String sqlFromRel = rel2sql();
 		
 		assertEquals(expected, sqlFromRel);
-		walkTree();
 		System.out.println("***********************************");
 	}
 	
 // generate SQL from SqlNode
-// SqlNode = flatter representation, ~one obj per SELECT
-// TODO: make this produce SQL that is compatible with SQL dialect
-// TODO: this fails with optimized plans from SecureRelRoot
-	// figure out if there is some shadow format to the operators needed with pointers 
-	// between the "clean" RelNodes and the "real" ones
 void generateSql() throws SQLException {
 	SqlPrettyWriter writer = new SqlPrettyWriter(dialect);
 	writer.setQuoteAllIdentifiers(false);
@@ -110,25 +98,10 @@ public void walkTree() throws SQLException {
 		for(RelNode r : inputs) {
 			System.out.println("For operator " + r.getDigest() + " have class " + r.getClass() + " and SQL:\n " + SqlGenerator.getSql(r, dialect));
 			nextGeneration.addAll(r.getInputs());
-			// TODO: implement RelWriter to leverage logic of RelOptUtils.toString
-			// print it out like a plan
-			
 		}
 		inputs = nextGeneration;
 	}
 	
 }
-	
-
-//final RelBuilder builder = RelBuilder.create(parser.getConfig());
-
-
-//RelNode mNode = builder.push(relRoot.project())
- //       .build();		
-
-//PreparedStatement pd = RelRunners.run(mNode);
-
-//System.out.println("Prepared statement "  + pd.toString());
-//pd.executeQuery();
 
 }
