@@ -68,13 +68,9 @@ public class QueryTable implements Serializable {
 		
 	}
 
-	// TODO: take into account sort order
 	public void addTuples(QueryTable src) {
 		if(src == null) 
 			return;
-		
-		//SecureRelRecordType srcSchema = src.getSchema();
-		//assert(srcSchema.equals(schema));
 		
 		for(Tuple t : src.tuples) {
 			tuples.add(t);

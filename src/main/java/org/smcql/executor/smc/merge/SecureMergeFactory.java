@@ -18,8 +18,6 @@ public class SecureMergeFactory {
 		String opID = Utilities.getOperatorId(parent.packageName);
 		String opType = opID.replaceAll("\\d*$", "");
 		
-		/// TODO: create more secure merges
-
 		if(opType.equals("Aggregate")) {
 			
 			for(SecureRelDataTypeField r : parent.outSchema.getAttributes()) {

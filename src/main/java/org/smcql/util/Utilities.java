@@ -61,8 +61,8 @@ public class Utilities {
 	        if(path.endsWith("target/classes/")) 
 	            path = path.substring(0, path.length() - "/target/classes/".length());
 
-	        if(path.endsWith("target/smcql-calcite-0.5.jar"))
-	        	path = path.substring(0, path.length() - "/target/smcql-calcite-0.5.jar".length());
+	        if(path.endsWith("target/smcql-open-source-0.5.jar"))
+	        	path = path.substring(0, path.length() - "/target/smcql-open-source-0.5.jar".length());
 	        
 	        return path;
 	    }	

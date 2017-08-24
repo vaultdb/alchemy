@@ -45,7 +45,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 	// stored in original tables
 	private String storedTable;
 	private String storedAttribute;
-	transient List<LogicalFilter> filters; // TODO: merge them in place?
+	transient List<LogicalFilter> filters;
 
 	public SecureRelDataTypeField(String name, int index, RelDataType type) {
 		super(name, index, type);
@@ -81,7 +81,6 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {
-		//out.defaultWriteObject();
 		List<String> field = new ArrayList<String>();
 		field.add(Integer.toString(baseField.getIndex()));
 		field.add(baseField.getName());
@@ -97,7 +96,6 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 
 	@SuppressWarnings("unchecked")
 	private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
-		//ois.defaultReadObject();
 		List<String> field = (List<String>) ois.readObject();
 		SqlTypeName stn = (SqlTypeName) ois.readObject();
 
@@ -159,7 +157,6 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 	}
 
 	// for testing equality of slice keys
-	// TODO: handle filters over > 1 table
 	public void addFilter(LogicalFilter aFilter) {
 		if (aFilter != null)
 			filters.add(aFilter);
@@ -169,7 +166,6 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 		return filters;
 	}
 
-	// TODO: implement for multiple source attributes in one out field
 	public boolean isSliceAble() {
 		if (storedAttribute != null && storedTable != null && policy == SecurityPolicy.Public)
 			return true;

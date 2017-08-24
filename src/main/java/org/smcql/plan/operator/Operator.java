@@ -190,7 +190,6 @@ public abstract class Operator implements CodeGenerator {
 
 	// schema of output 
 	public SecureRelRecordType getSchema(boolean asSecureLeaf) {
-		// TODO: johes, mark when we insert SUM and COUNT for AVG
 		return baseRelNode.getSchema();
 	}
 
@@ -222,7 +221,6 @@ public abstract class Operator implements CodeGenerator {
 	public String toString() {
 		
 		String ret = baseRelNode.getRelNode().getRelTypeName() + "-" + executionMode + ", schema:" + getSchema();
-		//String ret = baseRelNode.getRelNode().getRelTypeName() + ", schema:" + getSchema();
 		List<SecureRelDataTypeField> sliceAttrs = this.getSliceAttributes();
 		if(!sliceAttrs.isEmpty())
 			ret += ", slice key: " + sliceAttrs;
@@ -350,10 +348,6 @@ public abstract class Operator implements CodeGenerator {
 	
 	@Override
 	public String generate(boolean asSecureLeaf) throws Exception {
-		// TODO: Johes: 
-		// * add ORDER BY for secure compute order
-		// * rewrite avg() to sum(), count()
-
 		return null;
 	}
 
@@ -413,7 +407,6 @@ public abstract class Operator implements CodeGenerator {
 		
 		RelNode next = project;
 		RelNodeMatcher matcher = new RelNodeMatcher();
-		RelNode match = baseRelNode.getRelNode();
 		if (matcher.matches(project, baseRelNode.getRelNode())) {
 			unoptimizedRelNode = new ShadowRelNode(project);
 			next = (project.getInputs().isEmpty()) ? null : project.getInput(0);

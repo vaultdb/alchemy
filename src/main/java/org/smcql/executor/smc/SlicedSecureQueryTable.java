@@ -43,7 +43,6 @@ public class SlicedSecureQueryTable implements SecureQueryTable, Serializable {
 	transient CompEnv<GCSignal> env;
 	transient SMCRunnable parent;
 	transient Iterator<Entry<Tuple, BasicSecureQueryTable>> sliceItr;
-	//OperatorExecution operator;
 	QueryTable plaintextOutput;
 	protected BasicSecureQueryTable aPlaintext, bPlaintext; // this will be skipped by sliceItr, but included in declassify and getSecureArray
 	boolean merged = false;
@@ -55,7 +54,6 @@ public class SlicedSecureQueryTable implements SecureQueryTable, Serializable {
 	public SlicedSecureQueryTable(OperatorExecution op, CompEnv<GCSignal> e, SMCRunnable p, boolean isRemote) throws Exception {
 		env = e;
 		parent = p;
-		//operator = op;
 		schema = op.outSchema;
 		R = GCGenComp.R;
 		party = env.party;
@@ -95,7 +93,6 @@ public class SlicedSecureQueryTable implements SecureQueryTable, Serializable {
 	public SlicedSecureQueryTable(OperatorExecution op, CompEnv<GCSignal> e, SMCRunnable p, BasicSecureQueryTable slice, Tuple t) throws Exception {
 		env = e;
 		parent = p;
-		//operator = op;
 		schema = op.outSchema;
 		R = GCGenComp.R;
 		party = env.party;
@@ -114,7 +111,6 @@ public class SlicedSecureQueryTable implements SecureQueryTable, Serializable {
 			party = e.party;
 			slices = new LinkedHashMap<Tuple, BasicSecureQueryTable>();
 			bufferPoolKey = SecureBufferPool.getKey(op);
-			//operator = op;
 			schema = op.outSchema;
 			env = e;
 			parent = p;
@@ -158,7 +154,6 @@ public class SlicedSecureQueryTable implements SecureQueryTable, Serializable {
 		parent.sendInt(sliceCount);
 		
 		for(Tuple key : plainSlices.keySet()) {
-		    //System.out.println("Adding key " + key + " with " + plainSlices.get(key).size() + " tuples.");
 			BasicSecureQueryTable table = SMCUtils.prepareLocalPlaintext(key, plainSlices.get(key), env, parent);
 			table.R = R;
 			table.schema = schema;
@@ -228,7 +223,6 @@ public class SlicedSecureQueryTable implements SecureQueryTable, Serializable {
 		for(Tuple key : slices.keySet()) {
 			BasicSecureQueryTable a = aTable.slices.get(key);
 			BasicSecureQueryTable b = bTable.slices.get(key);
-			//System.out.println("Assembling " + key + " with " + a + ", "+ b);
 			QueryTable keyTable = SecureOutputReader.assembleOutput(a, b, schema);
 			result.addTuples(keyTable);
 		}

@@ -33,8 +33,6 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 	ExecutionSegment runSpec;
 	ArrayManager<T> dataManager;
 	boolean sliceEnabled = true;
-	// may have > 1 source (e.g., asp rate)
-	// String = opPackageName-(lhs|rhs)
 	Map<String, SlicedSecureQueryTable> sliceInputs;
 	Map<String, Double> perfReport;
 	
@@ -42,7 +40,6 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 	SlicedSecureQueryTable sliceOutput;
 	boolean slicedExecution = true;
 	boolean semijoinExecution = true;
-	// may have > 1 source (e.g., asp rate)
 	Tuple executingSliceValue = null; // all slices move in lockstep, so we need only one
 	SMCRunnable parent;
 	SecureQueryTable lastOutput = null;
@@ -187,7 +184,7 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		}
 		
 		double start = System.nanoTime();
-		ISecureRunnable runnable = DynamicCompiler.loadClass(op.packageName, op.byteCode, env);
+		ISecureRunnable<T> runnable = DynamicCompiler.loadClass(op.packageName, op.byteCode, env);
 		int rhsLength = (rhs != null) ? rhs.length : 0;
 		int lhsLength = (lhs != null) ? lhs.length : 0;
 		String msg =  "Operator " + op.packageName + " started at " + Utilities.getTime() + " on " + lhsLength + "," + rhsLength  + " tuples.";
@@ -196,9 +193,6 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		SecureArray<T> secResult = null;
 		if(Utilities.isMerge(op) && (lhs == null || rhs == null)) { // applies for both null too
 			secResult = (lhs == null) ? rhs : lhs;
-		}
-		else if(op.packageName.equals("org.smcql.generated.aspirin_rate.CommonTableExpressionScan9.merge")) {
-			secResult = lhs; // temp JMD to skip merge on replicated inputs
 		}
 		else {			
 			secResult = runnable.run(lhs, rhs);
@@ -321,8 +315,9 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		throw new Exception("Operator " + op.packageName + " has no input!");
 	}
 	
+	@SuppressWarnings("unchecked")
 	private SecureArray<T> slicedRun(OperatorExecution op, CompEnv<T> env, SecureArray<T> lhs, SecureArray<T> rhs) throws Exception {
-		ISecureRunnable runnable = DynamicCompiler.loadClass(op.packageName, op.byteCode, env);
+		ISecureRunnable<T> runnable = DynamicCompiler.loadClass(op.packageName, op.byteCode, env);
 		
 		int lhsLength = lhs != null ? lhs.length: 0;
 		int rhsLength = rhs != null ? rhs.length : 0;
@@ -347,13 +342,10 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		return secResult;
 	}
 	
-	public void prepareOutput(CompEnv<T> env) throws Exception {
-		//TODO: set plaintext output for semijoin execution only
-		
+	public void prepareOutput(CompEnv<T> env) throws Exception {		
 		if(runSpec.sliceComplementSQL != null && !runSpec.sliceComplementSQL.isEmpty() && semijoinExecution) {
 			 QueryTable plainOut = SqlQueryExecutor.query(runSpec.sliceComplementSQL, runSpec.outSchema, runSpec.workerId);
 			 lastOutput.setPlaintextOutput(plainOut);
-			 //System.out.println("Running complement " + runSpec.sliceComplementSQL);
 			 SecureBufferPool.getInstance().addArray(runSpec.rootNode, lastOutput);
 		}
 		

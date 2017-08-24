@@ -103,7 +103,6 @@ public class SecureOutputReader {
 		System.arraycopy(bData, lengthBits, bBits, 0, bitsToCopy);
 
 		int length = decodeInt(aLength, bLength, R);
-		//System.out.println("Decoding " + length + " tuples");
 		
 		return decodeSignals(aBits, bBits, length * schema.size(), R, schema);
 	}

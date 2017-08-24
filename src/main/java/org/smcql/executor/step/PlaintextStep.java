@@ -27,8 +27,6 @@ public class PlaintextStep implements ExecutionStep, Serializable {
 	String packageName = null;
 	OperatorExecution exec;
 
-	// child not yet implemented
-	// require's Johes's plaintext executor to identify additional steps
 	public PlaintextStep(Operator op, RunConfig run, ExecutionStep child) throws Exception {
 		srcOperator = op;
 		runConf = run;

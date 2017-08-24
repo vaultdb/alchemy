@@ -23,9 +23,11 @@ import org.smcql.type.SecureRelRecordType;
 // generic flattener for expressions, needs override for input references
 public abstract class RexFlattener implements RexVisitor<String> {
 	protected SecureRelRecordType schema;
+	protected int inputSize;
 	
-	public RexFlattener(SecureRelRecordType aSchema) {
+	public RexFlattener(SecureRelRecordType aSchema, int srcSize) {
 		schema = aSchema;
+		inputSize = srcSize;
 	}
 	
 	
@@ -60,8 +62,7 @@ public abstract class RexFlattener implements RexVisitor<String> {
 				&& !kind.equals(SqlKind.DIVIDE)
 				&& !kind.equals(SqlKind.GREATER_THAN_OR_EQUAL)
 				&& !kind.equals(SqlKind.LESS_THAN_OR_EQUAL)) {
-			int len = 129; //TODO: fix this.schema.size();
-			return ((RexNodeToSmc) this).variableName + "$" + (len - 1) + "~" + len + "$ == 1";				
+			return ((RexNodeToSmc) this).variableName + "$" + (inputSize - 1) + "~" + inputSize + "$ == 1";				
 		}
 		
 		if(kind.equals(SqlKind.AND)) {

@@ -202,19 +202,8 @@ public class SystemConfiguration {
 	public String getConfigFile() {
 		return configFile;
 	}
-
-	/*	public void reinitialize(String configRoot) throws Exception {
-		config.clear();
-		String confFile = configRoot + "/conf/setup";
-		parseConfiguration(confFile);
-		
-		// setup for remote connection managers
-		String dataProvidersConfig = configRoot + "/" +  config.get("data-providers");
-		config.put("data-providers", dataProvidersConfig);
-		ConnectionManager.getInstance().reinitialize();
-	}*/
 	
-		private void parseConfiguration(List<String> parameters) {
+	private void parseConfiguration(List<String> parameters) {
 		String prefix = null;
 
 		for(String p : parameters) {

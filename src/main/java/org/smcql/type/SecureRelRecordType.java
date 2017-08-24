@@ -29,8 +29,12 @@ import org.smcql.util.Utilities;
 
 
 // decorator for RelRecordType, annotate with a security policy
-public class SecureRelRecordType implements Serializable {
-
+public class SecureRelRecordType implements Serializable {	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5544214600670533850L;
+	
 	// maximum policy over all attributes
 	SecurityPolicy policy = SecurityPolicy.Private;
     RelRecordType baseType;
@@ -195,7 +199,7 @@ public class SecureRelRecordType implements Serializable {
 	public void removeAttribute(int index) {
 		if (secureFields.size() > index) {
 			secureFields.remove(index);
-		}//TODO: reorder indices after removal
+		}
 	}
 
 	public SecureRelDataTypeField getAttribute(String attrName) {

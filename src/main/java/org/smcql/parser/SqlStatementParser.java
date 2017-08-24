@@ -74,8 +74,7 @@ public class SqlStatementParser {
 		    builder.addRuleClass(FilterJoinRule.class);
 		    builder.addRuleClass(JoinPushTransitivePredicatesRule.class);
 		    builder.addRuleClass(ProjectMergeRule.class);
-		    builder.addCommonRelSubExprInstruction(); // TODO: figure out when vertices have more than one parent
-		    // new ones
+		    builder.addCommonRelSubExprInstruction(); 
 		    builder.addRuleClass(AggregateExpandDistinctAggregatesRule.class);
 		    builder.addRuleClass(ProjectToWindowRule.class);
 		    builder.addRuleClass(SortProjectTransposeRule.class);
@@ -125,7 +124,6 @@ public class SqlStatementParser {
 	public RelRoot compile(SqlNode sqlRoot) throws RelConversionException {
 		RelRoot root =  planner.rel(sqlRoot);
 		
-		//root = planner.transform(0, null, root.rel);
 		return root;
 	}
 	
@@ -166,7 +164,6 @@ public class SqlStatementParser {
 	      RelRoot root =
 	          converter.convertQuery(validatedQuery, false, true);
 	      assert(root != null);
-	      //root = root.withRel(converter.flattenTypes(root.rel, true));
 	      converter.setTrimUnusedFields(true);
 	      root = root.withRel(converter.trimUnusedFields(true, root.rel));
 	      return root;

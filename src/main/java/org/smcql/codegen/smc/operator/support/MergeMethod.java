@@ -100,7 +100,7 @@ public class MergeMethod implements CodeGenerator, Serializable {
 		}
 		else {
 			
-			String bitmask = CodeGenUtils.getBitmask(schema.getAttributes(), orderKey.get(0)); //orderKey.get(0).getBitmask(); won't work here b/c order by sometimes generated separately
+			String bitmask = CodeGenUtils.getBitmask(schema.getAttributes(), orderKey.get(0));
 			ret += "    if(lhs" + bitmask + " < rhs" + bitmask + ") {\n";
 			ret += "        res = 1;\n";
 			ret += "    }\n";

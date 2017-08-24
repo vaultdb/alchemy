@@ -7,8 +7,8 @@ public class RexNodeToSmc extends RexFlattener{
 
 	String variableName;  // variable for bitmask
 
-	public RexNodeToSmc(SecureRelRecordType aSchema, String aVarName) {
-		super(aSchema);
+	public RexNodeToSmc(SecureRelRecordType aSchema, String aVarName, int srcSize) {
+		super(aSchema, srcSize);
 		variableName = aVarName;
 	}
 

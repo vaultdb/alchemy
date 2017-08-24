@@ -325,25 +325,4 @@ public class AttributeResolver {
 		return accessed;
 
 	}
-
-	/*protected String getFieldName(Operator op, RexNode rex, SecureRelRecordType schema) {
-
-		// joins done separately
-		assert(!(op instanceof Join));
-		
-		RelToSqlConverter converter = new ExtendedRelToSqlConverter(SqlDialect.DatabaseProduct.CALCITE.getDialect());
-		
-		RelNode rel = op.getSecureRelNode().getRelNode();
-		Result result = converter.visitChild(0, rel.getInput(0));
-		
-	    final Builder builder = result.builder(rel, Clause.SELECT);
-
-		SqlNode sqlExpr = builder.context.toSql(null, rex);
-		// still seems to point to ordinals
-		
-		return null;
-	}*/
-
-
-
 }

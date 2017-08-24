@@ -135,11 +135,11 @@ public class SecureOperator implements CodeGenerator, Serializable {
 			int index = 0;
 			String srcName = "tuple";
 			for (Filter f : this.filters) {
-				String filterCond = RexNodeUtilities.flattenFilter(f, srcName);
+				String filterCond = RexNodeUtilities.flattenFilter(f, srcName, Integer.parseInt(variables.get("sSize")));
 				condition += (index == 0) ? filterCond : " && " + filterCond;
 				index++;
 			}
-			//condition = condition.replace("(", "").replace(")", "");
+			
 			if (planNode instanceof Join)
 				condition = rewriteForJoin(condition, srcName);
 			
@@ -150,8 +150,7 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	
 	private void handleProjects(Map<String, String> variables, SecureRelRecordType childSchema) throws Exception {
 		if(!projects.isEmpty()) {
-			//TODO: support multiple projects
-			String projectVars = RexNodeUtilities.flattenProjection(projects.get(0), "srcTuple", "dstTuple");
+			String projectVars = RexNodeUtilities.flattenProjection(projects.get(0), "srcTuple", "dstTuple", Integer.parseInt(variables.get("sSize")));
 			variables.put("writeDst", projectVars);
 		}
 		else {

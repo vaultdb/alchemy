@@ -25,7 +25,6 @@ public class MergeProject implements SecureMerge, Serializable {
 	@Override
 	public SecureArray<GCSignal> merge(SecureQueryTable src, CompEnv<GCSignal> localEnv, SMCRunnable parent) throws Exception {
 		env = localEnv;
-		System.out.println("Merge projecting!");
 		// this needs to be done simultaneously b/c it is a single object spanning Alice & Bob
 		// is it hitting the keys in the right order?
 		GCSignal[] payload = src.getSecurePayload(env);

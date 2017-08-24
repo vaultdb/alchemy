@@ -21,7 +21,6 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 	 */
 	private static final long serialVersionUID = 6565213527478140219L;
 	public String packageName;
-	//public String cteName; // denotes that it is a CTE root and records this separately for reuse
 	public SecureRelRecordType outSchema;
 	public OperatorExecution parent = null;
 	public OperatorExecution lhsChild, rhsChild;  // may be root of another segment
@@ -40,7 +39,6 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 	
 	public OperatorExecution(SecureStep s) {
 		packageName = s.getPackageName();
-		//cteName = s.getOutSchema().getTableAlias();
 		outSchema = s.getSchema(); //change this
 		
 		

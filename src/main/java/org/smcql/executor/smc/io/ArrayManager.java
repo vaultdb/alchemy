@@ -143,7 +143,6 @@ public class ArrayManager<T> implements Serializable {
 				local.bufferPoolKey = SecureBufferPool.getKey(op);
 				local.resetSliceIterator();
 				return local;
-				//return new SlicedSecureQueryTable(op, (CompEnv<GCSignal>) env, parent, false);
 			}
 			else {
 				// retrieve local half of shared secret for Bob's input - collect remote
@@ -160,7 +159,6 @@ public class ArrayManager<T> implements Serializable {
 				}
 				remote.resetSliceIterator();
 				return remote;
-				//return new SlicedSecureQueryTable(op, (CompEnv<GCSignal>) env, parent, true);
 
 			}
 

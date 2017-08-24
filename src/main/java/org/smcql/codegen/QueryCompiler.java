@@ -348,7 +348,6 @@ public class QueryCompiler {
 		return  curStep;
 	}
 	
-	// TODO: Johes distributed plaintext computation goes here - may need to manage children for plaintext execution over many hosts
 	private ExecutionStep generatePlaintextStep(Operator op) throws Exception {
 		return generatePlaintextStep(op, null);
 	}
@@ -449,9 +448,8 @@ public class QueryCompiler {
 	}
 	
 	private void inferExecutionSegment(ExecutionStep step) throws Exception  {
-		if(step instanceof PlaintextStep) { // TODO: Johes identify coordination points and assign their ops to an execution segment
+		if(step instanceof PlaintextStep) 
 			return;
-		}
 		
 		SecureStep secStep = (SecureStep) step;
 		

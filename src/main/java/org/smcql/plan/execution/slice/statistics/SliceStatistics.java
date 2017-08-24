@@ -138,8 +138,6 @@ public class SliceStatistics {
 
 
 	
-	// TODO: add support for data placement statistics
-	// for now this just generates a set of distributed slice values
 	public static SliceStatistics intersectStatistics(SliceStatistics lhs, SliceStatistics rhs) {
 		SliceStatistics merged = new SliceStatistics();
 		merged.sliceKey = new SliceKeyDefinition(lhs.sliceKey.getAttributes());

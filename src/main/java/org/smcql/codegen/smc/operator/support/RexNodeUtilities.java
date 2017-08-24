@@ -13,7 +13,7 @@ import org.smcql.type.SecureRelRecordType;
 
 public class RexNodeUtilities {
 	
-	public static String flattenProjection(Project aProject, String srcVariable, String dstVariable) {
+	public static String flattenProjection(Project aProject, String srcVariable, String dstVariable, int srcSize) {
 		SecureRelRecordType srcSchema = aProject.getInSchema();
 		SecureRelRecordType dstSchema = aProject.getSchema();
 		String ret = new String();
@@ -25,32 +25,31 @@ public class RexNodeUtilities {
 
 		for(SecureRelDataTypeField field : dstSchema.getSecureFieldList()) {
 			if(itr.hasNext())
-				ret += dstVariable + dstSchema.getBitmask(field) + " = " + flattenForSmc(itr.next(), srcSchema, srcVariable) + ";\n";
+				ret += dstVariable + dstSchema.getBitmask(field) + " = " + flattenForSmc(itr.next(), srcSchema, srcVariable, srcSize) + ";\n";
 		}
 		
 		return ret;
 		
 	}
 	
-	public static String flattenFilter(Filter aFilter, String srcVariable) {
+	public static String flattenFilter(Filter aFilter, String srcVariable, int srcSize) {
 		SecureRelRecordType schema = aFilter.getChild(0).getSchema(true);
 		String ret = new String();
 		LogicalFilter filter = (LogicalFilter) aFilter.getSecureRelNode().getRelNode();
 		
-		//assert(filter.getChildExps().size() == schema.getFieldCount());
 		List<RexNode> fieldFilter = filter.getChildExps();
 		Iterator<RexNode> itr = fieldFilter.iterator();
 		
 		while (itr.hasNext()) {
-			ret += flattenForSmc(itr.next(), schema, srcVariable);
+			ret += flattenForSmc(itr.next(), schema, srcVariable, srcSize);
 		}
 		
 		return ret;
 	}
 	
 	
-	public static String flattenForSmc(RexNode expr, SecureRelRecordType schema, String variable) {
-		RexFlattener flatten = new RexNodeToSmc(schema, variable);
+	public static String flattenForSmc(RexNode expr, SecureRelRecordType schema, String variable, int srcSize) {
+		RexFlattener flatten = new RexNodeToSmc(schema, variable, srcSize);
 		String result = expr.accept(flatten);
 		return result;
 	}

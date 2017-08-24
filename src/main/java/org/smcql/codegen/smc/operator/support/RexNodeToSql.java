@@ -7,7 +7,7 @@ import org.smcql.type.SecureRelRecordType;
 public class RexNodeToSql extends RexFlattener {
 
 	public RexNodeToSql(SecureRelRecordType aSchema) {
-		super(aSchema);
+		super(aSchema, aSchema.size());
 	}
 
 	@Override

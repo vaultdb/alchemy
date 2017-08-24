@@ -63,7 +63,7 @@ public class SecureWindowAggregate extends SecureOperator  {
 				SecureRelDataTypeField field = f.computesOn(inSchema).get(0);
 				field = fieldFromSchema(inSchema, field);
 				
-				String filterCond = RexNodeUtilities.flattenFilter(f, "tuple");
+				String filterCond = RexNodeUtilities.flattenFilter(f, "tuple", Integer.parseInt(variables.get("sSize")));
 				condition += (index == 0) ? filterCond : " && " + filterCond;
 				
 				index++;

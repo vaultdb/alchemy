@@ -329,9 +329,6 @@ public class SMCQLRunnable {
 
 				this.writeByte(rawData);
 				this.flush();
-				//os.write(rawData.length);
-				//os.write(rawData);
-				//os.flush();
 
 			
 			} catch (IOException e) {

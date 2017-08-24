@@ -116,7 +116,7 @@ public class SliceKeyDefinition implements Serializable {
 		
 		for(SecureRelDataTypeField pKey : parentKeys)
 			for(SecureRelDataTypeField cKey : childKeys)
-				if(pKey.getBaseField().equals(cKey.getBaseField()))   // TODO: integrate pKey.getfilters().equals(cKey.getFilters())
+				if(pKey.getBaseField().equals(cKey.getBaseField())) 
 					found = true;
 		return found;
 	}

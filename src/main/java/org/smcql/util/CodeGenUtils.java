@@ -176,11 +176,6 @@ public class CodeGenUtils {
 	
 	
 	public static String getBitmask(List<SecureRelDataTypeField> attrs, SecureRelDataTypeField ref) {
-
-
-		// TODO: need true index for equality, since some may be removed 
-		//int idx = attrs.indexOf(ref);
-
 		int startIdx = 0;
 		boolean found = false;
 		for(SecureRelDataTypeField r : attrs) {
@@ -208,41 +203,6 @@ public class CodeGenUtils {
 	}
 	
 	
-	//projection
-	/*public static String projectFields(Operator planNode,
-			String srcName, String dstName) throws Exception {
-		
-		
-		String ret = new String();
-		
-		assert(planNode instanceof Project);
-		
-		LogicalProject schemaMapper = (LogicalProject) planNode.getSecureRelNode().getRelNode();
-		SecureRelRecordType srcSchema = planNode.getInSchema();
-		SecureRelRecordType dstSchema = planNode.getSchema();
-		
-		List<RexNode> expressions = schemaMapper.getChildExps();
-		
-		
-		for(Integer idx : schemaMap.keySet()) {
-			int dstIdx = schemaMap.get(idx);
-			SecureRelDataTypeField srcAttr = srcSchema.getAttribute(idx);
-			SecureRelDataTypeField dstAttr = dstSchema.getAttribute(dstIdx);
-			
-			
-			String srcBitmask = CodeGenUtils.getBitmask(srcSchema, srcAttr);
-			String dstBitmask = CodeGenUtils.getBitmask(dstSchema, dstAttr);
-			ret += dstName + dstBitmask + " = " + srcName + srcBitmask + ";\n        ";
-			
-		}
-		
-		
-		return ret;
-
-	}
-
-	*/
-	// is this operator a secure execution that consumes plaintext input?
 	public static boolean isSecureLeaf(Operator o) {
 		
 		if(o.getExecutionMode() == ExecutionMode.Plain) { // seq scans always plaintext, so this covered here
