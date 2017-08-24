@@ -72,12 +72,23 @@ public abstract class RexFlattener implements RexVisitor<String> {
 		} else if(kind.equals(SqlKind.CAST)) {// skip these for now
 			delimiter = "";
 		} else if (kind.equals(SqlKind.LIKE)) {
-			return ((RexNodeToSmc) this).variableName + "$128~129$ == 1"; //TODO: Clean this up later
-			//delimiter = "==";
+			return ((RexNodeToSmc) this).variableName + "$" + (inputSize - 1) + "~" + inputSize + "$ == 1";
 		} else if (kind.equals(SqlKind.EQUALS)) {
 			delimiter = "==";
 		} else if (kind.equals(SqlKind.DIVIDE)) {
-			return "(rTuple$64~128$ - lTuple$64~128$)/86400000"; //TODO: Clean this up later
+			RexLiteral comp = (RexLiteral) call.getOperands().get(1);
+			int value = Integer.parseInt(comp.toString());
+			int startIndex = 0;
+			int endIndex = 0;
+			for (int i=0; i<schema.getFieldCount(); i++) {
+				if (!call.getOperands().get(0).toString().contains("$" + i)) {
+					startIndex += schema.getSecureField(i).size();
+				} else {
+					endIndex = startIndex + schema.getSecureField(i).size();
+					break;
+				}
+			}
+			return "(rTuple$" + startIndex + "~" + endIndex + "$ - lTuple$" + startIndex + "~" + endIndex + "$)/" + value;
 		} else {
 			delimiter = call.getOperator().getName();
 		}
