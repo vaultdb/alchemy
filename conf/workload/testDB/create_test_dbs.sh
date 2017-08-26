@@ -1,13 +1,20 @@
-#!/bin/bash -x
+#!/bin/bash
 
-#run from smcql home contains src/ test/
+#run from smcql home, which contains src/ 
 path=$(pwd)
-echo "Path: $path"
+echo "Using test data from $path"
 
-dbPrefix='healthlnk'
+if [ ! -d "$path/src" ]; then
+  echo "Running from incorrect directory. Please run from project home directory."
+  exit
+fi
+
+echo "Creating test database..."
+
+dbPrefix='smcql_testDB'
 dropdb $dbPrefix
 createdb $dbPrefix
-psql $dbPrefix -f $path/conf/schemas/healthlnk/plain.sql
+psql $dbPrefix -f $path/conf/workload/testDB/test_schema.sql
 
 for i in 1 2
 do
@@ -15,7 +22,7 @@ do
     dropdb $dbName
     createdb $dbName
 
-    psql $dbName -f $path/conf/schemas/healthlnk/plain.sql
+    psql $dbName -f $path/conf/workload/testDB/test_schema.sql
     psql $dbName -c "COPY diagnoses FROM '$path/conf/workload/testDB/$i/diagnoses.csv' WITH DELIMITER ','"
     psql $dbName -c "COPY medications FROM '$path/conf/workload/testDB/$i/medications.csv' WITH DELIMITER ','"
     psql $dbName -c "COPY site FROM '$path/conf/workload/testDB/$i/site.csv' WITH DELIMITER ','"
@@ -28,5 +35,18 @@ do
     fi
     psql $dbName -c "CREATE TABLE remote_cdiff_cohort_diagnoses AS SELECT * FROM remote_diagnoses WHERE icd9='008.45'"
 
-    psql $dbName -f $path/conf/workload/testDB/registries.sql
+    psql $dbName -f $path/conf/workload/testDB/setup_test_registries.sql
 done
+
+psql -lqt | cut -d \| -f 1 | grep -qw $dbPrefix
+res0=$?
+psql -lqt | cut -d \| -f 1 | grep -qw $dbPrefix'_site1'
+res1=$?
+psql -lqt | cut -d \| -f 1 | grep -qw $dbPrefix'_site2'
+res2=$?
+
+if (($res0 == 0)) && (($res1 == 0)) && (($res2 == 0)); then
+    exit 0
+else
+    exit 1
+fi

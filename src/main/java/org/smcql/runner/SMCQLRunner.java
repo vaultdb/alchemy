@@ -30,6 +30,7 @@ public class SMCQLRunner {
 		setUp();
 
 		String sql = args[0];
+		System.out.println("query: " + sql);
 		String testName = "userQuery";
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		QueryCompiler qc = new QueryCompiler(secRoot, sql);

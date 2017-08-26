@@ -9,9 +9,7 @@ conf/setup.localhost
 runeva.sh
 rungen.sh
 runtogether.sh
-smcql.log
-smcql.log.1
-smcql.log.2
+smcql.log*
 /src/main/java/com/
 /bin/
 /target/
