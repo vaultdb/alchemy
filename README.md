@@ -67,9 +67,7 @@ The above files are an automated example for setting up the test databases and a
 --------------------------------------------------------------------------------
 Running the example queries on different machines
 --------------------------------------------------------------------------------
-1. Create new configuration files for your remote hosts. 
-
-Example:
+1. Create new configuration files for your remote hosts:
 
 * conf/setup.remote
 * conf/connections/remote-hosts
