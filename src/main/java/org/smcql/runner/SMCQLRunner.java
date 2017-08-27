@@ -40,7 +40,6 @@ public class SMCQLRunner {
 		
 	    QueryTable results = exec.getOutput();
 	    System.out.println("output: " + results);
-
 	}
 
 }

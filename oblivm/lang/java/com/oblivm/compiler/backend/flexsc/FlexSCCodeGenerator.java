@@ -72,7 +72,7 @@ public class FlexSCCodeGenerator implements ICodeGenerator {
 			for(Method meth : tm.noClassFunctions) {
 				new FunctionPointerImplEmittable(config, codeGen, meth, tm).emit();
 			}
-			
+			/*
 			if(shellFolder != null) {
 				FileWriter fout;
 				if(System.getProperty("os.name").startsWith("Windows")) {
@@ -81,6 +81,7 @@ public class FlexSCCodeGenerator implements ICodeGenerator {
 					fout.write("java -cp to-run/\\;lib/* com.oblivm.backend.lang.inter.Cmd "
 							+"-t gen -i $1 -c "+packageName+".NoClass\n");
 					fout.close();
+					
 					fout = new FileWriter(new File(shellFolder + File.separator + "runeva_cygwin.sh"));
 					fout.write("java -cp to-run/\\;lib/* com.oblivm.backend.lang.inter.Cmd "
 							+"-t eva -i $1 -c "+packageName+".NoClass\n");
@@ -99,6 +100,7 @@ public class FlexSCCodeGenerator implements ICodeGenerator {
 					else
 						fout.write("Mode: VERIFY\n");
 					fout.close();
+			
 				} else {
 					fout = new FileWriter(new File(shellFolder + File.separator + "rungen.sh"));
 					String path = (new File(".").getAbsolutePath());
@@ -139,7 +141,7 @@ public class FlexSCCodeGenerator implements ICodeGenerator {
 						fout.write("Mode: VERIFY\n");
 					fout.close();
 				}
-			} 
+			} */
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

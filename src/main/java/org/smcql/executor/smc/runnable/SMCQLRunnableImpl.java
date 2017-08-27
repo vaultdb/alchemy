@@ -82,7 +82,6 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		if(slicedExecution) {
 			sliceOutput = new SlicedSecureQueryTable(runSpec.rootNode, (CompEnv<GCSignal>) env, parent);
 			List<Tuple> sliceVals = runSpec.sliceValues;
-			System.out.println("Num Slices: " + sliceVals.size());
 			for(Tuple t : sliceVals) {
 				runSpec.resetOutput();
 				executingSliceValue = t;

@@ -100,7 +100,6 @@ public class QueryCompiler {
 		}
 
 		inferExecutionSegment(compiledRoot);
-		System.out.println("Compiled " + executionSegments.size() + " segments.");
 	}
 	
 	public QueryCompiler(SecureRelRoot q, String sql) throws Exception {
@@ -136,7 +135,6 @@ public class QueryCompiler {
 		}
 
 		inferExecutionSegment(compiledRoot);
-		System.out.println("Compiled " + executionSegments.size() + " segments.");
 	}
 	
 	public QueryCompiler(SecureRelRoot q, Mode m) throws Exception {

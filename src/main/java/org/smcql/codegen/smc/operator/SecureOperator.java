@@ -165,7 +165,7 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	   
 		// tuple size in bits
 		String tupleSize = Integer.toString(planNode.getSchema(true).size());
-		variables.put("size", tupleSize); //TODO: should be the output size of project
+		variables.put("size", tupleSize);
 		
 		// for ops with different schemas between input and output
 		// overridden by Join
@@ -253,12 +253,9 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	@Override
 	public void compileIt() throws Exception {
 		String code = generate();
-
-		System.out.println(code);
-		
+	
 		if(code != null)
-			DynamicCompiler.compileOblivLang(code, this.getPackageName());
-		
+			DynamicCompiler.compileOblivLang(code, this.getPackageName());		
 	}
 
 

@@ -34,10 +34,6 @@ import org.smcql.util.Utilities;
 import com.oblivm.backend.flexsc.Party;
 import com.oblivm.backend.gc.GCSignal;
 
-
-// standalone remote query executor
-// needs to be a singleton b/c there appears to be a singleton in nanocloud dependency
-// i.e., if you launch > 1 at a time, you get spooky action at a distance
 public class SegmentExecutor {
 
 	Cloud cloud = null;
@@ -75,7 +71,6 @@ public class SegmentExecutor {
 
 		String msg = "Initializing segment executor for " + aWorker + ", " + bWorker + " on " + aliceWorker.hostname + "," + bobWorker.hostname;
 		logger.info(msg);
-		System.out.println(msg);
 
 		cloud = CloudFactory.createCloud();
 		RemoteNode.at(cloud.node("**")).useSimpleRemoting();
@@ -124,7 +119,6 @@ public class SegmentExecutor {
 		String workerId = worker.workerId;
 		
 		ViNode cloudHost = cloud.node(workerId);
-		//cloudHost.getProp("username");
 		
 		 RemoteNodeProps.at(cloudHost).setRemoteHost(host);
 		
@@ -136,8 +130,6 @@ public class SegmentExecutor {
 			
 		}
 		
-		// use more of codd cluster's memory
-		// TODO: add this to the params in setup file
 		if(host.startsWith("codd")) {
 			 cloudHost.x(VX.PROCESS).addJvmArg("-Xms1024m").addJvmArg("-Xmx60g");
 		}
@@ -210,7 +202,6 @@ public class SegmentExecutor {
 					try {
 						SqlQueryExecutor.queryNoOutput(sql, workerId);
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					return null;
@@ -228,7 +219,6 @@ public class SegmentExecutor {
 					try {
 						SqlQueryExecutor.queryNoOutput(sql, workerId);
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					return null;
@@ -259,7 +249,7 @@ public class SegmentExecutor {
 					Thread execThread = runner.runIt();
 					execThread.join();
 	
-					SecureQueryTable smcOutput = runner.getOutput(); //SecureBufferPool.getInstance().readRecord(segment.rootNode);
+					SecureQueryTable smcOutput = runner.getOutput(); 
 				
 					return smcOutput;
 				}

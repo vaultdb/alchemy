@@ -111,9 +111,8 @@ public class SqlStatementParser {
 	
 	
 	public SqlNode parseSQL(String sql) throws SqlParseException, ValidationException  {
-			System.out.println("Parsing " + sql);
-			SqlNode parsed =  planner.parse(sql);
-			parsed = planner.validate(parsed);
+		SqlNode parsed =  planner.parse(sql);
+		parsed = planner.validate(parsed);
 		return parsed;
 	}
 	

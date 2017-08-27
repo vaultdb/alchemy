@@ -29,7 +29,6 @@ public class SecureOutputReader {
 		assert(R != null);
 		
 		int length = decodeInt(alice.nonNullLength, bob.nonNullLength, R);
-		System.out.println("Have length " + length + " tuples  with schema " + schema);
 		
 		//get schema from the honest broker (embedded in the smcqlqueryexecutor
 		return decodeSignals(alice.payload, bob.payload, length * schema.size(), R, schema);	
@@ -51,7 +50,6 @@ public class SecureOutputReader {
 			QueryTable sliceResult = decodeSignals(a.payload, b.payload, length * schema.size(), R, schema);
 			result.addTuples(sliceResult);
 		}
-		System.out.println("Have length " + result.tupleCount() + " tuples  with schema " + schema);
 		
 		return result;	
 	}
@@ -85,7 +83,6 @@ public class SecureOutputReader {
 		GCSignal[] aData = readSignals(alice);
 		GCSignal[] bData = readSignals(bob);
 
-		//System.out.println("Read in " + aData.length + " signals for a, " + bData.length + " signals for b.");
 		GCSignal R = aData[0];
 		int lengthBits = SecureBufferPool.lengthBits;
 		
@@ -165,10 +162,7 @@ public class SecureOutputReader {
 	
 	
 	// elements = # of bits to read
-	public static QueryTable decodeSignals(GCSignal[] aData, GCSignal[] bData, int elements, GCSignal R, SecureRelRecordType schema) throws Exception {
-
-	    System.out.println("signal lengths: " + aData.length + "," + bData.length + " iterating over " + elements + " elements.");		
-		
+	public static QueryTable decodeSignals(GCSignal[] aData, GCSignal[] bData, int elements, GCSignal R, SecureRelRecordType schema) throws Exception {		
 		assert(aData.length >= elements);
 		assert(bData.length >= elements);
 		
