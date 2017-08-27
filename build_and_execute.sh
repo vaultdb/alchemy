@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #Check usage
-if [ "$#" -ne 2 ]; then
-  printf "Usage: ./build_and_execute.sh <arg1> <arg2>\n\targ1: Name of executable. E.g. smcql-open-source-0.5.jar\n\targ2: Path (including file name) containing SQL query. E.g. conf/workload/sql/comorbidity.sql\n"
+if [ "$#" -ne 1 ]; then
+  printf "Usage: ./build_and_execute.sh <arg1>\n\targ1: Path (including file name) containing SQL query. E.g. conf/workload/sql/comorbidity.sql\n"
   exit 1
 fi
 
@@ -16,6 +16,6 @@ if (($?==1)); then
 fi
 
 #Execute query
-query=$(<$2)
+query=$(<$1)
 echo "Executing Query..."
-java -cp "target/$1" org.smcql.runner.SMCQLRunner "$query"
+java -cp "target/smcql-open-source-0.5.jar" org.smcql.runner.SMCQLRunner "$query"
