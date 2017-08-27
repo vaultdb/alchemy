@@ -11,8 +11,6 @@ import org.smcql.plan.SecureRelRoot;
 import org.smcql.util.Utilities;
 
 public class SMCQLRunner {
-	private static String aWorkerId = "healthlnk1";
-	private static String bWorkerId = "healthlnk2";
 	protected SqlDialect dialect = SqlDialect.DatabaseProduct.POSTGRESQL.getDialect();
 	protected String codePath = Utilities.getSMCQLRoot() + "/conf/workload/sql";
 	protected static WorkerConfiguration honestBroker;
@@ -31,6 +29,10 @@ public class SMCQLRunner {
 
 		String sql = args[0];
 		System.out.println("\nQuery:\n" + sql);
+		
+		String aWorkerId = args[1];
+		String bWorkerId = args[2];
+		
 		String testName = "userQuery";
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		QueryCompiler qc = new QueryCompiler(secRoot, sql);

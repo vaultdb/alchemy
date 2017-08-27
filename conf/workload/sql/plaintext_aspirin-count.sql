@@ -1,11 +1,11 @@
 WITH all_diagnoses AS (
-    (SELECT * FROM mi_cohort_diagnoses)
+    (SELECT * FROM diagnoses)
     UNION ALL
-    (SELECT * FROM remote_mi_cohort_diagnoses)
+    (SELECT * FROM remote_diagnoses)
 ), all_medications AS (
-    (SELECT * FROM mi_cohort_medications)
+    (SELECT * FROM medications)
     UNION ALL
-    (SELECT * FROM remote_mi_cohort_medications)
+    (SELECT * FROM remote_medications)
 )
 SELECT COUNT(DISTINCT d.patient_id) as rx_cnt
 FROM all_diagnoses d JOIN all_medications m ON d.patient_id = m.patient_id 

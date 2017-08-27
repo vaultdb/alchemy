@@ -1,8 +1,9 @@
--- experimental config
+-- Test DB configuration
 \set site1 4
 \set site2 7
 \set test_year 2006
 
+-- Create data tables
 CREATE TABLE demographics (
        patient_id integer,
        birth_year integer,

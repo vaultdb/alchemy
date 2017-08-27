@@ -33,7 +33,9 @@ do
     else
         psql $dbName -c "COPY remote_diagnoses FROM '$path/conf/workload/testDB/1/diagnoses.csv' WITH DELIMITER ','"
     fi
-    psql $dbName -c "CREATE TABLE remote_cdiff_cohort_diagnoses AS SELECT * FROM remote_diagnoses WHERE icd9='008.45'"
+    psql $dbName -c "CREATE TABLE remote_cdiff_cohort_diagnoses AS (SELECT * FROM remote_diagnoses WHERE icd9='008.45')"
+    psql $dbName -c "CREATE TABLE remote_mi_cohort_diagnoses AS (SELECT * FROM remote_diagnoses WHERE icd9 like '414%')"
+    psql $dbName -c "CREATE TABLE remote_mi_cohort_medications AS (SELECT * FROM remote_medications WHERE lower(medication) like '%aspirin%')"
 
     psql $dbName -f $path/conf/workload/testDB/setup_test_registries.sql
 done
