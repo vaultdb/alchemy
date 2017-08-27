@@ -25,6 +25,7 @@ Requirements
 Setup
 --------------------------------------------------------------------------------
 Edit the configuration files:
+
 * conf/setup.localhost
 * conf/connections/localhost
 
@@ -83,7 +84,7 @@ Example:
 
 6. Run the example command on the honest broker, from the SMCQL repository.
 
-$ ./build_and_execute.sh conf/workload/sql/comorbidity.sql remoteDB1 remoteDB2
+    $ ./build_and_execute.sh conf/workload/sql/comorbidity.sql remoteDB1 remoteDB2
 
 Notes:
 
