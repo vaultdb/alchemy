@@ -126,16 +126,12 @@ public class SegmentExecutor {
 
 		if(host.equalsIgnoreCase("localhost")) {
 			cloudHost.x(VX.TYPE).setLocal();
-			ViProps.at(cloudHost).setIsolateType(); // enable debugger
-			
+			//ViProps.at(cloudHost).setIsolateType(); // enable debugger
 		}
 		
-		if(host.startsWith("codd")) {
+		/*if(host.startsWith("codd")) {
 			 cloudHost.x(VX.PROCESS).addJvmArg("-Xms1024m").addJvmArg("-Xmx60g");
-		}
-		
-					
-
+		}*/
 	}
 
 	private String getSetupParameters() throws Exception {

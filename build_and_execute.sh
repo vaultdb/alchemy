@@ -8,7 +8,7 @@ fi
 
 #Build jar
 echo "Creating executable..."
-mvn package -Dmaven.test.skip=true
+mvn package -Dmaven.test.skip=true >/dev/null
 
 if (($?==1)); then
     echo "Error creating executable"
@@ -18,4 +18,4 @@ fi
 #Execute query
 query=$(<$2)
 echo "Executing Query..."
-java -cp "target/lib/*:target/$1" org.smcql.runner.SMCQLRunner "$query"
+java -cp "target/$1" org.smcql.runner.SMCQLRunner "$query"

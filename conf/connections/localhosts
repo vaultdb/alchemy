@@ -1,3 +1,3 @@
 #workerName=host:psqlPort,db name,smcql id (must be distinct, internal use),ssh username,ssh username, key file, ssh port, client port
-healthlnk1=localhost:5432,healthlnk_site1,1,conf/connections/smcql-key.localhost,22,899
-healthlnk2=localhost:5432,healthlnk_site2,2,conf/connections/smcql-key.localhost,22,999
+healthlnk1=localhost:5432,healthlnk_site1,1,22,899
+healthlnk2=localhost:5432,healthlnk_site2,2,22,999

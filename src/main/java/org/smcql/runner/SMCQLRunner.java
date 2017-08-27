@@ -30,7 +30,7 @@ public class SMCQLRunner {
 		setUp();
 
 		String sql = args[0];
-		System.out.println("query: " + sql);
+		System.out.println("\nQuery:\n" + sql);
 		String testName = "userQuery";
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		QueryCompiler qc = new QueryCompiler(secRoot, sql);
@@ -39,7 +39,8 @@ public class SMCQLRunner {
 		exec.run();
 		
 	    QueryTable results = exec.getOutput();
-	    System.out.println("output: " + results);
+	    System.out.println("\nOutput:\n" + results);
+	    System.exit(0);
 	}
 
 }

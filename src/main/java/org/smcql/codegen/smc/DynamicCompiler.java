@@ -213,8 +213,6 @@ public class DynamicCompiler
     }
     
     public static void compileOblivLang(String smcCode, String packageName) throws Exception {
-		System.out.println("Compiling code for " + packageName);
-
     	String dstPath = Utilities.getCodeGenTarget() + "/";
 		String srcFile = dstPath + "tmp.lcc";
 		
@@ -246,21 +244,10 @@ public class DynamicCompiler
     
 
     public static void runGenerator(String className, String host, int port, SecureArray<GCSignal> input)  {
-
-    	
-    	/*listen(port);
-
-        @SuppressWarnings("unchecked")
-        CompEnv<GCSignal> env = CompEnv.getEnv(m, Party.Alice, this);
-        Class<?> cl = Class.forName(className);
-		Constructor<?> ctor = cl.getConstructors()[0];
-		ISecureRunnable<GCSignal> runnable = (ISecureRunnable<GCSignal>)ctor.newInstance(env);*/
-		
     }
     
     
     /** run class from the compiled byte code file by URLClassloader */
-    /** TODO: instantiate instance of class for passing to Cmd **/
     public static void runIt(String className)
     {
         // Create a File object on the root of the directory

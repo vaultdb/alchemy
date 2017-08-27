@@ -196,20 +196,7 @@ public class QueryCompiler {
 				Utilities.writeFile(targetFile, e.getValue());
 		}
 
-	}
-	
-	
-	public String buildJar() throws IOException, InterruptedException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		String dstName = Utilities.getSMCQLRoot() + "/lib/smcql-" + queryId + ".jar";
-		String srcPath = Utilities.getCodeGenTarget() + "/org/smcql/generated/" +queryId;
-		String cmd = "jar cf " + dstName + " " + srcPath;
-		Utilities.runCmd(cmd);
-
-		ClassPathUpdater.add(dstName);
-		return dstName;
-		
-	}
-	
+	}	
 	
 	public List<String> getClasses() throws IOException, InterruptedException {
 	
