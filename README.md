@@ -69,6 +69,7 @@ Running the example queries on different machines
 1. Create new configuration files for your remote hosts. 
 
 Example:
+
 * conf/setup.remote
 * conf/connections/remote-hosts
 
@@ -85,6 +86,7 @@ Example:
 $ ./build_and_execute.sh conf/workload/sql/comorbidity.sql remoteDB1 remoteDB2
 
 Notes:
+
 * Machine 1: Contains PostgreSQL database 'remoteDB1' and correct schema
 * Machine 2: Contains PostgreSQL database 'remoteDB2' and correct schema
 * Machine 3: Contains configuration files that specify the locations and connection information for 'remoteDB1' and 'remoteDB2'
