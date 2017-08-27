@@ -123,7 +123,6 @@ public abstract class RexFlattener implements RexVisitor<String> {
 	}
 	
 	private String getSqlString(RexCall call) {
-		//TODO: handle more than two operands
 		String result = "";
 		for (int i=0; i<call.operands.size(); i++) {
 			RexNode op = call.operands.get(i);
@@ -146,37 +145,31 @@ public abstract class RexFlattener implements RexVisitor<String> {
 
 	@Override
 	public String visitOver(RexOver over) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String visitCorrelVariable(RexCorrelVariable correlVariable) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String visitDynamicParam(RexDynamicParam dynamicParam) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String visitRangeRef(RexRangeRef rangeRef) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String visitFieldAccess(RexFieldAccess fieldAccess) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String visitSubQuery(RexSubQuery subQuery) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

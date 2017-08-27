@@ -28,7 +28,6 @@ public class ByteArrayClassLoader extends ClassLoader {
     			byteArray = Utilities.readGeneratedClassFile(packageName);
     			className = packageName + ".NoClass";
     			} catch (IOException e) {
-    			// TODO Auto-generated catch block
     				e.printStackTrace();
     			}
 

@@ -72,7 +72,6 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
 		}
 	}
 	
-	// TODO: move this to utils
 	public static boolean[] reverseBits(boolean[] src) {
 		int len = src.length;
 		boolean[] dst = new boolean[len];

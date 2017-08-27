@@ -39,7 +39,6 @@ public class SecureAggregate extends SecureOperator {
 		String groupByMatch = generateGroupBy(groupByAttributes);
 		variables.put("groupByMatch", groupByMatch);
 			
-		// TODO: multiple aggregates in SELECT
 		int aggregateIdx = a.getComputeAttributeIndex();
 		String cntMask = planNode.getSchema().getBitmask(aggregateIdx);
 		

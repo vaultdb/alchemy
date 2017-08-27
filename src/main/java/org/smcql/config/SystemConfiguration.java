@@ -241,7 +241,6 @@ public class SystemConfiguration {
 	public String getQueryName() {
 		++queryCounter;
 		
-		// TODO Auto-generated method stub
 		return "query" + queryCounter;
 	}
 	

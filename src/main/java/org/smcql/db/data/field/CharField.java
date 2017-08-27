@@ -123,7 +123,6 @@ public class CharField extends Field implements Serializable   {
 	
 	@Override
 	public void deserialize(boolean[] src) {
-		// TODO: fix this
 		assert(src.length == this.size); 
 		int chars = this.size / 8;
 		
@@ -139,7 +138,6 @@ public class CharField extends Field implements Serializable   {
 	
 	
 	private char deserializeChar(boolean[] bits) {
-		//TODO: fix this
 		assert(bits.length == 8);
 
 	    int n = 0;

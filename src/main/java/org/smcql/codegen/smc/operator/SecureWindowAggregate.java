@@ -45,12 +45,11 @@ public class SecureWindowAggregate extends SecureOperator  {
 		String rowNumMask = CodeGenUtils.getBitmask(dstSchema, ref);
 		
 		variables.put("rowNum", rowNumMask);
-		variables.put("mSize", Integer.toString(windowAttr.size())); // TODO: multiple attr group by 
+		variables.put("mSize", Integer.toString(windowAttr.size()));
 		variables.put("winMask", dstSchema.getBitmask(windowAttr));
 
 		
 		// everything else is a 1:1 copy
-		//SecureRelRecordType srcSchema = win.getChild(0).getSchema();
 		if (this.filters.isEmpty()) {
 			variables.put("applyFilter", "ret = 1;");
 		} else {

@@ -288,7 +288,6 @@ public class QueryTable implements Serializable {
 				List<Tuple> tmp = new ArrayList<Tuple>();
 				tmp.add(t);
 
-				// ???  TODO: check this out further
 				if(slices.containsKey(t)) 
 					throw new Exception("Input not sorted by slice key!"); // no repeat keys
 				

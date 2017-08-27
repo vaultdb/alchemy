@@ -74,7 +74,6 @@ public class WorkerConfiguration  {
 	
 			props.setProperty("user", user);
 			props.setProperty("password",password);
-			// TODO: props.setProperty("ssl","true");
 			dbConnection = DriverManager.getConnection(url, props);
 
 		}

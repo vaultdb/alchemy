@@ -10,7 +10,6 @@ import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.TypeMap;
 import org.smcql.util.CodeGenUtils;
 
-// TODO:Perf: add functionality for merge of sorted leaf input
 public class SecureSort extends SecureOperator {
 
 	private boolean keyed = false;
@@ -78,7 +77,7 @@ public class SecureSort extends SecureOperator {
 		int sig = sortDirection == RelFieldCollation.Direction.ASCENDING ? 1 : 0;
 		String signal = Integer.toString(sig);
 		variables.put("signal", signal);
-		if(limit > -1) {  // TODO: if written > limit, put in ORAM....
+		if(limit > -1) { 
 			variables.put("limitDefine", "#define LIMIT $limit");
 			variables.put("limitVar", "LIMIT");
 			variables.put("limit", Integer.toString(limit));

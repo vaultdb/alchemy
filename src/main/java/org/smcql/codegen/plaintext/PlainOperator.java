@@ -71,32 +71,26 @@ public class PlainOperator implements CodeGenerator {
 
 	@Override
 	public String getPackageName() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public SecureRelRecordType getInSchema() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public SecureRelRecordType getSchema() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String destFilename(ExecutionMode e) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void compileIt() throws Exception {
-		// TODO Auto-generated method stub
-		
+	public void compileIt() throws Exception {		
 	}
 
 	@Override
@@ -106,7 +100,6 @@ public class PlainOperator implements CodeGenerator {
 
 	@Override
 	public String generate(boolean asSecureLeaf) throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	
@@ -127,7 +120,6 @@ public class PlainOperator implements CodeGenerator {
 		return (complementPredicate.equals("()")) ? null : complementPredicate;
 	}
 	//inserts complement values into the query
-	//TODO: migrate the string manipulation to calcite constructs
 	public String generatePlaintextForSliceComplement(String userQuery) throws Exception {
 		List<String> predicates = planNode.getSliceKey().getFilters();
 		String complementPredicate = getComplementPredicate();

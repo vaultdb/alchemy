@@ -35,7 +35,7 @@ public class WindowAggregate extends Operator {
 		LogicalWindow win = (LogicalWindow) this.getSecureRelNode().getRelNode();
 		SecureRelRecordType inSchema = getInSchema();
 		
-		assert(win.groups.size() <= 1); // TODO: multiple PARTITION BY clauses
+		assert(win.groups.size() <= 1); 
 		
 		Group aggregate = win.groups.get(0);
 		List<Integer> partitionBy = new ArrayList<Integer>(aggregate.keys.asList());

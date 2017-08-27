@@ -38,7 +38,6 @@ public class SecureBufferPool implements Serializable {
 		try {
 			logger = SystemConfiguration.getInstance().getLogger();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

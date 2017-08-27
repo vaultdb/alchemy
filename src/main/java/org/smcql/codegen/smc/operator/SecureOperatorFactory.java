@@ -6,7 +6,6 @@ import org.smcql.util.CodeGenUtils;
 
 public class SecureOperatorFactory {
 	
-	//TODO: handle operator children
 	public static SecureOperator get(Operator o) throws Exception {
 		switch(o.getOpName()) {
 			case "Aggregate":

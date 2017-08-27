@@ -6,7 +6,6 @@ public class SecureFilter extends SecureOperator {
 
 	public SecureFilter(Operator o) throws Exception {
 		super(o);
-		// TODO Auto-generated constructor stub
 	}
 
 }

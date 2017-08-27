@@ -175,7 +175,6 @@ public class MergeMethod implements CodeGenerator, Serializable {
 	}
 	@Override
 	public String generate(boolean asSecureLeaf) throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	

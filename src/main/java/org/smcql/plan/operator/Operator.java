@@ -298,7 +298,6 @@ public abstract class Operator implements CodeGenerator {
 
 
 	
-	// TODO: generalize this for common table expression scans
 	public List<Operator> getSources() {
 		return children;
 	}
@@ -306,7 +305,7 @@ public abstract class Operator implements CodeGenerator {
 
 	// if a SMC operator implementation leverages the order of tuples for comparisons, codify that in this function
 	// otherwise empty set = order agnostic
-	// order is implicitly ascending, TODO: make this a RelCollation or the like to make this checkable
+	// order is implicitly ascending
 	public List<SecureRelDataTypeField> secureComputeOrder() {
 		return new ArrayList<SecureRelDataTypeField>();
 	}
@@ -357,7 +356,6 @@ public abstract class Operator implements CodeGenerator {
 
 
 	
-	// TODO: implement with full collation, i.e., ASC|DESC
 	public boolean sharesComputeOrder(Operator o) {
 		return secureComputeOrder().equals(o.secureComputeOrder());
 	}

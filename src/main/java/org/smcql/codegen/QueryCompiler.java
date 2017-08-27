@@ -304,9 +304,7 @@ public class QueryCompiler {
 		RunConfig pRunConf = new RunConfig();
 		pRunConf.port = 54321; // does not matter for plaintext
 		pRunConf.smcMode = mode;
-		
-		//TODO: handle projects and filters that need to combined into other operators
-		
+				
 		if (prevStep == null) {
 			PlaintextStep result = new PlaintextStep(op, pRunConf, null); 
 			processStep(result);

@@ -14,7 +14,6 @@ import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 
 // only supports single equality predicates per Join for now
-// TODO JOIN ON a = b AND c = d
 
 public class SliceKeyDefinition implements Serializable {
 	List<SecureRelDataTypeField> keyset; // equality attributes

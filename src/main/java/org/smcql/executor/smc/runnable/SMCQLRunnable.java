@@ -147,7 +147,6 @@ public class SMCQLRunnable {
 
 			
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -169,7 +168,6 @@ public class SMCQLRunnable {
 				return (Tuple) in.readObject();
 
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -332,7 +330,6 @@ public class SMCQLRunnable {
 
 			
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -358,7 +355,6 @@ public class SMCQLRunnable {
 				return (Tuple) in.readObject();
 
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 

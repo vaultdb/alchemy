@@ -39,7 +39,7 @@ public class SqlGenerator {
 		
 		String sqlOut = node.toSqlString(dialect).getSql();
 		
-		sqlOut = sqlOut.replace("\"", ""); // TODO: fix this in generator
+		sqlOut = sqlOut.replace("\"", "");
 		return sqlOut;	
 	}
 }
