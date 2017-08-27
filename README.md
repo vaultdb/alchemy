@@ -80,7 +80,7 @@ Running the example queries on different machines
 
 5. On the third machine (the honest broker), ensure that you have a copy of the repository and that the configuration files are populated with the correct worker configuration information.
 
-6. Run the example command on the honest broker, from the SMCQL repository.
+6. Run the example command on the honest broker, from the SMCQL repository:
 
     $ ./build_and_execute.sh conf/workload/sql/comorbidity.sql remoteDB1 remoteDB2
 
@@ -89,8 +89,6 @@ Notes:
 * Machine 1: Contains PostgreSQL database 'remoteDB1' and correct schema
 * Machine 2: Contains PostgreSQL database 'remoteDB2' and correct schema
 * Machine 3: Contains configuration files that specify the locations and connection information for 'remoteDB1' and 'remoteDB2'
-
-7. View your results on the honest broker.
 
 --------------------------------------------------------------------------------
 References
