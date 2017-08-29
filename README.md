@@ -38,9 +38,9 @@ Install the dependencies as needed:
 
 * Create a superuser PostgreSQL role for SMCQL: 
 
-	`$ sudo su - postgres`
-	`$ createuser -sPE smcql`
-	`$ exit`
+	`$ sudo su - postgres`  
+	`$ createuser -sPE smcql`  
+	`$ exit`  
 	
 * Install Maven: 
 
