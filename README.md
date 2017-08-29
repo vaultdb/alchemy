@@ -28,27 +28,27 @@ Setup
 --------------------------------------------------------------------------------
 Clone the repository:
 
-	$ git clone https://github.com/smcql/smcql.git
+	`$ git clone https://github.com/smcql/smcql.git`
 
 Install the dependencies as needed:
 
 * Install PostgreSQL: 
 
-	$ sudo apt-get install postgresql postgresql-contrib
+	`$ sudo apt-get install postgresql postgresql-contrib`
 
 * Create a superuser PostgreSQL role for SMCQL: 
 
-	$ sudo su - postgres
-	$ createuser -sPE smcql
-	$ exit
+	`$ sudo su - postgres`
+	`$ createuser -sPE smcql`
+	`$ exit`
 	
 * Install Maven: 
 
-	$ sudo apt-get install maven
+	`$ sudo apt-get install maven`
 
 * Install Java: 
 
-	$ sudo apt-get install default-jdk
+	`$ sudo apt-get install default-jdk`
 
 Edit the configuration files as needed:
 
@@ -108,7 +108,7 @@ Running the example queries on different machines
 
 6. Run the example command on the honest broker, from the SMCQL repository:
 
-    $ ./build_and_execute.sh conf/workload/sql/comorbidity.sql remoteDB1 remoteDB2
+    `$ ./build_and_execute.sh conf/workload/sql/comorbidity.sql remoteDB1 remoteDB2`
 
 Notes:
 
