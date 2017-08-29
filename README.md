@@ -17,6 +17,8 @@ The code is a research-quality proof of concept, and is still under development 
 Requirements
 --------------------------------------------------------------------------------
 * PostgreSQL 9.5+
+* Apache Calcite 1.8+
+* Apache Maven 3+
 * Oracle Java 8+
 * JavaCC 5.0+
 * Python 2.7+
