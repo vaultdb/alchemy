@@ -4,7 +4,7 @@
 Author
 --------------------------------------------------------------------------------
 
-SMCQL is developed and currently maintained by Johes Bater, under the direction of Jennie Rogers.
+SMCQL is developed and currently maintained by Johes Bater, under the direction of Jennie Rogers.  It translates SQL statements into <a href="http://oblivm.com/index.html">ObliVM</a> programs for secure query evaluation.
 
 
 --------------------------------------------------------------------------------
@@ -26,25 +26,38 @@ Requirements
 --------------------------------------------------------------------------------
 Setup
 --------------------------------------------------------------------------------
-Clone the repository (including submodules):
+Clone the repository:
 
-	$ git clone --recursive https://github.com/smcql/smcql.git
+	$ git clone https://github.com/smcql/smcql.git
 
 Install the dependencies as needed:
 
-* PostgreSQL: `$ sudo apt-get install postgresql postgresql-contrib` 
-* Create a PostgreSQL role for SMCQL: `$ createuser -sPE smcql`
-* Install Maven: `$ sudo apt-get install maven`
-* Install Java: `$ sudo apt-get install default-jdk`
+* Install PostgreSQL: 
 
-Edit the configuration files:
+	$ sudo apt-get install postgresql postgresql-contrib
+
+* Create a superuser PostgreSQL role for SMCQL: 
+
+	$ sudo su - postgres
+	$ createuser -sPE smcql
+	$ exit
+	
+* Install Maven: 
+
+	$ sudo apt-get install maven
+
+* Install Java: 
+
+	$ sudo apt-get install default-jdk
+
+Edit the configuration files as needed:
 
 * conf/setup.localhost
 * conf/connections/localhost
 
-This configures your local environment for SMCQL. Note that you should insert your PostgreSQL user name and password here as needed.
+This configures your local environment for SMCQL. Note that you should insert your PostgreSQL password for SMCQL here. You also may want to add setup.localhost to your .gitignore to avoid pushing your password.
 
-Run the following command:
+Start up PostgreSQL and run the following command in the SMCQL home directory:
 
     $ ./setup.sh
 
@@ -95,7 +108,7 @@ Running the example queries on different machines
 
 6. Run the example command on the honest broker, from the SMCQL repository:
 
-    `$ ./build_and_execute.sh conf/workload/sql/comorbidity.sql remoteDB1 remoteDB2`
+    $ ./build_and_execute.sh conf/workload/sql/comorbidity.sql remoteDB1 remoteDB2
 
 Notes:
 
@@ -107,10 +120,10 @@ Notes:
 References
 --------------------------------------------------------------------------------
 
-*Source Paper*:
+*SMCQL*:
 
-J. Bater, G. Elliott, C. Eggen, A. Kho, and J. Rogers, “SMCQL : Secure Querying for Federated Databases.”
+J. Bater, G. Elliott, C. Eggen, S. Goel, A. Kho, and J. Rogers, “SMCQL: Secure Querying for Federated Databases.”, VLDB, 10(6), pages 673-684, 2017.
 
-*Original ObliVM Paper*:
+*ObliVM*:
 
 C. Liu, X. S. Wang, K. Nayak, Y. Huang, and E. Shi, “ObliVM : A Programming Framework for Secure Computation,” Oakland, pp. 359–376, 2015.
