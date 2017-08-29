@@ -26,12 +26,23 @@ Requirements
 --------------------------------------------------------------------------------
 Setup
 --------------------------------------------------------------------------------
+Clone the repository (including submodules):
+
+	$ git clone --recursive https://github.com/smcql/smcql.git
+
+Install the dependencies as needed:
+
+* PostgreSQL: `$ sudo apt-get install postgresql postgresql-contrib` 
+* Create a PostgreSQL role for your current user: `$ sudo -u postgres createuser --interactive`
+* Install Maven: `$ sudo apt-get install maven`
+* Install Java: `$ sudo apt-get install default-jdk`
+
 Edit the configuration files:
 
 * conf/setup.localhost
 * conf/connections/localhost
 
-This configures your local environment for SMCQL.
+This configures your local environment for SMCQL. Note that you should insert your PostgreSQL user name and password here as needed.
 
 Run the following command:
 
