@@ -16,7 +16,7 @@ public abstract class GenRunnable<T> extends com.oblivm.backend.network.Server i
 	protected Mode m;
 	protected int port;
 	protected String[] args;
-	public boolean verbose = true;
+	public boolean verbose = false;
 	public void setParameter(Mode m, int port, String[] args) {
 		this.m = m;
 		this.port = port;
@@ -48,7 +48,6 @@ public abstract class GenRunnable<T> extends com.oblivm.backend.network.Server i
 	            CompEnv<T> env = CompEnv.getEnv(m, Party.Alice, this);
 	            Flag.sw.startTotal();
 		         
-	            System.out.println("Env: " + env);
 	            s = System.nanoTime();
 	            prepareInput(env);
 	            os.flush();

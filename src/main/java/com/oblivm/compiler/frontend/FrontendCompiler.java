@@ -173,7 +173,7 @@ public class FrontendCompiler extends DefaultVisitor<IRCode, Pair<List<Variable>
 			Bugs.LOG.log("The program does not type check.");
 			System.exit(1);
 		}
-		Info.LOG.log("The program type checks");
+		//Info.LOG.log("The program type checks");
 		return translate(program);
 	}
 

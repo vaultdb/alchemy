@@ -38,9 +38,7 @@ public class Cmd {
 		TypeManager tm = fc.compile(prog);
 
 		cg.codeGen(tm, prog.packageName, ".", false, 54321, "localhost");
-		Info.LOG.log("Compiling " + srcFile + " succeeds");
-
-		
+		//Info.LOG.log("Compiling " + srcFile + " succeeds");	
 	}
 	
 	public static void main(String[] args) throws Exception {
@@ -91,11 +89,11 @@ public class Cmd {
 						Boolean.getBoolean(ns.getString("count")),
 					   Integer.parseInt(ns.getString("port")), 
 							    ns.getString("node"));
-				Info.LOG.log("Compiling "+file+" succeeds");
+				//Info.LOG.log("Compiling "+file+" succeeds");
 //			} catch (Exception e) {
 //				e.printStackTrace();
 //			}
 		}
-		Info.LOG.log("Compilation finishes successfully.");
+		//Info.LOG.log("Compilation finishes successfully.");
 	}
 }

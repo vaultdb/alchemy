@@ -19,7 +19,7 @@ public abstract  class EvaRunnable<T> extends com.oblivm.backend.network.Client 
 	protected int port;
 	protected String host;
 	protected String[] args;
-	public boolean verbose = true;
+	public boolean verbose = false;
 
 	public void setParameter(Mode m, String host, int port, String[] args){
 		this.m = m;
@@ -48,7 +48,6 @@ public abstract  class EvaRunnable<T> extends com.oblivm.backend.network.Client 
 				
 				@SuppressWarnings("unchecked")
 	            CompEnv<T> env = CompEnv.getEnv(m, Party.Bob, this);
-	            System.out.println("Env: " + env);
 
 				Flag.sw.startTotal();
 
@@ -65,7 +64,6 @@ public abstract  class EvaRunnable<T> extends com.oblivm.backend.network.Client 
 				disconnect();
 				if(verbose){
 					System.out.println("Eva running time:"+(e-s)/1e9);
-	     //           System.out.println("Number Of AND Gates:"+env.numOfAnds);
 	            }
 			}	
 		} catch (Exception e) {
