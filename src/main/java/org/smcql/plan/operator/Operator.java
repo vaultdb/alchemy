@@ -48,6 +48,7 @@ public abstract class Operator implements CodeGenerator {
 	ExecutionMode  executionMode = ExecutionMode.Secure;
 	String queryName;
 	
+	protected double epsilon;
 	
 	public Operator(String name, SecureRelNode src, Operator... childOps) throws Exception {
 		baseRelNode = src;
@@ -60,10 +61,10 @@ public abstract class Operator implements CodeGenerator {
 			op.setParent(this);
 		}
 		
-		
 		logger = SystemConfiguration.getInstance().getLogger();
 		queryName = name.replaceAll("-", "_");
 		plaintextGenerator = new PlainOperator(this);
+		epsilon = Double.parseDouble(SystemConfiguration.getInstance().getProperty("epsilon"));
 	}
 	 
 	public ShadowRelNode getShadowRelNode() { 
@@ -443,14 +444,13 @@ public abstract class Operator implements CodeGenerator {
 		return new HashCodeBuilder(17, 31).append(this.toString()).toHashCode();
 	}
 	
-	//TODO: Implement code to estimate cardinality of output
+	//TODO: Implement code to estimate cardinality of output (true cardinality plus number pulled from LaPlace distribution)
 	public int getPrivateCardinalityEstimate() {
 		return -1;
 	}
 	
-	//TODO: Implement code to determine the privacy leakage
-	public int getPrivacyCost() {
-		return -1;
+	public double getPrivacyCost() {
+		return epsilon; //Epsilon value * # relations touched (1 by default)
 	}
 	
 	//TODO: Implement code to determine the performance cost

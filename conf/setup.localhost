@@ -10,6 +10,9 @@ sliced-execution=false
 slice-parallelism=2
 semijoin-execution=false
 
+#privacy parameters
+epsilon=0.1
+
 #postgres credentials and info
 [psql]
 host=localhost

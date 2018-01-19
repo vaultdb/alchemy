@@ -45,6 +45,10 @@ public class Join extends Operator {
 		}
 	}
 	
+	@Override
+	public double getPrivacyCost() {
+		return epsilon * 2;
+	}
 
 	public List<SecureRelDataTypeField> getSliceAttributes() {
 		
