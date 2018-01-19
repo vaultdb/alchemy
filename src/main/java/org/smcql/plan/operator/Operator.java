@@ -442,4 +442,20 @@ public abstract class Operator implements CodeGenerator {
 	public int hashCode() {
 		return new HashCodeBuilder(17, 31).append(this.toString()).toHashCode();
 	}
+	
+	//TODO: Implement code to estimate cardinality of output
+	public int getPrivateCardinalityEstimate() {
+		return -1;
+	}
+	
+	//TODO: Implement code to determine the privacy leakage
+	public int getPrivacyCost() {
+		return -1;
+	}
+	
+	//TODO: Implement code to determine the performance cost
+	public int getPerformanceCost() {
+		return -1;
+	}
+	
 }
