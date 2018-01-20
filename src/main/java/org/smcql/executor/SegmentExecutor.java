@@ -126,7 +126,7 @@ public class SegmentExecutor {
 
 		if(host.equalsIgnoreCase("localhost")) {
 			cloudHost.x(VX.TYPE).setLocal();
-			//ViProps.at(cloudHost).setIsolateType(); // enable debugger
+			ViProps.at(cloudHost).setIsolateType(); // enable debugger
 		}
 		
 		/*if(host.startsWith("codd")) {

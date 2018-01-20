@@ -58,9 +58,13 @@ public class SystemConfiguration {
 	int queryCounter = -1;
 	int portCounter = 54320;
 	
+	//privacy budget tracking
+	private Map<String, Double> privacyBudget;
+	
 	protected SystemConfiguration() throws Exception {
 
 		config = new HashMap<String, String>();
+		privacyBudget = new HashMap<String, Double>();
 		
 		String configStr = System.getProperty("smcql.setup.str");
 		if(configStr != null) {
@@ -279,5 +283,16 @@ public class SystemConfiguration {
 		operatorCounter = -1;
 		queryCounter = -1;
 		portCounter = 54320;
+	}
+
+	public Double getPrivacyBudget(String tableName) {
+		return privacyBudget.get(tableName);
+	}
+
+	public void incrementPrivacyBudget(String tableName, Double increment) {
+		if (!privacyBudget.containsKey(tableName))
+			privacyBudget.put(tableName, 0.0);
+		
+		this.privacyBudget.put(tableName, getPrivacyBudget(tableName) + increment);
 	}
 }

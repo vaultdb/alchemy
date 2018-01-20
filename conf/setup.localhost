@@ -12,6 +12,7 @@ semijoin-execution=false
 
 #privacy parameters
 epsilon=0.1
+delta=0.00001
 
 #postgres credentials and info
 [psql]

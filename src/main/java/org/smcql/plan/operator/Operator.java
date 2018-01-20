@@ -49,6 +49,7 @@ public abstract class Operator implements CodeGenerator {
 	String queryName;
 	
 	protected double epsilon;
+	protected double delta;
 	
 	public Operator(String name, SecureRelNode src, Operator... childOps) throws Exception {
 		baseRelNode = src;
@@ -64,7 +65,9 @@ public abstract class Operator implements CodeGenerator {
 		logger = SystemConfiguration.getInstance().getLogger();
 		queryName = name.replaceAll("-", "_");
 		plaintextGenerator = new PlainOperator(this);
+		
 		epsilon = Double.parseDouble(SystemConfiguration.getInstance().getProperty("epsilon"));
+		delta = Double.parseDouble(SystemConfiguration.getInstance().getProperty("delta"));
 	}
 	 
 	public ShadowRelNode getShadowRelNode() { 
@@ -444,8 +447,8 @@ public abstract class Operator implements CodeGenerator {
 		return new HashCodeBuilder(17, 31).append(this.toString()).toHashCode();
 	}
 	
-	//TODO: Implement code to estimate cardinality of output (true cardinality plus number pulled from LaPlace distribution)
-	public int getPrivateCardinalityEstimate() {
+	//TODO: Implement code to estimate cardinality of output (true cardinality plus number pulled from LaPlace distribution (which depends on the sensitivity of f aka the operator)
+	public int getPrivateCardinalityEstimate() {		
 		return -1;
 	}
 	

@@ -202,6 +202,8 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 				T[] prevEntries = lhs.getNonNullEntries();
 				secResult.setNonNullEntries(prevEntries);
 			}
+			
+			op.updatePrivacyBudget();
 		}
 		double end = System.nanoTime();
 		double elapsed = (end - start) / 1e9;

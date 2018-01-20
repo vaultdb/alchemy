@@ -2,6 +2,7 @@ package org.smcql.executor.smc;
 
 import java.io.Serializable;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
@@ -28,9 +29,11 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 	public byte[] byteCode; // compiled .class for this step
 
 	 // for merge case
-	String sourceSQL = null;
+	protected String sourceSQL = null;
 	public transient SecureArray<GCSignal> output; // optional - for passing around data w/in segment
 	
+	// for privacy calculation
+	private double privacyCost = 0.0;
 	
 	public OperatorExecution() {
 		
@@ -38,6 +41,7 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 	
 	
 	public OperatorExecution(SecureStep s) {
+		privacyCost = s.getSourceOperator().getPrivacyCost();
 		packageName = s.getPackageName();
 		outSchema = s.getSchema(); //change this
 		
@@ -120,6 +124,13 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 
 	public void setSourceSQL(String sourceSql) throws Exception {
 		this.sourceSQL = sourceSql;
+	}
+
+	public void updatePrivacyBudget() throws Exception {
+		for (SecureRelDataTypeField f : outSchema.getAttributes()) {
+			String key = f.getStoredTable() + "." + f.getName();
+			SystemConfiguration.getInstance().incrementPrivacyBudget(key, privacyCost); 
+		}
 	}
 	
 }
