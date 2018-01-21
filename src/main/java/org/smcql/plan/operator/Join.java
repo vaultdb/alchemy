@@ -2,26 +2,22 @@ package org.smcql.plan.operator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.logical.LogicalAggregate;
-import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.logical.LogicalJoin;
-import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.SecureRelNode;
+import org.smcql.privacy.PrivacyCost;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
 import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.Utilities;
 
 public class Join extends Operator {
 
@@ -46,8 +42,10 @@ public class Join extends Operator {
 	}
 	
 	@Override
-	public double getPrivacyCost() {
-		return epsilon * 2;
+	public PrivacyCost getPrivacyCost() throws Exception {
+		double epsilon = Double.parseDouble(SystemConfiguration.getInstance().getProperty("epsilon")); 
+		super.getPrivacyCost().setEpsilon(epsilon * 2);
+		return super.getPrivacyCost();
 	}
 
 	public List<SecureRelDataTypeField> getSliceAttributes() {

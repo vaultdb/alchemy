@@ -15,6 +15,7 @@ import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.plan.ShadowRelNode;
 import org.smcql.plan.slice.SliceKeyDefinition;
+import org.smcql.privacy.PrivacyCost;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
 import org.smcql.type.SecureRelRecordType;
@@ -48,8 +49,7 @@ public abstract class Operator implements CodeGenerator {
 	ExecutionMode  executionMode = ExecutionMode.Secure;
 	String queryName;
 	
-	protected double epsilon;
-	protected double delta;
+	PrivacyCost pCost;
 	
 	public Operator(String name, SecureRelNode src, Operator... childOps) throws Exception {
 		baseRelNode = src;
@@ -66,8 +66,9 @@ public abstract class Operator implements CodeGenerator {
 		queryName = name.replaceAll("-", "_");
 		plaintextGenerator = new PlainOperator(this);
 		
-		epsilon = Double.parseDouble(SystemConfiguration.getInstance().getProperty("epsilon"));
-		delta = Double.parseDouble(SystemConfiguration.getInstance().getProperty("delta"));
+		double epsilon = Double.parseDouble(SystemConfiguration.getInstance().getProperty("epsilon")); 
+		double delta = Double.parseDouble(SystemConfiguration.getInstance().getProperty("delta"));
+		pCost = new PrivacyCost(epsilon, delta); //Epsilon Cost = Epsilon value * # relations touched (1 by default)
 	}
 	 
 	public ShadowRelNode getShadowRelNode() { 
@@ -452,8 +453,8 @@ public abstract class Operator implements CodeGenerator {
 		return -1;
 	}
 	
-	public double getPrivacyCost() {
-		return epsilon; //Epsilon value * # relations touched (1 by default)
+	public PrivacyCost getPrivacyCost() throws Exception {
+		return pCost; 
 	}
 	
 	//TODO: Implement code to determine the performance cost

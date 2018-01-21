@@ -31,6 +31,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.smc.OperatorExecution;
+import org.smcql.privacy.PrivacyStatistics;
 //import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.util.Utilities;
 
@@ -46,8 +47,9 @@ public class SystemConfiguration {
 	private Map<String, String> config;
 	// package name --> SQL statement
 	
-	String configFile = null;
+	private PrivacyStatistics privacyBudget;
 	
+	String configFile = null;
 
 	// calcite parameters
 	SchemaPlus pdnSchema;
@@ -58,13 +60,10 @@ public class SystemConfiguration {
 	int queryCounter = -1;
 	int portCounter = 54320;
 	
-	//privacy budget tracking
-	private Map<String, Double> privacyBudget;
 	
 	protected SystemConfiguration() throws Exception {
-
 		config = new HashMap<String, String>();
-		privacyBudget = new HashMap<String, Double>();
+		privacyBudget = new PrivacyStatistics();
 		
 		String configStr = System.getProperty("smcql.setup.str");
 		if(configStr != null) {
@@ -285,14 +284,7 @@ public class SystemConfiguration {
 		portCounter = 54320;
 	}
 
-	public Double getPrivacyBudget(String tableName) {
-		return privacyBudget.get(tableName);
-	}
-
-	public void incrementPrivacyBudget(String tableName, Double increment) {
-		if (!privacyBudget.containsKey(tableName))
-			privacyBudget.put(tableName, 0.0);
-		
-		this.privacyBudget.put(tableName, getPrivacyBudget(tableName) + increment);
+	public PrivacyStatistics getPrivacyStatistics() {
+		return privacyBudget;
 	}
 }

@@ -7,6 +7,7 @@ import org.smcql.type.SecureRelRecordType;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.executor.step.SecureStep;
+import org.smcql.privacy.PrivacyCost;
 import org.smcql.util.Utilities;
 
 import com.oblivm.backend.flexsc.Party;
@@ -33,14 +34,14 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 	public transient SecureArray<GCSignal> output; // optional - for passing around data w/in segment
 	
 	// for privacy calculation
-	private double privacyCost = 0.0;
+	private PrivacyCost privacyCost;
 	
 	public OperatorExecution() {
 		
 	}
 	
 	
-	public OperatorExecution(SecureStep s) {
+	public OperatorExecution(SecureStep s) throws Exception {
 		privacyCost = s.getSourceOperator().getPrivacyCost();
 		packageName = s.getPackageName();
 		outSchema = s.getSchema(); //change this
@@ -129,7 +130,7 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 	public void updatePrivacyBudget() throws Exception {
 		for (SecureRelDataTypeField f : outSchema.getAttributes()) {
 			String key = f.getStoredTable() + "." + f.getName();
-			SystemConfiguration.getInstance().incrementPrivacyBudget(key, privacyCost); 
+			SystemConfiguration.getInstance().getPrivacyStatistics().consumePrivacy(key, privacyCost); 
 		}
 	}
 	

@@ -10,9 +10,9 @@ sliced-execution=false
 slice-parallelism=2
 semijoin-execution=false
 
-#privacy parameters
+#privacy consumed by each operator
 epsilon=0.1
-delta=0.00001
+delta=0.0
 
 #postgres credentials and info
 [psql]
