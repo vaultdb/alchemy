@@ -25,6 +25,7 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.Table;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.distribution.GeometricDistribution;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.schema.SecureSchemaLookup;
 import org.smcql.executor.smc.OperatorExecution;
@@ -242,4 +243,15 @@ public class Utilities {
 		return result;
 	}
 
+	public static int generateDiscreteLaplaceNoise(double epsilon, double delta, double sensitivity) {
+		double prob = 1.0 - Math.exp(-1.0 * epsilon/sensitivity);
+		double lpMean = Math.ceil(-1.0*sensitivity * Math.log((Math.exp(epsilon)/sensitivity + 1) * (1.0-Math.sqrt(1.0-delta)))/epsilon);
+		
+		GeometricDistribution geo = new GeometricDistribution(prob);
+		int positiveSide = geo.sample() - 1;
+		int negativeSide = geo.sample() - 1;
+		
+		return (int) (positiveSide - negativeSide + lpMean);
+	}
+	
 }
