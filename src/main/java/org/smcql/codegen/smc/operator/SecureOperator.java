@@ -27,6 +27,10 @@ import org.smcql.util.Utilities;
 
 public class SecureOperator implements CodeGenerator, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4748853061046387638L;
 	protected Operator planNode;
 	protected String structName;
 	protected String generatedCode = null;

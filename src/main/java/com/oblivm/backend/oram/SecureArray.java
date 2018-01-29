@@ -11,6 +11,8 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Base64;
 
+import org.smcql.util.Utilities;
+
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.BadLabelException;
 
@@ -19,10 +21,6 @@ public class SecureArray<T> implements java.io.Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 5885430036769465598L;
-	/**
-	 * 
-	 */
-
 	static final int threshold = 256;
 	boolean useTrivialOram = false;
 	public LinearScanOram<T> trivialOram = null;
@@ -31,12 +29,14 @@ public class SecureArray<T> implements java.io.Serializable {
 	public int length;
 	public int dataSize;
 	protected T[] nonNullEntries; // number of entries in array that are initialized
+	private CompEnv<T> env;
 	
 	public SecureArray() {
 		// needed for serialization
 	}
 	
 	public SecureArray(CompEnv<T> env, int N, int dataSize) throws Exception {
+		this.env = env;
 		length = N;
 		this.dataSize = dataSize;
 		useTrivialOram = N <= threshold;
@@ -166,6 +166,20 @@ public class SecureArray<T> implements java.io.Serializable {
 		 return null;
 		 
 	}
+	
+	public void shrinkToPrivateLength(double epsilon, double delta, int sensitivity) {
+		length = Utilities.generateDiscreteLaplaceNoise(epsilon, delta, sensitivity);
+		
+		//actually shrink the ORAM
+		if (useTrivialOram) {
+			trivialOram = new LinearScanOram<T>(env, length, dataSize);
+			lengthOfIden = trivialOram.lengthOfIden;
+		} else {
+			circuitOram = new RecursiveCircuitOram<T>(env, length, dataSize);
+			lengthOfIden = circuitOram.lengthOfIden;
+		}
+	}
+	
    /*** End SMCQL extensions ***/
 	private static SecureArray<?> extracted(Object o) {
 		return (SecureArray<?>) o;

@@ -30,6 +30,10 @@ import com.oblivm.backend.oram.SecureArray;
 // place for methods entirely duplicated by gen and eva
 public class SMCQLRunnableImpl<T> implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1762697393082563418L;
 	ExecutionSegment runSpec;
 	ArrayManager<T> dataManager;
 	boolean sliceEnabled = true;
@@ -205,6 +209,9 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 			
 			op.updatePrivacyBudget();
 		}
+		
+		//resize secResult here
+		
 		double end = System.nanoTime();
 		double elapsed = (end - start) / 1e9;
 		
@@ -223,7 +230,6 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		dataManager.registerArray(op, secResult, env, parent);
 		op.output = (SecureArray<GCSignal>) secResult;
 		return secResult;
-		
 	}
 	
 	
@@ -300,8 +306,7 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		
 
 	}
-	
-	
+		
 	private SecureArray<T> mergeRun(OperatorExecution op, CompEnv<T> env, SecureArray<T> lhs, SecureArray<T> rhs) throws Exception {
 		if(lhs != null && rhs != null) {
 			return slicedRun(op, env, lhs, rhs);
