@@ -245,7 +245,7 @@ public class Utilities {
 
 	public static int generateDiscreteLaplaceNoise(double epsilon, double delta, double sensitivity) {
 		double prob = 1.0 - Math.exp(-1.0 * epsilon/sensitivity);
-		double lpMean = Math.ceil(-1.0*sensitivity * Math.log((Math.exp(epsilon)/sensitivity + 1) * (1.0-Math.sqrt(1.0-delta)))/epsilon);
+		double lpMean = Math.ceil(-1.0*sensitivity * Math.log( (Math.exp(epsilon/sensitivity)+1) * (1.0-Math.pow(1.0-delta, 1.0/sensitivity)) )/epsilon);
 		
 		GeometricDistribution geo = new GeometricDistribution(prob);
 		int positiveSide = geo.sample() - 1;
