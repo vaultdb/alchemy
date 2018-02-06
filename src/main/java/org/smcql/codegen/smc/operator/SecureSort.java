@@ -1,5 +1,6 @@
 package org.smcql.codegen.smc.operator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public class SecureSort extends SecureOperator {
 	
 	
 	@Override
-	public String generate() throws Exception  {
+	public List<String> generate() throws Exception  {
 		
 		// variables: size, sortKeySize signal, fid, bitmask
 		Map<String, String> variables = baseVariables();
@@ -110,7 +111,9 @@ public class SecureSort extends SecureOperator {
 		// plain sort
 		if(planNode.getSchema().getSecureFieldList().equals(sortKey)) {
 			generatedCode =  CodeGenUtils.generateFromTemplate("sort/simple.txt", variables);
-			return generatedCode;
+			List<String> result = new ArrayList<String>();
+			result.add(generatedCode);
+			return result;
 		}
 
 		// add functionality for ORDER BY over part of tuple or different order of attributes
@@ -125,8 +128,9 @@ public class SecureSort extends SecureOperator {
 		String srcFile = "sort/keyed.txt";
 		
 		generatedCode = CodeGenUtils.generateFromTemplate(srcFile, variables);
-		return generatedCode;
-		
+		List<String> result = new ArrayList<String>();
+		result.add(generatedCode);
+		return result;
 	}
 	
 }

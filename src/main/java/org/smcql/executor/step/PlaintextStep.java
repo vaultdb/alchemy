@@ -17,6 +17,11 @@ import org.smcql.type.SecureRelRecordType;
 
 public class PlaintextStep implements ExecutionStep, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3064422376190639522L;
+
 	transient Operator srcOperator;
 	
 	RunConfig runConf;
@@ -62,7 +67,7 @@ public class PlaintextStep implements ExecutionStep, Serializable {
 	
 	@Override
 	public String generate() throws Exception {
-		return srcOperator.getPlainOperator().generate();
+		return srcOperator.getPlainOperator().generate().get(0);
 	}
 
 	@Override

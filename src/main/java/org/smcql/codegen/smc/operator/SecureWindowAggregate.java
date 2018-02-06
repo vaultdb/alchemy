@@ -1,5 +1,6 @@
 package org.smcql.codegen.smc.operator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,11 @@ import org.smcql.util.CodeGenUtils;
 // only supports row number for now
 public class SecureWindowAggregate extends SecureOperator  {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 891090055886639488L;
+
 	public SecureWindowAggregate(Operator o) throws Exception {
 		super(o);
 
@@ -31,7 +37,7 @@ public class SecureWindowAggregate extends SecureOperator  {
 	}
 	
 	@Override
-	public String generate() throws Exception  {
+	public List<String> generate() throws Exception  {
 		Map<String, String> variables = baseVariables();		
 		
 		assert(planNode instanceof WindowAggregate);
@@ -81,7 +87,8 @@ public class SecureWindowAggregate extends SecureOperator  {
 			generatedCode = CodeGenUtils.generateFromTemplate("windowAggregate/singular/row_num.txt", variables);
 		}
 	
-		return generatedCode;
-		
+		List<String> result = new ArrayList<String>();
+		result.add(generatedCode);
+		return result;
 	}
 }

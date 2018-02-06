@@ -13,6 +13,10 @@ import org.smcql.plan.operator.Operator;
 
 public class SecureStep implements ExecutionStep, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5928302082757391973L;
 	transient CodeGenerator codeGenerator;
 	transient Operator srcOperator;
 	ExecutionStep parent;
@@ -47,7 +51,7 @@ public class SecureStep implements ExecutionStep, Serializable {
 	
 	@Override
 	public String generate() throws Exception {
-		return codeGenerator.generate();
+		return codeGenerator.generate().get(0);
 	}
 
 	@Override

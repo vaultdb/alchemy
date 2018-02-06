@@ -6,15 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.calcite.rel.logical.LogicalFilter;
-import org.apache.calcite.rex.RexNode;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.smc.DynamicCompiler;
+import org.smcql.codegen.smc.operator.support.ProcessingStep;
 import org.smcql.codegen.smc.operator.support.RexNodeUtilities;
 import org.smcql.codegen.smc.operator.support.SortMethod;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.executor.step.ExecutionStep;
-import org.smcql.executor.step.PlaintextStep;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Join;
 import org.smcql.plan.operator.Operator;
@@ -23,7 +21,6 @@ import org.smcql.plan.operator.Sort;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.CodeGenUtils;
-import org.smcql.util.Utilities;
 
 public class SecureOperator implements CodeGenerator, Serializable {
 
@@ -38,6 +35,8 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	protected List<Filter> filters;
 	protected List<Project> projects;
 	protected List<ExecutionStep> merges;
+	
+	protected List<ProcessingStep> processingSteps;
 	
 	// not equal to Operator.children b/c of projects and filters getting folded into code gen for larger op
 	protected List<SecureOperator> children;
@@ -57,12 +56,13 @@ public class SecureOperator implements CodeGenerator, Serializable {
 		filters = new ArrayList<Filter>();
 		projects = new ArrayList<Project>();
 		merges = new ArrayList<ExecutionStep>();
+		processingSteps = new ArrayList<ProcessingStep>();
 	}	
 	
 	
 
-	public String generate() throws Exception {
-		return null;
+	public List<String> generate() throws Exception {
+		return new ArrayList<String>();
 	}
 	
 	
@@ -91,6 +91,10 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	public void addFilter(Filter aFilter) {
 		aFilter.setSecureOperator(this);
 		filters.add(aFilter);
+	}
+	
+	public void addProcessingStep(ProcessingStep step) {
+		processingSteps.add(step);
 	}
 	
 	public List<ExecutionStep> getMerges() {
@@ -256,16 +260,18 @@ public class SecureOperator implements CodeGenerator, Serializable {
 
 	@Override
 	public void compileIt() throws Exception {
-		String code = generate();
+		List<String> code = generate();
 	
-		if(code != null)
-			DynamicCompiler.compileOblivLang(code, this.getPackageName());		
+		for (int i=0; i< code.size(); i++) {
+			String name = this.getPackageName() + "_" + i;
+			DynamicCompiler.compileOblivLang(code.get(i), name);	
+		}				
 	}
 
 
 
 	@Override
-	public String generate(boolean asSecureLeaf) throws Exception {
+	public List<String> generate(boolean asSecureLeaf) throws Exception {
 		return this.generate();
 	}
 

@@ -1,17 +1,14 @@
 package $packageName;
 
 //naively return input size
-int$dSize[1] run@v(int$sSize[v] a, int$sSize[v] b) {
-	int tupleCount;
+int run@v(int$size[v] a, int$size[v] b) {
+	secure int tupleCount;
 	getArrElements(a, tupleCount);	
 
-    secure int$dSize[1] dst;
+    int dst;
 
 	//insert native method for dp noise here
 
-	dst[0] = tupleCount;
-	
-	int one = 1;
-	setArrElements(dst, one);
+	dst = 0;
 	return dst;
 }

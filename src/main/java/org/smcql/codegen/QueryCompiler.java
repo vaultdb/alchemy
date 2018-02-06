@@ -294,7 +294,7 @@ public class QueryCompiler {
 	private void processStep(PlaintextStep step) throws Exception {
 		Operator op = step.getSourceOperator();
 		
-		String sql = op.generate();
+		String sql = op.generate().get(0);
 		allSteps.put(op, step);
 		sqlCode.put(step, sql);
 	}
@@ -367,7 +367,7 @@ public class QueryCompiler {
 
 		SecureStep mergeStep = new SecureStep(merge, op, mRunConf, child, null);
 		child.setParent(mergeStep);
-		smcCode.put(mergeStep, merge.generate());
+		smcCode.put(mergeStep, merge.generate().get(0));
 		return mergeStep;
 	}
 	
@@ -411,8 +411,10 @@ public class QueryCompiler {
 		}
 		
 		allSteps.put(op, smcStep);
-		String code = secOp.generate();
-		smcCode.put(smcStep, code);
+		List<String> code = secOp.generate();
+		for (String c : code)
+			smcCode.put(smcStep, c);
+		
 		return smcStep;
 	}
 

@@ -1,5 +1,6 @@
 package org.smcql.codegen.smc.operator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public class SecureAggregate extends SecureOperator {
 	}
 	
 	@Override
-	public String generate() throws Exception  {
+	public List<String> generate() throws Exception  {
 		Map<String, String> variables = baseVariables();	
 		Aggregate a = (Aggregate) planNode;
 		
@@ -33,7 +34,9 @@ public class SecureAggregate extends SecureOperator {
 		
 		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
 		if (groupByAttributes.isEmpty()) {
-			return CodeGenUtils.generateFromTemplate("aggregate/singular/full/count.txt", variables);
+			List<String> result = new ArrayList<String>();
+			result.add(CodeGenUtils.generateFromTemplate("aggregate/singular/full/count.txt", variables));
+			return result;
 		} 
 		
 		String groupByMatch = generateGroupBy(groupByAttributes);
@@ -45,7 +48,10 @@ public class SecureAggregate extends SecureOperator {
 		variables.put("cntMask", cntMask);
 	
 		generatedCode = CodeGenUtils.generateFromTemplate("aggregate/groupby/partial/count.txt", variables);
-		return generatedCode;
+		
+		List<String> result = new ArrayList<String>();
+		result.add(generatedCode);
+		return result;
 	}
 	
 	

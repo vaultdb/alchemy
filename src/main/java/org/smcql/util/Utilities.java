@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -17,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -36,57 +38,54 @@ import org.smcql.type.SecureRelRecordType;
 
 
 public class Utilities {
-	
-	
-    
-	 public static String getSMCQLRoot() {
-	        String    root = System.getProperty("smcql.root"); // for remote systems
+	public static String getSMCQLRoot() {
+		String root = System.getProperty("smcql.root"); // for remote systems
+	    if(root != null) {
+	    		return root;
+	    }
 	       
-	        if(root != null) {
-	            return root;
-	        }
+	    // fall back to local path
+	    URL location = Utilities.class.getProtectionDomain().getCodeSource().getLocation();
+	    String path = location.getFile();
 	       
-	        // fall back to local path
-	        URL location = Utilities.class.getProtectionDomain().getCodeSource().getLocation();
-	        String path = location.getFile();
+	    // chop off trailing "/bin/src/"
+	    if(path.endsWith("src/")) { // ant build
+	        path = path.substring(0, path.length()-"src/".length());
+	    }
 	       
-	        // chop off trailing "/bin/src/"
-	        if(path.endsWith("src/")) { // ant build
-	            path = path.substring(0, path.length()-"src/".length());
-	        }
+	    if(path.endsWith("bin/")) { // eclipse and ant build
+	    		path = path.substring(0, path.length() - "/bin/".length());
+	    }
 	       
-	        if(path.endsWith("bin/")) { // eclipse and ant build
-	            path = path.substring(0, path.length() - "/bin/".length());
-	        }
-	       
-	        if(path.endsWith("target/classes/")) 
-	            path = path.substring(0, path.length() - "/target/classes/".length());
+	    if(path.endsWith("target/classes/")) 
+	    		path = path.substring(0, path.length() - "/target/classes/".length());
 
-	        if(path.endsWith("target/smcql-open-source-0.5.jar"))
-	        	path = path.substring(0, path.length() - "/target/smcql-open-source-0.5.jar".length());
-	        
-	        return path;
-	    }	
+	    return path;
+	}	
 	 
 	 
-     public static String getCodeGenRoot() {
-         return getSMCQLRoot() + "/conf/smc/operators";
- }
+    	public static String getCodeGenRoot() {
+    		return getSMCQLRoot() + "/conf/smc/operators/";
+    	}
  
- public static String getCodeGenTarget() {
-         return getSMCQLRoot() + "/bin";
- }
+    	public static String getCodeGenTarget() {
+    		return getSMCQLRoot() + "/bin";
+    	}
  
-	 public static List<String> readFile(String filename) throws IOException  {				  
-			
+    	public static List<String> readFile(String filename) throws IOException  {	
+    		List<String> lines = null;
+		
+	    if(System.getProperty("smcql.root") != null) {
+	    		InputStream is = Utilities.class.getClassLoader().getResourceAsStream(filename);
+	    		lines = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
+	    } else {
+	    		lines = Files.readAllLines(Paths.get(filename), StandardCharsets.UTF_8);
+	    }
+		
+	    return lines;				
+    	}
 
-				List<String> lines = Files.readAllLines(Paths.get(filename), StandardCharsets.UTF_8);
-				return lines;
-					
-			
-		}
-
-	 public static void writeFile(String fname, String contents) throws FileNotFoundException, UnsupportedEncodingException {
+	public static void writeFile(String fname, String contents) throws FileNotFoundException, UnsupportedEncodingException {
          String path = FilenameUtils.getFullPath(fname);
          File f = new File(path);
          f.mkdirs();

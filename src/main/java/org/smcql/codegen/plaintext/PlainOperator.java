@@ -56,7 +56,7 @@ public class PlainOperator implements CodeGenerator {
 	}
 	
 	@Override
-	public String generate() throws Exception {
+	public List<String> generate() throws Exception {
 		Operator parent = planNode.getParent();
 		Operator sqlOp = planNode;
 		if (sqlOp instanceof SeqScan) {
@@ -66,7 +66,9 @@ public class PlainOperator implements CodeGenerator {
 			}
 		}
 		
-		return SqlGenerator.getSourceSql(sqlOp, SystemConfiguration.DIALECT);		
+		List<String> result = new ArrayList<String>();
+		result.add(SqlGenerator.getSourceSql(sqlOp, SystemConfiguration.DIALECT));
+		return result;		
 	}
 
 	@Override
@@ -99,8 +101,8 @@ public class PlainOperator implements CodeGenerator {
 	}
 
 	@Override
-	public String generate(boolean asSecureLeaf) throws Exception {
-		return null;
+	public List<String> generate(boolean asSecureLeaf) throws Exception {
+		return new ArrayList<String>();
 	}
 	
 	

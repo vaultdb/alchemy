@@ -10,11 +10,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.smcql.codegen.smc.DynamicCompiler;
+import org.smcql.util.CodeGenUtils;
 import org.smcql.util.Utilities;
 
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.BadLabelException;
+import com.oblivm.backend.lang.inter.ISecureRunnable;
 
 public class SecureArray<T> implements java.io.Serializable {
 	/**
@@ -167,17 +172,37 @@ public class SecureArray<T> implements java.io.Serializable {
 		 
 	}
 	
-	public void shrinkToPrivateLength(double epsilon, double delta, int sensitivity) {
-		length = Utilities.generateDiscreteLaplaceNoise(epsilon, delta, sensitivity);
+	public int getTrueLength(CompEnv<T> env) throws Exception {
+		String packageName = "org.smcql.generated.utilities.dpSize";
+		Map<String, String> variables = new HashMap<String, String>();
+		variables.put("size", Integer.toString(dataSize));
+		variables.put("packageName", packageName);
 		
-		//actually shrink the ORAM
+		String generatedCode = CodeGenUtils.generateFromTemplate("dp_size.txt", variables);
+		DynamicCompiler.compileOblivLang(generatedCode, packageName);
+		byte[] byteCode = Utilities.readGeneratedClassFile(packageName);
+		ISecureRunnable<T> runnable = DynamicCompiler.loadClass(packageName, byteCode, env);
+		
+		runnable.run(this, null);
+		return 0;
+	}
+	
+	public void shrinkToPrivateLength(double epsilon, double delta, int sensitivity) throws Exception {
+		// get the length of the current array (will be d-private later)
+		//int trueLen = getTrueLength();
+		
+		// shrink the ORAM (will be done efficiently later)
+		
+		/*
+		int numDummies = Utilities.generateDiscreteLaplaceNoise(epsilon, delta, sensitivity); //this is the noise, not the full length
+		
 		if (useTrivialOram) {
 			trivialOram = new LinearScanOram<T>(env, length, dataSize);
 			lengthOfIden = trivialOram.lengthOfIden;
 		} else {
 			circuitOram = new RecursiveCircuitOram<T>(env, length, dataSize);
 			lengthOfIden = circuitOram.lengthOfIden;
-		}
+		}*/
 	}
 	
    /*** End SMCQL extensions ***/

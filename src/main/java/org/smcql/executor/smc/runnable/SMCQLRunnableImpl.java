@@ -210,8 +210,6 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 			op.updatePrivacyBudget();
 		}
 		
-		//resize secResult here
-		
 		double end = System.nanoTime();
 		double elapsed = (end - start) / 1e9;
 		
@@ -229,6 +227,9 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		
 		dataManager.registerArray(op, secResult, env, parent);
 		op.output = (SecureArray<GCSignal>) secResult;
+		
+		//logger.info("True length = " + secResult.getTrueLength(env));
+		
 		return secResult;
 	}
 	

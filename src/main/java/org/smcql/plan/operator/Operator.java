@@ -345,14 +345,14 @@ public abstract class Operator implements CodeGenerator {
 
 
 	@Override
-	public String generate() throws Exception {
+	public List<String> generate() throws Exception {
 		return plaintextGenerator.generate();
 	}
 
 	
 	@Override
-	public String generate(boolean asSecureLeaf) throws Exception {
-		return null;
+	public List<String> generate(boolean asSecureLeaf) throws Exception {
+		return new ArrayList<String>();
 	}
 
 	public void compileIt() throws Exception {

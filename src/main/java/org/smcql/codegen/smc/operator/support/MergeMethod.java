@@ -64,8 +64,7 @@ public class MergeMethod implements CodeGenerator, Serializable {
 	}
 	
 	@Override
-	public String generate() throws Exception {
-		
+	public List<String> generate() throws Exception {
 		int size = schema.size();
 
 		Map<String, String> variables = new HashMap<String, String>();
@@ -74,9 +73,9 @@ public class MergeMethod implements CodeGenerator, Serializable {
 		variables.put("packageName", packageName);
 		
 		generatedCode = CodeGenUtils.generateFromTemplate("util/merge_inputs.txt", variables);
-	
-		return generatedCode;
-		
+		List<String> result = new ArrayList<String>();
+		result.add(generatedCode);
+		return result;
 	}
 	
 	// if l.a1 < l.a2 then r = 1
@@ -170,12 +169,15 @@ public class MergeMethod implements CodeGenerator, Serializable {
 	}
 	@Override
 	public void compileIt() throws Exception {
-		String code = generate();
-		DynamicCompiler.compileOblivLang(code, packageName);
+		List<String> code = generate();
+		for(int i=0; i<code.size(); i++) {
+			String name = packageName + "_" + i;
+			DynamicCompiler.compileOblivLang(code.get(i), name);
+		}
 	}
 	@Override
-	public String generate(boolean asSecureLeaf) throws Exception {
-		return null;
+	public List<String> generate(boolean asSecureLeaf) throws Exception {
+		return new ArrayList<String>();
 	}
 	
 

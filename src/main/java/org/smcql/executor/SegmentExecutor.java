@@ -84,6 +84,7 @@ public class SegmentExecutor {
 		cloud.node("**").setProp("plan.pointers", bufferPoolPointers);
 		cloud.node("**").setProp("smcql.setup.str", getSetupParameters());
 		cloud.node("**").setProp("smcql.connections.str", getConnectionParameters());
+		cloud.node("**").setProp("smcql.root", "");
 
 		// configure Alice and Bob
 		cloud.node(aWorker).setProp("party", "gen");

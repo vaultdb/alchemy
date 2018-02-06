@@ -213,33 +213,32 @@ public class DynamicCompiler
     }
     
     public static void compileOblivLang(String smcCode, String packageName) throws Exception {
-    	String dstPath = Utilities.getCodeGenTarget() + "/";
+    		String dstPath = Utilities.getCodeGenTarget() + "/";
 		String srcFile = dstPath + "tmp.lcc";
 		
 		Utilities.writeFile(srcFile, smcCode);
 
 		Cmd.compile(srcFile, dstPath);
 		
-		String javaPath = dstPath + packageName.replace('.', '/');
-    	File dir = new File(javaPath);
+		String javaPath = dstPath + packageName.replace('.', '/').substring(0, packageName.lastIndexOf('_'));
+    		File dir = new File(javaPath);
 
-    	File[] files = dir.listFiles(new FilenameFilter() {
+    		File[] files = dir.listFiles(new FilenameFilter() {
     		  public boolean accept(File dir, String name) {
     		    return name.endsWith(".java");
     		  }
     		});
     	
-    	String[] fileNames = new String[files.length];
-    	for (int i = 0; i < files.length; i ++) {
-    		fileNames[i] = files[i].getName();
-    	}
+    		String[] fileNames = new String[files.length];
+    		for (int i = 0; i < files.length; i ++) {
+    			fileNames[i] = files[i].getName();
+    		}
 		
 		DynamicCompiler.compileJava(fileNames, packageName, javaPath);
 		
 		Path srcPath = Paths.get(srcFile);
 		
 		Files.deleteIfExists(srcPath);
-
     }
     
 
