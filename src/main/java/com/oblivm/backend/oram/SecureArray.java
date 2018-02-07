@@ -184,7 +184,7 @@ public class SecureArray<T> implements java.io.Serializable {
 		byte[] byteCode = Utilities.readGeneratedClassFile(packageName);
 		IPublicRunnable<T> runnable = DynamicCompiler.loadPublicClass(packageName, byteCode, env);
 		
-		runnable.run(this, null);
+		runnable.runPublic(this, null);
 		return 0;
 	}
 	

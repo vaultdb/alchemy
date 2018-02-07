@@ -34,7 +34,7 @@ public class SecureJoin extends SecureOperator{
 		Filter filter = new Filter(this.getPackageName(), new SecureRelNode(f, nodeChildren), opChildren, (Join) o);
 		this.addFilter(filter);
 		
-		ProcessingStep trueSize = new ProcessingStep("util/dp_size.txt");
+		ProcessingStep trueSize = new ProcessingStep("util/dp_size.txt", "dpSize");
 		processingSteps.add(trueSize);
 	}
 

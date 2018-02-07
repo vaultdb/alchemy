@@ -1,4 +1,4 @@
-package process.$packageName;
+package $packageName.$processName;
 
 //naively return input size
 int runPublic@v(int$sSize[v] a, int$sSize[v] b) {
