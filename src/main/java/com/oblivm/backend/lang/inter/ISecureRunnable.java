@@ -9,7 +9,5 @@ public interface ISecureRunnable<T> {
 	public T[] main(int lenA, int lenB, T[] x, T[] y) throws Exception;
 		
 	// implement for smcql
-	 public SecureArray<T> run(SecureArray<T> a, SecureArray<T> b) throws Exception;
-	 
-
+	public SecureArray<T> run(SecureArray<T> a, SecureArray<T> b) throws Exception;
 }

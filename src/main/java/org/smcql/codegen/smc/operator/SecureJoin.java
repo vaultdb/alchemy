@@ -57,6 +57,9 @@ public class SecureJoin extends SecureOperator{
 		
 		List<String> result = new ArrayList<String>();
 		result.add(generatedCode);
+		
+		result.add(processingSteps.get(0).generate(variables));
+		
 		return result;
 	}
 	

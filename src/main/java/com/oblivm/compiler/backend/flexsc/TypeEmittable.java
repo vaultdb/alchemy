@@ -64,6 +64,11 @@ public class TypeEmittable extends Emittable {
 						throw new RuntimeException("Multiple run functions!");
 					main = meth;
 					
+				} else if (meth.name.equals("runPublic")) {
+					this.implementInterfaces.add("IPublicRunnable<"+codeGen.dataType+">");
+					if ( main != null)
+						throw new RuntimeException("Multiple run functions!");
+					main = meth;
 				}
 			}
 		}

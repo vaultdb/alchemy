@@ -261,9 +261,9 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	@Override
 	public void compileIt() throws Exception {
 		List<String> code = generate();
-	
+		
 		for (int i=0; i< code.size(); i++) {
-			String name = this.getPackageName() + "_" + i;
+			String name = this.getPackageName(); //TODO: change package name in dp_size.txt
 			DynamicCompiler.compileOblivLang(code.get(i), name);	
 		}				
 	}

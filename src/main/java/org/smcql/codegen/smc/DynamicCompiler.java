@@ -32,6 +32,7 @@ import org.smcql.util.Utilities;
 
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.GCSignal;
+import com.oblivm.backend.lang.inter.IPublicRunnable;
 import com.oblivm.backend.lang.inter.ISecureRunnable;
 import com.oblivm.backend.oram.SecureArray;
 import com.oblivm.compiler.cmd.Cmd;
@@ -126,11 +127,20 @@ public class DynamicCompiler
 
     @SuppressWarnings("unchecked")
 	public static <T> ISecureRunnable<T> loadClass(String packageName, byte[] byteCode, CompEnv<T> env) throws Exception {
-    	ByteArrayClassLoader loader = new ByteArrayClassLoader(packageName, byteCode, Thread.currentThread().getContextClassLoader());  	
-    	Class<?> cl = loader.findClass(packageName);
-    	Constructor<?> ctor = cl.getConstructors()[0];
-    	ISecureRunnable<T> newInstance = (ISecureRunnable<T>)ctor.newInstance(env);
-    	return newInstance;
+    		ByteArrayClassLoader loader = new ByteArrayClassLoader(packageName, byteCode, Thread.currentThread().getContextClassLoader());  	
+    		Class<?> cl = loader.findClass(packageName);
+    		Constructor<?> ctor = cl.getConstructors()[0];
+    		ISecureRunnable<T> newInstance = (ISecureRunnable<T>)ctor.newInstance(env);
+    		return newInstance;
+    }
+    
+    @SuppressWarnings("unchecked")
+	public static <T> IPublicRunnable<T> loadPublicClass(String packageName, byte[] byteCode, CompEnv<T> env) throws Exception {
+    		ByteArrayClassLoader loader = new ByteArrayClassLoader(packageName, byteCode, Thread.currentThread().getContextClassLoader());  	
+		Class<?> cl = loader.findClass(packageName);
+		Constructor<?> ctor = cl.getConstructors()[0];
+		IPublicRunnable<T> newInstance = (IPublicRunnable<T>)ctor.newInstance(env);
+		return newInstance;
     }
 
     /** compile your files by JavaCompiler */
@@ -220,7 +230,7 @@ public class DynamicCompiler
 
 		Cmd.compile(srcFile, dstPath);
 		
-		String javaPath = dstPath + packageName.replace('.', '/').substring(0, packageName.lastIndexOf('_'));
+		String javaPath = dstPath + packageName.replace('.', '/');
     		File dir = new File(javaPath);
 
     		File[] files = dir.listFiles(new FilenameFilter() {

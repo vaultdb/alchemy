@@ -171,7 +171,7 @@ public class MergeMethod implements CodeGenerator, Serializable {
 	public void compileIt() throws Exception {
 		List<String> code = generate();
 		for(int i=0; i<code.size(); i++) {
-			String name = packageName + "_" + i;
+			String name = this.getPackageName();
 			DynamicCompiler.compileOblivLang(code.get(i), name);
 		}
 	}

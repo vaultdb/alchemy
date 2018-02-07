@@ -19,6 +19,7 @@ import org.smcql.util.Utilities;
 
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.BadLabelException;
+import com.oblivm.backend.lang.inter.IPublicRunnable;
 import com.oblivm.backend.lang.inter.ISecureRunnable;
 
 public class SecureArray<T> implements java.io.Serializable {
@@ -181,7 +182,7 @@ public class SecureArray<T> implements java.io.Serializable {
 		String generatedCode = CodeGenUtils.generateFromTemplate("dp_size.txt", variables);
 		DynamicCompiler.compileOblivLang(generatedCode, packageName);
 		byte[] byteCode = Utilities.readGeneratedClassFile(packageName);
-		ISecureRunnable<T> runnable = DynamicCompiler.loadClass(packageName, byteCode, env);
+		IPublicRunnable<T> runnable = DynamicCompiler.loadPublicClass(packageName, byteCode, env);
 		
 		runnable.run(this, null);
 		return 0;
