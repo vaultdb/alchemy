@@ -1,6 +1,6 @@
 package org.smcql.codegen;
 
-import java.util.List;
+import java.util.Map;
 
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.type.SecureRelRecordType;
@@ -8,10 +8,10 @@ import org.smcql.type.SecureRelRecordType;
 
 public interface CodeGenerator {
 
-	List<String> generate() throws Exception;
+	Map<String, String> generate() throws Exception;
 
 	
-	List<String> generate(boolean asSecureLeaf) throws Exception;
+	Map<String, String> generate(boolean asSecureLeaf) throws Exception;
 
 	public String getPackageName();
 	

@@ -293,8 +293,9 @@ public class QueryCompiler {
 	//adds the given step to the global collections and adds execution information to the step
 	private void processStep(PlaintextStep step) throws Exception {
 		Operator op = step.getSourceOperator();
-		
-		String sql = op.generate().get(0);
+		Map<String, String> code = op.generate();
+		String name = op.getPackageName();
+		String sql = op.generate().get(op.getPackageName());
 		allSteps.put(op, step);
 		sqlCode.put(step, sql);
 	}
@@ -367,7 +368,7 @@ public class QueryCompiler {
 
 		SecureStep mergeStep = new SecureStep(merge, op, mRunConf, child, null);
 		child.setParent(mergeStep);
-		smcCode.put(mergeStep, merge.generate().get(0));
+		smcCode.put(mergeStep, merge.generate().get(op.getPackageName()));
 		return mergeStep;
 	}
 	
@@ -411,8 +412,8 @@ public class QueryCompiler {
 		}
 		
 		allSteps.put(op, smcStep);
-		List<String> code = secOp.generate();
-		for (String c : code)
+		Map<String, String> code = secOp.generate();
+		for (String c : code.values())
 			smcCode.put(smcStep, c);
 		
 		return smcStep;

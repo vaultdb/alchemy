@@ -1,6 +1,7 @@
 package org.smcql.codegen.smc.operator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +38,7 @@ public class SecureWindowAggregate extends SecureOperator  {
 	}
 	
 	@Override
-	public List<String> generate() throws Exception  {
+	public Map<String, String> generate() throws Exception  {
 		Map<String, String> variables = baseVariables();		
 		
 		assert(planNode instanceof WindowAggregate);
@@ -87,8 +88,8 @@ public class SecureWindowAggregate extends SecureOperator  {
 			generatedCode = CodeGenUtils.generateFromTemplate("windowAggregate/singular/row_num.txt", variables);
 		}
 	
-		List<String> result = new ArrayList<String>();
-		result.add(generatedCode);
+		Map<String, String> result = new HashMap<String, String>();
+		result.put(getPackageName(), generatedCode);
 		return result;
 	}
 }

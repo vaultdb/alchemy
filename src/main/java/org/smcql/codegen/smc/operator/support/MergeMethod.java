@@ -23,6 +23,10 @@ import org.smcql.util.Utilities;
 // and creates a single joint set of tuples for query execution
 public class MergeMethod implements CodeGenerator, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5083349178327948258L;
 	// if smc leaf is splittable, operate on secure leaf
 	// else operates on the *child* of the SMC op
 	Operator src;
@@ -64,7 +68,7 @@ public class MergeMethod implements CodeGenerator, Serializable {
 	}
 	
 	@Override
-	public List<String> generate() throws Exception {
+	public Map<String, String> generate() throws Exception {
 		int size = schema.size();
 
 		Map<String, String> variables = new HashMap<String, String>();
@@ -73,8 +77,8 @@ public class MergeMethod implements CodeGenerator, Serializable {
 		variables.put("packageName", packageName);
 		
 		generatedCode = CodeGenUtils.generateFromTemplate("util/merge_inputs.txt", variables);
-		List<String> result = new ArrayList<String>();
-		result.add(generatedCode);
+		Map<String, String> result = new HashMap<String, String>();
+		result.put(packageName, generatedCode);
 		return result;
 	}
 	
@@ -161,23 +165,25 @@ public class MergeMethod implements CodeGenerator, Serializable {
 	public void setSourceSQL(String srcSQL) {
 		this.srcSQL = srcSQL;
 	}
+	
 	@Override
 	public String destFilename(ExecutionMode e) {
 		String base = childStep.getCodeGenerator().destFilename(e);
 		base = base.substring(0, base.length() - ".lcc".length());
 		return base + "_merge.lcc";
 	}
+	
 	@Override
 	public void compileIt() throws Exception {
-		List<String> code = generate();
-		for(int i=0; i<code.size(); i++) {
-			String name = this.getPackageName();
-			DynamicCompiler.compileOblivLang(code.get(i), name);
-		}
+		Map<String, String> code = generate();
+		
+		for (String n : code.keySet())
+			DynamicCompiler.compileOblivLang(code.get(n), n);
 	}
+	
 	@Override
-	public List<String> generate(boolean asSecureLeaf) throws Exception {
-		return new ArrayList<String>();
+	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
+		return new HashMap<String, String>();
 	}
 	
 

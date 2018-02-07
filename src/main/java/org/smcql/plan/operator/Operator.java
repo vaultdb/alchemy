@@ -1,7 +1,9 @@
 package org.smcql.plan.operator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -345,14 +347,14 @@ public abstract class Operator implements CodeGenerator {
 
 
 	@Override
-	public List<String> generate() throws Exception {
+	public Map<String, String> generate() throws Exception {
 		return plaintextGenerator.generate();
 	}
 
 	
 	@Override
-	public List<String> generate(boolean asSecureLeaf) throws Exception {
-		return new ArrayList<String>();
+	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
+		return new HashMap<String, String>();
 	}
 
 	public void compileIt() throws Exception {

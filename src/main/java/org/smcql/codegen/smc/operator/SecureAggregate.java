@@ -1,6 +1,7 @@
 package org.smcql.codegen.smc.operator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,10 @@ import org.smcql.util.CodeGenUtils;
 
 public class SecureAggregate extends SecureOperator {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5374902647734506171L;
 	private SecureRelRecordType schema;
 	public SecureAggregate(Operator o) throws Exception {
 		super(o);
@@ -21,7 +26,7 @@ public class SecureAggregate extends SecureOperator {
 	}
 	
 	@Override
-	public List<String> generate() throws Exception  {
+	public Map<String, String> generate() throws Exception  {
 		Map<String, String> variables = baseVariables();	
 		Aggregate a = (Aggregate) planNode;
 		
@@ -34,8 +39,8 @@ public class SecureAggregate extends SecureOperator {
 		
 		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
 		if (groupByAttributes.isEmpty()) {
-			List<String> result = new ArrayList<String>();
-			result.add(CodeGenUtils.generateFromTemplate("aggregate/singular/full/count.txt", variables));
+			Map<String, String> result = new HashMap<String, String>();
+			result.put(getPackageName(), CodeGenUtils.generateFromTemplate("aggregate/singular/full/count.txt", variables));
 			return result;
 		} 
 		
@@ -49,8 +54,8 @@ public class SecureAggregate extends SecureOperator {
 	
 		generatedCode = CodeGenUtils.generateFromTemplate("aggregate/groupby/partial/count.txt", variables);
 		
-		List<String> result = new ArrayList<String>();
-		result.add(generatedCode);
+		Map<String, String> result = new HashMap<String, String>();
+		result.put(getPackageName(), generatedCode);
 		return result;
 	}
 	

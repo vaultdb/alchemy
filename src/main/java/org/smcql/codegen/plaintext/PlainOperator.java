@@ -1,7 +1,9 @@
 package org.smcql.codegen.plaintext;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.sql.SqlGenerator;
@@ -56,7 +58,7 @@ public class PlainOperator implements CodeGenerator {
 	}
 	
 	@Override
-	public List<String> generate() throws Exception {
+	public Map<String, String> generate() throws Exception {
 		Operator parent = planNode.getParent();
 		Operator sqlOp = planNode;
 		if (sqlOp instanceof SeqScan) {
@@ -66,8 +68,8 @@ public class PlainOperator implements CodeGenerator {
 			}
 		}
 		
-		List<String> result = new ArrayList<String>();
-		result.add(SqlGenerator.getSourceSql(sqlOp, SystemConfiguration.DIALECT));
+		Map<String, String> result = new HashMap<String, String>();
+		result.put(planNode.getPackageName(), SqlGenerator.getSourceSql(sqlOp, SystemConfiguration.DIALECT));
 		return result;		
 	}
 
@@ -101,8 +103,8 @@ public class PlainOperator implements CodeGenerator {
 	}
 
 	@Override
-	public List<String> generate(boolean asSecureLeaf) throws Exception {
-		return new ArrayList<String>();
+	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
+		return new HashMap<String, String>();
 	}
 	
 	

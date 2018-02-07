@@ -1,6 +1,7 @@
 package org.smcql.codegen.smc.operator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ public class SecureDistinct extends SecureOperator{
 	}
 	
 	@Override
-	public List<String> generate() throws Exception  {
+	public Map<String, String> generate() throws Exception  {
 		Map<String, String> variables = baseVariables();
 		
 		String generatedCode = null;
@@ -35,8 +36,8 @@ public class SecureDistinct extends SecureOperator{
 			generatedCode = CodeGenUtils.generateFromTemplate("distinct/simple.txt", variables);
 		}
 
-		List<String> result = new ArrayList<String>();
-		result.add(generatedCode);
+		Map<String, String> result = new HashMap<String, String>();
+		result.put(getPackageName(), generatedCode);
 		return result;
 	}
 

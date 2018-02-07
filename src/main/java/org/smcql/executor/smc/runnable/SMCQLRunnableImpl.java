@@ -197,7 +197,10 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		if(Utilities.isMerge(op) && (lhs == null || rhs == null)) { // applies for both null too
 			secResult = (lhs == null) ? rhs : lhs;
 		}
-		else {			
+		else {		
+			if(lhs == null && rhs == null)
+				throw new Exception("Null inputs for " + op.packageName);
+			
 			secResult = runnable.run(lhs, rhs);
 			if(secResult == null) 
 				throw new Exception("Null result for " + op.packageName);

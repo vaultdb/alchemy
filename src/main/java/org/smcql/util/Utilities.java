@@ -98,7 +98,6 @@ public class Utilities {
 	 }
 
 		public static byte[] readGeneratedClassFile(String packageName) throws IOException {
-
 			String filename = Utilities.getCodeGenTarget() + "/"  + packageName.replace('.', '/') + "/NoClass.class";
 			return readBinaryFile(filename);
 		}

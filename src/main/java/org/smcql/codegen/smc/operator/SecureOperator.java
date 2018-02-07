@@ -61,8 +61,8 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	
 	
 
-	public List<String> generate() throws Exception {
-		return new ArrayList<String>();
+	public Map<String, String> generate() throws Exception {
+		return new HashMap<String, String>();
 	}
 	
 	
@@ -95,6 +95,10 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	
 	public void addProcessingStep(ProcessingStep step) {
 		processingSteps.add(step);
+	}
+	
+	public List<ProcessingStep> getProcessingSteps() {
+		return processingSteps;
 	}
 	
 	public List<ExecutionStep> getMerges() {
@@ -260,18 +264,16 @@ public class SecureOperator implements CodeGenerator, Serializable {
 
 	@Override
 	public void compileIt() throws Exception {
-		List<String> code = generate();
+		Map<String, String> code = generate();
 		
-		for (int i=0; i< code.size(); i++) {
-			String name = this.getPackageName(); //TODO: change package name in dp_size.txt
-			DynamicCompiler.compileOblivLang(code.get(i), name);	
-		}				
+		for (String n : code.keySet())
+			DynamicCompiler.compileOblivLang(code.get(n), n);	
 	}
 
 
 
 	@Override
-	public List<String> generate(boolean asSecureLeaf) throws Exception {
+	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
 		return this.generate();
 	}
 

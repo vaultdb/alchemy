@@ -1,6 +1,11 @@
 package org.smcql.executor.smc;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.smcql.codegen.smc.operator.SecureOperator;
+import org.smcql.codegen.smc.operator.support.ProcessingStep;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
@@ -36,6 +41,9 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 	// for privacy calculation
 	private PrivacyCost privacyCost;
 	
+	// for additional processing
+	private List<ProcessingStep> processingSteps;
+	
 	public OperatorExecution() {
 		
 	}
@@ -46,6 +54,8 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 		packageName = s.getPackageName();
 		outSchema = s.getSchema(); //change this
 		
+		SecureOperator sec = s.getSourceOperator().getSecureOperator();
+		processingSteps = (sec == null) ? new ArrayList<ProcessingStep>() : sec.getProcessingSteps();
 		
 		lhsChild = getChild(s, 0);
 		rhsChild = getChild(s, 1);
@@ -57,7 +67,12 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 			rhsChild.parent = this;
 		
 		try {
-			byteCode =  Utilities.readGeneratedClassFile(packageName);
+			byteCode = Utilities.readGeneratedClassFile(packageName);
+			
+			for (ProcessingStep p : processingSteps) {
+				String name = packageName + "." + p.getProcessName();
+				p.setByteCode(Utilities.readGeneratedClassFile(name));
+			}
 		} catch(Exception e) {
 			// do nothing
 		}

@@ -2,6 +2,7 @@ package org.smcql.codegen.smc.operator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +15,7 @@ import org.smcql.plan.operator.Join;
 import org.smcql.plan.operator.Operator;
 import org.smcql.util.CodeGenUtils;
 
-public class SecureJoin extends SecureOperator{
+public class SecureJoin extends SecureOperator {
 
 	/**
 	 * 
@@ -40,7 +41,7 @@ public class SecureJoin extends SecureOperator{
 
 	@Override
 	// implementing a standard NLJ so sorting is not tackled yet
-	public List<String> generate() throws Exception  {
+	public Map<String, String> generate() throws Exception  {
 		Map<String, String> variables = baseVariables();		
 
 		Join join = (Join) planNode;
@@ -55,10 +56,11 @@ public class SecureJoin extends SecureOperator{
 			generatedCode =  CodeGenUtils.generateFromTemplate("join/simple.txt", variables);
 		}
 		
-		List<String> result = new ArrayList<String>();
-		result.add(generatedCode);
+		Map<String, String> result = new HashMap<String, String>();
+		result.put(getPackageName(), generatedCode);
 		
-		result.add(processingSteps.get(0).generate(variables));
+		//for (ProcessingStep p : processingSteps)
+		//	result.put(getPackageName() + "." + p.getProcessName(), p.generate(variables));
 		
 		return result;
 	}
