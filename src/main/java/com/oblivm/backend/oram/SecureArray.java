@@ -10,17 +10,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.smcql.codegen.smc.DynamicCompiler;
-import org.smcql.util.CodeGenUtils;
 import org.smcql.util.Utilities;
 
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.BadLabelException;
-import com.oblivm.backend.lang.inter.IPublicRunnable;
-import com.oblivm.backend.lang.inter.ISecureRunnable;
+import com.oblivm.backend.gc.GCSignal;
+
 
 public class SecureArray<T> implements java.io.Serializable {
 	/**
@@ -170,40 +166,34 @@ public class SecureArray<T> implements java.io.Serializable {
 	         return null;
 	      }
 		 return null;
-		 
 	}
 	
-	public int getTrueLength(CompEnv<T> env) throws Exception {
-		String packageName = "org.smcql.generated.utilities.dpSize";
-		Map<String, String> variables = new HashMap<String, String>();
-		variables.put("size", Integer.toString(dataSize));
-		variables.put("packageName", packageName);
-		
-		String generatedCode = CodeGenUtils.generateFromTemplate("dp_size.txt", variables);
-		DynamicCompiler.compileOblivLang(generatedCode, packageName);
-		byte[] byteCode = Utilities.readGeneratedClassFile(packageName);
-		IPublicRunnable<T> runnable = DynamicCompiler.loadPublicClass(packageName, byteCode, env);
-		
-		runnable.runPublic(this, null);
-		return 0;
-	}
-	
+	@SuppressWarnings("unchecked")
 	public void shrinkToPrivateLength(double epsilon, double delta, int sensitivity) throws Exception {
-		// get the length of the current array (will be d-private later)
-		//int trueLen = getTrueLength();
+		//extract values from ORAM into a GCSignal[]
+		T[] arr = (T[]) new GCSignal[length];
+		T[] zero = (T[]) new GCSignal[length];
 		
-		// shrink the ORAM (will be done efficiently later)
+		T[][] data = (useTrivialOram) ? trivialOram.content : (T[][]) circuitOram.extract(arr, zero, length);
 		
-		/*
-		int numDummies = Utilities.generateDiscreteLaplaceNoise(epsilon, delta, sensitivity); //this is the noise, not the full length
+		//sort values
 		
+		
+		//calculate differentially private length
+		//int numDummies = Utilities.generateDiscreteLaplaceNoise(epsilon, delta, sensitivity);
+		int dpLength = length;
+		
+		//allocate and set new ORAM
 		if (useTrivialOram) {
-			trivialOram = new LinearScanOram<T>(env, length, dataSize);
+			trivialOram = new LinearScanOram<T>(env, dpLength, dataSize);
 			lengthOfIden = trivialOram.lengthOfIden;
+			trivialOram.content = data;
 		} else {
-			circuitOram = new RecursiveCircuitOram<T>(env, length, dataSize);
+			circuitOram = new RecursiveCircuitOram<T>(env, dpLength, dataSize);
 			lengthOfIden = circuitOram.lengthOfIden;
-		}*/
+			arr = (T[]) new GCSignal[length];
+			circuitOram.put(arr, zero, (T[]) data);
+		}
 	}
 	
    /*** End SMCQL extensions ***/

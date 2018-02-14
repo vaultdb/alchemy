@@ -34,9 +34,6 @@ public class SecureJoin extends SecureOperator {
 		
 		Filter filter = new Filter(this.getPackageName(), new SecureRelNode(f, nodeChildren), opChildren, (Join) o);
 		this.addFilter(filter);
-		
-		ProcessingStep trueSize = new ProcessingStep("util/dp_size.txt", "dpSize");
-		processingSteps.add(trueSize);
 	}
 
 	@Override
@@ -59,8 +56,8 @@ public class SecureJoin extends SecureOperator {
 		Map<String, String> result = new HashMap<String, String>();
 		result.put(getPackageName(), generatedCode);
 		
-		//for (ProcessingStep p : processingSteps)
-		//	result.put(getPackageName() + "." + p.getProcessName(), p.generate(variables));
+		for (ProcessingStep p : processingSteps)
+			result.put(getPackageName() + "." + p.getProcessName(), p.generate(variables));
 		
 		return result;
 	}
