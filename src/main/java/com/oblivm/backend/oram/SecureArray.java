@@ -13,9 +13,11 @@ import java.util.Base64;
 
 import org.smcql.util.Utilities;
 
+import com.oblivm.backend.circuits.BitonicSortLib;
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.BadLabelException;
 import com.oblivm.backend.gc.GCSignal;
+import com.oblivm.backend.lang.inter.Util;
 
 
 public class SecureArray<T> implements java.io.Serializable {
@@ -177,11 +179,11 @@ public class SecureArray<T> implements java.io.Serializable {
 		T[][] data = (useTrivialOram) ? trivialOram.content : (T[][]) circuitOram.extract(arr, zero, length);
 		
 		//sort values
-		
+		BitonicSortLib<T> lib = new BitonicSortLib<T>(env);
+		lib.sort(data, lib.SIGNAL_ZERO);
 		
 		//calculate differentially private length
-		//int numDummies = Utilities.generateDiscreteLaplaceNoise(epsilon, delta, sensitivity);
-		int dpLength = length;
+		int dpLength = Util.getDifferentiallyPrivateLength(this.getNonNullEntries(), epsilon, delta, sensitivity);
 		
 		//allocate and set new ORAM
 		if (useTrivialOram) {

@@ -57,4 +57,8 @@ public class Util {
 		
 		return intArray;
 	}
+	
+	public static <T> int getDifferentiallyPrivateLength(T[] trueLength, double epsilon, double delta, int sensitivity) {
+		return 1;
+	}
 }

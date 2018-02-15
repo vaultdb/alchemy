@@ -20,6 +20,10 @@ import com.oblivm.backend.oram.SecureArray;
 public class BasicSecureQueryTable implements SecureQueryTable, Serializable {
 
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6328855454363807543L;
 	public GCSignal[] payload; // raw data
 	public GCSignal[] nonNullLength; // 32-bit int for real array length, as opposed to SecureArrray.length, which may include nulls
 	transient public SecureRelRecordType schema; // output schema
