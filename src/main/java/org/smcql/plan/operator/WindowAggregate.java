@@ -99,4 +99,11 @@ public class WindowAggregate extends Operator {
 		}
 		return aggs;
 	}
+	
+	@Override
+	public int getPerformanceCost(int n) {
+		// n*log(n)^2
+		return 2*n*(int)Math.pow(Math.log((double)n),2);
+	}
+	
 };

@@ -459,9 +459,21 @@ public abstract class Operator implements CodeGenerator {
 		return pCost; 
 	}
 	
-	//TODO: Implement code to determine the performance cost
-	public int getPerformanceCost() {
-		return -1;
-	}
+    public int getPerformanceCost(int n) {
+        // n is the estimated input cardinality
+        return 1; // Overriden in sub classes
+    }
+    
+    
+    public int getEstimatedCardinality() {
+        // Overridden in SeqScan class
+        return (int)(getReductionFactor()*children.get(0).getEstimatedCardinality());
+    }
+    
+    
+    public double getReductionFactor() {
+        // Overriden in Filter class
+        return 1.0;
+    }
 	
 }

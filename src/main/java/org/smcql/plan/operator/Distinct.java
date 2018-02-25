@@ -32,4 +32,11 @@ public class Distinct extends Operator {
 		return getSchema().getSecureFieldList();
 	}
 
+	
+	@Override
+	public int getPerformanceCost(int n) {
+		// n*log(n)^2
+		return n*(int)Math.pow(Math.log((double)n),2);
+	}
+	
 };

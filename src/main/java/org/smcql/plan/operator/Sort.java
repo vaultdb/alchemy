@@ -65,4 +65,10 @@ public class Sort extends Operator {
 		return collation.getFieldCollations().get(0).direction;
 	}
 	
+	@Override
+	public int getPerformanceCost(int n) {
+		// n*log(n)^2
+		return n*(int)Math.pow(Math.log((double)n),2);
+	}
+	
 };

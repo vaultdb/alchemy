@@ -45,5 +45,12 @@ public class Filter extends Operator {
 		
 		return AttributeResolver.getAttributes(predicate, schema);
 	}
-
+	
+	
+	@Override
+    public int getPerformanceCost(int n) {
+        // 0
+        return 0;
+    }
+	
 }

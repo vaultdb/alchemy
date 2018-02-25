@@ -68,5 +68,23 @@ public class SeqScan extends Operator {
 		executionMode = ExecutionMode.Plain;
 	}
 
+	@Override
+	public int getEstimatedCardinality() {
+		
+		//This errors out
+		//SliceKeyDefinition s = getSliceKey();
+		
+		SecureRelDataTypeField keyField = getSliceKey().getAttributes().get(0);
+		//String table = keyField.getStoredTable();
+		
+		//String attribute = keyField.getStoredAttribute();
+		//String query = "SELECT COUNT(*) FROM <TABLENAME>";
+		//SqlQueryExecutor qe = new SqlQueryExecutor();
+		//QueryTable rawStats = qe.plainQuery(inSchema, query);
+		//List<Tuple> tuples = rawStats.tuples();
+		//return tuples.size();
+		
+		return 1;
+	}
 	
 };
