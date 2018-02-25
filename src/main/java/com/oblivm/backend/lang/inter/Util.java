@@ -3,8 +3,15 @@ package com.oblivm.backend.lang.inter;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.smcql.executor.smc.io.SecureOutputReader;
+
+import com.oblivm.backend.circuits.CircuitLib;
 import com.oblivm.backend.circuits.arithmetic.IntegerLib;
 import com.oblivm.backend.flexsc.CompEnv;
+import com.oblivm.backend.flexsc.Party;
+import com.oblivm.backend.gc.GCGenComp;
+import com.oblivm.backend.gc.GCSignal;
 import com.oblivm.backend.oram.SecureArray;
 import com.oblivm.backend.util.Utils;
 
@@ -58,7 +65,11 @@ public class Util {
 		return intArray;
 	}
 	
-	public static <T> int getDifferentiallyPrivateLength(T[] trueLength, double epsilon, double delta, int sensitivity) {
-		return 1;
+	public static <T> int getDifferentiallyPrivateLength(CompEnv<T> env, T[] trueLength, double epsilon, double delta, int sensitivity) throws Exception {	
+		CircuitLib<T> lib = new CircuitLib<T>(env);
+		
+		int length = (int) Utils.toLong(lib.declassifyToBoth(trueLength));
+		
+		return length;
 	}
 }

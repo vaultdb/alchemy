@@ -171,6 +171,7 @@ public class ArrayManager<T> implements Serializable {
 	}
 
 	
+	@SuppressWarnings("unchecked")
 	public void registerArray(OperatorExecution srcOp, SecureArray<T> arr, CompEnv<T> env, SMCRunnable parent) throws Exception {
 		inputArrays.put(srcOp, arr);
 		

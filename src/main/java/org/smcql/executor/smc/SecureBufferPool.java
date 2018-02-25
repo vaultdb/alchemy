@@ -72,7 +72,6 @@ public class SecureBufferPool implements Serializable {
 		   logger.fine("Secure buffer pool adding new key: " + key + " --> " + table);
 		   
 		   records.put(key, table);
-
 	   }
 	   
 	   public synchronized void addArray(OperatorExecution op, GCSignal[] value, GCSignal[] length, CompEnv<GCSignal> env, SMCRunnable parent, Tuple t) throws Exception {

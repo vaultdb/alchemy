@@ -228,9 +228,9 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		else 
 			perfReport.put(op.packageName, elapsed);
 		
-		secResult.shrinkToPrivateLength(0.1, 0.00001, 1);
-		
 		dataManager.registerArray(op, secResult, env, parent);
+
+		secResult.shrinkToPrivateLength(0.1, 0.00001, 1);
 		op.output = (SecureArray<GCSignal>) secResult;
 				
 		return secResult;

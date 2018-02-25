@@ -72,7 +72,7 @@ public abstract class CompEnv<T> implements java.io.Serializable{
 	}
 
 	public abstract T inputOfAlice(boolean in);
-
+	
 	public abstract T inputOfBob(boolean in);
 
 	public abstract boolean outputToAlice(T out);

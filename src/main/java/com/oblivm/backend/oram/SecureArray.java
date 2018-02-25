@@ -11,13 +11,12 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Base64;
 
-import org.smcql.util.Utilities;
-
 import com.oblivm.backend.circuits.BitonicSortLib;
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.BadLabelException;
 import com.oblivm.backend.gc.GCSignal;
 import com.oblivm.backend.lang.inter.Util;
+import com.oblivm.backend.util.Utils;
 
 
 public class SecureArray<T> implements java.io.Serializable {
@@ -44,6 +43,7 @@ public class SecureArray<T> implements java.io.Serializable {
 		length = N;
 		this.dataSize = dataSize;
 		useTrivialOram = N <= threshold;
+		
 		if (useTrivialOram) {
 			trivialOram = new LinearScanOram<T>(env, N, dataSize);
 			lengthOfIden = trivialOram.lengthOfIden;
@@ -53,12 +53,12 @@ public class SecureArray<T> implements java.io.Serializable {
 		}
 	}
 
-	public T[] readAndRemove(T[] iden) throws BadLabelException {
+	public T[] readAndRemove(T[] iden) throws BadLabelException {	
 		return circuitOram.clients.get(0).readAndRemove(iden, 
 				Arrays.copyOfRange(circuitOram.clients.get(0).lib.declassifyToBoth(iden), 0, circuitOram.clients.get(0).lengthOfPos), false);
 	}
 
-	public T[] read(T[] iden) throws BadLabelException {
+	public T[] read(T[] iden) throws BadLabelException {	
 		if (useTrivialOram)
 			return trivialOram.read(iden);
 		else
@@ -175,7 +175,6 @@ public class SecureArray<T> implements java.io.Serializable {
 		//extract values from ORAM into a GCSignal[]
 		T[] arr = (T[]) new GCSignal[length];
 		T[] zero = (T[]) new GCSignal[length];
-		
 		T[][] data = (useTrivialOram) ? trivialOram.content : (T[][]) circuitOram.extract(arr, zero, length);
 		
 		//sort values
@@ -183,19 +182,23 @@ public class SecureArray<T> implements java.io.Serializable {
 		lib.sort(data, lib.SIGNAL_ZERO);
 		
 		//calculate differentially private length
-		int dpLength = Util.getDifferentiallyPrivateLength(this.getNonNullEntries(), epsilon, delta, sensitivity);
+		length = Util.getDifferentiallyPrivateLength(env, this.getNonNullEntries(), epsilon, delta, sensitivity);
+		
+		if (length <= 0)
+			length = 1;
 		
 		//allocate and set new ORAM
 		if (useTrivialOram) {
-			trivialOram = new LinearScanOram<T>(env, dpLength, dataSize);
-			lengthOfIden = trivialOram.lengthOfIden;
-			trivialOram.content = data;
+			trivialOram = new LinearScanOram<T>(env, length, dataSize);
+			trivialOram.content = Arrays.copyOfRange(data, 0, length);
+			//for (int i=0; i<length; i++) {
+			//	System.out.println("val: " + Utils.toLong(lib.declassifyToBoth(trivialOram.content[i])));
+			//}
 		} else {
-			circuitOram = new RecursiveCircuitOram<T>(env, dpLength, dataSize);
-			lengthOfIden = circuitOram.lengthOfIden;
+			circuitOram = new RecursiveCircuitOram<T>(env, length, dataSize);
 			arr = (T[]) new GCSignal[length];
 			circuitOram.put(arr, zero, (T[]) data);
-		}
+		}		
 	}
 	
    /*** End SMCQL extensions ***/
