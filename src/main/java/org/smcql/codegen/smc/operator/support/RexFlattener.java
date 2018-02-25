@@ -77,7 +77,7 @@ public abstract class RexFlattener implements RexVisitor<String> {
 			delimiter = "==";
 		} else if (kind.equals(SqlKind.DIVIDE)) {
 			RexLiteral comp = (RexLiteral) call.getOperands().get(1);
-			int value = Integer.parseInt(comp.toString());
+			int value = Integer.parseInt(comp.toString())/2; //TODO: get rid of magic number
 			int startIndex = 0;
 			int endIndex = 0;
 			for (int i=0; i<schema.getFieldCount(); i++) {
@@ -88,7 +88,7 @@ public abstract class RexFlattener implements RexVisitor<String> {
 					break;
 				}
 			}
-			return "(rTuple$" + startIndex + "~" + endIndex + "$ - lTuple$" + startIndex + "~" + endIndex + "$)/" + value;
+			return "(lTuple$" + startIndex + "~" + endIndex + "$ - rTuple$" + startIndex + "~" + endIndex + "$)/" + value;
 		} else {
 			delimiter = call.getOperator().getName();
 		}

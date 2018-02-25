@@ -192,7 +192,8 @@ public class SecureArray<T> implements java.io.Serializable {
 			trivialOram = new LinearScanOram<T>(env, length, dataSize);
 			trivialOram.content = Arrays.copyOfRange(data, 0, length);
 			//for (int i=0; i<length; i++) {
-			//	System.out.println("val: " + Utils.toLong(lib.declassifyToBoth(trivialOram.content[i])));
+			//	boolean[] val = lib.declassifyToBoth(trivialOram.content[i]);
+			//	System.out.println("val: " + Utils.toLong(val));
 			//}
 		} else {
 			circuitOram = new RecursiveCircuitOram<T>(env, length, dataSize);

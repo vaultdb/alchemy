@@ -27,7 +27,7 @@ public class GenerateSqlTest  extends  BaseTest {
 	
 	
 	public void testCDiff() throws Exception {
-		String expected =  "SELECT DISTINCT patient_id, CAST((t0.timestamp_ - t2.timestamp_) DAY AS INTEGER) /INT 86400000 >= 15 AND CAST((t0.timestamp_ - t2.timestamp_) DAY AS INTEGER) /INT 86400000 <= 56 AND t0.r + 1 = t2.r\n"
+		String expected =  "SELECT DISTINCT patient_id, CAST((t0.timestamp_ - t2.timestamp_) DAY AS INTEGER) /INT 43200000 >= 15 AND CAST((t0.timestamp_ - t2.timestamp_) DAY AS INTEGER) /INT 43200000 <= 56 AND t0.r + 1 = t2.r\n"
 				 + "FROM (SELECT patient_id, timestamp_, ROW_NUMBER() AS r\n"
 				 + "FROM cdiff_cohort_diagnoses\n"
 				 + "WHERE icd9 = '008.45') AS t0\n"
