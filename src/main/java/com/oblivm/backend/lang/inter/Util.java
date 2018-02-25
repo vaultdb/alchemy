@@ -5,6 +5,8 @@ import java.util.Arrays;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.smcql.executor.smc.io.SecureOutputReader;
+import org.smcql.executor.smc.runnable.SMCRunnable;
+import org.smcql.util.Utilities;
 
 import com.oblivm.backend.circuits.CircuitLib;
 import com.oblivm.backend.circuits.arithmetic.IntegerLib;
@@ -65,11 +67,19 @@ public class Util {
 		return intArray;
 	}
 	
-	public static <T> int getDifferentiallyPrivateLength(CompEnv<T> env, T[] trueLength, double epsilon, double delta, int sensitivity) throws Exception {	
+	public static <T> int getDifferentiallyPrivateLength(CompEnv<T> env, SMCRunnable parent, T[] trueLength, double epsilon, double delta, int sensitivity) throws Exception {	
 		CircuitLib<T> lib = new CircuitLib<T>(env);
 		
 		int length = (int) Utils.toLong(lib.declassifyToBoth(trueLength));
 		
-		return length;
+		int noise = 0;
+		if (env.getParty() == Party.Alice) {
+			noise = Utilities.generateDiscreteLaplaceNoise(epsilon, delta, sensitivity);
+			parent.sendInt(noise);
+		} else {
+			noise = parent.getInt();
+		}
+		
+		return length + noise;
 	}
 }

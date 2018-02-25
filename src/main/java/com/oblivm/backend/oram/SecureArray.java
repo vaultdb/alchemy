@@ -11,6 +11,8 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Base64;
 
+import org.smcql.executor.smc.runnable.SMCRunnable;
+
 import com.oblivm.backend.circuits.BitonicSortLib;
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.BadLabelException;
@@ -171,7 +173,7 @@ public class SecureArray<T> implements java.io.Serializable {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void shrinkToPrivateLength(double epsilon, double delta, int sensitivity) throws Exception {
+	public void shrinkToPrivateLength(SMCRunnable parent, double epsilon, double delta, int sensitivity) throws Exception {
 		//extract values from ORAM into a GCSignal[]
 		T[] arr = (T[]) new GCSignal[length];
 		T[] zero = (T[]) new GCSignal[length];
@@ -182,10 +184,15 @@ public class SecureArray<T> implements java.io.Serializable {
 		lib.sort(data, lib.SIGNAL_ZERO);
 		
 		//calculate differentially private length
-		length = Util.getDifferentiallyPrivateLength(env, this.getNonNullEntries(), epsilon, delta, sensitivity);
+		int dpLength = Util.getDifferentiallyPrivateLength(env, parent, this.getNonNullEntries(), epsilon, delta, sensitivity);
 		
-		if (length <= 0)
+		//determine whether to use dp length
+		//System.out.println("length: " + length + ", dpLength: " + dpLength);
+		if (length <= 0) {
 			length = 1;
+		} else if (length > dpLength && dpLength > 0) {
+			length = dpLength;
+		}
 		
 		//allocate and set new ORAM
 		if (useTrivialOram) {
