@@ -143,4 +143,9 @@ public class Join extends Operator {
 		return n*(int)Math.pow(Math.log((double)n),2);
 	}
 	
+	@Override
+	protected int getEstimatedStability() {
+		return getEstimatedCardinality();
+	}
+	
 };

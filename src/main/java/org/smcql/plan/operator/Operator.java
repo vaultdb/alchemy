@@ -459,6 +459,20 @@ public abstract class Operator implements CodeGenerator {
 		return pCost; 
 	}
 	
+	protected int getEstimatedStability() {
+		return 1;
+	}
+	
+	public int getEstimatedSensitivity() {
+		int max = 0;
+		for (Operator child : children) {
+			int cSensitivity = child.getEstimatedSensitivity();
+			if (cSensitivity > max)
+				max = cSensitivity;
+		}
+		return getEstimatedStability() + max;
+	}
+	
     public int getPerformanceCost(int n) {
         // n is the estimated input cardinality
         return 1; // Overriden in sub classes

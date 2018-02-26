@@ -111,4 +111,9 @@ public class Aggregate extends Operator {
 		return n*(int)Math.pow(Math.log((double)n),2);
 	}
 	
+	@Override
+	protected int getEstimatedStability() {
+		return (getGroupByAttributes().size() > 0) ? 1 : 0;
+	}
+	
 };

@@ -18,7 +18,6 @@ import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.BadLabelException;
 import com.oblivm.backend.gc.GCSignal;
 import com.oblivm.backend.lang.inter.Util;
-import com.oblivm.backend.util.Utils;
 
 
 public class SecureArray<T> implements java.io.Serializable {

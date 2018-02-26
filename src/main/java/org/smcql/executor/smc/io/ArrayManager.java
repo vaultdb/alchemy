@@ -31,6 +31,10 @@ import org.smcql.util.Utilities;
 
 // for use in SMCQLRunnable$Generator, SMCQLRunnable$Evaluator
 public class ArrayManager<T> implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7324485864756713723L;
 	Map<OperatorExecution, SecureArray<T> > inputArrays;
 	SecureBufferPool bufferPool;
 
@@ -102,6 +106,7 @@ public class ArrayManager<T> implements Serializable {
 	
 
 
+	@SuppressWarnings("unchecked")
 	public SlicedSecureQueryTable getSliceInputs(OperatorExecution op,  CompEnv<T> env, SMCRunnable parent, boolean isLhs) throws Exception {
 		if(op == null)
 			return null;
@@ -181,6 +186,7 @@ public class ArrayManager<T> implements Serializable {
 		bufferPool.addArray(srcOp, (GCSignal[]) dstArray, (GCSignal[]) length, (CompEnv<GCSignal>) env, parent);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void registerSlicedArray(OperatorExecution srcOp, SecureArray<T> arr, CompEnv<T> env, SMCRunnable parent, Tuple t) throws Exception {
 		inputArrays.put(srcOp, arr);
 		
