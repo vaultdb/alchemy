@@ -227,14 +227,27 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		}
 		else 
 			perfReport.put(op.packageName, elapsed);
+
+		secResult.shrinkToPrivateLength(parent, 0.1, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName);
 		
 		dataManager.registerArray(op, secResult, env, parent);
-		secResult.shrinkToPrivateLength(parent, 0.1, 0.00001, 1);
 		op.output = (SecureArray<GCSignal>) secResult;
 				
 		return secResult;
 	}
 	
+	private int getInputSensitivity(SecureArray<T> lhs, SecureArray<T> rhs, String packageName) {
+		if (packageName.contains("Join"))
+			return (lhs.getSensitivity() > rhs.getSensitivity()) ? lhs.getSensitivity() : rhs.getSensitivity();
+			
+		int result = 0;
+		if (lhs != null)
+			result += lhs.getSensitivity();
+		if (rhs != null)
+			result += rhs.getSensitivity();
+		
+		return result;
+	}
 	
 	
 	@SuppressWarnings("unchecked")

@@ -12,12 +12,14 @@ import java.util.Arrays;
 import java.util.Base64;
 
 import org.smcql.executor.smc.runnable.SMCRunnable;
+import org.smcql.privacy.PrivacyCost;
 
 import com.oblivm.backend.circuits.BitonicSortLib;
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.BadLabelException;
 import com.oblivm.backend.gc.GCSignal;
 import com.oblivm.backend.lang.inter.Util;
+import com.oblivm.backend.util.Utils;
 
 
 public class SecureArray<T> implements java.io.Serializable {
@@ -34,6 +36,7 @@ public class SecureArray<T> implements java.io.Serializable {
 	public int dataSize;
 	protected T[] nonNullEntries; // number of entries in array that are initialized
 	private CompEnv<T> env;
+	private int sensitivity;
 	
 	public SecureArray() {
 		// needed for serialization
@@ -44,6 +47,7 @@ public class SecureArray<T> implements java.io.Serializable {
 		length = N;
 		this.dataSize = dataSize;
 		useTrivialOram = N <= threshold;
+		sensitivity = 0;
 		
 		if (useTrivialOram) {
 			trivialOram = new LinearScanOram<T>(env, N, dataSize);
@@ -172,7 +176,7 @@ public class SecureArray<T> implements java.io.Serializable {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void shrinkToPrivateLength(SMCRunnable parent, double epsilon, double delta, int sensitivity) throws Exception {
+	public void shrinkToPrivateLength(SMCRunnable parent, double epsilon, double delta, int inputSensitivity, String packageName) throws Exception {
 		//extract values from ORAM into a GCSignal[]
 		T[] arr = (T[]) new GCSignal[length];
 		T[] zero = (T[]) new GCSignal[length];
@@ -183,10 +187,11 @@ public class SecureArray<T> implements java.io.Serializable {
 		lib.sort(data, lib.SIGNAL_ZERO);
 		
 		//calculate differentially private length
-		int dpLength = Util.getDifferentiallyPrivateLength(env, parent, this.getNonNullEntries(), epsilon, delta, sensitivity);
+		setSensitivity(inputSensitivity + PrivacyCost.getSensitivity(packageName, (int) Utils.toLong(lib.declassifyToBoth(this.getNonNullEntries()))));
+		int dpLength = Util.getDifferentiallyPrivateLength(env, parent, this.getNonNullEntries(), epsilon, delta, getSensitivity());
 		
 		//determine whether to use dp length
-		//System.out.println("length: " + length + ", dpLength: " + dpLength);
+		System.out.println(packageName + ", length: " + length + ", dpLength: " + dpLength);
 		if (length <= 0) {
 			length = 1;
 		} else if (length > dpLength && dpLength > 0) {
@@ -206,6 +211,14 @@ public class SecureArray<T> implements java.io.Serializable {
 			arr = (T[]) new GCSignal[length];
 			circuitOram.put(arr, zero, (T[]) data);
 		}		
+	}
+	
+	public int getSensitivity() {
+		return sensitivity;
+	}
+
+	public void setSensitivity(int sensitivity) {
+		this.sensitivity = sensitivity;
 	}
 	
    /*** End SMCQL extensions ***/
