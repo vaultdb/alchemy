@@ -64,24 +64,26 @@ CREATE TABLE mi_cohort_diagnoses AS SELECT * FROM diagnoses  WHERE year = :test_
 -- 
 
 CREATE TABLE vitals (
-	patient_id integer,
-	height_timestamp timestamp,
-	height_visit_no integer,
-	height real,
-	height_units character varying,
-	weight_timestamp timestamp,
-	weight_visit_no integer,
-	weight real,
-	weight_units character varying,
-	bmi_timestamp timestamp,
-	bmi_visit_no integer,
-	bmi real,
-	bmi_units character varying,
-	pulse integer,
-	systolic integer,
-	diastolic integer ,
-	bp_method character varying);       
+    patient_id integer NOT NULL,
+    site integer NOT NULL,
+    year integer NOT NULL,
+    month integer NOT NULL,
+    visit_no integer NOT NULL,
+    height numeric,
+    height_units character varying,
+    weight numeric,
+    weight_units character varying,
+    bmi numeric,
+    bmi_units character varying,
+    systolic numeric,
+    diastolic numeric,
+    pulse numeric,
+    bp_method character varying,
+    timestamp_ timestamp without time zone
+);    
 
+DROP TABLE IF EXISTS mi_cohort_vitals;
+CREATE TABLE mi_cohort_vitals AS SELECT * FROM vitals WHERE year = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM mi_cohort); 
 
 CREATE TABLE labs (
 	patient_id integer,
@@ -149,7 +151,6 @@ GRANT SELECT(diag_src) ON diagnoses TO protected_attribute;
 GRANT SELECT(icd9) ON diagnoses TO protected_attribute;
 GRANT SELECT(major_icd9) ON diagnoses TO protected_attribute;
 
-
 GRANT SELECT(patient_id) ON cdiff_cohort_diagnoses TO public_attribute;
 GRANT SELECT(visit_no) ON cdiff_cohort_diagnoses TO public_attribute;
 GRANT SELECT(primary_) ON cdiff_cohort_diagnoses TO public_attribute;
@@ -173,3 +174,34 @@ GRANT SELECT(patient_id) ON mi_cohort_medications TO public_attribute;
 GRANT SELECT(dosage) ON mi_cohort_medications TO public_attribute;
 GRANT SELECT(route) ON mi_cohort_medications TO public_attribute;
 GRANT SELECT(medication) ON mi_cohort_medications TO protected_attribute;
+
+GRANT SELECT(patient_id) ON vitals TO public_attribute;
+GRANT SELECT(visit_no) ON vitals TO public_attribute;
+GRANT SELECT(height_units) ON vitals TO public_attribute;
+GRANT SELECT(weight_units) ON vitals TO public_attribute;
+GRANT SELECT(bp_method) ON vitals TO public_attribute;
+GRANT SELECT(height) ON vitals TO protected_attribute;
+GRANT SELECT(weight) ON vitals TO protected_attribute;
+GRANT SELECT(bmi) ON vitals TO protected_attribute;
+GRANT SELECT(systolic) ON vitals TO protected_attribute;
+GRANT SELECT(diastolic) ON vitals TO protected_attribute;
+GRANT SELECT(pulse) ON vitals TO protected_attribute;
+
+GRANT SELECT(patient_id) ON mi_cohort_vitals TO public_attribute;
+GRANT SELECT(visit_no) ON mi_cohort_vitals TO public_attribute;
+GRANT SELECT(height_units) ON mi_cohort_vitals TO public_attribute;
+GRANT SELECT(weight_units) ON mi_cohort_vitals TO public_attribute;
+GRANT SELECT(bp_method) ON mi_cohort_vitals TO public_attribute;
+GRANT SELECT(height) ON mi_cohort_vitals TO protected_attribute;
+GRANT SELECT(weight) ON mi_cohort_vitals TO protected_attribute;
+GRANT SELECT(bmi) ON mi_cohort_vitals TO protected_attribute;
+GRANT SELECT(systolic) ON mi_cohort_vitals TO protected_attribute;
+GRANT SELECT(diastolic) ON mi_cohort_vitals TO protected_attribute;
+GRANT SELECT(pulse) ON mi_cohort_vitals TO protected_attribute;
+
+GRANT SELECT(patient_id) ON demographics TO public_attribute;
+GRANT SELECT(gender) ON demographics TO public_attribute;
+GRANT SELECT(race) ON demographics TO protected_attribute;
+GRANT SELECT(ethnicity) ON demographics TO protected_attribute;
+GRANT SELECT(insurance) ON demographics TO protected_attribute;
+GRANT SELECT(birth_year) ON demographics TO protected_attribute;

@@ -76,7 +76,7 @@ public class Join extends Operator {
 		else // single comparison
 			sliceKey = checkForSliceField(joinOn, sliceKey);
 		
-		assert(sliceKey.size() <= 2); // multiple, composite slice keys not implemented
+		//assert(sliceKey.size() <= 2); // multiple, composite slice keys not implemented
 		return sliceKey;
 	}
 

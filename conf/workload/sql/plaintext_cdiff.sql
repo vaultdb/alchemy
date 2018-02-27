@@ -1,7 +1,7 @@
 WITH all_diagnoses AS (
-    (SELECT * FROM cdiff_cohort_diagnoses)
+    (SELECT * FROM diagnoses WHERE year=2006 AND site=4)
     UNION ALL
-    (SELECT * FROM remote_cdiff_cohort_diagnoses)
+    (SELECT * FROM diagnoses WHERE year=2006 AND site=5)
 ),
 diags (patient_id, timestamp_, r) AS (
     SELECT patient_id,timestamp_, row_number()  OVER (PARTITION BY patient_id ORDER BY timestamp_) AS r

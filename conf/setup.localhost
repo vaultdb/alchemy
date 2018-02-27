@@ -3,12 +3,12 @@ codegen-target=bin
 data-providers=conf/connections/localhosts
 
 #log information
-log-level=off
+log-level=info
 
 #query planner information
-sliced-execution=false
+sliced-execution=true
 slice-parallelism=2
-semijoin-execution=false
+semijoin-execution=true
 
 #privacy consumed by each operator
 epsilon=0.1

@@ -1,7 +1,7 @@
 WITH all_diagnoses AS (
-    (SELECT * FROM cdiff_cohort_diagnoses)
+    (SELECT * FROM diagnoses WHERE year=2006 AND site=4)
     UNION ALL
-    (SELECT * FROM remote_cdiff_cohort_diagnoses)
+    (SELECT * FROM diagnoses WHERE year=2006 AND site=5)
 )
 SELECT d.major_icd9, count(*) as cnt 
 FROM all_diagnoses d 

@@ -191,7 +191,7 @@ public class SecureArray<T> implements java.io.Serializable {
 		int dpLength = Util.getDifferentiallyPrivateLength(env, parent, this.getNonNullEntries(), epsilon, delta, getSensitivity());
 		
 		//determine whether to use dp length
-		System.out.println(packageName + ", length: " + length + ", dpLength: " + dpLength);
+		//System.out.println(packageName + ", length: " + length + ", dpLength: " + dpLength);
 		if (length <= 0) {
 			length = 1;
 		} else if (length > dpLength && dpLength > 0) {

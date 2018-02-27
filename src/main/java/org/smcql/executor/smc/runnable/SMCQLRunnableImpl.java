@@ -302,9 +302,10 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		if(Utilities.isMerge(op)) {
 			secResult = mergeRun(op, env, lhs, rhs);
 		}
-		else
+		else {
 			secResult = slicedRun(op, env, lhs, rhs);
-		
+			op.updatePrivacyBudget();
+		}
 		double end = System.nanoTime();
 		double elapsed = (end - start) / 1e9;
 
@@ -317,6 +318,8 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		}
 		else 
 			perfReport.put(op.packageName, elapsed);
+		
+		secResult.shrinkToPrivateLength(parent, 0.1, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName);
 		
 		return secResult;
 		

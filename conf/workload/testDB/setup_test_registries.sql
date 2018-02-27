@@ -27,6 +27,11 @@ CREATE TABLE mi_cohort_medications AS(
     SELECT * FROM medications WHERE year=2006 AND (site=4 OR site=7) AND patient_id IN (SELECT * FROM mi_cohort)
 ); 
 
+DROP TABLE IF EXISTS mi_cohort_vitals;
+CREATE TABLE mi_cohort_vitals AS(
+    SELECT * FROM vitals WHERE year=2006 AND (site=4 OR site=7) AND patient_id IN (SELECT * FROM mi_cohort)
+); 
+
 DROP TABLE IF EXISTS sample_cdiff_cohort_diagnoses;
 CREATE TABLE sample_cdiff_cohort_diagnoses AS (
     SELECT * FROM diagnoses WHERE year=2006 AND (site=4 OR site=7) AND patient_id IN (SELECT * FROM cdiff_cohort)
