@@ -1,15 +1,15 @@
 WITH all_diagnoses AS (
     (SELECT * FROM diagnoses WHERE year=2006 AND site=4)
     UNION ALL
-    (SELECT * FROM diagnoses WHERE year=2006 AND site=5)
+    (SELECT * FROM diagnoses WHERE year=2006 AND site=7)
 ), all_medications AS (
     (SELECT * FROM medications WHERE year=2006 AND site=4)
     UNION ALL
-    (SELECT * FROM medications WHERE year=2006 AND site=5)
+    (SELECT * FROM medications WHERE year=2006 AND site=7)
 ), all_vitals AS (
     (SELECT * FROM medications WHERE year=2006 AND site=4)
     UNION ALL
-    (SELECT * FROM medications WHERE year=2006 AND site=5)
+    (SELECT * FROM medications WHERE year=2006 AND site=7)
 ), dd AS (SELECT DISTINCT patient_id, gender, race
             FROM demographics)
 SELECT gender, race, count(*)

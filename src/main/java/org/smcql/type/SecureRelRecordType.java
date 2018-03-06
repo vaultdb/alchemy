@@ -16,6 +16,7 @@ import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.type.BasicSqlType;
+import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang.StringUtils;
 import org.smcql.db.data.field.Field;
@@ -88,8 +89,8 @@ public class SecureRelRecordType implements Serializable {
 			int precision = Integer.parseInt(serialized.get(i+2));
 			int scale = Integer.parseInt(serialized.get(i+3));
 
-			BasicSqlType type = new BasicSqlType(RelDataTypeSystem.DEFAULT, stn, precision, scale);
-			RelDataTypeField f = new RelDataTypeFieldImpl(name, index, type);
+			SqlTypeFactoryImpl factory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
+			RelDataTypeField f = new RelDataTypeFieldImpl(name, index, factory.createSqlType(stn, precision, scale));
 			fields.add(f);
 		}
 		baseType = new RelRecordType(fields);

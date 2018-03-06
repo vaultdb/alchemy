@@ -135,6 +135,7 @@ public class SecureOperator implements CodeGenerator, Serializable {
 			
 			right = !right;
 		}
+		result = result.replace("true && ", "");
 		return result;
 	}
 	
@@ -148,6 +149,7 @@ public class SecureOperator implements CodeGenerator, Serializable {
 			String srcName = "tuple";
 			for (Filter f : this.filters) {
 				String filterCond = RexNodeUtilities.flattenFilter(f, srcName, Integer.parseInt(variables.get("sSize")));
+
 				condition += (index == 0) ? filterCond : " && " + filterCond;
 				index++;
 			}
@@ -266,8 +268,9 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	public void compileIt() throws Exception {
 		Map<String, String> code = generate();
 		
-		for (String n : code.keySet())
+		for (String n : code.keySet()) {
 			DynamicCompiler.compileOblivLang(code.get(n), n);	
+		}
 	}
 
 

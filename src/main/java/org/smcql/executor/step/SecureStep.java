@@ -49,6 +49,7 @@ public class SecureStep implements ExecutionStep, Serializable {
 	}
 	
 	
+	@SuppressWarnings("unlikely-arg-type")
 	@Override
 	public String generate() throws Exception {
 		return codeGenerator.generate().get(0);

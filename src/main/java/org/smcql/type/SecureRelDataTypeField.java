@@ -16,6 +16,7 @@ import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.type.BasicSqlType;
+import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.SerializableCharset;
 import org.apache.commons.lang.CharSet;
@@ -104,8 +105,8 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 		int precision = Integer.parseInt(field.get(2));
 		int scale = Integer.parseInt(field.get(3));
 
-		BasicSqlType type = new BasicSqlType(RelDataTypeSystem.DEFAULT, stn, precision, scale);
-		baseField = new RelDataTypeFieldImpl(name, index, type);
+		SqlTypeFactoryImpl factory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
+		baseField = new RelDataTypeFieldImpl(name, index, factory.createSqlType(stn, precision, scale));
 		storedTable = (String)ois.readObject();
 		storedAttribute = (String)ois.readObject();
 		policy = (SecurityPolicy)ois.readObject();

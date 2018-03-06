@@ -38,7 +38,7 @@ public class RunnableRemoteQueryTest extends BaseTest {
 		expectedOutput = new HashMap<String, QueryTable>();
 		plaintextTimes = new HashMap<String, Double>();
 		
-		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.codd";
+		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.remote";
 		System.setProperty("smcql.setup", setupFile);
 
 		ConnectionManager cm = ConnectionManager.getInstance();
@@ -86,8 +86,8 @@ public class RunnableRemoteQueryTest extends BaseTest {
 		
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		
-		if (testName.equals("cdiff"))
-			sql = super.readSQL("postgres_cdiff");
+		//if (testName.equals("cdiff"))
+		//	sql = super.readSQL("postgres_cdiff");
 		QueryCompiler qc = new QueryCompiler(secRoot, sql);
 		
 		List<ExecutionSegment> segments = qc.getSegments();

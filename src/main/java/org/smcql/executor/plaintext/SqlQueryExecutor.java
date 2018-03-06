@@ -34,6 +34,10 @@ public class SqlQueryExecutor {
 		List<Tuple> queryOutput = new ArrayList<Tuple>();		
 
 		Statement st = c.createStatement();
+		System.out.println("query: " + query);
+		//TODO: remove hardcode
+		query = query.replace("TIMESTAMPDIFF(DAY, d2.timestamp_, d1.timestamp_)", "DATE_PART('day', d2.timestamp_ - d1.timestamp_)");
+		query = query.replace("cdiff_cohort_diagnoses", "sample_cdiff_cohort_diagnoses");
 		ResultSet rs = st.executeQuery(query);
 		if(!rs.isBeforeFirst()) // empty input set
 			return new QueryTable(outSchema);

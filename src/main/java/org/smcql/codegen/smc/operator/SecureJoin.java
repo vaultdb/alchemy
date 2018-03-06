@@ -45,6 +45,8 @@ public class SecureJoin extends SecureOperator {
 
 		variables.put("lSize", variables.get("sSize"));
 		variables.put("rSize", variables.get("sSize"));
+		//String dstSize = (projects.isEmpty()) ? variables.get("sSize") : Integer.toString(projects.get(0).getSchema().size());
+		//variables.put("dSize", dstSize);
 				
 		if(join.getCondition() == null) {
 			generatedCode =  CodeGenUtils.generateFromTemplate("join/cross.txt", variables);	

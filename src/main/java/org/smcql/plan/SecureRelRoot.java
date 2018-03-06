@@ -19,6 +19,7 @@ public class SecureRelRoot {
 		SqlStatementParser parser = new SqlStatementParser();
 
 		baseRoot = parser.convertSqlToRelMinFields(sql);
+		
 		baseRoot = parser.optimize(baseRoot); // optimized to represent in a fine granularity for more smc avoidance
 		
 		baseRoot = parser.trimFields(baseRoot); // use minimal set of fields to avoid triggering unnecessary SMC

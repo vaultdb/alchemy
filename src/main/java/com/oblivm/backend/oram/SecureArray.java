@@ -180,12 +180,14 @@ public class SecureArray<T> implements java.io.Serializable {
 		//extract values from ORAM into a GCSignal[]
 		T[] arr = (T[]) new GCSignal[length];
 		T[] zero = (T[]) new GCSignal[length];
-		T[][] data = (useTrivialOram) ? trivialOram.content : (T[][]) circuitOram.extract(arr, zero, length);
+		T[][] data = (useTrivialOram) ? trivialOram.content : null;
+		T[] d2 = (useTrivialOram) ? null : circuitOram.extract(arr, zero, length);
 		
 		//sort values
 		BitonicSortLib<T> lib = new BitonicSortLib<T>(env);
-		lib.sort(data, lib.SIGNAL_ZERO);
-		
+		if (data != null) 
+			lib.sort(data, lib.SIGNAL_ZERO);
+			
 		//calculate differentially private length
 		setSensitivity(inputSensitivity + PrivacyCost.getSensitivity(packageName, (int) Utils.toLong(lib.declassifyToBoth(this.getNonNullEntries()))));
 		int dpLength = Util.getDifferentiallyPrivateLength(env, parent, this.getNonNullEntries(), epsilon, delta, getSensitivity());
@@ -209,7 +211,10 @@ public class SecureArray<T> implements java.io.Serializable {
 		} else {
 			circuitOram = new RecursiveCircuitOram<T>(env, length, dataSize);
 			arr = (T[]) new GCSignal[length];
-			circuitOram.put(arr, zero, (T[]) data);
+			T[] tmp = (T[]) new GCSignal[length];
+			tmp = Arrays.copyOfRange(d2, 0, length);
+			zero = (T[]) new GCSignal[length];
+			circuitOram.put(arr, zero, tmp);
 		}		
 	}
 	

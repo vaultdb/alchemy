@@ -14,7 +14,7 @@ CREATE TABLE demographics (
        zip integer);
  
 CREATE TABLE remote_diagnoses (
-	patient_id integer NOT NULL,
+    patient_id integer NOT NULL,
     site integer NOT NULL,
     year integer NOT NULL,
     month integer NOT NULL,
@@ -86,13 +86,13 @@ DROP TABLE IF EXISTS mi_cohort_vitals;
 CREATE TABLE mi_cohort_vitals AS SELECT * FROM vitals WHERE year = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM mi_cohort); 
 
 CREATE TABLE labs (
-	patient_id integer,
-	timestamp_ timestamp,
-	test_name character varying,
-	value_ character varying,
-	unit character varying,
-	value_low real,
-	value_high real);
+    patient_id integer,
+    timestamp_ timestamp,
+    test_name character varying,
+    value_ character varying,
+    unit character varying,
+    value_low real,
+    value_high real);
 
 
 CREATE TABLE medications (
@@ -112,7 +112,7 @@ CREATE TABLE site (
 
 
 CREATE TABLE remote_medications (
-	patient_id integer NOT NULL,
+    patient_id integer NOT NULL,
     site integer NOT NULL,
     year integer NOT NULL,
     month integer NOT NULL,
@@ -126,18 +126,18 @@ DROP TABLE IF EXISTS mi_cohort_medications;
 CREATE TABLE mi_cohort_medications AS SELECT * FROM medications  WHERE year = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM mi_cohort); 
 
 CREATE TABLE a_diagnoses (
-	patient_id integer,
-	icd9 character varying,
-	timestamp_ timestamp);
+    patient_id integer,
+    icd9 character varying,
+    timestamp_ timestamp);
 
 CREATE TABLE a_init (
-	lenD integer,
-	lenM integer,
-	pad timestamp);
+    lenD integer,
+    lenM integer,
+    pad timestamp);
 
 CREATE TABLE test (
-	privc varchar(1),
-	privi integer);
+    privc varchar(1),
+    privi integer);
 
 
 -- set up security level of attributes

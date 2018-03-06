@@ -3,18 +3,23 @@ codegen-target=bin
 data-providers=conf/connections/remote-hosts
 
 #log information
-log-level=info
+log-level=debug
 local-log-file=logs/smcql.log
 
 #query planner information
 sliced-execution=false
 slice-parallelism=2
-semijoin-execution=false
+semijoin-execution=true
+truncate-input=5
+
+#privacy consumed by each operator
+epsilon=0.1
+delta=0.0
 
 #postgres credentials and info
 [psql]
 host=localhost
 port=5432
-db=smcql_testDB
-user=smcql
-password=<insert psql password>
+db=smcql_testdb
+user=jennie
+password=one4smcql

@@ -11,7 +11,7 @@ fi
 
 echo "Creating test database..."
 
-dbPrefix='smcql_testDB'
+dbPrefix='smcql_testdb'
 dropdb $dbPrefix
 createdb $dbPrefix
 psql $dbPrefix -f $path/conf/workload/testDB/test_schema.sql
