@@ -502,11 +502,11 @@ public class TypeEmittable extends Emittable {
 		out.print("\tpublic ");
 		out.print(codeGen.visit(method.returnType)+" "+method.name+"(");
 		boolean f = true;
-		for(String s : method.bitParameters) {
+		/*for(String s : method.bitParameters) {
 			if(f) f = false;
 			else out.print(", ");
 			out.print("int "+s);
-		}
+		}*/
 		for(Pair<Type, String> ent : method.parameters) {
 			if(f) f = false;
 			else out.print(", ");

@@ -11,25 +11,8 @@ void sortWithPayload@r@s@t(int@s[r] toSort, int@t[r] tuples, int1 isAscending) =
 
 rnd@m RND(intp_32 m) = native intLib.randBools;
 
-phantom StackNode@m<T> NonRecursiveORAM@m<T>.readAndRemove(int@m id, rnd@m pos) = native conditionalReadAndRemove;
-phantom void NonRecursiveORAM@m<T>.add(int@m id, int@m pos, StackNode@m<T> node) = native conditionalPutBack;
-
 typedef char = int8;
 typedef intp_ = public int;
-typedef NonRecursiveORAM@m<T> = native CircuitOram(m, sizeof(T));
- 
-struct StackNode@m<T> {
-   rnd@m next;
-   T data;
-};
- 
-struct Stack@m<T> {
-   rnd@m root;
-   int@m size;
-   NonRecursiveORAM@(1 << m)< StackNode@m<T> > oram;
-};
-
-
 
 
 secure int1 applyFilter(secure int$lSize lTuple, secure int$rSize rTuple) {
