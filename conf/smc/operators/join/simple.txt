@@ -29,6 +29,34 @@ struct Stack@m<T> {
    NonRecursiveORAM@(1 << m)< StackNode@m<T> > oram;
 };
 
+phantom void Stack@m<T>.push(T operand) {
+      StackNode@m<T> node = 
+         StackNode@m{T} ( next = this.root,
+               data = operand);
+      this.root = RND(m);
+      this.size  = this.size + 1;
+      this.oram.add(this.size, this.root, node);
+}
+
+phantom T Stack@m<T>.pop() {
+   T ret;
+   rnd@m next;
+   StackNode@m<T> r = this.oram.readAndRemove(this.size, this.root);
+   ret, this.root = r.(data, next);
+   this.size = this.size - 1;
+   return ret;
+}
+
+T Stack@m<T>.op(int operand, T value) {
+  T ret;
+  if (operand == PUSH) {
+     this.push(value);
+  } else {
+     ret = this.pop();
+  }
+  return ret;
+}
+
 secure int1 applyFilter(secure int$lSize lTuple, secure int$rSize rTuple) {
 	secure int1 ret = 0;
 	$applyFilter
