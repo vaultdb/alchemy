@@ -210,4 +210,5 @@ public class StateIdentifier implements StatementVisitor<StateMachine> {
 	public StateMachine visit(ASTGetNonNullArrayEntriesStatement stmt) {
 		return buildOne(stmt);
 	}
+
 }

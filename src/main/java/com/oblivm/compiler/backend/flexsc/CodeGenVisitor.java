@@ -644,7 +644,7 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 						if(assign.name.type.getBits().isConstant(1))
 							sb.append(assign.name.name+" = env.inputOfAlice("+tmp.left+");\n");
 						else
-							sb.append(assign.name.name+" = env.inputOfAlice(Utils.fromLong("+tmp.left+", "+assign.name.type.getBits()+"));\n");
+ 							sb.append(assign.name.name+" = env.inputOfAlice(Utils.fromLong("+tmp.left+", "+assign.name.type.getBits()+"));\n");
 					} else {
 						// TODO problem here
 						sb.append(assign.name.name+" = floatLib.inputOfAlice("+tmp.left+");\n");
@@ -745,7 +745,7 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 		String tmpArray = new String();
 		List<String> tempArrays = new ArrayList<String>();
 
-		//		String ret = "f_tmp_"+(this.tmpId++);
+//		String ret = "f_tmp_"+(this.tmpId++);
 //		String ty = visit(exp.type);
 //		sb.append(indent(indent));
 		String base = "noclass";
@@ -767,6 +767,7 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 			else sb.append(", ");
 			sb.append(exp.bitParameters.get(i).toString());
 		}*/
+
 		for(int i=0; i<exp.inputs.size(); ++i) {
 			if(f) f = false;
 			else sb.append(", ");
@@ -841,7 +842,7 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 		if(!exp.rawFty.returnType.similar(exp.fty.returnType)) {
 			value = value+".value";
 		}
-
+		
 		int tmpIdx = 0;
 		// if value matches sort, it is operating in place and we need a postcompute step to get back to SecureArray
 		if(value.contains("sortLib.sort")) {
@@ -889,7 +890,6 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 		if(exp.type instanceof RecordType)
 			sb.append(")");
 		sb.append(";\n");
-
 
 		return new Pair<String, String>(ret, sb.toString()); 
 	}
@@ -955,8 +955,6 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 	}
 
 	public String visit(ArrayType type) {
-
-
 		if(type.indexLab.lab != Label.Pub) {
 			return "SecureArray<"+dataType+">";
 		}
@@ -1139,7 +1137,6 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 					s = "env.inputOfAlice(Utils.fromLong(0, "+it.getBits()+"))";
 				else
 					s = "env.inputOfAlice(false)";
-
 			}
 
 			return s;
@@ -1631,7 +1628,7 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 	}
 
 	public String compileVariableConstant(Constant vc) {
-		return Long.toString(vc.value);
+ 		return Long.toString(vc.value);
 	}
 
 	public String compileVariableConstant(LogVariable vc) {
@@ -1654,7 +1651,6 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 		sb.append(indent(indent)+"long old_and_gates = env.numOfAnds;\n");
 		sb.append(visit(ret.code));
 		if(ret.cond != null) {
-
 			sb.append(indent(indent) + "Boolean condA = null, condB = null;\n");
 			sb.append(indent(indent) + "if (" + ret.cond.name + " instanceof GCSignal) {\n"); // for non-VERIFY mode
 			++indent;
@@ -1677,7 +1673,6 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 			sb.append(indent(indent)+"if ((env.party == Party.Alice && condA) || (env.party == Party.Bob && condB)) {\n");
 			indent ++;
 		} 
-
 		
 		String now = "%x";
 		if(ret.toShow.type instanceof IntType) {
@@ -1728,7 +1723,6 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 		indent --;
 		sb.append(indent(indent)+"} else {\n");
 		indent ++;
-
 		sb.append(indent(indent) + now+";\n");
 		
 		indent --;
@@ -1738,7 +1732,7 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 			indent --;
 			sb.append(indent(indent) + "}\n");
 		}
-		
+
 		sb.append(indent(indent)+"env.numOfAnds = old_and_gates;\n");
 		indent --;
 		sb.append(indent(indent) + "}\n");
@@ -1774,5 +1768,4 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 		return indent(indent)+"SecureArray.deserialize(" +  read.array + ", " + read.filename + ");\n";
 	
 	}
-
 }

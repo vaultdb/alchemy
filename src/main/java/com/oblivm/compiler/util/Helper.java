@@ -5,6 +5,7 @@ package com.oblivm.compiler.util;
 
 import com.oblivm.compiler.ast.expr.ASTBinaryExpression.BOP;
 import com.oblivm.compiler.ast.expr.ASTBinaryPredicate.REL_OP;
+
 import java.util.*;
 
 public class Helper {
@@ -83,7 +84,6 @@ public class Helper {
 		}
 	}
 	
-	
 	public static long parseLong(String str) {
 		if(str.startsWith("0x")) {
 			// hex
@@ -114,9 +114,6 @@ public class Helper {
 			return Long.decode(str);
 		}
 	}
-	
-	
-	
 	
 	public static<T> T last(List<T> list) {
 		return list.get(list.size() - 1);

@@ -66,13 +66,14 @@ import com.oblivm.compiler.util.Helper;
 import com.oblivm.compiler.log.Bugs;
 
 /** Token Manager. */
-@SuppressWarnings("unused")public class CParserTokenManager implements CParserConstants {
-
+@SuppressWarnings("unused")
+public class CParserTokenManager implements CParserConstants {
   /** Debug output. */
   public static  java.io.PrintStream debugStream = System.out;
   /** Set debug output. */
   public static  void setDebugStream(java.io.PrintStream ds) { debugStream = ds; }
-private static final int jjStopStringLiteralDfa_0(int pos, long active0, long active1){
+  
+  private static final int jjStopStringLiteralDfa_0(int pos, long active0, long active1){
    switch (pos)
    {
       case 0:
@@ -226,6 +227,7 @@ static private int jjStopAtPos(int pos, int kind)
    jjmatchedPos = pos;
    return pos + 1;
 }
+
 static private int jjMoveStringLiteralDfa0_0(){
    switch(curChar)
    {
@@ -323,6 +325,7 @@ static private int jjMoveStringLiteralDfa0_0(){
          return jjMoveNfa_0(0, 0);
    }
 }
+
 static private int jjMoveStringLiteralDfa1_0(long active0, long active1){
    try { curChar = input_stream.readChar(); }
    catch(java.io.IOException e) {
@@ -398,6 +401,7 @@ static private int jjMoveStringLiteralDfa1_0(long active0, long active1){
    }
    return jjStartNfa_0(0, active0, active1);
 }
+
 static private int jjMoveStringLiteralDfa2_0(long old0, long active0, long old1, long active1){
    if (((active0 &= old0) | (active1 &= old1)) == 0L)
       return jjStartNfa_0(0, old0, old1);
@@ -457,6 +461,7 @@ static private int jjMoveStringLiteralDfa2_0(long old0, long active0, long old1,
    }
    return jjStartNfa_0(1, active0, active1);
 }
+
 static private int jjMoveStringLiteralDfa3_0(long old0, long active0, long old1, long active1){
    if (((active0 &= old0) | (active1 &= old1)) == 0L)
       return jjStartNfa_0(1, old0, old1);
@@ -565,6 +570,7 @@ static private int jjMoveStringLiteralDfa4_0(long old0, long active0, long old1,
    }
    return jjStartNfa_0(3, active0, active1);
 }
+
 static private int jjMoveStringLiteralDfa5_0(long old0, long active0, long old1, long active1){
    if (((active0 &= old0) | (active1 &= old1)) == 0L)
       return jjStartNfa_0(3, old0, old1);
@@ -622,6 +628,7 @@ static private int jjMoveStringLiteralDfa5_0(long old0, long active0, long old1,
    }
    return jjStartNfa_0(4, active0, active1);
 }
+
 static private int jjMoveStringLiteralDfa6_0(long old0, long active0, long old1, long active1){
    if (((active0 &= old0) | (active1 &= old1)) == 0L)
       return jjStartNfa_0(4, old0, old1);
@@ -659,6 +666,7 @@ static private int jjMoveStringLiteralDfa6_0(long old0, long active0, long old1,
    }
    return jjStartNfa_0(5, active0, active1);
 }
+
 static private int jjMoveStringLiteralDfa7_0(long old0, long active0, long old1, long active1){
    if (((active0 &= old0) | (active1 &= old1)) == 0L)
       return jjStartNfa_0(5, old0, old1);
@@ -807,6 +815,7 @@ static private int jjStartNfaWithStates_0(int pos, int kind, int state)
 static final long[] jjbitVec0 = {
    0x0L, 0x0L, 0xffffffffffffffffL, 0xffffffffffffffffL
 };
+
 static private int jjMoveNfa_0(int startState, int curPos)
 {
    int startsAt = 0;
@@ -1353,6 +1362,7 @@ static private int jjMoveNfa_0(int startState, int curPos)
       catch(java.io.IOException e) { return curPos; }
    }
 }
+
 static private int jjMoveStringLiteralDfa0_1(){
    switch(curChar)
    {
@@ -1364,6 +1374,7 @@ static private int jjMoveStringLiteralDfa0_1(){
          return 1;
    }
 }
+
 static private int jjMoveStringLiteralDfa1_1(long active0){
    try { curChar = input_stream.readChar(); }
    catch(java.io.IOException e) {

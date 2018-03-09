@@ -42,11 +42,14 @@ import com.oblivm.compiler.ast.expr.ASTVariableExpression;
 import com.oblivm.compiler.ast.stmt.ASTAssignStatement;
 import com.oblivm.compiler.ast.stmt.ASTBoundedWhileStatement;
 import com.oblivm.compiler.ast.stmt.ASTDebugStatement;
+<<<<<<< HEAD
 import com.oblivm.compiler.ast.stmt.ASTSetNonNullArrayEntriesStatement;
 import com.oblivm.compiler.ast.stmt.ASTGetNonNullArrayEntriesStatement;
 import com.oblivm.compiler.ast.stmt.ASTWriteArrayStatement;
 import com.oblivm.compiler.ast.stmt.ASTReadArrayStatement;
 import com.oblivm.compiler.ast.expr.ASTStringConstantExpression;
+=======
+>>>>>>> obliv/master
 import com.oblivm.compiler.ast.stmt.ASTFuncStatement;
 import com.oblivm.compiler.ast.stmt.ASTIfStatement;
 import com.oblivm.compiler.ast.stmt.ASTOnDummyStatement;
@@ -166,11 +169,15 @@ TOKEN : {
 	<PACKAGE : "package"> |
 	<SIZEOF : "sizeof"> |
 	<USING : "using"> |
+<<<<<<< HEAD
 	<DEBUG : "debug"> |
 	<SETARRSIZE : "setArrElements"> | 
 	<GETARRSIZE : "getArrElements"> |
 	<READ  : "readArray"> | 
 	<WRITE : "writeArray">
+=======
+	<DEBUG : "debug">
+>>>>>>> obliv/master
 }
 
 TOKEN : {
@@ -422,19 +429,31 @@ List<ASTType> TypeVariables() :
 		(LOOKAHEAD(2) "," tyVar = Type(ASTLabel.Secure) { ret.add(tyVar); } )* ">" { return ret; }
 }
 
+<<<<<<< HEAD
 long Constant() : 
+=======
+int Constant() : 
+>>>>>>> obliv/master
 {
 	Token n;
 }
 {
+<<<<<<< HEAD
  	n = <INTEGER_LITERAL> { return com.oblivm.compiler.util.Helper.parseLong(n.image); }
 }
 
 java.lang.String StringConstant() :
+=======
+ 	n = <INTEGER_LITERAL> { return com.oblivm.compiler.util.Helper.parseInt(n.image); }
+}
+
+double FloatConstant() :
+>>>>>>> obliv/master
 {
 	Token n;
 }
 {
+<<<<<<< HEAD
  	n = <STRING_LITERAL> { return java.lang.String(n.image); }
 }
 
@@ -444,6 +463,9 @@ long FloatConstant() :
 }
 {
  	n = <FLOATING_POINT_LITERAL> { return Long.parseLong(n.image); }
+=======
+ 	n = <FLOATING_POINT_LITERAL> { return Double.parseDouble(n.image); }
+>>>>>>> obliv/master
 }
 
 void StructDef() : 
@@ -617,7 +639,11 @@ ASTType Type(ASTLabel defaultLabel) :
 				) ]
 	  	{
 	  		if(v.image.length() > 3) 
+<<<<<<< HEAD
 	  			bit = Long.parseLong(v.image.substring(3));
+=======
+	  			bit = Integer.parseInt(v.image.substring(3));
+>>>>>>> obliv/master
 	  		else
 	  			bit = -1;
 	  		if(bit >= 0 && bitExp != null)
@@ -888,7 +914,11 @@ List<ASTStatement> Statement(ASTFunctionDef func) :
 	List<ASTStatement> incre, tmp;
 	ASTType ty;
 	Token v;
+<<<<<<< HEAD
 	ASTExpression exp, arr;
+=======
+	ASTExpression exp;
+>>>>>>> obliv/master
 	ASTExpression var, bound;
 	ASTPredicate cond; 
 	ASTIfStatement ifStmt;
@@ -982,12 +1012,16 @@ List<ASTStatement> Statement(ASTFunctionDef func) :
 			}
 		| tmp_tok = <DEBUG> "(" exp = BIExpression() ")" tmp_tok1 = ";"
 			{
+<<<<<<< HEAD
 			    
+=======
+>>>>>>> obliv/master
 				ASTDebugStatement debugStmt = new ASTDebugStatement(exp);
 				debugStmt.setBeginPosition(tmp_tok.beginLine, tmp_tok.beginColumn);
 				debugStmt.setEndPosition(tmp_tok1.endLine, tmp_tok1.endColumn);
 				stmt.add(debugStmt); 
 			}
+<<<<<<< HEAD
 
 	| tmp_tok = <SETARRSIZE> "(" arr = BIExpression()  "," exp = BIExpression() ")" tmp_tok1 = ";"
 			{
@@ -1017,6 +1051,8 @@ List<ASTStatement> Statement(ASTFunctionDef func) :
 				stmt.add(write); 
 			}
 		
+=======
+>>>>>>> obliv/master
 		| tmp_tok = <FOR> "(" init = Statement(func) cond = Predicate() ";"
 			{ 
 				incre = new ArrayList<ASTStatement>(); 
@@ -1230,7 +1266,11 @@ ASTExpression RangeShiftExpression() :
 ASTExpression ConstantExpression() : 
 {
 	int n;
+<<<<<<< HEAD
 	long v;
+=======
+	double v;
+>>>>>>> obliv/master
 	ASTExpression st;
 }
 {

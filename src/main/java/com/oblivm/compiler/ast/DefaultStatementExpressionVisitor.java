@@ -135,7 +135,7 @@ public abstract class DefaultStatementExpressionVisitor<T1, T2> implements State
 			return visit((ASTReadArrayStatement) statement);
 		}
 
-			throw new RuntimeException("Unknown Statement!");
+		throw new RuntimeException("Unknown Statement!");
 	}
 
 }

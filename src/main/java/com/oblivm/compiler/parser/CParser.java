@@ -64,6 +64,7 @@ import com.oblivm.compiler.ast.type.ASTType;
 import com.oblivm.compiler.ast.type.ASTVariableType;
 import com.oblivm.compiler.ast.type.ASTVoidType;
 import com.oblivm.compiler.util.Pair;
+import com.oblivm.compiler.util.Helper;
 import com.oblivm.compiler.log.Bugs;
 
 public class CParser implements CParserConstants {
@@ -1276,7 +1277,7 @@ bitExp = new ASTConstantExpression(bit);
             }
           case IDENTIFIER:{
             bitVar = jj_consume_token(IDENTIFIER);
-if(def.containsKey(bitVar.image))
+            									   if(def.containsKey(bitVar.image))
                                                         bitExp = def.get(bitVar.image).clone();
                                                 else
                                                         bitExp = new ASTVariableExpression(bitVar);
@@ -3637,7 +3638,7 @@ ASTPredicate p = new ASTBinaryPredicate(e1, op, e2);
   }
 
   static private boolean jj_3R_57()
- {
+  {
     if (jj_scan_token(NATIVE)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;

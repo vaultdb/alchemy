@@ -24,7 +24,6 @@ public abstract class Log {
 	}
 	
 	public void log(Position pos, String msg) {
-
 		log(pos.toString()+": "+msg);
 	}
 	

@@ -6,7 +6,6 @@ package com.oblivm.compiler.cmd;
 import com.oblivm.compiler.ast.ASTProgram;
 import com.oblivm.compiler.backend.ICodeGenerator;
 import com.oblivm.compiler.frontend.IFrontEndCompiler;
-import com.oblivm.compiler.log.Info;
 import com.oblivm.compiler.parser.CParser;
 import com.oblivm.compiler.type.manage.TypeManager;
 
@@ -60,7 +59,6 @@ public class Cmd {
 		ap.addArgument("-n", "--node")
 		    .setDefault("localhost")
 		    .help("Host the generator will run on");
-
 	    ap.addArgument("--count")
            .dest("count")
            .action(Arguments.storeConst())
@@ -78,18 +76,17 @@ public class Cmd {
 		
 		IFrontEndCompiler fc = conf.getFrontend();
 		ICodeGenerator cg = conf.getCodeGen();		
-
 		for(String file : ns.<String> getList("file")) {
 //			try {
 				ASTProgram prog = CParser.parse(file);
 				TypeManager tm = fc.compile(prog);
-
 				cg.codeGen(tm, prog.packageName, 
 						ns.getString("shell"), 
 						Boolean.getBoolean(ns.getString("count")),
 					   Integer.parseInt(ns.getString("port")), 
 							    ns.getString("node"));
 				//Info.LOG.log("Compiling "+file+" succeeds");
+
 //			} catch (Exception e) {
 //				e.printStackTrace();
 //			}

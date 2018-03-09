@@ -815,7 +815,6 @@ public class TypeResolver extends DefaultVisitor<ASTStatement, ASTExpression, AS
 		return constantExpression;
 	}
 
-
 	@Override
 	public ASTExpression visit(ASTStringConstantExpression constantExpression) {
 		return constantExpression;
@@ -946,7 +945,6 @@ public class TypeResolver extends DefaultVisitor<ASTStatement, ASTExpression, AS
 		return stmt;
 	}
 
-
 	@Override
 	public ASTStatement visit(ASTSetNonNullArrayEntriesStatement stmt) {
 		if(copy) {
@@ -987,5 +985,4 @@ public class TypeResolver extends DefaultVisitor<ASTStatement, ASTExpression, AS
 		
 		return stmt;
 	}
-
 }

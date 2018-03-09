@@ -57,6 +57,7 @@ import com.oblivm.compiler.ast.type.ASTVariableType;
 import com.oblivm.compiler.ast.type.ASTVoidType;
 import com.oblivm.compiler.log.Bugs;
 
+
 /**
  * Check if the bit expressions in a program are valid.
  *  
@@ -285,7 +286,6 @@ public class BitInference extends DefaultVisitor<Boolean, Boolean, Boolean> {
 		return true;
 	}
 
-
 	@Override
 	public Boolean visit(ASTStringConstantExpression constantExpression) {
 		return true;
@@ -365,5 +365,4 @@ public class BitInference extends DefaultVisitor<Boolean, Boolean, Boolean> {
 		return false;
 
 	}
-
 }

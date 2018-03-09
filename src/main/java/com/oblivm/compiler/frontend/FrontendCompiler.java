@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.oblivm.compiler.ast.ASTFunction;
 import com.oblivm.compiler.ast.ASTFunctionDef;
 import com.oblivm.compiler.ast.ASTFunctionNative;
@@ -22,6 +23,7 @@ import com.oblivm.compiler.ast.expr.ASTConstantExpression;
 import com.oblivm.compiler.ast.expr.ASTExpression;
 import com.oblivm.compiler.ast.expr.ASTFloatConstantExpression;
 import com.oblivm.compiler.ast.expr.ASTStringConstantExpression;
+
 import com.oblivm.compiler.ast.expr.ASTFuncExpression;
 import com.oblivm.compiler.ast.expr.ASTLogExpression;
 import com.oblivm.compiler.ast.expr.ASTNewObjectExpression;
@@ -42,11 +44,13 @@ import com.oblivm.compiler.ast.stmt.ASTGetNonNullArrayEntriesStatement;
 import com.oblivm.compiler.ast.stmt.ASTIfStatement;
 import com.oblivm.compiler.ast.stmt.ASTOnDummyStatement;
 import com.oblivm.compiler.ast.stmt.ASTReadArrayStatement;
+
 import com.oblivm.compiler.ast.stmt.ASTReturnStatement;
 import com.oblivm.compiler.ast.stmt.ASTStatement;
 import com.oblivm.compiler.ast.stmt.ASTUsingStatement;
 import com.oblivm.compiler.ast.stmt.ASTWhileStatement;
 import com.oblivm.compiler.ast.stmt.ASTWriteArrayStatement;
+
 import com.oblivm.compiler.ast.type.ASTArrayType;
 import com.oblivm.compiler.ast.type.ASTDummyType;
 import com.oblivm.compiler.ast.type.ASTFloatType;
@@ -80,6 +84,7 @@ import com.oblivm.compiler.ir.EnforceBitExp;
 import com.oblivm.compiler.ir.Expression;
 import com.oblivm.compiler.ir.FuncCallExp;
 import com.oblivm.compiler.ir.GetNonNullArrayEntries;
+
 import com.oblivm.compiler.ir.GetValueExp;
 import com.oblivm.compiler.ir.IRCode;
 import com.oblivm.compiler.ir.If;
@@ -106,7 +111,6 @@ import com.oblivm.compiler.ir.Variable;
 import com.oblivm.compiler.ir.While;
 import com.oblivm.compiler.ir.WriteArray;
 import com.oblivm.compiler.log.Bugs;
-import com.oblivm.compiler.log.Info;
 import com.oblivm.compiler.type.manage.ArrayType;
 import com.oblivm.compiler.type.manage.BOPVariableConstant;
 import com.oblivm.compiler.type.manage.BitVariable;
@@ -160,7 +164,6 @@ public class FrontendCompiler extends DefaultVisitor<IRCode, Pair<List<Variable>
 	private int varNum = 0;
 
 	private String newTempVar() {
-
 		return "__tmp"+(varNum++);
 	}
 
@@ -1159,7 +1162,6 @@ public class FrontendCompiler extends DefaultVisitor<IRCode, Pair<List<Variable>
 	@Override
 	public Type visit(ASTFunctionType type) {
 		Type ret = visit(type.returnType);
-		
 		List<Type> inputs = new ArrayList<Type>();
 		for(int i=0; i<type.inputTypes.size(); ++i)
 			inputs.add(visit(type.inputTypes.get(i)));
@@ -1181,13 +1183,13 @@ public class FrontendCompiler extends DefaultVisitor<IRCode, Pair<List<Variable>
 				new Assign(Label.Pub, var, new ConstExp(exp.value, bits)));
 	}
 
-
 	@Override
 	public Pair<List<Variable>, IRCode> visit(ASTStringConstantExpression exp) {
 		VariableConstant bits = this.constructConstant(exp.bitSize);
 		Variable var = new Variable(new StringType(bits, Label.Pub), Label.Pub, newTempVar());
 		return new Pair<List<Variable>, IRCode>(one(var),
-				new Assign(Label.Pub, var, new ConstExp(exp.value, bits)));	}
+				new Assign(Label.Pub, var, new ConstExp(exp.value, bits)));	
+	}
 
 
 	@Override
@@ -1242,7 +1244,6 @@ public class FrontendCompiler extends DefaultVisitor<IRCode, Pair<List<Variable>
 				new Assign(var.lab, var, new GetValueExp(exp.way, tmp.left.get(0))));
 		return new Pair<List<Variable>, IRCode>(one(var), code);
 	}
-
 
 	@Override
 	public Type visit(ASTNullType type) {
@@ -1311,7 +1312,6 @@ public class FrontendCompiler extends DefaultVisitor<IRCode, Pair<List<Variable>
 		return new Debug(code.right, code.left.get(0), this.currentCond, stmt.beginPosition);
 	}
 
-
 	@Override
 	public IRCode visit(ASTSetNonNullArrayEntriesStatement stmt) {
 		Pair<List<Variable>, IRCode> var = visit(stmt.var);
@@ -1360,8 +1360,4 @@ public class FrontendCompiler extends DefaultVisitor<IRCode, Pair<List<Variable>
 		
 		return new ReadArray(arr, c);
 	}
-
-
-	
-
 }

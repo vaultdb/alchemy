@@ -522,13 +522,11 @@ public class BitInferenceEngine  extends DefaultStatementExpressionVisitor<Void,
 		return constantExpression.bitSize;
 	}
 
-
 	@Override
 	public ASTExpression visit(ASTStringConstantExpression constantExpression) {
 		this.current = ASTStringType.get(constantExpression.bitSize, ASTLabel.Pub);
 		return null;
 	}
-
 
 	@Override
 	public ASTExpression visit(ASTLogExpression tuple) {
@@ -601,5 +599,4 @@ public class BitInferenceEngine  extends DefaultStatementExpressionVisitor<Void,
 		visit(stmt.array);
 		return null;
 	}
-
 }

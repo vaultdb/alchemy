@@ -310,7 +310,6 @@ public class BitChecker extends DefaultVisitor<Boolean, Boolean, Boolean> {
 		return true;
 	}
 
-
 	@Override
 	public Boolean visit(ASTLogExpression tuple) {
 		return true;
@@ -386,5 +385,4 @@ public class BitChecker extends DefaultVisitor<Boolean, Boolean, Boolean> {
 		Bugs.LOG.log("Read array statement is not allowed to appear in bit expression");
 		return false;
 	 }
-
 }

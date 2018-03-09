@@ -45,7 +45,6 @@ public abstract class IRVisitor<T1, T2> {
 	}
 	
 	public T2 visit(Expression exp) {
-		//Bugs.LOG.log("Assign exp " + exp.getClass() + exp.toString());
 		if(exp instanceof BopExp) {
 			return visit((BopExp)exp);
 		} else if(exp instanceof ArrayExp) {
@@ -130,5 +129,4 @@ public abstract class IRVisitor<T1, T2> {
 	public abstract T1 visit(GetNonNullArrayEntries ret);	
 	public abstract T1 visit(WriteArray ret);
 	public abstract T1 visit(ReadArray ret);
-
 }

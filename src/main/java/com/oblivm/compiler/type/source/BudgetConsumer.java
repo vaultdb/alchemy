@@ -160,7 +160,6 @@ public class BudgetConsumer extends ASTDefaultTypeVisitor<Boolean> implements Ex
 		return null;
 	}
 
-
 	@Override
 	public Void visit(ASTStringConstantExpression constantExpression) {
 		// Do nothing

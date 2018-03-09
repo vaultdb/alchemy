@@ -50,8 +50,7 @@ public class TypeEmittable extends Emittable {
 
 		codeGen.isDefine = false;
 		if(this.inheritWritable(type)) {
-			this.implementInterfaces.add("IWritable<"+codeGen.visit(type)+", "+codeGen.dataType+">");
-			
+			this.implementInterfaces.add("IWritable<"+codeGen.visit(type)+", "+codeGen.dataType+">");			
 		}
 		this.implementInterfaces.add("java.io.Serializable");
 		type.getMethods().contains("main");
@@ -121,7 +120,7 @@ public class TypeEmittable extends Emittable {
 	public void emitFieldsInternal() {
 		// Constants
 		out.println("\tprivate static final long serialVersionUID = 1L;");
-		
+
 		// Local variables
 		for(Map.Entry<String, Type> ent : type.fields.entrySet()) {
 			out.println("\tpublic "+codeGen.visit(ent.getValue())+" "+ent.getKey()+";");
@@ -283,7 +282,6 @@ public class TypeEmittable extends Emittable {
 			out.println("\t}\n");
 		}
 	}
-
 	
 	public void emitReturnSize() {
 		out.print("\tpublic ");
@@ -306,6 +304,7 @@ public class TypeEmittable extends Emittable {
 		
 		}
 	}
+
 	public void emitGetBits() {
 		out.println("\tpublic "+codeGen.dataType+"[] getBits() throws Exception {");
 		//		out.println("\t\t"+codeGen.dataType+"[] ret = new "+codeGen.dataType+"[this.numBits()];");
@@ -503,6 +502,11 @@ public class TypeEmittable extends Emittable {
 		out.print("\tpublic ");
 		out.print(codeGen.visit(method.returnType)+" "+method.name+"(");
 		boolean f = true;
+		for(String s : method.bitParameters) {
+			if(f) f = false;
+			else out.print(", ");
+			out.print("int "+s);
+		}
 		for(Pair<Type, String> ent : method.parameters) {
 			if(f) f = false;
 			else out.print(", ");
@@ -647,6 +651,7 @@ public class TypeEmittable extends Emittable {
 		out.print("\tpublic ");
 		//out.print(codeGen.visit(main.returnType)+" main (int __n, int __m, "+codeGen.dataType+"[] x, "+codeGen.dataType+"[] y) throws Exception {\n");
 		out.print(codeGen.dataType+"[] main (int __n, int __m, "+codeGen.dataType+"[] a, "+codeGen.dataType+"[] b) throws Exception {\n");
+
 		int inputParams = main.parameters.size() + main.bitParameters.size();
 		String[] inputs = new String[inputParams];
 		for(int i=0; i<inputs.length; ++i) {
@@ -704,7 +709,6 @@ public class TypeEmittable extends Emittable {
 		}
 		out.println(");");
 		if (main.returnType instanceof ArrayType) {
-			out.println("\t\toutput.serializeToDisk(\"secure_output.ser\");");
 			out.print("\t\treturn com.oblivm.backend.lang.inter.Util.secToIntArray(env, output, output.dataSize, output.length);\n");
 		}
 		out.print("\t}\n");

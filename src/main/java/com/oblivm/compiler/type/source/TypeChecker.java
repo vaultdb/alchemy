@@ -194,7 +194,6 @@ public class TypeChecker extends DefaultStatementExpressionVisitor<Boolean, List
 
 	@Override
 	public Boolean visit(ASTAssignStatement assignStatement) {
-	    
 		if(!ac.visit(assignStatement.var))
 			return false;
 		List<ASTType> expTypes = visit(assignStatement.expr);
@@ -454,7 +453,6 @@ public class TypeChecker extends DefaultStatementExpressionVisitor<Boolean, List
 			return null;
 		}
 		if(!ty.getLabel().less(type.lab)) {
-
 			Bugs.LOG.log(arrayExpression.indexExpr.beginPosition, 
 					"cannot use secret index for a non-ORAM array");
 			return null;
@@ -513,10 +511,9 @@ public class TypeChecker extends DefaultStatementExpressionVisitor<Boolean, List
 	public List<ASTType> visit(ASTFuncExpression funcExpression) {
 		ASTFuncExpression exp = funcExpression;
 		ASTExpression obj = exp.obj;
-		//Bugs.LOG.log(funcExpression.beginPosition, "Parsing " + funcExpression.toString());
+
 		if(obj instanceof ASTVariableExpression) {
 			String name = ((ASTVariableExpression)obj).var;
-			//Bugs.LOG.log(funcExpression.beginPosition, "Looking up " + name);
 			if(exp.inputs.size() > 0) {
 				// TODO forgot what to do...
 			}
@@ -564,8 +561,7 @@ public class TypeChecker extends DefaultStatementExpressionVisitor<Boolean, List
 					Bugs.LOG.log(funcExpression.beginPosition, 
 						     "1. numbers of bit parameters mis-match " + funcExpression.bitParameters.size()+ " != " + type.bitParameter.size() 
 						     + "\n funcExpression: " + funcExpression.toString()
-						     + "\n type: " + type.toString());
-						     
+						     + "\n type: " + type.toString());		     
 					return null;
 				}
 				resolver.bitVars = new HashMap<String, ASTExpression>();
@@ -643,8 +639,6 @@ public class TypeChecker extends DefaultStatementExpressionVisitor<Boolean, List
 			return visit(funcExpression);
 		} else if(obj instanceof ASTRecExpression) {
 			ASTRecExpression recObj = (ASTRecExpression)obj;
-			Bugs.LOG.log(obj.beginPosition, "unknown object type" + obj);
-			
 			String name = recObj.field;
 			ASTType baseType = assertOne(visit(recObj.base));
 			funcExpression.baseType = baseType;

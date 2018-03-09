@@ -41,5 +41,4 @@ public abstract interface StatementVisitor<T> {
 
 	public abstract T visit(ASTReadArrayStatement stmt);
 
-
 }
