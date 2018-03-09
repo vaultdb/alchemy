@@ -106,6 +106,21 @@ public class CircuitLib<T> implements java.io.Serializable{
 
 		return resSC;
 	}
+	
+	public T[] randBools(long len) {
+		int length = (int) len;
+		if(env.getMode() == Mode.COUNT) {
+			return zeros(length);
+		}
+		boolean[] res = new boolean[length];
+		for (int i = 0; i < length; ++i)
+			res[i] = CompEnv.rnd.nextBoolean();
+		T[] alice = env.inputOfAlice(res);
+		T[] bob = env.inputOfBob(res);
+		T[] resSC = xor(alice, bob);
+
+		return resSC;
+	}
 
 	public boolean[] declassifyToAlice(T[] x) {
 		return env.outputToAlice(x);

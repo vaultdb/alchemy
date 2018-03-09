@@ -1362,7 +1362,7 @@ public class CodeGenVisitor extends IRVisitor<String, Pair<String, String>> {
 		// bit variables
 		for(int i=0; i<type.bits.size(); ++i) {
 			sb.append(", ");
-			sb.append("long "+type.bits.get(i).toString());
+			sb.append("int "+type.bits.get(i).toString());
 		}
 		// factories
 		if(type.typeParameter != null) {
