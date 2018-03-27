@@ -1,5 +1,45 @@
 package $packageName;
 
+#define PUSH 0
+#define POP 1
+
+phantom StackNode@m<T> NonRecursiveORAM@m<T>.readAndRemove(int@m id, rnd@m pos) = native conditionalReadAndRemove;
+phantom void NonRecursiveORAM@m<T>.add(int@m id, int@m pos, StackNode@m<T> node) = native conditionalPutBack;
+
+rnd@m RND(intp_32 m) = native intLib.randBools;
+
+typedef intp_ = public int;
+typedef NonRecursiveORAM@m<T> = native CircuitOram(m, sizeof(T));
+
+struct StackNode@m<T> {
+   rnd@m next;
+   T data;
+};
+
+struct Stack@m<T> {
+   rnd@m root;
+   int@m size;
+   NonRecursiveORAM@(1 << m)< StackNode@m<T> > oram;
+};
+
+phantom void Stack@m<T>.push(T operand) {
+      StackNode@m<T> node = 
+         StackNode@m{T} ( next = this.root,
+               data = operand);
+      this.root = RND(m);
+      this.size  = this.size + 1;
+      this.oram.add(this.size, this.root, node);
+}
+
+phantom T Stack@m<T>.pop() {
+   T ret;
+   rnd@m next;
+   StackNode@m<T> r = this.oram.readAndRemove(this.size, this.root);
+   ret, this.root = r.(data, next);
+   this.size = this.size - 1;
+   return ret;
+}
+
 $lessThan
 
 

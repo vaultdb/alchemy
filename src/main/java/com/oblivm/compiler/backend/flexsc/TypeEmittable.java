@@ -79,6 +79,7 @@ public class TypeEmittable extends Emittable {
 			throw new RuntimeException("Output stream is closed!");
 		if(isAbstract)
 			out.print("abstract ");
+		out.print("@SuppressWarnings(\"unchecked\")\n");
 		out.print("public class "+className);
 		if(Config.useTemplate) {
 			if(typeParameters.size() > 0) {
