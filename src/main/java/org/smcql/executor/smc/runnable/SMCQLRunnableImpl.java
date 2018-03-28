@@ -213,10 +213,13 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 			op.updatePrivacyBudget();
 		}
 		
+		secResult.shrinkToPrivateLength(parent, 0.1, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName);
+		
 		double end = System.nanoTime();
 		double elapsed = (end - start) / 1e9;
 		
 		msg = "Operator ended at " + Utilities.getTime() + " it ran in " + op.packageName + " ran in " + elapsed + " seconds, output=" + secResult;
+		System.out.println(msg);
 		logger.info(msg);
 
 		// sum for slices
@@ -228,8 +231,6 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		else 
 			perfReport.put(op.packageName, elapsed);
 
-		secResult.shrinkToPrivateLength(parent, 0.1, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName);
-		
 		dataManager.registerArray(op, secResult, env, parent);
 		op.output = (SecureArray<GCSignal>) secResult;
 				

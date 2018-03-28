@@ -28,16 +28,11 @@
       <artifactId>commons-dbcp2</artifactId>
       <version>2.1.1</version>
    </dependency>
-   <dependency>
-       <groupId>org.slf4j</groupId>
-       <artifactId>slf4j-api</artifactId>
-       <version>1.7.5</version>
-   </dependency>
-   <dependency>
-       <groupId>org.slf4j</groupId>
-       <artifactId>slf4j-log4j12</artifactId>
-       <version>1.7.5</version>
-   </dependency>
+    <dependency>
+    	<groupId>org.slf4j</groupId>
+    	<artifactId>slf4j-log4j12</artifactId>
+    	<version>1.7.21</version>
+    </dependency>
     <dependency>
     <groupId>org.apache.logging.log4j</groupId>
     <artifactId>log4j-api</artifactId>
@@ -128,6 +123,7 @@
        <configuration>
           <archive>
             <manifest>
+              <addClasspath>true</addClasspath>
               <mainClass>org.smcql.runner.SMCQLRunner</mainClass>
             </manifest>
           </archive>
@@ -145,7 +141,7 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/sources</outputDirectory>
+              <outputDirectory>${project.build.directory}/</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>

@@ -117,7 +117,7 @@ public class RunnableRemoteQueryTest extends BaseTest {
 	}
 	
 	public void testAspirinCount() throws Exception {
-		String testName = "aspirin-count";
+		String testName = "aspirin-profile";
 		//setUpComorbidity(testName);
 		runTest(testName);
 	}

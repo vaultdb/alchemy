@@ -9,7 +9,7 @@ local-log-file=logs/smcql.log
 #query planner information
 sliced-execution=false
 slice-parallelism=2
-semijoin-execution=true
+semijoin-execution=false
 truncate-input=5
 
 #privacy consumed by each operator

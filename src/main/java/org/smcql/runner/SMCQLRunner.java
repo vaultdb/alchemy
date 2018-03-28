@@ -17,7 +17,7 @@ public class SMCQLRunner {
 	protected static SqlStatementParser parser;
 	
 	private static void setUp() throws Exception {
-		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.localhost");
+		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.remote");
 
 		parser = new SqlStatementParser();
 		honestBroker = SystemConfiguration.getInstance().getHonestBrokerConfig();

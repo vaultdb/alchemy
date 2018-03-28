@@ -15,6 +15,7 @@ import org.smcql.executor.smc.runnable.SMCRunnable;
 import org.smcql.privacy.PrivacyCost;
 
 import com.oblivm.backend.circuits.BitonicSortLib;
+import com.oblivm.backend.circuits.arithmetic.IntegerLib;
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.BadLabelException;
 import com.oblivm.backend.gc.GCSignal;
@@ -178,10 +179,7 @@ public class SecureArray<T> implements java.io.Serializable {
 	@SuppressWarnings("unchecked")
 	public void shrinkToPrivateLength(SMCRunnable parent, double epsilon, double delta, int inputSensitivity, String packageName) throws Exception {
 		//extract values from ORAM into a GCSignal[]
-		T[] arr = (T[]) new GCSignal[length];
-		T[] zero = (T[]) new GCSignal[length];
-		T[][] data = (useTrivialOram) ? trivialOram.content : null;
-		T[] d2 = (useTrivialOram) ? null : circuitOram.extract(arr, zero, length);
+		T[][] data = (useTrivialOram) ? trivialOram.content : circuitOram.baseOram.content;
 		
 		//sort values
 		BitonicSortLib<T> lib = new BitonicSortLib<T>(env);
@@ -189,11 +187,11 @@ public class SecureArray<T> implements java.io.Serializable {
 			lib.sort(data, lib.SIGNAL_ZERO);
 			
 		//calculate differentially private length
-		setSensitivity(inputSensitivity + PrivacyCost.getSensitivity(packageName, (int) Utils.toLong(lib.declassifyToBoth(this.getNonNullEntries()))));
+		setSensitivity(inputSensitivity * PrivacyCost.getSensitivity(packageName, (int) Utils.toLong(lib.declassifyToBoth(this.getNonNullEntries()))));
 		int dpLength = Util.getDifferentiallyPrivateLength(env, parent, this.getNonNullEntries(), epsilon, delta, getSensitivity());
 		
 		//determine whether to use dp length
-		//System.out.println(packageName + ", length: " + length + ", dpLength: " + dpLength);
+		System.out.println(packageName + ", length: " + length + ", dpLength: " + dpLength);
 		if (length <= 0) {
 			length = 1;
 		} else if (length > dpLength && dpLength > 0) {
@@ -210,11 +208,7 @@ public class SecureArray<T> implements java.io.Serializable {
 			//}
 		} else {
 			circuitOram = new RecursiveCircuitOram<T>(env, length, dataSize);
-			arr = (T[]) new GCSignal[length];
-			T[] tmp = (T[]) new GCSignal[length];
-			tmp = Arrays.copyOfRange(d2, 0, length);
-			zero = (T[]) new GCSignal[length];
-			circuitOram.put(arr, zero, tmp);
+			circuitOram.baseOram.content = Arrays.copyOfRange(data, 0, length);
 		}		
 	}
 	

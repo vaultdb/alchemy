@@ -79,7 +79,7 @@ public class SystemConfiguration {
 		
 		if(configFile == null) 
 			configFile = Utilities.getSMCQLRoot() + "/conf/setup";
-		
+		System.out.println("configFile: " + configFile);
 		File f = new File(configFile); // may not always exist in remote invocations
 		if(f.exists()) {
 			List<String> parameters = Utilities.readFile(configFile);

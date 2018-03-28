@@ -60,6 +60,9 @@ public class Utilities {
 	    if(path.endsWith("target/classes/")) 
 	    		path = path.substring(0, path.length() - "/target/classes/".length());
 
+	    if(path.endsWith(".jar"))
+	    	path = path.substring(0, path.length() - "target/smcql-open-source-0.5.jar/".length());
+	    
 	    return path;
 	}	
 	 
