@@ -48,7 +48,7 @@ public class SecureArray<T> implements java.io.Serializable {
 		length = N;
 		this.dataSize = dataSize;
 		useTrivialOram = N <= threshold;
-		sensitivity = 0;
+		sensitivity = 1;
 		
 		if (useTrivialOram) {
 			trivialOram = new LinearScanOram<T>(env, N, dataSize);
@@ -191,8 +191,8 @@ public class SecureArray<T> implements java.io.Serializable {
 		int dpLength = Util.getDifferentiallyPrivateLength(env, parent, this.getNonNullEntries(), epsilon, delta, getSensitivity());
 		
 		//determine whether to use dp length
-		System.out.println(packageName + ", length: " + length + ", dpLength: " + dpLength);
-		if (length <= 0) {
+		System.out.println(packageName + ", length: " + length + ", dpLength: " + dpLength + ", inputSensitivity: " + inputSensitivity + ", current sensitivity: " + getSensitivity());
+		if (length <= 0 || dpLength <= 0) {
 			length = 1;
 		} else if (length > dpLength && dpLength > 0) {
 			length = dpLength;

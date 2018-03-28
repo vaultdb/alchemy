@@ -243,9 +243,9 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 			
 		int result = 0;
 		if (lhs != null)
-			result += lhs.getSensitivity();
+			result = lhs.getSensitivity();
 		if (rhs != null)
-			result += rhs.getSensitivity();
+			result = rhs.getSensitivity();
 		
 		return result;
 	}

@@ -30,9 +30,7 @@ public class PrivacyCost implements Serializable {
 	
 	public static int getSensitivity(String packageName, int length) {
 		if (packageName.contains("Join")) {
-			return length;
-		} else if (packageName.contains("Limit")) {
-			return 0;
+			return (length == 0) ? 1 : length;
 		} else {
 			return 1;
 		}
