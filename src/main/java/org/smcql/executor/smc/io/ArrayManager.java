@@ -230,7 +230,7 @@ public class ArrayManager<T> implements Serializable {
         String limitStr = SystemConfiguration.getInstance().getProperty("truncate-input");
         if(limitStr != null) {
         	int limit = Integer.parseInt(limitStr);
-        	logger.info("Truncating to " + limit + " tuples.");
+        	logger.info("Truncating true size " + tupleData.tupleCount() + " to " + limit + " tuples.");
         	//  for testing
         	tupleData.truncateData(limit);
         }

@@ -21,11 +21,13 @@ import org.smcql.executor.smc.SlicedSecureQueryTable;
 import org.smcql.executor.smc.io.ArrayManager;
 import org.smcql.util.Utilities;
 
+import com.oblivm.backend.circuits.BitonicSortLib;
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.GCSignal;
 import com.oblivm.backend.lang.inter.ISecureRunnable;
 import com.oblivm.backend.lang.inter.Util;
 import com.oblivm.backend.oram.SecureArray;
+import com.oblivm.backend.util.Utils;
 
 // place for methods entirely duplicated by gen and eva
 public class SMCQLRunnableImpl<T> implements Serializable {
@@ -190,6 +192,7 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		ISecureRunnable<T> runnable = DynamicCompiler.loadClass(op.packageName, op.byteCode, env);
 		int rhsLength = (rhs != null) ? rhs.length : 0;
 		int lhsLength = (lhs != null) ? lhs.length : 0;
+		
 		String msg =  "Operator " + op.packageName + " started at " + Utilities.getTime() + " on " + lhsLength + "," + rhsLength  + " tuples.";
 		logger.info(msg);
 		
@@ -213,7 +216,57 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 			op.updatePrivacyBudget();
 		}
 		
-		secResult.shrinkToPrivateLength(parent, 0.1, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName);
+		/*
+		if (op.packageName.contains("WindowAggregate3")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 1;
+			secResult.shrinkToPrivateLength(parent, 0.001, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+		} else if (op.packageName.contains("Join8")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 2;
+			secResult.shrinkToPrivateLength(parent, 0.1, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+		}*/
+		/*if (op.packageName.contains("Join8")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 1;
+			secResult.shrinkToPrivateLength(parent, 0.3866, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+		} else if (op.packageName.contains("Join11")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 1;
+			secResult.shrinkToPrivateLength(parent, 0.1081, 0.00002, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+		} else if (op.packageName.contains("Distinct13")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 1;
+			secResult.shrinkToPrivateLength(parent, 0.0053, 0.00003, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+		}*/
+		/*if (op.packageName.equals("org.smcql.generated.userQuery.Aggregate2")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 1;
+			secResult.shrinkToPrivateLength(parent, 0.5, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+		} */
+		/*if (op.packageName.contains("Join8")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 1;
+			secResult.shrinkToPrivateLength(parent, 0.5, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);	
+		} */
+		if (op.packageName.contains("Join8")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 1;
+			secResult.shrinkToPrivateLength(parent, 0.2221, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+		} else if (op.packageName.contains("Join11")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 1;
+			secResult.shrinkToPrivateLength(parent, 0.2155, 0.00002, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+		} else if (op.packageName.contains("Join14")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 1;
+			secResult.shrinkToPrivateLength(parent, 0.0591, 0.00003, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+		} else if (op.packageName.contains("Distinct16")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 1;
+			secResult.shrinkToPrivateLength(parent, 0.0033, 0.00004, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+		}
+		
 		
 		double end = System.nanoTime();
 		double elapsed = (end - start) / 1e9;
@@ -235,6 +288,14 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		op.output = (SecureArray<GCSignal>) secResult;
 				
 		return secResult;
+	}
+	
+	private int getInputLength(SecureArray<T> input, CompEnv<T> env) {
+		if (input == null)
+			return 0;
+		
+		BitonicSortLib<T> lib = new BitonicSortLib<T>(env);
+		return (int) Utils.toLong(lib.declassifyToBoth(input.getNonNullEntries()));
 	}
 	
 	private int getInputSensitivity(SecureArray<T> lhs, SecureArray<T> rhs, String packageName) {
@@ -320,7 +381,7 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		else 
 			perfReport.put(op.packageName, elapsed);
 		
-		secResult.shrinkToPrivateLength(parent, 0.1, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName);
+		//secResult.shrinkToPrivateLength(parent, 0.1, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName);
 		
 		return secResult;
 		

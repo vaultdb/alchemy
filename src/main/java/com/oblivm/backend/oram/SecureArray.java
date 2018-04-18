@@ -177,7 +177,7 @@ public class SecureArray<T> implements java.io.Serializable {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void shrinkToPrivateLength(SMCRunnable parent, double epsilon, double delta, int inputSensitivity, String packageName) throws Exception {
+	public void shrinkToPrivateLength(SMCRunnable parent, double epsilon, double delta, int inputSensitivity, String packageName, int inputLength) throws Exception {
 		//extract values from ORAM into a GCSignal[]
 		T[][] data = (useTrivialOram) ? trivialOram.content : circuitOram.baseOram.content;
 		
@@ -187,7 +187,7 @@ public class SecureArray<T> implements java.io.Serializable {
 			lib.sort(data, lib.SIGNAL_ZERO);
 			
 		//calculate differentially private length
-		setSensitivity(inputSensitivity * PrivacyCost.getSensitivity(packageName, (int) Utils.toLong(lib.declassifyToBoth(this.getNonNullEntries()))));
+		setSensitivity(inputSensitivity * PrivacyCost.getSensitivity(packageName, inputLength));
 		int dpLength = Util.getDifferentiallyPrivateLength(env, parent, this.getNonNullEntries(), epsilon, delta, getSensitivity());
 		
 		//determine whether to use dp length

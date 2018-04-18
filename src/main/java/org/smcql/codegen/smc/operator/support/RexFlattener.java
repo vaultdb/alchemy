@@ -94,8 +94,8 @@ public abstract class RexFlattener implements RexVisitor<String> {
 		List<String> children = new ArrayList<String>();
 		
 		for(RexNode op : call.operands) {
-			if (op.toString().indexOf("%") > 0)
-				continue;
+			//if (op.toString().indexOf("%") > 0)
+			//	continue;
 			String entry = op.accept(this);
 			if (entry.contains(",")) {
 				children = new ArrayList<String>();
