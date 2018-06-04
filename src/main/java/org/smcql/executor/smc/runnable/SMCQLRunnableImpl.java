@@ -249,22 +249,28 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 			int inputMultiplicity = 1;
 			secResult.shrinkToPrivateLength(parent, 0.5, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);	
 		} */
-		if (op.packageName.contains("Join8")) {
+		/*if (op.packageName.contains("Join8")) {
 			System.out.println("Resizing " + op.packageName);
 			int inputMultiplicity = 1;
-			secResult.shrinkToPrivateLength(parent, 0.2221, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+			secResult.shrinkToPrivateLength(parent, 0.0443, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
 		} else if (op.packageName.contains("Join11")) {
 			System.out.println("Resizing " + op.packageName);
 			int inputMultiplicity = 1;
-			secResult.shrinkToPrivateLength(parent, 0.2155, 0.00002, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+			secResult.shrinkToPrivateLength(parent, 0.0431, 0.00002, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
 		} else if (op.packageName.contains("Join14")) {
 			System.out.println("Resizing " + op.packageName);
 			int inputMultiplicity = 1;
-			secResult.shrinkToPrivateLength(parent, 0.0591, 0.00003, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+			secResult.shrinkToPrivateLength(parent, 0.0122, 0.00003, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
 		} else if (op.packageName.contains("Distinct16")) {
 			System.out.println("Resizing " + op.packageName);
 			int inputMultiplicity = 1;
-			secResult.shrinkToPrivateLength(parent, 0.0033, 0.00004, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+			secResult.shrinkToPrivateLength(parent, 0.0005, 0.00004, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
+		}*/
+		
+		if (op.packageName.contains("Join8")) {
+			System.out.println("Resizing " + op.packageName);
+			int inputMultiplicity = 1;
+			secResult.shrinkToPrivateLength(parent, 0.5, 0.00001, getInputSensitivity(lhs, rhs, op.packageName), op.packageName, inputMultiplicity);
 		}
 		
 		

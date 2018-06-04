@@ -1,4 +1,4 @@
 #List the workers and their associated databases here
 #workerName=host:psqlPort,db name,smcql id (must be distinct, internal use)
-remoteDB5=codd15:5432,healthlnk_a,1
-remoteDB6=codd16:5432,healthlnk_b,2
+remoteDB3=codd13:5432,healthlnk_a,1
+remoteDB4=codd14:5432,healthlnk_b,2

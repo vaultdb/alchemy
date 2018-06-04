@@ -176,7 +176,6 @@ public class SecureArray<T> implements java.io.Serializable {
 		 return null;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void shrinkToPrivateLength(SMCRunnable parent, double epsilon, double delta, int inputSensitivity, String packageName, int inputLength) throws Exception {
 		//extract values from ORAM into a GCSignal[]
 		T[][] data = (useTrivialOram) ? trivialOram.content : circuitOram.baseOram.content;
@@ -202,13 +201,14 @@ public class SecureArray<T> implements java.io.Serializable {
 		if (useTrivialOram) {
 			trivialOram = new LinearScanOram<T>(env, length, dataSize);
 			trivialOram.content = Arrays.copyOfRange(data, 0, length);
-			//for (int i=0; i<length; i++) {
-			//	boolean[] val = lib.declassifyToBoth(trivialOram.content[i]);
-			//	System.out.println("val: " + Utils.toLong(val));
-			//}
+			lengthOfIden = trivialOram.lengthOfIden;
 		} else {
 			circuitOram = new RecursiveCircuitOram<T>(env, length, dataSize);
-			circuitOram.baseOram.content = Arrays.copyOfRange(data, 0, length);
+			System.out.println("content.length: " + circuitOram.baseOram.content.length + ", length: " + length);
+			if (length < circuitOram.baseOram.content.length) {
+				circuitOram.baseOram.content = Arrays.copyOfRange(data, 0, length);
+				lengthOfIden = circuitOram.lengthOfIden;
+			}
 		}		
 	}
 	
