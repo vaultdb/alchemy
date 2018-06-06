@@ -30,7 +30,7 @@ public class ParseMinTest  extends  BaseTest {
 	public void testCDiff() throws Exception {
 		String expectedPlan = "LogicalAggregate(group=[{0}])\n"
 				 + "  LogicalProject(patient_id=[$0])\n"
-				 + "    LogicalJoin(condition=[AND(=($0, $3), >=(/INT(CAST(-($1, $4, FLAG(DAY))):INTEGER NOT NULL, 43200000), 15), <=(/INT(CAST(-($1, $4, FLAG(DAY))):INTEGER NOT NULL, 43200000), 56), =(+($2, 1), $5))], joinType=[inner])\n"
+				 + "    LogicalJoin(condition=[AND(=($0, $3), >=(/INT(CAST(-($1, $4, FLAG(DAY))):INTEGER NOT NULL, 86400000), 15), <=(/INT(CAST(-($1, $4, FLAG(DAY))):INTEGER NOT NULL, 86400000), 56), =(+($2, 1), $5))], joinType=[inner])\n"
 				 + "      LogicalWindow(window#0=[window(partition {0} order by [1] rows between UNBOUNDED PRECEDING and CURRENT ROW aggs [ROW_NUMBER()])])\n"
 				 + "        LogicalProject(patient_id=[$0], timestamp_=[$2])\n"
 				 + "          LogicalProject(patient_id=[$0], icd9=[$8], timestamp_=[$10])\n"

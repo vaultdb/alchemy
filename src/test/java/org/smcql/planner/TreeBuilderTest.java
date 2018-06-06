@@ -12,7 +12,7 @@ import org.smcql.plan.SecureRelRoot;
 public class TreeBuilderTest extends BaseTest {
 
 	public void testAspirinCount() throws Exception {
-		String expectedTree = "LogicalAggregate-Secure, schema:(#0: rx_cnt BIGINT Public)\n"
+		String expectedTree = "LogicalAggregate-Slice, schema:(#0: rx_cnt BIGINT Public), slice key: [#0: patient_id INTEGER Public]\n"
 				 + "    LogicalAggregate-Slice, schema:(#0: patient_id INTEGER Public), slice key: [#0: patient_id INTEGER Public]\n"
 				 + "        LogicalProject-Slice, schema:(#0: patient_id INTEGER Public), slice key: [#0: patient_id INTEGER Public]\n"
 				 + "            LogicalJoin-Slice, schema:(#0: patient_id INTEGER Public,#1: timestamp_ TIMESTAMP(6) Private,#2: patient_id0 INTEGER Public,#3: timestamp_0 TIMESTAMP(6) Private), slice key: [#0: patient_id INTEGER Public, #2: patient_id0 INTEGER Public]\n"

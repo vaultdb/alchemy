@@ -1,12 +1,10 @@
 package org.smcql.codegen.secure;
 
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
-import org.smcql.codegen.smc.DynamicCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.SecureRelRoot;
@@ -16,7 +14,6 @@ public class GenerateSmcTest extends BaseTest {
 	protected void setUp() throws Exception {
 		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
 		System.setProperty("smcql.setup", setupFile);
-
 	}
 	
 	public void testComorbidity() throws Exception {
@@ -40,6 +37,8 @@ public class GenerateSmcTest extends BaseTest {
 		logger.log(Level.INFO, "Parsing " + sql);
 		
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
+		//Insert new query compiler here
+		
 		QueryCompiler qc = new QueryCompiler(secRoot);
 		qc.writeToDisk();
 		
