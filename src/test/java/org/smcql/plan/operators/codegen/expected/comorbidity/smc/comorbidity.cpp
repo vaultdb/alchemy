@@ -20,14 +20,20 @@ string sql_query = "SELECT major_icd9, COUNT(*) AS cnt \
             ORDER BY major_icd9";
 
 // Generated variables
-int row_size = 320;     //compile time
 int alice_size = 159;   //run time
 int bob_size = 591; //run time
+int row_size = 320;     //compile time
 int limit = 10;     //compile time
 int col_length0 = 256;  //compile time
 int col_length1 = 64;   //compile time
 
-// Helper functions
+// Helpers
+class Data {public:
+    Integer * data;
+    int public_size;
+    Integer real_size;
+};
+
 string reveal_bin(Integer &input, int length, int output_party) {
     bool * b = new bool[length];
     ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
@@ -76,13 +82,6 @@ bool *concat(std::vector<Row> rows, int row_size) {
     return result;
 }
 
-// Operator functions
-class Data {public:
-    Integer * data;
-    int public_size;
-    Integer real_size;
-};
-
 Integer from_bool(bool* b, int size, int party) {
     Integer res;
     res.bits = new Bit[size];
@@ -90,6 +89,7 @@ Integer from_bool(bool* b, int size, int party) {
     return res;
 }
 
+// Operator functions
 Data* merge(bool * local_data, int bit_length, 
 int alice_size, int bob_size, int party) {
     Integer * res = new Integer[alice_size + bob_size];
@@ -119,6 +119,7 @@ int alice_size, int bob_size, int party) {
         
     return d;
 }
+
 void aggregate (Data * data) {
     for (int i = 0; i < data->public_size - 1; ++i) {
         Integer id1(col_length0, data->data[i].bits);
@@ -133,7 +134,7 @@ void aggregate (Data * data) {
     }
 }
 
-void s_sort(Data * data) {
+void sort(Data * data) {
     bitonic_sort_sql(data->data, 0, data->public_size, Bit(false), col_length0, col_length1);
 }
 

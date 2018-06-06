@@ -85,7 +85,6 @@ public String rel2sql() {
 	String sqlOut =  SqlGenerator.getSql(relRoot.project(), dialect);
 	System.out.println("Root sql " + sqlOut);
 	return sqlOut;
-	
 }
 
 // examine partial plans
