@@ -11,6 +11,9 @@ import org.smcql.plan.SecureRelNode;
 import org.smcql.plan.operator.Operator;
 
 public class SqlGenerator {
+	
+	protected static SqlDialect postgresDialect = SqlDialect.DatabaseProduct.POSTGRESQL.getDialect();
+	
 	public static String getSql(RelRoot root, SqlDialect dialect) {
 		return getSql(root.rel, dialect);
 	}
@@ -18,6 +21,13 @@ public class SqlGenerator {
 	public static String getSql(RelNode rel, SqlDialect dialect) {	
 		RelToSqlConverter converter = new ExtendedRelToSqlConverter(dialect);
 		return getStringFromNode(rel, converter, dialect);
+	}
+	
+	public static String getSourceSql(Operator node) {
+		SecureRelNode secNode = node.getSecureRelNode();
+		RelNode rel = secNode.getRelNode();
+		RelToSqlConverter converter = new SecureRelToSqlConverter(postgresDialect, secNode.getPhysicalNode());
+		return getStringFromNode(rel, converter, postgresDialect);
 	}
 	
 	public static String getSourceSql(Operator node, SqlDialect dialect) {
