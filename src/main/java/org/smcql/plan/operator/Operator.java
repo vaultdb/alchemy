@@ -72,10 +72,6 @@ public abstract class Operator implements CodeGenerator {
 		double delta = Double.parseDouble(SystemConfiguration.getInstance().getProperty("delta"));
 		pCost = new PrivacyCost(epsilon, delta); //Epsilon Cost = Epsilon value * # relations touched (1 by default)
 	}
-	 
-	public ShadowRelNode getShadowRelNode() { 
-		return unoptimizedRelNode;
-	}
 	
 	public void inferExecutionMode() {
 		for(Operator op : children) {
