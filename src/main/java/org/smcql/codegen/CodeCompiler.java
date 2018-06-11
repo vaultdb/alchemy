@@ -1,20 +1,20 @@
 package org.smcql.codegen;
 
-import org.smcql.codegen.sql.SqlGenerator;
+import org.smcql.codegen.operators.CodeGenStep;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Operator;
-import org.smcql.plan.operator.Project;
 
 public class CodeCompiler {
-	SecureRelRoot queryPlan;
+	private SecureRelRoot queryPlan;
+	private CodeGenStep rootStep;
 	
 	public CodeCompiler(SecureRelRoot root) {
 		queryPlan = root;
+		
 	}
 	
-	public void compile(String destination) {
+	public void compile(String destination) throws Exception {
 		String queryId = queryPlan.getName();
 		Operator root = queryPlan.getPlanRoot();
 		
@@ -23,16 +23,11 @@ public class CodeCompiler {
 	}
 	
 	
-	//handle pushing/pulling filters and projects
-	//handle self join repetition
-	
-	private void traverse(Operator op) {
+	//TODO: handle pushing filters up, inserting merge
+	private void traverse(Operator op) throws Exception {
 		if (op.getExecutionMode() == ExecutionMode.Plain) {
-			while (op instanceof Filter || op instanceof Project)
-				op = op.getParent();
-
-			String srcSql =  SqlGenerator.getSourceSql(op);
-			System.out.println("Source SQL for " + op.getOpName() + ":\n" + srcSql);
+			Operator publicOp = (op.getParent().isSplittable()) ? op.getParent() : op;
+			addStep(new CodeGenStep(publicOp, true));			
 			return;
 		}
 		
@@ -40,8 +35,15 @@ public class CodeCompiler {
 			if (!child.getSources().isEmpty())
 				traverse(child);
 			
-			if (!(op instanceof Filter || op instanceof Project))
-				System.out.println(op.getOpName());
+			System.out.println(op.getOpName());
+		}
+	}
+		
+	private void addStep(CodeGenStep step) {
+		if (rootStep == null) {
+			rootStep = step;
+		} else {
+			rootStep.addChild(step);
 		}
 	}
 }
