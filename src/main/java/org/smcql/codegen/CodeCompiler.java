@@ -1,6 +1,7 @@
 package org.smcql.codegen;
 
 import org.smcql.codegen.operators.CodeGenNode;
+import org.smcql.codegen.operators.MergeNode;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.plan.operator.Operator;
@@ -19,11 +20,10 @@ public class CodeCompiler {
 		//emit public and private code to destination
 	}
 	
-	//TODO: handle pushing filters up, inserting merge
+	//TODO: handle pushing filters up
 	private void compileSteps(Operator op, CodeGenNode parent) throws Exception {	
 		if (op.getExecutionMode() == ExecutionMode.Plain) {
-			Operator publicOp = (op.getParent().isSplittable()) ? op.getParent() : op;
-			parent.addChild(new CodeGenNode(publicOp, true));
+			insertPublicNode(op, parent);
 			return;
 		}
 		
@@ -38,6 +38,18 @@ public class CodeCompiler {
 			if (!child.getSources().isEmpty())
 				compileSteps(child, curNode);			
 		}
+	}
+	
+	private void insertPublicNode(Operator op, CodeGenNode parent) {
+		Operator publicOp = op;
+		if (op.getParent().isSplittable()) {
+			publicOp = op.getParent();
+			MergeNode merge = new MergeNode(publicOp);
+			parent.addChild(merge);
+			parent = merge;
+		}
+		
+		parent.addChild(new CodeGenNode(publicOp, true));
 	}
 	
 	public void printNodes() {
