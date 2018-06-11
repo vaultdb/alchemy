@@ -68,7 +68,7 @@ public class Utilities {
 	 
 	 
     	public static String getCodeGenRoot() {
-    		return getSMCQLRoot() + "/conf/smc/operators/";
+    		return getSMCQLRoot() + "/conf/smc/";
     	}
  
     	public static String getCodeGenTarget() {

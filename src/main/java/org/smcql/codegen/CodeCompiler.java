@@ -48,6 +48,10 @@ public class CodeCompiler {
 		parent.addChild(new CodeGenNode(publicOp, true));
 	}
 	
+	public void printEmpCode() throws Exception {
+		System.out.println(rootNode.generateSMC());
+	}
+	
 	public void printNodes() {
 		printRecursive(rootNode, 0);
 	}
