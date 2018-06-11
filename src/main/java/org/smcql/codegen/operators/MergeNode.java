@@ -9,7 +9,7 @@ public class MergeNode extends CodeGenNode {
 	}
 
 	public String toString() {
-		return "Operators: Merge (" + this.getOperators().get(0).getOpName() + ");";		
+		return "Operator(s): Merge (" + this.getOperators().get(0).getOpName() + ")";		
 	}
 
 }

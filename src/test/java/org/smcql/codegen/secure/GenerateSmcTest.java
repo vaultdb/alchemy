@@ -42,6 +42,7 @@ public class GenerateSmcTest extends BaseTest {
 		//compiles code to a couple of cpp files that will be sent to alice & bob for execution
 		CodeCompiler cc = new CodeCompiler(secRoot);
 		cc.compile(Utilities.getCodeGenTarget() + "/" + testName);
+		System.out.println("Query: " + testName.toUpperCase());
 		cc.printNodes();
 		/*
 		QueryCompiler qc = new QueryCompiler(secRoot);

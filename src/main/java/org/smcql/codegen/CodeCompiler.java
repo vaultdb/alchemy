@@ -41,14 +41,10 @@ public class CodeCompiler {
 	}
 	
 	private void insertPublicNode(Operator op, CodeGenNode parent) {
-		Operator publicOp = op;
-		if (op.getParent().isSplittable()) {
-			publicOp = op.getParent();
-			MergeNode merge = new MergeNode(publicOp);
-			parent.addChild(merge);
-			parent = merge;
-		}
-		
+		Operator publicOp = (op.getParent().isSplittable()) ? op.getParent() : op;
+		MergeNode merge = new MergeNode(publicOp);
+		parent.addChild(merge);
+		parent = merge;
 		parent.addChild(new CodeGenNode(publicOp, true));
 	}
 	

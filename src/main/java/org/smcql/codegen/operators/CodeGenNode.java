@@ -3,6 +3,7 @@ package org.smcql.codegen.operators;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.smcql.codegen.emp.EmpGenerator;
 import org.smcql.codegen.sql.SqlGenerator;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Project;
@@ -46,7 +47,7 @@ public class CodeGenNode {
 		if (isPublic)
 			throw new Exception("Cannot generate SMC for public node");
 			
-		return "";
+		return EmpGenerator.getEmpCode(this);
 	}
 	
 	public List<Operator> getOperators() {
@@ -75,7 +76,7 @@ public class CodeGenNode {
 	}
 	
 	public String toString() {
-		String result = "Operators: ";
+		String result = "Operator(s): ";
 		
 		for (int i=0; i<operators.size(); i++) {
 			result += operators.get(i).getOpName();
