@@ -39,4 +39,22 @@ public class CodeCompiler {
 				compileSteps(child, curNode);			
 		}
 	}
+	
+	public void printNodes() {
+		printRecursive(rootNode, 0);
+	}
+	
+	private void printRecursive(CodeGenNode node, int level) {
+		String indent = "";
+		for (int i=0; i<level; i++) 
+			indent += "\t";
+		
+		System.out.println(indent + node.toString());
+		
+		if (node.getChildren().isEmpty())
+			return;
+		
+		for (CodeGenNode child : node.getChildren()) 
+			printRecursive(child, level + 1);
+	}
 }

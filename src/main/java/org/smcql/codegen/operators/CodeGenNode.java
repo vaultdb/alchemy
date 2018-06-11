@@ -16,12 +16,14 @@ public class CodeGenNode {
 	public CodeGenNode(List<Operator> operators, boolean isPublic) {
 		this.operators = operators;
 		this.isPublic = isPublic;
+		this.children = new ArrayList<CodeGenNode>();
 	}
 	
 	public CodeGenNode(Operator operator, boolean isPublic) {
 		this.operators = new ArrayList<Operator>();
 		this.operators.add(operator);
 		this.isPublic = isPublic;
+		this.children = new ArrayList<CodeGenNode>();
 	}
 	
 	public String generateSQL() throws Exception {
@@ -64,14 +66,25 @@ public class CodeGenNode {
 	}
 
 	public void addChild(CodeGenNode child) {
-		if (children == null) 
-			children = new ArrayList<CodeGenNode>();
-		
 		child.setParent(this);
 		children.add(child);
 	}
 	
 	public boolean isPublic() {
 		return isPublic;
+	}
+	
+	public String toString() {
+		String result = "Operators: ";
+		
+		for (int i=0; i<operators.size(); i++) {
+			result += operators.get(i).getOpName();
+			if (i<operators.size()-1)
+				result += ", ";
+		}
+			
+		result += "; Execution: " + ((isPublic) ? "public" : "private");
+		
+		return result;
 	}
 }
