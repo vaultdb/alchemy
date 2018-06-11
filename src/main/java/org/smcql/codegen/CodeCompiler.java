@@ -1,49 +1,42 @@
 package org.smcql.codegen;
 
-import org.smcql.codegen.operators.CodeGenStep;
+import org.smcql.codegen.operators.CodeGenNode;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.plan.operator.Operator;
 
 public class CodeCompiler {
 	private SecureRelRoot queryPlan;
-	private CodeGenStep rootStep;
+	private CodeGenNode rootNode;
 	
 	public CodeCompiler(SecureRelRoot root) {
 		queryPlan = root;
-		
+		rootNode = null;
 	}
 	
 	public void compile(String destination) throws Exception {
-		String queryId = queryPlan.getName();
-		Operator root = queryPlan.getPlanRoot();
-		
-		System.out.println("query: " + queryId);
-		traverse(root);
+		compileSteps(queryPlan.getPlanRoot(), null);
+		//emit public and private code to destination
 	}
 	
-	
 	//TODO: handle pushing filters up, inserting merge
-	private void traverse(Operator op) throws Exception {
+	private void compileSteps(Operator op, CodeGenNode parent) throws Exception {	
 		if (op.getExecutionMode() == ExecutionMode.Plain) {
 			Operator publicOp = (op.getParent().isSplittable()) ? op.getParent() : op;
-			addStep(new CodeGenStep(publicOp, true));			
+			parent.addChild(new CodeGenNode(publicOp, true));
 			return;
 		}
 		
+		CodeGenNode curNode = new CodeGenNode(op, false);
+		if (parent == null) {
+			rootNode = curNode;
+		} else {
+			rootNode.addChild(curNode);
+		}			
+					
 		for(Operator child : op.getSources()) {
 			if (!child.getSources().isEmpty())
-				traverse(child);
-			
-			System.out.println(op.getOpName());
-		}
-	}
-		
-	private void addStep(CodeGenStep step) {
-		if (rootStep == null) {
-			rootStep = step;
-		} else {
-			rootStep.addChild(step);
+				compileSteps(child, curNode);			
 		}
 	}
 }

@@ -7,18 +7,18 @@ import org.smcql.codegen.sql.SqlGenerator;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Project;
 
-public class CodeGenStep {
+public class CodeGenNode {
 	private List<Operator> operators;
-	private CodeGenStep parent;
-	private List<CodeGenStep> children;
-	boolean isPublic;
+	private CodeGenNode parent;
+	private List<CodeGenNode> children;
+	private boolean isPublic;
 
-	public CodeGenStep(List<Operator> operators, boolean isPublic) {
+	public CodeGenNode(List<Operator> operators, boolean isPublic) {
 		this.operators = operators;
 		this.isPublic = isPublic;
 	}
 	
-	public CodeGenStep(Operator operator, boolean isPublic) {
+	public CodeGenNode(Operator operator, boolean isPublic) {
 		this.operators = new ArrayList<Operator>();
 		this.operators.add(operator);
 		this.isPublic = isPublic;
@@ -26,7 +26,7 @@ public class CodeGenStep {
 	
 	public String generateSQL() throws Exception {
 		if (!isPublic)
-			throw new Exception("Cannot generate SQL for non-public step");
+			throw new Exception("Cannot generate SQL for non-public node");
 		
 		for (Operator op : operators) {
 			Operator cur = op;
@@ -40,26 +40,38 @@ public class CodeGenStep {
 		throw new Exception("Failed to generate SQL for step");
 	}
 	
+	public String generateSMC() throws Exception {
+		if (isPublic)
+			throw new Exception("Cannot generate SMC for public node");
+			
+		return "";
+	}
+	
 	public List<Operator> getOperators() {
 		return operators;
 	}
 
-	public CodeGenStep getParent() {
+	public CodeGenNode getParent() {
 		return parent;
 	}
 
-	public void setParent(CodeGenStep parent) {
+	public void setParent(CodeGenNode parent) {
 		this.parent = parent;
 	}
 
-	public List<CodeGenStep> getChildren() {
+	public List<CodeGenNode> getChildren() {
 		return children;
 	}
 
-	public void addChild(CodeGenStep child) {
+	public void addChild(CodeGenNode child) {
 		if (children == null) 
-			children = new ArrayList<CodeGenStep>();
+			children = new ArrayList<CodeGenNode>();
 		
+		child.setParent(this);
 		children.add(child);
+	}
+	
+	public boolean isPublic() {
+		return isPublic;
 	}
 }
