@@ -1,13 +1,8 @@
 package org.smcql.codegen.secure;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.smcql.BaseTest;
 import org.smcql.codegen.CodeCompiler;
-import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.util.Utilities;
 
@@ -33,19 +28,17 @@ public class GenerateSmcTest extends BaseTest {
 	
 	protected void testCase(String testName) throws Exception {
 		SystemConfiguration.getInstance().resetCounters();
-		Logger logger = SystemConfiguration.getInstance().getLogger();
 		String sql = super.readSQL(testName);
-		logger.log(Level.INFO, "Parsing " + sql);
-		
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 	
 		//compiles code to a couple of cpp files that will be sent to alice & bob for execution
 		CodeCompiler cc = new CodeCompiler(secRoot);
 		cc.compile(Utilities.getCodeGenTarget() + "/" + testName);
 		System.out.println("Query: " + testName.toUpperCase());
-		cc.printNodes();
+		System.out.println("\nTree:\n" + cc.getTree());
+		System.out.println("\nSource SQL:\n" + cc.getSourceSQL());
 		//System.out.println("Source SQL:");
-		//cc.printSourceSQL();
+		// cc.printSourceSQL();
 		//System.out.println("\nEMP Code:");
 		//cc.printEmpCode();
 		/*

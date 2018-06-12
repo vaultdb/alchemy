@@ -54,7 +54,6 @@ public class CodeCompiler {
 		return cur;
 	}
 	
-	
 	private void insertPublicNode(Operator op, CodeGenNode parent) {
 		Operator publicOp = (op.getParent().isSplittable()) ? op.getParent() : op;
 		MergeNode merge = new MergeNode(publicOp);
@@ -63,38 +62,46 @@ public class CodeCompiler {
 		parent.addChild(new CodeGenNode(publicOp, true));
 	}
 	
-	public void printSourceSQL() throws Exception {
-		printSourceSQLRecursive(rootNode);
+	public String getSourceSQL() throws Exception {
+		String result = "";
+		result = getSourceSQLRecursive(rootNode, result);
+		return result;
 	}
 	
-	private void printSourceSQLRecursive(CodeGenNode node) throws Exception {
+	private String getSourceSQLRecursive(CodeGenNode node, String str) throws Exception {
 		if (node.getChildren().isEmpty())
-			System.out.println(node.generateSQL());
+			str += node.generateSQL() + "\n";
 			
 		for (CodeGenNode child : node.getChildren()) {
-			printSourceSQLRecursive(child);
+			str = getSourceSQLRecursive(child, str);
 		}
+		
+		return str;
 	}
 	
-	public void printEmpCode() throws Exception {
-		System.out.println(rootNode.generateSMC());
+	public String getEmpCode() throws Exception {
+		return rootNode.generateSMC();
 	}
 	
-	public void printNodes() {
-		printNodesRecursive(rootNode, 0);
+	public String getTree() {
+		String result = "";
+		result = getTreeRecursive(rootNode, 0, result);
+		return result.substring(0, result.length()-1);
 	}
 	
-	private void printNodesRecursive(CodeGenNode node, int level) {
+	private String getTreeRecursive(CodeGenNode node, int level, String str) {
 		String indent = "";
 		for (int i=0; i<level; i++) 
 			indent += "\t";
 		
-		System.out.println(indent + node.toString());
+		str += indent + node.toString() + "\n";
 		
 		if (node.getChildren().isEmpty())
-			return;
+			return str;
 		
 		for (CodeGenNode child : node.getChildren()) 
-			printNodesRecursive(child, level + 1);
+			str = getTreeRecursive(child, level + 1, str);
+					
+		return str;
 	}
 }
