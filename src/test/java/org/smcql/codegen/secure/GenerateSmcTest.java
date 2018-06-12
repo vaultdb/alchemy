@@ -38,14 +38,14 @@ public class GenerateSmcTest extends BaseTest {
 		logger.log(Level.INFO, "Parsing " + sql);
 		
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
-		//Insert new query compiler here
+	
 		//compiles code to a couple of cpp files that will be sent to alice & bob for execution
 		CodeCompiler cc = new CodeCompiler(secRoot);
 		cc.compile(Utilities.getCodeGenTarget() + "/" + testName);
 		System.out.println("Query: " + testName.toUpperCase());
 		cc.printNodes();
-		System.out.println("\nEMP Code:");
-		cc.printEmpCode();
+		//System.out.println("\nEMP Code:");
+		//cc.printEmpCode();
 		/*
 		QueryCompiler qc = new QueryCompiler(secRoot);
 		qc.writeToDisk();

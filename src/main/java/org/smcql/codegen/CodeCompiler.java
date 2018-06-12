@@ -31,12 +31,11 @@ public class CodeCompiler {
 		if (parent == null) {
 			rootNode = curNode;
 		} else {
-			rootNode.addChild(curNode);
+			parent.addChild(curNode);
 		}			
 					
 		for(Operator child : op.getSources()) {
-			if (!child.getSources().isEmpty())
-				compileSteps(child, curNode);			
+			compileSteps(child, curNode);			
 		}
 	}
 	
