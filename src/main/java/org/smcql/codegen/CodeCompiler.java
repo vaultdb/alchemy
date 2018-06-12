@@ -55,7 +55,8 @@ public class CodeCompiler {
 	}
 	
 	private void insertPublicNode(Operator op, CodeGenNode parent) {
-		Operator publicOp = (op.getParent().isSplittable()) ? op.getParent() : op;
+		Operator effectiveParent = parent.getOperators().get(0);
+		Operator publicOp = (effectiveParent.isSplittable()) ? effectiveParent : op;
 		MergeNode merge = new MergeNode(publicOp);
 		parent.addChild(merge);
 		parent = merge;
