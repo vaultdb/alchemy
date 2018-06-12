@@ -13,6 +13,8 @@ public class EmpGenerator {
 	public static String getEmpCode(CodeGenNode node) throws IOException {
 		Map<String, String> variables = new HashMap<String, String>();
 		
+		//TODO: make sure that projects are taken care of first
+		
 		variables.put("db_name_1", "healthlnk_site1");
 		variables.put("db_name_2", "healthlnk_site2");
 		variables.put("user", "smcql");

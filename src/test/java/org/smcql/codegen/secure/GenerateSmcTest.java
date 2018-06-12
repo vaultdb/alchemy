@@ -44,6 +44,8 @@ public class GenerateSmcTest extends BaseTest {
 		cc.compile(Utilities.getCodeGenTarget() + "/" + testName);
 		System.out.println("Query: " + testName.toUpperCase());
 		cc.printNodes();
+		//System.out.println("Source SQL:");
+		//cc.printSourceSQL();
 		//System.out.println("\nEMP Code:");
 		//cc.printEmpCode();
 		/*

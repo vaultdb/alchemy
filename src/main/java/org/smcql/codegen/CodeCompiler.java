@@ -4,7 +4,9 @@ import org.smcql.codegen.operators.CodeGenNode;
 import org.smcql.codegen.operators.MergeNode;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.SecureRelRoot;
+import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Operator;
+import org.smcql.plan.operator.Project;
 
 public class CodeCompiler {
 	private SecureRelRoot queryPlan;
@@ -17,10 +19,9 @@ public class CodeCompiler {
 	
 	public void compile(String destination) throws Exception {
 		compileSteps(queryPlan.getPlanRoot(), null);
-		//emit public and private code to destination
+		//TODO: emit public and private code to destination
 	}
 	
-	//TODO: handle pushing filters up
 	private void compileSteps(Operator op, CodeGenNode parent) throws Exception {	
 		if (op.getExecutionMode() == ExecutionMode.Plain) {
 			insertPublicNode(op, parent);
@@ -35,9 +36,24 @@ public class CodeCompiler {
 		}			
 					
 		for(Operator child : op.getSources()) {
+			child = fuseOperator(child, curNode);
 			compileSteps(child, curNode);			
 		}
 	}
+	
+	private Operator fuseOperator(Operator op, CodeGenNode node) throws Exception {
+		Operator cur = op;
+		while (cur instanceof Filter || cur instanceof Project) {
+			node.addOperator(cur);
+			
+			if (cur.getChildren().size() > 1)
+				throw new Exception("Cannot fuse operators with multiple children");
+			
+			cur = cur.getChild(0);
+		}
+		return cur;
+	}
+	
 	
 	private void insertPublicNode(Operator op, CodeGenNode parent) {
 		Operator publicOp = (op.getParent().isSplittable()) ? op.getParent() : op;
@@ -47,15 +63,28 @@ public class CodeCompiler {
 		parent.addChild(new CodeGenNode(publicOp, true));
 	}
 	
+	public void printSourceSQL() throws Exception {
+		printSourceSQLRecursive(rootNode);
+	}
+	
+	private void printSourceSQLRecursive(CodeGenNode node) throws Exception {
+		if (node.getChildren().isEmpty())
+			System.out.println(node.generateSQL());
+			
+		for (CodeGenNode child : node.getChildren()) {
+			printSourceSQLRecursive(child);
+		}
+	}
+	
 	public void printEmpCode() throws Exception {
 		System.out.println(rootNode.generateSMC());
 	}
 	
 	public void printNodes() {
-		printRecursive(rootNode, 0);
+		printNodesRecursive(rootNode, 0);
 	}
 	
-	private void printRecursive(CodeGenNode node, int level) {
+	private void printNodesRecursive(CodeGenNode node, int level) {
 		String indent = "";
 		for (int i=0; i<level; i++) 
 			indent += "\t";
@@ -66,6 +95,6 @@ public class CodeCompiler {
 			return;
 		
 		for (CodeGenNode child : node.getChildren()) 
-			printRecursive(child, level + 1);
+			printNodesRecursive(child, level + 1);
 	}
 }

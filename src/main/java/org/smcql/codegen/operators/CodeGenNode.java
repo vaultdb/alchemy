@@ -34,7 +34,8 @@ public class CodeGenNode {
 		for (Operator op : operators) {
 			Operator cur = op;
 			while (cur instanceof Project) {
-				cur = op.getChild(0);
+				//TODO: insert exception here
+				cur = cur.getChild(0);
 			}
 			
 			return SqlGenerator.getSourceSql(cur);
@@ -54,6 +55,10 @@ public class CodeGenNode {
 		return operators;
 	}
 
+	public void addOperator(Operator op) {
+		operators.add(op);
+	}
+	
 	public CodeGenNode getParent() {
 		return parent;
 	}
