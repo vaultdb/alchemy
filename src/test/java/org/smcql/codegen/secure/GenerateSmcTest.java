@@ -40,7 +40,7 @@ public class GenerateSmcTest extends BaseTest {
 		System.out.println("Query: " + testName.toUpperCase());
 		System.out.println("\nTree:\n" + cc.getTree());
 		System.out.println("\nSource SQL:\n" + cc.getSourceSQL());
-		//System.out.println("\nEMP Code:\n" + cc.getEmpCode());
+		System.out.println("\nEMP Code:\n" + cc.getEmpCode());
 		/*
 		QueryCompiler qc = new QueryCompiler(secRoot);
 		qc.writeToDisk();

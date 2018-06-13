@@ -87,7 +87,7 @@ Integer from_bool(bool* b, int size, int party) {
     return res;
 }
 
-Data* merge(bool * local_data, int bit_length, 
+Data* op_merge(bool * local_data, int bit_length,
 int alice_size, int bob_size, int party) {
     Integer * res = new Integer[alice_size + bob_size];
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)];
@@ -116,7 +116,7 @@ int alice_size, int bob_size, int party) {
         
     return d;
 }
-void aggregate (Data * data) {
+void op_aggregate (Data * data) {
     for (int i = 0; i < data->public_size - 1; ++i) {
         Integer id1(col_length0, data->data[i].bits);
         Integer cnt1(col_length1, data->data[i].bits + col_length0);
@@ -130,8 +130,20 @@ void aggregate (Data * data) {
     }
 }
 
-void s_sort(Data * data) {
+void op_sort(Data * data) {
     bitonic_sort_sql(data->data, 0, data->public_size, Bit(false), col_length0, col_length1);
+}
+
+void op_distinct(Data *data) {
+
+}
+
+void op_join(Data *left, Data *right) {
+
+}
+
+void op_window_aggregate(Data *data) {
+
 }
 
 
@@ -180,24 +192,8 @@ int main(int argc, char** argv) {
 
     std::sort(in.begin(), in.end());
     bool *input = concat(in, row_size);
-
-    io->flush();    
-    auto s = clock_start();
-    Data *res = merge(input, row_size, alice_size, bob_size, party);    
+    $functions
     io->flush();
-    cout << "merge: " << time_from(s) << " us" << endl;
-        
-    s = clock_start();  
-    aggregate(res);
-    io->flush();
-    cout << "aggregate: " << time_from(s) << " us" <<  endl;
-
-    s = clock_start();
-    s_sort(res);
-    io->flush();
-    cout << "sort: " << time_from(s) << " us" << endl;
-    io->flush();
-
     for (int i=0; i<res->public_size; i++) {
         if (i==0 && party == BOB)
             cout << "\nOutput:" << endl;

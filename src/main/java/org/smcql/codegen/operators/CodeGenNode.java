@@ -40,6 +40,7 @@ public class CodeGenNode {
 			op = op.getParent();
 		}
 		
+		//TODO: make a more permanent fix for src sql generation
 		op = (op instanceof WindowAggregate) ? op.getChild(0) : op;
 		
 		return SqlGenerator.getSourceSql(op);
