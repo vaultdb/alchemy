@@ -1,5 +1,8 @@
 package org.smcql.codegen.secure;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 import org.smcql.BaseTest;
 import org.smcql.codegen.CodeCompiler;
 import org.smcql.config.SystemConfiguration;
@@ -37,10 +40,7 @@ public class GenerateSmcTest extends BaseTest {
 		System.out.println("Query: " + testName.toUpperCase());
 		System.out.println("\nTree:\n" + cc.getTree());
 		System.out.println("\nSource SQL:\n" + cc.getSourceSQL());
-		//System.out.println("Source SQL:");
-		// cc.printSourceSQL();
-		//System.out.println("\nEMP Code:");
-		//cc.printEmpCode();
+		//System.out.println("\nEMP Code:\n" + cc.getEmpCode());
 		/*
 		QueryCompiler qc = new QueryCompiler(secRoot);
 		qc.writeToDisk();
@@ -53,6 +53,27 @@ public class GenerateSmcTest extends BaseTest {
 		String expectedDir = Utilities.getSMCQLRoot() + "/src/test/java/org/smcql/plan/operators/codegen/expected/" + testName;
 		String observedDir = Utilities.getCodeGenTarget() + "/" + testName;
 		assertEquals(true, Utilities.dirsEqual(expectedDir, observedDir));*/
+	}
+	
+	private String executeCommand(String command) {
+
+		StringBuffer output = new StringBuffer();
+
+		Process p;
+		try {
+			p = Runtime.getRuntime().exec(command);
+			p.waitFor();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line = "";			
+			while ((line = reader.readLine())!= null) {
+				output.append(line + "\n");
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return output.toString();
 	}
 	
 }

@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.smcql.codegen.emp.EmpGenerator;
 import org.smcql.codegen.sql.SqlGenerator;
+import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Project;
+import org.smcql.plan.operator.WindowAggregate;
 
 public class CodeGenNode {
 	private List<Operator> operators;
@@ -31,17 +33,16 @@ public class CodeGenNode {
 		if (!isPublic)
 			throw new Exception("Cannot generate SQL for non-public node");
 		
-		for (Operator op : operators) {
-			Operator cur = op;
-			while (cur instanceof Project) {
-				//TODO: insert exception here
-				cur = cur.getChild(0);
-			}
-			
-			return SqlGenerator.getSourceSql(cur);
+		Operator op = operators.get(0);
+		
+		//TODO: check that this doesn't violate security policy
+		while (op.getParent() instanceof Project || op.getParent() instanceof Filter) {
+			op = op.getParent();
 		}
 		
-		throw new Exception("Failed to generate SQL for step");
+		op = (op instanceof WindowAggregate) ? op.getChild(0) : op;
+		
+		return SqlGenerator.getSourceSql(op);
 	}
 	
 	public String generateSMC() throws Exception {
