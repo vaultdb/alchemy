@@ -28,12 +28,14 @@ public class EmpGenerator {
 		variables.put("col_length_1", "64");
 		
 		//traverse tree
-		getCode(node, functions, srcSQL);
+		getCode(node, functions, srcSQL, "res_0");
 		
 		//variables
-		for (String src : srcSQL) {
-			variables.put("src_sql", src);
+		String s = "";
+		for (int i=0; i<srcSQL.size(); i++) {
+			s += "string sql_query_" + i + " = \"" + srcSQL.get(i) + "\";\n";
 		}
+		variables.put("src_sql", s);
 		
 		//functions
 		//TODO: make sure that projects are taken care of first
@@ -49,32 +51,47 @@ public class EmpGenerator {
 	}
 	
 	
-	private static void getCode(CodeGenNode node, List<String> functions, List<String> srcSQL) throws Exception {
+	private static void getCode(CodeGenNode node, List<String> functions, List<String> srcSQL, String varName) throws Exception {
 		if (node.isPublic()) {
 			srcSQL.add(node.generateSQL().replace("\n", " "));
 			return;
 		}
 	
-		for (CodeGenNode child : node.getChildren()) 
-			getCode(child, functions, srcSQL);
+		for (int i=0; i< node.getChildren().size(); i++) {
+			int index = Character.getNumericValue(varName.charAt(varName.length()-1)) + i;
+			String name = varName.substring(0, varName.length()-1) + index;
+			getCode(node.getChildren().get(i), functions, srcSQL, name);
+		}
 		
-		functions.add(getFunction(node));
+		functions.add(getFunction(node, varName));
 	}
 	
-	private static String getFunction(CodeGenNode node) throws Exception {
+	private static String getFunction(CodeGenNode node, String varName) throws Exception {
 		String opName = (node instanceof MergeNode) ? "Merge" : node.getOperators().get(0).getOpName();
 		String result = "";
 		
-		//TODO: add more operators
 		switch (opName) {
 			case "Sort": 
-				result = "op_sort(res);";
+				result = "op_sort(" + varName + ");";
 				break;
 			case "Aggregate": 
-				result = "op_aggregate(res);";
+				result = "op_aggregate(" + varName + ");";
+				break;
+			case "WindowAggregate":
+				result = "op_window_aggregate(" + varName + ");";
+				break;
+			case "Distinct":
+				result = "op_distinct(" + varName + ");";
+				break;
+			case "Join":
+				//TODO: handle self join
+				String rightName = varName.substring(0, varName.length()-1);
+				rightName += (Character.getNumericValue(varName.charAt(varName.length()-1)) + 1);
+				result = varName + " = op_join(" + varName + ", " + rightName +");";
 				break;
 			case "Merge":
-				result = "Data *res = op_merge(input, row_size, alice_size, bob_size, party);";
+				int index = Character.getNumericValue(varName.charAt(varName.length()-1));
+				result = "Data *" + varName + " = op_merge(sql_query_" + index + ", row_size, alice_size, bob_size, party);";
 				break;
 			default: 
 				throw new Exception("Unsupported operator " + opName);

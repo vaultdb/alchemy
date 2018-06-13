@@ -14,7 +14,7 @@ string host_db = "$db_host_addr";
 string port_db = "$db_port";
 
 // Plaintext Query
-string sql_query = "$src_sql";
+$src_sql
 
 // Generated variables
 int row_size = $row_size;     //compile time
@@ -87,8 +87,12 @@ Integer from_bool(bool* b, int size, int party) {
     return res;
 }
 
-Data* op_merge(bool * local_data, int bit_length,
+Data* op_merge(string sql, int bit_length,
 int alice_size, int bob_size, int party) {
+	std::vector<Row> in = execute_sql(sql_query, party);
+	std::sort(in.begin(), in.end());
+	bool *local_data = concat(in, row_size);
+
     Integer * res = new Integer[alice_size + bob_size];
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)];
     for (int i = 0; i < alice_size; ++i)
@@ -186,19 +190,13 @@ int main(int argc, char** argv) {
     NetIO * io = new NetIO(party==ALICE ? nullptr : "127.0.0.1", port);
 
     setup_semi_honest(io, party);
-    std::vector<Row> in = execute_sql(sql_query, party);
-
-    cout << "Fetched " << in.size() << " rows." << endl;
-
-    std::sort(in.begin(), in.end());
-    bool *input = concat(in, row_size);
     $functions
     io->flush();
-    for (int i=0; i<res->public_size; i++) {
+    for (int i=0; i<res_0->public_size; i++) {
         if (i==0 && party == BOB)
             cout << "\nOutput:" << endl;
 
-        string val = reveal_bin(res->data[i], row_size, PUBLIC);
+        string val = reveal_bin(res_0->data[i], row_size, PUBLIC);
         string icd9 = val.substr(0, col_length0);
         string cnt = val.substr(col_length0, col_length1);
         
