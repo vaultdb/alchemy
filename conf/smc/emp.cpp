@@ -6,6 +6,12 @@ using namespace emp;
 using namespace std;
 using namespace pqxx;
 
+// Constants
+#define OID_STRING 1043
+#define LENGTH_STRING 256
+#define OID_INT 20
+#define LENGTH_INT 64
+
 // Connection variables
 string alice_db = "$db_name_1";
 string bob_db = "$db_name_2";
@@ -16,13 +22,15 @@ string port_db = "$db_port";
 // Plaintext Query
 $src_sql
 
-// Generated variables
-int row_size = $row_size;     //compile time
+
 int alice_size = 159;   //run time
 int bob_size = 591; //run time
+
+// Generated variables
+int initial_row_size = $row_size;     //compile time
 int limit = $limit;     //compile time
-int col_length0 = $col_length_0;  //compile time
-int col_length1 = $col_length_1;   //compile time
+int output_col_length0 = $col_length_0;  //compile time
+int output_col_length1 = $col_length_1;   //compile time
 
 // Helper functions
 string reveal_bin(Integer &input, int length, int output_party) {
@@ -73,6 +81,50 @@ bool *concat(std::vector<Row> rows, int row_size) {
     return result;
 }
 
+// DB connection functions
+std::vector<Row> execute_sql(string sql, int party) {
+    std::vector<Row> res;
+    try {
+        string db = (party == ALICE) ? alice_db : bob_db;
+        string config= "dbname = " + db + " user = " + user_db + " host = " + host_db + " port = " + port_db;
+        connection C(config);
+
+        if (C.is_open()) {
+                cout << "Opened database successfully: " << C.dbname() << endl;
+                work w(C);
+            result r = w.exec(sql);
+            w.commit();
+
+            for (auto row : r) {
+            	const int num_cols = row.size();
+            	vector<int>lengths;
+            	string bin_str = "";
+            	for (int j=0; j<num_cols; j++) {
+            		const pqxx::field field = row[j];
+            		int oid = field.type();
+            		if (oid == OID_STRING) {
+            			lengths.push_back(LENGTH_STRING);
+            			bin_str += str_to_binary(row[j].as<string>(), LENGTH_STRING);
+            		} else if (oid == OID_INT) {
+            			lengths.push_back(LENGTH_INT);
+            			bin_str += int64_to_binstr(row[j].as<int64_t>());
+            		} else {
+            			throw "Unsupported data type in column";
+            		}
+            	}
+            	res.push_back(Row(bin_str, lengths));
+            }
+        } else {
+                cout << "Can't open database" << endl;
+            }
+            C.disconnect();
+    } catch (const std::exception &e) {
+            cerr << e.what() << std::endl;
+    }
+
+    return res;
+}
+
 // Operator functions
 class Data {public:
     Integer * data;
@@ -87,8 +139,7 @@ Integer from_bool(bool* b, int size, int party) {
     return res;
 }
 
-Data* op_merge(string sql, int bit_length,
-int alice_size, int bob_size, int party) {
+Data* op_merge(string sql, int bit_length, int alice_size, int bob_size, int party) {
 	std::vector<Row> in = execute_sql(sql_query, party);
 	std::sort(in.begin(), in.end());
 	bool *local_data = concat(in, row_size);
@@ -150,39 +201,6 @@ void op_window_aggregate(Data *data) {
 
 }
 
-
-// DB connection functions
-std::vector<Row> execute_sql(string sql, int party) {
-    std::vector<Row> res;
-    try {
-        string db = (party == ALICE) ? alice_db : bob_db;
-        string config= "dbname = " + db + " user = " + user_db + " host = " + host_db + " port = " + port_db;
-        connection C(config);
-
-        if (C.is_open()) {
-                cout << "Opened database successfully: " << C.dbname() << endl;
-                work w(C);
-            result r = w.exec(sql);
-            w.commit();
-
-            for (auto row : r) {
-                string col0 = str_to_binary(row[0].as<string>(), col_length0);      
-                string col1 = int64_to_binstr(row[1].as<int64_t>());
-
-                vector<int> lengths{col_length0, col_length1};
-                res.push_back(Row(col0 + col1, lengths));
-            }           
-        } else {
-                cout << "Can't open database" << endl;
-            }   
-            C.disconnect();
-    } catch (const std::exception &e) {
-            cerr << e.what() << std::endl;
-    }
-
-    return res;
-}
-
 // Main execution
 int main(int argc, char** argv) {
     int port, party;
@@ -196,12 +214,13 @@ int main(int argc, char** argv) {
         if (i==0 && party == BOB)
             cout << "\nOutput:" << endl;
 
-        string val = reveal_bin(res_0->data[i], row_size, PUBLIC);
-        string icd9 = val.substr(0, col_length0);
-        string cnt = val.substr(col_length0, col_length1);
+        string val = reveal_bin(res_0->data[i], initial_row_size, PUBLIC);
+        string col0 = val.substr(0, output_col_length0);
+        reverse(col0.begin(), col0.end());
+        string col1 = val.substr(output_col_length0, output_col_length0 + output_col_length1);
         
         vector<int> lengths{col_length0, col_length1};
-                Row row = Row(icd9 + cnt, lengths);
+        Row row = Row(col0 + col1, lengths);
         
         if (party == ALICE && i < limit)
             cout << row.to_string() << endl;    

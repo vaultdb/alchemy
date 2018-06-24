@@ -23,6 +23,8 @@ public class EmpGenerator {
 		variables.put("db_host_addr", "10.0.2.2");
 		variables.put("db_port", "5432");
 		variables.put("row_size", "320");
+		
+		//TODO: eliminate hard coding
 		variables.put("limit", "10");
 		variables.put("col_length_0", "256");
 		variables.put("col_length_1", "64");
@@ -30,7 +32,7 @@ public class EmpGenerator {
 		//traverse tree
 		getCode(node, functions, srcSQL, "res_0");
 		
-		//variables
+		//source SQL
 		String s = "";
 		for (int i=0; i<srcSQL.size(); i++) {
 			s += "string sql_query_" + i + " = \"" + srcSQL.get(i) + "\";\n";
