@@ -7,6 +7,7 @@ import org.smcql.plan.SecureRelRoot;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Project;
+import org.smcql.util.Utilities;
 
 public class CodeCompiler {
 	private SecureRelRoot queryPlan;
@@ -17,9 +18,11 @@ public class CodeCompiler {
 		rootNode = null;
 	}
 	
-	public void compile(String destination) throws Exception {
+	public void compile(String fileName, String destination) throws Exception {
 		compileSteps(queryPlan.getPlanRoot(), null);
-		//TODO: emit public and private code to destination
+		
+		Utilities.cleanDir(destination);
+		Utilities.writeFile(destination + "/" + fileName, getEmpCode());
 	}
 	
 	private void compileSteps(Operator op, CodeGenNode parent) throws Exception {	
