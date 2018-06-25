@@ -18,8 +18,14 @@ public class CodeCompiler {
 		rootNode = null;
 	}
 	
-	public void compile(String fileName, String destination) throws Exception {
+	public String compile() throws Exception {
 		compileSteps(queryPlan.getPlanRoot(), null);
+		return this.getEmpCode();
+	}
+	
+	public void writeToDisk(String fileName, String destination) throws Exception {
+		if (rootNode == null)
+			throw new Exception("Cannot write uncompiled code!");
 		
 		Utilities.cleanDir(destination);
 		Utilities.writeFile(destination + "/" + fileName, getEmpCode());

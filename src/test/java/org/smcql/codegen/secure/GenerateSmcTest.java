@@ -36,19 +36,13 @@ public class GenerateSmcTest extends BaseTest {
 	
 		//compiles code to a couple of cpp files that will be sent to alice & bob for execution
 		CodeCompiler cc = new CodeCompiler(secRoot);
-		cc.compile(testName + ".cpp", Utilities.getCodeGenTarget() + "/" + testName);
+		cc.compile();
+		cc.writeToDisk(testName + ".cpp", Utilities.getCodeGenTarget() + "/" + testName);
 		System.out.println("Query: " + testName.toUpperCase());
 		System.out.println("\nTree:\n" + cc.getTree());
 		System.out.println("\nSource SQL:\n" + cc.getSourceSQL());
 		System.out.println("\nEMP Code:\n" + cc.getEmpCode());
 		/*
-		QueryCompiler qc = new QueryCompiler(secRoot);
-		qc.writeToDisk();
-		
-		ExecutionStep root = qc.getRoot();
-		String testTree = root.printTree();
-		logger.log(Level.INFO, "Resolved secure tree to:\n " + testTree);
-		
 		testName = testName.replace("-", "_");
 		String expectedDir = Utilities.getSMCQLRoot() + "/src/test/java/org/smcql/plan/operators/codegen/expected/" + testName;
 		String observedDir = Utilities.getCodeGenTarget() + "/" + testName;
