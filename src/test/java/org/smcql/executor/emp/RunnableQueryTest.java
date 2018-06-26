@@ -25,7 +25,8 @@ public class RunnableQueryTest extends BaseTest {
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		
 		CodeCompiler cc = new CodeCompiler(secRoot);
-		String empCode = cc.compile();		
+		String empCode = cc.compile();
+		System.out.println(empCode);
 		cc.writeToDisk("smcql.cpp", Utilities.getSMCQLRoot()+ "/bin/");
 		EMPQueryExecutor exec = new EMPQueryExecutor(empCode, parties);
 		exec.run();

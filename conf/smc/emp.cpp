@@ -29,8 +29,8 @@ int bob_size = 591; //run time
 // Generated variables
 int initial_row_size = $row_size;     //compile time
 int limit = $limit;     //compile time
-int output_col_length0 = $col_length_0;  //compile time
-int output_col_length1 = $col_length_1;   //compile time
+int col_length0 = $col_length_0;  //compile time
+int col_length1 = $col_length_1;   //compile time
 
 // Helper functions
 string reveal_bin(Integer &input, int length, int output_party) {
@@ -140,9 +140,9 @@ Integer from_bool(bool* b, int size, int party) {
 }
 
 Data* op_merge(string sql, int bit_length, int alice_size, int bob_size, int party) {
-	std::vector<Row> in = execute_sql(sql_query, party);
+	std::vector<Row> in = execute_sql(sql, party);
 	std::sort(in.begin(), in.end());
-	bool *local_data = concat(in, row_size);
+	bool *local_data = concat(in, initial_row_size);
 
     Integer * res = new Integer[alice_size + bob_size];
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)];
@@ -215,9 +215,9 @@ int main(int argc, char** argv) {
             cout << "\nOutput:" << endl;
 
         string val = reveal_bin(res_0->data[i], initial_row_size, PUBLIC);
-        string col0 = val.substr(0, output_col_length0);
+        string col0 = val.substr(0, col_length0);
         reverse(col0.begin(), col0.end());
-        string col1 = val.substr(output_col_length0, output_col_length0 + output_col_length1);
+        string col1 = val.substr(col_length0, col_length0 + col_length1);
         
         vector<int> lengths{col_length0, col_length1};
         Row row = Row(col0 + col1, lengths);

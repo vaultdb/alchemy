@@ -93,7 +93,7 @@ public class EmpGenerator {
 				break;
 			case "Merge":
 				int index = Character.getNumericValue(varName.charAt(varName.length()-1));
-				result = "Data *" + varName + " = op_merge(sql_query_" + index + ", row_size, alice_size, bob_size, party);";
+				result = "Data *" + varName + " = op_merge(sql_query_" + index + ", initial_row_size, alice_size, bob_size, party);";
 				break;
 			default: 
 				throw new Exception("Unsupported operator " + opName);

@@ -120,6 +120,7 @@ public class EMPQueryExecutor implements Runnable {
 		return true;
 	}
 	
+	//TODO: Remove hard-coding
 	@Override
 	public void run() {
 		//String code = this.empCode;
@@ -130,10 +131,7 @@ public class EMPQueryExecutor implements Runnable {
 		List<String> results = cloud.node("**").massExec(new Callable<String>() {
 			@Override
 			public String call() throws Exception {
-				
-				String result = executeCommand("./empsql.sh test/smcql.cpp");
-				
-				return result;
+				return executeCommand("./empsql.sh test/smcql.cpp");
 			}
 			
 			private String executeCommand(String command) {
