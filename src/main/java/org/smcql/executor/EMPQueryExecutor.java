@@ -1,18 +1,22 @@
 package org.smcql.executor;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.gridkit.nanocloud.Cloud;
 import org.gridkit.nanocloud.CloudFactory;
 import org.gridkit.nanocloud.RemoteNode;
-import org.gridkit.nanocloud.VX;
 import org.gridkit.nanocloud.telecontrol.ssh.SshSpiConf;
 import org.gridkit.vicluster.ViNode;
-import org.gridkit.vicluster.ViProps;
 import org.gridkit.vicluster.telecontrol.Classpath;
 import org.gridkit.vicluster.telecontrol.ssh.RemoteNodeProps;
 import org.smcql.config.SystemConfiguration;
@@ -20,8 +24,6 @@ import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.smc.SecureBufferPool;
 import org.smcql.util.Utilities;
-
-import com.oblivm.backend.flexsc.Party;
 
 
 public class EMPQueryExecutor implements Runnable {
@@ -106,17 +108,48 @@ public class EMPQueryExecutor implements Runnable {
          throw new Exception("Jar not found!");
     }
 	
+	private boolean copyFile(String source, String destination) {
+		CommandLine l = CommandLine.parse("scp " + source + " " + destination);
+		DefaultExecutor e = new DefaultExecutor();
+		try {
+			e.execute(l);
+		} catch (Exception ex) {
+			System.out.println("Failed to copy file");
+			return false;
+		}
+		return true;
+	}
+	
 	@Override
 	public void run() {
+		//String code = this.empCode;
+		boolean success = copyFile(Utilities.getSMCQLRoot() + "/bin/smcql.cpp", "johesbater@ubuntu:~/Projects/emp/empsql/test");
+		if (!success)
+			return;
+		
 		List<String> results = cloud.node("**").massExec(new Callable<String>() {
 			@Override
 			public String call() throws Exception {
-				String workerId = System.getProperty("workerId");
 				
-				//JSCH stuff here
+				String result = executeCommand("./empsql.sh test/smcql.cpp");
 				
-				
-				return "WorkerID: " + workerId + ". To be initialized!";
+				return result;
+			}
+			
+			private String executeCommand(String command) {
+				try {
+					ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+			        PumpStreamHandler psh = new PumpStreamHandler(stdout);
+
+			        CommandLine cl = CommandLine.parse(command);
+
+			        DefaultExecutor exec = new DefaultExecutor();
+			        exec.setStreamHandler(psh);
+			        exec.execute(cl);
+					return stdout.toString();					
+				} catch (Exception e) {
+					return "Failed to execute command";
+				}
 			}
 		});
 		

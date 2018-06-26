@@ -8,6 +8,7 @@ import org.smcql.codegen.CodeCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.EMPQueryExecutor;
 import org.smcql.plan.SecureRelRoot;
+import org.smcql.util.Utilities;
 
 public class RunnableQueryTest extends BaseTest {
 	
@@ -25,6 +26,7 @@ public class RunnableQueryTest extends BaseTest {
 		
 		CodeCompiler cc = new CodeCompiler(secRoot);
 		String empCode = cc.compile();		
+		cc.writeToDisk("smcql.cpp", Utilities.getSMCQLRoot()+ "/bin/");
 		EMPQueryExecutor exec = new EMPQueryExecutor(empCode, parties);
 		exec.run();
 	}
