@@ -31,7 +31,7 @@ public class EMPQueryExecutor implements Runnable {
 	Cloud cloud;
 	
 	public EMPQueryExecutor(String empCode, List<String> parties) throws Exception {
-		if (workers.size() > 2) 
+		if (parties.size() > 2) 
 			throw new Exception("SMCQL does not support execution for more than two parties!");
 		
 		this.empCode = empCode;		
@@ -51,8 +51,7 @@ public class EMPQueryExecutor implements Runnable {
 		WorkerConfiguration aliceWorker = workers.get(0);
 		WorkerConfiguration bobWorker = workers.get(1);
 		
-		System.out.println("Executing query on workers: " + aliceWorker + "(" + aliceWorker.hostname 
-				+ ") and " + bobWorker + "(" + bobWorker.hostname + ")");
+		System.out.println("Executing query on workers: " + aliceWorker + " and " + bobWorker);
 		
 		cloud = CloudFactory.createCloud();
 		RemoteNode.at(cloud.node("**")).useSimpleRemoting();
@@ -95,7 +94,7 @@ public class EMPQueryExecutor implements Runnable {
 		
 		ViNode cloudHost = cloud.node(workerId);
 		
-		 RemoteNodeProps.at(cloudHost).setRemoteHost(host);
+		RemoteNodeProps.at(cloudHost).setRemoteHost(host);
 		
 		cloudHost.setProp(SshSpiConf.SPI_JAR_CACHE, remotePath);
 

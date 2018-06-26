@@ -2,3 +2,4 @@
 #workerName=host:psqlPort,db name,smcql id (must be distinct, internal use)
 testDB1=localhost:5432,smcql_testdb_site1,1
 testDB2=localhost:5432,smcql_testdb_site2,2
+emp=ubuntu:5432,smcql_testdb_site1,1
