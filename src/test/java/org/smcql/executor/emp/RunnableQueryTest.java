@@ -10,25 +10,21 @@ import org.smcql.executor.EMPQueryExecutor;
 import org.smcql.plan.SecureRelRoot;
 
 public class RunnableQueryTest extends BaseTest {
-	public String aWorkerId = "emp";
-	public String bWorkerId = "emp";
-
+	
 	public void testComorbidity() throws Exception {
 		String testName = "comorbidity";
-		executeTest(testName);
+		List<String> parties = new ArrayList<String>();
+		parties.add("emp");
+		executeTest(testName, parties);
 	}
 	
-	public void executeTest(String testName) throws Exception {
+	public void executeTest(String testName, List<String> parties) throws Exception {
 		SystemConfiguration.getInstance().resetCounters();
 		String sql = super.readSQL(testName);
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		
 		CodeCompiler cc = new CodeCompiler(secRoot);
-		String empCode = cc.compile();
-		List<String> parties = new ArrayList<String>();
-		parties.add(aWorkerId);
-		parties.add(bWorkerId);
-		
+		String empCode = cc.compile();		
 		EMPQueryExecutor exec = new EMPQueryExecutor(empCode, parties);
 		exec.run();
 	}

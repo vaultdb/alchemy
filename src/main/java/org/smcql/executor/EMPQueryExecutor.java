@@ -27,7 +27,6 @@ import com.oblivm.backend.flexsc.Party;
 public class EMPQueryExecutor implements Runnable {
 	String empCode;
 	String remotePath;
-	List<WorkerConfiguration> workers;
 	Cloud cloud;
 	
 	public EMPQueryExecutor(String empCode, List<String> parties) throws Exception {
@@ -35,7 +34,7 @@ public class EMPQueryExecutor implements Runnable {
 			throw new Exception("SMCQL does not support execution for more than two parties!");
 		
 		this.empCode = empCode;		
-		this.workers = new ArrayList<WorkerConfiguration>();
+		List<WorkerConfiguration> workers = new ArrayList<WorkerConfiguration>();
 		
 		for (String workerId : parties) 
 			workers.add(ConnectionManager.getInstance().getWorker(workerId));
@@ -44,21 +43,17 @@ public class EMPQueryExecutor implements Runnable {
 		if(remotePath == null)
 			remotePath = "/tmp/smcql";
 		
-		prepareWorkers();
+		prepareWorkers(workers);
 	}
 	
-	private void prepareWorkers() throws Exception {
-		WorkerConfiguration aliceWorker = workers.get(0);
-		WorkerConfiguration bobWorker = workers.get(1);
-		
-		System.out.println("Executing query on workers: " + aliceWorker + " and " + bobWorker);
-		
+	private void prepareWorkers(List<WorkerConfiguration> workers) throws Exception {
 		cloud = CloudFactory.createCloud();
 		RemoteNode.at(cloud.node("**")).useSimpleRemoting();
-
-		//initialize hosts
-		initializeHost(aliceWorker);
-		initializeHost(bobWorker);
+		
+		for (WorkerConfiguration w : workers) {
+			System.out.println("Executing query on worker: " + w);
+			initializeHost(w);	
+		}
 		
 		String bufferPoolPointers = SecureBufferPool.getInstance().getPointers();
 		
@@ -66,16 +61,8 @@ public class EMPQueryExecutor implements Runnable {
 		cloud.node("**").setProp("smcql.setup.str", getSetupParameters());
 		cloud.node("**").setProp("smcql.connections.str", getConnectionParameters());
 		cloud.node("**").setProp("smcql.root", "");
-
-		// configure Alice and Bob
-		cloud.node(aliceWorker.workerId).setProp("party", "gen");
-		cloud.node(aliceWorker.workerId).setProp("workerId", aliceWorker.workerId);
-		   
-		cloud.node(bobWorker.workerId).setProp("party", "eva");
-		cloud.node(bobWorker.workerId).setProp("workerId", bobWorker.workerId);
-
-		cloud.node("**").touch();
 		
+		cloud.node("**").touch();
 		cloud.node("**").massExec(new Callable<Void>() {
 
             @Override
@@ -92,16 +79,10 @@ public class EMPQueryExecutor implements Runnable {
 		String host = worker.hostname;
 		String workerId = worker.workerId;
 		
-		ViNode cloudHost = cloud.node(workerId);
-		
+		ViNode cloudHost = cloud.node(workerId);		
 		RemoteNodeProps.at(cloudHost).setRemoteHost(host);
-		
 		cloudHost.setProp(SshSpiConf.SPI_JAR_CACHE, remotePath);
-
-		if(host.equalsIgnoreCase("localhost")) {
-			cloudHost.x(VX.TYPE).setLocal();
-			ViProps.at(cloudHost).setIsolateType(); // enable debugger
-		}
+		cloud.node(worker.workerId).setProp("workerId", worker.workerId);
 	}
 	
 	private String getSetupParameters() throws Exception {
@@ -130,17 +111,17 @@ public class EMPQueryExecutor implements Runnable {
 		List<String> results = cloud.node("**").massExec(new Callable<String>() {
 			@Override
 			public String call() throws Exception {
-				Party party = (System.getProperty("party").equals("gen")) ? Party.Alice : Party.Bob;
 				String workerId = System.getProperty("workerId");
 				
 				//JSCH stuff here
 				
 				
-				return "To be initialized!";
+				return "WorkerID: " + workerId + ". To be initialized!";
 			}
 		});
 		
-		System.out.println(results.get(0));
+		for (String result : results)
+			System.out.println(result);
 	}
 
 }
