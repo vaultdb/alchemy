@@ -131,7 +131,7 @@ public class EMPQueryExecutor implements Runnable {
 		List<String> results = cloud.node("**").massExec(new Callable<String>() {
 			@Override
 			public String call() throws Exception {
-				return executeCommand("./empsql.sh test/smcql.cpp");
+				return executeCommand("/home/johesbater/Projects/emp/empsql/exec.sh");
 			}
 			
 			private String executeCommand(String command) {

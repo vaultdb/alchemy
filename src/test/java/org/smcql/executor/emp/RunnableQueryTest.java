@@ -19,6 +19,13 @@ public class RunnableQueryTest extends BaseTest {
 		executeTest(testName, parties);
 	}
 	
+	public void testCDiff() throws Exception {
+		String testName = "cdiff";
+		List<String> parties = new ArrayList<String>();
+		parties.add("emp");
+		executeTest(testName, parties);
+	}
+	
 	public void executeTest(String testName, List<String> parties) throws Exception {
 		SystemConfiguration.getInstance().resetCounters();
 		String sql = super.readSQL(testName);
@@ -29,6 +36,6 @@ public class RunnableQueryTest extends BaseTest {
 		System.out.println(empCode);
 		cc.writeToDisk("smcql.cpp", Utilities.getSMCQLRoot()+ "/bin/");
 		EMPQueryExecutor exec = new EMPQueryExecutor(empCode, parties);
-		exec.run();
+		//exec.run();
 	}
 }

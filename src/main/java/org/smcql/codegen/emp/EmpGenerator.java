@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.smcql.codegen.operators.CodeGenNode;
 import org.smcql.codegen.operators.MergeNode;
+import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.CodeGenUtils;
 
 public class EmpGenerator {
@@ -68,22 +69,51 @@ public class EmpGenerator {
 		functions.add(getFunction(node, varName));
 	}
 	
+	private static String getCols(CodeGenNode node, String opName) {
+		if (opName.equals("Join")) {
+			return ""; //TODO: implement this
+		}
+		
+		String result = "vector<int> input_col_lengths{";
+		SecureRelRecordType inSchema = node.getOperators().get(0).getInSchema();
+		for (int i=0; i<inSchema.getAttributes().size(); i++) {
+			if (i!=0)
+				result += ", ";
+			
+			result += inSchema.getAttributes().get(i).size();
+		}
+		result += "};\n";
+		
+		
+		result += "    vector<int> output_col_lengths{";
+		SecureRelRecordType outSchema = node.getOperators().get(0).getSchema();
+		for (int i=0; i<outSchema.getAttributes().size(); i++) {
+			if (i!=0)
+				result += ", ";
+			
+			result += outSchema.getAttributes().get(i).size();
+		}
+		result += "};\n";
+		
+		return result;
+	}
+	
 	private static String getFunction(CodeGenNode node, String varName) throws Exception {
 		String opName = (node instanceof MergeNode) ? "Merge" : node.getOperators().get(0).getOpName();
-		String result = "";
+		String result = getCols(node, opName);
 		
 		switch (opName) {
-			case "Sort": 
-				result = "op_sort(" + varName + ");";
+			case "Sort":
+				result += "    op_sort(" + varName + ", input_col_lengths, output_col_lengths);";
 				break;
 			case "Aggregate": 
-				result = "op_aggregate(" + varName + ");";
+				result += "    op_aggregate(" + varName + ", input_col_lengths, output_col_lengths);";
 				break;
 			case "WindowAggregate":
-				result = "op_window_aggregate(" + varName + ");";
+				result += "    op_window_aggregate(" + varName + ", input_col_lengths, output_col_lengths);";
 				break;
 			case "Distinct":
-				result = "op_distinct(" + varName + ");";
+				result += "    op_distinct(" + varName + ", input_col_lengths, output_col_lengths);";
 				break;
 			case "Join":
 				//TODO: handle self join
@@ -93,7 +123,7 @@ public class EmpGenerator {
 				break;
 			case "Merge":
 				int index = Character.getNumericValue(varName.charAt(varName.length()-1));
-				result = "Data *" + varName + " = op_merge(sql_query_" + index + ", initial_row_size, alice_size, bob_size, party);";
+				result += "    Data *" + varName + " = op_merge(sql_query_" + index + ", output_col_lengths, party, io);";
 				break;
 			default: 
 				throw new Exception("Unsupported operator " + opName);
