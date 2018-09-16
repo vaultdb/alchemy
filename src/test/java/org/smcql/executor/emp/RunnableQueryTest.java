@@ -36,6 +36,6 @@ public class RunnableQueryTest extends BaseTest {
 		System.out.println(empCode);
 		cc.writeToDisk("smcql.cpp", Utilities.getSMCQLRoot()+ "/bin/");
 		EMPQueryExecutor exec = new EMPQueryExecutor(empCode, parties);
-		//exec.run();
+		exec.run();
 	}
 }
