@@ -22,13 +22,14 @@ import org.apache.calcite.util.SerializableCharset;
 import org.apache.commons.lang.CharSet;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.smcql.db.schema.statistics.FieldStatistics;
 import org.smcql.util.Utilities;
 
 // thin wrapper on top of RelDataTypeField for attaching security policy to an attribute
 // how do we call this at schema construction time?
 // create a secure table 
 // instantiate SecureTable where we do "Table table = schema.getTable(tableName);" now
-public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Serializable {
+public class SecureRelDataTypeField<T> extends RelDataTypeFieldImpl implements Serializable {
 
 	/**
 	 * 
@@ -41,7 +42,8 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 
 	SecurityPolicy policy = SecurityPolicy.Private;
 	RelDataTypeField baseField;
-
+	FieldStatistics<T> stats;
+	
 	// both of below are null if field sourced from greater than one attribute
 	// stored in original tables
 	private String storedTable;
@@ -51,13 +53,15 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 	public SecureRelDataTypeField(String name, int index, RelDataType type) {
 		super(name, index, type);
 		filters = new ArrayList<LogicalFilter>();
+		
 	}
 
-	public SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy) {
+	public  SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy) {
 		super(baseField.getName(), baseField.getIndex(), baseField.getType());
 		this.baseField = baseField;
 		policy = secPolicy;
 		filters = new ArrayList<LogicalFilter>();
+		stats = new FieldStatistics<T>(this); 
 	}
 
 	public SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy, String aStoredTable,

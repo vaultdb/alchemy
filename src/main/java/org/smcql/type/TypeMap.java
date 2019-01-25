@@ -87,5 +87,28 @@ public class TypeMap {
 		   return 0;
 	   }
 	   
+	   
+	   
+	   /******* Factories for setting up attributes with statistics *********/
 
+	   public static SecureRelDataTypeField<?> secureRelDataTypeFieldFactory(String name, int index, RelDataType type) {
+		   switch(type.getSqlTypeName()){
+		   	case INTEGER:
+		   	case BIGINT:
+			   	return new SecureRelDataTypeField<Long>(name, index, type);
+		   	case TIMESTAMP:
+			   return new SecureRelDataTypeField<java.util.Date>(name, index, type);
+		   	case BOOLEAN:
+				   return new SecureRelDataTypeField<Boolean>(name, index, type);
+		   	case VARCHAR:
+			   return new SecureRelDataTypeField<String>(name, index, type);
+
+		   	default: // unsupported type!
+		   		return null; 
+		   		
+		   }
+		   
+	   }
+	   
+	   
 	}
