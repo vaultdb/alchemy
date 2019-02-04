@@ -64,6 +64,15 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 		stats = new FieldStatistics(this); 
 	}
 
+	public  SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy, FieldStatistics theStats) {
+		super(baseField.getName(), baseField.getIndex(), baseField.getType());
+		this.baseField = baseField;
+		policy = secPolicy;
+		filters = new ArrayList<LogicalFilter>();
+		stats = theStats;
+	}
+
+	
 	public SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy, String aStoredTable,
 			String aStoredAttribute, LogicalFilter aFilter) {
 		super(baseField.getName(), baseField.getIndex(), baseField.getType());

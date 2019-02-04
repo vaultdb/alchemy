@@ -21,10 +21,6 @@ import org.apache.calcite.rel.logical.LogicalJoin;
 import org.apache.calcite.rel.logical.LogicalProject;
 import org.apache.calcite.rel.logical.LogicalSort;
 import org.apache.calcite.rel.logical.LogicalWindow;
-import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
-import org.apache.calcite.rel.rel2sql.SqlImplementor.Builder;
-import org.apache.calcite.rel.rel2sql.SqlImplementor.Clause;
-import org.apache.calcite.rel.rel2sql.SqlImplementor.Result;
 import org.apache.calcite.rel.logical.LogicalAggregate;
 
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -32,17 +28,12 @@ import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexSubQuery;
-import org.apache.calcite.sql.SqlDialect;
-import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.util.Pair;
-import org.smcql.codegen.sql.ExtendedRelToSqlConverter;
 import org.smcql.db.schema.SecureSchemaLookup;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
 import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.Utilities;
 
 public class AttributeResolver {
 	

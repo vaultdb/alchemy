@@ -2,6 +2,8 @@ package org.smcql.db.schema.statistics;
 
 import java.util.List;
 
+import org.apache.calcite.rel.type.RelDataTypeField;
+import org.smcql.plan.SecureRelNode;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.TypeMap;
 
@@ -21,6 +23,7 @@ public class FieldStatistics {
 	
 
 	// called on public field to automatically collect stats
+	// this is for leaf nodes in the query tree
 	public FieldStatistics(SecureRelDataTypeField f) {
 		String name = f.getName();
 		
@@ -33,7 +36,12 @@ public class FieldStatistics {
 	}
 
 
-
+	public FieldStatistics(RelDataTypeField src, SecureRelNode ... children) {
+		// use child schema(s) to infer stats.  Deduce attribute from children 
+		// get attribute in question from src, may leverage logic in AttributeResolver for this.
+		// TODO: rewire parts of AttributeResolver to support intermediate nodes with this constructor
+		// invoke SecureRelDataType(RelDataType, sec policy, FieldStatistics) constructor in AttrResolver
+	}
 	public int getDistinctValues() {
 		return distinctValues;
 	}
