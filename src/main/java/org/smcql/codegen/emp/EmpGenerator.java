@@ -7,6 +7,9 @@ import java.util.Map;
 
 import org.smcql.codegen.operators.CodeGenNode;
 import org.smcql.codegen.operators.MergeNode;
+import org.smcql.config.SystemConfiguration;
+import org.smcql.executor.config.ConnectionManager;
+import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.CodeGenUtils;
 
@@ -18,12 +21,19 @@ public class EmpGenerator {
 		List<String> functions = new ArrayList<String>();
 		
 		//constants
-		variables.put("db_name_1", "healthlnk_site1");
-		variables.put("db_name_2", "healthlnk_site2");
-		variables.put("user", "smcql");
+		
+		// db1 config: 
+		WorkerConfiguration alice = ConnectionManager.getInstance().getWorkerConfigurations().get(0);
+		WorkerConfiguration bob = ConnectionManager.getInstance().getWorkerConfigurations().get(1);
+		
+		
+	    variables.put("db_name_1", alice.dbName);
+		variables.put("db_name_2", bob.dbName);
+		variables.put("user", alice.user); // TODO: incorporate multi-host users/passes/IP addresses
+		variables.put("db_host_addr", alice.hostname);
 		variables.put("db_host_addr", "10.0.2.2");
-		variables.put("db_port", "5432");
-		variables.put("row_size", "320");
+		variables.put("db_port", Integer.toString(alice.dbPort));
+		variables.put("row_size", "320");  // This should be variable depending on the operator's schema, will change from op to op
 		
 		//TODO: eliminate hard coding
 		variables.put("limit", "10");

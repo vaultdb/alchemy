@@ -400,7 +400,7 @@ public class QueryCompiler {
 			smcStep = new SecureStep(secOp, op, sRunConf, child, null);
 			child.setParent(smcStep);
 		}
-		else if(children.size() == 2) {// join
+		else if(children.size() == 2) {// join, set ops (intersection/union)
 			ExecutionStep lhsChild = children.get(0);
 			ExecutionStep rhsChild = children.get(1);
 			smcStep = new SecureStep(secOp, op, sRunConf, lhsChild, rhsChild);
