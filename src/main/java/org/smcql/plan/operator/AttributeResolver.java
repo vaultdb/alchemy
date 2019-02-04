@@ -281,7 +281,7 @@ public class AttributeResolver {
 	}
 	
 	public static SecureRelRecordType resolveScan(SecureRelNode aScan) throws Exception {
-		List<SecureRelDataTypeField> secureFields = new ArrayList<SecureRelDataTypeField>();
+		List<SecureRelDataTypeField > secureFields = new ArrayList<SecureRelDataTypeField>();
 		
 		JdbcTableScan rel = (JdbcTableScan) aScan.getRelNode();
 		RelRecordType record = (RelRecordType) rel.getRowType();
@@ -292,11 +292,12 @@ public class AttributeResolver {
 			String attr = field.getName();
 			SecurityPolicy policy = permissions.getPolicy(table, attr);
 
-			SecureRelDataTypeField secField = new SecureRelDataTypeField(field, policy, table, attr, null);
+			SecureRelDataTypeField secField = new SecureRelDataTypeField(field, policy);
 			secureFields.add(secField);
 		}
 		
 		return new SecureRelRecordType(record, secureFields);
+
 	
 	}
 		

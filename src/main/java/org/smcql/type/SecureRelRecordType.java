@@ -45,7 +45,7 @@ public class SecureRelRecordType implements Serializable {
 		secureFields = new ArrayList<SecureRelDataTypeField>();
 	}
 	
-	public SecureRelRecordType(RelRecordType baseRow, List<SecureRelDataTypeField> fields) {
+	public SecureRelRecordType(RelRecordType baseRow, List<SecureRelDataTypeField > fields) {
 		baseType = baseRow;
 		secureFields = new ArrayList<SecureRelDataTypeField>(fields);
 		

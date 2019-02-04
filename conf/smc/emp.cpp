@@ -137,7 +137,7 @@ Integer from_bool(bool* b, int size, int party) {
 
 Data* op_merge(string sql, vector<int> input_col_lengths, int party, NetIO * io) {
     std::vector<Row> in = execute_sql(sql, party);
-    std::sort(in.begin(), in.end());
+    std::sort(in.begin(), in.end()); // TODO: sort in DB
     int bit_length = sum_vals(input_col_lengths);
     bool *local_data = concat(in, bit_length);
 
@@ -182,6 +182,7 @@ Data* op_merge(string sql, vector<int> input_col_lengths, int party, NetIO * io)
         
     return d;
 }
+
 void op_aggregate (Data * data, vector<int> input_col_lengths, vector<int> output_col_lengths) {
     int col_length0 = input_col_lengths[0];
     int col_length1 = input_col_lengths[1];

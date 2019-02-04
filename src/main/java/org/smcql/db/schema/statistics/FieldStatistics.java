@@ -8,31 +8,91 @@ import org.smcql.type.TypeMap;
 // to be attached to a SecureRelDataTypeField 
 // for use in deriving cardinality bounds 
 // for intermediate results
-
-public class FieldStatistics<T> {
+// just supporting integer statistics for now
+// TODO: templatize this later with FieldStatistics<T>
+public class FieldStatistics { 
 	
-	int distinctValues;
-	int maxMultiplicity;
-	List<T>  domain;
-	T min;
-	T max;
+	private int distinctValues;
+	private int maxMultiplicity;
+	private List<Integer>  domain;
+	private int min;
+	private int max;
 
 	
 
 	// called on public field to automatically collect stats
-	public FieldStatistics(SecureRelDataTypeField<T> f) {
-	
+	public FieldStatistics(SecureRelDataTypeField f) {
+		String name = f.getName();
+		
 		// TODO: populate statistics from schema and public vals
 		// read in CHECKs from table defs for min/max
 		// get max multiplicity, distinct cardinality, etc. for public vals
 		
+		// model stats building after StatisticsCollector
+		
+	}
+
+
+
+	public int getDistinctValues() {
+		return distinctValues;
+	}
+
+
+
+	public void setDistinctValues(int distinctValues) {
+		this.distinctValues = distinctValues;
+	}
+
+
+
+	public int getMaxMultiplicity() {
+		return maxMultiplicity;
+	}
+
+
+
+	public void setMaxMultiplicity(int maxMultiplicity) {
+		this.maxMultiplicity = maxMultiplicity;
+	}
+
+
+
+	public List<Integer> getDomain() {
+		return domain;
+	}
+
+
+
+	public void setDomain(List<Integer> domain) {
+		this.domain = domain;
+	}
+
+
+
+	public int getMax() {
+		return max;
+	}
+
+
+
+	public void setMax(int max) {
+		this.max = max;
+	}
+
+
+
+	public int getMin() {
+		return min;
+	}
+
+
+
+	public void setMin(int min) {
+		this.min = min;
 	}
 	
-	// create a table in the DB called stats from which we draw the rest of the fields
-	// can't do that easily b/c of the T values above.
-	// need to create a text file once
-	
-	// orthogonal TODO: rename merge to union
+
 	
 	
 }

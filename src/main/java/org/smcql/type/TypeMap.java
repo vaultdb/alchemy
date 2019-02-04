@@ -4,8 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
 
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 
@@ -88,27 +91,6 @@ public class TypeMap {
 	   }
 	   
 	   
-	   
-	   /******* Factories for setting up attributes with statistics *********/
 
-	   public static SecureRelDataTypeField<?> secureRelDataTypeFieldFactory(String name, int index, RelDataType type) {
-		   switch(type.getSqlTypeName()){
-		   	case INTEGER:
-		   	case BIGINT:
-			   	return new SecureRelDataTypeField<Long>(name, index, type);
-		   	case TIMESTAMP:
-			   return new SecureRelDataTypeField<java.util.Date>(name, index, type);
-		   	case BOOLEAN:
-				   return new SecureRelDataTypeField<Boolean>(name, index, type);
-		   	case VARCHAR:
-			   return new SecureRelDataTypeField<String>(name, index, type);
-
-		   	default: // unsupported type!
-		   		return null; 
-		   		
-		   }
-		   
-	   }
-	   
 	   
 	}

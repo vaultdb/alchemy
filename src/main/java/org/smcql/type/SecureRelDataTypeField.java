@@ -29,7 +29,7 @@ import org.smcql.util.Utilities;
 // how do we call this at schema construction time?
 // create a secure table 
 // instantiate SecureTable where we do "Table table = schema.getTable(tableName);" now
-public class SecureRelDataTypeField<T> extends RelDataTypeFieldImpl implements Serializable {
+public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Serializable {
 
 	/**
 	 * 
@@ -42,7 +42,7 @@ public class SecureRelDataTypeField<T> extends RelDataTypeFieldImpl implements S
 
 	SecurityPolicy policy = SecurityPolicy.Private;
 	RelDataTypeField baseField;
-	FieldStatistics<T> stats;
+	FieldStatistics stats;
 	
 	// both of below are null if field sourced from greater than one attribute
 	// stored in original tables
@@ -53,7 +53,7 @@ public class SecureRelDataTypeField<T> extends RelDataTypeFieldImpl implements S
 	public SecureRelDataTypeField(String name, int index, RelDataType type) {
 		super(name, index, type);
 		filters = new ArrayList<LogicalFilter>();
-		
+		stats = new FieldStatistics(this); 
 	}
 
 	public  SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy) {
@@ -61,7 +61,7 @@ public class SecureRelDataTypeField<T> extends RelDataTypeFieldImpl implements S
 		this.baseField = baseField;
 		policy = secPolicy;
 		filters = new ArrayList<LogicalFilter>();
-		stats = new FieldStatistics<T>(this); 
+		stats = new FieldStatistics(this); 
 	}
 
 	public SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy, String aStoredTable,
@@ -73,6 +73,8 @@ public class SecureRelDataTypeField<T> extends RelDataTypeFieldImpl implements S
 		setStoredAttribute(aStoredAttribute);
 		filters = new ArrayList<LogicalFilter>();
 		addFilter(aFilter);
+		stats = new FieldStatistics(this); 
+		
 	}
 
 	// quasi-copy constructor
@@ -83,6 +85,7 @@ public class SecureRelDataTypeField<T> extends RelDataTypeFieldImpl implements S
 		storedTable = src.getStoredTable();
 		storedAttribute = src.getStoredAttribute();
 		filters = new ArrayList<LogicalFilter>(src.getFilters());
+		stats = new FieldStatistics(this);  
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {
