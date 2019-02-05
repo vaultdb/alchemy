@@ -1,0 +1,33 @@
+// suffix for our emp ExecutionStep
+// TODO: generalize this
+// we fill in $functions as we go along
+// need to fill in NetIO setup based on contents of ConnectionManager
+// expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
+
+int main(int argc, char** argv) {
+    int port, party;
+    parse_party_and_port(argv, &party, &port);
+    NetIO * io = new NetIO(party==ALICE ? nullptr : "127.0.0.1", port);
+
+    setup_semi_honest(io, party);
+    
+    $functions
+    
+    io->flush();
+    for (int i=0; i<res_0->public_size; i++) {
+        if (i==0 && party == BOB)
+            cout << "\nOutput:" << endl;
+
+        string val = reveal_bin(res_0->data[i], initial_row_size, PUBLIC);
+        string col0 = val.substr(0, col_length0);
+        reverse(col0.begin(), col0.end());
+        string col1 = val.substr(col_length0, col_length0 + col_length1);
+        
+        vector<int> lengths{col_length0, col_length1};
+        Row row = Row(col0 + col1, lengths);
+        
+        if (party == ALICE && i < limit)
+            cout << row.to_string() << endl;    
+    }
+    delete io;
+}

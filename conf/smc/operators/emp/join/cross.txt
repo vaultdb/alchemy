@@ -1,0 +1,31 @@
+Data * op_cross(Data *left, Data *right) {
+    Integer *output = new Integer[left->public_size * right->public_size];
+    Data *result = new Data;
+    int writeIdx = 0;
+    
+	int lhsTupleLength = left->data[0].size(); 
+	int rhsTupleLength = right->data[0].size(); 
+	// this may change later when we know more about the columns we will keep for output
+	int outLength = lhsTupleLength + rhsTupleLength; 
+	int lhsBitLength = sizeof(Bit)*lhsTupleLength;
+	int rhsBitLength = sizeof(Bit)*rhsTupleLength;
+
+    // output tuple count
+    result->public_size = left->public_size * right->public_size;
+    result->real_size = left->public_size * right->public_size;
+    
+    
+    for (int i=0; i<left->public_size; i++) {
+    	// integers are all bitlength, i.e., tuple length
+    	Integer lhs = left->data[i];
+    	
+        for (int j=0; j<right->public_size; j++) {
+	    	Integer rhs = right->data[j];
+	    	Bit outBits = new Bit[outLength];
+			memcpy(outBits, lhs.bits, lhsBitLength);
+			memcpy(outBits + lhsBitLength, rhs.bits,  rhsBitLength);
+			result->data[writeIdx] = new Integer(outBits, outLength);
+        }
+    }
+    return result;
+}

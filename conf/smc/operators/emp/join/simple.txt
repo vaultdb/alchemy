@@ -1,0 +1,31 @@
+// TODO: generalize for arbitrary selection criteria
+// see ObliVM generator for example of this
+// this example is based on aspirin expected code
+Data * op_join(Data *left, Data *right) {
+    Integer *output = new Integer[left->public_size * right->public_size];
+    int index = 0;
+    for (int i=0; i<left->public_size; i++) {
+        for (int j=0; j<right->public_size; j++) {
+        	$applyFilter
+        	
+            /*Example:
+            Integer idl(col_length0, left->data[i].bits);
+            Integer idr(col_length0, right->data[j].bits);
+            Integer timestamp1(col_length1, left->data[i].bits + col_length0);
+            Integer timestamp2(col_length1, right->data[j].bits + col_length1);
+            Bit cond = (idl == idr) & (timestamp1 <= timestamp2);
+            Integer join = If(cond, idl, Integer(col_length1, 0, PUBLIC));         
+            output[index] = join;
+            index++;
+            appears to be outputting a single bit per comparison*/
+        }
+    }
+    Data *result = new Data;
+    result->data = output;
+    // output tuple count
+    result->public_size = left->public_size * right->public_size;
+	// real size needs to be maintained by counting the times the join criteria is met
+	// this variable should probably not be public
+    result->real_size = Integer(64, left->public_size, PUBLIC);
+    return result;
+}
