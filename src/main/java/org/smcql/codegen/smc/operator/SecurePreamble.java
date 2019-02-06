@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.operator.Operator;
 import org.smcql.util.CodeGenUtils;
@@ -30,25 +31,38 @@ public class SecurePreamble extends SecureOperator {
 	}
 	
 	
-	public void setSqlStatements(Map<ExecutionStep, String> sqlSrc) {
+/*	public void setSqlStatements(Map<ExecutionStep, String> sqlSrc) {
 		sqlStatements = new Vector<String>(sqlSrc.values());
 		
-	}
+	}*/
 	
 	
 	@Override
 	public Map<String, String> generate() throws Exception  {
 		Map<String, String> variables = new HashMap<String, String>();	
-		assert(sqlStatements != null);
+	//	assert(sqlStatements != null);
 		
-		String queries = new String();
-		for(String sql : sqlStatements) {
-			queries = queries +  sql + "\n";
-		}
+		//String queries = new String();
+		//for(String sql : sqlStatements) {
+		//	queries += "queries.push_back(\"" + sql.replace('\n', ' ')  + "\"); \n";
+		//}
 		
-		variables.put("srcSQL", queries);
-		String alice = ConnectionManager.getInstance().getConnectionString(0);
-		String bob = ConnectionManager.getInstance().getConnectionString(1);
+		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		String aliceKey = connectionManager.getAlice();
+		WorkerConfiguration aliceConfig = connectionManager.getWorker(aliceKey);
+		String aliceHost = aliceConfig.hostname;
+
+		
+		String bobKey = connectionManager.getBob();
+		WorkerConfiguration bobConfig = connectionManager.getWorker(bobKey);
+		String bobHost = bobConfig.hostname;
+		
+		variables.put("bobHost", bobHost);
+		variables.put("aliceHost", aliceHost);
+		
+		//variables.put("srcSQL", queries);
+		String alice = ConnectionManager.getInstance().getConnectionString(1);
+		String bob = ConnectionManager.getInstance().getConnectionString(2);
 		
 		variables.put("aliceConnectionString", alice);
 		variables.put("bobConnectionString", bob);

@@ -1,4 +1,4 @@
-Data * op_distinct(Data *data) {
+Data * $functionName(Data *data) {
 	$sortInput
 	
 	int tupleLen = data->data[0].size() * sizeof(Bit);

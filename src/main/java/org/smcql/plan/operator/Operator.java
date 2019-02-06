@@ -487,8 +487,9 @@ public abstract class Operator implements CodeGenerator {
     }
 
 	public String getFunctionName() {
-		// TODO Auto-generated method stub
-		return null;
+		String opName = getOpName();
+		return opName + operatorId;
+
 	}
 	
 }

@@ -15,12 +15,15 @@ using namespace pqxx;
 // Connection strings, encapsulates db name, db user, port, host
 string aliceConnectionString = "$aliceConnectionString";
 string bobConnectionString = "$bobConnectionString";
+string aliceHost = "$aliceHost";
+string bobHost = "$bobHost";
+
 
 
 
 std::vector<String> queries;
 // Plaintext queries
-$srcSQL
+// $srcSQL
 
 // Helper functions
 string reveal_bin(Integer &input, int length, int output_party) {
@@ -137,3 +140,6 @@ Integer from_bool(bool* b, int size, int party) {
     init(res.bits, b, size, party);
     return res;
 }
+
+
+

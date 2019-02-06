@@ -1,4 +1,4 @@
-Data * op_cross(Data *left, Data *right) {
+Data * $functionName(Data *left, Data *right) {
     Integer *output = new Integer[left->public_size * right->public_size];
     Data *result = new Data;
     int writeIdx = 0;

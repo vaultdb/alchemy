@@ -10,15 +10,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.calcite.util.Pair;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.smcql.codegen.plaintext.PlainOperator;
 import org.smcql.codegen.smc.operator.SecureOperator;
 import org.smcql.codegen.smc.operator.SecureOperatorFactory;
 import org.smcql.codegen.smc.operator.SecurePreamble;
-import org.smcql.codegen.smc.operator.support.MergeMethod;
+import org.smcql.codegen.smc.operator.support.UnionMethod;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.RunConfig;
@@ -210,30 +213,90 @@ public class QueryCompiler {
 		
 		String targetFile = Utilities.getCodeGenTarget() + "/" + queryId + "/emp.cpp";
 
+		String wholeFile = new String();
+		
 		Logger logger = SystemConfiguration.getInstance().getLogger();
 		logger.log(Level.INFO, "Writing generated code to " + targetFile);
 		
 		SecurePreamble preamble =  new SecurePreamble(null);
-		preamble.setSqlStatements(sqlCode);
+		//preamble.setSqlStatements(sqlCode);
+		
 		String generatedPreamble = preamble.generate().get("preamble");
-		Utilities.writeFile(targetFile, generatedPreamble);
-		
-		int opCounter = 1;
-		String functionCalls = new String();
-		
-		for(Entry<ExecutionStep, String> e : smcCode.entrySet()) {
-			if(e.getValue() != null) // no ctes
-				Utilities.appendFile(targetFile,  e.getValue() + "\n");
-		}
+		wholeFile = generatedPreamble;
 		
 		
-
+		// traverse the tree bottom-up in our control flow
+		Pair<String, String> code = empCodeGeneratorHelper((SecureStep) compiledRoot);
+		wholeFile += code.left; // add functions
 		
+		String rootOutput = compiledRoot.getFunctionName() + "Output";
 		
+		wholeFile += generateEMPMain(targetFile, code.right, rootOutput); // plug in function calls
+		Utilities.writeFile(targetFile, wholeFile);
 		
+		System.out.println("Generated file:\n" + wholeFile);
 		
 	}
 	
+	// generate program flow by traversing the tree bottom-up
+	private Pair<String, String>  empCodeGeneratorHelper(SecureStep step) {
+		
+		String functions = new String();
+		String calls = new String();
+		
+		String myCode = smcCode.get(step) + "\n";
+		String myCall = generateFunctionCall(step) + "\n";
+		if(step.isUnion()) {
+			functions = myCode;
+		    calls = myCall;
+			return new Pair<String, String>(functions, calls);
+		}
+		
+		for(ExecutionStep child : step.getChildren()) {
+			Pair<String, String> childCode = empCodeGeneratorHelper((SecureStep) child);
+			functions += childCode.left;
+			calls += childCode.right;
+		}
+		
+		functions += myCode;
+		calls += myCall;
+		
+		return new Pair<String, String>(functions, calls);
+
+	}
+	
+	private String generateFunctionCall(ExecutionStep srcStep) {
+		// desire: Data *$functionName+ "Output" = $functionName(childOutput...)
+
+		String functionName = srcStep.getFunctionName();
+
+		if(((SecureStep) srcStep).isUnion()) {
+			String call = "Data *" + functionName + "Output = " + functionName + "(party, io);\n";
+			return call;
+		}
+		
+		List<ExecutionStep> children = srcStep.getChildren();
+		String args =  children.get(0).getFunctionName() + "Output";
+		for(int i = 1; i < children.size(); ++i) {
+			args += ", " + children.get(i);
+		}
+		String outputVariable = functionName + "Output";
+		String call = "Data * " + outputVariable + " = " + functionName + "(" + args + ");\n";
+
+		return call;
+	}
+	
+	private String generateEMPMain(String targetFile, String functions, String rootOutput) throws IOException {
+
+		Map<String, String> variables = new HashMap<String, String>();
+		variables.put("functions", functions);
+		variables.put("rootOutput", rootOutput);
+		String generatedCode = CodeGenUtils.generateFromTemplate("util/main.txt", variables);
+		
+		Utilities.appendFile(targetFile, generatedCode);
+		return generatedCode;
+
+	}
 	
 	public List<String> getClasses() throws IOException, InterruptedException {
 	
@@ -377,7 +440,7 @@ public class QueryCompiler {
 	// child.getSourceOp may be equal to op for split execution 
 	private ExecutionStep addMerge(Operator op, ExecutionStep child) throws Exception {
 		// merge input tuples with other party
-		MergeMethod merge = null;
+		UnionMethod merge = null;
 		if(op instanceof Join) { // inserts merge for specified child
 			Operator childOp = child.getSourceOperator();
 			Join joinOp = (Join) op;
@@ -386,13 +449,13 @@ public class QueryCompiler {
 			
 			boolean isLhs = (leftChild == childOp); 
 			List<SecureRelDataTypeField> orderBy = (isLhs) ? leftChild.secureComputeOrder() : rightChild.secureComputeOrder();
-			merge = new MergeMethod(op, child, orderBy);	
+			merge = new UnionMethod(op, child, orderBy);	
 			
 		} else {
-			 merge = new MergeMethod(op, child, op.secureComputeOrder());
+			 merge = new UnionMethod(op, child, op.secureComputeOrder());
 		}
-		// TODO: save this for later
-		// merge.compileIt();
+		// TODO: save this for later, EMP in a single file
+		 //merge.compileIt();
 		
 		RunConfig mRunConf = new RunConfig();
 		mRunConf.port = (SystemConfiguration.getInstance()).readAndIncrementPortCounter();
@@ -406,7 +469,10 @@ public class QueryCompiler {
 
 		SecureStep mergeStep = new SecureStep(merge, op, mRunConf, child, null);
 		child.setParent(mergeStep);
-		smcCode.put(mergeStep, merge.generate().get(op.getPackageName()));
+		Map<String, String> results  = merge.generate();
+		String key = mergeStep.getPackageName();
+		String code = results.get(key);
+		smcCode.put(mergeStep, code);
 		return mergeStep;
 	}
 	

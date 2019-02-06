@@ -4,9 +4,9 @@
 // need to make this more general by tweaking the parameters 
 
 
-Data* op_ordered_union(string sql, int party, NetIO * io) {
+Data* $functionName(int party, NetIO * io) {
+	string sql = "$sql";
     std::vector<Row> in = execute_sql(sql, party);
-	// TODO: sort input rows in SQL, operator code will set this up for us
     int bit_length = $size; // TODO: automatically derive size from Row metadata?
     // flatten out local data
     bool *local_data = concat(in, bit_length);

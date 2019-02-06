@@ -29,5 +29,8 @@ public interface CodeGenerator {
 
 	public SecureRelRecordType getSchema(boolean asSecureLeaf);
 
+
+	String getFunctionName();
+
 	
 }

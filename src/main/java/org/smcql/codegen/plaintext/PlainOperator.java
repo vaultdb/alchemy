@@ -79,6 +79,11 @@ public class PlainOperator implements CodeGenerator {
 	}
 
 	@Override
+	public String getFunctionName() {
+		return null;
+	}
+	
+	@Override
 	public SecureRelRecordType getInSchema() {
 		return null;
 	}

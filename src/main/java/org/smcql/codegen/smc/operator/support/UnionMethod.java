@@ -21,7 +21,7 @@ import org.smcql.util.Utilities;
 
 // takes in the sorted input of Alice and Bob 
 // and creates a single joint set of tuples for query execution
-public class MergeMethod implements CodeGenerator, Serializable {
+public class UnionMethod implements CodeGenerator, Serializable {
 
 	/**
 	 * 
@@ -36,8 +36,9 @@ public class MergeMethod implements CodeGenerator, Serializable {
 	private SecureRelRecordType schema;
 	private List<SecureRelDataTypeField> orderKey;
 	ExecutionStep childStep;
+	private String functionName;
 	
-	public MergeMethod(Operator op, ExecutionStep child, List<SecureRelDataTypeField> orderBy) throws Exception{
+	public UnionMethod(Operator op, ExecutionStep child, List<SecureRelDataTypeField> orderBy) throws Exception{
 		src = op;
 		orderKey = orderBy;
 		childStep = child;
@@ -45,7 +46,7 @@ public class MergeMethod implements CodeGenerator, Serializable {
 		srcSQL = (child instanceof PlaintextStep) ? child.generate() : null;
 
 		packageName = child.getPackageName() + ".merge";
-
+		functionName = child.getFunctionName() + "Merge";
 		if (srcSQL != null) {
 			schema = Utilities.getOutSchemaFromString(srcSQL);
 		} else {
@@ -53,7 +54,7 @@ public class MergeMethod implements CodeGenerator, Serializable {
 		}
 	}
 	// for use in testing
-	public MergeMethod(String sql, String pack) throws Exception {
+	public UnionMethod(String sql, String pack) throws Exception {
 		packageName = pack;
 		srcSQL = sql;
 		orderKey = new ArrayList<SecureRelDataTypeField>();
@@ -75,6 +76,10 @@ public class MergeMethod implements CodeGenerator, Serializable {
 		variables.put("lessThan", generateLessThan());
 		variables.put("size", Integer.toString(size));
 		variables.put("packageName", packageName);
+		variables.put("functionName", functionName);
+		String sql =  srcSQL.replace('\n', ' ');
+		variables.put("sql", sql);
+		
 		
 		String unionFile = "union/ordered.txt";
 		
@@ -149,6 +154,12 @@ public class MergeMethod implements CodeGenerator, Serializable {
 		return packageName;
 	}
 
+	@Override
+	public String getFunctionName() {
+		return functionName;
+	}
+
+	
 	@Override
 	public SecureRelRecordType getInSchema() {
 		return schema;

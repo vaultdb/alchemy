@@ -1,4 +1,4 @@
-Integer op_aggregate_count(Data *data) {
+Integer $functionName(Data *data) {
     return data->real_size;
 }
 

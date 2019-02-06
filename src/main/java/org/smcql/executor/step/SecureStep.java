@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.smcql.codegen.CodeGenerator;
-import org.smcql.codegen.smc.operator.support.MergeMethod;
+import org.smcql.codegen.smc.operator.support.UnionMethod;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.executor.config.RunConfig;
 import org.smcql.executor.smc.OperatorExecution;
@@ -42,9 +42,9 @@ public class SecureStep implements ExecutionStep, Serializable {
 
 		
 		// needed to avoid serializing whole code generator
-		if(cg instanceof MergeMethod)  {
+		if(cg instanceof UnionMethod)  {
 			isMerge = true;
-			exec.setSourceSQL(((MergeMethod) cg).getSourceSQL());
+			exec.setSourceSQL(((UnionMethod) cg).getSourceSQL());
 		}
 	}
 	
@@ -151,5 +151,15 @@ public class SecureStep implements ExecutionStep, Serializable {
 			src = appendOperator(child, src, linePrefix);
 		}
 		return src;
+	}
+
+
+	@Override
+	public String getFunctionName() {
+		return codeGenerator.getFunctionName();
+	}
+	
+	public boolean isUnion() {
+		return isMerge;
 	}
 }

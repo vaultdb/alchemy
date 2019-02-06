@@ -11,10 +11,12 @@ import org.smcql.plan.operator.Operator;
 public interface ExecutionStep {
 	 
 	
-	// generates a main method for smc
+	// generates a method for MPC
 	public String generate() throws Exception;
 		
 	public String getPackageName();
+
+	public String getFunctionName();
 	
 	public ExecutionStep getParent();
 

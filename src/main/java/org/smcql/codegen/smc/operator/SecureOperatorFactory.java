@@ -21,7 +21,7 @@ public class SecureOperatorFactory {
 			case "Filter":
 				return new SecureFilter(o);
 			case "Merge":
-				return new SecureMerge(o);
+				return new SecureUnion(o);
 			default:
 				return null;
 		

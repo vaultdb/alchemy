@@ -33,7 +33,7 @@ public class GenerateSmcTest extends BaseTest {
 	}*/
 	
 	public void testCount() throws Exception {
-		testCase("count", "SELECT COUNT(DISTINCT icd9) FROM diagnoses");
+		testCase("count-icd9s", "SELECT COUNT(DISTINCT icd9) FROM diagnoses");
 	}
 	
 /*	protected void testCase(String testName) throws Exception {
@@ -64,7 +64,8 @@ public class GenerateSmcTest extends BaseTest {
 			
 		QueryCompiler qc = new QueryCompiler(secRoot);
 		// TODO: generalize this to write to one file for emp
-		qc.writeToDisk();
+		//qc.writeToDisk();
+		qc.writeOutEmpFile();
 		
 		
 		ExecutionStep root = qc.getRoot();

@@ -184,4 +184,9 @@ public class PlaintextStep implements ExecutionStep, Serializable {
 		}
 		return src;
 	}
+
+	@Override
+	public String getFunctionName() {
+		return srcOperator.getFunctionName();
+	}
 }

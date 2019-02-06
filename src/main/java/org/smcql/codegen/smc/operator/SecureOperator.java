@@ -253,6 +253,12 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	public String getPackageName() {
 		return planNode.getPackageName();
 	}
+	
+	@Override
+	public String getFunctionName() {
+		return planNode.getFunctionName();
+	}
+	
 
 	@Override
 	public SecureRelRecordType getInSchema() {

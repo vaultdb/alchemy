@@ -1,4 +1,5 @@
-Data* op_union(string sql, int party, NetIO * io) {
+Data* $functionName(int party, NetIO * io) {
+    string sql = "$sql";
     std::vector<Row> in = execute_sql(sql, party);
     int bit_length = $size; // TODO: automatically derive size from Row metadata?
     bool *local_data = concat(in, bit_length);
