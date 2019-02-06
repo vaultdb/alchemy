@@ -129,6 +129,19 @@ public class ConnectionManager {
 		
 	}
 
+	// for C++/pqxx connection
+	// 0 = alice, 1 = bob
+	public String getConnectionString(int party) {
+		WorkerConfiguration config = workersById.get(0);
+		String connectionString = new String();
+		// "dbname = " + db + " user = " + user_db + " host = " + host_db + " port = " + port_db;
+		
+		connectionString = "dbname = " + config.dbName + " user = " + config.user
+				+ " host = " + config.hostname + " port = " + config.dbPort;
+		
+		return connectionString;
+		
+	}
 	
 }
 

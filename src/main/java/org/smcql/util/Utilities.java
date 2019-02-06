@@ -3,6 +3,7 @@ package org.smcql.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -106,6 +107,19 @@ public class Utilities {
 
 
 	 }
+
+	public static void appendFile(String fname, String contents) throws IOException {
+        String path = FilenameUtils.getFullPath(fname);
+        File f = new File(path);
+        f.mkdirs();
+
+        PrintWriter writer = new PrintWriter(fname, "UTF-8");
+        writer.append(contents);
+        writer.close();
+
+
+	 }
+
 
 		public static byte[] readGeneratedClassFile(String packageName) throws IOException {
 			String filename = Utilities.getCodeGenTarget() + "/"  + packageName.replace('.', '/') + "/NoClass.class";

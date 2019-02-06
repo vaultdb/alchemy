@@ -485,5 +485,10 @@ public abstract class Operator implements CodeGenerator {
         // Overriden in Filter class
         return 1.0;
     }
+
+	public String getFunctionName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }

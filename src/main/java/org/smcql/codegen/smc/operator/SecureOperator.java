@@ -43,22 +43,23 @@ public class SecureOperator implements CodeGenerator, Serializable {
 
 	
 	public SecureOperator(Operator o) throws Exception {
-		planNode = o;		
-		children = new ArrayList<SecureOperator>();
+		planNode = o;
+		if(planNode != null) { // accommodate generating preamble and main for emp
+			children = new ArrayList<SecureOperator>();
 		
-		for (Operator child : planNode.getChildren()) {
-			SecureOperator secureChild = child.getSecureOperator();
-			if (secureChild != null)
-				children.add(secureChild);
-		}
+			for (Operator child : planNode.getChildren()) {
+				SecureOperator secureChild = child.getSecureOperator();
+				if (secureChild != null)
+					children.add(secureChild);
+			}
 		
-		planNode.setSecureOperator(this);
-		filters = new ArrayList<Filter>();
-		projects = new ArrayList<Project>();
-		merges = new ArrayList<ExecutionStep>();
-		processingSteps = new ArrayList<ProcessingStep>();
-	}	
-	
+			planNode.setSecureOperator(this);
+			filters = new ArrayList<Filter>();
+			projects = new ArrayList<Project>();
+			merges = new ArrayList<ExecutionStep>();
+			processingSteps = new ArrayList<ProcessingStep>();
+		}	
+	}
 	
 
 	public Map<String, String> generate() throws Exception {
@@ -194,6 +195,8 @@ public class SecureOperator implements CodeGenerator, Serializable {
 		handleFilters(variables);
 		handleProjects(variables, childSchema);
 		
+		// TODO: add function name here
+		variables.put("functionName", planNode.getFunctionName());
 		variables.put("packageName", planNode.getPackageName());
 		
 		if(!(planNode instanceof Sort) && !(planNode instanceof Join)) {

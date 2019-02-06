@@ -17,6 +17,7 @@ import org.apache.commons.io.FileUtils;
 import org.smcql.codegen.plaintext.PlainOperator;
 import org.smcql.codegen.smc.operator.SecureOperator;
 import org.smcql.codegen.smc.operator.SecureOperatorFactory;
+import org.smcql.codegen.smc.operator.SecurePreamble;
 import org.smcql.codegen.smc.operator.support.MergeMethod;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
@@ -203,6 +204,36 @@ public class QueryCompiler {
 		}
 
 	}	
+	
+	// JMR work in progress
+	public void writeOutEmpFile() throws Exception {
+		
+		String targetFile = Utilities.getCodeGenTarget() + "/" + queryId + "/emp.cpp";
+
+		Logger logger = SystemConfiguration.getInstance().getLogger();
+		logger.log(Level.INFO, "Writing generated code to " + targetFile);
+		
+		SecurePreamble preamble =  new SecurePreamble(null);
+		preamble.setSqlStatements(sqlCode);
+		String generatedPreamble = preamble.generate().get("preamble");
+		Utilities.writeFile(targetFile, generatedPreamble);
+		
+		int opCounter = 1;
+		String functionCalls = new String();
+		
+		for(Entry<ExecutionStep, String> e : smcCode.entrySet()) {
+			if(e.getValue() != null) // no ctes
+				Utilities.appendFile(targetFile,  e.getValue() + "\n");
+		}
+		
+		
+
+		
+		
+		
+		
+	}
+	
 	
 	public List<String> getClasses() throws IOException, InterruptedException {
 	

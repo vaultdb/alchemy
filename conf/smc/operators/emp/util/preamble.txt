@@ -12,15 +12,15 @@ using namespace pqxx;
 
 #define LENGTH_INT 64
 
-// Connection variables
-string alice_db = "$db_name_1";
-string bob_db = "$db_name_2";
-string user_db = "$user";
-string host_db = "$db_host_addr";
-string port_db = "$db_port";
+// Connection strings, encapsulates db name, db user, port, host
+string aliceConnectionString = "$aliceConnectionString";
+string bobConnectionString = "$bobConnectionString";
 
-// Plaintext Query
-$src_sql
+
+
+std::vector<String> queries;
+// Plaintext queries
+$srcSQL
 
 // Helper functions
 string reveal_bin(Integer &input, int length, int output_party) {
@@ -82,8 +82,7 @@ int sum_vals(vector<int> vec) {
 std::vector<Row> execute_sql(string sql, int party) {
     std::vector<Row> res;
     try {
-        string db = (party == ALICE) ? alice_db : bob_db;
-        string config= "dbname = " + db + " user = " + user_db + " host = " + host_db + " port = " + port_db;
+        string config= (party == ALICE) ? aliceConnectionString : bobConnectionString;
         connection C(config);
 
         if (C.is_open()) {
