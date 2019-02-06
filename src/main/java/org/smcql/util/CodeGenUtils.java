@@ -56,6 +56,9 @@ public class CodeGenUtils {
 			}
 		//}
 		
+		//String output = StringUtils.join(template.toArray(), "\n");
+		//System.out.println("templated code " + output);
+		
 		return StringUtils.join(template.toArray(), "\n");
 	}
 	

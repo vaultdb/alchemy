@@ -68,7 +68,14 @@ public class Utilities {
 	 
 	 
     	public static String getCodeGenRoot() {
-    		return getSMCQLRoot() + "/conf/smc/";
+    		String mpcLib = "";
+    		try {
+    			mpcLib =  SystemConfiguration.getInstance().getProperty("mpc-lib");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		return getSMCQLRoot() + "/conf/smc/operators/" + mpcLib;
     	}
  
     	public static String getCodeGenTarget() {

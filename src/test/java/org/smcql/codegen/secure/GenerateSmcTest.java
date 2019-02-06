@@ -2,10 +2,14 @@ package org.smcql.codegen.secure;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.smcql.BaseTest;
 import org.smcql.codegen.CodeCompiler;
+import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.util.Utilities;
 
@@ -15,7 +19,7 @@ public class GenerateSmcTest extends BaseTest {
 		System.setProperty("smcql.setup", setupFile);
 	}
 	
-	public void testComorbidity() throws Exception {
+/*	public void testComorbidity() throws Exception {
 		testCase("comorbidity");
 	}
 	
@@ -26,10 +30,13 @@ public class GenerateSmcTest extends BaseTest {
 
 	public void testAspirinCount() throws Exception {
 		testCase("aspirin-count");
+	}*/
+	
+	public void testCount() throws Exception {
+		testCase("count", "SELECT COUNT(DISTINCT icd9) FROM diagnoses");
 	}
 	
-	
-	protected void testCase(String testName) throws Exception {
+/*	protected void testCase(String testName) throws Exception {
 		SystemConfiguration.getInstance().resetCounters();
 		String sql = super.readSQL(testName);
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
@@ -42,11 +49,34 @@ public class GenerateSmcTest extends BaseTest {
 		System.out.println("\nTree:\n" + cc.getTree());
 		System.out.println("\nSource SQL:\n" + cc.getSourceSQL());
 		System.out.println("\nEMP Code:\n" + cc.getEmpCode());
-		/*
+		
 		testName = testName.replace("-", "_");
 		String expectedDir = Utilities.getSMCQLRoot() + "/src/test/java/org/smcql/plan/operators/codegen/expected/" + testName;
 		String observedDir = Utilities.getCodeGenTarget() + "/" + testName;
-		assertEquals(true, Utilities.dirsEqual(expectedDir, observedDir));*/
+		assertEquals(true, Utilities.dirsEqual(expectedDir, observedDir));
+	}
+	*/
+	
+	protected void testCase(String testName, String sql) throws Exception {
+		SystemConfiguration.getInstance().resetCounters();
+		Logger logger = SystemConfiguration.getInstance().getLogger();
+		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
+			
+		QueryCompiler qc = new QueryCompiler(secRoot);
+		// TODO: generalize this to write to one file for emp
+		qc.writeToDisk();
+		
+		
+		ExecutionStep root = qc.getRoot();
+		String testTree = root.printTree();
+		logger.log(Level.INFO, "Resolved secure tree to:\n " + testTree);
+		
+		//compiles code to a couple of cpp files that will be sent to alice & bob for execution
+		//String expectedDir = Utilities.getSMCQLRoot() + "/src/test/java/org/smcql/plan/operators/codegen/expected/" + testName;
+		//String observedDir = Utilities.getCodeGenTarget() + "/" + testName;
+		//assertEquals(true, Utilities.dirsEqual(expectedDir, observedDir));
+	
+		
 	}
 	
 	private String executeCommand(String command) {

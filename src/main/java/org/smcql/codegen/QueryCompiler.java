@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.smcql.codegen.plaintext.PlainOperator;
@@ -173,6 +175,10 @@ public class QueryCompiler {
 	public void writeToDisk() throws Exception {
 		
 		String targetPath = Utilities.getCodeGenTarget() + "/" + queryId;
+		
+		Logger logger = SystemConfiguration.getInstance().getLogger();
+		logger.log(Level.INFO, "Writing generated code to " + targetPath);
+		
 		Utilities.cleanDir(targetPath);
 
 
@@ -245,8 +251,8 @@ public class QueryCompiler {
 		List<ExecutionStep> localChildren = new ArrayList<ExecutionStep>();
 		for(Operator child : o.getSources()) {
 			List<Operator> nextToCombine = new ArrayList<Operator>();
-			while (child instanceof Filter || child instanceof Project) {
-				if (child instanceof Filter) {
+			while (child instanceof Filter || child instanceof Project) { // Aggregate NYI, needs group-by
+				if (child instanceof Filter) { 
 					opsToCombine.add(child);
 				} else {
 					nextToCombine.add(child);
@@ -354,7 +360,8 @@ public class QueryCompiler {
 		} else {
 			 merge = new MergeMethod(op, child, op.secureComputeOrder());
 		}
-		merge.compileIt();
+		// TODO: save this for later
+		// merge.compileIt();
 		
 		RunConfig mRunConf = new RunConfig();
 		mRunConf.port = (SystemConfiguration.getInstance()).readAndIncrementPortCounter();
@@ -385,7 +392,8 @@ public class QueryCompiler {
 				secOp.addProject((Project) cur);
 			}
 		}
-		secOp.compileIt();
+		// TODO: save this for later
+		//secOp.compileIt();
 	
 		RunConfig sRunConf = new RunConfig();
 		

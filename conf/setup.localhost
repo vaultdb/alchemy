@@ -9,6 +9,7 @@ log-level=debug
 sliced-execution=false
 slice-parallelism=2
 semijoin-execution=false
+mpc-lib=emp
 
 #privacy consumed by each operator
 epsilon=0.1

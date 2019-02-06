@@ -99,10 +99,12 @@ std::vector<Row> execute_sql(string sql, int party) {
             	for (int j=0; j<num_cols; j++) {
             	    const pqxx::field field = row[j];
             	    int oid = field.type();
-            	    if (oid == OID_STRING) {
-            	        lengths.push_back(LENGTH_STRING);
+            	   /* if (oid == OID_STRING) { // TODO: TODO: what happens if we have two string fields in the same query? 
+            	        lengths.push_back(LENGTH_STRING);  //   implement this using pqxx::binary_string size methods
+            	                                          // May need to parameterize schema, e.g., define column icd9 as varchar(7) 
             	        bin_str += str_to_binary(row[j].as<string>(), LENGTH_STRING);
-            	    } else if (oid == OID_INT) {
+            	    } else*/
+            	   if (oid == OID_INT) {
             	        lengths.push_back(LENGTH_INT);
             	        bin_str += int64_to_binstr(row[j].as<int64_t>());
             	    } else {
@@ -123,7 +125,8 @@ std::vector<Row> execute_sql(string sql, int party) {
 }
 
 // Operator functions
-class Data {public:
+class Data {
+public:
     Integer * data;
     int public_size;
     Integer real_size;

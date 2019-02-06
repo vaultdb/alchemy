@@ -1,6 +1,6 @@
-Data* op_merge(string sql, vector<int> input_col_lengths, int party, NetIO * io) {
+Data* op_union(string sql, int party, NetIO * io) {
     std::vector<Row> in = execute_sql(sql, party);
-    int bit_length = sum_vals(input_col_lengths);
+    int bit_length = $size; // TODO: automatically derive size from Row metadata?
     bool *local_data = concat(in, bit_length);
 
     int alice_size = in.size();
@@ -25,16 +25,12 @@ Data* op_merge(string sql, vector<int> input_col_lengths, int party, NetIO * io)
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
     
-    for (int i = 0; i < alice_size; ++i) {
-        for (int j = 0; j < bit_length; ++j) {
+    for (int i = 0; i < alice_size*bit_length; ++i) {
         	   // set up bit array, if alice, secret share a local bit, 
         	   // otherwise bob collects his part of the secret share and inputs 0 as a placeholder
         	   alice_batcher.add<Bit>((ALICE==party) ? local_data[i]:0);
-	           tmp[i*bit_length + j] = Bit((ALICE==party) ? 
-    	            local_data[(alice_size-i-1)*bit_length + j]:0, ALICE);
-    	            }
-    	        }
-
+    }
+     
 	alice_batcher.make_semi_honest(ALICE);
 		
 	for(int i = 0; i < alice.size*bit_length; ++i) {

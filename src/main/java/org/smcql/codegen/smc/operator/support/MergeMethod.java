@@ -76,7 +76,13 @@ public class MergeMethod implements CodeGenerator, Serializable {
 		variables.put("size", Integer.toString(size));
 		variables.put("packageName", packageName);
 		
-		generatedCode = CodeGenUtils.generateFromTemplate("util/merge_inputs.txt", variables);
+		String unionFile = "union/ordered.txt";
+		
+		if(orderKey.isEmpty()){
+			unionFile = "union/unordered.txt";
+		}
+		
+		generatedCode = CodeGenUtils.generateFromTemplate(unionFile, variables);
 		Map<String, String> result = new HashMap<String, String>();
 		result.put(packageName, generatedCode);
 		return result;

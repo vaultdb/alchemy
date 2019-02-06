@@ -40,7 +40,8 @@ public class SecureAggregate extends SecureOperator {
 		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
 		if (groupByAttributes.isEmpty()) {
 			Map<String, String> result = new HashMap<String, String>();
-			result.put(getPackageName(), CodeGenUtils.generateFromTemplate("aggregate/singular/full/count.txt", variables));
+			//result.put(getPackageName(), CodeGenUtils.generateFromTemplate("aggregate/singular/full/count.txt", variables));
+			result.put(getPackageName(), CodeGenUtils.generateFromTemplate("aggregate/count.txt", variables));
 			return result;
 		} 
 		

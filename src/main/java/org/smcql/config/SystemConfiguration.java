@@ -233,7 +233,10 @@ public class SystemConfiguration {
 
 	
 	public String getProperty(String p) {
-		return config.get(p);
+		if(config.containsKey(p)) 
+			return config.get(p);
+		
+		return null;
 	}
 	
 	public String getOperatorId() {
