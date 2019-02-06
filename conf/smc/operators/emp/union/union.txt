@@ -5,7 +5,7 @@ Data* op_merge(string sql, vector<int> input_col_lengths, int party, NetIO * io)
 
     int alice_size = in.size();
     int bob_size = in.size();
-    Batcher batcher;
+    Batcher alice_batcher, bob_batcher;
     
     // line up input sizes
     if (party == ALICE) {
@@ -23,28 +23,42 @@ Data* op_merge(string sql, vector<int> input_col_lengths, int party, NetIO * io)
     Integer * res = new Integer[alice_size + bob_size];  // enough space for all inputs
     
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
+    Bit *tmpPtr = tmp;
     
     for (int i = 0; i < alice_size; ++i) {
         for (int j = 0; j < bit_length; ++j) {
         	   // set up bit array, if alice, secret share a local bit, 
         	   // otherwise bob collects his part of the secret share and inputs 0 as a placeholder
+        	   alice_batcher.add<Bit>((ALICE==party) ? local_data[i]:0);
 	           tmp[i*bit_length + j] = Bit((ALICE==party) ? 
     	            local_data[(alice_size-i-1)*bit_length + j]:0, ALICE);
     	            }
     	        }
 
+	alice_batcher.make_semi_honest(ALICE);
+		
+	for(int i = 0; i < alice.size*bit_length; ++i) {
+		*tmpPtr = batcher.next<Bit>();
+		++tmpPtr;
+	}
+	
     for (int i = 0; i < bob_size*bit_length; ++i)
-        batcher.add<Bit>((BOB==party) ? local_data[i]:0);
-    batcher.make_semi_honest(BOB);
+        bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
+    bob_batcher.make_semi_honest(BOB);
 
 	// append all of bob's bits to tmp
-    for (int i = 0; i < bob_size*bit_length; ++i)
-        tmp[i+alice_size*bit_length] = batcher.next<Bit>();
-
+    for (int i = 0; i < bob_size*bit_length; ++i) {
+        *tmpPtr = batcher.next<Bit>();
+        ++tmpPtr;
+	}
+	
+	tmpPtr = tmp;
 	// create a 2D array of secret-shared bits
 	// each index is a tuple
-    for(int i = 0; i < alice_size + bob_size; ++i)
-        res[i] = Integer(bit_length, tmp+bit_length*i);
+    for(int i = 0; i < alice_size + bob_size; ++i) {
+        res[i] = Integer(bit_length, tmpPtr);
+        tmpPtr += bitLength;
+     }
 
 
     Data * d = new Data;

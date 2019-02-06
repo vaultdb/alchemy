@@ -25,6 +25,7 @@ Data * op_cross(Data *left, Data *right) {
 			memcpy(outBits, lhs.bits, lhsBitLength);
 			memcpy(outBits + lhsBitLength, rhs.bits,  rhsBitLength);
 			result->data[writeIdx] = new Integer(outBits, outLength);
+			++writeIdx;
         }
     }
     return result;

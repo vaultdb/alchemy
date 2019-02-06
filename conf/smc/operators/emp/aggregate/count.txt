@@ -1,0 +1,3 @@
+Integer op_aggregate_count(Data *data) {
+    return data->real_size;
+}
