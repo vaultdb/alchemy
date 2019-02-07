@@ -21,9 +21,6 @@ string bobHost = "$bobHost";
 
 
 
-std::vector<String> queries;
-// Plaintext queries
-// $srcSQL
 
 // Helper functions
 string reveal_bin(Integer &input, int length, int output_party) {
@@ -132,6 +129,7 @@ public:
     Integer * data;
     int public_size;
     Integer real_size;
+    Integer dummyTags;
 };
 
 Integer from_bool(bool* b, int size, int party) {

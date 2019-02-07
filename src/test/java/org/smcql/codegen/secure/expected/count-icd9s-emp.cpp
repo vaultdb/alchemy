@@ -21,9 +21,6 @@ string bobHost = "localhost";
 
 
 
-std::vector<String> queries;
-// Plaintext queries
-// $srcSQL
 
 // Helper functions
 string reveal_bin(Integer &input, int length, int output_party) {
@@ -132,6 +129,7 @@ public:
     Integer * data;
     int public_size;
     Integer real_size;
+    Integer dummyTags;
 };
 
 Integer from_bool(bool* b, int size, int party) {
@@ -184,7 +182,7 @@ Data* Distinct2Merge(int party, NetIO * io) {
 	alice_batcher.make_semi_honest(ALICE);
 		
 	for(int i = 0; i < alice.size*bit_length; ++i) {
-		*tmpPtr = batcher.next<Bit>();
+		*tmpPtr = alice_batcher.next<Bit>();
 		++tmpPtr;
 	}
 	
@@ -194,11 +192,12 @@ Data* Distinct2Merge(int party, NetIO * io) {
 
 	// append all of bob's bits to tmp
     for (int i = 0; i < bob_size*bit_length; ++i) {
-        *tmpPtr = batcher.next<Bit>();
+        *tmpPtr = bob_batcher.next<Bit>();
         ++tmpPtr;
 	}
 	
 	tmpPtr = tmp;
+	
 	// create a 2D array of secret-shared bits
 	// each index is a tuple
     for(int i = 0; i < alice_size + bob_size; ++i) {
@@ -207,7 +206,8 @@ Data* Distinct2Merge(int party, NetIO * io) {
      }
 
 
-    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, col_length0);
+    // TODO: sort if needed, not specific to col_length0
+    //bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, col_length0);
     Data * d = new Data;
     d->data = res;
     d->public_size = alice_size + bob_size;
