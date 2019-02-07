@@ -50,8 +50,12 @@ public class GenerateSqlTest  extends  BaseTest {
 
 	public void runTest(String testName, String expected) throws Exception {
 		String sql = super.readSQL(testName);
-		
-		root = parser.parseSQL(sql);
+		runSqlTest(sql);
+		}
+
+	
+    public void runSqlTest(String sql) throws Exception {
+    	root = parser.parseSQL(sql);
 		relRoot = parser.compile(root);
 				
 		System.out.println("Generating on:\n " + sql);
@@ -60,10 +64,12 @@ public class GenerateSqlTest  extends  BaseTest {
 		generateSql();
 		String sqlFromRel = rel2sql();
 		
-		assertEquals(expected, sqlFromRel);
+		assertEquals(sql, sqlFromRel);
 		System.out.println("***********************************");
-	}
-	
+
+    }
+    
+    
 // generate SQL from SqlNode
 void generateSql() throws SQLException {
 	SqlPrettyWriter writer = new SqlPrettyWriter(dialect);

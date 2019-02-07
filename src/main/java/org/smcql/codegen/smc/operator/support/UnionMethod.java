@@ -48,7 +48,7 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		packageName = child.getPackageName() + ".merge";
 		functionName = child.getFunctionName() + "Merge";
 		if (srcSQL != null) {
-			schema = Utilities.getOutSchemaFromString(srcSQL);
+			schema = Utilities.getOutSchemaFromSql(srcSQL);
 		} else {
 			schema = child.getSourceOperator().getSchema(true);
 		}
@@ -58,7 +58,7 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		packageName = pack;
 		srcSQL = sql;
 		orderKey = new ArrayList<SecureRelDataTypeField>();
-		schema = Utilities.getOutSchemaFromString(sql);
+		schema = Utilities.getOutSchemaFromSql(sql);
 		packageName = pack + ".merge";
 	}
 	

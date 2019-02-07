@@ -130,6 +130,9 @@ public class SqlStatementParser {
 		return config;
 	}
 	
+	public Planner getPlanner() {
+		return planner;
+	}
 	
 	// method for minimizing the fields at each RelNode 
 	// this reduces the permissions we need to run many operators

@@ -14,14 +14,20 @@ import org.smcql.type.TypeMap;
 // TODO: templatize this later with FieldStatistics<T>
 public class FieldStatistics { 
 	
-	private int distinctValues;
-	private int maxMultiplicity;
-	private List<Integer>  domain;
-	private int min;
-	private int max;
+	private long distinctValues = -1;
+	private long maxMultiplicity = -1;
+	private List<Long>  domain;
+	private long min = -1;
+	private long max = -1;
 
 	
 
+	public FieldStatistics() {
+
+	}
+
+
+	
 	// called on public field to automatically collect stats
 	// this is for leaf nodes in the query tree
 	public FieldStatistics(SecureRelDataTypeField f) {
@@ -36,67 +42,84 @@ public class FieldStatistics {
 	}
 
 
-	public FieldStatistics(RelDataTypeField src, SecureRelNode ... children) {
-		// use child schema(s) to infer stats.  Deduce attribute from children 
-		// get attribute in question from src, may leverage logic in AttributeResolver for this.
-		// TODO: rewire parts of AttributeResolver to support intermediate nodes with this constructor
-		// invoke SecureRelDataType(RelDataType, sec policy, FieldStatistics) constructor in AttrResolver
+	@Override
+    public boolean equals(Object o) { 
+		if(o instanceof FieldStatistics) {
+			FieldStatistics f = (FieldStatistics) o;
+			if(f.distinctValues == this.distinctValues && 
+					f.domain == this.domain && 
+					f.min == this.min && 
+					f.max == this.max &&
+					f.maxMultiplicity == this.maxMultiplicity)
+				return true;
+		}
+		return false;
 	}
-	public int getDistinctValues() {
+	
+
+	@Override 
+	public String toString() {
+		String output = "(distinct value count=" + Long.toString(distinctValues) +
+					      " max multiplicity=" + Long.toString(maxMultiplicity) + 
+					      " range=[" + min + "," + max + "] " +
+					      " domain: " + domain + ")";
+		return output;
+	}
+	public long getDistinctValues() {
 		return distinctValues;
 	}
 
 
 
-	public void setDistinctValues(int distinctValues) {
-		this.distinctValues = distinctValues;
+	public void setDistinctValues(long distinctIDs) {
+		this.distinctValues = distinctIDs;
 	}
 
 
 
-	public int getMaxMultiplicity() {
+	public long getMaxMultiplicity() {
 		return maxMultiplicity;
 	}
 
 
 
-	public void setMaxMultiplicity(int maxMultiplicity) {
+	public void setMaxMultiplicity(long maxMultiplicity) {
 		this.maxMultiplicity = maxMultiplicity;
 	}
 
 
 
-	public List<Integer> getDomain() {
+	public List<Long> getDomain() {
 		return domain;
 	}
 
 
 
-	public void setDomain(List<Integer> domain) {
+	public void setDomain(List<Long> domain) {
 		this.domain = domain;
 	}
 
 
 
-	public int getMax() {
+	public long getMax() {
 		return max;
 	}
 
 
 
-	public void setMax(int max) {
+	public void setMax(long max) {
 		this.max = max;
 	}
 
 
 
-	public int getMin() {
+	public long getMin() {
 		return min;
 	}
 
 
 
-	public void setMin(int min) {
+	public void setMin(long min) {
 		this.min = min;
 	}
 	

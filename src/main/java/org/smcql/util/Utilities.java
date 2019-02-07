@@ -22,16 +22,26 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.java.JavaTypeFactory;
+import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelRoot;
+import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.Table;
+import org.apache.calcite.sql.SqlDialect;
+import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.tools.Planner;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.GeometricDistribution;
+import org.smcql.codegen.sql.DistributedRelToSqlConverter;
+import org.smcql.codegen.sql.ExtendedRelToSqlConverter;
+import org.smcql.codegen.sql.SqlGenerator;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.schema.SecureSchemaLookup;
 import org.smcql.executor.smc.OperatorExecution;
+import org.smcql.parser.SqlStatementParser;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
@@ -39,6 +49,9 @@ import org.smcql.type.SecureRelRecordType;
 
 
 public class Utilities {
+	
+
+	
 	public static String getSMCQLRoot() {
 		String root = System.getProperty("smcql.root"); // for remote systems
 	    if(root != null) {
@@ -119,7 +132,7 @@ public class Utilities {
 		}
 
 
-		public static SecureRelRecordType getOutSchemaFromString(String sql) throws Exception {
+		public static SecureRelRecordType getOutSchemaFromSql(String sql) throws Exception {
 			SecureRelRoot relRoot = new SecureRelRoot("anonymous", sql);
 			
 			return relRoot.getPlanRoot().getSchema();
@@ -261,6 +274,29 @@ public class Utilities {
 		int negativeSide = geo.sample() - 1;
 		
 		return (int) (positiveSide - negativeSide + lpMean);
+	}
+	
+	// **** Caution, this only works for single-relation queries, i.e., no joins!
+	public static String getDistributedQuery(String aQuery) throws Exception {
+		SqlStatementParser parser = new SqlStatementParser();
+	    Planner planner = parser.getPlanner();
+	    SqlNode parse = planner.parse(aQuery);
+	    SqlNode validate = planner.validate(parse);
+	    RelNode rel = planner.rel(validate).project();
+	    
+
+		SqlDialect dialect = SqlDialect.DatabaseProduct.POSTGRESQL.getDialect();
+		
+		DistributedRelToSqlConverter converter = new DistributedRelToSqlConverter(dialect);
+		
+		SqlNode node = converter.visitChild(0, rel).asQuery();
+		String sqlOut = node.toSqlString(dialect).getSql();
+		
+		sqlOut = sqlOut.replace("\"", "");
+		return sqlOut;	
+
+		
+
 	}
 	
 }

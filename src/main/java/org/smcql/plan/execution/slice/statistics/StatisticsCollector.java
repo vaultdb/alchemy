@@ -24,7 +24,7 @@ public class StatisticsCollector {
 		if (predicates.size() == 0) {
 			String table = keyField.getStoredTable();
 			String query = "SELECT " + table + "." + attribute + ",site.id, COUNT(*) cnt FROM " + table + ", site GROUP BY " + table + "." + attribute + ", site.id";
-			SecureRelRecordType schema = Utilities.getOutSchemaFromString(query);
+			SecureRelRecordType schema = Utilities.getOutSchemaFromSql(query);
 			return getResults(query, schema, s);
 		}
 		
@@ -42,7 +42,7 @@ public class StatisticsCollector {
 			if (i > 0) {
 				query += "\nUNION\n"; 
 			} else {
-				schema = Utilities.getOutSchemaFromString(subQuery);
+				schema = Utilities.getOutSchemaFromSql(subQuery);
 			}
 			
 			query += subQuery;

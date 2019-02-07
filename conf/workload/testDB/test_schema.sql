@@ -205,3 +205,11 @@ GRANT SELECT(race) ON demographics TO protected_attribute;
 GRANT SELECT(ethnicity) ON demographics TO protected_attribute;
 GRANT SELECT(insurance) ON demographics TO protected_attribute;
 GRANT SELECT(birth_year) ON demographics TO protected_attribute;
+
+-- constraints for cardinality bounds
+ALTER TABLE demographics ADD CONSTRAINT  year_range CHECK  (birth_year >= 1900 AND birth_year <= date_part('year', CURRENT_DATE));
+ALTER TABLE demographics ADD CONSTRAINT  gender_range CHECK  (gender >= 1 AND gender <= 3);  
+ALTER TABLE demographics ADD CONSTRAINT  race_range CHECK  (race >= 1 AND race <= 8);  
+ALTER TABLE demographics ADD CONSTRAINT  ethnicity_range CHECK  (ethnicity >= 1 AND ethnicity <= 2);  
+ALTER TABLE demographics ADD CONSTRAINT  insurance_range CHECK  (insurance >= 1 AND insurance <= 6);  
+ALTER TABLE diagnoses ADD CONSTRAINT month_range CHECK (month >= 1 AND month <= 12);

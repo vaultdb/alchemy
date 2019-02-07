@@ -34,7 +34,7 @@ public class SqlQueryExecutor {
 		List<Tuple> queryOutput = new ArrayList<Tuple>();		
 
 		Statement st = c.createStatement();
-		System.out.println("query: " + query);
+		
 		//TODO: remove hardcode
 		query = query.replace("TIMESTAMPDIFF(DAY, d2.timestamp_, d1.timestamp_)", "DATE_PART('day', d2.timestamp_ - d1.timestamp_)");
 		//query = query.replace("cdiff_cohort_diagnoses", "sample_cdiff_cohort_diagnoses");
@@ -74,7 +74,7 @@ public class SqlQueryExecutor {
 	
 	public static QueryTable query(String sql, String workerId) throws Exception {
 		System.out.println("Processing " + sql);
-		SecureRelRecordType outSchema = Utilities.getOutSchemaFromString(sql);
+		SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(sql);
 
 		SegmentExecutor executor = SegmentExecutor.getInstance();
 		return executor.runPlaintext(workerId, sql, outSchema);

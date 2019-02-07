@@ -20,6 +20,7 @@ public class GenerateSmcTest extends BaseTest {
 	protected void setUp() throws Exception {
 		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
 		System.setProperty("smcql.setup", setupFile);
+
 	}
 	
 
@@ -27,7 +28,8 @@ public class GenerateSmcTest extends BaseTest {
 		
 		String query = "SELECT COUNT(DISTINCT icd9) FROM diagnoses";
 		// to run in plaintext to verify our results
-		String distributedQuery = "WITH all_diagnoses AS ((SELECT icd9 FROM diagnoses) UNION ALL (SELECT icd9 FROM remote_diagnoses)) SELECT COUNT(DISTINCT icd9) FROM all_diagnoses;";
+		//String distributedQuery = "WITH all_diagnoses AS ((SELECT icd9 FROM diagnoses) UNION ALL (SELECT icd9 FROM remote_diagnoses)) SELECT COUNT(DISTINCT icd9) FROM all_diagnoses;";
+		String distributedQuery = Utilities.getDistributedQuery(query);
 		String testName = "count-icd9s";
 
 		QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
@@ -48,7 +50,8 @@ public class GenerateSmcTest extends BaseTest {
 		     "SELECT DISTINCT d.patient_id FROM all_diagnoses d JOIN all_medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\';";
 
 	
-		System.out.println("Distributed query: " + distributedQuery);
+//		String distributedQuery = Utilities.getDistributedQuery(query);
+//		System.out.println("Distributed query: " + distributedQuery);
 		
 		QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
 	
@@ -65,9 +68,10 @@ public class GenerateSmcTest extends BaseTest {
 	public void testFilterDistinct() throws Exception {
 		String testName = "filter-distinct";
 		String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
-		String distributedQuery = "WITH all_diagnoses AS ((SELECT patient_id,icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)) " +
-				"SELECT DISTINCT patient_id FROM all_diagnoses WHERE icd9 = \'414.01\'";
+//		String distributedQuery = "WITH all_diagnoses AS ((SELECT patient_id,icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)) " +
+//				"SELECT DISTINCT patient_id FROM all_diagnoses WHERE icd9 = \'414.01\'";
 		
+		String distributedQuery = Utilities.getDistributedQuery(query);
 		QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
 		testCase(testName, query, expectedOutput);	
 	
@@ -75,8 +79,7 @@ public class GenerateSmcTest extends BaseTest {
 
 	protected QueryTable getExpectedOutput(String testName, String query, String distributedQuery) throws Exception {
 		String aliceId = ConnectionManager.getInstance().getAlice();
-		SecureRelRoot secRoot = new SecureRelRoot(testName, query);
-		SecureRelRecordType outSchema = secRoot.getPlanRoot().getSchema();
+		SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
 	
 		return SqlQueryExecutor.query(distributedQuery, outSchema, aliceId);
 	

@@ -37,7 +37,7 @@ public class SqlGenerator {
 		return getStringFromNode(rel, converter, dialect);
 	}
 	
-	private static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect) {
+	public static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect) {
 		SqlNode node = converter.visitChild(0, rel).asQuery();
 		
 		if (node instanceof SqlSelect && ((SqlSelect) node).getWhere() != null) {

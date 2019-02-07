@@ -164,7 +164,7 @@ public class SegmentExecutor {
 	 public QueryTable runPlaintext(String workerId, String sql, SecureRelRecordType os) throws Exception {
 
 			ViNode node = cloud.node(workerId);
-			final SecureRelRecordType outSchema = (os == null) ?  Utilities.getOutSchemaFromString(sql) : os;
+			final SecureRelRecordType outSchema = (os == null) ?  Utilities.getOutSchemaFromSql(sql) : os;
 			
 			QueryTable output = node.exec(new Callable<QueryTable>() {
 				@Override
