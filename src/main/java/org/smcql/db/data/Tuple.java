@@ -111,6 +111,7 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
 				
 	}
 
+	
 	// create blank tuple that matches schema
 	public Tuple(SecureRelRecordType schema) throws Exception {
 		fields = new ArrayList<Field>();

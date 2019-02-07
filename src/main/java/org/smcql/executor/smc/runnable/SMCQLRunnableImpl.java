@@ -197,7 +197,7 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 		logger.info(msg);
 		
 		SecureArray<T> secResult = null;
-		if(Utilities.isMerge(op) && (lhs == null || rhs == null)) { // applies for both null too
+		if(Utilities.isUnion(op) && (lhs == null || rhs == null)) { // applies for both null too
 			secResult = (lhs == null) ? rhs : lhs;
 		}
 		else {		
@@ -367,7 +367,7 @@ public class SMCQLRunnableImpl<T> implements Serializable {
 
 		double start = System.nanoTime();
 		SecureArray<T> secResult = null;
-		if(Utilities.isMerge(op)) {
+		if(Utilities.isUnion(op)) {
 			secResult = mergeRun(op, env, lhs, rhs);
 		}
 		else {

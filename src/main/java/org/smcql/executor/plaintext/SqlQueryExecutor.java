@@ -73,6 +73,7 @@ public class SqlQueryExecutor {
 	}
 	
 	public static QueryTable query(String sql, String workerId) throws Exception {
+		System.out.println("Processing " + sql);
 		SecureRelRecordType outSchema = Utilities.getOutSchemaFromString(sql);
 
 		SegmentExecutor executor = SegmentExecutor.getInstance();

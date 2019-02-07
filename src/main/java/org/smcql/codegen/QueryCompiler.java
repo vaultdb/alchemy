@@ -10,13 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.calcite.util.Pair;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.smcql.codegen.plaintext.PlainOperator;
 import org.smcql.codegen.smc.operator.SecureOperator;
 import org.smcql.codegen.smc.operator.SecureOperatorFactory;
@@ -26,9 +24,7 @@ import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.RunConfig;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
-import org.smcql.executor.smc.BasicSecureQueryTable;
 import org.smcql.executor.smc.ExecutionSegment;
-import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.executor.smc.SecureBufferPool;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
@@ -208,8 +204,9 @@ public class QueryCompiler {
 
 	}	
 	
-	// JMR work in progress
-	public void writeOutEmpFile() throws Exception {
+
+	// returns filename
+	public String writeOutEmpFile() throws Exception {
 		
 		String targetFile = Utilities.getCodeGenTarget() + "/" + queryId + "/emp.cpp";
 
@@ -234,7 +231,8 @@ public class QueryCompiler {
 		wholeFile += generateEMPMain(targetFile, code.right, rootOutput); // plug in function calls
 		Utilities.writeFile(targetFile, wholeFile);
 		
-		System.out.println("Generated file:\n" + wholeFile);
+		return targetFile;
+		
 		
 	}
 	
@@ -271,7 +269,7 @@ public class QueryCompiler {
 		String functionName = srcStep.getFunctionName();
 
 		if(((SecureStep) srcStep).isUnion()) {
-			String call = "Data *" + functionName + "Output = " + functionName + "(party, io);\n";
+			String call = "     Data *" + functionName + "Output = " + functionName + "(party, io);\n";
 			return call;
 		}
 		
@@ -281,7 +279,7 @@ public class QueryCompiler {
 			args += ", " + children.get(i);
 		}
 		String outputVariable = functionName + "Output";
-		String call = "Data * " + outputVariable + " = " + functionName + "(" + args + ");\n";
+		String call = "    Data * " + outputVariable + " = " + functionName + "(" + args + ");\n";
 
 		return call;
 	}
@@ -293,7 +291,6 @@ public class QueryCompiler {
 		variables.put("rootOutput", rootOutput);
 		String generatedCode = CodeGenUtils.generateFromTemplate("util/main.txt", variables);
 		
-		Utilities.appendFile(targetFile, generatedCode);
 		return generatedCode;
 
 	}

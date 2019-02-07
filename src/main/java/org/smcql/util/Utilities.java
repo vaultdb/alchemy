@@ -108,19 +108,6 @@ public class Utilities {
 
 	 }
 
-	public static void appendFile(String fname, String contents) throws IOException {
-        String path = FilenameUtils.getFullPath(fname);
-        File f = new File(path);
-        f.mkdirs();
-
-        PrintWriter writer = new PrintWriter(fname, "UTF-8");
-        writer.append(contents);
-        writer.close();
-
-
-	 }
-
-
 		public static byte[] readGeneratedClassFile(String packageName) throws IOException {
 			String filename = Utilities.getCodeGenTarget() + "/"  + packageName.replace('.', '/') + "/NoClass.class";
 			return readBinaryFile(filename);
@@ -240,7 +227,7 @@ public class Utilities {
 	}
 
 	
-	public static boolean isMerge(OperatorExecution op) {
+	public static boolean isUnion(OperatorExecution op) {
 		if(op.packageName.endsWith(".merge"))
 			return true;
 		return false;

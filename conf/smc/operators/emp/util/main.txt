@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 
     setup_semi_honest(io, party);
     
-    $functions
+$functions
     
     // TODO: decrypt $rootOutput at honest broker
    
