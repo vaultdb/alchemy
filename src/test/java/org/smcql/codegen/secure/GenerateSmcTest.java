@@ -22,19 +22,7 @@ public class GenerateSmcTest extends BaseTest {
 		System.setProperty("smcql.setup", setupFile);
 	}
 	
-/*	public void testComorbidity() throws Exception {
-		testCase("comorbidity");
-	}
-	
 
-	public void testCDiff() throws Exception {
-		testCase("cdiff");
-	}
-
-	public void testAspirinCount() throws Exception {
-		testCase("aspirin-count");
-	}*/
-	
 	public void testCount() throws Exception {
 		
 		String query = "SELECT COUNT(DISTINCT icd9) FROM diagnoses";
