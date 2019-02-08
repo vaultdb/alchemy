@@ -185,7 +185,7 @@ public class AttributeResolver {
 	}
 
 
-	// straight copy of permissions, accept any new aliases
+	// simple copy of permissions, accept any new aliases
 	public static SecureRelRecordType copySchema(SecureRelNode aNode) {
 		SecureRelRecordType srcSchema = aNode.getChild(0).getSchema();
 		RelRecordType dstRecord = (RelRecordType) aNode.getRelNode().getRowType();
@@ -242,7 +242,7 @@ public class AttributeResolver {
 		
 	}
 	
-	private static SecureRelRecordType resolveJoin(SecureRelNode aJoin) {
+	private static SecureRelRecordType resolveJoin(SecureRelNode aJoin) throws Exception {
 		
 		List<SecureRelDataTypeField> secureFields = new ArrayList<SecureRelDataTypeField>();
 		LogicalJoin join = (LogicalJoin) aJoin.getRelNode();
@@ -279,11 +279,12 @@ public class AttributeResolver {
 		String table = rel.getTable().getQualifiedName().get(0);
 		SecureSchemaLookup permissions = SecureSchemaLookup.getInstance();
 		
+		
 		for(RelDataTypeField field : record.getFieldList()) {
 			String attr = field.getName();
 			SecurityPolicy policy = permissions.getPolicy(table, attr);
 
-			SecureRelDataTypeField secField = new SecureRelDataTypeField(field, policy);
+			SecureRelDataTypeField secField = new SecureRelDataTypeField(field, policy, table, attr, null);
 			secureFields.add(secField);
 		}
 		

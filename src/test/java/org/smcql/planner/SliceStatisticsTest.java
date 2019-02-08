@@ -159,7 +159,7 @@ public class SliceStatisticsTest extends SliceKeyTest {
 	}
 	
 	// create a tuple with k int fields
-	private Tuple createTuple(String src, int[] fields) {
+	private Tuple createTuple(String src, int[] fields) throws Exception {
 		Tuple t = new Tuple();
 		
 		SecureRelDataTypeField sPrime = new SecureRelDataTypeField(src, 0, null);

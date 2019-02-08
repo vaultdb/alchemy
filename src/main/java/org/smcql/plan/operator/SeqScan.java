@@ -33,6 +33,12 @@ public class SeqScan extends Operator {
 		return schema;
 	}
 	
+	@Override
+	public void initializeStatistics() {
+		// infer from base relation
+		baseRelNode.getSchema().initializeStatistics();
+	}
+	
 	private List<String> getOrderableFields() {
 		List<String> fieldNames = new ArrayList<String>();
 		Operator parent = this.parent;
@@ -64,10 +70,17 @@ public class SeqScan extends Operator {
 		return result;
 	}
 
+	@Override
 	public void inferExecutionMode() {
 		executionMode = ExecutionMode.Plain;
 	}
 
+	@Override
+	public long getCardinalityBound() {
+		return inSchema.getSecureField(0).getStatistics().getCardinality();
+	}
+	
+	
 	@Override
 	public int getEstimatedCardinality() {
 		

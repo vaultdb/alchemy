@@ -7,15 +7,20 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.calcite.plan.RelOptUtil;
 import org.junit.Test;
 import org.smcql.BaseTest;
+import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;
 import org.smcql.db.data.field.IntField;
-import org.smcql.db.schema.statistics.FieldStatistics;
+import org.smcql.db.schema.statistics.ObliviousFieldStatistics;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
+import org.smcql.executor.step.ExecutionStep;
+import org.smcql.plan.SecureRelRoot;
+import org.smcql.plan.operator.Operator;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
@@ -33,7 +38,7 @@ public class TableScanTest extends BaseTest  {
 		String table = "diagnoses";
 		String attr = "patient_id";
 		
-		FieldStatistics stats = getExpectedOutput(table, attr);
+		ObliviousFieldStatistics stats = getExpectedOutput(table, attr);
 		testCase(table, attr, stats);	
 	}
 	
@@ -41,7 +46,7 @@ public class TableScanTest extends BaseTest  {
 		String table = "medications";
 		String attr = "patient_id";
 		
-		FieldStatistics stats = getExpectedOutput(table, attr);
+		ObliviousFieldStatistics stats = getExpectedOutput(table, attr);
 		testCase(table, attr, stats);	
 	}
 	
@@ -52,7 +57,7 @@ public class TableScanTest extends BaseTest  {
 		String table = "demographics";
 		String attr = "birth_year";
 		
-		FieldStatistics stats = new FieldStatistics();
+		ObliviousFieldStatistics stats = new ObliviousFieldStatistics();
 		stats.setMin(1900);
 		stats.setMax(2019);
 		
@@ -60,13 +65,24 @@ public class TableScanTest extends BaseTest  {
 		testCase(table, attr, stats);
 		
 		
-	}	
+	}
 	
-	protected FieldStatistics getExpectedOutput(String table, String attr) throws Exception {
+	public void testDemographicsScan() throws Exception {
+		String query = "SELECT * FROM demographics";
+	
+		SecureRelRecordType schema = testQuery("demographic-scan", query);
+		Logger logger = SystemConfiguration.getInstance().getLogger();
+		logger.log(Level.INFO, "Demo schema: " + schema);
+		for(SecureRelDataTypeField f : schema.getSecureFieldList()) {
+			logger.log(Level.INFO, "Field: " + f.toString() + " has statistics " + f.getStatistics());
+		}
+	}
+	
+	protected ObliviousFieldStatistics getExpectedOutput(String table, String attr) throws Exception {
 		
 		
 		
-		FieldStatistics stats = new FieldStatistics();
+		ObliviousFieldStatistics stats = new ObliviousFieldStatistics();
 		long maxMultiplicity = runLongIntQuery("SELECT COUNT(*) FROM " +  table + " GROUP BY " + attr + " ORDER BY COUNT(*) LIMIT 1");
 		List<Long> domain = runLongIntListQuery("SELECT DISTINCT " + attr + " FROM " + table);
 		long min = runLongIntQuery("SELECT min(" + attr + ") FROM " + table);
@@ -75,7 +91,7 @@ public class TableScanTest extends BaseTest  {
 		
 		stats.setMaxMultiplicity((int) maxMultiplicity); 
 		stats.setDomain(domain);
-		stats.setDistinctValues(domain.size());
+		stats.setDistinctCardinality(domain.size());
 		stats.setMax(max);
 		stats.setMin(min);
 		
@@ -97,7 +113,7 @@ public class TableScanTest extends BaseTest  {
 		return f.getValue();
 	}
 
-	
+	// caution: this only works for one-relation queries, i.e., ones with no joins	
 	protected List<Long> runLongIntListQuery(String query) throws Exception {
 		String aliceId = ConnectionManager.getInstance().getAlice();
 		SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
@@ -114,13 +130,34 @@ public class TableScanTest extends BaseTest  {
 		return results;
 	}
 	
-	protected void testCase(String table, String attr, FieldStatistics expectedOutput) throws Exception {
+	protected void testCase(String table, String attr, ObliviousFieldStatistics expectedOutput) throws Exception {
 		Logger logger = SystemConfiguration.getInstance().getLogger();
 		
 		logger.log(Level.INFO, "Expected output: " + expectedOutput);
 
 		SecureRelDataTypeField field = Utilities.lookUpAttribute(table, attr);
 		assertEquals(expectedOutput, field);
+	}
+	
+	protected SecureRelRecordType testQuery(String testName, String sql) throws Exception {
+		SystemConfiguration.getInstance().resetCounters();
+		Logger logger = SystemConfiguration.getInstance().getLogger();
+
+		logger.log(Level.INFO, "Parsing " + sql);
+		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
+		Operator planRoot = secRoot.getPlanRoot();
+		planRoot.initializeStatistics();
+		
+	
+		logger.log(Level.INFO, "Parsed " + RelOptUtil.toString(secRoot.getRelRoot().project()));
+		
+		QueryCompiler qc = new QueryCompiler(secRoot);
+		ExecutionStep root = qc.getRoot();
+		
+		String testTree = root.printTree();
+		logger.log(Level.INFO, "Resolved secure tree to:\n " + testTree);
+		return secRoot.getPlanRoot().getSchema();
+
 	}
 
 }

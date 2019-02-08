@@ -12,7 +12,12 @@ import org.smcql.type.SecureRelRecordType;
 
 // decorator for calcite's RelNode
 // for attribute-level security policy inference 
+// and cardinality resolution
 public class SecureRelNode implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	transient RelNode baseNode;
 	Operator physicalNode; 
 	List<SecureRelNode> children;

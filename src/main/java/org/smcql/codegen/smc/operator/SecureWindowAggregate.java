@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.calcite.rel.logical.LogicalFilter;
-import org.smcql.codegen.smc.operator.support.RexNodeUtilities;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Filter;
@@ -15,6 +14,7 @@ import org.smcql.plan.operator.WindowAggregate;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.CodeGenUtils;
+import org.smcql.util.RexNodeUtilities;
 
 // only supports row number for now
 public class SecureWindowAggregate extends SecureOperator  {

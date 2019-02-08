@@ -114,6 +114,13 @@ public class SecureRelRecordType implements Serializable {
 		
 	}
 
+	public void initializeStatistics() {
+		for(SecureRelDataTypeField fields : this.getSecureFieldList()) {
+			fields.initializeStatistics();
+		}
+	}
+	
+	
 	public SecureRelDataTypeField getSecureField(int idx) {
 		if (idx >= secureFields.size()) {
 			for (SecureRelDataTypeField field : secureFields) {
@@ -168,6 +175,8 @@ public class SecureRelRecordType implements Serializable {
 	public RelRecordType getBaseType() {
 		return baseType;
 	}
+	
+	
 	
 	public String getBitmask(int idx)  {
 		SecureRelDataTypeField field = null;

@@ -12,22 +12,17 @@ CREATE TABLE demographics (
        ethnicity integer,
        insurance integer,
        zip integer);
+
+CREATE TABLE remote_demographics (
+       patient_id integer,
+       birth_year integer,
+       gender integer,
+       race integer,
+       ethnicity integer,
+       insurance integer,
+       zip integer);
  
-CREATE TABLE remote_diagnoses (
-    patient_id integer NOT NULL,
-    site integer NOT NULL,
-    year integer NOT NULL,
-    month integer NOT NULL,
-    visit_no integer NOT NULL,
-    type_ integer NOT NULL,
-    encounter_id integer NOT NULL,
-    diag_src character varying NOT NULL,
-    icd9 character varying NOT NULL,
-    primary_ integer NOT NULL,
-    timestamp_ timestamp without time zone,
-    clean_icd9 character varying,
-    major_icd9 character varying
-);
+
 
 CREATE TABLE diagnoses (
     patient_id integer NOT NULL,
@@ -44,6 +39,23 @@ CREATE TABLE diagnoses (
     clean_icd9 character varying,
     major_icd9 character varying
 );
+
+CREATE TABLE remote_diagnoses (
+    patient_id integer NOT NULL,
+    site integer NOT NULL,
+    year integer NOT NULL,
+    month integer NOT NULL,
+    visit_no integer NOT NULL,
+    type_ integer NOT NULL,
+    encounter_id integer NOT NULL,
+    diag_src character varying NOT NULL,
+    icd9 character varying NOT NULL,
+    primary_ integer NOT NULL,
+    timestamp_ timestamp without time zone,
+    clean_icd9 character varying,
+    major_icd9 character varying
+);
+
 
 DROP TABLE IF EXISTS cdiff_cohort;
 CREATE TABLE cdiff_cohort AS (
@@ -96,6 +108,18 @@ CREATE TABLE labs (
 
 
 CREATE TABLE medications (
+    patient_id integer NOT NULL,
+    site integer NOT NULL,
+    year integer NOT NULL,
+    month integer NOT NULL,
+    medication character varying NOT NULL,
+    dosage character varying NOT NULL,
+    route character varying,
+    timestamp_ timestamp without time zone
+);
+
+
+CREATE TABLE remote_medications (
     patient_id integer NOT NULL,
     site integer NOT NULL,
     year integer NOT NULL,
@@ -200,7 +224,7 @@ GRANT SELECT(diastolic) ON mi_cohort_vitals TO protected_attribute;
 GRANT SELECT(pulse) ON mi_cohort_vitals TO protected_attribute;
 
 GRANT SELECT(patient_id) ON demographics TO public_attribute;
-GRANT SELECT(gender) ON demographics TO public_attribute;
+GRANT SELECT(gender) ON demographics TO protected_attribute;
 GRANT SELECT(race) ON demographics TO protected_attribute;
 GRANT SELECT(ethnicity) ON demographics TO protected_attribute;
 GRANT SELECT(insurance) ON demographics TO protected_attribute;
@@ -213,3 +237,6 @@ ALTER TABLE demographics ADD CONSTRAINT  race_range CHECK  (race >= 1 AND race <
 ALTER TABLE demographics ADD CONSTRAINT  ethnicity_range CHECK  (ethnicity >= 1 AND ethnicity <= 2);  
 ALTER TABLE demographics ADD CONSTRAINT  insurance_range CHECK  (insurance >= 1 AND insurance <= 6);  
 ALTER TABLE diagnoses ADD CONSTRAINT month_range CHECK (month >= 1 AND month <= 12);
+
+-- stats table for cardinality bounds
+CREATE TABLE relation_statistics(relation varchar, attr varchar, distinct_values integer, max_multiplicity integer, min_value integer, max_value integer); 

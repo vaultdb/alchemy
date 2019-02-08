@@ -22,7 +22,7 @@ import org.apache.calcite.util.SerializableCharset;
 import org.apache.commons.lang.CharSet;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.smcql.db.schema.statistics.FieldStatistics;
+import org.smcql.db.schema.statistics.ObliviousFieldStatistics;
 import org.smcql.util.Utilities;
 
 // thin wrapper on top of RelDataTypeField for attaching security policy to an attribute
@@ -42,7 +42,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 
 	SecurityPolicy policy = SecurityPolicy.Private;
 	RelDataTypeField baseField;
-	FieldStatistics stats;
+	ObliviousFieldStatistics statistics;
 	
 	// both of below are null if field sourced from greater than one attribute
 	// stored in original tables
@@ -50,31 +50,31 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 	private String storedAttribute;
 	transient List<LogicalFilter> filters;
 
-	public SecureRelDataTypeField(String name, int index, RelDataType type) {
+	public SecureRelDataTypeField(String name, int index, RelDataType type)  {
 		super(name, index, type);
 		filters = new ArrayList<LogicalFilter>();
-		stats = new FieldStatistics(this); 
+		//statistics = new ObliviousFieldStatistics(this); 
 	}
 
-	public  SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy) {
+	public  SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy)  {
 		super(baseField.getName(), baseField.getIndex(), baseField.getType());
 		this.baseField = baseField;
 		policy = secPolicy;
 		filters = new ArrayList<LogicalFilter>();
-		stats = new FieldStatistics(this); 
+		//statistics = new ObliviousFieldStatistics(this); 
 	}
 
-	public  SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy, FieldStatistics theStats) {
+	public  SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy, ObliviousFieldStatistics theStats) {
 		super(baseField.getName(), baseField.getIndex(), baseField.getType());
 		this.baseField = baseField;
 		policy = secPolicy;
 		filters = new ArrayList<LogicalFilter>();
-		stats = theStats;
+		statistics = theStats;
 	}
 
 	
 	public SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy, String aStoredTable,
-			String aStoredAttribute, LogicalFilter aFilter) {
+			String aStoredAttribute, LogicalFilter aFilter) throws Exception {
 		super(baseField.getName(), baseField.getIndex(), baseField.getType());
 		this.baseField = baseField;
 		policy = secPolicy;
@@ -82,7 +82,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 		setStoredAttribute(aStoredAttribute);
 		filters = new ArrayList<LogicalFilter>();
 		addFilter(aFilter);
-		stats = new FieldStatistics(this); 
+		//statistics = new ObliviousFieldStatistics(this); 
 		
 	}
 
@@ -94,7 +94,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 		storedTable = src.getStoredTable();
 		storedAttribute = src.getStoredAttribute();
 		filters = new ArrayList<LogicalFilter>(src.getFilters());
-		stats = new FieldStatistics(this);  
+		statistics = src.statistics;
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {
@@ -133,6 +133,12 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 		return tMap.sizeof(this);
 	}
 
+	// for table scans
+	public void initializeStatistics() {
+		statistics = new ObliviousFieldStatistics(this);
+	}
+	
+	
 	@Override
 	public int getIndex() {
 		if (baseField == null)
@@ -167,6 +173,10 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 
 	public String getStoredAttribute() {
 		return storedAttribute;
+	}
+	
+	public ObliviousFieldStatistics getStatistics() {
+		return statistics;
 	}
 
 	public void setStoredAttribute(String storedAttribute) {

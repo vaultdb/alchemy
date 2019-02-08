@@ -66,7 +66,7 @@ public class Join extends Operator {
 		
 		joinOn = RexUtil.toCnf(rexBuilder, joinOn);  // get it to conjunctive normal form for easier optimization
 		
-		if(joinOn.getKind() == SqlKind.AND) { 
+		if(joinOn.getKind() == SqlKind.AND) {  // TODO: handle > 2 selection criteria?
 			List<RexNode> operands = new ArrayList<RexNode>(((RexCall) joinOn).operands);
 			for(RexNode op : operands) {
 				sliceKey = checkForSliceField(op, sliceKey);

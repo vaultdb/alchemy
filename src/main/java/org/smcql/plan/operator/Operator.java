@@ -129,6 +129,12 @@ public abstract class Operator implements CodeGenerator {
 		
 	}
 	
+	// TODO: use this to manage attribute-level statistics as tuples move up the query tree
+	// will likely need to be overriden in many classes
+	public void initializeStatistics() {
+		// simplest case: copy stats from children
+		// see algebra in paper for more involved cases
+	}
 		
 	public void addChild(Operator op) {
 		children.add(op);
@@ -196,6 +202,13 @@ public abstract class Operator implements CodeGenerator {
 		return baseRelNode.getSchema();
 	}
 
+	// very  basic case, simply copies child cardinality bound
+	// TODO: override for join and other binary ops
+	// TODO: write this for SeqScan too
+	public long getCardinalityBound() {
+		assert(children.size() == 1);
+		return children.get(0).getCardinalityBound();
+	}
 	
 	// for all but SeqScan and join
 	public SecureRelRecordType getInSchema() {
@@ -482,7 +495,7 @@ public abstract class Operator implements CodeGenerator {
     
     
     public double getReductionFactor() {
-        // Overriden in Filter class
+        // Overridden in Filter class
         return 1.0;
     }
 

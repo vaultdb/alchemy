@@ -1,4 +1,4 @@
-
+-- replicated: r_<tablename>
 CREATE TABLE r_demographics (
        patient_id integer,
        birth_year protected_integer,
@@ -8,6 +8,7 @@ CREATE TABLE r_demographics (
        insurance protected_integer,
        zip private_integer);
  
+-- shared: s_<tablename>
 CREATE TABLE s_diagnoses (
 	patient_id integer,
 	year private_integer,
@@ -99,3 +100,4 @@ CREATE TABLE s_test (
 
 
 
+CREATE TABLE s_relation_statistics(relation varchar, attr varchar, distinct_values integer, max_multiplicity integer, min_value integer, max_value integer);

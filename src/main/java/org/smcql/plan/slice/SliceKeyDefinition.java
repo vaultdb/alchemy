@@ -6,12 +6,12 @@ import java.util.List;
 
 import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.type.RelDataTypeField;
-import org.smcql.codegen.smc.operator.support.RexNodeUtilities;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Project;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
+import org.smcql.util.RexNodeUtilities;
 
 // only supports single equality predicates per Join for now
 

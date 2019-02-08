@@ -9,7 +9,6 @@ import java.util.Map;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.smc.DynamicCompiler;
 import org.smcql.codegen.smc.operator.support.ProcessingStep;
-import org.smcql.codegen.smc.operator.support.RexNodeUtilities;
 import org.smcql.codegen.smc.operator.support.SortMethod;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.executor.step.ExecutionStep;
@@ -21,6 +20,7 @@ import org.smcql.plan.operator.Sort;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.CodeGenUtils;
+import org.smcql.util.RexNodeUtilities;
 
 public class SecureOperator implements CodeGenerator, Serializable {
 

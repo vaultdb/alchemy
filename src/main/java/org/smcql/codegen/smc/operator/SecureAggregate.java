@@ -5,13 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.smcql.codegen.smc.operator.support.RexNodeUtilities;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Operator;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.plan.operator.Aggregate;
 import org.smcql.util.CodeGenUtils;
+import org.smcql.util.RexNodeUtilities;
 
 public class SecureAggregate extends SecureOperator {
 
