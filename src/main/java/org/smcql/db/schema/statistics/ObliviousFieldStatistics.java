@@ -98,23 +98,26 @@ public class ObliviousFieldStatistics {
 		max = src.max;
 		cardinality = src.cardinality;
 	}
+	
 	public static ObliviousFieldStatistics getCachedStatistics(String table, String attr) throws Exception {
 		ObliviousFieldStatistics f = new ObliviousFieldStatistics();
 		f.populatePrivateAttribute(table, attr);
 		return f;
 	}
+	
+	
 
 	@Override
     public boolean equals(Object o) { 
 		if(o instanceof ObliviousFieldStatistics) {
+
 			ObliviousFieldStatistics f = (ObliviousFieldStatistics) o;
 			if(f.distinctValues == this.distinctValues && 
-					f.domain == this.domain && 
+					f.domain.equals(this.domain) && 
 					f.min == this.min && 
 					f.max == this.max &&
 					f.maxMultiplicity == this.maxMultiplicity &&
-					f.cardinality == this.cardinality &&
-					f.parentField == this.parentField)
+					f.cardinality == this.cardinality)
 				return true;
 		}
 		return false;
@@ -126,7 +129,7 @@ public class ObliviousFieldStatistics {
 		String output = "(distinct value count=" + Long.toString(distinctValues) +
 					      " max multiplicity=" + Long.toString(maxMultiplicity) + 
 					      " range=[" + min + "," + max + "] " +
-					      " domain: " + domain + ")";
+					      " domain: " + domain + " cardinality: " + cardinality + ")";
 		return output;
 	}
 	
@@ -203,7 +206,6 @@ public class ObliviousFieldStatistics {
 
 
 	private void populatePublicAttribute(String table, String attr) throws Exception {
-		
 		
 		
 		maxMultiplicity = runLongIntQuery("SELECT COUNT(*) FROM " +  table + " GROUP BY " + attr + " ORDER BY COUNT(*) DESC LIMIT 1");

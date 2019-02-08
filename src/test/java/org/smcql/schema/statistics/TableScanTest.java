@@ -3,6 +3,7 @@ package org.smcql.schema.statistics;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,30 +71,52 @@ public class TableScanTest extends BaseTest  {
 	public void testDemographicsScan() throws Exception {
 		String query = "SELECT * FROM demographics";
 	
-		SecureRelRecordType schema = testQuery("demographic-scan", query);
+		SecureRelRecordType schema = testQuery("demographics-scan", query);
+		logSchemaStats(schema);
+		
+	}
+	
+	public void testDemographicsProjection() throws Exception {
+		String query = "SELECT patient_id FROM demographics";
+	
+		SecureRelRecordType schema = testQuery("demographics-pid", query);
+		logSchemaStats(schema);
+	}
+	
+	public void testDemographicsFilter() throws Exception {
+		String query = "SELECT patient_id from demographics WHERE gender = 1";
+		SecureRelRecordType schema = testQuery("demographics-filter", query);
+		logSchemaStats(schema);
+
+		// expect output cardinality of 6
+	}
+	
+	
+	protected void logSchemaStats(SecureRelRecordType schema) throws Exception {
 		Logger logger = SystemConfiguration.getInstance().getLogger();
-		logger.log(Level.INFO, "Demo schema: " + schema);
+		logger.log(Level.INFO, "Schema: " + schema);
+		
 		for(SecureRelDataTypeField f : schema.getSecureFieldList()) {
 			logger.log(Level.INFO, "Field: " + f.toString() + " has statistics " + f.getStatistics());
 		}
 	}
-	
 	protected ObliviousFieldStatistics getExpectedOutput(String table, String attr) throws Exception {
 		
 		
 		
 		ObliviousFieldStatistics stats = new ObliviousFieldStatistics();
-		long maxMultiplicity = runLongIntQuery("SELECT COUNT(*) FROM " +  table + " GROUP BY " + attr + " ORDER BY COUNT(*) LIMIT 1");
+		long maxMultiplicity = runLongIntQuery("SELECT COUNT(*) FROM " +  table + " GROUP BY " + attr + " ORDER BY COUNT(*) DESC LIMIT 1");
 		List<Long> domain = runLongIntListQuery("SELECT DISTINCT " + attr + " FROM " + table);
 		long min = runLongIntQuery("SELECT min(" + attr + ") FROM " + table);
 		long max = runLongIntQuery("SELECT max(" + attr + ") FROM " + table);
-		
+		long cardinality = runLongIntQuery("SELECT COUNT(*) FROM " + table);
 		
 		stats.setMaxMultiplicity((int) maxMultiplicity); 
 		stats.setDomain(domain);
 		stats.setDistinctCardinality(domain.size());
 		stats.setMax(max);
 		stats.setMin(min);
+		stats.setCardinality(cardinality);
 		
 		
 		return stats;
@@ -126,17 +149,20 @@ public class TableScanTest extends BaseTest  {
 			IntField f = (IntField) t.getField(0);
 			results.add(f.getValue());
 		}
-		
+		Collections.sort(results);
 		return results;
 	}
 	
 	protected void testCase(String table, String attr, ObliviousFieldStatistics expectedOutput) throws Exception {
 		Logger logger = SystemConfiguration.getInstance().getLogger();
 		
-		logger.log(Level.INFO, "Expected output: " + expectedOutput);
-
+	
 		SecureRelDataTypeField field = Utilities.lookUpAttribute(table, attr);
-		assertEquals(expectedOutput, field);
+		field.initializeStatistics();
+		
+		logger.log(Level.INFO, "Expected output: " + expectedOutput);	
+		logger.log(Level.INFO, "observed output: " + field.getStatistics());
+		assertEquals(expectedOutput, field.getStatistics());
 	}
 	
 	protected SecureRelRecordType testQuery(String testName, String sql) throws Exception {
