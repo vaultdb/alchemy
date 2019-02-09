@@ -113,12 +113,12 @@ public class ObliviousFieldStatistics {
 
 			ObliviousFieldStatistics f = (ObliviousFieldStatistics) o;
 			if(f.distinctValues == this.distinctValues && 
-					f.domain.equals(this.domain) && 
 					f.min == this.min && 
 					f.max == this.max &&
 					f.maxMultiplicity == this.maxMultiplicity &&
 					f.cardinality == this.cardinality)
-				return true;
+					if((f.domain == null && domain == null ) || f.domain.equals(domain))
+						return true;
 		}
 		return false;
 	}
@@ -222,15 +222,18 @@ public class ObliviousFieldStatistics {
 	// TODO: fix this so that null is interpreted as -1 instead of 0 for all intfields
 	private void populatePrivateAttribute(String table, String attr) throws Exception {
 		String aliceId = ConnectionManager.getInstance().getAlice();
-
-		QueryTable result = SqlQueryExecutor.query("SELECT distinct_values, max_multiplicity, min_value, max_value FROM relation_statistics WHERE relation = \'" + table + "\' AND attr=\'" + attr + "\'", aliceId);
+		String query = new String("SELECT distinct_values, max_multiplicity, min_value, max_value FROM relation_statistics WHERE relation = \'" + table + "\' AND attr=\'" + attr + "\'");
+		SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
+		QueryTable result = SqlQueryExecutor.query(query, outSchema, aliceId);
 		if(result.tupleCount() > 0) {
 			Tuple firstTuple = result.getTuple(0);
 		
-			distinctValues =  ((IntField) firstTuple.getField(0)).getValue();
-			maxMultiplicity =  ((IntField) firstTuple.getField(1)).getValue();
-			min =  ((IntField) firstTuple.getField(2)).getValue();
-			max =  ((IntField) firstTuple.getField(3)).getValue();
+			// custom null-handling
+			// NULL == -1 here
+			distinctValues =  (((IntField) firstTuple.getField(0)).getValue() == 0) ? -1 : ((IntField) firstTuple.getField(0)).getValue();
+			maxMultiplicity = (((IntField) firstTuple.getField(1)).getValue() == 0) ? -1 : ((IntField) firstTuple.getField(1)).getValue();
+			min =  (((IntField) firstTuple.getField(2)).getValue() == 0) ? -1 : ((IntField) firstTuple.getField(2)).getValue();
+			max =  (((IntField) firstTuple.getField(3)).getValue() == 0) ? -1 : ((IntField) firstTuple.getField(3)).getValue();
 			cardinality = runLongIntQuery("SELECT COUNT(*) FROM " + table);
 		// domain unknown for now
 		}

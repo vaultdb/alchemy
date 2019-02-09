@@ -60,9 +60,10 @@ public class TableScanTest extends BaseTest  {
 		
 		ObliviousFieldStatistics stats = new ObliviousFieldStatistics();
 		// TODO: get correct inputs from DB
-		stats.setMin(1900);
-		stats.setMax(2019);
-		
+		stats.setMin(1924);
+		stats.setMax(1995);
+		stats.setDistinctCardinality(72);
+		stats.setCardinality(6);
 		
 		testCase(table, attr, stats);
 		
