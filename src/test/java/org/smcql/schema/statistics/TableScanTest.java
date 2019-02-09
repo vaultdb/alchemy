@@ -59,6 +59,7 @@ public class TableScanTest extends BaseTest  {
 		String attr = "birth_year";
 		
 		ObliviousFieldStatistics stats = new ObliviousFieldStatistics();
+		// TODO: get correct inputs from DB
 		stats.setMin(1900);
 		stats.setMax(2019);
 		
@@ -69,9 +70,30 @@ public class TableScanTest extends BaseTest  {
 	}
 	
 	public void testDemographicsScan() throws Exception {
-		String query = "SELECT * FROM demographics";
+		String query = "SELECT patient_id,gender,birth_year FROM demographics";
 	
 		SecureRelRecordType schema = testQuery("demographics-scan", query);
+		List<ObliviousFieldStatistics> expectedStats = new ArrayList<ObliviousFieldStatistics>();
+		List<ObliviousFieldStatistics> observedStats = new ArrayList<ObliviousFieldStatistics>();
+		
+		// TODO: fill this in with real vals
+		ObliviousFieldStatistics patientIdStats = new ObliviousFieldStatistics();
+		patientIdStats.setMaxMultiplicity(1);
+		
+		ObliviousFieldStatistics genderStats = new ObliviousFieldStatistics();
+		ObliviousFieldStatistics birthYearStats = new ObliviousFieldStatistics();
+		
+		expectedStats.add(patientIdStats);
+		expectedStats.add(genderStats);
+		expectedStats.add(birthYearStats);
+				
+		for(SecureRelDataTypeField f : schema.getSecureFieldList()) {
+			observedStats.add(f.getStatistics());
+						
+		}
+		
+		assertEquals(expectedStats, observedStats);
+		
 		logSchemaStats(schema);
 		
 	}
@@ -141,6 +163,9 @@ public class TableScanTest extends BaseTest  {
 		String aliceId = ConnectionManager.getInstance().getAlice();
 		SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
 		String distributedQuery = Utilities.getDistributedQuery(query);
+
+		System.out.println("Initial query: " + query);
+		System.out.println("Distributed query: " + distributedQuery);
 		
 		QueryTable output =  SqlQueryExecutor.query(distributedQuery, outSchema, aliceId);
 		
