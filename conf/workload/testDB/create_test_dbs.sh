@@ -28,7 +28,7 @@ do
     psql $dbName -c "COPY site FROM '$path/conf/workload/testDB/$i/site.csv' WITH DELIMITER ','"
     psql $dbName -c "COPY vitals FROM '$path/conf/workload/testDB/$i/vitals.csv' WITH DELIMITER ',' NULL AS ''"
     psql $dbName -c "COPY demographics FROM '$path/conf/workload/testDB/$i/demographics.csv' WITH DELIMITER ','"
-    psql $dbName -c "COPY relation_statistics FROM '$path/code/conf/schemas/healthlnk/stats.csv' WITH DELIMITER ',' NULL AS ''"
+    psql $dbName -c "COPY relation_statistics FROM '$path/conf/schemas/healthlnk/stats.csv' WITH DELIMITER ',' NULL AS ''"
     val=$i
     if (($val == 1)); then
         psql $dbName -c "COPY remote_diagnoses FROM '$path/conf/workload/testDB/2/diagnoses.csv' WITH DELIMITER ','"
