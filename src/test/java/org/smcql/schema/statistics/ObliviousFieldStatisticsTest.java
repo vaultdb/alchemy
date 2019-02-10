@@ -1,17 +1,12 @@
 package org.smcql.schema.statistics;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.calcite.plan.RelOptUtil;
-import org.junit.Test;
 import org.smcql.BaseTest;
-import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;
@@ -19,15 +14,11 @@ import org.smcql.db.data.field.IntField;
 import org.smcql.db.schema.statistics.ObliviousFieldStatistics;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.executor.step.ExecutionStep;
-import org.smcql.plan.SecureRelRoot;
-import org.smcql.plan.operator.Operator;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
 
-// this only works on example DB from setup.sh
-public class TableScanTest extends BaseTest  {
+public class ObliviousFieldStatisticsTest  extends BaseTest  {
 
 	protected void setUp() throws Exception {
 		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
@@ -69,66 +60,46 @@ public class TableScanTest extends BaseTest  {
 		
 		
 	}
-	
-	public void testDemographicsProjection() throws Exception {
-		String query = "SELECT patient_id,gender,birth_year FROM demographics";
-		SecureRelRecordType schema = testQuery("demographics-scan", query);
-		
-		List<ObliviousFieldStatistics> expectedStats = new ArrayList<ObliviousFieldStatistics>();
-		List<ObliviousFieldStatistics> observedStats = new ArrayList<ObliviousFieldStatistics>();
-		
-		ObliviousFieldStatistics patientIdStats = getExpectedOutput("demographics", "patient_id");
 
-		// TODO: Nisha, please fill this in with real vals from union of testDBs
-		// These figures are available in the relation_statistics table in the db smcql_test_site1
-		// use methods like ObliviousFieldStatistics.setMax
-		// the test will complete successfully after this
-		ObliviousFieldStatistics genderStats = new ObliviousFieldStatistics();
-		ObliviousFieldStatistics birthYearStats = new ObliviousFieldStatistics();
+	public void testMedicationsMonth() throws Exception {
+		String table = "medications";
+		String attr = "month";
 		
-		expectedStats.add(patientIdStats);
-		expectedStats.add(genderStats);
-		expectedStats.add(birthYearStats);
-				
-		for(SecureRelDataTypeField f : schema.getSecureFieldList()) {
-			observedStats.add(f.getStatistics());
-						
-		}
-		
-		assertEquals(expectedStats, observedStats);
-		
-		logSchemaStats(schema);
+		ObliviousFieldStatistics expectedStats = new ObliviousFieldStatistics();
+		// TODO: Nisha and May, fill in expected output following the pattern in testDemographicsBirthYear
+		// Since attr is not public, may only use contents of relation_statistics table in test database to get stats
+		// Naturally, month will range from 1...12, need to set domain and distinct card of 12 too
+
+		testCase(table, attr, expectedStats);
 		
 	}
 	
-
-	public void testDemographicsFilter() throws Exception {
-		String query = "SELECT patient_id from demographics WHERE patient_id = 1";
-		SecureRelRecordType schema = testQuery("demographics-filter", query);
-		logSchemaStats(schema);
-
-		assertEquals(1, schema.getCardinalityBound());
-		// TODO: check other fields in ObliviousFieldStatistic member variables
-	}
-	
-
-	public void testDemographicsFilters() throws Exception {
+	public void testDemographicsGender() throws Exception {
+		String table = "demographics";
+		String attr = "gender";
 		
-		String query = "SELECT patient_id from demographics WHERE gender = 1 AND birth_year = 1990";
-		SecureRelRecordType schema = testQuery("demographics-filter", query);
-		//logSchemaStats(schema);
+		ObliviousFieldStatistics expectedStats = new ObliviousFieldStatistics();
+		// TODO: Nisha and May, fill in expected output following the pattern in testDemographicsBirthYear
+		// Since attr is not public, may only use contents of relation_statistics in test database to get stats
+		// gender should have  cardinality of <demo table length>, range = 1..3, distinct vals: 3, ...
 
-	}
-	
-	
-	protected void logSchemaStats(SecureRelRecordType schema) throws Exception {
-		Logger logger = SystemConfiguration.getInstance().getLogger();
-		logger.log(Level.INFO, "Schema: " + schema);
+		testCase(table, attr, expectedStats);
 		
-		for(SecureRelDataTypeField f : schema.getSecureFieldList()) {
-			logger.log(Level.INFO, "Field: " + f.toString() + " has statistics " + f.getStatistics());
-		}
 	}
+
+	public void testDiagnosesMajorIcd9() throws Exception {
+		String table = "diagnoses";
+		String attr = "major_icd9";
+		
+		ObliviousFieldStatistics expectedStats = new ObliviousFieldStatistics();
+		// icd9 should have  cardinality of <diag table length>, 1604 distinct vals
+		// TODO: Nisha and May, derive expected output following the pattern in testDemographicsBirthYear
+
+		testCase(table, attr, expectedStats);
+		
+	}
+	
+	
 	protected ObliviousFieldStatistics getExpectedOutput(String table, String attr) throws Exception {
 		
 		
@@ -195,29 +166,6 @@ public class TableScanTest extends BaseTest  {
 		logger.log(Level.INFO, "Expected output: " + expectedOutput);	
 		logger.log(Level.INFO, "observed output: " + field.getStatistics());
 		assertEquals(expectedOutput, field.getStatistics());
-	}
-	
-	protected SecureRelRecordType testQuery(String testName, String sql) throws Exception {
-		SystemConfiguration.getInstance().resetCounters();
-		SystemConfiguration.getInstance().setProperty("code-generator-mode", "debug");
-		Logger logger = SystemConfiguration.getInstance().getLogger();
-
-		logger.log(Level.INFO, "Parsing " + sql);
-		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
-		Operator planRoot = secRoot.getPlanRoot();
-		planRoot.initializeStatistics();
-		
-		// logical representation with all ops displayed at finest granularity 
-		logger.log(Level.INFO, "Parsed " + RelOptUtil.toString(secRoot.getRelRoot().project()));
-		
-		QueryCompiler qc = new QueryCompiler(secRoot);
-		ExecutionStep root = qc.getRoot();
-		
-		// executable format with filters and projects merged to reduce overhead
-		String testTree = root.printTree();
-		logger.log(Level.INFO, "Resolved secure tree to:\n " + testTree);
-		return secRoot.getPlanRoot().getSchema();
-
 	}
 
 }

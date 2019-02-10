@@ -153,7 +153,7 @@ public class Join extends Operator {
 		for(Operator child : children) {
 			child.initializeStatistics();
 		}
-		// TODO: implement this
+		// TODO: Nisha and May: derive statistics using methods in <repo root>/docs/alchemy-algebra.pdf
 	}
 	
 	

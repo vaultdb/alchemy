@@ -119,6 +119,9 @@ public class Aggregate extends Operator {
 	@Override
 	public void initializeStatistics() {
 		children.get(0).initializeStatistics();
+		
+		// TODO: Nisha and May: derive statistics using methods in <repo root>/docs/alchemy-algebra.pdf
+
 	}
 	
 	

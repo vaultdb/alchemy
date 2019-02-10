@@ -129,7 +129,7 @@ public class ObliviousFieldStatistics {
 	public String toString() {
 		String output = "(distinct value count=" + Long.toString(distinctValues) +
 					      " max multiplicity=" + Long.toString(maxMultiplicity) + 
-					      " range=[" + min + "," + max + "] " +
+					      " range={" + min + "," + max + "} " +
 					      " domain: " + domain + " cardinality: " + cardinality + ")";
 		return output;
 	}
@@ -236,7 +236,15 @@ public class ObliviousFieldStatistics {
 			min =  (((IntField) firstTuple.getField(2)).getValue() == 0) ? -1 : ((IntField) firstTuple.getField(2)).getValue();
 			max =  (((IntField) firstTuple.getField(3)).getValue() == 0) ? -1 : ((IntField) firstTuple.getField(3)).getValue();
 			cardinality = runLongIntQuery("SELECT COUNT(*) FROM " + table);
-		// domain unknown for now
+
+			if((max - min +1) == distinctValues) {
+			     // domain is known, fill it in
+				// TODO: make this faster by not materializing it and populating it as needed
+				 domain = new ArrayList<Long>();
+				 for(long i = min; i <= max; ++i) {
+					 domain.add(i);
+				 }
+			}
 		}
 	}
 	
