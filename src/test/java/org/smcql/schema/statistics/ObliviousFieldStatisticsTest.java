@@ -69,8 +69,10 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		// TODO: Nisha and May, fill in expected output following the pattern in testDemographicsBirthYear
 		// Since attr is not public, may only use contents of relation_statistics table in test database to get stats
 		// Naturally, month will range from 1...12, need to set domain and distinct card of 12 too
-
+	
+		
 		testCase(table, attr, expectedStats);
+		
 		
 	}
 	

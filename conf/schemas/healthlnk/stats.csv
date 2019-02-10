@@ -11,6 +11,7 @@ diagnoses,month,12,,1,12
 diagnoses,major_icd9,1604,,,
 medications,patient_id,1025946,9211,2,7956747
 medications,site,4,14969913,2,5
+medications,month,12,,1,12
 vitals,patient_id,1727347,84701,1,8848766
 vitals,site,5,19430161,1,7
 cdiff_cohort ,patient_id,8881,1,4,8848538

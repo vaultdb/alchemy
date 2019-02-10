@@ -97,9 +97,11 @@ public class QueryStatisticsTest  extends BaseTest {
 		SecureRelRecordType schema = testQuery("demographics-filter", query);
 		logSchemaStats(schema);
 
+		ObliviousFieldStatistics expectedStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics", "patient_id");
 		// TODO: check other fields in ObliviousFieldStatistic member variables
 		assertEquals(6, schema.getCardinalityBound());
-
+		assertEquals(expectedStats, schema.getSecureField(0).getStatistics());
+		
 	}
 	
 	public void testSimpleJoin() throws Exception {
