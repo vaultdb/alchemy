@@ -116,4 +116,10 @@ public class Aggregate extends Operator {
 		return (getGroupByAttributes().size() > 0) ? 1 : 0;
 	}
 	
+	@Override
+	public void initializeStatistics() {
+		children.get(0).initializeStatistics();
+	}
+	
+	
 };

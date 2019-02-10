@@ -45,6 +45,10 @@ public class PlaintextStep implements ExecutionStep, Serializable {
 		exec.setSourceSQL(generate());
 	}
 	
+	public String toString() {
+		return srcOperator.toString();
+	}
+	
 	public PlaintextStep(Operator op, RunConfig run, ExecutionStep lhsChild, ExecutionStep rhsChild) throws Exception {
 		srcOperator = op;
 		runConf = run;

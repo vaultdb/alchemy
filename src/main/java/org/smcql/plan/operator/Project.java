@@ -1,6 +1,7 @@
 package org.smcql.plan.operator;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.calcite.rel.logical.LogicalProject;
@@ -26,10 +27,13 @@ public class Project extends Operator {
 		List<SecureRelDataTypeField> derivedKey = new ArrayList<SecureRelDataTypeField>();
 		SecureRelRecordType projSchema = getSchema();
 		
+		// iterate over source slice attributes
 		for(SecureRelDataTypeField f : baseKey) {
 			int dstIdx = 0;
 			
+			// for each projection expression
 			for(RexNode rex : projExpressions) {
+
 				if(rex.getKind() == SqlKind.INPUT_REF) {
 					int ordinal = ((RexInputRef) rex).getIndex();
 					
@@ -73,6 +77,26 @@ public class Project extends Operator {
 	}
 
 	
+	@Override
+	public void initializeStatistics() {
+		children.get(0).initializeStatistics();
+		
+		LogicalProject project = (LogicalProject) baseRelNode.getRelNode();
+		List<RexNode> projExpressions = project.getChildExps();
+		SecureRelRecordType projSchema = getSchema();
+		SecureRelRecordType inSchema = getInSchema();
+		Iterator<RexNode> rexItr = projExpressions.iterator();
+		
+		// map each dstField to its source and initialize stats based on that 
+		for(SecureRelDataTypeField f : projSchema.getSecureFieldList()) {
+			try {
+				AttributeResolver.initializeFieldStatistics(rexItr.next(), f, inSchema);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
 	
 
 

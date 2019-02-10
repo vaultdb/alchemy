@@ -130,10 +130,22 @@ public abstract class Operator implements CodeGenerator {
 	}
 	
 	// TODO: use this to manage attribute-level statistics as tuples move up the query tree
-	// will likely need to be overriden in many classes
+	// will need to be overridden in many classes
 	public void initializeStatistics() {
-		// simplest case: copy stats from children
-		// see algebra in paper for more involved cases
+		
+		// base case: simply copy statistics from children
+		// assumes child and parent have same schema
+		
+		SecureRelRecordType srcSchema = this.getInSchema();
+		SecureRelRecordType schema = this.getSchema();
+		assert(children.size() == 1);
+		assert (schema == srcSchema);
+		
+		Operator child = children.get(0);
+		child.initializeStatistics();
+		schema.initializeStatistics(srcSchema);
+		
+	
 	}
 		
 	public void addChild(Operator op) {
@@ -206,8 +218,8 @@ public abstract class Operator implements CodeGenerator {
 	// TODO: override for join and other binary ops
 	// TODO: write this for SeqScan too
 	public long getCardinalityBound() {
-		assert(children.size() == 1);
-		return children.get(0).getCardinalityBound();
+		
+		return baseRelNode.getSchema().getCardinalityBound();
 	}
 	
 	// for all but SeqScan and join
@@ -503,6 +515,26 @@ public abstract class Operator implements CodeGenerator {
 		String opName = getOpName();
 		return opName + operatorId;
 
+	}
+	
+	protected void lineUpCardinalityStatistics() {
+		long minCard = children.get(0).getCardinalityBound();
+		long localCard = 0;
+		
+		// find min cardinality for bound
+		for(SecureRelDataTypeField f : getSchema().getSecureFieldList()) {
+		
+			localCard = f.getStatistics().getCardinality();
+			if(localCard < minCard && localCard != -1) {
+				minCard = localCard;
+			}
+		}
+
+		// copy it to all fields in schema to make it consistent
+		for(SecureRelDataTypeField f : getSchema().getSecureFieldList()) {
+			f.getStatistics().setCardinality(minCard);
+		}
+		
 	}
 	
 }

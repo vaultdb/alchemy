@@ -7,6 +7,7 @@ import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlNodeList;
 import org.apache.calcite.sql.SqlSelect;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.plan.operator.Operator;
 
@@ -39,8 +40,15 @@ public class SqlGenerator {
 	
 	public static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect) {
 		SqlNode node = converter.visitChild(0, rel).asQuery();
+		String sqlMode = "release";
+		try {
+			sqlMode = SystemConfiguration.getInstance().getProperty("code-generator-mode");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		if (node instanceof SqlSelect && ((SqlSelect) node).getWhere() != null) {
+		if (node instanceof SqlSelect && ((SqlSelect) node).getWhere() != null && sqlMode != "debug") {
 			SqlNodeList list = ((SqlSelect) node).getSelectList();
 			list.add(((SqlSelect) node).getWhere());
 			((SqlSelect) node).setWhere(null);

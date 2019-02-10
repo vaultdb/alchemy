@@ -39,4 +39,12 @@ public class Distinct extends Operator {
 		return n*(int)Math.pow(Math.log((double)n),2);
 	}
 	
+	@Override
+	public void initializeStatistics() {
+		// TODO: implement this, might fall into the Operator generic case depending on presence of projection
+		children.get(0).initializeStatistics();
+
+	}
+	
+	
 };

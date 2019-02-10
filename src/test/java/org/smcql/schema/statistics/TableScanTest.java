@@ -59,7 +59,7 @@ public class TableScanTest extends BaseTest  {
 		String attr = "birth_year";
 		
 		ObliviousFieldStatistics stats = new ObliviousFieldStatistics();
-		// TODO: get correct inputs from DB
+		
 		stats.setMin(1924);
 		stats.setMax(1995);
 		stats.setDistinctCardinality(72);
@@ -70,17 +70,19 @@ public class TableScanTest extends BaseTest  {
 		
 	}
 	
-	public void testDemographicsScan() throws Exception {
+	public void testDemographicsProjection() throws Exception {
 		String query = "SELECT patient_id,gender,birth_year FROM demographics";
-	
 		SecureRelRecordType schema = testQuery("demographics-scan", query);
+		
 		List<ObliviousFieldStatistics> expectedStats = new ArrayList<ObliviousFieldStatistics>();
 		List<ObliviousFieldStatistics> observedStats = new ArrayList<ObliviousFieldStatistics>();
 		
-		// TODO: fill this in with real vals
-		ObliviousFieldStatistics patientIdStats = new ObliviousFieldStatistics();
-		patientIdStats.setMaxMultiplicity(1);
-		
+		ObliviousFieldStatistics patientIdStats = getExpectedOutput("demographics", "patient_id");
+
+		// TODO: Nisha, please fill this in with real vals from union of testDBs
+		// These figures are available in the relation_statistics table in the db smcql_test_site1
+		// use methods like ObliviousFieldStatistics.setMax
+		// the test will complete successfully after this
 		ObliviousFieldStatistics genderStats = new ObliviousFieldStatistics();
 		ObliviousFieldStatistics birthYearStats = new ObliviousFieldStatistics();
 		
@@ -99,19 +101,23 @@ public class TableScanTest extends BaseTest  {
 		
 	}
 	
-	public void testDemographicsProjection() throws Exception {
-		String query = "SELECT patient_id FROM demographics";
-	
-		SecureRelRecordType schema = testQuery("demographics-pid", query);
-		logSchemaStats(schema);
-	}
-	
+
 	public void testDemographicsFilter() throws Exception {
-		String query = "SELECT patient_id from demographics WHERE gender = 1";
+		String query = "SELECT patient_id from demographics WHERE patient_id = 1";
 		SecureRelRecordType schema = testQuery("demographics-filter", query);
 		logSchemaStats(schema);
 
-		// expect output cardinality of 6
+		assertEquals(1, schema.getCardinalityBound());
+		// TODO: check other fields in ObliviousFieldStatistic member variables
+	}
+	
+
+	public void testDemographicsFilters() throws Exception {
+		
+		String query = "SELECT patient_id from demographics WHERE gender = 1 AND birth_year = 1990";
+		SecureRelRecordType schema = testQuery("demographics-filter", query);
+		//logSchemaStats(schema);
+
 	}
 	
 	
@@ -193,6 +199,7 @@ public class TableScanTest extends BaseTest  {
 	
 	protected SecureRelRecordType testQuery(String testName, String sql) throws Exception {
 		SystemConfiguration.getInstance().resetCounters();
+		SystemConfiguration.getInstance().setProperty("code-generator-mode", "debug");
 		Logger logger = SystemConfiguration.getInstance().getLogger();
 
 		logger.log(Level.INFO, "Parsing " + sql);
@@ -200,12 +207,13 @@ public class TableScanTest extends BaseTest  {
 		Operator planRoot = secRoot.getPlanRoot();
 		planRoot.initializeStatistics();
 		
-	
+		// logical representation with all ops displayed at finest granularity 
 		logger.log(Level.INFO, "Parsed " + RelOptUtil.toString(secRoot.getRelRoot().project()));
 		
 		QueryCompiler qc = new QueryCompiler(secRoot);
 		ExecutionStep root = qc.getRoot();
 		
+		// executable format with filters and projects merged to reduce overhead
 		String testTree = root.printTree();
 		logger.log(Level.INFO, "Resolved secure tree to:\n " + testTree);
 		return secRoot.getPlanRoot().getSchema();

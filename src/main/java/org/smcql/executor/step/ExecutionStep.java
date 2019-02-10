@@ -33,6 +33,8 @@ public interface ExecutionStep {
 	
 	public void setParent(ExecutionStep e);
 	
+	public String toString();
+	
 	public Operator getSourceOperator();
 	
 	public CodeGenerator getCodeGenerator();

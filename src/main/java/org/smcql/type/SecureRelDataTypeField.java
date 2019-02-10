@@ -139,6 +139,10 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 	}
 	
 	
+	public void initializeStatistics(ObliviousFieldStatistics stats) {
+		statistics = new ObliviousFieldStatistics(this, stats);
+	}
+	
 	@Override
 	public int getIndex() {
 		if (baseField == null)

@@ -43,7 +43,7 @@ public class OperatorFactory {
 		
 		if(node instanceof LogicalFilter)
 			return new Filter(name, secNode, children);
-		
+
 		return null;
 	}
 

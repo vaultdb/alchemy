@@ -337,6 +337,12 @@ public class QueryCompiler {
 			return generatePlaintextStep(o);
 		}
 		
+		// If we have a root project, push it down to the next op
+		if(o instanceof Project && o.getParent() == null) {
+			opsToCombine.add(o);
+			o = o.getChild(0);
+		}
+		
 		// secure case
 		List<ExecutionStep> merges = new ArrayList<ExecutionStep>();
 		List<ExecutionStep> localChildren = new ArrayList<ExecutionStep>();
@@ -476,7 +482,9 @@ public class QueryCompiler {
 	
 	private ExecutionStep generateSecureStep(Operator op, List<ExecutionStep> children, List<Operator> opsToCombine, List<ExecutionStep> merges) throws Exception {
 		SecureOperator secOp = SecureOperatorFactory.get(op);
-		if (!merges.isEmpty())
+		// secOp is null for filter and projection because we coalesce those with their neighbors
+		
+		if (!merges.isEmpty()) 
 			secOp.setMerges(merges);
 		
 		for (Operator cur : opsToCombine) {

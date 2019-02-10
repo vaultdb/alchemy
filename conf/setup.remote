@@ -12,6 +12,7 @@ slice-parallelism=2
 semijoin-execution=false
 #truncate-input=5
 mpc-lib=emp
+code-generator-mode=release #set to debug to	disable	pushing	filter up to select
 
 #privacy consumed by each operator
 epsilon=0.1

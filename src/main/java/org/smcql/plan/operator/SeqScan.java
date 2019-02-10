@@ -75,10 +75,6 @@ public class SeqScan extends Operator {
 		executionMode = ExecutionMode.Plain;
 	}
 
-	@Override
-	public long getCardinalityBound() {
-		return inSchema.getSecureField(0).getStatistics().getCardinality();
-	}
 	
 	
 	@Override

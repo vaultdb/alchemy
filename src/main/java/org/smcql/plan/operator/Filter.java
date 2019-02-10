@@ -11,9 +11,12 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.smcql.db.schema.statistics.ObliviousFieldStatistics;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
+import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexLiteral;
 
 public class Filter extends Operator {
 	
@@ -61,57 +64,85 @@ public class Filter extends Operator {
 
 	@Override
 	public void initializeStatistics() {
-		// TODO: beef this up with coverage of more than equality checks on fixed vals and conjunctive normal form
+		
+		children.get(0).initializeStatistics();
+		 // initially copy stats from input since this op has the same schema as its source
+		super.initializeStatistics(); 
+		
+		// TODO: beef this up with coverage of more than equality checks on integers
 
 		// update fields that we compute on to have a distinct cardinality of 1
 		// and max multiplicity equal to that of the lowest of what we compute on
-		List<SecureRelDataTypeField> fields = this.computesOn();
+		// also need to setCardinality() on all attrs to reflect filter's output size 
 		LogicalFilter filter = (LogicalFilter) baseRelNode.getRelNode();
 		RexNode expr = filter.getCondition();
 		RexBuilder builder = filter.getCluster().getRexBuilder();
-		expr = RexUtil.toCnf(builder, expr);
-		// TODO: support for nested expressions
+		
+		
+		// TODO: support  nested expressions
 		List<RexNode> comparisons = new ArrayList<RexNode>();
+		long lowestMaxMultiplicity = children.get(0).getCardinalityBound();
+		long maxMultiplicity;
+		
+		expr = RexUtil.toCnf(builder, expr);
 		RelOptUtil.decomposeConjunction(expr, comparisons);
 		
 		
 		
+		List<SecureRelDataTypeField> filteredFields = new ArrayList<SecureRelDataTypeField>();
 		
 		for(RexNode r : comparisons) {
 			assert(r.getKind() == SqlKind.EQUALS); // only support equality predicate
 			RexCall cOp = (RexCall) r;
 			RexNode lhs = cOp.getOperands().get(0);
 			RexNode rhs = cOp.getOperands().get(1);
-			if(lhs.getKind() == SqlKind.INPUT_REF) {
+			SecureRelDataTypeField dstField = null;
+			long targetValue = -1;
+			
+			if(lhs.getKind() == SqlKind.INPUT_REF && rhs.getKind() == SqlKind.LITERAL) {
+				int ordinal = ((RexInputRef) lhs).getIndex();
 				
+			    dstField = getSchema().getSecureField(ordinal);
+				targetValue = RexLiteral.intValue(rhs);			
 			}
-		}
-		
-		Long lowestMaxMultiplicity = children.get(0).getCardinalityBound();
-		
-		
-		for(SecureRelDataTypeField f : fields) {
-			// field has only one value now since we are comparing it to a constant
-			f.getStatistics().setDistinctCardinality(1);
-			// TODO: set min and max to the scalar we are comparing it to in the expr
+			else if(lhs.getKind() == SqlKind.LITERAL && rhs.getKind() == SqlKind.INPUT_REF) {
+				int ordinal = ((RexInputRef) rhs).getIndex();
 
-			long localMaxMultiplicity = f.getStatistics().getMaxMultiplicity();
-			if(localMaxMultiplicity > 0 && localMaxMultiplicity < lowestMaxMultiplicity) {
-				lowestMaxMultiplicity = localMaxMultiplicity;
+				dstField = getSchema().getSecureField(ordinal);
+				targetValue = RexLiteral.intValue(lhs);
 			}
+			
+			List<Long> newDomain = new ArrayList<Long>();
+			newDomain.add(targetValue);
+			
+			ObliviousFieldStatistics stats = dstField.getStatistics();
+			stats.setDomain(newDomain);
+			stats.setDistinctCardinality(1);
+			stats.setMin(targetValue);
+			stats.setMax(targetValue);
+			maxMultiplicity = stats.getMaxMultiplicity();
+			if(maxMultiplicity != -1)
+				stats.setCardinality(maxMultiplicity);
+
+			if(maxMultiplicity > 0 &&  maxMultiplicity < lowestMaxMultiplicity) {
+				lowestMaxMultiplicity = maxMultiplicity;
+			}
+			
+			filteredFields.add(dstField);
 		}
 		
-		// make a second pass to line up max multiplicity for relation
-		for(SecureRelDataTypeField f : fields) {
-				if(f.getStatistics().getMaxMultiplicity() > lowestMaxMultiplicity)
-					f.getStatistics().setMaxMultiplicity(lowestMaxMultiplicity);
+
+		for(SecureRelDataTypeField f : filteredFields){
+			f.getStatistics().setMaxMultiplicity(lowestMaxMultiplicity);
 		}
 		
+		// ensure that all field statistics have the same cardinality bound
+		lineUpCardinalityStatistics();
 	}
 
 	
-	@Override
-	public long getCardinalityBound() {
+//	@Override
+/*	public long getCardinalityBound() {
 		// TODO: beef this up with coverage of more than equality checks on fixed vals and conjunctive normal form
 		List<SecureRelDataTypeField> fields = this.computesOn();
 		long cardinality = children.get(0).getCardinalityBound();
@@ -125,6 +156,6 @@ public class Filter extends Operator {
 		}
 		
 		return cardinality;
-	}
+	}*/
 	
 }

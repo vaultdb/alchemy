@@ -106,4 +106,12 @@ public class WindowAggregate extends Operator {
 		return 2*n*(int)Math.pow(Math.log((double)n),2);
 	}
 	
+	@Override
+	public void initializeStatistics() {
+		children.get(0).initializeStatistics();
+
+		// TODO: implement this
+	}
+	
+	
 };

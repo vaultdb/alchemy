@@ -99,6 +99,7 @@ public class ObliviousFieldStatistics {
 		cardinality = src.cardinality;
 	}
 	
+
 	public static ObliviousFieldStatistics getCachedStatistics(String table, String attr) throws Exception {
 		ObliviousFieldStatistics f = new ObliviousFieldStatistics();
 		f.populatePrivateAttribute(table, attr);

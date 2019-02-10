@@ -184,6 +184,20 @@ public class AttributeResolver {
 		}
 	}
 
+	// TODO: support expressions
+	// right now just does 1:1 mapping
+	public static void initializeFieldStatistics(RexNode rex, SecureRelDataTypeField dstField, SecureRelRecordType inSchema) throws Exception {
+		final RelOptUtil.InputReferencedVisitor shuttle = new RelOptUtil.InputReferencedVisitor();
+		rex.accept(shuttle);
+		SortedSet<Integer> ordinalsAccessed = shuttle.inputPosReferenced;
+		if(ordinalsAccessed.size() ==  1) { // can preserve stored source info
+			SecureRelDataTypeField srcField = inSchema.getSecureField(ordinalsAccessed.first());
+			dstField.initializeStatistics(srcField.getStatistics());
+		}
+		else {
+			throw new Exception("Statistics over expressions not yet implemented");
+		}
+	}
 
 	// simple copy of permissions, accept any new aliases
 	public static SecureRelRecordType copySchema(SecureRelNode aNode) {

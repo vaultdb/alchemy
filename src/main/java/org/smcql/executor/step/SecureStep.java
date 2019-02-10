@@ -135,6 +135,9 @@ public class SecureStep implements ExecutionStep, Serializable {
 		return getSchema();
 	}
 
+	public String toString() {
+		return codeGenerator.getClass() + ", schema: " + codeGenerator.getSchema();
+	}
 
 	@Override
 	public String printTree() {
@@ -142,7 +145,7 @@ public class SecureStep implements ExecutionStep, Serializable {
 	}
 	
 	private String appendOperator(ExecutionStep step, String src, String linePrefix) {
-		String opString = step.getSourceOperator().toString();
+		String opString = step.toString();
 		if (step instanceof SecureStep && ((SecureStep) step).isMerge)
 			opString = "LogicalMerge-Secure";
 		src += linePrefix + opString + "\n";

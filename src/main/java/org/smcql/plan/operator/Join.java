@@ -148,4 +148,13 @@ public class Join extends Operator {
 		return getEstimatedCardinality();
 	}
 	
+	@Override
+	public void initializeStatistics() {
+		for(Operator child : children) {
+			child.initializeStatistics();
+		}
+		// TODO: implement this
+	}
+	
+	
 };
