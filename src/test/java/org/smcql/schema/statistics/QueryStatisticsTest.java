@@ -39,30 +39,37 @@ public class QueryStatisticsTest  extends BaseTest {
 		String query = "SELECT patient_id,gender,birth_year FROM demographics";
 		SecureRelRecordType schema = testQuery("demographics-scan", query);
 		
-		List<ObliviousFieldStatistics> expectedStats = new ArrayList<ObliviousFieldStatistics>();
 		List<ObliviousFieldStatistics> observedStats = new ArrayList<ObliviousFieldStatistics>();
-		
 		ObliviousFieldStatistics patientIdStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics", "patient_id");
 
-		// TODO: Nisha, please fill this in with real vals from union of testDBs
-		// These figures are available in the relation_statistics table in the db smcql_test_site1
-		// use methods like ObliviousFieldStatistics.setMax
-		// the test will complete successfully after this
-		ObliviousFieldStatistics genderStats = new ObliviousFieldStatistics();
-		ObliviousFieldStatistics birthYearStats = new ObliviousFieldStatistics();
+		ObliviousFieldStatistics genderStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics","gender");
+		// make it oblivious, getExpected only works for public attrs
+		genderStats.setDistinctCardinality(3);
+		genderStats.setMaxMultiplicity(-1);
+		genderStats.setMin(1);
+		genderStats.setMax(3);
+		List<Long> genderDomain = ObliviousFieldStatistics.generateDomain(1L,  3L);
+		genderStats.setDomain(genderDomain);
+
+		ObliviousFieldStatistics birthYearStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics", "birth_year");
+		birthYearStats.setDomain(null);
+		birthYearStats.setDistinctCardinality(72);
+		birthYearStats.setMaxMultiplicity(-1);
+		birthYearStats.setMin(1924);
+		birthYearStats.setMax(1995);
 		
-		expectedStats.add(patientIdStats);
-		expectedStats.add(genderStats);
-		expectedStats.add(birthYearStats);
-				
+		logSchemaStats(schema);
+		
 		for(SecureRelDataTypeField f : schema.getSecureFieldList()) {
 			observedStats.add(f.getStatistics());
 						
 		}
 		
-		assertEquals(expectedStats, observedStats);
+		assertEquals(6, schema.getCardinalityBound());
+		assertEquals(patientIdStats, observedStats.get(0));
+		assertEquals(genderStats, observedStats.get(1));		
+		assertEquals(birthYearStats, observedStats.get(2));
 		
-		logSchemaStats(schema);
 		
 	}
 	
@@ -112,6 +119,12 @@ public class QueryStatisticsTest  extends BaseTest {
 		}
 		
 		assertEquals(16, cardinalityBound);
+		// schema: diag concatenated with meds
+		// TODO: May, please fill this in with real stats as in testDemographicProjection
+		// everything in meds may have up to 4 copies
+		// diag statistics remain the same
+		
+		
 		
 	}
 	
@@ -122,14 +135,31 @@ public class QueryStatisticsTest  extends BaseTest {
 		
 		
 		long cardinalityBound = -1;
+		ObliviousFieldStatistics genderStats, countStats;
+		
+		genderStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics","gender");
+		// make it oblivious, getExpected only works for public attrs
+		genderStats.setDistinctCardinality(3);
+		genderStats.setMaxMultiplicity(-1);
+		genderStats.setMin(1);
+		genderStats.setMax(3);
+		genderStats.setCardinality(3);
+		List<Long> genderDomain = ObliviousFieldStatistics.generateDomain(1L,  3L);
+		genderStats.setDomain(genderDomain);
+
+		countStats = new ObliviousFieldStatistics(); // the only thing we know is its range
+		countStats.setMin(0L);
+		countStats.setMax(6L); // can't have a count greater than its input card
+		countStats.setCardinality(3);
 		
 		if(schema.getSecureField(0).getStatistics() != null) {
 			cardinalityBound = schema.getCardinalityBound();
 		}
 		
 		assertEquals(3, cardinalityBound);
-		
-		
+		// TODO: Nisha, please hand-verify these expected values
+		assertEquals(genderStats, schema.getSecureField(0).getStatistics());
+		assertEquals(countStats, schema.getSecureField(1).getStatistics());
 		
 	}
 	

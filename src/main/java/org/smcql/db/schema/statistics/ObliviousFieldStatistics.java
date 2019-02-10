@@ -91,15 +91,36 @@ public class ObliviousFieldStatistics {
 		cardinality = aCardinality;	
 	}
 	
+	// copy constructor for new SecureRelDataTypeField
+	public ObliviousFieldStatistics(ObliviousFieldStatistics src)		
+		{
+			parentField = src.parentField;
+			distinctValues = src.distinctValues;
+			maxMultiplicity = src.maxMultiplicity;
+			min = src.min;	
+			max = src.max;
+			cardinality = src.cardinality;
+			
+			if(src.domain != null)
+				domain = new ArrayList<Long>(src.domain);
+
+		}
+		
 	// copy constructor for new SecureRelDataTypeField, i.e., the parent of an existing one
-	public ObliviousFieldStatistics(SecureRelDataTypeField f, ObliviousFieldStatistics src) {
+	public ObliviousFieldStatistics(SecureRelDataTypeField f, ObliviousFieldStatistics src)		
+	{
 		parentField = f;
 		distinctValues = src.distinctValues;
 		maxMultiplicity = src.maxMultiplicity;
-		domain = src.domain;
 		min = src.min;	
 		max = src.max;
 		cardinality = src.cardinality;
+
+		if(src.domain != null)
+			domain = new ArrayList<Long>(src.domain);
+		// TODO: check if conditions still hold for auto-generated domains
+
+
 	}
 	
 
@@ -121,7 +142,8 @@ public class ObliviousFieldStatistics {
 					f.max == this.max &&
 					f.maxMultiplicity == this.maxMultiplicity &&
 					f.cardinality == this.cardinality)
-					if((f.domain == null && domain == null ) || f.domain.equals(domain))
+					if((f.domain == null && domain == null ) || 
+							(f.domain != null && domain != null && f.domain.equals(domain)))
 						return true;
 		}
 		return false;
@@ -157,6 +179,8 @@ public class ObliviousFieldStatistics {
 
 	public void setCardinality(long aCardinality) {
 		this.cardinality = aCardinality;
+		
+		// TODO: check if conditions still hold for auto-generated domains
 	}
 
 
@@ -179,8 +203,11 @@ public class ObliviousFieldStatistics {
 
 
 
-	public void setDomain(List<Long> domain) {
-		this.domain = domain;
+	public void setDomain(List<Long> aDomain) {
+		if(aDomain == null)
+			domain = null;
+		else
+			this.domain = new ArrayList<Long>(aDomain);
 	}
 
 
@@ -222,6 +249,15 @@ public class ObliviousFieldStatistics {
 	}
 	
 	
+	public static List<Long> generateDomain(Long minValue, Long maxValue) {
+		 List<Long> localDomain = new ArrayList<Long>();
+		 for(long i = minValue; i <= maxValue; ++i) {
+			 localDomain.add(i);
+		 }
+		 return localDomain;
+
+	}
+	
 	
 	// TODO: fix this so that null is interpreted as -1 instead of 0 for all intfields
 	private void populatePrivateAttribute(String table, String attr) throws Exception {
@@ -240,13 +276,11 @@ public class ObliviousFieldStatistics {
 			max =  (((IntField) firstTuple.getField(3)).getValue() == 0) ? -1 : ((IntField) firstTuple.getField(3)).getValue();
 			cardinality = runLongIntQuery("SELECT COUNT(*) FROM " + table);
 
-			if((max - min +1) == distinctValues) {
+			// when it is possible to infer the domain, we take the worst-case
+			if((max - min +1) == distinctValues && cardinality >= distinctValues) {
 			     // domain is known, fill it in
 				// TODO: make this faster by not materializing it and populating it as needed
-				 domain = new ArrayList<Long>();
-				 for(long i = min; i <= max; ++i) {
-					 domain.add(i);
-				 }
+				domain = generateDomain(min, max);
 			}
 		}
 	}
