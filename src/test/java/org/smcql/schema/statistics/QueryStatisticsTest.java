@@ -27,7 +27,7 @@ import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
 
 // this only works on example DB from setup.sh
-public class QueryStatisticsTest extends ObliviousFieldStatisticsTest  {
+public class QueryStatisticsTest  extends BaseTest {
 
 	protected void setUp() throws Exception {
 		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
@@ -42,7 +42,7 @@ public class QueryStatisticsTest extends ObliviousFieldStatisticsTest  {
 		List<ObliviousFieldStatistics> expectedStats = new ArrayList<ObliviousFieldStatistics>();
 		List<ObliviousFieldStatistics> observedStats = new ArrayList<ObliviousFieldStatistics>();
 		
-		ObliviousFieldStatistics patientIdStats = getExpectedOutput("demographics", "patient_id");
+		ObliviousFieldStatistics patientIdStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics", "patient_id");
 
 		// TODO: Nisha, please fill this in with real vals from union of testDBs
 		// These figures are available in the relation_statistics table in the db smcql_test_site1
@@ -72,8 +72,15 @@ public class QueryStatisticsTest extends ObliviousFieldStatisticsTest  {
 		SecureRelRecordType schema = testQuery("demographics-filter", query);
 		logSchemaStats(schema);
 
-		// TODO: check other fields in ObliviousFieldStatistic member variables
+		
+		List<Long> domain = new ArrayList<Long>();
+		domain.add(1L);
+		
+		ObliviousFieldStatistics expectedStats = new ObliviousFieldStatistics(null, 1L, 1L, domain, 1L, 1L, 1L);
+		ObliviousFieldStatistics observedStats = schema.getSecureField(0).getStatistics();
+		
 		assertEquals(1, schema.getCardinalityBound());
+		assertEquals(expectedStats, observedStats);
 	}
 	
 

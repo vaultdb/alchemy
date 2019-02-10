@@ -72,13 +72,16 @@ public class ObliviousFieldStatistics {
 		
 	}
 
-	// constructor for intermediate results
+	// constructor for intermediate results and test cases
 	public ObliviousFieldStatistics(SecureRelDataTypeField f, Long distinctCardinality, Long aMaxMultiplicity, 
 			List<Long> aDomain, Long aMinValue, Long aMaxValue, Long aCardinality) {
 
-		// only integer types are supported		
-		SqlTypeName fieldType = parentField.getType().getSqlTypeName();
-		assert(fieldType == SqlTypeName.INTEGER || fieldType == SqlTypeName.BIGINT); 
+		// null available for testing
+		if(f != null) {
+			// only integer types are supported		
+			SqlTypeName fieldType = parentField.getType().getSqlTypeName();
+			assert(fieldType == SqlTypeName.INTEGER || fieldType == SqlTypeName.BIGINT); 
+		}
 		
 		distinctValues = distinctCardinality;
 		maxMultiplicity = aMaxMultiplicity;
@@ -129,7 +132,7 @@ public class ObliviousFieldStatistics {
 	public String toString() {
 		String output = "(distinct value count=" + Long.toString(distinctValues) +
 					      " max multiplicity=" + Long.toString(maxMultiplicity) + 
-					      " range={" + min + "," + max + "} " +
+					      " range=(" + min + "," + max + ") " +
 					      " domain: " + domain + " cardinality: " + cardinality + ")";
 		return output;
 	}

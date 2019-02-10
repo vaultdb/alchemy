@@ -100,7 +100,8 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 	}
 	
 	
-	protected ObliviousFieldStatistics getExpectedOutput(String table, String attr) throws Exception {
+	// For use with public attributes
+	public static ObliviousFieldStatistics getExpectedOutput(String table, String attr) throws Exception {
 		
 		
 		
@@ -123,7 +124,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 	}
 
 	// caution: this only works for one-relation queries, i.e., ones with no joins
-	protected long runLongIntQuery(String query) throws Exception {
+	protected static long runLongIntQuery(String query) throws Exception {
 		String aliceId = ConnectionManager.getInstance().getAlice();
 	
 		SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
@@ -137,7 +138,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 	}
 
 	// caution: this only works for one-relation queries, i.e., ones with no joins	
-	protected List<Long> runLongIntListQuery(String query) throws Exception {
+	protected static List<Long> runLongIntListQuery(String query) throws Exception {
 		String aliceId = ConnectionManager.getInstance().getAlice();
 		SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
 		String distributedQuery = Utilities.getDistributedQuery(query);
