@@ -15,7 +15,7 @@ Data * $functionName(Data *left, Data *right) {
             Integer timestamp2(col_length1, right->data[j].bits + col_length1);
             Bit cond = (idl == idr) & (timestamp1 <= timestamp2);
             Integer join = If(cond, idl, Integer(col_length1, 0, PUBLIC));         
-            output[index] = join;
+            output[index] = $writeDst;
             index++;
             appears to be outputting a single bit per comparison*/
         }

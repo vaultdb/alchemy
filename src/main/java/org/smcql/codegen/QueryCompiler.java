@@ -229,6 +229,9 @@ public class QueryCompiler {
 		String rootOutput = compiledRoot.getFunctionName() + "Output";
 		
 		wholeFile += generateEMPMain(targetFile, code.right, rootOutput); // plug in function calls
+		
+		System.out.println("EMP code: " + wholeFile);
+		
 		Utilities.writeFile(targetFile, wholeFile);
 		
 		return targetFile;

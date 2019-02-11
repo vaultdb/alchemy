@@ -44,10 +44,10 @@ public class GenerateSmcTest extends BaseTest {
 	// make sure to create a file in expected directory called "join-cdiff-emp.cpp"
 	public void testJoin() throws Exception {
 		String testName = "join-cdiff";
-		String query = "SELECT DISTINCT d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE d.icd9 = \'008.45\'";
+		String query = "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
 		String distributedQuery = "WITH all_diagnoses AS ((SELECT patient_id, icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)), " + 
 		    "all_medications AS ((SELECT patient_id FROM medications) UNION ALL (select patient_id FROM remote_medications)) " +
-		     "SELECT DISTINCT d.patient_id FROM all_diagnoses d JOIN all_medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\';";
+		     "SELECT DISTINCT d.patient_id FROM all_diagnoses d JOIN all_medications m ON d.patient_id = m.patient_id AND icd9=\'008.45\';";
 
 	
 //		String distributedQuery = Utilities.getDistributedQuery(query);
