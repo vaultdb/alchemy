@@ -15,10 +15,11 @@ using namespace pqxx;
 // Connection strings, encapsulates db name, db user, port, host
 string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
 string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=localhost port=5432";
-string aliceHost = "localhost";
-string bobHost = "localhost";
+char* aliceHost = "localhost";
+char* bobHost = "localhost";
 
-
+#define OID_STRING 1043
+#define OID_INT 20
 
 
 
@@ -155,7 +156,8 @@ Data* Distinct2Merge(int party, NetIO * io) {
 
     int alice_size, bob_size;
     alice_size = bob_size = in.size();
-
+    Batcher alice_batcher, bob_batcher;
+    
     if (party == ALICE) {
         io->send_data(&alice_size, 4);
         io->flush();
@@ -181,7 +183,7 @@ Data* Distinct2Merge(int party, NetIO * io) {
 
 	alice_batcher.make_semi_honest(ALICE);
 		
-	for(int i = 0; i < alice.size*bit_length; ++i) {
+	for(int i = 0; i < alice_size*bit_length; ++i) {
 		*tmpPtr = alice_batcher.next<Bit>();
 		++tmpPtr;
 	}
@@ -202,7 +204,7 @@ Data* Distinct2Merge(int party, NetIO * io) {
 	// each index is a tuple
     for(int i = 0; i < alice_size + bob_size; ++i) {
         res[i] = Integer(bit_length, tmpPtr);
-        tmpPtr += bitLength;
+        tmpPtr += bit_length;
      }
 
 
@@ -215,6 +217,7 @@ Data* Distinct2Merge(int party, NetIO * io) {
         
     return d;
 }
+
 Data * Distinct2(Data *data) {
 	
 	
@@ -226,15 +229,19 @@ Data * Distinct2(Data *data) {
         Bit eq = (id1 == id2);
         id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
         //maintain real size
-  	    data->real_size = If(eq, data->real_size, data->real_size - 1);
-        memcpy(data->data[i],id1, tupleLen);       
+  	data->real_size = If(eq, data->real_size - Integer(64, 1, PUBLIC), data->real_size);
+        memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }
     
     return data;
 }
 
-Integer Aggregate3(Data *data) {
-    return data->real_size;
+Data * Aggregate3(Data *data) {
+  data->data = new Integer[1];
+  data->data[0] = data->real_size;
+  data->public_size = 1;
+  return data;
+  //    return data->real_size;
 }
 
 // suffix for our emp ExecutionStep
@@ -246,6 +253,7 @@ Integer Aggregate3(Data *data) {
 int main(int argc, char** argv) {
     int port, party;
     parse_party_and_port(argv, &party, &port);
+
     NetIO * io = new NetIO(party==ALICE ? aliceHost : bobHost, port);
 
     setup_semi_honest(io, party);
@@ -258,14 +266,19 @@ int main(int argc, char** argv) {
 
 
     
-    // TODO: decrypt Aggregate3Output at honest broker
+
    
     io->flush();
-    for (int i=0; i<res_0->public_size; i++) {
+    // TODO: decrypt Aggregate3Output at honest broker
+
+    
+    /*
+    for (int i=0; i< Aggregate3Output->public_size; i++) {
         if (i==0 && party == BOB)
             cout << "\nOutput:" << endl;
 
-        string val = reveal_bin(res_0->data[i], initial_row_size, PUBLIC);
+        string val = reveal_bin(Aggregate3Output->data[i], Aggregate3Output->data[i].size(), PUBLIC);
+	// TODO: break this into real col sizes for the output schema, may require automatically generating it
         string col0 = val.substr(0, col_length0);
         reverse(col0.begin(), col0.end());
         string col1 = val.substr(col_length0, col_length0 + col_length1);
@@ -275,6 +288,6 @@ int main(int argc, char** argv) {
         
         if (party == ALICE && i < limit)
             cout << row.to_string() << endl;    
-    }
+	    }*/
     delete io;
 }
