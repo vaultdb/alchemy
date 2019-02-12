@@ -14,14 +14,16 @@ public class EMPQueryTest extends BaseTest {
 	public void testComorbidity() throws Exception {
 		String testName = "comorbidity";
 		List<String> parties = new ArrayList<String>();
-		parties.add("emp");
+		parties.add("codd03");
+		parties.add("codd04");
 		executeTest(testName, parties);
 	}
 	
 	public void testCDiff() throws Exception {
 		String testName = "cdiff";
 		List<String> parties = new ArrayList<String>();
-		parties.add("emp");
+		parties.add("codd03");
+		parties.add("codd04");
 		executeTest(testName, parties);
 	}
 	
