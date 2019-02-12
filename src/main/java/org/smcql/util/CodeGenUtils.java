@@ -5,12 +5,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.calcite.linq4j.tree.ConditionalExpression;
 import org.apache.calcite.rel.logical.LogicalProject;
 import org.apache.calcite.rex.RexNode;
 import org.apache.commons.lang3.StringUtils;
 import org.postgresql.util.PGInterval;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Project;
@@ -44,6 +47,15 @@ public class CodeGenUtils {
 	public static String generateFromTemplate(String srcFile, Map<String, String> variables) throws IOException {
 		srcFile =  Utilities.getCodeGenRoot() + "/" + srcFile;
 		
+		try {
+			Logger logger = SystemConfiguration.getInstance().getLogger();
+			logger.log(Level.INFO, "Generating code from " + srcFile);
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		List<String> template = Utilities.readFile(srcFile);
 		
 		//while(incompleteSubstitution(template)) {

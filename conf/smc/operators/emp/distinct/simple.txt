@@ -9,8 +9,8 @@ Data * $functionName(Data *data) {
         Bit eq = (id1 == id2);
         id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
         //maintain real size
-  	    data->real_size = If(eq, data->real_size, data->real_size - 1);
-        memcpy(data->data[i],id1, tupleLen);       
+  	    data->real_size = If(eq, data->real_size - 1,  data->real_size);
+        memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }
     
     return data;
