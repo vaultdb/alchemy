@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.logical.LogicalProject;
 import org.smcql.plan.operator.AttributeResolver;
 import org.smcql.plan.operator.Operator;
 import org.smcql.type.SecureRelRecordType;

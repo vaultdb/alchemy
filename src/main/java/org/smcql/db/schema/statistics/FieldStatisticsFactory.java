@@ -1,11 +1,5 @@
 package org.smcql.db.schema.statistics;
 
-import org.apache.calcite.rel.logical.LogicalFilter;
-import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeField;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
-
 // for later when we templatize
 public class FieldStatisticsFactory {
 /*

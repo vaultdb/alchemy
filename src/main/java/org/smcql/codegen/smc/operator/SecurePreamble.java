@@ -3,16 +3,10 @@ package org.smcql.codegen.smc.operator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
-import java.util.Map.Entry;
-
-import org.smcql.codegen.CodeGenerator;
 import org.smcql.executor.config.ConnectionManager;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.executor.config.WorkerConfiguration;
-import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.operator.Operator;
 import org.smcql.util.CodeGenUtils;
-import org.smcql.util.Utilities;
 
 // setup for emp code
 public class SecurePreamble extends SecureOperator {

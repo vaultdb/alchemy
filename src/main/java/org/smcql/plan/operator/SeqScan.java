@@ -3,13 +3,10 @@ package org.smcql.plan.operator;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.sql.type.BasicSqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
 import org.smcql.type.SecureRelRecordType;
 
 public class SeqScan extends Operator {

@@ -5,14 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.smcql.codegen.CodeGenerator;
-import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.config.RunConfig;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.executor.smc.OperatorExecution;
-import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Operator;
-import org.smcql.plan.operator.Project;
 import org.smcql.type.SecureRelRecordType;
 
 public class PlaintextStep implements ExecutionStep, Serializable {

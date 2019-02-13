@@ -1,17 +1,14 @@
 package org.smcql.codegen.smc.operator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Operator;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.plan.operator.Aggregate;
 import org.smcql.util.CodeGenUtils;
-import org.smcql.util.RexNodeUtilities;
 
 public class SecureAggregate extends SecureOperator {
 
@@ -37,6 +34,7 @@ public class SecureAggregate extends SecureOperator {
 		compute += "merged[mIdx] = deref;\n";
 		variables.put("compute", compute);
 		
+		// TODO: add more aggregates
 		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
 		if (groupByAttributes.isEmpty()) {
 			Map<String, String> result = new HashMap<String, String>();
@@ -67,7 +65,7 @@ public class SecureAggregate extends SecureOperator {
 		
 		for(SecureRelDataTypeField r : attrs) {
 			int size = r.size();
-			String bitmask = CodeGenUtils.getBitmask(schema.getAttributes(), r);
+			String bitmask = CodeGenUtils.getField(schema.getAttributes(), r);
 			String lVar = "l" + i;
 			String rVar = "r" + i;
 			

@@ -1,6 +1,5 @@
 package org.smcql.executor.remote;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,16 +10,12 @@ import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
-import org.smcql.db.data.Tuple;
-import org.smcql.db.data.field.CharField;
-import org.smcql.db.data.field.IntField;
 import org.smcql.executor.SMCQLQueryExecutor;
 import org.smcql.executor.SegmentExecutor;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.smc.ExecutionSegment;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
 
 

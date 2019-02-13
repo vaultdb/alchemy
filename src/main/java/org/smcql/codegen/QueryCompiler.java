@@ -30,7 +30,6 @@ import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.executor.step.SecureStep;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.plan.operator.Aggregate;
 import org.smcql.plan.operator.CommonTableExpressionScan;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Join;

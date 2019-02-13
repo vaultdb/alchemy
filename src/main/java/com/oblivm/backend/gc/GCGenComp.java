@@ -1,8 +1,6 @@
 package com.oblivm.backend.gc;
 
 import java.io.IOException;
-import java.util.Arrays;
-
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.flexsc.Flag;
 import com.oblivm.backend.flexsc.Mode;

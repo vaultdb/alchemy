@@ -4,13 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
-
-import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 // singleton for converting from sql types to smc types and vice versa
 // file format: sql name, smc name, sizeof(entry)

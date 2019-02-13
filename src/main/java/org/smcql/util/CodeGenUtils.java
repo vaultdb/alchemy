@@ -1,22 +1,16 @@
 package org.smcql.util;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.calcite.linq4j.tree.ConditionalExpression;
-import org.apache.calcite.rel.logical.LogicalProject;
-import org.apache.calcite.rex.RexNode;
 import org.apache.commons.lang3.StringUtils;
 import org.postgresql.util.PGInterval;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Operator;
-import org.smcql.plan.operator.Project;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 
@@ -190,7 +184,8 @@ public class CodeGenUtils {
 	}
 	
 	
-	public static String getBitmask(List<SecureRelDataTypeField> attrs, SecureRelDataTypeField ref) {
+	// returns attrName from extractedVariables
+	public static String getField(List<SecureRelDataTypeField> attrs, SecureRelDataTypeField ref) {
 		int startIdx = 0;
 		boolean found = false;
 		for(SecureRelDataTypeField r : attrs) {
@@ -212,9 +207,9 @@ public class CodeGenUtils {
 		return mask;
 	}
 	
-		public static String getBitmask(SecureRelRecordType srcSchema, SecureRelDataTypeField r)  {
+		public static String getField(SecureRelRecordType srcSchema, SecureRelDataTypeField r)  {
 		
-		return getBitmask(srcSchema.getSecureFieldList(), r);
+		return getField(srcSchema.getSecureFieldList(), r);
 	}
 	
 	
@@ -235,12 +230,13 @@ public class CodeGenUtils {
 		
 	}
 	
+	// projections are implemented here
 	public static String writeFields(SecureRelRecordType srcSchema, String srcName, String dstName) throws Exception {
 		
 		String ret = new String();
 		
 		for(SecureRelDataTypeField field : srcSchema.getAttributes()) {
-			String bitmask =  CodeGenUtils.getBitmask(srcSchema, field);
+			String bitmask =  CodeGenUtils.getField(srcSchema, field);
 			ret += dstName + bitmask + " = " + srcName + bitmask + ";\n        ";
 		}
 			

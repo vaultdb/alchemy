@@ -114,14 +114,14 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		}
 		else {
 			
-			String bitmask = CodeGenUtils.getBitmask(schema.getAttributes(), orderKey.get(0));
+			String bitmask = CodeGenUtils.getField(schema.getAttributes(), orderKey.get(0));
 			ret += "    if(lhs" + bitmask + " < rhs" + bitmask + ") {\n";
 			ret += "        res = 1;\n";
 			ret += "    }\n";
 
 			for(int i = 1; i < orderKey.size(); ++i) {
 				String predecessors = equalities(orderKey, i);
-				bitmask = CodeGenUtils.getBitmask(schema.getAttributes(), orderKey.get(i));
+				bitmask = CodeGenUtils.getField(schema.getAttributes(), orderKey.get(i));
 				ret += "    else if(" + predecessors + " && lhs" + bitmask + " < rhs" + bitmask + ") { \n";
 				ret += "        res = 1;\n";
 				ret += "    }\n";

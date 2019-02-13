@@ -1,16 +1,11 @@
 package org.smcql.util;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.logical.LogicalProject;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.sql.SqlKind;
 import org.smcql.codegen.smc.operator.support.RexFlattener;
 import org.smcql.codegen.smc.operator.support.RexNodeToSmc;
 import org.smcql.codegen.smc.operator.support.RexNodeToSql;
@@ -40,25 +35,7 @@ public class RexNodeUtilities {
 		
 	}
 	
-	public static boolean checkForCardinalityBoundSupportedOps(RexNode r) {
-		// TODO:  Check that all predicates are equality checks and that all connectors are conjunctive
-		return true;
-	}
 	
-	// TODO: make this more robust by using visitor to check out whole tree
-	public static List<SecureRelDataTypeField> getInputRefs(RexNode expr, SecureRelRecordType schema) {
-		RexUtil.FieldAccessFinder visitor =  new RexUtil.FieldAccessFinder();
-        expr.accept(visitor);
-        List<RexFieldAccess> accesses = visitor.getFieldAccessList();
-        List<SecureRelDataTypeField> fieldsAccessed = new ArrayList<SecureRelDataTypeField>();
-        
-        for(RexFieldAccess a : accesses) {
-        	// TODO: match this with schema entries
-        }
-        
-        return null;
-
-	}
 	
 	
 	

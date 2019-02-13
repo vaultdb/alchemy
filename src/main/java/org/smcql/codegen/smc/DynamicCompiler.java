@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Logger;
 import java.io.FilenameFilter;
 
 import javax.tools.Diagnostic;
@@ -26,7 +25,6 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
 import org.apache.commons.lang3.StringUtils;
-import org.smcql.config.SystemConfiguration;
 import org.smcql.util.ClassPathUpdater;
 import org.smcql.util.Utilities;
 

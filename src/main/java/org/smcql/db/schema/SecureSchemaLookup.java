@@ -3,8 +3,6 @@ package org.smcql.db.schema;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
-import org.smcql.util.Utilities;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;

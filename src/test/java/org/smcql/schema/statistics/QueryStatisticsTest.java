@@ -1,24 +1,15 @@
 package org.smcql.schema.statistics;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.calcite.plan.RelOptUtil;
-import org.junit.Test;
 import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.db.data.QueryTable;
-import org.smcql.db.data.Tuple;
-import org.smcql.db.data.field.IntField;
 import org.smcql.db.schema.statistics.ObliviousFieldStatistics;
-import org.smcql.executor.config.ConnectionManager;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.plan.operator.Operator;

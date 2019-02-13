@@ -1,11 +1,6 @@
 // Copyright (C) 2014 by Xiao Shaun Wang <wangxiao@cs.umd.edu>
 package com.oblivm.backend.oram;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-
 import com.oblivm.backend.util.Utils;
 
 public class PlainBlock implements java.io.Serializable {

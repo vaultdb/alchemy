@@ -1,21 +1,14 @@
 package org.smcql.plan.operator;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
-import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelFieldCollation;
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Window.Group;
 import org.apache.calcite.rel.logical.LogicalWindow;
-import org.apache.calcite.rel.type.RelDataTypeField;
-import org.apache.calcite.rel.type.RelRecordType;
-import org.smcql.util.Utilities;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
 import org.smcql.type.SecureRelRecordType;
 
 public class WindowAggregate extends Operator {

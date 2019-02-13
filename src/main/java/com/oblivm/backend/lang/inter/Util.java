@@ -3,8 +3,6 @@ package com.oblivm.backend.lang.inter;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.smcql.executor.smc.io.SecureOutputReader;
 import org.smcql.executor.smc.runnable.SMCRunnable;
 import org.smcql.util.Utilities;
 
@@ -12,8 +10,6 @@ import com.oblivm.backend.circuits.CircuitLib;
 import com.oblivm.backend.circuits.arithmetic.IntegerLib;
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.flexsc.Party;
-import com.oblivm.backend.gc.GCGenComp;
-import com.oblivm.backend.gc.GCSignal;
 import com.oblivm.backend.oram.SecureArray;
 import com.oblivm.backend.util.Utils;
 

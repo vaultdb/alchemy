@@ -1,11 +1,8 @@
 package org.smcql.codegen.smc.operator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.calcite.rel.logical.LogicalFilter;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Filter;
@@ -49,7 +46,7 @@ public class SecureWindowAggregate extends SecureOperator  {
 		SecureRelDataTypeField windowAttr = win.getSliceAttributes().get(0);  // partition by
 		
 
-		String rowNumMask = CodeGenUtils.getBitmask(dstSchema, ref);
+		String rowNumMask = CodeGenUtils.getField(dstSchema, ref);
 		
 		variables.put("rowNum", rowNumMask);
 		variables.put("mSize", Integer.toString(windowAttr.size()));
