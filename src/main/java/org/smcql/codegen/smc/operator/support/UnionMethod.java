@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.smc.DynamicCompiler;
@@ -73,7 +74,7 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		int size = schema.size();
 
 		Map<String, String> variables = new HashMap<String, String>();
-		variables.put("lessThan", generateLessThan());
+		//variables.put("lessThan", generateLessThan());
 		variables.put("size", Integer.toString(size));
 		variables.put("packageName", packageName);
 		variables.put("functionName", functionName);
@@ -81,10 +82,17 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		variables.put("sql", sql);
 		
 		
+		
 		String unionFile = "union/ordered.txt";
 		
 		if(orderKey.isEmpty()){
 			unionFile = "union/unordered.txt";
+		}
+		else {
+			//TODO: add support for composite merge key
+			Pair<Integer, Integer> schemaPos = CodeGenUtils.getSchemaPosition(schema.getAttributes(), orderKey.get(0));
+			variables.put("keyLength", Integer.toString(schemaPos.getKey()));
+			variables.put("keyPos", Integer.toString(schemaPos.getValue()));
 		}
 		
 		generatedCode = CodeGenUtils.generateFromTemplate(unionFile, variables);
@@ -93,62 +101,7 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		return result;
 	}
 	
-	// if l.a1 < l.a2 then r = 1
-	// else if(a1 ==, l.a2 < r.a2
-	// else if ...
-	// do less than on order by attributes - the column order of the output may not be the same as the order by cols
-	private String generateLessThan() throws Exception {
-		
-		assert(orderKey != null);
-
-		int size = schema.size();
-		
-		
-		String ret = "secure int1 lessThan(int" + size + "  lhs, int" + size + " rhs) {\n";
-		ret += "    int1 res = 0;\n";
-		
-		if(orderKey.isEmpty()) {
-			ret += "    if(lhs < rhs) {\n";
-			ret += "           res = 1;\n";
-			ret += "     }\n\n";
-		}
-		else {
-			
-			String bitmask = CodeGenUtils.getField(schema.getAttributes(), orderKey.get(0));
-			ret += "    if(lhs" + bitmask + " < rhs" + bitmask + ") {\n";
-			ret += "        res = 1;\n";
-			ret += "    }\n";
-
-			for(int i = 1; i < orderKey.size(); ++i) {
-				String predecessors = equalities(orderKey, i);
-				bitmask = CodeGenUtils.getField(schema.getAttributes(), orderKey.get(i));
-				ret += "    else if(" + predecessors + " && lhs" + bitmask + " < rhs" + bitmask + ") { \n";
-				ret += "        res = 1;\n";
-				ret += "    }\n";
 	
-			}
-		}
-		ret += "    return res;\n";
-		ret += "}\n\n";
-		
-
-		return ret;
-		
-	}
-	
-	private String equalities(List<SecureRelDataTypeField> orderKey, int idxFor) throws Exception {
-		int i = 0;
-		List<String> eqs = new ArrayList<String>();
-		
-		while(i < idxFor) {
-			String bitmask = schema.getBitmask(orderKey.get(i));
-		   eqs.add("lhs" + bitmask + " == rhs" + bitmask);
-		   ++i;
-		}
-		
-		return StringUtils.join(eqs.toArray(), " && ");
-	}
-
 	@Override
 	public String getPackageName() {
 		return packageName;

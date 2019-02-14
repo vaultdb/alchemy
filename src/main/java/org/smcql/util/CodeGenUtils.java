@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.postgresql.util.PGInterval;
 import org.smcql.config.SystemConfiguration;
@@ -185,7 +186,15 @@ public class CodeGenUtils {
 	
 	
 	// returns attrName from extractedVariables
-	public static String getField(List<SecureRelDataTypeField> attrs, SecureRelDataTypeField ref) {
+	public static String getInputRef(List<SecureRelDataTypeField> attrs, SecureRelDataTypeField ref, String srcVariable) {
+		
+		Pair<Integer, Integer> schemaPos = getSchemaPosition(attrs, ref);
+		String mask =  "Integer(" + schemaPos.getKey() + ", " + srcVariable + ".bits + " + schemaPos.getValue() + ")";
+		return mask;
+	}
+	
+	
+	public static Pair<Integer, Integer> getSchemaPosition(List<SecureRelDataTypeField> attrs, SecureRelDataTypeField ref) {
 		int startIdx = 0;
 		boolean found = false;
 		for(SecureRelDataTypeField r : attrs) {
@@ -200,16 +209,13 @@ public class CodeGenUtils {
 		}
 		
 		assert(found);
-		
-		int endIdx = startIdx + ref.size();
-		
-		String mask =  "$" + startIdx + "~" + endIdx + "$";
-		return mask;
+		return new Pair<Integer, Integer>(ref.size(), startIdx);
+	
 	}
 	
-		public static String getField(SecureRelRecordType srcSchema, SecureRelDataTypeField r)  {
+	public static String getInputRef(SecureRelRecordType srcSchema, SecureRelDataTypeField r, String srcVariable)  {
 		
-		return getField(srcSchema.getSecureFieldList(), r);
+		return getInputRef(srcSchema.getSecureFieldList(), r, srcVariable);
 	}
 	
 	
@@ -230,16 +236,38 @@ public class CodeGenUtils {
 		
 	}
 	
-	// projections are implemented here
+	// creates a memcpy function that copies a field from one tuple/Integer to another
+	public static String writeField(String srcInteger, String dstInteger, int srcOffset, int dstOffset, int writeSize) {
+	
+	//(List<SecureRelDataTypeField> dstSchema,  SecureRelDataTypeField dstField, 
+		//	List<SecureRelDataTypeField> srcSchema, SecureRelDataTypeField srcField) {
+		
+		
+
+		// attr index and its start position in bits from beginning of tuple
+		//Pair<Integer, Integer> dstPosition = getSchemaPosition(dstSchema, dstField);
+		
+		
+		
+		String output =  "memcpy(" + dstInteger + ".bits";
+		if(dstOffset > 0)
+			output += " + " + dstOffset;
+
+		output += ", " + srcInteger + ".bits";
+		
+		if(srcOffset > 0)
+			output += " + " + srcOffset;
+		
+		output += ", " + writeSize +  ");";
+		
+		return output;
+	}
+	
+	// simple field copies here
 	public static String writeFields(SecureRelRecordType srcSchema, String srcName, String dstName) throws Exception {
 		
-		String ret = new String();
+		String ret = "Integer " + dstName + "(" + srcSchema.size() + ", " + dstName + ".bits);\n";
 		
-		for(SecureRelDataTypeField field : srcSchema.getAttributes()) {
-			String bitmask =  CodeGenUtils.getField(srcSchema, field);
-			ret += dstName + bitmask + " = " + srcName + bitmask + ";\n        ";
-		}
-			
 		return ret;
 
 	}

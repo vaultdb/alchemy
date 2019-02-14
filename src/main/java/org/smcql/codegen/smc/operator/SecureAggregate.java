@@ -7,6 +7,7 @@ import java.util.Map;
 import org.smcql.plan.operator.Operator;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
+import org.apache.calcite.util.Pair;
 import org.smcql.plan.operator.Aggregate;
 import org.smcql.util.CodeGenUtils;
 
@@ -47,7 +48,7 @@ public class SecureAggregate extends SecureOperator {
 		variables.put("groupByMatch", groupByMatch);
 			
 		int aggregateIdx = a.getComputeAttributeIndex();
-		String cntMask = planNode.getSchema().getBitmask(aggregateIdx);
+		String cntMask = planNode.getSchema().getInputRef(aggregateIdx, null);
 		
 		variables.put("cntMask", cntMask);
 	
@@ -58,22 +59,27 @@ public class SecureAggregate extends SecureOperator {
 		return result;
 	}
 	
-	
+	// takes in a list of attrs we are grouping by
 	private String generateGroupBy(List<SecureRelDataTypeField> attrs) throws Exception {
 		int i = 1;
-		String ret = "    int1 ret = 1;\n\n";
+		String ret = "    Bit ret(1, PUBLIC);\n\n";
 		
 		for(SecureRelDataTypeField r : attrs) {
 			int size = r.size();
-			String bitmask = CodeGenUtils.getField(schema.getAttributes(), r);
 			String lVar = "l" + i;
 			String rVar = "r" + i;
 			
-			ret += "    int" + size + " " + lVar + " = lhs" + bitmask + ";\n";
-			ret += "    int" + size + " " + rVar + " = rhs" + bitmask + ";\n";
-			ret += "    if(" + lVar + " != " + rVar + ")  {\n";
-			ret += "            ret = 0;\n";
-			ret += "     }\n\n";
+			// want lVarInteger(lBits, lhs.bits + offset)
+			
+			Pair<Integer, Integer> schemaPos = CodeGenUtils.getSchemaPosition(schema.getAttributes(), r);
+			int fieldSize = schemaPos.getKey();
+			int fieldOffset = schemaPos.getValue();
+			
+			
+			ret += "    Integer " +  lVar + "(" + fieldSize + ", lhs.bits + " + fieldOffset + ");\n";
+			ret += "    Integer " +  rVar + "(" + fieldSize + ", rhs.bits + " + fieldOffset + ");\n";
+			ret += "    If(" + lVar + " != " + rVar + ", ret = 0);\n";
+			ret += "     \n\n";
 			
 			
 			++i;

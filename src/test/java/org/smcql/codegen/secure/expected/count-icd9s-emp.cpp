@@ -12,14 +12,15 @@ using namespace pqxx;
 
 #define LENGTH_INT 64
 
+#define OID_INT 20
+
 // Connection strings, encapsulates db name, db user, port, host
 string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
 string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=localhost port=5432";
-char* aliceHost = "localhost";
-char* bobHost = "localhost";
+string aliceHost = "localhost";
+string bobHost = "localhost";
 
-#define OID_STRING 1043
-#define OID_INT 20
+
 
 
 
@@ -43,6 +44,7 @@ void cmp_swap_sql(Integer*key, int i, int j, Bit acc, int key_pos, int key_lengt
     swap(to_swap, key[i], key[j]);
 }
 
+// TODO: extend this to multiple columns as a list of key_pos and key_length
 void bitonic_merge_sql(Integer* key, int lo, int n, Bit acc, int key_pos, int key_length) {
     if (n > 1) {
         int m = greatestPowerOfTwoLessThan(n);
@@ -156,8 +158,7 @@ Data* Distinct2Merge(int party, NetIO * io) {
 
     int alice_size, bob_size;
     alice_size = bob_size = in.size();
-    Batcher alice_batcher, bob_batcher;
-    
+
     if (party == ALICE) {
         io->send_data(&alice_size, 4);
         io->flush();
@@ -174,6 +175,7 @@ Data* Distinct2Merge(int party, NetIO * io) {
    
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
+    Batcher alice_batcher, bob_batcher;
     
     for (int i = 0; i < alice_size*bit_length; ++i) {
         	   // set up bit array, if alice, secret share a local bit, 
@@ -190,7 +192,7 @@ Data* Distinct2Merge(int party, NetIO * io) {
 	
     for (int i = 0; i < bob_size*bit_length; ++i)
         bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
-    bob_batcher.make_semi_honest(BOB);
+    	bob_batcher.make_semi_honest(BOB);
 
 	// append all of bob's bits to tmp
     for (int i = 0; i < bob_size*bit_length; ++i) {
@@ -209,7 +211,7 @@ Data* Distinct2Merge(int party, NetIO * io) {
 
 
     // TODO: sort if needed, not specific to col_length0
-    //bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, col_length0);
+    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, 256);
     Data * d = new Data;
     d->data = res;
     d->public_size = alice_size + bob_size;
@@ -217,7 +219,6 @@ Data* Distinct2Merge(int party, NetIO * io) {
         
     return d;
 }
-
 Data * Distinct2(Data *data) {
 	
 	
@@ -229,7 +230,7 @@ Data * Distinct2(Data *data) {
         Bit eq = (id1 == id2);
         id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
         //maintain real size
-  	data->real_size = If(eq, data->real_size - Integer(64, 1, PUBLIC), data->real_size);
+  	    data->real_size = If(eq, data->real_size - Integer(LENGTH_INT, 1, PUBLIC),  data->real_size);
         memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }
     
@@ -237,11 +238,11 @@ Data * Distinct2(Data *data) {
 }
 
 Data * Aggregate3(Data *data) {
-  data->data = new Integer[1];
-  data->data[0] = data->real_size;
-  data->public_size = 1;
-  return data;
-  //    return data->real_size;
+	data->public_size = 1;
+	data->data = new Integer[1];
+	data->data[0] = data->real_size;
+	data->real_size = Integer(LENGTH_INT, 1, PUBLIC);
+    return data;
 }
 
 // suffix for our emp ExecutionStep
@@ -251,11 +252,11 @@ Data * Aggregate3(Data *data) {
 // expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
 
 int main(int argc, char** argv) {
+
     int port, party;
     parse_party_and_port(argv, &party, &port);
-
-    NetIO * io = new NetIO(party==ALICE ? aliceHost : bobHost, port);
-
+    NetIO * io = new NetIO((party==ALICE ? aliceHost.c_str() : bobHost.c_str()), port);
+    
     setup_semi_honest(io, party);
     
      Data *Distinct2MergeOutput = Distinct2Merge(party, io);
@@ -266,28 +267,8 @@ int main(int argc, char** argv) {
 
 
     
-
+    // TODO: decrypt Aggregate3Output at honest broker
    
     io->flush();
-    // TODO: decrypt Aggregate3Output at honest broker
-
-    
-    /*
-    for (int i=0; i< Aggregate3Output->public_size; i++) {
-        if (i==0 && party == BOB)
-            cout << "\nOutput:" << endl;
-
-        string val = reveal_bin(Aggregate3Output->data[i], Aggregate3Output->data[i].size(), PUBLIC);
-	// TODO: break this into real col sizes for the output schema, may require automatically generating it
-        string col0 = val.substr(0, col_length0);
-        reverse(col0.begin(), col0.end());
-        string col1 = val.substr(col_length0, col_length0 + col_length1);
-        
-        vector<int> lengths{col_length0, col_length1};
-        Row row = Row(col0 + col1, lengths);
-        
-        if (party == ALICE && i < limit)
-            cout << row.to_string() << endl;    
-	    }*/
     delete io;
 }

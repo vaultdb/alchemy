@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.logical.LogicalProject;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.util.Pair;
 import org.smcql.codegen.smc.operator.support.RexFlattener;
 import org.smcql.codegen.smc.operator.support.RexNodeToSmc;
 import org.smcql.codegen.smc.operator.support.RexNodeToSql;
@@ -27,8 +28,19 @@ public class RexNodeUtilities {
 		Iterator<RexNode> itr = fieldProject.iterator();
 
 		for(SecureRelDataTypeField field : dstSchema.getSecureFieldList()) {
-			if(itr.hasNext())
-				ret += dstVariable + dstSchema.getBitmask(field) + " = " + flattenForSmc(itr.next(), srcSchema, srcVariable, srcSize) + ";\n";
+			if(itr.hasNext()) {
+				//ret += dstVariable + dstSchema.getInputRef(field, null) + " = " + flattenForSmc(itr.next(), srcSchema, srcVariable, srcSize) + ";\n";
+				Pair<Integer, Integer> schemaPos = CodeGenUtils.getSchemaPosition(dstSchema.getAttributes(),field);
+				int dstOffset = schemaPos.getValue();
+				int dstSize = schemaPos.getKey();
+				
+				ret += "memcpy(" + dstVariable + ".bits ";
+				if(dstOffset > 0) {
+					ret += " + " + dstOffset;
+				}
+				ret += ", " + flattenForSmc(itr.next(), srcSchema, srcVariable, srcSize);
+				ret += ", " + dstSize + ");\n";
+			}
 		}
 		
 		return ret;

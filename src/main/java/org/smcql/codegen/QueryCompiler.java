@@ -229,7 +229,7 @@ public class QueryCompiler {
 		
 		wholeFile += generateEMPMain(targetFile, code.right, rootOutput); // plug in function calls
 		
-		
+		System.out.println("Generated file: " + wholeFile);
 		Utilities.writeFile(targetFile, wholeFile);
 		
 		return targetFile;

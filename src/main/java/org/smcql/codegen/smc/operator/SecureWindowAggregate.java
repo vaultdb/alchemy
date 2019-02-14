@@ -3,6 +3,7 @@ package org.smcql.codegen.smc.operator;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.calcite.util.Pair;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Filter;
@@ -45,12 +46,21 @@ public class SecureWindowAggregate extends SecureOperator  {
 		SecureRelRecordType dstSchema = win.getSchema();
 		SecureRelDataTypeField windowAttr = win.getSliceAttributes().get(0);  // partition by
 		
-
-		String rowNumMask = CodeGenUtils.getField(dstSchema, ref);
+		// desired outcome:
+		//  Integer rowNumSec(INT_SIZE, rowNum, PUBLIC);
+		//  memcpy(dstTuple.bits + dstOffset, rowNumSec, INT_SIZE)
 		
-		variables.put("rowNum", rowNumMask);
+		String rowNumSec = "Integer rowNumSec(INT_SIZE, rowNum, PUBLIC);\n";
+
+		// field size, field offset in bits
+		Pair<Integer, Integer> pos = CodeGenUtils.getSchemaPosition(dstSchema.getAttributes(), ref);
+		rowNumSec += "memcpy(dstTuple.bits" + " + " + pos.getValue() + ", rowNumSec, INT_SIZE);\n";
+		
+		
+		variables.put("rowNumAssign", rowNumSec);
 		variables.put("mSize", Integer.toString(windowAttr.size()));
-		variables.put("winMask", dstSchema.getBitmask(windowAttr));
+		// TODO: fix this one
+		variables.put("winMask", dstSchema.getInputRef(windowAttr, "dstTuple"));
 
 		
 		// everything else is a 1:1 copy

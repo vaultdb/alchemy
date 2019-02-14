@@ -6,7 +6,7 @@ typedef char = int8;
 secure int$dSize writeValues(int$sSize srcTuple, int rowNum) {
        int$dSize dstTuple;
        $writeDst
-       dstTuple$rowNum = rowNum;
+       $rowNumAssign
        return dstTuple;
 }
 

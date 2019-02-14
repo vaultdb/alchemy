@@ -47,7 +47,7 @@ public class SecureSort extends SecureOperator {
 
 		for(int i = 0; i < sortKey.size(); ++i) {
 			SecureRelDataTypeField r = sortKey.get(i);
-			String bitmask = s.getSchema().getBitmask(r);
+			String bitmask = s.getSchema().getInputRef(r, null);
 			writeEndIdx = writeStartIdx + r.size();
 			ret += "    dst$" + writeStartIdx + "~" + writeEndIdx + "$ = src" + bitmask + ";\n";
 		}

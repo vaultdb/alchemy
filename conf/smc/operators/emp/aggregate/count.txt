@@ -1,4 +1,8 @@
-Integer $functionName(Data *data) {
-    return data->real_size;
+Data * $functionName(Data *data) {
+	data->public_size = 1;
+	data->data = new Integer[1];
+	data->data[0] = data->real_size;
+	data->real_size = Integer(LENGTH_INT, 1, PUBLIC);
+    return data;
 }
 

@@ -12,6 +12,8 @@ using namespace pqxx;
 
 #define LENGTH_INT 64
 
+#define OID_INT 20
+
 // Connection strings, encapsulates db name, db user, port, host
 string aliceConnectionString = "$aliceConnectionString";
 string bobConnectionString = "$bobConnectionString";
@@ -42,6 +44,7 @@ void cmp_swap_sql(Integer*key, int i, int j, Bit acc, int key_pos, int key_lengt
     swap(to_swap, key[i], key[j]);
 }
 
+// TODO: extend this to multiple columns as a list of key_pos and key_length
 void bitonic_merge_sql(Integer* key, int lo, int n, Bit acc, int key_pos, int key_length) {
     if (n > 1) {
         int m = greatestPowerOfTwoLessThan(n);

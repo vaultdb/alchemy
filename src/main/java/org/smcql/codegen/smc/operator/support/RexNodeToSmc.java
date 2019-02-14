@@ -17,9 +17,9 @@ public class RexNodeToSmc extends RexFlattener{
 		int idx = inputRef.getIndex();
 		
 		try {
-			return variableName + schema.getBitmask(idx);
+			return schema.getInputRef(idx, variableName);
 		} catch (NullPointerException e) {
-			return variableName + schema.getBitmask(idx - schema.getFieldCount()); //occurs when filter comes from a join
+			return schema.getInputRef(idx - schema.getFieldCount(), variableName); //occurs when filter comes from a join
 		}
 		
 	}

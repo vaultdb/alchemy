@@ -188,7 +188,7 @@ public class SecureRelRecordType implements Serializable {
 	
 	
 	
-	public String getBitmask(int idx)  {
+	public String getInputRef(int idx, String srcVariable)  {
 		SecureRelDataTypeField field = null;
 		for (SecureRelDataTypeField cur : secureFields) {
 			if (idx == cur.getIndex()) {
@@ -196,11 +196,11 @@ public class SecureRelRecordType implements Serializable {
 				break;
 			}
 		}
-		return CodeGenUtils.getField(this, field);
+		return CodeGenUtils.getInputRef(this, field, srcVariable);
 	}
 
-	public String getBitmask(SecureRelDataTypeField field) {
-		return CodeGenUtils.getField(this, field);
+	public String getInputRef(SecureRelDataTypeField field, String srcVariable) {
+		return CodeGenUtils.getInputRef(this, field, srcVariable);
 	}
 
 	public List<SecureRelDataTypeField> getAttributes() {
