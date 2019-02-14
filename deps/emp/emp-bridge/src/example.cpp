@@ -149,8 +149,8 @@ Integer from_bool(bool* b, int size, int party) {
 // need to make this more general by tweaking the parameters 
 
 
-Data* SeqScan0Merge(int party, NetIO * io) {
-	string sql = "SELECT patient_id, icd9 = '008.45' FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY patient_id";
+Data* Distinct4Merge(int party, NetIO * io) {
+	string sql = "SELECT DISTINCT patient_id, icd9 = '414.01' FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY patient_id";
     std::vector<Row> in = execute_sql(sql, party);
     int bit_length = 65; // TODO: automatically derive size from Row metadata?
     // flatten out local data
@@ -219,121 +219,24 @@ Data* SeqScan0Merge(int party, NetIO * io) {
         
     return d;
 }
-// ordered union, multiset op, has multiset semantics
-// inputs must be sorted by sort key from query plan in source DBs
-// right now this presumes that the sort key is always the first column.
-// need to make this more general by tweaking the parameters 
-
-
-Data* SeqScan4Merge(int party, NetIO * io) {
-	string sql = "SELECT patient_id FROM medications ORDER BY patient_id";
-    std::vector<Row> in = execute_sql(sql, party);
-    int bit_length = 64; // TODO: automatically derive size from Row metadata?
-    // flatten out local data
-    bool *local_data = concat(in, bit_length);
-
-    int alice_size, bob_size;
-    alice_size = bob_size = in.size();
-
-    if (party == ALICE) {
-        io->send_data(&alice_size, 4);
-        io->flush();
-        io->recv_data(&bob_size, 4);
-        io->flush();
-    } else if (party == BOB) {
-        io->recv_data(&alice_size, 4);
-        io->flush();
-        io->send_data(&bob_size, 4);
-        io->flush();
+Data * Distinct4(Data *data) {
+	
+	
+	int tupleLen = data->data[0].size() * sizeof(Bit);
+	
+    for (int i=0; i< data->public_size - 1; i++) {
+        Integer id1 = data->data[i];
+        Integer id2 = data->data[i+1];
+        Bit eq = (id1 == id2);
+        id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
+        //maintain real size
+  	    data->real_size = If(eq, data->real_size - Integer(LENGTH_INT, 1, PUBLIC),  data->real_size);
+        memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }
-
-	Integer * res = new Integer[alice_size + bob_size];  // enough space for all inputs
-   
-    Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
-    Bit *tmpPtr = tmp;
-    Batcher alice_batcher, bob_batcher;
     
-    for (int i = 0; i < alice_size*bit_length; ++i) {
-        	   // set up bit array, if alice, secret share a local bit, 
-        	   // otherwise bob collects his part of the secret share and inputs 0 as a placeholder
-        	   alice_batcher.add<Bit>((ALICE==party) ? local_data[i]:0);
-    }
-
-	alice_batcher.make_semi_honest(ALICE);
-		
-	for(int i = 0; i < alice_size*bit_length; ++i) {
-		*tmpPtr = alice_batcher.next<Bit>();
-		++tmpPtr;
-	}
-	
-    for (int i = 0; i < bob_size*bit_length; ++i)
-        bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
-    	bob_batcher.make_semi_honest(BOB);
-
-	// append all of bob's bits to tmp
-    for (int i = 0; i < bob_size*bit_length; ++i) {
-        *tmpPtr = bob_batcher.next<Bit>();
-        ++tmpPtr;
-	}
-	
-	tmpPtr = tmp;
-	
-	// create a 2D array of secret-shared bits
-	// each index is a tuple
-    for(int i = 0; i < alice_size + bob_size; ++i) {
-        res[i] = Integer(bit_length, tmpPtr);
-        tmpPtr += bit_length;
-     }
-
-
-    // TODO: sort if needed, not specific to col_length0
-    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, 64);
-    Data * d = new Data;
-    d->data = res;
-    d->public_size = alice_size + bob_size;
-    d->real_size = Integer(64, d->public_size, PUBLIC);
-        
-    return d;
+    return data;
 }
-// TODO: generalize for arbitrary selection criteria
-// see ObliVM generator for example of this
-// this example is based on aspirin expected code
-Data * Join6(Data *left, Data *right) {
-    Integer *output = new Integer[left->public_size * right->public_size];
-    int writeIdx = 0;
-    Integer dstTuple, srcTuple, lTuple, rTuple;
-    int jointSchemaSize = 64 + 64;
-    srcTuple = Integer();
-    srcTuple.resize(jointSchemaSize);
-    
-    dstTuple = Integer(64, 0, PUBLIC); // indicates dummy
-    
-    for (int i=0; i<left->public_size; i++) {
-        for (int j=0; j<right->public_size; j++) {
-        	lTuple = left->data[i];
-        	rTuple = right->data[j];
-        	// concatenate the two inputs into srcTuple, the standard join output schema
-        	memcpy(srcTuple.bits, lTuple.bits, 64);
-        	memcpy(srcTuple.bits + 64, rTuple.bits, 64);
-        	
-        	Bit cmp = (Integer(64, lTuple.bits) == Integer(64, rTuple.bits)) & ((lTuple.bits[64] == Bit(1, PUBLIC)));
-        	memcpy(dstTuple.bits , Integer(64, srcTuple.bits).bits, 64);
-;
-        	dstTuple = If(cmp, dstTuple, Integer(64, 0, PUBLIC)); 
-	        output[writeIdx] = dstTuple;
-            writeIdx++;
-            
-        }
-    }
-    Data *result = new Data;
-    result->data = output;
-    // output tuple count
-    result->public_size = left->public_size * right->public_size;
-	// real size needs to be maintained by counting the times the join criteria is met
-	// this variable should probably not be public
-    result->real_size = Integer(64, left->public_size, PUBLIC);
-    return result;
-}
+
 // suffix for our emp ExecutionStep
 // TODO: generalize this
 // we fill in functions as we go along
@@ -348,14 +251,13 @@ int main(int argc, char** argv) {
     
     setup_semi_honest(io, party);
     
-     Data *SeqScan0MergeOutput = SeqScan0Merge(party, io);
+     Data *Distinct4MergeOutput = Distinct4Merge(party, io);
 
-     Data *SeqScan4MergeOutput = SeqScan4Merge(party, io);
-
-    Data * Join6Output = Join6(SeqScan0MergeOutput, SeqScan4MergeOutput);
+    Data * Distinct4Output = Distinct4(Distinct4MergeOutput);
 
 
-    // TODO: decrypt Join6Output at honest broker
+    
+    // TODO: decrypt Distinct4Output at honest broker
    
     io->flush();
     delete io;
