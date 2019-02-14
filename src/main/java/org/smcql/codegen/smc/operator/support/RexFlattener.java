@@ -7,6 +7,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexFieldAccess;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
@@ -61,17 +62,17 @@ public abstract class RexFlattener implements RexVisitor<String> {
 				&& !kind.equals(SqlKind.DIVIDE)
 				&& !kind.equals(SqlKind.GREATER_THAN_OR_EQUAL)
 				&& !kind.equals(SqlKind.LESS_THAN_OR_EQUAL)) {
-			return ((RexNodeToSmc) this).variableName + "$" + (inputSize - 1) + "~" + inputSize + "$ == 1";				
+			return "(" + ((RexNodeToSmc) this).variableName + ".bits[" + (inputSize - 1) + "] == Bit(1, PUBLIC))";				
 		}
 		
 		if(kind.equals(SqlKind.AND)) {
-			delimiter = "&&";
+			delimiter = "&";
 		} else if(kind.equals(SqlKind.OR)) {
 			delimiter = "||";
 		} else if(kind.equals(SqlKind.CAST)) {// skip these for now
 			delimiter = "";
 		} else if (kind.equals(SqlKind.LIKE)) {
-			return ((RexNodeToSmc) this).variableName + "$" + (inputSize - 1) + "~" + inputSize + "$ == 1";
+			return "(" +  ((RexNodeToSmc) this).variableName + ".bits[" + (inputSize - 1) + "] == Bit(1, PUBLIC))";		
 		} else if (kind.equals(SqlKind.EQUALS)) {
 			delimiter = "==";
 		} else if (kind.equals(SqlKind.DIVIDE)) {
@@ -87,7 +88,7 @@ public abstract class RexFlattener implements RexVisitor<String> {
 					break;
 				}
 			}
-			return "(lTuple$" + startIndex + "~" + endIndex + "$ - rTuple$" + startIndex + "~" + endIndex + "$)/" + value;
+			return "lTuple$" + startIndex + "~" + endIndex + "$ - rTuple$" + startIndex + "~" + endIndex + "$)/" + value;
 		} else {
 			delimiter = call.getOperator().getName();
 		}
@@ -97,17 +98,19 @@ public abstract class RexFlattener implements RexVisitor<String> {
 			//if (op.toString().indexOf("%") > 0)
 			//	continue;
 			String entry = op.accept(this);
-			if (entry.contains(",")) {
+			if (entry.contains(",") && !(op instanceof RexInputRef ) && !(op instanceof RexLiteral)) {
 				children = new ArrayList<String>();
 				String[] vals = entry.split(",");
 				int startIndex = 0;
 				for (String v : vals) {
-					int endIndex = startIndex + 8;
-					String line = "(" + ((RexNodeToSmc) this).variableName + "$" + startIndex + "~" + endIndex + "$ == " + v + ")";
+					String offset = "";
+					if(startIndex > 0)
+						offset = " + " + startIndex;
+					String line = "Integer(8, " + ((RexNodeToSmc) this).variableName + ".bits " + offset + ") == Integer(LENGTH_INT, " + v + ", PUBLIC)";
 					children.add(line);
 					startIndex += 8;
 				}
-				delimiter = "&&";
+				delimiter = "&";
 			} else {
 				children.add(entry);
 				if (kind.equals(SqlKind.LIKE))
@@ -116,7 +119,7 @@ public abstract class RexFlattener implements RexVisitor<String> {
 			
 		}
 		
-		String separater = (delimiter.equals("=") || delimiter.equals("LIKE")) ? " && " : " " + delimiter + " ";
+		String separater = (delimiter.equals("=") || delimiter.equals("LIKE")) ? " & " : " " + delimiter + " ";
 		String result = StringUtils.join(children, separater);
 		return result;
 	}

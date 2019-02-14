@@ -38,7 +38,7 @@ public class RexNodeUtilities {
 				if(dstOffset > 0) {
 					ret += " + " + dstOffset;
 				}
-				ret += ", " + flattenForSmc(itr.next(), srcSchema, srcVariable, srcSize);
+				ret += ", " + flattenForSmc(itr.next(), srcSchema, srcVariable, srcSize) + ".bits";
 				ret += ", " + dstSize + ");\n";
 			}
 		}

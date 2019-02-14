@@ -189,7 +189,11 @@ public class CodeGenUtils {
 	public static String getInputRef(List<SecureRelDataTypeField> attrs, SecureRelDataTypeField ref, String srcVariable) {
 		
 		Pair<Integer, Integer> schemaPos = getSchemaPosition(attrs, ref);
-		String mask =  "Integer(" + schemaPos.getKey() + ", " + srcVariable + ".bits + " + schemaPos.getValue() + ")";
+		String offset = "";
+		if(schemaPos.getValue() > 0) {
+			offset = " + " + schemaPos.getValue();
+		}
+		String mask =  "Integer(" + schemaPos.getKey() + ", " + srcVariable + ".bits" + offset + ")";
 		return mask;
 	}
 	

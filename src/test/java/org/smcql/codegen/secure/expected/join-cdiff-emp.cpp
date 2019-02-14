@@ -12,6 +12,8 @@ using namespace pqxx;
 
 #define LENGTH_INT 64
 
+#define OID_INT 20
+
 // Connection strings, encapsulates db name, db user, port, host
 string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
 string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=localhost port=5432";
@@ -42,6 +44,7 @@ void cmp_swap_sql(Integer*key, int i, int j, Bit acc, int key_pos, int key_lengt
     swap(to_swap, key[i], key[j]);
 }
 
+// TODO: extend this to multiple columns as a list of key_pos and key_length
 void bitonic_merge_sql(Integer* key, int lo, int n, Bit acc, int key_pos, int key_length) {
     if (n > 1) {
         int m = greatestPowerOfTwoLessThan(n);
@@ -172,6 +175,7 @@ Data* SeqScan0Merge(int party, NetIO * io) {
    
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
+    Batcher alice_batcher, bob_batcher;
     
     for (int i = 0; i < alice_size*bit_length; ++i) {
         	   // set up bit array, if alice, secret share a local bit, 
@@ -181,14 +185,14 @@ Data* SeqScan0Merge(int party, NetIO * io) {
 
 	alice_batcher.make_semi_honest(ALICE);
 		
-	for(int i = 0; i < alice.size*bit_length; ++i) {
+	for(int i = 0; i < alice_size*bit_length; ++i) {
 		*tmpPtr = alice_batcher.next<Bit>();
 		++tmpPtr;
 	}
 	
     for (int i = 0; i < bob_size*bit_length; ++i)
         bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
-    bob_batcher.make_semi_honest(BOB);
+    	bob_batcher.make_semi_honest(BOB);
 
 	// append all of bob's bits to tmp
     for (int i = 0; i < bob_size*bit_length; ++i) {
@@ -202,12 +206,12 @@ Data* SeqScan0Merge(int party, NetIO * io) {
 	// each index is a tuple
     for(int i = 0; i < alice_size + bob_size; ++i) {
         res[i] = Integer(bit_length, tmpPtr);
-        tmpPtr += bitLength;
+        tmpPtr += bit_length;
      }
 
 
     // TODO: sort if needed, not specific to col_length0
-    //bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, col_length0);
+    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, 64);
     Data * d = new Data;
     d->data = res;
     d->public_size = alice_size + bob_size;
@@ -247,6 +251,7 @@ Data* SeqScan4Merge(int party, NetIO * io) {
    
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
+    Batcher alice_batcher, bob_batcher;
     
     for (int i = 0; i < alice_size*bit_length; ++i) {
         	   // set up bit array, if alice, secret share a local bit, 
@@ -256,14 +261,14 @@ Data* SeqScan4Merge(int party, NetIO * io) {
 
 	alice_batcher.make_semi_honest(ALICE);
 		
-	for(int i = 0; i < alice.size*bit_length; ++i) {
+	for(int i = 0; i < alice_size*bit_length; ++i) {
 		*tmpPtr = alice_batcher.next<Bit>();
 		++tmpPtr;
 	}
 	
     for (int i = 0; i < bob_size*bit_length; ++i)
         bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
-    bob_batcher.make_semi_honest(BOB);
+    	bob_batcher.make_semi_honest(BOB);
 
 	// append all of bob's bits to tmp
     for (int i = 0; i < bob_size*bit_length; ++i) {
@@ -277,12 +282,12 @@ Data* SeqScan4Merge(int party, NetIO * io) {
 	// each index is a tuple
     for(int i = 0; i < alice_size + bob_size; ++i) {
         res[i] = Integer(bit_length, tmpPtr);
-        tmpPtr += bitLength;
+        tmpPtr += bit_length;
      }
 
 
     // TODO: sort if needed, not specific to col_length0
-    //bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, col_length0);
+    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, 64);
     Data * d = new Data;
     d->data = res;
     d->public_size = alice_size + bob_size;
@@ -296,32 +301,39 @@ Data* SeqScan4Merge(int party, NetIO * io) {
 Data * Join6(Data *left, Data *right) {
     Integer *output = new Integer[left->public_size * right->public_size];
     int writeIdx = 0;
-    Integer trueSize(64, 0);
-
+    Integer dstTuple, srcTuple, lTuple, rTuple;
+    int jointSchemaSize = 64 + 64;
+    srcTuple = Integer();
+    srcTuple.resize(jointSchemaSize);
+    
+    dstTuple = Integer(64, 0, PUBLIC); // indicates dummy
+    
     for (int i=0; i<left->public_size; i++) {
         for (int j=0; j<right->public_size; j++) {
-        	Integer lField1(64, left->data[i].bits);
-        	Bit lField2 = left->data[i].bits[64];
-        	Integer rField1(64, right->data[j].bits);
-           	// output size = 64 bits, ID alone, defaults to dummy tuple
-        	Integer dstTuple(64, 0, PUBLIC);
-        	Bit cond =  lField1 == rField1 & lField2 == Bit(1, PUBLIC);
-        	output = If(cond, lField1, Integer(64, 0, PUBLIC));
-        	trueSize = If(cond, trueSize + 1, trueSize);
+        	lTuple = left->data[i];
+        	rTuple = right->data[j];
+        	// concatenate the two inputs into srcTuple, the standard join output schema
+        	memcpy(srcTuple.bits, lTuple.bits, 64);
+        	memcpy(srcTuple.bits + 64, rTuple.bits, 64);
         	
-            output[writeIdx] = dstTuple;
-            ++writeIdx;
+        	Bit cmp = (Integer(64, lTuple.bits) == Integer(64, rTuple.bits)) & ((lTuple.bits[64] == Bit(1, PUBLIC)));
+        	memcpy(dstTuple.bits , Integer(64, srcTuple.bits).bits, 64);
+;
+        	dstTuple = If(cmp, dstTuple, Integer(64, 0, PUBLIC)); 
+	        output[writeIdx] = dstTuple;
+            writeIdx++;
+            
         }
     }
-
     Data *result = new Data;
     result->data = output;
     // output tuple count
     result->public_size = left->public_size * right->public_size;
-    result->real_size = trueSize;
+	// real size needs to be maintained by counting the times the join criteria is met
+	// this variable should probably not be public
+    result->real_size = Integer(64, left->public_size, PUBLIC);
     return result;
 }
-
 // suffix for our emp ExecutionStep
 // TODO: generalize this
 // we fill in functions as we go along
@@ -329,37 +341,23 @@ Data * Join6(Data *left, Data *right) {
 // expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
 
 int main(int argc, char** argv) {
+
     int port, party;
     parse_party_and_port(argv, &party, &port);
-    NetIO * io = new NetIO(party==ALICE ? aliceHost : bobHost, port);
-
+    NetIO * io = new NetIO((party==ALICE ? aliceHost.c_str() : bobHost.c_str()), port);
+    
     setup_semi_honest(io, party);
     
      Data *SeqScan0MergeOutput = SeqScan0Merge(party, io);
 
      Data *SeqScan4MergeOutput = SeqScan4Merge(party, io);
 
-    Data * Join6Output = Join6(SeqScan0MergeOutput, class org.smcql.codegen.smc.operator.support.UnionMethod, schema: (#0: patient_id INTEGER Public));
+    Data * Join6Output = Join6(SeqScan0MergeOutput, SeqScan4MergeOutput);
 
 
     
     // TODO: decrypt Join6Output at honest broker
    
     io->flush();
-    for (int i=0; i<res_0->public_size; i++) {
-        if (i==0 && party == BOB)
-            cout << "\nOutput:" << endl;
-
-        string val = reveal_bin(res_0->data[i], initial_row_size, PUBLIC);
-        string col0 = val.substr(0, col_length0);
-        reverse(col0.begin(), col0.end());
-        string col1 = val.substr(col_length0, col_length0 + col_length1);
-        
-        vector<int> lengths{col_length0, col_length1};
-        Row row = Row(col0 + col1, lengths);
-        
-        if (party == ALICE && i < limit)
-            cout << row.to_string() << endl;    
-    }
     delete io;
 }

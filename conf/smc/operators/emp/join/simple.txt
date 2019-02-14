@@ -2,24 +2,29 @@
 // see ObliVM generator for example of this
 // this example is based on aspirin expected code
 Data * $functionName(Data *left, Data *right) {
-    Integer *output = new Integer[left->public_size * right->public_size] * sizeof(Bit);
+    Integer *output = new Integer[left->public_size * right->public_size];
     int writeIdx = 0;
+    Integer dstTuple, srcTuple, lTuple, rTuple;
+    int jointSchemaSize = $lSize + $rSize;
+    srcTuple = Integer();
+    srcTuple.resize(jointSchemaSize);
+    
+    dstTuple = Integer($dSize, 0, PUBLIC); // indicates dummy
     
     for (int i=0; i<left->public_size; i++) {
         for (int j=0; j<right->public_size; j++) {
-        	$applyFilter
+        	lTuple = left->data[i];
+        	rTuple = right->data[j];
+        	// concatenate the two inputs into srcTuple, the standard join output schema
+        	memcpy(srcTuple.bits, lTuple.bits, $lSize);
+        	memcpy(srcTuple.bits + $lSize, rTuple.bits, $rSize);
         	
-            /*Example:
-            Integer idl(col_length0, left->data[i].bits);
-            Integer idr(col_length0, right->data[j].bits);
-            Integer timestamp1(col_length1, left->data[i].bits + col_length0);
-            Integer timestamp2(col_length1, right->data[j].bits + col_length1);
-            Bit cond = (idl == idr) & (timestamp1 <= timestamp2);
-            Integer join = If(cond, idl, Integer(col_length1, 0, PUBLIC));         
-	        memcpy(output[writeIx].bits, dstTuple.bits, tupleLen);       
-
+        	Bit cmp = $filterCond;
+        	$writeDst;
+        	dstTuple = If(cmp, dstTuple, Integer($dSize, 0, PUBLIC)); 
+	        output[writeIdx] = dstTuple;
             writeIdx++;
-            appears to be outputting a single bit per comparison*/
+            
         }
     }
     Data *result = new Data;

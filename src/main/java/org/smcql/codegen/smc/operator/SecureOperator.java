@@ -142,14 +142,13 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	
 	private void handleFilters(Map<String, String> variables) {
 		if (this.filters.isEmpty()) {
-			variables.put("applyFilter", "ret = 1;");
+			variables.put("filterCond", "Bit(1, PUBLIC)");
 		} else {
 			String condition = "";
-			String assigns = "";
 			int index = 0;
 			String srcName = "tuple";
 			for (Filter f : this.filters) {
-				String filterCond = RexNodeUtilities.flattenFilter(f, srcName, Integer.parseInt(variables.get("sSize")));
+				String filterCond = "(" + RexNodeUtilities.flattenFilter(f, srcName, Integer.parseInt(variables.get("sSize"))) + ")";
 
 				condition += (index == 0) ? filterCond : " & " + filterCond;
 				index++;
@@ -158,8 +157,8 @@ public class SecureOperator implements CodeGenerator, Serializable {
 			if (planNode instanceof Join)
 				condition = rewriteForJoin(condition, srcName);
 			
-			String filterStr = assigns + "\n\tIf (" + condition + ", ret = 1);\n\t}";
-			variables.put("applyFilter", filterStr);
+			
+			variables.put("filterCond", condition);
 		}		
 	}
 	

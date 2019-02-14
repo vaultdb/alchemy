@@ -277,7 +277,7 @@ public class QueryCompiler {
 		List<ExecutionStep> children = srcStep.getChildren();
 		String args =  children.get(0).getFunctionName() + "Output";
 		for(int i = 1; i < children.size(); ++i) {
-			args += ", " + children.get(i);
+			args += ", " + children.get(i).getFunctionName() + "Output";
 		}
 		String outputVariable = functionName + "Output";
 		String call = "    Data * " + outputVariable + " = " + functionName + "(" + args + ");\n";
