@@ -262,7 +262,7 @@ class Count {
 // need to fill in NetIO setup based on contents of ConnectionManager
 // expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
 
-bool[] run(int party, int port) {
+bool* run(int party, int port) {
 
     NetIO * io = new NetIO((party==ALICE ? aliceHost.c_str() : bobHost.c_str()), port);
 
@@ -278,9 +278,9 @@ bool[] run(int party, int port) {
     int tupleLen = results->data[0].size();
 
     bool *output = new bool[results->public_size * tupleLen];
-    int writePtr = output;
+    bool *writePtr = output;
     bool *tuple;
-    for(int i = 0; i < ) {
+    for(int i = 0; i < results->public_size; ++i) {
     	tuple = outputBits(results->data[i], tupleLen, XOR);
     	memcpy(writePtr, tuple, tupleLen);
     	writePtr += tupleLen;
