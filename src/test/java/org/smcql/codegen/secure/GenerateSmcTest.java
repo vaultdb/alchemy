@@ -128,6 +128,7 @@ public class GenerateSmcTest extends BaseTest {
 	// returns true if the code compiles
 	boolean compileCode(String testName, QueryCompiler compiler) throws Exception {
 		String empBridgePath = Utilities.getSMCQLRoot() + "/deps/emp/emp-bridge";
+		Utilities.mkdir(empBridgePath + "/bin");
 		String writeDstCpp = empBridgePath + "/src/" + testName + ".cpp";
 		Utilities.writeFile(writeDstCpp, compiler.getEmpCode());
 		

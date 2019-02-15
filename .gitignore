@@ -11,3 +11,11 @@ runtogether.sh
 smcql.log*
 /bin/
 /target/
+deps/emp/emp-m2pc/
+deps/emp/emp-ot/
+deps/emp/emp-readme/
+deps/emp/emp-sh2pc/
+deps/emp/emp-tool/
+deps/emp/relic/
+deps/emp/emp-bridge/src/*
+deps/emp/emp-bridge/bin/*
