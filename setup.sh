@@ -9,14 +9,9 @@ if (($?==1)); then
     exit 1
 fi
 
-#create executable jar
-echo "Creating executable..."
-mvn package -Dmaven.test.skip=true
+#download emp to dep
+/bin/bash deps/emp/install.sh 
 
-if (($?==1)); then
-    echo "Error creating executable"
-    exit 1
-fi
-
+#end
 echo "Setup completed successfully."
 exit 0
