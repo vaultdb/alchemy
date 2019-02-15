@@ -4,13 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.smcql.BaseTest;
-import org.smcql.codegen.CodeCompiler;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.EMPExecutor;
-import org.smcql.executor.MPCExecutor;
+import org.smcql.executor.EMPQueryExecutor;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.util.Utilities;
 
 public class RunnableQueryTest extends BaseTest {
 	
@@ -34,7 +31,7 @@ public class RunnableQueryTest extends BaseTest {
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		
 		QueryCompiler qc = new QueryCompiler(secRoot);
-		EMPExecutor exec = new EMPExecutor(qc, parties);
+		EMPQueryExecutor exec = new EMPQueryExecutor(qc.getEmpCode(), parties);
 		exec.run();
 	}
 }
