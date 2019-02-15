@@ -2,17 +2,11 @@ package com.oblivm.backend.lang.inter;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.oblivm.backend.flexsc.CompEnv;
-/***
- * Copyright (C) 2015 by Chang Liu <liuchang@cs.umd.edu>
- */
-import com.oblivm.backend.gc.GCSignal;
 import com.oblivm.backend.lang.inter.input.BitArrayInput;
 import com.oblivm.backend.lang.inter.input.BitFileInput;
 import com.oblivm.backend.oram.SecureArray;

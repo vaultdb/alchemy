@@ -4,18 +4,9 @@
 package com.oblivm.compiler.backend.flexsc;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.Set;
-
 import com.oblivm.compiler.ast.ASTProgram;
 import com.oblivm.compiler.backend.ICodeGenerator;
-import com.oblivm.compiler.parser.ParseException;
 import com.oblivm.compiler.type.manage.Method;
 import com.oblivm.compiler.type.manage.RecordType;
 import com.oblivm.compiler.type.manage.Type;

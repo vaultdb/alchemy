@@ -1,9 +1,7 @@
 package org.smcql.codegen.smc.operator;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.calcite.rel.logical.LogicalFilter;
@@ -42,9 +40,11 @@ public class SecureJoin extends SecureOperator {
 		Map<String, String> variables = baseVariables();		
 
 		Join join = (Join) planNode;
+		String lSize = Integer.toString(join.getChild(0).getSchema().size());
+		String rSize = Integer.toString(join.getChild(1).getSchema().size());
 
-		variables.put("lSize", variables.get("sSize"));
-		variables.put("rSize", variables.get("sSize"));
+		variables.put("lSize", lSize);
+		variables.put("rSize", rSize);
 		//String dstSize = (projects.isEmpty()) ? variables.get("sSize") : Integer.toString(projects.get(0).getSchema().size());
 		//variables.put("dSize", dstSize);
 				

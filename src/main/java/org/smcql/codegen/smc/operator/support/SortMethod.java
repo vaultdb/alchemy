@@ -109,7 +109,7 @@ public class SortMethod {
 				// sort key refers to dstSchema
 				// find its idx in dst schema, use SchemaMap to get it in srcSchema
 				SecureRelDataTypeField outAttr = sortKey.get(i);
-				String bitmask = srcSchema.getBitmask(outAttr);
+				String bitmask = srcSchema.getInputRef(outAttr, null);
 				writeEndIdx = writeStartIdx + outAttr.size();
 				ret += "    dst$" + writeStartIdx + "~" + writeEndIdx + "$ = src" + bitmask + ";\n";
 				writeStartIdx = writeEndIdx;

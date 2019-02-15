@@ -8,25 +8,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.calcite.adapter.jdbc.JdbcTableScan;
-import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rel.type.RelRecordType;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.type.BasicSqlType;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang.StringUtils;
-import org.smcql.db.data.field.Field;
-import org.smcql.db.schema.SecureSchemaLookup;
-import org.smcql.plan.operator.Join;
-import org.smcql.plan.operator.Operator;
-import org.smcql.plan.operator.SeqScan;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
 import org.smcql.util.CodeGenUtils;
-import org.smcql.util.Utilities;
 
 
 // decorator for RelRecordType, annotate with a security policy
@@ -198,7 +188,7 @@ public class SecureRelRecordType implements Serializable {
 	
 	
 	
-	public String getBitmask(int idx)  {
+	public String getInputRef(int idx, String srcVariable)  {
 		SecureRelDataTypeField field = null;
 		for (SecureRelDataTypeField cur : secureFields) {
 			if (idx == cur.getIndex()) {
@@ -206,11 +196,11 @@ public class SecureRelRecordType implements Serializable {
 				break;
 			}
 		}
-		return CodeGenUtils.getBitmask(this, field);
+		return CodeGenUtils.getInputRef(this, field, srcVariable);
 	}
 
-	public String getBitmask(SecureRelDataTypeField field) {
-		return CodeGenUtils.getBitmask(this, field);
+	public String getInputRef(SecureRelDataTypeField field, String srcVariable) {
+		return CodeGenUtils.getInputRef(this, field, srcVariable);
 	}
 
 	public List<SecureRelDataTypeField> getAttributes() {

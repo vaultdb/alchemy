@@ -61,7 +61,7 @@ Data* $functionName(int party, NetIO * io) {
     Data * d = new Data;
     d->data = res;
     d->public_size = alice_size + bob_size;
-    d->real_size = Integer(64, d->public_size, PUBLIC);
+    d->real_size = Integer(INT_SIZE, d->public_size, PUBLIC);
         
     return d;
 }

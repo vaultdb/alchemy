@@ -30,6 +30,7 @@ Data* $functionName(int party, NetIO * io) {
    
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
+    Batcher alice_batcher, bob_batcher;
     
     for (int i = 0; i < alice_size*bit_length; ++i) {
         	   // set up bit array, if alice, secret share a local bit, 
@@ -39,14 +40,14 @@ Data* $functionName(int party, NetIO * io) {
 
 	alice_batcher.make_semi_honest(ALICE);
 		
-	for(int i = 0; i < alice.size*bit_length; ++i) {
+	for(int i = 0; i < alice_size*bit_length; ++i) {
 		*tmpPtr = alice_batcher.next<Bit>();
 		++tmpPtr;
 	}
 	
     for (int i = 0; i < bob_size*bit_length; ++i)
         bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
-    bob_batcher.make_semi_honest(BOB);
+    	bob_batcher.make_semi_honest(BOB);
 
 	// append all of bob's bits to tmp
     for (int i = 0; i < bob_size*bit_length; ++i) {
@@ -60,12 +61,12 @@ Data* $functionName(int party, NetIO * io) {
 	// each index is a tuple
     for(int i = 0; i < alice_size + bob_size; ++i) {
         res[i] = Integer(bit_length, tmpPtr);
-        tmpPtr += bitLength;
+        tmpPtr += bit_length;
      }
 
 
     // TODO: sort if needed, not specific to col_length0
-    //bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, col_length0);
+    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), $keyPos, $keyLength);
     Data * d = new Data;
     d->data = res;
     d->public_size = alice_size + bob_size;

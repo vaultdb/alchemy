@@ -1,6 +1,7 @@
 package org.smcql.codegen.smc.operator.support;
 
 import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexLiteral;
 import org.smcql.type.SecureRelRecordType;
 
 public class RexNodeToSmc extends RexFlattener{
@@ -17,10 +18,15 @@ public class RexNodeToSmc extends RexFlattener{
 		int idx = inputRef.getIndex();
 		
 		try {
-			return variableName + schema.getBitmask(idx);
+			return schema.getInputRef(idx, variableName);
 		} catch (NullPointerException e) {
-			return variableName + schema.getBitmask(idx - schema.getFieldCount()); //occurs when filter comes from a join
+			return schema.getInputRef(idx - schema.getFieldCount(), variableName); //occurs when filter comes from a join
 		}
 		
+	}
+	@Override
+	public String visitLiteral(RexLiteral literal) {
+		// only handles ints for now
+		return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
 	}
 }

@@ -64,7 +64,6 @@ import com.oblivm.compiler.ast.type.ASTType;
 import com.oblivm.compiler.ast.type.ASTVariableType;
 import com.oblivm.compiler.ast.type.ASTVoidType;
 import com.oblivm.compiler.util.Pair;
-import com.oblivm.compiler.util.Helper;
 import com.oblivm.compiler.log.Bugs;
 
 public class CParser implements CParserConstants {

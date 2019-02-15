@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.BitSet;
-
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.flexsc.Party;
 

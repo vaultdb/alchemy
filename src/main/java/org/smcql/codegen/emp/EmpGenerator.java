@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.smcql.codegen.operators.CodeGenNode;
 import org.smcql.codegen.operators.MergeNode;
-import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.type.SecureRelRecordType;

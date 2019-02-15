@@ -149,10 +149,10 @@ Integer from_bool(bool* b, int size, int party) {
 // need to make this more general by tweaking the parameters 
 
 
-Data* Distinct2Merge(int party, NetIO * io) {
-	string sql = "SELECT DISTINCT icd9 FROM diagnoses ORDER BY icd9";
+Data* Distinct4Merge(int party, NetIO * io) {
+	string sql = "SELECT DISTINCT patient_id, icd9 = '414.01' FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY patient_id";
     std::vector<Row> in = execute_sql(sql, party);
-    int bit_length = 256; // TODO: automatically derive size from Row metadata?
+    int bit_length = 65; // TODO: automatically derive size from Row metadata?
     // flatten out local data
     bool *local_data = concat(in, bit_length);
 
@@ -211,7 +211,7 @@ Data* Distinct2Merge(int party, NetIO * io) {
 
 
     // TODO: sort if needed, not specific to col_length0
-    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, 256);
+    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, 64);
     Data * d = new Data;
     d->data = res;
     d->public_size = alice_size + bob_size;
@@ -219,7 +219,7 @@ Data* Distinct2Merge(int party, NetIO * io) {
         
     return d;
 }
-Data * Distinct2(Data *data) {
+Data * Distinct4(Data *data) {
 	
 	
 	int tupleLen = data->data[0].size() * sizeof(Bit);
@@ -237,14 +237,6 @@ Data * Distinct2(Data *data) {
     return data;
 }
 
-Data * Aggregate3(Data *data) {
-	data->public_size = 1;
-	data->data = new Integer[1];
-	data->data[0] = data->real_size;
-	data->real_size = Integer(LENGTH_INT, 1, PUBLIC);
-    return data;
-}
-
 // suffix for our emp ExecutionStep
 // TODO: generalize this
 // we fill in functions as we go along
@@ -259,15 +251,13 @@ int main(int argc, char** argv) {
     
     setup_semi_honest(io, party);
     
-     Data *Distinct2MergeOutput = Distinct2Merge(party, io);
+     Data *Distinct4MergeOutput = Distinct4Merge(party, io);
 
-    Data * Distinct2Output = Distinct2(Distinct2MergeOutput);
-
-    Data * Aggregate3Output = Aggregate3(Distinct2Output);
+    Data * Distinct4Output = Distinct4(Distinct4MergeOutput);
 
 
     
-    // TODO: decrypt Aggregate3Output at honest broker
+    // TODO: decrypt Distinct4Output at honest broker
    
     io->flush();
     delete io;

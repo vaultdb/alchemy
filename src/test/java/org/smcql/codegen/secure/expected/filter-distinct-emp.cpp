@@ -1,6 +1,6 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <pqxx/pqxx>
-#include <utils/row.h>
+#include <row.h>
 
 // header of an ExecutionSegment in emp
 // put in front of first generated MPC operator
@@ -11,6 +11,8 @@ using namespace std;
 using namespace pqxx;
 
 #define LENGTH_INT 64
+
+#define OID_INT 20
 
 // Connection strings, encapsulates db name, db user, port, host
 string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
@@ -42,6 +44,7 @@ void cmp_swap_sql(Integer*key, int i, int j, Bit acc, int key_pos, int key_lengt
     swap(to_swap, key[i], key[j]);
 }
 
+// TODO: extend this to multiple columns as a list of key_pos and key_length
 void bitonic_merge_sql(Integer* key, int lo, int n, Bit acc, int key_pos, int key_length) {
     if (n > 1) {
         int m = greatestPowerOfTwoLessThan(n);
@@ -172,6 +175,7 @@ Data* Distinct4Merge(int party, NetIO * io) {
    
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
+    Batcher alice_batcher, bob_batcher;
     
     for (int i = 0; i < alice_size*bit_length; ++i) {
         	   // set up bit array, if alice, secret share a local bit, 
@@ -181,14 +185,14 @@ Data* Distinct4Merge(int party, NetIO * io) {
 
 	alice_batcher.make_semi_honest(ALICE);
 		
-	for(int i = 0; i < alice.size*bit_length; ++i) {
+	for(int i = 0; i < alice_size*bit_length; ++i) {
 		*tmpPtr = alice_batcher.next<Bit>();
 		++tmpPtr;
 	}
 	
     for (int i = 0; i < bob_size*bit_length; ++i)
         bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
-    bob_batcher.make_semi_honest(BOB);
+    	bob_batcher.make_semi_honest(BOB);
 
 	// append all of bob's bits to tmp
     for (int i = 0; i < bob_size*bit_length; ++i) {
@@ -202,12 +206,12 @@ Data* Distinct4Merge(int party, NetIO * io) {
 	// each index is a tuple
     for(int i = 0; i < alice_size + bob_size; ++i) {
         res[i] = Integer(bit_length, tmpPtr);
-        tmpPtr += bitLength;
+        tmpPtr += bit_length;
      }
 
 
     // TODO: sort if needed, not specific to col_length0
-    //bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, col_length0);
+    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, 64);
     Data * d = new Data;
     d->data = res;
     d->public_size = alice_size + bob_size;
@@ -215,22 +219,18 @@ Data* Distinct4Merge(int party, NetIO * io) {
         
     return d;
 }
-
-
 Data * Distinct4(Data *data) {
 	
 	
-	int tupleLen = data->data[0].size();
-	Integer id1, id2;
+	int tupleLen = data->data[0].size() * sizeof(Bit);
 	
     for (int i=0; i< data->public_size - 1; i++) {
-        Integer firstValue(64, data->data[i].bits);
-        Bit filter1(data->data[i].bits[64]); // TODO: autogenerate for filter criteria
-        Integer secondValue(64, data->data[i+1].bits);
-        Bit eq = (id1 == id2 & filter1 == Bit(1, PUBLIC));
+        Integer id1 = data->data[i];
+        Integer id2 = data->data[i+1];
+        Bit eq = (id1 == id2);
         id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
         //maintain real size
-  	    data->real_size = If(eq, data->real_size - 1,  data->real_size);
+  	    data->real_size = If(eq, data->real_size - Integer(LENGTH_INT, 1, PUBLIC),  data->real_size);
         memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }
     
@@ -244,10 +244,11 @@ Data * Distinct4(Data *data) {
 // expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
 
 int main(int argc, char** argv) {
+
     int port, party;
     parse_party_and_port(argv, &party, &port);
-    NetIO * io = new NetIO(party==ALICE ? aliceHost : bobHost, port);
-
+    NetIO * io = new NetIO((party==ALICE ? aliceHost.c_str() : bobHost.c_str()), port);
+    
     setup_semi_honest(io, party);
     
      Data *Distinct4MergeOutput = Distinct4Merge(party, io);
@@ -259,20 +260,5 @@ int main(int argc, char** argv) {
     // TODO: decrypt Distinct4Output at honest broker
    
     io->flush();
-    for (int i=0; i<res_0->public_size; i++) {
-        if (i==0 && party == BOB)
-            cout << "\nOutput:" << endl;
-
-        string val = reveal_bin(res_0->data[i], initial_row_size, PUBLIC);
-        string col0 = val.substr(0, col_length0);
-        reverse(col0.begin(), col0.end());
-        string col1 = val.substr(col_length0, col_length0 + col_length1);
-        
-        vector<int> lengths{col_length0, col_length1};
-        Row row = Row(col0 + col1, lengths);
-        
-        if (party == ALICE && i < limit)
-            cout << row.to_string() << endl;    
-    }
     delete io;
 }

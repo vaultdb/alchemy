@@ -3,7 +3,6 @@ package org.smcql.schema;
 import org.smcql.BaseTest;
 import org.smcql.db.schema.SecureSchemaLookup;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
-import org.smcql.util.Utilities;
 
 public class SchemaTest extends BaseTest {
 

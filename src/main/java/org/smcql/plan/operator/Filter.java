@@ -2,8 +2,6 @@ package org.smcql.plan.operator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rex.RexBuilder;

@@ -136,36 +136,35 @@ public class SecureOperator implements CodeGenerator, Serializable {
 			
 			right = !right;
 		}
-		result = result.replace("true && ", "");
+		result = result.replace("true & ", "");
 		return result;
 	}
 	
 	private void handleFilters(Map<String, String> variables) {
 		if (this.filters.isEmpty()) {
-			variables.put("applyFilter", "ret = 1;");
+			variables.put("filterCond", "Bit(1, PUBLIC)");
 		} else {
 			String condition = "";
-			String assigns = "";
 			int index = 0;
 			String srcName = "tuple";
 			for (Filter f : this.filters) {
-				String filterCond = RexNodeUtilities.flattenFilter(f, srcName, Integer.parseInt(variables.get("sSize")));
+				String filterCond = "(" + RexNodeUtilities.flattenFilter(f, srcName, Integer.parseInt(variables.get("sSize"))) + ")";
 
-				condition += (index == 0) ? filterCond : " && " + filterCond;
+				condition += (index == 0) ? filterCond : " & " + filterCond;
 				index++;
 			}
 			
 			if (planNode instanceof Join)
 				condition = rewriteForJoin(condition, srcName);
 			
-			String filterStr = assigns + "\n\tif (" + condition + ") {\n\t\tret = 1;\n\t}";
-			variables.put("applyFilter", filterStr);
+			
+			variables.put("filterCond", condition);
 		}		
 	}
 	
 	private void handleProjects(Map<String, String> variables, SecureRelRecordType childSchema) throws Exception {
 		if(!projects.isEmpty()) {
-			String projectVars = RexNodeUtilities.flattenProjection(projects.get(0), "srcTuple", "dstTuple", Integer.parseInt(variables.get("sSize")));
+			String projectVars = RexNodeUtilities.flattenProjection(projects.get(0), "srcTuple", "dstTuple", childSchema.size());
 			variables.put("writeDst", projectVars);
 		}
 		else {

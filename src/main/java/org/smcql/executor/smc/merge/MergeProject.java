@@ -12,7 +12,6 @@ import com.oblivm.backend.circuits.arithmetic.IntegerLib;
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.flexsc.Party;
 import com.oblivm.backend.gc.GCSignal;
-import com.oblivm.backend.lang.inter.Util;
 import com.oblivm.backend.oram.SecureArray;
 import com.oblivm.backend.util.Utils;
 

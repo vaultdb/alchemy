@@ -26,11 +26,9 @@ import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.parser.SqlParser.Config;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
-import org.apache.calcite.tools.Planner;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.executor.config.WorkerConfiguration;
-import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.privacy.PrivacyStatistics;
 //import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.util.Utilities;
@@ -259,9 +257,10 @@ public class SystemConfiguration {
 		String dbName = config.get("psql-db");
 		String user = config.get("psql-user");
 		String pass = config.get("psql-password");
+		String empBridgePath = Utilities.getSMCQLRoot() + "/deps/emp/emp-bridge";
 
 
-		return new WorkerConfiguration("honest-broker", host, port, dbName, user, pass);
+		return new WorkerConfiguration("honest-broker", host, port, dbName, user, pass, empBridgePath);
 	}
 	
 	public FrameworkConfig getCalciteConfiguration() {

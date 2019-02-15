@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.Properties;
 
 import org.smcql.config.SystemConfiguration;
+import org.smcql.util.Utilities;
 
 public class WorkerConfiguration  {
 
@@ -17,7 +18,9 @@ public class WorkerConfiguration  {
 	public String dbName;
 	public String user; 
 	public String password;
+	public String empBridgePath;
 	public int dbPort;
+	public int empPort = 0;
 
 	
 	transient Connection  dbConnection = null; // psql connection, will be reconstructed for remote runs
@@ -26,7 +29,7 @@ public class WorkerConfiguration  {
 	//	public int clientPort; 
 
 	public WorkerConfiguration(String worker, 
-			String h, int p, String dbName, String user, String pass)  // psql
+			String h, int p, String dbName, String user, String pass, String empBridge)  // psql
 					throws ClassNotFoundException, SQLException {
 		workerId = worker;
 		hostname = h;
@@ -34,6 +37,7 @@ public class WorkerConfiguration  {
 		this.dbName = dbName;
 		this.user = user;
 		password = pass;
+		empBridgePath = empBridge;
 		
 	}
 
@@ -53,7 +57,12 @@ public class WorkerConfiguration  {
 		dbPort = Integer.parseInt(parsed[1]);
 		dbName = parsed[2];
 		
-		dbId = Integer.parseInt(parsed[3]);
+		
+		empBridgePath = parsed[3];
+		empBridgePath.replace("$SMCQL_ROOT", Utilities.getSMCQLRoot()); // replace pointer
+		empPort = Integer.parseInt(parsed[4]);
+		
+		dbId = Integer.parseInt(parsed[5]);
 
 		SystemConfiguration globalConf = SystemConfiguration.getInstance();
 		user = globalConf.getProperty("psql-user");

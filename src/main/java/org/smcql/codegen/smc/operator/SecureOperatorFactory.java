@@ -2,7 +2,6 @@ package org.smcql.codegen.smc.operator;
 
 
 import org.smcql.plan.operator.Operator;
-import org.smcql.util.CodeGenUtils;
 
 public class SecureOperatorFactory {
 	

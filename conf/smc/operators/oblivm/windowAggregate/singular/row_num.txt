@@ -6,7 +6,7 @@ void sort@l@s(int@s[l] toSort, int1 isAscending) = native sortLib.sort;
 secure int$dSize writeValues(int$sSize srcTuple, int rowNum) {
 	int$dSize dstTuple;
     $writeDst
-	dstTuple$rowNum = rowNum;
+    $rowNumAssign
     return dstTuple;
 }
 
