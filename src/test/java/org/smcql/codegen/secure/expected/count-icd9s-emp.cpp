@@ -12,13 +12,10 @@ using namespace pqxx;
 
 #define LENGTH_INT 64
 
-#define OID_INT 20
-
 // Connection strings, encapsulates db name, db user, port, host
-string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
-string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=localhost port=5432";
-string aliceHost = "localhost";
-string bobHost = "localhost";
+string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=127.0.0.1 port=5432";
+string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=127.0.0.1 port=5432";
+string bobHost = "127.0.0.1";
 
 
 
@@ -99,19 +96,21 @@ std::vector<Row> execute_sql(string sql, int party) {
             	vector<int>lengths;
             	string bin_str = "";
             	for (int j=0; j<num_cols; j++) {
-            	    const pqxx::field field = row[j];
-            	    int oid = field.type();
-            	   /* if (oid == OID_STRING) { // TODO: TODO: what happens if we have two string fields in the same query? 
-            	        lengths.push_back(LENGTH_STRING);  //   implement this using pqxx::binary_string size methods
-            	                                          // May need to parameterize schema, e.g., define column icd9 as varchar(7) 
-            	        bin_str += str_to_binary(row[j].as<string>(), LENGTH_STRING);
-            	    } else*/
-            	   if (oid == OID_INT) {
-            	        lengths.push_back(LENGTH_INT);
-            	        bin_str += int64_to_binstr(row[j].as<int64_t>());
-            	    } else {
-            	        throw "Unsupported data type in column";
-            	    }
+            	    int val;
+                    string str;
+                    try {
+                        row[j].to(val);
+                        lengths.push_back(LENGTH_INT);
+                        bin_str += int64_to_binstr(val);
+                    } catch (const std::exception& ex) {
+                        try {
+                            row[j].to(str);
+                            lengths.push_back(str.length());
+                            bin_str += str_to_binary(str, str.length());
+                        } catch (const std::exception& ex) {
+                            throw runtime_error("Unsupported data type in column");
+                        }
+                    }
             	}
             	res.push_back(Row(bin_str, lengths));
             }
@@ -255,7 +254,7 @@ int main(int argc, char** argv) {
 
     int port, party;
     parse_party_and_port(argv, &party, &port);
-    NetIO * io = new NetIO((party==ALICE ? aliceHost.c_str() : bobHost.c_str()), port);
+    NetIO * io = new NetIO((party==ALICE ? nullptr : bobHost.c_str()), port);
     
     setup_semi_honest(io, party);
     
