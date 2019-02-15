@@ -17,7 +17,6 @@ using namespace pqxx;
 // Connection strings, encapsulates db name, db user, port, host
 string aliceConnectionString = "$aliceConnectionString";
 string bobConnectionString = "$bobConnectionString";
-string aliceHost = "$aliceHost";
 string bobHost = "$bobHost";
 
 
