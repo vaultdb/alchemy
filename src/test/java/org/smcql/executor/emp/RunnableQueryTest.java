@@ -6,7 +6,7 @@ import java.util.List;
 import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.EMPQueryExecutor;
+import org.smcql.executor.EMPExecutor;
 import org.smcql.plan.SecureRelRoot;
 
 public class RunnableQueryTest extends BaseTest {
@@ -31,7 +31,7 @@ public class RunnableQueryTest extends BaseTest {
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		
 		QueryCompiler qc = new QueryCompiler(secRoot);
-		EMPQueryExecutor exec = new EMPQueryExecutor(qc.getEmpCode(), parties);
+		EMPExecutor exec = new EMPExecutor(qc, parties);
 		exec.run();
 	}
 }
