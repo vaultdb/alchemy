@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
 
     int port, party;
     parse_party_and_port(argv, &party, &port);
-    NetIO * io = new NetIO((party==ALICE ? aliceHost.c_str() : bobHost.c_str()), port);
+    NetIO * io = new NetIO((party==ALICE ? nullptr : bobHost.c_str()), port);
     
     setup_semi_honest(io, party);
     
