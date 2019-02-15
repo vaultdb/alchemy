@@ -1,10 +1,13 @@
 package org.smcql.runner;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.calcite.sql.SqlDialect;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
-import org.smcql.executor.SMCQLQueryExecutor;
+import org.smcql.executor.ObliVMExecutor;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.parser.SqlStatementParser;
 import org.smcql.plan.SecureRelRoot;
@@ -37,7 +40,10 @@ public class SMCQLRunner {
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		QueryCompiler qc = new QueryCompiler(secRoot, sql);
 		
-		SMCQLQueryExecutor exec = new SMCQLQueryExecutor(qc, aWorkerId, bWorkerId);
+		List<String> workers = new ArrayList<String>();
+		workers.add(aWorkerId);
+		workers.add(bWorkerId);
+		ObliVMExecutor exec = new ObliVMExecutor(qc, workers);
 		exec.run();
 		
 	    QueryTable results = exec.getOutput();

@@ -355,6 +355,7 @@ int main(int argc, char** argv) {
     Data * Join6Output = Join6(SeqScan0MergeOutput, SeqScan4MergeOutput);
 
 
+    
     // TODO: decrypt Join6Output at honest broker
    
     io->flush();

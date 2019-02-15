@@ -1,6 +1,7 @@
 package org.smcql.codegen.secure;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,6 +15,7 @@ import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelRecordType;
+import org.smcql.util.CommandOutput;
 import org.smcql.util.Utilities;
 
 public class GenerateSmcTest extends BaseTest {
@@ -110,6 +112,9 @@ public class GenerateSmcTest extends BaseTest {
 		File expected = new File(expectedFile);
 		assertTrue("The files differ!", FileUtils.contentEquals(generated, expected));
 		
+		boolean compiled = compileCode(testName, qc);
+		assertTrue(compiled);
+		
 		// TODO: run code compiler and executor here
 		// TODO: collect results as a SecureQueryTable
 		
@@ -117,6 +122,28 @@ public class GenerateSmcTest extends BaseTest {
 		assertEquals(expectedOutput, observedOutput);
 		
 	
+		
+	}
+	
+	// returns true if the code compiles
+	boolean compileCode(String testName, QueryCompiler compiler) throws Exception {
+		String empBridgePath = Utilities.getSMCQLRoot() + "/deps/emp/emp-bridge";
+		String writeDstCpp = empBridgePath + "/src/" + testName + ".cpp";
+		Utilities.writeFile(writeDstCpp, compiler.getEmpCode());
+		
+		String buildCmd =  empBridgePath + "/build.sh " + empBridgePath + " " + testName;
+		System.out.println("Build command: " + buildCmd);
+		
+		CommandOutput co = Utilities.runCmd(buildCmd);
+
+		Logger logger = SystemConfiguration.getInstance().getLogger();
+		logger.log(Level.INFO, "Build output:\n" + co.output);
+		
+		if(co.exitValue == 0)
+			return true;
+		return false;
+		
+		
 		
 	}
 	

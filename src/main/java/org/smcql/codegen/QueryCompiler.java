@@ -207,12 +207,23 @@ public class QueryCompiler {
 	// returns filename
 	public String writeOutEmpFile() throws Exception {
 		
-		String targetFile = Utilities.getCodeGenTarget() + "/" + queryId + "/emp.cpp";
-
-		String wholeFile = new String();
-		
+		String targetFile = Utilities.getCodeGenTarget() + "/" + queryId + ".cpp";
 		Logger logger = SystemConfiguration.getInstance().getLogger();
 		logger.log(Level.INFO, "Writing generated code to " + targetFile);
+		
+		
+		String empCode = getEmpCode();
+		Utilities.writeFile(targetFile, empCode);
+		
+		return targetFile;
+		
+		
+	}
+	
+	
+	public String getEmpCode() throws Exception {
+		String wholeFile = new String();
+		
 		
 		SecurePreamble preamble =  new SecurePreamble(null);
 		//preamble.setSqlStatements(sqlCode);
@@ -227,15 +238,12 @@ public class QueryCompiler {
 		
 		String rootOutput = compiledRoot.getFunctionName() + "Output";
 		
-		wholeFile += generateEMPMain(targetFile, code.right, rootOutput); // plug in function calls
+		wholeFile += generateEMPMain(code.right, rootOutput); // plug in function calls
 		
-		System.out.println("Generated file: " + wholeFile);
-		Utilities.writeFile(targetFile, wholeFile);
-		
-		return targetFile;
-		
+		return wholeFile;
 		
 	}
+	
 	
 	// generate program flow by traversing the tree bottom-up
 	private Pair<String, String>  empCodeGeneratorHelper(SecureStep step) {
@@ -285,7 +293,7 @@ public class QueryCompiler {
 		return call;
 	}
 	
-	private String generateEMPMain(String targetFile, String functions, String rootOutput) throws IOException {
+	private String generateEMPMain(String functions, String rootOutput) throws IOException {
 
 		Map<String, String> variables = new HashMap<String, String>();
 		variables.put("functions", functions);

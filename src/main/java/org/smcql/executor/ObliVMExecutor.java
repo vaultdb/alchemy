@@ -16,7 +16,7 @@ import java.util.ListIterator;
 
 // handles only 2 nodes, must contain at least one SecureStep in plan
 
-public class SMCQLQueryExecutor implements Runnable {
+public class ObliVMExecutor extends MPCExecutor {
 	
 	SegmentExecutor runner = null;
 	QueryCompiler compiledPlan = null;
@@ -24,11 +24,16 @@ public class SMCQLQueryExecutor implements Runnable {
 	private List<SecureQueryTable> lastOutput;
 	private QueryTable plainOutput;
 	
-	public SMCQLQueryExecutor(QueryCompiler compiled, String aWorker, String bWorker) throws Exception {
-		runner = new SegmentExecutor(aWorker, bWorker);
+	public ObliVMExecutor(QueryCompiler compiled, List<String> workers) throws Exception {
+		runner = new SegmentExecutor(workers.get(0), workers.get(1));
 		compiledPlan = compiled;
 	}
-	
+
+	public ObliVMExecutor(QueryCompiler compiled, String aWorkerId, String bWorkerId) throws Exception {
+		runner = new SegmentExecutor(aWorkerId, bWorkerId);
+		compiledPlan = compiled;
+
+	}
 	
 	public void run() {
 		List<ExecutionSegment> segments = compiledPlan.getSegments();

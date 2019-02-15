@@ -10,7 +10,7 @@ import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
-import org.smcql.executor.SMCQLQueryExecutor;
+import org.smcql.executor.ObliVMExecutor;
 import org.smcql.executor.SegmentExecutor;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
@@ -91,7 +91,7 @@ public class RunnableRemoteQueryTest extends BaseTest {
 		logger.log(Level.INFO, "Segment has out schema " + segment.outSchema);
 		logger.log(Level.INFO, "Have segment count " + segments.size());
 		
-		SMCQLQueryExecutor exec = new SMCQLQueryExecutor(qc, aWorkerId, bWorkerId);
+		ObliVMExecutor exec = new ObliVMExecutor(qc, aWorkerId, bWorkerId);
 		exec.run();
 		
 	    QueryTable results = exec.getOutput();

@@ -1,6 +1,6 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <pqxx/pqxx>
-#include <utils/row.h>
+#include <row.h>
 
 // header of an ExecutionSegment in emp
 // put in front of first generated MPC operator

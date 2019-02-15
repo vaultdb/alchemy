@@ -17,23 +17,29 @@ import org.gridkit.nanocloud.telecontrol.ssh.SshSpiConf;
 import org.gridkit.vicluster.ViNode;
 import org.gridkit.vicluster.telecontrol.Classpath;
 import org.gridkit.vicluster.telecontrol.ssh.RemoteNodeProps;
+import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.db.data.QueryTable;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.smc.SecureBufferPool;
+import org.smcql.executor.smc.SecureQueryTable;
+import org.smcql.executor.step.PlaintextStep;
+import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
 
 
-public class EMPQueryExecutor implements Runnable {
-	String empCode;
+public class EMPExecutor implements Runnable {
 	String remotePath;
 	Cloud cloud;
+	QueryCompiler compiledPlan = null;
+	List<String> results;
 	
-	public EMPQueryExecutor(String empCode, List<String> parties) throws Exception {
+	public EMPExecutor(QueryCompiler qc, List<String> parties) throws Exception {
 		if (parties.size() > 2) 
 			throw new Exception("SMCQL does not support execution for more than two parties!");
 		
-		this.empCode = empCode;		
+		
 		List<WorkerConfiguration> workers = new ArrayList<WorkerConfiguration>();
 		
 		for (String workerId : parties) 
@@ -44,6 +50,8 @@ public class EMPQueryExecutor implements Runnable {
 			remotePath = "/tmp/smcql";
 		
 		prepareWorkers(workers);
+		compiledPlan = qc;
+		
 	}
 	
 	private void prepareWorkers(List<WorkerConfiguration> workers) throws Exception {
@@ -51,7 +59,6 @@ public class EMPQueryExecutor implements Runnable {
 		RemoteNode.at(cloud.node("**")).useSimpleRemoting();
 		
 		for (WorkerConfiguration w : workers) {
-			System.out.println("Executing query on worker: " + w);
 			initializeHost(w);	
 		}
 		
@@ -79,10 +86,19 @@ public class EMPQueryExecutor implements Runnable {
 		String host = worker.hostname;
 		String workerId = worker.workerId;
 		
+		String queryName = compiledPlan.getPlan().getName();
+		String buildCmd = worker.empBridgePath + "/build.sh " + worker.empBridgePath + "/src/" + queryName + ".cpp";
+
+		
+		String execCmd = worker.empBridgePath + "/bin/" +  queryName  + " " + worker.dbId +  " "	 + worker.empPort;
 		ViNode cloudHost = cloud.node(workerId);		
 		RemoteNodeProps.at(cloudHost).setRemoteHost(host);
 		cloudHost.setProp(SshSpiConf.SPI_JAR_CACHE, remotePath);
 		cloud.node(worker.workerId).setProp("workerId", worker.workerId);
+		cloud.node(worker.workerId).setProp("buildCmd", buildCmd);
+		cloud.node(worker.workerId).setProp("execCmd", execCmd);
+		
+		
 	}
 	
 	private String getSetupParameters() throws Exception {
@@ -121,36 +137,81 @@ public class EMPQueryExecutor implements Runnable {
 	//TODO: Remove hard-coding
 	@Override
 	public void run() {
-		//String code = this.empCode;
-		boolean success = copyFile(Utilities.getSMCQLRoot() + "/bin/smcql.cpp", "johesbater@ubuntu:~/Projects/emp/empsql/test");
-		if (!success)
-			return;
 		
-		List<String> results = cloud.node("**").massExec(new Callable<String>() {
+		String srcFile = null;
+		
+		
+		 try {
+			srcFile = compiledPlan.writeOutEmpFile();
+			
+		} catch (Exception e1) {
+			System.out.println("Failed to create emp plan!");
+			e1.printStackTrace();
+			System.exit(-1);
+		}
+		
+		try {
+		
+			List<WorkerConfiguration> workers = ConnectionManager.getInstance().getWorkerConfigurations();
+			for(WorkerConfiguration worker : workers) {
+				String dst = worker.user + "@" + worker.hostname + ":" + worker.empBridgePath + "/src/";
+				
+				boolean success = copyFile(srcFile, dst);
+				if (!success)
+					return;
+				
+			}
+		} catch (Exception e1) {
+			System.out.println("Failed to send files!");
+			e1.printStackTrace();
+			System.exit(-1);
+		}
+		
+		
+		
+		 results = cloud.node("**").massExec(new Callable<String>() {
 			@Override
 			public String call() throws Exception {
-				return executeCommand("/home/johesbater/Projects/emp/empsql/exec.sh");
-			}
-			
-			private String executeCommand(String command) {
 				try {
 					ByteArrayOutputStream stdout = new ByteArrayOutputStream();
 			        PumpStreamHandler psh = new PumpStreamHandler(stdout);
 
-			        CommandLine cl = CommandLine.parse(command);
+			        String buildCmd = System.getProperty("buildCmd"); // initialized above
+			        String execCmd = System.getProperty("execCmd");
+			        
+			        CommandLine buildCL = CommandLine.parse(buildCmd);
+			        CommandLine execCL = CommandLine.parse(execCmd);
 
 			        DefaultExecutor exec = new DefaultExecutor();
 			        exec.setStreamHandler(psh);
-			        exec.execute(cl);
-					return stdout.toString();					
+			        exec.execute(buildCL);
+			        exec.execute(execCL);
+			        return stdout.toString();
 				} catch (Exception e) {
-					return "Failed to execute command";
+					System.out.print("Failed to execute command!");
+					e.printStackTrace();
+					System.exit(-1);
 				}
+				return "";
 			}
 		});
 		
-		for (String result : results)
-			System.out.println(result);
 	}
+	
+	public QueryTable getOutput() throws Exception {
+		if (results == null || results.isEmpty())
+			return null;
+		
+		String alice = results.get(0);
+		String bob = results.get(1);
+		boolean[] decrypted = null;
+		
+		// TODO: create two boolean[] arrays, one for alice, and one for bob
+		// write the output of xoring them to decrypted variable
+		
+		SecureRelRecordType rootSchema = compiledPlan.getPlan().getPlanRoot().getSchema();
+		return new QueryTable(decrypted,  rootSchema);
+	}
+	
 
 }

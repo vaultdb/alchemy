@@ -44,7 +44,7 @@ public class CodeGenUtils {
 		
 		try {
 			Logger logger = SystemConfiguration.getInstance().getLogger();
-			logger.log(Level.INFO, "Generating code from " + srcFile);
+			logger.log(Level.FINE, "Generating code from " + srcFile);
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

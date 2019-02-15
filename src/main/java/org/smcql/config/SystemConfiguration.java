@@ -257,9 +257,10 @@ public class SystemConfiguration {
 		String dbName = config.get("psql-db");
 		String user = config.get("psql-user");
 		String pass = config.get("psql-password");
+		String empBridgePath = Utilities.getSMCQLRoot() + "/deps/emp/emp-bridge";
 
 
-		return new WorkerConfiguration("honest-broker", host, port, dbName, user, pass);
+		return new WorkerConfiguration("honest-broker", host, port, dbName, user, pass, empBridgePath);
 	}
 	
 	public FrameworkConfig getCalciteConfiguration() {
