@@ -124,6 +124,21 @@ public class DynamicCompiler
     
 
     @SuppressWarnings("unchecked")
+	public static EmpProgram loadClass(String className, int party, int port) throws Exception {
+
+			File f = new File(Utilities.getCodeGenTarget());
+			URL[] cp = {f.toURI().toURL()};
+			@SuppressWarnings("resource")
+			URLClassLoader urlcl = new URLClassLoader(cp);
+
+			Class<?> cl = urlcl.loadClass(className);
+			Constructor<?> ctor = cl.getConstructors()[0];
+			return (EmpProgram) ctor.newInstance(party, port);
+	
+    }
+
+    
+    @SuppressWarnings("unchecked")
 	public static <T> ISecureRunnable<T> loadClass(String packageName, byte[] byteCode, CompEnv<T> env) throws Exception {
     		ByteArrayClassLoader loader = new ByteArrayClassLoader(packageName, byteCode, Thread.currentThread().getContextClassLoader());  	
     		Class<?> cl = loader.findClass(packageName);

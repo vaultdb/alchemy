@@ -14,16 +14,18 @@ using namespace pqxx;
 
 #define OID_INT 20
 
-// Connection strings, encapsulates db name, db user, port, host
-string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
-string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=localhost port=5432";
-string aliceHost = "localhost";
-string bobHost = "localhost";
 
 
 namespace Count {
 
 class Count {
+
+	// Connection strings, encapsulates db name, db user, port, host
+	string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
+	string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=localhost port=5432";
+	string aliceHost = "localhost";
+	string bobHost = "localhost";
+	long outputSize = 0; // in bits
 
 	// Helper functions
 	string reveal_bin(Integer &input, int length, int output_party) {
@@ -262,34 +264,41 @@ class Count {
 // need to fill in NetIO setup based on contents of ConnectionManager
 // expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
 
-bool* run(int party, int port) {
+public:
+	bool* run(int party, int port) {
 
-    NetIO * io = new NetIO((party==ALICE ? aliceHost.c_str() : bobHost.c_str()), port);
+		NetIO * io = new NetIO((party==ALICE ? aliceHost.c_str() : bobHost.c_str()), port);
 
-    setup_semi_honest(io, party);
+		setup_semi_honest(io, party);
 
-     Data *Distinct2MergeOutput = Distinct2Merge(party, io);
+		 Data *Distinct2MergeOutput = Distinct2Merge(party, io);
 
-    Data * Distinct2Output = Distinct2(Distinct2MergeOutput);
+		Data * Distinct2Output = Distinct2(Distinct2MergeOutput);
 
-    Data * Aggregate3Output = Aggregate3(Distinct2Output);
-    Data * results = Aggregate3Output;
+		Data * Aggregate3Output = Aggregate3(Distinct2Output);
+		Data * results = Aggregate3Output;
 
-    int tupleLen = results->data[0].size();
+		int tupleLen = results->data[0].size();
 
-    bool *output = new bool[results->public_size * tupleLen];
-    bool *writePtr = output;
-    bool *tuple;
-    for(int i = 0; i < results->public_size; ++i) {
-    	tuple = outputBits(results->data[i], tupleLen, XOR);
-    	memcpy(writePtr, tuple, tupleLen);
-    	writePtr += tupleLen;
-    }
+		outputSize = results->public_size * tupleLen;
+		bool *output = new bool[outputSize];
+		bool *writePtr = output;
+		bool *tuple;
+		for(int i = 0; i < results->public_size; ++i) {
+			tuple = outputBits(results->data[i], tupleLen, XOR);
+			memcpy(writePtr, tuple, tupleLen);
+			writePtr += tupleLen;
+		}
 
-    io->flush();
-    delete io;
-    return output;
+		io->flush();
+		delete io;
+		return output;
 
-}
+	}
+
+	// output size in bits
+	long getOutputSize() {
+		return outputSize;
+	}
 };
 }

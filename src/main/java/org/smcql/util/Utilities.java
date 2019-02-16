@@ -294,4 +294,13 @@ public class Utilities {
 
 	}
 	
+	// Source: http://www.java2s.com/Code/Android/Date-Type/ConvertabytearraytoabooleanarrayBit0isrepresentedwithfalseBit1isrepresentedwith1.htm
+	public static boolean[] byteArray2BitArray(byte[] bytes) {
+	    boolean[] bits = new boolean[bytes.length * 8];
+	    for (int i = 0; i < bytes.length * 8; i++) {
+	      if ((bytes[i / 8] & (1 << (7 - (i % 8)))) > 0)
+	        bits[i] = true;
+	    }
+	    return bits;
+	  }
 }
