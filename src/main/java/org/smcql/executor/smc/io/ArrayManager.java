@@ -56,7 +56,7 @@ public class ArrayManager<T> implements Serializable {
 			return null;
 
 		OperatorExecution src = (isLhs) ? op.lhsChild : op.rhsChild;
-		Party party = op.getParty();
+		int party = op.getParty();
 		String workerId = op.getWorkerId();
 		
 		if(op.parentSegment != parent.getSegment()) {
@@ -85,7 +85,7 @@ public class ArrayManager<T> implements Serializable {
 		}
 		
 		if(op.getSourceSQL() != null) {
-			if((isLhs && party == Party.Alice) || (!isLhs && party == Party.Bob)) {
+			if((isLhs && party == 1) || (!isLhs && party == 2)) {
 				return prepareLocalPlainData(op, env, parent);
 			}
 			else {
@@ -112,7 +112,7 @@ public class ArrayManager<T> implements Serializable {
 			return null;
 
 		OperatorExecution src = (isLhs) ? op.lhsChild : op.rhsChild;
-		Party party = op.getParty();
+		int party = op.getParty();
 		String workerId = op.getWorkerId();
 		
 		if(op.parentSegment != parent.getSegment()) {
@@ -129,7 +129,7 @@ public class ArrayManager<T> implements Serializable {
 		}
 		
 		if(op.getSourceSQL() != null) {
-			if((isLhs && party == Party.Alice) || (!isLhs && party == Party.Bob)) {
+			if((isLhs && party == 1) || (!isLhs && party == 2)) {
 				// encode local secure query table
 				SlicedSecureQueryTable local = new SlicedSecureQueryTable(op.outSchema, (CompEnv<GCSignal>) env, parent, false);
 				QueryTable plainInput = queryIt(op);
@@ -199,7 +199,7 @@ public class ArrayManager<T> implements Serializable {
 	public boolean hasArray(OperatorExecution op, SMCRunnable parent) {
 		ExecutionSegment segment = parent.getSegment(); // reference parent segment because sometimes we draw from other segments
 		String workerId = segment.workerId;
-		Party p = segment.party;
+		int p = segment.party;
 		
 		if(inputArrays.containsKey(op)) {
 			return true;

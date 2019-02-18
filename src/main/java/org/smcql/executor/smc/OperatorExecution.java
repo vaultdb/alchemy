@@ -108,10 +108,10 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 	}
 	
 	
-	public Party getParty() {
+	public int getParty() {
 		if(parentSegment != null)
 			return parentSegment.party;
-		return null;
+		return -1;
 	}
 	
 	public String getWorkerId() {

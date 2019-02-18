@@ -12,7 +12,7 @@ import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
-import org.smcql.executor.EMPExecutor;
+import org.smcql.executor.EmpExecutor;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
@@ -135,7 +135,7 @@ public class GenerateSmcTest extends BaseTest {
 
     assertTrue("The jni wrappers differ!", FileUtils.contentEquals(generated, expected));
 
-    EMPExecutor exec = new EMPExecutor(qc, workerIds);
+    EmpExecutor exec = new EmpExecutor(qc, workerIds);
     exec.run();
 
     QueryTable observedOutput = exec.getOutput(); // Johes: please work on populating this

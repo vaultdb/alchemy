@@ -64,7 +64,7 @@ public class SecureBufferPool implements Serializable {
 		   String key = getKey(op);
 		   
 		   BasicSecureQueryTable table = new BasicSecureQueryTable(value, length, op.outSchema, env, parent);
-		   if(op.getParty() == Party.Alice) {
+		   if(op.getParty() == 1) {
 			   table.R = GCGenComp.R;
 		   }
 		   
@@ -80,7 +80,7 @@ public class SecureBufferPool implements Serializable {
 		   BasicSecureQueryTable val = (value == null) ? null : new BasicSecureQueryTable(value, length, op.outSchema, env, parent);
 		   SlicedSecureQueryTable table = new SlicedSecureQueryTable(op, env, parent, val ,t);
 		   
-		   if(op.getParty() == Party.Alice) {
+		   if(op.getParty() == 1) {
 			   table.R = GCGenComp.R;
 		   }
 		   
@@ -125,9 +125,9 @@ public class SecureBufferPool implements Serializable {
 	  }
 	  
 	  
-	  public synchronized SecureQueryTable readRecord(String packageName, String workerId, Party party) {
+	  public synchronized SecureQueryTable readRecord(String packageName, String workerId, int party) {
 		  
-		   String partyStr = (party == Party.Alice) ? "-gen" : "-eva";
+		   String partyStr = (party == 1) ? "-gen" : "-eva";
 		   String key = packageName + "." + workerId + partyStr;
 
 		  return readRecord(key);
@@ -230,8 +230,8 @@ public class SecureBufferPool implements Serializable {
        }
 	 	
        public static String getKey(OperatorExecution op) {
-    	   Party p = op.getParty();
-    	   String suffix = (p == Party.Alice) ? "-gen" : "-eva";
+    	   int p = op.getParty();
+    	   String suffix = (p == 1) ? "-gen" : "-eva";
     	   return op.packageName + "." + op.getWorkerId() + suffix;
     	   
        }

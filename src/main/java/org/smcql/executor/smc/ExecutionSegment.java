@@ -21,7 +21,7 @@ public class ExecutionSegment implements Serializable {
 	// replacing SMCConfig
 	public RunConfig runConf;
 	public String workerId;
-	public Party party;
+	public int party;
 	
 	// for sliced merge
 	public SecureRelRecordType outSchema;
@@ -35,7 +35,7 @@ public class ExecutionSegment implements Serializable {
 	
 	
 	public void checkInit() throws Exception {
-		if(party == null || workerId == null) {
+		if(party == 0 || workerId == null) {
 			throw new Exception("Parent segment uninitialized!");
 		}
 		checkInitHelper(rootNode);
@@ -51,7 +51,7 @@ public class ExecutionSegment implements Serializable {
 		}
 		
 		
-		if(op.getWorkerId() == null || op.getParty() == null) {
+		if(op.getWorkerId() == null || op.getParty() == -1) {
 			throw new Exception("Bad configuration for " + op);
 		}
 		

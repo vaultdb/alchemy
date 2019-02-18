@@ -114,7 +114,8 @@ public class EmpCompiler {
 
 			Class<?> cl = urlcl.loadClass(className);
 			Constructor<?> ctor = cl.getConstructors()[0];
-			return (EmpProgram) ctor.newInstance(party, port);
+			EmpProgram program =  (EmpProgram) ctor.newInstance(party, port);
+			return program;
 	
     }
 

@@ -17,6 +17,8 @@ import org.gridkit.vicluster.ViNode;
 import org.gridkit.vicluster.ViProps;
 import org.gridkit.vicluster.telecontrol.Classpath;
 import org.gridkit.vicluster.telecontrol.ssh.RemoteNodeProps;
+import org.smcql.codegen.smc.compiler.emp.EmpCompiler;
+import org.smcql.codegen.smc.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.type.SecureRelRecordType;
@@ -125,7 +127,7 @@ public class SegmentExecutor {
 		
 		cloudHost.setProp(SshSpiConf.SPI_JAR_CACHE, remotePath);
 
-		if(host.equalsIgnoreCase("localhost")) {
+		if(host.equalsIgnoreCase("localhost") || host.equals("127.0.0.1") ) {
 			cloudHost.x(VX.TYPE).setLocal();
 			ViProps.at(cloudHost).setIsolateType(); // enable debugger
 		}
@@ -229,7 +231,7 @@ public class SegmentExecutor {
 		 List<SecureQueryTable> result = cloud.node("**").massExec(new Callable<SecureQueryTable>() {
 				@Override
 				public SecureQueryTable call() throws Exception {
-					Party party = (System.getProperty("party").equals("gen")) ? Party.Alice : Party.Bob;
+					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
 					String workerId = System.getProperty("workerId");
 					
 					
@@ -237,12 +239,10 @@ public class SegmentExecutor {
 					segment.party = party;
 					segment.workerId = workerId;
 					segment.sliceComplementSQL = sql;
-					
 					RunnableSegment<GCSignal> runner = new RunnableSegment<GCSignal>(segment);
-					if(party == Party.Alice)
-						Thread.sleep(200); // eva must start first
 					
-					
+					//EmpProgram runner = EmpCompiler.loadClass(className, party, port)
+				
 					Thread execThread = runner.runIt();
 					execThread.join();
 	
@@ -255,6 +255,34 @@ public class SegmentExecutor {
 		 return result;
 	 }
 	 
+	 
+	 public List<boolean[]> runSecure(ExecutionSegment segment, String className) {
+		 String sql = segment.sliceComplementSQL;
+			
+		 List<boolean[]> result = cloud.node("**").massExec(new Callable<boolean[]>() {
+				@Override
+				public boolean[] call() throws Exception {
+					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
+					String workerId = System.getProperty("workerId");
+					
+					
+					
+					segment.party = party;
+					segment.workerId = workerId;
+					segment.sliceComplementSQL = sql;
+					// TODO: make port a parameter
+					EmpProgram program = EmpCompiler.loadClass(className, party, 54321);
+					
+					program.runProgram();
+					
+					boolean[] smcOutput = program.getOutput(); 
+				
+					return smcOutput;
+				}
+			});
+		 
+		 return result;
+	 }
 	 
 	 public QueryTable runPlain(PlaintextStep step) throws Exception {
 		 OperatorExecution op = step.getExec();

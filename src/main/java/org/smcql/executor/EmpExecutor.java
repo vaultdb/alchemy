@@ -16,25 +16,28 @@ import java.util.ListIterator;
 
 // handles only 2 nodes, must contain at least one SecureStep in plan
 
-public class ObliVMExecutor extends MPCExecutor {
+public class EmpExecutor extends MPCExecutor {
 	
 	SegmentExecutor runner = null;
 	QueryCompiler compiledPlan = null;
 	private SecureRelRecordType lastSchema;
-	private List<SecureQueryTable> lastOutput;
+	private List<boolean[]> lastOutput;
 	private QueryTable plainOutput;
-	String queryId;
+	String queryId; 
+	SecureRelRecordType outSchema;
 	
-	public ObliVMExecutor(QueryCompiler compiled, List<String> workers) throws Exception {
+	public EmpExecutor(QueryCompiler compiled, List<String> workers) throws Exception {
 		runner = new SegmentExecutor(workers.get(0), workers.get(1));
 		compiledPlan = compiled;
 		queryId = compiledPlan.getQueryId();
+		outSchema = compiledPlan.getPlan().getPlanRoot().getSchema();
 	}
 
-	public ObliVMExecutor(QueryCompiler compiled, String aWorkerId, String bWorkerId) throws Exception {
+	public EmpExecutor(QueryCompiler compiled, String aWorkerId, String bWorkerId) throws Exception {
 		runner = new SegmentExecutor(aWorkerId, bWorkerId);
 		compiledPlan = compiled;
 		queryId = compiledPlan.getQueryId();
+		outSchema = compiledPlan.getPlan().getPlanRoot().getSchema();
 
 	}
 	
@@ -67,7 +70,7 @@ public class ObliVMExecutor extends MPCExecutor {
 		
 			while(li.hasPrevious()) { 
 				ExecutionSegment segment = li.previous();
-				lastOutput = runner.runSecure(segment);
+				 lastOutput = runner.runSecure(segment, queryId);
 				 lastSchema = segment.outSchema;
 			}
 		}
@@ -85,10 +88,17 @@ public class ObliVMExecutor extends MPCExecutor {
 			return plainOutput;
 		}
 		
-		SecureQueryTable lhs = lastOutput.get(0);
-		SecureQueryTable rhs = lastOutput.get(1);
+		boolean[] lhs = lastOutput.get(0);
+		boolean[] rhs = lastOutput.get(1);
+		boolean[] decrypted = new boolean[lhs.length];
 		
-		return lhs.declassify(rhs, lastSchema);		
+		assert(lhs.length == rhs.length);
+		
+		for(int i = 0; i < lhs.length; ++i) {
+			decrypted[i] = lhs[i] ^ rhs[i];
+		}
+		
+		return new QueryTable( decrypted, outSchema);	
 		
 	}
 	

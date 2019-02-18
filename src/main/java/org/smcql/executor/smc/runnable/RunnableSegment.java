@@ -39,7 +39,7 @@ public class RunnableSegment<T> implements Callable<SecureQueryTable>, Serializa
 	
 	@SuppressWarnings("unchecked")
 	public Thread runIt() throws Exception {
-		if(segment.party == Party.Alice) {
+		if(segment.party == 1) {
     		genRunner = new SMCQLRunnable.Generator<T>(segment);
     		runnerThread = new Thread(genRunner);
         }
