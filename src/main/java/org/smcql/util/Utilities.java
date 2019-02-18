@@ -147,7 +147,7 @@ public class Utilities {
 			
 			CommandOutput output = runCmd(cmd);
 			
-			if(output.exitValue != 0 && output.exitValue != 1) { // 1 = already exists
+			if(output.exitCode != 0 && output.exitCode != 1) { // 1 = already exists
 				throw new Exception("Failed to create path " + path + "!");
 			}
 			
@@ -159,7 +159,7 @@ public class Utilities {
 			String cmd = "rm -rf "  + path + "/*" ;
 			CommandOutput output = runCmd(cmd);
 			
-			if(output.exitValue != 0) {
+			if(output.exitCode != 0) {
 				throw new Exception("Failed to clear out " + path + "!");
 			}
 			
@@ -201,7 +201,7 @@ public class Utilities {
 		
 		p.waitFor();
 		
-		cmdOutput.exitValue = p.exitValue();
+		cmdOutput.exitCode = p.exitValue();
 		return cmdOutput;
 	}
 
@@ -228,10 +228,10 @@ public class Utilities {
 
 
 		CommandOutput output =  runCmd(cmd);
-		if(output.exitValue != 0) {
+		if(output.exitCode != 0) {
 			System.out.println("diff: " + output.output);
 		}
-		return output.exitValue == 0;
+		return output.exitCode == 0;
 	}
 
 	
@@ -294,13 +294,5 @@ public class Utilities {
 
 	}
 	
-	// Source: http://www.java2s.com/Code/Android/Date-Type/ConvertabytearraytoabooleanarrayBit0isrepresentedwithfalseBit1isrepresentedwith1.htm
-	public static boolean[] byteArray2BitArray(byte[] bytes) {
-	    boolean[] bits = new boolean[bytes.length * 8];
-	    for (int i = 0; i < bytes.length * 8; i++) {
-	      if ((bytes[i / 8] & (1 << (7 - (i % 8)))) > 0)
-	        bits[i] = true;
-	    }
-	    return bits;
-	  }
+
 }

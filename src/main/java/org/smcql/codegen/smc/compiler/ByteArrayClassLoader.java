@@ -1,4 +1,4 @@
-package org.smcql.codegen.smc;
+package org.smcql.codegen.smc.compiler;
 
 import java.io.IOException;
 import org.smcql.util.Utilities;

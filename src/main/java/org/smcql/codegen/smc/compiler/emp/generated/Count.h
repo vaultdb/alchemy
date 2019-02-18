@@ -1,6 +1,6 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <pqxx/pqxx>
-#include <row.h>
+#include "row.h"
 
 // header of an ExecutionSegment in emp
 // put in front of first generated MPC operator
@@ -18,7 +18,7 @@ using namespace pqxx;
 
 namespace Count {
 
-class Count {
+class CountClass {
 
 	// Connection strings, encapsulates db name, db user, port, host
 	string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";

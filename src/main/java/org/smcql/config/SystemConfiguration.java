@@ -200,6 +200,10 @@ public class SystemConfiguration {
 	}
 	
 	
+	public String getSmcqlRoot() {
+		return Utilities.getSMCQLRoot();
+	}
+	
 	public String getConfigFile() {
 		return configFile;
 	}

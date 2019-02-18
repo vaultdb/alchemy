@@ -10,7 +10,7 @@ import java.util.Map;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.codegen.CodeGenerator;
-import org.smcql.codegen.smc.DynamicCompiler;
+import org.smcql.codegen.smc.compiler.DynamicCompiler;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;

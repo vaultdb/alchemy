@@ -1,5 +1,6 @@
 #configure locations
-codegen-target=bin
+codegen-target=org/smcql/codegen/smc/compiler/emp/generated 
+javacpp-jar=jars/javacpp.jar
 data-providers=conf/connections/remote-hosts
 
 #log information

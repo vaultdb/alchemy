@@ -1,4 +1,4 @@
-package org.smcql.codegen.smc;
+package org.smcql.codegen.smc.compiler;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +25,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
 import org.apache.commons.lang3.StringUtils;
+import org.smcql.codegen.smc.compiler.emp.EmpProgram;
 import org.smcql.util.ClassPathUpdater;
 import org.smcql.util.Utilities;
 
@@ -123,19 +124,6 @@ public class DynamicCompiler
     }
     
 
-    @SuppressWarnings("unchecked")
-	public static EmpProgram loadClass(String className, int party, int port) throws Exception {
-
-			File f = new File(Utilities.getCodeGenTarget());
-			URL[] cp = {f.toURI().toURL()};
-			@SuppressWarnings("resource")
-			URLClassLoader urlcl = new URLClassLoader(cp);
-
-			Class<?> cl = urlcl.loadClass(className);
-			Constructor<?> ctor = cl.getConstructors()[0];
-			return (EmpProgram) ctor.newInstance(party, port);
-	
-    }
 
     
     @SuppressWarnings("unchecked")
@@ -189,6 +177,36 @@ public class DynamicCompiler
         Iterable<? extends JavaFileObject> files = Arrays.asList(so);
         DynamicCompiler.compile(files);
 
+    }
+    
+    public static void compileEmp(String srcFile, String packageName) throws Exception {
+
+    	List<String> code = Utilities.readFile(srcFile);
+		String smcCode = StringUtils.join(code.toArray(), "\n");
+	
+		JavaFileObject so = new InMemoryJavaFileObject(packageName, smcCode);
+        Iterable<? extends JavaFileObject> files = Arrays.asList(so);
+        //get system compiler:
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+
+        // for compilation diagnostic message processing on compilation WARNING/ERROR
+        MyDiagnosticListener c = new MyDiagnosticListener();
+        StandardJavaFileManager fileManager = compiler.getStandardFileManager(c,
+                                                                              Locale.ENGLISH,
+                                                                              null);
+        //specify classes output folder
+        Iterable options = Arrays.asList("-d", classOutputFolder, "-jar", "deps/javacpp/target/javacpp.jar");
+        @SuppressWarnings("unchecked")
+		JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager,
+                                                             c, options, null,
+                                                             files);
+        Boolean result = task.call();
+        if (result == false)
+        {
+        	throw new Exception("Compile failed!");
+        }
+
+    
     }
     
     public static void compileJava(String[] srcFiles, String packageName, String path) throws Exception {

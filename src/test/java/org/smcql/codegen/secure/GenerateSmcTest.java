@@ -112,8 +112,8 @@ public class GenerateSmcTest extends BaseTest {
 		File expected = new File(expectedFile);
 		assertTrue("The files differ!", FileUtils.contentEquals(generated, expected));
 		
-		boolean compiled = compileCode(testName, qc);
-		assertTrue(compiled);
+		int exitCode = qc.compileEmpCode();
+		assertEquals(0, exitCode);
 		
 		// TODO: run code compiler and executor here
 		// TODO: collect results as a SecureQueryTable
@@ -125,27 +125,5 @@ public class GenerateSmcTest extends BaseTest {
 		
 	}
 	
-	// returns true if the code compiles
-	boolean compileCode(String testName, QueryCompiler compiler) throws Exception {
-		String empBridgePath = Utilities.getSMCQLRoot() + "/deps/emp/emp-bridge";
-		Utilities.mkdir(empBridgePath + "/bin");
-		String writeDstCpp = empBridgePath + "/src/" + testName + ".cpp";
-		Utilities.writeFile(writeDstCpp, compiler.getEmpCode());
-		
-		String buildCmd =  empBridgePath + "/build.sh " + empBridgePath + " " + testName;
-		System.out.println("Build command: " + buildCmd);
-		
-		CommandOutput co = Utilities.runCmd(buildCmd);
-
-		Logger logger = SystemConfiguration.getInstance().getLogger();
-		logger.log(Level.INFO, "Build output:\n" + co.output);
-		
-		if(co.exitValue == 0)
-			return true;
-		return false;
-		
-		
-		
-	}
 	
 }

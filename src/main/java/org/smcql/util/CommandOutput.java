@@ -2,7 +2,7 @@ package org.smcql.util;
 
 public class CommandOutput {
 	public String output;
-	public int exitValue;
+	public int exitCode;
 	
 	public CommandOutput() {
 		output = new String();

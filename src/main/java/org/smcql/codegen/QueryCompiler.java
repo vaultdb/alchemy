@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.io.FileUtils;
 import org.smcql.codegen.plaintext.PlainOperator;
+import org.smcql.codegen.smc.compiler.emp.EmpCompiler;
 import org.smcql.codegen.smc.operator.SecureOperator;
 import org.smcql.codegen.smc.operator.SecureOperatorFactory;
 import org.smcql.codegen.smc.operator.SecurePreamble;
@@ -136,6 +137,7 @@ public class QueryCompiler {
 		}
 
 		inferExecutionSegment(compiledRoot);
+
 	}
 	
 	public QueryCompiler(SecureRelRoot q, Mode m) throws Exception {
@@ -207,7 +209,7 @@ public class QueryCompiler {
 	// returns filename
 	public String writeOutEmpFile() throws Exception {
 		
-		String targetFile = Utilities.getCodeGenTarget() + "/" + queryId + ".cpp";
+		String targetFile = Utilities.getCodeGenTarget() + "/" + queryId + ".h";
 		Logger logger = SystemConfiguration.getInstance().getLogger();
 		logger.log(Level.INFO, "Writing generated code to " + targetFile);
 		
@@ -242,6 +244,12 @@ public class QueryCompiler {
 		
 		return wholeFile;
 		
+	}
+	
+	public int compileEmpCode() throws Exception {
+		writeOutEmpFile();
+		EmpCompiler compiler = new EmpCompiler(queryId);
+		return compiler.compile();
 	}
 	
 	
@@ -466,8 +474,7 @@ public class QueryCompiler {
 		} else {
 			 merge = new UnionMethod(op, child, op.secureComputeOrder());
 		}
-		// TODO: save this for later, EMP in a single file
-		 //merge.compileIt();
+		// merge.compileIt();
 		
 		RunConfig mRunConf = new RunConfig();
 		mRunConf.port = (SystemConfiguration.getInstance()).readAndIncrementPortCounter();
@@ -503,7 +510,7 @@ public class QueryCompiler {
 				secOp.addProject((Project) cur);
 			}
 		}
-		// TODO: save this for later
+		// TODO: save this for later once we have whole file
 		//secOp.compileIt();
 	
 		RunConfig sRunConf = new RunConfig();

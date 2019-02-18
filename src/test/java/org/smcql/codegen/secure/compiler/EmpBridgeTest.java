@@ -1,11 +1,19 @@
 package org.smcql.codegen.secure.compiler;
 
 import org.smcql.BaseTest;
-
-import org.smcql.codegen.smc.DynamicCompiler;
-import org.smcql.codegen.smc.EmpProgram;
+import org.smcql.codegen.smc.compiler.DynamicCompiler;
+import org.smcql.codegen.smc.compiler.emp.EmpProgram;
+import org.smcql.codegen.smc.compiler.emp.ClassPathBuilder;
+import org.smcql.codegen.smc.compiler.emp.EmpCompiler;
+import org.smcql.util.CommandOutput;
 import org.smcql.util.Utilities;
-import org.bytedeco.javacpp.tools.Builder;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 
 public class EmpBridgeTest extends BaseTest {
 	protected void setUp() throws Exception {
@@ -13,23 +21,36 @@ public class EmpBridgeTest extends BaseTest {
 		System.setProperty("smcql.setup", setupFile);
 
 	}
+	
 
+/*	private List<String> getBuildCommand(String srcFile, ClassPathBuilder classLoader) throws IOException {
+		   ArrayList<String> command = new ArrayList<String>();
+		   command.add("javac");
+		   command.add("-cp");
+		   
+		   String paths = System.getProperty("java.class.path");
+		   
+		   String[] classPaths = classLoader.getPaths();
+		   paths += paths + String.join(File.pathSeparator, classPaths);
+		   
+		   
+		   command.add(paths);
+		   command.add(srcFile);
+		   
+		   return command;       
+		   
+	}*/
+	
 	public void testCount() throws Exception {
-		String srcFile = Utilities.getSMCQLRoot() + "/src/test/java/org/smcql/codegen/secure/compiler/inputs/Count.java";
-//		String srcFile = "inputs/Count.java";
-//		String srcFile =  "/src/test/java/org/smcql/codegen/secure/compiler/inputs/Count.java";
+		
+		EmpCompiler compiler = new EmpCompiler("Count");
+		int exitCode = compiler.compile();
+		assertEquals(0, exitCode); //  it built successfully
+		
+		EmpProgram theProgram = EmpCompiler.loadClass("Count", 1, 54321);
 
-		System.out.println("Source file: " + srcFile);
+		assert(theProgram != null); // we can load it
 		
-		String[] args = new String[2];
-		args[0] = "-nodelete";
-		args[1] = srcFile;
-		
-		Builder.main(args);
-		
-		DynamicCompiler.compileJava(srcFile, "org.smcql.codegen.secure.compiler.inputs.Count");
-		EmpProgram theProgram = DynamicCompiler.loadClass("org.smcql.codegen.secure.compiler.inputs.Count", 1, 54321);
-		boolean[] output = theProgram.runProgram();
 	}
 
 }
