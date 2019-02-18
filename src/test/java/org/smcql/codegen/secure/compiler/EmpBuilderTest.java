@@ -27,8 +27,8 @@ public class EmpBuilderTest extends BaseTest {
 		EmpProgram theProgram = EmpCompiler.loadClass("Count", 1, 54321);
 		assert(theProgram != null); // we can load it
 		
-		theProgram.runProgram();
-		boolean[] aliceOut = theProgram.getOutput();
+		//theProgram.runProgram();
+		//boolean[] aliceOut = theProgram.getOutput();
 		
 		
 		//TODO: Bob
