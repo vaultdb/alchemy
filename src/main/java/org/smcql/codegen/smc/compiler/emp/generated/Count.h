@@ -25,7 +25,7 @@ class CountClass {
 	string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=localhost port=5432";
 	string aliceHost = "localhost";
 	string bobHost = "localhost";
-	long outputSize = 0; // in bits
+	bool *output;
 
 	// Helper functions
 	string reveal_bin(Integer &input, int length, int output_party) {
@@ -265,9 +265,9 @@ class CountClass {
 // expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
 
 public:
-	bool* run(int party, int port) {
+	void run(int party, int port) {
 
-		NetIO * io = new NetIO((party==ALICE ? aliceHost.c_str() : bobHost.c_str()), port);
+		NetIO * io = new NetIO((party==ALICE ? nullptr : bobHost.c_str()), port);
 
 		setup_semi_honest(io, party);
 
@@ -276,12 +276,15 @@ public:
 		Data * Distinct2Output = Distinct2(Distinct2MergeOutput);
 
 		Data * Aggregate3Output = Aggregate3(Distinct2Output);
+		io->flush();
+		delete io;
+
 		Data * results = Aggregate3Output;
 
 		int tupleLen = results->data[0].size();
 
-		outputSize = results->public_size * tupleLen;
-		bool *output = new bool[outputSize];
+		long outputSize = results->public_size * tupleLen;
+	    output = new bool[outputSize];
 		bool *writePtr = output;
 		bool *tuple;
 		for(int i = 0; i < results->public_size; ++i) {
@@ -290,15 +293,14 @@ public:
 			writePtr += tupleLen;
 		}
 
-		io->flush();
-		delete io;
-		return output;
+		
+		
 
 	}
 
-	// output size in bits
-	long getOutputSize() {
-		return outputSize;
+	bool *getOutput() {
+	  return output;
 	}
+
 };
 }

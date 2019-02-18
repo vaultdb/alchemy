@@ -1,15 +1,10 @@
 package org.smcql.codegen.secure.compiler;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.smcql.BaseTest;
-import org.smcql.codegen.QueryCompiler;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.db.data.QueryTable;
-import org.smcql.executor.step.ExecutionStep;
-import org.smcql.plan.SecureRelRoot;
+import org.smcql.codegen.smc.compiler.emp.EmpProgram;
+import org.smcql.codegen.smc.compiler.emp.EmpCompiler;
 import org.smcql.util.Utilities;
+
 
 public class EmpBuilderTest extends BaseTest {
 	protected void setUp() throws Exception {
@@ -18,33 +13,19 @@ public class EmpBuilderTest extends BaseTest {
 
 	}
 	
+
+
+	
 	public void testCount() throws Exception {
-
-		String query = "SELECT COUNT(DISTINCT icd9) FROM diagnoses";
-		String distributedQuery = Utilities.getDistributedQuery(query);
-		String testName = "count-icd9s";
 		
-		buildTest(testName, query);
+		EmpCompiler compiler = new EmpCompiler("Count");
+		int exitCode = compiler.compile();
+		assertEquals(0, exitCode); //  it built successfully
+		
+		EmpProgram theProgram = EmpCompiler.loadClass("Count", 1, 54321);
 
+		assert(theProgram != null); // we can load it
+		
 	}
 
-	
-	protected void buildTest(String testName, String sql) throws Exception  {
-		SystemConfiguration.getInstance().resetCounters();
-		Logger logger = SystemConfiguration.getInstance().getLogger();
-		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
-			
-		QueryCompiler qc = new QueryCompiler(secRoot);
-		
-		ExecutionStep root = qc.getRoot();
-		String testTree = root.printTree();
-		logger.log(Level.INFO, "Resolved secure tree to:\n " + testTree);
-	
-		String empFile = qc.writeOutEmpFile();
-		String empCode = qc.getEmpCode();
-		
-		//
-		// TODO: Madhav, invoke builder chain and verify that it successfully creates binary 
-		
-		}
 }

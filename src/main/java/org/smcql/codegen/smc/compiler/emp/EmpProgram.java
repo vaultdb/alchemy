@@ -16,7 +16,11 @@ public class EmpProgram  {
 	}
 	
 	// delegate to children
-    public  boolean[] runProgram() {
+    public void runProgram() {
+    
+    }
+    
+    public boolean[] getOutput() {
     	return null;
     }
     

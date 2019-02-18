@@ -18,22 +18,28 @@ import org.gridkit.vicluster.ViNode;
 import org.gridkit.vicluster.telecontrol.Classpath;
 import org.gridkit.vicluster.telecontrol.ssh.RemoteNodeProps;
 import org.smcql.codegen.QueryCompiler;
+import org.smcql.codegen.smc.compiler.emp.EmpCompiler;
+import org.smcql.codegen.smc.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.smc.SecureBufferPool;
 import org.smcql.executor.smc.SecureQueryTable;
+import org.smcql.executor.smc.runnable.RunnableSegment;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
+
+import com.oblivm.backend.flexsc.Party;
+import com.oblivm.backend.gc.GCSignal;
 
 
 public class EMPExecutor implements Runnable {
 	String remotePath;
 	Cloud cloud;
 	QueryCompiler compiledPlan = null;
-	List<String> results;
+	List<boolean[]> results;
 	
 	public EMPExecutor(QueryCompiler qc, List<String> parties) throws Exception {
 		if (parties.size() > 2) 
@@ -134,76 +140,36 @@ public class EMPExecutor implements Runnable {
 		return true;
 	}
 	
-	//TODO: Remove hard-coding
 	@Override
 	public void run() {
-		
-		String srcFile = null;
-		
-		
-		 try {
-			srcFile = compiledPlan.writeOutEmpFile();
 			
-		} catch (Exception e1) {
-			System.out.println("Failed to create emp plan!");
-			e1.printStackTrace();
-			System.exit(-1);
-		}
-		
-		try {
-		
-			List<WorkerConfiguration> workers = ConnectionManager.getInstance().getWorkerConfigurations();
-			for(WorkerConfiguration worker : workers) {
-				String dst = worker.user + "@" + worker.hostname + ":" + worker.empBridgePath + "/src/";
+		 results = cloud.node("**").massExec(new Callable<boolean[]>() {
+				@Override
+				public boolean[] call() throws Exception {
+					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
+					
+					
+					EmpProgram runner = EmpCompiler.loadClass(compiledPlan.getPlan().getName(), party, 54321);
+					runner.runProgram();
+	
+					boolean[] smcOutput = runner.getOutput(); 
 				
-				boolean success = copyFile(srcFile, dst);
-				if (!success)
-					return;
-				
-			}
-		} catch (Exception e1) {
-			System.out.println("Failed to send files!");
-			e1.printStackTrace();
-			System.exit(-1);
-		}
-		
-		
-		
-		 results = cloud.node("**").massExec(new Callable<String>() {
-			@Override
-			public String call() throws Exception {
-				try {
-					ByteArrayOutputStream stdout = new ByteArrayOutputStream();
-			        PumpStreamHandler psh = new PumpStreamHandler(stdout);
-
-			        String buildCmd = System.getProperty("buildCmd"); // initialized above
-			        String execCmd = System.getProperty("execCmd");
-			        
-			        CommandLine buildCL = CommandLine.parse(buildCmd);
-			        CommandLine execCL = CommandLine.parse(execCmd);
-
-			        DefaultExecutor exec = new DefaultExecutor();
-			        exec.setStreamHandler(psh);
-			        exec.execute(buildCL);
-			        exec.execute(execCL);
-			        return stdout.toString();
-				} catch (Exception e) {
-					System.out.print("Failed to execute command!");
-					e.printStackTrace();
-					System.exit(-1);
+					return smcOutput;
 				}
-				return "";
-			}
-		});
-		
-	}
+			});
+		 
+	
+	 }
+	 
+	
+			
 	
 	public QueryTable getOutput() throws Exception {
 		if (results == null || results.isEmpty())
 			return null;
 		
-		String alice = results.get(0);
-		String bob = results.get(1);
+		boolean[] alice = results.get(0);
+		boolean[] bob = results.get(1);
 		boolean[] decrypted = null;
 		
 		// TODO: create two boolean[] arrays, one for alice, and one for bob

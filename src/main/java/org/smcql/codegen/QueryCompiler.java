@@ -227,7 +227,7 @@ public class QueryCompiler {
 		String wholeFile = new String();
 		
 		
-		SecurePreamble preamble =  new SecurePreamble(null);
+		SecurePreamble preamble =  new SecurePreamble(getRoot().getSourceOperator());
 		//preamble.setSqlStatements(sqlCode);
 		
 		String generatedPreamble = preamble.generate().get("preamble");

@@ -53,6 +53,9 @@ public class SecurePreamble extends SecureOperator {
 		
 		variables.put("bobHost", bobHost);
 		variables.put("aliceHost", aliceHost);
+		variables.put("queryName", planNode.getQueryId());
+		variables.put("queryClass", planNode.getQueryId() + "Class");
+
 		
 		//variables.put("srcSQL", queries);
 		String alice = ConnectionManager.getInstance().getConnectionString(1);

@@ -13,13 +13,13 @@ using namespace pqxx;
 #define LENGTH_INT 64
 
 
-namespace $queryName {
+namespace FilterDistinct {
 
-class $queryClass {
+class FilterDistinctClass {
 // Connection strings, encapsulates db name, db user, port, host
-string aliceConnectionString = "$aliceConnectionString";
-string bobConnectionString = "$bobConnectionString";
-string bobHost = "$bobHost";
+string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=127.0.0.1 port=5432";
+string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=127.0.0.1 port=5432";
+string bobHost = "127.0.0.1";
 bool *output;
 
 
@@ -155,4 +155,138 @@ Integer from_bool(bool* b, int size, int party) {
 }
 
 
+// ordered union, multiset op, has multiset semantics
+// inputs must be sorted by sort key from query plan in source DBs
+// right now this presumes that the sort key is always the first column.
+// need to make this more general by tweaking the parameters 
 
+
+Data* Distinct4Merge(int party, NetIO * io) {
+	string sql = "SELECT DISTINCT patient_id, icd9 = '414.01' FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY patient_id";
+    std::vector<Row> in = execute_sql(sql, party);
+    int bit_length = 65; // TODO: automatically derive size from Row metadata?
+    // flatten out local data
+    bool *local_data = concat(in, bit_length);
+
+    int alice_size, bob_size;
+    alice_size = bob_size = in.size();
+
+    if (party == ALICE) {
+        io->send_data(&alice_size, 4);
+        io->flush();
+        io->recv_data(&bob_size, 4);
+        io->flush();
+    } else if (party == BOB) {
+        io->recv_data(&alice_size, 4);
+        io->flush();
+        io->send_data(&bob_size, 4);
+        io->flush();
+    }
+
+	Integer * res = new Integer[alice_size + bob_size];  // enough space for all inputs
+   
+    Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
+    Bit *tmpPtr = tmp;
+    Batcher alice_batcher, bob_batcher;
+    
+    for (int i = 0; i < alice_size*bit_length; ++i) {
+        	   // set up bit array, if alice, secret share a local bit, 
+        	   // otherwise bob collects his part of the secret share and inputs 0 as a placeholder
+        	   alice_batcher.add<Bit>((ALICE==party) ? local_data[i]:0);
+    }
+
+	alice_batcher.make_semi_honest(ALICE);
+		
+	for(int i = 0; i < alice_size*bit_length; ++i) {
+		*tmpPtr = alice_batcher.next<Bit>();
+		++tmpPtr;
+	}
+	
+    for (int i = 0; i < bob_size*bit_length; ++i)
+        bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
+    	bob_batcher.make_semi_honest(BOB);
+
+	// append all of bob's bits to tmp
+    for (int i = 0; i < bob_size*bit_length; ++i) {
+        *tmpPtr = bob_batcher.next<Bit>();
+        ++tmpPtr;
+	}
+	
+	tmpPtr = tmp;
+	
+	// create a 2D array of secret-shared bits
+	// each index is a tuple
+    for(int i = 0; i < alice_size + bob_size; ++i) {
+        res[i] = Integer(bit_length, tmpPtr);
+        tmpPtr += bit_length;
+     }
+
+
+    // TODO: sort if needed, not specific to col_length0
+    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, 64);
+    Data * d = new Data;
+    d->data = res;
+    d->public_size = alice_size + bob_size;
+    d->real_size = Integer(64, d->public_size, PUBLIC);
+        
+    return d;
+}
+Data * Distinct4(Data *data) {
+	
+	
+	int tupleLen = data->data[0].size() * sizeof(Bit);
+	
+    for (int i=0; i< data->public_size - 1; i++) {
+        Integer id1 = data->data[i];
+        Integer id2 = data->data[i+1];
+        Bit eq = (id1 == id2);
+        id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
+        //maintain real size
+  	    data->real_size = If(eq, data->real_size - Integer(LENGTH_INT, 1, PUBLIC),  data->real_size);
+        memcpy(data->data[i].bits, id1.bits, tupleLen);       
+    }
+    
+    return data;
+}
+
+
+
+// expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
+
+public:
+	void run(int party, int port) {
+    NetIO * io = new NetIO((party==ALICE ? nullptr : bobHost.c_str()), port);
+    
+    setup_semi_honest(io, party);
+    
+     Data *Distinct4MergeOutput = Distinct4Merge(party, io);
+
+    Data * Distinct4Output = Distinct4(Distinct4MergeOutput);
+
+
+    
+    	Data * results = Distinct4Output;
+
+		int tupleLen = results->data[0].size();
+
+		long outputSize = results->public_size * tupleLen;
+		output = new bool[outputSize];
+		bool *writePtr = output;
+		bool *tuple;
+		for(int i = 0; i < results->public_size; ++i) {
+			tuple = outputBits(results->data[i], tupleLen, XOR);
+			memcpy(writePtr, tuple, tupleLen);
+			writePtr += tupleLen;
+		}
+
+		io->flush();
+		delete io;
+		
+	}
+
+    bool *getOutput() {
+    	return output;
+    }
+}; // end class
+} // end namespace
+ 

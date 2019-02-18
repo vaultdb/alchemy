@@ -1,21 +1,37 @@
-// suffix for our emp ExecutionStep
-// TODO: generalize this
-// we fill in functions as we go along
-// need to fill in NetIO setup based on contents of ConnectionManager
+
+
 // expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
 
-int main(int argc, char** argv) {
-
-    int port, party;
-    parse_party_and_port(argv, &party, &port);
+public:
+	void run(int party, int port) {
     NetIO * io = new NetIO((party==ALICE ? nullptr : bobHost.c_str()), port);
     
     setup_semi_honest(io, party);
     
 $functions
     
-    // TODO: decrypt $rootOutput at honest broker
-   
-    io->flush();
-    delete io;
-}
+    	Data * results = $rootOutput;
+
+		int tupleLen = results->data[0].size();
+
+		long outputSize = results->public_size * tupleLen;
+		output = new bool[outputSize];
+		bool *writePtr = output;
+		bool *tuple;
+		for(int i = 0; i < results->public_size; ++i) {
+			tuple = outputBits(results->data[i], tupleLen, XOR);
+			memcpy(writePtr, tuple, tupleLen);
+			writePtr += tupleLen;
+		}
+
+		io->flush();
+		delete io;
+		
+	}
+
+    bool *getOutput() {
+    	return output;
+    }
+}; // end class
+} // end namespace
+ 

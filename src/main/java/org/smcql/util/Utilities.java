@@ -88,6 +88,13 @@ public class Utilities {
     	}
  
     	public static String getCodeGenTarget() {
+    		
+    		try {
+				return getSMCQLRoot() + "/" + SystemConfiguration.getInstance().getProperty("codegen-target");
+			} catch (Exception e) {
+				System.out.println("Missing codegen-target parameter, please add it to your config file.");
+				e.printStackTrace();
+			}
     		return getSMCQLRoot() + "/bin";
     	}
  
@@ -169,14 +176,26 @@ public class Utilities {
 	public static CommandOutput runCmd(String aCmd) throws IOException, InterruptedException {
 		
 		String[] cmd = StringUtils.split(aCmd, ' ');
-		return runCmd(cmd);
+		return runCmd(cmd, null);
+	}
+	
+public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws IOException, InterruptedException {
+		
+		String[] cmd = StringUtils.split(aCmd, ' ');
+		return runCmd(cmd, aWorkingDirectory);
 	}
 	
 	
 	
-	
-	public static CommandOutput runCmd(String[] cmd) throws IOException, InterruptedException {
-		File dir = new File(Utilities.getSMCQLRoot());
+	public static CommandOutput runCmd(String[] cmd, String workingDirectory) throws IOException, InterruptedException {
+
+		
+		if(workingDirectory == null || workingDirectory == "") {
+			workingDirectory = Utilities.getSMCQLRoot();
+		}
+		
+		File dir = new File(workingDirectory);
+		
 		Process p = java.lang.Runtime.getRuntime().exec(cmd, null, dir);
 
 		BufferedReader stderr = new BufferedReader(new InputStreamReader(p.getErrorStream()));

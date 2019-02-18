@@ -26,13 +26,13 @@ public class GenerateSmcTest extends BaseTest {
 	}
 	
 
-	public void testCount() throws Exception {
+	public void testCountIcd9s() throws Exception {
 		
 		String query = "SELECT COUNT(DISTINCT icd9) FROM diagnoses";
 		// to run in plaintext to verify our results
 		//String distributedQuery = "WITH all_diagnoses AS ((SELECT icd9 FROM diagnoses) UNION ALL (SELECT icd9 FROM remote_diagnoses)) SELECT COUNT(DISTINCT icd9) FROM all_diagnoses;";
 		String distributedQuery = Utilities.getDistributedQuery(query);
-		String testName = "count-icd9s";
+		String testName = "CountIcd9s";
 
 		QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
 		
@@ -45,7 +45,7 @@ public class GenerateSmcTest extends BaseTest {
 	// for guidance
 	// make sure to create a file in expected directory called "join-cdiff-emp.cpp"
 	public void testJoin() throws Exception {
-		String testName = "join-cdiff";
+		String testName = "JoinCdiff";
 		String query = "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
 		String distributedQuery = "WITH all_diagnoses AS ((SELECT patient_id, icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)), " + 
 		    "all_medications AS ((SELECT patient_id FROM medications) UNION ALL (select patient_id FROM remote_medications)) " +
@@ -68,7 +68,7 @@ public class GenerateSmcTest extends BaseTest {
 	// make sure to create a file in expected directory called "filter-distinct-emp.cpp"
 		
 	public void testFilterDistinct() throws Exception {
-		String testName = "filter-distinct";
+		String testName = "FilterDistinct";
 		String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
 //		String distributedQuery = "WITH all_diagnoses AS ((SELECT patient_id,icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)) " +
 //				"SELECT DISTINCT patient_id FROM all_diagnoses WHERE icd9 = \'414.01\'";
@@ -101,19 +101,36 @@ public class GenerateSmcTest extends BaseTest {
 	
 		String generatedFile = qc.writeOutEmpFile();
 		
-		String cwd = System.getProperty("user.dir");
-		String expectedFile = cwd + "/src/test/java/org/smcql/codegen/secure/expected/" + testName + "-emp.cpp";
+		String cwd = Utilities.getSMCQLRoot();
+		String expectedFile = cwd + "/src/test/java/org/smcql/codegen/secure/expected/" + testName + ".h";
 		System.out.println("Generated: " + generatedFile);
 		System.out.println("Expected: " + expectedFile);
 		
 	
 		
-		File generated = new File(generatedFile);
-		File expected = new File(expectedFile);
-		assertTrue("The files differ!", FileUtils.contentEquals(generated, expected));
+		
 		
 		int exitCode = qc.compileEmpCode();
 		assertEquals(0, exitCode);
+		
+		File generated = new File(generatedFile);
+		File expected = new File(expectedFile);
+		assertTrue("The emp code differs!", FileUtils.contentEquals(generated, expected));
+		
+		
+		// check the jni wrappers  ".h" --> ".java"
+		generatedFile = generatedFile.substring(0, generatedFile.length() - 1);
+		generatedFile += "java";
+		generated = new File(generatedFile);
+		
+		expectedFile = expectedFile.substring(0, expectedFile.length() - 1);
+		expectedFile += "java_"; // underscore to prevent compiler from complaining about package path			
+		expected = new File(expectedFile);
+		
+		assertTrue("The jni wrappers differ!", FileUtils.contentEquals(generated, expected));
+				
+				
+				
 		
 		// TODO: run code compiler and executor here
 		// TODO: collect results as a SecureQueryTable

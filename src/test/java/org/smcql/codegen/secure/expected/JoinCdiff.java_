@@ -13,7 +13,7 @@ import org.bytedeco.javacpp.annotation.Platform;
 import org.smcql.codegen.smc.compiler.emp.EmpProgram;
 
 
-@Platform(include={"Count.h"}, 
+@Platform(include={"JoinCdiff.h"}, 
 			includepath= "/usr/local/include", 
 			linkpath="/usr/local/lib", 
 			link={"emp-tool","pqxx"},
@@ -23,18 +23,18 @@ import org.smcql.codegen.smc.compiler.emp.EmpProgram;
 
 
 
-@Namespace("Count")
-public class Count  extends EmpProgram  {
+@Namespace("JoinCdiff")
+public class JoinCdiff  extends EmpProgram  {
 
 
 	
-	public Count(int aParty, int aPort) {
+	public JoinCdiff(int aParty, int aPort) {
 		super(aParty, aPort);
 	}
 
-	public static class CountClass extends Pointer {
+	public static class JoinCdiffClass extends Pointer {
         static { Loader.load(); }
-        public CountClass() { 	
+        public JoinCdiffClass() { 	
         	allocate(); 
         	}
         private native void allocate();
@@ -45,12 +45,12 @@ public class Count  extends EmpProgram  {
         
 	}
 	
-	   CountClass theQuery;
+	   JoinCdiffClass theQuery;
 	   
 	   
         @Override
         public  void runProgram() {
-        	theQuery = new CountClass();
+        	theQuery = new JoinCdiffClass();
 	        theQuery.run(party, port);
 	        
         }

@@ -118,7 +118,6 @@ public class EMPQueryExecutor implements Runnable {
 		return true;
 	}
 	
-	//TODO: Remove hard-coding
 	@Override
 	public void run() {
 		//String code = this.empCode;
