@@ -77,7 +77,7 @@ public class EmpCompiler {
 		CommandOutput out = Utilities.runCmd(command, workingDirectory);
 		
 		System.out.println("Compiler output: " + out.output);
-		System.out.println("Exit code: " + out.exitCode);
+	
 		return out.exitCode;
 				
 
