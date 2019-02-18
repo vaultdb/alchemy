@@ -148,6 +148,8 @@ public class EMPExecutor implements Runnable {
 				public boolean[] call() throws Exception {
 					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
 					
+					EmpCompiler compiler = new EmpCompiler(compiledPlan.getPlan().getName());
+					compiler.compile();
 					
 					EmpProgram runner = EmpCompiler.loadClass(compiledPlan.getPlan().getName(), party, 54321);
 					runner.runProgram();
