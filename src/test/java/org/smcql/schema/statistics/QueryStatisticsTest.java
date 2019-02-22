@@ -94,8 +94,47 @@ public class QueryStatisticsTest  extends BaseTest {
 		assertEquals(expectedStats, schema.getSecureField(0).getStatistics());
 		
 	}
-	
+
+	//		public void testDemographicsProjection() throws Exception {
+//			String query = "SELECT patient_id,gender,birth_year FROM demographics";
+//			SecureRelRecordType schema = testQuery("demographics-scan", query);
+//
+//			List<ObliviousFieldStatistics> observedStats = new ArrayList<ObliviousFieldStatistics>();
+//			ObliviousFieldStatistics patientIdStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics", "patient_id");
+//
+//			ObliviousFieldStatistics genderStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics","gender");
+//			// make it oblivious, getExpected only works for public attrs
+//			genderStats.setDistinctCardinality(3);
+//			genderStats.setMaxMultiplicity(-1);
+//			genderStats.setMin(1);
+//			genderStats.setMax(3);
+//			List<Long> genderDomain = ObliviousFieldStatistics.generateDomain(1L,  3L);
+//			genderStats.setDomain(genderDomain);
+//
+//			ObliviousFieldStatistics birthYearStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics", "birth_year");
+//			birthYearStats.setDomain(null);
+//			birthYearStats.setDistinctCardinality(72);
+//			birthYearStats.setMaxMultiplicity(-1);
+//			birthYearStats.setMin(1924);
+//			birthYearStats.setMax(1995);
+//
+//			logSchemaStats(schema);
+//
+//			for(SecureRelDataTypeField f : schema.getSecureFieldList()) {
+//				observedStats.add(f.getStatistics());
+//
+//			}
+//
+//			assertEquals(6, schema.getCardinalityBound());
+//			assertEquals(patientIdStats, observedStats.get(0));
+//			assertEquals(genderStats, observedStats.get(1));
+//			assertEquals(birthYearStats, observedStats.get(2));
+//
+//
+//		}
+
 	public void testSimpleJoin() throws Exception {
+
 		String query = "SELECT * FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id";
 		SecureRelRecordType schema = testQuery("simple-join", query);
 		logSchemaStats(schema);
