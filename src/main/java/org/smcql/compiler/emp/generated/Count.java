@@ -20,6 +20,7 @@ import java.io.IOException;
 
 
 import org.smcql.compiler.emp.EmpProgram;
+import org.smcql.compiler.emp.EmpParty;
 
 
 @Platform(include={"Count.h"}, 
@@ -34,8 +35,8 @@ public class Count  extends EmpProgram  {
 
 
 	
-	public Count(int aParty, int aPort) {
-		super(aParty, aPort);
+	public Count(EmpParty aParty) {
+		super(aParty);
 	}
 
 	public static class CountClass extends Pointer {
@@ -93,26 +94,15 @@ public class Count  extends EmpProgram  {
     		return "I am a Count!";
     	}
 	   
-	   public EmpProgram upcast() {
-	   
-	   		 Class<?> cl = super.getClass();
-	   	     
-	   	     System.out.println("Parent class: " + cl);
-	   	     Object upcast = cl.cast(this);
-	   	     System.out.println("Upcast has type " + upcast.getClass());
-		     EmpProgram upcast2 = (EmpProgram) this;
-		     System.out.println("Emp upcast has type " + upcast2.getClass());
-	   	     return  upcast2;
-	   	}
 	   	
         @Override
-        public  void runProgram() {
+        public  boolean[] runProgram() {
         	System.out.println("Running Count");
         	CountClass theQuery = new CountClass();
         	
-	        theQuery.run(party, port);
+	        theQuery.run(party.asInt(), party.getPort());
 
-		System.out.println("Done running emp!");	        
+		    System.out.println("Done running emp!");	        
 	        BoolPointer outputPtr = theQuery.getOutput();
 	        ByteBuffer buf = outputPtr.asByteBuffer();
 	        
@@ -122,25 +112,19 @@ public class Count  extends EmpProgram  {
 	        
 	        theQuery.close();
 	        
-	        queryOutput = byteArray2BitArray(bytes);
+	       return byteArray2BitArray(bytes);
 	        
         }
         
-        public boolean[] getOutput() {
-        
-			return queryOutput;
-	        
-	     
-        }
-
 	// for testing
 	public static void main(String[] args) {
         // Pointer objects allocated in Java get deallocated once they become unreachable,
         // but C++ destructors can still be called in a timely fashion with Pointer.deallocate()
            int party = Integer.parseInt(args[0]);
 	       int port = Integer.parseInt(args[1]);
-
-	Count qc = new Count(party, port);
+		
+		EmpParty theParty =  new EmpParty(party, port);
+	Count qc = new Count(theParty);
 	qc.runProgram();
 	
 	        

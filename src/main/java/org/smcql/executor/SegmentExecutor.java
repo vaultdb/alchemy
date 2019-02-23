@@ -288,8 +288,9 @@ public class SegmentExecutor {
 		 	String aWorker = ConnectionManager.getInstance().getAlice();
 		 	String bWorker = ConnectionManager.getInstance().getBob();
 		 	
-			EmpParty alice = new EmpParty(1);
-			EmpParty bob = new EmpParty(2);
+		 	int empPort = Utilities.getEmpPort();
+			EmpParty alice = new EmpParty(1, empPort);
+			EmpParty bob = new EmpParty(2, empPort);
 		 	
 			EmpCompiler aliceCompiler = new EmpCompiler(className, alice);
 			EmpCompiler bobCompiler = new EmpCompiler(className, bob);
@@ -337,7 +338,8 @@ public class SegmentExecutor {
 					// then we won't have this dynamic namespace collision
 					
 					// alice and bob both need to compile, even in local case
-					EmpParty partyObj = new EmpParty(party);
+					int port = Integer.parseInt(System.getProperty("emp-port"));
+					EmpParty partyObj = new EmpParty(party, port);
 					EmpCompiler compiler = new EmpCompiler(className, partyObj);
 					compiler.writeEmpCode(System.getProperty("empCode"));	
 					compiler.writeJniWrapper(System.getProperty("jniCode"));
@@ -351,11 +353,10 @@ public class SegmentExecutor {
 					
 			 
 					
-					program.runProgram();
+					boolean[] smcOutput = program.runProgram();
 					System.out.println("Completed query run on party " + party);
 
 					
-					boolean[] smcOutput = program.getOutput(); 
 				
 					return smcOutput;
 				}

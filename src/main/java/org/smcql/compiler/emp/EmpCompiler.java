@@ -86,11 +86,10 @@ public class EmpCompiler {
 		wrapperFile = wrapperFile.replace(javaCppWorkingDirectory + "/", "");
 		
 		
-		
-		
+		String classPath = System.getProperty("java.class.path");
 		String command = "java -jar " + javaCppJar + " " + 
 				wrapperFile + " -propertyfile " + propertyFile +
-				" -nodelete";
+				" -nodelete -classpath " + classPath;
 		logger.log(Level.INFO, "Compiler command: " + command);
 		
 		CommandOutput out = Utilities.runCmd(command, javaCppWorkingDirectory);

@@ -156,11 +156,15 @@ public class DynamicCompiler
     	//ByteArrayClassLoader loader = new ByteArrayClassLoader(runnableClassname, byteCode, Thread.currentThread().getContextClassLoader());  	
     	Class<?> cl =  loader.loadClass(runnableClassname);  //loader.findClass(runnableClassname);
     	Constructor<?> ctor = cl.getConstructors()[0];
-		Object empObj = ctor.newInstance(party.asInt(), party.getPort());
-		
-		//Method upcastMethod = empObj.getClass().getMethod("upcast");
-		//Object output = upcastMethod.invoke(empObj);
-		return (EmpProgram) empObj;
+		Object empObj = ctor.newInstance(party);
+		EmpProgram theProgram;
+		try {
+			theProgram = (EmpProgram) empObj;
+		} catch(Exception e) {// sometimes upcasting is failing in nanocloud, encapsulate the obj in EmpProgram when that happens
+			theProgram = new EmpProgram(party);
+			theProgram.setSubclass(empObj);
+		}
+		return theProgram;
 	
 		/*
 		Class<?> empParent = empObj.getClass().getSuperclass();

@@ -194,7 +194,7 @@ public class QueryCompiler {
   // returns filename
   public String writeOutEmpFile() throws Exception {
 	 
-	EmpCompiler compiler = new EmpCompiler(queryId, new EmpParty(0));
+	EmpCompiler compiler = new EmpCompiler(queryId, new EmpParty());
 	compiler.writeEmpCode(getEmpCode());
 	return compiler.getEmpFilename();
 	
@@ -203,8 +203,8 @@ public class QueryCompiler {
 
   // TODO: clean this up -- party and party code are redundant
   public String writeOutEmpFile(int party) throws Exception {
-
-	 EmpParty theParty = new EmpParty(party);
+	  int port = Utilities.getEmpPort();
+	 EmpParty theParty = new EmpParty(party, port);
 	EmpCompiler compiler = new EmpCompiler(queryId, theParty);
 	compiler.writeEmpCode(generateEmpCode(theParty));
 	return compiler.getEmpFilename();
@@ -257,7 +257,7 @@ public class QueryCompiler {
 	writeOutEmpFile();
     
     // abstract implementation for testing compilation toolchain
-	EmpParty empParty = new EmpParty(0);
+	EmpParty empParty = new EmpParty();
     EmpCompiler compiler = new EmpCompiler(queryId, empParty);     
     return  compiler.compile();
      

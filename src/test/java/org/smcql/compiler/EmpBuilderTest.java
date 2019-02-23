@@ -20,7 +20,7 @@ public class EmpBuilderTest extends BaseTest {
 	
 	public void testCount() throws Exception {
 		
-		EmpParty theParty = new EmpParty(0);
+		EmpParty theParty = new EmpParty();
 		EmpCompiler compiler = new EmpCompiler("Count", theParty);
 		int exitCode = compiler.compile();
 		assertEquals(0, exitCode); //  it built successfully

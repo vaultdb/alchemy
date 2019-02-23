@@ -1,6 +1,5 @@
 package org.smcql.compiler.emp;
 
-import org.smcql.config.SystemConfiguration;
 
 // simple party definition
 public class EmpParty {
@@ -8,14 +7,12 @@ public class EmpParty {
 	int party = 0; // agnostic, not alice or bob
 	int port = 54321;
 	
-	public EmpParty(int party) throws Exception {
-		this.party = party;
-		getEmpPort();
-		
-		
+	public EmpParty(int party, int port) {
+		this.party = party;		
+		this.port = port;
 	}
 	
-	public EmpParty(String partyStr) throws Exception {
+	public EmpParty(String partyStr, int port)  {
 
 		if(partyStr.equalsIgnoreCase("Alice")) {
 			party = 1;
@@ -23,22 +20,16 @@ public class EmpParty {
 		if(partyStr.equalsIgnoreCase("Bob")) {
 			party = 2;
 		}
+		this.port = port;
 	
-		getEmpPort();
+		
 	}
 	
 	
-	private void getEmpPort() throws Exception {
-		// try local source
-				String empPort = SystemConfiguration.getInstance().getProperty("emp-port");
-				if(empPort != null && empPort != "") {
-					port = Integer.parseInt(empPort); // TODO: check if it is numeric
-				}
-				else {
-					// handle remote case
-				   port = Integer.parseInt(System.getProperty("emp-port"));
-				}
+	// for compilation tests we don't need party/port
+	public EmpParty() {
 	}
+
 	public String asString() {
 		if(party == 1) {
 			return "Alice";
@@ -56,6 +47,11 @@ public class EmpParty {
 	
 	public int getPort() {
 		return port;
+	}
+
+	public void setPort(int port2) {
+		port = port2;
+		
 	}
 
 	

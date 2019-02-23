@@ -1,28 +1,43 @@
 package org.smcql.compiler.emp;
 
+import java.lang.reflect.Method;
+
 public class EmpProgram  {
 
-	protected int party = 1;
-	protected int port = 54321;
+
+	protected EmpParty party;
+	Object subclass;
 	
-	public EmpProgram(int aParty, int aPort) {
-		configure(aParty, aPort);
+	public EmpProgram(EmpParty aParty) {
+		party = aParty;
 	}
 	
-	public void configure(int aParty, int aPort) {
+	public void configure(EmpParty aParty) {
 		party = aParty;
-		port = aPort;
 	
+	}
+	
+	public void setSubclass(Object aSubclass) {
+		subclass = aSubclass;
 	}
 	
 	// delegate to children
-    public void runProgram() {
+    public boolean[] runProgram() {
     
+    	boolean[] results = null;
+    	if(subclass != null) {
+    		try {
+    			Method runMethod = subclass.getClass().getMethod("runProgram");
+    			results = (boolean[]) runMethod.invoke(subclass);
+    			
+    		} catch (Exception e) {
+    			
+    		}
+    	}
+    	
+    	return results;
     }
     
-    public boolean[] getOutput() {
-    	return null;
-    }
     
     public String helloWorld() {
     	return "I am an EmpProgram!";

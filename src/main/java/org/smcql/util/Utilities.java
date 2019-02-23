@@ -298,4 +298,17 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 
 	}
 
+	public static int getEmpPort() throws Exception {
+		int port;
+		// try local source
+		String empPort = SystemConfiguration.getInstance().getProperty("emp-port");
+		if(empPort != null && empPort != "") {
+			port = Integer.parseInt(empPort); // TODO: check if it is numeric
+		}
+		else {
+			// handle remote case
+			port = Integer.parseInt(System.getProperty("emp-port"));
+		}
+		return port;
+	}
 }
