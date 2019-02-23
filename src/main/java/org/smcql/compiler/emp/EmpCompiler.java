@@ -168,16 +168,9 @@ public class EmpCompiler {
     		String fullyQualifiedClassname = getGeneratedClassPrefix() + "." + className;
     		
             System.out.println("Loading " + className);
-
-            String bytecodeFilename = getJniWrapperFilename();
-            
-            bytecodeFilename = bytecodeFilename.substring(0, bytecodeFilename.length()-4); //chop of "java" suffix
-            bytecodeFilename += "class"; 
-            
-            byte[] bytecode = Utilities.readBinaryFile(bytecodeFilename);
             
             // do it in DynamicCompiler to garbage collect the classloader so that running locally won't create loader collisions
-            return DynamicCompiler.loadJniClass(fullyQualifiedClassname, bytecode, party);		
+            return DynamicCompiler.loadJniClass(fullyQualifiedClassname, party);		
 			
     }
 

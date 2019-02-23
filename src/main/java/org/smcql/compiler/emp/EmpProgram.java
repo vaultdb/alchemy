@@ -8,8 +8,11 @@ public class EmpProgram  {
 	protected EmpParty party;
 	Object subclass;
 	
-	public EmpProgram(EmpParty aParty) {
-		party = aParty;
+
+	// JNI seems to only cooperate in a remote setting with primitives as inputs
+	// EmpProgram(EmpParty) fails
+	public EmpProgram(int aParty, int aPort) {
+		party = new EmpParty(aParty, aPort);
 	}
 	
 	public void configure(EmpParty aParty) {

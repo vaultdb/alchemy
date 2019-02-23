@@ -35,8 +35,8 @@ public class $queryName  extends EmpProgram  {
 
 
 	
-	public $queryName(EmpParty aParty) {
-		super(aParty);
+	public $queryName(int party, int port) {
+		super(party, port);
 	}
 
 	public static class $queryClass extends Pointer {
@@ -123,9 +123,8 @@ public class $queryName  extends EmpProgram  {
            int party = Integer.parseInt(args[0]);
 	       int port = Integer.parseInt(args[1]);
 		
-		EmpParty theParty =  new EmpParty(party, port);
-	$queryName qc = new $queryName(theParty);
-	qc.runProgram();
+		$queryName qc = new $queryName(party, port);
+		qc.runProgram();
 	
 	        
     }        

@@ -33,11 +33,10 @@ import org.smcql.compiler.emp.EmpParty;
 @Namespace("Count")
 public class Count  extends EmpProgram  {
 
-
-	
-	public Count(EmpParty aParty) {
-		super(aParty);
+	public Count(int party, int port) {
+		super(party, port);
 	}
+	
 
 	public static class CountClass extends Pointer {
 	
@@ -124,7 +123,7 @@ public class Count  extends EmpProgram  {
 	       int port = Integer.parseInt(args[1]);
 		
 		EmpParty theParty =  new EmpParty(party, port);
-	Count qc = new Count(theParty);
+	Count qc = new Count(party, port);
 	qc.runProgram();
 	
 	        
