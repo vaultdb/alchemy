@@ -1,9 +1,9 @@
 package org.smcql.executor;
 
 import org.smcql.codegen.QueryCompiler;
+import org.smcql.compiler.emp.EmpCompiler;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.smc.ExecutionSegment;
-import org.smcql.executor.smc.SecureQueryTable;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.type.SecureRelDataTypeField;
@@ -20,10 +20,9 @@ public class EmpExecutor extends MPCExecutor {
 	
 	SegmentExecutor runner = null;
 	QueryCompiler compiledPlan = null;
-	private SecureRelRecordType lastSchema;
 	private List<boolean[]> lastOutput;
 	private QueryTable plainOutput;
-	String queryId; 
+	String queryId = null; 
 	SecureRelRecordType outSchema;
 	
 	public EmpExecutor(QueryCompiler compiled, List<String> workers) throws Exception {
@@ -31,6 +30,9 @@ public class EmpExecutor extends MPCExecutor {
 		compiledPlan = compiled;
 		queryId = compiledPlan.getQueryId();
 		outSchema = compiledPlan.getPlan().getPlanRoot().getSchema();
+		
+		
+		
 	}
 
 	public EmpExecutor(QueryCompiler compiled, String aWorkerId, String bWorkerId) throws Exception {
@@ -70,8 +72,9 @@ public class EmpExecutor extends MPCExecutor {
 		
 			while(li.hasPrevious()) { 
 				ExecutionSegment segment = li.previous();
-				 lastOutput = runner.runSecure(segment, queryId);
-				 lastSchema = segment.outSchema;
+				runner.setQueryCompiler(compiledPlan);
+				lastOutput = runner.runSecure(segment, queryId);
+				outSchema = segment.outSchema;
 			}
 		}
 		catch(Exception e) {

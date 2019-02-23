@@ -1,4 +1,4 @@
-package org.smcql.codegen.smc.compiler.emp;
+package org.smcql.compiler.emp;
 
 public class EmpProgram  {
 

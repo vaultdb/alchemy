@@ -39,7 +39,7 @@ public class SqlGenerator {
 	}
 	
 	public static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect) {
-		SqlNode node = converter.visitChild(0, rel).asQuery();
+		SqlNode node = converter.visitChild(0, rel).asQueryOrValues();
 		String sqlMode = "release";
 		try {
 			sqlMode = SystemConfiguration.getInstance().getProperty("code-generator-mode");

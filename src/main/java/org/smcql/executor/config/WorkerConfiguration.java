@@ -18,7 +18,7 @@ public class WorkerConfiguration  {
 	public String dbName;
 	public String user; 
 	public String password;
-	public String empBridgePath;
+	public String smcqlRoot;
 	public int dbPort;
 	public int empPort = 0;
 
@@ -29,7 +29,7 @@ public class WorkerConfiguration  {
 	//	public int clientPort; 
 
 	public WorkerConfiguration(String worker, 
-			String h, int p, String dbName, String user, String pass, String empBridge)  // psql
+			String h, int p, String dbName, String user, String pass, String smcqlRoot)  // psql
 					throws ClassNotFoundException, SQLException {
 		workerId = worker;
 		hostname = h;
@@ -37,7 +37,8 @@ public class WorkerConfiguration  {
 		this.dbName = dbName;
 		this.user = user;
 		password = pass;
-		empBridgePath = empBridge;
+		this.smcqlRoot = smcqlRoot.replace("$SMCQL_ROOT", Utilities.getSMCQLRoot()); // replace pointer
+
 		
 	}
 
@@ -58,8 +59,8 @@ public class WorkerConfiguration  {
 		dbName = parsed[2];
 		
 		
-		empBridgePath = parsed[3];
-		empBridgePath.replace("$SMCQL_ROOT", Utilities.getSMCQLRoot()); // replace pointer
+		smcqlRoot = parsed[3];
+		smcqlRoot = smcqlRoot.replace("$SMCQL_ROOT", Utilities.getSMCQLRoot()); // replace pointer
 		empPort = Integer.parseInt(parsed[4]);
 		
 		dbId = Integer.parseInt(parsed[5]);

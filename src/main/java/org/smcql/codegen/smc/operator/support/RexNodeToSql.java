@@ -1,6 +1,8 @@
 package org.smcql.codegen.smc.operator.support;
 
 import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexPatternFieldRef;
+import org.apache.calcite.rex.RexTableInputRef;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 
@@ -19,6 +21,19 @@ public class RexNodeToSql extends RexFlattener {
 			return table + "." + attr;
 		
 		return field.getName();
+	}
+
+
+	@Override
+	public String visitTableInputRef(RexTableInputRef fieldRef) {
+		// TODO: verify this
+		return fieldRef.toString();
+	}
+
+	@Override
+	public String visitPatternFieldRef(RexPatternFieldRef fieldRef) {
+		// TODO: verify this
+		return fieldRef.toString();
 	}
 
 }

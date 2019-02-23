@@ -3,6 +3,9 @@ package org.smcql.codegen.smc.operator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
+
+import org.smcql.compiler.emp.EmpParty;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.plan.operator.Operator;
@@ -69,6 +72,40 @@ public class SecurePreamble extends SecureOperator {
 		result.put("preamble", CodeGenUtils.generateFromTemplate("util/preamble.txt", variables));
 		return result;
 	}
-	
+
+	public String generate(EmpParty party) throws Exception  {
+		Map<String, String> variables = new HashMap<String, String>();	
+
+		
+		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		SystemConfiguration config = SystemConfiguration.getInstance();
+		String aliceKey = connectionManager.getAlice();
+		WorkerConfiguration aliceConfig = connectionManager.getWorker(aliceKey);
+		String aliceHost = aliceConfig.hostname;
+
+		
+		String bobKey = connectionManager.getBob();
+		WorkerConfiguration bobConfig = connectionManager.getWorker(bobKey);
+		String bobHost = bobConfig.hostname;
+		
+		variables.put("bobHost", bobHost);
+		variables.put("aliceHost", aliceHost);
+		String queryName = planNode.getQueryId() + party.asString();
+
+		variables.put("queryName", queryName );
+		variables.put("queryClass", queryName + "Class");
+		variables.put("party", Integer.toString(party.asInt()));
+		variables.put("port", config.getProperty("emp-port"));
+		
+		
+		String alice = ConnectionManager.getInstance().getConnectionString(1);
+		String bob = ConnectionManager.getInstance().getConnectionString(2);
+		
+		variables.put("aliceConnectionString", alice);
+		variables.put("bobConnectionString", bob);
+		
+		return CodeGenUtils.generateFromTemplate("util/preamble.txt", variables);
+	}
+
 
 }

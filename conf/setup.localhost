@@ -1,7 +1,8 @@
 #configure locations
-codegen-target=src/main/java/org/smcql/codegen/smc/compiler/emp/generated
-javacpp-jar=jars/javacpp.jar
+codegen-target=src/main/java/org/smcql/compiler/emp/generated
+javacpp-jar=target/javacpp-1.4.4.jar
 data-providers=conf/connections/localhosts
+javacpp-working-directory=src/main/java
 
 
 #log information
@@ -12,6 +13,7 @@ sliced-execution=false
 slice-parallelism=2
 semijoin-execution=false
 mpc-lib=emp
+emp-port=54321
 code-generator-mode=release #set to debug to disable pushing filter up to select
 
 #privacy consumed by each operator

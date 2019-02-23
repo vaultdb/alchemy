@@ -5,6 +5,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
@@ -17,8 +18,10 @@ import org.gridkit.vicluster.ViNode;
 import org.gridkit.vicluster.ViProps;
 import org.gridkit.vicluster.telecontrol.Classpath;
 import org.gridkit.vicluster.telecontrol.ssh.RemoteNodeProps;
-import org.smcql.codegen.smc.compiler.emp.EmpCompiler;
-import org.smcql.codegen.smc.compiler.emp.EmpProgram;
+import org.smcql.codegen.QueryCompiler;
+import org.smcql.compiler.emp.EmpCompiler;
+import org.smcql.compiler.emp.EmpParty;
+import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.type.SecureRelRecordType;
@@ -43,6 +46,8 @@ public class SegmentExecutor {
 	private static SegmentExecutor instance = null;
 	String remotePath;
 	Logger logger;
+	QueryCompiler compiledPlan = null;
+	
 	
 	public static SegmentExecutor getInstance() throws Exception {
 		if(instance == null) {
@@ -86,14 +91,31 @@ public class SegmentExecutor {
 		cloud.node("**").setProp("plan.pointers", bufferPoolPointers);
 		cloud.node("**").setProp("smcql.setup.str", getSetupParameters());
 		cloud.node("**").setProp("smcql.connections.str", getConnectionParameters());
-		cloud.node("**").setProp("smcql.root", "");
+		cloud.node("**").setProp("emp-port", SystemConfiguration.getInstance().getProperty("emp-port"));
+		
 
+		
+		boolean aliceLocal = (aliceWorker.hostname == "localhost" || aliceWorker.hostname == "127.0.0.1");
+		boolean bobLocal = (bobWorker.hostname == "localhost" || bobWorker.hostname == "127.0.0.1");
+		
+		if(aliceLocal && bobLocal) {
+			cloud.node("**").setProp("localExecution", "true");
+					
+		}
+		else {
+			cloud.node("**").setProp("localExecution", "false");
+		}
+		
 		// configure Alice and Bob
 		cloud.node(aWorker).setProp("party", "gen");
 		cloud.node(aWorker).setProp("workerId", aliceWorker.workerId);
+		cloud.node(aWorker).setProp("smcql.root", aliceWorker.smcqlRoot);
+		
+		
 		   
 		cloud.node(bWorker).setProp("party", "eva");
 		cloud.node(bWorker).setProp("workerId", bobWorker.workerId);
+		cloud.node(bWorker).setProp("smcql.root", bobWorker.smcqlRoot);
 
 		cloud.node("**").touch();
 
@@ -107,6 +129,12 @@ public class SegmentExecutor {
             	
             }
         });
+		
+		logger.log(Level.INFO, "Completed initialization.");
+	}
+	
+	public void setQueryCompiler(QueryCompiler qc) {
+		compiledPlan = qc;
 	}
 	
 	public Cloud getCloud() {
@@ -125,7 +153,8 @@ public class SegmentExecutor {
 		
 		 RemoteNodeProps.at(cloudHost).setRemoteHost(host);
 		
-		cloudHost.setProp(SshSpiConf.SPI_JAR_CACHE, remotePath);
+		String workerRemotePath = remotePath + '/' + workerId;
+		cloudHost.setProp(SshSpiConf.SPI_JAR_CACHE, workerRemotePath);
 
 		if(host.equalsIgnoreCase("localhost") || host.equals("127.0.0.1") ) {
 			cloudHost.x(VX.TYPE).setLocal();
@@ -227,6 +256,8 @@ public class SegmentExecutor {
 	 
 	 public List<SecureQueryTable> runSecure(ExecutionSegment segment) {
 		 String sql = segment.sliceComplementSQL;
+		 
+		 // initialize code
 			
 		 List<SecureQueryTable> result = cloud.node("**").massExec(new Callable<SecureQueryTable>() {
 				@Override
@@ -235,13 +266,11 @@ public class SegmentExecutor {
 					String workerId = System.getProperty("workerId");
 					
 					
-					
 					segment.party = party;
 					segment.workerId = workerId;
 					segment.sliceComplementSQL = sql;
 					RunnableSegment<GCSignal> runner = new RunnableSegment<GCSignal>(segment);
 					
-					//EmpProgram runner = EmpCompiler.loadClass(className, party, port)
 				
 					Thread execThread = runner.runIt();
 					execThread.join();
@@ -256,24 +285,67 @@ public class SegmentExecutor {
 	 }
 	 
 	 
-	 public List<boolean[]> runSecure(ExecutionSegment segment, String className) {
-		 String sql = segment.sliceComplementSQL;
+	 // emp runner
+	 public List<boolean[]> runSecure(ExecutionSegment segment, String className) throws Exception {
 			
+		 	String aWorker = ConnectionManager.getInstance().getAlice();
+		 	String bWorker = ConnectionManager.getInstance().getBob();
+		 	
+			EmpParty alice = new EmpParty(1);
+			EmpParty bob = new EmpParty(2);
+		 	
+			EmpCompiler aliceCompiler = new EmpCompiler(className, alice);
+			EmpCompiler bobCompiler = new EmpCompiler(className, bob);
+			
+			
+			// configure Alice and Bob's jni wrapper for this segment
+		 	cloud.node(aWorker).setProp("jniCode", aliceCompiler.getJniWrapperCode());
+			cloud.node(aWorker).setProp("empCode", compiledPlan.generateEmpCode(alice));
+			cloud.node(aWorker).setProp("className", className + alice.asString());
+			
+			cloud.node(bWorker).setProp("jniCode", bobCompiler.getJniWrapperCode());
+			cloud.node(bWorker).setProp("empCode", compiledPlan.generateEmpCode(bob));
+			cloud.node(bWorker).setProp("className", className + bob.asString());
+  
+
+		 
 		 List<boolean[]> result = cloud.node("**").massExec(new Callable<boolean[]>() {
 				@Override
 				public boolean[] call() throws Exception {
 					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
-					String workerId = System.getProperty("workerId");
+					System.setProperty("user.dir", Utilities.getCodeGenTarget());
+					System.setProperty("org.bytedeco.javacpp.logger.debug", "true");
+					
+					System.out.println("Starting to launch emp on party " + party);
+					
+					/*if(party == 2)
+						return null;*/
+					
+					// when we skip alice and compile it then emp runs successfully
+					// same is true when we skip bob.
+					// it is only when we have both that all hell breaks loose
+					// some hidden global variable in javacpp?
+					// simple fix: create two classes, one for alice, one for bob
+					// then we won't have this dynamic namespace collision
+					
+					// alice and bob both need to compile, even in local case
+					EmpParty partyObj = new EmpParty(party);
+					EmpCompiler compiler = new EmpCompiler(className, partyObj);
+					compiler.writeEmpCode(System.getProperty("empCode"));	
+					compiler.writeJniWrapper(System.getProperty("jniCode"));
+					compiler.setGenerateWrapper(false);
+					compiler.compile();
 					
 					
+				    EmpProgram program = compiler.loadClass();
+					System.out.println("Loaded emp!");
 					
-					segment.party = party;
-					segment.workerId = workerId;
-					segment.sliceComplementSQL = sql;
-					// TODO: make port a parameter
-					EmpProgram program = EmpCompiler.loadClass(className, party, 54321);
+					
+			 
 					
 					program.runProgram();
+					System.out.println("Completed query run on party " + party);
+
 					
 					boolean[] smcOutput = program.getOutput(); 
 				

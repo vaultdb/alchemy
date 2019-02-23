@@ -4,7 +4,9 @@
 
 public:
 	void run(int party, int port) {
-    NetIO * io = new NetIO((party==ALICE ? nullptr : bobHost.c_str()), port);
+	
+	std::cout << "starting run in emp! party=" << party << " port=" << port <<  std::endl;
+	NetIO * io = new NetIO((party==ALICE ? nullptr : bobHost.c_str()), port);
     
     setup_semi_honest(io, party);
     
@@ -26,12 +28,20 @@ $functions
 
 		io->flush();
 		delete io;
+		cout << "Finished query!" << endl;
 		
 	}
 
     bool *getOutput() {
     	return output;
     }
+
+int main(int argc, char** argv) { 
+	int party, port;
+	parse_party_and_port(argv, 2, &party, &port);
+	run(party, port);
+	return 0;
+}
 }; // end class
 } // end namespace
  

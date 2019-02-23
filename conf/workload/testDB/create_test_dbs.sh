@@ -22,6 +22,9 @@ do
     dropdb $dbName
     createdb $dbName
 
+    psql $dbName -c "CREATE ROLE smcql"
+    psql $dbName -c "ALTER ROLE smcql superuser login"
+
     psql $dbName -f $path/conf/workload/testDB/test_schema.sql
     psql $dbName -c "COPY diagnoses FROM '$path/conf/workload/testDB/$i/diagnoses.csv' WITH DELIMITER ','"
     psql $dbName -c "COPY medications FROM '$path/conf/workload/testDB/$i/medications.csv' WITH DELIMITER ','"
@@ -43,8 +46,10 @@ do
     psql $dbName -c "CREATE TABLE remote_mi_cohort_diagnoses AS (SELECT * FROM remote_diagnoses WHERE icd9 like '414%')"
     psql $dbName -c "CREATE TABLE remote_mi_cohort_medications AS (SELECT * FROM remote_medications WHERE lower(medication) like '%aspirin%')"
 
+
     psql $dbName -f $path/conf/workload/testDB/setup_test_registries.sql
 done
+
 
 psql -lqt | cut -d \| -f 1 | grep -qw $dbPrefix
 res0=$?

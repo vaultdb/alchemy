@@ -40,14 +40,14 @@ public class SecureRelToSqlConverter extends ExtendedRelToSqlConverter {
 	
 	private Result addOrderBy(RelNode e) {
 		Result x = dispatch(e);
-		
+		final Builder builder = x.builder(e);
 		SqlSelect select = x.asSelect();
 		SqlNodeList list = new SqlNodeList(select.getParserPosition());
 		for (SqlIdentifier iden : getOrderAttrs(select.getParserPosition()))
 			list.add(iden);
 		select.setOrderBy(list);
 		
-		final Builder builder = new Builder(e, new ArrayList<Clause>(), select, x.qualifiedContext());
+		builder.setOrderBy(list);
 		Result res = builder.result();
 		
 		return res;

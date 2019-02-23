@@ -43,10 +43,6 @@ public class SecureRelRoot {
 		return name;
 	}
 	
-	private void addSqlGenerationNode(RelRoot node) {
-		treeRoot.addSqlGenerationNode(node.project());
-	}
-	
 	String appendOperator(Operator op, String src, String linePrefix) {
 		src += linePrefix + op + "\n";
 		linePrefix += "    ";

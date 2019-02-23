@@ -1,5 +1,6 @@
 #List the workers and their associated databases here
-#workerName=host:psqlPort,db name,path-to-emp-bridge,emp port,smcql id (must be distinct, internal use)
-testDB1=127.0.0.1:5432,smcql_testdb_site1,$SMCQL_ROOT/deps/emp/emp-bridge,54321,1
-testDB2=127.0.0.1:5432,smcql_testdb_site2,$SMCQL_ROOT/deps/emp/empbridge,54321,2
-emp=ubuntu:5432,smcql_testdb_site1,$SMCQL_ROOT/deps/emp/empbridge,54321,3
+#workerName=host:psqlPort,db name,smcql root,emp port,smcql id (must be distinct, internal use)
+#TODO use ports as described here
+testDB1=127.0.0.1:5432,smcql_testdb_site1,$SMCQL_ROOT,54321,1
+testDB2=127.0.0.1:5432,smcql_testdb_site2,$SMCQL_ROOT,54321,2
+emp=ubuntu:5432,smcql_testdb_site1,$SMCQL_ROOT,54321,3

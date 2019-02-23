@@ -125,7 +125,6 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		return stats;
 	}
 
-	// caution: this only works for one-relation queries, i.e., ones with no joins
 	protected static long runLongIntQuery(String query) throws Exception {
 		String aliceId = ConnectionManager.getInstance().getAlice();
 	
@@ -170,5 +169,6 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		logger.log(Level.INFO, "observed output: " + field.getStatistics());
 		assertEquals(expectedOutput, field.getStatistics());
 	}
+	
 
 }

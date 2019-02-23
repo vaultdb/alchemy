@@ -1,4 +1,4 @@
-package org.smcql.codegen.smc.compiler;
+package org.smcql.compiler;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,9 +25,13 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
 import org.apache.commons.lang3.StringUtils;
-import org.smcql.codegen.smc.compiler.emp.EmpProgram;
+import org.smcql.compiler.emp.EmpParty;
+import org.smcql.compiler.emp.EmpProgram;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.util.ClassPathUpdater;
 import org.smcql.util.Utilities;
+
+import org.bytedeco.javacpp.tools.*;
 
 import com.oblivm.backend.flexsc.CompEnv;
 import com.oblivm.backend.gc.GCSignal;
@@ -136,6 +140,50 @@ public class DynamicCompiler
     }
     
     @SuppressWarnings("unchecked")
+	public static EmpProgram loadJniClass(String runnableClassname, byte[] byteCode, EmpParty party) throws Exception {
+    	// TODO: try runIt() trick instead, sidestepping need for EmpProgram
+    	// "Right way": add alchemy code path to cp when we build to avoid conflicts
+    	// semi-right way, remove emp program from this project and leave it in javacpp to get rid of the probably conflict.
+    	System.out.println("loading " + runnableClassname);
+    	SystemConfiguration config = SystemConfiguration.getInstance();
+		String classPath = System.getProperty("java.class.path");
+    	String codegenTarget = Utilities.getSMCQLRoot()  + "/" + config.getProperty("codegen-target");
+		String javaCppJar = Utilities.getSMCQLRoot() + "/" + config.getProperty("javacpp-jar");
+    	
+    	classPath = javaCppJar + ":" + codegenTarget + ":" + classPath; 
+    	System.setProperty("java.class.path", classPath);
+    	System.out.println("Set class path to " + classPath);
+   
+     	File f = new File(codegenTarget);
+        URL[] urls = new URL[] { f.toURI().toURL()  };
+    	URLClassLoader loader = new URLClassLoader(urls);
+    	
+    	
+    	
+    	 //   Class<?> cl = loader.loadClass(runnableClassname);
+    	    
+    	//ByteArrayClassLoader loader = new ByteArrayClassLoader(runnableClassname, byteCode, Thread.currentThread().getContextClassLoader());  	
+    	Class<?> cl =  loader.loadClass(runnableClassname);  //loader.findClass(runnableClassname);
+    	Constructor<?> ctor = cl.getConstructors()[0];
+		Object empObj = ctor.newInstance(party.asInt(), party.getPort());
+		Class<?> empParent = empObj.getClass().getSuperclass();
+		System.out.println("Emp parent class " + empParent);
+		Object upCast =  empParent.cast(empObj);
+		if(upCast instanceof EmpProgram) {
+			return (EmpProgram) upCast;
+		}
+		else {
+			throw new Exception("Could not bind " + empObj.getClass() + " to EmpProgram!  It is an instance of " + upCast.getClass());
+			
+	    	
+		}
+		///System.out.println("empObj's parent: " + );
+		//return (EmpProgram) empObj;
+    }
+    
+
+    
+    @SuppressWarnings("unchecked")
 	public static <T> IPublicRunnable<T> loadPublicClass(String packageName, byte[] byteCode, CompEnv<T> env) throws Exception {
     		ByteArrayClassLoader loader = new ByteArrayClassLoader(packageName, byteCode, Thread.currentThread().getContextClassLoader());  	
 		Class<?> cl = loader.findClass(packageName);
@@ -179,35 +227,7 @@ public class DynamicCompiler
 
     }
     
-    public static void compileEmp(String srcFile, String packageName) throws Exception {
 
-    	List<String> code = Utilities.readFile(srcFile);
-		String smcCode = StringUtils.join(code.toArray(), "\n");
-	
-		JavaFileObject so = new InMemoryJavaFileObject(packageName, smcCode);
-        Iterable<? extends JavaFileObject> files = Arrays.asList(so);
-        //get system compiler:
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-
-        // for compilation diagnostic message processing on compilation WARNING/ERROR
-        MyDiagnosticListener c = new MyDiagnosticListener();
-        StandardJavaFileManager fileManager = compiler.getStandardFileManager(c,
-                                                                              Locale.ENGLISH,
-                                                                              null);
-        //specify classes output folder
-        Iterable options = Arrays.asList("-d", classOutputFolder, "-jar", "deps/javacpp/target/javacpp.jar");
-        @SuppressWarnings("unchecked")
-		JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager,
-                                                             c, options, null,
-                                                             files);
-        Boolean result = task.call();
-        if (result == false)
-        {
-        	throw new Exception("Compile failed!");
-        }
-
-    
-    }
     
     public static void compileJava(String[] srcFiles, String packageName, String path) throws Exception {
     	JavaFileObject[] sos = new JavaFileObject[srcFiles.length];

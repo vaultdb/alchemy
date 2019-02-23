@@ -6,9 +6,7 @@ import java.util.List;
 import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.EMPQueryExecutor;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.util.Utilities;
 
 public class EMPQueryTest extends BaseTest {
 	public void testComorbidity() throws Exception {

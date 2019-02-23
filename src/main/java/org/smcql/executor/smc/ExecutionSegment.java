@@ -22,6 +22,7 @@ public class ExecutionSegment implements Serializable {
 	public RunConfig runConf;
 	public String workerId;
 	public int party;
+	public int port;
 	
 	// for sliced merge
 	public SecureRelRecordType outSchema;
@@ -32,6 +33,9 @@ public class ExecutionSegment implements Serializable {
 	public String sliceComplementSQL = null;
 	public List<Tuple> sliceValues;
 	public List<Tuple> complementValues;
+	String className;
+	public String empCode;
+	public String jniCode;
 	
 	
 	public void checkInit() throws Exception {

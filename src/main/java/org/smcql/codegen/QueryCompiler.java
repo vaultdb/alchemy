@@ -15,11 +15,13 @@ import java.util.logging.Logger;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.io.FileUtils;
 import org.smcql.codegen.plaintext.PlainOperator;
-import org.smcql.codegen.smc.compiler.emp.EmpCompiler;
 import org.smcql.codegen.smc.operator.SecureOperator;
 import org.smcql.codegen.smc.operator.SecureOperatorFactory;
 import org.smcql.codegen.smc.operator.SecurePreamble;
 import org.smcql.codegen.smc.operator.support.UnionMethod;
+import org.smcql.compiler.emp.EmpCompiler;
+import org.smcql.compiler.emp.EmpParty;
+import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.RunConfig;
@@ -191,23 +193,31 @@ public class QueryCompiler {
 
   // returns filename
   public String writeOutEmpFile() throws Exception {
-
-    String targetFile = Utilities.getCodeGenTarget() + "/" + queryId + ".h";
-    Logger logger = SystemConfiguration.getInstance().getLogger();
-    logger.log(Level.INFO, "Writing generated code to " + targetFile);
-
-    String empCode = getEmpCode();
-    Utilities.writeFile(targetFile, empCode);
-
-    return targetFile;
+	 
+	EmpCompiler compiler = new EmpCompiler(queryId, new EmpParty(0));
+	compiler.writeEmpCode(getEmpCode());
+	return compiler.getEmpFilename();
+	
+	  
   }
+
+  // TODO: clean this up -- party and party code are redundant
+  public String writeOutEmpFile(int party) throws Exception {
+
+	 EmpParty theParty = new EmpParty(party);
+	EmpCompiler compiler = new EmpCompiler(queryId, theParty);
+	compiler.writeEmpCode(generateEmpCode(theParty));
+	return compiler.getEmpFilename();
+	
+	  
+  }
+ 
 
   public String getEmpCode() throws Exception {
     String wholeFile = new String();
 
     SecurePreamble preamble = new SecurePreamble(getRoot().getSourceOperator());
-    // preamble.setSqlStatements(sqlCode);
-
+    
     String generatedPreamble = preamble.generate().get("preamble");
     wholeFile = generatedPreamble;
 
@@ -222,10 +232,36 @@ public class QueryCompiler {
     return wholeFile;
   }
 
+  public String generateEmpCode(EmpParty party) throws Exception{
+
+	  String wholeFile = new String();
+
+	    SecurePreamble preamble = new SecurePreamble(getRoot().getSourceOperator());
+	    
+	    String generatedPreamble = preamble.generate(party);
+	    wholeFile = generatedPreamble;
+
+	    // traverse the tree bottom-up in our control flow
+	    Pair<String, String> code = empCodeGeneratorHelper((SecureStep) compiledRoot);
+	    wholeFile += code.left; // add functions
+
+	    String rootOutput = compiledRoot.getFunctionName() + "Output";
+
+	    wholeFile += generateEMPMain(code.right, rootOutput); // plug in function calls
+
+	    return wholeFile;
+
+  }
+  
   public int compileEmpCode() throws Exception {
-    writeOutEmpFile();
-    EmpCompiler compiler = new EmpCompiler(queryId);
-    return compiler.compile();
+	writeOutEmpFile();
+    
+    // abstract implementation for testing compilation toolchain
+	EmpParty empParty = new EmpParty(0);
+    EmpCompiler compiler = new EmpCompiler(queryId, empParty);     
+    return  compiler.compile();
+     
+     
   }
 
   // generate program flow by traversing the tree bottom-up

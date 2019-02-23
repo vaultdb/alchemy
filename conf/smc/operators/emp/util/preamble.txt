@@ -10,7 +10,7 @@ using namespace emp;
 using namespace std;
 using namespace pqxx;
 
-#define LENGTH_INT 64
+
 
 
 namespace $queryName {
@@ -21,7 +21,7 @@ string aliceConnectionString = "$aliceConnectionString";
 string bobConnectionString = "$bobConnectionString";
 string bobHost = "$bobHost";
 bool *output;
-
+int LENGTH_INT = 64;
 
 
 

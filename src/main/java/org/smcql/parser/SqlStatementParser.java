@@ -124,6 +124,7 @@ public class SqlStatementParser {
 	// generalization of SqlToRelTestBase
 	  public RelRoot convertSqlToRelMinFields(String sql) throws SqlParseException {
 	      assert(sql != null);
+	      System.out.println("Processing " + sql);
 	      final SqlNode sqlQuery = planner.parse(sql);
 			
 	      final RelDataTypeFactory typeFactory = planner.getTypeFactory();
@@ -131,9 +132,8 @@ public class SqlStatementParser {
 
 	      final Prepare.CatalogReader catalogReader = new CalciteCatalogReader(
 	    	        CalciteSchema.from(sharedSchema),
-	    	        false,
 	    	        CalciteSchema.from(sharedSchema).path(null),
-	    	        (JavaTypeFactory) typeFactory);
+	    	        (JavaTypeFactory) typeFactory, calciteConnection.config());
 
 	          
 	      final SqlValidator validator = new LocalValidatorImpl(config.getOperatorTable(), catalogReader, typeFactory,
@@ -146,13 +146,14 @@ public class SqlStatementParser {
 	              catalogReader,
 	              typeFactory);
 	      
-	      converter.setTrimUnusedFields(true);
 	      final SqlNode validatedQuery = validator.validate(sqlQuery);
 	      RelRoot root =
 	          converter.convertQuery(validatedQuery, false, true);
 	      assert(root != null);
-	      converter.setTrimUnusedFields(true);
-	      root = root.withRel(converter.trimUnusedFields(true, root.rel));
+	      
+	      final boolean ordered = !root.collation.getFieldCollations().isEmpty();
+	      
+	      root = root.withRel(converter.trimUnusedFields(ordered, root.rel));
 	      return root;
 	    }
 
@@ -191,9 +192,9 @@ public class SqlStatementParser {
 
 	      final Prepare.CatalogReader catalogReader = new CalciteCatalogReader(
 	    	        CalciteSchema.from(sharedSchema),
-	    	        false,
 	    	        CalciteSchema.from(sharedSchema).path(null),
-	    	        (JavaTypeFactory) typeFactory);
+	    	        (JavaTypeFactory) typeFactory, calciteConnection.config());
+;
 
 	          
 	      final SqlValidator validator = new LocalValidatorImpl(config.getOperatorTable(), catalogReader, typeFactory,
@@ -206,7 +207,6 @@ public class SqlStatementParser {
 	              catalogReader,
 	              typeFactory);
 	      
-	      converter.setTrimUnusedFields(true);
 	      
 	      final boolean ordered = !root.collation.getFieldCollations().isEmpty();
 	      return root.withRel(converter.trimUnusedFields(ordered, root.rel));

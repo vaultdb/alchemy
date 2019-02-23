@@ -32,7 +32,6 @@ import org.apache.calcite.tools.Planner;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.GeometricDistribution;
-import org.smcql.codegen.sql.DistributedRelToSqlConverter;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.schema.SecureSchemaLookup;
 import org.smcql.executor.smc.OperatorExecution;
@@ -49,7 +48,7 @@ public class Utilities {
 	
 	public static String getSMCQLRoot() {
 		String root = System.getProperty("smcql.root"); // for remote systems
-	    if(root != null) {
+	    if(root != null && root != "") {
 	    		return root;
 	    }
 	       
@@ -129,6 +128,7 @@ public class Utilities {
 		}
 
 		public static byte[] readBinaryFile(String filename) throws IOException {
+			  System.out.println("reading in bytecode for " + filename);
 		 	  Path p = FileSystems.getDefault().getPath("", filename);
 		 	  return Files.readAllBytes(p);	 
 		}
@@ -290,28 +290,12 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		return (int) (positiveSide - negativeSide + lpMean);
 	}
 	
-	// **** Caution, this only works for single-relation queries, i.e., no joins!
-	public static String getDistributedQuery(String aQuery) throws Exception {
-		SqlStatementParser parser = new SqlStatementParser();
-	    Planner planner = parser.getPlanner();
-	    SqlNode parse = planner.parse(aQuery);
-	    SqlNode validate = planner.validate(parse);
-	    RelNode rel = planner.rel(validate).project();
-	    
-
-		SqlDialect dialect = SqlDialect.DatabaseProduct.POSTGRESQL.getDialect();
-		
-		DistributedRelToSqlConverter converter = new DistributedRelToSqlConverter(dialect);
-		
-		SqlNode node = converter.visitChild(0, rel).asQuery();
-		String sqlOut = node.toSqlString(dialect).getSql();
-		
-		sqlOut = sqlOut.replace("\"", "");
-		return sqlOut;	
-
-		
+	
+	public static String getDistributedQuery(String query) throws Exception {
+		SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
+		String tableName = outSchema.getAttributes().get(0).getStoredTable();
+		return query.replaceFirst(tableName, "((SELECT * FROM remote_" + tableName +"_A) UNION ALL (SELECT * FROM remote_" + tableName + "_B)) remote_" + tableName);
 
 	}
-	
 
 }

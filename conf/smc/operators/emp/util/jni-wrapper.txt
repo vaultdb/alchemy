@@ -1,4 +1,5 @@
-package org.smcql.codegen.smc.compiler.emp.generated;
+package org.smcql.compiler.emp.generated;
+
 
 import java.nio.ByteBuffer;
 
@@ -9,14 +10,22 @@ import org.bytedeco.javacpp.annotation.ByPtr;
 import org.bytedeco.javacpp.annotation.Namespace;
 import org.bytedeco.javacpp.annotation.Platform;
 
+import java.util.Properties;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
 
-import org.smcql.codegen.smc.compiler.emp.EmpProgram;
+
+
+
+import org.smcql.compiler.emp.EmpProgram;
 
 
 @Platform(include={"$queryName.h"}, 
-			includepath= "/usr/local/include", 
-			linkpath="/usr/local/lib", 
-			link={"emp-tool","pqxx"},
+			//includepath= "/usr/local/include", 
+			//linkpath="/usr/local/lib", 
+			//link={"emp-tool","pqxx"},
 			compiler = "cpp11")
 
 
@@ -33,7 +42,42 @@ public class $queryName  extends EmpProgram  {
 	}
 
 	public static class $queryClass extends Pointer {
-        static { Loader.load(); }
+	
+        static {
+           // System.setProperty("java.class.path", "../jars/javacpp.jar:/Users/jennie/projects/alchemy/code/bin");
+        
+		Properties props = System.getProperties();
+		props.remove("empCode");
+		props.remove("jniCode");
+		props.remove("smcql.setup.str");
+		props.remove("smcql.connections.str");
+		
+            System.out.println("Loader environment: " + props); 
+         
+			Loader.load(); 
+			/*         Loader.
+        FileInputStream fis = null;
+        Properties properties = new Properties();
+         try {
+          
+          String propertyFilename = "$propertyFile";
+          File propertyFile = new File(propertyFilename);
+          fis = new FileInputStream(propertyFile);
+         }
+         catch (IOException e) {
+	         System.out.println("Could not load property file,  $propertyFile, exiting...");
+	         System.exit(-1);
+         }
+	      try {
+             properties.load(new InputStreamReader(fis));
+           } catch (Exception e) {
+              properties.load(fis);
+          }
+        fis.close();
+        Loader.load($queryClass.class, properties, false); 
+			 */
+	       } 
+       
         public $queryClass() { 	
         	allocate(); 
         	}
@@ -45,31 +89,49 @@ public class $queryName  extends EmpProgram  {
         
 	}
 	
-	   $queryNameClass theQuery;
+	   boolean[] queryOutput = null;
 	   
 	   
         @Override
         public  void runProgram() {
-        	theQuery = new $queryClass();
+        	System.out.println("Running $queryName");
+        	$queryClass theQuery = new $queryClass();
+        	
 	        theQuery.run(party, port);
-	        
-        }
-        
-        public boolean[] getOutput() {
-        
-            BoolPointer outputPtr = theQuery.getOutput();
+
+		System.out.println("Done running emp!");	        
+	        BoolPointer outputPtr = theQuery.getOutput();
 	        ByteBuffer buf = outputPtr.asByteBuffer();
 	        
 	        // copy bytes out of buffer
 	        byte[] bytes = new byte[buf.capacity()];    
 	        buf.get(bytes, 0, bytes.length);
+	        
 	        theQuery.close();
 	        
-	        return byteArray2BitArray(bytes);
+	        queryOutput = byteArray2BitArray(bytes);
+	        
+        }
+        
+        public boolean[] getOutput() {
+        
+			return queryOutput;
+	        
 	     
         }
 
-        
+	// for testing
+	public static void main(String[] args) {
+        // Pointer objects allocated in Java get deallocated once they become unreachable,
+        // but C++ destructors can still be called in a timely fashion with Pointer.deallocate()
+           int party = Integer.parseInt(args[0]);
+	       int port = Integer.parseInt(args[1]);
+
+	$queryName qc = new $queryName(party, port);
+	qc.runProgram();
+	
+	        
+    }        
 	
     	
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.smcql.codegen.smc.compiler.DynamicCompiler;
+import org.smcql.compiler.DynamicCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;

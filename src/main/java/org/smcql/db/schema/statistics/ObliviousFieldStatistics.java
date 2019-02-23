@@ -1,15 +1,18 @@
 package org.smcql.db.schema.statistics;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;
 import org.smcql.db.data.field.IntField;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
+import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
@@ -316,7 +319,9 @@ public class ObliviousFieldStatistics {
 		// this will work once we stand everything up, but until then...
 		
 		SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
-		String distributedQuery = Utilities.getDistributedQuery(query);
+		String tableName = outSchema.getAttributes().get(0).getStoredTable();
+		String distributedQuery = query.replaceFirst(tableName, "((SELECT * FROM remote_" + tableName +"_A) UNION ALL (SELECT * FROM remote_" + tableName + "_B)) remote_" + tableName);
+
 		
 		return SqlQueryExecutor.query(distributedQuery, outSchema, aliceId);
 		
