@@ -124,7 +124,7 @@ public class SqlStatementParser {
 	// generalization of SqlToRelTestBase
 	  public RelRoot convertSqlToRelMinFields(String sql) throws SqlParseException {
 	      assert(sql != null);
-	      System.out.println("Processing " + sql);
+
 	      final SqlNode sqlQuery = planner.parse(sql);
 			
 	      final RelDataTypeFactory typeFactory = planner.getTypeFactory();

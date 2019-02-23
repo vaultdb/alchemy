@@ -156,7 +156,6 @@ public class DynamicCompiler
     	//ByteArrayClassLoader loader = new ByteArrayClassLoader(runnableClassname, byteCode, Thread.currentThread().getContextClassLoader());  	
     	Class<?> cl =  loader.loadClass(runnableClassname);  //loader.findClass(runnableClassname);
     	Constructor<?>[] constructors = cl.getConstructors();
-    	System.out.println("Have constructors: " + constructors);
     	Constructor<?> ctor = constructors[0];
 		Object empObj = ctor.newInstance(party.asInt(), party.getPort());
 		EmpProgram theProgram;

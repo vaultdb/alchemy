@@ -66,7 +66,8 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 		if(rhsChild != null) 
 			rhsChild.parent = this;
 		
-		try {
+		/* this will always fail in emp land
+		 * try {
 			byteCode = Utilities.readGeneratedClassFile(packageName);
 			
 			for (ProcessingStep p : processingSteps) {
@@ -75,7 +76,7 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 			}
 		} catch(Exception e) {
 			// do nothing
-		}
+		}*/
 		
 	}
 	

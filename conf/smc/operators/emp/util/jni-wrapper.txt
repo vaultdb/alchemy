@@ -42,38 +42,9 @@ public class $queryName  extends EmpProgram  {
 	public static class $queryClass extends Pointer {
 	
         static {
-           // System.setProperty("java.class.path", "../jars/javacpp.jar:/Users/jennie/projects/alchemy/code/bin");
         
-		Properties props = System.getProperties();
-		props.remove("empCode");
-		props.remove("jniCode");
-		props.remove("smcql.setup.str");
-		props.remove("smcql.connections.str");
-		
-            System.out.println("Loader environment: " + props); 
          
 			Loader.load(); 
-			/*         Loader.
-        FileInputStream fis = null;
-        Properties properties = new Properties();
-         try {
-          
-          String propertyFilename = "$propertyFile";
-          File propertyFile = new File(propertyFilename);
-          fis = new FileInputStream(propertyFile);
-         }
-         catch (IOException e) {
-	         System.out.println("Could not load property file,  $propertyFile, exiting...");
-	         System.exit(-1);
-         }
-	      try {
-             properties.load(new InputStreamReader(fis));
-           } catch (Exception e) {
-              properties.load(fis);
-          }
-        fis.close();
-        Loader.load($queryClass.class, properties, false); 
-			 */
 	       } 
        
         public $queryClass() { 	

@@ -1,7 +1,8 @@
 Data* $functionName(int party, NetIO * io) {
+    cout << "Running $functionName!" << endl;
     string sql = "$sql";
     std::vector<Row> in = execute_sql(sql, party);
-    int bit_length = $size; // TODO: automatically derive size from Row metadata?
+    int bit_length = $size; 
     bool *local_data = concat(in, bit_length);
 
     int alice_size = in.size();

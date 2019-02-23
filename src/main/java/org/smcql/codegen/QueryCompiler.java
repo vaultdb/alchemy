@@ -279,10 +279,10 @@ public class QueryCompiler {
     }
 
     for (ExecutionStep child : step.getChildren()) {
-      Pair<String, String> childCode = empCodeGeneratorHelper((SecureStep) child);
-      functions += childCode.left;
-      calls += childCode.right;
-    }
+        Pair<String, String> childCode = empCodeGeneratorHelper((SecureStep) child);
+        functions += childCode.left;
+        calls += childCode.right;
+      }
 
     functions += myCode;
     calls += myCall;
@@ -314,6 +314,7 @@ public class QueryCompiler {
   private String generateEMPMain(String functions, String rootOutput) throws IOException {
 
     Map<String, String> variables = new HashMap<String, String>();
+    
     variables.put("functions", functions);
     variables.put("rootOutput", rootOutput);
     String generatedCode = CodeGenUtils.generateFromTemplate("util/main.txt", variables);

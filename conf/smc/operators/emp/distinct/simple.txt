@@ -1,6 +1,7 @@
 Data * $functionName(Data *data) {
 	$sortInput
 	
+	cout << " Running $fuctionName" << endl;
 	int tupleLen = data->data[0].size() * sizeof(Bit);
 	
     for (int i=0; i< data->public_size - 1; i++) {

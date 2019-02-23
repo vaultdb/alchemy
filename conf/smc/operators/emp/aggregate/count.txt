@@ -1,4 +1,6 @@
 Data * $functionName(Data *data) {
+
+	cout << "Running $functionName " << endl;
 	data->public_size = 1;
 	data->data = new Integer[1];
 	data->data[0] = data->real_size;

@@ -322,20 +322,13 @@ public class SegmentExecutor {
 					String javaCppWorkingDirectory = Utilities.getSMCQLRoot() + "/" + config.getProperty("javacpp-working-directory");
 
 					System.setProperty("user.dir", javaCppWorkingDirectory);
-					System.out.println("Setting up user.dir as " + javaCppWorkingDirectory);
-					System.setProperty("org.bytedeco.javacpp.logger.debug", "true");
+					//System.setProperty("org.bytedeco.javacpp.logger.debug", "true");
 					
 					System.out.println("Starting to launch emp on party " + party);
 					
 					/*if(party == 2)
 						return null;*/
 					
-					// when we skip alice and compile it then emp runs successfully
-					// same is true when we skip bob.
-					// it is only when we have both that all hell breaks loose
-					// some hidden global variable in javacpp?
-					// simple fix: create two classes, one for alice, one for bob
-					// then we won't have this dynamic namespace collision
 					
 					// alice and bob both need to compile, even in local case
 					int port = Integer.parseInt(System.getProperty("emp-port"));

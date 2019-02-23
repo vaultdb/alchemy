@@ -86,11 +86,15 @@ public class EmpCompiler {
 		wrapperFile = wrapperFile.replace(javaCppWorkingDirectory + "/", "");
 		
 		
-		String classPath = System.getProperty("java.class.path");
+		//String classPath = System.getProperty("java.class.path");
+		
 		String command = "java -jar " + javaCppJar + " " + 
 				wrapperFile + " -propertyfile " + propertyFile +
-				" -nodelete -classpath " + classPath;
+				" -nodelete"; // -classpath " + classPath;
+		
 		logger.log(Level.INFO, "Compiler command: " + command);
+		
+		System.out.println("Compiler command: " + command);
 		
 		CommandOutput out = Utilities.runCmd(command, javaCppWorkingDirectory);
 		
@@ -131,8 +135,6 @@ public class EmpCompiler {
 	
 	public void writeJniWrapper(String jniWrapperCode) throws Exception {
 		String jniFilename = getJniWrapperFilename();
-		System.out.println("Writing wrapper to " + jniFilename);
-		System.out.println("Working directory: " + System.getProperty("user.dir"));
 		Utilities.writeFile(jniFilename, jniWrapperCode);
 	}
 	
@@ -167,9 +169,8 @@ public class EmpCompiler {
     		
     		String fullyQualifiedClassname = getGeneratedClassPrefix() + "." + className;
     		
-            System.out.println("Loading " + className);
             
-            // do it in DynamicCompiler to garbage collect the classloader so that running locally won't create loader collisions
+            // do it in DynamicCompiler to garbage collect the classloader so that running locally won't create loader collisions in javacpp
             return DynamicCompiler.loadJniClass(fullyQualifiedClassname, party);		
 			
     }

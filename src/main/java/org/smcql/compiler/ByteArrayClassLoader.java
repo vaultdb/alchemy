@@ -21,8 +21,6 @@ public class ByteArrayClassLoader extends ClassLoader {
 
 
 	public Class findClass(String fullyQualifiedClassName) {
-    	System.out.println("**************Finding class on " + fullyQualifiedClassName);		
-    	System.out.println("***Java lib path: " + System.getProperty("java.library.path"));
     	
     	int prefixEnd =  fullyQualifiedClassName.lastIndexOf('.');
 	    this.className = fullyQualifiedClassName.substring(prefixEnd+1, fullyQualifiedClassName.length());
@@ -44,8 +42,6 @@ public class ByteArrayClassLoader extends ClassLoader {
 
 public Class findEmpClass(String fullyQualifiedClassName) {
     	
-		System.out.println("**************Finding class on " + fullyQualifiedClassName);		
-		System.out.println("***Java lib path: " + System.getProperty("java.library.path"));
 	
 		int prefixEnd =  fullyQualifiedClassName.lastIndexOf('.');
 	    this.className = fullyQualifiedClassName.substring(prefixEnd+1, fullyQualifiedClassName.length());
