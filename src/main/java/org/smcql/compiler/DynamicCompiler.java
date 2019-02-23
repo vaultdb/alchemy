@@ -141,44 +141,46 @@ public class DynamicCompiler
     
     @SuppressWarnings("unchecked")
 	public static EmpProgram loadJniClass(String runnableClassname, byte[] byteCode, EmpParty party) throws Exception {
-    	// TODO: try runIt() trick instead, sidestepping need for EmpProgram
-    	// "Right way": add alchemy code path to cp when we build to avoid conflicts
-    	// semi-right way, remove emp program from this project and leave it in javacpp to get rid of the probably conflict.
     	System.out.println("loading " + runnableClassname);
     	SystemConfiguration config = SystemConfiguration.getInstance();
-		String classPath = System.getProperty("java.class.path");
-    	String codegenTarget = Utilities.getSMCQLRoot()  + "/" + config.getProperty("codegen-target");
-		String javaCppJar = Utilities.getSMCQLRoot() + "/" + config.getProperty("javacpp-jar");
     	
-    	classPath = javaCppJar + ":" + codegenTarget + ":" + classPath; 
-    	System.setProperty("java.class.path", classPath);
-    	System.out.println("Set class path to " + classPath);
-   
-     	File f = new File(codegenTarget);
+    	String loaderPath = Utilities.getSMCQLRoot() + "/" + config.getProperty("javacpp-working-directory"); 
+    	System.out.println("Loader path: " + loaderPath);
+    	File f = new File(loaderPath);
         URL[] urls = new URL[] { f.toURI().toURL()  };
     	URLClassLoader loader = new URLClassLoader(urls);
     	
     	
     	
     	 //   Class<?> cl = loader.loadClass(runnableClassname);
-    	    
     	//ByteArrayClassLoader loader = new ByteArrayClassLoader(runnableClassname, byteCode, Thread.currentThread().getContextClassLoader());  	
     	Class<?> cl =  loader.loadClass(runnableClassname);  //loader.findClass(runnableClassname);
     	Constructor<?> ctor = cl.getConstructors()[0];
 		Object empObj = ctor.newInstance(party.asInt(), party.getPort());
+		
+		//Method upcastMethod = empObj.getClass().getMethod("upcast");
+		//Object output = upcastMethod.invoke(empObj);
+		return (EmpProgram) empObj;
+	
+		/*
 		Class<?> empParent = empObj.getClass().getSuperclass();
-		System.out.println("Emp parent class " + empParent);
-		Object upCast =  empParent.cast(empObj);
-		if(upCast instanceof EmpProgram) {
+		System.out.println("Emp parent class  is " + empParent);
+		EmpProgram upCast =  (EmpProgram) empParent.cast(empObj);
+		loader.close();
+
+		EmpProgram example = new EmpProgram(1, 544321);
+		System.out.println("Example is instanceof " + example.getClass());
+		return (EmpProgram) upCast;
+		
+	/*	if(upCast instanceof EmpProgram) {
 			return (EmpProgram) upCast;
 		}
 		else {
 			throw new Exception("Could not bind " + empObj.getClass() + " to EmpProgram!  It is an instance of " + upCast.getClass());
 			
 	    	
-		}
-		///System.out.println("empObj's parent: " + );
-		//return (EmpProgram) empObj;
+		}*/
+		
     }
     
 

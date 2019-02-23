@@ -24,6 +24,9 @@ public class EmpProgram  {
     	return null;
     }
     
+    public String helloWorld() {
+    	return "I am an EmpProgram!";
+    }
 	// Source: http://www.java2s.com/Code/Android/Date-Type/ConvertabytearraytoabooleanarrayBit0isrepresentedwithfalseBit1isrepresentedwith1.htm
 	public static boolean[] byteArray2BitArray(byte[] bytes) {
 	    boolean[] bits = new boolean[bytes.length * 8];

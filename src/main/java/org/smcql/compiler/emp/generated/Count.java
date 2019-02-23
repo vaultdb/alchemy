@@ -22,23 +22,23 @@ import java.io.IOException;
 import org.smcql.compiler.emp.EmpProgram;
 
 
-@Platform(include={"$queryName.h"}, 
+@Platform(include={"Count.h"}, 
 			compiler = "cpp11")
 
 
 
 
 
-@Namespace("$queryName")
-public class $queryName  extends EmpProgram  {
+@Namespace("Count")
+public class Count  extends EmpProgram  {
 
 
 	
-	public $queryName(int aParty, int aPort) {
+	public Count(int aParty, int aPort) {
 		super(aParty, aPort);
 	}
 
-	public static class $queryClass extends Pointer {
+	public static class CountClass extends Pointer {
 	
         static {
            // System.setProperty("java.class.path", "../jars/javacpp.jar:/Users/jennie/projects/alchemy/code/bin");
@@ -57,12 +57,12 @@ public class $queryName  extends EmpProgram  {
         Properties properties = new Properties();
          try {
           
-          String propertyFilename = "$propertyFile";
+          String propertyFilename = "/Users/jennie/projects/alchemy/code/src/main/resources/org/bytedeco/javacpp/properties/macosx-x86_64-emp.properties";
           File propertyFile = new File(propertyFilename);
           fis = new FileInputStream(propertyFile);
          }
          catch (IOException e) {
-	         System.out.println("Could not load property file,  $propertyFile, exiting...");
+	         System.out.println("Could not load property file,  /Users/jennie/projects/alchemy/code/src/main/resources/org/bytedeco/javacpp/properties/macosx-x86_64-emp.properties, exiting...");
 	         System.exit(-1);
          }
 	      try {
@@ -71,11 +71,11 @@ public class $queryName  extends EmpProgram  {
               properties.load(fis);
           }
         fis.close();
-        Loader.load($queryClass.class, properties, false); 
+        Loader.load(CountClass.class, properties, false); 
 			 */
 	       } 
        
-        public $queryClass() { 	
+        public CountClass() { 	
         	allocate(); 
         	}
         private native void allocate();
@@ -90,7 +90,7 @@ public class $queryName  extends EmpProgram  {
 	   
 	   @Override
 	   public String helloWorld() {
-    		return "I am a $queryName!";
+    		return "I am a Count!";
     	}
 	   
 	   public EmpProgram upcast() {
@@ -107,8 +107,8 @@ public class $queryName  extends EmpProgram  {
 	   	
         @Override
         public  void runProgram() {
-        	System.out.println("Running $queryName");
-        	$queryClass theQuery = new $queryClass();
+        	System.out.println("Running Count");
+        	CountClass theQuery = new CountClass();
         	
 	        theQuery.run(party, port);
 
@@ -140,7 +140,7 @@ public class $queryName  extends EmpProgram  {
            int party = Integer.parseInt(args[0]);
 	       int port = Integer.parseInt(args[1]);
 
-	$queryName qc = new $queryName(party, port);
+	Count qc = new Count(party, port);
 	qc.runProgram();
 	
 	        

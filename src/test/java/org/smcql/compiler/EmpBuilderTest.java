@@ -28,7 +28,7 @@ public class EmpBuilderTest extends BaseTest {
 		//Alice
 		EmpProgram theProgram = compiler.loadClass();
 		assert(theProgram != null); // we can load it
-		
+		System.out.println("Verification: " + theProgram.helloWorld());
 		//theProgram.runProgram();
 		//boolean[] aliceOut = theProgram.getOutput();
 		
