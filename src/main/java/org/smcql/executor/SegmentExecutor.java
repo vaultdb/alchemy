@@ -4,6 +4,8 @@ package org.smcql.executor;
 import java.io.File;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,12 +68,14 @@ public class SegmentExecutor {
 	}
 	
 	protected SegmentExecutor(String aWorker, String bWorker) throws Exception {
-
+		SystemConfiguration config = SystemConfiguration.getInstance();
+		
 		aliceWorker = ConnectionManager.getInstance().getWorker(aWorker);
 		bobWorker = ConnectionManager.getInstance().getWorker(bWorker);
-		logger = SystemConfiguration.getInstance().getLogger();
+		logger = config.getLogger();
 		
-		remotePath = SystemConfiguration.getInstance().getProperty("remote-path");
+		
+		remotePath = config.getProperty("remote-path");
 		if(remotePath == null)
 			remotePath = "/tmp/smcql";
 		
@@ -85,14 +89,12 @@ public class SegmentExecutor {
 		initializeHost(bobWorker);
 		initializeHost(aliceWorker);
 		
-		String bufferPoolPointers = SecureBufferPool.getInstance().getPointers();
 		
 		
-		cloud.node("**").setProp("plan.pointers", bufferPoolPointers);
 		cloud.node("**").setProp("smcql.setup.str", getSetupParameters());
 		cloud.node("**").setProp("smcql.connections.str", getConnectionParameters());
-		cloud.node("**").setProp("emp-port", SystemConfiguration.getInstance().getProperty("emp-port"));
-		
+		cloud.node("**").setProp("emp-port", config.getProperty("emp-port"));
+		cloud.node("**").setProp("javacpp-working-directory", config.getProperty("javacpp-working-directory"));
 
 		
 		boolean aliceLocal = (aliceWorker.hostname == "localhost" || aliceWorker.hostname == "127.0.0.1");
@@ -119,17 +121,7 @@ public class SegmentExecutor {
 
 		cloud.node("**").touch();
 
-		cloud.node("**").massExec(new Callable<Void>() {
 
-            @Override
-            public Void call() throws Exception {
-            	String pointers = System.getProperty("plan.pointers");
-            	SecureBufferPool.getInstance().addPointers(pointers);
-            	return null;
-            	
-            }
-        });
-		
 		logger.log(Level.INFO, "Completed initialization.");
 	}
 	
@@ -168,10 +160,15 @@ public class SegmentExecutor {
 
 	private String getSetupParameters() throws Exception {
 		
-		String srcFile = SystemConfiguration.getInstance().getConfigFile();
-		List<String> params = Utilities.readFile(srcFile);
-		return StringUtils.join(params.toArray(), '\n');
 		
+		Map<String, String> propertiesMap = SystemConfiguration.getInstance().getProperties();
+		String properties = new String();
+		
+		for(Entry<String, String> param : propertiesMap.entrySet()) {
+			properties += param.getKey() + "=" + param.getValue() + "\n";
+		}
+		
+		return properties;
 	}
 	
 	private String getConnectionParameters() throws Exception {
@@ -313,7 +310,18 @@ public class SegmentExecutor {
 				@Override
 				public boolean[] call() throws Exception {
 					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
-					System.setProperty("user.dir", Utilities.getCodeGenTarget());
+					
+					// load setup
+					String setupFile = "/tmp/smcql/setup";
+					String setupProperties = System.getProperty("smcql.setup.str");
+					Utilities.writeFile(setupFile, setupProperties);
+				    System.setProperty("smcql.setup", setupFile);
+				    SystemConfiguration config = SystemConfiguration.getInstance();
+
+					String javaCppWorkingDirectory = Utilities.getSMCQLRoot() + "/" + config.getProperty("javacpp-working-directory");
+
+					System.setProperty("user.dir", javaCppWorkingDirectory);
+					System.out.println("Setting up user.dir as " + javaCppWorkingDirectory);
 					System.setProperty("org.bytedeco.javacpp.logger.debug", "true");
 					
 					System.out.println("Starting to launch emp on party " + party);

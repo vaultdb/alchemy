@@ -83,8 +83,7 @@ public class EmpCompiler {
 			generateJniWrapper(); // null for unknown or agnostic party
 		}
 
-		String wrapperPath = codegenTarget + "/";
-		wrapperFile = wrapperFile.replace(wrapperPath, "");
+		wrapperFile = wrapperFile.replace(javaCppWorkingDirectory + "/", "");
 		
 		
 		
@@ -108,8 +107,7 @@ public class EmpCompiler {
 	
 	private String getJniWrapperFilename() throws Exception {
 		
-		String absolutePathFilename =  codegenTarget + "/" + className  + ".java";
-		return absolutePathFilename.replace(javaCppWorkingDirectory + "/", "");
+		return codegenTarget + "/" + className  + ".java";
 		
 	}
 	
@@ -134,6 +132,8 @@ public class EmpCompiler {
 	
 	public void writeJniWrapper(String jniWrapperCode) throws Exception {
 		String jniFilename = getJniWrapperFilename();
+		System.out.println("Writing wrapper to " + jniFilename);
+		System.out.println("Working directory: " + System.getProperty("user.dir"));
 		Utilities.writeFile(jniFilename, jniWrapperCode);
 	}
 	
@@ -154,18 +154,19 @@ public class EmpCompiler {
 	
 	
 	// for the generated class
-	public static String getGeneratedClassPrefix() throws Exception {
-		String srcDir = SystemConfiguration.getInstance().getProperty("codegen-target");
-		if(srcDir.endsWith("/")) {
-			srcDir = srcDir.substring(0, srcDir.length()-1); // chop off trailing slash
+	public  String getGeneratedClassPrefix() throws Exception {
+		String srcDir = new String(codegenTarget);
+		srcDir = srcDir.replace(javaCppWorkingDirectory, ""); 
+		if(srcDir.charAt(0) == '/') {
+			srcDir = srcDir.substring(1);
 		}
-		srcDir = srcDir.replaceFirst("src/main/java/", "");  
 		return srcDir.replace('/', '.');
 	}
 	
     @SuppressWarnings("unchecked")
 	public EmpProgram loadClass() throws Exception {
     		
+    		String fullyQualifiedClassname = getGeneratedClassPrefix() + "." + className;
     		
             System.out.println("Loading " + className);
 
@@ -175,8 +176,9 @@ public class EmpCompiler {
             bytecodeFilename += "class"; 
             
             byte[] bytecode = Utilities.readBinaryFile(bytecodeFilename);
+            
             // do it in DynamicCompiler to garbage collect the classloader so that running locally won't create loader collisions
-            return DynamicCompiler.loadJniClass(className, bytecode, party);		
+            return DynamicCompiler.loadJniClass(fullyQualifiedClassname, bytecode, party);		
 			
     }
 

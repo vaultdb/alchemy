@@ -293,4 +293,8 @@ public class SystemConfiguration {
 	public PrivacyStatistics getPrivacyStatistics() {
 		return privacyBudget;
 	}
+
+	public Map<String, String> getProperties() {
+		return config;
+	}
 }

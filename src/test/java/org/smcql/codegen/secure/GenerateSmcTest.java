@@ -133,11 +133,12 @@ public class GenerateSmcTest extends BaseTest {
 
     // TODO: re-add these before shipping
     //assertTrue("The jni wrappers differ!", FileUtils.contentEquals(generated, expected));
-
+	*/
+    
     EmpExecutor exec = new EmpExecutor(qc, workerIds);
     exec.run();
 
-    QueryTable observedOutput = exec.getOutput(); // Johes: please work on populating this
-    assertEquals(expectedOutput, observedOutput);*/
+    QueryTable observedOutput = exec.getOutput();
+    assertEquals(expectedOutput, observedOutput);
   }
 }
