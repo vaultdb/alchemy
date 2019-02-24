@@ -172,6 +172,34 @@ public class Utilities {
 			
 			
 		}
+	
+	public static void cleanEmpCode(String className) throws Exception {
+		String delGeneratedFiles = "rm " + Utilities.getCodeGenTarget() + "/" + className + "* ";
+		runCmd(delGeneratedFiles);
+
+		
+		String osName =  System.getProperty("os.name", "").toLowerCase();
+		
+		if (osName.startsWith("mac os x") || osName.startsWith("darwin")) {
+            osName = "macosx";
+		}
+		else if(osName.startsWith("linux")){
+			osName = "linux";
+		}
+		else {
+			System.out.print("Unsupported system: " + osName + "!  Not cleaning dir...");
+			return;
+		}
+		
+		
+		String delOsCode = "rm -rf " + Utilities.getCodeGenTarget()+ "/" + osName + "*";
+		runCmd(delOsCode);
+		
+		// nuke the javacpp cache
+		String delCache = "rm -rf " + System.getProperty("user.home") + "/.javacpp/cache";
+		runCmd(delCache);
+		
+	}
 		
 	public static CommandOutput runCmd(String aCmd) throws IOException, InterruptedException {
 		

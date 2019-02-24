@@ -99,11 +99,14 @@ std::vector<Row> execute_sql(string sql, int party) {
         connection C(config);
 
         if (C.is_open()) {
+            cout << "Running " << sql << endl;
+
             cout << "Opened database successfully: " << C.dbname() << endl;
             work w(C);
             result r = w.exec(sql);
             w.commit();
-
+			cout << "Received query results!" << endl;
+			
             for (auto row : r) {
             	const int num_cols = row.size();
             	vector<int>lengths;

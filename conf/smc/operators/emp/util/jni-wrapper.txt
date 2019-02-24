@@ -89,8 +89,6 @@ public class $queryName  extends EmpProgram  {
         
 	// for testing
 	public static void main(String[] args) {
-        // Pointer objects allocated in Java get deallocated once they become unreachable,
-        // but C++ destructors can still be called in a timely fashion with Pointer.deallocate()
            int party = Integer.parseInt(args[0]);
 	       int port = Integer.parseInt(args[1]);
 		

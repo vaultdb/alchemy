@@ -306,6 +306,7 @@ public class SegmentExecutor {
 			cloud.node(bWorker).setProp("className", className + bob.asString());
   
 
+		 Utilities.cleanEmpCode(className);
 		 
 		 List<boolean[]> result = cloud.node("**").massExec(new Callable<boolean[]>() {
 				@Override
@@ -326,14 +327,13 @@ public class SegmentExecutor {
 					
 					System.out.println("Starting to launch emp on party " + party);
 					
-					/*if(party == 2)
-						return null;*/
-					
 					
 					// alice and bob both need to compile, even in local case
 					int port = Integer.parseInt(System.getProperty("emp-port"));
+					
 					EmpParty partyObj = new EmpParty(party, port);
 					EmpCompiler compiler = new EmpCompiler(className, partyObj);
+					
 					compiler.writeEmpCode(System.getProperty("empCode"));	
 					compiler.writeJniWrapper(System.getProperty("jniCode"));
 					compiler.setGenerateWrapper(false);

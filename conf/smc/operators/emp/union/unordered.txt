@@ -2,12 +2,16 @@ Data* $functionName(int party, NetIO * io) {
     cout << "Running $functionName!" << endl;
     string sql = "$sql";
     std::vector<Row> in = execute_sql(sql, party);
+    
+    cout << "Received query results" << endl;
     int bit_length = $size; 
     bool *local_data = concat(in, bit_length);
 
     int alice_size = in.size();
     int bob_size = in.size();
     Batcher alice_batcher, bob_batcher;
+
+	cout << "setting up OT!" << endl;
     
     // line up input sizes
     if (party == ALICE) {
@@ -26,7 +30,8 @@ Data* $functionName(int party, NetIO * io) {
     
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
-    
+
+	cout << "Sending Alice" << endl;    
     for (int i = 0; i < alice_size*bit_length; ++i) {
         	   // set up bit array, if alice, secret share a local bit, 
         	   // otherwise bob collects his part of the secret share and inputs 0 as a placeholder
@@ -36,12 +41,16 @@ Data* $functionName(int party, NetIO * io) {
 	alice_batcher.make_semi_honest(ALICE);
 		
 	for(int i = 0; i < alice.size*bit_length; ++i) {
-		*tmpPtr = batcher.next<Bit>();
+		*tmpPtr = alice_batcher.next<Bit>();
 		++tmpPtr;
 	}
 	
-    for (int i = 0; i < bob_size*bit_length; ++i)
+	io->sync();
+	
+	cout << "Sending bob!" << endl;
+    for (int i = 0; i < bob_size*bit_length; ++i) {
         bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
+    }
     bob_batcher.make_semi_honest(BOB);
 
 	// append all of bob's bits to tmp
@@ -63,6 +72,7 @@ Data* $functionName(int party, NetIO * io) {
     d->data = res;
     d->public_size = alice_size + bob_size;
     d->real_size = Integer(INT_SIZE, d->public_size, PUBLIC);
-        
+     
+    cout << "Done union!" << endl;   
     return d;
 }
