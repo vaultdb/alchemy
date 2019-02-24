@@ -37,7 +37,7 @@ CREATE TABLE diagnoses (
     primary_ integer NOT NULL,
     timestamp_ timestamp without time zone,
     clean_icd9 character varying,
-    major_icd9 character varying
+    major_icd9 varchar(4)
 );
 
 CREATE TABLE remote_diagnoses (

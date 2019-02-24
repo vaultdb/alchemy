@@ -76,7 +76,7 @@ public class SegmentExecutor {
 		
 		
 		remotePath = config.getProperty("remote-path");
-		if(remotePath == null)
+		//if(remotePath == null) TMP - jmd
 			remotePath = "/tmp/smcql";
 		
 
@@ -97,28 +97,15 @@ public class SegmentExecutor {
 		cloud.node("**").setProp("javacpp-working-directory", config.getProperty("javacpp-working-directory"));
 
 		
-		boolean aliceLocal = (aliceWorker.hostname == "localhost" || aliceWorker.hostname == "127.0.0.1");
-		boolean bobLocal = (bobWorker.hostname == "localhost" || bobWorker.hostname == "127.0.0.1");
-		
-		if(aliceLocal && bobLocal) {
-			cloud.node("**").setProp("localExecution", "true");
-					
-		}
-		else {
-			cloud.node("**").setProp("localExecution", "false");
-		}
-		
 		// configure Alice and Bob
 		cloud.node(aWorker).setProp("party", "gen");
 		cloud.node(aWorker).setProp("workerId", aliceWorker.workerId);
-		cloud.node(aWorker).setProp("smcql.root", aliceWorker.smcqlRoot);
 		
 		
 		   
 		cloud.node(bWorker).setProp("party", "eva");
 		cloud.node(bWorker).setProp("workerId", bobWorker.workerId);
-		cloud.node(bWorker).setProp("smcql.root", bobWorker.smcqlRoot);
-
+	
 		cloud.node("**").touch();
 
 
@@ -145,7 +132,14 @@ public class SegmentExecutor {
 		
 		 RemoteNodeProps.at(cloudHost).setRemoteHost(host);
 		
+		
 		String workerRemotePath = remotePath + '/' + workerId;
+		System.out.println("Remote path " + workerRemotePath);
+		worker.smcqlRoot = workerRemotePath;
+		
+		cloud.node(workerId).setProp("smcql.root", worker.smcqlRoot);
+		cloud.node(workerId).setProp("jar-cache-path", workerRemotePath);
+		
 		cloudHost.setProp(SshSpiConf.SPI_JAR_CACHE, workerRemotePath);
 
 		if(host.equalsIgnoreCase("localhost") || host.equals("127.0.0.1") ) {
@@ -153,9 +147,10 @@ public class SegmentExecutor {
 			ViProps.at(cloudHost).setIsolateType(); // enable debugger
 		}
 		
-		/*if(host.startsWith("codd")) {
-			 cloudHost.x(VX.PROCESS).addJvmArg("-Xms1024m").addJvmArg("-Xmx60g");
-		}*/
+		//if(host.startsWith("codd")) {
+		// give it more memory
+			 cloudHost.x(VX.PROCESS).addJvmArg("-Xms1024m").addJvmArg("-Xmx10g");
+		//}*/
 	}
 
 	private String getSetupParameters() throws Exception {
@@ -304,7 +299,7 @@ public class SegmentExecutor {
 			cloud.node(bWorker).setProp("jniCode", bobCompiler.getJniWrapperCode());
 			cloud.node(bWorker).setProp("empCode", compiledPlan.generateEmpCode(bob));
 			cloud.node(bWorker).setProp("className", className + bob.asString());
-  
+			System.out.println("Initial working dir: " + System.getProperty("user.dir"));
 
 		 Utilities.cleanEmpCode(className);
 		 
@@ -312,17 +307,23 @@ public class SegmentExecutor {
 				@Override
 				public boolean[] call() throws Exception {
 					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
+					System.out.println("Initial working dir: " + System.getProperty("user.dir"));
 					
 					// load setup
-					String setupFile = "/tmp/smcql/setup";
+					String setupFile = "/tmp/smcql/setup" + party;
 					String setupProperties = System.getProperty("smcql.setup.str");
 					Utilities.writeFile(setupFile, setupProperties);
 				    System.setProperty("smcql.setup", setupFile);
 				    SystemConfiguration config = SystemConfiguration.getInstance();
 
-					String javaCppWorkingDirectory = Utilities.getSMCQLRoot() + "/" + config.getProperty("javacpp-working-directory");
-
-					System.setProperty("user.dir", javaCppWorkingDirectory);
+				    String currentWorkingDirectory = System.getProperty("user.dir");
+					String javaCppWorkingDirectory = config.getProperty("javacpp-working-directory");
+					String newWorkingDirectory = currentWorkingDirectory + "/" + javaCppWorkingDirectory;
+					
+					if(currentWorkingDirectory.contains("jennie")) 
+						return null;
+					
+					System.setProperty("user.dir", newWorkingDirectory);
 					//System.setProperty("org.bytedeco.javacpp.logger.debug", "true");
 					
 					System.out.println("Starting to launch emp on party " + party);

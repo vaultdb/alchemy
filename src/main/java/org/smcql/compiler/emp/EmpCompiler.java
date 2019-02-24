@@ -84,7 +84,7 @@ public class EmpCompiler {
 		}
 
 		wrapperFile = wrapperFile.replace(javaCppWorkingDirectory + "/", "");
-		System.out.println("Wrapper file: " + wrapperFile);
+		logger.log(Level.FINE, "Wrapper file: " + wrapperFile);
 		
 		//String classPath = System.getProperty("java.class.path");
 		
@@ -135,13 +135,13 @@ public class EmpCompiler {
 	
 	public void writeJniWrapper(String jniWrapperCode) throws Exception {
 		String jniFilename = getJniWrapperFilename();
-		System.out.println("Writing jni code to " + jniFilename);
+		logger.log(Level.FINE, "Writing jni code to " + jniFilename);
 		Utilities.writeFile(jniFilename, jniWrapperCode);
 	}
 	
 	public void writeEmpCode(String empCode) throws Exception {
 		String empFilename = getEmpFilename();
-		System.out.println("Writing emp code to " + empFilename);
+		logger.log(Level.FINE, "Writing emp code to " + empFilename);
 		Utilities.writeFile(empFilename, empCode);
 		
 

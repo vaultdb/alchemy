@@ -73,9 +73,9 @@ Data* $functionName(int party, NetIO * io) {
      }
 
 
-	cout << "Sorting!" << endl;
+	cout << "Done OT!" << endl;
     // TODO: make sort more robust s.t. the sort columns need not be adjacent
-    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), $keyPos, $keyLength);
+    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(false), $keyPos, $keyLength);
     Data * d = new Data;
     d->data = res;
     d->public_size = alice_size + bob_size;

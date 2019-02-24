@@ -40,9 +40,9 @@ public class GenerateSmcTest extends BaseTest {
 
   public void testCountIcd9s() throws Exception {
 
-    String query = "SELECT COUNT(DISTINCT icd9) FROM diagnoses";
+    String query = "SELECT COUNT(DISTINCT major_icd9) FROM diagnoses";
     // to run in plaintext to verify our results
-    String distributedQuery = "WITH all_diagnoses AS ((SELECT icd9 FROM diagnoses) UNION ALL (SELECT icd9 FROM remote_diagnoses)) SELECT COUNT(DISTINCT icd9) FROM all_diagnoses;";
+    String distributedQuery = "WITH all_diagnoses AS ((SELECT major_icd9 FROM diagnoses) UNION ALL (SELECT major_icd9 FROM remote_diagnoses)) SELECT COUNT(DISTINCT major_icd9) FROM all_diagnoses;";
     String testName = "CountIcd9s";
 
     QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
