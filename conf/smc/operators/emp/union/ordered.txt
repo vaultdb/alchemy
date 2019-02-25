@@ -4,36 +4,17 @@
 // need to make this more general by tweaking the parameters 
 
 
-void OTData(bool* localData, Bit* dst, long size, int sendingParty, int myParty) {
-	Batcher batcher;
-	cout << "Running batcher!" << endl;
-	for(int i = 0; i < size; ++i) {
-		batcher.add<Bit>((sendingParty == myParty) ? localData[i]:0);
-	}
-	
-	batcher.make_semi_honest(sendingParty);
-	
-	for (int i = 0; i < size; ++i) {
-        *dst = batcher.next<Bit>();
-        ++dst;
-	}
-     
-}
-
 Data* $functionName(int party, NetIO * io) {
     cout << "Running $functionName!" << endl;
 
-	string sql = "$sql";
+    string sql = "$sql";
     std::vector<Row> in = execute_sql(sql, party);
-    cout << "Received query results" << endl;
-
-    int bit_length = $size; 
+    int bit_length = $size; // TODO: automatically derive size from Row metadata?
     // flatten out local data
     bool *local_data = concat(in, bit_length);
 
     int alice_size, bob_size;
     alice_size = bob_size = in.size();
-	cout << "setting up OT!" << endl;
 
     if (party == ALICE) {
         io->send_data(&alice_size, 4);
@@ -47,26 +28,37 @@ Data* $functionName(int party, NetIO * io) {
         io->flush();
     }
 
-	Integer * res = new Integer[alice_size + bob_size];  // enough space for all inputs
+    Integer * res = new Integer[alice_size + bob_size];  // enough space for all inputs
+   
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
-   
-   cout << "Sending Alice" << endl;    
-   OTData(local_data, tmpPtr, alice_size * bit_length, party, ALICE);
+    Batcher alice_batcher, bob_batcher;
     
-    io->sync();
-    
-    
-    tmpPtr +=  bob_size * bit_length;
-    cout << "Sending bob!" << endl;
-    
-    OTData(local_data, tmpPtr, bob_size * bit_length, party, BOB);
-       
-    io->sync();
-    
+    for (int i = 0; i < alice_size*bit_length; ++i) {
+                // set up bit array, if alice, secret share a local bit, 
+        	   // otherwise bob collects his part of the secret share and inputs 0 as a placeholder
+        	      alice_batcher.add<Bit>((ALICE==party) ? local_data[i]:0);
+    }
+
+    alice_batcher.make_semi_honest(ALICE);
+	
+	for(int i = 0; i < alice_size*bit_length; ++i) {
+		*tmpPtr = alice_batcher.next<Bit>();
+			++tmpPtr;
+			}
+			
+    for (int i = 0; i < bob_size*bit_length; ++i)
+        bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
+    	bob_batcher.make_semi_honest(BOB);
+
+	// append all of bob's bits to tmp
+    for (int i = 0; i < bob_size*bit_length; ++i) {
+        *tmpPtr = bob_batcher.next<Bit>();
+        ++tmpPtr;
+	}
+	
 	tmpPtr = tmp;
 	
-	cout << "Making tuples!" << endl;
 	// create a 2D array of secret-shared bits
 	// each index is a tuple
     for(int i = 0; i < alice_size + bob_size; ++i) {
@@ -75,15 +67,13 @@ Data* $functionName(int party, NetIO * io) {
      }
 
 
-	cout << "Done OT for " << typeid(this).name() << endl;
-    // TODO: make sort more robust s.t. the sort columns need not be adjacent
-    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(false), $keyPos, $keyLength);
+    // TODO: sort if needed, not specific to col_length0
+    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), $keyPos, $keyLength);
     Data * d = new Data;
     d->data = res;
     d->public_size = alice_size + bob_size;
     d->real_size = Integer(64, d->public_size, PUBLIC);
-      
-    cout << "Done union!" << endl;   
-       
+        
     return d;
 }
+
