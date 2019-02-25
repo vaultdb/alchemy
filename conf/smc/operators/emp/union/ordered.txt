@@ -34,6 +34,7 @@ Data* $functionName(int party, NetIO * io) {
     Bit *tmpPtr = tmp;
     Batcher alice_batcher, bob_batcher;
     
+    cout << "Sending alice!" << endl;
     for (int i = 0; i < alice_size*bit_length; ++i) {
                 // set up bit array, if alice, secret share a local bit, 
         	   // otherwise bob collects his part of the secret share and inputs 0 as a placeholder
@@ -41,15 +42,31 @@ Data* $functionName(int party, NetIO * io) {
     }
 
     alice_batcher.make_semi_honest(ALICE);
+	cout << "Flushing!" << endl;
+
+  	io->flush();
+
+  	cout << "Unwinding alice!" << endl;
 	
 	for(int i = 0; i < alice_size*bit_length; ++i) {
 		*tmpPtr = alice_batcher.next<Bit>();
 			++tmpPtr;
-			}
+	}
+	   
+    cout << "Sending bob!" << endl;
 			
-    for (int i = 0; i < bob_size*bit_length; ++i)
+    for (int i = 0; i < bob_size*bit_length; ++i) {
         bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
-    	bob_batcher.make_semi_honest(BOB);
+     }
+
+    	
+    cout << "Batching bob!" << endl;
+    bob_batcher.make_semi_honest(BOB);
+
+	cout << "Flushing!" << endl;
+  	io->flush();
+
+  	cout << "Unwinding bob!" << endl;
 
 	// append all of bob's bits to tmp
     for (int i = 0; i < bob_size*bit_length; ++i) {
@@ -67,7 +84,7 @@ Data* $functionName(int party, NetIO * io) {
      }
 
 
-    // TODO: sort if needed, not specific to col_length0
+    // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
     bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), $keyPos, $keyLength);
     Data * d = new Data;
     d->data = res;

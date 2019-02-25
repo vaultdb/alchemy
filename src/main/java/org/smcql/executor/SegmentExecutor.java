@@ -138,7 +138,7 @@ public class SegmentExecutor {
 
             cloudHost.x(VX.CLASSPATH).inheritClasspath(true);
             System.out.println("Parent classpath: " + System.getProperty("java.class.path"));
-            cloudHost.x(VX.PROCESS).addJvmArg("-Xms1024m").addJvmArg("-Xmx10g");                                                                                        
+            cloudHost.x(VX.PROCESS).addJvmArg("-Xms4096m").addJvmArg("-Xmx10g");                                                                                        
             
      
     }
