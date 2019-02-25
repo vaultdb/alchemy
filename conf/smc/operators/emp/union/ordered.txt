@@ -51,16 +51,18 @@ Data* $functionName(int party, NetIO * io) {
     Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
    
-    cout << "Sending bob!" << endl;
+   cout << "Sending Alice" << endl;    
+   OTData(local_data, tmpPtr, alice_size * bit_length, party, ALICE);
     
-    OTData(local_data, tmpPtr, bob_size * bit_length, party, BOB);
     io->sync();
     
     
     tmpPtr +=  bob_size * bit_length;
+    cout << "Sending bob!" << endl;
+    
+    OTData(local_data, tmpPtr, bob_size * bit_length, party, BOB);
        
-    cout << "Sending Alice" << endl;    
-    OTData(local_data, tmpPtr, alice_size * bit_length, party, ALICE);
+    io->sync();
     
 	tmpPtr = tmp;
 	
@@ -73,7 +75,7 @@ Data* $functionName(int party, NetIO * io) {
      }
 
 
-	cout << "Done OT!" << endl;
+	cout << "Done OT for " << typeid(this).name() << endl;
     // TODO: make sort more robust s.t. the sort columns need not be adjacent
     bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(false), $keyPos, $keyLength);
     Data * d = new Data;

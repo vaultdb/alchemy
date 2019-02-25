@@ -335,7 +335,7 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		}
 		else {
 			// handle remote case
-			port = Integer.parseInt(System.getProperty("emp-port"));
+			port = Integer.parseInt(System.getProperty("emp.port"));
 		}
 		return port;
 	}

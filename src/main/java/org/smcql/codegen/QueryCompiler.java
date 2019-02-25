@@ -238,7 +238,9 @@ public class QueryCompiler {
 
 	    SecurePreamble preamble = new SecurePreamble(getRoot().getSourceOperator());
 	    
-	    String generatedPreamble = preamble.generate(party);
+	    // JMR: undo this for Alice and Bob to have separate classes
+	    //String generatedPreamble = preamble.generate(party);
+	    String generatedPreamble = preamble.generate().get("preamble");
 	    wholeFile = generatedPreamble;
 
 	    // traverse the tree bottom-up in our control flow

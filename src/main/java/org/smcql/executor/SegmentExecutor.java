@@ -32,13 +32,11 @@ import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.executor.smc.ExecutionSegment;
 import org.smcql.executor.smc.OperatorExecution;
-import org.smcql.executor.smc.SecureBufferPool;
 import org.smcql.executor.smc.SecureQueryTable;
 import org.smcql.executor.smc.runnable.RunnableSegment;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.util.Utilities;
 
-import com.oblivm.backend.flexsc.Party;
 import com.oblivm.backend.gc.GCSignal;
 
 public class SegmentExecutor {
@@ -68,45 +66,37 @@ public class SegmentExecutor {
 	}
 	
 	protected SegmentExecutor(String aWorker, String bWorker) throws Exception {
-		SystemConfiguration config = SystemConfiguration.getInstance();
-		
-		aliceWorker = ConnectionManager.getInstance().getWorker(aWorker);
-		bobWorker = ConnectionManager.getInstance().getWorker(bWorker);
-		logger = config.getLogger();
-		
-		
-		remotePath = config.getProperty("remote-path");
-		//if(remotePath == null) TMP - jmd
-			remotePath = "/tmp/smcql";
-		
 
-		String msg = "Initializing segment executor for " + aWorker + ", " + bWorker + " on " + aliceWorker.hostname + "," + bobWorker.hostname;
-		logger.info(msg);
+        aliceWorker = ConnectionManager.getInstance().getWorker(aWorker);
+        bobWorker = ConnectionManager.getInstance().getWorker(bWorker);
+        logger = SystemConfiguration.getInstance().getLogger();
 
-		cloud = CloudFactory.createCloud();
-		RemoteNode.at(cloud.node("**")).useSimpleRemoting();
+        remotePath = SystemConfiguration.getInstance().getProperty("remote-path");
+        if(remotePath == null)
+                remotePath = "/tmp/smcql";
 
-		initializeHost(bobWorker);
-		initializeHost(aliceWorker);
-		
-		
-		
-		cloud.node("**").setProp("smcql.setup.str", getSetupParameters());
-		cloud.node("**").setProp("smcql.connections.str", getConnectionParameters());
-		cloud.node("**").setProp("emp-port", config.getProperty("emp-port"));
-		cloud.node("**").setProp("javacpp-working-directory", config.getProperty("javacpp-working-directory"));
 
-		
-		// configure Alice and Bob
-		cloud.node(aWorker).setProp("party", "gen");
-		cloud.node(aWorker).setProp("workerId", aliceWorker.workerId);
-		
-		
-		   
-		cloud.node(bWorker).setProp("party", "eva");
-		cloud.node(bWorker).setProp("workerId", bobWorker.workerId);
-	
-		cloud.node("**").touch();
+        String msg = "Initializing segment executor for " + aWorker + ", " + bWorker + " on " + aliceWorker.hostname + "," + bobWorker.hostname;
+        logger.info(msg);
+
+        cloud = CloudFactory.createCloud();
+        RemoteNode.at(cloud.node("**")).useSimpleRemoting();
+
+        initializeHost(bobWorker);
+        initializeHost(aliceWorker);
+
+        cloud.node("**").setProp("smcql.setup.str", getSetupParameters());
+        cloud.node("**").setProp("smcql.connections.str", getConnectionParameters());
+        cloud.node("**").setProp("emp.port", String.valueOf(Utilities.getEmpPort()));
+
+        // configure Alice and Bob                                                                                                                                           
+        cloud.node(aWorker).setProp("party", "gen");
+        cloud.node(aWorker).setProp("workerId", aliceWorker.workerId);
+
+        cloud.node(bWorker).setProp("party", "eva");
+        cloud.node(bWorker).setProp("workerId", bobWorker.workerId);
+
+        cloud.node("**").touch();
 
 
 		logger.log(Level.INFO, "Completed initialization.");
@@ -124,36 +114,35 @@ public class SegmentExecutor {
 		return runSecure(segment);
 	}
 	
-	private void initializeHost(WorkerConfiguration worker) throws Exception {
-		String host = worker.hostname;
-		String workerId = worker.workerId;
-		
-		ViNode cloudHost = cloud.node(workerId);
-		
-		 RemoteNodeProps.at(cloudHost).setRemoteHost(host);
-		
-		
-		String workerRemotePath = remotePath + '/' + workerId;
-		System.out.println("Remote path " + workerRemotePath);
-		worker.smcqlRoot = workerRemotePath;
-		
-		cloud.node(workerId).setProp("smcql.root", worker.smcqlRoot);
-		cloud.node(workerId).setProp("jar-cache-path", workerRemotePath);
-		
-		cloudHost.setProp(SshSpiConf.SPI_JAR_CACHE, workerRemotePath);
 
-		if(host.equalsIgnoreCase("localhost") || host.equals("127.0.0.1") ) {
-			cloudHost.x(VX.TYPE).setLocal();
-			ViProps.at(cloudHost).setIsolateType(); // enable debugger
-		}
-		
-		//if(host.startsWith("codd")) {
-		// give it more memory
-			 cloudHost.x(VX.PROCESS).addJvmArg("-Xms1024m").addJvmArg("-Xmx10g");
-		//}*/
-	}
+    private void initializeHost(WorkerConfiguration worker) throws Exception {
+            String host = worker.hostname;
+            String workerId = worker.workerId;
 
-	private String getSetupParameters() throws Exception {
+            ViNode cloudHost = cloud.node(workerId);
+
+
+            if(host.equalsIgnoreCase("localhost") || host.equalsIgnoreCase("127.0.0.1")) {
+                    cloudHost.x(VX.TYPE).setLocal();
+                    ViProps.at(cloudHost).setIsolateType(); // enable debugger  
+                    cloudHost.setProp("smcql.root", Utilities.getSMCQLRoot());
+                    cloudHost.setProp("remote.node", "false");
+            }
+            else { // remote case
+            	cloudHost.x(VX.RUNTIME).setProp("user.dir", remotePath + "/" + workerId);
+                RemoteNodeProps.at(cloudHost).setRemoteHost(host);
+                cloudHost.setProp(SshSpiConf.SPI_JAR_CACHE, remotePath + "/" + workerId);
+                cloudHost.setProp("remote.node", "true");
+
+            }
+
+            cloudHost.x(VX.CLASSPATH).inheritClasspath(true);
+            System.out.println("Parent classpath: " + System.getProperty("java.class.path"));
+            cloudHost.x(VX.PROCESS).addJvmArg("-Xms1024m").addJvmArg("-Xmx10g");                                                                                        
+            
+     
+    }
+    private String getSetupParameters() throws Exception {
 		
 		
 		Map<String, String> propertiesMap = SystemConfiguration.getInstance().getProperties();
@@ -280,67 +269,24 @@ public class SegmentExecutor {
 	 // emp runner
 	 public List<boolean[]> runSecure(ExecutionSegment segment, String className) throws Exception {
 			
-		 	String aWorker = ConnectionManager.getInstance().getAlice();
-		 	String bWorker = ConnectionManager.getInstance().getBob();
-		 	
-		 	int empPort = Utilities.getEmpPort();
-			EmpParty alice = new EmpParty(1, empPort);
-			EmpParty bob = new EmpParty(2, empPort);
-		 	
-			EmpCompiler aliceCompiler = new EmpCompiler(className, alice);
-			EmpCompiler bobCompiler = new EmpCompiler(className, bob);
+	
 			
-			
-			// configure Alice and Bob's jni wrapper for this segment
-		 	cloud.node(aWorker).setProp("jniCode", aliceCompiler.getJniWrapperCode());
-			cloud.node(aWorker).setProp("empCode", compiledPlan.generateEmpCode(alice));
-			cloud.node(aWorker).setProp("className", className + alice.asString());
-			
-			cloud.node(bWorker).setProp("jniCode", bobCompiler.getJniWrapperCode());
-			cloud.node(bWorker).setProp("empCode", compiledPlan.generateEmpCode(bob));
-			cloud.node(bWorker).setProp("className", className + bob.asString());
-			System.out.println("Initial working dir: " + System.getProperty("user.dir"));
-
-		 Utilities.cleanEmpCode(className);
-		 
 		 List<boolean[]> result = cloud.node("**").massExec(new Callable<boolean[]>() {
 				@Override
 				public boolean[] call() throws Exception {
 					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
-					System.out.println("Initial working dir: " + System.getProperty("user.dir"));
-					
-					// load setup
-					String setupFile = "/tmp/smcql/setup" + party;
-					String setupProperties = System.getProperty("smcql.setup.str");
-					Utilities.writeFile(setupFile, setupProperties);
-				    System.setProperty("smcql.setup", setupFile);
-				    SystemConfiguration config = SystemConfiguration.getInstance();
 
-				    String currentWorkingDirectory = System.getProperty("user.dir");
-					String javaCppWorkingDirectory = config.getProperty("javacpp-working-directory");
-					String newWorkingDirectory = currentWorkingDirectory + "/" + javaCppWorkingDirectory;
-					
-					if(currentWorkingDirectory.contains("jennie")) 
-						return null;
-					
-					System.setProperty("user.dir", newWorkingDirectory);
+					String codegenWorkingDirectory = SegmentExecutor.getCodegenWorkingDirectory(party);
+					System.setProperty("user.dir", codegenWorkingDirectory);
 					//System.setProperty("org.bytedeco.javacpp.logger.debug", "true");
+					
 					
 					System.out.println("Starting to launch emp on party " + party);
 					
 					
-					// alice and bob both need to compile, even in local case
-					int port = Integer.parseInt(System.getProperty("emp-port"));
-					
+					int port = Utilities.getEmpPort();
 					EmpParty partyObj = new EmpParty(party, port);
-					EmpCompiler compiler = new EmpCompiler(className, partyObj);
-					
-					compiler.writeEmpCode(System.getProperty("empCode"));	
-					compiler.writeJniWrapper(System.getProperty("jniCode"));
-					compiler.setGenerateWrapper(false);
-					compiler.compile();
-					
-					
+					EmpCompiler compiler = new EmpCompiler(className, partyObj);		
 				    EmpProgram program = compiler.loadClass();
 					System.out.println("Loaded emp!");
 					
@@ -359,6 +305,78 @@ public class SegmentExecutor {
 		 return result;
 	 }
 	 
+	 /* private Integer compileCode(String worker) {
+		 Integer  result = cloud.node(worker).exec(new Callable<Integer>() {
+				@Override
+				public Integer call() throws Exception {
+					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
+					int port = Utilities.getEmpPort();
+					String className = System.getProperty("className");
+					
+					EmpParty theParty = new EmpParty(party, port);
+					EmpCompiler compiler = new EmpCompiler(className, theParty);
+					
+					compiler.writeEmpCode(System.getProperty("empCode"));	
+					compiler.writeJniWrapper(System.getProperty("jniCode"));
+					compiler.setGenerateWrapper(false);
+					return compiler.compile();		
+				}
+
+		 });
+		 return result;
+	 }
+	 */
+	 
+	 protected static String getCodegenWorkingDirectory(int party) throws Exception {
+		 SystemConfiguration config = SegmentExecutor.initializeSystemConfiguration(party);
+		 String currentWorkingDirectory = System.getProperty("user.dir");
+		 String javaCppWorkingDirectory = config.getProperty("javacpp-working-directory");
+	     return currentWorkingDirectory + "/" + javaCppWorkingDirectory;
+	}
+
+	// both need to run unconditionally to make them sync up easily
+	 private List<Integer> compileCode() {
+		 List<Integer>  result = cloud.node("**").massExec(new Callable<Integer>() {
+				@Override
+				public Integer call() throws Exception {
+					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
+					int port = Utilities.getEmpPort();
+					String className = System.getProperty("className");
+
+					
+					String codegenWorkingDirectory = SegmentExecutor.getCodegenWorkingDirectory(party);
+					System.setProperty("user.dir", codegenWorkingDirectory);
+
+					// if it is marked for compilation
+					if(System.getProperty("jniCode") != null) {
+
+						EmpParty theParty = new EmpParty(party, port);
+						EmpCompiler compiler = new EmpCompiler(className, theParty);
+						
+						compiler.writeEmpCode(System.getProperty("empCode"));	
+						compiler.writeJniWrapper(System.getProperty("jniCode"));
+						compiler.setGenerateWrapper(false);
+						return compiler.compile();		
+
+						
+					}
+					return 0;
+				}
+
+		 });
+		 return result;
+	 }
+	 
+	 
+	 public static  SystemConfiguration initializeSystemConfiguration(int party) throws Exception {
+		// load setup
+			String setupFile = "/tmp/smcql/setup" + party;
+			String setupProperties = System.getProperty("smcql.setup.str");
+			Utilities.writeFile(setupFile, setupProperties);
+		    System.setProperty("smcql.setup", setupFile);
+		    return SystemConfiguration.getInstance();
+	 }
+	 
 	 public QueryTable runPlain(PlaintextStep step) throws Exception {
 		 OperatorExecution op = step.getExec();
 		 Connection c = SystemConfiguration.getInstance().getHonestBrokerConfig().getDbConnection();
@@ -367,6 +385,39 @@ public class SegmentExecutor {
 		 QueryTable tupleData = SqlQueryExecutor.query(op.outSchema, srcSql, c);
 		 return tupleData;
 	 }
+
+	public void compileEmp(String className) throws Exception {
+	 	String aWorker = ConnectionManager.getInstance().getAlice();
+	 	String bWorker = ConnectionManager.getInstance().getBob();
+	 	
+	 	int empPort = Utilities.getEmpPort();
+		EmpParty alice = new EmpParty(1, empPort);
+		EmpParty bob = new EmpParty(2, empPort);
+	 	
+		EmpCompiler aliceCompiler = new EmpCompiler(className, new EmpParty()); // was alice
+		EmpCompiler bobCompiler = new EmpCompiler(className, new EmpParty()); // was bob
+		Boolean bothCompile = false;
+		
+		if(cloud.node(aWorker).getProp("remote.node").equals("true") ||
+				cloud.node(bWorker).getProp("remote.node").equals("true"))
+				bothCompile = true; // at least one remote node
+
+
+		// configure Alice and Bob's jni wrapper for this segment
+	 	cloud.node(aWorker).setProp("jniCode", aliceCompiler.getJniWrapperCode());
+		cloud.node(aWorker).setProp("empCode", compiledPlan.generateEmpCode(alice));
+		cloud.node(aWorker).setProp("className", className); //  + alice.asString());
+		
+		if(bothCompile) {	// eventually this will point to a single class
+			cloud.node(bWorker).setProp("jniCode", bobCompiler.getJniWrapperCode());
+			cloud.node(bWorker).setProp("empCode", compiledPlan.generateEmpCode(bob));
+			cloud.node(bWorker).setProp("className", className + bob.asString());
+			
+		}
+		compileCode(); // one or both compile code
+	
+		System.out.println("Finished compiling code!");
+	}
 	 
 	
 	 

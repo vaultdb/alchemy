@@ -29,7 +29,12 @@ public class EmpCompiler {
 	// e.g., Count
 	public EmpCompiler(String className, EmpParty party) throws Exception {
 		this.party = party;
-		this.className = className + party.asString();
+		this.className = className;
+		System.out.println("Working on  class " + this.className);
+		
+	    // JMR: undo this for Alice and Bob to have separate classes
+		//this.className = className + party.asString();
+		
 		SystemConfiguration config = SystemConfiguration.getInstance();
 		
 		port = Integer.parseInt(config.getProperty("emp-port"));
@@ -71,6 +76,12 @@ public class EmpCompiler {
 		 
 		return propertyFile;
 	}
+	
+	/*private String getJavaCppJar() {
+		String classpath = System.getProperty("java.class.path");
+		String[] paths =  classpath.split(":");
+		
+	}*/
 	
 	public void setGenerateWrapper(boolean val) {
 		generateJni = val;
@@ -141,7 +152,7 @@ public class EmpCompiler {
 	
 	public void writeEmpCode(String empCode) throws Exception {
 		String empFilename = getEmpFilename();
-		logger.log(Level.FINE, "Writing emp code to " + empFilename);
+		logger.log(Level.INFO, "Writing emp code to " + empFilename);
 		Utilities.writeFile(empFilename, empCode);
 		
 

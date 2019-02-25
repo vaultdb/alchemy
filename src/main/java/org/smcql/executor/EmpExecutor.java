@@ -73,6 +73,8 @@ public class EmpExecutor extends MPCExecutor {
 			while(li.hasPrevious()) { 
 				ExecutionSegment segment = li.previous();
 				runner.setQueryCompiler(compiledPlan);
+				runner.compileEmp(queryId);
+				System.out.println("******************* Done query compilation **************");
 				lastOutput = runner.runSecure(segment, queryId);
 				outSchema = segment.outSchema;
 			}

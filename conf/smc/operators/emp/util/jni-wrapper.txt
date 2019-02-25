@@ -60,9 +60,9 @@ public class $queryName  extends EmpProgram  {
 	   	
         @Override
         public  boolean[] runProgram() {
-        	System.out.println("Running $queryName");
         	$queryClass theQuery = new $queryClass();
-        	
+
+        	System.out.println("Running $queryName with object " + theQuery + " of type " + theQuery.getClass());        	
 	        theQuery.run(party.asInt(), party.getPort());
 
 		    System.out.println("Done running emp!");	        

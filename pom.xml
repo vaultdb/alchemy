@@ -56,7 +56,7 @@
 <dependency>
     <groupId>org.gridkit.lab</groupId>
     <artifactId>nanocloud</artifactId>
-    <version>0.8.11</version>
+    <version>0.8.16</version>
 </dependency>
 <dependency>
   <groupId>org.apache.commons</groupId>
