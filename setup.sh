@@ -9,6 +9,10 @@ if (($?==1)); then
     exit 1
 fi
 
+# needed for macosx, may need to check for os name on this first:
+ln -s /usr/local/opt/openssl/include/openssl /usr/local/include
+ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/
+
 #download emp to dep
 /bin/bash deps/emp/install.sh 
 
