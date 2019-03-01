@@ -1,6 +1,7 @@
 package org.smcql.schema.statistics;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -57,8 +58,6 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		stats.setCardinality(6);
 		
 		testCase(table, attr, stats);
-		
-		
 	}
 
 	public void testMedicationsMonth() throws Exception {
@@ -69,8 +68,12 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		// TODO: Nisha and May, fill in expected output following the pattern in testDemographicsBirthYear
 		// Since attr is not public, may only use contents of relation_statistics table in test database to get stats
 		// Naturally, month will range from 1...12, need to set domain and distinct card of 12 too
-	
-		
+
+		expectedStats.setMin(1);
+		expectedStats.setMax(12);
+		expectedStats.setDistinctCardinality(12);
+		expectedStats.setCardinality(4);
+
 		testCase(table, attr, expectedStats);
 		
 		
@@ -85,6 +88,13 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		// Since attr is not public, may only use contents of relation_statistics in test database to get stats
 		// gender should have  cardinality of <demo table length>, range = 1..3, distinct vals: 3, ...
 
+		expectedStats.setMin(1);
+		expectedStats.setMax(3);
+		List<Long> d = new ArrayList<>(Arrays.asList(1L, 2L, 3L));
+		expectedStats.setDomain(d);
+		expectedStats.setCardinality(6);
+		expectedStats.setDistinctCardinality(3);
+
 		testCase(table, attr, expectedStats);
 		
 	}
@@ -97,6 +107,9 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		// icd9 should have  cardinality of <diag table length>, 1604 distinct vals
 		// TODO: Nisha and May, derive expected output following the pattern in testDemographicsBirthYear
 
+		expectedStats.setCardinality(16);
+		expectedStats.setDistinctCardinality(1604);
+
 		testCase(table, attr, expectedStats);
 		
 	}
@@ -104,9 +117,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 	
 	// For use with public attributes
 	public static ObliviousFieldStatistics getExpectedOutput(String table, String attr) throws Exception {
-		
-		
-		
+
 		ObliviousFieldStatistics stats = new ObliviousFieldStatistics();
 		long maxMultiplicity = runLongIntQuery("SELECT COUNT(*) FROM " +  table + " GROUP BY " + attr + " ORDER BY COUNT(*) DESC LIMIT 1");
 		List<Long> domain = runLongIntListQuery("SELECT DISTINCT " + attr + " FROM " + table);
@@ -120,7 +131,6 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		stats.setMax(max);
 		stats.setMin(min);
 		stats.setCardinality(cardinality);
-		
 		
 		return stats;
 	}
