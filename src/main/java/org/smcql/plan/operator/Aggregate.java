@@ -25,18 +25,12 @@ public class Aggregate extends Operator {
 		List<SecureRelDataTypeField> sliceKeys = new ArrayList<SecureRelDataTypeField>();
 		SecureRelRecordType inSchema = this.getInSchema();
 		
-		for(Integer i : groupBy)
-			if(inSchema.getSecureField(i).isSliceAble())
-				sliceKeys.add(inSchema.getSecureField(i));
+		for(Integer i : groupBy) if(inSchema.getSecureField(i).isSliceAble()) sliceKeys.add(inSchema.getSecureField(i));
 		
 		for(AggregateCall aggCall : agg.getAggCallList()) {
 			List<Integer> args  =  aggCall.getArgList();
-			for(Integer i : args) {
-				if(inSchema.getSecureField(i).isSliceAble())
-					sliceKeys.add(inSchema.getSecureField(i));
-			}
+			for(Integer i : args) if(inSchema.getSecureField(i).isSliceAble()) sliceKeys.add(inSchema.getSecureField(i));
 		}
-		
 		return sliceKeys;
 	}
 	
@@ -51,9 +45,8 @@ public class Aggregate extends Operator {
 		
 		SecureRelRecordType schema = this.getSchema();
 		List<SecureRelDataTypeField> result = new ArrayList<SecureRelDataTypeField>();
-		for (Integer i : groupBy) {
-			result.add(schema.getSecureField(i));
-		}
+		for (Integer i : groupBy) result.add(schema.getSecureField(i));
+
 		return result;
 	}
 	
@@ -65,15 +58,13 @@ public class Aggregate extends Operator {
 		List<AggregateCall> aggregates = agg.getAggCallList();
 		for(AggregateCall aggCall : aggregates) {
 			List<Integer> args  =  aggCall.getArgList();
-			if(args.isEmpty()) { // compute over entire row
-				return baseRelNode.getSchema().getSecureFieldList();
-			}
+			// compute over entire row
+			if(args.isEmpty()) return baseRelNode.getSchema().getSecureFieldList();
 
 			for(Integer i : args) {
 				SecureRelDataTypeField lookup = allFields.get(i);
 				
-				if(!attrs.contains(lookup))
-					attrs.add(lookup);
+				if(!attrs.contains(lookup)) attrs.add(lookup);
 			}
 		}
 		
@@ -81,16 +72,10 @@ public class Aggregate extends Operator {
 			for(Integer i : bits.asList()) {
 				SecureRelDataTypeField lookup = allFields.get(i);
 				
-				if(!attrs.contains(lookup))
-					attrs.add(lookup);
+				if(!attrs.contains(lookup)) attrs.add(lookup);
 			}
-		
 		}
-				
-		
-		
 		return attrs;
-		
 	}
 
 	public List<SecureRelDataTypeField> secureComputeOrder() {
@@ -98,10 +83,9 @@ public class Aggregate extends Operator {
 		List<Integer> groupBy = agg.getGroupSet().asList();
 		List<SecureRelDataTypeField> orderBy = new ArrayList<SecureRelDataTypeField>();
 		SecureRelRecordType inSchema = this.getInSchema();
-		
-		for(Integer i : groupBy)
-				orderBy.add(inSchema.getSecureField(i));
-		
+
+		for (Integer i : groupBy) orderBy.add(inSchema.getSecureField(i));
+
 		return orderBy;
 	}
 	
@@ -119,10 +103,9 @@ public class Aggregate extends Operator {
 	@Override
 	public void initializeStatistics() {
 		children.get(0).initializeStatistics();
-		
+		//read the code above, copy the statistics for the groupby bin, for the aggregate bin you want to give it
+		//range of 1 to n if it's a count
+		//
 		// TODO: Nisha and May: derive statistics using methods in <repo root>/docs/alchemy-algebra.pdf
-
 	}
-	
-	
 };
