@@ -1,4 +1,4 @@
-package org.smcql.compiler;
+package org.smcql.compiler.emp;
 
 import org.smcql.BaseTest;
 import org.smcql.compiler.emp.EmpBuilder;

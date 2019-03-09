@@ -9,7 +9,6 @@ import org.smcql.util.Utilities;
 
 public class EmpRunnable implements Runnable {
     String className;
-    String aliceHost; // ip or hostname of alice
  	int party, port;
  	boolean[] output;
  	boolean compile = false;
@@ -18,16 +17,15 @@ public class EmpRunnable implements Runnable {
 	final String javaCppWorkingDirectory = smcqlRoot + "/target/classes";
 
 	
-	public EmpRunnable(String aClassName, int aParty, int aPort, String host, boolean compile) {
-		configure(aClassName, aParty, aPort, host, compile);
+	public EmpRunnable(String aClassName, int aParty, int aPort, boolean compile) {
+		configure(aClassName, aParty, aPort, compile);
 	}
 	
- 	public void configure(String aClassName, int aParty, int aPort, String host,  boolean compile) {
+ 	public void configure(String aClassName, int aParty, int aPort,   boolean compile) {
  		className = aClassName;
  		party = aParty;
  		port = aPort;
  		this.compile = compile;
- 		aliceHost = host;
  	}
  	
  	
@@ -43,8 +41,8 @@ public class EmpRunnable implements Runnable {
     	    ByteArrayOutputStream stderr = new ByteArrayOutputStream(); // use this to capture bitstring
 
     	    PumpStreamHandler psh = new PumpStreamHandler(stdout, stderr);
-    	    // java -cp $JAVACPP_JAR:$JAVACPP_WORKING_DIRECTORY  org.smcql.compiler.emp.generated.ClassName <party> <port> <aliceHost>
-    	    String command = "java -cp " + javaCppJar + ":" + javaCppWorkingDirectory + " " + className + " " + party + " " + port + aliceHost;
+    	    // java -cp $JAVACPP_JAR:$JAVACPP_WORKING_DIRECTORY  org.smcql.compiler.emp.generated.ClassName <party> <port> 
+    	    String command = "java -cp " + javaCppJar + ":" + javaCppWorkingDirectory + " " + className + " " + party + " " + port;
     	    CommandLine cl = CommandLine.parse(command);
     	    DefaultExecutor exec = new DefaultExecutor();
     	    exec.setStreamHandler(psh);
