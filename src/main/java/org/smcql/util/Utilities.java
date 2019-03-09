@@ -339,4 +339,19 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		}
 		return port;
 	}
+
+
+	public static void mkdir(String path, String workingDirectory) throws Exception {
+		
+		String cmd = "mkdir -p "  + path;
+		
+		CommandOutput output = runCmd(cmd, workingDirectory);
+		
+		if(output.exitCode != 0 && output.exitCode != 1) { // 1 = already exists
+			throw new Exception("Failed to create path " + path + "!");
+		}
+		
+		
+	}
+
 }

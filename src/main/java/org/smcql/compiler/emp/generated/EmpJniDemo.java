@@ -42,7 +42,7 @@ public class EmpJniDemo  extends EmpProgram  {
         private native void allocate();
         public native void addInput(String opName, String bitString);
         public native void run(int party, int port); 
-        
+        public native void setGeneratorHost(@StdString String host);
         public native @StdString String getOutput();
         
         
@@ -56,11 +56,11 @@ public class EmpJniDemo  extends EmpProgram  {
         public  boolean[] runProgram() {
         	EmpJniDemoClass theQuery = new EmpJniDemoClass();
 
+        	if(generatorHost != null) {
+        		theQuery.setGeneratorHost(generatorHost);
+        	}
         	theQuery.run(party, port);
         	String output = theQuery.getOutput();
-        	
-        		
-
 	        theQuery.close();
 
 	       boolean[] outBits = new boolean[output.length()];

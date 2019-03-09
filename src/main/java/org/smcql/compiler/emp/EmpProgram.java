@@ -4,6 +4,7 @@ public class EmpProgram {
 
 	protected int party = 0;
 	protected int port = 0;
+	protected String generatorHost = null; // hostname or IP address for Alice
 	
 
 	public EmpProgram(int aParty, int aPort) {
@@ -12,6 +13,9 @@ public class EmpProgram {
 		
 	}
 	
+	public void setGeneratorHost(String host) {
+		generatorHost = host;
+	}
 	
 	// delegate to implementing classes
     public  boolean[] runProgram() {

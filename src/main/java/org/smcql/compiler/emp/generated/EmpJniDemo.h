@@ -46,6 +46,7 @@ bool * outputBits(Integer &input, int length, int output_party) {
 
 
 
+
 string reveal_bin(Integer &input, int length, int output_party) {
 	bool * b = new bool[length];
 	ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
@@ -242,6 +243,11 @@ public:
 		
 }
 
+void setGeneratorHost(string host) {
+	aliceHost = host;
+}
+
+
 // placeholder for maintaining a map of inputs from JDBC
 void addInput(const std::string& opName, const std::string& bitString) {
 
@@ -254,12 +260,13 @@ const std::string& getOutput() {
 	return output;
 }
 
-int main(int argc, char** argv) { 
-	int party, port;
-	parse_party_and_port(argv, 2, &party, &port);
-	run(party, port);
-	return 0;
-}
+	int main(int argc, char** argv) {
+		int party, port;
+		parse_party_and_port(argv, 2, &party, &port);
+		run(party, port);
+		return 0;
+	}
+
 }; // end class
 } // end namespace
  
