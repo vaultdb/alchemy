@@ -1,6 +1,5 @@
 #configure locations
 codegen-target=src/main/java/org/smcql/compiler/emp/generated
-javacpp-jar=target/javacpp-1.4.4.jar
 data-providers=conf/connections/localhosts
 javacpp-working-directory=src/main/java
 
@@ -25,5 +24,5 @@ delta=0.0
 host=localhost
 port=5432
 db=smcql_testdb
-user=mayli
+user=smcql
 password=password
