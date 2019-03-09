@@ -15,32 +15,32 @@ import org.bytedeco.javacpp.annotation.StdString;
 import org.smcql.compiler.emp.EmpProgram;
 
 
-@Platform(include={"Count.h"}, 
+@Platform(include={"EmpJniDemo.h"}, 
 			compiler = "cpp11")
 
 
 
 
 
-@Namespace("Count")
-public class Count  extends EmpProgram  {
+@Namespace("EmpJniDemo")
+public class EmpJniDemo  extends EmpProgram  {
 
-	public Count(int party, int port) {
+	public EmpJniDemo(int party, int port) {
 		super(party, port);
 	}
 	
 
-	public static class CountClass extends Pointer {
+	public static class EmpJniDemoClass extends Pointer {
 	
         static {         
 			Loader.load(); 
 	       } 
        
-        public CountClass() { 	
+        public EmpJniDemoClass() { 	
         	allocate(); 
         	}
         private native void allocate();
-        public native void addInput(@StdString String opName, @StdString String bitString);
+        public native void addInput(String opName, String bitString);
         public native void run(int party, int port); 
         
         public native @StdString String getOutput();
@@ -54,7 +54,7 @@ public class Count  extends EmpProgram  {
 	   	
         @Override
         public  boolean[] runProgram() {
-        	CountClass theQuery = new CountClass();
+        	EmpJniDemoClass theQuery = new EmpJniDemoClass();
 
         	theQuery.run(party, port);
         	String output = theQuery.getOutput();
@@ -78,7 +78,7 @@ public class Count  extends EmpProgram  {
 		int party = Integer.parseInt(args[0]);
 		int port = Integer.parseInt(args[1]);
 		
-		Count qc = new Count(party, port);
+		EmpJniDemo qc = new EmpJniDemo(party, port);
 		boolean[] bits = qc.runProgram();
 		char b;
 	       

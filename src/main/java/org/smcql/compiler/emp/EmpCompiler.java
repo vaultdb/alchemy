@@ -184,8 +184,7 @@ public class EmpCompiler {
     		
             
             // do it in DynamicCompiler to garbage collect the classloader so that running locally won't create loader collisions in javacpp
-            return DynamicCompiler.loadJniClass(fullyQualifiedClassname, party);		
-			
+        return null;	
     }
 
 

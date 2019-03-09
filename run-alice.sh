@@ -1,0 +1,10 @@
+#!/bin/bash -x
+
+#must be run in emp-jni dir
+export JAVACPP_JAR=$HOME/.m2/repository/org/bytedeco/javacpp/1.4.4/javacpp-1.4.4.jar
+export EMP_JNI_ROOT=$PWD
+export JAVACPP_WORKING_DIRECTORY=$EMP_JNI_ROOT/src/main/java
+
+ulimit -c unlimited
+cd $JAVACPP_WORKING_DIRECTORY
+java -cp $JAVACPP_JAR:$JAVACPP_WORKING_DIRECTORY  org.smcql.compiler.emp.generated.CountIcd9sLocal 1 54321

@@ -1,6 +1,7 @@
 package org.smcql.compiler;
 
 import org.smcql.BaseTest;
+import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.compiler.emp.EmpCompiler;
 import org.smcql.compiler.emp.EmpParty;
 import org.smcql.compiler.emp.EmpProgram;
@@ -17,26 +18,31 @@ public class EmpBuilderTest extends BaseTest {
 	
 
 
+
+	// tests emp-jni link with minimal dependencies
+	public void testEmpJniDemo() throws Exception {
+		String className = "org.smcql.compiler.emp.generated.EmpJniDemo";
+		EmpBuilder builder = new EmpBuilder();
+		builder.compile(className, true);
+		EmpProgram instance = builder.getClass(className, 1, 54321);
+		assert(instance != null);
+		// verify that it loads and is runnable
+		assert(instance.helloWorld().equals("I am an EmpJniDemo!"));
+		
+	}
 	
+	
+	// tests linker access to pqxx
 	public void testCount() throws Exception {
-		
-		EmpParty theParty = new EmpParty();
-		EmpCompiler compiler = new EmpCompiler("Count", theParty);
-		int exitCode = compiler.compile();
-		assertEquals(0, exitCode); //  it built successfully
-		
-		//Alice
-		EmpProgram theProgram = compiler.loadClass();
-		assert(theProgram != null); // we can load it
-		System.out.println("Verification: " + theProgram.helloWorld());
-		//theProgram.runProgram();
-		//boolean[] aliceOut = theProgram.getOutput();
-		
-		
-		//TODO: Bob
-		
-		
-		//TODO: xor and collect output (ex. EMPExecutor.getOutput)
+		String className = "org.smcql.compiler.emp.generated.Count";
+		EmpBuilder builder = new EmpBuilder();
+		builder.compile(className, true);
+		EmpProgram instance = builder.getClass(className, 1, 54321);
+		assert(instance != null);
+		// verify that it loads and is runnable
+		String observedClass = instance.helloWorld();
+		String expectedClass = "I am a org.smcql.compiler.emp.generated.Count!";
+		assertEquals(observedClass, expectedClass);
 		
 	}
 

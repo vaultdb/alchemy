@@ -139,55 +139,6 @@ public class DynamicCompiler
     		return newInstance;
     }
     
-    @SuppressWarnings("unchecked")
-	public static EmpProgram loadJniClass(String runnableClassname, EmpParty party) throws Exception {
-    	System.out.println("loading " + runnableClassname);
-    	SystemConfiguration config = SystemConfiguration.getInstance();
-    	
-    	String loaderPath = Utilities.getSMCQLRoot() + "/" + config.getProperty("javacpp-working-directory"); 
-    	System.out.println("Loader path: " + loaderPath);
-    	File f = new File(loaderPath);
-        URL[] urls = new URL[] { f.toURI().toURL()  };
-    	URLClassLoader loader = new URLClassLoader(urls);
-    	
-    	
-    	
-    	 //   Class<?> cl = loader.loadClass(runnableClassname);
-    	//ByteArrayClassLoader loader = new ByteArrayClassLoader(runnableClassname, byteCode, Thread.currentThread().getContextClassLoader());  	
-    	Class<?> cl =  loader.loadClass(runnableClassname);  //loader.findClass(runnableClassname);
-    	Constructor<?>[] constructors = cl.getConstructors();
-    	Constructor<?> ctor = constructors[0];
-		Object empObj = ctor.newInstance(party.asInt(), party.getPort());
-		EmpProgram theProgram;
-		try {
-			theProgram = (EmpProgram) empObj;
-		} catch(Exception e) {// sometimes upcasting is failing in nanocloud, encapsulate the obj in EmpProgram when that happens
-			theProgram = new EmpProgram(party.asInt(), party.getPort());
-			theProgram.setSubclass(empObj);
-		}
-		return theProgram;
-	
-		/*
-		Class<?> empParent = empObj.getClass().getSuperclass();
-		System.out.println("Emp parent class  is " + empParent);
-		EmpProgram upCast =  (EmpProgram) empParent.cast(empObj);
-		loader.close();
-
-		EmpProgram example = new EmpProgram(1, 544321);
-		System.out.println("Example is instanceof " + example.getClass());
-		return (EmpProgram) upCast;
-		
-	/*	if(upCast instanceof EmpProgram) {
-			return (EmpProgram) upCast;
-		}
-		else {
-			throw new Exception("Could not bind " + empObj.getClass() + " to EmpProgram!  It is an instance of " + upCast.getClass());
-			
-	    	
-		}*/
-		
-    }
-    
 
     
     @SuppressWarnings("unchecked")

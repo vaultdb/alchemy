@@ -23,9 +23,8 @@ class CountClass {
 	// Connection strings, encapsulates db name, db user, port, host
 	string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
 	string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=localhost port=5432";
-	string aliceHost = "localhost";
-	string bobHost = "localhost";
-	bool *output;
+	string aliceHost = "127.0.0.1";
+    string output;
 
 	// Helper functions
 	string reveal_bin(Integer &input, int length, int output_party) {
@@ -267,7 +266,7 @@ class CountClass {
 public:
 	void run(int party, int port) {
 
-		NetIO * io = new NetIO((party==ALICE ? nullptr : bobHost.c_str()), port);
+		NetIO * io = new NetIO((party==ALICE ? nullptr : aliceHost.c_str()), port);
 
 		setup_semi_honest(io, party);
 
@@ -283,14 +282,15 @@ public:
 
 		int tupleLen = results->data[0].size();
 
-		long outputSize = results->public_size * tupleLen;
-	    output = new bool[outputSize];
-		bool *writePtr = output;
+		long outputLength = results->public_size * tupleLen;
+		output.reserve(outputLength);
+
 		bool *tuple;
 		for(int i = 0; i < results->public_size; ++i) {
 			tuple = outputBits(results->data[i], tupleLen, XOR);
-			memcpy(writePtr, tuple, tupleLen);
-			writePtr += tupleLen;
+			for(int j = 0; j < tupleLen; ++j) {
+				output += (tuple[j] == true) ? '1' : '0';
+			}
 		}
 
 		
@@ -298,7 +298,11 @@ public:
 
 	}
 
-	bool *getOutput() {
+	void addInput(string opName, string bitString) {
+		// TODO: construct a map of function names to tuple inputs.
+	}
+
+	string getOutput() {
 	  return output;
 	}
 
