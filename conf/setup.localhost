@@ -25,5 +25,5 @@ delta=0.0
 host=localhost
 port=5432
 db=smcql_testdb
-user=smcql
-password=<insert psql password>
+user=mayli
+password=password

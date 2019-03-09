@@ -52,7 +52,7 @@ public class ObliviousFieldStatistics {
 		
 		SqlTypeName fieldType = parentField.getType().getSqlTypeName();
 		// only integer types are supported
-		assert(fieldType == SqlTypeName.INTEGER || fieldType == SqlTypeName.BIGINT); 
+		//assert(fieldType == SqlTypeName.INTEGER || fieldType == SqlTypeName.BIGINT);
 		
 		try {
 			if(parentField.getSecurityPolicy() == SecurityPolicy.Public)  {	
