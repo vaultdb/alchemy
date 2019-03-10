@@ -19,7 +19,7 @@ import org.smcql.codegen.smc.operator.SecureOperator;
 import org.smcql.codegen.smc.operator.SecureOperatorFactory;
 import org.smcql.codegen.smc.operator.SecurePreamble;
 import org.smcql.codegen.smc.operator.support.UnionMethod;
-import org.smcql.compiler.emp.EmpCompiler;
+import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.compiler.emp.EmpParty;
 import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
@@ -43,6 +43,7 @@ import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.ClassPathUpdater;
 import org.smcql.util.CodeGenUtils;
+import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 
 import com.oblivm.backend.flexsc.Mode;
@@ -60,7 +61,7 @@ public class QueryCompiler {
   SecureRelRoot queryPlan;
   ExecutionStep compiledRoot;
   Mode mode = Mode.REAL;
-  String generatedClasspath = null;
+  boolean codeGenerated = false;
 
   public QueryCompiler(SecureRelRoot q) throws Exception {
 
@@ -76,10 +77,6 @@ public class QueryCompiler {
     queryId = q.getName();
     Operator root = q.getPlanRoot();
 
-    // set up space for .class files
-    generatedClasspath = Utilities.getSMCQLRoot() + "/bin/org/smcql/generated/" + queryId;
-    Utilities.mkdir(generatedClasspath);
-    Utilities.cleanDir(generatedClasspath);
 
     // single plaintext executionstep if no secure computation detected
     if (root.getExecutionMode() == ExecutionMode.Plain) {
@@ -109,10 +106,6 @@ public class QueryCompiler {
     queryId = q.getName();
     Operator root = q.getPlanRoot();
 
-    // set up space for .class files
-    generatedClasspath = Utilities.getSMCQLRoot() + "/bin/org/smcql/generated/" + queryId;
-    Utilities.mkdir(generatedClasspath);
-    Utilities.cleanDir(generatedClasspath);
 
     // single plaintext executionstep if no secure computation detected
     if (root.getExecutionMode() == ExecutionMode.Plain) {
@@ -179,7 +172,7 @@ public class QueryCompiler {
       CodeGenerator cg = e.getKey().getCodeGenerator();
       String targetFile = cg.destFilename(ExecutionMode.Plain);
       sqlFiles.add(targetFile);
-      Utilities.writeFile(targetFile, e.getValue());
+      org.smcql.util.FileUtils.writeFile(targetFile, e.getValue());
     }
 
     for (Entry<ExecutionStep, String> e : smcCode.entrySet()) {
@@ -187,31 +180,31 @@ public class QueryCompiler {
       String targetFile = cg.destFilename(ExecutionMode.Secure);
       smcFiles.add(targetFile);
       if (e.getValue() != null) // no ctes
-      Utilities.writeFile(targetFile, e.getValue());
+      org.smcql.util.FileUtils.writeFile(targetFile, e.getValue());
     }
   }
 
-  // returns filename
-  public String writeOutEmpFile() throws Exception {
-	 
-	EmpCompiler compiler = new EmpCompiler(queryId, new EmpParty());
-	compiler.writeEmpCode(getEmpCode());
-	return compiler.getEmpFilename();
+	// returns filename
+	public String writeOutEmpFile() throws Exception {
+		
+		
+		String targetFile = Utilities.getCodeGenTarget() + "/" + queryId + ".h";
+		Logger logger = SystemConfiguration.getInstance().getLogger();
+		logger.log(Level.INFO, "QueryCompiler writing generated code to " + targetFile);
+		
+		
+		String empCode = getEmpCode();
+		org.smcql.util.FileUtils.writeFile(targetFile, empCode);
+		
+		String jniFile = Utilities.getCodeGenTarget() + "/" + queryId + ".java";
+		EmpJniUtilities.createJniWrapper(queryId, jniFile);
+		codeGenerated = true;
+		
+		return targetFile;
+		
+		
+	}
 	
-	  
-  }
-
-  // TODO: clean this up -- party and party code are redundant
-  public String writeOutEmpFile(int party) throws Exception {
-	  int port = Utilities.getEmpPort();
-	 EmpParty theParty = new EmpParty(party, port);
-	EmpCompiler compiler = new EmpCompiler(queryId, theParty);
-	compiler.writeEmpCode(generateEmpCode(theParty));
-	return compiler.getEmpFilename();
-	
-	  
-  }
- 
 
   public String getEmpCode() throws Exception {
     String wholeFile = new String();
@@ -232,38 +225,15 @@ public class QueryCompiler {
     return wholeFile;
   }
 
-  public String generateEmpCode(EmpParty party) throws Exception{
 
-	  String wholeFile = new String();
+  public void  compileEmpCode() throws Exception {
+	if(!codeGenerated) 
+		writeOutEmpFile();
+	
+	
+	EmpBuilder builder = new EmpBuilder(queryId);
+	builder.compile();
 
-	    SecurePreamble preamble = new SecurePreamble(getRoot().getSourceOperator());
-	    
-	    // JMR: undo this for Alice and Bob to have separate classes
-	    //String generatedPreamble = preamble.generate(party);
-	    String generatedPreamble = preamble.generate().get("preamble");
-	    wholeFile = generatedPreamble;
-
-	    // traverse the tree bottom-up in our control flow
-	    Pair<String, String> code = empCodeGeneratorHelper((SecureStep) compiledRoot);
-	    wholeFile += code.left; // add functions
-
-	    String rootOutput = compiledRoot.getFunctionName() + "Output";
-
-	    wholeFile += generateEMPMain(code.right, rootOutput); // plug in function calls
-
-	    return wholeFile;
-
-  }
-  
-  public int compileEmpCode() throws Exception {
-	writeOutEmpFile();
-    
-    // abstract implementation for testing compilation toolchain
-	EmpParty empParty = new EmpParty();
-    EmpCompiler compiler = new EmpCompiler(queryId, empParty);     
-    return  compiler.compile();
-     
-     
   }
 
   // generate program flow by traversing the tree bottom-up

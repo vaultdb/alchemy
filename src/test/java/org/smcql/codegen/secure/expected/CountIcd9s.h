@@ -10,7 +10,7 @@ using namespace emp;
 using namespace std;
 using namespace pqxx;
 
-#define LENGTH_INT 64
+
 
 
 namespace CountIcd9s {
@@ -19,10 +19,11 @@ class CountIcd9sClass {
 // Connection strings, encapsulates db name, db user, port, host
 string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=127.0.0.1 port=5432";
 string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=127.0.0.1 port=5432";
-string bobHost = "127.0.0.1";
-bool *output;
 
-
+string aliceHost = "127.0.0.1";
+int LENGTH_INT = 64;
+string output;
+map<string, string> inputs; // maps opName --> bitString of input tuples
 
 
 // Helper functions
@@ -99,11 +100,14 @@ std::vector<Row> execute_sql(string sql, int party) {
         connection C(config);
 
         if (C.is_open()) {
+            cout << "Running " << sql << endl;
+
             cout << "Opened database successfully: " << C.dbname() << endl;
             work w(C);
             result r = w.exec(sql);
             w.commit();
-
+			cout << "Received query results!" << endl;
+			
             for (auto row : r) {
             	const int num_cols = row.size();
             	vector<int>lengths;
@@ -142,8 +146,8 @@ std::vector<Row> execute_sql(string sql, int party) {
 class Data {
 public:
     Integer * data;
-    int public_size;
-    Integer real_size;
+    int publicSize;
+    Integer realSize;
     Integer dummyTags;
 };
 
@@ -155,94 +159,101 @@ Integer from_bool(bool* b, int size, int party) {
 }
 
 
-// ordered union, multiset op, has multiset semantics
-// inputs must be sorted by sort key from query plan in source DBs
-// right now this presumes that the sort key is always the first column.
-// need to make this more general by tweaking the parameters 
-
-
 Data* Distinct2Merge(int party, NetIO * io) {
-	string sql = "SELECT DISTINCT icd9 FROM diagnoses ORDER BY icd9";
+    cout << "Running Distinct2Merge!" << endl;
+    string sql = "SELECT DISTINCT major_icd9 FROM diagnoses ORDER BY major_icd9";
     std::vector<Row> in = execute_sql(sql, party);
-    int bit_length = 256; // TODO: automatically derive size from Row metadata?
-    // flatten out local data
-    bool *local_data = concat(in, bit_length);
+    
+    cout << "Received query results" << endl;
+    int rowLength = 32; 
+    bool *localData = concat(in, rowLength);
 
-    int alice_size, bob_size;
-    alice_size = bob_size = in.size();
+
+    int aliceSize = in.size();
+    int bobSize = in.size();
 
     if (party == ALICE) {
-        io->send_data(&alice_size, 4);
+        io->send_data(&aliceSize, 4);
         io->flush();
-        io->recv_data(&bob_size, 4);
+        io->recv_data(&bobSize, 4);
         io->flush();
     } else if (party == BOB) {
-        io->recv_data(&alice_size, 4);
+        io->recv_data(&aliceSize, 4);
         io->flush();
-        io->send_data(&bob_size, 4);
+        io->send_data(&bobSize, 4);
         io->flush();
     }
 
-	Integer * res = new Integer[alice_size + bob_size];  // enough space for all inputs
+    Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
    
-    Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
+    Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
-    Batcher alice_batcher, bob_batcher;
-    
-    for (int i = 0; i < alice_size*bit_length; ++i) {
-        	   // set up bit array, if alice, secret share a local bit, 
-        	   // otherwise bob collects his part of the secret share and inputs 0 as a placeholder
-        	   alice_batcher.add<Bit>((ALICE==party) ? local_data[i]:0);
-    }
 
-	alice_batcher.make_semi_honest(ALICE);
-		
-	for(int i = 0; i < alice_size*bit_length; ++i) {
-		*tmpPtr = alice_batcher.next<Bit>();
-		++tmpPtr;
-	}
-	
-    for (int i = 0; i < bob_size*bit_length; ++i)
-        bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
-    	bob_batcher.make_semi_honest(BOB);
+    Batcher aliceBatcher, bobBatcher;
+   
+    int bobBits = bobSize * rowLength;
+    int aliceBits = aliceSize * rowLength;
 
-	// append all of bob's bits to tmp
-    for (int i = 0; i < bob_size*bit_length; ++i) {
-        *tmpPtr = bob_batcher.next<Bit>();
+    for (int i = 0; i < bobBits; ++i) {
+    	bobBatcher.add<Bit>((BOB==party) ? localData[i]:0);
+     }
+     
+    bobBatcher.make_semi_honest(BOB);
+
+
+
+    // append all of bob's bits to tmp
+    for (int i = 0; i < bobBits; ++i) {
+        *tmpPtr = bobBatcher.next<Bit>();
         ++tmpPtr;
 	}
-	
-	tmpPtr = tmp;
-	
-	// create a 2D array of secret-shared bits
-	// each index is a tuple
-    for(int i = 0; i < alice_size + bob_size; ++i) {
-        res[i] = Integer(bit_length, tmpPtr);
-        tmpPtr += bit_length;
+   
+
+    for (int i = 0; i < aliceBits; ++i) {
+    	aliceBatcher.add<Bit>((ALICE==party) ? localData[i]:0);
+    }
+
+    aliceBatcher.make_semi_honest(ALICE);
+
+
+    for(int i = 0; i < aliceBits; ++i) {
+    	    *tmpPtr = aliceBatcher.next<Bit>();
+	    	    ++tmpPtr;
+		    }
+
+   		    // resetting cursor
+		    tmpPtr = tmp;
+		    
+		    // create a 2D array of secret-shared bits
+		    // each index is a tuple
+    for(int i = 0; i < aliceSize + bobSize; ++i) {
+        res[i] = Integer(rowLength, tmpPtr);
+        tmpPtr += rowLength;
      }
 
+    // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
+    bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), 0, 32);
 
-    // TODO: sort if needed, not specific to col_length0
-    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), 0, 256);
     Data * d = new Data;
     d->data = res;
-    d->public_size = alice_size + bob_size;
-    d->real_size = Integer(64, d->public_size, PUBLIC);
-        
+    d->publicSize = aliceSize + bobSize;
+    d->realSize = Integer(64, d->publicSize, PUBLIC);
+    cout << "Done union!" << endl;   
     return d;
 }
 Data * Distinct2(Data *data) {
 	
 	
+	cout << " Running Distinct2" << endl;
 	int tupleLen = data->data[0].size() * sizeof(Bit);
 	
-    for (int i=0; i< data->public_size - 1; i++) {
+    for (int i=0; i< data->publicSize - 1; i++) {
         Integer id1 = data->data[i];
         Integer id2 = data->data[i+1];
         Bit eq = (id1 == id2);
         id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
         //maintain real size
-  	    data->real_size = If(eq, data->real_size - Integer(LENGTH_INT, 1, PUBLIC),  data->real_size);
+  	    data->realSize = If(eq, data->realSize - Integer(LENGTH_INT, 1, PUBLIC),  data->realSize);
         memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }
     
@@ -250,10 +261,12 @@ Data * Distinct2(Data *data) {
 }
 
 Data * Aggregate3(Data *data) {
-	data->public_size = 1;
+
+	cout << "Running Aggregate3 " << endl;
+	data->publicSize = 1;
 	data->data = new Integer[1];
-	data->data[0] = data->real_size;
-	data->real_size = Integer(LENGTH_INT, 1, PUBLIC);
+	data->data[0] = data->realSize;
+	data->realSize = Integer(LENGTH_INT, 1, PUBLIC);
     return data;
 }
 
@@ -262,8 +275,27 @@ Data * Aggregate3(Data *data) {
 // expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
 
 public:
+void setGeneratorHost(string host) {
+     aliceHost = host;
+}
+
+
+// placeholder for maintaining a map of inputs from JDBC
+void addInput(const std::string& opName, const std::string& bitString) {
+
+     inputs[opName] = bitString;
+
+     }
+
+
+const std::string& getOutput() {
+      return output;
+}
+
 	void run(int party, int port) {
-    NetIO * io = new NetIO((party==ALICE ? nullptr : bobHost.c_str()), port);
+	
+	std::cout << "starting run in emp! party=" << party << " port=" << port <<  std::endl;
+	NetIO * io = new NetIO((party==ALICE ? nullptr : aliceHost.c_str()), port);
     
     setup_semi_honest(io, party);
     
@@ -277,26 +309,39 @@ public:
     
     	Data * results = Aggregate3Output;
 
-		int tupleLen = results->data[0].size();
+     int tupleWidth = results->data[0].size();
+     long outputSize = results->publicSize * tupleWidth;
+     output.reserve(outputSize);
+     bool *tuple;
 
-		long outputSize = results->public_size * tupleLen;
-		output = new bool[outputSize];
-		bool *writePtr = output;
-		bool *tuple;
-		for(int i = 0; i < results->public_size; ++i) {
-			tuple = outputBits(results->data[i], tupleLen, XOR);
-			memcpy(writePtr, tuple, tupleLen);
-			writePtr += tupleLen;
-		}
 
-		io->flush();
-		delete io;
+     for(int i = 0; i < results->publicSize; ++i) {
+     	     tuple = outputBits(results->data[i], tupleWidth, XOR);
+     	     for(int j = 0; j < tupleWidth; ++j) {
+     	     	     output += (tuple[j] == true) ? '1' : '0';
+     		     }
+     }
+
+     io->flush();
+     delete io;
+
+		cout << "Finished query!" << endl;
 		
 	}
 
-    bool *getOutput() {
-    	return output;
-    }
+
+
+
+
+
+
+
+int main(int argc, char** argv) { 
+	int party, port;
+	parse_party_and_port(argv, 2, &party, &port);
+	run(party, port);
+	return 0;
+}
 }; // end class
 } // end namespace
  

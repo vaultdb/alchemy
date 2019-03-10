@@ -13,6 +13,7 @@ import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperatorTable;
 import org.apache.calcite.sql.parser.SqlParseException;
@@ -21,6 +22,8 @@ import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql.validate.SqlValidatorCatalogReader;
 import org.apache.calcite.sql.validate.SqlValidatorImpl;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
+import org.apache.calcite.sql2rel.SqlToRelConverter.Config;
+import org.apache.calcite.sql2rel.SqlToRelConverter.ConfigBuilder;
 import org.apache.calcite.sql2rel.StandardConvertletTable;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Planner;
@@ -29,6 +32,7 @@ import org.apache.calcite.tools.ValidationException;
 import org.smcql.config.SystemConfiguration;
 import org.apache.calcite.plan.Context;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.rules.*;
@@ -150,10 +154,13 @@ public class SqlStatementParser {
 	      RelRoot root =
 	          converter.convertQuery(validatedQuery, false, true);
 	      assert(root != null);
+
 	      
 	      final boolean ordered = !root.collation.getFieldCollations().isEmpty();
 	      
-	      root = root.withRel(converter.trimUnusedFields(ordered, root.rel));
+	      RelNode trimmed = converter.trimUnusedFields(ordered, root.rel);
+
+	      root = root.withRel(trimmed);
 	      return root;
 	    }
 
@@ -209,7 +216,9 @@ public class SqlStatementParser {
 	      
 	      
 	      final boolean ordered = !root.collation.getFieldCollations().isEmpty();
-	      return root.withRel(converter.trimUnusedFields(ordered, root.rel));
+	      RelNode trimmed = converter.trimUnusedFields(ordered, root.rel);
+
+	      return root.withRel(trimmed);
 	      
 	      
 	}
@@ -262,9 +271,10 @@ public class SqlStatementParser {
 
           RelOptCluster cluster =
               RelOptCluster.create(optimizer, rexBuilder);
-
-          return new SqlToRelConverter(null, validator, catalogReader, cluster,
-              StandardConvertletTable.INSTANCE);
+          
+          final SqlToRelConverter.ConfigBuilder configBuilder =  SqlToRelConverter.configBuilder().withTrimUnusedFields(true);
+          Config config = configBuilder.build();
+          return new SqlToRelConverter(null, validator, catalogReader, cluster, StandardConvertletTable.INSTANCE, config);
         }
 
 

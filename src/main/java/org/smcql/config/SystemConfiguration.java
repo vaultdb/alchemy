@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,6 +31,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.privacy.PrivacyStatistics;
+import org.smcql.util.FileUtils;
 //import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.util.Utilities;
 
@@ -70,6 +72,7 @@ public class SystemConfiguration {
 			parseConfiguration(parameters);
 			initializeLogger();
 
+			
 			return;
 		}
 		
@@ -80,13 +83,17 @@ public class SystemConfiguration {
 		System.out.println("configFile: " + configFile);
 		File f = new File(configFile); // may not always exist in remote invocations
 		if(f.exists()) {
-			List<String> parameters = Utilities.readFile(configFile);
+			List<String> parameters = FileUtils.readFile(configFile);
 			parseConfiguration(parameters);
 			
 		}		
 
 		initializeLogger();
 		initializeCalcite();
+		
+		// have to do this in system properties because remote instances may not have SystemConfiguration initialized
+		setProperty("node-type", "local");
+		
 	}
 	
 	private void initializeLogger() throws SecurityException, IOException  {
@@ -297,4 +304,20 @@ public class SystemConfiguration {
 	public Map<String, String> getProperties() {
 		return config;
 	}
+	
+	// all info needed to initialize remote host
+    public String getSetupParameters() throws Exception {
+		
+		
+		Map<String, String> propertiesMap = SystemConfiguration.getInstance().getProperties();
+		String properties = new String();
+		
+		for(Entry<String, String> param : propertiesMap.entrySet()) {
+			properties += param.getKey() + "=" + param.getValue() + "\n";
+		}
+		
+		return properties;
+	}
+	
+
 }

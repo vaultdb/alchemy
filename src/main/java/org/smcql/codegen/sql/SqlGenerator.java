@@ -4,9 +4,11 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.sql.SqlDialect;
+import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlNodeList;
 import org.apache.calcite.sql.SqlSelect;
+import org.apache.calcite.sql.parser.SqlParserPos;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.plan.operator.Operator;
@@ -39,7 +41,7 @@ public class SqlGenerator {
 	}
 	
 	public static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect) {
-		SqlNode node = converter.visitChild(0, rel).asQueryOrValues();
+		SqlSelect selection = converter.visitChild(0, rel).asSelect();
 		String sqlMode = "release";
 		try {
 			sqlMode = SystemConfiguration.getInstance().getProperty("code-generator-mode");
@@ -47,15 +49,26 @@ public class SqlGenerator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		if (node instanceof SqlSelect && ((SqlSelect) node).getWhere() != null && sqlMode != "debug") {
-			SqlNodeList list = ((SqlSelect) node).getSelectList();
-			list.add(((SqlSelect) node).getWhere());
-			((SqlSelect) node).setWhere(null);
-			((SqlSelect) node).setSelectList(list);
+		//         "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
+		// why isn't project being pushed down?
+		if (selection.getWhere() != null && sqlMode != "debug") {
+			SqlNodeList list = selection.getSelectList();
+
+			if(list == null) {
+				SqlParserPos pos = selection.getParserPosition();
+				list = new SqlNodeList(pos);
+
+				SqlNode star = (SqlNode)  SqlIdentifier.star(pos);
+				list.add(star);
+				
+			}
+			
+			list.add(selection.getWhere());
+			selection.setWhere(null);
+			selection.setSelectList(list);
 		}
 		
-		String sqlOut = node.toSqlString(dialect).getSql();
+		String sqlOut = selection.toSqlString(dialect).getSql();
 		
 		sqlOut = sqlOut.replace("\"", "");
 		return sqlOut;	

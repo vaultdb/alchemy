@@ -3,10 +3,27 @@
 // expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
 
 public:
+void setGeneratorHost(string host) {
+     aliceHost = host;
+}
+
+
+// placeholder for maintaining a map of inputs from JDBC
+void addInput(const std::string& opName, const std::string& bitString) {
+
+     inputs[opName] = bitString;
+
+     }
+
+
+const std::string& getOutput() {
+      return output;
+}
+
 	void run(int party, int port) {
 	
 	std::cout << "starting run in emp! party=" << party << " port=" << port <<  std::endl;
-	NetIO * io = new NetIO((party==ALICE ? nullptr : bobHost.c_str()), port);
+	NetIO * io = new NetIO((party==ALICE ? nullptr : aliceHost.c_str()), port);
     
     setup_semi_honest(io, party);
     
@@ -14,27 +31,32 @@ $functions
     
     	Data * results = $rootOutput;
 
-		int tupleLen = results->data[0].size();
+     int tupleWidth = results->data[0].size();
+     long outputSize = results->publicSize * tupleWidth;
+     output.reserve(outputSize);
+     bool *tuple;
 
-		long outputSize = results->public_size * tupleLen;
-		output = new bool[outputSize];
-		bool *writePtr = output;
-		bool *tuple;
-		for(int i = 0; i < results->public_size; ++i) {
-			tuple = outputBits(results->data[i], tupleLen, XOR);
-			memcpy(writePtr, tuple, tupleLen);
-			writePtr += tupleLen;
-		}
 
-		io->flush();
-		delete io;
+     for(int i = 0; i < results->publicSize; ++i) {
+     	     tuple = outputBits(results->data[i], tupleWidth, XOR);
+     	     for(int j = 0; j < tupleWidth; ++j) {
+     	     	     output += (tuple[j] == true) ? '1' : '0';
+     		     }
+     }
+
+     io->flush();
+     delete io;
+
 		cout << "Finished query!" << endl;
 		
 	}
 
-    bool *getOutput() {
-    	return output;
-    }
+
+
+
+
+
+
 
 int main(int argc, char** argv) { 
 	int party, port;

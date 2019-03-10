@@ -17,7 +17,7 @@ import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
 
-public class EmpExecutorTest extends BaseTest {
+public class EmpQueryExecutorLocalTest extends BaseTest {
   public ArrayList<String> workerIds;
 
   protected void setUp() throws Exception {

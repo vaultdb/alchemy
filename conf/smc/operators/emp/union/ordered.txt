@@ -1,99 +1,82 @@
-// ordered union, multiset op, has multiset semantics
-// inputs must be sorted by sort key from query plan in source DBs
-// right now this presumes that the sort key is always the first column.
-// need to make this more general by tweaking the parameters 
-
-
 Data* $functionName(int party, NetIO * io) {
     cout << "Running $functionName!" << endl;
-
     string sql = "$sql";
     std::vector<Row> in = execute_sql(sql, party);
-    int bit_length = $size; // TODO: automatically derive size from Row metadata?
-    // flatten out local data
-    bool *local_data = concat(in, bit_length);
+    
+    cout << "Received query results" << endl;
+    int rowLength = $size; 
+    bool *localData = concat(in, rowLength);
 
-    int alice_size, bob_size;
-    alice_size = bob_size = in.size();
+
+    int aliceSize = in.size();
+    int bobSize = in.size();
 
     if (party == ALICE) {
-        io->send_data(&alice_size, 4);
+        io->send_data(&aliceSize, 4);
         io->flush();
-        io->recv_data(&bob_size, 4);
+        io->recv_data(&bobSize, 4);
         io->flush();
     } else if (party == BOB) {
-        io->recv_data(&alice_size, 4);
+        io->recv_data(&aliceSize, 4);
         io->flush();
-        io->send_data(&bob_size, 4);
+        io->send_data(&bobSize, 4);
         io->flush();
     }
 
-    Integer * res = new Integer[alice_size + bob_size];  // enough space for all inputs
+    Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
    
-    Bit * tmp = new Bit[bit_length * (alice_size + bob_size)]; //  bit array of inputs
+    Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
-    Batcher alice_batcher, bob_batcher;
+
+    Batcher aliceBatcher, bobBatcher;
    
-    cout << "Sending bob!" << endl;
-			
-    for (int i = 0; i < bob_size*bit_length; ++i) {
-        bob_batcher.add<Bit>((BOB==party) ? local_data[i]:0);
+    int bobBits = bobSize * rowLength;
+    int aliceBits = aliceSize * rowLength;
+
+    for (int i = 0; i < bobBits; ++i) {
+    	bobBatcher.add<Bit>((BOB==party) ? localData[i]:0);
      }
+     
+    bobBatcher.make_semi_honest(BOB);
 
-    	
-    bob_batcher.make_semi_honest(BOB);
 
-	cout << "Flushing!" << endl;
-  	io->flush();
 
-  	cout << "Unwinding bob!" << endl;
-
-	// append all of bob's bits to tmp
-    for (int i = 0; i < bob_size*bit_length; ++i) {
-        *tmpPtr = bob_batcher.next<Bit>();
+    // append all of bob's bits to tmp
+    for (int i = 0; i < bobBits; ++i) {
+        *tmpPtr = bobBatcher.next<Bit>();
         ++tmpPtr;
 	}
    
-    
-    cout << "Sending alice!" << endl;
-    
-    for (int i = 0; i < alice_size*bit_length; ++i) {
-                // set up bit array, if alice, secret share a local bit, 
-        	   // otherwise bob collects his part of the secret share and inputs 0 as a placeholder
-    
-        	      alice_batcher.add<Bit>((ALICE==party) ? local_data[i]:0);
+
+    for (int i = 0; i < aliceBits; ++i) {
+    	aliceBatcher.add<Bit>((ALICE==party) ? localData[i]:0);
     }
 
-    alice_batcher.make_semi_honest(ALICE);
-	cout << "Flushing!" << endl;
+    aliceBatcher.make_semi_honest(ALICE);
 
-  	io->flush();
 
-  	cout << "Unwinding alice!" << endl;
-	
-	for(int i = 0; i < alice_size*bit_length; ++i) {
-		*tmpPtr = alice_batcher.next<Bit>();
-			++tmpPtr;
-	}
-	   
-   	
-	tmpPtr = tmp;
-	
-	// create a 2D array of secret-shared bits
-	// each index is a tuple
-    for(int i = 0; i < alice_size + bob_size; ++i) {
-        res[i] = Integer(bit_length, tmpPtr);
-        tmpPtr += bit_length;
+    for(int i = 0; i < aliceBits; ++i) {
+    	    *tmpPtr = aliceBatcher.next<Bit>();
+	    	    ++tmpPtr;
+		    }
+
+   		    // resetting cursor
+		    tmpPtr = tmp;
+		    
+		    // create a 2D array of secret-shared bits
+		    // each index is a tuple
+    for(int i = 0; i < aliceSize + bobSize; ++i) {
+        res[i] = Integer(rowLength, tmpPtr);
+        tmpPtr += rowLength;
      }
 
-
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
-    bitonic_merge_sql(res, 0, alice_size + bob_size, Bit(true), $keyPos, $keyLength);
+    bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), $keyPos, $keyLength);
+
     Data * d = new Data;
     d->data = res;
-    d->public_size = alice_size + bob_size;
-    d->real_size = Integer(64, d->public_size, PUBLIC);
-        
+    d->publicSize = aliceSize + bobSize;
+    d->realSize = Integer(64, d->publicSize, PUBLIC);
+    cout << "Done union!" << endl;   
     return d;
 }
-

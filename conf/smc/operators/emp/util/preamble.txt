@@ -19,10 +19,11 @@ class $queryClass {
 // Connection strings, encapsulates db name, db user, port, host
 string aliceConnectionString = "$aliceConnectionString";
 string bobConnectionString = "$bobConnectionString";
-string bobHost = "$bobHost";
-bool *output;
-int LENGTH_INT = 64;
 
+string aliceHost = "$aliceHost";
+int LENGTH_INT = 64;
+string output;
+map<string, string> inputs; // maps opName --> bitString of input tuples
 
 
 // Helper functions
@@ -145,8 +146,8 @@ std::vector<Row> execute_sql(string sql, int party) {
 class Data {
 public:
     Integer * data;
-    int public_size;
-    Integer real_size;
+    int publicSize;
+    Integer realSize;
     Integer dummyTags;
 };
 

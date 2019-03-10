@@ -1,6 +1,6 @@
 #configure locations
-codegen-target=bin
-javacpp-jar=target/javacpp-1.2.2.jar
+local-codegen-target=src/main/java/org/smcql/compiler/emp/generated
+remote-codegen-target=org/smcql/compiler/emp/generated	
 data-providers=conf/connections/remote-hosts
 
 #log information
@@ -16,6 +16,8 @@ mpc-lib=emp
 #set to debug to disable pushing filter up to select
 code-generator-mode=release 
 emp-port=54321
+generated-class-prefix=org.smcql.compiler.emp.generated
+
 
 #privacy consumed by each operator
 epsilon=0.1
@@ -26,5 +28,5 @@ delta=0.0
 host=localhost
 port=5432
 db=smcql_testdb
-user=jennie
-password=one4smcql
+user=smcql
+password=smcql123

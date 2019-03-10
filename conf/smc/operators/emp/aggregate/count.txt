@@ -1,10 +1,10 @@
 Data * $functionName(Data *data) {
 
 	cout << "Running $functionName " << endl;
-	data->public_size = 1;
+	data->publicSize = 1;
 	data->data = new Integer[1];
-	data->data[0] = data->real_size;
-	data->real_size = Integer(LENGTH_INT, 1, PUBLIC);
+	data->data[0] = data->realSize;
+	data->realSize = Integer(LENGTH_INT, 1, PUBLIC);
     return data;
 }
 

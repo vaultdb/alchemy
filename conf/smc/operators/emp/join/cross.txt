@@ -1,5 +1,5 @@
 Data * $functionName(Data *left, Data *right) {
-    Integer *output = new Integer[left->public_size * right->public_size];
+    Integer *output = new Integer[left->publicSize * right->publicSize];
     Data *result = new Data;
     int writeIdx = 0;
     
@@ -11,15 +11,15 @@ Data * $functionName(Data *left, Data *right) {
 	int rhsBitLength = sizeof(Bit)*rhsTupleLength;
 
     // output tuple count
-    result->public_size = left->public_size * right->public_size;
-    result->real_size = left->public_size * right->public_size;
+    result->publicSize = left->publicSize * right->publicSize;
+    result->realSize = left->publicSize * right->publicSize;
     
     
-    for (int i=0; i<left->public_size; i++) {
+    for (int i=0; i<left->publicSize; i++) {
     	// integers are all bitlength, i.e., tuple length
     	Integer lhs = left->data[i];
     	
-        for (int j=0; j<right->public_size; j++) {
+        for (int j=0; j<right->publicSize; j++) {
 	    	Integer rhs = right->data[j];
 	    	Bit outBits = new Bit[outLength];
 			memcpy(outBits, lhs.bits, lhsBitLength);

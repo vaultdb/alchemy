@@ -62,6 +62,7 @@ public class PlainOperator implements CodeGenerator {
 		Operator parent = planNode.getParent();
 		Operator sqlOp = planNode;
 		if (sqlOp instanceof SeqScan) {
+			// push down filters and projects into the select clause
 			while (parent instanceof Filter || parent instanceof Project) {
 				sqlOp = parent;
 				parent = parent.getParent();

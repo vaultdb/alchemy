@@ -1,6 +1,8 @@
 package org.smcql.plan;
 
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelRoot;
+import org.apache.calcite.sql.SqlExplainLevel;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.parser.SqlStatementParser;
 import org.smcql.parser.TreeBuilder;
@@ -18,7 +20,9 @@ public class SecureRelRoot {
 		
 		baseRoot = parser.optimize(baseRoot); // optimized to represent in a fine granularity for more smc avoidance
 		
+
 		baseRoot = parser.trimFields(baseRoot); // use minimal set of fields to avoid triggering unnecessary SMC
+
 		
 		baseRoot = parser.mergeProjects(baseRoot); // drop any unnecessary steps in the plan
 		

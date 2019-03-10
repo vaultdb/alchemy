@@ -178,15 +178,6 @@ Data* unionOp(int party, NetIO * io) {
         tmpPtr += rowLength;
      }
 
-    	for(int i = 0; i < aliceSize + bobSize; ++i) {
-    		string decrypted = reveal_bin(res[0], rowLength, PUBLIC);
-    		if(party == ALICE) {
-    			// reverse for endian-ness
-    			std::reverse(decrypted.begin(), decrypted.end());
-    			string plaintext = binstr_to_str(decrypted);
-    		}
-
-    }
 
     Data * d = new Data;
     d->data = res;

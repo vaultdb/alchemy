@@ -29,6 +29,7 @@ import org.smcql.compiler.emp.EmpParty;
 import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.util.ClassPathUpdater;
+import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
 
 import org.bytedeco.javacpp.tools.*;
@@ -176,7 +177,7 @@ public class DynamicCompiler
     }
     
     public static void compileJava(String srcFile, String packageName) throws Exception {
-		List<String> code = Utilities.readFile(srcFile);
+		List<String> code = FileUtils.readFile(srcFile);
 		String smcCode = StringUtils.join(code.toArray(), "\n");
 	
 		JavaFileObject so = new InMemoryJavaFileObject(packageName, smcCode);
@@ -191,7 +192,7 @@ public class DynamicCompiler
     	JavaFileObject[] sos = new JavaFileObject[srcFiles.length];
     	for (int i = 0; i < srcFiles.length; i++) {
     		String file = path + "/" + srcFiles[i];
-	    	List<String> code = Utilities.readFile(file);
+	    	List<String> code = FileUtils.readFile(file);
 			String smcCode = StringUtils.join(code.toArray(), "\n");
 
 		
@@ -205,7 +206,7 @@ public class DynamicCompiler
     public static void compileOblivFromFile(String srcFile) throws Exception {
     	String dstPath = Utilities.getCodeGenTarget();
 
-    	List<String> lines = Utilities.readFile(srcFile);
+    	List<String> lines = FileUtils.readFile(srcFile);
     	String firstLine = lines.get(0);
 
     	String[] packageTokens = firstLine.split(" ");
@@ -235,7 +236,7 @@ public class DynamicCompiler
     		String dstPath = Utilities.getCodeGenTarget() + "/";
 		String srcFile = dstPath + "tmp.lcc";
 		
-		Utilities.writeFile(srcFile, smcCode);
+		FileUtils.writeFile(srcFile, smcCode);
 
 		Cmd.compile(srcFile, dstPath);
 		

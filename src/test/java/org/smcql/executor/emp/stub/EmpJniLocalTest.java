@@ -1,10 +1,12 @@
-package org.smcql.compiler.emp;
+package org.smcql.executor.emp.stub;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
+import org.smcql.compiler.emp.EmpBuilder;
+import org.smcql.compiler.emp.EmpRunnable;
+import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.EmpJniUtilities;
 import junit.framework.TestCase;
 
@@ -16,13 +18,13 @@ public class EmpJniLocalTest  extends TestCase  {
 	 
 
     
-	public void testEmpJniProcessCalls() throws Exception {
+	public void testEmpJni() throws Exception {
 		EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, 54321, false);
 		EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, 54321, false);
 
 
-	   EmpBuilder builder = new EmpBuilder();
-	   builder.compile(fullyQualifiedClassName, true);
+	   EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
+	   builder.compile();
 
 	   
 		

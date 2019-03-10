@@ -3,9 +3,7 @@ package org.smcql.compiler.emp;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 
 import org.bytedeco.javacpp.ClassProperties;
@@ -14,14 +12,21 @@ import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.tools.BuildEnabled;
 import org.bytedeco.javacpp.tools.Builder;
 import org.bytedeco.javacpp.tools.Logger;
+import org.smcql.config.SystemConfiguration;
+import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 
-// based on builder test in Javacpp
-// https://github.com/bytedeco/javacpp/blob/master/src/test/java/org/bytedeco/javacpp/BuilderTest.java
 
 public class EmpBuilder implements BuildEnabled, LoadEnabled {
 
-  
+	String fullyQualifiedClassName;
+	java.util.logging.Logger smcqlLogger = null;
+	
+	public EmpBuilder(String className) throws Exception {
+		fullyQualifiedClassName = EmpJniUtilities.getFullyQualifiedClassName(className);
+    	System.out.println("Started with " + className + " using " + fullyQualifiedClassName);
+    	smcqlLogger = SystemConfiguration.getInstance().getLogger();
+	}
     @Override 
     public void init(ClassProperties properties) {
     }
@@ -31,10 +36,23 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     }
     
 
-    // takes as input fully qualified class name
     @SuppressWarnings("rawtypes")
-    public void compile(String name, boolean isLocal) throws Exception {
-        Class cls = Class.forName(name);
+    public void compile() throws Exception {
+    	
+    	// node type is local or remote
+    	// local nodes run within maven framework and work out of src/main/java
+    	// remote simply works from "."
+    	String nodeType = SystemConfiguration.getInstance().getProperty("node-type");
+       	String projectDirectory = System.getProperty("user.dir");
+    	String workingDirectory = new String(projectDirectory);
+    	if(nodeType.equals("local")) {
+    		workingDirectory += "/src/main/java";
+    	}
+
+    	System.setProperty("user.dir", workingDirectory);
+    
+    	smcqlLogger.info("Comp  iling: |" + fullyQualifiedClassName + "| from " + workingDirectory);
+    	Class cls = Class.forName(fullyQualifiedClassName);
         
         // initial cleanup
         String extension = "-emp";
@@ -50,34 +68,38 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         Properties properties = getProperties();
         
         
-        String className = name.substring(name.lastIndexOf('.')+1);
-        if(isLocal) {
-        	// copy over our header files to build target
+        String className = fullyQualifiedClassName.substring(fullyQualifiedClassName.lastIndexOf('.')+1);
+
+        if(nodeType.equals("local")) {
+        	// copy over our header files to build target for local builds
         	String srcHeader = "src/main/java/org/smcql/compiler/emp/generated/" + className + ".h";
         	String dstHeader = "target/classes/org/smcql/compiler/emp/generated/" + className + ".h";
-        	String cmd = "cp " + srcHeader + " " + dstHeader;
 
-        	Utilities.runCmd(cmd, System.getProperty("user.dir"));
+        	// in localhost setting
+        	String cmd = "cp " + srcHeader + " " + dstHeader;
+            Utilities.runCmd(cmd, System.getProperty("user.dir"));
         }
         
         Builder builder = new Builder().properties(properties).classesOrPackages(cls.getName()); //.copyLibs(true);
  
         
         File[] outputFiles = builder.build();
-        System.out.println("Builder files: " + Arrays.toString(outputFiles));
+        smcqlLogger.info("Builder files: " + Arrays.toString(outputFiles));
         
+        // revert search path
+        System.setProperty("user.dir", projectDirectory);
     }
     
     
     @SuppressWarnings("rawtypes")
-    public EmpProgram getClass(String name, int party, int port) throws Exception {
-        Class cls = Class.forName(name);
+    public EmpProgram getClass(int party, int port) throws Exception {
+        Class cls = Class.forName(fullyQualifiedClassName);
         Properties properties = getProperties();
         
         // loads and returns name of lib that contains this class
     	Object instance = Loader.load(cls, properties, true);
         if(instance == null || instance.equals("")) {
-        	throw new Exception("Failed to load library for " + name);
+        	throw new Exception("Failed to load library for " + fullyQualifiedClassName);
         }
         
         Constructor<?>[] constructors = cls.getConstructors();

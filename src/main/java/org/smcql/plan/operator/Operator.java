@@ -459,6 +459,10 @@ public abstract class Operator implements CodeGenerator {
 	
 	//returns first non-Project, non-Filter child Op
 	public Operator getNextValidChild() {
+		if(children.isEmpty()) {
+			return this;
+		}
+		
 		Operator child = children.get(0);
 		while (child instanceof Project || child instanceof Filter) {
 			child = child.getChild(0);

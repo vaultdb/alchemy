@@ -1,18 +1,18 @@
 package org.smcql.compiler.emp.generated;
 
 
-import java.nio.ByteBuffer;
 
-import org.bytedeco.javacpp.BoolPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
-import org.bytedeco.javacpp.annotation.ByPtr;
 import org.bytedeco.javacpp.annotation.Namespace;
 import org.bytedeco.javacpp.annotation.Platform;
+import org.bytedeco.javacpp.annotation.StdString;
+
+
+
 
 
 import org.smcql.compiler.emp.EmpProgram;
-import org.smcql.compiler.emp.EmpParty;
 
 
 @Platform(include={"$queryName.h"}, 
@@ -25,17 +25,14 @@ import org.smcql.compiler.emp.EmpParty;
 @Namespace("$queryName")
 public class $queryName  extends EmpProgram  {
 
-
-	
 	public $queryName(int party, int port) {
 		super(party, port);
 	}
+	
 
 	public static class $queryClass extends Pointer {
 	
-        static {
-        
-         
+        static {         
 			Loader.load(); 
 	       } 
        
@@ -43,50 +40,54 @@ public class $queryName  extends EmpProgram  {
         	allocate(); 
         	}
         private native void allocate();
-
+        public native void addInput(@StdString String opName,  @StdString String bitString);
         public native void run(int party, int port); 
-        public native @ByPtr BoolPointer getOutput();
+        public native void setGeneratorHost(@StdString String host);
+        public native @StdString String getOutput();
         
         
 	}
 	
 	   boolean[] queryOutput = null;
-	   
-	   @Override
-	   public String helloWorld() {
-    		return "I am a $queryName!";
-    	}
+	
 	   
 	   	
         @Override
         public  boolean[] runProgram() {
         	$queryClass theQuery = new $queryClass();
 
-        	System.out.println("Running $queryName with object " + theQuery + " of type " + theQuery.getClass());        	
-	        theQuery.run(party.asInt(), party.getPort());
-
-		    System.out.println("Done running emp!");	        
-	        BoolPointer outputPtr = theQuery.getOutput();
-	        ByteBuffer buf = outputPtr.asByteBuffer();
-	        
-	        // copy bytes out of buffer
-	        byte[] bytes = new byte[buf.capacity()];    
-	        buf.get(bytes, 0, bytes.length);
-	        
+        	if(generatorHost != null) {
+        		theQuery.setGeneratorHost(generatorHost);
+        	}
+        	theQuery.run(party, port);
+        	String output = theQuery.getOutput();
 	        theQuery.close();
-	        
-	       return byteArray2BitArray(bytes);
-	        
+
+	       boolean[] outBits = new boolean[output.length()];
+	       for(int i = 0; i < output.length(); ++i) {
+	    	   outBits[i] = output.charAt(i) == '1' ? true : false;
+	       }
+	       return outBits;
+	       
         }
         
+
 	// for testing
 	public static void main(String[] args) {
-           int party = Integer.parseInt(args[0]);
-	       int port = Integer.parseInt(args[1]);
+           
+		int party = Integer.parseInt(args[0]);
+		int port = Integer.parseInt(args[1]);
 		
 		$queryName qc = new $queryName(party, port);
-		qc.runProgram();
-	
+		boolean[] bits = qc.runProgram();
+		char b;
+	       
+			// write bitstring to stderr
+			for(int i = 0; i < bits.length; ++i) {
+				b = (bits[i] == true) ? '1' : '0';
+				System.err.print(b);
+			}
+
 	        
     }        
 	

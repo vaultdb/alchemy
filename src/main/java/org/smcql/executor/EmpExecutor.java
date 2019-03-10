@@ -1,7 +1,6 @@
 package org.smcql.executor;
 
 import org.smcql.codegen.QueryCompiler;
-import org.smcql.compiler.emp.EmpCompiler;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.smc.ExecutionSegment;
 import org.smcql.executor.step.ExecutionStep;
@@ -20,7 +19,7 @@ public class EmpExecutor extends MPCExecutor {
 	
 	SegmentExecutor runner = null;
 	QueryCompiler compiledPlan = null;
-	private List<boolean[]> lastOutput;
+	private QueryTable lastOutput;
 	private QueryTable plainOutput;
 	String queryId = null; 
 	SecureRelRecordType outSchema;
@@ -73,8 +72,6 @@ public class EmpExecutor extends MPCExecutor {
 			while(li.hasPrevious()) { 
 				ExecutionSegment segment = li.previous();
 				runner.setQueryCompiler(compiledPlan);
-				runner.compileEmp(queryId);
-				System.out.println("******************* Done query compilation **************");
 				lastOutput = runner.runSecure(segment, queryId);
 				outSchema = segment.outSchema;
 			}
@@ -93,17 +90,8 @@ public class EmpExecutor extends MPCExecutor {
 			return plainOutput;
 		}
 		
-		boolean[] lhs = lastOutput.get(0);
-		boolean[] rhs = lastOutput.get(1);
-		boolean[] decrypted = new boolean[lhs.length];
+		return lastOutput;
 		
-		assert(lhs.length == rhs.length);
-		
-		for(int i = 0; i < lhs.length; ++i) {
-			decrypted[i] = lhs[i] ^ rhs[i];
-		}
-		
-		return new QueryTable( decrypted, outSchema);	
 		
 	}
 	

@@ -51,7 +51,7 @@ public class CodeGenUtils {
 			e.printStackTrace();
 		}
 
-		List<String> template = Utilities.readFile(srcFile);
+		List<String> template = FileUtils.readFile(srcFile);
 		
 		//while(incompleteSubstitution(template)) {
 			for(int i = 0; i < template.size(); ++i) {

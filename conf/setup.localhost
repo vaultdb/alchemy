@@ -1,7 +1,7 @@
 #configure locations
-codegen-target=src/main/java/org/smcql/compiler/emp/generated
+local-codegen-target=src/main/java/org/smcql/compiler/emp/generated
 data-providers=conf/connections/localhosts
-javacpp-working-directory=src/main/java
+
 
 
 #log information
@@ -13,7 +13,10 @@ slice-parallelism=2
 semijoin-execution=false
 mpc-lib=emp
 emp-port=54321
-code-generator-mode=release #set to debug to disable pushing filter up to select
+generated-class-prefix=org.smcql.compiler.emp.generated
+#set to debug to disable pushing filter up to select
+code-generator-mode=release 
+
 
 #privacy consumed by each operator
 epsilon=0.1
@@ -25,4 +28,4 @@ host=localhost
 port=5432
 db=smcql_testdb
 user=smcql
-password=password
+password=smcql123

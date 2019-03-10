@@ -9,6 +9,7 @@ import org.smcql.compiler.DynamicCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.util.CodeGenUtils;
 import org.smcql.util.CommandOutput;
+import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,22 +23,18 @@ public class EmpCompiler {
 	String className;
 	boolean generateJni = true;
 	Logger logger = null;
-	EmpParty party;
 	int port = 0;
 	String javaCppWorkingDirectory;
 	
 	// e.g., Count
-	public EmpCompiler(String className, EmpParty party) throws Exception {
-		this.party = party;
+	public EmpCompiler(String className) throws Exception {
 		this.className = className;
 		System.out.println("Working on  class " + this.className);
 		
-	    // JMR: undo this for Alice and Bob to have separate classes
-		//this.className = className + party.asString();
 		
 		SystemConfiguration config = SystemConfiguration.getInstance();
 		
-		port = Integer.parseInt(config.getProperty("emp-port"));
+		port = EmpJniUtilities.getEmpPort();
 		javaCppJar = Utilities.getSMCQLRoot() + "/" + config.getProperty("javacpp-jar");
 		propertyFile = getPropertyFile();
 		logger = config.getLogger();

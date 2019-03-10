@@ -1,4 +1,4 @@
 #List the workers and their associated databases here
 #workerName=host:psqlPort,db name,smcql id (must be distinct, internal use)
-alice=codd1:5432,healthlnk_testdb_site1,$SMCQL_ROOT,54321,1
-bob=codd2:5432,healthlnk_testdb_site2,$SMCQL_ROOT,54321,2
+alice=codd1:5432,smcql_testdb_site1,$SMCQL_ROOT,54321,1
+bob=codd2:5432,smcql_testdb_site2,$SMCQL_ROOT,54321,2

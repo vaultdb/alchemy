@@ -1,22 +1,21 @@
-package org.smcql.codegen.smc.compiler.emp.generated;
+package org.smcql.compiler.emp.generated;
 
-import java.nio.ByteBuffer;
 
-import org.bytedeco.javacpp.BoolPointer;
+
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
-import org.bytedeco.javacpp.annotation.ByPtr;
 import org.bytedeco.javacpp.annotation.Namespace;
 import org.bytedeco.javacpp.annotation.Platform;
+import org.bytedeco.javacpp.annotation.StdString;
 
 
-import org.smcql.codegen.smc.compiler.emp.EmpProgram;
+
+
+
+import org.smcql.compiler.emp.EmpProgram;
 
 
 @Platform(include={"CountIcd9s.h"}, 
-			includepath= "/usr/local/include", 
-			linkpath="/usr/local/lib", 
-			link={"emp-tool","pqxx"},
 			compiler = "cpp11")
 
 
@@ -26,50 +25,71 @@ import org.smcql.codegen.smc.compiler.emp.EmpProgram;
 @Namespace("CountIcd9s")
 public class CountIcd9s  extends EmpProgram  {
 
-
-	
-	public CountIcd9s(int aParty, int aPort) {
-		super(aParty, aPort);
+	public CountIcd9s(int party, int port) {
+		super(party, port);
 	}
+	
 
 	public static class CountIcd9sClass extends Pointer {
-        static { Loader.load(); }
+	
+        static {         
+			Loader.load(); 
+	       } 
+       
         public CountIcd9sClass() { 	
         	allocate(); 
         	}
         private native void allocate();
-
+        public native void addInput(@StdString String opName,  @StdString String bitString);
         public native void run(int party, int port); 
-        public native @ByPtr BoolPointer getOutput();
+        public native void setGeneratorHost(@StdString String host);
+        public native @StdString String getOutput();
         
         
 	}
 	
-	   CountIcd9sClass theQuery;
+	   boolean[] queryOutput = null;
+	
 	   
-	   
+	   	
         @Override
-        public  void runProgram() {
-        	theQuery = new CountIcd9sClass();
-	        theQuery.run(party, port);
-	        
-        }
-        
-        public boolean[] getOutput() {
-        
-            BoolPointer outputPtr = theQuery.getOutput();
-	        ByteBuffer buf = outputPtr.asByteBuffer();
-	        
-	        // copy bytes out of buffer
-	        byte[] bytes = new byte[buf.capacity()];    
-	        buf.get(bytes, 0, bytes.length);
-	        theQuery.close();
-	        
-	        return byteArray2BitArray(bytes);
-	     
-        }
+        public  boolean[] runProgram() {
+        	CountIcd9sClass theQuery = new CountIcd9sClass();
 
+        	if(generatorHost != null) {
+        		theQuery.setGeneratorHost(generatorHost);
+        	}
+        	theQuery.run(party, port);
+        	String output = theQuery.getOutput();
+	        theQuery.close();
+
+	       boolean[] outBits = new boolean[output.length()];
+	       for(int i = 0; i < output.length(); ++i) {
+	    	   outBits[i] = output.charAt(i) == '1' ? true : false;
+	       }
+	       return outBits;
+	       
+        }
         
+
+	// for testing
+	public static void main(String[] args) {
+           
+		int party = Integer.parseInt(args[0]);
+		int port = Integer.parseInt(args[1]);
+		
+		CountIcd9s qc = new CountIcd9s(party, port);
+		boolean[] bits = qc.runProgram();
+		char b;
+	       
+			// write bitstring to stderr
+			for(int i = 0; i < bits.length; ++i) {
+				b = (bits[i] == true) ? '1' : '0';
+				System.err.print(b);
+			}
+
+	        
+    }        
 	
     	
 }

@@ -2,7 +2,7 @@
 // see ObliVM generator for example of this
 // this example is based on aspirin expected code
 Data * $functionName(Data *left, Data *right) {
-    Integer *output = new Integer[left->public_size * right->public_size];
+    Integer *output = new Integer[left->publicSize * right->publicSize];
     int writeIdx = 0;
     Integer dstTuple, srcTuple, lTuple, rTuple;
     int jointSchemaSize = $lSize + $rSize;
@@ -11,8 +11,8 @@ Data * $functionName(Data *left, Data *right) {
     
     dstTuple = Integer($dSize, 0, PUBLIC); // indicates dummy
     
-    for (int i=0; i<left->public_size; i++) {
-        for (int j=0; j<right->public_size; j++) {
+    for (int i=0; i<left->publicSize; i++) {
+        for (int j=0; j<right->publicSize; j++) {
         	lTuple = left->data[i];
         	rTuple = right->data[j];
         	// concatenate the two inputs into srcTuple, the standard join output schema
@@ -30,9 +30,9 @@ Data * $functionName(Data *left, Data *right) {
     Data *result = new Data;
     result->data = output;
     // output tuple count
-    result->public_size = left->public_size * right->public_size;
+    result->publicSize = left->publicSize * right->publicSize;
 	// real size needs to be maintained by counting the times the join criteria is met
 	// this variable should probably not be public
-    result->real_size = Integer(64, left->public_size, PUBLIC);
+    result->realSize = Integer(64, left->publicSize, PUBLIC);
     return result;
 }

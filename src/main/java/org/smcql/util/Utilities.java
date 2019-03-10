@@ -2,26 +2,14 @@ package org.smcql.util;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.java.JavaTypeFactory;
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.schema.SchemaPlus;
@@ -29,9 +17,9 @@ import org.apache.calcite.schema.Table;
 import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.tools.Planner;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.GeometricDistribution;
+import org.bytedeco.javacpp.Loader;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.schema.SecureSchemaLookup;
 import org.smcql.executor.smc.OperatorExecution;
@@ -87,54 +75,25 @@ public class Utilities {
     	}
  
     	public static String getCodeGenTarget() {
-    		
+    	
     		try {
-				return getSMCQLRoot() + "/" + SystemConfiguration.getInstance().getProperty("codegen-target");
+    			
+    			SystemConfiguration config = SystemConfiguration.getInstance();
+    			String nodeType = config.getProperty("node-type"); // local or remote
+    			String localTarget = (nodeType.equals("remote")) ? config.getProperty("remote-codegen-target")
+    															 : config.getProperty("local-codegen-target");
+    			
+    				return getSMCQLRoot() + "/" + localTarget;
+    			
 			} catch (Exception e) {
-				System.out.println("Missing codegen-target parameter, please add it to your config file.");
+				System.out.println("Missing local-codegen-target parameter (or remote-codegen-target), please add it to your config file.");
 				e.printStackTrace();
 			}
+    		// default 
     		return getSMCQLRoot() + "/bin";
     	}
  
-    	public static List<String> readFile(String filename) throws IOException  {	
-    		List<String> lines = null;
-		
-	    if(System.getProperty("smcql.root") != null) {
-	    		InputStream is = Utilities.class.getClassLoader().getResourceAsStream(filename);
-	    		lines = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
-	    } else {
-	    		lines = Files.readAllLines(Paths.get(filename), StandardCharsets.UTF_8);
-	    }
-		
-	    return lines;				
-    	}
-
-	public static void writeFile(String fname, String contents) throws FileNotFoundException, UnsupportedEncodingException {
-         String path = FilenameUtils.getFullPath(fname);
-         File f = new File(path);
-         f.mkdirs();
-
-         PrintWriter writer = new PrintWriter(fname, "UTF-8");
-         writer.write(contents);
-         writer.close();
-
-
-	 }
-
-		public static byte[] readGeneratedClassFile(String packageName) throws IOException {
-			String filename = Utilities.getCodeGenTarget() + "/"  + packageName.replace('.', '/') + "/NoClass.class";
-			return readBinaryFile(filename);
-		}
-
-		public static byte[] readBinaryFile(String filename) throws IOException {
-			  System.out.println("reading in bytecode for " + filename);
-		 	  Path p = FileSystems.getDefault().getPath("", filename);
-		 	  return Files.readAllBytes(p);	 
-		}
-
-
-		public static SecureRelRecordType getOutSchemaFromSql(String sql) throws Exception {
+    	public static SecureRelRecordType getOutSchemaFromSql(String sql) throws Exception {
 			SecureRelRoot relRoot = new SecureRelRoot("anonymous", sql);
 			
 			return relRoot.getPlanRoot().getSchema();
@@ -172,34 +131,7 @@ public class Utilities {
 			
 			
 		}
-	
-	public static void cleanEmpCode(String className) throws Exception {
-		String delGeneratedFiles = "rm " + Utilities.getCodeGenTarget() + "/" + className + "* ";
-		runCmd(delGeneratedFiles);
 
-		
-		String osName =  System.getProperty("os.name", "").toLowerCase();
-		
-		if (osName.startsWith("mac os x") || osName.startsWith("darwin")) {
-            osName = "macosx";
-		}
-		else if(osName.startsWith("linux")){
-			osName = "linux";
-		}
-		else {
-			System.out.print("Unsupported system: " + osName + "!  Not cleaning dir...");
-			return;
-		}
-		
-		
-		String delOsCode = "rm -rf " + Utilities.getCodeGenTarget()+ "/" + osName + "*";
-		runCmd(delOsCode);
-		
-		// nuke the javacpp cache
-		String delCache = "rm -rf " + System.getProperty("user.home") + "/.javacpp/cache";
-		runCmd(delCache);
-		
-	}
 		
 	public static CommandOutput runCmd(String aCmd) throws IOException, InterruptedException {
 		
@@ -324,20 +256,6 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		String tableName = outSchema.getAttributes().get(0).getStoredTable();
 		return query.replaceFirst(tableName, "((SELECT * FROM remote_" + tableName +"_A) UNION ALL (SELECT * FROM remote_" + tableName + "_B)) remote_" + tableName);
 
-	}
-
-	public static int getEmpPort() throws Exception {
-		int port;
-		// try local source
-		String empPort = SystemConfiguration.getInstance().getProperty("emp-port");
-		if(empPort != null && empPort != "") {
-			port = Integer.parseInt(empPort); // TODO: check if it is numeric
-		}
-		else {
-			// handle remote case
-			port = Integer.parseInt(System.getProperty("emp.port"));
-		}
-		return port;
 	}
 
 

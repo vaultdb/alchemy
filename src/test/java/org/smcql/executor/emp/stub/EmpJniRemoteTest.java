@@ -1,4 +1,4 @@
-package org.smcql.compiler.emp;
+package org.smcql.executor.emp.stub;
 
 import java.net.InetAddress;
 import java.util.List;
@@ -12,11 +12,14 @@ import org.gridkit.nanocloud.telecontrol.ssh.SshSpiConf;
 import org.gridkit.vicluster.ViNode;
 import org.gridkit.vicluster.ViProps;
 import org.gridkit.vicluster.telecontrol.ssh.RemoteNodeProps;
+import org.smcql.compiler.emp.EmpBuilder;
+import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.util.CommandOutput;
 import org.smcql.util.EmpJniUtilities;
+import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
 
 import junit.framework.TestCase;
@@ -25,9 +28,6 @@ public class EmpJniRemoteTest extends TestCase  {
 	
 	final String smcqlRoot = Utilities.getSMCQLRoot();
 	final String className = "EmpJniDemo";
-	final String localPath = "src/main/java";
-	final String empCodeLocal = "org/smcql/compiler/emp/generated/" + className + ".h";
-	final String jniCodeLocal = "org/smcql/compiler/emp/generated/" + className + ".java";
 	
 	final String fullyQualifiedClassName = "org.smcql.compiler.emp.generated." + className;
 	Cloud cloud;
@@ -39,7 +39,14 @@ public class EmpJniRemoteTest extends TestCase  {
 	  protected void setUp() throws Exception {
 		    String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.remote";
 		    System.setProperty("smcql.setup", setupFile);
-			cloud = CloudFactory.createCloud();
+			
+		    SystemConfiguration.getInstance(); // initialize config
+		    initializeCloud();
+	  }
+	  
+	  
+	  private void initializeCloud() throws Exception {
+		  cloud = CloudFactory.createCloud();
 	        RemoteNode.at(cloud.node("**")).useSimpleRemoting();
 
 			
@@ -54,6 +61,32 @@ public class EmpJniRemoteTest extends TestCase  {
 		     for(WorkerConfiguration w : workers) {
 		    	 initializeHost(w);
 		     }
+
+			 // declare nodes
+			 cloud.node("alice");
+			 cloud.node("alice").setProp("party", "alice");
+
+			 cloud.node("bob");
+			 cloud.node("bob").setProp("party", "bob");
+
+			
+			 cloud.node("**").x(VX.PROCESS).addJvmArg("-Xms4096m"); // give it lots of memory
+			 cloud.node("**").setProp("emp.port", SystemConfiguration.getInstance().getProperty("emp-port"));
+			 cloud.node("**").setProp("class.name", className);
+			 
+			 String codeGenTarget = Utilities.getCodeGenTarget();
+			 List<String> empLines =  FileUtils.readFile(codeGenTarget + "/" + className + ".h");
+			 cloud.node("**").setProp("emp.code", String.join("\n", empLines));
+			 
+
+			 List<String> jniLines =  FileUtils.readFile(codeGenTarget + "/" + className + ".java");
+			 cloud.node("**").setProp("jni.code", String.join("\n", jniLines));
+			 cloud.node("**").setProp("alice.host", generatorHost);
+
+		     cloud.node("**").setProp("smcql.setup.str", SystemConfiguration.getInstance().getSetupParameters());
+		     cloud.node("**").setProp("emp.port", String.valueOf(EmpJniUtilities.getEmpPort()));
+
+		  
 	  }
 
 	
@@ -64,7 +97,7 @@ public class EmpJniRemoteTest extends TestCase  {
 		 System.out.println("Output: " + tuples);
 	}
 	
-	
+		
 	  private void initializeHost(WorkerConfiguration worker) throws Exception {
 	        String host = worker.hostname;
 	        String workerId = worker.workerId;
@@ -100,30 +133,9 @@ public class EmpJniRemoteTest extends TestCase  {
 
 	  
 	  
-	// for remote test
 	private List<boolean[]> runCloudExecution() throws Exception {
 		 
-		 // declare nodes
-		 cloud.node("alice");
-		 cloud.node("alice").setProp("party", "alice");
 
-		 cloud.node("bob");
-		 cloud.node("bob").setProp("party", "bob");
-
-		
-		 cloud.node("**").x(VX.PROCESS).addJvmArg("-Xms4096m"); // give it lots of memory
-		 cloud.node("**").setProp("emp.port", SystemConfiguration.getInstance().getProperty("emp-port"));
-		 
-		 List<String> empLines =  Utilities.readFile(localPath + "/" + empCodeLocal);
-		 cloud.node("**").setProp("emp.code", String.join("\n", empLines));
-		 cloud.node("**").setProp("emp.file", empCodeLocal);
-		 
-
-		 List<String> jniLines =  Utilities.readFile(localPath + "/" + jniCodeLocal);
-		 cloud.node("**").setProp("jni.code", String.join("\n", jniLines));
-		 cloud.node("**").setProp("jni.file", jniCodeLocal);
-		 cloud.node("**").setProp("alice.host", generatorHost);
-		 
 		 ViNode allNodes = cloud.node("**");
 		 
 		List<boolean[]> results = allNodes.massExec(new Callable<boolean[]>() {
@@ -136,6 +148,9 @@ public class EmpJniRemoteTest extends TestCase  {
 	                String jniCode = System.getProperty("jni.code");
 	                String workingDirectory = System.getProperty("user.dir");	                
 	                String aliceHost = System.getProperty("alice.host");
+	                SystemConfiguration config = SystemConfiguration.getInstance();
+	                config.setProperty("node-type", "remote");
+	                String codeGenTarget = Utilities.getCodeGenTarget();
 	                
 	                if(System.getProperty("party").equals("bob")) {
 	                	party = 2;
@@ -145,21 +160,20 @@ public class EmpJniRemoteTest extends TestCase  {
 	                //System.setProperty("org.bytedeco.javacpp.logger.debug", "true");
 	              
 	                	                
-	                Utilities.mkdir(workingDirectory + "org/smcql/compiler/emp/generated/", workingDirectory);
-      
-	                String empFile = workingDirectory + "/" + empCodeLocal;
-	                String jniFile = workingDirectory + "/" + jniCodeLocal;
+	                Utilities.mkdir(workingDirectory + "/" + codeGenTarget, workingDirectory);
 	                
-	                Utilities.writeFile(empFile, empCode);
-	                Utilities.writeFile(jniFile, jniCode);
+	                String empFile = workingDirectory + "/" + className + ".h";
+	                String jniFile = workingDirectory + "/" + className + ".java";
+	                
+	                FileUtils.writeFile(empFile, empCode);
+	                FileUtils.writeFile(jniFile, jniCode);
 	                
 	                // build it
-	                EmpBuilder builder = new EmpBuilder();
-	         	   	builder.compile(fullyQualifiedClassName, false);
+	                EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
+	         	   	builder.compile();
 	    
-	         	   	System.out.println("Have alice at " + aliceHost);
 	         	   	// run it
-	         	   EmpProgram instance = (EmpProgram) builder.getClass(fullyQualifiedClassName, party, port);
+	         	   EmpProgram instance = (EmpProgram) builder.getClass(party, port);
 	         	   instance.setGeneratorHost(aliceHost);
 	         	   return instance.runProgram();
 	               

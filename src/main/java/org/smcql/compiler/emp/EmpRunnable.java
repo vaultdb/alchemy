@@ -33,8 +33,8 @@ public class EmpRunnable implements Runnable {
     	try {
     	
     		if(compile) {
-    			EmpBuilder builder = new EmpBuilder();
-    			builder.compile(className, true);
+    			EmpBuilder builder = new EmpBuilder(className);
+    			builder.compile();
     		}
     		
     	    ByteArrayOutputStream stdout = new ByteArrayOutputStream(); // use this for debug info

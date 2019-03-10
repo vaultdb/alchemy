@@ -1,14 +1,23 @@
 package org.smcql.util;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.bytedeco.javacpp.Loader;
+import org.smcql.compiler.emp.EmpBuilder;
+import org.smcql.compiler.emp.EmpRunnable;
+import org.smcql.config.SystemConfiguration;
+import org.smcql.db.data.QueryTable;
+import org.smcql.type.SecureRelRecordType;
 
 public class EmpJniUtilities {
 	
@@ -77,5 +86,103 @@ public class EmpJniUtilities {
 
 
 
+	// class name includes package info
+	// e.g., org.smcql.compiler.emp.generated.Count
+	public static QueryTable runEmpLocal(String fullyQualifiedClassName, SecureRelRecordType outSchema) throws Exception {
+		int empPort = getEmpPort();
+		
+		EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort, false);
+		EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, empPort, false);
+
+
+	   EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
+	   builder.compile();
+
+	   
+		
+		Thread alice = new Thread(aliceRunnable);
+		alice.start();
+		
+		Thread bob = new Thread(bobRunnable);
+		bob.start();
+		
+		alice.join();
+		bob.join();
+		
+		boolean[] aliceOutput = aliceRunnable.getOutput();
+		boolean[] bobOutput = bobRunnable.getOutput();
+		boolean[] decrypted = decrypt(aliceOutput, bobOutput);
+		return new QueryTable(decrypted, outSchema);
+	}
 	 
+	
+	// for debugging this does a deep delete on previous builds 
+	public static void cleanEmpCode(String className) throws Exception {
+		String delGeneratedFiles = "rm " + Utilities.getCodeGenTarget() + "/" + className + "* ";
+		Utilities.runCmd(delGeneratedFiles);
+
+		String platform = Loader.getPlatform();
+		
+		String delOsCode = "rm -rf " + Utilities.getCodeGenTarget()+ "/" + platform + "/*";
+		Utilities.runCmd(delOsCode);
+		
+		// nuke the javacpp cache
+		String delCache = "rm -rf " + System.getProperty("user.home") + "/.javacpp/cache";
+		Utilities.runCmd(delCache);
+		
+	}
+
+	public static void createJniWrapper(String className, String dstFile) throws Exception {
+		// if it is a fully qualified class name, strip the prefix
+		if(className.contains(".")) {
+			className = className.substring(className.lastIndexOf('.'+1));
+		}
+
+		Map<String, String> variables = new HashMap<String, String>();
+
+		variables.put("queryName", className);
+		variables.put("queryClass", className + "Class");
+
+		String jniCode = CodeGenUtils.generateFromTemplate("/util/jni-wrapper.txt", variables);
+		FileUtils.writeFile(dstFile, jniCode);
+		
+		Logger logger = SystemConfiguration.getInstance().getLogger();
+	    logger.info("Writing jni wrapper to " + dstFile);
+	}
+
+	public static int getEmpPort() throws Exception {
+		int port;
+		// try local source
+		String empPort = SystemConfiguration.getInstance().getProperty("emp-port");
+		if(empPort != null && empPort != "") {
+			port = Integer.parseInt(empPort); // TODO: check if it is numeric
+		}
+		else {
+			// handle remote case
+			port = Integer.parseInt(System.getProperty("emp.port"));
+		}
+		return port;
+	}
+
+	
+	public static boolean[] decrypt(boolean[] alice, boolean[] bob) {
+		assert(alice.length == bob.length); 
+		boolean[] decrypted = new boolean[alice.length];
+		
+		for(int i = 0; i < alice.length; ++i) {
+			decrypted[i] = alice[i] ^ bob[i];
+		}
+		return decrypted;
+	}
+
+	public static String getFullyQualifiedClassName(String className) throws Exception {
+		String classPrefix = SystemConfiguration.getInstance().getProperty("generated-class-prefix");
+    	if(!className.startsWith(classPrefix)) {
+    		return classPrefix + "." + className;
+    	}
+    	else {
+    		return className;
+    	}
+    
+	}
 }

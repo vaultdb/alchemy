@@ -1,9 +1,23 @@
 package org.smcql.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.io.FilenameUtils;
 
 public class FileUtils {
 	public static String readSQL(String filename) throws IOException {
@@ -19,5 +33,47 @@ public class FileUtils {
 	    sql = sql.replaceAll("`", "");
 
 	    return sql;
+	}
+
+	public static List<String> readFile(String filename) throws IOException  {	
+		List<String> lines = null;
+	
+	if(System.getProperty("smcql.root") != null) {
+			InputStream is = Utilities.class.getClassLoader().getResourceAsStream(filename);
+			lines = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
+	} else {
+			lines = Files.readAllLines(Paths.get(filename), StandardCharsets.UTF_8);
+	}
+	
+	return lines;				
+	}
+
+	public static void writeFile(String fname, String contents) throws FileNotFoundException, UnsupportedEncodingException {
+	     String path = FilenameUtils.getFullPath(fname);
+	     File f = new File(path);
+	     f.mkdirs();
+	
+	     PrintWriter writer = new PrintWriter(fname, "UTF-8");
+	     writer.write(contents);
+	     writer.close();
+	
+	
+	 }
+
+	public static byte[] readGeneratedClassFile(String packageName) throws IOException {
+		String filename = Utilities.getCodeGenTarget() + "/"  + packageName.replace('.', '/') + "/NoClass.class";
+		return FileUtils.readBinaryFile(filename);
+	}
+
+	public static byte[] readBinaryFile(String filename) throws IOException {
+		  System.out.println("reading in bytecode for " + filename);
+	 	  Path p = FileSystems.getDefault().getPath("", filename);
+	 	  return Files.readAllBytes(p);	 
+	}
+	
+	// works for directories too
+	public static boolean fileExists(String file) {
+		File tmp = new File(file);
+		return tmp.exists();
 	}
 }

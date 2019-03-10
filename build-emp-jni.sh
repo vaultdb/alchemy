@@ -1,4 +1,6 @@
 #!/bin/bash -x
+#usage: ./build-emp-jni.sh <class name>
+#example: ./build-emp-jni.sh CountIcd9s
 
 #must be run in emp-jni dir
 export CLASS_NAME=$1

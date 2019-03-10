@@ -42,12 +42,13 @@ public class GenerateSmcTest extends BaseTest {
 
     String query = "SELECT COUNT(DISTINCT major_icd9) FROM diagnoses";
     // to run in plaintext to verify our results
-    String distributedQuery = "WITH all_diagnoses AS ((SELECT major_icd9 FROM diagnoses) UNION ALL (SELECT major_icd9 FROM remote_diagnoses)) SELECT COUNT(DISTINCT major_icd9) FROM all_diagnoses;";
+    //String distributedQuery = "WITH all_diagnoses AS ((SELECT major_icd9 FROM diagnoses) UNION ALL (SELECT major_icd9 FROM remote_diagnoses)) SELECT COUNT(DISTINCT major_icd9) FROM all_diagnoses;";
     String testName = "CountIcd9s";
 
-    QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
+    // TODO: save this for exec test
+    // QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
 
-    testCase(testName, query, expectedOutput);
+    testCase(testName, query);
   }
 
   // TODO: Keith please work on getting this going
@@ -58,17 +59,18 @@ public class GenerateSmcTest extends BaseTest {
     String testName = "JoinCdiff";
     String query =
         "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
-    String distributedQuery =
-        "WITH all_diagnoses AS ((SELECT patient_id, icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)), "
-            + "all_medications AS ((SELECT patient_id FROM medications) UNION ALL (select patient_id FROM remote_medications)) "
-            + "SELECT DISTINCT d.patient_id FROM all_diagnoses d JOIN all_medications m ON d.patient_id = m.patient_id AND icd9=\'008.45\';";
+    //String distributedQuery =
+      //  "WITH all_diagnoses AS ((SELECT patient_id, icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)), "
+        //    + "all_medications AS ((SELECT patient_id FROM medications) UNION ALL (select patient_id FROM remote_medications)) "
+          //  + "SELECT DISTINCT d.patient_id FROM all_diagnoses d JOIN all_medications m ON d.patient_id = m.patient_id AND icd9=\'008.45\';";
 
     //		String distributedQuery = Utilities.getDistributedQuery(query);
     //		System.out.println("Distributed query: " + distributedQuery);
 
-    QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
+    // TODO: save this for executor tests
+    //QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
 
-    testCase(testName, query, expectedOutput);
+    testCase(testName, query);
   }
 
   // TODO: George, please work on getting the code generator to build code for this
@@ -79,11 +81,12 @@ public class GenerateSmcTest extends BaseTest {
   public void testFilterDistinct() throws Exception {
     String testName = "FilterDistinct";
     String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
-    		String distributedQuery = "WITH all_diagnoses AS ((SELECT patient_id,icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)) " +
-    				"SELECT DISTINCT patient_id FROM all_diagnoses WHERE icd9 = \'414.01\'";
+    //String distributedQuery = "WITH all_diagnoses AS ((SELECT patient_id,icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)) " +
+    //				"SELECT DISTINCT patient_id FROM all_diagnoses WHERE icd9 = \'414.01\'";
 
-    QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
-    testCase(testName, query, expectedOutput);
+    // TODO: save this for executor tests
+    //QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
+    testCase(testName, query);
   }
 
   protected QueryTable getExpectedOutput(String testName, String query, String distributedQuery)
@@ -94,9 +97,10 @@ public class GenerateSmcTest extends BaseTest {
     return SqlQueryExecutor.query(distributedQuery, outSchema, aliceId);
   }
 
-  protected void testCase(String testName, String sql, QueryTable expectedOutput) throws Exception {
+  protected void testCase(String testName, String sql) throws Exception {
     SystemConfiguration.getInstance().resetCounters();
     Logger logger = SystemConfiguration.getInstance().getLogger();
+    
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
     QueryCompiler qc = new QueryCompiler(secRoot);
@@ -106,21 +110,20 @@ public class GenerateSmcTest extends BaseTest {
     logger.log(Level.INFO, "Resolved secure tree to:\n " + testTree);
 
     String generatedFile = qc.writeOutEmpFile();
+    qc.compileEmpCode();
+    
 
+    
     String cwd = Utilities.getSMCQLRoot();
     String expectedFile =
         cwd + "/src/test/java/org/smcql/codegen/secure/expected/" + testName + ".h";
     System.out.println("Generated: " + generatedFile);
     System.out.println("Expected: " + expectedFile);
 
-    int exitCode = qc.compileEmpCode();
-    assertEquals(0, exitCode);
-
-    /*File generated = new File(generatedFile);
+    File generated = new File(generatedFile);
     File expected = new File(expectedFile);
     
-    // TODO: re-add this before shipping
-    //assertTrue("The emp code differs!", FileUtils.contentEquals(generated, expected));
+    assertTrue("The emp code differs!", FileUtils.contentEquals(generated, expected));
 
     // check the jni wrappers  ".h" --> ".java"
     generatedFile = generatedFile.substring(0, generatedFile.length() - 1);
@@ -131,14 +134,15 @@ public class GenerateSmcTest extends BaseTest {
     expectedFile += "java_"; // underscore to prevent compiler from complaining about package path
     expected = new File(expectedFile);
 
-    // TODO: re-add these before shipping
-    //assertTrue("The jni wrappers differ!", FileUtils.contentEquals(generated, expected));
-	*/
+    assertTrue("The jni wrappers differ!", FileUtils.contentEquals(generated, expected));
+	
     
-    EmpExecutor exec = new EmpExecutor(qc, workerIds);
+    /* 
+     * Save this for the executor tests
+     * EmpExecutor exec = new EmpExecutor(qc, workerIds);
     exec.run();
 
     QueryTable observedOutput = exec.getOutput();
-    assertEquals(expectedOutput, observedOutput);
+    assertEquals(expectedOutput, observedOutput);*/
   }
 }

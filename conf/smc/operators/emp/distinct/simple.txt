@@ -4,13 +4,13 @@ Data * $functionName(Data *data) {
 	cout << " Running $functionName" << endl;
 	int tupleLen = data->data[0].size() * sizeof(Bit);
 	
-    for (int i=0; i< data->public_size - 1; i++) {
+    for (int i=0; i< data->publicSize - 1; i++) {
         Integer id1 = data->data[i];
         Integer id2 = data->data[i+1];
         Bit eq = (id1 == id2);
         id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
         //maintain real size
-  	    data->real_size = If(eq, data->real_size - Integer(LENGTH_INT, 1, PUBLIC),  data->real_size);
+  	    data->realSize = If(eq, data->realSize - Integer(LENGTH_INT, 1, PUBLIC),  data->realSize);
         memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }
     
