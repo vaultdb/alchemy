@@ -1,5 +1,6 @@
 package org.smcql.codegen.smc.operator;
 
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -48,12 +49,19 @@ public class SecurePreamble extends SecureOperator {
 		String aliceKey = connectionManager.getAlice();
 		WorkerConfiguration aliceConfig = connectionManager.getWorker(aliceKey);
 		String aliceHost = aliceConfig.hostname;
+	     // in case it is a hostname and not an IP address, resolve it
+	     InetAddress address = InetAddress.getByName(aliceHost); 
+	     aliceHost = address.getHostAddress();
+
 
 		
 		String bobKey = connectionManager.getBob();
 		WorkerConfiguration bobConfig = connectionManager.getWorker(bobKey);
 		String bobHost = bobConfig.hostname;
-		
+	     // in case it is a hostname and not an IP address, resolve it
+	     address = InetAddress.getByName(bobHost); 
+	     bobHost = address.getHostAddress();
+
 		variables.put("bobHost", bobHost);
 		variables.put("aliceHost", aliceHost);
 		variables.put("queryName", planNode.getQueryId());

@@ -1,7 +1,7 @@
 Data * $functionName(Data *data) {
 	$sortInput
 	
-	cout << " Running $functionName" << endl;
+	cout << " Running $functionName with " << data->publicSize << " inputs." << endl;
 	int tupleLen = data->data[0].size() * sizeof(Bit);
 	
     for (int i=0; i< data->publicSize - 1; i++) {
@@ -9,9 +9,14 @@ Data * $functionName(Data *data) {
         Integer id2 = data->data[i+1];
         Bit eq = (id1 == id2);
         id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
+        
+        cout << "Equality check for " << i << " is " << eq.reveal(PUBLIC) << " for " << id1.reveal<int>(PUBLIC) << " and " << id2.reveal<int>(PUBLIC) << endl;
+
         //maintain real size
-  	    data->realSize = If(eq, data->realSize - Integer(LENGTH_INT, 1, PUBLIC),  data->realSize);
-        memcpy(data->data[i].bits, id1.bits, tupleLen);       
+        Integer decremented = data->realSize - Integer(LENGTH_INT, 1, PUBLIC);
+  	    data->realSize = If(eq, decremented,  data->realSize);
+        
+  	    memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }
     
     return data;

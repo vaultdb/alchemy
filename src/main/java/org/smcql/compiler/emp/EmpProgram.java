@@ -1,5 +1,8 @@
 package org.smcql.compiler.emp;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 public class EmpProgram {
 
 	protected int party = 0;
@@ -13,8 +16,11 @@ public class EmpProgram {
 		
 	}
 	
-	public void setGeneratorHost(String host) {
-		generatorHost = host;
+	public void setGeneratorHost(String host) throws UnknownHostException {
+		// if it is a hostname, resolve it to an IP address
+		InetAddress address = InetAddress.getByName(host); 
+		generatorHost = address.getHostAddress();
+
 	}
 	
 	// delegate to implementing classes

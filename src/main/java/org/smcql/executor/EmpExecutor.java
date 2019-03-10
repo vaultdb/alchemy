@@ -2,6 +2,7 @@ package org.smcql.executor;
 
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.db.data.QueryTable;
+import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.smc.ExecutionSegment;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
@@ -24,8 +25,9 @@ public class EmpExecutor extends MPCExecutor {
 	String queryId = null; 
 	SecureRelRecordType outSchema;
 	
-	public EmpExecutor(QueryCompiler compiled, List<String> workers) throws Exception {
-		runner = new SegmentExecutor(workers.get(0), workers.get(1));
+	public EmpExecutor(QueryCompiler compiled) throws Exception {
+		ConnectionManager cm = ConnectionManager.getInstance();
+		runner = new SegmentExecutor(cm.getAlice(), cm.getBob());
 		compiledPlan = compiled;
 		queryId = compiledPlan.getQueryId();
 		outSchema = compiledPlan.getPlan().getPlanRoot().getSchema();

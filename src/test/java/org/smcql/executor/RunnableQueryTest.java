@@ -31,7 +31,7 @@ public class RunnableQueryTest extends BaseTest {
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		
 		QueryCompiler qc = new QueryCompiler(secRoot);
-		EmpExecutor exec = new EmpExecutor(qc, parties);
+		EmpExecutor exec = new EmpExecutor(qc);
 		exec.run();
 	}
 }

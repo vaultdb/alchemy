@@ -1,4 +1,4 @@
-package org.smcql.executor.emp;
+package org.smcql.executor.localhost;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,22 +15,19 @@ import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelRecordType;
+import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
 
+
 public class EmpQueryExecutorLocalTest extends BaseTest {
-  public ArrayList<String> workerIds;
+  public List<WorkerConfiguration> workers;
 
   protected void setUp() throws Exception {
     String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
     System.setProperty("smcql.setup", setupFile);
     ConnectionManager cm = ConnectionManager.getInstance();
-    List<WorkerConfiguration> workers = cm.getWorkerConfigurations();
-    workerIds = new ArrayList<String>();
+    workers = new ArrayList<WorkerConfiguration>(cm.getWorkerConfigurations());
 
-    if (workers.size() >= 2) {
-      workerIds.add(workers.get(0).workerId);
-      workerIds.add(workers.get(1).workerId);
-    }
   }
 
   public void testCountIcd9s() throws Exception {
@@ -94,7 +91,14 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
     QueryCompiler qc = new QueryCompiler(secRoot);
-    EmpExecutor exec = new EmpExecutor(qc, workerIds);
+    qc.writeOutEmpFile();
+    String empTarget = Utilities.getCodeGenTarget() + "/" + testName + ".h";
+    String jniTarget = Utilities.getCodeGenTarget() + "/" + testName + ".java";
+		
+    assertTrue(FileUtils.fileExists(empTarget));
+    assertTrue(FileUtils.fileExists(jniTarget));
+    
+    EmpExecutor exec = new EmpExecutor(qc);
     exec.run();
 
     QueryTable observedOutput = exec.getOutput();

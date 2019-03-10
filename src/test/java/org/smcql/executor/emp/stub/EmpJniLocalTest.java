@@ -8,6 +8,8 @@ import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.compiler.emp.EmpRunnable;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.EmpJniUtilities;
+import org.smcql.util.Utilities;
+
 import junit.framework.TestCase;
 
 public class EmpJniLocalTest  extends TestCase  {
@@ -19,8 +21,10 @@ public class EmpJniLocalTest  extends TestCase  {
 
     
 	public void testEmpJni() throws Exception {
-		EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, 54321, false);
-		EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, 54321, false);
+		int empPort = EmpJniUtilities.getEmpPort();
+		
+		EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort);
+		EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, empPort);
 
 
 	   EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);

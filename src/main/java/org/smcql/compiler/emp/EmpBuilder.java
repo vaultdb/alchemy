@@ -13,6 +13,7 @@ import org.bytedeco.javacpp.tools.BuildEnabled;
 import org.bytedeco.javacpp.tools.Builder;
 import org.bytedeco.javacpp.tools.Logger;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.util.CommandOutput;
 import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 
@@ -24,7 +25,6 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
 	
 	public EmpBuilder(String className) throws Exception {
 		fullyQualifiedClassName = EmpJniUtilities.getFullyQualifiedClassName(className);
-    	System.out.println("Started with " + className + " using " + fullyQualifiedClassName);
     	smcqlLogger = SystemConfiguration.getInstance().getLogger();
 	}
     @Override 
@@ -43,51 +43,38 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     	// local nodes run within maven framework and work out of src/main/java
     	// remote simply works from "."
     	String nodeType = SystemConfiguration.getInstance().getProperty("node-type");
-       	String projectDirectory = System.getProperty("user.dir");
-    	String workingDirectory = new String(projectDirectory);
-    	if(nodeType.equals("local")) {
-    		workingDirectory += "/src/main/java";
-    	}
+        System.out.println("Node type: " + nodeType);
 
-    	System.setProperty("user.dir", workingDirectory);
-    
-    	smcqlLogger.info("Comp  iling: |" + fullyQualifiedClassName + "| from " + workingDirectory);
-    	Class cls = Class.forName(fullyQualifiedClassName);
-        
-        // initial cleanup
-        String extension = "-emp";
-        URL u = Loader.findResource(cls, Loader.getPlatform() + extension);
-        if (u != null) {
-        	for (File f : new File(u.toURI()).listFiles()) {
-        		f.delete();
-                	}
-            }
-        
-
-    
+    	    
         Properties properties = getProperties();
         
         
         String className = fullyQualifiedClassName.substring(fullyQualifiedClassName.lastIndexOf('.')+1);
 
-        if(nodeType.equals("local")) {
+        if(nodeType.equalsIgnoreCase("local")) {
         	// copy over our header files to build target for local builds
         	String srcHeader = "src/main/java/org/smcql/compiler/emp/generated/" + className + ".h";
         	String dstHeader = "target/classes/org/smcql/compiler/emp/generated/" + className + ".h";
 
         	// in localhost setting
         	String cmd = "cp " + srcHeader + " " + dstHeader;
-            Utilities.runCmd(cmd, System.getProperty("user.dir"));
+        	System.out.println("Copying with " + cmd);
+        	String cwd = System.getProperty("user.dir");
+         	System.out.println("Current working directory: " + cwd );
+        	CommandOutput out = Utilities.runCmd(cmd, cwd);
+        	System.out.println("Exited with " + out.exitCode + " output: " + out.output);
+        	if(out.exitCode != 0) {
+        		throw new Exception("File copy failed!");
+        	}
         }
         
-        Builder builder = new Builder().properties(properties).classesOrPackages(cls.getName()); //.copyLibs(true);
- 
+        Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName); //.copyLibs(true);
+
         
         File[] outputFiles = builder.build();
         smcqlLogger.info("Builder files: " + Arrays.toString(outputFiles));
         
-        // revert search path
-        System.setProperty("user.dir", projectDirectory);
+        
     }
     
     

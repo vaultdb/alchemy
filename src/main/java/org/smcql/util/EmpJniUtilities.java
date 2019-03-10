@@ -88,13 +88,15 @@ public class EmpJniUtilities {
 
 	// class name includes package info
 	// e.g., org.smcql.compiler.emp.generated.Count
-	public static QueryTable runEmpLocal(String fullyQualifiedClassName, SecureRelRecordType outSchema) throws Exception {
+	public static QueryTable runEmpLocal(String className, SecureRelRecordType outSchema) throws Exception {
 		int empPort = getEmpPort();
+		String fullyQualifiedClassName = getFullyQualifiedClassName(className);
 		
-		EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort, false);
-		EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, empPort, false);
+		EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort);
+		EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, empPort);
 
 
+		System.out.println("Compiling " + fullyQualifiedClassName);
 	   EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
 	   builder.compile();
 

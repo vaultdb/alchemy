@@ -85,12 +85,6 @@ bool *concat(std::vector<Row> rows, int row_size) {
     return result;
 }
 
-int sum_vals(vector<int> vec) {
-    int sum = 0;
-    for (int i : vec)
-        sum += i;
-    return sum;
-}
 
 // DB connection functions
 std::vector<Row> execute_sql(string sql, int party) {
