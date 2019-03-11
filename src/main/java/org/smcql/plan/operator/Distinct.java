@@ -9,7 +9,7 @@ public class Distinct extends Operator {
 
 	public Distinct(String name, SecureRelNode src, Operator ...children ) throws Exception {
 		super(name, src, children);
-		splittable = true;
+		splittable = false;
 		blocking = true;
 		sliceAgnostic = true;
 

@@ -45,7 +45,8 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		childStep = child;
 		
 		srcSQL = (child instanceof PlaintextStep) ? child.generate() : null;
-
+		System.out.println("UnionMethod srcSQL: " + srcSQL);
+		
 		packageName = child.getPackageName() + ".merge";
 		functionName = child.getFunctionName() + "Merge";
 		if (srcSQL != null) {
