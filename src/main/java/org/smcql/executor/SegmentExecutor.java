@@ -145,8 +145,6 @@ public class SegmentExecutor {
 
             }
 
-            //cloudHost.x(VX.CLASSPATH).inheritClasspath(true);
-            System.out.println("Parent classpath: " + System.getProperty("java.class.path"));
             cloudHost.x(VX.PROCESS).addJvmArg("-Xms4096m").addJvmArg("-Xmx4g");                                                                                        
             
      
@@ -308,13 +306,11 @@ public class SegmentExecutor {
 					//System.setProperty("org.bytedeco.javacpp.logger.debug", "true");
 					
 					
-					System.out.println("Starting to launch emp on party " + party);
 					
 					EmpBuilder builder = new EmpBuilder(className);
 					builder.compile();
 					
 					EmpProgram program = builder.getClass(party, port);
-					System.out.println("Loaded emp!");
 					
 					
 			 

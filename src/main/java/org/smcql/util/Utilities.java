@@ -86,7 +86,7 @@ public class Utilities {
     				return getSMCQLRoot() + "/" + localTarget;
     			
 			} catch (Exception e) {
-				System.out.println("Missing local-codegen-target parameter (or remote-codegen-target), please add it to your config file.");
+				System.err.println("Missing local-codegen-target parameter (or remote-codegen-target), please add it to your config file.");
 				e.printStackTrace();
 			}
     		// default 

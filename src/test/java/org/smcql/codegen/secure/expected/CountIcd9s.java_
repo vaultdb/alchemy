@@ -72,8 +72,8 @@ public class CountIcd9s  extends EmpProgram  {
     	SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(sql);
     	String workerId = System.getProperty("workerId");	
     	
-    	ConnectionManager cm = ConnectionManager.getInstance();
-   		System.out.println("Getting connection for " + workerId + " out of " + cm.getDataSources());
+    	//ConnectionManager cm = ConnectionManager.getInstance();
+   		//System.out.println("Getting connection for " + workerId + " out of " + cm.getDataSources());
     					
 		
     	QueryTable table = SqlQueryExecutor.query(sql, outSchema, workerId);
@@ -124,7 +124,6 @@ public class CountIcd9s  extends EmpProgram  {
   	    String workerId = (party == 1) ? "alice" : "bob";
   	    
   	    
-  	    System.out.println("*********For party " + party + " have workerId " + workerId);
   	    
   	    System.setProperty("workerId", workerId);
   	    

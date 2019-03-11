@@ -6,6 +6,8 @@ import java.io.File;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.gridkit.internal.com.jcraft.jsch.Logger;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
@@ -39,7 +41,7 @@ public class EmpRunnable implements Runnable {
 
     	try {
     	
-    		
+    		java.util.logging.Logger logger = SystemConfiguration.getInstance().getLogger();
 
     	    PumpStreamHandler psh = new PumpStreamHandler(stdout, stderr);
     	    String classPath = System.getProperty("java.class.path");
@@ -52,9 +54,9 @@ public class EmpRunnable implements Runnable {
     	    	outFile = "run-bob.sh";
     	    }
     	    
+    	    // save it for later for debugging
     	    FileUtils.writeFile(outFile, command);
     	    
-    	    System.out.println("Running: " + command);
     	    
     	    CommandLine cl = CommandLine.parse(command);
     	    DefaultExecutor exec = new DefaultExecutor();
@@ -64,12 +66,11 @@ public class EmpRunnable implements Runnable {
     	    assert(0 == exitValue);
     	    
     	    String bitString = stderr.toString(); // TODO: can we make this all happen in binary?
-    	    System.out.println(stdout.toString());
-    	    System.out.println("Output: " + bitString);
+    	    logger.fine("Output: " + bitString);
     	    // translate to bools
     	    output = new boolean[bitString.length()];
     	    
-    	    System.out.println("Party " + party + " returned " + bitString.length() + " bits.");
+    	    logger.info("Party " + party + " returned " + bitString.length() + " bits.");
     	    for(int i = 0; i < bitString.length(); ++i) {
     	    	output[i] = bitString.charAt(i) == '1' ? true : false;
     	    }
@@ -77,9 +78,9 @@ public class EmpRunnable implements Runnable {
     	    
     		
     	} catch (Exception e) {
-    		System.out.println("Running emp on party " + party + " failed!");
-    		System.out.println("stdout: " + stdout.toString());
-    		System.out.println("stderr: " + stderr.toString());
+    		System.err.println("Running emp on party " + party + " failed!");
+    		System.err.println("stdout: " + stdout.toString());
+    		System.err.println("stderr: " + stderr.toString());
 
     		e.printStackTrace();
     	}

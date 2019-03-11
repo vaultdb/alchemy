@@ -96,7 +96,6 @@ public class EmpJniUtilities {
 		EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort);
 		EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, empPort);
 
-		System.out.println("Compiling " + fullyQualifiedClassName);
 	   EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
 	   builder.compile();
 
@@ -114,7 +113,6 @@ public class EmpJniUtilities {
 		boolean[] aliceOutput = aliceRunnable.getOutput();
 		boolean[] bobOutput = bobRunnable.getOutput();
 		boolean[] decrypted = decrypt(aliceOutput, bobOutput);
-		System.out.println("Out schema: " + outSchema);
 		return new QueryTable(decrypted, outSchema);
 		
 	}

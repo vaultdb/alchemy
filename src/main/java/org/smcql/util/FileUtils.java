@@ -66,7 +66,6 @@ public class FileUtils {
 	}
 
 	public static byte[] readBinaryFile(String filename) throws IOException {
-		  System.out.println("reading in bytecode for " + filename);
 	 	  Path p = FileSystems.getDefault().getPath("", filename);
 	 	  return Files.readAllBytes(p);	 
 	}

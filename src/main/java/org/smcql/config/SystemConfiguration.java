@@ -80,7 +80,6 @@ public class SystemConfiguration {
 		
 		if(configFile == null) 
 			configFile = Utilities.getSMCQLRoot() + "/conf/setup";
-		System.out.println("configFile: " + configFile);
 		File f = new File(configFile); // may not always exist in remote invocations
 		if(f.exists()) {
 			List<String> parameters = FileUtils.readFile(configFile);
@@ -93,6 +92,7 @@ public class SystemConfiguration {
 		
 		// have to do this in system properties because remote instances may not have SystemConfiguration initialized
 		setProperty("node-type", "local");
+		logger.info("configFile: " + configFile);
 		
 	}
 	

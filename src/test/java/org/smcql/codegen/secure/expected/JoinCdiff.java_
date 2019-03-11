@@ -73,8 +73,8 @@ inputs.put("SeqScan0Merge", "SELECT patient_id, icd9 = '008.45' FROM (SELECT pat
     	SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(sql);
     	String workerId = System.getProperty("workerId");	
     	
-    	ConnectionManager cm = ConnectionManager.getInstance();
-   		System.out.println("Getting connection for " + workerId + " out of " + cm.getDataSources());
+    	//ConnectionManager cm = ConnectionManager.getInstance();
+   		//System.out.println("Getting connection for " + workerId + " out of " + cm.getDataSources());
     					
 		
     	QueryTable table = SqlQueryExecutor.query(sql, outSchema, workerId);
@@ -125,7 +125,6 @@ inputs.put("SeqScan0Merge", "SELECT patient_id, icd9 = '008.45' FROM (SELECT pat
   	    String workerId = (party == 1) ? "alice" : "bob";
   	    
   	    
-  	    System.out.println("*********For party " + party + " have workerId " + workerId);
   	    
   	    System.setProperty("workerId", workerId);
   	    
