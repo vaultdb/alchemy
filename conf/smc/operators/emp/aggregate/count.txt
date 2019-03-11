@@ -4,7 +4,7 @@ Data * $functionName(Data *data) {
 	data->publicSize = 1;
 	data->data = new Integer[1];
 	data->data[0] = data->realSize;
-	data->realSize = Integer(LENGTH_INT, 1, PUBLIC);
+	data->realSize = Integer(INT_LENGTH, 1, PUBLIC);
     return data;
 }
 

@@ -49,8 +49,6 @@ public class SqlGenerator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//         "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
-		// why isn't project being pushed down?
 		if (selection.getWhere() != null && sqlMode != "debug") {
 			SqlNodeList list = selection.getSelectList();
 

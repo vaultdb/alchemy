@@ -3,6 +3,11 @@ package org.smcql.compiler.emp;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.smcql.db.data.QueryTable;
+import org.smcql.executor.plaintext.SqlQueryExecutor;
+import org.smcql.type.SecureRelRecordType;
+import org.smcql.util.Utilities;
+
 public class EmpProgram {
 
 	protected int party = 0;
@@ -24,7 +29,7 @@ public class EmpProgram {
 	}
 	
 	// delegate to implementing classes
-    public  boolean[] runProgram() {
+    public  boolean[] runProgram() throws Exception {
     	return null;
     }
     
@@ -33,5 +38,6 @@ public class EmpProgram {
     	String className = this.getClass().getName();
     	return "I am a " + className + "!";
     }
-
+    
+   
 }

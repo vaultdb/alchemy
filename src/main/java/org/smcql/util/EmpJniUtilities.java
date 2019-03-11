@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -95,7 +96,6 @@ public class EmpJniUtilities {
 		EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort);
 		EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, empPort);
 
-
 		System.out.println("Compiling " + fullyQualifiedClassName);
 	   EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
 	   builder.compile();
@@ -114,7 +114,9 @@ public class EmpJniUtilities {
 		boolean[] aliceOutput = aliceRunnable.getOutput();
 		boolean[] bobOutput = bobRunnable.getOutput();
 		boolean[] decrypted = decrypt(aliceOutput, bobOutput);
+		System.out.println("Out schema: " + outSchema);
 		return new QueryTable(decrypted, outSchema);
+		
 	}
 	 
 	
@@ -134,7 +136,7 @@ public class EmpJniUtilities {
 		
 	}
 
-	public static void createJniWrapper(String className, String dstFile) throws Exception {
+	public static void createJniWrapper(String className, String dstFile, Map<String, String> inputs) throws Exception {
 		// if it is a fully qualified class name, strip the prefix
 		if(className.contains(".")) {
 			className = className.substring(className.lastIndexOf('.'+1));
@@ -145,6 +147,25 @@ public class EmpJniUtilities {
 		variables.put("queryName", className);
 		variables.put("queryClass", className + "Class");
 
+		if(inputs == null) {
+			throw new Exception("Cannot run a query without input data!");
+		}
+		
+		Iterator inputItr = inputs.entrySet().iterator();
+		String inputSetup = new String();
+		
+		// generate sql input statements
+		while(inputItr.hasNext()) {
+			 Map.Entry pair = (Map.Entry)inputItr.next();
+			 String sql = (String) pair.getValue();
+			 sql = sql.replace('\n', ' ');
+			 String putStatement = "inputs.put(\"" + pair.getKey() + "Merge\", \"" + sql + "\");\n";
+			 inputSetup += putStatement;
+			 
+		}
+		
+		variables.put("sqlSetup", inputSetup);
+		
 		String jniCode = CodeGenUtils.generateFromTemplate("/util/jni-wrapper.txt", variables);
 		FileUtils.writeFile(dstFile, jniCode);
 		

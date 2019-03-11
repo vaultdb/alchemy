@@ -53,13 +53,22 @@ public class QueryTable implements Serializable {
 
            for(int i = 0; i < tupleCount; ++i) {
                    boolean[] tupleBits = Arrays.copyOfRange(bits, i*tupleSize, (i+1)*tupleSize);
-                   Tuple t = new Tuple(tupleBits, schema);
-
-                   tuples.add(t);
+                   if(!isNull(tupleBits)) { 	   
+                	   Tuple t = new Tuple(tupleBits, schema);
+                	   tuples.add(t);
+                   }
            }
 
 	}
 
+	// is it all zeroes?
+	private boolean isNull(final boolean[] tupleBits) {
+		boolean init = false;
+		for(int i = 0; i < tupleBits.length; ++i)
+			init |= tupleBits[i];
+		
+		return !init;
+	}
 	public QueryTable(SecureRelRecordType outSchema)  {
 		schema = outSchema; 
 		tupleSize = schema.size();

@@ -1,15 +1,11 @@
 Data* $functionName(int party, NetIO * io) {
-    cout << "Running $functionName!" << endl;
-    string sql = "$sql";
-    std::vector<Row> in = execute_sql(sql, party);
-    
-    cout << "Received query results" << endl;
     int rowLength = $size; 
-    bool *localData = concat(in, rowLength);
+	string localBitstring = inputs["$functionName"];
+    bool *localData = toBool(localBitstring);
 
 
-    int aliceSize = in.size();
-    int bobSize = in.size();
+    int aliceSize = localBitstring.length() / rowLength;
+    int bobSize = aliceSize;
 
     if (party == ALICE) {
         io->send_data(&aliceSize, 4);
@@ -69,6 +65,8 @@ Data* $functionName(int party, NetIO * io) {
         res[i] = Integer(rowLength, tmpPtr);
         tmpPtr += rowLength;
      }
+
+    cout << "$functionName took as input " << aliceSize + bobSize << " tuples." << endl;
 
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
     bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), $keyPos, $keyLength);

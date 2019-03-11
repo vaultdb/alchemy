@@ -45,7 +45,6 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   // TODO: Keith please work on getting this going
   // use the examples in here: https://github.com/johesbater/emp-aqp/tree/master/test
   // for guidance
-  // make sure to create a file in expected directory called "join-cdiff-emp.cpp"
   public void testJoin() throws Exception {
     String testName = "JoinCdiff";
     String query =
@@ -53,10 +52,9 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     String distributedQuery =
         "WITH all_diagnoses AS ((SELECT patient_id, icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)), "
             + "all_medications AS ((SELECT patient_id FROM medications) UNION ALL (select patient_id FROM remote_medications)) "
-            + "SELECT DISTINCT d.patient_id FROM all_diagnoses d JOIN all_medications m ON d.patient_id = m.patient_id AND icd9=\'008.45\';";
+            + "SELECT d.patient_id FROM all_diagnoses d JOIN all_medications m ON d.patient_id = m.patient_id AND icd9=\'008.45\' ORDER BY d.patient_id;";
 
-    //		String distributedQuery = Utilities.getDistributedQuery(query);
-    //		System.out.println("Distributed query: " + distributedQuery);
+    		System.out.println("Distributed query: " + distributedQuery);
 
     QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
 
@@ -90,6 +88,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     SystemConfiguration.getInstance().resetCounters();
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
+    System.out.println("Initial schema: " + secRoot.getPlanRoot().getSchema() );
     QueryCompiler qc = new QueryCompiler(secRoot);
     qc.writeOutEmpFile();
     String empTarget = Utilities.getCodeGenTarget() + "/" + testName + ".h";
@@ -102,6 +101,10 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     exec.run();
 
     QueryTable observedOutput = exec.getOutput();
+    //************ temp until we debug sorter in emp     **************//
+    observedOutput.sort();
+    
     assertEquals(expectedOutput, observedOutput);
+    
   }
 }

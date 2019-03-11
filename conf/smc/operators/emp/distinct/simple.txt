@@ -10,11 +10,15 @@ Data * $functionName(Data *data) {
         Bit eq = (id1 == id2);
         id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
         
-        cout << "Equality check for " << i << " is " << eq.reveal(PUBLIC) << " for " << id1.reveal<int>(PUBLIC) << " and " << id2.reveal<int>(PUBLIC) << endl;
+        //cout << "Equality check for " << i << " is " << eq.reveal(PUBLIC) << " for " << id1.reveal<int64_t>(PUBLIC) << " and " << id2.reveal<int64_t>(PUBLIC) << endl;
 
         //maintain real size
-        Integer decremented = data->realSize - Integer(LENGTH_INT, 1, PUBLIC);
+        Integer decremented = data->realSize - Integer(INT_LENGTH, 1, PUBLIC);
   	    data->realSize = If(eq, decremented,  data->realSize);
+         
+        if(eq.reveal(PUBLIC)) {
+        	cout << "Decrementing!" << endl;
+        }
         
   	    memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }

@@ -7,6 +7,7 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.smcql.util.EmpJniUtilities;
+import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
 
 // for use in localhost setting 
@@ -15,7 +16,9 @@ public class EmpRunnable implements Runnable {
  	int party, port;
  	boolean[] output;
  	final String smcqlRoot = Utilities.getSMCQLRoot(); // directory with pom.xml
-	final String javaCppJar = System.getProperty("user.home") + "/.m2/repository/org/bytedeco/javacpp/1.4.4/javacpp-1.4.4.jar";
+	// TODO: adjust to versions in pom.xml
+ 	final String javaCppJar = System.getProperty("user.home") + "/.m2/repository/org/bytedeco/javacpp/1.4.4/javacpp-1.4.4.jar";
+ 	final String calciteCoreJar = System.getProperty("user.home") +   ".m2/repository/org/apache/calcite/calcite-core/1.18.0/calcite-core-1.18.0.jar";
 	final String javaCppWorkingDirectory = smcqlRoot + "/target/classes";
 
 	
@@ -39,8 +42,17 @@ public class EmpRunnable implements Runnable {
     		
 
     	    PumpStreamHandler psh = new PumpStreamHandler(stdout, stderr);
+    	    String classPath = System.getProperty("java.class.path");
+    	    
     	    // java -cp $JAVACPP_JAR:$JAVACPP_WORKING_DIRECTORY  org.smcql.compiler.emp.generated.ClassName <party> <port> 
-    	    String command = "java -cp " + javaCppJar + ":" + javaCppWorkingDirectory + " " + className + " " + party + " " + port;
+    	    String command = "java -cp " + classPath + " " + className + " " + party + " " + port;
+    	    
+    	    String outFile = "run-alice.sh";
+    	    if(party == 2) {
+    	    	outFile = "run-bob.sh";
+    	    }
+    	    
+    	    FileUtils.writeFile(outFile, command);
     	    
     	    System.out.println("Running: " + command);
     	    

@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,8 +21,6 @@ import org.smcql.codegen.smc.operator.SecureOperatorFactory;
 import org.smcql.codegen.smc.operator.SecurePreamble;
 import org.smcql.codegen.smc.operator.support.UnionMethod;
 import org.smcql.compiler.emp.EmpBuilder;
-import org.smcql.compiler.emp.EmpParty;
-import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.RunConfig;
@@ -62,16 +61,17 @@ public class QueryCompiler {
   ExecutionStep compiledRoot;
   Mode mode = Mode.REAL;
   boolean codeGenerated = false;
+  SecureRelRecordType outSchema = null;
 
   public QueryCompiler(SecureRelRoot q) throws Exception {
 
     queryPlan = q;
+    outSchema = q.getPlanRoot().getSchema();
     smcFiles = new ArrayList<String>();
     sqlFiles = new ArrayList<String>();
     sqlCode = new HashMap<ExecutionStep, String>();
     smcCode = new HashMap<ExecutionStep, String>();
     executionSegments = new ArrayList<ExecutionSegment>();
-
     allSteps = new HashMap<Operator, ExecutionStep>();
 
     queryId = q.getName();
@@ -94,6 +94,8 @@ public class QueryCompiler {
   public QueryCompiler(SecureRelRoot q, String sql) throws Exception {
 
     queryPlan = q;
+    outSchema = q.getPlanRoot().getSchema();
+
     smcFiles = new ArrayList<String>();
     sqlFiles = new ArrayList<String>();
     sqlCode = new HashMap<ExecutionStep, String>();
@@ -123,6 +125,7 @@ public class QueryCompiler {
   public QueryCompiler(SecureRelRoot q, Mode m) throws Exception {
 
     queryPlan = q;
+    outSchema = q.getPlanRoot().getSchema();
     mode = m;
     smcFiles = new ArrayList<String>();
     sqlFiles = new ArrayList<String>();
@@ -196,8 +199,21 @@ public class QueryCompiler {
 		String empCode = getEmpCode();
 		org.smcql.util.FileUtils.writeFile(targetFile, empCode);
 		
+		
+		Map<String, String> inputs = new HashMap<String, String>();
+		Iterator itr = sqlCode.entrySet().iterator();
+		
+		while(itr.hasNext()) {
+			Map.Entry entry = (Map.Entry) itr.next();
+			ExecutionStep step = (ExecutionStep) entry.getKey();
+			String functionName  = step.getFunctionName();
+			inputs.put(functionName, (String) entry.getValue());
+			
+		}
+		
+		
 		String jniFile = Utilities.getCodeGenTarget() + "/" + queryId + ".java";
-		EmpJniUtilities.createJniWrapper(queryId, jniFile);
+		EmpJniUtilities.createJniWrapper(queryId, jniFile, inputs);
 		codeGenerated = true;
 		
 		return targetFile;
@@ -609,4 +625,8 @@ public class QueryCompiler {
     for (byte b : primitive) bytes[i++] = Byte.valueOf(b);
     return bytes;
   }
+
+public SecureRelRecordType getOutSchema() {
+		return outSchema;
+	}
 }

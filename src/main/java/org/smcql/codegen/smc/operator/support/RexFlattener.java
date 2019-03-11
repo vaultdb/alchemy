@@ -62,7 +62,7 @@ public abstract class RexFlattener implements RexVisitor<String> {
 				&& !kind.equals(SqlKind.DIVIDE)
 				&& !kind.equals(SqlKind.GREATER_THAN_OR_EQUAL)
 				&& !kind.equals(SqlKind.LESS_THAN_OR_EQUAL)) {
-			return "(" + ((RexNodeToSmc) this).variableName + ".bits[" + (inputSize - 1) + "] == Bit(1, PUBLIC))";				
+			return "(" + ((RexNodeToSmc) this).variableName + ".bits[" + (inputSize - 1) + "])";	// previously  == Bit(1, PUBLIC)
 		}
 		
 		if(kind.equals(SqlKind.AND)) {

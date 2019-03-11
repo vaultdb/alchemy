@@ -58,11 +58,10 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
 
         	// in localhost setting
         	String cmd = "cp " + srcHeader + " " + dstHeader;
-        	System.out.println("Copying with " + cmd);
+
         	String cwd = System.getProperty("user.dir");
          	System.out.println("Current working directory: " + cwd );
         	CommandOutput out = Utilities.runCmd(cmd, cwd);
-        	System.out.println("Exited with " + out.exitCode + " output: " + out.output);
         	if(out.exitCode != 0) {
         		throw new Exception("File copy failed!");
         	}
@@ -73,6 +72,10 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         
         File[] outputFiles = builder.build();
         smcqlLogger.info("Builder files: " + Arrays.toString(outputFiles));
+        if(outputFiles == null || outputFiles.length == 0) {
+        	System.out.println("Code compilation failed!");
+        	System.exit(-1);
+        }
         
         
     }

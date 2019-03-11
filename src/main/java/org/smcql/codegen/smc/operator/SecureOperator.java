@@ -149,7 +149,7 @@ public class SecureOperator implements CodeGenerator, Serializable {
 			String srcName = "tuple";
 			for (Filter f : this.filters) {
 				String filterCond = "(" + RexNodeUtilities.flattenFilter(f, srcName, Integer.parseInt(variables.get("sSize"))) + ")";
-
+				// put it in CNF earlier
 				condition += (index == 0) ? filterCond : " & " + filterCond;
 				index++;
 			}

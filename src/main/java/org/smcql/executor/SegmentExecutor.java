@@ -112,7 +112,7 @@ public class SegmentExecutor {
 	
 	public void setQueryCompiler(QueryCompiler qc) {
 		compiledPlan = qc;
-		outSchema = qc.getRoot().getSchema();
+		outSchema = qc.getOutSchema();
 	}
 	
 	public Cloud getCloud() {
@@ -284,7 +284,7 @@ public class SegmentExecutor {
 
 	
 	private QueryTable runSecureLocal(ExecutionSegment segment, String queryId) throws Exception {
-		return EmpJniUtilities.runEmpLocal(queryId, segment.outSchema);
+		return EmpJniUtilities.runEmpLocal(queryId, outSchema);
 	}
 	
 
