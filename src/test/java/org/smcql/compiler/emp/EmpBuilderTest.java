@@ -23,8 +23,8 @@ public class EmpBuilderTest extends BaseTest {
 		builder.compile();
 		EmpProgram instance = builder.getClass(1, 54321);
 		assert(instance != null);
-		// verify that it loads and is runnable
-		assert(instance.helloWorld().equals("I am an EmpJniDemo!"));
+		// verify that it loads and is runnables
+		assert(instance.helloWorld().equals("I am a org.smcql.compiler.emp.generated.EmpJniDemo!"));
 		
 	}
 	
