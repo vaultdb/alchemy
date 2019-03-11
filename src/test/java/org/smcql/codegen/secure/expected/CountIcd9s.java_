@@ -42,7 +42,7 @@ public class CountIcd9s  extends EmpProgram  {
 	
 	public CountIcd9s(int party, int port) {
 		super(party, port);
-		inputs.put("Distinct2Merge", "SELECT DISTINCT major_icd9 FROM diagnoses ORDER BY major_icd9");
+		inputs.put("SeqScan0Merge", "SELECT major_icd9 FROM diagnoses");
 
 	}
 	

@@ -4,8 +4,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.logical.LogicalJoin;
+import org.apache.calcite.rex.RexNode;
 import org.smcql.codegen.smc.operator.support.ProcessingStep;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.plan.operator.Filter;
@@ -23,8 +25,18 @@ public class SecureJoin extends SecureOperator {
 	public SecureJoin(Operator o) throws Exception {
 		super(o);
 		
-		//Add any conditions as filters
+		assert(o instanceof Join);
+		
+		
+		//Add any join conditions as filters
 		LogicalJoin j = (LogicalJoin) o.getSecureRelNode().getRelNode();
+
+		// it is getting stuck because we need a composite schema rather than just that of the first child
+        RelNode input = j.getInput(0);
+        RexNode selectionCriteria = j.getCondition();
+        
+        System.out.println("Working from input: " + input + " with selection criteria " + selectionCriteria);
+        
 		LogicalFilter f = LogicalFilter.create(j.getInput(0), j.getCondition());
 		
 		SecureRelNode[] nodeChildren = Arrays.copyOf(o.getSecureRelNode().getChildren().toArray(), o.getSecureRelNode().getChildren().size(), SecureRelNode[].class);

@@ -64,8 +64,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   // TODO: George, please work on getting the code generator to build code for this
   // use the examples in here: https://github.com/johesbater/emp-aqp/tree/master/test
   // for guidance
-  // make sure to create a file in expected directory called "filter-distinct-emp.cpp"
-
+  // TODO: need to check for dummy tag in generated code.  Recommend adding it to merge to zero out tuples that don't match icd9=414.01 in this case
   public void testFilterDistinct() throws Exception {
     String testName = "FilterDistinct";
     String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";

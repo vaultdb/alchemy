@@ -99,9 +99,9 @@ public:
 
 
 
-Data* Distinct2Merge(int party, NetIO * io) {
-    int rowLength = 32; 
-	string localBitstring = inputs["Distinct2Merge"];
+Data* SeqScan0Merge(int party, NetIO * io) {
+    int rowLength = 524288; 
+	string localBitstring = inputs["SeqScan0Merge"];
     bool *localData = toBool(localBitstring);
 
 
@@ -167,10 +167,10 @@ Data* Distinct2Merge(int party, NetIO * io) {
         tmpPtr += rowLength;
      }
 
-    cout << "Distinct2Merge took as input " << aliceSize + bobSize << " tuples." << endl;
+    cout << "SeqScan0Merge took as input " << aliceSize + bobSize << " tuples." << endl;
 
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
-    bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), 0, 32);
+    bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), 0, 524288);
 
     Data * d = new Data;
     d->data = res;
@@ -246,9 +246,9 @@ const std::string& getOutput() {
     
     setup_semi_honest(io, party);
     
-     Data *Distinct2MergeOutput = Distinct2Merge(party, io);
+     Data *SeqScan0MergeOutput = SeqScan0Merge(party, io);
 
-    Data * Distinct2Output = Distinct2(Distinct2MergeOutput);
+    Data * Distinct2Output = Distinct2(SeqScan0MergeOutput);
 
     Data * Aggregate3Output = Aggregate3(Distinct2Output);
 

@@ -42,7 +42,7 @@ public class FilterDistinct  extends EmpProgram  {
 	
 	public FilterDistinct(int party, int port) {
 		super(party, port);
-		inputs.put("Distinct4Merge", "SELECT DISTINCT patient_id, icd9 = '414.01' FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY patient_id");
+		inputs.put("SeqScan0Merge", "SELECT patient_id, icd9 = '414.01' FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY patient_id");
 
 	}
 	

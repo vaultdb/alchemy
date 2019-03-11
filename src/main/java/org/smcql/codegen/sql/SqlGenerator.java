@@ -37,6 +37,7 @@ public class SqlGenerator {
 		SecureRelNode secNode = node.getSecureRelNode();
 		RelNode rel = secNode.getRelNode();
 		RelToSqlConverter converter = new SecureRelToSqlConverter(dialect, secNode.getPhysicalNode());
+		System.out.println("Generatinig SQL for " + rel);
 		return getStringFromNode(rel, converter, dialect);
 	}
 	
