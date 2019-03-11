@@ -1,6 +1,7 @@
 #include <emp-sh2pc/emp-sh2pc.h>
-#include <pqxx/pqxx>
-#include "row.h"
+#include <map>
+#include <string>
+
 
 // header of an ExecutionSegment in emp
 // put in front of first generated MPC operator
@@ -8,7 +9,6 @@
 
 using namespace emp;
 using namespace std;
-using namespace pqxx;
 
 
 
@@ -17,11 +17,11 @@ namespace FilterDistinct {
 
 class FilterDistinctClass {
 // Connection strings, encapsulates db name, db user, port, host
-string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=127.0.0.1 port=5432";
-string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=127.0.0.1 port=5432";
+string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
+string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=localhost port=5432";
 
 string aliceHost = "127.0.0.1";
-int LENGTH_INT = 64;
+int INT_LENGTH = 64;
 string output;
 map<string, string> inputs; // maps opName --> bitString of input tuples
 
@@ -39,15 +39,7 @@ string reveal_bin(Integer &input, int length, int output_party) {
     return bin;
 }
 
-	bool * outputBits(Integer &input, int length, int output_party) {
-		bool * b = new bool[length];
-		ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
-		string bin="";
-
-		return b;
-	}
-
-
+	
 void cmp_swap_sql(Integer*key, int i, int j, Bit acc, int key_pos, int key_length) {
     Integer keyi = Integer(key_length, key[i].bits+key_pos);
     Integer keyj = Integer(key_length, key[j].bits+key_pos);
@@ -75,71 +67,25 @@ void bitonic_sort_sql(Integer * key, int lo, int n, Bit acc,  int key_pos, int k
     }
 }
 
-bool *concat(std::vector<Row> rows, int row_size) {
-    bool *result = new bool[row_size*rows.size()];
-    int num_rows = rows.size();
 
-    for (int i=0; i<num_rows; i++) {
-        memcpy(result + i*row_size, rows[i].to_bool(), row_size);   
-    }
-    return result;
-}
 
-int sum_vals(vector<int> vec) {
-    int sum = 0;
-    for (int i : vec)
-        sum += i;
-    return sum;
-}
+bool * outputBits(Integer &input, int length, int output_party) {
+		bool * b = new bool[length];
+		ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
+		string bin="";
 
-// DB connection functions
-std::vector<Row> execute_sql(string sql, int party) {
-    std::vector<Row> res;
-    try {
-        string config= (party == ALICE) ? aliceConnectionString : bobConnectionString;
-        connection C(config);
+		return b;
+	}
 
-        if (C.is_open()) {
-            cout << "Running " << sql << endl;
 
-            cout << "Opened database successfully: " << C.dbname() << endl;
-            work w(C);
-            result r = w.exec(sql);
-            w.commit();
-			cout << "Received query results!" << endl;
-			
-            for (auto row : r) {
-            	const int num_cols = row.size();
-            	vector<int>lengths;
-            	string bin_str = "";
-            	for (int j=0; j<num_cols; j++) {
-            	    int val;
-                    string str;
-                    try {
-                        row[j].to(val);
-                        lengths.push_back(LENGTH_INT);
-                        bin_str += int64_to_binstr(val);
-                    } catch (const std::exception& ex) {
-                        try {
-                            row[j].to(str);
-                            lengths.push_back(str.length());
-                            bin_str += str_to_binary(str, str.length());
-                        } catch (const std::exception& ex) {
-                            throw runtime_error("Unsupported data type in column");
-                        }
-                    }
-            	}
-            	res.push_back(Row(bin_str, lengths));
-            }
-        } else {
-            cout << "Can't open database" << endl;
-        }
-        C.disconnect();
-    } catch (const std::exception &e) {
-        cerr << e.what() << std::endl;
-    }
-
-    return res;
+bool * toBool(string src) {
+	long length = src.length();
+	bool *output = new bool[length];
+	
+	for(int i = 0; i < length; ++i) 
+		output[i] = (src[i] == '1') ? true : false;
+	
+	return output;
 }
 
 // Operator functions
@@ -148,29 +94,19 @@ public:
     Integer * data;
     int publicSize;
     Integer realSize;
-    Integer dummyTags;
+    Integer dummyTags; // TODO
 };
 
-Integer from_bool(bool* b, int size, int party) {
-    Integer res;
-    res.bits = new Bit[size];
-    init(res.bits, b, size, party);
-    return res;
-}
 
 
 Data* Distinct4Merge(int party, NetIO * io) {
-    cout << "Running Distinct4Merge!" << endl;
-    string sql = "SELECT DISTINCT patient_id, icd9 = '414.01' FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY patient_id";
-    std::vector<Row> in = execute_sql(sql, party);
-    
-    cout << "Received query results" << endl;
     int rowLength = 65; 
-    bool *localData = concat(in, rowLength);
+	string localBitstring = inputs["Distinct4Merge"];
+    bool *localData = toBool(localBitstring);
 
 
-    int aliceSize = in.size();
-    int bobSize = in.size();
+    int aliceSize = localBitstring.length() / rowLength;
+    int bobSize = aliceSize;
 
     if (party == ALICE) {
         io->send_data(&aliceSize, 4);
@@ -231,6 +167,8 @@ Data* Distinct4Merge(int party, NetIO * io) {
         tmpPtr += rowLength;
      }
 
+    cout << "Distinct4Merge took as input " << aliceSize + bobSize << " tuples." << endl;
+
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
     bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), 0, 64);
 
@@ -244,7 +182,7 @@ Data* Distinct4Merge(int party, NetIO * io) {
 Data * Distinct4(Data *data) {
 	
 	
-	cout << " Running Distinct4" << endl;
+	cout << " Running Distinct4 with " << data->publicSize << " inputs." << endl;
 	int tupleLen = data->data[0].size() * sizeof(Bit);
 	
     for (int i=0; i< data->publicSize - 1; i++) {
@@ -252,9 +190,18 @@ Data * Distinct4(Data *data) {
         Integer id2 = data->data[i+1];
         Bit eq = (id1 == id2);
         id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
+        
+        //cout << "Equality check for " << i << " is " << eq.reveal(PUBLIC) << " for " << id1.reveal<int64_t>(PUBLIC) << " and " << id2.reveal<int64_t>(PUBLIC) << endl;
+
         //maintain real size
-  	    data->realSize = If(eq, data->realSize - Integer(LENGTH_INT, 1, PUBLIC),  data->realSize);
-        memcpy(data->data[i].bits, id1.bits, tupleLen);       
+        Integer decremented = data->realSize - Integer(INT_LENGTH, 1, PUBLIC);
+  	    data->realSize = If(eq, decremented,  data->realSize);
+         
+        if(eq.reveal(PUBLIC)) {
+        	cout << "Decrementing!" << endl;
+        }
+        
+  	    memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }
     
     return data;
