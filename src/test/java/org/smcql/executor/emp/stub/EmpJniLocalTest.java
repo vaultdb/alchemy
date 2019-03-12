@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.smcql.BaseTest;
 import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.compiler.emp.EmpRunnable;
 import org.smcql.type.SecureRelRecordType;
@@ -12,11 +13,18 @@ import org.smcql.util.Utilities;
 
 import junit.framework.TestCase;
 
-public class EmpJniLocalTest  extends TestCase  {
-
-	
+public class EmpJniLocalTest  extends BaseTest {
 	final String fullyQualifiedClassName = "org.smcql.compiler.emp.generated.EmpJniDemo";
     final int tupleWidth = 3; //characters in string
+
+    
+	protected void setUp() throws Exception {
+		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
+		System.setProperty("smcql.setup", setupFile);
+
+	}
+
+	
 	 
 
     
