@@ -2,8 +2,6 @@
 local-codegen-target=src/main/java/org/smcql/compiler/emp/generated
 data-providers=conf/connections/localhosts
 
-
-
 #log information
 log-level=debug
 
