@@ -37,7 +37,7 @@ public class SecureJoin extends SecureOperator {
         
         System.out.println("Working from input: " + input + " with selection criteria " + selectionCriteria);
         
-		LogicalFilter f = LogicalFilter.create(j.getInput(0), j.getCondition());
+		LogicalFilter f = LogicalFilter.create(input, selectionCriteria);
 		
 		SecureRelNode[] nodeChildren = Arrays.copyOf(o.getSecureRelNode().getChildren().toArray(), o.getSecureRelNode().getChildren().size(), SecureRelNode[].class);
 		Operator[] opChildren = Arrays.copyOf(o.getChildren().toArray(), o.getChildren().size(), Operator[].class);
