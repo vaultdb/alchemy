@@ -1,7 +1,5 @@
 package org.smcql.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,9 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.PumpStreamHandler;
 import org.bytedeco.javacpp.Loader;
 import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.compiler.emp.EmpRunnable;
@@ -121,16 +116,19 @@ public class EmpJniUtilities {
 	// for debugging this does a deep delete on previous builds 
 	public static void cleanEmpCode(String className) throws Exception {
 		String delGeneratedFiles = "rm " + Utilities.getCodeGenTarget() + "/" + className + "* ";
-		Utilities.runCmd(delGeneratedFiles);
-
 		String platform = Loader.getPlatform();
-		
+		String delGeneratedTargets = "rm " + Utilities.getSMCQLRoot() + "/target/classes/org/smcql/compiler/emp/generated/" + className + "*";
 		String delOsCode = "rm -rf " + Utilities.getCodeGenTarget()+ "/" + platform + "/*";
-		Utilities.runCmd(delOsCode);
-		
 		// nuke the javacpp cache
 		String delCache = "rm -rf " + System.getProperty("user.home") + "/.javacpp/cache";
+		
+		
+		Utilities.runCmd(delGeneratedFiles);
+		Utilities.runCmd(delGeneratedTargets);
+		Utilities.runCmd(delOsCode);		
 		Utilities.runCmd(delCache);
+		
+		
 		
 	}
 

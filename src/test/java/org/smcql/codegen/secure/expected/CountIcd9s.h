@@ -100,7 +100,7 @@ public:
 
 
 Data* SeqScan0Merge(int party, NetIO * io) {
-    int rowLength = 524288; 
+    int rowLength = 32; 
 	string localBitstring = inputs["SeqScan0Merge"];
     bool *localData = toBool(localBitstring);
 
@@ -170,7 +170,7 @@ Data* SeqScan0Merge(int party, NetIO * io) {
     cout << "SeqScan0Merge took as input " << aliceSize + bobSize << " tuples." << endl;
 
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
-    bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), 0, 524288);
+    bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), 0, 32);
 
     Data * d = new Data;
     d->data = res;

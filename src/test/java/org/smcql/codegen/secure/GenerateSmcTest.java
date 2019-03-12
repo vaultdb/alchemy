@@ -20,6 +20,7 @@ import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.CommandOutput;
+import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 
 public class GenerateSmcTest extends BaseTest {
@@ -98,6 +99,8 @@ public class GenerateSmcTest extends BaseTest {
   }
 
   protected void testCase(String testName, String sql) throws Exception {
+
+	  EmpJniUtilities.cleanEmpCode(testName);
     SystemConfiguration.getInstance().resetCounters();
     Logger logger = SystemConfiguration.getInstance().getLogger();
     
