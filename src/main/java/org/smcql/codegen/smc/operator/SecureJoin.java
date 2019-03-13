@@ -37,9 +37,9 @@ public class SecureJoin extends SecureOperator {
         RexNode selectionCriteria = j.getCondition();
         
         System.out.println("Working from input: " + input + " with selection criteria " + selectionCriteria);
-        
+
 		RelNode f = RelFactories.DEFAULT_FILTER_FACTORY.createFilter(j, selectionCriteria);
-		
+
 		SecureRelNode[] nodeChildren = Arrays.copyOf(o.getSecureRelNode().getChildren().toArray(), o.getSecureRelNode().getChildren().size(), SecureRelNode[].class);
 		Operator[] opChildren = Arrays.copyOf(o.getChildren().toArray(), o.getChildren().size(), Operator[].class);
 		
