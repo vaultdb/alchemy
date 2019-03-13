@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.logical.LogicalJoin;
 import org.apache.calcite.rex.RexNode;
@@ -37,7 +38,7 @@ public class SecureJoin extends SecureOperator {
         
         System.out.println("Working from input: " + input + " with selection criteria " + selectionCriteria);
         
-		LogicalFilter f = LogicalFilter.create(j.getInput(0), j.getCondition());
+		RelNode f = RelFactories.DEFAULT_FILTER_FACTORY.createFilter(j, selectionCriteria);
 		
 		SecureRelNode[] nodeChildren = Arrays.copyOf(o.getSecureRelNode().getChildren().toArray(), o.getSecureRelNode().getChildren().size(), SecureRelNode[].class);
 		Operator[] opChildren = Arrays.copyOf(o.getChildren().toArray(), o.getChildren().size(), Operator[].class);
