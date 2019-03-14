@@ -89,12 +89,6 @@
       <artifactId>grpc-stub</artifactId>
       <version>${grpc.version}</version>
   </dependency>
-  <!-- https://mvnrepository.com/artifact/org.bytedeco/javacpp -->
-  <dependency>
-	  <groupId>org.bytedeco</groupId>
-	  <artifactId>javacpp</artifactId>
-	  <version>1.2.2</version>
-  </dependency>
 
   <dependency>
 	  <groupId>com.google.guava</groupId>
