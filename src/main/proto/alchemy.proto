@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_package = "org.smcql.executor";
+option java_outer_classname ="queryexecutorservice";
+
+package queryexecutorservice;
+
+service QueryExecutor {
+	rpc ExecuteSegment (ExecuteSegmentRequest) returns (ExecuteSegmentResponse) {}
+}
+
+message ExecuteSegmentRequest {
+	string source = 1;
+	string metadata = 2;
+}
+
+message ExecuteSegmentResponse {
+	bytes xor_resp = 1;
+}
