@@ -905,25 +905,30 @@ public class GenerateTpcH extends BaseTest {
 	    else
 	    	mergeOperatorCounts(operatorHistogram);
 
-	    //System.out.println("Global counts histogram: " + globalOperatorCounts);
+	    
+	    logger.info("Global counts histogram: " + globalOperatorCounts.toString().replace(' ', '\n'));
 	    
 	    
 	  }
+	  
+	  
 
-	 private void initializeOperatorCounts(Map<String, ArrayList<RelNode>> localCounts) {
+	 private void initializeOperatorCounts(Map<String, ArrayList<RelNode>> localCounts) throws IOException {
 		  for(Entry<String, ArrayList<RelNode> > entry : localCounts.entrySet()) {
 			  String opType = entry.getKey();
 			  Integer cnt = entry.getValue().size();
 			  globalOperatorCounts.put(opType, cnt);
 		  }
-		  
-		  System.setProperty("global.operator.count", globalOperatorCounts.toString());
+	
+		  // pass it on to the next junit test
+		  System.setProperty("global.operator.count", serialize((Serializable) globalOperatorCounts));
 	 }
 	 
-	 private void mergeOperatorCounts(Map<String, ArrayList<RelNode>> localCounts) {
+	 private void mergeOperatorCounts(Map<String, ArrayList<RelNode>> localCounts) throws ClassNotFoundException, IOException {
 		 
 
 		 String serializedMap = System.getProperty("global.operator.count");
+		 globalOperatorCounts = (Map<String, Integer>) deserialize(serializedMap);
 		 
 		  for(Entry<String, ArrayList<RelNode> > entry : localCounts.entrySet()) {
 			  String opType = entry.getKey();
@@ -933,6 +938,8 @@ public class GenerateTpcH extends BaseTest {
 			  }
 			  globalOperatorCounts.put(opType, cnt);
 		  }
+		  
+		  System.setProperty("global.operator.count", serialize((Serializable) globalOperatorCounts));
 	  }
 	  
 	  // catalog relnodes
