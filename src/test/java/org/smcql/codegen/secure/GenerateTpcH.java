@@ -125,8 +125,8 @@ public class GenerateTpcH extends BaseTest {
 		          + "  c.c_mktsegment = 'HOUSEHOLD'\n"
 		          + "  and c.c_custkey = o.o_custkey\n"
 		          + "  and l.l_orderkey = o.o_orderkey\n"
-		          + "--  and o.o_orderdate < date '1995-03-25'\n"
-		          + "--  and l.l_shipdate > date '1995-03-25'\n"
+		          + "  and o.o_orderdate < date '1995-03-25'\n"
+		          + "  and l.l_shipdate > date '1995-03-25'\n"
 		          + "\n"
 		          + "group by\n"
 		          + "  l.l_orderkey,\n"
@@ -145,9 +145,9 @@ public class GenerateTpcH extends BaseTest {
 		          + "  orders\n"
 		          + "\n"
 		          + "where\n"
-		          + "--  o_orderdate >= date '1996-10-01'\n"
-		          + "--  and o_orderdate < date '1996-10-01' + interval '3' month\n"
-		          + "--  and \n"
+		          + "  o_orderdate >= date '1996-10-01'\n"
+		          + "  and o_orderdate < date '1996-10-01' + interval '3' month\n"
+		          + "  and \n"
 		          + "  exists (\n"
 		          + "    select\n"
 		          + "      *\n"
@@ -183,8 +183,8 @@ public class GenerateTpcH extends BaseTest {
 		          + "  and s.s_nationkey = n.n_nationkey\n"
 		          + "  and n.n_regionkey = r.r_regionkey\n"
 		          + "  and r.r_name = 'EUROPE'\n"
-		          + "--  and o.o_orderdate >= date '1997-01-01'\n"
-		          + "--  and o.o_orderdate < date '1997-01-01' + interval '1' year\n"
+		          + "  and o.o_orderdate >= date '1997-01-01'\n"
+		          + "  and o.o_orderdate < date '1997-01-01' + interval '1' year\n"
 		          + "group by\n"
 		          + "  n.n_name\n"
 		          + "\n"
@@ -197,9 +197,9 @@ public class GenerateTpcH extends BaseTest {
 		          + "from\n"
 		          + "  lineitem\n"
 		          + "where\n"
-		          + "--  l_shipdate >= date '1997-01-01'\n"
-		          + "--  and l_shipdate < date '1997-01-01' + interval '1' year\n"
-		          + "--  and\n"
+		          + "  l_shipdate >= date '1997-01-01'\n"
+		          + "  and l_shipdate < date '1997-01-01' + interval '1' year\n"
+		          + "  and\n"
 		          + "  l_discount between 0.03 - 0.01 and 0.03 + 0.01\n"
 		          + "  and l_quantity < 24",
 
@@ -233,7 +233,7 @@ public class GenerateTpcH extends BaseTest {
 		          + "        (n1.n_name = 'EGYPT' and n2.n_name = 'UNITED STATES')\n"
 		          + "        or (n1.n_name = 'UNITED STATES' and n2.n_name = 'EGYPT')\n"
 		          + "      )\n"
-		          + "--      and l.l_shipdate between date '1995-01-01' and date '1996-12-31'\n"
+		          + "      and l.l_shipdate between date '1995-01-01' and date '1996-12-31'\n"
 		          + "  ) as shipping\n"
 		          + "group by\n"
 		          + "  supp_nation,\n"
@@ -403,8 +403,8 @@ public class GenerateTpcH extends BaseTest {
 		          + "  and l.l_shipmode in ('TRUCK', 'REG AIR')\n"
 		          + "  and l.l_commitdate < l.l_receiptdate\n"
 		          + "  and l.l_shipdate < l.l_commitdate\n"
-		          + "--  and l.l_receiptdate >= date '1994-01-01'\n"
-		          + "--  and l.l_receiptdate < date '1994-01-01' + interval '1' year\n"
+		          + "  and l.l_receiptdate >= date '1994-01-01'\n"
+		          + "  and l.l_receiptdate < date '1994-01-01' + interval '1' year\n"
 		          + "group by\n"
 		          + "  l.l_shipmode\n"
 		          + "order by\n"
@@ -906,7 +906,7 @@ public class GenerateTpcH extends BaseTest {
 	    	mergeOperatorCounts(operatorHistogram);
 
 	    
-	    logger.info("Global counts histogram: " + globalOperatorCounts.toString().replace(' ', '\n'));
+	    logger.info("Global counts histogram:\n" + globalOperatorCounts.toString().replace(' ', '\n'));
 	    
 	    
 	  }
