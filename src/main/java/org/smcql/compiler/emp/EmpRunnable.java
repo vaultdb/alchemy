@@ -75,7 +75,7 @@ public class EmpRunnable implements Runnable {
     	    	output[i] = bitString.charAt(i) == '1' ? true : false;
     	    }
     	    
-    	    
+    	    logger.info("stdout: " + stdout.toString()); //uncomment to show cout statements
     		
     	} catch (Exception e) {
     		System.err.println("Running emp on party " + party + " failed!");

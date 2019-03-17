@@ -22,54 +22,27 @@ Data* $functionName(int party, NetIO * io) {
     Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
    
     Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit array of inputs
-    Bit *tmpPtr = tmp;
+    for (int i = 0; i < aliceSize; ++i)
+        for (int j = 0; j < rowLength; ++j)
+            tmp[i*rowLength + j] = Bit((ALICE==party) ? 
+                localData[(aliceSize-i-1)*rowLength + j]:0, ALICE);
 
-    Batcher aliceBatcher, bobBatcher;
-   
-    int bobBits = bobSize * rowLength;
-    int aliceBits = aliceSize * rowLength;
+    Batcher batcher;
+    for (int i = 0; i < bobSize*rowLength; ++i)
+        batcher.add<Bit>((BOB==party) ? localData[i]:0);
+    batcher.make_semi_honest(BOB);
 
-    for (int i = 0; i < bobBits; ++i) {
-    	bobBatcher.add<Bit>((BOB==party) ? localData[i]:0);
-     }
-     
-    bobBatcher.make_semi_honest(BOB);
+    for (int i = 0; i < bobSize*rowLength; ++i)
+        tmp[i+aliceSize*rowLength] = batcher.next<Bit>();
 
-
-
-    // append all of bob's bits to tmp
-    for (int i = 0; i < bobBits; ++i) {
-        *tmpPtr = bobBatcher.next<Bit>();
-        ++tmpPtr;
-	}
-   
-
-    for (int i = 0; i < aliceBits; ++i) {
-    	aliceBatcher.add<Bit>((ALICE==party) ? localData[i]:0);
-    }
-
-    aliceBatcher.make_semi_honest(ALICE);
-
-
-    for(int i = 0; i < aliceBits; ++i) {
-    	    *tmpPtr = aliceBatcher.next<Bit>();
-	    	    ++tmpPtr;
-		    }
-
-   		    // resetting cursor
-		    tmpPtr = tmp;
-		    
-		    // create a 2D array of secret-shared bits
-		    // each index is a tuple
-    for(int i = 0; i < aliceSize + bobSize; ++i) {
-        res[i] = Integer(rowLength, tmpPtr);
-        tmpPtr += rowLength;
-     }
+    for(int i = 0; i < aliceSize + bobSize; ++i)
+        res[i] = Integer(rowLength, tmp+rowLength*i);
 
     cout << "$functionName took as input " << aliceSize + bobSize << " tuples." << endl;
 
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
     bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), $keyPos, $keyLength);
+    
 
     Data * d = new Data;
     d->data = res;

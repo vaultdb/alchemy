@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.RelFactories;
-import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.logical.LogicalJoin;
 import org.apache.calcite.rex.RexNode;
 import org.smcql.codegen.smc.operator.support.ProcessingStep;

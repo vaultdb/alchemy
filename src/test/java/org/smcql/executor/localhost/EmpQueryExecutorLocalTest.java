@@ -100,8 +100,6 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     exec.run();
 
     QueryTable observedOutput = exec.getOutput();
-    //************ temp until we debug sorter in emp     **************//
-    observedOutput.sort();
     
     assertEquals(expectedOutput, observedOutput);
     
