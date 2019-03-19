@@ -46,7 +46,6 @@ public class QueryTable implements Serializable {
 		
 		tupleCount = bits.length / tupleSize;
     
-        
         assert(bits.length == (tupleCount * tupleSize));
            
            tuples = new ArrayList<Tuple>();
