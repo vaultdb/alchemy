@@ -87,6 +87,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     SystemConfiguration.getInstance().resetCounters();
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
+    // cut out root node
     System.out.println("Initial schema: " + secRoot.getPlanRoot().getSchema() );
     QueryCompiler qc = new QueryCompiler(secRoot);
     qc.writeOutEmpFile();
@@ -100,7 +101,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     exec.run();
 
     QueryTable observedOutput = exec.getOutput();
-    
+    assertEquals(expectedOutput.tupleCount(), observedOutput.tupleCount());
     assertEquals(expectedOutput, observedOutput);
     
   }

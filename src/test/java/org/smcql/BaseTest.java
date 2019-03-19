@@ -1,6 +1,8 @@
 package org.smcql;
 
 import java.io.IOException;
+import java.util.logging.Logger;
+
 import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.SqlNode;
@@ -19,12 +21,14 @@ public class BaseTest extends TestCase {
 	protected SqlDialect dialect = SqlDialect.DatabaseProduct.POSTGRESQL.getDialect();
 	protected String codePath = Utilities.getSMCQLRoot() + "/conf/workload/sql";
 	protected WorkerConfiguration honestBroker;
+	protected Logger logger;
 	
 	protected void setUp() throws Exception {
 		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.localhost");
 
 		parser = new SqlStatementParser();
 		honestBroker = SystemConfiguration.getInstance().getHonestBrokerConfig();
+		logger = SystemConfiguration.getInstance().getLogger();
 		
 	}
 	

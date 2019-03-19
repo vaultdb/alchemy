@@ -3,6 +3,7 @@ package org.smcql.plan.operator;
 import org.apache.calcite.adapter.jdbc.JdbcTableScan;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.logical.LogicalAggregate;
+import org.apache.calcite.rel.logical.LogicalCorrelate;
 import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.logical.LogicalJoin;
 import org.apache.calcite.rel.logical.LogicalProject;
@@ -43,6 +44,9 @@ public class OperatorFactory {
 		
 		if(node instanceof LogicalFilter)
 			return new Filter(name, secNode, children);
+
+		if(node instanceof LogicalCorrelate)
+			return new Correlate(name, secNode, children);
 
 		return null;
 	}

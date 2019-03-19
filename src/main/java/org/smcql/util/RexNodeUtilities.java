@@ -70,6 +70,7 @@ public class RexNodeUtilities {
 	
 	public static String flattenForSmc(RexNode expr, SecureRelRecordType schema, String variable, int srcSize) {
 		RexFlattener flatten = new RexNodeToSmc(schema, variable, srcSize);
+		System.out.println("Flattening expression: " + expr + " from schema " + schema + " for variable " + variable);
 		String result = expr.accept(flatten);
 		return result;
 	}

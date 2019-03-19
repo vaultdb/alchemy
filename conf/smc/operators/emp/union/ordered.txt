@@ -22,11 +22,21 @@ Data* $functionName(int party, NetIO * io) {
     Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
    
     Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit array of inputs
-    for (int i = 0; i < aliceSize; ++i)
-        for (int j = 0; j < rowLength; ++j)
-            tmp[i*rowLength + j] = Bit((ALICE==party) ? 
-                localData[(aliceSize-i-1)*rowLength + j]:0, ALICE);
-
+    bool *readPos = localData;
+    int writePos = 0;
+    int writeTuple = aliceSize; // last tuple
+    
+    for (int i = 0;  i < aliceSize; ++i) {
+    	--writeTuple;
+    	writePos = writeTuple * rowLength;
+        for (int j = 0; j < rowLength; ++j) {
+            tmp[writeTuple*rowLength + j] = Bit((ALICE==party) ? 
+                *readPos:0, ALICE);
+            ++readPos;
+            ++writePos;
+         }
+	}
+	
     Batcher batcher;
     for (int i = 0; i < bobSize*rowLength; ++i)
         batcher.add<Bit>((BOB==party) ? localData[i]:0);
@@ -38,8 +48,13 @@ Data* $functionName(int party, NetIO * io) {
     for(int i = 0; i < aliceSize + bobSize; ++i)
         res[i] = Integer(rowLength, tmp+rowLength*i);
 
-    cout << "$functionName took as input " << aliceSize + bobSize << " tuples." << endl;
+    cout << "$functionName took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
+	/*for(int i = 0; i < (aliceSize + bobSize); ++i) {
+    	long value = res[i].reveal<int64_t>(PUBLIC);
+    	cout << "Value i: " << value << endl;
+    }*/
+    
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
     bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), $keyPos, $keyLength);
     

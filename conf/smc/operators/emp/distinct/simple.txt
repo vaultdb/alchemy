@@ -17,9 +17,6 @@ Data * $functionName(Data *data) {
         Integer decremented = data->realSize - Integer(INT_LENGTH, 1, PUBLIC);
   	    data->realSize = If(eq, decremented,  data->realSize);
          
-        if(eq.reveal(PUBLIC)) {
-        	cout << "Decrementing!" << endl;
-        }
         
   	    memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }
