@@ -120,25 +120,24 @@ public class TpcHBaseTest extends BaseTest {
 		          + "limit 10",
 
 		      // 04
-		      "select\n"
+		      "WITH ordered_keys AS (" +
+					  "select\n"
+					+ "      l_orderkey\n"
+					+ "    from\n"
+					+ "      lineitem\n"
+					+ "    where\n"
+					+ "      l_commitdate < l_receiptdate\n" +
+					  ")\n" +
+					  "select\n"
 		          + "  o_orderpriority,\n"
 		          + "  count(*) as order_count\n"
 		          + "from\n"
-		          + "  orders\n"
+		          + "  orders,\n ordered_keys\n"
 		          + "\n"
 		          + "where\n"
 		          + "  o_orderdate >= date '1996-10-01'\n"
 		          + "  and o_orderdate < date '1996-10-01' + interval '3' month\n"
-		          + "  and \n"
-		          + "  exists (\n"
-		          + "    select\n"
-		          + "      *\n"
-		          + "    from\n"
-		          + "      lineitem\n"
-		          + "    where\n"
-		          + "      l_orderkey = o_orderkey\n"
-		          + "      and l_commitdate < l_receiptdate\n"
-		          + "  )\n"
+		          + "  and l_orderkey = o_orderkey\n"
 		          + "group by\n"
 		          + "  o_orderpriority\n"
 		          + "order by\n"
