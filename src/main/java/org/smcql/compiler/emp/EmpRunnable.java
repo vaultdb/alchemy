@@ -45,7 +45,7 @@ public class EmpRunnable implements Runnable {
 
     	    PumpStreamHandler psh = new PumpStreamHandler(stdout, stderr);
     	    String classPath = System.getProperty("java.class.path");
-    	    
+    	    classPath = classPath.replace(" ", "\\ ");
     	    // java -cp $JAVACPP_JAR:$JAVACPP_WORKING_DIRECTORY  org.smcql.compiler.emp.generated.ClassName <party> <port> 
     	    String command = "java -cp " + classPath + " " + className + " " + party + " " + port;
     	    
@@ -56,13 +56,20 @@ public class EmpRunnable implements Runnable {
     	    
     	    // save it for later for debugging
     	    FileUtils.writeFile(outFile, command);
-    	    
-    	    
-    	    CommandLine cl = CommandLine.parse(command);
+
+			CommandLine cmdl = new CommandLine("java");
+			cmdl.addArgument("-cp");
+			cmdl.addArgument(classPath);
+			cmdl.addArgument(className);
+			cmdl.addArgument(String.valueOf(party));
+			cmdl.addArgument(String.valueOf(port));
+
+    	    //CommandLine cl = CommandLine.parse(command);
     	    DefaultExecutor exec = new DefaultExecutor();
     	    exec.setStreamHandler(psh);
     	    exec.setWorkingDirectory(new File(javaCppWorkingDirectory));
-    	    int exitValue = exec.execute(cl);
+    	    System.out.println("running command: " + command);
+    	    int exitValue = exec.execute(cmdl);
     	    assert(0 == exitValue);
     	    
     	    String bitString = stderr.toString(); // TODO: can we make this all happen in binary?
