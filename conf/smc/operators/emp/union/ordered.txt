@@ -22,54 +22,42 @@ Data* $functionName(int party, NetIO * io) {
     Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
    
     Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit array of inputs
-    Bit *tmpPtr = tmp;
-
-    Batcher aliceBatcher, bobBatcher;
-   
-    int bobBits = bobSize * rowLength;
-    int aliceBits = aliceSize * rowLength;
-
-    for (int i = 0; i < bobBits; ++i) {
-    	bobBatcher.add<Bit>((BOB==party) ? localData[i]:0);
-     }
-     
-    bobBatcher.make_semi_honest(BOB);
-
-
-
-    // append all of bob's bits to tmp
-    for (int i = 0; i < bobBits; ++i) {
-        *tmpPtr = bobBatcher.next<Bit>();
-        ++tmpPtr;
+    bool *readPos = localData;
+    int writePos = 0;
+    int writeTuple = aliceSize; // last tuple
+    
+    for (int i = 0;  i < aliceSize; ++i) {
+    	--writeTuple;
+    	writePos = writeTuple * rowLength;
+        for (int j = 0; j < rowLength; ++j) {
+            tmp[writeTuple*rowLength + j] = Bit((ALICE==party) ? 
+                *readPos:0, ALICE);
+            ++readPos;
+            ++writePos;
+         }
 	}
-   
+	
+    Batcher batcher;
+    for (int i = 0; i < bobSize*rowLength; ++i)
+        batcher.add<Bit>((BOB==party) ? localData[i]:0);
+    batcher.make_semi_honest(BOB);
 
-    for (int i = 0; i < aliceBits; ++i) {
-    	aliceBatcher.add<Bit>((ALICE==party) ? localData[i]:0);
-    }
+    for (int i = 0; i < bobSize*rowLength; ++i)
+        tmp[i+aliceSize*rowLength] = batcher.next<Bit>();
 
-    aliceBatcher.make_semi_honest(ALICE);
+    for(int i = 0; i < aliceSize + bobSize; ++i)
+        res[i] = Integer(rowLength, tmp+rowLength*i);
 
+    cout << "$functionName took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
-    for(int i = 0; i < aliceBits; ++i) {
-    	    *tmpPtr = aliceBatcher.next<Bit>();
-	    	    ++tmpPtr;
-		    }
-
-   		    // resetting cursor
-		    tmpPtr = tmp;
-		    
-		    // create a 2D array of secret-shared bits
-		    // each index is a tuple
-    for(int i = 0; i < aliceSize + bobSize; ++i) {
-        res[i] = Integer(rowLength, tmpPtr);
-        tmpPtr += rowLength;
-     }
-
-    cout << "$functionName took as input " << aliceSize + bobSize << " tuples." << endl;
-
+	/*for(int i = 0; i < (aliceSize + bobSize); ++i) {
+    	long value = res[i].reveal<int64_t>(PUBLIC);
+    	cout << "Value i: " << value << endl;
+    }*/
+    
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
     bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), $keyPos, $keyLength);
+    
 
     Data * d = new Data;
     d->data = res;

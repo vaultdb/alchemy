@@ -29,7 +29,7 @@ public class EmpBuilderTest extends BaseTest {
 	}
 	
 	
-	// tests linker access to pqxx
+	// tests emp-jni link with jdbc for data inputs
 	public void testCount() throws Exception {
 		String className = "org.smcql.compiler.emp.generated.Count";
 		EmpBuilder builder = new EmpBuilder(className);

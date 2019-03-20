@@ -1,8 +1,6 @@
 package org.smcql.plan;
 
-import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelRoot;
-import org.apache.calcite.sql.SqlExplainLevel;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.parser.SqlStatementParser;
 import org.smcql.parser.TreeBuilder;

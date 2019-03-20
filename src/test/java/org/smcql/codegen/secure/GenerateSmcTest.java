@@ -24,30 +24,16 @@ import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 
 public class GenerateSmcTest extends BaseTest {
-  public ArrayList<String> workerIds;
 
   protected void setUp() throws Exception {
-    String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
-    System.setProperty("smcql.setup", setupFile);
-    ConnectionManager cm = ConnectionManager.getInstance();
-    List<WorkerConfiguration> workers = cm.getWorkerConfigurations();
-    workerIds = new ArrayList<String>();
-
-    if (workers.size() >= 2) {
-      workerIds.add(workers.get(0).workerId);
-      workerIds.add(workers.get(1).workerId);
-    }
+	  super.setUp();
   }
 
   public void testCountIcd9s() throws Exception {
 
     String query = "SELECT COUNT(DISTINCT major_icd9) FROM diagnoses";
-    // to run in plaintext to verify our results
-    //String distributedQuery = "WITH all_diagnoses AS ((SELECT major_icd9 FROM diagnoses) UNION ALL (SELECT major_icd9 FROM remote_diagnoses)) SELECT COUNT(DISTINCT major_icd9) FROM all_diagnoses;";
     String testName = "CountIcd9s";
 
-    // TODO: save this for exec test
-    // QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
 
     testCase(testName, query);
   }
@@ -60,18 +46,7 @@ public class GenerateSmcTest extends BaseTest {
     String testName = "JoinCdiff";
     String query =
         "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
-    //String distributedQuery =
-      //  "WITH all_diagnoses AS ((SELECT patient_id, icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)), "
-        //    + "all_medications AS ((SELECT patient_id FROM medications) UNION ALL (select patient_id FROM remote_medications)) "
-          //  + "SELECT DISTINCT d.patient_id FROM all_diagnoses d JOIN all_medications m ON d.patient_id = m.patient_id AND icd9=\'008.45\';";
-
-    //		String distributedQuery = Utilities.getDistributedQuery(query);
-    //		System.out.println("Distributed query: " + distributedQuery);
-
-    // TODO: save this for executor tests
-    //QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
-
-    testCase(testName, query);
+       testCase(testName, query);
   }
 
   // TODO: George, please work on getting the code generator to build code for this
@@ -82,11 +57,6 @@ public class GenerateSmcTest extends BaseTest {
   public void testFilterDistinct() throws Exception {
     String testName = "FilterDistinct";
     String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
-    //String distributedQuery = "WITH all_diagnoses AS ((SELECT patient_id,icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)) " +
-    //				"SELECT DISTINCT patient_id FROM all_diagnoses WHERE icd9 = \'414.01\'";
-
-    // TODO: save this for executor tests
-    //QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
     testCase(testName, query);
   }
 
@@ -100,10 +70,9 @@ public class GenerateSmcTest extends BaseTest {
 
   protected void testCase(String testName, String sql) throws Exception {
 
-	  EmpJniUtilities.cleanEmpCode(testName);
+	EmpJniUtilities.cleanEmpCode(testName);
     SystemConfiguration.getInstance().resetCounters();
-    Logger logger = SystemConfiguration.getInstance().getLogger();
-    
+     
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
     QueryCompiler qc = new QueryCompiler(secRoot);
@@ -139,13 +108,5 @@ public class GenerateSmcTest extends BaseTest {
 
     assertTrue("The jni wrappers differ!", FileUtils.contentEquals(generated, expected));
 	
-    
-    /* 
-     * Save this for the executor tests
-     * EmpExecutor exec = new EmpExecutor(qc, workerIds);
-    exec.run();
-
-    QueryTable observedOutput = exec.getOutput();
-    assertEquals(expectedOutput, observedOutput);*/
   }
 }

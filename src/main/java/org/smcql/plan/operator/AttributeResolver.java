@@ -206,12 +206,12 @@ public class AttributeResolver {
 		
 		List<SecureRelDataTypeField> dstFields = new ArrayList<SecureRelDataTypeField>();
 		
-		assert(srcSchema.getFieldCount() == dstRecord.getFieldCount());
+		//assert(srcSchema.getFieldCount() == dstRecord.getFieldCount());
 		
 		Iterator<RelDataTypeField> baseItr = dstRecord.getFieldList().iterator();
 		Iterator<SecureRelDataTypeField> srcItr = srcSchema.getSecureFieldList().iterator();
 		
-		while(baseItr.hasNext()) {
+		while(baseItr.hasNext() && srcItr.hasNext()) {
 			SecureRelDataTypeField secureField = new SecureRelDataTypeField(baseItr.next(), srcItr.next());
 			dstFields.add(secureField);
 		}

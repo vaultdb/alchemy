@@ -9,10 +9,12 @@ import org.apache.calcite.prepare.PlannerImpl;
 import org.apache.calcite.prepare.Prepare;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
+import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperatorTable;
@@ -21,12 +23,14 @@ import org.apache.calcite.sql.validate.SqlConformance;
 import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql.validate.SqlValidatorCatalogReader;
 import org.apache.calcite.sql.validate.SqlValidatorImpl;
+import org.apache.calcite.sql2rel.RelDecorrelator;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.sql2rel.SqlToRelConverter.Config;
 import org.apache.calcite.sql2rel.SqlToRelConverter.ConfigBuilder;
 import org.apache.calcite.sql2rel.StandardConvertletTable;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Planner;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelConversionException;
 import org.apache.calcite.tools.ValidationException;
 import org.smcql.config.SystemConfiguration;
@@ -70,7 +74,8 @@ public class SqlStatementParser {
 		    builder.addRuleClass(FilterMergeRule.class);
 		    builder.addRuleClass(ProjectWindowTransposeRule.class);
 		    builder.addRuleClass(FilterProjectTransposeRule.class);
-		    builder.addRuleClass(FilterMergeRule.class);
+		    builder.addRuleClass(SubQueryRemoveRule.class); // removes EXISTS subqueries
+		    
 		    
 		    
 		    optimizer = new HepPlanner(builder.build());
@@ -91,10 +96,13 @@ public class SqlStatementParser {
 		    optimizer.addRule(AggregateExpandDistinctAggregatesRule.INSTANCE);
 		    optimizer.addRule(SortProjectTransposeRule.INSTANCE);
 		    optimizer.addRule(FilterTableScanRule.INSTANCE);
-		   optimizer.addRule(ProjectWindowTransposeRule.INSTANCE);
+		    optimizer.addRule(ProjectWindowTransposeRule.INSTANCE);
 		    
 		    optimizer.addRule(FilterMergeRule.INSTANCE);
 		    optimizer.addRule(ProjectMergeRule.INSTANCE);
+		    optimizer.addRule(SubQueryRemoveRule.FILTER);
+		    optimizer.addRule(SubQueryRemoveRule.JOIN);
+		    optimizer.addRule(SubQueryRemoveRule.PROJECT);
 		    
 	}
 	
@@ -130,7 +138,6 @@ public class SqlStatementParser {
 	      assert(sql != null);
 
 	      final SqlNode sqlQuery = planner.parse(sql);
-			
 	      final RelDataTypeFactory typeFactory = planner.getTypeFactory();
 	     
 
@@ -144,6 +151,7 @@ public class SqlStatementParser {
 	              conformance());
 	      validator.setIdentifierExpansion(true);
 	      
+	    
 	      final SqlToRelConverter converter =
 	          createSqlToRelConverter(
 	              validator,
@@ -155,10 +163,18 @@ public class SqlStatementParser {
 	          converter.convertQuery(validatedQuery, false, true);
 	      assert(root != null);
 
+	      //RelBuilder relBuilder = RelBuilder.create(config);
+	      //RelNode decorrelated = RelDecorrelator.decorrelateQuery(root.rel, relBuilder);
+	      //root.withRel(decorrelated);
+	      
+		  String plan = RelOptUtil.dumpPlan("", root.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
+		  System.out.print("Parsed plan: " + plan);
 	      
 	      final boolean ordered = !root.collation.getFieldCollations().isEmpty();
 	      
 	      RelNode trimmed = converter.trimUnusedFields(ordered, root.rel);
+
+
 
 	      root = root.withRel(trimmed);
 	      return root;
@@ -183,8 +199,7 @@ public class SqlStatementParser {
 	// very basic optimizer
 	public RelRoot optimize(RelRoot relRoot) {
 		
-		     optimizer.setRoot(relRoot.project());
-
+		     optimizer.setRoot(relRoot.rel);
 		 		    
 		    RelNode out = optimizer.findBestExp();
 		    return RelRoot.of(out, relRoot.kind);
@@ -272,7 +287,7 @@ public class SqlStatementParser {
           RelOptCluster cluster =
               RelOptCluster.create(optimizer, rexBuilder);
           
-          final SqlToRelConverter.ConfigBuilder configBuilder =  SqlToRelConverter.configBuilder().withTrimUnusedFields(true);
+          final SqlToRelConverter.ConfigBuilder configBuilder =  SqlToRelConverter.configBuilder().withTrimUnusedFields(true).withDecorrelationEnabled(true);
           Config config = configBuilder.build();
           return new SqlToRelConverter(null, validator, catalogReader, cluster, StandardConvertletTable.INSTANCE, config);
         }

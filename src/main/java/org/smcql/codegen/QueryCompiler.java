@@ -401,6 +401,7 @@ public class QueryCompiler {
     }
 
     if (secStep == null) {
+    	System.out.println("***Adding operator: " + o + " with children " + localChildren + " with ops to combine " + opsToCombine);
       secStep = generateSecureStep(o, localChildren, opsToCombine, merges);
     }
 

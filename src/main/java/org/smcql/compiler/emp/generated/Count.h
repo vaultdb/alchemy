@@ -1,6 +1,6 @@
 #include <emp-sh2pc/emp-sh2pc.h>
-#include <pqxx/pqxx>
-#include "row.h"
+#include <map>
+#include <string>
 
 // header of an ExecutionSegment in emp
 // put in front of first generated MPC operator
@@ -8,7 +8,6 @@
 
 using namespace emp;
 using namespace std;
-using namespace pqxx;
 
 #define LENGTH_INT 64
 
@@ -20,11 +19,14 @@ namespace Count {
 
 class CountClass {
 
+	string output;
+	map<string, string> inputs; // maps opName --> bitString of input tuples
+
+
 	// Connection strings, encapsulates db name, db user, port, host
 	string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
 	string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=localhost port=5432";
 	string aliceHost = "127.0.0.1";
-    string output;
 
 	// Helper functions
 	string reveal_bin(Integer &input, int length, int output_party) {
@@ -75,15 +77,6 @@ class CountClass {
 		}
 	}
 
-	bool *concat(std::vector<Row> rows, int row_size) {
-		bool *result = new bool[row_size*rows.size()];
-		int num_rows = rows.size();
-
-		for (int i=0; i<num_rows; i++) {
-			memcpy(result + i*row_size, rows[i].to_bool(), row_size);
-		}
-		return result;
-	}
 
 	int sum_vals(vector<int> vec) {
 		int sum = 0;
@@ -92,50 +85,6 @@ class CountClass {
 		return sum;
 	}
 
-	// DB connection functions
-	std::vector<Row> execute_sql(string sql, int party) {
-		std::vector<Row> res;
-		try {
-			string config= (party == ALICE) ? aliceConnectionString : bobConnectionString;
-			connection C(config);
-
-			if (C.is_open()) {
-				cout << "Opened database successfully: " << C.dbname() << endl;
-				work w(C);
-				result r = w.exec(sql);
-				w.commit();
-
-				for (auto row : r) {
-					const int num_cols = row.size();
-					vector<int>lengths;
-					string bin_str = "";
-					for (int j=0; j<num_cols; j++) {
-						const pqxx::field field = row[j];
-						int oid = field.type();
-					   /* if (oid == OID_STRING) { // TODO: TODO: what happens if we have two string fields in the same query?
-							lengths.push_back(LENGTH_STRING);  //   implement this using pqxx::binary_string size methods
-															  // May need to parameterize schema, e.g., define column icd9 as varchar(7)
-							bin_str += str_to_binary(row[j].as<string>(), LENGTH_STRING);
-						} else*/
-					   if (oid == OID_INT) {
-							lengths.push_back(LENGTH_INT);
-							bin_str += int64_to_binstr(row[j].as<int64_t>());
-						} else {
-							throw "Unsupported data type in column";
-						}
-					}
-					res.push_back(Row(bin_str, lengths));
-				}
-			} else {
-				cout << "Can't open database" << endl;
-			}
-			C.disconnect();
-		} catch (const std::exception &e) {
-			cerr << e.what() << std::endl;
-		}
-
-		return res;
-	}
 
 	// Operator functions
 	class Data {
@@ -154,6 +103,22 @@ class CountClass {
 	}
 
 
+
+
+
+
+
+	bool * toBool(string src) {
+		long length = src.length();
+		bool *output = new bool[length];
+
+		for(int i = 0; i < length; ++i)
+			output[i] = (src[i] == '1') ? true : false;
+
+		return output;
+	}
+
+
 // ordered union, multiset op, has multiset semantics
 // inputs must be sorted by sort key from query plan in source DBs
 // right now this presumes that the sort key is always the first column.
@@ -161,14 +126,12 @@ class CountClass {
 
 
 	Data* Distinct2Merge(int party, NetIO * io) {
-		string sql = "SELECT DISTINCT icd9 FROM diagnoses ORDER BY icd9";
-		std::vector<Row> in = execute_sql(sql, party);
-		int bit_length = 256; // TODO: automatically derive size from Row metadata?
-		// flatten out local data
-		bool *local_data = concat(in, bit_length);
+		string inputStr = inputs["Distinct2Merge"];
+		bool *local_data = toBool(inputStr);
+		int bit_length = 32;
 
 		int alice_size, bob_size;
-		alice_size = bob_size = in.size();
+		alice_size = bob_size = inputStr.length() / bit_length;
 
 		if (party == ALICE) {
 			io->send_data(&alice_size, 4);
@@ -264,6 +227,16 @@ class CountClass {
 // expects as arguments party (1 = alice, 2 = bob) plus the port it will run the protocols over
 
 public:
+
+	 void setGeneratorHost(string& generator) {
+		aliceHost = generator;
+	}
+
+	const std::string& getOutput() {
+		      return output;
+		}
+
+
 	void run(int party, int port) {
 
 		NetIO * io = new NetIO((party==ALICE ? nullptr : aliceHost.c_str()), port);
@@ -298,13 +271,13 @@ public:
 
 	}
 
-	void addInput(string opName, string bitString) {
-		// TODO: construct a map of function names to tuple inputs.
-	}
+	void addInput(const std::string& opName, const std::string& bitString) {
 
-	string getOutput() {
-	  return output;
-	}
+	     inputs[opName] = bitString;
+
+	     }
+
+
 
 };
 }

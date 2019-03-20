@@ -68,7 +68,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   public void testFilterDistinct() throws Exception {
     String testName = "FilterDistinct";
     String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
-    		String distributedQuery = "WITH all_diagnoses AS ((SELECT patient_id,icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)) " +
+    String distributedQuery = "WITH all_diagnoses AS ((SELECT patient_id,icd9 FROM diagnoses) UNION ALL (SELECT patient_id, icd9 FROM remote_diagnoses)) " +
     				"SELECT DISTINCT patient_id FROM all_diagnoses WHERE icd9 = \'414.01\'";
 
     QueryTable expectedOutput = getExpectedOutput(testName, query, distributedQuery);
@@ -87,6 +87,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     SystemConfiguration.getInstance().resetCounters();
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
+    // cut out root node
     System.out.println("Initial schema: " + secRoot.getPlanRoot().getSchema() );
     QueryCompiler qc = new QueryCompiler(secRoot);
     qc.writeOutEmpFile();
@@ -100,9 +101,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     exec.run();
 
     QueryTable observedOutput = exec.getOutput();
-    //************ temp until we debug sorter in emp     **************//
-    observedOutput.sort();
-    
+    assertEquals(expectedOutput.tupleCount(), observedOutput.tupleCount());
     assertEquals(expectedOutput, observedOutput);
     
   }
