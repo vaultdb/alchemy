@@ -53,7 +53,6 @@ public class CodeGenUtils {
 
 		List<String> template = FileUtils.readFile(srcFile);
 		
-		//while(incompleteSubstitution(template)) {
 			for(int i = 0; i < template.size(); ++i) {
 				for(String v : variables.keySet()) {
 					// variable references in template start with "$"
@@ -61,10 +60,6 @@ public class CodeGenUtils {
 					template.set(i, line.replace("$" + v, variables.get(v)));
 				}
 			}
-		//}
-		
-		//String output = StringUtils.join(template.toArray(), "\n");
-		//System.out.println("templated code " + output);
 		
 		return StringUtils.join(template.toArray(), "\n");
 	}

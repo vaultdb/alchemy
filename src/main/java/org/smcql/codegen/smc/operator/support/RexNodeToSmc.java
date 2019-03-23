@@ -35,7 +35,6 @@ public class RexNodeToSmc extends RexFlattener{
 	@Override
 	public String visitLiteral(RexLiteral literal) {
 		SqlTypeName type = literal.getTypeName();
-		System.out.print("Processing a literal of type: " + type);
 		
 		 switch (type) {
          case DATE:
@@ -53,7 +52,7 @@ public class RexNodeToSmc extends RexFlattener{
         	 return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
          case BOOLEAN:
         	 final Comparable boolValue = literal.getValue();
-        	 System.out.println("Working with " + boolValue.getClass());
+
         	 if(boolValue instanceof Boolean) {
             	 String bitValue = "1";
             	 if(((Boolean) boolValue).booleanValue() == false) 

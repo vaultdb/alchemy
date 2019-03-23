@@ -5,22 +5,28 @@ import java.util.List;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.logical.LogicalAggregate;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 
 public class Aggregate extends Operator {
 
-	
+	LogicalAggregate agg;
 	
 	public Aggregate(String name, SecureRelNode src, Operator ...children) throws Exception {
 		super(name, src, children);
-		splittable = true;
+		
 		blocking = true;
+		agg = (LogicalAggregate) this.getSecureRelNode().getRelNode();
+
+		// aggs without group-bys are splittable
+		splittable = (agg.getGroupCount() == 0) ? true : false;
+		
+
 	}
 
 	public List<SecureRelDataTypeField> getSliceAttributes() {
-		LogicalAggregate agg = (LogicalAggregate) this.getSecureRelNode().getRelNode();
 		List<Integer> groupBy = agg.getGroupSet().asList();
 		List<SecureRelDataTypeField> sliceKeys = new ArrayList<SecureRelDataTypeField>();
 		SecureRelRecordType inSchema = this.getInSchema();
@@ -35,12 +41,10 @@ public class Aggregate extends Operator {
 	}
 	
 	public int getComputeAttributeIndex() {
-		LogicalAggregate agg = (LogicalAggregate) this.getSecureRelNode().getRelNode();
-		return agg.getGroupCount();
+		return agg.getGroupCount(); // only supports one group-by col for now
 	}
 	
 	public List<SecureRelDataTypeField> getGroupByAttributes() {
-		LogicalAggregate agg = (LogicalAggregate) this.getSecureRelNode().getRelNode();
 		List<Integer> groupBy = agg.getGroupSet().asList();
 		
 		SecureRelRecordType schema = this.getSchema();
@@ -52,7 +56,6 @@ public class Aggregate extends Operator {
 	
 	public List<SecureRelDataTypeField> computesOn() {
 		List<SecureRelDataTypeField> attrs = getSliceAttributes(); // group by
-		LogicalAggregate agg = (LogicalAggregate) this.getSecureRelNode().getRelNode();
 		List<SecureRelDataTypeField> allFields = getSchema().getSecureFieldList();
 		
 		List<AggregateCall> aggregates = agg.getAggCallList();
@@ -79,7 +82,6 @@ public class Aggregate extends Operator {
 	}
 
 	public List<SecureRelDataTypeField> secureComputeOrder() {
-		LogicalAggregate agg = (LogicalAggregate) this.getSecureRelNode().getRelNode();
 		List<Integer> groupBy = agg.getGroupSet().asList();
 		List<SecureRelDataTypeField> orderBy = new ArrayList<SecureRelDataTypeField>();
 		SecureRelRecordType inSchema = this.getInSchema();
@@ -108,4 +110,72 @@ public class Aggregate extends Operator {
 		//
 		// TODO: Nisha and May: derive statistics using methods in <repo root>/docs/alchemy-algebra.pdf
 	}
+	
+	@Override
+	public boolean pullUpFilter() {
+		if(splitAggregate()) {
+			return false;
+		}
+		return true;
+	}
+
+	// is this a scalar aggregate with no distributed children?
+	public boolean splitAggregate() {
+
+		if(this.executionMode == ExecutionMode.Secure && (agg.getGroupCount() == 0)
+				 && childrenLocal()) { 
+			return true;
+		}
+		return false;
+		
+	}
+	
+	@Override
+	public void inferExecutionMode() {
+		super.inferExecutionMode(); 
+		
+		// if this is a scalar aggregate  (no group-by) with no distributed children
+		// then set children to public and run its partial execution locally
+
+		if(splitAggregate()) {
+					// recursively set all children to public
+					setChildrenToPublic();
+				}
+		
+	}
+	
+
+	
+	private boolean childrenLocal() {
+		return childrenLocalHelper(this.getChild(0));
+	}
+	private boolean childrenLocalHelper(Operator op) {
+		if(!(op instanceof Filter || op instanceof SeqScan || op instanceof Project || op instanceof CommonTableExpressionScan)) {
+			
+			return false;
+		}	
+		
+		boolean local = true;
+		for(Operator child : op.children) {
+			local = local & childrenLocalHelper(child);
+		}
+		return local;
+	}
+	
+	// for split operator case where aggregate has no group-by
+	// hence its cardinality is independent of that of its locally-executed children
+	private void setChildrenToPublic() {
+		for(Operator child : children) {
+			setToPublicHelper(child);
+		}
+	}
+	
+	// set children to public
+	private void setToPublicHelper(Operator op) {
+		op.executionMode = ExecutionMode.Plain;
+		for(Operator child : op.getChildren()) {
+			setToPublicHelper(child);
+		}
+	}
+	
 };

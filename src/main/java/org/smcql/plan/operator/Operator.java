@@ -540,5 +540,10 @@ public abstract class Operator implements CodeGenerator {
 		}
 		
 	}
+
+	// by default we pull up filter when generating SQL code
+	public boolean pullUpFilter() {
+		return true;
+	}
 	
 }

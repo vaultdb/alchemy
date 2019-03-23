@@ -23,26 +23,19 @@ public class SqlGenerator {
 	
 	public static String getSql(RelNode rel, SqlDialect dialect) {	
 		RelToSqlConverter converter = new ExtendedRelToSqlConverter(dialect);
-		return getStringFromNode(rel, converter, dialect);
+		return getStringFromNode(rel, converter, dialect, filterPullUpConfig());
 	}
 	
 	public static String getSourceSql(Operator node) {
 		SecureRelNode secNode = node.getSecureRelNode();
 		RelNode rel = secNode.getRelNode();
 		RelToSqlConverter converter = new SecureRelToSqlConverter(postgresDialect, secNode.getPhysicalNode());
-		return getStringFromNode(rel, converter, postgresDialect);
+		boolean filterPullUp = filterPullUpConfig() & node.pullUpFilter();
+		return getStringFromNode(rel, converter, postgresDialect, filterPullUp);
 	}
 	
-	public static String getSourceSql(Operator node, SqlDialect dialect) {
-		SecureRelNode secNode = node.getSecureRelNode();
-		RelNode rel = secNode.getRelNode();
-		RelToSqlConverter converter = new SecureRelToSqlConverter(dialect, secNode.getPhysicalNode());
-		System.out.println("Generating SQL for " + rel);
-		return getStringFromNode(rel, converter, dialect);
-	}
-	
-	public static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect) {
-		SqlSelect selection = converter.visitChild(0, rel).asSelect();
+	// debug mode = no filter pull-up
+	private static boolean filterPullUpConfig() {
 		String sqlMode = "release";
 		try {
 			sqlMode = SystemConfiguration.getInstance().getProperty("code-generator-mode");
@@ -50,7 +43,22 @@ public class SqlGenerator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (selection.getWhere() != null && sqlMode != "debug") {
+		return sqlMode.equals("debug");
+	}
+	public static String getSourceSql(Operator node, SqlDialect dialect) {
+		SecureRelNode secNode = node.getSecureRelNode();
+		RelNode rel = secNode.getRelNode();
+		RelToSqlConverter converter = new SecureRelToSqlConverter(dialect, secNode.getPhysicalNode());
+
+		boolean filterPullUp = filterPullUpConfig() || node.pullUpFilter();
+
+		return getStringFromNode(rel, converter, dialect, filterPullUp);
+	}
+	
+	public static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect, boolean filterPullUp) {
+		SqlSelect selection = converter.visitChild(0, rel).asSelect();
+		// move up filter for union/merge input as needed
+		if (selection.getWhere() != null && filterPullUp) {
 			SqlNodeList list = selection.getSelectList();
 
 			if(list == null) {
@@ -61,7 +69,6 @@ public class SqlGenerator {
 				list.add(star);
 				
 			}
-			
 			list.add(selection.getWhere());
 			selection.setWhere(null);
 			selection.setSelectList(list);

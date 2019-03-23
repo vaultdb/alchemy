@@ -62,6 +62,7 @@ public class QueryCompiler {
   Mode mode = Mode.REAL;
   boolean codeGenerated = false;
   SecureRelRecordType outSchema = null;
+  Logger logger;
 
   public QueryCompiler(SecureRelRoot q) throws Exception {
 
@@ -77,6 +78,7 @@ public class QueryCompiler {
     queryId = q.getName();
     Operator root = q.getPlanRoot();
 
+    logger = SystemConfiguration.getInstance().getLogger();
 
     // single plaintext executionstep if no secure computation detected
     if (root.getExecutionMode() == ExecutionMode.Plain) {
@@ -95,6 +97,7 @@ public class QueryCompiler {
 
     queryPlan = q;
     outSchema = q.getPlanRoot().getSchema();
+    logger = SystemConfiguration.getInstance().getLogger();
 
     smcFiles = new ArrayList<String>();
     sqlFiles = new ArrayList<String>();
@@ -132,7 +135,7 @@ public class QueryCompiler {
     sqlCode = new HashMap<ExecutionStep, String>();
     smcCode = new HashMap<ExecutionStep, String>();
     executionSegments = new ArrayList<ExecutionSegment>();
-
+    logger = SystemConfiguration.getInstance().getLogger();
     allSteps = new HashMap<Operator, ExecutionStep>();
 
     queryId = q.getName();
@@ -377,6 +380,9 @@ public class QueryCompiler {
         Operator tmp = o;
         if (child.getExecutionMode() == ExecutionMode.Plain) {
           Operator plain = (o.isSplittable() && !(o instanceof WindowAggregate)) ? o : child;
+          logger.info("***Generating plaintext for secure leaf at " + o.getSecureRelNode().getRelNode());
+          logger.info("***Creating plaintext step for " + plain.getSecureRelNode().getRelNode());
+          // TODO: figure out why generate plaintext step is running on JdbcTableScan instead of aggregate
           childSource = generatePlaintextStep(plain);
         } else {
           childSource = addOperator(child, nextToCombine);
@@ -401,7 +407,6 @@ public class QueryCompiler {
     }
 
     if (secStep == null) {
-    	System.out.println("***Adding operator: " + o + " with children " + localChildren + " with ops to combine " + opsToCombine);
       secStep = generateSecureStep(o, localChildren, opsToCombine, merges);
     }
 
@@ -411,8 +416,6 @@ public class QueryCompiler {
   // adds the given step to the global collections and adds execution information to the step
   private void processStep(PlaintextStep step) throws Exception {
     Operator op = step.getSourceOperator();
-    Map<String, String> code = op.generate();
-    String name = op.getPackageName();
     String sql = op.generate().get(op.getPackageName());
     allSteps.put(op, step);
     sqlCode.put(step, sql);

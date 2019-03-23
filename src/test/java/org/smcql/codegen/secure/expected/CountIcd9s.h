@@ -99,9 +99,9 @@ public:
 
 
 
-Data* SeqScan0Merge(int party, NetIO * io) {
+Data* SeqScan0Union(int party, NetIO * io) {
     int rowLength = 32; 
-	string localBitstring = inputs["SeqScan0Merge"];
+	string localBitstring = inputs["SeqScan0Union"];
     bool *localData = toBool(localBitstring);
 
 
@@ -123,54 +123,42 @@ Data* SeqScan0Merge(int party, NetIO * io) {
     Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
    
     Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit array of inputs
-    Bit *tmpPtr = tmp;
-
-    Batcher aliceBatcher, bobBatcher;
-   
-    int bobBits = bobSize * rowLength;
-    int aliceBits = aliceSize * rowLength;
-
-    for (int i = 0; i < bobBits; ++i) {
-    	bobBatcher.add<Bit>((BOB==party) ? localData[i]:0);
-     }
-     
-    bobBatcher.make_semi_honest(BOB);
-
-
-
-    // append all of bob's bits to tmp
-    for (int i = 0; i < bobBits; ++i) {
-        *tmpPtr = bobBatcher.next<Bit>();
-        ++tmpPtr;
+    bool *readPos = localData;
+    int writePos = 0;
+    int writeTuple = aliceSize; // last tuple
+    
+    for (int i = 0;  i < aliceSize; ++i) {
+    	--writeTuple;
+    	writePos = writeTuple * rowLength;
+        for (int j = 0; j < rowLength; ++j) {
+            tmp[writeTuple*rowLength + j] = Bit((ALICE==party) ? 
+                *readPos:0, ALICE);
+            ++readPos;
+            ++writePos;
+         }
 	}
-   
+	
+    Batcher batcher;
+    for (int i = 0; i < bobSize*rowLength; ++i)
+        batcher.add<Bit>((BOB==party) ? localData[i]:0);
+    batcher.make_semi_honest(BOB);
 
-    for (int i = 0; i < aliceBits; ++i) {
-    	aliceBatcher.add<Bit>((ALICE==party) ? localData[i]:0);
-    }
+    for (int i = 0; i < bobSize*rowLength; ++i)
+        tmp[i+aliceSize*rowLength] = batcher.next<Bit>();
 
-    aliceBatcher.make_semi_honest(ALICE);
+    for(int i = 0; i < aliceSize + bobSize; ++i)
+        res[i] = Integer(rowLength, tmp+rowLength*i);
 
+    cout << "SeqScan0Union took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
-    for(int i = 0; i < aliceBits; ++i) {
-    	    *tmpPtr = aliceBatcher.next<Bit>();
-	    	    ++tmpPtr;
-		    }
-
-   		    // resetting cursor
-		    tmpPtr = tmp;
-		    
-		    // create a 2D array of secret-shared bits
-		    // each index is a tuple
-    for(int i = 0; i < aliceSize + bobSize; ++i) {
-        res[i] = Integer(rowLength, tmpPtr);
-        tmpPtr += rowLength;
-     }
-
-    cout << "SeqScan0Merge took as input " << aliceSize + bobSize << " tuples." << endl;
-
+	/*for(int i = 0; i < (aliceSize + bobSize); ++i) {
+    	long value = res[i].reveal<int64_t>(PUBLIC);
+    	cout << "Value i: " << value << endl;
+    }*/
+    
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
     bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), 0, 32);
+    
 
     Data * d = new Data;
     d->data = res;
@@ -189,17 +177,15 @@ Data * Distinct2(Data *data) {
         Integer id1 = data->data[i];
         Integer id2 = data->data[i+1];
         Bit eq = (id1 == id2);
-        id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
         
-        //cout << "Equality check for " << i << " is " << eq.reveal(PUBLIC) << " for " << id1.reveal<int64_t>(PUBLIC) << " and " << id2.reveal<int64_t>(PUBLIC) << endl;
+        //cout << "Equality check for " << i << " is " << eq.reveal(PUBLIC) << " for " << id1.reveal<string>(PUBLIC) << " and " << id2.reveal<string>(PUBLIC) << endl;
+
+        id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
 
         //maintain real size
         Integer decremented = data->realSize - Integer(INT_LENGTH, 1, PUBLIC);
   	    data->realSize = If(eq, decremented,  data->realSize);
          
-        if(eq.reveal(PUBLIC)) {
-        	cout << "Decrementing!" << endl;
-        }
         
   	    memcpy(data->data[i].bits, id1.bits, tupleLen);       
     }
@@ -246,9 +232,9 @@ const std::string& getOutput() {
     
     setup_semi_honest(io, party);
     
-     Data *SeqScan0MergeOutput = SeqScan0Merge(party, io);
+     Data *SeqScan0UnionOutput = SeqScan0Union(party, io);
 
-    Data * Distinct2Output = Distinct2(SeqScan0MergeOutput);
+    Data * Distinct2Output = Distinct2(SeqScan0UnionOutput);
 
     Data * Aggregate3Output = Aggregate3(Distinct2Output);
 

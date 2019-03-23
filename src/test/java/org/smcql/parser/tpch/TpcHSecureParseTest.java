@@ -53,6 +53,8 @@ public class TpcHSecureParseTest extends TpcHBaseTest {
 		     secureParseTest(testName, sql);
 		}
 
+		// want this to be a split aggregate
+		// each DO produces a partial sum
 		public void testQuery06() throws Exception {
 		     String sql = QUERIES.get(5);
 		     String testName = "q" + String.valueOf(6);
@@ -167,8 +169,7 @@ public class TpcHSecureParseTest extends TpcHBaseTest {
 		  // verifies that the plan resolver identified all attributes and 
 		  // matched them to their security policy
 		  String plan = RelOptUtil.dumpPlan("", secRoot.getRelRoot().rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
-		  logger.info("Resolved secure tree to:\n " + plan);
-
+		  logger.info("Resolved secure tree to:\n " + plan); 
 		  
 		  // tests if the query compiler knows how to generate this code
 		  // parts of this are not written yet for EMP
@@ -180,7 +181,8 @@ public class TpcHSecureParseTest extends TpcHBaseTest {
 
 		  ExecutionStep root = qc.getRoot();
 		  String testTree = root.printTree();
-		  logger.info("Compiled plan: " + testTree);
+		  logger.info("Compiled plan:\n" + testTree);
+		  
 		  
 	  }
 

@@ -6,11 +6,13 @@ import java.util.HashMap;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.compiler.DynamicCompiler;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
@@ -43,12 +45,14 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		src = op;
 		orderKey = orderBy;
 		childStep = child;
+		Logger logger = SystemConfiguration.getInstance().getLogger();
 		
 		srcSQL = (child instanceof PlaintextStep) ? child.generate() : null;
-		System.out.println("UnionMethod srcSQL: " + srcSQL);
+		logger.info("Union Method srcSQL: " + srcSQL);
 		
-		packageName = child.getPackageName() + ".merge";
-		functionName = child.getFunctionName() + "Merge";
+		packageName = child.getPackageName() + ".union";
+		functionName = child.getFunctionName() + "Union";
+		
 		if (srcSQL != null) {
 			schema = Utilities.getOutSchemaFromSql(srcSQL);
 		} else {

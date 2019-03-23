@@ -35,7 +35,6 @@ public class SecureJoin extends SecureOperator {
         RelNode input = j.getInput(0);
         RexNode selectionCriteria = j.getCondition();
         
-        System.out.println("Working from input: " + input + " with selection criteria " + selectionCriteria);
 
 		RelNode f = RelFactories.DEFAULT_FILTER_FACTORY.createFilter(j, selectionCriteria);
 

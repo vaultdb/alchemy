@@ -6,7 +6,7 @@ import org.smcql.plan.operator.Operator;
 public class SecureOperatorFactory {
 	
 	public static SecureOperator get(Operator o) throws Exception {
-		System.out.println("***Processing operator with name: " + o.getOpName());
+	
 		switch(o.getOpName()) {
 			case "Aggregate":
 				return new SecureAggregate(o);

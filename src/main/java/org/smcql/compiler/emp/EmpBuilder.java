@@ -43,7 +43,6 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     	// local nodes run within maven framework and work out of src/main/java
     	// remote simply works from "."
     	String nodeType = SystemConfiguration.getInstance().getProperty("node-type");
-        System.out.println("Node type: " + nodeType);
 
     	    
         Properties properties = getProperties();
@@ -60,7 +59,6 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         	String cmd = "cp " + srcHeader + " " + dstHeader;
 
         	String cwd = System.getProperty("user.dir");
-         	System.out.println("Current working directory: " + cwd );
         	CommandOutput out = Utilities.runCmd(cmd, cwd);
         	if(out.exitCode != 0) {
         		throw new Exception("File copy failed!");
