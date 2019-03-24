@@ -27,6 +27,6 @@ delta=0.0
 [psql]
 host=localhost
 port=5432
-db=tpch-sf1
+db=tpch_alice
 user=smcql
 password=smcql123

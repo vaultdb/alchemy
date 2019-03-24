@@ -545,5 +545,14 @@ public abstract class Operator implements CodeGenerator {
 	public boolean pullUpFilter() {
 		return true;
 	}
+
+	// replace child i with provided node
+	/*public void replaceChild(int i, RelNode child) {
+		
+		children.set(i, child);
+		
+		
+	}*/
+	
 	
 }

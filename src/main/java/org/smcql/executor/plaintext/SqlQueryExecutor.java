@@ -35,7 +35,7 @@ public class SqlQueryExecutor {
 
 		Statement st = c.createStatement();
 		
-		//TODO: remove hardcode
+		//TODO: remove hardcode, override how psql dialect is handled in calcite SQL generator
 		query = query.replace("TIMESTAMPDIFF(DAY, d2.timestamp_, d1.timestamp_)", "DATE_PART('day', d2.timestamp_ - d1.timestamp_)");
 		//query = query.replace("cdiff_cohort_diagnoses", "sample_cdiff_cohort_diagnoses");
 		ResultSet rs = st.executeQuery(query);
@@ -84,9 +84,11 @@ public class SqlQueryExecutor {
 	
 	public static QueryTable query(String sql, SecureRelRecordType outSchema, String workerId) throws Exception {
 		Logger logger = SystemConfiguration.getInstance().getLogger();
+		logger.fine("Starting query:\n" + sql);
+		
 		double start = System.nanoTime();
-		logger.fine("Starting query" + sql);
 		Connection c = ConnectionManager.getInstance().getConnection(workerId);
+		
 		QueryTable result = query(outSchema, sql, c);
 		double end = System.nanoTime();
 		double elapsed = (end - start) / 1e9;

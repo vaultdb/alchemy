@@ -9,17 +9,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 
-import org.smcql.BaseTest;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.parser.SqlStatementParser;
-import org.smcql.util.Utilities;
-
-import com.google.common.collect.ImmutableList;
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;

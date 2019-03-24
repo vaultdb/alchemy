@@ -29,6 +29,7 @@ import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
+import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.privacy.PrivacyStatistics;
 import org.smcql.util.FileUtils;
@@ -148,7 +149,7 @@ public class SystemConfiguration {
 		
 	}
 
-	void initializeCalcite() throws ClassNotFoundException, SQLException {
+	void initializeCalcite() throws Exception {
 		WorkerConfiguration honestBroker = getHonestBrokerConfig();
 		String host = honestBroker.hostname;
 		int port = honestBroker.dbPort;
@@ -259,10 +260,7 @@ public class SystemConfiguration {
 		return "query" + queryCounter;
 	}
 	
-	public WorkerConfiguration getHonestBrokerConfig() throws ClassNotFoundException, SQLException {
-		/// public WorkerConfiguration(String worker, 
-		//String h, int p, String dbName, String user, String pass)  // psql
-		
+	public WorkerConfiguration getHonestBrokerConfig() throws Exception {
 		String host = config.get("psql-host");
 		int port = Integer.parseInt(config.get("psql-port"));
 		String dbName = config.get("psql-db");

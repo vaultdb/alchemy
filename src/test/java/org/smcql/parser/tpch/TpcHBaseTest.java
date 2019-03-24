@@ -7,7 +7,11 @@ import java.util.List;
 import org.apache.calcite.rel.RelNode;
 import org.smcql.BaseTest;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.db.data.QueryTable;
+import org.smcql.executor.config.ConnectionManager;
+import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.parser.SqlStatementParser;
+import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
 
 import com.google.common.collect.ImmutableList;
@@ -714,6 +718,21 @@ public class TpcHBaseTest extends BaseTest {
 
 			
 	  }
+
+	  // runs query over unioned database
+	  // the sql statement is written against the shared schema
+	  // no manual unioning of the inputs of multiple parties
+	  protected QueryTable getExpectedDistributedOutput(String sql, SecureRelRecordType outSchema) throws Exception {
+		  // unioned is a dummy database that contains all of alice and bob's records
+		  return SqlQueryExecutor.query(sql, outSchema, "unioned");  
+	  }
+	  
+	  // simulate a query run in MPC by doing unions on two tables in alice's db
+	  protected QueryTable getExpectedOutput(String sql, SecureRelRecordType outSchema) throws Exception {
+		  String aliceId = ConnectionManager.getInstance().getAlice();
+		  return SqlQueryExecutor.query(sql, outSchema, aliceId);
+	  }
+
 
 
 }

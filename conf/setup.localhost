@@ -20,7 +20,7 @@ code-generator-mode=release
 epsilon=0.1
 delta=0.0
 
-#postgres credentials and info
+#postgres credentials and info for honest broker configuration
 [psql]
 host=localhost
 port=5432

@@ -18,7 +18,7 @@ public class ExtendedRelToSqlConverter extends RelToSqlConverter {
 		super(dialect);
 	}
 
-	// fix bug in calcite where it omits distinct from SQL generation
+	// fix bug in calcite where it omits distinct from SQL generation in some cases
 	@Override
 	public Result visit(Aggregate e) {
 	
