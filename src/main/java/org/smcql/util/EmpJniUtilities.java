@@ -155,7 +155,7 @@ public class EmpJniUtilities {
 			 Map.Entry pair = (Map.Entry)inputItr.next();
 			 String sql = (String) pair.getValue();
 			 sql = sql.replace('\n', ' ');
-			 String putStatement = "inputs.put(\"" + pair.getKey() + "Merge\", \"" + sql + "\");\n";
+			 String putStatement = "inputs.put(\"" + pair.getKey() + "Union\", \"" + sql + "\");\n";
 			 inputSetup += putStatement;
 			 
 		}
