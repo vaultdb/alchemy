@@ -1,19 +1,27 @@
 syntax = "proto3";
 
+option java_multiple_files = true;
 option java_package = "org.smcql.executor";
-option java_outer_classname ="queryexecutorservice";
+option java_outer_classname ="QueryExecutorService";
 
 package queryexecutorservice;
 
-service QueryExecutor {
+service VaultQueryExecutor {
 	rpc ExecuteSegment (ExecuteSegmentRequest) returns (ExecuteSegmentResponse) {}
 }
 
 message ExecuteSegmentRequest {
-	string source = 1;
-	string metadata = 2;
+	string empSource = 1;
+	string empFileName = 2;
+	string jniSource = 3;
+	string jniFileName = 4;
+	string metadata = 5;
+	string queryId=6;
+	int32 empParty=7;
+	int32 empPort=8;
 }
 
 message ExecuteSegmentResponse {
-	bytes xor_resp = 1;
+	string xor_resp = 1;
+    repeated bytes empOutput = 2;
 }

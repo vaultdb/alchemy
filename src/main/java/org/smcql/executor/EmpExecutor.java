@@ -31,9 +31,6 @@ public class EmpExecutor extends MPCExecutor {
 		compiledPlan = compiled;
 		queryId = compiledPlan.getQueryId();
 		outSchema = compiledPlan.getPlan().getPlanRoot().getSchema();
-		
-		
-		
 	}
 
 	public EmpExecutor(QueryCompiler compiled, String aWorkerId, String bWorkerId) throws Exception {
@@ -41,7 +38,6 @@ public class EmpExecutor extends MPCExecutor {
 		compiledPlan = compiled;
 		queryId = compiledPlan.getQueryId();
 		outSchema = compiledPlan.getPlan().getPlanRoot().getSchema();
-
 	}
 	
 	public void run() {

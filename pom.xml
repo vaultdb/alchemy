@@ -73,7 +73,14 @@
     <artifactId>javacpp</artifactId>
     <version>1.4.4</version>
 </dependency>
-        <!-- GRPC dependencies -->
+
+  <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>3.9.5</version>
+  </dependency>
+
+      <!-- GRPC dependencies -->
   <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>grpc-netty-shaded</artifactId>
