@@ -78,6 +78,7 @@ public class QueryCompiler {
 
     queryId = q.getName();
     Operator root = q.getPlanRoot();
+    logger = SystemConfiguration.getInstance().getLogger();
 
     // single plaintext executionstep if no secure computation detected
     if (root.getExecutionMode() == ExecutionMode.Plain) {
