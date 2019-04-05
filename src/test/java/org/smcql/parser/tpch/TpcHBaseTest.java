@@ -507,7 +507,7 @@ public class TpcHBaseTest extends BaseTest {
 					  "    l2.l_partkey\n" +
 					  ")\n" +
 					  "select\n" +
-					  "  sum(l.l_extendedprice) / 7 as avg_yearly\n" +
+					  "  sum(l.l_extendedprice) / 7.0 as avg_yearly\n" +
 					  "from\n" +
 					  "  lineitem l,\n" +
 					  "  part p,\n" +

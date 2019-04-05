@@ -21,7 +21,10 @@ public class FieldFactory implements Serializable {
 		   if(sqlType == SqlTypeName.INTEGER || sqlType == SqlTypeName.BIGINT) 
 				return new IntField(s, r.getInt(resultIdx));
 
-		   
+		   if(sqlType == SqlTypeName.FLOAT || sqlType == SqlTypeName.DOUBLE)
+				return new FloatField(s, r.getFloat(resultIdx));
+
+
 		   if(SqlTypeName.DATETIME_TYPES.contains(sqlType)) {
 			    Timestamp t = r.getTimestamp(resultIdx);
 			    return new TimestampField(s, r.getTimestamp(resultIdx));
