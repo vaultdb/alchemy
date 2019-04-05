@@ -498,23 +498,26 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  p.p_size",
 
 		      // 17
-		      "select\n"
-		          + "  sum(l.l_extendedprice) / 7.0 as avg_yearly\n"
-		          + "from\n"
-		          + "  lineitem l,\n"
-		          + "  part p\n"
-		          + "where\n"
-		          + "  p.p_partkey = l.l_partkey\n"
-		          + "  and p.p_brand = 'Brand#13'\n"
-		          + "  and p.p_container = 'JUMBO CAN'\n"
-		          + "  and l.l_quantity < (\n"
-		          + "    select\n"
-		          + "      0.2 * avg(l2.l_quantity)\n"
-		          + "    from\n"
-		          + "      lineitem l2\n"
-		          + "    where\n"
-		          + "      l2.l_partkey = p.p_partkey\n"
-		          + "  )",
+		      "WITH l2table AS (\n" +
+					  "  select \n" +
+					  "    l_partkey, 0.2 * avg(l2.l_quantity) AS avg_l2_q\n" +
+					  "  from\n" +
+					  "    lineitem l2\n" +
+					  "  group by\n" +
+					  "    l2.l_partkey\n" +
+					  ")\n" +
+					  "select\n" +
+					  "  sum(l.l_extendedprice) / 7 as avg_yearly\n" +
+					  "from\n" +
+					  "  lineitem l,\n" +
+					  "  part p,\n" +
+					  "  l2table\n" +
+					  "where\n" +
+					  "  p.p_partkey = l.l_partkey\n" +
+					  "  and p.p_brand = 'Brand#13'\n" +
+					  "  and p.p_container = 'JUMBO CAN'\n" +
+					  "  and l.l_quantity < avg_l2_q\n" +
+					  "  and l2table.l_partkey = p.p_partkey",
 
 		      // 18
 		      "select\n"
