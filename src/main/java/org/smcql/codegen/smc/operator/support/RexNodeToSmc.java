@@ -1,5 +1,6 @@
 package org.smcql.codegen.smc.operator.support;
 
+import java.math.BigDecimal;
 import java.util.GregorianCalendar;
 
 import org.apache.calcite.rel.type.RelDataType;
@@ -47,6 +48,10 @@ public class RexNodeToSmc extends RexFlattener{
         			return new String("Integer(LENGTH_INT, " + timestamp + ", PUBLIC)" );
         	 	}
         	 return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
+			 case FLOAT:
+			 case DOUBLE:
+				 Float bd = literal.getValueAs(Float.class);
+			 	return new String("Float(32, " + bd + ", PUBLIC)");
          case INTEGER:
          case BIGINT:
         	 return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );

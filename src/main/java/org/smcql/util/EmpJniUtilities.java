@@ -82,6 +82,12 @@ public class EmpJniUtilities {
 
 
 
+	public static QueryTable runEmpRemote(String className, SecureRelRecordType outSchema) throws Exception {
+    	int empPort = getEmpPort();
+
+    	//int empPort =
+		return null;
+	}
 	// class name includes package info
 	// e.g., org.smcql.compiler.emp.generated.Count
 	public static QueryTable runEmpLocal(String className, SecureRelRecordType outSchema) throws Exception {
@@ -155,7 +161,7 @@ public class EmpJniUtilities {
 			 Map.Entry pair = (Map.Entry)inputItr.next();
 			 String sql = (String) pair.getValue();
 			 sql = sql.replace('\n', ' ');
-			 String putStatement = "inputs.put(\"" + pair.getKey() + "Merge\", \"" + sql + "\");\n";
+			 String putStatement = "inputs.put(\"" + pair.getKey() + "Union\", \"" + sql + "\");\n";
 			 inputSetup += putStatement;
 			 
 		}
@@ -182,6 +188,7 @@ public class EmpJniUtilities {
 		}
 		return port;
 	}
+
 
 	
 	public static boolean[] decrypt(boolean[] alice, boolean[] bob) {

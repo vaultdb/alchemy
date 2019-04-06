@@ -22,6 +22,7 @@ import org.smcql.codegen.smc.operator.SecurePreamble;
 import org.smcql.codegen.smc.operator.support.UnionMethod;
 import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.executor.RPC.RPCExecutorClient;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.RunConfig;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
@@ -77,7 +78,6 @@ public class QueryCompiler {
 
     queryId = q.getName();
     Operator root = q.getPlanRoot();
-
     logger = SystemConfiguration.getInstance().getLogger();
 
     // single plaintext executionstep if no secure computation detected
@@ -110,7 +110,6 @@ public class QueryCompiler {
 
     queryId = q.getName();
     Operator root = q.getPlanRoot();
-
 
     // single plaintext executionstep if no secure computation detected
     if (root.getExecutionMode() == ExecutionMode.Plain) {
@@ -190,46 +189,48 @@ public class QueryCompiler {
     }
   }
 
-	// returns filename
-	public String writeOutEmpFile() throws Exception {
-		
-		
-		String targetFile = Utilities.getCodeGenTarget() + "/" + queryId + ".h";
-		Logger logger = SystemConfiguration.getInstance().getLogger();
-		logger.log(Level.INFO, "QueryCompiler writing generated code to " + targetFile);
-		
-		
-		String empCode = getEmpCode();
-		org.smcql.util.FileUtils.writeFile(targetFile, empCode);
-		
-		
-		Map<String, String> inputs = new HashMap<String, String>();
-		Iterator itr = sqlCode.entrySet().iterator();
-		
-		while(itr.hasNext()) {
-			Map.Entry entry = (Map.Entry) itr.next();
-			ExecutionStep step = (ExecutionStep) entry.getKey();
-			String functionName  = step.getFunctionName();
-			inputs.put(functionName, (String) entry.getValue());
-			
-		}
-		
-		
-		String jniFile = Utilities.getCodeGenTarget() + "/" + queryId + ".java";
-		EmpJniUtilities.createJniWrapper(queryId, jniFile, inputs);
-		codeGenerated = true;
-		
-		return targetFile;
-		
-		
-	}
-	
+  public void setCodeGenerated(boolean val) {
+    codeGenerated = val;
+  }
 
+  // TODO(madhavsuresh): document this function call
+  public String writeOutEmpFile() throws Exception {
+    String empCode = getEmpCode();
+    return writeOutEmpFile(empCode);
+  }
+  // returns filename (but only for C++ code, not jni wrapper.
+  // the intent of this function is to write out all code
+  public String writeOutEmpFile(String empCode) throws Exception {
+
+    String targetFile = Utilities.getCodeGenTarget() + "/" + queryId + ".h";
+    Logger logger = SystemConfiguration.getInstance().getLogger();
+    logger.log(Level.INFO, "QueryCompiler writing generated code to " + targetFile);
+
+    org.smcql.util.FileUtils.writeFile(targetFile, empCode);
+
+    Map<String, String> inputs = new HashMap<String, String>();
+    Iterator itr = sqlCode.entrySet().iterator();
+
+    while (itr.hasNext()) {
+      Map.Entry entry = (Map.Entry) itr.next();
+      ExecutionStep step = (ExecutionStep) entry.getKey();
+      String functionName = step.getFunctionName();
+      inputs.put(functionName, (String) entry.getValue());
+    }
+
+    String jniFile = Utilities.getCodeGenTarget() + "/" + queryId + ".java";
+    EmpJniUtilities.createJniWrapper(queryId, jniFile, inputs);
+    codeGenerated = true;
+
+    return targetFile;
+  }
+
+  // This only writes out C++ code, not the jni code.
   public String getEmpCode() throws Exception {
     String wholeFile = new String();
 
     SecurePreamble preamble = new SecurePreamble(getRoot().getSourceOperator());
-    
+
     String generatedPreamble = preamble.generate().get("preamble");
     wholeFile = generatedPreamble;
 
@@ -244,15 +245,11 @@ public class QueryCompiler {
     return wholeFile;
   }
 
+  public void compileEmpCode() throws Exception {
+    if (!codeGenerated) writeOutEmpFile();
 
-  public void  compileEmpCode() throws Exception {
-	if(!codeGenerated) 
-		writeOutEmpFile();
-	
-	
-	EmpBuilder builder = new EmpBuilder(queryId);
-	builder.compile();
-
+    EmpBuilder builder = new EmpBuilder(queryId);
+    builder.compile();
   }
 
   // generate program flow by traversing the tree bottom-up
@@ -270,10 +267,10 @@ public class QueryCompiler {
     }
 
     for (ExecutionStep child : step.getChildren()) {
-        Pair<String, String> childCode = empCodeGeneratorHelper((SecureStep) child);
-        functions += childCode.left;
-        calls += childCode.right;
-      }
+      Pair<String, String> childCode = empCodeGeneratorHelper((SecureStep) child);
+      functions += childCode.left;
+      calls += childCode.right;
+    }
 
     functions += myCode;
     calls += myCall;
@@ -305,7 +302,7 @@ public class QueryCompiler {
   private String generateEMPMain(String functions, String rootOutput) throws IOException {
 
     Map<String, String> variables = new HashMap<String, String>();
-    
+
     variables.put("functions", functions);
     variables.put("rootOutput", rootOutput);
     String generatedCode = CodeGenUtils.generateFromTemplate("util/main.txt", variables);
@@ -630,7 +627,7 @@ public class QueryCompiler {
     return bytes;
   }
 
-public SecureRelRecordType getOutSchema() {
-		return outSchema;
-	}
+  public SecureRelRecordType getOutSchema() {
+    return outSchema;
+  }
 }
