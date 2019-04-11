@@ -16,12 +16,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Window;
 import org.apache.calcite.rel.core.Window.Group;
-import org.apache.calcite.rel.logical.LogicalFilter;
-import org.apache.calcite.rel.logical.LogicalJoin;
-import org.apache.calcite.rel.logical.LogicalProject;
-import org.apache.calcite.rel.logical.LogicalSort;
-import org.apache.calcite.rel.logical.LogicalWindow;
-import org.apache.calcite.rel.logical.LogicalAggregate;
+import org.apache.calcite.rel.logical.*;
 
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelRecordType;
@@ -59,13 +54,47 @@ public class AttributeResolver {
 		
 		if(baseNode instanceof LogicalWindow) 
 			return resolveWinAggregate(aNode);
+
+		if(baseNode instanceof LogicalCorrelate)
+			return resolveLogicalCorrelate(aNode);
 		
 		// unknown type
 		return null;
 				
 		
 	}
-	
+
+	private static SecureRelRecordType resolveLogicalCorrelate(SecureRelNode aJoin) throws Exception {
+
+		List<SecureRelDataTypeField> secureFields = new ArrayList<SecureRelDataTypeField>();
+		LogicalJoin join = (LogicalJoin) aJoin.getRelNode();
+		SecureRelNode lhsChild = aJoin.getChild(0);
+		SecureRelNode rhsChild = aJoin.getChild(1);
+
+
+		SecureRelRecordType lhs = lhsChild.getSchema();
+		SecureRelRecordType rhs = rhsChild.getSchema();
+
+		RelRecordType baseType = (RelRecordType) join.getRowType();
+		Iterator<RelDataTypeField> baseItr = baseType.getFieldList().iterator();
+
+		for(SecureRelDataTypeField field : lhs.getSecureFieldList()) {
+			RelDataTypeField dstField = baseItr.next();
+			secureFields.add(new SecureRelDataTypeField(dstField, field));
+		}
+
+		for(SecureRelDataTypeField field : rhs.getSecureFieldList()) {
+			RelDataTypeField dstField = baseItr.next();
+			secureFields.add(new SecureRelDataTypeField(dstField, field));
+		}
+
+
+		return new SecureRelRecordType(baseType, secureFields);
+
+	}
+
+
+
 	private static SecureRelRecordType resolveWinAggregate(SecureRelNode aNode) {
 		SecureRelRecordType inSchema = aNode.getChild(0).getSchema();
 		

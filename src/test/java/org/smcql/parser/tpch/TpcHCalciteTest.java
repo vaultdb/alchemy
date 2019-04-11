@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.smcql.codegen.sql.SqlGenerator;
 import org.smcql.config.SystemConfiguration;
 
 import org.apache.calcite.plan.RelOptUtil;
@@ -184,8 +185,12 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 	    String plan = RelOptUtil.dumpPlan("", root.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
 
 	    logger.info("Parsed plan for " + testName + ":\n" + plan);
-	  
 
+
+	    // Testing generation for SQL from created Calcite plan
+		// Uncomment two lines below to avoid this test
+	    String SQl = SqlGenerator.getSql(root.rel,SystemConfiguration.DIALECT);
+	    System.out.println(SQl);
 	    
 	    buildOperatorHistogram(root.rel);
 
