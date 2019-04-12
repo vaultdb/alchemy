@@ -12,8 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.smcql.codegen.sql.SqlGenerator;
 import org.smcql.config.SystemConfiguration;
-
+import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
@@ -173,17 +174,23 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 
 	    SystemConfiguration.getInstance().resetCounters();
 	    
-	
+	    // this decouples  the parser from SMCQL's code
+	    ExplainQuery eq = new ExplainQuery();
+	    RelRoot root = eq.explain(sql);
 	 
 	    // getting buried for now
 	    //logger.info("For test " + testName + " running:\n" + sql);
 	    
-	    RelRoot root = parser.convertSqlToRelMinFields(sql);
+	    //RelRoot root = parser.convertSqlToRelMinFields(sql);
 	    
 	    
 	    String plan = RelOptUtil.dumpPlan("", root.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
 
 	    logger.info("Parsed plan for " + testName + ":\n" + plan);
+	    
+	    String query = SqlGenerator.getSql(root, SystemConfiguration.DIALECT);
+	    logger.info("Preparing to run query: " + query);
+	    SqlQueryExecutor.queryNoOutput(query, "alice");
 	  
 
 	    
