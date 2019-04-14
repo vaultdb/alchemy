@@ -420,15 +420,7 @@ public class TpcHBaseTest extends BaseTest {
 
 
 
-			// 13 B - CalciteTest parsed query plan reversal
-			// currently fails the TpcH reverse test and parse test with simple left outer join
-			/*"select *\n"
-					+ "from \n"
-					+ "  customer c \n"
-					+ "  left outer join orders o \n"
-					+ "    on c.c_custkey = o.o_custkey\n"
-					+ "    WHERE o.o_comment not like '%special%requests%'\n",*/
-
+		
 			// 14
 		      "select\n"
 		          + "  100.00 * sum(case\n"
@@ -486,36 +478,34 @@ public class TpcHBaseTest extends BaseTest {
 		          // The key here will be to push down all filters and projects that have expressions 
 		          // so that we don't hit the SMC parser for all of these specialized expression like 
 		          // EXTRACT(Year FROM ...)
-		      "select\n"
-		          + "  p.p_brand,\n"
-		          + "  p.p_type,\n"
-		          + "  p.p_size,\n"
-		          + "  count(distinct ps.ps_suppkey) as supplier_cnt\n"
-		          + "from\n"
-		          + "  partsupp ps,\n"
-		          + "  part p\n"
-		          + "where\n"
-		          + "  p.p_partkey = ps.ps_partkey\n"
-				  + "  and p.p_brand <> 'Brand#21'\n"
-/*				   + "  and p.p_type not like 'MEDIUM PLATED%'\n"
-		           + "  and p.p_size in (38, 2, 8, 31, 44, 5, 14, 24)\n"
-		           + "  and ps.ps_suppkey not in (\n"
-		           + "    select\n"
-		           + "      s_suppkey\n"
-		           + "    from\n"
-		           + "      supplier\n"
-		           + "    where\n"
-		           + "      s_comment like '%Customer%Complaints%'\n"
-		           + "  )\n"*/
-		          + "group by\n"
-		          + "  p.p_brand,\n"
-		          + "  p.p_type,\n"
-		          + "  p.p_size\n"
-		          + "order by\n"
-		          + "  supplier_cnt desc,\n"
-		          + "  p.p_brand,\n"
-		          + "  p.p_type,\n"
-		          + "  p.p_size",
+	
+		          "WITH complaints AS (SELECT * FROM supplier WHERE s_comment LIKE '%Customer%Complaints%'),\n"
+		          + "     ps_suppkey_set_diff AS (\n"
+		          + "     SELECT ps_partkey, ps_suppkey\n"
+		          + "     FROM partsupp ps LEFT JOIN complaints c ON ps.ps_suppkey = c.s_suppkey\n"
+		          + "     WHERE c.s_suppkey IS NULL)\n"
+		          + "select\n"
+		          + "   p.p_brand,\n"
+		          + "   p.p_type,\n"
+		          + "   p.p_size,\n"
+		          + "   count(distinct ps.ps_suppkey) as supplier_cnt\n"
+		          + " from\n"
+		          + "   ps_suppkey_set_diff ps,\n"
+		          + "   part p\n"
+		          + " where\n"
+		          + "   p.p_partkey = ps.ps_partkey\n"
+		          + "   and p.p_brand <> 'Brand#21'\n"
+		          + "   and p.p_type not like 'MEDIUM PLATED%'\n"
+		          + "   and p.p_size in (38, 2, 8, 31, 44, 5, 14, 24)\n"
+		          + " group by\n"
+		          + "   p.p_brand,\n"
+		          + "   p.p_type,\n"
+		          + "   p.p_size\n"
+		          + " order by\n"
+		          + "   supplier_cnt desc,\n"
+		          + "   p.p_brand,\n"
+		          + "   p.p_type,\n"
+		          + "   p.p_size",
 
 		      // 17
 		      "WITH l2table AS (\n" +
