@@ -62,14 +62,16 @@ public class ExplainQuery {
 		 
 		 
 		  public RelRoot explain(String sql) throws SqlParseException, ValidationException, RelConversionException{
-		    SqlNode parse = planner.parse(sql);
-		    System.out.println(parse.toString());
+			 
+			System.out.println("Initial query: " + sql);
+			SqlNode parse = planner.parse(sql);
+		    System.out.println("Parsed SqlNode: " + parse.toString());
 		 
 		    SqlNode validate = planner.validate(parse);
 		    RelRoot tree = planner.rel(validate);
 		 
 		    String plan = RelOptUtil.toString(tree.rel); //explain(tree, SqlExplainLevel.ALL_ATTRIBUTES);
-		    System.out.println("plan>");
+		    System.out.println("Plan: ");
 		    System.out.println(plan);
 		    return tree;
 		 

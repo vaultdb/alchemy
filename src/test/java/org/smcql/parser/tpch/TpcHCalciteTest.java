@@ -18,8 +18,10 @@ import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
+import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
+import org.apache.calcite.sql.SqlNode;
 
 
 public class TpcHCalciteTest extends TpcHBaseTest {
@@ -178,6 +180,17 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 	    ExplainQuery eq = new ExplainQuery();
 	    RelRoot root = eq.explain(sql);
 	 
+	    final RelToSqlConverter conv = new RelToSqlConverter(SystemConfiguration.DIALECT);
+        final SqlNode sqlNode = conv.visitChild(0, root.rel).asStatement();
+        String sqlOut =  sqlNode.toSqlString(dialect).getSql();
+        
+        System.out.println("Sql deparsed: " + sqlOut);
+        
+        // for Q13, why is stack padded with a bunch of nulls?
+        // failing to add last table scan to its queue before first pop in visit child?
+        // no, this goes through, but it first fails on the join
+        // let's try isolating the join
+        
 	    // getting buried for now
 	    //logger.info("For test " + testName + " running:\n" + sql);
 	    
@@ -188,11 +201,16 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 
 	    logger.info("Parsed plan for " + testName + ":\n" + plan);
 	    
-	    String query = SqlGenerator.getSql(root, SystemConfiguration.DIALECT);
+/*	    String query = SqlGenerator.getSql(root, SystemConfiguration.DIALECT);
 	    logger.info("Preparing to run query: " + query);
 	    SqlQueryExecutor.queryNoOutput(query, "alice");
 	  
 
+
+	    // Testing generation for SQL from created Calcite plan
+		// Uncomment two lines below to avoid this test
+	    String SQl = SqlGenerator.getSql(root.rel,SystemConfiguration.DIALECT);
+	    System.out.println(SQl);
 	    
 	    buildOperatorHistogram(root.rel);
 
@@ -211,7 +229,7 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 
 	    
 	    logger.info("Global counts histogram:\n" + globalOperatorCounts.toString().replace(' ', '\n'));
-	    
+	*/    
 	    
 	  }
 	  

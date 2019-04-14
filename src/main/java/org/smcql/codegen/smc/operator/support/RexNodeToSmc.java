@@ -37,11 +37,13 @@ public class RexNodeToSmc extends RexFlattener{
 	public String visitLiteral(RexLiteral literal) {
 		SqlTypeName type = literal.getTypeName();
 		
+		System.out.println("Examining " + literal + " type: " + literal.getClass());
 		 switch (type) {
          case DATE:
          case TIME:
          case TIMESTAMP:
         	 	final Comparable value = literal.getValue();
+        	 	System.out.println("Getting value of type: " + value.getClass());
         	 	if(value instanceof GregorianCalendar) { // printed datetime
         	 		GregorianCalendar calendar = (GregorianCalendar) value;
         	 		long timestamp = calendar.getTimeInMillis();
@@ -54,7 +56,7 @@ public class RexNodeToSmc extends RexFlattener{
 			 	return new String("Float(32, " + bd + ", PUBLIC)");
          case INTEGER:
          case BIGINT:
-        	 return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
+        	 return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );	 
          case BOOLEAN:
         	 final Comparable boolValue = literal.getValue();
 
@@ -65,14 +67,12 @@ public class RexNodeToSmc extends RexFlattener{
             	 return new String("Bit(" + bitValue + ",  PUBLIC)");
         	 }
          default: // try to convert it to an int
-        	 return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
+        	//System.out.println("Can't convert literal of type " + literal.getValue().getClass() +  " to smc!");
+        	//System.exit(-1);
+        	return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
               
 		 }
 		 
-	/*	if(type  == DATE) {
-			long timestamp = ((DateString) type).getMillisSinceEpoch();
-			return new String("Integer(LENGTH_INT, " + timestamp + ", PUBLIC)" );			
-		}*/
 		
 	}
 
