@@ -1,20 +1,5 @@
 package org.smcql.parser.tpch;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.smcql.codegen.sql.SqlGenerator;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
@@ -22,9 +7,17 @@ import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
+import org.smcql.config.SystemConfiguration;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 
-public class TpcHCalciteTest extends TpcHBaseTest {
+public class TpcHVanillaCalciteTest extends TpcHBaseTest {
 
 	Map<String, ArrayList<RelNode> > operatorHistogram;
 	Map<String, Integer> globalOperatorCounts;
@@ -174,59 +167,22 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 	  
 	  protected void testCase(String testName, String sql) throws Exception {
 
-
-
 	    SystemConfiguration.getInstance().resetCounters();
 	    
+	    // this decouples  the parser from SMCQL's code
+	    ExplainQuery eq = new ExplainQuery();
+	    RelRoot root = eq.explain(sql);
 
-		// Do we still have this problem? Looks like it is solved...
+	    // Go from compiled plan back to plan sql using built in Calcite tests
+	    final RelToSqlConverter conv = new RelToSqlConverter(SystemConfiguration.DIALECT);
+        final SqlNode sqlNode = conv.visitChild(0, root.rel).asStatement();
+        String sqlOut =  sqlNode.toSqlString(dialect).getSql();
 
-        // for Q13, why is stack padded with a bunch of nulls?
-        // failing to add last table scan to its queue before first pop in visit child?
-        // no, this goes through, but it first fails on the join
-        // let's try isolating the join
-        
-	    // getting buried for now
-	    //logger.info("For test " + testName + " running:\n" + sql);
-
-
-	    RelRoot root = parser.convertSqlToRelMinFields(sql);
-	    
-	    
+        // Print out Calcite plans
+        System.out.println("Sql deparsed: " + sqlOut);
 	    String plan = RelOptUtil.dumpPlan("", root.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
-
 	    logger.info("Parsed plan for " + testName + ":\n" + plan);
-	    
-/*	    String query = SqlGenerator.getSql(root, SystemConfiguration.DIALECT);
-	    logger.info("Preparing to run query: " + query);
-	    SqlQueryExecutor.queryNoOutput(query, "alice");
-*/
 
-
-	    // Reverse our own plan using our SqlGenerator
-	    String sqlOut = SqlGenerator.getSql(root.rel,SystemConfiguration.DIALECT);
-	    System.out.println("Sql deparsed: " + sqlOut);
-
-
-
-	    // Build and log tree histogram
-	    buildOperatorHistogram(root.rel);
-
-	    String histogram = "Operator distribution for " + testName + ":\n";
-	    
-	    for(Entry<String, ArrayList<RelNode> > opType : operatorHistogram.entrySet()) {
-	    	histogram += "     " + opType.getKey() + ": " + opType.getValue().size() + "\n";
-	    }
-	    
-	    logger.info(histogram);
-
-	    if(testName.equals("q1")) 
-	    	initializeOperatorCounts(operatorHistogram);
-	    else
-	    	mergeOperatorCounts(operatorHistogram);
-
-	    
-	    logger.info("Global counts histogram:\n" + globalOperatorCounts.toString().replace(' ', '\n'));
 
 	  }
 	  
