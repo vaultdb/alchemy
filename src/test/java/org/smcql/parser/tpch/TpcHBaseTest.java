@@ -35,7 +35,7 @@ public class TpcHBaseTest extends BaseTest {
 		          + "from\n"
 		          + "  lineitem\n"
 		          + " where\n"
-		          + "  l_shipdate <= date '1998-12-01' - interval '120' day (3)\n"
+		          + "  l_shipdate <= date '1998-12-01' - interval '120' day(3)\n"
 		          + "group by\n"
 		          + "  l_returnflag,\n"
 		          + "  l_linestatus\n"
