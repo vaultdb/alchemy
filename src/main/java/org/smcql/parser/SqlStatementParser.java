@@ -168,7 +168,7 @@ public class SqlStatementParser {
 	      //root.withRel(decorrelated);
 	      
 		  String plan = RelOptUtil.dumpPlan("", root.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
-		  System.out.print("Parsed plan: " + plan);
+		  System.out.print("SqlStatementParser.java : Parsed plan: " + plan);
 	      
 	      final boolean ordered = !root.collation.getFieldCollations().isEmpty();
 	      
