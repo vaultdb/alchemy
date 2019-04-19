@@ -395,6 +395,22 @@ public class TpcHBaseTest extends BaseTest {
 		          + "order by\n"
 		          + "  l.l_shipmode",
 
+
+
+			  "select\n"
+				  + "  c.c_custkey,\n"
+				  + "  count(o.o_orderkey)\n"
+				  + "    from\n"
+				  + "      customer c \n"
+				  + "      LEFT JOIN orders o \n"
+				  + "        on c.c_custkey = o.o_custkey\n"
+				  + "        WHERE  o.o_comment not like '%special%requests%'\n"
+				  + "    group by\n"
+				  + "      c.c_custkey",
+
+
+
+		      /*
 		      // 13
 		          "select\n"
 		                  + "  c_count,\n"
@@ -417,7 +433,7 @@ public class TpcHBaseTest extends BaseTest {
 		                  + "order by\n"
 		                  + "  custdist desc,\n"
 		                  + "  c_count desc",
-
+				*/
 
 
 		
@@ -664,80 +680,52 @@ public class TpcHBaseTest extends BaseTest {
 		          + "                      order by\n"
 		          + "                        s.s_name\n",
 
-	      /*
-
-
-		      // 21 - Original version from Tcph
-		      // Logical Correlates cause both Calcite & SecureParse tests to fail in Q21
-
-		      "select\n"
-		          + "  s.s_name,\n"
-		          + "  count(*) as numwait\n"
-		          + "from\n"
-		          + "  supplier s,\n"
-		          + "  lineitem l1,\n"
-		          + "  orders o,\n"
-		          + "  nation n\n"
-		          + "where\n"
-		          + "  s.s_suppkey = l1.l_suppkey\n"
-		          + "  and o.o_orderkey = l1.l_orderkey\n"
-		          + "  and o.o_orderstatus = 'F'\n"
-		          + "  and l1.l_receiptdate > l1.l_commitdate\n"
-		          + "  and exists (\n"
-		          + "    select\n"
-		          + "      *\n"
-		          + "    from\n"
-		          + "      lineitem l2\n"
-		          + "    where\n"
-		          + "      l2.l_orderkey = l1.l_orderkey\n"
-		          + "      and l2.l_suppkey <> l1.l_suppkey\n"
-		          + "  )\n"
-		           + "  and not exists (\n"
-		          + "    select\n"
-		          + "      *\n"
-		          + "    from\n"
-		          + "      lineitem l3\n"
-		          + "    where\n"
-		          + "      l3.l_orderkey = l1.l_orderkey\n"
-		          + "      and l3.l_suppkey <> l1.l_suppkey\n"
-		          + "      and l3.l_receiptdate > l3.l_commitdate\n"
-		          + "  )\n"
-		          + "  and s.s_nationkey = n.n_nationkey\n"
-		          + "  and n.n_name = 'BRAZIL'\n"
-		          + "group by\n"
-		          + "  s.s_name\n"
-		          + "order by\n"
-		          + "  numwait desc,\n"
-		          + "  s.s_name\n"
-		          + "limit 100",
-
-			*/
-
-
-			// 21 B
-			// Simplified version of query 21 - no logical correlates
-			// Passes both TpcH reverse test and SecureParseTest
-			"select\n"
-					+ "  s.s_name,\n"
-					+ "  count(*) as numwait\n"
-					+ "from\n"
-					+ "  supplier s,\n"
-					+ "  lineitem l1,\n"
-					+ "  orders o,\n"
-					+ "  nation n\n"
-					+ "where\n"
-					+ "  s.s_suppkey = l1.l_suppkey\n"
-					+ "  and o.o_orderkey = l1.l_orderkey\n"
-					+ "  and o.o_orderstatus = 'F'\n"
-					+ "  and l1.l_receiptdate > l1.l_commitdate\n"
-					+ "  and s.s_nationkey = n.n_nationkey\n"
-					+ "  and n.n_name = 'BRAZIL'\n"
-					+ "group by\n"
-					+ "  s.s_name\n"
-					+ "order by\n"
-					+ "  numwait desc,\n"
-					+ "  s.s_name\n"
-					+ "limit 100",
+					//21
+					" WITH l2 AS ( select DISTINCT l_suppkey, l_orderkey\n"
+					+ "                                              from\n"
+					+ "                                                lineitem l1),\n"
+					+ "\n"
+					+ "\n"
+					+ " l1prime AS (SELECT DISTINCT l1.l_suppkey, l1.l_orderkey \n"
+					+ "   FROM lineitem l1 LEFT JOIN l2 ON (l2.l_orderkey = l1.l_orderkey\n"
+					+ " AND l2.l_suppkey <> l1.l_suppkey)\n"
+					+ "                                       WHERE l2.l_orderkey IS NOT NULL),\n"
+					+ "\n"
+					+ "\n"
+					+ "  l3 AS (\n"
+					+ "       select DISTINCT  l_orderkey, l_suppkey\n"
+					+ "      from lineitem l3\n"
+					+ "      where l3.l_receiptdate > l3.l_commitdate\n"
+					+ "   ),\n"
+					+ "\n"
+					+ "  l1doubleprime AS (SELECT l1prime.l_suppkey, l1prime.l_orderkey, l1prime.l_receiptdate, l1prime.l_commitdate\n"
+					+ "     FROM lineitem l1prime LEFT JOIN l3 ON l3.l_orderkey = l1prime.l_orderkey  and l3.l_suppkey <> l1prime.l_suppkey\n"
+					+ "     WHERE  l3.l_orderkey IS NULL),\n"
+					+ "\n"
+					+ " agg AS (select\n"
+					+ "    s.s_name, l_orderkey, l_suppkey\n"
+					+ "  from\n"
+					+ "    supplier s,\n"
+					+ "    l1doubleprime l1,\n"
+					+ "    orders o,\n"
+					+ "    nation n\n"
+					+ "  where\n"
+					+ "    s.s_suppkey = l1.l_suppkey\n"
+					+ "    and o.o_orderkey = l1.l_orderkey\n"
+					+ "    and o.o_orderstatus = 'F'\n"
+					+ "    and l1.l_receiptdate > l1.l_commitdate\n"
+					+ "    and s.s_nationkey = n.n_nationkey\n"
+					+ "    and n.n_name = 'BRAZIL'\n"
+					+ "  order by\n"
+					+ "    s.s_name)\n"
+					+ "\n"
+					+ " SELECT agg.s_name, count(*) as numwait FROM agg LEFT JOIN l1prime on agg.l_orderkey = l1prime.l_orderkey and agg.l_suppkey = l1prime.l_suppkey WHERE l1prime.l_suppkey IS NOT NULL\n"
+					+ " group by\n"
+					+ "   agg.s_name\n"
+					+ " order by\n"
+					+ "   numwait desc,\n"
+					+ "   agg.s_name\n"
+					+ " limit 100",
 
 
 
