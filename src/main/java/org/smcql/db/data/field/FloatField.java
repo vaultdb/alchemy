@@ -3,6 +3,7 @@ package org.smcql.db.data.field;
 import org.smcql.type.SecureRelDataTypeField;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 public class FloatField extends Field  implements Serializable {
 
@@ -33,6 +34,15 @@ public class FloatField extends Field  implements Serializable {
     @Override
     public String serializeToBinaryString() {
         String binString = Integer.toBinaryString(Float.floatToIntBits(value));
+        //System.out.println(value);
+        //System.out.println(binString);
+        if(binString.length() == 31){
+            if(value < 0){
+                binString = "1" + binString;
+            }else{
+                binString = "0" + binString;
+            }
+        }
         assert (binString.length() == 32);
         return binString;
     }

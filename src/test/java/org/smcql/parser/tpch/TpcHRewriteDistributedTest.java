@@ -41,7 +41,9 @@ public class TpcHRewriteDistributedTest  extends TpcHBaseTest {
 			public void testQuery05() throws Exception {
 			     String sql = QUERIES.get(4);
 			     String testName = "q" + String.valueOf(5);
-			     testCase(testName, sql);
+			     // testCase(testName, sql); - Need to uncomment
+				// TODO - Deterine why test case is failing
+				fail("Test Case hangs");
 			}
 
 			public void testQuery06() throws Exception {
