@@ -41,9 +41,9 @@ public class TpcHRewriteDistributedTest  extends TpcHBaseTest {
 			public void testQuery05() throws Exception {
 			     String sql = QUERIES.get(4);
 			     String testName = "q" + String.valueOf(5);
-			     // testCase(testName, sql); - Need to uncomment
-				// TODO - Deterine why test case is failing
-				fail("Test Case hangs");
+			     testCase(testName, sql);
+				// TODO - Improve efficiency.  This works but takes a long time
+
 			}
 
 			public void testQuery06() throws Exception {
@@ -155,17 +155,16 @@ public class TpcHRewriteDistributedTest  extends TpcHBaseTest {
 
 		    SystemConfiguration.getInstance().resetCounters();
 		    logger.info(testName + " parsing:\n" + sql);
-
 		    SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
+
 			String distributedSql = SqlGenerator.getDistributedSql(secRoot, SystemConfiguration.DIALECT);
 			logger.info("Produced distributed query:\n" + distributedSql);
 
-			
+
 		    SecureRelRecordType outSchema = secRoot.getPlanRoot().getSchema();
 		    QueryTable expectedOutput = super.getExpectedDistributedOutput(sql, outSchema);
-					
 			QueryTable observedOutput = super.getExpectedOutput(distributedSql, outSchema);
-			
+
 			
 			assertEquals(expectedOutput.tupleCount(), observedOutput.tupleCount());
 			assertEquals(expectedOutput, observedOutput);
