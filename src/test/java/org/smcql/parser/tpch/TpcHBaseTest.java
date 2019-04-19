@@ -743,27 +743,7 @@ public class TpcHBaseTest extends BaseTest {
 				+ "	  GROUP BY\n"
 				+ "	  cntrycode\n"
 				+ "	  ORDER BY\n"
-				+ "	  cntrycode",
-
-
-
-			//Query 23 - To test 13
-
-					"  \n"
-					+ "    select\n"
-					+ "      c.c_custkey,\n"
-					+ "      count(o.o_orderkey)\n"
-					+ "    from\n"
-					+ "      customer c \n"
-					+ "      left outer join orders o \n"
-					+ "        on c.c_custkey = o.o_custkey\n"
-					+ "        WHERE  o.o_comment not like '%special%requests%'\n"
-					+ "    group by\n"
-					+ "      c.c_custkey\n"
-
-
-
-			);
+				+ "	  cntrycode");
 
 
 	  protected void setUp() throws Exception {
