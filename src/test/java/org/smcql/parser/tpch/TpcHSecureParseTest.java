@@ -104,11 +104,7 @@ public class TpcHSecureParseTest extends TpcHBaseTest {
 		}
 
 
-	public void testQuery23() throws Exception {
-		String sql = QUERIES.get(22);
-		String testName = "q" + String.valueOf(13);
-		secureParseTest(testName, sql);
-	}
+
 
 	public void testQuery14() throws Exception {
 		     String sql = QUERIES.get(13);
@@ -163,6 +159,12 @@ public class TpcHSecureParseTest extends TpcHBaseTest {
 		     String testName = "q" + String.valueOf(22);
 		     secureParseTest(testName, sql);
 		}
+
+	public void testQuery23() throws Exception {
+		String sql = QUERIES.get(22);
+		String testName = "q" + String.valueOf(13);
+		secureParseTest(testName, sql);
+	}
 
 		
 	  

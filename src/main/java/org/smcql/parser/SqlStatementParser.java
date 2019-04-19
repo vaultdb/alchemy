@@ -75,6 +75,8 @@ public class SqlStatementParser {
 		    builder.addRuleClass(ProjectWindowTransposeRule.class);
 		    builder.addRuleClass(FilterProjectTransposeRule.class);
 		    builder.addRuleClass(SubQueryRemoveRule.class); // removes EXISTS subqueries
+
+			builder.addRuleClass(PushDownFilter.class);
 		    
 		    
 		    
@@ -82,7 +84,8 @@ public class SqlStatementParser {
 		    optimizer.addRule(ProjectToWindowRule.PROJECT);
 		    
 		    
-		       
+
+		    optimizer.addRule(PushDownFilter.INSTANCE);
 		    optimizer.addRule(ReduceExpressionsRule.FILTER_INSTANCE);
 		    optimizer.addRule(ReduceExpressionsRule.CALC_INSTANCE);
 		    optimizer.addRule(ReduceExpressionsRule.PROJECT_INSTANCE);
