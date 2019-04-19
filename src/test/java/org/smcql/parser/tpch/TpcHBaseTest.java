@@ -397,20 +397,6 @@ public class TpcHBaseTest extends BaseTest {
 
 
 
-			  "select\n"
-				  + "  c.c_custkey,\n"
-				  + "  count(o.o_orderkey)\n"
-				  + "    from\n"
-				  + "      customer c \n"
-				  + "      LEFT JOIN orders o \n"
-				  + "        on c.c_custkey = o.o_custkey\n"
-				  + "        WHERE  o.o_comment not like '%special%requests%'\n"
-				  + "    group by\n"
-				  + "      c.c_custkey",
-
-
-
-		      /*
 		      // 13
 		          "select\n"
 		                  + "  c_count,\n"
@@ -433,7 +419,6 @@ public class TpcHBaseTest extends BaseTest {
 		                  + "order by\n"
 		                  + "  custdist desc,\n"
 		                  + "  c_count desc",
-				*/
 
 
 		
@@ -544,30 +529,6 @@ public class TpcHBaseTest extends BaseTest {
 					  "  and p.p_container = 'JUMBO CAN'\n" +
 					  "  and l.l_quantity < avg_l2_q\n" +
 					  "  and l2table.l_partkey = p.p_partkey",
-
-
-
-			// Original TpcH Q17 - this causes both reverse Calcite and Secureparse Test to fail
-			/*
-			"select\n"
-					+ "  sum(l.l_extendedprice) / 7.0 as avg_yearly\n"
-					+ "from\n"
-					+ "  lineitem l,\n"
-					+ "  part p\n"
-					+ "where\n"
-					+ "  p.p_partkey = l.l_partkey\n"
-					+ "  and p.p_brand = 'Brand#13'\n"
-					+ "  and p.p_container = 'JUMBO CAN'\n"
-					+ "  and l.l_quantity < (\n"
-					+ "    select\n"
-					+ "      0.2 * avg(l2.l_quantity)\n"
-					+ "    from\n"
-					+ "      lineitem l2\n"
-					+ "    where\n"
-					+ "      l2.l_partkey = p.p_partkey\n"
-					+ "  )",
-
-			*/
 
 			// 18
 		      "select\n"
@@ -731,43 +692,58 @@ public class TpcHBaseTest extends BaseTest {
 
 
 		      // 22
-		      "select\n"
-		          + "  cntrycode,\n"
-		          + "  count(*) as numcust,\n"
-		          + "  sum(c_acctbal) as totacctbal\n"
-		          + "from\n"
-		          + "  (\n"
-		          + "    select\n"
-		          + "      substring(c_phone from 1 for 2) as cntrycode,\n"
-		          + "      c_acctbal\n"
-		          + "    from\n"
-		          + "      customer c\n"
-		          + "    where\n"
-		          + "      substring(c_phone from 1 for 2) in\n"
-		          + "        ('24', '31', '11', '16', '21', '20', '34')\n"
-		          + "      and c_acctbal > (\n"
-		          + "        select\n"
-		          + "          avg(c_acctbal)\n"
-		          + "        from\n"
-		          + "          customer\n"
-		          + "        where\n"
-		          + "          c_acctbal > 0.00\n"
-		          + "          and substring(c_phone from 1 for 2) in\n"
-		          + "            ('24', '31', '11', '16', '21', '20', '34')\n"
-		          + "      )\n"
-		          + "      and not exists (\n"
-		          + "        select\n"
-		          + "          *\n"
-		          + "        from\n"
-		          + "          orders o\n"
-		          + "        where\n"
-		          + "          o.o_custkey = c.c_custkey\n"
-		          + "      )\n"
-		          + "  ) as custsale\n"
-		          + "group by\n"
-		          + "  cntrycode\n"
-		          + "order by\n"
-		          + "  cntrycode");
+			  "WITH\n"
+				+ "	  c_sub\n"
+				+ "	  AS (\n"
+				+ "	  		SELECT\n"
+				+ "	  		substring(c_phone, 1, 2) AS cntrycode, *\n"
+				+ "	  		FROM\n"
+				+ "	  customer AS c\n"
+				+ "	  WHERE\n"
+				+ "	  substring(c_phone, 1, 2)\n"
+				+ "	  IN ('24','31','11','16','21','20','34')\n"
+				+ "    ),\n"
+				+ "	  		c_avg\n"
+				+ "	  AS (\n"
+				+ "	  		SELECT\n"
+				+ "	  				avg(c_acctbal) AS avg_c_acctbal\n"
+				+ "	  FROM\n"
+				+ "	  		customer\n"
+				+ "	  WHERE\n"
+				+ "	  c_acctbal > 0.00\n"
+				+ "	  AND substring(c_phone, 1, 2)\n"
+				+ "	  IN ('24','31','11','16','21','20','34')\n"
+				+ "	  	),\n"
+				+ "	  c_avg_restrict\n"
+				+ "	  AS (\n"
+				+ "	  		SELECT\n"
+				+ "	  				c.*, a.avg_c_acctbal\n"
+				+ "	  				FROM\n"
+				+ "	  			c_sub AS c, c_avg AS a\n"
+				+ "	  				WHERE\n"
+				+ "	  				c.c_acctbal > a.avg_c_acctbal\n"
+				+ "	  ),\n"
+				+ "	  c_orderkey\n"
+				+ "	  AS (\n"
+				+ "	  		SELECT\n"
+				+ "	  			*\n"
+				+ "	  					FROM\n"
+				+ "	  					c_avg_restrict AS c\n"
+				+ "	  					LEFT JOIN orders AS o ON\n"
+				+ "	  					o.o_custkey = c.c_custkey\n"
+				+ "	  					WHERE\n"
+				+ "	  					o.o_custkey IS NULL\n"
+				+ "	  )\n"
+				+ "	  SELECT\n"
+				+ "	  		cntrycode,\n"
+				+ "	  count(*) AS numcust,\n"
+				+ "	  sum(c_acctbal) AS totacctbal\n"
+				+ "	  FROM\n"
+				+ "	  c_orderkey AS c\n"
+				+ "	  GROUP BY\n"
+				+ "	  cntrycode\n"
+				+ "	  ORDER BY\n"
+				+ "	  cntrycode");
 
 
 	  protected void setUp() throws Exception {
