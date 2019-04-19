@@ -125,6 +125,7 @@ public class SqlGenerator {
 		String sqlOut = selection.toSqlString(dialect).getSql();
 		
 		sqlOut = sqlOut.replace("\"", "");
+        sqlOut = sqlOut.replaceAll("\' DAY\\(3\\)", " DAYS\'"); // fix date interval rendering
 		return sqlOut;	
 	}
 }

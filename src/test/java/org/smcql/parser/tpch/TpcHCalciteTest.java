@@ -197,10 +197,10 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 
 	    logger.info("Parsed plan for " + testName + ":\n" + plan);
 	    
-/*	    String query = SqlGenerator.getSql(root, SystemConfiguration.DIALECT);
+	    String query = SqlGenerator.getSql(root, SystemConfiguration.DIALECT);
 	    logger.info("Preparing to run query: " + query);
 	    SqlQueryExecutor.queryNoOutput(query, "alice");
-*/
+
 
 
 	    // Reverse our own plan using our SqlGenerator
