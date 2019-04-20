@@ -35,7 +35,7 @@ public class TpcHBaseTest extends BaseTest {
 		          + "from\n"
 		          + "  lineitem\n"
 		          + " where\n"
-		          + "  l_shipdate <= date '1998-12-01' - interval '120' day(3)\n"
+		          + "  l_shipdate <= date '1998-08-03'\n"
 		          + "group by\n"
 		          + "  l_returnflag,\n"
 		          + "  l_linestatus\n"
@@ -124,24 +124,16 @@ public class TpcHBaseTest extends BaseTest {
 		          + "limit 10",
 
 		      // 04
-		      "WITH ordered_keys AS (" +
-					  "select\n"
-					+ "      l_orderkey\n"
-					+ "    from\n"
-					+ "      lineitem\n"
-					+ "    where\n"
-					+ "      l_commitdate < l_receiptdate\n" +
-					  ")\n" +
-					  "select\n"
+		          "select\n"
 		          + "  o_orderpriority,\n"
 		          + "  count(*) as order_count\n"
 		          + "from\n"
-		          + "  orders,\n ordered_keys\n"
-		          + "\n"
-		          + "where\n"
-		          + "  o_orderdate >= date '1996-10-01'\n"
-		          + "  and o_orderdate < date '1996-10-01' + interval '3' month\n"
-		          + "  and l_orderkey = o_orderkey\n"
+		          + "  orders	LEFT JOIN (SELECT DISTINCT l_orderkey FROM lineitem WHERE l_commitdate < l_receiptdate) li ON l_orderkey = o_orderkey\n"
+		          + "where o_orderdate >= date '1996-10-01'\n"
+		          // TODO: address handling date intervals
+//		          + "   and o_orderdate < date '1996-10-01' + interval '3 months' \n" 
+		          + "   and o_orderdate < date '1997-01-01'\n" 
+		          + "   AND l_orderkey IS NOT NULL\n"
 		          + "group by\n"
 		          + "  o_orderpriority\n"
 		          + "order by\n"
@@ -169,7 +161,7 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  and n.n_regionkey = r.r_regionkey\n"
 		          + "  and r.r_name = 'EUROPE'\n"
 		          + "  and o.o_orderdate >= date '1997-01-01'\n"
-		          + "  and o.o_orderdate < date '1997-01-01' + interval '1' year\n"
+		          + "  and o.o_orderdate < date '1998-01-01'\n"
 		          + "group by\n"
 		          + "  n.n_name\n"
 		          + "\n"
@@ -183,7 +175,7 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  lineitem\n"
 		          + "where\n"
 		          + "  l_shipdate >= date '1997-01-01'\n"
-		          + "  and l_shipdate < date '1997-01-01' + interval '1' year\n"
+		          + "  and l_shipdate < date '1998-01-01'\n"
 		          + "  and\n"
 		          + "  l_discount between 0.03 - 0.01 and 0.03 + 0.01\n"
 		          + "  and l_quantity < 24",
@@ -321,7 +313,7 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  c.c_custkey = o.o_custkey\n"
 		          + "  and l.l_orderkey = o.o_orderkey\n"
 		          + "  and o.o_orderdate >= date '1994-03-01'\n"
-		          + "  and o.o_orderdate < date '1994-03-01' + interval '3' month\n"
+		          + "  and o.o_orderdate < date '1994-06-01'\n"
 		          + "  and l.l_returnflag = 'R'\n"
 		          + "  and c.c_nationkey = n.n_nationkey\n"
 		          + "group by\n"
@@ -389,7 +381,7 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  and l.l_commitdate < l.l_receiptdate\n"
 		          + "  and l.l_shipdate < l.l_commitdate\n"
 		          + "  and l.l_receiptdate >= date '1994-01-01'\n"
-		          + "  and l.l_receiptdate < date '1994-01-01' + interval '1' year\n"
+		          + "  and l.l_receiptdate < date '1995-01-01'\n"
 		          + "group by\n"
 		          + "  l.l_shipmode\n"
 		          + "order by\n"
@@ -435,7 +427,7 @@ public class TpcHBaseTest extends BaseTest {
 		          + "where\n"
 		          + "  l.l_partkey = p.p_partkey\n"
 		          + "  and l.l_shipdate >= date '1994-08-01'\n"
-		          + "  and l.l_shipdate < date '1994-08-01' + interval '1' month",
+		          + "  and l.l_shipdate < date '1994-09-01'",
 
 		      // 15
 		      "with revenue0 (supplier_no, total_revenue) as (\n"
@@ -446,7 +438,7 @@ public class TpcHBaseTest extends BaseTest {
 		          + "    lineitem\n"
 		          + "  where\n"
 		          + "    l_shipdate >= date '1993-05-01'\n"
-		          + "    and l_shipdate < date '1993-05-01' + interval '3' month\n"
+		          + "    and l_shipdate < date '1993-08-01'\n"
 		          + "  group by\n"
 		          + "    l_suppkey)\n"
 		          + "select\n"
@@ -616,7 +608,7 @@ public class TpcHBaseTest extends BaseTest {
 		          + "                                   lineitem l\n"
 		          + "                                 where\n"
 		          + "                                    l.l_shipdate >= date '1993-01-01'\n"
-		          + "                                   and l.l_shipdate < date '1993-01-01' + interval '1' year\n"
+		          + "                                   and l.l_shipdate < date '1994-01-01'\n"
 		          + "                              GROUP BY l_partkey, l_suppkey\n"
 		          + "                     ),\n"
 		          + "\n"
