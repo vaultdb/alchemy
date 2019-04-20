@@ -75,16 +75,13 @@ public class SqlStatementParser {
 		    builder.addRuleClass(ProjectWindowTransposeRule.class);
 		    builder.addRuleClass(FilterProjectTransposeRule.class);
 		    builder.addRuleClass(SubQueryRemoveRule.class); // removes EXISTS subqueries
-
-			builder.addRuleClass(PushDownFilter.class);
+		    builder.addRuleClass(PushDownFilter.class);
 		    
 		    
 		    
 		    optimizer = new HepPlanner(builder.build());
+		
 		    optimizer.addRule(ProjectToWindowRule.PROJECT);
-		    
-		    
-
 		    optimizer.addRule(PushDownFilter.INSTANCE);
 		    optimizer.addRule(ReduceExpressionsRule.FILTER_INSTANCE);
 		    optimizer.addRule(ReduceExpressionsRule.CALC_INSTANCE);
