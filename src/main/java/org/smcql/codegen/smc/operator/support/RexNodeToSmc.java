@@ -3,6 +3,7 @@ package org.smcql.codegen.smc.operator.support;
 import java.math.BigDecimal;
 import java.util.GregorianCalendar;
 
+import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -37,21 +38,25 @@ public class RexNodeToSmc extends RexFlattener{
 	public String visitLiteral(RexLiteral literal) {
 		SqlTypeName type = literal.getTypeName();
 		
-		System.out.println("Examining " + literal + " type: " + literal.getClass());
-		 switch (type) {
+		System.out.println("Examining " + literal + " type: " + type);
+	 	final Comparable v = literal.getValue();
+	 	System.out.println("Getting value of type: " + v.getClass());
+
+	 	// converting to org.apache.calcite.avatica.util.TimeUnitRange
+		switch (type) {
          case DATE:
          case TIME:
          case TIMESTAMP:
         	 	final Comparable value = literal.getValue();
-        	 	System.out.println("Getting value of type: " + value.getClass());
         	 	if(value instanceof GregorianCalendar) { // printed datetime
         	 		GregorianCalendar calendar = (GregorianCalendar) value;
         	 		long timestamp = calendar.getTimeInMillis();
         			return new String("Integer(LENGTH_INT, " + timestamp + ", PUBLIC)" );
         	 	}
         	 return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
-			 case FLOAT:
-			 case DOUBLE:
+         case FLOAT:
+         case DOUBLE:
+         case DECIMAL:
 				 Float bd = literal.getValueAs(Float.class);
 			 	return new String("Float(32, " + bd + ", PUBLIC)");
          case INTEGER:
@@ -67,8 +72,8 @@ public class RexNodeToSmc extends RexFlattener{
             	 return new String("Bit(" + bitValue + ",  PUBLIC)");
         	 }
          default: // try to convert it to an int
-        	//System.out.println("Can't convert literal of type " + literal.getValue().getClass() +  " to smc!");
-        	//System.exit(-1);
+        	System.out.println("Can't convert literal of type " + literal.getValue().getClass() +  " to smc!");
+        	System.exit(-1);
         	return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
               
 		 }
