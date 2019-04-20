@@ -1,4 +1,4 @@
-# SMCQL : Secure Querying for Federated Databases
+# VaultDB : A Private Data Federation
 
 --------------------------------------------------------------------------------
 Author
