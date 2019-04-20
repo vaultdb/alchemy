@@ -36,7 +36,7 @@ public class FloatField extends Field  implements Serializable {
         String binString = Integer.toBinaryString(Float.floatToIntBits(value));
         //System.out.println(value);
         //System.out.println(binString);
-        if(binString.length() == 31){
+        while(binString.length() < 32){
             if(value < 0){
                 binString = "1" + binString;
             }else{
@@ -53,7 +53,7 @@ public class FloatField extends Field  implements Serializable {
 
     @Override
     public String toString() {
-        return serializeToBinaryString();
+    	return Float.toString(value);
     }
 
     @Override
