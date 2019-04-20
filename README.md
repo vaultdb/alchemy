@@ -1,10 +1,10 @@
-# SMCQL : Secure Querying for Federated Databases
+# VaultDB : Secure Querying for Federated Databases
 
 --------------------------------------------------------------------------------
 Author
 --------------------------------------------------------------------------------
 
-SMCQL is developed and currently maintained by Johes Bater, under the direction of Jennie Rogers.  It translates SQL statements into <a href="http://oblivm.com/index.html">ObliVM</a> programs for secure query evaluation.
+VaultDB is being developed by Johes Bater, Madhav Suresh, Jennie Rogers, Keith Pallo, May Li, George Malty, and Nisha Pant.  It translates SQL statements into emp-toolkit programs for secure query evaluation.
 
 
 --------------------------------------------------------------------------------
