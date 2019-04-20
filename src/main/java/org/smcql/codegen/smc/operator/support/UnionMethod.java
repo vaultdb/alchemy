@@ -45,10 +45,10 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		src = op;
 		orderKey = orderBy;
 		childStep = child;
-		Logger logger = SystemConfiguration.getInstance().getLogger();
+		//Logger logger = SystemConfiguration.getInstance().getLogger();
 		
 		srcSQL = (child instanceof PlaintextStep) ? child.generate() : null;
-		logger.info("Union Method srcSQL: " + srcSQL);
+		//logger.info("Union Method srcSQL: " + srcSQL);
 		
 		packageName = child.getPackageName() + ".union";
 		functionName = child.getFunctionName() + "Union";

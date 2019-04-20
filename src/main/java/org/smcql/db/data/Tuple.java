@@ -19,6 +19,7 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
 	
 	public Tuple(SecureRelRecordType s, ResultSet values) throws Exception {
 		ResultSetMetaData rsmd = values.getMetaData();
+		
 		schema = s;
 
 		if(schema.getAttributes().size() != rsmd.getColumnCount()) {
@@ -34,8 +35,9 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
 			++i;
 		}
 		
+		
 		if(this.toBinaryString().length() != s.size()) {
-			throw new Exception("Badly formed tuple!");
+			throw new Exception("Badly formed tuple! expected size=" + s.size() + " received: " + this.toBinaryString().length());
 		}
 		
 	}
