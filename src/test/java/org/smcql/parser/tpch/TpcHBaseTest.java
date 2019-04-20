@@ -130,7 +130,8 @@ public class TpcHBaseTest extends BaseTest {
 		          + "from\n"
 		          + "  orders	LEFT JOIN (SELECT DISTINCT l_orderkey FROM lineitem WHERE l_commitdate < l_receiptdate) li ON l_orderkey = o_orderkey\n"
 		          + "where o_orderdate >= date '1996-10-01'\n"
-		          // TODO: address handling date intervals
+		         
+		// TODO: address handling date intervals
 //		          + "   and o_orderdate < date '1996-10-01' + interval '3 months' \n" 
 		          + "   and o_orderdate < date '1997-01-01'\n" 
 		          + "   AND l_orderkey IS NOT NULL\n"
