@@ -52,6 +52,28 @@ public class QueryTable implements Serializable {
     }
   }
 
+  public QueryTable(boolean[] dummyTags, boolean[] bits, SecureRelRecordType s) throws Exception {
+	    schema = s;
+	    tupleSize = schema.size();
+
+	    tupleCount = bits.length / tupleSize;
+
+	    //assert (bits.length == (tupleCount * tupleSize));
+	    tuples = new ArrayList<Tuple>();
+
+	    for (int i = 0; i < tupleCount; ++i) {
+	    	if(dummyTags[i] == false) {
+	  	      boolean[] tupleBits = Arrays.copyOfRange(bits, i * tupleSize, (i + 1) * tupleSize);
+		        Tuple t = new Tuple(tupleBits, schema);
+		        tuples.add(t);
+
+	    	}
+	      }
+	   }
+
+
+
+  
   // is it all zeroes?
   private boolean isNull(final boolean[] tupleBits) {
     boolean init = false;
