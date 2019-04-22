@@ -9,6 +9,7 @@ import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
 
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import static java.lang.Thread.sleep;
@@ -69,9 +70,19 @@ public class RPCExecutorUtility {
     bobThread.start();
     aliceThread.join();
     bobThread.join();
+    
     boolean[] aliceOutput = aliceClient.getLastOutput();
     boolean[] bobOutput = bobClient.getLastOutput();
     boolean[] decrypted = EmpJniUtilities.decrypt(aliceOutput, bobOutput);
-    return new QueryTable(decrypted, qc.getOutSchema());
+
+    // solve for bit size    
+    int tupleLen = qc.getOutSchema().size() + 1;  // +1 for the dummy tag
+    int tupleCount = decrypted.length / tupleLen;
+    
+    // TODO: Keith figure out how to do this with pointer arithmetic
+    boolean[] dummyTags = Arrays.copyOfRange(decrypted, 0, tupleCount);
+    boolean[] tuples = Arrays.copyOfRange(decrypted, tupleCount, decrypted.length);
+
+    return new QueryTable(dummyTags, tuples, qc.getOutSchema());
   }
 }
