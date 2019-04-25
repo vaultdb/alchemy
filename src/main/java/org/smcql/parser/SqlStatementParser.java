@@ -1,5 +1,7 @@
 package org.smcql.parser;
 
+import java.util.logging.Logger;
+
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.jdbc.CalciteConnection;
@@ -9,7 +11,6 @@ import org.apache.calcite.prepare.PlannerImpl;
 import org.apache.calcite.prepare.Prepare;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
-import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
@@ -23,14 +24,11 @@ import org.apache.calcite.sql.validate.SqlConformance;
 import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql.validate.SqlValidatorCatalogReader;
 import org.apache.calcite.sql.validate.SqlValidatorImpl;
-import org.apache.calcite.sql2rel.RelDecorrelator;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.sql2rel.SqlToRelConverter.Config;
-import org.apache.calcite.sql2rel.SqlToRelConverter.ConfigBuilder;
 import org.apache.calcite.sql2rel.StandardConvertletTable;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Planner;
-import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelConversionException;
 import org.apache.calcite.tools.ValidationException;
 import org.smcql.config.SystemConfiguration;
@@ -82,7 +80,6 @@ public class SqlStatementParser {
 		    optimizer = new HepPlanner(builder.build());
 		
 		    optimizer.addRule(ProjectToWindowRule.PROJECT);
-		    optimizer.addRule(PushDownFilter.INSTANCE);
 		    optimizer.addRule(ReduceExpressionsRule.FILTER_INSTANCE);
 		    optimizer.addRule(ReduceExpressionsRule.CALC_INSTANCE);
 		    optimizer.addRule(ReduceExpressionsRule.PROJECT_INSTANCE);
@@ -100,9 +97,10 @@ public class SqlStatementParser {
 		    
 		    optimizer.addRule(FilterMergeRule.INSTANCE);
 		    optimizer.addRule(ProjectMergeRule.INSTANCE);
-		    optimizer.addRule(SubQueryRemoveRule.FILTER);
-		    optimizer.addRule(SubQueryRemoveRule.JOIN);
-		    optimizer.addRule(SubQueryRemoveRule.PROJECT);
+		    //optimizer.addRule(SubQueryRemoveRule.FILTER);
+		    //optimizer.addRule(SubQueryRemoveRule.JOIN);
+		    //optimizer.addRule(SubQueryRemoveRule.PROJECT);
+		    //optimizer.addRule(PushDownFilter.INSTANCE);
 		    
 	}
 	
@@ -163,12 +161,15 @@ public class SqlStatementParser {
 	          converter.convertQuery(validatedQuery, false, true);
 	      assert(root != null);
 
-	      //RelBuilder relBuilder = RelBuilder.create(config);
-	      //RelNode decorrelated = RelDecorrelator.decorrelateQuery(root.rel, relBuilder);
-	      //root.withRel(decorrelated);
-	      
 		  String plan = RelOptUtil.dumpPlan("", root.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
-		  System.out.print("SqlStatementParser.java : Parsed plan: " + plan);
+		  Logger logger = null;
+		  try {
+			logger = SystemConfiguration.getInstance().getLogger();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		  logger.info("Initial parsed plan:\n" + plan);
 	      
 	      final boolean ordered = !root.collation.getFieldCollations().isEmpty();
 	      

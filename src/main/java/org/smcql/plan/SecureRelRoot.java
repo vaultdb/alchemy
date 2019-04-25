@@ -19,12 +19,16 @@ public class SecureRelRoot {
 		SqlStatementParser parser = new SqlStatementParser();
 
 
+	
+		Logger log = SystemConfiguration.getInstance().getLogger();
 		baseRoot = parser.convertSqlToRelMinFields(sql);
 
-		Logger log = SystemConfiguration.getInstance().getLogger();
+		//log.info("Pre-optimization:\n "+ RelOptUtil.dumpPlan("", baseRoot.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES));
 
+		
+		
 		//this is just for logging
-		log.info("SecureRelRoot.java :  Post Optimization : "+ RelOptUtil.dumpPlan("", baseRoot.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES));
+		//log.info("Post-optimization:\n "+ RelOptUtil.dumpPlan("", baseRoot.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES));
 
 
 		baseRoot = parser.optimize(baseRoot); // optimized to represent in a fine granularity for more smc avoidance
@@ -32,7 +36,7 @@ public class SecureRelRoot {
 
 		//this is just for logging
 
-		log.info("SecureRelRoot.java :  Post Optimization : "+ RelOptUtil.dumpPlan("", baseRoot.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES));
+		log.info("Post Optimization:\n "+ RelOptUtil.dumpPlan("", baseRoot.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES));
 
 		baseRoot = parser.trimFields(baseRoot); // use minimal set of fields to avoid triggering unnecessary SMC
 
