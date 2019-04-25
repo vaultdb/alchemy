@@ -16,15 +16,61 @@ import org.smcql.type.SecureRelRecordType;
 
 public class RexNodeToSmc extends RexFlattener{
 
-	String variableName;  // variable for bitmask
+	String variableName;  // variable for tuple
 
 	public RexNodeToSmc(SecureRelRecordType aSchema, String aVarName, int srcSize) {
 		super(aSchema, srcSize);
 		variableName = aVarName;
 	}
 
-	@Override
+	@Override 
 	public String visitInputRef(RexInputRef inputRef) {
+		
+		// get type
+		SqlTypeName type = inputRef.getType().getSqlTypeName();
+		
+		// get ordinal
+		int ordinal = inputRef.getIndex();
+		int startIdx = getStartIdx(ordinal);
+		int fieldSize = schema.getSecureField(ordinal).size();
+		String variable;
+		
+		// use FieldFactory pattern to get size, etc.  For now either an integer or float
+		if(type == SqlTypeName.DECIMAL || type == SqlTypeName.FLOAT || type == SqlTypeName.DOUBLE) {
+			 variable =  "Float("; 
+		}
+		else { // default setting Integer, should cover strings too
+			variable = "Integer(";			
+		}
+			 
+		variable += fieldSize + ", " + ((RexNodeToSmc) this).variableName + ".bits ";
+		if(startIdx > 0) {
+			variable += " + " + startIdx;
+		}
+		variable += ")";
+		
+		return variable;
+
+	}
+		private int getStartIdx(int ordinal) {
+			int startIdx = 0;
+			int fieldIdx = 0;
+
+			while(fieldIdx < ordinal) {
+				startIdx += schema.getSecureField(fieldIdx).size();
+				++fieldIdx;
+			}
+
+			return startIdx;
+		}
+		
+
+		
+		
+	/*@Override
+	public String visitInputRef(RexInputRef inputRef) {
+		return super.visitInputRef(inputRef);
+
 		int idx = inputRef.getIndex();
 		
 		try {
@@ -33,7 +79,8 @@ public class RexNodeToSmc extends RexFlattener{
 			return schema.getInputRef(idx - schema.getFieldCount(), variableName); //occurs when filter comes from a join
 		}
 		
-	}
+	}*/
+
 	@Override
 	public String visitLiteral(RexLiteral literal) {
 		SqlTypeName type = literal.getTypeName();
@@ -70,7 +117,7 @@ public class RexNodeToSmc extends RexFlattener{
             	 if(((Boolean) boolValue).booleanValue() == false) 
             		 bitValue = "0";
             	 return new String("Bit(" + bitValue + ",  PUBLIC)");
-        	 }
+        	 }        	 
          default: // try to convert it to an int
         	System.out.println("Can't convert literal of type " + literal.getValue().getClass() +  " to smc!");
         	System.exit(-1);

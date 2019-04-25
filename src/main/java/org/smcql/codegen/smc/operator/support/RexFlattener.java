@@ -37,7 +37,8 @@ public abstract class RexFlattener implements RexVisitor<String> {
 		System.exit(-1);
 		return null;
 	}
-
+	
+		// SQL version
 	@Override
 	public String visitLiteral(RexLiteral literal) {
 		if (literal.getTypeName().toString().equals("CHAR")) {
@@ -76,36 +77,15 @@ public abstract class RexFlattener implements RexVisitor<String> {
 		} else if (kind.equals(SqlKind.EQUALS)) {
 			delimiter = "==";
 		} else if (kind.equals(SqlKind.DIVIDE)) {
-			RexLiteral comp = (RexLiteral) call.getOperands().get(1);
-			try {/**
-			 TODO: this only works for int and float**/
-				int value = Integer.parseInt(comp.toString()) / 2; //TODO: get rid of magic number
-				int startIndex = 0;
-				int endIndex = 0;
-				for (int i = 0; i < schema.getFieldCount(); i++) {
-					if (!call.getOperands().get(0).toString().contains("$" + i)) {
-						startIndex += schema.getSecureField(i).size();
-					} else {
-						endIndex = startIndex + schema.getSecureField(i).size();
-						break;
-					}
-				}
-				return "lTuple$" + startIndex + "~" + endIndex + "$ - rTuple$" + startIndex + "~" + endIndex + "$)/" + value;
-			}catch (NumberFormatException e){
-				// not int, assume float
-				float value = Float.parseFloat(comp.toString()) / 2; //TODO: get rid of magic number
-				int startIndex = 0;
-				int endIndex = 0;
-				for (int i = 0; i < schema.getFieldCount(); i++) {
-					if (!call.getOperands().get(0).toString().contains("$" + i)) {
-						startIndex += schema.getSecureField(i).size();
-					} else {
-						endIndex = startIndex + schema.getSecureField(i).size();
-						break;
-					}
-				}
-				return "lTuple$" + startIndex + "~" + endIndex + "$ - rTuple$" + startIndex + "~" + endIndex + "$)/" + value;
-			}
+			
+			// recurse to RexLiteral or RexInputRef
+			RexNode lhs = call.getOperands().get(0); // usually RexLiteral or RexInputRef
+			RexNode rhs = call.getOperands().get(0);
+			
+			String lhsStr = lhs.accept(this);
+			String rhsStr = rhs.accept(this);
+			
+			return lhsStr + " / " + rhsStr;
 		} else {
 			delimiter = call.getOperator().getName();
 		}

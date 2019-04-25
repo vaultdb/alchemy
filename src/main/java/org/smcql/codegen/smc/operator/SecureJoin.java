@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.RelFactories;
+import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.logical.LogicalJoin;
 import org.apache.calcite.rex.RexNode;
 import org.smcql.codegen.smc.operator.support.ProcessingStep;
@@ -32,16 +33,18 @@ public class SecureJoin extends SecureOperator {
 		LogicalJoin j = (LogicalJoin) o.getSecureRelNode().getRelNode();
 
 		// it is getting stuck because we need a composite schema rather than just that of the first child
-        RelNode input = j.getInput(0);
         RexNode selectionCriteria = j.getCondition();
         
 
-		RelNode f = RelFactories.DEFAULT_FILTER_FACTORY.createFilter(j, selectionCriteria);
-
-		SecureRelNode[] nodeChildren = Arrays.copyOf(o.getSecureRelNode().getChildren().toArray(), o.getSecureRelNode().getChildren().size(), SecureRelNode[].class);
-		Operator[] opChildren = Arrays.copyOf(o.getChildren().toArray(), o.getChildren().size(), Operator[].class);
+		RelNode f =LogicalFilter.create(j, selectionCriteria);
 		
-		Filter filter = new Filter(this.getPackageName(), new SecureRelNode(f, nodeChildren), opChildren, (Join) o);
+		
+
+		//SecureRelNode[] nodeChildren = Arrays.copyOf(o.getSecureRelNode().getChildren().toArray(), o.getSecureRelNode().getChildren().size(), SecureRelNode[].class);
+		Operator[] opChildren = Arrays.copyOf(o.getChildren().toArray(), o.getChildren().size(), Operator[].class);
+		SecureRelNode src = new SecureRelNode(f, o.getSecureRelNode());
+		
+		Filter filter = new Filter(this.getPackageName(), src, opChildren, (Join) o);
 		this.addFilter(filter);
 	}
 
