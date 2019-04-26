@@ -198,7 +198,7 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 	    
         sql = sql.replaceAll("\' DAY\\(3\\)", " DAYS\'"); // fix date interval rendering	    
 	    logger.info("Running vanilla query: " + sql);
-	    QueryTable expected = SqlQueryExecutor.query(sql, outSchema, "unioned");
+	    QueryTable expected = super.getExpectedOutput(sql, outSchema);
 	    assertEquals(expected, output);
 
 	  

@@ -783,17 +783,15 @@ public class TpcHBaseTest extends BaseTest {
 
 	  // runs query over unioned database
 	  // the sql statement is written against the shared schema
-	  // no manual unioning of the inputs of multiple parties
-	  protected QueryTable getExpectedDistributedOutput(String sql, SecureRelRecordType outSchema) throws Exception {
-		  // unioned is a dummy database that contains all of alice and bob's records
-		  return SqlQueryExecutor.query(sql, outSchema, "unioned");
+	  protected QueryTable getExpectedOutput(String sql, SecureRelRecordType outSchema) throws Exception {
+		  String unionedId = ConnectionManager.getInstance().getUnioned();
+		  return SqlQueryExecutor.query(sql, outSchema, unionedId);
 	  }
 
-	  // simulate a query run in MPC by doing unions on two tables in alice's db
-	  protected QueryTable getExpectedOutput(String sql, SecureRelRecordType outSchema) throws Exception {
-		  String aliceId = ConnectionManager.getInstance().getAlice();
-		  return SqlQueryExecutor.query(sql, outSchema, aliceId);
-	  }
+	public QueryTable getExpectedDistributedOutput(String sql, SecureRelRecordType outSchema) throws Exception{
+		String aliceId = ConnectionManager.getInstance().getAlice();
+		return SqlQueryExecutor.query(sql, outSchema, aliceId);
+	}
 
 
 

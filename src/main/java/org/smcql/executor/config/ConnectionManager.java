@@ -130,6 +130,16 @@ public class ConnectionManager {
 		
 	}
 
+	// optional third db that contains the union of the inputs of Alice and Bob for testing
+	public String getUnioned() {
+		if(workers.size() > 2) {
+			List<String> keys = new ArrayList<String>(workers.keySet());
+			return keys.get(2);
+
+		}
+		return null;
+	}
+	
 	// for C++/pqxx connection
 	// 1 = alice, 2 = bob
 	public String getConnectionString(int party) {

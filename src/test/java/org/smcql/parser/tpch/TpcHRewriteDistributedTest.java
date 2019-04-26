@@ -163,7 +163,7 @@ public class TpcHRewriteDistributedTest  extends TpcHBaseTest {
 
 		    SecureRelRecordType outSchema = secRoot.getPlanRoot().getSchema();
 		    QueryTable expectedOutput = super.getExpectedDistributedOutput(sql, outSchema);
-			QueryTable observedOutput = super.getExpectedOutput(distributedSql, outSchema);
+			QueryTable observedOutput = super.getExpectedOutput(sql, outSchema);
 
 			
 			assertEquals(expectedOutput.tupleCount(), observedOutput.tupleCount());
