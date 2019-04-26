@@ -8,7 +8,9 @@ import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
+import org.smcql.type.SecureRelRecordType;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -179,7 +181,6 @@ public class TpcHVanillaCalciteTest extends TpcHBaseTest {
         final SqlNode sqlNode = conv.visitChild(0, root.rel).asStatement();
         String sqlOut =  sqlNode.toSqlString(dialect).getSql();
         sqlOut = sqlOut.replaceAll("\"", "");
-        sqlOut = sqlOut.replaceAll("\' DAY\\(3\\)", " DAYS\'"); // fix date interval rendering
         
         // Print out Calcite plans
         System.out.println("Sql deparsed: " + sqlOut);
@@ -187,9 +188,8 @@ public class TpcHVanillaCalciteTest extends TpcHBaseTest {
 	    logger.info("Parsed plan for " + testName + ":\n" + plan);
 
 	    logger.info("Preparing to run query: " + sqlOut);
-	    SqlQueryExecutor.queryNoOutput(sqlOut, "alice");
+	    SqlQueryExecutor.queryNoOutput(sqlOut, "unioned");
 	  
-
 	  }
 	  
 	  

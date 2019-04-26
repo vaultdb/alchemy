@@ -61,6 +61,7 @@ public class TpcHSecureParseTest extends TpcHBaseTest {
 		     secureParseTest(testName, sql);
 		}
 
+		// TODO: extract year by pushing down this expression to outside of MPC
 		public void testQuery07() throws Exception {
 		     String sql = QUERIES.get(6);
 		     String testName = "q" + String.valueOf(7);
@@ -177,7 +178,7 @@ public class TpcHSecureParseTest extends TpcHBaseTest {
 		  SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		  // verifies that the plan resolver identified all attributes and 
 		  // matched them to their security policy
-		  String plan = RelOptUtil.dumpPlan("", secRoot.getRelRoot().rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
+		  String plan = RelOptUtil.dumpPlan("", secRoot.getRelRoot().rel, SqlExplainFormat.TEXT, SqlExplainLevel.NON_COST_ATTRIBUTES);
 		  logger.info("Resolved secure tree to:\n " + plan); 
 		  
 		  // tests if the query compiler knows how to generate this code

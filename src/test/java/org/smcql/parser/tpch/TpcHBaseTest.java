@@ -404,28 +404,30 @@ public class TpcHBaseTest extends BaseTest {
 
 
 		      // 13
-		          "select\n"
-		                  + "  c_count,\n"
-		                  + "  count(*) as custdist\n"
-		                  + "from\n"
-		                  + "  (\n"
-		                  + "    select\n"
-		                  + "      c.c_custkey,\n"
-		                  + "      count(o.o_orderkey)\n"
-		                  + "    from\n"
-		                  + "      customer c \n"
-		                  + "      left outer join orders o \n"
-		                  + "        on c.c_custkey = o.o_custkey\n"
-		                  + "        WHERE  o.o_comment not like '%special%requests%'\n"
-		                  + "    group by\n"
-		                  + "      c.c_custkey\n"
-		                  + "  ) as orders (c_custkey, c_count)\n"
-		                  + "group by\n"
-		                  + "  c_count\n"
-		                  + "order by\n"
-		                  + "  custdist desc,\n"
-		                  + "  c_count desc",
-
+		          "WITH tagged_orders AS (\n"
+		          + "     SELECT o_custkey, o_orderkey, o.o_comment not like '%special%requests%' not_special\n"
+		          + "     FROM orders o)\n"
+		          + " select\n"
+		          + "  c_count,\n"
+		          + "  count(*) as custdist\n"
+		          + "from\n"
+		          + "  (\n"
+		          + "    select\n"
+		          + "      c.c_custkey,\n"
+		          + "      count(o.o_orderkey)\n"
+		          + "    from\n"
+		          + "      customer c \n"
+		          + "      left outer join tagged_orders o \n"
+		          + "        on c.c_custkey = o.o_custkey and  not_special\n"
+		          + "    group by\n"
+		          + "      c.c_custkey\n"
+		          + "  ) as orders (c_custkey, c_count)\n"
+		          + "group by\n"
+		          + "  c_count\n"
+		          + "order by\n"
+		          + "  custdist desc,\n"
+		          + "  c_count desc", 
+		          
 
 		
 			// 14

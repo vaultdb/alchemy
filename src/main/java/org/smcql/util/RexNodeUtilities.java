@@ -2,6 +2,7 @@ package org.smcql.util;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.logical.LogicalProject;
@@ -10,6 +11,7 @@ import org.apache.calcite.util.Pair;
 import org.smcql.codegen.smc.operator.support.RexFlattener;
 import org.smcql.codegen.smc.operator.support.RexNodeToSmc;
 import org.smcql.codegen.smc.operator.support.RexNodeToSql;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Project;
 import org.smcql.type.SecureRelDataTypeField;
@@ -53,7 +55,7 @@ public class RexNodeUtilities {
 	
 	
 	public static String flattenFilter(Filter aFilter, String srcVariable, int srcSize) {
-		SecureRelRecordType schema = aFilter.getChild(0).getSchema(true);
+		SecureRelRecordType schema = aFilter.getSchema();
 		String ret = new String();
 		LogicalFilter filter = (LogicalFilter) aFilter.getSecureRelNode().getRelNode();
 		
@@ -70,8 +72,20 @@ public class RexNodeUtilities {
 	
 	public static String flattenForSmc(RexNode expr, SecureRelRecordType schema, String variable, int srcSize) {
 		RexFlattener flatten = new RexNodeToSmc(schema, variable, srcSize);
-		//System.out.println("Flattening expression: " + expr + " from schema " + schema + " for variable " + variable);
+		Logger logger = null;
+		try {
+			logger = SystemConfiguration.getInstance().getLogger();
+			
+		} catch (Exception e) {
+			System.out.println("Expression debug failed!");
+			e.printStackTrace();
+			return "";
+			
+		}
+		
+		logger.info("Flattening expression: " + expr + " from schema " + schema);
 		String result = expr.accept(flatten);
+		logger.info("Flattened to " + result);
 		return result;
 	}
 	
