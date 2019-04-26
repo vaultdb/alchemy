@@ -3,3 +3,4 @@
 #TODO use ports as described here
 alice=localhost:5432,smcql_testdb_site1,$SMCQL_ROOT,54321,1
 bob=localhost:5432,smcql_testdb_site2,$SMCQL_ROOT,54321,2
+union=localhost:5432,smcql_testdb_unioned,$SMCQL_ROOT,54321,2

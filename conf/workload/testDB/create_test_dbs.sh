@@ -12,9 +12,13 @@ fi
 echo "Creating test database..."
 
 dbPrefix='smcql_testdb'
-dropdb $dbPrefix
-createdb $dbPrefix
-psql $dbPrefix -f $path/conf/workload/testDB/test_schema.sql
+unionDB=$dbPrefix'_unioned'
+dropdb $unionDB
+createdb $unionDB
+psql $unionDB -f $path/conf/workload/testDB/test_schema.sql
+
+
+
 
 for i in 1 2
 do
@@ -32,6 +36,15 @@ do
     psql $dbName -c "COPY vitals FROM '$path/conf/workload/testDB/$i/vitals.csv' WITH DELIMITER ',' NULL AS ''"
     psql $dbName -c "COPY demographics FROM '$path/conf/workload/testDB/$i/demographics.csv' WITH DELIMITER ','"
     psql $dbName -c "COPY relation_statistics FROM '$path/conf/schemas/healthlnk/stats.csv' WITH DELIMITER ',' NULL AS ''"
+
+    #add contribution to unioned DB
+    psql $unionDB -c "COPY diagnoses FROM '$path/conf/workload/testDB/$i/diagnoses.csv' WITH DELIMITER ','"
+    psql $unionDB -c "COPY medications FROM '$path/conf/workload/testDB/$i/medications.csv' WITH DELIMITER ','"
+    psql $unionDB -c "COPY site FROM '$path/conf/workload/testDB/$i/site.csv' WITH DELIMITER ','"
+    psql $unionDB -c "COPY vitals FROM '$path/conf/workload/testDB/$i/vitals.csv' WITH DELIMITER ',' NULL AS ''"
+    psql $unionDB -c "COPY demographics FROM '$path/conf/workload/testDB/$i/demographics.csv' WITH DELIMITER ','"
+    psql $unionDB -c "COPY relation_statistics FROM '$path/conf/schemas/healthlnk/stats.csv' WITH DELIMITER ',' NULL AS ''"
+
     val=$i
     if (($val == 1)); then
         psql $dbName -c "COPY remote_diagnoses FROM '$path/conf/workload/testDB/2/diagnoses.csv' WITH DELIMITER ','"
@@ -45,10 +58,11 @@ do
     psql $dbName -c "CREATE TABLE remote_cdiff_cohort_diagnoses AS (SELECT * FROM remote_diagnoses WHERE icd9='008.45')"
     psql $dbName -c "CREATE TABLE remote_mi_cohort_diagnoses AS (SELECT * FROM remote_diagnoses WHERE icd9 like '414%')"
     psql $dbName -c "CREATE TABLE remote_mi_cohort_medications AS (SELECT * FROM remote_medications WHERE lower(medication) like '%aspirin%')"
-
-
     psql $dbName -f $path/conf/workload/testDB/setup_test_registries.sql
 done
+
+
+
 
 
 psql -lqt | cut -d \| -f 1 | grep -qw $dbPrefix
@@ -63,3 +77,5 @@ if (($res0 == 0)) && (($res1 == 0)) && (($res2 == 0)); then
 else
     exit 1
 fi
+
+
