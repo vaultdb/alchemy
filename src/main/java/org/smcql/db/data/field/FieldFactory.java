@@ -15,6 +15,7 @@ public class FieldFactory implements Serializable {
 
 		RelDataType type = s.getBaseField().getType();
 		SqlTypeName sqlType = type.getSqlTypeName();
+		
 		if(SqlTypeName.CHAR_TYPES.contains(sqlType))
 			return new CharField(s, r.getString(resultIdx));
 
@@ -22,12 +23,15 @@ public class FieldFactory implements Serializable {
 		if(sqlType == SqlTypeName.INTEGER || sqlType == SqlTypeName.BIGINT)
 			return new IntField(s, r.getInt(resultIdx));
 
-		if(sqlType == SqlTypeName.FLOAT || sqlType == SqlTypeName.DOUBLE)
-			return new FloatField(s, r.getFloat(resultIdx));
-
+		if(sqlType == SqlTypeName.FLOAT || sqlType == SqlTypeName.DOUBLE)  {
+			float val = r.getFloat(resultIdx);
+			return new FloatField(s, val);
+		}
+		
 		if(sqlType == SqlTypeName.DECIMAL) {
 			BigDecimal bd = r.getBigDecimal(resultIdx);
-			return new FloatField(s, bd.floatValue());
+			float val = bd.floatValue();
+			return new FloatField(s, val);
 		}
 
 

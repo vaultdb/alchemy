@@ -377,8 +377,6 @@ public class QueryCompiler {
         Operator tmp = o;
         if (child.getExecutionMode() == ExecutionMode.Plain) {
           Operator plain = (o.isSplittable() && !(o instanceof WindowAggregate)) ? o : child;
-          logger.info("***Generating plaintext for secure leaf at " + o.getSecureRelNode().getRelNode());
-          logger.info("***Creating plaintext step for " + plain.getSecureRelNode().getRelNode());
           // TODO: figure out why generate plaintext step is running on JdbcTableScan instead of aggregate
           childSource = generatePlaintextStep(plain);
         } else {

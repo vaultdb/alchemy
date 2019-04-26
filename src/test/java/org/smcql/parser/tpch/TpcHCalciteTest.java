@@ -14,7 +14,11 @@ import java.util.Map.Entry;
 
 import org.smcql.codegen.sql.SqlGenerator;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
+import org.smcql.parser.SqlStatementParser;
+import org.smcql.plan.SecureRelRoot;
+import org.smcql.type.SecureRelRecordType;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
@@ -177,40 +181,35 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 
 
 	    SystemConfiguration.getInstance().resetCounters();
+		SecureRelRoot root = new SecureRelRoot(testName, sql);
+
+	    SecureRelRecordType outSchema = root.getPlanRoot().getSchema();
 	    
-
-		// Do we still have this problem? Looks like it is solved...
-
-        // for Q13, why is stack padded with a bunch of nulls?
-        // failing to add last table scan to its queue before first pop in visit child?
-        // no, this goes through, but it first fails on the join
-        // let's try isolating the join
-        
-	    // getting buried for now
-	    //logger.info("For test " + testName + " running:\n" + sql);
-
-
-	    RelRoot root = parser.convertSqlToRelMinFields(sql);
-	    
-	    
-	    String plan = RelOptUtil.dumpPlan("", root.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
+	    String plan = RelOptUtil.dumpPlan("", root.getRelRoot().rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
 
 	    logger.info("Parsed plan for " + testName + ":\n" + plan);
 	    
-	    String query = SqlGenerator.getSql(root, SystemConfiguration.DIALECT);
-	    logger.info("Preparing to run query: " + query);
-	    SqlQueryExecutor.queryNoOutput(query, "alice");
+	    String query = SqlGenerator.getSql(root.getRelRoot(), SystemConfiguration.DIALECT);
+	    logger.info("Preparing to run query:\n " + query);
+	    logger.info("Out schema: " + outSchema);
+	    
+	    QueryTable output = SqlQueryExecutor.query(query, outSchema, "unioned");
+	    
+	    
+        sql = sql.replaceAll("\' DAY\\(3\\)", " DAYS\'"); // fix date interval rendering	    
+	    logger.info("Running vanilla query: " + sql);
+	    QueryTable expected = SqlQueryExecutor.query(sql, outSchema, "unioned");
+	    assertEquals(expected, output);
+
+	  
 
 
-
-	    // Reverse our own plan using our SqlGenerator
-	    String sqlOut = SqlGenerator.getSql(root.rel,SystemConfiguration.DIALECT);
-	    System.out.println("Sql deparsed: " + sqlOut);
-
-
-
-	    // Build and log tree histogram
-	    buildOperatorHistogram(root.rel);
+	    // Testing generation for SQL from created Calcite plan
+		// Uncomment two lines below to avoid this test
+	    //String SQl = SqlGenerator.getSql(root.rel,SystemConfiguration.DIALECT);
+	    //System.out.println(SQl);
+	    
+/*	    buildOperatorHistogram(root.rel);
 
 	    String histogram = "Operator distribution for " + testName + ":\n";
 	    
@@ -227,7 +226,7 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 
 	    
 	    logger.info("Global counts histogram:\n" + globalOperatorCounts.toString().replace(' ', '\n'));
-
+*/
 	  }
 	  
 	  
