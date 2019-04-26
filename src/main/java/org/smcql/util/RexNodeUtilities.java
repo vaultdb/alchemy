@@ -53,7 +53,7 @@ public class RexNodeUtilities {
 	
 	
 	public static String flattenFilter(Filter aFilter, String srcVariable, int srcSize) {
-		SecureRelRecordType schema = aFilter.getChild(0).getSchema(true);
+		SecureRelRecordType schema = aFilter.getSchema();// aFilter.getChild(0).getSchema(true);
 		String ret = new String();
 		LogicalFilter filter = (LogicalFilter) aFilter.getSecureRelNode().getRelNode();
 		
