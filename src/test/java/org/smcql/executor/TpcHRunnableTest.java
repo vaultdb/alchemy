@@ -167,7 +167,7 @@ public class TpcHRunnableTest extends TpcHBaseTest{
 	    assertTrue(FileUtils.fileExists(jniTarget));
 	    
 	    EmpExecutor exec = new EmpExecutor(qc);
-	    exec.run();
+	    exec.runForTesting();
 		  
 	}
 }

@@ -19,3 +19,8 @@ deps/emp/emp-tool/
 deps/emp/relic/
 deps/emp/emp-bridge/src/*
 deps/emp/emp-bridge/bin/*
+jnijavacpp.cpp
+run-alice.sh
+run-bob.sh
+src/main/java/org/smcql/compiler/emp/generated/*
+src/main/java/org/smcql/codegen/smc/compiler/emp/*

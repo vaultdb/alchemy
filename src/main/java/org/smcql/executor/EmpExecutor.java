@@ -40,6 +40,30 @@ public class EmpExecutor extends MPCExecutor {
 		outSchema = compiledPlan.getPlan().getPlanRoot().getSchema();
 	}
 	
+	public void runForTesting() throws Exception {
+		List<ExecutionSegment> segments = compiledPlan.getSegments();
+		ExecutionStep root = compiledPlan.getRoot();
+		
+		if(root instanceof PlaintextStep) {			
+			try {
+				plainOutput = runner.runPlain((PlaintextStep) root);
+			} catch (Exception e) {
+				System.out.println("Exception: No runnable execution step!");
+			}
+			return;
+		}
+
+		// iterate in reverse order to go bottom up
+		ListIterator<ExecutionSegment> li = segments.listIterator(segments.size());
+
+		while(li.hasPrevious()) { 
+			ExecutionSegment segment = li.previous();
+			runner.setQueryCompiler(compiledPlan);
+			lastOutput = runner.runSecure(segment, queryId);
+			outSchema = segment.outSchema;
+		}
+	}
+	
 	public void run() {
 		List<ExecutionSegment> segments = compiledPlan.getSegments();
 		
