@@ -124,21 +124,31 @@ public class TpcHBaseTest extends BaseTest {
 		          + "limit 10",
 
 		      // 04
-		          "select\n"
-		          + "  o_orderpriority,\n"
-		          + "  count(*) as order_count\n"
-		          + "from\n"
-		          + "  orders	LEFT JOIN (SELECT DISTINCT l_orderkey FROM lineitem WHERE l_commitdate < l_receiptdate) li ON l_orderkey = o_orderkey\n"
-		          + "where o_orderdate >= date '1996-10-01'\n"
+
+			"with lis as (SELECT DISTINCT l_orderkey FROM lineitem WHERE l_commitdate < l_receiptdate) \n" +
+					"\n" +
+					"select\n" +
+					"  o_orderpriority,\n" +
+					"  count(*) as order_count\n" +
+					"from\n" +
+					"  orders\to,\n" +
+					"  lis li \n" +
+					"\n" +
+					"where \n" +
+					"li.l_orderkey = o.o_orderkey\n" +
+					"and o.o_orderdate >= date '1996-10-01'\n" +
+					"   and o_orderdate < date '1997-01-01'\n" +
+					"   AND l_orderkey IS NOT NULL\n" +
+					"   \n" +
+					"   \n" +
+					"group by\n" +
+					"  o_orderpriority\n" +
+					"order by\n" +
+					"  o_orderpriority",
 		         
 		// TODO: address handling date intervals
-//		          + "   and o_orderdate < date '1996-10-01' + interval '3 months' \n" 
-		          + "   and o_orderdate < date '1997-01-01'\n" 
-		          + "   AND l_orderkey IS NOT NULL\n"
-		          + "group by\n"
-		          + "  o_orderpriority\n"
-		          + "order by\n"
-		          + "  o_orderpriority",
+
+
 
 		      // 05
 		      "select\n"
