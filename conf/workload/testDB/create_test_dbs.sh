@@ -12,6 +12,10 @@ fi
 echo "Creating test database..."
 
 dbPrefix='smcql_testdb'
+dropdb $dbPrefix
+createdb $dbPrefix
+psql $dbPrefix -f $path/conf/workload/testDB/test_schema.sql
+
 unionDB=$dbPrefix'_unioned'
 dropdb $unionDB
 createdb $unionDB
