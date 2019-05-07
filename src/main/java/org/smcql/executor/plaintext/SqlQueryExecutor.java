@@ -53,7 +53,7 @@ public class SqlQueryExecutor {
 	
 	// no joins between engines
 	// just run each query once per data source and concatenate their collective outputs
-	public static QueryTable plainQuery(SecureRelRecordType outSchema, String query) throws Exception  {
+	public QueryTable plainQuery(SecureRelRecordType outSchema, String query) throws Exception  {
 	
 		SegmentExecutor executor = SegmentExecutor.getInstance();
 		List<QueryTable> output = executor.runPlaintext(query, outSchema);
