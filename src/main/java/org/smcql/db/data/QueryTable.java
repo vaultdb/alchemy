@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.plan.slice.SliceKeyDefinition;
 import org.smcql.type.SecureRelDataTypeField;
@@ -20,6 +21,7 @@ public class QueryTable implements Serializable {
   private List<Tuple> tuples =
       null; // null until explicitly decrypted if init'd to PortableSecArray
   private transient SecureRelRecordType schema;
+  private String dummytags = null;
 
   int tupleSize = 0;
   int tupleCount = 0;
@@ -71,8 +73,89 @@ public class QueryTable implements Serializable {
 	      }
 	   }
 
+   boolean toExtractDummy(){
+    /* checks to see if there are dummyTags present in the schema.
+       current implementation assumes that a boolean field at the end of the schema is the trigger
+    */
+
+    if (schema.getLast().getBaseField().getType().getSqlTypeName() == SqlTypeName.BOOLEAN){
+      return true;
+    }
+    else{
+      return false;
+    }
+
+  }
+
+   public boolean extractDummys() throws Exception {
+    /* checks for existence of dummyTags. If present, updates the private dummyTag attribute and the schema */
+
+     if (toExtractDummy()){
+
+       dummytags = "";
+       String tuplebits = "";
+
+       // for each tuple, copy last bit constructing the dummyTags for each and record the other bits
+       for( int i = 0; i < tupleCount; i++){
+          String tupleString = tuples.get(i).toBinaryString();
+          dummytags += tupleString.substring(tupleSize - 1);
+          tuplebits += tupleString.substring(0, tupleSize - 1);
+
+       }
+       // Convert new tuple string to raw boolean -- is there a way to make this a global function?
+       boolean[] newbits = new boolean[tuplebits.length()];
+
+       for (int i = 0; i < tuplebits.length(); ++i){
+         char search = '1';
+
+         if (tuplebits.charAt(i) == search){
+           newbits[i] = false;
+         }
+         else{
+           newbits[i] = true;
+         }
+       }
 
 
+       // modify schema & remove bits from tuples
+       List<SecureRelDataTypeField> newSchemaList = schema.getAttributes();
+       newSchemaList.remove(newSchemaList.size() - 1);
+
+       SecureRelRecordType newSchema = new SecureRelRecordType(schema.getBaseType(), newSchemaList);
+
+       // update schema and tupleSize
+       schema = newSchema;
+       tupleSize -= 1;
+
+       // Reset the raw bits in current QueryTable
+       resetTuples(newbits);
+
+       return true;
+     }
+     else{
+       return false;
+     }
+   }
+
+
+  public String getDummyTags(){
+    // return the dummyTag elements
+    return dummytags;
+  }
+
+  private void resetTuples(boolean[] bits) throws Exception {
+    // initialize a new arraylist for the tuples
+    tuples = new ArrayList<Tuple>();
+
+    // create new tuples via the
+    for (int i = 0; i < tupleCount; ++i) {
+      boolean[] tupleBits = Arrays.copyOfRange(bits, i * tupleSize, (i + 1) * tupleSize);
+      if (!isNull(tupleBits)) {
+        Tuple t = new Tuple(tupleBits, schema);
+        tuples.add(t);
+      }
+    }
+  }
   
   // is it all zeroes?
   private boolean isNull(final boolean[] tupleBits) {
@@ -293,4 +376,5 @@ public class QueryTable implements Serializable {
 
     return slices;
   }
+
 }
