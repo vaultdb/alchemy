@@ -23,8 +23,8 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   public List<WorkerConfiguration> workers;
 
   protected void setUp() throws Exception {
-	  super.setUp();
-	  
+    super.setUp();
+
     String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
     System.setProperty("smcql.setup", setupFile);
     ConnectionManager cm = ConnectionManager.getInstance();
@@ -48,8 +48,8 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   public void testJoin() throws Exception {
     String testName = "JoinCdiff";
     String query =
-        "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
-    
+            "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
+
     testCase(testName, query);
   }
 
@@ -60,10 +60,10 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   }
 
   protected QueryTable getExpectedOutput(String testName, String query)
-      throws Exception {
-	  	
-	  	String unionedId = ConnectionManager.getInstance().getUnioned();
-	  
+          throws Exception {
+
+    String unionedId = ConnectionManager.getInstance().getUnioned();
+
     SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
 
     return SqlQueryExecutor.query(query, outSchema, unionedId);
@@ -72,29 +72,30 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   protected void testCase(String testName, String sql) throws Exception {
     SystemConfiguration.getInstance().resetCounters();
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
-    
-    
+
+
 
     System.out.println("Initial schema: " + secRoot.getPlanRoot().getSchema() );
     QueryCompiler qc = new QueryCompiler(secRoot);
     qc.writeOutEmpFile();
+
     String empTarget = Utilities.getCodeGenTarget() + "/" + testName + ".h";
     String jniTarget = Utilities.getCodeGenTarget() + "/" + testName + ".java";
-		
+
     assertTrue(FileUtils.fileExists(empTarget));
     assertTrue(FileUtils.fileExists(jniTarget));
-    
+
     EmpExecutor exec = new EmpExecutor(qc);
     exec.run();
 
     QueryTable expectedOutput = getExpectedOutput(testName, sql);
     QueryTable observedOutput = exec.getOutput();
-    
+
     logger.info("Observed output: \n" + observedOutput);
     logger.info("Expected output: \n" + expectedOutput);
-    
+
     assertEquals(expectedOutput.tupleCount(), observedOutput.tupleCount());
     assertEquals(expectedOutput, observedOutput);
-    
+
   }
 }
