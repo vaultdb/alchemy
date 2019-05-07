@@ -56,7 +56,7 @@ public class $queryName  extends EmpProgram  {
         	allocate(); 
         	}
         private native void allocate();
-        public native void addInput(@StdString String opName,  @StdString String bitString);
+        public native void addInput(@StdString String opName,  @StdString String bitString, @StdString String dummyTags);
         public native void run(int party, int port); 
         public native void setGeneratorHost(@StdString String host);
         public native @StdString String getOutput();
@@ -67,16 +67,20 @@ public class $queryName  extends EmpProgram  {
 	
 	   
 	   
-	String getInput(String sql) throws Exception {
+	QueryTable getInput(String sql) throws Exception {
     	SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(sql);
     	String workerId = System.getProperty("workerId");	
     	
     	//ConnectionManager cm = ConnectionManager.getInstance();
    		//System.out.println("Getting connection for " + workerId + " out of " + cm.getDataSources());
     					
-		
+		// Perform plaintext execution, which does not reduce cardinality, but add dummyTags
     	QueryTable table = SqlQueryExecutor.query(sql, outSchema, workerId);
-		return  table.toBinaryString();
+
+    	// Seperate the dummyTags within the query table
+    	boolean extract = table.extractDummys();
+
+		return table;
 
     }
 	   	
@@ -88,8 +92,12 @@ public class $queryName  extends EmpProgram  {
 	        while(inputItr.hasNext()) {
 	        	Map.Entry entry = (Map.Entry) inputItr.next();
 	        	String functionName = (String) entry.getKey();
-	        	String tupleBitstring = getInput((String) entry.getValue());
-	        	theQuery.addInput(functionName, tupleBitstring);
+
+	        	// For all inputs to MPC, get an associated QueryTable
+	        	QueryTable table = getInput((String) entry.getValue());
+
+                // add the input strings using the addInput function - which is available in main.txtOkay
+	        	theQuery.addInput(functionName, table.toBinaryString(),table.getDummyTags());
 	        }
 	        
         	if(generatorHost != null) {
