@@ -1,30 +1,27 @@
 package org.smcql.executor.localhost;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
-import org.smcql.executor.EmpExecutor;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-public class EmpQueryExecutorLocalTest extends BaseTest {
+
+public class EmpQueryPlaintextInputsTest extends BaseTest {
   public List<WorkerConfiguration> workers;
 
   protected void setUp() throws Exception {
-    super.setUp();
-
+	  super.setUp();
+	  
     String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
     System.setProperty("smcql.setup", setupFile);
     ConnectionManager cm = ConnectionManager.getInstance();
@@ -48,8 +45,8 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   public void testJoin() throws Exception {
     String testName = "JoinCdiff";
     String query =
-            "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
-
+        "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
+    
     testCase(testName, query);
   }
 
@@ -60,42 +57,62 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   }
 
   protected QueryTable getExpectedOutput(String testName, String query)
-          throws Exception {
-
-    String unionedId = ConnectionManager.getInstance().getUnioned();
-
-    SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
+      throws Exception {
+	  	
+	  	String unionedId = ConnectionManager.getInstance().getUnioned();
+	  
+        SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
 
     return SqlQueryExecutor.query(query, outSchema, unionedId);
+  }
+
+
+
+  QueryTable getPlainInput(String sql) throws Exception {
+
+    SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(sql);
+    String workerId = workers.get(0).workerId;
+
+    QueryTable table = SqlQueryExecutor.query(sql, outSchema, workerId);
+    return  table;
+
   }
 
   protected void testCase(String testName, String sql) throws Exception {
     SystemConfiguration.getInstance().resetCounters();
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
-
-
+    
+    
 
     System.out.println("Initial schema: " + secRoot.getPlanRoot().getSchema() );
     QueryCompiler qc = new QueryCompiler(secRoot);
-    qc.writeOutEmpFile();
 
-    String empTarget = Utilities.getCodeGenTarget() + "/" + testName + ".h";
-    String jniTarget = Utilities.getCodeGenTarget() + "/" + testName + ".java";
+    // Gets all sql inputs that emp code will use - this is the plaintext execution
+    // that will generate results where the dummy is not yet separated
+    Map<String,String> inputs = qc.getEmpInputs();
 
-    assertTrue(FileUtils.fileExists(empTarget));
-    assertTrue(FileUtils.fileExists(jniTarget));
 
-    EmpExecutor exec = new EmpExecutor(qc);
-    exec.run();
+    for (Map.Entry<String, String> entry : inputs.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
 
-    QueryTable expectedOutput = getExpectedOutput(testName, sql);
-    QueryTable observedOutput = exec.getOutput();
+      // Print the initial function, query, and schema for reference
+      System.out.println(key);
+      System.out.println(value);
+      System.out.println(Utilities.getOutSchemaFromSql(value).toString());
 
-    logger.info("Observed output: \n" + observedOutput);
-    logger.info("Expected output: \n" + expectedOutput);
+      // run the query against one of the test dbs
+      QueryTable wDummy = getPlainInput(value);
 
-    assertEquals(expectedOutput.tupleCount(), observedOutput.tupleCount());
-    assertEquals(expectedOutput, observedOutput);
+      // find and remove the dummy tags
+      wDummy.extractDummys();
+      String dummys = wDummy.getDummyTags();
+
+      // Print the dummys and the new schema (which should no longer have the bool attached)
+      System.out.println(dummys);
+      System.out.println(wDummy.getSchema().toString());
+    }
+
 
   }
 }

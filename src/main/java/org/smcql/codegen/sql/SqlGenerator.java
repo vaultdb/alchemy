@@ -9,11 +9,7 @@ import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.logical.LogicalJoin;
 import org.apache.calcite.rel.logical.LogicalProject;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
-import org.apache.calcite.sql.SqlDialect;
-import org.apache.calcite.sql.SqlIdentifier;
-import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.SqlNodeList;
-import org.apache.calcite.sql.SqlSelect;
+import org.apache.calcite.sql.*;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.RelBuilder;
@@ -53,7 +49,7 @@ public class SqlGenerator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return sqlMode.equals("debug");
+		return sqlMode.equals("release");
 	}
 	public static String getSourceSql(Operator node, SqlDialect dialect) {
 		SecureRelNode secNode = node.getSecureRelNode();
@@ -106,26 +102,44 @@ public class SqlGenerator {
 	public static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect, boolean filterPullUp) {
 		SqlSelect selection = converter.visitChild(0, rel).asSelect();
 		// move up filter for union/merge input as needed
-		if (selection.getWhere() != null && filterPullUp) {
-			SqlNodeList list = selection.getSelectList();
 
+		// create list for dummyTags regardless of value ( both true and false will be represented)
+		SqlNodeList list = selection.getSelectList();
+
+		// Initialize where clause Node
+		SqlNode where = selection.getWhere();
+
+		// logic for existence of dummyTags
+		if (where != null && filterPullUp) {
+
+			// if list is empty, then add base SqlNode
 			if(list == null) {
 				SqlParserPos pos = selection.getParserPosition();
 				list = new SqlNodeList(pos);
 
 				SqlNode star = (SqlNode)  SqlIdentifier.star(pos);
 				list.add(star);
-				
+
 			}
-			list.add(selection.getWhere());
+
+			// Add the where clause to the selection criteria
+			list.add(selection.getWhere()); //
 			selection.setWhere(null);
 			selection.setSelectList(list);
 		}
-		
+
+		// logic for no dummyTags (all false) with a filter pullup
+		else if (filterPullUp){
+
+			SqlLiteral dummy = SqlLiteral.createBoolean(false, list.getParserPosition());
+			list.add(dummy);
+			selection.setSelectList(list);
+
+		}
+
 		String sqlOut = selection.toSqlString(dialect).getSql();
-		
 		sqlOut = sqlOut.replace("\"", "");
 
-        return sqlOut;	
+		return sqlOut;
 	}
 }

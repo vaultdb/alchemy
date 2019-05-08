@@ -230,5 +230,15 @@ public class SecureRelRecordType implements Serializable {
 		return null;
 	}
 
+	public SecureRelDataTypeField getLast(){
+		if (secureFields.size() > 1){
+			return secureFields.get(secureFields.size() -1);
+		}
+		else{
+			return null;
+		}
+
+	}
+
 
 }
