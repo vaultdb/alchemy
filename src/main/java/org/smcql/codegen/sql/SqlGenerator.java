@@ -49,7 +49,7 @@ public class SqlGenerator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return sqlMode.equals("debug");
+		return sqlMode.equals("release");
 	}
 	public static String getSourceSql(Operator node, SqlDialect dialect) {
 		SecureRelNode secNode = node.getSecureRelNode();
@@ -110,7 +110,7 @@ public class SqlGenerator {
 		SqlNode where = selection.getWhere();
 
 		// logic for existence of dummyTags
-		if (where != null) {
+		if (where != null && filterPullUp) {
 
 			// if list is empty, then add base SqlNode
 			if(list == null) {
@@ -128,8 +128,8 @@ public class SqlGenerator {
 			selection.setSelectList(list);
 		}
 
-		// logic for no dummyTags (all false)
-		else{
+		// logic for no dummyTags (all false) with a filter pullup
+		else if (filterPullUp){
 
 			SqlLiteral dummy = SqlLiteral.createBoolean(false, list.getParserPosition());
 			list.add(dummy);
