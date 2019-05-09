@@ -21,7 +21,7 @@ public class EmpQueryPlaintextInputsTest extends BaseTest {
 
   protected void setUp() throws Exception {
 	  super.setUp();
-	  
+
     String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
     System.setProperty("smcql.setup", setupFile);
     ConnectionManager cm = ConnectionManager.getInstance();
@@ -46,7 +46,7 @@ public class EmpQueryPlaintextInputsTest extends BaseTest {
     String testName = "JoinCdiff";
     String query =
         "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
-    
+
     testCase(testName, query);
   }
 
@@ -58,9 +58,9 @@ public class EmpQueryPlaintextInputsTest extends BaseTest {
 
   protected QueryTable getExpectedOutput(String testName, String query)
       throws Exception {
-	  	
+
 	  	String unionedId = ConnectionManager.getInstance().getUnioned();
-	  
+
         SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
 
     return SqlQueryExecutor.query(query, outSchema, unionedId);
@@ -81,8 +81,8 @@ public class EmpQueryPlaintextInputsTest extends BaseTest {
   protected void testCase(String testName, String sql) throws Exception {
     SystemConfiguration.getInstance().resetCounters();
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
-    
-    
+
+
 
     System.out.println("Initial schema: " + secRoot.getPlanRoot().getSchema() );
     QueryCompiler qc = new QueryCompiler(secRoot);
@@ -104,13 +104,29 @@ public class EmpQueryPlaintextInputsTest extends BaseTest {
       // run the query against one of the test dbs
       QueryTable wDummy = getPlainInput(value);
 
+      int totalSize = wDummy.toBinaryString().length();
+
+      System.out.println(wDummy.tupleCount());
+
+
       // find and remove the dummy tags
       wDummy.extractDummys();
       String dummys = wDummy.getDummyTags();
+      System.out.println(wDummy.tupleCount());
+
 
       // Print the dummys and the new schema (which should no longer have the bool attached)
       System.out.println(dummys);
       System.out.println(wDummy.getSchema().toString());
+
+      int newSize = dummys.length() + wDummy.toBinaryString().length();
+
+
+      // making sure new and old size are the same
+      assertEquals(totalSize, newSize);
+
+
+
     }
 
 
