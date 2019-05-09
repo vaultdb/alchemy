@@ -3,6 +3,9 @@ Data* $functionName(int party, NetIO * io) {
     // std::cout << "Testing that this is the correct template" << std::endl;
 
     int rowLength = $size;
+
+    std::cout << "The rowlength in bits is " << rowLength << std::endl;
+
     // rowLength = 64; // manual reset. if not reset, then suspects fewer tuples
 
 
