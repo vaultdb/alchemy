@@ -113,6 +113,10 @@ public class EmpJniUtilities {
 		
 		boolean[] aliceOutput = aliceRunnable.getOutput();
 		boolean[] bobOutput = bobRunnable.getOutput();
+
+		// decrypt dummies
+		// selectively decrypt
+
 		boolean[] decrypted = decrypt(aliceOutput, bobOutput);
 		return new QueryTable(decrypted, outSchema);
 		

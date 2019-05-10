@@ -7,6 +7,7 @@ Data * $functionName(Data *data) {
     for (int i=0; i< data->publicSize - 1; i++) {
         Integer id1 = data->data[i];
         Integer id2 = data->data[i+1];
+
         Bit eq = (id1 == id2);
         
         //cout << "Equality check for " << i << " is " << eq.reveal(PUBLIC) << " for " << id1.reveal<string>(PUBLIC) << " and " << id2.reveal<string>(PUBLIC) << endl;
