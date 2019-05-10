@@ -98,6 +98,10 @@ public class QueryTable implements Serializable {
        // for each tuple, copy last bit constructing the dummyTags for each and record the other bits
        for( int i = 0; i < tupleCount; i++){
           String tupleString = tuples.get(i).toBinaryString();
+
+          System.out.println("Look here");
+          System.out.println(tupleString);
+
           dummytags += tupleString.substring(tupleSize - 1);
           tuplebits += tupleString.substring(0, tupleSize - 1);
 
@@ -109,10 +113,10 @@ public class QueryTable implements Serializable {
          char search = '1';
 
          if (tuplebits.charAt(i) == search){
-           newbits[i] = false;
+           newbits[i] = true;
          }
          else{
-           newbits[i] = true;
+           newbits[i] = false;
          }
        }
 
