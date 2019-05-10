@@ -245,6 +245,25 @@ public class QueryCompiler {
     return wholeFile;
   }
 
+  public Map<String,String> getEmpInputs() throws Exception {
+    // Method to return map of Sql inputs.
+    // Step is the key, and the value is the associated query
+
+    Map<String, String> inputs = new HashMap<String, String>();
+    Iterator itr = sqlCode.entrySet().iterator();
+
+    while (itr.hasNext()) {
+      Map.Entry entry = (Map.Entry) itr.next();
+      ExecutionStep step = (ExecutionStep) entry.getKey();
+      String functionName = step.getFunctionName();
+      inputs.put(functionName, (String) entry.getValue());
+    }
+
+
+    return inputs;
+  }
+
+
   public void compileEmpCode() throws Exception {
     if (!codeGenerated) writeOutEmpFile();
 

@@ -23,7 +23,8 @@ string bobConnectionString = "$bobConnectionString";
 string aliceHost = "$aliceHost";
 int INT_LENGTH = 64;
 string output;
-map<string, string> inputs; // maps opName --> bitString of input tuples
+map<string, string> inputs;    // maps opName --> bitString of input tuples
+map<string, string> dummyTagsMap; // maps opName --> bitstring of dummy tags, 1 / tuple
 
 
 // Helper functions

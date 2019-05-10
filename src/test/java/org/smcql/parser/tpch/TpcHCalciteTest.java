@@ -26,6 +26,7 @@ import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
+import org.smcql.util.Utilities;
 
 
 public class TpcHCalciteTest extends TpcHBaseTest {
@@ -177,34 +178,34 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 		
 	  
 	  protected void testCase(String testName, String sql) throws Exception {
-	    SystemConfiguration.getInstance().resetCounters();
-		SecureRelRoot root = new SecureRelRoot(testName, sql);
+	  	  SystemConfiguration.getInstance().resetCounters();
+	      SystemConfiguration.getInstance().setProperty("code-generator-mode","debug");
 
-	    SecureRelRecordType outSchema = root.getPlanRoot().getSchema();
-	    
-	    String plan = RelOptUtil.dumpPlan("", root.getRelRoot().rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
+		  SecureRelRoot root = new SecureRelRoot(testName, sql);
 
-	    logger.info("Parsed plan for " + testName + ":\n" + plan);
-	    
-	    String query = SqlGenerator.getSql(root.getRelRoot(), SystemConfiguration.DIALECT);
-	    logger.info("Preparing to run query:\n " + query);
-	    logger.info("Out schema: " + outSchema);
-	    
-	    QueryTable output = SqlQueryExecutor.query(query, outSchema, "unioned");
-	    
-	    
-        sql = sql.replaceAll("\' DAY\\(3\\)", " DAYS\'"); // fix date interval rendering	    
-	    logger.info("Running vanilla query: " + sql);
-	    QueryTable expected = super.getExpectedOutput(sql, outSchema);
-	    assertEquals(expected, output);
+		  SecureRelRecordType outSchema = root.getPlanRoot().getSchema();
 
-	  
+		  String plan = RelOptUtil.dumpPlan("", root.getRelRoot().rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
+
+		  logger.info("Parsed plan for " + testName + ":\n" + plan);
+
+		  String query = SqlGenerator.getSql(root.getRelRoot(), SystemConfiguration.DIALECT);
+		  logger.info("Preparing to run query:\n " + query);
+		  logger.info("Out schema: " + outSchema);
+
+		  QueryTable output = SqlQueryExecutor.query(query, outSchema, "unioned");
+
+
+		  sql = sql.replaceAll("\' DAY\\(3\\)", " DAYS\'"); // fix date interval rendering
+		  logger.info("Running vanilla query: " + sql);
+		  QueryTable expected = super.getExpectedOutput(sql, outSchema);
+		  assertEquals(expected, output);
 
 
 	    // Testing generation for SQL from created Calcite plan
 		// Uncomment two lines below to avoid this test
-	    //String SQl = SqlGenerator.getSql(root.rel,SystemConfiguration.DIALECT);
-	    //System.out.println(SQl);
+	    // String SQl = SqlGenerator.getSql(root.rel,SystemConfiguration.DIALECT);
+	    // System.out.println(SQl);
 	    
 /*	    buildOperatorHistogram(root.rel);
 

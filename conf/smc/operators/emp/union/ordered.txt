@@ -1,7 +1,22 @@
 Data* $functionName(int party, NetIO * io) {
-    int rowLength = $size; 
+
+    // std::cout << "Testing that this is the correct template" << std::endl;
+
+    int rowLength = $size;
+
+    std::cout << "The rowlength in bits is " << rowLength << std::endl;
+
+    // rowLength = 64; // manual reset. if not reset, then suspects fewer tuples
+
+
 	string localBitstring = inputs["$functionName"];
+	string localDummyTags = dummyTagsMap["$functionName"];
+
+	std::cout << " Dummies " << localDummyTags << std::endl;
+	std::cout << " rowLength " << rowLength << std::endl;
+
     bool *localData = toBool(localBitstring);
+    bool *localDummies = toBool(localDummyTags);
 
 
     int aliceSize = localBitstring.length() / rowLength;
@@ -20,9 +35,12 @@ Data* $functionName(int party, NetIO * io) {
     }
 
     Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
+    Bit * dummyTags = new Bit[aliceSize + bobSize]; // same for dummies
    
     Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit array of inputs
     bool *readPos = localData;
+    Bit *dummyPtr = dummyTags;
+
     int writePos = 0;
     int writeTuple = aliceSize; // last tuple
     
@@ -38,8 +56,21 @@ Data* $functionName(int party, NetIO * io) {
 	}
 	
     Batcher batcher;
+
+    /*
+
+    I think this is where we should add dummyTag info, but unsure
+    for(int i = 0; i < alice_size; ++i) {
+           batcher.add<Bit>((ALICE==party) ? dummyTags[i]:0);
+    }
+
+    */
+
     for (int i = 0; i < bobSize*rowLength; ++i)
+       // set up bit array, if alice, secret share a local bit,
+       // otherwise bob collects his part of the secret share and inputs 0 as a placeholder
         batcher.add<Bit>((BOB==party) ? localData[i]:0);
+
     batcher.make_semi_honest(BOB);
 
     for (int i = 0; i < bobSize*rowLength; ++i)
@@ -61,6 +92,7 @@ Data* $functionName(int party, NetIO * io) {
 
     Data * d = new Data;
     d->data = res;
+    // data->dummyTag = dummyTag; // Added
     d->publicSize = aliceSize + bobSize;
     d->realSize = Integer(64, d->publicSize, PUBLIC);
     cout << "Done union!" << endl;   

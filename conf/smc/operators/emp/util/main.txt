@@ -9,9 +9,10 @@ void setGeneratorHost(string host) {
 
 
 // placeholder for maintaining a map of inputs from JDBC
-void addInput(const std::string& opName, const std::string& bitString) {
+void addInput(const std::string& opName, const std::string& bitString, const std::string& dummyTags) {
 
      inputs[opName] = bitString;
+     dummyTagsMap[opName] = dummyTags;
 
      }
 

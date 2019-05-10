@@ -185,7 +185,7 @@ public class SecureOperator implements CodeGenerator, Serializable {
 		// overridden by Join
 		Operator child = getCorrectChild(planNode.getChild(0), 0);
 		SecureRelRecordType childSchema = (merges.isEmpty()) ? child.getSchema(true) : merges.get(0).getCodeGenerator().getSchema();
-		String srcSize = Integer.toString(childSchema.size());
+		String srcSize = Integer.toString(childSchema.size()); // Potentially decrease size for dummy (doesn't seem to effect)
 		String dstSize = (projects.isEmpty()) ? variables.get("size") : Integer.toString(projects.get(0).getSchema().size());
 		
 		variables.put("sSize", srcSize);
