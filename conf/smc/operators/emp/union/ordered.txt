@@ -6,10 +6,13 @@ Data* $functionName(int party, NetIO * io) {
 
     std::cout << "The rowlength in bits is " << rowLength << std::endl;
 
-    // rowLength = 64; // manual reset. if not reset, then suspects fewer tuples
+    rowLength = rowLength - 1; // account for boolean at end of schema
 
 
 	string localBitstring = inputs["$functionName"];
+
+	std::cout << " Raw bitstring is " << localBitstring << std::endl;
+
 	string localDummyTags = dummyTagsMap["$functionName"];
 
 	std::cout << " Dummies " << localDummyTags << std::endl;
@@ -22,6 +25,7 @@ Data* $functionName(int party, NetIO * io) {
     int aliceSize = localBitstring.length() / rowLength;
     int bobSize = aliceSize;
 
+    // communicate with other party to correct sizes ( number of tuples )
     if (party == ALICE) {
         io->send_data(&aliceSize, 4);
         io->flush();
@@ -34,65 +38,87 @@ Data* $functionName(int party, NetIO * io) {
         io->flush();
     }
 
+    // allocating secret share for union data & dummies
     Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
-    Bit * dummyTags = new Bit[aliceSize + bobSize]; // same for dummies
-   
-    Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit array of inputs
+    Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit representation of res
+
+
+    Bit * dummyTags = new Bit[aliceSize + bobSize];    // same for dummies
+
     bool *readPos = localData;
-    Bit *dummyPtr = dummyTags;
 
     int writePos = 0;
     int writeTuple = aliceSize; // last tuple
-    
+
+    // reverse Alice's order for correct Bitonic Merge ( Increasing -> Max -> Decreasing )
+    // must also reverse associated dummyTags
     for (int i = 0;  i < aliceSize; ++i) {
     	--writeTuple;
     	writePos = writeTuple * rowLength;
+
+    	// reverse dummytags
+    	dummyTags[writeTuple] = Bit((ALICE==party) ? localDummies[writeTuple] : 0, ALICE);
+
         for (int j = 0; j < rowLength; ++j) {
-            tmp[writeTuple*rowLength + j] = Bit((ALICE==party) ? 
-                *readPos:0, ALICE);
+            // updating tmp pointer with alice's
+            tmp[writeTuple*rowLength + j] = Bit((ALICE==party) ? *readPos : 0, ALICE);
+
             ++readPos;
             ++writePos;
          }
 	}
-	
+
+	// Initialize Bob's Batcher
     Batcher batcher;
 
-    /*
 
-    I think this is where we should add dummyTag info, but unsure
-    for(int i = 0; i < alice_size; ++i) {
-           batcher.add<Bit>((ALICE==party) ? dummyTags[i]:0);
+    // put local dummies into batcher
+    for(int i = 0; i < bobSize; ++i) {
+           batcher.add<Bit>((BOB==party) ? localDummies[i]:0);
     }
 
-    */
 
     for (int i = 0; i < bobSize*rowLength; ++i)
-       // set up bit array, if alice, secret share a local bit,
-       // otherwise bob collects his part of the secret share and inputs 0 as a placeholder
         batcher.add<Bit>((BOB==party) ? localData[i]:0);
 
-    batcher.make_semi_honest(BOB);
+    batcher.make_semi_honest(BOB); // Secret Share
 
+    // add Bob's encrypted dummies
+
+    for (int i = 0; i < bobSize; ++i)
+        dummyTags[i+aliceSize] = batcher.next<Bit>();
+
+
+    // add Bob's encrypted tuples
     for (int i = 0; i < bobSize*rowLength; ++i)
         tmp[i+aliceSize*rowLength] = batcher.next<Bit>();
 
+    // create full Integer representation with both Bob and Alice's information
     for(int i = 0; i < aliceSize + bobSize; ++i)
         res[i] = Integer(rowLength, tmp+rowLength*i);
 
     cout << "$functionName took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
-	/*for(int i = 0; i < (aliceSize + bobSize); ++i) {
+    // debugging help - this will reveal the underlying values to ensure that bitonic input is correct
+	for(int i = 0; i < (aliceSize + bobSize); ++i) {
     	long value = res[i].reveal<int64_t>(PUBLIC);
     	cout << "Value i: " << value << endl;
-    }*/
+    }
     
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
-    bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), $keyPos, $keyLength);
-    
+    bitonic_merge_sql(res, dummyTags, 0, aliceSize + bobSize, Bit(true), $keyPos, $keyLength);
+
+    std::cout << " After performing bitonic_merge_sql " << std::endl;
+
+    for(int i = 0; i < (aliceSize + bobSize); ++i) {
+        long value = res[i].reveal<int64_t>(PUBLIC);
+        cout << "Value i: " << value << endl;
+    }
+
 
     Data * d = new Data;
     d->data = res;
-    // data->dummyTag = dummyTag; // Added
+    d->dummyTags = dummyTags;
     d->publicSize = aliceSize + bobSize;
     d->realSize = Integer(64, d->publicSize, PUBLIC);
     cout << "Done union!" << endl;   
