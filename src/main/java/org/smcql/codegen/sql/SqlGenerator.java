@@ -103,6 +103,7 @@ public class SqlGenerator {
 		SqlSelect selection = converter.visitChild(0, rel).asSelect();
 		// move up filter for union/merge input as needed
 
+
 		// create list for dummyTags regardless of value ( both true and false will be represented)
 		SqlNodeList list = selection.getSelectList();
 
@@ -117,7 +118,7 @@ public class SqlGenerator {
 				SqlParserPos pos = selection.getParserPosition();
 				list = new SqlNodeList(pos);
 
-				SqlNode star = (SqlNode)  SqlIdentifier.star(pos);
+				SqlNode star = (SqlNode)  SqlIdentifier.star(pos); // check to see what is being inserted
 				list.add(star);
 
 			}
@@ -130,6 +131,15 @@ public class SqlGenerator {
 
 		// logic for no dummyTags (all false) with a filter pullup
 		else if (filterPullUp){
+
+            if(list == null) {
+                SqlParserPos pos = selection.getParserPosition();
+                list = new SqlNodeList(pos);
+
+                SqlNode star = (SqlNode)  SqlIdentifier.star(pos); // check to see what is being inserted
+                list.add(star);
+
+            }
 
 			SqlLiteral dummy = SqlLiteral.createBoolean(false, list.getParserPosition());
 			list.add(dummy);
