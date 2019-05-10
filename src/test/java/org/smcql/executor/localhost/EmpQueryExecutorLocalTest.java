@@ -55,7 +55,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
 
   public void testFilterDistinct() throws Exception {
     String testName = "FilterDistinct";
-    String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
+    String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\' ORDER BY patient_id";
     testCase(testName, query);
   }
 
