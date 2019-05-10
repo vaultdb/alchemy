@@ -177,9 +177,6 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 		
 	  
 	  protected void testCase(String testName, String sql) throws Exception {
-
-
-
 	    SystemConfiguration.getInstance().resetCounters();
 		SecureRelRoot root = new SecureRelRoot(testName, sql);
 
