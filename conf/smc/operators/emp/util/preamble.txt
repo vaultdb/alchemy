@@ -24,7 +24,7 @@ string aliceHost = "$aliceHost";
 int INT_LENGTH = 64;
 string output;
 map<string, string> inputs;    // maps opName --> bitString of input tuples
-map<string, string> dummyTagsMap; // maps opName --> bitstring of dummy tags, 1 / tuple
+map<string, string> dummyTagsMap; // maps opName --> bitString of dummy tags, 1 / tuple
 
 
 // Helper functions
@@ -41,30 +41,31 @@ string reveal_bin(Integer &input, int length, int output_party) {
 }
 
 	
-void cmp_swap_sql(Integer*key, int i, int j, Bit acc, int key_pos, int key_length) {
+void cmp_swap_sql(Integer*key, Bit* dummyTags, int i, int j, Bit acc, int key_pos, int key_length) {
     Integer keyi = Integer(key_length, key[i].bits+key_pos);
     Integer keyj = Integer(key_length, key[j].bits+key_pos);
     Bit to_swap = ((keyi > keyj) == acc);
     swap(to_swap, key[i], key[j]);
+    swap(to_swap, dummyTags[i], dummyTags[j]);
 }
 
 // TODO: extend this to multiple columns as a list of key_pos and key_length
-void bitonic_merge_sql(Integer* key, int lo, int n, Bit acc, int key_pos, int key_length) {
+void bitonic_merge_sql(Integer* key, Bit* dummyTags, int lo, int n, Bit acc, int key_pos, int key_length) {
     if (n > 1) {
         int m = greatestPowerOfTwoLessThan(n);
         for (int i = lo; i < lo + n - m; i++)
-            cmp_swap_sql(key, i, i + m, acc, key_pos, key_length);
-        bitonic_merge_sql(key, lo, m, acc, key_pos, key_length);
-        bitonic_merge_sql(key, lo + m, n - m, acc, key_pos, key_length);
+            cmp_swap_sql(key, dummyTags, i, i + m, acc, key_pos, key_length);
+        bitonic_merge_sql(key, dummyTags, lo, m, acc, key_pos, key_length);
+        bitonic_merge_sql(key, dummyTags, lo + m, n - m, acc, key_pos, key_length);
     }
 }
 
-void bitonic_sort_sql(Integer * key, int lo, int n, Bit acc,  int key_pos, int key_length) {
+void bitonic_sort_sql(Integer * key, Bit* dummyTags, int lo, int n, Bit acc,  int key_pos, int key_length) {
     if (n > 1) {
         int m = n / 2;
-        bitonic_sort_sql(key, lo, m, !acc, key_pos, key_length);
-        bitonic_sort_sql(key, lo + m, n - m, acc, key_pos, key_length);
-        bitonic_merge_sql(key, lo, n, acc, key_pos, key_length);
+        bitonic_sort_sql(key, dummyTags, lo, m, !acc, key_pos, key_length);
+        bitonic_sort_sql(key, dummyTags, lo + m, n - m, acc, key_pos, key_length);
+        bitonic_merge_sql(key, dummyTags, lo, n, acc, key_pos, key_length);
     }
 }
 
@@ -93,9 +94,10 @@ bool * toBool(string src) {
 class Data {
 public:
     Integer * data;
+    Bit * dummyTags; // TODO
     int publicSize;
     Integer realSize;
-    Integer dummyTags; // TODO
+
 };
 
 

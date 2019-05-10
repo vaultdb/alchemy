@@ -163,6 +163,9 @@ Data* op_merge(string sql, vector<int> input_col_lengths, int party, NetIO * io)
                 local_data[(alice_size-i-1)*bit_length + j]:0, ALICE);
 
     Batcher batcher;
+
+
+
     for (int i = 0; i < bob_size*bit_length; ++i)
         batcher.add<Bit>((BOB==party) ? local_data[i]:0);
     batcher.make_semi_honest(BOB);

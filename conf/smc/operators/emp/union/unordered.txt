@@ -1,4 +1,9 @@
 Data* $functionName(int party, NetIO * io) {
+
+    std::cout << "Testing that this is the correct template" << std::endl;
+
+
+
     int rowLength = $size; 
 	string localBitstring = inputs["$functionName"];
     bool *localData = toBool(localBitstring);
