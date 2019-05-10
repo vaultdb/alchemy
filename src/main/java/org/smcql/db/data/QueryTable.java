@@ -99,12 +99,8 @@ public class QueryTable implements Serializable {
        for( int i = 0; i < tupleCount; i++){
           String tupleString = tuples.get(i).toBinaryString();
 
-          System.out.println("Look here");
-          System.out.println(tupleString);
-
           dummytags += tupleString.substring(tupleSize - 1);
           tuplebits += tupleString.substring(0, tupleSize - 1);
-
        }
        // Convert new tuple string to raw boolean -- is there a way to make this a global function?
        boolean[] newbits = new boolean[tuplebits.length()];
