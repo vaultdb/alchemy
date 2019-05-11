@@ -80,7 +80,7 @@ public abstract class Operator implements CodeGenerator {
 		}
 		
 		ExecutionMode maxChild = maxChildMode(); 
-		SecurityPolicy maxAccess = maxAccessLevel(); // most sensitive thing it computes on
+		SecurityPolicy maxAccess = maxAccessLevel(); // most sensitive attribute it computes on
 		List<SecureRelDataTypeField> sliceAttrs = getSliceAttributes();
 		
 		String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess + " slice key " + sliceAttrs;
@@ -92,8 +92,12 @@ public abstract class Operator implements CodeGenerator {
 		}
 
 
-		
-		
+
+		// filter push-down, execute it in plaintext and dummy pad it
+		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 && this instanceof Filter) {
+			executionMode = ExecutionMode.Plain;
+			return;
+		}
 		
 		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 & !sliceAttrs.isEmpty()) {
 			executionMode = ExecutionMode.Slice;

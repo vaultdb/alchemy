@@ -49,7 +49,6 @@ public class SecureJoin extends SecureOperator {
 	}
 
 	@Override
-	// implementing a standard NLJ so sorting is not tackled yet
 	public Map<String, String> generate() throws Exception  {
 		Map<String, String> variables = baseVariables();		
 
