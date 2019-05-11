@@ -58,17 +58,7 @@ public abstract class RexFlattener implements RexVisitor<String> {
 	private String getSmcString(RexCall call) {
 		SqlKind kind = call.getKind();
 		String delimiter;
-		Logger logger = null;
 		
-		try {
-			logger = SystemConfiguration.getInstance().getLogger();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-		logger.info("Handling call: " + call + " of type " + kind + " with operands " + call.getOperands());
 		//handle boolean types
 		if (call.getType().getSqlTypeName() == SqlTypeName.BOOLEAN 
 				&& call.getOperands().size() >= 2
