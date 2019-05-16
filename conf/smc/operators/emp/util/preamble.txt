@@ -79,6 +79,14 @@ bool * outputBits(Integer &input, int length, int output_party) {
 		return b;
 	}
 
+bool * outputTags(Bit &input, int length, int output_party) {
+		bool * b = new bool[length];
+		// ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input,  length);
+		string bin="";
+
+		return b;
+	}
+
 
 bool * toBool(string src) {
 	long length = src.length();

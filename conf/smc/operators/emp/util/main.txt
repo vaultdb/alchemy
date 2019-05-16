@@ -33,9 +33,24 @@ $functions
     	Data * results = $rootOutput;
 
      int tupleWidth = results->data[0].size();
+     int dummyCount = results->publicSize;
+
+     std::cout << "The number of dummies new is " << dummyCount << std::endl;
+
+
      long outputSize = results->publicSize * tupleWidth;
-     output.reserve(outputSize);
+     output.reserve(dummyCount + outputSize);
      bool *tuple;
+
+    // TODO: add logic to send dummies to output
+    /*
+     for(int i = 0; i < dummyCount; ++i{
+        tuple = outputTags(results->data[i],1,XOR);
+        output += tuple[0];
+     }
+     */
+
+
 
 
      for(int i = 0; i < results->publicSize; ++i) {
