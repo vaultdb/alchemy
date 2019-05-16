@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.smcql.plan.slice.SliceKeyDefinition;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
+import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.FileUtils;
 
 public class QueryTable implements Serializable {
@@ -54,6 +55,7 @@ public class QueryTable implements Serializable {
     }
   }
 
+  // TODO: Depricate after selective decryption implemented properly
   public QueryTable(boolean[] dummyTags, boolean[] bits, SecureRelRecordType s) throws Exception {
 	    schema = s;
 	    tupleSize = schema.size();
@@ -156,6 +158,63 @@ public class QueryTable implements Serializable {
       }
     }
   }
+
+  // TODO: Test once dummyTags are being output from EMP
+  public QueryTable(SecureRelRecordType outSchema,boolean[] alice,boolean[] bob) throws Exception {
+    assert(alice.length == bob.length);
+
+    schema = outSchema;
+    tupleSize = outSchema.size();
+    tupleCount = alice.length / (tupleSize+1); // add plus 1 for dummies
+
+    int realCount = 0;
+
+    List<Boolean> decrypted=new ArrayList<Boolean>();
+
+    // decrept dummytags
+    boolean [] tags = EmpJniUtilities.decrypt(Arrays.copyOfRange(alice, 0, tupleCount),Arrays.copyOfRange(bob, 0, tupleCount));
+
+    // iterate through tags, decrypting only the nonDummies
+    for(int i = 0; i < tupleCount; i++){
+      if(tags[i] == false){
+
+        int startIndx = tupleCount + tupleSize*i;
+        int endIndx = startIndx + tupleSize;
+        boolean[] bobTuple = Arrays.copyOfRange(bob,startIndx,endIndx);
+        boolean[] aliceTuple =  Arrays.copyOfRange(bob,startIndx,endIndx);
+
+        boolean[] decTuple = EmpJniUtilities.decrypt(aliceTuple,bobTuple);
+
+        for(int j=0; j < tupleCount; j++) {
+          decrypted.add(decTuple[j]);
+        }
+        realCount += 1;
+      }
+    }
+
+    // reset tupleCount
+    tupleCount = realCount;
+
+
+    // form the Querytable
+    boolean[] fullDecrypted = new boolean[decrypted.size()];
+
+    for(int i = 0; i < decrypted.size(); i++)
+    {
+      fullDecrypted[i] = decrypted.get(i);
+    }
+
+    tuples = new ArrayList<Tuple>();
+
+
+    for (int i = 0; i < tupleCount; ++i) {
+        boolean[] tupleBits = Arrays.copyOfRange(fullDecrypted, i * tupleSize, (i + 1) * tupleSize);
+        Tuple t = new Tuple(tupleBits, schema);
+        tuples.add(t);
+
+      }
+    }
+
   
   // is it all zeroes?
   private boolean isNull(final boolean[] tupleBits) {
