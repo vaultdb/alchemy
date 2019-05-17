@@ -78,7 +78,7 @@ public class SecureAggregate extends SecureOperator {
 			
 			ret += "    Integer " +  lVar + "(" + fieldSize + ", lhs.bits + " + fieldOffset + ");\n";
 			ret += "    Integer " +  rVar + "(" + fieldSize + ", rhs.bits + " + fieldOffset + ");\n";
-			ret += "    If(" + lVar + " != " + rVar + ", ret = 0);\n";
+			ret += "    ret = If(" + lVar + " != " + rVar + ", Bit(0, PUBLIC), Bit(1, PUBLIC));\n";
 			ret += "     \n\n";
 			
 			
