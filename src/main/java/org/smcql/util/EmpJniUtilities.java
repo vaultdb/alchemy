@@ -114,14 +114,20 @@ public class EmpJniUtilities {
 		boolean[] aliceOutput = aliceRunnable.getOutput();
 		boolean[] bobOutput = bobRunnable.getOutput();
 
+
+
 		System.out.println("Out of EMP Length");
 		System.out.println(aliceOutput.length);
 
 		// decrypt dummies
 		// selectively decrypt
 
-		boolean[] decrypted = decrypt(aliceOutput, bobOutput);
-		return new QueryTable(decrypted, outSchema);
+		return new QueryTable(outSchema,aliceOutput,bobOutput);
+
+		// old logic
+
+		//boolean[] decrypted = decrypt(aliceOutput, bobOutput);
+		//return new QueryTable(decrypted, outSchema);
 		
 	}
 	 

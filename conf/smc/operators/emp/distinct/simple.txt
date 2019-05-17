@@ -44,17 +44,22 @@ Data * $functionName(Data *data) {
 
     while ( cursor < data->publicSize - 1) {
 
+        // std::cout << "Init is set to " << init.reveal(PUBLIC) << std::endl;
+
         cursor++;
         Integer current = data->data[cursor];
         Bit dummyOut = data->dummyTags[cursor];
         Bit dummyTest = !(data->dummyTags[cursor]); // easier to perform logic checks
+
+        // std::cout << "Comparison " << (current==lastOne).reveal(PUBLIC) << std::endl;
 
         // if init and equal, set dummyOut to True for reverse logic
         dummyOut = If((init & (current==lastOne)),Bit(true,PUBLIC),dummyOut);
 
         // reset init so that it will be false if we have not seen
         // a real of the current Integer value
-        Bit init = (init | dummyTest) & current==lastOne;
+        Bit temp = (init | dummyTest) & (current==lastOne);
+        init = temp;
 
         // if we are initialized, do not move lastOne. If initialized, move lastOne to current
         lastOne = If(init,current,lastOne);
@@ -63,6 +68,7 @@ Data * $functionName(Data *data) {
         data->dummyTags[cursor] = dummyOut;
 
     }
+
 
 
     // debugging print statements

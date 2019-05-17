@@ -172,7 +172,7 @@ public class QueryTable implements Serializable {
     List<Boolean> decrypted=new ArrayList<Boolean>();
 
     // decrept dummytags
-    boolean [] tags = EmpJniUtilities.decrypt(Arrays.copyOfRange(alice, 0, tupleCount),Arrays.copyOfRange(bob, 0, tupleCount));
+    boolean [] tags = Arrays.copyOfRange(alice, 0, tupleCount);
 
     // iterate through tags, decrypting only the nonDummies
     for(int i = 0; i < tupleCount; i++){
@@ -180,12 +180,13 @@ public class QueryTable implements Serializable {
 
         int startIndx = tupleCount + tupleSize*i;
         int endIndx = startIndx + tupleSize;
+        boolean[] aliceTuple =  Arrays.copyOfRange(alice,startIndx,endIndx);
         boolean[] bobTuple = Arrays.copyOfRange(bob,startIndx,endIndx);
-        boolean[] aliceTuple =  Arrays.copyOfRange(bob,startIndx,endIndx);
+
 
         boolean[] decTuple = EmpJniUtilities.decrypt(aliceTuple,bobTuple);
 
-        for(int j=0; j < tupleCount; j++) {
+        for(int j=0; j < tupleSize; j++) {
           decrypted.add(decTuple[j]);
         }
         realCount += 1;
