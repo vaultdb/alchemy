@@ -1,1 +1,36 @@
-TODO
+// TODO
+/*
+    PseudoCode for the aggregate count function:
+    for each row in the data:
+        check this row with the next row
+        get the aggeregate tuple data from both rows
+        if they are equal, add to current count
+        if they are not equal, start new count at 1 and add old count to the list of counts
+*/
+Data * $functionName(Data *data) {
+
+	cout << "Running $functionName " << endl;
+	int numOfCounts = 1;
+	int currCount = 1;
+	std::vector<int> counts;
+	for (int i = 0; i < data->publicSize; i++) {
+        if (!helper$functionName(data->data[i], data->data[i+1]).reveal(PUBLIC)){
+            numOfCounts++;
+            counts.push_back(currCount);
+            currCount = 1;
+        }else{
+            currCount++;
+        }
+	}
+	data->publicSize = numOfCounts;
+	data->data = new Integer[numOfCounts];
+	for(int i = 0; i < numOfCounts; i++){
+	    data->data[i] = Integer(INT_LENGTH, counts.at(i), PUBLIC);
+	}
+	data->realSize = Integer(INT_LENGTH, numOfCounts, PUBLIC);
+    return data;
+}
+
+Bit helper$functionName(Integer lhs, Integer rhs){
+    $groupByMatch
+}
