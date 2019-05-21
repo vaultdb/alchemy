@@ -54,7 +54,9 @@ public class Join extends Operator {
 		
 		LogicalJoin join = (LogicalJoin) this.getSecureRelNode().getRelNode();
 		
-		assert(join.getJoinType() == JoinRelType.INNER || join.getJoinType() == JoinRelType.FULL);
+		
+		assert(join.getJoinType() == JoinRelType.INNER || join.getJoinType() == JoinRelType.FULL
+				|| join.getJoinType() == JoinRelType.LEFT); // TODO: LEFT not yet implemented
 		
 		RexNode joinOn = join.getCondition();
 		
@@ -126,6 +128,7 @@ public class Join extends Operator {
 		LogicalJoin join = (LogicalJoin) this.getSecureRelNode().getRelNode();
 		RexNode joinOn = join.getCondition();
 		
+		logger.info("Join " + this + " computes on " + AttributeResolver.getAttributes(joinOn, getSchema()) );
 		return AttributeResolver.getAttributes(joinOn, getSchema());
 		
 	}
