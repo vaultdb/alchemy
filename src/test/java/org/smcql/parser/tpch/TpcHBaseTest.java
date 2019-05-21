@@ -21,127 +21,107 @@ public class TpcHBaseTest extends BaseTest {
 
 	protected static final List<String> QUERIES = ImmutableList.of(
 		      // 01
-		      "with lineitem_projection as (select l_returnflag, l_linestatus, l_quantity, \n" +
-					  "l_extendedprice,l_discount, l_tax,\n" +
-					  "l_shipdate\n" +
-					  "\n" +
-					  "from lineitem) \n" +
-					  "\n" +
-					  " \n" +
-					  "\n" +
-					  "select\n" +
-					  "l_returnflag,\n" +
-					  "l_linestatus,\n" +
-					  "sum(l_quantity) as sum_qty,\n" +
-					  "sum(l_extendedprice) as sum_base_price,\n" +
-					  "sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,\n" +
-					  "sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,\n" +
-					  "avg(l_quantity) as avg_qty,\n" +
-					  "avg(l_extendedprice) as avg_price,\n" +
-					  "avg(l_discount) as avg_disc,\n" +
-					  "count(*) as count_order\n" +
-					  "from\n" +
-					  "lineitem_projection\n" +
-					  "where\n" +
-					  "l_shipdate <= date '1998-08-03'\n" +
-					  "group by\n" +
-					  "l_returnflag,\n" +
-					  "l_linestatus\n" +
-					  "\n" +
-					  "order by\n" +
-					  "l_returnflag,\n" +
-					  "l_linestatus",
+		      "select\n"
+		          + "  l_returnflag,\n"
+		          + "  l_linestatus,\n"
+		          + "  sum(l_quantity) as sum_qty,\n"
+		          + "  sum(l_extendedprice) as sum_base_price,\n"
+		          + "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,\n"
+		          + "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,\n"
+		          + "  avg(l_quantity) as avg_qty,\n"
+		          + "  avg(l_extendedprice) as avg_price,\n"
+		          + "  avg(l_discount) as avg_disc,\n"
+		          + "  count(*) as count_order\n"
+		          + "from\n"
+		          + "  lineitem\n"
+		          + " where\n"
+		          + "  l_shipdate <= date '1998-08-03'\n"
+		          + "group by\n"
+		          + "  l_returnflag,\n"
+		          + "  l_linestatus\n"
+		          + "\n"
+		          + "order by\n"
+		          + "  l_returnflag,\n"
+		          + "  l_linestatus",
 
 		      // 02
-		      "WITH min_ps_supplycost AS (    select\n" +
-					  "      ps.ps_partkey,min(ps.ps_supplycost) min_cost\n" +
-					  "\n" +
-					  "    from\n" +
-					  "      partsupp ps,\n" +
-					  "      supplier s,\n" +
-					  "      nation n,\n" +
-					  "      region r\n" +
-					  "    where\n" +
-					  "      s.s_suppkey = ps.ps_suppkey\n" +
-					  "      and s.s_nationkey = n.n_nationkey\n" +
-					  "      and n.n_regionkey = r.r_regionkey\n" +
-					  "      and r.r_name = 'EUROPE'\n" +
-					  "    GROUP BY ps.ps_partkey  )\n" +
-					  "select\n" +
-					  "  s.s_acctbal,\n" +
-					  "  s.s_name,\n" +
-					  "  n.n_name,\n" +
-					  "  p.p_partkey,\n" +
-					  "  p.p_mfgr,\n" +
-					  "  s.s_address,\n" +
-					  "  s.s_phone,\n" +
-					  "  s.s_comment\n" +
-					  "from\n" +
-					  "  part p,\n" +
-					  "  supplier s,\n" +
-					  "  partsupp ps,\n" +
-					  "  nation n,\n" +
-					  "  region r,\n" +
-					  "  min_ps_supplycost mps\n" +
-					  "where\n" +
-					  "  p.p_partkey = ps.ps_partkey\n" +
-					  "  and s.s_suppkey = ps.ps_suppkey\n" +
-					  "  and p.p_size = 41\n" +
-					  "  and p.p_type like '%NICKEL'\n" +
-					  "  and s.s_nationkey = n.n_nationkey\n" +
-					  "  and n.n_regionkey = r.r_regionkey\n" +
-					  "  and r.r_name = 'EUROPE'\n" +
-					  "  and mps.ps_partkey = ps.ps_partkey\n" +
-					  "  and ps.ps_supplycost = mps.min_cost\n" +
-					  "\n" +
-					  "order by\n" +
-					  "  s.s_acctbal desc,\n" +
-					  "  n.n_name,\n" +
-					  "  s.s_name,\n" +
-					  "  p.p_partkey\n" +
-					  "\n" +
-					  "\n" ,
+		      "WITH min_ps_supplycost AS ("
+	          + "    select\n"
+	          + "      ps.ps_partkey,min(ps.ps_supplycost) min_cost\n"
+	          + "\n"
+	          + "    from\n"
+	          + "      partsupp ps,\n"
+	          + "      supplier s,\n"
+	          + "      nation n,\n"
+	          + "      region r\n"
+	          + "    where\n"
+	          + "      s.s_suppkey = ps.ps_suppkey\n"
+	          + "      and s.s_nationkey = n.n_nationkey\n"
+	          + "      and n.n_regionkey = r.r_regionkey\n"
+	          + "      and r.r_name = 'EUROPE'\n"
+	          + "    GROUP BY ps.ps_partkey"
+	          + "  )\n"
+		      + "select\n"
+		          + "  s.s_acctbal,\n"
+		          + "  s.s_name,\n"
+		          + "  n.n_name,\n"
+		          + "  p.p_partkey,\n"
+		          + "  p.p_mfgr,\n"
+		          + "  s.s_address,\n"
+		          + "  s.s_phone,\n"
+		          + "  s.s_comment\n"
+		          + "from\n"
+		          + "  part p,\n"
+		          + "  supplier s,\n"
+		          + "  partsupp ps,\n"
+		          + "  nation n,\n"
+		          + "  region r,\n"
+		          + "  min_ps_supplycost mps\n"
+		          + "where\n"
+		          + "  p.p_partkey = ps.ps_partkey\n"
+		          + "  and s.s_suppkey = ps.ps_suppkey\n"
+		          + "  and p.p_size = 41\n"
+		          + "  and p.p_type like '%NICKEL'\n"
+		          + "  and s.s_nationkey = n.n_nationkey\n"
+		          + "  and n.n_regionkey = r.r_regionkey\n"
+		          + "  and r.r_name = 'EUROPE'\n"
+		          + "  and mps.ps_partkey = ps.ps_partkey\n"
+		          + "  and ps.ps_supplycost = mps.min_cost\n"
+		          + "\n"
+		          + "order by\n"
+		          + "  s.s_acctbal desc,\n"
+		          + "  n.n_name,\n"
+		          + "  s.s_name,\n"
+		          + "  p.p_partkey\n"
+		          + "limit 100",
 
 		      // 03
-		      "with customer_proj as (select c_mktsegment, c_custkey from customer\n" +
-					  "\n" +
-					  " where c_mktsegment= 'HOUSEHOLD' ),\n" +
-					  "\n" +
-					  "lineitem_proj as (select l_orderkey, l_shipdate,l_extendedprice,\n" +
-					  "          l_discount\n" +
-					  "          from lineitem where l_shipdate> date '1995-03-25'),\n" +
-					  "          \n" +
-					  "orders_proj as (select o_custkey,o_orderkey, o_orderdate,o_shippriority from orders \n" +
-					  "        \n" +
-					  "        where o_orderdate < date '1995-03-25')\n" +
-					  "\n" +
-					  "\n" +
-					  "\n" +
-					  "\n" +
-					  "select\n" +
-					  "  l.l_orderkey,\n" +
-					  "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue,\n" +
-					  "  o.o_orderdate,\n" +
-					  "  o.o_shippriority\n" +
-					  "\n" +
-					  "from\n" +
-					  "  customer_proj c,\n" +
-					  "  orders_proj o,\n" +
-					  "  lineitem_proj l\n" +
-					  "\n" +
-					  "where\n" +
-					  "   c.c_custkey = o.o_custkey\n" +
-					  "  and l.l_orderkey = o.o_orderkey\n" +
-					  "\n" +
-					  "  \n" +
-					  "\n" +
-					  "group by\n" +
-					  "  l.l_orderkey,\n" +
-					  "  o.o_orderdate,\n" +
-					  "  o.o_shippriority\n" +
-					  "order by\n" +
-					  "  revenue desc,\n" +
-					  "  o.o_orderdate",
+		      "select\n"
+		          + "  l.l_orderkey,\n"
+		          + "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue,\n"
+		          + "  o.o_orderdate,\n"
+		          + "  o.o_shippriority\n"
+		          + "\n"
+		          + "from\n"
+		          + "  customer c,\n"
+		          + "  orders o,\n"
+		          + "  lineitem l\n"
+		          + "\n"
+		          + "where\n"
+		          + "  c.c_mktsegment = 'HOUSEHOLD'\n"
+		          + "  and c.c_custkey = o.o_custkey\n"
+		          + "  and l.l_orderkey = o.o_orderkey\n"
+		          + "  and o.o_orderdate < date '1995-03-25'\n"
+		          + "  and l.l_shipdate > date '1995-03-25'\n"
+		          + "\n"
+		          + "group by\n"
+		          + "  l.l_orderkey,\n"
+		          + "  o.o_orderdate,\n"
+		          + "  o.o_shippriority\n"
+		          + "order by\n"
+		          + "  revenue desc,\n"
+		          + "  o.o_orderdate\n"
+		          + "limit 10",
 
 		      // 04
 		          "select\n"
@@ -161,60 +141,45 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  o_orderpriority",
 
 		      // 05
-		      "with region_proj as (select r_regionkey from region where r_name = 'EUROPE'),\n" +
-					  "\n" +
-					  "orders_proj as (select o_orderkey,o_custkey from orders where o_orderdate >= date '1997-01-01'\n" +
-					  "  and o_orderdate < date '1998-01-01'),\n" +
-					  "  \n" +
-					  "  lineitem_proj as (select l_orderkey,l_extendedprice ,l_discount, l_suppkey from lineitem),\n" +
-					  "  \n" +
-					  "  nation_proj as (select n_regionkey,n_nationkey, n_name from nation ),\n" +
-					  "  \n" +
-					  "  customer_proj as (select c_custkey, c_nationkey from customer),\n" +
-					  " \n" +
-					  " supplier_proj as (select s_suppkey, s_nationkey from supplier)\n" +
-					  " \n" +
-					  " \n" +
-					  "  \n" +
-					  "\n" +
-					  "select\n" +
-					  "  n.n_name,\n" +
-					  "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue\n" +
-					  "\n" +
-					  "from\n" +
-					  "  customer_proj c,\n" +
-					  "  orders_proj o,\n" +
-					  "  lineitem_proj l,\n" +
-					  "  supplier_proj s,\n" +
-					  "  nation_proj n,\n" +
-					  "  region_proj r\n" +
-					  "\n" +
-					  "where\n" +
-					  "  c.c_custkey = o.o_custkey\n" +
-					  "  and l.l_orderkey = o.o_orderkey\n" +
-					  "  and l.l_suppkey = s.s_suppkey\n" +
-					  "  and c.c_nationkey = s.s_nationkey\n" +
-					  "  and s.s_nationkey = n.n_nationkey\n" +
-					  "  and n.n_regionkey = r.r_regionkey\n" +
-					  "\n" +
-					  "group by\n" +
-					  "  n.n_name\n" +
-					  "\n" +
-					  "order by\n" +
-					  "  revenue desc\n" +
-					  "\n" +
-					  "\n",
+		      "select\n"
+		          + "  n.n_name,\n"
+		          + "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue\n"
+		          + "\n"
+		          + "from\n"
+		          + "  customer c,\n"
+		          + "  orders o,\n"
+		          + "  lineitem l,\n"
+		          + "  supplier s,\n"
+		          + "  nation n,\n"
+		          + "  region r\n"
+		          + "\n"
+		          + "where\n"
+		          + "  c.c_custkey = o.o_custkey\n"
+		          + "  and l.l_orderkey = o.o_orderkey\n"
+		          + "  and l.l_suppkey = s.s_suppkey\n"
+		          + "  and c.c_nationkey = s.s_nationkey\n"
+		          + "  and s.s_nationkey = n.n_nationkey\n"
+		          + "  and n.n_regionkey = r.r_regionkey\n"
+		          + "  and r.r_name = 'EUROPE'\n"
+		          + "  and o.o_orderdate >= date '1997-01-01'\n"
+		          + "  and o.o_orderdate < date '1998-01-01'\n"
+		          + "group by\n"
+		          + "  n.n_name\n"
+		          + "\n"
+		          + "order by\n"
+		          + "  revenue desc",
 
 		      // 06
-		      "with lineitem_proj as (select l_extendedprice, l_discount from lineitem where l_shipdate >= date '1997-01-01'\n" +
-					  "  and l_shipdate < date '1998-01-01'\n" +
-					  "  and\n" +
-					  "  l_discount between 0.03 - 0.01 and 0.03 + 0.01\n" +
-					  "  and l_quantity < 24)\n" +
-					  "  \n" +
-					  "  select sum(l_extendedprice * l_discount) as revenue\n" +
-					  "from lineitem_proj\n" +
-					  "\n",
+		      "select\n"
+		          + "  sum(l_extendedprice * l_discount) as revenue\n"
+		          + "from\n"
+		          + "  lineitem\n"
+		          + "where\n"
+		          + "  l_shipdate >= date '1997-01-01'\n"
+		          + "  and l_shipdate < date '1998-01-01'\n"
+		          + "  and\n"
+		          + "  l_discount between 0.03 - 0.01 and 0.03 + 0.01\n"
+		          + "  and l_quantity < 24",
 
 		      // 07
 		          "WITH lineitems AS (\n"
@@ -344,55 +309,38 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  o_year desc\n",
 
 		      // 10
-		      "WITH order_year AS (\n" +
-					  "     SELECT o.o_orderkey, o.o_custkey, extract(year from o.o_orderdate) as o_year\n" +
-					  "     FROM orders o\n" +
-					  "     WHERE  o.o_orderdate >= date '1995-01-01'\n" +
-					  "       AND  o.o_orderdate <= date '1996-12-31'\n" +
-					  "),\n" +
-					  "supplier_nation AS (\n" +
-					  "\t\tSELECT n_nationkey, n_name, n_name = 'EGYPT' nation_check\n" +
-					  "\t\tFROM nation),\n" +
-					  "\n" +
-					  "region_proj as (select r_regionkey from region where r_name = 'MIDDLE EAST' ),\n" +
-					  "\t\t\n" +
-					  "all_nations AS (\n" +
-					  "    select\n" +
-					  "      o_year,\n" +
-					  "      l.l_extendedprice * (1 - l.l_discount) as volume,\n" +
-					  "      n2.n_name as nation,\n" +
-					  "      nation_check\n" +
-					  "    from\n" +
-					  "      part p,\n" +
-					  "      supplier s,\n" +
-					  "      lineitem l,\n" +
-					  "      order_year o,\n" +
-					  "      customer c,\n" +
-					  "      nation n1,\n" +
-					  "      supplier_nation n2,\n" +
-					  "      region_proj r\n" +
-					  "    where\n" +
-					  "      p.p_partkey = l.l_partkey\n" +
-					  "      and s.s_suppkey = l.l_suppkey\n" +
-					  "      and l.l_orderkey = o.o_orderkey\n" +
-					  "      and o.o_custkey = c.c_custkey\n" +
-					  "      and c.c_nationkey = n1.n_nationkey\n" +
-					  "      and n1.n_regionkey = r.r_regionkey\n" +
-					  "      and s.s_nationkey = n2.n_nationkey\n" +
-					  "      and p.p_type = 'PROMO BRUSHED COPPER')\n" +
-					  "select\n" +
-					  "  o_year,\n" +
-					  "  sum(case\n" +
-					  "    when nation_check then volume\n" +
-					  "    else 0\n" +
-					  "  end) / sum(volume) as mkt_share\n" +
-					  "from all_nations\n" +
-					  "group by\n" +
-					  "  o_year\n" +
-					  "order by\n" +
-					  "  o_year\n" +
-					  "\n" +
-					  "\n",
+		      "select\n"
+		          + "  c.c_custkey,\n"
+		          + "  c.c_name,\n"
+		          + "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue,\n"
+		          + "  c.c_acctbal,\n"
+		          + "  n.n_name,\n"
+		          + "  c.c_address,\n"
+		          + "  c.c_phone,\n"
+		          + "  c.c_comment\n"
+		          + "from\n"
+		          + "  customer c,\n"
+		          + "  orders o,\n"
+		          + "  lineitem l,\n"
+		          + "  nation n\n"
+		          + "where\n"
+		          + "  c.c_custkey = o.o_custkey\n"
+		          + "  and l.l_orderkey = o.o_orderkey\n"
+		          + "  and o.o_orderdate >= date '1994-03-01'\n"
+		          + "  and o.o_orderdate < date '1994-06-01'\n"
+		          + "  and l.l_returnflag = 'R'\n"
+		          + "  and c.c_nationkey = n.n_nationkey\n"
+		          + "group by\n"
+		          + "  c.c_custkey,\n"
+		          + "  c.c_name,\n"
+		          + "  c.c_acctbal,\n"
+		          + "  c.c_phone,\n"
+		          + "  n.n_name,\n"
+		          + "  c.c_address,\n"
+		          + "  c.c_comment\n"
+		          + "order by\n"
+		          + "  revenue desc\n"
+		          + "limit 20",
 
 		      // 11
 		      "select\n"
@@ -424,48 +372,34 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  val desc",
 
 		      // 12
-		      "with order_proj as (select o_orderkey, o_orderpriority \n" +
-					  "  from orders \n" +
-					  "  \n" +
-					  "),\n" +
-					  "\n" +
-					  "lineitem_proj as (select l_shipmode, l_orderkey \n" +
-					  "  from lineitem \n" +
-					  "  where \n" +
-					  "l_shipmode in ('TRUCK', 'REG AIR')\n" +
-					  "and l_commitdate < l_receiptdate\n" +
-					  "  and l_shipdate < l_commitdate\n" +
-					  "  and l_receiptdate >= date '1994-01-01'\n" +
-					  "  and l_receiptdate < date '1995-01-01'\n" +
-					  "\n" +
-					  " )\n" +
-					  "\n" +
-					  "select\n" +
-					  "  l.l_shipmode,\n" +
-					  "  sum(case\n" +
-					  "    when o.o_orderpriority = '1-URGENT'\n" +
-					  "      or o.o_orderpriority = '2-HIGH'\n" +
-					  "      then 1\n" +
-					  "    else 0\n" +
-					  "  end) as high_line_count,\n" +
-					  "  \n" +
-					  "  sum(case\n" +
-					  "    when o.o_orderpriority <> '1-URGENT'\n" +
-					  "      and o.o_orderpriority <> '2-HIGH'\n" +
-					  "      then 1\n" +
-					  "    else 0\n" +
-					  "  end) as low_line_count\n" +
-					  "from\n" +
-					  "  order_proj o,\n" +
-					  "  lineitem_proj l\n" +
-					  "where\n" +
-					  "  o.o_orderkey = l.l_orderkey\n" +
-					  "  \n" +
-					  "group by\n" +
-					  "  l.l_shipmode\n" +
-					  "order by\n" +
-					  "  l.l_shipmode\n" +
-					  "\n",
+		      "select\n"
+		          + "  l.l_shipmode,\n"
+		          + "  sum(case\n"
+		          + "    when o.o_orderpriority = '1-URGENT'\n"
+		          + "      or o.o_orderpriority = '2-HIGH'\n"
+		          + "      then 1\n"
+		          + "    else 0\n"
+		          + "  end) as high_line_count,\n"
+		          + "  sum(case\n"
+		          + "    when o.o_orderpriority <> '1-URGENT'\n"
+		          + "      and o.o_orderpriority <> '2-HIGH'\n"
+		          + "      then 1\n"
+		          + "    else 0\n"
+		          + "  end) as low_line_count\n"
+		          + "from\n"
+		          + "  orders o,\n"
+		          + "  lineitem l\n"
+		          + "where\n"
+		          + "  o.o_orderkey = l.l_orderkey\n"
+		          + "  and l.l_shipmode in ('TRUCK', 'REG AIR')\n"
+		          + "  and l.l_commitdate < l.l_receiptdate\n"
+		          + "  and l.l_shipdate < l.l_commitdate\n"
+		          + "  and l.l_receiptdate >= date '1994-01-01'\n"
+		          + "  and l.l_receiptdate < date '1995-01-01'\n"
+		          + "group by\n"
+		          + "  l.l_shipmode\n"
+		          + "order by\n"
+		          + "  l.l_shipmode",
 
 
 
@@ -550,20 +484,12 @@ public class TpcHBaseTest extends BaseTest {
 		          // so that we don't hit the SMC parser for all of these specialized expression like 
 		          // EXTRACT(Year FROM ...)
 	
-		          "WITH complaints AS (SELECT * FROM supplier WHERE s_comment LIKE '%Customer%Complaints%'),\n" +
-						  "     ps_suppkey_set_diff AS (\n" +
+		          "WITH complaints AS (SELECT s_suppkey FROM supplier WHERE s_comment LIKE '%Customer%Complaints%'),\n" +
+						  "     \n" +
+						  "\t ps_suppkey_set_diff AS (\n" +
 						  "     SELECT ps_partkey, ps_suppkey\n" +
 						  "     FROM partsupp ps LEFT JOIN complaints c ON ps.ps_suppkey = c.s_suppkey\n" +
-						  "     WHERE c.s_suppkey IS NULL),\n" +
-						  "\n" +
-						  "     part_pro  AS ( select p_partkey, p_brand,p_type,p_size from part p \n" +
-						  "      where\n" +
-						  "      p.p_brand <> 'Brand#21'\n" +
-						  "      and p.p_type not like 'MEDIUM PLATED%'\n" +
-						  "        AND p.p_size in (38, 2, 8, 31, 44, 5, 14, 24)\n" +
-						  "\n" +
-						  "      )\n" +
-						  "\n" +
+						  "     WHERE c.s_suppkey IS NULL)\n" +
 						  "select\n" +
 						  "   p.p_brand,\n" +
 						  "   p.p_type,\n" +
@@ -571,10 +497,12 @@ public class TpcHBaseTest extends BaseTest {
 						  "   count(distinct ps.ps_suppkey) as supplier_cnt\n" +
 						  " from\n" +
 						  "   ps_suppkey_set_diff ps,\n" +
-						  "   part_pro p\n" +
+						  "   part p\n" +
 						  " where\n" +
 						  "   p.p_partkey = ps.ps_partkey\n" +
-						  "   \n" +
+						  "   and p.p_brand <> 'Brand#21'\n" +
+						  "   and p.p_type not like 'MEDIUM PLATED%'\n" +
+						  "   and p.p_size in (38, 2, 8, 31, 44, 5, 14, 24)\n" +
 						  " group by\n" +
 						  "   p.p_brand,\n" +
 						  "   p.p_type,\n" +
@@ -583,7 +511,8 @@ public class TpcHBaseTest extends BaseTest {
 						  "   supplier_cnt desc,\n" +
 						  "   p.p_brand,\n" +
 						  "   p.p_type,\n" +
-						  "   p.p_size",
+						  "   p.p_size\n" +
+						  "\n",
 
 		      // 17
 		      "WITH l2table AS (\n" +
@@ -593,25 +522,19 @@ public class TpcHBaseTest extends BaseTest {
 					  "    lineitem l2\n" +
 					  "  group by\n" +
 					  "    l2.l_partkey\n" +
-					  "),\n" +
-					  "\n" +
-					  "part_proj as (select p_partkey from part \n" +
-					  "where \n" +
-					  "p_container = 'JUMBO CAN'\n" +
-					  "and\n" +
-					  "p_brand = 'Brand#13'\n" +
 					  ")\n" +
 					  "select\n" +
 					  "  sum(l.l_extendedprice) / 7.0 as avg_yearly\n" +
 					  "from\n" +
 					  "  lineitem l,\n" +
-					  "  part_proj p,\n" +
-					  "  l2table l2\n" +
+					  "  part p,\n" +
+					  "  l2table\n" +
 					  "where\n" +
 					  "  p.p_partkey = l.l_partkey\n" +
-					  "  \n" +
-					  "  and l.l_quantity < l2.avg_l2_q\n" +
-					  "  and l2.l_partkey = p.p_partkey",
+					  "  and p.p_brand = 'Brand#13'\n" +
+					  "  and p.p_container = 'JUMBO CAN'\n" +
+					  "  and l.l_quantity < avg_l2_q\n" +
+					  "  and l2table.l_partkey = p.p_partkey",
 
 			// 18
 		      "select\n"
