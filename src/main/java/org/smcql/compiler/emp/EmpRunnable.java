@@ -62,6 +62,7 @@ public class EmpRunnable implements Runnable {
       FileUtils.writeFile(outFile, command);
 
       CommandLine cmdl = new CommandLine("java");
+      cmdl.addArgument("--illegal-access=deny");
       cmdl.addArgument("-cp");
       cmdl.addArgument(classPath);
       cmdl.addArgument(className);
