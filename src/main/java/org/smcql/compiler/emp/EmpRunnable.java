@@ -77,8 +77,9 @@ public class EmpRunnable implements Runnable {
       assert (0 == exitValue);
 
       String bitString = stderr.toString(); // TODO: can we make this all happen in binary?
+      bitString = bitString.substring(bitString.lastIndexOf("\n") + 1);
       outputString = bitString;
-      logger.fine("Output: " + bitString);
+      logger.info("Output: " + bitString);
       logger.info("Party " + party + " returned " + bitString.length() + " bits.");
       // translate to bools
       output = stringToBool(bitString);

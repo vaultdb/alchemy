@@ -21,7 +21,7 @@ const std::string& getOutput() {
       return output;
 }
 
-	void run(int party, int port) {
+void run(int party, int port) {
 	
 	std::cout << "starting run in emp! party=" << party << " port=" << port <<  std::endl;
 	NetIO * io = new NetIO((party==ALICE ? nullptr : aliceHost.c_str()), port);
@@ -41,9 +41,12 @@ $functions
      for(int i = 0; i < results->publicSize; ++i) {
      	     tuple = outputBits(results->data[i], tupleWidth, XOR);
      	     for(int j = 0; j < tupleWidth; ++j) {
-     	     	     output += (tuple[j] == true) ? '1' : '0';
+     	     	     output += (tuple[j] ? '1' : '0');
      		     }
      }
+     
+     //debug output
+     //cout << "output: " << output << endl;
 
      io->flush();
      delete io;
