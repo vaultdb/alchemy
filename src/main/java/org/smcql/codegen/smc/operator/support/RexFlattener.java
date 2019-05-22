@@ -2,6 +2,7 @@ package org.smcql.codegen.smc.operator.support;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
@@ -18,6 +19,7 @@ import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang.StringUtils;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.type.SecureRelRecordType;
 
 // generic flattener for expressions, needs override for input references
@@ -59,10 +61,12 @@ public abstract class RexFlattener implements RexVisitor<String> {
 		
 		//handle boolean types
 		if (call.getType().getSqlTypeName() == SqlTypeName.BOOLEAN 
+				&& call.getOperands().size() >= 2
 				&& call.getOperands().get(1) instanceof RexLiteral
 				&& !kind.equals(SqlKind.DIVIDE)
 				&& !kind.equals(SqlKind.GREATER_THAN_OR_EQUAL)
-				&& !kind.equals(SqlKind.LESS_THAN_OR_EQUAL)) {
+				&& !kind.equals(SqlKind.LESS_THAN_OR_EQUAL) 
+				&& !kind.equals(SqlKind.IS_NULL)) {
 			return "(" + ((RexNodeToSmc) this).variableName + ".bits[" + (inputSize - 1) + "])";	// previously  == Bit(1, PUBLIC)
 		}
 		

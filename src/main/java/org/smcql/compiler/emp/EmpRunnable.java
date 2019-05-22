@@ -81,6 +81,7 @@ public class EmpRunnable implements Runnable {
 
       
       String bitString = stderr.toString(); // TODO: can we make this all happen in binary?
+      bitString = bitString.substring(bitString.lastIndexOf("\n") + 1);
       outputString = bitString;
       logger.info("Output: " + bitString);
       logger.info("Party " + party + " returned " + bitString.length() + " bits.");

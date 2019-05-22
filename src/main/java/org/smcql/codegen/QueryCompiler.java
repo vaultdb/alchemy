@@ -383,7 +383,7 @@ public class QueryCompiler {
     for (Operator child : o.getSources()) {
       List<Operator> nextToCombine = new ArrayList<Operator>();
       while (child instanceof Filter || child instanceof Project) { // Aggregate NYI, needs group-by
-        if (child instanceof Filter) {
+        if (child instanceof Filter && child.getExecutionMode() != ExecutionMode.Plain) {
           opsToCombine.add(child);
         } else {
           nextToCombine.add(child);

@@ -149,7 +149,8 @@ public class SqlGenerator {
 
 		String sqlOut = selection.toSqlString(dialect).getSql();
 		sqlOut = sqlOut.replace("\"", "");
-
+		
+		
 		return sqlOut;
 	}
 }
