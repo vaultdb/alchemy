@@ -1,31 +1,17 @@
 package org.smcql.codegen.smc.operator;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.RelFactories;
-import org.apache.calcite.rel.logical.LogicalFilter;
-import org.apache.calcite.rel.logical.LogicalJoin;
-import org.apache.calcite.rel.type.RelDataTypeField;
-import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.schema.SchemaPlus;
-import org.apache.calcite.schema.Table;
 import org.smcql.codegen.smc.operator.support.ProcessingStep;
-import org.smcql.codegen.smc.operator.support.TypeCorrecter;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.plan.SecureRelNode;
-import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Join;
 import org.smcql.plan.operator.Operator;
-import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.CodeGenUtils;
 import org.smcql.util.RexNodeUtilities;
-import org.smcql.util.Utilities;
 
 public class SecureJoin extends SecureOperator {
 
