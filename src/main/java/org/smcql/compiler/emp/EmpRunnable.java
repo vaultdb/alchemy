@@ -62,6 +62,7 @@ public class EmpRunnable implements Runnable {
       FileUtils.writeFile(outFile, command);
 
       CommandLine cmdl = new CommandLine("java");
+      cmdl.addArgument("--illegal-access=deny");
       cmdl.addArgument("-cp");
       cmdl.addArgument(classPath);
       cmdl.addArgument(className);
@@ -78,7 +79,6 @@ public class EmpRunnable implements Runnable {
 
       
       String bitString = stderr.toString(); // TODO: can we make this all happen in binary?
-      bitString = bitString.substring(bitString.lastIndexOf("\n") + 1);
       outputString = bitString;
       logger.info("Output: " + bitString);
       logger.info("Party " + party + " returned " + bitString.length() + " bits.");
