@@ -3,24 +3,64 @@ Data * $functionName(Data *data) {
 	
 	cout << " Running $functionName with " << data->publicSize << " inputs." << endl;
 	int tupleLen = data->data[0].size() * sizeof(Bit);
-	
-    for (int i=0; i< data->publicSize - 1; i++) {
-        Integer id1 = data->data[i];
-        Integer id2 = data->data[i+1];
 
-        Bit eq = (id1 == id2);
-        
-        //cout << "Equality check for " << i << " is " << eq.reveal(PUBLIC) << " for " << id1.reveal<string>(PUBLIC) << " and " << id2.reveal<string>(PUBLIC) << endl;
+	// still using publicSize for length of dummyTags, potentially depricate
+    // code above can be removed once dummyTag outputs are added
 
-        id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
+    // TODO: Test new code below for all edge cases
 
-        //maintain real size
-        Integer decremented = data->realSize - Integer(INT_LENGTH, 1, PUBLIC);
-  	    data->realSize = If(eq, decremented,  data->realSize);
-         
-        
-  	    memcpy(data->data[i].bits, id1.bits, tupleLen);       
+    // debugging print statement
+    std::cout << "Original dummies are as follows: " << std::endl;
+
+    for(int i = 0; i < data->publicSize; i++){
+            std::cout << data->dummyTags[i].reveal(PUBLIC);
     }
+    std::cout << endl;
+
+
+
+    // set index 0 init
+    Bit init = If(data->dummyTags[0],Bit(),Bit(true,PUBLIC));
+
+    Integer lastOne = data->data[0];
+    int cursor = 0;
+
+    while ( cursor < data->publicSize - 1) {
+
+        // std::cout << "Init is set to " << init.reveal(PUBLIC) << std::endl;
+
+        cursor++;
+        Integer current = data->data[cursor];
+        Bit dummyOut = data->dummyTags[cursor];
+        Bit dummyTest = !(data->dummyTags[cursor]); // easier to perform logic checks
+
+        // std::cout << "Comparison " << (current==lastOne).reveal(PUBLIC) << std::endl;
+
+        // if init and equal, set dummyOut to True for reverse logic
+        dummyOut = If((init & (current==lastOne)),Bit(true,PUBLIC),dummyOut);
+
+        // reset init so that it will be false if we have not seen
+        // a real of the current Integer value
+        Bit temp = If((current==lastOne),(init | dummyTest),dummyTest);
+        init = temp;
+
+        // if we are initialized, do not move lastOne. If initialized, move lastOne to current
+        lastOne = If(init,current,lastOne);
+
+        // replace current dummy
+        data->dummyTags[cursor] = dummyOut;
+
+    }
+
+
+
+    // debugging print statements
+    std::cout << "New dummies are as follows: " << std::endl;
+    for(int i = 0; i < data->publicSize; i++){
+            std::cout << data->dummyTags[i].reveal(PUBLIC);
+    }
+    std::cout << endl;
+
     
     return data;
 }

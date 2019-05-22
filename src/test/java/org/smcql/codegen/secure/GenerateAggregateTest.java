@@ -1,9 +1,4 @@
-package org.smcql.executor.localhost;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+package org.smcql.codegen.secure;
 
 import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
@@ -18,8 +13,11 @@ import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
 
+import java.util.ArrayList;
+import java.util.List;
 
-public class EmpQueryExecutorLocalTest extends BaseTest {
+
+public class GenerateAggregateTest extends BaseTest {
   public List<WorkerConfiguration> workers;
 
   protected void setUp() throws Exception {
@@ -32,55 +30,56 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
 
   }
 
-  public void testCountIcd9s() throws Exception {
+  // TODO: Create test queries from health database for Groupby: Count & Sum, Splitscalar: Count & Sum
 
-    String query = "SELECT COUNT(DISTINCT major_icd9) FROM diagnoses";
-    // to run in plaintext to verify our results
-    String testName = "CountIcd9s";
+  public void testGroupbyCount() throws Exception {
 
+    String testName = "testGroupbyCount";
 
-    testCase(testName, query);
+    // String query = ""
+    // testCase(testName, query);
   }
 
-  // TODO: Keith please work on getting this going
-  // use the examples in here: https://github.com/johesbater/emp-aqp/tree/master/test
-  // for guidance
-  public void testJoin() throws Exception {
+  public void testGroupbySum() throws Exception {
 
-    fail(" Test does not end, so forcing failure"); // forcing failure - test not stopping otherwise
+    String testName = "testGroupbySum";
 
-    String testName = "JoinCdiff";
-    String query =
-            "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
-
-    testCase(testName, query);
+    // String query = "";
+    //testCase(testName, query);
   }
 
-  public void testFilterDistinct() throws Exception {
-    String testName = "FilterDistinct";
-    String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\' ";
 
-    // query to test distinct - currently crashes
-    // String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE encounter_id = \'4\' ";
+  public void testSplitscalarCount() throws Exception {
 
-    testCase(testName, query);
+    String testName = "testSplitscalarCount";
+
+    // String query = "";
+    // testCase(testName, query);
   }
 
-  protected QueryTable getExpectedOutput(String testName, String query)
-          throws Exception {
+
+  public void testSplitscalarSum() throws Exception {
+
+    String testName = "testSplitscalarSum";
+
+    // String query = "";
+    // testCase(testName, query);
+  }
+
+
+  protected QueryTable getExpectedOutput(String testName, String query) throws Exception {
 
     String unionedId = ConnectionManager.getInstance().getUnioned();
-
     SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
-
     return SqlQueryExecutor.query(query, outSchema, unionedId);
   }
+
+
+
 
   protected void testCase(String testName, String sql) throws Exception {
     SystemConfiguration.getInstance().resetCounters();
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
-
-
 
     System.out.println("Initial schema: " + secRoot.getPlanRoot().getSchema() );
     QueryCompiler qc = new QueryCompiler(secRoot);

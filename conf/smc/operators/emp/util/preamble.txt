@@ -74,10 +74,11 @@ void bitonic_sort_sql(Integer * key, Bit* dummyTags, int lo, int n, Bit acc,  in
 bool * outputBits(Integer &input, int length, int output_party) {
 		bool * b = new bool[length];
 		ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
-		string bin="";
+
 
 		return b;
-	}
+}
+
 
 
 bool * toBool(string src) {

@@ -109,11 +109,11 @@ public class $queryName  extends EmpProgram  {
         	String output = theQuery.getOutput();
 	        theQuery.close();
 
-	       boolean[] outBits = new boolean[output.length()];
-	       for(int i = 0; i < output.length(); ++i) {
-	    	   outBits[i] = output.charAt(i) == '1' ? true : false;
-	       }
-	       return outBits;
+	       	boolean[] outBits = new boolean[output.length()];
+	       	for(int i = 0; i < output.length(); ++i) {
+	    		outBits[i] = output.charAt(i) == '1' ? true : false;
+	       	}
+	       	return outBits;
 	       
         }
         
@@ -146,7 +146,7 @@ public class $queryName  extends EmpProgram  {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-	       
+
 			// write bitstring to stderr
 			for(int i = 0; i < bits.length; ++i) {
 				b = (bits[i] == true) ? '1' : '0';

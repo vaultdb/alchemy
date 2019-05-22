@@ -4,19 +4,21 @@ Data* $functionName(int party, NetIO * io) {
 
     int rowLength = $size;
 
-    std::cout << "The rowlength in bits is " << rowLength << std::endl;
+
+    // std::cout << "The rowlength in bits is " << rowLength << std::endl;
 
     rowLength = rowLength - 1; // account for boolean at end of schema
 
 
 	string localBitstring = inputs["$functionName"];
 
-	std::cout << " Raw bitstring is " << localBitstring << std::endl;
+
+	// std::cout << " Raw bitstring is " << localBitstring << std::endl;
 
 	string localDummyTags = dummyTagsMap["$functionName"];
 
-	std::cout << " Dummies " << localDummyTags << std::endl;
-	std::cout << " rowLength " << rowLength << std::endl;
+	//std::cout << " Dummies " << localDummyTags << std::endl;
+	//std::cout << " rowLength " << rowLength << std::endl;
 
     bool *localData = toBool(localBitstring);
     bool *localDummies = toBool(localDummyTags);
@@ -100,20 +102,20 @@ Data* $functionName(int party, NetIO * io) {
     cout << "$functionName took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
     // debugging help - this will reveal the underlying values to ensure that bitonic input is correct
-	for(int i = 0; i < (aliceSize + bobSize); ++i) {
-    	long value = res[i].reveal<int64_t>(PUBLIC);
-    	cout << "Value i: " << value << endl;
-    }
+	//for(int i = 0; i < (aliceSize + bobSize); ++i) {
+    //	long value = res[i].reveal<int64_t>(PUBLIC);
+    //	cout << "Value i: " << value << endl;
+    //}
     
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
     bitonic_merge_sql(res, dummyTags, 0, aliceSize + bobSize, Bit(true), $keyPos, $keyLength);
 
-    std::cout << " After performing bitonic_merge_sql " << std::endl;
+    //std::cout << " After performing bitonic_merge_sql " << std::endl;
 
-    for(int i = 0; i < (aliceSize + bobSize); ++i) {
-        long value = res[i].reveal<int64_t>(PUBLIC);
-        cout << "Value i: " << value << endl;
-    }
+    //for(int i = 0; i < (aliceSize + bobSize); ++i) {
+    //    long value = res[i].reveal<int64_t>(PUBLIC);
+     //   cout << "Value i: " << value << endl;
+    //}
 
 
     Data * d = new Data;

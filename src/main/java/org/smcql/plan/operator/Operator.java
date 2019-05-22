@@ -92,6 +92,7 @@ public abstract class Operator implements CodeGenerator {
 		}
 
 
+		/* Commented out to prevent EmpQueryExecutorLocal Crash
 
 		// filter push-down, execute it in plaintext and dummy pad it
 		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 && this instanceof Filter) {
@@ -100,6 +101,7 @@ public abstract class Operator implements CodeGenerator {
 
 			return;
 		}
+		*/
 		
 		assert(sliceAttrs.isEmpty()); // not possible in current test because everything is private
 		

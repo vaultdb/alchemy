@@ -1,5 +1,7 @@
 Data * $functionName(Data *data) {
 
+	$sortInput
+
 	cout << "Running $functionName " << endl;
 	data->publicSize = 1;
 	data->data = new Integer[1];
@@ -7,4 +9,3 @@ Data * $functionName(Data *data) {
 	data->realSize = Integer(INT_LENGTH, 1, PUBLIC);
     return data;
 }
-
