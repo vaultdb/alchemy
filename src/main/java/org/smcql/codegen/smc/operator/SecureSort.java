@@ -39,17 +39,22 @@ public class SecureSort extends SecureOperator {
 		}
 		
 
-		int writeStartIdx = 0;
-		int writeEndIdx;
-
-		String ret = "int" + sortKeySize + " extractKey" + "(int" + s.getSchema().size() + " src) {\n";
-		ret += "    int" + sortKeySize + " dst;\n\n";
-
+		int dstOffset = 0;
+		
+		String ret = "Integer extractKey" + "(Integer src) {\n";
+		ret += "    Integer dst = Integer(" + sortKeySize + ", 0, PUBLIC);\n\n";
+		
+		
 		for(int i = 0; i < sortKey.size(); ++i) {
 			SecureRelDataTypeField r = sortKey.get(i);
-			String bitmask = s.getSchema().getInputRef(r, null);
-			writeEndIdx = writeStartIdx + r.size();
-			ret += "    dst$" + writeStartIdx + "~" + writeEndIdx + "$ = src" + bitmask + ";\n";
+			int srcOffset = s.getSchema().getFieldOffset(r.getIndex());
+			int writeSize = r.size();
+			
+			
+			//String bitmask = s.getSchema().getInputRef(r, null);
+			// memcpy(dst + writeStartIdx, src + 
+			ret += CodeGenUtils.writeField("src", "dst", srcOffset, dstOffset, writeSize);
+			dstOffset += r.size();
 		}
 
 		ret += "\n    return dst;\n }";

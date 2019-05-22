@@ -240,5 +240,16 @@ public class SecureRelRecordType implements Serializable {
 
 	}
 
+	public int getFieldOffset(int idx) {
+		int offset = 0;
+		int i = 0;
+		
+		while(i != idx) {
+			offset += secureFields.get(i).size();
+			++i;
+		}
+		
+		return offset;
+	}
 
 }

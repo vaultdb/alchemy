@@ -1,31 +1,38 @@
 // for sort key
 $extractKey
 
-void keyed_sort$fName(Integer*key, Bit* dummyTags, int i, int j, Bit acc, int key_pos, int key_length) {
-    Integer keyi = $extractKey(key[i]);
-    Integer keyj = $extractKey(key[j]);
+void $functionName_cmp_and_swap(Integer*key, Bit* dummyTags, int i, int j, Bit acc) {
+    Integer keyi = extractKey(key[i]);
+    Integer keyj = extractKey(key[j]);
     Bit to_swap = ((keyi > keyj) == acc);
     swap(to_swap, key[i], key[j]);
     swap(to_swap, dummyTags[i], dummyTags[j]);
 }
 
 // TODO: extend this to multiple columns as a list of key_pos and key_length
-void keyed_bitonic_merge$fName(Integer* key, Bit* dummyTags, int lo, int n, Bit acc, int key_pos, int key_length) {
+void $functionName_merge(Integer* key, Bit* dummyTags, int lo, int n, Bit acc) {
     if (n > 1) {
         int m = greatestPowerOfTwoLessThan(n);
         for (int i = lo; i < lo + n - m; i++)
-            keyed_sort$fName(key, dummyTags, i, i + m, acc, key_pos, key_length);
-        keyeyd_bitonic_merge$fName(key, dummyTags, lo, m, acc, key_pos, key_length);
-        keyeyd_bitonic_merge$fName(key, dummyTags, lo + m, n - m, acc, key_pos, key_length);
+            $functionName_cmp_and_swap(key, dummyTags, i, i + m, acc);
+        $functionName_merge(key, dummyTags, lo, m, acc);
+        $functionName_merge(key, dummyTags, lo + m, n - m, acc);
     }
 }
 
 
-void bitonic_sort$fName(Integer * key, Bit* dummyTags, int lo, int n, Bit acc,  int key_pos, int key_length) {
+void bitonic_$functionName(Integer * key, Bit* dummyTags, int lo, int n, Bit acc) {
     if (n > 1) {
         int m = n / 2;
-        bitonic_sort$fName(key, dummyTags, lo, m, !acc, key_pos, key_length);
-        bitonic_sort$fName(key, dummyTags, lo + m, n - m, acc, key_pos, key_length);
-        keyed_bitonic_merge$fName(key, dummyTags, lo, n, acc, key_pos, key_length);
+        bitonic_$functionName(key, dummyTags, lo, m, !acc);
+        bitonic_$functionName(key, dummyTags, lo + m, n - m, acc);
+        $functionName_merge(key, dummyTags, lo, n, acc);
     }
 }
+
+Data* $functionName(Data *data) {
+    bitonic_$functionName(data->data, data->dummyTags, 0, data->publicSize, Bit(false));
+    return data;
+}
+
+
