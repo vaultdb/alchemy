@@ -46,6 +46,9 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   // use the examples in here: https://github.com/johesbater/emp-aqp/tree/master/test
   // for guidance
   public void testJoin() throws Exception {
+
+    fail(" Test does not end, so forcing failure"); // forcing failure - test not stopping otherwise
+
     String testName = "JoinCdiff";
     String query =
             "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
