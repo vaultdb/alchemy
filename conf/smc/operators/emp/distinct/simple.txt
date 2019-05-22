@@ -3,25 +3,8 @@ Data * $functionName(Data *data) {
 	
 	cout << " Running $functionName with " << data->publicSize << " inputs." << endl;
 	int tupleLen = data->data[0].size() * sizeof(Bit);
-	
-    for (int i=0; i< data->publicSize - 1; i++) {
-        Integer id1 = data->data[i];
-        Integer id2 = data->data[i+1];
 
-        Bit eq = (id1 == id2);
-        
-        // cout << "Equality check for " << i << " is " << eq.reveal(PUBLIC) << " for " << id1.reveal<string>(PUBLIC) << " and " << id2.reveal<string>(PUBLIC) << endl;
-
-        id1 = If(eq, Integer(tupleLen, 0, PUBLIC), id1);
-
-        //maintain real size
-        Integer decremented = data->realSize - Integer(INT_LENGTH, 1, PUBLIC);
-  	    data->realSize = If(eq, decremented,  data->realSize);
-         
-        
-  	    memcpy(data->data[i].bits, id1.bits, tupleLen);       
-    }
-
+	// still using publicSize for length of dummyTags, potentially depricate
     // code above can be removed once dummyTag outputs are added
 
     // TODO: Test new code below for all edge cases
@@ -58,7 +41,7 @@ Data * $functionName(Data *data) {
 
         // reset init so that it will be false if we have not seen
         // a real of the current Integer value
-        Bit temp = (init | dummyTest) & (current==lastOne);
+        Bit temp = If((current==lastOne),(init | dummyTest),dummyTest);
         init = temp;
 
         // if we are initialized, do not move lastOne. If initialized, move lastOne to current
