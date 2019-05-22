@@ -3,20 +3,25 @@
 // this example is based on aspirin expected code
 Data * $functionName(Data *left, Data *right) {
  
- 	Integer *output = new Integer[left->publicSize * right->publicSize];
     int writeIdx = 0;
     Integer dstTuple, srcTuple, lTuple, rTuple;
     int jointSchemaSize = $lSize + $rSize;
-	
+    int outputTupleCount = left->publicSize * right->publicSize;
+
+	Data *result = new Data;
+    
 	srcTuple = Integer(jointSchemaSize, 0, PUBLIC);
     
-    Integer realCount(INT_LENGTH, 0, PUBLIC);
 
+    // output tuple count
+    result->data = new Integer[outputTupleCount];
+    result->publicSize = outputTupleCount;
+    result->dummyTag = new Bit[outputTupleCount];
     
     dstTuple = Integer($dSize, 0, PUBLIC);
 	
-    for (int i=0; i<left->publicSize; i++) {
-        for (int j=0; j<right->publicSize; j++) {
+    for (int i=0; i < left->publicSize; i++) {
+        for (int j=0; j < right->publicSize; j++) {
         	lTuple = left->data[i];
         	rTuple = right->data[j];
 	        	
@@ -24,29 +29,19 @@ Data * $functionName(Data *left, Data *right) {
         	memcpy(srcTuple.bits, lTuple.bits, $lSize);
         	memcpy(srcTuple.bits + $lSize, rTuple.bits, $rSize);
         	
-        	
+        	// TODO: rewire filter flattener to skip the memcopies above
         	Bit cmp = $filterCond;
         	
+        	// populate dstTuple with any projections
         	$writeDst;
+	       
+	       // if selection criteria true and neither input is a dummy
+	        result->dummyTag[writeIdx] = If(cmp & !left->dummyTag[i] & !right->dummyTag[j], Bit(0, PUBLIC), Bit(1, PUBLIC));        	
         	
-        	dstTuple = If(cmp, dstTuple, Integer($dSize, 0, PUBLIC)); 
-        	
-        	Integer incremented = realCount + Integer(INT_LENGTH, 1, PUBLIC);
-        	realCount = If(cmp, incremented, realCount);
-        	
-        	/*if(cmp.reveal(PUBLIC) == 1) {
-        		cout << "Matched at " << i << ", " << j << endl;
-        	}*/
-        	
-	        output[writeIdx] = dstTuple;
+	        result->data[writeIdx] = dstTuple;
             writeIdx++;
             
         }
     }
-    Data *result = new Data;
-    result->data = output;
-    // output tuple count
-    result->publicSize = left->publicSize * right->publicSize;
-	result->realSize = realCount;
     return result;
 }

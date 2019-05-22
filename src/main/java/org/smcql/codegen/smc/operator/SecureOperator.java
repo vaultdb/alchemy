@@ -194,7 +194,7 @@ public class SecureOperator implements CodeGenerator, Serializable {
 		variables.put("dSize", dstSize);
 
 		
-		handleFilters(variables);
+		handleFilters(variables); 
 		handleProjects(variables, childSchema);
 		
 		// TODO: add function name here
