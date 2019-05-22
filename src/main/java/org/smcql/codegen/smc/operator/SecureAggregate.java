@@ -27,7 +27,10 @@ public class SecureAggregate extends SecureOperator {
 	public Map<String, String> generate() throws Exception  {
 		Map<String, String> variables = baseVariables();	
 		Aggregate a = (Aggregate) planNode;
-		
+
+		// TODO: Allow compute to replace operation for the following operations: Count, Sum, Avg, Min, Max
+		// Current Priorities are: Count and Sum
+
 		String compute = "";
 		compute += "secure int$size deref = merged[mIdx];\n";
 		compute += "secure int$size toAdd = a[aIdx];\n";
@@ -35,12 +38,12 @@ public class SecureAggregate extends SecureOperator {
 		compute += "merged[mIdx] = deref;\n";
 		variables.put("compute", compute);
 		
-		// TODO: add more aggregates
+		// TODO: add more aggregates; currently hardcoded for groupby aggregate (full oblivious)
 		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
 		if (groupByAttributes.isEmpty()) {
 			Map<String, String> result = new HashMap<String, String>();
-			//result.put(getPackageName(), CodeGenUtils.generateFromTemplate("aggregate/singular/full/count.txt", variables));
-			result.put(getPackageName(), CodeGenUtils.generateFromTemplate("aggregate/count.txt", variables));
+
+			result.put(getPackageName(), CodeGenUtils.generateFromTemplate("aggregate/groupby/aggregate.txt", variables));
 			return result;
 		} 
 		
@@ -52,7 +55,7 @@ public class SecureAggregate extends SecureOperator {
 		
 		variables.put("cntMask", cntMask);
 	
-		generatedCode = CodeGenUtils.generateFromTemplate("aggregate/groupby/partial/count.txt", variables);
+		generatedCode = CodeGenUtils.generateFromTemplate("aggregate/groupby/aggregate.txt", variables);
 		
 		Map<String, String> result = new HashMap<String, String>();
 		result.put(getPackageName(), generatedCode);

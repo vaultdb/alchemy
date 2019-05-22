@@ -9,6 +9,9 @@
 */
 Data * $functionName(Data *data) {
 
+	$sortInput
+
+
 	cout << "Running $functionName " << endl;
 	int numOfCounts = 1;
 	int currCount = 1;

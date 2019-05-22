@@ -1,0 +1,12 @@
+Data * $functionName(Data *data) {
+
+	$sortInput
+
+	cout << "Running $functionName " << endl;
+	data->publicSize = 1;
+	data->data = new Integer[1];
+	data->data[0] = data->realSize;
+	data->realSize = Integer(INT_LENGTH, 1, PUBLIC);
+    return data;
+}
+
