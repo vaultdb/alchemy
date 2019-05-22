@@ -161,17 +161,20 @@ public class QueryTable implements Serializable {
 
   // TODO: Test once dummyTags are being output from EMP
   public QueryTable(SecureRelRecordType outSchema,boolean[] alice,boolean[] bob) throws Exception {
+    // check to make sure alice and bob are of the same length - should always be the case
     assert(alice.length == bob.length);
 
     schema = outSchema;
     tupleSize = outSchema.size();
     tupleCount = alice.length / (tupleSize+1); // add plus 1 for dummies
+    tuples = new ArrayList<Tuple>();
+
 
     int realCount = 0;
 
     List<Boolean> decrypted=new ArrayList<Boolean>();
 
-    // decrept dummytags
+    // select dummytags - currently do not decrypt
     boolean [] tags = Arrays.copyOfRange(alice, 0, tupleCount);
 
     // iterate through tags, decrypting only the nonDummies
@@ -205,15 +208,12 @@ public class QueryTable implements Serializable {
       fullDecrypted[i] = decrypted.get(i);
     }
 
-    tuples = new ArrayList<Tuple>();
-
-
     for (int i = 0; i < tupleCount; ++i) {
         boolean[] tupleBits = Arrays.copyOfRange(fullDecrypted, i * tupleSize, (i + 1) * tupleSize);
         Tuple t = new Tuple(tupleBits, schema);
         tuples.add(t);
-
       }
+
     }
 
   
