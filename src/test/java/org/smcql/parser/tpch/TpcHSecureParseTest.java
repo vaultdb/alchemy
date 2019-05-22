@@ -193,6 +193,8 @@ public class TpcHSecureParseTest extends TpcHBaseTest {
 		  String testTree = root.printTree();
 		  logger.info("Compiled plan:\n" + testTree);
 		  
+		  qc.writeOutEmpFile();
+		  
 		  
 	  }
 
