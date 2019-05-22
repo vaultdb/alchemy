@@ -71,6 +71,10 @@ public class SecureWindowAggregate extends SecureOperator  {
 			String assigns = "";
 			int index = 0;
 			for (Filter f : this.filters) {
+				
+				// TODO: need to flatten for mpc with RexNodeUtilities
+				// add them up as in flattenFilter
+				
 				SecureRelRecordType inSchema = f.getChild(0).getSchema(true);
 				
 				SecureRelDataTypeField field = f.computesOn(inSchema).get(0);

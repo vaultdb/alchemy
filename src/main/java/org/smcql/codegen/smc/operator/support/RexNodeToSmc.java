@@ -1,18 +1,14 @@
 package org.smcql.codegen.smc.operator.support;
 
-import java.math.BigDecimal;
 import java.util.GregorianCalendar;
 
-import org.apache.calcite.avatica.util.TimeUnitRange;
-import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexPatternFieldRef;
 import org.apache.calcite.rex.RexTableInputRef;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.calcite.util.DateString;
 import org.smcql.type.SecureRelRecordType;
+
 
 public class RexNodeToSmc extends RexFlattener{
 

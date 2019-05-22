@@ -32,7 +32,9 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	protected String structName;
 	protected String generatedCode = null;
 	
+	// TODO: convert filter into a list of rexnodes
 	protected List<Filter> filters;
+	
 	protected List<Project> projects;
 	protected List<ExecutionStep> merges;
 	

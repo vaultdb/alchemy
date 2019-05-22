@@ -84,10 +84,10 @@ public abstract class Operator implements CodeGenerator {
 		List<SecureRelDataTypeField> sliceAttrs = getSliceAttributes();
 		
 		String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess + " slice key " + sliceAttrs;
-		logger.log(Level.FINE, msg);
 
 		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 && maxAccess == SecurityPolicy.Public) {
 			executionMode = ExecutionMode.Plain;
+			logger.info(msg + "\nLabeling " + this + " as plain 1");
 			return;
 		}
 
@@ -96,8 +96,12 @@ public abstract class Operator implements CodeGenerator {
 		// filter push-down, execute it in plaintext and dummy pad it
 		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 && this instanceof Filter) {
 			executionMode = ExecutionMode.Plain;
+			logger.info(msg + "\nLabeling " + this + " as plain 2");
+
 			return;
 		}
+		
+		assert(sliceAttrs.isEmpty()); // not possible in current test because everything is private
 		
 		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 & !sliceAttrs.isEmpty()) {
 			executionMode = ExecutionMode.Slice;
