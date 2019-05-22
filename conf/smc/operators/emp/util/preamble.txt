@@ -80,6 +80,7 @@ bool * outputBits(Integer &input, int length, int output_party) {
 }
 
 
+
 bool * toBool(string src) {
 	long length = src.length();
 	bool *output = new bool[length];

@@ -59,7 +59,7 @@ public class SecurePreamble extends SecureOperator {
 
         Map<String, String> result = new HashMap<String, String>();
         // result.put(getPackageName(),
-        // CodeGenUtils.generateFromTemplate("aggregate/singular/full/count.txt", variables));
+        // CodeGenUtils.generateFromTemplate("aggregate/singular/full/aggregate.txt", variables));
         result.put("preamble", CodeGenUtils.generateFromTemplate("util/preamble.txt", variables));
         return result;
     }

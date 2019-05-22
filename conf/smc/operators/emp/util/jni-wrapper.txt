@@ -146,7 +146,7 @@ public class $queryName  extends EmpProgram  {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-	       
+
 			// write bitstring to stderr
 			for(int i = 0; i < bits.length; ++i) {
 				b = (bits[i] == true) ? '1' : '0';
