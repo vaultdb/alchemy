@@ -2,10 +2,92 @@ Data * $functionName(Data *data) {
 
 	$sortInput
 
-	cout << "Running $functionName " << endl;
-	data->publicSize = 1;
-	data->data = new Integer[1];
-	data->data[0] = data->realSize;
-	data->realSize = Integer(INT_LENGTH, 1, PUBLIC);
+	std::cout << "groupby Aggregate being used" << std::endl;
+
+    // init is used to check if same type has been seen before
+
+    Integer * res = new Integer[data->publicSize];
+
+    // set index 0 init
+    Bit init = If(data->dummyTags[0],Bit(),Bit(true,PUBLIC));
+    Integer value = If(init,Integer(32,1,PUBLIC),Integer(32,1,PUBLIC));
+
+    Integer lastOne = data->data[0];
+    int cursor = 0;
+
+    // holds all associated aggregate values
+    std::vector<Integer> myVect;
+    myVect.push_back(value);
+
+
+    while ( cursor < data->publicSize - 1) {
+
+        // std::cout << "Init is set to " << init.reveal(PUBLIC) << std::endl;
+
+        cursor++;
+        Integer current = data->data[cursor];
+        Bit dummyOut = data->dummyTags[cursor];
+        Bit dummyTest = !(data->dummyTags[cursor]); // easier to perform logic checks
+        Bit initPrev = init;
+
+        // if init and equal, set dummyOut to True for reverse logic
+        dummyOut = If((init & (current==lastOne)),Bit(true,PUBLIC),dummyOut);
+
+        // reset init so that it will be false if we have not seen
+        // a real of the current Integer value
+        Bit temp = If((current==lastOne),(init | dummyTest),dummyTest);
+        init = temp;
+
+        // store check to see if lastOne will be mutated
+        Integer lastHolder = lastOne;
+
+        // if no longer initialized (i.e we just saw the last nonDummy of an attribute, mutate the last-nonDummy value)
+        // otherwise increment the value(specifics eventually determined in compute)
+        value = If(current==lastOne & init, value + Integer(32,1,PUBLIC), If(init,Integer(32,1,PUBLIC),Integer(32,0,PUBLIC)));
+        myVect.push_back(value);
+
+        // new value print statements
+        long val = value.reveal<int32_t>(PUBLIC);
+        cout << "Value: " << val << endl;
+
+        // if we are initialized, move lastOne to current. Else do not move lastOne
+        lastOne = If(init,current,lastOne);
+
+        // replace current dummy
+        data->dummyTags[cursor] = dummyOut;
+
+    }
+
+   // reset variables
+   Bit prevDummy = data->dummyTags[0];
+   cursor = 1;
+   Bit real = Bit();
+
+   // swap first and last dummy positions and reset values
+   while ( cursor < data->publicSize) {
+        Bit prevDummy = data->dummyTags[cursor-1];
+        Bit currDummy = data->dummyTags[cursor];
+
+        Bit prevtemp = If(prevDummy==real & currDummy!=real, !Bit(),prevDummy);
+        Bit currtemp = If(prevDummy==real & currDummy!=real, Bit(), currDummy);
+
+        // replace current dummy
+        data->dummyTags[cursor-1] = prevtemp;
+        data->dummyTags[cursor] = currtemp;
+
+        // replace aggregate value
+        data->data[cursor] = myVect[cursor];
+
+        cursor++;
+
+    }
+
+    // debugging statements to see new values
+    for(int i = 0; i < data->publicSize; i++){
+            long value = data->data[i].reveal<int32_t>(PUBLIC);
+            cout << "Value i: " << value << endl;
+            std::cout << data->dummyTags[i].reveal(PUBLIC) << std::endl;
+    }
+
     return data;
 }
