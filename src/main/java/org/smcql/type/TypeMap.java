@@ -64,7 +64,12 @@ public class TypeMap {
 	}
 
 	public int sizeof(SecureRelDataTypeField attribute) {
+
 		RelDataType type = attribute.getBaseField().getType();
+		return sizeof(type);
+	}
+
+	public int sizeof(RelDataType type) {
 		SqlTypeName sqlType = type.getSqlTypeName();
 		if(SqlTypeName.CHAR_TYPES.contains(sqlType)) {
 			int precision = (type.getPrecision() == 2147483647) ? 32 : type.getPrecision();
@@ -96,7 +101,6 @@ public class TypeMap {
 		// all others not yet implemented
 		return 0;
 	}
-
 
 
 

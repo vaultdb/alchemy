@@ -1,15 +1,24 @@
 package org.smcql.codegen.smc.operator;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.logical.LogicalAggregate;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rel.type.RelRecordType;
+import org.apache.calcite.sql.SqlKind;
 import org.smcql.plan.operator.Operator;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.apache.calcite.util.Pair;
 import org.smcql.plan.operator.Aggregate;
+import org.smcql.type.TypeMap;
 import org.smcql.util.CodeGenUtils;
+import org.smcql.util.RexNodeUtilities;
 
 public class SecureAggregate extends SecureOperator {
 
@@ -28,6 +37,8 @@ public class SecureAggregate extends SecureOperator {
 		Map<String, String> variables = baseVariables();	
 		Aggregate a = (Aggregate) planNode;
 
+
+
 		// TODO: Allow compute to replace operation for the following operations: Count, Sum, Avg, Min, Max
 		// Current Priorities are: Count and Sum
 
@@ -42,8 +53,14 @@ public class SecureAggregate extends SecureOperator {
 		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
 		if (groupByAttributes.isEmpty()) {
 			Map<String, String> result = new HashMap<String, String>();
+			Map<String, String> scalarVars = getScalarAggregates();
 
-			result.put(getPackageName(), CodeGenUtils.generateFromTemplate("aggregate/groupby/aggregate.txt", variables));
+
+			for(Map.Entry<String, String> entry : scalarVars.entrySet()) {
+				variables.put(entry.getKey(), entry.getValue());
+			}
+
+			result.put(getPackageName(), CodeGenUtils.generateFromTemplate("aggregate/scalar/aggregate.txt", variables));
 			return result;
 		} 
 		
@@ -93,6 +110,129 @@ public class SecureAggregate extends SecureOperator {
 		return ret;
 		
 	}
-	
+
+	// variable --> value
+	private Map<String, String> getScalarAggregates(){
+
+		String initAggregate = "";
+		String processAggregate = "";
+		String writeAggregate = "";
+		int runningOffset = 0;
+		int aggCounter = 0;
+
+		Map<String, AggregateCall> aggMap = new HashMap<String, AggregateCall>();
+
+
+
+		LogicalAggregate baseAggregate = (LogicalAggregate) planNode.getSecureRelNode().getRelNode();
+		RelRecordType record = (RelRecordType) baseAggregate.getRowType();
+
+		List<AggregateCall> aggCallList = baseAggregate.getAggCallList();
+		Iterator<Pair<AggregateCall, String> > aggItr = baseAggregate.getNamedAggCalls().iterator();
+
+		assert(aggCallList.size() == baseAggregate.getNamedAggCalls().size()); // TODO: add support for anonymous calls
+
+		while(aggItr.hasNext()) {
+
+			Pair<AggregateCall, String> entry = aggItr.next();
+			aggMap.put(entry.right, entry.left);
+		}
+
+	    Iterator<AggregateCall> aggPos = aggCallList.iterator();
+
+		while(aggPos.hasNext()) {
+		 	AggregateCall a = aggPos.next();
+
+			RelDataType field = a.getType();
+			int size = TypeMap.getInstance().sizeof(field);
+			System.out.println(" Aggregate call for scalar aggregate:" + a);
+
+			int varNo = aggCounter + 1;
+			String aggVariable = "agg" + varNo;
+
+
+			// if min - set to max, else do below
+
+			initAggregate += "Integer " + aggVariable + "= Integer(INT_LENGTH,0,PUBLIC);\n";
+
+			if(!a.getArgList().isEmpty())
+				initAggregate += "Integer tupleArg" + varNo + " = Integer(" + size  + ", 0, PUBLIC);\n";
+			processAggregate += getProcessAggregate(a,aggCounter+1,size);
+
+			writeAggregate += getWriteDest(a, aggMap, "result->data[0]", aggVariable, size);
+
+			aggCounter++;
+
+		}
+
+
+		Map<String, String> vars = new HashMap<String, String>();
+		vars.put("initAgg", initAggregate);
+		vars.put("processAgg",processAggregate);
+		vars.put("writeAgg",writeAggregate);
+
+		return vars;
+	}
+
+	private String getProcessAggregate(AggregateCall call, int aggId, int size){
+
+		String aggVar = "agg" + aggId;
+		String tupleVar = "tupleArg" + aggId;
+		String processString = "";
+
+		if(!call.getArgList().isEmpty())
+			processString = extractAggregateArgument(call, aggVar, tupleVar, size);
+
+
+		switch(call.getAggregation().kind) {
+
+			case MIN:
+				processString += "agg" + aggId + " = If(" + tupleVar + " < " + aggVar + ", " + tupleVar + ", " + aggVar + ");\n";
+				return processString;
+			case MAX:
+				processString += "agg" + aggId + " = If(" + tupleVar + " > " + aggVar + ", " + tupleVar + ", " + aggVar + ");\n";
+				return processString;
+			default:
+				return null;
+		}
+
+
+	}
+
+	private String extractAggregateArgument(AggregateCall call, String srcVar, String dstVar, int size) {
+			Integer arg = call.getArgList().get(0);
+			Integer offset = schema.getFieldOffset(arg);
+
+			return "memcpy(" + dstVar + ".bits, " + srcVar  + ".bits + " +  offset + ", " + size + ");\n";
+
+
+		}
+
+	private String getWriteDest(AggregateCall call, Map<String, AggregateCall> aggMap, String dstTuple, String aggVar, int size){
+
+		LogicalAggregate baseAggregate = (LogicalAggregate) planNode.getSecureRelNode().getRelNode();
+		RelRecordType record = (RelRecordType) baseAggregate.getRowType();
+
+		String writer = new String();
+
+		// Iterate over record
+		for(RelDataTypeField field : record.getFieldList()) {
+			String name = field.getName();
+			int offset = schema.getFieldOffset(field.getIndex());
+
+			if(aggMap.containsKey(name)) {
+				if(aggMap.get(name).equals(call)) {
+			       writer = "memcpy(" + dstTuple + ".bits + " + offset + ", " + aggVar + ".bits, " + size +");\n";
+			       break;
+				}
+			}
+		}
+
+		return writer;
+
+
+	}
+
+
 
 }

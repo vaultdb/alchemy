@@ -5,7 +5,7 @@ Data* $functionName(int party, NetIO * io) {
     int rowLength = $size;
 
 
-    // std::cout << "The rowlength in bits is " << rowLength << std::endl;
+    std::cout << "The rowlength in bits is " << rowLength << std::endl;
 
     rowLength = rowLength - 1; // account for boolean at end of schema
 

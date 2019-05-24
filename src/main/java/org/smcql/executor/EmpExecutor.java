@@ -68,13 +68,15 @@ public class EmpExecutor extends MPCExecutor {
 		List<ExecutionSegment> segments = compiledPlan.getSegments();
 		
 		ExecutionStep root = compiledPlan.getRoot();
-		
+
+		/*
 		for (SecureRelDataTypeField field : root.getExec().outSchema.getAttributes()) {
 			if (field.getSecurityPolicy().equals(SecurityPolicy.Private)) {
 				System.out.println("Exception: Private attribute " + field.getName() + " in out schema!");
 				return;
 			}
 		}
+		*/
 		
 		if(root instanceof PlaintextStep) {			
 			try {

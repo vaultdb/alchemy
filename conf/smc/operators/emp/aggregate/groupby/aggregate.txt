@@ -46,10 +46,6 @@ Data * $functionName(Data *data) {
         value = If(current==lastOne & init, value + Integer(32,1,PUBLIC), If(init,Integer(32,1,PUBLIC),Integer(32,0,PUBLIC)));
         myVect.push_back(value);
 
-        // new value print statements
-        long val = value.reveal<int32_t>(PUBLIC);
-        cout << "Value: " << val << endl;
-
         // if we are initialized, move lastOne to current. Else do not move lastOne
         lastOne = If(init,current,lastOne);
 
@@ -67,20 +63,32 @@ Data * $functionName(Data *data) {
    while ( cursor < data->publicSize) {
         Bit prevDummy = data->dummyTags[cursor-1];
         Bit currDummy = data->dummyTags[cursor];
+        Integer prevValue = data->data[cursor-1];
+        Integer currValue = data->data[cursor];
+        Bit same = If(prevValue==currValue,!Bit(),Bit());
 
-        Bit prevtemp = If(prevDummy==real & currDummy!=real, !Bit(),prevDummy);
-        Bit currtemp = If(prevDummy==real & currDummy!=real, Bit(), currDummy);
+        Bit prevtemp = If(prevDummy==real & currDummy!=real & same, !Bit(),prevDummy);
+        Bit currtemp = If(prevDummy==real & currDummy!=real & same, Bit(), currDummy);
 
         // replace current dummy
         data->dummyTags[cursor-1] = prevtemp;
         data->dummyTags[cursor] = currtemp;
 
         // replace aggregate value
-        data->data[cursor] = myVect[cursor];
+        data->data[cursor-1] = myVect[cursor-1];
 
         cursor++;
 
+        // check for last value replacement
+        /*
+        if(cursor == data->publicSize){
+            data->data[cursor] = myVect[cursor-1];
+        }
+        */
+
     }
+
+    data->data[data->publicSize-1] = myVect[data->publicSize-1];
 
     // debugging statements to see new values
     for(int i = 0; i < data->publicSize; i++){

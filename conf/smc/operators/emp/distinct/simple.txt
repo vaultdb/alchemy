@@ -44,7 +44,7 @@ Data * $functionName(Data *data) {
         Bit temp = If((current==lastOne),(init | dummyTest),dummyTest);
         init = temp;
 
-        // if we are initialized, do not move lastOne. If initialized, move lastOne to current
+        // if we are initialized, move lastOne to current. Else do not move lastOne
         lastOne = If(init,current,lastOne);
 
         // replace current dummy

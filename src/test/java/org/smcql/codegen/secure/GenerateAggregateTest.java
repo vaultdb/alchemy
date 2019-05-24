@@ -32,19 +32,31 @@ public class GenerateAggregateTest extends BaseTest {
 
   // TODO: Create test queries from health database for Groupby: Count & Sum, Splitscalar: Count & Sum
 
+
+
+  public void testScalarAggregate() throws Exception {
+
+    String testName = "testScalarAggregate";
+
+    String query = "SELECT Min(site), Max(site) FROM diagnoses";
+    testCase(testName, query);
+  }
+
+
   public void testGroupbyCount() throws Exception {
 
     String testName = "testGroupbyCount";
 
-    // String query = ""
-    // testCase(testName, query);
+    String query = "SELECT COUNT(*) FROM diagnoses GROUP BY major_icd9";
+    testCase(testName, query);
   }
 
   public void testGroupbySum() throws Exception {
 
     String testName = "testGroupbySum";
+    //TODO: Get Sum( <any integer input> ) to compile. Some options from diagnoses are: patient_id, site, month
 
-    // String query = "";
+    // String query = "SELECT SUM(patient_id) FROM diagnoses GROUP BY major_icd9";
     //testCase(testName, query);
   }
 

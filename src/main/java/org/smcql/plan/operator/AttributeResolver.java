@@ -167,6 +167,9 @@ public class AttributeResolver {
 				SecureRelDataTypeField secField = new SecureRelDataTypeField(field, prev);
 				secFields.add(secField);
 			}
+
+			// second for loop for the writeDest using logic below
+
 			else if(aggMap.containsKey(name)) {
 				SecurityPolicy policy = AttributeResolver.getAggPolicy(aggMap.get(name), inSchema);
 				SecureRelDataTypeField secField = new SecureRelDataTypeField(field, policy);

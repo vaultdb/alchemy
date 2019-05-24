@@ -37,6 +37,8 @@ $functions
 
      std::cout << "The number of dummies new is " << dummyCount << std::endl;
 
+     std::cout << "Tuple width is" << tupleWidth << std::endl;
+
 
      long outputSize = results->publicSize * tupleWidth;
      output.reserve(dummyCount + outputSize);

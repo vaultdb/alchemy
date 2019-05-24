@@ -1,12 +1,25 @@
 Data * $functionName(Data *data) {
 
-	$sortInput
+    Data *result = new Data;
+    result->data = new Integer[1];
+    result->publicSize = 1;
+
+    Integer output = new Integer($dSize, 0, PUBLIC);
 
 	cout << "Running $functionName " << endl;
-	data->publicSize = 1;
-	data->data = new Integer[1];
-	data->data[0] = data->realSize;
-	data->realSize = Integer(INT_LENGTH, 1, PUBLIC);
-    return data;
+
+	$initAgg
+
+	for(int cursor = 0; cursor < data->publicSize; cursor++){
+        Integer tuple = data->data[cursor];
+	    $processAgg
+
+	}
+
+    $writeAgg
+
+    result->data[0] = output;
+
+    return result;
 }
 
