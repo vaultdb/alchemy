@@ -46,7 +46,7 @@ $functions
 
 
      for(int i = 0; i < dummyCount; ++i){
-        output += to_string(results->dummyTags[i].reveal(PUBLIC));
+        output += to_string(results->dummyTags[i].reveal(XOR));
      }
 
      for(int i = 0; i < results->publicSize; ++i) {
