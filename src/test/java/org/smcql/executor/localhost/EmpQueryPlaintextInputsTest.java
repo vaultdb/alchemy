@@ -66,6 +66,14 @@ public class EmpQueryPlaintextInputsTest extends BaseTest {
     return SqlQueryExecutor.query(query, outSchema, unionedId);
   }
 
+  public void testScalarAggregate() throws Exception {
+
+    String testName = "testScalarAggregate";
+
+    String query = "SELECT Min(month_id), Max(month_id) FROM diagnoses";
+    testCase(testName, query);
+  }
+
 
 
   QueryTable getPlainInput(String sql) throws Exception {
