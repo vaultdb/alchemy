@@ -28,7 +28,7 @@ CREATE TABLE diagnoses (
     patient_id integer NOT NULL,
     site integer NOT NULL,
     year integer NOT NULL,
-    month integer NOT NULL,
+    month_id integer NOT NULL,
     visit_no integer NOT NULL,
     type_ integer NOT NULL,
     encounter_id integer NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE remote_diagnoses (
     patient_id integer NOT NULL,
     site integer NOT NULL,
     year integer NOT NULL,
-    month integer NOT NULL,
+    month_id integer NOT NULL,
     visit_no integer NOT NULL,
     type_ integer NOT NULL,
     encounter_id integer NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE vitals (
     patient_id integer NOT NULL,
     site integer NOT NULL,
     year integer NOT NULL,
-    month integer NOT NULL,
+    month_id integer NOT NULL,
     visit_no integer NOT NULL,
     height numeric,
     height_units character varying,
@@ -111,7 +111,7 @@ CREATE TABLE medications (
     patient_id integer NOT NULL,
     site integer NOT NULL,
     year integer NOT NULL,
-    month integer NOT NULL,
+    month_id integer NOT NULL,
     medication character varying NOT NULL,
     dosage character varying NOT NULL,
     route character varying,
@@ -123,7 +123,7 @@ CREATE TABLE remote_medications (
     patient_id integer NOT NULL,
     site integer NOT NULL,
     year integer NOT NULL,
-    month integer NOT NULL,
+    month_id integer NOT NULL,
     medication character varying NOT NULL,
     dosage character varying NOT NULL,
     route character varying,
@@ -139,7 +139,7 @@ CREATE TABLE remote_medications (
     patient_id integer NOT NULL,
     site integer NOT NULL,
     year integer NOT NULL,
-    month integer NOT NULL,
+    month_id integer NOT NULL,
     medication character varying NOT NULL,
     dosage character varying NOT NULL,
     route character varying,
@@ -171,6 +171,7 @@ CREATE ROLE protected_attribute;
 GRANT SELECT(patient_id) ON diagnoses TO public_attribute;
 GRANT SELECT(visit_no) ON diagnoses TO public_attribute;
 GRANT SELECT(primary_) ON diagnoses TO public_attribute;
+GRANT SELECT(month_id) ON diagnoses TO protected_attribute;
 GRANT SELECT(diag_src) ON diagnoses TO protected_attribute;
 GRANT SELECT(icd9) ON diagnoses TO protected_attribute;
 GRANT SELECT(major_icd9) ON diagnoses TO protected_attribute;
@@ -192,6 +193,7 @@ GRANT SELECT(major_icd9) ON mi_cohort_diagnoses TO protected_attribute;
 GRANT SELECT(patient_id) ON medications TO public_attribute;
 GRANT SELECT(dosage) ON medications TO public_attribute;
 GRANT SELECT(route) ON medications TO public_attribute;
+GRANT SELECT(month_id) ON medications TO protected_attribute;
 GRANT SELECT(medication) ON medications TO protected_attribute;
 
 GRANT SELECT(patient_id) ON mi_cohort_medications TO public_attribute;
@@ -236,7 +238,7 @@ ALTER TABLE demographics ADD CONSTRAINT  gender_range CHECK  (gender >= 1 AND ge
 ALTER TABLE demographics ADD CONSTRAINT  race_range CHECK  (race >= 1 AND race <= 8);  
 ALTER TABLE demographics ADD CONSTRAINT  ethnicity_range CHECK  (ethnicity >= 1 AND ethnicity <= 2);  
 ALTER TABLE demographics ADD CONSTRAINT  insurance_range CHECK  (insurance >= 1 AND insurance <= 6);  
-ALTER TABLE diagnoses ADD CONSTRAINT month_range CHECK (month >= 1 AND month <= 12);
+ALTER TABLE diagnoses ADD CONSTRAINT month_id_range CHECK (month_id >= 1 AND month_id <= 12);
 
 -- stats table for cardinality bounds
 CREATE TABLE relation_statistics(relation varchar, attr varchar, distinct_values integer, max_multiplicity integer, min_value integer, max_value integer); 
