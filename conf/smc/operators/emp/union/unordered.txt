@@ -1,12 +1,20 @@
 Data* $functionName(int party, NetIO * io) {
 
-    std::cout << "Testing that this is the correct template" << std::endl;
+    // std::cout << "Testing that this is the correct template" << std::endl;
 
 
 
     int rowLength = $size; 
 	string localBitstring = inputs["$functionName"];
+	string localDummyTags = dummyTagsMap["$functionName"];
+
+
+
+
     bool *localData = toBool(localBitstring);
+    bool *localDummies = toBool(localDummyTags);
+
+
 
 
     int aliceSize = localBitstring.length() / rowLength;
@@ -24,59 +32,97 @@ Data* $functionName(int party, NetIO * io) {
         io->send_data(&bobSize, 4);
         io->flush();
     }
+        std::cout << " Input Data Length is " << localBitstring.length() << std::endl;
+    	std::cout << " Dummies " << localDummyTags << std::endl;
+    	std::cout << " rowLength " << rowLength << std::endl;
+
+    cout << "Alice size is " << aliceSize << endl;
+
+
 
     Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
-   
     Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit array of inputs
     Bit *tmpPtr = tmp;
+
+    Bit * dummyTags = new Bit[aliceSize + bobSize];    // same for dummies
+
 
     Batcher aliceBatcher, bobBatcher;
    
     int bobBits = bobSize * rowLength;
     int aliceBits = aliceSize * rowLength;
 
+
+    // put Bob's local dummies into batcher
+    for(int i = 0; i < bobSize; ++i) {
+           bobBatcher.add<Bit>((BOB==party) ? localDummies[i]:0);
+    }
+
+    // put Bob's local data into the batcher
     for (int i = 0; i < bobBits; ++i) {
     	bobBatcher.add<Bit>((BOB==party) ? localData[i]:0);
      }
      
     bobBatcher.make_semi_honest(BOB);
 
+   // add Bob's encrypted dummies directly to dummyTags
+    for (int i = 0; i < bobSize; ++i)
+        dummyTags[i+aliceSize] = bobBatcher.next<Bit>();
 
 
-    // append all of bob's bits to tmp
+    // append all of Bob's encrypted data bits to tmp
     for (int i = 0; i < bobBits; ++i) {
         *tmpPtr = bobBatcher.next<Bit>();
         ++tmpPtr;
 	}
-   
 
+    // put Alice local dummies into batcher
+    for(int i = 0; i < aliceSize; ++i) {
+           aliceBatcher.add<Bit>((ALICE==party) ? localDummies[i]:0);
+    }
+   
+    // put Alice's local data into the batcher
     for (int i = 0; i < aliceBits; ++i) {
     	aliceBatcher.add<Bit>((ALICE==party) ? localData[i]:0);
     }
 
     aliceBatcher.make_semi_honest(ALICE);
 
+    // add Alice's encrypted dummies directly to dummyTags
+    for (int i = 0; i < aliceSize; ++i)
+        dummyTags[i] = aliceBatcher.next<Bit>();
 
+    // append all of Alice's encrypted data bits to tmp
     for(int i = 0; i < aliceBits; ++i) {
     	    *tmpPtr = aliceBatcher.next<Bit>();
 	    	    ++tmpPtr;
 		    }
 
-   		    // resetting cursor
-		    tmpPtr = tmp;
-		    
-		    // create a 2D array of secret-shared bits
-		    // each index is a tuple
+    // resetting cursor
+    tmpPtr = tmp;
+
+
+    // create a 2D array of secret-shared bits each index is a tuple
+    // create an Integer structure for each tuple, and place into res
     for(int i = 0; i < aliceSize + bobSize; ++i) {
         res[i] = Integer(rowLength, tmpPtr);
         tmpPtr += rowLength;
      }
 
 
+     // debugging help - this will reveal the underlying values to ensure that bitonic input is correct
+     // for(int i = 0; i < (aliceSize + bobSize); ++i) {
+     	// long value = res[0].reveal<int128_t>(PUBLIC);
+     	// std::cout << "Value i: " << std::endl;
+     // }
+
+
     Data * d = new Data;
     d->data = res;
     d->publicSize = aliceSize + bobSize;
     d->realSize = Integer(64, d->publicSize, PUBLIC);
+    d->dummyTags = dummyTags;
+
     cout << "Done union!" << endl;   
     return d;
 }
