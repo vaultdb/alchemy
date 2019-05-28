@@ -159,7 +159,7 @@ public class SecureAggregate extends SecureOperator {
 				initAggregate += "Integer tupleArg" + varNo + " = Integer(" + size  + ", 0, PUBLIC);\n";
 			processAggregate += getProcessAggregate(a,aggCounter+1,size);
 
-			writeAggregate += getWriteDest(a, aggMap, "result->data[0]", aggVariable, size);
+			writeAggregate += getWriteDest(a, aggMap, "output", aggVariable, size);
 
 			aggCounter++;
 
@@ -222,7 +222,7 @@ public class SecureAggregate extends SecureOperator {
 
 			if(aggMap.containsKey(name)) {
 				if(aggMap.get(name).equals(call)) {
-			       writer = "memcpy(" + dstTuple + ".bits + " + offset + ", " + aggVar + ".bits, " + size +");\n";
+			       writer = "memcpy(" + dstTuple + "->bits + " + offset + ", " + aggVar + ".bits, " + size + ");\n";
 			       break;
 				}
 			}

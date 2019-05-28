@@ -1,10 +1,12 @@
 Data * $functionName(Data *data) {
 
+
     Data *result = new Data;
     result->data = new Integer[1];
     result->publicSize = 1;
+    result->dummyTags = new Bit();
 
-    Integer output = new Integer($dSize, 0, PUBLIC);
+    Integer *output = new Integer($dSize, 0, PUBLIC);
 
 	cout << "Running $functionName " << endl;
 
@@ -12,13 +14,18 @@ Data * $functionName(Data *data) {
 
 	for(int cursor = 0; cursor < data->publicSize; cursor++){
         Integer tuple = data->data[cursor];
+
+        // debugging assistance
+        // long value = tuple.reveal<int64_t>(PUBLIC);
+        // std::cout << "Tuple being processed: " << value << std::endl;
+
 	    $processAgg
 
 	}
 
     $writeAgg
 
-    result->data[0] = output;
+    result->data = output;
 
     return result;
 }
