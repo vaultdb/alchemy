@@ -8,9 +8,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang3.StringUtils;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.slice.SliceKeyDefinition;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
@@ -29,6 +31,8 @@ public class QueryTable implements Serializable {
 
   public QueryTable(List<Tuple> tuples) throws Exception {
     this.tuples = tuples;
+    // this.dummytags = "0"; - Potentially add for consistency. This constructor should only
+    // be used for expected output so dummies should not be necesarry.
 
     if (tuples != null && !tuples.isEmpty()) {
       schema = tuples.get(0).schema;
@@ -79,11 +83,16 @@ public class QueryTable implements Serializable {
     /* checks to see if there are dummyTags present in the schema.
        current implementation assumes that a boolean field at the end of the schema is the trigger
     */
-
-    if (schema.getLast().getBaseField().getType().getSqlTypeName() == SqlTypeName.BOOLEAN){
-      return true;
+    try {
+      if (schema.getLast().getBaseField().getType().getSqlTypeName() == SqlTypeName.BOOLEAN) {
+        return true;
+      } else {
+        return false;
+      }
     }
-    else{
+    catch (Exception e){
+      System.out.println(" Tried to exact dummy but failed");
+      dummytags = "0";
       return false;
     }
 
