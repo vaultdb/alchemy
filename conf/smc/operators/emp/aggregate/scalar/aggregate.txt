@@ -8,22 +8,27 @@ Data * $functionName(Data *data) {
 
     Integer *output = new Integer($dSize, 0, PUBLIC);
 
+
 	cout << "Running $functionName " << endl;
 
 	$initAgg
 
 	for(int cursor = 0; cursor < data->publicSize; cursor++){
         Integer tuple = data->data[cursor];
+        Bit dummyCheck = !data->dummyTags[cursor];
 
         // debugging assistance
-        // long value = tuple.reveal<int64_t>(PUBLIC);
-        // std::cout << "Tuple being processed: " << value << std::endl;
+        long value = tuple.reveal<int64_t>(PUBLIC);
+        std::cout << "Tuple being processed: " << value << std::endl;
 
 	    $processAgg
 
 	}
 
     $writeAgg
+
+    long value = output->reveal<int64_t>(PUBLIC);
+    std::cout << "Output being processed: " << value << std::endl;
 
     result->data = output;
 

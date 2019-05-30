@@ -153,10 +153,13 @@ public class SecureAggregate extends SecureOperator {
 
 			// if min - set to max, else do below
 
-			initAggregate += "Integer " + aggVariable + "= Integer(INT_LENGTH,0,PUBLIC);\n";
+			String initAggregateValue = getValueInit(a);
+
+			initAggregate += "Integer " + aggVariable + "= Integer(INT_LENGTH," + initAggregateValue + ",PUBLIC);\n"; // TODO: Update for min,max, ect.
 
 			if(!a.getArgList().isEmpty())
-				initAggregate += "Integer tupleArg" + varNo + " = Integer(" + size  + ", 0, PUBLIC);\n";
+				initAggregate += "Integer tupleArg" + varNo + " = Integer(" + size  + "," + initAggregateValue + ", PUBLIC);\n";
+
 			processAggregate += getProcessAggregate(a,aggCounter+1,size);
 
 			writeAggregate += getWriteDest(a, aggMap, "output", aggVariable, size);
@@ -174,6 +177,34 @@ public class SecureAggregate extends SecureOperator {
 		return vars;
 	}
 
+
+	private String getValueInit(AggregateCall call){
+		// case: min - return 99999
+		// case: max, avg, count, sum - return 0
+
+
+		String varInit = "0";
+
+		switch(call.getAggregation().kind) {
+
+			case MIN:
+				varInit = "99999";
+				return varInit;
+			case MAX:
+				return varInit;
+			case COUNT:
+				return varInit;
+			case SUM:
+				return varInit;
+			case AVG:
+				return varInit;
+			default:
+				return null;
+		}
+
+
+	}
+
 	private String getProcessAggregate(AggregateCall call, int aggId, int size){
 
 		String aggVar = "agg" + aggId;
@@ -184,14 +215,28 @@ public class SecureAggregate extends SecureOperator {
 			processString = extractAggregateArgument(call, aggVar, tupleVar, size);
 
 
+
 		switch(call.getAggregation().kind) {
 
 			case MIN:
-				processString += "agg" + aggId + " = If(" + tupleVar + " < " + aggVar + ", " + tupleVar + ", " + aggVar + ");\n";
+
+				processString += "agg" + aggId + " = If(dummyCheck, If(" + tupleVar + " < " + aggVar + ", " + tupleVar + ", " + aggVar + ")," + aggVar + ");\n";
 				return processString;
 			case MAX:
-				processString += "agg" + aggId + " = If(" + tupleVar + " > " + aggVar + ", " + tupleVar + ", " + aggVar + ");\n";
+				processString += "agg" + aggId + " = If(dummyCheck, If(" + tupleVar + " > " + aggVar + ", " + tupleVar + ", " + aggVar + ")" + aggVar + ");\n";
 				return processString;
+			case COUNT:
+				return "not yet implemented";
+			case SUM:
+				// processString += "long value2 = tupleArg1.reveal<int64_t>(PUBLIC)" + ";\n";
+				// processString += "std::cout << \" Revealing i: \" << value2 << std::endl" + ";\n";
+				// processString += "agg" + aggId + " = agg" + aggId + " + " + tupleVar + ";\n";
+				processString += "agg" + aggId + " = agg" + aggId + " + tuple" +  ";\n";
+				processString += "long value3 = agg1.reveal<int64_t>(PUBLIC)" + ";\n";
+				processString += "std::cout << \" Revealing i: \" << value3 << std::endl" + ";\n";
+				return processString;
+			case AVG:
+				return "not yet implemented";
 			default:
 				return null;
 		}
@@ -203,7 +248,8 @@ public class SecureAggregate extends SecureOperator {
 			Integer arg = call.getArgList().get(0);
 			Integer offset = schema.getFieldOffset(arg);
 
-			return "memcpy(" + dstVar + ".bits, " + srcVar  + ".bits + " +  offset + ", " + size + ");\n";
+			// Debugging assistance for sum - return "memcpy(" + dstVar + ".bits, " + "tuple.bits + " +  offset + ", " + size + ");\n";
+            return "memcpy(" + dstVar + ".bits, " + srcVar  + ".bits + " +  offset + ", " + size + ");\n";
 
 
 		}
