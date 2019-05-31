@@ -104,32 +104,45 @@ public class TpcHBaseTest extends BaseTest {
 		          + "limit 100",
 
 		      // 03
-		      "select\n"
-		          + "  l.l_orderkey,\n"
-		          + "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue,\n"
-		          + "  o.o_orderdate,\n"
-		          + "  o.o_shippriority\n"
-		          + "\n"
-		          + "from\n"
-		          + "  customer c,\n"
-		          + "  orders o,\n"
-		          + "  lineitem l\n"
-		          + "\n"
-		          + "where\n"
-		          + "  c.c_mktsegment = 'HOUSEHOLD'\n"
-		          + "  and c.c_custkey = o.o_custkey\n"
-		          + "  and l.l_orderkey = o.o_orderkey\n"
-		          + "  and o.o_orderdate < date '1995-03-25'\n"
-		          + "  and l.l_shipdate > date '1995-03-25'\n"
-		          + "\n"
-		          + "group by\n"
-		          + "  l.l_orderkey,\n"
-		          + "  o.o_orderdate,\n"
-		          + "  o.o_shippriority\n"
-		          + "order by\n"
-		          + "  revenue desc,\n"
-		          + "  o.o_orderdate\n"
-		          + "limit 10",
+		      "with customer_proj as (select c_mktsegment, c_custkey from customer\n" +
+					  "\n" +
+					  " where c_mktsegment= 'HOUSEHOLD' ),\n" +
+					  "\n" +
+					  "lineitem_proj as (select l_orderkey, l_shipdate,l_extendedprice,\n" +
+					  "          l_discount\n" +
+					  "          from lineitem where l_shipdate> date '1995-03-25'),\n" +
+					  "          \n" +
+					  "orders_proj as (select o_custkey,o_orderkey, o_orderdate,o_shippriority from orders \n" +
+					  "        \n" +
+					  "        where o_orderdate < date '1995-03-25')\n" +
+					  "\n" +
+					  "\n" +
+					  "\n" +
+					  "\n" +
+					  "select\n" +
+					  "  l.l_orderkey,\n" +
+					  "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue,\n" +
+					  "  o.o_orderdate,\n" +
+					  "  o.o_shippriority\n" +
+					  "\n" +
+					  "from\n" +
+					  "  customer_proj c,\n" +
+					  "  orders_proj o,\n" +
+					  "  lineitem_proj l\n" +
+					  "\n" +
+					  "where\n" +
+					  "   c.c_custkey = o.o_custkey\n" +
+					  "  and l.l_orderkey = o.o_orderkey\n" +
+					  "\n" +
+					  "  \n" +
+					  "\n" +
+					  "group by\n" +
+					  "  l.l_orderkey,\n" +
+					  "  o.o_orderdate,\n" +
+					  "  o.o_shippriority\n" +
+					  "order by\n" +
+					  "  revenue desc,\n" +
+					  "  o.o_orderdate limit 10",
 
 		      // 04
 		          "select\n"
