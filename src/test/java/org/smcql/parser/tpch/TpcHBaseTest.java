@@ -21,28 +21,36 @@ public class TpcHBaseTest extends BaseTest {
 
 	protected static final List<String> QUERIES = ImmutableList.of(
 		      // 01
-		      "select\n"
-		          + "  l_returnflag,\n"
-		          + "  l_linestatus,\n"
-		          + "  sum(l_quantity) as sum_qty,\n"
-		          + "  sum(l_extendedprice) as sum_base_price,\n"
-		          + "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,\n"
-		          + "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,\n"
-		          + "  avg(l_quantity) as avg_qty,\n"
-		          + "  avg(l_extendedprice) as avg_price,\n"
-		          + "  avg(l_discount) as avg_disc,\n"
-		          + "  count(*) as count_order\n"
-		          + "from\n"
-		          + "  lineitem\n"
-		          + " where\n"
-		          + "  l_shipdate <= date '1998-08-03'\n"
-		          + "group by\n"
-		          + "  l_returnflag,\n"
-		          + "  l_linestatus\n"
-		          + "\n"
-		          + "order by\n"
-		          + "  l_returnflag,\n"
-		          + "  l_linestatus",
+		      "with lineitem_projection as (select l_returnflag, l_linestatus, l_quantity, \n" +
+					  "l_extendedprice,l_discount, l_tax,\n" +
+					  "l_shipdate\n" +
+					  "\n" +
+					  "from lineitem) \n" +
+					  "\n" +
+					  " \n" +
+					  "\n" +
+					  "select\n" +
+					  "l_returnflag,\n" +
+					  "l_linestatus,\n" +
+					  "sum(l_quantity) as sum_qty,\n" +
+					  "sum(l_extendedprice) as sum_base_price,\n" +
+					  "sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,\n" +
+					  "sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,\n" +
+					  "avg(l_quantity) as avg_qty,\n" +
+					  "avg(l_extendedprice) as avg_price,\n" +
+					  "avg(l_discount) as avg_disc,\n" +
+					  "count(*) as count_order\n" +
+					  "from\n" +
+					  "lineitem_projection\n" +
+					  "where\n" +
+					  "l_shipdate <= date '1998-08-03'\n" +
+					  "group by\n" +
+					  "l_returnflag,\n" +
+					  "l_linestatus\n" +
+					  "\n" +
+					  "order by\n" +
+					  "l_returnflag,\n" +
+					  "l_linestatus",
 
 		      // 02
 		      "WITH min_ps_supplycost AS ("
