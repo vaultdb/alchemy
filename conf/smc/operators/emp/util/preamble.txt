@@ -91,6 +91,15 @@ bool * toBool(string src) {
 	return output;
 }
 
+void writeToInteger(Integer *dst, Integer *src, int writeOffset, int readOffset, int size) {
+    Bit *writePtr = dst->bits + writeOffset;
+    Bit *srcPtr = src->bits + readOffset;
+
+    memcpy(writePtr, srcPtr, sizeof(Bit)*size);
+
+}
+
+
 // Operator functions
 class Data {
 public:

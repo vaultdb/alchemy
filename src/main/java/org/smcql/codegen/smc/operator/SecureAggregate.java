@@ -224,8 +224,8 @@ public class SecureAggregate extends SecureOperator {
 				return processString;
 			case MAX:
 				processString += "agg" + aggId + " = If(dummyCheck, If(" + tupleVar + " > " + aggVar + ", " + tupleVar + ", " + aggVar + "), " + aggVar + ");\n";
-				processString += "long value2 = agg1.reveal<int64_t>(PUBLIC)" + ";\n";
-				processString += "std::cout << \" Revealing after dummy comp: \" << value2 << std::endl" + ";\n";
+				//processString += "long value2 = agg1.reveal<int64_t>(PUBLIC)" + ";\n";
+				//processString += "std::cout << \" Revealing after dummy comp: \" << value2 << std::endl" + ";\n";
 				return processString;
 			case COUNT:
 				return "not yet implemented";
@@ -234,8 +234,8 @@ public class SecureAggregate extends SecureOperator {
 				// processString += "std::cout << \" Revealing i: \" << value2 << std::endl" + ";\n";
 				// processString += "agg" + aggId + " = agg" + aggId + " + " + tupleVar + ";\n";
 				processString += "agg" + aggId + " = agg" + aggId + " + tuple" +  ";\n";
-				processString += "long value3 = agg1.reveal<int64_t>(PUBLIC)" + ";\n";
-				processString += "std::cout << \" Revealing i: \" << value3 << std::endl" + ";\n";
+				//processString += "long value3 = agg1.reveal<int64_t>(PUBLIC)" + ";\n";
+				//processString += "std::cout << \" Revealing i: \" << value3 << std::endl" + ";\n";
 				return processString;
 			case AVG:
 				return "not yet implemented";
@@ -250,10 +250,7 @@ public class SecureAggregate extends SecureOperator {
 			Integer arg = call.getArgList().get(0);
 			Integer offset = schema.getFieldOffset(arg);
 
-			return "memcpy(" + dstVar + ".bits, " + "tuple.bits + " +  offset + ", " + size + ");\n";
-            // return "memcpy(" + dstVar + ".bits, " + srcVar  + ".bits + " +  offset + ", " + size + ");\n";
-
-
+			return "memcpy(" + dstVar + ".bits, " + "tuple.bits, " + size + ");\n";
 		}
 
 	private String getWriteDest(AggregateCall call, Map<String, AggregateCall> aggMap, String dstTuple, String aggVar, int size){
@@ -270,7 +267,7 @@ public class SecureAggregate extends SecureOperator {
 
 			if(aggMap.containsKey(name)) {
 				if(aggMap.get(name).equals(call)) {
-			       writer = "memcpy(" + dstTuple + "->bits + " + offset + ", " + aggVar + ".bits, " + size + ");\n";
+				   writer += "writeToInteger(" + dstTuple + ", &" + aggVar + ", " + offset  + ", 0, " + size  + ");";
 			       break;
 				}
 			}
