@@ -487,36 +487,37 @@ public class TpcHBaseTest extends BaseTest {
 					  " ",
 
 		      // 15
-		      "with revenue0 (supplier_no, total_revenue) as (\n"
-		          + "  select\n"
-		          + "    l_suppkey,\n"
-		          + "    sum(l_extendedprice * (1 - l_discount))\n"
-		          + "  from\n"
-		          + "    lineitem\n"
-		          + "  where\n"
-		          + "    l_shipdate >= date '1993-05-01'\n"
-		          + "    and l_shipdate < date '1993-08-01'\n"
-		          + "  group by\n"
-		          + "    l_suppkey)\n"
-		          + "select\n"
-		          + "  s.s_suppkey,\n"
-		          + "  s.s_name,\n"
-		          + "  s.s_address,\n"
-		          + "  s.s_phone,\n"
-		          + "  r.total_revenue\n"
-		          + "from\n"
-		          + "  supplier s,\n"
-		          + "  revenue0 r\n"
-		          + "where\n"
-		          + "  s.s_suppkey = r.supplier_no\n"
-		          + "  and r.total_revenue = (\n"
-		          + "    select\n"
-		          + "      max(total_revenue)\n"
-		          + "    from\n"
-		          + "      revenue0\n"
-		          + "  )\n"
-		          + "order by\n"
-		          + "  s.s_suppkey",
+		      "with revenue0 (supplier_no, total_revenue) as (\n" +
+					  "  select\n" +
+					  "    l_suppkey,\n" +
+					  "    sum(l_extendedprice * (1 - l_discount))\n" +
+					  "  from\n" +
+					  "    lineitem\n" +
+					  "  where\n" +
+					  "    l_shipdate >= date '1993-05-01'\n" +
+					  "    and l_shipdate < date '1993-08-01'\n" +
+					  "  group by\n" +
+					  "    l_suppkey),\n" +
+					  "max_rev_proj as (select\n" +
+					  "      max(total_revenue) as max_rev\n" +
+					  "    from\n" +
+					  "      revenue0)\n" +
+					  "\n" +
+					  "select\n" +
+					  "  s.s_suppkey,\n" +
+					  "  s.s_name,\n" +
+					  "  s.s_address,\n" +
+					  "  s.s_phone,\n" +
+					  "  r.total_revenue\n" +
+					  "from\n" +
+					  "  supplier s,\n" +
+					  "  revenue0 r,\n" +
+					  "    max_rev_proj\n" +
+					  "where\n" +
+					  "  s.s_suppkey = r.supplier_no\n" +
+					  "  and r.total_revenue = max_rev_proj.max_rev\n" +
+					  "order by\n" +
+					  "  s.s_suppkey\n",
 
 		      // 16 - Potentially indicating to look at string replacements
 		         // TODO: fix compiler with commented lines.  
