@@ -468,19 +468,23 @@ public class TpcHBaseTest extends BaseTest {
 
 		
 			// 14
-		      "select\n"
-		          + "  100.00 * sum(case\n"
-		          + "    when p.p_type like 'PROMO%'\n"
-		          + "      then l.l_extendedprice * (1 - l.l_discount)\n"
-		          + "    else 0\n"
-		          + "  end) / sum(l.l_extendedprice * (1 - l.l_discount)) as promo_revenue\n"
-		          + "from\n"
-		          + "  lineitem l,\n"
-		          + "  part p\n"
-		          + "where\n"
-		          + "  l.l_partkey = p.p_partkey\n"
-		          + "  and l.l_shipdate >= date '1994-08-01'\n"
-		          + "  and l.l_shipdate < date '1994-09-01'",
+		      "with lineitem_proj as (select l_partkey, l_extendedprice, l_discount from lineitem where\n" +
+					  "l_shipdate >= date '1994-08-01'\n" +
+					  "  and l_shipdate < date '1994-09-01'\n" +
+					  " )\n" +
+					  "\n" +
+					  "select\n" +
+					  "  100.00 * sum(case\n" +
+					  "    when p.p_type like 'PROMO%'\n" +
+					  "      then l.l_extendedprice * (1 - l.l_discount)\n" +
+					  "    else 0\n" +
+					  "  end) / sum(l.l_extendedprice * (1 - l.l_discount)) as promo_revenue\n" +
+					  "from\n" +
+					  "  lineitem_proj l,\n" +
+					  "  part p\n" +
+					  "where\n" +
+					  "  l.l_partkey = p.p_partkey\n" +
+					  " ",
 
 		      // 15
 		      "with revenue0 (supplier_no, total_revenue) as (\n"
