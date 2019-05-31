@@ -21,28 +21,36 @@ public class TpcHBaseTest extends BaseTest {
 
 	protected static final List<String> QUERIES = ImmutableList.of(
 		      // 01
-		      "select\n"
-		          + "  l_returnflag,\n"
-		          + "  l_linestatus,\n"
-		          + "  sum(l_quantity) as sum_qty,\n"
-		          + "  sum(l_extendedprice) as sum_base_price,\n"
-		          + "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,\n"
-		          + "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,\n"
-		          + "  avg(l_quantity) as avg_qty,\n"
-		          + "  avg(l_extendedprice) as avg_price,\n"
-		          + "  avg(l_discount) as avg_disc,\n"
-		          + "  count(*) as count_order\n"
-		          + "from\n"
-		          + "  lineitem\n"
-		          + " where\n"
-		          + "  l_shipdate <= date '1998-08-03'\n"
-		          + "group by\n"
-		          + "  l_returnflag,\n"
-		          + "  l_linestatus\n"
-		          + "\n"
-		          + "order by\n"
-		          + "  l_returnflag,\n"
-		          + "  l_linestatus",
+		      "with lineitem_projection as (select l_returnflag, l_linestatus, l_quantity, \n" +
+					  "l_extendedprice,l_discount, l_tax,\n" +
+					  "l_shipdate\n" +
+					  "\n" +
+					  "from lineitem) \n" +
+					  "\n" +
+					  " \n" +
+					  "\n" +
+					  "select\n" +
+					  "l_returnflag,\n" +
+					  "l_linestatus,\n" +
+					  "sum(l_quantity) as sum_qty,\n" +
+					  "sum(l_extendedprice) as sum_base_price,\n" +
+					  "sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,\n" +
+					  "sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,\n" +
+					  "avg(l_quantity) as avg_qty,\n" +
+					  "avg(l_extendedprice) as avg_price,\n" +
+					  "avg(l_discount) as avg_disc,\n" +
+					  "count(*) as count_order\n" +
+					  "from\n" +
+					  "lineitem_projection\n" +
+					  "where\n" +
+					  "l_shipdate <= date '1998-08-03'\n" +
+					  "group by\n" +
+					  "l_returnflag,\n" +
+					  "l_linestatus\n" +
+					  "\n" +
+					  "order by\n" +
+					  "l_returnflag,\n" +
+					  "l_linestatus",
 
 		      // 02
 		      "WITH min_ps_supplycost AS ("
@@ -96,32 +104,45 @@ public class TpcHBaseTest extends BaseTest {
 		          + "limit 100",
 
 		      // 03
-		      "select\n"
-		          + "  l.l_orderkey,\n"
-		          + "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue,\n"
-		          + "  o.o_orderdate,\n"
-		          + "  o.o_shippriority\n"
-		          + "\n"
-		          + "from\n"
-		          + "  customer c,\n"
-		          + "  orders o,\n"
-		          + "  lineitem l\n"
-		          + "\n"
-		          + "where\n"
-		          + "  c.c_mktsegment = 'HOUSEHOLD'\n"
-		          + "  and c.c_custkey = o.o_custkey\n"
-		          + "  and l.l_orderkey = o.o_orderkey\n"
-		          + "  and o.o_orderdate < date '1995-03-25'\n"
-		          + "  and l.l_shipdate > date '1995-03-25'\n"
-		          + "\n"
-		          + "group by\n"
-		          + "  l.l_orderkey,\n"
-		          + "  o.o_orderdate,\n"
-		          + "  o.o_shippriority\n"
-		          + "order by\n"
-		          + "  revenue desc,\n"
-		          + "  o.o_orderdate\n"
-		          + "limit 10",
+		      "with customer_proj as (select c_mktsegment, c_custkey from customer\n" +
+					  "\n" +
+					  " where c_mktsegment= 'HOUSEHOLD' ),\n" +
+					  "\n" +
+					  "lineitem_proj as (select l_orderkey, l_shipdate,l_extendedprice,\n" +
+					  "          l_discount\n" +
+					  "          from lineitem where l_shipdate> date '1995-03-25'),\n" +
+					  "          \n" +
+					  "orders_proj as (select o_custkey,o_orderkey, o_orderdate,o_shippriority from orders \n" +
+					  "        \n" +
+					  "        where o_orderdate < date '1995-03-25')\n" +
+					  "\n" +
+					  "\n" +
+					  "\n" +
+					  "\n" +
+					  "select\n" +
+					  "  l.l_orderkey,\n" +
+					  "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue,\n" +
+					  "  o.o_orderdate,\n" +
+					  "  o.o_shippriority\n" +
+					  "\n" +
+					  "from\n" +
+					  "  customer_proj c,\n" +
+					  "  orders_proj o,\n" +
+					  "  lineitem_proj l\n" +
+					  "\n" +
+					  "where\n" +
+					  "   c.c_custkey = o.o_custkey\n" +
+					  "  and l.l_orderkey = o.o_orderkey\n" +
+					  "\n" +
+					  "  \n" +
+					  "\n" +
+					  "group by\n" +
+					  "  l.l_orderkey,\n" +
+					  "  o.o_orderdate,\n" +
+					  "  o.o_shippriority\n" +
+					  "order by\n" +
+					  "  revenue desc,\n" +
+					  "  o.o_orderdate limit 10",
 
 		      // 04
 		          "select\n"
@@ -170,16 +191,14 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  revenue desc",
 
 		      // 06
-		      "select\n"
-		          + "  sum(l_extendedprice * l_discount) as revenue\n"
-		          + "from\n"
-		          + "  lineitem\n"
-		          + "where\n"
-		          + "  l_shipdate >= date '1997-01-01'\n"
-		          + "  and l_shipdate < date '1998-01-01'\n"
-		          + "  and\n"
-		          + "  l_discount between 0.03 - 0.01 and 0.03 + 0.01\n"
-		          + "  and l_quantity < 24",
+		      "with lineitem_proj as (select l_extendedprice, l_discount from lineitem where l_shipdate >= date '1997-01-01'\n" +
+					  "  and l_shipdate < date '1998-01-01'\n" +
+					  "  and\n" +
+					  "  l_discount between 0.03 - 0.01 and 0.03 + 0.01\n" +
+					  "  and l_quantity < 24)\n" +
+					  "  \n" +
+					  "  select sum(l_extendedprice * l_discount) as revenue\n" +
+					  "from lineitem_proj\n",
 
 		      // 07
 		          "WITH lineitems AS (\n"
@@ -343,63 +362,85 @@ public class TpcHBaseTest extends BaseTest {
 		          + "limit 20",
 
 		      // 11
-		      "select\n"
-		          + "  ps.ps_partkey,\n"
-		          + "  sum(ps.ps_supplycost * ps.ps_availqty) as val\n"
-		          + "from\n"
-		          + "  partsupp ps,\n"
-		          + "  supplier s,\n"
-		          + "  nation n\n"
-		          + "where\n"
-		          + "  ps.ps_suppkey = s.s_suppkey\n"
-		          + "  and s.s_nationkey = n.n_nationkey\n"
-		          + "  and n.n_name = 'JAPAN'\n"
-		          + "group by\n"
-		          + "  ps.ps_partkey having\n"
-		          + "    sum(ps.ps_supplycost * ps.ps_availqty) > (\n"
-		          + "      select\n"
-		          + "        sum(ps.ps_supplycost * ps.ps_availqty) * 0.0001000000\n"
-		          + "      from\n"
-		          + "        partsupp ps,\n"
-		          + "        supplier s,\n"
-		          + "        nation n\n"
-		          + "      where\n"
-		          + "        ps.ps_suppkey = s.s_suppkey\n"
-		          + "        and s.s_nationkey = n.n_nationkey\n"
-		          + "        and n.n_name = 'JAPAN'\n"
-		          + "    )\n"
-		          + "order by\n"
-		          + "  val desc",
+		      "with nation_proj as (select n_nationkey from nation where n_name = 'JAPAN'),\n" +
+					  "\n" +
+					  "partsupp_proj as (select ps_partkey,ps_supplycost,ps_availqty, \n" +
+					  "\t\t\t\tps_suppkey from partsupp  ),\n" +
+					  "\t\t\t\t\n" +
+					  "supplier_proj as (select s_nationkey,s_suppkey  from supplier )\n" +
+					  "\n" +
+					  "\n" +
+					  "select\n" +
+					  "  ps.ps_partkey,\n" +
+					  "  sum(ps.ps_supplycost * ps.ps_availqty) as val\n" +
+					  "from\n" +
+					  "  partsupp_proj ps,\n" +
+					  "  supplier_proj s,\n" +
+					  "  nation_proj n\n" +
+					  "where\n" +
+					  "  ps.ps_suppkey = s.s_suppkey\n" +
+					  "  and s.s_nationkey = n.n_nationkey\n" +
+					  "  \n" +
+					  "group by\n" +
+					  "  ps.ps_partkey having\n" +
+					  "    sum(ps.ps_supplycost * ps.ps_availqty) > (\n" +
+					  "      select\n" +
+					  "        sum(ps.ps_supplycost * ps.ps_availqty) * 0.0001000000\n" +
+					  "      from\n" +
+					  "        partsupp ps,\n" +
+					  "        supplier s,\n" +
+					  "        nation n\n" +
+					  "      where\n" +
+					  "        ps.ps_suppkey = s.s_suppkey\n" +
+					  "        and s.s_nationkey = n.n_nationkey\n" +
+					  "        and n.n_name = 'JAPAN'\n" +
+					  "    )\n" +
+					  "order by\n" +
+					  "  val desc\n" +
+					  "\n" ,
 
 		      // 12
-		      "select\n"
-		          + "  l.l_shipmode,\n"
-		          + "  sum(case\n"
-		          + "    when o.o_orderpriority = '1-URGENT'\n"
-		          + "      or o.o_orderpriority = '2-HIGH'\n"
-		          + "      then 1\n"
-		          + "    else 0\n"
-		          + "  end) as high_line_count,\n"
-		          + "  sum(case\n"
-		          + "    when o.o_orderpriority <> '1-URGENT'\n"
-		          + "      and o.o_orderpriority <> '2-HIGH'\n"
-		          + "      then 1\n"
-		          + "    else 0\n"
-		          + "  end) as low_line_count\n"
-		          + "from\n"
-		          + "  orders o,\n"
-		          + "  lineitem l\n"
-		          + "where\n"
-		          + "  o.o_orderkey = l.l_orderkey\n"
-		          + "  and l.l_shipmode in ('TRUCK', 'REG AIR')\n"
-		          + "  and l.l_commitdate < l.l_receiptdate\n"
-		          + "  and l.l_shipdate < l.l_commitdate\n"
-		          + "  and l.l_receiptdate >= date '1994-01-01'\n"
-		          + "  and l.l_receiptdate < date '1995-01-01'\n"
-		          + "group by\n"
-		          + "  l.l_shipmode\n"
-		          + "order by\n"
-		          + "  l.l_shipmode",
+		      "with order_proj as (select o_orderkey, o_orderpriority \n" +
+					  "  from orders \n" +
+					  "  \n" +
+					  "),\n" +
+					  "\n" +
+					  "lineitem_proj as (select l_shipmode, l_orderkey \n" +
+					  "  from lineitem \n" +
+					  "  where \n" +
+					  "l_shipmode in ('TRUCK', 'REG AIR')\n" +
+					  "and l_commitdate < l_receiptdate\n" +
+					  "  and l_shipdate < l_commitdate\n" +
+					  "  and l_receiptdate >= date '1994-01-01'\n" +
+					  "  and l_receiptdate < date '1995-01-01'\n" +
+					  "\n" +
+					  " )\n" +
+					  "\n" +
+					  "select\n" +
+					  "  l.l_shipmode,\n" +
+					  "  sum(case\n" +
+					  "    when o.o_orderpriority = '1-URGENT'\n" +
+					  "      or o.o_orderpriority = '2-HIGH'\n" +
+					  "      then 1\n" +
+					  "    else 0\n" +
+					  "  end) as high_line_count,\n" +
+					  "  \n" +
+					  "  sum(case\n" +
+					  "    when o.o_orderpriority <> '1-URGENT'\n" +
+					  "      and o.o_orderpriority <> '2-HIGH'\n" +
+					  "      then 1\n" +
+					  "    else 0\n" +
+					  "  end) as low_line_count\n" +
+					  "from\n" +
+					  "  order_proj o,\n" +
+					  "  lineitem_proj l\n" +
+					  "where\n" +
+					  "  o.o_orderkey = l.l_orderkey\n" +
+					  "  \n" +
+					  "group by\n" +
+					  "  l.l_shipmode\n" +
+					  "order by\n" +
+					  "  l.l_shipmode\n",
 
 
 
@@ -427,19 +468,23 @@ public class TpcHBaseTest extends BaseTest {
 
 		
 			// 14
-		      "select\n"
-		          + "  100.00 * sum(case\n"
-		          + "    when p.p_type like 'PROMO%'\n"
-		          + "      then l.l_extendedprice * (1 - l.l_discount)\n"
-		          + "    else 0\n"
-		          + "  end) / sum(l.l_extendedprice * (1 - l.l_discount)) as promo_revenue\n"
-		          + "from\n"
-		          + "  lineitem l,\n"
-		          + "  part p\n"
-		          + "where\n"
-		          + "  l.l_partkey = p.p_partkey\n"
-		          + "  and l.l_shipdate >= date '1994-08-01'\n"
-		          + "  and l.l_shipdate < date '1994-09-01'",
+		      "with lineitem_proj as (select l_partkey, l_extendedprice, l_discount from lineitem where\n" +
+					  "l_shipdate >= date '1994-08-01'\n" +
+					  "  and l_shipdate < date '1994-09-01'\n" +
+					  " )\n" +
+					  "\n" +
+					  "select\n" +
+					  "  100.00 * sum(case\n" +
+					  "    when p.p_type like 'PROMO%'\n" +
+					  "      then l.l_extendedprice * (1 - l.l_discount)\n" +
+					  "    else 0\n" +
+					  "  end) / sum(l.l_extendedprice * (1 - l.l_discount)) as promo_revenue\n" +
+					  "from\n" +
+					  "  lineitem_proj l,\n" +
+					  "  part p\n" +
+					  "where\n" +
+					  "  l.l_partkey = p.p_partkey\n" +
+					  " ",
 
 		      // 15
 		      "with revenue0 (supplier_no, total_revenue) as (\n"
