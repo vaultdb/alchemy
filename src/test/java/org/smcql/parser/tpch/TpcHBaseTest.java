@@ -400,34 +400,47 @@ public class TpcHBaseTest extends BaseTest {
 					  "\n" ,
 
 		      // 12
-		      "select\n"
-		          + "  l.l_shipmode,\n"
-		          + "  sum(case\n"
-		          + "    when o.o_orderpriority = '1-URGENT'\n"
-		          + "      or o.o_orderpriority = '2-HIGH'\n"
-		          + "      then 1\n"
-		          + "    else 0\n"
-		          + "  end) as high_line_count,\n"
-		          + "  sum(case\n"
-		          + "    when o.o_orderpriority <> '1-URGENT'\n"
-		          + "      and o.o_orderpriority <> '2-HIGH'\n"
-		          + "      then 1\n"
-		          + "    else 0\n"
-		          + "  end) as low_line_count\n"
-		          + "from\n"
-		          + "  orders o,\n"
-		          + "  lineitem l\n"
-		          + "where\n"
-		          + "  o.o_orderkey = l.l_orderkey\n"
-		          + "  and l.l_shipmode in ('TRUCK', 'REG AIR')\n"
-		          + "  and l.l_commitdate < l.l_receiptdate\n"
-		          + "  and l.l_shipdate < l.l_commitdate\n"
-		          + "  and l.l_receiptdate >= date '1994-01-01'\n"
-		          + "  and l.l_receiptdate < date '1995-01-01'\n"
-		          + "group by\n"
-		          + "  l.l_shipmode\n"
-		          + "order by\n"
-		          + "  l.l_shipmode",
+		      "with order_proj as (select o_orderkey, o_orderpriority \n" +
+					  "  from orders \n" +
+					  "  \n" +
+					  "),\n" +
+					  "\n" +
+					  "lineitem_proj as (select l_shipmode, l_orderkey \n" +
+					  "  from lineitem \n" +
+					  "  where \n" +
+					  "l_shipmode in ('TRUCK', 'REG AIR')\n" +
+					  "and l_commitdate < l_receiptdate\n" +
+					  "  and l_shipdate < l_commitdate\n" +
+					  "  and l_receiptdate >= date '1994-01-01'\n" +
+					  "  and l_receiptdate < date '1995-01-01'\n" +
+					  "\n" +
+					  " )\n" +
+					  "\n" +
+					  "select\n" +
+					  "  l.l_shipmode,\n" +
+					  "  sum(case\n" +
+					  "    when o.o_orderpriority = '1-URGENT'\n" +
+					  "      or o.o_orderpriority = '2-HIGH'\n" +
+					  "      then 1\n" +
+					  "    else 0\n" +
+					  "  end) as high_line_count,\n" +
+					  "  \n" +
+					  "  sum(case\n" +
+					  "    when o.o_orderpriority <> '1-URGENT'\n" +
+					  "      and o.o_orderpriority <> '2-HIGH'\n" +
+					  "      then 1\n" +
+					  "    else 0\n" +
+					  "  end) as low_line_count\n" +
+					  "from\n" +
+					  "  order_proj o,\n" +
+					  "  lineitem_proj l\n" +
+					  "where\n" +
+					  "  o.o_orderkey = l.l_orderkey\n" +
+					  "  \n" +
+					  "group by\n" +
+					  "  l.l_shipmode\n" +
+					  "order by\n" +
+					  "  l.l_shipmode\n",
 
 
 
