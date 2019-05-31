@@ -220,10 +220,12 @@ public class SecureAggregate extends SecureOperator {
 
 			case MIN:
 
-				processString += "agg" + aggId + " = If(dummyCheck, If(" + tupleVar + " < " + aggVar + ", " + tupleVar + ", " + aggVar + ")," + aggVar + ");\n";
+				processString += "agg" + aggId + " = If(dummyCheck, If(" + tupleVar + " < " + aggVar + ", " + tupleVar + ", " + aggVar + "), " + aggVar + ");\n";
 				return processString;
 			case MAX:
-				processString += "agg" + aggId + " = If(dummyCheck, If(" + tupleVar + " > " + aggVar + ", " + tupleVar + ", " + aggVar + ")" + aggVar + ");\n";
+				processString += "agg" + aggId + " = If(dummyCheck, If(" + tupleVar + " > " + aggVar + ", " + tupleVar + ", " + aggVar + "), " + aggVar + ");\n";
+				processString += "long value2 = agg1.reveal<int64_t>(PUBLIC)" + ";\n";
+				processString += "std::cout << \" Revealing after dummy comp: \" << value2 << std::endl" + ";\n";
 				return processString;
 			case COUNT:
 				return "not yet implemented";
@@ -248,8 +250,8 @@ public class SecureAggregate extends SecureOperator {
 			Integer arg = call.getArgList().get(0);
 			Integer offset = schema.getFieldOffset(arg);
 
-			// Debugging assistance for sum - return "memcpy(" + dstVar + ".bits, " + "tuple.bits + " +  offset + ", " + size + ");\n";
-            return "memcpy(" + dstVar + ".bits, " + srcVar  + ".bits + " +  offset + ", " + size + ");\n";
+			return "memcpy(" + dstVar + ".bits, " + "tuple.bits + " +  offset + ", " + size + ");\n";
+            // return "memcpy(" + dstVar + ".bits, " + srcVar  + ".bits + " +  offset + ", " + size + ");\n";
 
 
 		}

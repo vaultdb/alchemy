@@ -38,7 +38,7 @@ public class GenerateAggregateTest extends BaseTest {
 
     String testName = "testScalarAggregate";
 
-    String query = "SELECT Min(site), Max(site) FROM diagnoses";
+    String query = "SELECT Max(month_id) FROM diagnoses where month_id > 3";
     testCase(testName, query);
   }
 
