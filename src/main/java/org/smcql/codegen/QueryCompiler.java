@@ -22,7 +22,6 @@ import org.smcql.codegen.smc.operator.SecurePreamble;
 import org.smcql.codegen.smc.operator.support.UnionMethod;
 import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.RPC.RPCExecutorClient;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.RunConfig;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
