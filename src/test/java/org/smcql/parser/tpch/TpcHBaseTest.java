@@ -362,33 +362,42 @@ public class TpcHBaseTest extends BaseTest {
 		          + "limit 20",
 
 		      // 11
-		      "select\n"
-		          + "  ps.ps_partkey,\n"
-		          + "  sum(ps.ps_supplycost * ps.ps_availqty) as val\n"
-		          + "from\n"
-		          + "  partsupp ps,\n"
-		          + "  supplier s,\n"
-		          + "  nation n\n"
-		          + "where\n"
-		          + "  ps.ps_suppkey = s.s_suppkey\n"
-		          + "  and s.s_nationkey = n.n_nationkey\n"
-		          + "  and n.n_name = 'JAPAN'\n"
-		          + "group by\n"
-		          + "  ps.ps_partkey having\n"
-		          + "    sum(ps.ps_supplycost * ps.ps_availqty) > (\n"
-		          + "      select\n"
-		          + "        sum(ps.ps_supplycost * ps.ps_availqty) * 0.0001000000\n"
-		          + "      from\n"
-		          + "        partsupp ps,\n"
-		          + "        supplier s,\n"
-		          + "        nation n\n"
-		          + "      where\n"
-		          + "        ps.ps_suppkey = s.s_suppkey\n"
-		          + "        and s.s_nationkey = n.n_nationkey\n"
-		          + "        and n.n_name = 'JAPAN'\n"
-		          + "    )\n"
-		          + "order by\n"
-		          + "  val desc",
+		      "with nation_proj as (select n_nationkey from nation where n_name = 'JAPAN'),\n" +
+					  "\n" +
+					  "partsupp_proj as (select ps_partkey,ps_supplycost,ps_availqty, \n" +
+					  "\t\t\t\tps_suppkey from partsupp  ),\n" +
+					  "\t\t\t\t\n" +
+					  "supplier_proj as (select s_nationkey,s_suppkey  from supplier )\n" +
+					  "\n" +
+					  "\n" +
+					  "select\n" +
+					  "  ps.ps_partkey,\n" +
+					  "  sum(ps.ps_supplycost * ps.ps_availqty) as val\n" +
+					  "from\n" +
+					  "  partsupp_proj ps,\n" +
+					  "  supplier_proj s,\n" +
+					  "  nation_proj n\n" +
+					  "where\n" +
+					  "  ps.ps_suppkey = s.s_suppkey\n" +
+					  "  and s.s_nationkey = n.n_nationkey\n" +
+					  "  \n" +
+					  "group by\n" +
+					  "  ps.ps_partkey having\n" +
+					  "    sum(ps.ps_supplycost * ps.ps_availqty) > (\n" +
+					  "      select\n" +
+					  "        sum(ps.ps_supplycost * ps.ps_availqty) * 0.0001000000\n" +
+					  "      from\n" +
+					  "        partsupp ps,\n" +
+					  "        supplier s,\n" +
+					  "        nation n\n" +
+					  "      where\n" +
+					  "        ps.ps_suppkey = s.s_suppkey\n" +
+					  "        and s.s_nationkey = n.n_nationkey\n" +
+					  "        and n.n_name = 'JAPAN'\n" +
+					  "    )\n" +
+					  "order by\n" +
+					  "  val desc\n" +
+					  "\n" ,
 
 		      // 12
 		      "select\n"
