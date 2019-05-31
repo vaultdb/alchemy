@@ -191,16 +191,14 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  revenue desc",
 
 		      // 06
-		      "select\n"
-		          + "  sum(l_extendedprice * l_discount) as revenue\n"
-		          + "from\n"
-		          + "  lineitem\n"
-		          + "where\n"
-		          + "  l_shipdate >= date '1997-01-01'\n"
-		          + "  and l_shipdate < date '1998-01-01'\n"
-		          + "  and\n"
-		          + "  l_discount between 0.03 - 0.01 and 0.03 + 0.01\n"
-		          + "  and l_quantity < 24",
+		      "with lineitem_proj as (select l_extendedprice, l_discount from lineitem where l_shipdate >= date '1997-01-01'\n" +
+					  "  and l_shipdate < date '1998-01-01'\n" +
+					  "  and\n" +
+					  "  l_discount between 0.03 - 0.01 and 0.03 + 0.01\n" +
+					  "  and l_quantity < 24)\n" +
+					  "  \n" +
+					  "  select sum(l_extendedprice * l_discount) as revenue\n" +
+					  "from lineitem_proj\n",
 
 		      // 07
 		          "WITH lineitems AS (\n"
