@@ -1,21 +1,12 @@
 Data* $functionName(int party, NetIO * io) {
 
-    // std::cout << "Testing that this is the correct template" << std::endl;
-
-
 
     int rowLength = $size; 
 	string localBitstring = inputs["$functionName"];
 	string localDummyTags = dummyTagsMap["$functionName"];
 
-
-
-
     bool *localData = toBool(localBitstring);
     bool *localDummies = toBool(localDummyTags);
-
-
-
 
     int aliceSize = localBitstring.length() / rowLength;
     int bobSize = aliceSize;
@@ -32,12 +23,10 @@ Data* $functionName(int party, NetIO * io) {
         io->send_data(&bobSize, 4);
         io->flush();
     }
-        std::cout << " Input Data Length is " << localBitstring.length() << std::endl;
-    	std::cout << " Dummies " << localDummyTags << std::endl;
-    	std::cout << " rowLength " << rowLength << std::endl;
 
-    cout << "Alice size is " << aliceSize << endl;
 
+    std::cout << " Input Data Length is " << localBitstring.length() << std::endl;
+    std::cout << " Input Dummies are: " << localDummyTags << std::endl; // TODO: Test why Scalar Aggs do not always input
 
 
     Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs

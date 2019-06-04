@@ -44,7 +44,7 @@ public class GenerateAggregateTest extends BaseTest {
 
   public void testScalarMin() throws Exception {
 
-    String testName = "testScalarAggregate";
+    String testName = "testScalarMin";
 
     String query = "SELECT Min(month_id) FROM diagnoses";
     testCase(testName, query);
@@ -52,7 +52,7 @@ public class GenerateAggregateTest extends BaseTest {
 
   public void testScalarSum() throws Exception {
 
-    String testName = "testScalarAggregate";
+    String testName = "testScalarSum";
 
     String query = "SELECT Sum(month_id) FROM diagnoses";
     testCase(testName, query);
@@ -61,9 +61,9 @@ public class GenerateAggregateTest extends BaseTest {
 
   public void testScalarMultiAgg() throws Exception {
 
-    String testName = "testScalarAggregate";
+    String testName = "testScalarMultiAggregate";
 
-    String query = "SELECT Min(month_id), Max(month_id) FROM diagnoses";
+    String query = "SELECT Min(month_id), Max(month_id), Sum(month_id) FROM diagnoses";
     testCase(testName, query);
   }
 
