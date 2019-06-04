@@ -154,16 +154,18 @@ public class SecureAggregate extends SecureOperator {
 
 			String initAggregateValue = getValueInit(call);
 
-			initAggregate += "Integer " + aggVariable + "= Integer(INT_LENGTH," + initAggregateValue + ",PUBLIC);\n"; // TODO: Update for min,max, ect.
+			initAggregate += "Integer " + aggVariable + "= Integer(INT_LENGTH," + initAggregateValue + ",PUBLIC);\n";
 
 			if(!call.getArgList().isEmpty())
 				initAggregate += "Integer tupleArg" + varNo + " = Integer(" + size  + "," + initAggregateValue + ", PUBLIC);\n";
 
-			processAggregate += getProcessAggregate(call,aggCounter+1,size);
+			processAggregate += getProcessAggregate(call,aggCounter+1,size, runningOffset);
 
 			writeAggregate += getWriteDest(call, aggMap, "output", aggVariable, size);
 
 			aggCounter++;
+
+			runningOffset += size;
 
 		}
 
@@ -204,14 +206,14 @@ public class SecureAggregate extends SecureOperator {
 
 	}
 
-	private String getProcessAggregate(AggregateCall call, int aggId, int size){
+	private String getProcessAggregate(AggregateCall call, int aggId, int size, int runningOffset){
 
 		String aggVar = "agg" + aggId;
 		String tupleVar = "tupleArg" + aggId;
 		String processString = "";
 
 		if(!call.getArgList().isEmpty())
-			processString = extractAggregateArgument(call, aggVar, tupleVar, size);
+			processString = extractAggregateArgument(call, aggVar, tupleVar, size, runningOffset);
 
 
 
@@ -237,11 +239,11 @@ public class SecureAggregate extends SecureOperator {
 
 	}
 
-	private String extractAggregateArgument(AggregateCall call, String srcVar, String dstVar, int size) {
+	private String extractAggregateArgument(AggregateCall call, String srcVar, String dstVar, int size, int runningOffset) {
 			Integer arg = call.getArgList().get(0);
 			Integer offset = schema.getFieldOffset(arg);
 
-			return "writeToInteger( &" + dstVar + ", &tuple, 0, " + offset + ", " + size  + ");\n";
+			return "writeToInteger( &" + dstVar + ", &tuple, 0, " + runningOffset + ", " + size  + ");\n";
 		}
 
 	private String getWriteDest(AggregateCall call, Map<String, AggregateCall> aggMap, String dstTuple, String aggVar, int size){

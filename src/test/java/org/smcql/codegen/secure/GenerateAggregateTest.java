@@ -31,16 +31,43 @@ public class GenerateAggregateTest extends BaseTest {
   }
 
   // TODO: Create test queries from health database for Groupby: Count & Sum, Splitscalar: Count & Sum
+  // TODO: Fix race condition, so queries will pass on single run. Currently they require 2 runs to pass
 
 
-
-  public void testScalarAggregate() throws Exception {
+  public void testScalarMax() throws Exception {
 
     String testName = "testScalarAggregate";
 
-    String query = "SELECT SUM(month_id) FROM diagnoses";
+    String query = "SELECT Max(month_id) FROM diagnoses";
     testCase(testName, query);
   }
+
+  public void testScalarMin() throws Exception {
+
+    String testName = "testScalarAggregate";
+
+    String query = "SELECT Min(month_id) FROM diagnoses";
+    testCase(testName, query);
+  }
+
+  public void testScalarSum() throws Exception {
+
+    String testName = "testScalarAggregate";
+
+    String query = "SELECT Sum(month_id) FROM diagnoses";
+    testCase(testName, query);
+  }
+
+
+  public void testScalarMultiAgg() throws Exception {
+
+    String testName = "testScalarAggregate";
+
+    String query = "SELECT Min(month_id), Max(month_id) FROM diagnoses";
+    testCase(testName, query);
+  }
+
+
 
 
   public void testGroupbyCount() throws Exception {
