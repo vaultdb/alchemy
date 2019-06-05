@@ -36,7 +36,7 @@ public class GenerateAggregateTest extends BaseTest {
 
   public void testScalarMax() throws Exception {
 
-    String testName = "testScalarAggregate";
+    String testName = "testScalarMax";
 
     String query = "SELECT Max(month_id) FROM diagnoses";
     testCase(testName, query);
@@ -74,17 +74,18 @@ public class GenerateAggregateTest extends BaseTest {
 
     String testName = "testGroupbyCount";
 
-    String query = "SELECT COUNT(*) FROM diagnoses GROUP BY major_icd9";
+    // String query = "SELECT COUNT(month_id) FROM diagnoses GROUP BY major_icd9";
+    String query = "SELECT major_icd9, Count(*) FROM diagnoses GROUP BY major_icd9";
     testCase(testName, query);
   }
 
   public void testGroupbySum() throws Exception {
 
     String testName = "testGroupbySum";
-    //TODO: Get Sum( <any integer input> ) to compile. Some options from diagnoses are: patient_id, site, month
+    // TODO: Get Sum( <any integer input> ) to compile. Some options from diagnoses are: patient_id, site, month
 
-    // String query = "SELECT SUM(patient_id) FROM diagnoses GROUP BY major_icd9";
-    //testCase(testName, query);
+    String query = "SELECT Sum(month_id) FROM diagnoses GROUP BY major_icd9";
+    testCase(testName, query);
   }
 
 
