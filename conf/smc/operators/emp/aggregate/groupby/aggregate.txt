@@ -2,33 +2,33 @@ Data * $functionName(Data *data) {
 
 	$sortInput
 
+    // Initialize new Data object for end results
+    Data *result = new Data;
+    result->data = new Integer[data->publicSize];
+    result->publicSize = data->publicSize;
+    result->dummyTags = new Bit[data->publicSize];
+
 	std::cout << "groupby Aggregate being used" << std::endl;
-
-    // init is used to check if same type has been seen before
-
-    Integer * res = new Integer[data->publicSize];
 
     // set index 0 init
     Bit init = If(data->dummyTags[0],Bit(),Bit(true,PUBLIC));
-    Integer value = If(init,Integer(32,1,PUBLIC),Integer(32,1,PUBLIC));
+    Integer value = If(init,Integer(64,1,PUBLIC),Integer(64,1,PUBLIC));
 
     Integer lastOne = data->data[0];
     int cursor = 0;
 
-    // holds all associated aggregate values
-    std::vector<Integer> myVect;
-    myVect.push_back(value);
+    $initAgg
+
 
 
     while ( cursor < data->publicSize - 1) {
-
-        // std::cout << "Init is set to " << init.reveal(PUBLIC) << std::endl;
 
         cursor++;
         Integer current = data->data[cursor];
         Bit dummyOut = data->dummyTags[cursor];
         Bit dummyTest = !(data->dummyTags[cursor]); // easier to perform logic checks
         Bit initPrev = init;
+
 
         // if init and equal, set dummyOut to True for reverse logic
         dummyOut = If((init & (current==lastOne)),Bit(true,PUBLIC),dummyOut);
@@ -38,19 +38,31 @@ Data * $functionName(Data *data) {
         Bit temp = If((current==lastOne),(init | dummyTest),dummyTest);
         init = temp;
 
-        // store check to see if lastOne will be mutated
-        Integer lastHolder = lastOne;
+        // create new integer to add to the new data type
+        Integer *output = new Integer($dSize, 0, PUBLIC);
 
-        // if no longer initialized (i.e we just saw the last nonDummy of an attribute, mutate the last-nonDummy value)
-        // otherwise increment the value(specifics eventually determined in compute)
-        value = If(current==lastOne & init, value + Integer(32,1,PUBLIC), If(init,Integer(32,1,PUBLIC),Integer(32,0,PUBLIC)));
-        myVect.push_back(value);
+        // Compute all aggregates
+        $processAgg
+
+        // extract groupby attributes to output
+        $writeGroupBy  // extractGroupBy in SecureAggregate
+
+        // extract each aggregate to output
+        $writeAggregate //
+
 
         // if we are initialized, move lastOne to current. Else do not move lastOne
         lastOne = If(init,current,lastOne);
 
+
+        // insert current output
+        result->data[cursor] = output;
+
+
         // replace current dummy
-        data->dummyTags[cursor] = dummyOut;
+        result->dummyTags[cursor] = dummyOut;
+
+
 
     }
 
@@ -60,6 +72,8 @@ Data * $functionName(Data *data) {
    Bit real = Bit();
 
    // swap first and last dummy positions and reset values
+   // apply only to result
+
    while ( cursor < data->publicSize) {
         Bit prevDummy = data->dummyTags[cursor-1];
         Bit currDummy = data->dummyTags[cursor];

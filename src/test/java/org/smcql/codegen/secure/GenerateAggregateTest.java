@@ -31,33 +31,61 @@ public class GenerateAggregateTest extends BaseTest {
   }
 
   // TODO: Create test queries from health database for Groupby: Count & Sum, Splitscalar: Count & Sum
+  // TODO: Fix race condition, so queries will pass on single run. Currently they require 2 runs to pass
 
 
+  public void testScalarMax() throws Exception {
 
-  public void testScalarAggregate() throws Exception {
+    String testName = "testScalarMax";
 
-    String testName = "testScalarAggregate";
-
-    String query = "SELECT SUM(month_id) FROM diagnoses";
+    String query = "SELECT Max(month_id) FROM diagnoses";
     testCase(testName, query);
   }
+
+  public void testScalarMin() throws Exception {
+
+    String testName = "testScalarMin";
+
+    String query = "SELECT Min(month_id) FROM diagnoses";
+    testCase(testName, query);
+  }
+
+  public void testScalarSum() throws Exception {
+
+    String testName = "testScalarSum";
+
+    String query = "SELECT Sum(month_id) FROM diagnoses";
+    testCase(testName, query);
+  }
+
+
+  public void testScalarMultiAgg() throws Exception {
+
+    String testName = "testScalarMultiAggregate";
+
+    String query = "SELECT Min(month_id), Max(month_id), Sum(month_id) FROM diagnoses";
+    testCase(testName, query);
+  }
+
+
 
 
   public void testGroupbyCount() throws Exception {
 
     String testName = "testGroupbyCount";
 
-    String query = "SELECT COUNT(*) FROM diagnoses GROUP BY major_icd9";
+    // String query = "SELECT COUNT(month_id) FROM diagnoses GROUP BY major_icd9";
+    String query = "SELECT major_icd9, Count(*) FROM diagnoses GROUP BY major_icd9";
     testCase(testName, query);
   }
 
   public void testGroupbySum() throws Exception {
 
     String testName = "testGroupbySum";
-    //TODO: Get Sum( <any integer input> ) to compile. Some options from diagnoses are: patient_id, site, month
+    // TODO: Get Sum( <any integer input> ) to compile. Some options from diagnoses are: patient_id, site, month
 
-    // String query = "SELECT SUM(patient_id) FROM diagnoses GROUP BY major_icd9";
-    //testCase(testName, query);
+    String query = "SELECT Sum(month_id) FROM diagnoses GROUP BY major_icd9";
+    testCase(testName, query);
   }
 
 

@@ -28,43 +28,43 @@ void run(int party, int port) {
     
     setup_semi_honest(io, party);
     
-$functions
+    $functions
     
-    	Data * results = $rootOutput;
+    Data * results = $rootOutput;
 
-     int tupleWidth = results->data[0].size();
-     int dummyCount = results->publicSize;
+    int tupleWidth = results->data[0].size();
+    int dummyCount = results->publicSize;
 
-     std::cout << "The number of dummies new is " << dummyCount << std::endl;
-
-     std::cout << "Tuple width is" << tupleWidth << std::endl;
-
-
-     long outputSize = results->publicSize * tupleWidth;
-     output.reserve(dummyCount + outputSize);
-     bool *tuple;
+    // Debugging assistance
+    std::cout << "The number of dummies after all operations is " << dummyCount << std::endl;
+    std::cout << "Output tuple width is " << tupleWidth << std::endl;
 
 
-     for(int i = 0; i < dummyCount; ++i){
-        output += to_string(results->dummyTags[i].reveal(XOR));
-     }
+    long outputSize = results->publicSize * tupleWidth;
+    output.reserve(dummyCount + outputSize);
+    bool *tuple;
 
-     for(int i = 0; i < results->publicSize; ++i) {
-     	     tuple = outputBits(results->data[i], tupleWidth, XOR);
-     	     for(int j = 0; j < tupleWidth; ++j) {
-     	     	     output += (tuple[j] ? '1' : '0');
-     		     }
-     }
-     
-     //debug output
-     //cout << "output: " << output << endl;
 
-     io->flush();
-     delete io;
+    for(int i = 0; i < dummyCount; ++i){
+    output += to_string(results->dummyTags[i].reveal(XOR));
+    }
 
-		cout << "Finished query!" << endl;
-		
-	}
+    for(int i = 0; i < results->publicSize; ++i) {
+         tuple = outputBits(results->data[i], tupleWidth, XOR);
+         for(int j = 0; j < tupleWidth; ++j) {
+                 output += (tuple[j] ? '1' : '0');
+             }
+    }
+
+// debug final output
+// cout << " Final output from EMP is: " << output << endl;
+
+io->flush();
+delete io;
+
+cout << "Finished query!" << endl;
+
+}
 
 
 

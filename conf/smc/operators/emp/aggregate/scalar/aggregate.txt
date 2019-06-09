@@ -17,18 +17,11 @@ Data * $functionName(Data *data) {
         Integer tuple = data->data[cursor];
         Bit dummyCheck = !data->dummyTags[cursor];
 
-        // debugging assistance
-        long value = tuple.reveal<int64_t>(PUBLIC);
-        std::cout << "Tuple being processed: " << value << std::endl;
-
 	    $processAgg
 
 	}
 
     $writeAgg
-
-    long value = output->reveal<int64_t>(PUBLIC);
-    std::cout << "Output being processed: " << value << std::endl;
 
     result->data = output;
 

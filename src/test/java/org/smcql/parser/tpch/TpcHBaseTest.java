@@ -487,36 +487,37 @@ public class TpcHBaseTest extends BaseTest {
 					  " ",
 
 		      // 15
-		      "with revenue0 (supplier_no, total_revenue) as (\n"
-		          + "  select\n"
-		          + "    l_suppkey,\n"
-		          + "    sum(l_extendedprice * (1 - l_discount))\n"
-		          + "  from\n"
-		          + "    lineitem\n"
-		          + "  where\n"
-		          + "    l_shipdate >= date '1993-05-01'\n"
-		          + "    and l_shipdate < date '1993-08-01'\n"
-		          + "  group by\n"
-		          + "    l_suppkey)\n"
-		          + "select\n"
-		          + "  s.s_suppkey,\n"
-		          + "  s.s_name,\n"
-		          + "  s.s_address,\n"
-		          + "  s.s_phone,\n"
-		          + "  r.total_revenue\n"
-		          + "from\n"
-		          + "  supplier s,\n"
-		          + "  revenue0 r\n"
-		          + "where\n"
-		          + "  s.s_suppkey = r.supplier_no\n"
-		          + "  and r.total_revenue = (\n"
-		          + "    select\n"
-		          + "      max(total_revenue)\n"
-		          + "    from\n"
-		          + "      revenue0\n"
-		          + "  )\n"
-		          + "order by\n"
-		          + "  s.s_suppkey",
+		      "with revenue0 (supplier_no, total_revenue) as (\n" +
+					  "  select\n" +
+					  "    l_suppkey,\n" +
+					  "    sum(l_extendedprice * (1 - l_discount))\n" +
+					  "  from\n" +
+					  "    lineitem\n" +
+					  "  where\n" +
+					  "    l_shipdate >= date '1993-05-01'\n" +
+					  "    and l_shipdate < date '1993-08-01'\n" +
+					  "  group by\n" +
+					  "    l_suppkey),\n" +
+					  "max_rev_proj as (select\n" +
+					  "      max(total_revenue) as max_rev\n" +
+					  "    from\n" +
+					  "      revenue0)\n" +
+					  "\n" +
+					  "select\n" +
+					  "  s.s_suppkey,\n" +
+					  "  s.s_name,\n" +
+					  "  s.s_address,\n" +
+					  "  s.s_phone,\n" +
+					  "  r.total_revenue\n" +
+					  "from\n" +
+					  "  supplier s,\n" +
+					  "  revenue0 r,\n" +
+					  "    max_rev_proj\n" +
+					  "where\n" +
+					  "  s.s_suppkey = r.supplier_no\n" +
+					  "  and r.total_revenue = max_rev_proj.max_rev\n" +
+					  "order by\n" +
+					  "  s.s_suppkey\n",
 
 		      // 16 - Potentially indicating to look at string replacements
 		         // TODO: fix compiler with commented lines.  
@@ -529,12 +530,20 @@ public class TpcHBaseTest extends BaseTest {
 		          // so that we don't hit the SMC parser for all of these specialized expression like 
 		          // EXTRACT(Year FROM ...)
 	
-		          "WITH complaints AS (SELECT s_suppkey FROM supplier WHERE s_comment LIKE '%Customer%Complaints%'),\n" +
-						  "     \n" +
-						  "\t ps_suppkey_set_diff AS (\n" +
+		          "WITH complaints AS (SELECT * FROM supplier WHERE s_comment LIKE '%Customer%Complaints%'),\n" +
+						  "     ps_suppkey_set_diff AS (\n" +
 						  "     SELECT ps_partkey, ps_suppkey\n" +
 						  "     FROM partsupp ps LEFT JOIN complaints c ON ps.ps_suppkey = c.s_suppkey\n" +
-						  "     WHERE c.s_suppkey IS NULL)\n" +
+						  "     WHERE c.s_suppkey IS NULL),\n" +
+						  "\n" +
+						  "     part_pro  AS ( select p_partkey, p_brand,p_type,p_size from part p \n" +
+						  "      where\n" +
+						  "      p.p_brand <> 'Brand#21'\n" +
+						  "      and p.p_type not like 'MEDIUM PLATED%'\n" +
+						  "        AND p.p_size in (38, 2, 8, 31, 44, 5, 14, 24)\n" +
+						  "\n" +
+						  "      )\n" +
+						  "\n" +
 						  "select\n" +
 						  "   p.p_brand,\n" +
 						  "   p.p_type,\n" +
@@ -542,12 +551,10 @@ public class TpcHBaseTest extends BaseTest {
 						  "   count(distinct ps.ps_suppkey) as supplier_cnt\n" +
 						  " from\n" +
 						  "   ps_suppkey_set_diff ps,\n" +
-						  "   part p\n" +
+						  "   part_pro p\n" +
 						  " where\n" +
 						  "   p.p_partkey = ps.ps_partkey\n" +
-						  "   and p.p_brand <> 'Brand#21'\n" +
-						  "   and p.p_type not like 'MEDIUM PLATED%'\n" +
-						  "   and p.p_size in (38, 2, 8, 31, 44, 5, 14, 24)\n" +
+						  "   \n" +
 						  " group by\n" +
 						  "   p.p_brand,\n" +
 						  "   p.p_type,\n" +
@@ -556,8 +563,7 @@ public class TpcHBaseTest extends BaseTest {
 						  "   supplier_cnt desc,\n" +
 						  "   p.p_brand,\n" +
 						  "   p.p_type,\n" +
-						  "   p.p_size\n" +
-						  "\n",
+						  "   p.p_size",
 
 		      // 17
 		      "WITH l2table AS (\n" +
@@ -567,19 +573,25 @@ public class TpcHBaseTest extends BaseTest {
 					  "    lineitem l2\n" +
 					  "  group by\n" +
 					  "    l2.l_partkey\n" +
+					  "),\n" +
+					  "\n" +
+					  "part_proj as (select p_partkey from part \n" +
+					  "where \n" +
+					  "p_container = 'JUMBO CAN'\n" +
+					  "and\n" +
+					  "p_brand = 'Brand#13'\n" +
 					  ")\n" +
 					  "select\n" +
 					  "  sum(l.l_extendedprice) / 7.0 as avg_yearly\n" +
 					  "from\n" +
 					  "  lineitem l,\n" +
-					  "  part p,\n" +
-					  "  l2table\n" +
+					  "  part_proj p,\n" +
+					  "  l2table l2\n" +
 					  "where\n" +
 					  "  p.p_partkey = l.l_partkey\n" +
-					  "  and p.p_brand = 'Brand#13'\n" +
-					  "  and p.p_container = 'JUMBO CAN'\n" +
-					  "  and l.l_quantity < avg_l2_q\n" +
-					  "  and l2table.l_partkey = p.p_partkey",
+					  "  \n" +
+					  "  and l.l_quantity < l2.avg_l2_q\n" +
+					  "  and l2.l_partkey = p.p_partkey",
 
 			// 18
 		      "select\n"
