@@ -44,8 +44,8 @@ Data * $functionName(Data *data) {
         // Compute all aggregates
         $processAgg
 
-        // extract groupby attributes to output
-        $writeGroupBy  // extractGroupBy in SecureAggregate
+        // extractGroupBy in SecureAggregate
+        $writeGroupBy
 
         // extract each aggregate to output
         $writeAggregate //
@@ -72,7 +72,7 @@ Data * $functionName(Data *data) {
    Bit real = Bit();
 
    // swap first and last dummy positions and reset values
-   // apply only to result
+   // TODO: apply only to result, logic needs to be updated
 
    while ( cursor < data->publicSize) {
         Bit prevDummy = data->dummyTags[cursor-1];
@@ -92,14 +92,6 @@ Data * $functionName(Data *data) {
         data->data[cursor-1] = myVect[cursor-1];
 
         cursor++;
-
-        // check for last value replacement
-        /*
-        if(cursor == data->publicSize){
-            data->data[cursor] = myVect[cursor-1];
-        }
-        */
-
     }
 
     data->data[data->publicSize-1] = myVect[data->publicSize-1];

@@ -1,7 +1,11 @@
 package org.smcql.codegen.smc.operator;
 
 
+import org.smcql.plan.operator.Aggregate;
 import org.smcql.plan.operator.Operator;
+import org.smcql.type.SecureRelDataTypeField;
+
+import java.util.List;
 
 public class SecureOperatorFactory {
 	
@@ -9,7 +13,20 @@ public class SecureOperatorFactory {
 	
 		switch(o.getOpName()) {
 			case "Aggregate":
-				return new SecureAggregate(o);
+
+				// Ideally these will be merged into one class in the future
+				// Currently seperated as SecureAggregate is functional
+				Aggregate agg = (Aggregate) o;
+				List<SecureRelDataTypeField> groupByAttributes = agg.getGroupByAttributes();
+
+				if (groupByAttributes.isEmpty()) {
+					return new SecureAggregate(o);
+				}
+
+				else{
+					return new SecureGroupByAggregate(o);
+				}
+
 			case "Sort":
 				return new SecureSort(o);
 			case "Distinct":
