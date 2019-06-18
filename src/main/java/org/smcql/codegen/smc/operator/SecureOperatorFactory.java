@@ -5,6 +5,7 @@ import org.smcql.plan.operator.Aggregate;
 import org.smcql.plan.operator.Operator;
 import org.smcql.type.SecureRelDataTypeField;
 
+
 import java.util.List;
 
 public class SecureOperatorFactory {
