@@ -224,7 +224,8 @@ public class SecureAggregate extends SecureOperator {
 				processString += "agg" + aggId + " = If(dummyCheck, If(" + tupleVar + " > " + aggVar + ", " + tupleVar + ", " + aggVar + "), " + aggVar + ");\n";
 				return processString;
 			case COUNT:
-				return "not yet implemented";
+				processString += "agg" + aggId + " = If(dummyCheck, " +  aggVar + " + 1, " + aggVar + ");\n";
+				return processString;
 			case SUM:
 				processString += "agg" + aggId + " = If(dummyCheck," + aggVar + " + " + tupleVar + ", " + aggVar + ");\n";
 				return processString;
@@ -239,7 +240,6 @@ public class SecureAggregate extends SecureOperator {
 
 	private String extractAggregateArgument(AggregateCall call, String srcVar, String dstVar, int size, int runningOffset) {
 		Integer arg = call.getArgList().get(0);
-		Integer offset = schema.getFieldOffset(arg);
 
 		return "writeToInteger( &" + dstVar + ", &tuple, 0, " + runningOffset + ", " + size  + ");\n";
 	}

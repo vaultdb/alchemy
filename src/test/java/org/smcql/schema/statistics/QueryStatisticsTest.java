@@ -28,12 +28,12 @@ public class QueryStatisticsTest  extends BaseTest {
 	
 	public void testDemographicsProjection() throws Exception {
 		String query = "SELECT patient_id,gender,birth_year FROM demographics";
-		SecureRelRecordType schema = testQuery("demographics-scan", query);
+		SecureRelRecordType schema = testStatisticsQuery("demographics-scan", query);
 		
 		List<ObliviousFieldStatistics> observedStats = new ArrayList<ObliviousFieldStatistics>();
-		ObliviousFieldStatistics patientIdStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics", "patient_id");
+		ObliviousFieldStatistics patientIdStats = ObliviousFieldStatisticsTest.getExpectedStatistics("demographics", "patient_id");
 
-		ObliviousFieldStatistics genderStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics","gender");
+		ObliviousFieldStatistics genderStats = ObliviousFieldStatisticsTest.getExpectedStatistics("demographics","gender");
 		// make it oblivious, getExpected only works for public attrs
 		genderStats.setDistinctCardinality(3);
 		genderStats.setMaxMultiplicity(-1);
@@ -42,7 +42,7 @@ public class QueryStatisticsTest  extends BaseTest {
 		List<Long> genderDomain = ObliviousFieldStatistics.generateDomain(1L,  3L);
 		genderStats.setDomain(genderDomain);
 
-		ObliviousFieldStatistics birthYearStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics", "birth_year");
+		ObliviousFieldStatistics birthYearStats = ObliviousFieldStatisticsTest.getExpectedStatistics("demographics", "birth_year");
 		birthYearStats.setDomain(null);
 		birthYearStats.setDistinctCardinality(72);
 		birthYearStats.setMaxMultiplicity(-1);
@@ -67,7 +67,7 @@ public class QueryStatisticsTest  extends BaseTest {
 
 	public void testDemographicsFilter() throws Exception {
 		String query = "SELECT patient_id from demographics WHERE patient_id = 1";
-		SecureRelRecordType schema = testQuery("demographics-filter", query);
+		SecureRelRecordType schema = testStatisticsQuery("demographics-filter", query);
 		logSchemaStats(schema);
 
 		
@@ -85,10 +85,10 @@ public class QueryStatisticsTest  extends BaseTest {
 	public void testDemographicsMultiFilter() throws Exception {
 		
 		String query = "SELECT patient_id from demographics WHERE gender = 1 AND birth_year = 1990";
-		SecureRelRecordType schema = testQuery("demographics-filter", query);
+		SecureRelRecordType schema = testStatisticsQuery("demographics-filter", query);
 		logSchemaStats(schema);
 
-		ObliviousFieldStatistics expectedStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics", "patient_id");
+		ObliviousFieldStatistics expectedStats = ObliviousFieldStatisticsTest.getExpectedStatistics("demographics", "patient_id");
 		// TODO: check other fields in ObliviousFieldStatistic member variables
 		assertEquals(6, schema.getCardinalityBound());
 		assertEquals(expectedStats, schema.getSecureField(0).getStatistics());
@@ -141,12 +141,12 @@ public class QueryStatisticsTest  extends BaseTest {
 	public void testSimpleJoin() throws Exception {
 
 		String query = "SELECT * FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id";
-		SecureRelRecordType schema = testQuery("simple-join", query);
+		SecureRelRecordType schema = testStatisticsQuery("simple-join", query);
 
 		List<ObliviousFieldStatistics> observedStats = new ArrayList<ObliviousFieldStatistics>();
-		ObliviousFieldStatistics patientIdStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics", "patient_id");
+		ObliviousFieldStatistics patientIdStats = ObliviousFieldStatisticsTest.getExpectedStatistics("demographics", "patient_id");
 
-		ObliviousFieldStatistics genderStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics","gender");
+		ObliviousFieldStatistics genderStats = ObliviousFieldStatisticsTest.getExpectedStatistics("demographics","gender");
 		// make it oblivious, getExpected only works for public attrs
 		genderStats.setDistinctCardinality(3);
 		genderStats.setMaxMultiplicity(-1);
@@ -155,7 +155,7 @@ public class QueryStatisticsTest  extends BaseTest {
 		List<Long> genderDomain = ObliviousFieldStatistics.generateDomain(1L,  3L);
 		genderStats.setDomain(genderDomain);
 
-		ObliviousFieldStatistics birthYearStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics", "birth_year");
+		ObliviousFieldStatistics birthYearStats = ObliviousFieldStatisticsTest.getExpectedStatistics("demographics", "birth_year");
 		birthYearStats.setDomain(null);
 		birthYearStats.setDistinctCardinality(72);
 		birthYearStats.setMaxMultiplicity(-1);
@@ -195,14 +195,14 @@ public class QueryStatisticsTest  extends BaseTest {
 		//[1...6] -> 7 options to choose from but if you have 0 elements of something, you would strike it out as a
 		//dummy and then it becomes [1...6]
 		String query = "SELECT gender,COUNT(*) FROM demographics GROUP BY gender";
-		SecureRelRecordType schema = testQuery("group-by-aggregate", query);
+		SecureRelRecordType schema = testStatisticsQuery("group-by-aggregate", query);
 		logSchemaStats(schema);
 		
 		
 		long cardinalityBound = 3;
 		ObliviousFieldStatistics genderStats, countStats;
 		
-		genderStats = ObliviousFieldStatisticsTest.getExpectedOutput("demographics","gender");
+		genderStats = ObliviousFieldStatisticsTest.getExpectedStatistics("demographics","gender");
 		// make it oblivious, getExpected only works for public attrs
 		genderStats.setDistinctCardinality(3);
 		genderStats.setMaxMultiplicity(-1);
@@ -238,7 +238,7 @@ public class QueryStatisticsTest  extends BaseTest {
 	}
 
 	
-	protected SecureRelRecordType testQuery(String testName, String sql) throws Exception {
+	protected SecureRelRecordType testStatisticsQuery(String testName, String sql) throws Exception {
 		SystemConfiguration.getInstance().resetCounters();
 		SystemConfiguration.getInstance().setProperty("code-generator-mode", "debug");
 		Logger logger = SystemConfiguration.getInstance().getLogger();

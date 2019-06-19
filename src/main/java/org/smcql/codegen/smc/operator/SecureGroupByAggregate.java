@@ -115,8 +115,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 
 
 		LogicalAggregate baseAggregate = (LogicalAggregate) planNode.getSecureRelNode().getRelNode();
-		RelRecordType record = (RelRecordType) baseAggregate.getRowType();
-
+		
 		List<AggregateCall> aggCallList = baseAggregate.getAggCallList();
 		Iterator<Pair<AggregateCall, String>> aggItr = baseAggregate.getNamedAggCalls().iterator();
 
@@ -188,11 +187,8 @@ public class SecureGroupByAggregate extends SecureOperator {
 				varInit = "99999";
 				return varInit;
 			case MAX:
-				return varInit;
 			case COUNT:
-				return varInit;
 			case SUM:
-				return varInit;
 			case AVG:
 				return varInit;
 			default:
@@ -220,11 +216,11 @@ public class SecureGroupByAggregate extends SecureOperator {
 			case MAX:
 				processString += "not yet implemented";
 				return processString;
-			case COUNT:
-				processString += "not yet implemented";
+			case COUNT:  // TODO: set up for group by part
+				processString += "agg" + aggId + " = If(dummyTest, " +  aggVar + " + 1, " + aggVar + ");\n";
 				return processString;
 			case SUM:
-				processString += "not yet implemented";
+				processString += "agg" + aggId + " = If(dummyTest, " + aggVar + " + " + tupleVar + ", " + aggVar + ");\n";
 				return processString;
 			case AVG:
 				processString += "not yet implemented";
@@ -279,18 +275,17 @@ public class SecureGroupByAggregate extends SecureOperator {
 
 		LogicalAggregate baseAggregate = (LogicalAggregate) planNode.getSecureRelNode().getRelNode();
 		RelRecordType record = (RelRecordType) baseAggregate.getRowType();
-		SecureRelRecordType inSchema = planNode.getInSchema();
-
+		
 		String writer = new String();
 
 		// Iterate over record
 		for (RelDataTypeField field : record.getFieldList()) {
 			String name = field.getName();
 			int dstOffset = schema.getFieldOffset(field.getIndex());
-			int srcOffset = inSchema.getFieldOffset(inSchema.getFieldOffset(inSchema.getAttribute(name).getIndex()));
+			//int srcOffset = inSchema.getFieldOffset(inSchema.getFieldOffset(inSchema.getAttribute(name).getIndex()));
 			if (aggMap.containsKey(name)) {
 				if (aggMap.get(name).equals(call)) {
-					writer += "writeToInteger(" + dstTuple + ", &" + aggVar + ", " + dstOffset + "," + srcOffset+  ", " + size + ");\n";
+					writer += "writeToInteger(" + dstTuple + ", &" + aggVar + ", " + dstOffset + ",0, " + size + ");\n";
 					break;
 				}
 			}

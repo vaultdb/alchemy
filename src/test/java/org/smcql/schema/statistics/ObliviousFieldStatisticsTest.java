@@ -31,7 +31,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "diagnoses";
 		String attr = "patient_id";
 		
-		ObliviousFieldStatistics stats = getExpectedOutput(table, attr);
+		ObliviousFieldStatistics stats = getExpectedStatistics(table, attr);
 		testCase(table, attr, stats);	
 	}
 	
@@ -39,7 +39,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "medications";
 		String attr = "patient_id";
 		
-		ObliviousFieldStatistics stats = getExpectedOutput(table, attr);
+		ObliviousFieldStatistics stats = getExpectedStatistics(table, attr);
 		testCase(table, attr, stats);	
 	}
 	
@@ -116,7 +116,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 	
 	
 	// For use with public attributes
-	public static ObliviousFieldStatistics getExpectedOutput(String table, String attr) throws Exception {
+	public static ObliviousFieldStatistics getExpectedStatistics(String table, String attr) throws Exception {
 
 		ObliviousFieldStatistics stats = new ObliviousFieldStatistics();
 		long maxMultiplicity = runLongIntQuery("SELECT COUNT(*) FROM " +  table + " GROUP BY " + attr + " ORDER BY COUNT(*) DESC LIMIT 1");

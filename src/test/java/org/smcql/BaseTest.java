@@ -6,9 +6,16 @@ import java.util.logging.Logger;
 import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.SqlNode;
+import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.db.data.QueryTable;
+import org.smcql.executor.EmpExecutor;
+import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
+import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.parser.SqlStatementParser;
+import org.smcql.plan.SecureRelRoot;
+import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
 
@@ -44,4 +51,39 @@ public class BaseTest extends TestCase {
 	}
 
 
+	  protected QueryTable getExpectedOutput(String testName, String query) throws Exception {
+
+		    String unionedId = ConnectionManager.getInstance().getUnioned();
+		    SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
+		    return SqlQueryExecutor.query(query, outSchema, unionedId);
+		  }
+
+	  
+	  protected void testQuery(String testName, String sql) throws Exception {
+		    SystemConfiguration.getInstance().resetCounters();
+		    SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
+
+		    System.out.println("Initial schema: " + secRoot.getPlanRoot().getSchema() );
+		    QueryCompiler qc = new QueryCompiler(secRoot);
+		    qc.writeOutEmpFile();
+
+		    String empTarget = Utilities.getCodeGenTarget() + "/" + testName + ".h";
+		    String jniTarget = Utilities.getCodeGenTarget() + "/" + testName + ".java";
+
+		    assertTrue(FileUtils.fileExists(empTarget));
+		    assertTrue(FileUtils.fileExists(jniTarget));
+
+		    EmpExecutor exec = new EmpExecutor(qc);
+		    exec.run();
+
+		    QueryTable expectedOutput = getExpectedOutput(testName, sql);
+		    QueryTable observedOutput = exec.getOutput();
+
+		    logger.info("Observed output: \n" + observedOutput);
+		    logger.info("Expected output: \n" + expectedOutput);
+
+		    assertEquals(expectedOutput.tupleCount(), observedOutput.tupleCount());
+		    assertEquals(expectedOutput, observedOutput);
+
+		  }
 }

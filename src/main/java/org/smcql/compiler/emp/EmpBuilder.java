@@ -65,6 +65,8 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         	}
         }
         
+        
+        smcqlLogger.info("Loading class: " + fullyQualifiedClassName);
         Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName); //.copyLibs(true);
 
         
