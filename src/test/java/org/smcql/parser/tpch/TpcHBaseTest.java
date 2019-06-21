@@ -53,55 +53,56 @@ public class TpcHBaseTest extends BaseTest {
 					  "l_linestatus",
 
 		      // 02
-		      "WITH min_ps_supplycost AS ("
-	          + "    select\n"
-	          + "      ps.ps_partkey,min(ps.ps_supplycost) min_cost\n"
-	          + "\n"
-	          + "    from\n"
-	          + "      partsupp ps,\n"
-	          + "      supplier s,\n"
-	          + "      nation n,\n"
-	          + "      region r\n"
-	          + "    where\n"
-	          + "      s.s_suppkey = ps.ps_suppkey\n"
-	          + "      and s.s_nationkey = n.n_nationkey\n"
-	          + "      and n.n_regionkey = r.r_regionkey\n"
-	          + "      and r.r_name = 'EUROPE'\n"
-	          + "    GROUP BY ps.ps_partkey"
-	          + "  )\n"
-		      + "select\n"
-		          + "  s.s_acctbal,\n"
-		          + "  s.s_name,\n"
-		          + "  n.n_name,\n"
-		          + "  p.p_partkey,\n"
-		          + "  p.p_mfgr,\n"
-		          + "  s.s_address,\n"
-		          + "  s.s_phone,\n"
-		          + "  s.s_comment\n"
-		          + "from\n"
-		          + "  part p,\n"
-		          + "  supplier s,\n"
-		          + "  partsupp ps,\n"
-		          + "  nation n,\n"
-		          + "  region r,\n"
-		          + "  min_ps_supplycost mps\n"
-		          + "where\n"
-		          + "  p.p_partkey = ps.ps_partkey\n"
-		          + "  and s.s_suppkey = ps.ps_suppkey\n"
-		          + "  and p.p_size = 41\n"
-		          + "  and p.p_type like '%NICKEL'\n"
-		          + "  and s.s_nationkey = n.n_nationkey\n"
-		          + "  and n.n_regionkey = r.r_regionkey\n"
-		          + "  and r.r_name = 'EUROPE'\n"
-		          + "  and mps.ps_partkey = ps.ps_partkey\n"
-		          + "  and ps.ps_supplycost = mps.min_cost\n"
-		          + "\n"
-		          + "order by\n"
-		          + "  s.s_acctbal desc,\n"
-		          + "  n.n_name,\n"
-		          + "  s.s_name,\n"
-		          + "  p.p_partkey\n"
-		          + "limit 100",
+		      "WITH min_ps_supplycost AS (    select\n" +
+					  "      ps.ps_partkey,min(ps.ps_supplycost) min_cost\n" +
+					  "\n" +
+					  "    from\n" +
+					  "      partsupp ps,\n" +
+					  "      supplier s,\n" +
+					  "      nation n,\n" +
+					  "      region r\n" +
+					  "    where\n" +
+					  "      s.s_suppkey = ps.ps_suppkey\n" +
+					  "      and s.s_nationkey = n.n_nationkey\n" +
+					  "      and n.n_regionkey = r.r_regionkey\n" +
+					  "      and r.r_name = 'EUROPE'\n" +
+					  "    GROUP BY ps.ps_partkey  ),\n" +
+					  "\n" +
+					  "parts_projected as (select p_partkey,p_mfgr,p_size,p_type from part where \n" +
+					  "  p_type like '%NICKEL' and p_size = 41)\n" +
+					  "\n" +
+					  "select\n" +
+					  "  s.s_acctbal,\n" +
+					  "  s.s_name,\n" +
+					  "  n.n_name,\n" +
+					  "  p.p_partkey,\n" +
+					  "  p.p_mfgr,\n" +
+					  "  s.s_address,\n" +
+					  "  s.s_phone,\n" +
+					  "  s.s_comment\n" +
+					  "from\n" +
+					  "  parts_projected p,\n" +
+					  "  supplier s,\n" +
+					  "  partsupp ps,\n" +
+					  "  nation n,\n" +
+					  "  region r,\n" +
+					  "  min_ps_supplycost mps\n" +
+					  "where\n" +
+					  "  p.p_partkey = ps.ps_partkey\n" +
+					  "  and s.s_suppkey = ps.ps_suppkey\n" +
+					  "\n" +
+					  "  and s.s_nationkey = n.n_nationkey\n" +
+					  "  and n.n_regionkey = r.r_regionkey\n" +
+					  "  and mps.ps_partkey = ps.ps_partkey\n" +
+					  "  and ps.ps_supplycost = mps.min_cost\n" +
+					  "\n" +
+					  "order by\n" +
+					  "  s.s_acctbal desc,\n" +
+					  "  n.n_name,\n" +
+					  "  s.s_name,\n" +
+					  "  p.p_partkey\n" +
+					  "\n" +
+					  "\n",
 
 		      // 03
 		      "with customer_proj as (select c_mktsegment, c_custkey from customer\n" +
