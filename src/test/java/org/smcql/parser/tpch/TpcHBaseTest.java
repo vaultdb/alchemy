@@ -345,38 +345,53 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  o_year desc\n",
 
 		      // 10
-		      "select\n"
-		          + "  c.c_custkey,\n"
-		          + "  c.c_name,\n"
-		          + "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue,\n"
-		          + "  c.c_acctbal,\n"
-		          + "  n.n_name,\n"
-		          + "  c.c_address,\n"
-		          + "  c.c_phone,\n"
-		          + "  c.c_comment\n"
-		          + "from\n"
-		          + "  customer c,\n"
-		          + "  orders o,\n"
-		          + "  lineitem l,\n"
-		          + "  nation n\n"
-		          + "where\n"
-		          + "  c.c_custkey = o.o_custkey\n"
-		          + "  and l.l_orderkey = o.o_orderkey\n"
-		          + "  and o.o_orderdate >= date '1994-03-01'\n"
-		          + "  and o.o_orderdate < date '1994-06-01'\n"
-		          + "  and l.l_returnflag = 'R'\n"
-		          + "  and c.c_nationkey = n.n_nationkey\n"
-		          + "group by\n"
-		          + "  c.c_custkey,\n"
-		          + "  c.c_name,\n"
-		          + "  c.c_acctbal,\n"
-		          + "  c.c_phone,\n"
-		          + "  n.n_name,\n"
-		          + "  c.c_address,\n"
-		          + "  c.c_comment\n"
-		          + "order by\n"
-		          + "  revenue desc\n"
-		          + "limit 20",
+		      "with customer_proj as (select c_custkey,c_name,c_acctbal,\n" +
+					  "\t\t\t\t\t  c_address,c_phone,c_comment,\n" +
+					  "\t\t\t\t\t   c_nationkey from customer\n" +
+					  "\t\t\t\t\t  ),\n" +
+					  "\t\t\t\t\t  \n" +
+					  "lineitem_proj as (select l_extendedprice, l_discount, \n" +
+					  "\t\t\t\t l_orderkey,l_returnflag from lineitem \n" +
+					  "         where l_returnflag = 'R'),\n" +
+					  "\t\t\t\t \n" +
+					  "order_proj as (select o_orderkey,o_custkey from orders \n" +
+					  "  where  o_orderdate >= date '1994-03-01'\n" +
+					  "  and o_orderdate < date '1994-06-01'),\n" +
+					  "  \n" +
+					  "  nation_proj as (select n_name, n_nationkey from nation)\n" +
+					  "\n" +
+					  "select\n" +
+					  "  c.c_custkey,\n" +
+					  "  c.c_name,\n" +
+					  "  sum(l.l_extendedprice * (1 - l.l_discount)) \n" +
+					  "  as revenue,\n" +
+					  "  c.c_acctbal,\n" +
+					  "  n.n_name,\n" +
+					  "  c.c_address,\n" +
+					  "  c.c_phone,\n" +
+					  "  c.c_comment\n" +
+					  "from\n" +
+					  "  customer_proj c,\n" +
+					  "  order_proj o,\n" +
+					  "  lineitem_proj l,\n" +
+					  "  nation_proj n\n" +
+					  "where\n" +
+					  "  c.c_custkey = o.o_custkey\n" +
+					  "  and l.l_orderkey = o.o_orderkey\n" +
+					  "  \n" +
+					  "  and c.c_nationkey = n.n_nationkey\n" +
+					  "group by\n" +
+					  "  c.c_custkey,\n" +
+					  "  c.c_name,\n" +
+					  "  c.c_acctbal,\n" +
+					  "  c.c_phone,\n" +
+					  "  n.n_name,\n" +
+					  "  c.c_address,\n" +
+					  "  c.c_comment\n" +
+					  "order by\n" +
+					  "  revenue desc\n" +
+					  "\n" +
+					  "\n",
 
 		      // 11
 		      "with nation_proj as (select n_nationkey from nation where n_name = 'JAPAN'),\n" +
