@@ -152,10 +152,10 @@ public class TpcHBaseTest extends BaseTest {
 		          + "from\n"
 		          + "  orders	LEFT JOIN (SELECT DISTINCT l_orderkey FROM lineitem WHERE l_commitdate < l_receiptdate) li ON l_orderkey = o_orderkey\n"
 		          + "where o_orderdate >= date '1996-10-01'\n"
-		         
+
 		// TODO: address handling date intervals
-//		          + "   and o_orderdate < date '1996-10-01' + interval '3 months' \n" 
-		          + "   and o_orderdate < date '1997-01-01'\n" 
+//		          + "   and o_orderdate < date '1996-10-01' + interval '3 months' \n"
+		          + "   and o_orderdate < date '1997-01-01'\n"
 		          + "   AND l_orderkey IS NOT NULL\n"
 		          + "group by\n"
 		          + "  o_orderpriority\n"
@@ -163,33 +163,49 @@ public class TpcHBaseTest extends BaseTest {
 		          + "  o_orderpriority",
 
 		      // 05
-		      "select\n"
-		          + "  n.n_name,\n"
-		          + "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue\n"
-		          + "\n"
-		          + "from\n"
-		          + "  customer c,\n"
-		          + "  orders o,\n"
-		          + "  lineitem l,\n"
-		          + "  supplier s,\n"
-		          + "  nation n,\n"
-		          + "  region r\n"
-		          + "\n"
-		          + "where\n"
-		          + "  c.c_custkey = o.o_custkey\n"
-		          + "  and l.l_orderkey = o.o_orderkey\n"
-		          + "  and l.l_suppkey = s.s_suppkey\n"
-		          + "  and c.c_nationkey = s.s_nationkey\n"
-		          + "  and s.s_nationkey = n.n_nationkey\n"
-		          + "  and n.n_regionkey = r.r_regionkey\n"
-		          + "  and r.r_name = 'EUROPE'\n"
-		          + "  and o.o_orderdate >= date '1997-01-01'\n"
-		          + "  and o.o_orderdate < date '1998-01-01'\n"
-		          + "group by\n"
-		          + "  n.n_name\n"
-		          + "\n"
-		          + "order by\n"
-		          + "  revenue desc",
+		      "with region_proj as (select r_regionkey from region where r_name = 'EUROPE'),\n" +
+					  "\n" +
+					  "orders_proj as (select o_orderkey,o_custkey from orders where o_orderdate >= date '1997-01-01'\n" +
+					  "  and o_orderdate < date '1998-01-01'),\n" +
+					  "  \n" +
+					  "  lineitem_proj as (select l_orderkey,l_extendedprice ,l_discount, l_suppkey from lineitem),\n" +
+					  "  \n" +
+					  "  nation_proj as (select n_regionkey,n_nationkey, n_name from nation ),\n" +
+					  "  \n" +
+					  "  customer_proj as (select c_custkey, c_nationkey from customer),\n" +
+					  " \n" +
+					  " supplier_proj as (select s_suppkey, s_nationkey from supplier)\n" +
+					  " \n" +
+					  " \n" +
+					  "  \n" +
+					  "\n" +
+					  "select\n" +
+					  "  n.n_name,\n" +
+					  "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue\n" +
+					  "\n" +
+					  "from\n" +
+					  "  customer_proj c,\n" +
+					  "  orders_proj o,\n" +
+					  "  lineitem_proj l,\n" +
+					  "  supplier_proj s,\n" +
+					  "  nation_proj n,\n" +
+					  "  region_proj r\n" +
+					  "\n" +
+					  "where\n" +
+					  "  c.c_custkey = o.o_custkey\n" +
+					  "  and l.l_orderkey = o.o_orderkey\n" +
+					  "  and l.l_suppkey = s.s_suppkey\n" +
+					  "  and c.c_nationkey = s.s_nationkey\n" +
+					  "  and s.s_nationkey = n.n_nationkey\n" +
+					  "  and n.n_regionkey = r.r_regionkey\n" +
+					  "\n" +
+					  "group by\n" +
+					  "  n.n_name\n" +
+					  "\n" +
+					  "order by\n" +
+					  "  revenue desc\n" +
+					  "\n" +
+					  "\n",
 
 		      // 06
 		      "with lineitem_proj as (select l_extendedprice, l_discount from lineitem where l_shipdate >= date '1997-01-01'\n" +
