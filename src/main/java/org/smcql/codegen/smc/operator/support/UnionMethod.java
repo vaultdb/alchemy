@@ -52,6 +52,7 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		packageName = child.getPackageName() + ".union";
 		functionName = child.getFunctionName() + "Union";
 		
+		
 		if (srcSQL != null) {
 			schema = Utilities.getOutSchemaFromSql(srcSQL);
 		} else {

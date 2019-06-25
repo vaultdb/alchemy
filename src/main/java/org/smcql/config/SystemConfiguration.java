@@ -279,10 +279,13 @@ public class SystemConfiguration {
 		return calciteConfig;
 	}
 	
-	public SchemaPlus getPdnSchema() {
+	public SchemaPlus getPdfSchema() {
 		return pdnSchema;
 	}
 	
+	public boolean slicingEnabled() {
+		return !getProperty("sliced-execution").equals("false");
+	}
 	public CalciteConnection getCalciteConnection() {
 		return calciteConnection;
 	}

@@ -93,7 +93,7 @@ public class SqlGenerator {
 			// Add the WHERE clause to the selection criteria
 			// alias it as a new variable, dummyTag
 			// this is needed to sort by (dummyTag, SecureComputeOrder)
-			SqlNode dummyTag = SqlValidatorUtil.addAlias(where, "dummyTag");
+			SqlNode dummyTag = SqlValidatorUtil.addAlias(where, "dummy_tag");
 
 			
 			
@@ -117,7 +117,7 @@ public class SqlGenerator {
             }
 
 			SqlLiteral dummy = SqlLiteral.createBoolean(false, list.getParserPosition());
-			SqlNode dummyTag = SqlValidatorUtil.addAlias(dummy, "dummyTag");
+			SqlNode dummyTag = SqlValidatorUtil.addAlias(dummy, "dummy_tag");
 
 			list.add(dummyTag);
 			selection.setSelectList(list);

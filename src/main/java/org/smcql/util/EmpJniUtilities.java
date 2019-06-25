@@ -112,7 +112,7 @@ public class EmpJniUtilities {
 
 		
 
-		System.out.println("Out of EMP Length" + aliceOutput.size());
+		System.out.println("EMP output length" + aliceOutput.size());
 
 		// decrypt dummies
 		// selectively decrypt

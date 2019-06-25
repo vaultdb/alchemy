@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.calcite.rel.RelNode;
@@ -53,18 +52,22 @@ public abstract class Operator implements CodeGenerator {
 	
 	PrivacyCost pCost;
 	
+	SystemConfiguration config;
+	
 	public Operator(String name, SecureRelNode src, Operator... childOps) throws Exception {
 		baseRelNode = src;
 		src.setPhysicalNode(this);
 		children = new ArrayList<Operator>();
-		operatorId = SystemConfiguration.getInstance().getOperatorId();
+		config = SystemConfiguration.getInstance();
+		
+		operatorId = config.getOperatorId();
 		
 		for(Operator op : childOps) {
 			children.add(op);
 			op.setParent(this);
 		}
 		
-		logger = SystemConfiguration.getInstance().getLogger();
+		logger = config.getLogger();
 		queryName = name.replaceAll("-", "_");
 		plaintextGenerator = new PlainOperator(this);
 		
@@ -92,8 +95,7 @@ public abstract class Operator implements CodeGenerator {
 		}
 
 
-		/* Commented out to prevent EmpQueryExecutorLocal Crash
-
+		
 		// filter push-down, execute it in plaintext and dummy pad it
 		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 && this instanceof Filter) {
 			executionMode = ExecutionMode.Plain;
@@ -101,11 +103,11 @@ public abstract class Operator implements CodeGenerator {
 
 			return;
 		}
-		*/
 		
-		assert(sliceAttrs.isEmpty()); // not possible in current test because everything is private
 		
-		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 & !sliceAttrs.isEmpty()) {
+	
+		if(maxChild.compareTo(ExecutionMode.Plain) <= 0)
+			if(config.slicingEnabled() && !sliceAttrs.isEmpty()) {
 			executionMode = ExecutionMode.Slice;
 			sliceKey = new SliceKeyDefinition(sliceAttrs);
 			sliceKey.addFilters(sliceAttrs.get(0).getFilters(), this.getSchema());

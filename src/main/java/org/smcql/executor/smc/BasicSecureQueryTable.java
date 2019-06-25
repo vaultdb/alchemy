@@ -71,7 +71,7 @@ public class BasicSecureQueryTable implements SecureQueryTable, Serializable {
 		if(!(other instanceof BasicSecureQueryTable)){
 			throw new Exception("Cannot decode unmatched tables!");
 		}
-		QueryTable output = null;
+		
 		
 		if(schema == null) {
 			schema = array.getSchema(); // use the one we have
@@ -84,7 +84,7 @@ public class BasicSecureQueryTable implements SecureQueryTable, Serializable {
 		dummyTags.xor(other.getDummyTags()); // decrypted
 
 
-		return new QueryTable(plaintext, dummyTags, schema);
+		return new QueryTable(plaintext, schema, true);
 		
 	}
 

@@ -92,11 +92,11 @@ public class SecureWindowAggregate extends SecureOperator  {
 		}		
 		
 		String generatedCode = null;
-		if(planNode.getExecutionMode() == ExecutionMode.Slice && SystemConfiguration.getInstance().getProperty("sliced-execution").equals("true")) {
-			generatedCode = CodeGenUtils.generateFromTemplate("windowAggregate/sliced/row_num.txt", variables);
+		if(planNode.getExecutionMode() == ExecutionMode.Slice && SystemConfiguration.getInstance().slicingEnabled()) {
+			generatedCode = CodeGenUtils.generateFromTemplate("window-aggregate/sliced/row-num.txt", variables);
 		}
 		else {
-			generatedCode = CodeGenUtils.generateFromTemplate("windowAggregate/singular/row_num.txt", variables);
+			generatedCode = CodeGenUtils.generateFromTemplate("window-aggregate/scalar/row-num.txt", variables);
 		}
 	
 		Map<String, String> result = new HashMap<String, String>();

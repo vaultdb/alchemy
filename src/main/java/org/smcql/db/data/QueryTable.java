@@ -22,8 +22,8 @@ import org.smcql.util.FileUtils;
 
 public class QueryTable implements Serializable {
 
-  private List<Tuple> tuples =
-      null; // null until explicitly decrypted if init'd to PortableSecArray
+	// NB: tuples arrive with dummy tags, but the output schema does not include them
+  private List<Tuple> tuples = null; // null until explicitly decrypted if init'd to PortableSecArray
   private transient SecureRelRecordType schema;
   private BitSet dummyTags = null;
 
@@ -42,47 +42,50 @@ public class QueryTable implements Serializable {
     }
   }
 
-  // no dummy tags, assume all are real
-  public QueryTable(BitSet bits, SecureRelRecordType s) throws Exception {
-    schema = s;
-    tupleSize = schema.size();
 
-    tupleCount = bits.size() / tupleSize;
-
-    //assert (bits.length == (tupleCount * tupleSize));
-    tuples = new ArrayList<Tuple>();
-
-    for (int i = 0; i < tupleCount; ++i) {
-    	BitSet tupleBits = bits.get(i * tupleSize, (i + 1) * tupleSize);
-        Tuple t = new Tuple(tupleBits, schema);
-        tuples.add(t);
-      }
-  }
-
-  // TODO: Deprecate after selective decryption implemented properly
-  public QueryTable(BitSet bits, BitSet dummyTags, SecureRelRecordType s) throws Exception {
+  public QueryTable(BitSet bits, SecureRelRecordType s, boolean dummyTagged) throws Exception {
 	    schema = s;
 	    tupleSize = schema.size();
 
-	    tupleCount = bits.size() / tupleSize;
+	    if(dummyTagged)  {
+	    	int readIdx = 0;
+		    tupleCount = bits.size() / (tupleSize + 1);
+		    assert (bits.size() % (tupleSize + 1) == 0);
+		    dummyTags = new BitSet(tupleCount);
 
-	    assert (bits.size() % tupleSize == 0);
+		    tuples = new ArrayList<Tuple>();
+		    
+		    for (int i = 0; i < tupleCount; ++i) {
+		    	if(!bits.get(readIdx + tupleSize)) { // if dummyTag false
+		    		BitSet tupleBits = bits.get(readIdx, readIdx + tupleSize);
+			        Tuple t = new Tuple(tupleBits, schema);	        
+			        tuples.add(t);
+			        readIdx += tupleSize + 1;
+
+		    }    
+		    
+		    
+		    }
+	    }
+	    else { // assume all values are real
+
+	        tupleCount = bits.size() / tupleSize;
+
+	        //assert (bits.length == (tupleCount * tupleSize));
+	        tuples = new ArrayList<Tuple>(tupleCount);
+
+	        for (int i = 0; i < tupleCount; ++i) {
+	        	BitSet tupleBits = bits.get(i * tupleSize, (i + 1) * tupleSize);
+	            Tuple t = new Tuple(tupleBits, schema);
+	            tuples.add(t);
+	          }
+	    	
+	    } // end no dummy tags case
 	    
-	    // full size minus the ones marked as dummies
-	    int trueCardinality = dummyTags.size() - dummyTags.cardinality(); 
-	    tuples = new ArrayList<Tuple>(trueCardinality);
-	   
+  }
 
-	    for (int i = 0; i < tupleCount; ++i) {
-	    	if(dummyTags.get(i) == false) {
-	    		BitSet tupleBits = bits.get(i * tupleSize, (i+i) * tupleSize);
-		        Tuple t = new Tuple(tupleBits, schema);
-		        tuples.add(t);
-
-	    	}
-	      }
-	   }
-
+  
+  
    boolean toExtractDummy(){
     /* checks to see if there are dummyTags present in the schema.
        current implementation assumes that a boolean field at the end of the schema is the trigger

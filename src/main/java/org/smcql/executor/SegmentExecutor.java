@@ -323,7 +323,7 @@ public class SegmentExecutor {
 		 
 		
 		BitSet decrypted = EmpJniUtilities.decrypt(result.get(0), result.get(1));
-		return new QueryTable(decrypted, segment.outSchema);
+		return new QueryTable(decrypted, segment.outSchema, true);
 	 }
 
 	 

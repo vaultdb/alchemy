@@ -19,7 +19,7 @@ public class TypeMap {
 	protected TypeMap()  {
 		// hardcoded since types rarely change
 		String[] typeSpecs = {"integer,int,32",
-				"bigint,bigint, 64",
+				"bigint,bigint,64",
 				"boolean,int,1",
 				"varchar,int,8",
 				"timestamp,int,64",

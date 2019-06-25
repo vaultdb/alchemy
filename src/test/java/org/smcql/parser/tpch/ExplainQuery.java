@@ -48,7 +48,7 @@ public class ExplainQuery {
 		  }
 		 
 		  public void addTableSchema() throws Exception{
-			 defaultSchema = SystemConfiguration.getInstance().getPdnSchema();
+			 defaultSchema = SystemConfiguration.getInstance().getPdfSchema();
 		  }
 		 
 

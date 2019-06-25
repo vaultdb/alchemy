@@ -223,7 +223,7 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 
 	public static SecureRelDataTypeField lookUpAttribute(String table, String attr) throws Exception {
 		SystemConfiguration conf = SystemConfiguration.getInstance();
-		SchemaPlus tables = conf.getPdnSchema();
+		SchemaPlus tables = conf.getPdfSchema();
 		Table lookupTable = tables.getTable(table);
 		JavaTypeFactory typeFactory = conf.getCalciteConnection().getTypeFactory();
 		

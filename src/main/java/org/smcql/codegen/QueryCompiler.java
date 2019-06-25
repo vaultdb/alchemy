@@ -458,10 +458,14 @@ public class QueryCompiler {
       boolean isLhs = (leftChild == childOp);
       List<SecureRelDataTypeField> orderBy =
           (isLhs) ? leftChild.secureComputeOrder() : rightChild.secureComputeOrder();
+     
       merge = new UnionMethod(op, child, orderBy);
 
-    } else {
+    } 
+    else {
+    	
       merge = new UnionMethod(op, child, op.secureComputeOrder());
+
     }
     // merge.compileIt();
 
@@ -599,14 +603,16 @@ public class QueryCompiler {
       current.sliceSpec = secStep.getSourceOperator().getSliceKey();
 
       PlainOperator sqlGenRoot = secStep.getSourceOperator().getPlainOperator();
-      sqlGenRoot.inferSlicePredicates(current.sliceSpec);
-      current.sliceValues = sqlGenRoot.getSliceValues();
-      current.complementValues = sqlGenRoot.getComplementValues();
-      current.sliceComplementSQL =
-          sqlGenRoot.generatePlaintextForSliceComplement(
-              userQuery); // plaintext query for single site values
+      
+      if(!SystemConfiguration.getInstance().slicingEnabled()) {
+    	  sqlGenRoot.inferSlicePredicates(current.sliceSpec);
+    	  current.sliceValues = sqlGenRoot.getSliceValues();
+    	  current.complementValues = sqlGenRoot.getComplementValues();
+    	  current.sliceComplementSQL =
+    			  sqlGenRoot.generatePlaintextForSliceComplement(
+    					  userQuery); // plaintext query for single site values
+      }
     }
-
     return current;
   }
 
