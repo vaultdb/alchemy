@@ -1,6 +1,7 @@
 package org.smcql.db.data.field;
 
 import java.io.Serializable;
+import java.util.BitSet;
 
 import org.smcql.type.SecureRelDataTypeField;
 
@@ -84,12 +85,15 @@ public class IntField extends Field  implements Serializable   {
 	}
 	
 	@Override
-	public void deserialize(boolean[] src) {
-		assert(src.length == this.size());
+	public void deserialize(BitSet src) {
+		assert(src.size() == this.size());
 		value = 0;
+		boolean b;
 
-		for (boolean b : src)
-			value = (value << 1) | (b ? 1 : 0);
+		for(int i = 0; i < src.size(); ++i) {
+			 b = src.get(i);
+			 value = (value << 1) | (b ? 1 : 0);
+		}
 		
 	}
 	

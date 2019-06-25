@@ -6,91 +6,66 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;
 import org.smcql.type.SecureRelRecordType;
+import org.smcql.type.TypeMap;
 import org.smcql.executor.smc.BasicSecureQueryTable;
-import org.smcql.executor.smc.SecureBufferPool;
 import org.smcql.executor.smc.SlicedSecureQueryTable;
+import org.apache.calcite.rel.type.RelDataType;
 
-import com.oblivm.backend.gc.GCSignal;
 
 public class SecureOutputReader {
 
 	
 	
 	public static QueryTable assembleOutput(BasicSecureQueryTable alice, BasicSecureQueryTable bob, SecureRelRecordType schema) throws Exception {
-		GCSignal R = alice.R;
 		
 		if (schema == null)
-			schema = alice.schema;
+			schema = alice.getSchema();
 		
-		assert(R != null);
 		
-		int length = decodeInt(alice.nonNullLength, bob.nonNullLength, R);
+		int length = decodeInt(alice.getSecureNonNullLength(), bob.getSecureNonNullLength());
 		
 		//get schema from the honest broker (embedded in the smcqlqueryexecutor
-		return decodeSignals(alice.payload, bob.payload, length * schema.size(), R, schema);	
+		return decodeSignals(alice.getSecurePayload(), bob.getSecurePayload(), length * schema.size(), schema);	
 	}
 	
 	public static QueryTable assembleOutput(SlicedSecureQueryTable alice, SlicedSecureQueryTable bob, SecureRelRecordType schema) throws Exception {
-		GCSignal R = alice.R;
 		
 		if (schema == null)
 			schema = alice.schema;
-		
-		assert(R != null);
 		
 		QueryTable result = new QueryTable(schema);
 		for (Tuple t : alice.slices.keySet()) {
 			BasicSecureQueryTable a = alice.slices.get(t);
 			BasicSecureQueryTable b = bob.slices.get(t);
-			int length = decodeInt(a.nonNullLength, b.nonNullLength, R);
-			QueryTable sliceResult = decodeSignals(a.payload, b.payload, length * schema.size(), R, schema);
+			int length = decodeInt(a.getSecureNonNullLength(), b.getSecureNonNullLength());
+			QueryTable sliceResult = decodeSignals(a.getSecurePayload(), b.getSecurePayload(), length * schema.size(), schema);
 			result.addTuples(sliceResult);
 		}
 		
 		return result;	
 	}
 	
-	
-	private static GCSignal[] readSignals(String filename) throws Exception {
-		byte[] data = readFile(filename);
-		int signalCount = data.length / 10;
-		GCSignal[] output = new GCSignal[signalCount];
-
 		
-		assert(data.length % 10 == 0); 
-		
-		for(int i = 0; i < signalCount; ++i) {
-			byte[] signalBytes = Arrays.copyOfRange(data, i*10, (i+1)*10);
-			output[i] = new GCSignal(signalBytes);
-		}
-		
-		return output;
-
-	}
 	
-	static byte[] readFile(String filename) throws IOException {
-		Path path = Paths.get(filename);
-	    return Files.readAllBytes(path);
-	}
-	
-	// Alice data: R|# of elements|data array
+	// Alice data: # of elements (dummy or real) |dummyTags|data array
 	// Bob data: #of elements|data array
 	public static QueryTable assembleOutput(String alice, String bob, SecureRelRecordType schema) throws Exception{
-		GCSignal[] aData = readSignals(alice);
-		GCSignal[] bData = readSignals(bob);
+		boolean[] aData = readSignals(alice);
+		boolean[] bData = readSignals(bob);
 
 		GCSignal R = aData[0];
-		int lengthBits = SecureBufferPool.lengthBits;
+		int lengthBits = TypeMap.getInstance().sizeof(SqlTypeName.INTEGER);
 		
 		int bitsToCopy = aData.length - lengthBits - 1;
 
-		GCSignal[] aLength = new GCSignal[lengthBits];
-		GCSignal[] bLength = new GCSignal[lengthBits];
-		GCSignal[] aBits = new GCSignal[bitsToCopy];
-		GCSignal[] bBits = new GCSignal[bitsToCopy];
+		boolean[] aLength = new boolean[lengthBits];
+		boolean[] bLength = new boolean[lengthBits];
+		boolean[] aBits = new boolean[bitsToCopy];
+		boolean[] bBits = new boolean[bitsToCopy];
 		
 		System.arraycopy(aData, 1, aLength, 0, lengthBits);
 		System.arraycopy(bData, 0, bLength, 0, lengthBits);
@@ -105,33 +80,25 @@ public class SecureOutputReader {
 
 	
 
-	public static int decodeInt(GCSignal[] aData, GCSignal[] bData, GCSignal R) throws Exception {
-		boolean[] bits = new boolean[32];
+	public static int decodeInt(boolean[] aData, boolean[] bData) throws Exception {
+		int intSize = TypeMap.getInstance().sizeof(SqlTypeName.INTEGER);
+		boolean[] bits = new boolean[intSize];
 		int value = 0;
-		assert(aData.length == bData.length && aData.length == 32);
+		assert(aData.length == bData.length && aData.length == intSize);
 		
 		
-		for(int i = 0; i < 32; ++i) {
-			GCSignal aBit = aData[i];
-			GCSignal bBit = bData[i];
-
-			if(aBit.equals(bBit)) {
-				bits[i] = false;
-			}
-			else if((R.xor(aBit)).equals(bBit)) {
-				bits[i] = true;
-			}
-			else {
-				throw new Exception("Bad label in output!");
-			}
+		for(int i = 0; i < intSize; ++i) {
+			bits[i] = aData[i] ^ bData[i];
 		}
-
+		
 		bits = Tuple.reverseBits(bits);
 		for (boolean b : bits)
 			value = (value << 1) | (b ? 1 : 0);
 		
 		return value;
 	}
+	
+	
 	
 	public static long decodeLong(GCSignal[] aData, GCSignal[] bData, GCSignal R) throws Exception {
 		boolean[] bits = new boolean[64];
@@ -161,7 +128,7 @@ public class SecureOutputReader {
 	
 	
 	// elements = # of bits to read
-	public static QueryTable decodeSignals(GCSignal[] aData, GCSignal[] bData, int elements, GCSignal R, SecureRelRecordType schema) throws Exception {		
+	public static QueryTable decodeSignals(boolean[] aData, boolean[] bData, int elements,  SecureRelRecordType schema) throws Exception {		
 		assert(aData.length >= elements);
 		assert(bData.length >= elements);
 		
@@ -169,19 +136,8 @@ public class SecureOutputReader {
 		boolean[] plaintext = new boolean[elements];
 		
 		for(int i = 0; i < elements; ++i) {
-			GCSignal aBit = aData[i];
-			GCSignal bBit = bData[i];
-			if(aBit.equals(bBit)) {
-				plaintext[i] = false;
-			}
-			else if((R.xor(aBit)).equals(bBit)) {
-				plaintext[i] = true;
-			}
-			else {
-				throw new Exception("Bad label in output!");
-			}
-		}
-		
+			plaintext[i] = aData[i] ^ bData[i];
+		}		
 		return new QueryTable(plaintext, schema);
 
 	}

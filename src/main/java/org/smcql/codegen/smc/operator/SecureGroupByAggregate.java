@@ -15,6 +15,11 @@ import org.smcql.plan.operator.Aggregate;
 import org.smcql.type.TypeMap;
 import org.smcql.util.CodeGenUtils;
 
+// TODO: modify sort procedure s.t. if it has a secure child we sort on group-by key and dummy tag
+// if it is a secure leaf, then we order by group-by attr and dummy tag in plaintext
+// need to revise SQL generator for that
+// also need to address sort method to extract dummyTag first
+
 public class SecureGroupByAggregate extends SecureOperator {
 
 	/**
@@ -37,13 +42,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 		// TODO: Allow compute to replace operation for the following operations: Count, Sum, Avg, Min, Max
 		// Current Priorities are: Count and Sum
 
-		String compute = "";
-		compute += "secure int$size deref = merged[mIdx];\n";
-		compute += "secure int$size toAdd = a[aIdx];\n";
-		compute += "deref$cntMask = deref$cntMask + toAdd$cntMask;\n";
-		compute += "merged[mIdx] = deref;\n";
-		variables.put("compute", compute);
-
+		
 		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
 
 		String groupByMatch = generateGroupBy(groupByAttributes);
@@ -75,7 +74,6 @@ public class SecureGroupByAggregate extends SecureOperator {
 		String ret = "    Bit ret(1, PUBLIC);\n\n";
 
 		for (SecureRelDataTypeField r : attrs) {
-			int size = r.size();
 			String lVar = "l" + i;
 			String rVar = "r" + i;
 
@@ -217,7 +215,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 				processString += "not yet implemented";
 				return processString;
 			case COUNT:  // TODO: set up for group by part
-				processString += "agg" + aggId + " = If(dummyTest, " +  aggVar + " + 1, " + aggVar + ");\n";
+				processString += "agg" + aggId + " = If(dummyTest, " +  aggVar + " + Integer(INT_LENGTH, 1, PUBLIC), " + aggVar + ");\n";
 				return processString;
 			case SUM:
 				processString += "agg" + aggId + " = If(dummyTest, " + aggVar + " + " + tupleVar + ", " + aggVar + ");\n";

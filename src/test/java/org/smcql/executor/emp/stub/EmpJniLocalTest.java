@@ -2,6 +2,7 @@ package org.smcql.executor.emp.stub;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 
 import org.smcql.BaseTest;
@@ -41,8 +42,8 @@ public class EmpJniLocalTest extends BaseTest {
         alice.join();
         bob.join();
 
-        boolean[] aliceOutput = aliceRunnable.getOutput();
-        boolean[] bobOutput = bobRunnable.getOutput();
+        BitSet aliceOutput = aliceRunnable.getOutput();
+        BitSet bobOutput = bobRunnable.getOutput();
 
         List<String> output = EmpJniUtilities.revealStringOutput(aliceOutput, bobOutput, tupleWidth);
         System.out.println("Query output: " + output);

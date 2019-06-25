@@ -13,7 +13,18 @@ string bool_to_binstr(bool *b, int size) {
 
 string binstr_to_str(string bin) {
         string result = "";
+        int charCount = bin.size() / 8;
+        int readIdx = 0;
+        std::bitset<8> bits;
 
+        for(int i = 0; i < charCount; ++i) {
+        	String bits = charCount.substr(readIdx, 8);
+        	// TODO: finish this
+            sstream >> bits;
+            char c = char(bits.to_ulong());
+            result += c;
+
+        }
         std::stringstream sstream(bin);
         while(sstream.good())
         {

@@ -37,6 +37,12 @@ public class CodeGenUtils {
 	
 
 	
+	// TODO: invoke writeInteger method in EMP
+	public static String copyField(SecureRelDataTypeField srcField, SecureRelRecordType inSchema) {
+
+		return null;
+	}
+	
 	// read in template file and replace all of its variables with intended values
 	// source file is a relative path
 	public static String generateFromTemplate(String srcFile, Map<String, String> variables) throws IOException {

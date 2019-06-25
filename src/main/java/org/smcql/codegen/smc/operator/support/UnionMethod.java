@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.codegen.CodeGenerator;
-import org.smcql.compiler.DynamicCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.executor.step.ExecutionStep;
@@ -148,13 +147,6 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		return base + "_merge.lcc";
 	}
 	
-	@Override
-	public void compileIt() throws Exception {
-		Map<String, String> code = generate();
-		
-		for (String n : code.keySet())
-			DynamicCompiler.compileOblivLang(code.get(n), n);
-	}
 	
 	@Override
 	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {

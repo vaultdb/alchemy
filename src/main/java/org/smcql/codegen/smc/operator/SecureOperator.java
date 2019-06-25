@@ -9,7 +9,6 @@ import java.util.Map;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.smc.operator.support.ProcessingStep;
 import org.smcql.codegen.smc.operator.support.SortMethod;
-import org.smcql.compiler.DynamicCompiler;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.operator.Filter;
@@ -275,14 +274,8 @@ public class SecureOperator implements CodeGenerator, Serializable {
 		return planNode.destFilename(e);
 	}
 
-	@Override
-	public void compileIt() throws Exception {
-		Map<String, String> code = generate();
-		
-		for (String n : code.keySet()) {
-			DynamicCompiler.compileOblivLang(code.get(n), n);	
-		}
-	}
+	
+	
 
 
 

@@ -21,7 +21,7 @@ public interface CodeGenerator {
 	
 	public String destFilename(ExecutionMode e);
 	
-	public void compileIt() throws Exception;
+	//public void compileIt() throws Exception;
 
 	public SecureRelRecordType getSchema();
 

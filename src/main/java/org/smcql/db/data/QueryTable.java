@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ public class QueryTable implements Serializable {
   private List<Tuple> tuples =
       null; // null until explicitly decrypted if init'd to PortableSecArray
   private transient SecureRelRecordType schema;
-  private String dummytags = null;
+  private BitSet dummyTags = null;
 
   int tupleSize = 0;
   int tupleCount = 0;
@@ -41,37 +42,40 @@ public class QueryTable implements Serializable {
     }
   }
 
-  public QueryTable(boolean[] bits, SecureRelRecordType s) throws Exception {
+  // no dummy tags, assume all are real
+  public QueryTable(BitSet bits, SecureRelRecordType s) throws Exception {
     schema = s;
     tupleSize = schema.size();
 
-    tupleCount = bits.length / tupleSize;
+    tupleCount = bits.size() / tupleSize;
 
     //assert (bits.length == (tupleCount * tupleSize));
     tuples = new ArrayList<Tuple>();
 
     for (int i = 0; i < tupleCount; ++i) {
-      boolean[] tupleBits = Arrays.copyOfRange(bits, i * tupleSize, (i + 1) * tupleSize);
-      if (!isNull(tupleBits)) {
+    	BitSet tupleBits = bits.get(i * tupleSize, (i + 1) * tupleSize);
         Tuple t = new Tuple(tupleBits, schema);
         tuples.add(t);
       }
-    }
   }
 
-  // TODO: Depricate after selective decryption implemented properly
-  public QueryTable(boolean[] dummyTags, boolean[] bits, SecureRelRecordType s) throws Exception {
+  // TODO: Deprecate after selective decryption implemented properly
+  public QueryTable(BitSet bits, BitSet dummyTags, SecureRelRecordType s) throws Exception {
 	    schema = s;
 	    tupleSize = schema.size();
 
-	    tupleCount = bits.length / tupleSize;
+	    tupleCount = bits.size() / tupleSize;
 
-	    //assert (bits.length == (tupleCount * tupleSize));
-	    tuples = new ArrayList<Tuple>();
+	    assert (bits.size() % tupleSize == 0);
+	    
+	    // full size minus the ones marked as dummies
+	    int trueCardinality = dummyTags.size() - dummyTags.cardinality(); 
+	    tuples = new ArrayList<Tuple>(trueCardinality);
+	   
 
 	    for (int i = 0; i < tupleCount; ++i) {
-	    	if(dummyTags[i] == false) {
-	  	      boolean[] tupleBits = Arrays.copyOfRange(bits, i * tupleSize, (i + 1) * tupleSize);
+	    	if(dummyTags.get(i) == false) {
+	    		BitSet tupleBits = bits.get(i * tupleSize, (i+i) * tupleSize);
 		        Tuple t = new Tuple(tupleBits, schema);
 		        tuples.add(t);
 
@@ -92,27 +96,39 @@ public class QueryTable implements Serializable {
     }
     catch (Exception e){
       System.out.println(" Tried to exact dummy but failed");
-      dummytags = "0";
+      dummyTags = new BitSet(1);
+      dummyTags.set(0, true);
       return false;
     }
 
   }
 
-   public boolean extractDummys() throws Exception {
-    /* checks for existence of dummyTags. If present, updates the private dummyTag attribute and the schema */
+   /* TODO: fix this up when we have something that invokes it
+   public boolean extractDummies() throws Exception {
+    //checks for existence of dummyTags. If present, updates the private dummyTag attribute and the schema 
 
      if (toExtractDummy()){
 
-       dummytags = "";
-       String tuplebits = "";
+       dummyTags = new BitSet(tupleCount);
+       BitSet tupleBits = new BitSet(tupleCount * tupleSize);
+       int tupleWriteIdx = 0;
+
+	   int dummyTagOffset = schema.size() - 1; 
 
        // for each tuple, copy last bit constructing the dummyTags for each and record the other bits
        for( int i = 0; i < tupleCount; i++){
-          String tupleString = tuples.get(i).toBinaryString();
-
-          dummytags += tupleString.substring(tupleSize - 1);
-          tuplebits += tupleString.substring(0, tupleSize - 1);
+    	   BitSet tuple = tuples.get(i).toBitSet();
+    	   boolean dummy = tuple.get(dummyTagOffset);
+    	   if(!dummy) {
+    		   // append this tuple to the set
+    	   }
+    	   dummyTags.set(i, tuple.get(dummyTagOffset));
+    	   for(int j = 0; j < dummyTagOffset; ++j) {
+        	   tupleBits.set(tupleWriteIdx, tuple.get(j));
+        	   ++tupleWriteIdx;
+    	   }
        }
+       
        // Convert new tuple string to raw boolean -- is there a way to make this a global function?
        boolean[] newbits = new boolean[tuplebits.length()];
 
@@ -125,7 +141,7 @@ public class QueryTable implements Serializable {
          else{
            newbits[i] = false;
          }
-       }
+       } 
 
 
        // modify schema & remove bits from tuples
@@ -137,6 +153,7 @@ public class QueryTable implements Serializable {
        // update schema and tupleSize
        schema = newSchema;
        tupleSize -= 1;
+
 
        // Reset the raw bits in current QueryTable
        resetTuples(newbits);
@@ -151,31 +168,32 @@ public class QueryTable implements Serializable {
 
   public String getDummyTags(){
     // return the dummyTag elements
-    return dummytags;
-  }
+    return dummyTags;
+  } 
 
-  private void resetTuples(boolean[] bits) throws Exception {
+  private void resetTuples(BitSet bits) throws Exception {
     // initialize a new arraylist for the tuples
     tuples = new ArrayList<Tuple>();
 
     // create new tuples via the
     for (int i = 0; i < tupleCount; ++i) {
-      boolean[] tupleBits = Arrays.copyOfRange(bits, i * tupleSize, (i + 1) * tupleSize);
-      if (!isNull(tupleBits)) {
-        Tuple t = new Tuple(tupleBits, schema);
-        tuples.add(t);
-      }
+      BitSet tupleBits = bits.get(i * tupleSize, (i + 1) * tupleSize);
+      Tuple t = new Tuple(tupleBits, schema);
+      tuples.add(t);
+      
     }
   }
-
-  // TODO: Test once dummyTags are being output from EMP
-  public QueryTable(SecureRelRecordType outSchema,boolean[] alice,boolean[] bob) throws Exception {
+*/
+  
+   /*
+    * // TODO: refactor this to have EmpProgram return a SecureArray
+  public QueryTable(SecureRelRecordType outSchema, BitSet alice, BitSet bob) throws Exception {
     // check to make sure alice and bob are of the same length - should always be the case
-    assert(alice.length == bob.length);
+    assert(alice.size() == bob.size());
 
     schema = outSchema;
     tupleSize = outSchema.size();
-    tupleCount = alice.length / (tupleSize+1); // add plus 1 for dummies
+    tupleCount = alice.size() / (tupleSize+1); // add plus 1 for dummies
     tuples = new ArrayList<Tuple>();
 
 
@@ -184,7 +202,9 @@ public class QueryTable implements Serializable {
     List<Boolean> decrypted=new ArrayList<Boolean>();
 
 
-    boolean[] aliceTags = Arrays.copyOfRange(alice, 0, tupleCount);
+    BitSet aliceTags = alice.get(0, tupleCount);
+    BitSet bobTags = alice.get(0, tupleCount);
+    
     boolean[] bobTags = Arrays.copyOfRange(bob, 0, tupleCount);
     boolean [] tags = EmpJniUtilities.decrypt(aliceTags, bobTags);
 
@@ -234,7 +254,8 @@ public class QueryTable implements Serializable {
     for (int i = 0; i < tupleBits.length; ++i) init |= tupleBits[i];
 
     return !init;
-  }
+  } */
+   
 
   public QueryTable(SecureRelRecordType outSchema) {
     schema = outSchema;
@@ -243,7 +264,8 @@ public class QueryTable implements Serializable {
     tuples = new ArrayList<Tuple>();
   }
 
-  public void addTuples(QueryTable src) {
+
+public void addTuples(QueryTable src) {
     if (src == null) return;
 
     for (Tuple t : src.tuples) {

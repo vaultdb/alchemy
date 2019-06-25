@@ -105,6 +105,7 @@ public class SortMethod {
 			ret += "    int" + sortKeySize + " dst;\n\n";
 
 		
+			// TODO: put dummy tag in the front of the extract key method
 			for(int i = 0; i < sortKey.size(); ++i) {
 				// sort key refers to dstSchema
 				// find its idx in dst schema, use SchemaMap to get it in srcSchema

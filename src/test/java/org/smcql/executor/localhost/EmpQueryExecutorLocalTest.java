@@ -34,7 +34,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
 
   public void testCountIcd9s() throws Exception {
 
-    String query = "SELECT COUNT(major_icd9) FROM diagnoses GROUP BY major_icd9";;
+    String query = "SELECT COUNT(major_icd9) FROM diagnoses GROUP BY major_icd9";
     // to run in plaintext to verify our results
     String testName = "CountIcd9s";
 

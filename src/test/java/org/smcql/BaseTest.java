@@ -60,7 +60,8 @@ public class BaseTest extends TestCase {
 
 	  
 	  protected void testQuery(String testName, String sql) throws Exception {
-		    SystemConfiguration.getInstance().resetCounters();
+		 
+		  	SystemConfiguration.getInstance().resetCounters();
 		    SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
 		    System.out.println("Initial schema: " + secRoot.getPlanRoot().getSchema() );

@@ -2,6 +2,7 @@ package org.smcql.compiler.emp;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.BitSet;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -16,7 +17,7 @@ import org.smcql.util.Utilities;
 public class EmpRunnable implements Runnable {
   String className;
   int party, port;
-  boolean[] output;
+  BitSet output;
   String outputString;
   final String smcqlRoot = Utilities.getSMCQLRoot(); // directory with pom.xml
   // TODO: adjust to versions in pom.xml
@@ -84,7 +85,7 @@ public class EmpRunnable implements Runnable {
       logger.info("Party " + party + " returned " + bitString.length() + " bits.");
   
       // translate to bools
-      output = stringToBool(bitString);
+      output = stringToBitSet(bitString);
       logger.info("stdout: " + stdout.toString()); // uncomment to show cout statements
 
     } catch (Exception e) {
@@ -96,12 +97,14 @@ public class EmpRunnable implements Runnable {
     }
   }
 
-  public static boolean[] stringToBool(String s) {
-    boolean[] b = new boolean[s.length()];
+  public static BitSet stringToBitSet(String s) {
+	  BitSet b = new BitSet(s.length());
+
 
     for (int i = 0; i < s.length(); ++i) {
-      b[i] = (s.charAt(i) == '1') ? true : false;
+    	b.set(i,  (s.charAt(i) == '1') ? true : false);
     }
+
     return b;
   }
 
@@ -109,7 +112,7 @@ public class EmpRunnable implements Runnable {
     return outputString;
   }
 
-  public boolean[] getOutput() {
+  public BitSet getOutput() {
     return output;
   }
 }

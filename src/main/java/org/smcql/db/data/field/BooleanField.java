@@ -1,6 +1,7 @@
 package org.smcql.db.data.field;
 
 import java.io.Serializable;
+import java.util.BitSet;
 
 import org.smcql.type.SecureRelDataTypeField;
 
@@ -74,8 +75,8 @@ public boolean value;
 	}
 	
 	@Override
-	public void deserialize(boolean[] src) {
-		assert(src.length == this.size());
-		value = src[0];
+	public void deserialize(BitSet src) {
+		assert(src.size() == this.size());
+		value = src.get(0);
 	}
 }

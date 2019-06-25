@@ -3,6 +3,7 @@ package org.smcql.db.data.field;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.BitSet;
 
 import org.smcql.type.SecureRelDataTypeField;
 
@@ -122,13 +123,13 @@ public class CharField extends Field implements Serializable   {
 	}
 	
 	@Override
-	public void deserialize(boolean[] src) {
-		assert(src.length == this.size); 
+	public void deserialize(BitSet src) {
+		assert(src.size() == this.size); 
 		int chars = this.size / 8;
 		
 		for(int i = 0; i < chars; ++i)
 		{
-			boolean[] bits = Arrays.copyOfRange(src, i*8, (i+1)*8);
+			BitSet bits =  src.get(i*8, (i+1)*8);
 			value += deserializeChar(bits);
 			
 		}
@@ -137,12 +138,14 @@ public class CharField extends Field implements Serializable   {
 
 	
 	
-	private char deserializeChar(boolean[] bits) {
-		assert(bits.length == 8);
+	private char deserializeChar(BitSet bits) {
+		assert(bits.size() == 8);
 
 	    int n = 0;
-	    for (boolean b : bits)
+	    for(int i = 0; i < bits.size(); ++i) {
+	    	boolean b = bits.get(i);
 	        n = (n << 1) | (b ? 1 : 0);
+	    }
 	    return (char) n;
 	}
 

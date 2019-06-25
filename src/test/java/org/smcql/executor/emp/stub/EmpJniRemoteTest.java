@@ -1,6 +1,7 @@
 package org.smcql.executor.emp.stub;
 
 import java.net.InetAddress;
+import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -92,7 +93,7 @@ public class EmpJniRemoteTest extends TestCase  {
 	
 	public void testRemoteExecution() throws Exception {
 		 
-		 List<boolean[]> outputs = runCloudExecution();
+		 List<BitSet> outputs = runCloudExecution();
 		 List<String> tuples = EmpJniUtilities.revealStringOutput(outputs.get(0), outputs.get(1), tupleWidth);
 		 System.out.println("Output: " + tuples);
 	}
@@ -133,15 +134,15 @@ public class EmpJniRemoteTest extends TestCase  {
 
 	  
 	  
-	private List<boolean[]> runCloudExecution() throws Exception {
+	private List<BitSet> runCloudExecution() throws Exception {
 		 
 
 		 ViNode allNodes = cloud.node("**");
 		 
-		List<boolean[]> results = allNodes.massExec(new Callable<boolean[]>() {
+		List<BitSet> results = allNodes.massExec(new Callable<BitSet>() {
 		        
 	            @Override
-	            public boolean[] call() throws Exception {
+	            public BitSet call() throws Exception {
 	                int party = 1;
 	                int port = Integer.parseInt(System.getProperty("emp.port"));
 	                String empCode = System.getProperty("emp.code");

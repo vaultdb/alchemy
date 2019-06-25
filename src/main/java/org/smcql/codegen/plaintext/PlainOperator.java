@@ -99,10 +99,7 @@ public class PlainOperator implements CodeGenerator {
 		return null;
 	}
 
-	@Override
-	public void compileIt() throws Exception {		
-	}
-
+	
 	@Override
 	public SecureRelRecordType getSchema(boolean asSecureLeaf) {
 		return planNode.getSchema(asSecureLeaf);

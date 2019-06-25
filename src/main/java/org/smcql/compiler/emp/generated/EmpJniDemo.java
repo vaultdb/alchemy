@@ -2,6 +2,8 @@ package org.smcql.compiler.emp.generated;
 
 
 
+import java.util.BitSet;
+
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.annotation.Namespace;
@@ -53,7 +55,7 @@ public class EmpJniDemo  extends EmpProgram  {
 	   
 	   	
         @Override
-        public  boolean[] runProgram() {
+        public  BitSet runProgram() {
         	EmpJniDemoClass theQuery = new EmpJniDemoClass();
 
         	if(generatorHost != null) {
@@ -63,9 +65,10 @@ public class EmpJniDemo  extends EmpProgram  {
         	String output = theQuery.getOutput();
 	        theQuery.close();
 
-	       boolean[] outBits = new boolean[output.length()];
+	        BitSet outBits = new BitSet(output.length());
+	        
 	       for(int i = 0; i < output.length(); ++i) {
-	    	   outBits[i] = output.charAt(i) == '1' ? true : false;
+	    	   outBits.set(i,  output.charAt(i) == '1' ? true : false);
 	       }
 	       return outBits;
 	       
@@ -79,12 +82,12 @@ public class EmpJniDemo  extends EmpProgram  {
 		int port = Integer.parseInt(args[1]);
 		
 		EmpJniDemo qc = new EmpJniDemo(party, port);
-		boolean[] bits = qc.runProgram();
+		BitSet bits = qc.runProgram();
 		char b;
 	       
 			// write bitstring to stderr
-			for(int i = 0; i < bits.length; ++i) {
-				b = (bits[i] == true) ? '1' : '0';
+			for(int i = 0; i < bits.size(); ++i) {
+				b = (bits.get(i)) ? '1' : '0';
 				System.err.print(b);
 			}
 

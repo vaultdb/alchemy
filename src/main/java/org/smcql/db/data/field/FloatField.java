@@ -4,6 +4,7 @@ import org.smcql.type.SecureRelDataTypeField;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.BitSet;
 
 public class FloatField extends Field  implements Serializable {
 
@@ -93,11 +94,13 @@ public class FloatField extends Field  implements Serializable {
     }
 
     @Override
-    public void deserialize(boolean[] src) {
-        assert(src.length == this.size());
+    public void deserialize(BitSet src) {
+        assert(src.size() == this.size());
         int temp = 0;
-        for (boolean b : src)
-            temp = (temp << 1) | (b ? 1 : 0);
+        for(int i = 0; i < src.size(); ++i) {
+        	boolean b = src.get(i);
+            temp = (temp << 1) | (b ? 1 : 0);   
+        }
         value = Float.intBitsToFloat(temp);
     }
 

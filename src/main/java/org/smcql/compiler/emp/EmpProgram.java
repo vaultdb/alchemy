@@ -2,6 +2,7 @@ package org.smcql.compiler.emp;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.BitSet;
 
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
@@ -29,7 +30,7 @@ public class EmpProgram {
 	}
 	
 	// delegate to implementing classes
-    public  boolean[] runProgram() throws Exception {
+    public  BitSet runProgram() throws Exception {
     	return null;
     }
     

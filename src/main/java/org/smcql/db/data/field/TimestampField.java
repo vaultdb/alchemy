@@ -2,6 +2,7 @@ package org.smcql.db.data.field;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.BitSet;
 
 import org.smcql.type.SecureRelDataTypeField;
 
@@ -85,13 +86,18 @@ public class TimestampField extends Field implements Serializable  {
 	
 	
 	@Override
-	public void deserialize(boolean[] src) {
+	public void deserialize(BitSet src) {
 		
-		assert(src.length == this.size());
+		assert(src.size() == this.size());
 		long epoch = 0;
-
-		for (boolean b : src)
+		boolean b;
+		
+		for(int i = 0; i < src.size(); ++i) {
+			b = src.get(i);
 			epoch = (epoch << 1) | (b ? 1 : 0);
+
+		}
+
 		time = new Timestamp(epoch);
 		
 	}

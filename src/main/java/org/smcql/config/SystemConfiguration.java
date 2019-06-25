@@ -40,6 +40,9 @@ public class SystemConfiguration {
 	
 	public static final SqlDialect DIALECT = SqlDialect.DatabaseProduct.POSTGRESQL.getDialect();
 	
+	
+	public enum Party { ALICE, BOB, COORDINATOR};
+	
 	static SystemConfiguration instance = null;
 	private static final Logger logger =
 	        Logger.getLogger(SystemConfiguration.class.getName());

@@ -18,7 +18,8 @@ public class TypeMap {
 
 	protected TypeMap()  {
 		// hardcoded since types rarely change
-		String[] typeSpecs = {"integer,int,64",
+		String[] typeSpecs = {"integer,int,32",
+				"bigint,bigint, 64",
 				"boolean,int,1",
 				"varchar,int,8",
 				"timestamp,int,64",
@@ -65,7 +66,7 @@ public class TypeMap {
 
 	public int sizeof(SecureRelDataTypeField attribute) {
 
-		RelDataType type = attribute.getBaseField().getType();
+		RelDataType type = attribute.getBaseField().getType();		
 		return sizeof(type);
 	}
 
@@ -75,12 +76,15 @@ public class TypeMap {
 			int precision = (type.getPrecision() == 2147483647) ? 32 : type.getPrecision();
 			return precision * sqlSize.get("varchar");
 		}
-
+		return sizeof(sqlType);
+	}
+	
+	public int sizeof(SqlTypeName sqlType) {
 		if(sqlType == SqlTypeName.INTEGER)
 			return sqlSize.get("integer");
 
 		if(sqlType == SqlTypeName.BIGINT)
-			return sqlSize.get("integer");
+			return sqlSize.get("bigint");
 
 		if(SqlTypeName.DATETIME_TYPES.contains(sqlType))
 			return sqlSize.get("timestamp");
@@ -102,6 +106,7 @@ public class TypeMap {
 		return 0;
 	}
 
+	
 
 
 }

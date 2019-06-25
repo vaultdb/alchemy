@@ -26,12 +26,10 @@ import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.RunConfig;
 import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.executor.smc.ExecutionSegment;
-import org.smcql.executor.smc.SecureBufferPool;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.executor.step.SecureStep;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.plan.operator.CommonTableExpressionScan;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Join;
 import org.smcql.plan.operator.Operator;
@@ -45,7 +43,6 @@ import org.smcql.util.CodeGenUtils;
 import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 
-import com.oblivm.backend.flexsc.Mode;
 
 public class QueryCompiler {
 
@@ -59,7 +56,7 @@ public class QueryCompiler {
   String userQuery = null;
   SecureRelRoot queryPlan;
   ExecutionStep compiledRoot;
-  Mode mode = Mode.REAL;
+  
   boolean codeGenerated = false;
   SecureRelRecordType outSchema = null;
   Logger logger;
@@ -125,33 +122,6 @@ public class QueryCompiler {
     inferExecutionSegment(compiledRoot);
   }
 
-  public QueryCompiler(SecureRelRoot q, Mode m) throws Exception {
-
-    queryPlan = q;
-    outSchema = q.getPlanRoot().getSchema();
-    mode = m;
-    smcFiles = new ArrayList<String>();
-    sqlFiles = new ArrayList<String>();
-    sqlCode = new HashMap<ExecutionStep, String>();
-    smcCode = new HashMap<ExecutionStep, String>();
-    executionSegments = new ArrayList<ExecutionSegment>();
-    logger = SystemConfiguration.getInstance().getLogger();
-    allSteps = new HashMap<Operator, ExecutionStep>();
-
-    queryId = q.getName();
-    Operator root = q.getPlanRoot();
-
-    // single plaintext executionstep if no secure computation detected
-    if (root.getExecutionMode() == ExecutionMode.Plain) {
-      compiledRoot = generatePlaintextStep(root);
-      ExecutionSegment segment = createSegment(compiledRoot);
-      executionSegments.add(segment);
-    } else { // recurse
-      compiledRoot = addOperator(root, new ArrayList<Operator>());
-    }
-
-    inferExecutionSegment(compiledRoot);
-  }
 
   public String getQueryId() {
     return queryId;
@@ -359,10 +329,13 @@ public class QueryCompiler {
 
   private ExecutionStep addOperator(Operator o, List<Operator> opsToCombine) throws Exception {
 
-    if (o instanceof CommonTableExpressionScan) {
+	  
+    /*Deprecated: intermediate results are now registered in the run method of EMP program
+	
+     * if (o instanceof CommonTableExpressionScan) {
       Operator child = o.getSources().get(0);
-      SecureBufferPool.getInstance().addPointer(o.getPackageName(), child.getPackageName());
-    }
+      //SecureBufferPool.getInstance().addPointer(o.getPackageName(), child.getPackageName());
+    }*/
 
     if (allSteps.containsKey(o)) {
       return allSteps.get(o);
@@ -441,7 +414,6 @@ public class QueryCompiler {
       throws Exception {
     RunConfig pRunConf = new RunConfig();
     pRunConf.port = 54321; // does not matter for plaintext
-    pRunConf.smcMode = mode;
 
     if (prevStep == null) {
       PlaintextStep result = new PlaintextStep(op, pRunConf, null);
@@ -495,13 +467,14 @@ public class QueryCompiler {
 
     RunConfig mRunConf = new RunConfig();
     mRunConf.port = (SystemConfiguration.getInstance()).readAndIncrementPortCounter();
-    mRunConf.smcMode = mode;
 
+    /* Deprecated: intermediate results are now registered in the run method of EMP program
     if (child.getSourceOperator() instanceof CommonTableExpressionScan) {
       String src = child.getPackageName();
       String dst = merge.getPackageName();
       SecureBufferPool.getInstance().addPointer(src, dst);
-    }
+    }*/
+    
 
     SecureStep mergeStep = new SecureStep(merge, op, mRunConf, child, null);
     child.setParent(mergeStep);
@@ -536,7 +509,6 @@ public class QueryCompiler {
     RunConfig sRunConf = new RunConfig();
 
     sRunConf.port = (SystemConfiguration.getInstance()).readAndIncrementPortCounter();
-    sRunConf.smcMode = mode;
     sRunConf.host = getAliceHostname();
 
     SecureStep smcStep = null;

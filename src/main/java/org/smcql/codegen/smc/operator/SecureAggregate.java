@@ -224,7 +224,7 @@ public class SecureAggregate extends SecureOperator {
 				processString += "agg" + aggId + " = If(dummyCheck, If(" + tupleVar + " > " + aggVar + ", " + tupleVar + ", " + aggVar + "), " + aggVar + ");\n";
 				return processString;
 			case COUNT:
-				processString += "agg" + aggId + " = If(dummyCheck, " +  aggVar + " + 1, " + aggVar + ");\n";
+				processString += "agg" + aggId + " = If(dummyCheck, " +  aggVar + " + INTEGER(INT_LENGTH, 1, PUBLIC), " + aggVar + ");\n";
 				return processString;
 			case SUM:
 				processString += "agg" + aggId + " = If(dummyCheck," + aggVar + " + " + tupleVar + ", " + aggVar + ");\n";

@@ -23,12 +23,12 @@ public class GroupByAggregateTest extends BaseTest {
 	  }
 
 	  
-	  public void testDistinct() throws Exception {
+	/*  public void testDistinct() throws Exception {
 		  String testName = "Distinct";
 		  String query = "SELECT DISTINCT major_icd9 FROM diagnoses";
 		  
 		  testQuery(testName, query);
-	  }
+	  }*/
 
 	  public void testGroupByCount() throws Exception {
 
@@ -39,6 +39,7 @@ public class GroupByAggregateTest extends BaseTest {
 		    testQuery(testName, query);
 		  }
 
+	  /*
 		  public void testGroupBySum() throws Exception {
 
 		    String testName = "GroupBySum";
@@ -57,7 +58,7 @@ public class GroupByAggregateTest extends BaseTest {
 			    testQuery(testName, query);
 			  }
 
-
+*/
 
 
 }
