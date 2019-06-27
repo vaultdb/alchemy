@@ -107,7 +107,7 @@ public class AttributeResolver {
 		for(RelDataTypeField field : outRow.getFieldList()) {
 			String name = field.getName();
 			SecurityPolicy policy;
-			if(name.contains("$")) { // w<winNo>$o<orderByNo> for window aggs
+			if(name.contains("$") && name.startsWith("w")) { // w<winNo>$o<orderByNo> for window aggs
 				String[] tokens = name.split("\\$");
 				
 				String winNoStr = tokens[0].substring(1, tokens[0].length());

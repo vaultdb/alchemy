@@ -23,7 +23,7 @@ public class GenerateSourceSqlTest extends BaseTest {
 	
 	public void testCDiff() throws Exception {		
 		Map<String, String> expected = new HashMap<String, String>();
-		expected.put("org.smcql.generated.cdiff.SeqScan0", "SELECT patient_id, timestamp_, icd9 = '008.45' AS dummy_tag FROM cdiff_cohort_diagnoses ORDER BY dummy_tag, patient_id, timestamp_");
+		expected.put("org.smcql.generated.cdiff.SeqScan0", "SELECT patient_id, timestamp_, EXTRACT(EPOCH FROM timestamp_) / 86400 AS $2, icd9 = '008.45' AS dummy_tag FROM cdiff_cohort_diagnoses ORDER BY dummy_tag, patient_id, timestamp_");
 		runTest("cdiff", expected);
 	}
 
