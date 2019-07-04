@@ -23,6 +23,7 @@ GRANT SELECT(PS_PARTKEY) ON partsupp TO public_attribute;
 GRANT SELECT(PS_SUPPKEY) ON partsupp TO public_attribute;
 GRANT SELECT(PS_SUPPLYCOST) ON partsupp TO public_attribute;
 
+GRANT SELECT(S_SUPPKEY) ON supplier TO public_attribute;
 GRANT SELECT(S_NAME) ON supplier TO public_attribute;
 GRANT SELECT(S_NATIONKEY) ON supplier TO public_attribute;
 
