@@ -67,9 +67,9 @@
 #endif            /* HP */
 #include <ctype.h>
 #include <math.h>
-#ifndef _POSIX_SOURCE
+#ifndef  __clang__
 #include <malloc.h>
-#endif /* POSIX_SOURCE */
+#endif /* was POSIX_SOURCE */
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
