@@ -86,11 +86,11 @@ public abstract class Operator implements CodeGenerator {
 		SecurityPolicy maxAccess = maxAccessLevel(); // most sensitive attribute it computes on
 		List<SecureRelDataTypeField> sliceAttrs = getSliceAttributes();
 		
-		String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess + " slice key " + sliceAttrs;
+		//String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess + " slice key " + sliceAttrs;
 
 		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 && maxAccess == SecurityPolicy.Public) {
 			executionMode = ExecutionMode.Plain;
-			logger.info(msg + "\nLabeling " + this + " as plain 1");
+			//logger.info(msg + "\nLabeling " + this + " as plain 1");
 			return;
 		}
 
@@ -99,7 +99,7 @@ public abstract class Operator implements CodeGenerator {
 		// filter push-down, execute it in plaintext and dummy pad it
 		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 && this instanceof Filter) {
 			executionMode = ExecutionMode.Plain;
-			logger.info(msg + "\nLabeling " + this + " as plain 2");
+			//logger.info(msg + "\nLabeling " + this + " as plain 2");
 
 			return;
 		}

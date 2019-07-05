@@ -64,18 +64,18 @@ public class AttributeResolver {
 		
 	}
 
-	private static SecureRelRecordType resolveLogicalCorrelate(SecureRelNode aJoin) throws Exception {
+	private static SecureRelRecordType resolveLogicalCorrelate(SecureRelNode aCorr) throws Exception {
 
 		List<SecureRelDataTypeField> secureFields = new ArrayList<SecureRelDataTypeField>();
-		LogicalJoin join = (LogicalJoin) aJoin.getRelNode();
-		SecureRelNode lhsChild = aJoin.getChild(0);
-		SecureRelNode rhsChild = aJoin.getChild(1);
+		LogicalCorrelate corr = (LogicalCorrelate) aCorr.getRelNode();
+		SecureRelNode lhsChild = aCorr.getChild(0);
+		SecureRelNode rhsChild = aCorr.getChild(1);
 
 
 		SecureRelRecordType lhs = lhsChild.getSchema();
 		SecureRelRecordType rhs = rhsChild.getSchema();
 
-		RelRecordType baseType = (RelRecordType) join.getRowType();
+		RelRecordType baseType = (RelRecordType) corr.getRowType();
 		Iterator<RelDataTypeField> baseItr = baseType.getFieldList().iterator();
 
 		for(SecureRelDataTypeField field : lhs.getSecureFieldList()) {

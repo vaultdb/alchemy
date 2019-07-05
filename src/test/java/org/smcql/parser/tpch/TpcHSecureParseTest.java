@@ -1,18 +1,13 @@
 package org.smcql.parser.tpch;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.logging.Level;
 
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.util.Utilities;
 
 public class TpcHSecureParseTest extends TpcHBaseTest {
 	

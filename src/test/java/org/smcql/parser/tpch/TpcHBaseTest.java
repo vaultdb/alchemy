@@ -3,6 +3,7 @@ package org.smcql.parser.tpch;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.apache.calcite.rel.RelNode;
 import org.smcql.BaseTest;
@@ -18,7 +19,7 @@ import com.google.common.collect.ImmutableList;
 
 public class TpcHBaseTest extends BaseTest {
 
-
+	
 	protected static final List<String> QUERIES = ImmutableList.of(
 		      // 01
 		      "select\n"
@@ -471,47 +472,37 @@ public class TpcHBaseTest extends BaseTest {
 		          + "order by\n"
 		          + "  s.s_suppkey",
 
-		      // 16 - Potentially indicating to look at string replacements
-		         // TODO: fix compiler with commented lines.  
-		          // these can all be handled in SqlGenerator
-		          // hence needing to make sure that the new CalciteTest
-		          // SQL --> RelNode --> SQL works correctly
-		          // also, re-add  subquery
-		          
-		          // The key here will be to push down all filters and projects that have expressions 
-		          // so that we don't hit the SMC parser for all of these specialized expression like 
-		          // EXTRACT(Year FROM ...)
-	
-		          "WITH complaints AS (SELECT s_suppkey FROM supplier WHERE s_comment LIKE '%Customer%Complaints%'),\n" +
-						  "     \n" +
-						  "\t ps_suppkey_set_diff AS (\n" +
-						  "     SELECT ps_partkey, ps_suppkey\n" +
-						  "     FROM partsupp ps LEFT JOIN complaints c ON ps.ps_suppkey = c.s_suppkey\n" +
-						  "     WHERE c.s_suppkey IS NULL)\n" +
-						  "select\n" +
-						  "   p.p_brand,\n" +
-						  "   p.p_type,\n" +
-						  "   p.p_size,\n" +
-						  "   count(distinct ps.ps_suppkey) as supplier_cnt\n" +
-						  " from\n" +
-						  "   ps_suppkey_set_diff ps,\n" +
-						  "   part p\n" +
-						  " where\n" +
-						  "   p.p_partkey = ps.ps_partkey\n" +
-						  "   and p.p_brand <> 'Brand#21'\n" +
-						  "   and p.p_type not like 'MEDIUM PLATED%'\n" +
-						  "   and p.p_size in (38, 2, 8, 31, 44, 5, 14, 24)\n" +
-						  " group by\n" +
-						  "   p.p_brand,\n" +
-						  "   p.p_type,\n" +
-						  "   p.p_size\n" +
-						  " order by\n" +
-						  "   supplier_cnt desc,\n" +
-						  "   p.p_brand,\n" +
-						  "   p.p_type,\n" +
-						  "   p.p_size\n" +
-						  "\n",
-
+		          "select\n"
+		                  + "  p.p_brand,\n"
+		                  + "  p.p_type,\n"
+		                  + "  p.p_size,\n"
+		                  + "  count(distinct ps.ps_suppkey) as supplier_cnt\n"
+		                  + "from\n"
+		                  + "  partsupp ps,\n"
+		                  + "  part p\n"
+		                  + "where\n"
+		                  + "  p.p_partkey = ps.ps_partkey\n"
+		                  + "  and p.p_brand <> 'Brand#21'\n"
+		                  + "  and p.p_type not like 'MEDIUM PLATED%'\n"
+		                  + "  and p.p_size in (38, 2, 8, 31, 44, 5, 14, 24)\n"
+		                  + "  and ps.ps_suppkey not in (\n"
+		                  + "    select\n"
+		                  + "      s_suppkey\n"
+		                  + "    from\n"
+		                  + "      supplier\n"
+		                  + "    where\n"
+		                  + "      s_comment like '%Customer%Complaints%'\n"
+		                  + "  )\n"
+		                  + "group by\n"
+		                  + "  p.p_brand,\n"
+		                  + "  p.p_type,\n"
+		                  + "  p.p_size\n"
+		                  + "order by\n"
+		                  + "  supplier_cnt desc,\n"
+		                  + "  p.p_brand,\n"
+		                  + "  p.p_type,\n"
+		                  + "  p.p_size",
+		                  
 		      // 17
 		      "WITH l2table AS (\n" +
 					  "  select \n" +
@@ -695,73 +686,65 @@ public class TpcHBaseTest extends BaseTest {
 
 
 
-		      // 22
-			  "WITH\n"
-				+ "	  c_sub\n"
-				+ "	  AS (\n"
-				+ "	  		SELECT\n"
-				+ "	  		substring(c_phone, 1, 2) AS cntrycode, *\n"
-				+ "	  		FROM\n"
-				+ "	  customer AS c\n"
-				+ "	  WHERE\n"
-				+ "	  substring(c_phone, 1, 2)\n"
-				+ "	  IN ('24','31','11','16','21','20','34')\n"
-				+ "    ),\n"
-				+ "	  		c_avg\n"
-				+ "	  AS (\n"
-				+ "	  		SELECT\n"
-				+ "	  				avg(c_acctbal) AS avg_c_acctbal\n"
-				+ "	  FROM\n"
-				+ "	  		customer\n"
-				+ "	  WHERE\n"
-				+ "	  c_acctbal > 0.00\n"
-				+ "	  AND substring(c_phone, 1, 2)\n"
-				+ "	  IN ('24','31','11','16','21','20','34')\n"
-				+ "	  	),\n"
-				+ "	  c_avg_restrict\n"
-				+ "	  AS (\n"
-				+ "	  		SELECT\n"
-				+ "	  				c.*, a.avg_c_acctbal\n"
-				+ "	  				FROM\n"
-				+ "	  			c_sub AS c, c_avg AS a\n"
-				+ "	  				WHERE\n"
-				+ "	  				c.c_acctbal > a.avg_c_acctbal\n"
-				+ "	  ),\n"
-				+ "	  c_orderkey\n"
-				+ "	  AS (\n"
-				+ "	  		SELECT\n"
-				+ "	  			*\n"
-				+ "	  					FROM\n"
-				+ "	  					c_avg_restrict AS c\n"
-				+ "	  					LEFT JOIN orders AS o ON\n"
-				+ "	  					o.o_custkey = c.c_custkey\n"
-				+ "	  					WHERE\n"
-				+ "	  					o.o_custkey IS NULL\n"
-				+ "	  )\n"
-				+ "	  SELECT\n"
-				+ "	  		cntrycode,\n"
-				+ "	  count(*) AS numcust,\n"
-				+ "	  sum(c_acctbal) AS totacctbal\n"
-				+ "	  FROM\n"
-				+ "	  c_orderkey AS c\n"
-				+ "	  GROUP BY\n"
-				+ "	  cntrycode\n"
-				+ "	  ORDER BY\n"
-				+ "	  cntrycode"
-
+		      // TODO: renormalize this
+				      // 22
+				      "select\n"
+				          + "  cntrycode,\n"
+				          + "  count(*) as numcust,\n"
+				          + "  sum(c_acctbal) as totacctbal\n"
+				          + "from\n"
+				          + "  (\n"
+				          + "    select\n"
+				          + "      substring(c_phone from 1 for 2) as cntrycode,\n"
+				          + "      c_acctbal\n"
+				          + "    from\n"
+				          + "      customer c\n"
+				          + "    where\n"
+				          + "      substring(c_phone from 1 for 2) in\n"
+				          + "        ('24', '31', '11', '16', '21', '20', '34')\n"
+				          + "      and c_acctbal > (\n"
+				          + "        select\n"
+				          + "          avg(c_acctbal)\n"
+				          + "        from\n"
+				          + "          customer\n"
+				          + "        where\n"
+				          + "          c_acctbal > 0.00\n"
+				          + "          and substring(c_phone from 1 for 2) in\n"
+				          + "            ('24', '31', '11', '16', '21', '20', '34')\n"
+				          + "      )\n"
+				          + "      and not exists (\n"
+				          + "        select\n"
+				          + "          *\n"
+				          + "        from\n"
+				          + "          orders o\n"
+				          + "        where\n"
+				          + "          o.o_custkey = c.c_custkey\n"
+				          + "      )\n"
+				          + "  ) as custsale\n"
+				          + "group by\n"
+				          + "  cntrycode\n"
+				          + "order by\n"
+				          + "  cntrycode"
 			);
 
 
+	
 	  protected void setUp() throws Exception {
 
 		    String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.tpch";
 		    System.setProperty("smcql.setup", setupFile);
 		 	logger = SystemConfiguration.getInstance().getLogger();
 		 	parser = new SqlStatementParser();
+		 	
 
 
 	  }
 
+	  
+	  protected String readSQL(int queryNo) {
+		  return QUERIES.get(queryNo-1); // zero-indexed
+	  }
+	  
 	  // runs query over unioned database
 	  // the sql statement is written against the shared schema
 	  protected QueryTable getExpectedOutput(String sql, SecureRelRecordType outSchema) throws Exception {
