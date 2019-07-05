@@ -1,4 +1,6 @@
 CREATE ROLE public_attribute;
+CREATE ROLE replicated;
+CREATE ROLE partitioned_on;
 
 GRANT SELECT(N_NATIONKEY) ON nation TO public_attribute;
 GRANT SELECT(N_NAME) ON nation TO public_attribute;
@@ -30,3 +32,23 @@ GRANT SELECT(C_CUSTKEY) ON customer TO public_attribute;
 GRANT SELECT(C_NATIONKEY) ON customer TO public_attribute;
 
 GRANT SELECT(O_ORDERKEY) ON orders TO public_attribute;
+
+
+-- declare replicated tables
+GRANT SELECT ON part TO replicated;
+GRANT SELECT ON region TO replicated;
+GRANT SELECT ON nation TO replicated;
+
+-- codify partitioning scheme
+GRANT SELECT(c_nationkey) ON customer TO partitioned_on;
+
+GRANT SELECT(o_custkey) ON orders TO partitioned_on;
+
+GRANT SELECT(l_orderkey) ON lineitem TO partitioned_on;
+
+GRANT SELECT(s_nationkey) ON supplier TO partitioned_on;
+
+GRANT SELECT(ps_suppkey) ON partsupp TO partitioned_on;
+
+
+

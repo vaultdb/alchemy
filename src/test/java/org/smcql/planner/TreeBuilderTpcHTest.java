@@ -588,6 +588,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
 
       public void testQuery13() throws Exception {
     	  //TODO: fix this test s.t. joins that can be run locally - like o_custkey = c_custkey because they are partitioned-alike, are run in the clear w/oblivous padding
+    	  // use this as a testcase because it is relatively simple
           String expectedOutput = PLANS.get(12);
           runTest(13, expectedOutput);
       }
