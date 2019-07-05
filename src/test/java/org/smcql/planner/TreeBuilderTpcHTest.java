@@ -21,6 +21,10 @@ import com.google.common.collect.ImmutableList;
 
 // need to push down joins that can be executed in the clear, either owing to permissions, replication, or partitioning
 
+// query rewrite rules (in order of operations):
+// 1) push down joins with replicated tables
+// 2) push down joins on public attributes (run after joins in #1)
+// 3) push down joins that are partitioned-alike (run after joins in #2)
 
 public class TreeBuilderTpcHTest extends TpcHBaseTest {
 
@@ -491,18 +495,24 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
 "LogicalSort-Secure, schema:(#0: cntrycode VARCHAR(15) Private,#1: numcust BIGINT Private,#2: totacctbal DECIMAL(19, 0) Private)\n"
 + "    LogicalAggregate-Secure, schema:(#0: cntrycode VARCHAR(15) Private,#1: numcust BIGINT Private,#2: totacctbal DECIMAL(19, 0) Private)\n"
 + "        LogicalProject-Secure, schema:(#0: cntrycode VARCHAR(15) Private,#1: c_acctbal DECIMAL(19, 0) Private)\n"
-+ "            LogicalFilter-Secure, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_address VARCHAR(40) Private,#3: c_nationkey BIGINT Public,#4: c_phone CHAR(15) Private,#5: c_acctbal DECIMAL(19, 0) Private,#6: c_mktsegment CHAR(10) Private,#7: c_comment VARCHAR(117) Private,#8: EXPR$0 DECIMAL(19, 0) Private,#9: $f0 BOOLEAN Public)\n"
-+ "                LogicalCorrelate-Secure, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_address VARCHAR(40) Private,#3: c_nationkey BIGINT Public,#4: c_phone CHAR(15) Private,#5: c_acctbal DECIMAL(19, 0) Private,#6: c_mktsegment CHAR(10) Private,#7: c_comment VARCHAR(117) Private,#8: EXPR$0 DECIMAL(19, 0) Private,#9: $f0 BOOLEAN Public)\n"
-+ "                    LogicalJoin-Secure, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_address VARCHAR(40) Private,#3: c_nationkey BIGINT Public,#4: c_phone CHAR(15) Private,#5: c_acctbal DECIMAL(19, 0) Private,#6: c_mktsegment CHAR(10) Private,#7: c_comment VARCHAR(117) Private,#8: EXPR$0 DECIMAL(19, 0) Private)\n"
-+ "                        JdbcTableScan-Plain, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_address VARCHAR(40) Private,#3: c_nationkey BIGINT Public,#4: c_phone CHAR(15) Private,#5: c_acctbal DECIMAL(19, 0) Private,#6: c_mktsegment CHAR(10) Private,#7: c_comment VARCHAR(117) Private)\n"
-+ "                        LogicalAggregate-Secure, schema:(#0: EXPR$0 DECIMAL(19, 0) Private)\n"
-+ "                            LogicalProject-Plain, schema:(#0: c_acctbal DECIMAL(19, 0) Private)\n"
-+ "                                LogicalFilter-Plain, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_address VARCHAR(40) Private,#3: c_nationkey BIGINT Public,#4: c_phone CHAR(15) Private,#5: c_acctbal DECIMAL(19, 0) Private,#6: c_mktsegment CHAR(10) Private,#7: c_comment VARCHAR(117) Private)\n"
-+ "                                    JdbcTableScan-Plain, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_address VARCHAR(40) Private,#3: c_nationkey BIGINT Public,#4: c_phone CHAR(15) Private,#5: c_acctbal DECIMAL(19, 0) Private,#6: c_mktsegment CHAR(10) Private,#7: c_comment VARCHAR(117) Private)\n"
-+ "                    LogicalAggregate-Secure, schema:(#0: $f0 BOOLEAN Public)\n"
-+ "                        LogicalProject-Plain, schema:(#0: $f0 BOOLEAN Public)\n"
-+ "                            LogicalFilter-Plain, schema:(#0: o_orderkey INTEGER Public,#1: o_custkey BIGINT Private,#2: o_orderstatus CHAR(1) Private,#3: o_totalprice DECIMAL(19, 0) Private,#4: o_orderdate DATE Private,#5: o_orderpriority CHAR(15) Private,#6: o_clerk CHAR(15) Private,#7: o_shippriority INTEGER Private,#8: o_comment VARCHAR(79) Private)\n"
++ "            LogicalJoin-Secure, schema:(#0: cntrycode VARCHAR(15) Private,#1: c_acctbal DECIMAL(19, 0) Private,#2: $f0 DECIMAL(19, 0) Private)\n"
++ "                LogicalProject-Secure, schema:(#0: cntrycode VARCHAR(15) Private,#1: c_acctbal DECIMAL(19, 0) Private)\n"
++ "                    LogicalFilter-Secure, schema:(#0: cntrycode VARCHAR(15) Private,#1: c_acctbal DECIMAL(19, 0) Private,#2: c_custkey0 BIGINT Public,#3: o_custkey BIGINT Private,#4: o_clerk CHAR(15) Private)\n"
++ "                        LogicalJoin-Secure, schema:(#0: cntrycode VARCHAR(15) Private,#1: c_acctbal DECIMAL(19, 0) Private,#2: c_custkey0 BIGINT Public,#3: o_custkey BIGINT Private,#4: o_clerk CHAR(15) Private)\n"
++ "                            LogicalProject-Plain, schema:(#0: cntrycode VARCHAR(15) Private,#1: c_acctbal DECIMAL(19, 0) Private,#2: c_custkey0 BIGINT Public)\n"
++ "                                LogicalFilter-Plain, schema:(#0: c_custkey INTEGER Public,#1: c_phone CHAR(15) Private,#2: c_acctbal DECIMAL(19, 0) Private)\n"
++ "                                    LogicalProject-Plain, schema:(#0: c_custkey INTEGER Public,#1: c_phone CHAR(15) Private,#2: c_acctbal DECIMAL(19, 0) Private)\n"
++ "                                        JdbcTableScan-Plain, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_address VARCHAR(40) Private,#3: c_nationkey BIGINT Public,#4: c_phone CHAR(15) Private,#5: c_acctbal DECIMAL(19, 0) Private,#6: c_mktsegment CHAR(10) Private,#7: c_comment VARCHAR(117) Private)\n"
++ "                            LogicalProject-Plain, schema:(#0: o_custkey BIGINT Private,#1: o_clerk CHAR(15) Private)\n"
 + "                                JdbcTableScan-Plain, schema:(#0: o_orderkey INTEGER Public,#1: o_custkey BIGINT Private,#2: o_orderstatus CHAR(1) Private,#3: o_totalprice DECIMAL(19, 0) Private,#4: o_orderdate DATE Private,#5: o_orderpriority CHAR(15) Private,#6: o_clerk CHAR(15) Private,#7: o_shippriority INTEGER Private,#8: o_comment VARCHAR(79) Private)\n"
++ "                LogicalAggregate-Secure, schema:(#0: $f0 DECIMAL(19, 0) Private)\n"
++ "                    LogicalAggregate-Secure, schema:(#0: EXPR$0 DECIMAL(19, 0) Private)\n"
++ "                        LogicalProject-Plain, schema:(#0: c_acctbal DECIMAL(19, 0) Private)\n"
++ "                            LogicalFilter-Plain, schema:(#0: c_phone CHAR(15) Private,#1: c_acctbal DECIMAL(19, 0) Private)\n"
++ "                                LogicalFilter-Plain, schema:(#0: c_phone CHAR(15) Private,#1: c_acctbal DECIMAL(19, 0) Private)\n"
++ "                                    LogicalProject-Plain, schema:(#0: c_phone CHAR(15) Private,#1: c_acctbal DECIMAL(19, 0) Private)\n"
++ "                                        JdbcTableScan-Plain, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_address VARCHAR(40) Private,#3: c_nationkey BIGINT Public,#4: c_phone CHAR(15) Private,#5: c_acctbal DECIMAL(19, 0) Private,#6: c_mktsegment CHAR(10) Private,#7: c_comment VARCHAR(117) Private)\n"
+
 
 
 

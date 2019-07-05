@@ -286,6 +286,7 @@ public class SystemConfiguration {
 	public boolean slicingEnabled() {
 		return !getProperty("sliced-execution").equals("false");
 	}
+
 	public CalciteConnection getCalciteConnection() {
 		return calciteConnection;
 	}
