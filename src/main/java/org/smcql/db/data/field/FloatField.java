@@ -3,7 +3,6 @@ package org.smcql.db.data.field;
 import org.smcql.type.SecureRelDataTypeField;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.BitSet;
 
 public class FloatField extends Field  implements Serializable {

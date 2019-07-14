@@ -12,7 +12,7 @@ import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.plaintext.PlainOperator;
 import org.smcql.codegen.smc.operator.SecureOperator;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.plan.ShadowRelNode;
 import org.smcql.plan.slice.SliceKeyDefinition;
@@ -47,18 +47,20 @@ public abstract class Operator implements CodeGenerator {
 	
 	protected boolean blocking = false;
 	
-	ExecutionMode  executionMode = ExecutionMode.Secure;
+	ExecutionMode  executionMode = null;
 	String queryName;
 	
 	PrivacyCost pCost;
 	
 	SystemConfiguration config;
 	
+	
 	public Operator(String name, SecureRelNode src, Operator... childOps) throws Exception {
 		baseRelNode = src;
 		src.setPhysicalNode(this);
 		children = new ArrayList<Operator>();
 		config = SystemConfiguration.getInstance();
+	
 		
 		operatorId = config.getOperatorId();
 		
@@ -84,63 +86,109 @@ public abstract class Operator implements CodeGenerator {
 		
 		ExecutionMode maxChild = maxChildMode(); 
 		SecurityPolicy maxAccess = maxAccessLevel(); // most sensitive attribute it computes on
-		List<SecureRelDataTypeField> sliceAttrs = getSliceAttributes();
+		
+		executionMode = new ExecutionMode(); // defaults to distributed oblivious, i.e. MPC
+		
+		
 		
 		//String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess + " slice key " + sliceAttrs;
 
-		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 && maxAccess == SecurityPolicy.Public) {
-			executionMode = ExecutionMode.Plain;
-			//logger.info(msg + "\nLabeling " + this + " as plain 1");
-			return;
-		}
-
-
-		
-		// filter push-down, execute it in plaintext and dummy pad it
-		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 && this instanceof Filter) {
-			executionMode = ExecutionMode.Plain;
-			//logger.info(msg + "\nLabeling " + this + " as plain 2");
-
-			return;
-		}
+		// if maxChild is DistributedClear or LocalClear and maxAccess is public, 
+		// then set it equal to maxChild
 		
 		
-	
-		if(maxChild.compareTo(ExecutionMode.Plain) <= 0)
-			if(config.slicingEnabled() && !sliceAttrs.isEmpty()) {
-			executionMode = ExecutionMode.Slice;
-			sliceKey = new SliceKeyDefinition(sliceAttrs);
-			sliceKey.addFilters(sliceAttrs.get(0).getFilters(), this.getSchema());
-			return;
-		}
-		
-		
-		
-		if(maxChild == ExecutionMode.Slice) {
-			boolean sliceAble = true;
-			for(Operator op : children) {
-				if(!SliceKeyDefinition.sliceCompatible(op, this)) {
-					sliceAble = false;
+		if(!maxChild.distributed) {
+			if(!maxChild.oblivious) { // local-clear
+				if(maxAccess == SecurityPolicy.Public) {
+					executionMode.distributed = false;
+					executionMode.oblivious = false; // sliced init'd t false
 				}
+			} else // local-oblivious
+				try {
+					if(locallyRunnable()) {
+						executionMode.distributed = false;					
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.exit(-1);
+				}
+		
+		}
+		
+		// return distributed-oblivious-!sliced
+		
+		// TODO: update this to support slicing, rework old slicing code
 			
-			}
-		
-			if(sliceAble) {
-				executionMode = ExecutionMode.Slice;
-				sliceKey = new SliceKeyDefinition(this);
-				//For multiple filters
-				for (int i=0; i< this.getChildren().size(); i++) {
-					sliceKey.mergeFilters(this.getChild(i).getSliceKey().getFilters());
-				}
-				return;
-			}
-		}
-		
-		// secure mode default
+
 		
 		
 	}
 	
+	
+	 
+	// checks to see if we can use replication, partitioned-alike attributes, or unary ops
+	// to run this locally
+	protected boolean locallyRunnable()  throws Exception{
+		
+		for(Operator child : children) { // either child is replicated or if binary op, have one input that is replicated
+			if(child.getSchema().isReplicated())
+				return true;
+		}
+		
+		if(this instanceof Filter || this instanceof Project || this instanceof SeqScan) { // unary ops
+			return true;
+		}
+		
+		// a binary op where the instances are partitioned-alike
+		if(children.size() == 2) {
+			Operator lhsChild = children.get(0);
+			Operator rhsChild = children.get(1);
+			SecureRelRecordType lhsSchema = lhsChild.getSchema();
+			SecureRelRecordType rhsSchema = rhsChild.getSchema();
+			
+			if(lhsSchema.isReplicated() || rhsSchema.isReplicated()) // automatically partitioned-alike
+				return true;
+
+			SecureRelDataTypeField lhsPartitionBy = null;
+			SecureRelDataTypeField rhsPartitionBy = null;
+
+			
+			List<SecureRelDataTypeField> computesOn = this.computesOn();
+			for(SecureRelDataTypeField aField : computesOn) {
+				if(lhsSchema.getAttributes().contains(aField)) {
+					if(lhsPartitionBy == null) {
+						lhsPartitionBy = aField; // get first field from lhs that we compute on
+					}
+					else {
+						throw new Exception("Composite partitioning keys not yet implemented!");
+					}
+					
+					if(rhsSchema.getAttributes().contains(aField)) {
+						if(rhsPartitionBy == null) {
+							rhsPartitionBy = aField; // // get first field from rhs that we compute on
+						}
+						else {
+							throw new Exception("Composite partitioning keys not yet implemented!");
+						}
+					}
+				}
+			}
+			
+			assert(rhsPartitionBy  != null && lhsPartitionBy != null);
+
+ 
+			
+			if(Utilities.isLocalPartitionKey(lhsChild.getSchema(), lhsPartitionBy) && Utilities.isLocalPartitionKey(rhsChild.getSchema(), rhsPartitionBy) )
+				return true;
+			
+		}
+		
+		return false;
+	}
+	
+	
+	
+
 	// TODO: use this to manage attribute-level statistics as tuples move up the query tree
 	// will need to be overridden in many classes
 	public void initializeStatistics() {
@@ -208,10 +256,16 @@ public abstract class Operator implements CodeGenerator {
 	protected ExecutionMode maxChildMode() {
 		ExecutionMode maxMode = children.get(0).executionMode;
 		
-		//join
-		if(children.size() == 2)
-			if(children.get(1).executionMode.compareTo(maxMode) > 0)
-				maxMode = children.get(1).executionMode;
+		//join or other binary op
+		if(children.size() == 2)  {
+			ExecutionMode rhs = children.get(1).executionMode;
+			if(rhs.distributed) 
+				maxMode.distributed = true;
+	
+			if(rhs.oblivious)
+				maxMode.oblivious = true;
+			
+		}
 
 		return maxMode;
 	}
@@ -251,7 +305,7 @@ public abstract class Operator implements CodeGenerator {
 	}
 	
 	boolean sliceAble() {
-		if(this.sliceAgnostic == true && this.maxChildMode() != ExecutionMode.Secure)
+		if(this.sliceAgnostic == true && !this.maxChildMode().oblivious)
 			return true;
 		return false;
 	}
@@ -277,7 +331,7 @@ public abstract class Operator implements CodeGenerator {
 		List<SecureRelDataTypeField> baseKey;
 		
 		// if has a sliced child
-		if(children.get(0).getExecutionMode() == ExecutionMode.Slice) {
+		if(children.get(0).getExecutionMode().sliced) {
 			baseKey = children.get(0).getSliceAttributes();
 		}
 		else { 
@@ -324,6 +378,8 @@ public abstract class Operator implements CodeGenerator {
 	}
 
 
+	
+	
 	public String getOpName() {
 		String fullName = this.getClass().toString();
 		int startIdx = fullName.lastIndexOf('.') + 1;
@@ -371,7 +427,7 @@ public abstract class Operator implements CodeGenerator {
 
 
 	public String destFilename(ExecutionMode e) {
-        if(e == ExecutionMode.Plain) {
+        if(!e.distributed || (e.distributed && !e.oblivious)) {
         	return Utilities.getCodeGenTarget() + "/" + getQueryId() +  "/sql/" + getOperatorId() + "_" + getOpName() + ".sql";
         }
 
@@ -418,7 +474,7 @@ public abstract class Operator implements CodeGenerator {
 		if(executionMode != op.getExecutionMode())
 			return false;
 		
-		if(executionMode == ExecutionMode.Slice && op.getExecutionMode() == this.executionMode) {
+		if(executionMode.sliced && executionMode.oblivious && op.getExecutionMode() == this.executionMode) {
 			if(!SliceKeyDefinition.sliceCompatible(this, op)) {
 				return false;
 			}

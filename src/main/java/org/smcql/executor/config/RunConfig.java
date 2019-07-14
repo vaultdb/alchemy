@@ -9,9 +9,12 @@ public class RunConfig implements Serializable {
 	/**
 	 * 
 	 */
+	
 	private static final long serialVersionUID = -6316868926248404447L;
 
-	public enum ExecutionMode {Plain, Slice, Secure};
+	
+	ExecutionMode executionMode;
+	
 
 	public int port = 54321;
 	public String host = "localhost"; // location of generator 

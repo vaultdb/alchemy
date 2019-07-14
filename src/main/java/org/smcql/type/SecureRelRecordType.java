@@ -29,6 +29,9 @@ public class SecureRelRecordType implements Serializable {
 	// maximum policy over all attributes
 	SecurityPolicy policy = SecurityPolicy.Private;
     RelRecordType baseType;
+    boolean replicated = false; // for tables with replication
+    
+    
     
 	List<SecureRelDataTypeField> secureFields;
 	public SecureRelRecordType() {
@@ -44,7 +47,8 @@ public class SecureRelRecordType implements Serializable {
 	private void writeObject(ObjectOutputStream out) throws IOException {		
 		//handle policy
 		out.writeObject(policy);
-		
+		out.writeObject(replicated);
+
 		//handle baseType
 		out.writeObject(baseType.getSqlTypeName());
 		List<RelDataTypeField> fields = baseType.getFieldList();
@@ -68,6 +72,8 @@ public class SecureRelRecordType implements Serializable {
 	private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
 		//handle policy
 		policy = (SecurityPolicy)ois.readObject();
+		replicated =  ois.readBoolean();
+
 		
 		//handle baseType
 		SqlTypeName stn = (SqlTypeName) ois.readObject();
@@ -102,6 +108,14 @@ public class SecureRelRecordType implements Serializable {
 		baseType = schema.baseType;
 		secureFields = new ArrayList<SecureRelDataTypeField>(schema.getSecureFieldList());
 		
+		cloneExecutionProperties(schema);
+	}
+	
+	
+	public void cloneExecutionProperties(SecureRelRecordType schema) {
+		
+		this.replicated = schema.replicated;
+
 	}
 
 	public void initializeStatistics() {
@@ -154,6 +168,16 @@ public class SecureRelRecordType implements Serializable {
 	public List<String> getFieldNames() {
 		
 		return baseType.getFieldNames();
+	}
+	
+	
+	public void setReplicated(boolean rep) {
+		replicated = rep;
+	}
+	
+ 	public boolean isReplicated() {
+		return replicated;
+		
 	}
 	
 	@Override
@@ -251,5 +275,7 @@ public class SecureRelRecordType implements Serializable {
 		
 		return offset;
 	}
+	
+	
 
 }

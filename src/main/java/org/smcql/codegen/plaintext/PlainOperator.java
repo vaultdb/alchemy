@@ -9,7 +9,7 @@ import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.sql.SqlGenerator;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.Tuple;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.plan.execution.slice.statistics.SliceStatistics;
 import org.smcql.plan.execution.slice.statistics.StatisticsCollector;
 import org.smcql.plan.operator.Filter;
@@ -167,7 +167,7 @@ public class PlainOperator implements CodeGenerator {
 	}
 	
 	public void inferSlicePredicates(SliceKeyDefinition def) throws Exception {
-		if(planNode.getExecutionMode() == ExecutionMode.Slice) {
+		if(planNode.getExecutionMode().sliced) {
 			SliceStatistics stats = StatisticsCollector.collect(def);
 			sliceValues = new ArrayList<Tuple>(stats.getDistributedValues().keySet());
 			complementValues = new ArrayList<Tuple>(stats.getSingleSiteValues().keySet());

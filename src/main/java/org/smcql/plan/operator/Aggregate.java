@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.logical.LogicalAggregate;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
@@ -122,7 +121,7 @@ public class Aggregate extends Operator {
 	// is this a scalar aggregate with no distributed children?
 	public boolean splitAggregate() {
 
-		if(this.executionMode == ExecutionMode.Secure && (agg.getGroupCount() == 0)
+		if(this.executionMode.distributed  && this.executionMode.oblivious && (agg.getGroupCount() == 0)
 				 && childrenLocal()) { 
 			return true;
 		}
@@ -134,48 +133,23 @@ public class Aggregate extends Operator {
 	public void inferExecutionMode() {
 		super.inferExecutionMode(); 
 		
-		// if this is a scalar aggregate  (no group-by) with no distributed children
-		// then set children to public and run its partial execution locally
-
-		if(splitAggregate()) {
-					// recursively set all children to public
-					setChildrenToPublic();
-				}
 		
 	}
 	
 
 	
 	private boolean childrenLocal() {
-		return childrenLocalHelper(this.getChild(0));
-	}
-	private boolean childrenLocalHelper(Operator op) {
-		if(!(op instanceof Filter || op instanceof SeqScan || op instanceof Project || op instanceof CommonTableExpressionScan)) {
-			
-			return false;
-		}	
 		
-		boolean local = true;
-		for(Operator child : op.children) {
-			local = local & childrenLocalHelper(child);
+		for(Operator op : children) {
+			if(op.getExecutionMode().distributed) {
+				return false;
+			}
+			
 		}
-		return local;
+		return true;
+		
 	}
 	
-	// for split operator case where aggregate has no group-by
-	// hence its cardinality is independent of that of its locally-executed children
-	private void setChildrenToPublic() {
-		for(Operator child : children) {
-			setToPublicHelper(child);
-		}
-	}
 	
-	// set children to public
-	private void setToPublicHelper(Operator op) {
-		op.executionMode = ExecutionMode.Plain;
-		for(Operator child : op.getChildren()) {
-			setToPublicHelper(child);
-		}
-	}
 	
 };

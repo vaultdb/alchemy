@@ -9,7 +9,7 @@ import java.util.Map;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.smc.operator.support.ProcessingStep;
 import org.smcql.codegen.smc.operator.support.SortMethod;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Join;

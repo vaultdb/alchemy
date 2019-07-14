@@ -1,12 +1,9 @@
 package org.smcql.executor.smc;
 
 import java.io.Serializable;
-import java.sql.Connection;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -14,8 +11,6 @@ import org.smcql.config.SystemConfiguration.Party;
 import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;
 import org.smcql.type.SecureRelRecordType;
-import org.smcql.executor.config.ConnectionManager;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.executor.smc.io.SecureArray;
 import org.smcql.executor.smc.runnable.SMCRunnable;
 import org.smcql.plan.slice.SliceKeyDefinition;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
@@ -16,7 +16,10 @@ public class SeqScan extends Operator {
 
 	public SeqScan(String name, SecureRelNode src, Operator ... children ) throws Exception {
 		super(name, src, children);
-		executionMode = ExecutionMode.Plain;
+		executionMode = new ExecutionMode();
+		executionMode.distributed = false;
+		executionMode.oblivious = false;
+		
 		sliceAgnostic = true;
 	}
 	
@@ -69,7 +72,7 @@ public class SeqScan extends Operator {
 
 	@Override
 	public void inferExecutionMode() {
-		executionMode = ExecutionMode.Plain;
+		return; // done in constructor
 	}
 
 	

@@ -1,11 +1,6 @@
 package org.smcql.parser.tpch;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
-
-import org.apache.calcite.rel.RelNode;
 import org.smcql.BaseTest;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;

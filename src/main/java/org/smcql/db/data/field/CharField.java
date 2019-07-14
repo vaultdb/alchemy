@@ -2,7 +2,6 @@ package org.smcql.db.data.field;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.BitSet;
 
 import org.smcql.type.SecureRelDataTypeField;

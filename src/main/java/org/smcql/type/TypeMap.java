@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.sql.type.SqlTypeExplicitPrecedenceList;
 import org.apache.calcite.sql.type.SqlTypeName;
 
 // singleton for converting from sql types to smc types and vice versa

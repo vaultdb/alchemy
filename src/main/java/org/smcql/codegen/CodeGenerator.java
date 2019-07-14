@@ -2,7 +2,7 @@ package org.smcql.codegen;
 
 import java.util.Map;
 
-import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.type.SecureRelRecordType;
 
 

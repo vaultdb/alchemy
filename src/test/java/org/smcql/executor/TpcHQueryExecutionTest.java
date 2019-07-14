@@ -1,11 +1,8 @@
 package org.smcql.executor;
 
 import org.smcql.codegen.QueryCompiler;
-import org.smcql.codegen.sql.SqlGenerator;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
-import org.smcql.executor.config.ConnectionManager;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.parser.tpch.TpcHBaseTest;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelRecordType;

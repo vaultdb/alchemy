@@ -9,10 +9,9 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.calcite.util.Pair;
-import org.apache.commons.lang3.StringUtils;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.plan.operator.Operator;

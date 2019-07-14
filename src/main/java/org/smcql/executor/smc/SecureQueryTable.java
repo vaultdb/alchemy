@@ -3,7 +3,6 @@ package org.smcql.executor.smc;
 import java.io.Serializable;
 import java.util.BitSet;
 
-import org.smcql.config.SystemConfiguration.Party;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.smc.io.SecureArray;
 import org.smcql.type.SecureRelRecordType;

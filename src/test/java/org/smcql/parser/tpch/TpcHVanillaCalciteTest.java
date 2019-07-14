@@ -8,10 +8,7 @@ import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.type.SecureRelRecordType;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Base64;

@@ -1,8 +1,5 @@
 package org.smcql.runner;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.calcite.sql.SqlDialect;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;

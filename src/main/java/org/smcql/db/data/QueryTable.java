@@ -3,21 +3,16 @@ package org.smcql.db.data;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang3.StringUtils;
-import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.slice.SliceKeyDefinition;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.FileUtils;
 
 public class QueryTable implements Serializable {

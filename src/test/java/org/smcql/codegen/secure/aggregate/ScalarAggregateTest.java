@@ -1,16 +1,8 @@
 package org.smcql.codegen.secure.aggregate;
 
 import org.smcql.BaseTest;
-import org.smcql.codegen.QueryCompiler;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.db.data.QueryTable;
-import org.smcql.executor.EmpExecutor;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.plan.SecureRelRoot;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
 
 import java.util.ArrayList;

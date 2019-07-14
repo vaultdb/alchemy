@@ -24,7 +24,7 @@ import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.RunConfig;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.executor.smc.ExecutionSegment;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
@@ -79,7 +79,7 @@ public class QueryCompiler {
     
 
     // single plaintext executionstep if no secure computation detected
-    if (root.getExecutionMode() == ExecutionMode.Plain) {
+    if (!root.getExecutionMode().distributed) {
       compiledRoot = generatePlaintextStep(root);
       ExecutionSegment segment = createSegment(compiledRoot);
       executionSegments.add(segment);
@@ -110,7 +110,7 @@ public class QueryCompiler {
     Operator root = q.getPlanRoot();
 
     // single plaintext executionstep if no secure computation detected
-    if (root.getExecutionMode() == ExecutionMode.Plain) {
+    if (!root.getExecutionMode().distributed) {
       compiledRoot = generatePlaintextStep(root);
       ExecutionSegment segment = createSegment(compiledRoot);
       executionSegments.add(segment);
@@ -144,16 +144,24 @@ public class QueryCompiler {
 
     Utilities.mkdir(targetPath + "/smc");
 
+    ExecutionMode executionMode = new ExecutionMode();
+    
+    executionMode.distributed = false;
+
+    
     for (Entry<ExecutionStep, String> e : sqlCode.entrySet()) {
       CodeGenerator cg = e.getKey().getCodeGenerator();
-      String targetFile = cg.destFilename(ExecutionMode.Plain);
+      
+      String targetFile = cg.destFilename(executionMode);
       sqlFiles.add(targetFile);
       org.smcql.util.FileUtils.writeFile(targetFile, e.getValue());
     }
 
+    executionMode.distributed = true;
+    
     for (Entry<ExecutionStep, String> e : smcCode.entrySet()) {
       CodeGenerator cg = e.getKey().getCodeGenerator();
-      String targetFile = cg.destFilename(ExecutionMode.Secure);
+      String targetFile = cg.destFilename(executionMode);
       smcFiles.add(targetFile);
       if (e.getValue() != null) // no ctes
       org.smcql.util.FileUtils.writeFile(targetFile, e.getValue());
@@ -341,7 +349,7 @@ public class QueryCompiler {
       return allSteps.get(o);
     }
 
-    if (o.getExecutionMode() == ExecutionMode.Plain) { // child of a secure leaf
+    if (!o.getExecutionMode().distributed) { // child of a secure leaf
       return generatePlaintextStep(o);
     }
 
@@ -357,7 +365,7 @@ public class QueryCompiler {
     for (Operator child : o.getSources()) {
       List<Operator> nextToCombine = new ArrayList<Operator>();
       while (child instanceof Filter || child instanceof Project) { // Aggregate NYI, needs group-by
-        if (child instanceof Filter && child.getExecutionMode() != ExecutionMode.Plain) {
+        if (child instanceof Filter && child.getExecutionMode().distributed) {
           opsToCombine.add(child);
         } else {
           nextToCombine.add(child);
@@ -368,7 +376,7 @@ public class QueryCompiler {
       if (child.getExecutionMode() != o.getExecutionMode()) { // secure leaf
         ExecutionStep childSource = null;
         Operator tmp = o;
-        if (child.getExecutionMode() == ExecutionMode.Plain) {
+        if (!child.getExecutionMode().distributed) {
           Operator plain = (o.isSplittable() && !(o instanceof WindowAggregate)) ? o : child;
           // TODO: figure out why generate plaintext step is running on JdbcTableScan instead of aggregate
           childSource = generatePlaintextStep(plain);
@@ -598,7 +606,7 @@ public class QueryCompiler {
     current.outSchema = new SecureRelRecordType(secStep.getSchema());
     current.executionMode = secStep.getSourceOperator().getExecutionMode();
 
-    if (secStep.getSourceOperator().getExecutionMode() == ExecutionMode.Slice
+    if (secStep.getSourceOperator().getExecutionMode().sliced
         && userQuery != null) {
       current.sliceSpec = secStep.getSourceOperator().getSliceKey();
 

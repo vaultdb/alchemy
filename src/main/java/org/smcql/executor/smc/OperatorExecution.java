@@ -1,11 +1,7 @@
 package org.smcql.executor.smc;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.smcql.codegen.smc.operator.SecureOperator;
-import org.smcql.codegen.smc.operator.support.ProcessingStep;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.config.SystemConfiguration.Party;
 import org.smcql.type.SecureRelDataTypeField;
@@ -14,7 +10,6 @@ import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.executor.step.SecureStep;
 import org.smcql.privacy.PrivacyCost;
-import org.smcql.util.Utilities;
 
 
 

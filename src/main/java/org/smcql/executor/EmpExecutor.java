@@ -6,8 +6,6 @@ import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.smc.ExecutionSegment;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
 import org.smcql.type.SecureRelRecordType;
 
 import java.util.List;

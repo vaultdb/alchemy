@@ -18,7 +18,6 @@ import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
-import org.smcql.util.CommandOutput;
 import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;

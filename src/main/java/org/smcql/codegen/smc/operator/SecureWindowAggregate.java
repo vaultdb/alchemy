@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.apache.calcite.util.Pair;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.WindowAggregate;
@@ -92,7 +91,7 @@ public class SecureWindowAggregate extends SecureOperator  {
 		}		
 		
 		String generatedCode = null;
-		if(planNode.getExecutionMode() == ExecutionMode.Slice && SystemConfiguration.getInstance().slicingEnabled()) {
+		if(planNode.getExecutionMode().sliced && SystemConfiguration.getInstance().slicingEnabled()) {
 			generatedCode = CodeGenUtils.generateFromTemplate("window-aggregate/sliced/row-num.txt", variables);
 		}
 		else {

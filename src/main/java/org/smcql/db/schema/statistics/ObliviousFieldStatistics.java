@@ -1,18 +1,15 @@
 package org.smcql.db.schema.statistics;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;
 import org.smcql.db.data.field.IntField;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;

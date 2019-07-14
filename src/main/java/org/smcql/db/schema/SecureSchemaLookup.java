@@ -14,7 +14,7 @@ import java.util.Map;
 
 // decorator for calcite schema
 // adds management of security policy for attributes
-// also keeps track of how the tables are layed out - i.e., partitioning keys, replicated status
+// also keeps track of how the tables are laid out - i.e., partitioning keys, replicated status
 public class SecureSchemaLookup {
 
 	
@@ -25,12 +25,8 @@ public class SecureSchemaLookup {
     List<String> replicatedTables;
     
     // <table, attr> - what attribute is this table partitioned on?  
-    // TODO: extend this for composite keys
-    // Does not include case where we partition by X,
-    // but Y is the primary key, so Y is a de facto partition key too
-    // handle that later
-    
-    Map<String, String> partitionOn;
+    // TODO: extend this for composite keys    
+    Map<String, String> partitionBy;
     
     // primary keys
     // <table, list<attrs> >
@@ -46,12 +42,12 @@ public class SecureSchemaLookup {
 		accessPolicies = new HashMap<String, Map<String, SecurityPolicy>>();
 		String publicQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='public_attribute'";
 		String protectedQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='protected_attribute'";
-		String partitionOnQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='partitioned_on'";
+		String partitionByQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='partitioned_on'";
 		String replicatedTablesQuery = "SELECT table_name FROM information_schema.table_privileges WHERE grantee='replicated'";
-		String primaryKeysQuery = "SELECT pg_attribute.attname, pg_class.relname"
-				+ "FROM pg_index, pg_class, pg_attribute, pg_namespace "
-				+ "WHERE indrelid = pg_class.oid AND"
-				+ "nspname = 'public' AND "
+		String primaryKeysQuery = "SELECT pg_class.relname, pg_attribute.attname\n "
+				+ "FROM pg_index, pg_class, pg_attribute, pg_namespace\n "
+				+ "WHERE indrelid = pg_class.oid AND "
+				+ "pg_namespace.nspname = 'public' AND "
 				+ "pg_class.relnamespace = pg_namespace.oid AND "
 				+  "pg_attribute.attrelid = pg_class.oid AND "
 				+  "pg_attribute.attnum = any(pg_index.indkey) AND indisprimary";
@@ -61,13 +57,14 @@ public class SecureSchemaLookup {
 		initializeSecurityPolicy(publicQuery, dbConnection, SecurityPolicy.Public);
 		initializeSecurityPolicy(protectedQuery, dbConnection, SecurityPolicy.Protected);
 		initializeReplicatedTables(replicatedTablesQuery, dbConnection);
-		initializePartitioningKeys(partitionOnQuery, dbConnection);
+		initializePartitioningKeys(partitionByQuery, dbConnection);
 		initializePrimaryKeys(primaryKeysQuery, dbConnection);
 	}
 	
     private void initializePrimaryKeys(String sql, Connection c) throws SQLException {
     	Statement st = c.createStatement();
-		ResultSet rs = st.executeQuery(sql);
+    	
+    	ResultSet rs = st.executeQuery(sql);
 
     	primaryKeys = new HashMap<String, List<String>>();
     	
@@ -93,12 +90,12 @@ public class SecureSchemaLookup {
 	
     	Statement st = c.createStatement();
 		ResultSet rs = st.executeQuery(sql);
-		partitionOn =  new HashMap<String, String>();
+		partitionBy =  new HashMap<String, String>();
 		
 		while (rs.next()) {
 			String table = rs.getString(1);
 			String attr = rs.getString(2);
-			partitionOn.put(table, attr);
+			partitionBy.put(table, attr);
 		}
 		
 		rs.close();
@@ -162,32 +159,12 @@ public class SecureSchemaLookup {
 		return replicatedTables.contains(tableName);
 	}
 	
-	// partition key helps us deduce what tables can be joined unencrypted (locally) with oblivious padding
-	public boolean isPartitionKey(String tableName,  String attrName) {
-		
-		String partitionKey = partitionOn.get(tableName);
-		if(partitionKey.equals(attrName)) {
-			return true;
-		}
-		
-		
-		// else, if partition on something else, and inquiring about primary key then true
-		List<String> primaryKey = primaryKeys.get(tableName);
-		if(primaryKey == null) {
-			return false;
-		}
-		
-		if(primaryKey.size() == 1 && primaryKey.get(0).equals(attrName)) {
-			return true;
-		}
-		
-		// else if the table's partition key plus the supplied attrName make up a composite primary key, then true
-		// only support one partition key for now
-		if(primaryKey.size() == 2 && primaryKey.contains(partitionKey) && primaryKey.contains(attrName)) {
-			return true;
-		}
-		
-	 // else false
-		return false;
+	public List<String> getPrimaryKey(String tableName) {
+		return primaryKeys.get(tableName);
 	}
+	
+	public String getPartitionKey(String tableName) {
+		return partitionBy.get(tableName);
+	}
+	
 }

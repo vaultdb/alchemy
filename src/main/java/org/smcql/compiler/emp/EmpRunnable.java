@@ -7,7 +7,6 @@ import java.util.BitSet;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.gridkit.internal.com.jcraft.jsch.Logger;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.FileUtils;

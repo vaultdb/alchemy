@@ -4,11 +4,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.BitSet;
 
-import org.smcql.db.data.QueryTable;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.Utilities;
-
 public class EmpProgram {
 
 	protected int party = 0;

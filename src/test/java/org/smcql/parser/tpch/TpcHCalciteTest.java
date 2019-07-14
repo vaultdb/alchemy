@@ -16,17 +16,12 @@ import org.smcql.codegen.sql.SqlGenerator;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.parser.SqlStatementParser;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelRecordType;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.RelRoot;
-import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
-import org.apache.calcite.sql.SqlNode;
-import org.smcql.util.Utilities;
 
 
 public class TpcHCalciteTest extends TpcHBaseTest {

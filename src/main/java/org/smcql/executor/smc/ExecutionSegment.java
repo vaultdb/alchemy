@@ -6,8 +6,8 @@ import java.util.List;
 import org.smcql.config.SystemConfiguration.Party;
 import org.smcql.db.data.Tuple;
 import org.smcql.type.SecureRelRecordType;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.executor.config.RunConfig;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.slice.SliceKeyDefinition;
 
 
@@ -27,7 +27,6 @@ public class ExecutionSegment implements Serializable {
 	// for sliced merge
 	public SecureRelRecordType outSchema;
 
-	public ExecutionMode executionMode;
 	public boolean isPlanRoot = false;
 	
 	public String sliceComplementSQL = null;
@@ -36,6 +35,7 @@ public class ExecutionSegment implements Serializable {
 	String className;
 	public String empCode;
 	public String jniCode;
+	public ExecutionMode executionMode;
 	
 	
 	public void checkInit() throws Exception {

@@ -1,5 +1,6 @@
 #configuration for local run of tpc-h
 #configure locations
+schema-name=tpch
 local-codegen-target=src/main/java/org/smcql/compiler/emp/generated
 data-providers=conf/connections/tpch-hosts
 
