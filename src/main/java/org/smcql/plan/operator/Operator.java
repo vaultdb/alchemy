@@ -88,7 +88,7 @@ public abstract class Operator implements CodeGenerator {
 		SecurityPolicy maxAccess = maxAccessLevel(); // most sensitive attribute it computes on
 		
 		executionMode = new ExecutionMode(); // defaults to distributed oblivious, i.e. MPC
-		
+		executionMode.replicated = getSchema().isReplicated(); // inferred this during schema resolution
 		
 		
 		String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess;
@@ -128,7 +128,7 @@ public abstract class Operator implements CodeGenerator {
 		
 		}
 		
-		logger.info("     Defaulting to distributed oblivious exec mode!");
+		logger.info("For " + this + " inferred execution mode: " + executionMode);
 		
 		// return distributed-oblivious-!sliced
 		

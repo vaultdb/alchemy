@@ -187,7 +187,7 @@ public class AttributeResolver {
 		}
 			
 		SecureRelRecordType schema =  new SecureRelRecordType(record, secFields);
-		schema.cloneExecutionProperties(inSchema);
+		schema.setReplicated(inSchema.isReplicated()); // propagate replicated status of child
 		return schema;
 		
 			
@@ -211,8 +211,8 @@ public class AttributeResolver {
 		}
 		
 		SecureRelRecordType schema =  new SecureRelRecordType((RelRecordType) projection.getRowType(), secureFields);
-		schema.cloneExecutionProperties(srcSchema);
-		return schema;
+		schema.setReplicated(srcSchema.isReplicated()); // propagate replicated status of child
+ 		return schema;
 
 	}
 	
@@ -272,7 +272,7 @@ public class AttributeResolver {
 		assert(dstFields.size() == aNode.getRelNode().getRowType().getFieldCount());
 		
 		SecureRelRecordType schema =  new SecureRelRecordType(dstRecord, dstFields);
-		schema.cloneExecutionProperties(srcSchema);
+		schema.setReplicated(srcSchema.isReplicated()); // propagate replicated status of child
 		return schema;
 	}
 	
@@ -362,8 +362,7 @@ public class AttributeResolver {
 		}
 		
 		SecureRelRecordType tableDef = new SecureRelRecordType(record, secureFields);
-		if(permissions.isReplicated(table))
-			tableDef.setReplicated(true);
+		tableDef.setReplicated(permissions.isReplicated(table));
 		
 		
 		return tableDef;

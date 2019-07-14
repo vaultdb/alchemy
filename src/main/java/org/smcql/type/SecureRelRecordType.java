@@ -108,15 +108,9 @@ public class SecureRelRecordType implements Serializable {
 		baseType = schema.baseType;
 		secureFields = new ArrayList<SecureRelDataTypeField>(schema.getSecureFieldList());
 		
-		cloneExecutionProperties(schema);
 	}
 	
 	
-	public void cloneExecutionProperties(SecureRelRecordType schema) {
-		
-		this.replicated = schema.replicated;
-
-	}
 
 	public void initializeStatistics() {
 		for(SecureRelDataTypeField fields : this.getSecureFieldList()) {

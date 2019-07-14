@@ -3,7 +3,9 @@ package org.smcql.plan.operator;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.calcite.adapter.jdbc.JdbcTableScan;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.smcql.db.schema.SecureSchemaLookup;
 import org.smcql.executor.config.ExecutionMode;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.type.SecureRelDataTypeField;
@@ -16,9 +18,15 @@ public class SeqScan extends Operator {
 
 	public SeqScan(String name, SecureRelNode src, Operator ... children ) throws Exception {
 		super(name, src, children);
+		
+		JdbcTableScan scan = (JdbcTableScan) src.getPhysicalNode().baseRelNode.getRelNode();
+		String tableName = scan.getTable().getQualifiedName().get(0);
+
 		executionMode = new ExecutionMode();
 		executionMode.distributed = false;
 		executionMode.oblivious = false;
+		boolean replicatedTable = SecureSchemaLookup.getInstance().isReplicated(tableName);
+		executionMode.replicated = replicatedTable;
 		
 		sliceAgnostic = true;
 	}
