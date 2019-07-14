@@ -91,8 +91,10 @@ public abstract class Operator implements CodeGenerator {
 		
 		
 		
-		//String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess + " slice key " + sliceAttrs;
+		String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess;
 
+		logger.info(msg);
+		
 		// if maxChild is DistributedClear or LocalClear and maxAccess is public, 
 		// then set it equal to maxChild
 		
@@ -103,7 +105,18 @@ public abstract class Operator implements CodeGenerator {
 					executionMode.distributed = false;
 					executionMode.oblivious = false; // sliced init'd t false
 				}
-			} else // local-oblivious
+				else {
+					try {
+						if(locallyRunnable()) {
+							executionMode.distributed = false;					
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						System.exit(-1);
+					}
+					
+				}
+			} else // max child is local-oblivious
 				try {
 					if(locallyRunnable()) {
 						executionMode.distributed = false;					
@@ -114,6 +127,8 @@ public abstract class Operator implements CodeGenerator {
 				}
 		
 		}
+		
+		logger.info("     Defaulting to distributed oblivious exec mode!");
 		
 		// return distributed-oblivious-!sliced
 		
