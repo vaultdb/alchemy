@@ -82,25 +82,25 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
 				 + "                                    JdbcTableScan-LocalClearReplicated, schema:(#0: r_regionkey INTEGER Public,#1: r_name CHAR(25) Public,#2: r_comment VARCHAR(152) Public)\n",
           		  
           		  // 03
-          		  "LogicalProject-Secure, schema:(#0: l_orderkey BIGINT Private,#1: revenue DECIMAL(19, 0) Private,#2: o_orderdate DATE Private,#3: o_shippriority INTEGER Private)\n"
-          				 + "    LogicalSort-Secure, schema:(#0: l_orderkey BIGINT Private,#1: o_orderdate DATE Private,#2: o_shippriority INTEGER Private,#3: revenue DECIMAL(19, 0) Private)\n"
-          				 + "        LogicalAggregate-Secure, schema:(#0: l_orderkey BIGINT Private,#1: o_orderdate DATE Private,#2: o_shippriority INTEGER Private,#3: revenue DECIMAL(19, 0) Private)\n"
-          				 + "            LogicalProject-Secure, schema:(#0: l_orderkey BIGINT Private,#1: o_orderdate DATE Private,#2: o_shippriority INTEGER Private,#3: $f3 DECIMAL(19, 0) Private)\n"
-          				 + "                LogicalJoin-Secure, schema:(#0: c_custkey INTEGER Public,#1: o_orderkey INTEGER Public,#2: o_custkey BIGINT Private,#3: o_orderdate DATE Private,#4: o_shippriority INTEGER Private,#5: l_orderkey BIGINT Private,#6: l_extendedprice DECIMAL(19, 0) Private,#7: l_discount DECIMAL(19, 0) Private)\n"
-          				 + "                    LogicalJoin-Secure, schema:(#0: c_custkey INTEGER Public,#1: o_orderkey INTEGER Public,#2: o_custkey BIGINT Private,#3: o_orderdate DATE Private,#4: o_shippriority INTEGER Private)\n"
-          				 + "                        LogicalProject-Plain, schema:(#0: c_custkey INTEGER Public)\n"
-          				 + "                            LogicalFilter-Plain, schema:(#0: c_custkey INTEGER Public,#1: c_mktsegment CHAR(10) Private)\n"
-          				 + "                                LogicalProject-Plain, schema:(#0: c_custkey INTEGER Public,#1: c_mktsegment CHAR(10) Private)\n"
-          				 + "                                    JdbcTableScan-Plain, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_address VARCHAR(40) Private,#3: c_nationkey BIGINT Public,#4: c_phone CHAR(15) Private,#5: c_acctbal DECIMAL(19, 0) Private,#6: c_mktsegment CHAR(10) Private,#7: c_comment VARCHAR(117) Private)\n"
-          				 + "                        LogicalFilter-Plain, schema:(#0: o_orderkey INTEGER Public,#1: o_custkey BIGINT Private,#2: o_orderdate DATE Private,#3: o_shippriority INTEGER Private)\n"
-          				 + "                            LogicalProject-Plain, schema:(#0: o_orderkey INTEGER Public,#1: o_custkey BIGINT Private,#2: o_orderdate DATE Private,#3: o_shippriority INTEGER Private)\n"
-          				 + "                                JdbcTableScan-Plain, schema:(#0: o_orderkey INTEGER Public,#1: o_custkey BIGINT Private,#2: o_orderstatus CHAR(1) Private,#3: o_totalprice DECIMAL(19, 0) Private,#4: o_orderdate DATE Private,#5: o_orderpriority CHAR(15) Private,#6: o_clerk CHAR(15) Private,#7: o_shippriority INTEGER Private,#8: o_comment VARCHAR(79) Private)\n"
-          				 + "                    LogicalProject-Plain, schema:(#0: l_orderkey BIGINT Private,#1: l_extendedprice DECIMAL(19, 0) Private,#2: l_discount DECIMAL(19, 0) Private)\n"
-          				 + "                        LogicalFilter-Plain, schema:(#0: l_orderkey BIGINT Private,#1: l_extendedprice DECIMAL(19, 0) Private,#2: l_discount DECIMAL(19, 0) Private,#3: l_shipdate DATE Private)\n"
-          				 + "                            LogicalProject-Plain, schema:(#0: l_orderkey BIGINT Private,#1: l_extendedprice DECIMAL(19, 0) Private,#2: l_discount DECIMAL(19, 0) Private,#3: l_shipdate DATE Private)\n"
-          				 + "                                JdbcTableScan-Plain, schema:(#0: l_orderkey BIGINT Private,#1: l_partkey BIGINT Private,#2: l_suppkey BIGINT Private,#3: l_linenumber INTEGER Private,#4: l_quantity DECIMAL(19, 0) Private,#5: l_extendedprice DECIMAL(19, 0) Private,#6: l_discount DECIMAL(19, 0) Private,#7: l_tax DECIMAL(19, 0) Private,#8: l_returnflag CHAR(1) Private,#9: l_linestatus CHAR(1) Private,#10: l_shipdate DATE Private,#11: l_commitdate DATE Private,#12: l_receiptdate DATE Private,#13: l_shipinstruct CHAR(25) Private,#14: l_shipmode CHAR(10) Private,#15: l_comment VARCHAR(44) Private)\n",
-          				 
-          				// 04
+				 "LogicalProject-DistributedOblivious, schema:(#0: l_orderkey INTEGER Private,#1: revenue DECIMAL(19, 0) Private,#2: o_orderdate DATE Private,#3: o_shippriority INTEGER Private)\n"
+				 + "    LogicalSort-DistributedOblivious, schema:(#0: l_orderkey INTEGER Private,#1: o_orderdate DATE Private,#2: o_shippriority INTEGER Private,#3: revenue DECIMAL(19, 0) Private)\n"
+				 + "        LogicalAggregate-DistributedOblivious, schema:(#0: l_orderkey INTEGER Private,#1: o_orderdate DATE Private,#2: o_shippriority INTEGER Private,#3: revenue DECIMAL(19, 0) Private)\n"
+				 + "            LogicalProject-LocalObliviousPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: o_orderdate DATE Private,#2: o_shippriority INTEGER Private,#3: $f3 DECIMAL(19, 0) Private)\n"
+				 + "                LogicalJoin-LocalObliviousPartitioned, schema:(#0: c_custkey INTEGER Public,#1: o_orderkey INTEGER Public,#2: o_custkey INTEGER Private,#3: o_orderdate DATE Private,#4: o_shippriority INTEGER Private,#5: l_orderkey INTEGER Private,#6: l_extendedprice DECIMAL(19, 0) Private,#7: l_discount DECIMAL(19, 0) Private), Predicate: =($5, $1)\n"
+				 + "                    LogicalJoin-LocalObliviousPartitioned, schema:(#0: c_custkey INTEGER Public,#1: o_orderkey INTEGER Public,#2: o_custkey INTEGER Private,#3: o_orderdate DATE Private,#4: o_shippriority INTEGER Private), Predicate: =($0, $2)\n"
+				 + "                        LogicalProject-LocalObliviousPartitioned, schema:(#0: c_custkey INTEGER Public)\n"
+				 + "                            LogicalFilter-LocalObliviousPartitioned, schema:(#0: c_custkey INTEGER Public,#1: c_mktsegment CHAR(10) Private)\n"
+				 + "                                LogicalProject-LocalClearPartitioned, schema:(#0: c_custkey INTEGER Public,#1: c_mktsegment CHAR(10) Private)\n"
+				 + "                                    JdbcTableScan-LocalClearPartitioned, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_address VARCHAR(40) Private,#3: c_nationkey INTEGER Public,#4: c_phone CHAR(15) Private,#5: c_acctbal DECIMAL(19, 0) Private,#6: c_mktsegment CHAR(10) Private,#7: c_comment VARCHAR(117) Private)\n"
+				 + "                        LogicalFilter-LocalObliviousPartitioned, schema:(#0: o_orderkey INTEGER Public,#1: o_custkey INTEGER Private,#2: o_orderdate DATE Private,#3: o_shippriority INTEGER Private)\n"
+				 + "                            LogicalProject-LocalClearPartitioned, schema:(#0: o_orderkey INTEGER Public,#1: o_custkey INTEGER Private,#2: o_orderdate DATE Private,#3: o_shippriority INTEGER Private)\n"
+				 + "                                JdbcTableScan-LocalClearPartitioned, schema:(#0: o_orderkey INTEGER Public,#1: o_custkey INTEGER Private,#2: o_orderstatus CHAR(1) Private,#3: o_totalprice DECIMAL(19, 0) Private,#4: o_orderdate DATE Private,#5: o_orderpriority CHAR(15) Private,#6: o_clerk CHAR(15) Private,#7: o_shippriority INTEGER Private,#8: o_comment VARCHAR(79) Private)\n"
+				 + "                    LogicalProject-LocalObliviousPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: l_extendedprice DECIMAL(19, 0) Private,#2: l_discount DECIMAL(19, 0) Private)\n"
+				 + "                        LogicalFilter-LocalObliviousPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: l_extendedprice DECIMAL(19, 0) Private,#2: l_discount DECIMAL(19, 0) Private,#3: l_shipdate DATE Private)\n"
+				 + "                            LogicalProject-LocalClearPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: l_extendedprice DECIMAL(19, 0) Private,#2: l_discount DECIMAL(19, 0) Private,#3: l_shipdate DATE Private)\n"
+				 + "                                JdbcTableScan-LocalClearPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: l_partkey INTEGER Private,#2: l_suppkey INTEGER Private,#3: l_linenumber INTEGER Private,#4: l_quantity DECIMAL(19, 0) Private,#5: l_extendedprice DECIMAL(19, 0) Private,#6: l_discount DECIMAL(19, 0) Private,#7: l_tax DECIMAL(19, 0) Private,#8: l_returnflag CHAR(1) Private,#9: l_linestatus CHAR(1) Private,#10: l_shipdate DATE Private,#11: l_commitdate DATE Private,#12: l_receiptdate DATE Private,#13: l_shipinstruct CHAR(25) Private,#14: l_shipmode CHAR(10) Private,#15: l_comment VARCHAR(44) Private)\n",
+
+				 // 04
           				"LogicalSort-DistributedOblivious, schema:(#0: o_orderpriority CHAR(15) Private,#1: order_count BIGINT Private)\n"
           				 + "    LogicalAggregate-DistributedOblivious, schema:(#0: o_orderpriority CHAR(15) Private,#1: order_count BIGINT Private)\n"
           				 + "        LogicalProject-LocalObliviousPartitioned, schema:(#0: o_orderpriority CHAR(15) Private)\n"
@@ -532,23 +532,23 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
           String expectedOutput = PLANS.get(1);
           
           runTest(2, expectedOutput);
-     }
+     }*/
 
       public void testQuery03() throws Exception {
           String expectedOutput = PLANS.get(2);
           runTest(3, expectedOutput);
      }
-*/
+
       public void testQuery04() throws Exception {
           String expectedOutput = PLANS.get(3);
           runTest(4, expectedOutput);
      }
-/*
+
       public void testQuery05() throws Exception {
     	  // fails because we need to do rewrites to push down public tables
           String expectedOutput = PLANS.get(4);
           runTest(5, expectedOutput);
-     }
+     } /*
 */
       public void testQuery06() throws Exception {
           String expectedOutput = PLANS.get(5);
