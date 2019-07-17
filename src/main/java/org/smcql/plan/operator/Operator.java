@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.plaintext.PlainOperator;
@@ -164,33 +165,47 @@ public abstract class Operator implements CodeGenerator {
 			if(lhsSchema.isReplicated() || rhsSchema.isReplicated()) // automatically partitioned-alike
 				return true;
 
+			List<SecureRelDataTypeField> lhsFields = lhsSchema.getAttributes();
+			List<SecureRelDataTypeField> rhsFields = rhsSchema.getAttributes();
+			
+			
 			SecureRelDataTypeField lhsPartitionBy = null;
 			SecureRelDataTypeField rhsPartitionBy = null;
 
 			
 			List<SecureRelDataTypeField> computesOn = this.computesOn();
 			for(SecureRelDataTypeField aField : computesOn) {
-				if(lhsSchema.getAttributes().contains(aField)) {
+				debugFieldComparison("lhs", aField, lhsFields);
+
+				if(lhsFields.contains(aField)) {					
 					if(lhsPartitionBy == null) {
-						lhsPartitionBy = aField; // get first field from lhs that we compute on
+						lhsPartitionBy = aField; // get first field from lhs that we compute on, assumes equality predicates
 					}
 					else {
 						throw new Exception("Composite partitioning keys not yet implemented!");
 					}
+				}
+					debugFieldComparison("rhs", aField, rhsFields);
 					
-					if(rhsSchema.getAttributes().contains(aField)) {
+					// TODO: adjust idx to account for shift of rhs ordinals in concat join schema
+					SecureRelDataTypeField rhsField = new SecureRelDataTypeField(aField.getName(), aField.getIndex() - lhsFields.size(), aField.getType());
+					if(rhsFields.contains(rhsField)) {
 						if(rhsPartitionBy == null) {
-							rhsPartitionBy = aField; // // get first field from rhs that we compute on
+							rhsPartitionBy = aField; // get first field from rhs that we compute on
 						}
 						else {
 							throw new Exception("Composite partitioning keys not yet implemented!");
 						}
 					}
-				}
-			}
+				} // end for
 			
-			assert(rhsPartitionBy  != null && lhsPartitionBy != null);
 
+			System.out.println("lhs partition key: " + lhsPartitionBy);
+			System.out.println("rhs partition key: " + rhsPartitionBy);
+			
+			if(lhsPartitionBy == null || rhsPartitionBy == null) {
+				throw new Exception("Did not find partitioning keys for matching!");
+			}
  
 			
 			if(Utilities.isLocalPartitionKey(lhsChild.getSchema(), lhsPartitionBy) && Utilities.isLocalPartitionKey(rhsChild.getSchema(), rhsPartitionBy) )
@@ -203,6 +218,29 @@ public abstract class Operator implements CodeGenerator {
 	
 	
 	
+	private void debugFieldComparison(String msg, SecureRelDataTypeField aField, List<SecureRelDataTypeField> fields) throws Exception {
+		for(SecureRelDataTypeField field : fields) {
+			System.out.println("\n" + msg + ": Comparing " + aField + " to " + field + ": " + field.equals(aField));
+			
+			System.out.println("Name: " + aField.getName().equals(field.getName()));
+
+			System.out.println("Indices: " + aField.getIndex() + ", " + field.getIndex());
+			System.out.println("Index: " + (aField.getIndex() == field.getIndex()));
+			
+			RelDataType schemaType = field.getType();
+			RelDataType cmpType = aField.getType();
+			
+			System.out.println("Schema type: " + schemaType + ", matching to " + cmpType);
+			System.out.println("Type: " + schemaType.equals(cmpType));
+			
+			
+			if(field.equals(aField))
+				break;
+			
+		
+		}
+		
+	}
 
 	// TODO: use this to manage attribute-level statistics as tuples move up the query tree
 	// will need to be overridden in many classes

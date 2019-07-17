@@ -141,6 +141,27 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 		return baseField.getIndex();
 	}
 
+	
+	@Override 
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		
+		if(!(obj instanceof SecureRelDataTypeField)) {
+			return ((RelDataTypeFieldImpl) this).equals(obj); // default to superclass
+		}
+		
+		SecureRelDataTypeField that = (SecureRelDataTypeField) obj;
+		if(this.getIndex() == that.getIndex()
+				&& this.getName().equals(that.getName())
+				&& this.getType().equals(that.getType()))
+			return true;
+		
+		return false;
+		
+	}
+	
 	public SecurityPolicy getSecurityPolicy() {
 		return policy;
 	}
@@ -193,5 +214,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 			return true;
 		return false;
 	}
+	
+	
 	
 }

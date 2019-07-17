@@ -240,6 +240,8 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		
 		// only supporting a single partition key defined for now
 		SystemConfiguration config = SystemConfiguration.getInstance();
+		System.out.println("Analyzing " + attr);
+
 		String srcTable = attr.getStoredTable();
 		
 		SecureSchemaLookup schemaDef = SecureSchemaLookup.getInstance();
@@ -262,7 +264,7 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 
 		// Case 3: if there is a primary key, then any partition key will automatically divide this up
 		// by primary key since the latter admits no duplicates
-		if(primaryKey.contains(attr) &&  primaryKey.size() == 1 && schemaDef.getPartitionKey(srcTable) != null) {
+		if(primaryKey.contains(attr.getName()) &&  primaryKey.size() == 1 && schemaDef.getPartitionKey(srcTable) != null) {
 			return true;
 		}
 			

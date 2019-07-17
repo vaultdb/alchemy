@@ -12,11 +12,13 @@ public class ExecutionMode {
 		@Override
 		public String toString() {
 
-			String descriptor = distributed ?  "Distributed"
-					:  "Local";
+			String descriptor = distributed ?  new String("Distributed")
+					:  new String("Local");
 			
 			descriptor += oblivious ? "Oblivious" : "Clear";
-			descriptor += replicated ? "Replicated" : "Sharded";
+			if(!distributed)
+				descriptor += replicated ? "Replicated" : "Partitioned";
+			
 			return descriptor;
 		}
 }

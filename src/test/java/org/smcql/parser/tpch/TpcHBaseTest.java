@@ -487,26 +487,20 @@ public class TpcHBaseTest extends BaseTest {
 		                  + "  p.p_size",
 		                  
 		      // 17
-		      "WITH l2table AS (\n" +
-					  "  select \n" +
-					  "    l_partkey, 0.2 * avg(l2.l_quantity) AS avg_l2_q\n" +
-					  "  from\n" +
-					  "    lineitem l2\n" +
-					  "  group by\n" +
-					  "    l2.l_partkey\n" +
-					  ")\n" +
-					  "select\n" +
-					  "  sum(l.l_extendedprice) / 7.0 as avg_yearly\n" +
-					  "from\n" +
-					  "  lineitem l,\n" +
-					  "  part p,\n" +
-					  "  l2table\n" +
-					  "where\n" +
-					  "  p.p_partkey = l.l_partkey\n" +
-					  "  and p.p_brand = 'Brand#13'\n" +
-					  "  and p.p_container = 'JUMBO CAN'\n" +
-					  "  and l.l_quantity < avg_l2_q\n" +
-					  "  and l2table.l_partkey = p.p_partkey",
+		                  
+		                  "SELECT sum(extendedprice) / 7.0 as avg_yearly \n"
+		                  + "FROM ( \n"
+		                  + "     SELECT l_quantity as quantity, l_extendedprice as extendedprice, t_avg_quantity\n"
+		                  + "     FROM (\n"
+		                  + "       SELECT l_partkey as t_partkey, 0.2 * avg(l_quantity) as t_avg_quantity \n"
+		                  + "       FROM lineitem\n"
+		                  + "       GROUP By l_partkey) as tmp\n"
+		                  + "    INNER JOIN (\n"
+		                  + "      SELECT l_quantity, l_partkey, l_extendedprice\n"
+		                  + "      FROM  part, lineitem \n"
+		                  + "      WHERE  p_partkey = l_partkey and p_brand = 'Brand#23' and p_container = 'MED BOX'\n"
+		                  + "      ) as l1 ON  l1.l_partkey = t_partkey ) a\n"
+		                  + "where quantity < t_avg_quantity\n",
 
 			// 18
 		      "select\n"
