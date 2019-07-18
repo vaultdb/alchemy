@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.apache.calcite.rel.logical.LogicalJoin;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.plaintext.PlainOperator;
@@ -146,6 +149,8 @@ public abstract class Operator implements CodeGenerator {
 	// to run this locally
 	protected boolean locallyRunnable()  throws Exception{
 		
+		boolean locallyRunnable = true;
+		
 		for(Operator child : children) { // either child is replicated or if binary op, have one input that is replicated
 			if(child.getSchema().isReplicated())
 				return true;
@@ -155,8 +160,20 @@ public abstract class Operator implements CodeGenerator {
 			return true;
 		}
 		
+		
 		// a binary op where the instances are partitioned-alike
 		if(children.size() == 2) {
+			
+			
+			if(!(this instanceof Join)) {
+				throw new Exception("Only binary operator supported is join!");
+			}
+			
+			LogicalJoin join = (LogicalJoin) baseRelNode.getRelNode();
+			List<RexNode> joinCondition = join.getChildExps();
+			List<RexNode> predicates = RexUtil.flattenAnd(joinCondition);
+			System.out.println("Predicaetes: " + predicates);
+			
 			Operator lhsChild = children.get(0);
 			Operator rhsChild = children.get(1);
 			SecureRelRecordType lhsSchema = lhsChild.getSchema();
@@ -169,49 +186,54 @@ public abstract class Operator implements CodeGenerator {
 			List<SecureRelDataTypeField> rhsFields = rhsSchema.getAttributes();
 			
 			
-			SecureRelDataTypeField lhsPartitionBy = null;
-			SecureRelDataTypeField rhsPartitionBy = null;
-
-			
-			List<SecureRelDataTypeField> computesOn = this.computesOn();
-			for(SecureRelDataTypeField aField : computesOn) {
-				debugFieldComparison("lhs", aField, lhsFields);
-
-				if(lhsFields.contains(aField)) {					
-					if(lhsPartitionBy == null) {
-						lhsPartitionBy = aField; // get first field from lhs that we compute on, assumes equality predicates
-					}
-					else {
-						throw new Exception("Composite partitioning keys not yet implemented!");
-					}
-				}
-					debugFieldComparison("rhs", aField, rhsFields);
-					
-					// TODO: adjust idx to account for shift of rhs ordinals in concat join schema
-					SecureRelDataTypeField rhsField = new SecureRelDataTypeField(aField.getName(), aField.getIndex() - lhsFields.size(), aField.getType());
-					if(rhsFields.contains(rhsField)) {
-						if(rhsPartitionBy == null) {
-							rhsPartitionBy = aField; // get first field from rhs that we compute on
+			for(RexNode predicate : predicates) {
+				SecureRelDataTypeField lhsPartitionBy = null;
+				SecureRelDataTypeField rhsPartitionBy = null;
+	
+				List<SecureRelDataTypeField>  srcAttrs = AttributeResolver.getAttributes(predicate, this.getSchema());
+				
+				for(SecureRelDataTypeField aField : srcAttrs) {
+					debugFieldComparison("lhs", aField, lhsFields);
+	
+					if(lhsFields.contains(aField)) {					
+						if(lhsPartitionBy == null) {
+							lhsPartitionBy = aField; // get first field from lhs that we compute on, assumes equality predicates
 						}
 						else {
 							throw new Exception("Composite partitioning keys not yet implemented!");
 						}
 					}
-				} // end for
+						debugFieldComparison("rhs", aField, rhsFields);
+						
+					
+						SecureRelDataTypeField rhsField = new SecureRelDataTypeField(aField.getName(), aField.getIndex() - lhsFields.size(), aField.getType());
+						if(rhsFields.contains(rhsField)) {
+							if(rhsPartitionBy == null) {
+								rhsPartitionBy = aField; // get first field from rhs that we compute on
+							}
+							else {
+								throw new Exception("Composite partitioning keys not yet implemented!");
+							}
+						}
+					} // end schema matcher
 			
 
-			System.out.println("lhs partition key: " + lhsPartitionBy);
-			System.out.println("rhs partition key: " + rhsPartitionBy);
+				System.out.println("lhs partition key: " + lhsPartitionBy);
+				System.out.println("rhs partition key: " + rhsPartitionBy);
 			
-			if(lhsPartitionBy == null || rhsPartitionBy == null) {
-				throw new Exception("Did not find partitioning keys for matching!");
-			}
- 
+				if(lhsPartitionBy == null || rhsPartitionBy == null) {
+					throw new Exception("Did not find partitioning keys for matching!");
+				}
+	 
+				
+				if(!(Utilities.isLocalPartitionKey(lhsChild.getSchema(), lhsPartitionBy) && Utilities.isLocalPartitionKey(rhsChild.getSchema(), rhsPartitionBy)) )
+					locallyRunnable = false;
+				
+				} // end for each computesOn
 			
-			if(Utilities.isLocalPartitionKey(lhsChild.getSchema(), lhsPartitionBy) && Utilities.isLocalPartitionKey(rhsChild.getSchema(), rhsPartitionBy) )
-				return true;
-			
-		}
+				return locallyRunnable;
+					
+			} // end for each predicate
 		
 		return false;
 	}
@@ -222,7 +244,7 @@ public abstract class Operator implements CodeGenerator {
 		for(SecureRelDataTypeField field : fields) {
 			System.out.println("\n" + msg + ": Comparing " + aField + " to " + field + ": " + field.equals(aField));
 			
-			System.out.println("Name: " + aField.getName().equals(field.getName()));
+		/*	System.out.println("Name: " + aField.getName().equals(field.getName()));
 
 			System.out.println("Indices: " + aField.getIndex() + ", " + field.getIndex());
 			System.out.println("Index: " + (aField.getIndex() == field.getIndex()));
@@ -232,7 +254,7 @@ public abstract class Operator implements CodeGenerator {
 			
 			System.out.println("Schema type: " + schemaType + ", matching to " + cmpType);
 			System.out.println("Type: " + schemaType.equals(cmpType));
-			
+			*/
 			
 			if(field.equals(aField))
 				break;

@@ -270,7 +270,7 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 			
 		// TODO: remove hardcode, lineitem is a special case where linenumber will be partitioned along with orderkey
 		// owing to its semantics of counting the items in an order
-		if(config.getProperty("schema-config").equals("tpch") && attr.getName().equals("l_orderkey")) {
+		if(config.getProperty("schema-name").equals("tpch") && attr.getName().equals("l_orderkey")) {
 				return true;
 		}
 			
