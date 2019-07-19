@@ -7,22 +7,8 @@ Data* $functionName(int party, NetIO * io) {
 
     std::cout << "The rowlength in bits is " << rowLength << std::endl;
 
-    rowLength = rowLength - 1; // account for boolean at end of schema
-
-
 	string localBitstring = inputs["$functionName"];
-
-
-	// std::cout << " Raw bitstring is " << localBitstring << std::endl;
-
-	string localDummyTags = dummyTagsMap["$functionName"];
-
-	//std::cout << " Dummies " << localDummyTags << std::endl;
-	//std::cout << " rowLength " << rowLength << std::endl;
-
-    bool *localData = toBool(localBitstring);
-    bool *localDummies = toBool(localDummyTags);
-
+    bool *localData = EmpUtilities::toBool(localBitstring);
 
     int aliceSize = localBitstring.length() / rowLength;
     int bobSize = aliceSize;
@@ -45,7 +31,6 @@ Data* $functionName(int party, NetIO * io) {
     Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit representation of res
 
 
-    Bit * dummyTags = new Bit[aliceSize + bobSize];    // same for dummies
 
     bool *readPos = localData;
 
@@ -53,13 +38,10 @@ Data* $functionName(int party, NetIO * io) {
     int writeTuple = aliceSize; // last tuple
 
     // reverse Alice's order for correct Bitonic Merge ( Increasing -> Max -> Decreasing )
-    // must also reverse associated dummyTags
     for (int i = 0;  i < aliceSize; ++i) {
     	--writeTuple;
     	writePos = writeTuple * rowLength;
 
-    	// reverse dummytags
-    	dummyTags[writeTuple] = Bit((ALICE==party) ? localDummies[writeTuple] : 0, ALICE);
 
         for (int j = 0; j < rowLength; ++j) {
             // updating tmp pointer with alice's
@@ -74,21 +56,11 @@ Data* $functionName(int party, NetIO * io) {
     Batcher batcher;
 
 
-    // put local dummies into batcher
-    for(int i = 0; i < bobSize; ++i) {
-           batcher.add<Bit>((BOB==party) ? localDummies[i]:0);
-    }
-
 
     for (int i = 0; i < bobSize*rowLength; ++i)
         batcher.add<Bit>((BOB==party) ? localData[i]:0);
 
     batcher.make_semi_honest(BOB); // Secret Share
-
-    // add Bob's encrypted dummies
-
-    for (int i = 0; i < bobSize; ++i)
-        dummyTags[i+aliceSize] = batcher.next<Bit>();
 
 
     // add Bob's encrypted tuples
@@ -101,28 +73,12 @@ Data* $functionName(int party, NetIO * io) {
 
     cout << "$functionName took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
-    // debugging help - this will reveal the underlying values to ensure that bitonic input is correct
-	//for(int i = 0; i < (aliceSize + bobSize); ++i) {
-    //	long value = res[i].reveal<int64_t>(PUBLIC);
-    //	cout << "Value i: " << value << endl;
-    //}
-    
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
-    bitonic_merge_sql(res, dummyTags, 0, aliceSize + bobSize, Bit(true), $keyPos, $keyLength);
-
-    //std::cout << " After performing bitonic_merge_sql " << std::endl;
-
-    //for(int i = 0; i < (aliceSize + bobSize); ++i) {
-    //    long value = res[i].reveal<int64_t>(PUBLIC);
-     //   cout << "Value i: " << value << endl;
-    //}
-
+    EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), $keyPos, $keyLength);
 
     Data * d = new Data;
-    d->data = res;
-    d->dummyTags = dummyTags;
+    d->tuples = res;
     d->publicSize = aliceSize + bobSize;
-    d->realSize = Integer(64, d->publicSize, PUBLIC);
-    cout << "Done union!" << endl;   
+
     return d;
 }

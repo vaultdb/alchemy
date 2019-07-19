@@ -609,13 +609,19 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
           String expectedOutput = PLANS.get(14);
           runTest(15, expectedOutput);
       }
-
+*/
       public void testQuery16() throws Exception {
-    	  // aggregate on supplier is secure because it is based on a private filter
+    	  // aggregate on supplier is oblivious b/c of secret  filter
+    	  // TODO: examine design point of running local oblivious query in plaintext w/o padding
+    	  // compare to query rewrite
+    	  
+    	  // TODO: fix this to make sure that attrs are being labelled correctly as they pass up the tree
+    	  // if an op has an oblivious child, then it becomes private going forward
+    	  // can look at src policy for partition-by decisions
           String expectedOutput = PLANS.get(15);
           runTest(16, expectedOutput);
       }
-*/
+
       public void testQuery17() throws Exception {
           String expectedOutput = PLANS.get(16);
           runTest(17, expectedOutput);

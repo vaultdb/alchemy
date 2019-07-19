@@ -1,0 +1,93 @@
+#include <emp-sh2pc/emp-sh2pc.h>
+#include <map>
+#include <string>
+
+using namespace emp;
+using namespace std;
+
+
+class EmpUtilities {
+
+
+	// Helper functions
+public:
+	static string revealBinary(Integer &input, int length, int output_party) {
+		bool * b = new bool[length];
+		ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
+		string bin="";
+
+		for (int i=0; i<length; i++)
+			bin += (b[i] ? '1':'0');
+
+		delete [] b;
+		return bin;
+	}
+
+
+	static void cmpSwapSql(Integer*key, int i, int j, Bit acc, int keyPos, int keyLength) {
+		Integer keyi = Integer(keyLength, key[i].bits+keyPos);
+		Integer keyj = Integer(keyLength, key[j].bits+keyPos);
+		Bit to_swap = ((keyi > keyj) == acc);
+		swap(to_swap, key[i], key[j]);
+}
+
+// TODO: extend this to multiple columns as a list of keyPos and keyLength
+	static void bitonicMergeSql(Integer* key, int lo, int n, Bit acc, int keyPos, int keyLength) {
+		if (n > 1) {
+			int m = greatestPowerOfTwoLessThan(n);
+			for (int i = lo; i < lo + n - m; i++)
+				cmpSwapSql(key, i, i + m, acc, keyPos, keyLength);
+
+			bitonicMergeSql(key, lo, m, acc, keyPos, keyLength);
+			bitonicMergeSql(key, lo + m, n - m, acc, keyPos, keyLength);
+		}
+	}
+
+	static void bitonicSortSql(Integer * key, int lo, int n, Bit acc,  int keyPos, int keyLength) {
+		if (n > 1) {
+			int m = n / 2;
+			bitonicSortSql(key, lo, m, !acc, keyPos, keyLength);
+			bitonicSortSql(key, lo + m, n - m, acc, keyPos, keyLength);
+			bitonicSortSql(key, lo, n, acc, keyPos, keyLength);
+		}
+	}
+
+
+
+	static bool * outputBits(Integer &input, int length, int output_party) {
+		bool * b = new bool[length];
+		ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
+
+
+		return b;
+	}
+
+
+
+	static bool * toBool(string src) {
+		long length = src.length();
+		bool *output = new bool[length];
+
+		for(int i = 0; i < length; ++i)
+			output[i] = (src[i] == '1') ? true : false;
+
+		return output;
+	}
+
+	static void writeToInteger(Integer *dst, Integer *src, int writeOffset, int readOffset, int size) {
+		Bit *writePtr = dst->bits + writeOffset;
+		Bit *srcPtr = src->bits + readOffset;
+
+		memcpy(writePtr, srcPtr, sizeof(Bit)*size);
+
+	}
+
+
+	static Bit getDummyTag(Integer tuple) {
+		int dummyIdx = tuple.size() - 1;
+		return tuple[dummyIdx];
+	}
+
+
+
+};

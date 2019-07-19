@@ -7,9 +7,12 @@ import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.annotation.Namespace;
 import org.bytedeco.javacpp.annotation.Platform;
 import org.bytedeco.javacpp.annotation.StdString;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.BitSet;
+
 
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
@@ -42,7 +45,7 @@ public class FilterDistinct  extends EmpProgram  {
 	
 	public FilterDistinct(int party, int port) {
 		super(party, port);
-		inputs.put("SeqScan0Merge", "SELECT patient_id, icd9 = '414.01' FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY patient_id");
+		inputs.put("SeqScan0Union", "SELECT patient_id, icd9 = '414.01' AS dummy_tag FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY dummy_tag, patient_id");
 
 	}
 	
@@ -57,6 +60,9 @@ public class FilterDistinct  extends EmpProgram  {
         	allocate(); 
         	}
         private native void allocate();
+        
+        // schema always has boolean dummyTag at the end of each tuple - both for input and output
+        // 1 = dummy, 0 = real value
         public native void addInput(@StdString String opName,  @StdString String bitString);
         public native void run(int party, int port); 
         public native void setGeneratorHost(@StdString String host);
@@ -68,29 +74,33 @@ public class FilterDistinct  extends EmpProgram  {
 	
 	   
 	   
-	String getInput(String sql) throws Exception {
+	QueryTable getInput(String sql) throws Exception {
     	SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(sql);
     	String workerId = System.getProperty("workerId");	
     	
-    	//ConnectionManager cm = ConnectionManager.getInstance();
-   		//System.out.println("Getting connection for " + workerId + " out of " + cm.getDataSources());
-    					
-		
+					
+		// Perform plaintext execution, which does not reduce cardinality, but add dummyTags
     	QueryTable table = SqlQueryExecutor.query(sql, outSchema, workerId);
-		return  table.toBinaryString();
+
+    	
+		return table;
 
     }
 	   	
         @Override
-        public  boolean[] runProgram() throws Exception {
+        public  BitSet runProgram() throws Exception {
         	FilterDistinctClass theQuery = new FilterDistinctClass();
 
 	        Iterator inputItr = inputs.entrySet().iterator();
 	        while(inputItr.hasNext()) {
 	        	Map.Entry entry = (Map.Entry) inputItr.next();
 	        	String functionName = (String) entry.getKey();
-	        	String tupleBitstring = getInput((String) entry.getValue());
-	        	theQuery.addInput(functionName, tupleBitstring);
+
+	        	// For all inputs to MPC, get an associated QueryTable
+	        	QueryTable table = getInput((String) entry.getValue());
+
+                // add the input strings using the addInput function - which is available in main.txtOkay
+	        	theQuery.addInput(functionName, table.toBinaryString());
 	        }
 	        
         	if(generatorHost != null) {
@@ -102,12 +112,12 @@ public class FilterDistinct  extends EmpProgram  {
         	String output = theQuery.getOutput();
 	        theQuery.close();
 
-	       boolean[] outBits = new boolean[output.length()];
+	       	BitSet outBits = new BitSet(output.length());
+	        
 	       for(int i = 0; i < output.length(); ++i) {
-	    	   outBits[i] = output.charAt(i) == '1' ? true : false;
+	    	   outBits.set(i,  output.charAt(i) == '1' ? true : false);
 	       }
 	       return outBits;
-	       
         }
         
 
@@ -128,7 +138,7 @@ public class FilterDistinct  extends EmpProgram  {
   	    System.setProperty("workerId", workerId);
   	    
 		FilterDistinct qc = new FilterDistinct(party, port);
-		boolean[] bits = null;
+		BitSet bits = null;
 		char b;
 		
 		try {
@@ -139,13 +149,12 @@ public class FilterDistinct  extends EmpProgram  {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-	       
+
 			// write bitstring to stderr
-			for(int i = 0; i < bits.length; ++i) {
-				b = (bits[i] == true) ? '1' : '0';
+			for(int i = 0; i < bits.size(); ++i) {
+				b = (bits.get(i)) ? '1' : '0';
 				System.err.print(b);
 			}
-
 	        
     }        
 	

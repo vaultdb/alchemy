@@ -2,6 +2,8 @@
 #include <map>
 #include <string>
 
+#include "EmpUtilities.h"
+
 
 // header of an ExecutionSegment in emp
 // put in front of first generated MPC operator
@@ -18,96 +20,51 @@ namespace JoinCdiff {
 class JoinCdiffClass {
 // Connection strings, encapsulates db name, db user, port, host
 string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
-string bobConnectionString = "dbname=smcql_testdb_site2 user=smcql host=localhost port=5432";
+string bobConnectionString = "dbname=smcql_testdb_unioned user=smcql host=localhost port=5432";
 
 string aliceHost = "127.0.0.1";
-int INT_LENGTH = 64;
+int INT_LENGTH = 32;
 string output;
-map<string, string> inputs; // maps opName --> bitString of input tuples
-
-
-// Helper functions
-string reveal_bin(Integer &input, int length, int output_party) {
-    bool * b = new bool[length];
-    ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
-    string bin="";
-    
-    for (int i=0; i<length; i++)
-        bin += (b[i] ? '1':'0');
-    
-    delete [] b;
-    return bin;
-}
-
-	
-void cmp_swap_sql(Integer*key, int i, int j, Bit acc, int key_pos, int key_length) {
-    Integer keyi = Integer(key_length, key[i].bits+key_pos);
-    Integer keyj = Integer(key_length, key[j].bits+key_pos);
-    Bit to_swap = ((keyi > keyj) == acc);
-    swap(to_swap, key[i], key[j]);
-}
-
-// TODO: extend this to multiple columns as a list of key_pos and key_length
-void bitonic_merge_sql(Integer* key, int lo, int n, Bit acc, int key_pos, int key_length) {
-    if (n > 1) {
-        int m = greatestPowerOfTwoLessThan(n);
-        for (int i = lo; i < lo + n - m; i++)
-            cmp_swap_sql(key, i, i + m, acc, key_pos, key_length);
-        bitonic_merge_sql(key, lo, m, acc, key_pos, key_length);
-        bitonic_merge_sql(key, lo + m, n - m, acc, key_pos, key_length);
-    }
-}
-
-void bitonic_sort_sql(Integer * key, int lo, int n, Bit acc,  int key_pos, int key_length) {
-    if (n > 1) {
-        int m = n / 2;
-        bitonic_sort_sql(key, lo, m, !acc, key_pos, key_length);
-        bitonic_sort_sql(key, lo + m, n - m, acc, key_pos, key_length);
-        bitonic_merge_sql(key, lo, n, acc, key_pos, key_length);
-    }
-}
+map<string, string> inputs;    // maps opName --> bitString of input tuples
 
 
 
-bool * outputBits(Integer &input, int length, int output_party) {
-		bool * b = new bool[length];
-		ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
-		string bin="";
+	class Data {
+	public:
+		Integer * tuples;
+		int publicSize;
 
-		return b;
+	};
+
+public:
+	// maintains a map of inputs from JDBC
+	void addInput(const std::string& opName, const std::string& bitString) {
+
+     inputs[opName] = bitString;
+
+     }
+
+
+	const std::string& getOutput() {
+	      return output;
 	}
 
-
-bool * toBool(string src) {
-	long length = src.length();
-	bool *output = new bool[length];
-	
-	for(int i = 0; i < length; ++i) 
-		output[i] = (src[i] == '1') ? true : false;
-	
-	return output;
-}
-
-// Operator functions
-class Data {
-public:
-    Integer * data;
-    int publicSize;
-    Integer realSize;
-    Integer dummyTags; // TODO
-};
-
-
-
 Data* SeqScan0Union(int party, NetIO * io) {
-    int rowLength = 65; 
-	string localBitstring = inputs["SeqScan0Union"];
-    bool *localData = toBool(localBitstring);
 
+    // std::cout << "Testing that this is the correct template" << std::endl;
+
+    int rowLength = 33;
+
+
+    std::cout << "The rowlength in bits is " << rowLength << std::endl;
+
+	string localBitstring = inputs["SeqScan0Union"];
+    bool *localData = EmpUtilities::toBool(localBitstring);
 
     int aliceSize = localBitstring.length() / rowLength;
     int bobSize = aliceSize;
 
+    // communicate with other party to correct sizes ( number of tuples )
     if (party == ALICE) {
         io->send_data(&aliceSize, 4);
         io->flush();
@@ -120,62 +77,78 @@ Data* SeqScan0Union(int party, NetIO * io) {
         io->flush();
     }
 
+    // allocating secret share for union data & dummies
     Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
-   
-    Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit array of inputs
+    Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit representation of res
+
+
+
     bool *readPos = localData;
+
     int writePos = 0;
     int writeTuple = aliceSize; // last tuple
-    
+
+    // reverse Alice's order for correct Bitonic Merge ( Increasing -> Max -> Decreasing )
     for (int i = 0;  i < aliceSize; ++i) {
     	--writeTuple;
     	writePos = writeTuple * rowLength;
+
+
         for (int j = 0; j < rowLength; ++j) {
-            tmp[writeTuple*rowLength + j] = Bit((ALICE==party) ? 
-                *readPos:0, ALICE);
+            // updating tmp pointer with alice's
+            tmp[writeTuple*rowLength + j] = Bit((ALICE==party) ? *readPos : 0, ALICE);
+
             ++readPos;
             ++writePos;
          }
 	}
-	
+
+	// Initialize Bob's Batcher
     Batcher batcher;
+
+
+
     for (int i = 0; i < bobSize*rowLength; ++i)
         batcher.add<Bit>((BOB==party) ? localData[i]:0);
-    batcher.make_semi_honest(BOB);
 
+    batcher.make_semi_honest(BOB); // Secret Share
+
+
+    // add Bob's encrypted tuples
     for (int i = 0; i < bobSize*rowLength; ++i)
         tmp[i+aliceSize*rowLength] = batcher.next<Bit>();
 
+    // create full Integer representation with both Bob and Alice's information
     for(int i = 0; i < aliceSize + bobSize; ++i)
         res[i] = Integer(rowLength, tmp+rowLength*i);
 
     cout << "SeqScan0Union took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
-	/*for(int i = 0; i < (aliceSize + bobSize); ++i) {
-    	long value = res[i].reveal<int64_t>(PUBLIC);
-    	cout << "Value i: " << value << endl;
-    }*/
-    
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
-    bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), 0, 64);
-    
+    EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 32);
 
     Data * d = new Data;
-    d->data = res;
+    d->tuples = res;
     d->publicSize = aliceSize + bobSize;
-    d->realSize = Integer(64, d->publicSize, PUBLIC);
-    cout << "Done union!" << endl;   
+
     return d;
 }
 Data* SeqScan4Union(int party, NetIO * io) {
-    int rowLength = 64; 
-	string localBitstring = inputs["SeqScan4Union"];
-    bool *localData = toBool(localBitstring);
 
+    // std::cout << "Testing that this is the correct template" << std::endl;
+
+    int rowLength = 33;
+
+
+    std::cout << "The rowlength in bits is " << rowLength << std::endl;
+
+	string localBitstring = inputs["SeqScan4Union"];
+    bool *localData = EmpUtilities::toBool(localBitstring);
 
     int aliceSize = localBitstring.length() / rowLength;
     int bobSize = aliceSize;
 
+    // communicate with other party to correct sizes ( number of tuples )
     if (party == ALICE) {
         io->send_data(&aliceSize, 4);
         io->flush();
@@ -188,51 +161,60 @@ Data* SeqScan4Union(int party, NetIO * io) {
         io->flush();
     }
 
+    // allocating secret share for union data & dummies
     Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
-   
-    Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit array of inputs
+    Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit representation of res
+
+
+
     bool *readPos = localData;
+
     int writePos = 0;
     int writeTuple = aliceSize; // last tuple
-    
+
+    // reverse Alice's order for correct Bitonic Merge ( Increasing -> Max -> Decreasing )
     for (int i = 0;  i < aliceSize; ++i) {
     	--writeTuple;
     	writePos = writeTuple * rowLength;
+
+
         for (int j = 0; j < rowLength; ++j) {
-            tmp[writeTuple*rowLength + j] = Bit((ALICE==party) ? 
-                *readPos:0, ALICE);
+            // updating tmp pointer with alice's
+            tmp[writeTuple*rowLength + j] = Bit((ALICE==party) ? *readPos : 0, ALICE);
+
             ++readPos;
             ++writePos;
          }
 	}
-	
+
+	// Initialize Bob's Batcher
     Batcher batcher;
+
+
+
     for (int i = 0; i < bobSize*rowLength; ++i)
         batcher.add<Bit>((BOB==party) ? localData[i]:0);
-    batcher.make_semi_honest(BOB);
 
+    batcher.make_semi_honest(BOB); // Secret Share
+
+
+    // add Bob's encrypted tuples
     for (int i = 0; i < bobSize*rowLength; ++i)
         tmp[i+aliceSize*rowLength] = batcher.next<Bit>();
 
+    // create full Integer representation with both Bob and Alice's information
     for(int i = 0; i < aliceSize + bobSize; ++i)
         res[i] = Integer(rowLength, tmp+rowLength*i);
 
     cout << "SeqScan4Union took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
-	/*for(int i = 0; i < (aliceSize + bobSize); ++i) {
-    	long value = res[i].reveal<int64_t>(PUBLIC);
-    	cout << "Value i: " << value << endl;
-    }*/
-    
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
-    bitonic_merge_sql(res, 0, aliceSize + bobSize, Bit(true), 0, 64);
-    
+    EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 32);
 
     Data * d = new Data;
-    d->data = res;
+    d->tuples = res;
     d->publicSize = aliceSize + bobSize;
-    d->realSize = Integer(64, d->publicSize, PUBLIC);
-    cout << "Done union!" << endl;   
+
     return d;
 }
 // TODO: generalize for arbitrary selection criteria
@@ -240,52 +222,50 @@ Data* SeqScan4Union(int party, NetIO * io) {
 // this example is based on aspirin expected code
 Data * Join6(Data *left, Data *right) {
  
- 	Integer *output = new Integer[left->publicSize * right->publicSize];
     int writeIdx = 0;
     Integer dstTuple, srcTuple, lTuple, rTuple;
-    int jointSchemaSize = 64 + 64;
+    int jointSchemaSize = 32 + 32 - 1; // don't double-count dummy tags from two contributing tuples
+    int outputTupleCount = left->publicSize * right->publicSize;
+	int lhsPayloadSize = 32 - 1; // sans dummy tag
+	int rhsPayloadSize = 32 - 1; // sans dummy tag
 	
+    
+
+	Data *result = new Data;
+    
 	srcTuple = Integer(jointSchemaSize, 0, PUBLIC);
     
-    Integer realCount(INT_LENGTH, 0, PUBLIC);
 
+    // output tuple count
+    result->tuples = new Integer[outputTupleCount];
+    result->publicSize = outputTupleCount;
     
-    dstTuple = Integer(64, 0, PUBLIC);
+    dstTuple = Integer(32, 0, PUBLIC);
 	
-    for (int i=0; i<left->publicSize; i++) {
-        for (int j=0; j<right->publicSize; j++) {
-        	lTuple = left->data[i];
-        	rTuple = right->data[j];
+    for (int i=0; i < left->publicSize; i++) {
+        for (int j=0; j < right->publicSize; j++) {
+        	lTuple = left->tuples[i];
+        	rTuple = right->tuples[j];
 	        	
         	// concatenate the two inputs into srcTuple, the standard join output schema
-        	memcpy(srcTuple.bits, lTuple.bits, 64);
-        	memcpy(srcTuple.bits + 64, rTuple.bits, 64);
+        	memcpy(srcTuple.bits, lTuple.bits, lhsPayloadSize);
+        	memcpy(srcTuple.bits + 32, rTuple.bits, rhsPayloadSize);
         	
+        	// TODO: rewire filter flattener to skip the memcopies above
+        	Bit cmp = Integer(32, srcTuple.bits ) == Integer(32, srcTuple.bits  + 32);
         	
-        	Bit cmp = (Integer(64, lTuple.bits) == Integer(64, rTuple.bits)) & ((lTuple.bits[64]));
-        	
-        	memcpy(dstTuple.bits , Integer(64, srcTuple.bits).bits, 64);
+        	// populate dstTuple with any projections
+        	memcpy(dstTuple.bits , Integer(32, srcTuple.bits ).bits, 32);
 ;
         	
-        	dstTuple = If(cmp, dstTuple, Integer(64, 0, PUBLIC)); 
+        	dstTuple[dstTuple.size() - 1] = cmp & !EmpUtilities::getDummyTag(lTuple) & !EmpUtilities::getDummyTag(rTuple);
+	       
         	
-        	Integer incremented = realCount + Integer(INT_LENGTH, 1, PUBLIC);
-        	realCount = If(cmp, incremented, realCount);
-        	
-        	/*if(cmp.reveal(PUBLIC) == 1) {
-        		cout << "Matched at " << i << ", " << j << endl;
-        	}*/
-        	
-	        output[writeIdx] = dstTuple;
+	        result->tuples[writeIdx] = dstTuple;
             writeIdx++;
             
         }
     }
-    Data *result = new Data;
-    result->data = output;
-    // output tuple count
-    result->publicSize = left->publicSize * right->publicSize;
-	result->realSize = realCount;
     return result;
 }
 
@@ -298,26 +278,14 @@ void setGeneratorHost(string host) {
 }
 
 
-// placeholder for maintaining a map of inputs from JDBC
-void addInput(const std::string& opName, const std::string& bitString) {
-
-     inputs[opName] = bitString;
-
-     }
-
-
-const std::string& getOutput() {
-      return output;
-}
-
-	void run(int party, int port) {
+void run(int party, int port) {
 	
 	std::cout << "starting run in emp! party=" << party << " port=" << port <<  std::endl;
 	NetIO * io = new NetIO((party==ALICE ? nullptr : aliceHost.c_str()), port);
     
     setup_semi_honest(io, party);
     
-     Data *SeqScan0UnionOutput = SeqScan0Union(party, io);
+         Data *SeqScan0UnionOutput = SeqScan0Union(party, io);
 
      Data *SeqScan4UnionOutput = SeqScan4Union(party, io);
 
@@ -325,27 +293,34 @@ const std::string& getOutput() {
 
 
     
-    	Data * results = Join6Output;
+    Data * results = Join6Output;
 
-     int tupleWidth = results->data[0].size();
-     long outputSize = results->publicSize * tupleWidth;
-     output.reserve(outputSize);
-     bool *tuple;
+    int tupleWidth = results->tuples[0].size();
+
+    // Debugging assistance
+    std::cout << "Output tuple width is " << tupleWidth << std::endl;
 
 
-     for(int i = 0; i < results->publicSize; ++i) {
-     	     tuple = outputBits(results->data[i], tupleWidth, XOR);
-     	     for(int j = 0; j < tupleWidth; ++j) {
-     	     	     output += (tuple[j] == true) ? '1' : '0';
-     		     }
-     }
+    long outputSize = results->publicSize * tupleWidth;
+    output.reserve(outputSize);
+    bool *tuple;
 
-     io->flush();
-     delete io;
 
-		cout << "Finished query!" << endl;
-		
-	}
+
+    for(int i = 0; i < results->publicSize; ++i) {
+         tuple = EmpUtilities::outputBits(results->tuples[i], tupleWidth, XOR);
+         for(int j = 0; j < tupleWidth; ++j) {
+                 output += (tuple[j] ? '1' : '0');
+             }
+    }
+
+
+	io->flush();
+	delete io;
+
+	cout << "Finished query!" << endl;
+
+}
 
 
 

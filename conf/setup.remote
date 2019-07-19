@@ -3,6 +3,7 @@ schema-name=healthlnk
 local-codegen-target=src/main/java/org/smcql/compiler/emp/generated
 remote-codegen-target=org/smcql/compiler/emp/generated	
 data-providers=conf/connections/remote-hosts
+has-partitioning=false
 
 #log information
 log-level=debug

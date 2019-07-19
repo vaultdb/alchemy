@@ -15,6 +15,8 @@ import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 
+
+// TODO: update this with working generated code when it is ready
 public class GenerateSmcTest extends BaseTest {
 
   protected void setUp() throws Exception {

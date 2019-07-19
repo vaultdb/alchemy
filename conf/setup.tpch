@@ -3,7 +3,7 @@
 schema-name=tpch
 local-codegen-target=src/main/java/org/smcql/compiler/emp/generated
 data-providers=conf/connections/tpch-hosts
-
+has-partitioning=true
 
 
 #log information

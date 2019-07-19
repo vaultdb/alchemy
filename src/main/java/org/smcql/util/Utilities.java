@@ -240,15 +240,17 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		
 		// only supporting a single partition key defined for now
 		SystemConfiguration config = SystemConfiguration.getInstance();
-		System.out.println("Analyzing " + attr);
 
 		String srcTable = attr.getStoredTable();
+		System.out.println("Analyzing " + attr + " src table: " + srcTable);
+
 		
 		SecureSchemaLookup schemaDef = SecureSchemaLookup.getInstance();
 		List<String> primaryKey = schemaDef.getPrimaryKey(srcTable);
 		
 		
-
+		if(attr.getName() == null)
+			throw new Exception("Can't check status of anonymous attribute! Need to recurse to its inputs.");
 		// Case 1: if it is the source relation's stored partition key
 		if(schemaDef.getPartitionKey(srcTable).equals(attr.getName()))
 		{

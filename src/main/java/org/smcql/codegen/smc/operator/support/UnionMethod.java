@@ -76,16 +76,22 @@ public class UnionMethod implements CodeGenerator, Serializable {
 	@Override
 	public Map<String, String> generate() throws Exception {
 		int size = schema.size();
-
+		String sql = new String("");
+		boolean localRun = !src.getExecutionMode().distributed;
+		
 		Map<String, String> variables = new HashMap<String, String>();
 		//variables.put("lessThan", generateLessThan());
 		variables.put("size", Integer.toString(size));
 		variables.put("packageName", packageName);
 		variables.put("functionName", functionName);
-		String sql =  srcSQL.replace('\n', ' ');
+		
+		// if it is run locally
+		if(localRun) {
+			sql =  srcSQL.replace('\n', ' ');
+		}
+
 		variables.put("sql", sql);
-		
-		
+
 		
 		String unionFile = "union/ordered.txt";
 		

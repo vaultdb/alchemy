@@ -177,6 +177,8 @@ public class QueryCompiler {
     String empCode = getEmpCode();
     return writeOutEmpFile(empCode);
   }
+  
+  
   // returns filename (but only for C++ code, not jni wrapper.
   // the intent of this function is to write out all code
   public String writeOutEmpFile(String empCode) throws Exception {

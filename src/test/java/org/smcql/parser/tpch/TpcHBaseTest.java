@@ -445,6 +445,7 @@ public class TpcHBaseTest extends BaseTest {
 		          + "order by\n"
 		          + "  s.s_suppkey",
 
+		          // 16
 		          "select\n"
 		                  + "  p.p_brand,\n"
 		                  + "  p.p_type,\n"

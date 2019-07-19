@@ -8,19 +8,6 @@ void setGeneratorHost(string host) {
 }
 
 
-// placeholder for maintaining a map of inputs from JDBC
-void addInput(const std::string& opName, const std::string& bitString, const std::string& dummyTags) {
-
-     inputs[opName] = bitString;
-     dummyTagsMap[opName] = dummyTags;
-
-     }
-
-
-const std::string& getOutput() {
-      return output;
-}
-
 void run(int party, int port) {
 	
 	std::cout << "starting run in emp! party=" << party << " port=" << port <<  std::endl;
@@ -32,37 +19,30 @@ void run(int party, int port) {
     
     Data * results = $rootOutput;
 
-    int tupleWidth = results->data[0].size();
-    int dummyCount = results->publicSize;
+    int tupleWidth = results->tuples[0].size();
 
     // Debugging assistance
-    std::cout << "The number of dummies after all operations is " << dummyCount << std::endl;
     std::cout << "Output tuple width is " << tupleWidth << std::endl;
 
 
     long outputSize = results->publicSize * tupleWidth;
-    output.reserve(dummyCount + outputSize);
+    output.reserve(outputSize);
     bool *tuple;
 
 
-    for(int i = 0; i < dummyCount; ++i){
-    output += to_string(results->dummyTags[i].reveal(XOR));
-    }
 
     for(int i = 0; i < results->publicSize; ++i) {
-         tuple = outputBits(results->data[i], tupleWidth, XOR);
+         tuple = EmpUtilities::outputBits(results->tuples[i], tupleWidth, XOR);
          for(int j = 0; j < tupleWidth; ++j) {
                  output += (tuple[j] ? '1' : '0');
              }
     }
 
-// debug final output
-// cout << " Final output from EMP is: " << output << endl;
 
-io->flush();
-delete io;
+	io->flush();
+	delete io;
 
-cout << "Finished query!" << endl;
+	cout << "Finished query!" << endl;
 
 }
 

@@ -234,7 +234,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 		Integer arg = call.getArgList().get(0);
 		Integer offset = schema.getFieldOffset(arg);
 
-		return "writeToInteger( &" + dstVar + ", &tuple, 0, " + runningOffset + ", " + size + ");\n";
+		return "EmpUtilities::writeToInteger( &" + dstVar + ", &tuple, 0, " + runningOffset + ", " + size + ");\n";
 	}
 
 	private String writeGroupBy(String dstTuple, String aggVar) {
@@ -258,7 +258,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 			int srcOffset = inSchema.getFieldOffset(field.getIndex());
 			int dstOrdinal = schema.getAttribute(name).getIndex();
 			int dstOffset = schema.getFieldOffset(dstOrdinal);
-			writer += "writeToInteger(" + dstTuple + ", &" + aggVar + ", " + srcOffset + ", " + dstOffset + ", " + size + ");\n";
+			writer += "EmpUtilities::writeToInteger(" + dstTuple + ", &" + aggVar + ", " + srcOffset + ", " + dstOffset + ", " + size + ");\n";
 		}
 
 		return writer;
@@ -283,7 +283,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 			//int srcOffset = inSchema.getFieldOffset(inSchema.getFieldOffset(inSchema.getAttribute(name).getIndex()));
 			if (aggMap.containsKey(name)) {
 				if (aggMap.get(name).equals(call)) {
-					writer += "writeToInteger(" + dstTuple + ", &" + aggVar + ", " + dstOffset + ",0, " + size + ");\n";
+					writer += "EmpUtilities::writeToInteger(" + dstTuple + ", &" + aggVar + ", " + dstOffset + ",0, " + size + ");\n";
 					break;
 				}
 			}
@@ -338,7 +338,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 		Integer arg = call.getArgList().get(0);
 		Integer offset = schema.getFieldOffset(arg);
 
-		return "writeToInteger( &" + dstVar + ", &current, 0, " + runningOffset + ", " + size + ");\n";
+		return "EmpUtilities::writeToInteger( &" + dstVar + ", &current, 0, " + runningOffset + ", " + size + ");\n";
 	}
 
 }
