@@ -39,6 +39,7 @@ public class EmpJniUtilities {
 		
 		List<String> output = new ArrayList<String>();
 		
+		System.out.println("Decrypting " + tupleCount + " tuples.");
 		
 		int readIdx = 0;
 		for(int i = 0; i < tupleCount; ++i) {

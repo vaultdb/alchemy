@@ -65,6 +65,7 @@ public class EmpJniDemo  extends EmpProgram  {
         	String output = theQuery.getOutput();
 	        theQuery.close();
 
+	        System.out.println("Output was " + output.length() + " bits in javaland.");
 	        BitSet outBits = new BitSet(output.length());
 	        
 	       for(int i = 0; i < output.length(); ++i) {

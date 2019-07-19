@@ -41,6 +41,8 @@ public class EmpJniLocalTest extends BaseTest {
         BitSet aliceOutput = aliceRunnable.getOutput();
         BitSet bobOutput = bobRunnable.getOutput();
 
+        System.out.println("Alice output len = " + aliceOutput.length() + ", bob's is " + bobOutput.length());
+        
         List<String> output = EmpJniUtilities.revealStringOutput(aliceOutput, bobOutput, tupleWidth);
         System.out.println("Query output: " + output);
 

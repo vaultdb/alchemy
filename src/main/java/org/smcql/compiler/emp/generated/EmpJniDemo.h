@@ -23,10 +23,8 @@ class EmpJniDemoClass {
   // Operator functions
   class Data {
   public:
-      Integer * data;
+      Integer * tuples;
       int publicSize;
-      Integer realSize;
-      Integer dummyTag;
   };
 
   Integer fromBool(bool* b, int size, int party) {
@@ -180,9 +178,8 @@ Data* unionOp(int party, NetIO * io) {
 
 
     Data * d = new Data;
-    d->data = res;
+    d->tuples = res;
     d->publicSize = aliceSize + bobSize;
-    d->realSize = Integer(64, d->publicSize, PUBLIC);
     return d;
 
 }
@@ -213,14 +210,14 @@ public:
      Data *results = unionOp(party, io);
 
 
-     int tupleWidth = results->data[0].size();
+     int tupleWidth = results->tuples[0].size();
      long outputSize = results->publicSize * tupleWidth;
      output.reserve(outputSize);
      bool *tuple;
 
 
      for(int i = 0; i < results->publicSize; ++i) {
-     	tuple = outputBits(results->data[i], tupleWidth, XOR);
+     	tuple = outputBits(results->tuples[i], tupleWidth, XOR);
      	for(int j = 0; j < tupleWidth; ++j) {
      		output += (tuple[j] == true) ? '1' : '0';
      	}
@@ -229,6 +226,7 @@ public:
      io->flush();
      delete io;
 
+     cout << "Returning " << outputSize << " bits!" << endl;
      cout << "Completed emp program!" << endl;
 
 		
