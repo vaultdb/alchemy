@@ -141,6 +141,9 @@ public class SliceStatisticsTest extends SliceKeyTest {
 	
 	private void testCase(String testName) throws Exception {
 		String sql = super.readSQL(testName);
+		
+		if(!config.getProperty("sliced-execution").equals("true"))
+			return;
 
 		System.out.println("Running query " + sql);
 		
@@ -150,8 +153,8 @@ public class SliceStatisticsTest extends SliceKeyTest {
 			Map<SecureRelDataTypeField, SliceStatistics> expectedLookup = expectedStatistics.get(testName + "-" + key.getStoredTable());	
 			SliceStatistics expected = expectedLookup.get(key);
 			
-			System.out.println("Expected: " + expected);
-			System.out.println("Observed: " + attrStatistics);
+			logger.info("Expected: " + expected);
+			logger.info("Observed: " + attrStatistics);
 			
 			assertTrue(attrStatistics.toString().equals(expected.toString()));	
 		}

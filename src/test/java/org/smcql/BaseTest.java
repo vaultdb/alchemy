@@ -29,6 +29,7 @@ public class BaseTest extends TestCase {
 	protected String codePath = Utilities.getSMCQLRoot() + "/conf/workload/sql";
 	protected WorkerConfiguration honestBroker;
 	protected Logger logger;
+	protected SystemConfiguration config;
 	
 	protected void setUp() throws Exception {
 		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.localhost");
@@ -36,6 +37,7 @@ public class BaseTest extends TestCase {
 		parser = new SqlStatementParser();
 		honestBroker = SystemConfiguration.getInstance().getHonestBrokerConfig();
 		logger = SystemConfiguration.getInstance().getLogger();
+		config = SystemConfiguration.getInstance();
 		
 	}
 	

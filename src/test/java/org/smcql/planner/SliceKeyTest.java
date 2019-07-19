@@ -17,6 +17,8 @@ public class SliceKeyTest extends BaseTest {
 	
 	
 	protected void setUp() throws Exception {
+		super.setUp();
+		
 		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
 		System.setProperty("smcql.setup", setupFile);
 
@@ -85,7 +87,12 @@ public class SliceKeyTest extends BaseTest {
 
 	
 	
-	private void testCase(String testName) throws Exception {		
+	private void testCase(String testName) throws Exception {
+		
+		if(config.getProperty("sliced-execution") != null && !config.getProperty("sliced-execution").equals("true"))
+			return;
+
+		
 		String sql = super.readSQL(testName);
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 		Operator root = secRoot.getPlanRoot();
@@ -93,8 +100,8 @@ public class SliceKeyTest extends BaseTest {
 		List<SecureRelDataTypeField> sliceKeys = root.getSliceAttributes();
 		List<SecureRelDataTypeField> expectedSliceKeysList = expectedSliceKeys.get(testName);
 		
-		System.out.println("Expected: " + expectedSliceKeysList);
-		System.out.println("Observed: " + sliceKeys);
+		logger.info("Expected: " + expectedSliceKeysList);
+		logger.info("Observed: " + sliceKeys);
 		
 		assertEquals(expectedSliceKeysList.size(), sliceKeys.size());
 
