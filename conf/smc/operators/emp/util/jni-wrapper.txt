@@ -41,7 +41,6 @@ import org.smcql.compiler.emp.EmpProgram;
 public class $queryName  extends EmpProgram  {
 
 	Map<String, String> inputs = new HashMap<String, String>();
-	boolean[] queryOutput = null;
 	
 	public $queryName(int party, int port) {
 		super(party, port);
@@ -87,7 +86,7 @@ public class $queryName  extends EmpProgram  {
     }
 	   	
         @Override
-        public  BitSet runProgram() throws Exception {
+        public void runProgram() throws Exception {
         	$queryClass theQuery = new $queryClass();
 
 	        Iterator inputItr = inputs.entrySet().iterator();
@@ -108,15 +107,10 @@ public class $queryName  extends EmpProgram  {
         	
         	
         	theQuery.run(party, port);
-        	String output = theQuery.getOutput();
+        	outputString = theQuery.getOutput();
+		outputBits = EmpJniUtility.stringToBitSet(outputString);
 	        theQuery.close();
 
-	       	BitSet outBits = new BitSet(output.length());
-	        
-	       for(int i = 0; i < output.length(); ++i) {
-	    	   outBits.set(i,  output.charAt(i) == '1' ? true : false);
-	       }
-	       return outBits;
         }
         
 
@@ -142,18 +136,16 @@ public class $queryName  extends EmpProgram  {
 		
 		try {
 			SystemConfiguration.getInstance(); // initialize config
-			bits = qc.runProgram();
+		        qc.runProgram();
 		} catch(Exception e) {
 			System.err.println("Program execution failed!");
 			e.printStackTrace();
 			System.exit(-1);
 		}
 
-			// write bitstring to stderr
-			for(int i = 0; i < bits.size(); ++i) {
-				b = (bits.get(i)) ? '1' : '0';
-				System.err.print(b);
-			}
+		System.err.print(qc.getOutputString());
+
+
 	        
     }        
 	

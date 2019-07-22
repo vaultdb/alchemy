@@ -15,6 +15,7 @@ import org.bytedeco.javacpp.annotation.StdString;
 
 
 import org.smcql.compiler.emp.EmpProgram;
+import org.smcql.util.EmpJniUtilities;
 
 
 @Platform(include={"EmpJniDemo.h"}, 
@@ -27,6 +28,7 @@ import org.smcql.compiler.emp.EmpProgram;
 @Namespace("EmpJniDemo")
 public class EmpJniDemo  extends EmpProgram  {
 
+	
 	public EmpJniDemo(int party, int port) {
 		super(party, port);
 	}
@@ -50,32 +52,33 @@ public class EmpJniDemo  extends EmpProgram  {
         
 	}
 	
-	   boolean[] queryOutput = null;
 	
 	   
 	   	
         @Override
-        public  BitSet runProgram() {
+        public  void runProgram() {
         	EmpJniDemoClass theQuery = new EmpJniDemoClass();
 
         	if(generatorHost != null) {
         		theQuery.setGeneratorHost(generatorHost);
         	}
         	theQuery.run(party, port);
-        	String output = theQuery.getOutput();
+        	outputString = theQuery.getOutput();
 	        theQuery.close();
 
-	        System.out.println("Output was " + output.length() + " bits in javaland.");
-	        BitSet outBits = new BitSet(output.length());
 	        
-	       for(int i = 0; i < output.length(); ++i) {
-	    	   outBits.set(i,  output.charAt(i) == '1' ? true : false);
-	       }
-	       return outBits;
+	        outputBits = EmpJniUtilities.stringToBitSet(outputString);
+	        
+	       
+	       
+	       
+	       System.out.println("Output length: " + outputString.length() + " in javaland.");
+	 
 	       
         }
         
 
+        
 	// for testing
 	public static void main(String[] args) {
            
@@ -83,15 +86,9 @@ public class EmpJniDemo  extends EmpProgram  {
 		int port = Integer.parseInt(args[1]);
 		
 		EmpJniDemo qc = new EmpJniDemo(party, port);
-		BitSet bits = qc.runProgram();
-		char b;
-	       
-			// write bitstring to stderr
-			for(int i = 0; i < bits.size(); ++i) {
-				b = (bits.get(i)) ? '1' : '0';
-				System.err.print(b);
-			}
-
+		qc.runProgram();
+		System.err.print(qc.getOutputString());
+	    
 	        
     }        
 	

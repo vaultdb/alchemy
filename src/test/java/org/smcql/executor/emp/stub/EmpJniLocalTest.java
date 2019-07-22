@@ -38,15 +38,26 @@ public class EmpJniLocalTest extends BaseTest {
         alice.join();
         bob.join();
 
-        BitSet aliceOutput = aliceRunnable.getOutput();
-        BitSet bobOutput = bobRunnable.getOutput();
+        String aliceOutput = aliceRunnable.getOutputString();
+        String bobOutput = bobRunnable.getOutputString();
+        
 
-        System.out.println("Alice output len = " + aliceOutput.length() + ", bob's is " + bobOutput.length());
+        logger.info("Alice output len = " + aliceOutput.length() + ", bob's is " + bobOutput.length());
         
         List<String> output = EmpJniUtilities.revealStringOutput(aliceOutput, bobOutput, tupleWidth);
-        System.out.println("Query output: " + output);
+        logger.info("Query output: " + output);
 
-        List<String> expectedOutput = new ArrayList<>(Arrays.asList("008", "414", "008", "414"));
+        List<String> expectedOutput = new ArrayList<String>(Arrays.asList("008", "414", "008", "414"));
+        logger.info("Expected output: " + expectedOutput);
+        
+        for(int i = 0; i < expectedOutput.size(); ++i) {
+        	logger.info("Index: " + i + ": " + output.get(i) + " expected: " + expectedOutput.get(i));
+        	assertEquals(output.get(i), expectedOutput.get(i));
+        	
+        }
+        
         assertEquals(expectedOutput, output);
+        
+        
     }
 }

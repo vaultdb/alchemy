@@ -286,9 +286,9 @@ public class SegmentExecutor {
 			
 	
 			
-		 List<BitSet> result = cloud.node("**").massExec(new Callable<BitSet>() {
+		 List<String> result = cloud.node("**").massExec(new Callable<String>() {
 				@Override
-				public BitSet call() throws Exception {
+				public String call() throws Exception {
 					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
 					int port = EmpJniUtilities.getEmpPort();
 	
@@ -308,13 +308,14 @@ public class SegmentExecutor {
 					
 					
 			 
+					program.runProgram();
+
 					
-					BitSet smcOutput = program.runProgram();
 					System.out.println("Completed query run on party " + party);
 
 					
 				
-					return smcOutput;
+					return program.getOutputString();
 				}
 			});
 		 

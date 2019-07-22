@@ -100,7 +100,7 @@ public class EmpJniRemoteTest extends TestCase  {
 	public void testRemoteExecution() throws Exception {
 		 
 	    if(config.getProperty("location").equals("distributed")) {
-	    	List<BitSet> outputs = runCloudExecution();
+	    	List<String> outputs = runCloudExecution();
 	    	List<String> tuples = EmpJniUtilities.revealStringOutput(outputs.get(0), outputs.get(1), tupleWidth);
 	    	System.out.println("Output: " + tuples);
 	    }
@@ -142,15 +142,15 @@ public class EmpJniRemoteTest extends TestCase  {
 
 	  
 	  
-	private List<BitSet> runCloudExecution() throws Exception {
+	private List<String> runCloudExecution() throws Exception {
 		 
 
 		 ViNode allNodes = cloud.node("**");
 		 
-		List<BitSet> results = allNodes.massExec(new Callable<BitSet>() {
+		List<String> results = allNodes.massExec(new Callable<String>() {
 		        
 	            @Override
-	            public BitSet call() throws Exception {
+	            public String call() throws Exception {
 	                int party = 1;
 	                int port = Integer.parseInt(System.getProperty("emp.port"));
 	                String empCode = System.getProperty("emp.code");
@@ -184,7 +184,8 @@ public class EmpJniRemoteTest extends TestCase  {
 	         	   	// run it
 	         	   EmpProgram instance = (EmpProgram) builder.getClass(party, port);
 	         	   instance.setGeneratorHost(aliceHost);
-	         	   return instance.runProgram();
+	         	   instance.runProgram();
+	         	   return instance.getOutputString();
 	               
 	            }
 	        });   

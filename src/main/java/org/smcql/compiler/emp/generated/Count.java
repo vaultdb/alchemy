@@ -83,7 +83,7 @@ public class Count  extends EmpProgram  {
     }
 	   	
         @Override
-        public  BitSet runProgram() throws Exception {
+        public  void runProgram() throws Exception {
         	CountIcd9sClass theQuery = new CountIcd9sClass();
 
 	        Iterator inputItr = inputs.entrySet().iterator();
@@ -104,15 +104,11 @@ public class Count  extends EmpProgram  {
         	
         	
         	theQuery.run(party, port);
-        	String output = theQuery.getOutput();
+        	outputString = theQuery.getOutput();
 	        theQuery.close();
 
-	       	BitSet outBits = new BitSet(output.length());
+	       	outputBits = super.stringToBitSet(outputString);
 	        
-	       for(int i = 0; i < output.length(); ++i) {
-	    	   outBits.set(i,  output.charAt(i) == '1' ? true : false);
-	       }
-	       return outBits;
         }
         
 
@@ -138,18 +134,14 @@ public class Count  extends EmpProgram  {
 		
 		try {
 			SystemConfiguration.getInstance(); // initialize config
-			bits = qc.runProgram();
+			qc.runProgram();
 		} catch(Exception e) {
 			System.err.println("Program execution failed!");
 			e.printStackTrace();
 			System.exit(-1);
 		}
-	       
-		// write bitstring to stderr
-		for(int i = 0; i < bits.size(); ++i) {
-			b = (bits.get(i)) ? '1' : '0';
-			System.err.print(b);
-		}
+	     
+		System.err.print(qc.getOutputString());
     
 	        
     }        

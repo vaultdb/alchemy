@@ -18,6 +18,9 @@ public class EmpRunnable implements Runnable {
   int party, port;
   BitSet output;
   String outputString;
+  
+  int outputSize = 0;
+  
   final String smcqlRoot = Utilities.getSMCQLRoot(); // directory with pom.xml
   // TODO: adjust to versions in pom.xml
   final String javaCppJar =
@@ -28,10 +31,13 @@ public class EmpRunnable implements Runnable {
           + ".m2/repository/org/apache/calcite/calcite-core/1.18.0/calcite-core-1.18.0.jar";
   final String javaCppWorkingDirectory = smcqlRoot + "/target/classes";
 
+  
+  
   public EmpRunnable(String aClassName, int aParty, int aPort) throws Exception {
     configure(aClassName, aParty, aPort);
   }
 
+  
   public void configure(String aClassName, int aParty, int aPort) throws Exception {
     className = EmpJniUtilities.getFullyQualifiedClassName(aClassName);
     party = aParty;
@@ -84,7 +90,7 @@ public class EmpRunnable implements Runnable {
       logger.info("Party " + party + " returned " + bitString.length() + " bits.");
   
       // translate to bools
-      output = stringToBitSet(bitString);
+      output = EmpJniUtilities.stringToBitSet(bitString);
       logger.info("stdout: " + stdout.toString()); 
 
     } catch (Exception e) {
@@ -96,17 +102,7 @@ public class EmpRunnable implements Runnable {
     }
   }
 
-  public static BitSet stringToBitSet(String s) {
-	  BitSet b = new BitSet(s.length());
-
-
-    for (int i = 0; i < s.length(); ++i) {
-    	b.set(i,  (s.charAt(i) == '1') ? true : false);
-    }
-
-    return b;
-  }
-
+ 
   public String getOutputString() {
     return outputString;
   }
@@ -114,4 +110,11 @@ public class EmpRunnable implements Runnable {
   public BitSet getOutput() {
     return output;
   }
+  
+  public int getOutputLength() {
+	 	if(outputString == null)
+    		return 0;
+    	
+    	return outputString.length();
+    }
 }

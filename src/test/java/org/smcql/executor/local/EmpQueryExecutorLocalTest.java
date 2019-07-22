@@ -1,7 +1,8 @@
-package org.smcql.executor.localhost;
+package org.smcql.executor.local;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
@@ -42,8 +43,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   // for guidance
   public void testJoin() throws Exception {
 
-    fail(" Test does not end, so forcing failure"); // forcing failure - test not stopping otherwise
-
+    
     String testName = "JoinCdiff";
     String query =
             "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";

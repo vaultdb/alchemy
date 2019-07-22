@@ -27,19 +27,27 @@ public class EmpJniUtilities {
     }
 
 	// output handling
-	public static List<String> revealStringOutput(BitSet alice, BitSet bob, int tupleWidth) {
-		assert(alice.size() == bob.size());
+	public static List<String> revealStringOutput(String alice, String bob, int tupleWidth) {
+		assert(alice.length() == bob.length());
 		
-		BitSet decrypted = (BitSet) alice.clone();
-		decrypted.xor(bob);
+
+		
+		BitSet aliceBits = EmpJniUtilities.stringToBitSet(alice);
+		BitSet bobBits = EmpJniUtilities.stringToBitSet(bob);
+		
 		
 		int tupleBits = tupleWidth*8; // 8 bits / char
-		int tupleCount = decrypted.size() / tupleBits;
+		int tupleCount = alice.length() / tupleBits;
+		
+		System.out.println("Decrypting " + tupleCount + " tuples.");
+		
+		BitSet decrypted = (BitSet) aliceBits.clone();
+		decrypted.xor(bobBits);
+		
 		
 		
 		List<String> output = new ArrayList<String>();
 		
-		System.out.println("Decrypting " + tupleCount + " tuples.");
 		
 		int readIdx = 0;
 		for(int i = 0; i < tupleCount; ++i) {
@@ -51,6 +59,18 @@ public class EmpJniUtilities {
 		
 		return output;		
 	}
+	
+	 public static BitSet stringToBitSet(String s) {
+		  BitSet b = new BitSet(s.length());
+
+
+	    for (int i = 0; i < s.length(); ++i) {
+	    	b.set(i,  (s.charAt(i) == '1') ? true : false);
+	    }
+
+	    return b;
+	  }
+
 	
 	public static String deserializeString(BitSet src) {
 		assert(src.size() % 8 == 0);
@@ -209,6 +229,15 @@ public class EmpJniUtilities {
 		
 	}
 
+	
+	public static BitSet decrypt(String alice, String bob) {
+		assert(alice.length() == bob.length());
+		
+		BitSet aliceBits = stringToBitSet(alice);
+		BitSet bobBits = stringToBitSet(bob);
+		return decrypt(aliceBits, bobBits);	
+	}
+	
 	public static String getFullyQualifiedClassName(String className) throws Exception {
 		String classPrefix = SystemConfiguration.getInstance().getProperty("generated-class-prefix");
     	if(!className.startsWith(classPrefix)) {
