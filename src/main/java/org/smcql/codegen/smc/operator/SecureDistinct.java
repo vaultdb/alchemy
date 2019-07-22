@@ -1,6 +1,5 @@
 package org.smcql.codegen.smc.operator;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.smcql.config.SystemConfiguration;
@@ -26,7 +25,7 @@ public class SecureDistinct extends SecureOperator{
 		
 		String generatedCode = null;
 
-		if(planNode.getExecutionMode().sliced && SystemConfiguration.getInstance().getProperty("sliced-execution").equals("true")) {
+		if(planNode.getExecutionMode().sliced && SystemConfiguration.getInstance().slicingEnabled()) {
 			generatedCode = CodeGenUtils.generateFromTemplate("distinct/sliced.txt", variables);
 		}
 		else {

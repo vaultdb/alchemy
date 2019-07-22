@@ -127,8 +127,12 @@ public class EmpJniUtilities {
 		bob.join();
 		
 		// output consists of dummyTags followed by padded tuple payload
+		//String aliceOutput = aliceRunnable.getOutputString();
+		//String bobOutput = bobRunnable.getOutputString();
+		
 		BitSet aliceOutput = aliceRunnable.getOutput();
 		BitSet bobOutput = bobRunnable.getOutput();
+		
 		
 		BasicSecureQueryTable aliceTable = new BasicSecureQueryTable(aliceOutput, outSchema);
 		BasicSecureQueryTable bobTable = new BasicSecureQueryTable(bobOutput, outSchema);

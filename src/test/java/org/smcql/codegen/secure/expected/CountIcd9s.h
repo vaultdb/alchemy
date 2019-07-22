@@ -18,9 +18,6 @@ using namespace std;
 namespace CountIcd9s {
 
 class CountIcd9sClass {
-// Connection strings, encapsulates db name, db user, port, host
-string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
-string bobConnectionString = "dbname=smcql_testdb_unioned user=smcql host=localhost port=5432";
 
 string aliceHost = "127.0.0.1";
 int INT_LENGTH = 32;
@@ -49,16 +46,16 @@ public:
 	      return output;
 	}
 
-Data* Distinct2Union(int party, NetIO * io) {
+Data* SeqScan0Union(int party, NetIO * io) {
 
     // std::cout << "Testing that this is the correct template" << std::endl;
 
-    int rowLength = 32;
+    int rowLength = 33;
 
 
     std::cout << "The rowlength in bits is " << rowLength << std::endl;
 
-	string localBitstring = inputs["Distinct2Union"];
+	string localBitstring = inputs["SeqScan0Union"];
     bool *localData = EmpUtilities::toBool(localBitstring);
 
     int aliceSize = localBitstring.length() / rowLength;
@@ -77,6 +74,7 @@ Data* Distinct2Union(int party, NetIO * io) {
         io->flush();
     }
 
+    // allocating secret share for union data & dummies
     Integer * res = new Integer[aliceSize + bobSize];  // enough space for all inputs
     Bit * tmp = new Bit[rowLength * (aliceSize + bobSize)]; //  bit representation of res
 
@@ -88,7 +86,6 @@ Data* Distinct2Union(int party, NetIO * io) {
     int writeTuple = aliceSize; // last tuple
 
     // reverse Alice's order for correct Bitonic Merge ( Increasing -> Max -> Decreasing )
-
     for (int i = 0;  i < aliceSize; ++i) {
     	--writeTuple;
     	writePos = writeTuple * rowLength;
@@ -114,7 +111,6 @@ Data* Distinct2Union(int party, NetIO * io) {
     batcher.make_semi_honest(BOB); // Secret Share
 
 
-
     // add Bob's encrypted tuples
     for (int i = 0; i < bobSize*rowLength; ++i)
         tmp[i+aliceSize*rowLength] = batcher.next<Bit>();
@@ -123,8 +119,10 @@ Data* Distinct2Union(int party, NetIO * io) {
     for(int i = 0; i < aliceSize + bobSize; ++i)
         res[i] = Integer(rowLength, tmp+rowLength*i);
 
-    cout << "Distinct2Union took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
+    cout << "SeqScan0Union took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
+    // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
+    EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 33);
 
     Data * d = new Data;
     d->tuples = res;
@@ -132,32 +130,72 @@ Data* Distinct2Union(int party, NetIO * io) {
 
     return d;
 }
+Data * Distinct2(Data *data) {
+	// TODO: presort this to put dummies last
+	
+	
+	
+
+	int tupleLen = data->tuples[0].size() * sizeof(Bit);
+	int dummyIdx = tupleLen - 1;
+	int tupleBits = tupleLen - 1;
+	cout << " Running Distinct2 with " << data->publicSize << " inputs, tupleLen=" << tupleLen << endl;
+
+
+    Integer lastPayload = data->tuples[0].resize(tupleBits, 0); // compare tuple value sans dummyTag
+    int cursor = 0;
+
+
+
+    while ( cursor < data->publicSize - 1) {
+
+
+        cursor++;
+        Bit isDummy = data->tuples[cursor][dummyIdx]; // easier to perform logic checks
+        Integer payload = data->tuples[cursor].resize(tupleBits, 0);
+	  
+       // std::cout << "Comparison " << (current==lastOne).reveal(PUBLIC) << std::endl;
+	     
+	     Bit condition = !isDummy; // would terminate early if we encounter a dummy
+	     condition = condition & !payload.equal(lastPayload); // set to dummy if it equals its predecessor
+	     
+	    data->tuples[cursor][dummyIdx] = If(condition, Bit(false, PUBLIC), Bit(true, PUBLIC)); 
+		
+        lastPayload = payload;
+    }
+
+
+
+
+    return data;
+}
+
 Data * Aggregate3(Data *data) {
 
 
     Data *result = new Data;
     result->tuples = new Integer[1];
-    result->publicSize = 1; //  tuple.size() - 1;
+    result->publicSize = 1; 
 
-	int dummyIdx = 32 - 1;
+    int dummyIdx = 32 - 1;
     Integer *output = new Integer(64, 0, PUBLIC);
 
 
-	cout << "Running Aggregate3 " << endl;
+    cout << "Running Aggregate3 " << endl;
 
-	Integer agg1= Integer(INT_LENGTH,0,PUBLIC);
+   Integer agg1= Integer(INT_LENGTH,0,PUBLIC);
 Integer tupleArg1 = Integer(64,0, PUBLIC);
 
 
-	for(int cursor = 0; cursor < data->publicSize; cursor++){
+  for(int cursor = 0; cursor < data->publicSize; cursor++){
         Integer tuple = data->tuples[cursor];
         Bit dummyCheck = tuple[dummyIdx];
 
-	    EmpUtilities::writeToInteger( &tupleArg1, &tuple, 0, 0, 64);
+	   EmpUtilities::writeToInteger( &tupleArg1, &tuple, 0, 0, 64);
 agg1 = If(dummyCheck, agg1 + Integer(INT_LENGTH, 1, PUBLIC), agg1);
 
 
-	}
+    }
 
     EmpUtilities::writeToInteger(output, &agg1, 0, 0, 64);
 
@@ -184,9 +222,11 @@ void run(int party, int port) {
     
     setup_semi_honest(io, party);
     
-         Data *Distinct2UnionOutput = Distinct2Union(party, io);
+         Data *SeqScan0UnionOutput = SeqScan0Union(party, io);
 
-    Data * Aggregate3Output = Aggregate3(Distinct2UnionOutput);
+    Data * Distinct2Output = Distinct2(SeqScan0UnionOutput);
+
+    Data * Aggregate3Output = Aggregate3(Distinct2Output);
 
 
     

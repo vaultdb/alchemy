@@ -84,6 +84,7 @@ public class SystemConfiguration {
 		if(configFile == null) 
 			configFile = Utilities.getSMCQLRoot() + "/conf/setup.global";
 		
+		
 		File f = new File(configFile); // may not always exist in remote invocations
 		if(f.exists()) {
 			List<String> parameters = FileUtils.readFile(configFile);
@@ -91,12 +92,12 @@ public class SystemConfiguration {
 			
 		}	
 
-		String deploymentConfigFile = new String("conf/setup.");
+		String deploymentConfigFile = new String(Utilities.getSMCQLRoot() + "/conf/setup.");
 		String location = (System.getProperty("smcql.location") != null) ? System.getProperty("smcql.location") : config.get("location"); // if not given at setup time, use default
 		
 		// if distributed nodes not set up yet, switch to local mode.  E.g.,
 		// distributed-eval-enabled=false
-		if(config.get("distributed-eval-enabled").equals("false")) {
+		if(config.get("distributed-eval-enabled") != null && config.get("distributed-eval-enabled").equals("false")) {
 			location = "local";
 		}
 		
@@ -355,6 +356,13 @@ public class SystemConfiguration {
 		}
 		
 		return properties;
+	}
+
+	public boolean distributedEvaluationEnabled() {
+		if(config.get("distributed-eval-enabled") != null && config.get("distributed-eval-enabled").equals("false")) 
+			return false;
+		
+		return true;
 	}
 	
 

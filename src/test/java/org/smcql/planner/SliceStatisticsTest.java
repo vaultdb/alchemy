@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.junit.Test;
 import org.smcql.db.data.Tuple;
 import org.smcql.db.data.field.IntField;
@@ -172,7 +173,7 @@ public class SliceStatisticsTest extends SliceKeyTest {
 		
 		SecureRelDataTypeField sPrime = new SecureRelDataTypeField(src, 0, null);
 		for(int i = 0; i < fields.length; ++i) {
-			IntField intField = new IntField(sPrime, fields[i]);
+			IntField intField = new IntField(sPrime, fields[i], SqlTypeName.INTEGER);
 			t.addField(intField);
 		}
 		

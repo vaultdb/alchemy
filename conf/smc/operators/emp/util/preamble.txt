@@ -18,11 +18,8 @@ using namespace std;
 namespace $queryName {
 
 class $queryClass {
-// Connection strings, encapsulates db name, db user, port, host
-string aliceConnectionString = "$aliceConnectionString";
-string bobConnectionString = "$bobConnectionString";
 
-string aliceHost = "$aliceHost";
+string aliceHost = "127.0.0.1";
 int INT_LENGTH = 32;
 string output;
 map<string, string> inputs;    // maps opName --> bitString of input tuples

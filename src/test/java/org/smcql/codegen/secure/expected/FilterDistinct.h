@@ -18,9 +18,6 @@ using namespace std;
 namespace FilterDistinct {
 
 class FilterDistinctClass {
-// Connection strings, encapsulates db name, db user, port, host
-string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
-string bobConnectionString = "dbname=smcql_testdb_unioned user=smcql host=localhost port=5432";
 
 string aliceHost = "127.0.0.1";
 int INT_LENGTH = 32;
@@ -125,7 +122,7 @@ Data* SeqScan0Union(int party, NetIO * io) {
     cout << "SeqScan0Union took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
-    EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 32);
+    EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 33);
 
     Data * d = new Data;
     d->tuples = res;
@@ -138,14 +135,14 @@ Data * Distinct4(Data *data) {
 	
 	
 	
-	cout << " Running Distinct4 with " << data->publicSize << " inputs." << endl;
+
 	int tupleLen = data->tuples[0].size() * sizeof(Bit);
-	int dummyIdx = data->tuples[0].size() - 1;
-	int tupleBits = data->tuples[0].size() - 1;
+	int dummyIdx = tupleLen - 1;
+	int tupleBits = tupleLen - 1;
+	cout << " Running Distinct4 with " << data->publicSize << " inputs, tupleLen=" << tupleLen << endl;
 
-	Data result;
 
-    Integer lastTuple = data->tuples[0].resize(tupleBits, 0); // compare tuple value sans dummyTag
+    Integer lastPayload = data->tuples[0].resize(tupleBits, 0); // compare tuple value sans dummyTag
     int cursor = 0;
 
 
@@ -155,16 +152,16 @@ Data * Distinct4(Data *data) {
 
         cursor++;
         Bit isDummy = data->tuples[cursor][dummyIdx]; // easier to perform logic checks
-	    Integer payload = data->tuples[cursor].resize(tupleBits, 0);
+        Integer payload = data->tuples[cursor].resize(tupleBits, 0);
 	  
        // std::cout << "Comparison " << (current==lastOne).reveal(PUBLIC) << std::endl;
 	     
 	     Bit condition = !isDummy; // would terminate early if we encounter a dummy
-	     condition = condition & !payload.equal(lastTuple); // set to dummy if it equals its predecessor
+	     condition = condition & !payload.equal(lastPayload); // set to dummy if it equals its predecessor
 	     
 	    data->tuples[cursor][dummyIdx] = If(condition, Bit(false, PUBLIC), Bit(true, PUBLIC)); 
 		
-        lastTuple = payload;
+        lastPayload = payload;
     }
 
 

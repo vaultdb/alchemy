@@ -3,26 +3,25 @@ package org.smcql.db.data.field;
 import java.io.Serializable;
 import java.util.BitSet;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.smcql.type.SecureRelDataTypeField;
+import org.smcql.type.TypeMap;
 
 public class IntField extends Field  implements Serializable   {
 
 	public long value;
 	
-	public IntField(SecureRelDataTypeField attr, int v) {
-		super(attr);
+	public IntField(SecureRelDataTypeField attr, int v, SqlTypeName sqlType) {
+		super(attr, sqlType);
 		value = v;
+		
 	}
 	
-	public IntField(SecureRelDataTypeField attr) {
-		super(attr);		
+	public IntField(SecureRelDataTypeField attr, SqlTypeName sqlType) {
+		super(attr, sqlType);		
 		value = 0;
 	}
 
-	@Override
-	public int size()  {
-		return 64;
-	}
 	
 	
 	@Override

@@ -52,8 +52,9 @@ public class BaseTest extends TestCase {
 
 	}
 	
-	protected void dummyTest() {
-		// gets rid of warnings
+	// get rid of warnings
+	public void dummyTest() {
+		System.out.println("Hello world");
 	}
 
 

@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Comparator;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.smcql.type.SecureRelDataTypeField;
+import org.smcql.type.TypeMap;
 
 // individual attribute value inside a tuple
 // for use in slice values and for passing around data between SMC and plaintext
@@ -13,16 +15,18 @@ import org.smcql.type.SecureRelDataTypeField;
 public class Field implements Comparator<Field>, Comparable<Field>, Serializable {
 
 	transient SecureRelDataTypeField srcAttribute = null;
+	int size = 0;
+
 	
 	// psql ResultSet r, int rsetIdx
-	Field(SecureRelDataTypeField attr) {
+	Field(SecureRelDataTypeField attr, SqlTypeName sqlType) {
 		srcAttribute = attr;
+		size = TypeMap.getInstance().sizeof(sqlType);
 	}
 	
 	// bytes
-	// to be overriden by children
 	public int size()  {
-		return 0;
+		return size;
 	}
 	
 	

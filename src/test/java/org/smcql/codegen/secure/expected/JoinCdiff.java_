@@ -19,7 +19,7 @@ import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
-import org.smcql.executor.config.ConnectionManager;
+import org.smcql.util.EmpJniUtilities;
 
 
 
@@ -41,12 +41,11 @@ import org.smcql.compiler.emp.EmpProgram;
 public class JoinCdiff  extends EmpProgram  {
 
 	Map<String, String> inputs = new HashMap<String, String>();
-	boolean[] queryOutput = null;
 	
 	public JoinCdiff(int party, int port) {
 		super(party, port);
-		inputs.put("SeqScan4Union", "SELECT patient_id, FALSE AS dummy_tag FROM medications ORDER BY dummy_tag, patient_id");
-inputs.put("SeqScan0Union", "SELECT patient_id, icd9 = '008.45' AS dummy_tag FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY dummy_tag, patient_id");
+		inputs.put("SeqScan4Union", "SELECT FALSE AS dummy_tag, patient_id FROM medications ORDER BY dummy_tag, patient_id");
+inputs.put("SeqScan0Union", "SELECT icd9 = '008.45' AS dummy_tag, patient_id FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY dummy_tag, patient_id");
 
 	}
 	
@@ -89,7 +88,7 @@ inputs.put("SeqScan0Union", "SELECT patient_id, icd9 = '008.45' AS dummy_tag FRO
     }
 	   	
         @Override
-        public  BitSet runProgram() throws Exception {
+        public void runProgram() throws Exception {
         	JoinCdiffClass theQuery = new JoinCdiffClass();
 
 	        Iterator inputItr = inputs.entrySet().iterator();
@@ -110,15 +109,10 @@ inputs.put("SeqScan0Union", "SELECT patient_id, icd9 = '008.45' AS dummy_tag FRO
         	
         	
         	theQuery.run(party, port);
-        	String output = theQuery.getOutput();
+        	outputString = theQuery.getOutput();
+		outputBits = EmpJniUtilities.stringToBitSet(outputString);
 	        theQuery.close();
 
-	       	BitSet outBits = new BitSet(output.length());
-	        
-	       for(int i = 0; i < output.length(); ++i) {
-	    	   outBits.set(i,  output.charAt(i) == '1' ? true : false);
-	       }
-	       return outBits;
         }
         
 
@@ -129,7 +123,7 @@ inputs.put("SeqScan0Union", "SELECT patient_id, icd9 = '008.45' AS dummy_tag FRO
            
 		int party = Integer.parseInt(args[0]);
 		int port = Integer.parseInt(args[1]);
-		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
+		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.global";
 		
   	    System.setProperty("smcql.setup", setupFile);
   	    String workerId = (party == 1) ? "alice" : "bob";
@@ -144,18 +138,16 @@ inputs.put("SeqScan0Union", "SELECT patient_id, icd9 = '008.45' AS dummy_tag FRO
 		
 		try {
 			SystemConfiguration.getInstance(); // initialize config
-			bits = qc.runProgram();
+		        qc.runProgram();
 		} catch(Exception e) {
 			System.err.println("Program execution failed!");
 			e.printStackTrace();
 			System.exit(-1);
 		}
 
-			// write bitstring to stderr
-			for(int i = 0; i < bits.size(); ++i) {
-				b = (bits.get(i)) ? '1' : '0';
-				System.err.print(b);
-			}
+		System.err.print(qc.getOutputString());
+
+
 	        
     }        
 	
