@@ -85,7 +85,8 @@ public class Aggregate extends Operator {
 		List<SecureRelDataTypeField> orderBy = new ArrayList<SecureRelDataTypeField>();
 		SecureRelRecordType inSchema = this.getInSchema();
 
-		for (Integer i : groupBy) orderBy.add(inSchema.getSecureField(i));
+		for (Integer i : groupBy) 
+			orderBy.add(inSchema.getSecureField(i));
 
 		return orderBy;
 	}

@@ -68,7 +68,7 @@ public class PlaintextStep implements ExecutionStep, Serializable {
 	
 	@Override
 	public String generate() throws Exception {
-		return srcOperator.getPlainOperator().generate().get(srcOperator.getPackageName());
+		return srcOperator.getPlainOperator().generate();
 	}
 
 	@Override

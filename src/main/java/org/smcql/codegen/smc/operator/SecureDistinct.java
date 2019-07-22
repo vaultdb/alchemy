@@ -21,7 +21,7 @@ public class SecureDistinct extends SecureOperator{
 	}
 	
 	@Override
-	public Map<String, String> generate() throws Exception  {
+	public String generate() throws Exception  {
 		Map<String, String> variables = baseVariables();
 		
 		String generatedCode = null;
@@ -33,9 +33,7 @@ public class SecureDistinct extends SecureOperator{
 			generatedCode = CodeGenUtils.generateFromTemplate("distinct/simple.txt", variables);
 		}
 
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(getPackageName(), generatedCode);
-		return result;
+		return generatedCode;
 	}
 
 }

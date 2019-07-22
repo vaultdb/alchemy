@@ -58,7 +58,7 @@ public class PlainOperator implements CodeGenerator {
 	}
 	
 	@Override
-	public Map<String, String> generate() throws Exception {
+	public String generate() throws Exception {
 		Operator parent = planNode.getParent();
 		Operator sqlOp = planNode;
 		if (sqlOp instanceof SeqScan) {
@@ -69,9 +69,7 @@ public class PlainOperator implements CodeGenerator {
 			}
 		}
 		
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(planNode.getPackageName(), SqlGenerator.getSourceSql(sqlOp, SystemConfiguration.DIALECT));
-		return result;		
+		return  SqlGenerator.getSourceSql(sqlOp, SystemConfiguration.DIALECT);
 	}
 
 	@Override
@@ -106,8 +104,8 @@ public class PlainOperator implements CodeGenerator {
 	}
 
 	@Override
-	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
-		return new HashMap<String, String>();
+	public String generate(boolean asSecureLeaf) throws Exception {
+		return new String();
 	}
 	
 	

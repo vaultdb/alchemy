@@ -74,7 +74,7 @@ public class UnionMethod implements CodeGenerator, Serializable {
 	}
 	
 	@Override
-	public Map<String, String> generate() throws Exception {
+	public String generate() throws Exception {
 		int size = schema.size();
 		String sql = new String("");
 		boolean localRun = !src.getExecutionMode().distributed;
@@ -106,9 +106,7 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		}
 		
 		generatedCode = CodeGenUtils.generateFromTemplate(unionFile, variables);
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(packageName, generatedCode);
-		return result;
+		return generatedCode;
 	}
 	
 	
@@ -155,8 +153,8 @@ public class UnionMethod implements CodeGenerator, Serializable {
 	
 	
 	@Override
-	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
-		return new HashMap<String, String>();
+	public String generate(boolean asSecureLeaf) throws Exception {
+		return new String();
 	}
 	
 

@@ -31,7 +31,7 @@ public class SecureAggregate extends SecureOperator {
 	}
 
 	@Override
-	public Map<String, String> generate() throws Exception  {
+	public String generate() throws Exception  {
 		Map<String, String> variables = baseVariables();
 		Aggregate a = (Aggregate) planNode;
 
@@ -50,7 +50,6 @@ public class SecureAggregate extends SecureOperator {
 		// TODO: add more aggregates; currently hardcoded for groupby aggregate (full oblivious)
 		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
 		if (groupByAttributes.isEmpty()) {
-			Map<String, String> result = new HashMap<String, String>();
 			Map<String, String> scalarVars = getScalarAggregates();
 
 
@@ -58,8 +57,7 @@ public class SecureAggregate extends SecureOperator {
 				variables.put(entry.getKey(), entry.getValue());
 			}
 
-			result.put(getPackageName(), CodeGenUtils.generateFromTemplate("aggregate/scalar/aggregate.txt", variables));
-			return result;
+			return CodeGenUtils.generateFromTemplate("aggregate/scalar/aggregate.txt", variables);
 		}
 
 
@@ -70,9 +68,7 @@ public class SecureAggregate extends SecureOperator {
 
 		generatedCode = CodeGenUtils.generateFromTemplate("aggregate/groupby/aggregate.txt", variables);
 
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(getPackageName(), generatedCode);
-		return result;
+		return generatedCode;
 	}
 	// variable --> value
 	private Map<String, String> getScalarAggregates(){

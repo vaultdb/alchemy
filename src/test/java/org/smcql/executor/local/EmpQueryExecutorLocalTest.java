@@ -30,7 +30,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
 
   public void testCountIcd9s() throws Exception {
 
-    String query = "SELECT COUNT(major_icd9) FROM diagnoses GROUP BY major_icd9";
+    String query = "SELECT major_icd9,COUNT(*) FROM diagnoses GROUP BY major_icd9";
     // to run in plaintext to verify our results
     String testName = "CountIcd9s";
 
@@ -38,9 +38,6 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     testCase(testName, query);
   }
 
-  // TODO: Keith please work on getting this going
-  // use the examples in here: https://github.com/johesbater/emp-aqp/tree/master/test
-  // for guidance
   public void testJoin() throws Exception {
 
     

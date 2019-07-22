@@ -63,8 +63,8 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	}
 	
 
-	public Map<String, String> generate() throws Exception {
-		return new HashMap<String, String>();
+	public String generate() throws Exception {
+		return new String();
 	}
 	
 	
@@ -280,7 +280,7 @@ public class SecureOperator implements CodeGenerator, Serializable {
 
 
 	@Override
-	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
+	public String generate(boolean asSecureLeaf) throws Exception {
 		return this.generate();
 	}
 

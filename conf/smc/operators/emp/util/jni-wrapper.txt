@@ -19,7 +19,7 @@ import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
-import org.smcql.executor.config.ConnectionManager;
+import org.smcql.util.EmpJniUtilities;
 
 
 
@@ -108,7 +108,7 @@ public class $queryName  extends EmpProgram  {
         	
         	theQuery.run(party, port);
         	outputString = theQuery.getOutput();
-		outputBits = EmpJniUtility.stringToBitSet(outputString);
+		outputBits = EmpJniUtilities.stringToBitSet(outputString);
 	        theQuery.close();
 
         }

@@ -8,10 +8,10 @@ import org.smcql.type.SecureRelRecordType;
 
 public interface CodeGenerator {
 
-	Map<String, String> generate() throws Exception;
+	String generate() throws Exception;
 
 	
-	Map<String, String> generate(boolean asSecureLeaf) throws Exception;
+	String generate(boolean asSecureLeaf) throws Exception;
 
 	public String getPackageName();
 	

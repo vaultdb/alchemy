@@ -40,7 +40,7 @@ public class SecureJoin extends SecureOperator {
 
 	
 	@Override
-	public Map<String, String> generate() throws Exception  {
+	public String generate() throws Exception  {
 		Map<String, String> variables = baseVariables();		
 
 		Join join = (Join) planNode;
@@ -65,13 +65,7 @@ public class SecureJoin extends SecureOperator {
 			generatedCode =  CodeGenUtils.generateFromTemplate("join/simple.txt", variables);
 		}
 		
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(getPackageName(), generatedCode);
-		
-		for (ProcessingStep p : processingSteps)
-			result.put(getPackageName() + "." + p.getProcessName(), p.generate(variables));
-		
-		return result;
+		return generatedCode;
 	}
 	
 	

@@ -68,7 +68,7 @@ public class SecureSort extends SecureOperator {
 	
 	
 	@Override
-	public Map<String, String> generate() throws Exception  {
+	public String generate() throws Exception  {
 		
 		// variables: size, sortKeySize signal, fid, bitmask
 		Map<String, String> variables = baseVariables();
@@ -120,9 +120,7 @@ public class SecureSort extends SecureOperator {
 		// plain sort
 		if(planNode.getSchema().getSecureFieldList().equals(sortKey)) {
 			generatedCode =  CodeGenUtils.generateFromTemplate("sort/simple.txt", variables);
-			Map<String, String> result = new HashMap<String, String>();
-			result.put(getPackageName(), generatedCode);
-			return result;
+			return generatedCode;
 		}
 
 		// add functionality for ORDER BY over part of tuple or different order of attributes
@@ -137,9 +135,7 @@ public class SecureSort extends SecureOperator {
 		String srcFile = "sort/keyed.txt";
 		
 		generatedCode = CodeGenUtils.generateFromTemplate(srcFile, variables);
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(getPackageName(), generatedCode);
-		return result;
+		return generatedCode;
 	}
 	
 }

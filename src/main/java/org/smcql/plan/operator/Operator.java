@@ -520,14 +520,14 @@ public abstract class Operator implements CodeGenerator {
 
 
 	@Override
-	public Map<String, String> generate() throws Exception {
+	public String generate() throws Exception {
 		return plaintextGenerator.generate();
 	}
 
 	
 	@Override
-	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
-		return new HashMap<String, String>();
+	public String generate(boolean asSecureLeaf) throws Exception {
+		return new String();
 	}
 
 	public void compileIt() throws Exception {
