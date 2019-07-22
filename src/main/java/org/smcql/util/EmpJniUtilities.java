@@ -52,7 +52,7 @@ public class EmpJniUtilities {
 		int readIdx = 0;
 		for(int i = 0; i < tupleCount; ++i) {
 			BitSet bits = decrypted.get(readIdx*8, (readIdx+tupleWidth)*8);
-			String tuple= deserializeString(bits);
+			String tuple= deserializeString(bits, tupleWidth);
 			output.add(tuple);
 			readIdx += tupleWidth;
 		}
@@ -72,13 +72,14 @@ public class EmpJniUtilities {
 	  }
 
 	
-	public static String deserializeString(BitSet src) {
+	public static String deserializeString(BitSet src, int stringLength) {
 		assert(src.size() % 8 == 0);
-		int chars = src.size() / 8;
+		
 		String value = new String();
+		System.out.println("Value length: " + value.length());
 		
 		
-		for(int i = 0; i < chars; ++i)
+		for(int i = 0; i < stringLength; ++i)
 		{
 			int n = 0;
 			 for(int j = 0; j < 8; ++j) {
@@ -87,9 +88,11 @@ public class EmpJniUtilities {
 			    }
 			 
 			value += (char) n;
+			System.out.println("Value length: " + value.length());
 			
 		}
 		
+		System.out.println("Deserialized " + value + " of length " + value.length());
 		return value;
 		
 		
