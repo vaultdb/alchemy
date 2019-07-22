@@ -1,6 +1,6 @@
 package org.smcql.executor.config;
 
-
+import org.smcql.config.SystemConfiguration;
 
 public class ExecutionMode {
 		public boolean distributed = true; // || distributed.   Distributed clear usually will be a semi-join or some other rewrite that isolates the public variables
@@ -20,5 +20,34 @@ public class ExecutionMode {
 				descriptor += replicated ? "Replicated" : "Partitioned";
 			
 			return descriptor;
+		}
+		
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(!(obj instanceof ExecutionMode))
+				return false;
+			
+			ExecutionMode other = (ExecutionMode) obj;
+			
+
+			try {
+				SystemConfiguration config = SystemConfiguration.getInstance();
+				if(config.slicingEnabled() && other.sliced != this.sliced)
+					return false;
+			
+			} catch (Exception e) {
+				System.out.println("Failed to get system configuration! ");
+				e.printStackTrace();
+				
+			}
+			
+			if(other.distributed == this.distributed
+					&& other.oblivious == this.oblivious 
+					&& other.replicated == this.replicated)
+				return true;
+			
+			return false;
+			
 		}
 }

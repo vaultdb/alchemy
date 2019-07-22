@@ -16,8 +16,8 @@ public class EmpJniLocalTest extends BaseTest {
     final int tupleWidth = 3; // characters in string
 
     protected void setUp() throws Exception {
-        String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
-        System.setProperty("smcql.setup", setupFile);
+
+        super.setUp();
     }
 
     public void testEmpJni() throws Exception {

@@ -12,7 +12,6 @@ import org.smcql.util.Utilities;
 
 public class TpcHQueryExecutionTest extends TpcHBaseTest {
 	  protected void setUp() throws Exception {
-		    
 		 super.setUp();
 			
 	  }

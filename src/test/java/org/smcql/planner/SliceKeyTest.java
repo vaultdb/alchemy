@@ -19,8 +19,7 @@ public class SliceKeyTest extends BaseTest {
 	protected void setUp() throws Exception {
 		super.setUp();
 		
-		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
-		System.setProperty("smcql.setup", setupFile);
+		
 
 		expectedSliceKeys  = new HashMap<String, List<SecureRelDataTypeField> >();
 				
@@ -89,7 +88,7 @@ public class SliceKeyTest extends BaseTest {
 	
 	private void testCase(String testName) throws Exception {
 		
-		if(config.getProperty("sliced-execution") != null && !config.getProperty("sliced-execution").equals("true"))
+		if(!config.slicingEnabled())
 			return;
 
 		

@@ -19,148 +19,107 @@ public class TpcHSecureParseTest extends TpcHBaseTest {
 	  
 	  
 	  public void testQuery01() throws Exception {
-		     String sql = QUERIES.get(0);
-		     String testName = "q" + String.valueOf(1);
-		     secureParseTest(testName, sql);
+		     secureParseTest(1);
 		}
 
 		public void testQuery02() throws Exception {
-			 String sql = QUERIES.get(1);
-		     String testName = "q" + String.valueOf(2);
-		     secureParseTest(testName, sql);
+		     secureParseTest(2);
 		}
 
 		public void testQuery03() throws Exception {
-		     String sql = QUERIES.get(2);
-		     String testName = "q" + String.valueOf(3);
-		     secureParseTest(testName, sql);
+		     secureParseTest(3);
 		}
 
 		public void testQuery04() throws Exception {
-		     String sql = QUERIES.get(3);
-		     String testName = "q" + String.valueOf(4);
-		     secureParseTest(testName, sql);
+		     secureParseTest(4);
 		}
 
 		public void testQuery05() throws Exception {
-		     String sql = QUERIES.get(4);
-		     String testName = "q" + String.valueOf(5);
-		     secureParseTest(testName, sql);
+		     secureParseTest(5);
 		}
 
 		// want this to be a split aggregate
 		// each DO produces a partial sum
 		public void testQuery06() throws Exception {
-		     String sql = QUERIES.get(5);
-		     String testName = "q" + String.valueOf(6);
-		     secureParseTest(testName, sql);
+		     secureParseTest(6);
 		}
 
 		// TODO: extract year by pushing down this expression to outside of MPC
 		public void testQuery07() throws Exception {
-		     String sql = QUERIES.get(6);
-		     String testName = "q" + String.valueOf(7);
-		     secureParseTest(testName, sql);
+		     secureParseTest(7);
 		}
 
 		public void testQuery08() throws Exception {
-		     String sql = QUERIES.get(7);
-		     String testName = "q" + String.valueOf(8);
-		     secureParseTest(testName, sql);
+		     secureParseTest(8);
 		}
 
 		public void testQuery09() throws Exception {
-		     String sql = QUERIES.get(8);
-		     String testName = "q" + String.valueOf(9);
-		     secureParseTest(testName, sql);
+		     secureParseTest(9);
 		}
 
 		public void testQuery10() throws Exception {
-		     String sql = QUERIES.get(9);
-		     String testName = "q" + String.valueOf(10);
-		     secureParseTest(testName, sql);
+		     secureParseTest(10);
 		}
 
 		public void testQuery11() throws Exception {
-		     String sql = QUERIES.get(10);
-		     String testName = "q" + String.valueOf(11);
-		     secureParseTest(testName, sql);
+		     secureParseTest(11);
 		}
 
 		public void testQuery12() throws Exception {
-		     String sql = QUERIES.get(11);
-		     String testName = "q" + String.valueOf(12);
-		     secureParseTest(testName, sql);
+		     secureParseTest(12);
 		}
 
 		public void testQuery13() throws Exception {
-		     String sql = QUERIES.get(12);
-		     String testName = "q" + String.valueOf(13);
-		     secureParseTest(testName, sql);
+		     secureParseTest(13);
 		}
 
 
 
 
 	public void testQuery14() throws Exception {
-		     String sql = QUERIES.get(13);
-		     String testName = "q" + String.valueOf(14);
-		     secureParseTest(testName, sql);
+	     secureParseTest(14);
 		}
 
 		public void testQuery15() throws Exception {
-		     String sql = QUERIES.get(14);
-		     String testName = "q" + String.valueOf(15);
-		     secureParseTest(testName, sql);
+		     secureParseTest(15);
 		}
 
 		public void testQuery16() throws Exception {
-		     String sql = QUERIES.get(15);
-		     String testName = "q" + String.valueOf(16);
-		     secureParseTest(testName, sql);
+		     secureParseTest(16);
 		}
 
 		public void testQuery17() throws Exception {
-		     String sql = QUERIES.get(16);
-		     String testName = "q" + String.valueOf(17);
-		     secureParseTest(testName, sql);
+		     secureParseTest(17);
 		}
 
 		public void testQuery18() throws Exception {
-		     String sql = QUERIES.get(17);
-		     String testName = "q" + String.valueOf(18);
-		     secureParseTest(testName, sql);
+		     secureParseTest(18);
 		}
 
 		public void testQuery19() throws Exception {
-		     String sql = QUERIES.get(18);
-		     String testName = "q" + String.valueOf(19);
-		     secureParseTest(testName, sql);
+		     secureParseTest(19);
 		}
 
 		public void testQuery20() throws Exception {
-		     String sql = QUERIES.get(19);
-		     String testName = "q" + String.valueOf(20);
-		     secureParseTest(testName, sql);
+		     secureParseTest(20);
 		}
 
 		public void testQuery21() throws Exception {
-		     String sql = QUERIES.get(20);
-		     String testName = "q" + String.valueOf(21);
-		     secureParseTest(testName, sql);
+		     secureParseTest(21);
 		}
 
 		public void testQuery22() throws Exception {
-		     String sql = QUERIES.get(21);
-		     String testName = "q" + String.valueOf(22);
-		     secureParseTest(testName, sql);
+		     secureParseTest(22);
 		}
 
 		
 	  
-	  private void secureParseTest(String testName, String sql) throws Exception {
+	  private void secureParseTest(int testNo) throws Exception {
 		  // make the test reproducible
-		  SystemConfiguration.getInstance().resetCounters();
+		  config.resetCounters();
+		  
+		  String sql = super.readSQL(testNo);
+		  String testName = "q" + testNo;
 		  
 		  logger.info(testName + " parsing:\n" +sql);
 		     

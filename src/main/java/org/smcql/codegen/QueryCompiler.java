@@ -375,7 +375,7 @@ public class QueryCompiler {
         child = child.getChild(0);
       }
 
-      if (child.getExecutionMode() != o.getExecutionMode()) { // secure leaf
+      if (!child.getExecutionMode().equals(o.getExecutionMode())) { // usually a secure leaf
         ExecutionStep childSource = null;
         Operator tmp = o;
         if (!child.getExecutionMode().distributed) {

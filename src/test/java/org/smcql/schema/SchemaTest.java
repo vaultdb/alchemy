@@ -5,6 +5,10 @@ import org.smcql.db.schema.SecureSchemaLookup;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
 
 public class SchemaTest extends BaseTest {
+	
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
 
 	public void testHealthLNK() throws Exception {
 		SecureSchemaLookup lookup = SecureSchemaLookup.getInstance();

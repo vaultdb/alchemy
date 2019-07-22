@@ -7,9 +7,9 @@ import org.smcql.util.Utilities;
 
 
 public class EmpBuilderTest extends BaseTest {
+
 	protected void setUp() throws Exception {
-		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
-		System.setProperty("smcql.setup", setupFile);
+		super.setUp();
 
 	}
 	

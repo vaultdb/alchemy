@@ -20,6 +20,9 @@ public class SliceStatisticsTest extends SliceKeyTest {
 		super.setUp();
 		expectedStatistics = new HashMap<String, Map<SecureRelDataTypeField, SliceStatistics> >();
 	
+		if(!config.slicingEnabled())
+			return;
+
 		setupAspirintCount();
 		setupCDiff();
 		setupComorbidity();		
@@ -140,10 +143,12 @@ public class SliceStatisticsTest extends SliceKeyTest {
 	}
 	
 	private void testCase(String testName) throws Exception {
+
+		if(!config.slicingEnabled())
+			return;
+
 		String sql = super.readSQL(testName);
 		
-		if(!config.getProperty("sliced-execution").equals("true"))
-			return;
 
 		System.out.println("Running query " + sql);
 		

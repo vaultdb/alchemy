@@ -13,6 +13,10 @@ import org.apache.calcite.tools.ValidationException;
 
 public class ParseTest  extends  BaseTest {
 
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
+	
 	
 	public void testComorbidity() throws ClassNotFoundException, SQLException, SqlParseException, ValidationException, RelConversionException, IOException {
 		runTest("comorbidity");

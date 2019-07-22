@@ -295,7 +295,10 @@ public class SecureOperator implements CodeGenerator, Serializable {
 
 
 
-
+    @Override
+    public String toString() {
+    	return planNode.toString();
+    }
 
 	
 

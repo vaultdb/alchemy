@@ -676,10 +676,8 @@ public class TpcHBaseTest extends BaseTest {
 	
 	  protected void setUp() throws Exception {
 
-		    String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.tpch";
-		    System.setProperty("smcql.setup", setupFile);
-		 	logger = SystemConfiguration.getInstance().getLogger();
-		 	parser = new SqlStatementParser();
+		  System.setProperty("smcql.schema.name", "tpch");
+		  super.setUp();
 		 	
 
 

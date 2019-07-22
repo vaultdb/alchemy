@@ -25,17 +25,19 @@ public class RunnableRemoteQueryTest extends BaseTest {
 	
 	SegmentExecutor plaintextRunner = null;
 	
-	Map<String, QueryTable> expectedOutput;
 	Map<String, Double> plaintextTimes;
 	
 	
 	protected void setUp() throws Exception {
-		expectedOutput = new HashMap<String, QueryTable>();
-		plaintextTimes = new HashMap<String, Double>();
 		
-		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.remote";
-		System.setProperty("smcql.setup", setupFile);
+		  // TODO: test in remote setting by setting line in setup.global
+		  // "distributed-eval-enabled=true"
+		  
+		  System.setProperty("smcql.location", "distributed");
+		  super.setUp();
 
+		  plaintextTimes = new HashMap<String, Double>();
+		
 		ConnectionManager cm = ConnectionManager.getInstance();
 		List<WorkerConfiguration> workers = cm.getWorkerConfigurations();
 		
@@ -47,42 +49,41 @@ public class RunnableRemoteQueryTest extends BaseTest {
 		
 		plaintextRunner = SegmentExecutor.getInstance();
 	}
+
+
+
+	public void testComorbidity() throws Exception {
+		String testName = "comorbidity";
+		runTest(testName);
+	}
+
+	public void testCDiff() throws Exception {
+		String testName = "cdiff";
+		runTest(testName);
+	}
 	
-	/*private void setUpComorbidity(String testName) throws Exception {
-		String sql = super.readSQL(testName);
-		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
-		QueryCompiler qc = new QueryCompiler(secRoot);
-
-		SecureRelRecordType outSchema = qc.getRoot().getSchema();
-		List<Tuple> output = new ArrayList<Tuple>();
-		
-		Tuple t0 = new Tuple();
-		t0.addField(new CharField(outSchema.getSecureField(0), "008"));
-		t0.addField(new IntField(outSchema.getSecureField(1), 4));
-		output.add(t0);
-		
-		
-		Tuple t1 = new Tuple();
-		t1.addField(new CharField(outSchema.getSecureField(0), "410"));
-		t1.addField(new IntField(outSchema.getSecureField(1), 1));
-		output.add(t1);
-
-		QueryTable result = new QueryTable(output);
-		expectedOutput.put(testName, result);
-	}*/
+	public void testAspirinCount() throws Exception {
+		String testName = "aspirin-profile";
+		runTest(testName);
+	}
 
 
 	private void runTest(String testName) throws Exception {
-		SystemConfiguration.getInstance().resetCounters();
-		Logger logger = SystemConfiguration.getInstance().getLogger();
+
+
+		if(!config.getProperty("location").equals("distributed"))
+			return;
+
+		
+		config.resetCounters();
 		
 		String sql = super.readSQL(testName);
+		
+		
 		logger.log(Level.INFO, "Parsing " + sql);
 		
 		SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
-		
-		//if (testName.equals("cdiff"))
-		//	sql = super.readSQL("postgres_cdiff");
+	
 		QueryCompiler qc = new QueryCompiler(secRoot, sql);
 		
 		List<ExecutionSegment> segments = qc.getSegments();
@@ -96,24 +97,8 @@ public class RunnableRemoteQueryTest extends BaseTest {
 		
 	    QueryTable results = exec.getOutput();
 	    logger.log(Level.INFO, "output: " + results);
-	    //assertEquals(expectedOutput.get(testName), results);
-	}
-	
-	public void testComorbidity() throws Exception {
-		String testName = "comorbidity";
-		//setUpComorbidity(testName);
-		runTest(testName);
-	}
-
-	public void testCDiff() throws Exception {
-		String testName = "cdiff";
-		//setUpCDiff(testName);
-		runTest(testName);
-	}
-	
-	public void testAspirinCount() throws Exception {
-		String testName = "aspirin-profile";
-		//setUpComorbidity(testName);
-		runTest(testName);
+	    
+	    QueryTable expected = getExpectedOutput(sql);
+	    assertEquals(expected, results);
 	}
 }

@@ -21,9 +21,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
 
   protected void setUp() throws Exception {
     super.setUp();
-
-    String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
-    System.setProperty("smcql.setup", setupFile);
+    
     ConnectionManager cm = ConnectionManager.getInstance();
     workers = new ArrayList<WorkerConfiguration>(cm.getWorkerConfigurations());
 
@@ -63,15 +61,6 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     testCase(testName, query);
   }
 
-  protected QueryTable getExpectedOutput(String testName, String query)
-          throws Exception {
-
-    String unionedId = ConnectionManager.getInstance().getUnioned();
-
-    SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
-
-    return SqlQueryExecutor.query(query, outSchema, unionedId);
-  }
 
   protected void testCase(String testName, String sql) throws Exception {
     SystemConfiguration.getInstance().resetCounters();
@@ -92,7 +81,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     EmpExecutor exec = new EmpExecutor(qc);
     exec.run();
 
-    QueryTable expectedOutput = getExpectedOutput(testName, sql);
+    QueryTable expectedOutput = getExpectedOutput(sql);
     QueryTable observedOutput = exec.getOutput();
 
     logger.info("Observed output: \n" + observedOutput);

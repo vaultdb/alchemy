@@ -1,0 +1,17 @@
+location=local # or distributed
+schema-name=healthlnk
+# schemas supported: healthlnk, tpch; also may be overriden with Java system properties
+
+distributed-eval-enabled=false
+
+# config filename format: conf/setup.$location"-"$schemaName
+#e.g., local-healthlnk-configuration=conf/setup.local
+
+
+#log information
+log-level=debug
+
+#query planner information
+sliced-execution=false
+slice-parallelism=2
+semijoin-execution=false

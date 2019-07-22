@@ -21,6 +21,7 @@ import org.smcql.util.Utilities;
 
 import junit.framework.TestCase;
 
+
 public class BaseTest extends TestCase {
 	protected SqlStatementParser parser;
 	protected SqlNode root;
@@ -31,13 +32,16 @@ public class BaseTest extends TestCase {
 	protected Logger logger;
 	protected SystemConfiguration config;
 	
+	
+
 	protected void setUp() throws Exception {
-		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.localhost");
+	
+		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.global");
 
 		parser = new SqlStatementParser();
+		config = SystemConfiguration.getInstance();
 		honestBroker = SystemConfiguration.getInstance().getHonestBrokerConfig();
 		logger = SystemConfiguration.getInstance().getLogger();
-		config = SystemConfiguration.getInstance();
 		
 	}
 	
@@ -53,11 +57,12 @@ public class BaseTest extends TestCase {
 	}
 
 
-	  protected QueryTable getExpectedOutput(String testName, String query) throws Exception {
+	  protected QueryTable getExpectedOutput(String query) throws Exception {
 
 		    String unionedId = ConnectionManager.getInstance().getUnioned();
 		    SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
 		    return SqlQueryExecutor.query(query, outSchema, unionedId);
+		    
 		  }
 
 	  
@@ -79,7 +84,7 @@ public class BaseTest extends TestCase {
 		    EmpExecutor exec = new EmpExecutor(qc);
 		    exec.run();
 
-		    QueryTable expectedOutput = getExpectedOutput(testName, sql);
+		    QueryTable expectedOutput = getExpectedOutput(sql);
 		    QueryTable observedOutput = exec.getOutput();
 
 		    logger.info("Observed output: \n" + observedOutput);

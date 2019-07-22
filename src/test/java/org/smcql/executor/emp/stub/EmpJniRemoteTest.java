@@ -24,6 +24,8 @@ import org.smcql.util.Utilities;
 
 import junit.framework.TestCase;
 
+
+//  Minimal EMP test, based on emp-jni repo
 public class EmpJniRemoteTest extends TestCase  {
 	
 	final String smcqlRoot = Utilities.getSMCQLRoot();
@@ -34,14 +36,19 @@ public class EmpJniRemoteTest extends TestCase  {
 	String generatorHost = null;
 	List<WorkerConfiguration> workers;
 	final int tupleWidth = 3; //characters in string
-	
+	SystemConfiguration config;
 	
 	  protected void setUp() throws Exception {
-		    String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.remote";
-		    System.setProperty("smcql.setup", setupFile);
+
+		  // TODO: test in remote setting by setting line in setup.global
+		  // "distributed-eval-enabled=true"
+		  
+		  System.setProperty("smcql.location", "distributed");
 			
-		    SystemConfiguration.getInstance(); // initialize config
-		    initializeCloud();
+		  config  = SystemConfiguration.getInstance(); // initialize config
+		    
+		    if(config.getProperty("location").equals("distributed"))
+		    	initializeCloud();
 	  }
 	  
 	  
@@ -92,9 +99,11 @@ public class EmpJniRemoteTest extends TestCase  {
 	
 	public void testRemoteExecution() throws Exception {
 		 
-		 List<BitSet> outputs = runCloudExecution();
-		 List<String> tuples = EmpJniUtilities.revealStringOutput(outputs.get(0), outputs.get(1), tupleWidth);
-		 System.out.println("Output: " + tuples);
+	    if(config.getProperty("location").equals("distributed")) {
+	    	List<BitSet> outputs = runCloudExecution();
+	    	List<String> tuples = EmpJniUtilities.revealStringOutput(outputs.get(0), outputs.get(1), tupleWidth);
+	    	System.out.println("Output: " + tuples);
+	    }
 	}
 	
 		

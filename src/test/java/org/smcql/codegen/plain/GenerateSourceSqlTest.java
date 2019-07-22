@@ -10,6 +10,7 @@ import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.SecureRelRoot;
 
 public class GenerateSourceSqlTest extends BaseTest {
+	
 	protected void setUp() throws Exception {
 		super.setUp();
 	}

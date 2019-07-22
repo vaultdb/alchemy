@@ -11,6 +11,11 @@ import org.smcql.plan.SecureRelRoot;
 
 public class TreeBuilderTest extends BaseTest {
 
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
+	
+	
 	public void testAspirinCount() throws Exception {
 		String expectedTree = "LogicalAggregate-DistributedOblivious, schema:(#0: rx_cnt BIGINT Public), slice key: [#0: patient_id INTEGER Public]\n"
 				 + "    LogicalAggregate-DistributedOblivious, schema:(#0: patient_id INTEGER Public), slice key: [#0: patient_id INTEGER Public]\n"

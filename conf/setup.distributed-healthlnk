@@ -5,14 +5,9 @@ remote-codegen-target=org/smcql/compiler/emp/generated
 data-providers=conf/connections/remote-hosts
 has-partitioning=false
 
-#log information
-log-level=debug
 local-log-file=logs/smcql.log
 
 #query planner information
-sliced-execution=false
-slice-parallelism=2
-semijoin-execution=false
 #truncate-input=5
 mpc-lib=emp
 #set to debug to disable pushing filter up to select
@@ -29,6 +24,6 @@ delta=0.0
 [psql]
 host=localhost
 port=5432
-db=smcql_testdb
+db=smcql_testdb_unioned
 user=smcql
 password=smcql123
