@@ -24,6 +24,7 @@ public:
 	}
 
 
+<<<<<<< HEAD
 	Integer appendDummyTag(Integer src) {
 		Bit dummyTag = src.bits[0];
 		int lastIdx = src.size() - 1;
@@ -33,6 +34,7 @@ public:
 
 		return lhs;
 	}
+
 	static void cmpSwapSql(Integer* tuples, int i, int j, Bit acc, int keyPos, int keyLength) {
 		Integer lhs = Integer(keyLength, tuples[i].bits+keyPos);
 		Integer rhs = Integer(keyLength, tuples[j].bits+keyPos);
@@ -45,7 +47,6 @@ public:
 		cout << "Compare and swapping indexes: " << i << " and " << j << ", to swap? " <<  toSwap.reveal(PUBLIC) <<  std::endl;
 		Integer iValue = Integer(32, lhs.bits + 1);
 		Integer jValue = Integer(32, rhs.bits + 1);
-
 		cout << "i-value: " << keyi.bits[0].reveal(PUBLIC) << ", " << iValue.reveal<int32_t>(PUBLIC)
 				<< ", j-value: " << keyj.bits[0].reveal(PUBLIC) << ", " << jValue.reveal<int32_t>(PUBLIC) << endl;
 
