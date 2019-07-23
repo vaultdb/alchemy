@@ -65,8 +65,10 @@ public class BasicSecureQueryTable implements SecureQueryTable, Serializable {
 	}
 
 
+	// TODO: clean this up
 	@Override
 	public QueryTable declassify(SecureQueryTable other, SecureRelRecordType schema) throws Exception {
+		/*
 		if(!(other instanceof BasicSecureQueryTable)){
 			throw new Exception("Cannot decode unmatched tables!");
 		}
@@ -84,7 +86,8 @@ public class BasicSecureQueryTable implements SecureQueryTable, Serializable {
 
 
 		return new QueryTable(plaintext, schema, true);
-		
+		*/
+		return null;
 	}
 
 	// deprecated, this is for doing OT on plaintext inputs

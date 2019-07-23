@@ -20,7 +20,7 @@ namespace $queryName {
 class $queryClass {
 
 string aliceHost = "127.0.0.1";
-int INT_LENGTH = 32;
+
 string output;
 map<string, string> inputs;    // maps opName --> bitString of input tuples
 

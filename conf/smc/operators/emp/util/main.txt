@@ -22,7 +22,7 @@ void run(int party, int port) {
     int tupleWidth = results->tuples[0].size();
 
     // Debugging assistance
-    std::cout << "Output tuple width is " << tupleWidth << std::endl;
+    std::cout << "Final output tuple width is " << tupleWidth << std::endl;
 
 
     long outputSize = results->publicSize * tupleWidth;
@@ -42,6 +42,7 @@ void run(int party, int port) {
 	io->flush();
 	delete io;
 
+	cout << "Returning " << outputSize  << " bits." << endl;
 	cout << "Finished query!" << endl;
 
 }

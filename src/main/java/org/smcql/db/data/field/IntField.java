@@ -85,11 +85,10 @@ public class IntField extends Field  implements Serializable   {
 	
 	@Override
 	public void deserialize(BitSet src) {
-		assert(src.size() == this.size());
 		value = 0;
 		boolean b;
 
-		for(int i = 0; i < src.size(); ++i) {
+		for(int i = 0; i < this.size(); ++i) {
 			 b = src.get(i);
 			 value = (value << 1) | (b ? 1 : 0);
 		}

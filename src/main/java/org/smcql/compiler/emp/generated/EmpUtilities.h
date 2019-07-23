@@ -24,22 +24,30 @@ public:
 	}
 
 
-	static void cmpSwapSql(Integer*key, int i, int j, Bit acc, int keyPos, int keyLength) {
-		Integer keyi = Integer(keyLength, key[i].bits+keyPos);
-		Integer keyj = Integer(keyLength, key[j].bits+keyPos);
-		Bit to_swap = ((keyi > keyj) == acc);
-		swap(to_swap, key[i], key[j]);
+	static void cmpSwapSql(Integer* tuples, int i, int j, Bit acc, int keyPos, int keyLength) {
+		Integer keyi = Integer(keyLength, tuples[i].bits+keyPos);
+		Integer keyj = Integer(keyLength, tuples[j].bits+keyPos);
+
+		Bit toSwap = ((keyi > keyj) == acc);
+		cout << "Compare and swapping indexes: " << i << " and " << j << ", to swap? " <<  toSwap.reveal(PUBLIC) <<  std::endl;
+		Integer iValue = Integer(32, keyi.bits + 1);
+		Integer jValue = Integer(32, keyj.bits + 1);
+
+		cout << "i-value: " << keyi.bits[0].reveal(PUBLIC) << ", " << iValue.reveal<int32_t>(PUBLIC)
+				<< ", j-value: " << keyj.bits[0].reveal(PUBLIC) << ", " << jValue.reveal<int32_t>(PUBLIC) << endl;
+
+		swap(toSwap, tuples[i], tuples[j]);
 }
 
 // TODO: extend this to multiple columns as a list of keyPos and keyLength
-	static void bitonicMergeSql(Integer* key, int lo, int n, Bit acc, int keyPos, int keyLength) {
+	static void bitonicMergeSql(Integer* tuples, int lo, int n, Bit acc, int keyPos, int keyLength) {
 		if (n > 1) {
 			int m = greatestPowerOfTwoLessThan(n);
 			for (int i = lo; i < lo + n - m; i++)
-				cmpSwapSql(key, i, i + m, acc, keyPos, keyLength);
+				cmpSwapSql(tuples, i, i + m, acc, keyPos, keyLength);
 
-			bitonicMergeSql(key, lo, m, acc, keyPos, keyLength);
-			bitonicMergeSql(key, lo + m, n - m, acc, keyPos, keyLength);
+			bitonicMergeSql(tuples, lo, m, acc, keyPos, keyLength);
+			bitonicMergeSql(tuples, lo + m, n - m, acc, keyPos, keyLength);
 		}
 	}
 

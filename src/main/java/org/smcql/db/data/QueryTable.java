@@ -38,35 +38,36 @@ public class QueryTable implements Serializable {
   }
 
 
-  public QueryTable(BitSet bits, SecureRelRecordType s, boolean dummyTagged) throws Exception {
+  public QueryTable(BitSet bits, SecureRelRecordType s, int bitCount, boolean dummyTagged) throws Exception {
 	    schema = s;
 	    tupleSize = schema.size();
+	    tupleCount = 0;
 
 	    if(dummyTagged)  {
 	    	int readIdx = 0;
-		    tupleCount = bits.size() / (tupleSize + 1);
-		    assert (bits.size() % (tupleSize + 1) == 0);
-		    dummyTags = new BitSet(tupleCount);
+		    int inputTuples = bitCount / (tupleSize + 1);
+
+		    assert (bitCount % (tupleSize + 1) == 0);
+
 
 		    tuples = new ArrayList<Tuple>();
 		    
-		    for (int i = 0; i < tupleCount; ++i) {
-		    	if(!bits.get(readIdx + tupleSize)) { // if dummyTag false
-		    		BitSet tupleBits = bits.get(readIdx, readIdx + tupleSize);
+		    for (int i = 0; i < inputTuples; ++i) {
+		    	if(!bits.get(readIdx)) { // if dummyTag false
+		    		BitSet tupleBits = bits.get(readIdx+1, readIdx + tupleSize);
 			        Tuple t = new Tuple(tupleBits, schema);	        
 			        tuples.add(t);
 			        readIdx += tupleSize + 1;
-
-		    }    
-		    
+			        ++tupleCount;
+		    	}    
 		    
 		    }
 	    }
 	    else { // assume all values are real
 
-	        tupleCount = bits.size() / tupleSize;
+	        tupleCount = bitCount / tupleSize;
 
-	        //assert (bits.length == (tupleCount * tupleSize));
+	        assert (bitCount == (tupleCount * tupleSize));
 	        tuples = new ArrayList<Tuple>(tupleCount);
 
 	        for (int i = 0; i < tupleCount; ++i) {

@@ -97,6 +97,8 @@ public class $queryName  extends EmpProgram  {
 	        	// For all inputs to MPC, get an associated QueryTable
 	        	QueryTable table = getInput((String) entry.getValue());
 
+			System.out.println("Input table " + functionName + ": " + table);
+
                 // add the input strings using the addInput function - which is available in main.txtOkay
 	        	theQuery.addInput(functionName, table.toBinaryString());
 	        }

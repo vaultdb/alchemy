@@ -127,31 +127,18 @@ public class EmpJniUtilities {
 		bob.join();
 		
 		// output consists of dummyTags followed by padded tuple payload
-		//String aliceOutput = aliceRunnable.getOutputString();
-		//String bobOutput = bobRunnable.getOutputString();
-		
-		BitSet aliceOutput = aliceRunnable.getOutput();
-		BitSet bobOutput = bobRunnable.getOutput();
+		String aliceOutput = aliceRunnable.getOutputString();
+		String bobOutput = bobRunnable.getOutputString();
 		
 		
-		BasicSecureQueryTable aliceTable = new BasicSecureQueryTable(aliceOutput, outSchema);
-		BasicSecureQueryTable bobTable = new BasicSecureQueryTable(bobOutput, outSchema);
-
+		BitSet decrypted = decrypt(aliceOutput, bobOutput);
 		
-
-		System.out.println("EMP output length" + aliceOutput.size());
-
-		// decrypt dummies
-		// selectively decrypt
-
+		// out schema does not have a dummy tag in it
+		// first bit of each tuple is a "hidden" dummy tag
 		
-		return aliceTable.declassify(bobTable);
-
-		// old logic
-
-		//boolean[] decrypted = decrypt(aliceOutput, bobOutput);
-		//return new QueryTable(decrypted, outSchema);
-		
+		QueryTable decryptedTable = new QueryTable(decrypted, outSchema, aliceOutput.length(), true);
+	
+		return decryptedTable;		
 	}
 	 
 	
