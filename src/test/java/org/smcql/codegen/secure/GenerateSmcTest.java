@@ -32,10 +32,6 @@ public class GenerateSmcTest extends BaseTest {
     testCase(testName, query);
   }
 
-  // TODO: Keith please work on getting this going
-  // use the examples in here: https://github.com/johesbater/emp-aqp/tree/master/test
-  // for guidance
-  // make sure to create a file in expected directory called "join-cdiff-emp.cpp"
   public void testJoin() throws Exception {
     String testName = "JoinCdiff";
     String query =
@@ -43,24 +39,12 @@ public class GenerateSmcTest extends BaseTest {
        testCase(testName, query);
   }
 
-  // TODO: George, please work on getting the code generator to build code for this
-  // use the examples in here: https://github.com/johesbater/emp-aqp/tree/master/test
-  // for guidance
-  // make sure to create a file in expected directory called "filter-distinct-emp.cpp"
-
-  public void testFilterDistinct() throws Exception {
+   public void testFilterDistinct() throws Exception {
     String testName = "FilterDistinct";
     String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
     testCase(testName, query);
   }
 
-  protected QueryTable getExpectedOutput(String testName, String query, String distributedQuery)
-      throws Exception {
-    String aliceId = ConnectionManager.getInstance().getAlice();
-    SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
-
-    return SqlQueryExecutor.query(distributedQuery, outSchema, aliceId);
-  }
 
   protected void testCase(String testName, String sql) throws Exception {
 

@@ -18,6 +18,7 @@ import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.type.SecureRelRecordType;
+import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 import org.smcql.executor.config.ConnectionManager;
 
@@ -108,7 +109,7 @@ public class $queryName  extends EmpProgram  {
         	
         	theQuery.run(party, port);
         	outputString = theQuery.getOutput();
-		outputBits = EmpJniUtility.stringToBitSet(outputString);
+		outputBits = EmpJniUtilities.stringToBitSet(outputString);
 	        theQuery.close();
 
         }
@@ -121,7 +122,7 @@ public class $queryName  extends EmpProgram  {
            
 		int party = Integer.parseInt(args[0]);
 		int port = Integer.parseInt(args[1]);
-		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
+		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.global";
 		
   	    System.setProperty("smcql.setup", setupFile);
   	    String workerId = (party == 1) ? "alice" : "bob";

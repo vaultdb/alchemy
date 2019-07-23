@@ -688,17 +688,12 @@ public class TpcHBaseTest extends BaseTest {
 		  return QUERIES.get(queryNo-1); // zero-indexed
 	  }
 	  
-	  // runs query over unioned database
-	  // the sql statement is written against the shared schema
-	  protected QueryTable getExpectedOutput(String sql, SecureRelRecordType outSchema) throws Exception {
-		  String unionedId = ConnectionManager.getInstance().getUnioned();
-		  return SqlQueryExecutor.query(sql, outSchema, unionedId);
-	  }
 
-	public QueryTable getExpectedDistributedOutput(String sql, SecureRelRecordType outSchema) throws Exception{
-		String aliceId = ConnectionManager.getInstance().getAlice();
-		return SqlQueryExecutor.query(sql, outSchema, aliceId);
+	
+	public void dummyTest() {
+		// gets rid of warnings
 	}
+
 
 
 

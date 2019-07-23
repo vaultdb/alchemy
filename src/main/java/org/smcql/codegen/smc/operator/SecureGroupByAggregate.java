@@ -34,7 +34,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 	}
 
 	@Override
-	public Map<String, String> generate() throws Exception {
+	public String generate() throws Exception {
 		Map<String, String> variables = baseVariables();
 		Aggregate a = (Aggregate) planNode;
 
@@ -63,9 +63,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 
 		generatedCode = CodeGenUtils.generateFromTemplate("aggregate/groupby/aggregate.txt", variables);
 
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(getPackageName(), generatedCode);
-		return result;
+		return generatedCode;
 	}
 
 	// takes in a list of attrs we are grouping by

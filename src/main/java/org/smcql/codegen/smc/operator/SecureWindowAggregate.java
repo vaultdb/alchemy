@@ -35,7 +35,7 @@ public class SecureWindowAggregate extends SecureOperator  {
 	}
 	
 	@Override
-	public Map<String, String> generate() throws Exception  {
+	public String generate() throws Exception  {
 		Map<String, String> variables = baseVariables();		
 		
 		assert(planNode instanceof WindowAggregate);
@@ -98,8 +98,6 @@ public class SecureWindowAggregate extends SecureOperator  {
 			generatedCode = CodeGenUtils.generateFromTemplate("window-aggregate/scalar/row-num.txt", variables);
 		}
 	
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(getPackageName(), generatedCode);
-		return result;
+		return generatedCode;
 	}
 }

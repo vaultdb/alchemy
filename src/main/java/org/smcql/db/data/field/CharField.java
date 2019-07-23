@@ -4,21 +4,21 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.BitSet;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.smcql.type.SecureRelDataTypeField;
 
 public class CharField extends Field implements Serializable   {
 	public String value;
-	int size = 0; // stored bit size - char array may be smaller, but not larger
-
 	
-	CharField(SecureRelDataTypeField attr) throws IOException {
-		super(attr);
+	
+	CharField(SecureRelDataTypeField attr, SqlTypeName sqlType) throws IOException {
+		super(attr, sqlType);
 		value = new String();
 		size = attr.size();
 	}
 
-	public CharField(SecureRelDataTypeField attr, String value) throws Exception {
-		super(attr);
+	public CharField(SecureRelDataTypeField attr, String value, SqlTypeName sqlType) throws Exception {
+		super(attr, sqlType);
 		this.value = value;
 		if(value != null && value.length() > (attr.size() / 8)) {
 			throw new Exception("String exceeds specified size!" + value + " at " + value.length() + " for attribute " + attr);
@@ -27,10 +27,6 @@ public class CharField extends Field implements Serializable   {
 
 	}
 	
-	@Override
-	public int size()  {
-		return size;
-	}
 
 
 	@Override

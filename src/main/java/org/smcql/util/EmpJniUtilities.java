@@ -52,7 +52,7 @@ public class EmpJniUtilities {
 		int readIdx = 0;
 		for(int i = 0; i < tupleCount; ++i) {
 			BitSet bits = decrypted.get(readIdx*8, (readIdx+tupleWidth)*8);
-			String tuple= deserializeString(bits);
+			String tuple= deserializeString(bits, tupleWidth);
 			output.add(tuple);
 			readIdx += tupleWidth;
 		}
@@ -72,13 +72,14 @@ public class EmpJniUtilities {
 	  }
 
 	
-	public static String deserializeString(BitSet src) {
+	public static String deserializeString(BitSet src, int stringLength) {
 		assert(src.size() % 8 == 0);
-		int chars = src.size() / 8;
+		
 		String value = new String();
+		System.out.println("Value length: " + value.length());
 		
 		
-		for(int i = 0; i < chars; ++i)
+		for(int i = 0; i < stringLength; ++i)
 		{
 			int n = 0;
 			 for(int j = 0; j < 8; ++j) {
@@ -87,9 +88,11 @@ public class EmpJniUtilities {
 			    }
 			 
 			value += (char) n;
+			System.out.println("Value length: " + value.length());
 			
 		}
 		
+		System.out.println("Deserialized " + value + " of length " + value.length());
 		return value;
 		
 		
@@ -124,27 +127,18 @@ public class EmpJniUtilities {
 		bob.join();
 		
 		// output consists of dummyTags followed by padded tuple payload
-		BitSet aliceOutput = aliceRunnable.getOutput();
-		BitSet bobOutput = bobRunnable.getOutput();
+		String aliceOutput = aliceRunnable.getOutputString();
+		String bobOutput = bobRunnable.getOutputString();
 		
-		BasicSecureQueryTable aliceTable = new BasicSecureQueryTable(aliceOutput, outSchema);
-		BasicSecureQueryTable bobTable = new BasicSecureQueryTable(bobOutput, outSchema);
-
 		
-
-		System.out.println("EMP output length" + aliceOutput.size());
-
-		// decrypt dummies
-		// selectively decrypt
-
+		BitSet decrypted = decrypt(aliceOutput, bobOutput);
 		
-		return aliceTable.declassify(bobTable);
-
-		// old logic
-
-		//boolean[] decrypted = decrypt(aliceOutput, bobOutput);
-		//return new QueryTable(decrypted, outSchema);
+		// out schema does not have a dummy tag in it
+		// first bit of each tuple is a "hidden" dummy tag
 		
+		QueryTable decryptedTable = new QueryTable(decrypted, outSchema, aliceOutput.length(), true);
+	
+		return decryptedTable;		
 	}
 	 
 	

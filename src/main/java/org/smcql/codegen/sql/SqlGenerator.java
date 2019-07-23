@@ -71,58 +71,41 @@ public class SqlGenerator {
 
 
 		// create list for dummyTags regardless of value ( both true and false will be represented)
-		SqlNodeList list = selection.getSelectList();
+		SqlNodeList selections = selection.getSelectList();
 
-		// Initialize where clause Node
+		SqlNodeList newSelection = selections;		
 		SqlNode where = selection.getWhere();
-
-		// logic for existence of dummyTags
-		if (where != null && filterPullUp) {
-
-			// if list is empty, then add base SqlNode
-			if(list == null) {
-				SqlParserPos pos = selection.getParserPosition();
-				list = new SqlNodeList(pos);
-
-				SqlNode star = (SqlNode)  SqlIdentifier.star(pos); // check to see what is being inserted
-				list.add(star);
-
-			}
-
-			// Add the WHERE clause to the selection criteria
-			// alias it as a new variable, dummyTag
-			// this is needed to sort by (dummyTag, SecureComputeOrder)
+		
+		if(where != null && filterPullUp) {
 			SqlNode dummyTag = SqlValidatorUtil.addAlias(where, "dummy_tag");
-
-			
-			
-
-			list.add(dummyTag); 
+			newSelection = SqlNodeList.of(dummyTag);			
 			selection.setWhere(null);
-			selection.setSelectList(list);
+
 		}
-
-		// logic for no dummyTags (all false) with a filter pullup
-		// ensures that last column is always a dummyTag
-		else if (filterPullUp){
-
-            if(list == null) {
-                SqlParserPos pos = selection.getParserPosition();
-                list = new SqlNodeList(pos);
-
-                SqlNode star = (SqlNode)  SqlIdentifier.star(pos); // check to see what is being inserted
-                list.add(star);
-
-            }
-
-			SqlLiteral dummy = SqlLiteral.createBoolean(false, list.getParserPosition());
+		else if(filterPullUp) { // where is null, still want dummy tag
+			SqlLiteral dummy = SqlLiteral.createBoolean(false, selections.getParserPosition());
 			SqlNode dummyTag = SqlValidatorUtil.addAlias(dummy, "dummy_tag");
-
-			list.add(dummyTag);
-			selection.setSelectList(list);
-
+			newSelection = SqlNodeList.of(dummyTag);			
 		}
-
+		
+		
+		// if list is empty, then add wildcard selection
+		if(filterPullUp) {
+			if(selections == null) {
+				SqlParserPos pos = selection.getParserPosition();
+				SqlNode star = (SqlNode)  SqlIdentifier.star(pos); // check to see what is being inserted
+				newSelection.add(star);
+	
+			}
+			else {
+					for(SqlNode node : selections) {
+						newSelection.add(node);
+					}
+				}
+			selection.setSelectList(newSelection);
+		} // otherwise leave selection alone
+		
+		
 		String sqlOut = selection.toSqlString(dialect).getSql();
 		sqlOut = sqlOut.replace("\"", "");
 		

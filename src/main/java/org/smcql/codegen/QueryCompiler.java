@@ -212,7 +212,7 @@ public class QueryCompiler {
 
     SecurePreamble preamble = new SecurePreamble(getRoot().getSourceOperator());
 
-    String generatedPreamble = preamble.generate().get("preamble");
+    String generatedPreamble = preamble.generate();
     wholeFile = generatedPreamble;
 
     // traverse the tree bottom-up in our control flow
@@ -414,7 +414,7 @@ public class QueryCompiler {
   // adds the given step to the global collections and adds execution information to the step
   private void processStep(PlaintextStep step) throws Exception {
     Operator op = step.getSourceOperator();
-    String sql = op.generate().get(op.getPackageName());
+    String sql = op.generate();
     allSteps.put(op, step);
     sqlCode.put(step, sql);
   }
@@ -492,9 +492,8 @@ public class QueryCompiler {
 
     SecureStep mergeStep = new SecureStep(merge, op, mRunConf, child, null);
     child.setParent(mergeStep);
-    Map<String, String> results = merge.generate();
+    String code  = merge.generate();
     String key = mergeStep.getPackageName();
-    String code = results.get(key);
     smcCode.put(mergeStep, code);
     return mergeStep;
   }
@@ -542,8 +541,8 @@ public class QueryCompiler {
     }
 
     allSteps.put(op, smcStep);
-    Map<String, String> code = secOp.generate();
-    for (String c : code.values()) smcCode.put(smcStep, c);
+    String code = secOp.generate();
+    smcCode.put(smcStep, code);
 
     return smcStep;
   }

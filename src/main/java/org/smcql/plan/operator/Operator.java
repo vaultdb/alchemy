@@ -95,9 +95,8 @@ public abstract class Operator implements CodeGenerator {
 		executionMode.replicated = getSchema().isReplicated(); // inferred this during schema resolution
 		
 		
-		String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess;
-
-		logger.info(msg);
+		//String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess;
+		//logger.info(msg);
 		
 		// if maxChild is DistributedClear or LocalClear and maxAccess is public, 
 		// then set it equal to maxChild
@@ -520,14 +519,14 @@ public abstract class Operator implements CodeGenerator {
 
 
 	@Override
-	public Map<String, String> generate() throws Exception {
+	public String generate() throws Exception {
 		return plaintextGenerator.generate();
 	}
 
 	
 	@Override
-	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
-		return new HashMap<String, String>();
+	public String generate(boolean asSecureLeaf) throws Exception {
+		return new String();
 	}
 
 	public void compileIt() throws Exception {

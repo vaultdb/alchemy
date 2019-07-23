@@ -18,9 +18,6 @@ using namespace std;
 namespace JoinCdiff {
 
 class JoinCdiffClass {
-// Connection strings, encapsulates db name, db user, port, host
-string aliceConnectionString = "dbname=smcql_testdb_site1 user=smcql host=localhost port=5432";
-string bobConnectionString = "dbname=smcql_testdb_unioned user=smcql host=localhost port=5432";
 
 string aliceHost = "127.0.0.1";
 int INT_LENGTH = 32;
@@ -125,7 +122,7 @@ Data* SeqScan0Union(int party, NetIO * io) {
     cout << "SeqScan0Union took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
-    EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 32);
+    EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 33);
 
     Data * d = new Data;
     d->tuples = res;
@@ -209,7 +206,7 @@ Data* SeqScan4Union(int party, NetIO * io) {
     cout << "SeqScan4Union took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
 
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
-    EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 32);
+    EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 33);
 
     Data * d = new Data;
     d->tuples = res;
