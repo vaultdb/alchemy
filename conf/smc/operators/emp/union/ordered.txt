@@ -1,13 +1,13 @@
 Data* $functionName(int party, NetIO * io) {
 
-    // std::cout << "Testing that this is the correct template" << std::endl;
+
 
     int rowLength = $size;
 
 
     std::cout << "The rowlength in bits is " << rowLength << std::endl;
 
-	string localBitstring = inputs["$functionName"];
+    string localBitstring = inputs["$functionName"];
     bool *localData = EmpUtilities::toBool(localBitstring);
 
     int aliceSize = localBitstring.length() / rowLength;
@@ -73,10 +73,11 @@ Data* $functionName(int party, NetIO * io) {
 	   res[i] = Integer(rowLength, tmp + rowLength*i);
 	   
 	   Integer value = Integer(res[i]);
-	   value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag
+           value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag
 
            
-	   cout << "Encoding idx: " << i << " as " << res[i].reveal<int64_t>(PUBLIC) << " or " <<  res[i].bits[rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<uint32_t>(PUBLIC) << endl;
+          cout << "Encoding idx: " << i << " as " << res[i].reveal<int64_t>(PUBLIC) << " or " <<  res[i].bits[rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<uint32_t>(PUBLIC) << endl;
+	
 	}
 
     cout << "$functionName took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
@@ -89,7 +90,7 @@ Data* $functionName(int party, NetIO * io) {
     d->tuples = res;
     d->publicSize = aliceSize + bobSize;
 
-    cout << "Tuple length post-merge: "  << res[0].size() << ", output: " <<  endl;
+
     for(int i = 0; i < aliceSize + bobSize; ++i) { 
 	   Integer value = Integer(res[i]);
 	   value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag

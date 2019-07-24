@@ -34,14 +34,17 @@ public:
 	// 0 is LSB
    static Integer prepKey(Integer src) {
 
-	   int srcLength = src.size();
+	   /*int srcLength = src.size();
 	   Integer dst = Integer(src);
-	   dst.resize(srcLength + 1);
+	   dst.resize(srcLength + 1, 0);
+*
+*/
 
+	   return src.resize(src.size() + 1, 0);
 	   //dst = dst >> 1;
 	   //dst.bits[srcLength - 1] = src.bits[0];
 
-	   return dst;
+	   //return dst;
 
 
    }
@@ -50,8 +53,8 @@ public:
 		   Integer lhs = Integer(keyLength, tuples[i].bits + keyPos);
 		   Integer rhs = Integer(keyLength, tuples[j].bits + keyPos);
 
-		   lhs = lhs.resize(keyLength + 1); // otherwise dummyTag gets interpreted as sign bit
-		   rhs = rhs.resize(keyLength + 1);
+		   lhs = lhs.resize(keyLength + 1, 0); // otherwise dummyTag gets interpreted as sign bit
+		   rhs = rhs.resize(keyLength + 1, 0);
 
 
 		   Bit toSwap = ((lhs > rhs) == acc);
