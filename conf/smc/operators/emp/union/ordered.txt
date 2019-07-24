@@ -72,11 +72,6 @@ Data* $functionName(int party, NetIO * io) {
            
 	   res[i] = Integer(rowLength, tmp + rowLength*i);
 	   
-	   Integer value = Integer(res[i]);
-           value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag
-
-           
-          cout << "Encoding idx: " << i << " as " << res[i].reveal<int64_t>(PUBLIC) << " or " <<  res[i].bits[rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<uint32_t>(PUBLIC) << endl;
 	
 	}
 

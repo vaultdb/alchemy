@@ -31,23 +31,6 @@ public:
 		// producing incorrect results.
 		// so we pad it with another bit to make the sign bit a neutral
 
-	// 0 is LSB
-   static Integer prepKey(Integer src) {
-
-	   /*int srcLength = src.size();
-	   Integer dst = Integer(src);
-	   dst.resize(srcLength + 1, 0);
-*
-*/
-
-	   return src.resize(src.size() + 1, 0);
-	   //dst = dst >> 1;
-	   //dst.bits[srcLength - 1] = src.bits[0];
-
-	   //return dst;
-
-
-   }
 
   static void cmpSwapSql(Integer* tuples, int i, int j, Bit acc, int keyPos, int keyLength) {
 		   Integer lhs = Integer(keyLength, tuples[i].bits + keyPos);
@@ -58,10 +41,6 @@ public:
 
 
 		   Bit toSwap = ((lhs > rhs) == acc);
-
-		   cout << "Comparing idx: " << i << ": " << tuples[i].bits[0].reveal(PUBLIC) << ", " << Integer(32, tuples[i].bits + 1).reveal<int32_t>(PUBLIC) << ", "
-				   << " to idx: " << j << ": " << tuples[j].bits[0].reveal(PUBLIC) << ", " << Integer(32, tuples[j].bits + 1).reveal<int32_t>(PUBLIC) << " swapping? " << toSwap.reveal(PUBLIC) << endl;
-		   cout << "Keys: " << lhs.reveal<int64_t>(PUBLIC) << ", " << rhs.reveal<int64_t>(PUBLIC) << endl;
 
 		   swap(toSwap, tuples[i], tuples[j]);
 	}
