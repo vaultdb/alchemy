@@ -112,7 +112,8 @@ public class SecureAggregate extends SecureOperator {
 
 			String initAggregateValue = getValueInit(call);
 
-			initAggregate += "Integer " + aggVariable + "= Integer(INT_LENGTH," + initAggregateValue + ",PUBLIC);\n";
+			
+			initAggregate += "Integer " + aggVariable + "= Integer(" + size + "," + initAggregateValue + ",PUBLIC);\n";
 
 			if(!call.getArgList().isEmpty())
 				initAggregate += "Integer tupleArg" + varNo + " = Integer(" + size  + "," + initAggregateValue + ", PUBLIC);\n";
@@ -184,7 +185,7 @@ public class SecureAggregate extends SecureOperator {
 				processString += "agg" + aggId + " = If(dummyCheck, If(" + tupleVar + " > " + aggVar + ", " + tupleVar + ", " + aggVar + "), " + aggVar + ");\n";
 				return processString;
 			case COUNT:
-				processString += "agg" + aggId + " = If(dummyCheck, " +  aggVar + " + Integer(INT_LENGTH, 1, PUBLIC), " + aggVar + ");\n";
+				processString += "agg" + aggId + " = If(dummyCheck, " +  aggVar + " + Integer(" + size + ", 1, PUBLIC), " + aggVar + ");\n";
 				return processString;
 			case SUM:
 				processString += "agg" + aggId + " = If(dummyCheck," + aggVar + " + " + tupleVar + ", " + aggVar + ");\n";

@@ -25,7 +25,6 @@ public class GenerateSmcTest extends BaseTest {
 
   public void testCountIcd9s() throws Exception {
 
-	 assertEquals(0, 1);
     String query = "SELECT COUNT(DISTINCT major_icd9) FROM diagnoses";
     String testName = "CountIcd9s";
 
@@ -34,8 +33,7 @@ public class GenerateSmcTest extends BaseTest {
   }
 
   public void testJoin() throws Exception {
-	  assertEquals(0, 1);
-	    
+	 	    
 	  String testName = "JoinCdiff";
     String query =
         "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
@@ -43,7 +41,7 @@ public class GenerateSmcTest extends BaseTest {
   }
 
    public void testFilterDistinct() throws Exception {
-	   assertEquals(0, 1);
+	   
 	    
 	   String testName = "FilterDistinct";
     String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";

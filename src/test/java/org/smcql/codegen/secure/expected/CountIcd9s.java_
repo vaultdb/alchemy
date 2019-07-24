@@ -18,6 +18,7 @@ import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.type.SecureRelRecordType;
+import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 import org.smcql.util.EmpJniUtilities;
 
@@ -44,7 +45,7 @@ public class CountIcd9s  extends EmpProgram  {
 	
 	public CountIcd9s(int party, int port) {
 		super(party, port);
-		inputs.put("SeqScan0Union", "SELECT FALSE AS dummy_tag, major_icd9 FROM diagnoses ORDER BY dummy_tag");
+		inputs.put("SeqScan0Union", "SELECT major_icd9, FALSE AS dummy_tag FROM diagnoses ORDER BY dummy_tag");
 
 	}
 	
@@ -98,6 +99,8 @@ public class CountIcd9s  extends EmpProgram  {
 	        	// For all inputs to MPC, get an associated QueryTable
 	        	QueryTable table = getInput((String) entry.getValue());
 
+			System.out.println("Input table " + functionName + ": " + table);
+
                 // add the input strings using the addInput function - which is available in main.txtOkay
 	        	theQuery.addInput(functionName, table.toBinaryString());
 	        }
@@ -132,8 +135,7 @@ public class CountIcd9s  extends EmpProgram  {
   	    System.setProperty("workerId", workerId);
   	    
 		CountIcd9s qc = new CountIcd9s(party, port);
-		BitSet bits = null;
-		char b;
+
 		
 		try {
 			SystemConfiguration.getInstance(); // initialize config

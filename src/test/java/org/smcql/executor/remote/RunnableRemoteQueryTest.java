@@ -23,9 +23,6 @@ public class RunnableRemoteQueryTest extends BaseTest {
 	public String aWorkerId = null;
 	public String bWorkerId = null;
 	
-	SegmentExecutor plaintextRunner = null;
-	
-	Map<String, Double> plaintextTimes;
 	
 	
 	protected void setUp() throws Exception {
@@ -36,7 +33,7 @@ public class RunnableRemoteQueryTest extends BaseTest {
 		  System.setProperty("smcql.location", "distributed");
 		  super.setUp();
 
-		  plaintextTimes = new HashMap<String, Double>();
+		
 		
 		ConnectionManager cm = ConnectionManager.getInstance();
 		List<WorkerConfiguration> workers = cm.getWorkerConfigurations();
@@ -47,7 +44,7 @@ public class RunnableRemoteQueryTest extends BaseTest {
 
 		}
 		
-		plaintextRunner = SegmentExecutor.getInstance();
+		
 	}
 
 
@@ -71,7 +68,7 @@ public class RunnableRemoteQueryTest extends BaseTest {
 	private void runTest(String testName) throws Exception {
 
 
-		if(!config.getProperty("location").equals("distributed"))
+		if(!config.distributedEvaluationEnabled())
 			return;
 
 		
