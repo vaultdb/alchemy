@@ -17,20 +17,20 @@ public class GenerateSourceSqlTest extends BaseTest {
 	
 	public void testAsprinCount() throws Exception {
 		Map<String, String> expected = new HashMap<String, String>();
-		expected.put("org.smcql.generated.aspirin_count.SeqScan4", "SELECT LOWER(medication) LIKE '%aspirin%' AS dummy_tag, patient_id, timestamp_ FROM (SELECT patient_id, medication, timestamp_ FROM mi_cohort_medications) AS t ORDER BY dummy_tag, patient_id, timestamp_");
-		expected.put("org.smcql.generated.aspirin_count.SeqScan0", "SELECT icd9 LIKE '414%' AS dummy_tag, patient_id, timestamp_ FROM (SELECT patient_id, icd9, timestamp_ FROM mi_cohort_diagnoses) AS t ORDER BY dummy_tag, patient_id, timestamp_");
+		expected.put("org.smcql.generated.aspirin_count.SeqScan4", "SELECT patient_id, timestamp_, LOWER(medication) LIKE '%aspirin%' AS dummy_tag FROM (SELECT patient_id, medication, timestamp_ FROM mi_cohort_medications) AS t ORDER BY dummy_tag, patient_id, timestamp_");
+		expected.put("org.smcql.generated.aspirin_count.SeqScan0", "SELECT patient_id, timestamp_, icd9 LIKE '414%' AS dummy_tag FROM (SELECT patient_id, icd9, timestamp_ FROM mi_cohort_diagnoses) AS t ORDER BY dummy_tag, patient_id, timestamp_");
 		runTest("aspirin-count", expected);		
 	}
 	
 	public void testCDiff() throws Exception {		
 		Map<String, String> expected = new HashMap<String, String>();
-		expected.put("org.smcql.generated.cdiff.SeqScan0", "SELECT icd9 = '008.45' AS dummy_tag, patient_id, timestamp_, EXTRACT(EPOCH FROM timestamp_) / 86400 AS $2 FROM cdiff_cohort_diagnoses ORDER BY dummy_tag, patient_id, timestamp_");
+		expected.put("org.smcql.generated.cdiff.SeqScan0", "SELECT patient_id, timestamp_, EXTRACT(EPOCH FROM timestamp_) / 86400 AS $2, icd9 = '008.45' AS dummy_tag FROM cdiff_cohort_diagnoses ORDER BY dummy_tag, patient_id, timestamp_");
 		runTest("cdiff", expected);
 	}
 
 	public void testComorbidity() throws Exception {		
 		Map<String, String> expected = new HashMap<String, String>();
-		expected.put("org.smcql.generated.comorbidity.SeqScan0", "SELECT FALSE AS dummy_tag, major_icd9 FROM cdiff_cohort_diagnoses ORDER BY dummy_tag");
+		expected.put("org.smcql.generated.comorbidity.SeqScan0", "SELECT major_icd9, FALSE AS dummy_tag FROM cdiff_cohort_diagnoses ORDER BY dummy_tag");
 		runTest("comorbidity", expected);
 	}
 	
