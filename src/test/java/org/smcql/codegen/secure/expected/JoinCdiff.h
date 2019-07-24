@@ -20,7 +20,7 @@ namespace JoinCdiff {
 class JoinCdiffClass {
 
 string aliceHost = "127.0.0.1";
-int INT_LENGTH = 32;
+
 string output;
 map<string, string> inputs;    // maps opName --> bitString of input tuples
 
@@ -48,14 +48,14 @@ public:
 
 Data* SeqScan0Union(int party, NetIO * io) {
 
-    // std::cout << "Testing that this is the correct template" << std::endl;
+
 
     int rowLength = 33;
 
 
     std::cout << "The rowlength in bits is " << rowLength << std::endl;
 
-	string localBitstring = inputs["SeqScan0Union"];
+    string localBitstring = inputs["SeqScan0Union"];
     bool *localData = EmpUtilities::toBool(localBitstring);
 
     int aliceSize = localBitstring.length() / rowLength;
@@ -116,10 +116,20 @@ Data* SeqScan0Union(int party, NetIO * io) {
         tmp[i+aliceSize*rowLength] = batcher.next<Bit>();
 
     // create full Integer representation with both Bob and Alice's information
-    for(int i = 0; i < aliceSize + bobSize; ++i)
-        res[i] = Integer(rowLength, tmp+rowLength*i);
+    for(int i = 0; i < aliceSize + bobSize; ++i) {
+           
+	   res[i] = Integer(rowLength, tmp + rowLength*i);
+	   
+	   Integer value = Integer(res[i]);
+           value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag
+
+           
+          cout << "Encoding idx: " << i << " as " << res[i].reveal<int64_t>(PUBLIC) << " or " <<  res[i].bits[rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<uint32_t>(PUBLIC) << endl;
+	
+	}
 
     cout << "SeqScan0Union took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
+    cout << "Tuple length "  << res[0].size() << endl;
 
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
     EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 33);
@@ -128,18 +138,27 @@ Data* SeqScan0Union(int party, NetIO * io) {
     d->tuples = res;
     d->publicSize = aliceSize + bobSize;
 
+
+    for(int i = 0; i < aliceSize + bobSize; ++i) { 
+	   Integer value = Integer(res[i]);
+	   value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag
+
+
+
+	  cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
+    }
     return d;
 }
 Data* SeqScan4Union(int party, NetIO * io) {
 
-    // std::cout << "Testing that this is the correct template" << std::endl;
+
 
     int rowLength = 33;
 
 
     std::cout << "The rowlength in bits is " << rowLength << std::endl;
 
-	string localBitstring = inputs["SeqScan4Union"];
+    string localBitstring = inputs["SeqScan4Union"];
     bool *localData = EmpUtilities::toBool(localBitstring);
 
     int aliceSize = localBitstring.length() / rowLength;
@@ -200,10 +219,20 @@ Data* SeqScan4Union(int party, NetIO * io) {
         tmp[i+aliceSize*rowLength] = batcher.next<Bit>();
 
     // create full Integer representation with both Bob and Alice's information
-    for(int i = 0; i < aliceSize + bobSize; ++i)
-        res[i] = Integer(rowLength, tmp+rowLength*i);
+    for(int i = 0; i < aliceSize + bobSize; ++i) {
+           
+	   res[i] = Integer(rowLength, tmp + rowLength*i);
+	   
+	   Integer value = Integer(res[i]);
+           value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag
+
+           
+          cout << "Encoding idx: " << i << " as " << res[i].reveal<int64_t>(PUBLIC) << " or " <<  res[i].bits[rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<uint32_t>(PUBLIC) << endl;
+	
+	}
 
     cout << "SeqScan4Union took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
+    cout << "Tuple length "  << res[0].size() << endl;
 
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
     EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 33);
@@ -212,6 +241,15 @@ Data* SeqScan4Union(int party, NetIO * io) {
     d->tuples = res;
     d->publicSize = aliceSize + bobSize;
 
+
+    for(int i = 0; i < aliceSize + bobSize; ++i) { 
+	   Integer value = Integer(res[i]);
+	   value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag
+
+
+
+	  cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
+    }
     return d;
 }
 // TODO: generalize for arbitrary selection criteria
@@ -295,7 +333,7 @@ void run(int party, int port) {
     int tupleWidth = results->tuples[0].size();
 
     // Debugging assistance
-    std::cout << "Output tuple width is " << tupleWidth << std::endl;
+    std::cout << "Final output tuple width is " << tupleWidth << std::endl;
 
 
     long outputSize = results->publicSize * tupleWidth;
@@ -315,6 +353,7 @@ void run(int party, int port) {
 	io->flush();
 	delete io;
 
+	cout << "Returning " << outputSize  << " bits." << endl;
 	cout << "Finished query!" << endl;
 
 }

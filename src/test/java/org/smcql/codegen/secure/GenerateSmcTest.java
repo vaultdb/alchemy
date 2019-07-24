@@ -33,14 +33,17 @@ public class GenerateSmcTest extends BaseTest {
   }
 
   public void testJoin() throws Exception {
-    String testName = "JoinCdiff";
+	 	    
+	  String testName = "JoinCdiff";
     String query =
         "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
        testCase(testName, query);
   }
 
    public void testFilterDistinct() throws Exception {
-    String testName = "FilterDistinct";
+	   
+	    
+	   String testName = "FilterDistinct";
     String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
     testCase(testName, query);
   }

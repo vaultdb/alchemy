@@ -18,6 +18,7 @@ import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.type.SecureRelRecordType;
+import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 import org.smcql.util.EmpJniUtilities;
 
@@ -44,7 +45,7 @@ public class FilterDistinct  extends EmpProgram  {
 	
 	public FilterDistinct(int party, int port) {
 		super(party, port);
-		inputs.put("SeqScan0Union", "SELECT icd9 = '414.01' AS dummy_tag, patient_id FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY dummy_tag, patient_id");
+		inputs.put("SeqScan0Union", "SELECT patient_id, icd9 = '414.01' AS dummy_tag FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY dummy_tag, patient_id");
 
 	}
 	
@@ -98,6 +99,8 @@ public class FilterDistinct  extends EmpProgram  {
 	        	// For all inputs to MPC, get an associated QueryTable
 	        	QueryTable table = getInput((String) entry.getValue());
 
+			System.out.println("Input table " + functionName + ": " + table);
+
                 // add the input strings using the addInput function - which is available in main.txtOkay
 	        	theQuery.addInput(functionName, table.toBinaryString());
 	        }
@@ -132,8 +135,7 @@ public class FilterDistinct  extends EmpProgram  {
   	    System.setProperty("workerId", workerId);
   	    
 		FilterDistinct qc = new FilterDistinct(party, port);
-		BitSet bits = null;
-		char b;
+
 		
 		try {
 			SystemConfiguration.getInstance(); // initialize config

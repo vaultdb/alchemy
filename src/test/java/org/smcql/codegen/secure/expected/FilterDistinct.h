@@ -20,7 +20,7 @@ namespace FilterDistinct {
 class FilterDistinctClass {
 
 string aliceHost = "127.0.0.1";
-int INT_LENGTH = 32;
+
 string output;
 map<string, string> inputs;    // maps opName --> bitString of input tuples
 
@@ -48,14 +48,14 @@ public:
 
 Data* SeqScan0Union(int party, NetIO * io) {
 
-    // std::cout << "Testing that this is the correct template" << std::endl;
+
 
     int rowLength = 33;
 
 
     std::cout << "The rowlength in bits is " << rowLength << std::endl;
 
-	string localBitstring = inputs["SeqScan0Union"];
+    string localBitstring = inputs["SeqScan0Union"];
     bool *localData = EmpUtilities::toBool(localBitstring);
 
     int aliceSize = localBitstring.length() / rowLength;
@@ -116,10 +116,20 @@ Data* SeqScan0Union(int party, NetIO * io) {
         tmp[i+aliceSize*rowLength] = batcher.next<Bit>();
 
     // create full Integer representation with both Bob and Alice's information
-    for(int i = 0; i < aliceSize + bobSize; ++i)
-        res[i] = Integer(rowLength, tmp+rowLength*i);
+    for(int i = 0; i < aliceSize + bobSize; ++i) {
+           
+	   res[i] = Integer(rowLength, tmp + rowLength*i);
+	   
+	   Integer value = Integer(res[i]);
+           value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag
+
+           
+          cout << "Encoding idx: " << i << " as " << res[i].reveal<int64_t>(PUBLIC) << " or " <<  res[i].bits[rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<uint32_t>(PUBLIC) << endl;
+	
+	}
 
     cout << "SeqScan0Union took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
+    cout << "Tuple length "  << res[0].size() << endl;
 
     // TODO: make sort more robust.  Handle sort keys that are not adjacent or in the same order in the table
     EmpUtilities::bitonicMergeSql(res, 0, aliceSize + bobSize, Bit(true), 0, 33);
@@ -128,21 +138,31 @@ Data* SeqScan0Union(int party, NetIO * io) {
     d->tuples = res;
     d->publicSize = aliceSize + bobSize;
 
+
+    for(int i = 0; i < aliceSize + bobSize; ++i) { 
+	   Integer value = Integer(res[i]);
+	   value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag
+
+
+
+	  cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
+    }
     return d;
 }
 Data * Distinct4(Data *data) {
-	// TODO: presort this to put dummies last
+	// sort step needs to always put dummies last and then sort by payload
 	
 	
 	
 
-	int tupleLen = data->tuples[0].size() * sizeof(Bit);
+	int tupleLen = data->tuples[0].size();
 	int dummyIdx = tupleLen - 1;
-	int tupleBits = tupleLen - 1;
+	int payloadBits = tupleLen - 1;
 	cout << " Running Distinct4 with " << data->publicSize << " inputs, tupleLen=" << tupleLen << endl;
 
 
-    Integer lastPayload = data->tuples[0].resize(tupleBits, 0); // compare tuple value sans dummyTag
+    Integer lastPayload = Integer(payloadBits, data->tuples[0].bits);
+    Integer payload;
     int cursor = 0;
 
 
@@ -152,14 +172,15 @@ Data * Distinct4(Data *data) {
 
         cursor++;
         Bit isDummy = data->tuples[cursor][dummyIdx]; // easier to perform logic checks
-        Integer payload = data->tuples[cursor].resize(tupleBits, 0);
+	
+        payload =  Integer(payloadBits, data->tuples[cursor].bits);
 	  
-       // std::cout << "Comparison " << (current==lastOne).reveal(PUBLIC) << std::endl;
+ 
+         // if it is real and != to predecessor
+	    Bit condition = (!isDummy) & (payload != lastPayload); // set to dummy if it equals its predecessor
+	    std::cout << "Comparison " << payload.reveal<int32_t>(PUBLIC) << " vs " << lastPayload.reveal<int32_t>(PUBLIC) << " dummy tag: " << (!isDummy).reveal(PUBLIC) << " setting dummy? " << condition.reveal(PUBLIC) << std::endl;
 	     
-	     Bit condition = !isDummy; // would terminate early if we encounter a dummy
-	     condition = condition & !payload.equal(lastPayload); // set to dummy if it equals its predecessor
-	     
-	    data->tuples[cursor][dummyIdx] = If(condition, Bit(false, PUBLIC), Bit(true, PUBLIC)); 
+        data->tuples[cursor][dummyIdx] = If(condition, Bit(false, PUBLIC), Bit(true, PUBLIC)); 
 		
         lastPayload = payload;
     }
@@ -198,7 +219,7 @@ void run(int party, int port) {
     int tupleWidth = results->tuples[0].size();
 
     // Debugging assistance
-    std::cout << "Output tuple width is " << tupleWidth << std::endl;
+    std::cout << "Final output tuple width is " << tupleWidth << std::endl;
 
 
     long outputSize = results->publicSize * tupleWidth;
@@ -218,6 +239,7 @@ void run(int party, int port) {
 	io->flush();
 	delete io;
 
+	cout << "Returning " << outputSize  << " bits." << endl;
 	cout << "Finished query!" << endl;
 
 }

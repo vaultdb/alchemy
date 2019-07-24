@@ -138,7 +138,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 
 			String initAggregateValue = getValueInit(call);
 
-			initAggregate += "Integer " + aggVariable + "= Integer(INT_LENGTH," + initAggregateValue + ",PUBLIC);\n";
+			initAggregate += "Integer " + aggVariable + "= Integer(" + size + "," + initAggregateValue + ",PUBLIC);\n";
 
 			if (!call.getArgList().isEmpty())
 				initAggregate += "Integer tupleArg" + varNo + " = Integer(" + size + "," + initAggregateValue + ", PUBLIC);\n";
@@ -213,8 +213,8 @@ public class SecureGroupByAggregate extends SecureOperator {
 				processString += "not yet implemented";
 				return processString;
 			case COUNT:  // TODO: set up for group by part
-				processString += "agg" + aggId + " = If(dummyTest, " +  aggVar + " + Integer(INT_LENGTH, 1, PUBLIC), " + aggVar + ");\n";
-				return processString;
+				processString += "agg" + aggId + " = If(dummyTest, " +  aggVar + " + Integer(" + size + ", 1, PUBLIC), " + aggVar + ");\n";
+				return processString;  
 			case SUM:
 				processString += "agg" + aggId + " = If(dummyTest, " + aggVar + " + " + tupleVar + ", " + aggVar + ");\n";
 				return processString;
