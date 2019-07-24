@@ -66,47 +66,40 @@ public class SqlGenerator {
 	
 
 	public static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect, boolean filterPullUp) {
-		SqlSelect selection = converter.visitChild(0, rel).asSelect();
+		SqlSelect sql = converter.visitChild(0, rel).asSelect();
 		// move up filter for union/merge input as needed
 
 
 		// create list for dummyTags regardless of value ( both true and false will be represented)
-		SqlNodeList selections = selection.getSelectList();
+		SqlNodeList selections = sql.getSelectList();
 
 		SqlNodeList newSelection = selections;		
-		SqlNode where = selection.getWhere();
-		
-		if(where != null && filterPullUp) {
-			SqlNode dummyTag = SqlValidatorUtil.addAlias(where, "dummy_tag");
-			newSelection = SqlNodeList.of(dummyTag);			
-			selection.setWhere(null);
-
-		}
-		else if(filterPullUp) { // where is null, still want dummy tag
-			SqlLiteral dummy = SqlLiteral.createBoolean(false, selections.getParserPosition());
-			SqlNode dummyTag = SqlValidatorUtil.addAlias(dummy, "dummy_tag");
-			newSelection = SqlNodeList.of(dummyTag);			
-		}
-		
-		
-		// if list is empty, then add wildcard selection
+		SqlNode where = sql.getWhere();
+		SqlNode dummyTag = null;
 		if(filterPullUp) {
+			// if selection list is empty, then add wildcard selection		
 			if(selections == null) {
-				SqlParserPos pos = selection.getParserPosition();
+				SqlParserPos pos = sql.getParserPosition();
 				SqlNode star = (SqlNode)  SqlIdentifier.star(pos); // check to see what is being inserted
 				newSelection.add(star);
 	
 			}
-			else {
-					for(SqlNode node : selections) {
-						newSelection.add(node);
-					}
-				}
-			selection.setSelectList(newSelection);
-		} // otherwise leave selection alone
+			
+			if(where != null) {
+				dummyTag = SqlValidatorUtil.addAlias(where, "dummy_tag");
+				sql.setWhere(null);
+			}
+			else { // where is null, still want dummy tag
+				SqlLiteral dummy = SqlLiteral.createBoolean(false, selections.getParserPosition());
+				dummyTag = SqlValidatorUtil.addAlias(dummy, "dummy_tag");
+			}
+			newSelection.add(dummyTag);
+			sql.setSelectList(newSelection);
+		}
 		
 		
-		String sqlOut = selection.toSqlString(dialect).getSql();
+		
+		String sqlOut = sql.toSqlString(dialect).getSql();
 		sqlOut = sqlOut.replace("\"", "");
 		
 		

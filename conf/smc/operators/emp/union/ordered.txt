@@ -69,10 +69,16 @@ Data* $functionName(int party, NetIO * io) {
 
     // create full Integer representation with both Bob and Alice's information
     for(int i = 0; i < aliceSize + bobSize; ++i) {
-           Integer value = Integer(rowLength - 1, tmp + rowLength*i + 1);
-	   cout << "Encoding " << tmp[rowLength*i].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;
-           res[i] = Integer(rowLength, tmp + rowLength*i);
+           
+	   res[i] = Integer(rowLength, tmp + rowLength*i);
+	   
+	   Integer value = Integer(res[i]);
+	   value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag
+
+           
+	   cout << "Encoding idx: " << i << " as " << res[i].reveal<int64_t>(PUBLIC) << " or " <<  res[i].bits[rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<uint32_t>(PUBLIC) << endl;
 	}
+
     cout << "$functionName took as input " << aliceSize + bobSize << " tuples from alice and bob." << endl;
     cout << "Tuple length "  << res[0].size() << endl;
 
@@ -85,8 +91,12 @@ Data* $functionName(int party, NetIO * io) {
 
     cout << "Tuple length post-merge: "  << res[0].size() << ", output: " <<  endl;
     for(int i = 0; i < aliceSize + bobSize; ++i) { 
-          Integer value = Integer(rowLength - 1, res[i].bits + 1);
-	  cout << "Outputting " << res[i][0].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
+	   Integer value = Integer(res[i]);
+	   value.bits[rowLength-1] = Bit(0, PUBLIC); // zero out the dummy tag
+
+
+
+	  cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
     }
     return d;
 }

@@ -134,8 +134,7 @@ public class $queryName  extends EmpProgram  {
   	    System.setProperty("workerId", workerId);
   	    
 		$queryName qc = new $queryName(party, port);
-		BitSet bits = null;
-		char b;
+
 		
 		try {
 			SystemConfiguration.getInstance(); // initialize config

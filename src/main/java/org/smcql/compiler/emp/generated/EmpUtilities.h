@@ -14,44 +14,55 @@ public:
 	static string revealBinary(Integer &input, int length, int output_party) {
 		bool * b = new bool[length];
 		ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
-		string bin="";
+		char *bin = new char[length];
 
 		for (int i=0; i<length; i++)
-			bin += (b[i] ? '1':'0');
+			bin[i] = (b[i] ? '1':'0');
 
 		delete [] b;
-		return bin;
+		return string(bin);
+		//return bin;
 	}
 
 
-<<<<<<< HEAD
-	Integer appendDummyTag(Integer src) {
-		Bit dummyTag = src.bits[0];
-		int lastIdx = src.size() - 1;
 
-		src.bits[0] = src.bits[lastIdx];
-		src.bits[lastIdx] = dummyTag;
+	// dummy tag is at most significant bit (at the end)
+		// this means that the comparator mistakens it for a sign bit
+		// producing incorrect results.
+		// so we pad it with another bit to make the sign bit a neutral
 
-		return lhs;
+	// 0 is LSB
+   static Integer prepKey(Integer src) {
+
+	   int srcLength = src.size();
+	   Integer dst = Integer(src);
+	   dst.resize(srcLength + 1);
+
+	   //dst = dst >> 1;
+	   //dst.bits[srcLength - 1] = src.bits[0];
+
+	   return dst;
+
+
+   }
+
+  static void cmpSwapSql(Integer* tuples, int i, int j, Bit acc, int keyPos, int keyLength) {
+		   Integer lhs = Integer(keyLength, tuples[i].bits + keyPos);
+		   Integer rhs = Integer(keyLength, tuples[j].bits + keyPos);
+
+		   lhs = lhs.resize(keyLength + 1); // otherwise dummyTag gets interpreted as sign bit
+		   rhs = rhs.resize(keyLength + 1);
+
+
+		   Bit toSwap = ((lhs > rhs) == acc);
+
+		   cout << "Comparing idx: " << i << ": " << tuples[i].bits[0].reveal(PUBLIC) << ", " << Integer(32, tuples[i].bits + 1).reveal<int32_t>(PUBLIC) << ", "
+				   << " to idx: " << j << ": " << tuples[j].bits[0].reveal(PUBLIC) << ", " << Integer(32, tuples[j].bits + 1).reveal<int32_t>(PUBLIC) << " swapping? " << toSwap.reveal(PUBLIC) << endl;
+		   cout << "Keys: " << lhs.reveal<int64_t>(PUBLIC) << ", " << rhs.reveal<int64_t>(PUBLIC) << endl;
+
+		   swap(toSwap, tuples[i], tuples[j]);
 	}
 
-	static void cmpSwapSql(Integer* tuples, int i, int j, Bit acc, int keyPos, int keyLength) {
-		Integer lhs = Integer(keyLength, tuples[i].bits+keyPos);
-		Integer rhs = Integer(keyLength, tuples[j].bits+keyPos);
-
-		// put the dummy tag at the end to make it the most significant bit
-		lhs = appendDummyTag(lhs);
-		rhs = appendDummyTag(rhs);
-
-		Bit toSwap = ((lhs > rhs) == acc);
-		cout << "Compare and swapping indexes: " << i << " and " << j << ", to swap? " <<  toSwap.reveal(PUBLIC) <<  std::endl;
-		Integer iValue = Integer(32, lhs.bits + 1);
-		Integer jValue = Integer(32, rhs.bits + 1);
-		cout << "i-value: " << keyi.bits[0].reveal(PUBLIC) << ", " << iValue.reveal<int32_t>(PUBLIC)
-				<< ", j-value: " << keyj.bits[0].reveal(PUBLIC) << ", " << jValue.reveal<int32_t>(PUBLIC) << endl;
-
-		swap(toSwap, tuples[i], tuples[j]);
-}
 
 // TODO: extend this to multiple columns as a list of keyPos and keyLength
 	static void bitonicMergeSql(Integer* tuples, int lo, int n, Bit acc, int keyPos, int keyLength) {
@@ -70,7 +81,7 @@ public:
 			int m = n / 2;
 			bitonicSortSql(key, lo, m, !acc, keyPos, keyLength);
 			bitonicSortSql(key, lo + m, n - m, acc, keyPos, keyLength);
-			bitonicSortSql(key, lo, n, acc, keyPos, keyLength);
+			bitonicMergeSql(key, lo, n, acc, keyPos, keyLength);
 		}
 	}
 
