@@ -47,11 +47,12 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 		//statistics = new ObliviousFieldStatistics(this); 
 	}
 
-	public  SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy)  {
+	public  SecureRelDataTypeField(RelDataTypeField baseField, SecurityPolicy secPolicy, String aStoredTable)  {
 		super(baseField.getName(), baseField.getIndex(), baseField.getType());
 		this.baseField = baseField;
 		policy = secPolicy;
 		filters = new ArrayList<LogicalFilter>();
+		storedTable = aStoredTable;
 		//statistics = new ObliviousFieldStatistics(this); 
 	}
 

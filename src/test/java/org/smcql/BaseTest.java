@@ -52,11 +52,7 @@ public class BaseTest extends TestCase {
 
 	}
 	
-	// get rid of warnings
-	public void testDummy() {
-		System.out.println("Hello world");
-		assertEquals(1, 1);
-	}
+	
 
 
 	  protected QueryTable getExpectedOutput(String query) throws Exception {

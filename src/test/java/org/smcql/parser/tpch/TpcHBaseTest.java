@@ -690,10 +690,6 @@ public class TpcHBaseTest extends BaseTest {
 	  
 
 	
-	public void testDummy() {
-		// gets rid of warnings
-		assertEquals(1, 1);
-	}
 
 
 

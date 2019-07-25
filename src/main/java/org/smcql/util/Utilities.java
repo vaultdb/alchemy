@@ -229,7 +229,8 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		SecureSchemaLookup lookup = SecureSchemaLookup.getInstance();
 		SecurityPolicy policy = lookup.getPolicy(table, attr);
 		
-		SecureRelDataTypeField result = new SecureRelDataTypeField(fieldType, policy);
+		
+		SecureRelDataTypeField result = new SecureRelDataTypeField(fieldType, policy, table);
 		result.setStoredAttribute(attr);
 		result.setStoredTable(table);
 		return result;
@@ -242,7 +243,7 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		SystemConfiguration config = SystemConfiguration.getInstance();
 
 		String srcTable = attr.getStoredTable();
-		System.out.println("Analyzing " + attr + " src table: " + srcTable);
+		System.out.println("Analyzing " + attr + ", src table: " + srcTable);
 
 		
 		SecureSchemaLookup schemaDef = SecureSchemaLookup.getInstance();

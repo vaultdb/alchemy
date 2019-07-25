@@ -127,7 +127,6 @@ public class Join extends Operator {
 		LogicalJoin join = (LogicalJoin) this.getSecureRelNode().getRelNode();
 		RexNode joinOn = join.getCondition();
 		
-		logger.info("Join " + this + " computes on " + AttributeResolver.getAttributes(joinOn, getSchema()) );
 		return AttributeResolver.getAttributes(joinOn, getSchema());
 		
 	}

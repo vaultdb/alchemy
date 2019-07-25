@@ -111,6 +111,8 @@ public class AttributeResolver {
 		for(RelDataTypeField field : outRow.getFieldList()) {
 			String name = field.getName();
 			SecurityPolicy policy;
+			String storedTable = null;
+			
 			if(name.contains("$") && name.startsWith("w")) { // w<winNo>$o<orderByNo> for window aggs
 				String[] tokens = name.split("\\$");
 				
@@ -127,7 +129,8 @@ public class AttributeResolver {
 					}				
 				}
 				policy = getFieldPolicy(inSchema, new HashSet<Integer>(attrsUsed));
-				secureFields.add(new SecureRelDataTypeField(field, policy));
+				storedTable = getStoredTable(inSchema, new HashSet<Integer>(attrsUsed));
+				secureFields.add(new SecureRelDataTypeField(field, policy, storedTable));
 					
 			}
 			else { // 1:1 mapping
@@ -168,6 +171,7 @@ public class AttributeResolver {
 
 		for(RelDataTypeField field : record.getFieldList()) {
 			String name = field.getName();
+			System.out.println("Aggregate inferring type of " + name + " source field: " + field );
 			if(scalarMap.containsKey(name)) {
 				SecureRelDataTypeField prev = scalarMap.get(name);
 				SecureRelDataTypeField secField = new SecureRelDataTypeField(field, prev);
@@ -177,8 +181,10 @@ public class AttributeResolver {
 			// second for loop for the writeDest using logic below
 
 			else if(aggMap.containsKey(name)) {
-				SecurityPolicy policy = AttributeResolver.getAggPolicy(aggMap.get(name), inSchema);
-				SecureRelDataTypeField secField = new SecureRelDataTypeField(field, policy);
+				AggregateCall call = aggMap.get(name);
+				SecurityPolicy policy = AttributeResolver.getAggPolicy(call, inSchema);
+				String storedTable = AttributeResolver.getStoredTable(call, inSchema);
+				SecureRelDataTypeField secField = new SecureRelDataTypeField(field, policy, storedTable);
 				//if(policy == SecurityPolicy.Private) {
 				//	obliviousEval = true;
 				//}
@@ -225,8 +231,9 @@ public class AttributeResolver {
 		}
 		else {
 			SecurityPolicy policy  = getFieldPolicy(inSchema, ordinalsAccessed);
+			String storedTable = getStoredTable(inSchema, ordinalsAccessed);
 		
-			return new SecureRelDataTypeField(baseField, policy);
+			return new SecureRelDataTypeField(baseField, policy, storedTable);
 		}
 	}
 
@@ -306,6 +313,48 @@ public class AttributeResolver {
 		else 
 			return getFieldPolicy(inSchema, new HashSet<Integer>(agg.getArgList()));
 		
+	}
+	
+	
+	public static String getStoredTable(AggregateCall agg, SecureRelRecordType inSchema) {
+		List<Integer> ordinalsAccessed = agg.getArgList();
+		String storedTable = null;
+		
+		if(ordinalsAccessed.isEmpty()) {
+			// see if all attrs have same src table
+			
+			for(SecureRelDataTypeField field : inSchema.getSecureFieldList()) {
+				if(storedTable == null) {
+					storedTable = field.getStoredTable();
+				}
+				else if(!field.getStoredTable().equals(storedTable)) { // no single source
+					return null;
+				}
+			}
+		
+			return storedTable;
+			
+		}
+		else 
+			return getStoredTable(inSchema, new HashSet<Integer>(agg.getArgList()));
+		
+	}
+	
+	
+	public static String getStoredTable(SecureRelRecordType srcSchema, Set<Integer> ordinalsAccessed) {
+		SecurityPolicy maxPolicy = SecurityPolicy.Public;
+		String storedTable = null;
+		
+		for(Integer i : ordinalsAccessed) {
+			SecureRelDataTypeField field = srcSchema.getSecureField(i);
+			if(storedTable == null) {
+				storedTable = field.getStoredTable();
+			}
+			else if(!storedTable.equals(field.getStoredTable())) {
+				return null;
+			}
+		}
+		return storedTable;
 	}
 	
 	private static SecureRelRecordType resolveJoin(SecureRelNode aJoin) throws Exception {
