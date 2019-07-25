@@ -1,6 +1,7 @@
 package org.smcql.executor.emp.stub;
 
 import java.net.InetAddress;
+import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -17,13 +18,14 @@ import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
-import org.smcql.util.CommandOutput;
 import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
 
 import junit.framework.TestCase;
 
+
+//  Minimal EMP test, based on emp-jni repo
 public class EmpJniRemoteTest extends TestCase  {
 	
 	final String smcqlRoot = Utilities.getSMCQLRoot();
@@ -34,14 +36,19 @@ public class EmpJniRemoteTest extends TestCase  {
 	String generatorHost = null;
 	List<WorkerConfiguration> workers;
 	final int tupleWidth = 3; //characters in string
-	
+	SystemConfiguration config;
 	
 	  protected void setUp() throws Exception {
-		    String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.remote";
-		    System.setProperty("smcql.setup", setupFile);
+
+		  // TODO: test in remote setting by setting line in setup.global
+		  // "distributed-eval-enabled=true"
+		  
+		  System.setProperty("smcql.location", "distributed");
 			
-		    SystemConfiguration.getInstance(); // initialize config
-		    initializeCloud();
+		  config  = SystemConfiguration.getInstance(); // initialize config
+		    
+		    if(config.getProperty("location").equals("distributed"))
+		    	initializeCloud();
 	  }
 	  
 	  
@@ -92,9 +99,11 @@ public class EmpJniRemoteTest extends TestCase  {
 	
 	public void testRemoteExecution() throws Exception {
 		 
-		 List<boolean[]> outputs = runCloudExecution();
-		 List<String> tuples = EmpJniUtilities.revealStringOutput(outputs.get(0), outputs.get(1), tupleWidth);
-		 System.out.println("Output: " + tuples);
+	    if(config.getProperty("location").equals("distributed")) {
+	    	List<String> outputs = runCloudExecution();
+	    	List<String> tuples = EmpJniUtilities.revealStringOutput(outputs.get(0), outputs.get(1), tupleWidth);
+	    	System.out.println("Output: " + tuples);
+	    }
 	}
 	
 		
@@ -133,15 +142,15 @@ public class EmpJniRemoteTest extends TestCase  {
 
 	  
 	  
-	private List<boolean[]> runCloudExecution() throws Exception {
+	private List<String> runCloudExecution() throws Exception {
 		 
 
 		 ViNode allNodes = cloud.node("**");
 		 
-		List<boolean[]> results = allNodes.massExec(new Callable<boolean[]>() {
+		List<String> results = allNodes.massExec(new Callable<String>() {
 		        
 	            @Override
-	            public boolean[] call() throws Exception {
+	            public String call() throws Exception {
 	                int party = 1;
 	                int port = Integer.parseInt(System.getProperty("emp.port"));
 	                String empCode = System.getProperty("emp.code");
@@ -175,7 +184,8 @@ public class EmpJniRemoteTest extends TestCase  {
 	         	   	// run it
 	         	   EmpProgram instance = (EmpProgram) builder.getClass(party, port);
 	         	   instance.setGeneratorHost(aliceHost);
-	         	   return instance.runProgram();
+	         	   instance.runProgram();
+	         	   return instance.getOutputString();
 	               
 	            }
 	        });   

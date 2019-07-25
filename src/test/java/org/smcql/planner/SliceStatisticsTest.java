@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.junit.Test;
 import org.smcql.db.data.Tuple;
 import org.smcql.db.data.field.IntField;
@@ -20,6 +21,9 @@ public class SliceStatisticsTest extends SliceKeyTest {
 		super.setUp();
 		expectedStatistics = new HashMap<String, Map<SecureRelDataTypeField, SliceStatistics> >();
 	
+		if(!config.slicingEnabled())
+			return;
+
 		setupAspirintCount();
 		setupCDiff();
 		setupComorbidity();		
@@ -140,7 +144,12 @@ public class SliceStatisticsTest extends SliceKeyTest {
 	}
 	
 	private void testCase(String testName) throws Exception {
+
+		if(!config.slicingEnabled())
+			return;
+
 		String sql = super.readSQL(testName);
+		
 
 		System.out.println("Running query " + sql);
 		
@@ -150,8 +159,8 @@ public class SliceStatisticsTest extends SliceKeyTest {
 			Map<SecureRelDataTypeField, SliceStatistics> expectedLookup = expectedStatistics.get(testName + "-" + key.getStoredTable());	
 			SliceStatistics expected = expectedLookup.get(key);
 			
-			System.out.println("Expected: " + expected);
-			System.out.println("Observed: " + attrStatistics);
+			logger.info("Expected: " + expected);
+			logger.info("Observed: " + attrStatistics);
 			
 			assertTrue(attrStatistics.toString().equals(expected.toString()));	
 		}
@@ -164,7 +173,7 @@ public class SliceStatisticsTest extends SliceKeyTest {
 		
 		SecureRelDataTypeField sPrime = new SecureRelDataTypeField(src, 0, null);
 		for(int i = 0; i < fields.length; ++i) {
-			IntField intField = new IntField(sPrime, fields[i]);
+			IntField intField = new IntField(sPrime, fields[i], SqlTypeName.INTEGER);
 			t.addField(intField);
 		}
 		

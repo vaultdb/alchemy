@@ -12,7 +12,6 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.privacy.PrivacyCost;
 import org.smcql.type.SecureRelDataTypeField;
@@ -35,9 +34,9 @@ public class Join extends Operator {
 
 		super.inferExecutionMode();
 		
-		if(children.get(0).executionMode.compareTo(ExecutionMode.Plain) <= 0 && 
-				children.get(1).executionMode.compareTo(ExecutionMode.Plain) <= 0 && maxAccess == SecurityPolicy.Public) { // results are replicated
-				executionMode = ExecutionMode.Plain;
+		if(!children.get(0).executionMode.oblivious  && 
+				!children.get(1).executionMode.oblivious && maxAccess == SecurityPolicy.Public) { // results are replicated
+				executionMode.oblivious = false;
 		}
 	}
 	
@@ -159,5 +158,18 @@ public class Join extends Operator {
 		// TODO: Nisha and May: derive statistics using methods in <repo root>/docs/alchemy-algebra.pdf
 	}
 	
+	
+	public String toString() {
+		
+		LogicalJoin join = (LogicalJoin) this.getSecureRelNode().getRelNode();
+		RexNode predicate = join.getCondition();
+		String ret = baseRelNode.getRelNode().getRelTypeName() + "-" + executionMode + ", schema:" + getSchema() + ", Predicate: " + predicate;
+		List<SecureRelDataTypeField> sliceAttrs = this.getSliceAttributes();
+		if(!sliceAttrs.isEmpty())
+			ret += ", slice key: " + sliceAttrs;
+
+		return ret;
+	}
+
 	
 };

@@ -23,6 +23,7 @@ import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexSubQuery;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
 import org.smcql.db.schema.SecureSchemaLookup;
 import org.smcql.plan.SecureRelNode;
@@ -38,16 +39,19 @@ public class AttributeResolver {
 		
 		if(baseNode instanceof LogicalJoin)
 			return resolveJoin(aNode);
+
+// ****
 		if(baseNode instanceof JdbcTableScan)
 			return resolveScan(aNode);
 		
 		if(baseNode instanceof LogicalProject)
 			return resolveProjection(aNode);
 		
+// ****
 		if(baseNode instanceof LogicalFilter || baseNode instanceof LogicalSort
 				|| (baseNode instanceof LogicalAggregate && ((LogicalAggregate) baseNode).getAggCallList().isEmpty())) // distinct
 				return copySchema(aNode);
-		
+// ****	
 		if(baseNode instanceof LogicalAggregate)
 			return resolveAggregate(aNode);
 		
@@ -64,18 +68,18 @@ public class AttributeResolver {
 		
 	}
 
-	private static SecureRelRecordType resolveLogicalCorrelate(SecureRelNode aJoin) throws Exception {
+	private static SecureRelRecordType resolveLogicalCorrelate(SecureRelNode aCorr) throws Exception {
 
 		List<SecureRelDataTypeField> secureFields = new ArrayList<SecureRelDataTypeField>();
-		LogicalJoin join = (LogicalJoin) aJoin.getRelNode();
-		SecureRelNode lhsChild = aJoin.getChild(0);
-		SecureRelNode rhsChild = aJoin.getChild(1);
+		LogicalCorrelate corr = (LogicalCorrelate) aCorr.getRelNode();
+		SecureRelNode lhsChild = aCorr.getChild(0);
+		SecureRelNode rhsChild = aCorr.getChild(1);
 
 
 		SecureRelRecordType lhs = lhsChild.getSchema();
 		SecureRelRecordType rhs = rhsChild.getSchema();
 
-		RelRecordType baseType = (RelRecordType) join.getRowType();
+		RelRecordType baseType = (RelRecordType) corr.getRowType();
 		Iterator<RelDataTypeField> baseItr = baseType.getFieldList().iterator();
 
 		for(SecureRelDataTypeField field : lhs.getSecureFieldList()) {
@@ -107,7 +111,7 @@ public class AttributeResolver {
 		for(RelDataTypeField field : outRow.getFieldList()) {
 			String name = field.getName();
 			SecurityPolicy policy;
-			if(name.contains("$")) { // w<winNo>$o<orderByNo> for window aggs
+			if(name.contains("$") && name.startsWith("w")) { // w<winNo>$o<orderByNo> for window aggs
 				String[] tokens = name.split("\\$");
 				
 				String winNoStr = tokens[0].substring(1, tokens[0].length());
@@ -148,6 +152,8 @@ public class AttributeResolver {
 		Map<String, AggregateCall> aggMap = new HashMap<String, AggregateCall>();
 		Map<String,SecureRelDataTypeField> scalarMap = new HashMap<String, SecureRelDataTypeField>();
 		
+		// TODO: figure out how to adjust ExecutionMode from this
+		//boolean obliviousEval = aNode.getChild(0).getPhysicalNode().getExecutionMode().oblivious;
 		
 		Iterator<Pair<AggregateCall, String>> aggItr = agg.getNamedAggCalls().iterator();
 		while(aggItr.hasNext()) {
@@ -173,12 +179,17 @@ public class AttributeResolver {
 			else if(aggMap.containsKey(name)) {
 				SecurityPolicy policy = AttributeResolver.getAggPolicy(aggMap.get(name), inSchema);
 				SecureRelDataTypeField secField = new SecureRelDataTypeField(field, policy);
+				//if(policy == SecurityPolicy.Private) {
+				//	obliviousEval = true;
+				//}
 				secFields.add(secField);
 			}
 		}
 			
-			return new SecureRelRecordType(record, secFields);
-
+		SecureRelRecordType schema =  new SecureRelRecordType(record, secFields);
+		schema.setReplicated(inSchema.isReplicated()); // propagate replicated status of child
+		return schema;
+		
 			
 	}
 
@@ -199,7 +210,10 @@ public class AttributeResolver {
 			secureFields.add(secField);
 		}
 		
-		return new SecureRelRecordType((RelRecordType) projection.getRowType(), secureFields);
+		SecureRelRecordType schema =  new SecureRelRecordType((RelRecordType) projection.getRowType(), secureFields);
+		schema.setReplicated(srcSchema.isReplicated()); // propagate replicated status of child
+ 		return schema;
+
 	}
 	
 	public static SecureRelDataTypeField resolveField(RexNode rex, RelDataTypeField baseField, SecureRelRecordType inSchema) {
@@ -253,7 +267,13 @@ public class AttributeResolver {
 			for(int i = 0; i  < dstFields.size(); ++i)
 				dstFields.get(i).addFilter(filter);
 		}
-		return new SecureRelRecordType(dstRecord, dstFields);
+		
+		// make sure we copied the correct fields
+		assert(dstFields.size() == aNode.getRelNode().getRowType().getFieldCount());
+		
+		SecureRelRecordType schema =  new SecureRelRecordType(dstRecord, dstFields);
+		schema.setReplicated(srcSchema.isReplicated()); // propagate replicated status of child
+		return schema;
 	}
 	
 	public static SecurityPolicy getFieldPolicy(SecureRelRecordType srcSchema, Set<Integer> ordinalsAccessed) {
@@ -313,8 +333,15 @@ public class AttributeResolver {
 		}
 		
 		
-		return new SecureRelRecordType(baseType, secureFields);
 		
+		SecureRelRecordType schema =  new SecureRelRecordType(baseType, secureFields);
+		
+		if(lhs.isReplicated() && rhs.isReplicated())
+			schema.setReplicated(true);
+		
+		
+
+		return schema;
 	}
 	
 	public static SecureRelRecordType resolveScan(SecureRelNode aScan) throws Exception {
@@ -334,11 +361,17 @@ public class AttributeResolver {
 			secureFields.add(secField);
 		}
 		
-		return new SecureRelRecordType(record, secureFields);
+		SecureRelRecordType tableDef = new SecureRelRecordType(record, secureFields);
+		tableDef.setReplicated(permissions.isReplicated(table));
+		
+		
+		return tableDef;
 
 	
 	}
 		
+	
+	
 	static boolean hasCall(LogicalProject p) {
 		
 		

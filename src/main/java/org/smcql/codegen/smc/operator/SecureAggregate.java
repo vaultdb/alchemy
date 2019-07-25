@@ -31,7 +31,7 @@ public class SecureAggregate extends SecureOperator {
 	}
 
 	@Override
-	public Map<String, String> generate() throws Exception  {
+	public String generate() throws Exception  {
 		Map<String, String> variables = baseVariables();
 		Aggregate a = (Aggregate) planNode;
 
@@ -50,7 +50,6 @@ public class SecureAggregate extends SecureOperator {
 		// TODO: add more aggregates; currently hardcoded for groupby aggregate (full oblivious)
 		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
 		if (groupByAttributes.isEmpty()) {
-			Map<String, String> result = new HashMap<String, String>();
 			Map<String, String> scalarVars = getScalarAggregates();
 
 
@@ -58,12 +57,9 @@ public class SecureAggregate extends SecureOperator {
 				variables.put(entry.getKey(), entry.getValue());
 			}
 
-			result.put(getPackageName(), CodeGenUtils.generateFromTemplate("aggregate/scalar/aggregate.txt", variables));
-			return result;
+			return CodeGenUtils.generateFromTemplate("aggregate/scalar/aggregate.txt", variables);
 		}
 
-		String groupByMatch = generateGroupBy(groupByAttributes);
-		variables.put("groupByMatch", groupByMatch);
 
 		int aggregateIdx = a.getComputeAttributeIndex();
 		String cntMask = planNode.getSchema().getInputRef(aggregateIdx, null);
@@ -72,43 +68,8 @@ public class SecureAggregate extends SecureOperator {
 
 		generatedCode = CodeGenUtils.generateFromTemplate("aggregate/groupby/aggregate.txt", variables);
 
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(getPackageName(), generatedCode);
-		return result;
+		return generatedCode;
 	}
-
-	// takes in a list of attrs we are grouping by
-	private String generateGroupBy(List<SecureRelDataTypeField> attrs) throws Exception {
-		int i = 1;
-		String ret = "    Bit ret(1, PUBLIC);\n\n";
-
-		for(SecureRelDataTypeField r : attrs) {
-			int size = r.size();
-			String lVar = "l" + i;
-			String rVar = "r" + i;
-
-			// want lVarInteger(lBits, lhs.bits + offset)
-
-			Pair<Integer, Integer> schemaPos = CodeGenUtils.getSchemaPosition(schema.getAttributes(), r);
-			int fieldSize = schemaPos.getKey();
-			int fieldOffset = schemaPos.getValue();
-
-
-			ret += "    Integer " +  lVar + "(" + fieldSize + ", lhs.bits + " + fieldOffset + ");\n";
-			ret += "    Integer " +  rVar + "(" + fieldSize + ", rhs.bits + " + fieldOffset + ");\n";
-			ret += "    ret = If(" + lVar + " != " + rVar + ", Bit(0, PUBLIC), Bit(1, PUBLIC));\n";
-			ret += "     \n\n";
-
-
-			++i;
-		}
-
-		ret += "    return ret;\n";
-
-		return ret;
-
-	}
-
 	// variable --> value
 	private Map<String, String> getScalarAggregates(){
 
@@ -123,7 +84,6 @@ public class SecureAggregate extends SecureOperator {
 
 
 		LogicalAggregate baseAggregate = (LogicalAggregate) planNode.getSecureRelNode().getRelNode();
-		RelRecordType record = (RelRecordType) baseAggregate.getRowType();
 
 		List<AggregateCall> aggCallList = baseAggregate.getAggCallList();
 		Iterator<Pair<AggregateCall, String> > aggItr = baseAggregate.getNamedAggCalls().iterator();
@@ -152,7 +112,8 @@ public class SecureAggregate extends SecureOperator {
 
 			String initAggregateValue = getValueInit(call);
 
-			initAggregate += "Integer " + aggVariable + "= Integer(INT_LENGTH," + initAggregateValue + ",PUBLIC);\n";
+			
+			initAggregate += "Integer " + aggVariable + "= Integer(" + size + "," + initAggregateValue + ",PUBLIC);\n";
 
 			if(!call.getArgList().isEmpty())
 				initAggregate += "Integer tupleArg" + varNo + " = Integer(" + size  + "," + initAggregateValue + ", PUBLIC);\n";
@@ -224,7 +185,7 @@ public class SecureAggregate extends SecureOperator {
 				processString += "agg" + aggId + " = If(dummyCheck, If(" + tupleVar + " > " + aggVar + ", " + tupleVar + ", " + aggVar + "), " + aggVar + ");\n";
 				return processString;
 			case COUNT:
-				processString += "agg" + aggId + " = If(dummyCheck, " +  aggVar + " + 1, " + aggVar + ");\n";
+				processString += "agg" + aggId + " = If(dummyCheck, " +  aggVar + " + Integer(" + size + ", 1, PUBLIC), " + aggVar + ");\n";
 				return processString;
 			case SUM:
 				processString += "agg" + aggId + " = If(dummyCheck," + aggVar + " + " + tupleVar + ", " + aggVar + ");\n";
@@ -241,7 +202,7 @@ public class SecureAggregate extends SecureOperator {
 	private String extractAggregateArgument(AggregateCall call, String srcVar, String dstVar, int size, int runningOffset) {
 		Integer arg = call.getArgList().get(0);
 
-		return "writeToInteger( &" + dstVar + ", &tuple, 0, " + runningOffset + ", " + size  + ");\n";
+		return "EmpUtilities::writeToInteger( &" + dstVar + ", &tuple, 0, " + runningOffset + ", " + size  + ");\n";
 	}
 
 	private String getWriteDest(AggregateCall call, Map<String, AggregateCall> aggMap, String dstTuple, String aggVar, int size){
@@ -258,7 +219,7 @@ public class SecureAggregate extends SecureOperator {
 
 			if(aggMap.containsKey(name)) {
 				if(aggMap.get(name).equals(call)) {
-					writer += "writeToInteger(" + dstTuple + ", &" + aggVar + ", " + offset  + ", 0, " + size  + ");\n";
+					writer += "EmpUtilities::writeToInteger(" + dstTuple + ", &" + aggVar + ", " + offset  + ", 0, " + size  + ");\n";
 					break;
 				}
 			}

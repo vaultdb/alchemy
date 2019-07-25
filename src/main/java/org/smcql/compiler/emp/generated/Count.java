@@ -8,6 +8,7 @@ import org.bytedeco.javacpp.annotation.Namespace;
 import org.bytedeco.javacpp.annotation.Platform;
 import org.bytedeco.javacpp.annotation.StdString;
 import java.util.Map;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -25,6 +26,7 @@ import org.smcql.executor.config.ConnectionManager;
 
 
 import org.smcql.compiler.emp.EmpProgram;
+import org.smcql.compiler.emp.generated.CountIcd9s.CountIcd9sClass;
 
 
 @Platform(include={"Count.h"}, 
@@ -81,15 +83,19 @@ public class Count  extends EmpProgram  {
     }
 	   	
         @Override
-        public  boolean[] runProgram() throws Exception {
-        	CountClass theQuery = new CountClass();
+        public  void runProgram() throws Exception {
+        	CountIcd9sClass theQuery = new CountIcd9sClass();
 
 	        Iterator inputItr = inputs.entrySet().iterator();
 	        while(inputItr.hasNext()) {
 	        	Map.Entry entry = (Map.Entry) inputItr.next();
 	        	String functionName = (String) entry.getKey();
-	        	String tupleBitstring = getInput((String) entry.getValue());
-	        	theQuery.addInput(functionName, tupleBitstring);
+
+	        	// For all inputs to MPC, get an associated QueryTable
+	        	String table = getInput((String) entry.getValue());
+
+                // add the input strings using the addInput function - which is available in main.txtOkay
+	        	theQuery.addInput(functionName, table);
 	        }
 	        
         	if(generatorHost != null) {
@@ -98,15 +104,11 @@ public class Count  extends EmpProgram  {
         	
         	
         	theQuery.run(party, port);
-        	String output = theQuery.getOutput();
+        	outputString = theQuery.getOutput();
 	        theQuery.close();
 
-	       boolean[] outBits = new boolean[output.length()];
-	       for(int i = 0; i < output.length(); ++i) {
-	    	   outBits[i] = output.charAt(i) == '1' ? true : false;
-	       }
-	       return outBits;
-	       
+	       	outputBits = super.stringToBitSet(outputString);
+	        
         }
         
 
@@ -127,24 +129,20 @@ public class Count  extends EmpProgram  {
   	    System.setProperty("workerId", workerId);
   	    
 		Count qc = new Count(party, port);
-		boolean[] bits = null;
+		BitSet bits = null;
 		char b;
 		
 		try {
 			SystemConfiguration.getInstance(); // initialize config
-			bits = qc.runProgram();
+			qc.runProgram();
 		} catch(Exception e) {
 			System.err.println("Program execution failed!");
 			e.printStackTrace();
 			System.exit(-1);
 		}
-	       
-			// write bitstring to stderr
-			for(int i = 0; i < bits.length; ++i) {
-				b = (bits[i] == true) ? '1' : '0';
-				System.err.print(b);
-			}
-
+	     
+		System.err.print(qc.getOutputString());
+    
 	        
     }        
 	

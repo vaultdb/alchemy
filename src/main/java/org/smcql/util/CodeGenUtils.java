@@ -10,8 +10,8 @@ import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.postgresql.util.PGInterval;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Operator;
+import org.smcql.plan.operator.SeqScan;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 
@@ -36,6 +36,12 @@ public class CodeGenUtils {
 	}
 	
 
+	
+	// TODO: invoke writeInteger method in EMP
+	public static String copyField(SecureRelDataTypeField srcField, SecureRelRecordType inSchema) {
+
+		return null;
+	}
 	
 	// read in template file and replace all of its variables with intended values
 	// source file is a relative path
@@ -220,14 +226,14 @@ public class CodeGenUtils {
 	
 	public static boolean isSecureLeaf(Operator o) {
 		
-		if(o.getExecutionMode() == ExecutionMode.Plain) { // seq scans always plaintext, so this covered here
+		if(o instanceof SeqScan) { // seq scans always plaintext, so this covered here
 			return false;
 		}
 		
 		List<Operator> sources = o.getSources();
 
 		for(Operator s : sources) {
-			if(s.getExecutionMode() == ExecutionMode.Plain) {
+			if(!s.getExecutionMode().distributed) {
 				return true;
 			}
 		}

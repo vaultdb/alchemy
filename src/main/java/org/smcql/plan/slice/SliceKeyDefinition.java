@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.type.RelDataTypeField;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Project;
 import org.smcql.type.SecureRelDataTypeField;
@@ -91,8 +90,8 @@ public class SliceKeyDefinition implements Serializable {
 	}
 	
 	public static boolean sliceCompatible(Operator child, Operator parent)  {
-		if(child.getExecutionMode() == ExecutionMode.Plain
-				|| child.getExecutionMode() == ExecutionMode.Plain) {
+		if(!child.getExecutionMode().oblivious 
+				|| !parent.getExecutionMode().oblivious) {
 			return true;
 		}
 		

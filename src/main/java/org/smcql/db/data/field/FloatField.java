@@ -1,9 +1,10 @@
 package org.smcql.db.data.field;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.smcql.type.SecureRelDataTypeField;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
+import java.util.BitSet;
 
 public class FloatField extends Field  implements Serializable {
 
@@ -11,24 +12,20 @@ public class FloatField extends Field  implements Serializable {
     int exponent;
     int fraction;
 
-    public FloatField(SecureRelDataTypeField attr, Float v) {
-        super(attr);
+    public FloatField(SecureRelDataTypeField attr, Float v, SqlTypeName sqlType) {
+        super(attr, sqlType);
         value = v;
         exponent = Float.floatToIntBits(v) & 0x7F800000;
         fraction = Float.floatToIntBits(v) & 0x807FFFFF;
     }
 
-    public FloatField(SecureRelDataTypeField attr) {
-        super(attr);
+    public FloatField(SecureRelDataTypeField attr, SqlTypeName sqlType) {
+        super(attr, sqlType);
         value = 0.0f;
         exponent = 0;
         fraction = 0;
     }
 
-    @Override
-    public int size()  {
-        return 32;
-    }
 
 
     @Override
@@ -93,11 +90,13 @@ public class FloatField extends Field  implements Serializable {
     }
 
     @Override
-    public void deserialize(boolean[] src) {
-        assert(src.length == this.size());
+    public void deserialize(BitSet src) {
+        assert(src.size() == this.size());
         int temp = 0;
-        for (boolean b : src)
-            temp = (temp << 1) | (b ? 1 : 0);
+        for(int i = 0; i < src.size(); ++i) {
+        	boolean b = src.get(i);
+            temp = (temp << 1) | (b ? 1 : 0);   
+        }
         value = Float.intBitsToFloat(temp);
     }
 

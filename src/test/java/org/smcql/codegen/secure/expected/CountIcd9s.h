@@ -198,8 +198,8 @@ Data * Aggregate3(Data *data) {
     result->tuples = new Integer[1];
     result->publicSize = 1; 
 
-    int dummyIdx = 32 - 1;
-    Integer *output = new Integer(64, 0, PUBLIC);
+    int dummyIdx = 33 - 1;
+    Integer *output = new Integer(65, 0, PUBLIC);
 
 
     cout << "Running Aggregate3 " << endl;

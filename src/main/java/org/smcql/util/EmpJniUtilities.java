@@ -1,7 +1,7 @@
 package org.smcql.util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -13,6 +13,7 @@ import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.compiler.emp.EmpRunnable;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
+import org.smcql.executor.smc.BasicSecureQueryTable;
 import org.smcql.type.SecureRelRecordType;
 
 public class EmpJniUtilities {
@@ -26,25 +27,32 @@ public class EmpJniUtilities {
     }
 
 	// output handling
-	public static List<String> revealStringOutput(boolean[] alice, boolean[] bob, int tupleWidth) {
-		assert(alice.length == bob.length);
-		boolean[] decrypted = new boolean[alice.length];
+	public static List<String> revealStringOutput(String alice, String bob, int tupleWidth) {
+		assert(alice.length() == bob.length());
+		
+
+		
+		BitSet aliceBits = EmpJniUtilities.stringToBitSet(alice);
+		BitSet bobBits = EmpJniUtilities.stringToBitSet(bob);
+		
+		
 		int tupleBits = tupleWidth*8; // 8 bits / char
-		int tupleCount = alice.length / tupleBits;
+		int tupleCount = alice.length() / tupleBits;
+		
+		System.out.println("Decrypting " + tupleCount + " tuples.");
+		
+		BitSet decrypted = (BitSet) aliceBits.clone();
+		decrypted.xor(bobBits);
+		
+		
+		
 		List<String> output = new ArrayList<String>();
 		
-		System.out.print("Decrypted: ");
-		for(int i = 0; i < alice.length; ++i) {
-			decrypted[i] = alice[i] ^ bob[i];
-			System.out.print(decrypted[i] == true ? '1' : '0');
-		}
-
-		System.out.println("\n");
 		
 		int readIdx = 0;
 		for(int i = 0; i < tupleCount; ++i) {
-			boolean[] bits = Arrays.copyOfRange(decrypted, readIdx*8, (readIdx+tupleWidth)*8);
-			String tuple = deserializeString(bits);
+			BitSet bits = decrypted.get(readIdx*8, (readIdx+tupleWidth)*8);
+			String tuple= deserializeString(bits, tupleWidth);
 			output.add(tuple);
 			readIdx += tupleWidth;
 		}
@@ -52,18 +60,39 @@ public class EmpJniUtilities {
 		return output;		
 	}
 	
-	public static String deserializeString(boolean[] src) {
-		assert(src.length % 8 == 0);
-		int chars = src.length / 8;
-		String value = new String();
+	 public static BitSet stringToBitSet(String s) {
+		  BitSet b = new BitSet(s.length());
+
+
+	    for (int i = 0; i < s.length(); ++i) {
+	    	b.set(i,  (s.charAt(i) == '1') ? true : false);
+	    }
+
+	    return b;
+	  }
+
+	
+	public static String deserializeString(BitSet src, int stringLength) {
+		assert(src.size() % 8 == 0);
 		
-		for(int i = 0; i < chars; ++i)
+		String value = new String();
+		System.out.println("Value length: " + value.length());
+		
+		
+		for(int i = 0; i < stringLength; ++i)
 		{
-			boolean[] bits = Arrays.copyOfRange(src, i*8, (i+1)*8);
-			value += deserializeChar(bits);
+			int n = 0;
+			 for(int j = 0; j < 8; ++j) {
+			    	boolean b = src.get(i*8 + j);
+			        n = (n << 1) | (b ? 1 : 0);
+			    }
+			 
+			value += (char) n;
+			System.out.println("Value length: " + value.length());
 			
 		}
 		
+		System.out.println("Deserialized " + value + " of length " + value.length());
 		return value;
 		
 		
@@ -71,23 +100,9 @@ public class EmpJniUtilities {
 
 	
 	
-	public static char deserializeChar(boolean[] bits) {
-		assert(bits.length == 8);
-
-	    int n = 0;
-	    for (boolean b : bits)
-	        n = (n << 1) | (b ? 1 : 0);
-	    return (char) n;
-	}
 
 
 
-	public static QueryTable runEmpRemote(String className, SecureRelRecordType outSchema) throws Exception {
-    	int empPort = getEmpPort();
-
-    	//int empPort =
-		return null;
-	}
 	// class name includes package info
 	// e.g., org.smcql.compiler.emp.generated.Count
 	public static QueryTable runEmpLocal(String className, SecureRelRecordType outSchema) throws Exception {
@@ -111,24 +126,19 @@ public class EmpJniUtilities {
 		alice.join();
 		bob.join();
 		
-		boolean[] aliceOutput = aliceRunnable.getOutput();
-		boolean[] bobOutput = bobRunnable.getOutput();
-
-
-
-		System.out.println("Out of EMP Length");
-		System.out.println(aliceOutput.length);
-
-		// decrypt dummies
-		// selectively decrypt
-
-		return new QueryTable(outSchema,aliceOutput,bobOutput);
-
-		// old logic
-
-		//boolean[] decrypted = decrypt(aliceOutput, bobOutput);
-		//return new QueryTable(decrypted, outSchema);
+		// output consists of dummyTags followed by padded tuple payload
+		String aliceOutput = aliceRunnable.getOutputString();
+		String bobOutput = bobRunnable.getOutputString();
 		
+		
+		BitSet decrypted = decrypt(aliceOutput, bobOutput);
+		
+		// out schema does not have a dummy tag in it
+		// first bit of each tuple is a "hidden" dummy tag
+		
+		QueryTable decryptedTable = new QueryTable(decrypted, outSchema, aliceOutput.length(), true);
+	
+		return decryptedTable;		
 	}
 	 
 	
@@ -204,16 +214,24 @@ public class EmpJniUtilities {
 
 
 	
-	public static boolean[] decrypt(boolean[] alice, boolean[] bob) {
-		assert(alice.length == bob.length); 
-		boolean[] decrypted = new boolean[alice.length];
+	public static BitSet decrypt(BitSet alice, BitSet bob) {
+		assert(alice.size() == bob.size());
 		
-		for(int i = 0; i < alice.length; ++i) {
-			decrypted[i] = alice[i] ^ bob[i];
-		}
+		BitSet decrypted = (BitSet) alice.clone();
+		decrypted.xor(bob);
 		return decrypted;
+		
 	}
 
+	
+	public static BitSet decrypt(String alice, String bob) {
+		assert(alice.length() == bob.length());
+		
+		BitSet aliceBits = stringToBitSet(alice);
+		BitSet bobBits = stringToBitSet(bob);
+		return decrypt(aliceBits, bobBits);	
+	}
+	
 	public static String getFullyQualifiedClassName(String className) throws Exception {
 		String classPrefix = SystemConfiguration.getInstance().getProperty("generated-class-prefix");
     	if(!className.startsWith(classPrefix)) {

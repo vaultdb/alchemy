@@ -14,6 +14,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.BitSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,9 +46,10 @@ public class FileUtils {
 			lines = Files.readAllLines(Paths.get(filename), StandardCharsets.UTF_8);
 	}
 	
-	return lines;				
+		return lines;				
 	}
 
+	
 	public static void writeFile(String fname, String contents) throws FileNotFoundException, UnsupportedEncodingException {
 	     String path = FilenameUtils.getFullPath(fname);
 	     File f = new File(path);
@@ -74,5 +76,18 @@ public class FileUtils {
 	public static boolean fileExists(String file) {
 		File tmp = new File(file);
 		return tmp.exists();
+	}
+	
+	public static byte[] readByteFile(String filename) throws IOException {
+		Path path = Paths.get(filename);
+	    return Files.readAllBytes(path);
+	}
+	
+	
+	public static BitSet readBoolFile(String filename) throws IOException {
+		byte[] bytes = readByteFile(filename);
+		return BitSet.valueOf(bytes);
+	    
+	    
 	}
 }

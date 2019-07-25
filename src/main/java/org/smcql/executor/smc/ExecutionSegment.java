@@ -3,13 +3,13 @@ package org.smcql.executor.smc;
 import java.io.Serializable;
 import java.util.List;
 
+import org.smcql.config.SystemConfiguration.Party;
 import org.smcql.db.data.Tuple;
 import org.smcql.type.SecureRelRecordType;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.executor.config.RunConfig;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.slice.SliceKeyDefinition;
 
-import com.oblivm.backend.flexsc.Party;
 
 // sequence of generated operators for execution (no sync points with other ops / hosts)
 public class ExecutionSegment implements Serializable {
@@ -21,13 +21,12 @@ public class ExecutionSegment implements Serializable {
 	// replacing SMCConfig
 	public RunConfig runConf;
 	public String workerId;
-	public int party;
+	public Party party = null;
 	public int port;
 	
 	// for sliced merge
 	public SecureRelRecordType outSchema;
 
-	public ExecutionMode executionMode;
 	public boolean isPlanRoot = false;
 	
 	public String sliceComplementSQL = null;
@@ -36,10 +35,11 @@ public class ExecutionSegment implements Serializable {
 	String className;
 	public String empCode;
 	public String jniCode;
+	public ExecutionMode executionMode;
 	
 	
 	public void checkInit() throws Exception {
-		if(party == 0 || workerId == null) {
+		if(party == null || workerId == null) {
 			throw new Exception("Parent segment uninitialized!");
 		}
 		checkInitHelper(rootNode);
@@ -55,7 +55,7 @@ public class ExecutionSegment implements Serializable {
 		}
 		
 		
-		if(op.getWorkerId() == null || op.getParty() == -1) {
+		if(op.getWorkerId() == null || op.getParty() == null) {
 			throw new Exception("Bad configuration for " + op);
 		}
 		

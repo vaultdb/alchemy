@@ -7,16 +7,20 @@ import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.annotation.Namespace;
 import org.bytedeco.javacpp.annotation.Platform;
 import org.bytedeco.javacpp.annotation.StdString;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.BitSet;
+
 
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.type.SecureRelRecordType;
+import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
-import org.smcql.executor.config.ConnectionManager;
+import org.smcql.util.EmpJniUtilities;
 
 
 
@@ -38,12 +42,11 @@ import org.smcql.compiler.emp.EmpProgram;
 public class JoinCdiff  extends EmpProgram  {
 
 	Map<String, String> inputs = new HashMap<String, String>();
-	boolean[] queryOutput = null;
 	
 	public JoinCdiff(int party, int port) {
 		super(party, port);
-		inputs.put("SeqScan4Merge", "SELECT patient_id FROM medications ORDER BY patient_id");
-inputs.put("SeqScan0Merge", "SELECT patient_id, icd9 = '008.45' FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY patient_id");
+		inputs.put("SeqScan4Union", "SELECT patient_id, FALSE AS dummy_tag FROM medications ORDER BY dummy_tag, patient_id");
+inputs.put("SeqScan0Union", "SELECT patient_id, icd9 = '008.45' AS dummy_tag FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY dummy_tag, patient_id");
 
 	}
 	
@@ -58,6 +61,9 @@ inputs.put("SeqScan0Merge", "SELECT patient_id, icd9 = '008.45' FROM (SELECT pat
         	allocate(); 
         	}
         private native void allocate();
+        
+        // schema always has boolean dummyTag at the end of each tuple - both for input and output
+        // 1 = dummy, 0 = real value
         public native void addInput(@StdString String opName,  @StdString String bitString);
         public native void run(int party, int port); 
         public native void setGeneratorHost(@StdString String host);
@@ -69,29 +75,35 @@ inputs.put("SeqScan0Merge", "SELECT patient_id, icd9 = '008.45' FROM (SELECT pat
 	
 	   
 	   
-	String getInput(String sql) throws Exception {
+	QueryTable getInput(String sql) throws Exception {
     	SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(sql);
     	String workerId = System.getProperty("workerId");	
     	
-    	//ConnectionManager cm = ConnectionManager.getInstance();
-   		//System.out.println("Getting connection for " + workerId + " out of " + cm.getDataSources());
-    					
-		
+					
+		// Perform plaintext execution, which does not reduce cardinality, but add dummyTags
     	QueryTable table = SqlQueryExecutor.query(sql, outSchema, workerId);
-		return  table.toBinaryString();
+
+    	
+		return table;
 
     }
 	   	
         @Override
-        public  boolean[] runProgram() throws Exception {
+        public void runProgram() throws Exception {
         	JoinCdiffClass theQuery = new JoinCdiffClass();
 
 	        Iterator inputItr = inputs.entrySet().iterator();
 	        while(inputItr.hasNext()) {
 	        	Map.Entry entry = (Map.Entry) inputItr.next();
 	        	String functionName = (String) entry.getKey();
-	        	String tupleBitstring = getInput((String) entry.getValue());
-	        	theQuery.addInput(functionName, tupleBitstring);
+
+	        	// For all inputs to MPC, get an associated QueryTable
+	        	QueryTable table = getInput((String) entry.getValue());
+
+			System.out.println("Input table " + functionName + ": " + table);
+
+                // add the input strings using the addInput function - which is available in main.txtOkay
+	        	theQuery.addInput(functionName, table.toBinaryString());
 	        }
 	        
         	if(generatorHost != null) {
@@ -100,15 +112,10 @@ inputs.put("SeqScan0Merge", "SELECT patient_id, icd9 = '008.45' FROM (SELECT pat
         	
         	
         	theQuery.run(party, port);
-        	String output = theQuery.getOutput();
+        	outputString = theQuery.getOutput();
+		outputBits = EmpJniUtilities.stringToBitSet(outputString);
 	        theQuery.close();
 
-	       boolean[] outBits = new boolean[output.length()];
-	       for(int i = 0; i < output.length(); ++i) {
-	    	   outBits[i] = output.charAt(i) == '1' ? true : false;
-	       }
-	       return outBits;
-	       
         }
         
 
@@ -119,7 +126,7 @@ inputs.put("SeqScan0Merge", "SELECT patient_id, icd9 = '008.45' FROM (SELECT pat
            
 		int party = Integer.parseInt(args[0]);
 		int port = Integer.parseInt(args[1]);
-		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
+		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.global";
 		
   	    System.setProperty("smcql.setup", setupFile);
   	    String workerId = (party == 1) ? "alice" : "bob";
@@ -129,23 +136,19 @@ inputs.put("SeqScan0Merge", "SELECT patient_id, icd9 = '008.45' FROM (SELECT pat
   	    System.setProperty("workerId", workerId);
   	    
 		JoinCdiff qc = new JoinCdiff(party, port);
-		boolean[] bits = null;
-		char b;
+
 		
 		try {
 			SystemConfiguration.getInstance(); // initialize config
-			bits = qc.runProgram();
+		        qc.runProgram();
 		} catch(Exception e) {
 			System.err.println("Program execution failed!");
 			e.printStackTrace();
 			System.exit(-1);
 		}
-	       
-			// write bitstring to stderr
-			for(int i = 0; i < bits.length; ++i) {
-				b = (bits[i] == true) ? '1' : '0';
-				System.err.print(b);
-			}
+
+		System.err.print(qc.getOutputString());
+
 
 	        
     }        

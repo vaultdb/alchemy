@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.apache.calcite.util.Pair;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.WindowAggregate;
@@ -36,7 +35,7 @@ public class SecureWindowAggregate extends SecureOperator  {
 	}
 	
 	@Override
-	public Map<String, String> generate() throws Exception  {
+	public String generate() throws Exception  {
 		Map<String, String> variables = baseVariables();		
 		
 		assert(planNode instanceof WindowAggregate);
@@ -92,15 +91,13 @@ public class SecureWindowAggregate extends SecureOperator  {
 		}		
 		
 		String generatedCode = null;
-		if(planNode.getExecutionMode() == ExecutionMode.Slice && SystemConfiguration.getInstance().getProperty("sliced-execution").equals("true")) {
-			generatedCode = CodeGenUtils.generateFromTemplate("windowAggregate/sliced/row_num.txt", variables);
+		if(planNode.getExecutionMode().sliced && SystemConfiguration.getInstance().slicingEnabled()) {
+			generatedCode = CodeGenUtils.generateFromTemplate("window-aggregate/sliced/row-num.txt", variables);
 		}
 		else {
-			generatedCode = CodeGenUtils.generateFromTemplate("windowAggregate/singular/row_num.txt", variables);
+			generatedCode = CodeGenUtils.generateFromTemplate("window-aggregate/scalar/row-num.txt", variables);
 		}
 	
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(getPackageName(), generatedCode);
-		return result;
+		return generatedCode;
 	}
 }

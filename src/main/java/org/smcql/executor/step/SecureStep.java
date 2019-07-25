@@ -52,7 +52,7 @@ public class SecureStep implements ExecutionStep, Serializable {
 	@SuppressWarnings("unlikely-arg-type")
 	@Override
 	public String generate() throws Exception {
-		return codeGenerator.generate().get(0);
+		return codeGenerator.generate();
 	}
 
 	@Override
@@ -136,7 +136,7 @@ public class SecureStep implements ExecutionStep, Serializable {
 	}
 
 	public String toString() {
-		return codeGenerator.getClass() + ", schema: " + codeGenerator.getSchema();
+		return codeGenerator.toString();
 	}
 
 	@Override
@@ -146,8 +146,8 @@ public class SecureStep implements ExecutionStep, Serializable {
 	
 	private String appendOperator(ExecutionStep step, String src, String linePrefix) {
 		String opString = step.toString();
-		if (step instanceof SecureStep && ((SecureStep) step).isMerge)
-			opString = "LogicalMerge-Secure";
+		if (step instanceof SecureStep && ((SecureStep) step).isMerge)  // TODO: extend to take into account slicing
+			opString = "LogicalMerge-DistributedOblivious"; 
 		src += linePrefix + opString + "\n";
 		linePrefix += "    ";
 		for(ExecutionStep child : step.getChildren()) {

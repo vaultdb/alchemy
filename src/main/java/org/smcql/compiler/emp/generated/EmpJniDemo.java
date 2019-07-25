@@ -2,6 +2,8 @@ package org.smcql.compiler.emp.generated;
 
 
 
+import java.util.BitSet;
+
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.annotation.Namespace;
@@ -13,6 +15,7 @@ import org.bytedeco.javacpp.annotation.StdString;
 
 
 import org.smcql.compiler.emp.EmpProgram;
+import org.smcql.util.EmpJniUtilities;
 
 
 @Platform(include={"EmpJniDemo.h"}, 
@@ -25,6 +28,7 @@ import org.smcql.compiler.emp.EmpProgram;
 @Namespace("EmpJniDemo")
 public class EmpJniDemo  extends EmpProgram  {
 
+	
 	public EmpJniDemo(int party, int port) {
 		super(party, port);
 	}
@@ -48,30 +52,33 @@ public class EmpJniDemo  extends EmpProgram  {
         
 	}
 	
-	   boolean[] queryOutput = null;
 	
 	   
 	   	
         @Override
-        public  boolean[] runProgram() {
+        public  void runProgram() {
         	EmpJniDemoClass theQuery = new EmpJniDemoClass();
 
         	if(generatorHost != null) {
         		theQuery.setGeneratorHost(generatorHost);
         	}
         	theQuery.run(party, port);
-        	String output = theQuery.getOutput();
+        	outputString = theQuery.getOutput();
 	        theQuery.close();
 
-	       boolean[] outBits = new boolean[output.length()];
-	       for(int i = 0; i < output.length(); ++i) {
-	    	   outBits[i] = output.charAt(i) == '1' ? true : false;
-	       }
-	       return outBits;
+	        
+	        outputBits = EmpJniUtilities.stringToBitSet(outputString);
+	        
+	       
+	       
+	       
+	       System.out.println("Output length: " + outputString.length() + " in javaland.");
+	 
 	       
         }
         
 
+        
 	// for testing
 	public static void main(String[] args) {
            
@@ -79,15 +86,9 @@ public class EmpJniDemo  extends EmpProgram  {
 		int port = Integer.parseInt(args[1]);
 		
 		EmpJniDemo qc = new EmpJniDemo(party, port);
-		boolean[] bits = qc.runProgram();
-		char b;
-	       
-			// write bitstring to stderr
-			for(int i = 0; i < bits.length; ++i) {
-				b = (bits[i] == true) ? '1' : '0';
-				System.err.print(b);
-			}
-
+		qc.runProgram();
+		System.err.print(qc.getOutputString());
+	    
 	        
     }        
 	

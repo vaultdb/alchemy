@@ -3,10 +3,8 @@ package org.smcql.executor;
 
 import java.io.File;
 import java.sql.Connection;
-import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +21,6 @@ import org.gridkit.vicluster.telecontrol.Classpath;
 import org.gridkit.vicluster.telecontrol.ssh.RemoteNodeProps;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.compiler.emp.EmpBuilder;
-import org.smcql.compiler.emp.EmpParty;
 import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
@@ -33,14 +30,11 @@ import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.executor.smc.ExecutionSegment;
 import org.smcql.executor.smc.OperatorExecution;
-import org.smcql.executor.smc.SecureQueryTable;
-import org.smcql.executor.smc.runnable.RunnableSegment;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.FileUtils;
 import org.smcql.util.Utilities;
 
-import com.oblivm.backend.gc.GCSignal;
 
 public class SegmentExecutor {
 
@@ -119,9 +113,9 @@ public class SegmentExecutor {
 		return cloud;
 	}
 	
-	public List<SecureQueryTable> runSecureSegment(ExecutionSegment segment) throws Exception {
+	/*public List<SecureQueryTable> runSecureSegment(ExecutionSegment segment) throws Exception {
 		return runSecure(segment);
-	}
+	}*/
 	
 
     private void initializeHost(WorkerConfiguration worker) throws Exception {
@@ -229,7 +223,7 @@ public class SegmentExecutor {
 		 });
 	 }
 	 
-	 public List<SecureQueryTable> runSecure(ExecutionSegment segment) {
+	/* public List<SecureQueryTable> runSecure(ExecutionSegment segment) {
 		 String sql = segment.sliceComplementSQL;
 		 
 		 // initialize code
@@ -258,7 +252,7 @@ public class SegmentExecutor {
 		 
 		 return result;
 	 }
-	 
+	 */
 	 
 	 
 	 
@@ -292,9 +286,9 @@ public class SegmentExecutor {
 			
 	
 			
-		 List<boolean[]> result = cloud.node("**").massExec(new Callable<boolean[]>() {
+		 List<String> result = cloud.node("**").massExec(new Callable<String>() {
 				@Override
-				public boolean[] call() throws Exception {
+				public String call() throws Exception {
 					int party = (System.getProperty("party").equals("gen")) ? 1 : 2;
 					int port = EmpJniUtilities.getEmpPort();
 	
@@ -314,18 +308,20 @@ public class SegmentExecutor {
 					
 					
 			 
+					program.runProgram();
+
 					
-					boolean[] smcOutput = program.runProgram();
 					System.out.println("Completed query run on party " + party);
 
 					
 				
-					return smcOutput;
+					return program.getOutputString();
 				}
 			});
 		 
-		boolean[] decrypted = EmpJniUtilities.decrypt(result.get(0), result.get(1));
-		return new QueryTable(decrypted, segment.outSchema);
+		
+		BitSet decrypted = EmpJniUtilities.decrypt(result.get(0), result.get(1));
+		return new QueryTable(decrypted, segment.outSchema, result.get(0).length(), true);
 	 }
 
 	 

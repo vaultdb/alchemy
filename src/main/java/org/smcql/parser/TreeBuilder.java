@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.OperatorFactory;

@@ -15,6 +15,11 @@ import org.smcql.plan.operator.Aggregate;
 import org.smcql.type.TypeMap;
 import org.smcql.util.CodeGenUtils;
 
+// TODO: modify sort procedure s.t. if it has a secure child we sort on group-by key and dummy tag
+// if it is a secure leaf, then we order by group-by attr and dummy tag in plaintext
+// need to revise SQL generator for that
+// also need to address sort method to extract dummyTag first
+
 public class SecureGroupByAggregate extends SecureOperator {
 
 	/**
@@ -29,7 +34,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 	}
 
 	@Override
-	public Map<String, String> generate() throws Exception {
+	public String generate() throws Exception {
 		Map<String, String> variables = baseVariables();
 		Aggregate a = (Aggregate) planNode;
 
@@ -37,13 +42,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 		// TODO: Allow compute to replace operation for the following operations: Count, Sum, Avg, Min, Max
 		// Current Priorities are: Count and Sum
 
-		String compute = "";
-		compute += "secure int$size deref = merged[mIdx];\n";
-		compute += "secure int$size toAdd = a[aIdx];\n";
-		compute += "deref$cntMask = deref$cntMask + toAdd$cntMask;\n";
-		compute += "merged[mIdx] = deref;\n";
-		variables.put("compute", compute);
-
+		
 		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
 
 		String groupByMatch = generateGroupBy(groupByAttributes);
@@ -64,9 +63,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 
 		generatedCode = CodeGenUtils.generateFromTemplate("aggregate/groupby/aggregate.txt", variables);
 
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(getPackageName(), generatedCode);
-		return result;
+		return generatedCode;
 	}
 
 	// takes in a list of attrs we are grouping by
@@ -75,7 +72,6 @@ public class SecureGroupByAggregate extends SecureOperator {
 		String ret = "    Bit ret(1, PUBLIC);\n\n";
 
 		for (SecureRelDataTypeField r : attrs) {
-			int size = r.size();
 			String lVar = "l" + i;
 			String rVar = "r" + i;
 
@@ -142,7 +138,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 
 			String initAggregateValue = getValueInit(call);
 
-			initAggregate += "Integer " + aggVariable + "= Integer(INT_LENGTH," + initAggregateValue + ",PUBLIC);\n";
+			initAggregate += "Integer " + aggVariable + "= Integer(" + size + "," + initAggregateValue + ",PUBLIC);\n";
 
 			if (!call.getArgList().isEmpty())
 				initAggregate += "Integer tupleArg" + varNo + " = Integer(" + size + "," + initAggregateValue + ", PUBLIC);\n";
@@ -217,8 +213,8 @@ public class SecureGroupByAggregate extends SecureOperator {
 				processString += "not yet implemented";
 				return processString;
 			case COUNT:  // TODO: set up for group by part
-				processString += "agg" + aggId + " = If(dummyTest, " +  aggVar + " + 1, " + aggVar + ");\n";
-				return processString;
+				processString += "agg" + aggId + " = If(dummyTest, " +  aggVar + " + Integer(" + size + ", 1, PUBLIC), " + aggVar + ");\n";
+				return processString;  
 			case SUM:
 				processString += "agg" + aggId + " = If(dummyTest, " + aggVar + " + " + tupleVar + ", " + aggVar + ");\n";
 				return processString;
@@ -236,7 +232,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 		Integer arg = call.getArgList().get(0);
 		Integer offset = schema.getFieldOffset(arg);
 
-		return "writeToInteger( &" + dstVar + ", &tuple, 0, " + runningOffset + ", " + size + ");\n";
+		return "EmpUtilities::writeToInteger( &" + dstVar + ", &tuple, 0, " + runningOffset + ", " + size + ");\n";
 	}
 
 	private String writeGroupBy(String dstTuple, String aggVar) {
@@ -260,7 +256,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 			int srcOffset = inSchema.getFieldOffset(field.getIndex());
 			int dstOrdinal = schema.getAttribute(name).getIndex();
 			int dstOffset = schema.getFieldOffset(dstOrdinal);
-			writer += "writeToInteger(" + dstTuple + ", &" + aggVar + ", " + srcOffset + ", " + dstOffset + ", " + size + ");\n";
+			writer += "EmpUtilities::writeToInteger(" + dstTuple + ", &" + aggVar + ", " + srcOffset + ", " + dstOffset + ", " + size + ");\n";
 		}
 
 		return writer;
@@ -285,7 +281,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 			//int srcOffset = inSchema.getFieldOffset(inSchema.getFieldOffset(inSchema.getAttribute(name).getIndex()));
 			if (aggMap.containsKey(name)) {
 				if (aggMap.get(name).equals(call)) {
-					writer += "writeToInteger(" + dstTuple + ", &" + aggVar + ", " + dstOffset + ",0, " + size + ");\n";
+					writer += "EmpUtilities::writeToInteger(" + dstTuple + ", &" + aggVar + ", " + dstOffset + ",0, " + size + ");\n";
 					break;
 				}
 			}
@@ -340,7 +336,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 		Integer arg = call.getArgList().get(0);
 		Integer offset = schema.getFieldOffset(arg);
 
-		return "writeToInteger( &" + dstVar + ", &current, 0, " + runningOffset + ", " + size + ");\n";
+		return "EmpUtilities::writeToInteger( &" + dstVar + ", &current, 0, " + runningOffset + ", " + size + ");\n";
 	}
 
 }

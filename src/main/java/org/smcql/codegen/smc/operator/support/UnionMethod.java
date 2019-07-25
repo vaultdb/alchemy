@@ -9,11 +9,9 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.calcite.util.Pair;
-import org.apache.commons.lang3.StringUtils;
 import org.smcql.codegen.CodeGenerator;
-import org.smcql.compiler.DynamicCompiler;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.plan.operator.Operator;
@@ -45,13 +43,14 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		src = op;
 		orderKey = orderBy;
 		childStep = child;
-		//Logger logger = SystemConfiguration.getInstance().getLogger();
+		Logger logger = SystemConfiguration.getInstance().getLogger();
 		
 		srcSQL = (child instanceof PlaintextStep) ? child.generate() : null;
-		//logger.info("Union Method srcSQL: " + srcSQL);
+		logger.info("Union Method srcSQL: " + srcSQL);
 		
 		packageName = child.getPackageName() + ".union";
 		functionName = child.getFunctionName() + "Union";
+		
 		
 		if (srcSQL != null) {
 			schema = Utilities.getOutSchemaFromSql(srcSQL);
@@ -75,18 +74,24 @@ public class UnionMethod implements CodeGenerator, Serializable {
 	}
 	
 	@Override
-	public Map<String, String> generate() throws Exception {
+	public String generate() throws Exception {
 		int size = schema.size();
-
+		String sql = new String("");
+		boolean localRun = !src.getExecutionMode().distributed;
+		
 		Map<String, String> variables = new HashMap<String, String>();
 		//variables.put("lessThan", generateLessThan());
 		variables.put("size", Integer.toString(size));
 		variables.put("packageName", packageName);
 		variables.put("functionName", functionName);
-		String sql =  srcSQL.replace('\n', ' ');
+		
+		// if it is run locally
+		if(localRun) {
+			sql =  srcSQL.replace('\n', ' ');
+		}
+
 		variables.put("sql", sql);
-		
-		
+
 		
 		String unionFile = "union/ordered.txt";
 		
@@ -95,15 +100,17 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		}
 		else {
 			//TODO: add support for composite merge key
-			Pair<Integer, Integer> schemaPos = CodeGenUtils.getSchemaPosition(schema.getAttributes(), orderKey.get(0));
+			/*Pair<Integer, Integer> schemaPos = CodeGenUtils.getSchemaPosition(schema.getAttributes(), orderKey.get(0));
 			variables.put("keyLength", Integer.toString(schemaPos.getKey()));
-			variables.put("keyPos", Integer.toString(schemaPos.getValue()));
+			variables.put("keyPos", Integer.toString(schemaPos.getValue()));*/
+			
+			// sort the whole thing
+			variables.put("keyLength", Integer.toString(size));
+			variables.put("keyPos", "0");
 		}
 		
 		generatedCode = CodeGenUtils.generateFromTemplate(unionFile, variables);
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(packageName, generatedCode);
-		return result;
+		return generatedCode;
 	}
 	
 	
@@ -148,17 +155,10 @@ public class UnionMethod implements CodeGenerator, Serializable {
 		return base + "_merge.lcc";
 	}
 	
-	@Override
-	public void compileIt() throws Exception {
-		Map<String, String> code = generate();
-		
-		for (String n : code.keySet())
-			DynamicCompiler.compileOblivLang(code.get(n), n);
-	}
 	
 	@Override
-	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
-		return new HashMap<String, String>();
+	public String generate(boolean asSecureLeaf) throws Exception {
+		return new String();
 	}
 	
 

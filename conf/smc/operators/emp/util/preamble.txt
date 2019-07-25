@@ -2,6 +2,8 @@
 #include <map>
 #include <string>
 
+#include "EmpUtilities.h"
+
 
 // header of an ExecutionSegment in emp
 // put in front of first generated MPC operator
@@ -16,100 +18,32 @@ using namespace std;
 namespace $queryName {
 
 class $queryClass {
-// Connection strings, encapsulates db name, db user, port, host
-string aliceConnectionString = "$aliceConnectionString";
-string bobConnectionString = "$bobConnectionString";
 
-string aliceHost = "$aliceHost";
-int INT_LENGTH = 64;
+string aliceHost = "127.0.0.1";
+
 string output;
 map<string, string> inputs;    // maps opName --> bitString of input tuples
-map<string, string> dummyTagsMap; // maps opName --> bitString of dummy tags, 1 / tuple
-
-
-// Helper functions
-string reveal_bin(Integer &input, int length, int output_party) {
-    bool * b = new bool[length];
-    ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
-    string bin="";
-    
-    for (int i=0; i<length; i++)
-        bin += (b[i] ? '1':'0');
-    
-    delete [] b;
-    return bin;
-}
-
-	
-void cmp_swap_sql(Integer*key, Bit* dummyTags, int i, int j, Bit acc, int key_pos, int key_length) {
-    Integer keyi = Integer(key_length, key[i].bits+key_pos);
-    Integer keyj = Integer(key_length, key[j].bits+key_pos);
-    Bit to_swap = ((keyi > keyj) == acc);
-    swap(to_swap, key[i], key[j]);
-    swap(to_swap, dummyTags[i], dummyTags[j]);
-}
-
-// TODO: extend this to multiple columns as a list of key_pos and key_length
-void bitonic_merge_sql(Integer* key, Bit* dummyTags, int lo, int n, Bit acc, int key_pos, int key_length) {
-    if (n > 1) {
-        int m = greatestPowerOfTwoLessThan(n);
-        for (int i = lo; i < lo + n - m; i++)
-            cmp_swap_sql(key, dummyTags, i, i + m, acc, key_pos, key_length);
-        bitonic_merge_sql(key, dummyTags, lo, m, acc, key_pos, key_length);
-        bitonic_merge_sql(key, dummyTags, lo + m, n - m, acc, key_pos, key_length);
-    }
-}
-
-void bitonic_sort_sql(Integer * key, Bit* dummyTags, int lo, int n, Bit acc,  int key_pos, int key_length) {
-    if (n > 1) {
-        int m = n / 2;
-        bitonic_sort_sql(key, dummyTags, lo, m, !acc, key_pos, key_length);
-        bitonic_sort_sql(key, dummyTags, lo + m, n - m, acc, key_pos, key_length);
-        bitonic_merge_sql(key, dummyTags, lo, n, acc, key_pos, key_length);
-    }
-}
 
 
 
-bool * outputBits(Integer &input, int length, int output_party) {
-		bool * b = new bool[length];
-		ProtocolExecution::prot_exec->reveal(b, output_party, (block *)input.bits,  length);
+	class Data {
+	public:
+		Integer * tuples;
+		int publicSize;
 
+	};
 
-		return b;
-}
-
-
-
-bool * toBool(string src) {
-	long length = src.length();
-	bool *output = new bool[length];
-	
-	for(int i = 0; i < length; ++i) 
-		output[i] = (src[i] == '1') ? true : false;
-	
-	return output;
-}
-
-void writeToInteger(Integer *dst, Integer *src, int writeOffset, int readOffset, int size) {
-    Bit *writePtr = dst->bits + writeOffset;
-    Bit *srcPtr = src->bits + readOffset;
-
-    memcpy(writePtr, srcPtr, sizeof(Bit)*size);
-
-}
-
-
-// Operator functions
-class Data {
 public:
-    Integer * data;
-    Bit * dummyTags; // TODO
-    int publicSize;
-    Integer realSize;
+	// maintains a map of inputs from JDBC
+	void addInput(const std::string& opName, const std::string& bitString) {
 
-};
+     inputs[opName] = bitString;
+
+     }
 
 
+	const std::string& getOutput() {
+	      return output;
+	}
 
 

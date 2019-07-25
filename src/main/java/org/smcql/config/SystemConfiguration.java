@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +28,6 @@ import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
-import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.privacy.PrivacyStatistics;
 import org.smcql.util.FileUtils;
@@ -39,6 +37,9 @@ import org.smcql.util.Utilities;
 public class SystemConfiguration {
 	
 	public static final SqlDialect DIALECT = SqlDialect.DatabaseProduct.POSTGRESQL.getDialect();
+	
+	
+	public enum Party { ALICE, BOB, COORDINATOR};
 	
 	static SystemConfiguration instance = null;
 	private static final Logger logger =
@@ -66,7 +67,7 @@ public class SystemConfiguration {
 		config = new HashMap<String, String>();
 		privacyBudget = new PrivacyStatistics();
 		
-		String configStr = System.getProperty("smcql.setup.str");
+		String configStr = System.getProperty("smcql.setup.str"); // remote case, serialize config and parse this string
 		if(configStr != null) {
 
 			List<String> parameters = Arrays.asList(StringUtils.split(configStr, '\n'));
@@ -77,17 +78,46 @@ public class SystemConfiguration {
 			return;
 		}
 		
+		// local case, read in a text file
 		configFile = System.getProperty("smcql.setup");
 		
 		if(configFile == null) 
-			configFile = Utilities.getSMCQLRoot() + "/conf/setup";
+			configFile = Utilities.getSMCQLRoot() + "/conf/setup.global";
+		
+		
 		File f = new File(configFile); // may not always exist in remote invocations
 		if(f.exists()) {
 			List<String> parameters = FileUtils.readFile(configFile);
 			parseConfiguration(parameters);
 			
-		}		
+		}	
 
+		String deploymentConfigFile = new String(Utilities.getSMCQLRoot() + "/conf/setup.");
+		String location = (System.getProperty("smcql.location") != null) ? System.getProperty("smcql.location") : config.get("location"); // if not given at setup time, use default
+		
+		// if distributed nodes not set up yet, switch to local mode.  E.g.,
+		// distributed-eval-enabled=false
+		if(config.get("distributed-eval-enabled") != null && config.get("distributed-eval-enabled").equals("false")) {
+			location = "local";
+		}
+		
+		String schemaName = (System.getProperty("smcql.schema.name") != null) ? System.getProperty("smcql.schema.name") : config.get("schema-name"); // if not given at setup time, use default
+
+		deploymentConfigFile +=  location + "-" + schemaName;
+		
+
+		File d = new File(deploymentConfigFile); // may not always exist in remote invocations
+		if(d.exists()) {
+			List<String> parameters = FileUtils.readFile(deploymentConfigFile);
+			parseConfiguration(parameters);		
+		}
+		else {
+			System.out.println("Warning! No deployment file: " + deploymentConfigFile);
+		}
+		
+		
+		
+		
 		initializeLogger();
 		initializeCalcite();
 		
@@ -199,6 +229,8 @@ public class SystemConfiguration {
 		return instance;
 	}
 	
+
+	
 	public  Logger getLogger() {
 		return logger;
 	}
@@ -276,10 +308,17 @@ public class SystemConfiguration {
 		return calciteConfig;
 	}
 	
-	public SchemaPlus getPdnSchema() {
+	public SchemaPlus getPdfSchema() {
 		return pdnSchema;
 	}
 	
+	public boolean slicingEnabled() {
+		if(getProperty("sliced-execution") != null)
+			return !getProperty("sliced-execution").equals("false");
+		return false;
+		
+	}
+
 	public CalciteConnection getCalciteConnection() {
 		return calciteConnection;
 	}
@@ -288,6 +327,8 @@ public class SystemConfiguration {
 		++portCounter;
 		return portCounter;
 	}
+	
+		
 
 	public void resetCounters() {
 		operatorCounter = -1;
@@ -315,6 +356,13 @@ public class SystemConfiguration {
 		}
 		
 		return properties;
+	}
+
+	public boolean distributedEvaluationEnabled() {
+		if(config.get("distributed-eval-enabled") != null && config.get("distributed-eval-enabled").equals("false")) 
+			return false;
+		
+		return true;
 	}
 	
 

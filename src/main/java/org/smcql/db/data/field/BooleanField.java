@@ -1,26 +1,25 @@
 package org.smcql.db.data.field;
 
 import java.io.Serializable;
+import java.util.BitSet;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.smcql.type.SecureRelDataTypeField;
 
 public class BooleanField extends Field implements Serializable {
 public boolean value;
 	
-	public BooleanField(SecureRelDataTypeField attr, boolean v) {
-		super(attr);
+	public BooleanField(SecureRelDataTypeField attr, boolean v, SqlTypeName sqlType) {
+		super(attr, sqlType);
 		value = v;
 	}
 	
-	public BooleanField(SecureRelDataTypeField attr) {
-		super(attr);		
+	public BooleanField(SecureRelDataTypeField attr, SqlTypeName sqlType) {
+		super(attr, sqlType);		
 		value = false;
 	}
 
-	@Override
-	public int size()  {
-		return 1;
-	}
+	
 	
 	
 	@Override
@@ -74,8 +73,8 @@ public boolean value;
 	}
 	
 	@Override
-	public void deserialize(boolean[] src) {
-		assert(src.length == this.size());
-		value = src[0];
+	public void deserialize(BitSet src) {
+		assert(src.size() == this.size());
+		value = src.get(0);
 	}
 }

@@ -7,11 +7,9 @@ Data * $functionName(Data *data) {
 
     // Initialize new Data object for end results
     Data *result = new Data;
-    result->data = new Integer[data->publicSize];
-    result->publicSize = data->publicSize;
-    result->dummyTags = new Bit[data->publicSize];
+    result->tuples = new Integer[data->publicSize];
 
-	std::cout << "Performing group-by aggregate over " << data->publicSize << " input tuples!" << std::endl;
+
 
     // set index 0 init
     Bit init = If(data->dummyTags[0], Bit(), Bit(true,PUBLIC));

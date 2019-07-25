@@ -249,12 +249,11 @@ Data * Join6(Data *left, Data *right) {
  
     int writeIdx = 0;
     Integer dstTuple, srcTuple, lTuple, rTuple;
-    int jointSchemaSize = 32 + 32 - 1; // don't double-count dummy tags from two contributing tuples
+    int jointSchemaSize = 33 + 33 - 1; // don't double count the dummy tag 
     int outputTupleCount = left->publicSize * right->publicSize;
-	int lhsPayloadSize = 32 - 1; // sans dummy tag
-	int rhsPayloadSize = 32 - 1; // sans dummy tag
+	int lhsPayloadSize = 33 - 1; // sans dummy tag
+	int rhsPayloadSize = 33 - 1; // sans dummy tag
 	
-    
 
 	Data *result = new Data;
     
@@ -265,16 +264,18 @@ Data * Join6(Data *left, Data *right) {
     result->tuples = new Integer[outputTupleCount];
     result->publicSize = outputTupleCount;
     
-    dstTuple = Integer(32, 0, PUBLIC);
+    dstTuple = Integer(33, 0, PUBLIC);
 	
     for (int i=0; i < left->publicSize; i++) {
+        lTuple = left->tuples[i];
+        memcpy(srcTuple.bits, lTuple.bits, lhsPayloadSize);
+        		
         for (int j=0; j < right->publicSize; j++) {
-        	lTuple = left->tuples[i];
         	rTuple = right->tuples[j];
 	        	
         	// concatenate the two inputs into srcTuple, the standard join output schema
-        	memcpy(srcTuple.bits, lTuple.bits, lhsPayloadSize);
-        	memcpy(srcTuple.bits + 32, rTuple.bits, rhsPayloadSize);
+        	memcpy(srcTuple.bits + lhsPayloadSize, rTuple.bits, rhsPayloadSize);
+        	
         	
         	// TODO: rewire filter flattener to skip the memcopies above
         	Bit cmp = Integer(32, srcTuple.bits ) == Integer(32, srcTuple.bits  + 32);
@@ -283,7 +284,7 @@ Data * Join6(Data *left, Data *right) {
         	memcpy(dstTuple.bits , Integer(32, srcTuple.bits ).bits, 32);
 ;
         	
-        	dstTuple[dstTuple.size() - 1] = cmp & !EmpUtilities::getDummyTag(lTuple) & !EmpUtilities::getDummyTag(rTuple);
+        	dstTuple[33 - 1] = cmp & !EmpUtilities::getDummyTag(lTuple) & !EmpUtilities::getDummyTag(rTuple);
 	       
         	
 	        result->tuples[writeIdx] = dstTuple;

@@ -4,16 +4,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.calcite.rel.logical.LogicalJoin;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.plaintext.PlainOperator;
 import org.smcql.codegen.smc.operator.SecureOperator;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.plan.ShadowRelNode;
 import org.smcql.plan.slice.SliceKeyDefinition;
@@ -48,23 +51,29 @@ public abstract class Operator implements CodeGenerator {
 	
 	protected boolean blocking = false;
 	
-	ExecutionMode  executionMode = ExecutionMode.Secure;
+	ExecutionMode  executionMode = null;
 	String queryName;
 	
 	PrivacyCost pCost;
+	
+	SystemConfiguration config;
+	
 	
 	public Operator(String name, SecureRelNode src, Operator... childOps) throws Exception {
 		baseRelNode = src;
 		src.setPhysicalNode(this);
 		children = new ArrayList<Operator>();
-		operatorId = SystemConfiguration.getInstance().getOperatorId();
+		config = SystemConfiguration.getInstance();
+	
+		
+		operatorId = config.getOperatorId();
 		
 		for(Operator op : childOps) {
 			children.add(op);
 			op.setParent(this);
 		}
 		
-		logger = SystemConfiguration.getInstance().getLogger();
+		logger = config.getLogger();
 		queryName = name.replaceAll("-", "_");
 		plaintextGenerator = new PlainOperator(this);
 		
@@ -81,64 +90,188 @@ public abstract class Operator implements CodeGenerator {
 		
 		ExecutionMode maxChild = maxChildMode(); 
 		SecurityPolicy maxAccess = maxAccessLevel(); // most sensitive attribute it computes on
-		List<SecureRelDataTypeField> sliceAttrs = getSliceAttributes();
 		
-		String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess + " slice key " + sliceAttrs;
-
-		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 && maxAccess == SecurityPolicy.Public) {
-			executionMode = ExecutionMode.Plain;
-			logger.info(msg + "\nLabeling " + this + " as plain 1");
-			return;
-		}
-
-
-		/* Commented out to prevent EmpQueryExecutorLocal Crash
-
-		// filter push-down, execute it in plaintext and dummy pad it
-		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 && this instanceof Filter) {
-			executionMode = ExecutionMode.Plain;
-			logger.info(msg + "\nLabeling " + this + " as plain 2");
-
-			return;
-		}
-		*/
-		
-		assert(sliceAttrs.isEmpty()); // not possible in current test because everything is private
-		
-		if(maxChild.compareTo(ExecutionMode.Plain) <= 0 & !sliceAttrs.isEmpty()) {
-			executionMode = ExecutionMode.Slice;
-			sliceKey = new SliceKeyDefinition(sliceAttrs);
-			sliceKey.addFilters(sliceAttrs.get(0).getFilters(), this.getSchema());
-			return;
-		}
+		executionMode = new ExecutionMode(); // defaults to distributed oblivious, i.e. MPC
+		executionMode.replicated = getSchema().isReplicated(); // inferred this during schema resolution
 		
 		
+		//String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess;
+		//logger.info(msg);
 		
-		if(maxChild == ExecutionMode.Slice) {
-			boolean sliceAble = true;
-			for(Operator op : children) {
-				if(!SliceKeyDefinition.sliceCompatible(op, this)) {
-					sliceAble = false;
+		// if maxChild is DistributedClear or LocalClear and maxAccess is public, 
+		// then set it equal to maxChild
+		
+		
+		if(!maxChild.distributed) {
+			if(!maxChild.oblivious) { // local-clear
+				if(maxAccess == SecurityPolicy.Public) {
+					executionMode.distributed = false;
+					executionMode.oblivious = false; // sliced init'd t false
 				}
+				else { // oblivious child
+					try {
+						if(locallyRunnable()) {
+							executionMode.distributed = false;					
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						System.exit(-1);
+					}
+					
+				}
+			} else // max child is local-oblivious
+				try {
+					if(locallyRunnable()) {
+						executionMode.distributed = false;					
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.exit(-1);
+				}
+		
+		}
+		
+		logger.info("For " + this + " inferred execution mode: " + executionMode);
+		
+		// return distributed-oblivious-!sliced
+		
+		// TODO: update this to support slicing, rework old slicing code
 			
-			}
-		
-			if(sliceAble) {
-				executionMode = ExecutionMode.Slice;
-				sliceKey = new SliceKeyDefinition(this);
-				//For multiple filters
-				for (int i=0; i< this.getChildren().size(); i++) {
-					sliceKey.mergeFilters(this.getChild(i).getSliceKey().getFilters());
-				}
-				return;
-			}
-		}
-		
-		// secure mode default
+
 		
 		
 	}
 	
+	
+	 
+	// checks to see if we can use replication, partitioned-alike attributes, or unary ops
+	// to run this locally
+	protected boolean locallyRunnable()  throws Exception{
+		
+		boolean local = true;
+		
+		for(Operator child : children) { // either child is replicated or if binary op, have one input that is replicated
+			if(child.getSchema().isReplicated())
+				return true;
+		}
+		
+		if(this instanceof Filter || this instanceof Project || this instanceof SeqScan) { // unary ops
+			return true;
+		}
+		
+		
+		// if not partitioned-by well-known attrs
+		if(!(config.getProperty("has-partitioning") == null || config.getProperty("has-partitioning").equals("true"))) {
+			return false;
+		}
+		
+		// a binary op where the instances are partitioned-alike
+		if(children.size() == 2) {
+			
+			
+			if(!(this instanceof Join)) {
+				throw new Exception("Only binary operator supported is join!");
+			}
+			
+			LogicalJoin join = (LogicalJoin) baseRelNode.getRelNode();
+			List<RexNode> joinCondition = join.getChildExps();
+			List<RexNode> predicates = RexUtil.flattenAnd(joinCondition);
+			
+			Operator lhsChild = children.get(0);
+			Operator rhsChild = children.get(1);
+			SecureRelRecordType lhsSchema = lhsChild.getSchema();
+			SecureRelRecordType rhsSchema = rhsChild.getSchema();
+			
+			if(lhsSchema.isReplicated() || rhsSchema.isReplicated()) // automatically partitioned-alike
+				return true;
+
+			List<SecureRelDataTypeField> lhsFields = lhsSchema.getAttributes();
+			List<SecureRelDataTypeField> rhsFields = rhsSchema.getAttributes();
+			
+			
+			for(RexNode predicate : predicates) {
+				SecureRelDataTypeField lhsPartitionBy = null;
+				SecureRelDataTypeField rhsPartitionBy = null;
+	
+				List<SecureRelDataTypeField>  srcAttrs = AttributeResolver.getAttributes(predicate, this.getSchema());
+				
+				for(SecureRelDataTypeField aField : srcAttrs) {
+					
+					if(lhsFields.contains(aField)) {					
+						if(lhsPartitionBy == null) {
+							lhsPartitionBy = aField; // get first field from lhs that we compute on, assumes equality predicates
+						}
+						else {
+							throw new Exception("Composite partitioning keys not yet implemented!");
+						}
+					}
+						
+					
+						SecureRelDataTypeField rhsField = new SecureRelDataTypeField(aField.getName(), aField.getIndex() - lhsFields.size(), aField.getType());
+						if(rhsFields.contains(rhsField)) {
+							if(rhsPartitionBy == null) {
+								rhsPartitionBy = aField; // get first field from rhs that we compute on
+							}
+							else {
+								throw new Exception("Composite partitioning keys not yet implemented!");
+							}
+						}
+					} // end schema matcher
+			
+
+				
+				
+					if(lhsPartitionBy == null || rhsPartitionBy == null) {
+						throw new Exception("Did not find partitioning keys for matching!");
+					}
+		 
+					
+					if(!(Utilities.isLocalPartitionKey(lhsChild.getSchema(), lhsPartitionBy) && Utilities.isLocalPartitionKey(rhsChild.getSchema(), rhsPartitionBy)) )
+						local = false;
+					
+					} // end for each predicate	
+				return local;
+			
+		} // end if binary op
+		
+		// single input, e.g., aggregate
+		List<SecureRelDataTypeField> fields = this.computesOn();
+		for(SecureRelDataTypeField aField : fields) {
+			if(!Utilities.isLocalPartitionKey(children.get(0).getSchema(), aField)) {
+				local = false;
+				}
+			}
+			
+	   // end unary case
+		return local;
+	}
+	
+	
+	
+	private void debugFieldComparison(String msg, SecureRelDataTypeField aField, List<SecureRelDataTypeField> fields) throws Exception {
+		for(SecureRelDataTypeField field : fields) {
+			System.out.println("\n" + msg + ": Comparing " + aField + " to " + field + ": " + field.equals(aField));
+			
+		/*	System.out.println("Name: " + aField.getName().equals(field.getName()));
+
+			System.out.println("Indices: " + aField.getIndex() + ", " + field.getIndex());
+			System.out.println("Index: " + (aField.getIndex() == field.getIndex()));
+			
+			RelDataType schemaType = field.getType();
+			RelDataType cmpType = aField.getType();
+			
+			System.out.println("Schema type: " + schemaType + ", matching to " + cmpType);
+			System.out.println("Type: " + schemaType.equals(cmpType));
+			*/
+			
+			if(field.equals(aField))
+				break;
+			
+		
+		}
+		
+	}
+
 	// TODO: use this to manage attribute-level statistics as tuples move up the query tree
 	// will need to be overridden in many classes
 	public void initializeStatistics() {
@@ -206,10 +339,16 @@ public abstract class Operator implements CodeGenerator {
 	protected ExecutionMode maxChildMode() {
 		ExecutionMode maxMode = children.get(0).executionMode;
 		
-		//join
-		if(children.size() == 2)
-			if(children.get(1).executionMode.compareTo(maxMode) > 0)
-				maxMode = children.get(1).executionMode;
+		//join or other binary op
+		if(children.size() == 2)  {
+			ExecutionMode rhs = children.get(1).executionMode;
+			if(rhs.distributed) 
+				maxMode.distributed = true;
+	
+			if(rhs.oblivious)
+				maxMode.oblivious = true;
+			
+		}
 
 		return maxMode;
 	}
@@ -249,7 +388,7 @@ public abstract class Operator implements CodeGenerator {
 	}
 	
 	boolean sliceAble() {
-		if(this.sliceAgnostic == true && this.maxChildMode() != ExecutionMode.Secure)
+		if(this.sliceAgnostic == true && !this.maxChildMode().oblivious)
 			return true;
 		return false;
 	}
@@ -275,7 +414,7 @@ public abstract class Operator implements CodeGenerator {
 		List<SecureRelDataTypeField> baseKey;
 		
 		// if has a sliced child
-		if(children.get(0).getExecutionMode() == ExecutionMode.Slice) {
+		if(children.get(0).getExecutionMode().sliced) {
 			baseKey = children.get(0).getSliceAttributes();
 		}
 		else { 
@@ -322,6 +461,8 @@ public abstract class Operator implements CodeGenerator {
 	}
 
 
+	
+	
 	public String getOpName() {
 		String fullName = this.getClass().toString();
 		int startIdx = fullName.lastIndexOf('.') + 1;
@@ -369,7 +510,7 @@ public abstract class Operator implements CodeGenerator {
 
 
 	public String destFilename(ExecutionMode e) {
-        if(e == ExecutionMode.Plain) {
+        if(!e.distributed || (e.distributed && !e.oblivious)) {
         	return Utilities.getCodeGenTarget() + "/" + getQueryId() +  "/sql/" + getOperatorId() + "_" + getOpName() + ".sql";
         }
 
@@ -378,14 +519,14 @@ public abstract class Operator implements CodeGenerator {
 
 
 	@Override
-	public Map<String, String> generate() throws Exception {
+	public String generate() throws Exception {
 		return plaintextGenerator.generate();
 	}
 
 	
 	@Override
-	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
-		return new HashMap<String, String>();
+	public String generate(boolean asSecureLeaf) throws Exception {
+		return new String();
 	}
 
 	public void compileIt() throws Exception {
@@ -416,7 +557,7 @@ public abstract class Operator implements CodeGenerator {
 		if(executionMode != op.getExecutionMode())
 			return false;
 		
-		if(executionMode == ExecutionMode.Slice && op.getExecutionMode() == this.executionMode) {
+		if(executionMode.sliced && executionMode.oblivious && op.getExecutionMode() == this.executionMode) {
 			if(!SliceKeyDefinition.sliceCompatible(this, op)) {
 				return false;
 			}

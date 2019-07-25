@@ -2,18 +2,15 @@ package org.smcql.compiler.emp;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
-import org.smcql.db.data.QueryTable;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.Utilities;
+import java.util.BitSet;
 
 public class EmpProgram {
 
 	protected int party = 0;
 	protected int port = 0;
 	protected String generatorHost = null; // hostname or IP address for Alice
-	
+	protected String outputString = null;
+	protected BitSet outputBits = null;
 
 	public EmpProgram(int aParty, int aPort) {
 		party = aParty;
@@ -29,11 +26,42 @@ public class EmpProgram {
 	}
 	
 	// delegate to implementing classes
-    public  boolean[] runProgram() throws Exception {
-    	return null;
+    public  void runProgram() throws Exception {
+
     }
     
 
+    public String getOutputString() {
+    	return outputString;
+    	
+    }
+    
+
+    public BitSet getOutputBits() {
+    	return outputBits;
+    	
+    }
+    
+    // output size in bits
+    public int getOutputLength() {
+    	if(outputString == null)
+    		return 0;
+    	
+    	return outputString.length();
+    }
+
+    public static BitSet stringToBitSet(String s) {
+  	  BitSet b = new BitSet(s.length());
+
+
+      for (int i = 0; i < s.length(); ++i) {
+      	b.set(i,  (s.charAt(i) == '1') ? true : false);
+      }
+
+      return b;
+    }
+
+    
     public String helloWorld() {
     	String className = this.getClass().getName();
     	return "I am a " + className + "!";

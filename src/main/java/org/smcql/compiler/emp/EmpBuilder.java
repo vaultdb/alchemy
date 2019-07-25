@@ -2,7 +2,6 @@ package org.smcql.compiler.emp;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -68,9 +67,15 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         
         smcqlLogger.info("Loading class: " + fullyQualifiedClassName);
         Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName); //.copyLibs(true);
-
+        File[] outputFiles = null;
         
-        File[] outputFiles = builder.build();
+        try {
+        	outputFiles = builder.build();
+        	
+        } catch(Exception e) {
+        	smcqlLogger.info("Failed to build class! exiting...");
+        	System.exit(1);
+        }
         smcqlLogger.info("Builder files: " + Arrays.toString(outputFiles));
         if(outputFiles == null || outputFiles.length == 0) {
         	System.out.println("Code compilation failed!");

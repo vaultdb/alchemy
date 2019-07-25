@@ -54,7 +54,7 @@ public class SqlStatementParser {
 		SystemConfiguration pdnConfig = SystemConfiguration.getInstance();
 		config = pdnConfig.getCalciteConfiguration();
 		calciteConnection = pdnConfig.getCalciteConnection();
-		sharedSchema = pdnConfig.getPdnSchema();
+		sharedSchema = pdnConfig.getPdfSchema();
 		
 		planner = new PlannerImpl(config);
 		 

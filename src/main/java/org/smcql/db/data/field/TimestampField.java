@@ -2,7 +2,9 @@ package org.smcql.db.data.field;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.BitSet;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.smcql.type.SecureRelDataTypeField;
 
 
@@ -12,21 +14,17 @@ public class TimestampField extends Field implements Serializable  {
 	public Timestamp time;
 	
 	
-	TimestampField(SecureRelDataTypeField attr, Timestamp timestamp) {
-		super(attr);
+	TimestampField(SecureRelDataTypeField attr, Timestamp timestamp, SqlTypeName sqlType) {
+		super(attr, sqlType);
 		time = timestamp;
 		timestamp.getTime();
 
 	}
 	
-	public TimestampField(SecureRelDataTypeField attr) {
-		super(attr);
+	public TimestampField(SecureRelDataTypeField attr, SqlTypeName sqlType) {
+		super(attr, sqlType);
 	}
 
-	@Override
-	public int size()  {
-		return 64;
-	}
 	
 	@Override
 	public String serializeToBinaryString() {
@@ -85,13 +83,18 @@ public class TimestampField extends Field implements Serializable  {
 	
 	
 	@Override
-	public void deserialize(boolean[] src) {
+	public void deserialize(BitSet src) {
 		
-		assert(src.length == this.size());
+		assert(src.size() == this.size());
 		long epoch = 0;
-
-		for (boolean b : src)
+		boolean b;
+		
+		for(int i = 0; i < src.size(); ++i) {
+			b = src.get(i);
 			epoch = (epoch << 1) | (b ? 1 : 0);
+
+		}
+
 		time = new Timestamp(epoch);
 		
 	}

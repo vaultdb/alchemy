@@ -15,9 +15,9 @@ rm -rf /tmp/dss/data/*
 #Generated case
 if [ "$#" -ne 0 ]; then
     TPCH_SF=$1
-    DB_NAME=tpch_unioned_sf$TPCH_SF
-    ALICE_DB=tpch_alice_sf$TPCH_SF
-    BOB_DB=tpch_bob_sf$TPCH_SF
+    DB_NAME=tpch_unioned #_sf$TPCH_SF -- just put them all in the same place
+    ALICE_DB=tpch_alice #_sf$TPCH_SF
+    BOB_DB=tpch_bob #_sf$TPCH_SF
 
     pushd deps/tpch/dbgen
 
@@ -48,7 +48,7 @@ dropdb $DB_NAME
 createdb $DB_NAME
 
 psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-load.sql
-psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-pkeys.sql
+#psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-pkeys.sql
 psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-alter.sql
 psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-index.sql
 
@@ -75,5 +75,24 @@ pg_dump tpch_unioned | psql $BOB_DB
 
 psql $ALICE_DB < $CONF_PATH/select-alice.sql
 psql $BOB_DB < $CONF_PATH/select-bob.sql
+
+
+# optional -- use this to populate main dbs
+
+#if [ "$#" -ne 0 ]; then
+#rename to main DBs
+#    dropdb tpch_alice
+#    dropdb tpch_bob
+#    dropdb tpch_unioned
+
+#    CMD='ALTER DATABASE \"' $ALICE_DB '\" RENAME TO tpch_alice'
+#    psql -c "$CMD"
+
+#    CMD='ALTER DATABASE \"' $BOB_DB '\" RENAME TO tpch_bob'
+#    psql -c "$CMD"
+
+#    CMD='ALTER DATABASE \"' $DB_NAME '\" RENAME TO tpch_unioned'
+#    psql -c "$CMD"
+#fi
 
 

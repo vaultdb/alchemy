@@ -1,27 +1,27 @@
 package org.smcql.db.data.field;
 
 import java.io.Serializable;
+import java.util.BitSet;
 
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.smcql.type.SecureRelDataTypeField;
+import org.smcql.type.TypeMap;
 
 public class IntField extends Field  implements Serializable   {
 
 	public long value;
 	
-	public IntField(SecureRelDataTypeField attr, int v) {
-		super(attr);
+	public IntField(SecureRelDataTypeField attr, int v, SqlTypeName sqlType) {
+		super(attr, sqlType);
 		value = v;
+		
 	}
 	
-	public IntField(SecureRelDataTypeField attr) {
-		super(attr);		
+	public IntField(SecureRelDataTypeField attr, SqlTypeName sqlType) {
+		super(attr, sqlType);		
 		value = 0;
 	}
 
-	@Override
-	public int size()  {
-		return 64;
-	}
 	
 	
 	@Override
@@ -84,12 +84,14 @@ public class IntField extends Field  implements Serializable   {
 	}
 	
 	@Override
-	public void deserialize(boolean[] src) {
-		assert(src.length == this.size());
+	public void deserialize(BitSet src) {
 		value = 0;
+		boolean b;
 
-		for (boolean b : src)
-			value = (value << 1) | (b ? 1 : 0);
+		for(int i = 0; i < this.size(); ++i) {
+			 b = src.get(i);
+			 value = (value << 1) | (b ? 1 : 0);
+		}
 		
 	}
 	

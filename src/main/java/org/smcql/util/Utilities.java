@@ -8,22 +8,18 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.Table;
-import org.apache.calcite.sql.SqlDialect;
-import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.tools.Planner;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.GeometricDistribution;
-import org.bytedeco.javacpp.Loader;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.schema.SecureSchemaLookup;
 import org.smcql.executor.smc.OperatorExecution;
-import org.smcql.parser.SqlStatementParser;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
@@ -223,7 +219,7 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 
 	public static SecureRelDataTypeField lookUpAttribute(String table, String attr) throws Exception {
 		SystemConfiguration conf = SystemConfiguration.getInstance();
-		SchemaPlus tables = conf.getPdnSchema();
+		SchemaPlus tables = conf.getPdfSchema();
 		Table lookupTable = tables.getTable(table);
 		JavaTypeFactory typeFactory = conf.getCalciteConnection().getTypeFactory();
 		
@@ -238,6 +234,54 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		result.setStoredTable(table);
 		return result;
 	}
+	
+	// partition key helps us deduce what tables can be joined unencrypted (locally) with oblivious padding
+	public static boolean isLocalPartitionKey(SecureRelRecordType table, SecureRelDataTypeField attr) throws Exception {
+		
+		// only supporting a single partition key defined for now
+		SystemConfiguration config = SystemConfiguration.getInstance();
+
+		String srcTable = attr.getStoredTable();
+		System.out.println("Analyzing " + attr + " src table: " + srcTable);
+
+		
+		SecureSchemaLookup schemaDef = SecureSchemaLookup.getInstance();
+		List<String> primaryKey = schemaDef.getPrimaryKey(srcTable);
+		
+		
+		if(attr.getName() == null)
+			throw new Exception("Can't check status of anonymous attribute! Need to recurse to its inputs.");
+		// Case 1: if it is the source relation's stored partition key
+		if(schemaDef.getPartitionKey(srcTable).equals(attr.getName()))
+		{
+			return true;
+		}
+		
+
+		// Case 2: the partition key is not a match and no primary keys
+		if(primaryKey == null) {
+			return false;
+		}
+
+
+		// Case 3: if there is a primary key, then any partition key will automatically divide this up
+		// by primary key since the latter admits no duplicates
+		if(primaryKey.contains(attr.getName()) &&  primaryKey.size() == 1 && schemaDef.getPartitionKey(srcTable) != null) {
+			return true;
+		}
+			
+		// TODO: remove hardcode, lineitem is a special case where linenumber will be partitioned along with orderkey
+		// owing to its semantics of counting the items in an order
+		if(config.getProperty("schema-name").equals("tpch") && attr.getName().equals("l_orderkey")) {
+				return true;
+		}
+			
+			
+		 // else false
+		return false;
+	}
+
+	
 
 	public static int generateDiscreteLaplaceNoise(double epsilon, double delta, double sensitivity) {
 		double prob = 1.0 - Math.exp(-1.0 * epsilon/sensitivity);

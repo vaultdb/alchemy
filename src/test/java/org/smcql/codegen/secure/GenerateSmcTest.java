@@ -1,28 +1,22 @@
 package org.smcql.codegen.secure;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.apache.commons.io.FileUtils;
 import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
-import org.smcql.executor.EmpExecutor;
 import org.smcql.executor.config.ConnectionManager;
-import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.CommandOutput;
 import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 
+
+// TODO: update this with working generated code when it is ready
 public class GenerateSmcTest extends BaseTest {
 
   protected void setUp() throws Exception {
@@ -38,35 +32,22 @@ public class GenerateSmcTest extends BaseTest {
     testCase(testName, query);
   }
 
-  // TODO: Keith please work on getting this going
-  // use the examples in here: https://github.com/johesbater/emp-aqp/tree/master/test
-  // for guidance
-  // make sure to create a file in expected directory called "join-cdiff-emp.cpp"
   public void testJoin() throws Exception {
-    String testName = "JoinCdiff";
+	 	    
+	  String testName = "JoinCdiff";
     String query =
         "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
        testCase(testName, query);
   }
 
-  // TODO: George, please work on getting the code generator to build code for this
-  // use the examples in here: https://github.com/johesbater/emp-aqp/tree/master/test
-  // for guidance
-  // make sure to create a file in expected directory called "filter-distinct-emp.cpp"
-
-  public void testFilterDistinct() throws Exception {
-    String testName = "FilterDistinct";
+   public void testFilterDistinct() throws Exception {
+	   
+	    
+	   String testName = "FilterDistinct";
     String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
     testCase(testName, query);
   }
 
-  protected QueryTable getExpectedOutput(String testName, String query, String distributedQuery)
-      throws Exception {
-    String aliceId = ConnectionManager.getInstance().getAlice();
-    SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
-
-    return SqlQueryExecutor.query(distributedQuery, outSchema, aliceId);
-  }
 
   protected void testCase(String testName, String sql) throws Exception {
 

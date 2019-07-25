@@ -2,25 +2,22 @@ package org.smcql.executor.emp.stub;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 
 import org.smcql.BaseTest;
 import org.smcql.compiler.emp.EmpBuilder;
-import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.compiler.emp.EmpRunnable;
-import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
-
-import junit.framework.TestCase;
 
 public class EmpJniLocalTest extends BaseTest {
     final String fullyQualifiedClassName = "org.smcql.compiler.emp.generated.EmpJniDemo";
     final int tupleWidth = 3; // characters in string
 
     protected void setUp() throws Exception {
-        String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
-        System.setProperty("smcql.setup", setupFile);
+
+        super.setUp();
     }
 
     public void testEmpJni() throws Exception {
@@ -41,13 +38,20 @@ public class EmpJniLocalTest extends BaseTest {
         alice.join();
         bob.join();
 
-        boolean[] aliceOutput = aliceRunnable.getOutput();
-        boolean[] bobOutput = bobRunnable.getOutput();
+        String aliceOutput = aliceRunnable.getOutputString();
+        String bobOutput = bobRunnable.getOutputString();
+        
 
+        logger.info("Alice output len = " + aliceOutput.length() + ", bob's is " + bobOutput.length());
+        
         List<String> output = EmpJniUtilities.revealStringOutput(aliceOutput, bobOutput, tupleWidth);
-        System.out.println("Query output: " + output);
+        logger.info("Query output: " + output);
 
-        List<String> expectedOutput = new ArrayList<>(Arrays.asList("008", "414", "008", "414"));
+        List<String> expectedOutput = new ArrayList<String>(Arrays.asList("008", "414", "008", "414"));
+     
+        
         assertEquals(expectedOutput, output);
+        
+        
     }
 }

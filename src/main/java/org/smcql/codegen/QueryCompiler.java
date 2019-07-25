@@ -24,14 +24,12 @@ import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.RunConfig;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.executor.smc.ExecutionSegment;
-import org.smcql.executor.smc.SecureBufferPool;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.executor.step.SecureStep;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.plan.operator.CommonTableExpressionScan;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Join;
 import org.smcql.plan.operator.Operator;
@@ -45,7 +43,6 @@ import org.smcql.util.CodeGenUtils;
 import org.smcql.util.EmpJniUtilities;
 import org.smcql.util.Utilities;
 
-import com.oblivm.backend.flexsc.Mode;
 
 public class QueryCompiler {
 
@@ -59,7 +56,7 @@ public class QueryCompiler {
   String userQuery = null;
   SecureRelRoot queryPlan;
   ExecutionStep compiledRoot;
-  Mode mode = Mode.REAL;
+  
   boolean codeGenerated = false;
   SecureRelRecordType outSchema = null;
   Logger logger;
@@ -82,7 +79,7 @@ public class QueryCompiler {
     
 
     // single plaintext executionstep if no secure computation detected
-    if (root.getExecutionMode() == ExecutionMode.Plain) {
+    if (!root.getExecutionMode().distributed) {
       compiledRoot = generatePlaintextStep(root);
       ExecutionSegment segment = createSegment(compiledRoot);
       executionSegments.add(segment);
@@ -113,7 +110,7 @@ public class QueryCompiler {
     Operator root = q.getPlanRoot();
 
     // single plaintext executionstep if no secure computation detected
-    if (root.getExecutionMode() == ExecutionMode.Plain) {
+    if (!root.getExecutionMode().distributed) {
       compiledRoot = generatePlaintextStep(root);
       ExecutionSegment segment = createSegment(compiledRoot);
       executionSegments.add(segment);
@@ -125,33 +122,6 @@ public class QueryCompiler {
     inferExecutionSegment(compiledRoot);
   }
 
-  public QueryCompiler(SecureRelRoot q, Mode m) throws Exception {
-
-    queryPlan = q;
-    outSchema = q.getPlanRoot().getSchema();
-    mode = m;
-    smcFiles = new ArrayList<String>();
-    sqlFiles = new ArrayList<String>();
-    sqlCode = new HashMap<ExecutionStep, String>();
-    smcCode = new HashMap<ExecutionStep, String>();
-    executionSegments = new ArrayList<ExecutionSegment>();
-    logger = SystemConfiguration.getInstance().getLogger();
-    allSteps = new HashMap<Operator, ExecutionStep>();
-
-    queryId = q.getName();
-    Operator root = q.getPlanRoot();
-
-    // single plaintext executionstep if no secure computation detected
-    if (root.getExecutionMode() == ExecutionMode.Plain) {
-      compiledRoot = generatePlaintextStep(root);
-      ExecutionSegment segment = createSegment(compiledRoot);
-      executionSegments.add(segment);
-    } else { // recurse
-      compiledRoot = addOperator(root, new ArrayList<Operator>());
-    }
-
-    inferExecutionSegment(compiledRoot);
-  }
 
   public String getQueryId() {
     return queryId;
@@ -174,16 +144,24 @@ public class QueryCompiler {
 
     Utilities.mkdir(targetPath + "/smc");
 
+    ExecutionMode executionMode = new ExecutionMode();
+    
+    executionMode.distributed = false;
+
+    
     for (Entry<ExecutionStep, String> e : sqlCode.entrySet()) {
       CodeGenerator cg = e.getKey().getCodeGenerator();
-      String targetFile = cg.destFilename(ExecutionMode.Plain);
+      
+      String targetFile = cg.destFilename(executionMode);
       sqlFiles.add(targetFile);
       org.smcql.util.FileUtils.writeFile(targetFile, e.getValue());
     }
 
+    executionMode.distributed = true;
+    
     for (Entry<ExecutionStep, String> e : smcCode.entrySet()) {
       CodeGenerator cg = e.getKey().getCodeGenerator();
-      String targetFile = cg.destFilename(ExecutionMode.Secure);
+      String targetFile = cg.destFilename(executionMode);
       smcFiles.add(targetFile);
       if (e.getValue() != null) // no ctes
       org.smcql.util.FileUtils.writeFile(targetFile, e.getValue());
@@ -199,6 +177,8 @@ public class QueryCompiler {
     String empCode = getEmpCode();
     return writeOutEmpFile(empCode);
   }
+  
+  
   // returns filename (but only for C++ code, not jni wrapper.
   // the intent of this function is to write out all code
   public String writeOutEmpFile(String empCode) throws Exception {
@@ -232,7 +212,7 @@ public class QueryCompiler {
 
     SecurePreamble preamble = new SecurePreamble(getRoot().getSourceOperator());
 
-    String generatedPreamble = preamble.generate().get("preamble");
+    String generatedPreamble = preamble.generate();
     wholeFile = generatedPreamble;
 
     // traverse the tree bottom-up in our control flow
@@ -359,16 +339,19 @@ public class QueryCompiler {
 
   private ExecutionStep addOperator(Operator o, List<Operator> opsToCombine) throws Exception {
 
-    if (o instanceof CommonTableExpressionScan) {
+	  
+    /*Deprecated: intermediate results are now registered in the run method of EMP program
+	
+     * if (o instanceof CommonTableExpressionScan) {
       Operator child = o.getSources().get(0);
-      SecureBufferPool.getInstance().addPointer(o.getPackageName(), child.getPackageName());
-    }
+      //SecureBufferPool.getInstance().addPointer(o.getPackageName(), child.getPackageName());
+    }*/
 
     if (allSteps.containsKey(o)) {
       return allSteps.get(o);
     }
 
-    if (o.getExecutionMode() == ExecutionMode.Plain) { // child of a secure leaf
+    if (!o.getExecutionMode().distributed) { // child of a secure leaf
       return generatePlaintextStep(o);
     }
 
@@ -384,7 +367,7 @@ public class QueryCompiler {
     for (Operator child : o.getSources()) {
       List<Operator> nextToCombine = new ArrayList<Operator>();
       while (child instanceof Filter || child instanceof Project) { // Aggregate NYI, needs group-by
-        if (child instanceof Filter && child.getExecutionMode() != ExecutionMode.Plain) {
+        if (child instanceof Filter && child.getExecutionMode().distributed) {
           opsToCombine.add(child);
         } else {
           nextToCombine.add(child);
@@ -392,10 +375,10 @@ public class QueryCompiler {
         child = child.getChild(0);
       }
 
-      if (child.getExecutionMode() != o.getExecutionMode()) { // secure leaf
+      if (!child.getExecutionMode().equals(o.getExecutionMode())) { // usually a secure leaf
         ExecutionStep childSource = null;
         Operator tmp = o;
-        if (child.getExecutionMode() == ExecutionMode.Plain) {
+        if (!child.getExecutionMode().distributed) {
           Operator plain = (o.isSplittable() && !(o instanceof WindowAggregate)) ? o : child;
           // TODO: figure out why generate plaintext step is running on JdbcTableScan instead of aggregate
           childSource = generatePlaintextStep(plain);
@@ -431,7 +414,7 @@ public class QueryCompiler {
   // adds the given step to the global collections and adds execution information to the step
   private void processStep(PlaintextStep step) throws Exception {
     Operator op = step.getSourceOperator();
-    String sql = op.generate().get(op.getPackageName());
+    String sql = op.generate();
     allSteps.put(op, step);
     sqlCode.put(step, sql);
   }
@@ -441,7 +424,6 @@ public class QueryCompiler {
       throws Exception {
     RunConfig pRunConf = new RunConfig();
     pRunConf.port = 54321; // does not matter for plaintext
-    pRunConf.smcMode = mode;
 
     if (prevStep == null) {
       PlaintextStep result = new PlaintextStep(op, pRunConf, null);
@@ -486,28 +468,32 @@ public class QueryCompiler {
       boolean isLhs = (leftChild == childOp);
       List<SecureRelDataTypeField> orderBy =
           (isLhs) ? leftChild.secureComputeOrder() : rightChild.secureComputeOrder();
+     
       merge = new UnionMethod(op, child, orderBy);
 
-    } else {
+    } 
+    else {
+    	
       merge = new UnionMethod(op, child, op.secureComputeOrder());
+
     }
     // merge.compileIt();
 
     RunConfig mRunConf = new RunConfig();
     mRunConf.port = (SystemConfiguration.getInstance()).readAndIncrementPortCounter();
-    mRunConf.smcMode = mode;
 
+    /* Deprecated: intermediate results are now registered in the run method of EMP program
     if (child.getSourceOperator() instanceof CommonTableExpressionScan) {
       String src = child.getPackageName();
       String dst = merge.getPackageName();
       SecureBufferPool.getInstance().addPointer(src, dst);
-    }
+    }*/
+    
 
     SecureStep mergeStep = new SecureStep(merge, op, mRunConf, child, null);
     child.setParent(mergeStep);
-    Map<String, String> results = merge.generate();
+    String code  = merge.generate();
     String key = mergeStep.getPackageName();
-    String code = results.get(key);
     smcCode.put(mergeStep, code);
     return mergeStep;
   }
@@ -536,7 +522,6 @@ public class QueryCompiler {
     RunConfig sRunConf = new RunConfig();
 
     sRunConf.port = (SystemConfiguration.getInstance()).readAndIncrementPortCounter();
-    sRunConf.smcMode = mode;
     sRunConf.host = getAliceHostname();
 
     SecureStep smcStep = null;
@@ -556,8 +541,8 @@ public class QueryCompiler {
     }
 
     allSteps.put(op, smcStep);
-    Map<String, String> code = secOp.generate();
-    for (String c : code.values()) smcCode.put(smcStep, c);
+    String code = secOp.generate();
+    smcCode.put(smcStep, code);
 
     return smcStep;
   }
@@ -622,19 +607,21 @@ public class QueryCompiler {
     current.outSchema = new SecureRelRecordType(secStep.getSchema());
     current.executionMode = secStep.getSourceOperator().getExecutionMode();
 
-    if (secStep.getSourceOperator().getExecutionMode() == ExecutionMode.Slice
+    if (secStep.getSourceOperator().getExecutionMode().sliced
         && userQuery != null) {
       current.sliceSpec = secStep.getSourceOperator().getSliceKey();
 
       PlainOperator sqlGenRoot = secStep.getSourceOperator().getPlainOperator();
-      sqlGenRoot.inferSlicePredicates(current.sliceSpec);
-      current.sliceValues = sqlGenRoot.getSliceValues();
-      current.complementValues = sqlGenRoot.getComplementValues();
-      current.sliceComplementSQL =
-          sqlGenRoot.generatePlaintextForSliceComplement(
-              userQuery); // plaintext query for single site values
+      
+      if(!SystemConfiguration.getInstance().slicingEnabled()) {
+    	  sqlGenRoot.inferSlicePredicates(current.sliceSpec);
+    	  current.sliceValues = sqlGenRoot.getSliceValues();
+    	  current.complementValues = sqlGenRoot.getComplementValues();
+    	  current.sliceComplementSQL =
+    			  sqlGenRoot.generatePlaintextForSliceComplement(
+    					  userQuery); // plaintext query for single site values
+      }
     }
-
     return current;
   }
 

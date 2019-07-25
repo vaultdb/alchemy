@@ -27,7 +27,7 @@ public class SecurePreamble extends SecureOperator {
     }
 
     @Override
-    public Map<String, String> generate() throws Exception {
+    public String generate() throws Exception {
         Map<String, String> variables = new HashMap<String, String>();
 
         ConnectionManager connectionManager = ConnectionManager.getInstance();
@@ -57,11 +57,9 @@ public class SecurePreamble extends SecureOperator {
         variables.put("aliceConnectionString", alice);
         variables.put("bobConnectionString", bob);
 
-        Map<String, String> result = new HashMap<String, String>();
         // result.put(getPackageName(),
         // CodeGenUtils.generateFromTemplate("aggregate/singular/full/aggregate.txt", variables));
-        result.put("preamble", CodeGenUtils.generateFromTemplate("util/preamble.txt", variables));
-        return result;
+        return CodeGenUtils.generateFromTemplate("util/preamble.txt", variables);
     }
 
     public String generate(EmpParty party) throws Exception {

@@ -1,23 +1,16 @@
 package org.smcql.executor.smc;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.smcql.codegen.smc.operator.SecureOperator;
-import org.smcql.codegen.smc.operator.support.ProcessingStep;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.config.SystemConfiguration.Party;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.executor.step.SecureStep;
 import org.smcql.privacy.PrivacyCost;
-import org.smcql.util.Utilities;
 
-import com.oblivm.backend.flexsc.Party;
-import com.oblivm.backend.gc.GCSignal;
-import com.oblivm.backend.oram.SecureArray;
 
 
 // basically a stripped down version of ExecutionStep for serialization
@@ -33,16 +26,14 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 	public OperatorExecution lhsChild, rhsChild;  // may be root of another segment
 	public ExecutionSegment parentSegment = null; // pointer to segment for SMCConfig 
 	public byte[] byteCode; // compiled .class for this step
-
+	public boolean[] output;
+	
 	 // for merge case
 	protected String sourceSQL = null;
-	public transient SecureArray<GCSignal> output; // optional - for passing around data w/in segment
 	
 	// for privacy calculation
 	private PrivacyCost privacyCost;
 	
-	// for additional processing
-	private List<ProcessingStep> processingSteps;
 	
 	public OperatorExecution() {
 		
@@ -55,7 +46,6 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 		outSchema = s.getSchema(); //change this
 		
 		SecureOperator sec = s.getSourceOperator().getSecureOperator();
-		processingSteps = (sec == null) ? new ArrayList<ProcessingStep>() : sec.getProcessingSteps();
 		
 		lhsChild = getChild(s, 0);
 		rhsChild = getChild(s, 1);
@@ -109,10 +99,10 @@ public class OperatorExecution implements Comparable<OperatorExecution>, Seriali
 	}
 	
 	
-	public int getParty() {
+	public Party getParty() {
 		if(parentSegment != null)
 			return parentSegment.party;
-		return -1;
+		return null;
 	}
 	
 	public String getWorkerId() {
