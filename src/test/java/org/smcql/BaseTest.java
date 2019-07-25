@@ -21,6 +21,7 @@ import org.smcql.util.Utilities;
 
 import junit.framework.TestCase;
 
+
 public class BaseTest extends TestCase {
 	protected SqlStatementParser parser;
 	protected SqlNode root;
@@ -29,11 +30,16 @@ public class BaseTest extends TestCase {
 	protected String codePath = Utilities.getSMCQLRoot() + "/conf/workload/sql";
 	protected WorkerConfiguration honestBroker;
 	protected Logger logger;
+	protected SystemConfiguration config;
 	
+	
+
 	protected void setUp() throws Exception {
-		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.localhost");
+	
+		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.global");
 
 		parser = new SqlStatementParser();
+		config = SystemConfiguration.getInstance();
 		honestBroker = SystemConfiguration.getInstance().getHonestBrokerConfig();
 		logger = SystemConfiguration.getInstance().getLogger();
 		
@@ -46,21 +52,25 @@ public class BaseTest extends TestCase {
 
 	}
 	
-	protected void dummyTest() {
-		// gets rid of warnings
+	// get rid of warnings
+	public void testDummy() {
+		System.out.println("Hello world");
+		assertEquals(1, 1);
 	}
 
 
-	  protected QueryTable getExpectedOutput(String testName, String query) throws Exception {
+	  protected QueryTable getExpectedOutput(String query) throws Exception {
 
 		    String unionedId = ConnectionManager.getInstance().getUnioned();
 		    SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
 		    return SqlQueryExecutor.query(query, outSchema, unionedId);
+		    
 		  }
 
 	  
 	  protected void testQuery(String testName, String sql) throws Exception {
-		    SystemConfiguration.getInstance().resetCounters();
+		 
+		  	SystemConfiguration.getInstance().resetCounters();
 		    SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
 		    System.out.println("Initial schema: " + secRoot.getPlanRoot().getSchema() );
@@ -76,7 +86,7 @@ public class BaseTest extends TestCase {
 		    EmpExecutor exec = new EmpExecutor(qc);
 		    exec.run();
 
-		    QueryTable expectedOutput = getExpectedOutput(testName, sql);
+		    QueryTable expectedOutput = getExpectedOutput(sql);
 		    QueryTable observedOutput = exec.getOutput();
 
 		    logger.info("Observed output: \n" + observedOutput);

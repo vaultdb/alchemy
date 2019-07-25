@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.List;
 
@@ -13,7 +13,9 @@ import org.smcql.db.data.field.Field;
 import org.smcql.db.data.field.FieldFactory;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.type.SecureRelDataTypeField;
+
 public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable {
+	
 	List<Field> fields;
 	transient SecureRelRecordType schema;
 	
@@ -55,7 +57,7 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
 		
 	}
 	
-	public Tuple(boolean[] bits, SecureRelRecordType schema) throws Exception {
+	public Tuple(BitSet bits, SecureRelRecordType schema) throws Exception {
 		fields = new ArrayList<Field>();
 		
 		int start = 0;
@@ -65,21 +67,22 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
 		for(SecureRelDataTypeField r : schema.getAttributes()) {
 			Field f = FieldFactory.get(r);
 			end = start + f.size();
-			boolean[] fieldBits = Arrays.copyOfRange(bits, start, end);
+			BitSet fieldBits = bits.get(start, end);
 			// reverse field bits
-			fieldBits = reverseBits(fieldBits);
+			
+			fieldBits = reverseBits(fieldBits, f.size());
 			f.deserialize(fieldBits);
 			fields.add(f);
 			start = end;
 		}
 	}
 	
-	public static boolean[] reverseBits(boolean[] src) {
-		int len = src.length;
-		boolean[] dst = new boolean[len];
+	public static BitSet reverseBits(BitSet src, int length) {
+		BitSet dst = new BitSet(length);
 		
-		for(int i = 0; i < len; ++i) 
-			dst[i] = src[len-i-1];
+		
+		for(int i = 0; i < length; ++i) 
+			dst.set(i, src.get(length-i-1));
 		
 		return dst;
 	}
@@ -156,6 +159,18 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
 		for(char c : source.toCharArray()) {
 			Boolean v = (c == '0') ? false : true;
 			output.add(v);
+		}
+		return output;
+	}
+	
+	public BitSet toBitSet() {
+		String src = this.toBinaryString();
+		BitSet output = new BitSet(src.length());
+		int writeIdx = 0;
+		
+		for(char c : src.toCharArray()) {
+			output.set(writeIdx, (c == '0') ? false : true);
+			++writeIdx;
 		}
 		return output;
 	}

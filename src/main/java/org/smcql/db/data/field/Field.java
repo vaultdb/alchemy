@@ -1,6 +1,7 @@
 package org.smcql.db.data.field;
 
 import java.io.Serializable;
+import java.util.BitSet;
 import java.util.Comparator;
 
 import org.smcql.type.SecureRelDataTypeField;
@@ -58,7 +59,7 @@ public class Field implements Comparator<Field>, Comparable<Field>, Serializable
 		
 	}
 	
-	public void deserialize(boolean[] src) {
+	public void deserialize(BitSet src) {
 		
 	}
 	

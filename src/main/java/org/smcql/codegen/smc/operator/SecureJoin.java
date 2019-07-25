@@ -40,18 +40,19 @@ public class SecureJoin extends SecureOperator {
 
 	
 	@Override
-	public Map<String, String> generate() throws Exception  {
+	public String generate() throws Exception  {
 		Map<String, String> variables = baseVariables();		
 
 		Join join = (Join) planNode;
-		int lSize = join.getChild(0).getSchema().size();
-		int rSize = join.getChild(1).getSchema().size();
+		int lSize = join.getChild(0).getSchema().size() + 1; // + 1 for dummy tag
+		int rSize = join.getChild(1).getSchema().size() + 1;
 		String lSizeStr = Integer.toString(lSize);
 		String rSizeStr = Integer.toString(rSize);
 		int srcTupleSize = lSize + rSize;
 		
 		variables.put("lSize", lSizeStr);
 		variables.put("rSize", rSizeStr);
+		variables.put("sSize", Integer.toString(srcTupleSize));
 		
 		RexNode selectionCriteria = join.getCondition();
 		
@@ -65,13 +66,7 @@ public class SecureJoin extends SecureOperator {
 			generatedCode =  CodeGenUtils.generateFromTemplate("join/simple.txt", variables);
 		}
 		
-		Map<String, String> result = new HashMap<String, String>();
-		result.put(getPackageName(), generatedCode);
-		
-		for (ProcessingStep p : processingSteps)
-			result.put(getPackageName() + "." + p.getProcessName(), p.generate(variables));
-		
-		return result;
+		return generatedCode;
 	}
 	
 	

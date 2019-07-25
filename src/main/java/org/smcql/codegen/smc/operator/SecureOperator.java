@@ -9,8 +9,7 @@ import java.util.Map;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.smc.operator.support.ProcessingStep;
 import org.smcql.codegen.smc.operator.support.SortMethod;
-import org.smcql.compiler.DynamicCompiler;
-import org.smcql.executor.config.RunConfig.ExecutionMode;
+import org.smcql.executor.config.ExecutionMode;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Join;
@@ -64,8 +63,8 @@ public class SecureOperator implements CodeGenerator, Serializable {
 	}
 	
 
-	public Map<String, String> generate() throws Exception {
-		return new HashMap<String, String>();
+	public String generate() throws Exception {
+		return new String();
 	}
 	
 	
@@ -180,15 +179,15 @@ public class SecureOperator implements CodeGenerator, Serializable {
 		Map<String, String> variables = new HashMap<String, String>();
 	   
 		// tuple size in bits
-		String tupleSize = Integer.toString(planNode.getSchema(true).size());
+		String tupleSize = Integer.toString(planNode.getSchema(true).size() + 1); // +1 for dummy tag
 		variables.put("size", tupleSize);
 		
 		// for ops with different schemas between input and output
 		// overridden by Join
 		Operator child = getCorrectChild(planNode.getChild(0), 0);
 		SecureRelRecordType childSchema = (merges.isEmpty()) ? child.getSchema(true) : merges.get(0).getCodeGenerator().getSchema();
-		String srcSize = Integer.toString(childSchema.size()); // Potentially decrease size for dummy (doesn't seem to effect)
-		String dstSize = (projects.isEmpty()) ? variables.get("size") : Integer.toString(projects.get(0).getSchema().size());
+		String srcSize = Integer.toString(childSchema.size() + 1); // + 1 for dummyTag
+		String dstSize = projects.isEmpty() ? tupleSize : Integer.toString(projects.get(0).getSchema().size() + 1);
 		
 		variables.put("sSize", srcSize);
 		variables.put("dSize", dstSize);
@@ -275,19 +274,13 @@ public class SecureOperator implements CodeGenerator, Serializable {
 		return planNode.destFilename(e);
 	}
 
-	@Override
-	public void compileIt() throws Exception {
-		Map<String, String> code = generate();
-		
-		for (String n : code.keySet()) {
-			DynamicCompiler.compileOblivLang(code.get(n), n);	
-		}
-	}
+	
+	
 
 
 
 	@Override
-	public Map<String, String> generate(boolean asSecureLeaf) throws Exception {
+	public String generate(boolean asSecureLeaf) throws Exception {
 		return this.generate();
 	}
 
@@ -302,7 +295,10 @@ public class SecureOperator implements CodeGenerator, Serializable {
 
 
 
-
+    @Override
+    public String toString() {
+    	return planNode.toString();
+    }
 
 	
 
