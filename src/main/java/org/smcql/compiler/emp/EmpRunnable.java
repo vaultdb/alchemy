@@ -9,7 +9,7 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.util.EmpJniUtilities;
-import org.smcql.util.FileUtils;
+import org.smcql.util.FileUtilities;
 import org.smcql.util.Utilities;
 
 // for use in localhost setting
@@ -65,7 +65,7 @@ public class EmpRunnable implements Runnable {
       }
 
       // save it for later for debugging
-      FileUtils.writeFile(outFile, command);
+      FileUtilities.writeFile(outFile, command);
 
       CommandLine cmdl = new CommandLine("java");
       cmdl.addArgument("-cp");

@@ -16,13 +16,13 @@ import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.parser.SqlStatementParser;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.FileUtils;
+import org.smcql.util.FileUtilities;
 import org.smcql.util.Utilities;
 
 import junit.framework.TestCase;
 
 
-public class BaseTest extends TestCase {
+public abstract class BaseTest extends TestCase {
 	protected SqlStatementParser parser;
 	protected SqlNode root;
 	protected RelRoot relRoot;
@@ -47,7 +47,7 @@ public class BaseTest extends TestCase {
 	
 	protected String readSQL(String testName) throws IOException {
 		String fileName = codePath + "/" + testName + ".sql";
-		String sql = FileUtils.readSQL(fileName);
+		String sql = FileUtilities.readSQL(fileName);
 		return sql;
 
 	}
@@ -76,8 +76,8 @@ public class BaseTest extends TestCase {
 		    String empTarget = Utilities.getCodeGenTarget() + "/" + testName + ".h";
 		    String jniTarget = Utilities.getCodeGenTarget() + "/" + testName + ".java";
 
-		    assertTrue(FileUtils.fileExists(empTarget));
-		    assertTrue(FileUtils.fileExists(jniTarget));
+		    assertTrue(FileUtilities.fileExists(empTarget));
+		    assertTrue(FileUtilities.fileExists(jniTarget));
 
 		    EmpExecutor exec = new EmpExecutor(qc);
 		    exec.run();

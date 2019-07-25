@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.apache.calcite.plan.RelOptUtil;
-import org.smcql.parser.tpch.TpcHBaseTest;
+import org.smcql.TpcHBaseTest;
 import org.smcql.plan.SecureRelRoot;
 
 import com.google.common.collect.ImmutableList;

@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.util.FileUtils;
+import org.smcql.util.FileUtilities;
 import org.smcql.util.Utilities;
 
 // read config and connect to psql instances
@@ -62,7 +62,7 @@ public class ConnectionManager {
 			String connectionsFile = SystemConfiguration.getInstance().getProperty("data-providers");		
 			String configHosts = Utilities.getSMCQLRoot() + "/" + connectionsFile;
 
-			 hosts = FileUtils.readFile(configHosts);
+			 hosts = FileUtilities.readFile(configHosts);
 		}
 		
 		for(String h : hosts) {

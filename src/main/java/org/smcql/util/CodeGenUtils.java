@@ -57,7 +57,7 @@ public class CodeGenUtils {
 			e.printStackTrace();
 		}
 
-		List<String> template = FileUtils.readFile(srcFile);
+		List<String> template = FileUtilities.readFile(srcFile);
 		
 			for(int i = 0; i < template.size(); ++i) {
 				for(String v : variables.keySet()) {

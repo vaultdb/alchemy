@@ -13,7 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.smcql.plan.slice.SliceKeyDefinition;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.FileUtils;
+import org.smcql.util.FileUtilities;
+
 
 public class QueryTable implements Serializable {
 
@@ -315,7 +316,7 @@ public void addTuples(QueryTable src) {
 
   public void toBinaryFile(String dstFile) throws Exception {
     String tuplesStr = this.toBinaryString();
-    FileUtils.writeFile(dstFile, tuplesStr);
+    FileUtilities.writeFile(dstFile, tuplesStr);
   }
 
   public String toBinaryString() throws Exception {

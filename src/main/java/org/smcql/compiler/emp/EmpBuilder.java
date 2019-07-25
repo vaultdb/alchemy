@@ -14,6 +14,7 @@ import org.bytedeco.javacpp.tools.Logger;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.util.CommandOutput;
 import org.smcql.util.EmpJniUtilities;
+import org.smcql.util.FileUtilities;
 import org.smcql.util.Utilities;
 
 
@@ -49,37 +50,35 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         
         String className = fullyQualifiedClassName.substring(fullyQualifiedClassName.lastIndexOf('.')+1);
 
+    	// in localhost setting
         if(nodeType.equalsIgnoreCase("local")) {
         	// copy over our header files to build target for local builds
         	String srcHeader = "src/main/java/org/smcql/compiler/emp/generated/" + className + ".h";
         	String dstHeader = "target/classes/org/smcql/compiler/emp/generated/" + className + ".h";
+        
+        	String srcUtilities = "src/main/java/org/smcql/compiler/emp/generated/EmpUtilities.h";
+        	String dstUtilities = "target/classes/org/smcql/compiler/emp/generated/EmpUtilities.h";
 
-        	// in localhost setting
-        	String cmd = "cp " + srcHeader + " " + dstHeader;
+        	FileUtilities.copyFile(srcHeader, dstHeader);
+        	FileUtilities.copyFile(srcUtilities, dstUtilities);
 
-        	String cwd = System.getProperty("user.dir");
-        	CommandOutput out = Utilities.runCmd(cmd, cwd);
-        	if(out.exitCode != 0) {
-        		throw new Exception("File copy failed!");
-        	}
         }
         
         
+        
         smcqlLogger.info("Loading class: " + fullyQualifiedClassName);
-        Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName); //.copyLibs(true);
+        Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName).deleteJniFiles(false); //.copyLibs(true);
         File[] outputFiles = null;
         
         try {
         	outputFiles = builder.build();
         	
         } catch(Exception e) {
-        	smcqlLogger.info("Failed to build class! exiting...");
-        	System.exit(1);
+          	throw new Exception("Code compilation failed!");
         }
         smcqlLogger.info("Builder files: " + Arrays.toString(outputFiles));
         if(outputFiles == null || outputFiles.length == 0) {
-        	System.out.println("Code compilation failed!");
-        	System.exit(-1);
+        	throw new Exception("No output files generated from jni compilation!");
         }
         
         

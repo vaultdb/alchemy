@@ -1,7 +1,7 @@
-package org.smcql.parser.tpch;
+package org.smcql;
 
 import java.util.List;
-import org.smcql.BaseTest;
+
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.config.ConnectionManager;
@@ -12,7 +12,7 @@ import org.smcql.util.Utilities;
 
 import com.google.common.collect.ImmutableList;
 
-public class TpcHBaseTest extends BaseTest {
+public abstract class TpcHBaseTest extends BaseTest {
 
 	
 	protected static final List<String> QUERIES = ImmutableList.of(

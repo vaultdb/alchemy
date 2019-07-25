@@ -192,7 +192,7 @@ public class EmpJniUtilities {
 		variables.put("sqlSetup", inputSetup);
 		
 		String jniCode = CodeGenUtils.generateFromTemplate("/util/jni-wrapper.txt", variables);
-		FileUtils.writeFile(dstFile, jniCode);
+		FileUtilities.writeFile(dstFile, jniCode);
 		
 		Logger logger = SystemConfiguration.getInstance().getLogger();
 	    logger.info("Writing jni wrapper to " + dstFile);

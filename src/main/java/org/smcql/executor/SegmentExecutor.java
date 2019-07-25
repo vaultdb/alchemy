@@ -32,7 +32,7 @@ import org.smcql.executor.smc.ExecutionSegment;
 import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.util.EmpJniUtilities;
-import org.smcql.util.FileUtils;
+import org.smcql.util.FileUtilities;
 import org.smcql.util.Utilities;
 
 
@@ -145,7 +145,7 @@ public class SegmentExecutor {
     }
 	private String getConnectionParameters() throws Exception {
 		String srcFile = SystemConfiguration.getInstance().getProperty("data-providers");
-		List<String> params = FileUtils.readFile(srcFile);
+		List<String> params = FileUtilities.readFile(srcFile);
 		return StringUtils.join(params.toArray(), '\n');
 		
 	}

@@ -19,7 +19,7 @@ import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.util.EmpJniUtilities;
-import org.smcql.util.FileUtils;
+import org.smcql.util.FileUtilities;
 import org.smcql.util.Utilities;
 
 import junit.framework.TestCase;
@@ -82,11 +82,11 @@ public class EmpJniRemoteTest extends TestCase  {
 			 cloud.node("**").setProp("class.name", className);
 			 
 			 String codeGenTarget = Utilities.getCodeGenTarget();
-			 List<String> empLines =  FileUtils.readFile(codeGenTarget + "/" + className + ".h");
+			 List<String> empLines =  FileUtilities.readFile(codeGenTarget + "/" + className + ".h");
 			 cloud.node("**").setProp("emp.code", String.join("\n", empLines));
 			 
 
-			 List<String> jniLines =  FileUtils.readFile(codeGenTarget + "/" + className + ".java");
+			 List<String> jniLines =  FileUtilities.readFile(codeGenTarget + "/" + className + ".java");
 			 cloud.node("**").setProp("jni.code", String.join("\n", jniLines));
 			 cloud.node("**").setProp("alice.host", generatorHost);
 
@@ -174,8 +174,8 @@ public class EmpJniRemoteTest extends TestCase  {
 	                String empFile = workingDirectory + "/" + className + ".h";
 	                String jniFile = workingDirectory + "/" + className + ".java";
 	                
-	                FileUtils.writeFile(empFile, empCode);
-	                FileUtils.writeFile(jniFile, jniCode);
+	                FileUtilities.writeFile(empFile, empCode);
+	                FileUtilities.writeFile(jniFile, jniCode);
 	                
 	                // build it
 	                EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);

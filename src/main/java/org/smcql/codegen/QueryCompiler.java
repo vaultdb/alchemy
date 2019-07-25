@@ -41,6 +41,7 @@ import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.ClassPathUpdater;
 import org.smcql.util.CodeGenUtils;
 import org.smcql.util.EmpJniUtilities;
+import org.smcql.util.FileUtilities;
 import org.smcql.util.Utilities;
 
 
@@ -154,7 +155,7 @@ public class QueryCompiler {
       
       String targetFile = cg.destFilename(executionMode);
       sqlFiles.add(targetFile);
-      org.smcql.util.FileUtils.writeFile(targetFile, e.getValue());
+      FileUtilities.writeFile(targetFile, e.getValue());
     }
 
     executionMode.distributed = true;
@@ -164,7 +165,7 @@ public class QueryCompiler {
       String targetFile = cg.destFilename(executionMode);
       smcFiles.add(targetFile);
       if (e.getValue() != null) // no ctes
-      org.smcql.util.FileUtils.writeFile(targetFile, e.getValue());
+      FileUtilities.writeFile(targetFile, e.getValue());
     }
   }
 
@@ -187,7 +188,7 @@ public class QueryCompiler {
     Logger logger = SystemConfiguration.getInstance().getLogger();
     logger.log(Level.INFO, "QueryCompiler writing generated code to " + targetFile);
 
-    org.smcql.util.FileUtils.writeFile(targetFile, empCode);
+    FileUtilities.writeFile(targetFile, empCode);
 
     Map<String, String> inputs = new HashMap<String, String>();
     Iterator itr = sqlCode.entrySet().iterator();

@@ -10,10 +10,8 @@ import org.smcql.db.data.QueryTable;
 import org.smcql.executor.EmpExecutor;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.FileUtils;
+import org.smcql.util.FileUtilities;
 import org.smcql.util.Utilities;
 
 
@@ -42,14 +40,15 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   }
 
   public void testJoin() throws Exception {
-	  assertEquals(1, 1);
-
-	  /* Temporarily commented out for merge
+	  /* JR: Temporarily commented out
+	   * 
     String testName = "JoinCdiff";
     String query =
             "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
 
-    testCase(testName, query); */
+    testCase(testName, query); 
+    	   */
+
   }
 
   public void testFilterDistinct() throws Exception {
@@ -76,8 +75,8 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     String empTarget = Utilities.getCodeGenTarget() + "/" + testName + ".h";
     String jniTarget = Utilities.getCodeGenTarget() + "/" + testName + ".java";
 
-    assertTrue(FileUtils.fileExists(empTarget));
-    assertTrue(FileUtils.fileExists(jniTarget));
+    assertTrue(FileUtilities.fileExists(empTarget));
+    assertTrue(FileUtilities.fileExists(jniTarget));
 
     EmpExecutor exec = new EmpExecutor(qc);
     exec.run();

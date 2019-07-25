@@ -30,7 +30,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.privacy.PrivacyStatistics;
-import org.smcql.util.FileUtils;
+import org.smcql.util.FileUtilities;
 //import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.util.Utilities;
 
@@ -87,7 +87,7 @@ public class SystemConfiguration {
 		
 		File f = new File(configFile); // may not always exist in remote invocations
 		if(f.exists()) {
-			List<String> parameters = FileUtils.readFile(configFile);
+			List<String> parameters = FileUtilities.readFile(configFile);
 			parseConfiguration(parameters);
 			
 		}	
@@ -108,7 +108,7 @@ public class SystemConfiguration {
 
 		File d = new File(deploymentConfigFile); // may not always exist in remote invocations
 		if(d.exists()) {
-			List<String> parameters = FileUtils.readFile(deploymentConfigFile);
+			List<String> parameters = FileUtilities.readFile(deploymentConfigFile);
 			parseConfiguration(parameters);		
 		}
 		else {

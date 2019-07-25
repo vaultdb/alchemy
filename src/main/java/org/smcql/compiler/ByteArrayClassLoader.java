@@ -2,7 +2,7 @@ package org.smcql.compiler;
 
 import java.io.IOException;
 
-import org.smcql.util.FileUtils;
+import org.smcql.util.FileUtilities;
 import org.smcql.util.Utilities;
 
 public class ByteArrayClassLoader extends ClassLoader {
@@ -31,7 +31,7 @@ public class ByteArrayClassLoader extends ClassLoader {
 
     	
            	try {
-    			byteArray = FileUtils.readBinaryFile(filename);
+    			byteArray = FileUtilities.readBinaryFile(filename);
     			} catch (IOException e) {
     				e.printStackTrace();
     			}
@@ -54,7 +54,7 @@ public Class findEmpClass(String fullyQualifiedClassName) {
 	    // load local file 
     	if(byteArray == null) {
            	try {
-    			byteArray = FileUtils.readBinaryFile(filename);
+    			byteArray = FileUtilities.readBinaryFile(filename);
     			
 
     			} catch (IOException e) {

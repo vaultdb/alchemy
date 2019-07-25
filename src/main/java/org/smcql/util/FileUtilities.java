@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 
-public class FileUtils {
+public class FileUtilities {
 	public static String readSQL(String filename) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
 	    String sql = "";
@@ -62,9 +62,21 @@ public class FileUtils {
 	
 	 }
 
+	public static void copyFile(String src, String dst) throws Exception {
+		String cmd = "cp " + src + " " + dst;
+		
+		String cwd = System.getProperty("user.dir");
+    	CommandOutput out = Utilities.runCmd(cmd, cwd);
+    	if(out.exitCode != 0) {
+    		throw new Exception("File copy failed!");
+    	}
+    
+
+	}
+	
 	public static byte[] readGeneratedClassFile(String packageName) throws IOException {
 		String filename = Utilities.getCodeGenTarget() + "/"  + packageName.replace('.', '/') + "/NoClass.class";
-		return FileUtils.readBinaryFile(filename);
+		return FileUtilities.readBinaryFile(filename);
 	}
 
 	public static byte[] readBinaryFile(String filename) throws IOException {
