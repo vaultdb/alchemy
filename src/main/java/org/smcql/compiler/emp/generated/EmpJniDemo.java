@@ -71,9 +71,7 @@ public class EmpJniDemo  extends EmpProgram  {
 	        
 	       
 	       
-	       
-	       System.out.println("Output length: " + outputString.length() + " in javaland.");
-	 
+	   
 	       
         }
         

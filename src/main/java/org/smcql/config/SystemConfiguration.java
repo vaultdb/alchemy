@@ -102,9 +102,9 @@ public class SystemConfiguration {
 		}
 		
 		String schemaName = (System.getProperty("smcql.schema.name") != null) ? System.getProperty("smcql.schema.name") : config.get("schema-name"); // if not given at setup time, use default
-
-		deploymentConfigFile +=  location + "-" + schemaName;
 		
+		
+		deploymentConfigFile +=  location + "-" + schemaName;
 
 		File d = new File(deploymentConfigFile); // may not always exist in remote invocations
 		if(d.exists()) {
@@ -124,9 +124,81 @@ public class SystemConfiguration {
 		// have to do this in system properties because remote instances may not have SystemConfiguration initialized
 		setProperty("node-type", "local");
 		logger.info("configFile: " + configFile);
+		logger.info("*****Deploying with " + schemaName + " and file " + deploymentConfigFile);
+
 		
 	}
+
 	
+	protected SystemConfiguration(String schemaName) throws Exception {
+		config = new HashMap<String, String>();
+		privacyBudget = new PrivacyStatistics();
+		
+		String configStr = System.getProperty("smcql.setup.str"); // remote case, serialize config and parse this string
+		if(configStr != null) {
+
+			List<String> parameters = Arrays.asList(StringUtils.split(configStr, '\n'));
+			parseConfiguration(parameters);
+			initializeLogger();
+
+			
+			return;
+		}
+		
+		// local case, read in a text file
+		configFile = System.getProperty("smcql.setup");
+		
+		if(configFile == null) 
+			configFile = Utilities.getSMCQLRoot() + "/conf/setup.global";
+		
+		
+		File f = new File(configFile); // may not always exist in remote invocations
+		if(f.exists()) {
+			List<String> parameters = FileUtilities.readFile(configFile);
+			parseConfiguration(parameters);
+			
+		}	
+
+		String deploymentConfigFile = new String(Utilities.getSMCQLRoot() + "/conf/setup.");
+		String location = (System.getProperty("smcql.location") != null) ? System.getProperty("smcql.location") : config.get("location"); // if not given at setup time, use default
+		
+		// if distributed nodes not set up yet, switch to local mode.  E.g.,
+		// distributed-eval-enabled=false
+		if(config.get("distributed-eval-enabled") != null && config.get("distributed-eval-enabled").equals("false")) {
+			location = "local";
+		}
+		
+		if(schemaName == null) 
+			schemaName = config.get("schema-name"); // if not given at setup time, use default
+		else 
+			config.put("schema-name", schemaName);
+		
+		
+		deploymentConfigFile +=  location + "-" + schemaName;
+
+		File d = new File(deploymentConfigFile); // may not always exist in remote invocations
+		if(d.exists()) {
+			List<String> parameters = FileUtilities.readFile(deploymentConfigFile);
+			parseConfiguration(parameters);		
+		}
+		else {
+			System.out.println("Warning! No deployment file: " + deploymentConfigFile);
+		}
+		
+		
+		
+		
+		initializeLogger();
+		initializeCalcite();
+		
+		// have to do this in system properties because remote instances may not have SystemConfiguration initialized
+		setProperty("node-type", "local");
+		logger.info("configFile: " + configFile);
+		logger.info("*****Deploying with " + schemaName + " and file " + deploymentConfigFile);
+
+		
+	}
+
 	private void initializeLogger() throws SecurityException, IOException  {
 		String filename = config.get("log-file");
 		if(filename == null)
@@ -225,10 +297,29 @@ public class SystemConfiguration {
 	public static SystemConfiguration getInstance() throws Exception {
 		if(instance == null) {
 			instance = new SystemConfiguration();
+			logger.info("***Setting up SystemConfiguration for default.");
+			Exception e = new Exception("Stuff");
+			e.printStackTrace();
+
+		}
+		return instance;
+	}
+
+	
+	
+	public static SystemConfiguration getInstance(String schemaName) throws Exception {
+		if(instance == null) {
+			instance = new SystemConfiguration(schemaName);
+			logger.info("***Setting up SystemConfiguration for " + schemaName);
 		}
 		return instance;
 	}
 	
+
+		
+	public static  void resetConfiguration() {
+		instance = null;
+	}
 
 	
 	public  Logger getLogger() {

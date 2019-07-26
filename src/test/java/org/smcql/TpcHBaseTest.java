@@ -1,18 +1,30 @@
 package org.smcql;
 
 import java.util.List;
+import java.util.logging.Logger;
 
+import org.apache.calcite.rel.RelRoot;
+import org.apache.calcite.sql.SqlDialect;
+import org.apache.calcite.sql.SqlNode;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.db.data.QueryTable;
-import org.smcql.executor.config.ConnectionManager;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
+import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.parser.SqlStatementParser;
-import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
 
 import com.google.common.collect.ImmutableList;
 
-public abstract class TpcHBaseTest extends BaseTest {
+import junit.framework.TestCase;
+
+public abstract class TpcHBaseTest  extends TestCase {
+
+	protected SqlStatementParser parser;
+	protected SqlNode root;
+	protected RelRoot relRoot;
+	protected SqlDialect dialect;
+	protected String codePath = Utilities.getSMCQLRoot() + "/conf/workload/sql";
+	protected WorkerConfiguration honestBroker;
+	protected Logger logger;
+	protected SystemConfiguration config;
 
 	
 	protected static final List<String> QUERIES = ImmutableList.of(
@@ -675,11 +687,13 @@ public abstract class TpcHBaseTest extends BaseTest {
 
 	
 	  protected void setUp() throws Exception {
-
-		  System.setProperty("smcql.schema.name", "tpch");
-		  super.setUp();
-		 	
-
+		  SystemConfiguration.resetConfiguration();
+		  config = SystemConfiguration.getInstance("tpch");
+		  parser = new SqlStatementParser();
+		  honestBroker = SystemConfiguration.getInstance().getHonestBrokerConfig();
+		  logger = SystemConfiguration.getInstance().getLogger();
+		  dialect = config.DIALECT;
+		 
 
 	  }
 

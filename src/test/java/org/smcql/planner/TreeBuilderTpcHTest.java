@@ -31,7 +31,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
 	  protected void setUp() throws Exception {
 		    
 		 super.setUp();
-			
+		 
 	  }
 
 		protected static final List<String> PLANS = ImmutableList.of(

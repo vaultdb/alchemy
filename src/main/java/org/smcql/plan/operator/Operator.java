@@ -131,7 +131,7 @@ public abstract class Operator implements CodeGenerator {
 		
 		}
 		
-		logger.info("For " + this + " inferred execution mode: " + executionMode);
+
 		
 		// return distributed-oblivious-!sliced
 		

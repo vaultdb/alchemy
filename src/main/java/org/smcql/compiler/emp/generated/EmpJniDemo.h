@@ -226,7 +226,6 @@ public:
      io->flush();
      delete io;
 
-     cout << "Returning " << outputSize << " bits!" << endl;
      cout << "Completed emp program!" << endl;
 
 		

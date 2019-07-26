@@ -76,7 +76,7 @@ public class EmpJniUtilities {
 		assert(src.size() % 8 == 0);
 		
 		String value = new String();
-		System.out.println("Value length: " + value.length());
+
 		
 		
 		for(int i = 0; i < stringLength; ++i)
@@ -88,11 +88,9 @@ public class EmpJniUtilities {
 			    }
 			 
 			value += (char) n;
-			System.out.println("Value length: " + value.length());
 			
 		}
 		
-		System.out.println("Deserialized " + value + " of length " + value.length());
 		return value;
 		
 		

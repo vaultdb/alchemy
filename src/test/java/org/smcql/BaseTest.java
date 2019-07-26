@@ -26,7 +26,7 @@ public abstract class BaseTest extends TestCase {
 	protected SqlStatementParser parser;
 	protected SqlNode root;
 	protected RelRoot relRoot;
-	protected SqlDialect dialect = SqlDialect.DatabaseProduct.POSTGRESQL.getDialect();
+	protected SqlDialect dialect;
 	protected String codePath = Utilities.getSMCQLRoot() + "/conf/workload/sql";
 	protected WorkerConfiguration honestBroker;
 	protected Logger logger;
@@ -42,8 +42,13 @@ public abstract class BaseTest extends TestCase {
 		config = SystemConfiguration.getInstance();
 		honestBroker = SystemConfiguration.getInstance().getHonestBrokerConfig();
 		logger = SystemConfiguration.getInstance().getLogger();
+		dialect = config.DIALECT;
 		
 	}
+
+	
+	
+	
 	
 	protected String readSQL(String testName) throws IOException {
 		String fileName = codePath + "/" + testName + ".sql";
