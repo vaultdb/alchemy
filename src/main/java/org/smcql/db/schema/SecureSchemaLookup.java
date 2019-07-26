@@ -92,13 +92,11 @@ public class SecureSchemaLookup {
 		ResultSet rs = st.executeQuery(sql);
 		partitionBy =  new HashMap<String, String>();
 
-		System.out.println("***Have partition keys: ");
 
 		while (rs.next()) {
 			String table = rs.getString(1);
 			String attr = rs.getString(2);
 			partitionBy.put(table, attr);
-			System.out.println("***" + table + ", " + attr);
 		}
 		
 		rs.close();
