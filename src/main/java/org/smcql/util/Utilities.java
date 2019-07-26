@@ -253,7 +253,10 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		if(attr.getName() == null)
 			throw new Exception("Can't check status of anonymous attribute! Need to recurse to its inputs.");
 		// Case 1: if it is the source relation's stored partition key
-		if(schemaDef.getPartitionKey(srcTable).equals(attr.getName()))
+		String partitionKey = schemaDef.getPartitionKey(srcTable);
+		System.out.println("Partition key: " + partitionKey);
+		
+		if(partitionKey.equals(attr.getName()))
 		{
 			return true;
 		}

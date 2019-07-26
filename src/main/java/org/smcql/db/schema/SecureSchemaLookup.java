@@ -91,11 +91,14 @@ public class SecureSchemaLookup {
     	Statement st = c.createStatement();
 		ResultSet rs = st.executeQuery(sql);
 		partitionBy =  new HashMap<String, String>();
-		
+
+		System.out.println("***Have partition keys: ");
+
 		while (rs.next()) {
 			String table = rs.getString(1);
 			String attr = rs.getString(2);
 			partitionBy.put(table, attr);
+			System.out.println("***" + table + ", " + attr);
 		}
 		
 		rs.close();
@@ -122,6 +125,12 @@ public class SecureSchemaLookup {
     	}
     	return instance;
     }
+	
+	
+	public static void resetInstance() {
+		instance = null;
+	}
+	
 	
 	void initializeSecurityPolicy(String sql, Connection c, SecurityPolicy policy) throws SQLException {
 		Statement st = c.createStatement();
