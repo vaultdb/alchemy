@@ -248,29 +248,6 @@ public abstract class Operator implements CodeGenerator {
 	
 	
 	
-	private void debugFieldComparison(String msg, SecureRelDataTypeField aField, List<SecureRelDataTypeField> fields) throws Exception {
-		for(SecureRelDataTypeField field : fields) {
-			System.out.println("\n" + msg + ": Comparing " + aField + " to " + field + ": " + field.equals(aField));
-			
-		/*	System.out.println("Name: " + aField.getName().equals(field.getName()));
-
-			System.out.println("Indices: " + aField.getIndex() + ", " + field.getIndex());
-			System.out.println("Index: " + (aField.getIndex() == field.getIndex()));
-			
-			RelDataType schemaType = field.getType();
-			RelDataType cmpType = aField.getType();
-			
-			System.out.println("Schema type: " + schemaType + ", matching to " + cmpType);
-			System.out.println("Type: " + schemaType.equals(cmpType));
-			*/
-			
-			if(field.equals(aField))
-				break;
-			
-		
-		}
-		
-	}
 
 	// TODO: use this to manage attribute-level statistics as tuples move up the query tree
 	// will need to be overridden in many classes

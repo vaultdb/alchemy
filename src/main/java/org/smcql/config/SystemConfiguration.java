@@ -123,8 +123,6 @@ public class SystemConfiguration {
 		
 		// have to do this in system properties because remote instances may not have SystemConfiguration initialized
 		setProperty("node-type", "local");
-		logger.info("configFile: " + configFile);
-		logger.info("*****Deploying with " + schemaName + " and file " + deploymentConfigFile);
 
 		
 	}
@@ -297,9 +295,6 @@ public class SystemConfiguration {
 	public static SystemConfiguration getInstance() throws Exception {
 		if(instance == null) {
 			instance = new SystemConfiguration();
-			logger.info("***Setting up SystemConfiguration for default.");
-			Exception e = new Exception("Stuff");
-			e.printStackTrace();
 
 		}
 		return instance;
@@ -310,7 +305,6 @@ public class SystemConfiguration {
 	public static SystemConfiguration getInstance(String schemaName) throws Exception {
 		if(instance == null) {
 			instance = new SystemConfiguration(schemaName);
-			logger.info("***Setting up SystemConfiguration for " + schemaName);
 		}
 		return instance;
 	}

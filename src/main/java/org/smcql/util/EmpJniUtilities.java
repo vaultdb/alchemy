@@ -39,7 +39,13 @@ public class EmpJniUtilities {
 		int tupleBits = tupleWidth*8; // 8 bits / char
 		int tupleCount = alice.length() / tupleBits;
 		
-		System.out.println("Decrypting " + tupleCount + " tuples.");
+		try {
+			Logger logger = SystemConfiguration.getInstance().getLogger();
+			logger.info("Decrypting " + tupleCount + " tuples.");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		BitSet decrypted = (BitSet) aliceBits.clone();
 		decrypted.xor(bobBits);

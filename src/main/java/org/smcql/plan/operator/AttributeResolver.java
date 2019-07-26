@@ -171,7 +171,7 @@ public class AttributeResolver {
 
 		for(RelDataTypeField field : record.getFieldList()) {
 			String name = field.getName();
-			System.out.println("Aggregate inferring type of " + name + " source field: " + field );
+			
 			if(scalarMap.containsKey(name)) {
 				SecureRelDataTypeField prev = scalarMap.get(name);
 				SecureRelDataTypeField secField = new SecureRelDataTypeField(field, prev);

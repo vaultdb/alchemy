@@ -103,7 +103,7 @@ public class SecureAggregate extends SecureOperator {
 
 			RelDataType field = call.getType();
 			int size = TypeMap.getInstance().sizeof(field);
-			System.out.println(" Aggregate call for scalar aggregate:" + call);
+
 
 			int varNo = aggCounter + 1;
 			String aggVariable = "agg" + varNo;

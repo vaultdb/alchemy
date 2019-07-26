@@ -72,9 +72,12 @@ public class RexNodeUtilities {
 	
 	public static String flattenForSmc(RexNode expr, SecureRelRecordType schema, String variable, int srcSize) {
 		RexFlattener flatten = new RexNodeToSmc(schema, variable, srcSize);
-		Logger logger = null;
+		String result = expr.accept(flatten);
+
 		try {
-			logger = SystemConfiguration.getInstance().getLogger();
+			Logger logger = SystemConfiguration.getInstance().getLogger();
+			logger.info("Flattening expression: " + expr + " from schema " + schema);
+			logger.info("Flattened to " + result);
 			
 		} catch (Exception e) {
 			System.out.println("Expression debug failed!");
@@ -83,9 +86,6 @@ public class RexNodeUtilities {
 			
 		}
 		
-		logger.info("Flattening expression: " + expr + " from schema " + schema);
-		String result = expr.accept(flatten);
-		logger.info("Flattened to " + result);
 		return result;
 	}
 	

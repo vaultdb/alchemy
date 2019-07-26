@@ -81,9 +81,8 @@ public class RexNodeToSmc extends RexFlattener{
 	public String visitLiteral(RexLiteral literal) {
 		SqlTypeName type = literal.getTypeName();
 		
-		System.out.println("Examining " + literal + " type: " + type);
+
 	 	final Comparable v = literal.getValue();
-	 	System.out.println("Getting value of type: " + v.getClass());
 
 	 	// converting to org.apache.calcite.avatica.util.TimeUnitRange
 		switch (type) {
@@ -117,7 +116,7 @@ public class RexNodeToSmc extends RexFlattener{
          default: // try to convert it to an int
         	System.out.println("Can't convert literal of type " + literal.getValue().getClass() +  " to smc!");
         	System.exit(-1);
-        	return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
+        	return new String("Integer(32, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
               
 		 }
 		 

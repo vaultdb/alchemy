@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -198,13 +199,14 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		
 	}
 
-	public static boolean dirsEqual(String lhs, String rhs) throws IOException, InterruptedException {
+	public static boolean dirsEqual(String lhs, String rhs) throws Exception {
 		String cmd = "diff -r " + lhs + " " + rhs;
 
 
 		CommandOutput output =  runCmd(cmd);
 		if(output.exitCode != 0) {
-			System.out.println("diff: " + output.output);
+			Logger logger = SystemConfiguration.getInstance().getLogger();
+			logger.info("diff: " + output.output);
 		}
 		return output.exitCode == 0;
 	}
@@ -254,7 +256,6 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 			throw new Exception("Can't check status of anonymous attribute! Need to recurse to its inputs.");
 		// Case 1: if it is the source relation's stored partition key
 		String partitionKey = schemaDef.getPartitionKey(srcTable);
-		System.out.println("Partition key: " + partitionKey);
 		
 		if(partitionKey.equals(attr.getName()))
 		{
