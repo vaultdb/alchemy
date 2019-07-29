@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.logical.LogicalAggregate;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Pair;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
@@ -150,6 +151,19 @@ public class Aggregate extends Operator {
 		return true;
 		
 	}
+
+
+	
+	public Pair<Long, Long> obliviousCardinality() {
+		if(agg.getGroupSet().isEmpty()){
+			// no group by, scalar output
+			return new Pair<Long, Long>(1L, 1L);
+		}
+		
+		return children.get(0).obliviousCardinality();
+		
+	}
+
 	
 	
 	

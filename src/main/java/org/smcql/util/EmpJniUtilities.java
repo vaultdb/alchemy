@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
+import org.apache.calcite.util.Pair;
 import org.bytedeco.javacpp.Loader;
 import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.compiler.emp.EmpRunnable;
@@ -165,7 +167,7 @@ public class EmpJniUtilities {
 		
 	}
 
-	public static void createJniWrapper(String className, String dstFile, Map<String, String> inputs) throws Exception {
+	public static void createJniWrapper(String className, String dstFile, Map<String, String> inputs, Map<String, Pair<Long, Long>> cardinalities) throws Exception {
 		// if it is a fully qualified class name, strip the prefix
 		if(className.contains(".")) {
 			className = className.substring(className.lastIndexOf('.'+1));
@@ -180,12 +182,15 @@ public class EmpJniUtilities {
 			throw new Exception("Cannot run a query without input data!");
 		}
 		
-		Iterator inputItr = inputs.entrySet().iterator();
+		Iterator<Entry<String, String>> inputItr = inputs.entrySet().iterator();
+		Iterator<Entry<String, Pair<Long, Long>>> cardinalityItr = cardinalities.entrySet().iterator();
+
 		String inputSetup = new String();
+		String cardinalitySetup = new String();
 		
 		// generate sql input statements
 		while(inputItr.hasNext()) {
-			 Map.Entry pair = (Map.Entry)inputItr.next();
+			 Entry<String, String> pair = inputItr.next();
 			 String sql = (String) pair.getValue();
 			 sql = sql.replace('\n', ' ');
 			 String putStatement = "inputs.put(\"" + pair.getKey() + "Union\", \"" + sql + "\");\n";
@@ -194,6 +199,21 @@ public class EmpJniUtilities {
 		}
 		
 		variables.put("sqlSetup", inputSetup);
+
+		
+		while(cardinalityItr.hasNext()) {
+			 Entry<String, Pair<Long, Long>> pair = cardinalityItr.next();
+			 Pair<Long, Long> value = pair.getValue();
+			 String variableName = pair.getKey() + "Cardinalities";
+			 String createStatement = "Pair<Long, Long> " + variableName + " = new Pair<Long, Long>(" + value.left + ", " + value.right + ");";
+			 cardinalitySetup += createStatement;
+			 
+			 String putStatement = "obliviousCardinalities.put(\"" + pair.getKey() + "Union\", " + variableName + ");\n";
+			 cardinalitySetup += putStatement;
+			 
+		}
+
+		variables.put("cardinalitySetup", cardinalitySetup);
 		
 		String jniCode = CodeGenUtils.generateFromTemplate("/util/jni-wrapper.txt", variables);
 		FileUtilities.writeFile(dstFile, jniCode);

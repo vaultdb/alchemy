@@ -11,6 +11,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.util.Pair;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.privacy.PrivacyCost;
@@ -158,6 +159,16 @@ public class Join extends Operator {
 	}
 	
 	
+	@Override
+	public Pair<Long, Long> obliviousCardinality() {
+		Pair<Long, Long>  lhs = children.get(0).obliviousCardinality();
+		Pair<Long, Long>  rhs = children.get(1).obliviousCardinality();
+		
+		return new Pair<Long, Long>(lhs.left * rhs.left, lhs.right * rhs.right);
+
+	}
+	
+	@Override
 	public String toString() {
 		
 		LogicalJoin join = (LogicalJoin) this.getSecureRelNode().getRelNode();

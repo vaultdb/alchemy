@@ -19,7 +19,7 @@ import org.apache.calcite.schema.Table;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.GeometricDistribution;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.db.schema.SecureSchemaLookup;
+import org.smcql.db.schema.SystemCatalog;
 import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.type.SecureRelDataTypeField;
@@ -228,7 +228,7 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		RelRecordType rowType = (RelRecordType) lookupTable.getRowType(typeFactory);
 		RelDataTypeField fieldType = rowType.getField(attr, false, false);
 		
-		SecureSchemaLookup lookup = SecureSchemaLookup.getInstance();
+		SystemCatalog lookup = SystemCatalog.getInstance();
 		SecurityPolicy policy = lookup.getPolicy(table, attr);
 		
 		
@@ -248,7 +248,7 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		System.out.println("Analyzing " + attr + ", src table: " + srcTable);
 
 		
-		SecureSchemaLookup schemaDef = SecureSchemaLookup.getInstance();
+		SystemCatalog schemaDef = SystemCatalog.getInstance();
 		List<String> primaryKey = schemaDef.getPrimaryKey(srcTable);
 		
 		

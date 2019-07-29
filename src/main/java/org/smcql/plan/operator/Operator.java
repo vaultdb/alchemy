@@ -11,11 +11,13 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.util.Pair;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.smcql.codegen.CodeGenerator;
 import org.smcql.codegen.plaintext.PlainOperator;
 import org.smcql.codegen.smc.operator.SecureOperator;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.db.schema.SystemCatalog;
 import org.smcql.executor.config.ExecutionMode;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.plan.ShadowRelNode;
@@ -58,13 +60,15 @@ public abstract class Operator implements CodeGenerator {
 	
 	SystemConfiguration config;
 	
+	SystemCatalog catalog;
+	
 	
 	public Operator(String name, SecureRelNode src, Operator... childOps) throws Exception {
 		baseRelNode = src;
 		src.setPhysicalNode(this);
 		children = new ArrayList<Operator>();
 		config = SystemConfiguration.getInstance();
-	
+		catalog = SystemCatalog.getInstance();
 		
 		operatorId = config.getOperatorId();
 		
@@ -267,7 +271,13 @@ public abstract class Operator implements CodeGenerator {
 		
 	
 	}
-		
+	
+	
+	// basic unary ops
+	public Pair<Long, Long> obliviousCardinality() {
+		return children.get(0).obliviousCardinality(); 
+	}
+	
 	public void addChild(Operator op) {
 		children.add(op);
 		op.setParent(this);

@@ -69,19 +69,7 @@ public class Count  extends EmpProgram  {
 	
 	   
 	   
-	String getInput(String sql) throws Exception {
-    	SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(sql);
-    	String workerId = System.getProperty("workerId");	
-    	
-    	//ConnectionManager cm = ConnectionManager.getInstance();
-   		//System.out.println("Getting connection for " + workerId + " out of " + cm.getDataSources());
-    					
-		
-    	QueryTable table = SqlQueryExecutor.query(sql, outSchema, workerId);
-		return  table.toBinaryString();
-
-    }
-	   	
+		   	
         @Override
         public  void runProgram() throws Exception {
         	CountIcd9sClass theQuery = new CountIcd9sClass();
@@ -90,9 +78,9 @@ public class Count  extends EmpProgram  {
 	        while(inputItr.hasNext()) {
 	        	Map.Entry entry = (Map.Entry) inputItr.next();
 	        	String functionName = (String) entry.getKey();
+	        	String sql = (String) entry.getValue();
 
-	        	// For all inputs to MPC, get an associated QueryTable
-	        	String table = getInput((String) entry.getValue());
+	        	String table = getObliviousInput(functionName, sql);
 
                 // add the input strings using the addInput function - which is available in main.txtOkay
 	        	theQuery.addInput(functionName, table);

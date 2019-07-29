@@ -25,7 +25,7 @@ import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
-import org.smcql.db.schema.SecureSchemaLookup;
+import org.smcql.db.schema.SystemCatalog;
 import org.smcql.plan.SecureRelNode;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
@@ -399,7 +399,7 @@ public class AttributeResolver {
 		JdbcTableScan rel = (JdbcTableScan) aScan.getRelNode();
 		RelRecordType record = (RelRecordType) rel.getRowType();
 		String table = rel.getTable().getQualifiedName().get(0);
-		SecureSchemaLookup permissions = SecureSchemaLookup.getInstance();
+		SystemCatalog permissions = SystemCatalog.getInstance();
 		
 		
 		for(RelDataTypeField field : record.getFieldList()) {

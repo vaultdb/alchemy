@@ -47,7 +47,8 @@ import org.smcql.util.Utilities;
 
 public class QueryCompiler {
 
-  Map<ExecutionStep, String> sqlCode;
+  Map<String, String> sqlCode;
+  Map<String, Pair<Long, Long> >  obliviousCardinalities; // pair<alice, bob>
   Map<ExecutionStep, String> smcCode;
   Map<Operator, ExecutionStep> allSteps;
   String queryId;
@@ -57,6 +58,7 @@ public class QueryCompiler {
   String userQuery = null;
   SecureRelRoot queryPlan;
   ExecutionStep compiledRoot;
+  ConnectionManager connections;
   
   boolean codeGenerated = false;
   SecureRelRecordType outSchema = null;
@@ -68,11 +70,12 @@ public class QueryCompiler {
     outSchema = q.getPlanRoot().getSchema();
     smcFiles = new ArrayList<String>();
     sqlFiles = new ArrayList<String>();
-    sqlCode = new HashMap<ExecutionStep, String>();
-    smcCode = new HashMap<ExecutionStep, String>();
+    sqlCode = new HashMap<String, String>();
     executionSegments = new ArrayList<ExecutionSegment>();
     allSteps = new HashMap<Operator, ExecutionStep>();
-
+    obliviousCardinalities = new HashMap<String, Pair<Long, Long> >();
+    connections = ConnectionManager.getInstance();
+    
     queryId = q.getName();
     Operator root = q.getPlanRoot();
     logger = SystemConfiguration.getInstance().getLogger();
@@ -100,11 +103,14 @@ public class QueryCompiler {
 
     smcFiles = new ArrayList<String>();
     sqlFiles = new ArrayList<String>();
-    sqlCode = new HashMap<ExecutionStep, String>();
+    sqlCode = new HashMap<String, String>();
     smcCode = new HashMap<ExecutionStep, String>();
     executionSegments = new ArrayList<ExecutionSegment>();
     userQuery = sql;
+    connections = ConnectionManager.getInstance();
+    obliviousCardinalities = new HashMap<String, Pair<Long, Long> >();
 
+    
     allSteps = new HashMap<Operator, ExecutionStep>();
 
     queryId = q.getName();
@@ -132,42 +138,6 @@ public class QueryCompiler {
     return executionSegments;
   }
 
-  public void writeToDisk() throws Exception {
-
-    String targetPath = Utilities.getCodeGenTarget() + "/" + queryId;
-
-    Logger logger = SystemConfiguration.getInstance().getLogger();
-    logger.log(Level.INFO, "Writing generated code to " + targetPath);
-
-    Utilities.cleanDir(targetPath);
-
-    Utilities.mkdir(targetPath + "/sql");
-
-    Utilities.mkdir(targetPath + "/smc");
-
-    ExecutionMode executionMode = new ExecutionMode();
-    
-    executionMode.distributed = false;
-
-    
-    for (Entry<ExecutionStep, String> e : sqlCode.entrySet()) {
-      CodeGenerator cg = e.getKey().getCodeGenerator();
-      
-      String targetFile = cg.destFilename(executionMode);
-      sqlFiles.add(targetFile);
-      FileUtilities.writeFile(targetFile, e.getValue());
-    }
-
-    executionMode.distributed = true;
-    
-    for (Entry<ExecutionStep, String> e : smcCode.entrySet()) {
-      CodeGenerator cg = e.getKey().getCodeGenerator();
-      String targetFile = cg.destFilename(executionMode);
-      smcFiles.add(targetFile);
-      if (e.getValue() != null) // no ctes
-      FileUtilities.writeFile(targetFile, e.getValue());
-    }
-  }
 
   public void setCodeGenerated(boolean val) {
     codeGenerated = val;
@@ -190,23 +160,15 @@ public class QueryCompiler {
 
     FileUtilities.writeFile(targetFile, empCode);
 
-    Map<String, String> inputs = new HashMap<String, String>();
-    Iterator itr = sqlCode.entrySet().iterator();
-
-    while (itr.hasNext()) {
-      Map.Entry entry = (Map.Entry) itr.next();
-      ExecutionStep step = (ExecutionStep) entry.getKey();
-      String functionName = step.getFunctionName();
-      inputs.put(functionName, (String) entry.getValue());
-    }
 
     String jniFile = Utilities.getCodeGenTarget() + "/" + queryId + ".java";
-    EmpJniUtilities.createJniWrapper(queryId, jniFile, inputs);
+    EmpJniUtilities.createJniWrapper(queryId, jniFile, sqlCode, obliviousCardinalities);
     codeGenerated = true;
 
     return targetFile;
   }
 
+  
   // This only writes out C++ code, not the jni code.
   public String getEmpCode() throws Exception {
     String wholeFile = new String();
@@ -416,8 +378,13 @@ public class QueryCompiler {
   private void processStep(PlaintextStep step) throws Exception {
     Operator op = step.getSourceOperator();
     String sql = op.generate();
+
+    Pair<Long, Long> stepCardinalities = op.obliviousCardinality();
+    
     allSteps.put(op, step);
-    sqlCode.put(step, sql);
+    sqlCode.put(step.getFunctionName(), sql);
+    obliviousCardinalities.put(step.getFunctionName(), stepCardinalities);
+    
   }
 
   // creates the PlaintextStep plan from the given operator and parent step
@@ -552,14 +519,13 @@ public class QueryCompiler {
     return smcCode;
   }
 
-  public Map<ExecutionStep, String> getSQLCode() {
+  public Map<String, String> getSQLCode() {
     return sqlCode;
   }
 
   private String getAliceHostname() throws Exception {
-    ConnectionManager cm = ConnectionManager.getInstance();
-    String alice = cm.getAlice();
-    return cm.getWorker(alice).hostname;
+    String alice = connections.getAlice();
+    return connections.getWorker(alice).hostname;
   }
 
   private void inferExecutionSegment(ExecutionStep step) throws Exception {

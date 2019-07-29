@@ -9,7 +9,7 @@ import org.apache.calcite.sql.SqlNode;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
-import org.smcql.db.schema.SecureSchemaLookup;
+import org.smcql.db.schema.SystemCatalog;
 import org.smcql.executor.EmpExecutor;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
@@ -39,7 +39,7 @@ public abstract class BaseTest extends TestCase {
 	
 		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.global");
 		SystemConfiguration.resetConfiguration();
-		SecureSchemaLookup.resetInstance();
+		SystemCatalog.resetInstance();
 		
 		config = SystemConfiguration.getInstance();
 		parser = new SqlStatementParser();

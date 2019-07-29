@@ -7,7 +7,7 @@ import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.SqlNode;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.db.schema.SecureSchemaLookup;
+import org.smcql.db.schema.SystemCatalog;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.parser.SqlStatementParser;
 import org.smcql.util.Utilities;
@@ -689,7 +689,7 @@ public abstract class TpcHBaseTest  extends TestCase {
 	
 	  protected void setUp() throws Exception {
 		  SystemConfiguration.resetConfiguration();
-		  SecureSchemaLookup.resetInstance();
+		  SystemCatalog.resetInstance();
 		  
 		  config = SystemConfiguration.getInstance("tpch");
 		  parser = new SqlStatementParser();

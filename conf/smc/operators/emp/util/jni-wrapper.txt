@@ -41,11 +41,11 @@ import org.smcql.compiler.emp.EmpProgram;
 @Namespace("$queryName")
 public class $queryName  extends EmpProgram  {
 
-	Map<String, String> inputs = new HashMap<String, String>();
 	
 	public $queryName(int party, int port) {
 		super(party, port);
 		$sqlSetup
+		$cardinalitySetup
 	}
 	
 
@@ -73,18 +73,7 @@ public class $queryName  extends EmpProgram  {
 	
 	   
 	   
-	QueryTable getInput(String sql) throws Exception {
-    	SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(sql);
-    	String workerId = System.getProperty("workerId");	
-    	
-					
-		// Perform plaintext execution, which does not reduce cardinality, but add dummyTags
-    	QueryTable table = SqlQueryExecutor.query(sql, outSchema, workerId);
-
-    	
-		return table;
-
-    }
+	
 	   	
         @Override
         public void runProgram() throws Exception {
@@ -94,14 +83,14 @@ public class $queryName  extends EmpProgram  {
 	        while(inputItr.hasNext()) {
 	        	Map.Entry entry = (Map.Entry) inputItr.next();
 	        	String functionName = (String) entry.getKey();
+			String sql = (String) entry.getValue();
 
 	        	// For all inputs to MPC, get an associated QueryTable
-	        	QueryTable table = getInput((String) entry.getValue());
+	        	String getTable = getObliviousInput(functionName, sql);
 
-			System.out.println("Input table " + functionName + ": " + table);
 
-                // add the input strings using the addInput function - which is available in main.txtOkay
-	        	theQuery.addInput(functionName, table.toBinaryString());
+                // add the input strings using the addInput function - which is available in main.txt
+	        	theQuery.addInput(functionName);
 	        }
 	        
         	if(generatorHost != null) {

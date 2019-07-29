@@ -45,9 +45,7 @@ public class OperatorFactory {
 		if(node instanceof LogicalFilter)
 			return new Filter(name, secNode, children);
 
-		if(node instanceof LogicalCorrelate)
-			return new Correlate(name, secNode, children);
-
+		
 		return null;
 	}
 

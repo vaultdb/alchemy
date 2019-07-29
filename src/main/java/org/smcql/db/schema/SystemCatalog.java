@@ -1,7 +1,12 @@
 package org.smcql.db.schema;
 
+import org.apache.calcite.util.Pair;
 import org.smcql.config.SystemConfiguration;
+import org.smcql.db.data.QueryTable;
+import org.smcql.db.data.field.IntField;
+import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
+import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,7 +20,7 @@ import java.util.Map;
 // decorator for calcite schema
 // adds management of security policy for attributes
 // also keeps track of how the tables are laid out - i.e., partitioning keys, replicated status
-public class SecureSchemaLookup {
+public class SystemCatalog {
 
 	
 	// <table, <attrName, policy>
@@ -34,11 +39,12 @@ public class SecureSchemaLookup {
     Map<String, List<String>> primaryKeys;
     
     
+    Map<String, Pair<Long, Long> > tableCardinalities; // size of alice and bob's inputs
     
     
-    static SecureSchemaLookup instance;
+    static SystemCatalog instance;
     
-    protected SecureSchemaLookup(WorkerConfiguration config) throws ClassNotFoundException, SQLException {
+    protected SystemCatalog(WorkerConfiguration config) throws ClassNotFoundException, SQLException {
 		accessPolicies = new HashMap<String, Map<String, SecurityPolicy>>();
 		String publicQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='public_attribute'";
 		String protectedQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='protected_attribute'";
@@ -59,9 +65,62 @@ public class SecureSchemaLookup {
 		initializeReplicatedTables(replicatedTablesQuery, dbConnection);
 		initializePartitioningKeys(partitionByQuery, dbConnection);
 		initializePrimaryKeys(primaryKeysQuery, dbConnection);
+		initializeTableCardinalities(dbConnection);
 	}
 	
-    private void initializePrimaryKeys(String sql, Connection c) throws SQLException {
+    private void initializeTableCardinalities(Connection c) throws SQLException {
+    	// list tables
+    	String tableListQuery = "SELECT DISTINCT table_name FROM information_schema.tables WHERE table_schema='public'";
+    	Statement st = c.createStatement();
+    	
+    	ResultSet rs = st.executeQuery(tableListQuery);
+
+    	List<String> tables = new ArrayList<String>();
+    	tableCardinalities = new HashMap<String, Pair<Long, Long>>();
+    	
+    	while (rs.next()) {
+			String table = rs.getString(1);
+			tables.add(table);		
+    	}
+    	
+    	rs.close();
+    	
+    	for(String table : tables) {
+			try {
+				tableCardinalities.put(table, collectTableCardinalities(table));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+    	}
+    	
+    		
+	}
+    
+    
+   
+    private Pair<Long, Long> collectTableCardinalities(String table) throws Exception {
+    	
+    	String countQuery = "SELECT COUNT(*) FROM " + table;
+    
+    	String aliceId = ConnectionManager.getInstance().getAlice();
+    	QueryTable alice = SqlQueryExecutor.query(countQuery, aliceId);
+    	IntField countField = (IntField) alice.getTuple(0).getField(0);
+    	long aliceCount = countField.value;
+    	
+    	String bobId = ConnectionManager.getInstance().getBob();
+    	QueryTable bob = SqlQueryExecutor.query(countQuery, bobId);
+    	countField = (IntField) bob.getTuple(0).getField(0);
+    	long bobCount = countField.value;
+    	
+    	
+    	Pair<Long, Long> counts = new Pair<Long, Long>(aliceCount, bobCount);
+        	
+    	return counts;
+    }
+
+	private void initializePrimaryKeys(String sql, Connection c) throws SQLException {
     	Statement st = c.createStatement();
     	
     	ResultSet rs = st.executeQuery(sql);
@@ -102,6 +161,10 @@ public class SecureSchemaLookup {
 		rs.close();
 	}
 
+	
+	public Pair<Long, Long> getTableCardinalities(String tableName) {
+		return tableCardinalities.get(tableName);
+	}
 	private void initializeReplicatedTables(String sql, Connection c) throws SQLException {
     	Statement st = c.createStatement();
 		ResultSet rs = st.executeQuery(sql);
@@ -116,10 +179,10 @@ public class SecureSchemaLookup {
 	
 	}
 
-	public static SecureSchemaLookup getInstance() throws Exception {
+	public static SystemCatalog getInstance() throws Exception {
     	if(instance == null) {
     		SystemConfiguration conf = SystemConfiguration.getInstance();
-    		instance = new SecureSchemaLookup(conf.getHonestBrokerConfig());
+    		instance = new SystemCatalog(conf.getHonestBrokerConfig());
     	}
     	return instance;
     }

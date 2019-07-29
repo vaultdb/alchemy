@@ -67,7 +67,11 @@ public class SqlGenerator {
 
 	public static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect, boolean filterPullUp) {
 		SqlSelect sql = converter.visitChild(0, rel).asSelect();
-		// move up filter for union/merge input as needed
+		String sqlOut = sql.toSqlString(dialect).getSql();
+		sqlOut = sqlOut.replace("\"", "");
+		return sqlOut;
+		
+/*		// move up filter for union/merge input as needed
 
 
 		// create list for dummyTags regardless of value ( both true and false will be represented)
@@ -103,7 +107,8 @@ public class SqlGenerator {
 		sqlOut = sqlOut.replace("\"", "");
 		
 		
-		return sqlOut;
+		return sqlOut;*/
+		
 	}
 	
 	
