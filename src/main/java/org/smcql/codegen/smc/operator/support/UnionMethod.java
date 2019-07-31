@@ -75,7 +75,7 @@ public class UnionMethod implements CodeGenerator, Serializable {
 	
 	@Override
 	public String generate() throws Exception {
-		int size = schema.size();
+		int size = schema.size() + 1; // for dummy tag
 		String sql = new String("");
 		boolean localRun = !src.getExecutionMode().distributed;
 		

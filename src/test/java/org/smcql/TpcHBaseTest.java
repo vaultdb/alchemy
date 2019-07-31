@@ -26,6 +26,7 @@ public abstract class TpcHBaseTest  extends TestCase {
 	protected WorkerConfiguration honestBroker;
 	protected Logger logger;
 	protected SystemConfiguration config;
+	protected SystemCatalog catalog;
 
 	
 	protected static final List<String> QUERIES = ImmutableList.of(
@@ -692,6 +693,8 @@ public abstract class TpcHBaseTest  extends TestCase {
 		  SystemCatalog.resetInstance();
 		  
 		  config = SystemConfiguration.getInstance("tpch");
+		  catalog = SystemCatalog.getInstance();
+
 		  parser = new SqlStatementParser();
 		  honestBroker = SystemConfiguration.getInstance().getHonestBrokerConfig();
 		  logger = SystemConfiguration.getInstance().getLogger();

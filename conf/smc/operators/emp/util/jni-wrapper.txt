@@ -1,6 +1,7 @@
 package org.smcql.compiler.emp.generated;
 
 
+import org.apache.calcite.util.Pair;
 
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
@@ -86,11 +87,11 @@ public class $queryName  extends EmpProgram  {
 			String sql = (String) entry.getValue();
 
 	        	// For all inputs to MPC, get an associated QueryTable
-	        	String getTable = getObliviousInput(functionName, sql);
+	        	String inputTable = getObliviousInput(functionName, sql);
 
 
                 // add the input strings using the addInput function - which is available in main.txt
-	        	theQuery.addInput(functionName);
+	        	theQuery.addInput(functionName, inputTable);
 	        }
 	        
         	if(generatorHost != null) {

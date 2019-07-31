@@ -50,7 +50,7 @@ public class QueryTable implements Serializable {
 
 	    	int inputTuples = bitCount / (tupleSize + 1);
 
-	    	System.out.println("\n\nHave " + inputTuples + " input tuples and " + bitCount + " input bits.");
+	    	System.out.println("\n\nHave " + inputTuples + " input tuples and " + bitCount + " input bits.  Tuple size = " + tupleSize + " bits.");
 
 		    assert (bitCount % (tupleSize + 1) == 0);
 

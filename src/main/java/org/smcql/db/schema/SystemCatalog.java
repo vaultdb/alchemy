@@ -44,7 +44,9 @@ public class SystemCatalog {
     
     static SystemCatalog instance;
     
-    protected SystemCatalog(WorkerConfiguration config) throws ClassNotFoundException, SQLException {
+    ConnectionManager connections;
+    
+    protected SystemCatalog(WorkerConfiguration config) throws Exception {
 		accessPolicies = new HashMap<String, Map<String, SecurityPolicy>>();
 		String publicQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='public_attribute'";
 		String protectedQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='protected_attribute'";
@@ -58,6 +60,8 @@ public class SystemCatalog {
 				+  "pg_attribute.attrelid = pg_class.oid AND "
 				+  "pg_attribute.attnum = any(pg_index.indkey) AND indisprimary";
 		
+		connections = ConnectionManager.getInstance();
+		
 		Connection dbConnection = config.getDbConnection();
 
 		initializeSecurityPolicy(publicQuery, dbConnection, SecurityPolicy.Public);
@@ -66,53 +70,72 @@ public class SystemCatalog {
 		initializePartitioningKeys(partitionByQuery, dbConnection);
 		initializePrimaryKeys(primaryKeysQuery, dbConnection);
 		initializeTableCardinalities(dbConnection);
+		
+		dbConnection.close();
 	}
 	
-    private void initializeTableCardinalities(Connection c) throws SQLException {
+    private void initializeTableCardinalities(Connection dbConnection) throws SQLException, ClassNotFoundException {
     	// list tables
     	String tableListQuery = "SELECT DISTINCT table_name FROM information_schema.tables WHERE table_schema='public'";
-    	Statement st = c.createStatement();
-    	
-    	ResultSet rs = st.executeQuery(tableListQuery);
-
     	List<String> tables = new ArrayList<String>();
     	tableCardinalities = new HashMap<String, Pair<Long, Long>>();
     	
-    	while (rs.next()) {
-			String table = rs.getString(1);
-			tables.add(table);		
-    	}
+    	Connection aliceConnection = connections.getConnection(connections.getAlice());
+    	Connection bobConnection = connections.getConnection(connections.getBob());
     	
-    	rs.close();
+		
+    	try {
+    		Statement st = dbConnection.createStatement();
+    	
+    		ResultSet rs = st.executeQuery(tableListQuery);
+    	
+    		while (rs.next()) {
+    			String table = rs.getString(1);
+    			tables.add(table);		
+    		}
+        	rs.close();
+
+    	} catch(Exception e) {
+
+    		e.printStackTrace();
+    		System.exit(-1);
+    	}
     	
     	for(String table : tables) {
 			try {
-				tableCardinalities.put(table, collectTableCardinalities(table));
+				tableCardinalities.put(table, collectTableCardinalities(table, aliceConnection, bobConnection));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				
+				System.exit(-1);
 			}
 			
     	}
     	
+    	//aliceConnection.close();
+    	//bobConnection.close();
     		
 	}
     
     
    
-    private Pair<Long, Long> collectTableCardinalities(String table) throws Exception {
+    private Pair<Long, Long> collectTableCardinalities(String table, Connection aliceConnection, Connection bobConnection) throws Exception {
     	
     	String countQuery = "SELECT COUNT(*) FROM " + table;
-    
-    	String aliceId = ConnectionManager.getInstance().getAlice();
-    	QueryTable alice = SqlQueryExecutor.query(countQuery, aliceId);
-    	IntField countField = (IntField) alice.getTuple(0).getField(0);
-    	long aliceCount = countField.value;
+    	Long aliceCount, bobCount;
     	
-    	String bobId = ConnectionManager.getInstance().getBob();
-    	QueryTable bob = SqlQueryExecutor.query(countQuery, bobId);
-    	countField = (IntField) bob.getTuple(0).getField(0);
-    	long bobCount = countField.value;
+		Statement stA = aliceConnection.createStatement();
+		ResultSet rsA = stA.executeQuery(countQuery);
+		rsA.next();
+		aliceCount = rsA.getLong(1);
+		rsA.close();
+		
+		Statement stB = bobConnection.createStatement();
+		ResultSet rsB = stB.executeQuery(countQuery);
+		rsB.next();	
+		bobCount = rsB.getLong(1);
+		rsB.close();
     	
     	
     	Pair<Long, Long> counts = new Pair<Long, Long>(aliceCount, bobCount);

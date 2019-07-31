@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -75,6 +74,7 @@ public class QueryCompiler {
     allSteps = new HashMap<Operator, ExecutionStep>();
     obliviousCardinalities = new HashMap<String, Pair<Long, Long> >();
     connections = ConnectionManager.getInstance();
+    smcCode = new HashMap<ExecutionStep, String>();
     
     queryId = q.getName();
     Operator root = q.getPlanRoot();
@@ -461,7 +461,6 @@ public class QueryCompiler {
     SecureStep mergeStep = new SecureStep(merge, op, mRunConf, child, null);
     child.setParent(mergeStep);
     String code  = merge.generate();
-    String key = mergeStep.getPackageName();
     smcCode.put(mergeStep, code);
     return mergeStep;
   }

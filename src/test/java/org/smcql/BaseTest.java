@@ -32,6 +32,7 @@ public abstract class BaseTest extends TestCase {
 	protected WorkerConfiguration honestBroker;
 	protected Logger logger;
 	protected SystemConfiguration config;
+	protected SystemCatalog catalog;
 	
 	
 
@@ -42,6 +43,7 @@ public abstract class BaseTest extends TestCase {
 		SystemCatalog.resetInstance();
 		
 		config = SystemConfiguration.getInstance();
+		catalog = SystemCatalog.getInstance();
 		parser = new SqlStatementParser();
 		honestBroker = SystemConfiguration.getInstance().getHonestBrokerConfig();
 		logger = SystemConfiguration.getInstance().getLogger();

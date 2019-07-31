@@ -205,7 +205,7 @@ public class EmpJniUtilities {
 			 Entry<String, Pair<Long, Long>> pair = cardinalityItr.next();
 			 Pair<Long, Long> value = pair.getValue();
 			 String variableName = pair.getKey() + "Cardinalities";
-			 String createStatement = "Pair<Long, Long> " + variableName + " = new Pair<Long, Long>(" + value.left + ", " + value.right + ");";
+			 String createStatement = "Pair<Long, Long> " + variableName + " = new Pair<Long, Long>(" + value.left + "L, " + value.right + "L);\n";
 			 cardinalitySetup += createStatement;
 			 
 			 String putStatement = "obliviousCardinalities.put(\"" + pair.getKey() + "Union\", " + variableName + ");\n";

@@ -32,7 +32,7 @@ public class SecureRelToSqlConverter extends ExtendedRelToSqlConverter {
 	
 	private List<SqlIdentifier> getOrderAttrs(SqlParserPos sqlParserPos) {
 		List<SqlIdentifier> result = new ArrayList<SqlIdentifier>();
-		result.add(new SqlIdentifier(Arrays.asList("dummy_tag"), sqlParserPos));
+		//result.add(new SqlIdentifier(Arrays.asList("dummy_tag"), sqlParserPos));
 
 		for (SecureRelDataTypeField field : scanOperator.secureComputeOrder()) {
 			result.add(new SqlIdentifier(Arrays.asList(field.getName()), sqlParserPos));

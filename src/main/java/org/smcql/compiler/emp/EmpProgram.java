@@ -7,8 +7,10 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.calcite.util.Pair;
 import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;
+import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.type.SecureRelRecordType;
 import org.smcql.util.Utilities;
@@ -22,7 +24,7 @@ public class EmpProgram {
 	protected BitSet outputBits = null;
 
 	protected Map<String, String> inputs = new HashMap<String, String>();
-	protected Map<String, Integer> obliviousCardinalities = new HashMap<String, Integer>();
+	protected Map<String, Pair<Long, Long>> obliviousCardinalities = new HashMap<String, Pair<Long, Long>>();
 
 
 	public EmpProgram(int aParty, int aPort) {
@@ -66,9 +68,13 @@ public class EmpProgram {
     protected String getObliviousInput(String name, String sql) throws Exception {
     	QueryTable baseTable = getInput(sql);
     	int tupleLength = baseTable.tupleSize() + 1; // for dummy tag
-    	int obliviousCardinality = obliviousCardinalities.get(name);
+    	Pair<Long, Long> obliviousLength = obliviousCardinalities.get(name);
+    	String workerId = System.getProperty("workerId");
+    	Long obliviousCardinality = (workerId.equals(ConnectionManager.getInstance().getAlice())) ?
+    			obliviousLength.left : obliviousLength.right;
+
     	String output = new String();
-    	int padding = obliviousCardinality - baseTable.tupleCount();
+    	long padding = obliviousCardinality - baseTable.tupleCount();
     	
     	
     	char[] chars = new char[tupleLength];

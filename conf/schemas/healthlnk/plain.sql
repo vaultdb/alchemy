@@ -122,16 +122,6 @@ CREATE TABLE remote_medications (
 DROP TABLE IF EXISTS mi_cohort_medications;
 CREATE TABLE mi_cohort_medications AS SELECT * FROM medications  WHERE year = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM mi_cohort); 
 
-CREATE TABLE a_diagnoses (
-	patient_id integer,
-	icd9 character varying,
-	timestamp_ timestamp);
-
-CREATE TABLE a_init (
-	lenD integer,
-	lenM integer,
-	pad timestamp);
-
 CREATE TABLE test (
 	privc varchar(1),
 	privi integer);

@@ -1,6 +1,7 @@
 package org.smcql.compiler.emp.generated;
 
 
+import org.apache.calcite.util.Pair;
 
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
@@ -41,12 +42,16 @@ import org.smcql.compiler.emp.EmpProgram;
 @Namespace("JoinCdiff")
 public class JoinCdiff  extends EmpProgram  {
 
-	Map<String, String> inputs = new HashMap<String, String>();
 	
 	public JoinCdiff(int party, int port) {
 		super(party, port);
-		inputs.put("SeqScan4Union", "SELECT patient_id, FALSE AS dummy_tag FROM medications ORDER BY dummy_tag, patient_id");
-inputs.put("SeqScan0Union", "SELECT patient_id, icd9 = '008.45' AS dummy_tag FROM (SELECT patient_id, icd9 FROM diagnoses) AS t ORDER BY dummy_tag, patient_id");
+		inputs.put("SeqScan4Union", "SELECT patient_id FROM medications ORDER BY patient_id");
+inputs.put("SeqScan0Union", "SELECT patient_id FROM (SELECT patient_id, icd9 FROM diagnoses) AS t WHERE icd9 = '008.45' ORDER BY patient_id");
+
+		Pair<Long, Long> SeqScan4Cardinalities = new Pair<Long, Long>(2L, 2L);
+obliviousCardinalities.put("SeqScan4Union", SeqScan4Cardinalities);
+Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(8L, 8L);
+obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
 
 	}
 	
@@ -75,18 +80,7 @@ inputs.put("SeqScan0Union", "SELECT patient_id, icd9 = '008.45' AS dummy_tag FRO
 	
 	   
 	   
-	QueryTable getInput(String sql) throws Exception {
-    	SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(sql);
-    	String workerId = System.getProperty("workerId");	
-    	
-					
-		// Perform plaintext execution, which does not reduce cardinality, but add dummyTags
-    	QueryTable table = SqlQueryExecutor.query(sql, outSchema, workerId);
-
-    	
-		return table;
-
-    }
+	
 	   	
         @Override
         public void runProgram() throws Exception {
@@ -96,14 +90,14 @@ inputs.put("SeqScan0Union", "SELECT patient_id, icd9 = '008.45' AS dummy_tag FRO
 	        while(inputItr.hasNext()) {
 	        	Map.Entry entry = (Map.Entry) inputItr.next();
 	        	String functionName = (String) entry.getKey();
+			String sql = (String) entry.getValue();
 
 	        	// For all inputs to MPC, get an associated QueryTable
-	        	QueryTable table = getInput((String) entry.getValue());
+	        	String inputTable = getObliviousInput(functionName, sql);
 
-			System.out.println("Input table " + functionName + ": " + table);
 
-                // add the input strings using the addInput function - which is available in main.txtOkay
-	        	theQuery.addInput(functionName, table.toBinaryString());
+                // add the input strings using the addInput function - which is available in main.txt
+	        	theQuery.addInput(functionName, inputTable);
 	        }
 	        
         	if(generatorHost != null) {

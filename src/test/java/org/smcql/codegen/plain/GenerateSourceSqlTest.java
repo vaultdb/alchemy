@@ -17,20 +17,39 @@ public class GenerateSourceSqlTest extends BaseTest {
 	
 	public void testAsprinCount() throws Exception {
 		Map<String, String> expected = new HashMap<String, String>();
-		expected.put("SeqScan4", "SELECT patient_id, timestamp_, LOWER(medication) LIKE '%aspirin%' AS dummy_tag FROM (SELECT patient_id, medication, timestamp_ FROM mi_cohort_medications) AS t ORDER BY dummy_tag, patient_id, timestamp_");
-		expected.put("SeqScan0", "SELECT patient_id, timestamp_, icd9 LIKE '414%' AS dummy_tag FROM (SELECT patient_id, icd9, timestamp_ FROM mi_cohort_diagnoses) AS t ORDER BY dummy_tag, patient_id, timestamp_");
+		
+		String scan0 = "SELECT patient_id, timestamp_\n"
+				 + "FROM (SELECT patient_id, icd9, timestamp_\n"
+				 + "FROM mi_cohort_diagnoses) AS t\n"
+				 + "WHERE icd9 LIKE '414%'\n"
+				 + "ORDER BY patient_id, timestamp_";
+		
+		String scan4 = "SELECT patient_id, timestamp_\n"
+				 + "FROM (SELECT patient_id, medication, timestamp_\n"
+				 + "FROM mi_cohort_medications) AS t\n"
+				 + "WHERE LOWER(medication) LIKE '%aspirin%'\n"
+				 + "ORDER BY patient_id, timestamp_";
+		
+		
+		expected.put("SeqScan4", scan4);
+		expected.put("SeqScan0", scan0);
 		runTest("aspirin-count", expected);		
 	}
 	
 	public void testCDiff() throws Exception {		
 		Map<String, String> expected = new HashMap<String, String>();
-		expected.put("SeqScan0", "SELECT patient_id, timestamp_, EXTRACT(EPOCH FROM timestamp_) / 86400 AS $2, icd9 = '008.45' AS dummy_tag FROM cdiff_cohort_diagnoses ORDER BY dummy_tag, patient_id, timestamp_");
+		String scan0 = "SELECT patient_id, timestamp_, EXTRACT(EPOCH FROM timestamp_) / 86400 AS $2\n"
+				 + "FROM cdiff_cohort_diagnoses\n"
+				 + "WHERE icd9 = '008.45'\n"
+				 + "ORDER BY patient_id, timestamp_";
+		
+		expected.put("SeqScan0", scan0);
 		runTest("cdiff", expected);
 	}
 
 	public void testComorbidity() throws Exception {		
 		Map<String, String> expected = new HashMap<String, String>();
-		expected.put("SeqScan0", "SELECT major_icd9, FALSE AS dummy_tag FROM cdiff_cohort_diagnoses ORDER BY dummy_tag");
+		expected.put("SeqScan0", "SELECT major_icd9\nFROM cdiff_cohort_diagnoses");
 		runTest("comorbidity", expected);
 	}
 	
