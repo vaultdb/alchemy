@@ -66,7 +66,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         
         
         
-        smcqlLogger.info("Loading class: " + fullyQualifiedClassName);
+        smcqlLogger.info("Building class: " + fullyQualifiedClassName);
         Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName).deleteJniFiles(false); //.copyLibs(true);
         File[] outputFiles = null;
         

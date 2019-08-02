@@ -8,6 +8,7 @@ import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.SqlNode;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.schema.SystemCatalog;
+import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.parser.SqlStatementParser;
 import org.smcql.util.Utilities;
@@ -691,6 +692,7 @@ public abstract class TpcHBaseTest  extends TestCase {
 	  protected void setUp() throws Exception {
 		  SystemConfiguration.resetConfiguration();
 		  SystemCatalog.resetInstance();
+		  ConnectionManager.reset();
 		  
 		  config = SystemConfiguration.getInstance("tpch");
 		  catalog = SystemCatalog.getInstance();
@@ -709,7 +711,21 @@ public abstract class TpcHBaseTest  extends TestCase {
 	  }
 	  
 
-	
+	  @Override
+	  protected void tearDown() throws Exception {
+
+		  // clean up any dangling resources
+		  ConnectionManager connections = ConnectionManager.getInstance();
+		  if(connections != null) {
+			  connections.closeConnections();
+			  ConnectionManager.reset();
+		  }
+		  
+		  SystemConfiguration.resetConfiguration();
+		  SystemCatalog.resetInstance();
+		  
+	  }
+
 
 
 

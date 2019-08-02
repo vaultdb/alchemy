@@ -22,6 +22,7 @@ public class EmpExecutor extends MPCExecutor {
 	private QueryTable plainOutput;
 	String queryId = null; 
 	SecureRelRecordType outSchema;
+	int exitCode = 0;
 	
 	public EmpExecutor(QueryCompiler compiled) throws Exception {
 		ConnectionManager cm = ConnectionManager.getInstance();
@@ -62,7 +63,7 @@ public class EmpExecutor extends MPCExecutor {
 		}
 	}
 	
-	public void run() {
+	public void run()  {
 		List<ExecutionSegment> segments = compiledPlan.getSegments();
 		
 		ExecutionStep root = compiledPlan.getRoot();
@@ -85,6 +86,8 @@ public class EmpExecutor extends MPCExecutor {
 			return;
 		}
 		
+		
+	
 
 		// iterate in reverse order to go bottom up
 		ListIterator<ExecutionSegment> li = segments.listIterator(segments.size());
@@ -100,8 +103,13 @@ public class EmpExecutor extends MPCExecutor {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			System.exit(1);
+			exitCode = -1;
 		}
+	}
+	
+	
+	public int getExitCode() {
+		return exitCode;
 	}
 	
 	public QueryTable getOutput() throws Exception {

@@ -41,6 +41,8 @@ public abstract class BaseTest extends TestCase {
 		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.global");
 		SystemConfiguration.resetConfiguration();
 		SystemCatalog.resetInstance();
+		ConnectionManager.reset();
+
 		
 		config = SystemConfiguration.getInstance();
 		catalog = SystemCatalog.getInstance();
@@ -102,4 +104,19 @@ public abstract class BaseTest extends TestCase {
 		    assertEquals(expectedOutput, observedOutput);
 
 		  }
+	  
+	  @Override
+	  protected void tearDown() throws Exception {
+
+		  // clean up any dangling resources
+		  ConnectionManager connections = ConnectionManager.getInstance();
+		  if(connections != null) {
+			  connections.closeConnections();
+			  ConnectionManager.reset();
+		  }
+		  
+		  SystemConfiguration.resetConfiguration();
+		  SystemCatalog.resetInstance();
+		  
+	  }
 }

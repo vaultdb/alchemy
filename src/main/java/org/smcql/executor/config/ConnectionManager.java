@@ -44,12 +44,23 @@ public class ConnectionManager {
 		      return instance;
 		   }
 
-	   
-	public void reinitialize() {
-		instance = null;
+	  
+
+	public void closeConnections() throws ClassNotFoundException, SQLException {
+		
+
+			for(WorkerConfiguration w : workersById.values()) {
+				w.getDbConnection().close();
+
+		}
 	}
 	
-	
+
+	public static void reset() {
+		instance = null;
+
+	}
+
 	private void initialize() throws Exception, SQLException {
 		List<String> hosts = null;
 		

@@ -104,5 +104,9 @@ public:
 	}
 
 
+	static Integer readFromInteger(Integer src, int readOffset, int size) {
+		return Integer(size, src.bits + readOffset);
+	}
+
 
 };
