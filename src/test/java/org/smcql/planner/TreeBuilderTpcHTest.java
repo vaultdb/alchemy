@@ -598,15 +598,15 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
           runTest(13, expectedOutput);
       }
 
-    /* JR: was working, TODO: return to this
-     *   public void testQuery14() throws Exception {
+  /* JR: This used to work and seems close to being on track
+        public void testQuery14() throws Exception {
      
     	  
     	  // TODO: this is another where the join can be done in the clear owing to partitioning
           String expectedOutput = PLANS.get(13);
           runTest(14, expectedOutput);
-         
-      } */
+        } */
+        
 
 /*      public void testQuery15() throws Exception {
           String expectedOutput = PLANS.get(14);
@@ -614,7 +614,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
       }
 */
      
-      /* TODO: JR return to this one, was working in an earlier version
+      /* TODO: JR: this too was working in an earlier version
        * public void testQuery16() throws Exception {
     	  // aggregate on supplier is oblivious b/c of secret  filter
     	  // TODO: examine design point of running local oblivious query in plaintext w/o padding

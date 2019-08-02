@@ -30,7 +30,7 @@ public class Join extends Operator {
 	
 
 	@Override
-	public void inferExecutionMode() {
+	public void inferExecutionMode()  throws Exception {
 		SecurityPolicy maxAccess = maxAccessLevel();
 
 		super.inferExecutionMode();

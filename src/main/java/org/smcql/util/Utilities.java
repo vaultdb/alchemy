@@ -257,6 +257,10 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		// Case 1: if it is the source relation's stored partition key
 		String partitionKey = schemaDef.getPartitionKey(srcTable);
 		
+		if(partitionKey == null) {
+			throw new Exception("Something went wrong on partition key lookup for " + srcTable);	
+		}
+		
 		if(partitionKey.equals(attr.getName()))
 		{
 			return true;

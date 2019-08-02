@@ -132,7 +132,7 @@ public class Aggregate extends Operator {
 	}
 	
 	@Override
-	public void inferExecutionMode() {
+	public void inferExecutionMode() throws Exception {
 		super.inferExecutionMode(); 
 		
 		

@@ -86,7 +86,7 @@ public abstract class Operator implements CodeGenerator {
 		pCost = new PrivacyCost(epsilon, delta); //Epsilon Cost = Epsilon value * # relations touched (1 by default)
 	}
 	
-	public void inferExecutionMode() {
+	public void inferExecutionMode() throws Exception {
 		for(Operator op : children) {
 			op.inferExecutionMode();
 			
@@ -124,14 +124,10 @@ public abstract class Operator implements CodeGenerator {
 					
 				}
 			} else // max child is local-oblivious
-				try {
+
 					if(locallyRunnable()) {
 						executionMode.distributed = false;					
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.exit(-1);
-				}
 		
 		}
 		
