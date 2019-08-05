@@ -8,8 +8,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang3.StringUtils;
+import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.slice.SliceKeyDefinition;
 import org.smcql.type.SecureRelDataTypeField;
 import org.smcql.type.SecureRelRecordType;
@@ -41,31 +44,35 @@ public class QueryTable implements Serializable {
 
   public QueryTable(BitSet bits, SecureRelRecordType s, int bitCount, boolean dummyTagged) throws Exception {
 	    schema = s;
-	    tupleSize = schema.size();
+	    tupleSize = schema.size(); // without dummy tag
+	    int physicalTupleSize = tupleSize + 1;
 	    tupleCount = 0;
 
+	    Logger logger = SystemConfiguration.getInstance().getLogger();
 	    if(dummyTagged)  {
-	    	int readIdx = 0;
-		    int dummyIdx = tupleSize;
+	        int dummyIdx = tupleSize;
 
-	    	int inputTuples = bitCount / (tupleSize + 1);
+	    	int inputTuples = bitCount / physicalTupleSize;
 
-	    	System.out.println("\n\nHave " + inputTuples + " input tuples and " + bitCount + " input bits.  Tuple size = " + tupleSize + " bits.");
+	    	logger.info("\n\nHave " + inputTuples + " input tuples and " + bitCount + " input bits.  Tuple size = " + tupleSize + " bits.");
 
-		    assert (bitCount % (tupleSize + 1) == 0);
+		    assert (bitCount % physicalTupleSize == 0);
 
 
 		    tuples = new ArrayList<Tuple>();
 		    
 		    
 		    for (int i = 0; i < inputTuples; ++i) {
-		    	if(!bits.get(readIdx + dummyIdx)) { // if dummyTag (at last idx) false
-		    		BitSet tupleBits = bits.get(readIdx, readIdx + tupleSize);
+		    	boolean dummyTag = bits.get(i*physicalTupleSize + dummyIdx);
+		    	//logger.info("Tuple " + i + " has dummy tag of " + dummyTag);
+		    	if(!dummyTag) { // if dummyTag (at last idx) false
+		        	BitSet tupleBits = bits.get(i * physicalTupleSize, (i + 1) * physicalTupleSize);
+
 			        Tuple t = new Tuple(tupleBits, schema);	        
+		    		//logger.info("Decoding a tuple " + t + "!");
 			        tuples.add(t);
 			        ++tupleCount;
 		    	}  
-		    	readIdx += tupleSize + 1;
 			       
 		    
 		    }
@@ -88,180 +95,7 @@ public class QueryTable implements Serializable {
   }
 
   
-  
-   boolean toExtractDummy(){
-    /* checks to see if there are dummyTags present in the schema.
-       current implementation assumes that a boolean field at the end of the schema is the trigger
-    */
-    try {
-      if (schema.getLast().getBaseField().getType().getSqlTypeName() == SqlTypeName.BOOLEAN) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-    catch (Exception e){
-      System.out.println(" Tried to exact dummy but failed");
-      dummyTags = new BitSet(1);
-      dummyTags.set(0, true);
-      return false;
-    }
 
-  }
-
-   /* TODO: fix this up when we have something that invokes it
-   public boolean extractDummies() throws Exception {
-    //checks for existence of dummyTags. If present, updates the private dummyTag attribute and the schema 
-
-     if (toExtractDummy()){
-
-       dummyTags = new BitSet(tupleCount);
-       BitSet tupleBits = new BitSet(tupleCount * tupleSize);
-       int tupleWriteIdx = 0;
-
-	   int dummyTagOffset = schema.size() - 1; 
-
-       // for each tuple, copy last bit constructing the dummyTags for each and record the other bits
-       for( int i = 0; i < tupleCount; i++){
-    	   BitSet tuple = tuples.get(i).toBitSet();
-    	   boolean dummy = tuple.get(dummyTagOffset);
-    	   if(!dummy) {
-    		   // append this tuple to the set
-    	   }
-    	   dummyTags.set(i, tuple.get(dummyTagOffset));
-    	   for(int j = 0; j < dummyTagOffset; ++j) {
-        	   tupleBits.set(tupleWriteIdx, tuple.get(j));
-        	   ++tupleWriteIdx;
-    	   }
-       }
-       
-       // Convert new tuple string to raw boolean -- is there a way to make this a global function?
-       boolean[] newbits = new boolean[tuplebits.length()];
-
-       for (int i = 0; i < tuplebits.length(); ++i){
-         char search = '1';
-
-         if (tuplebits.charAt(i) == search){
-           newbits[i] = true;
-         }
-         else{
-           newbits[i] = false;
-         }
-       } 
-
-
-       // modify schema & remove bits from tuples
-       List<SecureRelDataTypeField> newSchemaList = schema.getAttributes();
-       newSchemaList.remove(newSchemaList.size() - 1);
-
-       SecureRelRecordType newSchema = new SecureRelRecordType(schema.getBaseType(), newSchemaList);
-
-       // update schema and tupleSize
-       schema = newSchema;
-       tupleSize -= 1;
-
-
-       // Reset the raw bits in current QueryTable
-       resetTuples(newbits);
-
-       return true;
-     }
-     else{
-       return false;
-     }
-   }
-
-
-  public String getDummyTags(){
-    // return the dummyTag elements
-    return dummyTags;
-  } 
-
-  private void resetTuples(BitSet bits) throws Exception {
-    // initialize a new arraylist for the tuples
-    tuples = new ArrayList<Tuple>();
-
-    // create new tuples via the
-    for (int i = 0; i < tupleCount; ++i) {
-      BitSet tupleBits = bits.get(i * tupleSize, (i + 1) * tupleSize);
-      Tuple t = new Tuple(tupleBits, schema);
-      tuples.add(t);
-      
-    }
-  }
-*/
-  
-   /*
-    * // TODO: refactor this to have EmpProgram return a SecureArray
-  public QueryTable(SecureRelRecordType outSchema, BitSet alice, BitSet bob) throws Exception {
-    // check to make sure alice and bob are of the same length - should always be the case
-    assert(alice.size() == bob.size());
-
-    schema = outSchema;
-    tupleSize = outSchema.size();
-    tupleCount = alice.size() / (tupleSize+1); // add plus 1 for dummies
-    tuples = new ArrayList<Tuple>();
-
-
-    int realCount = 0;
-
-    List<Boolean> decrypted=new ArrayList<Boolean>();
-
-
-    BitSet aliceTags = alice.get(0, tupleCount);
-    BitSet bobTags = alice.get(0, tupleCount);
-    
-    boolean[] bobTags = Arrays.copyOfRange(bob, 0, tupleCount);
-    boolean [] tags = EmpJniUtilities.decrypt(aliceTags, bobTags);
-
-    // iterate through tags, decrypting only the nonDummies
-    for(int i = 0; i < tupleCount; i++){
-      if(tags[i] == false){
-
-        int startIndx = tupleCount + tupleSize*i;
-        int endIndx = startIndx + tupleSize;
-        boolean[] aliceTuple =  Arrays.copyOfRange(alice,startIndx,endIndx);
-        boolean[] bobTuple = Arrays.copyOfRange(bob,startIndx,endIndx);
-
-
-        boolean[] decTuple = EmpJniUtilities.decrypt(aliceTuple,bobTuple);
-
-        for(int j=0; j < tupleSize; j++) {
-          decrypted.add(decTuple[j]);
-        }
-        realCount += 1;
-      }
-    }
-
-    // reset tupleCount
-    tupleCount = realCount;
-
-
-    // form the Querytable
-    boolean[] fullDecrypted = new boolean[decrypted.size()];
-
-    for(int i = 0; i < decrypted.size(); i++)
-    {
-      fullDecrypted[i] = decrypted.get(i);
-    }
-
-    for (int i = 0; i < tupleCount; ++i) {
-        boolean[] tupleBits = Arrays.copyOfRange(fullDecrypted, i * tupleSize, (i + 1) * tupleSize);
-        Tuple t = new Tuple(tupleBits, schema);
-        tuples.add(t);
-      }
-
-    }
-
-  
-  // is it all zeroes?
-  private boolean isNull(final boolean[] tupleBits) {
-    boolean init = false;
-    for (int i = 0; i < tupleBits.length; ++i) init |= tupleBits[i];
-
-    return !init;
-  } */
-   
 
   public QueryTable(SecureRelRecordType outSchema) {
     schema = outSchema;

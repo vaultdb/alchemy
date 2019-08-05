@@ -140,7 +140,7 @@ Data* SeqScan0Union(int party, NetIO * io) {
 
 
 
-	  cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
+	  //cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
     }
     return d;
 }
@@ -218,7 +218,6 @@ void run(int party, int port) {
 
     int tupleWidth = results->tuples[0].size();
 
-    // Debugging assistance
     std::cout << "Final output tuple width is " << tupleWidth << std::endl;
 
 

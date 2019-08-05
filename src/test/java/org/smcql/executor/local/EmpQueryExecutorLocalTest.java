@@ -1,12 +1,14 @@
 package org.smcql.executor.local;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.smcql.BaseTest;
 import org.smcql.codegen.QueryCompiler;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
+import org.smcql.db.data.Tuple;
 import org.smcql.executor.EmpExecutor;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
@@ -40,14 +42,15 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
   }
 
   public void testJoin() throws Exception {
-	  /* JR: Temporarily commented out
-	   * 
+	  
     String testName = "JoinCdiff";
     String query =
-            "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
+            "SELECT  d.patient_id "
+    		+"FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id "
+            + "WHERE icd9=\'008.45\' ";
 
     testCase(testName, query); 
-    	   */
+    	   
 
   }
 
@@ -84,11 +87,17 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     QueryTable expectedOutput = getExpectedOutput(sql);
     QueryTable observedOutput = exec.getOutput();
 
+    List<Tuple> expected = expectedOutput.tuples();
+    List<Tuple> observed = observedOutput.tuples();
+    
+    Collections.sort(expected);
+    Collections.sort(observed);
+    
     logger.info("Observed output: \n" + observedOutput);
     logger.info("Expected output: \n" + expectedOutput);
 
     assertEquals(expectedOutput.tupleCount(), observedOutput.tupleCount());
-    assertEquals(expectedOutput, observedOutput);
+    assertEquals(expected, observed);
 
   }
 }

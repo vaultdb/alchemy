@@ -21,7 +21,6 @@ void run(int party, int port) {
 
     int tupleWidth = results->tuples[0].size();
 
-    // Debugging assistance
     std::cout << "Final output tuple width is " << tupleWidth << std::endl;
 
 

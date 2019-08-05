@@ -92,7 +92,7 @@ Data* $functionName(int party, NetIO * io) {
 
 
 
-	  cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
+	  //cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
     }
     return d;
 }

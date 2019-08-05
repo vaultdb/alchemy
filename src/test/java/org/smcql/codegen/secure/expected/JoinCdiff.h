@@ -140,7 +140,7 @@ Data* SeqScan0Union(int party, NetIO * io) {
 
 
 
-	  cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
+	  //cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
     }
     return d;
 }
@@ -238,7 +238,7 @@ Data* SeqScan4Union(int party, NetIO * io) {
 
 
 
-	  cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
+	  //cout << "Outputting " << res[i][rowLength - 1].reveal(PUBLIC) << ", " << value.reveal<int32_t>(PUBLIC) << endl;	  	  
     }
     return d;
 }
@@ -253,6 +253,7 @@ Data * Join6(Data *left, Data *right) {
     int outputTupleCount = left->publicSize * right->publicSize;
 	int lhsPayloadSize = 33 - 1; // sans dummy tag
 	int rhsPayloadSize = 33 - 1; // sans dummy tag
+	int dummyTagIdx = 33 - 1;
 	
 
 	Data *result = new Data;
@@ -266,27 +267,33 @@ Data * Join6(Data *left, Data *right) {
     
     dstTuple = Integer(33, 0, PUBLIC);
 	
+	// 
     for (int i=0; i < left->publicSize; i++) {
         lTuple = left->tuples[i];
-        memcpy(srcTuple.bits, lTuple.bits, lhsPayloadSize);
-        		
+        EmpUtilities::writeToInteger(&srcTuple, &lTuple, 0, 0, lhsPayloadSize);
+        	
         for (int j=0; j < right->publicSize; j++) {
         	rTuple = right->tuples[j];
+	        EmpUtilities::writeToInteger(&srcTuple, &rTuple, lhsPayloadSize, 0, rhsPayloadSize);
+
 	        	
-        	// concatenate the two inputs into srcTuple, the standard join output schema
-        	memcpy(srcTuple.bits + lhsPayloadSize, rTuple.bits, rhsPayloadSize);
         	
         	
         	// TODO: rewire filter flattener to skip the memcopies above
         	Bit cmp = Integer(32, srcTuple.bits ) == Integer(32, srcTuple.bits  + 32);
+
+
         	
         	// populate dstTuple with any projections
-        	memcpy(dstTuple.bits , Integer(32, srcTuple.bits ).bits, 32);
-;
+        	EmpUtilities::writeToInteger(&dstTuple, Integer(32, srcTuple.bits ), 0, 0, 32);
         	
-        	dstTuple[33 - 1] = cmp & !EmpUtilities::getDummyTag(lTuple) & !EmpUtilities::getDummyTag(rTuple);
-	       
-        	
+        	Bit dummyTag = (EmpUtilities::getDummyTag(lTuple)  == Bit(true, PUBLIC)) 
+        	           |  (EmpUtilities::getDummyTag(rTuple)  == Bit(true, PUBLIC))
+        	           |  (cmp == Bit(false, PUBLIC));
+        	           
+        	dstTuple[dummyTagIdx] = dummyTag;
+
+        		        
 	        result->tuples[writeIdx] = dstTuple;
             writeIdx++;
             
@@ -323,7 +330,6 @@ void run(int party, int port) {
 
     int tupleWidth = results->tuples[0].size();
 
-    // Debugging assistance
     std::cout << "Final output tuple width is " << tupleWidth << std::endl;
 
 

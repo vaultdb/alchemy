@@ -98,6 +98,15 @@ public:
 	}
 
 
+	static void writeToInteger(Integer *dst, Integer src, int writeOffset, int readOffset, int size) {
+		Bit *writePtr = dst->bits + writeOffset;
+		Bit *srcPtr = src.bits + readOffset;
+
+		memcpy(writePtr, srcPtr, sizeof(Bit)*size);
+
+	}
+
+
 	static Bit getDummyTag(Integer tuple) {
 		int dummyIdx = tuple.size() - 1;
 		return tuple[dummyIdx];

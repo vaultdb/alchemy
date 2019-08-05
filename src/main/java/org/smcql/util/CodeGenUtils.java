@@ -252,18 +252,11 @@ public class CodeGenUtils {
 		// attr index and its start position in bits from beginning of tuple
 		//Pair<Integer, Integer> dstPosition = getSchemaPosition(dstSchema, dstField);
 		
-		
-		
-		String output =  "memcpy(" + dstInteger + ".bits";
-		if(dstOffset > 0)
-			output += " + " + dstOffset;
-
-		output += ", " + srcInteger + ".bits";
-		
-		if(srcOffset > 0)
-			output += " + " + srcOffset;
-		
-		output += ", " + writeSize +  ");";
+		String output = "EmpUtilities::writeToInteger(&" + dstInteger
+		  +   ", &" + srcInteger 
+		  + ", " + dstOffset
+		  + ", " + srcOffset
+		  + ", " + writeSize + ");";
 		
 		return output;
 	}

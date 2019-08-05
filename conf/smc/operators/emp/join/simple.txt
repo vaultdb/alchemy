@@ -9,6 +9,7 @@ Data * $functionName(Data *left, Data *right) {
     int outputTupleCount = left->publicSize * right->publicSize;
 	int lhsPayloadSize = $lSize - 1; // sans dummy tag
 	int rhsPayloadSize = $rSize - 1; // sans dummy tag
+	int dummyTagIdx = $dSize - 1;
 	
 
 	Data *result = new Data;
@@ -22,26 +23,33 @@ Data * $functionName(Data *left, Data *right) {
     
     dstTuple = Integer($dSize, 0, PUBLIC);
 	
+	// 
     for (int i=0; i < left->publicSize; i++) {
         lTuple = left->tuples[i];
-        memcpy(srcTuple.bits, lTuple.bits, lhsPayloadSize);
-        		
+        EmpUtilities::writeToInteger(&srcTuple, &lTuple, 0, 0, lhsPayloadSize);
+        	
         for (int j=0; j < right->publicSize; j++) {
         	rTuple = right->tuples[j];
+	        EmpUtilities::writeToInteger(&srcTuple, &rTuple, lhsPayloadSize, 0, rhsPayloadSize);
+
 	        	
-        	// concatenate the two inputs into srcTuple, the standard join output schema
-        	memcpy(srcTuple.bits + lhsPayloadSize, rTuple.bits, rhsPayloadSize);
         	
         	
         	// TODO: rewire filter flattener to skip the memcopies above
         	Bit cmp = $filterCond;
+
+
         	
         	// populate dstTuple with any projections
         	$writeDst;
         	
-        	dstTuple[$dSize - 1] = cmp & !EmpUtilities::getDummyTag(lTuple) & !EmpUtilities::getDummyTag(rTuple);
-	       
-        	
+        	Bit dummyTag = (EmpUtilities::getDummyTag(lTuple)  == Bit(true, PUBLIC)) 
+        	           |  (EmpUtilities::getDummyTag(rTuple)  == Bit(true, PUBLIC))
+        	           |  (cmp == Bit(false, PUBLIC));
+        	           
+        	dstTuple[dummyTagIdx] = dummyTag;
+
+        		        
 	        result->tuples[writeIdx] = dstTuple;
             writeIdx++;
             

@@ -136,6 +136,7 @@ public class EmpJniUtilities {
 		String aliceOutput = aliceRunnable.getOutputString();
 		String bobOutput = bobRunnable.getOutputString();
 		
+		//debugDecryption(aliceOutput, bobOutput, outSchema);
 		
 		BitSet decrypted = decrypt(aliceOutput, bobOutput);
 		
@@ -148,6 +149,28 @@ public class EmpJniUtilities {
 	}
 	 
 	
+	static void debugDecryption(String aliceOutput, String bobOutput, SecureRelRecordType outSchema) {
+		int tupleWidthWithDummyTag = outSchema.size() + 1;
+		int tupleCount = aliceOutput.length() / tupleWidthWithDummyTag;
+		String decryptedString = new String();
+		
+		assert(aliceOutput.length() == bobOutput.length());
+		
+		for(int i = 0; i < aliceOutput.length(); ++i) {
+			boolean aliceBit = (aliceOutput.charAt(i) == '0') ? false : true;
+			boolean bobBit = (bobOutput.charAt(i) == '0') ? false : true;
+			boolean outBit = aliceBit ^ bobBit;
+			
+			decryptedString += outBit ? '1' : '0';
+			
+		}
+		
+		for(int i = 0; i < tupleCount; ++i) {
+			System.out.println("Tuple " + i + ":" + decryptedString.substring(i*tupleWidthWithDummyTag, (i+1)*tupleWidthWithDummyTag));
+		}
+		
+	}
+
 	// for debugging this does a deep delete on previous builds 
 	public static void cleanEmpCode(String className) throws Exception {
 		String delGeneratedFiles = "rm " + Utilities.getCodeGenTarget() + "/" + className + "* ";

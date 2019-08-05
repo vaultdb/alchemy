@@ -36,12 +36,14 @@ public class RexNodeUtilities {
 				int dstOffset = schemaPos.getValue();
 				int dstSize = schemaPos.getKey();
 				
-				ret += "memcpy(" + dstVariable + ".bits ";
-				if(dstOffset > 0) {
-					ret += " + " + dstOffset;
-				}
-				ret += ", " + flattenForSmc(itr.next(), srcSchema, srcVariable, srcSize) + ".bits";
-				ret += ", " + dstSize + ");\n";
+				
+				ret += "EmpUtilities::writeToInteger(&" + dstVariable;
+				ret +=  ", " + flattenForSmc(itr.next(), srcSchema, srcVariable, srcSize);
+				ret += ", ";
+				ret += dstOffset > 0 ? dstOffset : 0;
+				ret +=  ", 0" + ", " + dstSize + ")"; //srcOffset already addressed in flattenForSmc
+				
+			
 			}
 		}
 		
