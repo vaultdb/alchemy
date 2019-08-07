@@ -1,4 +1,4 @@
-package org.smcql.compiler.emp.generated;
+package org.vaultdb.compiler.emp.generated;
 
 
 import org.apache.calcite.util.Pair;
@@ -15,13 +15,13 @@ import java.util.Iterator;
 import java.util.BitSet;
 
 
-import org.smcql.config.SystemConfiguration;
-import org.smcql.db.data.QueryTable;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.EmpJniUtilities;
-import org.smcql.util.Utilities;
-import org.smcql.util.EmpJniUtilities;
+import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.db.data.QueryTable;
+import org.vaultdb.executor.plaintext.SqlQueryExecutor;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.EmpJniUtilities;
+import org.vaultdb.util.Utilities;
+import org.vaultdb.util.EmpJniUtilities;
 
 
 
@@ -29,7 +29,7 @@ import org.smcql.util.EmpJniUtilities;
 
 
 
-import org.smcql.compiler.emp.EmpProgram;
+import org.vaultdb.compiler.emp.EmpProgram;
 
 
 @Platform(include={"$queryName.h"}, 

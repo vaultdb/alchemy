@@ -13,6 +13,7 @@ import org.vaultdb.executor.EmpExecutor;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.config.WorkerConfiguration;
 import org.vaultdb.plan.SecureRelRoot;
+import org.vaultdb.util.EmpJniUtilities;
 import org.vaultdb.util.FileUtilities;
 import org.vaultdb.util.Utilities;
 
@@ -69,8 +70,6 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     SystemConfiguration.getInstance().resetCounters();
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
-
-
     System.out.println("Initial schema: " + secRoot.getPlanRoot().getSchema() );
     QueryCompiler qc = new QueryCompiler(secRoot);
     qc.writeOutEmpFile();
@@ -99,5 +98,6 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
     assertEquals(expectedOutput.tupleCount(), observedOutput.tupleCount());
     assertEquals(expected, observed);
 
+    EmpJniUtilities.cleanEmpCode(testName);
   }
 }

@@ -13,7 +13,7 @@ mpc-lib=emp
 #set to debug to disable pushing filter up to select
 code-generator-mode=release 
 emp-port=54321
-generated-class-prefix=org.smcql.compiler.emp.generated
+generated-class-prefix=org.vaultdb.compiler.emp.generated
 
 
 #privacy consumed by each operator
