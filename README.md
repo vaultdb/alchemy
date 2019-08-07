@@ -29,7 +29,7 @@ Setup
 --------------------------------------------------------------------------------
 Clone the repository:
 
-	$ git clone https://github.com/smcql/smcql.git
+	$ git clone https://github.com/vaultdb/vaultdb-core
 
 Install the dependencies as needed:
 
@@ -37,7 +37,7 @@ Install the dependencies as needed:
 
 	`$ sudo apt-get install postgresql postgresql-contrib`
 
-* Create a superuser PostgreSQL role for SMCQL: 
+* Create a superuser PostgreSQL role for VaultDB: 
 
 	`$ sudo su - postgres`  
 	`$ createuser -sPE smcql`  
@@ -56,9 +56,9 @@ Edit the configuration files as needed:
 * conf/setup.localhost
 * conf/connections/localhost
 
-This configures your local environment for SMCQL. Note that you should insert your PostgreSQL password for SMCQL here. You also may want to add setup.localhost to your .gitignore to avoid pushing your password.
+This configures your local environment for VaultDB. Note that you should insert your PostgreSQL password for VaultDB here. You also may want to add setup.localhost to your .gitignore to avoid pushing your password.
 
-Start up PostgreSQL and run the following command in the SMCQL home directory:
+Start up PostgreSQL and run the following command in the VaultDB home directory:
 
     $ ./setup.sh
 
@@ -81,7 +81,7 @@ Run the following commands for the respective queries:
 Note that these queries are CPU-intensive. They may take several minutes to run, depending on hardware.
 
 --------------------------------------------------------------------------------
-Running SMCQL with your own data and schema
+Running VaultDB with your own data and schema
 --------------------------------------------------------------------------------
 Refer to conf/workload/testDB for the necessary files:
 
@@ -107,7 +107,7 @@ Running the example queries on different machines
 
 5. On the third machine (the honest broker), ensure that you have a copy of the repository and that the configuration files are populated with the correct worker configuration information.
 
-6. Run the example command on the honest broker, from the SMCQL repository:
+6. Run the example command on the honest broker, from the VaultDB repository:
 
     `$ ./build_and_execute.sh conf/workload/sql/comorbidity.sql remoteDB1 remoteDB2`
 
