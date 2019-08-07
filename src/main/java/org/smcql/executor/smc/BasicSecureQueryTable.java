@@ -7,9 +7,9 @@ import java.io.Serializable;
 import java.util.BitSet;
 
 import org.smcql.db.data.QueryTable;
-import org.smcql.type.SecureRelRecordType;
 import org.smcql.executor.smc.io.SecureArray;
 import org.smcql.executor.smc.runnable.SMCRunnable;
+import org.vaultdb.type.SecureRelRecordType;
 
 public class BasicSecureQueryTable implements SecureQueryTable, Serializable {
 

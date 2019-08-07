@@ -2,8 +2,8 @@ package org.smcql.compiler;
 
 import java.io.IOException;
 
-import org.smcql.util.FileUtilities;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 
 public class ByteArrayClassLoader extends ClassLoader {
 

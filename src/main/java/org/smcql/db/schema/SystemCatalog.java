@@ -7,7 +7,8 @@ import org.smcql.db.data.field.IntField;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
+import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;

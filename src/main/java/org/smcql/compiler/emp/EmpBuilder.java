@@ -12,10 +12,10 @@ import org.bytedeco.javacpp.tools.BuildEnabled;
 import org.bytedeco.javacpp.tools.Builder;
 import org.bytedeco.javacpp.tools.Logger;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.util.CommandOutput;
-import org.smcql.util.EmpJniUtilities;
-import org.smcql.util.FileUtilities;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.CommandOutput;
+import org.vaultdb.util.EmpJniUtilities;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 
 
 public class EmpBuilder implements BuildEnabled, LoadEnabled {

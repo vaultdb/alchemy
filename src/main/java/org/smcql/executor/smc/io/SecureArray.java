@@ -2,7 +2,7 @@ package org.smcql.executor.smc.io;
 
 import java.util.BitSet;
 
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelRecordType;
 
 public class SecureArray {
 	 BitSet payload; // raw XOR-revealed tuples including dummies

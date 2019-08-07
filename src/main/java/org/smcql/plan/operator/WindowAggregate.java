@@ -8,8 +8,8 @@ import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.core.Window.Group;
 import org.apache.calcite.rel.logical.LogicalWindow;
 import org.smcql.plan.SecureRelNode;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
 
 public class WindowAggregate extends Operator {
 

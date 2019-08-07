@@ -7,9 +7,9 @@ import java.util.Map;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Sort;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.TypeMap;
-import org.smcql.util.CodeGenUtils;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.TypeMap;
+import org.vaultdb.util.CodeGenUtils;
 
 public class SecureSort extends SecureOperator {
 

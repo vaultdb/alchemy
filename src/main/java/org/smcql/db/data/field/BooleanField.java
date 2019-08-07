@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.BitSet;
 
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.smcql.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelDataTypeField;
 
 public class BooleanField extends Field implements Serializable {
 public boolean value;

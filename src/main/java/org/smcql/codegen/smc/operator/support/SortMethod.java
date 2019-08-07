@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.smcql.plan.operator.Operator;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.type.TypeMap;
-import org.smcql.util.CodeGenUtils;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.type.TypeMap;
+import org.vaultdb.util.CodeGenUtils;
 
 
 // if an operator and its child have different sort compute orders

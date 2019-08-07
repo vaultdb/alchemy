@@ -20,7 +20,7 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang.StringUtils;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelRecordType;
 
 // generic flattener for expressions, needs override for input references
 public abstract class RexFlattener implements RexVisitor<String> {

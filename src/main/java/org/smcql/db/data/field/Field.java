@@ -5,8 +5,8 @@ import java.util.BitSet;
 import java.util.Comparator;
 
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.TypeMap;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.TypeMap;
 
 // individual attribute value inside a tuple
 // for use in slice values and for passing around data between SMC and plaintext

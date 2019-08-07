@@ -3,7 +3,7 @@ package org.smcql.compiler.emp;
 import org.smcql.BaseTest;
 import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.compiler.emp.EmpProgram;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.Utilities;
 
 
 public class EmpBuilderTest extends BaseTest {

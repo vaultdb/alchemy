@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.smcql.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelDataTypeField;
 
 public class FieldFactory implements Serializable {
 

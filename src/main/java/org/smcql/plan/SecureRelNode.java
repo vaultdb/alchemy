@@ -7,7 +7,7 @@ import java.util.List;
 import org.apache.calcite.rel.RelNode;
 import org.smcql.plan.operator.AttributeResolver;
 import org.smcql.plan.operator.Operator;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelRecordType;
 
 // decorator for calcite's RelNode
 // for attribute-level security policy inference 

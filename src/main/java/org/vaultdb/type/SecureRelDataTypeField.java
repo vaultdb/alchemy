@@ -1,4 +1,4 @@
-package org.smcql.type;
+package org.vaultdb.type;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

@@ -8,10 +8,10 @@ import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.WindowAggregate;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.CodeGenUtils;
-import org.smcql.util.RexNodeUtilities;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.CodeGenUtils;
+import org.vaultdb.util.RexNodeUtilities;
 
 // only supports row number for now
 public class SecureWindowAggregate extends SecureOperator  {

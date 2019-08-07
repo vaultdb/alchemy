@@ -15,7 +15,7 @@ import org.bytedeco.javacpp.annotation.StdString;
 
 
 import org.smcql.compiler.emp.EmpProgram;
-import org.smcql.util.EmpJniUtilities;
+import org.vaultdb.util.EmpJniUtilities;
 
 
 @Platform(include={"EmpJniDemo.h"}, 

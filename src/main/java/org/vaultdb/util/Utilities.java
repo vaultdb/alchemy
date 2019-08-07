@@ -1,4 +1,4 @@
-package org.smcql.util;
+package org.vaultdb.util;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,9 +22,9 @@ import org.smcql.config.SystemConfiguration;
 import org.smcql.db.schema.SystemCatalog;
 import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
 
 
 public class Utilities {

@@ -13,7 +13,7 @@ import org.apache.calcite.sql.parser.SqlParserPos;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Project;
-import org.smcql.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelDataTypeField;
 
 public class SecureRelToSqlConverter extends ExtendedRelToSqlConverter {
 

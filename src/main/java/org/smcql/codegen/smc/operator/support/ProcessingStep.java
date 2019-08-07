@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.smcql.util.CodeGenUtils;
+import org.vaultdb.util.CodeGenUtils;
 
 public class ProcessingStep implements Serializable {
 	/**

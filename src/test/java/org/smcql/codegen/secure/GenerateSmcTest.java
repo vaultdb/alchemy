@@ -11,9 +11,9 @@ import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.EmpJniUtilities;
-import org.smcql.util.Utilities;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.EmpJniUtilities;
+import org.vaultdb.util.Utilities;
 
 
 // TODO: update this with working generated code when it is ready

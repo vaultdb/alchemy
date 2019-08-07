@@ -16,7 +16,7 @@ import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.smc.ExecutionSegment;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.Utilities;
 
 
 public class RunnableRemoteQueryTest extends BaseTest {

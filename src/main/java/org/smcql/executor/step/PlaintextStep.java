@@ -10,7 +10,7 @@ import org.smcql.executor.config.RunConfig;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.plan.operator.Operator;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelRecordType;
 
 public class PlaintextStep implements ExecutionStep, Serializable {
 

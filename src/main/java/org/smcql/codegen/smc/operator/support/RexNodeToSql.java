@@ -3,8 +3,8 @@ package org.smcql.codegen.smc.operator.support;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexPatternFieldRef;
 import org.apache.calcite.rex.RexTableInputRef;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
 
 public class RexNodeToSql extends RexFlattener {
 

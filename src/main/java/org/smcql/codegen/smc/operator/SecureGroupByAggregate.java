@@ -8,12 +8,12 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelRecordType;
 import org.smcql.plan.operator.Operator;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
 import org.apache.calcite.util.Pair;
 import org.smcql.plan.operator.Aggregate;
-import org.smcql.type.TypeMap;
-import org.smcql.util.CodeGenUtils;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.type.TypeMap;
+import org.vaultdb.util.CodeGenUtils;
 
 // TODO: modify sort procedure s.t. if it has a secure child we sort on group-by key and dummy tag
 // if it is a secure leaf, then we order by group-by attr and dummy tag in plaintext

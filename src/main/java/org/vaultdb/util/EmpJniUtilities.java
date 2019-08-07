@@ -1,4 +1,4 @@
-package org.smcql.util;
+package org.vaultdb.util;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -16,7 +16,7 @@ import org.smcql.compiler.emp.EmpRunnable;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.smc.BasicSecureQueryTable;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelRecordType;
 
 public class EmpJniUtilities {
 	

@@ -16,9 +16,9 @@ import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.parser.SqlStatementParser;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.FileUtilities;
-import org.smcql.util.Utilities;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 
 import junit.framework.TestCase;
 

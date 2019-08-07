@@ -9,9 +9,9 @@ import org.smcql.codegen.smc.operator.support.ProcessingStep;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.operator.Join;
 import org.smcql.plan.operator.Operator;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.CodeGenUtils;
-import org.smcql.util.RexNodeUtilities;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.CodeGenUtils;
+import org.vaultdb.util.RexNodeUtilities;
 
 public class SecureJoin extends SecureOperator {
 

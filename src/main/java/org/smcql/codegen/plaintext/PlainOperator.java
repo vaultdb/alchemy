@@ -17,7 +17,7 @@ import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Project;
 import org.smcql.plan.operator.SeqScan;
 import org.smcql.plan.slice.SliceKeyDefinition;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelRecordType;
 
 // thin layer on top of Operator for SQL generation
 public class PlainOperator implements CodeGenerator {

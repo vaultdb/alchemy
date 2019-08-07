@@ -13,8 +13,8 @@ import org.smcql.executor.EmpExecutor;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.util.FileUtilities;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 
 
 public class EmpQueryExecutorLocalTest extends BaseTest {

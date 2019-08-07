@@ -9,8 +9,8 @@ import org.junit.Test;
 import org.smcql.BaseTest;
 import org.smcql.plan.SecureRelRoot;
 import org.smcql.plan.operator.Operator;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.util.Utilities;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.util.Utilities;
 
 public class SliceKeyTest extends BaseTest {
 	protected Map<String, List<SecureRelDataTypeField> > expectedSliceKeys;

@@ -14,8 +14,8 @@ import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;
 import org.smcql.executor.SegmentExecutor;
 import org.smcql.executor.config.ConnectionManager;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.Utilities;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.Utilities;
 
 // issue queries to one or more psql dbs
 // automatically manages issuing query to all engines in network

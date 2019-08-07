@@ -8,9 +8,9 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.util.EmpJniUtilities;
-import org.smcql.util.FileUtilities;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.EmpJniUtilities;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 
 // for use in localhost setting
 public class EmpRunnable implements Runnable {

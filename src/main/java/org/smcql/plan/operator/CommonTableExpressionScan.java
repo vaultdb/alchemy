@@ -3,7 +3,7 @@ package org.smcql.plan.operator;
 import java.util.List;
 
 import org.smcql.plan.SecureRelNode;
-import org.smcql.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelDataTypeField;
 
 public class CommonTableExpressionScan extends Operator {
 

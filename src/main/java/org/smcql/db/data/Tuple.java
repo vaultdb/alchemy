@@ -11,8 +11,8 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.db.data.field.Field;
 import org.smcql.db.data.field.FieldFactory;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
 
 public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable {
 	

@@ -3,10 +3,10 @@ package org.smcql.executor.step;
 import java.util.List;
 
 import org.smcql.codegen.CodeGenerator;
-import org.smcql.type.SecureRelRecordType;
 import org.smcql.executor.config.RunConfig;
 import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.plan.operator.Operator;
+import org.vaultdb.type.SecureRelRecordType;
 
 public interface ExecutionStep {
 	 

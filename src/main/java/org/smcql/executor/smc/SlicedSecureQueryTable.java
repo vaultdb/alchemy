@@ -10,12 +10,10 @@ import java.util.Map.Entry;
 import org.smcql.config.SystemConfiguration.Party;
 import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;
-import org.smcql.type.SecureRelRecordType;
 import org.smcql.executor.smc.io.SecureArray;
 import org.smcql.executor.smc.runnable.SMCRunnable;
 import org.smcql.plan.slice.SliceKeyDefinition;
-
-
+import org.vaultdb.type.SecureRelRecordType;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 

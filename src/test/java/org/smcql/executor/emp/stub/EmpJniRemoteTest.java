@@ -18,9 +18,9 @@ import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
-import org.smcql.util.EmpJniUtilities;
-import org.smcql.util.FileUtilities;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.EmpJniUtilities;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 
 import junit.framework.TestCase;
 

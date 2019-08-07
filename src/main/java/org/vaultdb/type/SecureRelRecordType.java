@@ -1,4 +1,4 @@
-package org.smcql.type;
+package org.vaultdb.type;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -15,8 +15,8 @@ import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang.StringUtils;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
-import org.smcql.util.CodeGenUtils;
+import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
+import org.vaultdb.util.CodeGenUtils;
 
 
 // decorator for RelRecordType, annotate with a security policy

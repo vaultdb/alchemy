@@ -2,7 +2,7 @@ package org.smcql.schema;
 
 import org.smcql.BaseTest;
 import org.smcql.db.schema.SystemCatalog;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
+import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
 
 public class SchemaTest extends BaseTest {
 	

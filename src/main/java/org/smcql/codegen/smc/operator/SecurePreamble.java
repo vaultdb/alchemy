@@ -10,7 +10,7 @@ import org.smcql.config.SystemConfiguration;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.plan.operator.Operator;
-import org.smcql.util.CodeGenUtils;
+import org.vaultdb.util.CodeGenUtils;
 
 // setup for emp code
 public class SecurePreamble extends SecureOperator {

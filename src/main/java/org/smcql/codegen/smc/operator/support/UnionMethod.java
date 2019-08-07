@@ -15,10 +15,10 @@ import org.smcql.executor.config.ExecutionMode;
 import org.smcql.executor.step.ExecutionStep;
 import org.smcql.executor.step.PlaintextStep;
 import org.smcql.plan.operator.Operator;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.CodeGenUtils;
-import org.smcql.util.Utilities;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.CodeGenUtils;
+import org.vaultdb.util.Utilities;
 
 // takes in the sorted input of Alice and Bob 
 // and creates a single joint set of tuples for query execution

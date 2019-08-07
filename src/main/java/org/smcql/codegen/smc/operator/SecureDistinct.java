@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.operator.Operator;
-import org.smcql.util.CodeGenUtils;
+import org.vaultdb.util.CodeGenUtils;
 
 
 public class SecureDistinct extends SecureOperator{

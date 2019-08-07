@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.Properties;
 
 import org.smcql.config.SystemConfiguration;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.Utilities;
 
 public class WorkerConfiguration  {
 

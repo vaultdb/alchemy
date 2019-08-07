@@ -23,11 +23,11 @@ import org.smcql.plan.SecureRelNode;
 import org.smcql.plan.ShadowRelNode;
 import org.smcql.plan.slice.SliceKeyDefinition;
 import org.smcql.privacy.PrivacyCost;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.RelNodeMatcher;
-import org.smcql.util.Utilities;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
+import org.vaultdb.util.RelNodeMatcher;
+import org.vaultdb.util.Utilities;
 
 
 // for execution mode planning over a RelNode

@@ -1,7 +1,7 @@
 package org.smcql.db.data.field;
 
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.smcql.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelDataTypeField;
 
 import java.io.Serializable;
 import java.util.BitSet;

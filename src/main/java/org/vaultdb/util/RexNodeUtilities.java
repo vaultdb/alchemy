@@ -1,4 +1,4 @@
-package org.smcql.util;
+package org.vaultdb.util;
 
 import java.util.Iterator;
 import java.util.List;
@@ -14,8 +14,8 @@ import org.smcql.codegen.smc.operator.support.RexNodeToSql;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.operator.Filter;
 import org.smcql.plan.operator.Project;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
 
 public class RexNodeUtilities {
 	

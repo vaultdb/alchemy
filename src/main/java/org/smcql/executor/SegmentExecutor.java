@@ -24,16 +24,16 @@ import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.compiler.emp.EmpProgram;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.EmpJniUtilities;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.executor.smc.ExecutionSegment;
 import org.smcql.executor.smc.OperatorExecution;
 import org.smcql.executor.step.PlaintextStep;
-import org.smcql.util.EmpJniUtilities;
-import org.smcql.util.FileUtilities;
-import org.smcql.util.Utilities;
 
 
 public class SegmentExecutor {

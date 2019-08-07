@@ -3,8 +3,7 @@ package org.smcql.codegen.smc.operator;
 
 import org.smcql.plan.operator.Aggregate;
 import org.smcql.plan.operator.Operator;
-import org.smcql.type.SecureRelDataTypeField;
-
+import org.vaultdb.type.SecureRelDataTypeField;
 
 import java.util.List;
 

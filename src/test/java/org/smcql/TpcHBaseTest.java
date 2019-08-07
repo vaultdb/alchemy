@@ -11,7 +11,7 @@ import org.smcql.db.schema.SystemCatalog;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.parser.SqlStatementParser;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.Utilities;
 
 import com.google.common.collect.ImmutableList;
 

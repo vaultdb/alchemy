@@ -8,7 +8,7 @@ import org.smcql.executor.EmpExecutor;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.parser.SqlStatementParser;
 import org.smcql.plan.SecureRelRoot;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.Utilities;
 
 public class SMCQLRunner {
 	protected SqlDialect dialect = SqlDialect.DatabaseProduct.POSTGRESQL.getDialect();

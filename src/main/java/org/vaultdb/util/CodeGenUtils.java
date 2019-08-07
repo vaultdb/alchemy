@@ -1,4 +1,4 @@
-package org.smcql.util;
+package org.vaultdb.util;
 
 import java.io.IOException;
 import java.util.List;
@@ -12,8 +12,8 @@ import org.postgresql.util.PGInterval;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.SeqScan;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Alias;

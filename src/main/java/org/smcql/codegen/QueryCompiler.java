@@ -35,13 +35,13 @@ import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Project;
 import org.smcql.plan.operator.Sort;
 import org.smcql.plan.operator.WindowAggregate;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.ClassPathUpdater;
-import org.smcql.util.CodeGenUtils;
-import org.smcql.util.EmpJniUtilities;
-import org.smcql.util.FileUtilities;
-import org.smcql.util.Utilities;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.ClassPathUpdater;
+import org.vaultdb.util.CodeGenUtils;
+import org.vaultdb.util.EmpJniUtilities;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 
 
 public class QueryCompiler {

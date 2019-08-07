@@ -5,10 +5,10 @@ import java.util.List;
 
 import org.smcql.config.SystemConfiguration.Party;
 import org.smcql.db.data.Tuple;
-import org.smcql.type.SecureRelRecordType;
 import org.smcql.executor.config.ExecutionMode;
 import org.smcql.executor.config.RunConfig;
 import org.smcql.plan.slice.SliceKeyDefinition;
+import org.vaultdb.type.SecureRelRecordType;
 
 
 // sequence of generated operators for execution (no sync points with other ops / hosts)

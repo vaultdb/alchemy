@@ -12,7 +12,7 @@ import org.smcql.db.data.field.IntField;
 import org.smcql.plan.execution.slice.statistics.SliceStatistics;
 import org.smcql.plan.execution.slice.statistics.StatisticsCollector;
 import org.smcql.plan.slice.SliceKeyDefinition;
-import org.smcql.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelDataTypeField;
 
 public class SliceStatisticsTest extends SliceKeyTest {
 	private Map<String, Map<SecureRelDataTypeField, SliceStatistics> > expectedStatistics; // (test, (key, values))

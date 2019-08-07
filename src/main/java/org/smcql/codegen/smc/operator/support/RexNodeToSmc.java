@@ -7,7 +7,7 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexPatternFieldRef;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelRecordType;
 
 
 public class RexNodeToSmc extends RexFlattener{

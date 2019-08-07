@@ -12,8 +12,8 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.config.SystemConfiguration;
-import org.smcql.util.FileUtilities;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 
 // read config and connect to psql instances
 public class ConnectionManager {

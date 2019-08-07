@@ -30,9 +30,8 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.executor.config.WorkerConfiguration;
 import org.smcql.privacy.PrivacyStatistics;
-import org.smcql.util.FileUtilities;
-//import org.smcql.executor.smc.OperatorExecution;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 
 public class SystemConfiguration {
 	

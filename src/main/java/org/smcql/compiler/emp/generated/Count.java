@@ -15,8 +15,8 @@ import java.util.Iterator;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.db.data.QueryTable;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.Utilities;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.Utilities;
 import org.smcql.executor.config.ConnectionManager;
 
 

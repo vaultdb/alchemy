@@ -8,9 +8,9 @@ import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.smcql.plan.operator.Operator;
 import org.smcql.plan.operator.Project;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.RexNodeUtilities;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.RexNodeUtilities;
 
 // only supports single equality predicates per Join for now
 

@@ -1,4 +1,4 @@
-package org.smcql.util;
+package org.vaultdb.util;
 
 import java.io.BufferedReader;
 import java.io.File;

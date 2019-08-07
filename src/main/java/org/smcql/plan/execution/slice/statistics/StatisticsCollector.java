@@ -3,11 +3,11 @@ package org.smcql.plan.execution.slice.statistics;
 import java.util.List;
 import org.smcql.db.data.QueryTable;
 import org.smcql.db.data.Tuple;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.Utilities;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
 import org.smcql.plan.slice.SliceKeyDefinition;
-import org.smcql.util.Utilities;
 
 public class StatisticsCollector {
 	

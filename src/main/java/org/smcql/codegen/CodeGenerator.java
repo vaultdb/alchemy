@@ -3,7 +3,7 @@ package org.smcql.codegen;
 import java.util.Map;
 
 import org.smcql.executor.config.ExecutionMode;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelRecordType;
 
 
 public interface CodeGenerator {

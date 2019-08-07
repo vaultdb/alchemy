@@ -14,9 +14,9 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.commons.lang3.StringUtils;
 import org.smcql.config.SystemConfiguration;
 import org.smcql.plan.slice.SliceKeyDefinition;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.FileUtilities;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.FileUtilities;
 
 
 public class QueryTable implements Serializable {

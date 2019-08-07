@@ -1,4 +1,4 @@
-package org.smcql.type;
+package org.vaultdb.type;
 
 import java.util.HashMap;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.smcql.util;
+package org.vaultdb.util;
 
 public class CommandOutput {
 	public String output;

@@ -9,8 +9,8 @@ import org.apache.calcite.rel.logical.LogicalSort;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.smcql.plan.SecureRelNode;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
 
 public class Sort extends Operator {
 

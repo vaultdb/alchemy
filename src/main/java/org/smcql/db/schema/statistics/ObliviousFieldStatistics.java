@@ -10,10 +10,10 @@ import org.smcql.db.data.Tuple;
 import org.smcql.db.data.field.IntField;
 import org.smcql.executor.config.ConnectionManager;
 import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
-import org.smcql.util.Utilities;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
+import org.vaultdb.util.Utilities;
 
 // to be attached to a SecureRelDataTypeField 
 // for use in deriving cardinality bounds 

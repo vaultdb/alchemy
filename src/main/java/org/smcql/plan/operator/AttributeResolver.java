@@ -27,9 +27,9 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
 import org.smcql.db.schema.SystemCatalog;
 import org.smcql.plan.SecureRelNode;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelDataTypeField.SecurityPolicy;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
 
 public class AttributeResolver {
 	

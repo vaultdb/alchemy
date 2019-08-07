@@ -1,4 +1,4 @@
-package org.smcql.util;
+package org.vaultdb.util;
 
 // from https://stackoverflow.com/questions/271506/why-cant-system-setproperty-change-the-classpath-at-runtime
 

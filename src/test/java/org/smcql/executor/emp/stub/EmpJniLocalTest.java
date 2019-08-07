@@ -8,8 +8,8 @@ import java.util.List;
 import org.smcql.BaseTest;
 import org.smcql.compiler.emp.EmpBuilder;
 import org.smcql.compiler.emp.EmpRunnable;
-import org.smcql.util.EmpJniUtilities;
-import org.smcql.util.Utilities;
+import org.vaultdb.util.EmpJniUtilities;
+import org.vaultdb.util.Utilities;
 
 public class EmpJniLocalTest extends BaseTest {
     final String fullyQualifiedClassName = "org.smcql.compiler.emp.generated.EmpJniDemo";
