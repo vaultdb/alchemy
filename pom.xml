@@ -2,10 +2,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.smcql</groupId>
-  <artifactId>smcql-open-source</artifactId>
+  <artifactId>vaultdb</artifactId>
   <packaging>jar</packaging>
   <version>0.5</version>
-  <name>smcql-open-source</name>
+  <name>vaultdb</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
