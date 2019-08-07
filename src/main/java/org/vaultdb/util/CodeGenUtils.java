@@ -9,9 +9,9 @@ import java.util.logging.Logger;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.postgresql.util.PGInterval;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.plan.operator.Operator;
-import org.smcql.plan.operator.SeqScan;
+import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.plan.operator.Operator;
+import org.vaultdb.plan.operator.SeqScan;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
 

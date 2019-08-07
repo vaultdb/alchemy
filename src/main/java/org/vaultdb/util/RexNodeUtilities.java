@@ -8,12 +8,12 @@ import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.logical.LogicalProject;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.Pair;
-import org.smcql.codegen.smc.operator.support.RexFlattener;
-import org.smcql.codegen.smc.operator.support.RexNodeToSmc;
-import org.smcql.codegen.smc.operator.support.RexNodeToSql;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.plan.operator.Filter;
-import org.smcql.plan.operator.Project;
+import org.vaultdb.codegen.smc.operator.support.RexFlattener;
+import org.vaultdb.codegen.smc.operator.support.RexNodeToSmc;
+import org.vaultdb.codegen.smc.operator.support.RexNodeToSql;
+import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.plan.operator.Filter;
+import org.vaultdb.plan.operator.Project;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
 

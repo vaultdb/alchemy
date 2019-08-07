@@ -1,0 +1,23 @@
+package org.vaultdb.schema;
+
+import org.vaultdb.BaseTest;
+import org.vaultdb.db.schema.SystemCatalog;
+import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
+
+public class SchemaTest extends BaseTest {
+	
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
+
+	public void testHealthLNK() throws Exception {
+		SystemCatalog lookup = SystemCatalog.getInstance();
+		assertEquals(lookup.getPolicy("diagnoses", "patient_id"), SecurityPolicy.Public);
+		assertEquals(lookup.getPolicy("diagnoses", "major_icd9"), SecurityPolicy.Protected);
+		assertEquals(lookup.getPolicy("diagnoses", "icd9"), SecurityPolicy.Protected);
+		assertEquals(lookup.getPolicy("medications", "patient_id"), SecurityPolicy.Public);
+		assertEquals(lookup.getPolicy("medications", "medication"), SecurityPolicy.Protected);
+	}
+	
+	
+}

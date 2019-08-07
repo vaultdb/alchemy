@@ -18,10 +18,10 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.Table;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.GeometricDistribution;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.db.schema.SystemCatalog;
-import org.smcql.executor.smc.OperatorExecution;
-import org.smcql.plan.SecureRelRoot;
+import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.db.schema.SystemCatalog;
+import org.vaultdb.executor.smc.OperatorExecution;
+import org.vaultdb.plan.SecureRelRoot;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
 import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
@@ -54,7 +54,7 @@ public class Utilities {
 	    		path = path.substring(0, path.length() - "/target/classes/".length());
 
 	    if(path.endsWith(".jar"))
-	    	path = path.substring(0, path.length() - "target/smcql-open-source-0.5.jar/".length());
+	    	path = path.substring(0, path.length() - "target/vaultdb-0.5.jar/".length());
 	    
 	    return path;
 	}	

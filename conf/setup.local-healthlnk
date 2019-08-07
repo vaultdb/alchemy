@@ -1,13 +1,13 @@
 #configure locations
 schema-name=healthlnk
-local-codegen-target=src/main/java/org/smcql/compiler/emp/generated
+local-codegen-target=src/main/java/org/vaultdb/compiler/emp/generated
 data-providers=conf/connections/localhosts
 has-partitioning=false
 
 
 mpc-lib=emp
 emp-port=54321
-generated-class-prefix=org.smcql.compiler.emp.generated
+generated-class-prefix=org.vaultdb.compiler.emp.generated
 #set to debug to disable pushing filter up to select
 code-generator-mode=release 
 

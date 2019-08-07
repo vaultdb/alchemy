@@ -11,11 +11,11 @@ import java.util.logging.Logger;
 
 import org.apache.calcite.util.Pair;
 import org.bytedeco.javacpp.Loader;
-import org.smcql.compiler.emp.EmpBuilder;
-import org.smcql.compiler.emp.EmpRunnable;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.db.data.QueryTable;
-import org.smcql.executor.smc.BasicSecureQueryTable;
+import org.vaultdb.compiler.emp.EmpBuilder;
+import org.vaultdb.compiler.emp.EmpRunnable;
+import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.db.data.QueryTable;
+import org.vaultdb.executor.smc.BasicSecureQueryTable;
 import org.vaultdb.type.SecureRelRecordType;
 
 public class EmpJniUtilities {
@@ -175,7 +175,7 @@ public class EmpJniUtilities {
 	public static void cleanEmpCode(String className) throws Exception {
 		String delGeneratedFiles = "rm " + Utilities.getCodeGenTarget() + "/" + className + "* ";
 		String platform = Loader.getPlatform();
-		String delGeneratedTargets = "rm " + Utilities.getSMCQLRoot() + "/target/classes/org/smcql/compiler/emp/generated/" + className + "*";
+		String delGeneratedTargets = "rm " + Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/" + className + "*";
 		String delOsCode = "rm -rf " + Utilities.getCodeGenTarget()+ "/" + platform + "/*";
 		// nuke the javacpp cache
 		String delCache = "rm -rf " + System.getProperty("user.home") + "/.javacpp/cache";

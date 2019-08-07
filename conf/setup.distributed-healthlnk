@@ -1,7 +1,7 @@
 #configure locations
 schema-name=healthlnk
-local-codegen-target=src/main/java/org/smcql/compiler/emp/generated
-remote-codegen-target=org/smcql/compiler/emp/generated	
+local-codegen-target=src/main/java/org/vaultdb/compiler/emp/generated
+remote-codegen-target=org/vaultdb/compiler/emp/generated	
 data-providers=conf/connections/remote-hosts
 has-partitioning=false
 
