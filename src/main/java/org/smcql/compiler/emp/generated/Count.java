@@ -26,7 +26,6 @@ import org.smcql.executor.config.ConnectionManager;
 
 
 import org.smcql.compiler.emp.EmpProgram;
-import org.smcql.compiler.emp.generated.CountIcd9s.CountIcd9sClass;
 
 
 @Platform(include={"Count.h"}, 
@@ -72,7 +71,7 @@ public class Count  extends EmpProgram  {
 		   	
         @Override
         public  void runProgram() throws Exception {
-        	CountIcd9sClass theQuery = new CountIcd9sClass();
+        	CountClass theQuery = new CountClass();
 
 	        Iterator inputItr = inputs.entrySet().iterator();
 	        while(inputItr.hasNext()) {
