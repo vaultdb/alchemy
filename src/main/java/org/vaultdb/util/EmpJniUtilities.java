@@ -173,7 +173,7 @@ public class EmpJniUtilities {
 
 	// for debugging this does a deep delete on previous builds 
 	public static void cleanEmpCode(String className) throws Exception {
-		String delGeneratedFiles = "rm " + Utilities.getCodeGenTarget() + "/" + className + "* ";
+		String delGeneratedFiles = "rm " + Utilities.getCodeGenTarget() + "/" + className + "*";
 		String platform = Loader.getPlatform();
 		String delGeneratedTargets = "rm " + Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/" + className + "*";
 		String delOsCode = "rm -rf " + Utilities.getCodeGenTarget()+ "/" + platform + "/*";

@@ -88,6 +88,6 @@ public class GenerateSmcTest extends BaseTest {
     expected = new File(expectedFile);
 
     assertTrue("The jni wrappers differ!", FileUtils.contentEquals(generated, expected));
-	
+    EmpJniUtilities.cleanEmpCode(testName);
   }
 }

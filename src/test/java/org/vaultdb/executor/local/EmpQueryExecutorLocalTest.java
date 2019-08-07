@@ -67,6 +67,7 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
 
 
   protected void testCase(String testName, String sql) throws Exception {
+	EmpJniUtilities.cleanEmpCode(testName);
     SystemConfiguration.getInstance().resetCounters();
     SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
