@@ -92,7 +92,7 @@ public class DynamicCompiler
 
 
     @SuppressWarnings("unchecked")
-	public static Object loadClass(String packageName, String jarFile) throws Exception {
+	public static<T> ISecureRunnable<T> loadClass(String packageName, CompEnv<T> env, String jarFile) throws Exception {
     	System.out.println("Loading from " + jarFile + " looking for " + packageName);
 
     	String className = packageName + ".NoClass";
