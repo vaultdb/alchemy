@@ -15,30 +15,31 @@ public class EmpBuilderTest extends BaseTest {
 
 
 	// tests emp-jni link with minimal dependencies
-	public void testEmpJniDemo() throws Exception {
+	public void testEmpJniDemo() throws Exception {	
 		String className = "org.vaultdb.compiler.emp.generated.EmpJniDemo";
-		EmpBuilder builder = new EmpBuilder(className);
-		builder.compile();
-		EmpProgram instance = builder.getClass(1, 54321);
-		assert(instance != null);
-		// verify that it loads and is runnables
-		assert(instance.helloWorld().equals("I am a org.vaultdb.compiler.emp.generated.EmpJniDemo!"));
+		String expectedClass = "I am a org.vaultdb.compiler.emp.generated.EmpJniDemo!";
 		
+		testCase(className, expectedClass);	
 	}
 	
 	
 	// tests emp-jni link with jdbc for data inputs
 	public void testCount() throws Exception {
-		String className = "org.vaultdb.compiler.emp.generated.Count";
+		String className = "org.vaultdb.compiler.emp.generated.Count";		
+		String expectedClass = "I am a org.vaultdb.compiler.emp.generated.Count!";
+		
+		testCase(className, expectedClass);	
+	}
+
+	protected void testCase(String className, String expectedClass) throws Exception {		
 		EmpBuilder builder = new EmpBuilder(className);
 		builder.compile();
 		EmpProgram instance = builder.getClass(1, 54321);
 		assert(instance != null);
+		
 		// verify that it loads and is runnable
 		String observedClass = instance.helloWorld();
-		String expectedClass = "I am a org.vaultdb.compiler.emp.generated.Count!";
 		assertEquals(observedClass, expectedClass);
-		
 	}
-
+	
 }

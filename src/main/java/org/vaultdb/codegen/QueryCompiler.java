@@ -275,7 +275,7 @@ public class QueryCompiler {
 
   public List<String> getClasses() throws IOException, InterruptedException {
 
-    File path = new File(Utilities.getCodeGenTarget() + "/org/vaultdb/generated/" + queryId);
+    File path = new File(Utilities.getCodeGenTarget() );
     String[] extensions = new String[1];
     extensions[0] = "class";
     Collection<File> files = FileUtils.listFiles(path, extensions, true);

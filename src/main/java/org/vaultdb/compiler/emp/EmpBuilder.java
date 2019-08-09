@@ -2,6 +2,9 @@ package org.vaultdb.compiler.emp;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -12,10 +15,11 @@ import org.bytedeco.javacpp.tools.BuildEnabled;
 import org.bytedeco.javacpp.tools.Builder;
 import org.bytedeco.javacpp.tools.Logger;
 import org.vaultdb.config.SystemConfiguration;
-import org.vaultdb.util.CommandOutput;
 import org.vaultdb.util.EmpJniUtilities;
 import org.vaultdb.util.FileUtilities;
 import org.vaultdb.util.Utilities;
+
+import net.openhft.compiler.CachedCompiler;
 
 
 public class EmpBuilder implements BuildEnabled, LoadEnabled {
@@ -35,8 +39,16 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     public void init(Logger logger, Properties properties, String encoding) {
     }
     
+    @SuppressWarnings({"resource" })
+	private void addToClasspath(String fullyQualifiedClassName, String path) throws Exception {
+    	byte[] encoded = Files.readAllBytes(Paths.get(path));
+    	String javaCode = new String(encoded, StandardCharsets.US_ASCII);	
+    	String dstDir = Utilities.getSMCQLRoot() + "/target/classes";
+    
+    	CachedCompiler JCC = new CachedCompiler(null, new File(dstDir));
+    	JCC.loadFromJava(fullyQualifiedClassName, javaCode);
+    }
 
-    @SuppressWarnings("rawtypes")
     public void compile() throws Exception {
     	
     	// node type is local or remote
@@ -46,9 +58,13 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
 
     	    
         Properties properties = getProperties();
-        
-        
         String className = fullyQualifiedClassName.substring(fullyQualifiedClassName.lastIndexOf('.')+1);
+        
+        
+        File f = new File(Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/" + className + ".class");
+        if(!f.exists()) { 
+        	addToClasspath(fullyQualifiedClassName, "src/main/java/org/vaultdb/compiler/emp/generated/" + className + ".java");
+        }
 
     	// in localhost setting
         if(nodeType.equalsIgnoreCase("local")) {
@@ -63,16 +79,13 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         	FileUtilities.copyFile(srcHeader, dstHeader);
         	FileUtilities.copyFile(srcUtilities, dstUtilities);
 
-        }
-        
-        
+        }  
         
         smcqlLogger.info("Building class: " + fullyQualifiedClassName);
         Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName).deleteJniFiles(true); //.copyLibs(true);
         File[] outputFiles = null;
-        
+        outputFiles = builder.build();
         try {
-        	outputFiles = builder.build();
         	
         } catch(Exception e) {
           	throw new Exception("Code compilation failed!");
@@ -120,7 +133,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         String linkPath = properties.getProperty("platform.linkpath");
 
         
-        String localLinkPath = System.getProperty("user.dir") + "/org/vaultdb/compiler/emp/generated/" + Loader.getPlatform();
+        String localLinkPath = System.getProperty("user.dir") + "/target/classes/org/vaultdb/compiler/emp/generated/" + Loader.getPlatform();
         
         linkPath += ":" + localLinkPath;
         properties.setProperty("platform.linkpath", linkPath);
