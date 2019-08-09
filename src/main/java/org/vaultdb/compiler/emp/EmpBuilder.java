@@ -55,7 +55,8 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         	// copy over our header files to build target for local builds
         	String srcHeader = "src/main/java/org/vaultdb/compiler/emp/generated/" + className + ".h";
         	String dstHeader = "target/classes/org/vaultdb/compiler/emp/generated/" + className + ".h";
-        
+
+        	        	
         	String srcUtilities = "src/main/java/org/vaultdb/compiler/emp/generated/EmpUtilities.h";
         	String dstUtilities = "target/classes/org/vaultdb/compiler/emp/generated/EmpUtilities.h";
 
@@ -67,7 +68,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         
         
         smcqlLogger.info("Building class: " + fullyQualifiedClassName);
-        Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName).deleteJniFiles(false); //.copyLibs(true);
+        Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName).deleteJniFiles(true); //.copyLibs(true);
         File[] outputFiles = null;
         
         try {

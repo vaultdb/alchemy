@@ -76,12 +76,17 @@ public class CharField extends Field implements Serializable   {
 	public boolean equals(Object o) {
 		if(o instanceof CharField) {
 			CharField charField = (CharField) o;
+			String localValue = this.value;
+			String localOther = charField.value;
 		
-			while(charField.value.length() < value.length()) { // fix null padding
-				charField.value += "\0";
+			while(localOther.length() < localValue.length()) { // fix null padding
+				localOther += "\0";
 			}
 			
-			if(charField.value.equals(this.value)) {
+			while(localOther.length() > localValue.length()) { // fix null padding
+				localValue += "\0";
+			}
+			if(localOther.equals(localValue)) {
 				return true;
 			}
 		}
@@ -151,5 +156,6 @@ public class CharField extends Field implements Serializable   {
 	    
 	    return (char) n;
 	}
+	
 
 }
