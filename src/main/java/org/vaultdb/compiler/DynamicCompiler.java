@@ -1,4 +1,4 @@
-package org.smcql.compiler;
+package org.vaultdb.compiler;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,21 +25,15 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
 import org.apache.commons.lang3.StringUtils;
-import org.smcql.compiler.emp.EmpParty;
-import org.smcql.compiler.emp.EmpProgram;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.util.ClassPathUpdater;
-import org.smcql.util.FileUtils;
-import org.smcql.util.Utilities;
+import org.vaultdb.compiler.emp.EmpParty;
+import org.vaultdb.compiler.emp.EmpProgram;
+import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.util.ClassPathUpdater;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 
 import org.bytedeco.javacpp.tools.*;
 
-import com.oblivm.backend.flexsc.CompEnv;
-import com.oblivm.backend.gc.GCSignal;
-import com.oblivm.backend.lang.inter.IPublicRunnable;
-import com.oblivm.backend.lang.inter.ISecureRunnable;
-import com.oblivm.backend.oram.SecureArray;
-import com.oblivm.compiler.cmd.Cmd;
 
 /**
  * Dynamic java class compiler and executer  <br>
@@ -106,14 +100,14 @@ public class DynamicCompiler
 
 		Class<?> cl = urlcl.loadClass(className);
 		Constructor<?> ctor = cl.getConstructors()[0];
-		return (ISecureRunnable<T>)ctor.newInstance(env);
+		return ctor.newInstance();
 
 
     }
   
     
     @SuppressWarnings("unchecked")
-	public static <T> ISecureRunnable<T> loadClass(String packageName, CompEnv<T> env) throws Exception {
+	public static Object loadClass(String packageName) throws Exception {
     	String className = packageName + ".NoClass";
 
 			File f = new File(Utilities.getCodeGenTarget());
@@ -123,7 +117,7 @@ public class DynamicCompiler
 
 			Class<?> cl = urlcl.loadClass(className);
 			Constructor<?> ctor = cl.getConstructors()[0];
-			return (ISecureRunnable<T>)ctor.newInstance(env);
+			return ctor.newInstance();
 
 	
     }
@@ -132,23 +126,22 @@ public class DynamicCompiler
 
     
     @SuppressWarnings("unchecked")
-	public static <T> ISecureRunnable<T> loadClass(String packageName, byte[] byteCode, CompEnv<T> env) throws Exception {
+	public static Object loadClass(String packageName, byte[] byteCode) throws Exception {
     		ByteArrayClassLoader loader = new ByteArrayClassLoader(packageName, byteCode, Thread.currentThread().getContextClassLoader());  	
     		Class<?> cl = loader.findClass(packageName);
     		Constructor<?> ctor = cl.getConstructors()[0];
-    		ISecureRunnable<T> newInstance = (ISecureRunnable<T>)ctor.newInstance(env);
-    		return newInstance;
+    		return ctor.newInstance();
     }
     
 
     
     @SuppressWarnings("unchecked")
-	public static <T> IPublicRunnable<T> loadPublicClass(String packageName, byte[] byteCode, CompEnv<T> env) throws Exception {
+	public static Object loadPublicClass(String packageName, byte[] byteCode) throws Exception {
     		ByteArrayClassLoader loader = new ByteArrayClassLoader(packageName, byteCode, Thread.currentThread().getContextClassLoader());  	
 		Class<?> cl = loader.findClass(packageName);
 		Constructor<?> ctor = cl.getConstructors()[0];
-		IPublicRunnable<T> newInstance = (IPublicRunnable<T>)ctor.newInstance(env);
-		return newInstance;
+		return ctor.newInstance();
+	
     }
 
     /** compile your files by JavaCompiler */
@@ -177,7 +170,7 @@ public class DynamicCompiler
     }
     
     public static void compileJava(String srcFile, String packageName) throws Exception {
-		List<String> code = FileUtils.readFile(srcFile);
+		List<String> code = FileUtilities.readFile(srcFile);
 		String smcCode = StringUtils.join(code.toArray(), "\n");
 	
 		JavaFileObject so = new InMemoryJavaFileObject(packageName, smcCode);
@@ -192,7 +185,7 @@ public class DynamicCompiler
     	JavaFileObject[] sos = new JavaFileObject[srcFiles.length];
     	for (int i = 0; i < srcFiles.length; i++) {
     		String file = path + "/" + srcFiles[i];
-	    	List<String> code = FileUtils.readFile(file);
+	    	List<String> code = FileUtilities.readFile(file);
 			String smcCode = StringUtils.join(code.toArray(), "\n");
 
 		
@@ -206,14 +199,15 @@ public class DynamicCompiler
     public static void compileOblivFromFile(String srcFile) throws Exception {
     	String dstPath = Utilities.getCodeGenTarget();
 
-    	List<String> lines = FileUtils.readFile(srcFile);
+    	List<String> lines = FileUtilities.readFile(srcFile);
     	String firstLine = lines.get(0);
 
     	String[] packageTokens = firstLine.split(" ");
     	String packageName = packageTokens[1].substring(0, packageTokens[1].length() - 1);
 
     	
-    	Cmd.compile(srcFile, dstPath);
+    	// TODO: invoke java compiler here
+    	//Cmd.compile(srcFile, dstPath);
     	
     	String javaPath = dstPath + "/" + packageName.replace('.', '/');
 
@@ -232,37 +226,8 @@ public class DynamicCompiler
 		
     }
     
-    public static void compileOblivLang(String smcCode, String packageName) throws Exception {
-    		String dstPath = Utilities.getCodeGenTarget() + "/";
-		String srcFile = dstPath + "tmp.lcc";
-		
-		FileUtils.writeFile(srcFile, smcCode);
-
-		Cmd.compile(srcFile, dstPath);
-		
-		String javaPath = dstPath + packageName.replace('.', '/');
-    		File dir = new File(javaPath);
-
-    		File[] files = dir.listFiles(new FilenameFilter() {
-    		  public boolean accept(File dir, String name) {
-    		    return name.endsWith(".java");
-    		  }
-    		});
-    	
-    		String[] fileNames = new String[files.length];
-    		for (int i = 0; i < files.length; i ++) {
-    			fileNames[i] = files[i].getName();
-    		}
-		
-		DynamicCompiler.compileJava(fileNames, packageName, javaPath);
-		
-		Path srcPath = Paths.get(srcFile);
-		
-		Files.deleteIfExists(srcPath);
-    }
     
-
-    public static void runGenerator(String className, String host, int port, SecureArray<GCSignal> input)  {
+    public static void runGenerator(String className, String host, int port)  {
     }
     
     

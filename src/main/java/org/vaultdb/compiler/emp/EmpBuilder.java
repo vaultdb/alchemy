@@ -11,7 +11,9 @@ import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.tools.BuildEnabled;
 import org.bytedeco.javacpp.tools.Builder;
 import org.bytedeco.javacpp.tools.Logger;
+import org.vaultdb.compiler.DynamicCompiler;
 import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.util.ClassPathUpdater;
 import org.vaultdb.util.CommandOutput;
 import org.vaultdb.util.EmpJniUtilities;
 import org.vaultdb.util.FileUtilities;
@@ -66,6 +68,11 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         }
         
         
+        // compile the java class first
+        String jniWrapper = "src/main/java/org/vaultdb/compiler/emp/generated/" + className + ".java";
+        String generatedClass = "target/classes/org/vaultdb/compiler/emp/generated/" + className + ".class";
+        DynamicCompiler.compileJava(jniWrapper, fullyQualifiedClassName);
+        ClassPathUpdater.add(generatedClass);
         
         smcqlLogger.info("Building class: " + fullyQualifiedClassName);
         Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName).deleteJniFiles(true); //.copyLibs(true);

@@ -48,8 +48,9 @@ public class ClassPathUpdater {
     public static void add( File f )
 	throws IOException, NoSuchMethodException, IllegalAccessException,
 	       InvocationTargetException {
-	f = f.isDirectory() ? f : f.getParentFile();
-	add( f.toURI().toURL() );
+	//f = f.isDirectory() ? f : f.getParentFile();
+	URL url = f.toURI().toURL();
+	add( url );
     }
 
     /**
