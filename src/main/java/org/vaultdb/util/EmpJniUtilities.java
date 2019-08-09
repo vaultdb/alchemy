@@ -1,5 +1,10 @@
 package org.vaultdb.util;
 
+import java.io.File;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -10,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.apache.calcite.util.Pair;
+import org.apache.commons.io.FileUtils;
 import org.bytedeco.javacpp.Loader;
 import org.vaultdb.compiler.emp.EmpBuilder;
 import org.vaultdb.compiler.emp.EmpRunnable;
@@ -118,8 +124,8 @@ public class EmpJniUtilities {
 		EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort);
 		EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, empPort);
 
-	   EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
-	   builder.compile();
+	    EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
+	    builder.compile();
 
 	   
 		
@@ -172,24 +178,26 @@ public class EmpJniUtilities {
 	}
 
 	// for debugging this does a deep delete on previous builds 
-	public static void cleanEmpCode(String className) throws Exception {
-		String delGeneratedFiles = "rm " + Utilities.getCodeGenTarget() + "/" + className + "*";
-		String platform = Loader.getPlatform();
-		String delGeneratedTargets = "rm " + Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/" + className + "*";
-		String delOsCode = "rm -rf " + Utilities.getCodeGenTarget()+ "/" + platform + "/*";
-		// nuke the javacpp cache
-		String delCache = "rm -rf " + System.getProperty("user.home") + "/.javacpp/cache";
-		
-		
-		Utilities.runCmd(delGeneratedFiles);
-		Utilities.runCmd(delGeneratedTargets);
-		Utilities.runCmd(delOsCode);		
-		Utilities.runCmd(delCache);
-		
-		
-		
-	}
 
+	public static void cleanEmpCode(String className) throws Exception {
+		Path generatedFiles = Paths.get(Utilities.getCodeGenTarget());
+		deleteFilesForPathByPrefix(generatedFiles, className);
+				
+		String osCode = Utilities.getCodeGenTarget()+ "/" + Loader.getPlatform();
+		FileUtils.deleteDirectory(new File(osCode));
+			
+		String cache = System.getProperty("user.home") + "/.javacpp/cache";
+		FileUtils.deleteDirectory(new File(cache));		
+	}
+		
+	private static void deleteFilesForPathByPrefix(final Path path, final String prefix) {
+		try (DirectoryStream<Path> newDirectoryStream = Files.newDirectoryStream(path, prefix + "*")) {
+			for (final Path newDirectoryStreamItem : newDirectoryStream) {
+				Files.delete(newDirectoryStreamItem);
+			}
+		} catch (final Exception e) {}
+	}
+		
 	public static void createJniWrapper(String className, String dstFile, Map<String, String> inputs, Map<String, Pair<Long, Long>> cardinalities) throws Exception {
 		// if it is a fully qualified class name, strip the prefix
 		if(className.contains(".")) {

@@ -24,70 +24,65 @@ public class GenerateSmcTest extends BaseTest {
   }
 
   public void testCountIcd9s() throws Exception {
+	  String query = "SELECT COUNT(DISTINCT major_icd9) FROM diagnoses";
+	  String testName = "CountIcd9s";
 
-    String query = "SELECT COUNT(DISTINCT major_icd9) FROM diagnoses";
-    String testName = "CountIcd9s";
 
-
-    testCase(testName, query);
+	  testCase(testName, query);
   }
 
   public void testJoin() throws Exception {
 	 	    
 	  String testName = "JoinCdiff";
-    String query =
+	  String query =
         "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
-       testCase(testName, query);
+      testCase(testName, query);
   }
 
-   public void testFilterDistinct() throws Exception {
-	   
-	    
+  public void testFilterDistinct() throws Exception {  
 	   String testName = "FilterDistinct";
-    String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
-    testCase(testName, query);
+	   String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
+	   testCase(testName, query);
   }
 
 
   protected void testCase(String testName, String sql) throws Exception {
-
-	EmpJniUtilities.cleanEmpCode(testName);
-    SystemConfiguration.getInstance().resetCounters();
+	  EmpJniUtilities.cleanEmpCode(testName);
+	  SystemConfiguration.getInstance().resetCounters();
      
-    SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
+	  SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
-    QueryCompiler qc = new QueryCompiler(secRoot);
+	  QueryCompiler qc = new QueryCompiler(secRoot);
 
-    ExecutionStep root = qc.getRoot();
-    String testTree = root.printTree();
-    logger.log(Level.INFO, "Resolved secure tree to:\n " + testTree);
+	  ExecutionStep root = qc.getRoot();
+	  String testTree = root.printTree();
+	  logger.log(Level.INFO, "Resolved secure tree to:\n " + testTree);
 
-    String generatedFile = qc.writeOutEmpFile();
-    qc.compileEmpCode();
+	  String generatedFile = qc.writeOutEmpFile();
+	  qc.compileEmpCode();
+
     
-
-    
-    String cwd = Utilities.getSMCQLRoot();
-    String expectedFile =
+	  String cwd = Utilities.getSMCQLRoot();
+	  String expectedFile =
         cwd + "/src/test/java/org/vaultdb/codegen/secure/expected/" + testName + ".h";
-    System.out.println("Generated: " + generatedFile);
-    System.out.println("Expected: " + expectedFile);
+	  System.out.println("Generated: " + generatedFile);
+	  System.out.println("Expected: " + expectedFile);
 
-    File generated = new File(generatedFile);
-    File expected = new File(expectedFile);
+	  File generated = new File(generatedFile);
+	  File expected = new File(expectedFile);
     
-    assertTrue("The emp code differs!", FileUtils.contentEquals(generated, expected));
+	  assertTrue("The emp code differs!", FileUtils.contentEquals(generated, expected));
 
-    // check the jni wrappers  ".h" --> ".java"
-    generatedFile = generatedFile.substring(0, generatedFile.length() - 1);
-    generatedFile += "java";
-    generated = new File(generatedFile);
+	  // check the jni wrappers  ".h" --> ".java"
+	  generatedFile = generatedFile.substring(0, generatedFile.length() - 1);
+	  generatedFile += "java";
+	  generated = new File(generatedFile);
 
-    expectedFile = expectedFile.substring(0, expectedFile.length() - 1);
-    expectedFile += "java_"; // underscore to prevent compiler from complaining about package path
-    expected = new File(expectedFile);
+	  expectedFile = expectedFile.substring(0, expectedFile.length() - 1);
+	  expectedFile += "java_"; // underscore to prevent compiler from complaining about package path
+	  expected = new File(expectedFile);
 
-    assertTrue("The jni wrappers differ!", FileUtils.contentEquals(generated, expected));
-    EmpJniUtilities.cleanEmpCode(testName);
+	  assertTrue("The jni wrappers differ!", FileUtils.contentEquals(generated, expected));
+	  EmpJniUtilities.cleanEmpCode(testName);
   }
 }
