@@ -99,8 +99,8 @@ public abstract class Operator implements CodeGenerator {
 		executionMode.replicated = getSchema().isReplicated(); // inferred this during schema resolution
 		
 		
-		//String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess;
-		//logger.info(msg);
+		String msg = "For " + baseRelNode.getRelNode().getRelTypeName() + " have max child " + maxChild + " and max access " + maxAccess;
+		logger.info(msg);
 		
 		// if maxChild is DistributedClear or LocalClear and maxAccess is public, 
 		// then set it equal to maxChild
@@ -137,6 +137,8 @@ public abstract class Operator implements CodeGenerator {
 		
 		// TODO: update this to support slicing, rework old slicing code
 			
+		msg = "Inferred execution mode: " + executionMode + " for " + this;
+		logger.info(msg);
 
 		
 		

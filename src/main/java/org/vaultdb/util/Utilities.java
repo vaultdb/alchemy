@@ -252,15 +252,13 @@ public static CommandOutput runCmd(String aCmd, String aWorkingDirectory) throws
 		SystemCatalog schemaDef = SystemCatalog.getInstance();
 		List<String> primaryKey = schemaDef.getPrimaryKey(srcTable);
 		
-		
-		if(attr.getName() == null)
-			throw new Exception("Can't check status of anonymous attribute! Need to recurse to its inputs.");
+		if(attr.getName() == null || srcTable == null)
+			return false; // TODO: work out transitive closure later based on slice key inference
 		// Case 1: if it is the source relation's stored partition key
 		String partitionKey = schemaDef.getPartitionKey(srcTable);
 		
-		if(partitionKey == null) {
-			throw new Exception("Something went wrong on partition key lookup for " + srcTable);	
-		}
+		if(partitionKey == null)
+			return false;
 		
 		if(partitionKey.equals(attr.getName()))
 		{

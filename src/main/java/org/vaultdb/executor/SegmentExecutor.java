@@ -47,6 +47,8 @@ public class SegmentExecutor {
 	// currently only supports one execution segment
 	// generalize for multiple exec modes (e.g., sliced --> oblivious) later
 	SecureRelRecordType outSchema; 
+	SystemConfiguration config;
+	ConnectionManager connections;
 	
 	public static SegmentExecutor getInstance() throws Exception {
 		if(instance == null) {
@@ -69,37 +71,42 @@ public class SegmentExecutor {
 	// TODO: move this into a separate method after a check to see if we need remote execution
 	protected SegmentExecutor(String aWorker, String bWorker) throws Exception {
 
-        aliceWorker = ConnectionManager.getInstance().getWorker(aWorker);
-        bobWorker = ConnectionManager.getInstance().getWorker(bWorker);
-        logger = SystemConfiguration.getInstance().getLogger();
+		config = SystemConfiguration.getInstance();
+        connections = ConnectionManager.getInstance();
 
-        remotePath = SystemConfiguration.getInstance().getProperty("remote-path");
-        if(remotePath == null)
-                remotePath = "/tmp/vaultdb";
+		aliceWorker = connections.getWorker(aWorker);
+        bobWorker = connections.getWorker(bWorker);
+        logger = config.getLogger();
 
-
-        String msg = "Initializing segment executor for " + aWorker + ", " + bWorker + " on " + aliceWorker.hostname + "," + bobWorker.hostname;
-        logger.info(msg);
-
-        cloud = CloudFactory.createCloud();
-        RemoteNode.at(cloud.node("**")).useSimpleRemoting();
-
-        initializeHost(bobWorker);
-        initializeHost(aliceWorker);
-
-        cloud.node("**").setProp("smcql.setup.str", SystemConfiguration.getInstance().getSetupParameters());
-        cloud.node("**").setProp("smcql.connections.str", getConnectionParameters());
-        cloud.node("**").setProp("emp.port", String.valueOf(EmpJniUtilities.getEmpPort()));
-
-        // configure Alice and Bob                                                                                                                                           
-        cloud.node(aWorker).setProp("party", "gen");
-        cloud.node(aWorker).setProp("workerId", aliceWorker.workerId);
-
-        cloud.node(bWorker).setProp("party", "eva");
-        cloud.node(bWorker).setProp("workerId", bobWorker.workerId);
-
-        cloud.node("**").touch();
-
+        if(config.distributedEvaluationEnabled()) {
+        
+	        remotePath = SystemConfiguration.getInstance().getProperty("remote-path");
+	        if(remotePath == null)
+	                remotePath = "/tmp/vaultdb";
+	
+	
+	        String msg = "Initializing segment executor for " + aWorker + ", " + bWorker + " on " + aliceWorker.hostname + "," + bobWorker.hostname;
+	        logger.info(msg);
+	
+	        cloud = CloudFactory.createCloud();
+	        RemoteNode.at(cloud.node("**")).useSimpleRemoting();
+	
+	        initializeHost(bobWorker);
+	        initializeHost(aliceWorker);
+	
+	        cloud.node("**").setProp("smcql.setup.str", SystemConfiguration.getInstance().getSetupParameters());
+	        cloud.node("**").setProp("smcql.connections.str", getConnectionParameters());
+	        cloud.node("**").setProp("emp.port", String.valueOf(EmpJniUtilities.getEmpPort()));
+	
+	        // configure Alice and Bob                                                                                                                                           
+	        cloud.node(aWorker).setProp("party", "gen");
+	        cloud.node(aWorker).setProp("workerId", aliceWorker.workerId);
+	
+	        cloud.node(bWorker).setProp("party", "eva");
+	        cloud.node(bWorker).setProp("workerId", bobWorker.workerId);
+	
+	        cloud.node("**").touch();
+        }
 
 		logger.log(Level.INFO, "Completed initialization.");
 	}

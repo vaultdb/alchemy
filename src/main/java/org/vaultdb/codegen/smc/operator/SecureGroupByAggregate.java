@@ -7,13 +7,14 @@ import org.apache.calcite.rel.logical.LogicalAggregate;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelRecordType;
-import org.apache.calcite.util.Pair;
-import org.vaultdb.plan.operator.Aggregate;
 import org.vaultdb.plan.operator.Operator;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
+import org.apache.calcite.util.Pair;
+import org.vaultdb.plan.operator.Aggregate;
 import org.vaultdb.type.TypeMap;
 import org.vaultdb.util.CodeGenUtils;
+
 
 // TODO: modify sort procedure s.t. if it has a secure child we sort on group-by key and dummy tag
 // if it is a secure leaf, then we order by group-by attr and dummy tag in plaintext
@@ -39,69 +40,52 @@ public class SecureGroupByAggregate extends SecureOperator {
 		Aggregate a = (Aggregate) planNode;
 
 
-		// TODO: Allow compute to replace operation for the following operations: Count, Sum, Avg, Min, Max
-		// Current Priorities are: Count and Sum
+		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
+		variables.put("groupBySize", Integer.toString(getGroupBySize(groupByAttributes)));
+		variables.put("initializeGroupBy", "        " + extractGroupByFields(groupByAttributes, "lastGroupBy", "lastTuple"));
 
 		
-		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
+		
+		variables.put("extractGroupBy", extractGroupByFields(groupByAttributes, "groupBy", "tuple"));
+		variables.put("writeGroupBy", writeGroupBy(groupByAttributes, "output", "groupBy"));
+		
+		
+		// rolled this into below
+		//variables.put("initializeAggregates", initializeAggregates());
+		
+		Map<String, String> aggregates = generateAggregates();
 
-		String groupByMatch = generateGroupBy(groupByAttributes);
-		variables.put("groupByMatch", groupByMatch);
-
-		Map<String, String> scalarVars = getGroupByAggregates();
-
-
-		for (Map.Entry<String, String> entry : scalarVars.entrySet()) {
+		// initializeAggregate, computeAggregate, writeOutAggregate
+		for (Map.Entry<String, String> entry : aggregates.entrySet()) {
 			variables.put(entry.getKey(), entry.getValue());
 		}
 
 
-		int aggregateIdx = a.getComputeAttributeIndex();
-		String cntMask = planNode.getSchema().getInputRef(aggregateIdx, null);
-
-		variables.put("cntMask", cntMask);
-
+		
+	
 		generatedCode = CodeGenUtils.generateFromTemplate("aggregate/groupby/aggregate.txt", variables);
 
 		return generatedCode;
 	}
 
-	// takes in a list of attrs we are grouping by
-	private String generateGroupBy(List<SecureRelDataTypeField> attrs) throws Exception {
-		int i = 1;
-		String ret = "    Bit ret(1, PUBLIC);\n\n";
-
-		for (SecureRelDataTypeField r : attrs) {
-			String lVar = "l" + i;
-			String rVar = "r" + i;
-
-			// want lVarInteger(lBits, lhs.bits + offset)
-
-			Pair<Integer, Integer> schemaPos = CodeGenUtils.getSchemaPosition(schema.getAttributes(), r);
-			int fieldSize = schemaPos.getKey();
-			int fieldOffset = schemaPos.getValue();
-
-
-			ret += "    Integer " + lVar + "(" + fieldSize + ", lhs.bits + " + fieldOffset + ");\n";
-			ret += "    Integer " + rVar + "(" + fieldSize + ", rhs.bits + " + fieldOffset + ");\n";
-			ret += "    ret = If(" + lVar + " != " + rVar + ", Bit(0, PUBLIC), Bit(1, PUBLIC));\n";
-			ret += "     \n\n";
-
-
-			++i;
+	
+	private int getGroupBySize(List<SecureRelDataTypeField> attrs) {
+		int size = 0;
+		
+		for (SecureRelDataTypeField r : attrs) { 
+			size += r.size();
 		}
-
-		ret += "    return ret;\n";
-
-		return ret;
-
+		
+		return size;
 	}
+	
+	
 
 
-	private Map<String, String> getGroupByAggregates() {
+	
+	private Map<String, String> generateAggregates() {
 		String initAggregate = "";
-		String processAggregate = "";
-		String writeGroupBy = "";
+		String computeAggregate = "";
 		String writeAggregate = "";
 
 		int runningOffset = 0;
@@ -115,7 +99,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 		List<AggregateCall> aggCallList = baseAggregate.getAggCallList();
 		Iterator<Pair<AggregateCall, String>> aggItr = baseAggregate.getNamedAggCalls().iterator();
 
-		assert (aggCallList.size() == baseAggregate.getNamedAggCalls().size()); // TODO: add support for anonymous calls
+		assert (aggCallList.size() == baseAggregate.getNamedAggCalls().size());
 
 		while (aggItr.hasNext()) {
 
@@ -126,41 +110,40 @@ public class SecureGroupByAggregate extends SecureOperator {
 		Iterator<AggregateCall> aggPos = aggCallList.iterator();
 
 		while (aggPos.hasNext()) {
+			aggCounter++;
+
 			AggregateCall call = aggPos.next();
 
 			RelDataType field = call.getType();
-			int size = TypeMap.getInstance().sizeof(field);
+			
+			int size = TypeMap.getInstance().sizeof(field.getSqlTypeName());
 
 
-			int varNo = aggCounter + 1;
-			String aggVariable = "agg" + varNo;
+			String aggVariable = "agg" + aggCounter;
 
 
 			String initAggregateValue = getValueInit(call);
 
-			initAggregate += "Integer " + aggVariable + "= Integer(" + size + "," + initAggregateValue + ",PUBLIC);\n";
+			initAggregate += "Integer " + aggVariable + " = Integer(" + size + "," + initAggregateValue + ",PUBLIC);\n";
 
 			if (!call.getArgList().isEmpty())
-				initAggregate += "Integer tupleArg" + varNo + " = Integer(" + size + "," + initAggregateValue + ", PUBLIC);\n";
+				initAggregate += "Integer tupleArg" + aggCounter + " = Integer(" + size + "," + initAggregateValue + ", PUBLIC);\n";
 
-			processAggregate += getProcessAggregate(call, aggCounter + 1, size, runningOffset);
-
-			writeGroupBy += writeGroupBy("output", aggVariable);
-
+			computeAggregate += getProcessAggregate(call, aggCounter, size, runningOffset);
 			writeAggregate += writeAggregate(call, aggMap, "output", aggVariable, size);
 
 
-			aggCounter++;
 
 			runningOffset += size;
 
 		}
+		
+		
 
 
 		Map<String, String> vars = new HashMap<String, String>();
-		vars.put("initAgg", initAggregate);
-		vars.put("processAgg", processAggregate);
-		vars.put("writeGroupBy", writeGroupBy);
+		vars.put("initializeAggregate", initAggregate);
+		vars.put("computeAggregate", computeAggregate);
 		vars.put("writeAggregate", writeAggregate);
 
 		return vars;
@@ -175,18 +158,18 @@ public class SecureGroupByAggregate extends SecureOperator {
 		// case: max, avg, count, sum - return 0
 
 
-		String varInit = "0";
 
 		switch (call.getAggregation().kind) {
 
 			case MIN:
-				varInit = "99999";
-				return varInit;
+				return "99999";
 			case MAX:
+				return "0";
 			case COUNT:
+				return "1"; // first tuple makes our count 1
 			case SUM:
 			case AVG:
-				return varInit;
+				return "0";
 			default:
 				return null;
 		}
@@ -212,11 +195,11 @@ public class SecureGroupByAggregate extends SecureOperator {
 			case MAX:
 				processString += "not yet implemented";
 				return processString;
-			case COUNT:  // TODO: set up for group by part
-				processString += "agg" + aggId + " = If(dummyTest, " +  aggVar + " + Integer(" + size + ", 1, PUBLIC), " + aggVar + ");\n";
+			case COUNT:  
+				processString += aggVar + " = If(incremental, " +  aggVar + " + Integer(" + size + ", 1, PUBLIC), Integer(" + size + ", 1, PUBLIC));\n";
 				return processString;  
 			case SUM:
-				processString += "agg" + aggId + " = If(dummyTest, " + aggVar + " + " + tupleVar + ", " + aggVar + ");\n";
+				processString += aggVar + " = If(incremental, " + aggVar + " + " + tupleVar + ", " + aggVar + ");\n";
 				return processString;
 			case AVG:
 				processString += "not yet implemented";
@@ -229,37 +212,28 @@ public class SecureGroupByAggregate extends SecureOperator {
 	}
 
 	private String extractAggregateArgument(AggregateCall call, String srcVar, String dstVar, int size, int runningOffset) {
-		Integer arg = call.getArgList().get(0);
-		Integer offset = schema.getFieldOffset(arg);
 
 		return "EmpUtilities::writeToInteger( &" + dstVar + ", &tuple, 0, " + runningOffset + ", " + size + ");\n";
 	}
 
-	private String writeGroupBy(String dstTuple, String aggVar) {
-		/* Function to write any GroupBy attributes to output tuples.
-		   For example, in the query "SELECT major_icd9, Count(*) FROM diagnoses GROUP BY major_icd9";
-		   the major_icd9 attribute would be written by this function.
-		   */
-
-
-
-		LogicalAggregate agg =  (LogicalAggregate) planNode.getSecureRelNode().getRelNode();
-		List<Integer> groupBy;
-		groupBy = agg.getGroupSet().asList();
+	private String writeGroupBy(List<SecureRelDataTypeField> groupByFields, String dstVariable, String srcVariable) {
+	      
+		String output = new String();
 		SecureRelRecordType inSchema = planNode.getInSchema();
-		String writer = new String();
 
-		for(Integer i : groupBy) {
-			SecureRelDataTypeField field = inSchema.getSecureField(i);
-			String name = field.getName();
-			int size = TypeMap.getInstance().sizeof(field);
+		
+		for(SecureRelDataTypeField field : groupByFields) {
 			int srcOffset = inSchema.getFieldOffset(field.getIndex());
+			int size = field.size();
+			String name = field.getName();
 			int dstOrdinal = schema.getAttribute(name).getIndex();
+			
 			int dstOffset = schema.getFieldOffset(dstOrdinal);
-			writer += "EmpUtilities::writeToInteger(" + dstTuple + ", &" + aggVar + ", " + srcOffset + ", " + dstOffset + ", " + size + ");\n";
+			if(dstOrdinal > -1)
+				output += "EmpUtilities::writeToInteger( &" + dstVariable + ", &" + srcVariable + ", " + dstOffset + ", " + srcOffset + ", " + size + ");\n";
 		}
 
-		return writer;
+		return output;
 	}
 
 
@@ -278,10 +252,10 @@ public class SecureGroupByAggregate extends SecureOperator {
 		for (RelDataTypeField field : record.getFieldList()) {
 			String name = field.getName();
 			int dstOffset = schema.getFieldOffset(field.getIndex());
-			//int srcOffset = inSchema.getFieldOffset(inSchema.getFieldOffset(inSchema.getAttribute(name).getIndex()));
+
 			if (aggMap.containsKey(name)) {
 				if (aggMap.get(name).equals(call)) {
-					writer += "EmpUtilities::writeToInteger(" + dstTuple + ", &" + aggVar + ", " + dstOffset + ",0, " + size + ");\n";
+					writer += "EmpUtilities::writeToInteger(&" + dstTuple + ", &" + aggVar + ", " + dstOffset + ",0, " + size + ");\n";
 					break;
 				}
 			}
@@ -295,48 +269,23 @@ public class SecureGroupByAggregate extends SecureOperator {
 
 
 
+	private String extractGroupByFields(List<SecureRelDataTypeField> groupByAttributes, String dstVariable, String srcVariable) {
 
-	private String getGroupProcessAggregate(AggregateCall call, int aggId, int size, int runningOffset) {
+		int size = getGroupBySize(groupByAttributes);
+		int dstOffset = 0;
+		SecureRelRecordType inSchema = planNode.getInSchema();
 
-		String aggVar = "agg" + aggId;
-		String tupleVar = "tupleArg" + aggId;
-		String processString = "";
+		String output =  dstVariable + " = Integer(" + size + ", 0, PUBLIC);\n";
+		
+		for(SecureRelDataTypeField f : groupByAttributes) {
+			int srcOffset = inSchema.getFieldOffset(f.getIndex());
 
-		if (!call.getArgList().isEmpty())
-			processString = extractGroupAggregateArgument(call, aggVar, tupleVar, size, runningOffset);
-
-
-		switch (call.getAggregation().kind) {
-
-			// TODO: Update for GroupBy
-
-			case MIN:
-				processString += "agg" + aggId + " = If(dummyTest, If(" + tupleVar + " < " + aggVar + ", " + tupleVar + ", " + aggVar + "), " + aggVar + ");\n";
-				return processString;
-			case MAX:
-				processString += "agg" + aggId + " = If(dummyTest, If(" + tupleVar + " > " + aggVar + ", " + tupleVar + ", " + aggVar + "), " + aggVar + ");\n";
-				return processString;
-			case COUNT:
-				return "// not yet implemented";
-			case SUM:
-				processString += "agg" + aggId + " = If(dummyTest," + aggVar + " + " + tupleVar + ", " + aggVar + ");\n";
-				return processString;
-			case AVG:
-				return "not yet implemented";
-			default:
-				return null;
+			output += "        EmpUtilities::writeToInteger( &" + dstVariable + ", &" + srcVariable + ", " + dstOffset + ", " + srcOffset + ", " + f.size() + ");\n";
+			dstOffset += f.size();
 		}
 
-
-	}
-
-
-
-	private String extractGroupAggregateArgument(AggregateCall call, String srcVar, String dstVar, int size, int runningOffset) {
-		Integer arg = call.getArgList().get(0);
-		Integer offset = schema.getFieldOffset(arg);
-
-		return "EmpUtilities::writeToInteger( &" + dstVar + ", &current, 0, " + runningOffset + ", " + size + ");\n";
+		System.out.println("Extract group by: " + output);
+		return output;
 	}
 
 }

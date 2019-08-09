@@ -347,25 +347,25 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
 ,
 
           											     //  16
-"LogicalSort-Securexsx, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: supplier_cnt BIGINT Public)\n"
-+ "    LogicalAggregate-Secure, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: supplier_cnt BIGINT Public), slice key: [#0: p_brand CHAR(10) Public, #1: p_type VARCHAR(25) Public, #2: p_size INTEGER Public, #3: ps_suppkey BIGINT Public]\n"
-+ "        LogicalAggregate-Secure, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: ps_suppkey BIGINT Public), slice key: [#0: p_brand CHAR(10) Public, #1: p_type VARCHAR(25) Public, #2: p_size INTEGER Public, #3: ps_suppkey BIGINT Public]\n"
-+ "            LogicalProject-Secure, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: ps_suppkey BIGINT Public)\n"
-+ "                LogicalFilter-Secure, schema:(#0: ps_suppkey BIGINT Public,#1: p_brand CHAR(10) Public,#2: p_type VARCHAR(25) Public,#3: p_size INTEGER Public,#4: ps_suppkey0 BIGINT Public,#5: s_suppkey INTEGER Public,#6: $f1 BOOLEAN Public)\n"
-+ "                    LogicalJoin-Secure, schema:(#0: ps_suppkey BIGINT Public,#1: p_brand CHAR(10) Public,#2: p_type VARCHAR(25) Public,#3: p_size INTEGER Public,#4: ps_suppkey0 BIGINT Public,#5: s_suppkey INTEGER Public,#6: $f1 BOOLEAN Public), slice key: [#4: ps_suppkey0 BIGINT Public, #5: s_suppkey INTEGER Public]\n"
-+ "                        LogicalProject-Plain, schema:(#0: ps_suppkey BIGINT Public,#1: p_brand CHAR(10) Public,#2: p_type VARCHAR(25) Public,#3: p_size INTEGER Public,#4: ps_suppkey0 BIGINT Public)\n"
-+ "                            LogicalFilter-Plain, schema:(#0: ps_partkey BIGINT Public,#1: ps_suppkey BIGINT Public,#2: p_partkey INTEGER Public,#3: p_brand CHAR(10) Public,#4: p_type VARCHAR(25) Public,#5: p_size INTEGER Public)\n"
-+ "                                LogicalJoin-Plain, schema:(#0: ps_partkey BIGINT Public,#1: ps_suppkey BIGINT Public,#2: p_partkey INTEGER Public,#3: p_brand CHAR(10) Public,#4: p_type VARCHAR(25) Public,#5: p_size INTEGER Public)\n"
-+ "                                    LogicalProject-Plain, schema:(#0: ps_partkey BIGINT Public,#1: ps_suppkey BIGINT Public)\n"
-+ "                                        JdbcTableScan-Plain, schema:(#0: ps_partkey BIGINT Public,#1: ps_suppkey BIGINT Public,#2: ps_availqty INTEGER Private,#3: ps_supplycost DECIMAL(19, 0) Public,#4: ps_comment VARCHAR(199) Private)\n"
-+ "                                    LogicalProject-Plain, schema:(#0: p_partkey INTEGER Public,#1: p_brand CHAR(10) Public,#2: p_type VARCHAR(25) Public,#3: p_size INTEGER Public)\n"
-+ "                                        JdbcTableScan-Plain, schema:(#0: p_partkey INTEGER Public,#1: p_name VARCHAR(55) Public,#2: p_mfgr CHAR(25) Public,#3: p_brand CHAR(10) Public,#4: p_type VARCHAR(25) Public,#5: p_size INTEGER Public,#6: p_container CHAR(10) Public,#7: p_retailprice DECIMAL(19, 0) Public,#8: p_comment VARCHAR(23) Public)\n"
-+ "                        LogicalAggregate-Secure, schema:(#0: s_suppkey INTEGER Public,#1: $f1 BOOLEAN Public), slice key: [#0: s_suppkey INTEGER Public]\n"
-+ "                            LogicalProject-Plain, schema:(#0: s_suppkey INTEGER Public,#1: $f1 BOOLEAN Public), slice key: [#0: s_suppkey INTEGER Public]\n"
-+ "                                LogicalFilter-Plain, schema:(#0: s_suppkey INTEGER Public,#1: s_comment VARCHAR(101) Private), slice key: [#0: s_suppkey INTEGER Public]\n"
-+ "                                    LogicalProject-Plain, schema:(#0: s_suppkey INTEGER Public,#1: s_comment VARCHAR(101) Private)\n"
-+ "                                        JdbcTableScan-Plain, schema:(#0: s_suppkey INTEGER Public,#1: s_name CHAR(25) Public,#2: s_address VARCHAR(40) Private,#3: s_nationkey BIGINT Public,#4: s_phone CHAR(15) Private,#5: s_acctbal DECIMAL(19, 0) Private,#6: s_comment VARCHAR(101) Private)\n"
-,
+"LogicalSort-DistributedOblivious, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: supplier_cnt BIGINT Public)\n"
++ "    LogicalAggregate-DistributedOblivious, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: supplier_cnt BIGINT Public), slice key: [#0: p_brand CHAR(10) Public, #1: p_type VARCHAR(25) Public, #2: p_size INTEGER Public, #3: ps_suppkey INTEGER Public]\n"
++ "        LogicalAggregate-DistributedOblivious, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: ps_suppkey INTEGER Public), slice key: [#0: p_brand CHAR(10) Public, #1: p_type VARCHAR(25) Public, #2: p_size INTEGER Public, #3: ps_suppkey INTEGER Public]\n"
++ "            LogicalProject-DistributedOblivious, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: ps_suppkey INTEGER Public)\n"
++ "                LogicalFilter-DistributedOblivious, schema:(#0: ps_suppkey INTEGER Public,#1: p_brand CHAR(10) Public,#2: p_type VARCHAR(25) Public,#3: p_size INTEGER Public,#4: ps_suppkey0 INTEGER Public,#5: s_suppkey INTEGER Public,#6: $f1 BOOLEAN Public)\n"
++ "                    LogicalJoin-DistributedOblivious, schema:(#0: ps_suppkey INTEGER Public,#1: p_brand CHAR(10) Public,#2: p_type VARCHAR(25) Public,#3: p_size INTEGER Public,#4: ps_suppkey0 INTEGER Public,#5: s_suppkey INTEGER Public,#6: $f1 BOOLEAN Public), Predicate: =($4, $5), slice key: [#4: ps_suppkey0 INTEGER Public, #5: s_suppkey INTEGER Public]\n"
++ "                        LogicalProject-LocalClearPartitioned, schema:(#0: ps_suppkey INTEGER Public,#1: p_brand CHAR(10) Public,#2: p_type VARCHAR(25) Public,#3: p_size INTEGER Public,#4: ps_suppkey0 INTEGER Public)\n"
++ "                            LogicalFilter-LocalClearPartitioned, schema:(#0: ps_partkey INTEGER Public,#1: ps_suppkey INTEGER Public,#2: p_partkey INTEGER Public,#3: p_brand CHAR(10) Public,#4: p_type VARCHAR(25) Public,#5: p_size INTEGER Public)\n"
++ "                                LogicalJoin-LocalClearPartitioned, schema:(#0: ps_partkey INTEGER Public,#1: ps_suppkey INTEGER Public,#2: p_partkey INTEGER Public,#3: p_brand CHAR(10) Public,#4: p_type VARCHAR(25) Public,#5: p_size INTEGER Public), Predicate: true\n"
++ "                                    LogicalProject-LocalClearPartitioned, schema:(#0: ps_partkey INTEGER Public,#1: ps_suppkey INTEGER Public)\n"
++ "                                        JdbcTableScan-LocalClearPartitioned, schema:(#0: ps_partkey INTEGER Public,#1: ps_suppkey INTEGER Public,#2: ps_availqty INTEGER Private,#3: ps_supplycost DECIMAL(19, 0) Public,#4: ps_comment VARCHAR(199) Private)\n"
++ "                                    LogicalProject-LocalClearReplicated, schema:(#0: p_partkey INTEGER Public,#1: p_brand CHAR(10) Public,#2: p_type VARCHAR(25) Public,#3: p_size INTEGER Public)\n"
++ "                                        JdbcTableScan-LocalClearReplicated, schema:(#0: p_partkey INTEGER Public,#1: p_name VARCHAR(55) Public,#2: p_mfgr CHAR(25) Public,#3: p_brand CHAR(10) Public,#4: p_type VARCHAR(25) Public,#5: p_size INTEGER Public,#6: p_container CHAR(10) Public,#7: p_retailprice DECIMAL(19, 0) Public,#8: p_comment VARCHAR(23) Public)\n"
++ "                        LogicalAggregate-DistributedOblivious, schema:(#0: s_suppkey INTEGER Public,#1: $f1 BOOLEAN Public), slice key: [#0: s_suppkey INTEGER Public]\n"
++ "                            LogicalProject-LocalObliviousPartitioned, schema:(#0: s_suppkey INTEGER Public,#1: $f1 BOOLEAN Public), slice key: [#0: s_suppkey INTEGER Public]\n"
++ "                                LogicalFilter-LocalObliviousPartitioned, schema:(#0: s_suppkey INTEGER Public,#1: s_comment VARCHAR(101) Private), slice key: [#0: s_suppkey INTEGER Public]\n"
++ "                                    LogicalProject-LocalClearPartitioned, schema:(#0: s_suppkey INTEGER Public,#1: s_comment VARCHAR(101) Private)\n"
++ "                                        JdbcTableScan-LocalClearPartitioned, schema:(#0: s_suppkey INTEGER Public,#1: s_name CHAR(25) Public,#2: s_address VARCHAR(40) Private,#3: s_nationkey INTEGER Public,#4: s_phone CHAR(15) Private,#5: s_acctbal DECIMAL(19, 0) Private,#6: s_comment VARCHAR(101) Private)\n",
+
 
           											     //  17
 "LogicalProject-DistributedOblivious, schema:(#0: avg_yearly DECIMAL(19, 0) Private)\n"
@@ -598,14 +598,13 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
           runTest(13, expectedOutput);
       }
 
-  /* JR: This used to work and seems close to being on track
         public void testQuery14() throws Exception {
      
     	  
     	  // TODO: this is another where the join can be done in the clear owing to partitioning
           String expectedOutput = PLANS.get(13);
           runTest(14, expectedOutput);
-        } */
+        } 
         
 
 /*      public void testQuery15() throws Exception {
@@ -614,8 +613,8 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
       }
 */
      
-      /* TODO: JR: this too was working in an earlier version
-       * public void testQuery16() throws Exception {
+     /* JMR return to this one, worked in previous version.
+       public void testQuery16() throws Exception {
     	  // aggregate on supplier is oblivious b/c of secret  filter
     	  // TODO: examine design point of running local oblivious query in plaintext w/o padding
     	  // compare to query rewrite
@@ -627,6 +626,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
           runTest(16, expectedOutput);
       }
       */
+        
  
       public void testQuery17() throws Exception {
           String expectedOutput = PLANS.get(16);

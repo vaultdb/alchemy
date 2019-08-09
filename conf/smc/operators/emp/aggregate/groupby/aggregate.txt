@@ -7,107 +7,88 @@ Data * $functionName(Data *data) {
 
     // Initialize new Data object for end results
     Data *result = new Data;
+    result->publicSize = data->publicSize;
+
     result->tuples = new Integer[data->publicSize];
-
-
+	int srcDummyTagIdx = data->tuples[0].size() - 1;
+	int dstDummyTagIdx = $dSize - 1;
+	
+	Integer lastTuple, lastGroupBy, groupBy, tuple;
 
     // set index 0 init
-    Bit init = If(data->dummyTags[0], Bit(), Bit(true,PUBLIC));
-    Integer value = If(init, Integer(64,1,PUBLIC), Integer(64,1,PUBLIC));
+    lastTuple = data->tuples[0];
+	Bit lastDummyTag = lastTuple[srcDummyTagIdx];
 
-    Integer lastOne = data->data[0];
+    $initializeGroupBy
+
+
+	Bit dummyTag = lastDummyTag;
+	groupBy = lastGroupBy;
+	
     int cursor = 0;
 
-    Integer tuple;
-    $initAgg
+	Integer output =  Integer($dSize, 0, PUBLIC);
+	
+	
+    output[dstDummyTagIdx] = lastDummyTag;
+    
+    $initializeAggregate
+    
+    $writeGroupBy
+		
+		
+	// write output of aggregate computation
+	$writeAggregate
 
-
-	 // holds all associated aggregate values
-    std::vector<Integer> myVect;
-    myVect.reserve(data->publicSize);
-    myVect.push_back(value);
+  
+	 result->tuples[0] = Integer($dSize, output.bits);
+	cout << "Done initializing aggregate!" << endl;
 
     while ( cursor < data->publicSize - 1) {
 
-        cursor++;
-        tuple = data->data[cursor];
-        Bit dummyOut = data->dummyTags[cursor];
-        Bit dummyTest = !(data->dummyTags[cursor]); // easier to perform logic checks
+        ++cursor;
+        tuple = data->tuples[cursor];
+        dummyTag = tuple[srcDummyTagIdx];
+	    $extractGroupBy
+	    
+	    output =  Integer($dSize, 0, PUBLIC);
+        
+        output[dstDummyTagIdx] = dummyTag;
+		
+		Bit eq = (lastGroupBy == groupBy);
+	    Bit incremental = !dummyTag & eq;
+	    		
+		// if !dummyTag & eq, incremental update
+		// else restart agg
+		// if incremental, set predecessor to dummy so this one replaces it
+		cout << "Processing cursor at " << cursor << " group by: " << groupBy.reveal<int32_t>(PUBLIC)
+		 << endl;
+		 
+		
+		Bit prevDummyTag = result->tuples[cursor-1][dstDummyTagIdx];		
+		prevDummyTag = If(incremental, Bit(1, PUBLIC), prevDummyTag);
+		result->tuples[cursor-1][dstDummyTagIdx] = prevDummyTag;
+				
+		$computeAggregate
 
+		
+		// write group by vals if applicable
+		$writeGroupBy
+		
+		cout << "Wrote group by " << Integer(32, output.bits).reveal<int32_t>(PUBLIC) << endl;
+		
+	    // write output of aggregate computation
+	    $writeAggregate
 
-        // if init and equal, set dummyOut to True for reverse logic
-        dummyOut = If((init & (tuple==lastOne)), Bit(true,PUBLIC), dummyOut);
-
-        // reset init so that it will be false if we have not seen
-        // a real of the current Integer value
-        init = If((tuple==lastOne), (init | dummyTest), dummyTest);
-
-        // create new integer to add to the new data type
-        Integer *output = new Integer($dSize, 0, PUBLIC);
-
-        // Compute all aggregates
-        $processAgg
-
-        // extractGroupBy in SecureAggregate
-        $writeGroupBy
-
-        // extract each aggregate to output
-        $writeAggregate 
-
-	    myVect.push_back(*output);
-
-
-        // if we are initialized, move lastOne to current. Else do not move lastOne
-        lastOne = If(init, tuple, lastOne);
-
-
-        // insert current output
-        result->data[cursor] = *output;
-
-
-        // replace current dummy
-        result->dummyTags[cursor] = dummyOut;
-
+        result->tuples[cursor] = Integer($dSize, output.bits);
+	    
+	    lastTuple = tuple;
+	    lastGroupBy = groupBy;
 
 
     }
+    
+    cout << "Completed aggregate!" << endl;
+    return result;
 
-   // reset variables
-   Bit prevDummy = data->dummyTags[0];
-   cursor = 1;
-   Bit real = Bit();
-
-   // swap first and last dummy positions and reset values
-   // TODO: apply only to result, logic needs to be updated
-
-   while ( cursor < data->publicSize) {
-        Bit prevDummy = data->dummyTags[cursor-1];
-        Bit currDummy = data->dummyTags[cursor];
-        Integer prevValue = data->data[cursor-1];
-        Integer currValue = data->data[cursor];
-        Bit same = If(prevValue==currValue, !Bit(), Bit());
-
-        Bit prevtemp = If(prevDummy==real & currDummy!=real & same, !Bit(),prevDummy);
-        Bit currtemp = If(prevDummy==real & currDummy!=real & same, Bit(), currDummy);
-
-        // replace current dummy
-        data->dummyTags[cursor-1] = prevtemp;
-        data->dummyTags[cursor] = currtemp;
-
-        // replace aggregate value
-        data->data[cursor-1] = myVect[cursor-1];
-
-        cursor++;
-    }
-
-    data->data[data->publicSize-1] = myVect[data->publicSize-1];
-
-    // debugging statements to see new values
-    for(int i = 0; i < data->publicSize; i++){
-            long value = result->data[i].reveal<int32_t>(PUBLIC);
-            cout << "Value i: " << value << endl;
-            std::cout << data->dummyTags[i].reveal(PUBLIC) << std::endl;
-    }
-
-    return data;
 }

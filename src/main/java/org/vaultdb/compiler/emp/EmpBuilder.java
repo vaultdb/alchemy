@@ -71,7 +71,8 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         	// copy over our header files to build target for local builds
         	String srcHeader = "src/main/java/org/vaultdb/compiler/emp/generated/" + className + ".h";
         	String dstHeader = "target/classes/org/vaultdb/compiler/emp/generated/" + className + ".h";
-        
+
+        	        	
         	String srcUtilities = "src/main/java/org/vaultdb/compiler/emp/generated/EmpUtilities.h";
         	String dstUtilities = "target/classes/org/vaultdb/compiler/emp/generated/EmpUtilities.h";
 

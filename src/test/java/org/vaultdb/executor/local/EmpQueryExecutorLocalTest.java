@@ -31,14 +31,14 @@ public class EmpQueryExecutorLocalTest extends BaseTest {
 
   public void testCountIcd9s() throws Exception {
 
-	/*JR: Temporarily commented out
-	 * 
+	//   Temporarily commented out - JMR
     String query = "SELECT major_icd9,COUNT(*) FROM diagnoses GROUP BY major_icd9";
     // to run in plaintext to verify our results
     String testName = "CountIcd9s";
 
 
-    testCase(testName, query);*/
+    testCase(testName, query);
+  
 	  
   }
 
