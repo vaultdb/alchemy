@@ -6,7 +6,7 @@
 export CLASS_NAME=$1
 export JAVACPP_JAR=$HOME/.m2/repository/org/bytedeco/javacpp/1.4.4/javacpp-1.4.4.jar
 export EMP_JNI_ROOT=$PWD
-export JAVACPP_SRC='org/smcql/compiler/emp/generated/'$CLASS_NAME'.java'
+export JAVACPP_SRC='org/vaultdb/compiler/emp/generated/'$CLASS_NAME'.java'
 export JAVACPP_WORKING_DIRECTORY=$EMP_JNI_ROOT/src/main/java
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
