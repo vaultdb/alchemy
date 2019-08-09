@@ -39,7 +39,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     public void init(Logger logger, Properties properties, String encoding) {
     }
     
-    @SuppressWarnings({ "rawtypes", "resource" })
+    @SuppressWarnings({"resource" })
 	private void addToClasspath(String fullyQualifiedClassName, String path) throws Exception {
     	byte[] encoded = Files.readAllBytes(Paths.get(path));
     	String javaCode = new String(encoded, StandardCharsets.US_ASCII);	
@@ -60,9 +60,9 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         Properties properties = getProperties();
         String className = fullyQualifiedClassName.substring(fullyQualifiedClassName.lastIndexOf('.')+1);
         
-        try {
-        	Class.forName(fullyQualifiedClassName);
-        } catch (Exception e) {
+        
+        File f = new File(Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/" + className + ".class");
+        if(!f.exists()) { 
         	addToClasspath(fullyQualifiedClassName, "src/main/java/org/vaultdb/compiler/emp/generated/" + className + ".java");
         }
 

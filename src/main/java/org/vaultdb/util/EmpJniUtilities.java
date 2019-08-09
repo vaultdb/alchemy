@@ -124,8 +124,8 @@ public class EmpJniUtilities {
 		EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort);
 		EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, empPort);
 
-	   EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
-	   builder.compile();
+	    EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
+	    builder.compile();
 
 	   
 		
@@ -182,9 +182,6 @@ public class EmpJniUtilities {
 	public static void cleanEmpCode(String className) throws Exception {
 		Path generatedFiles = Paths.get(Utilities.getCodeGenTarget());
 		deleteFilesForPathByPrefix(generatedFiles, className);
-			
-		Path generatedTargets = Paths.get(Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated");
-		deleteFilesForPathByPrefix(generatedTargets, className);
 				
 		String osCode = Utilities.getCodeGenTarget()+ "/" + Loader.getPlatform();
 		FileUtils.deleteDirectory(new File(osCode));
