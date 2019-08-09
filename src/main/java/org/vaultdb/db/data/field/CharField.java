@@ -8,6 +8,10 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.vaultdb.type.SecureRelDataTypeField;
 
 public class CharField extends Field implements Serializable   {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7638908984744040905L;
 	public String value;
 	
 	
@@ -119,7 +123,9 @@ public class CharField extends Field implements Serializable   {
 	
 	@Override
 	public void deserialize(BitSet src) {
-		assert(src.size() == this.size); 
+		//assert(src.size() == this.size); 
+		
+		value = new String();
 		int chars = this.size / 8;
 		
 		for(int i = 0; i < chars; ++i)
@@ -134,13 +140,15 @@ public class CharField extends Field implements Serializable   {
 	
 	
 	private char deserializeChar(BitSet bits) {
-		assert(bits.size() == 8);
 
 	    int n = 0;
-	    for(int i = 0; i < bits.size(); ++i) {
+	    for(int i = 0; i < 8; ++i) {
 	    	boolean b = bits.get(i);
 	        n = (n << 1) | (b ? 1 : 0);
 	    }
+	    
+	    System.out.println("Decoded character " + (char) n + " from " + n + " and " + bits);
+	    
 	    return (char) n;
 	}
 

@@ -69,7 +69,7 @@ public class QueryTable implements Serializable {
 		        	BitSet tupleBits = bits.get(i * physicalTupleSize, (i + 1) * physicalTupleSize);
 
 			        Tuple t = new Tuple(tupleBits, schema);	        
-		    		//logger.info("Decoding a tuple " + t + "!");
+		    		logger.info("Decoding a tuple " + t + "!");
 			        tuples.add(t);
 			        ++tupleCount;
 		    	}  
