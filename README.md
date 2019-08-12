@@ -1,4 +1,4 @@
-# VaultDB : A Private Data Federation
+# VaultDB : A Private Data Federation [![Build Status](https://travis-ci.com/vaultdb/vaultdb-core.svg?token=eqBexebXTQqzhcsDDVFJ&branch=master)](https://travis-ci.com/vaultdb/vaultdb-core)
 
 
 --------------------------------------------------------------------------------
