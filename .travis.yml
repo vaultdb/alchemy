@@ -1,0 +1,19 @@
+language: java
+
+# This is from https://github.com/travis-ci/travis-ci/issues/9036
+# postgresql uses the ramfs, need to increase it so we 
+# for TPC-H dataset
+before_install: 
+        - sudo mount -o remount,size=50% /var/ramfs
+
+jdk:
+        - openjdk8
+
+services:
+        - postgresql
+
+
+before_script:
+        - wget https://goo.gl/wmt4KB -O install.sh && bash install.sh
+        - /bin/bash conf/workload/testDB/create_test_dbs.sh
+        - /bin/bash conf/workload/tpch/generate-and-load-data.sh
