@@ -18,10 +18,12 @@ cache:
 
 before_script:
         - echo "Installing Emp..."
-        - wget https://goo.gl/wmt4KB -O install.sh && bash install.sh > /dev/null 2>&1
+        - wget https://goo.gl/wmt4KB -O install.sh && bash install.sh 
         - echo "Completed Emp Install...creating healthlnk testDBs"
-        - /bin/bash conf/workload/testDB/create_test_dbs.sh > /dev/null 2>&1
+        - /bin/bash conf/workload/testDB/create_test_dbs.sh 
         - echo "Completed HealthLNK testDBs...creating TPC-H DBs"
-        - /bin/bash conf/workload/tpch/generate-and-load-data.sh > /dev/null 2>&1
+        - /bin/bash conf/workload/tpch/generate-and-load-data.sh 
 
-script: mvn --quiet test -B
+#This is a hacky way to reduce the log output from testing. Right now, 
+# travis will fail because the log size is > 4MB. Logging needs to be fixed. 
+script: mvn --quiet test -B | grep -B 40 -A 40 -i error
