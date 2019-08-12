@@ -25,6 +25,8 @@ cache:
   - $HOME/.m2
 
 before_script:
+        - sudo ln -s `which clang++` /usr/bin/clang++
+        - sudo ln -s `which clang` /usr/bin/clang
         - echo "Installing Emp..."
         - wget https://goo.gl/wmt4KB -O install.sh && bash install.sh 
         - echo "Completed Emp Install...creating healthlnk testDBs"
