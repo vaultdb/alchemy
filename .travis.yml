@@ -17,6 +17,11 @@ cache:
   - $HOME/.m2
 
 before_script:
+        - echo "Installing Emp..."
         - wget https://goo.gl/wmt4KB -O install.sh && bash install.sh > /dev/null 2>&1
-        - /bin/bash conf/workload/testDB/create_test_dbs.sh
-        - /bin/bash conf/workload/tpch/generate-and-load-data.sh
+        - echo "Completed Emp Install...creating healthlnk testDBs"
+        - /bin/bash conf/workload/testDB/create_test_dbs.sh > /dev/null 2>&1
+        - echo "Completed HealthLNK testDBs...creating TPC-H DBs"
+        - /bin/bash conf/workload/tpch/generate-and-load-data.sh > /dev/null 2>&1
+
+script: mvn --quiet test -B
