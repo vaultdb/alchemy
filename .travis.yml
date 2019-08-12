@@ -37,4 +37,4 @@ before_script:
 #This is a hacky way to reduce the log output from testing. Right now, 
 # travis will fail because the log size is > 4MB. Logging needs to be fixed. 
 script: 
-        set -o pipefail && mvn --quiet test -B | grep -B 40 -A 40 -i error; echo $?
+        set -o pipefail && mvn --quiet test -B | grep -B 40 -A 40 -i error
