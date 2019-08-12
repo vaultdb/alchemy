@@ -6,6 +6,10 @@ language: java
 before_install: 
         - sudo mount -o remount,size=50% /var/ramfs
 
+install: 
+        - sudo apt install make clang
+
+
 jdk:
         - openjdk8
 
