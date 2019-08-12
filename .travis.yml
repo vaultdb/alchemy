@@ -12,8 +12,11 @@ jdk:
 services:
         - postgresql
 
+cache:
+  directories:
+  - $HOME/.m2
 
 before_script:
-        - wget https://goo.gl/wmt4KB -O install.sh && bash install.sh
+        - wget https://goo.gl/wmt4KB -O install.sh && bash install.sh > /dev/null 2>&1
         - /bin/bash conf/workload/testDB/create_test_dbs.sh
         - /bin/bash conf/workload/tpch/generate-and-load-data.sh
