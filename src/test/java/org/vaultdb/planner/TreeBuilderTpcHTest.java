@@ -409,37 +409,34 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
               + "                JdbcTableScan-LocalClearReplicated, schema:(#0: p_partkey INTEGER Public,#1: p_name VARCHAR(55) Public,#2: p_mfgr CHAR(25) Public,#3: p_brand CHAR(10) Public,#4: p_type VARCHAR(25) Public,#5: p_size INTEGER Public,#6: p_container CHAR(10) Public,#7: p_retailprice DECIMAL(19, 0) Public,#8: p_comment VARCHAR(23) Public)\n",
 
           //  20
-          "LogicalProject-Secure, schema:(#0: s_name CHAR(25) Public,#1: s_address VARCHAR(40) Private)\n"
-              + "    LogicalSort-Secure, schema:(#0: s_name CHAR(25) Public,#1: s_address VARCHAR(40) Private,#2: s_nationkey BIGINT Public,#3: n_nationkey INTEGER Public)\n"
-              + "        LogicalJoin-Plain, schema:(#0: s_name CHAR(25) Public,#1: s_address VARCHAR(40) Private,#2: s_nationkey BIGINT Public,#3: n_nationkey INTEGER Public)\n"
-              + "            LogicalProject-Secure, schema:(#0: s_name CHAR(25) Public,#1: s_address VARCHAR(40) Private,#2: s_nationkey BIGINT Public)\n"
-              + "                LogicalFilter-Secure, schema:(#0: s_name CHAR(25) Public,#1: s_address VARCHAR(40) Private,#2: s_nationkey BIGINT Public,#3: s_suppkey0 BIGINT Public,#4: ps_suppkey BIGINT Public)\n"
-              + "                    LogicalJoin-Plain, schema:(#0: s_name CHAR(25) Public,#1: s_address VARCHAR(40) Private,#2: s_nationkey BIGINT Public,#3: s_suppkey0 BIGINT Public,#4: ps_suppkey BIGINT Public), slice key: [#3: s_suppkey0 BIGINT Public, #4: ps_suppkey BIGINT Public]\n"
-              + "                        LogicalProject-Plain, schema:(#0: s_name CHAR(25) Public,#1: s_address VARCHAR(40) Private,#2: s_nationkey BIGINT Public,#3: s_suppkey0 BIGINT Public)\n"
-              + "                            JdbcTableScan-Plain, schema:(#0: s_suppkey INTEGER Public,#1: s_name CHAR(25) Public,#2: s_address VARCHAR(40) Private,#3: s_nationkey BIGINT Public,#4: s_phone CHAR(15) Private,#5: s_acctbal DECIMAL(19, 0) Private,#6: s_comment VARCHAR(101) Private)\n"
-              + "                        LogicalAggregate-Secure, schema:(#0: ps_suppkey BIGINT Public), slice key: [#0: ps_suppkey BIGINT Public]\n"
-              + "                            LogicalProject-Secure, schema:(#0: ps_suppkey BIGINT Public)\n"
-              + "                                LogicalFilter-Secure, schema:(#0: l_partkey BIGINT Private,#1: l_suppkey BIGINT Private,#2: inventory DECIMAL(19, 1) Private,#3: ps_partkey BIGINT Public,#4: ps_suppkey BIGINT Public,#5: ps_availqty INTEGER Private,#6: p_partkey INTEGER Public,#7: p_partkey0 BIGINT Public)\n"
-              + "                                    LogicalJoin-Plain, schema:(#0: l_partkey BIGINT Private,#1: l_suppkey BIGINT Private,#2: inventory DECIMAL(19, 1) Private,#3: ps_partkey BIGINT Public,#4: ps_suppkey BIGINT Public,#5: ps_availqty INTEGER Private,#6: p_partkey INTEGER Public,#7: p_partkey0 BIGINT Public), slice key: [#3: ps_partkey BIGINT Public, #7: p_partkey0 BIGINT Public]\n"
-              + "                                        LogicalJoin-Secure, schema:(#0: l_partkey BIGINT Private,#1: l_suppkey BIGINT Private,#2: inventory DECIMAL(19, 1) Private,#3: ps_partkey BIGINT Public,#4: ps_suppkey BIGINT Public,#5: ps_availqty INTEGER Private)\n"
-              + "                                            LogicalProject-Secure, schema:(#0: l_partkey BIGINT Private,#1: l_suppkey BIGINT Private,#2: inventory DECIMAL(19, 1) Private)\n"
-              + "                                                LogicalAggregate-Secure, schema:(#0: l_partkey BIGINT Private,#1: l_suppkey BIGINT Private,#2: $f2 DECIMAL(19, 0) Private)\n"
-              + "                                                    LogicalProject-Plain, schema:(#0: l_partkey BIGINT Private,#1: l_suppkey BIGINT Private,#2: l_quantity DECIMAL(19, 0) Private)\n"
-              + "                                                        LogicalFilter-Plain, schema:(#0: l_partkey BIGINT Private,#1: l_suppkey BIGINT Private,#2: l_quantity DECIMAL(19, 0) Private,#3: l_shipdate DATE Private)\n"
-              + "                                                            LogicalProject-Plain, schema:(#0: l_partkey BIGINT Private,#1: l_suppkey BIGINT Private,#2: l_quantity DECIMAL(19, 0) Private,#3: l_shipdate DATE Private)\n"
-              + "                                                                JdbcTableScan-Plain, schema:(#0: l_orderkey BIGINT Private,#1: l_partkey BIGINT Private,#2: l_suppkey BIGINT Private,#3: l_linenumber INTEGER Private,#4: l_quantity DECIMAL(19, 0) Private,#5: l_extendedprice DECIMAL(19, 0) Private,#6: l_discount DECIMAL(19, 0) Private,#7: l_tax DECIMAL(19, 0) Private,#8: l_returnflag CHAR(1) Private,#9: l_linestatus CHAR(1) Private,#10: l_shipdate DATE Private,#11: l_commitdate DATE Private,#12: l_receiptdate DATE Private,#13: l_shipinstruct CHAR(25) Private,#14: l_shipmode CHAR(10) Private,#15: l_comment VARCHAR(44) Private)\n"
-              + "                                            LogicalProject-Plain, schema:(#0: ps_partkey BIGINT Public,#1: ps_suppkey BIGINT Public,#2: ps_availqty INTEGER Private)\n"
-              + "                                                JdbcTableScan-Plain, schema:(#0: ps_partkey BIGINT Public,#1: ps_suppkey BIGINT Public,#2: ps_availqty INTEGER Private,#3: ps_supplycost DECIMAL(19, 0) Public,#4: ps_comment VARCHAR(199) Private)\n"
-              + "                                        LogicalProject-Plain, schema:(#0: p_partkey INTEGER Public,#1: p_partkey0 BIGINT Public)\n"
-              + "                                            LogicalAggregate-Plain, schema:(#0: p_partkey INTEGER Public)\n"
-              + "                                                LogicalProject-Plain, schema:(#0: p_partkey INTEGER Public)\n"
-              + "                                                    LogicalFilter-Plain, schema:(#0: p_partkey INTEGER Public,#1: p_name VARCHAR(55) Public)\n"
-              + "                                                        LogicalProject-Plain, schema:(#0: p_partkey INTEGER Public,#1: p_name VARCHAR(55) Public)\n"
-              + "                                                            JdbcTableScan-Plain, schema:(#0: p_partkey INTEGER Public,#1: p_name VARCHAR(55) Public,#2: p_mfgr CHAR(25) Public,#3: p_brand CHAR(10) Public,#4: p_type VARCHAR(25) Public,#5: p_size INTEGER Public,#6: p_container CHAR(10) Public,#7: p_retailprice DECIMAL(19, 0) Public,#8: p_comment VARCHAR(23) Public)\n"
-              + "            LogicalProject-Plain, schema:(#0: n_nationkey INTEGER Public)\n"
-              + "                LogicalFilter-Plain, schema:(#0: n_nationkey INTEGER Public,#1: n_name CHAR(25) Public)\n"
-              + "                    LogicalProject-Plain, schema:(#0: n_nationkey INTEGER Public,#1: n_name CHAR(25) Public)\n"
-              + "                        JdbcTableScan-Plain, schema:(#0: n_nationkey INTEGER Public,#1: n_name CHAR(25) Public,#2: n_regionkey BIGINT Public,#3: n_comment VARCHAR(152) Public)\n",
+          "LogicalProject-DistributedOblivious, schema:(#0: s_name CHAR(25) Public,#1: s_address VARCHAR(40) Private)\n"
+              + "    LogicalSort-DistributedOblivious, schema:(#0: s_name CHAR(25) Public,#1: s_address VARCHAR(40) Private,#2: s_nationkey INTEGER Public,#3: n_nationkey INTEGER Public)\n"
+              + "        LogicalJoin-DistributedOblivious, schema:(#0: s_name CHAR(25) Public,#1: s_address VARCHAR(40) Private,#2: s_nationkey INTEGER Public,#3: n_nationkey INTEGER Public), Predicate: =($2, $3), slice key: [#2: s_nationkey INTEGER Public, #3: n_nationkey INTEGER Public]\n"
+              + "            LogicalProject-DistributedOblivious, schema:(#0: s_name CHAR(25) Public,#1: s_address VARCHAR(40) Private,#2: s_nationkey INTEGER Public)\n"
+              + "                LogicalJoin-DistributedOblivious, schema:(#0: s_suppkey INTEGER Public,#1: s_name CHAR(25) Public,#2: s_address VARCHAR(40) Private,#3: s_nationkey INTEGER Public,#4: ps_suppkey INTEGER Public), Predicate: =($0, $4), slice key: [#0: s_suppkey INTEGER Public, #4: ps_suppkey INTEGER Public]\n"
+              + "                    LogicalProject-DistributedOblivious, schema:(#0: s_suppkey INTEGER Public,#1: s_name CHAR(25) Public,#2: s_address VARCHAR(40) Private,#3: s_nationkey INTEGER Public)\n"
+              + "                        JdbcTableScan-LocalClearPartitioned, schema:(#0: s_suppkey INTEGER Public,#1: s_name CHAR(25) Public,#2: s_address VARCHAR(40) Private,#3: s_nationkey INTEGER Public,#4: s_phone CHAR(15) Private,#5: s_acctbal DECIMAL(19, 0) Private,#6: s_comment VARCHAR(101) Private)\n"
+              + "                    LogicalAggregate-DistributedOblivious, schema:(#0: ps_suppkey INTEGER Public)\n"
+              + "                        LogicalProject-DistributedOblivious, schema:(#0: ps_suppkey INTEGER Public)\n"
+              + "                            LogicalJoin-DistributedOblivious, schema:(#0: l_partkey INTEGER Private,#1: l_suppkey INTEGER Private,#2: inventory DECIMAL(19, 1) Private,#3: ps_partkey INTEGER Public,#4: ps_suppkey INTEGER Public,#5: ps_availqty INTEGER Private,#6: p_partkey INTEGER Public), Predicate: =($3, $6), slice key: [#3: ps_partkey INTEGER Public, #6: p_partkey INTEGER Public]\n"
+              + "                                LogicalJoin-DistributedOblivious, schema:(#0: l_partkey INTEGER Private,#1: l_suppkey INTEGER Private,#2: inventory DECIMAL(19, 1) Private,#3: ps_partkey INTEGER Public,#4: ps_suppkey INTEGER Public,#5: ps_availqty INTEGER Private), Predicate: AND(>($5, $2), =($0, $3), =($1, $4))\n"
+              + "                                    LogicalProject-DistributedOblivious, schema:(#0: l_partkey INTEGER Private,#1: l_suppkey INTEGER Private,#2: inventory DECIMAL(19, 1) Private)\n"
+              + "                                        LogicalAggregate-DistributedOblivious, schema:(#0: l_partkey INTEGER Private,#1: l_suppkey INTEGER Private,#2: $f2 DECIMAL(19, 0) Private)\n"
+              + "                                            LogicalProject-LocalObliviousPartitioned, schema:(#0: l_partkey INTEGER Private,#1: l_suppkey INTEGER Private,#2: l_quantity DECIMAL(19, 0) Private)\n"
+              + "                                                LogicalFilter-LocalObliviousPartitioned, schema:(#0: l_partkey INTEGER Private,#1: l_suppkey INTEGER Private,#2: l_quantity DECIMAL(19, 0) Private,#3: l_shipdate DATE Private)\n"
+              + "                                                    LogicalProject-LocalClearPartitioned, schema:(#0: l_partkey INTEGER Private,#1: l_suppkey INTEGER Private,#2: l_quantity DECIMAL(19, 0) Private,#3: l_shipdate DATE Private)\n"
+              + "                                                        JdbcTableScan-LocalClearPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: l_partkey INTEGER Private,#2: l_suppkey INTEGER Private,#3: l_linenumber INTEGER Private,#4: l_quantity DECIMAL(19, 0) Private,#5: l_extendedprice DECIMAL(19, 0) Private,#6: l_discount DECIMAL(19, 0) Private,#7: l_tax DECIMAL(19, 0) Private,#8: l_returnflag CHAR(1) Private,#9: l_linestatus CHAR(1) Private,#10: l_shipdate DATE Private,#11: l_commitdate DATE Private,#12: l_receiptdate DATE Private,#13: l_shipinstruct CHAR(25) Private,#14: l_shipmode CHAR(10) Private,#15: l_comment VARCHAR(44) Private)\n"
+              + "                                    LogicalProject-LocalClearPartitioned, schema:(#0: ps_partkey INTEGER Public,#1: ps_suppkey INTEGER Public,#2: ps_availqty INTEGER Private)\n"
+              + "                                        JdbcTableScan-LocalClearPartitioned, schema:(#0: ps_partkey INTEGER Public,#1: ps_suppkey INTEGER Public,#2: ps_availqty INTEGER Private,#3: ps_supplycost DECIMAL(19, 0) Public,#4: ps_comment VARCHAR(199) Private)\n"
+              + "                                LogicalAggregate-LocalClearReplicated, schema:(#0: p_partkey INTEGER Public)\n"
+              + "                                    LogicalProject-LocalClearReplicated, schema:(#0: p_partkey INTEGER Public)\n"
+              + "                                        LogicalFilter-LocalClearReplicated, schema:(#0: p_partkey INTEGER Public,#1: p_name VARCHAR(55) Public)\n"
+              + "                                            LogicalProject-LocalClearReplicated, schema:(#0: p_partkey INTEGER Public,#1: p_name VARCHAR(55) Public)\n"
+              + "                                                JdbcTableScan-LocalClearReplicated, schema:(#0: p_partkey INTEGER Public,#1: p_name VARCHAR(55) Public,#2: p_mfgr CHAR(25) Public,#3: p_brand CHAR(10) Public,#4: p_type VARCHAR(25) Public,#5: p_size INTEGER Public,#6: p_container CHAR(10) Public,#7: p_retailprice DECIMAL(19, 0) Public,#8: p_comment VARCHAR(23) Public)\n"
+              + "            LogicalProject-LocalClearReplicated, schema:(#0: n_nationkey INTEGER Public)\n"
+              + "                LogicalFilter-LocalClearReplicated, schema:(#0: n_nationkey INTEGER Public,#1: n_name CHAR(25) Public)\n"
+              + "                    LogicalProject-LocalClearReplicated, schema:(#0: n_nationkey INTEGER Public,#1: n_name CHAR(25) Public)\n"
+              + "                        JdbcTableScan-LocalClearReplicated, schema:(#0: n_nationkey INTEGER Public,#1: n_name CHAR(25) Public,#2: n_regionkey INTEGER Public,#3: n_comment VARCHAR(152) Public)\n",
 
           //  21
           "LogicalSort-Secure, schema:(#0: s_name CHAR(25) Public,#1: numwait BIGINT Public)\n"
@@ -623,12 +620,12 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
     runTest(19, expectedOutput);
   }
 
-  /*
-        public void testQuery20() throws Exception {
-            String expectedOutput = PLANS.get(19);
-            runTest(20, expectedOutput);
-        }
+  public void testQuery20() throws Exception {
+    String expectedOutput = PLANS.get(19);
+    runTest(20, expectedOutput);
+  }
 
+  /*
         public void testQuery21() throws Exception {
             String expectedOutput = PLANS.get(20);
             runTest(21, expectedOutput);
