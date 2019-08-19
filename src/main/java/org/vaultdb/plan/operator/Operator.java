@@ -244,11 +244,9 @@ public abstract class Operator implements CodeGenerator {
 				
 				
 					if(lhsPartitionBy == null || rhsPartitionBy == null) {
-						throw new Exception("Did not find partitioning keys for matching!");
-					}
-		 
-					
-					if(!(Utilities.isLocalPartitionKey(lhsChild.getSchema(), lhsPartitionBy) && Utilities.isLocalPartitionKey(rhsChild.getSchema(), rhsPartitionBy)) )
+						local = false;
+					}			
+					else if(!(Utilities.isLocalPartitionKey(lhsChild.getSchema(), lhsPartitionBy) && Utilities.isLocalPartitionKey(rhsChild.getSchema(), rhsPartitionBy)) )
 						local = false;
 					
 					} // end for each predicate	
