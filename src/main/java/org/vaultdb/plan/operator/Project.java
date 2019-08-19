@@ -8,6 +8,7 @@ import org.apache.calcite.rel.logical.LogicalProject;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
+import org.vaultdb.executor.config.ExecutionMode;
 import org.vaultdb.plan.SecureRelNode;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
@@ -76,6 +77,19 @@ public class Project extends Operator {
 	
 	}
 
+	@Override
+	public void inferExecutionMode() throws Exception {
+		Operator child = children.get(0);
+		child.inferExecutionMode();
+		
+		// always takes on the execution mode of its child since it runs deterministically
+		executionMode = new ExecutionMode(child.executionMode);
+		//logger.info("Deduced execution mode: " + executionMode + " for " + this);
+		
+		
+		//String msg = "Current tree:\n" + printSubtree();
+		//logger.info(msg);
+	}
 	
 	@Override
 	public void initializeStatistics() {

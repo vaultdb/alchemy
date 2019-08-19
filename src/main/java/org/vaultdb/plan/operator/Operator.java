@@ -137,15 +137,35 @@ public abstract class Operator implements CodeGenerator {
 		
 		// TODO: update this to support slicing, rework old slicing code
 			
-		msg = "Inferred execution mode: " + executionMode + " for " + this;
-		logger.info(msg);
+		//msg = "Inferred execution mode: " + executionMode + " for " + this;
+		//logger.info(msg);
+		
+		//msg = "Current tree:\n" + printSubtree();
+		//logger.info(msg);
+		
 
 		
 		
 	}
 	
+	// print subtree for this and descendants
+	protected String printSubtree() {
+		
+		return appendOperator(this, new String(), "");
+	}
 	
-	 
+
+	
+	String appendOperator(Operator op, String src, String linePrefix) {
+		src += linePrefix + op + "\n";
+		linePrefix += "    ";
+		for(Operator child : op.getChildren()) {
+			src = appendOperator(child, src, linePrefix);
+		}
+		return src;
+	}
+	
+	
 	// checks to see if we can use replication, partitioned-alike attributes, or unary ops
 	// to run this locally
 	protected boolean locallyRunnable()  throws Exception{
@@ -322,7 +342,7 @@ public abstract class Operator implements CodeGenerator {
 	
 	
 	protected ExecutionMode maxChildMode() {
-		ExecutionMode maxMode = children.get(0).executionMode;
+		ExecutionMode maxMode = new ExecutionMode(children.get(0).executionMode);
 		
 		//join or other binary op
 		if(children.size() == 2)  {

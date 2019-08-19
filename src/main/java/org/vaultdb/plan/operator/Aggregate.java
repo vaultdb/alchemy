@@ -6,9 +6,12 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.logical.LogicalAggregate;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.vaultdb.executor.config.ExecutionMode;
 import org.vaultdb.plan.SecureRelNode;
 import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
 import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.Utilities;
 
 public class Aggregate extends Operator {
 
@@ -55,7 +58,10 @@ public class Aggregate extends Operator {
 	}
 	
 	public List<SecureRelDataTypeField> computesOn() {
-		List<SecureRelDataTypeField> attrs = getSliceAttributes(); // group by
+		List<SecureRelDataTypeField> attrs = this.getGroupByAttributes(); // group by only
+		
+		// don't need the rest of this because evaluation of aggregate is done deterministically
+		
 		List<SecureRelDataTypeField> allFields = getSchema().getSecureFieldList();
 		
 		List<AggregateCall> aggregates = agg.getAggCallList();
@@ -78,6 +84,7 @@ public class Aggregate extends Operator {
 				if(!attrs.contains(lookup)) attrs.add(lookup);
 			}
 		}
+		
 		return attrs;
 	}
 
@@ -131,14 +138,38 @@ public class Aggregate extends Operator {
 		
 	}
 	
+	
 	@Override
 	public void inferExecutionMode() throws Exception {
-		super.inferExecutionMode(); 
-		
-		
-	}
 	
+		Operator child = children.get(0);
+		child.inferExecutionMode();
+		
+		executionMode = new ExecutionMode(child.executionMode);
 
+		// we already know inputs are partitioned-alike
+		// see if we are partitioned on group-by or a subset thereof
+		boolean partitioned = false;
+		// if child runs locally
+		if(!child.executionMode.distributed) {
+			List<SecureRelDataTypeField> attrs = this.getGroupByAttributes();
+			
+			for(SecureRelDataTypeField attr : attrs) {
+				if(Utilities.isLocalPartitionKey(getSchema(), attr))
+					partitioned = true;
+			}
+			
+			
+		}
+		
+		SecurityPolicy maxExecutionMode = super.maxAccessLevel();
+		if(maxExecutionMode != SecurityPolicy.Public)
+			executionMode.oblivious = true;
+		
+		if(!partitioned)
+			executionMode.distributed = true;
+	}
+		
 	
 	private boolean childrenLocal() {
 		

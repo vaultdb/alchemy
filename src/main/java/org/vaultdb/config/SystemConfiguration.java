@@ -191,7 +191,7 @@ public class SystemConfiguration {
 		// have to do this in system properties because remote instances may not have SystemConfiguration initialized
 		setProperty("node-type", "local");
 		logger.info("configFile: " + configFile);
-		logger.info("*****Deploying with " + schemaName + " and file " + deploymentConfigFile);
+		logger.info("Deploying with " + schemaName + " and file " + deploymentConfigFile);
 
 		
 	}

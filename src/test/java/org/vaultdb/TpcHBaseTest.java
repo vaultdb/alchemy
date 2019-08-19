@@ -461,36 +461,41 @@ public abstract class TpcHBaseTest  extends TestCase {
 		          + "  s.s_suppkey",
 
 		          // 16
-		          "select\n"
-		                  + "  p.p_brand,\n"
-		                  + "  p.p_type,\n"
-		                  + "  p.p_size,\n"
-		                  + "  count(distinct ps.ps_suppkey) as supplier_cnt\n"
-		                  + "from\n"
-		                  + "  partsupp ps,\n"
-		                  + "  part p\n"
-		                  + "where\n"
-		                  + "  p.p_partkey = ps.ps_partkey\n"
-		                  + "  and p.p_brand <> 'Brand#21'\n"
-		                  + "  and p.p_type not like 'MEDIUM PLATED%'\n"
-		                  + "  and p.p_size in (38, 2, 8, 31, 44, 5, 14, 24)\n"
-		                  + "  and ps.ps_suppkey not in (\n"
-		                  + "    select\n"
-		                  + "      s_suppkey\n"
-		                  + "    from\n"
-		                  + "      supplier\n"
-		                  + "    where\n"
-		                  + "      s_comment like '%Customer%Complaints%'\n"
-		                  + "  )\n"
-		                  + "group by\n"
-		                  + "  p.p_brand,\n"
-		                  + "  p.p_type,\n"
-		                  + "  p.p_size\n"
-		                  + "order by\n"
-		                  + "  supplier_cnt desc,\n"
-		                  + "  p.p_brand,\n"
-		                  + "  p.p_type,\n"
-		                  + "  p.p_size",
+		          // breaking this into smaller pieces for easier debugging
+		          "WITH complaints AS (SELECT * FROM supplier WHERE s_comment LIKE '%Customer%Complaints%'),\n" +
+						  "     ps_suppkey_set_diff AS (\n" +
+						  "     SELECT ps_partkey, ps_suppkey\n" +
+						  "     FROM partsupp ps LEFT JOIN complaints c ON ps.ps_suppkey = c.s_suppkey\n" +
+						  "     WHERE c.s_suppkey IS NULL),\n" +
+						  "\n" +
+						  "     part_pro  AS ( SELECT p_partkey, p_brand,p_type,p_size " + 
+						  "   FROM part p \n" +
+						  "      WHERE p.p_brand <> 'Brand#21'\n" +
+						  "      AND p.p_type not like 'MEDIUM PLATED%'\n" +
+						  "        AND p.p_size IN (38, 2, 8, 31, 44, 5, 14, 24)\n" +
+						  "      )\n" +
+						  "\n" +
+						  "SELECT\n" +
+						  "   p.p_brand,\n" +
+						  "   p.p_type,\n" +
+						  "   p.p_size,\n" +
+						  "   COUNT(DISTINCT ps.ps_suppkey) as supplier_cnt\n" +
+						  " FROM\n" +
+						  "   ps_suppkey_set_diff ps,\n" +
+						  "   part_pro p\n" +
+						  " WHERE\n" +
+						  "   p.p_partkey = ps.ps_partkey\n" +
+						  "   \n" +
+						  " GROUP BY\n" +
+						  "   p.p_brand,\n" +
+						  "   p.p_type,\n" +
+						  "   p.p_size\n" +
+						  " ORDER BY\n" +
+						  "   supplier_cnt desc,\n" +
+						  "   p.p_brand,\n" +
+						  "   p.p_type,\n" +
+						  "   p.p_size",
+
 		                  
 		      // 17
 		                  

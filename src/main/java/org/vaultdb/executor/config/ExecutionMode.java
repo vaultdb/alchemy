@@ -9,6 +9,20 @@ public class ExecutionMode {
 		public boolean replicated = false; // when a table is replicated among all data owners, holds true when we join replicated tables too
 	
 
+		public ExecutionMode(ExecutionMode executionMode) {
+			
+			this.distributed = executionMode.distributed;
+			this.oblivious = executionMode.oblivious;
+			this.sliced = executionMode.sliced;
+			this.replicated = executionMode.replicated;
+		}
+
+
+		public ExecutionMode() {
+			// initialized to defaults above
+		}
+
+
 		@Override
 		public String toString() {
 
