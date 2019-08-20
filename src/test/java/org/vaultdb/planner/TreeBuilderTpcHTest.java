@@ -45,7 +45,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
 
           // 02
           // all joins on public keys that are partitioned-alike
-              "LogicalProject-DistributedOblivious, schema:(#0: s_acctbal DECIMAL(19, 0) Private,#1: s_name CHAR(25) Public,#2: n_name CHAR(25) Public,#3: p_partkey INTEGER Public,#4: p_mfgr CHAR(25) Public,#5: s_address VARCHAR(40) Private,#6: s_phone CHAR(15) Private,#7: s_comment VARCHAR(101) Private)\n"
+          "LogicalProject-DistributedOblivious, schema:(#0: s_acctbal DECIMAL(19, 0) Private,#1: s_name CHAR(25) Public,#2: n_name CHAR(25) Public,#3: p_partkey INTEGER Public,#4: p_mfgr CHAR(25) Public,#5: s_address VARCHAR(40) Private,#6: s_phone CHAR(15) Private,#7: s_comment VARCHAR(101) Private)\n"
               + "    LogicalSort-DistributedOblivious, schema:(#0: p_partkey INTEGER Public,#1: p_mfgr CHAR(25) Public,#2: s_suppkey INTEGER Public,#3: s_name CHAR(25) Public,#4: s_address VARCHAR(40) Private,#5: s_nationkey INTEGER Public,#6: s_phone CHAR(15) Private,#7: s_acctbal DECIMAL(19, 0) Private,#8: s_comment VARCHAR(101) Private,#9: ps_partkey INTEGER Public,#10: ps_suppkey INTEGER Public,#11: ps_supplycost DECIMAL(19, 0) Public,#12: n_nationkey INTEGER Public,#13: n_name CHAR(25) Public,#14: n_regionkey INTEGER Public,#15: r_regionkey INTEGER Public,#16: ps_partkey0 INTEGER Public,#17: min_cost DECIMAL(19, 0) Public)\n"
               + "        LogicalJoin-DistributedClear, schema:(#0: p_partkey INTEGER Public,#1: p_mfgr CHAR(25) Public,#2: s_suppkey INTEGER Public,#3: s_name CHAR(25) Public,#4: s_address VARCHAR(40) Private,#5: s_nationkey INTEGER Public,#6: s_phone CHAR(15) Private,#7: s_acctbal DECIMAL(19, 0) Private,#8: s_comment VARCHAR(101) Private,#9: ps_partkey INTEGER Public,#10: ps_suppkey INTEGER Public,#11: ps_supplycost DECIMAL(19, 0) Public,#12: n_nationkey INTEGER Public,#13: n_name CHAR(25) Public,#14: n_regionkey INTEGER Public,#15: r_regionkey INTEGER Public,#16: ps_partkey0 INTEGER Public,#17: min_cost DECIMAL(19, 0) Public), Predicate: AND(=($16, $9), =($11, $17)), slice key: [#16: ps_partkey0 INTEGER Public, #9: ps_partkey INTEGER Public]\n"
               + "            LogicalJoin-LocalClearPartitioned, schema:(#0: p_partkey INTEGER Public,#1: p_mfgr CHAR(25) Public,#2: s_suppkey INTEGER Public,#3: s_name CHAR(25) Public,#4: s_address VARCHAR(40) Private,#5: s_nationkey INTEGER Public,#6: s_phone CHAR(15) Private,#7: s_acctbal DECIMAL(19, 0) Private,#8: s_comment VARCHAR(101) Private,#9: ps_partkey INTEGER Public,#10: ps_suppkey INTEGER Public,#11: ps_supplycost DECIMAL(19, 0) Public,#12: n_nationkey INTEGER Public,#13: n_name CHAR(25) Public,#14: n_regionkey INTEGER Public,#15: r_regionkey INTEGER Public), Predicate: =($14, $15), slice key: [#14: n_regionkey INTEGER Public, #15: r_regionkey INTEGER Public]\n"
@@ -81,7 +81,6 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
               + "                                LogicalProject-LocalClearReplicated, schema:(#0: r_regionkey INTEGER Public,#1: r_name CHAR(25) Public)\n"
               + "                                    JdbcTableScan-LocalClearReplicated, schema:(#0: r_regionkey INTEGER Public,#1: r_name CHAR(25) Public,#2: r_comment VARCHAR(152) Public)\n",
 
-
           // 03
           "LogicalProject-DistributedOblivious, schema:(#0: l_orderkey INTEGER Private,#1: revenue DECIMAL(19, 0) Private,#2: o_orderdate DATE Private,#3: o_shippriority INTEGER Private)\n"
               + "    LogicalSort-DistributedOblivious, schema:(#0: l_orderkey INTEGER Private,#1: o_orderdate DATE Private,#2: o_shippriority INTEGER Private,#3: revenue DECIMAL(19, 0) Private)\n"
@@ -116,7 +115,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
               + "                            JdbcTableScan-LocalClearPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: l_partkey INTEGER Private,#2: l_suppkey INTEGER Private,#3: l_linenumber INTEGER Private,#4: l_quantity DECIMAL(19, 0) Private,#5: l_extendedprice DECIMAL(19, 0) Private,#6: l_discount DECIMAL(19, 0) Private,#7: l_tax DECIMAL(19, 0) Private,#8: l_returnflag CHAR(1) Private,#9: l_linestatus CHAR(1) Private,#10: l_shipdate DATE Private,#11: l_commitdate DATE Private,#12: l_receiptdate DATE Private,#13: l_shipinstruct CHAR(25) Private,#14: l_shipmode CHAR(10) Private,#15: l_comment VARCHAR(44) Private)\n",
 
           // 05
-              "LogicalSort-DistributedOblivious, schema:(#0: n_name CHAR(25) Public,#1: revenue DECIMAL(19, 0) Private)\n"
+          "LogicalSort-DistributedOblivious, schema:(#0: n_name CHAR(25) Public,#1: revenue DECIMAL(19, 0) Private)\n"
               + "    LogicalAggregate-DistributedOblivious, schema:(#0: n_name CHAR(25) Public,#1: revenue DECIMAL(19, 0) Private), slice key: [#0: n_name CHAR(25) Public]\n"
               + "        LogicalProject-DistributedOblivious, schema:(#0: n_name CHAR(25) Public,#1: $f1 DECIMAL(19, 0) Private)\n"
               + "            LogicalJoin-DistributedOblivious, schema:(#0: c_custkey INTEGER Public,#1: c_nationkey INTEGER Public,#2: o_orderkey INTEGER Public,#3: o_custkey INTEGER Private,#4: l_orderkey INTEGER Private,#5: l_suppkey INTEGER Private,#6: l_extendedprice DECIMAL(19, 0) Private,#7: l_discount DECIMAL(19, 0) Private,#8: s_suppkey INTEGER Public,#9: s_nationkey INTEGER Public,#10: n_nationkey INTEGER Public,#11: n_name CHAR(25) Public,#12: n_regionkey INTEGER Public,#13: r_regionkey INTEGER Public), Predicate: =($12, $13), slice key: [#12: n_regionkey INTEGER Public, #13: r_regionkey INTEGER Public]\n"
@@ -149,7 +148,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
               + "                JdbcTableScan-LocalClearPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: l_partkey INTEGER Private,#2: l_suppkey INTEGER Private,#3: l_linenumber INTEGER Private,#4: l_quantity DECIMAL(19, 0) Private,#5: l_extendedprice DECIMAL(19, 0) Private,#6: l_discount DECIMAL(19, 0) Private,#7: l_tax DECIMAL(19, 0) Private,#8: l_returnflag CHAR(1) Private,#9: l_linestatus CHAR(1) Private,#10: l_shipdate DATE Private,#11: l_commitdate DATE Private,#12: l_receiptdate DATE Private,#13: l_shipinstruct CHAR(25) Private,#14: l_shipmode CHAR(10) Private,#15: l_comment VARCHAR(44) Private)\n",
 
           // 07
-              "LogicalSort-DistributedOblivious, schema:(#0: supp_nation CHAR(25) Public,#1: cust_nation CHAR(25) Public,#2: l_year BIGINT Private,#3: revenue DECIMAL(19, 0) Private)\n"
+          "LogicalSort-DistributedOblivious, schema:(#0: supp_nation CHAR(25) Public,#1: cust_nation CHAR(25) Public,#2: l_year BIGINT Private,#3: revenue DECIMAL(19, 0) Private)\n"
               + "    LogicalAggregate-DistributedOblivious, schema:(#0: supp_nation CHAR(25) Public,#1: cust_nation CHAR(25) Public,#2: l_year BIGINT Private,#3: revenue DECIMAL(19, 0) Private), slice key: [#0: supp_nation CHAR(25) Public, #1: cust_nation CHAR(25) Public]\n"
               + "        LogicalProject-DistributedOblivious, schema:(#0: supp_nation CHAR(25) Public,#1: cust_nation CHAR(25) Public,#2: l_year BIGINT Private,#3: volume DECIMAL(19, 0) Private)\n"
               + "            LogicalJoin-DistributedOblivious, schema:(#0: s_suppkey INTEGER Public,#1: s_nationkey INTEGER Public,#2: l_extendedprice DECIMAL(19, 0) Private,#3: l_discount DECIMAL(19, 0) Private,#4: l_year BIGINT Private,#5: l_suppkey INTEGER Private,#6: l_orderkey INTEGER Private,#7: o_orderkey INTEGER Public,#8: o_custkey INTEGER Private,#9: c_custkey INTEGER Public,#10: c_nationkey INTEGER Public,#11: n_nationkey INTEGER Public,#12: n_name CHAR(25) Public,#13: n_nationkey0 INTEGER Public,#14: n_name0 CHAR(25) Public), Predicate: AND(=($10, $13), OR(AND(=($12, 'EGYPT                    '), =($14, 'UNITED STATES            ')), AND(=($12, 'UNITED STATES            '), =($14, 'EGYPT                    ')))), slice key: [#10: c_nationkey INTEGER Public, #13: n_nationkey0 INTEGER Public]\n"
@@ -173,7 +172,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
               + "                    JdbcTableScan-LocalClearReplicated, schema:(#0: n_nationkey INTEGER Public,#1: n_name CHAR(25) Public,#2: n_regionkey INTEGER Public,#3: n_comment VARCHAR(152) Public)\n",
 
           //  08
-              "LogicalProject-DistributedOblivious, schema:(#0: o_year BIGINT Private,#1: mkt_share DECIMAL(19, 0) Private)\n"
+          "LogicalProject-DistributedOblivious, schema:(#0: o_year BIGINT Private,#1: mkt_share DECIMAL(19, 0) Private)\n"
               + "    LogicalSort-DistributedOblivious, schema:(#0: o_year BIGINT Private,#1: $f1 DECIMAL(19, 0) Private,#2: $f2 DECIMAL(19, 0) Private)\n"
               + "        LogicalAggregate-DistributedOblivious, schema:(#0: o_year BIGINT Private,#1: $f1 DECIMAL(19, 0) Private,#2: $f2 DECIMAL(19, 0) Private)\n"
               + "            LogicalProject-DistributedOblivious, schema:(#0: o_year BIGINT Private,#1: $f1 DECIMAL(19, 0) Private,#2: volume DECIMAL(19, 0) Private)\n"
@@ -207,9 +206,8 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
               + "                            LogicalProject-LocalClearReplicated, schema:(#0: r_regionkey INTEGER Public,#1: r_name CHAR(25) Public)\n"
               + "                                JdbcTableScan-LocalClearReplicated, schema:(#0: r_regionkey INTEGER Public,#1: r_name CHAR(25) Public,#2: r_comment VARCHAR(152) Public)\n",
 
-
           //  09
-              "LogicalSort-DistributedOblivious, schema:(#0: nation CHAR(25) Public,#1: o_year BIGINT Private,#2: sum_profit DECIMAL(19, 0) Private)\n"
+          "LogicalSort-DistributedOblivious, schema:(#0: nation CHAR(25) Public,#1: o_year BIGINT Private,#2: sum_profit DECIMAL(19, 0) Private)\n"
               + "    LogicalAggregate-DistributedOblivious, schema:(#0: nation CHAR(25) Public,#1: o_year BIGINT Private,#2: sum_profit DECIMAL(19, 0) Private), slice key: [#0: nation CHAR(25) Public]\n"
               + "        LogicalProject-DistributedOblivious, schema:(#0: nation CHAR(25) Public,#1: o_year BIGINT Private,#2: amount DECIMAL(19, 0) Private)\n"
               + "            LogicalJoin-DistributedOblivious, schema:(#0: p_partkey INTEGER Public,#1: s_suppkey INTEGER Public,#2: s_nationkey INTEGER Public,#3: l_orderkey INTEGER Private,#4: l_partkey INTEGER Private,#5: l_suppkey INTEGER Private,#6: l_quantity DECIMAL(19, 0) Private,#7: l_extendedprice DECIMAL(19, 0) Private,#8: l_discount DECIMAL(19, 0) Private,#9: ps_partkey INTEGER Public,#10: ps_suppkey INTEGER Public,#11: ps_supplycost DECIMAL(19, 0) Public,#12: o_year BIGINT Private,#13: o_orderkey INTEGER Public,#14: n_nationkey INTEGER Public,#15: n_name CHAR(25) Public), Predicate: =($2, $14), slice key: [#2: s_nationkey INTEGER Public, #14: n_nationkey INTEGER Public]\n"
@@ -233,7 +231,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
               + "                    JdbcTableScan-LocalClearReplicated, schema:(#0: n_nationkey INTEGER Public,#1: n_name CHAR(25) Public,#2: n_regionkey INTEGER Public,#3: n_comment VARCHAR(152) Public)\n",
 
           //  10
-              "LogicalProject-DistributedOblivious, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: revenue DECIMAL(19, 0) Private,#3: c_acctbal DECIMAL(19, 0) Private,#4: n_name CHAR(25) Public,#5: c_address VARCHAR(40) Private,#6: c_phone CHAR(15) Private,#7: c_comment VARCHAR(117) Private)\n"
+          "LogicalProject-DistributedOblivious, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: revenue DECIMAL(19, 0) Private,#3: c_acctbal DECIMAL(19, 0) Private,#4: n_name CHAR(25) Public,#5: c_address VARCHAR(40) Private,#6: c_phone CHAR(15) Private,#7: c_comment VARCHAR(117) Private)\n"
               + "    LogicalSort-DistributedOblivious, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_acctbal DECIMAL(19, 0) Private,#3: c_phone CHAR(15) Private,#4: n_name CHAR(25) Public,#5: c_address VARCHAR(40) Private,#6: c_comment VARCHAR(117) Private,#7: revenue DECIMAL(19, 0) Private)\n"
               + "        LogicalAggregate-LocalObliviousPartitioned, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_acctbal DECIMAL(19, 0) Private,#3: c_phone CHAR(15) Private,#4: n_name CHAR(25) Public,#5: c_address VARCHAR(40) Private,#6: c_comment VARCHAR(117) Private,#7: revenue DECIMAL(19, 0) Private), slice key: [#0: c_custkey INTEGER Public, #4: n_name CHAR(25) Public]\n"
               + "            LogicalProject-LocalObliviousPartitioned, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: c_acctbal DECIMAL(19, 0) Private,#3: c_phone CHAR(15) Private,#4: n_name CHAR(25) Public,#5: c_address VARCHAR(40) Private,#6: c_comment VARCHAR(117) Private,#7: $f7 DECIMAL(19, 0) Private)\n"
@@ -323,7 +321,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
               + "                    JdbcTableScan-LocalClearReplicated, schema:(#0: p_partkey INTEGER Public,#1: p_name VARCHAR(55) Public,#2: p_mfgr CHAR(25) Public,#3: p_brand CHAR(10) Public,#4: p_type VARCHAR(25) Public,#5: p_size INTEGER Public,#6: p_container CHAR(10) Public,#7: p_retailprice DECIMAL(19, 0) Public,#8: p_comment VARCHAR(23) Public)\n",
 
           //  15
-              "LogicalProject-DistributedOblivious, schema:(#0: s_suppkey INTEGER Public,#1: s_name CHAR(25) Public,#2: s_address VARCHAR(40) Private,#3: s_phone CHAR(15) Private,#4: total_revenue DECIMAL(19, 0) Private)\n"
+          "LogicalProject-DistributedOblivious, schema:(#0: s_suppkey INTEGER Public,#1: s_name CHAR(25) Public,#2: s_address VARCHAR(40) Private,#3: s_phone CHAR(15) Private,#4: total_revenue DECIMAL(19, 0) Private)\n"
               + "    LogicalSort-DistributedOblivious, schema:(#0: s_suppkey INTEGER Public,#1: s_name CHAR(25) Public,#2: s_address VARCHAR(40) Private,#3: s_phone CHAR(15) Private,#4: l_suppkey INTEGER Private,#5: EXPR$1 DECIMAL(19, 0) Private,#6: EXPR$0 DECIMAL(19, 0) Private)\n"
               + "        LogicalJoin-DistributedOblivious, schema:(#0: s_suppkey INTEGER Public,#1: s_name CHAR(25) Public,#2: s_address VARCHAR(40) Private,#3: s_phone CHAR(15) Private,#4: l_suppkey INTEGER Private,#5: EXPR$1 DECIMAL(19, 0) Private,#6: EXPR$0 DECIMAL(19, 0) Private), Predicate: =($5, $6)\n"
               + "            LogicalJoin-DistributedOblivious, schema:(#0: s_suppkey INTEGER Public,#1: s_name CHAR(25) Public,#2: s_address VARCHAR(40) Private,#3: s_phone CHAR(15) Private,#4: l_suppkey INTEGER Private,#5: EXPR$1 DECIMAL(19, 0) Private), Predicate: =($0, $4)\n"
@@ -343,7 +341,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
               + "                                    JdbcTableScan-LocalClearPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: l_partkey INTEGER Private,#2: l_suppkey INTEGER Private,#3: l_linenumber INTEGER Private,#4: l_quantity DECIMAL(19, 0) Private,#5: l_extendedprice DECIMAL(19, 0) Private,#6: l_discount DECIMAL(19, 0) Private,#7: l_tax DECIMAL(19, 0) Private,#8: l_returnflag CHAR(1) Private,#9: l_linestatus CHAR(1) Private,#10: l_shipdate DATE Private,#11: l_commitdate DATE Private,#12: l_receiptdate DATE Private,#13: l_shipinstruct CHAR(25) Private,#14: l_shipmode CHAR(10) Private,#15: l_comment VARCHAR(44) Private)\n",
 
           //  16
-              "LogicalSort-DistributedOblivious, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: supplier_cnt BIGINT Public)\n"
+          "LogicalSort-DistributedOblivious, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: supplier_cnt BIGINT Public)\n"
               + "    LogicalAggregate-DistributedOblivious, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: supplier_cnt BIGINT Public), slice key: [#0: p_brand CHAR(10) Public, #1: p_type VARCHAR(25) Public, #2: p_size INTEGER Public, #3: ps_suppkey INTEGER Public]\n"
               + "        LogicalAggregate-DistributedOblivious, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: ps_suppkey INTEGER Public), slice key: [#0: p_brand CHAR(10) Public, #1: p_type VARCHAR(25) Public, #2: p_size INTEGER Public, #3: ps_suppkey INTEGER Public]\n" // TODO: distinct is on (p_size, p_brand, p_type, p_suppkey), should be locally runnable, but need a way to derive that p_* is co-partitioned with ps_suppkey since p_* is replicated
               + "            LogicalProject-LocalObliviousPartitioned, schema:(#0: p_brand CHAR(10) Public,#1: p_type VARCHAR(25) Public,#2: p_size INTEGER Public,#3: ps_suppkey INTEGER Public)\n"
@@ -382,7 +380,7 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
               + "                                JdbcTableScan-LocalClearPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: l_partkey INTEGER Private,#2: l_suppkey INTEGER Private,#3: l_linenumber INTEGER Private,#4: l_quantity DECIMAL(19, 0) Private,#5: l_extendedprice DECIMAL(19, 0) Private,#6: l_discount DECIMAL(19, 0) Private,#7: l_tax DECIMAL(19, 0) Private,#8: l_returnflag CHAR(1) Private,#9: l_linestatus CHAR(1) Private,#10: l_shipdate DATE Private,#11: l_commitdate DATE Private,#12: l_receiptdate DATE Private,#13: l_shipinstruct CHAR(25) Private,#14: l_shipmode CHAR(10) Private,#15: l_comment VARCHAR(44) Private)\n",
 
           //  18
-              "LogicalSort-DistributedOblivious, schema:(#0: c_name VARCHAR(25) Private,#1: c_custkey INTEGER Public,#2: o_orderkey INTEGER Public,#3: o_orderdate DATE Private,#4: o_totalprice DECIMAL(19, 0) Private,#5: EXPR$5 DECIMAL(19, 0) Private)\n"
+          "LogicalSort-DistributedOblivious, schema:(#0: c_name VARCHAR(25) Private,#1: c_custkey INTEGER Public,#2: o_orderkey INTEGER Public,#3: o_orderdate DATE Private,#4: o_totalprice DECIMAL(19, 0) Private,#5: EXPR$5 DECIMAL(19, 0) Private)\n"
               + "    LogicalAggregate-LocalObliviousPartitioned, schema:(#0: c_name VARCHAR(25) Private,#1: c_custkey INTEGER Public,#2: o_orderkey INTEGER Public,#3: o_orderdate DATE Private,#4: o_totalprice DECIMAL(19, 0) Private,#5: EXPR$5 DECIMAL(19, 0) Private), slice key: [#1: c_custkey INTEGER Public, #2: o_orderkey INTEGER Public]\n"
               + "        LogicalProject-LocalObliviousPartitioned, schema:(#0: c_name VARCHAR(25) Private,#1: c_custkey INTEGER Public,#2: o_orderkey INTEGER Public,#3: o_orderdate DATE Private,#4: o_totalprice DECIMAL(19, 0) Private,#5: l_quantity DECIMAL(19, 0) Private)\n"
               + "            LogicalJoin-LocalObliviousPartitioned, schema:(#0: c_custkey INTEGER Public,#1: c_name VARCHAR(25) Private,#2: o_orderkey INTEGER Public,#3: o_custkey INTEGER Private,#4: o_totalprice DECIMAL(19, 0) Private,#5: o_orderdate DATE Private,#6: l_orderkey INTEGER Private,#7: l_quantity DECIMAL(19, 0) Private,#8: l_orderkey0 INTEGER Private), Predicate: =($2, $8)\n"
@@ -399,7 +397,6 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
               + "                        LogicalAggregate-LocalObliviousPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: $f1 DECIMAL(19, 0) Private)\n"
               + "                            LogicalProject-LocalClearPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: l_quantity DECIMAL(19, 0) Private)\n"
               + "                                JdbcTableScan-LocalClearPartitioned, schema:(#0: l_orderkey INTEGER Private,#1: l_partkey INTEGER Private,#2: l_suppkey INTEGER Private,#3: l_linenumber INTEGER Private,#4: l_quantity DECIMAL(19, 0) Private,#5: l_extendedprice DECIMAL(19, 0) Private,#6: l_discount DECIMAL(19, 0) Private,#7: l_tax DECIMAL(19, 0) Private,#8: l_returnflag CHAR(1) Private,#9: l_linestatus CHAR(1) Private,#10: l_shipdate DATE Private,#11: l_commitdate DATE Private,#12: l_receiptdate DATE Private,#13: l_shipinstruct CHAR(25) Private,#14: l_shipmode CHAR(10) Private,#15: l_comment VARCHAR(44) Private)\n",
-
 
           //  19
           "LogicalAggregate-DistributedOblivious, schema:(#0: revenue DECIMAL(19, 0) Private)\n"
@@ -508,10 +505,10 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
     runTest(1, expectedOutput);
   }
 
-    public void testQuery02() throws Exception {
-       String expectedOutput = PLANS.get(1);
+  public void testQuery02() throws Exception {
+    String expectedOutput = PLANS.get(1);
 
-       runTest(2, expectedOutput);
+    runTest(2, expectedOutput);
   }
 
   public void testQuery03() throws Exception {
@@ -536,31 +533,29 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
     runTest(6, expectedOutput);
   }
 
-        public void testQuery07() throws Exception {
-           String expectedOutput = PLANS.get(6);
-           runTest(7, expectedOutput);
-       }
+  public void testQuery07() throws Exception {
+    String expectedOutput = PLANS.get(6);
+    runTest(7, expectedOutput);
+  }
 
-       public void testQuery08() throws Exception {
-     	  // expected to fail because need to push down public joins
-           String expectedOutput = PLANS.get(7);
-           runTest(8, expectedOutput);
-       }
+  public void testQuery08() throws Exception {
+    // expected to fail because need to push down public joins
+    String expectedOutput = PLANS.get(7);
+    runTest(8, expectedOutput);
+  }
 
-       
-       public void testQuery09() throws Exception {
-     	  // expected to fail because need to push down public join
-     	  String expectedOutput = PLANS.get(8);
-           runTest(9, expectedOutput);
-       }
+  public void testQuery09() throws Exception {
+    // expected to fail because need to push down public join
+    String expectedOutput = PLANS.get(8);
+    runTest(9, expectedOutput);
+  }
 
+  public void testQuery10() throws Exception {
+    // expected to fail because need to push down public join
+    String expectedOutput = PLANS.get(9);
+    runTest(10, expectedOutput);
+  }
 
-       public void testQuery10() throws Exception {
-     	  // expected to fail because need to push down public join
-     	  String expectedOutput = PLANS.get(9);
-           runTest(10, expectedOutput);
-       }
-  
   public void testQuery11() throws Exception {
 
     // TODO: push down join with nation 2X
@@ -585,30 +580,27 @@ public class TreeBuilderTpcHTest extends TpcHBaseTest {
     runTest(14, expectedOutput);
   }
 
-      public void testQuery15() throws Exception {
-            String expectedOutput = PLANS.get(14);
-            runTest(15, expectedOutput);
-        }
-  
-
-   public void testQuery16() throws Exception {
-
-	  // TODO: use heuristics to push down the locally-runnable join in experiments
-      String expectedOutput = PLANS.get(15);
-      runTest(16, expectedOutput);
+  public void testQuery15() throws Exception {
+    String expectedOutput = PLANS.get(14);
+    runTest(15, expectedOutput);
   }
-  
+
+  public void testQuery16() throws Exception {
+
+    // TODO: use heuristics to push down the locally-runnable join in experiments
+    String expectedOutput = PLANS.get(15);
+    runTest(16, expectedOutput);
+  }
 
   public void testQuery17() throws Exception {
     String expectedOutput = PLANS.get(16);
     runTest(17, expectedOutput);
   }
-  
-  /*public void testQuery18() throws Exception {
-      String expectedOutput = PLANS.get(17);
-      runTest(18, expectedOutput);
-  }*/
-  
+
+  public void testQuery18() throws Exception {
+    String expectedOutput = PLANS.get(17);
+    runTest(18, expectedOutput);
+  }
 
   public void testQuery19() throws Exception {
     String expectedOutput = PLANS.get(18);
