@@ -729,6 +729,11 @@ public abstract class TpcHBaseTest  extends TestCase {
 		  SystemConfiguration.resetConfiguration();
 		  SystemCatalog.resetInstance();
 		  
+		  // delete any generated classfiles
+		  String classFiles = Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/*.class";
+		  Utilities.runCmd("rm " + classFiles);
+
+		  
 	  }
 
 

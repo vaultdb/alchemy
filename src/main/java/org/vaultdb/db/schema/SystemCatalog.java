@@ -81,11 +81,13 @@ public class SystemCatalog {
     	List<String> tables = new ArrayList<String>();
     	tableCardinalities = new HashMap<String, Pair<Long, Long>>();
     	
-    	Connection aliceConnection = connections.getConnection(connections.getAlice());
-    	Connection bobConnection = connections.getConnection(connections.getBob());
+    	Connection aliceConnection = null; 
+    	Connection bobConnection = null; 
     	
 		
     	try {
+    		aliceConnection = connections.getConnection(connections.getAlice());
+    		bobConnection = connections.getConnection(connections.getBob());
     		Statement st = dbConnection.createStatement();
     	
     		ResultSet rs = st.executeQuery(tableListQuery);

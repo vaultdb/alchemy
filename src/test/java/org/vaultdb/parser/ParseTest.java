@@ -39,7 +39,6 @@ public class ParseTest  extends  BaseTest {
 		System.out.println("Parsing " + sql);
 
 		runParse(sql);
-		System.out.println("***********************************");
 
 	}
 		

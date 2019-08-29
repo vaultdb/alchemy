@@ -25,22 +25,22 @@ public class GenerateSmcTest extends BaseTest {
 
   public void testCountIcd9s() throws Exception {
 	  String query = "SELECT COUNT(DISTINCT major_icd9) FROM diagnoses";
-	  String testName = "CountIcd9s";
+	  String testName = "CountIcd9sCodegen";
 
 
 	  testCase(testName, query);
   }
 
   public void testJoin() throws Exception {
-	 	    
-	  String testName = "JoinCdiff";
+	                     
+	  String testName = "JoinCdiffCodegen";
 	  String query =
         "SELECT  d.patient_id FROM diagnoses d JOIN medications m ON d.patient_id = m.patient_id WHERE icd9=\'008.45\'";
       testCase(testName, query);
   }
 
   public void testFilterDistinct() throws Exception {  
-	   String testName = "FilterDistinct";
+	   String testName = "FilterDistinctCodegen";
 	   String query = "SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = \'414.01\'";
 	   testCase(testName, query);
   }

@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.vaultdb.config.SystemConfiguration;
@@ -46,11 +47,15 @@ public class ConnectionManager {
 
 	  
 
-	public void closeConnections() throws ClassNotFoundException, SQLException {
+	public void closeConnections() throws Exception {
 		
 
+			Logger logger = SystemConfiguration.getInstance().getLogger();
 			for(WorkerConfiguration w : workersById.values()) {
-				w.getDbConnection().close();
+				Connection c = w.getDbConnection();
+				
+				logger.info("Closing connnection: " + getConnectionString(w.dbId));
+				c.close();
 
 		}
 	}
@@ -63,6 +68,8 @@ public class ConnectionManager {
 
 	private void initialize() throws Exception, SQLException {
 		List<String> hosts = null;
+		SystemConfiguration config = SystemConfiguration.getInstance();
+		
 		
 		String connectionParameters = System.getProperty("smcql.connections.str");
 		if(connectionParameters != null) {
@@ -70,7 +77,7 @@ public class ConnectionManager {
 		}
 		
 		else {
-			String connectionsFile = SystemConfiguration.getInstance().getProperty("data-providers");		
+			String connectionsFile = config.getProperty("data-providers");		
 			String configHosts = Utilities.getSMCQLRoot() + "/" + connectionsFile;
 
 			 hosts = FileUtilities.readFile(configHosts);
@@ -117,11 +124,11 @@ public class ConnectionManager {
 		return workers.get(workerId);
 	}
 	
-	public Connection getConnection(String workerId) throws SQLException, ClassNotFoundException {
+	public Connection getConnection(String workerId) throws Exception {
 		return workers.get(workerId).getDbConnection();
 	}
 	
-	public Connection getConnectionById(int id) throws SQLException, ClassNotFoundException {
+	public Connection getConnectionById(int id) throws Exception {
 		return workersById.get(id).getDbConnection();
 	}
 	

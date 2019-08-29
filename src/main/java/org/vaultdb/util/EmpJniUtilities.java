@@ -188,6 +188,10 @@ public class EmpJniUtilities {
 			
 		String cache = System.getProperty("user.home") + "/.javacpp/cache";
 		FileUtils.deleteDirectory(new File(cache));		
+		
+		String deleteGeneratedClassFiles = "rm "  + Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/" + className + "*";
+		Utilities.runCmd(deleteGeneratedClassFiles);
+		
 	}
 		
 	private static void deleteFilesForPathByPrefix(final Path path, final String prefix) {

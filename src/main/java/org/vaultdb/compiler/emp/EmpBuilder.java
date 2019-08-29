@@ -45,6 +45,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     	String javaCode = new String(encoded, StandardCharsets.US_ASCII);	
     	String dstDir = Utilities.getSMCQLRoot() + "/target/classes";
     
+    	
     	CachedCompiler JCC = new CachedCompiler(null, new File(dstDir));
     	JCC.loadFromJava(fullyQualifiedClassName, javaCode);
     }

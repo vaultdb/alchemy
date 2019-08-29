@@ -2,6 +2,7 @@ package org.vaultdb.executor.config;
 
 import java.sql.*;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.util.Utilities;
@@ -30,7 +31,7 @@ public class WorkerConfiguration  {
 
 	public WorkerConfiguration(String worker, 
 			String h, int p, String dbName, String user, String pass, String smcqlRoot)  // psql
-					throws ClassNotFoundException, SQLException {
+					throws Exception {
 		workerId = worker;
 		hostname = h;
 		dbPort = p;
@@ -69,6 +70,7 @@ public class WorkerConfiguration  {
 		user = globalConf.getProperty("psql-user");
 		password = globalConf.getProperty("psql-password");
 
+		
 	}
 
 	@Override 
@@ -76,13 +78,13 @@ public class WorkerConfiguration  {
 		return workerId + "@" + hostname + " psql(" + dbName + ":" + dbPort + ")" ;
 	}
 
-	public Connection getDbConnection() throws SQLException, ClassNotFoundException {
+	public Connection getDbConnection() throws Exception {
 		if(dbConnection == null) {
 			Class.forName("org.postgresql.Driver");
 			String url = "jdbc:postgresql://" + hostname + ":" + dbPort + "/" + dbName;
 			Properties props = new Properties();
-	
-			System.out.println("Connecting with " + url + " and credentials: " + user + "," + password);
+			Logger logger = SystemConfiguration.getInstance().getLogger();
+			logger.info("Connecting with " + url + " and credentials: " + user + "," + password);
 			props.setProperty("user", user);
 			props.setProperty("password",password);
 			dbConnection = DriverManager.getConnection(url, props);
