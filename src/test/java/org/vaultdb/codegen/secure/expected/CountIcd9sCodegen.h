@@ -15,9 +15,9 @@ using namespace std;
 
 
 
-namespace CountIcd9s {
+namespace CountIcd9sCodegen {
 
-class CountIcd9sClass {
+class CountIcd9sCodegenClass {
 
 string aliceHost = "127.0.0.1";
 

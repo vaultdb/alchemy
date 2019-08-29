@@ -32,34 +32,37 @@ import org.vaultdb.util.EmpJniUtilities;
 import org.vaultdb.compiler.emp.EmpProgram;
 
 
-@Platform(include={"FilterDistinct.h"}, 
+@Platform(include={"JoinCdiffCodegen.h"}, 
 			compiler = "cpp11")
 
 
 
 
 
-@Namespace("FilterDistinct")
-public class FilterDistinct  extends EmpProgram  {
+@Namespace("JoinCdiffCodegen")
+public class JoinCdiffCodegen  extends EmpProgram  {
 
 	
-	public FilterDistinct(int party, int port) {
+	public JoinCdiffCodegen(int party, int port) {
 		super(party, port);
-		inputs.put("SeqScan0Union", "SELECT patient_id FROM (SELECT patient_id, icd9 FROM diagnoses) AS t WHERE icd9 = '414.01' ORDER BY patient_id");
+		inputs.put("SeqScan4Union", "SELECT patient_id FROM medications ORDER BY patient_id");
+inputs.put("SeqScan0Union", "SELECT patient_id FROM (SELECT patient_id, icd9 FROM diagnoses) AS t WHERE icd9 = '008.45' ORDER BY patient_id");
 
-		Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(8L, 8L);
+		Pair<Long, Long> SeqScan4Cardinalities = new Pair<Long, Long>(2L, 2L);
+obliviousCardinalities.put("SeqScan4Union", SeqScan4Cardinalities);
+Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(8L, 8L);
 obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
 
 	}
 	
 
-	public static class FilterDistinctClass extends Pointer {
+	public static class JoinCdiffCodegenClass extends Pointer {
 	
         static {         
 			Loader.load(); 
 	       } 
        
-        public FilterDistinctClass() { 	
+        public JoinCdiffCodegenClass() { 	
         	allocate(); 
         	}
         private native void allocate();
@@ -81,7 +84,7 @@ obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
 	   	
         @Override
         public void runProgram() throws Exception {
-        	FilterDistinctClass theQuery = new FilterDistinctClass();
+        	JoinCdiffCodegenClass theQuery = new JoinCdiffCodegenClass();
 
 	        Iterator inputItr = inputs.entrySet().iterator();
 	        while(inputItr.hasNext()) {
@@ -126,7 +129,7 @@ obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
   	    
   	    System.setProperty("workerId", workerId);
   	    
-		FilterDistinct qc = new FilterDistinct(party, port);
+		JoinCdiffCodegen qc = new JoinCdiffCodegen(party, port);
 
 		
 		try {

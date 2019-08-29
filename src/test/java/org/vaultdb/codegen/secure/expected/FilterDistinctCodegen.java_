@@ -32,20 +32,20 @@ import org.vaultdb.util.EmpJniUtilities;
 import org.vaultdb.compiler.emp.EmpProgram;
 
 
-@Platform(include={"CountIcd9s.h"}, 
+@Platform(include={"FilterDistinctCodegen.h"}, 
 			compiler = "cpp11")
 
 
 
 
 
-@Namespace("CountIcd9s")
-public class CountIcd9s  extends EmpProgram  {
+@Namespace("FilterDistinctCodegen")
+public class FilterDistinctCodegen  extends EmpProgram  {
 
 	
-	public CountIcd9s(int party, int port) {
+	public FilterDistinctCodegen(int party, int port) {
 		super(party, port);
-		inputs.put("SeqScan0Union", "SELECT major_icd9 FROM diagnoses");
+		inputs.put("SeqScan0Union", "SELECT patient_id FROM (SELECT patient_id, icd9 FROM diagnoses) AS t WHERE icd9 = '414.01' ORDER BY patient_id");
 
 		Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(8L, 8L);
 obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
@@ -53,13 +53,13 @@ obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
 	}
 	
 
-	public static class CountIcd9sClass extends Pointer {
+	public static class FilterDistinctCodegenClass extends Pointer {
 	
         static {         
 			Loader.load(); 
 	       } 
        
-        public CountIcd9sClass() { 	
+        public FilterDistinctCodegenClass() { 	
         	allocate(); 
         	}
         private native void allocate();
@@ -81,7 +81,7 @@ obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
 	   	
         @Override
         public void runProgram() throws Exception {
-        	CountIcd9sClass theQuery = new CountIcd9sClass();
+        	FilterDistinctCodegenClass theQuery = new FilterDistinctCodegenClass();
 
 	        Iterator inputItr = inputs.entrySet().iterator();
 	        while(inputItr.hasNext()) {
@@ -126,7 +126,7 @@ obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
   	    
   	    System.setProperty("workerId", workerId);
   	    
-		CountIcd9s qc = new CountIcd9s(party, port);
+		FilterDistinctCodegen qc = new FilterDistinctCodegen(party, port);
 
 		
 		try {

@@ -15,9 +15,9 @@ using namespace std;
 
 
 
-namespace FilterDistinct {
+namespace FilterDistinctCodegen {
 
-class FilterDistinctClass {
+class FilterDistinctCodegenClass {
 
 string aliceHost = "127.0.0.1";
 

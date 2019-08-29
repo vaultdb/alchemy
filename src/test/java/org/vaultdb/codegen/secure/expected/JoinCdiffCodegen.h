@@ -15,9 +15,9 @@ using namespace std;
 
 
 
-namespace JoinCdiff {
+namespace JoinCdiffCodegen {
 
-class JoinCdiffClass {
+class JoinCdiffCodegenClass {
 
 string aliceHost = "127.0.0.1";
 
