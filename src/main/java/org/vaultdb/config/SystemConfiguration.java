@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +56,7 @@ public class SystemConfiguration {
 	// calcite parameters
 	SchemaPlus pdnSchema;
 	CalciteConnection calciteConnection;
+	Connection baseConnection;
 	FrameworkConfig calciteConfig;
 	
 	int operatorCounter = -1;
@@ -261,8 +263,8 @@ public class SystemConfiguration {
 		Properties props = new Properties();
 		props.setProperty("caseSensitive", "false");
 		
-		 Connection connection = DriverManager.getConnection("jdbc:calcite:", props);
-	     calciteConnection = connection.unwrap(CalciteConnection.class);
+		 baseConnection = DriverManager.getConnection("jdbc:calcite:", props);
+	     calciteConnection = baseConnection.unwrap(CalciteConnection.class);
 	        
 	        Class.forName("org.postgresql.Driver");
 	        BasicDataSource dataSource = new BasicDataSource();
@@ -274,6 +276,7 @@ public class SystemConfiguration {
 	        JdbcSchema schema = JdbcSchema.create(calciteConnection.getRootSchema(), "name", dataSource,
 	        	    null, null);
 	        
+	        // TODO: see if adding pkeys and other non-relations is impacting this
 	        for(String tableName : schema.getTableNames()) {
 	        	Table table = schema.getTable(tableName);
 	        	
@@ -447,6 +450,13 @@ public class SystemConfiguration {
 			return false;
 		
 		return true;
+	}
+
+
+	public void closeCalciteConnection() throws SQLException {
+		calciteConnection.close();
+		baseConnection.close();
+		
 	}
 	
 

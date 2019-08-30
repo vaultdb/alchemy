@@ -2,11 +2,8 @@ package org.vaultdb.db.schema;
 
 import org.apache.calcite.util.Pair;
 import org.vaultdb.config.SystemConfiguration;
-import org.vaultdb.db.data.QueryTable;
-import org.vaultdb.db.data.field.IntField;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.config.WorkerConfiguration;
-import org.vaultdb.executor.plaintext.SqlQueryExecutor;
 import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
 
 import java.sql.Connection;
@@ -97,6 +94,7 @@ public class SystemCatalog {
     			tables.add(table);		
     		}
         	rs.close();
+        	st.close();
 
     	} catch(Exception e) {
 
@@ -116,8 +114,6 @@ public class SystemCatalog {
 			
     	}
     	
-    	//aliceConnection.close();
-    	//bobConnection.close();
     		
 	}
     
@@ -133,12 +129,14 @@ public class SystemCatalog {
 		rsA.next();
 		aliceCount = rsA.getLong(1);
 		rsA.close();
+		stA.close();
 		
 		Statement stB = bobConnection.createStatement();
 		ResultSet rsB = stB.executeQuery(countQuery);
 		rsB.next();	
 		bobCount = rsB.getLong(1);
 		rsB.close();
+		stB.close();
     	
     	
     	Pair<Long, Long> counts = new Pair<Long, Long>(aliceCount, bobCount);
@@ -168,6 +166,9 @@ public class SystemCatalog {
 		
     	}
     	
+    	rs.close();
+    	st.close();
+    	
     	
 	}
 
@@ -185,6 +186,7 @@ public class SystemCatalog {
 		}
 		
 		rs.close();
+		st.close();
 	}
 
 	
@@ -201,7 +203,9 @@ public class SystemCatalog {
 			String table = rs.getString(1);
 			replicatedTables.add(table);
 		}
+		
 		rs.close();
+		st.close();
 	
 	}
 
@@ -237,6 +241,7 @@ public class SystemCatalog {
 		}
 
 		rs.close();
+		st.close();
 
 	}
 	

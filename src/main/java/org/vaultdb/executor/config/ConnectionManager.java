@@ -53,9 +53,10 @@ public class ConnectionManager {
 			Logger logger = SystemConfiguration.getInstance().getLogger();
 			for(WorkerConfiguration w : workersById.values()) {
 				Connection c = w.getDbConnection();
-				
-				logger.info("Closing connnection: " + getConnectionString(w.dbId));
-				c.close();
+				if(c != null) {
+					logger.info("Closing connnection: " + getConnectionString(w.dbId));
+					c.close();
+				}
 
 		}
 	}

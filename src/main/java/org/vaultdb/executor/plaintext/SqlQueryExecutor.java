@@ -48,6 +48,9 @@ public class SqlQueryExecutor {
 		}
 
 			
+		rs.close();
+		st.close();
+		
 		return new QueryTable(queryOutput);
 	}
 	
@@ -104,7 +107,7 @@ public class SqlQueryExecutor {
 		
 		Statement st = c.createStatement();
 		st.execute(sql);
-
+		st.close();
 	}
 	
 }

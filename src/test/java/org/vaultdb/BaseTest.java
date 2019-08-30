@@ -115,6 +115,7 @@ public abstract class BaseTest extends TestCase {
 			  ConnectionManager.reset();
 		  }
 		  
+		  SystemConfiguration.getInstance().closeCalciteConnection();
 		  SystemConfiguration.resetConfiguration();
 		  SystemCatalog.resetInstance();
 		  
