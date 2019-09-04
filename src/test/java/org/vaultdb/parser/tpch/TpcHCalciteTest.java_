@@ -1,4 +1,4 @@
-package org.smcql.parser.tpch;
+package org.vaultdb.parser.tpch;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -12,12 +12,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.smcql.codegen.sql.SqlGenerator;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.db.data.QueryTable;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.plan.SecureRelRoot;
-import org.smcql.type.SecureRelRecordType;
+import org.vaultdb.codegen.sql.SqlGenerator;
+import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.db.data.QueryTable;
+import org.vaultdb.executor.plaintext.SqlQueryExecutor;
+import org.vaultdb.plan.SecureRelRoot;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.TpcHBaseTest;
+
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.sql.SqlExplainFormat;
@@ -171,10 +173,14 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 
 
 		
-	  
+	  // test the lifecycle of parsing, creating DAG, and regenerating SQL
+	  // does it produce the same results after these transformations?
 	  protected void testCase(String testName, String sql) throws Exception {
 	  	  SystemConfiguration.getInstance().resetCounters();
-	      SystemConfiguration.getInstance().setProperty("code-generator-mode","debug");
+	  	  
+	      // TODO: this should not matter anymore with the new, more descriptive ExecutionMode
+	  	  // see if we can deprecate it
+	  	  SystemConfiguration.getInstance().setProperty("code-generator-mode","debug");
 
 		  SecureRelRoot root = new SecureRelRoot(testName, sql);
 
@@ -197,10 +203,6 @@ public class TpcHCalciteTest extends TpcHBaseTest {
 		  assertEquals(expected, output);
 
 
-	    // Testing generation for SQL from created Calcite plan
-		// Uncomment two lines below to avoid this test
-	    // String SQl = SqlGenerator.getSql(root.rel,SystemConfiguration.DIALECT);
-	    // System.out.println(SQl);
 	    
 /*	    buildOperatorHistogram(root.rel);
 

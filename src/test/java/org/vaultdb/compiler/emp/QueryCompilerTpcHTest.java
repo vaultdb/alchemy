@@ -1,15 +1,15 @@
-package org.smcql.parser.tpch;
+package org.vaultdb.compiler.emp;
 
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
-import org.smcql.codegen.QueryCompiler;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.executor.step.ExecutionStep;
-import org.smcql.plan.SecureRelRoot;
+import org.vaultdb.TpcHBaseTest;
+import org.vaultdb.codegen.QueryCompiler;
+import org.vaultdb.executor.step.ExecutionStep;
+import org.vaultdb.plan.SecureRelRoot;
 
-public class TpcHSecureParseTest extends TpcHBaseTest {
+public class QueryCompilerTpcHTest extends TpcHBaseTest {
 	
 	  protected void setUp() throws Exception {
 		    
@@ -138,10 +138,11 @@ public class TpcHSecureParseTest extends TpcHBaseTest {
 		  QueryCompiler qc = new QueryCompiler(secRoot);
 
 		  ExecutionStep root = qc.getRoot();
-		  String testTree = root.printTree();
-		  logger.info("Compiled plan:\n" + testTree);
 		  
 		  qc.writeOutEmpFile();
+
+		  String testTree = root.printTree();
+		  logger.info("Compiled plan:\n" + testTree);
 		  
 		  
 	  }

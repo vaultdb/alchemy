@@ -276,6 +276,7 @@ public class SystemConfiguration {
 	        JdbcSchema schema = JdbcSchema.create(calciteConnection.getRootSchema(), "name", dataSource,
 	        	    null, null);
 	        
+	        // TODO: figure out why calciteConnection does not close properly at end of each unit test
 	        // TODO: see if adding pkeys and other non-relations is impacting this
 	        for(String tableName : schema.getTableNames()) {
 	        	Table table = schema.getTable(tableName);

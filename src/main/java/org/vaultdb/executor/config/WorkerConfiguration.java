@@ -94,5 +94,12 @@ public class WorkerConfiguration  {
 	}
 	
 	
+	public void closeConnection() throws Exception {
+		if(dbConnection != null) {
+			Logger logger = SystemConfiguration.getInstance().getLogger();
+			logger.info("Closing connnection: " + dbConnection);
+			dbConnection.close();
+		}
+	}
 	
 }

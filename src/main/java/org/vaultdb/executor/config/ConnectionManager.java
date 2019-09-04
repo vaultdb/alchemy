@@ -50,13 +50,8 @@ public class ConnectionManager {
 	public void closeConnections() throws Exception {
 		
 
-			Logger logger = SystemConfiguration.getInstance().getLogger();
 			for(WorkerConfiguration w : workersById.values()) {
-				Connection c = w.getDbConnection();
-				if(c != null) {
-					logger.info("Closing connnection: " + getConnectionString(w.dbId));
-					c.close();
-				}
+				w.closeConnection();
 
 		}
 	}
@@ -125,13 +120,6 @@ public class ConnectionManager {
 		return workers.get(workerId);
 	}
 	
-	public Connection getConnection(String workerId) throws Exception {
-		return workers.get(workerId).getDbConnection();
-	}
-	
-	public Connection getConnectionById(int id) throws Exception {
-		return workersById.get(id).getDbConnection();
-	}
 	
 		
 	
@@ -171,6 +159,11 @@ public class ConnectionManager {
 		
 		return connectionString;
 		
+	}
+
+
+	public Connection getConnection(String workerId) throws Exception {
+		return workers.get(workerId).getDbConnection();
 	}
 	
 }

@@ -7,10 +7,13 @@ import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.SqlNode;
 import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.db.data.QueryTable;
 import org.vaultdb.db.schema.SystemCatalog;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.config.WorkerConfiguration;
+import org.vaultdb.executor.plaintext.SqlQueryExecutor;
 import org.vaultdb.parser.SqlStatementParser;
+import org.vaultdb.type.SecureRelRecordType;
 import org.vaultdb.util.Utilities;
 
 import com.google.common.collect.ImmutableList;
@@ -586,13 +589,13 @@ public abstract class TpcHBaseTest  extends TestCase {
 		          + "  )",
 
 		      // 20
-		          "WITH antiques AS (select DISTINCT p.p_partkey\n"
+		          "WITH antiques AS (SELECT p.p_partkey\n"
 		          + "                                 from\n"
 		          + "                                   part p\n"
 		          + "                                 where\n"
 		          + "                                   p.p_name like 'antique%'\n"
 		          + "                                ),\n"
-		          + "            partial_agg AS (\n"
+		          + "            lineitem_agg AS (\n"
 		          + "                            select\n"
 		          + "                                   l_partkey, l_suppkey, 0.5 * sum(l.l_quantity) inventory\n"
 		          + "                                 from\n"
@@ -603,13 +606,14 @@ public abstract class TpcHBaseTest  extends TestCase {
 		          + "                              GROUP BY l_partkey, l_suppkey\n"
 		          + "                     ),\n"
 		          + "\n"
+		          + "            ps_qualified AS (\n"
+		          + "	        SELECT ps_suppkey, ps_partkey, ps.ps_availqty\n"
+		          + "                FROM  partsupp ps LEFT JOIN antiques a ON ps.ps_partkey = a.p_partkey\n"
+		          + "                 WHERE  a.p_partkey IS NOT NULL),\n"
 		          + "            qualified AS (\n"
-		          + "                          select DISTINCT ps.ps_suppkey\n"
-		          + "                          from\n"
-		          + "                            partial_agg pa,\n"
-		          + "                            partsupp ps LEFT JOIN antiques a ON ps.ps_partkey = a.p_partkey\n"
-		          + "                          WHERE a.p_partkey IS NOT NULL\n"
-		          + "                            and ps.ps_availqty > pa.inventory AND pa.l_partkey = ps.ps_partkey AND pa.l_suppkey = ps.ps_suppkey\n"
+		          + "                          SELECT DISTINCT ps.ps_suppkey\n"
+		          + "                          FROM lineitem_agg la INNER JOIN ps_qualified ps ON la.l_partkey = ps.ps_partkey AND la.l_suppkey = ps.ps_suppkey\n"
+		          + "                           WHERE ps.ps_availqty > la.inventory\n"
 		          + "                            )\n"
 		          + "select\n"
 		          + "                        s.s_name,\n"
@@ -624,6 +628,7 @@ public abstract class TpcHBaseTest  extends TestCase {
 		          + "                      order by\n"
 		          + "                        s.s_name\n",
 
+		          
 					//21
 					" WITH l2 AS ( select DISTINCT l_suppkey, l_orderkey\n"
 					+ "                                              from\n"
@@ -740,6 +745,12 @@ public abstract class TpcHBaseTest  extends TestCase {
 
 		  
 	  }
+
+
+	public QueryTable getExpectedOutput(String query, SecureRelRecordType outSchema) throws Exception {
+	    String unionedId = ConnectionManager.getInstance().getUnioned();
+	    return SqlQueryExecutor.query(query, outSchema, unionedId);
+	    }
 
 
 

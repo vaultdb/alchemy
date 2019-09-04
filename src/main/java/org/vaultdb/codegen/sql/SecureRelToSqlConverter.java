@@ -26,13 +26,13 @@ public class SecureRelToSqlConverter extends ExtendedRelToSqlConverter {
 		while (scanOperator instanceof Project || scanOperator instanceof Filter) {
 			scanOperator = scanOperator.getChild(0);
 		}
-		//needsRewrite = !scanOperator.secureComputeOrder().isEmpty();
-		needsRewrite = true; // do this just once to add order by clause for dummy_tag and any other columns needed
+		needsRewrite = !scanOperator.secureComputeOrder().isEmpty();
+		// no longer needed unconditionally because we do dummy padding in java instead of RDBMS
+		//needsRewrite = true; // do this just once to add order by clause for dummy_tag and any other columns needed
 	}
 	
 	private List<SqlIdentifier> getOrderAttrs(SqlParserPos sqlParserPos) {
 		List<SqlIdentifier> result = new ArrayList<SqlIdentifier>();
-		//result.add(new SqlIdentifier(Arrays.asList("dummy_tag"), sqlParserPos));
 
 		for (SecureRelDataTypeField field : scanOperator.secureComputeOrder()) {
 			result.add(new SqlIdentifier(Arrays.asList(field.getName()), sqlParserPos));
@@ -43,6 +43,7 @@ public class SecureRelToSqlConverter extends ExtendedRelToSqlConverter {
 	
 	private Result addOrderBy(RelNode e) {
 		Result x = dispatch(e);
+
 		final Builder builder = x.builder(e, Clause.ORDER_BY);
 		SqlSelect select = x.asSelect();
 		SqlNodeList list = new SqlNodeList(select.getParserPosition());

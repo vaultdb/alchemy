@@ -192,7 +192,7 @@ public class SqlStatementParser {
 		        return connectionConfig.conformance();
 		      }
 		    }
-		    return SqlConformance.DEFAULT;
+		    return calciteConnection.config().conformance();
 		  }
 
 	  
