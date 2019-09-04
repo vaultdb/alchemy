@@ -28,45 +28,37 @@ public class SqlGenerator {
 	
 	public static String getSql(RelNode rel, SqlDialect dialect) {	
 		RelToSqlConverter converter = new ExtendedRelToSqlConverter(dialect);
-		return getStringFromNode(rel, converter, dialect, filterPullUpConfig());
+		return getStringFromNode(rel, converter, dialect);
 	}
 	
 	public static String getSourceSql(Operator node) {
 		SecureRelNode secNode = node.getSecureRelNode();
 		RelNode rel = secNode.getRelNode();
 		RelToSqlConverter converter = new SecureRelToSqlConverter(postgresDialect, secNode.getPhysicalNode());
-		boolean filterPullUp = filterPullUpConfig() & node.pullUpFilter();
-		return getStringFromNode(rel, converter, postgresDialect, filterPullUp);
+		return getStringFromNode(rel, converter, postgresDialect);
 	}
 	
-	// debug mode = no filter pull-up
-	private static boolean filterPullUpConfig() {
-		String sqlMode = "release";
-		try {
-			sqlMode = SystemConfiguration.getInstance().getProperty("code-generator-mode");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return sqlMode.equals("release");
-	}
+
+	
+	
 	public static String getSourceSql(Operator node, SqlDialect dialect) {
 		SecureRelNode secNode = node.getSecureRelNode();
 		RelNode rel = secNode.getRelNode();
 		RelToSqlConverter converter = new SecureRelToSqlConverter(dialect, secNode.getPhysicalNode());
 
-		boolean filterPullUp = filterPullUpConfig() || node.pullUpFilter();
+		
 
-		return getStringFromNode(rel, converter, dialect, filterPullUp);
+		return getStringFromNode(rel, converter, dialect);
 	}
 	
 
-	public static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect, boolean filterPullUp) {
+	public static String getStringFromNode(RelNode rel, RelToSqlConverter converter, SqlDialect dialect) {
 		SqlSelect sql = converter.visitChild(0, rel).asSelect();
 		String sqlOut = sql.toSqlString(dialect).getSql();
 		sqlOut = sqlOut.replace("\"", "");
 		return sqlOut;
 		
+	}
 /*		// move up filter for union/merge input as needed
 
 
@@ -105,7 +97,7 @@ public class SqlGenerator {
 		
 		return sqlOut;*/
 		
-	}
+	//}
 	
 	
 	/*	public static String getDistributedSql(SecureRelRoot root, SqlDialect dialect) throws Exception {
