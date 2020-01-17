@@ -17,7 +17,7 @@ message GetTableResponse {
 
 
 message Schema {
-    map<int32, ColumnInfo> column = 1;
+    map<int32,ColumnInfo> column = 1;
     int32 numColumns = 2;
 }
 message Table {
@@ -25,7 +25,7 @@ message Table {
     repeated Row row = 2;
 }
 message Row {
-    map<int32, ColumnVal> column = 1;
+    map<int32,ColumnVal> column = 1;
 }
 
 message ColumnVal {
