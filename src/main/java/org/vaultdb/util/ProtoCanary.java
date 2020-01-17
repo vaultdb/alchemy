@@ -7,9 +7,7 @@ If this class fails to build, please contact @madhavsuresh.
  */
 public class ProtoCanary {
   private static int test() {
-    DBQueryProtos.Schema schema = DBQueryProtos.Schema.newBuilder()
-        .setNumColumns(10).build();
+    DBQueryProtos.Schema schema = DBQueryProtos.Schema.newBuilder().setNumColumns(10).build();
     return 0;
   }
 }
-
