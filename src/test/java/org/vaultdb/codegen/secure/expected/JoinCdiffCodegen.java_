@@ -48,7 +48,7 @@ public class JoinCdiffCodegen  extends EmpProgram  {
 		inputs.put("SeqScan4Union", "SELECT patient_id FROM medications ORDER BY patient_id");
 inputs.put("SeqScan0Union", "SELECT patient_id FROM (SELECT patient_id, icd9 FROM diagnoses) AS t WHERE icd9 = '008.45' ORDER BY patient_id");
 
-		Pair<Long, Long> SeqScan4Cardinalities = new Pair<Long, Long>(2L, 2L);
+                Pair<Long, Long> SeqScan4Cardinalities = new Pair<Long, Long>(2L, 2L);
 obliviousCardinalities.put("SeqScan4Union", SeqScan4Cardinalities);
 Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(8L, 8L);
 obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);

@@ -47,7 +47,7 @@ public class CountIcd9sCodegen  extends EmpProgram  {
 		super(party, port);
 		inputs.put("SeqScan0Union", "SELECT major_icd9 FROM diagnoses");
 
-		Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(8L, 8L);
+                Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(8L, 8L);
 obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
 
 	}

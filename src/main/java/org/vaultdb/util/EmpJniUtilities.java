@@ -21,7 +21,6 @@ import org.vaultdb.compiler.emp.EmpBuilder;
 import org.vaultdb.compiler.emp.EmpRunnable;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.db.data.QueryTable;
-import org.vaultdb.executor.smc.BasicSecureQueryTable;
 import org.vaultdb.type.SecureRelRecordType;
 
 public class EmpJniUtilities {

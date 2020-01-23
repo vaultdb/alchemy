@@ -47,7 +47,7 @@ public class FilterDistinctCodegen  extends EmpProgram  {
 		super(party, port);
 		inputs.put("SeqScan0Union", "SELECT patient_id FROM (SELECT patient_id, icd9 FROM diagnoses) AS t WHERE icd9 = '414.01' ORDER BY patient_id");
 
-		Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(8L, 8L);
+                Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(8L, 8L);
 obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
 
 	}

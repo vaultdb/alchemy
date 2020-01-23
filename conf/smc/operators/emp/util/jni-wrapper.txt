@@ -46,7 +46,7 @@ public class $queryName  extends EmpProgram  {
 	public $queryName(int party, int port) {
 		super(party, port);
 		$sqlSetup
-		$cardinalitySetup
+                $cardinalitySetup
 	}
 	
 

@@ -82,7 +82,7 @@ public class GenerateSmcTest extends BaseTest {
 	  expectedFile += "java_"; // underscore to prevent compiler from complaining about package path
 	  expected = new File(expectedFile);
 
-	  assertTrue("The jni wrappers differ!", FileUtils.contentEquals(generated, expected));
+	  assertTrue("The jni wrappers " + generatedFile + "\n" + expectedFile + "\n differ!", FileUtils.contentEquals(generated, expected));
 	  EmpJniUtilities.cleanEmpCode(testName);
   }
 }
