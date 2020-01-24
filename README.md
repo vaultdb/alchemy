@@ -125,6 +125,5 @@ References
 
 J. Bater, G. Elliott, C. Eggen, S. Goel, A. Kho, and J. Rogers, “SMCQL: Secure Querying for Federated Databases.”, VLDB, 10(6), pages 673-684, 2017.
 
-*ObliVM*:
-
-C. Liu, X. S. Wang, K. Nayak, Y. Huang, and E. Shi, “ObliVM : A Programming Framework for Secure Computation,” Oakland, pp. 359–376, 2015.
+*emp-toolkit*:
+X. Wang, A. J. Malozemoff, and J. Katz. EMP-toolkit: Efficient MultiParty computation toolkit. https://github.com/emp-toolkit,  2016. 
