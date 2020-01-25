@@ -63,6 +63,11 @@ public class Field implements Comparator<Field>, Comparable<Field>, Serializable
 		
 	}
 	
+	// for override
+	public byte[] getBytes() {
+		return null;
+	}
+	
 	public void deserialize(BitSet src) {
 		
 	}

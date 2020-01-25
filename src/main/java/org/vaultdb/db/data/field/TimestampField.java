@@ -1,6 +1,7 @@
 package org.vaultdb.db.data.field;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.BitSet;
 
@@ -11,6 +12,10 @@ import org.vaultdb.type.SecureRelDataTypeField;
 
 public class TimestampField extends Field implements Serializable  {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6750183365124209223L;
 	public Timestamp time;
 	
 	
@@ -99,7 +104,12 @@ public class TimestampField extends Field implements Serializable  {
 		
 	}
 
-
+	@Override 
+	public byte [] getBytes() {	
+		ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+	    buffer.putLong(time.getTime()); // serialize to epoch
+	    return buffer.array();
+	}
 	
 	
 }

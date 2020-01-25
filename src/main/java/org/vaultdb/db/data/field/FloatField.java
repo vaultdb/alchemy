@@ -8,7 +8,11 @@ import java.util.BitSet;
 
 public class FloatField extends Field  implements Serializable {
 
-    public Float value;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -5006383705908340758L;
+	public Float value;
     int exponent;
     int fraction;
 
@@ -75,9 +79,7 @@ public class FloatField extends Field  implements Serializable {
     @Override
     public int childCompare(Field f) {
         if(f instanceof FloatField) {
-            Float lhs = new Float(value);
-            Float rhs = new Float(((FloatField) f).getValue());
-            return lhs.compareTo(rhs);
+            return this.value.compareTo(((FloatField) f).getValue());
         }
         return 0;
     }
@@ -99,5 +101,13 @@ public class FloatField extends Field  implements Serializable {
         }
         value = Float.intBitsToFloat(temp);
     }
+
+    @Override
+	public byte[] getBytes() {
+    	int intBits =  Float.floatToIntBits(value);
+        return new byte[] {
+          (byte) (intBits >> 24), (byte) (intBits >> 16), (byte) (intBits >> 8), (byte) (intBits) };
+	}
+
 
 }

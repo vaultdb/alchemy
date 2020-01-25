@@ -2,6 +2,7 @@ package org.vaultdb.db.data;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -308,6 +309,22 @@ public void addTuples(QueryTable src) {
     }
 
     return slices;
+  }
+  
+  public byte[] getTupleBytes() {
+	  if(tuples == null || tuples.isEmpty()) 
+		  return null;
+
+	  int tupleLength = tuples.get(0).getBytes().length;
+	  byte dst[] = new byte[tupleLength * tuples.size()];
+	  ByteBuffer buffer = ByteBuffer.wrap(dst);
+	  
+	  for(Tuple t : tuples) {
+		  buffer.put(t.getBytes());
+	  }
+	  
+	  return buffer.array();
+
   }
 
 }

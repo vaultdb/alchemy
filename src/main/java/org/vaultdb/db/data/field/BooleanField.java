@@ -77,4 +77,13 @@ public boolean value;
 		assert(src.size() == this.size());
 		value = src.get(0);
 	}
+	
+	@Override
+	public byte[] getBytes() {
+		byte bytes[] = new byte[1];
+		bytes[0] = (byte)(value ? 1 : 0);		
+		return bytes;
+	}
+
+
 }

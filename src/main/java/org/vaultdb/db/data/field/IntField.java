@@ -1,6 +1,7 @@
 package org.vaultdb.db.data.field;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.BitSet;
 
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -9,6 +10,10 @@ import org.vaultdb.type.TypeMap;
 
 public class IntField extends Field  implements Serializable   {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4887316771502090772L;
 	public long value;
 	
 	public IntField(SecureRelDataTypeField attr, int v, SqlTypeName sqlType) {
@@ -93,6 +98,13 @@ public class IntField extends Field  implements Serializable   {
 			 value = (value << 1) | (b ? 1 : 0);
 		}
 		
+	}
+	
+	@Override 
+	public byte [] getBytes() {	
+		ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+	    buffer.putLong(value);
+	    return buffer.array();
 	}
 	
 }

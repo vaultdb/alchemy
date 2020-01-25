@@ -157,5 +157,11 @@ public class CharField extends Field implements Serializable   {
 	    return (char) n;
 	}
 	
+	@Override
+	public byte[] getBytes() {
+		return value.getBytes();
+	}
+
+	
 
 }

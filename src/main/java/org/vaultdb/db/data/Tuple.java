@@ -1,12 +1,14 @@
 package org.vaultdb.db.data;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
 import org.vaultdb.db.data.field.Field;
@@ -266,6 +268,25 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
 		return attrs;
 	}
 	
-	
+	public byte[] getBytes() {
+		int byteSize = 0;
+		
+		Vector<byte[]> bytes = new Vector<byte[]>();
+		for(Field f : fields) {
+			byte [] fieldBytes = f.getBytes();
+			bytes.add(fieldBytes);
+			byteSize += fieldBytes.length;
+		}
+
+		byte[] dst = new byte[byteSize];
+
+		ByteBuffer target = ByteBuffer.wrap(dst);
+		for(byte[] b : bytes) {
+			target.put(b);
+		}
+		
+		
+		return target.array();
+	}
 	
 }
