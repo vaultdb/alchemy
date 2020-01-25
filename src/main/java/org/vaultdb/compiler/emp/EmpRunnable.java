@@ -21,7 +21,7 @@ public class EmpRunnable implements Runnable {
   
   int outputSize = 0;
   
-  final String smcqlRoot = Utilities.getSMCQLRoot(); // directory with pom.xml
+  final String smcqlRoot = Utilities.getVaultDBRoot(); // directory with pom.xml
   // TODO: adjust to versions in pom.xml
   final String javaCppJar =
       System.getProperty("user.home")

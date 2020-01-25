@@ -99,7 +99,7 @@ public class Count  extends EmpProgram  {
            
 		int party = Integer.parseInt(args[0]);
 		int port = Integer.parseInt(args[1]);
-		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
+		String setupFile = Utilities.getVaultDBRoot() + "/conf/setup.localhost";
 		
   	    System.setProperty("smcql.setup", setupFile);
   	    String workerId = (party == 1) ? "alice" : "bob";

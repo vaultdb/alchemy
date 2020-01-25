@@ -26,7 +26,7 @@ public abstract class TpcHBaseTest  extends TestCase {
 	protected SqlNode root;
 	protected RelRoot relRoot;
 	protected SqlDialect dialect;
-	protected String codePath = Utilities.getSMCQLRoot() + "/conf/workload/sql";
+	protected String codePath = Utilities.getVaultDBRoot() + "/conf/workload/sql";
 	protected WorkerConfiguration honestBroker;
 	protected Logger logger;
 	protected SystemConfiguration config;
@@ -737,7 +737,7 @@ public abstract class TpcHBaseTest  extends TestCase {
 		  SystemCatalog.resetInstance();
 		  
 		  // delete any generated classfiles
-		  String classFiles = Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/*.class";
+		  String classFiles = Utilities.getVaultDBRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/*.class";
 		  Utilities.runCmd("rm " + classFiles);
 
 		  

@@ -68,7 +68,7 @@ public class SystemConfiguration {
 		config = new HashMap<String, String>();
 		privacyBudget = new PrivacyStatistics();
 		
-		String configStr = System.getProperty("smcql.setup.str"); // remote case, serialize config and parse this string
+		String configStr = System.getProperty("vaultdb.setup.str"); // remote case, serialize config and parse this string
 		if(configStr != null) {
 
 			List<String> parameters = Arrays.asList(StringUtils.split(configStr, '\n'));
@@ -80,10 +80,10 @@ public class SystemConfiguration {
 		}
 		
 		// local case, read in a text file
-		configFile = System.getProperty("smcql.setup");
+		configFile = System.getProperty("vaultdb.setup");
 		
 		if(configFile == null) 
-			configFile = Utilities.getSMCQLRoot() + "/conf/setup.global";
+			configFile = Utilities.getVaultDBRoot() + "/conf/setup.global";
 		
 		
 		File f = new File(configFile); // may not always exist in remote invocations
@@ -93,8 +93,8 @@ public class SystemConfiguration {
 			
 		}	
 
-		String deploymentConfigFile = new String(Utilities.getSMCQLRoot() + "/conf/setup.");
-		String location = (System.getProperty("smcql.location") != null) ? System.getProperty("smcql.location") : config.get("location"); // if not given at setup time, use default
+		String deploymentConfigFile = new String(Utilities.getVaultDBRoot() + "/conf/setup.");
+		String location = (System.getProperty("vaultdb.location") != null) ? System.getProperty("vaultdb.location") : config.get("location"); // if not given at setup time, use default
 		
 		// if distributed nodes not set up yet, switch to local mode.  E.g.,
 		// distributed-eval-enabled=false
@@ -102,7 +102,7 @@ public class SystemConfiguration {
 			location = "local";
 		}
 		
-		String schemaName = (System.getProperty("smcql.schema.name") != null) ? System.getProperty("smcql.schema.name") : config.get("schema-name"); // if not given at setup time, use default
+		String schemaName = (System.getProperty("vaultdb.schema.name") != null) ? System.getProperty("vaultdb.schema.name") : config.get("schema-name"); // if not given at setup time, use default
 		
 		
 		deploymentConfigFile +=  location + "-" + schemaName;
@@ -133,7 +133,7 @@ public class SystemConfiguration {
 		config = new HashMap<String, String>();
 		privacyBudget = new PrivacyStatistics();
 		
-		String configStr = System.getProperty("smcql.setup.str"); // remote case, serialize config and parse this string
+		String configStr = System.getProperty("vaultdb.setup.str"); // remote case, serialize config and parse this string
 		if(configStr != null) {
 
 			List<String> parameters = Arrays.asList(StringUtils.split(configStr, '\n'));
@@ -145,10 +145,10 @@ public class SystemConfiguration {
 		}
 		
 		// local case, read in a text file
-		configFile = System.getProperty("smcql.setup");
+		configFile = System.getProperty("vaultdb.setup");
 		
 		if(configFile == null) 
-			configFile = Utilities.getSMCQLRoot() + "/conf/setup.global";
+			configFile = Utilities.getVaultDBRoot() + "/conf/setup.global";
 		
 		
 		File f = new File(configFile); // may not always exist in remote invocations
@@ -158,8 +158,8 @@ public class SystemConfiguration {
 			
 		}	
 
-		String deploymentConfigFile = new String(Utilities.getSMCQLRoot() + "/conf/setup.");
-		String location = (System.getProperty("smcql.location") != null) ? System.getProperty("smcql.location") : config.get("location"); // if not given at setup time, use default
+		String deploymentConfigFile = new String(Utilities.getVaultDBRoot() + "/conf/setup.");
+		String location = (System.getProperty("vaultdb.location") != null) ? System.getProperty("vaultdb.location") : config.get("location"); // if not given at setup time, use default
 		
 		// if distributed nodes not set up yet, switch to local mode.  E.g.,
 		// distributed-eval-enabled=false
@@ -201,9 +201,9 @@ public class SystemConfiguration {
 	private void initializeLogger() throws SecurityException, IOException  {
 		String filename = config.get("log-file");
 		if(filename == null)
-			filename = "smcql.log";
+			filename = "vaultdb.log";
 
-		String logFile = Utilities.getSMCQLRoot() + "/" + filename;
+		String logFile = Utilities.getVaultDBRoot() + "/" + filename;
 
 		
 		String logLevel = config.get("log-level");
@@ -235,7 +235,7 @@ public class SystemConfiguration {
 
 		logger.addHandler(handler);
 		} catch (Exception e) { // fall back to home dir
-			logFile = "%h/smcql.log";
+			logFile = "%h/vaultdb.log";
 			FileHandler handler = new FileHandler(logFile);
 			SimpleFormatter formatter = new SimpleFormatter();
 			handler.setFormatter(formatter);
@@ -329,7 +329,7 @@ public class SystemConfiguration {
 	
 	
 	public String getSmcqlRoot() {
-		return Utilities.getSMCQLRoot();
+		return Utilities.getVaultDBRoot();
 	}
 	
 	public String getConfigFile() {
@@ -386,7 +386,7 @@ public class SystemConfiguration {
 		String dbName = config.get("psql-db");
 		String user = config.get("psql-user");
 		String pass = config.get("psql-password");
-		String empBridgePath = Utilities.getSMCQLRoot() + "/deps/emp/emp-bridge";
+		String empBridgePath = Utilities.getVaultDBRoot() + "/deps/emp/emp-bridge";
 
 
 		return new WorkerConfiguration("honest-broker", host, port, dbName, user, pass, empBridgePath);

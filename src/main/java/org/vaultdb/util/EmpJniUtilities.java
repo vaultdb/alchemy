@@ -26,7 +26,7 @@ import org.vaultdb.type.SecureRelRecordType;
 public class EmpJniUtilities {
 	
     public static String getPropertyFile()  {
-	String propertyFile = Utilities.getSMCQLRoot() + "/src/main/resources/org/bytedeco/javacpp/properties/";
+	String propertyFile = Utilities.getVaultDBRoot() + "/src/main/resources/org/bytedeco/javacpp/properties/";
 	propertyFile += Loader.getPlatform();
 	propertyFile += "-emp.properties";
 	 
@@ -188,7 +188,7 @@ public class EmpJniUtilities {
 		String cache = System.getProperty("user.home") + "/.javacpp/cache";
 		FileUtils.deleteDirectory(new File(cache));		
 		
-		String deleteGeneratedClassFiles = "rm "  + Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/" + className + "*";
+		String deleteGeneratedClassFiles = "rm "  + Utilities.getVaultDBRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/" + className + "*";
 		Utilities.runCmd(deleteGeneratedClassFiles);
 		
 	}

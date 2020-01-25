@@ -12,12 +12,12 @@ import org.vaultdb.util.Utilities;
 
 public class SMCQLRunner {
 	protected SqlDialect dialect = SqlDialect.DatabaseProduct.POSTGRESQL.getDialect();
-	protected String codePath = Utilities.getSMCQLRoot() + "/conf/workload/sql";
+	protected String codePath = Utilities.getVaultDBRoot() + "/conf/workload/sql";
 	protected static WorkerConfiguration honestBroker;
 	protected static SqlStatementParser parser;
 	
 	private static void setUp() throws Exception {
-		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.remote");
+		System.setProperty("smcql.setup", Utilities.getVaultDBRoot() + "/conf/setup.remote");
 
 		parser = new SqlStatementParser();
 		honestBroker = SystemConfiguration.getInstance().getHonestBrokerConfig();

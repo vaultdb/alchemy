@@ -28,7 +28,7 @@ import junit.framework.TestCase;
 //  Minimal EMP test, based on emp-jni repo
 public class EmpJniRemoteTest extends TestCase  {
 	
-	final String smcqlRoot = Utilities.getSMCQLRoot();
+	final String smcqlRoot = Utilities.getVaultDBRoot();
 	final String className = "EmpJniDemo";
 	
 	final String fullyQualifiedClassName = "org.smcql.compiler.emp.generated." + className;

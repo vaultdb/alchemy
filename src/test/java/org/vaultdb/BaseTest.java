@@ -28,7 +28,7 @@ public abstract class BaseTest extends TestCase {
 	protected SqlNode root;
 	protected RelRoot relRoot;
 	protected SqlDialect dialect;
-	protected String codePath = Utilities.getSMCQLRoot() + "/conf/workload/sql";
+	protected String codePath = Utilities.getVaultDBRoot() + "/conf/workload/sql";
 	protected WorkerConfiguration honestBroker;
 	protected Logger logger;
 	protected SystemConfiguration config;
@@ -38,7 +38,7 @@ public abstract class BaseTest extends TestCase {
 
 	protected void setUp() throws Exception {
 	
-		System.setProperty("smcql.setup", Utilities.getSMCQLRoot() + "/conf/setup.global");
+		System.setProperty("vaultdb.setup", Utilities.getVaultDBRoot() + "/conf/setup.global");
 		SystemConfiguration.resetConfiguration();
 		SystemCatalog.resetInstance();
 		ConnectionManager.reset();
@@ -120,7 +120,7 @@ public abstract class BaseTest extends TestCase {
 		  SystemCatalog.resetInstance();
 		  
 		  // delete any generated classfiles
-		  String classFiles = Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/*.class";
+		  String classFiles = Utilities.getVaultDBRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/*.class";
 		  Utilities.runCmd("rm " + classFiles);
 		  
 		  

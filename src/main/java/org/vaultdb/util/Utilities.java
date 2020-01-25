@@ -28,8 +28,8 @@ import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
 
 public class Utilities {
 
-  public static String getSMCQLRoot() {
-    String root = System.getProperty("smcql.root"); // for remote systems
+  public static String getVaultDBRoot() {
+    String root = System.getProperty("vaultdb.root"); // for remote systems
     if (root != null && root != "") {
       return root;
     }
@@ -64,7 +64,7 @@ public class Utilities {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    return getSMCQLRoot() + "/conf/smc/operators/" + mpcLib;
+    return getVaultDBRoot() + "/conf/smc/operators/" + mpcLib;
   }
 
   public static String getCodeGenTarget() {
@@ -78,7 +78,7 @@ public class Utilities {
               ? config.getProperty("remote-codegen-target")
               : config.getProperty("local-codegen-target");
 
-      return getSMCQLRoot() + "/" + localTarget;
+      return getVaultDBRoot() + "/" + localTarget;
 
     } catch (Exception e) {
       System.err.println(
@@ -86,7 +86,7 @@ public class Utilities {
       e.printStackTrace();
     }
     // default
-    return getSMCQLRoot() + "/bin";
+    return getVaultDBRoot() + "/bin";
   }
 
   public static SecureRelRecordType getOutSchemaFromSql(String sql) throws Exception {
@@ -140,7 +140,7 @@ public class Utilities {
       throws IOException, InterruptedException {
 
     if (workingDirectory == null || workingDirectory == "") {
-      workingDirectory = Utilities.getSMCQLRoot();
+      workingDirectory = Utilities.getVaultDBRoot();
     }
 
     File dir = new File(workingDirectory);

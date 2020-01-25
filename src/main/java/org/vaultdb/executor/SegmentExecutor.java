@@ -135,7 +135,7 @@ public class SegmentExecutor {
             if(isLocal(host)) {
                     cloudHost.x(VX.TYPE).setLocal();
                     ViProps.at(cloudHost).setIsolateType(); // enable debugger  
-                    cloudHost.setProp("smcql.root", Utilities.getSMCQLRoot());
+                    cloudHost.setProp("vaultdb.root", Utilities.getVaultDBRoot());
                     cloudHost.setProp("remote.node", "false");
             }
             else { // remote case
