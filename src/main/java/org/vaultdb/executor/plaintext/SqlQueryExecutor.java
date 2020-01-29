@@ -83,6 +83,12 @@ public class SqlQueryExecutor {
 
 		
 	}
+
+	public static QueryTable query(String sql) throws Exception {
+		SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(sql);
+		Connection unionConnection = ConnectionManager.getInstance().getConnection(ConnectionManager.getInstance().getUnioned());
+		return SqlQueryExecutor.query(outSchema, sql, unionConnection);
+	}
 	
 	
 	public static QueryTable query(String sql, SecureRelRecordType outSchema, String workerId) throws Exception {
