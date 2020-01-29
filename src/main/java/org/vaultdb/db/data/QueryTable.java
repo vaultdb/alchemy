@@ -1,5 +1,14 @@
 package org.vaultdb.db.data;
 
+import org.apache.commons.lang3.StringUtils;
+
+import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.plan.slice.SliceKeyDefinition;
+import org.vaultdb.protos.DBQueryProtos;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.FileUtilities;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -11,19 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.commons.lang3.StringUtils;
-import org.vaultdb.config.SystemConfiguration;
-import org.vaultdb.plan.slice.SliceKeyDefinition;
-import org.vaultdb.type.SecureRelDataTypeField;
-import org.vaultdb.type.SecureRelRecordType;
-import org.vaultdb.util.FileUtilities;
-
-
 public class QueryTable implements Serializable {
 
-	// NB: tuples arrive with dummy tags, but the output schema does not include them
-  private List<Tuple> tuples = null; // null until explicitly decrypted if init'd to PortableSecArray
+  // NB: tuples arrive with dummy tags, but the output schema does not include them
+  private List<Tuple> tuples =
+      null; // null until explicitly decrypted if init'd to PortableSecArray
   private transient SecureRelRecordType schema;
   private BitSet dummyTags = null;
 
@@ -42,61 +43,58 @@ public class QueryTable implements Serializable {
     }
   }
 
+  public QueryTable(BitSet bits, SecureRelRecordType s, int bitCount, boolean dummyTagged)
+      throws Exception {
+    schema = s;
+    tupleSize = schema.size(); // without dummy tag
+    int physicalTupleSize = tupleSize + 1;
+    tupleCount = 0;
 
-  public QueryTable(BitSet bits, SecureRelRecordType s, int bitCount, boolean dummyTagged) throws Exception {
-	    schema = s;
-	    tupleSize = schema.size(); // without dummy tag
-	    int physicalTupleSize = tupleSize + 1;
-	    tupleCount = 0;
+    Logger logger = SystemConfiguration.getInstance().getLogger();
+    if (dummyTagged) {
+      int dummyIdx = tupleSize;
 
-	    Logger logger = SystemConfiguration.getInstance().getLogger();
-	    if(dummyTagged)  {
-	        int dummyIdx = tupleSize;
+      int inputTuples = bitCount / physicalTupleSize;
 
-	    	int inputTuples = bitCount / physicalTupleSize;
+      logger.info(
+          "\n\nHave "
+              + inputTuples
+              + " input tuples and "
+              + bitCount
+              + " input bits.  Tuple size = "
+              + tupleSize
+              + " bits.");
 
-	    	logger.info("\n\nHave " + inputTuples + " input tuples and " + bitCount + " input bits.  Tuple size = " + tupleSize + " bits.");
+      assert (bitCount % physicalTupleSize == 0);
 
-		    assert (bitCount % physicalTupleSize == 0);
+      tuples = new ArrayList<Tuple>();
 
+      for (int i = 0; i < inputTuples; ++i) {
+        boolean dummyTag = bits.get(i * physicalTupleSize + dummyIdx);
+        // logger.info("Tuple " + i + " has dummy tag of " + dummyTag);
+        if (!dummyTag) { // if dummyTag (at last idx) false
+          BitSet tupleBits = bits.get(i * physicalTupleSize, (i + 1) * physicalTupleSize);
 
-		    tuples = new ArrayList<Tuple>();
-		    
-		    
-		    for (int i = 0; i < inputTuples; ++i) {
-		    	boolean dummyTag = bits.get(i*physicalTupleSize + dummyIdx);
-		    	//logger.info("Tuple " + i + " has dummy tag of " + dummyTag);
-		    	if(!dummyTag) { // if dummyTag (at last idx) false
-		        	BitSet tupleBits = bits.get(i * physicalTupleSize, (i + 1) * physicalTupleSize);
+          Tuple t = new Tuple(tupleBits, schema);
+          logger.info("Decoding a tuple " + t + "!");
+          tuples.add(t);
+          ++tupleCount;
+        }
+      }
+    } else { // assume all values are real
 
-			        Tuple t = new Tuple(tupleBits, schema);	        
-		    		logger.info("Decoding a tuple " + t + "!");
-			        tuples.add(t);
-			        ++tupleCount;
-		    	}  
-			       
-		    
-		    }
-	    }
-	    else { // assume all values are real
+      tupleCount = bitCount / tupleSize;
 
-	        tupleCount = bitCount / tupleSize;
+      assert (bitCount == (tupleCount * tupleSize));
+      tuples = new ArrayList<Tuple>(tupleCount);
 
-	        assert (bitCount == (tupleCount * tupleSize));
-	        tuples = new ArrayList<Tuple>(tupleCount);
-
-	        for (int i = 0; i < tupleCount; ++i) {
-	        	BitSet tupleBits = bits.get(i * tupleSize, (i + 1) * tupleSize);
-	            Tuple t = new Tuple(tupleBits, schema);
-	            tuples.add(t);
-	          }
-	    	
-	    } // end no dummy tags case
-	    
+      for (int i = 0; i < tupleCount; ++i) {
+        BitSet tupleBits = bits.get(i * tupleSize, (i + 1) * tupleSize);
+        Tuple t = new Tuple(tupleBits, schema);
+        tuples.add(t);
+      }
+    } // end no dummy tags case
   }
-
-  
-
 
   public QueryTable(SecureRelRecordType outSchema) {
     schema = outSchema;
@@ -105,8 +103,7 @@ public class QueryTable implements Serializable {
     tuples = new ArrayList<Tuple>();
   }
 
-
-public void addTuples(QueryTable src) {
+  public void addTuples(QueryTable src) {
     if (src == null) return;
 
     for (Tuple t : src.tuples) {
@@ -171,6 +168,58 @@ public void addTuples(QueryTable src) {
     }
 
     return tuples.get(0).size();
+  }
+
+  public DBQueryProtos.Schema schemaToProto(SecureRelRecordType schema) throws Exception {
+    DBQueryProtos.Schema.Builder schemaBuilder = DBQueryProtos.Schema.newBuilder();
+    schemaBuilder.setNumColumns(schema.getFieldCount());
+    for (int i = 0; i < schema.getFieldCount(); i++) {
+      DBQueryProtos.ColumnInfo.Builder columnInfoBuilder = DBQueryProtos.ColumnInfo.newBuilder();
+      columnInfoBuilder.setName(schema.getSecureField(i).getName());
+      columnInfoBuilder.setColumnNumber(i);
+      switch (schema.getSecureField(i).getType().getSqlTypeName()) {
+        case INTEGER:
+        case BIGINT:
+          columnInfoBuilder.setType(DBQueryProtos.OIDType.BIGINT);
+          break;
+        case DECIMAL:
+        case DOUBLE:
+        case FLOAT:
+          columnInfoBuilder.setType(DBQueryProtos.OIDType.DOUBLE);
+          break;
+        case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+        case TIME_WITH_LOCAL_TIME_ZONE:
+        case TIME:
+        case DATE:
+        case TIMESTAMP:
+          columnInfoBuilder.setType(DBQueryProtos.OIDType.TIMESTAMP);
+          break;
+        case CHAR:
+        case VARCHAR:
+          columnInfoBuilder.setType(DBQueryProtos.OIDType.VARCHAR);
+          break;
+        case BOOLEAN:
+        default:
+          throw new Exception("Type not supported in protobufs");
+      }
+      schemaBuilder.putColumn(i, columnInfoBuilder.build());
+    }
+    return schemaBuilder.build();
+  }
+
+  public DBQueryProtos.Table toProto() throws Exception {
+    if (tuples == null || tuples.isEmpty()) return null;
+
+    return toProto(tuples);
+  }
+
+  public DBQueryProtos.Table toProto(List<Tuple> tuples) throws Exception {
+    DBQueryProtos.Table.Builder tableBuilder = DBQueryProtos.Table.newBuilder();
+    tableBuilder.setSchema(schemaToProto(schema));
+    for (Tuple t : tuples) {
+      tableBuilder.addRow(t.toProto());
+    }
+    return tableBuilder.build();
   }
 
   public boolean[] toBinary() throws Exception {
@@ -310,21 +359,18 @@ public void addTuples(QueryTable src) {
 
     return slices;
   }
-  
+
   public byte[] getTupleBytes() {
-	  if(tuples == null || tuples.isEmpty()) 
-		  return null;
+    if (tuples == null || tuples.isEmpty()) return null;
 
-	  int tupleLength = tuples.get(0).getBytes().length;
-	  byte dst[] = new byte[tupleLength * tuples.size()];
-	  ByteBuffer buffer = ByteBuffer.wrap(dst);
-	  
-	  for(Tuple t : tuples) {
-		  buffer.put(t.getBytes());
-	  }
-	  
-	  return buffer.array();
+    int tupleLength = tuples.get(0).getBytes().length;
+    byte dst[] = new byte[tupleLength * tuples.size()];
+    ByteBuffer buffer = ByteBuffer.wrap(dst);
 
+    for (Tuple t : tuples) {
+      buffer.put(t.getBytes());
+    }
+
+    return buffer.array();
   }
-
 }
