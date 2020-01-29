@@ -5,6 +5,8 @@ import java.nio.ByteBuffer;
 import java.util.BitSet;
 
 import org.apache.calcite.sql.type.SqlTypeName;
+
+import org.vaultdb.protos.DBQueryProtos;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.TypeMap;
 
@@ -105,6 +107,15 @@ public class IntField extends Field  implements Serializable   {
 		ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
 	    buffer.putLong(value);
 	    return buffer.array();
+	}
+	@Override
+	public DBQueryProtos.ColumnVal toProto() {
+		DBQueryProtos.ColumnVal.Builder columnValBuilder = DBQueryProtos.ColumnVal.newBuilder();
+		columnValBuilder.setInt64Field(value);
+		//TODO(madhavsuresh): make this lineup with existing interface, this aligns with the OID fields from
+		// postgres as opposed to anything in vaultdb-core
+		columnValBuilder.setType(DBQueryProtos.OIDType.BIGINT);
+		return columnValBuilder.build();
 	}
 	
 }

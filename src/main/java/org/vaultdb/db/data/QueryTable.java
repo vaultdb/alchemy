@@ -3,6 +3,7 @@ package org.vaultdb.db.data;
 import org.apache.commons.lang3.StringUtils;
 
 import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.db.data.field.Field;
 import org.vaultdb.plan.slice.SliceKeyDefinition;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
@@ -18,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.vaultdb.protos.DBQueryProtos;
 
 public class QueryTable implements Serializable {
 
@@ -168,6 +170,20 @@ public class QueryTable implements Serializable {
 
     return tuples.get(0).size();
   }
+
+  public DBQueryProtos.Table toProto() throws Exception {
+    if (tuples == null || tuples.isEmpty()) return null;
+
+    return toProto(tuples);
+  }
+  public DBQueryProtos.Table toProto(List<Tuple> tuples) throws Exception {
+    DBQueryProtos.Table.Builder tableBuilder = DBQueryProtos.Table.newBuilder();
+    for (Tuple t: tuples) {
+      tableBuilder.addRow(t.toProto());
+    }
+    return tableBuilder.build();
+  }
+
 
   public boolean[] toBinary() throws Exception {
     if (tuples == null || tuples.isEmpty()) return null;

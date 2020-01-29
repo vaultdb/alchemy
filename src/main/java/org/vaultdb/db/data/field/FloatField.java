@@ -1,6 +1,8 @@
 package org.vaultdb.db.data.field;
 
 import org.apache.calcite.sql.type.SqlTypeName;
+
+import org.vaultdb.protos.DBQueryProtos;
 import org.vaultdb.type.SecureRelDataTypeField;
 
 import java.io.Serializable;
@@ -9,7 +11,7 @@ import java.util.BitSet;
 public class FloatField extends Field  implements Serializable {
 
     /**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -5006383705908340758L;
 	public Float value;
@@ -97,7 +99,7 @@ public class FloatField extends Field  implements Serializable {
         int temp = 0;
         for(int i = 0; i < src.size(); ++i) {
         	boolean b = src.get(i);
-            temp = (temp << 1) | (b ? 1 : 0);   
+            temp = (temp << 1) | (b ? 1 : 0);
         }
         value = Float.intBitsToFloat(temp);
     }
@@ -108,6 +110,12 @@ public class FloatField extends Field  implements Serializable {
         return new byte[] {
           (byte) (intBits >> 24), (byte) (intBits >> 16), (byte) (intBits >> 8), (byte) (intBits) };
 	}
-
-
+    public DBQueryProtos.ColumnVal toProto() {
+        DBQueryProtos.ColumnVal.Builder columnValBuilder = DBQueryProtos.ColumnVal.newBuilder();
+        columnValBuilder.setDoubleField(value);
+        //TODO(madhavsuresh): make this lineup with existing interface, this aligns with the OID fields from
+        // postgres as opposed to anything in vaultdb-core
+        columnValBuilder.setType(DBQueryProtos.OIDType.DOUBLE);
+        return columnValBuilder.build();
+    }
 }
