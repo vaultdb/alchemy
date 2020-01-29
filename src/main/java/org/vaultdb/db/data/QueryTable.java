@@ -170,6 +170,43 @@ public class QueryTable implements Serializable {
     return tuples.get(0).size();
   }
 
+  public DBQueryProtos.Schema schemaToProto(SecureRelRecordType schema) throws Exception {
+    DBQueryProtos.Schema.Builder schemaBuilder = DBQueryProtos.Schema.newBuilder();
+    schemaBuilder.setNumColumns(schema.getFieldCount());
+    for (int i = 0; i < schema.getFieldCount(); i++) {
+      DBQueryProtos.ColumnInfo.Builder columnInfoBuilder = DBQueryProtos.ColumnInfo.newBuilder();
+      columnInfoBuilder.setName(schema.getSecureField(i).getName());
+      columnInfoBuilder.setColumnNumber(i);
+      switch (schema.getSecureField(i).getType().getSqlTypeName()) {
+        case INTEGER:
+        case BIGINT:
+          columnInfoBuilder.setType(DBQueryProtos.OIDType.BIGINT);
+          break;
+        case DECIMAL:
+        case DOUBLE:
+        case FLOAT:
+          columnInfoBuilder.setType(DBQueryProtos.OIDType.DOUBLE);
+          break;
+        case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+        case TIME_WITH_LOCAL_TIME_ZONE:
+        case TIME:
+        case DATE:
+        case TIMESTAMP:
+          columnInfoBuilder.setType(DBQueryProtos.OIDType.TIMESTAMP);
+          break;
+        case CHAR:
+        case VARCHAR:
+          columnInfoBuilder.setType(DBQueryProtos.OIDType.VARCHAR);
+          break;
+        case BOOLEAN:
+        default:
+          throw new Exception("Type not supported in protobufs");
+      }
+      schemaBuilder.putColumn(i, columnInfoBuilder.build());
+    }
+    return schemaBuilder.build();
+  }
+
   public DBQueryProtos.Table toProto() throws Exception {
     if (tuples == null || tuples.isEmpty()) return null;
 
@@ -178,6 +215,7 @@ public class QueryTable implements Serializable {
 
   public DBQueryProtos.Table toProto(List<Tuple> tuples) throws Exception {
     DBQueryProtos.Table.Builder tableBuilder = DBQueryProtos.Table.newBuilder();
+    tableBuilder.setSchema(schemaToProto(schema));
     for (Tuple t : tuples) {
       tableBuilder.addRow(t.toProto());
     }
