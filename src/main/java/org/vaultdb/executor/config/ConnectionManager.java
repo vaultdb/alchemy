@@ -74,7 +74,7 @@ public class ConnectionManager {
 		
 		else {
 			String connectionsFile = config.getProperty("data-providers");		
-			String configHosts = Utilities.getSMCQLRoot() + "/" + connectionsFile;
+			String configHosts = Utilities.getVaultDBRoot() + "/" + connectionsFile;
 
 			 hosts = FileUtilities.readFile(configHosts);
 		}

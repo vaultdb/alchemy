@@ -19,7 +19,7 @@ public class WorkerConfiguration  {
 	public String dbName;
 	public String user; 
 	public String password;
-	public String smcqlRoot;
+	public String vaultDBRoot;
 	public int dbPort;
 	public int empPort = 0;
 
@@ -38,7 +38,7 @@ public class WorkerConfiguration  {
 		this.dbName = dbName;
 		this.user = user;
 		password = pass;
-		this.smcqlRoot = smcqlRoot.replace("$SMCQL_ROOT", Utilities.getSMCQLRoot()); // replace pointer
+		this.vaultDBRoot = smcqlRoot.replace("$VAULTDB_ROOT", Utilities.getVaultDBRoot()); // replace pointer
 
 		
 	}
@@ -60,8 +60,8 @@ public class WorkerConfiguration  {
 		dbName = parsed[2];
 		
 		
-		smcqlRoot = parsed[3];
-		smcqlRoot = smcqlRoot.replace("$SMCQL_ROOT", Utilities.getSMCQLRoot()); // replace pointer
+		vaultDBRoot = parsed[3];
+		vaultDBRoot = vaultDBRoot.replace("$VAULTDB_ROOT", Utilities.getVaultDBRoot()); // replace pointer
 		empPort = Integer.parseInt(parsed[4]);
 		
 		dbId = Integer.parseInt(parsed[5]);

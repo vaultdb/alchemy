@@ -20,6 +20,13 @@ import org.vaultdb.util.Utilities;
 public class GenerateSmcTest extends BaseTest {
 
   protected void setUp() throws Exception {
+	  String dstDir = Utilities.getVaultDBRoot() + "/src/main/java/org/vaultdb/compiler/emp/generated/";
+	  
+	  // set up the new files
+	  FileUtils.touch(new File(dstDir + "CountIcd9sCodegen.java"));
+	  FileUtils.touch(new File(dstDir + "JoinCdiffCodegen.java"));
+	  FileUtils.touch(new File(dstDir + "FilterDistinctCodegen.java"));
+
 	  super.setUp();
   }
 
@@ -62,7 +69,7 @@ public class GenerateSmcTest extends BaseTest {
 	  qc.compileEmpCode();
 
     
-	  String cwd = Utilities.getSMCQLRoot();
+	  String cwd = Utilities.getVaultDBRoot();
 	  String expectedFile =
         cwd + "/src/test/java/org/vaultdb/codegen/secure/expected/" + testName + ".h";
 	  System.out.println("Generated: " + generatedFile);
@@ -82,7 +89,7 @@ public class GenerateSmcTest extends BaseTest {
 	  expectedFile += "java_"; // underscore to prevent compiler from complaining about package path
 	  expected = new File(expectedFile);
 
-	  assertTrue("The jni wrappers differ!", FileUtils.contentEquals(generated, expected));
+	  assertTrue("The jni wrappers " + generatedFile + "\n" + expectedFile + "\n differ!", FileUtils.contentEquals(generated, expected));
 	  EmpJniUtilities.cleanEmpCode(testName);
   }
 }

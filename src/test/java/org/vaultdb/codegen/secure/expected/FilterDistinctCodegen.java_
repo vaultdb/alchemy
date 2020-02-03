@@ -47,7 +47,7 @@ public class FilterDistinctCodegen  extends EmpProgram  {
 		super(party, port);
 		inputs.put("SeqScan0Union", "SELECT patient_id FROM (SELECT patient_id, icd9 FROM diagnoses) AS t WHERE icd9 = '414.01' ORDER BY patient_id");
 
-		Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(8L, 8L);
+                Pair<Long, Long> SeqScan0Cardinalities = new Pair<Long, Long>(8L, 8L);
 obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
 
 	}
@@ -117,9 +117,9 @@ obliviousCardinalities.put("SeqScan0Union", SeqScan0Cardinalities);
            
 		int party = Integer.parseInt(args[0]);
 		int port = Integer.parseInt(args[1]);
-		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.global";
+		String setupFile = Utilities.getVaultDBRoot() + "/conf/setup.global";
 		
-  	    System.setProperty("smcql.setup", setupFile);
+  	    System.setProperty("vaultdb.setup", setupFile);
   	    String workerId = (party == 1) ? "alice" : "bob";
   	    
   	    

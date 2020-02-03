@@ -39,7 +39,7 @@ public class FileUtilities {
 	public static List<String> readFile(String filename) throws IOException  {	
 		List<String> lines = null;
 	
-	if(System.getProperty("smcql.root") != null) {
+	if(System.getProperty("vaultdb.root") != null) {
 			InputStream is = Utilities.class.getClassLoader().getResourceAsStream(filename);
 			lines = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
 	} else {

@@ -37,7 +37,7 @@ public class SecureRelRoot {
 
 		//this is just for logging
 
-		log.info("Post Optimization:\n "+ RelOptUtil.dumpPlan("", baseRoot.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES));
+		//log.info("Post Optimization:\n "+ RelOptUtil.dumpPlan("", baseRoot.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES));
 
 		baseRoot = parser.trimFields(baseRoot); // use minimal set of fields to avoid triggering unnecessary SMC
 

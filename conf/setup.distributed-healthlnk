@@ -5,7 +5,7 @@ remote-codegen-target=org/vaultdb/compiler/emp/generated
 data-providers=conf/connections/remote-hosts
 has-partitioning=false
 
-local-log-file=logs/smcql.log
+local-log-file=logs/vaultdb.log
 
 #query planner information
 #truncate-input=5

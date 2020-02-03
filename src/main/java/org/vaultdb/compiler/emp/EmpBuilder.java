@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.apache.log4j.Level;
 import org.bytedeco.javacpp.ClassProperties;
 import org.bytedeco.javacpp.LoadEnabled;
 import org.bytedeco.javacpp.Loader;
@@ -43,7 +44,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
 	private void addToClasspath(String fullyQualifiedClassName, String path) throws Exception {
     	byte[] encoded = Files.readAllBytes(Paths.get(path));
     	String javaCode = new String(encoded, StandardCharsets.US_ASCII);	
-    	String dstDir = Utilities.getSMCQLRoot() + "/target/classes";
+    	String dstDir = Utilities.getVaultDBRoot() + "/target/classes";
     
     	
     	CachedCompiler JCC = new CachedCompiler(null, new File(dstDir));
@@ -62,7 +63,9 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         String className = fullyQualifiedClassName.substring(fullyQualifiedClassName.lastIndexOf('.')+1);
         
         
-        File f = new File(Utilities.getSMCQLRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/" + className + ".class");
+    
+        File f = new File(Utilities.getVaultDBRoot() + "/target/classes/org/vaultdb/compiler/emp/generated/" + className + ".class");
+        
         if(!f.exists()) { 
         	addToClasspath(fullyQualifiedClassName, "src/main/java/org/vaultdb/compiler/emp/generated/" + className + ".java");
         }
@@ -81,7 +84,8 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         	FileUtilities.copyFile(srcUtilities, dstUtilities);
 
         }  
-        
+
+    
         smcqlLogger.info("Building class: " + fullyQualifiedClassName);
         Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName).deleteJniFiles(true); //.copyLibs(true);
         File[] outputFiles = null;
@@ -120,7 +124,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     }
     
     public static String getPropertyFile()  {
-    	String propertyFile = Utilities.getSMCQLRoot() + "/src/main/resources/org/bytedeco/javacpp/properties/";
+    	String propertyFile = Utilities.getVaultDBRoot() + "/src/main/resources/org/bytedeco/javacpp/properties/";
     	propertyFile += Loader.getPlatform();
     	propertyFile += "-emp.properties";
 	 
