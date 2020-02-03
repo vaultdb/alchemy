@@ -27,12 +27,5 @@ public class PrivacyCost implements Serializable {
 	public void setDelta(double val) {
 		delta = val;
 	}
-	
-	public static int getSensitivity(String packageName, int length) {
-		if (packageName.contains("Join")) {
-			return (length == 0) ? 1 : length;
-		} else {
-			return 1;
-		}
-	}
+
 }

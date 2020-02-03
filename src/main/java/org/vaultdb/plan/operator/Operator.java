@@ -295,6 +295,12 @@ public abstract class Operator implements CodeGenerator {
   public List<Operator> getChildren() {
     return children;
   }
+  
+  public int getNumChildren() {
+	  if (children == null) return 0;
+	  
+	  return children.size();
+  }
 
   // what fields does this operator reveal information on?
   // some, like SeqScan and Project reveal nothing in their output based on the contents of the

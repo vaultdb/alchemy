@@ -43,7 +43,7 @@ public class Join extends Operator {
 	
 	@Override
 	public PrivacyCost getPrivacyCost() throws Exception {
-		double epsilon = Double.parseDouble(SystemConfiguration.getInstance().getProperty("epsilon")); 
+		double epsilon = Double.parseDouble(SystemConfiguration.getInstance().getProperty("epsilon")); //assumes sensitivity == 1
 		super.getPrivacyCost().setEpsilon(epsilon * 2);
 		return super.getPrivacyCost();
 	}

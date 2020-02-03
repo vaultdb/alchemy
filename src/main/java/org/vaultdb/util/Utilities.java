@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.calcite.adapter.java.JavaTypeFactory;
@@ -22,6 +23,8 @@ import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.db.schema.SystemCatalog;
 import org.vaultdb.executor.smc.OperatorExecution;
 import org.vaultdb.plan.SecureRelRoot;
+import org.vaultdb.plan.operator.Join;
+import org.vaultdb.plan.operator.Operator;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
 import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
@@ -295,6 +298,24 @@ public class Utilities {
     return (int) (positiveSide - negativeSide + lpMean);
   }
 
+  public static int getSensitivity(Operator op, Map<String,Integer> maxFrequencies) {	  
+	  int result = 1;
+	  if (op.getOpName().equals("Join")) {
+		  for (SecureRelDataTypeField field: ((Join) op).computesOn()) {
+			  if (maxFrequencies.containsKey(field.getName())) 
+				  result = maxFrequencies.get(field.getName());
+		  }
+	  }
+	  
+	  if (op.getNumChildren() == 0) 
+		  return result;
+	  
+	  for (int i=0; i<op.getNumChildren(); i++) 
+		  result *= getSensitivity(op.getChild(i), maxFrequencies);
+	  
+	  return result;
+  }
+  
   public static String getDistributedQuery(String query) throws Exception {
     SecureRelRecordType outSchema = Utilities.getOutSchemaFromSql(query);
     String tableName = outSchema.getAttributes().get(0).getStoredTable();
