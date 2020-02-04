@@ -298,12 +298,15 @@ public class Utilities {
     return (int) (positiveSide - negativeSide + lpMean);
   }
 
-  public static int getSensitivity(Operator op, Map<String,Integer> maxFrequencies) {	  
+  public static int getSensitivity(Operator op, Map<String,Integer> maxFrequencies) throws Exception {	  
 	  int result = 1;
 	  if (op.getOpName().equals("Join")) {
 		  for (SecureRelDataTypeField field: ((Join) op).computesOn()) {
-			  if (maxFrequencies.containsKey(field.getName())) 
+			  if (maxFrequencies.containsKey(field.getName())) {
 				  result = maxFrequencies.get(field.getName());
+			  } else {
+				  throw new Exception("missing frequency information for attribute: " + field.getName());
+			  }
 		  }
 	  }
 	  
