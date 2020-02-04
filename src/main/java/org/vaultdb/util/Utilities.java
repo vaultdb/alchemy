@@ -304,9 +304,9 @@ public class Utilities {
 		  for (SecureRelDataTypeField field: ((Join) op).computesOn()) {
 			  if (maxFrequencies.containsKey(field.getName())) {
 				  result = maxFrequencies.get(field.getName());
-			  } else {
-				  throw new Exception("missing frequency information for attribute: " + field.getName());
-			  }
+			  } else if (!maxFrequencies.containsKey(field.getName().replaceAll("\\d*$", ""))) {
+				throw new Exception("missing frequency information for attribute: " + field.getName());
+			  } 
 		  }
 	  }
 	  
