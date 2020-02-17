@@ -45,13 +45,6 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
       ++i;
     }
 
-    if (this.toBinaryString().length() != s.size()) {
-      throw new Exception(
-          "Badly formed tuple! expected size="
-              + s.size()
-              + " received: "
-              + this.toBinaryString().length());
-    }
   }
 
   public Tuple(String boolStr, SecureRelRecordType schema) throws Exception {
