@@ -140,6 +140,12 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
     return fields.get(idx);
   }
 
+  // Danger, no type checking
+  // TODO: check that it is of the right type, e.g., schema says IntField, only accept IntField
+  public void setField(int idx, Field f) {
+    fields.set(idx, f);
+  }
+
   public int getAttributeCount() {
     return fields.size();
   }

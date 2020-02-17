@@ -1,5 +1,6 @@
 package org.vaultdb.db.data.field;
 
+import org.apache.calcite.avatica.SqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 
 import org.vaultdb.protos.DBQueryProtos;
@@ -17,11 +18,13 @@ import java.util.Comparator;
 public class Field implements Comparator<Field>, Comparable<Field>, Serializable {
 
   transient SecureRelDataTypeField srcAttribute = null;
+  transient SqlTypeName sqlTypeName = null;
   int size = 0;
 
   // psql ResultSet r, int rsetIdx
   Field(SecureRelDataTypeField attr, SqlTypeName sqlType) {
     srcAttribute = attr;
+    sqlTypeName = sqlType;
     size = TypeMap.getInstance().sizeof(sqlType);
   }
 
@@ -55,6 +58,8 @@ public class Field implements Comparator<Field>, Comparable<Field>, Serializable
   public SecureRelDataTypeField getAttribute() {
     return srcAttribute;
   }
+
+  public SqlTypeName getSqlTypeName() { return sqlTypeName; }
 
   // for override
   // source is a string of bools
