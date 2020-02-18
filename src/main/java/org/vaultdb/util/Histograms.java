@@ -1,77 +1,136 @@
 package org.vaultdb.util;
 
+import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.tools.FrameworkConfig;
+import org.apache.calcite.tools.RelBuilder;
+import org.vaultdb.codegen.sql.SqlGenerator;
+import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.db.data.QueryTable;
 import org.vaultdb.db.data.Tuple;
+import org.vaultdb.db.data.field.CharField;
+import org.vaultdb.db.data.field.IntField;
+import org.vaultdb.db.schema.SystemCatalog;
+import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.plaintext.SqlQueryExecutor;
+import org.vaultdb.parser.SqlStatementParser;
+import org.vaultdb.type.SecureRelDataTypeField;
 
+import javax.management.Query;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 public class Histograms {
 
-  // TODO(@cfgong) Run a histogram query with equal width bins. This requires
+  protected SystemConfiguration config;
+  protected FrameworkConfig calciteConfig;
+
+  public static final int CHAR_FIELD_IDX = 0;
+  public static final int INT_FIELD_IDX = 1;
+
+  public Histograms() throws Exception {
+    System.setProperty("vaultdb.setup", Utilities.getVaultDBRoot() + "/conf/setup.global");
+    SystemConfiguration.resetConfiguration();
+    SystemCatalog.resetInstance();
+    ConnectionManager.reset();
+
+    config = SystemConfiguration.getInstance();
+    calciteConfig = config.getCalciteConfiguration();
+  }
+  // TODO: add getField indexes as constants instead of just magic numbers
+  private int aggregateBins(
+          List<Tuple> tuples, int index, int binsToModifyMin, int resultsPerBinMin, List<Tuple> newTuples) throws IOException {
+    while (binsToModifyMin > 0) {
+      Tuple aggregatedTuple = new Tuple();
+      Tuple currTuple = tuples.get(index);
+
+      StringJoiner charFieldStringJoiner = new StringJoiner(", ", "[", "]");
+      CharField currTupleCharField = (CharField) currTuple.getField(CHAR_FIELD_IDX);
+      CharField charField = new CharField(currTupleCharField.getAttribute(), currTupleCharField.getSqlTypeName());
+
+      IntField currTupleIntField = (IntField) currTuple.getField(INT_FIELD_IDX);
+      IntField intField = new IntField(currTupleIntField.getAttribute(), currTupleIntField.getSqlTypeName());
+
+      for (int i = index; i < resultsPerBinMin; i++) {
+        CharField oldCharField = (CharField) tuples.get(i).getField(CHAR_FIELD_IDX);
+        charFieldStringJoiner.add(oldCharField.value);
+        IntField count = (IntField) tuples.get(i).getField(INT_FIELD_IDX);
+        intField.addValue(count.value);
+      }
+      String charFieldString = charFieldStringJoiner.toString();
+      charField.setValue(charFieldString);
+      aggregatedTuple.addField(charField);
+      aggregatedTuple.addField(intField);
+      newTuples.add(aggregatedTuple);
+      index += resultsPerBinMin;
+      binsToModifyMin--;
+    }
+    return index;
+  }
+
   public ArrayList<QueryTable> getHistogram(
       String tableName, ArrayList<String> columnNames, int numBins) throws Exception {
-
-    // TODO(@cfgong) example of how to query using SqlQueryExecutor
-    // https://github.com/smcql/smcql/blob/master/src/main/java/org/smcql/plan/execution/slice/statistics/StatisticsCollector.java
-    // Should i get all the columns at once and then count number of occurences?
-    /**
-     * final String columnString = columnNames.stream().collect(Collectors.joining(", ")); final
-     * String query = String.format("SELECT %s FROM %s", columnString, tableName); QueryTable t =
-     * SqlQueryExecutor.query(query); for (Tuple tup: t.tuples()){}
-     */
-    // or should I run through all the columns
+    if (numBins <= 0){
+      throw new Exception("Number of bins in histogram must be greater than 0");
+    }
     ArrayList<QueryTable> allQueryTables = new ArrayList<>();
     for (String col : columnNames) {
-      String query2 =
-          String.format(
-              "SELECT COUNT(%s) FROM %s GROUP BY %s ORDER BY %s", col, tableName, col, col);
-      QueryTable t2 = SqlQueryExecutor.query(query2);
-      final int tupleCount = t2.tupleCount();
+      RelBuilder builder = RelBuilder.create(calciteConfig);
+//      String.format("SELECT COUNT(%s) FROM %s GROUP BY %s ORDER BY %s", col, tableName, col, col);
+      RelNode node =
+              builder
+                      .scan(tableName)
+                      .aggregate(builder.groupKey(col),
+                              builder.count(false, "cnt"))
+                      .sort(0)
+                      .build();
+
+      String query = SqlGenerator.getSql(node, config.DIALECT);
+      System.out.println("Query: \n" + query);
+      QueryTable resultTable = SqlQueryExecutor.query(query);
+
+      final int tupleCount = resultTable.tupleCount();
+
       if (tupleCount > numBins) {
-        // aggregate results, consolidate bins
-        // do some math to determine how many bins
-        // 13 results / 6 bins = 2 r 1 --> 3, 3, 3, 3, 1, 1, 1 --> 2, 2, 2, 2, 2, 2, 3
-        // 33 / 7 = 4 r 5 --> 5, 5, 5, 5, 5, 5, 3 --> 4, 4, 5, 5, 5, 5, 5
-        // 9 / 6 = 1 r 3 --> 1, 1, 1, 2, 2, 2
-        final List<Tuple> tuples = t2.tuples();
+        final List<Tuple> tuples = resultTable.tuples();
+        final List<Tuple> newTuples = new ArrayList<>();
+
         final int resultsPerBinMin = tupleCount / numBins;
         int binsToModifyMin = numBins - tupleCount % numBins;
         final int resultsPerBinMax = (int) Math.ceil(tupleCount / numBins * 1.0);
         int binsToModifyMax = tupleCount % numBins;
         int index = 0;
-        if (resultsPerBinMin > 1) {
-          while (binsToModifyMin > 0) {
-            for (int i = index; i < resultsPerBinMin; i++) {
-              // somehow sum the tuples here
-            }
-            index += resultsPerBinMin;
-            binsToModifyMin--;
-          }
-        }
-        while (binsToModifyMax > 0) {
-          for (int i = index; i < resultsPerBinMax; i++) {
-            // somehow sum the tuples here
-          }
-          index += resultsPerBinMax;
-          binsToModifyMin--;
-        }
-        allQueryTables.add(t2);
+        index = aggregateBins(tuples, index, binsToModifyMin, resultsPerBinMin, newTuples);
+        aggregateBins(tuples, index, binsToModifyMax, resultsPerBinMax, newTuples);
+        QueryTable newTable = new QueryTable(newTuples);
+        allQueryTables.add(newTable);
 
       } else if (tupleCount < numBins) {
-        // more bins needed, add 0 padding
-        int numBinsToAdd = tupleCount - numBins;
-        // TODO: how to make tuples?
+        int numBinsToAdd = numBins - tupleCount;
+        List<Tuple> tuples = resultTable.tuples();
+        Tuple referenceTuple = tuples.get(0);
+        CharField referenceTupleCharField = (CharField) referenceTuple.getField(CHAR_FIELD_IDX);
+        IntField referenceTupleIntField = (IntField) referenceTuple.getField(INT_FIELD_IDX);
         for (int i = 0; i < numBinsToAdd; i++) {
-          // add 0 tuples here
+            Tuple zeroTuple = new Tuple();
+
+            CharField charField = new CharField(referenceTupleCharField.getAttribute(), referenceTupleCharField.getSqlTypeName());
+            zeroTuple.addField(charField);
+
+            IntField intField = new IntField(referenceTupleIntField.getAttribute(), referenceTupleIntField.getSqlTypeName());
+            zeroTuple.addField(intField);
+            tuples.add(zeroTuple);
         }
+        QueryTable paddedTable = new QueryTable(tuples);
+        allQueryTables.add(paddedTable);
       } else if (tupleCount == numBins) {
-        allQueryTables.add(t2);
+        allQueryTables.add(resultTable);
       }
     }
 
-    return null;
+    return allQueryTables;
   }
 }
