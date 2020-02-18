@@ -15,7 +15,7 @@ public class CharField extends Field implements Serializable {
 
   public String value;
 
-  CharField(SecureRelDataTypeField attr, SqlTypeName sqlType) throws IOException {
+  public CharField(SecureRelDataTypeField attr, SqlTypeName sqlType) throws IOException {
     super(attr, sqlType);
     value = new String();
     size = attr.size();
@@ -108,6 +108,10 @@ public class CharField extends Field implements Serializable {
     for (int i = 0; i < size / 8; ++i) {
       value += getCharacter(source, startOffset + i * 8);
     }
+  }
+
+  public void setValue(String newValue) {
+    value = newValue;
   }
 
   private char getCharacter(String source, int startOffset) {
