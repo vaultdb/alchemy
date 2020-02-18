@@ -33,17 +33,16 @@ public class CollectHistogramTest extends BaseTest {
             .build();
 
     String query = SqlGenerator.getSql(node, config.DIALECT);
-    System.out.println("Query " + query);
-    /**
+    System.out.println("Query: \n" + query);
+
     String aId = ConnectionManager.getInstance().getAlice();
     String bId = ConnectionManager.getInstance().getBob();
 
     SecureRelRecordType dstSchema = Utilities.getOutSchemaFromSql(query);
     QueryTable aTable = SqlQueryExecutor.query(query, dstSchema, aId);
     QueryTable bTable = SqlQueryExecutor.query(query, dstSchema, bId);
-     **/
-    QueryTable aTable = SqlQueryExecutor.query(query);
-    QueryTable bTable = SqlQueryExecutor.query(query);
+
+//    QueryTable completeTable = SqlQueryExecutor.query(query);
 
     HashMap<Field, Tuple> fieldTupleHashMap = new HashMap<>();
 
@@ -58,9 +57,9 @@ public class CollectHistogramTest extends BaseTest {
         IntField aCount = (IntField) fieldTupleHashMap.get(b.getField(0)).getField(1);
         IntField bCount = (IntField) b.getField(1);
 
-        IntField summedCount = new IntField(bCount.getAttribute(), bCount.getSqlTypeName());
-        summedCount.setValue(aCount.value + bCount.value);
-        aggregatedTuple.addField(summedCount);
+        IntField aggregatedCount = new IntField(bCount.getAttribute(), bCount.getSqlTypeName());
+        aggregatedCount.setValue(aCount.value + bCount.value);
+        aggregatedTuple.addField(aggregatedCount);
 
         fieldTupleHashMap.put(aggregatedTuple.getField(0), aggregatedTuple);
       } else {
@@ -74,4 +73,20 @@ public class CollectHistogramTest extends BaseTest {
     System.out.println("B table: " + bTable);
     System.out.println("Summed histogram: " + summedHistogram);
   }
+
+  public void testCreateGroupByOrderByQuery() throws Exception {
+    final FrameworkConfig calciteConfig = config.getCalciteConfiguration();
+    RelBuilder builder = RelBuilder.create(calciteConfig);
+    RelNode node =
+            builder
+                    .scan("diagnoses")
+                    .aggregate(builder.groupKey("clean_icd9"),
+                            builder.count(false, "cnt"))
+                    .sort(0)
+                    .build();
+
+    String query = SqlGenerator.getSql(node, config.DIALECT);
+    System.out.println("Query: \n" + query);
+  }
+
 }
