@@ -156,10 +156,10 @@ string str_to_binary(string str, unsigned int num_bits) {
 public:
 
 	void run(int party, int port) {
-	
+
 	std::cout << "starting run in emp! party=" << party << " port=" << port <<  " alice host=" << aliceHost <<  std::endl;
 	NetIO * io = new NetIO((party==ALICE ? nullptr : aliceHost.c_str()), port);
-    
+
     setup_semi_honest(io, party);
 
     cout << "Calling union op!" << endl;
@@ -172,7 +172,7 @@ public:
 
      cout << "Completed emp program!" << endl;
 
-		
+
 }
 
 void setGeneratorHost(string host) {
@@ -201,4 +201,5 @@ const void & getOutput() {
 
 }; // end class
 } // end namespace
- 
+
+
