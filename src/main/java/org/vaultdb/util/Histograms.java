@@ -71,8 +71,19 @@ public class Histograms {
     return index;
   }
 
+  //TODO(cfgong): merge together worker histograms
   public ArrayList<QueryTable> getHistogram(
       String tableName, ArrayList<String> columnNames, int numBins) throws Exception {
+        List<String> workers = ConnectionManager.getInstance().getWorkers();
+        for (String worker: workers) {
+          ArrayList<QueryTable> workerHistogram = getHistogram(tableName, columnNames, numBins, worker);
+        }
+        //TODO(cfgong): FIXME
+        return new ArrayList<QueryTable>();
+  }
+
+  public ArrayList<QueryTable> getHistogram(
+      String tableName, ArrayList<String> columnNames, int numBins, String workerId) throws Exception {
     if (numBins <= 0){
       throw new Exception("Number of bins in histogram must be greater than 0");
     }
@@ -90,7 +101,7 @@ public class Histograms {
 
       String query = SqlGenerator.getSql(node, config.DIALECT);
       System.out.println("Query: \n" + query);
-      QueryTable resultTable = SqlQueryExecutor.query(query);
+      QueryTable resultTable = SqlQueryExecutor.query(query, workerId);
 
       final int tupleCount = resultTable.tupleCount();
 

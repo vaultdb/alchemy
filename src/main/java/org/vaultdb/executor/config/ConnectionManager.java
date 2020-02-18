@@ -119,11 +119,12 @@ public class ConnectionManager {
 	public WorkerConfiguration getWorker(String workerId) {
 		return workers.get(workerId);
 	}
-	
-	
-		
-	
-	
+
+	public List<String> getWorkers() {
+		List<String> keys = new ArrayList<String>(workers.keySet());
+		return keys;
+	}
+
 	// get first connection
 	public String getAlice() {
 		List<String> keys = new ArrayList<String>(workers.keySet());
