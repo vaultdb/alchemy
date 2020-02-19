@@ -38,6 +38,7 @@ public:
   TypeId GetType() const;
   int64_t GetInt64() const;
   int32_t GetInt32() const;
+  [[nodiscard]] emp::Integer* GetEmpInt() const;
 
 protected:
   bool is_encrypted_;
@@ -61,3 +62,4 @@ protected:
   } value_{};
 };
 } // namespace vaultdb::types
+

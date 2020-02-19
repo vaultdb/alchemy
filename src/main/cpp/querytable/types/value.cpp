@@ -67,6 +67,8 @@ TypeId Value::GetType() const { return Value::type_; }
 
 int32_t Value::GetInt32() const { return value_.unencrypted_val.int32_val; }
 int64_t Value::GetInt64() const { return value_.unencrypted_val.int64_val; }
+emp::Integer *Value::GetEmpInt() const { return value_.emp_integer_; }
+
 Value::~Value() {
   /*
   switch(type_) {
@@ -151,3 +153,4 @@ void Value::SetValue(TypeId type, emp::Integer val, int len) {
   value_.emp_integer_ = new emp::Integer(val);
 }
 } // namespace vaultdb::types
+
