@@ -1,4 +1,4 @@
-add_library(types
+add_library(types SHARED
         encrypted/encrypted_integer_type.cpp
         unencrypted/integer_type.cpp
         value.cpp

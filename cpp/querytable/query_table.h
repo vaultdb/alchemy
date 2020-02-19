@@ -43,12 +43,13 @@ private:
   const bool is_encrypted_;
 
 public:
+  static std::unique_ptr<QueryTable> GetQueryFromProtoStream(const void *buf, int len);
   const bool GetIsEncrypted() const;
   QueryTable(int num_tuples);
   QueryTable(bool is_encrypted, int num_tuples);
   void AllocateQueryTuples();
   void SetSchema(std::unique_ptr<QuerySchema> s);
-  void SetSchema(const QuerySchema* s);
+  void SetSchema(const QuerySchema *s);
   const QuerySchema *GetSchema() const;
   QueryTuple *GetTuple(int idx) const;
   unsigned int GetNumTuples() const;

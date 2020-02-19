@@ -23,7 +23,7 @@ vaultdb::types::Type &vaultdb::types::Type::GetInstance(TypeId type_id) {
     break;
   case TypeId::FLOAT64:
     break;
-  case TypeId::DOUBLE:
+  case TypeId::VAULT_DOUBLE:
     break;
   case TypeId::NUMERIC:
     break;

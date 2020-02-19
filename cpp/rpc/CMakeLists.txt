@@ -43,6 +43,6 @@ add_custom_command(
 add_custom_target(rpc_proto_gen ALL DEPENDS ${vdb_proto} ${vdb_proto_srcs} ${vdb_proto_headers}) #${vdb_grpc_srcs} ${vdb_grpc_hdrs})
 
 
-add_library(krpc ${vdb_proto_srcs})
+add_library(krpc SHARED ${vdb_proto_srcs})
 
 target_link_libraries(krpc protobuf pthread)
