@@ -1,9 +1,5 @@
 package org.vaultdb.compiler.emp.generated;
 
-
-
-import java.util.BitSet;
-
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
@@ -13,104 +9,89 @@ import org.bytedeco.javacpp.annotation.Platform;
 import org.bytedeco.javacpp.annotation.StdString;
 import org.vaultdb.compiler.emp.EmpProgram;
 import org.vaultdb.db.data.QueryTable;
-import org.vaultdb.util.EmpJniUtilities;
 import org.vaultdb.util.Utilities;
 
-
-@Platform(include={"EmpJniJdbcDemo.h"}, 
-			compiler = "cpp11")
-
-
-
-
-
+@Platform(
+    include = {"EmpJniJdbcDemo.h"},
+    compiler = "cpp11")
 @Namespace("EmpJniJdbcDemo")
-public class EmpJniJdbcDemo  extends EmpProgram  {
+public class EmpJniJdbcDemo extends EmpProgram {
 
-	
-	String query;
-	public EmpJniJdbcDemo(int party, int port, String aQuery) {
-		super(party, port);
-		this.query = aQuery;
-	}
-	
+  String query;
 
-	public static class EmpJniJdbcDemoClass extends Pointer {
-	
-        static {         
-			Loader.load(); 
-	       } 
-       
-        public EmpJniJdbcDemoClass() { 	
-        	allocate(); 
-        	}
-        private native void allocate();
-        public native void addInput(String opName, @Const BytePointer bitString);
-        public native void run(int party, int port); 
-        public native void setGeneratorHost(@StdString String host);
-        public native @Const BytePointer  getOutput();
-        
-        
-	}
-	
-	
-	   
-	   	
-        @Override
-        public  void runProgram() {
-        	EmpJniJdbcDemoClass theQuery = new EmpJniJdbcDemoClass();
-        	QueryTable input = null;
-        	
-        	if(generatorHost != null) {
-        		theQuery.setGeneratorHost(generatorHost);
-        	}
-        	try {
-            	input = super.getInput(query);
-            	theQuery.addInput("base", new BytePointer(input.toProto().toByteArray()));
-            	
+  public EmpJniJdbcDemo(int party, int port, String aQuery) {
+    super(party, port);
+    this.query = aQuery;
+  }
 
-        	} catch(Exception e) {
-        		System.out.println("Failed to get input for " + query);
-        		e.printStackTrace();
-        		System.exit(-1);
-        	}
-        	
-        	theQuery.run(party, port);
-        	BytePointer output = theQuery.getOutput();
-	        theQuery.close();
-	        byte[] dst = new byte[(int) output.capacity()];
-	        output.get(dst);
-	        // TODO: madhav create constructor for XOR revealed outputs
-	        QueryTable xorTable = new QueryTable(input.getSchema(), output);
-	   
-	       
-        }
-        
+  public static class EmpJniJdbcDemoClass extends Pointer {
 
-        
-	// for testing
-	public static void main(String[] args) {
-           
-		int party = Integer.parseInt(args[0]);
-		int port = Integer.parseInt(args[1]);
-		
-		String query = "SELECT * FROM diagnoses";
-		
-    	String setupFile = Utilities.getVaultDBRoot() + "/conf/setup.global";
-		
-  	    System.setProperty("vaultdb.setup", setupFile);
-  	    String workerId = (party == 1) ? "alice" : "bob";
-  	    
-  	    
-  	    
-  	    System.setProperty("workerId", workerId);
-	
-  	    EmpJniJdbcDemo qc = new EmpJniJdbcDemo(party, port, query);
-		qc.runProgram();
-		System.err.print(qc.getOutputString());
-	    
-	        
-    }        
-	
-    	
+    static {
+      Loader.load();
+    }
+
+    public EmpJniJdbcDemoClass() {
+      allocate();
+    }
+
+    private native void allocate();
+
+    public native void addInput(String opName, @Const BytePointer bitString, int length);
+
+    public native void run(int party, int port);
+
+    //public native void setGeneratorHost(@StdString String host);
+
+    public native @Const BytePointer getOutput();
+  }
+
+  @Override
+  public void runProgram() {
+    EmpJniJdbcDemoClass theQuery = new EmpJniJdbcDemoClass();
+    QueryTable input = null;
+
+    if (generatorHost != null) {
+      //theQuery.setGeneratorHost(generatorHost);
+    }
+    try {
+      //input = super.getInput(query);
+
+      //byte output[] = input.toProto().toByteArray();
+      // theQuery.addInput("base", new BytePointer(output), output.length);
+
+    } catch (Exception e) {
+      System.out.println("Failed to get input for " + query);
+      e.printStackTrace();
+      System.exit(-1);
+    }
+
+    theQuery.run(party, port);
+    //BytePointer output = theQuery.getOutput();
+    theQuery.close();
+    //byte[] dst = new byte[(int) output.capacity()];
+    //output.get(dst);
+    // TODO: madhav create constructor for XOR revealed outputs
+    // QueryTable xorTable = new QueryTable(input.getSchema(), output);
+
+  }
+
+  // for testing
+  public static void main(String[] args) {
+
+    int party = Integer.parseInt(args[0]);
+    int port = Integer.parseInt(args[1]);
+
+    String query = "SELECT * FROM diagnoses";
+
+    String setupFile = Utilities.getVaultDBRoot() + "/conf/setup.global";
+
+    System.setProperty("vaultdb.setup", setupFile);
+    String workerId = (party == 1) ? "alice" : "bob";
+
+    System.setProperty("workerId", workerId);
+
+    EmpJniJdbcDemo qc = new EmpJniJdbcDemo(party, port, query);
+    qc.runProgram();
+    System.err.print(qc.getOutputString());
+  }
 }
