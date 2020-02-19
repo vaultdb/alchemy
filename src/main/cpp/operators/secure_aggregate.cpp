@@ -12,29 +12,30 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
   // that will have to be in the AggregateDef
   //pseudocode:
 
-
-  // 1. iterate over the table (using getTuples(), getRowNum())
-  // 2. aggregator (sum) = 0
-  //     2.5 initiate and increment a count(*)
-  // 3. go over each field and sum it up to final
-  // 4. print out the sum (for now)
-
   emp::Integer* sum = new emp::Integer(64,0, emp::BOB);
   int count_star = input->GetNumTuples();
   std::cout<<"Count(*) = "<<count_star;
   for(int row = 0; row < input->GetNumTuples(); row++) {
 
     *sum = *sum + *input->GetTuple(row)->GetField(def.index)->GetValue()->GetEmpInt();
-    //std::cout<<sum;
-    //std::cout<<"Sum = "<< sum;
-    //input->GetTuple(row)->GetField(def.index)->GetValue()->GetType();
 
   }
-  int table_sum = sum->reveal<int64_t>(emp::PUBLIC);
-  std::cout << "\nOutput of sum " << table_sum;
-  std::cout << "\nAverage of the table: "<< emp::Float(table_sum/count_star);
+  const QueryField f(*sum, sum->length, 0);
+  std::unique_ptr<QueryTable> aggregate_output = std::make_unique<QueryTable>
+      (input->GetIsEncrypted(), 1);
+  aggregate_output->GetTuple(0)->PutField(0, &f);
 
-  return nullptr;
+  //int table_sum = sum->reveal<int64_t>(emp::PUBLIC);
+  //std::cout << "\nOutput of sum " << table_sum;
+  // TODO: do a tuple creation instead where this average is returned
+  //  i) do it for count(*)
+  //  ii) for sum()
+  //  iii) average()
+  //  Do one better : -> make a table out of these   -> return encrypted block
+  //      -> return to main()     -> print output there to verify
+  //  HINT: look at secure_join.cpp
+  //std::cout << "\nAverage of the table: "<< emp::Float(table_sum/count_star);
+
+  return aggregate_output;
 }
-
 

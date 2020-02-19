@@ -40,6 +40,17 @@ int main(int argc, char **argv) {
   auto s_lineitem =
       ShareData(lineitem->GetSchema(), my_party, lineitem.get(), def);
   AggregateDef d;
-  Aggregate(s_lineitem.get(), d);
+
+  auto agg_result = Aggregate(s_lineitem.get(), d);
+  int table_sum = agg_result->GetNumTuples();
+
+  auto result = agg_result->GetTuple(0)->GetField(0)
+      ->GetValue()
+      ->GetEmpInt();
+  std::cout << "\nNo. of rows in table: " << table_sum;
+  std::cout << "\nSum (encrypted) : " << result;
+
+  auto dec_result = result->reveal<int64_t>(emp::PUBLIC);
+  std::cout << "\nSum (decrypted) : " << dec_result;
 }
 
