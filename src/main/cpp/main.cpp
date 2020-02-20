@@ -42,15 +42,18 @@ int main(int argc, char **argv) {
   AggregateDef d;
 
   auto agg_result = Aggregate(s_lineitem.get(), d);
-  int table_sum = agg_result->GetNumTuples();
+  int table_avg = agg_result->GetNumTuples();
 
-  auto result = agg_result->GetTuple(0)->GetField(0)
+  auto result = agg_result
+      ->GetTuple(0)
+      ->GetField(0)
       ->GetValue()
       ->GetEmpInt();
-  std::cout << "\nNo. of rows in table: " << table_sum;
-  std::cout << "\nSum (encrypted) : " << result;
+
+  std::cout << "\nNo. of rows in table: " << table_avg;
+  std::cout << "\nAverage (encrypted) : " << result;
 
   auto dec_result = result->reveal<int64_t>(emp::PUBLIC);
-  std::cout << "\nSum (decrypted) : " << dec_result;
+  std::cout << "\nAverage (decrypted) : " << dec_result;
 }
 
