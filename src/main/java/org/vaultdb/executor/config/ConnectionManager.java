@@ -135,7 +135,12 @@ public class ConnectionManager {
 	public String getBob() {
 		List<String> keys = new ArrayList<String>(workers.keySet());
 		return keys.get(1);
-		
+	}
+
+	// get first and second connection (all non-union connections)
+	public List<String> getAliceAndBob() {
+		List<String> keys = new ArrayList<String>(workers.keySet());
+		return keys.subList(0, 2);
 	}
 
 	// optional third db that contains the union of the inputs of Alice and Bob for testing

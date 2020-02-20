@@ -1,27 +1,25 @@
 package org.vaultdb.util;
 
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.RelBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.vaultdb.codegen.sql.SqlGenerator;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.db.data.QueryTable;
 import org.vaultdb.db.data.Tuple;
 import org.vaultdb.db.data.field.CharField;
+import org.vaultdb.db.data.field.Field;
 import org.vaultdb.db.data.field.IntField;
 import org.vaultdb.db.schema.SystemCatalog;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.plaintext.SqlQueryExecutor;
-import org.vaultdb.parser.SqlStatementParser;
-import org.vaultdb.type.SecureRelDataTypeField;
 
-import javax.management.Query;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 
 public class Histograms {
 
@@ -40,7 +38,7 @@ public class Histograms {
     config = SystemConfiguration.getInstance();
     calciteConfig = config.getCalciteConfiguration();
   }
-  // TODO: add getField indexes as constants instead of just magic numbers
+
   private int aggregateBins(
           List<Tuple> tuples, int index, int binsToModifyMin, int resultsPerBinMin, List<Tuple> newTuples) throws IOException {
     while (binsToModifyMin > 0) {
@@ -71,77 +69,115 @@ public class Histograms {
     return index;
   }
 
-  //TODO(cfgong): merge together worker histograms
-  public ArrayList<QueryTable> getHistogram(
+  public ArrayList<QueryTable> getHistograms(
       String tableName, ArrayList<String> columnNames, int numBins) throws Exception {
-        List<String> workers = ConnectionManager.getInstance().getWorkers();
-        for (String worker: workers) {
-          ArrayList<QueryTable> workerHistogram = getHistogram(tableName, columnNames, numBins, worker);
+    List<String> workers = ConnectionManager.getInstance().getAliceAndBob();
+    ArrayList<QueryTable> finalHistogramList = new ArrayList<>();
+    for (String col: columnNames){
+      ArrayList<QueryTable> histogramListByWorkers = new ArrayList<>();
+      for (String workerId: workers){
+        QueryTable qt = getQueryTable(tableName, workerId, col);
+        System.out.println(workerId + qt);
+        histogramListByWorkers.add(qt);
+      }
+      HashMap<Field, Tuple> fieldTupleHashMap = new HashMap<>();
+      for (QueryTable queryTable: histogramListByWorkers){
+        for (Tuple tuple : queryTable.tuples()) {
+          if (fieldTupleHashMap.containsKey(tuple.getField(CHAR_FIELD_IDX))) {
+            Tuple aggregatedTuple = new Tuple();
+            aggregatedTuple.addField(tuple.getField(CHAR_FIELD_IDX));
+
+            IntField aCount =
+                    (IntField)
+                            fieldTupleHashMap.get(tuple.getField(CHAR_FIELD_IDX)).getField(INT_FIELD_IDX);
+            IntField bCount = (IntField) tuple.getField(INT_FIELD_IDX);
+
+            IntField aggregatedCount = new IntField(bCount.getAttribute(), bCount.getSqlTypeName());
+            aggregatedCount.setValue(aCount.value + bCount.value);
+            aggregatedTuple.addField(aggregatedCount);
+
+            fieldTupleHashMap.put(aggregatedTuple.getField(CHAR_FIELD_IDX), aggregatedTuple);
+          } else {
+            fieldTupleHashMap.put(tuple.getField(CHAR_FIELD_IDX), tuple);
+          }
         }
-        //TODO(cfgong): FIXME
-        return new ArrayList<QueryTable>();
+      }
+      List<Tuple> tupleList = new ArrayList<>(fieldTupleHashMap.values());
+      QueryTable summedHistogram = new QueryTable(tupleList);
+      finalHistogramList.add(resizeQueryTableToHistogram(numBins, summedHistogram));
+    }
+    return finalHistogramList;
   }
 
-  public ArrayList<QueryTable> getHistogram(
-      String tableName, ArrayList<String> columnNames, int numBins, String workerId) throws Exception {
+  private QueryTable getQueryTable(String tableName, String workerId, String column) throws Exception {
+    RelBuilder builder = RelBuilder.create(calciteConfig);
+    RelNode node =
+            builder
+                    .scan(tableName)
+                    .aggregate(builder.groupKey(column),
+                            builder.count(false, "cnt"))
+                    .sort(0)
+                    .build();
+
+    String query = SqlGenerator.getSql(node, config.DIALECT);
+    System.out.println("Query: \n" + query);
+    QueryTable resultTable = SqlQueryExecutor.query(query, workerId);
+    return resultTable;
+  }
+
+  public ArrayList<QueryTable> getHistograms(
+          String tableName, ArrayList<String> columnNames, int numBins, String workerId) throws Exception {
+    ArrayList<QueryTable> allQueryTables = new ArrayList<>();
+    for (String col : columnNames) {
+      allQueryTables.add(getHistogram(tableName, numBins, workerId, col));
+    }
+    return allQueryTables;
+  }
+
+  public QueryTable getHistogram(String tableName, int numBins, String workerId, String column) throws Exception {
+    QueryTable resultTable = getQueryTable(tableName, workerId, column);
+    return resizeQueryTableToHistogram(numBins, resultTable);
+  }
+
+  @NotNull
+  private QueryTable resizeQueryTableToHistogram(int numBins, QueryTable resultTable) throws Exception {
     if (numBins <= 0){
       throw new Exception("Number of bins in histogram must be greater than 0");
     }
-    ArrayList<QueryTable> allQueryTables = new ArrayList<>();
-    for (String col : columnNames) {
-      RelBuilder builder = RelBuilder.create(calciteConfig);
-//      String.format("SELECT COUNT(%s) FROM %s GROUP BY %s ORDER BY %s", col, tableName, col, col);
-      RelNode node =
-              builder
-                      .scan(tableName)
-                      .aggregate(builder.groupKey(col),
-                              builder.count(false, "cnt"))
-                      .sort(0)
-                      .build();
+    final int tupleCount = resultTable.tupleCount();
 
-      String query = SqlGenerator.getSql(node, config.DIALECT);
-      System.out.println("Query: \n" + query);
-      QueryTable resultTable = SqlQueryExecutor.query(query, workerId);
+    if (tupleCount > numBins) {
+      final List<Tuple> tuples = resultTable.tuples();
+      final List<Tuple> newTuples = new ArrayList<>();
 
-      final int tupleCount = resultTable.tupleCount();
+      final int resultsPerBinMin = tupleCount / numBins;
+      int binsToModifyMin = numBins - tupleCount % numBins;
+      final int resultsPerBinMax = (int) Math.ceil(tupleCount / numBins * 1.0);
+      int binsToModifyMax = tupleCount % numBins;
+      int index = 0;
+      index = aggregateBins(tuples, index, binsToModifyMin, resultsPerBinMin, newTuples);
+      aggregateBins(tuples, index, binsToModifyMax, resultsPerBinMax, newTuples);
+      QueryTable newTable = new QueryTable(newTuples);
+      return newTable;
+    } else if (tupleCount < numBins) {
+      int numBinsToAdd = numBins - tupleCount;
+      List<Tuple> tuples = resultTable.tuples();
+      Tuple referenceTuple = tuples.get(0);
+      CharField referenceTupleCharField = (CharField) referenceTuple.getField(CHAR_FIELD_IDX);
+      IntField referenceTupleIntField = (IntField) referenceTuple.getField(INT_FIELD_IDX);
+      for (int i = 0; i < numBinsToAdd; i++) {
+          Tuple zeroTuple = new Tuple();
 
-      if (tupleCount > numBins) {
-        final List<Tuple> tuples = resultTable.tuples();
-        final List<Tuple> newTuples = new ArrayList<>();
+          CharField charField = new CharField(referenceTupleCharField.getAttribute(), referenceTupleCharField.getSqlTypeName());
+          zeroTuple.addField(charField);
 
-        final int resultsPerBinMin = tupleCount / numBins;
-        int binsToModifyMin = numBins - tupleCount % numBins;
-        final int resultsPerBinMax = (int) Math.ceil(tupleCount / numBins * 1.0);
-        int binsToModifyMax = tupleCount % numBins;
-        int index = 0;
-        index = aggregateBins(tuples, index, binsToModifyMin, resultsPerBinMin, newTuples);
-        aggregateBins(tuples, index, binsToModifyMax, resultsPerBinMax, newTuples);
-        QueryTable newTable = new QueryTable(newTuples);
-        allQueryTables.add(newTable);
-
-      } else if (tupleCount < numBins) {
-        int numBinsToAdd = numBins - tupleCount;
-        List<Tuple> tuples = resultTable.tuples();
-        Tuple referenceTuple = tuples.get(0);
-        CharField referenceTupleCharField = (CharField) referenceTuple.getField(CHAR_FIELD_IDX);
-        IntField referenceTupleIntField = (IntField) referenceTuple.getField(INT_FIELD_IDX);
-        for (int i = 0; i < numBinsToAdd; i++) {
-            Tuple zeroTuple = new Tuple();
-
-            CharField charField = new CharField(referenceTupleCharField.getAttribute(), referenceTupleCharField.getSqlTypeName());
-            zeroTuple.addField(charField);
-
-            IntField intField = new IntField(referenceTupleIntField.getAttribute(), referenceTupleIntField.getSqlTypeName());
-            zeroTuple.addField(intField);
-            tuples.add(zeroTuple);
-        }
-        QueryTable paddedTable = new QueryTable(tuples);
-        allQueryTables.add(paddedTable);
-      } else if (tupleCount == numBins) {
-        allQueryTables.add(resultTable);
+          IntField intField = new IntField(referenceTupleIntField.getAttribute(), referenceTupleIntField.getSqlTypeName());
+          zeroTuple.addField(intField);
+          tuples.add(zeroTuple);
       }
+      QueryTable paddedTable = new QueryTable(tuples);
+      return paddedTable;
     }
-
-    return allQueryTables;
+    return resultTable;
   }
 }
