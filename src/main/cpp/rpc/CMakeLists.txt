@@ -12,7 +12,7 @@ find_library(PROTOBUF protobuf)
 
 
 
-get_filename_component(vdb_proto "../java/src/main/proto/dbquery.proto" ABSOLUTE)
+get_filename_component(vdb_proto "../../proto/dbquery.proto" ABSOLUTE)
 get_filename_component(vdb_proto_path "${vdb_proto}" PATH)
 
 set(vdb_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/dbquery.pb.cc")
