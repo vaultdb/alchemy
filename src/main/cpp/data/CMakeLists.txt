@@ -6,6 +6,10 @@ add_library(pqxx_compat
         )
 target_link_libraries(pqxx_compat krpc pqxx pq)
 
+add_library(proto_converter SHARED
+        proto_converter.cpp)
+target_link_libraries(proto_converter krpc)
+
 add_library(dataprovider DataProvider.cpp PQDataProvider.cpp )
 target_link_libraries(dataprovider pqxx_compat)
 
