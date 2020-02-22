@@ -23,6 +23,7 @@ message ColumnVal {
         int32 int32Field = 3;
         int64 timeStampField = 4;
         double doubleField = 5;
+        string xorField = 7;
     }
     OIDType type = 6;
 }

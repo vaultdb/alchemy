@@ -9,4 +9,6 @@
 #include <querytable/query_table.h>
 
 std::unique_ptr<QueryTable> ProtoToQuerytable(const dbquery::Table &t);
+const dbquery::Table
+QueryTableToXorProto(const QueryTable* input_table);
 #endif // TESTING_PROTO_CONVERTER_H

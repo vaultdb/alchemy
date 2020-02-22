@@ -77,3 +77,42 @@ std::unique_ptr<QueryTable> ProtoToQuerytable(const dbquery::Table &t) {
   }
   return query_table;
 }
+
+const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
+  dbquery::Table t;
+  for (int i = 0; i < input_table->GetNumTuples(); i++) {
+    dbquery::Row row;
+    for (int j = 0; j < input_table->GetSchema()->GetNumFields(); j++) {
+      dbquery::ColumnVal val;
+      switch (input_table->GetSchema()->GetField(j)->GetType()) {
+
+      case types::TypeId::INVALID:
+      case types::TypeId::BOOLEAN:
+      case types::TypeId::INTEGER32:
+      case types::TypeId::INTEGER64:
+      case types::TypeId::FLOAT32:
+      case types::TypeId::FLOAT64:
+      case types::TypeId::VAULT_DOUBLE:
+      case types::TypeId::NUMERIC:
+      case types::TypeId::TIMESTAMP:
+      case types::TypeId::TIME:
+      case types::TypeId::DATE:
+      case types::TypeId::ENCRYPTED_BOOLEAN:
+      case types::TypeId::VARCHAR:
+      case types::TypeId::ENCRYPTED_INTEGER32:
+        throw;
+      case types::TypeId::ENCRYPTED_INTEGER64:
+        auto s = input_table->GetTuple(i)
+                     ->GetField(j)
+                     ->GetValue()
+                     ->GetEmpInt()
+                     ->reveal<string>(emp::XOR);
+        val.set_xorfield(s);
+        (*row.mutable_column())[j] = val;
+        break;
+      }
+    }
+    t.add_row()->CopyFrom(row);
+  }
+  return t;
+}

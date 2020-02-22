@@ -17,19 +17,21 @@ void QueryTable::SetSchema(std::unique_ptr<QuerySchema> s) {
 
 const QuerySchema *QueryTable::GetSchema() const { return schema_.get(); }
 
-std::unique_ptr<QuerySchema> QueryTable::ReleaseSchema() { return std::move(schema_);}
+std::unique_ptr<QuerySchema> QueryTable::ReleaseSchema() {
+  return std::move(schema_);
+}
 
 unsigned int QueryTable::GetNumTuples() const { return num_tuples_; }
 QueryTable::QueryTable(int num_tuples)
     : is_encrypted_(false), num_tuples_(num_tuples) {
-  tuples_2 = static_cast<QueryTuple *>(malloc(
-      sizeof(QueryTuple) * num_tuples_));
+  tuples_2 =
+      static_cast<QueryTuple *>(malloc(sizeof(QueryTuple) * num_tuples_));
 }
 
 QueryTable::QueryTable(bool is_encrypted, int num_tuples)
     : is_encrypted_(is_encrypted), num_tuples_(num_tuples) {
-  tuples_2 = static_cast<QueryTuple *>(malloc(
-      sizeof(QueryTuple) * num_tuples_));
+  tuples_2 =
+      static_cast<QueryTuple *>(malloc(sizeof(QueryTuple) * num_tuples_));
 }
 
 const bool QueryTable::GetIsEncrypted() const { return is_encrypted_; }
@@ -38,8 +40,13 @@ void QueryTable::AllocateQueryTuples() {
     throw;
   }
 }
- std::unique_ptr<QueryTable> QueryTable::GetQueryFromProtoStream(const void *buf, int len) {
+std::unique_ptr<QueryTable> QueryTable::GetQueryFromProtoStream(const void *buf,
+                                                                int len) {
   dbquery::Table t;
   t.ParseFromArray(buf, len);
   return ProtoToQuerytable(t);
+}
+
+std::string QueryTable::GetQueryTableXorString(QueryTable *input_table) {
+  return QueryTableToXorProto(input_table).SerializeAsString();
 }
