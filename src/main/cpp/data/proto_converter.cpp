@@ -17,7 +17,7 @@ vaultdb::types::TypeId ProtoToTypeId(dbquery::OIDType oidtype) {
     return vaultdb::types::TypeId::VARCHAR;
   case dbquery::NUMERIC:
   case dbquery::DOUBLE:
-    return vaultdb::types::TypeId::DOUBLE;
+    return vaultdb::types::TypeId::VAULT_DOUBLE;
   case dbquery::TIMESTAMP:
   case dbquery::TIME:
   case dbquery::UNSUPPORTED:
@@ -63,7 +63,7 @@ std::unique_ptr<QueryTable> ProtoToQuerytable(const dbquery::Table &t) {
         qf =
             std::make_unique<vaultdb::QueryField>(c.second.strfield(), c.first);
         break;
-      case vaultdb::types::TypeId::DOUBLE:
+      case vaultdb::types::TypeId::VAULT_DOUBLE:
         throw;
         qf = std::make_unique<vaultdb::QueryField>(c.second.doublefield(),
                                                    c.first);

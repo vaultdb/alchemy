@@ -12,7 +12,7 @@ enum class TypeId {
   INTEGER64,
   FLOAT32,
   FLOAT64,
-  DOUBLE,
+  VAULT_DOUBLE,
   NUMERIC,
   TIMESTAMP,
   TIME,

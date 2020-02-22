@@ -29,7 +29,7 @@ Value::Value(const Value &val)
   case TypeId::INVALID:
   case TypeId::FLOAT32:
   case TypeId::FLOAT64:
-  case TypeId::DOUBLE:
+  case TypeId::VAULT_DOUBLE:
   case TypeId::NUMERIC:
   case TypeId::TIMESTAMP:
   case TypeId::TIME:
@@ -101,7 +101,7 @@ void Value::SetValue(const Value *v) {
     break;
   case TypeId::FLOAT64:
     break;
-  case TypeId::DOUBLE:
+  case TypeId::VAULT_DOUBLE:
     break;
   case TypeId::NUMERIC:
     break;

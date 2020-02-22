@@ -31,18 +31,18 @@ if [ ! -d "gflags" ]; then
 fi
 
 #grpc installation
-cd $BASEDIR/external
-if [ ! -d "grpc" ]; then
-	git clone --branch v1.26.0 https://github.com/grpc/grpc.git
-	cd grpc
-	git submodule update --init
-	make HAS_SYSTEM_PROTOBUF=false -j10
-	make prefix=$BASEDIR/lib install
-	cd third_party/protobuf
-	make prefix=$BASEDIR/lib install
-	# back in external
-	cd $BASEDIR/external
-fi
+#cd $BASEDIR/external
+#if [ ! -d "grpc" ]; then
+#	git clone --branch v1.26.0 https://github.com/grpc/grpc.git
+#	cd grpc
+#	git submodule update --init
+#	make HAS_SYSTEM_PROTOBUF=false -j10
+#	make prefix=$BASEDIR/lib install
+#	cd third_party/protobuf
+#	make prefix=$BASEDIR/lib install
+#	# back in external
+#	cd $BASEDIR/external
+#fi
 
 #G3Log installation
 cd $BASEDIR/external

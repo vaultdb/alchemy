@@ -4,18 +4,6 @@ package dbquery;
 option java_package = "org.vaultdb.protos";
 option java_outer_classname = "DBQueryProtos";
 
-message GetTableRequest {
-    string sqlString = 1;
-    string dbString = 2;
-    string user = 3;
-    string password = 4;
-}
-
-message GetTableResponse {
-    Table table = 1;
-}
-
-
 message Schema {
     map<int32, ColumnInfo> column = 1;
     int32 numColumns = 2;

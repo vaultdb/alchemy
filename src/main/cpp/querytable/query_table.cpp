@@ -3,6 +3,7 @@
 //
 
 #include "query_table.h"
+#include "../data/proto_converter.h"
 
 QueryTuple *QueryTable::GetTuple(int idx) const { return &tuples_2[idx]; }
 
@@ -36,4 +37,9 @@ void QueryTable::AllocateQueryTuples() {
   if (num_tuples_ == 0) {
     throw;
   }
+}
+ std::unique_ptr<QueryTable> QueryTable::GetQueryFromProtoStream(const void *buf, int len) {
+  dbquery::Table t;
+  t.ParseFromArray(buf, len);
+  return ProtoToQuerytable(t);
 }

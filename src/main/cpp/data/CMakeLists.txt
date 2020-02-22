@@ -6,7 +6,11 @@ add_library(pqxx_compat
         )
 target_link_libraries(pqxx_compat krpc pqxx pq)
 
-add_library(dataprovider DataProvider.cpp PQDataProvider.cpp ../querytable/query_table.cpp ../querytable/query_table.h)
+add_library(proto_converter SHARED
+        proto_converter.cpp)
+target_link_libraries(proto_converter krpc)
+
+add_library(dataprovider DataProvider.cpp PQDataProvider.cpp )
 target_link_libraries(dataprovider pqxx_compat)
 
 add_executable(pqxx_compat_test pqxx_compat_test.cpp)
