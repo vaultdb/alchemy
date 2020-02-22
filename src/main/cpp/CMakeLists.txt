@@ -71,12 +71,6 @@ include(${CMAKE_SOURCE_DIR}/lib/cmake/source_of_randomness.cmake)
 include(${CMAKE_SOURCE_DIR}/lib/cmake/threading.cmake)
 message("hello ${OPENSSL_LIBRARIES}")
 message("wee ${EMP-OT_LIBRARIES}")
-add_executable(main main.cpp operators/filter.cpp operators/filter.h common/macros.h common/defs.h vaultdb.h)
+add_executable(main main.cpp operators/filter.cpp operators/filter.h common/macros.h common/defs.h)
 target_link_libraries(main profiler gflags pthread emp-tool gmp ${EMP-OT_LIBRARIES} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES}
         dataprovider secure_operators)
-
-add_library(vaultdb_cpp_exec STATIC vaultdb.h)
-target_link_libraries(vaultdb_cpp_exec profiler gflags pthread emp-tool gmp ${EMP-OT_LIBRARIES} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES}
-        dataprovider secure_operators)
-
-
