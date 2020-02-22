@@ -12,8 +12,7 @@ class EmpJniJdbcDemoClass {
 
   string aliceHost = "127.0.0.1";
   void *output;
-  map<string, QueryTable *>
-      inputs; // maps opName --> C++ query table representation
+  map<string, QueryTable *> inputs;
 
   unique_ptr<QueryTable> unionOp(int party, emp::NetIO *io) { //, NetIO * io) {
 
@@ -56,6 +55,8 @@ public:
         new emp::NetIO(party == emp::ALICE ? nullptr : "127.0.0.1", port);
     setup_semi_honest(io, party);
     std::unique_ptr<QueryTable> results = unionOp(party, io);
+    inputs["shared"] = results.get();
+    results.release();
   }
 
   // placeholder for maintaining a map of inputs from JDBC
@@ -65,7 +66,7 @@ public:
     table.release();
   }
 
-  const void *getOutput() { return output; }
+  const void *getOutput() { return QueryTable::GetQueryTableXorString(inputs["shared"]).c_str(); }
 
 }; // end class
 } // namespace EmpJniJdbcDemo

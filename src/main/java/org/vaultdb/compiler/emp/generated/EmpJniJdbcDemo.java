@@ -65,7 +65,7 @@ public class EmpJniJdbcDemo extends EmpProgram {
     }
 
     theQuery.run(party, port);
-    // BytePointer output = theQuery.getOutput();
+    BytePointer output = theQuery.getOutput();
     theQuery.close();
     // byte[] dst = new byte[(int) output.capacity()];
     // output.get(dst);
