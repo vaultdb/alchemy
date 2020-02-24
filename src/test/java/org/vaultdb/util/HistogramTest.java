@@ -14,53 +14,57 @@ public class HistogramTest extends TpcHBaseTest {
       QueryTable q1 = results.get(i);
       QueryTable q2 = resultsUnioned.get(i);
       System.out.printf("Query Table %d: %s \n", i, q1);
-      assertEquals(q1.tupleCount(), numOfBins);
-      assertEquals(q2.tupleCount(), numOfBins);
+      assertEquals(numOfBins, q1.tupleCount());
+      assertEquals(numOfBins, q2.tupleCount());
       assertEquals(q1, q2);
     }
   }
 
-  public void testCreateHistogramsSameBins() throws Exception {
-    Histograms histogram = new Histograms();
-
-    String tableName = "diagnoses";
-    ArrayList<String> columnNames = new ArrayList<>();
-    columnNames.add("clean_icd9");
-    int numOfBins = 2;
-
-    ArrayList<QueryTable> results = histogram.getHistograms(tableName, columnNames, numOfBins);
-    ArrayList<QueryTable> resultsUnioned = histogram.getHistograms(tableName, columnNames, numOfBins, ConnectionManager.getInstance().getUnioned());
-    testCorrect(numOfBins, results, resultsUnioned);
-  }
-
   // This test tests Alice and Bob having different keys
-  public void testCreateHistogramsSameBins1() throws Exception {
+  // Range divides evenly (integer-wise) into bins
+  public void testCreateHistogramsIntegerBins() throws Exception {
     Histograms histogram = new Histograms();
 
     String tableName = "diagnoses";
     ArrayList<String> columnNames = new ArrayList<>();
     columnNames.add("month_id");
-    int numOfBins = 9;
+    int numOfBins = 3;
 
     ArrayList<QueryTable> results = histogram.getHistograms(tableName, columnNames, numOfBins);
     ArrayList<QueryTable> resultsUnioned = histogram.getHistograms(tableName, columnNames, numOfBins, ConnectionManager.getInstance().getUnioned());
     testCorrect(numOfBins, results, resultsUnioned);
   }
 
-  public void testCreateHistogramsMoreBins() throws Exception {
+  // Histogram returns one bin
+  public void testCreateHistogramsOneBin() throws Exception {
     Histograms histogram = new Histograms();
 
     String tableName = "diagnoses";
     ArrayList<String> columnNames = new ArrayList<>();
-    columnNames.add("clean_icd9");
-    int numOfBins = 8;
+    columnNames.add("month_id");
+    int numOfBins = 1;
 
     ArrayList<QueryTable> results = histogram.getHistograms(tableName, columnNames, numOfBins);
     ArrayList<QueryTable> resultsUnioned = histogram.getHistograms(tableName, columnNames, numOfBins, ConnectionManager.getInstance().getUnioned());
     testCorrect(numOfBins, results, resultsUnioned);
   }
 
-  public void testCreateHistogramsMoreBins1() throws Exception {
+  // Range does not divide evenly (integer-wise) into bins
+  public void testCreateHistogramsFloatBins() throws Exception {
+    Histograms histogram = new Histograms();
+
+    String tableName = "diagnoses";
+    ArrayList<String> columnNames = new ArrayList<>();
+    columnNames.add("month_id");
+    int numOfBins = 5;
+
+    ArrayList<QueryTable> results = histogram.getHistograms(tableName, columnNames, numOfBins);
+    ArrayList<QueryTable> resultsUnioned = histogram.getHistograms(tableName, columnNames, numOfBins, ConnectionManager.getInstance().getUnioned());
+    testCorrect(numOfBins, results, resultsUnioned);
+  }
+  // Range does not divide evenly (integer-wise) into bins
+  // Some bins will be empty
+  public void testCreateHistogramsEmptyBins() throws Exception {
     Histograms histogram = new Histograms();
 
     String tableName = "diagnoses";
@@ -72,32 +76,14 @@ public class HistogramTest extends TpcHBaseTest {
     ArrayList<QueryTable> resultsUnioned = histogram.getHistograms(tableName, columnNames, numOfBins, ConnectionManager.getInstance().getUnioned());
     testCorrect(numOfBins, results, resultsUnioned);
   }
-
-  public void testCreateHistogramsLessBins() throws Exception {
-    // aggregate results, consolidate bins
-    // TODO: create more less bins tests: following example below
-    // 13 results / 6 bins = 2 r 1 --> 3, 3, 3, 3, 1, 1, 1 --> 2, 2, 2, 2, 2, 2, 3
-    // 33 / 7 = 4 r 5 --> 5, 5, 5, 5, 5, 5, 3 --> 4, 4, 5, 5, 5, 5, 5
-    // 9 / 6 = 1 r 3 --> 1, 1, 1, 2, 2, 2
-    Histograms histogram = new Histograms();
-
-    String tableName = "diagnoses";
-    ArrayList<String> columnNames = new ArrayList<>();
-    columnNames.add("clean_icd9");
-    int numOfBins = 1;
-
-    ArrayList<QueryTable> results = histogram.getHistograms(tableName, columnNames, numOfBins);
-    ArrayList<QueryTable> resultsUnioned = histogram.getHistograms(tableName, columnNames, numOfBins, ConnectionManager.getInstance().getUnioned());
-    testCorrect(numOfBins, results, resultsUnioned);
-  }
-
-  public void testCreateHistogramsLessBins1() throws Exception {
+  // Number of bins greater than range
+  public void testCreateHistogramsBinCountGreaterThanRange() throws Exception {
     Histograms histogram = new Histograms();
 
     String tableName = "diagnoses";
     ArrayList<String> columnNames = new ArrayList<>();
     columnNames.add("month_id");
-    int numOfBins = 6;
+    int numOfBins = 22;
 
     ArrayList<QueryTable> results = histogram.getHistograms(tableName, columnNames, numOfBins);
     ArrayList<QueryTable> resultsUnioned = histogram.getHistograms(tableName, columnNames, numOfBins, ConnectionManager.getInstance().getUnioned());
