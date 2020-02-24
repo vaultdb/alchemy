@@ -66,6 +66,7 @@ public class EmpJniJdbcDemo extends EmpProgram {
 
     theQuery.run(party, port);
     BytePointer output = theQuery.getOutput();
+    outputString = output.getString();
     theQuery.close();
     // byte[] dst = new byte[(int) output.capacity()];
     // output.get(dst);
@@ -91,6 +92,6 @@ public class EmpJniJdbcDemo extends EmpProgram {
 
     EmpJniJdbcDemo qc = new EmpJniJdbcDemo(party, port, query);
     qc.runProgram();
-    System.err.print(qc.getOutputString());
+    // System.err.print(qc.getOutputString());
   }
 }

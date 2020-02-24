@@ -3,11 +3,12 @@ package org.vaultdb.executor.emp.stub;
 import org.vaultdb.BaseTest;
 import org.vaultdb.compiler.emp.EmpBuilder;
 import org.vaultdb.compiler.emp.EmpRunnable;
+import org.vaultdb.protos.DBQueryProtos;
 import org.vaultdb.util.EmpJniUtilities;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EmpJniJdbcLocalTest extends BaseTest {
   final String fullyQualifiedClassName = "org.vaultdb.compiler.emp.generated.EmpJniJdbcDemo";
@@ -37,14 +38,23 @@ public class EmpJniJdbcLocalTest extends BaseTest {
     bob.join();
 
     String aliceOutput = aliceRunnable.getOutputString();
+    DBQueryProtos.Table aliceTable = aliceRunnable.getOutputProtoTable();
+    // DBQueryProtos.Table aliceTable = DBQueryProtos.Table.parseFrom(aliceOutput.getBytes());
     String bobOutput = bobRunnable.getOutputString();
+    DBQueryProtos.Table bobTable = bobRunnable.getOutputProtoTable();
+    System.out.println(bobTable.getRowCount());
 
-    logger.info("Alice output len = " + aliceOutput.length() + ", bob's is " + bobOutput.length());
+    logger.info(
+        "Alice output len = "
+            + aliceOutput.getBytes().length
+            + ", bob's is "
+            + bobOutput.getBytes().length);
 
-    List<String> output = EmpJniUtilities.revealStringOutput(aliceOutput, bobOutput, tupleWidth);
+    List<Long> output = EmpJniUtilities.revealTableOutput(aliceTable, bobTable);
     logger.info("Query output: " + output);
 
-    List<String> expectedOutput = new ArrayList<String>(Arrays.asList("008", "414", "008", "414"));
+    long[] arr = {1, 2, 3, 4, 1, 2, 3, 4, 2, 1, 5, 6, 1, 2, 5, 6};
+    List<Long> expectedOutput = Arrays.stream(arr).boxed().collect(Collectors.toList());
 
     assertEquals(expectedOutput, output);
   }

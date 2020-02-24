@@ -66,7 +66,11 @@ public:
     table.release();
   }
 
-  const void *getOutput() { return QueryTable::GetQueryTableXorString(inputs["shared"]).c_str(); }
+  const void *getOutput() {
+    auto s = QueryTable::GetQueryTableXorString(inputs["shared"]);
+    std::cerr << s;
+    return s.c_str();
+  }
 
 }; // end class
 } // namespace EmpJniJdbcDemo
