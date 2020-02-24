@@ -94,8 +94,8 @@ const dbquery::Schema GetTableXorSchema(const QuerySchema *s) {
   for (int i = 0; i < s->GetNumFields(); i++) {
     dbquery::ColumnInfo columnInfo;
     columnInfo.set_name(s->GetField(i)->GetName());
-    columnInfo.set_type(GetEncryptedOIDFromVaultDBType(
-        s->GetField(i)->GetType()));
+    columnInfo.set_type(
+        GetEncryptedOIDFromVaultDBType(s->GetField(i)->GetType()));
     columnInfo.set_columnnumber(i);
     columnInfo.set_is_private(true);
     (*ps.mutable_column())[i] = columnInfo;
