@@ -43,7 +43,9 @@ private:
   const bool is_encrypted_;
 
 public:
-  static std::unique_ptr<QueryTable> GetQueryFromProtoStream(const void *buf, int len);
+  static std::unique_ptr<QueryTable> GetQueryFromProtoStream(const void *buf,
+                                                             int len);
+  static std::string GetQueryTableXorString(QueryTable *input_table);
   const bool GetIsEncrypted() const;
   QueryTable(int num_tuples);
   QueryTable(bool is_encrypted, int num_tuples);
