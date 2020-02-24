@@ -78,8 +78,35 @@ std::unique_ptr<QueryTable> ProtoToQuerytable(const dbquery::Table &t) {
   return query_table;
 }
 
+dbquery::OIDType GetEncryptedOIDFromVaultDBType(vaultdb::types::TypeId t) {
+  switch (t) {
+
+  case types::TypeId::ENCRYPTED_INTEGER64:
+    return dbquery::OIDType::ENCRYPTED_INTEGER64;
+  default:
+    throw;
+  }
+}
+
+const dbquery::Schema GetTableXorSchema(const QuerySchema *s) {
+
+  dbquery::Schema ps;
+  for (int i = 0; i < s->GetNumFields(); i++) {
+    dbquery::ColumnInfo columnInfo;
+    columnInfo.set_name(s->GetField(i)->GetName());
+    columnInfo.set_type(GetEncryptedOIDFromVaultDBType(
+        s->GetField(i)->GetType()));
+    columnInfo.set_columnnumber(i);
+    columnInfo.set_is_private(true);
+    (*ps.mutable_column())[i] = columnInfo;
+  }
+  return ps;
+}
+
 const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
   dbquery::Table t;
+  dbquery::Schema s = GetTableXorSchema(input_table->GetSchema());
+  t.mutable_schema()->CopyFrom(s);
   for (int i = 0; i < input_table->GetNumTuples(); i++) {
     dbquery::Row row;
     for (int j = 0; j < input_table->GetSchema()->GetNumFields(); j++) {

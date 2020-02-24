@@ -37,6 +37,7 @@ enum OIDType {
     TIMESTAMP = 5;
     TIME = 6;
     BIGINT = 7;
+    ENCRYPTED_INTEGER64= 8;
 }
 
 message ColumnInfo {
