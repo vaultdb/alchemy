@@ -6,7 +6,6 @@ import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.annotation.Const;
 import org.bytedeco.javacpp.annotation.Namespace;
 import org.bytedeco.javacpp.annotation.Platform;
-import org.bytedeco.javacpp.annotation.StdString;
 import org.vaultdb.compiler.emp.EmpProgram;
 import org.vaultdb.db.data.QueryTable;
 import org.vaultdb.util.Utilities;
@@ -40,7 +39,7 @@ public class EmpJniJdbcDemo extends EmpProgram {
 
     public native void run(int party, int port);
 
-    //public native void setGeneratorHost(@StdString String host);
+    // public native void setGeneratorHost(@StdString String host);
 
     public native @Const BytePointer getOutput();
   }
@@ -51,13 +50,13 @@ public class EmpJniJdbcDemo extends EmpProgram {
     QueryTable input = null;
 
     if (generatorHost != null) {
-      //theQuery.setGeneratorHost(generatorHost);
+      // theQuery.setGeneratorHost(generatorHost);
     }
     try {
-      //input = super.getInput(query);
+      input = super.getInput(query);
 
-      //byte output[] = input.toProto().toByteArray();
-      // theQuery.addInput("base", new BytePointer(output), output.length);
+      byte output[] = input.toProto().toByteArray();
+      theQuery.addInput("base", new BytePointer(output), output.length);
 
     } catch (Exception e) {
       System.out.println("Failed to get input for " + query);
@@ -66,10 +65,10 @@ public class EmpJniJdbcDemo extends EmpProgram {
     }
 
     theQuery.run(party, port);
-    //BytePointer output = theQuery.getOutput();
+    BytePointer output = theQuery.getOutput();
     theQuery.close();
-    //byte[] dst = new byte[(int) output.capacity()];
-    //output.get(dst);
+    // byte[] dst = new byte[(int) output.capacity()];
+    // output.get(dst);
     // TODO: madhav create constructor for XOR revealed outputs
     // QueryTable xorTable = new QueryTable(input.getSchema(), output);
 
@@ -81,7 +80,7 @@ public class EmpJniJdbcDemo extends EmpProgram {
     int party = Integer.parseInt(args[0]);
     int port = Integer.parseInt(args[1]);
 
-    String query = "SELECT * FROM diagnoses";
+    String query = "SELECT patient_id FROM diagnoses";
 
     String setupFile = Utilities.getVaultDBRoot() + "/conf/setup.global";
 

@@ -2,6 +2,7 @@
 // Created by madhav on 12/27/19.
 //
 #include "pqxx_compat.h"
+#include <iostream>
 
 using namespace dbquery;
 using namespace std;
@@ -117,6 +118,7 @@ pqxx::result query(string dbname, string query_string) {
     // TODO(madhavsuresh): make this exception handling more robust
   } catch (const std::exception &e) {
     std::cerr << e.what() << std::endl;
+
     throw e;
   }
   return res;

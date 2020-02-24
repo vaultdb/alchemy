@@ -5,7 +5,12 @@
 #ifndef TESTING_SECURE_AGGREGATE_H
 #define TESTING_SECURE_AGGREGATE_H
 
+#include <querytable/query_table.h>
 struct AggregateDef {
+  int index;
 
 };
+std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
+                                      const AggregateDef &def);
 #endif // TESTING_SECURE_AGGREGATE_H
+
