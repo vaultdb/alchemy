@@ -80,6 +80,14 @@ public class IntField extends Field implements Serializable {
     value = Integer.parseInt(rawBits, 2);
   }
 
+  public void setValue(long newValue) {
+    value = newValue;
+  }
+
+  public void addValue(long extraValue) {
+    value += extraValue;
+  }
+
   @Override
   public void deserialize(BitSet src) {
     value = 0;

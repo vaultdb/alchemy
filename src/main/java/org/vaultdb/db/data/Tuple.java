@@ -45,13 +45,6 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
       ++i;
     }
 
-    if (this.toBinaryString().length() != s.size()) {
-      throw new Exception(
-          "Badly formed tuple! expected size="
-              + s.size()
-              + " received: "
-              + this.toBinaryString().length());
-    }
   }
 
   public Tuple(String boolStr, SecureRelRecordType schema) throws Exception {
@@ -145,6 +138,12 @@ public class Tuple implements Comparator<Tuple>, Comparable<Tuple>, Serializable
 
   public Field getField(int idx) {
     return fields.get(idx);
+  }
+
+  // Danger, no type checking
+  // TODO: check that it is of the right type, e.g., schema says IntField, only accept IntField
+  public void setField(int idx, Field f) {
+    fields.set(idx, f);
   }
 
   public int getAttributeCount() {
