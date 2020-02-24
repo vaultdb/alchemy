@@ -56,8 +56,7 @@ void AddToTable(QueryTable *t, const QuerySchema *shared_schema,
 }
 
 std::unique_ptr<QueryTable> ShareData(const QuerySchema *shared_schema,
-                                      EmpParty party,
-                                      QueryTable *input_table,
+                                      EmpParty party, QueryTable *input_table,
                                       ShareDef &def) {
 
   // TODO(madhavsuresh): copy the schema over to the new table. need to make
@@ -88,8 +87,23 @@ std::unique_ptr<QueryTable> ShareData(const QuerySchema *shared_schema,
   AddToTable(output_table.get(), shared_schema,
              batcher_map[EmpParty::BOB].get(), def.share_map[EmpParty::BOB],
              def.share_map[EmpParty::ALICE].num_tuples);
-  //TODO(madhavsuresh): this should really be with a copy constructor
-  output_table->SetSchema(input_table->GetSchema());
+  // TODO(madhavsuresh): this should really be with a copy constructor
+  QuerySchema s(input_table->GetSchema()->GetNumFields());
+  for (int i = 0; i < input_table->GetSchema()->GetNumFields(); i++) {
+    auto f = input_table->GetSchema()->GetField(i);
+    switch (f->GetType()) {
+    case vaultdb::types::TypeId::INTEGER64: {
+      QueryFieldDesc new_field(*f, vaultdb::types::TypeId::ENCRYPTED_INTEGER64,
+                               true /*is_private*/);
+      s.PutField(i, new_field);
+      break;
+    }
+    default: {
+      throw;
+    }
+    }
+  }
+  output_table->SetSchema(&s);
   return output_table;
 }
 

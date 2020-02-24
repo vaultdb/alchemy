@@ -40,6 +40,11 @@ public:
       : type_(f.type_), column_number_(f.column_number_),
         is_private_(f.is_private_), name_(f.name_), table_name(f.table_name){};
 
+  QueryFieldDesc(QueryFieldDesc &f, vaultdb::types::TypeId type,
+                 bool is_private)
+      : type_(type), column_number_(f.column_number_), is_private_(is_private),
+        name_(f.name_), table_name(f.table_name){};
+
   QueryFieldDesc(QueryFieldDesc &f, int col_num)
       : type_(f.type_), column_number_(col_num), is_private_(f.is_private_),
         name_(f.name_), table_name(f.table_name){};
