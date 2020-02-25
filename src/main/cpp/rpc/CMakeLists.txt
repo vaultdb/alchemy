@@ -1,4 +1,4 @@
-link_directories(/usr/local/lib /home/madhav/DB/grpc/libs/opt/)
+link_directories(/usr/local/lib)
 set(CMAKE_BUILD_TYPE Debug)
 LIST(APPEND CMAKE_PROGRAM_PATH ${CMAKE_SOURCE_DIR}/lib/bin)
 find_program(PROTOC protoc ${CMAKE_SOURCE_DIR}/lib/bin)

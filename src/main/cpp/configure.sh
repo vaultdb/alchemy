@@ -41,35 +41,7 @@ if [ ! -d "libpqxx" ]; then
 	make install
 fi
 
-cd $BASEDIR/external
-if [ ! -d "emp-tool" ]; then
-	git clone https://github.com/emp-toolkit/emp-tool.git
-	cd emp-tool
-	mkdir build && cd build
-	cmake -DCMAKE_INSTALL_PREFIX=$BASEDIR/lib ..
-	make -j10
-	make install
-fi
 
-cd $BASEDIR/external
-if [ ! -d "emp-ot" ]; then
-	git clone https://github.com/emp-toolkit/emp-ot.git
-	cd emp-ot
-	mkdir build && cd build
-	cmake -DCMAKE_PREFIX_PATH=$BASEDIR/lib -DCMAKE_INCLUDE_PATH=$BASEDIR/lib/include -DCMAKE_INSTALL_PREFIX=$BASEDIR/lib ..
-	make -j10
-	make install
-fi
-
-cd $BASEDIR/external
-if [ ! -d "emp-sh2pc" ]; then
-	git clone https://github.com/emp-toolkit/emp-sh2pc.git
-	cd emp-sh2pc
-	mkdir build && cd build
-	cmake -DCMAKE_PREFIX_PATH=$BASEDIR/lib -DCMAKE_INCLUDE_PATH=$BASEDIR/lib/include -DCMAKE_INSTALL_PREFIX=$BASEDIR/lib ..
-	make -j10
-	make install
-fi
 
 
 
