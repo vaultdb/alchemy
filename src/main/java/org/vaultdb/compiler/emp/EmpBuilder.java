@@ -58,8 +58,21 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     	// remote simply works from "."
     	String nodeType = SystemConfiguration.getInstance().getProperty("node-type");
 
-    	    
+    	
+    	
         Properties properties = getProperties();
+        String root = Utilities.getVaultDBRoot() + "/";
+
+        String includePath = properties.getProperty("platform.includepath");
+        includePath +=  ":" + root + "src/main/cpp:" + root + "src/main/cpp/lib/include";
+        properties.setProperty("platform.includepath", includePath);
+
+        String linkPath = properties.getProperty("platform.linkpath");
+        linkPath +=  ":" + root + "src/main/cpp/lib/lib";
+        
+        properties.setProperty("platform.linkpath", linkPath);
+        
+        
         String className = fullyQualifiedClassName.substring(fullyQualifiedClassName.lastIndexOf('.')+1);
         
         

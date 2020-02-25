@@ -4,7 +4,7 @@
 #include "data/PQDataProvider.h"
 #include "emp-sh2pc/emp-sh2pc.h"
 #include "emp-tool/emp-tool.h"
-#include "gflags/gflags.h"
+#include <gflags/gflags.h>
 #include "operators/secure_join.h"
 #include "querytable/private_share_utility.h"
 #include <chrono>

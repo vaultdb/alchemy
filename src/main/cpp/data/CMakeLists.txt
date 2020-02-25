@@ -6,7 +6,7 @@ add_library(pqxx_compat
         )
 target_link_libraries(pqxx_compat krpc pqxx pq gmp protobuf)
 
-add_library(proto_converter SHARED
+add_library(proto_converter STATIC
         proto_converter.cpp)
 target_link_libraries(proto_converter krpc gmp protobuf)
 install(TARGETS proto_converter DESTINATION ${CMAKE_SOURCE_DIR}/lib/lib)

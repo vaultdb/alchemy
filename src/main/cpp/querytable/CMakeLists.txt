@@ -1,4 +1,4 @@
-add_library(query_table SHARED
+add_library(query_table STATIC
         query_field_desc.cpp
         query_schema.cpp
         query_field.cpp

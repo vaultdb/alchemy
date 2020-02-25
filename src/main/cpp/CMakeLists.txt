@@ -28,6 +28,9 @@ include_directories(${CMAKE_SOURCE_DIR})
 include_directories(/usr/local/include)
 
 
+find_package(OpenSSL REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
+
 add_subdirectory(rpc)
 add_subdirectory(data)
 add_subdirectory(operators)
@@ -44,3 +47,5 @@ message("hello ${OPENSSL_LIBRARIES}")
 add_executable(main main.cpp operators/filter.cpp operators/filter.h common/macros.h common/defs.h)
 target_link_libraries(main gflags pthread emp-tool gmp ${EMP-OT_LIBRARIES} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES}
         dataprovider secure_operators)
+
+
