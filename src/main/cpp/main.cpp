@@ -40,6 +40,7 @@ int main(int argc, char **argv) {
   auto s_lineitem =
       ShareData(lineitem->GetSchema(), my_party, lineitem.get(), def);
   AggregateDef d;
+  d.index = 0;
 
   auto agg_result = Aggregate(s_lineitem.get(), d);
   int table_avg = agg_result->GetNumTuples();

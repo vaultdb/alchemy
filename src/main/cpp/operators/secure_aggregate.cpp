@@ -13,7 +13,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
   // pseudocode:
 
   emp::Integer *sum = new emp::Integer(64, 0, emp::BOB);
-  emp::Bit *isDummy = new emp::Bit();
+  emp::Bit *isDummy = new emp::Bit(false, emp::PUBLIC);
   //emp::Integer *value = new emp::Integer
   // int count_star = input->GetNumTuples();
 
@@ -29,13 +29,17 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
   for (int row = 0; row < input->GetNumTuples(); row++) {
     //    *sum = *sum +
     //        emp::If(*input->GetTuple(row)->InitDummy())
-    *isDummy = *input->GetTuple(row)->GetField(def.index)->GetValue()->GetEmpBit();
+    input->GetTuple(row)->InitDummy();
+    *isDummy = *input->GetTuple(row)->GetDummyFlag()->GetEmpBit();
+    //std::cout<<"DUMMY VALUE IS................\n"<<isDummy->reveal(emp::PUBLIC);
+    //vaultdb::types::Value* flag = t.GetDummyFlag(def.index);
 
+    //*isDummy = *input->GetTuple(row)->GetField(def.index)->GetValue()->GetEmpBit();
     *sum =
         *sum +
-        emp::If(isDummy,
-                *input->GetTuple(row)->GetField(def.index)->GetValue()->GetEmpInt(),
-                zero);
+        emp::If(*isDummy,
+                zero,
+                *input->GetTuple(row)->GetField(def.index)->GetValue()->GetEmpInt());
     //
     //    *sum = *sum +
     //        *input->GetTuple(row)
@@ -43,20 +47,22 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
     //        ->GetValue()
     //        ->GetEmpInt();
 
-    count_emp = count_emp + emp::If(isDummy, one, zero);
+    count_emp = count_emp +
+        emp::If(*isDummy,
+            zero,
+            one);
   }
   // std::cout<<"\n=========== count ===========
   // "<<count_emp->reveal<int64_t>(emp::PUBLIC); emp::Float f =
   // emp::Float(emp::Float());
 
   emp::Integer *average = new emp::Integer(64, 0, emp::BOB);
-  // if(average){std::cout<<"Average assigned size of :"<<average->size();}
 
   *average = (*sum) / count_emp;
 
   // std::cout<<"\n=========== count ============
   // "<<average->reveal<int64_t>(emp::PUBLIC); *sum emp::Float::operator/
-  //*count_emp; const QueryField f(*sum, sum->length, 0);
+  //*count_emp;
 
   const QueryField f(*average, average->length, 0);
   std::unique_ptr<QueryTable> aggregate_output =

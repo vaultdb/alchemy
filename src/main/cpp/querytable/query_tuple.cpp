@@ -37,9 +37,9 @@ void QueryTuple::InitDummy() {
   }
 }
 
-//const vaultdb::types::Value *QueryTuple::GetDummyFlag() const {
-//  return &this->dummy_flag_;
-//}
+const vaultdb::types::Value *QueryTuple::GetDummyFlag()  {
+  return &this->dummy_flag_;
+}
 
 void QueryTuple::SetIsEncrypted(bool isEncrypted) {
   is_encrypted_ = isEncrypted;
