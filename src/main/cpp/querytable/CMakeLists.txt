@@ -11,4 +11,5 @@ add_library(query_table SHARED
         private_share_utility.cpp)
 target_link_libraries(query_table types gmp)
 add_subdirectory(types)
+install(TARGETS query_table DESTINATION ${CMAKE_SOURCE_DIR}/lib/lib)
 

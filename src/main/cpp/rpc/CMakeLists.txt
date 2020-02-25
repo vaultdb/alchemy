@@ -46,3 +46,4 @@ add_custom_target(rpc_proto_gen ALL DEPENDS ${vdb_proto} ${vdb_proto_srcs} ${vdb
 add_library(krpc SHARED ${vdb_proto_srcs})
 
 target_link_libraries(krpc protobuf pthread)
+install(TARGETS krpc DESTINATION ${CMAKE_SOURCE_DIR}/lib/lib)

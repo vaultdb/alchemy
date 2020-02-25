@@ -30,35 +30,6 @@ if [ ! -d "gflags" ]; then
 	cd $BASEDIR/external
 fi
 
-#grpc installation
-#cd $BASEDIR/external
-#if [ ! -d "grpc" ]; then
-#	git clone --branch v1.26.0 https://github.com/grpc/grpc.git
-#	cd grpc
-#	git submodule update --init
-#	make HAS_SYSTEM_PROTOBUF=false -j10
-#	make prefix=$BASEDIR/lib install
-#	cd third_party/protobuf
-#	make prefix=$BASEDIR/lib install
-#	# back in external
-#	cd $BASEDIR/external
-#fi
-
-#G3Log installation
-cd $BASEDIR/external
-if [ ! -d "g3log" ]; then
-	git clone --branch 1.3.2 https://github.com/KjellKod/g3log.git
-	cd g3log
-	cd 3rdParty/gtest
-	unzip gtest-1.7.0.zip
-	cd ../../
-	mkdir build
-	cd build
-	cmake -DCPACK_PACKAGING_INSTALL_PREFIX=$BASEDIR/lib -DCMAKE_BUILD_TYPE=Release -DCHANGE_G3LOG_DEBUG_TO_DBUG=ON ..
-	make -j10
-	make install
-fi
-
 
 #libpqxx installation
 cd $BASEDIR/external

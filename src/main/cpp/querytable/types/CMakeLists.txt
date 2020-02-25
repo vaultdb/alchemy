@@ -13,3 +13,4 @@ add_library(types SHARED
         ../expression/arithmetic_expression.cpp
         ../expression/arithmetic_expression.h encrypted/encrypted_boolean_type.cpp encrypted/encrypted_boolean_type.h unencrypted/boolean_type.cpp unencrypted/boolean_type.h)
 target_link_libraries(types emp-tool)
+install(TARGETS types DESTINATION ${CMAKE_SOURCE_DIR}/lib/lib)

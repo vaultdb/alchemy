@@ -9,6 +9,7 @@ target_link_libraries(pqxx_compat krpc pqxx pq)
 add_library(proto_converter SHARED
         proto_converter.cpp)
 target_link_libraries(proto_converter krpc)
+install(TARGETS proto_converter DESTINATION ${CMAKE_SOURCE_DIR}/lib/lib)
 
 add_library(dataprovider DataProvider.cpp PQDataProvider.cpp )
 target_link_libraries(dataprovider pqxx_compat)
