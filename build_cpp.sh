@@ -1,6 +1,6 @@
 #!/bin/bash
 cd src/main/cpp
-./configure.sh
+#./configure.sh
 mkdir build
 cd build
 cmake ..
