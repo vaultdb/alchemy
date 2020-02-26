@@ -27,10 +27,7 @@ void QueryTuple::PutField(int ordinal, const QueryField *f) {
 }
 
 void QueryTuple::SetDummyFlag(vaultdb::types::Value *v) {
-  vaultdb::expression::Expression ex(v, &dummy_flag_,
-                                     vaultdb::expression::ExpressionId::EQUAL);
-  auto result = ex.execute();
-  dummy_flag_.SetValue(&result);
+  dummy_flag_.SetValue(v);
 }
 void QueryTuple::InitDummy() {
   if (is_encrypted_) {
