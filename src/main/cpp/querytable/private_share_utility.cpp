@@ -39,6 +39,7 @@ void AddToTable(QueryTable *t, const QuerySchema *shared_schema,
   for (int i = 0; i < c.num_tuples; i++) {
     QueryTuple *tup = t->GetTuple(i + insert_offset);
     tup->SetIsEncrypted(true);
+    tup->InitDummy();
     for (int ordinal = 0; ordinal < shared_schema->GetNumFields(); ordinal++) {
       std::unique_ptr<vaultdb::QueryField> qf;
       switch (shared_schema->GetField(ordinal)->GetType()) {
