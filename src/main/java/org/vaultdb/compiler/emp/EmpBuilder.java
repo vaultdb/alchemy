@@ -59,7 +59,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     	String nodeType = SystemConfiguration.getInstance().getProperty("node-type");
 
     	
-    	
+    	// add relative paths
         Properties properties = getProperties();
         String root = Utilities.getVaultDBRoot() + "/";
 

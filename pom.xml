@@ -66,6 +66,11 @@
       <version>2.0-beta9</version>
     </dependency>
     <dependency>
+      <groupId>com.googlecode.cmake-maven-project</groupId>
+      <artifactId>cmake-maven-plugin</artifactId>
+      <version>3.16.3-b2</version>
+    </dependency>
+    <dependency>
       <groupId>com.github.jsqlparser</groupId>
       <artifactId>jsqlparser</artifactId>
       <version>0.9</version>
@@ -109,6 +114,7 @@
     </dependency>
 
   </dependencies>
+
   <build>
     <extensions>
       <extension>
@@ -117,24 +123,81 @@
         <version>1.6.2</version>
       </extension>
     </extensions>
-    <plugins>
-	    <plugin>
-		    <artifactId>exec-maven-plugin</artifactId>
-		    <groupId>org.codehaus.mojo</groupId>
-		    <executions>
-			    <execution><!-- compile cpp target -->
-				    <id>Build CPP</id>
-				    <phase>generate-sources</phase>
-				    <goals>
-					    <goal>exec</goal>
-				    </goals>
-				    <configuration>
-					    <executable>${basedir}/build_cpp.sh</executable>
-				    </configuration>
-			    </execution>
-		    </executions>
-	    </plugin>
 
+
+
+    
+    <plugins>
+      <plugin>
+	<groupId>com.googlecode.cmake-maven-project</groupId>
+	<artifactId>cmake-maven-plugin</artifactId>
+	<version>3.16.3-b2</version>
+	<executions>
+	  <execution>
+	    <id>cmake-generate</id>
+	    <goals>
+              <goal>generate</goal>
+	    </goals>
+	    <configuration>
+        <sourcePath>${basedir}/src/main/cpp</sourcePath>
+        <targetPath>${basedir}/src/main/cpp/lib/lib</targetPath>
+        
+        <options>
+          <option>-j10</option>
+        </options>
+      </configuration>
+    </execution>
+  </executions>
+      </plugin>
+
+
+      <plugin>
+	<groupId>com.googlecode.cmake-maven-project</groupId>
+	<artifactId>cmake-maven-plugin</artifactId>
+	<version>3.16.3-b2</version>
+	<executions>
+	  <execution>
+	    <id>cmake-compile</id>
+	    <goals>
+              <goal>compile</goal>
+	    </goals>
+	    <configuration>
+        
+        <projectDirectory>${basedir}/src/main/cpp/lib/lib</projectDirectory>
+	    </configuration>
+      </execution>
+  </executions>
+      </plugin>
+
+
+<plugin>
+  <groupId>com.googlecode.cmake-maven-project</groupId>
+  <artifactId>cmake-maven-plugin</artifactId>
+  <version>3.16.3-b2</version>
+  <executions>
+    <execution>
+      <id>cmake-test</id>
+      <goals>
+        <goal>test</goal>
+      </goals>
+      <configuration>
+        <!-- "buildDirectory" is "targetPath" from the "generate" goal -->
+        <buildDirectory>${project.build.directory}</buildDirectory>
+        <!-- Optional: do not fail the build on test failures. false by default. -->
+        <testFailureIgnore>true</testFailureIgnore>
+        <!-- Optional: skip only ctest tests. false by default. -->
+        <ctest.skip.tests>true</ctest.skip.tests>
+        <!-- Optional: Skip all Maven tests. false by default -->
+        <maven.test.skip>true</maven.test.skip>
+        <!-- Optional: the number of threads tests should use -->
+        <threadCount>2</threadCount>
+        <!-- Optional: dashboard configuration; used with CTestConfig.cmake -->
+        <dashboard>Experimental</dashboard>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
+      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
@@ -148,6 +211,7 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
