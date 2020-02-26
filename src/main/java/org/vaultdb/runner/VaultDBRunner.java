@@ -10,7 +10,7 @@ import org.vaultdb.parser.SqlStatementParser;
 import org.vaultdb.plan.SecureRelRoot;
 import org.vaultdb.util.Utilities;
 
-public class SMCQLRunner {
+public class VaultDBRunner {
 	protected SqlDialect dialect = SqlDialect.DatabaseProduct.POSTGRESQL.getDialect();
 	protected String codePath = Utilities.getVaultDBRoot() + "/conf/workload/sql";
 	protected static WorkerConfiguration honestBroker;

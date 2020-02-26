@@ -126,7 +126,6 @@
 
 
 
-    
     <plugins>
       <plugin>
 	<groupId>com.googlecode.cmake-maven-project</groupId>
@@ -218,7 +217,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>org.smcql.runner.SMCQLRunner</mainClass>
+              <mainClass>org.vaultdb.runner.VaultDBRunner</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -277,5 +276,41 @@
 
 
     </plugins>
+    <pluginManagement>
+    	<plugins>
+    		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+    		<plugin>
+    			<groupId>org.eclipse.m2e</groupId>
+    			<artifactId>lifecycle-mapping</artifactId>
+    			<version>1.0.0</version>
+    			<configuration>
+    				<lifecycleMappingMetadata>
+    					<pluginExecutions>
+    						<pluginExecution>
+    							<pluginExecutionFilter>
+    								<groupId>
+    									com.googlecode.cmake-maven-project
+    								</groupId>
+    								<artifactId>
+    									cmake-maven-plugin
+    								</artifactId>
+    								<versionRange>
+    									[3.16.3-b2,)
+    								</versionRange>
+    								<goals>
+    									<goal>compile</goal>
+    									<goal>generate</goal>
+    								</goals>
+    							</pluginExecutionFilter>
+    							<action>
+    								<ignore></ignore>
+    							</action>
+    						</pluginExecution>
+    					</pluginExecutions>
+    				</lifecycleMappingMetadata>
+    			</configuration>
+    		</plugin>
+    	</plugins>
+    </pluginManagement>
   </build>
 </project>
