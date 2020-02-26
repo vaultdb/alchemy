@@ -170,33 +170,6 @@
       </plugin>
 
 
-<plugin>
-  <groupId>com.googlecode.cmake-maven-project</groupId>
-  <artifactId>cmake-maven-plugin</artifactId>
-  <version>3.16.3-b2</version>
-  <executions>
-    <execution>
-      <id>cmake-test</id>
-      <goals>
-        <goal>test</goal>
-      </goals>
-      <configuration>
-        <!-- "buildDirectory" is "targetPath" from the "generate" goal -->
-        <buildDirectory>${project.build.directory}</buildDirectory>
-        <!-- Optional: do not fail the build on test failures. false by default. -->
-        <testFailureIgnore>true</testFailureIgnore>
-        <!-- Optional: skip only ctest tests. false by default. -->
-        <ctest.skip.tests>true</ctest.skip.tests>
-        <!-- Optional: Skip all Maven tests. false by default -->
-        <maven.test.skip>true</maven.test.skip>
-        <!-- Optional: the number of threads tests should use -->
-        <threadCount>2</threadCount>
-        <!-- Optional: dashboard configuration; used with CTestConfig.cmake -->
-        <dashboard>Experimental</dashboard>
-      </configuration>
-    </execution>
-  </executions>
-</plugin>
       
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
