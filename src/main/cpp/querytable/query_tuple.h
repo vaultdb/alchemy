@@ -42,6 +42,7 @@ public:
   void SetDummyFlag(vaultdb::types::Value *v);
   void SetDummyFlag(emp::Bit &flag);
   void SetDummyFlag(bool flag);
+  const vaultdb::types::Value *GetDummyFlag() ;
 };
 
 } // namespace vaultdb

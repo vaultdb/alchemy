@@ -3,58 +3,47 @@
 //
 
 #include "secure_aggregate.h"
+#include <common/macros.h>
 #include <querytable/query_table.h>
-
 std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
                                       const AggregateDef &def) {
-  //TODO(madhavsuresh): for tpc-h 1 need to implement SUM, AVG, and COUNT
+  // TODO(madhavsuresh): for tpc-h 1 need to implement SUM, AVG, and COUNT
   // need to be able to set the output schema with the "as" clause
   // that will have to be in the AggregateDef
-  //pseudocode:
-
-  emp::Integer* sum = new emp::Integer(64,0, emp::BOB);
-  int count_star = input->GetNumTuples();
+  // pseudocode:
+  std::unique_ptr<QueryTable> aggregate_output =
+      std::make_unique<QueryTable>(input->GetIsEncrypted(), 1);
+  emp::Integer *sum = new emp::Integer(64, 0, emp::BOB);
+  std::vector<emp::Integer> sum_vector;
+  for (int i = 0; i < def.index.size(); i++) {
+    sum_vector.emplace_back(64, 0, emp::BOB);
+  }
+  emp::Bit *isDummy = new emp::Bit(false, emp::PUBLIC);
 
   emp::Integer count_emp(64, 0, emp::BOB);
 
-  //std::cout<<"Count(*) = "<<count_star;
-  //if(count_emp){std::cout<<"There's our size for count"<<count_emp->size();}
-
   emp::Integer one(64, 1, emp::PUBLIC);
-  for(int row = 0; row < input->GetNumTuples(); row++) {
-
-    *sum = *sum +
-        *input->GetTuple(row)
-        ->GetField(def.index)
-        ->GetValue()
-        ->GetEmpInt();
-
-    count_emp = count_emp+one;
-
+  emp::Integer zero(64, 1, emp::PUBLIC);
+  for (int row = 0; row < input->GetNumTuples(); row++) {
+    *isDummy = *input->GetTuple(row)->GetDummyFlag()->GetEmpBit();
+    count_emp = count_emp + emp::If(*isDummy, zero, one);
+    for (int idx = 0; idx < def.index.size(); idx++) {
+      sum_vector[idx] =
+          sum_vector[idx] + emp::If(*isDummy, zero,
+                                    *input->GetTuple(row)
+                                         ->GetField(def.index[idx])
+                                         ->GetValue()
+                                         ->GetEmpInt());
+    }
   }
-  //std::cout<<"\n=========== count =========== "<<count_emp->reveal<int64_t>(emp::PUBLIC);
-  //emp::Float f = emp::Float(emp::Float());
-
-  emp::Integer* average = new emp::Integer(64, 0, emp::BOB);
-  //if(average){std::cout<<"Average assigned size of :"<<average->size();}
-
-  *average = (*sum) / count_emp;
-
-  //std::cout<<"\n=========== count ============ "<<average->reveal<int64_t>(emp::PUBLIC);
-  //*sum emp::Float::operator/ *count_emp;
-  //const QueryField f(*sum, sum->length, 0);
-
-  const QueryField f(*average, average->length, 0);
-  std::unique_ptr<QueryTable> aggregate_output = std::make_unique<QueryTable>
-      (input->GetIsEncrypted(), 1);
-  aggregate_output->GetTuple(0)->PutField(0, &f);
-
-  //int table_sum = sum->reveal<int64_t>(emp::PUBLIC);
-  //std::cout << "\nOutput of sum " << table_sum;
-  //std::cout << "\nAverage of the table: "<< emp::Float(table_sum/count_star);
+  std::vector<emp::Integer> average_vector;
+  for (int i = 0; i < def.index.size(); i++) {
+    average_vector.emplace_back(64, 0, emp::BOB);
+    average_vector[i] = (sum_vector[i]) / count_emp;
+    const QueryField f(average_vector[i], average_vector[i].length, i);
+    aggregate_output->GetTuple(0)->PutField(i, &f);
+  }
 
   // TODO: implement this for float as well (returning int(AVG) for now
-
   return aggregate_output;
 }
-
