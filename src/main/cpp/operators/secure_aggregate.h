@@ -7,7 +7,7 @@
 
 #include <querytable/query_table.h>
 struct AggregateDef {
-  std::vector<int> index {0, 1, 2};
+  std::vector<int> index {};
   //int ordinals[5];
 
 };

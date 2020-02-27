@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 
   PQDataProvider pq = PQDataProvider();
   auto lineitem = pq.GetQueryTable("dbname=tpch_unioned",
-                                   "SELECT l_quantity::integer, l_partkey::integer, l_suppkey::integer FROM lineitem LIMIT 50");
+                                   "SELECT l_quantity::integer, l_partkey::integer, l_suppkey::integer, l_orderkey::integer FROM lineitem LIMIT 50");
 
   EmpParty my_party =
       FLAGS_party == emp::ALICE ? EmpParty::ALICE : EmpParty::BOB;
@@ -41,6 +41,10 @@ int main(int argc, char **argv) {
   auto s_lineitem =
       ShareData(lineitem->GetSchema(), my_party, lineitem.get(), def);
   AggregateDef d;
+  for (int i = 0; i<s_lineitem.get()->GetSchema()->GetNumFields(); i++){
+    d.index.push_back(s_lineitem.get()->GetSchema()->GetField(i)->GetColumnNumber());
+  }
+  // s_lineitem.get()->GetSchema()->GetNumFields();
   auto agg_result = Aggregate(s_lineitem.get(), d);
   int table_avg = agg_result->GetNumTuples();
 
