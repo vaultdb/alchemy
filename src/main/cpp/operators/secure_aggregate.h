@@ -7,7 +7,8 @@
 
 #include <querytable/query_table.h>
 struct AggregateDef {
-  int index;
+  std::vector<int> index {0, 1, 2};
+  //int ordinals[5];
 
 };
 std::unique_ptr<QueryTable> Aggregate(QueryTable *input,

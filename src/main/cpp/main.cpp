@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 
   PQDataProvider pq = PQDataProvider();
   auto lineitem = pq.GetQueryTable("dbname=tpch_unioned",
-                                   "SELECT l_quantity::integer FROM lineitem LIMIT 50");
+                                   "SELECT l_quantity::integer, l_partkey::integer, l_suppkey::integer FROM lineitem LIMIT 50");
 
   EmpParty my_party =
       FLAGS_party == emp::ALICE ? EmpParty::ALICE : EmpParty::BOB;
@@ -37,24 +37,27 @@ int main(int argc, char **argv) {
 
   def.share_map[EmpParty::ALICE] = ca;
   def.share_map[EmpParty::BOB] = cb;
+  //lineitem.get()->GetTuple(0)->GetField(ord)
   auto s_lineitem =
       ShareData(lineitem->GetSchema(), my_party, lineitem.get(), def);
   AggregateDef d;
-  d.index = 0;
-
   auto agg_result = Aggregate(s_lineitem.get(), d);
   int table_avg = agg_result->GetNumTuples();
 
-  auto result = agg_result
-      ->GetTuple(0)
-      ->GetField(0)
-      ->GetValue()
-      ->GetEmpInt();
+  for (int ord : d.index){
+    //d.index.front();
+    auto result = agg_result
+        ->GetTuple(0)
+        ->GetField(ord)       // replace with ord
+        ->GetValue()
+        ->GetEmpInt();
 
-  std::cout << "\nNo. of rows in table: " << table_avg;
-  std::cout << "\nAverage (encrypted) : " << result;
+    std::cout << "\nNo. of rows in table: " << table_avg;
+    std::cout << "\nAverage (encrypted) : " << result;
 
-  auto dec_result = result->reveal<int64_t>(emp::PUBLIC);
-  std::cout << "\nAverage (decrypted) : " << dec_result;
+    auto dec_result = result->reveal<int64_t>(emp::PUBLIC);
+    std::cout << "\nAverage (decrypted) : " << dec_result;
+  }
+
 }
 
