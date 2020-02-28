@@ -4,10 +4,10 @@
 #include "data/PQDataProvider.h"
 #include "emp-sh2pc/emp-sh2pc.h"
 #include "emp-tool/emp-tool.h"
-#include <gflags/gflags.h>
 #include "operators/secure_join.h"
 #include "querytable/private_share_utility.h"
 #include <chrono>
+#include <gflags/gflags.h>
 #include <operators/secure_aggregate.h>
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -23,8 +23,10 @@ int main(int argc, char **argv) {
   setup_semi_honest(io, FLAGS_party);
 
   PQDataProvider pq = PQDataProvider();
-  auto lineitem = pq.GetQueryTable("dbname=tpch_unioned",
-                                   "SELECT l_quantity::integer, l_partkey::integer, l_suppkey::integer, l_orderkey::integer FROM lineitem LIMIT 50");
+  auto lineitem = pq.GetQueryTable(
+      "dbname=tpch_unioned",
+      "SELECT l_quantity::integer, l_partkey::integer, l_suppkey::integer, "
+      "l_orderkey::integer FROM lineitem LIMIT 50");
 
   EmpParty my_party =
       FLAGS_party == emp::ALICE ? EmpParty::ALICE : EmpParty::BOB;
@@ -34,34 +36,47 @@ int main(int argc, char **argv) {
   ShareCount cb = {.party = EmpParty::BOB};
   cb.num_tuples = lineitem->GetNumTuples();
 
-
   def.share_map[EmpParty::ALICE] = ca;
   def.share_map[EmpParty::BOB] = cb;
-  //lineitem.get()->GetTuple(0)->GetField(ord)
+  // lineitem.get()->GetTuple(0)->GetField(ord)
   auto s_lineitem =
       ShareData(lineitem->GetSchema(), my_party, lineitem.get(), def);
+
   AggregateDef d;
-  for (int i = 0; i<s_lineitem.get()->GetSchema()->GetNumFields(); i++){
-    d.index.push_back(s_lineitem.get()->GetSchema()->GetField(i)->GetColumnNumber());
-  }
+  //d.defs.at(0).ordinal;
+  // TODO: hardcoding defs just to get it to work, automate later
+  ScalarAggregateDef def1 = {0, vaultdb::AggregateId::COUNT};
+  ScalarAggregateDef def2 = {1, vaultdb::AggregateId::COUNT};
+  ScalarAggregateDef def3 = {2, vaultdb::AggregateId::SUM};
+  ScalarAggregateDef def4 = {3, vaultdb::AggregateId::SUM};
+
+  d.defs.push_back(def1); //COUNT
+  d.defs.push_back(def2); //COUNT
+  d.defs.push_back(def3); //SUM TODO(shawshank-cs: IMPLEMENT AVERAGE
+  d.defs.push_back(def4); //SUM
+
+//  for (int i = 0; i < s_lineitem.get()->GetSchema()->GetNumFields(); i++) {
+//    d.index.push_back(
+//        s_lineitem.get()->GetSchema()->GetField(i)->GetColumnNumber());
+//  }
   // s_lineitem.get()->GetSchema()->GetNumFields();
   auto agg_result = Aggregate(s_lineitem.get(), d);
   int table_avg = agg_result->GetNumTuples();
 
-  for (int ord : d.index){
-    //d.index.front();
-    auto result = agg_result
-        ->GetTuple(0)
-        ->GetField(ord)       // replace with ord
-        ->GetValue()
-        ->GetEmpInt();
+  for (ScalarAggregateDef ord : d.defs) {
+    // d.index.front();
+    auto result = agg_result->GetTuple(0)
+                      ->GetField(ord.ordinal)
+                      ->GetValue()
+                      ->GetEmpInt();
 
-    std::cout << "\nNo. of rows in table: " << table_avg;
-    std::cout << "\nAverage (encrypted) : " << result;
+    string type = "";
+    if (ord.id == AggregateId ::COUNT) { type = "Count"; }
+    if (ord.id == AggregateId ::SUM) { type = "Sum"; }
+    if (ord.id == AggregateId ::COUNT) { type = "Count"; }
 
+    std::cout << "\n"<<type<<" (encrypted) : "<< result;
     auto dec_result = result->reveal<int64_t>(emp::PUBLIC);
-    std::cout << "\nAverage (decrypted) : " << dec_result;
+    std::cout << "\n"<<type<<" (decrypted) : " << dec_result;
   }
-
 }
-
