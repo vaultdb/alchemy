@@ -1,6 +1,8 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <map>
 #include <string>
+#include <sstream>
+#include <iostream>
 
 using namespace emp;
 using namespace std;

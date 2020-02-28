@@ -83,8 +83,6 @@ public class WorkerConfiguration  {
 			Class.forName("org.postgresql.Driver");
 			String url = "jdbc:postgresql://" + hostname + ":" + dbPort + "/" + dbName;
 			Properties props = new Properties();
-			// cannot use logger here because it creates a dependency loop with SystemConfiguration (or need to init in constructor)
-			System.out.println("Connecting with " + url + " and credentials: " + user + "," + password);
 			props.setProperty("user", user);
 			props.setProperty("password",password);
 			dbConnection = DriverManager.getConnection(url, props);
@@ -97,7 +95,6 @@ public class WorkerConfiguration  {
 	public void closeConnection() throws Exception {
 		if(dbConnection != null) {
 			Logger logger = SystemConfiguration.getInstance().getLogger();
-			logger.info("Closing connnection: " + dbConnection);
 			dbConnection.close();
 		}
 	}
