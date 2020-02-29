@@ -26,11 +26,11 @@ import net.openhft.compiler.CachedCompiler;
 public class EmpBuilder implements BuildEnabled, LoadEnabled {
 
 	String fullyQualifiedClassName;
-	java.util.logging.Logger smcqlLogger = null;
+	java.util.logging.Logger vaultdbLogger = null;
 	
 	public EmpBuilder(String className) throws Exception {
 		fullyQualifiedClassName = EmpJniUtilities.getFullyQualifiedClassName(className);
-    	smcqlLogger = SystemConfiguration.getInstance().getLogger();
+    	vaultdbLogger = SystemConfiguration.getInstance().getLogger();
 	}
     @Override 
     public void init(ClassProperties properties) {
@@ -61,18 +61,6 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     	
     	// add relative paths
         Properties properties = getProperties();
-        String root = Utilities.getVaultDBRoot() + "/";
-
-        String includePath = properties.getProperty("platform.includepath");
-        includePath +=  ":" + root + "src/main/cpp:" + root + "src/main/cpp/lib/include";
-        properties.setProperty("platform.includepath", includePath);
-
-        String linkPath = properties.getProperty("platform.linkpath");
-        linkPath +=  ":" + root + "src/main/cpp/lib/lib";
-        
-        properties.setProperty("platform.linkpath", linkPath);
-        
-        
         String className = fullyQualifiedClassName.substring(fullyQualifiedClassName.lastIndexOf('.')+1);
         
         
@@ -99,7 +87,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         }  
 
     
-        smcqlLogger.info("Building class: " + fullyQualifiedClassName);
+        vaultdbLogger.info("Building class: " + fullyQualifiedClassName);
         Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName).deleteJniFiles(true); //.copyLibs(true);
         File[] outputFiles = null;
         outputFiles = builder.build();
@@ -108,7 +96,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         } catch(Exception e) {
           	throw new Exception("Code compilation failed!");
         }
-        smcqlLogger.info("Builder files: " + Arrays.toString(outputFiles));
+        vaultdbLogger.info("Builder files: " + Arrays.toString(outputFiles));
         if(outputFiles == null || outputFiles.length == 0) {
         	throw new Exception("No output files generated from jni compilation!");
         }
@@ -148,13 +136,22 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     private Properties getProperties() {
     	String propertiesFile = Loader.getPlatform() + "-emp";
         Properties properties = Loader.loadProperties(propertiesFile, null);
+        String root = Utilities.getVaultDBRoot() + "/";
+
         String linkPath = properties.getProperty("platform.linkpath");
 
         
         String localLinkPath = System.getProperty("user.dir") + "/target/classes/org/vaultdb/compiler/emp/generated/" + Loader.getPlatform();
         
         linkPath += ":" + localLinkPath;
+        linkPath +=  ":" + root + "src/main/cpp/lib/lib";
+
         properties.setProperty("platform.linkpath", linkPath);
+        
+
+        String includePath = properties.getProperty("platform.includepath");
+        includePath +=  ":" + root + "src/main/cpp:" + root + "src/main/cpp/lib/include";
+        properties.setProperty("platform.includepath", includePath);
 
         return properties;
         
