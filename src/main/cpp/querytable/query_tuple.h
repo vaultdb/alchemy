@@ -5,7 +5,6 @@
 #ifndef TESTING_QUERY_TUPLE_H
 #define TESTING_QUERY_TUPLE_H
 
-#include "dummy_flag.h"
 #include "query_field.h"
 #include <map>
 #include <memory>

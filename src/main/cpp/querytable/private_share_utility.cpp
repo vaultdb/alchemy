@@ -108,9 +108,3 @@ std::unique_ptr<QueryTable> ShareData(const QuerySchema *shared_schema,
   return output_table;
 }
 
-std::unique_ptr<QueryTable> GetXorQueryTable(const QueryTable *table) {
-  for (int i = 0; i < table->GetNumTuples(); i++) {
-    for (int j = 0; j < table->GetSchema()->GetNumFields(); j++) {
-    }
-  }
-}
