@@ -1,19 +1,23 @@
 package org.vaultdb.compiler.emp;
 
+import org.apache.calcite.util.Pair;
+
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import org.vaultdb.db.data.QueryTable;
+import org.vaultdb.db.data.Tuple;
+import org.vaultdb.executor.config.ConnectionManager;
+import org.vaultdb.executor.plaintext.SqlQueryExecutor;
+import org.vaultdb.protos.DBQueryProtos;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.Utilities;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.calcite.util.Pair;
-import org.vaultdb.db.data.QueryTable;
-import org.vaultdb.db.data.Tuple;
-import org.vaultdb.executor.config.ConnectionManager;
-import org.vaultdb.executor.plaintext.SqlQueryExecutor;
-import org.vaultdb.type.SecureRelRecordType;
-import org.vaultdb.util.Utilities;
 
 public class EmpProgram {
 
@@ -41,12 +45,16 @@ public class EmpProgram {
 	}
 	
 	// delegate to implementing classes
-    public  void runProgram() throws Exception {
+    public void runProgram() throws Exception {
 
     }
-    
 
-    public String getOutputString() {
+	public DBQueryProtos.Table runProgramGetProto() throws InvalidProtocolBufferException {
+		return null;
+	}
+
+
+	public String getOutputString() {
     	return outputString;
     	
     }

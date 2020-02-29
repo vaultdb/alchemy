@@ -82,16 +82,10 @@ public class EmpRunnable implements Runnable {
       int exitValue = exec.execute(cmdl);
       assert (0 == exitValue);
 
-      String bitString = stderr.toString(); // TODO: can we make this all happen in binary?
-      outputProtoTable = DBQueryProtos.Table.parseFrom(bitString.getBytes());
-      bitString = bitString.substring(bitString.lastIndexOf("\n") + 1);
-      outputString = bitString;
-      // logger.info("Output: " + bitString);
-      logger.info("Party " + party + " returned " + bitString.length() + " bits.");
+      byte[] stderrOut = stderr.toByteArray();
+      outputProtoTable = DBQueryProtos.Table.parseFrom(stderrOut);
+      logger.info("Party " + party + " returned " + outputProtoTable.getRowCount() + " tuples.");
 
-      // translate to bools
-      output = EmpJniUtilities.stringToBitSet(bitString);
-      logger.info("stdout: " + stdout.toString());
 
     } catch (Exception e) {
       System.err.println("Running emp on party " + party + " failed!");

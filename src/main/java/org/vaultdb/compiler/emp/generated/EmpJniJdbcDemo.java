@@ -1,5 +1,7 @@
 package org.vaultdb.compiler.emp.generated;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
@@ -8,6 +10,7 @@ import org.bytedeco.javacpp.annotation.Namespace;
 import org.bytedeco.javacpp.annotation.Platform;
 import org.vaultdb.compiler.emp.EmpProgram;
 import org.vaultdb.db.data.QueryTable;
+import org.vaultdb.protos.DBQueryProtos;
 import org.vaultdb.util.Utilities;
 
 @Platform(
@@ -41,11 +44,15 @@ public class EmpJniJdbcDemo extends EmpProgram {
 
     // public native void setGeneratorHost(@StdString String host);
 
-    public native @Const BytePointer getOutput();
+    public native BytePointer getOutput();
+
+    public native int getOutputLength();
+
+    public native void prepareOutput();
   }
 
   @Override
-  public void runProgram() {
+  public DBQueryProtos.Table runProgramGetProto() throws InvalidProtocolBufferException {
     EmpJniJdbcDemoClass theQuery = new EmpJniJdbcDemoClass();
     QueryTable input = null;
 
@@ -65,18 +72,18 @@ public class EmpJniJdbcDemo extends EmpProgram {
     }
 
     theQuery.run(party, port);
+    theQuery.prepareOutput();
+    int size = theQuery.getOutputLength();
+    byte[] outputBytes = new byte[size];
     BytePointer output = theQuery.getOutput();
-    outputString = output.getString();
+    output.get(outputBytes, 0, size);
+    DBQueryProtos.Table outputProtoTable = DBQueryProtos.Table.parseFrom(outputBytes);
     theQuery.close();
-    // byte[] dst = new byte[(int) output.capacity()];
-    // output.get(dst);
-    // TODO: madhav create constructor for XOR revealed outputs
-    // QueryTable xorTable = new QueryTable(input.getSchema(), output);
-
+    return outputProtoTable;
   }
 
   // for testing
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
 
     int party = Integer.parseInt(args[0]);
     int port = Integer.parseInt(args[1]);
@@ -91,7 +98,8 @@ public class EmpJniJdbcDemo extends EmpProgram {
     System.setProperty("workerId", workerId);
 
     EmpJniJdbcDemo qc = new EmpJniJdbcDemo(party, port, query);
-    qc.runProgram();
-    // System.err.print(qc.getOutputString());
+    DBQueryProtos.Table table = qc.runProgramGetProto();
+    byte[] testing = table.toByteArray();
+    System.err.write(testing);
   }
 }

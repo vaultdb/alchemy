@@ -37,18 +37,8 @@ public class EmpJniJdbcLocalTest extends BaseTest {
     alice.join();
     bob.join();
 
-    String aliceOutput = aliceRunnable.getOutputString();
     DBQueryProtos.Table aliceTable = aliceRunnable.getOutputProtoTable();
-    // DBQueryProtos.Table aliceTable = DBQueryProtos.Table.parseFrom(aliceOutput.getBytes());
-    String bobOutput = bobRunnable.getOutputString();
     DBQueryProtos.Table bobTable = bobRunnable.getOutputProtoTable();
-    System.out.println(bobTable.getRowCount());
-
-    logger.info(
-        "Alice output len = "
-            + aliceOutput.getBytes().length
-            + ", bob's is "
-            + bobOutput.getBytes().length);
 
     List<Long> output = EmpJniUtilities.revealTableOutput(aliceTable, bobTable);
     logger.info("Query output: " + output);

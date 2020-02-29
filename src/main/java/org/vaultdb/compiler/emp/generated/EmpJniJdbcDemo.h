@@ -11,8 +11,8 @@ namespace EmpJniJdbcDemo {
 class EmpJniJdbcDemoClass {
 
   string aliceHost = "127.0.0.1";
-  void *output;
   map<string, QueryTable *> inputs;
+  std::string output;
 
   unique_ptr<QueryTable> unionOp(int party, emp::NetIO *io) { //, NetIO * io) {
 
@@ -66,11 +66,13 @@ public:
     table.release();
   }
 
-  const void *getOutput() {
-    auto s = QueryTable::GetQueryTableXorString(inputs["shared"]);
-    std::cerr << s;
-    return s.c_str();
+  const void prepareOutput() {
+    output = QueryTable::GetQueryTableXorString(inputs["shared"]);
   }
+
+  int getOutputLength() { return output.size(); }
+
+  signed char *getOutput() { return (signed char *)output.c_str(); }
 
 }; // end class
 } // namespace EmpJniJdbcDemo
