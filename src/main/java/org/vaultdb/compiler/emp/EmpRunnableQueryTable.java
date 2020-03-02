@@ -1,26 +1,29 @@
 package org.vaultdb.compiler.emp;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.util.BitSet;
-
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
+
 import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.protos.DBQueryProtos;
 import org.vaultdb.util.EmpJniUtilities;
 import org.vaultdb.util.FileUtilities;
 import org.vaultdb.util.Utilities;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.BitSet;
+
 // for use in localhost setting
-public class EmpRunnable implements Runnable {
+public class EmpRunnableQueryTable extends EmpRunnable {
   String className;
   int party, port;
   BitSet output;
   String outputString;
-  
+  DBQueryProtos.Table outputProtoTable;
+
   int outputSize = 0;
-  
+
   final String smcqlRoot = Utilities.getVaultDBRoot(); // directory with pom.xml
   // TODO: adjust to versions in pom.xml
   final String javaCppJar =
@@ -31,13 +34,11 @@ public class EmpRunnable implements Runnable {
           + ".m2/repository/org/apache/calcite/calcite-core/1.18.0/calcite-core-1.18.0.jar";
   final String javaCppWorkingDirectory = smcqlRoot + "/target/classes";
 
-  
-  
-  public EmpRunnable(String aClassName, int aParty, int aPort) throws Exception {
+  public EmpRunnableQueryTable(String aClassName, int aParty, int aPort) throws Exception {
+    super(aClassName, aParty, aPort);
     configure(aClassName, aParty, aPort);
   }
 
-  
   public void configure(String aClassName, int aParty, int aPort) throws Exception {
     className = EmpJniUtilities.getFullyQualifiedClassName(aClassName);
     party = aParty;
@@ -82,16 +83,10 @@ public class EmpRunnable implements Runnable {
       int exitValue = exec.execute(cmdl);
       assert (0 == exitValue);
 
-      
-      String bitString = stderr.toString(); // TODO: can we make this all happen in binary?
-      bitString = bitString.substring(bitString.lastIndexOf("\n") + 1);
-      outputString = bitString;
-      //logger.info("Output: " + bitString);
-      logger.info("Party " + party + " returned " + bitString.length() + " bits.");
-  
-      // translate to bools
-      output = EmpJniUtilities.stringToBitSet(bitString);
-      logger.info("stdout: " + stdout.toString()); 
+      byte[] stderrOut = stderr.toByteArray();
+      outputProtoTable = DBQueryProtos.Table.parseFrom(stderrOut);
+      logger.info("Party " + party + " returned " + outputProtoTable.getRowCount() + " tuples.");
+
 
     } catch (Exception e) {
       System.err.println("Running emp on party " + party + " failed!");
@@ -102,7 +97,10 @@ public class EmpRunnable implements Runnable {
     }
   }
 
- 
+  public DBQueryProtos.Table getOutputProtoTable() {
+    return outputProtoTable;
+  }
+
   public String getOutputString() {
     return outputString;
   }
@@ -110,11 +108,10 @@ public class EmpRunnable implements Runnable {
   public BitSet getOutput() {
     return output;
   }
-  
+
   public int getOutputLength() {
-	 	if(outputString == null)
-    		return 0;
-    	
-    	return outputString.length();
-    }
+    if (outputString == null) return 0;
+
+    return outputString.length();
+  }
 }
