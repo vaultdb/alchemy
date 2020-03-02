@@ -137,11 +137,8 @@
 	    </goals>
 	    <configuration>
         <sourcePath>${basedir}/src/main/cpp</sourcePath>
-        <targetPath>${basedir}/src/main/cpp/lib/lib</targetPath>
+        <targetPath>${basedir}/src/main/cpp/build/</targetPath>
         
-        <options>
-          <option>-j10</option>
-        </options>
       </configuration>
     </execution>
 	  <execution>
@@ -151,7 +148,12 @@
 	    </goals>
 	    <configuration>
         
-        <projectDirectory>${basedir}/src/main/cpp/lib/lib</projectDirectory>
+        <projectDirectory>${basedir}/src/main/cpp/build/</projectDirectory>
+	<options>
+	  <option>-j4</option>
+	  <option>--target</option>
+	  <option>install</option>
+        </options>
 	    </configuration>
 	  </execution>
 	  
