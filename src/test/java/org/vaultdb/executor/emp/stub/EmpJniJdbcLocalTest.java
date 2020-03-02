@@ -19,7 +19,7 @@ public class EmpJniJdbcLocalTest extends BaseTest {
     super.setUp();
   }
 
-  public void testEmpJni() throws Exception {
+  public void testEmpJniJdbc() throws Exception {
     int empPort = EmpJniUtilities.getEmpPort();
 
     EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort);
