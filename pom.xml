@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.smcql</groupId>
+  <groupId>org.vaultdb</groupId>
   <artifactId>vaultdb</artifactId>
   <packaging>jar</packaging>
   <version>0.5</version>
@@ -16,8 +16,6 @@
       <artifactId>junit</artifactId>
       <version>4.12</version>
     </dependency>
-
-
     <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-core</artifactId>
@@ -193,8 +191,13 @@
         <version>2.19.1</version>
         <configuration>
           <skipTests>${skipTests}</skipTests>
-          <enableAssertions>false</enableAssertions>
-        </configuration>
+          <enableAssertions>true</enableAssertions>
+	  <excludes>
+            <exclude>**/TpcHRunnableTest.java</exclude>
+          </excludes>
+	</configuration>
+	
+
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

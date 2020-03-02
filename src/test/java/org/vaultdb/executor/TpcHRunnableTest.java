@@ -1,13 +1,13 @@
-package org.smcql.executor;
+package org.vaultdb.executor;
 
-import org.smcql.codegen.QueryCompiler;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.parser.tpch.TpcHBaseTest;
-import org.smcql.plan.SecureRelRoot;
-import org.smcql.util.FileUtils;
-import org.smcql.util.Utilities;
+import org.vaultdb.TpcHBaseTest;
+import org.vaultdb.codegen.QueryCompiler;
+import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.plan.SecureRelRoot;
+import org.vaultdb.util.FileUtilities;
+import org.vaultdb.util.Utilities;
 
-public class TpcHRunnableTest extends TpcHBaseTest{
+public class TpcHRunnableTest extends TpcHBaseTest {
 
 	
 	  protected void setUp() throws Exception {
@@ -163,8 +163,8 @@ public class TpcHRunnableTest extends TpcHBaseTest{
 	    String empTarget = Utilities.getCodeGenTarget() + "/" + testName + ".h";
 	    String jniTarget = Utilities.getCodeGenTarget() + "/" + testName + ".java";
 			
-	    assertTrue(FileUtils.fileExists(empTarget));
-	    assertTrue(FileUtils.fileExists(jniTarget));
+	    assertTrue(FileUtilities.fileExists(empTarget));
+	    assertTrue(FileUtilities.fileExists(jniTarget));
 	    
 	    EmpExecutor exec = new EmpExecutor(qc);
 	    exec.runForTesting();

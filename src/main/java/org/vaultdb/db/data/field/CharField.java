@@ -146,8 +146,7 @@ public class CharField extends Field implements Serializable {
       n = (n << 1) | (b ? 1 : 0);
     }
 
-    System.out.println("Decoded character " + (char) n + " from " + n + " and " + bits);
-
+    
     return (char) n;
   }
 
