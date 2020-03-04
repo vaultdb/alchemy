@@ -23,13 +23,23 @@ int main(int argc, char **argv) {
   setup_semi_honest(io, FLAGS_party);
 
   PQDataProvider pq = PQDataProvider();
+
+
   auto lineitem = pq.GetQueryTable(
-      "dbname=tpch_unioned",
+      "dbname= tpch_unioned",
       "SELECT l_quantity::integer, l_partkey::integer, l_suppkey::integer, "
-      "l_orderkey::integer FROM lineitem LIMIT 50");
+      "l_orderkey::integer FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 50");
 
   EmpParty my_party =
       FLAGS_party == emp::ALICE ? EmpParty::ALICE : EmpParty::BOB;
+
+  //string db_name = "tpch_" +
+      //(my_party == EmpParty::ALICE) ? "alice" :"bob";
+  //std::cout<<db_name;
+//  auto lineitem = pq.GetQueryTable(
+//      "dbname=" + db_name,
+//      "SELECT l_quantity::integer, l_partkey::integer, l_suppkey::integer, "
+//      "l_orderkey::integer FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 50");
   ShareDef def;
   ShareCount ca = {.party = EmpParty::ALICE};
   ca.num_tuples = lineitem->GetNumTuples();
@@ -46,7 +56,7 @@ int main(int argc, char **argv) {
   //d.defs.at(0).ordinal;
   // TODO: hardcoding defs just to get it to work, automate later
   ScalarAggregateDef def1 = {0, vaultdb::AggregateId::COUNT};
-  ScalarAggregateDef def2 = {1, vaultdb::AggregateId::COUNT};
+  ScalarAggregateDef def2 = {1, vaultdb::AggregateId::AVG};
   ScalarAggregateDef def3 = {2, vaultdb::AggregateId::SUM};
   ScalarAggregateDef def4 = {3, vaultdb::AggregateId::SUM};
 
@@ -73,7 +83,7 @@ int main(int argc, char **argv) {
     string type = "";
     if (ord.id == AggregateId ::COUNT) { type = "Count"; }
     if (ord.id == AggregateId ::SUM) { type = "Sum"; }
-    if (ord.id == AggregateId ::COUNT) { type = "Count"; }
+    if (ord.id == AggregateId ::AVG) { type = "Average"; }
 
     std::cout << "\n"<<type<<" (encrypted) : "<< result;
     auto dec_result = result->reveal<int64_t>(emp::PUBLIC);
