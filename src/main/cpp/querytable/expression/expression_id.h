@@ -9,11 +9,14 @@ enum class ExpressionId {
   INVALID = 0,
   LESSTHANOREQUAL,
   EQUAL,
+  OR,
   GREATERTHANOREQUAL,
   LESSTHAN,
   GREATERTHAN,
   SUBSTRING,
   AND,
+  SELECT,
+  SWAP
 };
 
 };

@@ -41,6 +41,7 @@ public:
   void SetQueryField(emp::Integer, int length, int field_num);
 
   [[nodiscard]] const types::Value *GetValue() const;
+  [[nodiscard]] types::Value *GetMutableValue();
   void SetValue(const types::Value *val);
 };
 

@@ -16,12 +16,24 @@ public:
   static Type &GetInstance(TypeId type_id);
 
   [[nodiscard]] virtual Value CompareEquals(const Value &left,
-                                                    const Value &right) const = 0;
-  [[nodiscard]] virtual Value
-  CompareNotEquals(const Value &left, const Value &right) const = 0;
+					    const Value &right) const = 0;
+  [[nodiscard]] virtual Value CompareNotEquals(const Value &left,
+					       const Value &right) const = 0;
 
-  [[nodiscard]] virtual Value
-  And(const Value &left, const Value &right) const = 0;
+  [[nodiscard]] virtual Value CompareLessThanOrEqual(const Value &left,
+					       const Value &right) const = 0;
+
+  [[nodiscard]] virtual Value CompareGreaterThan(const Value &left,
+					       const Value &right) const = 0;
+
+  [[nodiscard]] virtual Value And(const Value &left,
+				  const Value &right) const = 0;
+
+  [[nodiscard]] virtual Value Or(const Value &left,
+				  const Value &right) const = 0;
+
+  virtual void Swap(const Value &compareBit, Value &left,
+				   Value &right) = 0;
 
 protected:
   TypeId type_id_;

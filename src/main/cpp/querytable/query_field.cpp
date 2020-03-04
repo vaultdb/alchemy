@@ -18,23 +18,10 @@ QueryField::QueryField(emp::Integer val, int length, int field_num)
     : field_num_(field_num),
       value_(types::TypeId::ENCRYPTED_INTEGER64, val, length) {}
 
+types::Value *QueryField::GetMutableValue() { return &value_; }
+
 const types::Value *QueryField::GetValue() const { return &value_; }
+
 QueryField::QueryField() {}
-/*
-void QueryField::SetQueryField(int64_t val, int field_num) {
-  value_3.SetValue(types::TypeId::INTEGER64, val);
-  field_num_ = field_num;
-}
-void QueryField::SetQueryField(int32_t val, int field_num) {
-  value_3.SetValue(types::TypeId::INTEGER32, val);
-  field_num_ = field_num;
-}
-void QueryField::SetQueryField(emp::Integer val, int length, int field_num) {
-  // TODO(madhavsuresh): there could be a bug here, automatic upgrade to longer
-  // length
-  value_3.SetValue(types::TypeId::ENCRYPTED_INTEGER64, val, length);
-  field_num_ = field_num;
-}
- */
 
 void QueryField::SetValue(const types::Value *val) { value_.SetValue(val); }

@@ -11,6 +11,10 @@ const QueryField *QueryTuple::GetField(int ordinal) const {
   return &this->fields_[ordinal];
 }
 
+QueryField *QueryTuple::GetMutableField(int ordinal) {
+  return &this->fields_[ordinal];
+}
+
 void QueryTuple::PutField(int ordinal, std::unique_ptr<QueryField> f) {
   if (ordinal >= 10) {
     throw;

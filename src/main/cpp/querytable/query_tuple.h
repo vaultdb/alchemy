@@ -35,6 +35,7 @@ public:
   void SetIsEncrypted(bool isEncrypted);
   const vaultdb::QueryField *GetField(int ordinal) const;
   const vaultdb::QueryField &GetField(string name) const;
+  vaultdb::QueryField *GetMutableField(int ordinal);
   void PutField(int ordinal, const vaultdb::QueryField &f);
   void PutField(int ordinal, std::unique_ptr<QueryField> f);
   void PutField(int ordinal, const QueryField *f);
