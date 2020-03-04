@@ -16,7 +16,6 @@ import org.vaultdb.db.schema.SystemCatalog;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.plaintext.SqlQueryExecutor;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +36,7 @@ public class Histograms {
     SystemCatalog.resetInstance();
     ConnectionManager.reset();
 
-    config = SystemConfiguration.getInstance();
+    config = SystemConfiguration.getInstance("tpch");
     calciteConfig = config.getCalciteConfiguration();
   }
 
@@ -50,7 +49,7 @@ public class Histograms {
       for (String workerId: workers){
         // get query table for each worker
         QueryTable qt = getQueryTable(tableName, workerId, col);
-        System.out.println(workerId + qt);
+//        System.out.println(workerId + qt);
         histogramListByWorkers.add(qt);
       }
       HashMap<Field, Tuple> fieldTupleHashMap = new HashMap<>();
@@ -58,8 +57,8 @@ public class Histograms {
       for (QueryTable queryTable: histogramListByWorkers){
         for (Tuple tuple : queryTable.tuples()) {
           if (fieldTupleHashMap.containsKey(tuple.getField(GROUPED_BY_FIELD_IDX))) {
-            Tuple aggregatedTuple = getAggregatedTuple(fieldTupleHashMap, tuple);
-            fieldTupleHashMap.put(aggregatedTuple.getField(GROUPED_BY_FIELD_IDX), aggregatedTuple);
+            Tuple unionedTuple = getUnionedTuple(fieldTupleHashMap, tuple);
+            fieldTupleHashMap.put(unionedTuple.getField(GROUPED_BY_FIELD_IDX), unionedTuple);
           } else {
             fieldTupleHashMap.put(tuple.getField(GROUPED_BY_FIELD_IDX), tuple);
           }
@@ -73,7 +72,7 @@ public class Histograms {
     return finalHistogramList;
   }
 
-  private Tuple getAggregatedTuple(HashMap<Field, Tuple> fieldTupleHashMap, Tuple tuple) {
+  private Tuple getUnionedTuple(HashMap<Field, Tuple> fieldTupleHashMap, Tuple tuple) {
     Tuple aggregatedTuple = new Tuple();
     aggregatedTuple.addField(tuple.getField(GROUPED_BY_FIELD_IDX));
 
@@ -82,9 +81,9 @@ public class Histograms {
                     fieldTupleHashMap.get(tuple.getField(GROUPED_BY_FIELD_IDX)).getField(COUNT_FIELD_IDX);
     IntField bCount = (IntField) tuple.getField(COUNT_FIELD_IDX);
 
-    IntField aggregatedCount = new IntField(bCount.getAttribute(), bCount.getSqlTypeName());
-    aggregatedCount.setValue(aCount.value + bCount.value);
-    aggregatedTuple.addField(aggregatedCount);
+    IntField maxCount = new IntField(bCount.getAttribute(), bCount.getSqlTypeName());
+    maxCount.setValue(Math.max(aCount.value, bCount.value));
+    aggregatedTuple.addField(maxCount);
     return aggregatedTuple;
   }
 
@@ -99,7 +98,7 @@ public class Histograms {
                     .build();
 
     String query = SqlGenerator.getSql(node, config.DIALECT);
-    System.out.println("Query: \n" + query);
+//    System.out.println("Query: \n" + query);
     QueryTable resultTable = SqlQueryExecutor.query(query, workerId);
     return resultTable;
   }
@@ -115,7 +114,7 @@ public class Histograms {
 
   public QueryTable getHistogram(String tableName, int numBins, String workerId, String column) throws Exception {
     QueryTable resultTable = getQueryTable(tableName, workerId, column);
-    System.out.println(resultTable);
+//    System.out.println(resultTable);
     return resizeQueryTableToHistogram(numBins, resultTable);
   }
 
@@ -135,6 +134,7 @@ public class Histograms {
     IntField currTupleField  = (IntField) tuples.get(0).getField(GROUPED_BY_FIELD_IDX);
     int index = 0;
     float maxInBin = sizeOfBin + minKey;
+    int binIndex = 0;
     // keep aggregating tuples until we run out of tuples
     while (index < tupleCount){
       StringJoiner charFieldStringJoiner = new StringJoiner(", ", "[", "]");
@@ -142,8 +142,10 @@ public class Histograms {
       CharField groupField = new CharField(currTupleField.getAttribute(), SqlTypeName.VARCHAR);
       IntField countField = new IntField(currTupleField.getAttribute(), SqlTypeName.INTEGER);
       // keep adding until we run out of tuples, or grouped by key value is too large for current bin
+      // TODO: beware of rounding errors
       while (index < tupleCount &&
-              ((IntField)tuples.get(index).getField(GROUPED_BY_FIELD_IDX)).getValue() <= maxInBin){
+              (((IntField) tuples.get(index).getField(GROUPED_BY_FIELD_IDX)).getValue() <= maxInBin ||
+                      (binIndex >= numBins - 1))){
         IntField oldGroupByField = (IntField) tuples.get(index).getField(GROUPED_BY_FIELD_IDX);
         charFieldStringJoiner.add(String.valueOf(oldGroupByField.value));
         IntField count = (IntField) tuples.get(index).getField(COUNT_FIELD_IDX);
@@ -158,7 +160,9 @@ public class Histograms {
       aggregatedTuple.addField(countField);
       newTuples.add(aggregatedTuple);
       // move onto the next bin
+//      System.out.println("max in bin " + newTuples.size() + " " +maxInBin);
       maxInBin += sizeOfBin;
+      binIndex++;
     }
 
     return new QueryTable(newTuples);

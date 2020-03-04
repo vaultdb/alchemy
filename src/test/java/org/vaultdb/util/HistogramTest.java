@@ -89,4 +89,5 @@ public class HistogramTest extends TpcHBaseTest {
     ArrayList<QueryTable> resultsUnioned = histogram.getHistograms(tableName, columnNames, numOfBins, ConnectionManager.getInstance().getUnioned());
     testCorrect(numOfBins, results, resultsUnioned);
   }
+
 }
