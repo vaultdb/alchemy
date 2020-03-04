@@ -24,9 +24,9 @@ void SwapTuples(int t1, int t2, QueryTable *t, types::Value *swap_condition) {
   auto tup2 = t->GetTuple(t2);
   for (int i = 0; i < t->GetSchema()->GetNumFields(); i++) {
     vaultdb::expression::Expression ex(
-	swap_condition, tup1->GetMutableField(i)->GetMutableValue(),
-	tup2->GetMutableField(i)->GetMutableValue(),
-	vaultdb::expression::ExpressionId::SWAP);
+        swap_condition, tup1->GetMutableField(i)->GetMutableValue(),
+        tup2->GetMutableField(i)->GetMutableValue(),
+        vaultdb::expression::ExpressionId::SWAP);
     ex.ExecuteMutable();
   }
 }
@@ -48,23 +48,23 @@ void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir) {
   }
   vaultdb::expression::ExpressionId compare_dir =
       dir ? vaultdb::expression::ExpressionId::GREATERTHAN
-	  : vaultdb::expression::ExpressionId::LESSTHANOREQUAL;
+          : vaultdb::expression::ExpressionId::LESSTHAN;
   for (auto idx : s.ordinals) {
     vaultdb::expression::Expression ex(
-	t->GetTuple(t1)->GetField(idx)->GetValue(),
-	t->GetTuple(t2)->GetField(idx)->GetValue(), compare_dir);
+        t->GetTuple(t1)->GetField(idx)->GetValue(),
+        t->GetTuple(t2)->GetField(idx)->GetValue(), compare_dir);
     auto v = ex.execute();
     vaultdb::expression::Expression ex_cascade(
-	&v, &v_and, vaultdb::expression::ExpressionId::AND);
+        &v, &v_and, vaultdb::expression::ExpressionId::AND);
     auto v_cascade = ex_cascade.execute();
     vaultdb::expression::Expression ex2(&comparator, &v_cascade,
-					vaultdb::expression::ExpressionId::OR);
+                                        vaultdb::expression::ExpressionId::OR);
     comparator = ex2.execute();
     vaultdb::expression::Expression ex_and(
-	t->GetTuple(t1)->GetField(idx)->GetValue(),
-	t->GetTuple(t2)->GetField(idx)->GetValue(),
-	vaultdb::expression::ExpressionId::EQUAL);
-    v_and = ex.execute();
+        t->GetTuple(t1)->GetField(idx)->GetValue(),
+        t->GetTuple(t2)->GetField(idx)->GetValue(),
+        vaultdb::expression::ExpressionId::EQUAL);
+    v_and = ex_and.execute();
   }
   SwapTuples(t1, t2, t, &comparator);
 }

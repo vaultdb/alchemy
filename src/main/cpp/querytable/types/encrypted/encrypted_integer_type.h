@@ -22,9 +22,11 @@ public:
   [[nodiscard]] Value CompareNotEquals(const Value &left,
                                        const Value &right) const override;
   [[nodiscard]] Value CompareLessThanOrEqual(const Value &left,
-                                    const Value &right) const override;
+                                             const Value &right) const override;
+  [[nodiscard]] Value CompareLessThan(const Value &left,
+                                      const Value &right) const override;
   [[nodiscard]] Value CompareGreaterThan(const Value &left,
-                                       const Value &right) const override;
+                                         const Value &right) const override;
   Value And(const Value &left, const Value &right) const override;
 
   Value Or(const Value &left, const Value &right) const override;

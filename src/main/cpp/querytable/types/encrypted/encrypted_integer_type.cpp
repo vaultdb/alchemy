@@ -28,15 +28,19 @@ Value EncryptedIntegerType::CompareNotEquals(const Value &left,
 }
 EncryptedIntegerType::EncryptedIntegerType() {}
 Value EncryptedIntegerType::And(const Value &left, const Value &right) const {
-  EMP_INT_BINARY (&);
+  EMP_INT_BINARY(&);
 }
 
 Value EncryptedIntegerType::Or(const Value &left, const Value &right) const {
-  EMP_INT_BINARY (|);
+  EMP_INT_BINARY(|);
 }
 Value EncryptedIntegerType::CompareLessThanOrEqual(const Value &left,
 						   const Value &right) const {
   EMP_INT_CMP(<=);
+}
+Value EncryptedIntegerType::CompareLessThan(const Value &left,
+					    const Value &right) const {
+  EMP_INT_CMP(<);
 }
 Value EncryptedIntegerType::CompareGreaterThan(const Value &left,
 					       const Value &right) const {

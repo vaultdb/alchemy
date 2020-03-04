@@ -19,16 +19,18 @@ public:
   [[nodiscard]] Value CompareNotEquals(const Value &left,
                                        const Value &right) const override;
 
-  [[nodiscard]] virtual Value CompareLessThanOrEqual(const Value &left,
-					       const Value &right) const override;;
+  [[nodiscard]] virtual Value
+  CompareLessThanOrEqual(const Value &left, const Value &right) const override;
+  ;
 
-  [[nodiscard]] virtual Value CompareGreaterThan(const Value &left,
-					       const Value &right) const override;
+  [[nodiscard]] virtual Value
+  CompareGreaterThan(const Value &left, const Value &right) const override;
+  [[nodiscard]] Value CompareLessThan(const Value &left,
+                                      const Value &right) const override;
   [[nodiscard]] Value And(const Value &left, const Value &right) const override;
   [[nodiscard]] Value Or(const Value &left, const Value &right) const override;
 
-  void Swap(const Value &compareBit, Value &left,
-				   Value &right) override;
+  void Swap(const Value &compareBit, Value &left, Value &right) override;
 };
 } // namespace vaultdb::types
 

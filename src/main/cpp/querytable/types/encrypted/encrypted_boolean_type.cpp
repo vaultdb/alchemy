@@ -23,23 +23,30 @@ Value vaultdb::types::EncryptedBooleanType::CompareEquals(
   EMP_BOOL_CMP(==);
 }
 Value EncryptedBooleanType::CompareNotEquals(const Value &left,
-					     const Value &right) const {
+                                             const Value &right) const {
   EMP_BOOL_CMP(!=);
 }
 Value EncryptedBooleanType::CompareLessThanOrEqual(const Value &left,
-						   const Value &right) const {
+                                                   const Value &right) const {
+  throw;
+}
+Value EncryptedBooleanType::CompareLessThan(const Value &left,
+                                            const Value &right) const {
   throw;
 }
 Value EncryptedBooleanType::CompareGreaterThan(const Value &left,
-					       const Value &right) const {
+                                               const Value &right) const {
   throw;
 }
 Value EncryptedBooleanType::And(const Value &left, const Value &right) const {
-  EMP_BOOL_BINARY (&);
+  EMP_BOOL_BINARY(&);
 }
 
 Value EncryptedBooleanType::Or(const Value &left, const Value &right) const {
-  EMP_BOOL_BINARY (|);
+  EMP_BOOL_BINARY(|);
 }
-void EncryptedBooleanType::Swap(const Value &compareBit, Value &left, Value &right){throw;};
+void EncryptedBooleanType::Swap(const Value &compareBit, Value &left,
+                                Value &right) {
+  throw;
+};
 } // namespace vaultdb::types

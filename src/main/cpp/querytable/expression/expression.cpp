@@ -14,15 +14,15 @@ Expression::Expression(const vaultdb::types::Value *v1, const ExpressionId id) {
 }
 
 Expression::Expression(const types::Value *v1, const types::Value *v2,
-		       const ExpressionId id) {
+                       const ExpressionId id) {
   values_[0] = v1;
   values_[1] = v2;
   num_values_ = 2;
   id_ = id;
 }
 
-Expression::Expression(const types::Value *v1, types::Value *v2, types::Value *v3,
-		       ExpressionId id) {
+Expression::Expression(const types::Value *v1, types::Value *v2,
+                       types::Value *v3, ExpressionId id) {
   values_[0] = v1;
   mutable_values_[0] = v2;
   mutable_values_[1] = v3;
@@ -34,7 +34,7 @@ void Expression::ExecuteMutable() {
   switch (num_values_) {
   case 3: {
     return EvaluateMutableTernary(values_[0], mutable_values_[0],
-				  mutable_values_[1], id_);
+                                  mutable_values_[1], id_);
   }
   default:
     throw;
@@ -56,13 +56,13 @@ vaultdb::types::Value Expression::execute() {
 }
 
 void Expression::EvaluateMutableTernary(const types::Value *condition,
-					types::Value *v2, types::Value *v3,
-					ExpressionId id) {
+                                        types::Value *v2, types::Value *v3,
+                                        ExpressionId id) {
   VAULTDB_ASSERT(v2->GetType() == v3->GetType());
   switch (id) {
   case ExpressionId::SWAP: {
     return vaultdb::types::Type::GetInstance(v2->GetType())
-	.Swap(*condition, *v2, *v3);
+        .Swap(*condition, *v2, *v3);
   }
   default:
     throw;
@@ -70,8 +70,8 @@ void Expression::EvaluateMutableTernary(const types::Value *condition,
 }
 
 vaultdb::types::Value Expression::EvaluateBinary(const types::Value *v1,
-						 const types::Value *v2,
-						 const ExpressionId id) {
+                                                 const types::Value *v2,
+                                                 const ExpressionId id) {
   VAULTDB_ASSERT(v1->GetType() == v2->GetType());
 
   switch (id) {
@@ -82,17 +82,18 @@ vaultdb::types::Value Expression::EvaluateBinary(const types::Value *v1,
     throw;
   case ExpressionId::LESSTHANOREQUAL:
     return vaultdb::types::Type::GetInstance(v1->GetType())
-	.CompareLessThanOrEqual(*v1, *v2);
+        .CompareLessThanOrEqual(*v1, *v2);
   case ExpressionId::EQUAL:
     return vaultdb::types::Type::GetInstance(v1->GetType())
-	.CompareEquals(*v1, *v2);
+        .CompareEquals(*v1, *v2);
   case ExpressionId::GREATERTHAN:
     return vaultdb::types::Type::GetInstance(v1->GetType())
-	.CompareGreaterThan(*v1, *v2);
+        .CompareGreaterThan(*v1, *v2);
   case ExpressionId::GREATERTHANOREQUAL:
     throw;
   case ExpressionId::LESSTHAN:
-    throw;
+    return vaultdb::types::Type::GetInstance(v1->GetType())
+        .CompareLessThan(*v1, *v2);
   case ExpressionId::SUBSTRING:
     throw;
   case ExpressionId::AND:
