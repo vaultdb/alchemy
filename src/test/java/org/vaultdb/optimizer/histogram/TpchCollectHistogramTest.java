@@ -92,7 +92,6 @@ public class TpchCollectHistogramTest extends TpcHBaseTest {
    */
   public void testLineitemHistogram() throws Exception {
     Histograms histogram = new Histograms();
-
     String tableName = "lineitem";
     ArrayList<String> columnNames = new ArrayList<>();
     columnNames.add("l_orderkey");
