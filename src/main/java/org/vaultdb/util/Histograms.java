@@ -26,8 +26,10 @@ public class Histograms {
 
   protected SystemConfiguration config;
   protected FrameworkConfig calciteConfig;
+  protected SystemCatalog systemCatalog;
 
   //TODO(cfgong): document general idea behind histogram library
+
   // Constants of the index of fields in count(*) queries
   public static final int GROUPED_BY_FIELD_IDX = 0; // grouped by key (bin) field index
   public static final int COUNT_FIELD_IDX = 1; // count field index
@@ -40,6 +42,7 @@ public class Histograms {
 
     config = SystemConfiguration.getInstance("tpch");
     calciteConfig = config.getCalciteConfiguration();
+    systemCatalog = SystemCatalog.getInstance();
   }
 
   public ArrayList<QueryTable> getHistograms(
@@ -47,35 +50,40 @@ public class Histograms {
     List<String> workers = ConnectionManager.getInstance().getAliceAndBob();
     ArrayList<QueryTable> finalHistogramList = new ArrayList<>();
     for (String col : columnNames) {
-      ArrayList<QueryTable> histogramListByWorkers = new ArrayList<>();
-      for (String workerId : workers) {
-        // get query table for each worker
-        QueryTable qt = getQueryTable(tableName, workerId, col);
-        //        System.out.println(workerId + qt);
-        histogramListByWorkers.add(qt);
-      }
-      TreeMap<Field, Tuple> fieldTupleHashMap = new TreeMap<>();
-      // combine query tables
-      for (QueryTable queryTable : histogramListByWorkers) {
-        for (Tuple tuple : queryTable.tuples()) {
-          if (fieldTupleHashMap.containsKey(tuple.getField(GROUPED_BY_FIELD_IDX))) {
-            Tuple unionedTuple = getUnionedTuple(fieldTupleHashMap, tuple);
-            fieldTupleHashMap.put(unionedTuple.getField(GROUPED_BY_FIELD_IDX), unionedTuple);
-          } else {
-            fieldTupleHashMap.put(tuple.getField(GROUPED_BY_FIELD_IDX), tuple);
+      QueryTable summedQueryTable;
+      // if table is replicated, just get query table of one worker
+      // because query table of all workers are the same
+      // otherwise sum up tables across workers
+      if (systemCatalog.isReplicated(tableName)){
+        summedQueryTable = getQueryTable(tableName, workers.get(0), col);
+      } else {
+        ArrayList<QueryTable> histogramListByWorkers = new ArrayList<>();
+        for (String workerId : workers) {
+          // get query table for each worker
+          QueryTable qt = getQueryTable(tableName, workerId, col);
+          histogramListByWorkers.add(qt);
+        }
+        TreeMap<Field, Tuple> fieldTupleHashMap = new TreeMap<>();
+        // combine query tables
+        for (QueryTable queryTable : histogramListByWorkers) {
+          for (Tuple tuple : queryTable.tuples()) {
+            if (fieldTupleHashMap.containsKey(tuple.getField(GROUPED_BY_FIELD_IDX))) {
+              Tuple aggregatedTuple = getAggregatedTuple(fieldTupleHashMap, tuple);
+              fieldTupleHashMap.put(aggregatedTuple.getField(GROUPED_BY_FIELD_IDX), aggregatedTuple);
+            } else {
+              fieldTupleHashMap.put(tuple.getField(GROUPED_BY_FIELD_IDX), tuple);
+            }
           }
         }
+        List<Tuple> tupleList = new ArrayList<>(fieldTupleHashMap.values());
+        summedQueryTable = new QueryTable(tupleList);
       }
-      List<Tuple> tupleList = new ArrayList<>(fieldTupleHashMap.values());
-      // resize into a proper histogram
-      QueryTable summedHistogram = new QueryTable(tupleList);
-
-      finalHistogramList.add(resizeQueryTableToHistogram(numBins, summedHistogram));
+      finalHistogramList.add(resizeQueryTableToHistogram(numBins, summedQueryTable));
     }
     return finalHistogramList;
   }
 
-  private Tuple getUnionedTuple(Map<Field, Tuple> fieldTupleHashMap, Tuple tuple) {
+  private Tuple getAggregatedTuple(Map<Field, Tuple> fieldTupleHashMap, Tuple tuple) {
     Tuple aggregatedTuple = new Tuple();
     aggregatedTuple.addField(tuple.getField(GROUPED_BY_FIELD_IDX));
 
@@ -84,10 +92,9 @@ public class Histograms {
             fieldTupleHashMap.get(tuple.getField(GROUPED_BY_FIELD_IDX)).getField(COUNT_FIELD_IDX);
     IntField bCount = (IntField) tuple.getField(COUNT_FIELD_IDX);
 
-    IntField maxCount = new IntField(bCount.getAttribute(), bCount.getSqlTypeName());
-    // TODO: check for replicated tables
-    maxCount.setValue(aCount.value + bCount.value);
-    aggregatedTuple.addField(maxCount);
+    IntField sumCount = new IntField(bCount.getAttribute(), bCount.getSqlTypeName());
+    sumCount.setValue(aCount.value + bCount.value);
+    aggregatedTuple.addField(sumCount);
     return aggregatedTuple;
   }
 
@@ -102,7 +109,6 @@ public class Histograms {
             .build();
 
     String query = SqlGenerator.getSql(node, config.DIALECT);
-    //    System.out.println("Query: \n" + query);
     QueryTable resultTable = SqlQueryExecutor.query(query, workerId);
     return resultTable;
   }
@@ -169,7 +175,7 @@ public class Histograms {
       aggregatedTuple.addField(countField);
       newTuples.add(aggregatedTuple);
       // move onto the next bin
-      //      System.out.println("max in bin " + newTuples.size() + " " +maxInBin);
+      // System.out.println("max in bin " + newTuples.size() + " " + maxInBin);
       maxInBin += sizeOfBin;
       binIndex++;
     }
