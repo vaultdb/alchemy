@@ -7,12 +7,24 @@
 #include <common/macros.h>
 #include <querytable/query_table.h>
 
+#define AGG_COUNT(is_dummy, result_ref)                                        \
+  do {                                                                         \
+    emp::Integer res = emp::If(*is_dummy, zero, one);                          \
+    AddToCount(result_ref, res);                                               \
+  } while (0)
+
+#define AGG_SUM(is_dummy, result_ref, row, idx)                                \
+  do {                                                                         \
+    emp::Integer res = emp::If(*isDummy, zero, *input->GetTuple(row)           \
+    ->GetField(def.defs[idx].ordinal) ->GetValue() ->GetEmpInt());             \
+    AddToCount(result_ref, res);                                               \
+  } while (0)
+
 std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
                                       const AggregateDef &def) {
   // TODO(madhavsuresh): for tpc-h 1 need to implement SUM, AVG, and COUNT
   // need to be able to set the output schema with the "as" clause
   // that will have to be in the AggregateDef
-  // pseudocode:
 
   std::unique_ptr<QueryTable> aggregate_output =
       std::make_unique<QueryTable>(input->GetIsEncrypted(), 1);
@@ -23,103 +35,72 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
     result_vector.emplace_back(64, 0, emp::BOB);
   }
 
-  // checking the number of columns having the AVG() clause
-  int avg_count = 0;
+  // shadow vector to keep track of the running average
+  std::map<int, std::pair<emp::Integer, emp::Integer>> running_avg;
+
+  // copy constructors for initializing pair<emp:Int,emp:Int>
+  emp::Integer i1(64, 0, emp::BOB);
+  emp::Integer i2(64, 0, emp::BOB);
+  
   for (int idx = 0; idx < def.defs.size(); idx++) {
     if (def.defs[idx].id == AggregateId ::AVG) {
-      avg_count++;
+      running_avg[idx] = std::make_pair(i1, i2);
     }
   }
 
-  // using this shadow vector to compute the running average
-  std::vector<std::pair<emp::Integer, emp::Integer>> running_avg;
-
-  // NOTE: emplace_back or push_back isn't working for pairs
-  // I beleive this is where the problem is..
-  for (int i = 0; i < avg_count; i++) {
-    //std::pair pair = std::make_pair((64, 0, emp::BOB),(64, 0, emp::BOB));
-    running_avg.emplace_back(std::make_pair((64, 0, emp::BOB), (64, 0, emp::BOB)));
-  }
-
   emp::Bit *isDummy = new emp::Bit(false, emp::PUBLIC);
-  // emp::Integer count_emp(64, 0, emp::BOB);
-
   emp::Integer one(64, 1, emp::PUBLIC);
   emp::Integer zero(64, 0, emp::PUBLIC);
 
   for (int row = 0; row < input->GetNumTuples(); row++) {
 
+    // dummy flag to determine if the tuplle is a Dummy value
     *isDummy = *input->GetTuple(row)->GetDummyFlag()->GetEmpBit();
 
     for (int idx = 0; idx < def.defs.size(); idx++) {
 
-      int n = avg_count;    // keeps count of the AVG ordinals
-
+      // switch on the Aggregate ID
       switch (def.defs[idx].id) {
 
       case AggregateId::COUNT: {
-        emp::Integer res = emp::If(*isDummy, zero, one);
-        AddToCount(result_vector[idx], res);
+        AGG_COUNT(isDummy, result_vector[idx]);
         break;
       }
 
       case AggregateId::SUM: {
-        emp::Integer res = emp::If(*isDummy, zero,
-                                   *input->GetTuple(row)
-                                        ->GetField(def.defs[idx].ordinal)
-                                        ->GetValue()
-                                        ->GetEmpInt());
-        AddToSum(result_vector[idx], res);
+
+        AGG_SUM(isDummy, result_vector[idx], row, idx);
         break;
       }
 
-      case AggregateId ::AVG:
-        emp::Integer sum = emp::If(*isDummy, zero,
-                                   *input->GetTuple(row)
-                                       ->GetField(def.defs[idx].ordinal)
-                                       ->GetValue()
-                                       ->GetEmpInt());
-        emp::Integer cnt = emp::If(*isDummy, zero, one);
+      case AggregateId::AVG: {
 
-        // not sure if its the right way to iterate through a vector of pairs
-        if (n > 0) {
-          running_avg[n].first = running_avg[n].first + sum;
-          running_avg[n].second = running_avg[n].second + cnt;
-
-          result_vector[idx] = running_avg[n].first/running_avg[n].second;
-          n-- ;
-        }
+        AGG_SUM(isDummy, running_avg[idx].first, row, idx);
+        AGG_COUNT(isDummy, running_avg[idx].second);
 
         break;
       }
-
+      }
     }
-
+    // accumulating sum and count from the shadow vector and computing AVG()
+    for (int idx = 0; idx < def.defs.size(); idx++) {
+      if (def.defs[idx].id == AggregateId ::AVG) {
+        result_vector[idx] = running_avg[idx].first / running_avg[idx].second;
+      }
+    }
   }
-  //  std::vector<emp::Integer> average_vector;
-  //  for (int i = 0; i < def.defs.size(); i++) {
-  //    average_vector.emplace_back(64, 0, emp::BOB);
-  //    average_vector[i] = (result_vector[i]) / count_emp;
-  //    const QueryField f(average_vector[i], average_vector[i].length, i);
-  //    aggregate_output->GetTuple(0)->PutField(i, &f);
-  //  }
 
+  // creates resultant relation; inserting QueryField into tuple (just 1 row)
   for (int i = 0; i < def.defs.size(); i++) {
-    // average_vector.emplace_back(64, 0, emp::BOB);
-    // average_vector[i] = (result_vector[i]) / count_emp;
     const QueryField f(result_vector[i], result_vector[i].length, i);
     aggregate_output->GetTuple(0)->PutField(i, &f);
   }
-  // TODO: implement this for float as well (returning int(AVG) for now
   return aggregate_output;
 }
 
-emp::Integer AddToCount(emp::Integer &count_so_far, emp::Integer add) {
-  count_so_far = count_so_far + add;
-  return count_so_far;
-}
 
-emp::Integer AddToSum(emp::Integer &sum_so_far, emp::Integer add) {
-  sum_so_far = sum_so_far + add;
-  return sum_so_far;
+// function for basic in-place addition to go along with the macros
+void AddToCount(emp::Integer &count_so_far, emp::Integer add) {
+  count_so_far = count_so_far + add;
+  return;
 }

@@ -18,8 +18,7 @@ struct AggregateDef {
 };
 std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
                                       const AggregateDef &def);
-emp::Integer AddToCount(emp::Integer &count_so_far, emp::Integer add);
-emp::Integer AddToSum(emp::Integer &sum_so_far, emp::Integer add);
+void AddToCount(emp::Integer &count_so_far, emp::Integer add);
 emp::Integer GetAggregateById(emp::Integer result_vector,
                               AggregateId agg_type, emp::Bit dummy);
 #endif // TESTING_SECURE_AGGREGATE_H
