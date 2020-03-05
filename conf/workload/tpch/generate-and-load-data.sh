@@ -54,6 +54,8 @@ psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-index.sql
 
 #add permissions
 psql $DB_NAME < $CONF_PATH/set-security-policy.sql
+#add constraints
+psql $DB_NAME < $CONF_PATH/set-constraints.sql
 
 
 #OK, DB is set up, now need to partition for Alice and Bob
