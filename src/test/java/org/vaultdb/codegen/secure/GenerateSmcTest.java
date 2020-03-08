@@ -66,14 +66,16 @@ public class GenerateSmcTest extends BaseTest {
 	  logger.log(Level.INFO, "Resolved secure tree to:\n " + testTree);
 
 	  String generatedFile = qc.writeOutEmpFile();
-	  qc.compileEmpCode();
+
+	  // testing the code generator alone for now, evaluate compiler separately
+	  //qc.compileEmpCode();
 
     
 	  String cwd = Utilities.getVaultDBRoot();
 	  String expectedFile =
         cwd + "/src/test/java/org/vaultdb/codegen/secure/expected/" + testName + ".h";
-	  System.out.println("Generated: " + generatedFile);
-	  System.out.println("Expected: " + expectedFile);
+	  logger.info("Generated: " + generatedFile);
+	  logger.info("Expected: " + expectedFile);
 
 	  File generated = new File(generatedFile);
 	  File expected = new File(expectedFile);
