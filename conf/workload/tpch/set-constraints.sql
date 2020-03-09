@@ -10,6 +10,20 @@
 
 
 -- lineitem
+-- start by dropping constraints if they already exist
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_partkey_domain;
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_linenumber_domain;
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_quantity_domain;
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_discount_domain;
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_tax_domain;
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_returnflag_domain;
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_returnflag_based_on_receiptdate_domain;
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_linestatus_domain;
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_linestatus_based_on_shipdate_domain;
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_receiptdate_domain;
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_shipinstruct_domain;
+ALTER TABLE lineitem DROP CONSTRAINT IF EXISTS l_shipmode_domain;
+-- adding constraints
 -- partkey random value [1 .. (SF * 200,000), constraint based on sf of 0.1
 ALTER TABLE lineitem ADD CONSTRAINT l_partkey_domain CHECK
  (l_partkey >= 1 and l_partkey <= 20000);
@@ -42,9 +56,15 @@ ALTER TABLE lineitem ADD CONSTRAINT l_shipmode_domain CHECK
 
 
 -- order
+-- start by dropping constraints if they already exist
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS o_orderkey_domain;
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS o_orderstatus_domain;
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS o_orderdate_domain;
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS o_orderpriority_domain;
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS o_clerk_domain;
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS o_shippriority_domain;
+-- adding constraints
 -- orderkey unique within [scalingfactor * 1,500,000 * 4], constraint based on sf of 0.1
-ALTER TABLE orders ADD CONSTRAINT o_orderkey_domain CHECK
- (o_orderkey >= 1 and o_orderkey <= 600000);
 ALTER TABLE orders ADD CONSTRAINT o_orderkey_domain CHECK
  (o_orderkey >= 1 and o_orderkey <= 600000);
 ALTER TABLE orders ADD CONSTRAINT o_orderstatus_domain CHECK
@@ -64,9 +84,14 @@ ALTER TABLE orders ADD CONSTRAINT o_shippriority_domain CHECK
 
 
 -- nation
+-- start by dropping constraints if they already exist
+ALTER TABLE nation DROP CONSTRAINT IF EXISTS n_nationkey_domain;
+ALTER TABLE nation DROP CONSTRAINT IF EXISTS n_name_domain;
+ALTER TABLE nation DROP CONSTRAINT IF EXISTS n_regionkey_domain;
+ALTER TABLE nation DROP CONSTRAINT IF EXISTS n_nationkey_name_regionkey_domain;
+-- adding constraints
 ALTER TABLE nation ADD CONSTRAINT n_nationkey_domain CHECK
  (n_nationkey >= 0 and n_nationkey <= 24);
--- TODO:: add constraint on (n_nationkey, n_name, n_regionkey) tuples
 ALTER TABLE nation ADD CONSTRAINT n_name_domain CHECK
  (n_name in ('ETHIOPIA', 'IRAN', 'EGYPT', 'RUSSIA', 'SAUDI ARABIA',
  'INDONESIA', 'VIETNAM', 'GERMANY', 'PERU', 'FRANCE', 'ALGERIA', 'ROMANIA',
@@ -74,9 +99,42 @@ ALTER TABLE nation ADD CONSTRAINT n_name_domain CHECK
  'UNITED STATES', 'MOZAMBIQUE', 'CHINA', 'BRAZIL', 'KENYA', 'IRAQ' ));
 ALTER TABLE nation ADD CONSTRAINT n_regionkey_domain CHECK
  (n_regionkey >= 0 and n_regionkey <= 4);
+-- (n_nationkey, n_name, n_regionkey) tuple constraint
+ALTER TABLE nation ADD CONSTRAINT n_nationkey_name_regionkey_domain CHECK
+ ((n_nationkey = 0 and n_name = 'ALGERIA' and n_regionkey = 0) or
+ (n_nationkey = 1 and n_name = 'ARGENTINA' and n_regionkey = 1) or
+ (n_nationkey = 2 and n_name = 'BRAZIL' and n_regionkey = 1) or
+ (n_nationkey = 3 and n_name = 'CANADA' and n_regionkey = 1) or
+ (n_nationkey = 4 and n_name = 'EGYPT' and n_regionkey = 4) or
+ (n_nationkey = 5 and n_name = 'ETHIOPIA' and n_regionkey = 0) or
+ (n_nationkey = 6 and n_name = 'FRANCE' and n_regionkey = 3) or
+ (n_nationkey = 7 and n_name = 'GERMANY' and n_regionkey = 3) or
+ (n_nationkey = 8 and n_name = 'INDIA' and n_regionkey = 2) or
+ (n_nationkey = 9 and n_name = 'INDONESIA' and n_regionkey = 2) or
+ (n_nationkey = 10 and n_name = 'IRAN' and n_regionkey = 4) or
+ (n_nationkey = 11 and n_name = 'IRAQ' and n_regionkey = 4) or
+ (n_nationkey = 12 and n_name = 'JAPAN' and n_regionkey = 2) or
+ (n_nationkey = 13 and n_name = 'JORDAN' and n_regionkey = 4) or
+ (n_nationkey = 14 and n_name = 'KENYA' and n_regionkey = 0) or
+ (n_nationkey = 15 and n_name = 'MOROCCO' and n_regionkey = 0) or
+ (n_nationkey = 16 and n_name = 'MOZAMBIQUE'and n_regionkey = 0) or
+ (n_nationkey = 17 and n_name = 'PERU' and n_regionkey = 1) or
+ (n_nationkey = 18 and n_name = 'CHINA' and n_regionkey = 2) or
+ (n_nationkey = 19 and n_name = 'ROMANIA' and n_regionkey = 3) or
+ (n_nationkey = 20 and n_name = 'SAUDI ARABIA' and n_regionkey = 4) or
+ (n_nationkey = 21 and n_name = 'VIETNAM' and n_regionkey = 2) or
+ (n_nationkey = 22 and n_name = 'RUSSIA' and n_regionkey = 3) or
+ (n_nationkey = 23 and n_name = 'UNITED KINGDOM' and n_regionkey = 3) or
+ (n_nationkey = 24 and n_name = 'UNITED STATES' and n_regionkey = 1));
 
 
 -- customer
+ALTER TABLE customer DROP CONSTRAINT IF EXISTS c_custkey_domain;
+ALTER TABLE customer DROP CONSTRAINT IF EXISTS c_name_domain;
+ALTER TABLE customer DROP CONSTRAINT IF EXISTS c_nationkey_domain;
+ALTER TABLE customer DROP CONSTRAINT IF EXISTS c_phone_domain;
+ALTER TABLE customer DROP CONSTRAINT IF EXISTS c_acctbal_domain;
+ALTER TABLE customer DROP CONSTRAINT IF EXISTS c_mktsegment_domain;
 -- cuskey unique within [scalingfactor * 150000], constraint based on sf of 0.1
 ALTER TABLE customer ADD CONSTRAINT c_custkey_domain CHECK
  (c_custkey >= 1 and c_custkey <= 15000);
@@ -87,7 +145,14 @@ ALTER TABLE customer ADD CONSTRAINT c_name_domain CHECK
  ARRAY_LENGTH(STRING_TO_ARRAY(c_name, '#'), 1) = 2);
 ALTER TABLE customer ADD CONSTRAINT c_nationkey_domain CHECK
  (c_nationkey >= 0 and c_nationkey <= 24);
---TODO: C_PHONE generated according to Clause 4.2.2.9.
+ALTER TABLE customer ADD CONSTRAINT c_phone_domain CHECK
+ ((cast(substring(c_phone, 1,2) as int) = c_nationkey + 10) and
+ (substring(c_phone, 3,1) = '-') and
+ (cast(substring(c_phone, 4,3) as int) BETWEEN 100 and 999) and
+ (substring(c_phone, 7,1) = '-') and
+ (cast(substring(c_phone, 8,3) as int) BETWEEN 100 and 999) and
+ (substring(c_phone, 11,1) = '-') and
+ (cast(substring(c_phone, 12,4) as int) BETWEEN 1000 and 9999));
 ALTER TABLE customer ADD CONSTRAINT c_acctbal_domain CHECK
  (c_acctbal >= -999.99 and c_acctbal <= 9999.99);
 ALTER TABLE customer ADD CONSTRAINT c_mktsegment_domain CHECK
@@ -95,6 +160,13 @@ ALTER TABLE customer ADD CONSTRAINT c_mktsegment_domain CHECK
 
 
 -- supplier
+-- start by dropping constraints if they already exist
+ALTER TABLE supplier DROP CONSTRAINT IF EXISTS s_suppkey_domain;
+ALTER TABLE supplier DROP CONSTRAINT IF EXISTS s_name_domain;
+ALTER TABLE supplier DROP CONSTRAINT IF EXISTS s_nationkey_domain;
+ALTER TABLE supplier DROP CONSTRAINT IF EXISTS s_phone_domain;
+ALTER TABLE supplier DROP CONSTRAINT IF EXISTS s_acctbal_domain;
+-- adding constraints
 -- suppkey unique within [scalingfactor * 10,000], constraint based on sf of 0.1
 ALTER TABLE supplier ADD CONSTRAINT s_suppkey_domain CHECK
  (s_suppkey >= 1 and s_suppkey <= 1000);
@@ -105,12 +177,28 @@ ALTER TABLE supplier ADD CONSTRAINT s_name_domain CHECK
  ARRAY_LENGTH(STRING_TO_ARRAY(s_name, '#'), 1) = 2);
 ALTER TABLE supplier ADD CONSTRAINT s_nationkey_domain CHECK
  (s_nationkey >= 0 and s_nationkey <= 24);
---TODO: S_PHONE generated according to Clause 4.2.2.9.
+ALTER TABLE supplier ADD CONSTRAINT s_phone_domain CHECK
+ ((cast(substring(s_phone, 1,2) as int) = s_nationkey + 10) and
+ (substring(s_phone, 3,1) = '-') and
+ (cast(substring(s_phone, 4,3) as int) BETWEEN 100 and 999) and
+ (substring(s_phone, 7,1) = '-') and
+ (cast(substring(s_phone, 8,3) as int) BETWEEN 100 and 999) and
+ (substring(s_phone, 11,1) = '-') and
+ (cast(substring(s_phone, 12,4) as int) BETWEEN 1000 and 9999));
 ALTER TABLE supplier ADD CONSTRAINT s_acctbal_domain CHECK
  (s_acctbal >= -999.99 and s_acctbal <= 9999.99);
 
 
 -- part
+-- start by dropping constraints if they already exist
+ALTER TABLE part DROP CONSTRAINT IF EXISTS p_partkey_domain;
+ALTER TABLE part DROP CONSTRAINT IF EXISTS p_name_domain;
+ALTER TABLE part DROP CONSTRAINT IF EXISTS p_mfgr_domain;
+ALTER TABLE part DROP CONSTRAINT IF EXISTS p_brand_domain;
+ALTER TABLE part DROP CONSTRAINT IF EXISTS p_type_domain;
+ALTER TABLE part DROP CONSTRAINT IF EXISTS p_size_domain;
+ALTER TABLE part DROP CONSTRAINT IF EXISTS p_container_domain;
+-- adding constraints
 -- partkey unique within [scalingfactor * 200,000], constraint based on sf of 0.1
 ALTER TABLE part ADD CONSTRAINT p_partkey_domain CHECK
  (p_partkey >= 1 and p_partpkey <= 20000);
@@ -155,6 +243,10 @@ ALTER TABLE part ADD CONSTRAINT p_container_domain CHECK
 
 
 -- partsupp
+-- start by dropping constraints if they already exist
+ALTER TABLE partsupp DROP CONSTRAINT IF EXISTS ps_availqty_domain;
+ALTER TABLE partsupp DROP CONSTRAINT IF EXISTS ps_supplycost_domain;
+-- adding constraints
 ALTER TABLE partsupp ADD CONSTRAINT ps_availqty_domain CHECK
  (ps_availqty >= 1 and ps_availqty <= 9999);
 ALTER TABLE partsupp ADD CONSTRAINT ps_supplycost_domain CHECK
@@ -162,8 +254,19 @@ ALTER TABLE partsupp ADD CONSTRAINT ps_supplycost_domain CHECK
 
 
 -- region
+-- start by dropping constraints if they already exist
+ALTER TABLE region DROP CONSTRAINT IF EXISTS r_regionkey_domain;
+ALTER TABLE region DROP CONSTRAINT IF EXISTS r_name_domain;
+ALTER TABLE region DROP CONSTRAINT IF EXISTS r_regionkey_name_domain;
+-- adding constraints
 ALTER TABLE region ADD CONSTRAINT r_regionkey_domain CHECK
  (r_regionkey >= 0 and r_regionkey <= 4);
 ALTER TABLE region ADD CONSTRAINT r_name_domain CHECK
  (r_name in ('MIDDLE EAST', 'AMERICA', 'ASIA', 'EUROPE', 'AFRICA'));
---TODO: add constraint on (R_REGIONKEY, R_NAME) tuples
+-- (r_regionkey, r_name) tuple constraint
+ALTER TABLE region ADD CONSTRAINT r_regionkey_name_domain CHECK
+ ((r_regionkey = 0 and r_name = 'AFRICA') or
+ (r_regionkey = 1 and r_name = 'AMERICA') or
+ (r_regionkey = 2 and r_name = 'ASIA') or
+ (r_regionkey = 3 and r_name = 'EUROPE') or
+ (r_regionkey = 4 and r_name = 'MIDDLE EAST'));
