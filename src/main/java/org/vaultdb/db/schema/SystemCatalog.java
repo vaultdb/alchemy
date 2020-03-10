@@ -1,9 +1,15 @@
 package org.vaultdb.db.schema;
 
+import org.apache.calcite.adapter.java.JavaTypeFactory;
+import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rel.type.RelRecordType;
+import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.schema.Table;
 import org.apache.calcite.util.Pair;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.config.WorkerConfiguration;
+import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
 
 import java.sql.Connection;
@@ -50,6 +56,8 @@ public class SystemCatalog {
 		String protectedQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='protected_attribute'";
 		String partitionByQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='partitioned_on'";
 		String replicatedTablesQuery = "SELECT table_name FROM information_schema.table_privileges WHERE grantee='replicated'";
+
+		
 		String primaryKeysQuery = "SELECT pg_class.relname, pg_attribute.attname\n "
 				+ "FROM pg_index, pg_class, pg_attribute, pg_namespace\n "
 				+ "WHERE indrelid = pg_class.oid AND "
@@ -60,8 +68,11 @@ public class SystemCatalog {
 		
 		connections = ConnectionManager.getInstance();
 		
+		
 		Connection dbConnection = config.getDbConnection();
 
+	   
+	    
 		initializeSecurityPolicy(publicQuery, dbConnection, SecurityPolicy.Public);
 		initializeSecurityPolicy(protectedQuery, dbConnection, SecurityPolicy.Protected);
 		initializeReplicatedTables(replicatedTablesQuery, dbConnection);
@@ -245,6 +256,11 @@ public class SystemCatalog {
 
 	}
 	
+	// extract a set of RexNodes to describe schema constraints
+	// 
+	void initializeSchemaConstraints() {
+		
+	}
 	
 	public Map<String, SecurityPolicy> tablePolicies(String tableName) {
 		return accessPolicies.get(tableName);

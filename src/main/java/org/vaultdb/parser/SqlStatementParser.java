@@ -51,10 +51,10 @@ public class SqlStatementParser {
 	
 	
 	public SqlStatementParser() throws Exception {
-		SystemConfiguration pdnConfig = SystemConfiguration.getInstance();
-		config = pdnConfig.getCalciteConfiguration();
-		calciteConnection = pdnConfig.getCalciteConnection();
-		sharedSchema = pdnConfig.getPdfSchema();
+		SystemConfiguration pdfConfig = SystemConfiguration.getInstance();
+		config = pdfConfig.getCalciteConfiguration();
+		calciteConnection = pdfConfig.getCalciteConnection();
+		sharedSchema = pdfConfig.getPdfSchema();
 		
 		planner = new PlannerImpl(config);
 		 
