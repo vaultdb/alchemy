@@ -9,7 +9,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.util.Pair;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.vaultdb.codegen.CodeGenerator;
 import org.vaultdb.codegen.plaintext.PlainOperator;
 import org.vaultdb.codegen.smc.operator.SecureOperator;
