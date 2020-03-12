@@ -20,6 +20,7 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.Statistic;
 import org.apache.calcite.schema.Table;
 import org.apache.calcite.schema.impl.ModifiableViewTable;
+import org.apache.calcite.sql.validate.SqlValidatorTable;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.vaultdb.config.SystemConfiguration;
@@ -37,16 +38,18 @@ public class TableConstraints {
 	Table baseTable;
 	
 	
-	TableConstraints(String tableName) throws Exception {
+	public TableConstraints(String tableName) throws Exception {
 
 		// set up calcite config
 		SystemConfiguration config = SystemConfiguration.getInstance();
 		SchemaPlus sharedSchema = config.getPdfSchema();
 		CalciteConnection calciteConnection = config.getCalciteConnection();
-		Statistic statistic = baseTable.getStatistic();		
 		JavaTypeFactory typeFactory = config.getCalciteConnection().getTypeFactory();
 
-	    RelRecordType rowType = (RelRecordType) baseTable.getRowType(typeFactory);
+
+		baseTable = sharedSchema.getTable(tableName);
+		Statistic statistic = baseTable.getStatistic();		
+			    RelRecordType rowType = (RelRecordType) baseTable.getRowType(typeFactory);
 		List<RelDataTypeField> tableFields = rowType.getFieldList();
 		
 		  final Prepare.CatalogReader catalogReader = new CalciteCatalogReader(
@@ -54,8 +57,6 @@ public class TableConstraints {
 	    	        CalciteSchema.from(sharedSchema).path(null),
 	    	        (JavaTypeFactory) typeFactory, calciteConnection.config());
 	      
-		// populate the member vars
-		baseTable = sharedSchema.getTable(tableName);
 
 	    integrityConstraints = statistic.getReferentialConstraints();
 		
@@ -75,11 +76,15 @@ public class TableConstraints {
 	    
 	    List<String> tableNames = new ArrayList<String>();
 	    tableNames.add(tableName);
+	   
 	    
 	    PreparingTable prepTable = catalogReader.getTable(tableNames);
 	    
+	    // try this
+	    SqlValidatorTable sqlValidatorTable = prepTable.unwrap(SqlValidatorTable.class);
 	    
-	    final ModifiableViewTable modifiableViewTable =  prepTable.unwrap(ModifiableViewTable.class);
+	    
+	    final ModifiableViewTable modifiableViewTable =  sqlValidatorTable.unwrap(ModifiableViewTable.class);
 
 	    // get additional constraints, e.g., domains/ranges of cols
 	    Map<Integer, RexNode> constraintsMap = RelOptUtil.getColumnConstraints(modifiableViewTable, rowType, typeFactory);
