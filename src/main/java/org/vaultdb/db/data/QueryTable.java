@@ -12,6 +12,7 @@ import org.vaultdb.util.FileUtilities;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -42,6 +43,8 @@ public class QueryTable implements Serializable {
       tupleSize = schema.size();
     }
   }
+  
+
 
   public QueryTable(BitSet bits, SecureRelRecordType s, int bitCount, boolean dummyTagged)
       throws Exception {
@@ -102,6 +105,8 @@ public class QueryTable implements Serializable {
     tupleCount = 0;
     tuples = new ArrayList<Tuple>();
   }
+
+  
 
   public void addTuples(QueryTable src) {
     if (src == null) return;

@@ -11,7 +11,7 @@ emp-port=54321
 generated-class-prefix=org.vaultdb.compiler.emp.generated
 #set to debug to disable pushing filter up to select
 code-generator-mode=release 
-
+schema-definition=conf/workload/tpch/tpch-schema.sql
 
 #privacy consumed by each operator
 epsilon=0.1
