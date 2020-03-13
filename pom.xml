@@ -21,7 +21,6 @@
       <artifactId>calcite-core</artifactId>
       <version>1.22.0</version>
     </dependency>
-
    <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-server</artifactId>

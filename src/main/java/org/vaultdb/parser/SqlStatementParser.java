@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfig;
+import org.apache.calcite.config.Lex;
 import org.apache.calcite.jdbc.CalciteConnection;
 import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.prepare.CalciteCatalogReader;
@@ -14,13 +15,17 @@ import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperatorTable;
 import org.apache.calcite.sql.parser.SqlParseException;
+import org.apache.calcite.sql.parser.SqlParser;
+import org.apache.calcite.sql.parser.ddl.SqlDdlParserImpl;
 import org.apache.calcite.sql.validate.SqlConformance;
+import org.apache.calcite.sql.validate.SqlConformanceEnum;
 import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql.validate.SqlValidatorCatalogReader;
 import org.apache.calcite.sql.validate.SqlValidatorImpl;
@@ -182,6 +187,45 @@ public class SqlStatementParser {
 	    }
 
 	
+	  public RexNode parseExpression(String expressionStr) throws SqlParseException {
+	      assert(expressionStr != null);
+
+	      SqlParser.Config sqlParserConfig = SqlParser.configBuilder()
+				    .setParserFactory(SqlDdlParserImpl.FACTORY)
+				    .setConformance(SqlConformanceEnum.MYSQL_5) // psql not available - blasphemy!
+				    .setLex(Lex.MYSQL)
+				    .build();
+		  
+	      SqlParser parser = SqlParser.create(expressionStr, sqlParserConfig);
+	      SqlNode expression = parser.parseExpression();
+	      
+	      
+	      // TODO: planner.getTypeFactory returns NULL
+	      
+	      final RelDataTypeFactory typeFactory = planner.getTypeFactory();
+	     
+
+	      final Prepare.CatalogReader catalogReader = new CalciteCatalogReader(
+	    	        CalciteSchema.from(sharedSchema),
+	    	        CalciteSchema.from(sharedSchema).path(null),
+	    	        (JavaTypeFactory) typeFactory, calciteConnection.config());
+
+	          
+	      final SqlValidator validator = new LocalValidatorImpl(config.getOperatorTable(), catalogReader, typeFactory,
+	              conformance());
+	      validator.setIdentifierExpansion(true);
+	      
+	    
+	      final SqlToRelConverter converter =
+	          createSqlToRelConverter(
+	              validator,
+	              catalogReader,
+	              typeFactory);
+	      
+	     return  converter.convertExpression(expression);
+	      
+	    }
+
 	  // from PlannerImpl, here b/c of protected method
 	  private SqlConformance conformance() {
 		    final Context context = config.getContext();
@@ -295,8 +339,8 @@ public class SqlStatementParser {
 
 
 	
-	private class LocalValidatorImpl extends SqlValidatorImpl {
-	    protected LocalValidatorImpl(
+	public class LocalValidatorImpl extends SqlValidatorImpl {
+	    public LocalValidatorImpl(
 	        SqlOperatorTable opTab,
 	        SqlValidatorCatalogReader catalogReader,
 	        RelDataTypeFactory typeFactory,
