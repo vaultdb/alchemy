@@ -68,7 +68,6 @@ public abstract class RexFlattener implements RexVisitor<String> {
 		}
 		
 		
-		
 		logger.info("Handling call: " + call + " of type " + kind + " with operands " + call.getOperands());
 		//handle boolean types
 		if (call.getType().getSqlTypeName() == SqlTypeName.BOOLEAN 

@@ -144,10 +144,7 @@ public class TableConstraints {
 	}
 	
 	
-	// adds a UNIQUE constraint to the table
-	void addKey() {
-		
-	}
+	
 	String resultSetToString(ResultSet result) throws SQLException {
 		   ResultSetMetaData rsmd = result.getMetaData();
 		   int columnCount = rsmd.getColumnCount();
