@@ -102,10 +102,6 @@ public class SqlStatementParser {
 		    
 		    optimizer.addRule(FilterMergeRule.INSTANCE);
 		    optimizer.addRule(ProjectMergeRule.INSTANCE);
-		    //optimizer.addRule(SubQueryRemoveRule.FILTER);
-		    //optimizer.addRule(SubQueryRemoveRule.JOIN);
-		    //optimizer.addRule(SubQueryRemoveRule.PROJECT);
-		    //optimizer.addRule(PushDownFilter.INSTANCE);
 		    
 	}
 	
@@ -211,8 +207,7 @@ public class SqlStatementParser {
 	    	        (JavaTypeFactory) typeFactory, calciteConnection.config());
 
 	          
-	      final SqlValidator validator = new LocalValidatorImpl(config.getOperatorTable(), catalogReader, typeFactory,
-	              conformance());
+	      final SqlValidator validator =  getValidator();
 	      validator.setIdentifierExpansion(true);
 	      
 	    
@@ -226,6 +221,24 @@ public class SqlStatementParser {
 	      
 	    }
 
+	  public SqlValidator getValidator() {
+		     final RelDataTypeFactory typeFactory = planner.getTypeFactory();
+		     
+
+		      final Prepare.CatalogReader catalogReader = new CalciteCatalogReader(
+		    	        CalciteSchema.from(sharedSchema),
+		    	        CalciteSchema.from(sharedSchema).path(null),
+		    	        (JavaTypeFactory) typeFactory, calciteConnection.config());
+
+		          
+		      final SqlValidator validator = new LocalValidatorImpl(config.getOperatorTable(), catalogReader, typeFactory,
+		              conformance());
+		      validator.setIdentifierExpansion(true);
+
+		  return new LocalValidatorImpl(config.getOperatorTable(), catalogReader, typeFactory,
+	              conformance());
+	  }
+	  
 	  // from PlannerImpl, here b/c of protected method
 	  private SqlConformance conformance() {
 		    final Context context = config.getContext();
@@ -323,7 +336,7 @@ public class SqlStatementParser {
 	
 	
 	
-    protected SqlToRelConverter createSqlToRelConverter(
+    public SqlToRelConverter createSqlToRelConverter(
             final SqlValidator validator,
             final Prepare.CatalogReader catalogReader,
             final RelDataTypeFactory typeFactory) {
@@ -338,9 +351,8 @@ public class SqlStatementParser {
         }
 
 
-	
-	public class LocalValidatorImpl extends SqlValidatorImpl {
-	    public LocalValidatorImpl(
+	 class LocalValidatorImpl extends SqlValidatorImpl {
+	     LocalValidatorImpl(
 	        SqlOperatorTable opTab,
 	        SqlValidatorCatalogReader catalogReader,
 	        RelDataTypeFactory typeFactory,
