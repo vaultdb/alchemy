@@ -7,20 +7,27 @@ import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.Lex;
 import org.apache.calcite.jdbc.CalciteConnection;
 import org.apache.calcite.jdbc.CalciteSchema;
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.prepare.CalciteCatalogReader;
 import org.apache.calcite.prepare.PlannerImpl;
 import org.apache.calcite.prepare.Prepare;
+import org.apache.calcite.prepare.Prepare.CatalogReader;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
+import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.rules.ReduceExpressionsRule;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlExplainFormat;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperatorTable;
+import org.apache.calcite.sql.ddl.SqlCreateTable;
+import org.apache.calcite.sql.dialect.PostgresqlSqlDialect;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.parser.ddl.SqlDdlParserImpl;
@@ -53,6 +60,7 @@ public class SqlStatementParser {
 	Planner planner;
 	FrameworkConfig config;
 	HepPlanner optimizer;
+	Logger logger;
 	
 	
 	public SqlStatementParser() throws Exception {
@@ -60,6 +68,7 @@ public class SqlStatementParser {
 		config = pdfConfig.getCalciteConfiguration();
 		calciteConnection = pdfConfig.getCalciteConnection();
 		sharedSchema = pdfConfig.getPdfSchema();
+		logger = pdfConfig.getLogger();
 		
 		planner = new PlannerImpl(config);
 		 
@@ -102,13 +111,25 @@ public class SqlStatementParser {
 		    
 		    optimizer.addRule(FilterMergeRule.INSTANCE);
 		    optimizer.addRule(ProjectMergeRule.INSTANCE);
+		    //optimizer.addRule(SubQueryRemoveRule.FILTER);
+		    //optimizer.addRule(SubQueryRemoveRule.JOIN);
+		    //optimizer.addRule(SubQueryRemoveRule.PROJECT);
+		    //optimizer.addRule(PushDownFilter.INSTANCE);
 		    
 	}
 	
 	
 	public SqlNode parseSQL(String sql) throws SqlParseException, ValidationException  {
-		SqlNode parsed =  planner.parse(sql);
+		logger.info("Parsing: " + sql);
+		SqlNode parsed = null;
+		
+
+		((PlannerImpl) planner).close();
+		((PlannerImpl) planner).reset(); // clear the state from the last parse
+		parsed =  planner.parse(sql);
 		parsed = planner.validate(parsed);
+		
+		logger.info("Parsed: " + parsed);
 		return parsed;
 	}
 	
@@ -183,62 +204,6 @@ public class SqlStatementParser {
 	    }
 
 	
-	  public RexNode parseExpression(String expressionStr) throws SqlParseException {
-	      assert(expressionStr != null);
-
-	      SqlParser.Config sqlParserConfig = SqlParser.configBuilder()
-				    .setParserFactory(SqlDdlParserImpl.FACTORY)
-				    .setConformance(SqlConformanceEnum.MYSQL_5) // psql not available - blasphemy!
-				    .setLex(Lex.MYSQL)
-				    .build();
-		  
-	      SqlParser parser = SqlParser.create(expressionStr, sqlParserConfig);
-	      SqlNode expression = parser.parseExpression();
-	      
-	      
-	      // TODO: planner.getTypeFactory returns NULL
-	      
-	      final RelDataTypeFactory typeFactory = planner.getTypeFactory();
-	     
-
-	      final Prepare.CatalogReader catalogReader = new CalciteCatalogReader(
-	    	        CalciteSchema.from(sharedSchema),
-	    	        CalciteSchema.from(sharedSchema).path(null),
-	    	        (JavaTypeFactory) typeFactory, calciteConnection.config());
-
-	          
-	      final SqlValidator validator =  getValidator();
-	      validator.setIdentifierExpansion(true);
-	      
-	    
-	      final SqlToRelConverter converter =
-	          createSqlToRelConverter(
-	              validator,
-	              catalogReader,
-	              typeFactory);
-	      
-	     return  converter.convertExpression(expression);
-	      
-	    }
-
-	  public SqlValidator getValidator() {
-		     final RelDataTypeFactory typeFactory = planner.getTypeFactory();
-		     
-
-		      final Prepare.CatalogReader catalogReader = new CalciteCatalogReader(
-		    	        CalciteSchema.from(sharedSchema),
-		    	        CalciteSchema.from(sharedSchema).path(null),
-		    	        (JavaTypeFactory) typeFactory, calciteConnection.config());
-
-		          
-		      final SqlValidator validator = new LocalValidatorImpl(config.getOperatorTable(), catalogReader, typeFactory,
-		              conformance());
-		      validator.setIdentifierExpansion(true);
-
-		  return new LocalValidatorImpl(config.getOperatorTable(), catalogReader, typeFactory,
-	              conformance());
-	  }
-	  
 	  // from PlannerImpl, here b/c of protected method
 	  private SqlConformance conformance() {
 		    final Context context = config.getContext();
@@ -296,6 +261,69 @@ public class SqlStatementParser {
 	      
 	}
 	
+	
+	
+    public SqlValidator getValidator() {
+        final RelDataTypeFactory typeFactory = planner.getTypeFactory();
+
+
+         final Prepare.CatalogReader catalogReader = new CalciteCatalogReader(
+                   CalciteSchema.from(sharedSchema),
+                   CalciteSchema.from(sharedSchema).path(null),
+                   (JavaTypeFactory) typeFactory, calciteConnection.config());
+
+
+         final SqlValidator validator = new LocalValidatorImpl(config.getOperatorTable(), catalogReader, typeFactory,
+                 conformance());
+         validator.setIdentifierExpansion(true);
+
+     return new LocalValidatorImpl(config.getOperatorTable(), catalogReader, typeFactory,
+         conformance());
+}
+    
+	
+	public  RexNode parseTableConstraint(String tableName, String predicate) throws Exception {
+		String sqlQuery = "SELECT * FROM " + tableName + " WHERE " + predicate;
+
+		SqlNode query = parseSQL(sqlQuery);
+        
+        
+        
+        final SqlValidator validator = this.getValidator();
+        
+        
+        
+        RelDataTypeSystem typeSystem = PostgresqlSqlDialect.DEFAULT.getTypeSystem();
+        final RelDataTypeFactory typeFactory = new JavaTypeFactoryImpl(typeSystem);
+
+            
+        
+        final CatalogReader catalogReader = new CalciteCatalogReader(
+        CalciteSchema.from(sharedSchema),
+        CalciteSchema.from(sharedSchema).path(null),
+        (JavaTypeFactory) typeFactory, calciteConnection.config());
+
+        assert(typeFactory != null);
+        
+        SqlToRelConverter sqlToRel = this.createSqlToRelConverter(validator, catalogReader, typeFactory);
+        
+        
+        RelRoot queryTree = sqlToRel.convertQuery(query, true, true);
+        RelNode rootNode = queryTree.rel;
+        LogicalFilter filter = (LogicalFilter) rootNode.getInput(0); // has to be a filter owing to SELECT setup above
+        RexNode rowExpression = filter.getCondition();
+
+        RexBuilder builder = filter.getCluster().getRexBuilder();
+        rowExpression = RexUtil.toCnf(builder, rowExpression);
+        return rowExpression;
+        
+        
+
+        
+		
+	}
+	
+	
 	public RelRoot mergeProjects(RelRoot root) {
 		   HepProgramBuilder builder = new HepProgramBuilder();
 		   builder.addRuleClass(ProjectMergeRule.class);
@@ -336,7 +364,7 @@ public class SqlStatementParser {
 	
 	
 	
-    public SqlToRelConverter createSqlToRelConverter(
+    protected SqlToRelConverter createSqlToRelConverter(
             final SqlValidator validator,
             final Prepare.CatalogReader catalogReader,
             final RelDataTypeFactory typeFactory) {
@@ -351,8 +379,9 @@ public class SqlStatementParser {
         }
 
 
-	 class LocalValidatorImpl extends SqlValidatorImpl {
-	     LocalValidatorImpl(
+	
+	private class LocalValidatorImpl extends SqlValidatorImpl {
+	    protected LocalValidatorImpl(
 	        SqlOperatorTable opTab,
 	        SqlValidatorCatalogReader catalogReader,
 	        RelDataTypeFactory typeFactory,
@@ -360,6 +389,23 @@ public class SqlStatementParser {
 	      super(opTab, catalogReader, typeFactory, conformance);
 	    }
 
+	}
+
+
+
+	public SqlCreateTable parseTableDefinition(String tableDefinition) throws SqlParseException {
+        assert(tableDefinition != null);
+
+        SqlParser.Config sqlParserConfig = SqlParser.configBuilder()
+                              .setParserFactory(SqlDdlParserImpl.FACTORY)
+                              .setConformance(SqlConformanceEnum.MYSQL_5) // psql not available - blasphemy!
+                              .setLex(Lex.MYSQL)
+                              .build();
+            
+        
+        SqlParser parser = SqlParser.create(tableDefinition, sqlParserConfig);
+        SqlNode node =  parser.parseStmt();
+        return (SqlCreateTable) node;
 	};
 	
 }

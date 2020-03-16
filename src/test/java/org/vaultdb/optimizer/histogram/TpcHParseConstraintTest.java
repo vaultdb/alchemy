@@ -1,9 +1,6 @@
 package org.vaultdb.optimizer.histogram;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.Lex;
@@ -16,18 +13,25 @@ import org.apache.calcite.prepare.Prepare;
 import org.apache.calcite.prepare.Prepare.CatalogReader;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
+import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.sql.SqlBasicCall;
 import org.apache.calcite.sql.SqlCall;
 import org.apache.calcite.sql.SqlCreate;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.sql.SqlNodeList;
 import org.apache.calcite.sql.SqlSelect;
+import org.apache.calcite.sql.ddl.SqlCheckConstraint;
+import org.apache.calcite.sql.ddl.SqlCreateTable;
+import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.parser.ddl.SqlDdlParserImpl;
+import org.apache.calcite.sql.util.SqlString;
 import org.apache.calcite.sql.validate.SqlConformanceEnum;
 import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql2rel.SqlNodeToRexConverter;
@@ -70,79 +74,64 @@ public class TpcHParseConstraintTest  extends TpcHBaseTest {
 	   
 	  }
 		
-	  public void testLineitem() throws Exception  {
+	  public void testLineitemExpression() throws Exception  {
 		
 		// to dump all constraints at once.  Not used yet.
 		// String tableSchema = super.TABLE_DEFINITIONS.get("lineitem");
 		String constraintExpression = "(l_linenumber >= 1) AND (l_linenumber <= 7)";
 		String tableName = "lineitem";
 		
-		
-		// hack to give it context for mapping InputRefs to cols
-		String constraintQuery = "SELECT * FROM " + tableName + " WHERE " + constraintExpression; 		
-		SqlSelect query = (SqlSelect) sqlParser.parseSQL(constraintQuery);
-		
-		SqlNode predicate = query.getWhere();
-		logger.info("Parsed a " + predicate.getClass() + " " + predicate.getKind());
-		
-		
-		
-		final SqlValidator validator = sqlParser.getValidator();
-		final CalciteConnection calciteConnection = config.getCalciteConnection();
-		
-		
-		
-		RelDataTypeSystem typeSystem =
-		        calciteConnection.config().typeSystem(RelDataTypeSystem.class,
-		            RelDataTypeSystem.DEFAULT);
-		final RelDataTypeFactory typeFactory = new JavaTypeFactoryImpl(typeSystem);
-
-		    
-		
-		final CatalogReader catalogReader = new CalciteCatalogReader(
-    	        CalciteSchema.from(sharedSchema),
-    	        CalciteSchema.from(sharedSchema).path(null),
-    	        (JavaTypeFactory) typeFactory, calciteConnection.config());
-
-		assert(typeFactory != null);
-		
-		SqlToRelConverter sqlToRel = sqlParser.createSqlToRelConverter(validator, catalogReader, typeFactory);
-		
-		
-		RelRoot queryTree = sqlToRel.convertQuery(query, true, true);
-		RelNode rootNode = queryTree.rel;
-		
-		RexShuttle shuttle = new RexShuttle();
-		
-		List<RexNode> rowExpressions = rootNode.accept(shuttle);
-		
-		logger.info("Parsed a " + queryTree.getClass() + queryTree.rel.getClass());
-
-		//SqlParser parser = SqlParser.create(constraintExpression, sqlParserConfig);
-		//SqlNode expression = parser.parseExpression();
-		
-
-		//RexNode expression = sqlParser.parseExpression(constraintExpression);
-		
-		
-		//SqlRexConvertletTable tableDefs = config.getCalciteConfiguration().getConvertletTable();
-
-		
-		//RexNode rowExpression =  converter.convertExpression(expression);
-		//SqlNodeToRexConverter converter = new SqlNodeToRexConverterImpl(tableDefs);
-		 //= tableDef.convertCall(null, expression);
-		// SqlRexConvertlet converts SqlNode to RexNode		
-		// See http://users.eecs.northwestern.edu/~jennie/documentation/calcite-javadoc/org/apache/calcite/sql2rel/SqlNodeToRexConverter.html
-		// for more
-		
-		// how to parse an expression to  SqlNode?  It's a SqlCall more precisely
-		
-		//PlannerImpl planner = new PlannerImpl(config.getCalciteConfiguration());
-		//SqlNode parseSql = planner.parse(constraint);  // don't validate it just yet
-		
-		
-		
+		RexNode predicate = sqlParser.parseTableConstraint(tableName, constraintExpression);
+		logger.info("Parsed " + predicate);
 				
 	}
+	  
+	  public void testLineitemTableDeclaration() throws Exception {
+		  
+		String tableName = "lineitem";
+		String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
+		logger.info("Parsing: " + tableDefinition);
+		
+		
+		
+		//RelNode tableNode = sqlParser.parseTableDefinition(tableDefinition);
+		//logger.info("Table node: " + tableNode);
+
+		SqlCreateTable tableNode =  sqlParser.parseTableDefinition(tableDefinition);
+		List<SqlNode> tableOperands = tableNode.getOperandList();
+		SqlNodeList columns = (SqlNodeList) tableOperands.get(1);
+		
+		
+		logger.info("Table node: " + tableNode.getKind());
+
+		
+		for(SqlNode node : columns) {
+			logger.info("Parsed column=" + node.getKind() );
+			if(node instanceof SqlCheckConstraint) {
+				SqlCheckConstraint constraint = (SqlCheckConstraint) node;
+				List<SqlNode> operands = constraint.getOperandList();
+				// operands[0] = name
+				// operands[1] = SqlBasicCall
+				// need to get from SqlBasicCall to RexNode
+				SqlBasicCall expression = (SqlBasicCall) operands.get(1);
+				String sqlExpression = expression.toSqlString(config.DIALECT).getSql();
+				
+				// delete excess quotes
+				sqlExpression  = sqlExpression.replace("\"", "");
+				logger.info("Parsing sql string: " + sqlExpression);
+
+				RexNode rowExpression = sqlParser.parseTableConstraint(tableName, sqlExpression);
+				logger.info("**********Parsed rexnode: " + rowExpression);
+
+			}
+		}
+
+  
+		
+		
+
+		
+		
+	  }
 
 }
