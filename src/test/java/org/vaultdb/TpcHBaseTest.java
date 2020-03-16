@@ -741,7 +741,7 @@ public abstract class TpcHBaseTest  extends TestCase {
             "    CONSTRAINT l_linestatus_domain CHECK (l_linestatus IN ('O', 'F'))," + 
             "    CONSTRAINT l_partkey_domain CHECK ((l_partkey >= 1) AND (l_partkey <= 20000))," + 
             "    CONSTRAINT l_quantity_domain CHECK ((l_quantity >= 1) AND (l_quantity <= 50))," + 
-            "    CONSTRAINT l_receiptdate_domain CHECK ((l_receiptdate >= (l_shipdate + 1)) AND (l_receiptdate <= (l_shipdate + 30)))," + 
+            "    CONSTRAINT l_receiptdate_domain CHECK (((l_receiptdate >= (l_shipdate + INTERVAL '1' DAY))) AND (l_receiptdate <= (l_shipdate + INTERVAL '30' DAY))), " + 
             "    CONSTRAINT l_returnflag_based_on_receiptdate_domain CHECK ((l_returnflag IN ('R', 'A') AND l_receiptdate <= CAST('1995-06-17' AS date)) OR (l_returnflag = 'N' AND l_receiptdate > CAST('1995-06-17' AS date)))," + 
             "    CONSTRAINT l_returnflag_domain CHECK (l_returnflag IN ('R', 'A', 'N'))," + 
             "    CONSTRAINT l_shipinstruct_domain CHECK (l_shipinstruct IN ('DELIVER IN PERSON', 'COLLECT COD', 'NONE','TAKE BACK RETURN'))," + 
