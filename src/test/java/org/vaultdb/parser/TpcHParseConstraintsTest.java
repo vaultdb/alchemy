@@ -1,4 +1,4 @@
-package org.vaultdb.optimizer.histogram;
+package org.vaultdb.parser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ import org.vaultdb.parser.SqlStatementParser;
 
 import com.google.common.collect.ImmutableList;
 
-public class TpcHParseConstraintTest  extends TpcHBaseTest {
+public class TpcHParseConstraintsTest  extends TpcHBaseTest {
 	
 	SqlStatementParser sqlParser;
 	
@@ -41,6 +41,7 @@ public class TpcHParseConstraintTest  extends TpcHBaseTest {
 		
 		RexNode predicate = sqlParser.parseTableConstraint(tableName, constraintExpression);
 		logger.info("Parsed " + predicate);
+		assertEquals(predicate.toString(), "AND(<=(1, $3), >=(7, $3))");
 				
 	}
 
@@ -87,6 +88,32 @@ public class TpcHParseConstraintTest  extends TpcHBaseTest {
 	  }
 	  
 
+	  public void testNationTableDeclaration() throws Exception {
+		  assert(false);
+	  }
+	  
+
+	  public void testOrdersTableDeclaration() throws Exception {
+		  assert(false);
+	  }
+	  
+
+	  public void testPartTableDeclaration() throws Exception {
+		  assert(false);
+	  }
+	  
+	  public void testPartsuppDeclaration() throws Exception {
+		  assert(false);
+	  }
+	    
+	  
+	  public void testRegionTableDeclaration() throws Exception {
+		  assert(false);
+	  }
+	  
+	  public void testSupplierTableDeclaration() throws Exception {
+		  assert(false);
+	  }
 	  
 	  
 	  List<RexNode> extractTableConstraints(String tableName) throws Exception {
