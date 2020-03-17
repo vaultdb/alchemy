@@ -184,9 +184,7 @@ public class AttributeResolver {
 				SecurityPolicy policy = AttributeResolver.getAggPolicy(call, inSchema);
 				String storedTable = AttributeResolver.getStoredTable(call, inSchema);
 				SecureRelDataTypeField secField = new SecureRelDataTypeField(field, policy, storedTable);
-				//if(policy == SecurityPolicy.Private) {
-				//	obliviousEval = true;
-				//}
+				
 				secFields.add(secField);
 			}
 		}

@@ -13,6 +13,7 @@ import org.vaultdb.db.data.QueryTable;
 import org.vaultdb.db.data.Tuple;
 import org.vaultdb.db.data.field.IntField;
 import org.vaultdb.db.schema.constraints.ColumnConstraints;
+import org.vaultdb.db.schema.constraints.ColumnConstraintsFactory;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.plaintext.SqlQueryExecutor;
 import org.vaultdb.type.SecureRelDataTypeField;
@@ -31,7 +32,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "diagnoses";
 		String attr = "patient_id";
 		
-		ColumnConstraints stats = getExpectedStatistics(table, attr);
+		ColumnConstraints<Long> stats = getExpectedStatistics(table, attr);
 		testCase(table, attr, stats);	
 	}
 	
@@ -39,7 +40,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "medications";
 		String attr = "patient_id";
 		
-		ColumnConstraints stats = getExpectedStatistics(table, attr);
+		ColumnConstraints<Long> stats = getExpectedStatistics(table, attr);
 		testCase(table, attr, stats);	
 	}
 	
@@ -50,12 +51,12 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "demographics";
 		String attr = "birth_year";
 		
-		ColumnConstraints stats = new ColumnConstraints();
+		ColumnConstraints<Long> stats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
 		
-		stats.setMin(1924);
-		stats.setMax(1995);
-		stats.setDistinctCardinality(72);
-		stats.setCardinality(6);
+		stats.setMin(1924L);
+		stats.setMax(1995L);
+		stats.setDistinctCardinality(72L);
+		stats.setCardinality(6L);
 		
 		testCase(table, attr, stats);
 	}
@@ -64,13 +65,10 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "medications";
 		String attr = "month";
 		
-		ColumnConstraints expectedStats = new ColumnConstraints();
-		// TODO: Nisha and May, fill in expected output following the pattern in testDemographicsBirthYear
-		// Since attr is not public, may only use contents of relation_statistics table in test database to get stats
-		// Naturally, month will range from 1...12, need to set domain and distinct card of 12 too
+		ColumnConstraints<Long> expectedStats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
 
-		expectedStats.setMin(1);
-		expectedStats.setMax(12);
+		expectedStats.setMin(1L);
+		expectedStats.setMax(12L);
 		expectedStats.setDistinctCardinality(12);
 		expectedStats.setCardinality(4);
 
@@ -83,7 +81,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "demographics";
 		String attr = "gender";
 		
-		ColumnConstraints expectedStats = new ColumnConstraints();
+		ColumnConstraints expectedStats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
 		// TODO: Nisha and May, fill in expected output following the pattern in testDemographicsBirthYear
 		// Since attr is not public, may only use contents of relation_statistics in test database to get stats
 		// gender should have  cardinality of <demo table length>, range = 1..3, distinct vals: 3, ...
@@ -103,7 +101,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "diagnoses";
 		String attr = "major_icd9";
 		
-		ColumnConstraints expectedStats = new ColumnConstraints();
+		ColumnConstraints expectedStats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
 		// icd9 should have  cardinality of <diag table length>, 1604 distinct vals
 		// TODO: Nisha and May, derive expected output following the pattern in testDemographicsBirthYear
 
@@ -116,9 +114,11 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 	
 	
 	// For use with public attributes
-	public static ColumnConstraints getExpectedStatistics(String table, String attr) throws Exception {
+	// only supporting Longs for this test
+	public static ColumnConstraints<Long> getExpectedStatistics(String table, String attr) throws Exception {
 
-		ColumnConstraints stats = new ColumnConstraints();
+		ColumnConstraints<Long> stats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
+		
 		long maxMultiplicity = runLongIntQuery("SELECT COUNT(*) FROM " +  table + " GROUP BY " + attr + " ORDER BY COUNT(*) DESC LIMIT 1");
 		List<Long> domain = runLongIntListQuery("SELECT DISTINCT " + attr + " FROM " + table);
 		long min = runLongIntQuery("SELECT min(" + attr + ") FROM " + table);
@@ -173,7 +173,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		
 	
 		SecureRelDataTypeField field = Utilities.lookUpAttribute(table, attr);
-		field.initializeStatistics();
+		field.initializeConstraints();
 		
 		logger.log(Level.INFO, "Expected output: " + expectedOutput);	
 		logger.log(Level.INFO, "observed output: " + field.getColumnConstraints());

@@ -34,7 +34,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 
   SecurityPolicy policy = SecurityPolicy.Private;
   RelDataTypeField baseField;
-  ColumnConstraints constraints = null;
+  ColumnConstraints<?> constraints = null; // TODO: initialize this
   private boolean aliased;
   private String unaliasedName;
 
@@ -48,12 +48,6 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     super(name, index, type);
     filters = new ArrayList<LogicalFilter>();
 
-    try {
-		constraints = ColumnConstraintsFactory.get(this);
-	} catch (Exception e) {
-		e.printStackTrace();
-		System.exit(-1); 
-	}
 
   }
 
@@ -64,14 +58,9 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     policy = secPolicy;
     filters = new ArrayList<LogicalFilter>();
     storedTable = aStoredTable;
-  
-    try {
-		constraints = ColumnConstraintsFactory.get(this);
-	} catch (Exception e) {
-		e.printStackTrace();
-		System.exit(-1); 
-	}
 
+  
+ 
   }
 
   public SecureRelDataTypeField(
@@ -80,7 +69,6 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     this.baseField = baseField;
     policy = secPolicy;
     filters = new ArrayList<LogicalFilter>();
-    constraints = theStats;
   }
 
   public SecureRelDataTypeField(
@@ -97,12 +85,11 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     setStoredAttribute(aStoredAttribute);
     filters = new ArrayList<LogicalFilter>();
     addFilter(aFilter);
-    // statistics = new ObliviousFieldStatistics(this);
 
   }
 
   // quasi-copy constructor
-  public SecureRelDataTypeField(RelDataTypeField aBaseField, SecureRelDataTypeField src) {
+  public SecureRelDataTypeField(RelDataTypeField aBaseField, SecureRelDataTypeField src)  {
     super(aBaseField.getName(), src.getBaseField().getIndex(), src.getBaseField().getType());
     if (!src.getName().equals(aBaseField.getName())) {
       aliased = true;
@@ -113,7 +100,10 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     storedTable = src.getStoredTable();
     storedAttribute = src.getStoredAttribute();
     filters = new ArrayList<LogicalFilter>(src.getFilters());
-    constraints = src.constraints;
+    // TODO: deep copy constraints
+    constraints = src.getColumnConstraints();
+
+
   }
 
   private void writeObject(ObjectOutputStream out) throws IOException {
@@ -153,12 +143,13 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
   }
 
   // for table scans
-  public void initializeStatistics() throws Exception {
+  public void initializeConstraints() throws Exception {
 	  constraints = ColumnConstraintsFactory.get(this);
   }
 
   // copy constructor
-  public void initializeStatistics(ColumnConstraints c) {
+  @SuppressWarnings("unchecked")
+public void initializeStatistics(ColumnConstraints<?> c) {
     constraints = new ColumnConstraints(this, c);
   }
 

@@ -53,10 +53,7 @@ public class ColumnConstraints<T> {
 		
 		assert(table != null && attr != null);
 		
-		
-		if(columnDefinition.getSecurityPolicy() == SecurityPolicy.Public)  {	
-			populatePublicAttribute();
-		}
+
 		
 
 		
@@ -115,19 +112,19 @@ public class ColumnConstraints<T> {
 
 
 
-	public static ColumnConstraints getCachedStatistics(String table, String attr) throws Exception {
+	/*public static ColumnConstraints getCachedStatistics(String table, String attr) throws Exception {
 		ColumnConstraints f = new ColumnConstraints();
 		f.populatePrivateAttribute(table, attr);
 		return f;
 	}
 	
-	
+	*/
 
 	@Override
     public boolean equals(Object o) { 
 		if(o instanceof ColumnConstraints) {
 
-			ColumnConstraints f = (ColumnConstraints) o;
+			ColumnConstraints<?> f = (ColumnConstraints<?>) o;
 			if(f.distinctValues == this.distinctValues && 
 					f.min == this.min && 
 					f.max == this.max &&
