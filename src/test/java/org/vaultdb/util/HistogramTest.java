@@ -2,12 +2,12 @@ package org.vaultdb.util;
 
 import java.util.ArrayList;
 
-import org.vaultdb.TpcHBaseTest;
+import org.vaultdb.BaseTest;
 import org.vaultdb.db.data.QueryTable;
 import org.vaultdb.executor.config.ConnectionManager;
 
 
-public class HistogramTest extends TpcHBaseTest {
+public class HistogramTest extends BaseTest {
 
   private void testCorrect(int numOfBins, ArrayList<QueryTable> results, ArrayList<QueryTable> resultsUnioned) {
     for (int i = 0; i < results.size(); i++) {

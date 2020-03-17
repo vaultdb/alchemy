@@ -1,7 +1,7 @@
-package org.vaultdb.schema;
+package org.vaultdb.schema.constraints;
 
 import org.vaultdb.TpcHBaseTest;
-import org.vaultdb.db.schema.TableConstraints;
+import org.vaultdb.db.schema.constraints.TableConstraints;
 
 public class TableConstraintsTest  extends TpcHBaseTest {
 	

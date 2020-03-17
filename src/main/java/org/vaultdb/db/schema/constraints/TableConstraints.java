@@ -1,4 +1,4 @@
-package org.vaultdb.db.schema;
+package org.vaultdb.db.schema.constraints;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +37,16 @@ public class TableConstraints {
 	
 	public TableConstraints(String tableName) throws Exception {
 
+		// TODO: redo this to:
+		// 1) grab unique, primary and foreign keys
+		// 2) Populate a table of Map<Column, ColumnConstraints>
+		
 		// set up calcite config
-		SystemConfiguration config = SystemConfiguration.getInstance();
+		/*SystemConfiguration config = SystemConfiguration.getInstance();
 		SchemaPlus sharedSchema = config.getPdfSchema();
 		CalciteConnection calciteConnection = config.getCalciteConnection();
+		baseTable = sharedSchema.getTable(tableName);
+
 		Statistic statistic = baseTable.getStatistic();		
 		JavaTypeFactory typeFactory = config.getCalciteConnection().getTypeFactory();
 
@@ -52,9 +58,7 @@ public class TableConstraints {
 	    	        CalciteSchema.from(sharedSchema).path(null),
 	    	        (JavaTypeFactory) typeFactory, calciteConnection.config());
 	      
-		// populate the member vars
-		baseTable = sharedSchema.getTable(tableName);
-
+		
 	    integrityConstraints = statistic.getReferentialConstraints();
 		
 	    // extract keysets
@@ -83,7 +87,7 @@ public class TableConstraints {
 	    Map<Integer, RexNode> constraintsMap = RelOptUtil.getColumnConstraints(modifiableViewTable, rowType, typeFactory);
 	    
 	    // TODO: check out RelOptUtil.inferViewPredicates​(Map<Integer,​RexNode> projectMap, List<RexNode> filters, RexNode constraint) for adding WHERE clause to constraints list
-	    
+	    */
 	}
 
 }

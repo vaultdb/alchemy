@@ -1,4 +1,4 @@
-package org.vaultdb.optimizer;
+package org.vaultdb.schema.constraints;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +20,7 @@ import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
 import org.vaultdb.util.Utilities;
 
-public class ObliviousFieldStatisticsTest  extends BaseTest  {
+public class ColumnConstraintsTest  extends BaseTest  {
 
 	protected void setUp() throws Exception {
 		String setupFile = Utilities.getVaultDBRoot()+ "/conf/setup.localhost";

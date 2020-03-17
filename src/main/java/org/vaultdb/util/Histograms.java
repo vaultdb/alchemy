@@ -40,7 +40,7 @@ public class Histograms {
     SystemCatalog.resetInstance();
     ConnectionManager.reset();
 
-    config = SystemConfiguration.getInstance("tpch");
+    config = SystemConfiguration.getInstance();
     calciteConfig = config.getCalciteConfiguration();
     systemCatalog = SystemCatalog.getInstance();
   }
