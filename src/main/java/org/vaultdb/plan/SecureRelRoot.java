@@ -1,9 +1,6 @@
 package org.vaultdb.plan;
 
-import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelRoot;
-import org.apache.calcite.sql.SqlExplainFormat;
-import org.apache.calcite.sql.SqlExplainLevel;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.parser.SqlStatementParser;
 import org.vaultdb.parser.TreeBuilder;

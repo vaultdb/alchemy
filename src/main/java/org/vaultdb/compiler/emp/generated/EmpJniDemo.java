@@ -2,8 +2,6 @@ package org.vaultdb.compiler.emp.generated;
 
 
 
-import java.util.BitSet;
-
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.annotation.Namespace;

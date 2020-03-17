@@ -9,8 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
-
 import org.apache.commons.lang3.StringUtils;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.util.FileUtilities;

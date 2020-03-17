@@ -1,70 +1,28 @@
 package org.vaultdb.optimizer.histogram;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.calcite.adapter.java.JavaTypeFactory;
-import org.apache.calcite.config.Lex;
-import org.apache.calcite.jdbc.CalciteConnection;
-import org.apache.calcite.jdbc.CalciteSchema;
-import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
-import org.apache.calcite.prepare.CalciteCatalogReader;
-import org.apache.calcite.prepare.PlannerImpl;
-import org.apache.calcite.prepare.Prepare;
-import org.apache.calcite.prepare.Prepare.CatalogReader;
-import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.RelRoot;
-import org.apache.calcite.rel.logical.LogicalFilter;
-import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexShuttle;
-import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlBasicCall;
-import org.apache.calcite.sql.SqlCall;
-import org.apache.calcite.sql.SqlCreate;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlNodeList;
-import org.apache.calcite.sql.SqlSelect;
 import org.apache.calcite.sql.ddl.SqlCheckConstraint;
 import org.apache.calcite.sql.ddl.SqlCreateTable;
-import org.apache.calcite.sql.parser.SqlParseException;
-import org.apache.calcite.sql.parser.SqlParser;
-import org.apache.calcite.sql.parser.ddl.SqlDdlParserImpl;
-import org.apache.calcite.sql.util.SqlString;
-import org.apache.calcite.sql.validate.SqlConformanceEnum;
-import org.apache.calcite.sql.validate.SqlValidator;
-import org.apache.calcite.sql2rel.SqlNodeToRexConverter;
-import org.apache.calcite.sql2rel.SqlNodeToRexConverterImpl;
-import org.apache.calcite.sql2rel.SqlRexConvertlet;
-import org.apache.calcite.sql2rel.SqlRexConvertletTable;
-import org.apache.calcite.sql2rel.SqlToRelConverter;
-import org.apache.calcite.tools.FrameworkConfig;
-import org.apache.calcite.tools.Planner;
 import org.vaultdb.TpcHBaseTest;
+import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.parser.SqlStatementParser;
-import org.vaultdb.util.FileUtilities;
-import org.vaultdb.util.Utilities;
+
+import com.google.common.collect.ImmutableList;
 
 public class TpcHParseConstraintTest  extends TpcHBaseTest {
 	
 	SqlStatementParser sqlParser;
 	
-	SqlParser.Config sqlParserConfig;
-	SchemaPlus sharedSchema;
 	
 	  protected void setUp() throws Exception {
 		  super.setUp();
-		  
-		  sqlParserConfig = SqlParser.configBuilder()
-				    .setParserFactory(SqlDdlParserImpl.FACTORY)
-				    .setConformance(SqlConformanceEnum.MYSQL_5) // psql not available - blasphemy!
-				    .setLex(Lex.MYSQL)
-				    .build();
-		  
-			sharedSchema = config.getPdfSchema();
-			
-		     
+		       
 
 	      
 	          
@@ -85,53 +43,90 @@ public class TpcHParseConstraintTest  extends TpcHBaseTest {
 		logger.info("Parsed " + predicate);
 				
 	}
+
+	  public void testCustomerTableDeclaration() throws Exception {
+		  
+			List<RexNode> customerConstraints = extractTableConstraints("customer");
+			final List<String> expectedRexNodes =   ImmutableList.of(					
+					"AND(<=($5, 9999.99:DECIMAL(6, 2)), >=($5, CAST('-999.99'):DECIMAL(19, 0) NOT NULL))",
+                    "AND(<=(1, $0), <=($0, 15000))",
+                    "OR(=($6, 'BUILDING'), =($6, 'FURNITURE'), =($6, 'HOUSEHOLD'), =($6, 'MACHINERY'), =($6, 'AUTOMOBILE'))",
+                    "AND(<=(0, $3), <=($3, 24))"
+			);
+			
+			List<String> observedRexNodes = new ArrayList<String>();
+			for(RexNode r : customerConstraints) {
+				observedRexNodes.add(r.toString());
+			}
+			
+			assertEquals(expectedRexNodes, observedRexNodes);	
+	  }
 	  
 	  public void testLineitemTableDeclaration() throws Exception {
 		  
-		String tableName = "lineitem";
-		String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
-		logger.info("Parsing: " + tableDefinition);
+		List<RexNode> lineitemConstraints = extractTableConstraints("lineitem");
+		final List<String> expectedRexNodes = ImmutableList.of(
+				"AND(<=($6, 0.10:DECIMAL(3, 2)), >=($6, 0.00:DECIMAL(3, 2)))",
+				"AND(<=(1, $3), >=(7, $3))",
+				"OR(=($9, 'F'), =($9, 'O'))",
+				"AND(<=(1, $1), <=($1, 20000))",
+				"AND(<=(1, $4), <=($4, 50))",
+				"OR(=($8, 'A'), =($8, 'N'), =($8, 'R'))",
+				"OR(=($13, 'NONE'), =($13, 'COLLECT COD'), =($13, 'TAKE BACK RETURN'), =($13, 'DELIVER IN PERSON'))",
+				"OR(=($14, 'AIR'), =($14, 'FOB'), =($14, 'MAIL'), =($14, 'RAIL'), =($14, 'SHIP'), =($14, 'TRUCK'), =($14, 'REG AIR'))",
+				"AND(<=($7, 0.08:DECIMAL(3, 2)), >=($7, 0.00:DECIMAL(3, 2)))");
 		
-		
-		
-		//RelNode tableNode = sqlParser.parseTableDefinition(tableDefinition);
-		//logger.info("Table node: " + tableNode);
+		List<String> observedRexNodes = new ArrayList<String>();
 
-		SqlCreateTable tableNode =  sqlParser.parseTableDefinition(tableDefinition);
-		List<SqlNode> tableOperands = tableNode.getOperandList();
-		SqlNodeList columns = (SqlNodeList) tableOperands.get(1);
-		
-		
-		logger.info("Table node: " + tableNode.getKind());
-
-		
-		for(SqlNode node : columns) {
-			logger.info("Parsed column=" + node.getKind() );
-			if(node instanceof SqlCheckConstraint) {
-				SqlCheckConstraint constraint = (SqlCheckConstraint) node;
-				List<SqlNode> operands = constraint.getOperandList();
-				// operands[0] = name
-				// operands[1] = SqlBasicCall
-				// need to get from SqlBasicCall to RexNode
-				SqlBasicCall expression = (SqlBasicCall) operands.get(1);
-				String sqlExpression = expression.toSqlString(config.DIALECT).getSql();
-				
-				// delete excess quotes
-				sqlExpression  = sqlExpression.replace("\"", "");
-				logger.info("Parsing sql string: " + sqlExpression);
-
-				RexNode rowExpression = sqlParser.parseTableConstraint(tableName, sqlExpression);
-				logger.info("**********Parsed rexnode: " + rowExpression);
-
-			}
+		for(RexNode r : lineitemConstraints) {
+			observedRexNodes.add(r.toString());
 		}
+		
+		assertEquals(expectedRexNodes, observedRexNodes);	
+	
+	  }
+	  
 
-  
-		
-		
+	  
+	  
+	  List<RexNode> extractTableConstraints(String tableName) throws Exception {
+		  
+		  String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
+			
+			
+			
+			//RelNode tableNode = sqlParser.parseTableDefinition(tableDefinition);
+			//logger.info("Table node: " + tableNode);
 
-		
-		
+			SqlCreateTable tableNode =  sqlParser.parseTableDefinition(tableDefinition);
+			List<SqlNode> tableOperands = tableNode.getOperandList();
+			SqlNodeList columns = (SqlNodeList) tableOperands.get(1);
+			
+			
+	
+			List<RexNode> rowExpressions = new ArrayList<RexNode>();
+			
+			for(SqlNode node : columns) {
+			
+				if(node instanceof SqlCheckConstraint) {
+					SqlCheckConstraint constraint = (SqlCheckConstraint) node;
+					List<SqlNode> operands = constraint.getOperandList();
+					// operands[0] = name
+					// operands[1] = SqlBasicCall
+					// need to get from SqlBasicCall to RexNode
+					SqlBasicCall expression = (SqlBasicCall) operands.get(1);
+					String sqlExpression = expression.toSqlString(SystemConfiguration.DIALECT).getSql();
+					
+					// delete excess quotes
+					sqlExpression  = sqlExpression.replace("\"", "");
+					RexNode rowExpression = sqlParser.parseTableConstraint(tableName, sqlExpression);
+					rowExpressions.add(rowExpression);
+				
+				}
+			}
+			
+
+		  return rowExpressions;
 	  }
 
 }

@@ -712,10 +712,10 @@ public abstract class TpcHBaseTest  extends TestCase {
             "    c_acctbal numeric, " + 
             "    c_mktsegment character(10), " + 
             "    c_comment character varying(117), " + 
-            "    CONSTRAINT c_acctbal_domain CHECK (((c_acctbal >= CAST('-999.99' AS numeric)) AND (c_acctbal <= 9999.99))), " + 
-            "    CONSTRAINT c_custkey_domain CHECK (((c_custkey >= 1) AND (c_custkey <= 15000))), " + 
+            "    CONSTRAINT c_acctbal_domain CHECK (c_acctbal >= CAST('-999.99' AS numeric) AND c_acctbal <= 9999.99), " + 
+            "    CONSTRAINT c_custkey_domain CHECK (c_custkey >= 1 AND c_custkey <= 15000), " + 
             "    CONSTRAINT c_mktsegment_domain CHECK (c_mktsegment IN ('MACHINERY', 'AUTOMOBILE', 'BUILDING', 'FURNITURE', 'HOUSEHOLD')), " + 
-            "    CONSTRAINT c_nationkey_domain CHECK (((c_nationkey >= 0) AND (c_nationkey <= 24)))" + 
+            "    CONSTRAINT c_nationkey_domain CHECK (c_nationkey >= 0 AND c_nationkey <= 24)" + 
             ")",
             "lineitem", 
             "CREATE TABLE lineitem (" + 
@@ -737,12 +737,14 @@ public abstract class TpcHBaseTest  extends TestCase {
             "    l_comment character varying(44)," + 
             "    CONSTRAINT l_discount_domain CHECK (((l_discount >= 0.00) AND (l_discount <= 0.10)))," + 
             "    CONSTRAINT l_linenumber_domain CHECK (((l_linenumber >= 1) AND (l_linenumber <= 7)))," + 
-            "    CONSTRAINT l_linestatus_based_on_shipdate_domain CHECK ((((l_linestatus = 'O')) AND (l_shipdate > CAST('1995-06-17' AS date))) OR (l_linestatus = 'F' AND (l_shipdate <= CAST('1995-06-17' AS date))))," + 
+            //   restricting scope to single column constraints for now 
+            // "    CONSTRAINT l_linestatus_based_on_shipdate_domain CHECK ((((l_linestatus = 'O')) AND (l_shipdate > CAST('1995-06-17' AS date))) OR (l_linestatus = 'F' AND (l_shipdate <= CAST('1995-06-17' AS date))))," + 
+            // "    CONSTRAINT l_receiptdate_domain CHECK (((l_receiptdate >= (l_shipdate + INTERVAL '1' DAY))) AND (l_receiptdate <= (l_shipdate + INTERVAL '30' DAY))), " + 
+            // "    CONSTRAINT l_returnflag_based_on_receiptdate_domain CHECK ((l_returnflag IN ('R', 'A') AND l_receiptdate <= CAST('1995-06-17' AS date)) OR (l_returnflag = 'N' AND l_receiptdate > CAST('1995-06-17' AS date)))," + 
+
             "    CONSTRAINT l_linestatus_domain CHECK (l_linestatus IN ('O', 'F'))," + 
             "    CONSTRAINT l_partkey_domain CHECK ((l_partkey >= 1) AND (l_partkey <= 20000))," + 
             "    CONSTRAINT l_quantity_domain CHECK ((l_quantity >= 1) AND (l_quantity <= 50))," + 
-            "    CONSTRAINT l_receiptdate_domain CHECK (((l_receiptdate >= (l_shipdate + INTERVAL '1' DAY))) AND (l_receiptdate <= (l_shipdate + INTERVAL '30' DAY))), " + 
-            "    CONSTRAINT l_returnflag_based_on_receiptdate_domain CHECK ((l_returnflag IN ('R', 'A') AND l_receiptdate <= CAST('1995-06-17' AS date)) OR (l_returnflag = 'N' AND l_receiptdate > CAST('1995-06-17' AS date)))," + 
             "    CONSTRAINT l_returnflag_domain CHECK (l_returnflag IN ('R', 'A', 'N'))," + 
             "    CONSTRAINT l_shipinstruct_domain CHECK (l_shipinstruct IN ('DELIVER IN PERSON', 'COLLECT COD', 'NONE','TAKE BACK RETURN'))," + 
             "    CONSTRAINT l_shipmode_domain CHECK (l_shipmode IN ('REG AIR', 'AIR', 'RAIL', 'SHIP', 'TRUCK', 'MAIL', 'FOB'))," + 

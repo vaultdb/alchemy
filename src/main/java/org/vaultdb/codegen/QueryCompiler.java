@@ -22,7 +22,6 @@ import org.vaultdb.codegen.smc.operator.support.UnionMethod;
 import org.vaultdb.compiler.emp.EmpBuilder;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.executor.config.ConnectionManager;
-import org.vaultdb.executor.config.ExecutionMode;
 import org.vaultdb.executor.config.RunConfig;
 import org.vaultdb.executor.smc.ExecutionSegment;
 import org.vaultdb.executor.step.ExecutionStep;

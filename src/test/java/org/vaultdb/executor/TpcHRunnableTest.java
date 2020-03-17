@@ -1,11 +1,7 @@
 package org.vaultdb.executor;
 
 import org.vaultdb.TpcHBaseTest;
-import org.vaultdb.codegen.QueryCompiler;
 import org.vaultdb.config.SystemConfiguration;
-import org.vaultdb.plan.SecureRelRoot;
-import org.vaultdb.util.FileUtilities;
-import org.vaultdb.util.Utilities;
 
 public class TpcHRunnableTest extends TpcHBaseTest {
 

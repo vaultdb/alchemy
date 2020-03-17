@@ -5,15 +5,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.sql.SqlDialect;
-import org.apache.calcite.sql.SqlIdentifier;
-import org.apache.calcite.sql.SqlLiteral;
-import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.SqlNodeList;
 import org.apache.calcite.sql.SqlSelect;
-import org.apache.calcite.sql.parser.SqlParserPos;
-//import org.apache.calcite.sql.ddl.SqlAttributeDefinition;
-import org.apache.calcite.sql.validate.SqlValidatorUtil;
-import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.plan.SecureRelNode;
 import org.vaultdb.plan.operator.Operator;
 

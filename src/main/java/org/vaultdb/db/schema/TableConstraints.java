@@ -7,7 +7,6 @@ import java.util.Map;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.jdbc.CalciteConnection;
 import org.apache.calcite.jdbc.CalciteSchema;
-import org.apache.calcite.jdbc.CalciteSchema.TableEntry;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.prepare.CalciteCatalogReader;
 import org.apache.calcite.prepare.Prepare;
@@ -20,7 +19,6 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.Statistic;
 import org.apache.calcite.schema.Table;
 import org.apache.calcite.schema.impl.ModifiableViewTable;
-import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.vaultdb.config.SystemConfiguration;
 

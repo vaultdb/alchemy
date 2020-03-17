@@ -23,7 +23,6 @@ import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexSubQuery;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
 import org.vaultdb.db.schema.SystemCatalog;
 import org.vaultdb.plan.SecureRelNode;

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
-import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.plan.SecureRelNode;
 import org.vaultdb.plan.operator.Operator;
 import org.vaultdb.plan.operator.OperatorFactory;

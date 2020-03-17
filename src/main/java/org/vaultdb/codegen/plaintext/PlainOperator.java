@@ -1,10 +1,7 @@
 package org.vaultdb.codegen.plaintext;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.vaultdb.codegen.CodeGenerator;
 import org.vaultdb.codegen.sql.SqlGenerator;
 import org.vaultdb.config.SystemConfiguration;

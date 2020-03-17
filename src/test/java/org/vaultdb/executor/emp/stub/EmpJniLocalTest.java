@@ -2,14 +2,12 @@ package org.vaultdb.executor.emp.stub;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.List;
 
 import org.vaultdb.BaseTest;
 import org.vaultdb.compiler.emp.EmpBuilder;
 import org.vaultdb.compiler.emp.EmpRunnable;
 import org.vaultdb.util.EmpJniUtilities;
-import org.vaultdb.util.Utilities;
 
 public class EmpJniLocalTest extends BaseTest {
     final String fullyQualifiedClassName = "org.vaultdb.compiler.emp.generated.EmpJniDemo";

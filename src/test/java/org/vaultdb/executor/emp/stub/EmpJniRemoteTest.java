@@ -1,7 +1,6 @@
 package org.vaultdb.executor.emp.stub;
 
 import java.net.InetAddress;
-import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 

@@ -1,15 +1,9 @@
 package org.vaultdb.db.schema;
 
-import org.apache.calcite.adapter.java.JavaTypeFactory;
-import org.apache.calcite.rel.type.RelDataTypeField;
-import org.apache.calcite.rel.type.RelRecordType;
-import org.apache.calcite.schema.SchemaPlus;
-import org.apache.calcite.schema.Table;
 import org.apache.calcite.util.Pair;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.config.WorkerConfiguration;
-import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
 
 import java.sql.Connection;

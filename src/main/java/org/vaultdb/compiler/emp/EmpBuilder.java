@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.apache.log4j.Level;
 import org.bytedeco.javacpp.ClassProperties;
 import org.bytedeco.javacpp.LoadEnabled;
 import org.bytedeco.javacpp.Loader;

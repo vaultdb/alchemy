@@ -2,7 +2,6 @@ package org.vaultdb.executor.emp.stub;
 
 import org.vaultdb.BaseTest;
 import org.vaultdb.compiler.emp.EmpBuilder;
-import org.vaultdb.compiler.emp.EmpRunnable;
 import org.vaultdb.compiler.emp.EmpRunnableQueryTable;
 import org.vaultdb.protos.DBQueryProtos;
 import org.vaultdb.util.EmpJniUtilities;

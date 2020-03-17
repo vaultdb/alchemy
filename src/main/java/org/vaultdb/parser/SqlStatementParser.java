@@ -120,7 +120,6 @@ public class SqlStatementParser {
 	
 	
 	public SqlNode parseSQL(String sql) throws SqlParseException, ValidationException  {
-		logger.info("Parsing: " + sql);
 		SqlNode parsed = null;
 		
 
@@ -129,7 +128,6 @@ public class SqlStatementParser {
 		parsed =  planner.parse(sql);
 		parsed = planner.validate(parsed);
 		
-		logger.info("Parsed: " + parsed);
 		return parsed;
 	}
 	
@@ -184,13 +182,6 @@ public class SqlStatementParser {
 	      assert(root != null);
 
 		  String plan = RelOptUtil.dumpPlan("", root.rel, SqlExplainFormat.TEXT, SqlExplainLevel.ALL_ATTRIBUTES);
-		  Logger logger = null;
-		  try {
-			logger = SystemConfiguration.getInstance().getLogger();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		  logger.info("Initial parsed plan:\n" + plan);
 	      
 	      final boolean ordered = !root.collation.getFieldCollations().isEmpty();

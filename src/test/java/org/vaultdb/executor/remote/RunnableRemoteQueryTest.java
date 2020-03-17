@@ -1,22 +1,15 @@
 package org.vaultdb.executor.remote;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.vaultdb.BaseTest;
 import org.vaultdb.codegen.QueryCompiler;
-import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.db.data.QueryTable;
 import org.vaultdb.executor.EmpExecutor;
-import org.vaultdb.executor.SegmentExecutor;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.config.WorkerConfiguration;
 import org.vaultdb.executor.smc.ExecutionSegment;
 import org.vaultdb.plan.SecureRelRoot;
-import org.vaultdb.util.Utilities;
 
 
 public class RunnableRemoteQueryTest extends BaseTest {

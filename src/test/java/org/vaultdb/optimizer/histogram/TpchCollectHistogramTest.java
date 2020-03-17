@@ -3,13 +3,9 @@ package org.vaultdb.optimizer.histogram;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.RelBuilder;
-import org.vaultdb.BaseTest;
 import org.vaultdb.TpcHBaseTest;
 import org.vaultdb.codegen.sql.SqlGenerator;
 import org.vaultdb.db.data.QueryTable;
-import org.vaultdb.db.data.Tuple;
-import org.vaultdb.db.data.field.Field;
-import org.vaultdb.db.data.field.IntField;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.plaintext.SqlQueryExecutor;
 import org.vaultdb.type.SecureRelRecordType;
@@ -17,8 +13,6 @@ import org.vaultdb.util.Histograms;
 import org.vaultdb.util.Utilities;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 public class TpchCollectHistogramTest extends TpcHBaseTest {
   /**

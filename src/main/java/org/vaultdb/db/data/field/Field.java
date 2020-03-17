@@ -1,6 +1,5 @@
 package org.vaultdb.db.data.field;
 
-import org.apache.calcite.avatica.SqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 
 import org.vaultdb.protos.DBQueryProtos;
