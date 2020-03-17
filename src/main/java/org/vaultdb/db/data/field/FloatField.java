@@ -8,12 +8,10 @@ import org.vaultdb.type.SecureRelDataTypeField;
 import java.io.Serializable;
 import java.util.BitSet;
 
-public class FloatField extends Field implements Serializable {
+public class FloatField extends Field<Float> implements Serializable {
 
   /** */
   private static final long serialVersionUID = -5006383705908340758L;
-
-  public Float value;
   int exponent;
   int fraction;
 
@@ -47,9 +45,7 @@ public class FloatField extends Field implements Serializable {
     return binString;
   }
 
-  public float getValue() {
-    return value;
-  }
+
 
   @Override
   public String toString() {
@@ -74,9 +70,9 @@ public class FloatField extends Field implements Serializable {
   }
 
   @Override
-  public int childCompare(Field f) {
+  public int childCompare(Field<Float> f) {
     if (f instanceof FloatField) {
-      return this.value.compareTo(((FloatField) f).getValue());
+      return this.value.compareTo(((FloatField) f).value);
     }
     return 0;
   }

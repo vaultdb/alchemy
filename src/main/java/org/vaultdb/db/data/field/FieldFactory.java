@@ -17,11 +17,13 @@ public class FieldFactory implements Serializable {
 		SqlTypeName sqlType = type.getSqlTypeName();
 		
 		if(SqlTypeName.CHAR_TYPES.contains(sqlType))
-			return new CharField(s, r.getString(resultIdx), sqlType);
+			return new StringField(s, r.getString(resultIdx), sqlType);
 
 
-		if(sqlType == SqlTypeName.INTEGER || sqlType == SqlTypeName.BIGINT)
-			return new IntField(s, r.getInt(resultIdx), sqlType);
+		if(sqlType == SqlTypeName.INTEGER || sqlType == SqlTypeName.BIGINT) {
+			Long value = (sqlType == SqlTypeName.BIGINT) ? r.getLong(resultIdx) : r.getInt(resultIdx);
+			return new IntField(s, value, sqlType);
+		}
 
 		if(sqlType == SqlTypeName.FLOAT || sqlType == SqlTypeName.DOUBLE)  {
 			float val = r.getFloat(resultIdx);
@@ -36,7 +38,6 @@ public class FieldFactory implements Serializable {
 
 
 		if(SqlTypeName.DATETIME_TYPES.contains(sqlType)) {
-			Timestamp t = r.getTimestamp(resultIdx);
 			return new TimestampField(s, r.getTimestamp(resultIdx), sqlType);
 		}
 
@@ -50,17 +51,29 @@ public class FieldFactory implements Serializable {
 
 		RelDataType type = s.getBaseField().getType();
 		SqlTypeName sqlType = type.getSqlTypeName();
+
+		
+		
 		if(SqlTypeName.CHAR_TYPES.contains(sqlType))
-			return new CharField(s, sqlType);
+			return new StringField(s, sqlType);
 
 
-		if(sqlType == SqlTypeName.INTEGER || sqlType == SqlTypeName.BIGINT)
+		if(sqlType == SqlTypeName.INTEGER || sqlType == SqlTypeName.BIGINT) {
 			return new IntField(s, sqlType);
+		}
+
+		if(sqlType == SqlTypeName.FLOAT || sqlType == SqlTypeName.DOUBLE || sqlType == SqlTypeName.DECIMAL)  {
+			return new FloatField(s, sqlType);
+		}
+		
 
 
 		if(SqlTypeName.DATETIME_TYPES.contains(sqlType)) {
 			return new TimestampField(s, sqlType);
 		}
+
+		if(SqlTypeName.BOOLEAN_TYPES.contains(sqlType))
+			return new BooleanField(s, sqlType);
 
 		throw new NullPointerException("Type " + sqlType + " is not defined!");
 	}

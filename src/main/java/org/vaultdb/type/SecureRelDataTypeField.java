@@ -14,7 +14,8 @@ import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.vaultdb.db.schema.statistics.ObliviousFieldStatistics;
+import org.vaultdb.db.schema.constraints.ColumnConstraints;
+import org.vaultdb.db.schema.constraints.ColumnConstraintsFactory;
 
 // thin wrapper on top of RelDataTypeField for attaching security policy to an attribute
 // how do we call this at schema construction time?
@@ -33,7 +34,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 
   SecurityPolicy policy = SecurityPolicy.Private;
   RelDataTypeField baseField;
-  ObliviousFieldStatistics statistics;
+  ColumnConstraints constraints = null;
   private boolean aliased;
   private String unaliasedName;
 
@@ -46,7 +47,14 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
   public SecureRelDataTypeField(String name, int index, RelDataType type) {
     super(name, index, type);
     filters = new ArrayList<LogicalFilter>();
-    // statistics = new ObliviousFieldStatistics(this);
+
+    try {
+		constraints = ColumnConstraintsFactory.get(this);
+	} catch (Exception e) {
+		e.printStackTrace();
+		System.exit(-1); 
+	}
+
   }
 
   public SecureRelDataTypeField(
@@ -56,16 +64,23 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     policy = secPolicy;
     filters = new ArrayList<LogicalFilter>();
     storedTable = aStoredTable;
-    // statistics = new ObliviousFieldStatistics(this);
+  
+    try {
+		constraints = ColumnConstraintsFactory.get(this);
+	} catch (Exception e) {
+		e.printStackTrace();
+		System.exit(-1); 
+	}
+
   }
 
   public SecureRelDataTypeField(
-      RelDataTypeField baseField, SecurityPolicy secPolicy, ObliviousFieldStatistics theStats) {
+      RelDataTypeField baseField, SecurityPolicy secPolicy, ColumnConstraints theStats) {
     super(baseField.getName(), baseField.getIndex(), baseField.getType());
     this.baseField = baseField;
     policy = secPolicy;
     filters = new ArrayList<LogicalFilter>();
-    statistics = theStats;
+    constraints = theStats;
   }
 
   public SecureRelDataTypeField(
@@ -98,7 +113,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     storedTable = src.getStoredTable();
     storedAttribute = src.getStoredAttribute();
     filters = new ArrayList<LogicalFilter>(src.getFilters());
-    statistics = src.statistics;
+    constraints = src.constraints;
   }
 
   private void writeObject(ObjectOutputStream out) throws IOException {
@@ -138,12 +153,13 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
   }
 
   // for table scans
-  public void initializeStatistics() {
-    statistics = new ObliviousFieldStatistics(this);
+  public void initializeStatistics() throws Exception {
+	  constraints = ColumnConstraintsFactory.get(this);
   }
 
-  public void initializeStatistics(ObliviousFieldStatistics stats) {
-    statistics = new ObliviousFieldStatistics(this, stats);
+  // copy constructor
+  public void initializeStatistics(ColumnConstraints c) {
+    constraints = new ColumnConstraints(this, c);
   }
 
   @Override
@@ -199,8 +215,8 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     return storedAttribute;
   }
 
-  public ObliviousFieldStatistics getStatistics() {
-    return statistics;
+  public ColumnConstraints getColumnConstraints() {
+    return constraints;
   }
 
   public void setStoredAttribute(String storedAttribute) {

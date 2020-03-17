@@ -112,14 +112,10 @@ public class SecureRelRecordType implements Serializable {
 	
 	
 
-	public void initializeStatistics() {
-		for(SecureRelDataTypeField fields : this.getSecureFieldList()) {
-			fields.initializeStatistics();
-		}
-	}
+
 	
 	public long getCardinalityBound() {
-		return secureFields.get(0).getStatistics().getCardinality();
+		return secureFields.get(0).getColumnConstraints().getCardinality();
 	}
 	
 	// iterate over src attributes and invoke copy constructor on them
@@ -134,7 +130,7 @@ public class SecureRelRecordType implements Serializable {
 
 		while(dstItr.hasNext()) {
 			SecureRelDataTypeField dstField = dstItr.next();
-			dstField.initializeStatistics(srcItr.next().getStatistics());
+			dstField.initializeStatistics(srcItr.next().getColumnConstraints());
 		}
 		
 	}

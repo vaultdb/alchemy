@@ -14,11 +14,12 @@ import java.util.Comparator;
 // for use in slice values and for passing around data between SMC and plaintext
 // hashcode() and equals() are compare by value, not source attribute name / type
 
-public class Field implements Comparator<Field>, Comparable<Field>, Serializable {
+public class Field<T> implements Comparator<Field>, Comparable<Field>, Serializable {
 
   transient SecureRelDataTypeField srcAttribute = null;
   transient SqlTypeName sqlTypeName = null;
   int size = 0;
+  T value = null;
 
   // psql ResultSet r, int rsetIdx
   Field(SecureRelDataTypeField attr, SqlTypeName sqlType) {
@@ -37,7 +38,7 @@ public class Field implements Comparator<Field>, Comparable<Field>, Serializable
   }
 
   // meant to be overriden by children
-  public int childCompare(Field f) {
+  public int childCompare(Field<T> f) {
     return 0;
   }
 
@@ -73,5 +74,9 @@ public class Field implements Comparator<Field>, Comparable<Field>, Serializable
     throw new Exception("Base class not implemented");
   }
 
+  public T getValue() {
+	  return value;
+  }
+  
   public void deserialize(BitSet src) {}
 }

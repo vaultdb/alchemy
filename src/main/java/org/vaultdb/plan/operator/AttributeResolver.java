@@ -244,7 +244,7 @@ public class AttributeResolver {
 		SortedSet<Integer> ordinalsAccessed = shuttle.inputPosReferenced;
 		if(ordinalsAccessed.size() ==  1) { // can preserve stored source info
 			SecureRelDataTypeField srcField = inSchema.getSecureField(ordinalsAccessed.first());
-			dstField.initializeStatistics(srcField.getStatistics());
+			dstField.initializeStatistics(srcField.getColumnConstraints());
 		}
 		else {
 			throw new Exception("Statistics over expressions not yet implemented");

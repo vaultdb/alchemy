@@ -9,7 +9,7 @@ import org.vaultdb.codegen.sql.SqlGenerator;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.db.data.QueryTable;
 import org.vaultdb.db.data.Tuple;
-import org.vaultdb.db.data.field.CharField;
+import org.vaultdb.db.data.field.StringField;
 import org.vaultdb.db.data.field.Field;
 import org.vaultdb.db.data.field.IntField;
 import org.vaultdb.db.schema.SystemCatalog;
@@ -93,7 +93,10 @@ public class Histograms {
     IntField bCount = (IntField) tuple.getField(COUNT_FIELD_IDX);
 
     IntField sumCount = new IntField(bCount.getAttribute(), bCount.getSqlTypeName());
-    sumCount.setValue(aCount.value + bCount.value);
+    
+    Long aCountScalar = aCount.getValue();
+    Long bCountScalar = bCount.getValue();
+    sumCount.setValue(aCountScalar + bCountScalar);
     aggregatedTuple.addField(sumCount);
     return aggregatedTuple;
   }
@@ -153,7 +156,7 @@ public class Histograms {
     while (index < tupleCount) {
       StringJoiner charFieldStringJoiner = new StringJoiner(", ", "[", "]");
 
-      CharField groupField = new CharField(currTupleField.getAttribute(), SqlTypeName.VARCHAR);
+      StringField groupField = new StringField(currTupleField.getAttribute(), SqlTypeName.VARCHAR);
       IntField countField = new IntField(currTupleField.getAttribute(), SqlTypeName.INTEGER);
       // keep adding until we run out of tuples, or grouped by key value is too large for current
       // bin
@@ -162,9 +165,9 @@ public class Histograms {
           && (((IntField) tuples.get(index).getField(GROUPED_BY_FIELD_IDX)).getValue() <= maxInBin
               || (binIndex >= numBins - 1))) {
         IntField oldGroupByField = (IntField) tuples.get(index).getField(GROUPED_BY_FIELD_IDX);
-        charFieldStringJoiner.add(String.valueOf(oldGroupByField.value));
+        charFieldStringJoiner.add(String.valueOf(oldGroupByField.getValue()));
         IntField count = (IntField) tuples.get(index).getField(COUNT_FIELD_IDX);
-        countField.addValue(count.value);
+        countField.addValue(count.getValue());
         index++;
       }
       // create new tuple
