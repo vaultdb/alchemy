@@ -88,6 +88,7 @@ public class TpcHParseConstraintsTest  extends TpcHBaseTest {
 	  }
 	  
 
+	  // TODO: remaining tables
 	  public void testNationTableDeclaration() throws Exception {
 		  assert(false);
 	  }
