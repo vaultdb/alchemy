@@ -9,7 +9,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
-import org.vaultdb.db.schema.statistics.ColumnConstraints;
+import org.vaultdb.db.schema.constraints.ColumnConstraints;
 import org.vaultdb.plan.SecureRelNode;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;

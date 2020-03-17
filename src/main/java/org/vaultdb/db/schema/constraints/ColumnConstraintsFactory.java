@@ -4,12 +4,12 @@ import java.sql.Timestamp;
 
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.util.Utilities;
 
 
 public class ColumnConstraintsFactory {
 
-	@SuppressWarnings("rawtypes")
-	public static ColumnConstraints get(SecureRelDataTypeField col) throws Exception {
+	public static ColumnConstraints<?> get(SecureRelDataTypeField col) throws Exception {
 		SqlTypeName type = col.getType().getSqlTypeName();
 	
 		
@@ -35,4 +35,10 @@ public class ColumnConstraintsFactory {
 
 		
 	}
+
+	public static ColumnConstraints<?> get(String table, String attr) throws Exception {
+		SecureRelDataTypeField field = Utilities.lookUpAttribute(table, attr);
+		return get(field);
+	}
+	
 }

@@ -45,7 +45,7 @@ public class SeqScan extends Operator {
 	@Override
 	public void initializeStatistics() {
 		// infer from base relation
-		baseRelNode.getSchema().initializeStatistics();
+		baseRelNode.getSchema().initializeStatistics(inSchema);
 	}
 	
 	private List<String> getOrderableFields() {

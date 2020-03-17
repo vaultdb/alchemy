@@ -56,7 +56,7 @@ public class CollectHistogramTest extends BaseTest {
         IntField bCount = (IntField) b.getField(1);
 
         IntField aggregatedCount = new IntField(bCount.getAttribute(), bCount.getSqlTypeName());
-        aggregatedCount.setValue(aCount.value + bCount.value);
+        aggregatedCount.setValue(aCount.getValue() + bCount.getValue());
         aggregatedTuple.addField(aggregatedCount);
 
         fieldTupleHashMap.put(aggregatedTuple.getField(0), aggregatedTuple);

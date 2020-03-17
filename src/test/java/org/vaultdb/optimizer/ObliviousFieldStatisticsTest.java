@@ -12,7 +12,7 @@ import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.db.data.QueryTable;
 import org.vaultdb.db.data.Tuple;
 import org.vaultdb.db.data.field.IntField;
-import org.vaultdb.db.schema.statistics.ColumnConstraints;
+import org.vaultdb.db.schema.constraints.ColumnConstraints;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.plaintext.SqlQueryExecutor;
 import org.vaultdb.type.SecureRelDataTypeField;

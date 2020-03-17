@@ -52,8 +52,8 @@ public class SliceStatistics {
 		Tuple sliceValues = new Tuple();
 		// collect values
 		int i;
-		int siteId = 0;
-		int valueCount = 0;
+		long siteId = 0;
+		long valueCount = 0;
 		
 		for(i = 0; i < t.getAttributeCount()-2; ++i) {
 			sliceValues.addField(t.getField(i));
@@ -62,7 +62,7 @@ public class SliceStatistics {
 		// site id
 		Field f = t.getField(i);
 		if(f instanceof IntField) {
-			siteId = (int) ((IntField) f).getValue();
+			siteId =  ((IntField) f).getValue();
 		}
 		else {
 			throw new Exception("Fields not aligned for statistics collection.");
@@ -71,7 +71,7 @@ public class SliceStatistics {
 		++i;
 		f = t.getField(i);
 		if(f instanceof IntField) {
-			valueCount = (int) ((IntField) f).getValue();
+			valueCount =  ((IntField) f).getValue();
 		}
 		else {
 			throw new Exception("Fields not aligned for statistics collection.");
@@ -119,12 +119,12 @@ public class SliceStatistics {
 	
 	private boolean matchAndAdd(Tuple t, SlicePlacement place) {
 		
-		int siteId = place.getSiteId();
+		long siteId = place.getSiteId();
 		
 		for(int i = 0; i < distributedValues.get(t).size(); ++i) {
 			SlicePlacement s = distributedValues.get(t).get(i);
 			if(s.getSiteId() == place.getSiteId()) {
-				int newTotal = s.getCount() + place.getCount();
+				long newTotal = s.getCount() + place.getCount();
 				SlicePlacement sp = new SlicePlacement(siteId, newTotal);
 				distributedValues.get(t).set(i, sp);
 				return true;
