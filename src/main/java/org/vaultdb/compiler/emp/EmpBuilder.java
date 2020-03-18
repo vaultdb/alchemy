@@ -155,4 +155,23 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         return properties;
         
     }
+    
+	public static void main(String[] args) {
+        
+		
+		String className = args[0];
+		EmpBuilder instance = null;
+		
+		try {
+			 instance = new EmpBuilder(className);
+			 instance.compile();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		
+	    
+	        
+    }
 }

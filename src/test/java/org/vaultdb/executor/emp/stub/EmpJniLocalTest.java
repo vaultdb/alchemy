@@ -24,8 +24,7 @@ public class EmpJniLocalTest extends BaseTest {
         EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort);
         EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, empPort);
 
-        EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
-        builder.compile();
+        EmpJniUtilities.buildEmpProgram(fullyQualifiedClassName);
 
         Thread alice = new Thread(aliceRunnable);
         alice.start();

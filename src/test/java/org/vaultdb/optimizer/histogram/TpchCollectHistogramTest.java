@@ -1,6 +1,7 @@
 package org.vaultdb.optimizer.histogram;
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.RelBuilder;
 import org.vaultdb.TpcHBaseTest;
@@ -8,6 +9,7 @@ import org.vaultdb.codegen.sql.SqlGenerator;
 import org.vaultdb.db.data.QueryTable;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.plaintext.SqlQueryExecutor;
+import org.vaultdb.parser.SqlStatementParser;
 import org.vaultdb.type.SecureRelRecordType;
 import org.vaultdb.util.Histograms;
 import org.vaultdb.util.Utilities;
@@ -75,6 +77,20 @@ public class TpchCollectHistogramTest extends TpcHBaseTest {
     columnNames.add("c_nationkey");
     int numOfBins = 19;
 
+    
+    /*** start JMR debug ***/
+    FrameworkConfig calciteConfig = config.getCalciteConfiguration();
+    SqlStatementParser parser = new SqlStatementParser();
+    RelRoot test = parser.convertSqlToRelMinFields("SELECT COUNT(*) FROM customer");
+    RelBuilder builder = RelBuilder.create(calciteConfig);
+    
+    RelNode rootNode = builder
+    .scan(tableName)
+    .aggregate(builder.groupKey("c_nationkey"), builder.count(false, "cnt"))
+    .sort(0)
+    .build();
+    /*** end JMR debug ***/
+    
     ArrayList<QueryTable> results = histogram.getHistograms(tableName, columnNames, numOfBins);
     ArrayList<QueryTable> resultsUnioned = histogram.getHistograms(tableName, columnNames, numOfBins, ConnectionManager.getInstance().getUnioned());
     testCorrect(numOfBins, results, resultsUnioned);

@@ -210,8 +210,8 @@ public class QueryCompiler {
   public void compileEmpCode() throws Exception {
     if (!codeGenerated) writeOutEmpFile();
 
-    EmpBuilder builder = new EmpBuilder(queryId);
-    builder.compile();
+    String className = EmpJniUtilities.getFullyQualifiedClassName(queryId);
+    EmpJniUtilities.buildEmpProgram(className);
   }
 
   // generate program flow by traversing the tree bottom-up

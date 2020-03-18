@@ -23,8 +23,9 @@ import org.vaultdb.util.Utilities;
 public class ColumnConstraintsTest  extends BaseTest  {
 
 	protected void setUp() throws Exception {
-		String setupFile = Utilities.getVaultDBRoot()+ "/conf/setup.localhost";
-		System.setProperty("vaultdb.setup", setupFile);
+		//String setupFile = Utilities.getVaultDBRoot()+ "/conf/setup.localhost";
+		//System.setProperty("vaultdb.setup", setupFile);
+		super.setUp();
 	}
 
 	
@@ -63,12 +64,12 @@ public class ColumnConstraintsTest  extends BaseTest  {
 
 	public void testMedicationsMonth() throws Exception {
 		String table = "medications";
-		String attr = "month";
+		String attr = "month_id";
 		
 		ColumnConstraints<Long> expectedStats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
 
-		expectedStats.setMin(1L);
-		expectedStats.setMax(12L);
+		expectedStats.setMin(0L);
+		expectedStats.setMax(11L);
 		expectedStats.setDistinctCardinality(12);
 		expectedStats.setCardinality(4);
 
@@ -82,7 +83,7 @@ public class ColumnConstraintsTest  extends BaseTest  {
 		String attr = "gender";
 		
 		ColumnConstraints expectedStats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
-		// TODO: Nisha and May, fill in expected output following the pattern in testDemographicsBirthYear
+		// TODO: fill in expected output following the pattern in testDemographicsBirthYear
 		// Since attr is not public, may only use contents of relation_statistics in test database to get stats
 		// gender should have  cardinality of <demo table length>, range = 1..3, distinct vals: 3, ...
 

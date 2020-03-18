@@ -25,8 +25,7 @@ public class EmpJniJdbcLocalTest extends BaseTest {
     EmpRunnableQueryTable aliceRunnable = new EmpRunnableQueryTable(fullyQualifiedClassName, 1, empPort);
     EmpRunnableQueryTable bobRunnable = new EmpRunnableQueryTable(fullyQualifiedClassName, 2, empPort);
 
-    EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
-    builder.compile();
+    EmpJniUtilities.buildEmpProgram(fullyQualifiedClassName);
 
     Thread alice = new Thread(aliceRunnable);
     alice.start();
