@@ -48,7 +48,6 @@ dropdb $DB_NAME
 createdb $DB_NAME
 
 psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-load.sql
-#psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-pkeys.sql
 psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-alter.sql
 psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-index.sql
 
