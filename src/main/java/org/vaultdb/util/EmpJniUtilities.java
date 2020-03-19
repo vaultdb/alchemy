@@ -325,8 +325,9 @@ public class EmpJniUtilities {
 
 		String mvnLocation = SystemConfiguration.getInstance().getProperty("maven-location");
 		
+		Logger logger = SystemConfiguration.getInstance().getLogger();
 		String command =  mvnLocation +  " exec:java -Dexec.mainClass=\"org.vaultdb.compiler.emp.EmpBuilder\" -Dexec.args=\"" + className + "\"";
-		System.out.println("Running command: " + command);
+		logger.info("Building " + className + " with command: " + command);
 		Utilities.runCmd(command);
 		
 		

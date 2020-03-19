@@ -31,6 +31,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
 		fullyQualifiedClassName = EmpJniUtilities.getFullyQualifiedClassName(className);
     	vaultdbLogger = SystemConfiguration.getInstance().getLogger();
 	}
+	
     @Override 
     public void init(ClassProperties properties) {
     }
@@ -87,7 +88,7 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
 
     
         vaultdbLogger.info("Building class: " + fullyQualifiedClassName);
-        Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName).deleteJniFiles(true); //.copyLibs(true);
+        Builder builder = new Builder().properties(properties).classesOrPackages(fullyQualifiedClassName).deleteJniFiles(false); //.copyLibs(true);
         File[] outputFiles = null;
         outputFiles = builder.build();
         try {
@@ -104,10 +105,17 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
     }
     
     
+    
+    
+    
     @SuppressWarnings("rawtypes")
-    public EmpProgram getClass(int party, int port) throws Exception {
-        Class cls = Class.forName(fullyQualifiedClassName);
+    public EmpProgram getClass(int party, int port) throws Exception { 
+
+    	Class cls = Class.forName(fullyQualifiedClassName);
         Properties properties = getProperties();
+        
+        vaultdbLogger.info("Library path: " + System.getProperty("java.library.path"));
+        vaultdbLogger.info("Loader link path: " + properties.getProperty("platform.linkpath"));
         
         // loads and returns name of lib that contains this class
     	Object instance = Loader.load(cls, properties, true);
@@ -151,6 +159,8 @@ public class EmpBuilder implements BuildEnabled, LoadEnabled {
         String includePath = properties.getProperty("platform.includepath");
         includePath +=  ":" + root + "src/main/cpp:" + root + "src/main/cpp/lib/include";
         properties.setProperty("platform.includepath", includePath);
+        
+        
 
         return properties;
         
