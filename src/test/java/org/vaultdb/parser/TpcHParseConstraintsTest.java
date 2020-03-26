@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlBasicCall;
+import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlNodeList;
 import org.apache.calcite.sql.ddl.SqlCheckConstraint;
@@ -47,7 +48,10 @@ public class TpcHParseConstraintsTest  extends TpcHBaseTest {
 
 	  public void testCustomerTableDeclaration() throws Exception {
 		  
-			List<RexNode> customerConstraints = extractTableConstraints("customer");
+		  String tableName = "customer";
+		  String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
+		  
+			List<RexNode> customerConstraints = extractTableConstraints(tableName, tableDefinition);
 			final List<String> expectedRexNodes =   ImmutableList.of(					
 					"AND(<=($5, 9999.99:DECIMAL(6, 2)), >=($5, CAST('-999.99'):DECIMAL(19, 0) NOT NULL))",
                     "AND(<=(1, $0), <=($0, 15000))",
@@ -65,7 +69,10 @@ public class TpcHParseConstraintsTest  extends TpcHBaseTest {
 	  
 	  public void testLineitemTableDeclaration() throws Exception {
 		  
-		List<RexNode> lineitemConstraints = extractTableConstraints("lineitem");
+		  String tableName = "lineitem";
+		  String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
+
+		List<RexNode> lineitemConstraints = extractTableConstraints(tableName, tableDefinition);
 		final List<String> expectedRexNodes = ImmutableList.of(
 				"AND(<=($6, 0.10:DECIMAL(3, 2)), >=($6, 0.00:DECIMAL(3, 2)))",
 				"AND(<=(1, $3), >=(7, $3))",
@@ -88,38 +95,146 @@ public class TpcHParseConstraintsTest  extends TpcHBaseTest {
 	  }
 	  
 
-	  // TODO: remaining tables
 	  public void testNationTableDeclaration() throws Exception {
-		  assert(false);
+		  String tableName = "nation";
+		  String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
+
+		  List<RexNode> nationConstraints = extractTableConstraints(tableName, tableDefinition);
+
+
+		  
+		  List<String> observedRexNodes = new ArrayList<String>();
+
+		  // TODO: add any expected constraints and test for them
+		  final List<String> expectedRexNodes = ImmutableList.of();
+		  
+			for(RexNode r : nationConstraints) {
+				observedRexNodes.add(r.toString());
+			}
+			
+			assertEquals(expectedRexNodes, observedRexNodes);	
+		  
+		  
 	  }
 	  
 
 	  public void testOrdersTableDeclaration() throws Exception {
-		  assert(false);
+		  String tableName = "orders";
+		  String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
+
+		  List<RexNode> checkConstraints = extractTableConstraints(tableName, tableDefinition);
+
+
+		  
+		  List<String> observedRexNodes = new ArrayList<String>();
+
+		  // TODO: add any expected constraints and test for them
+		  final List<String> expectedRexNodes = ImmutableList.of();
+		  
+			for(RexNode r : checkConstraints) {
+				observedRexNodes.add(r.toString());
+			}
+			
+			assertEquals(expectedRexNodes, observedRexNodes);	
+		  
+
 	  }
 	  
 
 	  public void testPartTableDeclaration() throws Exception {
-		  assert(false);
+		  String tableName = "part";
+		  String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
+
+		  List<RexNode> checkConstraints = extractTableConstraints(tableName, tableDefinition);
+
+
+		  
+		  List<String> observedRexNodes = new ArrayList<String>();
+
+		  // TODO: add any expected constraints and test for them
+		  final List<String> expectedRexNodes = ImmutableList.of();
+		  
+			for(RexNode r : checkConstraints) {
+				observedRexNodes.add(r.toString());
+			}
+			
+			assertEquals(expectedRexNodes, observedRexNodes);	
+		  
+
 	  }
 	  
 	  public void testPartsuppDeclaration() throws Exception {
-		  assert(false);
+
+		  String tableName = "partsupp";
+		  String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
+
+		  List<RexNode> checkConstraints = extractTableConstraints(tableName, tableDefinition);
+
+
+		  
+		  List<String> observedRexNodes = new ArrayList<String>();
+
+		  // TODO: add any expected constraints and test for them
+		  final List<String> expectedRexNodes = ImmutableList.of();
+		  
+			for(RexNode r : checkConstraints) {
+				observedRexNodes.add(r.toString());
+			}
+			
+			assertEquals(expectedRexNodes, observedRexNodes);	
+		  
+
 	  }
 	    
 	  
 	  public void testRegionTableDeclaration() throws Exception {
-		  assert(false);
+		  String tableName = "region";
+		  String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
+
+		  List<RexNode> checkConstraints = extractTableConstraints(tableName, tableDefinition);
+
+
+		  
+		  List<String> observedRexNodes = new ArrayList<String>();
+
+		  // TODO: add any expected constraints and test for them
+		  final List<String> expectedRexNodes = ImmutableList.of();
+		  
+			for(RexNode r : checkConstraints) {
+				observedRexNodes.add(r.toString());
+			}
+			
+			assertEquals(expectedRexNodes, observedRexNodes);	
+		  
+
 	  }
 	  
 	  public void testSupplierTableDeclaration() throws Exception {
-		  assert(false);
+		
+		  String tableName = "supplier";
+		  String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
+
+		  List<RexNode> checkConstraints = extractTableConstraints(tableName, tableDefinition);
+
+
+		  
+		  List<String> observedRexNodes = new ArrayList<String>();
+
+		  // TODO: add any expected constraints and test for them
+		  final List<String> expectedRexNodes = ImmutableList.of();
+		  
+			for(RexNode r : checkConstraints) {
+				observedRexNodes.add(r.toString());
+			}
+			
+			assertEquals(expectedRexNodes, observedRexNodes);	
+		  
+
 	  }
 	  
 	  
-	  List<RexNode> extractTableConstraints(String tableName) throws Exception {
+	  List<RexNode> extractTableConstraints(String tableName, String tableDefinition) throws Exception {
 		  
-		  String tableDefinition = super.TABLE_DEFINITIONS.get(tableName);
 			
 			
 			

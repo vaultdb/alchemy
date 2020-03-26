@@ -78,7 +78,7 @@ public class TpchCollectHistogramTest extends TpcHBaseTest {
     int numOfBins = 19;
 
     
-    /*** start JMR debug ***/
+    /*** start JMR debug ***
     FrameworkConfig calciteConfig = config.getCalciteConfiguration();
     SqlStatementParser parser = new SqlStatementParser();
     RelRoot test = parser.convertSqlToRelMinFields("SELECT COUNT(*) FROM customer");
