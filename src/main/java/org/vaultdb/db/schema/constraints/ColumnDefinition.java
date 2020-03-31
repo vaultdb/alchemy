@@ -24,7 +24,7 @@ import org.vaultdb.util.Utilities;
 
 
 
-public class ColumnConstraints<T> { 
+public class ColumnDefinition<T> { 
 	
 	private long distinctValues = -1;
 	private long maxMultiplicity = -1;
@@ -33,11 +33,12 @@ public class ColumnConstraints<T> {
 	private T max = null;
 	private long cardinality = -1; // # of tuples in relation
 	private SecureRelDataTypeField columnDefinition = null;
+	private int stringLength; // not yet implemented, for limiting domain of string based on # of chars
 	
 	// pushing key constraints up to the table level since they can be composite
 	boolean isUnique = false;
 	
-	public ColumnConstraints() {
+	public ColumnDefinition() {
 
 	}
 
@@ -45,7 +46,7 @@ public class ColumnConstraints<T> {
 	
 	// called on public field to automatically collect stats
 	// this is for leaf nodes in the query tree
-	public ColumnConstraints(SecureRelDataTypeField f) throws Exception  {
+	public ColumnDefinition(SecureRelDataTypeField f) throws Exception  {
 		columnDefinition = f;
 		
 		String table = columnDefinition.getStoredTable();
@@ -60,7 +61,7 @@ public class ColumnConstraints<T> {
 	}
 
 	// constructor for intermediate results and test cases
-	public ColumnConstraints(SecureRelDataTypeField f, Long distinctCardinality, Long aMaxMultiplicity, 
+	public ColumnDefinition(SecureRelDataTypeField f, Long distinctCardinality, Long aMaxMultiplicity, 
 			List<T> aDomain, T aMinValue, T aMaxValue, Long aCardinality) {
 
 		
@@ -73,7 +74,7 @@ public class ColumnConstraints<T> {
 	}
 	
 	// copy constructor for new SecureRelDataTypeField
-	public ColumnConstraints(ColumnConstraints<T> src)		
+	public ColumnDefinition(ColumnDefinition<T> src)		
 		{
 			columnDefinition = src.columnDefinition;
 			distinctValues = src.distinctValues;
@@ -89,7 +90,7 @@ public class ColumnConstraints<T> {
 		
 	// copy constructor for new SecureRelDataTypeField, i.e., the parent of an existing one
 	
-	public ColumnConstraints(SecureRelDataTypeField f, ColumnConstraints<T> src)		
+	public ColumnDefinition(SecureRelDataTypeField f, ColumnDefinition<T> src)		
 	{
 		columnDefinition = f;
 		distinctValues = src.distinctValues;
@@ -122,9 +123,9 @@ public class ColumnConstraints<T> {
 
 	@Override
     public boolean equals(Object o) { 
-		if(o instanceof ColumnConstraints) {
+		if(o instanceof ColumnDefinition) {
 
-			ColumnConstraints<?> f = (ColumnConstraints<?>) o;
+			ColumnDefinition<?> f = (ColumnDefinition<?>) o;
 			if(f.distinctValues == this.distinctValues && 
 					f.min == this.min && 
 					f.max == this.max &&

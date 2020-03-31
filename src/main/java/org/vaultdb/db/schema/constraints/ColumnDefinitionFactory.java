@@ -7,9 +7,9 @@ import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.util.Utilities;
 
 
-public class ColumnConstraintsFactory {
+public class ColumnDefinitionFactory {
 
-	public static ColumnConstraints<?> get(SecureRelDataTypeField col) throws Exception {
+	public static ColumnDefinition<?> get(SecureRelDataTypeField col) throws Exception {
 		SqlTypeName type = col.getType().getSqlTypeName();
 	
 		
@@ -17,17 +17,17 @@ public class ColumnConstraintsFactory {
 			case  DECIMAL:
 			case DOUBLE:
 			case FLOAT:
-				return new ColumnConstraints<Float>(col);
+				return new ColumnDefinition<Float>(col);
 			case INTEGER:
 			case BIGINT:
-				return new ColumnConstraints<Long>(col);
+				return new ColumnDefinition<Long>(col);
 			case BOOLEAN:
-				return new ColumnConstraints<Boolean>(col);
+				return new ColumnDefinition<Boolean>(col);
 			case VARCHAR:
-				return new ColumnConstraints<String>(col);
+				return new ColumnDefinition<String>(col);
 			case TIMESTAMP:
 			case DATE:
-				return new ColumnConstraints<Timestamp>(col);	
+				return new ColumnDefinition<Timestamp>(col);	
 			default:
 				throw new Exception("Column constraints not supported for type " + type + "!");
 			}
@@ -36,7 +36,7 @@ public class ColumnConstraintsFactory {
 		
 	}
 
-	public static ColumnConstraints<?> get(String table, String attr) throws Exception {
+	public static ColumnDefinition<?> get(String table, String attr) throws Exception {
 		SecureRelDataTypeField field = Utilities.lookUpAttribute(table, attr);
 		return get(field);
 	}
