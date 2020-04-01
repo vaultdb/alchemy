@@ -101,7 +101,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     storedAttribute = src.getStoredAttribute();
     filters = new ArrayList<LogicalFilter>(src.getFilters());
     // TODO: deep copy constraints
-    constraints = src.getColumnConstraints();
+    constraints = src.getColumnDefinition();
 
 
   }
@@ -206,7 +206,7 @@ public void initializeStatistics(ColumnDefinition<?> c) {
     return storedAttribute;
   }
 
-  public ColumnDefinition getColumnConstraints() {
+  public ColumnDefinition<?> getColumnDefinition() {
     return constraints;
   }
 

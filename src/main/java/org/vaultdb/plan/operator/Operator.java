@@ -629,7 +629,7 @@ public abstract class Operator implements CodeGenerator {
     // find min cardinality for bound
     for (SecureRelDataTypeField f : getSchema().getSecureFieldList()) {
 
-      localCard = f.getColumnConstraints().getCardinality();
+      localCard = f.getColumnDefinition().getCardinality();
       if (localCard < minCard && localCard != -1) {
         minCard = localCard;
       }
@@ -637,7 +637,7 @@ public abstract class Operator implements CodeGenerator {
 
     // copy it to all fields in schema to make it consistent
     for (SecureRelDataTypeField f : getSchema().getSecureFieldList()) {
-      f.getColumnConstraints().setCardinality(minCard);
+      f.getColumnDefinition().setCardinality(minCard);
     }
   }
 
