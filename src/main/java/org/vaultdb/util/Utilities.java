@@ -243,7 +243,7 @@ public class Utilities {
     System.out.println("Analyzing " + attr + ", src table: " + srcTable);
 
     SystemCatalog schemaDef = SystemCatalog.getInstance();
-    List<String> primaryKey = schemaDef.getPrimaryKey(srcTable);
+    List<SecureRelDataTypeField> primaryKey = schemaDef.getPrimaryKey(srcTable);
 
     if (name == null || srcTable == null)
       return false; // TODO: work out transitive closure later based on slice key inference
@@ -263,7 +263,7 @@ public class Utilities {
 
     // Case 3: if there is a primary key, then any partition key will automatically divide this up
     // by primary key since the latter admits no duplicates
-    if (primaryKey.contains(name)
+    if (primaryKey.get(0).getName().contains(name)
         && primaryKey.size() == 1
         && schemaDef.getPartitionKey(srcTable) != null) {
       return true;

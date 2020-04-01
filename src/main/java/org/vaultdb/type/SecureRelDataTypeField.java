@@ -14,8 +14,8 @@ import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.vaultdb.db.schema.constraints.ColumnConstraints;
-import org.vaultdb.db.schema.constraints.ColumnConstraintsFactory;
+import org.vaultdb.db.schema.constraints.ColumnDefinition;
+import org.vaultdb.db.schema.constraints.ColumnDefinitionFactory;
 
 // thin wrapper on top of RelDataTypeField for attaching security policy to an attribute
 // how do we call this at schema construction time?
@@ -34,7 +34,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 
   SecurityPolicy policy = SecurityPolicy.Private;
   RelDataTypeField baseField;
-  ColumnConstraints<?> constraints = null; // TODO: initialize this
+  ColumnDefinition<?> constraints = null; // TODO: initialize this
   private boolean aliased;
   private String unaliasedName;
 
@@ -64,7 +64,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
   }
 
   public SecureRelDataTypeField(
-      RelDataTypeField baseField, SecurityPolicy secPolicy, ColumnConstraints theStats) {
+      RelDataTypeField baseField, SecurityPolicy secPolicy, ColumnDefinition theStats) {
     super(baseField.getName(), baseField.getIndex(), baseField.getType());
     this.baseField = baseField;
     policy = secPolicy;
@@ -101,7 +101,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     storedAttribute = src.getStoredAttribute();
     filters = new ArrayList<LogicalFilter>(src.getFilters());
     // TODO: deep copy constraints
-    constraints = src.getColumnConstraints();
+    constraints = src.getColumnDefinition();
 
 
   }
@@ -144,13 +144,13 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 
   // for table scans
   public void initializeConstraints() throws Exception {
-	  constraints = ColumnConstraintsFactory.get(this);
+	  constraints = ColumnDefinitionFactory.get(this);
   }
 
   // copy constructor
   @SuppressWarnings("unchecked")
-public void initializeStatistics(ColumnConstraints<?> c) {
-    constraints = new ColumnConstraints(this, c);
+public void initializeStatistics(ColumnDefinition<?> c) {
+    constraints = new ColumnDefinition(this, c);
   }
 
   @Override
@@ -206,7 +206,7 @@ public void initializeStatistics(ColumnConstraints<?> c) {
     return storedAttribute;
   }
 
-  public ColumnConstraints getColumnConstraints() {
+  public ColumnDefinition<?> getColumnDefinition() {
     return constraints;
   }
 
