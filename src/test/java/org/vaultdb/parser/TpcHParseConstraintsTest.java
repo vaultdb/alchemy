@@ -2,6 +2,7 @@ package org.vaultdb.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlBasicCall;
@@ -11,9 +12,15 @@ import org.apache.calcite.sql.ddl.SqlCheckConstraint;
 import org.apache.calcite.sql.ddl.SqlCreateTable;
 import org.vaultdb.TpcHBaseTest;
 import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.db.schema.SystemCatalog;
+import org.vaultdb.db.schema.constraints.ColumnDefinition;
+import org.vaultdb.db.schema.constraints.ColumnDefinitionFactory;
 import org.vaultdb.parser.SqlStatementParser;
 
 import com.google.common.collect.ImmutableList;
+import org.vaultdb.type.SecureRelDataTypeField;
+
+import org.vaultdb.db.schema.constraints.TableDefinition;
 
 public class TpcHParseConstraintsTest  extends TpcHBaseTest {
 
@@ -23,6 +30,28 @@ public class TpcHParseConstraintsTest  extends TpcHBaseTest {
 		super.setUp();
 		sqlParser = new SqlStatementParser();
 	}
+
+	public void testRexNode() throws Exception {
+		String tableName = "customer";
+
+		// ColumnDefinition
+		// SecureRelDataTypeField f;
+		// ColumnDefinition cd = new ColumnDefinition(f);
+		// setCardinality
+		// min, max, domain (list)
+		//ColumnDefinitionFactory.get("customer", "name");
+//		SecureRelDataTypeField field, SecureRelRecordType schema
+//		ConstraintVisitor constraintVisitor = new ConstraintVisitor()
+//		customerConstraints.get(1).accept();
+		TableDefinition tableDefinition = new TableDefinition(tableName, catalog);
+		// SecureRelDataTypeField, SecureRelDataTypeField
+		Map<SecureRelDataTypeField, SecureRelDataTypeField> td =  tableDefinition.getIntegrityConstraint(5);
+		for (SecureRelDataTypeField s: td.values()){
+			System.out.println(s);
+		}
+	}
+
+
 
 	public void testLineitemExpression() throws Exception  {
 		// to dump all constraints at once.  Not used yet.
