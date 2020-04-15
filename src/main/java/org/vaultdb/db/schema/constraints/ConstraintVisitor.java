@@ -22,6 +22,7 @@ import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.Table;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.db.schema.SystemCatalog;
@@ -71,11 +72,40 @@ public class ConstraintVisitor   implements RexVisitor<Comparable> {
 
 	@Override
 	public Comparable visitCall(RexCall call) {
-		
-		  final List<Comparable> values = new ArrayList<>(call.operands.size());
-		    for (RexNode operand : call.operands) {
-		      values.add(operand.accept(this));
-		    }
+		final List<Comparable> values = new ArrayList<>(call.operands.size());
+		ArrayList<SqlOperator> operators = new ArrayList<>();
+		for (RexNode operand : call.operands) {
+			values.add(operand.accept(this));
+			operators.add(call.getOperator());
+		}
+
+		System.out.println("Values: " + values);
+		// TODO: how to extract numbers?
+		switch (call.getOperator().getKind()) {
+			case EQUALS:
+				return "Equals";
+			case IS_DISTINCT_FROM:
+				return "IS_DISTINCT_FROM";
+			case NOT_EQUALS:
+				return "NOT_EQUALS";
+			case GREATER_THAN:
+				return "GREATER_THAN";
+			case GREATER_THAN_OR_EQUAL:
+				return "GREATER_THAN_OR_EQUAL";
+			case LESS_THAN:
+				return "LESS_THAN";
+			case LESS_THAN_OR_EQUAL:
+				return "LESS_THAN_OR_EQUAL";
+			case AND:
+				values.add("AND");
+				return "AND";
+			case OR:
+				return "OR";
+			case NOT:
+				return "NOT";
+			case CAST:
+				return "CAST";
+		}
 
 
 		    /*
