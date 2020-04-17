@@ -1,12 +1,12 @@
 package org.vaultdb.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlBasicCall;
 import org.apache.calcite.sql.SqlNode;
@@ -46,22 +46,21 @@ public class TpcHParseConstraintsTest  extends TpcHBaseTest {
 		calciteConfig = config.getCalciteConfiguration();
 	}
 
-	public void testRexNode() throws Exception {
+	public void testConstraintVisitorSchemaConstructor() throws Exception {
 		String tableName = "customer";
 		List<RexNode> customerConstraints = extractTableConstraints("customer");
 
-		final List<String> expectedRexNodes =   ImmutableList.of(
-				"AND(<=($5, 9999.99:DECIMAL(6, 2)), >=($5, CAST('-999.99'):DECIMAL(19, 0) NOT NULL))",
-				"AND(<=(1, $0), <=($0, 15000))",
-				"OR(=($6, 'BUILDING'), =($6, 'FURNITURE'), =($6, 'HOUSEHOLD'), =($6, 'MACHINERY'), =($6, 'AUTOMOBILE'))",
-				"AND(<=(0, $3), <=($3, 24))"
-		);
-
-		// ColumnDefinition
-		// SecureRelDataTypeField f;
-		// ColumnDefinition cd = new ColumnDefinition(f);
-		// setCardinality
-		// min, max, domain (list)
+		// correct column definitions
+		List<ColumnDefinition> correctColumnDefinitions = new ArrayList<>(customerConstraints.size());
+		// "AND(<=($5, 9999.99:DECIMAL(6, 2)), >=($5, CAST('-999.99'):DECIMAL(19, 0) NOT NULL))"
+		correctColumnDefinitions.add(new ColumnDefinition(null, -1L, -1L, null, -999.99, 9999.99, -1L));
+		// "AND(<=(1, $0), <=($0, 15000))"
+		correctColumnDefinitions.add(new ColumnDefinition(null, -1L, -1L, null, 1, 15000, -1L));
+		// "OR(=($6, 'BUILDING'), =($6, 'FURNITURE'), =($6, 'HOUSEHOLD'), =($6, 'MACHINERY'), =($6, 'AUTOMOBILE'))"
+		Set<Object> domain = new HashSet<>(Arrays. asList("MACHINERY", "AUTOMOBILE", "BUILDING", "FURNITURE", "HOUSEHOLD"));
+		correctColumnDefinitions.add(new ColumnDefinition(null, 5L, -1L, domain, null, null, -1L));
+		// "AND(<=(0, $3), <=($3, 24))"
+		correctColumnDefinitions.add(new ColumnDefinition(null, -1L, -1L, null, 0, 24, -1L));
 
 		// step 0: use rel builder to get schema
 		RelBuilder builder = RelBuilder.create(calciteConfig);
@@ -74,28 +73,74 @@ public class TpcHParseConstraintsTest  extends TpcHBaseTest {
 		QueryTable resultTable = SqlQueryExecutor.query(query, ConnectionManager.getInstance().getUnioned());
 		SecureRelRecordType tableSchema = resultTable.getSchema();
 
-		// step 1: use RexNodes to gather which tables have constraints, we can use regex here
-		Pattern p = Pattern.compile("(?<=\\$)[0-9]+");
+		// step 1: use RexNodes to gather constraints
+//		for (RexNode r: customerConstraints){
+		for (int i = 0; i < customerConstraints.size(); i++){
+			RexNode r = customerConstraints.get(i);
+			System.out.println("Accepting rexnode: " + r.toString());
+
+			ConstraintVisitor constraintVisitor = new ConstraintVisitor(tableSchema);
+			Comparable c = r.accept(constraintVisitor);
+			Map<RexInputRef, ColumnDefinition> columnDefinitionMap = constraintVisitor.getColumnDefinitionMap();
+			for (ColumnDefinition columnDefinition: columnDefinitionMap.values()){
+				System.out.println("Column Definition");
+				System.out.println(columnDefinition);
+				System.out.println("Correct Column Definition");
+				System.out.println(correctColumnDefinitions.get(i));
+				assertTrue(columnDefinition.equals(correctColumnDefinitions.get(i)));
+			}
+			System.out.println();
+		}
+	}
+
+	public void testConstraintVisitorColumnDefinitionConstructor() throws Exception {
+		String tableName = "customer";
+		List<RexNode> customerConstraints = extractTableConstraints("customer");
+		// correct column definitions
+		// correct column definitions
+		List<ColumnDefinition> correctColumnDefinitions = new ArrayList<>(customerConstraints.size());
+		// "AND(<=($5, 9999.99:DECIMAL(6, 2)), >=($5, CAST('-999.99'):DECIMAL(19, 0) NOT NULL))"
+		correctColumnDefinitions.add(new ColumnDefinition(null, -1L, -1L, null, -999.99, 9999.99, -1L));
+		// "AND(<=(1, $0), <=($0, 15000))"
+		correctColumnDefinitions.add(new ColumnDefinition(null, -1L, -1L, null, 1, 15000, -1L));
+		// "OR(=($6, 'BUILDING'), =($6, 'FURNITURE'), =($6, 'HOUSEHOLD'), =($6, 'MACHINERY'), =($6, 'AUTOMOBILE'))"
+		Set<Object> domain = new HashSet<>(Arrays. asList("MACHINERY", "AUTOMOBILE", "BUILDING", "FURNITURE", "HOUSEHOLD"));
+		correctColumnDefinitions.add(new ColumnDefinition(null, 5L, -1L, domain, null, null, -1L));
+		// "AND(<=(0, $3), <=($3, 24))"
+		correctColumnDefinitions.add(new ColumnDefinition(null, -1L, -1L, null, 0, 24, -1L));
+
+		// step 0: use rel builder to get schema
+		RelBuilder builder = RelBuilder.create(calciteConfig);
+		RelNode node =
+				builder
+						.scan(tableName)
+						.build();
+		node.getRowType().getFieldList().get(0);
+		String query = SqlGenerator.getSql(node, config.DIALECT);
+		QueryTable resultTable = SqlQueryExecutor.query(query, ConnectionManager.getInstance().getUnioned());
+		SecureRelRecordType tableSchema = resultTable.getSchema();
+
+		// step 1: use RexNodes to gather constraints
+		 Pattern p = Pattern.compile("(?<=\\$)[0-9]+");
 		// RexNode r : customerConstraints
 		for(int i = 0; i < customerConstraints.size(); i++) {
 			RexNode r = customerConstraints.get(i);
 			Matcher m = p.matcher(r.toString());
 			if (m.find()) {
 				String columnString = m.group();
-				int columnIndex = Integer.parseInt(columnString);
-				SecureRelDataTypeField secureRelDataTypeField = tableSchema.getSecureField(columnIndex);
-				ConstraintVisitor constraintVisitor = new ConstraintVisitor(secureRelDataTypeField, tableSchema);
-
+				int columnIndex = Integer.valueOf(columnString);
 				System.out.println("Accepting rexnode:" + r.toString());
-				String s = (String) customerConstraints.get(1).accept(constraintVisitor);
-				System.out.println(s);
+
+				SecureRelDataTypeField secureRelDataTypeField = tableSchema.getSecureField(columnIndex);
+				ColumnDefinition columnDefinition = ColumnDefinitionFactory.get(secureRelDataTypeField);
+				ConstraintVisitor constraintVisitor = new ConstraintVisitor(columnDefinition);
+				r.accept(constraintVisitor);
+				System.out.println(columnDefinition);
+				// assertEquals doesn't work here
+				assertTrue(columnDefinition.equals(correctColumnDefinitions.get(i)));
 			}
 		}
-
-
-		// SecureRelDataTypeField, SecureRelDataTypeField
-//		Map<SecureRelDataTypeField, SecureRelDataTypeField> td =  tableDefinition.getIntegrityConstraint(5);
-		}
+	}
 
 	public void testLineitemExpression() throws Exception  {
 		// to dump all constraints at once.  Not used yet.

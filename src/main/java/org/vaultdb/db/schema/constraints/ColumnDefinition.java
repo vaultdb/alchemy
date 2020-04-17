@@ -1,8 +1,6 @@
 package org.vaultdb.db.schema.constraints;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -28,7 +26,7 @@ public class ColumnDefinition<T> {
 	
 	private long distinctValues = -1;
 	private long maxMultiplicity = -1;
-	private List<T>  domain;
+	private Set<T> domain;
 	private T min = null;
 	private T max = null;
 	private long cardinality = -1; // # of tuples in relation
@@ -62,7 +60,7 @@ public class ColumnDefinition<T> {
 
 	// constructor for intermediate results and test cases
 	public ColumnDefinition(SecureRelDataTypeField f, Long distinctCardinality, Long aMaxMultiplicity, 
-			List<T> aDomain, T aMinValue, T aMaxValue, Long aCardinality) {
+			Set<T> aDomain, T aMinValue, T aMaxValue, Long aCardinality) {
 
 		
 		distinctValues = distinctCardinality;
@@ -84,7 +82,7 @@ public class ColumnDefinition<T> {
 			cardinality = src.cardinality;
 			
 			if(src.domain != null)
-				domain = new ArrayList<T>(src.domain);
+				domain = new HashSet<T>(src.domain);
 
 		}
 		
@@ -103,7 +101,7 @@ public class ColumnDefinition<T> {
 		assert(f.getType().equals(src.columnDefinition.getType()));
 		
 		if(src.domain != null)
-			domain = new ArrayList<T>(src.domain);
+			domain = new HashSet<T>(src.domain);
 		// TODO: check if conditions still hold for auto-generated domains
 
 
@@ -126,9 +124,9 @@ public class ColumnDefinition<T> {
 		if(o instanceof ColumnDefinition) {
 
 			ColumnDefinition<?> f = (ColumnDefinition<?>) o;
-			if(f.distinctValues == this.distinctValues && 
-					f.min == this.min && 
-					f.max == this.max &&
+			if(f.distinctValues == this.distinctValues &&
+					(f.min == null && this.min == null || f.min.equals(this.min)) &&
+					(f.max == null && this.max == null || f.max.equals(this.max)) &&
 					f.maxMultiplicity == this.maxMultiplicity &&
 					f.cardinality == this.cardinality)
 					if((f.domain == null && domain == null ) || 
@@ -172,7 +170,6 @@ public class ColumnDefinition<T> {
 		// TODO: check if conditions still hold for auto-generated domains
 	}
 
-
 	
 	public long getMaxMultiplicity() {
 		return maxMultiplicity;
@@ -186,17 +183,26 @@ public class ColumnDefinition<T> {
 
 
 
-	public List<T> getDomain() {
+	public Set<T> getDomain() {
 		return domain;
 	}
-
 
 
 	public void setDomain(List<T> aDomain) {
 		if(aDomain == null)
 			domain = null;
 		else
-			this.domain = new ArrayList<T>(aDomain);
+			this.domain = new HashSet<T>(aDomain);
+		this.setDistinctCardinality(aDomain.size());
+	}
+
+	public void appendToDomain(T domainElement) {
+		System.out.println("Appending to domain " + domainElement);
+		if(this.domain == null){
+			this.domain = new HashSet<T>();
+		}
+		this.domain.add(domainElement);
+		this.setDistinctCardinality(this.domain.size());
 	}
 
 
@@ -208,6 +214,7 @@ public class ColumnDefinition<T> {
 
 
 	public void setMax(T max) {
+		System.out.println("Setting ColumnDefinition new max to: " + max);
 		this.max = max;
 	}
 
@@ -220,6 +227,7 @@ public class ColumnDefinition<T> {
 
 
 	public void setMin(T min) {
+		System.out.println("Setting ColumnDefinition new min to: " + min);
 		this.min = min;
 	}
 	
@@ -233,7 +241,7 @@ public class ColumnDefinition<T> {
 		
 		maxMultiplicity = runScalarIntegerQuery("SELECT COUNT(*) FROM " +  table + " GROUP BY " + attr + " ORDER BY COUNT(*) DESC LIMIT 1");
 		// this may be suboptimal for dbs with big domains - TODO: lazily evaluate this later
-		domain = runListQuery("SELECT DISTINCT " + attr + " FROM " + table);
+		domain = new HashSet<>(runListQuery("SELECT DISTINCT " + attr + " FROM " + table));
 		min = runScalarQuery("SELECT min(" + attr + ") FROM " + table);
 		max = runScalarQuery("SELECT max(" + attr + ") FROM " + table);
 		cardinality = runScalarIntegerQuery("SELECT COUNT(*) FROM " + table);

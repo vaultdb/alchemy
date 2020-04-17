@@ -14,7 +14,7 @@ public class ColumnDefinitionFactory {
 	
 		
 		switch(type) {
-			case  DECIMAL:
+			case DECIMAL:
 			case DOUBLE:
 			case FLOAT:
 				return new ColumnDefinition<Float>(col);
@@ -23,11 +23,12 @@ public class ColumnDefinitionFactory {
 				return new ColumnDefinition<Long>(col);
 			case BOOLEAN:
 				return new ColumnDefinition<Boolean>(col);
+			case CHAR:
 			case VARCHAR:
 				return new ColumnDefinition<String>(col);
 			case TIMESTAMP:
 			case DATE:
-				return new ColumnDefinition<Timestamp>(col);	
+				return new ColumnDefinition<Timestamp>(col);
 			default:
 				throw new Exception("Column constraints not supported for type " + type + "!");
 			}

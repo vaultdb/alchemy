@@ -1,10 +1,8 @@
 package org.vaultdb.db.schema.constraints;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.GregorianCalendar;
-import java.util.List;
+import java.util.*;
 
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
@@ -24,10 +22,27 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.schema.Table;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.jetbrains.annotations.NotNull;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.db.schema.SystemCatalog;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
+import org.apache.calcite.avatica.util.DateTimeUtils;
+import org.apache.calcite.avatica.util.TimeUnit;
+import org.apache.calcite.avatica.util.TimeUnitRange;
+import org.apache.calcite.rel.metadata.NullSentinel;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.util.NlsString;
+import org.apache.calcite.util.Util;
+
+import com.google.common.collect.ImmutableMap;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.IntPredicate;
 
 
 // adds constraints to SystemCatalog
@@ -35,322 +50,421 @@ import org.vaultdb.type.SecureRelRecordType;
 // loosely based on RexInterpreter
 public class ConstraintVisitor   implements RexVisitor<Comparable> {
 
-	SystemConfiguration config;
-	SecureRelDataTypeField srcField;
-	ColumnDefinition<?> constraints;
-	SchemaPlus sharedSchema;
-	SystemCatalog catalog;
-	
-	//SecureRelRecordType srcSchema;
-	
-	
-	public ConstraintVisitor(SecureRelDataTypeField field, SecureRelRecordType schema) throws Exception {
-		srcField = new SecureRelDataTypeField(field.getBaseField(), field);
-		constraints = ColumnDefinitionFactory.get(srcField);
-		config = SystemConfiguration.getInstance();
-		catalog = SystemCatalog.getInstance();
-		sharedSchema = config.getPdfSchema();
+/**
+ * Evaluates {@link RexNode} expressions.
+ *
+ * <p>Caveats:
+ * <ul>
+ *   <li>It uses interpretation, so it is not very efficient.
+ *   <li>It is intended for testing, so does not cover very many functions and
+ *   operators. (Feel free to contribute more!)
+ *   <li>It is not well tested.
+ * </ul>
+ */
+	private static final NullSentinel N = NullSentinel.INSTANCE;
+
+	public static final EnumSet<SqlKind> SUPPORTED_SQL_KIND =
+			EnumSet.of(SqlKind.IS_NOT_DISTINCT_FROM, SqlKind.EQUALS, SqlKind.IS_DISTINCT_FROM,
+					SqlKind.NOT_EQUALS, SqlKind.GREATER_THAN, SqlKind.GREATER_THAN_OR_EQUAL,
+					SqlKind.LESS_THAN, SqlKind.LESS_THAN_OR_EQUAL, SqlKind.AND, SqlKind.OR,
+					SqlKind.NOT, SqlKind.CASE, SqlKind.IS_TRUE, SqlKind.IS_NOT_TRUE,
+					SqlKind.IS_FALSE, SqlKind.IS_NOT_FALSE, SqlKind.PLUS_PREFIX,
+					SqlKind.MINUS_PREFIX, SqlKind.PLUS, SqlKind.MINUS, SqlKind.TIMES,
+					SqlKind.DIVIDE, SqlKind.COALESCE, SqlKind.CEIL,
+					SqlKind.FLOOR, SqlKind.EXTRACT);
+
+	private ColumnDefinition columnDefinition;
+	private SecureRelRecordType schema;
+	// for handling multiple columns
+	private Map <RexInputRef, ColumnDefinition> columnDefinitionMap;
+
+	public ConstraintVisitor(ColumnDefinition columnDefinition){
+		this.columnDefinition = columnDefinition;
 	}
 
-	@Override
+	public ConstraintVisitor(SecureRelRecordType schema){
+		columnDefinitionMap = new HashMap<>();
+		this.schema = schema;
+	}
+
+	public ColumnDefinition getColumnDefinition() {
+		return columnDefinition;
+	}
+
+	public Map<RexInputRef, ColumnDefinition> getColumnDefinitionMap() {
+		return columnDefinitionMap;
+	}
+
+	private IllegalArgumentException unbound(RexNode e) {
+		return new IllegalArgumentException("unbound: " + e);
+	}
+
+	private Comparable getOrUnbound(RexNode e) {
+		return null;
+	}
+
 	public Comparable visitInputRef(RexInputRef inputRef) {
-		// TODO Auto-generated method stub
+		System.out.println("visitInputRef: " + inputRef.toString());
+		if (columnDefinitionMap != null){
+			try {
+				if (!columnDefinitionMap.containsKey(inputRef)){
+					int columnIndex = Integer.valueOf(inputRef.getIndex());
+					SecureRelDataTypeField secureRelDataTypeField = schema.getSecureField(columnIndex);
+					ColumnDefinition columnDefinition = ColumnDefinitionFactory.get(secureRelDataTypeField);
+					columnDefinitionMap.put(inputRef, columnDefinition);
+				}
+			} catch (Exception e) {
+				System.out.println("visit input ref unable to create new column definition");
+			}
+		}
 		return null;
 	}
 
-	@Override
 	public Comparable visitLocalRef(RexLocalRef localRef) {
-		// TODO Auto-generated method stub
-		return null;
+		throw unbound(localRef);
 	}
 
-	@Override
 	public Comparable visitLiteral(RexLiteral literal) {
-		// TODO Auto-generated method stub
-		return null;
+		System.out.println("visitLiteral: " + literal.getValue());
+		switch (literal.getType().getSqlTypeName()){
+			case VARCHAR:
+			case CHAR:
+				return ((NlsString) literal.getValue()).getValue();
+			case INTEGER:
+				if (literal.getValue() instanceof BigDecimal){
+					return ((BigDecimal) literal.getValue()).intValue();
+				}
+			case DECIMAL:
+				if (literal.getValue() instanceof BigDecimal){
+					return ((BigDecimal) literal.getValue()).doubleValue();
+				}
+			default:
+				return Util.first(literal.getValue4(), N);
+		}
 	}
 
-	@Override
+	public Comparable visitOver(RexOver over) {
+		throw unbound(over);
+	}
+
+	public Comparable visitCorrelVariable(RexCorrelVariable correlVariable) {
+		return getOrUnbound(correlVariable);
+	}
+
+	public Comparable visitDynamicParam(RexDynamicParam dynamicParam) {
+		return getOrUnbound(dynamicParam);
+	}
+
+	public Comparable visitRangeRef(RexRangeRef rangeRef) {
+		throw unbound(rangeRef);
+	}
+
+	public Comparable visitFieldAccess(RexFieldAccess fieldAccess) {
+		return getOrUnbound(fieldAccess);
+	}
+
+	public Comparable visitSubQuery(RexSubQuery subQuery) {
+		throw unbound(subQuery);
+	}
+
+	public Comparable visitTableInputRef(RexTableInputRef fieldRef) {
+		throw unbound(fieldRef);
+	}
+
+	public Comparable visitPatternFieldRef(RexPatternFieldRef fieldRef) {
+		throw unbound(fieldRef);
+	}
+
 	public Comparable visitCall(RexCall call) {
 		final List<Comparable> values = new ArrayList<>(call.operands.size());
-		ArrayList<SqlOperator> operators = new ArrayList<>();
 		for (RexNode operand : call.operands) {
 			values.add(operand.accept(this));
-			operators.add(call.getOperator());
 		}
-
-		System.out.println("Values: " + values);
-		// TODO: how to extract numbers?
-		switch (call.getOperator().getKind()) {
+		// TODO: properly handle OR case
+		// TODO: set constraint string length based on the total number of characters (i.e. CHAR(7))
+		switch (call.getKind()) {
+			case IS_NOT_DISTINCT_FROM:
 			case EQUALS:
-				return "Equals";
+				System.out.println(values);
+				Comparable rexLiteralEquals;
+				if (call.operands.get(0) instanceof RexInputRef){
+					rexLiteralEquals = values.get(1);
+				} else {
+					rexLiteralEquals = values.get(0);
+				}
+				if (columnDefinitionMap != null){
+					columnDefinitionMap.get(call.operands.get(0)).appendToDomain(rexLiteralEquals);
+				} else {
+					columnDefinition.appendToDomain(rexLiteralEquals);
+				}
+				return null;
 			case IS_DISTINCT_FROM:
-				return "IS_DISTINCT_FROM";
 			case NOT_EQUALS:
-				return "NOT_EQUALS";
+				return null;
 			case GREATER_THAN:
-				return "GREATER_THAN";
 			case GREATER_THAN_OR_EQUAL:
-				return "GREATER_THAN_OR_EQUAL";
+				System.out.println("greater than or equal to");
+				if (call.operands.get(0) instanceof RexInputRef){
+					// $0  >= literal
+					if (columnDefinitionMap != null){
+						columnDefinitionMap.get(call.operands.get(0)).setMin(values.get(1));
+					} else {
+						columnDefinition.setMin(values.get(1));
+					}
+				} else {
+					// literal >= $0
+					if (columnDefinitionMap != null){
+						columnDefinitionMap.get(call.operands.get(0)).setMax(values.get(0));
+					} else {
+						columnDefinition.setMax(values.get(0));
+					}
+				}
+				return null;
 			case LESS_THAN:
-				return "LESS_THAN";
 			case LESS_THAN_OR_EQUAL:
-				return "LESS_THAN_OR_EQUAL";
+				System.out.println("less than or equal to");
+				// figure out whether col def is on left or rhs
+				if (call.operands.get(0) instanceof RexInputRef){
+					// $0  <= literal
+					if (columnDefinitionMap != null){
+						columnDefinitionMap.get(call.operands.get(0)).setMax(values.get(1));
+					} else {
+						columnDefinition.setMax(values.get(1));
+					}
+				} else {
+					// literal <= $0
+					if (columnDefinitionMap != null){
+						columnDefinitionMap.get(call.operands.get(0)).setMin(values.get(0));
+					} else {
+						columnDefinition.setMin(values.get(0));
+					}
+				}
+				return null;
 			case AND:
-				values.add("AND");
-				return "AND";
+				System.out.println("AND operator");
+				return null;
 			case OR:
-				return "OR";
+				System.out.println("OR operator");
+				return null;
 			case NOT:
-				return "NOT";
+				System.out.println("NOT operator");
+				return null;
+			case CASE:
+			case IS_TRUE:
+			case IS_NOT_TRUE:
+			case IS_NULL:
+				System.out.println("IS_NULL operator");
+				return null;
+			case IS_NOT_NULL:
+				System.out.println("IS_NOT_NOT operator");
+				return null;
+			case IS_FALSE:
+			case IS_NOT_FALSE:
+			case PLUS_PREFIX:
+			case MINUS_PREFIX: ;
+			case PLUS:
+			case MINUS:
+			case TIMES:
+			case DIVIDE:
 			case CAST:
-				return "CAST";
+				return cast(call, values);
+			case COALESCE:
+				System.out.println("COALESCE operator");
+				return null;
+//				return coalesce(call, values);
+			case CEIL:
+			case FLOOR:
+				System.out.println("CEIL operator");
+				return null;
+//				return ceil(call, values);
+			case EXTRACT:
+				System.out.println("EXTRACT operator");
+				return null;
+//				return extract(call, values);
+			default:
+				return null;
+		}
+	}
+
+	private Comparable extract(RexCall call, List<Comparable> values) {
+		final Comparable v = values.get(1);
+		if (v == N) {
+			return N;
+		}
+		final TimeUnitRange timeUnitRange = (TimeUnitRange) values.get(0);
+		final int v2;
+		if (v instanceof Long) {
+			// TIMESTAMP
+			v2 = (int) (((Long) v) / TimeUnit.DAY.multiplier.longValue());
+		} else {
+			// DATE
+			v2 = (Integer) v;
+		}
+		return DateTimeUtils.unixDateExtract(timeUnitRange, v2);
+	}
+
+	private Comparable coalesce(RexCall call, List<Comparable> values) {
+		for (Comparable value : values) {
+			if (value != N) {
+				return value;
+			}
+		}
+		return N;
+	}
+
+	private Comparable ceil(RexCall call, List<Comparable> values) {
+		if (values.get(0) == N) {
+			return N;
+		}
+		final Long v = (Long) values.get(0);
+		final TimeUnitRange unit = (TimeUnitRange) values.get(1);
+		switch (unit) {
+			case YEAR:
+			case MONTH:
+				switch (call.getKind()) {
+					case FLOOR:
+						return DateTimeUtils.unixTimestampFloor(unit, v);
+					default:
+						return DateTimeUtils.unixTimestampCeil(unit, v);
+				}
+		}
+		final TimeUnitRange subUnit = subUnit(unit);
+		for (long v2 = v;;) {
+			final int e = DateTimeUtils.unixTimestampExtract(subUnit, v2);
+			if (e == 0) {
+				return v2;
+			}
+			v2 -= unit.startUnit.multiplier.longValue();
+		}
+	}
+
+	private TimeUnitRange subUnit(TimeUnitRange unit) {
+		switch (unit) {
+			case QUARTER:
+				return TimeUnitRange.MONTH;
+			default:
+				return TimeUnitRange.DAY;
+		}
+	}
+	// only supports casting to decimal
+	private Comparable cast(RexCall call, List<Comparable> values) {
+		System.out.println("CAST operator");
+		switch (call.getType().getSqlTypeName().getName()){
+			case "DECIMAL":
+				String stringValue;
+				// TODO: consider scale and precision
+				if (values.get(0) instanceof NlsString){
+					stringValue = ((NlsString) values.get(0)).getValue();
+					return Double.valueOf(stringValue);
+				} else if (values.get(0) instanceof String){
+					stringValue = (String) values.get(0);
+					return Double.valueOf(stringValue);
+				}
+				return values.get(0);
+			default:
+				return values.get(0);
+		}
+	}
+
+	private Comparable not(Comparable value) {
+		if (value.equals(true)) {
+			return false;
+		} else if (value.equals(false)) {
+			return true;
+		} else {
+			return N;
+		}
+	}
+
+	private Comparable case_(List<Comparable> values) {
+		final int size;
+		final Comparable elseValue;
+		if (values.size() % 2 == 0) {
+			size = values.size();
+			elseValue = N;
+		} else {
+			size = values.size() - 1;
+			elseValue = Util.last(values);
+		}
+		for (int i = 0; i < size; i += 2) {
+			if (values.get(i).equals(true)) {
+				return values.get(i + 1);
+			}
+		}
+		return elseValue;
+	}
+
+	private BigDecimal number(Comparable comparable) {
+		return comparable instanceof BigDecimal
+				? (BigDecimal) comparable
+				: comparable instanceof BigInteger
+				? new BigDecimal((BigInteger) comparable)
+				: comparable instanceof Long
+				|| comparable instanceof Integer
+				|| comparable instanceof Short
+				? new BigDecimal(((Number) comparable).longValue())
+				: new BigDecimal(((Number) comparable).doubleValue());
+	}
+
+	private Comparable compare(List<Comparable> values, IntPredicate p) {
+		if (containsNull(values)) {
+			return N;
+		}
+		Comparable v0 = values.get(0);
+		Comparable v1 = values.get(1);
+
+		if (v0 instanceof Number && v1 instanceof NlsString) {
+			try {
+				v1 = new BigDecimal(((NlsString) v1).getValue());
+			} catch (NumberFormatException e) {
+				return false;
+			}
+		}
+		if (v1 instanceof Number && v0 instanceof NlsString) {
+			try {
+				v0 = new BigDecimal(((NlsString) v0).getValue());
+			} catch (NumberFormatException e) {
+				return false;
+			}
+		}
+		if (v0 instanceof Number) {
+			v0 = number(v0);
+		}
+		if (v1 instanceof Number) {
+			v1 = number(v1);
+		}
+		//noinspection unchecked
+		final int c = v0.compareTo(v1);
+		return p.test(c);
+	}
+
+	private boolean containsNull(List<Comparable> values) {
+		for (Comparable value : values) {
+			if (value == N) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** An enum that wraps boolean and unknown values and makes them
+	 * comparable. */
+	enum Truthy {
+		// Order is important; AND returns the min, OR returns the max
+		FALSE, UNKNOWN, TRUE;
+
+		static Truthy of(Comparable c) {
+			return c.equals(true) ? TRUE : c.equals(false) ? FALSE : UNKNOWN;
 		}
 
-
-		    /*
-		    switch (call.getKind()) {
-		    	case EQUALS:
-		    		return compare(values, c -> c == 0);
-		    case IS_DISTINCT_FROM:
-		      if (containsNull(values)) {
-		        return !values.get(0).equals(values.get(1));
-		      }
-		      // falls through NOT_EQUALS
-		    case NOT_EQUALS:
-		      return compare(values, c -> c != 0);
-		    case GREATER_THAN:
-		      return compare(values, c -> c > 0);
-		    case GREATER_THAN_OR_EQUAL:
-		      return compare(values, c -> c >= 0);
-		    case LESS_THAN:
-		      return compare(values, c -> c < 0);
-		    case LESS_THAN_OR_EQUAL:
-		      return compare(values, c -> c <= 0);
-		    case AND:
-		      return values.stream().map(Truthy::of).min(Comparator.naturalOrder())
-		          .get().toComparable();
-		    case OR:
-		      return values.stream().map(Truthy::of).max(Comparator.naturalOrder())
-		          .get().toComparable();
-		    case NOT:
-		      return not(values.get(0));
-		    case CASE:
-		      return case_(values);
-		    case IS_TRUE:
-		      return values.get(0).equals(true);
-		    case IS_NOT_TRUE:
-		      return !values.get(0).equals(true);
-		    case IS_NULL:
-		      return values.get(0).equals(N);
-		    case IS_NOT_NULL:
-		      return !values.get(0).equals(N);
-		    case IS_FALSE:
-		      return values.get(0).equals(false);
-		    case IS_NOT_FALSE:
-		      return !values.get(0).equals(false);
-		    case PLUS_PREFIX:
-		      return values.get(0);
-		    case MINUS_PREFIX:
-		      return containsNull(values) ? N
-		          : number(values.get(0)).negate();
-		    case PLUS:
-		      return containsNull(values) ? N
-		          : number(values.get(0)).add(number(values.get(1)));
-		    case MINUS:
-		      return containsNull(values) ? N
-		          : number(values.get(0)).subtract(number(values.get(1)));
-		    case TIMES:
-		      return containsNull(values) ? N
-		          : number(values.get(0)).multiply(number(values.get(1)));
-		    case DIVIDE:
-		      return containsNull(values) ? N
-		          : number(values.get(0)).divide(number(values.get(1)));
-		    case CAST:
-		      return cast(call, values);
-		    case COALESCE:
-		      return coalesce(call, values);
-		    case CEIL:
-		    case FLOOR:
-		      return ceil(call, values);
-		    case EXTRACT:
-		      return extract(call, values);
-		    default:
-		      throw new Exception("call " + call.getKind() + " not yet implemented.");
-		    }
-		    */
-		    
-		// TODO Auto-generated method stub
-		return null;
+		Comparable toComparable() {
+			switch (this) {
+				case TRUE: return true;
+				case FALSE: return false;
+				case UNKNOWN: return N;
+				default:
+					throw new AssertionError();
+			}
+		}
 	}
-
-	@Override
-	public Comparable visitOver(RexOver over) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitCorrelVariable(RexCorrelVariable correlVariable) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitDynamicParam(RexDynamicParam dynamicParam) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitRangeRef(RexRangeRef rangeRef) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitFieldAccess(RexFieldAccess fieldAccess) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitSubQuery(RexSubQuery subQuery) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitTableInputRef(RexTableInputRef fieldRef) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitPatternFieldRef(RexPatternFieldRef fieldRef) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-/*
- * 	@Override
- 
-	public Comparable visitInputRef(RexInputRef inputRef) {
-		// should not need this
-		
-		// verifies that this only references srcField - not supporting composite constraints for now
-		if(inputRef.getName().equals(srcField.getName()) && inputRef.getIndex() == srcField.getIndex())
-				return true;
-		return false;
-		
-	}
-
-	@Override
-	public Comparable visitLocalRef(RexLocalRef localRef) {
-		// N/A
-		return true;
-	}
-
-	@Override
-	public Comparable visitLiteral(RexLiteral literal) {
-		SqlTypeName type = literal.getTypeName();	 // TODO: may wish to validate against ColumnDefinition type
-
-		final Comparable v = literal.getValue();
-/*
-	 	// converting to org.apache.calcite.avatica.util.TimeUnitRange
-		switch (type) {
-         case DATE:
-         case TIME:
-         case TIMESTAMP:
-        	 	final Comparable value = literal.getValue();
-        	 	if(value instanceof GregorianCalendar) { // printed datetime
-        	 		GregorianCalendar calendar = (GregorianCalendar) value;
-        	 		Long timestamp = calendar.getTimeInMillis();
-        	 		
-        	 	}
-        	 return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
-         case FLOAT:
-         case DOUBLE:
-         case DECIMAL:
-				 Float bd = literal.getValueAs(Float.class);
-			 	return new String("Float(32, " + bd + ", PUBLIC)");
-         case INTEGER:
-         case BIGINT:
-        	 return new String("Integer(LENGTH_INT, " + RexLiteral.intValue(literal) + ", PUBLIC)" );	 
-         case BOOLEAN:
-        	 final Comparable boolValue = literal.getValue();
-
-        	 if(boolValue instanceof Boolean) {
-            	 String bitValue = "1";
-            	 if(((Boolean) boolValue).booleanValue() == false) 
-            		 bitValue = "0";
-            	 return new String("Bit(" + bitValue + ",  PUBLIC)");
-        	 }        	 
-         default: // try to convert it to an int
-        	System.out.println("Can't convert literal of type " + literal.getValue().getClass() +  " to smc!");
-        	System.exit(-1);
-        	return new String("Integer(32, " + RexLiteral.intValue(literal) + ", PUBLIC)" );
-              
-		 }
-		 
-		
-		
-		return true;
-	}
-
-	@Override
-	public Comparable visitCall(RexCall call) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitOver(RexOver over) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitCorrelVariable(RexCorrelVariable correlVariable) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitDynamicParam(RexDynamicParam dynamicParam) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitRangeRef(RexRangeRef rangeRef) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitFieldAccess(RexFieldAccess fieldAccess) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitSubQuery(RexSubQuery subQuery) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitTableInputRef(RexTableInputRef fieldRef) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Comparable visitPatternFieldRef(RexPatternFieldRef fieldRef) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-*/
-
 }
