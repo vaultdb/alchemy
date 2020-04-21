@@ -1,5 +1,9 @@
 package org.vaultdb.db.schema.constraints;
 
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.calcite.rel.type.RelDataType;
@@ -61,6 +65,8 @@ public class ConstraintVisitor   implements RexVisitor<Comparable> {
  *   <li>It is not well tested.
  * </ul>
  */
+	public static final String DATE_FORMAT = "yyyy-MM-dd";
+	public static DateFormat dateFormatter = new SimpleDateFormat(DATE_FORMAT);
 	private static final NullSentinel N = NullSentinel.INSTANCE;
 
 	public static final EnumSet<SqlKind> SUPPORTED_SQL_KIND =
@@ -349,20 +355,35 @@ public class ConstraintVisitor   implements RexVisitor<Comparable> {
 	// only supports casting to decimal
 	private Comparable cast(RexCall call, List<Comparable> values) {
 		System.out.println("CAST operator");
+
+		String stringValue;
+		if (values.get(0) instanceof NlsString){
+			stringValue = ((NlsString) values.get(0)).getValue();
+		} else if (values.get(0) instanceof String){
+			stringValue = (String) values.get(0);
+		} else {
+			return values.get(0);
+		}
+
 		switch (call.getType().getSqlTypeName().getName()){
 			case "DECIMAL":
-				String stringValue;
 				// TODO: consider scale and precision
-				if (values.get(0) instanceof NlsString){
-					stringValue = ((NlsString) values.get(0)).getValue();
-					return Double.valueOf(stringValue);
-				} else if (values.get(0) instanceof String){
-					stringValue = (String) values.get(0);
-					return Double.valueOf(stringValue);
-				}
-				return values.get(0);
+				return Double.valueOf(stringValue);
+			case "TIMESTAMP":
+			case "DATE":
+				return parseTimestampFromDateString(stringValue);
 			default:
 				return values.get(0);
+		}
+	}
+
+	public static Comparable parseTimestampFromDateString(String stringValue) {
+		try {
+			Date d = dateFormatter.parse(stringValue);
+			return new Timestamp(d.getTime());
+		} catch (ParseException e){
+			System.out.println(e);
+			return stringValue;
 		}
 	}
 

@@ -19,8 +19,8 @@ import org.vaultdb.util.Utilities;
 // for use in deriving cardinality bounds 
 // for intermediate results
 
-
-
+// TODO: precision and scale of doubles
+// TODO: use min and max bounds to determine unique cardinality
 
 public class ColumnDefinition<T> { 
 	
