@@ -202,6 +202,7 @@ ALTER TABLE part DROP CONSTRAINT IF EXISTS p_container_domain;
 -- partkey unique within [scalingfactor * 200,000], constraint based on sf of 0.1
 ALTER TABLE part ADD CONSTRAINT p_partkey_domain CHECK
  (p_partkey >= 1 and p_partkey <= 20000);
+
 select ('''almond''', '''antique''', '''aquamarine''', '''azure''', '''beige''', '''bisque''', '''black''', '''blanched''', '''blue''',
         '''blush''', '''brown''', '''burlywood''', '''burnished''', '''chartreuse''', '''chiffon''', '''chocolate''', '''coral''',
         '''cornflower''', '''cornsilk''', '''cream''', '''cyan''', '''dark''', '''deep''', '''dim''', '''dodger''', '''drab''', '''firebrick''',
@@ -270,6 +271,3 @@ ALTER TABLE region ADD CONSTRAINT r_regionkey_name_domain CHECK
  (r_regionkey = 2 and r_name = 'ASIA') or
  (r_regionkey = 3 and r_name = 'EUROPE') or
  (r_regionkey = 4 and r_name = 'MIDDLE EAST'));
-
-
-
