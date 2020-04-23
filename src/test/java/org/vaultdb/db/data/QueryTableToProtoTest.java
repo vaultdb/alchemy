@@ -1,6 +1,5 @@
 package org.vaultdb.db.data;
 
-import org.vaultdb.BaseTest;
 import org.vaultdb.TpcHBaseTest;
 import org.vaultdb.executor.plaintext.SqlQueryExecutor;
 

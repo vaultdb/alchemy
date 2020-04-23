@@ -14,7 +14,7 @@ import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
 import org.vaultdb.util.CodeGenUtils;
 
@@ -112,14 +112,10 @@ public class SecureRelRecordType implements Serializable {
 	
 	
 
-	public void initializeStatistics() {
-		for(SecureRelDataTypeField fields : this.getSecureFieldList()) {
-			fields.initializeStatistics();
-		}
-	}
+
 	
 	public long getCardinalityBound() {
-		return secureFields.get(0).getStatistics().getCardinality();
+		return secureFields.get(0).getColumnDefinition().getCardinality();
 	}
 	
 	// iterate over src attributes and invoke copy constructor on them
@@ -134,7 +130,7 @@ public class SecureRelRecordType implements Serializable {
 
 		while(dstItr.hasNext()) {
 			SecureRelDataTypeField dstField = dstItr.next();
-			dstField.initializeStatistics(srcItr.next().getStatistics());
+			dstField.initializeStatistics(srcItr.next().getColumnDefinition());
 		}
 		
 	}

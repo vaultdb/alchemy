@@ -6,12 +6,8 @@ import java.util.List;
 import org.apache.calcite.adapter.jdbc.JdbcTableScan;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Pair;
-import org.vaultdb.db.data.QueryTable;
-import org.vaultdb.db.data.Tuple;
-import org.vaultdb.db.data.field.IntField;
 import org.vaultdb.db.schema.SystemCatalog;
 import org.vaultdb.executor.config.ExecutionMode;
-import org.vaultdb.executor.plaintext.SqlQueryExecutor;
 import org.vaultdb.plan.SecureRelNode;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
@@ -49,7 +45,7 @@ public class SeqScan extends Operator {
 	@Override
 	public void initializeStatistics() {
 		// infer from base relation
-		baseRelNode.getSchema().initializeStatistics();
+		baseRelNode.getSchema().initializeStatistics(inSchema);
 	}
 	
 	private List<String> getOrderableFields() {

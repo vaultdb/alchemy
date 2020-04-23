@@ -1,12 +1,9 @@
 package org.vaultdb.planner;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.apache.calcite.plan.RelOptUtil;
 import org.vaultdb.BaseTest;
 import org.vaultdb.codegen.QueryCompiler;
-import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.executor.step.ExecutionStep;
 import org.vaultdb.plan.SecureRelRoot;
 

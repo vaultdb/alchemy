@@ -6,8 +6,8 @@ import java.util.BitSet;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.vaultdb.type.SecureRelDataTypeField;
 
-public class BooleanField extends Field implements Serializable {
-public boolean value;
+public class BooleanField extends Field<Boolean> implements Serializable {
+
 	
 	public BooleanField(SecureRelDataTypeField attr, boolean v, SqlTypeName sqlType) {
 		super(attr, sqlType);
@@ -27,9 +27,6 @@ public boolean value;
 		return (value) ? "1" : "0";
 	}
 	
-	public boolean getValue() {
-		return value;
-	}
 	
 	@Override
 	public String toString() {
@@ -56,7 +53,7 @@ public boolean value;
 
 	
 	@Override
-	public int childCompare(Field f) {
+	public int childCompare(Field<Boolean> f) {
 		if(f instanceof BooleanField) {
 			Boolean lhs = value;
 			Boolean rhs = ((BooleanField) f).getValue();

@@ -6,12 +6,8 @@ import org.apache.commons.io.FileUtils;
 import org.vaultdb.BaseTest;
 import org.vaultdb.codegen.QueryCompiler;
 import org.vaultdb.config.SystemConfiguration;
-import org.vaultdb.db.data.QueryTable;
-import org.vaultdb.executor.config.ConnectionManager;
-import org.vaultdb.executor.plaintext.SqlQueryExecutor;
 import org.vaultdb.executor.step.ExecutionStep;
 import org.vaultdb.plan.SecureRelRoot;
-import org.vaultdb.type.SecureRelRecordType;
 import org.vaultdb.util.EmpJniUtilities;
 import org.vaultdb.util.Utilities;
 

@@ -14,7 +14,8 @@ import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.vaultdb.db.schema.statistics.ObliviousFieldStatistics;
+import org.vaultdb.db.schema.constraints.ColumnDefinition;
+import org.vaultdb.db.schema.constraints.ColumnDefinitionFactory;
 
 // thin wrapper on top of RelDataTypeField for attaching security policy to an attribute
 // how do we call this at schema construction time?
@@ -33,7 +34,7 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
 
   SecurityPolicy policy = SecurityPolicy.Private;
   RelDataTypeField baseField;
-  ObliviousFieldStatistics statistics;
+  ColumnDefinition<?> constraints = null; // TODO: initialize this
   private boolean aliased;
   private String unaliasedName;
 
@@ -46,7 +47,8 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
   public SecureRelDataTypeField(String name, int index, RelDataType type) {
     super(name, index, type);
     filters = new ArrayList<LogicalFilter>();
-    // statistics = new ObliviousFieldStatistics(this);
+
+
   }
 
   public SecureRelDataTypeField(
@@ -56,16 +58,17 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     policy = secPolicy;
     filters = new ArrayList<LogicalFilter>();
     storedTable = aStoredTable;
-    // statistics = new ObliviousFieldStatistics(this);
+
+  
+ 
   }
 
   public SecureRelDataTypeField(
-      RelDataTypeField baseField, SecurityPolicy secPolicy, ObliviousFieldStatistics theStats) {
+      RelDataTypeField baseField, SecurityPolicy secPolicy, ColumnDefinition theStats) {
     super(baseField.getName(), baseField.getIndex(), baseField.getType());
     this.baseField = baseField;
     policy = secPolicy;
     filters = new ArrayList<LogicalFilter>();
-    statistics = theStats;
   }
 
   public SecureRelDataTypeField(
@@ -82,12 +85,11 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     setStoredAttribute(aStoredAttribute);
     filters = new ArrayList<LogicalFilter>();
     addFilter(aFilter);
-    // statistics = new ObliviousFieldStatistics(this);
 
   }
 
   // quasi-copy constructor
-  public SecureRelDataTypeField(RelDataTypeField aBaseField, SecureRelDataTypeField src) {
+  public SecureRelDataTypeField(RelDataTypeField aBaseField, SecureRelDataTypeField src)  {
     super(aBaseField.getName(), src.getBaseField().getIndex(), src.getBaseField().getType());
     if (!src.getName().equals(aBaseField.getName())) {
       aliased = true;
@@ -98,7 +100,10 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     storedTable = src.getStoredTable();
     storedAttribute = src.getStoredAttribute();
     filters = new ArrayList<LogicalFilter>(src.getFilters());
-    statistics = src.statistics;
+    // TODO: deep copy constraints
+    constraints = src.getColumnDefinition();
+
+
   }
 
   private void writeObject(ObjectOutputStream out) throws IOException {
@@ -138,12 +143,14 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
   }
 
   // for table scans
-  public void initializeStatistics() {
-    statistics = new ObliviousFieldStatistics(this);
+  public void initializeConstraints() throws Exception {
+	  constraints = ColumnDefinitionFactory.get(this);
   }
 
-  public void initializeStatistics(ObliviousFieldStatistics stats) {
-    statistics = new ObliviousFieldStatistics(this, stats);
+  // copy constructor
+  @SuppressWarnings("unchecked")
+public void initializeStatistics(ColumnDefinition<?> c) {
+    constraints = new ColumnDefinition(this, c);
   }
 
   @Override
@@ -199,8 +206,8 @@ public class SecureRelDataTypeField extends RelDataTypeFieldImpl implements Seri
     return storedAttribute;
   }
 
-  public ObliviousFieldStatistics getStatistics() {
-    return statistics;
+  public ColumnDefinition<?> getColumnDefinition() {
+    return constraints;
   }
 
   public void setStoredAttribute(String storedAttribute) {

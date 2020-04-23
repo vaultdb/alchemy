@@ -59,7 +59,7 @@ public class SecureRelToSqlConverter extends ExtendedRelToSqlConverter {
 	}
 	
 	@Override
-	public Result visitChild(int i, RelNode e) {
+	public Result visitChild(int i, RelNode e, boolean isAnon) {
 		if (needsRewrite) {
 			needsRewrite = false;
 			return addOrderBy(e);

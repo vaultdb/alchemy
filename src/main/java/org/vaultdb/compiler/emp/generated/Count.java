@@ -14,10 +14,6 @@ import java.util.Iterator;
 
 import org.vaultdb.compiler.emp.EmpProgram;
 import org.vaultdb.config.SystemConfiguration;
-import org.vaultdb.db.data.QueryTable;
-import org.vaultdb.executor.config.ConnectionManager;
-import org.vaultdb.executor.plaintext.SqlQueryExecutor;
-import org.vaultdb.type.SecureRelRecordType;
 import org.vaultdb.util.Utilities;
 
 

@@ -2,14 +2,12 @@ package org.vaultdb.executor.emp.stub;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.List;
 
 import org.vaultdb.BaseTest;
 import org.vaultdb.compiler.emp.EmpBuilder;
 import org.vaultdb.compiler.emp.EmpRunnable;
 import org.vaultdb.util.EmpJniUtilities;
-import org.vaultdb.util.Utilities;
 
 public class EmpJniLocalTest extends BaseTest {
     final String fullyQualifiedClassName = "org.vaultdb.compiler.emp.generated.EmpJniDemo";
@@ -26,8 +24,7 @@ public class EmpJniLocalTest extends BaseTest {
         EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort);
         EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, empPort);
 
-        EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
-        builder.compile();
+        EmpJniUtilities.buildEmpProgram(fullyQualifiedClassName);
 
         Thread alice = new Thread(aliceRunnable);
         alice.start();

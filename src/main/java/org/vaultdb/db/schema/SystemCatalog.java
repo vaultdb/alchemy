@@ -1,9 +1,22 @@
 package org.vaultdb.db.schema;
 
+import org.apache.calcite.adapter.java.JavaTypeFactory;
+import org.apache.calcite.jdbc.CalciteConnection;
+import org.apache.calcite.rel.RelReferentialConstraint;
+import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rel.type.RelRecordType;
+import org.apache.calcite.schema.SchemaPlus;
+import org.apache.calcite.schema.Statistic;
+import org.apache.calcite.schema.Table;
+import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
+import org.apache.calcite.util.mapping.IntPair;
 import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.db.schema.constraints.IntegrityConstraints;
+import org.vaultdb.db.schema.constraints.TableDefinition;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.config.WorkerConfiguration;
+import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelDataTypeField.SecurityPolicy;
 
 import java.sql.Connection;
@@ -14,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 // decorator for calcite schema
 // adds management of security policy for attributes
@@ -31,14 +45,13 @@ public class SystemCatalog {
     // TODO: extend this for composite keys    
     Map<String, String> partitionBy;
     
-    // primary keys
-    // <table, list<attrs> >
-    
-    Map<String, List<String>> primaryKeys;
-    
+
     
     Map<String, Pair<Long, Long> > tableCardinalities; // size of alice and bob's inputs
+
+    Map<String, TableDefinition> tableConstraints;
     
+    SchemaPlus sharedSchema;
     
     static SystemCatalog instance;
     
@@ -46,30 +59,34 @@ public class SystemCatalog {
     
     protected SystemCatalog(WorkerConfiguration config) throws Exception {
 		accessPolicies = new HashMap<String, Map<String, SecurityPolicy>>();
+		
+		sharedSchema = SystemConfiguration.getInstance().getPdfSchema();
+		
 		String publicQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='public_attribute'";
 		String protectedQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='protected_attribute'";
 		String partitionByQuery = "SELECT table_name, column_name FROM information_schema.column_privileges WHERE grantee='partitioned_on'";
 		String replicatedTablesQuery = "SELECT table_name FROM information_schema.table_privileges WHERE grantee='replicated'";
-		String primaryKeysQuery = "SELECT pg_class.relname, pg_attribute.attname\n "
-				+ "FROM pg_index, pg_class, pg_attribute, pg_namespace\n "
-				+ "WHERE indrelid = pg_class.oid AND "
-				+ "pg_namespace.nspname = 'public' AND "
-				+ "pg_class.relnamespace = pg_namespace.oid AND "
-				+  "pg_attribute.attrelid = pg_class.oid AND "
-				+  "pg_attribute.attnum = any(pg_index.indkey) AND indisprimary";
+
+		
 		
 		connections = ConnectionManager.getInstance();
 		
+		
 		Connection dbConnection = config.getDbConnection();
 
+	   
+	    
 		initializeSecurityPolicy(publicQuery, dbConnection, SecurityPolicy.Public);
 		initializeSecurityPolicy(protectedQuery, dbConnection, SecurityPolicy.Protected);
 		initializeReplicatedTables(replicatedTablesQuery, dbConnection);
 		initializePartitioningKeys(partitionByQuery, dbConnection);
-		initializePrimaryKeys(primaryKeysQuery, dbConnection);
+		
 		initializeTableCardinalities(dbConnection);
 		
 		dbConnection.close();
+		
+		
+		
 	}
 	
     private void initializeTableCardinalities(Connection dbConnection) throws SQLException, ClassNotFoundException {
@@ -144,33 +161,22 @@ public class SystemCatalog {
     	return counts;
     }
 
-	private void initializePrimaryKeys(String sql, Connection c) throws SQLException {
-    	Statement st = c.createStatement();
-    	
-    	ResultSet rs = st.executeQuery(sql);
+    // primary  keys and integrity constraints
+    // do integrity constraints separately
+	public void initializeConstraints() throws Exception {
 
-    	primaryKeys = new HashMap<String, List<String>>();
-    	
-    	while (rs.next()) {
-			String table = rs.getString(1);
-			String attr = rs.getString(2);
-			
-			if(primaryKeys.containsKey(table)) {
-				primaryKeys.get(table).add(attr);
-			}
-			else {
-				List<String> keys = new ArrayList<String>();
-				keys.add(attr);
-				primaryKeys.put(table, keys);
-			}
+		Set<String>  tables = sharedSchema.getTableNames();
+		tableConstraints = new HashMap<String, TableDefinition>();
 		
-    	}
-    	
-    	rs.close();
-    	st.close();
-    	
-    	
+		for(String tableName : tables) {
+			TableDefinition tableDef = new TableDefinition(tableName, this);
+			tableConstraints.put(tableName, tableDef);
+		} 
+
 	}
+	
+	
+	
 
 	private void initializePartitioningKeys(String sql, Connection c) throws SQLException {
 	
@@ -213,6 +219,9 @@ public class SystemCatalog {
     	if(instance == null) {
     		SystemConfiguration conf = SystemConfiguration.getInstance();
     		instance = new SystemCatalog(conf.getHonestBrokerConfig());
+    		
+    		// needs to run after constructor
+    		instance.initializeConstraints();
     	}
     	return instance;
     }
@@ -260,12 +269,37 @@ public class SystemCatalog {
 		return replicatedTables.contains(tableName);
 	}
 	
-	public List<String> getPrimaryKey(String tableName) {
-		return primaryKeys.get(tableName);
+	// returns first entry for tableName
+	// TODO: tighten this up for multiple unique keys
+	public List<SecureRelDataTypeField> getPrimaryKey(  String tableName) {
+		if(tableConstraints.containsKey(tableName)) {
+			return tableConstraints.get(tableName).getUniqueKey(0);
+		}
+
+		return null;
 	}
+	
 	
 	public String getPartitionKey(String tableName) {
 		return partitionBy.get(tableName);
 	}
+	
+	
+	// foreign key lookup
+	// default case, returns first one
+	public Map<SecureRelDataTypeField, SecureRelDataTypeField>  getIntegrityConstraints(String tableName) {
+		return getIntegrityConstraints(tableName, 0);
+	}
+
+	public Map<SecureRelDataTypeField, SecureRelDataTypeField> getIntegrityConstraints(String tableName, int i) {
+		TableDefinition table = tableConstraints.get(tableName);
+		if(table == null)
+			return null;
+		
+		return table.getIntegrityConstraint(i);
+		
+	}
+	
+	
 	
 }

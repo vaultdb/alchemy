@@ -9,21 +9,20 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 
-public class IntField extends Field implements Serializable {
+public class IntField extends Field<Long> implements Serializable {
 
   /** */
   private static final long serialVersionUID = -4887316771502090772L;
 
-  public long value;
 
-  public IntField(SecureRelDataTypeField attr, int v, SqlTypeName sqlType) {
+  public IntField(SecureRelDataTypeField attr, Long v, SqlTypeName sqlType) {
     super(attr, sqlType);
     value = v;
   }
 
   public IntField(SecureRelDataTypeField attr, SqlTypeName sqlType) {
     super(attr, sqlType);
-    value = 0;
+    value = 0L;
   }
 
   @Override
@@ -38,9 +37,6 @@ public class IntField extends Field implements Serializable {
     return binString;
   }
 
-  public long getValue() {
-    return value;
-  }
 
   @Override
   public String toString() {
@@ -65,11 +61,9 @@ public class IntField extends Field implements Serializable {
   }
 
   @Override
-  public int childCompare(Field f) {
+  public int childCompare(Field<Long> f) {
     if (f instanceof IntField) {
-      Long lhs = new Long(value);
-      Long rhs = new Long(((IntField) f).getValue());
-      return lhs.compareTo(rhs);
+      return value.compareTo(f.value);
     }
     return 0;
   }
@@ -77,7 +71,7 @@ public class IntField extends Field implements Serializable {
   @Override
   public void setValue(String source, int sourceOffset) {
     String rawBits = source.substring(sourceOffset, sourceOffset + this.size());
-    value = Integer.parseInt(rawBits, 2);
+    value = Long.parseLong(rawBits, 2);
   }
 
   public void setValue(long newValue) {
@@ -90,7 +84,7 @@ public class IntField extends Field implements Serializable {
 
   @Override
   public void deserialize(BitSet src) {
-    value = 0;
+    value = 0L;
     boolean b;
 
     for (int i = 0; i < this.size(); ++i) {

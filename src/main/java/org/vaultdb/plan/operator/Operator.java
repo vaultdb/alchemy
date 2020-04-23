@@ -9,7 +9,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.util.Pair;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.vaultdb.codegen.CodeGenerator;
 import org.vaultdb.codegen.plaintext.PlainOperator;
 import org.vaultdb.codegen.smc.operator.SecureOperator;
@@ -629,7 +629,7 @@ public abstract class Operator implements CodeGenerator {
     // find min cardinality for bound
     for (SecureRelDataTypeField f : getSchema().getSecureFieldList()) {
 
-      localCard = f.getStatistics().getCardinality();
+      localCard = f.getColumnDefinition().getCardinality();
       if (localCard < minCard && localCard != -1) {
         minCard = localCard;
       }
@@ -637,7 +637,7 @@ public abstract class Operator implements CodeGenerator {
 
     // copy it to all fields in schema to make it consistent
     for (SecureRelDataTypeField f : getSchema().getSecureFieldList()) {
-      f.getStatistics().setCardinality(minCard);
+      f.getColumnDefinition().setCardinality(minCard);
     }
   }
 

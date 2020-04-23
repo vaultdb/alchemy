@@ -29,7 +29,7 @@ public class ExtendedRelToSqlConverter extends RelToSqlConverter {
 			 list.add(SqlSelectKeyword.DISTINCT.symbol(select.getParserPosition()));
 			 select.setOperand(0, list);
 			 
-			 final Builder builder = new Builder(e, new ArrayList<Clause>(), select, x.qualifiedContext(), null);
+			 final Builder builder = new Builder(e, new ArrayList<Clause>(), select, x.qualifiedContext(), false, null);
 			Result res = builder.result();
 			return res;
 		}

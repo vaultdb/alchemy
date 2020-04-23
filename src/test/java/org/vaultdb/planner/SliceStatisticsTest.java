@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.junit.Test;
 import org.vaultdb.db.data.Tuple;
+import org.vaultdb.db.data.field.FieldFactory;
 import org.vaultdb.db.data.field.IntField;
 import org.vaultdb.plan.execution.slice.statistics.SliceStatistics;
 import org.vaultdb.plan.execution.slice.statistics.StatisticsCollector;
@@ -173,7 +174,8 @@ public class SliceStatisticsTest extends SliceKeyTest {
 		
 		SecureRelDataTypeField sPrime = new SecureRelDataTypeField(src, 0, null);
 		for(int i = 0; i < fields.length; ++i) {
-			IntField intField = new IntField(sPrime, fields[i], SqlTypeName.INTEGER);
+			IntField intField = (IntField) FieldFactory.get(sPrime);
+			intField.setValue(fields[i]);
 			t.addField(intField);
 		}
 		

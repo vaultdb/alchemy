@@ -157,9 +157,8 @@ public class TpcHRunnableTest extends TpcHBaseTest {
 	    SystemConfiguration.getInstance().resetCounters();
 	    
 	    logger.info("TpcHRunnableTest::" + testName + " is disabled pending code generator development.");
-	    return;
 	    
-	    /*SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
+	    SecureRelRoot secRoot = new SecureRelRoot(testName, sql);
 
 	    logger.info("Initial schema: " + secRoot.getPlanRoot().getSchema() );
 	    QueryCompiler qc = new QueryCompiler(secRoot);
@@ -171,7 +170,7 @@ public class TpcHRunnableTest extends TpcHBaseTest {
 	    assertTrue(FileUtilities.fileExists(jniTarget));
 	    
 	    EmpExecutor exec = new EmpExecutor(qc);
-	    exec.runForTesting(); */
+	    exec.runForTesting(); 
 		  
 	}
 }

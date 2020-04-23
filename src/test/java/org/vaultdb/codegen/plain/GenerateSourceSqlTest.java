@@ -6,7 +6,6 @@ import java.util.Map;
 import org.vaultdb.BaseTest;
 import org.vaultdb.codegen.QueryCompiler;
 import org.vaultdb.config.SystemConfiguration;
-import org.vaultdb.executor.step.ExecutionStep;
 import org.vaultdb.plan.SecureRelRoot;
 
 public class GenerateSourceSqlTest extends BaseTest {

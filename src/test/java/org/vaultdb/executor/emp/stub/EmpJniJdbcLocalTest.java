@@ -2,7 +2,6 @@ package org.vaultdb.executor.emp.stub;
 
 import org.vaultdb.BaseTest;
 import org.vaultdb.compiler.emp.EmpBuilder;
-import org.vaultdb.compiler.emp.EmpRunnable;
 import org.vaultdb.compiler.emp.EmpRunnableQueryTable;
 import org.vaultdb.protos.DBQueryProtos;
 import org.vaultdb.util.EmpJniUtilities;
@@ -26,8 +25,7 @@ public class EmpJniJdbcLocalTest extends BaseTest {
     EmpRunnableQueryTable aliceRunnable = new EmpRunnableQueryTable(fullyQualifiedClassName, 1, empPort);
     EmpRunnableQueryTable bobRunnable = new EmpRunnableQueryTable(fullyQualifiedClassName, 2, empPort);
 
-    EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
-    builder.compile();
+    EmpJniUtilities.buildEmpProgram(fullyQualifiedClassName);
 
     Thread alice = new Thread(aliceRunnable);
     alice.start();

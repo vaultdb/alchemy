@@ -9,7 +9,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
-import org.vaultdb.db.schema.statistics.ObliviousFieldStatistics;
+import org.vaultdb.db.schema.constraints.ColumnDefinition;
 import org.vaultdb.plan.SecureRelNode;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
@@ -113,7 +113,7 @@ public class Filter extends Operator {
 			List<Long> newDomain = new ArrayList<Long>();
 			newDomain.add(targetValue);
 			
-			ObliviousFieldStatistics stats = dstField.getStatistics();
+			ColumnDefinition stats = dstField.getColumnDefinition();
 			stats.setDomain(newDomain);
 			stats.setDistinctCardinality(1);
 			stats.setMin(targetValue);
@@ -131,7 +131,7 @@ public class Filter extends Operator {
 		
 
 		for(SecureRelDataTypeField f : filteredFields){
-			f.getStatistics().setMaxMultiplicity(lowestMaxMultiplicity);
+			f.getColumnDefinition().setMaxMultiplicity(lowestMaxMultiplicity);
 		}
 		
 		// ensure that all field statistics have the same cardinality bound

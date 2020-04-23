@@ -1,11 +1,9 @@
 package org.vaultdb.codegen.smc.operator;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.calcite.rex.RexNode;
-import org.vaultdb.codegen.smc.operator.support.ProcessingStep;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.plan.operator.Join;
 import org.vaultdb.plan.operator.Operator;

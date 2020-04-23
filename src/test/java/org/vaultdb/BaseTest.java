@@ -44,7 +44,7 @@ public abstract class BaseTest extends TestCase {
 		ConnectionManager.reset();
 
 		
-		config = SystemConfiguration.getInstance();
+		config = SystemConfiguration.getInstance("healthlnk");
 		catalog = SystemCatalog.getInstance();
 		parser = new SqlStatementParser();
 		honestBroker = SystemConfiguration.getInstance().getHonestBrokerConfig();

@@ -1,7 +1,5 @@
 package org.vaultdb.codegen;
 
-import java.util.Map;
-
 import org.vaultdb.executor.config.ExecutionMode;
 import org.vaultdb.type.SecureRelRecordType;
 

@@ -22,7 +22,6 @@ import org.vaultdb.codegen.smc.operator.support.UnionMethod;
 import org.vaultdb.compiler.emp.EmpBuilder;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.executor.config.ConnectionManager;
-import org.vaultdb.executor.config.ExecutionMode;
 import org.vaultdb.executor.config.RunConfig;
 import org.vaultdb.executor.smc.ExecutionSegment;
 import org.vaultdb.executor.step.ExecutionStep;
@@ -211,8 +210,8 @@ public class QueryCompiler {
   public void compileEmpCode() throws Exception {
     if (!codeGenerated) writeOutEmpFile();
 
-    EmpBuilder builder = new EmpBuilder(queryId);
-    builder.compile();
+    String className = EmpJniUtilities.getFullyQualifiedClassName(queryId);
+    EmpJniUtilities.buildEmpProgram(className);
   }
 
   // generate program flow by traversing the tree bottom-up

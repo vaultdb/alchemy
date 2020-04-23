@@ -2,12 +2,8 @@ package org.vaultdb.plan.operator;
 
 import java.util.List;
 
-import org.apache.calcite.rel.logical.LogicalAggregate;
-import org.apache.calcite.util.ImmutableBitSet;
 import org.vaultdb.plan.SecureRelNode;
 import org.vaultdb.type.SecureRelDataTypeField;
-
-import com.google.common.collect.ImmutableList;
 
 public class Distinct extends Operator {
 

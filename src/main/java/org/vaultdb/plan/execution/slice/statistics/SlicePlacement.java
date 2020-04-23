@@ -4,25 +4,25 @@ import java.util.Comparator;
 
 // basically a pair for keeping track of where a slice key has values
 public class SlicePlacement implements Comparator<SlicePlacement>, Comparable<SlicePlacement> {
-	private int siteId;
-	private int count;
+	private long siteId;
+	private long count;
 	
 	
-	public SlicePlacement(int s, int c) {
-		siteId = s;
-		count = c;
+	public SlicePlacement(long siteId2, long valueCount) {
+		siteId = siteId2;
+		count = valueCount;
 	}
 	
-	public int getSiteId() {
+	public long getSiteId() {
 		return siteId;
 	}
 	public void setSiteId(int siteId) {
 		this.siteId = siteId;
 	}
-	public int getCount() {
+	public long getCount() {
 		return count;
 	}
-	public void setCount(int count) {
+	public void setCount(long count) {
 		this.count = count;
 	}
 	
@@ -44,12 +44,12 @@ public class SlicePlacement implements Comparator<SlicePlacement>, Comparable<Sl
 
 	@Override
 	public int compareTo(SlicePlacement o) {
-		int cmp = compareInt(siteId, o.siteId);
+		int cmp = compareLong(siteId, o.siteId);
 		if(cmp != 0) {
 			return cmp;
 		}
 		
-		return compareInt(count, o.count);
+		return compareLong(count, o.count);
 		
 	}
 
@@ -58,9 +58,9 @@ public class SlicePlacement implements Comparator<SlicePlacement>, Comparable<Sl
 		return o1.compareTo(o2);
 	}
 
-	private int compareInt(int lhs, int rhs) {
-		Integer l = new Integer(lhs);
-		Integer r = new Integer(rhs);
+	private int compareLong(long lhs, long rhs) {
+		Long l = Long.valueOf(lhs);
+		Long r = Long.valueOf(rhs);
 		return l.compareTo(r);
 	}
 	

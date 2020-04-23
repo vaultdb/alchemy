@@ -10,16 +10,14 @@ import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.BitSet;
 
-public class TimestampField extends Field implements Serializable {
+public class TimestampField extends Field<Timestamp> implements Serializable {
 
   /** */
   private static final long serialVersionUID = -6750183365124209223L;
 
-  public Timestamp time;
-
   TimestampField(SecureRelDataTypeField attr, Timestamp timestamp, SqlTypeName sqlType) {
     super(attr, sqlType);
-    time = timestamp;
+    value = timestamp;
     timestamp.getTime();
   }
 
@@ -29,7 +27,7 @@ public class TimestampField extends Field implements Serializable {
 
   @Override
   public String serializeToBinaryString() {
-    long epoch = time.getTime();
+    long epoch = value.getTime();
     String binString = Long.toBinaryString(epoch);
 
     while (binString.length() < this.size()) {
@@ -40,19 +38,19 @@ public class TimestampField extends Field implements Serializable {
   }
 
   public String toString() {
-    return new String(Long.toString(time.getTime()));
+    return new String(Long.toString(value.getTime()));
   }
 
   @Override
   public int hashCode() {
-    Long hash = time.getTime();
+    Long hash = value.getTime();
     return hash.hashCode();
   }
 
   public boolean equals(Object o) {
     if (o instanceof IntField) {
       TimestampField field = (TimestampField) o;
-      if (field.time.getTime() == this.time.getTime()) {
+      if (field.value.getTime() == this.value.getTime()) {
         return true;
       }
     }
@@ -62,8 +60,10 @@ public class TimestampField extends Field implements Serializable {
   @Override
   public int childCompare(Field f) {
     if (f instanceof TimestampField) {
-      Long lhs = new Long(time.getTime());
-      Long rhs = new Long(((TimestampField) f).time.getTime());
+      Long lhs = value.getTime();
+      TimestampField rhsField = (TimestampField) f;
+      
+      Long rhs = rhsField.value.getTime();
       return lhs.compareTo(rhs);
     }
     return 0;
@@ -73,7 +73,7 @@ public class TimestampField extends Field implements Serializable {
   public void setValue(String source, int sourceOffset) {
     String rawBits = source.substring(sourceOffset, sourceOffset + this.size());
     Long epoch = Long.parseLong(rawBits, 2);
-    time = new Timestamp(epoch);
+    value = new Timestamp(epoch);
   }
 
   @Override
@@ -88,19 +88,19 @@ public class TimestampField extends Field implements Serializable {
       epoch = (epoch << 1) | (b ? 1 : 0);
     }
 
-    time = new Timestamp(epoch);
+    value = new Timestamp(epoch);
   }
 
   @Override
   public byte[] getBytes() {
     ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-    buffer.putLong(time.getTime()); // serialize to epoch
+    buffer.putLong(value.getTime()); // serialize to epoch
     return buffer.array();
   }
 
   public DBQueryProtos.ColumnVal toProto() {
     DBQueryProtos.ColumnVal.Builder columnValBuilder = DBQueryProtos.ColumnVal.newBuilder();
-    columnValBuilder.setTimeStampField(time.getTime());
+    columnValBuilder.setTimeStampField(value.getTime());
     // TODO(madhavsuresh): make this lineup with existing interface, this aligns with the OID fields
     // from postgres as opposed to anything in vaultdb-core
     columnValBuilder.setType(DBQueryProtos.OIDType.TIMESTAMP);

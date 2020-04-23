@@ -3,6 +3,7 @@ package org.vaultdb.compiler.emp;
 import org.vaultdb.BaseTest;
 import org.vaultdb.compiler.emp.EmpBuilder;
 import org.vaultdb.compiler.emp.EmpProgram;
+import org.vaultdb.util.EmpJniUtilities;
 
 
 public class EmpBuilderTest extends BaseTest {
@@ -32,8 +33,9 @@ public class EmpBuilderTest extends BaseTest {
 	}
 
 	protected void testCase(String className, String expectedClass) throws Exception {		
+		EmpJniUtilities.buildEmpProgram(className);
+
 		EmpBuilder builder = new EmpBuilder(className);
-		builder.compile();
 		EmpProgram instance = builder.getClass(1, 54321);
 		assert(instance != null);
 		

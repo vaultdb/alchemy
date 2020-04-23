@@ -134,9 +134,8 @@ public class EmpJniUtilities {
     EmpRunnable aliceRunnable = new EmpRunnable(fullyQualifiedClassName, 1, empPort);
     EmpRunnable bobRunnable = new EmpRunnable(fullyQualifiedClassName, 2, empPort);
 
-    EmpBuilder builder = new EmpBuilder(fullyQualifiedClassName);
-    builder.compile();
-
+    EmpJniUtilities.buildEmpProgram(fullyQualifiedClassName);
+ 
     Thread alice = new Thread(aliceRunnable);
     alice.start();
 
@@ -319,4 +318,20 @@ public class EmpJniUtilities {
       return className;
     }
   }
+  
+	public static void buildEmpProgram(String className) throws Exception {
+		// fork and exec EmpBuilder to make it see the new files
+		
+
+		String mvnLocation = SystemConfiguration.getInstance().getProperty("maven-location");
+		
+		Logger logger = SystemConfiguration.getInstance().getLogger();
+		String command =  mvnLocation +  " exec:java -Dexec.mainClass=\"org.vaultdb.compiler.emp.EmpBuilder\" -Dexec.args=\"" + className + "\"";
+		logger.info("Building " + className + " with command: " + command);
+		Utilities.runCmd(command);
+		
+		
+
+	}
+	
 }

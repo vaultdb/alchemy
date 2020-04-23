@@ -1,4 +1,4 @@
-package org.smcql.schema.statistics;
+package org.vaultdb.schema.constraints;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,23 +7,25 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.smcql.BaseTest;
-import org.smcql.config.SystemConfiguration;
-import org.smcql.db.data.QueryTable;
-import org.smcql.db.data.Tuple;
-import org.smcql.db.data.field.IntField;
-import org.smcql.db.schema.statistics.ObliviousFieldStatistics;
-import org.smcql.executor.config.ConnectionManager;
-import org.smcql.executor.plaintext.SqlQueryExecutor;
-import org.smcql.type.SecureRelDataTypeField;
-import org.smcql.type.SecureRelRecordType;
-import org.smcql.util.Utilities;
+import org.vaultdb.BaseTest;
+import org.vaultdb.config.SystemConfiguration;
+import org.vaultdb.db.data.QueryTable;
+import org.vaultdb.db.data.Tuple;
+import org.vaultdb.db.data.field.IntField;
+import org.vaultdb.db.schema.constraints.ColumnConstraints;
+import org.vaultdb.db.schema.constraints.ColumnConstraintsFactory;
+import org.vaultdb.executor.config.ConnectionManager;
+import org.vaultdb.executor.plaintext.SqlQueryExecutor;
+import org.vaultdb.type.SecureRelDataTypeField;
+import org.vaultdb.type.SecureRelRecordType;
+import org.vaultdb.util.Utilities;
 
-public class ObliviousFieldStatisticsTest  extends BaseTest  {
+public class ColumnConstraintsTest  extends BaseTest  {
 
 	protected void setUp() throws Exception {
-		String setupFile = Utilities.getSMCQLRoot() + "/conf/setup.localhost";
-		System.setProperty("smcql.setup", setupFile);
+		//String setupFile = Utilities.getVaultDBRoot()+ "/conf/setup.localhost";
+		//System.setProperty("vaultdb.setup", setupFile);
+		super.setUp();
 	}
 
 	
@@ -31,7 +33,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "diagnoses";
 		String attr = "patient_id";
 		
-		ObliviousFieldStatistics stats = getExpectedStatistics(table, attr);
+		ColumnConstraints<Long> stats = getExpectedStatistics(table, attr);
 		testCase(table, attr, stats);	
 	}
 	
@@ -39,7 +41,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "medications";
 		String attr = "patient_id";
 		
-		ObliviousFieldStatistics stats = getExpectedStatistics(table, attr);
+		ColumnConstraints<Long> stats = getExpectedStatistics(table, attr);
 		testCase(table, attr, stats);	
 	}
 	
@@ -50,27 +52,24 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "demographics";
 		String attr = "birth_year";
 		
-		ObliviousFieldStatistics stats = new ObliviousFieldStatistics();
+		ColumnConstraints<Long> stats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
 		
-		stats.setMin(1924);
-		stats.setMax(1995);
-		stats.setDistinctCardinality(72);
-		stats.setCardinality(6);
+		stats.setMin(1924L);
+		stats.setMax(1995L);
+		stats.setDistinctCardinality(72L);
+		stats.setCardinality(6L);
 		
 		testCase(table, attr, stats);
 	}
 
 	public void testMedicationsMonth() throws Exception {
 		String table = "medications";
-		String attr = "month";
+		String attr = "month_id";
 		
-		ObliviousFieldStatistics expectedStats = new ObliviousFieldStatistics();
-		// TODO: Nisha and May, fill in expected output following the pattern in testDemographicsBirthYear
-		// Since attr is not public, may only use contents of relation_statistics table in test database to get stats
-		// Naturally, month will range from 1...12, need to set domain and distinct card of 12 too
+		ColumnConstraints<Long> expectedStats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
 
-		expectedStats.setMin(1);
-		expectedStats.setMax(12);
+		expectedStats.setMin(0L);
+		expectedStats.setMax(11L);
 		expectedStats.setDistinctCardinality(12);
 		expectedStats.setCardinality(4);
 
@@ -83,8 +82,8 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "demographics";
 		String attr = "gender";
 		
-		ObliviousFieldStatistics expectedStats = new ObliviousFieldStatistics();
-		// TODO: Nisha and May, fill in expected output following the pattern in testDemographicsBirthYear
+		ColumnConstraints expectedStats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
+		// TODO: fill in expected output following the pattern in testDemographicsBirthYear
 		// Since attr is not public, may only use contents of relation_statistics in test database to get stats
 		// gender should have  cardinality of <demo table length>, range = 1..3, distinct vals: 3, ...
 
@@ -103,7 +102,7 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		String table = "diagnoses";
 		String attr = "major_icd9";
 		
-		ObliviousFieldStatistics expectedStats = new ObliviousFieldStatistics();
+		ColumnConstraints expectedStats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
 		// icd9 should have  cardinality of <diag table length>, 1604 distinct vals
 		// TODO: Nisha and May, derive expected output following the pattern in testDemographicsBirthYear
 
@@ -116,9 +115,11 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 	
 	
 	// For use with public attributes
-	public static ObliviousFieldStatistics getExpectedStatistics(String table, String attr) throws Exception {
+	// only supporting Longs for this test
+	public static ColumnConstraints<Long> getExpectedStatistics(String table, String attr) throws Exception {
 
-		ObliviousFieldStatistics stats = new ObliviousFieldStatistics();
+		ColumnConstraints<Long> stats = (ColumnConstraints<Long>) ColumnConstraintsFactory.get(table, attr);
+		
 		long maxMultiplicity = runLongIntQuery("SELECT COUNT(*) FROM " +  table + " GROUP BY " + attr + " ORDER BY COUNT(*) DESC LIMIT 1");
 		List<Long> domain = runLongIntListQuery("SELECT DISTINCT " + attr + " FROM " + table);
 		long min = runLongIntQuery("SELECT min(" + attr + ") FROM " + table);
@@ -168,16 +169,16 @@ public class ObliviousFieldStatisticsTest  extends BaseTest  {
 		return results;
 	}
 	
-	protected void testCase(String table, String attr, ObliviousFieldStatistics expectedOutput) throws Exception {
+	protected void testCase(String table, String attr, ColumnConstraints expectedOutput) throws Exception {
 		Logger logger = SystemConfiguration.getInstance().getLogger();
 		
 	
 		SecureRelDataTypeField field = Utilities.lookUpAttribute(table, attr);
-		field.initializeStatistics();
+		field.initializeConstraints();
 		
 		logger.log(Level.INFO, "Expected output: " + expectedOutput);	
-		logger.log(Level.INFO, "observed output: " + field.getStatistics());
-		assertEquals(expectedOutput, field.getStatistics());
+		logger.log(Level.INFO, "observed output: " + field.getColumnConstraints());
+		assertEquals(expectedOutput, field.getColumnConstraints());
 	}
 	
 

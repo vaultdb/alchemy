@@ -9,19 +9,18 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.BitSet;
 
-public class CharField extends Field implements Serializable {
+public class StringField extends Field<String> implements Serializable {
   /** */
   private static final long serialVersionUID = 7638908984744040905L;
 
-  public String value;
 
-  public CharField(SecureRelDataTypeField attr, SqlTypeName sqlType) throws IOException {
+  public StringField(SecureRelDataTypeField attr, SqlTypeName sqlType) throws IOException {
     super(attr, sqlType);
     value = new String();
     size = attr.size();
   }
 
-  public CharField(SecureRelDataTypeField attr, String value, SqlTypeName sqlType)
+  public StringField(SecureRelDataTypeField attr, String value, SqlTypeName sqlType)
       throws Exception {
     super(attr, sqlType);
     this.value = value;
@@ -74,8 +73,8 @@ public class CharField extends Field implements Serializable {
   }
 
   public boolean equals(Object o) {
-    if (o instanceof CharField) {
-      CharField charField = (CharField) o;
+    if (o instanceof StringField) {
+      StringField charField = (StringField) o;
       String localValue = this.value;
       String localOther = charField.value;
 
@@ -94,9 +93,9 @@ public class CharField extends Field implements Serializable {
   }
 
   @Override
-  public int childCompare(Field f) {
-    if (f instanceof CharField) {
-      return value.compareTo(((CharField) f).value);
+  public int childCompare(Field<String> f) {
+    if (f instanceof StringField) {
+      return value.compareTo(((StringField) f).value);
     }
     return 0;
   }

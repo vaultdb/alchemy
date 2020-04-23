@@ -18,7 +18,7 @@ import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.type.SecureRelRecordType;
 

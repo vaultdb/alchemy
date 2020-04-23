@@ -1,7 +1,6 @@
 package org.vaultdb.optimizer.histogram;
 
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.RelBuilder;
 import org.vaultdb.BaseTest;
@@ -12,7 +11,6 @@ import org.vaultdb.db.data.field.Field;
 import org.vaultdb.db.data.field.IntField;
 import org.vaultdb.executor.config.ConnectionManager;
 import org.vaultdb.executor.plaintext.SqlQueryExecutor;
-import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
 import org.vaultdb.util.Utilities;
 
@@ -58,7 +56,7 @@ public class CollectHistogramTest extends BaseTest {
         IntField bCount = (IntField) b.getField(1);
 
         IntField aggregatedCount = new IntField(bCount.getAttribute(), bCount.getSqlTypeName());
-        aggregatedCount.setValue(aCount.value + bCount.value);
+        aggregatedCount.setValue(aCount.getValue() + bCount.getValue());
         aggregatedTuple.addField(aggregatedCount);
 
         fieldTupleHashMap.put(aggregatedTuple.getField(0), aggregatedTuple);

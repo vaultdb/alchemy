@@ -48,14 +48,12 @@ dropdb $DB_NAME
 createdb $DB_NAME
 
 psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-load.sql
-#psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-pkeys.sql
 psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-alter.sql
 psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-index.sql
 
 #add permissions
 psql $DB_NAME < $CONF_PATH/set-security-policy.sql
-#add constraints
-psql $DB_NAME < $CONF_PATH/set-constraints.sql
+
 
 
 #OK, DB is set up, now need to partition for Alice and Bob
@@ -72,11 +70,17 @@ createdb $BOB_DB
 
 
 #create a deep copy of tpch_unioned for alice and bob and delete the records not in their partition
-pg_dump tpch_unioned | psql $ALICE_DB
-pg_dump tpch_unioned | psql $BOB_DB
+pg_dump $DB_NAME | psql $ALICE_DB
+pg_dump $DB_NAME | psql $BOB_DB
 
 psql $ALICE_DB < $CONF_PATH/select-alice.sql
 psql $BOB_DB < $CONF_PATH/select-bob.sql
+
+
+#add constraints
+psql $DB_NAME < $CONF_PATH/set-constraints.sql
+psql $ALICE_DB < $CONF_PATH/set-constraints.sql
+psql $BOB_DB < $CONF_PATH/set-constraints.sql
 
 
 # optional -- use this to populate main dbs
