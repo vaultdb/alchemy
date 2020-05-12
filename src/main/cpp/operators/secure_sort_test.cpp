@@ -10,6 +10,7 @@
 #include "emp-tool/emp-tool.h"
 #include "querytable/private_share_utility.h"
 #include <chrono>
+#include <emp-sh2pc/emp-sh2pc.h>
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43439, "port for EMP execution");
@@ -17,10 +18,12 @@ DEFINE_string(hostname, "127.0.0.1", "hostname for execution");
 DEFINE_bool(input, false, "input value");
 DEFINE_int32(int_input, 10, "int_intput");
 
+using namespace emp;
+using namespace std;
+
 int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true /* remove_flags */);
-  emp::NetIO *io = new emp::NetIO(
-      FLAGS_party == emp::ALICE ? nullptr : FLAGS_hostname.c_str(), FLAGS_port);
+  emp::NetIO *io = new emp::NetIO(FLAGS_party == emp::ALICE ? nullptr : FLAGS_hostname.c_str(), FLAGS_port);
   setup_semi_honest(io, FLAGS_party);
 
   PQDataProvider pq;
@@ -38,7 +41,6 @@ int main(int argc, char **argv) {
 
   def.share_map[EmpParty::ALICE] = ca;
   def.share_map[EmpParty::BOB] = cb;
-  // lineitem.get()->GetTuple(0)->GetField(ord)
   auto s_lineitem =
       ShareData(lineitem->GetSchema(), my_party, lineitem.get(), def);
 
@@ -46,8 +48,7 @@ int main(int argc, char **argv) {
   SortDef sortdef;
   sortdef.order = SortOrder::ASCENDING;
   sortdef.ordinals = ordinals;
-  // cout << ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid<<endl;
+  cout << ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid<<endl;
   Sort(s_lineitem.get(), sortdef);
-  // std::cout << "Running sort operation took: " << std::endl;
-  // cout << ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid<<endl;
+  cout << ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid<<endl;
 }
