@@ -63,12 +63,18 @@ Value::Value(TypeId type, const emp::Integer val, int len)
   value_.emp_integer_ = new emp::Integer(val);
 }
 
+Value::Value(TypeId type, double val)
+    : type_(type), len_(sizeof(double)), is_encrypted_(false) {
+  value_.unencrypted_val.double_val = val;
+}
+
 TypeId Value::GetType() const { return Value::type_; }
 
 int32_t Value::GetInt32() const { return value_.unencrypted_val.int32_val; }
 int64_t Value::GetInt64() const { return value_.unencrypted_val.int64_val; }
 emp::Integer *Value::GetEmpInt() const { return value_.emp_integer_; }
 emp::Bit *Value::GetEmpBit() const { return value_.emp_bit_; }
+double Value::GetDouble() const { return value_.unencrypted_val.double_val; }
 
 Value::~Value() {
   /*
@@ -99,8 +105,10 @@ void Value::SetValue(const Value *v) {
     SetValue(v->type_, v->value_.unencrypted_val.int64_val);
     break;
   case TypeId::FLOAT32:
+    SetValue(v->type_, v->value_.unencrypted_val.double_val);
     break;
   case TypeId::FLOAT64:
+    SetValue(v->type_, v->value_.unencrypted_val.double_val);
     break;
   case TypeId::VAULT_DOUBLE:
     break;
@@ -120,6 +128,8 @@ void Value::SetValue(const Value *v) {
     break;
   case TypeId::ENCRYPTED_BOOLEAN:
     SetValue(v->type_, *v->value_.emp_bit_);
+    break;
+  case TypeId::ENCRYPTED_FLOAT64:
     break;
   }
 }
@@ -152,6 +162,12 @@ void Value::SetValue(TypeId type, emp::Integer val, int len) {
   is_encrypted_ = true;
   len_ = len;
   value_.emp_integer_ = new emp::Integer(val);
+}
+void Value::SetValue(TypeId type, double val) {
+  type_ = type;
+  is_encrypted_ = false;
+  len_ = sizeof(double);
+  value_.unencrypted_val.double_val = val;
 }
 } // namespace vaultdb::types
 

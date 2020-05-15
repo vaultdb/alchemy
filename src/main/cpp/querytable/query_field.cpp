@@ -18,6 +18,9 @@ QueryField::QueryField(emp::Integer val, int length, int field_num)
     : field_num_(field_num),
       value_(types::TypeId::ENCRYPTED_INTEGER64, val, length) {}
 
+QueryField::QueryField(double val, int field_num)
+    : field_num_(field_num), value_(types::TypeId::FLOAT64, val) {}
+
 types::Value *QueryField::GetMutableValue() { return &value_; }
 
 const types::Value *QueryField::GetValue() const { return &value_; }
