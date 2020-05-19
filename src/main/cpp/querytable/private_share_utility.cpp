@@ -99,8 +99,8 @@ std::unique_ptr<QueryTable> ShareData(const QuerySchema *shared_schema,
       s.PutField(i, new_field);
       break;
     }
-    case vaultdb::types::TypeId::FLOAT64: {
-      QueryFieldDesc new_field(*f, vaultdb::types::TypeId::ENCRYPTED_FLOAT64,
+    case vaultdb::types::TypeId::FLOAT32: {
+      QueryFieldDesc new_field(*f, vaultdb::types::TypeId::ENCRYPTED_FLOAT32,
                                true /*is_private*/);
       s.PutField(i, new_field);
       break;

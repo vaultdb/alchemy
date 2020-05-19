@@ -15,7 +15,7 @@ vaultdb::types::TypeId ProtoToTypeId(dbquery::OIDType oidtype) {
   case dbquery::VARCHAR:
     return vaultdb::types::TypeId::VARCHAR;
   case dbquery::NUMERIC:
-    return vaultdb::types::TypeId::FLOAT64;
+    return vaultdb::types::TypeId::FLOAT32;
   case dbquery::DOUBLE:
     return vaultdb::types::TypeId::VAULT_DOUBLE;
   case dbquery::TIMESTAMP:

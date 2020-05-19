@@ -148,7 +148,7 @@ void testSingleFloatColumnUnencrypted(){
   sortdef.ordinals = ordinals;
   Sort(qt.get(), sortdef);
   for (int i =0 ; i< qt->GetNumTuples(); i++){
-    std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->GetDouble() << std::endl;
+    std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->GetFloat() << std::endl;
   }
 }
 int main(int argc, char **argv) {

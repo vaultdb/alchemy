@@ -43,7 +43,7 @@ public:
   int32_t GetInt32() const;
   [[nodiscard]] emp::Integer* GetEmpInt() const;
   [[nodiscard]] emp::Bit* GetEmpBit() const;
-  double GetDouble() const;
+  double GetFloat() const;
 
 protected:
   bool is_encrypted_;

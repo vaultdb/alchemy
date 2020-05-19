@@ -23,11 +23,11 @@ vaultdb::types::Type &vaultdb::types::Type::GetInstance(TypeId type_id) {
   case TypeId::FLOAT32:
     return FloatType::shared_instance();
   case TypeId::FLOAT64:
-    return FloatType::shared_instance();
-  case TypeId::VAULT_DOUBLE:
-    return FloatType::shared_instance();
-  case TypeId::NUMERIC:
     break;
+  case TypeId::VAULT_DOUBLE:
+    break;
+  case TypeId::NUMERIC:
+    return FloatType::shared_instance();
   case TypeId::TIMESTAMP:
     break;
   case TypeId::TIME:
@@ -42,7 +42,7 @@ vaultdb::types::Type &vaultdb::types::Type::GetInstance(TypeId type_id) {
     return EncryptedIntegerType::shared_instance();
   case TypeId::ENCRYPTED_BOOLEAN:
     return EncryptedBooleanType::shared_instance();
-  case TypeId::ENCRYPTED_FLOAT64:
+  case TypeId::ENCRYPTED_FLOAT32:
     break;
   }
 }

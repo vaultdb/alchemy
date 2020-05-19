@@ -74,7 +74,7 @@ int32_t Value::GetInt32() const { return value_.unencrypted_val.int32_val; }
 int64_t Value::GetInt64() const { return value_.unencrypted_val.int64_val; }
 emp::Integer *Value::GetEmpInt() const { return value_.emp_integer_; }
 emp::Bit *Value::GetEmpBit() const { return value_.emp_bit_; }
-double Value::GetDouble() const { return value_.unencrypted_val.double_val; }
+double Value::GetFloat() const { return value_.unencrypted_val.double_val; }
 
 Value::~Value() {
   /*
@@ -108,7 +108,6 @@ void Value::SetValue(const Value *v) {
     SetValue(v->type_, v->value_.unencrypted_val.double_val);
     break;
   case TypeId::FLOAT64:
-    SetValue(v->type_, v->value_.unencrypted_val.double_val);
     break;
   case TypeId::VAULT_DOUBLE:
     break;
@@ -129,7 +128,7 @@ void Value::SetValue(const Value *v) {
   case TypeId::ENCRYPTED_BOOLEAN:
     SetValue(v->type_, *v->value_.emp_bit_);
     break;
-  case TypeId::ENCRYPTED_FLOAT64:
+  case TypeId::ENCRYPTED_FLOAT32:
     break;
   }
 }
