@@ -6,7 +6,6 @@
 #include <querytable/types/encrypted/encrypted_boolean_type.h>
 #include <querytable/types/encrypted/encrypted_integer_type.h>
 #include <querytable/types/unencrypted/boolean_type.h>
-#include <querytable/types/unencrypted/float_type.h>
 #include <querytable/types/unencrypted/integer_type.h>
 
 vaultdb::types::Type &vaultdb::types::Type::GetInstance(TypeId type_id) {
@@ -21,13 +20,13 @@ vaultdb::types::Type &vaultdb::types::Type::GetInstance(TypeId type_id) {
   case TypeId::INTEGER64:
     return IntegerType::shared_instance();
   case TypeId::FLOAT32:
-    return FloatType::shared_instance();
+    break;
   case TypeId::FLOAT64:
     break;
   case TypeId::VAULT_DOUBLE:
     break;
   case TypeId::NUMERIC:
-    return FloatType::shared_instance();
+    break;
   case TypeId::TIMESTAMP:
     break;
   case TypeId::TIME:
@@ -42,7 +41,5 @@ vaultdb::types::Type &vaultdb::types::Type::GetInstance(TypeId type_id) {
     return EncryptedIntegerType::shared_instance();
   case TypeId::ENCRYPTED_BOOLEAN:
     return EncryptedBooleanType::shared_instance();
-  case TypeId::ENCRYPTED_FLOAT32:
-    break;
   }
 }

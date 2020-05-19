@@ -11,6 +11,6 @@ add_library(types STATIC
         ../expression/bool_expression.cpp
         ../expression/bool_expression.h
         ../expression/arithmetic_expression.cpp
-        ../expression/arithmetic_expression.h encrypted/encrypted_boolean_type.cpp encrypted/encrypted_boolean_type.h unencrypted/boolean_type.cpp unencrypted/boolean_type.h unencrypted/float_type.cpp unencrypted/float_type.h)
+        ../expression/arithmetic_expression.h encrypted/encrypted_boolean_type.cpp encrypted/encrypted_boolean_type.h unencrypted/boolean_type.cpp unencrypted/boolean_type.h)
 target_link_libraries(types emp-tool)
 install(TARGETS types DESTINATION ${CMAKE_SOURCE_DIR}/lib/lib)
