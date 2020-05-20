@@ -41,7 +41,8 @@ public:
   TypeId GetType() const;
   int64_t GetInt64() const;
   int32_t GetInt32() const;
-  [[nodiscard]] emp::Integer* GetEmpInt() const;
+  [[nodiscard]] bool GetBool() const;
+  [[nodiscard]] emp::Integer *GetEmpInt() const;
   [[nodiscard]] emp::Bit* GetEmpBit() const;
   double GetFloat() const;
 

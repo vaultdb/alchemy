@@ -12,7 +12,7 @@
 #include <chrono>
 #include <emp-sh2pc/emp-sh2pc.h>
 
-//void testSingleIntColumn();
+// void testSingleIntColumn();
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43439, "port for EMP execution");
 DEFINE_string(hostname, "127.0.0.1", "hostname for execution");
@@ -24,8 +24,8 @@ using namespace std;
 
 void testSingleIntColumn() {
   PQDataProvider pq;
-  auto lineitem =
-      pq.GetQueryTable("dbname=tpch_alice", "SELECT c_custkey FROM customer LIMIT 10");
+  auto lineitem = pq.GetQueryTable("dbname=tpch_alice",
+                                   "SELECT c_custkey FROM customer LIMIT 10");
 
   EmpParty my_party =
       FLAGS_party == emp::ALICE ? EmpParty::ALICE : EmpParty::BOB;
@@ -48,13 +48,13 @@ void testSingleIntColumn() {
   int gates1 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
   Sort(s_lineitem.get(), sortdef);
   int gates2 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
-  cout << gates2 - gates1 <<endl;
+  cout << gates2 - gates1 << endl;
 }
 
 void testTwoIntColumns() {
   PQDataProvider pq;
-  auto lineitem =
-      pq.GetQueryTable("dbname=tpch_alice", "SELECT o_orderkey, o_custkey FROM orders LIMIT 10");
+  auto lineitem = pq.GetQueryTable(
+      "dbname=tpch_alice", "SELECT o_orderkey, o_custkey FROM orders LIMIT 10");
 
   EmpParty my_party =
       FLAGS_party == emp::ALICE ? EmpParty::ALICE : EmpParty::BOB;
@@ -77,13 +77,13 @@ void testTwoIntColumns() {
   int gates1 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
   Sort(s_lineitem.get(), sortdef);
   int gates2 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
-  cout << gates2 - gates1 <<endl;
+  cout << gates2 - gates1 << endl;
 }
 
 void testSingleFloatColumnEncrypted() {
   PQDataProvider pq;
-  auto lineitem =
-      pq.GetQueryTable("dbname=tpch_alice", "SELECT c_acctbal FROM customer LIMIT 10");
+  auto lineitem = pq.GetQueryTable("dbname=tpch_alice",
+                                   "SELECT c_acctbal FROM customer LIMIT 10");
 
   EmpParty my_party =
       FLAGS_party == emp::ALICE ? EmpParty::ALICE : EmpParty::BOB;
@@ -106,13 +106,13 @@ void testSingleFloatColumnEncrypted() {
   int gates1 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
   Sort(s_lineitem.get(), sortdef);
   int gates2 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
-  cout << gates2 - gates1 <<endl;
+  cout << gates2 - gates1 << endl;
 }
 
 void testSingleVarcharColumn() {
   PQDataProvider pq;
-  auto lineitem =
-      pq.GetQueryTable("dbname=tpch_alice", "SELECT c_name FROM customer LIMIT 10");
+  auto lineitem = pq.GetQueryTable("dbname=tpch_alice",
+                                   "SELECT c_name FROM customer LIMIT 10");
 
   EmpParty my_party =
       FLAGS_party == emp::ALICE ? EmpParty::ALICE : EmpParty::BOB;
@@ -135,29 +135,54 @@ void testSingleVarcharColumn() {
   int gates1 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
   Sort(s_lineitem.get(), sortdef);
   int gates2 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
-  cout << gates2 - gates1 <<endl;
+  cout << gates2 - gates1 << endl;
 }
 // TODO: Sort by timestamp
 // TODO: Sort by fixed length string
-void testSingleFloatColumnUnencrypted(){
+void testSingleFloatColumnUnencrypted() {
   PQDataProvider pq;
-  auto qt = pq.GetQueryTable("dbname=tpch_alice", "SELECT c_acctbal FROM customer LIMIT 10");
+  auto qt = pq.GetQueryTable("dbname=tpch_alice",
+                             "SELECT c_acctbal FROM customer LIMIT 10");
   vector<int> ordinals{0};
   SortDef sortdef;
   sortdef.order = SortOrder::ASCENDING;
   sortdef.ordinals = ordinals;
   Sort(qt.get(), sortdef);
-  for (int i =0 ; i< qt->GetNumTuples(); i++){
-    std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->GetFloat() << std::endl;
+  for (int i = 0; i < qt->GetNumTuples(); i++) {
+    std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->GetFloat()
+              << std::endl;
+  }
+}
+
+void testLineItemSort() {
+  PQDataProvider pq;
+  auto qt = pq.GetQueryTable("dbname=tpch_unioned",
+                             "SELECT l_orderkey FROM lineitem LIMIT 10");
+  auto v = types::Value(types::TypeId::BOOLEAN, true);
+  for (int i = 0; i < 3; i++) {
+    qt->GetTuple(i * 2 + 2)->SetDummyFlag(&v);
+  }
+  vector<int> ordinals{0, -1};
+  SortDef sortdef;
+  sortdef.dummy_order = SortOrder::ASCENDING;
+  sortdef.order = SortOrder::DESCENDING;
+  sortdef.ordinals = ordinals;
+  Sort(qt.get(), sortdef);
+  for (int i = 0; i < qt->GetNumTuples(); i++) {
+    std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->GetInt64()
+              << ", D: " << qt->GetTuple(i)->GetDummyFlag()->GetBool()
+              << std::endl;
   }
 }
 int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true /* remove_flags */);
-  emp::NetIO *io = new emp::NetIO(FLAGS_party == emp::ALICE ? nullptr : FLAGS_hostname.c_str(), FLAGS_port);
-  setup_semi_honest(io, FLAGS_party);
-  testSingleIntColumn();
-  testTwoIntColumns();
-//  testSingleFloatColumnEncrypted();
-  testSingleFloatColumnUnencrypted();
-  //testSingleVarcharColumn();
+  testLineItemSort();
+  // emp::NetIO *io = new emp::NetIO(
+  // FLAGS_party == emp::ALICE ? nullptr : FLAGS_hostname.c_str(), FLAGS_port);
+  // setup_semi_honest(io, FLAGS_party);
+  // testSingleIntColumn();
+  // testTwoIntColumns();
+  //  testSingleFloatColumnEncrypted();
+  // testSingleFloatColumnUnencrypted();
+  // testSingleVarcharColumn();
 }

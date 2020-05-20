@@ -45,6 +45,8 @@ std::unique_ptr<QueryTable> ProtoToQuerytable(const dbquery::Table &t) {
   int index = 0;
   for (auto &r : t.row()) {
     QueryTuple *tup = query_table->GetTuple(index);
+    tup->SetIsEncrypted(false);
+    tup->InitDummy();
     for (auto &c : r.column()) {
       // FieldType type = ProtoToFieldtype(c.second.type());
       vaultdb::types::TypeId type = ProtoToTypeId(c.second.type());
