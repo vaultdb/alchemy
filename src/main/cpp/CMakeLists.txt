@@ -44,8 +44,8 @@ message("wee ${EMP-OT_LIBRARIES}")
 find_package(OpenSSL REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 message("hello ${OPENSSL_LIBRARIES}")
-#add_executable(main main.cpp operators/filter.cpp operators/filter.h common/macros.h common/defs.h)
-#target_link_libraries(main gflags pthread emp-tool gmp ${EMP-OT_LIBRARIES} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES}
-#        dataprovider secure_operators)
+add_executable(main main.cpp operators/filter.cpp operators/filter.h common/macros.h common/defs.h)
+target_link_libraries(main gflags pthread emp-tool gmp ${EMP-OT_LIBRARIES} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES}
+        dataprovider secure_operators)
 
 

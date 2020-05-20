@@ -20,7 +20,8 @@ enum class TypeId {
   VARCHAR,
   ENCRYPTED_INTEGER32,
   ENCRYPTED_INTEGER64,
-  ENCRYPTED_BOOLEAN
+  ENCRYPTED_BOOLEAN,
+  ENCRYPTED_FLOAT32
 };
 
 } // namespace vaultdb::types
