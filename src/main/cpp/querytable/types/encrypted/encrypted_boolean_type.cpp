@@ -54,7 +54,7 @@ void EncryptedBooleanType::Swap(const Value &compareBit, Value &left,
                                 Value &right) {
   VAULTDB_ASSERT(compareBit.GetType() ==
                  vaultdb::types::TypeId::ENCRYPTED_BOOLEAN);
-  emp::swap(*compareBit.value_.emp_bit_, *left.value_.emp_integer_,
-            *right.value_.emp_integer_);
+  emp::swap(*compareBit.value_.emp_bit_, *left.value_.emp_bit_,
+            *right.value_.emp_bit_);
 };
 } // namespace vaultdb::types
