@@ -18,6 +18,7 @@ public:
   friend class IntegerType;
   friend class BooleanType;
   friend class EncryptedBooleanType;
+  friend class FloatType;
 
   Value();
   void SetValue(const Value *v);
@@ -26,20 +27,24 @@ public:
   void SetValue(TypeId type, bool val);
   void SetValue(TypeId type, emp::Bit val);
   void SetValue(TypeId type, emp::Integer, int len);
+  void SetValue(TypeId type, double val);
 
   Value(TypeId type, int32_t val);
   Value(TypeId type, int64_t val);
   Value(TypeId type, bool val);
   Value(TypeId type, emp::Bit val);
   Value(TypeId type, emp::Integer, int len);
+  Value(TypeId type, double val);
   Value(const Value &val);
   ~Value();
 
   TypeId GetType() const;
   int64_t GetInt64() const;
   int32_t GetInt32() const;
-  [[nodiscard]] emp::Integer* GetEmpInt() const;
+  [[nodiscard]] bool GetBool() const;
+  [[nodiscard]] emp::Integer *GetEmpInt() const;
   [[nodiscard]] emp::Bit* GetEmpBit() const;
+  double GetFloat() const;
 
 protected:
   bool is_encrypted_;

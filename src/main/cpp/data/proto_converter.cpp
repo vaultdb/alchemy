@@ -1,7 +1,6 @@
 //
 // Created by madhav on 12/27/19.
 //
-
 #include "proto_converter.h"
 #include "querytable/query_field_desc.h"
 #include "querytable/query_schema.h"
@@ -16,6 +15,7 @@ vaultdb::types::TypeId ProtoToTypeId(dbquery::OIDType oidtype) {
   case dbquery::VARCHAR:
     return vaultdb::types::TypeId::VARCHAR;
   case dbquery::NUMERIC:
+    return vaultdb::types::TypeId::FLOAT32;
   case dbquery::DOUBLE:
     return vaultdb::types::TypeId::VAULT_DOUBLE;
   case dbquery::TIMESTAMP:
@@ -45,6 +45,8 @@ std::unique_ptr<QueryTable> ProtoToQuerytable(const dbquery::Table &t) {
   int index = 0;
   for (auto &r : t.row()) {
     QueryTuple *tup = query_table->GetTuple(index);
+    tup->SetIsEncrypted(false);
+    tup->InitDummy();
     for (auto &c : r.column()) {
       // FieldType type = ProtoToFieldtype(c.second.type());
       vaultdb::types::TypeId type = ProtoToTypeId(c.second.type());
@@ -64,7 +66,7 @@ std::unique_ptr<QueryTable> ProtoToQuerytable(const dbquery::Table &t) {
             std::make_unique<vaultdb::QueryField>(c.second.strfield(), c.first);
         break;
       case vaultdb::types::TypeId::VAULT_DOUBLE:
-        throw;
+//        throw;
         qf = std::make_unique<vaultdb::QueryField>(c.second.doublefield(),
                                                    c.first);
         break;

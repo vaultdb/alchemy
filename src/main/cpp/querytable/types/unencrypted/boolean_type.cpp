@@ -3,6 +3,7 @@
 //
 
 #include "boolean_type.h"
+#include <common/macros.h>
 namespace vaultdb::types {
 #define BOOL_BINARY(OP)                                                        \
   do {                                                                         \
@@ -34,17 +35,32 @@ Value vaultdb::types::BooleanType::Or(
 
 Value BooleanType::CompareLessThanOrEqual(const Value &left,
                                           const Value &right) const {
-  throw;
+  bool b1 = (!left.value_.unencrypted_val.bool_val) &
+            right.value_.unencrypted_val.bool_val;
+  bool b2 = left.value_.unencrypted_val.bool_val ==
+            right.value_.unencrypted_val.bool_val;
+  return Value(left.GetType(), (b1 | b2));
 }
 Value BooleanType::CompareLessThan(const Value &left,
                                    const Value &right) const {
+  bool b = (!left.value_.unencrypted_val.bool_val) &
+           right.value_.unencrypted_val.bool_val;
+  return Value(left.GetType(), b);
   throw;
 }
 Value BooleanType::CompareGreaterThan(const Value &left,
                                       const Value &right) const {
-  throw;
+  bool b = (left.value_.unencrypted_val.bool_val) &
+           (!right.value_.unencrypted_val.bool_val);
+  return Value(left.GetType(), b);
 }
 void BooleanType::Swap(const Value &compareBit, Value &left, Value &right) {
-  throw;
+  VAULTDB_ASSERT(compareBit.GetType() == vaultdb::types::TypeId::BOOLEAN);
+  if (compareBit.value_.unencrypted_val.bool_val) {
+    bool tmp = left.value_.unencrypted_val.bool_val;
+    left.value_.unencrypted_val.bool_val =
+        right.value_.unencrypted_val.bool_val;
+    right.value_.unencrypted_val.bool_val = tmp;
+  }
 };
 } // namespace vaultdb::types

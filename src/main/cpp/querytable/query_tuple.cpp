@@ -41,7 +41,10 @@ void QueryTuple::InitDummy() {
   }
 }
 
-const vaultdb::types::Value *QueryTuple::GetDummyFlag()  {
+const vaultdb::types::Value *QueryTuple::GetDummyFlag() {
+  return &this->dummy_flag_;
+}
+vaultdb::types::Value *QueryTuple::GetMutableDummyFlag() {
   return &this->dummy_flag_;
 }
 
