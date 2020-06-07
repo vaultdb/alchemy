@@ -27,7 +27,7 @@ CREATE TABLE remote_demographics (
 CREATE TABLE diagnoses (
     patient_id integer NOT NULL,
     site integer NOT NULL,
-    year integer NOT NULL,
+    year_ integer NOT NULL,
     month_id integer NOT NULL,
     visit_no integer NOT NULL,
     type_ integer NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE diagnoses (
     diag_src character varying NOT NULL,
     icd9 character varying NOT NULL,
     primary_ integer NOT NULL,
-    timestamp_ timestamp without time zone,
+    timestamp_ timestamp,
     clean_icd9 character varying,
     major_icd9 varchar(4)
 );
@@ -43,7 +43,7 @@ CREATE TABLE diagnoses (
 CREATE TABLE remote_diagnoses (
     patient_id integer NOT NULL,
     site integer NOT NULL,
-    year integer NOT NULL,
+    year_ integer NOT NULL,
     month_id integer NOT NULL,
     visit_no integer NOT NULL,
     type_ integer NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE remote_diagnoses (
     diag_src character varying NOT NULL,
     icd9 character varying NOT NULL,
     primary_ integer NOT NULL,
-    timestamp_ timestamp without time zone,
+    timestamp_ timestamp,
     clean_icd9 character varying,
     major_icd9 character varying
 );
@@ -59,26 +59,26 @@ CREATE TABLE remote_diagnoses (
 
 DROP TABLE IF EXISTS cdiff_cohort;
 CREATE TABLE cdiff_cohort AS (
-       SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = '008.45' AND year = :test_year AND (site=:site1 OR site=:site2));
+       SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 = '008.45' AND year_ = :test_year AND (site=:site1 OR site=:site2));
 
 DROP TABLE IF EXISTS mi_cohort;
 CREATE TABLE mi_cohort AS (
-       SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 LIKE '410%'  AND year = :test_year AND (site=:site1 OR site=:site2));
+       SELECT DISTINCT patient_id FROM diagnoses WHERE icd9 LIKE '410%'  AND year_ = :test_year AND (site=:site1 OR site=:site2));
 
 
 
  -- data used in test to simulate patient registry
 DROP TABLE IF EXISTS cdiff_cohort_diagnoses;
-CREATE TABLE cdiff_cohort_diagnoses AS SELECT * FROM diagnoses WHERE year = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM cdiff_cohort); 
+CREATE TABLE cdiff_cohort_diagnoses AS SELECT * FROM diagnoses WHERE year_ = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM cdiff_cohort); 
 DROP TABLE IF EXISTS mi_cohort_diagnoses;
-CREATE TABLE mi_cohort_diagnoses AS SELECT * FROM diagnoses  WHERE year = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM mi_cohort); 
+CREATE TABLE mi_cohort_diagnoses AS SELECT * FROM diagnoses  WHERE year_ = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM mi_cohort); 
 
 -- 
 
 CREATE TABLE vitals (
     patient_id integer NOT NULL,
     site integer NOT NULL,
-    year integer NOT NULL,
+    year_ integer NOT NULL,
     month_id integer NOT NULL,
     visit_no integer NOT NULL,
     height numeric,
@@ -91,11 +91,11 @@ CREATE TABLE vitals (
     diastolic numeric,
     pulse numeric,
     bp_method character varying,
-    timestamp_ timestamp without time zone
+    timestamp_ timestamp
 );    
 
 DROP TABLE IF EXISTS mi_cohort_vitals;
-CREATE TABLE mi_cohort_vitals AS SELECT * FROM vitals WHERE year = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM mi_cohort); 
+CREATE TABLE mi_cohort_vitals AS SELECT * FROM vitals WHERE year_ = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM mi_cohort); 
 
 CREATE TABLE labs (
     patient_id integer,
@@ -110,24 +110,24 @@ CREATE TABLE labs (
 CREATE TABLE medications (
     patient_id integer NOT NULL,
     site integer NOT NULL,
-    year integer NOT NULL,
+    year_ integer NOT NULL,
     month_id integer NOT NULL,
     medication character varying NOT NULL,
     dosage character varying NOT NULL,
     route character varying,
-    timestamp_ timestamp without time zone
+    timestamp_ timestamp
 );
 
 
 CREATE TABLE remote_medications (
     patient_id integer NOT NULL,
     site integer NOT NULL,
-    year integer NOT NULL,
+    year_ integer NOT NULL,
     month_id integer NOT NULL,
     medication character varying NOT NULL,
     dosage character varying NOT NULL,
     route character varying,
-    timestamp_ timestamp without time zone
+    timestamp_ timestamp
 );
 
 CREATE TABLE site (
@@ -135,19 +135,8 @@ CREATE TABLE site (
 
 
 
-CREATE TABLE remote_medications (
-    patient_id integer NOT NULL,
-    site integer NOT NULL,
-    year integer NOT NULL,
-    month_id integer NOT NULL,
-    medication character varying NOT NULL,
-    dosage character varying NOT NULL,
-    route character varying,
-    timestamp_ timestamp without time zone
-);
-
 DROP TABLE IF EXISTS mi_cohort_medications;
-CREATE TABLE mi_cohort_medications AS SELECT * FROM medications  WHERE year = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM mi_cohort); 
+CREATE TABLE mi_cohort_medications AS SELECT * FROM medications  WHERE year_ = :test_year AND (site=:site1 OR site=:site2) AND patient_id IN (SELECT * FROM mi_cohort); 
 
 
 CREATE TABLE test (
