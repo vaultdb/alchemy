@@ -9,7 +9,9 @@ import org.bytedeco.javacpp.annotation.Const;
 import org.bytedeco.javacpp.annotation.Namespace;
 import org.bytedeco.javacpp.annotation.Platform;
 import org.vaultdb.compiler.emp.EmpProgram;
+import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.db.data.QueryTable;
+import org.vaultdb.db.schema.SystemCatalog;
 import org.vaultdb.protos.DBQueryProtos;
 import org.vaultdb.util.Utilities;
 
@@ -90,9 +92,14 @@ public class EmpJniJdbcDemo extends EmpProgram {
 
     String query = "SELECT patient_id FROM diagnoses";
 
-    String setupFile = Utilities.getVaultDBRoot() + "/conf/setup.global";
+    String setupFile = Utilities.getVaultDBRoot() + "/conf/setup.local-healthlnk";
 
     System.setProperty("vaultdb.setup", setupFile);
+    System.setProperty("vaultdb.location", "local");
+    SystemConfiguration configuration = SystemConfiguration.getInstance();
+    SystemCatalog catalog = SystemCatalog.getInstance();
+
+
     String workerId = (party == 1) ? "alice" : "bob";
 
     System.setProperty("workerId", workerId);
