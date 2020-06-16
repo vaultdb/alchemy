@@ -56,7 +56,24 @@ public class Aggregate extends Operator {
 
 		return result;
 	}
-	
+
+	public List<SecureRelDataTypeField> getAggCallAttributes() {
+		List<Integer> groupBy = agg.getGroupSet().asList();
+
+		SecureRelRecordType schema = this.getSchema();
+		List<SecureRelDataTypeField> result = new ArrayList<SecureRelDataTypeField>();
+
+		for(SecureRelDataTypeField field : schema.getSecureFieldList()) {
+			int idx = field.getIndex();
+			if(!groupBy.contains(idx)) {
+				result.add(field);
+			}
+		}
+		return result;
+	}
+
+
+
 	public List<SecureRelDataTypeField> computesOn() {
 		List<SecureRelDataTypeField> attrs = this.getGroupByAttributes(); // group by only
 		

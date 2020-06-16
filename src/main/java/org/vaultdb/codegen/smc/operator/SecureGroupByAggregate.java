@@ -7,6 +7,7 @@ import org.apache.calcite.rel.logical.LogicalAggregate;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelRecordType;
+import org.apache.calcite.util.ImmutableBitSet;
 import org.vaultdb.plan.operator.Operator;
 import org.vaultdb.type.SecureRelDataTypeField;
 import org.vaultdb.type.SecureRelRecordType;
@@ -39,13 +40,16 @@ public class SecureGroupByAggregate extends SecureOperator {
 		Map<String, String> variables = baseVariables();
 		Aggregate a = (Aggregate) planNode;
 
-
 		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
 		variables.put("groupBySize", Integer.toString(getGroupBySize(groupByAttributes)));
 		variables.put("initializeGroupBy", "        " + extractGroupByFields(groupByAttributes, "lastGroupBy", "lastTuple"));
 
 		
+
+		String aggregateStruct = generateAggregateStruct();
+
 		
+		variables.put("aggregateDefinition", aggregateStruct);
 		variables.put("extractGroupBy", extractGroupByFields(groupByAttributes, "groupBy", "tuple"));
 		variables.put("writeGroupBy", writeGroupBy(groupByAttributes, "output", "groupBy"));
 		
@@ -68,7 +72,77 @@ public class SecureGroupByAggregate extends SecureOperator {
 		return generatedCode;
 	}
 
-	
+	private String generateAggregateStruct() {
+
+		Aggregate a = (Aggregate) planNode;
+
+		List<SecureRelDataTypeField> groupByAttributes = a.getGroupByAttributes();
+
+		String aggregateStruct = generateAggregateDef();
+		aggregateStruct += createGroupByStruct(groupByAttributes);
+		return aggregateStruct;
+
+
+
+
+	}
+
+	private String getAggCallString(AggregateCall call) {
+		String aggCallString = "vaultdb::AggregateId::";
+		switch (call.getAggregation().kind) {
+
+			case MIN:
+				return aggCallString + "MIN";
+			case MAX:
+				return aggCallString + "MAX";
+			case COUNT:
+				return aggCallString + "COUNT";
+
+			case SUM:
+				return aggCallString + "SUM";
+
+			case AVG:
+				return aggCallString + "AVG";
+
+			default:
+				return aggCallString + "NYI";
+		}
+
+	}
+		private String generateAggregateDef() {
+
+		Aggregate aggregate = (Aggregate) planNode;
+
+		LogicalAggregate baseAggregate = (LogicalAggregate) planNode.getSecureRelNode().getRelNode();
+
+		ImmutableBitSet groupByBits = baseAggregate.getGroupSet();
+
+		List<AggregateCall> aggCallList = baseAggregate.getAggCallList();
+		Iterator<Pair<AggregateCall, String>> aggItr = baseAggregate.getNamedAggCalls().iterator();
+		List<SecureRelDataTypeField> aggFields = aggregate.getAggCallAttributes();
+		Iterator<SecureRelDataTypeField> aggFieldPos = aggFields.iterator();
+
+		String dst = new String();
+
+		String addDefs = new String();
+	    int defId = 1;
+
+
+
+
+		for(AggregateCall call : aggCallList) {
+			  SecureRelDataTypeField field = aggFieldPos.next();
+			  int dstOrdinal = field.getIndex();
+			  dst +=     "    ScalarAggregateDef def" + defId + " = {" + dstOrdinal + ", " + getAggCallString(call) + "};\n" ;
+			  addDefs += "    d.defs.push_back(def" + defId + ");\n";
+			   ++defId;
+		}
+
+		dst += addDefs;
+		return dst;
+	}
+
+
 	private int getGroupBySize(List<SecureRelDataTypeField> attrs) {
 		int size = 0;
 		
@@ -269,6 +343,19 @@ public class SecureGroupByAggregate extends SecureOperator {
 
 
 
+	private String createGroupByStruct(List<SecureRelDataTypeField> groupByAttributes)
+	{
+
+		String dst = new String();
+		for(SecureRelDataTypeField f : groupByAttributes) {
+			int ordinal = f.getIndex();
+			dst += "    d.gb_ordinals.push_back(" + ordinal + ");\n";
+		}
+
+		return dst;
+
+
+	}
 	private String extractGroupByFields(List<SecureRelDataTypeField> groupByAttributes, String dstVariable, String srcVariable) {
 
 		int size = getGroupBySize(groupByAttributes);

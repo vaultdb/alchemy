@@ -9,9 +9,11 @@ import org.vaultdb.config.SystemConfiguration;
 import org.vaultdb.executor.step.ExecutionStep;
 import org.vaultdb.plan.SecureRelRoot;
 import org.vaultdb.util.EmpJniUtilities;
+import org.vaultdb.util.FileUtilities;
 import org.vaultdb.util.Utilities;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 
 
@@ -59,13 +61,18 @@ public class GenerateSmcTpcHTest extends TpcHBaseTest {
 	  String cwd = Utilities.getVaultDBRoot();
 	  String expectedFile =
         cwd + "/src/test/java/org/vaultdb/codegen/secure/expected/" + testName + ".h";
+
+
 	  logger.info("Generated: " + generatedFile);
 	  logger.info("Expected: " + expectedFile);
 
 	  File generated = new File(generatedFile);
 	  File expected = new File(expectedFile);
+	  String generatedCode = FileUtils.readFileToString(generated, Charset.defaultCharset());
+	  String expectedCode = FileUtils.readFileToString(expected, Charset.defaultCharset());
+
     
-	  assertTrue("The emp code differs!", FileUtils.contentEquals(generated, expected));
+	  assertEquals(expectedCode, generatedCode);
 
 	  // check the jni wrappers  ".h" --> ".java"
 	  generatedFile = generatedFile.substring(0, generatedFile.length() - 1);
