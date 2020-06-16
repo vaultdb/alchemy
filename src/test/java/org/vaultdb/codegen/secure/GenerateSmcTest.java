@@ -49,6 +49,7 @@ public class GenerateSmcTest extends BaseTest {
   }
 
 
+
   protected void testCase(String testName, String sql) throws Exception {
 	  EmpJniUtilities.cleanEmpCode(testName);
 	  SystemConfiguration.getInstance().resetCounters();
