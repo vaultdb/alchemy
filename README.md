@@ -23,7 +23,7 @@ Requirements
 * Oracle Java 8+
 * JavaCC 5.0+
 * Python 2.7+
-* Protobuf
+* Protobuf (protobuf-c-compiler protobuf-compiler)
 * libpqxx-dev
 
 --------------------------------------------------------------------------------
