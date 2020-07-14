@@ -9,23 +9,40 @@ set(NAME "vaultdb-emp")
 
 include(cmake/common.cmake)
 
+
+
 find_package(OpenSSL REQUIRED)
 find_package(GMP REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Emp REQUIRED)
+
 find_library(EMP_LIBRARIES NAMES emp-tool)
 find_library(PROTOBUF_LIBRARY protobuf)
 find_library(GRPC++ grpc++)
 find_library(GRPC grpc)
-find_library(GFLAGS gflags)
+find_library(GFLAGS_LIBRARY gflags)
 find_library(DL dl)
 find_library(PQXX_LIBRARY pqxx)
-#find_library(PQ_LIBRARY pq)
-#find_library(PQXX pqxx)
-find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc)
+find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
+add_subdirectory("${PROJECT_SOURCE_DIR}/external/googletest" "external/googletest")
+
+option(PACKAGE_TESTS "Build the tests" ON)
+if(PACKAGE_TESTS)
+	enable_testing()
+	include(GoogleTest)
+	add_subdirectory(test)
+endif()
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc
+		${CMAKE_CURRENT_BINARY_DIR}/data
+        ${CMAKE_CURRENT_BINARY_DIR}/operators
+        ${CMAKE_CURRENT_BINARY_DIR}/querytable
+        ${CMAKE_CURRENT_BINARY_DIR}/common)
+
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
+
+link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 
 get_filename_component(vdb_proto "../proto/dbquery.proto" ABSOLUTE)
@@ -43,7 +60,6 @@ add_custom_command(
 		"${vdb_proto}"
 		DEPENDS "${vdb_proto}")
 
-#add_custom_target(${vdb_proto} ALL DEPENDS )
 add_custom_target(rpc_proto_gen ALL DEPENDS ${vdb_proto} ${vdb_proto_srcs} ${vdb_proto_headers})
 
 
@@ -82,22 +98,11 @@ set(sources
 
 
 
-message("verify ${OPENSSL_LIBRARIES}:${Boost_LIBRARIES}:${PQXX_LIBRARY}:")
+message("verify ${OPENSSL_LIBRARIES}:${Boost_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY} ")
 add_library(${NAME} SHARED ${sources})
-target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES} ${PROTOBUF_LIBRARY} ${PQXX_LIBRARY} pthread)
+target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES} ${PROTOBUF_LIBRARY} ${PQXX_LIBRARY} ${GFLAGS_LIBRARY} pthread gtest gmock gtest_main )
 
 
 install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
 
-
-# Test cases
-macro (add_test _name)
-	add_test_with_lib(${_name} "${NAME}")
-endmacro()
-
-
-add_test(secure_sort_test)
-add_test(secure_join_test)
-add_test(pqxx_compat_test)
-add_test(proto_converter_test)
 
