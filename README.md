@@ -25,6 +25,7 @@ Requirements
 * Python 2.7+
 * Protobuf (protobuf-c-compiler protobuf-compiler)
 * libpqxx-dev
+* libgflags-dev
 
 --------------------------------------------------------------------------------
 Setup
