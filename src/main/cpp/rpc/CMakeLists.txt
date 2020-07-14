@@ -21,15 +21,6 @@ set(vdb_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/dbquery.grpc.pb.cc")
 set(vdb_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/dbquery.grpc.pb.h")
 
 
-#add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/vaultdb.grpc.pb.cc ${CMAKE_CURRENT_BINARY_DIR}/vaultdb.grpc.pb.h
-#		   PRE_BUILD
-#		   COMMAND protoc -I ${CMAKE_CURRENT_SOURCE_DIR} --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_cpp_plugin ${CMAKE_CURRENT_SOURCE_DIR}/vaultdb.proto)
-#
-#add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/vaultdb.pb.cc ${CMAKE_CURRENT_BINARY_DIR}/vaultdb.pb.h
-#		PRE_BUILD
-#		COMMAND protoc -I ${CMAKE_CURRENT_SOURCE_DIR} --cpp_out=. ${CMAKE_CURRENT_SOURCE_DIR}/vaultdb.proto)
-
-#add_library(HBGeneralize HBGeneralize.cpp ../postgres_client.cpp vaultdb.grpc.pb.cc vaultdb.pb.cc ../TableStatistics.cpp)
 
 add_custom_command(
 		OUTPUT "${vdb_proto_srcs}" "${vdb_proto_hdrs}" #"${vdb_grpc_srcs}" "${vdb_grpc_hdrs}"
@@ -37,10 +28,9 @@ add_custom_command(
 		ARGS
 		--cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
 		-I "${vdb_proto_path}"
-		#--plugin=protoc-gen-grpc=${GRPC_PROTO_PLUGIN}
 		"${vdb_proto}"
 		DEPENDS "${vdb_proto}")
-add_custom_target(rpc_proto_gen ALL DEPENDS ${vdb_proto} ${vdb_proto_srcs} ${vdb_proto_headers}) #${vdb_grpc_srcs} ${vdb_grpc_hdrs})
+add_custom_target(rpc_proto_gen ALL DEPENDS ${vdb_proto} ${vdb_proto_srcs} ${vdb_proto_headers}) 
 
 
 add_library(krpc STATIC ${vdb_proto_srcs})
