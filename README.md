@@ -26,7 +26,7 @@ Requirements
 * Protobuf (protobuf-c-compiler protobuf-compiler)
 * libpqxx-dev
 * libgflags-dev
-* libgrpc++-dev
+* libgrpc++-dev, libgrpc-dev
 
 --------------------------------------------------------------------------------
 Setup
