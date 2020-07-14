@@ -9,10 +9,8 @@
 #include "emp-sh2pc/emp-sh2pc.h"
 #include "emp-tool/emp-tool.h"
 #include "querytable/private_share_utility.h"
-#include <chrono>
-#include <emp-sh2pc/emp-sh2pc.h>
+#include <gtest/gtest.h>
 
-// void testSingleIntColumn();
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43439, "port for EMP execution");
 DEFINE_string(hostname, "127.0.0.1", "hostname for execution");
@@ -22,7 +20,18 @@ DEFINE_int32(int_input, 10, "int_intput");
 using namespace emp;
 using namespace std;
 
-void testSingleIntColumn() {
+
+
+
+class secure_sort_test : public ::testing::Test {
+protected:
+    void SetUp() override {};
+
+    void TearDown() override {};
+
+};
+    // void testSingleIntColumn();
+TEST_F(secure_sort_test,  testSingleIntColumn) {
   PQDataProvider pq;
   auto lineitem = pq.GetQueryTable("dbname=tpch_alice",
                                    "SELECT c_custkey FROM customer LIMIT 10");
@@ -51,7 +60,7 @@ void testSingleIntColumn() {
   cout << gates2 - gates1 << endl;
 }
 
-void testTwoIntColumns() {
+TEST_F(secure_sort_test,  testTwoIntColumns) {
   PQDataProvider pq;
   auto lineitem = pq.GetQueryTable(
       "dbname=tpch_alice", "SELECT o_orderkey, o_custkey FROM orders LIMIT 10");
@@ -80,7 +89,7 @@ void testTwoIntColumns() {
   cout << gates2 - gates1 << endl;
 }
 
-void testSingleFloatColumnEncrypted() {
+TEST_F(secure_sort_test,  testSingleFloatColumnEncrypted) {
   PQDataProvider pq;
   auto lineitem = pq.GetQueryTable("dbname=tpch_alice",
                                    "SELECT c_acctbal FROM customer LIMIT 10");
@@ -109,7 +118,7 @@ void testSingleFloatColumnEncrypted() {
   cout << gates2 - gates1 << endl;
 }
 
-void testSingleVarcharColumn() {
+TEST_F(secure_sort_test,  testSingleVarcharColumn) {
   PQDataProvider pq;
   auto lineitem = pq.GetQueryTable("dbname=tpch_alice",
                                    "SELECT c_name FROM customer LIMIT 10");
@@ -139,7 +148,7 @@ void testSingleVarcharColumn() {
 }
 // TODO: Sort by timestamp
 // TODO: Sort by fixed length string
-void testSingleFloatColumnUnencrypted() {
+TEST_F(secure_sort_test, testSingleFloatColumnUnencrypted) {
   PQDataProvider pq;
   auto qt = pq.GetQueryTable("dbname=tpch_alice",
                              "SELECT c_acctbal FROM customer LIMIT 10");
@@ -154,7 +163,7 @@ void testSingleFloatColumnUnencrypted() {
   }
 }
 
-void testLineItemSort() {
+TEST_F(secure_sort_test, testLineItemSort) {
   PQDataProvider pq;
   auto qt = pq.GetQueryTable("dbname=tpch_unioned",
                              "SELECT l_orderkey FROM lineitem LIMIT 10");
@@ -174,9 +183,15 @@ void testLineItemSort() {
               << std::endl;
   }
 }
-int main(int argc, char **argv) {
-  gflags::ParseCommandLineFlags(&argc, &argv, true /* remove_flags */);
-  testLineItemSort();
+
+
+
+
+//int main(int argc, char **argv) {
+
+  //gflags::ParseCommandLineFlags(&argc, &argv, true /* remove_flags */);
+
+ // testLineItemSort();
   // emp::NetIO *io = new emp::NetIO(
   // FLAGS_party == emp::ALICE ? nullptr : FLAGS_hostname.c_str(), FLAGS_port);
   // setup_semi_honest(io, FLAGS_party);
@@ -185,4 +200,4 @@ int main(int argc, char **argv) {
   //  testSingleFloatColumnEncrypted();
   // testSingleFloatColumnUnencrypted();
   // testSingleVarcharColumn();
-}
+//}
