@@ -14,11 +14,14 @@ find_package(GMP REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Emp REQUIRED)
 find_library(EMP_LIBRARIES NAMES emp-tool)
-find_library(PROTOBUF protobuf)
+find_library(PROTOBUF_LIBRARY protobuf)
 find_library(GRPC++ grpc++)
 find_library(GRPC grpc)
 find_library(GFLAGS gflags)
 find_library(DL dl)
+find_library(PQXX_LIBRARY pqxx)
+#find_library(PQ_LIBRARY pq)
+#find_library(PQXX pqxx)
 find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc)
@@ -29,8 +32,6 @@ get_filename_component(vdb_proto "../proto/dbquery.proto" ABSOLUTE)
 get_filename_component(vdb_proto_path "${vdb_proto}" PATH)
 set(vdb_proto_srcs "rpc/dbquery.pb.cc")
 set(vdb_proto_hdrs "rpc/dbquery.pb.h")
-set(vdb_grpc_srcs "rpc/dbquery.grpc.pb.cc")
-set(vdb_grpc_hdrs "rpc/dbquery.grpc.pb.h")
 
 
 add_custom_command(
@@ -81,9 +82,9 @@ set(sources
 
 
 
-message("verify ${OPENSSL_LIBRARIES}: ${Boost_LIBRARIES}")
+message("verify ${OPENSSL_LIBRARIES}:${Boost_LIBRARIES}:${PQXX_LIBRARY}:")
 add_library(${NAME} SHARED ${sources})
-target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES} ${PROTOBUF_LIBRARIES} pthread)
+target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES} ${PROTOBUF_LIBRARY} ${PQXX_LIBRARY} pthread)
 
 
 install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
