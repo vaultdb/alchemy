@@ -12,7 +12,6 @@ set(NAME "vaultdb-emp")
 include(cmake/common.cmake)
 include(GoogleTest)
 
-#link_directories(/usr/local/lib)
 
 find_package(OpenSSL REQUIRED)
 find_package(GMP REQUIRED)
@@ -26,7 +25,7 @@ find_library(GRPC grpc)
 find_library(GFLAGS_LIBRARY gflags)
 find_library(DL dl)
 
-#depends on pqxx v5 or greater
+#depends on pqxx v6.2
 find_library(PQXX_LIBRARY pqxx)
 
 find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
@@ -41,8 +40,6 @@ set(vdb_proto_hdrs "rpc/dbquery.pb.h")
 execute_process(COMMAND which protoc OUTPUT_VARIABLE PROTOC)
 string(REGEX REPLACE "\n$" "" PROTOC "${PROTOC}")  #delete trailing newline
 execute_process(COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})
-
-
 
 option(PACKAGE_TESTS "Build the tests" ON)
 if(PACKAGE_TESTS)

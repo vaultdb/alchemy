@@ -20,6 +20,9 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 include(GoogleTest)
 
 
+#add_subdirectory("${PROJECT_SOURCE_DIR}/external/googletest" "external/googletest")
+
+
 add_custom_command(
 		OUTPUT "${vdb_proto_srcs}" "${vdb_proto_hdrs}"
 		COMMAND ${PROTOC}
