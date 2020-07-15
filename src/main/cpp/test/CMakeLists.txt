@@ -1,3 +1,9 @@
+
+include(../cmake/common.cmake)
+include(FetchContent)
+
+
+
 include_directories(
     ${gtest_SOURCE_DIR}
     ${gtest_SOURCE_DIR}/include
@@ -12,7 +18,23 @@ include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_D
 
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  	if(NOT DEFINED GTEST_LIBRARY)
+	  FetchContent_Declare(
+		googletest
+		GIT_REPOSITORY https://github.com/google/googletest.git
+		GIT_TAG        release-1.8.0
+		)
 
+	      FetchContent_GetProperties(googletest)
+	      if(NOT googletest_POPULATED)
+		FetchContent_Populate(googletest)
+		add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+	      endif()
+
+	    endif()
+	  endif()
+	  
 macro(package_add_test TESTNAME)
     # create an exectuable in which the tests will be stored
     add_executable(${TESTNAME} ${ARGN})

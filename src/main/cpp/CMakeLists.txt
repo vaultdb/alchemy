@@ -1,20 +1,23 @@
 #based on emp-tool pipeline
 # https://github.com/emp-toolkit/emp-tool
 #SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.11)
 project (vaultdb-emp)
 set(NAME "vaultdb-emp")
 
-
+#initialize gtest
+#execute_process(COMMAND git submodule update --init --recursive WORKING_DIRECTORY ../../..) 
+#add_subdirectory("${PROJECT_SOURCE_DIR}/external/googletest" "external/googletest")
 
 include(cmake/common.cmake)
+include(GoogleTest)
 
-
+#link_directories(/usr/local/lib)
 
 find_package(OpenSSL REQUIRED)
 find_package(GMP REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
-find_package(Emp REQUIRED)
+find_package(EMP REQUIRED)
 
 find_library(EMP_LIBRARIES NAMES emp-tool)
 find_library(PROTOBUF_LIBRARY protobuf)
@@ -22,10 +25,28 @@ find_library(GRPC++ grpc++)
 find_library(GRPC grpc)
 find_library(GFLAGS_LIBRARY gflags)
 find_library(DL dl)
+
+#depends on pqxx v5 or greater
 find_library(PQXX_LIBRARY pqxx)
 
 find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
-add_subdirectory("${PROJECT_SOURCE_DIR}/external/googletest" "external/googletest")
+
+
+get_filename_component(vdb_proto "../proto/dbquery.proto" ABSOLUTE)
+get_filename_component(vdb_proto_path "${vdb_proto}" PATH)
+set(vdb_proto_srcs "rpc/dbquery.pb.cc")
+set(vdb_proto_hdrs "rpc/dbquery.pb.h")
+
+#find_program(PROTOC protoc /usr/local/bin:/usr/bin)
+execute_process(COMMAND which protoc OUTPUT_VARIABLE PROTOC)
+string(REGEX REPLACE "\n$" "" PROTOC "${PROTOC}")
+execute_process(COMMAND echo "Found ${PROTOC}")
+
+
+execute_process(COMMAND echo "Running ${PROTOC}  --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto}")
+execute_process(COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})
+
+
 
 option(PACKAGE_TESTS "Build the tests" ON)
 if(PACKAGE_TESTS)
@@ -40,27 +61,15 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc
         ${CMAKE_CURRENT_BINARY_DIR}/querytable
         ${CMAKE_CURRENT_BINARY_DIR}/common)
 
-include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
+include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR} ${GRPC_INCLUDE_DIR})
 
 link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 
-get_filename_component(vdb_proto "../proto/dbquery.proto" ABSOLUTE)
-get_filename_component(vdb_proto_path "${vdb_proto}" PATH)
-set(vdb_proto_srcs "rpc/dbquery.pb.cc")
-set(vdb_proto_hdrs "rpc/dbquery.pb.h")
 
 
-add_custom_command(
-		OUTPUT "${vdb_proto_srcs}" "${vdb_proto_hdrs}"
-		COMMAND ${PROTOC}
-		ARGS
-		--cpp_out "${CMAKE_CURRENT_BINARY_DIR}/rpc"
-		-I "${vdb_proto_path}"
-		"${vdb_proto}"
-		DEPENDS "${vdb_proto}")
 
-add_custom_target(rpc_proto_gen ALL DEPENDS ${vdb_proto} ${vdb_proto_srcs} ${vdb_proto_headers})
+
 
 
 set(sources

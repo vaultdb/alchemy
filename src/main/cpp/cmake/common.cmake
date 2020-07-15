@@ -1,6 +1,7 @@
 #from emp-toolkit
 # https://github.com/emp-toolkit/emp-tool/blob/master/cmake/common.cmake
 
+
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	if(NOT DEFINED OPENSSL_ROOT_DIR)
 		set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
@@ -28,9 +29,12 @@ if(NOT WIN32)
   set(BoldWhite   "${Esc}[1;37m")
 endif()
 
-set(CMAKE_MACOSX_RPATH 0)
-set(CMAKE_CXX_STANDARD 17)
+#set(CMAKE_MACOSX_RPATH 0)
+#set(CMAKE_CXX_STANDARD 17)
+#set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#set(CMAKE_CXX_EXTENSIONS OFF)
 
+message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -38,7 +42,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 #Compilation flags
 set(CMAKE_C_FLAGS "-pthread -Wall -march=native -O3 -maes -mrdseed")
-#set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++14")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
 
