@@ -70,6 +70,27 @@ Start up PostgreSQL and run the following command in the VaultDB home directory:
 This sets up the test databases in PostgreSQL. 
 
 --------------------------------------------------------------------------------
+Setup for C++ alone 
+--------------------------------------------------------------------------------
+Clone the repository:
+
+	$ git clone --recurse-submodules https://github.com/vaultdb/vaultdb-core
+
+Configure the build:
+
+	$ cd src/main/cpp
+	$ cmake .
+
+Make the library and tests:
+	$ make 
+
+To run a test:
+	$ ./run-alice.sh <test name>
+	$ ./run-bob.sh <test name>
+	
+Run both scripts concurrently in separate terminals.
+
+--------------------------------------------------------------------------------
 Running the example queries
 --------------------------------------------------------------------------------
 Run the following commands for the respective queries:
