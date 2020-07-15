@@ -37,13 +37,9 @@ get_filename_component(vdb_proto_path "${vdb_proto}" PATH)
 set(vdb_proto_srcs "rpc/dbquery.pb.cc")
 set(vdb_proto_hdrs "rpc/dbquery.pb.h")
 
-#find_program(PROTOC protoc /usr/local/bin:/usr/bin)
+
 execute_process(COMMAND which protoc OUTPUT_VARIABLE PROTOC)
-string(REGEX REPLACE "\n$" "" PROTOC "${PROTOC}")
-execute_process(COMMAND echo "Found ${PROTOC}")
-
-
-execute_process(COMMAND echo "Running ${PROTOC}  --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto}")
+string(REGEX REPLACE "\n$" "" PROTOC "${PROTOC}")  #delete trailing newline
 execute_process(COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})
 
 
@@ -107,7 +103,6 @@ set(sources
 
 
 
-message("verify ${OPENSSL_LIBRARIES}:${Boost_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY} ")
 add_library(${NAME} SHARED ${sources})
 target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES} ${PROTOBUF_LIBRARY} ${PQXX_LIBRARY} ${GFLAGS_LIBRARY} pthread gtest gmock gtest_main )
 

@@ -31,3 +31,7 @@ add_custom_command(
 
 	      
 add_custom_target(rpc_proto_gen ALL DEPENDS ${vdb_proto} ${vdb_proto_srcs} ${vdb_proto_headers})
+
+#find_program(PROTOC protoc /usr/local/bin:/usr/bin)
+
+message("verify ${OPENSSL_LIBRARIES}:${Boost_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY} ")
