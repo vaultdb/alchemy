@@ -17,7 +17,17 @@ ln -s /usr/local/opt/openssl/lib/libcrypto.dylib /usr/local/lib/
 ln -s /usr/local/opt/openssl/lib/libssl.dylib /usr/local/lib/
 
 #download emp to dep
-/bin/bash deps/emp/install.sh 
+cd deps/emp
+/bin/bash emp/install.sh 
+
+#to install correct pqxx version
+cd ..
+git clone --branch 6.2.5 https://github.com/jtv/libpqxx.git
+cd libpqxx
+./configure  --disable-documentation --enable-shared
+make 
+sudo make install
+
 
 #end
 echo "Setup completed successfully."
