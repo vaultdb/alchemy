@@ -36,7 +36,7 @@ cd $BASEDIR/external
 if [ ! -d "libpqxx" ]; then
 	git clone --branch 6.2.5 https://github.com/jtv/libpqxx.git
 	cd libpqxx
-	./configure --prefix=$BASEDIR/lib/ --disable-documentation
+	./configure --prefix=$BASEDIR/lib/ --disable-documentation --enable-shared
 	make -j10
 	make install
 fi

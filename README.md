@@ -20,11 +20,12 @@ Requirements
 * PostgreSQL 9.5+
 * Apache Calcite 1.8+
 * Apache Maven 3+
-* Oracle Java 8+
+* Java 8+
 * JavaCC 5.0+
 * Python 2.7+
-* Protobuf (protobuf-c-compiler protobuf-compiler)
-* libpqxx-dev
+* cmake 3.11+
+* Protobuf (protobuf-c-compiler protobuf-compiler in brew)
+* libpqxx 6.2.5 - may be installed with setup.sh
 * libgflags-dev
 * libgrpc++-dev, libgrpc-dev
 
@@ -33,9 +34,9 @@ Setup
 --------------------------------------------------------------------------------
 Clone the repository:
 
-	$ git clone https://github.com/vaultdb/vaultdb-core
+	$ git clone --recurse-submodules https://github.com/vaultdb/vaultdb-core
 
-Install the dependencies as needed:
+Install the dependencies above as needed.
 
 * Install PostgreSQL:
 
