@@ -140,8 +140,8 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
     aggDef.scalarAggregates.push_back(avgDisc);
     aggDef.scalarAggregates.push_back(countOrder);
 
+    aggDef.groupByOrdinals.push_back(0);
     aggDef.groupByOrdinals.push_back(1);
-    aggDef.groupByOrdinals.push_back(2);
 
 
 
