@@ -182,10 +182,9 @@ namespace vaultdb {
                  "   o.o_totalprice\n"
                  " order by\n"
                  "   o.o_totalprice desc,\n"
-                 "   o.o_orderdate\n" 
+                 "   o.o_orderdate\n"
                  " limit 100\n"}
     };
-    std::map<std::string, int> mymap = {{"one", 1}, {"two", 2}, {"three", 3}};
 
 
 }
