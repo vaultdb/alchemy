@@ -2,13 +2,13 @@
 // Created by madhav on 1/29/20.
 //
 
-#ifndef TESTING_DEFS_H
-#define TESTING_DEFS_H
+#ifndef _DEFS_H
+#define _DEFS_H
 
 #include <emp-tool/utils/constants.h>
 namespace vaultdb {
 
-enum class EmpParty { ALICE = emp::ALICE, BOB = emp::BOB };
+enum class EmpParty { ALICE = emp::ALICE, BOB = emp::BOB, PUBLIC = emp::PUBLIC, XOR = emp::XOR };
 
 }
-#endif // TESTING_DEFS_H
+#endif // _DEFS_H

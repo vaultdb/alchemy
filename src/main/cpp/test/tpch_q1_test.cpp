@@ -3,9 +3,11 @@
 //
 
 #include "secure_aggregate.h"
+#include "secure_sort.h"
 #include "emp-sh2pc/emp-sh2pc.h"
 #include "emp-tool/emp-tool.h"
 #include "querytable/private_share_utility.h"
+#include "support/tpch_queries.h"
 
 
 #include <ctime>
@@ -24,6 +26,8 @@ DEFINE_string(hostname, "127.0.0.1", "alice hostname for execution");
 
 
 class tpch_q1_test : public ::testing::Test {
+
+
 protected:
     void SetUp() override {};
     void TearDown() override{};
@@ -37,28 +41,13 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
     ScalarAggregateDef sumQty, sumBasePrice, sumCharge, sumDiscPrice, avgQty, avgPrice, avgDisc, countOrder;
     ShareDef def;
 
-    string baseQuery = "select \n"
-                       "  l_returnflag, \n"
-                       "  l_linestatus, \n"
-                       "  sum(l_quantity) as sum_qty, \n"
-                       "  sum(l_extendedprice) as sum_base_price, \n"
-                       "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, \n"
-                       "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, \n"
-                       "  avg(l_quantity) as avg_qty, \n"
-                       "  avg(l_extendedprice) as avg_price, \n"
-                       "  avg(l_discount) as avg_disc, \n"
-                       "  count(*) as count_order \n"
-                       "from \n"
-                       "  lineitem \n"
-                       " where \n"
-                       "  l_shipdate <= date '1998-08-03' \n"
-                       "group by \n"
-                       "  l_returnflag, \n"
-                       "  l_linestatus \n"
-                       " \n"
-                       "order by \n"
-                       "  l_returnflag, \n"
-                       "  l_linestatus";
+    vector<int> sortOrdinals{0, 1};
+    SortDef sortDef;
+    sortDef.order = SortOrder::ASCENDING; // TODO: each sort ordinal needs its own collation (ASC||DESC)
+    sortDef.ordinals = sortOrdinals;
+
+
+    string baseQuery = tpch_queries[1];
 
     EmpParty party =
             FLAGS_party == emp::ALICE ? EmpParty::ALICE : EmpParty::BOB;
@@ -96,6 +85,11 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
         ShareData(inputTuples->GetSchema(), party, inputTuples.get(), def);
 
 
+
+
+    // sort the input tuples
+    // TODO: use merge sort instead (latter half of bitonic sort network)
+    Sort(encryptedInputTuples.get(), sortDef);
 
     sumQty.ordinal = 2;
     sumQty.id = vaultdb::AggregateId::SUM;
@@ -177,28 +171,4 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
 
 
  */
-/*
- *
- * select
-	l_returnflag,
-	l_linestatus,
-	sum(l_quantity) as sum_qty,
-	sum(l_extendedprice) as sum_base_price,
-	sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,
-	sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,
-	avg(l_quantity) as avg_qty,
-	avg(l_extendedprice) as avg_price,
-	avg(l_discount) as avg_disc,
-	count(*) as count_order
-from
-	lineitem
-where
-	l_shipdate <= date '1998-12-01' - interval ':1' day (3)
-group by
-	l_returnflag,
-	l_linestatus
-order by
-	l_returnflag,
-	l_linestatus;
-:n -1
- */
+
