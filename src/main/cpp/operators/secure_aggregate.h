@@ -11,10 +11,12 @@
 struct ScalarAggregateDef {
   int ordinal;
   AggregateId id;
+  string alias; // TODO: integrate this with QueryTable
 };
 
 struct AggregateDef {
-  std::vector<ScalarAggregateDef> defs;
+  std::vector<ScalarAggregateDef> scalarAggregates;
+  std::vector<int> groupByOrdinals;
 };
 std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
                                       const AggregateDef &def);
