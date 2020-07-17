@@ -2,12 +2,16 @@
 // Created by madhav on 1/31/20.
 //
 
-#ifndef TESTING_PRIVATE_SHARE_UTILITY_H
-#define TESTING_PRIVATE_SHARE_UTILITY_H
+#ifndef _PRIVATE_SHARE_UTILITY_H
+#define _PRIVATE_SHARE_UTILITY_H
 
 #include "query_schema.h"
 #include "query_table.h"
 #include <common/defs.h>
+
+using namespace vaultdb;
+
+class QueryTable;
 
 struct ShareCount {
   EmpParty party;
@@ -22,4 +26,4 @@ std::unique_ptr<QueryTable> ShareData(const QuerySchema *shared_schema,
                                        QueryTable *input_table,
                                        ShareDef &def);
 
-#endif // TESTING_PRIVATE_SHARE_UTILITY_H
+#endif // _PRIVATE_SHARE_UTILITY_H

@@ -50,14 +50,29 @@ get_filename_component(vdb_proto_path "${vdb_proto}" PATH)
 set(vdb_proto_srcs "rpc/dbquery.pb.cc")
 set(vdb_proto_hdrs "rpc/dbquery.pb.h")
 
-
+#find protobuf
 execute_process(COMMAND which protoc OUTPUT_VARIABLE PROTOC)
 string(REGEX REPLACE "\n$" "" PROTOC "${PROTOC}")  #delete trailing newline
-execute_process(COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})
+#execute_process(COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})
 
 
+add_custom_target(
+		protobuf_generate ALL
+		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/placeholder.h
+)
+
+add_custom_command(
+		OUTPUT
+		${CMAKE_CURRENT_BINARY_DIR}/placeholder.h  # fake! unconditionally triggers regenerating code
+		${CMAKE_CURRENT_BINARY_DIR}/${vdb_proto_srcs}    # real generated file
+		${CMAKE_CURRENT_BINARY_DIR}/${vdb_proto_hdrs}    # real generated file
+		COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})
 
 
+#regenerate protobuf for every build
+#add_custom_target(TARGET protobuf-gen ALL
+#		PRE_BUILD
+#		COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc
 		${CMAKE_CURRENT_BINARY_DIR}/data

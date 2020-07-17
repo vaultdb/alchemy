@@ -75,3 +75,5 @@ endif()
 
 
 include(FetchContent)
+
+#execute_process(COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})

@@ -9,6 +9,8 @@
 #include "query_schema.h"
 #include "query_tuple.h"
 #include <memory>
+#include <vaultdb.h>
+
 using namespace vaultdb;
 
 template <class BaseIterator> class DereferenceIterator : public BaseIterator {
@@ -72,6 +74,7 @@ public:
   const_iterator end() const { return dereference_iterator(tuples_.end()); }
   const_iterator cend() const { return dereference_iterator(tuples_.cend()); }
   std::unique_ptr<QuerySchema> ReleaseSchema();
+  std::unique_ptr<QueryTable> reveal(EmpParty party) const;
 };
 
 #endif // TESTING_QUERY_TABLE_H

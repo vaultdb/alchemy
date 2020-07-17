@@ -50,3 +50,8 @@ std::unique_ptr<QueryTable> QueryTable::GetQueryFromProtoStream(const void *buf,
 std::string QueryTable::GetQueryTableXorString(QueryTable *input_table) {
   return QueryTableToXorProto(input_table).SerializeAsString();
 }
+
+
+std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
+    return std::unique_ptr<QueryTable>(nullptr); // placeholder
+}
