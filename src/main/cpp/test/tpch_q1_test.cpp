@@ -20,7 +20,7 @@ using namespace std;
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43439, "port for EMP execution");
-DEFINE_string(hostname, "127.0.0.1", "hostname for execution");
+DEFINE_string(hostname, "127.0.0.1", "alice hostname for execution");
 
 
 class tpch_q1_test : public ::testing::Test {
