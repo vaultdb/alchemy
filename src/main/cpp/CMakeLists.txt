@@ -1,16 +1,30 @@
 #based on emp-tool pipeline
 # https://github.com/emp-toolkit/emp-tool
-#SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 cmake_minimum_required (VERSION 3.11)
 project (vaultdb-emp)
 set(NAME "vaultdb-emp")
 
-#initialize gtest
-#execute_process(COMMAND git submodule update --init --recursive WORKING_DIRECTORY ../../..) 
-#add_subdirectory("${PROJECT_SOURCE_DIR}/external/googletest" "external/googletest")
 
 include(cmake/common.cmake)
-include(GoogleTest)
+
+
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        release-1.8.0
+)
+
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+  FetchContent_Populate(googletest)
+  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+endif()
+
+
+enable_testing()
+add_subdirectory(test)
 
 
 find_package(OpenSSL REQUIRED)
@@ -25,7 +39,7 @@ find_library(GRPC grpc)
 find_library(GFLAGS_LIBRARY gflags)
 find_library(DL dl)
 
-#depends on pqxx v6.2
+#depends on pqxx v6.2.5
 find_library(PQXX_LIBRARY pqxx)
 
 find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
@@ -41,12 +55,9 @@ execute_process(COMMAND which protoc OUTPUT_VARIABLE PROTOC)
 string(REGEX REPLACE "\n$" "" PROTOC "${PROTOC}")  #delete trailing newline
 execute_process(COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})
 
-option(PACKAGE_TESTS "Build the tests" ON)
-if(PACKAGE_TESTS)
-	enable_testing()
-	include(GoogleTest)
-	add_subdirectory(test)
-endif()
+
+
+
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc
 		${CMAKE_CURRENT_BINARY_DIR}/data
@@ -57,12 +68,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR} ${GRPC_INCLUDE_DIR})
 
 link_directories(${CMAKE_SOURCE_DIR}/lib)
-
-
-
-
-
-
 
 
 set(sources
@@ -97,6 +102,7 @@ set(sources
 		data/DataProvider.cpp
 		data/proto_converter.cpp
 )
+
 
 
 

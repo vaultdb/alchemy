@@ -1,6 +1,19 @@
 
 include(../cmake/common.cmake)
-include(FetchContent)
+include(GoogleTest)
+
+#include(FetchContent)
+#FetchContent_Declare(
+#  googletest
+#  GIT_REPOSITORY https://github.com/google/googletest.git
+#  GIT_TAG        release-1.8.0
+#)
+
+#FetchContent_GetProperties(googletest)
+#if(NOT googletest_POPULATED)
+#  FetchContent_Populate(googletest)
+#  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+#endif()
 
 
 
@@ -16,7 +29,7 @@ include_directories(
 
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
 
-link_directories(${CMAKE_SOURCE_DIR}/lib)
+
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   	if(NOT DEFINED GTEST_LIBRARY)
