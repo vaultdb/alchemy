@@ -34,7 +34,7 @@ Setup
 --------------------------------------------------------------------------------
 Clone the repository:
 
-	$ git clone --recurse-submodules https://github.com/vaultdb/vaultdb-core
+	$ git clone  https://github.com/vaultdb/vaultdb-core
 
 Install the dependencies above as needed.
 
