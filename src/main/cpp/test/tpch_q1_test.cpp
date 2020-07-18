@@ -109,16 +109,13 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
 
 
 
-   // TODO: shashank: write a utility that decrypts the querytable into a new one that is public
-   // will need to create a reveal method in QueryTable, QueryTuple, and QueryField
-   // may want to model decoding after proto_converter switch statement
-
-    std::unique_ptr<QueryTable> decrypted = std::unique_ptr<QueryTable>(aggregated.get()); // TODO: aggregated->reveal(emp::PUBLIC);
+   // TODO: shashank: verify the reveal method in QueryTable
+    std::unique_ptr<QueryTable> decrypted = aggregated->reveal(EmpParty::PUBLIC);
     std::unique_ptr<QueryTable> expected = pq.GetQueryTable("dbname=tpch_unioned",
                                             baseQuery);
 
 
-    //std::cout << "Decrypted: " << decrypted << endl;
+    std::cout << "Decrypted: " << decrypted << endl;
     std::cout << "Expected: "  << expected << endl;
 
    assert((decrypted.get()) == (expected.get()));

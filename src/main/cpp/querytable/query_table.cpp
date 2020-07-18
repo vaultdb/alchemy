@@ -51,13 +51,13 @@ std::string QueryTable::GetQueryTableXorString(QueryTable *input_table) {
 std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
     // TODO: set it so that when it is XOR-encoded, it is encrypted
     // this has downstream effects that need to be figured out first
-/*
+
     std::unique_ptr<QueryTable> result(new QueryTable(false, this->num_tuples_));
 
     for(int i = 0; i < num_tuples_; ++i) {
-        std::unique_ptr<QueryTuple> decrypted(tuples_[i]->reveal(party));
-        result->tuples_.push_back(decrypted);
-    }
+        QueryTuple *decrypted  = tuples_[i]->reveal(party);
+        result->tuples_.emplace_back(std::unique_ptr<QueryTuple>(decrypted));
+   }
 
-    return result;*/
+    return result;
 }
