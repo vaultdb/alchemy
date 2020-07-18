@@ -2,8 +2,8 @@
 // Created by madhav on 1/13/20.
 //
 
-#ifndef TESTING_QUERY_TUPLE_H
-#define TESTING_QUERY_TUPLE_H
+#ifndef _QUERY_TUPLE_H
+#define _QUERY_TUPLE_H
 
 #include "query_field.h"
 #include <map>
@@ -44,6 +44,8 @@ public:
   void SetDummyFlag(bool flag);
   const vaultdb::types::Value *GetDummyFlag();
   vaultdb::types::Value *GetMutableDummyFlag();
+
+    QueryTuple * reveal(EmpParty party) const;
 };
 
 } // namespace vaultdb

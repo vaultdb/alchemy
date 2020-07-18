@@ -1,9 +1,5 @@
-//
-// Created by madhav on 1/7/20.
-//
-
-#ifndef TESTING_QUERY_TABLE_H
-#define TESTING_QUERY_TABLE_H
+#ifndef _QUERY_TABLE_H
+#define _QUERY_TABLE_H
 
 #include "emp-tool/emp-tool.h"
 #include "query_schema.h"
@@ -77,4 +73,4 @@ public:
   std::unique_ptr<QueryTable> reveal(EmpParty party) const;
 };
 
-#endif // TESTING_QUERY_TABLE_H
+#endif // _QUERY_TABLE_H

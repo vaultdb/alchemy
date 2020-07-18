@@ -33,6 +33,11 @@ void QueryTuple::PutField(int ordinal, const QueryField *f) {
 void QueryTuple::SetDummyFlag(vaultdb::types::Value *v) {
   dummy_flag_.SetValue(v);
 }
+
+void QueryTuple::SetDummyFlag(bool aFlag) {
+    dummy_flag_.SetValue(types::TypeId::BOOLEAN, aFlag);
+}
+
 void QueryTuple::InitDummy() {
   if (is_encrypted_) {
     dummy_flag_.SetValue(types::TypeId::ENCRYPTED_BOOLEAN, emp::Bit(false));
@@ -50,4 +55,24 @@ vaultdb::types::Value *QueryTuple::GetMutableDummyFlag() {
 
 void QueryTuple::SetIsEncrypted(bool isEncrypted) {
   is_encrypted_ = isEncrypted;
+}
+
+
+QueryTuple* QueryTuple::reveal(EmpParty party) const {
+    // TODO: set it so that when it is XOR-encoded, it is encrypted
+    // this has downstream effects that need to be figured out first
+
+    QueryTuple *result = new QueryTuple(false);
+
+    bool revealedDummyFlag = (is_encrypted_) ? dummy_flag_.GetEmpBit()->reveal<bool>((int) party)
+            : dummy_flag_.GetBool();
+
+    result->SetDummyFlag(revealedDummyFlag);
+
+    for(int i = 0; i < num_fields_; ++i) {
+        result->fields_[i] = this->fields_[i].reveal(party);
+    }
+
+    return result;
+
 }

@@ -10,6 +10,7 @@
 #include "types/value.h"
 #include <memory>
 #include <vector>
+#include <defs.h>
 
 namespace vaultdb {
 
@@ -43,6 +44,9 @@ public:
   [[nodiscard]] const types::Value *GetValue() const;
   [[nodiscard]] types::Value *GetMutableValue();
   void SetValue(const types::Value *val);
+
+  QueryField reveal(EmpParty party) const;
+
 };
 
 } // namespace vaultdb
