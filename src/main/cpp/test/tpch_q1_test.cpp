@@ -38,7 +38,6 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
 
     PQDataProvider pq;
     AggregateDef aggDef;
-    ScalarAggregateDef sumQty, sumBasePrice, sumCharge, sumDiscPrice, avgQty, avgPrice, avgDisc, countOrder;
     ShareDef def;
 
     vector<int> sortOrdinals{0, 1};
@@ -91,51 +90,18 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
     // TODO: use merge sort instead (latter half of bitonic sort network)
     Sort(encryptedInputTuples.get(), sortDef);
 
-    sumQty.ordinal = 2;
-    sumQty.id = vaultdb::AggregateId::SUM;
-    sumQty.alias = "sum_qty";
 
-    sumBasePrice.ordinal = 3;
-    sumBasePrice.id = vaultdb::AggregateId::SUM;
-    sumBasePrice.alias = "sum_base_price";
+    aggDef.scalarAggregates.emplace_back(ScalarAggregateDef(2, vaultdb::AggregateId::SUM, "sum_qty"));
+    aggDef.scalarAggregates.emplace_back(ScalarAggregateDef(3, vaultdb::AggregateId::SUM, "sum_base_price"));
+    aggDef.scalarAggregates.emplace_back(ScalarAggregateDef(5, vaultdb::AggregateId::SUM, "sum_disc_price"));
+    aggDef.scalarAggregates.emplace_back(ScalarAggregateDef(6, vaultdb::AggregateId::SUM, "sum_charge"));
+    aggDef.scalarAggregates.emplace_back(ScalarAggregateDef(2, vaultdb::AggregateId::AVG, "avg_qty"));
+    aggDef.scalarAggregates.emplace_back(ScalarAggregateDef(3, vaultdb::AggregateId::AVG, "avg_price"));
+    aggDef.scalarAggregates.emplace_back(ScalarAggregateDef(4, vaultdb::AggregateId::AVG, "avg_disc"));
+    aggDef.scalarAggregates.emplace_back(ScalarAggregateDef(-1, vaultdb::AggregateId::COUNT, "count_order"));
 
-    sumDiscPrice.ordinal = 5;
-    sumDiscPrice.id = vaultdb::AggregateId::SUM;
-    sumDiscPrice.alias = "sum_disc_price";
-
-
-    sumCharge.ordinal = 6;
-    sumDiscPrice.id = vaultdb::AggregateId::SUM;
-    sumDiscPrice.alias = "sum_charge";
-
-
-    avgQty.ordinal = 2;
-    avgQty.id = vaultdb::AggregateId::AVG;
-    avgQty.alias = "avg_qty";
-
-    avgPrice.ordinal = 3;
-    avgPrice.id = vaultdb::AggregateId::AVG;
-    avgPrice.alias = "avg_price";
-
-    avgDisc.ordinal = 4;
-    avgDisc.id = vaultdb::AggregateId::AVG;
-    avgDisc.alias = "avg_disc";
-
-    countOrder.ordinal = -1; // COUNT(*)
-    countOrder.id = vaultdb::AggregateId::COUNT;
-    countOrder.alias = "count_order";
-
-    aggDef.scalarAggregates.push_back(sumQty);
-    aggDef.scalarAggregates.push_back(sumBasePrice);
-    aggDef.scalarAggregates.push_back(sumCharge);
-    aggDef.scalarAggregates.push_back(sumDiscPrice);
-    aggDef.scalarAggregates.push_back(avgQty);
-    aggDef.scalarAggregates.push_back(avgPrice);
-    aggDef.scalarAggregates.push_back(avgDisc);
-    aggDef.scalarAggregates.push_back(countOrder);
-
-    aggDef.groupByOrdinals.push_back(0);
-    aggDef.groupByOrdinals.push_back(1);
+    aggDef.groupByOrdinals.emplace_back(0);
+    aggDef.groupByOrdinals.emplace_back(1);
 
 
 

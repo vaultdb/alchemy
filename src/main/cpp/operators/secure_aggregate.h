@@ -2,16 +2,20 @@
 // Created by madhav on 2/17/20.
 //
 
-#ifndef TESTING_SECURE_AGGREGATE_H
-#define TESTING_SECURE_AGGREGATE_H
+#ifndef _SECURE_AGGREGATE_H
+#define _SECURE_AGGREGATE_H
 
 #include <querytable/query_table.h>
 #include "aggregate_id.h"
-//#include <querytable/expression/aggregate
+
+
 struct ScalarAggregateDef {
   int ordinal;
   AggregateId id;
   string alias; // TODO: integrate this with QueryTable
+
+  ScalarAggregateDef(int anOrdinal, AggregateId aggregateId, string anAlias)  : ordinal(anOrdinal), id(aggregateId), alias(anAlias)
+    {}
 };
 
 struct AggregateDef {
@@ -23,5 +27,5 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 void AddToCount(emp::Integer &count_so_far, emp::Integer add);
 emp::Integer GetAggregateById(emp::Integer result_vector,
                               AggregateId agg_type, emp::Bit dummy);
-#endif // TESTING_SECURE_AGGREGATE_H
+#endif // _SECURE_AGGREGATE_H
 
