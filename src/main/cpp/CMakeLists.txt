@@ -114,6 +114,7 @@ set(sources
 		rpc/DBQueryClient.cpp
 		data/pqxx_compat.cpp
 		data/PQDataProvider.cpp
+		data/PsqlDataProvider.cpp
 		data/DataProvider.cpp
 		data/proto_converter.cpp
 )

@@ -27,6 +27,7 @@ const types::Value *QueryField::GetValue() const { return &value_; }
 
 QueryField::QueryField() {}
 
+QueryField::QueryField(int fn) : field_num_(fn) {}
 void QueryField::SetValue(const types::Value *val) { value_.SetValue(val); }
 
 

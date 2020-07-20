@@ -11,3 +11,12 @@ PQDataProvider::GetQueryTable(std::string dbname, std::string query_string) {
   auto t = ProtoToQuerytable(proto_table);
   return t;
 }
+
+
+//  a placeholder
+
+std::unique_ptr<QueryTable> PQDataProvider::GetQueryTable(std::string dbname,
+                                          std::string query_string, bool hasDummmyFlag) {
+
+    return GetQueryTable(dbname, query_string);
+}

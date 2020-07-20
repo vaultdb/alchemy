@@ -169,5 +169,15 @@ void Value::SetValue(TypeId type, double val) {
   len_ = sizeof(double);
   value_.unencrypted_val.double_val = val;
 }
+
+Value::Value(TypeId id, string basicString) {
+        type_ = id;
+        is_encrypted_ = false;
+        len_ = sizeof(basicString.c_str());
+        char *varchar = new char[basicString.size()];
+        memcpy(varchar, basicString.c_str(), basicString.size());
+        value_.unencrypted_val.varchar_val = varchar;
+
+    }
 } // namespace vaultdb::types
 

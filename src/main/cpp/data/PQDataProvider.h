@@ -2,8 +2,8 @@
 // Created by madhav on 12/31/19.
 //
 
-#ifndef TESTING_PQDATAPROVIDER_H
-#define TESTING_PQDATAPROVIDER_H
+#ifndef PQ_DATA_PROVIDER_H
+#define PQ_DATA_PROVIDER_H
 
 #include "DataProvider.h"
 #include "pqxx_compat.h"
@@ -14,6 +14,9 @@ class PQDataProvider : DataProvider {
 public:
   std::unique_ptr<QueryTable> GetQueryTable(std::string dbname,
                                             std::string query_string);
+    std::unique_ptr<QueryTable> GetQueryTable(std::string dbname,
+                                              std::string query_string, bool hasDummmyFlag);
+
 };
 
-#endif // TESTING_PQDATAPROVIDER_H
+#endif // PQ_DATA_PROVIDER_H

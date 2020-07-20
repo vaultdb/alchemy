@@ -12,7 +12,7 @@ protected:
 
 TEST_F(secure_join_test, simple_execution_test) {
   PQDataProvider pq;
-  auto qt = pq.GetQueryTable("dbname=tpch_sf1", "SELECT l_orderkey FROM lineitem LIMIT 10");
+  auto qt = pq.GetQueryTable("dbname=tpch_sf1", "SELECT l_orderkey FROM lineitem LIMIT 10", false);
   JoinDef def;
   def.id = vaultdb::expression::ExpressionId::EQUAL;
   def.right_index = 0;

@@ -13,7 +13,9 @@ namespace vaultdb::types {
 class Value {
 
 public:
-  friend class Type;
+    Value(TypeId id, string basicString);
+
+    friend class Type;
   friend class EncryptedIntegerType;
   friend class IntegerType;
   friend class BooleanType;

@@ -31,6 +31,8 @@ public:
 
   QueryField(double val, int field_num);
 
+  QueryField(int field_num);
+
   QueryField(char *val, int field_num);
 
   QueryField(std::string val, int field_num);
