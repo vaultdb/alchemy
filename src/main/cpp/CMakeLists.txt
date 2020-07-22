@@ -121,6 +121,8 @@ set(sources
 
 
 
+message("verify ${OPENSSL_LIBRARIES}:${Boost_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY} ")
+
 
 add_library(${NAME} SHARED ${sources})
 target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES} ${PROTOBUF_LIBRARY} ${PQXX_LIBRARY} ${GFLAGS_LIBRARY} pthread gtest gmock gtest_main )
