@@ -25,7 +25,7 @@ struct AggregateDef {
 std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
                                       const AggregateDef &def);
 void AddToCount(emp::Integer &count_so_far, emp::Integer add);
-emp::Integer GetAggregateById(emp::Integer result_vector,
-                              AggregateId agg_type, emp::Bit dummy);
+//emp::Integer GetAggregateById(emp::Integer result_vector,
+//                              AggregateId agg_type, emp::Bit dummy);
 #endif // _SECURE_AGGREGATE_H
 
