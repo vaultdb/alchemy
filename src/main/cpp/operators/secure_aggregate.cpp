@@ -16,7 +16,7 @@
   do {                                                                         \
     not_dummy = emp::If(is_dummy, zero,                                        \
                         *input->GetTuple(cursor)                               \
-                             ->GetField(def.defs[idx].ordinal)                 \
+                             ->GetField(def.scalarAggregates[idx].ordinal)                 \
                              ->GetValue()                                      \
                              ->GetEmpInt());                                   \
   } while (0)
@@ -30,7 +30,7 @@
 #define SCALAR_SUM(is_dummy, result_ref, row, idx)                                \
   do {                                                                         \
     emp::Integer res = emp::If(*isDummy, zero, *input->GetTuple(row)           \
-    ->GetField(def.defs[idx].ordinal) ->GetValue() ->GetEmpInt());             \
+    ->GetField(def.scalarAggregates[idx].ordinal) ->GetValue() ->GetEmpInt());             \
     AddToCount(result_ref, res);                                               \
   } while (0)
 
@@ -38,7 +38,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
                                       const AggregateDef &def) {
 
   std::unique_ptr<QueryTable> aggregate_output;
-  if (def.gb_ordinals.size() == 0) {
+  if (def.groupByOrdinals.size() == 0) {
     aggregate_output =
         std::make_unique<QueryTable>(input->GetIsEncrypted(), 1);
   }
@@ -59,7 +59,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
   // result vector for each tuple in the relation
   std::vector<emp::Integer> result_vector;
 
-  for (int i = 0; i < def.defs.size(); i++) {
+  for (int i = 0; i < def.scalarAggregates.size(); i++) {
     result_vector.emplace_back(64, 0, emp::BOB);
   }
 
@@ -71,19 +71,19 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
   emp::Integer i2(64, 0, emp::BOB);
 
   std::vector<emp::Integer> groupby_vector;
-  for (int i = 0; i < def.gb_ordinals.size(); i++) {
+  for (int i = 0; i < def.groupByOrdinals.size(); i++) {
     groupby_vector.emplace_back(64, 0, emp::BOB);
   }
 
   // same shadow vector can be used for each bin
-  for (int idx = 0; idx < def.defs.size(); idx++) {
-    if (def.defs[idx].id == AggregateId ::AVG) {
+  for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
+    if (def.scalarAggregates[idx].id == AggregateId ::AVG) {
       running_avg[idx] = std::make_pair(i1, i2);
     }
   }
 
   // check if the query is scalar (no groupby clause)
-  if (def.gb_ordinals.size() == 0) {
+  if (def.groupByOrdinals.size() == 0) {
 
     emp::Bit *isDummy = new emp::Bit(false, emp::PUBLIC);
 
@@ -92,10 +92,10 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       // dummy flag to determine if the tuplle is a Dummy value
       *isDummy = *input->GetTuple(row)->GetDummyFlag()->GetEmpBit();
 
-      for (int idx = 0; idx < def.defs.size(); idx++) {
+      for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
 
         // switch on the Aggregate ID
-        switch (def.defs[idx].id) {
+        switch (def.scalarAggregates[idx].id) {
 
         case AggregateId::COUNT: {
           SCALAR_COUNT(isDummy, result_vector[idx]);
@@ -114,15 +114,15 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
         }
       }
       // accumulating sum and count from the shadow vector and computing AVG()
-      for (int idx = 0; idx < def.defs.size(); idx++) {
-        if (def.defs[idx].id == AggregateId ::AVG) {
+      for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
+        if (def.scalarAggregates[idx].id == AggregateId ::AVG) {
           result_vector[idx] = running_avg[idx].first / running_avg[idx].second;
         }
       }
     }
 
     // creates resultant relation; inserting QueryField into tuple (just 1 row)
-    for (int i = 0; i < def.defs.size(); i++) {
+    for (int i = 0; i < def.scalarAggregates.size(); i++) {
       const QueryField f(result_vector[i], result_vector[i].length, i);
       aggregate_output->GetTuple(0)->PutField(i, &f);
     }
@@ -152,8 +152,8 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
             ->GetEmpBit();
 
       // groupby_eq (equality): bool=> checks for equality with prev. tuples GB
-      for (int idx = 0; idx < def.gb_ordinals.size(); idx++) {
-        int ord = def.gb_ordinals[idx];
+      for (int idx = 0; idx < def.groupByOrdinals.size(); idx++) {
+        int ord = def.groupByOrdinals[idx];
         group_by =
             *input->GetTuple(cursor)->GetField(ord)->GetValue()->GetEmpInt();
         groupby_eq =
@@ -161,9 +161,9 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
         groupby_vector[idx] = group_by;
       }
 
-      for (int idx = 0; idx < def.defs.size(); idx++) {
+      for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
 
-        switch (def.defs[idx].id) {
+        switch (def.scalarAggregates[idx].id) {
         case AggregateId::COUNT: {
           AGG_COUNT(isDummy);
           result_vector[idx] =
@@ -214,7 +214,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
         aggregate_output->GetTuple(cursor - 1)->SetDummyFlag(&prev_dval);
       }
 
-      for (int i = 0; i < def.defs.size(); i++) {
+      for (int i = 0; i < def.scalarAggregates.size(); i++) {
         const QueryField f(result_vector[i], result_vector[i].length, i);
         aggregate_output->GetTuple(cursor)->PutField(i, &f);
       }

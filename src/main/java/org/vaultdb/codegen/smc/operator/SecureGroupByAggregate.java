@@ -134,7 +134,7 @@ public class SecureGroupByAggregate extends SecureOperator {
 			  SecureRelDataTypeField field = aggFieldPos.next();
 			  int dstOrdinal = field.getIndex();
 			  dst +=     "    ScalarAggregateDef def" + defId + " = {" + dstOrdinal + ", " + getAggCallString(call) + "};\n" ;
-			  addDefs += "    d.defs.push_back(def" + defId + ");\n";
+			  // addDefs += "    d.defs.push_back(def" + defId + ");\n";
 			   ++defId;
 		}
 

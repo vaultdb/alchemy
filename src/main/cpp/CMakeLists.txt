@@ -111,7 +111,7 @@ set(sources
 		querytable/expression/arithmetic_expression.cpp
 		querytable/expression/expression.cpp
 		querytable/expression/bool_expression.cpp
-		rpc/DBQueryClient.cpp
+		#rpc/DBQueryClient.cpp
 		data/pqxx_compat.cpp
 		data/PQDataProvider.cpp
 		data/PsqlDataProvider.cpp

@@ -112,8 +112,8 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
                                             baseQuery, true);
 
 
-    std::cout << "Decrypted: " << decrypted << endl;
-    std::cout << "Expected: "  << expected << endl;
+    //std::cout << "Decrypted: " << decrypted << endl;
+    //std::cout << "Expected: "  << expected << endl;
 
    assert((decrypted.get()) == (expected.get()));
 }

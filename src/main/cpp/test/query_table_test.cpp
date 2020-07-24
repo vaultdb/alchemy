@@ -123,8 +123,8 @@ TEST_F(query_table_test, encrypt_table) {
                                                             QueryTableTestEnvironment::getInputQuery(), true);
 
 
-    std::cout << "Decrypted: " << decrypted << endl;
-    std::cout << "Expected: "  << expected << endl;
+    //std::cout << "Decrypted: " << decrypted << endl;
+    //std::cout << "Expected: "  << expected << endl;
 
     assert((decrypted.get()) == (expected.get()));
 }
