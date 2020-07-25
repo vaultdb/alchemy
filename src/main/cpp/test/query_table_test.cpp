@@ -9,6 +9,7 @@
 #include <data/PsqlDataProvider.h>
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
+#include <emp-sh2pc/emp-sh2pc.h>
 
 using namespace emp;
 using namespace std;
@@ -63,6 +64,9 @@ TEST_F(query_table_test, read_table) {
     AggregateDef aggDef;
     ShareDef def;
 
+    emp::NetIO *io = new emp::NetIO(
+            FLAGS_party == emp::ALICE ? nullptr : FLAGS_hostname.c_str(), FLAGS_port);
+    setup_semi_honest(io, FLAGS_party);
 
 
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
@@ -73,9 +77,10 @@ TEST_F(query_table_test, read_table) {
 
 
     auto inputTuples = dataProvider.GetQueryTable(db_name,
-                                        QueryTableTestEnvironment::getInputQuery(), true);
+                                        QueryTableTestEnvironment::getInputQuery(), "lineitem", true);
 
 
+    cout << "Received: " << inputTuples << endl;
 }
 
 
@@ -104,7 +109,7 @@ TEST_F(query_table_test, encrypt_table) {
 
 
     auto inputTuples = dataProvider.GetQueryTable("dbname=" + db_name,
-                                        QueryTableTestEnvironment::getInputQuery(), true);
+                                        QueryTableTestEnvironment::getInputQuery(), "lineitem", true);
 
     ShareCount ca = {.party = EmpParty::ALICE};
     ca.num_tuples = inputTuples->GetNumTuples();
@@ -120,7 +125,7 @@ TEST_F(query_table_test, encrypt_table) {
 
     std::unique_ptr<QueryTable> decrypted = encryptedInputTuples->reveal(EmpParty::PUBLIC);
     std::unique_ptr<QueryTable> expected = dataProvider.GetQueryTable("dbname=tpch_unioned",
-                                                            QueryTableTestEnvironment::getInputQuery(), true);
+                                                            QueryTableTestEnvironment::getInputQuery(), "lineitem", true);
 
 
     //std::cout << "Decrypted: " << decrypted << endl;

@@ -1,7 +1,8 @@
-//
-// Created by madhav on 1/15/20.
-//
+#include <iso646.h>
+#include <vaultdb.h>
+
 #include "value.h"
+#include "util/type_utilities.h"
 
 namespace vaultdb::types {
 
@@ -121,6 +122,7 @@ void Value::SetValue(const Value *v) {
   case TypeId::DATE:
     break;
   case TypeId::VARCHAR:
+      SetValue(v->type_,  v->value_.unencrypted_val.varchar_val);
     break;
   case TypeId::ENCRYPTED_INTEGER32:
   case TypeId::ENCRYPTED_INTEGER64:
@@ -179,5 +181,58 @@ Value::Value(TypeId id, string basicString) {
         value_.unencrypted_val.varchar_val = varchar;
 
     }
+
+    std::ostream& operator<<(std::ostream &strm, const Value &aValue) {
+        string typeStr = TypeUtilities::getTypeIdString(aValue.GetType());
+        string valueStr = Value::getValueString(aValue);
+
+        return strm << "(" << typeStr << "," <<  valueStr << ")";
+    }
+
+
+     string Value::getValueString(Value v) {
+        switch (v.type_) {
+
+            case TypeId::BOOLEAN:
+                return  v.value_.unencrypted_val.bool_val ? "true" : "false";
+                break;
+            case TypeId::INTEGER32:
+                 return std::to_string(v.value_.unencrypted_val.int32_val);
+            case TypeId::INTEGER64:
+                return std::to_string(v.value_.unencrypted_val.int64_val);
+            case TypeId::NUMERIC:
+            case TypeId::FLOAT32:
+                return std::to_string(v.value_.unencrypted_val.double_val);
+            case TypeId::FLOAT64:
+                return std::to_string(v.value_.unencrypted_val.float_val);
+            case TypeId::VAULT_DOUBLE:
+                return std::to_string(v.value_.unencrypted_val.double_val);
+                break;
+            case TypeId::TIMESTAMP:
+                return "timestamp";
+            case TypeId::TIME:
+                break;
+            case TypeId::DATE:
+                return std::to_string(v.value_.unencrypted_val.date_val);
+            case TypeId::VARCHAR:
+                break;
+            case TypeId::ENCRYPTED_INTEGER32: {
+                int32_t decrypted = v.GetEmpInt()->reveal<int32_t>((int) EmpParty::PUBLIC);
+                return std::to_string(decrypted); }
+                case TypeId::ENCRYPTED_INTEGER64:
+                {
+                    int64_t decrypted = v.GetEmpInt()->reveal<int64_t>((int) EmpParty::PUBLIC);
+                    return std::to_string(decrypted); }
+            case TypeId::ENCRYPTED_BOOLEAN: {
+                bool decrypted = v.GetEmpBit()->reveal<bool>((int) EmpParty::PUBLIC); // returns a bool for both XOR and PUBLIC
+                return  decrypted ? "true" : "false"; }
+            case TypeId::ENCRYPTED_FLOAT32:
+                return "Not yet implemented";
+            case TypeId::INVALID:
+                return "invalid";
+
+        }
+    }
+
 } // namespace vaultdb::types
 

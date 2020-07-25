@@ -18,3 +18,13 @@ QuerySchema::QuerySchema(const QuerySchema &s) {
     PutField(i, *s.GetField(i));
   }
 }
+
+size_t QuerySchema::size() const {
+    size_t bitSize = 0L;
+    for (int i = 0; i < GetNumFields(); i++) {
+        bitSize += fields_.at(i)->size();
+
+    }
+
+        return bitSize;
+}

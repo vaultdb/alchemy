@@ -71,6 +71,8 @@ public:
   const_iterator cend() const { return dereference_iterator(tuples_.cend()); }
   std::unique_ptr<QuerySchema> ReleaseSchema();
   std::unique_ptr<QueryTable> reveal(EmpParty party) const;
+
+  bool *serialize() const;
 };
 
 #endif // _QUERY_TABLE_H

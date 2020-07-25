@@ -1,9 +1,5 @@
-//
-// Created by madhav on 1/13/20.
-//
-
-#ifndef TESTING_QUERY_SCHEMA_H
-#define TESTING_QUERY_SCHEMA_H
+#ifndef _QUERY_SCHEMA_H
+#define _QUERY_SCHEMA_H
 
 #include "query_field_desc.h"
 #include <map>
@@ -23,7 +19,8 @@ public:
 
   void PutField(int index, QueryFieldDesc &fd);
 
-  size_t GetTupleLen();
+  // returns size in bits
+  [[nodiscard]] size_t size() const;
 
   size_t GetFieldOffset(int field_num) const;
 
@@ -32,6 +29,7 @@ public:
   QuerySchema(const QuerySchema &s);
 
   [[nodiscard]] QueryFieldDesc *GetField(int i) const;
+
 };
 
 #endif // TESTING_QUERY_SCHEMA_H

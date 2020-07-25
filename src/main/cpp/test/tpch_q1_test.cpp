@@ -65,7 +65,7 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
             " ORDER BY l_returnflag, l_linestatus"; // TODO: use merge sort after secret sharing
 
     auto inputTuples = pq.GetQueryTable("dbname=" + db_name,
-                                 inputQuery, true);
+                                 inputQuery, "lineitem", true);
 
     ShareCount ca = {.party = EmpParty::ALICE};
     ca.num_tuples = inputTuples->GetNumTuples();
@@ -109,7 +109,7 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
    // TODO: shashank: verify the reveal method in QueryTable
     std::unique_ptr<QueryTable> decrypted = aggregated->reveal(EmpParty::PUBLIC);
     std::unique_ptr<QueryTable> expected = pq.GetQueryTable("dbname=tpch_unioned",
-                                            baseQuery, true);
+                                            baseQuery, "lineitem", true);
 
 
     //std::cout << "Decrypted: " << decrypted << endl;

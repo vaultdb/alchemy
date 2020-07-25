@@ -62,7 +62,7 @@ QueryTuple* QueryTuple::reveal(EmpParty party) const {
     // TODO: set it so that when it is XOR-encoded, it is encrypted
     // this has downstream effects that need to be figured out first
 
-    QueryTuple *result = new QueryTuple(false);
+   /* QueryTuple *result = new QueryTuple(false);
 
     bool revealedDummyFlag = (is_encrypted_) ? dummy_flag_.GetEmpBit()->reveal<bool>((int) party)
             : dummy_flag_.GetBool();
@@ -73,6 +73,8 @@ QueryTuple* QueryTuple::reveal(EmpParty party) const {
         result->fields_[i] = this->fields_[i].reveal(party);
     }
 
-    return result;
+    return result;*/
+
+   return nullptr;
 
 }

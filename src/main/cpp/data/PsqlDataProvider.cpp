@@ -13,15 +13,19 @@
 //typedef std::chrono::steady_clock::time_point time_point;
 
 std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
-                                          std::string query_string) {
+                                          std::string query_string, std::string tableName) {
 
-   return  GetQueryTable(dbname, query_string, false);
+   return  GetQueryTable(dbname, query_string,  tableName,  false);
 }
 
 // TODO: implement dummy tag support
+// tableName == nullptr if query result from more than one table
+// TODO: deduce table name from query, plugging this in for now with a member variable
 std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
-                                          std::string query_string, bool hasDummyTag) {
+                                          std::string query_string,  std::string tableName, bool hasDummyTag) {
 
+    srcTable = tableName;
+    dbName = dbname;
     result pqxxResult = query("dbname=" + dbname, query_string);
     vector<pqxx::row> rows;
 
@@ -49,7 +53,26 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input) {
     for(int i = 0; i < colCount; ++i) {
        string colName =  input.column_name(i);
        types::TypeId type = getFieldTypeFromOid(input.column_type(i));
-       QueryFieldDesc fieldDesc(i, true, colName, "anonymous", type);
+       QueryFieldDesc fieldDesc(i, true, colName, srcTable, type);
+       if(type == vaultdb::types::TypeId::VARCHAR) {
+           // query the schema to get the column width
+       //  SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name='<table>' AND column_name='<col name>';
+            std::string queryCharWidth( "SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=\'");
+           queryCharWidth += srcTable;
+           queryCharWidth += "\' AND column_name=\'";
+           queryCharWidth += input.column_name(i);
+           queryCharWidth += "\'";
+
+           pqxx::result pqxxResult = query("dbname=" + dbName, queryCharWidth);
+           // read single row, single val
+
+            size_t stringWidth = pqxxResult.at(0)[0].as<size_t>();
+
+            fieldDesc.setStringLength(stringWidth);
+
+       }
+
+
        result->PutField(i, fieldDesc);
     }
 
@@ -145,19 +168,4 @@ void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple) {
 
 
 
-    pqxx::result PsqlDataProvider::readQuery(string query, string dbName) {
-        pqxx::result res;
-        try {
-            string config= "dbname=" + dbName + " host=127.0.0.1 port=5432"; // TODO: put this into a config file
-            connection c(config);
-            pqxx::work workObj(c);
-            res = workObj.exec(query);
-            workObj.commit();
-        } catch (const std::exception &e) {
-            std::cerr << "Error reading data: " << e.what() << std::endl;
-
-            throw e;
-        }
-
-    }
 

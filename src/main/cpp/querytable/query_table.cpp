@@ -40,7 +40,7 @@ std::unique_ptr<QueryTable> QueryTable::GetQueryFromProtoStream(const void *buf,
                                                                 int len) {
   dbquery::Table t;
   t.ParseFromArray(buf, len);
-  return ProtoToQuerytable(t);
+  return ProtoToQueryTable(t);
 }
 
 std::string QueryTable::GetQueryTableXorString(QueryTable *input_table) {
@@ -60,4 +60,12 @@ std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
    }
 
     return result;
+}
+
+// iterate over all tuples and produce one long bit array for encrypting/decrypting in emp
+// only works in PUBLIC or XOR mode
+bool *QueryTable::serialize() const {
+    size_t dstSize = num_tuples_ * schema_.get()->size();
+    bool *dst = new bool[dstSize];
+    return nullptr;
 }
