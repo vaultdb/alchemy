@@ -39,7 +39,7 @@ ProtoToQuerySchema(const dbquery::Schema &proto_schema) {
   return s;
 }
 
-std::unique_ptr<QueryTable> ProtoToQuerytable(const dbquery::Table &t) {
+std::unique_ptr<QueryTable> ProtoToQueryTable(const dbquery::Table &t) {
   auto query_table = std::make_unique<QueryTable>(t.row_size());
   query_table->SetSchema(ProtoToQuerySchema(t.schema()));
   int index = 0;
@@ -63,10 +63,9 @@ std::unique_ptr<QueryTable> ProtoToQuerytable(const dbquery::Table &t) {
       case vaultdb::types::TypeId::VARCHAR:
         throw;
         qf =
-            std::make_unique<vaultdb::QueryField>(c.second.strfield(), c.first);
+            std::make_unique<vaultdb::QueryField>( c.first, c.second.strfield());
         break;
       case vaultdb::types::TypeId::VAULT_DOUBLE:
-//        throw;
         qf = std::make_unique<vaultdb::QueryField>(c.second.doublefield(),
                                                    c.first);
         break;

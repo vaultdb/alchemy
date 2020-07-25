@@ -1,34 +1,45 @@
-//
-// Created by madhav on 1/13/20.
-//
-
 #include "query_field.h"
 using namespace vaultdb;
 
 QueryField::QueryField(const QueryField &qf)
-    : field_num_(qf.field_num_), value_(qf.value_) {}
+    : ordinal(qf.ordinal), value_(qf.value_) {}
 
-QueryField::QueryField(int64_t val, int fn)
-    : field_num_(fn), value_(types::TypeId::INTEGER64, val) {}
+QueryField::QueryField(int fn, int64_t val)
+    : ordinal(fn), value_(types::TypeId::INTEGER64, val) {}
 
-QueryField::QueryField(int32_t val, int fn)
-    : field_num_(fn), value_(types::TypeId::INTEGER32, val) {}
+QueryField::QueryField(int fn, int32_t val)
+    : ordinal(fn), value_(types::TypeId::INTEGER32, val) {}
 
-QueryField::QueryField(emp::Integer val, int length, int field_num)
-    : field_num_(field_num),
+QueryField::QueryField(int field_num, emp::Integer val, int length)
+    : ordinal(field_num),
       value_(types::TypeId::ENCRYPTED_INTEGER64, val, length) {}
 
-QueryField::QueryField(double val, int field_num)
-    : field_num_(field_num), value_(types::TypeId::FLOAT32, val) {}
+
+QueryField::QueryField(int field_num, float val)
+        : ordinal(field_num), value_(types::TypeId::FLOAT32, val) {}
+
+
+QueryField::QueryField(int field_num, double val)
+    : ordinal(field_num), value_(types::TypeId::FLOAT64, val) {}
+
+QueryField::QueryField(int field_num, std::string varchar) :
+        ordinal(field_num),
+        value_(types::TypeId::VARCHAR, varchar) {}
+
 
 types::Value *QueryField::GetMutableValue() { return &value_; }
 
-const types::Value *QueryField::GetValue() const { return &value_; }
+types::Value *QueryField::GetValue() const {
+    return const_cast<types::Value *>(&value_);
+}
 
 QueryField::QueryField() {}
 
-QueryField::QueryField(int fn) : field_num_(fn) {}
-void QueryField::SetValue(const types::Value *val) { value_.SetValue(val); }
+QueryField::QueryField(int fn) : ordinal(fn) {}
+void QueryField::SetValue(const types::Value *val) {
+    std::cout << "QueryField::setValue: Have value: " << val->getValueString() << std::endl;
+    value_.SetValue(val);
+}
 
 
 QueryField QueryField::reveal(EmpParty party) const {
@@ -53,7 +64,7 @@ QueryField QueryField::reveal(EmpParty party) const {
         case types::TypeId::TIME:
         case types::TypeId::DATE:
         case types::TypeId::VARCHAR:
-            return result; // copy the public one, no need to reveal
+            return result; // copy the public field, no need to reveal
         case types::TypeId::ENCRYPTED_BOOLEAN: {
             bool decrypted = value.GetEmpBit()->reveal<bool>((int) party); // returns a bool for both XOR and PUBLIC
             dstValue = new types::Value(types::TypeId::BOOLEAN, decrypted);
@@ -79,3 +90,8 @@ QueryField QueryField::reveal(EmpParty party) const {
 
 
     }
+
+std::ostream &vaultdb::operator<<(std::ostream &strm, const QueryField &aField) {
+
+    return strm << aField.value_.getValueString();
+}

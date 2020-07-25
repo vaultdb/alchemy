@@ -12,17 +12,17 @@
 #include <utility>
 #include <variant>
 #include <vector>
+#include <ostream>
 
 class QueryFieldDesc {
 
 private:
-  const vaultdb::types::TypeId type_;
-  const int column_number_;
-  const bool is_private_;
-  const std::string name_;
-  // origin table name
-  const std::string table_name;
-  unsigned long string_length; // for varchars
+    vaultdb::types::TypeId type_;
+   int column_number_;
+   bool is_private_;
+   std::string name_;
+   std::string table_name;
+  size_t string_length; // for varchars
 
 public:
   [[nodiscard]] int GetColumnNumber() const;
@@ -39,7 +39,7 @@ public:
 
   QueryFieldDesc(QueryFieldDesc &f)
       : type_(f.type_), column_number_(f.column_number_),
-        is_private_(f.is_private_), name_(f.name_), table_name(f.table_name), string_length(0)
+        is_private_(f.is_private_), name_(f.name_), table_name(f.table_name), string_length(f.string_length)
         {};
 
   QueryFieldDesc(QueryFieldDesc &f, vaultdb::types::TypeId type,
@@ -60,6 +60,11 @@ public:
         {};
 
     void setStringLength(size_t i);
+    void initialize(QueryFieldDesc src);
+
+    friend std::ostream &operator<<(std::ostream &os, const QueryFieldDesc &desc);
+
+    QueryFieldDesc();
 };
 
 #endif // _QUERY_FIELD_DESC_H

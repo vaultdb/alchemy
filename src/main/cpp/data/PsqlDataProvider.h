@@ -33,6 +33,7 @@ private:
      std::string srcTable;
      std::string dbName;
 
+    size_t getVarCharLength(string table, string column) const;
 };
 
 

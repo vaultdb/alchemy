@@ -7,6 +7,41 @@
 
 using namespace vaultdb;
 
+QueryTuple::QueryTuple(size_t aFieldCount) {
+    dummy_flag_.SetValue(types::TypeId::BOOLEAN, false);
+    fieldCount_ = aFieldCount;
+    fields_ =
+        std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+};
+
+QueryTuple::QueryTuple(size_t fieldCount, bool is_encrypted) : is_encrypted_(is_encrypted), fieldCount_(fieldCount) {
+    if (is_encrypted_) {
+        dummy_flag_.SetValue(types::TypeId::ENCRYPTED_BOOLEAN, emp::Bit(false));
+    } else {
+        dummy_flag_.SetValue(types::TypeId::BOOLEAN, false);
+    }
+
+    fields_ =
+            std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+
+}
+
+
+QueryTuple::QueryTuple(QueryTuple &src) :
+    is_encrypted_(src.is_encrypted_),
+    dummy_flag_(src.dummy_flag_),
+    fieldCount_(src.fieldCount_)
+{
+    fields_ =
+            std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+
+
+    for(int i = 0; i < fieldCount_; ++i) {
+        fields_[i] = src.fields_[i];
+    }
+
+}
+
 const QueryField *QueryTuple::GetField(int ordinal) const {
   return &this->fields_[ordinal];
 }
@@ -16,10 +51,10 @@ QueryField *QueryTuple::GetMutableField(int ordinal) {
 }
 
 void QueryTuple::PutField(int ordinal, std::unique_ptr<QueryField> f) {
-  if (ordinal >= 10) {
-    throw;
-  }
+    types::Value *src = f->GetValue();
   fields_[ordinal].SetValue(f->GetValue());
+
+  std::cout << "put field: " << fields_[ordinal] << std::endl;
 }
 
 void QueryTuple::PutField(int ordinal, const QueryField *f) {
@@ -27,7 +62,6 @@ void QueryTuple::PutField(int ordinal, const QueryField *f) {
     throw;
   }
   fields_[ordinal].SetValue(f->GetValue());
-  // fields_3[ordinal] = new QueryField(*f);
 }
 
 void QueryTuple::SetDummyFlag(vaultdb::types::Value *v) {
@@ -58,7 +92,7 @@ void QueryTuple::SetIsEncrypted(bool isEncrypted) {
 }
 
 
-QueryTuple* QueryTuple::reveal(EmpParty party) const {
+/*QueryTuple QueryTuple::reveal(EmpParty party) const {
     // TODO: set it so that when it is XOR-encoded, it is encrypted
     // this has downstream effects that need to be figured out first
 
@@ -73,8 +107,39 @@ QueryTuple* QueryTuple::reveal(EmpParty party) const {
         result->fields_[i] = this->fields_[i].reveal(party);
     }
 
-    return result;*/
+    return result;
 
-   return nullptr;
+   QueryTuple placeholder;
+   return placeholder;
+
+}*/
+
+std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple) {
+    strm << "(" << *(aTuple.GetField(0));
+
+    for(int i = 1; i < aTuple.fieldCount_; ++i)
+        strm << ", " << *(aTuple.GetField(i));
+
+    strm << ")";
+
+    return strm;
+
+
 
 }
+
+QueryTuple::QueryTuple() {
+    fieldCount_  = 0;
+
+
+}
+
+void QueryTuple::setFieldCount(size_t fieldCount) {
+    fieldCount_ = fieldCount;
+
+    fields_ =
+            std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+}
+
+
+

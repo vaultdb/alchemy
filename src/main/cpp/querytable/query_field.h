@@ -1,9 +1,5 @@
-//
-// Created by madhav on 1/13/20.
-//
-
-#ifndef TESTING_QUERY_FIELD_H
-#define TESTING_QUERY_FIELD_H
+#ifndef QUERY_FIELD_H
+#define QUERY_FIELD_H
 
 #include "emp-tool/emp-tool.h"
 #include "query_field_desc.h"
@@ -16,40 +12,39 @@ namespace vaultdb {
 
 class QueryField {
 private:
-  int field_num_;
+
+
+    int ordinal;
   types::Value value_;
 
 public:
   QueryField();
   QueryField(const QueryField &qf);
 
-  QueryField(int64_t val, int field_num);
+  QueryField(int field_num, int64_t val);
 
-  QueryField(int32_t val, int field_num);
+  QueryField(int field_num, int32_t val);
 
-  QueryField(emp::Integer, int length, int field_num);
+  QueryField(int field_num, emp::Integer, int length);
 
-  QueryField(double val, int field_num);
+  QueryField(int field_num, double val);
 
   QueryField(int field_num);
 
-  QueryField(char *val, int field_num);
+  QueryField(int field_num, std::string val);
 
-  QueryField(std::string val, int field_num);
+  QueryField(int field_num, float val);
 
-  void SetQueryField(int64_t val, int field_num);
 
-  void SetQueryField(int32_t val, int field_num);
-
-  void SetQueryField(emp::Integer, int length, int field_num);
-
-  [[nodiscard]] const types::Value *GetValue() const;
+  [[nodiscard]]  types::Value *GetValue() const;
   [[nodiscard]] types::Value *GetMutableValue();
   void SetValue(const types::Value *val);
+
+  friend std::ostream& operator<<(std::ostream &strm, const QueryField &aField);
 
   QueryField reveal(EmpParty party) const;
 
 };
 
 } // namespace vaultdb
-#endif // TESTING_QUERY_FIELD_H
+#endif // QUERY_FIELD_H

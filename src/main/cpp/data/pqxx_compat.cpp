@@ -1,11 +1,7 @@
-//
-// Created by madhav on 12/27/19.
-//
 #include "pqxx_compat.h"
 #include <iostream>
 
 using namespace dbquery;
-using namespace std;
 
 // OID constants taken from postgres/catalog/pg_type.h, not included in
 // Ubuntu 16.04 postgres package. These are global constants set in postgres
@@ -99,7 +95,7 @@ Table get_table_from_query(pqxx::result &res, Schema &schema) {
   return t;
 }
 
-Table GetPqTable(string dbname, string query_string) {
+Table GetPqTable(std::string dbname, std::string query_string) {
   auto res = query(dbname, query_string);
   Schema schema = GetSchemaFromQuery(res);
   Table table = get_table_from_query(res, schema);
@@ -107,7 +103,7 @@ Table GetPqTable(string dbname, string query_string) {
   return table;
 }
 
-pqxx::result query(string dbname, string query_string) {
+pqxx::result query(std::string dbname, std::string query_string) {
   pqxx::result res;
   try {
     pqxx::connection c(dbname);
@@ -121,5 +117,6 @@ pqxx::result query(string dbname, string query_string) {
 
     throw e;
   }
+
   return res;
 }

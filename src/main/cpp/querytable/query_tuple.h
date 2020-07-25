@@ -13,40 +13,40 @@
 namespace vaultdb {
 class QueryTuple {
 private:
-  vaultdb::types::Value dummy_flag_;
+
+    vaultdb::types::Value dummy_flag_;
   bool is_encrypted_{};
-  QueryField fields_[5];
-  int num_fields_{};
+    std::unique_ptr<QueryField[]>  fields_;
+    size_t fieldCount_;
+public:
+    void setFieldCount(size_t fieldCount);
+
 
 public:
-  QueryTuple(QueryTuple &t);
 
-  QueryTuple() { dummy_flag_.SetValue(types::TypeId::BOOLEAN, false); };
+    QueryTuple(size_t fieldCount, bool is_encrypted);
 
-  QueryTuple(bool is_encrypted) : is_encrypted_(is_encrypted) {
-    if (is_encrypted_) {
-      dummy_flag_.SetValue(types::TypeId::ENCRYPTED_BOOLEAN, emp::Bit(false));
-    } else {
-      dummy_flag_.SetValue(types::TypeId::BOOLEAN, false);
-    }
-  }
-  void InitDummy();
+    QueryTuple(size_t aFieldCount);
+    QueryTuple(QueryTuple &src);
+
+    void InitDummy();
 
   void SetIsEncrypted(bool isEncrypted);
   const vaultdb::QueryField *GetField(int ordinal) const;
-  const vaultdb::QueryField &GetField(string name) const;
   vaultdb::QueryField *GetMutableField(int ordinal);
-  void PutField(int ordinal, const vaultdb::QueryField &f);
   void PutField(int ordinal, std::unique_ptr<QueryField> f);
   void PutField(int ordinal, const QueryField *f);
   void SetDummyFlag(vaultdb::types::Value *v);
-  void SetDummyFlag(emp::Bit &flag);
   void SetDummyFlag(bool flag);
   const vaultdb::types::Value *GetDummyFlag();
   vaultdb::types::Value *GetMutableDummyFlag();
 
-    QueryTuple * reveal(EmpParty party) const;
+
+   // QueryTuple reveal(EmpParty party) const;
+    friend std::ostream& operator<<(std::ostream &strm, const QueryTuple &aTuple);
+
+    QueryTuple();
 };
 
 } // namespace vaultdb
-#endif // TESTING_QUERY_TUPLE_H
+#endif // QUERY_TUPLE_H

@@ -15,11 +15,11 @@ std::unique_ptr<emp::Batcher> GetBatcher(ShareCount &c,
   for (int i = 0; i < c.num_tuples; i++) {
     for (int j = 0; j < shared_schema->GetNumFields(); j++) {
       switch (shared_schema->GetField(j)->GetType()) {
-      case vaultdb::types::TypeId::INTEGER64: {
+         case vaultdb::types::TypeId::INTEGER64: {
         if (party == c.party) {
-          int64_t val =
-              input_table->GetTuple(i)->GetField(j)->GetValue()->GetInt64();
-          batcher->add<emp::Integer>(64, val);
+              int64_t val =
+                  input_table->GetTuple(i)->GetField(j)->GetValue()->GetInt64();
+             batcher->add<emp::Integer>(64, val);
         } else {
           batcher->add<emp::Integer>(64, 0);
         }
@@ -39,13 +39,14 @@ void AddToTable(QueryTable *t, const QuerySchema *shared_schema,
   for (int i = 0; i < c.num_tuples; i++) {
     QueryTuple *tup = t->GetTuple(i + insert_offset);
     tup->SetIsEncrypted(true);
+    // TODO: JMR make this support dummy tags from SQL
     tup->InitDummy();
     for (int ordinal = 0; ordinal < shared_schema->GetNumFields(); ordinal++) {
       std::unique_ptr<vaultdb::QueryField> qf;
       switch (shared_schema->GetField(ordinal)->GetType()) {
       case vaultdb::types::TypeId::INTEGER64: {
         auto val = b->next<emp::Integer>();
-        qf = std::make_unique<vaultdb::QueryField>(val, 64, ordinal);
+        qf = std::make_unique<vaultdb::QueryField>(ordinal, val, 64);
         break;
       }
       default:

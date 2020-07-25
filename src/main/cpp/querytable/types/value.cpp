@@ -59,6 +59,7 @@ Value::Value(TypeId type, emp::Bit val)
   value_.emp_bit_ = new emp::Bit(val.bit);
 }
 
+
 Value::Value(TypeId type, const emp::Integer val, int len)
     : type_(type), len_(len), is_encrypted_(true) {
   value_.emp_integer_ = new emp::Integer(val);
@@ -67,6 +68,12 @@ Value::Value(TypeId type, const emp::Integer val, int len)
 Value::Value(TypeId type, double val)
     : type_(type), len_(sizeof(double)), is_encrypted_(false) {
   value_.unencrypted_val.double_val = val;
+}
+
+Value::Value(TypeId type, float val) :
+        type_(type), len_(sizeof(double)), is_encrypted_(false) {
+
+    value_.unencrypted_val.float_val = val;
 }
 
 TypeId Value::GetType() const { return Value::type_; }
@@ -103,24 +110,21 @@ void Value::SetValue(const Value *v) {
   case TypeId::INTEGER32:
     SetValue(v->type_, v->value_.unencrypted_val.int32_val);
     break;
+  case TypeId::TIMESTAMP: // store epoch as int64_t
   case TypeId::INTEGER64:
     SetValue(v->type_, v->value_.unencrypted_val.int64_val);
     break;
+      case TypeId::TIME: // store time and date as int32_t
+      case TypeId::DATE:
+      case TypeId::NUMERIC:
   case TypeId::FLOAT32:
-    SetValue(v->type_, v->value_.unencrypted_val.double_val);
+    SetValue(v->type_, v->value_.unencrypted_val.float_val);
     break;
   case TypeId::FLOAT64:
+      SetValue(v->type_, v->value_.unencrypted_val.double_val);
     break;
-  case TypeId::VAULT_DOUBLE:
-    break;
-  case TypeId::NUMERIC:
-    break;
-  case TypeId::TIMESTAMP:
-    break;
-  case TypeId::TIME:
-    break;
-  case TypeId::DATE:
-    break;
+
+
   case TypeId::VARCHAR:
       SetValue(v->type_,  v->value_.unencrypted_val.varchar_val);
     break;
@@ -131,6 +135,7 @@ void Value::SetValue(const Value *v) {
   case TypeId::ENCRYPTED_BOOLEAN:
     SetValue(v->type_, *v->value_.emp_bit_);
     break;
+  case TypeId::VAULT_DOUBLE:
   case TypeId::ENCRYPTED_FLOAT32:
     break;
   }
@@ -165,6 +170,15 @@ void Value::SetValue(TypeId type, emp::Integer val, int len) {
   len_ = len;
   value_.emp_integer_ = new emp::Integer(val);
 }
+
+void Value::SetValue(TypeId type, char *val) {
+    type_ = type;
+    is_encrypted_ = false;
+    len_ = strlen(val);
+    value_.unencrypted_val.varchar_val = new char[len_];
+    memcpy(value_.unencrypted_val.varchar_val, val, len_);
+
+}
 void Value::SetValue(TypeId type, double val) {
   type_ = type;
   is_encrypted_ = false;
@@ -172,62 +186,85 @@ void Value::SetValue(TypeId type, double val) {
   value_.unencrypted_val.double_val = val;
 }
 
+void Value::SetValue(TypeId type, float val) {
+    type_ = type;
+    is_encrypted_ = false;
+    len_ = sizeof(float);
+    std::cout << "Setting float val to " << val << std::endl;
+    value_.unencrypted_val.float_val = val;
+}
+
+
+
 Value::Value(TypeId id, string basicString) {
         type_ = id;
         is_encrypted_ = false;
-        len_ = sizeof(basicString.c_str());
-        char *varchar = new char[basicString.size()];
-        memcpy(varchar, basicString.c_str(), basicString.size());
+        len_ = basicString.size();
+        char *varchar = new char[len_];
+        memcpy(varchar, basicString.c_str(), len_);
         value_.unencrypted_val.varchar_val = varchar;
 
     }
 
-    std::ostream& operator<<(std::ostream &strm, const Value &aValue) {
-        string typeStr = TypeUtilities::getTypeIdString(aValue.GetType());
-        string valueStr = Value::getValueString(aValue);
+    std::ostream& operator<<(std::ostream &strm, types::Value aValue) {
+        string valueStr = aValue.getValueString();
 
-        return strm << "(" << typeStr << "," <<  valueStr << ")";
+        //string typeStr = TypeUtilities::getTypeIdString(aValue.GetType());
+        //return strm << "(" << typeStr << "," <<  valueStr << ")";
+
+        return strm << valueStr;
+
     }
 
 
-     string Value::getValueString(Value v) {
-        switch (v.type_) {
+     string Value::getValueString() const {
+        switch (type_) {
 
             case TypeId::BOOLEAN:
-                return  v.value_.unencrypted_val.bool_val ? "true" : "false";
+                return  value_.unencrypted_val.bool_val ? "true" : "false";
                 break;
             case TypeId::INTEGER32:
-                 return std::to_string(v.value_.unencrypted_val.int32_val);
+                 return std::to_string(value_.unencrypted_val.int32_val);
             case TypeId::INTEGER64:
-                return std::to_string(v.value_.unencrypted_val.int64_val);
+                return std::to_string(value_.unencrypted_val.int64_val);
             case TypeId::NUMERIC:
             case TypeId::FLOAT32:
-                return std::to_string(v.value_.unencrypted_val.double_val);
+                return std::to_string(value_.unencrypted_val.float_val);
             case TypeId::FLOAT64:
-                return std::to_string(v.value_.unencrypted_val.float_val);
+                return std::to_string(value_.unencrypted_val.double_val);
             case TypeId::VAULT_DOUBLE:
-                return std::to_string(v.value_.unencrypted_val.double_val);
+                return std::to_string(value_.unencrypted_val.double_val);
                 break;
             case TypeId::TIMESTAMP:
                 return "timestamp";
             case TypeId::TIME:
                 break;
             case TypeId::DATE:
-                return std::to_string(v.value_.unencrypted_val.date_val);
+                return std::to_string(value_.unencrypted_val.date_val);
             case TypeId::VARCHAR:
-                break;
+                return std::string(value_.unencrypted_val.varchar_val);
             case TypeId::ENCRYPTED_INTEGER32: {
-                int32_t decrypted = v.GetEmpInt()->reveal<int32_t>((int) EmpParty::PUBLIC);
-                return std::to_string(decrypted); }
-                case TypeId::ENCRYPTED_INTEGER64:
+                //int32_t decrypted = .GetEmpInt()->reveal<int32_t>((int) EmpParty::PUBLIC);
+                //return std::to_string(decrypted);
+                return std::string("SECRET INT32");
+            }
+            case TypeId::ENCRYPTED_INTEGER64:
                 {
-                    int64_t decrypted = v.GetEmpInt()->reveal<int64_t>((int) EmpParty::PUBLIC);
-                    return std::to_string(decrypted); }
+                    //int64_t decrypted = GetEmpInt()->reveal<int64_t>((int) EmpParty::PUBLIC);
+                    //return std::to_string(decrypted);
+                    return std::string("SECRET INT64");
+
+                }
             case TypeId::ENCRYPTED_BOOLEAN: {
-                bool decrypted = v.GetEmpBit()->reveal<bool>((int) EmpParty::PUBLIC); // returns a bool for both XOR and PUBLIC
-                return  decrypted ? "true" : "false"; }
-            case TypeId::ENCRYPTED_FLOAT32:
+                //bool decrypted = GetEmpBit()->reveal<bool>((int) EmpParty::PUBLIC); // returns a bool for both XOR and PUBLIC
+                //return  decrypted ? "true" : "false";
+                return std::string("SECRET BOOL");
+
+            }
+            case TypeId::ENCRYPTED_FLOAT32: {
                 return "Not yet implemented";
+
+            }
             case TypeId::INVALID:
                 return "invalid";
 

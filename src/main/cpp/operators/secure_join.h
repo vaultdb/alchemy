@@ -2,11 +2,11 @@
 // Created by madhav on 1/6/20.
 //
 
-#ifndef TESTING_SECURE_JOIN_H
-#define TESTING_SECURE_JOIN_H
+#ifndef _SECURE_JOIN_H
+#define _SECURE_JOIN_H
 #include <map>
-#include <querytable/expression/expression_id.h>
-#include <querytable/query_table.h>
+#include "querytable/expression/expression_id.h"
+#include "querytable/query_table.h"
 #include <vector>
 
 struct FieldMap {

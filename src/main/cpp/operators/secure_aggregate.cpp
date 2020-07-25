@@ -123,7 +123,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 
     // creates resultant relation; inserting QueryField into tuple (just 1 row)
     for (int i = 0; i < def.scalarAggregates.size(); i++) {
-      const QueryField f(result_vector[i], result_vector[i].length, i);
+      const QueryField f(i, result_vector[i], result_vector[i].length);
       aggregate_output->GetTuple(0)->PutField(i, &f);
     }
 
@@ -215,7 +215,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       }
 
       for (int i = 0; i < def.scalarAggregates.size(); i++) {
-        const QueryField f(result_vector[i], result_vector[i].length, i);
+        const QueryField f(i, result_vector[i], result_vector[i].length);
         aggregate_output->GetTuple(cursor)->PutField(i, &f);
       }
       vaultdb::types::Value curr_dval(vaultdb::types::TypeId::ENCRYPTED_BOOLEAN,

@@ -5,6 +5,7 @@
 #include "PsqlDataProvider.h"
 #include "pq_oid_defs.h"
 #include "pqxx_compat.h"
+#include "util/type_utilities.h"
 
 #include <chrono>
 
@@ -29,21 +30,28 @@ std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
     result pqxxResult = query("dbname=" + dbname, query_string);
     vector<pqxx::row> rows;
 
-    for(pqxx::row aRow : pqxxResult) {
-        rows.emplace_back(aRow);
+    size_t rowCount = 0;
+    // just count the rows first
+    for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
+        ++rowCount;
     }
 
-    std::unique_ptr<QueryTable> result(new QueryTable(false, rows.size()));
 
-    for(int i = 0; i < rows.size(); ++i) {
-        QueryTuple *tuple = result->GetTuple(i);
-         getTuple(rows[i], tuple);
+    std::unique_ptr<QueryTable> dstTable(new QueryTable(rowCount, false));
+
+
+    int counter = 0;
+    for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
+        QueryTuple *tuple = dstTable->GetTuple(counter);
+        getTuple(*resultPos, tuple);
+        std::cout << "decoded tuple: " << *tuple << std::endl;
+        ++counter;
     }
 
     std::unique_ptr<QuerySchema> schema = getSchema(pqxxResult);
-    result->SetSchema(schema.get());
-
-    return result;
+    dstTable->SetSchema(schema.get());
+    std::cout << "Fin!" << std::endl;
+    return dstTable;
 }
 
 std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input) {
@@ -55,20 +63,9 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input) {
        types::TypeId type = getFieldTypeFromOid(input.column_type(i));
        QueryFieldDesc fieldDesc(i, true, colName, srcTable, type);
        if(type == vaultdb::types::TypeId::VARCHAR) {
-           // query the schema to get the column width
-       //  SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name='<table>' AND column_name='<col name>';
-            std::string queryCharWidth( "SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=\'");
-           queryCharWidth += srcTable;
-           queryCharWidth += "\' AND column_name=\'";
-           queryCharWidth += input.column_name(i);
-           queryCharWidth += "\'";
 
-           pqxx::result pqxxResult = query("dbname=" + dbName, queryCharWidth);
-           // read single row, single val
-
-            size_t stringWidth = pqxxResult.at(0)[0].as<size_t>();
-
-            fieldDesc.setStringLength(stringWidth);
+           size_t stringLength = getVarCharLength(srcTable, colName);
+            fieldDesc.setStringLength(stringLength);
 
        }
 
@@ -79,16 +76,40 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input) {
     return result;
 }
 
+// queries the psql data definition to find the max length of each string in our column definitions
+size_t PsqlDataProvider::getVarCharLength(std::string tableName, std::string columnName) const {
+    // query the schema to get the column width
+    //  SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name='<table>' AND column_name='<col name>';
+    std::string queryCharWidth( "SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=\'");
+    queryCharWidth += tableName;
+    queryCharWidth += "\' AND column_name=\'";
+    queryCharWidth += columnName;
+    queryCharWidth += "\'";
+
+    pqxx::result pqxxResult = query("dbname=" + dbName, queryCharWidth);
+    // read single row, single val
+
+    row aRow = pqxxResult[0];
+    field aField = aRow.at(0);
+
+    return aField.as<size_t>();
+
+}
+
 void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple) {
 
         dstTuple->SetIsEncrypted(false);
-
         const int numCols = row.size();
         dstTuple->InitDummy();
+        std::cout << "Allocating " << numCols << " fields in tuple." << std::endl;
+        dstTuple->setFieldCount(numCols);
 
 
         for (int i=0; i < numCols; i++) {
             const pqxx::field srcField = row[i];
+            std::cout << "***Adding field: " << *(getField(srcField)) << std::endl;
+
+
             dstTuple->PutField(i, getField(srcField));
         }
 
@@ -97,30 +118,27 @@ void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple) {
 
     std::unique_ptr<QueryField> PsqlDataProvider::getField(pqxx::field src) {
 
-        int fieldNumber = src.num();
+        int ordinal = src.num();
         pqxx::oid oid = src.type();
         types::TypeId colType = getFieldTypeFromOid(oid);
         types::Value value;
 
-        std::unique_ptr<QueryField> result(new QueryField(fieldNumber));
+        std::unique_ptr<QueryField> result(new QueryField(ordinal));
 
 
-        //     cout << "Looking up " << res.column_name(i) << " type ID: " << res.column_type(i) << endl;
+
+        std::cout << ordinal << " has colType " << TypeUtilities::getTypeIdString(colType) << std::endl;
 
         switch (colType) {
             case vaultdb::types::TypeId::INTEGER32:
             {
                 int32_t intVal = src.as<int32_t>();
-                value = types::Value(colType, intVal);
-                result->SetValue(&value);
-                break;
+                return std::unique_ptr<QueryField>(new QueryField(ordinal, intVal));
             }
             case vaultdb::types::TypeId::INTEGER64:
             {
                 int64_t intVal = src.as<int64_t>();
-                value = types::Value(colType, intVal);
-                result->SetValue(&value);
-                break;
+                return std::unique_ptr<QueryField>(new QueryField(ordinal, intVal));
             }
         /*    case vaultdb::types::TypeId::TIMESTAMP:
             {
@@ -134,36 +152,28 @@ void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple) {
             case vaultdb::types::TypeId::BOOLEAN:
             {
                 bool boolVal = src.as<bool>();
-                value = types::Value(colType, boolVal);
-                result->SetValue(&value);
-                break;
+                return std::unique_ptr<QueryField>(new QueryField(ordinal, boolVal));
             }
             case vaultdb::types::TypeId::FLOAT32:
             {
                 float floatVal = src.as<float>();
-                value = types::Value(colType, floatVal);
-                result->SetValue(&value);
-                break;
+                return std::unique_ptr<QueryField>(new QueryField(ordinal, floatVal));
             }
             case vaultdb::types::TypeId::FLOAT64:
             {
                 double doubleVal = src.as<double>();
-                value = types::Value(colType, doubleVal);
-                result->SetValue(&value);
-                break;
+                return std::unique_ptr<QueryField>(new QueryField(ordinal, doubleVal));
             }
             case types::TypeId::VARCHAR:
-            {  string stringVal = src.as<string>();
-                value = types::Value(colType, stringVal);
-                result->SetValue(&value);
-                break; }
+            {
+                string stringVal = src.as<string>();
+                return std::unique_ptr<QueryField>(new QueryField(ordinal, stringVal));
+            }
             default:
                 throw std::invalid_argument("Unsupported column type " + std::to_string(oid));
 
         };
 
-
-        return result;
     }
 
 

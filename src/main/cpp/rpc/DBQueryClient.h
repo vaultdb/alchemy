@@ -9,7 +9,6 @@
 #include <grpcpp/grpcpp.h>
 
 using namespace dbquery;
-using namespace std;
 
 //This a placeholder to serve as dependency for generating protobuf files
 class DBQueryClient {

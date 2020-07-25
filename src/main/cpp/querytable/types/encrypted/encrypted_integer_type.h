@@ -2,12 +2,14 @@
 // Created by madhav on 1/15/20.
 //
 
-#ifndef TESTING_ENCRYPTED_INTEGER_TYPE_H
-#define TESTING_ENCRYPTED_INTEGER_TYPE_H
+#ifndef ENCRYPTED_INTEGER_TYPE_H
+#define ENCRYPTED_INTEGER_TYPE_H
 
 #include "querytable/types/type.h"
 #include "querytable/types/unencrypted/integer_type.h"
 #include <memory>
+#include <querytable/types/value.h>
+
 
 namespace vaultdb::types {
 class EncryptedIntegerType : public Type {
@@ -33,6 +35,8 @@ public:
 
   void Swap(const Value &compareBit, Value &left, Value &right) override;
 };
+
+
 
 } // namespace vaultdb::types
 

@@ -7,10 +7,14 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <ostream>
 
 class QuerySchema {
 private:
-  std::map<int, std::unique_ptr<QueryFieldDesc>> fields_;
+
+    // TODO: safely delete fieldStorage in a destructor
+    std::unique_ptr<QueryFieldDesc[]>  fields_;
+    size_t fieldCount_;
 
 public:
   [[nodiscard]] int GetNumFields() const;
@@ -29,6 +33,8 @@ public:
   QuerySchema(const QuerySchema &s);
 
   [[nodiscard]] QueryFieldDesc *GetField(int i) const;
+
+    friend std::ostream &operator<<(std::ostream &os, const QuerySchema &schema);
 
 };
 
