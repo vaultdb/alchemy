@@ -54,7 +54,6 @@ void QueryTuple::PutField(int ordinal, std::unique_ptr<QueryField> f) {
     types::Value *src = f->GetValue();
   fields_[ordinal].SetValue(f->GetValue());
 
-  std::cout << "put field: " << fields_[ordinal] << std::endl;
 }
 
 void QueryTuple::PutField(int ordinal, const QueryField *f) {

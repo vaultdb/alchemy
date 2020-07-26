@@ -190,7 +190,6 @@ void Value::SetValue(TypeId type, float val) {
     type_ = type;
     is_encrypted_ = false;
     len_ = sizeof(float);
-    std::cout << "Setting float val to " << val << std::endl;
     value_.unencrypted_val.float_val = val;
 }
 
@@ -208,10 +207,6 @@ Value::Value(TypeId id, string basicString) {
 
     std::ostream& operator<<(std::ostream &strm, types::Value aValue) {
         string valueStr = aValue.getValueString();
-
-        //string typeStr = TypeUtilities::getTypeIdString(aValue.GetType());
-        //return strm << "(" << typeStr << "," <<  valueStr << ")";
-
         return strm << valueStr;
 
     }

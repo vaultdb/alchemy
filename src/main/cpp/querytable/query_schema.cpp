@@ -40,7 +40,6 @@ size_t QuerySchema::size() const {
 
 std::ostream &operator<<(std::ostream &os, const QuerySchema &schema) {
     int fieldCount = schema.GetNumFields();
-    std::cout << "Iterating over " << fieldCount << " fields." << std::endl;
 
     os << "(" << schema.fields_[0];
 

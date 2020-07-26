@@ -33,6 +33,7 @@ public:
   QueryTuple *GetTuple(int idx) const;
   unsigned int GetNumTuples() const;
   std::unique_ptr<QuerySchema> ReleaseSchema();
+  std::string toString() const;
 
 
     // TODO: validate this - work in progress, use with caution!

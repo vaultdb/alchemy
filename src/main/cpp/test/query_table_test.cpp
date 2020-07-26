@@ -41,6 +41,39 @@ public:
         return inputQuery;
     }
 
+    static const std::string getExpectedOutput() {
+
+        /*
+         * Expected output:
+         * tpch_alice=# SELECT l_orderkey, l_comment, l_returnflag, l_discount, EXTRACT(EPOCH FROM l_commitdate) AS l_commitdate FROM lineitem ORDER BY l_orderkey LIMIT 10;
+          1 |  pending foxes. slyly re                   | N            |       0.10 |    826761600
+          1 | arefully slyly ex                          | N            |       0.07 |    823651200
+          3 | nal foxes wake.                            | A            |       0.06 |    753926400
+          5 | ts wake furiously                          | R            |       0.02 |    778291200
+          5 | sts use slyly quickly special instruc      | R            |       0.07 |    780451200
+          7 | es. instructions                           | N            |       0.08 |    825724800
+          7 |  unusual reques                            | N            |       0.10 |    827884800
+          7 | . slyly special requests haggl             | N            |       0.03 |    828921600
+          7 | jole. excuses wake carefully alongside of  | N            |       0.06 |    825033600
+         32 | lithely regular deposits. fluffily         | N            |       0.02 |    813024000
+(10 rows)
+         */
+
+        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double lineitem.l_commitdate) isEncrypted? 0\n"
+                                               "(1,  pending foxes. slyly re, N, 0.100000, 826761600.000000)\n"
+                                               "(1, arefully slyly ex, N, 0.070000, 823651200.000000)\n"
+                                               "(3, nal foxes wake., A, 0.060000, 753926400.000000)\n"
+                                               "(5, ts wake furiously, R, 0.020000, 778291200.000000)\n"
+                                               "(5, sts use slyly quickly special instruc, R, 0.070000, 780451200.000000)\n"
+                                               "(7, es. instructions, N, 0.080000, 825724800.000000)\n"
+                                               "(7,  unusual reques, N, 0.100000, 827884800.000000)\n"
+                                               "(7, . slyly special requests haggl, N, 0.030000, 828921600.000000)\n"
+                                               "(7, jole. excuses wake carefully alongside of , N, 0.060000, 825033600.000000)\n"
+                                               "(32, lithely regular deposits. fluffily , N, 0.020000, 813024000.000000)\n";
+
+        return queryOutput;
+
+    }
 
     static std::string getInputQueryDummyTag() {
         // selecting one of each type:
@@ -91,10 +124,16 @@ TEST_F(query_table_test, read_table) {
 
     QueryTable * local = inputTable.get();
 
-    QueryTuple *firstTuple = local->GetTuple(0);
-    std::cout << "Local first tuple: " << *firstTuple << std::endl;
+    string observedTable = inputTable.get()->toString();
+    string expectedTable = QueryTableTestEnvironment::getExpectedOutput();
 
-    cout << "Received: " << *local << endl;
+    cout << "Expected:\n" << expectedTable << endl;
+    cout << "Observed: \n" << *local << endl;
+
+    ASSERT_EQ(expectedTable, observedTable) << "Query table was not parsed correctly.";
+
+
+
 }
 
 

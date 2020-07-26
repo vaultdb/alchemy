@@ -37,7 +37,6 @@ QueryField::QueryField() {}
 
 QueryField::QueryField(int fn) : ordinal(fn) {}
 void QueryField::SetValue(const types::Value *val) {
-    std::cout << "QueryField::setValue: Have value: " << val->getValueString() << std::endl;
     value_.SetValue(val);
 }
 

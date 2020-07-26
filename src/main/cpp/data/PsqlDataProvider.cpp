@@ -44,13 +44,11 @@ std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
     for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
         QueryTuple *tuple = dstTable->GetTuple(counter);
         getTuple(*resultPos, tuple);
-        std::cout << "decoded tuple: " << *tuple << std::endl;
         ++counter;
     }
 
     std::unique_ptr<QuerySchema> schema = getSchema(pqxxResult);
     dstTable->SetSchema(schema.get());
-    std::cout << "Fin!" << std::endl;
     return dstTable;
 }
 
@@ -101,14 +99,11 @@ void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple) {
         dstTuple->SetIsEncrypted(false);
         const int numCols = row.size();
         dstTuple->InitDummy();
-        std::cout << "Allocating " << numCols << " fields in tuple." << std::endl;
         dstTuple->setFieldCount(numCols);
 
 
         for (int i=0; i < numCols; i++) {
             const pqxx::field srcField = row[i];
-            std::cout << "***Adding field: " << *(getField(srcField)) << std::endl;
-
 
             dstTuple->PutField(i, getField(srcField));
         }
@@ -125,9 +120,6 @@ void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple) {
 
         std::unique_ptr<QueryField> result(new QueryField(ordinal));
 
-
-
-        std::cout << ordinal << " has colType " << TypeUtilities::getTypeIdString(colType) << std::endl;
 
         switch (colType) {
             case vaultdb::types::TypeId::INTEGER32:

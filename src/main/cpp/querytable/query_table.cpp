@@ -86,3 +86,10 @@ std::ostream &operator<<(std::ostream &os, const QueryTable &table) {
 
     return os;
 }
+
+std::string QueryTable::toString() const {
+
+    std::ostringstream stream;
+    stream << *this;
+    return stream.str();
+}
