@@ -2,8 +2,8 @@
 // Created by salome on 5/15/20.
 //
 
-#ifndef TESTING_FLOAT_TYPE_H
-#define TESTING_FLOAT_TYPE_H
+#ifndef FLOAT_TYPE_H
+#define FLOAT_TYPE_H
 
 #pragma once
 #include "querytable/types/type.h"
@@ -35,4 +35,4 @@ public:
 };
 } // namespace vaultdb::types
 
-#endif // TESTING_FLOAT_TYPE_H
+#endif // FLOAT_TYPE_H

@@ -14,12 +14,6 @@
             return std::string("double");
         case vaultdb::types::TypeId::NUMERIC:
             return std::string("numeric");
-        case vaultdb::types::TypeId::TIMESTAMP:
-            return std::string("timestamp");
-        case vaultdb::types::TypeId::TIME:
-            return std::string("time");
-        case vaultdb::types::TypeId::DATE:
-            return std::string("date");
         case vaultdb::types::TypeId::VARCHAR:
             return std::string("varchar");
         case vaultdb::types::TypeId::ENCRYPTED_INTEGER32:
@@ -47,15 +41,12 @@ size_t TypeUtilities::getTypeSize(types::TypeId id) {
         case vaultdb::types::TypeId::INTEGER32:
         case vaultdb::types::TypeId::FLOAT32:
         case vaultdb::types::TypeId::NUMERIC:
-        case vaultdb::types::TypeId::TIME:
-        case vaultdb::types::TypeId::DATE:
         case vaultdb::types::TypeId::ENCRYPTED_INTEGER32:
         case vaultdb::types::TypeId::ENCRYPTED_FLOAT32:
             return 32;
 
         case vaultdb::types::TypeId::FLOAT64:
         case vaultdb::types::TypeId::INTEGER64:
-        case vaultdb::types::TypeId::TIMESTAMP:
         case vaultdb::types::TypeId::ENCRYPTED_INTEGER64:
             return 64;
 

@@ -62,7 +62,7 @@ public:
         static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double lineitem.l_commitdate) isEncrypted? 0\n"
                                                "(1,  pending foxes. slyly re, N, 0.100000, 826761600.000000)\n"
                                                "(1, arefully slyly ex, N, 0.070000, 823651200.000000)\n"
-                                               "(3, nal foxes wake., A, 0.060000, 753926400.000000)\n"
+                                               "(3, nal foxes wake. , A, 0.060000, 753926400.000000)\n"
                                                "(5, ts wake furiously , R, 0.020000, 778291200.000000)\n"
                                                "(5, sts use slyly quickly special instruc, R, 0.070000, 780451200.000000)\n"
                                                "(7, es. instructions, N, 0.080000, 825724800.000000)\n"

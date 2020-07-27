@@ -3,6 +3,7 @@
 
 
 namespace vaultdb::types {
+    // timestamps are aliased to INT64, TIME and DATE are aliased to INT32s
 enum class TypeId {
     INVALID = 0,
     BOOLEAN,
@@ -10,11 +11,7 @@ enum class TypeId {
     INTEGER64,
     FLOAT32,
     FLOAT64,
-    VAULT_DOUBLE, // what is this?
-    NUMERIC, // becomes ENCRYPTED_FLOAT32 in emp-land
-    TIMESTAMP, // alias for INT64
-    TIME,  // alias for INT32
-    DATE, // alias for INT32
+    NUMERIC, // alias for FLOAT32, becomes ENCRYPTED_FLOAT32 in emp-land
     VARCHAR,
     ENCRYPTED_INTEGER32,
     ENCRYPTED_INTEGER64,
@@ -22,9 +19,6 @@ enum class TypeId {
     ENCRYPTED_FLOAT32,
     ENCRYPTED_FLOAT64,
     ENCRYPTED_VARCHAR, // need all types to have encrypted counterpart so that we can translate them back to query tables when we decrypt the results
-    ENCRYPTED_TIMESTAMP, // alias to ENCRYPTED_INTEGER64
-    ENCRYPTED_TIME, // alias to ENCRYPTED_INTEGER32
-    ENCRYPTED_DATE // alias to ENCRYPTED_INTEGER32
 };
 
 

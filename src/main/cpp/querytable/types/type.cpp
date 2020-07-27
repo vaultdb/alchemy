@@ -24,16 +24,8 @@ vaultdb::types::Type &vaultdb::types::Type::GetInstance(TypeId type_id) {
     return FloatType::shared_instance();
   case TypeId::FLOAT64:
     break;
-  case TypeId::VAULT_DOUBLE:
-    break;
   case TypeId::NUMERIC:
     return FloatType::shared_instance();
-  case TypeId::TIMESTAMP:
-    break;
-  case TypeId::TIME:
-    break;
-  case TypeId::DATE:
-    break;
   case TypeId::VARCHAR:
     break;
   case TypeId::ENCRYPTED_INTEGER32:

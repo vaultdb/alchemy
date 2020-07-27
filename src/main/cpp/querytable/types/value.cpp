@@ -46,13 +46,47 @@ Value::Value(const string &val) {
 
 TypeId Value::getType() const { return Value::type_; }
 
-int32_t Value::getInt32() const { return value_.unencrypted_val.int32_val; }
-bool Value::getBool() const { return value_.unencrypted_val.bool_val; }
-int64_t Value::getInt64() const { return value_.unencrypted_val.int64_val; }
-emp::Integer *Value::getEmpInt() const { return value_.emp_integer_; }
-emp::Bit *Value::getEmpBit() const { return value_.emp_bit_; }
-float Value::getFloat32() const { return value_.unencrypted_val.float_val; }
-double Value::getFloat64() const { return value_.unencrypted_val.double_val; }
+// boost::variant<bool, int32_t, int64_t, float_t, double_t, std::string>
+int32_t Value::getInt32() const {
+    if(value_.unencrypted_val.which() == 1) { // check that this converts to a int32_t
+        return boost::get<int32_t>(value_.unencrypted_val);
+    }
+}
+
+bool Value::getBool() const
+{
+    if(value_.unencrypted_val.which() == 0) { // check that this converts to a int32_t
+        return boost::get<bool>(value_.unencrypted_val);
+    }
+}
+
+int64_t Value::getInt64() const {
+    if(value_.unencrypted_val.which() == 2) { // check that this converts to a int32_t
+        return boost::get<int64_t>(value_.unencrypted_val);
+    }
+}
+
+    float_t Value::getFloat32() const  {
+        if(value_.unencrypted_val.which() == 3) { // check that this converts to a int32_t
+            return boost::get<float_t>(value_.unencrypted_val);
+        }
+    }
+
+
+    double_t Value::getFloat64() const  {
+        if(value_.unencrypted_val.which() == 4) { // check that this converts to a int32_t
+            return boost::get<double_t>(value_.unencrypted_val);
+        }
+    }
+
+    std::string Value::getVarchar() const  {
+        if(value_.unencrypted_val.which() == 5) { // check that this converts to a int32_t
+            return boost::get<std::string>(value_.unencrypted_val);
+        }
+    }
+
+    emp::Integer *Value::getEmpInt() const { return  value_.emp_integer_; }
+    emp::Bit *Value::getEmpBit() const { return value_.emp_bit_; }
 
 
 Value::~Value() {
@@ -69,83 +103,74 @@ Value::~Value() {
    */
 }
 
-void Value::setValue(const Value *v) {
-  switch (v->type_) {
+void Value::setValue(const Value *val) {
+    switch (val->type_) {
 
-  case TypeId::INVALID:
-    break;
-  case TypeId::BOOLEAN:
-      setValue(v->value_.unencrypted_val.bool_val);
-    break;
-  case TypeId::INTEGER32:
-      setValue(v->value_.unencrypted_val.int32_val);
-    break;
-  case TypeId::TIMESTAMP: // store epoch as int64_t
-  case TypeId::INTEGER64:
-      setValue(v->value_.unencrypted_val.int64_val);
-    break;
-      case TypeId::TIME: // store time and date as int32_t
-      case TypeId::DATE:
-      case TypeId::NUMERIC:
-  case TypeId::FLOAT32:
-      setValue(v->value_.unencrypted_val.float_val);
-    break;
-  case TypeId::FLOAT64:
-      setValue(v->value_.unencrypted_val.double_val);
-    break;
+        case TypeId::BOOLEAN:
+            setValue(val->getBool());
+            break;
+        case TypeId::INTEGER32:
+            setValue(val->getInt32());
+            break;
+        case TypeId::INTEGER64:
+            setValue(val->getInt64());
+            break;
+        case TypeId::ENCRYPTED_INTEGER32:
+        case TypeId::ENCRYPTED_INTEGER64:
+            setValue(val->type_, *(val->value_.emp_integer_));
+            break;
+        case TypeId::ENCRYPTED_BOOLEAN:
+            setValue(*(val->value_.emp_bit_));
+            break;
+        case TypeId::VARCHAR:
+            setValue(val->getVarchar());
+            break;
 
+        case TypeId::NUMERIC:
+        case TypeId::FLOAT32:
+            setValue(val->getFloat32());
+            break;
+        case TypeId::FLOAT64:
+            setValue(val->getFloat64());
+            break;
 
-  case TypeId::VARCHAR: {
-      std::string valueStr = v->getVarchar();
-      std::cout << "Parsed string 2: " << valueStr << std::endl;
-      setValue(valueStr);
-      break;
-  }
-  case TypeId::ENCRYPTED_INTEGER32:
-  case TypeId::ENCRYPTED_INTEGER64:
-      setValue(v->type_, *v->value_.emp_integer_);
-    break;
-  case TypeId::ENCRYPTED_BOOLEAN:
-      setValue(*v->value_.emp_bit_);
-    break;
-  case TypeId::VAULT_DOUBLE:
-  case TypeId::ENCRYPTED_FLOAT32:
-    break;
-  }
+        case TypeId::INVALID:
+            break;
+    }
 }
 void Value::setValue(int32_t val) {
   type_ = TypeId::INTEGER32;
   is_encrypted_ = false;
   len_ = sizeof(int32_t);
-  value_.unencrypted_val.int32_val = val;
+  value_.unencrypted_val = val;
 }
 
 void Value::setValue(int64_t val) {
   type_ = TypeId::INTEGER64;
   is_encrypted_ = false;
   len_ = sizeof(int64_t);
-  value_.unencrypted_val.int64_val = val;
+  value_.unencrypted_val = val;
 }
 
 void Value::setValue(bool val) {
   type_ = TypeId::BOOLEAN;
   is_encrypted_ = false;
   len_ = sizeof(uint8_t);
-  value_.unencrypted_val.bool_val = val;
+  value_.unencrypted_val = val;
 }
 
 void Value::setValue(double val) {
   type_ = TypeId::FLOAT64;
   is_encrypted_ = false;
   len_ = sizeof(double);
-  value_.unencrypted_val.double_val = val;
+  value_.unencrypted_val = val;
 }
 
 void Value::setValue(float val) {
     type_ = TypeId::FLOAT32;
     is_encrypted_ = false;
     len_ = sizeof(float);
-    value_.unencrypted_val.float_val = val;
+    value_.unencrypted_val = val;
 }
 
 void Value::setValue(std::string aString) {
@@ -183,32 +208,31 @@ void Value::setValue(std::string aString) {
         switch (type_) {
 
             case TypeId::BOOLEAN:
-                return  value_.unencrypted_val.bool_val ? "true" : "false";
+                return  (getBool()) ? "true" : "false";
                 break;
             case TypeId::INTEGER32:
-                 return std::to_string(value_.unencrypted_val.int32_val);
+                 return std::to_string(getInt32());
+
             case TypeId::INTEGER64:
-                return std::to_string(value_.unencrypted_val.int64_val);
+                return std::to_string(getInt64());
             case TypeId::NUMERIC:
             case TypeId::FLOAT32:
-                return std::to_string(value_.unencrypted_val.float_val);
+                return std::to_string(getFloat32());
             case TypeId::FLOAT64:
-                return std::to_string(value_.unencrypted_val.double_val);
-            case TypeId::VAULT_DOUBLE:
-                return std::to_string(value_.unencrypted_val.double_val);
-                break;
-            case TypeId::TIMESTAMP:
-                return "timestamp";
-            case TypeId::TIME:
-                break;
-            case TypeId::DATE:
-                return std::to_string(value_.unencrypted_val.date_val);
+                return std::to_string(getFloat64());
+            /*case TypeId::VAULT_DOUBLE:
+                return std::to_string(getFloat64());*/
+
+
             case TypeId::VARCHAR:
                 return  getVarchar();
             case TypeId::ENCRYPTED_INTEGER32: {
+                // #ifdef NDEBUG
+                return std::string("SECRET INT32");
+                // #else
                 //int32_t decrypted = .getEmpInt()->reveal<int32_t>((int) EmpParty::PUBLIC);
                 //return std::to_string(decrypted);
-                return std::string("SECRET INT32");
+                // #endif
             }
             case TypeId::ENCRYPTED_INTEGER64:
                 {
@@ -223,8 +247,10 @@ void Value::setValue(std::string aString) {
                 return std::string("SECRET BOOL");
 
             }
-            case TypeId::ENCRYPTED_FLOAT32: {
-                return "Not yet implemented";
+            case TypeId::ENCRYPTED_FLOAT32:
+            case TypeId::ENCRYPTED_FLOAT64:
+                {
+                return std::string("SECRET FLOAT");
 
             }
             case TypeId::INVALID:
@@ -234,9 +260,6 @@ void Value::setValue(std::string aString) {
     }
 
 
-    std::string Value::getVarchar() const {
-        return  *(value_.unencrypted_val.varchar_val.get());
-    }
 
     void Value::setType(TypeId type) {
         type_ = type;
@@ -244,43 +267,7 @@ void Value::setValue(std::string aString) {
 
 
     void Value::initialize(const Value &val) {
-            switch (val.type_) {
-
-                case TypeId::BOOLEAN:
-                    setValue(val.value_.unencrypted_val.bool_val);
-                    break;
-                case TypeId::INTEGER32:
-                case TypeId::TIME:
-                case TypeId::DATE:
-                    setValue(val.value_.unencrypted_val.int32_val);
-                    break;
-                case TypeId::INTEGER64:
-                case TypeId::TIMESTAMP: // alias for INT64
-                    setValue(val.value_.unencrypted_val.int64_val);
-                    break;
-                case TypeId::ENCRYPTED_INTEGER32:
-                case TypeId::ENCRYPTED_INTEGER64:
-                    setValue(val.type_, *(val.value_.emp_integer_));
-                    break;
-                case TypeId::ENCRYPTED_BOOLEAN:
-                    setValue(*(val.value_.emp_bit_));
-                    break;
-                case TypeId::VARCHAR:
-                    setValue(val.getVarchar());
-                    break;
-
-                case TypeId::NUMERIC:
-                case TypeId::FLOAT32:
-                    setValue(val.value_.unencrypted_val.float_val);
-                    break;
-                case TypeId::FLOAT64:
-                    setValue(val.value_.unencrypted_val.double_val);
-                    break;
-
-                case TypeId::INVALID:
-                case TypeId::VAULT_DOUBLE:
-                    throw;
-            }
+            setValue(&val);
     }
 
     Value &Value::operator=(const Value &other) {

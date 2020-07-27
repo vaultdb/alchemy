@@ -16,8 +16,8 @@ vaultdb::types::TypeId ProtoToTypeId(dbquery::OIDType oidtype) {
     return vaultdb::types::TypeId::VARCHAR;
   case dbquery::NUMERIC:
     return vaultdb::types::TypeId::FLOAT32;
-  case dbquery::DOUBLE:
-    return vaultdb::types::TypeId::VAULT_DOUBLE;
+  /*case dbquery::DOUBLE:
+    return vaultdb::types::TypeId::VAULT_DOUBLE;*/
   case dbquery::TIMESTAMP:
   case dbquery::TIME:
   case dbquery::UNSUPPORTED:
@@ -65,10 +65,10 @@ std::unique_ptr<QueryTable> ProtoToQueryTable(const dbquery::Table &t) {
         qf =
             std::make_unique<vaultdb::QueryField>( c.first, c.second.strfield());
         break;
-      case vaultdb::types::TypeId::VAULT_DOUBLE:
+      /*case vaultdb::types::TypeId::VAULT_DOUBLE:
         qf = std::make_unique<vaultdb::QueryField>(c.second.doublefield(),
                                                    c.first);
-        break;
+        break;*/
       default:
         throw;
       }
@@ -120,11 +120,7 @@ const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
       case types::TypeId::INTEGER64:
       case types::TypeId::FLOAT32:
       case types::TypeId::FLOAT64:
-      case types::TypeId::VAULT_DOUBLE:
       case types::TypeId::NUMERIC:
-      case types::TypeId::TIMESTAMP:
-      case types::TypeId::TIME:
-      case types::TypeId::DATE:
       case types::TypeId::ENCRYPTED_BOOLEAN:
       case types::TypeId::VARCHAR:
       case types::TypeId::ENCRYPTED_INTEGER32:

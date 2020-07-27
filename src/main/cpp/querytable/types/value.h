@@ -77,7 +77,7 @@ protected:
 
 
   struct ValueStruct {
-      boost::variant<bool, int64_t, int32_t, float_t, double_t, std::string> unencrypted_val;
+      boost::variant<bool, int32_t, int64_t, float_t, double_t, std::string> unencrypted_val;
     emp::Bit * emp_bit_;
     emp::Integer * emp_integer_;
     emp::Float *emp_float_;

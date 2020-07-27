@@ -52,17 +52,12 @@ QueryField QueryField::reveal(EmpParty party) const {
     switch(value.getType()) {
         case types::TypeId::ENCRYPTED_FLOAT32: // Not yet implemented
         case types::TypeId::INVALID:
-        case types::TypeId::VAULT_DOUBLE: // what is this?  Is it encrypted?
-            throw;
         case types::TypeId::BOOLEAN:
         case types::TypeId::INTEGER32:
         case types::TypeId::INTEGER64:
         case types::TypeId::FLOAT32:
         case types::TypeId::FLOAT64:
         case types::TypeId::NUMERIC:
-        case types::TypeId::TIMESTAMP:
-        case types::TypeId::TIME:
-        case types::TypeId::DATE:
         case types::TypeId::VARCHAR:
             return result; // copy the public field, no need to reveal
         case types::TypeId::ENCRYPTED_BOOLEAN: {
