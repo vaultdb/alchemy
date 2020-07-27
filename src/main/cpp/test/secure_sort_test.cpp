@@ -169,7 +169,7 @@ TEST_F(secure_sort_test, testLineItemSort) {
                              "SELECT l_orderkey FROM lineitem LIMIT 10");
   auto v = types::Value(true);
   for (int i = 0; i < 3; i++) {
-    qt->GetTuple(i * 2 + 2)->SetDummyFlag(&v);
+      qt->GetTuple(i * 2 + 2)->SetDummyTag(&v);
   }
   vector<int> ordinals{0, -1};
   SortDef sortdef;
@@ -179,7 +179,7 @@ TEST_F(secure_sort_test, testLineItemSort) {
   Sort(qt.get(), sortdef);
   for (int i = 0; i < qt->GetNumTuples(); i++) {
     std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->getInt64()
-              << ", D: " << qt->GetTuple(i)->GetDummyFlag()->getBool()
+              << ", D: " << qt->GetTuple(i)->GetDummyTag()->getBool()
               << std::endl;
   }
 }

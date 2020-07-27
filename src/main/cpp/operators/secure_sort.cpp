@@ -30,8 +30,8 @@ void SwapTuples(int t1, int t2, QueryTable *t, types::Value *swap_condition) {
     ex.ExecuteMutable();
   }
   vaultdb::expression::Expression ex2(
-      swap_condition, tup1->GetMutableDummyFlag(), tup2->GetMutableDummyFlag(),
-      vaultdb::expression::ExpressionId::SWAP);
+          swap_condition, tup1->GetMutableDummyTag(), tup2->GetMutableDummyTag(),
+          vaultdb::expression::ExpressionId::SWAP);
   ex2.ExecuteMutable();
 }
 
@@ -64,8 +64,8 @@ void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir,
   for (auto idx : s.ordinals) {
     const vaultdb::types::Value *val1, *val2;
     if (idx == -1) {
-      val1 = t->GetTuple(t1)->GetDummyFlag();
-      val2 = t->GetTuple(t2)->GetDummyFlag();
+      val1 = t->GetTuple(t1)->GetDummyTag();
+      val2 = t->GetTuple(t2)->GetDummyTag();
     } else {
       val1 = t->GetTuple(t1)->GetField(idx)->GetValue(),
       val2 = t->GetTuple(t2)->GetField(idx)->GetValue();

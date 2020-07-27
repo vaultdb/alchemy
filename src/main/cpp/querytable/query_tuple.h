@@ -1,7 +1,3 @@
-//
-// Created by madhav on 1/13/20.
-//
-
 #ifndef _QUERY_TUPLE_H
 #define _QUERY_TUPLE_H
 
@@ -14,7 +10,7 @@ namespace vaultdb {
 class QueryTuple {
 private:
 
-    vaultdb::types::Value dummy_flag_;
+    vaultdb::types::Value dummy_tag_;
   bool is_encrypted_{};
     std::unique_ptr<QueryField[]>  fields_;
     size_t fieldCount_;
@@ -36,10 +32,10 @@ public:
   vaultdb::QueryField *GetMutableField(int ordinal);
   void PutField(int ordinal, std::unique_ptr<QueryField> f);
   void PutField(int ordinal, const QueryField *f);
-  void SetDummyFlag(vaultdb::types::Value *v);
-  void SetDummyFlag(bool flag);
-  const vaultdb::types::Value *GetDummyFlag();
-  vaultdb::types::Value *GetMutableDummyFlag();
+  void SetDummyTag(vaultdb::types::Value *v);
+  void SetDummyTag(bool flag);
+  const vaultdb::types::Value *GetDummyTag();
+  vaultdb::types::Value *GetMutableDummyTag();
 
 
    // QueryTuple reveal(EmpParty party) const;

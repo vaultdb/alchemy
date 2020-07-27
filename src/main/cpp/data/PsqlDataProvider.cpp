@@ -19,7 +19,7 @@ std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
    return  GetQueryTable(dbname, query_string,  tableName,  false);
 }
 
-// TODO: implement dummy tag support
+// if hasDummyTag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
 // TODO: deduce table name from query, plugging this in for now with a member variable
 std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
@@ -38,23 +38,26 @@ std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
 
 
     std::unique_ptr<QueryTable> dstTable(new QueryTable(rowCount, false));
-
+    std::unique_ptr<QuerySchema> schema = getSchema(pqxxResult, hasDummyTag);
+    dstTable->SetSchema(schema.get());
 
     int counter = 0;
     for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
         QueryTuple *tuple = dstTable->GetTuple(counter);
-        getTuple(*resultPos, tuple);
+        getTuple(*resultPos, tuple, hasDummyTag);
         ++counter;
     }
 
-    std::unique_ptr<QuerySchema> schema = getSchema(pqxxResult);
-    dstTable->SetSchema(schema.get());
+
+
     return dstTable;
 }
 
-std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input) {
+std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, bool hasDummyTag) {
     size_t colCount = input.columns();
     std::unique_ptr<QuerySchema> result(new QuerySchema(colCount));
+    if(hasDummyTag)
+        --colCount; // don't include dummy tag as a separate column
 
     for(int i = 0; i < colCount; ++i) {
        string colName =  input.column_name(i);
@@ -69,6 +72,11 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input) {
 
 
        result->PutField(i, fieldDesc);
+    }
+
+    if(hasDummyTag) {
+        pqxx::oid dummyTagOid = input.column_type((int) colCount);
+        assert(getFieldTypeFromOid(dummyTagOid) == vaultdb::types::TypeId::BOOLEAN); // check that dummy tag is a boolean
     }
 
     return result;
@@ -94,22 +102,28 @@ size_t PsqlDataProvider::getVarCharLength(std::string tableName, std::string col
 
 }
 
-void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple) {
+void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple, bool hasDummyTag) {
 
         dstTuple->SetIsEncrypted(false);
         const int numCols = row.size();
         dstTuple->InitDummy();
         dstTuple->setFieldCount(numCols);
+        int dummyIdx = numCols - 1; // last value
 
 
         for (int i=0; i < numCols; i++) {
             const pqxx::field srcField = row[i];
 
-            dstTuple->PutField(i, getField(srcField));
 
+            if(!(i == dummyIdx && hasDummyTag)) {// skip dummy tag
+                dstTuple->PutField(i, getField(srcField));
+            }
+            else { // already verified that last col is a boolean in the schema step
+                std::unique_ptr<QueryField> parsedField(getField(srcField));
+                bool dummyTag = parsedField.get()->GetValue()->getBool();
+                dstTuple->SetDummyTag(dummyTag);
+            }
         }
-
-        std::cout << "Parsed tuple " << *dstTuple << std::endl;
     }
 
 

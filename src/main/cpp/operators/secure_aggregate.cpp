@@ -90,7 +90,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
     for (int row = 0; row < input->GetNumTuples(); row++) {
 
       // dummy flag to determine if the tuplle is a Dummy value
-      *isDummy = *input->GetTuple(row)->GetDummyFlag()->getEmpBit();
+      *isDummy = *input->GetTuple(row)->GetDummyTag()->getEmpBit();
 
       for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
 
@@ -129,7 +129,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 
     vaultdb::types::Value curr_dval(
             true_dummy);
-    aggregate_output->GetTuple(0)->SetDummyFlag(&curr_dval);
+      aggregate_output->GetTuple(0)->SetDummyTag(&curr_dval);
   }
 
     // otherwise, if the GROUPBY clause is present
@@ -145,10 +145,10 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       // this condition holds true even for the very first tuple
       // Since the default value is true, result vector would remain unaffected
 
-      isDummy = *input->GetTuple(cursor)->GetDummyFlag()->getEmpBit();
+      isDummy = *input->GetTuple(cursor)->GetDummyTag()->getEmpBit();
       if (cursor != 0)
         prev_dummy = *aggregate_output->GetTuple(cursor - 1)
-                ->GetDummyFlag()
+                ->GetDummyTag()
                 ->getEmpBit();
 
       // groupby_eq (equality): bool=> checks for equality with prev. tuples GB
@@ -196,7 +196,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       if (cursor != 0) {
         isDummy = If(groupby_eq,
                      If(*aggregate_output->GetTuple(cursor - 1)
-                                ->GetDummyFlag()
+                                ->GetDummyTag()
                                 ->getEmpBit(),
                         true_dummy, false_dummy),
                      isDummy);
@@ -204,13 +204,13 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
         // updating previous tuple's dummy (if necessary), and setting that value
         prev_dummy = If(groupby_eq,
                         If(*aggregate_output->GetTuple(cursor - 1)
-                                   ->GetDummyFlag()
+                                   ->GetDummyTag()
                                    ->getEmpBit(),
                            prev_dummy, true_dummy),
                         prev_dummy);
 
         vaultdb::types::Value prev_dval(prev_dummy);
-        aggregate_output->GetTuple(cursor - 1)->SetDummyFlag(&prev_dval);
+          aggregate_output->GetTuple(cursor - 1)->SetDummyTag(&prev_dval);
       }
 
       for (int i = 0; i < def.scalarAggregates.size(); i++) {
@@ -219,7 +219,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       }
       vaultdb::types::Value curr_dval(
               isDummy);
-      aggregate_output->GetTuple(cursor)->SetDummyFlag(&curr_dval);
+        aggregate_output->GetTuple(cursor)->SetDummyTag(&curr_dval);
     }
   }
   return aggregate_output;

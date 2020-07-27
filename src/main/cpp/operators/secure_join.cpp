@@ -55,7 +55,7 @@ std::unique_ptr<QueryTable> Join(QueryTable *left, QueryTable *right,
       output_table->GetTuple(index)->SetIsEncrypted(
           output_table->GetIsEncrypted());
       output_table->GetTuple(index)->InitDummy();
-      output_table->GetTuple(index)->SetDummyFlag(&output);
+        output_table->GetTuple(index)->SetDummyTag(&output);
       MergeTuples(output_table->GetTuple(index), lt, left->GetSchema(), rt,
                   right->GetSchema());
       index++;

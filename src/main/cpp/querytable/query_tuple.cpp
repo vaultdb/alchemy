@@ -1,14 +1,10 @@
-//
-// Created by madhav on 1/13/20.
-//
-
 #include "query_tuple.h"
 #include <querytable/expression/expression.h>
 
 using namespace vaultdb;
 
 QueryTuple::QueryTuple(size_t aFieldCount) {
-    dummy_flag_.setValue(false);
+    dummy_tag_.setValue(false);
     fieldCount_ = aFieldCount;
     fields_ =
         std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
@@ -16,9 +12,9 @@ QueryTuple::QueryTuple(size_t aFieldCount) {
 
 QueryTuple::QueryTuple(size_t fieldCount, bool is_encrypted) : is_encrypted_(is_encrypted), fieldCount_(fieldCount) {
     if (is_encrypted_) {
-        dummy_flag_.setValue(emp::Bit(false));
+        dummy_tag_.setValue(emp::Bit(false));
     } else {
-        dummy_flag_.setValue(false);
+        dummy_tag_.setValue(false);
     }
 
     fields_ =
@@ -28,9 +24,9 @@ QueryTuple::QueryTuple(size_t fieldCount, bool is_encrypted) : is_encrypted_(is_
 
 
 QueryTuple::QueryTuple(QueryTuple &src) :
-    is_encrypted_(src.is_encrypted_),
-    dummy_flag_(src.dummy_flag_),
-    fieldCount_(src.fieldCount_)
+        is_encrypted_(src.is_encrypted_),
+        dummy_tag_(src.dummy_tag_),
+        fieldCount_(src.fieldCount_)
 {
     fields_ =
             std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
@@ -62,27 +58,27 @@ void QueryTuple::PutField(int ordinal, const QueryField *f) {
   fields_[ordinal].SetValue(f->GetValue());
 }
 
-void QueryTuple::SetDummyFlag(vaultdb::types::Value *v) {
-    dummy_flag_.setValue(v);
+void QueryTuple::SetDummyTag(vaultdb::types::Value *v) {
+    dummy_tag_.setValue(v);
 }
 
-void QueryTuple::SetDummyFlag(bool aFlag) {
-    dummy_flag_.setValue(aFlag);
+void QueryTuple::SetDummyTag(bool aFlag) {
+    dummy_tag_.setValue(aFlag);
 }
 
 void QueryTuple::InitDummy() {
   if (is_encrypted_) {
-      dummy_flag_.setValue(emp::Bit(false));
+      dummy_tag_.setValue(emp::Bit(false));
   } else {
-      dummy_flag_.setValue(false);
+      dummy_tag_.setValue(false);
   }
 }
 
-const vaultdb::types::Value *QueryTuple::GetDummyFlag() {
-  return &this->dummy_flag_;
+const vaultdb::types::Value *QueryTuple::GetDummyTag() {
+  return &this->dummy_tag_;
 }
-vaultdb::types::Value *QueryTuple::GetMutableDummyFlag() {
-  return &this->dummy_flag_;
+vaultdb::types::Value *QueryTuple::GetMutableDummyTag() {
+  return &this->dummy_tag_;
 }
 
 void QueryTuple::SetIsEncrypted(bool isEncrypted) {
@@ -96,10 +92,10 @@ void QueryTuple::SetIsEncrypted(bool isEncrypted) {
 
    /* QueryTuple *result = new QueryTuple(false);
 
-    bool revealedDummyFlag = (is_encrypted_) ? dummy_flag_.getEmpBit()->reveal<bool>((int) party)
-            : dummy_flag_.getBool();
+    bool revealedDummyFlag = (is_encrypted_) ? dummy_tag_.getEmpBit()->reveal<bool>((int) party)
+            : dummy_tag_.getBool();
 
-    result->SetDummyFlag(revealedDummyFlag);
+    result->SetDummyTag(revealedDummyFlag);
 
     for(int i = 0; i < num_fields_; ++i) {
         result->fields_[i] = this->fields_[i].reveal(party);
@@ -118,7 +114,7 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple)
     for(int i = 1; i < aTuple.fieldCount_; ++i)
         strm << ", " << *(aTuple.GetField(i));
 
-    strm << ")";
+    strm << ") (dummy=" << aTuple.dummy_tag_.getValueString() + ")";
 
     return strm;
 
