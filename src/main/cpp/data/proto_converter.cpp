@@ -131,9 +131,9 @@ const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
         throw;
       case types::TypeId::ENCRYPTED_INTEGER64:
         auto s = input_table->GetTuple(i)
-                     ->GetField(j)
-                     ->GetValue()
-                     ->GetEmpInt()
+                ->GetField(j)
+                ->GetValue()
+                ->getEmpInt()
                      ->reveal<string>(emp::XOR);
         val.set_xorfield(s);
         (*row.mutable_column())[j] = val;

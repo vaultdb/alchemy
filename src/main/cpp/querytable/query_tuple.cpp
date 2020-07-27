@@ -8,7 +8,7 @@
 using namespace vaultdb;
 
 QueryTuple::QueryTuple(size_t aFieldCount) {
-    dummy_flag_.SetValue(types::TypeId::BOOLEAN, false);
+    dummy_flag_.setValue(false);
     fieldCount_ = aFieldCount;
     fields_ =
         std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
@@ -16,9 +16,9 @@ QueryTuple::QueryTuple(size_t aFieldCount) {
 
 QueryTuple::QueryTuple(size_t fieldCount, bool is_encrypted) : is_encrypted_(is_encrypted), fieldCount_(fieldCount) {
     if (is_encrypted_) {
-        dummy_flag_.SetValue(types::TypeId::ENCRYPTED_BOOLEAN, emp::Bit(false));
+        dummy_flag_.setValue(emp::Bit(false));
     } else {
-        dummy_flag_.SetValue(types::TypeId::BOOLEAN, false);
+        dummy_flag_.setValue(false);
     }
 
     fields_ =
@@ -37,7 +37,7 @@ QueryTuple::QueryTuple(QueryTuple &src) :
 
 
     for(int i = 0; i < fieldCount_; ++i) {
-        fields_[i] = src.fields_[i];
+        fields_[i].initialize(src.fields_[i]);
     }
 
 }
@@ -51,7 +51,6 @@ QueryField *QueryTuple::GetMutableField(int ordinal) {
 }
 
 void QueryTuple::PutField(int ordinal, std::unique_ptr<QueryField> f) {
-    types::Value *src = f->GetValue();
   fields_[ordinal].SetValue(f->GetValue());
 
 }
@@ -64,18 +63,18 @@ void QueryTuple::PutField(int ordinal, const QueryField *f) {
 }
 
 void QueryTuple::SetDummyFlag(vaultdb::types::Value *v) {
-  dummy_flag_.SetValue(v);
+    dummy_flag_.setValue(v);
 }
 
 void QueryTuple::SetDummyFlag(bool aFlag) {
-    dummy_flag_.SetValue(types::TypeId::BOOLEAN, aFlag);
+    dummy_flag_.setValue(aFlag);
 }
 
 void QueryTuple::InitDummy() {
   if (is_encrypted_) {
-    dummy_flag_.SetValue(types::TypeId::ENCRYPTED_BOOLEAN, emp::Bit(false));
+      dummy_flag_.setValue(emp::Bit(false));
   } else {
-    dummy_flag_.SetValue(types::TypeId::BOOLEAN, false);
+      dummy_flag_.setValue(false);
   }
 }
 
@@ -97,8 +96,8 @@ void QueryTuple::SetIsEncrypted(bool isEncrypted) {
 
    /* QueryTuple *result = new QueryTuple(false);
 
-    bool revealedDummyFlag = (is_encrypted_) ? dummy_flag_.GetEmpBit()->reveal<bool>((int) party)
-            : dummy_flag_.GetBool();
+    bool revealedDummyFlag = (is_encrypted_) ? dummy_flag_.getEmpBit()->reveal<bool>((int) party)
+            : dummy_flag_.getBool();
 
     result->SetDummyFlag(revealedDummyFlag);
 

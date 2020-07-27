@@ -44,6 +44,7 @@ public:
 
   QueryField reveal(EmpParty party) const;
 
+    void initialize(QueryField &field);
 };
 
 } // namespace vaultdb

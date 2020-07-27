@@ -158,7 +158,7 @@ TEST_F(secure_sort_test, testSingleFloatColumnUnencrypted) {
   sortdef.ordinals = ordinals;
   Sort(qt.get(), sortdef);
   for (int i = 0; i < qt->GetNumTuples(); i++) {
-    std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->GetFloat()
+    std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->getFloat32()
               << std::endl;
   }
 }
@@ -167,7 +167,7 @@ TEST_F(secure_sort_test, testLineItemSort) {
   PQDataProvider pq;
   auto qt = pq.GetQueryTable("dbname=tpch_unioned",
                              "SELECT l_orderkey FROM lineitem LIMIT 10");
-  auto v = types::Value(types::TypeId::BOOLEAN, true);
+  auto v = types::Value(true);
   for (int i = 0; i < 3; i++) {
     qt->GetTuple(i * 2 + 2)->SetDummyFlag(&v);
   }
@@ -178,8 +178,8 @@ TEST_F(secure_sort_test, testLineItemSort) {
   sortdef.ordinals = ordinals;
   Sort(qt.get(), sortdef);
   for (int i = 0; i < qt->GetNumTuples(); i++) {
-    std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->GetInt64()
-              << ", D: " << qt->GetTuple(i)->GetDummyFlag()->GetBool()
+    std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->getInt64()
+              << ", D: " << qt->GetTuple(i)->GetDummyFlag()->getBool()
               << std::endl;
   }
 }

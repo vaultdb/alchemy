@@ -58,10 +58,10 @@ vaultdb::types::Value Expression::execute() {
 void Expression::EvaluateMutableTernary(const types::Value *condition,
                                         types::Value *v2, types::Value *v3,
                                         ExpressionId id) {
-  VAULTDB_ASSERT(v2->GetType() == v3->GetType());
+  VAULTDB_ASSERT(v2->getType() == v3->getType());
   switch (id) {
   case ExpressionId::SWAP: {
-    return vaultdb::types::Type::GetInstance(v2->GetType())
+    return vaultdb::types::Type::GetInstance(v2->getType())
         .Swap(*condition, *v2, *v3);
   }
   default:
@@ -72,7 +72,7 @@ void Expression::EvaluateMutableTernary(const types::Value *condition,
 vaultdb::types::Value Expression::EvaluateBinary(const types::Value *v1,
                                                  const types::Value *v2,
                                                  const ExpressionId id) {
-  VAULTDB_ASSERT(v1->GetType() == v2->GetType());
+  VAULTDB_ASSERT(v1->getType() == v2->getType());
 
   switch (id) {
 
@@ -81,25 +81,25 @@ vaultdb::types::Value Expression::EvaluateBinary(const types::Value *v1,
   case ExpressionId::SELECT:
     throw;
   case ExpressionId::LESSTHANOREQUAL:
-    return vaultdb::types::Type::GetInstance(v1->GetType())
+    return vaultdb::types::Type::GetInstance(v1->getType())
         .CompareLessThanOrEqual(*v1, *v2);
   case ExpressionId::EQUAL:
-    return vaultdb::types::Type::GetInstance(v1->GetType())
+    return vaultdb::types::Type::GetInstance(v1->getType())
         .CompareEquals(*v1, *v2);
   case ExpressionId::GREATERTHAN:
-    return vaultdb::types::Type::GetInstance(v1->GetType())
+    return vaultdb::types::Type::GetInstance(v1->getType())
         .CompareGreaterThan(*v1, *v2);
   case ExpressionId::GREATERTHANOREQUAL:
     throw;
   case ExpressionId::LESSTHAN:
-    return vaultdb::types::Type::GetInstance(v1->GetType())
+    return vaultdb::types::Type::GetInstance(v1->getType())
         .CompareLessThan(*v1, *v2);
   case ExpressionId::SUBSTRING:
     throw;
   case ExpressionId::AND:
-    return vaultdb::types::Type::GetInstance(v1->GetType()).And(*v1, *v2);
+    return vaultdb::types::Type::GetInstance(v1->getType()).And(*v1, *v2);
   case ExpressionId::OR:
-    return vaultdb::types::Type::GetInstance(v1->GetType()).Or(*v1, *v2);
+    return vaultdb::types::Type::GetInstance(v1->getType()).Or(*v1, *v2);
   }
 }
 } // namespace vaultdb::expression

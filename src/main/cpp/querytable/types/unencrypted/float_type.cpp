@@ -8,10 +8,19 @@
 
 namespace vaultdb::types {
 #define FLOAT_BINARY(OP)                                                        \
-  do {                                                                         \
-                                                                               \
-    return Value(TypeId::BOOLEAN, left.value_.unencrypted_val.double_val OP           \
-                                 right.value_.unencrypted_val.double_val);       \
+  do {                                                                          \
+        bool result = 0; \
+         switch(left.getType()) {                                               \
+            case TypeId::FLOAT32:                                                                    \
+                result =  left.getFloat32() OP   right.getFloat32();                            \
+                 break;                   \
+              case TypeId::FLOAT64:                                             \
+                  result = left.getFloat64() OP right.getFloat64();             \
+                  break;                                                        \
+                  default:                                                      \
+                    throw;\
+                  }\
+    return Value(result);       \
   } while (0)
 
 Value vaultdb::types::FloatType::CompareEquals(
@@ -41,14 +50,27 @@ Value FloatType::And(const Value &left, const Value &right) const { throw; }
 
 Value FloatType::Or(const Value &left, const Value &right) const { throw; }
 
-void FloatType::Swap(const Value &compareBit, Value &left, Value &right) {
-  VAULTDB_ASSERT(compareBit.GetType() == vaultdb::types::TypeId::BOOLEAN);
-  if (compareBit.value_.unencrypted_val.bool_val) {
-    double tmp = left.value_.unencrypted_val.double_val;
-    left.value_.unencrypted_val.double_val =
-        right.value_.unencrypted_val.double_val;
-    right.value_.unencrypted_val.double_val = tmp;
-  }
+void FloatType::Swap(const Value &compareBit, Value &lhs, Value &rhs) {
+  VAULTDB_ASSERT(compareBit.getType() == vaultdb::types::TypeId::BOOLEAN);
+  bool cmp = compareBit.getBool();
+
+    if(lhs.getType() == TypeId::FLOAT32) {
+        if(cmp) {
+            float tmp = lhs.getFloat32();
+            lhs.setValue(rhs.getFloat32());
+            rhs.setValue(tmp);
+        }
+    }
+    else if(lhs.getType() == TypeId::FLOAT64) {
+        if(cmp) {
+            double tmp = lhs.getFloat64();
+            lhs.setValue(rhs.getFloat64());
+            rhs.setValue(tmp);
+        }
+    }
+    else {
+        throw;
+    }
 }
 
 FloatType::FloatType() {}

@@ -18,7 +18,7 @@ std::unique_ptr<emp::Batcher> GetBatcher(ShareCount &c,
          case vaultdb::types::TypeId::INTEGER64: {
         if (party == c.party) {
               int64_t val =
-                  input_table->GetTuple(i)->GetField(j)->GetValue()->GetInt64();
+                      input_table->GetTuple(i)->GetField(j)->GetValue()->getInt64();
              batcher->add<emp::Integer>(64, val);
         } else {
           batcher->add<emp::Integer>(64, 0);

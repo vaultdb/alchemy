@@ -1,66 +1,70 @@
 #include <iso646.h>
-//
-// Created by madhav on 1/15/20.
-//
-
 #pragma once
 #include "emp-tool/emp-tool.h"
 #include "type.h"
 #include "type_id.h"
 #include <cstdint>
 #include <memory>
+#include <boost/variant.hpp>
 
+
+class variant;
 namespace vaultdb::types {
 class Value {
 
 public:
-    Value(TypeId id, string basicString);
 
-    friend class Type;
-  friend class EncryptedIntegerType;
-  friend class IntegerType;
-  friend class BooleanType;
-  friend class EncryptedBooleanType;
-  friend class FloatType;
 
   Value();
-  void SetValue(const Value *v);
-  void SetValue(TypeId type, int32_t val);
-  void SetValue(TypeId type, int64_t val);
-  void SetValue(TypeId type, bool val);
-  void SetValue(TypeId type, emp::Bit val);
-  void SetValue(TypeId type, emp::Integer, int len);
-  void SetValue(TypeId type, float val);
-  void SetValue(TypeId type, double val);
 
-  Value(TypeId type, int32_t val);
-  Value(TypeId type, int64_t val);
-  Value(TypeId type, bool val);
-  Value(TypeId type, emp::Bit val);
-  Value(TypeId type, emp::Integer, int len);
-  Value(TypeId type, double val);
-  Value(TypeId type, float val);
+  void setValue(const Value *v);
+  // for unencrypted values, the TypeId is fixed.  This only becomes dynamic for the encrypted values
+  // hence only take as input a TypeId for the latter.
+  void setValue(int32_t val);
+  void setValue(int64_t val);
+  void setValue(bool val);
+  void setValue(emp::Bit val);
+  void setValue(TypeId type, emp::Integer val);
+  void setValue(float val);
+  void setValue(double val);
+  void setValue(std::string aString);
 
+  Value(int32_t val);
+  Value(int64_t val);
+  Value(bool val);
+  Value(emp::Bit val);
+  Value(TypeId type, const emp::Integer val);
+  Value(double val);
+  Value(float val);
   Value(const Value &val);
+  Value(const std::string & val);
+
   ~Value();
 
-  TypeId GetType() const;
-  int64_t GetInt64() const;
-  int32_t GetInt32() const;
-  [[nodiscard]] bool GetBool() const;
-  [[nodiscard]] emp::Integer *GetEmpInt() const;
-  [[nodiscard]] emp::Bit* GetEmpBit() const;
+  TypeId getType() const;
+  int64_t getInt64() const;
+  int32_t getInt32() const;
+  [[nodiscard]] bool getBool() const;
+  [[nodiscard]] emp::Integer *getEmpInt() const;
+  [[nodiscard]] emp::Bit* getEmpBit() const;
+    std::string getVarchar() const;
 
-    string getVarchar() const { return value_.unencrypted_val.varchar_val; }
-    double GetFloat() const;
+
+    float getFloat32() const;
+    double getFloat64() const;
 
     string getValueString() const;
     friend std::ostream& operator<<(std::ostream &strm, const types::Value &aValue);
+    Value& operator=(const Value& other); // copy assign operator overload
 
 protected:
   bool is_encrypted_;
   TypeId type_;
-  int64_t len_;
+public:
+    void setType(TypeId type);
+
+protected:
+    int64_t len_;
   union UnencryptedVal {
     uint8_t bool_val;
     int64_t int64_val;
@@ -70,18 +74,17 @@ protected:
     double double_val;
     char *varchar_val;
   };
-  struct value {
-    UnencryptedVal unencrypted_val{};
+
+
+  struct ValueStruct {
+      boost::variant<bool, int64_t, int32_t, float_t, double_t, std::string> unencrypted_val;
     emp::Bit * emp_bit_;
     emp::Integer * emp_integer_;
+    emp::Float *emp_float_;
 
-
-      // std::unique_ptr<emp::Float32> emp_float32_;
-    // std::unique_ptr<emp::Float> emp_float_;
-    // std::unique_ptr<std::vector<emp::Bit>> emp_bit_array_;
   } value_{};
 
-    void SetValue(TypeId type, char *val);
+    void initialize(const Value &other);
 };
 } // namespace vaultdb::types
 

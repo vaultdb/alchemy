@@ -45,11 +45,11 @@ void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir,
   if (t->GetIsEncrypted()) {
     emp::Bit b1(comparator_init, emp::BOB);
     emp::Bit b2(v_and_init, emp::BOB);
-    comparator = types::Value(types::TypeId::ENCRYPTED_BOOLEAN, b1);
-    v_and = types::Value(types::TypeId::ENCRYPTED_BOOLEAN, b2);
+    comparator = types::Value(b1);
+    v_and = types::Value(b2);
   } else {
-    comparator = types::Value(types::TypeId::BOOLEAN, comparator_init);
-    v_and = types::Value(types::TypeId::BOOLEAN, v_and_init);
+    comparator = types::Value(comparator_init);
+    v_and = types::Value(v_and_init);
   }
   vaultdb::expression::ExpressionId compare_dir =
       dir ? vaultdb::expression::ExpressionId::GREATERTHAN

@@ -7,9 +7,8 @@
 namespace vaultdb::types {
 #define BOOL_BINARY(OP)                                                        \
   do {                                                                         \
-                                                                               \
-    return Value(left.type_, left.value_.unencrypted_val.bool_val OP           \
-                                 right.value_.unencrypted_val.bool_val);       \
+           bool result = left.getBool() OP  right.getBool();                                                                     \
+           return Value(result );       \
   } while (0)
 
 Value vaultdb::types::BooleanType::CompareEquals(
@@ -35,32 +34,31 @@ Value vaultdb::types::BooleanType::Or(
 
 Value BooleanType::CompareLessThanOrEqual(const Value &left,
                                           const Value &right) const {
-  bool b1 = (!left.value_.unencrypted_val.bool_val) &
-            right.value_.unencrypted_val.bool_val;
-  bool b2 = left.value_.unencrypted_val.bool_val ==
-            right.value_.unencrypted_val.bool_val;
-  return Value(left.GetType(), (b1 | b2));
+  bool b1 = (!left.getBool()) &
+            right.getBool();
+  bool b2 = left.getBool() ==
+            right.getBool();
+  return Value((b1 | b2));
 }
 Value BooleanType::CompareLessThan(const Value &left,
                                    const Value &right) const {
-  bool b = (!left.value_.unencrypted_val.bool_val) &
-           right.value_.unencrypted_val.bool_val;
-  return Value(left.GetType(), b);
+  bool b = (!left.getBool()) &
+           right.getBool();
+  return Value(b);
   throw;
 }
 Value BooleanType::CompareGreaterThan(const Value &left,
                                       const Value &right) const {
-  bool b = (left.value_.unencrypted_val.bool_val) &
-           (!right.value_.unencrypted_val.bool_val);
-  return Value(left.GetType(), b);
+  bool b = (left.getBool()) &
+           (!right.getBool());
+  return Value(b);
 }
 void BooleanType::Swap(const Value &compareBit, Value &left, Value &right) {
-  VAULTDB_ASSERT(compareBit.GetType() == vaultdb::types::TypeId::BOOLEAN);
-  if (compareBit.value_.unencrypted_val.bool_val) {
-    bool tmp = left.value_.unencrypted_val.bool_val;
-    left.value_.unencrypted_val.bool_val =
-        right.value_.unencrypted_val.bool_val;
-    right.value_.unencrypted_val.bool_val = tmp;
+  VAULTDB_ASSERT(compareBit.getType() == vaultdb::types::TypeId::BOOLEAN);
+  if (compareBit.getBool()) {
+    bool tmp = left.getBool();
+    left.setValue(right.getBool());
+    right.setValue(tmp);
   }
 };
 } // namespace vaultdb::types

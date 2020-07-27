@@ -2,10 +2,12 @@
 // Created by madhav on 2/5/20.
 //
 
-#ifndef TESTING_BOOLEAN_TYPE_H
-#define TESTING_BOOLEAN_TYPE_H
+#ifndef BOOLEAN_TYPE_H
+#define BOOLEAN_TYPE_H
 
 #include <querytable/types/type.h>
+#include <querytable/types/value.h>
+
 namespace vaultdb::types {
 
 class BooleanType : public Type {
@@ -29,6 +31,10 @@ public:
   Value Or(const Value &left, const Value &right) const override;
   void Swap(const Value &compareBit, Value &left, Value &right) override;
 };
+
+
+
+
 } // namespace vaultdb::types
 
-#endif // TESTING_BOOLEAN_TYPE_H
+#endif // BOOLEAN_TYPE_H

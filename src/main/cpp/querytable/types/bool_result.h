@@ -2,8 +2,8 @@
 // Created by madhav on 1/15/20.
 //
 
-#ifndef TESTING_BOOL_RESULT_H
-#define TESTING_BOOL_RESULT_H
+#ifndef BOOL_RESULT_H
+#define BOOL_RESULT_H
 
 #include "emp-tool/emp-tool.h"
 #include <memory>
@@ -21,4 +21,4 @@ protected:
 };
 } // namespace vaultdb::types
 
-#endif // TESTING_BOOL_RESULT_H
+#endif // BOOL_RESULT_H

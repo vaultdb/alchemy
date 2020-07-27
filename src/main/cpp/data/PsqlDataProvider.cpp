@@ -106,8 +106,10 @@ void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple) {
             const pqxx::field srcField = row[i];
 
             dstTuple->PutField(i, getField(srcField));
+
         }
 
+        std::cout << "Parsed tuple " << *dstTuple << std::endl;
     }
 
 
@@ -138,7 +140,7 @@ void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple) {
                 int64_t epoch = std::chrono::duration_cast<std::chrono::seconds>(
                         timePoint.time_since_epoch()).count();
                value = types::Value(colType, epoch);
-               result->SetValue(&value);
+               result->setValue(&value);
                break;
             }*/
             case vaultdb::types::TypeId::BOOLEAN:
@@ -159,6 +161,7 @@ void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple) {
             case types::TypeId::VARCHAR:
             {
                 string stringVal = src.as<string>();
+                std::cout << "Parsed string 1: " << stringVal << std::endl;
                 return std::unique_ptr<QueryField>(new QueryField(ordinal, stringVal));
             }
             default:

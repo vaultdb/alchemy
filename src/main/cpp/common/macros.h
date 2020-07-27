@@ -2,8 +2,8 @@
 // Created by madhav on 1/15/20.
 //
 
-#ifndef TESTING_MACROS_H
-#define TESTING_MACROS_H
+#ifndef MACROS_H
+#define MACROS_H
 namespace vaultdb {
 #ifdef NDEBUG
 #define VAULTDB_ASSERT(expr) ((void)0)
@@ -20,4 +20,4 @@ namespace vaultdb {
 
 } // namespace vaultdb
 
-#endif // TESTING_MACROS_H
+#endif // MACROS_H
