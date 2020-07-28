@@ -68,9 +68,18 @@ std::string QueryTable::GetQueryTableXorString(QueryTable *input_table) {
 // iterate over all tuples and produce one long bit array for encrypting/decrypting in emp
 // only works in PUBLIC or XOR mode
 bool *QueryTable::serialize() const {
-    size_t dstSize = tupleCount_ * schema_.get()->size();
+    // dst size is in bits
+    size_t tupleWidth =  schema_.get()->size();
+    size_t dstSize = tupleCount_ * tupleWidth;
     bool *dst = new bool[dstSize];
-    return nullptr;
+    bool *cursor = dst;
+
+    for(int i = 0; i < tupleCount_; ++i) {
+        tuples_[i].serialize(cursor, schema_.get());
+        cursor += tupleWidth;
+    }
+
+    return dst;
 }
 
 std::ostream &operator<<(std::ostream &os, const QueryTable &table) {

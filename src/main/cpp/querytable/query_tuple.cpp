@@ -1,4 +1,5 @@
 #include "query_tuple.h"
+#include "query_schema.h"
 #include <querytable/expression/expression.h>
 
 using namespace vaultdb;
@@ -133,6 +134,22 @@ void QueryTuple::setFieldCount(size_t fieldCount) {
 
     fields_ =
             std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+}
+
+// only works for unencrypted tables
+void QueryTuple::serialize(bool *dst, QuerySchema *schema) {
+
+    assert(!is_encrypted_);
+
+    bool *cursor = dst;
+
+    for(int fieldIdx = 0; fieldIdx < fieldCount_; ++fieldIdx) {
+        fields_[fieldIdx].serialize(cursor);
+        cursor += schema->GetField(fieldIdx)->size();
+    }
+
+    *cursor = dummy_tag_.getBool();
+
 }
 
 

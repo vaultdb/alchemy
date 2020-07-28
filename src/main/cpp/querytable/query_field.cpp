@@ -17,6 +17,10 @@ QueryField::QueryField(int field_num, emp::Integer val, int length)
     : ordinal(field_num),
       value_(types::TypeId::ENCRYPTED_INTEGER64, val) {}
 
+QueryField::QueryField(int field_num, emp::Bit val)
+        : ordinal(field_num),
+          value_(val) {}
+
 
 QueryField::QueryField(int field_num, float val)
         : ordinal(field_num), value_(val) {}
@@ -98,3 +102,17 @@ void QueryField::initialize(QueryField &field) {
     value_.setValue(field.GetValue());
     ordinal = field.ordinal;
 }
+
+void QueryField::serialize(bool *dst) {
+    value_.serialize(dst);
+}
+
+QueryField::QueryField(int field_num, emp::Float32 val) : ordinal(field_num), value_(val)
+{}
+
+QueryField::QueryField(int anOrdinal, emp::Integer *aVal, types::TypeId aType) : ordinal(anOrdinal), value_(aVal) {
+
+        value_.setType(aType); // useful for differentiating int32s and varchars from int64s
+
+}
+

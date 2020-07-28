@@ -140,7 +140,6 @@ void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple, bool hasDum
         types::TypeId colType = getFieldTypeFromOid(oid);
         types::Value value;
 
-        std::cout << "parsed field with oid " << oid << " type: " << TypeUtilities::getTypeIdString(colType) << std::endl;
         std::unique_ptr<QueryField> result(new QueryField(ordinal));
 
 

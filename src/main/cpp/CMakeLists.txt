@@ -118,7 +118,7 @@ set(sources
 		data/DataProvider.cpp
 		data/proto_converter.cpp
         util/type_utilities.cpp
-		util/emp_utilities.h
+        util/emp_manager.cpp
 )
 
 

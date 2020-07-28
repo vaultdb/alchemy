@@ -27,6 +27,11 @@ Value::Value(emp::Bit val) {
 }
 
 
+Value::Value(emp::Float32 aFloat)  {
+    setValue(aFloat);
+}
+
+
 Value::Value(TypeId type, const emp::Integer val) {
     setValue(type, val);
 }
@@ -43,6 +48,9 @@ Value::Value(const string &val) {
         setValue(val);
     }
 
+    Value::Value(emp::Float aFloat) {
+        setValue(aFloat);
+    }
 
 TypeId Value::getType() const { return Value::type_; }
 
@@ -141,42 +149,36 @@ void Value::setValue(const Value *val) {
 void Value::setValue(int32_t val) {
   type_ = TypeId::INTEGER32;
   is_encrypted_ = false;
-  len_ = sizeof(int32_t);
   value_.unencrypted_val = val;
 }
 
 void Value::setValue(int64_t val) {
   type_ = TypeId::INTEGER64;
   is_encrypted_ = false;
-  len_ = sizeof(int64_t);
   value_.unencrypted_val = val;
 }
 
 void Value::setValue(bool val) {
   type_ = TypeId::BOOLEAN;
   is_encrypted_ = false;
-  len_ = sizeof(uint8_t);
   value_.unencrypted_val = val;
 }
 
 void Value::setValue(double val) {
   type_ = TypeId::FLOAT64;
   is_encrypted_ = false;
-  len_ = sizeof(double);
   value_.unencrypted_val = val;
 }
 
 void Value::setValue(float val) {
     type_ = TypeId::FLOAT32;
     is_encrypted_ = false;
-    len_ = sizeof(float);
     value_.unencrypted_val = val;
 }
 
 void Value::setValue(std::string aString) {
         type_ = TypeId::VARCHAR;
         is_encrypted_ = false;
-        len_ = aString.size();
         value_.unencrypted_val = aString; // = ValueStruct(std::make_unique<std::string>(aString));
 }
 
@@ -184,16 +186,25 @@ void Value::setValue(std::string aString) {
     void Value::setValue(emp::Bit val) {
         type_ = TypeId::ENCRYPTED_BOOLEAN;
         is_encrypted_ = true;
-        len_ = 1;
         value_.emp_bit_ = new emp::Bit(val.bit);
     }
     void Value::setValue(TypeId type, emp::Integer val) {
         type_ = type;
         is_encrypted_ = true;
-        len_ = val.length;
         value_.emp_integer_ = new emp::Integer(val);
     }
 
+    void Value::setValue(emp::Float32 val) {
+        type_ = TypeId::ENCRYPTED_FLOAT32;
+        is_encrypted_ = true;
+        value_.emp_float32_ = new emp::Float32(val);
+    }
+
+    void Value::setValue(emp::Float val) {
+        type_ = TypeId::ENCRYPTED_FLOAT64;
+        is_encrypted_ = true;
+        value_.emp_float_ = new emp::Float(val);
+    }
 
 
 
@@ -220,9 +231,6 @@ void Value::setValue(std::string aString) {
                 return std::to_string(getFloat32());
             case TypeId::FLOAT64:
                 return std::to_string(getFloat64());
-            /*case TypeId::VAULT_DOUBLE:
-                return std::to_string(getFloat64());*/
-
 
             case TypeId::VARCHAR:
                 return  getVarchar();
@@ -277,6 +285,58 @@ void Value::setValue(std::string aString) {
     initialize(other);
     return *this;
     }
+
+    // TODO: reverse the bit orders for this for emp
+    void Value::serialize(bool *dst) const {
+
+            size_t valSize = TypeUtilities::getTypeSize(type_);
+
+            switch (type_) {
+                case vaultdb::types::TypeId::BOOLEAN:
+                    *dst = getBool();
+                    break;
+                case vaultdb::types::TypeId::INTEGER32: {
+                    int32_t value = getInt32();
+                    memcpy(dst, (bool *) &value, valSize);
+                    break;
+                }
+                case vaultdb::types::TypeId::NUMERIC:
+                case vaultdb::types::TypeId::FLOAT32: {
+                    float value = getFloat32();
+                    memcpy(dst, (bool *) &value, valSize);
+                    break;
+                }
+                case vaultdb::types::TypeId::FLOAT64: {
+                    double value = getFloat64();
+                    memcpy(dst, (bool *) &value, valSize);
+                    break;
+                }
+                case vaultdb::types::TypeId::INTEGER64: {
+                    int64_t value = getInt64();
+                    memcpy(dst, (bool *) &value, valSize);
+                    break;
+                }
+
+                case vaultdb::types::TypeId::VARCHAR: {
+                    std::string valueStr = getVarchar();
+                    const char *value = valueStr.c_str();
+                    size_t strLen = valueStr.size();
+                    memcpy(dst, (bool *) value, strLen * 8);
+                    break;
+                }
+
+
+            // only works for unencrypted values for now
+            // TODO: add support for XOR table
+
+                default: // unsupported type
+                    throw;
+            }
+
+
+        }
+
+
 
 
 } // namespace vaultdb::types

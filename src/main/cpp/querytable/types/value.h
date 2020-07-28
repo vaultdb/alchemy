@@ -16,8 +16,20 @@ public:
 
 
   Value();
+    Value(int32_t val);
+    Value(int64_t val);
+    Value(bool val);
+    Value(emp::Bit val);
+    Value(TypeId type, const emp::Integer val);
+    Value(double val);
+    Value(float val);
+    Value(const Value &val);
+    Value(const std::string & val);
+  Value(emp::Float32 float32);
+    Value(emp::Float float32);
 
-  void setValue(const Value *v);
+
+    void setValue(const Value *v);
   // for unencrypted values, the TypeId is fixed.  This only becomes dynamic for the encrypted values
   // hence only take as input a TypeId for the latter.
   void setValue(int32_t val);
@@ -28,16 +40,10 @@ public:
   void setValue(float val);
   void setValue(double val);
   void setValue(std::string aString);
+  void setValue(emp::Float32 val);
+  void setValue(emp::Float val);
 
-  Value(int32_t val);
-  Value(int64_t val);
-  Value(bool val);
-  Value(emp::Bit val);
-  Value(TypeId type, const emp::Integer val);
-  Value(double val);
-  Value(float val);
-  Value(const Value &val);
-  Value(const std::string & val);
+
 
   ~Value();
 
@@ -57,6 +63,7 @@ public:
     friend std::ostream& operator<<(std::ostream &strm, const types::Value &aValue);
     Value& operator=(const Value& other); // copy assign operator overload
 
+    void serialize(bool *dst) const;
 protected:
   bool is_encrypted_;
   TypeId type_;
@@ -64,16 +71,7 @@ public:
     void setType(TypeId type);
 
 protected:
-    int64_t len_;
-  union UnencryptedVal {
-    uint8_t bool_val;
-    int64_t int64_val;
-    int32_t int32_val;
-    int64_t date_val;
-    float float_val;
-    double double_val;
-    char *varchar_val;
-  };
+
 
 
   struct ValueStruct {
@@ -81,10 +79,11 @@ protected:
     emp::Bit * emp_bit_;
     emp::Integer * emp_integer_;
     emp::Float *emp_float_;
-
+    emp::Float32 *emp_float32_;
   } value_{};
 
     void initialize(const Value &other);
+
 };
 } // namespace vaultdb::types
 

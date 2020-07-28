@@ -34,7 +34,7 @@ size_t QuerySchema::size() const {
         bitSize += fields_[i].size();
 
     }
-
+    ++bitSize; // account for dummy tag
         return bitSize;
 }
 
@@ -51,3 +51,5 @@ std::ostream &operator<<(std::ostream &os, const QuerySchema &schema) {
     os << ")";
     return os;
 }
+
+

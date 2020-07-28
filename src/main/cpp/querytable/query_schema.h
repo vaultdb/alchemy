@@ -26,8 +26,6 @@ public:
   // returns size in bits
   [[nodiscard]] size_t size() const;
 
-  size_t GetFieldOffset(int field_num) const;
-
   explicit QuerySchema(int num_fields);
 
   QuerySchema(const QuerySchema &s);

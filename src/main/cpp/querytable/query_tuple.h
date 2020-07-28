@@ -2,6 +2,7 @@
 #define _QUERY_TUPLE_H
 
 #include "query_field.h"
+#include "query_schema.h"
 #include <map>
 #include <memory>
 #include <vector>
@@ -42,6 +43,8 @@ public:
     friend std::ostream& operator<<(std::ostream &strm, const QueryTuple &aTuple);
 
     QueryTuple();
+
+    void serialize(bool *dst, QuerySchema *schema);
 };
 
 } // namespace vaultdb
