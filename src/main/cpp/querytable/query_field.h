@@ -14,6 +14,7 @@ class QueryField {
 private:
 
 
+
     int ordinal;
   types::Value value_;
 
@@ -34,6 +35,9 @@ public:
   QueryField(int field_num, std::string val);
 
   QueryField(int field_num, float val);
+
+  QueryField(int fn, bool val);
+
 
 
   [[nodiscard]]  types::Value *GetValue() const;

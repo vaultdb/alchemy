@@ -86,13 +86,47 @@ public:
 
         static const std::string inputQueryDummyTag = "SELECT l_orderkey, l_comment, l_returnflag, l_discount, "
                                               "EXTRACT(EPOCH FROM l_commitdate) AS l_commitdate, "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
-                                              "l_returnflag = 'N' AS dummy "
+                                              "l_returnflag <> 'N' AS dummy "  // simulate a filter for l_returnflag = 'N' -- all of the ones that dont match are dummies
                                               "FROM lineitem "
                                               "ORDER BY l_orderkey "
                                               "LIMIT 10";
         return inputQueryDummyTag;
     }
 
+
+    static const std::string getExpectedOutputDummyTag() {
+
+        /*
+         * Expected output:
+         * tpch_alice=# SELECT l_orderkey, l_comment, l_returnflag, l_discount, EXTRACT(EPOCH FROM l_commitdate) AS l_commitdate FROM lineitem ORDER BY l_orderkey LIMIT 10;
+          1 |  pending foxes. slyly re                   | N            |       0.10 |    826761600
+          1 | arefully slyly ex                          | N            |       0.07 |    823651200
+          3 | nal foxes wake.                            | A            |       0.06 |    753926400
+          5 | ts wake furiously                          | R            |       0.02 |    778291200
+          5 | sts use slyly quickly special instruc      | R            |       0.07 |    780451200
+          7 | es. instructions                           | N            |       0.08 |    825724800
+          7 |  unusual reques                            | N            |       0.10 |    827884800
+          7 | . slyly special requests haggl             | N            |       0.03 |    828921600
+          7 | jole. excuses wake carefully alongside of  | N            |       0.06 |    825033600
+         32 | lithely regular deposits. fluffily         | N            |       0.02 |    813024000
+(10 rows)
+         */
+
+        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double lineitem.l_commitdate) isEncrypted? 0\n"
+                                               "(1,  pending foxes. slyly re, N, 0.100000, 826761600.000000) (dummy=false)\n"
+                                               "(1, arefully slyly ex, N, 0.070000, 823651200.000000) (dummy=false)\n"
+                                               "(3, nal foxes wake. , A, 0.060000, 753926400.000000) (dummy=true)\n"
+                                               "(5, ts wake furiously , R, 0.020000, 778291200.000000) (dummy=true)\n"
+                                               "(5, sts use slyly quickly special instruc, R, 0.070000, 780451200.000000) (dummy=true)\n"
+                                               "(7, es. instructions, N, 0.080000, 825724800.000000) (dummy=false)\n"
+                                               "(7,  unusual reques, N, 0.100000, 827884800.000000) (dummy=false)\n"
+                                               "(7, . slyly special requests haggl, N, 0.030000, 828921600.000000) (dummy=false)\n"
+                                               "(7, jole. excuses wake carefully alongside of , N, 0.060000, 825033600.000000) (dummy=false)\n"
+                                               "(32, lithely regular deposits. fluffily , N, 0.020000, 813024000.000000) (dummy=false)\n";
+
+        return queryOutput;
+
+    }
     virtual void SetUp() { }
 };
 
@@ -113,22 +147,21 @@ TEST_F(query_table_test, read_table) {
     PsqlDataProvider dataProvider;
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
-    cout << "Querying " << db_name << " with: " << QueryTableTestEnvironment::getInputQuery() << endl;
+    std::string inputQuery = QueryTableTestEnvironment::getInputQuery();
+    cout << "Querying " << db_name << " with: " << inputQuery << endl;
 
 
 
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
-                                        QueryTableTestEnvironment::getInputQuery(), "lineitem", false);
+                                        inputQuery, "lineitem", false);
 
-
-    QueryTable * local = inputTable.get();
 
     string observedTable = inputTable.get()->toString();
     string expectedTable = QueryTableTestEnvironment::getExpectedOutput();
 
     cout << "Expected:\n" << expectedTable << endl;
-    cout << "Observed: \n" << *local << endl;
+    cout << "Observed: \n" << observedTable << endl;
 
     ASSERT_EQ(expectedTable, observedTable) << "Query table was not parsed correctly.";
 
@@ -146,22 +179,29 @@ TEST_F(query_table_test, read_table_dummy_tag) {
     ShareDef def;
 
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+    string expectedTable = QueryTableTestEnvironment::getExpectedOutputDummyTag();
+    std::string inputQuery = QueryTableTestEnvironment::getInputQueryDummyTag();
 
-    cout << "Querying " << db_name << " with: " << QueryTableTestEnvironment::getInputQueryDummyTag() << endl;
+    cout << "Querying " << db_name << " with: " << inputQuery  << endl;
 
 
 
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
-                                                                         QueryTableTestEnvironment::getInputQuery(),
+                                                                         inputQuery,
                                                                          "lineitem",
                                                                          true);
 
 
-    cout << "Received: " << inputTable.get() << endl;
+    std::string observedTable = inputTable->toString();
+
+    cout << "Expected:\n" << expectedTable << endl;
+    cout << "Observed: \n" << observedTable << endl;
+
+    ASSERT_EQ(expectedTable, observedTable) << "Query table was not parsed correctly.";
 }
 
-
+/*
 // test encrypting the query table with EMP
 TEST_F(query_table_test, encrypt_table) {
 
@@ -214,5 +254,6 @@ TEST_F(query_table_test, encrypt_table) {
     //std::cout << "Decrypted: " << decrypted << endl;
     //std::cout << "Expected: "  << expected << endl;
 
-    assert((decrypted.get()) == (expected.get()));*/
+    assert((decrypted.get()) == (expected.get()));
 }
+*/

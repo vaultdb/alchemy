@@ -54,10 +54,13 @@ std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
 }
 
 std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, bool hasDummyTag) {
-    size_t colCount = input.columns();
-    std::unique_ptr<QuerySchema> result(new QuerySchema(colCount));
+    pqxx::row firstRow = *(input.begin());
+    int colCount = firstRow.size();
     if(hasDummyTag)
         --colCount; // don't include dummy tag as a separate column
+
+
+    std::unique_ptr<QuerySchema> result(new QuerySchema(colCount));
 
     for(int i = 0; i < colCount; ++i) {
        string colName =  input.column_name(i);
@@ -74,9 +77,10 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
        result->PutField(i, fieldDesc);
     }
 
-    if(hasDummyTag) {
+   if(hasDummyTag) {
         pqxx::oid dummyTagOid = input.column_type((int) colCount);
-        assert(getFieldTypeFromOid(dummyTagOid) == vaultdb::types::TypeId::BOOLEAN); // check that dummy tag is a boolean
+        vaultdb::types::TypeId dummyType = getFieldTypeFromOid(dummyTagOid);
+        assert(dummyType == vaultdb::types::TypeId::BOOLEAN); // check that dummy tag is a boolean
     }
 
     return result;
@@ -105,24 +109,26 @@ size_t PsqlDataProvider::getVarCharLength(std::string tableName, std::string col
 void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple, bool hasDummyTag) {
 
         dstTuple->SetIsEncrypted(false);
-        const int numCols = row.size();
+        int colCount = row.size();
         dstTuple->InitDummy();
-        dstTuple->setFieldCount(numCols);
-        int dummyIdx = numCols - 1; // last value
+
+        if(hasDummyTag) {
+            --colCount;
+        }
+
+        dstTuple->setFieldCount(colCount);
 
 
-        for (int i=0; i < numCols; i++) {
+        for (int i=0; i < colCount; i++) {
             const pqxx::field srcField = row[i];
+            dstTuple->PutField(i, getField(srcField));
+        }
 
+        if(hasDummyTag) {
 
-            if(!(i == dummyIdx && hasDummyTag)) {// skip dummy tag
-                dstTuple->PutField(i, getField(srcField));
-            }
-            else { // already verified that last col is a boolean in the schema step
-                std::unique_ptr<QueryField> parsedField(getField(srcField));
+                std::unique_ptr<QueryField> parsedField(getField(row[colCount])); // get the last col
                 bool dummyTag = parsedField.get()->GetValue()->getBool();
                 dstTuple->SetDummyTag(dummyTag);
-            }
         }
     }
 
@@ -134,6 +140,7 @@ void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple, bool hasDum
         types::TypeId colType = getFieldTypeFromOid(oid);
         types::Value value;
 
+        std::cout << "parsed field with oid " << oid << " type: " << TypeUtilities::getTypeIdString(colType) << std::endl;
         std::unique_ptr<QueryField> result(new QueryField(ordinal));
 
 
@@ -175,7 +182,6 @@ void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple, bool hasDum
             case types::TypeId::VARCHAR:
             {
                 string stringVal = src.as<string>();
-                std::cout << "Parsed string 1: " << stringVal << std::endl;
                 return std::unique_ptr<QueryField>(new QueryField(ordinal, stringVal));
             }
             default:

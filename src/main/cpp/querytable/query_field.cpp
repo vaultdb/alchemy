@@ -10,6 +10,9 @@ QueryField::QueryField(int fn, int64_t val)
 QueryField::QueryField(int fn, int32_t val)
     : ordinal(fn), value_(val) {}
 
+QueryField::QueryField(int fn, bool val)
+        : ordinal(fn), value_(val) {}
+
 QueryField::QueryField(int field_num, emp::Integer val, int length)
     : ordinal(field_num),
       value_(types::TypeId::ENCRYPTED_INTEGER64, val) {}
