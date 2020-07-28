@@ -27,20 +27,32 @@ class EmpManager {
 public:
     static EmpManager *getInstance() {
         if (!instance)
-            instance = new EmpManager();
+            instance = new EmpManager();  // null initially, only valid once we call configure below
         return instance;
     }
 
     void configureEmpManager(const char *aliceHost, int port, EmpParty party) {
-        netio_ =  new emp::NetIO(aliceHost, port);
+        std::cout << "Instantiating emp with host=" << aliceHost << " port=" << port << " party=" << (int) party << std::endl;
+        netio_ =  new emp::NetIO(party == EmpParty::ALICE ? nullptr:aliceHost, port);
         party_ = party;
        emp::setup_semi_honest(netio_, (int) party_);
+       std::cout << "Initialized netio!" << std::endl;
     }
 
 
 
-    QueryTable *secretShareTable(QueryTable *srcTable);
-    void encryptField(QueryTable *src, QueryTable *dst, int srcTupleIdx, int dstTupleIdx, int fieldIdx, int party);
+    std::unique_ptr<QueryTable> secretShareTable(QueryTable *srcTable);
+    void secretShareTuple(QueryTuple *srcTuple, QueryTuple *dstTuple, const QuerySchema *schema, int party); // TODO: refactor this in query table to regularize access patterns wrt Table/Field
+    QueryField *secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, int party);
+    types::Value secretShareValue(const types::Value *srcValue, types::TypeId type, int party);
+
+    void secretShareField(QueryTable *src, QueryTable *dst, int srcTupleIdx, int dstTupleIdx, int fieldIdx, int party);
+
+
+    std::unique_ptr<QueryTable> revealTable(const QueryTable *srcTable, int party);
+    void revealField(const QueryTable *src, QueryTable *dst, int tupleIdx, int fieldIdx, int party);
+
+
 
 };
 

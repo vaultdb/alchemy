@@ -22,7 +22,7 @@ int power_of_two_less_than(int n) {
 void SwapTuples(int t1, int t2, QueryTable *t, types::Value *swap_condition) {
   auto tup1 = t->GetTuple(t1);
   auto tup2 = t->GetTuple(t2);
-  for (int i = 0; i < t->GetSchema()->GetNumFields(); i++) {
+  for (int i = 0; i < t->GetSchema()->getFieldCount(); i++) {
     vaultdb::expression::Expression ex(
         swap_condition, tup1->GetMutableField(i)->GetMutableValue(),
         tup2->GetMutableField(i)->GetMutableValue(),
@@ -119,5 +119,5 @@ void BitonicSort(int lo, int cnt, QueryTable *t, SortDef &s, bool dir,
 void Sort(QueryTable *input, SortDef &s) {
   bool dir = s.order == SortOrder::ASCENDING ? true : false;
   bool dummy_dir = s.dummy_order == SortOrder::ASCENDING ? true : false;
-  BitonicSort(0, input->GetNumTuples(), input, s, dir, dummy_dir);
+  BitonicSort(0, input->getTupleCount(), input, s, dir, dummy_dir);
 }

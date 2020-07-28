@@ -91,6 +91,7 @@ set(sources
 		operators/secure_sort.cpp
 		operators/filter.cpp
 		operators/secure_join.cpp
+		util/emp_manager.cpp
 		querytable/private_share_utility.cpp
 		querytable/query_tuple.cpp
 		querytable/types/unencrypted/float_type.cpp
@@ -118,7 +119,6 @@ set(sources
 		data/DataProvider.cpp
 		data/proto_converter.cpp
         util/type_utilities.cpp
-        util/emp_manager.cpp
 )
 
 

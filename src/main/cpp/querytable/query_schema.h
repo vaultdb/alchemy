@@ -17,7 +17,7 @@ private:
     size_t fieldCount_;
 
 public:
-  [[nodiscard]] int GetNumFields() const;
+  [[nodiscard]] int getFieldCount() const;
 
   std::map<std::string, int> nameToIndex;
 

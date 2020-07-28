@@ -31,7 +31,7 @@ public:
   void SetSchema(const QuerySchema *s);
   const QuerySchema *GetSchema() const;
   QueryTuple *GetTuple(int idx) const;
-  unsigned int GetNumTuples() const;
+  unsigned int getTupleCount() const;
   std::unique_ptr<QuerySchema> ReleaseSchema();
   std::string toString() const;
 
@@ -43,6 +43,8 @@ public:
   bool *serialize() const;
 
     friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
+
+    std::unique_ptr<QueryTable> reveal(EmpParty party) const;
 };
 
 #endif // _QUERY_TABLE_H

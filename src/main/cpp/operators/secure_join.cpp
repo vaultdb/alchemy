@@ -11,12 +11,12 @@ void MergeTuples(QueryTuple *output, const QueryTuple *tuple1,
                  const QuerySchema *schema1, const QueryTuple *tuple2,
                  const QuerySchema *schema2) {
   int counter = 0;
-  for (int i = 0; i < schema1->GetNumFields(); i++) {
+  for (int i = 0; i < schema1->getFieldCount(); i++) {
     output->PutField(counter, tuple1->GetField(i));
     counter++;
   }
 
-  for (int i = 0; i < schema2->GetNumFields(); i++) {
+  for (int i = 0; i < schema2->getFieldCount(); i++) {
     output->PutField(counter, tuple2->GetField(i));
     counter++;
   }
@@ -25,13 +25,13 @@ void MergeTuples(QueryTuple *output, const QueryTuple *tuple1,
 std::unique_ptr<QuerySchema> MergeSchema(const QuerySchema *schema1,
                                          const QuerySchema *schema2) {
   std::unique_ptr<QuerySchema> output = std::make_unique<QuerySchema>(
-      schema1->GetNumFields() + schema2->GetNumFields());
+          schema1->getFieldCount() + schema2->getFieldCount());
   int counter = 0;
-  for (int i = 0; i < schema1->GetNumFields(); i++) {
+  for (int i = 0; i < schema1->getFieldCount(); i++) {
     output->PutField(counter, *schema1->GetField(i));
     counter++;
   }
-  for (int i = 0; i < schema2->GetNumFields(); i++) {
+  for (int i = 0; i < schema2->getFieldCount(); i++) {
     output->PutField(counter, *schema2->GetField(i));
     counter++;
   }
@@ -41,11 +41,11 @@ std::unique_ptr<QuerySchema> MergeSchema(const QuerySchema *schema1,
 std::unique_ptr<QueryTable> Join(QueryTable *left, QueryTable *right,
                                  const JoinDef &def) {
   std::unique_ptr<QueryTable> output_table = std::make_unique<QueryTable>(
-      left->GetIsEncrypted(), left->GetNumTuples() * right->GetNumTuples());
+      left->GetIsEncrypted(), left->getTupleCount() * right->getTupleCount());
   output_table->SetSchema(MergeSchema(left->GetSchema(), right->GetSchema()));
   int index = 0;
-  for (int li = 0; li < left->GetNumTuples(); li++) {
-    for (int ri = 0; ri < right->GetNumTuples(); ri++) {
+  for (int li = 0; li < left->getTupleCount(); li++) {
+    for (int ri = 0; ri < right->getTupleCount(); ri++) {
       auto lt = left->GetTuple(li);
       auto rt = right->GetTuple(ri);
       expression::Expression ex(lt->GetField(def.left_index)->GetValue(),

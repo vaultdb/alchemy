@@ -64,6 +64,10 @@ public:
     Value& operator=(const Value& other); // copy assign operator overload
 
     void serialize(bool *dst) const;
+
+    emp::Float32 *getEmpFloat32() const;
+    emp::Float *getEmpFloat() const;
+
 protected:
   bool is_encrypted_;
   TypeId type_;
@@ -84,6 +88,7 @@ protected:
 
     void initialize(const Value &other);
 
+    emp::Float *getEmpFloat();
 };
 } // namespace vaultdb::types
 

@@ -44,7 +44,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
   }
   else {
     aggregate_output = std::make_unique<QueryTable>(
-        input->GetIsEncrypted(), input->GetNumTuples());
+        input->GetIsEncrypted(), input->getTupleCount());
   }
 
   emp::Integer one(64, 1, emp::PUBLIC);
@@ -87,7 +87,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 
     emp::Bit *isDummy = new emp::Bit(false, emp::PUBLIC);
 
-    for (int row = 0; row < input->GetNumTuples(); row++) {
+    for (int row = 0; row < input->getTupleCount(); row++) {
 
       // dummy flag to determine if the tuplle is a Dummy value
       *isDummy = *input->GetTuple(row)->GetDummyTag()->getEmpBit();
@@ -123,7 +123,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 
     // creates resultant relation; inserting QueryField into tuple (just 1 row)
     for (int i = 0; i < def.scalarAggregates.size(); i++) {
-      const QueryField f(i, result_vector[i], result_vector[i].length);
+      const QueryField f(i, result_vector[i]);
       aggregate_output->GetTuple(0)->PutField(i, &f);
     }
 
@@ -138,7 +138,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
     emp::Integer prev_group_by(64, 0, emp::PUBLIC);
     emp::Integer group_by(64, 0, emp::PUBLIC);
 
-    for (int cursor = 0; cursor < input->GetNumTuples(); cursor++) {
+    for (int cursor = 0; cursor < input->getTupleCount(); cursor++) {
 
       emp::Bit groupby_eq(true, emp::PUBLIC);
       // assuming that every tuple belongs to the previous tuple's bin
@@ -214,7 +214,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       }
 
       for (int i = 0; i < def.scalarAggregates.size(); i++) {
-        const QueryField f(i, result_vector[i], result_vector[i].length);
+        const QueryField f(i, result_vector[i]);
         aggregate_output->GetTuple(cursor)->PutField(i, &f);
       }
       vaultdb::types::Value curr_dval(

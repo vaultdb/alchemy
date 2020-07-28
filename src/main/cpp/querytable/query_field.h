@@ -27,10 +27,11 @@ public:
   QueryField(int field_num, std::string val);
   QueryField(int field_num, float val);
   QueryField(int fn, bool val);
+  QueryField(int fn, types::Value aVal);
 
   // encrypted inits
   QueryField(int field_num, emp::Bit val);
-  QueryField(int field_num, emp::Integer, int length);
+  QueryField(int field_num, emp::Integer);
   QueryField(int field_num, emp::Float32 val);
   QueryField(int field_num, emp::Float val);
 
@@ -42,6 +43,7 @@ public:
   friend std::ostream& operator<<(std::ostream &strm, const QueryField &aField);
 
   QueryField reveal(EmpParty party) const;
+  int getOrdinal() const { return ordinal; }
 
     void initialize(QueryField &field);
 

@@ -53,9 +53,6 @@ void QueryTuple::PutField(int ordinal, std::unique_ptr<QueryField> f) {
 }
 
 void QueryTuple::PutField(int ordinal, const QueryField *f) {
-  if (ordinal >= 10) {
-    throw;
-  }
   fields_[ordinal].SetValue(f->GetValue());
 }
 
@@ -150,6 +147,10 @@ void QueryTuple::serialize(bool *dst, QuerySchema *schema) {
 
     *cursor = dummy_tag_.getBool();
 
+}
+
+size_t QueryTuple::getFieldCount() const {
+    return fieldCount_;
 }
 
 

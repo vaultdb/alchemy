@@ -39,12 +39,13 @@ public:
   vaultdb::types::Value *GetMutableDummyTag();
 
 
-   // QueryTuple reveal(EmpParty party) const;
+    QueryTuple reveal(EmpParty party) const;
     friend std::ostream& operator<<(std::ostream &strm, const QueryTuple &aTuple);
 
     QueryTuple();
 
     void serialize(bool *dst, QuerySchema *schema);
+    size_t getFieldCount() const;
 };
 
 } // namespace vaultdb

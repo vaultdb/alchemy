@@ -11,6 +11,8 @@ namespace vaultdb {
 #define VAULTDB_ASSERT(expr) assert((expr))
 #endif /* NDEBUG */
 
+
+
 #define VAULTDB_DEBUG(label, statement)                                               \
   do {                                                                         \
     std::cout << "*****" << std::endl;                                         \

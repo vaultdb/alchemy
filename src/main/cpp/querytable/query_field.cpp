@@ -13,7 +13,7 @@ QueryField::QueryField(int fn, int32_t val)
 QueryField::QueryField(int fn, bool val)
         : ordinal(fn), value_(val) {}
 
-QueryField::QueryField(int field_num, emp::Integer val, int length)
+QueryField::QueryField(int field_num, emp::Integer val)
     : ordinal(field_num),
       value_(types::TypeId::ENCRYPTED_INTEGER64, val) {}
 
@@ -114,5 +114,8 @@ QueryField::QueryField(int anOrdinal, emp::Integer *aVal, types::TypeId aType) :
 
         value_.setType(aType); // useful for differentiating int32s and varchars from int64s
 
+}
+
+QueryField::QueryField(int fn, types::Value aVal)  : ordinal(fn), value_(aVal){
 }
 

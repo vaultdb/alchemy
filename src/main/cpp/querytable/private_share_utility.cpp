@@ -13,7 +13,7 @@ std::unique_ptr<emp::Batcher> GetBatcher(ShareCount &c,
 
   auto batcher = std::make_unique<emp::Batcher>();
   for (int i = 0; i < c.num_tuples; i++) {
-    for (int j = 0; j < shared_schema->GetNumFields(); j++) {
+    for (int j = 0; j < shared_schema->getFieldCount(); j++) {
       switch (shared_schema->GetField(j)->GetType()) {
          case vaultdb::types::TypeId::INTEGER64: {
         if (party == c.party) {
@@ -39,14 +39,13 @@ void AddToTable(QueryTable *t, const QuerySchema *shared_schema,
   for (int i = 0; i < c.num_tuples; i++) {
     QueryTuple *tup = t->GetTuple(i + insert_offset);
     tup->SetIsEncrypted(true);
-    // TODO: JMR make this support dummy tags from SQL
     tup->InitDummy();
-    for (int ordinal = 0; ordinal < shared_schema->GetNumFields(); ordinal++) {
+    for (int ordinal = 0; ordinal < shared_schema->getFieldCount(); ordinal++) {
       std::unique_ptr<vaultdb::QueryField> qf;
       switch (shared_schema->GetField(ordinal)->GetType()) {
       case vaultdb::types::TypeId::INTEGER64: {
         auto val = b->next<emp::Integer>();
-        qf = std::make_unique<vaultdb::QueryField>(ordinal, val, 64);
+        qf = std::make_unique<vaultdb::QueryField>(ordinal, val);
         break;
       }
       default:
@@ -90,8 +89,8 @@ std::unique_ptr<QueryTable> ShareData(const QuerySchema *shared_schema,
              batcher_map[EmpParty::BOB].get(), def.share_map[EmpParty::BOB],
              def.share_map[EmpParty::ALICE].num_tuples);
   // TODO(madhavsuresh): this should really be with a copy constructor
-  QuerySchema s(input_table->GetSchema()->GetNumFields());
-  for (int i = 0; i < input_table->GetSchema()->GetNumFields(); i++) {
+  QuerySchema s(input_table->GetSchema()->getFieldCount());
+  for (int i = 0; i < input_table->GetSchema()->getFieldCount(); i++) {
     auto f = input_table->GetSchema()->GetField(i);
     switch (f->GetType()) {
     case vaultdb::types::TypeId::INTEGER64: {

@@ -336,8 +336,12 @@ void Value::setValue(std::string aString) {
 
         }
 
+    emp::Float32 *Value::getEmpFloat32() const {
+        return value_.emp_float32_;
+    }
 
-
-
+    emp::Float *Value::getEmpFloat()  const {
+        return value_.emp_float_;
+    }
 } // namespace vaultdb::types
 

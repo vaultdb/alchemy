@@ -2,22 +2,20 @@
 // Created by Jennie Rogers on 7/18/20.
 //
 
-#include "secure_aggregate.h"
-#include "secure_sort.h"
-#include "querytable/private_share_utility.h"
 
 #include <data/PsqlDataProvider.h>
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <emp-sh2pc/emp-sh2pc.h>
+#include <util/emp_manager.h>
 
 using namespace emp;
 using namespace std;
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 43439, "port for EMP execution");
-DEFINE_string(hostname, "127.0.0.1", "alice hostname for execution");
+DEFINE_int32(port, 54321, "port for EMP execution");
+DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 
 class QueryTableTestEnvironment : public ::testing::Environment {
@@ -127,7 +125,10 @@ public:
         return queryOutput;
 
     }
-    virtual void SetUp() { }
+    virtual void SetUp() {
+
+    }
+
 };
 
 
@@ -145,7 +146,7 @@ TEST_F(query_table_test, read_table) {
 
 
     PsqlDataProvider dataProvider;
-    string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+    string db_name =  "tpch_alice"; //FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
     std::string inputQuery = QueryTableTestEnvironment::getInputQuery();
     cout << "Querying " << db_name << " with: " << inputQuery << endl;
@@ -175,10 +176,8 @@ TEST_F(query_table_test, read_table_dummy_tag) {
 
 
     PsqlDataProvider dataProvider;
-    AggregateDef aggDef;
-    ShareDef def;
 
-    string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+    string db_name =  "tpch_alice"; //FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
     string expectedTable = QueryTableTestEnvironment::getExpectedOutputDummyTag();
     std::string inputQuery = QueryTableTestEnvironment::getInputQueryDummyTag();
 
@@ -201,59 +200,48 @@ TEST_F(query_table_test, read_table_dummy_tag) {
     ASSERT_EQ(expectedTable, observedTable) << "Query table was not parsed correctly.";
 }
 
-/*
+
 // test encrypting the query table with EMP
 TEST_F(query_table_test, encrypt_table) {
 
-
     PsqlDataProvider dataProvider;
-    AggregateDef aggDef;
-    ShareDef def;
-
-    emp::NetIO *io = new emp::NetIO(
-            FLAGS_party == emp::ALICE ? nullptr : FLAGS_hostname.c_str(), FLAGS_port);
-    setup_semi_honest(io, FLAGS_party);
-
-
-    EmpParty party =
-            FLAGS_party == emp::ALICE ? EmpParty::ALICE : EmpParty::BOB;
-
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
 
-
-    // selecting one of each type:
-    // int
-    // varchar
-    // fixed char
-    // numeric
-    // date
-    // dummy tag
+    std::string inputQuery = QueryTableTestEnvironment::getInputQuery();
+    cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << endl;
 
 
 
-    auto inputTuples = dataProvider.GetQueryTable("dbname=" + db_name,
-                                        QueryTableTestEnvironment::getInputQuery(), "lineitem", false);
 
-    ShareCount ca = {.party = EmpParty::ALICE};
-    ca.num_tuples = inputTuples->GetNumTuples();
-
-    ShareCount cb = {.party = EmpParty::BOB};
-    cb.num_tuples = inputTuples->GetNumTuples();
-
-    def.share_map[EmpParty::ALICE] = ca;
-    def.share_map[EmpParty::BOB] = cb;
-
-    auto encryptedInputTuples =
-            ShareData(inputTuples->GetSchema(), party, inputTuples.get(), def);
-
-   /* std::unique_ptr<QueryTable> decrypted = encryptedInputTuples->reveal(EmpParty::PUBLIC);
-    std::unique_ptr<QueryTable> expected = dataProvider.GetQueryTable("dbname=tpch_unioned",
-                                                            QueryTableTestEnvironment::getInputQuery(), "lineitem", true);
+    std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
+                                                                         inputQuery, "lineitem", false);
 
 
-    //std::cout << "Decrypted: " << decrypted << endl;
-    //std::cout << "Expected: "  << expected << endl;
+    std::unique_ptr<QueryTable> encryptedTable(empManager->secretShareTable(inputTable.get()));
+    std::unique_ptr<QueryTable> decryptedTable(empManager->revealTable(encryptedTable.get(), emp::PUBLIC));
 
-    assert((decrypted.get()) == (expected.get()));
+    std::cout << "Encrypted table: " << encryptedTable->reveal( EmpParty::PUBLIC) << std::endl; // TODO: get reveal method going!
+
+
+    string observedTable = inputTable.get()->toString();
+    string expectedTable = QueryTableTestEnvironment::getExpectedOutput();
+
+    cout << "Expected:\n" << expectedTable << endl;
+    cout << "Observed: \n" << observedTable << endl;
+
+    ASSERT_EQ(expectedTable, observedTable) << "Query table was not parsed correctly.";
+
+
 }
-*/
+
+
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}
+

@@ -15,22 +15,22 @@ void QuerySchema::PutField(int idx, QueryFieldDesc &fd) {
 QueryFieldDesc *QuerySchema::GetField(int i) const {
   return &fields_[i];
 }
-int QuerySchema::GetNumFields() const {
+int QuerySchema::getFieldCount() const {
     return fieldCount_;
 }
 
 
-QuerySchema::QuerySchema(const QuerySchema &s) : fieldCount_(s.GetNumFields()){
+QuerySchema::QuerySchema(const QuerySchema &s) : fieldCount_(s.getFieldCount()){
     fields_ =
             std::unique_ptr<QueryFieldDesc[]>(new QueryFieldDesc[fieldCount_]);
-  for (int i = 0; i < s.GetNumFields(); i++) {
+  for (int i = 0; i < s.getFieldCount(); i++) {
       fields_[i].initialize(*s.GetField(i));
   }
 }
 
 size_t QuerySchema::size() const {
     size_t bitSize = 0L;
-    for (int i = 0; i < GetNumFields(); i++) {
+    for (int i = 0; i < getFieldCount(); i++) {
         bitSize += fields_[i].size();
 
     }
@@ -39,7 +39,7 @@ size_t QuerySchema::size() const {
 }
 
 std::ostream &operator<<(std::ostream &os, const QuerySchema &schema) {
-    int fieldCount = schema.GetNumFields();
+    int fieldCount = schema.getFieldCount();
 
     os << "(" << schema.fields_[0];
 

@@ -6,6 +6,7 @@
 #include "secure_sort.h"
 #include "querytable/private_share_utility.h"
 #include "support/tpch_queries.h"
+#include "util/emp_manager.h"
 
 
 #include <data/PsqlDataProvider.h>
@@ -19,7 +20,7 @@ using namespace std;
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43439, "port for EMP execution");
-DEFINE_string(hostname, "127.0.0.1", "alice hostname for execution");
+DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 
 class tpch_q1_test : public ::testing::Test {
@@ -35,7 +36,9 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
 
     PsqlDataProvider pq;
     AggregateDef aggDef;
-    ShareDef def;
+
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
 
     vector<int> sortOrdinals{0, 1};
     SortDef sortDef;
@@ -44,10 +47,6 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
 
 
     string baseQuery = tpch_queries[1];
-
-    EmpParty party =
-            FLAGS_party == emp::ALICE ? EmpParty::ALICE : EmpParty::BOB;
-
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
     // Ordinals:
@@ -64,28 +63,16 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
             " FROM lineitem\n"
             " ORDER BY l_returnflag, l_linestatus"; // TODO: use merge sort after secret sharing
 
-    auto inputTuples = pq.GetQueryTable("dbname=" + db_name,
+    auto inputTable = pq.GetQueryTable("dbname=" + db_name,
                                  inputQuery, "lineitem", true);
 
-    ShareCount ca = {.party = EmpParty::ALICE};
-    ca.num_tuples = inputTuples->GetNumTuples();
 
-    ShareCount cb = {.party = EmpParty::BOB};
-    cb.num_tuples = inputTuples->GetNumTuples();
-
-    def.share_map[EmpParty::ALICE] = ca;
-    def.share_map[EmpParty::BOB] = cb;
-
-    // TODO: ingest dummy tag as last attr in query output
-    auto encryptedInputTuples =
-        ShareData(inputTuples->GetSchema(), party, inputTuples.get(), def);
-
-
+    std::unique_ptr<QueryTable> encryptedTable(empManager->secretShareTable(inputTable.get()));
 
 
     // sort the input tuples
     // TODO: use merge sort instead (latter half of bitonic sort network)
-    Sort(encryptedInputTuples.get(), sortDef);
+    Sort(encryptedTable.get(), sortDef);
 
 
     aggDef.scalarAggregates.emplace_back(ScalarAggregateDef(2, vaultdb::AggregateId::SUM, "sum_qty"));
@@ -102,7 +89,7 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
 
 
 
-   auto aggregated = Aggregate(encryptedInputTuples.get(), aggDef);
+   auto aggregated = Aggregate(encryptedTable.get(), aggDef);
 
 
 
@@ -131,4 +118,12 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
 
 
  */
+
+// initialize gflags
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}
 

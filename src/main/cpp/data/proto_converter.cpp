@@ -92,7 +92,7 @@ dbquery::OIDType GetEncryptedOIDFromVaultDBType(vaultdb::types::TypeId t) {
 const dbquery::Schema GetTableXorSchema(const QuerySchema *s) {
 
   dbquery::Schema ps;
-  for (int i = 0; i < s->GetNumFields(); i++) {
+  for (int i = 0; i < s->getFieldCount(); i++) {
     dbquery::ColumnInfo columnInfo;
     columnInfo.set_name(s->GetField(i)->GetName());
     columnInfo.set_type(
@@ -108,9 +108,9 @@ const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
   dbquery::Table t;
   dbquery::Schema s = GetTableXorSchema(input_table->GetSchema());
   t.mutable_schema()->CopyFrom(s);
-  for (int i = 0; i < input_table->GetNumTuples(); i++) {
+  for (int i = 0; i < input_table->getTupleCount(); i++) {
     dbquery::Row row;
-    for (int j = 0; j < input_table->GetSchema()->GetNumFields(); j++) {
+    for (int j = 0; j < input_table->GetSchema()->getFieldCount(); j++) {
       dbquery::ColumnVal val;
       switch (input_table->GetSchema()->GetField(j)->GetType()) {
 

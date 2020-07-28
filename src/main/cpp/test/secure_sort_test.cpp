@@ -41,9 +41,9 @@ TEST_F(secure_sort_test,  testSingleIntColumn) {
 
   ShareDef def;
   ShareCount ca = {.party = EmpParty::ALICE};
-  ca.num_tuples = lineitem->GetNumTuples();
+  ca.num_tuples = lineitem->getTupleCount();
   ShareCount cb = {.party = EmpParty::BOB};
-  cb.num_tuples = lineitem->GetNumTuples();
+  cb.num_tuples = lineitem->getTupleCount();
 
   def.share_map[EmpParty::ALICE] = ca;
   def.share_map[EmpParty::BOB] = cb;
@@ -70,9 +70,9 @@ TEST_F(secure_sort_test,  testTwoIntColumns) {
 
   ShareDef def;
   ShareCount ca = {.party = EmpParty::ALICE};
-  ca.num_tuples = lineitem->GetNumTuples();
+  ca.num_tuples = lineitem->getTupleCount();
   ShareCount cb = {.party = EmpParty::BOB};
-  cb.num_tuples = lineitem->GetNumTuples();
+  cb.num_tuples = lineitem->getTupleCount();
 
   def.share_map[EmpParty::ALICE] = ca;
   def.share_map[EmpParty::BOB] = cb;
@@ -99,9 +99,9 @@ TEST_F(secure_sort_test,  testSingleFloatColumnEncrypted) {
 
   ShareDef def;
   ShareCount ca = {.party = EmpParty::ALICE};
-  ca.num_tuples = lineitem->GetNumTuples();
+  ca.num_tuples = lineitem->getTupleCount();
   ShareCount cb = {.party = EmpParty::BOB};
-  cb.num_tuples = lineitem->GetNumTuples();
+  cb.num_tuples = lineitem->getTupleCount();
 
   def.share_map[EmpParty::ALICE] = ca;
   def.share_map[EmpParty::BOB] = cb;
@@ -128,9 +128,9 @@ TEST_F(secure_sort_test,  testSingleVarcharColumn) {
 
   ShareDef def;
   ShareCount ca = {.party = EmpParty::ALICE};
-  ca.num_tuples = lineitem->GetNumTuples();
+  ca.num_tuples = lineitem->getTupleCount();
   ShareCount cb = {.party = EmpParty::BOB};
-  cb.num_tuples = lineitem->GetNumTuples();
+  cb.num_tuples = lineitem->getTupleCount();
 
   def.share_map[EmpParty::ALICE] = ca;
   def.share_map[EmpParty::BOB] = cb;
@@ -157,7 +157,7 @@ TEST_F(secure_sort_test, testSingleFloatColumnUnencrypted) {
   sortdef.order = SortOrder::ASCENDING;
   sortdef.ordinals = ordinals;
   Sort(qt.get(), sortdef);
-  for (int i = 0; i < qt->GetNumTuples(); i++) {
+  for (int i = 0; i < qt->getTupleCount(); i++) {
     std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->getFloat32()
               << std::endl;
   }
@@ -177,7 +177,7 @@ TEST_F(secure_sort_test, testLineItemSort) {
   sortdef.order = SortOrder::DESCENDING;
   sortdef.ordinals = ordinals;
   Sort(qt.get(), sortdef);
-  for (int i = 0; i < qt->GetNumTuples(); i++) {
+  for (int i = 0; i < qt->getTupleCount(); i++) {
     std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->getInt64()
               << ", D: " << qt->GetTuple(i)->GetDummyTag()->getBool()
               << std::endl;

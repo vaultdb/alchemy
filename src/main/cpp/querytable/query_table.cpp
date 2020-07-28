@@ -1,3 +1,4 @@
+#include <util/emp_manager.h>
 #include "query_table.h"
 #include "../data/proto_converter.h"
 
@@ -19,7 +20,7 @@ std::unique_ptr<QuerySchema> QueryTable::ReleaseSchema() {
   return std::move(schema_);
 }
 
-unsigned int QueryTable::GetNumTuples() const {
+unsigned int QueryTable::getTupleCount() const {
     return tupleCount_;
 }
 
@@ -51,19 +52,13 @@ std::string QueryTable::GetQueryTableXorString(QueryTable *input_table) {
 }
 
 
-/*std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
+std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
     // TODO: set it so that when it is XOR-encoded, it is encrypted
     // this has downstream effects that need to be figured out first
 
-    std::unique_ptr<QueryTable> result(new QueryTable(this->tupleCount_, false));
-
-    for(int i = 0; i < tupleCount_; ++i) {
-        QueryTuple decrypted = tuples_[i].reveal(party);
-        result->tuples_[i]
-   }
-
-    return result;
-}*/
+    EmpManager *empManager  = EmpManager::getInstance();
+    return empManager->revealTable(this, (int) party);
+}
 
 // iterate over all tuples and produce one long bit array for encrypting/decrypting in emp
 // only works in PUBLIC or XOR mode
@@ -88,7 +83,7 @@ std::ostream &operator<<(std::ostream &os, const QueryTable &table) {
 
     os <<  *(schemaPtr) << " isEncrypted? " << table.is_encrypted_ << std::endl;
 
-    for(int i = 0; i < table.GetNumTuples(); ++i)
+    for(int i = 0; i < table.getTupleCount(); ++i)
         os << table.tuples_[i] << std::endl;
 
 
