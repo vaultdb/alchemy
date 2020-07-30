@@ -25,8 +25,7 @@ public:
                                                              int len);
   static std::string GetQueryTableXorString(QueryTable *input_table);
   const bool GetIsEncrypted() const;
-  QueryTable(int num_tuples);
-  QueryTable(int num_tuples, bool is_encrypted);
+  QueryTable(int num_tuples, int colCount, bool is_encrypted);
   void SetSchema(std::unique_ptr<QuerySchema> s);
   void SetSchema(const QuerySchema *s);
   const QuerySchema *GetSchema() const;

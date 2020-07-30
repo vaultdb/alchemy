@@ -50,7 +50,7 @@ public:
 
 
     std::unique_ptr<QueryTable> revealTable(const QueryTable *srcTable, int party);
-    void revealField(const QueryTable *src, QueryTable *dst, int tupleIdx, int fieldIdx, int party);
+    QueryField *revealField(const QueryField *srcField, int party);
 
 
 

@@ -24,17 +24,17 @@ unsigned int QueryTable::getTupleCount() const {
     return tupleCount_;
 }
 
-QueryTable::QueryTable(int num_tuples)
-    : is_encrypted_(false), tupleCount_(num_tuples) {
-    tuples_ =
-            std::unique_ptr<QueryTuple[]>(new QueryTuple[tupleCount_]);
 
-}
 
-QueryTable::QueryTable(int num_tuples, bool is_encrypted)
+QueryTable::QueryTable(int num_tuples, int colCount, bool is_encrypted)
     : is_encrypted_(is_encrypted), tupleCount_(num_tuples) {
     tuples_ =
             std::unique_ptr<QueryTuple[]>(new QueryTuple[tupleCount_]);
+
+    for(int i = 0; i < tupleCount_; ++i) {
+        tuples_[i].setFieldCount(colCount); // initialize tuples
+    }
+
 
 }
 

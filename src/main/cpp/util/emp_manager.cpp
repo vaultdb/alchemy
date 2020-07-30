@@ -9,9 +9,9 @@ EmpManager * EmpManager::instance = nullptr;
 
 
 std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
-    size_t rowLength = srcTable->GetSchema()->size();
     size_t aliceSize = srcTable->getTupleCount(); // in tuples
     size_t bobSize = aliceSize;
+    int colCount = srcTable->GetSchema()->getFieldCount();
 
     if (party_ == EmpParty::ALICE) {
         netio_->send_data(&aliceSize, 4);
@@ -26,7 +26,10 @@ std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
     }
 
 
-    std::unique_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, true));
+    std::cout << "Allocating " << aliceSize + bobSize << " tuples in encrypted query table." << std::endl;
+    std::unique_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, colCount, true));
+
+    dstTable->SetSchema(srcTable->GetSchema());
 
     int readTuple = aliceSize; // last tuple
 
@@ -38,11 +41,12 @@ std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
         secretShareTuple(srcTuple, dstTuple, srcTable->GetSchema(), (int) EmpParty::ALICE);
     }
 
+    std::cout << "Secret sharing bob's data!" << std::endl;
     int writeIdx = aliceSize;
     for (int i = 0; i < bobSize; ++i) {
         QueryTuple *srcTuple =  (party_ == EmpParty::BOB) ?  srcTable->GetTuple(i) : nullptr;
         QueryTuple *dstTuple = dstTable->GetTuple(writeIdx);
-        secretShareTuple(srcTuple, dstTuple, nullptr, (int) EmpParty::BOB);
+        secretShareTuple(srcTuple, dstTuple, srcTable->GetSchema(), (int) EmpParty::BOB);
         ++writeIdx;
     }
 
@@ -59,6 +63,8 @@ void EmpManager::secretShareTuple(QueryTuple *srcTuple, QueryTuple *dstTuple, co
     if((int) party_ == party)
         std::cout << "Encrypting " << *srcTuple << std::endl;
 
+    dstTuple->setFieldCount(schema->getFieldCount());
+
     for(int i = 0; i < schema->getFieldCount(); ++i) {
 
         const QueryField *srcField = ((int) party_ == party) ? srcTuple->GetField(i) : nullptr;
@@ -68,6 +74,7 @@ void EmpManager::secretShareTuple(QueryTuple *srcTuple, QueryTuple *dstTuple, co
 
         }
         dstField = secretShareField(srcField, i, schema->GetField(i)->GetType(), party);
+        std::cout << "Encrypted  field: " << *dstField << " of type " << TypeUtilities::getTypeIdString(dstField->GetValue()->getType()) << " writing to field " << i << std::endl;
         dstTuple->PutField(i, dstField);
         delete dstField;
     }
@@ -142,12 +149,19 @@ types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::T
 std::unique_ptr<QueryTable> EmpManager::revealTable(const QueryTable *srcTable, int party = (int) EmpParty::PUBLIC) {
     int colCount = srcTable->GetSchema()->getFieldCount();
     int tupleCount = srcTable->getTupleCount();
-    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, true));
 
+    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, colCount, true));
+    dstTable->SetSchema(srcTable->GetSchema());
+    QueryTuple *srcTuple, *dstTuple; // initialized below
 
     for(int i = 0; i < srcTable->getTupleCount(); ++i)  {
+        srcTuple = srcTable->GetTuple(i);
+        dstTuple = dstTable->GetTuple(i);
+
+        dstTuple->setFieldCount(srcTable->GetSchema()->getFieldCount());
+
         for(int j = 0; j < colCount; ++j) {
-            revealField(srcTable, dstTable.get(), i, j, party);
+            revealField(srcTuple->GetField(j), party);
 
         }
 
@@ -159,61 +173,58 @@ std::unique_ptr<QueryTable> EmpManager::revealTable(const QueryTable *srcTable, 
 
 
 
-void EmpManager::revealField(const QueryTable *src, QueryTable *dst, int tupleIdx, int fieldIdx, int party) {
-    const QueryField *srcField = src->GetTuple(tupleIdx)->GetField(fieldIdx);
+QueryField * EmpManager::revealField(const QueryField *srcField, int party) {
     const types::Value srcValue = srcField->GetValue();
     types::TypeId type = srcValue.getType();
 
-    QueryTuple *dstTuple = dst->GetTuple(tupleIdx);
     QueryField *dstField = nullptr; // initialized below
+    size_t fieldIdx = srcField->getOrdinal();
 
+      switch (type) {
+          case vaultdb::types::TypeId::BOOLEAN: {
+              const emp::Bit eBit = srcValue.getEmpBit();
+              bool bit  = eBit.reveal(party);
+              dstField = new QueryField(fieldIdx, bit);
+              break;
+          }
+          case vaultdb::types::TypeId::INTEGER32: {
+              const emp::Integer *empInteger = srcValue.getEmpInt();
+              int32_t value = empInteger->reveal<int32_t>(party);
+              dstField = new QueryField(fieldIdx, value);
+              break;
+          }
+          case vaultdb::types::TypeId::INTEGER64: {
+              const emp::Integer *empInteger = srcValue.getEmpInt();
+              int64_t value = empInteger->reveal<int64_t>(party);
+              dstField = new QueryField(fieldIdx, value);
+              break;
+          }
 
+          case vaultdb::types::TypeId::NUMERIC:
+          case vaultdb::types::TypeId::FLOAT32: {
+              emp::Float32 *floatVal = srcValue.getEmpFloat32();
+              float value = floatVal->reveal<double_t>(party);
+              dstField = new QueryField(fieldIdx, value);
+              break;
+          }
+          case vaultdb::types::TypeId::FLOAT64: {
+              emp::Float *floatVal = srcValue.getEmpFloat();
+              double value = floatVal->reveal<double_t>(party);
+              dstField = new QueryField(fieldIdx, value);
+              break;
+          }
 
-    switch (type) {
-        case vaultdb::types::TypeId::BOOLEAN: {
-            const emp::Bit eBit = srcValue.getEmpBit();
-            bool bit  = eBit.reveal(party);
-            dstField = new QueryField(fieldIdx, bit);
-            break;
-        }
-        case vaultdb::types::TypeId::INTEGER32: {
-            const emp::Integer *empInteger = srcValue.getEmpInt();
-            int32_t value = empInteger->reveal<int32_t>(party);
-            dstField = new QueryField(fieldIdx, value);
-            break;
-        }
-        case vaultdb::types::TypeId::INTEGER64: {
-            const emp::Integer *empInteger = srcValue.getEmpInt();
-            int64_t value = empInteger->reveal<int64_t>(party);
-            dstField = new QueryField(fieldIdx, value);
-            break;
-        }
+          case vaultdb::types::TypeId::VARCHAR: {
+              const emp::Integer *empInteger = srcValue.getEmpInt();
+              std::string strVal = empInteger->reveal<std::string>(party);
+              dstField = new QueryField(fieldIdx, strVal);
+              break;
+          }
+          default: // unsupported type or it is already encrypted
+              throw;
+      }
 
-        case vaultdb::types::TypeId::NUMERIC:
-        case vaultdb::types::TypeId::FLOAT32: {
-            emp::Float32 *floatVal = srcValue.getEmpFloat32();
-            float value = floatVal->reveal<double_t>(party);
-            dstField = new QueryField(fieldIdx, value);
-            break;
-        }
-        case vaultdb::types::TypeId::FLOAT64: {
-            emp::Float *floatVal = srcValue.getEmpFloat();
-            double value = floatVal->reveal<double_t>(party);
-            dstField = new QueryField(fieldIdx, value);
-            break;
-        }
-
-        case vaultdb::types::TypeId::VARCHAR: {
-            const emp::Integer *empInteger = srcValue.getEmpInt();
-            std::string strVal = empInteger->reveal<std::string>(party);
-            dstField = new QueryField(fieldIdx, strVal);
-            break;
-        }
-        default: // unsupported type or it is already encrypted
-            throw;
-    }
-
-    dstTuple->PutField(fieldIdx, dstField);
+      return dstField;
 
 }
 

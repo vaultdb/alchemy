@@ -40,7 +40,7 @@ ProtoToQuerySchema(const dbquery::Schema &proto_schema) {
 }
 
 std::unique_ptr<QueryTable> ProtoToQueryTable(const dbquery::Table &t) {
-  auto query_table = std::make_unique<QueryTable>(t.row_size());
+  auto query_table = std::make_unique<QueryTable>(t.row_size(), t.schema().numcolumns(), false);
   query_table->SetSchema(ProtoToQuerySchema(t.schema()));
   int index = 0;
   for (auto &r : t.row()) {

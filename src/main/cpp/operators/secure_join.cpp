@@ -41,8 +41,12 @@ std::unique_ptr<QuerySchema> MergeSchema(const QuerySchema *schema1,
 std::unique_ptr<QueryTable> Join(QueryTable *left, QueryTable *right,
                                  const JoinDef &def) {
   std::unique_ptr<QueryTable> output_table = std::make_unique<QueryTable>(
-      left->GetIsEncrypted(), left->getTupleCount() * right->getTupleCount());
+     left->getTupleCount() * right->getTupleCount(),
+     left->GetSchema()->getFieldCount() + right->GetSchema()->getFieldCount(),
+     left->GetIsEncrypted());
   output_table->SetSchema(MergeSchema(left->GetSchema(), right->GetSchema()));
+
+
   int index = 0;
   for (int li = 0; li < left->getTupleCount(); li++) {
     for (int ri = 0; ri < right->getTupleCount(); ri++) {

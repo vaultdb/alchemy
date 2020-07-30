@@ -37,7 +37,10 @@ std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
     }
 
 
-    std::unique_ptr<QueryTable> dstTable(new QueryTable(rowCount, false));
+    pqxx::row firstRow = *(pqxxResult.begin());
+    int colCount = firstRow.size();
+
+    std::unique_ptr<QueryTable> dstTable(new QueryTable(rowCount, colCount, false));
     std::unique_ptr<QuerySchema> schema = getSchema(pqxxResult, hasDummyTag);
     dstTable->SetSchema(schema.get());
 

@@ -78,8 +78,9 @@ std::unique_ptr<QueryTable> ShareData(const QuerySchema *shared_schema,
   batcher_map[EmpParty::BOB]->make_semi_honest(static_cast<int>(EmpParty::BOB));
 
   std::unique_ptr<QueryTable> output_table = std::make_unique<QueryTable>(
-      true /* is_encrypted_ */, def.share_map[EmpParty::ALICE].num_tuples +
-                                    def.share_map[EmpParty::BOB].num_tuples);
+       def.share_map[EmpParty::ALICE].num_tuples +
+                                    def.share_map[EmpParty::BOB].num_tuples,
+                                    shared_schema->getFieldCount(), true);
 
   AddToTable(output_table.get(), shared_schema,
              batcher_map[EmpParty::ALICE].get(), def.share_map[EmpParty::ALICE],

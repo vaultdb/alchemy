@@ -38,13 +38,16 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
                                       const AggregateDef &def) {
 
   std::unique_ptr<QueryTable> aggregate_output;
+
+  int aggregateCount = def.scalarAggregates.size();
+
   if (def.groupByOrdinals.size() == 0) {
     aggregate_output =
-        std::make_unique<QueryTable>(input->GetIsEncrypted(), 1);
+        std::make_unique<QueryTable>(1, aggregateCount, input->GetIsEncrypted());
   }
   else {
     aggregate_output = std::make_unique<QueryTable>(
-        input->GetIsEncrypted(), input->getTupleCount());
+        input->getTupleCount(), aggregateCount, input->GetIsEncrypted());
   }
 
   emp::Integer one(64, 1, emp::PUBLIC);

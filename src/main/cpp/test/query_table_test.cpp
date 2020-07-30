@@ -202,7 +202,7 @@ TEST_F(query_table_test, read_table_dummy_tag) {
 
 
 // test encrypting the query table with EMP
-TEST_F(query_table_test, encrypt_table) {
+/*TEST_F(query_table_test, encrypt_table) {
 
     PsqlDataProvider dataProvider;
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
@@ -210,6 +210,8 @@ TEST_F(query_table_test, encrypt_table) {
     empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
 
     std::string inputQuery = QueryTableTestEnvironment::getInputQuery();
+
+    //inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT 10";
     cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << endl;
 
 
@@ -235,7 +237,7 @@ TEST_F(query_table_test, encrypt_table) {
 
 
 }
-
+*/
 
 
 int main(int argc, char **argv) {
