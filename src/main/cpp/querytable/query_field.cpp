@@ -119,3 +119,15 @@ QueryField::QueryField(int anOrdinal, emp::Integer *aVal, types::TypeId aType) :
 QueryField::QueryField(int fn, types::Value aVal)  : ordinal(fn), value_(aVal){
 }
 
+
+
+QueryField& QueryField::operator=(const QueryField& other) {
+    if(&other == this)
+        return *this;
+
+    value_.setValue(this->GetValue());
+    this->ordinal = other.getOrdinal();
+
+    return *this;
+
+}

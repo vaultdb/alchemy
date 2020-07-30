@@ -14,7 +14,7 @@ using namespace vaultdb;
 class QueryTable {
 private:
   std::unique_ptr<QuerySchema> schema_;
-  const bool is_encrypted_;
+  bool is_encrypted_;
 
     std::unique_ptr<QueryTuple[]>  tuples_;
     size_t tupleCount_;
@@ -33,6 +33,7 @@ public:
   unsigned int getTupleCount() const;
   std::unique_ptr<QuerySchema> ReleaseSchema();
   std::string toString() const;
+  void putTuple(int idx, QueryTuple tuple);
 
 
     // TODO: validate this - work in progress, use with caution!
@@ -44,6 +45,8 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
 
     std::unique_ptr<QueryTable> reveal(EmpParty party) const;
+
+    QueryTable & operator=(const QueryTable & src);
 };
 
 #endif // _QUERY_TABLE_H

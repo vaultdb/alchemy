@@ -50,6 +50,8 @@ public:
     void serialize(bool *dst);
 
     QueryField(int anOrdinal, emp::Integer *aVal, types::TypeId aType);
+
+    QueryField& operator=(const QueryField& other);
 };
 
 } // namespace vaultdb

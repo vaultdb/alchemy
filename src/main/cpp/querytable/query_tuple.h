@@ -39,6 +39,7 @@ public:
   vaultdb::types::Value *GetMutableDummyTag();
 
 
+
     QueryTuple reveal(EmpParty party) const;
     friend std::ostream& operator<<(std::ostream &strm, const QueryTuple &aTuple);
 
@@ -46,6 +47,8 @@ public:
 
     void serialize(bool *dst, QuerySchema *schema);
     size_t getFieldCount() const;
+
+    QueryTuple& operator=(const QueryTuple& other);
 };
 
 } // namespace vaultdb

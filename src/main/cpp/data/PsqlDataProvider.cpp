@@ -27,8 +27,12 @@ std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
 
     srcTable = tableName;
     dbName = dbname;
+
     result pqxxResult = query("dbname=" + dbname, query_string);
-    vector<pqxx::row> rows;
+    pqxx::row firstRow = *(pqxxResult.begin());
+    int colCount = firstRow.size();
+
+    QueryTuple tuple(colCount, false);
 
     size_t rowCount = 0;
     // just count the rows first
@@ -37,8 +41,6 @@ std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
     }
 
 
-    pqxx::row firstRow = *(pqxxResult.begin());
-    int colCount = firstRow.size();
 
     std::unique_ptr<QueryTable> dstTable(new QueryTable(rowCount, colCount, false));
     std::unique_ptr<QuerySchema> schema = getSchema(pqxxResult, hasDummyTag);
@@ -46,8 +48,8 @@ std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
 
     int counter = 0;
     for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
-        QueryTuple *tuple = dstTable->GetTuple(counter);
-        getTuple(*resultPos, tuple, hasDummyTag);
+        tuple = getTuple(*resultPos, hasDummyTag);
+        dstTable->putTuple(counter, tuple);
         ++counter;
     }
 
@@ -109,30 +111,31 @@ size_t PsqlDataProvider::getVarCharLength(std::string tableName, std::string col
 
 }
 
-void PsqlDataProvider::getTuple(pqxx::row row, QueryTuple *dstTuple, bool hasDummyTag) {
-
-        dstTuple->SetIsEncrypted(false);
+QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         int colCount = row.size();
-        dstTuple->InitDummy();
+
 
         if(hasDummyTag) {
             --colCount;
         }
 
-        dstTuple->setFieldCount(colCount);
+        QueryTuple dstTuple(colCount);
+        dstTuple.SetIsEncrypted(false);
 
 
         for (int i=0; i < colCount; i++) {
             const pqxx::field srcField = row[i];
-            dstTuple->PutField(i, getField(srcField));
+            dstTuple.PutField(i, getField(srcField));
         }
 
         if(hasDummyTag) {
 
                 std::unique_ptr<QueryField> parsedField(getField(row[colCount])); // get the last col
                 bool dummyTag = parsedField.get()->GetValue()->getBool();
-                dstTuple->SetDummyTag(dummyTag);
+                dstTuple.SetDummyTag(dummyTag);
         }
+
+        return dstTuple;
     }
 
 

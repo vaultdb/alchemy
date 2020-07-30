@@ -97,3 +97,27 @@ std::string QueryTable::toString() const {
     stream << *this;
     return stream.str();
 }
+
+
+QueryTable & QueryTable::operator=(const QueryTable & src) {
+    if(&src == this)
+        return *this;
+
+    this->SetSchema(src.GetSchema());
+    this->is_encrypted_ = src.GetIsEncrypted();
+    this->tupleCount_ = src.getTupleCount();
+    int colCount = schema_->getFieldCount();
+
+    tuples_ =
+            std::unique_ptr<QueryTuple[]>(new QueryTuple[tupleCount_]);
+
+    for(int i = 0; i < tupleCount_; ++i) {
+        tuples_[i] = src.tuples_[i];
+    }
+
+    return *this;
+}
+
+void QueryTable::putTuple(int idx, QueryTuple tuple) {
+    tuples_[idx]  = tuple;
+}

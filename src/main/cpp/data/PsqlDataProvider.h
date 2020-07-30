@@ -26,7 +26,7 @@ public:
                                               std::string query_string, std::string tableName, bool hasDummyTag);
 
 private:
-    void getTuple(pqxx::row row, QueryTuple *dstTuple, bool hasDummyTag);
+    QueryTuple getTuple(pqxx::row row, bool hasDummyTag);
     std::unique_ptr<QueryField>  getField(pqxx::field src);
     std::unique_ptr<QuerySchema> getSchema(pqxx::result input, bool hasDummyTag);
 

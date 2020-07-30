@@ -154,4 +154,25 @@ size_t QueryTuple::getFieldCount() const {
 }
 
 
+QueryTuple& QueryTuple::operator=(const QueryTuple& src) {
+    if(&src == this)
+        return *this;
+
+
+    this->is_encrypted_ = src.is_encrypted_;
+    this->dummy_tag_ = src.dummy_tag_;
+    this->fieldCount_ = src.fieldCount_;
+
+    fields_ =
+            std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+
+
+    for(int i = 0; i < fieldCount_; ++i) {
+        fields_[i].initialize(src.fields_[i]);
+    }
+
+    return *this;
+
+}
+
 

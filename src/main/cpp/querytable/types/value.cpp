@@ -112,7 +112,7 @@ Value::~Value() {
 }
 
 void Value::setValue(const Value *val) {
-     std::cout << "Writing " << val->getValueString() << std::endl;
+     //std::cout << "Writing " << val->getValueString() << std::endl;
     switch (val->type_) {
 
         case TypeId::BOOLEAN:
