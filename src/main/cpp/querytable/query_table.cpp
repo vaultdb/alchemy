@@ -56,8 +56,28 @@ std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
     // TODO: set it so that when it is XOR-encoded, it is encrypted
     // this has downstream effects that need to be figured out first
 
-    EmpManager *empManager  = EmpManager::getInstance();
-    return empManager->revealTable(this, (int) party);
+    int colCount = GetSchema()->getFieldCount();
+    int tupleCount = getTupleCount();
+
+    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, colCount, true));
+    dstTable->SetSchema(GetSchema());
+    QueryTuple *srcTuple; // initialized below
+    QueryField *dstField;
+
+    for(int i = 0; i < getTupleCount(); ++i)  {
+        srcTuple = GetTuple(i);
+
+        QueryTuple dstTuple(colCount, false);
+        dstTuple = srcTuple->reveal(party);
+        dstTable->putTuple(i, dstTuple);
+
+    }
+
+    return dstTable;
+
+
+//    EmpManager *empManager  = EmpManager::getInstance();
+//    return empManager->revealTable(this, (int) party);
 }
 
 // iterate over all tuples and produce one long bit array for encrypting/decrypting in emp

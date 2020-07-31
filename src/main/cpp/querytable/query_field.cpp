@@ -1,3 +1,4 @@
+#include <util/type_utilities.h>
 #include "query_field.h"
 using namespace vaultdb;
 
@@ -54,10 +55,9 @@ QueryField QueryField::reveal(EmpParty party) const {
 
     types::Value value = this->value_;
     QueryField result(*this);
-    types::Value *dstValue;
+    types::Value dstValue;
 
     switch(value.getType()) {
-        case types::TypeId::ENCRYPTED_FLOAT32: // Not yet implemented
         case types::TypeId::INVALID:
         case types::TypeId::BOOLEAN:
         case types::TypeId::INTEGER32:
@@ -69,29 +69,45 @@ QueryField QueryField::reveal(EmpParty party) const {
             return result; // copy the public field, no need to reveal
         case types::TypeId::ENCRYPTED_BOOLEAN: {
             bool decrypted = value.getEmpBit()->reveal<bool>((int) party); // returns a bool for both XOR and PUBLIC
-            dstValue = new types::Value(decrypted);
-            result.SetValue(dstValue);
-            return result;
+            dstValue.setValue(decrypted);
+            break;
         }
         case types::TypeId::ENCRYPTED_INTEGER32: {
             int32_t dst = value.getEmpInt()->reveal<int32_t>((int) party);
             dstValue = new types::Value(dst);
-            result.SetValue(dstValue);
-            return result;
+            break;
         }
 
         case types::TypeId::ENCRYPTED_INTEGER64: {
             int64_t dst = value.getEmpInt()->reveal<int64_t>((int) party);
             dstValue = new types::Value(dst);
-            result.SetValue(dstValue);
-            return result;
+            break;
         }
+        case types::TypeId::ENCRYPTED_FLOAT32: {
+            float_t dst = value.getEmpFloat32()->reveal<double>((int) party);
+            dstValue =  new types::Value(dst);
+            break;
+        }
+
+        case types::TypeId::ENCRYPTED_FLOAT64: {
+            emp::Float *floatVal = value.getEmpFloat64();
+            double dst = floatVal->reveal<double_t>((int) party);
+            dstValue = new types::Value(dst);
+            break;
+
+
+        }
+        default:
+            throw;
 
 
     };
 
+    result.SetValue(&dstValue);
+    return result;
 
-    }
+
+}
 
 std::ostream &vaultdb::operator<<(std::ostream &strm, const QueryField &aField) {
 
@@ -125,9 +141,11 @@ QueryField& QueryField::operator=(const QueryField& other) {
     if(&other == this)
         return *this;
 
+    std::cout << "Equality op writing " << value_.getValueString() << " "  << TypeUtilities::getTypeIdString(other.GetValue()->getType()) << std::endl;
     value_.setValue(this->GetValue());
     this->ordinal = other.getOrdinal();
 
+    std::cout << " new field: " << *this << std::endl;
     return *this;
 
 }

@@ -23,7 +23,7 @@ public:
     Value(TypeId type, const emp::Integer val);
     Value(double val);
     Value(float val);
-    Value(const Value &val);
+    Value(const Value *val);
     Value(const std::string & val);
   Value(emp::Float32 float32);
     Value(emp::Float float32);
@@ -66,7 +66,7 @@ public:
     void serialize(bool *dst) const;
 
     emp::Float32 *getEmpFloat32() const;
-    emp::Float *getEmpFloat() const;
+    emp::Float *getEmpFloat64() const;
 
 protected:
   bool is_encrypted_;
@@ -86,9 +86,7 @@ protected:
     emp::Float32 *emp_float32_;
   } value_{};
 
-    void initialize(const Value &other);
 
-    emp::Float *getEmpFloat();
 };
 } // namespace vaultdb::types
 

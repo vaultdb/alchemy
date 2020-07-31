@@ -42,12 +42,9 @@ public:
 
 
     std::unique_ptr<QueryTable> secretShareTable(QueryTable *srcTable);
-    void secretShareTuple(QueryTuple *srcTuple, QueryTuple *dstTuple, const QuerySchema *schema, int party); // TODO: refactor this in query table to regularize access patterns wrt Table/Field
-    QueryField *secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, int party);
+    QueryTuple secretShareTuple(QueryTuple *srcTuple,  const QuerySchema *schema, int party); // TODO: refactor this in query table to regularize access patterns wrt Table/Field
+    QueryField secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, int party);
     types::Value secretShareValue(const types::Value *srcValue, types::TypeId type, int party);
-
-    void secretShareField(QueryTable *src, QueryTable *dst, int srcTupleIdx, int dstTupleIdx, int fieldIdx, int party);
-
 
     std::unique_ptr<QueryTable> revealTable(const QueryTable *srcTable, int party);
     QueryField *revealField(const QueryField *srcField, int party);

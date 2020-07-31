@@ -202,7 +202,7 @@ TEST_F(query_table_test, read_table_dummy_tag) {
 
 
 // test encrypting the query table with EMP
-/*TEST_F(query_table_test, encrypt_table) {
+TEST_F(query_table_test, encrypt_table) {
 
     PsqlDataProvider dataProvider;
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
@@ -211,7 +211,7 @@ TEST_F(query_table_test, read_table_dummy_tag) {
 
     std::string inputQuery = QueryTableTestEnvironment::getInputQuery();
 
-    //inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT 10";
+    inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT 10";
     cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << endl;
 
 
@@ -221,10 +221,10 @@ TEST_F(query_table_test, read_table_dummy_tag) {
                                                                          inputQuery, "lineitem", false);
 
 
-    std::unique_ptr<QueryTable> encryptedTable(empManager->secretShareTable(inputTable.get()));
-    std::unique_ptr<QueryTable> decryptedTable(empManager->revealTable(encryptedTable.get(), emp::PUBLIC));
+    std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
+    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(EmpParty::PUBLIC);
 
-    std::cout << "Encrypted table: " << encryptedTable->reveal( EmpParty::PUBLIC) << std::endl; // TODO: get reveal method going!
+    std::cout << "Encrypted table: " << encryptedTable->reveal( EmpParty::PUBLIC) << std::endl;
 
 
     string observedTable = inputTable.get()->toString();
@@ -237,7 +237,7 @@ TEST_F(query_table_test, read_table_dummy_tag) {
 
 
 }
-*/
+
 
 
 int main(int argc, char **argv) {

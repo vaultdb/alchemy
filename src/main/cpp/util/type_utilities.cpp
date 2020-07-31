@@ -24,6 +24,10 @@
             return std::string("encrypted_bool" );
         case vaultdb::types::TypeId::ENCRYPTED_FLOAT32:
             return std::string("encrypted_float");
+        case vaultdb::types::TypeId::ENCRYPTED_FLOAT64:
+            return std::string("encrypted_double");
+        case vaultdb::types::TypeId::ENCRYPTED_VARCHAR:
+            return std::string("encrypted varchar");
         default:
             return std::string("unsupported type!");
     }

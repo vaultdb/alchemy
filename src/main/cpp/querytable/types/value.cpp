@@ -7,8 +7,8 @@
 namespace vaultdb::types {
 
 Value::Value() {}
-Value::Value(const Value &val) {
-    initialize(val);
+Value::Value(const Value *val) {
+    setValue(val);
 }
 
 Value::Value(int64_t val) {
@@ -112,7 +112,7 @@ Value::~Value() {
 }
 
 void Value::setValue(const Value *val) {
-     //std::cout << "Writing " << val->getValueString() << std::endl;
+     std::cout << "Writing " << val->getValueString() << std::endl;
     switch (val->type_) {
 
         case TypeId::BOOLEAN:
@@ -217,6 +217,7 @@ void Value::setValue(std::string aString) {
 
 
      string Value::getValueString() const {
+
         switch (type_) {
 
             case TypeId::BOOLEAN:
@@ -237,11 +238,13 @@ void Value::setValue(std::string aString) {
                 return  getVarchar();
             case TypeId::ENCRYPTED_INTEGER32: {
                 // #ifdef NDEBUG
+                std::cout << "Getting str val for encrypted int32" << std::endl;
                 return std::string("SECRET INT32");
                 // #else
                 //int32_t decrypted = .getEmpInt()->reveal<int32_t>((int) EmpParty::PUBLIC);
                 //return std::to_string(decrypted);
                 // #endif
+
             }
             case TypeId::ENCRYPTED_INTEGER64:
                 {
@@ -262,6 +265,9 @@ void Value::setValue(std::string aString) {
                 return std::string("SECRET FLOAT");
 
             }
+            case TypeId::ENCRYPTED_VARCHAR:
+                return std::string("SECRET VARCHAR");
+
             case TypeId::INVALID:
                 return "invalid";
 
@@ -275,15 +281,12 @@ void Value::setValue(std::string aString) {
     }
 
 
-    void Value::initialize(const Value &val) {
-            setValue(&val);
-    }
 
     Value &Value::operator=(const Value &other) {
     if(&other == this)
         return *this;
 
-    initialize(other);
+    setValue(&other);
     return *this;
     }
 
@@ -341,8 +344,9 @@ void Value::setValue(std::string aString) {
         return value_.emp_float32_;
     }
 
-    emp::Float *Value::getEmpFloat()  const {
+    emp::Float *Value::getEmpFloat64() const {
         return value_.emp_float_;
     }
+
 } // namespace vaultdb::types
 

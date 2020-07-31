@@ -34,6 +34,7 @@ QueryTuple::QueryTuple(QueryTuple &src) :
 
 
     for(int i = 0; i < fieldCount_; ++i) {
+        std::cout << "Initiaizing " << src.fields_[i] << std::endl;
         fields_[i].initialize(src.fields_[i]);
     }
 
@@ -172,6 +173,19 @@ QueryTuple& QueryTuple::operator=(const QueryTuple& src) {
     }
 
     return *this;
+
+}
+
+QueryTuple QueryTuple::reveal(EmpParty party) const {
+    QueryTuple dstTuple(fieldCount_, false);
+
+    for(int i = 0; i < fieldCount_; ++i) {
+        QueryField dstField = fields_[i].reveal(party);
+    }
+
+    emp::Bit encryptedBit = dummy_tag_.getEmpInt();
+    bool bit = encryptedBit.reveal((int) party);
+    dstTuple.SetDummyTag(bit);
 
 }
 
