@@ -216,11 +216,13 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
 
     std::cout << "Expected:\n" << expectedTable << std::endl;
 
+    // test a single value first
     const QueryTuple *encryptedTuple = encryptedTable->GetTuple(0);
     const QueryField *encryptedField = encryptedTuple->GetField(0);
     types::Value value = encryptedField->GetValue();
     types::Value revealedValue = value.reveal(EmpParty::PUBLIC);
 
+    ASSERT_EQ(1, revealedValue.getInt32());
 
     std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(EmpParty::PUBLIC);
 
@@ -235,6 +237,49 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
 }
 
 
+/*
+TEST_F(EmpManagerTest, encrypt_table) {
+
+    PsqlDataProvider dataProvider;
+    string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+
+    std::string inputQuery = EmpManagerTestEnvironment::getInputQuery();
+    std::cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
+
+
+
+
+    std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
+                                                                         inputQuery, "lineitem", false);
+
+
+    std::cout << "Initial table: " << *inputTable << std::endl;
+    std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
+
+    std::cout << "Finished encrypting table with " << encryptedTable->getTupleCount() << " tuples." << std::endl;
+
+    empManager->flush();
+
+    string expectedTable = EmpManagerTestEnvironment::getExpectedOutput();
+
+    std::cout << "Expected:\n" << expectedTable << std::endl;
+
+
+    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(EmpParty::PUBLIC);
+
+
+    std::cout << "Observed: \n" << *decryptedTable << endl;
+
+    ASSERT_EQ(expectedTable, decryptedTable->toString()) << "Query table was not processed correctly.";
+
+    empManager->close();
+
+
+}
+
+*/
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
