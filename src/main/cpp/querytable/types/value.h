@@ -3,6 +3,7 @@
 #include "emp-tool/emp-tool.h"
 #include "type.h"
 #include "type_id.h"
+#include "common/defs.h"
 #include <cstdint>
 #include <memory>
 #include <boost/variant.hpp>
@@ -67,6 +68,7 @@ public:
 
     emp::Float32 *getEmpFloat32() const;
     emp::Float *getEmpFloat64() const;
+    Value reveal(EmpParty party) const;
 
 protected:
   bool is_encrypted_;

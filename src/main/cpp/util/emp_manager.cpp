@@ -44,6 +44,7 @@ std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
         dstTable->putTuple(i, dstTuple);
     }
 
+    netio_->flush();
     std::cout << "Secret sharing bob's data!" << std::endl;
     int writeIdx = aliceSize;
     for (int i = 0; i < bobSize; ++i) {
@@ -52,6 +53,8 @@ std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
         dstTable->putTuple(writeIdx, dstTuple);
         ++writeIdx;
     }
+
+    netio_->flush();
 
     return dstTable;
 
@@ -76,7 +79,7 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
                       << TypeUtilities::getTypeIdString(srcField->GetValue()->getType()) << std::endl;
 
         }
-        QueryField tmp(secretShareField(srcField, i, schema->GetField(i)->GetType(), party));
+        QueryField tmp(secretShareField(srcField, i, schema->GetField(i)->GetType(), schema->GetField(i)->size(), party));
         std::cout << "Encrypted  field: " << tmp << " of type " << TypeUtilities::getTypeIdString(tmp.GetValue()->getType()) << " writing to field " << i << std::endl;
         dstTuple.PutField(i, &tmp);
     }
@@ -91,19 +94,24 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
 }
 
 // slap on the ordinal for Value
-QueryField EmpManager::secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, int party) {
+QueryField
+EmpManager::secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, size_t length, int party) {
     if(srcField != nullptr)
-    std::cout << "Secret sharing field " << srcField->GetValue()->getValueString() << " "
+    std::cout << "Secret sharing field with value " << srcField->GetValue()->getValueString() << " "
               << TypeUtilities::getTypeIdString(srcField->GetValue()->getType()) << " party: " << party << std::endl;
 
     types::Value *srcValue = ((int) party_ == party) ? srcField->GetValue() : nullptr;
-    types::Value dstValue = secretShareValue(srcValue, type, party);
+    types::Value dstValue = secretShareValue(srcValue, type, length, party);
+
+    int32_t sanityCheck = dstValue.reveal(EmpParty::PUBLIC).getInt32();
+
+    std::cout << "**Sanity check field: " << sanityCheck << std::endl;
     QueryField dstField(ordinal, dstValue);
     std::cout << "**Encrypted  field: " << dstField << " of type " << TypeUtilities::getTypeIdString(dstField.GetValue()->getType()) << " writing to field " << ordinal << std::endl;
     return dstField; // ok through here
 }
 
-types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::TypeId type, int party) {
+types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::TypeId type, size_t length, int party) {
 
         std::cout << "Secret sharing value "
             << TypeUtilities::getTypeIdString(type) << " party: " << party << std::endl;
@@ -116,7 +124,10 @@ types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::T
         }
         case vaultdb::types::TypeId::INTEGER32: {
             int32_t value = ((int) party_ == party) ? srcValue->getInt32() : 0;
-            emp::Integer intVal(value, party);
+            std::cout << "Inputting " << value << " for secret sharing." << std::endl;
+            emp::Integer intVal(32, value, party);
+            int32_t feedbackLoop = intVal.reveal<int32_t>(emp::PUBLIC);
+            std::cout << "Value feedback: " << feedbackLoop << std::endl;
             return types::Value(types::TypeId::ENCRYPTED_INTEGER32, intVal);
         }
         case vaultdb::types::TypeId::NUMERIC:
@@ -132,13 +143,13 @@ types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::T
         }
         case vaultdb::types::TypeId::INTEGER64: {
             int64_t value =  ((int) party_ == party) ? srcValue->getInt64(): 0;
-            emp::Integer intVal(value, party);
+            emp::Integer intVal(64, value, party);
             return types::Value(types::TypeId::ENCRYPTED_INTEGER64, intVal);
         }
 
         case vaultdb::types::TypeId::VARCHAR: {
             std::string valueStr = ((int) party_ == party) ? srcValue->getVarchar() : nullptr;
-            emp::Integer strVal(valueStr.size() * 8, valueStr, party);
+            emp::Integer strVal(length, valueStr, party);
             return types::Value(types::TypeId::ENCRYPTED_VARCHAR, strVal);
         }
 
@@ -232,6 +243,20 @@ QueryField * EmpManager::revealField(const QueryField *srcField, int party) {
       }
 
       return dstField;
+
+}
+
+
+
+void EmpManager::flush() {
+    netio_->flush();
+}
+
+// reset, perhaps for the next test
+void EmpManager::close() {
+
+    flush();
+    delete netio_;
 
 }
 

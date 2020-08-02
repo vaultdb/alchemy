@@ -51,58 +51,10 @@ void QueryField::SetValue(const types::Value *val) {
 
 
 QueryField QueryField::reveal(EmpParty party) const {
-    bool resultEncrypted = (party == EmpParty::PUBLIC) ? false  : true;
 
     types::Value value = this->value_;
     QueryField result(*this);
-    types::Value dstValue;
-
-    switch(value.getType()) {
-        case types::TypeId::INVALID:
-        case types::TypeId::BOOLEAN:
-        case types::TypeId::INTEGER32:
-        case types::TypeId::INTEGER64:
-        case types::TypeId::FLOAT32:
-        case types::TypeId::FLOAT64:
-        case types::TypeId::NUMERIC:
-        case types::TypeId::VARCHAR:
-            return result; // copy the public field, no need to reveal
-        case types::TypeId::ENCRYPTED_BOOLEAN: {
-            bool decrypted = value.getEmpBit()->reveal<bool>((int) party); // returns a bool for both XOR and PUBLIC
-            dstValue.setValue(decrypted);
-            break;
-        }
-        case types::TypeId::ENCRYPTED_INTEGER32: {
-            int32_t dst = value.getEmpInt()->reveal<int32_t>((int) party);
-            dstValue = new types::Value(dst);
-            break;
-        }
-
-        case types::TypeId::ENCRYPTED_INTEGER64: {
-            int64_t dst = value.getEmpInt()->reveal<int64_t>((int) party);
-            dstValue = new types::Value(dst);
-            break;
-        }
-        case types::TypeId::ENCRYPTED_FLOAT32: {
-            float_t dst = value.getEmpFloat32()->reveal<double>((int) party);
-            dstValue =  new types::Value(dst);
-            break;
-        }
-
-        case types::TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float *floatVal = value.getEmpFloat64();
-            double dst = floatVal->reveal<double_t>((int) party);
-            dstValue = new types::Value(dst);
-            break;
-
-
-        }
-        default:
-            throw;
-
-
-    };
-
+    types::Value dstValue = value_.reveal(party);
     result.SetValue(&dstValue);
     return result;
 

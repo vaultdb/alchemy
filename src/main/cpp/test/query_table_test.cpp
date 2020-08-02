@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <util/emp_manager.h>
+#include <util/type_utilities.h>
 
 using namespace emp;
 using namespace std;
@@ -142,7 +143,7 @@ protected:
 
 // tests how we handle each type
 // also validates overload of << operator
-TEST_F(query_table_test, read_table) {
+/*TEST_F(query_table_test, read_table) {
 
 
     PsqlDataProvider dataProvider;
@@ -200,6 +201,42 @@ TEST_F(query_table_test, read_table_dummy_tag) {
     ASSERT_EQ(expectedTable, observedTable) << "Query table was not parsed correctly.";
 }
 
+*/
+
+
+TEST_F(query_table_test, emp_manager_test) {
+
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+
+    int32_t inputValue =  FLAGS_party == emp::ALICE ? 1 : 0;
+
+    emp::Integer aliceSecretShared = emp::Integer(32, inputValue, (int) EmpParty::ALICE);
+    empManager->flush();
+
+    int32_t decrypted = aliceSecretShared.reveal<int32_t>(emp::PUBLIC);
+    empManager->flush();
+
+    ASSERT_EQ(1, decrypted);
+
+    inputValue =  FLAGS_party == emp::ALICE ? 0 : 4;
+
+    emp::Integer bobSecretShared = emp::Integer(32, inputValue, (int) EmpParty::BOB);
+
+    empManager->flush();
+    decrypted = bobSecretShared.reveal<int32_t>(emp::PUBLIC);
+    ASSERT_EQ(4, decrypted);
+
+
+
+    empManager->close();
+
+
+
+
+
+
+}
 
 // test encrypting the query table with EMP
 TEST_F(query_table_test, encrypt_table) {
@@ -211,7 +248,7 @@ TEST_F(query_table_test, encrypt_table) {
 
     std::string inputQuery = QueryTableTestEnvironment::getInputQuery();
 
-    inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT 10";
+    inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT 1";
     cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << endl;
 
 
@@ -221,19 +258,33 @@ TEST_F(query_table_test, encrypt_table) {
                                                                          inputQuery, "lineitem", false);
 
 
+    std::cout << "Initial table: " << *inputTable << std::endl;
     std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
-    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(EmpParty::PUBLIC);
 
-    std::cout << "Encrypted table: " << encryptedTable->reveal( EmpParty::PUBLIC) << std::endl;
+    std::cout << "Finished encrypting table with " << encryptedTable->getTupleCount() << " tuples." << std::endl;
 
+    empManager->flush();
 
-    string observedTable = inputTable.get()->toString();
-    string expectedTable = QueryTableTestEnvironment::getExpectedOutput();
+    string expectedTable = "(#0 int32 lineitem.l_orderkey) isEncrypted? 0\n"
+                           "(1) (dummy=false)\n"
+                           "(4) (dummy=false)\n";
 
     cout << "Expected:\n" << expectedTable << endl;
-    cout << "Observed: \n" << observedTable << endl;
 
-    ASSERT_EQ(expectedTable, observedTable) << "Query table was not parsed correctly.";
+    const QueryTuple *encryptedTuple = encryptedTable->GetTuple(0);
+    const QueryField *encryptedField = encryptedTuple->GetField(0);
+    types::Value value = encryptedField->GetValue();
+    types::Value revealedValue = value.reveal(EmpParty::PUBLIC);
+
+
+    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(EmpParty::PUBLIC);
+
+
+    cout << "Observed: \n" << *decryptedTable << endl;
+
+    ASSERT_EQ(expectedTable, decryptedTable->toString()) << "Query table was not processed correctly.";
+
+    delete empManager;
 
 
 }

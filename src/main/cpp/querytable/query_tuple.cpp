@@ -1,6 +1,6 @@
+#include <util/emp_manager.h>
 #include "query_tuple.h"
 #include "query_schema.h"
-#include <querytable/expression/expression.h>
 
 using namespace vaultdb;
 
@@ -61,8 +61,8 @@ void QueryTuple::SetDummyTag(vaultdb::types::Value *v) {
     dummy_tag_.setValue(v);
 }
 
-void QueryTuple::SetDummyTag(bool aFlag) {
-    dummy_tag_.setValue(aFlag);
+void QueryTuple::SetDummyTag(bool aTag) {
+    dummy_tag_.setValue(aTag);
 }
 
 void QueryTuple::InitDummy() {
@@ -181,11 +181,17 @@ QueryTuple QueryTuple::reveal(EmpParty party) const {
 
     for(int i = 0; i < fieldCount_; ++i) {
         QueryField dstField = fields_[i].reveal(party);
+        dstTuple.PutField(i, &dstField);
     }
+
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->flush();
 
     emp::Bit encryptedBit = dummy_tag_.getEmpInt();
     bool bit = encryptedBit.reveal((int) party);
+
     dstTuple.SetDummyTag(bit);
+    return dstTuple;
 
 }
 

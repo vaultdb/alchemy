@@ -53,18 +53,17 @@ std::string QueryTable::GetQueryTableXorString(QueryTable *input_table) {
 
 
 std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
-    // TODO: set it so that when it is XOR-encoded, it is encrypted
-    // this has downstream effects that need to be figured out first
-
     int colCount = GetSchema()->getFieldCount();
     int tupleCount = getTupleCount();
+    bool isEncrypted = (party == EmpParty::XOR) ? true : false;
 
-    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, colCount, true));
+
+    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, colCount, isEncrypted));
     dstTable->SetSchema(GetSchema());
     QueryTuple *srcTuple; // initialized below
     QueryField *dstField;
 
-    for(int i = 0; i < getTupleCount(); ++i)  {
+    for(int i = 0; i < tupleCount; ++i)  {
         srcTuple = GetTuple(i);
 
         QueryTuple dstTuple(colCount, false);
