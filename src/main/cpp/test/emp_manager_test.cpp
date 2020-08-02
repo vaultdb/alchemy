@@ -182,7 +182,7 @@ TEST_F(EmpManagerTest, emp_manager_test) {
 }
 
 // test encrypting the query table with EMP
-TEST_F(EmpManagerTest, encrypt_table) {
+TEST_F(EmpManagerTest, encrypt_table_one_column) {
 
     PsqlDataProvider dataProvider;
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
@@ -191,7 +191,7 @@ TEST_F(EmpManagerTest, encrypt_table) {
 
     std::string inputQuery = EmpManagerTestEnvironment::getInputQuery();
 
-    inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT 1";
+    inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT 2";
     std::cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
 
 
@@ -210,7 +210,9 @@ TEST_F(EmpManagerTest, encrypt_table) {
 
     string expectedTable = "(#0 int32 lineitem.l_orderkey) isEncrypted? 0\n"
                            "(1) (dummy=false)\n"
-                           "(4) (dummy=false)\n";
+                           "(1) (dummy=false)\n"
+                           "(4) (dummy=false)\n"
+                           "(33) (dummy=false)\n";
 
     std::cout << "Expected:\n" << expectedTable << std::endl;
 
