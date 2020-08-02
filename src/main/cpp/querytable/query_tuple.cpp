@@ -34,7 +34,6 @@ QueryTuple::QueryTuple(QueryTuple &src) :
 
 
     for(int i = 0; i < fieldCount_; ++i) {
-        std::cout << "Initiaizing " << src.fields_[i] << std::endl;
         fields_[i].initialize(src.fields_[i]);
     }
 

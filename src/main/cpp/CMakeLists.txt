@@ -118,8 +118,7 @@ set(sources
 		data/PsqlDataProvider.cpp
 		data/DataProvider.cpp
 		data/proto_converter.cpp
-        util/type_utilities.cpp
-)
+        util/type_utilities.cpp)
 
 
 

@@ -1,8 +1,6 @@
 //
-// Created by Jennie Rogers on 7/18/20.
+// Created by Jennie Rogers on 8/2/20.
 //
-
-
 #include <data/PsqlDataProvider.h>
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
@@ -10,14 +8,18 @@
 #include <util/emp_manager.h>
 #include <util/type_utilities.h>
 
+
 using namespace emp;
+
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54321, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 
-class QueryTableTestEnvironment : public ::testing::Environment {
+// TODO: refactor this into a common utility with QueryTableTest
+// TODO: figure out how to codify that this test depends on QueryTableTest
+class EmpManagerTestEnvironment : public ::testing::Environment {
 public:
     // Assume there's only going to be a single instance of this class, so we can just
     // hold the timestamp as a const static local variable and expose it through a
@@ -82,11 +84,11 @@ public:
         // dummy tag
 
         static const std::string inputQueryDummyTag = "SELECT l_orderkey, l_comment, l_returnflag, l_discount, "
-                                              "EXTRACT(EPOCH FROM l_commitdate) AS l_commitdate, "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
-                                              "l_returnflag <> 'N' AS dummy "  // simulate a filter for l_returnflag = 'N' -- all of the ones that dont match are dummies
-                                              "FROM lineitem "
-                                              "ORDER BY l_orderkey "
-                                              "LIMIT 10";
+                                                      "EXTRACT(EPOCH FROM l_commitdate) AS l_commitdate, "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
+                                                      "l_returnflag <> 'N' AS dummy "  // simulate a filter for l_returnflag = 'N' -- all of the ones that dont match are dummies
+                                                      "FROM lineitem "
+                                                      "ORDER BY l_orderkey "
+                                                      "LIMIT 10";
         return inputQueryDummyTag;
     }
 
@@ -131,7 +133,9 @@ public:
 };
 
 
-class QueryTableTest : public ::testing::Test {
+
+
+class EmpManagerTest : public ::testing::Test {
 
 
 protected:
@@ -139,64 +143,93 @@ protected:
     void TearDown() override{};
 };
 
-// tests how we handle each type
-// also validates overload of << operator
-TEST_F(QueryTableTest, read_table) {
-
-
-    PsqlDataProvider dataProvider;
-    string db_name =  "tpch_alice"; //FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
-
-    std::string inputQuery = QueryTableTestEnvironment::getInputQuery();
-    std::cout << "Querying " << db_name << " with: " << inputQuery << std::endl;
 
 
 
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
-                                        inputQuery, "lineitem", false);
+TEST_F(EmpManagerTest, emp_manager_test) {
+
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+
+    int32_t inputValue =  FLAGS_party == emp::ALICE ? 1 : 0;
+
+    emp::Integer aliceSecretShared = emp::Integer(32, inputValue, (int) EmpParty::ALICE);
+    empManager->flush();
+
+    int32_t decrypted = aliceSecretShared.reveal<int32_t>(emp::PUBLIC);
+    empManager->flush();
+
+    ASSERT_EQ(1, decrypted);
+
+    inputValue =  FLAGS_party == emp::ALICE ? 0 : 4;
+
+    emp::Integer bobSecretShared = emp::Integer(32, inputValue, (int) EmpParty::BOB);
+
+    empManager->flush();
+    decrypted = bobSecretShared.reveal<int32_t>(emp::PUBLIC);
+    ASSERT_EQ(4, decrypted);
 
 
-    string observedTable = inputTable.get()->toString();
-    string expectedTable = QueryTableTestEnvironment::getExpectedOutput();
 
-    std::cout << "Expected:\n" << expectedTable << std::endl;
-    std::cout << "Observed: \n" << observedTable << std::endl;
+    empManager->close();
 
-    ASSERT_EQ(expectedTable, observedTable) << "Query table was not parsed correctly.";
+
+
 
 
 
 }
 
-
-// tests handling of a dummy tag from SQL query
-TEST_F(QueryTableTest, read_table_dummy_tag) {
-
+// test encrypting the query table with EMP
+TEST_F(EmpManagerTest, encrypt_table) {
 
     PsqlDataProvider dataProvider;
+    string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
 
-    string db_name =  "tpch_alice"; //FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
-    string expectedTable = QueryTableTestEnvironment::getExpectedOutputDummyTag();
-    std::string inputQuery = QueryTableTestEnvironment::getInputQueryDummyTag();
+    std::string inputQuery = EmpManagerTestEnvironment::getInputQuery();
 
-    std::cout << "Querying " << db_name << " with: " << inputQuery  << std::endl;
+    inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT 1";
+    std::cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
 
 
 
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
-                                                                         inputQuery,
-                                                                         "lineitem",
-                                                                         true);
+                                                                         inputQuery, "lineitem", false);
 
 
-    std::string observedTable = inputTable->toString();
+    std::cout << "Initial table: " << *inputTable << std::endl;
+    std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
+
+    std::cout << "Finished encrypting table with " << encryptedTable->getTupleCount() << " tuples." << std::endl;
+
+    empManager->flush();
+
+    string expectedTable = "(#0 int32 lineitem.l_orderkey) isEncrypted? 0\n"
+                           "(1) (dummy=false)\n"
+                           "(4) (dummy=false)\n";
 
     std::cout << "Expected:\n" << expectedTable << std::endl;
-    std::cout << "Observed: \n" << observedTable << std::endl;
 
-    ASSERT_EQ(expectedTable, observedTable) << "Query table was not parsed correctly.";
+    const QueryTuple *encryptedTuple = encryptedTable->GetTuple(0);
+    const QueryField *encryptedField = encryptedTuple->GetField(0);
+    types::Value value = encryptedField->GetValue();
+    types::Value revealedValue = value.reveal(EmpParty::PUBLIC);
+
+
+    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(EmpParty::PUBLIC);
+
+
+    std::cout << "Observed: \n" << *decryptedTable << endl;
+
+    ASSERT_EQ(expectedTable, decryptedTable->toString()) << "Query table was not processed correctly.";
+
+    empManager->close();
+
+
 }
 
 

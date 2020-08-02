@@ -42,8 +42,6 @@ public:
     QueryField secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, size_t length, int party);
     types::Value secretShareValue(const types::Value *srcValue, types::TypeId type, size_t length, int party);
 
-    std::unique_ptr<QueryTable> revealTable(const QueryTable *srcTable, int party);
-    QueryField *revealField(const QueryField *srcField, int party);
 
 
     void flush();

@@ -61,7 +61,6 @@ std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
     std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, colCount, isEncrypted));
     dstTable->SetSchema(GetSchema());
     QueryTuple *srcTuple; // initialized below
-    QueryField *dstField;
 
     for(int i = 0; i < tupleCount; ++i)  {
         srcTuple = GetTuple(i);
@@ -125,7 +124,6 @@ QueryTable & QueryTable::operator=(const QueryTable & src) {
     this->SetSchema(src.GetSchema());
     this->is_encrypted_ = src.GetIsEncrypted();
     this->tupleCount_ = src.getTupleCount();
-    int colCount = schema_->getFieldCount();
 
     tuples_ =
             std::unique_ptr<QueryTuple[]>(new QueryTuple[tupleCount_]);

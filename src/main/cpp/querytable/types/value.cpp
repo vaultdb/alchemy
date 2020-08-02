@@ -364,9 +364,7 @@ void Value::setValue(std::string aString) {
             }
             case types::TypeId::ENCRYPTED_INTEGER32: {
                 emp::Integer *anInt = this->getEmpInt();
-                std::cout << "Decrypting " << anInt << std::endl;
                 int32_t dst = anInt->reveal<int32_t>((int) party);
-                std::cout << " revealed " << dst << std::endl;
                 return types::Value(dst);
             }
 
