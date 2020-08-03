@@ -42,6 +42,7 @@ std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
     }
 
     netio_->flush();
+    std::cout << "Secret sharing bob's data!" << std::endl;
 
     int writeIdx = aliceSize;
     for (int i = 0; i < bobSize; ++i) {
@@ -83,6 +84,10 @@ QueryField
 EmpManager::secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, size_t length, int party) {
 
     types::Value *srcValue = ((int) party_ == party) ? srcField->GetValue() : nullptr;
+
+    if(srcValue != nullptr)
+        std::cout << "Secret sharing " << srcValue->getValueString() << std::endl;
+
     types::Value dstValue = secretShareValue(srcValue, type, length, party);
     QueryField dstField(ordinal, dstValue);
     return dstField;
@@ -120,7 +125,10 @@ types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::T
         }
 
         case vaultdb::types::TypeId::VARCHAR: {
-            std::string valueStr = ((int) party_ == party) ? srcValue->getVarchar() : nullptr;
+
+            std::string valueStr = ((int) party_ == party) ?
+                srcValue->getVarchar() :
+                std::to_string(0);
             emp::Integer strVal(length, valueStr, party);
             return types::Value(types::TypeId::ENCRYPTED_VARCHAR, strVal);
         }

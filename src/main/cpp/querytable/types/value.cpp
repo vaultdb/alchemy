@@ -93,22 +93,24 @@ int64_t Value::getInt64() const {
         }
     }
 
-    emp::Integer *Value::getEmpInt() const { return  value_.emp_integer_; }
-    emp::Bit *Value::getEmpBit() const { return value_.emp_bit_; }
+    emp::Integer *Value::getEmpInt()  const { return  value_.emp_integer_; }
+    emp::Bit *Value::getEmpBit()  const { return value_.emp_bit_; }
 
 
 Value::~Value() {
-  /*
-  switch(type_) {
-  case TypeId::ENCRYPTED_BOOLEAN:
-    value_.emp_bit_.reset();
-    break;
-  case TypeId::ENCRYPTED_INTEGER64:
-  case TypeId::ENCRYPTED_INTEGER32:
-    value_.emp_integer_.reset();
-    break;
-  }
-   */
+/*
+    if(value_.emp_bit_ != nullptr)
+        delete value_.emp_bit_;
+    if(value_.emp_integer_ != nullptr)
+        delete value_.emp_integer_;
+    if(value_.emp_float32_ != nullptr)
+        delete value_.emp_float32_;
+
+    if(value_.emp_float_ != nullptr)
+        delete value_.emp_float_;
+
+*/
+
 }
 
 void Value::setValue(const Value *val) {
@@ -125,11 +127,24 @@ void Value::setValue(const Value *val) {
             break;
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
-            setValue(val->type_, *(val->value_.emp_integer_));
+        case TypeId::ENCRYPTED_VARCHAR: {
+            emp::Integer *intVal = val->getEmpInt();
+            setValue(val->type_, *intVal);
             break;
+        }
         case TypeId::ENCRYPTED_BOOLEAN:
             setValue(*(val->value_.emp_bit_));
             break;
+        case TypeId::ENCRYPTED_FLOAT32: {
+            emp::Float32 *floatVal = val->getEmpFloat32();
+            setValue(*floatVal);
+            break;
+        }
+        case TypeId::ENCRYPTED_FLOAT64: {
+            emp::Float *floatVal = val->getEmpFloat64();
+            setValue(*floatVal);
+            break;
+        }
         case TypeId::VARCHAR:
             setValue(val->getVarchar());
             break;
@@ -144,6 +159,8 @@ void Value::setValue(const Value *val) {
 
         case TypeId::INVALID:
             break;
+        default:
+            throw;
     }
 }
 void Value::setValue(int32_t val) {
@@ -338,15 +355,19 @@ void Value::setValue(std::string aString) {
 
         }
 
+        // TODO: temp -- danger will robinson!
     emp::Float32 *Value::getEmpFloat32() const {
-        return value_.emp_float32_;
+        return  nullptr; //value_.emp_float32_;
     }
-
+// TODO: temp -- danger will robinson!
     emp::Float *Value::getEmpFloat64() const {
-        return value_.emp_float_;
+        return nullptr; // value_.emp_float_;
     }
 
     Value Value::reveal(EmpParty party) const {
+
+    std::cout << "Decrypting a field of type " << TypeUtilities::getTypeIdString(type_) << std::endl;
+
 
         switch(type_) {
             case types::TypeId::INVALID:
@@ -383,6 +404,13 @@ void Value::setValue(std::string aString) {
                 return types::Value(dst);
 
             }
+
+            case types::TypeId::ENCRYPTED_VARCHAR: {
+                emp::Integer *anInt = this->getEmpInt();
+                std::string dst = anInt->reveal<std::string>((int) party);
+                return types::Value(dst);
+            }
+
             default: // all other types are unencrypted, so just copy out the value
                 if(!is_encrypted_) {
                     return types::Value(this);

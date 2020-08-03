@@ -32,8 +32,8 @@ public:
         // numeric
         // date
 
-        static const std::string inputQuery = "SELECT l_orderkey, l_comment, l_returnflag, l_discount, "
-                                              "EXTRACT(EPOCH FROM l_commitdate) AS l_commitdate "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
+        static const std::string inputQuery = "SELECT l_orderkey, l_comment "//, l_returnflag, l_discount, "
+                                              //"EXTRACT(EPOCH FROM l_commitdate) AS l_commitdate "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
                                               "FROM lineitem "
                                               "ORDER BY l_orderkey "
                                               "LIMIT 10";
@@ -147,6 +147,7 @@ protected:
 
 
 
+// basic test to verify emp configuration
 TEST_F(EmpManagerTest, emp_manager_test) {
 
     EmpManager *empManager = EmpManager::getInstance();
@@ -181,7 +182,8 @@ TEST_F(EmpManagerTest, emp_manager_test) {
 
 }
 
-// test encrypting the query table with EMP
+/*
+// test encrypting a query table with EMP
 TEST_F(EmpManagerTest, encrypt_table_one_column) {
 
     PsqlDataProvider dataProvider;
@@ -189,9 +191,8 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
     EmpManager *empManager = EmpManager::getInstance();
     empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
 
-    std::string inputQuery = EmpManagerTestEnvironment::getInputQuery();
 
-    inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT 2";
+    std::string inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT 2";
     std::cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
 
 
@@ -234,10 +235,10 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
     empManager->close();
 
 
-}
+}*/
 
 
-/*
+
 TEST_F(EmpManagerTest, encrypt_table) {
 
     PsqlDataProvider dataProvider;
@@ -279,7 +280,7 @@ TEST_F(EmpManagerTest, encrypt_table) {
 
 }
 
-*/
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

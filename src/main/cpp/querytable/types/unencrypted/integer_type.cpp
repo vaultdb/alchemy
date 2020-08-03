@@ -47,8 +47,9 @@ Value IntegerType::And(const Value &left, const Value &right) const { throw; }
 Value IntegerType::Or(const Value &left, const Value &right) const { throw; }
 
 void IntegerType::Swap(const Value &compareBit, Value &left, Value &right) {
-  VAULTDB_ASSERT(compareBit.getType() == vaultdb::types::TypeId::ENCRYPTED_BOOLEAN);
-  emp::Bit cmp = *compareBit.getEmpBit();
+  assert(compareBit.getType() == vaultdb::types::TypeId::ENCRYPTED_BOOLEAN);
+
+  emp::Bit cmp = *(compareBit.getEmpBit());
   emp::Integer lhs = *(left.getEmpInt());
   emp::Integer rhs = *(right.getEmpInt());
 

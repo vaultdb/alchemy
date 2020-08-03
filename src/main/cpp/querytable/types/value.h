@@ -51,9 +51,9 @@ public:
   TypeId getType() const;
   int64_t getInt64() const;
   int32_t getInt32() const;
-  [[nodiscard]] bool getBool() const;
-  [[nodiscard]] emp::Integer *getEmpInt() const;
-  [[nodiscard]] emp::Bit* getEmpBit() const;
+  bool getBool() const;
+  emp::Integer *getEmpInt() const ;
+  emp::Bit *getEmpBit() const;
     std::string getVarchar() const;
 
 
@@ -66,8 +66,8 @@ public:
 
     void serialize(bool *dst) const;
 
-    emp::Float32 *getEmpFloat32() const;
-    emp::Float *getEmpFloat64() const;
+    emp::Float32 *getEmpFloat32() const ;
+    emp::Float *getEmpFloat64() const ;
     Value reveal(EmpParty party) const;
 
 protected:
@@ -82,11 +82,13 @@ protected:
 
   struct ValueStruct {
       boost::variant<bool, int32_t, int64_t, float_t, double_t, std::string> unencrypted_val;
-    emp::Bit * emp_bit_;
-    emp::Integer * emp_integer_;
+    emp::Bit *emp_bit_;
+    emp::Integer  *emp_integer_;
     emp::Float *emp_float_;
     emp::Float32 *emp_float32_;
-  } value_{};
+  } value_   {false, nullptr, nullptr, nullptr, nullptr};
+         // false, emp::Bit(false, emp::PUBLIC), emp::Integer(1, 0, emp::PUBLIC), emp::Float(24, 9, 0, emp::PUBLIC), emp::Float32(0.0, emp::PUBLIC)
+ // };
 
 
 };

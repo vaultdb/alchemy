@@ -1,7 +1,3 @@
-//
-// Created by madhav on 1/15/20.
-//
-
 #pragma once
 #include "bool_result.h"
 #include "type_id.h"
