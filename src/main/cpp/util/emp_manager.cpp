@@ -37,6 +37,8 @@ std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
 
     for (int i = 0; i < aliceSize; ++i) {
         --readTuple;
+       // if(party_ == EmpParty::ALICE)
+       //     std::cout << "Alice initial source tuple has dummy tag: " << srcTable->GetTuple(readTuple)->GetDummyTag()->getBool()  << std::endl;
         QueryTuple *srcTuple = (party_ == EmpParty::ALICE) ? srcTable->GetTuple(readTuple) : nullptr;
         dstTuple = secretShareTuple(srcTuple,srcTable->GetSchema(), (int) EmpParty::ALICE);
         dstTable->putTuple(i, dstTuple);
@@ -47,6 +49,9 @@ std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
 
     int writeIdx = aliceSize;
     for (int i = 0; i < bobSize; ++i) {
+      //  if(party_ == EmpParty::BOB)
+      //      std::cout << "Bob initial source tuple has dummy tag: " << srcTable->GetTuple(i)->GetDummyTag()->getBool()  << std::endl;
+
         QueryTuple *srcTuple =  (party_ == EmpParty::BOB) ?  srcTable->GetTuple(i) : nullptr;
         dstTuple = secretShareTuple(srcTuple, srcTable->GetSchema(), (int) EmpParty::BOB);
         dstTable->putTuple(writeIdx, dstTuple);
@@ -74,17 +79,16 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
 
     bool dummyTag = 0;
     if(srcTuple != nullptr)
-         dummyTag =  srcTuple->GetDummyTag();
+         dummyTag =  srcTuple->GetDummyTag()->getBool();
+
 
     emp::Bit encryptedDummyTag(dummyTag, party);
+
+    std::cout << "Encrypting dummy tag: " << dummyTag <<  " decrypted: " << encryptedDummyTag.reveal(emp::PUBLIC) << std::endl;
+
     types::Value valueBit(encryptedDummyTag);
     dstTuple.SetDummyTag(&valueBit);
 
-   /* if(srcTuple != nullptr) {
-        types::Value decrypted = dstTuple.GetDummyTag()->reveal(EmpParty::PUBLIC);
-        bool revealedDummyTag = decrypted.getBool();
-        assert(dummyTag == revealedDummyTag);
-    }*/
 
 
     return dstTuple;

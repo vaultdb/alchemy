@@ -186,10 +186,12 @@ QueryTuple QueryTuple::reveal(EmpParty party) const {
     EmpManager *empManager = EmpManager::getInstance();
     empManager->flush();
 
-    emp::Bit encryptedBit = dummy_tag_.getEmpInt();
-    bool bit = encryptedBit.reveal((int) party);
 
-    dstTuple.SetDummyTag(bit);
+    emp::Bit *dummyTag = dummy_tag_.getEmpBit();
+    bool revealedBit = dummyTag->reveal((int) party);
+
+
+    dstTuple.SetDummyTag(revealedBit);
     return dstTuple;
 
 }

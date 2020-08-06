@@ -414,11 +414,19 @@ TEST_F(EmpManagerTest, encrypt_table_dummy_tag) {
 
     std::cout << "Initial table: " << *inputTable << std::endl;
     std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
+    empManager->flush();
 
     std::cout << "Finished encrypting table with " << encryptedTable->getTupleCount() << " tuples." << std::endl;
 
+    for(int i = 0; i < encryptedTable->getTupleCount(); ++i) {
+        QueryTuple *tuple = encryptedTable->GetTuple(i);
+        emp::Bit *dummyTag = tuple->GetDummyTag()->getEmpBit();
+        bool revealedBit = dummyTag->reveal();
 
-    empManager->flush();
+        std::cout << "Tuple " << i << ": " << revealedBit << std::endl;
+
+    }
+
 
     string expectedTable = EmpManagerTestEnvironment::getExpectedOutputDummyTag();
 
