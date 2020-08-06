@@ -72,10 +72,19 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
         dstTuple.PutField(i, &dstField);
     }
 
-    bool dummyTag = srcTuple->GetDummyTag();
+    bool dummyTag = 0;
+    if(srcTuple != nullptr)
+         dummyTag =  srcTuple->GetDummyTag();
+
     emp::Bit encryptedDummyTag(dummyTag, party);
     types::Value valueBit(encryptedDummyTag);
     dstTuple.SetDummyTag(&valueBit);
+
+   /* if(srcTuple != nullptr) {
+        types::Value decrypted = dstTuple.GetDummyTag()->reveal(EmpParty::PUBLIC);
+        bool revealedDummyTag = decrypted.getBool();
+        assert(dummyTag == revealedDummyTag);
+    }*/
 
 
     return dstTuple;
@@ -90,7 +99,6 @@ EmpManager::secretShareField(const QueryField *srcField, int ordinal, types::Typ
 
     types::Value dstValue = secretShareValue(srcValue, type, length, party);
     QueryField dstField(ordinal, dstValue);
-
 
     return dstField;
 }

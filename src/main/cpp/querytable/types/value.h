@@ -25,6 +25,8 @@ public:
     Value(double val);
     Value(float val);
     Value(const Value *val);
+    Value(const Value & val);
+
     Value(const std::string & val);
   Value(emp::Float32 float32);
     Value(emp::Float float32);

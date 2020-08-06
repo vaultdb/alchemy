@@ -8,8 +8,13 @@
 namespace vaultdb::types {
 
 Value::Value() {}
+
 Value::Value(const Value *val) {
     setValue(val);
+}
+
+Value::Value(const Value &val) {
+        setValue(&val);
 }
 
 Value::Value(int64_t val) {
@@ -356,13 +361,12 @@ void Value::setValue(std::string aString) {
 
         }
 
-        // TODO: temp -- danger will robinson!
     emp::Float32 *Value::getEmpFloat32() const {
-        return  nullptr; //value_.emp_float32_;
+        return  value_.emp_float32_;
     }
-// TODO: temp -- danger will robinson!
+
     emp::Float *Value::getEmpFloat64() const {
-        return nullptr; // value_.emp_float_;
+        return  value_.emp_float_;
     }
 
     Value Value::reveal(EmpParty party) const {
@@ -441,6 +445,8 @@ void Value::setValue(std::string aString) {
                 }
         };
 }
+
+
 
 } // namespace vaultdb::types
 
