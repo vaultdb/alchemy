@@ -367,7 +367,6 @@ void Value::setValue(std::string aString) {
 
     Value Value::reveal(EmpParty party) const {
 
-    std::cout << "Decrypting a field of type " << TypeUtilities::getTypeIdString(type_) << std::endl;
 
 
         switch(type_) {

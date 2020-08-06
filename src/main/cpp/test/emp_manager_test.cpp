@@ -242,8 +242,8 @@ TEST_F(EmpManagerTest, emp_manager_test_varchar) {
 }
 
 
-/*
-// test encrypting a query table with EMP
+
+// test encrypting a query table with a single int in EMP
 TEST_F(EmpManagerTest, encrypt_table_one_column) {
 
     PsqlDataProvider dataProvider;
@@ -295,7 +295,7 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
     empManager->close();
 
 
-}*/
+}
 
 
 
