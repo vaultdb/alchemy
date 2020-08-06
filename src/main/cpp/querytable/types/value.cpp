@@ -1,5 +1,6 @@
 #include <iso646.h>
 #include <vaultdb.h>
+#include <util/data_utilities.h>
 
 #include "value.h"
 #include "util/type_utilities.h"
@@ -406,8 +407,29 @@ void Value::setValue(std::string aString) {
             }
 
             case types::TypeId::ENCRYPTED_VARCHAR: {
-                emp::Integer *anInt = this->getEmpInt();
-                std::string dst = anInt->reveal<std::string>((int) party);
+
+                emp::Integer *encryptedString = this->getEmpInt();
+                long bitCount = encryptedString->length;
+                long byteCount = bitCount / 8;
+
+                bool *bools = new bool[bitCount];
+                emp::ProtocolExecution::prot_exec->reveal(bools, (int) party, (emp::block *) encryptedString->bits,  bitCount);
+
+                char *decodedBytes = (char *) DataUtilities::boolsToBytes(bools, bitCount);
+
+                // make the char * null terminated
+                char *tmp = new char[byteCount + 1];
+                memcpy(tmp, decodedBytes, byteCount);
+                tmp[byteCount] = '\0';
+                delete [] decodedBytes;
+                decodedBytes = tmp;
+
+
+                std::string dst(decodedBytes);
+
+                delete [] bools;
+                delete [] decodedBytes;
+
                 return types::Value(dst);
             }
 

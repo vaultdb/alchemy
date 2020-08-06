@@ -7,6 +7,7 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <util/emp_manager.h>
 #include <util/type_utilities.h>
+#include <util/data_utilities.h>
 
 
 using namespace emp;
@@ -147,8 +148,8 @@ protected:
 
 
 
-// basic test to verify emp configuration
-TEST_F(EmpManagerTest, emp_manager_test) {
+// basic test to verify emp configuration for int32s
+TEST_F(EmpManagerTest, emp_manager_test_int) {
 
     EmpManager *empManager = EmpManager::getInstance();
     empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
@@ -171,7 +172,65 @@ TEST_F(EmpManagerTest, emp_manager_test) {
     decrypted = bobSecretShared.reveal<int32_t>(emp::PUBLIC);
     ASSERT_EQ(4, decrypted);
 
+    empManager->close();
 
+}
+
+
+// basic test to verify emp configuration for strings
+TEST_F(EmpManagerTest, emp_manager_test_varchar) {
+
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+
+    std::string initialString = "lithely regular deposits. fluffily";
+    std::cout << "Encoding: " << initialString << std::endl;
+
+    int stringBitCount = 352; // 42 * 8
+    int stringLength = 44;
+    while(initialString.length() != stringLength) {
+        initialString += " ";
+    }
+
+    bool *bools = DataUtilities::bytesToBool((int8_t *) initialString.c_str(), stringLength);
+    // ENCRYPT THIS
+    emp::Bit *bits = new Bit[stringBitCount];
+    if(FLAGS_party == emp::ALICE) {
+        emp::init(bits, bools, stringBitCount, emp::ALICE);
+    }
+    else {
+        emp::init(bits, nullptr, stringBitCount, emp::ALICE);
+    }
+    empManager->flush();
+
+    delete [] bools;
+
+
+    Integer aliceSecretShared = Integer(stringBitCount, bits);
+
+    // the standard reveal method converts this to decimal.  Need to reveal it bitwise
+
+    bools = new bool[stringBitCount];
+    ProtocolExecution::prot_exec->reveal(bools, emp::PUBLIC, (block *)aliceSecretShared.bits,  stringBitCount);
+
+
+
+    char *decodedBytes = (char *) DataUtilities::boolsToBytes(bools, stringBitCount);
+    // make the char * null terminated
+    char *tmp = new char[stringLength + 1];
+    memcpy(tmp, decodedBytes, stringLength);
+    tmp[stringLength] = '\0';
+    delete [] decodedBytes;
+    decodedBytes = tmp;
+
+
+    std::string decodedString(decodedBytes);
+    delete [] decodedBytes;
+    delete [] bools;
+
+    std::cout << "Decoded string: " << decodedString << std::endl;
+
+    ASSERT_EQ(initialString, decodedString);
 
     empManager->close();
 
@@ -181,6 +240,7 @@ TEST_F(EmpManagerTest, emp_manager_test) {
 
 
 }
+
 
 /*
 // test encrypting a query table with EMP
@@ -239,14 +299,18 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
 
 
 
-TEST_F(EmpManagerTest, encrypt_table) {
+TEST_F(EmpManagerTest, encrypt_table_two_cols) {
 
     PsqlDataProvider dataProvider;
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
     EmpManager *empManager = EmpManager::getInstance();
     empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
 
-    std::string inputQuery = EmpManagerTestEnvironment::getInputQuery();
+    std::string inputQuery = "SELECT l_orderkey, l_comment "
+                             "FROM lineitem "
+                             "ORDER BY l_orderkey "
+                             "LIMIT 10";
+
     std::cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
 
 
@@ -261,16 +325,35 @@ TEST_F(EmpManagerTest, encrypt_table) {
 
     std::cout << "Finished encrypting table with " << encryptedTable->getTupleCount() << " tuples." << std::endl;
 
+
     empManager->flush();
 
-    string expectedTable = EmpManagerTestEnvironment::getExpectedOutput();
+    string expectedTable = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment) isEncrypted? 0\n"
+                           "(32, lithely regular deposits. fluffily          ) (dummy=false)\n"
+                           "(7, jole. excuses wake carefully alongside of   ) (dummy=false)\n"
+                           "(7, . slyly special requests haggl              ) (dummy=false)\n"
+                           "(7,  unusual reques                             ) (dummy=false)\n"
+                           "(7, es. instructions                            ) (dummy=false)\n"
+                           "(5, sts use slyly quickly special instruc       ) (dummy=false)\n"
+                           "(5, ts wake furiously                           ) (dummy=false)\n"
+                           "(3, nal foxes wake.                             ) (dummy=false)\n"
+                           "(1, arefully slyly ex                           ) (dummy=false)\n"
+                           "(1,  pending foxes. slyly re                    ) (dummy=false)\n"
+                           "(4, - quickly regular packages sleep. idly      ) (dummy=false)\n"
+                           "(33, ng to the furiously ironic package          ) (dummy=false)\n"
+                           "(33, gular theodolites                           ) (dummy=false)\n"
+                           "(33, . stealthily bold exc                       ) (dummy=false)\n"
+                           "(35, , regular tithe                             ) (dummy=false)\n"
+                           "(35, s are carefully against the f               ) (dummy=false)\n"
+                           "(35, . silent, unusual deposits boost            ) (dummy=false)\n"
+                           "(35, ly alongside of                             ) (dummy=false)\n"
+                           "(39, heodolites sleep silently pending foxes. ac ) (dummy=false)\n"
+                           "(64, ch slyly final, thin platelets.             ) (dummy=false)\n";
 
     std::cout << "Expected:\n" << expectedTable << std::endl;
 
 
     std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(EmpParty::PUBLIC);
-
-
     std::cout << "Observed: \n" << *decryptedTable << endl;
 
     ASSERT_EQ(expectedTable, decryptedTable->toString()) << "Query table was not processed correctly.";

@@ -4,6 +4,7 @@
 
 #include "emp_manager.h"
 #include "type_utilities.h"
+#include "data_utilities.h"
 
 EmpManager * EmpManager::instance = nullptr;
 
@@ -48,6 +49,8 @@ std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
     for (int i = 0; i < bobSize; ++i) {
         QueryTuple *srcTuple =  (party_ == EmpParty::BOB) ?  srcTable->GetTuple(i) : nullptr;
         dstTuple = secretShareTuple(srcTuple, srcTable->GetSchema(), (int) EmpParty::BOB);
+        std::cout << "string field length: " << dstTuple.GetField(1)->GetValue()->getEmpInt()->length
+            <<  " value: " << dstTuple.GetField(1)->GetValue()->getEmpInt()->reveal<std::string>() <<  std::endl;
         dstTable->putTuple(writeIdx, dstTuple);
         ++writeIdx;
     }
@@ -69,12 +72,19 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
         const QueryField *srcField = ((int) party_ == party) ? srcTuple->GetField(i) : nullptr;
         QueryField dstField(secretShareField(srcField, i, schema->GetField(i)->GetType(), schema->GetField(i)->size(), party));
         dstTuple.PutField(i, &dstField);
+
+        if(dstField.GetValue()->getType() == types::TypeId::ENCRYPTED_VARCHAR) {
+            std::cout << "DstTuple value len: " << dstTuple.GetField(i)->GetValue()->getEmpInt()->length
+                    <<  " value: " <<  dstTuple.GetField(i)->GetValue()->getEmpInt()->reveal<std::string>() << std::endl;
+
+        }
     }
 
     bool dummyTag = srcTuple->GetDummyTag();
     emp::Bit encryptedDummyTag(dummyTag, party);
     types::Value valueBit(encryptedDummyTag);
     dstTuple.SetDummyTag(&valueBit);
+
 
     return dstTuple;
 }
@@ -90,6 +100,12 @@ EmpManager::secretShareField(const QueryField *srcField, int ordinal, types::Typ
 
     types::Value dstValue = secretShareValue(srcValue, type, length, party);
     QueryField dstField(ordinal, dstValue);
+
+   /* if(dstValue.getType() == types::TypeId::ENCRYPTED_VARCHAR) {
+        std::cout << "DstField value len: " << dstField.GetValue()->getEmpInt()->length  <<  " value: " << dstField.GetValue()->getEmpInt()->reveal<std::string>() << std::endl;
+
+    }*/
+
     return dstField;
 }
 
@@ -105,6 +121,7 @@ types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::T
         case vaultdb::types::TypeId::INTEGER32: {
             int32_t value = ((int) party_ == party) ? srcValue->getInt32() : 0;
             emp::Integer intVal(32, value, party);
+            std::cout << "Secret shared int, encrypted val: " << intVal.reveal<int32_t>() << std::endl;
             return types::Value(types::TypeId::ENCRYPTED_INTEGER32, intVal);
         }
         case vaultdb::types::TypeId::NUMERIC:
@@ -129,8 +146,12 @@ types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::T
             std::string valueStr = ((int) party_ == party) ?
                 srcValue->getVarchar() :
                 std::to_string(0);
-            emp::Integer strVal(length, valueStr, party);
-            return types::Value(types::TypeId::ENCRYPTED_VARCHAR, strVal);
+            std::cout << "Secret sharing " << valueStr <<  " to party " << party << " who am I? " << (int) party_ <<  std::endl;
+            emp::Integer strVal = encryptVarchar(valueStr, length, party);
+
+            types::Value result(types::TypeId::ENCRYPTED_VARCHAR, strVal);;
+            std::cout << "Encrypted string: " << result.reveal(EmpParty::PUBLIC).getValueString() << std::endl;
+            return result;
         }
 
         default: // unsupported type or it is already encrypted
@@ -141,6 +162,33 @@ types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::T
 }
 
 
+emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, int party) {
+    size_t stringByteCount = stringBitCount / 8;
+
+    assert(input.length() <= stringByteCount);   // while loop will be infinite if the string is already oversized
+
+    while(input.length() != stringByteCount) { // pad it to the right length
+        input += " ";
+    }
+
+    bool *bools = DataUtilities::bytesToBool((int8_t *) input.c_str(), stringByteCount);
+    emp::Bit *bits = new emp::Bit[stringBitCount];
+    if(party == (int) party_) {
+        emp::init(bits, bools, stringBitCount, party);
+    }
+    else {
+        emp::init(bits, nullptr, stringBitCount, party);
+    }
+
+    flush();
+
+    delete [] bools;
+    emp::Integer result(stringBitCount, bits);
+
+
+    return result;
+
+}
 
 
 void EmpManager::flush() {

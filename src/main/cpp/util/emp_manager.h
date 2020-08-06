@@ -52,6 +52,8 @@ public:
     }
 
     void close();
+
+    emp::Integer encryptVarchar(std::string input, size_t stringBitCount, int party);
 };
 
 
