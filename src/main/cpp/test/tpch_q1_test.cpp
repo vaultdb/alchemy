@@ -67,7 +67,8 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
                                  inputQuery, "lineitem", true);
 
 
-    std::unique_ptr<QueryTable> encryptedTable(empManager->secretShareTable(inputTable.get()));
+    std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
+    empManager->flush();
 
 
     // sort the input tuples
@@ -95,14 +96,15 @@ TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {
 
    // TODO: shashank: verify the reveal method in QueryTable
     std::unique_ptr<QueryTable> decrypted = aggregated->reveal(EmpParty::PUBLIC);
+
     std::unique_ptr<QueryTable> expected = pq.GetQueryTable("dbname=tpch_unioned",
-                                            baseQuery, "lineitem", true);
+                                            baseQuery, "lineitem", false);
 
 
     //std::cout << "Decrypted: " << decrypted << endl;
     //std::cout << "Expected: "  << expected << endl;
 
-   assert((decrypted.get()) == (expected.get()));
+   assert(decrypted->toString() == expected->toString());
 }
 
 /****
