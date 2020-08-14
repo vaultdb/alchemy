@@ -28,7 +28,7 @@ public:
     Value(const Value & val);
 
     Value(const std::string & val);
-  Value(emp::Float32 float32);
+    Value(emp::Float32 float32);
     Value(emp::Float float32);
 
 

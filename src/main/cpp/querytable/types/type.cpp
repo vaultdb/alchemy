@@ -4,6 +4,7 @@
 
 #include "type.h"
 #include <querytable/types/encrypted/encrypted_boolean_type.h>
+#include <querytable/types/encrypted/encrypted_float32_type.h>
 #include <querytable/types/encrypted/encrypted_integer_type.h>
 #include <querytable/types/unencrypted/boolean_type.h>
 #include <querytable/types/unencrypted/float_type.h>
@@ -29,12 +30,12 @@ vaultdb::types::Type &vaultdb::types::Type::GetInstance(TypeId type_id) {
   case TypeId::VARCHAR:
     break;
   case TypeId::ENCRYPTED_INTEGER32:
-    break;
+  case TypeId::ENCRYPTED_VARCHAR:
   case TypeId::ENCRYPTED_INTEGER64:
     return EncryptedIntegerType::shared_instance();
   case TypeId::ENCRYPTED_BOOLEAN:
     return EncryptedBooleanType::shared_instance();
   case TypeId::ENCRYPTED_FLOAT32:
-    break;
+    return EncryptedFloat32Type::shared_instance();
   }
 }

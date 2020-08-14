@@ -19,44 +19,44 @@ namespace vaultdb::types {
   } while (0)
 
 Value EncryptedIntegerType::CompareEquals(const Value &left,
-					  const Value &right) const {
+                                          const Value &right) const {
   EMP_INT_CMP(==);
 }
 Value EncryptedIntegerType::CompareNotEquals(const Value &left,
-					     const Value &right) const {
+                                             const Value &right) const {
   EMP_INT_CMP(!=);
 }
 EncryptedIntegerType::EncryptedIntegerType() {}
 Value EncryptedIntegerType::And(const Value &left, const Value &right) const {
-    emp::Integer lhs = *left.getEmpInt();
-    emp::Integer rhs = *right.getEmpInt();
-    emp::Integer result = lhs & rhs;
-    return Value(left.getType(), result);
+  emp::Integer lhs = *left.getEmpInt();
+  emp::Integer rhs = *right.getEmpInt();
+  emp::Integer result = lhs & rhs;
+  return Value(left.getType(), result);
 
 }
 
 Value EncryptedIntegerType::Or(const Value &left, const Value &right) const {
-    emp::Integer lhs = *left.getEmpInt();
-    emp::Integer rhs = *right.getEmpInt();
-    emp::Integer result = lhs | rhs;
-    return Value(left.getType(), result);
+  emp::Integer lhs = *left.getEmpInt();
+  emp::Integer rhs = *right.getEmpInt();
+  emp::Integer result = lhs | rhs;
+  return Value(left.getType(), result);
 
 }
 Value EncryptedIntegerType::CompareLessThanOrEqual(const Value &left,
-						   const Value &right) const {
+                                                   const Value &right) const {
   EMP_INT_CMP(<=);
 }
 Value EncryptedIntegerType::CompareLessThan(const Value &left,
-					    const Value &right) const {
+                                            const Value &right) const {
   EMP_INT_CMP(<);
 }
 Value EncryptedIntegerType::CompareGreaterThan(const Value &left,
-					       const Value &right) const {
+                                               const Value &right) const {
   EMP_INT_CMP(>);
 }
 
 void EncryptedIntegerType::Swap(const Value &compareBit, Value &left,
-				Value &right) {
+                                Value &right) {
   VAULTDB_ASSERT(compareBit.getType() ==
                  vaultdb::types::TypeId::ENCRYPTED_BOOLEAN);
   emp::Integer lhs = *(left.getEmpInt());
