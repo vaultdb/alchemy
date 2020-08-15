@@ -231,7 +231,8 @@ void Value::setValue(std::string aString) {
 
 
 
-    std::ostream& operator<<(std::ostream &strm, types::Value aValue) {
+
+    std::ostream &vaultdb::types::operator<<(std::ostream &strm, const Value &aValue) {
         string valueStr = aValue.getValueString();
         return strm << valueStr;
 

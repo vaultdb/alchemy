@@ -405,3 +405,20 @@ Value Value::operator!=(const Value &rhs) const {
     bool payload = isEqual.getBool();
     return Value(!payload);
 }
+
+
+// for use only with bool and emp::Bit
+Value vaultdb::types::Value::operator!() const {
+    TypeId valType = getType();
+
+    assert(valType == TypeId::ENCRYPTED_BOOLEAN || valType == TypeId::BOOLEAN);
+
+    if(valType == TypeId::ENCRYPTED_BOOLEAN) {
+        emp::Bit payload = getEmpBit();
+        return Value(!payload);
+    }
+
+    bool payload = getBool();
+    return Value(!payload);
+    
+}

@@ -80,6 +80,7 @@ public:
     Value operator<(const Value &rhs) const;
     Value operator==(const Value &rhs) const;
     Value operator!=(const Value &rhs) const;
+    Value operator !() const; // for use only with bool and emp::Bit
 
 
     // arithmetic expressions
