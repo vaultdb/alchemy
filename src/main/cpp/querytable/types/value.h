@@ -72,6 +72,24 @@ public:
     emp::Float *getEmpFloat64() const ;
     Value reveal(EmpParty party) const;
 
+
+    // comparators
+    Value operator>=(const Value &rhs) const;
+    Value operator>(const Value &rhs) const;
+    Value operator<=(const Value &rhs) const;
+    Value operator<(const Value &rhs) const;
+    Value operator==(const Value &rhs) const;
+    Value operator!=(const Value &rhs) const;
+
+
+    // arithmetic expressions
+    Value operator+(const Value& rhs)const;
+    Value operator-(const Value& rhs)const;
+    Value operator*(const Value& rhs)const;
+    Value operator/(const Value& rhs)const;
+
+
+
 protected:
   bool is_encrypted_;
   TypeId type_;

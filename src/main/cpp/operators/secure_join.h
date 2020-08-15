@@ -39,4 +39,4 @@ struct JoinDef {
 std::unique_ptr<QueryTable> Join(QueryTable *left, QueryTable *right,
                                  const JoinDef &def);
 
-#endif // TESTING_SECURE_JOIN_H
+#endif // _SECURE_JOIN_H

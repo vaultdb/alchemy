@@ -1,7 +1,3 @@
-//
-// Created by madhav on 1/6/20.
-//
-
 #include "secure_join.h"
 #include "emp-tool/emp-tool.h"
 #include <querytable/expression/expression.h>

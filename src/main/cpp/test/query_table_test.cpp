@@ -6,8 +6,6 @@
 #include <data/PsqlDataProvider.h>
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
-#include <emp-sh2pc/emp-sh2pc.h>
-#include <util/emp_manager.h>
 #include <util/type_utilities.h>
 
 using namespace emp;

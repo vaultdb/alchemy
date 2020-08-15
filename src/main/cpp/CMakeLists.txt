@@ -119,7 +119,9 @@ set(sources
 		data/DataProvider.cpp
 		data/proto_converter.cpp
         util/type_utilities.cpp
-		util/data_utilities.cpp querytable/types/encrypted/encrypted_float32_type.cpp)
+		util/data_utilities.cpp
+		querytable/types/encrypted/encrypted_float32_type.cpp
+		querytable/types/value_comparators.cpp querytable/types/value_arithmetic.cpp)
 
 
 
