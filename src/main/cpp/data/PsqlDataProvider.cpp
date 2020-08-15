@@ -13,19 +13,17 @@
 
 //typedef std::chrono::steady_clock::time_point time_point;
 
-std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
-                                          std::string query_string, std::string tableName) {
+std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname, std::string query_string) {
 
-   return  GetQueryTable(dbname, query_string,  tableName,  false);
+   return GetQueryTable(dbname, query_string, false);
 }
 
 // if hasDummyTag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
 // TODO: deduce table name from query, plugging this in for now with a member variable
-std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname,
-                                          std::string query_string,  std::string tableName, bool hasDummyTag) {
+std::unique_ptr<QueryTable>
+PsqlDataProvider::GetQueryTable(std::string dbname, std::string query_string, bool hasDummyTag) {
 
-    srcTable = tableName;
     dbName = dbname;
 
     result pqxxResult = query("dbname=" + dbname, query_string);
@@ -70,7 +68,11 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
     for(int i = 0; i < colCount; ++i) {
        string colName =  input.column_name(i);
        types::TypeId type = getFieldTypeFromOid(input.column_type(i));
-       QueryFieldDesc fieldDesc(i, true, colName, srcTable, type);
+        int tableId = input.column_table(i);
+
+        srcTable = getTableName(tableId);
+
+        QueryFieldDesc fieldDesc(i, true, colName, srcTable, type);
        if(type == vaultdb::types::TypeId::VARCHAR) {
 
            size_t stringLength = getVarCharLength(srcTable, colName);
@@ -108,6 +110,23 @@ size_t PsqlDataProvider::getVarCharLength(std::string tableName, std::string col
     field aField = aRow.at(0);
 
     return aField.as<size_t>();
+
+}
+
+
+
+string PsqlDataProvider::getTableName(int oid) {
+    std::string queryTableName = "SELECT relname FROM pg_class WHERE oid=" + std::to_string(oid);
+    pqxx::result pqxxResult = query("dbname=" + dbName, queryTableName);
+    // read single row, single val
+
+    if(pqxxResult.empty())
+        return "";
+
+    row aRow = pqxxResult[0];
+    field aField = aRow.at(0);
+
+    return aField.as<string>();
 
 }
 

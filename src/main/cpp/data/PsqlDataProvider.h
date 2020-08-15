@@ -19,11 +19,9 @@ using namespace vaultdb;
 
 class PsqlDataProvider  { // :  DataProvider
 public:
-    std::unique_ptr<QueryTable> GetQueryTable(std::string dbname,
-                                              std::string query_string, std::string tableName);
+    std::unique_ptr<QueryTable> GetQueryTable(std::string dbname, std::string query_string);
 
-    std::unique_ptr<QueryTable> GetQueryTable(std::string dbname,
-                                              std::string query_string, std::string tableName, bool hasDummyTag);
+    std::unique_ptr<QueryTable> GetQueryTable(std::string dbname, std::string query_string, bool hasDummyTag);
 
 private:
     QueryTuple getTuple(pqxx::row row, bool hasDummyTag);
@@ -34,6 +32,8 @@ private:
      std::string dbName;
 
     size_t getVarCharLength(string table, string column) const;
+
+    string getTableName(int oid);
 };
 
 

@@ -54,7 +54,9 @@ public:
 (10 rows)
          */
 
-        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double lineitem.l_commitdate) isEncrypted? 0\n"
+
+        // N.B. l_commitdate has no table name because it is the output of an expression
+        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double .l_commitdate) isEncrypted? 0\n"
                                                "(1,  pending foxes. slyly re, N, 0.100000, 826761600.000000) (dummy=false)\n"
                                                "(1, arefully slyly ex, N, 0.070000, 823651200.000000) (dummy=false)\n"
                                                "(3, nal foxes wake. , A, 0.060000, 753926400.000000) (dummy=false)\n"
@@ -107,7 +109,8 @@ public:
 (10 rows)
          */
 
-        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double lineitem.l_commitdate) isEncrypted? 0\n"
+        // N.B. l_commitdate has no table name because it is the output of an expression
+        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double .l_commitdate) isEncrypted? 0\n"
                                                "(1,  pending foxes. slyly re, N, 0.100000, 826761600.000000) (dummy=false)\n"
                                                "(1, arefully slyly ex, N, 0.070000, 823651200.000000) (dummy=false)\n"
                                                "(3, nal foxes wake. , A, 0.060000, 753926400.000000) (dummy=true)\n"
@@ -152,7 +155,7 @@ TEST_F(QueryTableTest, read_table) {
 
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
-                                        inputQuery, "lineitem", false);
+                                                                         inputQuery, false);
 
 
     string observedTable = inputTable.get()->toString();
@@ -174,7 +177,7 @@ TEST_F(QueryTableTest, read_table_dummy_tag) {
 
     PsqlDataProvider dataProvider;
 
-    string db_name =  "tpch_alice"; //FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+    string db_name =  "tpch_alice";
     string expectedTable = QueryTableTestEnvironment::getExpectedOutputDummyTag();
     std::string inputQuery = QueryTableTestEnvironment::getInputQueryDummyTag();
 
@@ -185,7 +188,6 @@ TEST_F(QueryTableTest, read_table_dummy_tag) {
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
                                                                          inputQuery,
-                                                                         "lineitem",
                                                                          true);
 
 
