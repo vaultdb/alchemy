@@ -6,7 +6,7 @@
 #define _SECURE_AGGREGATE_H
 
 #include <querytable/query_table.h>
-#include "aggregate_id.h"
+#include "operators/support/aggregate_id.h"
 
 
 struct ScalarAggregateDef {

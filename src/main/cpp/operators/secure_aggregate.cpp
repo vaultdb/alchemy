@@ -3,7 +3,7 @@
 //
 
 #include "secure_aggregate.h"
-#include "aggregate_id.h"
+#include "operators/support/aggregate_id.h"
 #include <common/macros.h>
 #include <querytable/query_table.h>
 

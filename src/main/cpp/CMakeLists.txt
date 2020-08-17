@@ -125,7 +125,8 @@ set(sources
 		querytable/types/value_arithmetic.cpp
 		operators/operator.cpp
 		operators/sql_input.cpp
-		operators/encrypted_sql_input.cpp)
+        operators/secure_sql_input.cpp
+		)
 
 
 

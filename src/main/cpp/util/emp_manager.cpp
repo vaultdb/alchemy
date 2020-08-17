@@ -9,7 +9,7 @@
 EmpManager * EmpManager::instance = nullptr;
 
 
-std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
+std::shared_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
     size_t aliceSize = srcTable->getTupleCount(); // in tuples
     size_t bobSize = aliceSize;
     int colCount = srcTable->getSchema()->getFieldCount();
@@ -28,7 +28,7 @@ std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
     }
 
 
-    std::unique_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, colCount, true));
+    std::shared_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, colCount, true));
 
     dstTable->setSchema(srcTable->getSchema());
 
@@ -152,7 +152,6 @@ types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::T
 
 emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, int party) {
 
-    std::cout << "Encrypting :" << input << std::endl;
     size_t stringByteCount = stringBitCount / 8;
 
     assert(input.length() <= stringByteCount);   // while loop will be infinite if the string is already oversized

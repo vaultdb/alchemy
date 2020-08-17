@@ -58,13 +58,19 @@ TEST_F(FilterTest, test_table_scan) {
 }
 
 
-// filtering for l_linenumber = 1
-// TODO: extend this to be part of a class instance so we can encrypt the literal just once
-Value predicateCall(const QueryTuple & aTuple) {
-    Value cmp = Value((int32_t) 1);
-    Value field = *(aTuple.GetField(1)->GetValue());
-    return  field == cmp;
-}
+
+// unencrypted case
+class FilterPredicate : public PredicateClass {
+    types::Value predicateCall(const QueryTuple & aTuple) const override {
+        Value cmp = Value((int32_t) 1);
+        Value field = *(aTuple.GetField(1)->GetValue());
+        return  field == cmp;
+    }
+
+
+};
+
+
 
 TEST_F(FilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 10";
@@ -78,20 +84,16 @@ TEST_F(FilterTest, test_filter) {
 
 
     std::shared_ptr<Operator> input(new SqlInput("tpch_alice", sql, false));
-    std::shared_ptr<Operator> filter(new Filter(&predicateCall, input));
-    input->setParent(filter);
+
+    std::shared_ptr<PredicateClass> predicateClass(new FilterPredicate);
+    Filter *filterOp = new Filter(predicateClass, input); // heap allocate it
+    std::shared_ptr<Operator> filter = filterOp->getPtr();
 
     std::shared_ptr<QueryTable> result = filter->run();
     std::cout << "Result: " << *result << std::endl;
 
-    std::cout << "Filter addr: " << filter.get() << " input addr: " << input.get() <<  std::endl;
 
     ASSERT_EQ(expectedOutput,  result->toString());
 
-    std::cout << "Test complete!" << std::endl;
-
-    // filter ref count is 1, we are creating 2 pointers instead of shared ptrs
-    // need a singleton to register the ops so that we can look them up - perhaps by an identifier
-    std::cout << "Filter reference count: " << filter.use_count() << std::endl;
 }
 

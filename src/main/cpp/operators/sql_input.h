@@ -18,7 +18,9 @@ protected:
 
 public:
     // bool denotes whether the last col of the SQL statement should be interpreted as a dummy tag
-    SqlInput(std::string db, std::string sql, bool dummyTag) : inputQuery(sql), dbName(db), hasDummyTag(dummyTag)  {}
+    SqlInput(std::string db, std::string sql, bool dummyTag) : inputQuery(sql), dbName(db), hasDummyTag(dummyTag)  {
+
+    }
 
     std::shared_ptr<QueryTable> runSelf() override;
 

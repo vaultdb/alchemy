@@ -5,16 +5,18 @@
 #ifndef _FILTER_H
 #define _FILTER_H
 
+#include <operators/support/predicate_class.h>
 #include "operator.h"
 
 
 // predicate function needs aware of encrypted or plaintext state of its inputs
 class Filter : public Operator {
 
-    types::Value(*predicate)(const QueryTuple &); // predicate function pointer
+    std::shared_ptr<PredicateClass> predicate;
+
 
 public:
-    Filter(types::Value(*predicateFunction)(const QueryTuple & tuple), std::shared_ptr<Operator> &child);
+    Filter(std::shared_ptr<PredicateClass> &predicateClass, std::shared_ptr<Operator> &child);
     std::shared_ptr<QueryTable> runSelf() override;
 };
 

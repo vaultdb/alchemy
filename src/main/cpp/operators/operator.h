@@ -25,7 +25,6 @@ public:
     Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs);
     ~Operator();
 
-
     // recurses first, then invokes runSelf method
     std::shared_ptr<QueryTable> run();
     std::shared_ptr<QueryTable> getOutput();
@@ -37,7 +36,7 @@ public:
     void setParent(std::shared_ptr<Operator> & aParent);
     void setChild(std::shared_ptr<Operator>  aChild, int idx = 0);
 
-   // Operator& operator=(const Operator& other); // copy assign operator overload
+   // Operator& operator=(const Operator& other); // TODO: copy assign operator overload
 
 protected:
     // to be implemented by the operator classes, e.g., sort, filter, et cetera

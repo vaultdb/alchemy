@@ -4,10 +4,10 @@
 
 #include "filter.h"
 
-Filter::Filter(types::Value (*predicateFunction)(const QueryTuple &), std::shared_ptr<Operator> & child)  : Operator(child) {
-        predicate = predicateFunction;
-
+Filter::Filter(std::shared_ptr<PredicateClass> &predicateClass, std::shared_ptr<Operator> &child) : Operator(child) {
+    predicate = predicateClass;
 }
+
 
 std::shared_ptr<QueryTable> Filter::runSelf() {
 
@@ -15,10 +15,11 @@ std::shared_ptr<QueryTable> Filter::runSelf() {
 
     for(int i = 0; i < output->getTupleCount(); ++i) {
         QueryTuple *tuple = output->getTuple(i);
-        types::Value dummyTag = predicate(*tuple);
+        types::Value dummyTag = predicate->predicateCall(*tuple);
         tuple->SetDummyTag(&dummyTag);
     }
     return output;
 }
+
 
 

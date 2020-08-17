@@ -3,17 +3,19 @@
 //
 
 #include <util/emp_manager.h>
-#include "encrypted_sql_input.h"
+#include "secure_sql_input.h"
 
-std::shared_ptr<QueryTable> EncryptedSqlInput::runSelf() {
+std::shared_ptr<QueryTable> SecureSqlInput::runSelf() {
     std::shared_ptr<QueryTable> plaintextTable = SqlInput::runSelf();
     EmpManager *empManager = EmpManager::getInstance();
 
+    std::cout << "Secret sharing:\n" << *plaintextTable << std::endl;
 
     // secret share it
-    std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(plaintextTable.get());
+    output = empManager->secretShareTable(plaintextTable.get());
     empManager->flush();
 
 
 
+    return output;
 }

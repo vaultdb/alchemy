@@ -9,9 +9,7 @@
 Operator::Operator(std::shared_ptr<Operator> &child) {
 
     myRef = std::shared_ptr<Operator>(this);
-
     child->setParent(myRef);
-
     children.push_back(child);
 
 }
@@ -28,26 +26,7 @@ Operator::Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rh
 
 
 Operator::~Operator() {
-    std::cout << "Freeing an operator at " << this << " with output " << output.get() << std::endl;
-
-
-    std::cout << "Parent: " << parent.get() << " children.size() " << children.size() << std::endl;
-    if(parent.get() != nullptr) {
-        std::cout << "Parent ref counter: " << parent.use_count() << std::endl;
-        parent.reset();
-    }
-
-    std::cout << "Freeing children: " << std::endl;
-    for(std::shared_ptr<Operator> child : children) {
-        child.reset();
-    }
-
-    std::cout << "Freeing output!" << std::endl;
-    if(output.get() != nullptr) {
-        output.reset();
-    }
-
-    std::cout << "Voila!" << std::endl;
+  // placeholder for debug
 }
 
 std::shared_ptr<QueryTable> Operator::run() {

@@ -37,7 +37,7 @@ public:
 
 
 
-    std::unique_ptr<QueryTable> secretShareTable(QueryTable *srcTable);
+    std::shared_ptr<QueryTable> secretShareTable(QueryTable *srcTable);
     QueryTuple secretShareTuple(QueryTuple *srcTuple,  const QuerySchema *schema, int party); // TODO: refactor this in query table to regularize access patterns wrt Table/Field
     QueryField secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, size_t length, int party);
     types::Value secretShareValue(const types::Value *srcValue, types::TypeId type, size_t length, int party);

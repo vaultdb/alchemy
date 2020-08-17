@@ -24,7 +24,11 @@ public:
     QueryTable(int num_tuples, int colCount, bool is_encrypted);
     QueryTable(const QueryTable & src);
     ~QueryTable() {
-        std::cout << "Freeing a query table at " << this << std::endl;
+        std::cout << "Freeing a query table at addr: " << this << std::endl;
+        schema_.release();
+        std::cout << "Released schema" << std::endl;
+        tuples_.release();
+        std::cout << "Released tuples." << std::endl;
     }
 
     static std::unique_ptr<QueryTable> GetQueryFromProtoStream(const void *buf,int len);
