@@ -5,14 +5,6 @@
 #ifndef _FILTER_H
 #define _FILTER_H
 
-// TODO: filter predicate is a function pointer, i.e.,
-// Value predicate(QueryTuple t)
-// return value is of type boolean or emp::Bit
-// e.g., https://www.cprogramming.com/tutorial/function-pointers.html
-
-//  void qsort(void *base, size_t nmemb, size_t size,
-//            int(*compar)(const void *, const void *));
-
 #include "operator.h"
 
 
@@ -22,7 +14,7 @@ class Filter : public Operator {
     types::Value(*predicate)(const QueryTuple &); // predicate function pointer
 
 public:
-    Filter(types::Value(*predicateFunction)(const QueryTuple & tuple), std::shared_ptr<Operator> child);
+    Filter(types::Value(*predicateFunction)(const QueryTuple & tuple), std::shared_ptr<Operator> &child);
     std::shared_ptr<QueryTable> runSelf() override;
 };
 

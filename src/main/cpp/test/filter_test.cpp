@@ -44,10 +44,10 @@ TEST_F(FilterTest, test_table_scan) {
                                  "(39460, 1, F) (dummy=false)\n"
                                  "(345252, 1, O) (dummy=false)\n"
                                  "(455171, 1, F) (dummy=false)\n"
-                                 "(523878, 4, O) (dummy=false)";
+                                 "(523878, 4, O) (dummy=false)\n";
 
-    SqlInput input("tpch_alice", sql, false);
-    std::shared_ptr<QueryTable> output = input.run();
+    std::shared_ptr<Operator> input = std::make_shared<SqlInput>("tpch_alice", sql, false);
+    std::shared_ptr<QueryTable> output = input->run();
 
     std::cout << *output << std::endl;
 
@@ -77,16 +77,21 @@ TEST_F(FilterTest, test_filter) {
                                  "(523878, 4, O) (dummy=false)\n";
 
 
-    std::shared_ptr<Operator> input = std::make_shared<SqlInput>("tpch_alice", sql, false);
-    //     Filter(types::Value(*predicateFunction)(const QueryTuple & tuple), std::shared_ptr<Operator> child);
+    std::shared_ptr<Operator> input(new SqlInput("tpch_alice", sql, false));
     std::shared_ptr<Operator> filter(new Filter(&predicateCall, input));
+    input->setParent(filter);
 
     std::shared_ptr<QueryTable> result = filter->run();
     std::cout << "Result: " << *result << std::endl;
 
-    std::cout << "Filter addr: " << &filter << std::endl;
+    std::cout << "Filter addr: " << filter.get() << " input addr: " << input.get() <<  std::endl;
 
     ASSERT_EQ(expectedOutput,  result->toString());
 
+    std::cout << "Test complete!" << std::endl;
+
+    // filter ref count is 1, we are creating 2 pointers instead of shared ptrs
+    // need a singleton to register the ops so that we can look them up - perhaps by an identifier
+    std::cout << "Filter reference count: " << filter.use_count() << std::endl;
 }
 

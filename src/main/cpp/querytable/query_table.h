@@ -23,7 +23,9 @@ private:
 public:
     QueryTable(int num_tuples, int colCount, bool is_encrypted);
     QueryTable(const QueryTable & src);
-    ~QueryTable() {}
+    ~QueryTable() {
+        std::cout << "Freeing a query table at " << this << std::endl;
+    }
 
     static std::unique_ptr<QueryTable> GetQueryFromProtoStream(const void *buf,int len);
   static std::string GetQueryTableXorString(QueryTable *input_table);

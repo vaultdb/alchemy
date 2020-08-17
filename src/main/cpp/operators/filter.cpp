@@ -4,7 +4,7 @@
 
 #include "filter.h"
 
-Filter::Filter(types::Value (*predicateFunction)(const QueryTuple &), std::shared_ptr<Operator> child)  : Operator(child) {
+Filter::Filter(types::Value (*predicateFunction)(const QueryTuple &), std::shared_ptr<Operator> & child)  : Operator(child) {
         predicate = predicateFunction;
 
 }
