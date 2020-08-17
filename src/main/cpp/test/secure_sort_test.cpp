@@ -48,7 +48,7 @@ TEST_F(secure_sort_test,  testSingleIntColumn) {
   def.share_map[EmpParty::ALICE] = ca;
   def.share_map[EmpParty::BOB] = cb;
   auto s_lineitem =
-      ShareData(lineitem->GetSchema(), my_party, lineitem.get(), def);
+      ShareData(lineitem->getSchema(), my_party, lineitem.get(), def);
 
   vector<int> ordinals{0};
   SortDef sortdef;
@@ -77,7 +77,7 @@ TEST_F(secure_sort_test,  testTwoIntColumns) {
   def.share_map[EmpParty::ALICE] = ca;
   def.share_map[EmpParty::BOB] = cb;
   auto s_lineitem =
-      ShareData(lineitem->GetSchema(), my_party, lineitem.get(), def);
+      ShareData(lineitem->getSchema(), my_party, lineitem.get(), def);
 
   vector<int> ordinals{0, 1};
   SortDef sortdef;
@@ -106,7 +106,7 @@ TEST_F(secure_sort_test,  testSingleFloatColumnEncrypted) {
   def.share_map[EmpParty::ALICE] = ca;
   def.share_map[EmpParty::BOB] = cb;
   auto s_lineitem =
-      ShareData(lineitem->GetSchema(), my_party, lineitem.get(), def);
+      ShareData(lineitem->getSchema(), my_party, lineitem.get(), def);
 
   vector<int> ordinals{0};
   SortDef sortdef;
@@ -135,7 +135,7 @@ TEST_F(secure_sort_test,  testSingleVarcharColumn) {
   def.share_map[EmpParty::ALICE] = ca;
   def.share_map[EmpParty::BOB] = cb;
   auto s_lineitem =
-      ShareData(lineitem->GetSchema(), my_party, lineitem.get(), def);
+      ShareData(lineitem->getSchema(), my_party, lineitem.get(), def);
 
   vector<int> ordinals{0};
   SortDef sortdef;
@@ -158,7 +158,7 @@ TEST_F(secure_sort_test, testSingleFloatColumnUnencrypted) {
   sortdef.ordinals = ordinals;
   Sort(qt.get(), sortdef);
   for (int i = 0; i < qt->getTupleCount(); i++) {
-    std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->getFloat32()
+    std::cout << qt->getTuple(i)->GetField(0)->GetValue()->getFloat32()
               << std::endl;
   }
 }
@@ -169,7 +169,7 @@ TEST_F(secure_sort_test, testLineItemSort) {
                              "SELECT l_orderkey FROM lineitem LIMIT 10");
   auto v = types::Value(true);
   for (int i = 0; i < 3; i++) {
-      qt->GetTuple(i * 2 + 2)->SetDummyTag(&v);
+      qt->getTuple(i * 2 + 2)->SetDummyTag(&v);
   }
   vector<int> ordinals{0, -1};
   SortDef sortdef;
@@ -178,8 +178,8 @@ TEST_F(secure_sort_test, testLineItemSort) {
   sortdef.ordinals = ordinals;
   Sort(qt.get(), sortdef);
   for (int i = 0; i < qt->getTupleCount(); i++) {
-    std::cout << qt->GetTuple(i)->GetField(0)->GetValue()->getInt64()
-              << ", D: " << qt->GetTuple(i)->GetDummyTag()->getBool()
+    std::cout << qt->getTuple(i)->GetField(0)->GetValue()->getInt64()
+              << ", D: " << qt->getTuple(i)->GetDummyTag()->getBool()
               << std::endl;
   }
 }
