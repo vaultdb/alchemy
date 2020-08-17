@@ -38,26 +38,26 @@ std::unique_ptr<QueryTable> Join(QueryTable *left, QueryTable *right,
                                  const JoinDef &def) {
   std::unique_ptr<QueryTable> output_table = std::make_unique<QueryTable>(
      left->getTupleCount() * right->getTupleCount(),
-     left->GetSchema()->getFieldCount() + right->GetSchema()->getFieldCount(),
-     left->GetIsEncrypted());
-  output_table->SetSchema(MergeSchema(left->GetSchema(), right->GetSchema()));
+     left->getSchema()->getFieldCount() + right->getSchema()->getFieldCount(),
+     left->isEncrypted());
+    output_table->setSchema(MergeSchema(left->getSchema(), right->getSchema()));
 
 
   int index = 0;
   for (int li = 0; li < left->getTupleCount(); li++) {
     for (int ri = 0; ri < right->getTupleCount(); ri++) {
-      auto lt = left->GetTuple(li);
-      auto rt = right->GetTuple(ri);
+      auto lt = left->getTuple(li);
+      auto rt = right->getTuple(ri);
       expression::Expression ex(lt->GetField(def.left_index)->GetValue(),
                                 rt->GetField(def.right_index)->GetValue(),
                                 def.id);
       auto output = ex.execute();
-      output_table->GetTuple(index)->SetIsEncrypted(
-          output_table->GetIsEncrypted());
-      output_table->GetTuple(index)->InitDummy();
-        output_table->GetTuple(index)->SetDummyTag(&output);
-      MergeTuples(output_table->GetTuple(index), lt, left->GetSchema(), rt,
-                  right->GetSchema());
+      output_table->getTuple(index)->SetIsEncrypted(
+              output_table->isEncrypted());
+      output_table->getTuple(index)->InitDummy();
+        output_table->getTuple(index)->SetDummyTag(&output);
+      MergeTuples(output_table->getTuple(index), lt, left->getSchema(), rt,
+                  right->getSchema());
       index++;
     }
   }

@@ -20,9 +20,9 @@ int power_of_two_less_than(int n) {
 // regardless if the swap occurs.
 //
 void SwapTuples(int t1, int t2, QueryTable *t, types::Value *swap_condition) {
-  auto tup1 = t->GetTuple(t1);
-  auto tup2 = t->GetTuple(t2);
-  for (int i = 0; i < t->GetSchema()->getFieldCount(); i++) {
+  auto tup1 = t->getTuple(t1);
+  auto tup2 = t->getTuple(t2);
+  for (int i = 0; i < t->getSchema()->getFieldCount(); i++) {
     vaultdb::expression::Expression ex(
         swap_condition, tup1->GetMutableField(i)->GetMutableValue(),
         tup2->GetMutableField(i)->GetMutableValue(),
@@ -42,7 +42,7 @@ void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir,
   types::Value v_and;
   bool comparator_init = false;
   bool v_and_init = true;
-  if (t->GetIsEncrypted()) {
+  if (t->isEncrypted()) {
     emp::Bit b1(comparator_init, emp::BOB);
     emp::Bit b2(v_and_init, emp::BOB);
     comparator = types::Value(b1);
@@ -64,11 +64,11 @@ void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir,
   for (auto idx : s.ordinals) {
     const vaultdb::types::Value *val1, *val2;
     if (idx == -1) {
-      val1 = t->GetTuple(t1)->GetDummyTag();
-      val2 = t->GetTuple(t2)->GetDummyTag();
+      val1 = t->getTuple(t1)->GetDummyTag();
+      val2 = t->getTuple(t2)->GetDummyTag();
     } else {
-      val1 = t->GetTuple(t1)->GetField(idx)->GetValue(),
-      val2 = t->GetTuple(t2)->GetField(idx)->GetValue();
+      val1 = t->getTuple(t1)->GetField(idx)->GetValue(),
+      val2 = t->getTuple(t2)->GetField(idx)->GetValue();
     }
     vaultdb::expression::Expression ex(
         val1, val2, (idx == -1) ? dummy_compare_dir : compare_dir);

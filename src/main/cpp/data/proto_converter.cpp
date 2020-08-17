@@ -41,10 +41,10 @@ ProtoToQuerySchema(const dbquery::Schema &proto_schema) {
 
 std::unique_ptr<QueryTable> ProtoToQueryTable(const dbquery::Table &t) {
   auto query_table = std::make_unique<QueryTable>(t.row_size(), t.schema().numcolumns(), false);
-  query_table->SetSchema(ProtoToQuerySchema(t.schema()));
+    query_table->setSchema(ProtoToQuerySchema(t.schema()));
   int index = 0;
   for (auto &r : t.row()) {
-    QueryTuple *tup = query_table->GetTuple(index);
+    QueryTuple *tup = query_table->getTuple(index);
     tup->SetIsEncrypted(false);
     tup->InitDummy();
     for (auto &c : r.column()) {
@@ -106,13 +106,13 @@ const dbquery::Schema GetTableXorSchema(const QuerySchema *s) {
 
 const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
   dbquery::Table t;
-  dbquery::Schema s = GetTableXorSchema(input_table->GetSchema());
+  dbquery::Schema s = GetTableXorSchema(input_table->getSchema());
   t.mutable_schema()->CopyFrom(s);
   for (int i = 0; i < input_table->getTupleCount(); i++) {
     dbquery::Row row;
-    for (int j = 0; j < input_table->GetSchema()->getFieldCount(); j++) {
+    for (int j = 0; j < input_table->getSchema()->getFieldCount(); j++) {
       dbquery::ColumnVal val;
-      switch (input_table->GetSchema()->GetField(j)->GetType()) {
+      switch (input_table->getSchema()->GetField(j)->GetType()) {
 
       case types::TypeId::INVALID:
       case types::TypeId::BOOLEAN:
@@ -126,7 +126,7 @@ const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
       case types::TypeId::ENCRYPTED_INTEGER32:
         throw;
       case types::TypeId::ENCRYPTED_INTEGER64:
-        auto s = input_table->GetTuple(i)
+        auto s = input_table->getTuple(i)
                 ->GetField(j)
                 ->GetValue()
                 ->getEmpInt()

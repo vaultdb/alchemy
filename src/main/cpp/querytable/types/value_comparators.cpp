@@ -322,6 +322,7 @@ Value Value::operator==(const Value &rhs) const {
 
     assert(opType == rhs.getType()); // do not compare if they are not the same type
 
+
     switch (opType) {
 
         case TypeId::BOOLEAN: {
@@ -420,5 +421,5 @@ Value vaultdb::types::Value::operator!() const {
 
     bool payload = getBool();
     return Value(!payload);
-    
+
 }

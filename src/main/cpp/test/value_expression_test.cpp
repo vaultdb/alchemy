@@ -5,10 +5,8 @@
 
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
-#include <emp-tool/emp-tool.h>
 #include <util/type_utilities.h>
 #include <stdexcept>
-#include <util/emp_manager.h>
 
 
 using namespace emp;

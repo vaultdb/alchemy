@@ -21,23 +21,22 @@ private:
 
 
 public:
-  static std::unique_ptr<QueryTable> GetQueryFromProtoStream(const void *buf,
-                                                             int len);
+    QueryTable(int num_tuples, int colCount, bool is_encrypted);
+    QueryTable(const QueryTable & src);
+    ~QueryTable() {}
+
+    static std::unique_ptr<QueryTable> GetQueryFromProtoStream(const void *buf,int len);
   static std::string GetQueryTableXorString(QueryTable *input_table);
-  const bool GetIsEncrypted() const;
-  QueryTable(int num_tuples, int colCount, bool is_encrypted);
-  void SetSchema(std::unique_ptr<QuerySchema> s);
-  void SetSchema(const QuerySchema *s);
-  const QuerySchema *GetSchema() const;
-  QueryTuple *GetTuple(int idx) const;
+  const bool isEncrypted() const;
+  void setSchema(std::unique_ptr<QuerySchema> s);
+  void setSchema(const QuerySchema *s);
+  const QuerySchema *getSchema() const;
+  QueryTuple *getTuple(int idx) const;
   unsigned int getTupleCount() const;
   std::unique_ptr<QuerySchema> ReleaseSchema();
   std::string toString() const;
   void putTuple(int idx, QueryTuple tuple);
 
-
-    // TODO: validate this - work in progress, use with caution!
-  //std::unique_ptr<QueryTable> reveal(EmpParty party) const;
 
   // TODO for encryption/decryption
   bool *serialize() const;

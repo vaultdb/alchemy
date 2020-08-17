@@ -84,36 +84,17 @@ void QueryTuple::SetIsEncrypted(bool isEncrypted) {
 }
 
 
-/*QueryTuple QueryTuple::reveal(EmpParty party) const {
-    // TODO: set it so that when it is XOR-encoded, it is encrypted
-    // this has downstream effects that need to be figured out first
-
-   /* QueryTuple *result = new QueryTuple(false);
-
-    bool revealedDummyFlag = (is_encrypted_) ? dummy_tag_.getEmpBit()->reveal<bool>((int) party)
-            : dummy_tag_.getBool();
-
-    result->SetDummyTag(revealedDummyFlag);
-
-    for(int i = 0; i < num_fields_; ++i) {
-        result->fields_[i] = this->fields_[i].reveal(party);
-    }
-
-    return result;
-
-   QueryTuple placeholder;
-   return placeholder;
-
-}*/
 
 std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple) {
-    strm << "(" << *(aTuple.GetField(0));
+    if((!aTuple.is_encrypted_ && !(aTuple.dummy_tag_.getBool())) // if it is real
+       || aTuple.is_encrypted_) { // or its status is unknown
+        strm << "(" << *(aTuple.GetField(0));
 
-    for(int i = 1; i < aTuple.fieldCount_; ++i)
-        strm << ", " << *(aTuple.GetField(i));
+        for (int i = 1; i < aTuple.fieldCount_; ++i)
+            strm << ", " << *(aTuple.GetField(i));
 
-    strm << ") (dummy=" << aTuple.dummy_tag_.getValueString() + ")";
-
+        strm << ") (dummy=" << aTuple.dummy_tag_.getValueString() + ")";
+    }
     return strm;
 
 

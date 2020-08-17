@@ -2,19 +2,19 @@
 #include "query_table.h"
 #include "../data/proto_converter.h"
 
-QueryTuple *QueryTable::GetTuple(int idx) const {
+QueryTuple *QueryTable::getTuple(int idx) const {
     return &tuples_[idx];
 }
 
-void QueryTable::SetSchema(const QuerySchema *s) {
+void QueryTable::setSchema(const QuerySchema *s) {
   QueryTable::schema_ = std::make_unique<QuerySchema>(*s);
 }
 
-void QueryTable::SetSchema(std::unique_ptr<QuerySchema> s) {
+void QueryTable::setSchema(std::unique_ptr<QuerySchema> s) {
   QueryTable::schema_ = std::move(s);
 }
 
-const QuerySchema *QueryTable::GetSchema() const { return schema_.get(); }
+const QuerySchema *QueryTable::getSchema() const { return schema_.get(); }
 
 std::unique_ptr<QuerySchema> QueryTable::ReleaseSchema() {
   return std::move(schema_);
@@ -38,7 +38,7 @@ QueryTable::QueryTable(int num_tuples, int colCount, bool is_encrypted)
 
 }
 
-const bool QueryTable::GetIsEncrypted() const { return is_encrypted_; }
+const bool QueryTable::isEncrypted() const { return is_encrypted_; }
 
 std::unique_ptr<QueryTable> QueryTable::GetQueryFromProtoStream(const void *buf,
                                                                 int len) {
@@ -53,17 +53,17 @@ std::string QueryTable::GetQueryTableXorString(QueryTable *input_table) {
 
 
 std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
-    int colCount = GetSchema()->getFieldCount();
+    int colCount = getSchema()->getFieldCount();
     int tupleCount = getTupleCount();
     bool isEncrypted = (party == EmpParty::XOR) ? true : false;
 
 
     std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, colCount, isEncrypted));
-    dstTable->SetSchema(GetSchema());
+    dstTable->setSchema(getSchema());
     QueryTuple *srcTuple; // initialized below
 
     for(int i = 0; i < tupleCount; ++i)  {
-        srcTuple = GetTuple(i);
+        srcTuple = getTuple(i);
 
         QueryTuple dstTuple(colCount, false);
         dstTuple = srcTuple->reveal(party);
@@ -101,8 +101,14 @@ std::ostream &operator<<(std::ostream &os, const QueryTable &table) {
 
     os <<  *(schemaPtr) << " isEncrypted? " << table.is_encrypted_ << std::endl;
 
-    for(int i = 0; i < table.getTupleCount(); ++i)
-        os << table.tuples_[i] << std::endl;
+    for(int i = 0; i < table.getTupleCount(); ++i) {
+        os << table.tuples_[i];
+
+        if(table.is_encrypted_ || (table.tuples_[i].GetDummyTag()->getBool() == false)) { // if we printed something
+            os << std::endl;
+        }
+    }
+
 
 
 
@@ -121,8 +127,8 @@ QueryTable & QueryTable::operator=(const QueryTable & src) {
     if(&src == this)
         return *this;
 
-    this->SetSchema(src.GetSchema());
-    this->is_encrypted_ = src.GetIsEncrypted();
+    this->setSchema(src.getSchema());
+    this->is_encrypted_ = src.isEncrypted();
     this->tupleCount_ = src.getTupleCount();
 
     tuples_ =
@@ -137,4 +143,21 @@ QueryTable & QueryTable::operator=(const QueryTable & src) {
 
 void QueryTable::putTuple(int idx, QueryTuple tuple) {
     tuples_[idx]  = tuple;
+}
+
+
+QueryTable::QueryTable(const QueryTable &src) {
+
+
+    this->setSchema(src.getSchema());
+    this->is_encrypted_ = src.isEncrypted();
+    this->tupleCount_ = src.getTupleCount();
+
+    tuples_ =
+            std::unique_ptr<QueryTuple[]>(new QueryTuple[tupleCount_]);
+
+    for(int i = 0; i < tupleCount_; ++i) {
+        tuples_[i] = src.tuples_[i];
+    }
+
 }

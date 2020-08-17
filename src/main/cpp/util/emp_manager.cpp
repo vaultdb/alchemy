@@ -12,7 +12,7 @@ EmpManager * EmpManager::instance = nullptr;
 std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
     size_t aliceSize = srcTable->getTupleCount(); // in tuples
     size_t bobSize = aliceSize;
-    int colCount = srcTable->GetSchema()->getFieldCount();
+    int colCount = srcTable->getSchema()->getFieldCount();
     QueryTuple dstTuple(colCount, true);
 
     if (party_ == EmpParty::ALICE) {
@@ -30,15 +30,15 @@ std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
 
     std::unique_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, colCount, true));
 
-    dstTable->SetSchema(srcTable->GetSchema());
+    dstTable->setSchema(srcTable->getSchema());
 
     int readTuple = aliceSize; // last tuple
 
 
     for (int i = 0; i < aliceSize; ++i) {
         --readTuple;
-        QueryTuple *srcTuple = (party_ == EmpParty::ALICE) ? srcTable->GetTuple(readTuple) : nullptr;
-        dstTuple = secretShareTuple(srcTuple,srcTable->GetSchema(), (int) EmpParty::ALICE);
+        QueryTuple *srcTuple = (party_ == EmpParty::ALICE) ? srcTable->getTuple(readTuple) : nullptr;
+        dstTuple = secretShareTuple(srcTuple,srcTable->getSchema(), (int) EmpParty::ALICE);
         dstTable->putTuple(i, dstTuple);
     }
 
@@ -47,8 +47,8 @@ std::unique_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
 
     int writeIdx = aliceSize;
     for (int i = 0; i < bobSize; ++i) {
-        QueryTuple *srcTuple =  (party_ == EmpParty::BOB) ?  srcTable->GetTuple(i) : nullptr;
-        dstTuple = secretShareTuple(srcTuple, srcTable->GetSchema(), (int) EmpParty::BOB);
+        QueryTuple *srcTuple =  (party_ == EmpParty::BOB) ?  srcTable->getTuple(i) : nullptr;
+        dstTuple = secretShareTuple(srcTuple, srcTable->getSchema(), (int) EmpParty::BOB);
         dstTable->putTuple(writeIdx, dstTuple);
         ++writeIdx;
     }

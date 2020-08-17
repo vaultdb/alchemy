@@ -1,34 +1,30 @@
 //
-// Created by madhav on 12/26/19.
+// Created by Jennie Rogers on 8/15/20.
 //
 
-#ifndef TESTING_FILTER_H
-#define TESTING_FILTER_H
+#ifndef _FILTER_H
+#define _FILTER_H
 
-#include <string>
+// TODO: filter predicate is a function pointer, i.e.,
+// Value predicate(QueryTuple t)
+// return value is of type boolean or emp::Bit
+// e.g., https://www.cprogramming.com/tutorial/function-pointers.html
 
-using namespace std;
+//  void qsort(void *base, size_t nmemb, size_t size,
+//            int(*compar)(const void *, const void *));
 
-struct Literal {
-};
+#include "operator.h"
 
-struct EqExp {
-};
 
-struct Expression {
-    union {
-        EqExp eq;
-        Literal lit;
-    };
-};
+// predicate function needs aware of encrypted or plaintext state of its inputs
+class Filter : public Operator {
 
-struct FilterDef {
-    Expression exp;
-};
+    types::Value(*predicate)(const QueryTuple &); // predicate function pointer
 
-class Filter {
-
+public:
+    Filter(types::Value(*predicateFunction)(const QueryTuple & tuple), std::shared_ptr<Operator> child);
+    std::shared_ptr<QueryTable> runSelf() override;
 };
 
 
-#endif //TESTING_FILTER_H
+#endif // _FILTER_H

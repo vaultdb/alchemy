@@ -15,7 +15,7 @@
 #define AGG_SUM(is_dummy, row, idx)                                            \
   do {                                                                         \
     not_dummy = emp::If(is_dummy, zero,                                        \
-                        *input->GetTuple(cursor)                               \
+                        *input->getTuple(cursor)                               \
                              ->GetField(def.scalarAggregates[idx].ordinal)                 \
                              ->GetValue()                                      \
                              ->getEmpInt());                                   \
@@ -29,7 +29,7 @@
 
 #define SCALAR_SUM(is_dummy, result_ref, row, idx)                                \
   do {                                                                         \
-    emp::Integer res = emp::If(*isDummy, zero, *input->GetTuple(row)           \
+    emp::Integer res = emp::If(*isDummy, zero, *input->getTuple(row)           \
     ->GetField(def.scalarAggregates[idx].ordinal) ->GetValue() ->getEmpInt());             \
     AddToCount(result_ref, res);                                               \
   } while (0)
@@ -43,11 +43,11 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 
   if (def.groupByOrdinals.size() == 0) {
     aggregate_output =
-        std::make_unique<QueryTable>(1, aggregateCount, input->GetIsEncrypted());
+        std::make_unique<QueryTable>(1, aggregateCount, input->isEncrypted());
   }
   else {
     aggregate_output = std::make_unique<QueryTable>(
-        input->getTupleCount(), aggregateCount, input->GetIsEncrypted());
+        input->getTupleCount(), aggregateCount, input->isEncrypted());
   }
 
   emp::Integer one(64, 1, emp::PUBLIC);
@@ -93,7 +93,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
     for (int row = 0; row < input->getTupleCount(); row++) {
 
       // dummy flag to determine if the tuplle is a Dummy value
-      *isDummy = *input->GetTuple(row)->GetDummyTag()->getEmpBit();
+      *isDummy = *input->getTuple(row)->GetDummyTag()->getEmpBit();
 
       for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
 
@@ -127,12 +127,12 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
     // creates resultant relation; inserting QueryField into tuple (just 1 row)
     for (int i = 0; i < def.scalarAggregates.size(); i++) {
       const QueryField f(i, result_vector[i]);
-      aggregate_output->GetTuple(0)->PutField(i, &f);
+      aggregate_output->getTuple(0)->PutField(i, &f);
     }
 
     vaultdb::types::Value curr_dval(
             true_dummy);
-      aggregate_output->GetTuple(0)->SetDummyTag(&curr_dval);
+      aggregate_output->getTuple(0)->SetDummyTag(&curr_dval);
   }
 
     // otherwise, if the GROUPBY clause is present
@@ -148,9 +148,9 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       // this condition holds true even for the very first tuple
       // Since the default value is true, result vector would remain unaffected
 
-      isDummy = *input->GetTuple(cursor)->GetDummyTag()->getEmpBit();
+      isDummy = *input->getTuple(cursor)->GetDummyTag()->getEmpBit();
       if (cursor != 0)
-        prev_dummy = *aggregate_output->GetTuple(cursor - 1)
+        prev_dummy = *aggregate_output->getTuple(cursor - 1)
                 ->GetDummyTag()
                 ->getEmpBit();
 
@@ -158,7 +158,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       for (int idx = 0; idx < def.groupByOrdinals.size(); idx++) {
         int ord = def.groupByOrdinals[idx];
         group_by =
-            *input->GetTuple(cursor)->GetField(ord)->GetValue()->getEmpInt();
+            *input->getTuple(cursor)->GetField(ord)->GetValue()->getEmpInt();
         groupby_eq =
             If((groupby_vector[idx] == group_by), groupby_eq, false_dummy);
         groupby_vector[idx] = group_by;
@@ -198,7 +198,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       // updating current dummy (nested If)
       if (cursor != 0) {
         isDummy = If(groupby_eq,
-                     If(*aggregate_output->GetTuple(cursor - 1)
+                     If(*aggregate_output->getTuple(cursor - 1)
                                 ->GetDummyTag()
                                 ->getEmpBit(),
                         true_dummy, false_dummy),
@@ -206,23 +206,23 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 
         // updating previous tuple's dummy (if necessary), and setting that value
         prev_dummy = If(groupby_eq,
-                        If(*aggregate_output->GetTuple(cursor - 1)
+                        If(*aggregate_output->getTuple(cursor - 1)
                                    ->GetDummyTag()
                                    ->getEmpBit(),
                            prev_dummy, true_dummy),
                         prev_dummy);
 
         vaultdb::types::Value prev_dval(prev_dummy);
-          aggregate_output->GetTuple(cursor - 1)->SetDummyTag(&prev_dval);
+          aggregate_output->getTuple(cursor - 1)->SetDummyTag(&prev_dval);
       }
 
       for (int i = 0; i < def.scalarAggregates.size(); i++) {
         const QueryField f(i, result_vector[i]);
-        aggregate_output->GetTuple(cursor)->PutField(i, &f);
+          aggregate_output->getTuple(cursor)->PutField(i, &f);
       }
       vaultdb::types::Value curr_dval(
               isDummy);
-        aggregate_output->GetTuple(cursor)->SetDummyTag(&curr_dval);
+        aggregate_output->getTuple(cursor)->SetDummyTag(&curr_dval);
     }
   }
   return aggregate_output;

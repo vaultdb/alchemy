@@ -247,7 +247,7 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
 
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
-                                                                         inputQuery, "lineitem", false);
+                                                                         inputQuery, false);
 
 
     std::cout << "Initial table: " << *inputTable << std::endl;
@@ -266,7 +266,7 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
     std::cout << "Expected:\n" << expectedTable << std::endl;
 
     // test a single value first
-    const QueryTuple *encryptedTuple = encryptedTable->GetTuple(0);
+    const QueryTuple *encryptedTuple = encryptedTable->getTuple(0);
     const QueryField *encryptedField = encryptedTuple->GetField(0);
     types::Value value = encryptedField->GetValue();
     types::Value revealedValue = value.reveal(EmpParty::PUBLIC);
@@ -305,7 +305,7 @@ TEST_F(EmpManagerTest, encrypt_table_two_cols) {
 
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
-                                                                         inputQuery, "lineitem", false);
+                                                                         inputQuery, false);
 
 
     std::cout << "Initial table: " << *inputTable << std::endl;
@@ -368,7 +368,7 @@ TEST_F(EmpManagerTest, encrypt_table) {
 
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
-                                                                         inputQuery, "lineitem", false);
+                                                                         inputQuery, false);
 
 
     std::cout << "Initial table: " << *inputTable << std::endl;
@@ -410,7 +410,7 @@ TEST_F(EmpManagerTest, encrypt_table_dummy_tag) {
 
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
-                                                                         inputQuery, "lineitem", true);
+                                                                         inputQuery, true);
 
 
     std::cout << "Initial table: " << *inputTable << std::endl;

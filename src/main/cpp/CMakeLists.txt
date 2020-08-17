@@ -121,7 +121,11 @@ set(sources
         util/type_utilities.cpp
 		util/data_utilities.cpp
 		querytable/types/encrypted/encrypted_float32_type.cpp
-		querytable/types/value_comparators.cpp querytable/types/value_arithmetic.cpp)
+		querytable/types/value_comparators.cpp
+		querytable/types/value_arithmetic.cpp
+		operators/operator.cpp
+		operators/sql_input.cpp
+		operators/encrypted_sql_input.cpp)
 
 
 
