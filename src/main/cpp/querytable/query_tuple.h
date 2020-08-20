@@ -12,7 +12,7 @@ class QueryTuple {
 private:
 
     vaultdb::types::Value dummy_tag_;
-  bool is_encrypted_{};
+    bool is_encrypted_{};
     std::unique_ptr<QueryField[]>  fields_;
     size_t fieldCount_;
 public:
@@ -31,7 +31,7 @@ public:
   void setIsEncrypted(bool isEncrypted);
   const vaultdb::QueryField getField(int ordinal) const;
   void putField(int ordinal, const QueryField &f);
-  void setDummyTag(types::Value &v);
+  void setDummyTag(const types::Value &v);
   const vaultdb::types::Value getDummyTag();
 
 

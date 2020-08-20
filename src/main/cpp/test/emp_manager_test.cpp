@@ -42,27 +42,27 @@ public:
     }
 
     static const std::string getExpectedOutput() {
-        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double lineitem.l_commitdate) isEncrypted? 0\n"
-                                               "(32, lithely regular deposits. fluffily          , N, 0.020000, 813024000.000000) (dummy=false)\n"
-                                               "(7, jole. excuses wake carefully alongside of   , N, 0.060000, 825033600.000000) (dummy=false)\n"
-                                               "(7, . slyly special requests haggl              , N, 0.030000, 828921600.000000) (dummy=false)\n"
-                                               "(7,  unusual reques                             , N, 0.100000, 827884800.000000) (dummy=false)\n"
-                                               "(7, es. instructions                            , N, 0.080000, 825724800.000000) (dummy=false)\n"
-                                               "(5, sts use slyly quickly special instruc       , R, 0.070000, 780451200.000000) (dummy=false)\n"
-                                               "(5, ts wake furiously                           , R, 0.020000, 778291200.000000) (dummy=false)\n"
-                                               "(3, nal foxes wake.                             , A, 0.060000, 753926400.000000) (dummy=false)\n"
-                                               "(1, arefully slyly ex                           , N, 0.070000, 823651200.000000) (dummy=false)\n"
-                                               "(1,  pending foxes. slyly re                    , N, 0.100000, 826761600.000000) (dummy=false)\n"
-                                               "(4, - quickly regular packages sleep. idly      , N, 0.030000, 818899200.000000) (dummy=false)\n"
-                                               "(33, ng to the furiously ironic package          , A, 0.090000, 756259200.000000) (dummy=false)\n"
-                                               "(33, gular theodolites                           , A, 0.020000, 757641600.000000) (dummy=false)\n"
-                                               "(33, . stealthily bold exc                       , A, 0.050000, 756777600.000000) (dummy=false)\n"
-                                               "(35, , regular tithe                             , N, 0.020000, 820627200.000000) (dummy=false)\n"
-                                               "(35, s are carefully against the f               , N, 0.060000, 820886400.000000) (dummy=false)\n"
-                                               "(35, . silent, unusual deposits boost            , N, 0.080000, 821664000.000000) (dummy=false)\n"
-                                               "(35, ly alongside of                             , N, 0.030000, 819763200.000000) (dummy=false)\n"
-                                               "(39, heodolites sleep silently pending foxes. ac , N, 0.070000, 850953600.000000) (dummy=false)\n"
-                                               "(64, ch slyly final, thin platelets.             , R, 0.050000, 779846400.000000) (dummy=false)\n";
+        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double .l_commitdate) isEncrypted? 0\n"
+                                               "(32, lithely regular deposits. fluffily          , N, 0.020000, 813024000.000000)\n"
+                                               "(7, jole. excuses wake carefully alongside of   , N, 0.060000, 825033600.000000)\n"
+                                               "(7, . slyly special requests haggl              , N, 0.030000, 828921600.000000)\n"
+                                               "(7,  unusual reques                             , N, 0.100000, 827884800.000000)\n"
+                                               "(7, es. instructions                            , N, 0.080000, 825724800.000000)\n"
+                                               "(5, sts use slyly quickly special instruc       , R, 0.070000, 780451200.000000)\n"
+                                               "(5, ts wake furiously                           , R, 0.020000, 778291200.000000)\n"
+                                               "(3, nal foxes wake.                             , A, 0.060000, 753926400.000000)\n"
+                                               "(1, arefully slyly ex                           , N, 0.070000, 823651200.000000)\n"
+                                               "(1,  pending foxes. slyly re                    , N, 0.100000, 826761600.000000)\n"
+                                               "(4, - quickly regular packages sleep. idly      , N, 0.030000, 818899200.000000)\n"
+                                               "(33, ng to the furiously ironic package          , A, 0.090000, 756259200.000000)\n"
+                                               "(33, gular theodolites                           , A, 0.020000, 757641600.000000)\n"
+                                               "(33, . stealthily bold exc                       , A, 0.050000, 756777600.000000)\n"
+                                               "(35, , regular tithe                             , N, 0.020000, 820627200.000000)\n"
+                                               "(35, s are carefully against the f               , N, 0.060000, 820886400.000000)\n"
+                                               "(35, . silent, unusual deposits boost            , N, 0.080000, 821664000.000000)\n"
+                                               "(35, ly alongside of                             , N, 0.030000, 819763200.000000)\n"
+                                               "(39, heodolites sleep silently pending foxes. ac , N, 0.070000, 850953600.000000)\n"
+                                               "(64, ch slyly final, thin platelets.             , R, 0.050000, 779846400.000000)\n";
 
         return queryOutput;
 
@@ -90,27 +90,20 @@ public:
     static const std::string getExpectedOutputDummyTag() {
 
 
-        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double lineitem.l_commitdate) isEncrypted? 0\n"
-                                               "(32, lithely regular deposits. fluffily          , N, 0.020000, 813024000.000000) (dummy=false)\n"
-                                               "(7, jole. excuses wake carefully alongside of   , N, 0.060000, 825033600.000000) (dummy=false)\n"
-                                               "(7, . slyly special requests haggl              , N, 0.030000, 828921600.000000) (dummy=false)\n"
-                                               "(7,  unusual reques                             , N, 0.100000, 827884800.000000) (dummy=false)\n"
-                                               "(7, es. instructions                            , N, 0.080000, 825724800.000000) (dummy=false)\n"
-                                               "(5, sts use slyly quickly special instruc       , R, 0.070000, 780451200.000000) (dummy=true)\n"
-                                               "(5, ts wake furiously                           , R, 0.020000, 778291200.000000) (dummy=true)\n"
-                                               "(3, nal foxes wake.                             , A, 0.060000, 753926400.000000) (dummy=true)\n"
-                                               "(1, arefully slyly ex                           , N, 0.070000, 823651200.000000) (dummy=false)\n"
-                                               "(1,  pending foxes. slyly re                    , N, 0.100000, 826761600.000000) (dummy=false)\n"
-                                               "(4, - quickly regular packages sleep. idly      , N, 0.030000, 818899200.000000) (dummy=false)\n"
-                                               "(33, ng to the furiously ironic package          , A, 0.090000, 756259200.000000) (dummy=true)\n"
-                                               "(33, gular theodolites                           , A, 0.020000, 757641600.000000) (dummy=true)\n"
-                                               "(33, . stealthily bold exc                       , A, 0.050000, 756777600.000000) (dummy=true)\n"
-                                               "(35, , regular tithe                             , N, 0.020000, 820627200.000000) (dummy=false)\n"
-                                               "(35, s are carefully against the f               , N, 0.060000, 820886400.000000) (dummy=false)\n"
-                                               "(35, . silent, unusual deposits boost            , N, 0.080000, 821664000.000000) (dummy=false)\n"
-                                               "(35, ly alongside of                             , N, 0.030000, 819763200.000000) (dummy=false)\n"
-                                               "(39, heodolites sleep silently pending foxes. ac , N, 0.070000, 850953600.000000) (dummy=false)\n"
-                                               "(64, ch slyly final, thin platelets.             , R, 0.050000, 779846400.000000) (dummy=true)\n";
+        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double .l_commitdate) isEncrypted? 0\n"
+                                               "(32, lithely regular deposits. fluffily          , N, 0.020000, 813024000.000000)\n"
+                                               "(7, jole. excuses wake carefully alongside of   , N, 0.060000, 825033600.000000)\n"
+                                               "(7, . slyly special requests haggl              , N, 0.030000, 828921600.000000)\n"
+                                               "(7,  unusual reques                             , N, 0.100000, 827884800.000000)\n"
+                                               "(7, es. instructions                            , N, 0.080000, 825724800.000000)\n"
+                                               "(1, arefully slyly ex                           , N, 0.070000, 823651200.000000)\n"
+                                               "(1,  pending foxes. slyly re                    , N, 0.100000, 826761600.000000)\n"
+                                               "(4, - quickly regular packages sleep. idly      , N, 0.030000, 818899200.000000)\n"
+                                               "(35, , regular tithe                             , N, 0.020000, 820627200.000000)\n"
+                                               "(35, s are carefully against the f               , N, 0.060000, 820886400.000000)\n"
+                                               "(35, . silent, unusual deposits boost            , N, 0.080000, 821664000.000000)\n"
+                                               "(35, ly alongside of                             , N, 0.030000, 819763200.000000)\n"
+                                               "(39, heodolites sleep silently pending foxes. ac , N, 0.070000, 850953600.000000)\n";
 
         return queryOutput;
 
@@ -258,10 +251,10 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
     empManager->flush();
 
     string expectedTable = "(#0 int32 lineitem.l_orderkey) isEncrypted? 0\n"
-                           "(1) (dummy=false)\n"
-                           "(1) (dummy=false)\n"
-                           "(4) (dummy=false)\n"
-                           "(33) (dummy=false)\n";
+                           "(1)\n"
+                           "(1)\n"
+                           "(4)\n"
+                           "(33)\n";
 
     std::cout << "Expected:\n" << expectedTable << std::endl;
 
@@ -317,26 +310,26 @@ TEST_F(EmpManagerTest, encrypt_table_two_cols) {
     empManager->flush();
 
     string expectedTable = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment) isEncrypted? 0\n"
-                           "(32, lithely regular deposits. fluffily          ) (dummy=false)\n"
-                           "(7, jole. excuses wake carefully alongside of   ) (dummy=false)\n"
-                           "(7, . slyly special requests haggl              ) (dummy=false)\n"
-                           "(7,  unusual reques                             ) (dummy=false)\n"
-                           "(7, es. instructions                            ) (dummy=false)\n"
-                           "(5, sts use slyly quickly special instruc       ) (dummy=false)\n"
-                           "(5, ts wake furiously                           ) (dummy=false)\n"
-                           "(3, nal foxes wake.                             ) (dummy=false)\n"
-                           "(1, arefully slyly ex                           ) (dummy=false)\n"
-                           "(1,  pending foxes. slyly re                    ) (dummy=false)\n"
-                           "(4, - quickly regular packages sleep. idly      ) (dummy=false)\n"
-                           "(33, ng to the furiously ironic package          ) (dummy=false)\n"
-                           "(33, gular theodolites                           ) (dummy=false)\n"
-                           "(33, . stealthily bold exc                       ) (dummy=false)\n"
-                           "(35, , regular tithe                             ) (dummy=false)\n"
-                           "(35, s are carefully against the f               ) (dummy=false)\n"
-                           "(35, . silent, unusual deposits boost            ) (dummy=false)\n"
-                           "(35, ly alongside of                             ) (dummy=false)\n"
-                           "(39, heodolites sleep silently pending foxes. ac ) (dummy=false)\n"
-                           "(64, ch slyly final, thin platelets.             ) (dummy=false)\n";
+                           "(32, lithely regular deposits. fluffily          )\n"
+                           "(7, jole. excuses wake carefully alongside of   )\n"
+                           "(7, . slyly special requests haggl              )\n"
+                           "(7,  unusual reques                             )\n"
+                           "(7, es. instructions                            )\n"
+                           "(5, sts use slyly quickly special instruc       )\n"
+                           "(5, ts wake furiously                           )\n"
+                           "(3, nal foxes wake.                             )\n"
+                           "(1, arefully slyly ex                           )\n"
+                           "(1,  pending foxes. slyly re                    )\n"
+                           "(4, - quickly regular packages sleep. idly      )\n"
+                           "(33, ng to the furiously ironic package          )\n"
+                           "(33, gular theodolites                           )\n"
+                           "(33, . stealthily bold exc                       )\n"
+                           "(35, , regular tithe                             )\n"
+                           "(35, s are carefully against the f               )\n"
+                           "(35, . silent, unusual deposits boost            )\n"
+                           "(35, ly alongside of                             )\n"
+                           "(39, heodolites sleep silently pending foxes. ac )\n"
+                           "(64, ch slyly final, thin platelets.             )\n";
 
     std::cout << "Expected:\n" << expectedTable << std::endl;
 
@@ -434,7 +427,6 @@ TEST_F(EmpManagerTest, encrypt_table_dummy_tag) {
 
 
 }
-
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

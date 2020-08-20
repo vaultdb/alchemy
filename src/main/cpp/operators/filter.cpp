@@ -12,15 +12,18 @@ Filter::Filter(std::shared_ptr<PredicateClass> &predicateClass, std::shared_ptr<
 std::shared_ptr<QueryTable> Filter::runSelf() {
 
     std::shared_ptr<QueryTable> input = children[0]->getOutput();
-    // deep copy new output
+
+    std::cout << "Sql input table: " << *input << std::endl;
+
+    // deep copy new output, then just modify the dummy tag
     output = std::shared_ptr<QueryTable>(new QueryTable(*input));
 
     for(int i = 0; i < output->getTupleCount(); ++i) {
         QueryTuple tuple = output->getTuple(i);
         types::Value dummyTag = predicate->predicateCall(tuple);
-        std::cout << "Have dummy tag: " << dummyTag.reveal() << " at " << dummyTag;
         tuple.setDummyTag(dummyTag);
-       std::cout << ", tuple dummy tag: " << output->getTuple(i).getDummyTag().reveal() << std::endl;
+
+        output->setTupleDummyTag(i, dummyTag);
     }
     return output;
 }

@@ -36,6 +36,7 @@ public:
   unsigned int getTupleCount() const;
   std::string toString() const;
   void putTuple(int idx, const QueryTuple & tuple);
+  void setTupleDummyTag(const int & tupleIdx, const types::Value & dummyTag);
 
 
   // TODO for encryption/decryption

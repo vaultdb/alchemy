@@ -1,7 +1,3 @@
-//
-// Created by madhav on 1/29/20.
-//
-
 #ifndef _DEFS_H
 #define _DEFS_H
 

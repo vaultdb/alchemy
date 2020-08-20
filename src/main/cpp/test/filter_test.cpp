@@ -35,16 +35,16 @@ TEST_F(FilterTest, test_table_scan) {
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 10";
     std::string expectedOutput = "(#0 int32 lineitem.l_orderkey, #1 int32 lineitem.l_linenumber, #2 varchar(1) lineitem.l_linestatus) isEncrypted? 0\n"
-                                 "(85090, 6, O) (dummy=false)\n"
-                                 "(373158, 5, F) (dummy=false)\n"
-                                 "(1028, 7, F) (dummy=false)\n"
-                                 "(435171, 1, O) (dummy=false)\n"
-                                 "(338759, 2, F) (dummy=false)\n"
-                                 "(486753, 2, O) (dummy=false)\n"
-                                 "(39460, 1, F) (dummy=false)\n"
-                                 "(345252, 1, O) (dummy=false)\n"
-                                 "(455171, 1, F) (dummy=false)\n"
-                                 "(523878, 4, O) (dummy=false)\n";
+                                 "(85090, 6, O)\n"
+                                 "(373158, 5, F)\n"
+                                 "(1028, 7, F)\n"
+                                 "(435171, 1, O)\n"
+                                 "(338759, 2, F)\n"
+                                 "(486753, 2, O)\n"
+                                 "(39460, 1, F)\n"
+                                 "(345252, 1, O)\n"
+                                 "(455171, 1, F)\n"
+                                 "(523878, 4, O)\n";
 
     std::shared_ptr<Operator> input = std::make_shared<SqlInput>("tpch_alice", sql, false);
     std::shared_ptr<QueryTable> output = input->run();
@@ -83,10 +83,10 @@ public:
 TEST_F(FilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 10";
     std::string expectedOutput = "(#0 int32 lineitem.l_orderkey, #1 int32 lineitem.l_linenumber, #2 varchar(1) lineitem.l_linestatus) isEncrypted? 0\n"
-                                 "(435171, 1, O) (dummy=false)\n"
-                                 "(39460, 1, F) (dummy=false)\n"
-                                 "(345252, 1, O) (dummy=false)\n"
-                                 "(455171, 1, F) (dummy=false)\n";
+                                 "(435171, 1, O)\n"
+                                 "(39460, 1, F)\n"
+                                 "(345252, 1, O)\n"
+                                 "(455171, 1, F)\n";
 
     std::shared_ptr<Operator> input(new SqlInput("tpch_alice", sql, false));
 

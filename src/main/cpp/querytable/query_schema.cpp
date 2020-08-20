@@ -3,7 +3,6 @@
 
 QuerySchema::QuerySchema(const int &num_fields) : fieldCount_(num_fields) {
     fields_.reserve(num_fields);
-    assert(fieldCount_ == 5);
 
 
 
@@ -26,7 +25,6 @@ int QuerySchema::getFieldCount() const {
 
 QuerySchema::QuerySchema(const QuerySchema &s) : fieldCount_(s.getFieldCount()){
     fields_.reserve(fieldCount_);
-    assert(fieldCount_ == 5);
 
   for (int i = 0; i < s.getFieldCount(); i++) {
       fields_[i] = s.getField(i);

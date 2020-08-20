@@ -52,8 +52,8 @@ void QueryTuple::putField(int ordinal, const QueryField &f) {
     fields_[ordinal].setValue(src);
 }
 
-void QueryTuple::setDummyTag(types::Value &v) {
-    dummy_tag_.setValue(v);
+void QueryTuple::setDummyTag(const types::Value &v) {
+    dummy_tag_ = v;
 }
 
 void QueryTuple::initDummy() {

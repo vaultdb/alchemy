@@ -415,9 +415,9 @@ Value vaultdb::types::Value::operator!() const {
     assert(valType == TypeId::ENCRYPTED_BOOLEAN || valType == TypeId::BOOLEAN);
 
     if(valType == TypeId::ENCRYPTED_BOOLEAN) {
-        std::shared_ptr<emp::Bit> payload = getEmpBit();
-        *payload = !(*payload);
-        return Value(payload.get()); // setting up a new shared_ptr
+        emp::Bit payload = *getEmpBit();
+        payload = !payload;
+        return Value(payload); // setting up a new shared_ptr
     }
 
     bool payload = getBool();
