@@ -96,14 +96,30 @@ int64_t Value::getInt64() const {
         }
     }
 
-    emp::Integer Value::getEmpInt()  const { return  *value_.emp_integer_; }
-    emp::Bit Value::getEmpBit()  const { return *value_.emp_bit_; }
+    emp::Integer Value::getEmpInt()  const {
+        if(value_.emp_integer_.get() == nullptr) // do not return uninitialized vals
+            throw;
+
+        return  *value_.emp_integer_;
+    }
+    emp::Bit Value::getEmpBit()  const {
+        if(value_.emp_bit_.get() == nullptr) // do not return uninitialized vals
+            throw;
+
+       return *value_.emp_bit_;
+    }
 
     emp::Float32 Value::getEmpFloat32() const {
+        if(value_.emp_float32_.get() == nullptr) // do not return uninitialized vals
+            throw;
+
         return  *value_.emp_float32_;
     }
 
     emp::Float Value::getEmpFloat64() const {
+        if(value_.emp_float_.get() == nullptr) // do not return uninitialized vals
+            throw;
+        
         return  *value_.emp_float_;
     }
 
