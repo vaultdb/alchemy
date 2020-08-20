@@ -70,7 +70,7 @@ public:
     ~FilterPredicate() {}
     types::Value predicateCall(const QueryTuple & aTuple) const override {
 
-        Value field = *(aTuple.getField(1)->GetValue());
+        Value field = aTuple.getField(1).getValue();
         Value res = (field == cmp);
         return  !res;  // (!) because dummy is false if our selection criteria is satisfied
     }

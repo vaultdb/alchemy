@@ -41,7 +41,7 @@ public:
 
     // filtering for l_linenumber = 1
     Value predicateCall(const QueryTuple & aTuple) const override {
-        Value field = *(aTuple.getField(1)->GetValue());
+        Value field = aTuple.getField(1).getValue();
 
         Value res = field == encryptedLineNumber;
         std::cout << "Comparing " << field.reveal() << " to " << encryptedLineNumber.reveal() << " result: " <<  res.reveal() <<  " at " << &res << std::endl;

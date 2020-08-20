@@ -299,6 +299,8 @@ void Value::setValue(const std::string & aString) {
     if(&other == this)
         return *this;
 
+
+
     setValue(other);
     return *this;
     }

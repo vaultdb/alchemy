@@ -41,7 +41,9 @@ PsqlDataProvider::GetQueryTable(std::string dbname, std::string query_string, bo
 
     std::unique_ptr<QueryTable> dstTable = std::make_unique<QueryTable>(rowCount, colCount, false);
     std::unique_ptr<QuerySchema> schema = getSchema(pqxxResult, hasDummyTag);
-    dstTable->setSchema(*schema.get());
+    std::cout << "Working with schema: " << *schema << std::endl;
+
+    dstTable->setSchema(*schema);
 
     int counter = 0;
     for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
@@ -74,7 +76,10 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
 
         srcTable = getTableName(tableId);
 
+        std::cout << "Initializing a field with type: " << TypeUtilities::getTypeIdString(type) << std::endl;
         QueryFieldDesc fieldDesc(i, true, colName, srcTable, type);
+        std::cout << "Resulting field: " << fieldDesc << std::endl;
+
        if(type == vaultdb::types::TypeId::VARCHAR) {
 
            size_t stringLength = getVarCharLength(srcTable, colName);
@@ -92,6 +97,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
         assert(dummyType == vaultdb::types::TypeId::BOOLEAN); // check that dummy tag is a boolean
     }
 
+   std::cout << "Result: " << *result << std::endl;
     return result;
 }
 

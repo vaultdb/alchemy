@@ -12,23 +12,23 @@
 class QuerySchema {
 private:
 
-    std::unique_ptr<QueryFieldDesc[]>  fields_;
+    std::vector<QueryFieldDesc> fields_;
     size_t fieldCount_;
 
 public:
-    explicit QuerySchema(int num_fields);
+    explicit QuerySchema(const int &num_fields);
     QuerySchema(const QuerySchema &s);
 
     [[nodiscard]] int getFieldCount() const;
 
 
-  void putField(int index, QueryFieldDesc &fd);
+  void putField(const int &index, const QueryFieldDesc &fd);
 
   // returns size in bits
    size_t size() const;
 
 
-    const QueryFieldDesc getField(int i) const;
+    const QueryFieldDesc getField(const int &i) const;
 
     friend std::ostream &operator<<(std::ostream &os, const QuerySchema &schema);
     QuerySchema& operator=(const QuerySchema& other);

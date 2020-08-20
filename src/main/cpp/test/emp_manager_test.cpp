@@ -266,9 +266,9 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
     std::cout << "Expected:\n" << expectedTable << std::endl;
 
     // test a single value first
-    const QueryTuple *encryptedTuple = encryptedTable->getTuple(0);
-    const QueryField *encryptedField = encryptedTuple->getField(0);
-    types::Value value = encryptedField->GetValue();
+    const QueryTuple encryptedTuple = encryptedTable->getTuple(0);
+    const QueryField encryptedField = encryptedTuple.getField(0);
+    types::Value value = encryptedField.getValue();
     types::Value revealedValue = value.reveal(EmpParty::PUBLIC);
 
     ASSERT_EQ(1, revealedValue.getInt32());

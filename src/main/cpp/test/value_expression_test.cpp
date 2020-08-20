@@ -57,6 +57,25 @@ TEST_F(ValueExpressionTest, test_int32_comparator) {
 
 
 
+
+// demo passing in an expression to query operator
+TEST_F(ValueExpressionTest, test_int32_expr) {
+
+    Value a((int32_t) 5);
+    Value b((int32_t) 10);
+    Value c((int32_t) 25);
+
+    Value sum = a  + b;
+    Value compare = sum < c;
+
+
+
+
+    ASSERT_EQ(sum.getInt32(), 15);
+    ASSERT_EQ(compare.getBool(), true);
+
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
@@ -68,26 +87,5 @@ int main(int argc, char **argv) {
 
 
 
-/*
- * TODO(jennie): demo how to use constexpr or const eval to declare and evaluate predicates w/in ops
- * May need to upgrade to C++20 to make this happen
- *
- * constexpr Value predicate(Value a, Value b, Value c)
-{
-    return (a + b) < c;
-}
 
 
-// demo passing in an expression to query operator
-TEST_F(ValueExpressionTest, test_int32_expr) {
-
-    Value a((int32_t) 5);
-    Value b((int32_t) 10);
-    Value c((int32_t) 25);
-
-
-
-
-    ASSERT_EQ(sum.getInt32(), 15);
-
-}*/

@@ -6,7 +6,7 @@ QueryField::QueryField(const QueryField &qf)
     : ordinal(qf.ordinal), value_(qf.value_) {}
 
 types::Value QueryField::getValue() const {
-    value_;
+   return value_;
 }
 
 

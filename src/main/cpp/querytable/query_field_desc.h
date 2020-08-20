@@ -41,7 +41,7 @@ public:
 
   QueryFieldDesc(const QueryFieldDesc &f)
       : ordinal_(f.ordinal_),
-        is_private_(f.is_private_), name_(f.name_), table_name(f.table_name), string_length(f.string_length)
+        is_private_(f.is_private_), name_(f.name_), table_name(f.table_name), string_length(f.string_length), type_(f.type_)
         {};
 
   QueryFieldDesc(const QueryFieldDesc &f, vaultdb::types::TypeId type,
@@ -52,17 +52,16 @@ public:
 
   QueryFieldDesc(QueryFieldDesc &f, int col_num)
       :  ordinal_(col_num), is_private_(f.is_private_),
-        name_(f.name_), table_name(f.table_name), string_length(0)
+        name_(f.name_), table_name(f.table_name), string_length(0), type_(f.type_)
         {};
 
   QueryFieldDesc(int anOrdinal, bool is_priv, const std::string &n,
-                 const std::string &tab, vaultdb::types::TypeId type)
-      : type_(type), ordinal_(anOrdinal), is_private_(is_priv), name_(n),
+                 const std::string &tab, const vaultdb::types::TypeId & aType)
+      : type_(aType), ordinal_(anOrdinal), is_private_(is_priv), name_(n),
         table_name(tab), string_length(0)
         {};
 
     void setStringLength(size_t i);
-    void initialize(QueryFieldDesc src);
 
     friend std::ostream &operator<<(std::ostream &os, const QueryFieldDesc &desc);
     QueryFieldDesc& operator=(const QueryFieldDesc& other);

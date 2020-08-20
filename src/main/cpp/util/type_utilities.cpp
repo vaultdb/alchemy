@@ -29,7 +29,8 @@
         case vaultdb::types::TypeId::ENCRYPTED_VARCHAR:
             return std::string("encrypted varchar");
         default:
-            return std::string("unsupported type!");
+            std::string typeIdStr = std::to_string((int) typeId);
+            return std::string("unsupported type! " + typeIdStr);
     }
 
 

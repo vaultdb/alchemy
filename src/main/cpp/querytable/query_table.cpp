@@ -7,7 +7,9 @@ QueryTuple QueryTable::getTuple(int idx) const {
 }
 
 void QueryTable::setSchema(const QuerySchema & s) {
-    schema_ = QuerySchema(s);
+    std::cout << "Received schema: " << s << " in constructor." << std::endl;
+    schema_ = s;
+    std::cout << "***Stored schema: " << schema_ << std::endl;
 }
 
 

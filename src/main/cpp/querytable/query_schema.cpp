@@ -1,28 +1,34 @@
 #include <iostream>
 #include "query_schema.h"
 
-QuerySchema::QuerySchema(int num_fields) : fieldCount_(num_fields) {
-    fields_ =
-            std::unique_ptr<QueryFieldDesc[]>(new QueryFieldDesc[fieldCount_]);
+QuerySchema::QuerySchema(const int &num_fields) : fieldCount_(num_fields) {
+    fields_.reserve(num_fields);
 
 
 }
 
-void QuerySchema::putField(int index, QueryFieldDesc &fd) {
-    fields_[index].initialize(fd); // copy field desc out into newly-allocated member variable
+void QuerySchema::putField(const int &idx, const QueryFieldDesc &fd) {
+    std::cout << "Putting field: " << fd << std::endl;
+    QueryFieldDesc tmp = fd;
+
+    std::cout << "Copied out tmp=" << tmp << std::endl;
+    fields_[idx]  = fd; // copy field desc out into newly-allocated member variable
+
+    std::cout << "In putfield, took in: " << fd << " stored: " << fields_[idx] << std::endl;
+    assert(fd.getType() == fields_[idx].getType());
 }
 
-const QueryFieldDesc QuerySchema::getField(int i) const {
-  return fields_[i];
+const QueryFieldDesc QuerySchema::getField(const int &i) const {
+  return fields_.at(i);
 }
+
 int QuerySchema::getFieldCount() const {
     return fieldCount_;
 }
 
 
 QuerySchema::QuerySchema(const QuerySchema &s) : fieldCount_(s.getFieldCount()){
-    fields_ =
-            std::unique_ptr<QueryFieldDesc[]>(new QueryFieldDesc[fieldCount_]);
+    fields_.reserve(fieldCount_);
 
   for (int i = 0; i < s.getFieldCount(); i++) {
       fields_[i] = s.getField(i);
@@ -55,13 +61,16 @@ std::ostream &operator<<(std::ostream &os, const QuerySchema &schema) {
 
 QuerySchema &QuerySchema::operator=(const QuerySchema &other) {
 
-    fields_ =
-            std::unique_ptr<QueryFieldDesc[]>(new QueryFieldDesc[other.getFieldCount()]);
+    std::cout << "Assigning from " << other << std::endl;
+    fields_.reserve(other.getFieldCount());
 
     for (int i = 0; i < other.getFieldCount(); i++) {
-        fields_[i] = other.getField(i);
+        QueryFieldDesc aFieldDesc = other.fields_[i];
+        std::cout << "Src field: " << aFieldDesc << std::endl;
+        fields_[i] = aFieldDesc;
     }
 
+    return *this;
 }
 
 
