@@ -11,7 +11,7 @@ Value::Value() {}
 
 
 Value::Value(const Value &val) {
-        setValue(&val);
+        setValue(val);
 }
 
 Value::Value(const int64_t & val) {

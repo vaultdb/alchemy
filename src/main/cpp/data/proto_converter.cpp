@@ -74,7 +74,7 @@ std::unique_ptr<QueryTable> ProtoToQueryTable(const dbquery::Table &t) {
       default:
         throw;
       }
-        tup.putField(c.first, std::move(qf));
+        tup.putField(c.first, *qf);
     }
     index++;
   }

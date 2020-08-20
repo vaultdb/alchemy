@@ -30,7 +30,6 @@ public:
 
   void setIsEncrypted(bool isEncrypted);
   const vaultdb::QueryField getField(int ordinal) const;
-  void putField(int ordinal, const std::unique_ptr<QueryField> & f);
   void putField(int ordinal, const QueryField &f);
   void setDummyTag(types::Value &v);
   const vaultdb::types::Value getDummyTag();

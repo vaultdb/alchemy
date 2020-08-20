@@ -82,9 +82,8 @@ bool *QueryTable::serialize() const {
 
 std::ostream &operator<<(std::ostream &os, const QueryTable &table) {
 
-    QuerySchema schema = table.schema_;
 
-    os <<  schema << " isEncrypted? " << table.is_encrypted_ << std::endl;
+    os <<  table.getSchema() << " isEncrypted? " << table.is_encrypted_ << std::endl;
 
     for(int i = 0; i < table.getTupleCount(); ++i) {
         os << table.tuples_[i];

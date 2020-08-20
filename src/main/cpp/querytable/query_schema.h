@@ -21,7 +21,7 @@ public:
 
     [[nodiscard]] int getFieldCount() const;
 
-
+    void appendField(const QueryFieldDesc &fd);
   void putField(const int &index, const QueryFieldDesc &fd);
 
   // returns size in bits

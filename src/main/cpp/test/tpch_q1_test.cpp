@@ -62,7 +62,7 @@ protected:
             " FROM lineitem\n"
             " ORDER BY l_returnflag, l_linestatus"; // TODO: use merge sort after secret sharing
 
-    auto inputTable = pq.GetQueryTable(db_name,
+    auto inputTable = pq.getQueryTable(db_name,
                                  inputQuery, "lineitem", true);
     std::cout<<"Party = "<<FLAGS_party << " received " << inputTable->getTupleCount() << " tuples\n";
 
@@ -97,7 +97,7 @@ protected:
    // TODO: shashank: verify the reveal method in QueryTable
     std::unique_ptr<QueryTable> decrypted = aggregated->reveal(EmpParty::PUBLIC);
 
-    std::unique_ptr<QueryTable> expected = pq.GetQueryTable("dbname=tpch_unioned",
+    std::unique_ptr<QueryTable> expected = pq.getQueryTable("dbname=tpch_unioned",
                                             baseQuery, "lineitem", false);
 
 
@@ -154,7 +154,7 @@ TEST_F(tpch_q1_test, TpcHQ1FullObliviousTruncated) {
                       " FROM lineitem\n"
                       " ORDER BY l_returnflag, l_linestatus LIMIT 10"; // TODO: use merge sort after secret sharing
 
-  auto inputTable = pq.GetQueryTable(db_name,
+  auto inputTable = pq.getQueryTable(db_name,
                                      inputQuery, true);
   std::cout<<"Party = "<<FLAGS_party << " received " << inputTable->getTupleCount() << " tuples\n";
 
@@ -189,7 +189,7 @@ TEST_F(tpch_q1_test, TpcHQ1FullObliviousTruncated) {
   // TODO: shashank: verify the reveal method in QueryTable
   std::unique_ptr<QueryTable> decrypted = aggregated->reveal(EmpParty::PUBLIC);
 
-  std::unique_ptr<QueryTable> expected = pq.GetQueryTable("dbname=tpch_unioned",
+  std::unique_ptr<QueryTable> expected = pq.getQueryTable("dbname=tpch_unioned",
                                                           baseQuery, false);
 
 

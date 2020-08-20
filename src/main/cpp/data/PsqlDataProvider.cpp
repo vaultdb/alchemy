@@ -13,15 +13,15 @@
 
 //typedef std::chrono::steady_clock::time_point time_point;
 
-std::unique_ptr<QueryTable> PsqlDataProvider::GetQueryTable(std::string dbname, std::string query_string) {
+std::unique_ptr<QueryTable> PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string) {
 
-   return GetQueryTable(dbname, query_string, false);
+   return getQueryTable(dbname, query_string, false);
 }
 
 // if hasDummyTag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
 std::unique_ptr<QueryTable>
-PsqlDataProvider::GetQueryTable(std::string dbname, std::string query_string, bool hasDummyTag) {
+PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag) {
 
     dbName = dbname;
 
@@ -88,7 +88,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
        }
 
 
-        result->putField(i, fieldDesc);
+        result->appendField(fieldDesc);
     }
 
    if(hasDummyTag) {
@@ -154,23 +154,26 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
 
         for (int i=0; i < colCount; i++) {
             const pqxx::field srcField = row[i];
-            dstTuple.putField(i, getField(srcField));
+
+           QueryField parsedField = getField(srcField);
+            std::cout << "Parsed field: " << parsedField << std::endl;
+            dstTuple.putField(i, parsedField);
         }
 
         if(hasDummyTag) {
 
-                std::unique_ptr<QueryField> parsedField(getField(row[colCount])); // get the last col
-                bool dummyTag = parsedField->getValue().getBool();
+                QueryField parsedField(getField(row[colCount])); // get the last col
+                bool dummyTag = parsedField.getValue().getBool();
                 types::Value dummyTagValue(dummyTag);
                 dstTuple.setDummyTag(dummyTagValue);
         }
 
-        std::cout << "returned tuple " << dstTuple.getDummyTag() << std::endl;
+        std::cout << "returned tuple " << dstTuple<< std::endl;
     return dstTuple;
     }
 
 
-    std::unique_ptr<QueryField> PsqlDataProvider::getField(pqxx::field src) {
+    QueryField PsqlDataProvider::getField(pqxx::field src) {
 
         int ordinal = src.num();
         pqxx::oid oid = src.type();
@@ -180,16 +183,19 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         std::unique_ptr<QueryField> result(new QueryField(ordinal));
 
 
+        std::cout << "Parsing tuple field with col type: " << TypeUtilities::getTypeIdString(colType) << std::endl;
         switch (colType) {
             case vaultdb::types::TypeId::INTEGER32:
             {
                 int32_t intVal = src.as<int32_t>();
-                return std::unique_ptr<QueryField>(new QueryField(ordinal, intVal));
+                types::Value val(intVal);
+                std::cout << "Parsed intVal=" << val <<  " aka " << val.getValueString() << std::endl;
+                return QueryField(ordinal, intVal);
             }
             case vaultdb::types::TypeId::INTEGER64:
             {
                 int64_t intVal = src.as<int64_t>();
-                return std::unique_ptr<QueryField>(new QueryField(ordinal, intVal));
+                return QueryField(ordinal, types::Value(intVal));
             }
         /*    case vaultdb::types::TypeId::TIMESTAMP:
             {
@@ -203,22 +209,22 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
             case vaultdb::types::TypeId::BOOLEAN:
             {
                 bool boolVal = src.as<bool>();
-                return std::unique_ptr<QueryField>(new QueryField(ordinal, boolVal));
+                return QueryField(ordinal, types::Value(boolVal));
             }
             case vaultdb::types::TypeId::FLOAT32:
             {
                 float floatVal = src.as<float>();
-                return std::unique_ptr<QueryField>(new QueryField(ordinal, floatVal));
+                return  QueryField(ordinal, types::Value(floatVal));
             }
             case vaultdb::types::TypeId::FLOAT64:
             {
                 double doubleVal = src.as<double>();
-                return std::unique_ptr<QueryField>(new QueryField(ordinal, doubleVal));
+                return QueryField(ordinal, types::Value(doubleVal));
             }
             case types::TypeId::VARCHAR:
             {
                 string stringVal = src.as<string>();
-                return std::unique_ptr<QueryField>(new QueryField(ordinal, stringVal));
+                return QueryField(ordinal, types::Value(stringVal));
             }
             default:
                 throw std::invalid_argument("Unsupported column type " + std::to_string(oid));

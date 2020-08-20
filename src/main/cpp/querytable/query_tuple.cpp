@@ -46,10 +46,6 @@ const QueryField QueryTuple::getField(int ordinal) const {
 }
 
 
-void QueryTuple::putField(int ordinal, const std::unique_ptr<QueryField> & f) {
-  fields_[ordinal].setValue(f->getValue());
-
-}
 
 void QueryTuple::putField(int ordinal, const QueryField &f) {
     const types::Value src = f.getValue();
@@ -144,6 +140,7 @@ QueryTuple& QueryTuple::operator=(const QueryTuple& src) {
             std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
 
 
+    std::cout << "Source tuple: " << src << std::endl;
     for(int i = 0; i < fieldCount_; ++i) {
         fields_[i] = src.fields_[i];
     }

@@ -7,6 +7,7 @@ QuerySchema::QuerySchema(const int &num_fields) : fieldCount_(num_fields) {
 
 }
 
+
 void QuerySchema::putField(const int &idx, const QueryFieldDesc &fd) {
     std::cout << "Putting field: " << fd << std::endl;
     QueryFieldDesc tmp = fd;
@@ -67,10 +68,14 @@ QuerySchema &QuerySchema::operator=(const QuerySchema &other) {
     for (int i = 0; i < other.getFieldCount(); i++) {
         QueryFieldDesc aFieldDesc = other.fields_[i];
         std::cout << "Src field: " << aFieldDesc << std::endl;
-        fields_[i] = aFieldDesc;
+        fields_.push_back(aFieldDesc);
     }
 
     return *this;
+}
+
+void QuerySchema::appendField(const QueryFieldDesc & aFieldDesc) {
+    fields_.push_back(aFieldDesc);
 }
 
 

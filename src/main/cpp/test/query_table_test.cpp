@@ -154,7 +154,7 @@ TEST_F(QueryTableTest, read_table) {
 
 
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
+    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(db_name,
                                                                          inputQuery, false);
 
 
@@ -187,7 +187,7 @@ TEST_F(QueryTableTest, read_table_dummy_tag) {
 
 
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.GetQueryTable(db_name,
+    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(db_name,
                                                                          inputQuery,
                                                                          true);
 

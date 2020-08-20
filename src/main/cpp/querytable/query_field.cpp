@@ -29,7 +29,7 @@ QueryField QueryField::reveal(EmpParty party) const {
 
 std::ostream &vaultdb::operator<<(std::ostream &strm, const QueryField &aField) {
 
-    return strm << aField.value_.getValueString();
+    return strm << aField.value_;
 }
 
 
@@ -46,8 +46,9 @@ QueryField& QueryField::operator=(const QueryField& other) {
     if(&other == this)
         return *this;
 
-    std::cout << "Equality op writing " << value_.getValueString() << " "  << TypeUtilities::getTypeIdString(other.getValue().getType()) << std::endl;
-    value_.setValue(this->getValue());
+    std::cout << "Other field:  " << other << std::endl;
+
+    value_.setValue(other.getValue());
     this->ordinal = other.getOrdinal();
 
     std::cout << " new field: " << *this << std::endl;
