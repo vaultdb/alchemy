@@ -4,7 +4,6 @@
 
 #include "secure_aggregate.h"
 #include "secure_sort.h"
-#include "querytable/private_share_utility.h"
 #include "support/tpch_queries.h"
 #include "util/emp_manager.h"
 
@@ -160,7 +159,7 @@ TEST_F(tpch_q1_test, TpcHQ1FullObliviousTruncated) {
   std::cout<<"Party = "<<FLAGS_party << " received " << inputTable->getTupleCount() << " tuples\n";
 
 
-  std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
+  std::shared_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
   empManager->flush();
 
 

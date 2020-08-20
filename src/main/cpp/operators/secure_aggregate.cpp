@@ -16,21 +16,22 @@
   do {                                                                         \
     not_dummy = emp::If(is_dummy, zero,                                        \
                         *input->getTuple(cursor)                               \
-                             ->GetField(def.scalarAggregates[idx].ordinal)                 \
-                             ->GetValue()                                      \
-                             ->getEmpInt());                                   \
+                             .getField(def.scalarAggregates[idx].ordinal)                 \
+                             .getValue()                                      \
+                             .getEmpInt());                                   \
   } while (0)
 
 #define SCALAR_COUNT(is_dummy, result_ref)                                        \
   do {                                                                         \
-    emp::Integer res = emp::If(*is_dummy, zero, one);                          \
+    emp::Integer res = emp::If(is_dummy, zero, one);                          \
     AddToCount(result_ref, res);                                               \
   } while (0)
 
-#define SCALAR_SUM(is_dummy, result_ref, row, idx)                                \
-  do {                                                                         \
-    emp::Integer res = emp::If(*isDummy, zero, *input->getTuple(row)           \
-    ->GetField(def.scalarAggregates[idx].ordinal) ->GetValue() ->getEmpInt());             \
+#define SCALAR_SUM(isDummy, result_ref, row, idx)                                \
+  do {                                                                           \
+  emp::Integer sumVal = *input->getTuple(row)           \
+    .getField(def.scalarAggregates[idx].ordinal).getValue().getEmpInt(); \
+    emp::Integer res = emp::If(isDummy, zero, sumVal);             \
     AddToCount(result_ref, res);                                               \
   } while (0)
 
@@ -70,8 +71,8 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
   std::map<int, std::pair<emp::Integer, emp::Integer>> running_avg;
 
   // copy constructors for initializing pair<emp:Int,emp:Int>
-  emp::Integer i1(64, 0, emp::BOB);
-  emp::Integer i2(64, 0, emp::BOB);
+  emp::Integer i1(64, 0, emp::PUBLIC);
+  emp::Integer i2(64, 0, emp::PUBLIC);
 
   std::vector<emp::Integer> groupby_vector;
   for (int i = 0; i < def.groupByOrdinals.size(); i++) {
@@ -88,12 +89,12 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
   // check if the query is scalar (no groupby clause)
   if (def.groupByOrdinals.size() == 0) {
 
-    emp::Bit *isDummy = new emp::Bit(false, emp::PUBLIC);
+    emp::Bit isDummy = new emp::Bit(false, emp::PUBLIC);
 
     for (int row = 0; row < input->getTupleCount(); row++) {
 
       // dummy flag to determine if the tuplle is a Dummy value
-      *isDummy = *input->getTuple(row)->GetDummyTag()->getEmpBit();
+      isDummy = *(input->getTuple(row).getDummyTag().getEmpBit());
 
       for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
 
@@ -126,13 +127,13 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 
     // creates resultant relation; inserting QueryField into tuple (just 1 row)
     for (int i = 0; i < def.scalarAggregates.size(); i++) {
-      const QueryField f(i, result_vector[i]);
-      aggregate_output->getTuple(0)->PutField(i, &f);
+      const QueryField f(i, types::Value(types::TypeId::ENCRYPTED_INTEGER32, result_vector[i]));
+        aggregate_output->getTuple(0).putField(i, f);
     }
 
     vaultdb::types::Value curr_dval(
             true_dummy);
-      aggregate_output->getTuple(0)->SetDummyTag(&curr_dval);
+      aggregate_output->getTuple(0).setDummyTag(curr_dval);
   }
 
     // otherwise, if the GROUPBY clause is present
@@ -148,17 +149,17 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       // this condition holds true even for the very first tuple
       // Since the default value is true, result vector would remain unaffected
 
-      isDummy = *input->getTuple(cursor)->GetDummyTag()->getEmpBit();
+      isDummy = *input->getTuple(cursor).getDummyTag().getEmpBit();
       if (cursor != 0)
         prev_dummy = *aggregate_output->getTuple(cursor - 1)
-                ->GetDummyTag()
-                ->getEmpBit();
+                .getDummyTag()
+                .getEmpBit();
 
       // groupby_eq (equality): bool=> checks for equality with prev. tuples GB
       for (int idx = 0; idx < def.groupByOrdinals.size(); idx++) {
         int ord = def.groupByOrdinals[idx];
         group_by =
-            *input->getTuple(cursor)->GetField(ord)->GetValue()->getEmpInt();
+            *input->getTuple(cursor).getField(ord).getValue().getEmpInt();
         groupby_eq =
             If((groupby_vector[idx] == group_by), groupby_eq, false_dummy);
         groupby_vector[idx] = group_by;
@@ -199,30 +200,30 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       if (cursor != 0) {
         isDummy = If(groupby_eq,
                      If(*aggregate_output->getTuple(cursor - 1)
-                                ->GetDummyTag()
-                                ->getEmpBit(),
+                                .getDummyTag()
+                                .getEmpBit(),
                         true_dummy, false_dummy),
                      isDummy);
 
         // updating previous tuple's dummy (if necessary), and setting that value
         prev_dummy = If(groupby_eq,
                         If(*aggregate_output->getTuple(cursor - 1)
-                                   ->GetDummyTag()
-                                   ->getEmpBit(),
+                                   .getDummyTag()
+                                   .getEmpBit(),
                            prev_dummy, true_dummy),
                         prev_dummy);
 
         vaultdb::types::Value prev_dval(prev_dummy);
-          aggregate_output->getTuple(cursor - 1)->SetDummyTag(&prev_dval);
+          aggregate_output->getTuple(cursor - 1).setDummyTag(prev_dval);
       }
 
       for (int i = 0; i < def.scalarAggregates.size(); i++) {
-        const QueryField f(i, result_vector[i]);
-          aggregate_output->getTuple(cursor)->PutField(i, &f);
+        const QueryField f(i, types::Value(types::TypeId::ENCRYPTED_INTEGER32, result_vector[i]));
+          aggregate_output->getTuple(cursor).putField(i, f);
       }
       vaultdb::types::Value curr_dval(
               isDummy);
-        aggregate_output->getTuple(cursor)->SetDummyTag(&curr_dval);
+        aggregate_output->getTuple(cursor).setDummyTag(curr_dval);
     }
   }
   return aggregate_output;

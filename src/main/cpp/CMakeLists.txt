@@ -90,37 +90,19 @@ set(sources
 		operators/secure_aggregate.cpp
 		operators/secure_sort.cpp
 		operators/filter.cpp
-		operators/secure_join.cpp
 		util/emp_manager.cpp
-		querytable/private_share_utility.cpp
 		querytable/query_tuple.cpp
-		querytable/types/unencrypted/float_type.cpp
-		querytable/types/unencrypted/boolean_type.cpp
-		querytable/types/unencrypted/integer_type.cpp
-		querytable/types/arithmetic_type.cpp
-		querytable/types/bool_result.cpp
 		querytable/types/value.cpp
-		querytable/types/encrypted/encrypted_boolean_type.cpp
-		querytable/types/encrypted/encrypted_integer_type.cpp
-		querytable/types/type.cpp
-		querytable/table_manager.cpp
 		querytable/query_field.cpp
-		querytable/dummy_flag.cpp
 		querytable/query_field_desc.cpp
 		querytable/query_schema.cpp
 		querytable/query_table.cpp
-		querytable/expression/arithmetic_expression.cpp
-		querytable/expression/expression.cpp
-		querytable/expression/bool_expression.cpp
-		#rpc/DBQueryClient.cpp
 		data/pqxx_compat.cpp
 		data/PQDataProvider.cpp
 		data/PsqlDataProvider.cpp
-		data/DataProvider.cpp
 		data/proto_converter.cpp
         util/type_utilities.cpp
 		util/data_utilities.cpp
-		querytable/types/encrypted/encrypted_float32_type.cpp
 		querytable/types/value_comparators.cpp
 		querytable/types/value_arithmetic.cpp
 		operators/operator.cpp

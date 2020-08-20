@@ -1,9 +1,7 @@
 #include "secure_sort.h"
-#include "querytable/expression/expression_id.h"
 #include "querytable/types/type_id.h"
 #include "querytable/types/value.h"
 #include <emp-tool/circuits/swappable.h>
-#include <querytable/expression/expression.h>
 #include <querytable/query_table.h>
 #include <vector>
 
@@ -19,8 +17,10 @@ int power_of_two_less_than(int n) {
 // Ideally the execution trace of this will be the same
 // regardless if the swap occurs.
 //
+
+// TODO(Jennie): update this with PredicateClass framework
 void SwapTuples(int t1, int t2, QueryTable *t, types::Value *swap_condition) {
-  auto tup1 = t->getTuple(t1);
+/*  auto tup1 = t->getTuple(t1);
   auto tup2 = t->getTuple(t2);
   for (int i = 0; i < t->getSchema()->getFieldCount(); i++) {
     vaultdb::expression::Expression ex(
@@ -32,7 +32,8 @@ void SwapTuples(int t1, int t2, QueryTable *t, types::Value *swap_condition) {
   vaultdb::expression::Expression ex2(
           swap_condition, tup1->GetMutableDummyTag(), tup2->GetMutableDummyTag(),
           vaultdb::expression::ExpressionId::SWAP);
-  ex2.ExecuteMutable();
+  ex2.ExecuteMutable();*/
+
 }
 
 void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir,
@@ -51,6 +52,8 @@ void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir,
     comparator = types::Value(comparator_init);
     v_and = types::Value(v_and_init);
   }
+
+  /* TODO(Jennie): Fix this up with the new PredicateClass framework
   vaultdb::expression::ExpressionId compare_dir =
       dir ? vaultdb::expression::ExpressionId::GREATERTHAN
           : vaultdb::expression::ExpressionId::LESSTHAN;
@@ -65,10 +68,10 @@ void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir,
     const vaultdb::types::Value *val1, *val2;
     if (idx == -1) {
       val1 = t->getTuple(t1)->GetDummyTag();
-      val2 = t->getTuple(t2)->GetDummyTag();
+      val2 = t->getTuple(t2)->getDummyTag();
     } else {
-      val1 = t->getTuple(t1)->GetField(idx)->GetValue(),
-      val2 = t->getTuple(t2)->GetField(idx)->GetValue();
+      val1 = t->getTuple(t1)->getField(idx)->GetValue(),
+      val2 = t->getTuple(t2)->getField(idx)->GetValue();
     }
     vaultdb::expression::Expression ex(
         val1, val2, (idx == -1) ? dummy_compare_dir : compare_dir);
@@ -83,7 +86,7 @@ void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir,
         val1, val2, vaultdb::expression::ExpressionId::EQUAL);
     v_and = ex_and.execute();
   }
-  SwapTuples(t1, t2, t, &comparator);
+  SwapTuples(t1, t2, t, &comparator); */
 }
 
 /** The procedure BitonicMerge recursively sorts a bitonic sequence in

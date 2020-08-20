@@ -61,10 +61,18 @@ TEST_F(FilterTest, test_table_scan) {
 
 // unencrypted case
 class FilterPredicate : public PredicateClass {
+    Value cmp;
+public:
+    FilterPredicate() {
+         cmp = Value((int32_t) 1);
+    }
+
+    ~FilterPredicate() {}
     types::Value predicateCall(const QueryTuple & aTuple) const override {
-        Value cmp = Value((int32_t) 1);
-        Value field = *(aTuple.GetField(1)->GetValue());
-        return  field == cmp;
+
+        Value field = *(aTuple.getField(1)->GetValue());
+        Value res = (field == cmp);
+        return  !res;  // (!) because dummy is false if our selection criteria is satisfied
     }
 
 
@@ -75,17 +83,15 @@ class FilterPredicate : public PredicateClass {
 TEST_F(FilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 10";
     std::string expectedOutput = "(#0 int32 lineitem.l_orderkey, #1 int32 lineitem.l_linenumber, #2 varchar(1) lineitem.l_linestatus) isEncrypted? 0\n"
-                                 "(85090, 6, O) (dummy=false)\n"
-                                 "(373158, 5, F) (dummy=false)\n"
-                                 "(1028, 7, F) (dummy=false)\n"
-                                 "(338759, 2, F) (dummy=false)\n"
-                                 "(486753, 2, O) (dummy=false)\n"
-                                 "(523878, 4, O) (dummy=false)\n";
-
+                                 "(435171, 1, O) (dummy=false)\n"
+                                 "(39460, 1, F) (dummy=false)\n"
+                                 "(345252, 1, O) (dummy=false)\n"
+                                 "(455171, 1, F) (dummy=false)\n";
 
     std::shared_ptr<Operator> input(new SqlInput("tpch_alice", sql, false));
 
-    std::shared_ptr<PredicateClass> predicateClass(new FilterPredicate);
+    // TODO: fix the warnings associated with this
+    std::shared_ptr<PredicateClass> predicateClass(new FilterPredicate());
     Filter *filterOp = new Filter(predicateClass, input); // heap allocate it
     std::shared_ptr<Operator> filter = filterOp->getPtr();
 

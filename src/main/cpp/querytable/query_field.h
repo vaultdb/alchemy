@@ -6,7 +6,7 @@
 #include "types/value.h"
 #include <memory>
 #include <vector>
-#include <defs.h>
+#include "common/defs.h"
 
 namespace vaultdb {
 
@@ -18,40 +18,23 @@ private:
   types::Value value_;
 
 public:
-  QueryField();
+  QueryField() {};
+
   QueryField(const QueryField &qf);
-  QueryField(int field_num, int64_t val);
-  QueryField(int field_num, int32_t val);
-  QueryField(int field_num, double val);
-  QueryField(int field_num);
-  QueryField(int field_num, std::string val);
-  QueryField(int field_num, float val);
-  QueryField(int fn, bool val);
-  QueryField(int fn, types::Value aVal);
-
-  // encrypted inits
-  QueryField(int field_num, emp::Bit val);
-  QueryField(int field_num, emp::Integer);
-  QueryField(int field_num, emp::Float32 val);
-  QueryField(int field_num, emp::Float val);
+  QueryField(int fn) : ordinal(fn) {};
+  QueryField(int fn, const types::Value & aVal)  : ordinal(fn), value_(aVal){};
 
 
-    [[nodiscard]]  types::Value *GetValue() const;
-  [[nodiscard]] types::Value *GetMutableValue();
-  void SetValue(const types::Value *val);
-
-  friend std::ostream& operator<<(std::ostream &strm, const QueryField &aField);
+  types::Value getValue() const;
 
   QueryField reveal(EmpParty party) const;
-  int getOrdinal() const { return ordinal; }
-
-    void initialize(QueryField &field);
-
+    int getOrdinal() const { return ordinal; }
     void serialize(bool *dst);
-
-    QueryField(int anOrdinal, emp::Integer *aVal, types::TypeId aType);
+    void setValue(const types::Value & val);
 
     QueryField& operator=(const QueryField& other);
+    friend std::ostream& operator<<(std::ostream &strm, const QueryField &aField);
+
 };
 
 } // namespace vaultdb

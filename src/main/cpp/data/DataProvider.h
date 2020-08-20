@@ -1,7 +1,6 @@
 #ifndef DATA_PROVIDER_H
 #define DATA_PROVIDER_H
 
-#include "dbquery.pb.h"
 #include <querytable/query_table.h>
 
 class DataProvider {

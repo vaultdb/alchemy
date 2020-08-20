@@ -41,12 +41,15 @@ PsqlDataProvider::GetQueryTable(std::string dbname, std::string query_string, bo
 
     std::unique_ptr<QueryTable> dstTable = std::make_unique<QueryTable>(rowCount, colCount, false);
     std::unique_ptr<QuerySchema> schema = getSchema(pqxxResult, hasDummyTag);
-    dstTable->setSchema(schema.get());
+    dstTable->setSchema(*schema.get());
 
     int counter = 0;
     for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
         tuple = getTuple(*resultPos, hasDummyTag);
+        std::cout << "Tuple dummy tag: " << tuple.getDummyTag();
         dstTable->putTuple(counter, tuple);
+       std::cout << " query tuple dummy tag: " << dstTable->getTuple(
+                counter).getDummyTag() << std::endl;
         ++counter;
     }
 
@@ -80,7 +83,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
        }
 
 
-       result->PutField(i, fieldDesc);
+        result->putField(i, fieldDesc);
     }
 
    if(hasDummyTag) {
@@ -138,22 +141,26 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         }
 
         QueryTuple dstTuple(colCount);
-        dstTuple.SetIsEncrypted(false);
+        std::cout << "initialized tuple with dummy tag: " << dstTuple.getDummyTag() << std::endl;
+
+    dstTuple.setIsEncrypted(false);
 
 
         for (int i=0; i < colCount; i++) {
             const pqxx::field srcField = row[i];
-            dstTuple.PutField(i, getField(srcField));
+            dstTuple.putField(i, getField(srcField));
         }
 
         if(hasDummyTag) {
 
                 std::unique_ptr<QueryField> parsedField(getField(row[colCount])); // get the last col
-                bool dummyTag = parsedField.get()->GetValue()->getBool();
-                dstTuple.SetDummyTag(dummyTag);
+                bool dummyTag = parsedField->getValue().getBool();
+                types::Value dummyTagValue(dummyTag);
+                dstTuple.setDummyTag(dummyTagValue);
         }
 
-        return dstTuple;
+        std::cout << "returned tuple " << dstTuple.getDummyTag() << std::endl;
+    return dstTuple;
     }
 
 

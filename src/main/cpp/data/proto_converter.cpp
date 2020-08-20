@@ -34,19 +34,21 @@ ProtoToQuerySchema(const dbquery::Schema &proto_schema) {
     col_info.type();
     QueryFieldDesc fd(i, col_info.is_private(), col_info.name(),
                       col_info.tablename(), ProtoToTypeId(col_info.type()));
-    s->PutField(i, fd);
+      s->putField(i, fd);
   }
   return s;
 }
 
 std::unique_ptr<QueryTable> ProtoToQueryTable(const dbquery::Table &t) {
   auto query_table = std::make_unique<QueryTable>(t.row_size(), t.schema().numcolumns(), false);
-    query_table->setSchema(ProtoToQuerySchema(t.schema()));
+    std::unique_ptr<QuerySchema> aSchema = ProtoToQuerySchema(t.schema());
+
+    query_table->setSchema(*aSchema);
   int index = 0;
   for (auto &r : t.row()) {
-    QueryTuple *tup = query_table->getTuple(index);
-    tup->SetIsEncrypted(false);
-    tup->InitDummy();
+    QueryTuple tup = query_table->getTuple(index);
+      tup.setIsEncrypted(false);
+      tup.initDummy();
     for (auto &c : r.column()) {
       // FieldType type = ProtoToFieldtype(c.second.type());
       vaultdb::types::TypeId type = ProtoToTypeId(c.second.type());
@@ -72,7 +74,7 @@ std::unique_ptr<QueryTable> ProtoToQueryTable(const dbquery::Table &t) {
       default:
         throw;
       }
-      tup->PutField(c.first, std::move(qf));
+        tup.putField(c.first, std::move(qf));
     }
     index++;
   }
@@ -94,9 +96,9 @@ const dbquery::Schema GetTableXorSchema(const QuerySchema *s) {
   dbquery::Schema ps;
   for (int i = 0; i < s->getFieldCount(); i++) {
     dbquery::ColumnInfo columnInfo;
-    columnInfo.set_name(s->GetField(i)->GetName());
+    columnInfo.set_name(s->getField(i).getName());
     columnInfo.set_type(
-        GetEncryptedOIDFromVaultDBType(s->GetField(i)->GetType()));
+        GetEncryptedOIDFromVaultDBType(s->getField(i).getType()));
     columnInfo.set_columnnumber(i);
     columnInfo.set_is_private(true);
     (*ps.mutable_column())[i] = columnInfo;
@@ -106,13 +108,13 @@ const dbquery::Schema GetTableXorSchema(const QuerySchema *s) {
 
 const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
   dbquery::Table t;
-  dbquery::Schema s = GetTableXorSchema(input_table->getSchema());
+  dbquery::Schema s =  GetTableXorSchema(&input_table->getSchema());
   t.mutable_schema()->CopyFrom(s);
   for (int i = 0; i < input_table->getTupleCount(); i++) {
     dbquery::Row row;
-    for (int j = 0; j < input_table->getSchema()->getFieldCount(); j++) {
+    for (int j = 0; j < input_table->getSchema().getFieldCount(); j++) {
       dbquery::ColumnVal val;
-      switch (input_table->getSchema()->GetField(j)->GetType()) {
+      switch (input_table->getSchema().getField(j).getType()) {
 
       case types::TypeId::INVALID:
       case types::TypeId::BOOLEAN:
@@ -127,9 +129,9 @@ const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
         throw;
       case types::TypeId::ENCRYPTED_INTEGER64:
         auto s = input_table->getTuple(i)
-                ->GetField(j)
-                ->GetValue()
-                ->getEmpInt()
+                .getField(j)
+                .getValue()
+                .getEmpInt()
                      ->reveal<string>(emp::XOR);
         val.set_xorfield(s);
         (*row.mutable_column())[j] = val;

@@ -251,7 +251,7 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
 
 
     std::cout << "Initial table: " << *inputTable << std::endl;
-    std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
+    std::shared_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
 
     std::cout << "Finished encrypting table with " << encryptedTable->getTupleCount() << " tuples." << std::endl;
 
@@ -267,7 +267,7 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
 
     // test a single value first
     const QueryTuple *encryptedTuple = encryptedTable->getTuple(0);
-    const QueryField *encryptedField = encryptedTuple->GetField(0);
+    const QueryField *encryptedField = encryptedTuple->getField(0);
     types::Value value = encryptedField->GetValue();
     types::Value revealedValue = value.reveal(EmpParty::PUBLIC);
 
@@ -309,7 +309,7 @@ TEST_F(EmpManagerTest, encrypt_table_two_cols) {
 
 
     std::cout << "Initial table: " << *inputTable << std::endl;
-    std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
+    std::shared_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
 
     std::cout << "Finished encrypting table with " << encryptedTable->getTupleCount() << " tuples." << std::endl;
 
@@ -372,7 +372,7 @@ TEST_F(EmpManagerTest, encrypt_table) {
 
 
     std::cout << "Initial table: " << *inputTable << std::endl;
-    std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
+    std::shared_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
 
     std::cout << "Finished encrypting table with " << encryptedTable->getTupleCount() << " tuples." << std::endl;
 
@@ -414,7 +414,7 @@ TEST_F(EmpManagerTest, encrypt_table_dummy_tag) {
 
 
     std::cout << "Initial table: " << *inputTable << std::endl;
-    std::unique_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
+    std::shared_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
     empManager->flush();
 
     std::cout << "Finished encrypting table with " << encryptedTable->getTupleCount() << " tuples." << std::endl;

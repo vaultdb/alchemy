@@ -163,6 +163,7 @@ TEST_F(QueryTableTest, read_table) {
 
     std::cout << "Expected:\n" << expectedTable << std::endl;
     std::cout << "Observed: \n" << observedTable << std::endl;
+    std::cout << "Observed tuple count: " << inputTable->getTupleCount() << std::endl;
 
     ASSERT_EQ(expectedTable, observedTable) << "Query table was not parsed correctly.";
 

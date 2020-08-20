@@ -41,8 +41,13 @@ public:
 
     // filtering for l_linenumber = 1
     Value predicateCall(const QueryTuple & aTuple) const override {
-        Value field = *(aTuple.GetField(1)->GetValue());
-        return field == encryptedLineNumber;
+        Value field = *(aTuple.getField(1)->GetValue());
+
+        Value res = field == encryptedLineNumber;
+        std::cout << "Comparing " << field.reveal() << " to " << encryptedLineNumber.reveal() << " result: " <<  res.reveal() <<  " at " << &res << std::endl;
+
+        res = !res;
+        return res;  // (!) because dummy is false if our selection criteria is satisfied
     }
 
 };
@@ -114,13 +119,15 @@ TEST_F(SecureFilterTest, test_filter) {
     std::shared_ptr<Operator> input = std::make_shared<SecureSqlInput>(dbName, sql, false);
 
     std::shared_ptr<PredicateClass> aPredicate(new SecureFilterPredicateClass(1));  // secret share the constant (1) just once
-    std::shared_ptr<Operator> filter(new Filter(aPredicate, input));
+    Filter *filterOp = new Filter(aPredicate, input);
+    std::shared_ptr<Operator> filter = filterOp->getPtr();
 
     std::shared_ptr<QueryTable> result = filter->run();
-    std::cout << "Result: " << *result << std::endl;
+    std::unique_ptr<QueryTable> revealed = result->reveal(EmpParty::PUBLIC);
+    std::cout << "Result: " << *revealed << std::endl;
 
 
-    ASSERT_EQ(expectedOutput,  result->toString());
+    ASSERT_EQ(expectedOutput,  revealed->toString());
 
 }
 

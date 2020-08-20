@@ -5,30 +5,34 @@
 #include "query_field_desc.h"
 #include "util/type_utilities.h"
 
+// default constructor setting up unique_ptr
+QueryFieldDesc::QueryFieldDesc() {
 
-int QueryFieldDesc::GetColumnNumber() const {
-  return QueryFieldDesc::column_number_;
 }
 
-bool QueryFieldDesc::GetIsPrivate() const {
+int QueryFieldDesc::getOrdinal() const {
+  return QueryFieldDesc::ordinal_;
+}
+
+bool QueryFieldDesc::getIsPrivate() const {
   return QueryFieldDesc::is_private_;
 }
 
-const std::string &QueryFieldDesc::GetName() const {
+const std::string &QueryFieldDesc::getName() const {
   return QueryFieldDesc::name_;
 }
 
-vaultdb::types::TypeId QueryFieldDesc::GetType() const {
-    return QueryFieldDesc::type_;
+vaultdb::types::TypeId QueryFieldDesc::getType() const {
+    return type_;
 }
 
 
-const std::string &QueryFieldDesc::GetTableName() const {
+const std::string &QueryFieldDesc::getTableName() const {
   return QueryFieldDesc::table_name;
 }
 
 size_t QueryFieldDesc::size() const {
-    vaultdb::types::TypeId typeId  = GetType();
+    vaultdb::types::TypeId typeId  = getType();
     size_t fieldSize = TypeUtilities::getTypeSize(typeId);
     if(QueryFieldDesc::type_ == vaultdb::types::TypeId::VARCHAR)  {
         fieldSize *= string_length;
@@ -45,7 +49,7 @@ void QueryFieldDesc::setStringLength(size_t len) {
 }
 
 std::ostream &operator<<(std::ostream &os, const QueryFieldDesc &desc) {
-    os << "#" << desc.column_number_ << " " << TypeUtilities::getTypeIdString(desc.type_);
+    os << "#" << desc.ordinal_ << " " << TypeUtilities::getTypeIdString(desc.type_);
     if(desc.type_ == vaultdb::types::TypeId::VARCHAR) {
         os << "(" << desc.string_length << ")";
     }
@@ -54,20 +58,22 @@ std::ostream &operator<<(std::ostream &os, const QueryFieldDesc &desc) {
     return os;
 }
 
+QueryFieldDesc& QueryFieldDesc::operator=(const QueryFieldDesc& other)  {
+    QueryFieldDesc dst;
+    dst.initialize(other);
+    return dst;
+}
+
 // essentially a copy constructor, designed to sidestep the need to deal with pointer semantics in QuerySchema
 void QueryFieldDesc::initialize(QueryFieldDesc src) {
 
     this->type_ = src.type_;
     this->name_ = src.name_;
-    this->column_number_ = src.column_number_;
+    this->ordinal_ = src.ordinal_;
     this->table_name = src.table_name;
-    this->is_private_ = src.GetIsPrivate();
+    this->is_private_ = src.getIsPrivate();
     this->string_length = src.string_length;
 
 
 }
 
-// default constructor setting up unique_ptr
-QueryFieldDesc::QueryFieldDesc() {
-
-}

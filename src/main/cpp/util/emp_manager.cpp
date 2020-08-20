@@ -12,7 +12,7 @@ EmpManager * EmpManager::instance = nullptr;
 std::shared_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
     size_t aliceSize = srcTable->getTupleCount(); // in tuples
     size_t bobSize = aliceSize;
-    int colCount = srcTable->getSchema()->getFieldCount();
+    int colCount = srcTable->getSchema().getFieldCount();
     QueryTuple dstTuple(colCount, true);
 
     if (party_ == EmpParty::ALICE) {
@@ -37,9 +37,11 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
 
     for (int i = 0; i < aliceSize; ++i) {
         --readTuple;
-        QueryTuple *srcTuple = (party_ == EmpParty::ALICE) ? srcTable->getTuple(readTuple) : nullptr;
-        dstTuple = secretShareTuple(srcTuple,srcTable->getSchema(), (int) EmpParty::ALICE);
+        QueryTuple *srcTuple = (party_ == EmpParty::ALICE) ? new QueryTuple(srcTable->getTuple(readTuple)) : nullptr;
+        dstTuple = secretShareTuple(srcTuple, &srcTable->getSchema(), (int) EmpParty::ALICE);
         dstTable->putTuple(i, dstTuple);
+        if(srcTuple != nullptr)
+            delete srcTuple;
     }
 
     netio_->flush();
@@ -47,10 +49,13 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
 
     int writeIdx = aliceSize;
     for (int i = 0; i < bobSize; ++i) {
-        QueryTuple *srcTuple =  (party_ == EmpParty::BOB) ?  srcTable->getTuple(i) : nullptr;
-        dstTuple = secretShareTuple(srcTuple, srcTable->getSchema(), (int) EmpParty::BOB);
+        QueryTuple *srcTuple =  (party_ == EmpParty::BOB) ?  new QueryTuple(srcTable->getTuple(i)) : nullptr;
+        dstTuple = secretShareTuple(srcTuple, &srcTable->getSchema(), (int) EmpParty::BOB);
         dstTable->putTuple(writeIdx, dstTuple);
         ++writeIdx;
+        if(srcTuple != nullptr)
+            delete srcTuple;
+
     }
 
     netio_->flush();
@@ -67,20 +72,23 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
     QueryTuple dstTuple(fieldCount, true);
 
     for(int i = 0; i < fieldCount; ++i) {
-        const QueryField *srcField = ((int) party_ == party) ? srcTuple->GetField(i) : nullptr;
-        QueryField dstField(secretShareField(srcField, i, schema->GetField(i)->GetType(), schema->GetField(i)->size(), party));
-        dstTuple.PutField(i, &dstField);
+
+        const QueryField *srcField = ((int) party_ == party) ? new QueryField(srcTuple->getField(i)) : nullptr;
+        QueryField dstField(secretShareField(srcField, i, schema->getField(i).getType(), schema->getField(i).size(), party));
+        dstTuple.putField(i, dstField);
+        if(srcField != nullptr)
+            delete srcField;
     }
 
     bool dummyTag = 0;
     if(srcTuple != nullptr)
-         dummyTag =  srcTuple->GetDummyTag()->getBool();
+         dummyTag = srcTuple->getDummyTag().getBool();
 
 
     emp::Bit encryptedDummyTag(dummyTag, party);
 
     types::Value valueBit(encryptedDummyTag);
-    dstTuple.SetDummyTag(&valueBit);
+    dstTuple.setDummyTag(valueBit);
 
 
 
@@ -91,11 +99,13 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
 QueryField
 EmpManager::secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, size_t length, int party) {
 
-    types::Value *srcValue = ((int) party_ == party) ? srcField->GetValue() : nullptr;
+    types::Value *srcValue = ((int) party_ == party) ? new types::Value(srcField->getValue()) : nullptr;
 
 
     types::Value dstValue = secretShareValue(srcValue, type, length, party);
     QueryField dstField(ordinal, dstValue);
+    if(srcValue != nullptr)
+        delete srcValue;
 
     return dstField;
 }

@@ -5,7 +5,6 @@
 #ifndef _SECURE_JOIN_H
 #define _SECURE_JOIN_H
 #include <map>
-#include "querytable/expression/expression_id.h"
 #include "querytable/query_table.h"
 #include <vector>
 

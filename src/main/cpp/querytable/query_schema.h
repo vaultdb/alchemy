@@ -12,28 +12,27 @@
 class QuerySchema {
 private:
 
-    // TODO: safely delete fieldStorage in a destructor
     std::unique_ptr<QueryFieldDesc[]>  fields_;
     size_t fieldCount_;
 
 public:
-  [[nodiscard]] int getFieldCount() const;
+    explicit QuerySchema(int num_fields);
+    QuerySchema(const QuerySchema &s);
 
-  std::map<std::string, int> nameToIndex;
+    [[nodiscard]] int getFieldCount() const;
 
-  void PutField(int index, QueryFieldDesc &fd);
+
+  void putField(int index, QueryFieldDesc &fd);
 
   // returns size in bits
-  [[nodiscard]] size_t size() const;
+   size_t size() const;
 
-  explicit QuerySchema(int num_fields);
 
-  QuerySchema(const QuerySchema &s);
-
-  [[nodiscard]] QueryFieldDesc *GetField(int i) const;
+    const QueryFieldDesc getField(int i) const;
 
     friend std::ostream &operator<<(std::ostream &os, const QuerySchema &schema);
+    QuerySchema& operator=(const QuerySchema& other);
 
 };
 
-#endif // TESTING_QUERY_SCHEMA_H
+#endif // _QUERY_SCHEMA_H

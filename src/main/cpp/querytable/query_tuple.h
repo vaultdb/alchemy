@@ -21,22 +21,19 @@ public:
 
 public:
 
-    QueryTuple(size_t fieldCount, bool is_encrypted);
+    QueryTuple(const size_t & fieldCount, const bool & is_encrypted);
 
-    QueryTuple(size_t aFieldCount);
-    QueryTuple(QueryTuple &src);
+    QueryTuple(const size_t & aFieldCount);
+    QueryTuple(const QueryTuple &src);
 
-    void InitDummy();
+    void initDummy();
 
-  void SetIsEncrypted(bool isEncrypted);
-  const vaultdb::QueryField *GetField(int ordinal) const;
-  vaultdb::QueryField *GetMutableField(int ordinal);
-  void PutField(int ordinal, std::unique_ptr<QueryField> f);
-  void PutField(int ordinal, const QueryField *f);
-  void SetDummyTag(vaultdb::types::Value *v);
-  void SetDummyTag(bool flag);
-  const vaultdb::types::Value *GetDummyTag();
-  vaultdb::types::Value *GetMutableDummyTag();
+  void setIsEncrypted(bool isEncrypted);
+  const vaultdb::QueryField getField(int ordinal) const;
+  void putField(int ordinal, const std::unique_ptr<QueryField> & f);
+  void putField(int ordinal, const QueryField &f);
+  void setDummyTag(types::Value &v);
+  const vaultdb::types::Value getDummyTag();
 
 
 
@@ -45,7 +42,7 @@ public:
 
     QueryTuple();
 
-    void serialize(bool *dst, QuerySchema *schema);
+    void serialize(bool *dst, const QuerySchema &schema);
     size_t getFieldCount() const;
 
     QueryTuple& operator=(const QueryTuple& other);

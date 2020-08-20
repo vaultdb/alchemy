@@ -32,6 +32,17 @@ protected:
 
 
 
+// test overlod of assignment operator
+TEST_F(SecureValueExpressionTest, test_value_assignment) {
+    Value src(true);
+    Value dst = src;
+
+    ASSERT_EQ(src.getBool(), dst.getBool());
+
+
+
+}
+
 
 TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 

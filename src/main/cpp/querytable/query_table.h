@@ -13,7 +13,7 @@ using namespace vaultdb;
 
 class QueryTable {
 private:
-  std::unique_ptr<QuerySchema> schema_;
+  QuerySchema schema_;
   bool is_encrypted_;
 
     std::unique_ptr<QueryTuple[]>  tuples_;
@@ -21,27 +21,21 @@ private:
 
 
 public:
-    QueryTable(int num_tuples, int colCount, bool is_encrypted);
+    QueryTable(const int & num_tuples, const int & colCount, const bool & is_encrypted);
     QueryTable(const QueryTable & src);
     ~QueryTable() {
-        std::cout << "Freeing a query table at addr: " << this << std::endl;
-        schema_.release();
-        std::cout << "Released schema" << std::endl;
         tuples_.release();
-        std::cout << "Released tuples." << std::endl;
     }
 
-    static std::unique_ptr<QueryTable> GetQueryFromProtoStream(const void *buf,int len);
-  static std::string GetQueryTableXorString(QueryTable *input_table);
+    static std::string getQueryTableXorString(const QueryTable  & input_table) {throw; } // not yet implemented
+
   const bool isEncrypted() const;
-  void setSchema(std::unique_ptr<QuerySchema> s);
-  void setSchema(const QuerySchema *s);
-  const QuerySchema *getSchema() const;
-  QueryTuple *getTuple(int idx) const;
+  void setSchema(const QuerySchema & schema);
+  const QuerySchema & getSchema() const;
+  QueryTuple getTuple(int idx) const;
   unsigned int getTupleCount() const;
-  std::unique_ptr<QuerySchema> ReleaseSchema();
   std::string toString() const;
-  void putTuple(int idx, QueryTuple tuple);
+  void putTuple(int idx, const QueryTuple & tuple);
 
 
   // TODO for encryption/decryption

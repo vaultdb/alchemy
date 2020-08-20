@@ -8,12 +8,12 @@ QuerySchema::QuerySchema(int num_fields) : fieldCount_(num_fields) {
 
 }
 
-void QuerySchema::PutField(int idx, QueryFieldDesc &fd) {
-    fields_[idx].initialize(fd); // copy field desc out into newly-allocated member variable
+void QuerySchema::putField(int index, QueryFieldDesc &fd) {
+    fields_[index].initialize(fd); // copy field desc out into newly-allocated member variable
 }
 
-QueryFieldDesc *QuerySchema::GetField(int i) const {
-  return &fields_[i];
+const QueryFieldDesc QuerySchema::getField(int i) const {
+  return fields_[i];
 }
 int QuerySchema::getFieldCount() const {
     return fieldCount_;
@@ -23,8 +23,9 @@ int QuerySchema::getFieldCount() const {
 QuerySchema::QuerySchema(const QuerySchema &s) : fieldCount_(s.getFieldCount()){
     fields_ =
             std::unique_ptr<QueryFieldDesc[]>(new QueryFieldDesc[fieldCount_]);
+
   for (int i = 0; i < s.getFieldCount(); i++) {
-      fields_[i].initialize(*s.GetField(i));
+      fields_[i] = s.getField(i);
   }
 }
 
@@ -50,6 +51,17 @@ std::ostream &operator<<(std::ostream &os, const QuerySchema &schema) {
 
     os << ")";
     return os;
+}
+
+QuerySchema &QuerySchema::operator=(const QuerySchema &other) {
+
+    fields_ =
+            std::unique_ptr<QueryFieldDesc[]>(new QueryFieldDesc[other.getFieldCount()]);
+
+    for (int i = 0; i < other.getFieldCount(); i++) {
+        fields_[i] = other.getField(i);
+    }
+
 }
 
 

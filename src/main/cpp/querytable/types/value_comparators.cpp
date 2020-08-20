@@ -48,8 +48,8 @@ Value Value::operator>=(const Value &rhs) const {
             return Value( lhsVal.greater(rhsVal) | (lhsVal.equal(rhsVal)));
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
-            emp::Bit lhsVal = this->getEmpBit();
-            emp::Bit rhsVal = rhs.getEmpBit();
+            std::shared_ptr<emp::Bit> lhsVal = this->getEmpBit();
+            std::shared_ptr<emp::Bit> rhsVal = rhs.getEmpBit();
 
             emp::Integer lhsInt(1, &lhsVal);
             emp::Integer rhsInt(1, &rhsVal);
@@ -126,8 +126,8 @@ Value Value::operator>(const Value &rhs) const {
             return Value( lhsVal.greater(rhsVal));
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
-            emp::Bit lhsVal = this->getEmpBit();
-            emp::Bit rhsVal = rhs.getEmpBit();
+            std::shared_ptr<emp::Bit> lhsVal = this->getEmpBit();
+            std::shared_ptr<emp::Bit> rhsVal = rhs.getEmpBit();
 
             emp::Integer lhsInt(1, &lhsVal);
             emp::Integer rhsInt(1, &rhsVal);
@@ -203,8 +203,8 @@ Value Value::operator<(const Value &rhs) const {
             return Value( (!lhsVal.greater(rhsVal)) ^ (!lhsVal.equal(rhsVal)));
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
-            emp::Bit lhsVal = this->getEmpBit();
-            emp::Bit rhsVal = rhs.getEmpBit();
+            std::shared_ptr<emp::Bit> lhsVal = this->getEmpBit();
+            std::shared_ptr<emp::Bit> rhsVal = rhs.getEmpBit();
 
             emp::Integer lhsInt(1, &lhsVal);
             emp::Integer rhsInt(1, &rhsVal);
@@ -282,8 +282,8 @@ Value Value::operator<=(const Value &rhs) const {
             return Value(!lhsVal.greater(rhsVal));
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
-            emp::Bit lhsVal = this->getEmpBit();
-            emp::Bit rhsVal = rhs.getEmpBit();
+            std::shared_ptr<emp::Bit> lhsVal = this->getEmpBit();
+            std::shared_ptr<emp::Bit> rhsVal = rhs.getEmpBit();
 
             emp::Integer lhsInt(1, &lhsVal);
             emp::Integer rhsInt(1, &rhsVal);
@@ -360,8 +360,8 @@ Value Value::operator==(const Value &rhs) const {
             return Value(lhsVal.equal(rhsVal));
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
-            emp::Bit lhsVal = this->getEmpBit();
-            emp::Bit rhsVal = rhs.getEmpBit();
+            std::shared_ptr<emp::Bit> lhsVal = this->getEmpBit();
+            std::shared_ptr<emp::Bit> rhsVal = rhs.getEmpBit();
 
             emp::Integer lhsInt(1, &lhsVal);
             emp::Integer rhsInt(1, &rhsVal);
@@ -399,7 +399,7 @@ Value Value::operator==(const Value &rhs) const {
 Value Value::operator!=(const Value &rhs) const {
     Value isEqual(*this == rhs);
     if(isEqual.getType() == TypeId::ENCRYPTED_BOOLEAN) {
-        emp::Bit payload = isEqual.getEmpBit();
+        std::shared_ptr<emp::Bit> payload = isEqual.getEmpBit();
         return Value(!payload);
     }
 
@@ -415,11 +415,25 @@ Value vaultdb::types::Value::operator!() const {
     assert(valType == TypeId::ENCRYPTED_BOOLEAN || valType == TypeId::BOOLEAN);
 
     if(valType == TypeId::ENCRYPTED_BOOLEAN) {
-        emp::Bit payload = getEmpBit();
-        return Value(!payload);
+        std::shared_ptr<emp::Bit> payload = getEmpBit();
+        *payload = !(*payload);
+        return Value(payload.get()); // setting up a new shared_ptr
     }
 
     bool payload = getBool();
     return Value(!payload);
 
 }
+
+/*bool vaultdb::types::Value::operator==(const Value &rhs) {
+    assert(!this->is_encrypted_ && !rhs.is_encrypted_); // only reveal this for encrypted vals
+
+    Value equality = (*this == rhs);
+    return equality.getBool();
+}
+
+bool vaultdb::types::Value::operator!=(const Value &rhs) {
+
+    return !(*this == rhs);
+}
+*/

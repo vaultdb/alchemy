@@ -6,9 +6,9 @@
 #define PSQL_DATA_PROVIDER_H
 
 #include "DataProvider.h"
-#include "query_table.h"
-#include "query_tuple.h"
-#include "query_field.h"
+#include "querytable/query_table.h"
+#include "querytable/query_tuple.h"
+#include "querytable/query_field.h"
 
 #include <pqxx/pqxx>
 

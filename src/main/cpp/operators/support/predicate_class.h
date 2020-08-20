@@ -15,8 +15,12 @@ using namespace emp;
 class PredicateClass {
 
 public:
+    PredicateClass() {}
+    ~PredicateClass() {}
     // override when we instantiate a predicate
     virtual types::Value predicateCall(const QueryTuple & aTuple) const = 0;
+
+
 };
 
 

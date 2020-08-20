@@ -1,7 +1,6 @@
 #include <iso646.h>
 #pragma once
 #include "emp-tool/emp-tool.h"
-#include "type.h"
 #include "type_id.h"
 #include "common/defs.h"
 #include <cstdint>
@@ -17,34 +16,33 @@ public:
 
 
   Value();
-    Value(int32_t val);
-    Value(int64_t val);
-    Value(bool val);
-    Value(emp::Bit val);
-    Value(TypeId type, const emp::Integer val);
-    Value(double val);
-    Value(float val);
-    Value(const Value *val);
+    Value(const int32_t & val);
+    Value(const int64_t & val);
+    Value(const bool & val);
+    Value(const emp::Bit & val);
+    Value(TypeId type, const emp::Integer & val);
+    Value(const double & val);
+    Value(const float & val);
     Value(const Value & val);
 
     Value(const std::string & val);
-    Value(emp::Float32 float32);
-    Value(emp::Float float32);
+    Value(const emp::Float32 & float32);
+    Value(const emp::Float & float32);
 
 
-    void setValue(const Value *v);
+    void setValue(const Value & v);
   // for unencrypted values, the TypeId is fixed.  This only becomes dynamic for the encrypted values
   // hence only take as input a TypeId for the latter.
-  void setValue(int32_t val);
-  void setValue(int64_t val);
-  void setValue(bool val);
-  void setValue(emp::Bit val);
-  void setValue(TypeId type, emp::Integer val);
-  void setValue(float val);
-  void setValue(double val);
-  void setValue(std::string aString);
-  void setValue(emp::Float32 val);
-  void setValue(emp::Float val);
+  void setValue(const int32_t & val);
+  void setValue(const int64_t  & val);
+  void setValue(const bool & val);
+  void setValue(const emp::Bit & val);
+  void setValue(TypeId type, const emp::Integer & val);
+  void setValue(const float & val);
+  void setValue(const double & val);
+  void setValue(const std::string & aString);
+  void setValue(const emp::Float32 & val);
+  void setValue(const emp::Float & val);
 
 
 
@@ -54,8 +52,8 @@ public:
   int64_t getInt64() const;
   int32_t getInt32() const;
   bool getBool() const;
-  emp::Integer *getEmpInt() const ;
-  emp::Bit *getEmpBit() const;
+  std::shared_ptr<emp::Integer> getEmpInt() const ;
+  std::shared_ptr<emp::Bit> getEmpBit() const;
     std::string getVarchar() const;
 
 
@@ -68,9 +66,9 @@ public:
 
     void serialize(bool *dst) const;
 
-    emp::Float32 *getEmpFloat32() const ;
-    emp::Float *getEmpFloat64() const ;
-    Value reveal(EmpParty party) const;
+    std::shared_ptr<emp::Float32> getEmpFloat32() const ;
+    std::shared_ptr<emp::Float> getEmpFloat64() const ;
+    Value reveal(EmpParty party = (EmpParty) emp::PUBLIC) const;
 
 
     // comparators
@@ -78,9 +76,14 @@ public:
     Value operator>(const Value &rhs) const;
     Value operator<=(const Value &rhs) const;
     Value operator<(const Value &rhs) const;
+    Value operator !() const; // for use only with bool and emp::Bit
     Value operator==(const Value &rhs) const;
     Value operator!=(const Value &rhs) const;
-    Value operator !() const; // for use only with bool and emp::Bit
+
+    // for use only with unencrypted instances of Value
+    // TODO: refactor this into encrypted value and unencrypted value, then overload an equality that returns an emp::Bit for the former
+    //bool operator== (Value const & rhs);
+    //bool operator!= (const Value & rhs);
 
 
     // arithmetic expressions
@@ -103,10 +106,10 @@ protected:
 
   struct ValueStruct {
       boost::variant<bool, int32_t, int64_t, float_t, double_t, std::string> unencrypted_val;
-    emp::Bit *emp_bit_;
-    emp::Integer  *emp_integer_;
-    emp::Float *emp_float_;
-    emp::Float32 *emp_float32_;
+    std::shared_ptr<emp::Bit> emp_bit_;
+      std::shared_ptr<emp::Integer>  emp_integer_;
+      std::shared_ptr<emp::Float> emp_float_;
+      std::shared_ptr<emp::Float32> emp_float32_;
   } value_   {false, nullptr, nullptr, nullptr, nullptr};
          // false, emp::Bit(false, emp::PUBLIC), emp::Integer(1, 0, emp::PUBLIC), emp::Float(24, 9, 0, emp::PUBLIC), emp::Float32(0.0, emp::PUBLIC)
  // };
