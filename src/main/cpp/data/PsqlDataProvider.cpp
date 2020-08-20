@@ -43,7 +43,6 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
     std::unique_ptr<QueryTable> dstTable = std::make_unique<QueryTable>(rowCount, colCount, false);
     std::unique_ptr<QuerySchema> schema = getSchema(pqxxResult, hasDummyTag);
-    std::cout << "Working with schema: " << *schema << std::endl;
 
     dstTable->setSchema(*schema);
 
@@ -55,7 +54,6 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
     }
 
 
-    std::cout << "dst table schema: " << dstTable->getSchema() << std::endl;
     return dstTable;
 }
 
@@ -65,7 +63,6 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
     if(hasDummyTag)
         --colCount; // don't include dummy tag as a separate column
 
-    std::cout << "Parsing " << colCount << " columns." << std::endl;
 
     std::unique_ptr<QuerySchema> result(new QuerySchema(colCount));
 
@@ -76,9 +73,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
 
         srcTable = getTableName(tableId);
 
-        std::cout << "Initializing a field with type: " << TypeUtilities::getTypeIdString(type) << std::endl;
         QueryFieldDesc fieldDesc(i, true, colName, srcTable, type);
-        std::cout << "Resulting field: " << fieldDesc << std::endl;
 
        if(type == vaultdb::types::TypeId::VARCHAR) {
 
@@ -97,7 +92,6 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
         assert(dummyType == vaultdb::types::TypeId::BOOLEAN); // check that dummy tag is a boolean
     }
 
-   std::cout << "Result: " << *result << std::endl;
     return result;
 }
 
@@ -147,7 +141,6 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         }
 
         QueryTuple dstTuple(colCount);
-        std::cout << "initialized tuple with dummy tag: " << dstTuple.getDummyTag() << std::endl;
 
     dstTuple.setIsEncrypted(false);
 
@@ -156,7 +149,6 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
             const pqxx::field srcField = row[i];
 
            QueryField parsedField = getField(srcField);
-            std::cout << "Parsed field: " << parsedField << std::endl;
             dstTuple.putField(i, parsedField);
         }
 
@@ -168,7 +160,6 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                 dstTuple.setDummyTag(dummyTagValue);
         }
 
-        std::cout << "returned tuple " << dstTuple<< std::endl;
     return dstTuple;
     }
 
@@ -183,13 +174,11 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         std::unique_ptr<QueryField> result(new QueryField(ordinal));
 
 
-        std::cout << "Parsing tuple field with col type: " << TypeUtilities::getTypeIdString(colType) << std::endl;
         switch (colType) {
             case vaultdb::types::TypeId::INTEGER32:
             {
                 int32_t intVal = src.as<int32_t>();
                 types::Value val(intVal);
-                std::cout << "Parsed intVal=" << val <<  " aka " << val.getValueString() << std::endl;
                 return QueryField(ordinal, intVal);
             }
             case vaultdb::types::TypeId::INTEGER64:
