@@ -3,20 +3,16 @@
 
 QuerySchema::QuerySchema(const int &num_fields) : fieldCount_(num_fields) {
     fields_.reserve(num_fields);
+    assert(fieldCount_ == 5);
+
 
 
 }
 
 
 void QuerySchema::putField(const int &idx, const QueryFieldDesc &fd) {
-    std::cout << "Putting field: " << fd << std::endl;
-    QueryFieldDesc tmp = fd;
-
-    std::cout << "Copied out tmp=" << tmp << std::endl;
     fields_[idx]  = fd; // copy field desc out into newly-allocated member variable
 
-    std::cout << "In putfield, took in: " << fd << " stored: " << fields_[idx] << std::endl;
-    assert(fd.getType() == fields_[idx].getType());
 }
 
 const QueryFieldDesc QuerySchema::getField(const int &i) const {
@@ -30,6 +26,7 @@ int QuerySchema::getFieldCount() const {
 
 QuerySchema::QuerySchema(const QuerySchema &s) : fieldCount_(s.getFieldCount()){
     fields_.reserve(fieldCount_);
+    assert(fieldCount_ == 5);
 
   for (int i = 0; i < s.getFieldCount(); i++) {
       fields_[i] = s.getField(i);
@@ -62,12 +59,12 @@ std::ostream &operator<<(std::ostream &os, const QuerySchema &schema) {
 
 QuerySchema &QuerySchema::operator=(const QuerySchema &other) {
 
-    std::cout << "Assigning from " << other << std::endl;
-    fields_.reserve(other.getFieldCount());
+    fieldCount_ = other.getFieldCount();
+
+    fields_.reserve(fieldCount_);
 
     for (int i = 0; i < other.getFieldCount(); i++) {
         QueryFieldDesc aFieldDesc = other.fields_[i];
-        std::cout << "Src field: " << aFieldDesc << std::endl;
         fields_.push_back(aFieldDesc);
     }
 

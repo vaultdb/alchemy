@@ -28,6 +28,8 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
     result pqxxResult = query("dbname=" + dbname, query_string);
     pqxx::row firstRow = *(pqxxResult.begin());
     int colCount = firstRow.size();
+    if(hasDummyTag)
+        --colCount;
 
     QueryTuple tuple(colCount, false);
 
@@ -48,15 +50,12 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
     int counter = 0;
     for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
         tuple = getTuple(*resultPos, hasDummyTag);
-        std::cout << "Tuple dummy tag: " << tuple.getDummyTag();
         dstTable->putTuple(counter, tuple);
-       std::cout << " query tuple dummy tag: " << dstTable->getTuple(
-                counter).getDummyTag() << std::endl;
         ++counter;
     }
 
 
-
+    std::cout << "dst table schema: " << dstTable->getSchema() << std::endl;
     return dstTable;
 }
 
@@ -66,6 +65,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
     if(hasDummyTag)
         --colCount; // don't include dummy tag as a separate column
 
+    std::cout << "Parsing " << colCount << " columns." << std::endl;
 
     std::unique_ptr<QuerySchema> result(new QuerySchema(colCount));
 

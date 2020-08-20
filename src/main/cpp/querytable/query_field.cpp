@@ -46,12 +46,10 @@ QueryField& QueryField::operator=(const QueryField& other) {
     if(&other == this)
         return *this;
 
-    std::cout << "Other field:  " << other << std::endl;
 
     value_.setValue(other.getValue());
     this->ordinal = other.getOrdinal();
 
-    std::cout << " new field: " << *this << std::endl;
     return *this;
 
 }

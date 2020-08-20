@@ -76,7 +76,7 @@ void QueryTuple::setIsEncrypted(bool isEncrypted) {
 
 
 std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple) {
-    std::cout << "Printing tuple with dummy tag: " << aTuple.dummy_tag_.getBool() << " to string: " << aTuple.dummy_tag_ << std::endl;
+
     if((!aTuple.is_encrypted_ && !(aTuple.dummy_tag_.getBool())) // if it is real
        || aTuple.is_encrypted_) { // or its status is unknown
         strm << "(" << aTuple.getField(0);
@@ -84,7 +84,7 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple)
         for (int i = 1; i < aTuple.fieldCount_; ++i)
             strm << ", " << aTuple.getField(i);
 
-        strm << ") (dummy=" << aTuple.dummy_tag_.getValueString() + ")";
+        strm << ")"; //  (dummy=" << aTuple.dummy_tag_.getValueString() + ")";
     }
     return strm;
 
@@ -140,7 +140,6 @@ QueryTuple& QueryTuple::operator=(const QueryTuple& src) {
             std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
 
 
-    std::cout << "Source tuple: " << src << std::endl;
     for(int i = 0; i < fieldCount_; ++i) {
         fields_[i] = src.fields_[i];
     }
