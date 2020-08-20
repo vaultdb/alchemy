@@ -52,11 +52,9 @@ public:
   int64_t getInt64() const;
   int32_t getInt32() const;
   bool getBool() const;
-  std::shared_ptr<emp::Integer> getEmpInt() const ;
-  std::shared_ptr<emp::Bit> getEmpBit() const;
+  emp::Integer getEmpInt() const ;
+  emp::Bit getEmpBit() const;
     std::string getVarchar() const;
-
-
     float getFloat32() const;
     double getFloat64() const;
 
@@ -66,8 +64,8 @@ public:
 
     void serialize(bool *dst) const;
 
-    std::shared_ptr<emp::Float32> getEmpFloat32() const ;
-    std::shared_ptr<emp::Float> getEmpFloat64() const ;
+    emp::Float32 getEmpFloat32() const ;
+    emp::Float getEmpFloat64() const ;
     Value reveal(const int &empParty =  emp::PUBLIC) const;
 
 
@@ -93,6 +91,7 @@ public:
     Value operator/(const Value& rhs)const;
 
 
+    static void compareAndSwap(Value & lhs, Value & rhs, const emp::Bit & cmp);
 
 protected:
   bool is_encrypted_;

@@ -18,11 +18,11 @@ int power_of_two_less_than(int n) {
 // regardless if the swap occurs.
 //
 
-// TODO(Jennie): update this with PredicateClass framework
-void SwapTuples(int t1, int t2, QueryTable *t, types::Value *swap_condition) {
-/*  auto tup1 = t->getTuple(t1);
-  auto tup2 = t->getTuple(t2);
-  for (int i = 0; i < t->getSchema()->getFieldCount(); i++) {
+void swapTuples(int t1, int t2, QueryTable *t, types::Value *swap_condition) {
+  QueryTuple tup1 = t->getTuple(t1);
+  QueryTuple tup2 = t->getTuple(t2);
+
+/*  for (int i = 0; i < t->getSchema()->getFieldCount(); i++) {
     vaultdb::expression::Expression ex(
         swap_condition, tup1->GetMutableField(i)->GetMutableValue(),
         tup2->GetMutableField(i)->GetMutableValue(),
@@ -36,7 +36,7 @@ void SwapTuples(int t1, int t2, QueryTable *t, types::Value *swap_condition) {
 
 }
 
-void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir,
+void Compare(int t1, int t2, QueryTable *t, SortDefinition &s, bool dir,
              bool dummy_dir) {
 
   types::Value comparator;
@@ -64,7 +64,7 @@ void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir,
 
   // This complicated algorithm is here to enable sorting on multiple
   // attributes, the comparison bit has to be carried.
-  for (auto idx : s.ordinals) {
+  for (auto idx : s.columnOrders) {
     const vaultdb::types::Value *val1, *val2;
     if (idx == -1) {
       val1 = t->getTuple(t1)->GetDummyTag();
@@ -94,7 +94,7 @@ void Compare(int t1, int t2, QueryTable *t, SortDef &s, bool dir,
  * otherwise. The sequence to be sorted starts at index position lo,
  * the number of elements is cnt.
  **/
-void BitonicMerge(int lo, int n, QueryTable *t, SortDef &s, bool dir,
+void BitonicMerge(int lo, int n, QueryTable *t, SortDefinition &s, bool dir,
                   bool dummy_dir) {
   if (n > 1) {
     int m = power_of_two_less_than(n);
@@ -110,7 +110,7 @@ void BitonicMerge(int lo, int n, QueryTable *t, SortDef &s, bool dir,
  * recursively sorting its two halves in opposite directions, and then
  * calls bitonicMerge.
  **/
-void BitonicSort(int lo, int cnt, QueryTable *t, SortDef &s, bool dir,
+void BitonicSort(int lo, int cnt, QueryTable *t, SortDefinition &s, bool dir,
                  bool dummy_dir) {
   if (cnt > 1) {
     int k = cnt / 2;
@@ -119,8 +119,22 @@ void BitonicSort(int lo, int cnt, QueryTable *t, SortDef &s, bool dir,
     BitonicMerge(lo, cnt, t, s, dir, dummy_dir);
   }
 }
-void Sort(QueryTable *input, SortDef &s) {
-  bool dir = s.order == SortOrder::ASCENDING ? true : false;
-  bool dummy_dir = s.dummy_order == SortOrder::ASCENDING ? true : false;
-  BitonicSort(0, input->getTupleCount(), input, s, dir, dummy_dir);
+void Sort(QueryTable *input, SortDefinition &s) {
+/*  bool dir = s.order == SortDirection::ASCENDING ? true : false;
+  bool dummy_dir = s.dummyOrder == SortDirection::ASCENDING ? true : false;
+  BitonicSort(0, input->getTupleCount(), input, s, dir, dummy_dir);*/
+}
+
+Sort::Sort(const SortDefinition &aSortDefinition, std::shared_ptr<Operator> &child) : Operator(child), sortDefinition(aSortDefinition) {
+
+}
+
+std::shared_ptr<QueryTable> Sort::runSelf() {
+    std::shared_ptr<QueryTable> input = children[0]->getOutput();
+
+
+    // deep copy new output
+    output = std::shared_ptr<QueryTable>(new QueryTable(*input));
+
+    return std::shared_ptr<QueryTable>();
 }

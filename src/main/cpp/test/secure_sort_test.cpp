@@ -42,14 +42,13 @@ TEST_F(SecureSortTest,  testSingleIntColumn) {
 
 
   vector<int> ordinals{0};
-  SortDef sortdef;
-  sortdef.order = SortOrder::ASCENDING;
-  sortdef.ordinals = ordinals;
+  SortDefinition sortdef;
+  sortdef.order = SortDirection::ASCENDING;
+  sortdef.columnOrders = ordinals;
 
-  int gates1 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
   Sort(sqlOutput.get(), sortdef);
   int gates2 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
-  cout << gates2 - gates1 << endl;
+
     /** TODO: INSERT CORRECTNESS CHECKS **/
 
 }
@@ -65,9 +64,9 @@ TEST_F(SecureSortTest,  testTwoIntColumns) {
 
 
   vector<int> ordinals{0, 1};
-  SortDef sortdef;
-  sortdef.order = SortOrder::ASCENDING;
-  sortdef.ordinals = ordinals;
+  SortDefinition sortdef;
+  sortdef.order = SortDirection::ASCENDING;
+  sortdef.columnOrders = ordinals;
   int gates1 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
   Sort(sqlOutput.get(), sortdef);
   int gates2 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
@@ -90,9 +89,9 @@ TEST_F(SecureSortTest,  testSingleFloatColumnEncrypted) {
     std::shared_ptr<QueryTable> sqlOutput = input->run();
 
   vector<int> ordinals{0};
-  SortDef sortdef;
-  sortdef.order = SortOrder::ASCENDING;
-  sortdef.ordinals = ordinals;
+  SortDefinition sortdef;
+  sortdef.order = SortDirection::ASCENDING;
+  sortdef.columnOrders = ordinals;
   int gates1 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
   Sort(sqlOutput.get(), sortdef);
   int gates2 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
@@ -114,9 +113,9 @@ TEST_F(SecureSortTest,  testSingleVarcharColumn) {
     std::shared_ptr<QueryTable> sqlOutput = input->run();
 
   vector<int> ordinals{0};
-  SortDef sortdef;
-  sortdef.order = SortOrder::ASCENDING;
-  sortdef.ordinals = ordinals;
+  SortDefinition sortdef;
+  sortdef.order = SortDirection::ASCENDING;
+  sortdef.columnOrders = ordinals;
   int gates1 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
   Sort(sqlOutput.get(), sortdef);
   int gates2 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
@@ -140,9 +139,9 @@ TEST_F(SecureSortTest, testSingleFloatColumnUnencrypted) {
 
 
     vector<int> ordinals{0};
-  SortDef sortdef;
-  sortdef.order = SortOrder::ASCENDING;
-  sortdef.ordinals = ordinals;
+  SortDefinition sortdef;
+  sortdef.order = SortDirection::ASCENDING;
+  sortdef.columnOrders = ordinals;
   Sort(sqlOutput.get(), sortdef);
 
   /** TODO: INSERT CORRECTNESS CHECKS **/
@@ -159,10 +158,10 @@ TEST_F(SecureSortTest, testLineItemSortDummyTag) {
     std::shared_ptr<QueryTable> sqlOutput = input->run();
 
   vector<int> ordinals{0, -1}; // -1 == dummy tag?
-  SortDef sortdef;
-  sortdef.dummy_order = SortOrder::ASCENDING;
-  sortdef.order = SortOrder::DESCENDING;
-  sortdef.ordinals = ordinals;
+  SortDefinition sortdef;
+  sortdef.dummyOrder = SortDirection::ASCENDING;
+  sortdef.order = SortDirection::DESCENDING;
+  sortdef.columnOrders = ordinals;
   Sort(sqlOutput.get(), sortdef);
 
     /** TODO: INSERT CORRECTNESS CHECKS **/

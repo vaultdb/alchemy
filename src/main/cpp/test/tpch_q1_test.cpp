@@ -40,9 +40,9 @@ protected:
     empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
 
     vector<int> sortOrdinals{0, 1};
-    SortDef sortDef;
-    sortDef.order = SortOrder::ASCENDING; // TODO: each sort ordinal needs its own collation (ASC||DESC)
-    sortDef.ordinals = sortOrdinals;
+    SortDefinition sortDef;
+    sortDef.order = SortDirection::ASCENDING; // TODO: each sort ordinal needs its own collation (ASC||DESC)
+    sortDef.columnOrders = sortOrdinals;
 
 
     string baseQuery = tpch_queries[1];
@@ -132,9 +132,9 @@ TEST_F(tpch_q1_test, TpcHQ1FullObliviousTruncated) {
   empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
 
   vector<int> sortOrdinals{0, 1};
-  SortDef sortDef;
-  sortDef.order = SortOrder::ASCENDING; // TODO: each sort ordinal needs its own collation (ASC||DESC)
-  sortDef.ordinals = sortOrdinals;
+  SortDefinition sortDef;
+  sortDef.order = SortDirection::ASCENDING; // TODO: each sort ordinal needs its own collation (ASC||DESC)
+  sortDef.columnOrders = sortOrdinals;
 
 
   string baseQuery = tpch_queries[1];

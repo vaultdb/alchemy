@@ -15,7 +15,7 @@
 #define AGG_SUM(is_dummy, row, idx)                                            \
   do {                                                                         \
     not_dummy = emp::If(is_dummy, zero,                                        \
-                        *input->getTuple(cursor)                               \
+                        input->getTuple(cursor)                               \
                              .getField(def.scalarAggregates[idx].ordinal)                 \
                              .getValue()                                      \
                              .getEmpInt());                                   \
@@ -29,7 +29,7 @@
 
 #define SCALAR_SUM(isDummy, result_ref, row, idx)                                \
   do {                                                                           \
-  emp::Integer sumVal = *input->getTuple(row)           \
+  emp::Integer sumVal = input->getTuple(row)           \
     .getField(def.scalarAggregates[idx].ordinal).getValue().getEmpInt(); \
     emp::Integer res = emp::If(isDummy, zero, sumVal);             \
     AddToCount(result_ref, res);                                               \
@@ -94,7 +94,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
     for (int row = 0; row < input->getTupleCount(); row++) {
 
       // dummy flag to determine if the tuplle is a Dummy value
-      isDummy = *(input->getTuple(row).getDummyTag().getEmpBit());
+      isDummy = input->getTuple(row).getDummyTag().getEmpBit();
 
       for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
 
@@ -149,9 +149,9 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       // this condition holds true even for the very first tuple
       // Since the default value is true, result vector would remain unaffected
 
-      isDummy = *input->getTuple(cursor).getDummyTag().getEmpBit();
+      isDummy = input->getTuple(cursor).getDummyTag().getEmpBit();
       if (cursor != 0)
-        prev_dummy = *aggregate_output->getTuple(cursor - 1)
+        prev_dummy = aggregate_output->getTuple(cursor - 1)
                 .getDummyTag()
                 .getEmpBit();
 
@@ -159,7 +159,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       for (int idx = 0; idx < def.groupByOrdinals.size(); idx++) {
         int ord = def.groupByOrdinals[idx];
         group_by =
-            *input->getTuple(cursor).getField(ord).getValue().getEmpInt();
+            input->getTuple(cursor).getField(ord).getValue().getEmpInt();
         groupby_eq =
             If((groupby_vector[idx] == group_by), groupby_eq, false_dummy);
         groupby_vector[idx] = group_by;
@@ -199,7 +199,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
       // updating current dummy (nested If)
       if (cursor != 0) {
         isDummy = If(groupby_eq,
-                     If(*aggregate_output->getTuple(cursor - 1)
+                     If(aggregate_output->getTuple(cursor - 1)
                                 .getDummyTag()
                                 .getEmpBit(),
                         true_dummy, false_dummy),
@@ -207,7 +207,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 
         // updating previous tuple's dummy (if necessary), and setting that value
         prev_dummy = If(groupby_eq,
-                        If(*aggregate_output->getTuple(cursor - 1)
+                        If(aggregate_output->getTuple(cursor - 1)
                                    .getDummyTag()
                                    .getEmpBit(),
                            prev_dummy, true_dummy),

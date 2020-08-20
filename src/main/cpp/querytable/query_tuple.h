@@ -45,6 +45,8 @@ public:
     size_t getFieldCount() const;
 
     QueryTuple& operator=(const QueryTuple& other);
+
+    static void compareAndSwap(QueryTuple & lhs, QueryTuple & rhs, const emp::Bit & cmp);
 };
 
 } // namespace vaultdb

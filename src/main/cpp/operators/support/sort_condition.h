@@ -6,12 +6,20 @@
 #define _SORT_CONDITION_H
 
 #include  <querytable/query_tuple.h>
+#include "defs.h"
 
 using namespace  vaultdb;
 
 class SortCondition {
 
-    virtual void compareAndSwap(QueryTuple lhs, QueryTuple rhs) = 0;
+protected:
+    SortDefinition sortDefinition;
+    types::Value getValue(QueryTuple & aTuple, const ColumnSort & aColumnSort);
+
+public:
+    SortCondition(const SortDefinition & aSortDefinition) :  sortDefinition(aSortDefinition) {};
+
+    virtual void compareAndSwap(QueryTuple  & lhs, QueryTuple & rhs) = 0;
 
 };
 

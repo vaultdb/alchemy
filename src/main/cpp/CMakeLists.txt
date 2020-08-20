@@ -108,6 +108,9 @@ set(sources
 		operators/operator.cpp
 		operators/sql_input.cpp
         operators/secure_sql_input.cpp
+		operators/support/sort_condition.cpp
+		operators/support/plain_sort_condition.cpp
+		operators/support/secure_sort_condition.cpp
 		)
 
 

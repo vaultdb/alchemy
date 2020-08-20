@@ -31,25 +31,25 @@ Value Value::operator>=(const Value &rhs) const {
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
         case TypeId::ENCRYPTED_VARCHAR: {
-            emp::Integer lhsVal = *(this->getEmpInt());
-            emp::Integer rhsVal = *(rhs.getEmpInt());
+            emp::Integer lhsVal = this->getEmpInt();
+            emp::Integer rhsVal = rhs.getEmpInt();
             return Value(lhsVal >= rhsVal);
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = *(this->getEmpFloat32());
-            emp::Float32 rhsVal = *(rhs.getEmpFloat32());
+            emp::Float32 lhsVal = this->getEmpFloat32();
+            emp::Float32 rhsVal = rhs.getEmpFloat32();
             emp::Bit lt = lhsVal.less_than(rhsVal);
             return Value(!lt); // >=
         }
         case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = *(this->getEmpFloat64());
-            emp::Float rhsVal = *(rhs.getEmpFloat64());
+            emp::Float lhsVal = this->getEmpFloat64();
+            emp::Float rhsVal = rhs.getEmpFloat64();
             return Value( lhsVal.greater(rhsVal) | (lhsVal.equal(rhsVal)));
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
-            std::shared_ptr<emp::Bit> lhsVal = this->getEmpBit();
-            std::shared_ptr<emp::Bit> rhsVal = rhs.getEmpBit();
+            emp::Bit lhsVal = this->getEmpBit();
+            emp::Bit rhsVal = rhs.getEmpBit();
 
             emp::Integer lhsInt(1, &lhsVal);
             emp::Integer rhsInt(1, &rhsVal);
@@ -109,25 +109,25 @@ Value Value::operator>(const Value &rhs) const {
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
         case TypeId::ENCRYPTED_VARCHAR: {
-            emp::Integer lhsVal = *(this->getEmpInt());
-            emp::Integer rhsVal = *(rhs.getEmpInt());
+            emp::Integer lhsVal = this->getEmpInt();
+            emp::Integer rhsVal = rhs.getEmpInt();
             return Value(lhsVal > rhsVal);
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = *(this->getEmpFloat32());
-            emp::Float32 rhsVal = *(rhs.getEmpFloat32());
+            emp::Float32 lhsVal = this->getEmpFloat32();
+            emp::Float32 rhsVal = rhs.getEmpFloat32();
             emp::Bit leq = lhsVal.less_equal(rhsVal);
             return Value(!leq); // >
         }
         case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = *(this->getEmpFloat64());
-            emp::Float rhsVal = *(rhs.getEmpFloat64());
+            emp::Float lhsVal = this->getEmpFloat64();
+            emp::Float rhsVal = rhs.getEmpFloat64();
             return Value( lhsVal.greater(rhsVal));
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
-            std::shared_ptr<emp::Bit> lhsVal = this->getEmpBit();
-            std::shared_ptr<emp::Bit> rhsVal = rhs.getEmpBit();
+            emp::Bit lhsVal = this->getEmpBit();
+            emp::Bit rhsVal = rhs.getEmpBit();
 
             emp::Integer lhsInt(1, &lhsVal);
             emp::Integer rhsInt(1, &rhsVal);
@@ -187,24 +187,24 @@ Value Value::operator<(const Value &rhs) const {
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
         case TypeId::ENCRYPTED_VARCHAR: {
-            emp::Integer lhsVal = *(this->getEmpInt());
-            emp::Integer rhsVal = *(rhs.getEmpInt());
+            emp::Integer lhsVal = this->getEmpInt();
+            emp::Integer rhsVal = rhs.getEmpInt();
             return Value(lhsVal < rhsVal);
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = *(this->getEmpFloat32());
-            emp::Float32 rhsVal = *(rhs.getEmpFloat32());
+            emp::Float32 lhsVal = this->getEmpFloat32();
+            emp::Float32 rhsVal = rhs.getEmpFloat32();
             return Value(lhsVal.less_than(rhsVal)); // <
         }
         case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = *(this->getEmpFloat64());
-            emp::Float rhsVal = *(rhs.getEmpFloat64());
+            emp::Float lhsVal = this->getEmpFloat64();
+            emp::Float rhsVal = rhs.getEmpFloat64();
             return Value( (!lhsVal.greater(rhsVal)) ^ (!lhsVal.equal(rhsVal)));
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
-            std::shared_ptr<emp::Bit> lhsVal = this->getEmpBit();
-            std::shared_ptr<emp::Bit> rhsVal = rhs.getEmpBit();
+            emp::Bit lhsVal = this->getEmpBit();
+            emp::Bit rhsVal = rhs.getEmpBit();
 
             emp::Integer lhsInt(1, &lhsVal);
             emp::Integer rhsInt(1, &rhsVal);
@@ -266,24 +266,24 @@ Value Value::operator<=(const Value &rhs) const {
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
         case TypeId::ENCRYPTED_VARCHAR: {
-            emp::Integer lhsVal = *(this->getEmpInt());
-            emp::Integer rhsVal = *(rhs.getEmpInt());
+            emp::Integer lhsVal = this->getEmpInt();
+            emp::Integer rhsVal = rhs.getEmpInt();
             return Value(lhsVal <= rhsVal);
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = *(this->getEmpFloat32());
-            emp::Float32 rhsVal = *(rhs.getEmpFloat32());
+            emp::Float32 lhsVal = this->getEmpFloat32();
+            emp::Float32 rhsVal = rhs.getEmpFloat32();
             return Value(lhsVal.less_equal(rhsVal)); // <=
         }
         case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = *(this->getEmpFloat64());
-            emp::Float rhsVal = *(rhs.getEmpFloat64());
+            emp::Float lhsVal = this->getEmpFloat64();
+            emp::Float rhsVal = rhs.getEmpFloat64();
             return Value(!lhsVal.greater(rhsVal));
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
-            std::shared_ptr<emp::Bit> lhsVal = this->getEmpBit();
-            std::shared_ptr<emp::Bit> rhsVal = rhs.getEmpBit();
+            emp::Bit lhsVal = this->getEmpBit();
+            emp::Bit rhsVal = rhs.getEmpBit();
 
             emp::Integer lhsInt(1, &lhsVal);
             emp::Integer rhsInt(1, &rhsVal);
@@ -344,24 +344,24 @@ Value Value::operator==(const Value &rhs) const {
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
         case TypeId::ENCRYPTED_VARCHAR: {
-            emp::Integer lhsVal = *(this->getEmpInt());
-            emp::Integer rhsVal = *(rhs.getEmpInt());
+            emp::Integer lhsVal = this->getEmpInt();
+            emp::Integer rhsVal = rhs.getEmpInt();
             return Value(lhsVal == rhsVal);
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = *(this->getEmpFloat32());
-            emp::Float32 rhsVal = *(rhs.getEmpFloat32());
+            emp::Float32 lhsVal = this->getEmpFloat32();
+            emp::Float32 rhsVal = rhs.getEmpFloat32();
             return Value(lhsVal.equal(rhsVal)); // <=
         }
         case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = *(this->getEmpFloat64());
-            emp::Float rhsVal = *(rhs.getEmpFloat64());
+            emp::Float lhsVal = this->getEmpFloat64();
+            emp::Float rhsVal = rhs.getEmpFloat64();
             return Value(lhsVal.equal(rhsVal));
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
-            std::shared_ptr<emp::Bit> lhsVal = this->getEmpBit();
-            std::shared_ptr<emp::Bit> rhsVal = rhs.getEmpBit();
+            emp::Bit lhsVal = this->getEmpBit();
+            emp::Bit rhsVal = rhs.getEmpBit();
 
             emp::Integer lhsInt(1, &lhsVal);
             emp::Integer rhsInt(1, &rhsVal);
@@ -399,7 +399,7 @@ Value Value::operator==(const Value &rhs) const {
 Value Value::operator!=(const Value &rhs) const {
     Value isEqual(*this == rhs);
     if(isEqual.getType() == TypeId::ENCRYPTED_BOOLEAN) {
-        std::shared_ptr<emp::Bit> payload = isEqual.getEmpBit();
+        emp::Bit payload = isEqual.getEmpBit();
         return Value(!payload);
     }
 
@@ -415,13 +415,63 @@ Value vaultdb::types::Value::operator!() const {
     assert(valType == TypeId::ENCRYPTED_BOOLEAN || valType == TypeId::BOOLEAN);
 
     if(valType == TypeId::ENCRYPTED_BOOLEAN) {
-        emp::Bit payload = *getEmpBit();
+        emp::Bit payload = getEmpBit();
         payload = !payload;
         return Value(payload); // setting up a new shared_ptr
     }
 
     bool payload = getBool();
     return Value(!payload);
+
+}
+
+void vaultdb::types::Value::compareAndSwap(Value &lhs, Value &rhs, const emp::Bit &cmp) {
+
+
+    types::TypeId opType = lhs.getType();
+
+    assert(lhs.getType() == rhs.getType()); // do not compare if they are not the same type
+    assert(lhs.is_encrypted_);
+    assert(rhs.is_encrypted_);  // don't need this for the plaintext setting
+
+    switch (opType) {
+
+
+        case TypeId::ENCRYPTED_INTEGER32:
+        case TypeId::ENCRYPTED_INTEGER64:
+        case TypeId::ENCRYPTED_VARCHAR: {
+            emp::Integer lhsVal = lhs.getEmpInt();
+            emp::Integer rhsVal = rhs.getEmpInt();
+            emp::swap(cmp, lhsVal, rhsVal);
+            lhs.setValue(opType, lhsVal);
+            rhs.setValue(opType, rhsVal);
+        }
+
+        case TypeId::ENCRYPTED_FLOAT32: {
+            emp::Float32 lhsVal = lhs.getEmpFloat32();
+            emp::Float32 rhsVal = rhs.getEmpFloat32();
+            emp::swap(cmp, lhsVal, rhsVal);
+            lhs.setValue(lhsVal);
+            rhs.setValue(rhsVal);
+        }
+        case TypeId::ENCRYPTED_FLOAT64: {
+            emp::Float lhsVal = lhs.getEmpFloat64();
+            emp::Float rhsVal = rhs.getEmpFloat64();
+            emp::swap(cmp, lhsVal, rhsVal);
+            lhs.setValue(lhsVal);
+            rhs.setValue(rhsVal);
+        }
+        case TypeId::ENCRYPTED_BOOLEAN: {
+            emp::Bit lhsVal = lhs.getEmpBit();
+            emp::Bit rhsVal = rhs.getEmpBit();
+            emp::swap(cmp, lhsVal, rhsVal);
+            lhs.setValue(lhsVal);
+            rhs.setValue(rhsVal);
+
+        }
+       default:
+            throw;
+    }
 
 }
 

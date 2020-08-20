@@ -160,13 +160,29 @@ QueryTuple QueryTuple::reveal(const int &empParty) const {
     empManager->flush();
 
 
-    std::shared_ptr<emp::Bit> dummyTag = dummy_tag_.getEmpBit();
-    bool revealedBit = dummyTag->reveal((int) empParty);
+    emp::Bit dummyTag = dummy_tag_.getEmpBit();
+    bool revealedBit = dummyTag.reveal((int) empParty);
     types::Value revealedValue(revealedBit);
 
 
     dstTuple.setDummyTag(revealedValue);
     return dstTuple;
+
+}
+
+void QueryTuple::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs, const emp::Bit & cmp) {
+
+    assert(lhs.getFieldCount() == rhs.getFieldCount());
+
+    for(int i = 0; i < lhs.getFieldCount(); ++i) {
+        types::Value lhsValue = lhs.getField(i).getValue();
+        types::Value rhsValue = rhs.getField(i).getValue();
+
+        types::Value::compareAndSwap(lhsValue, rhsValue, cmp);
+
+        lhs.putField(i, QueryField(i, lhsValue));
+        rhs.putField(i, QueryField(i, rhsValue));
+    }
 
 }
 

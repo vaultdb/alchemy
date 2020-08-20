@@ -32,19 +32,19 @@ Value Value::operator+(const Value &rhs) const {
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
         case TypeId::ENCRYPTED_VARCHAR: {
-            emp::Integer lhsVal = *(this->getEmpInt());
-            emp::Integer rhsVal = *(rhs.getEmpInt());
+            emp::Integer lhsVal = this->getEmpInt();
+            emp::Integer rhsVal = rhs.getEmpInt();
             return Value(opType, lhsVal + rhsVal);
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = *(this->getEmpFloat32());
-            emp::Float32 rhsVal = *(rhs.getEmpFloat32());
+            emp::Float32 lhsVal = this->getEmpFloat32();
+            emp::Float32 rhsVal = rhs.getEmpFloat32();
             return Value(lhsVal + rhsVal);
         }
         case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = *(this->getEmpFloat64());
-            emp::Float rhsVal = *(rhs.getEmpFloat64());
+            emp::Float lhsVal = this->getEmpFloat64();
+            emp::Float rhsVal = rhs.getEmpFloat64();
             return Value(lhsVal + rhsVal);
         }
 
@@ -98,19 +98,19 @@ Value Value::operator-(const Value &rhs) const {
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
         case TypeId::ENCRYPTED_VARCHAR: {
-            emp::Integer lhsVal = *(this->getEmpInt());
-            emp::Integer rhsVal = *(rhs.getEmpInt());
+            emp::Integer lhsVal = this->getEmpInt();
+            emp::Integer rhsVal = rhs.getEmpInt();
             return Value(opType, lhsVal - rhsVal);
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = *(this->getEmpFloat32());
-            emp::Float32 rhsVal = *(rhs.getEmpFloat32());
+            emp::Float32 lhsVal = this->getEmpFloat32();
+            emp::Float32 rhsVal = rhs.getEmpFloat32();
             return Value(lhsVal - rhsVal);
         }
         case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = *(this->getEmpFloat64());
-            emp::Float rhsVal = *(rhs.getEmpFloat64());
+            emp::Float lhsVal = this->getEmpFloat64();
+            emp::Float rhsVal = rhs.getEmpFloat64();
             return Value(lhsVal -  rhsVal);
         }
 
@@ -163,19 +163,19 @@ Value Value::operator*(const Value &rhs) const {
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
         case TypeId::ENCRYPTED_VARCHAR: {
-            emp::Integer lhsVal = *(this->getEmpInt());
-            emp::Integer rhsVal = *(rhs.getEmpInt());
+            emp::Integer lhsVal = this->getEmpInt();
+            emp::Integer rhsVal = rhs.getEmpInt();
             return Value(opType, lhsVal * rhsVal);
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = *(this->getEmpFloat32());
-            emp::Float32 rhsVal = *(rhs.getEmpFloat32());
+            emp::Float32 lhsVal = this->getEmpFloat32();
+            emp::Float32 rhsVal = rhs.getEmpFloat32();
             return Value(lhsVal * rhsVal);
         }
         case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = *(this->getEmpFloat64());
-            emp::Float rhsVal = *(rhs.getEmpFloat64());
+            emp::Float lhsVal = this->getEmpFloat64();
+            emp::Float rhsVal = rhs.getEmpFloat64();
             return Value(lhsVal * rhsVal);
         }
 
@@ -228,19 +228,19 @@ Value Value::operator/(const Value &rhs) const {
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
         case TypeId::ENCRYPTED_VARCHAR: {
-            emp::Integer lhsVal = *(this->getEmpInt());
-            emp::Integer rhsVal = *(rhs.getEmpInt());
+            emp::Integer lhsVal = this->getEmpInt();
+            emp::Integer rhsVal = rhs.getEmpInt();
             return Value(opType, lhsVal / rhsVal);
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = *(this->getEmpFloat32());
-            emp::Float32 rhsVal = *(rhs.getEmpFloat32());
+            emp::Float32 lhsVal = this->getEmpFloat32();
+            emp::Float32 rhsVal = rhs.getEmpFloat32();
             return Value(lhsVal / rhsVal);
         }
         case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = *(this->getEmpFloat64());
-            emp::Float rhsVal = *(rhs.getEmpFloat64());
+            emp::Float lhsVal = this->getEmpFloat64();
+            emp::Float rhsVal = rhs.getEmpFloat64();
             return Value(lhsVal / rhsVal);
         }
 

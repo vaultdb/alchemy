@@ -132,7 +132,7 @@ const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
                 .getField(j)
                 .getValue()
                 .getEmpInt()
-                     ->reveal<string>(emp::XOR);
+                     .reveal<string>(emp::XOR);
         val.set_xorfield(s);
         (*row.mutable_column())[j] = val;
         break;

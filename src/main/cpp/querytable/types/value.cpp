@@ -96,11 +96,19 @@ int64_t Value::getInt64() const {
         }
     }
 
-    std::shared_ptr<emp::Integer> Value::getEmpInt()  const { return  value_.emp_integer_; }
-    std::shared_ptr<emp::Bit> Value::getEmpBit()  const { return value_.emp_bit_; }
+    emp::Integer Value::getEmpInt()  const { return  *value_.emp_integer_; }
+    emp::Bit Value::getEmpBit()  const { return *value_.emp_bit_; }
+
+    emp::Float32 Value::getEmpFloat32() const {
+        return  *value_.emp_float32_;
+    }
+
+    emp::Float Value::getEmpFloat64() const {
+        return  *value_.emp_float_;
+    }
 
 
-Value::~Value() {
+    Value::~Value() {
 
 }
 
@@ -120,23 +128,23 @@ void Value::setValue(const Value  & val) {
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
         case TypeId::ENCRYPTED_VARCHAR: {
-            std::shared_ptr<emp::Integer> intVal = val.getEmpInt();
-            setValue(val.type_, *intVal);
+            emp::Integer intVal = val.getEmpInt();
+            setValue(val.type_, intVal);
             break;
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
-            std::shared_ptr<emp::Bit> bitValue = val.getEmpBit();
-            setValue(*bitValue);
+            emp::Bit bitValue = val.getEmpBit();
+            setValue(bitValue);
             break;
         }
         case TypeId::ENCRYPTED_FLOAT32: {
-            std::shared_ptr<emp::Float32> floatVal = val.getEmpFloat32();
-            setValue(*floatVal);
+            emp::Float32 floatVal = val.getEmpFloat32();
+            setValue(floatVal);
             break;
         }
         case TypeId::ENCRYPTED_FLOAT64: {
-            std::shared_ptr<emp::Float> floatVal = val.getEmpFloat64();
-            setValue(*floatVal);
+            emp::Float floatVal = val.getEmpFloat64();
+            setValue(floatVal);
             break;
         }
         case TypeId::VARCHAR:
@@ -355,13 +363,6 @@ void Value::setValue(const std::string & aString) {
 
         }
 
-    std::shared_ptr<emp::Float32> Value::getEmpFloat32() const {
-        return  value_.emp_float32_;
-    }
-
-    std::shared_ptr<emp::Float> Value::getEmpFloat64() const {
-        return  value_.emp_float_;
-    }
 
     Value Value::reveal(const int &empParty) const {
 
@@ -378,40 +379,40 @@ void Value::setValue(const std::string & aString) {
             case types::TypeId::VARCHAR:
                 return Value(this); // copy the public field, no need to reveal
             case types::TypeId::ENCRYPTED_BOOLEAN: {
-                bool decrypted = this->getEmpBit()->reveal<bool>((int) empParty); // returns a bool for both XOR and PUBLIC
+                bool decrypted = this->getEmpBit().reveal<bool>((int) empParty); // returns a bool for both XOR and PUBLIC
                 return Value(decrypted);
             }
             case types::TypeId::ENCRYPTED_INTEGER32: {
-                std::shared_ptr<emp::Integer> anInt = this->getEmpInt();
-                int32_t dst = anInt->reveal<int32_t>((int) empParty);
+                emp::Integer anInt = this->getEmpInt();
+                int32_t dst = anInt.reveal<int32_t>((int) empParty);
                 return types::Value(dst);
             }
 
             case types::TypeId::ENCRYPTED_INTEGER64: {
-                std::shared_ptr<emp::Integer> anInt = this->getEmpInt();
-                int64_t dst = anInt->reveal<int64_t>((int) empParty);
+                emp::Integer anInt = this->getEmpInt();
+                int64_t dst = anInt.reveal<int64_t>((int) empParty);
                 return types::Value(dst);
             }
             case types::TypeId::ENCRYPTED_FLOAT32: {
-                float_t dst = this->getEmpFloat32()->reveal<double>((int) empParty);
+                float_t dst = this->getEmpFloat32().reveal<double>((int) empParty);
                 return types::Value(dst);
             }
 
             case types::TypeId::ENCRYPTED_FLOAT64: {
-                std::shared_ptr<emp::Float> floatVal = this->getEmpFloat64();
-                double dst = floatVal->reveal<double_t>((int) empParty);
+                emp::Float floatVal = this->getEmpFloat64();
+                double dst = floatVal.reveal<double_t>((int) empParty);
                 return types::Value(dst);
 
             }
 
             case types::TypeId::ENCRYPTED_VARCHAR: {
 
-                std::shared_ptr<emp::Integer> encryptedString = this->getEmpInt();
-                long bitCount = encryptedString->length;
+                emp::Integer encryptedString = this->getEmpInt();
+                long bitCount = encryptedString.length;
                 long byteCount = bitCount / 8;
 
                 bool *bools = new bool[bitCount];
-                emp::ProtocolExecution::prot_exec->reveal(bools, (int) empParty, (emp::block *) encryptedString->bits, bitCount);
+                emp::ProtocolExecution::prot_exec->reveal(bools, (int) empParty, (emp::block *) encryptedString.bits, bitCount);
 
                 char *decodedBytes = (char *) DataUtilities::boolsToBytes(bools, bitCount);
 
