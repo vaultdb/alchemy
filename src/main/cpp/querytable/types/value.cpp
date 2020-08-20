@@ -363,7 +363,7 @@ void Value::setValue(const std::string & aString) {
         return  value_.emp_float_;
     }
 
-    Value Value::reveal(EmpParty party) const {
+    Value Value::reveal(const int &empParty) const {
 
 
 
@@ -378,28 +378,28 @@ void Value::setValue(const std::string & aString) {
             case types::TypeId::VARCHAR:
                 return Value(this); // copy the public field, no need to reveal
             case types::TypeId::ENCRYPTED_BOOLEAN: {
-                bool decrypted = this->getEmpBit()->reveal<bool>((int) party); // returns a bool for both XOR and PUBLIC
+                bool decrypted = this->getEmpBit()->reveal<bool>((int) empParty); // returns a bool for both XOR and PUBLIC
                 return Value(decrypted);
             }
             case types::TypeId::ENCRYPTED_INTEGER32: {
                 std::shared_ptr<emp::Integer> anInt = this->getEmpInt();
-                int32_t dst = anInt->reveal<int32_t>((int) party);
+                int32_t dst = anInt->reveal<int32_t>((int) empParty);
                 return types::Value(dst);
             }
 
             case types::TypeId::ENCRYPTED_INTEGER64: {
                 std::shared_ptr<emp::Integer> anInt = this->getEmpInt();
-                int64_t dst = anInt->reveal<int64_t>((int) party);
+                int64_t dst = anInt->reveal<int64_t>((int) empParty);
                 return types::Value(dst);
             }
             case types::TypeId::ENCRYPTED_FLOAT32: {
-                float_t dst = this->getEmpFloat32()->reveal<double>((int) party);
+                float_t dst = this->getEmpFloat32()->reveal<double>((int) empParty);
                 return types::Value(dst);
             }
 
             case types::TypeId::ENCRYPTED_FLOAT64: {
                 std::shared_ptr<emp::Float> floatVal = this->getEmpFloat64();
-                double dst = floatVal->reveal<double_t>((int) party);
+                double dst = floatVal->reveal<double_t>((int) empParty);
                 return types::Value(dst);
 
             }
@@ -411,7 +411,7 @@ void Value::setValue(const std::string & aString) {
                 long byteCount = bitCount / 8;
 
                 bool *bools = new bool[bitCount];
-                emp::ProtocolExecution::prot_exec->reveal(bools, (int) party, (emp::block *) encryptedString->bits,  bitCount);
+                emp::ProtocolExecution::prot_exec->reveal(bools, (int) empParty, (emp::block *) encryptedString->bits, bitCount);
 
                 char *decodedBytes = (char *) DataUtilities::boolsToBytes(bools, bitCount);
 

@@ -27,7 +27,7 @@ public:
 
   types::Value getValue() const;
 
-  QueryField reveal(EmpParty party) const;
+  QueryField reveal(const int &party) const;
     int getOrdinal() const { return ordinal; }
     void serialize(bool *dst);
     void setValue(const types::Value & val);

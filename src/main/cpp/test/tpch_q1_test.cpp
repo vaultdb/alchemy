@@ -129,7 +129,7 @@ TEST_F(tpch_q1_test, TpcHQ1FullObliviousTruncated) {
   AggregateDef aggDef;
 
   EmpManager *empManager = EmpManager::getInstance();
-  empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+  empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
 
   vector<int> sortOrdinals{0, 1};
   SortDef sortDef;
@@ -186,8 +186,8 @@ TEST_F(tpch_q1_test, TpcHQ1FullObliviousTruncated) {
 
 
 
-  // TODO: shashank: verify the reveal method in QueryTable
-  std::unique_ptr<QueryTable> decrypted = aggregated->reveal(EmpParty::PUBLIC);
+
+  std::unique_ptr<QueryTable> decrypted = aggregated->reveal(emp::PUBLIC);
 
   std::unique_ptr<QueryTable> expected = pq.getQueryTable("dbname=tpch_unioned",
                                                           baseQuery, false);

@@ -68,7 +68,7 @@ public:
 
     std::shared_ptr<emp::Float32> getEmpFloat32() const ;
     std::shared_ptr<emp::Float> getEmpFloat64() const ;
-    Value reveal(EmpParty party = (EmpParty) emp::PUBLIC) const;
+    Value reveal(const int &empParty =  emp::PUBLIC) const;
 
 
     // comparators

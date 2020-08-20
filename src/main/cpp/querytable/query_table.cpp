@@ -35,10 +35,10 @@ const bool QueryTable::isEncrypted() const { return is_encrypted_; }
 
 
 
-std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
+std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
     int colCount = getSchema().getFieldCount();
     int tupleCount = getTupleCount();
-    bool isEncrypted = (party == EmpParty::XOR) ? true : false;
+    bool isEncrypted = (empParty == emp::XOR) ? true : false;
 
 
     std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, colCount, isEncrypted));
@@ -49,7 +49,7 @@ std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
         srcTuple = getTuple(i);
 
         QueryTuple dstTuple(colCount, false);
-        dstTuple = srcTuple.reveal(party);
+        dstTuple = srcTuple.reveal(empParty);
         dstTable->putTuple(i, dstTuple);
 
     }
@@ -57,8 +57,6 @@ std::unique_ptr<QueryTable> QueryTable::reveal(EmpParty party) const  {
     return dstTable;
 
 
-//    EmpManager *empManager  = EmpManager::getInstance();
-//    return empManager->revealTable(this, (int) party);
 }
 
 // iterate over all tuples and produce one long bit array for encrypting/decrypting in emp

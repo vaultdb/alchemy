@@ -13,7 +13,7 @@
 class EmpManager {
     static EmpManager *instance;
     emp::NetIO *netio_;
-    EmpParty party_;
+    int empParty_;
 
     // Private constructor so that no objects can be created.
     EmpManager() {
@@ -27,11 +27,11 @@ public:
         return instance;
     }
 
-    void configureEmpManager(const char *aliceHost, int port, EmpParty party) {
-        std::cout << "Instantiating emp with host=" << aliceHost << " port=" << port << " party=" << (int) party << std::endl;
-        netio_ =  new emp::NetIO(party == EmpParty::ALICE ? nullptr:aliceHost, port);
-        party_ = party;
-       emp::setup_semi_honest(netio_, (int) party_);
+    void configureEmpManager(const char *aliceHost, int port, int empParty) {
+        std::cout << "Instantiating emp with host=" << aliceHost << " port=" << port << " empParty=" <<  empParty << std::endl;
+        netio_ =  new emp::NetIO(empParty == emp::ALICE ? nullptr : aliceHost, port);
+        empParty_ = empParty;
+       emp::setup_semi_honest(netio_, (int) empParty_);
        std::cout << "Initialized netio!" << std::endl;
     }
 

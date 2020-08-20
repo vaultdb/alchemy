@@ -15,12 +15,12 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
     int colCount = srcTable->getSchema().getFieldCount();
     QueryTuple dstTuple(colCount, true);
 
-    if (party_ == EmpParty::ALICE) {
+    if (empParty_ == emp::ALICE) {
         netio_->send_data(&aliceSize, 4);
         netio_->flush();
         netio_->recv_data(&bobSize, 4);
         netio_->flush();
-    } else if (party_ == EmpParty::BOB) {
+    } else if (empParty_ == emp::BOB) {
         netio_->recv_data(&aliceSize, 4);
         netio_->flush();
         netio_->send_data(&bobSize, 4);
@@ -37,8 +37,8 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
 
     for (int i = 0; i < aliceSize; ++i) {
         --readTuple;
-        QueryTuple *srcTuple = (party_ == EmpParty::ALICE) ? new QueryTuple(srcTable->getTuple(readTuple)) : nullptr;
-        dstTuple = secretShareTuple(srcTuple, &srcTable->getSchema(), (int) EmpParty::ALICE);
+        QueryTuple *srcTuple = (empParty_ == emp::ALICE) ? new QueryTuple(srcTable->getTuple(readTuple)) : nullptr;
+        dstTuple = secretShareTuple(srcTuple, &srcTable->getSchema(), (int) emp::ALICE);
         dstTable->putTuple(i, dstTuple);
         if(srcTuple != nullptr)
             delete srcTuple;
@@ -49,8 +49,8 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
 
     int writeIdx = aliceSize;
     for (int i = 0; i < bobSize; ++i) {
-        QueryTuple *srcTuple =  (party_ == EmpParty::BOB) ?  new QueryTuple(srcTable->getTuple(i)) : nullptr;
-        dstTuple = secretShareTuple(srcTuple, &srcTable->getSchema(), (int) EmpParty::BOB);
+        QueryTuple *srcTuple = (empParty_ == emp::BOB) ? new QueryTuple(srcTable->getTuple(i)) : nullptr;
+        dstTuple = secretShareTuple(srcTuple, &srcTable->getSchema(), (int) emp::BOB);
         dstTable->putTuple(writeIdx, dstTuple);
         ++writeIdx;
         if(srcTuple != nullptr)
@@ -73,7 +73,7 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
 
     for(int i = 0; i < fieldCount; ++i) {
 
-        const QueryField *srcField = ((int) party_ == party) ? new QueryField(srcTuple->getField(i)) : nullptr;
+        const QueryField *srcField = ((int) empParty_ == party) ? new QueryField(srcTuple->getField(i)) : nullptr;
         QueryField dstField(secretShareField(srcField, i, schema->getField(i).getType(), schema->getField(i).size(), party));
         dstTuple.putField(i, dstField);
         if(srcField != nullptr)
@@ -99,7 +99,7 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
 QueryField
 EmpManager::secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, size_t length, int party) {
 
-    types::Value *srcValue = ((int) party_ == party) ? new types::Value(srcField->getValue()) : nullptr;
+    types::Value *srcValue = ((int) empParty_ == party) ? new types::Value(srcField->getValue()) : nullptr;
 
 
     types::Value dstValue = secretShareValue(srcValue, type, length, party);
@@ -115,35 +115,35 @@ types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::T
 
     switch (type) {
         case vaultdb::types::TypeId::BOOLEAN: {
-            bool bit = ((int) party_ == party) ? srcValue->getBool() : 0;
+            bool bit = ((int) empParty_ == party) ? srcValue->getBool() : 0;
             emp::Bit eBit(bit, party);
             return types::Value(eBit);
         }
         case vaultdb::types::TypeId::INTEGER32: {
-            int32_t value = ((int) party_ == party) ? srcValue->getInt32() : 0;
+            int32_t value = ((int) empParty_ == party) ? srcValue->getInt32() : 0;
             emp::Integer intVal(32, value, party);
             return types::Value(types::TypeId::ENCRYPTED_INTEGER32, intVal);
         }
         case vaultdb::types::TypeId::NUMERIC:
         case vaultdb::types::TypeId::FLOAT32: {
-            float value = ((int) party_ == party) ? srcValue->getFloat32() : 0;
+            float value = ((int) empParty_ == party) ? srcValue->getFloat32() : 0;
             emp::Float32 floatVal(value, party);
             return types::Value(floatVal);
         }
         case vaultdb::types::TypeId::FLOAT64: {
-            double value =  ((int) party_ == party) ? srcValue->getFloat64() : 0;
+            double value = ((int) empParty_ == party) ? srcValue->getFloat64() : 0;
             emp::Float floatVal(24, 9, value, party);
             return types::Value(floatVal);
         }
         case vaultdb::types::TypeId::INTEGER64: {
-            int64_t value =  ((int) party_ == party) ? srcValue->getInt64(): 0;
+            int64_t value = ((int) empParty_ == party) ? srcValue->getInt64() : 0;
             emp::Integer intVal(64, value, party);
             return types::Value(types::TypeId::ENCRYPTED_INTEGER64, intVal);
         }
 
         case vaultdb::types::TypeId::VARCHAR: {
 
-            std::string valueStr = ((int) party_ == party) ?
+            std::string valueStr = ((int) empParty_ == party) ?
                 srcValue->getVarchar() :
                 std::to_string(0);
 
@@ -172,7 +172,7 @@ emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount
 
     bool *bools = DataUtilities::bytesToBool((int8_t *) input.c_str(), stringByteCount);
     emp::Bit *bits = new emp::Bit[stringBitCount];
-    if(party == (int) party_) {
+    if(party == (int) empParty_) {
         emp::init(bits, bools, stringBitCount, party);
     }
     else {

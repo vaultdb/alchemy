@@ -15,7 +15,7 @@ using namespace dbquery;
 #define FLOAT8OID 701
 #define NUMERIC 1700
 
-Row row_from_pq(pqxx::row row, Schema s) {}
+Row row_from_pq(pqxx::row row, Schema s) {return Row(); }
 
 OIDType get_OID_field_type(pqxx::oid oid) {
   switch (oid) {

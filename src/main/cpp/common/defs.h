@@ -6,9 +6,18 @@
 #define _DEFS_H
 
 #include <emp-tool/utils/constants.h>
+#include <vector>
+
 namespace vaultdb {
 
-enum class EmpParty { ALICE = emp::ALICE, BOB = emp::BOB, PUBLIC = emp::PUBLIC, XOR = emp::XOR };
+    enum class SortOrder { INVALID = 0, ASCENDING, DESCENDING};
+
+    struct SortDef {
+        SortOrder order;
+        SortOrder dummy_order;
+        // ordinal == -1 implies the sorting column is the dummy flag
+        std::vector<int> ordinals;
+    };
 
 }
 #endif // _DEFS_H

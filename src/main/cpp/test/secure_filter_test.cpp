@@ -69,7 +69,7 @@ protected:
 TEST_F(SecureFilterTest, test_table_scan) {
 
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port,  FLAGS_party);
     std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 5";
@@ -88,7 +88,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::shared_ptr<SecureSqlInput> input(new SecureSqlInput(dbName, sql, false));
     std::shared_ptr<QueryTable> output = input->run();
 
-    std::unique_ptr<QueryTable> revealed = output->reveal((EmpParty) emp::PUBLIC);
+    std::unique_ptr<QueryTable> revealed = output->reveal(emp::PUBLIC);
     std::cout << *revealed << std::endl;
 
     ASSERT_EQ(expectedOutput, revealed->toString());
@@ -104,7 +104,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
 
 TEST_F(SecureFilterTest, test_filter) {
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
     std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 5";
@@ -123,7 +123,7 @@ TEST_F(SecureFilterTest, test_filter) {
     std::shared_ptr<Operator> filter = filterOp->getPtr();
 
     std::shared_ptr<QueryTable> result = filter->run();
-    std::unique_ptr<QueryTable> revealed = result->reveal(EmpParty::PUBLIC);
+    std::unique_ptr<QueryTable> revealed = result->reveal(emp::PUBLIC);
     std::cout << "Result: " << *revealed << std::endl;
 
 

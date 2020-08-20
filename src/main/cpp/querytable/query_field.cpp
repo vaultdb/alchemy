@@ -1,4 +1,3 @@
-#include <util/type_utilities.h>
 #include "query_field.h"
 using namespace vaultdb;
 
@@ -16,7 +15,7 @@ void QueryField::setValue(const types::Value & val) {
 }
 
 
-QueryField QueryField::reveal(EmpParty party) const {
+QueryField QueryField::reveal(const int &party) const {
 
     types::Value value = this->value_;
     QueryField result(*this);

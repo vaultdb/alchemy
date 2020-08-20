@@ -140,11 +140,11 @@ protected:
 TEST_F(EmpManagerTest, emp_manager_test_int) {
 
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port,  FLAGS_party);
 
     int32_t inputValue =  FLAGS_party == emp::ALICE ? 1 : 0;
 
-    emp::Integer aliceSecretShared = emp::Integer(32, inputValue, (int) EmpParty::ALICE);
+    emp::Integer aliceSecretShared = emp::Integer(32, inputValue,  emp::ALICE);
     empManager->flush();
 
     int32_t decrypted = aliceSecretShared.reveal<int32_t>(emp::PUBLIC);
@@ -154,7 +154,7 @@ TEST_F(EmpManagerTest, emp_manager_test_int) {
 
     inputValue =  FLAGS_party == emp::ALICE ? 0 : 4;
 
-    emp::Integer bobSecretShared = emp::Integer(32, inputValue, (int) EmpParty::BOB);
+    emp::Integer bobSecretShared = emp::Integer(32, inputValue,  emp::BOB);
 
     empManager->flush();
     decrypted = bobSecretShared.reveal<int32_t>(emp::PUBLIC);
@@ -169,7 +169,7 @@ TEST_F(EmpManagerTest, emp_manager_test_int) {
 TEST_F(EmpManagerTest, emp_manager_test_varchar) {
 
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
 
     std::string initialString = "lithely regular deposits. fluffily";
     std::cout << "Encoding: " << initialString << std::endl;
@@ -237,7 +237,7 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
     PsqlDataProvider dataProvider;
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port,  FLAGS_party);
 
 
     std::string inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey LIMIT 2";
@@ -269,11 +269,11 @@ TEST_F(EmpManagerTest, encrypt_table_one_column) {
     const QueryTuple encryptedTuple = encryptedTable->getTuple(0);
     const QueryField encryptedField = encryptedTuple.getField(0);
     types::Value value = encryptedField.getValue();
-    types::Value revealedValue = value.reveal(EmpParty::PUBLIC);
+    types::Value revealedValue = value.reveal(emp::PUBLIC);
 
     ASSERT_EQ(1, revealedValue.getInt32());
 
-    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(EmpParty::PUBLIC);
+    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 
 
     std::cout << "Observed: \n" << *decryptedTable << endl;
@@ -292,7 +292,7 @@ TEST_F(EmpManagerTest, encrypt_table_two_cols) {
     PsqlDataProvider dataProvider;
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port,  FLAGS_party);
 
     std::string inputQuery = "SELECT l_orderkey, l_comment "
                              "FROM lineitem "
@@ -341,7 +341,7 @@ TEST_F(EmpManagerTest, encrypt_table_two_cols) {
     std::cout << "Expected:\n" << expectedTable << std::endl;
 
 
-    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(EmpParty::PUBLIC);
+    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
     std::cout << "Observed: \n" << *decryptedTable << endl;
 
     ASSERT_EQ(expectedTable, decryptedTable->toString()) << "Query table was not processed correctly.";
@@ -358,7 +358,7 @@ TEST_F(EmpManagerTest, encrypt_table) {
     PsqlDataProvider dataProvider;
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port,  FLAGS_party);
 
     std::string inputQuery = EmpManagerTestEnvironment::getInputQuery();
 
@@ -384,7 +384,7 @@ TEST_F(EmpManagerTest, encrypt_table) {
     std::cout << "Expected:\n" << expectedTable << std::endl;
 
 
-    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(EmpParty::PUBLIC);
+    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
     std::cout << "Observed: \n" << *decryptedTable << endl;
 
     ASSERT_EQ(expectedTable, decryptedTable->toString()) << "Query table was not processed correctly.";
@@ -400,7 +400,7 @@ TEST_F(EmpManagerTest, encrypt_table_dummy_tag) {
     PsqlDataProvider dataProvider;
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
 
     std::string inputQuery = EmpManagerTestEnvironment::getInputQueryDummyTag();
 
@@ -425,7 +425,7 @@ TEST_F(EmpManagerTest, encrypt_table_dummy_tag) {
     std::cout << "Expected:\n" << expectedTable << std::endl;
 
 
-    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(EmpParty::PUBLIC);
+    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
     std::cout << "Observed: \n" << *decryptedTable << endl;
 
     ASSERT_EQ(expectedTable, decryptedTable->toString()) << "Query table was not processed correctly.";

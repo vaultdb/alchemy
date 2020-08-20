@@ -43,7 +43,7 @@ public:
 
     friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
 
-    std::unique_ptr<QueryTable> reveal(EmpParty party) const;
+    std::unique_ptr<QueryTable> reveal(int empParty) const;
 
     QueryTable & operator=(const QueryTable & src);
 };

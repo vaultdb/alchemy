@@ -32,7 +32,7 @@ protected:
     // void testSingleIntColumn();
 TEST_F(SecureSortTest,  testSingleIntColumn) {
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
     std::string sql = "SELECT c_custkey FROM customer LIMIT 10";
 
     std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
@@ -56,7 +56,7 @@ TEST_F(SecureSortTest,  testSingleIntColumn) {
 
 TEST_F(SecureSortTest,  testTwoIntColumns) {
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port,  FLAGS_party);
     std::string sql = "SELECT o_orderkey, o_custkey FROM orders LIMIT 10";
     std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
@@ -82,7 +82,7 @@ TEST_F(SecureSortTest,  testSingleFloatColumnEncrypted) {
 
 
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
     std::string sql = "SELECT c_acctbal FROM customer LIMIT 10";
     std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
@@ -106,7 +106,7 @@ TEST_F(SecureSortTest,  testSingleFloatColumnEncrypted) {
 TEST_F(SecureSortTest,  testSingleVarcharColumn) {
 
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
     std::string sql = "SELECT o_orderkey, o_custkey FROM orders LIMIT 10";
     std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
@@ -131,7 +131,7 @@ TEST_F(SecureSortTest,  testSingleVarcharColumn) {
 TEST_F(SecureSortTest, testSingleFloatColumnUnencrypted) {
 
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
     std::string sql = "SELECT c_acctbal FROM customer LIMIT 10";
     std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
@@ -151,7 +151,7 @@ TEST_F(SecureSortTest, testSingleFloatColumnUnencrypted) {
 
 TEST_F(SecureSortTest, testLineItemSortDummyTag) {
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port,  FLAGS_party);
     std::string sql = "SELECT l_orderkey FROM lineitem LIMIT 10";
     std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 

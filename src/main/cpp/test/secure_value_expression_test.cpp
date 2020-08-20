@@ -47,7 +47,7 @@ TEST_F(SecureValueExpressionTest, test_value_assignment) {
 TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
 
     // alice inputs 7, bob inputs 12
     int32_t inputValue =  FLAGS_party == emp::ALICE ? 7 : 12;
@@ -66,7 +66,7 @@ TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 
     Value result = (aliceEncryptedValue + bobEncryptedValue) * multiplierValue;
 
-    Value revealed = result.reveal(EmpParty::PUBLIC);
+    Value revealed = result.reveal(emp::PUBLIC);
 
     ASSERT_EQ(revealed.getInt32(), 19*2);
 
@@ -81,7 +81,7 @@ TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 TEST_F(SecureValueExpressionTest, test_millionaires) {
 
     EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, (EmpParty) FLAGS_party);
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port,  FLAGS_party);
 
     // alice inputs 7, bob inputs 12
     int32_t inputValue =  FLAGS_party == emp::ALICE ? 7 : 12;
@@ -95,7 +95,7 @@ TEST_F(SecureValueExpressionTest, test_millionaires) {
 
 
     Value result = aliceEncryptedValue > bobEncryptedValue;
-    Value revealed = result.reveal(EmpParty::PUBLIC);
+    Value revealed = result.reveal(emp::PUBLIC);
 
     ASSERT_EQ(revealed.getBool(), false);
 

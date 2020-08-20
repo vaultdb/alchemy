@@ -148,11 +148,11 @@ QueryTuple& QueryTuple::operator=(const QueryTuple& src) {
 
 }
 
-QueryTuple QueryTuple::reveal(EmpParty party) const {
+QueryTuple QueryTuple::reveal(const int &empParty) const {
     QueryTuple dstTuple(fieldCount_, false);
 
     for(int i = 0; i < fieldCount_; ++i) {
-        QueryField dstField = fields_[i].reveal(party);
+        QueryField dstField = fields_[i].reveal(empParty);
         dstTuple.putField(i, dstField);
     }
 
@@ -161,7 +161,7 @@ QueryTuple QueryTuple::reveal(EmpParty party) const {
 
 
     std::shared_ptr<emp::Bit> dummyTag = dummy_tag_.getEmpBit();
-    bool revealedBit = dummyTag->reveal((int) party);
+    bool revealedBit = dummyTag->reveal((int) empParty);
     types::Value revealedValue(revealedBit);
 
 
