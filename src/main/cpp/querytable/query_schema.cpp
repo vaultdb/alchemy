@@ -27,7 +27,7 @@ QuerySchema::QuerySchema(const QuerySchema &s) : fieldCount_(s.getFieldCount()){
     fields_.reserve(fieldCount_);
 
   for (int i = 0; i < s.getFieldCount(); i++) {
-      fields_[i] = s.getField(i);
+      fields_.push_back( s.getField(i));
   }
 }
 

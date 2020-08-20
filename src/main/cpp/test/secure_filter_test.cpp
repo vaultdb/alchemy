@@ -44,7 +44,6 @@ public:
         Value field = aTuple.getField(1).getValue();
 
         Value res = field == encryptedLineNumber;
-        std::cout << "Comparing " << field.reveal() << " to " << encryptedLineNumber.reveal() << " result: " <<  res.reveal() <<  " at " << &res << std::endl;
 
         res = !res;
         return res;  // (!) because dummy is false if our selection criteria is satisfied
@@ -74,16 +73,16 @@ TEST_F(SecureFilterTest, test_table_scan) {
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 5";
     std::string expectedOutput = "(#0 int32 lineitem.l_orderkey, #1 int32 lineitem.l_linenumber, #2 varchar(1) lineitem.l_linestatus) isEncrypted? 0\n"
-                                 "(338759, 2, F) (dummy=false)\n"
-                                 "(435171, 1, O) (dummy=false)\n"
-                                 "(1028, 7, F) (dummy=false)\n"
-                                 "(373158, 5, F) (dummy=false)\n"
-                                 "(85090, 6, O) (dummy=false)\n"
-                                 "(7299, 1, F) (dummy=false)\n"
-                                 "(16452, 4, F) (dummy=false)\n"
-                                 "(232579, 1, O) (dummy=false)\n"
-                                 "(474533, 3, O) (dummy=false)\n"
-                                 "(173698, 1, F) (dummy=false)\n";
+                                 "(338759, 2, F)\n"
+                                 "(435171, 1, O)\n"
+                                 "(1028, 7, F)\n"
+                                 "(373158, 5, F)\n"
+                                 "(85090, 6, O)\n"
+                                 "(7299, 1, F)\n"
+                                 "(16452, 4, F)\n"
+                                 "(232579, 1, O)\n"
+                                 "(474533, 3, O)\n"
+                                 "(173698, 1, F)\n";
 
     std::shared_ptr<SecureSqlInput> input(new SecureSqlInput(dbName, sql, false));
     std::shared_ptr<QueryTable> output = input->run();
@@ -110,16 +109,16 @@ TEST_F(SecureFilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 5";
 
     std::string expectedOutput = "(#0 int32 lineitem.l_orderkey, #1 int32 lineitem.l_linenumber, #2 varchar(1) lineitem.l_linestatus) isEncrypted? 0\n"
-                                 "(435171, 1, O) (dummy=false)\n"
-                                 "(7299, 1, F) (dummy=false)\n"
-                                 "(232579, 1, O) (dummy=false)\n"
-                                 "(173698, 1, F) (dummy=false)\n";
+                                 "(435171, 1, O)\n"
+                                 "(7299, 1, F)\n"
+                                 "(232579, 1, O)\n"
+                                 "(173698, 1, F)\n";
 
 
     std::shared_ptr<Operator> input = std::make_shared<SecureSqlInput>(dbName, sql, false);
 
     std::shared_ptr<PredicateClass> aPredicate(new SecureFilterPredicateClass(1));  // secret share the constant (1) just once
-    Filter *filterOp = new Filter(aPredicate, input);
+    Filter *filterOp = new Filter(aPredicate, input);  // deletion handled by shared_ptr
     std::shared_ptr<Operator> filter = filterOp->getPtr();
 
     std::shared_ptr<QueryTable> result = filter->run();

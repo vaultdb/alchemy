@@ -13,7 +13,6 @@ std::shared_ptr<QueryTable> Filter::runSelf() {
 
     std::shared_ptr<QueryTable> input = children[0]->getOutput();
 
-    std::cout << "Sql input table: " << *input << std::endl;
 
     // deep copy new output, then just modify the dummy tag
     output = std::shared_ptr<QueryTable>(new QueryTable(*input));

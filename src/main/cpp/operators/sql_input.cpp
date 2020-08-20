@@ -12,7 +12,6 @@ std::shared_ptr<QueryTable> SqlInput::runSelf() {
 
 
     output = std::move(localOutput);
-    std::cout << "Output at: " << output.get() << std::endl;
 
     return output;
 }
