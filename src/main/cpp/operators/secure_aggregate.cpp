@@ -4,7 +4,6 @@
 
 #include "secure_aggregate.h"
 #include "operators/support/aggregate_id.h"
-#include <common/macros.h>
 #include <querytable/query_table.h>
 
 std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
@@ -78,18 +77,19 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
         switch (def.scalarAggregates[idx].id) {
 
         case AggregateId::COUNT: {
-          res_vec[idx] = emp::If(is_not_dummy.getEmpBit(),
-                                 (res_vec[idx] + one_enc), res_vec[idx]);
+            /* JR revert this before build
+            res_vec[idx] = emp::If(is_not_dummy.getEmpBit(),
+                                 (res_vec[idx] + one_enc), res_vec[idx]); */
           break;
         }
         case AggregateId::SUM: {
-          res_vec[idx] =
+          /*res_vec[idx] =
               emp::If(is_not_dummy.getEmpBit(),
                       (res_vec[idx] +
                        (input->getTuple(row)
                              .getField(def.scalarAggregates[idx].ordinal)
                              .getValue())),
-                      res_vec[idx]);
+                      res_vec[idx]); */
 
           //              emp::If(isDummy, zero,
           //                      *input->getTuple(row)
@@ -99,7 +99,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
           break;
         }
         case AggregateId::AVG: {
-          r_avg[idx].first =
+          /*r_avg[idx].first =
               emp::If(is_not_dummy.getEmpBit(),
                       r_avg[idx].first +
                           (input->getTuple(row)
@@ -108,7 +108,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
                       r_avg[idx].first);
           r_avg[idx].second =
               emp::If(is_not_dummy.getEmpBit(), (r_avg[idx].second + one_enc),
-                      r_avg[idx].second);
+                      r_avg[idx].second);*/
           break;
         }
         }
@@ -162,9 +162,9 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
         int ord = def.groupByOrdinals[idx];
         curr_gby = input->getTuple(cursor).getField(ord).getValue();
 
-        gby_equality =
+        /*gby_equality =
             emp::If((curr_gby.operator==(gby_vector[idx])).getEmpBit(),
-                    gby_equality, !trueBool);
+                    gby_equality, !trueBool); */
 
         gby_vector[idx] = curr_gby;
       }
@@ -173,29 +173,29 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 
         switch (def.scalarAggregates[idx].id) {
         case AggregateId::COUNT: {
-          res_vec[idx] =
+          /*res_vec[idx] =
               emp::If(is_not_dummy.getEmpBit(), one_enc, zero_enc) +
-              emp::If(gby_equality.getEmpBit(), res_vec[idx], zero_enc);
+              emp::If(gby_equality.getEmpBit(), res_vec[idx], zero_enc); */
           break;
         }
         case AggregateId::SUM: {
-          res_vec[idx] =
+         /* res_vec[idx] =
               emp::If(is_not_dummy.getEmpBit(),
                       (input->getTuple(cursor)
                             .getField(def.scalarAggregates[idx].ordinal)
                             .getValue()),
                       zero_enc) +
-              emp::If(gby_equality.getEmpBit(), res_vec[idx], zero_enc);
+              emp::If(gby_equality.getEmpBit(), res_vec[idx], zero_enc); */
           break;
         }
         case AggregateId::AVG: {
           if (cursor != 0) {
-            r_avg[idx].first =
+            /*r_avg[idx].first =
                 emp::If(gby_equality.getEmpBit(), r_avg[idx].first, zero_enc);
             r_avg[idx].second =
-                emp::If(gby_equality.getEmpBit(), r_avg[idx].second, zero_enc);
+                emp::If(gby_equality.getEmpBit(), r_avg[idx].second, zero_enc); */
           }
-          r_avg[idx].first =
+          /*r_avg[idx].first =
               r_avg[idx].first +
               emp::If(is_not_dummy.getEmpBit(),
                       (input->getTuple(cursor)
@@ -206,26 +206,26 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
               r_avg[idx].second +
               emp::If(is_not_dummy.getEmpBit(), one_enc, zero_enc);
           res_vec[idx] = r_avg[idx].first / r_avg[idx].second;
-          break;
+          break;*/
         }
         }
       }
       // updating current dummy (nested If)
       if (cursor != 0) {
-        is_not_dummy = emp::If(gby_equality.getEmpBit(),
+/*        is_not_dummy = emp::If(gby_equality.getEmpBit(),
                                emp::If(aggregate_output->getTuple(cursor - 1)
                                             .getDummyTag()
                                             .getEmpBit(),
                                        trueBool, !trueBool),
-                               is_not_dummy);
+                               is_not_dummy);*/
 
         // updating previous tuple's dummy (if necessary), and setting that val
-        prev_dummy = emp::If(gby_equality.getEmpBit(),
+       /* prev_dummy = emp::If(gby_equality.getEmpBit(),
                              emp::If(aggregate_output->getTuple(cursor - 1)
                                           .getDummyTag()
                                           .getEmpBit(),
                                      prev_dummy, trueBool),
-                             prev_dummy);
+                             prev_dummy); */
 
         vaultdb::types::Value prev_dval(prev_dummy);
         aggregate_output->getTuple(cursor - 1).setDummyTag(prev_dval);
