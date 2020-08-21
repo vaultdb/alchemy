@@ -107,7 +107,6 @@ TEST_F(SecureSortTest,  testTwoIntColumns) {
     ASSERT_EQ(revealed->toString(), expectedResult);
 
 
-    /** TODO: INSERT CORRECTNESS CHECKS **/
 
 
 }

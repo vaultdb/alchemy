@@ -11,6 +11,7 @@
 #include <data/PsqlDataProvider.h>
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
+#include <operators/secure_sql_input.h>
 
 
 using namespace emp;
@@ -131,10 +132,10 @@ TEST_F(tpch_q1_test, TpcHQ1FullObliviousTruncated) {
   EmpManager *empManager = EmpManager::getInstance();
   empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
 
-  vector<int> sortOrdinals{0, 1};
   SortDefinition sortDef;
-  sortDef.order = SortDirection::ASCENDING; // TODO: each sort ordinal needs its own collation (ASC||DESC)
-  sortDef.columnOrders = sortOrdinals;
+  sortDef.columnOrders.push_back(ColumnSort (0, SortDirection::ASCENDING));
+  sortDef.columnOrders.push_back(ColumnSort (1, SortDirection::ASCENDING));
+
 
 
   string baseQuery = tpch_queries[1];
@@ -154,19 +155,16 @@ TEST_F(tpch_q1_test, TpcHQ1FullObliviousTruncated) {
                       " FROM lineitem\n"
                       " ORDER BY l_returnflag, l_linestatus LIMIT 10"; // TODO: use merge sort after secret sharing
 
-  auto inputTable = pq.getQueryTable(db_name,
-                                     inputQuery, true);
-  std::cout<<"Party = "<<FLAGS_party << " received " << inputTable->getTupleCount() << " tuples\n";
 
 
-  std::shared_ptr<QueryTable> encryptedTable = empManager->secretShareTable(inputTable.get());
-  empManager->flush();
-
+    std::shared_ptr<Operator> input(new SecureSqlInput(db_name, inputQuery, true));
 
   // sort the input tuples
   // TODO: use merge sort instead (latter half of bitonic sort network)
-  Sort(encryptedTable.get(), sortDef);
+    Sort *sortOp = new Sort(sortDef, input); // heap allocate it
+    std::shared_ptr<Operator> sort = sortOp->getPtr();
 
+    std::shared_ptr<QueryTable> sorted = sort->run();
 
   aggDef.scalarAggregates.emplace_back(ScalarAggregateDef(2, vaultdb::AggregateId::SUM, "sum_qty"));
   aggDef.scalarAggregates.emplace_back(ScalarAggregateDef(3, vaultdb::AggregateId::SUM, "sum_base_price"));
@@ -182,7 +180,7 @@ TEST_F(tpch_q1_test, TpcHQ1FullObliviousTruncated) {
 
 
 
-  auto aggregated = Aggregate(encryptedTable.get(), aggDef);
+  auto aggregated = Aggregate(sorted.get(), aggDef);
 
 
 
