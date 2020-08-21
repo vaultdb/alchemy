@@ -11,6 +11,7 @@
 class SecureSortCondition  : public SortCondition {
 
 public:
+    explicit SecureSortCondition(const SortDefinition & aSortDefinition) : SortCondition(aSortDefinition) {};
     void compareAndSwap(QueryTuple  & lhs, QueryTuple & rhs) override;
 
 

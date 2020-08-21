@@ -1,4 +1,5 @@
 #include <util/emp_manager.h>
+#include <util/type_utilities.h>
 #include "query_tuple.h"
 #include "query_schema.h"
 
@@ -177,6 +178,7 @@ void QueryTuple::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs, const emp::Bit
     for(int i = 0; i < lhs.getFieldCount(); ++i) {
         types::Value lhsValue = lhs.getField(i).getValue();
         types::Value rhsValue = rhs.getField(i).getValue();
+
 
         types::Value::compareAndSwap(lhsValue, rhsValue, cmp);
 

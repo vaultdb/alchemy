@@ -1,6 +1,7 @@
 //
 // Created by Jennie Rogers on 8/14/20.
 //
+#include <util/type_utilities.h>
 #include "value.h"
 
 using vaultdb::types::Value;
@@ -445,6 +446,7 @@ void vaultdb::types::Value::compareAndSwap(Value &lhs, Value &rhs, const emp::Bi
             emp::swap(cmp, lhsVal, rhsVal);
             lhs.setValue(opType, lhsVal);
             rhs.setValue(opType, rhsVal);
+            break;
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
@@ -453,6 +455,8 @@ void vaultdb::types::Value::compareAndSwap(Value &lhs, Value &rhs, const emp::Bi
             emp::swap(cmp, lhsVal, rhsVal);
             lhs.setValue(lhsVal);
             rhs.setValue(rhsVal);
+            break;
+
         }
         case TypeId::ENCRYPTED_FLOAT64: {
             emp::Float lhsVal = lhs.getEmpFloat64();
@@ -460,6 +464,8 @@ void vaultdb::types::Value::compareAndSwap(Value &lhs, Value &rhs, const emp::Bi
             emp::swap(cmp, lhsVal, rhsVal);
             lhs.setValue(lhsVal);
             rhs.setValue(rhsVal);
+            break;
+
         }
         case TypeId::ENCRYPTED_BOOLEAN: {
             emp::Bit lhsVal = lhs.getEmpBit();
@@ -467,6 +473,8 @@ void vaultdb::types::Value::compareAndSwap(Value &lhs, Value &rhs, const emp::Bi
             emp::swap(cmp, lhsVal, rhsVal);
             lhs.setValue(lhsVal);
             rhs.setValue(rhsVal);
+            break;
+
 
         }
        default:

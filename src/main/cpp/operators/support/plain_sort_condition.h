@@ -10,6 +10,8 @@
 
 class PlainSortCondition : public SortCondition {
 public:
+
+    PlainSortCondition(const SortDefinition & aSortDefinition) : SortCondition(aSortDefinition) {};
     void compareAndSwap(QueryTuple  & lhs, QueryTuple & rhs) override;
 
 

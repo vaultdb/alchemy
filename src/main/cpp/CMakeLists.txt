@@ -88,7 +88,7 @@ link_directories(${CMAKE_SOURCE_DIR}/lib)
 set(sources
 		${vdb_proto_srcs}
 		operators/secure_aggregate.cpp
-		operators/secure_sort.cpp
+        operators/sort.cpp
 		operators/filter.cpp
 		util/emp_manager.cpp
 		querytable/query_tuple.cpp

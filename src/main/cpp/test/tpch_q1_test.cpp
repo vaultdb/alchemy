@@ -3,7 +3,7 @@
 //
 
 #include "secure_aggregate.h"
-#include "secure_sort.h"
+#include "sort.h"
 #include "support/tpch_queries.h"
 #include "util/emp_manager.h"
 

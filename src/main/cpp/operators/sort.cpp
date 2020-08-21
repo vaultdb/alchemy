@@ -1,11 +1,13 @@
-#include "secure_sort.h"
+#include "sort.h"
 #include "querytable/types/type_id.h"
 #include "querytable/types/value.h"
 #include <emp-tool/circuits/swappable.h>
 #include <querytable/query_table.h>
 #include <vector>
+#include <operators/support/secure_sort_condition.h>
+#include <operators/support/plain_sort_condition.h>
 
-int power_of_two_less_than(int n) {
+int Sort::powerOfLessThanTwo(const int & n) {
   int k = 1;
   while (k > 0 && k < n) {
     k *= 2;
@@ -94,10 +96,10 @@ void Compare(int t1, int t2, QueryTable *t, SortDefinition &s, bool dir,
  * otherwise. The sequence to be sorted starts at index position lo,
  * the number of elements is cnt.
  **/
-void BitonicMerge(int lo, int n, QueryTable *t, SortDefinition &s, bool dir,
+/*void BitonicMerge(int lo, int n, QueryTable *t, SortDefinition &s, bool dir,
                   bool dummy_dir) {
   if (n > 1) {
-    int m = power_of_two_less_than(n);
+    int m = powerOfLessThanTwo(n);
     for (int i = lo; i < lo + n - m; i++) {
       Compare(i, i + m, t, s, dir, dummy_dir);
     }
@@ -105,12 +107,15 @@ void BitonicMerge(int lo, int n, QueryTable *t, SortDefinition &s, bool dir,
     BitonicMerge(lo + m, n - m, t, s, dir, dummy_dir);
   }
 }
+*/
 
 /** Procedure bitonicSort first produces a bitonic sequence by
  * recursively sorting its two halves in opposite directions, and then
  * calls bitonicMerge.
  **/
-void BitonicSort(int lo, int cnt, QueryTable *t, SortDefinition &s, bool dir,
+
+
+/*void BitonicSort(int lo, int cnt, QueryTable *t, SortDefinition &s, bool dir,
                  bool dummy_dir) {
   if (cnt > 1) {
     int k = cnt / 2;
@@ -118,7 +123,8 @@ void BitonicSort(int lo, int cnt, QueryTable *t, SortDefinition &s, bool dir,
     BitonicSort(lo + k, cnt - k, t, s, dir, dummy_dir);
     BitonicMerge(lo, cnt, t, s, dir, dummy_dir);
   }
-}
+}*/
+
 void Sort(QueryTable *input, SortDefinition &s) {
 /*  bool dir = s.order == SortDirection::ASCENDING ? true : false;
   bool dummy_dir = s.dummyOrder == SortDirection::ASCENDING ? true : false;
@@ -127,14 +133,79 @@ void Sort(QueryTable *input, SortDefinition &s) {
 
 Sort::Sort(const SortDefinition &aSortDefinition, std::shared_ptr<Operator> &child) : Operator(child), sortDefinition(aSortDefinition) {
 
+
 }
 
 std::shared_ptr<QueryTable> Sort::runSelf() {
     std::shared_ptr<QueryTable> input = children[0]->getOutput();
+    SortDefinition reverseSortDefinition = getReverseSortDefinition(sortDefinition);
 
+    if(input->isEncrypted()) {
+        sortCondition = std::unique_ptr<SortCondition>(new SecureSortCondition(sortDefinition));
+        reverseSortCondition = std::unique_ptr<SortCondition>(new SecureSortCondition(reverseSortDefinition));
+    }
+    else {
+        sortCondition = std::unique_ptr<SortCondition>(new PlainSortCondition(sortDefinition));
+        reverseSortCondition = std::unique_ptr<SortCondition>(new PlainSortCondition(reverseSortDefinition));
+    }
 
     // deep copy new output
     output = std::shared_ptr<QueryTable>(new QueryTable(*input));
-
-    return std::shared_ptr<QueryTable>();
+    bitonicSort(0,  output->getTupleCount(), true);
+    return output;
 }
+
+void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
+    if (cnt > 1) {
+        int k = cnt / 2;
+        bitonicSort(lo, k, !invertDir);
+        bitonicSort(lo + k, cnt - k, invertDir);
+        bitonicMerge(lo, cnt, invertDir);
+    }
+}
+
+void Sort::bitonicMerge(const int &lo, const int &n, bool invertDir) {
+
+    if (n > 1) {
+        int m = powerOfLessThanTwo(n);
+        for (int i = lo; i < lo + n - m; i++) {
+            compareAndSwap(i, i + m, invertDir);
+        }
+        bitonicMerge(lo, m, invertDir);
+        bitonicMerge(lo + m, n - m, invertDir);
+    }
+}
+
+void Sort::compareAndSwap(const int &lhsIdx, const int &rhsIdx, bool invertDir) {
+    QueryTuple lhs = output->getTuple(lhsIdx);
+    QueryTuple rhs = output->getTuple(rhsIdx);
+
+    if(!invertDir) {
+        sortCondition->compareAndSwap(lhs, rhs);
+    }
+    else {
+        reverseSortCondition->compareAndSwap(lhs, rhs);
+    }
+
+    output->putTuple(lhsIdx, lhs);
+    output->putTuple(rhsIdx, rhs);
+
+
+
+
+}
+
+SortDefinition Sort::getReverseSortDefinition(const SortDefinition & aSortDef) {
+    SortDefinition reverseSortDefinition;
+
+    for(ColumnSort cs : aSortDef.columnOrders) {
+        ColumnSort reversed = cs;
+        reversed.second = (reversed.second == SortDirection::ASCENDING) ?  SortDirection::DESCENDING : SortDirection::ASCENDING;
+        reverseSortDefinition.columnOrders.push_back(reversed);
+    }
+
+    return reverseSortDefinition;
+
+}
+
+

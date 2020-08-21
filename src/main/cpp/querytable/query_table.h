@@ -38,8 +38,10 @@ public:
   void putTuple(int idx, const QueryTuple & tuple);
   void setTupleDummyTag(const int & tupleIdx, const types::Value & dummyTag);
 
+    QueryTuple* getTuplePtr(const int & idx)  const;
 
-  // TODO for encryption/decryption
+
+    // TODO for encryption/decryption
   bool *serialize() const;
 
     friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);

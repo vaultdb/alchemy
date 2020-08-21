@@ -17,6 +17,7 @@ protected:
     types::Value getValue(QueryTuple & aTuple, const ColumnSort & aColumnSort);
 
 public:
+    SortCondition() {}; // placeholder
     SortCondition(const SortDefinition & aSortDefinition) :  sortDefinition(aSortDefinition) {};
 
     virtual void compareAndSwap(QueryTuple  & lhs, QueryTuple & rhs) = 0;

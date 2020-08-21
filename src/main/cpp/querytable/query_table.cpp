@@ -153,3 +153,8 @@ QueryTable::QueryTable(const QueryTable &src) : schema_(src.getSchema()) {
 void QueryTable::setTupleDummyTag(const int &tupleIdx, const types::Value & dummyTag) {
     tuples_[tupleIdx].setDummyTag(dummyTag);
 }
+
+QueryTuple *QueryTable::getTuplePtr(const int &idx) const {
+    return tuples_.get() + idx;
+};
+

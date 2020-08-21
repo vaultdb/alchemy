@@ -35,7 +35,6 @@ public:
   const vaultdb::types::Value getDummyTag();
 
 
-
     QueryTuple reveal(const int &empParty) const;
     friend std::ostream& operator<<(std::ostream &strm, const QueryTuple &aTuple);
 
