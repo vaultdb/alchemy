@@ -482,6 +482,50 @@ void vaultdb::types::Value::compareAndSwap(Value &lhs, Value &rhs, const emp::Bi
     }
 
 }
+Value types::Value::obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs) {
+
+  types::TypeId opType = lhs.getType();
+
+  assert(lhs.getType() == rhs.getType()); // do not compare if they are not the same type
+  assert(lhs.is_encrypted_);
+  assert(rhs.is_encrypted_);  // don't need this for the plaintext setting
+
+  switch (opType) {
+
+
+  case TypeId::ENCRYPTED_INTEGER32:
+  case TypeId::ENCRYPTED_INTEGER64:
+  case TypeId::ENCRYPTED_VARCHAR: {
+    emp::Integer lhsVal = lhs.getEmpInt();
+    emp::Integer rhsVal = rhs.getEmpInt();
+    emp::Integer result = emp::If(cmp, lhsVal, rhsVal);
+    return Value(opType, result);
+  }
+
+  case TypeId::ENCRYPTED_FLOAT32: {
+    emp::Float32 lhsVal = lhs.getEmpFloat32();
+    emp::Float32 rhsVal = rhs.getEmpFloat32();
+    emp::Float32 result = emp::If(cmp, lhsVal, rhsVal);
+    return Value(result);
+  }
+  case TypeId::ENCRYPTED_FLOAT64: {
+    emp::Float lhsVal = lhs.getEmpFloat64();
+    emp::Float rhsVal = rhs.getEmpFloat64();
+    emp::Float result = emp::If(cmp, lhsVal, rhsVal);
+    return Value(result);
+  }
+  case TypeId::ENCRYPTED_BOOLEAN: {
+    emp::Bit lhsVal = lhs.getEmpBit();
+    emp::Bit rhsVal = rhs.getEmpBit();
+    emp::Bit result = emp::If(cmp, lhsVal, rhsVal);
+    return Value(result);
+  }
+  default:
+    throw;
+  }
+
+  return Value();
+}
 
 /*bool vaultdb::types::Value::operator==(const Value &rhs) {
     assert(!this->is_encrypted_ && !rhs.is_encrypted_); // only reveal this for encrypted vals
