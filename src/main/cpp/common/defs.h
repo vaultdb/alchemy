@@ -3,6 +3,7 @@
 
 #include <emp-tool/utils/constants.h>
 #include <vector>
+#include <cstdint>
 
 namespace vaultdb {
 

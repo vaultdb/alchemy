@@ -92,6 +92,7 @@ public:
 
 
     static void compareAndSwap(Value & lhs, Value & rhs, const emp::Bit & cmp);
+    static Value obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs);
 
 protected:
   bool is_encrypted_;
