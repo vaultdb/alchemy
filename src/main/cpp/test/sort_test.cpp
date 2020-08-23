@@ -124,15 +124,16 @@ TEST_F(SortTest, tpchQ8Sort) {
 
 TEST_F(SortTest, tpchQ9Sort) {
 
-    std::string sql = "SELECT extract(year from o.o_orderdate) as o_year, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
+    std::string sql = "SELECT extract(year from o.o_orderdate) as o_year, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
                       "  JOIN nation on n_nationkey = s_nationkey"
                       " ORDER BY o_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
-    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY n_name, o_year";
+    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY n_name ASC, o_year ASC, o_orderkey";  // o_orderkey needed to make this work?
+
     std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
 
     SortDefinition sortDefinition;
-    sortDefinition.columnOrders.emplace_back(1, SortDirection::ASCENDING);
+    sortDefinition.columnOrders.emplace_back(2, SortDirection::ASCENDING);
     sortDefinition.columnOrders.emplace_back(0, SortDirection::ASCENDING);
 
 
@@ -174,7 +175,11 @@ void SortTest::runSortTest(const SortDefinition & sortDefinition, const std::str
 
     std::shared_ptr<QueryTable> result = sort->run();
 
+    std::cout << "Observed sort result: " << std::endl;
     std::cout << *result << std::endl;
+
+    std::cout << "Expected result: " << std::endl
+     << expectedResult << std::endl;
 
     ASSERT_EQ(result->toString(), expectedResult);
 
@@ -187,3 +192,12 @@ std::unique_ptr<QueryTable> SortTest::getExpectedResult(std::string sql, bool du
     return dataProvider.getQueryTable("tpch_alice", sql, dummyTag);
 
 }
+
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}
+

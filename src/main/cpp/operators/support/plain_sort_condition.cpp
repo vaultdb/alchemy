@@ -20,6 +20,7 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
         SortDirection direction = sortDefinition.columnOrders[i].second;
 
+
         // is a swap needed?
         // if (lhs > rhs AND descending) OR (lhs < rhs AND ASCENDING)
         if((gt && direction == SortDirection::DESCENDING)  ||

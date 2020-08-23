@@ -10,6 +10,7 @@
 
 #include "emp-tool/emp-tool.h"
 #include <gtest/gtest.h>
+#include <data/PsqlDataProvider.h>
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43439, "port for EMP execution");
@@ -29,6 +30,7 @@ protected:
     void TearDown() override {};
     void runSortTest(const SortDefinition & sortDefinition, const std::string & sql, const std::string & expectedResult);
 
+    std::unique_ptr<QueryTable> getExpectedResult(std::string sql, bool dummyTag);
 
 };
 
@@ -106,22 +108,101 @@ TEST_F(SecureSortTest,  testTwoIntColumns) {
 }
 
 TEST_F(SecureSortTest, tpchQ1Sort) {
-    std::string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment LIMIT 5"; // order by to ensure order is reproducible
-    std::string expectedResult = "(#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus) isEncrypted? 0\n"
-                                 "(A,F)\n"
-                                 "(A,F)\n"
-                                 "(A,F)\n"
-                                 "(N,O)\n"
-                                 "(N,O)\n"
-                                 "(N,O)\n"
-                                 "(N,O)\n"
-                                 "(R,F)\n"
-                                 "(R,F)\n"
-                                 "(R,F)";
+    std::string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    std:string expectedResultSql = "WITH input AS (SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment LIMIT 10) SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
+    std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
 
     SortDefinition sortDefinition;
-    sortDefinition.columnOrders.push_back(ColumnSort(0, SortDirection::ASCENDING));
-    sortDefinition.columnOrders.push_back(ColumnSort(1, SortDirection::ASCENDING));
+    sortDefinition.columnOrders.emplace_back(0, SortDirection::ASCENDING);
+    sortDefinition.columnOrders.emplace_back(1, SortDirection::ASCENDING);
+
+
+    runSortTest(sortDefinition, sql, expectedResult);
+
+}
+
+TEST_F(SecureSortTest, tpchQ3Sort) {
+
+    std::string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, EXTRACT(epoch FROM o.o_orderdate) o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY revenue DESC, o_orderdate";
+    std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
+
+    SortDefinition sortDefinition;
+    sortDefinition.columnOrders.emplace_back(1, SortDirection::DESCENDING);
+    sortDefinition.columnOrders.emplace_back(3, SortDirection::ASCENDING);
+
+
+    runSortTest(sortDefinition, sql, expectedResult);
+
+}
+
+
+TEST_F(SecureSortTest, tpchQ5Sort) {
+
+    std::string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY revenue DESC";
+    std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
+
+    SortDefinition sortDefinition;
+    sortDefinition.columnOrders.emplace_back(1, SortDirection::DESCENDING);
+
+
+    runSortTest(sortDefinition, sql, expectedResult);
+
+}
+
+
+
+TEST_F(SecureSortTest, tpchQ8Sort) {
+
+    std::string sql = "SELECT extract(year from o.o_orderdate) as o_year, o_orderkey FROM orders o  ORDER BY o_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY o_year, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
+    std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
+
+    SortDefinition sortDefinition;
+    sortDefinition.columnOrders.emplace_back(0, SortDirection::ASCENDING);
+
+
+    runSortTest(sortDefinition, sql, expectedResult);
+
+}
+
+
+
+
+TEST_F(SecureSortTest, tpchQ9Sort) {
+
+    std::string sql = "SELECT extract(year from o.o_orderdate) as o_year, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
+                      "  JOIN supplier s ON s_suppkey = l_suppkey"
+                      "  JOIN nation on n_nationkey = s_nationkey"
+                      " ORDER BY o_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY n_name ASC, o_year ASC,  o_orderkey";  // o_orderkey might be needed to make this reproducible
+
+    std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
+
+    SortDefinition sortDefinition;
+    sortDefinition.columnOrders.emplace_back(1, SortDirection::ASCENDING);
+    sortDefinition.columnOrders.emplace_back(0, SortDirection::ASCENDING);
+
+
+    runSortTest(sortDefinition, sql, expectedResult);
+
+}
+
+
+
+// 18
+TEST_F(SecureSortTest, tpchQ18Sort) {
+
+    std::string sql = "SELECT o_orderkey, EXTRACT(epoch FROM o_orderdate) o_orderdate, o_totalprice FROM orders"
+                      " ORDER BY o_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY o_totalprice DESC, o_orderdate";
+    std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
+
+    SortDefinition sortDefinition;
+    sortDefinition.columnOrders.emplace_back(2, SortDirection::DESCENDING);
+    sortDefinition.columnOrders.emplace_back(1, SortDirection::ASCENDING);
+
 
     runSortTest(sortDefinition, sql, expectedResult);
 
@@ -131,98 +212,14 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
 
 
-/*TEST_F(SecureSortTest,  testSingleFloatColumnEncrypted) {
 
 
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-    std::string sql = "SELECT c_acctbal FROM customer LIMIT 10";
-    std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+std::unique_ptr<QueryTable> SecureSortTest::getExpectedResult(std::string sql, bool dummyTag) {
 
-    std::shared_ptr<SecureSqlInput> input(new SecureSqlInput(dbName, sql, false));
-    std::shared_ptr<QueryTable> sqlOutput = input->run();
-
-  vector<int> ordinals{0};
-  SortDefinition sortdef;
-  sortdef.order = SortDirection::ASCENDING;
-  sortdef.columnOrders = ordinals;
-  int gates1 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
-  Sort(sqlOutput.get(), sortdef);
-  int gates2 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
-  cout << gates2 - gates1 << endl;
-
-    /** TODO: INSERT CORRECTNESS CHECKS **
-
+    PsqlDataProvider dataProvider;
+    return dataProvider.getQueryTable("tpch_alice", sql, dummyTag);
 
 }
-
-TEST_F(SecureSortTest,  testSingleVarcharColumn) {
-
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-    std::string sql = "SELECT o_orderkey, o_custkey FROM orders LIMIT 10";
-    std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
-
-    std::shared_ptr<SecureSqlInput> input(new SecureSqlInput(dbName, sql, false));
-    std::shared_ptr<QueryTable> sqlOutput = input->run();
-
-  vector<int> ordinals{0};
-  SortDefinition sortdef;
-  sortdef.order = SortDirection::ASCENDING;
-  sortdef.columnOrders = ordinals;
-  int gates1 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
-  Sort(sqlOutput.get(), sortdef);
-  int gates2 = ((HalfGateGen<NetIO> *)CircuitExecution::circ_exec)->gid;
-  cout << gates2 - gates1 << endl;
-    /** TODO: INSERT CORRECTNESS CHECKS **
-
-}
-
-
-// TODO: Sort by timestamp
-// TODO: Sort by fixed length string
-TEST_F(SecureSortTest, testSingleFloatColumnUnencrypted) {
-
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-    std::string sql = "SELECT c_acctbal FROM customer LIMIT 10";
-    std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
-
-    std::shared_ptr<SqlInput> input(new SqlInput(dbName, sql, false));
-    std::shared_ptr<QueryTable> sqlOutput = input->run();
-
-
-    vector<int> ordinals{0};
-  SortDefinition sortdef;
-  sortdef.order = SortDirection::ASCENDING;
-  sortdef.columnOrders = ordinals;
-  Sort(sqlOutput.get(), sortdef);
-
-  /** TODO: INSERT CORRECTNESS CHECKS **
-
-}
-
-TEST_F(SecureSortTest, testLineItemSortDummyTag) {
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port,  FLAGS_party);
-    std::string sql = "SELECT l_orderkey FROM lineitem LIMIT 10";
-    std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
-
-    std::shared_ptr<SqlInput> input(new SqlInput(dbName, sql, false));
-    std::shared_ptr<QueryTable> sqlOutput = input->run();
-
-  vector<int> ordinals{0, -1}; // -1 == dummy tag?
-  SortDefinition sortdef;
-  sortdef.dummyOrder = SortDirection::ASCENDING;
-  sortdef.order = SortDirection::DESCENDING;
-  sortdef.columnOrders = ordinals;
-  Sort(sqlOutput.get(), sortdef);
-
-    /** TODO: INSERT CORRECTNESS CHECKS **
-
-}
-
-*/
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
@@ -232,18 +229,3 @@ int main(int argc, char **argv) {
 }
 
 
-
-//int main(int argc, char **argv) {
-
-  //gflags::ParseCommandLineFlags(&argc, &argv, true /* remove_flags */);
-
- // testLineItemSort();
-  // emp::NetIO *io = new emp::NetIO(
-  // FLAGS_party == emp::ALICE ? nullptr : FLAGS_hostname.c_str(), FLAGS_port);
-  // setup_semi_honest(io, FLAGS_party);
-  // testSingleIntColumn();
-  // testTwoIntColumns();
-  //  testSingleFloatColumnEncrypted();
-  // testSingleFloatColumnUnencrypted();
-  // testSingleVarcharColumn();
-//}
