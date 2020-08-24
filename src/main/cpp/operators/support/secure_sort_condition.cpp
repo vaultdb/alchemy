@@ -6,30 +6,60 @@
 
 void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
-    emp::Bit swap(false, emp::PUBLIC);
+    emp::Bit swap(false);
+
+    emp::Bit swapInit = swap; // false
+
+    emp::Bit trueBit(true);
+    emp::Bit falseBit(false);
 
 
     for(int i = 0; i < sortDefinition.columnOrders.size(); ++i) {
+        int sortColIdx = sortDefinition.columnOrders[i].first;
         types::Value lhsValue = SortCondition::getValue(lhs, sortDefinition.columnOrders[i]);
         types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition.columnOrders[i]);
 
         types::Value gtValue = lhsValue > rhsValue;
         emp::Bit gt = gtValue.getEmpBit();
 
-        types::Value eqValue = (lhsValue == rhsValue);
+        types::Value eqValue = lhsValue == rhsValue;
         emp::Bit eq = eqValue.getEmpBit();
 
+
+
         SortDirection direction = sortDefinition.columnOrders[i].second;
-        emp::Bit isAscending(direction == vaultdb::SortDirection::ASCENDING);
-        emp::Bit isDescending(direction == vaultdb::SortDirection::DESCENDING);
+
+        std::cout << "Comparing " << lhsValue.reveal(emp::PUBLIC) << " to " << rhsValue.reveal(emp::PUBLIC) << " gt? " << gt.reveal() << " sort direction: " << (int) direction << std::endl;
+
 
         // is a swap needed?
         // if (lhs > rhs AND descending) OR (lhs < rhs AND ASCENDING)
-        emp::Bit colSwapFlag = ((gt & isDescending) | (!gt & isAscending));
+        emp::Bit colSwapFlag;
+        if(direction == vaultdb::SortDirection::ASCENDING) {
+            colSwapFlag = !gt & !swapInit;
+        }
+        else {
+            colSwapFlag = gt & !swapInit;
+        }
+
+
+        std::cout << "   Comparing " << lhs.reveal(emp::PUBLIC) <<  " to " << rhs.reveal(emp::PUBLIC) << " on col: " <<  sortColIdx << " toSwap? " << colSwapFlag.reveal() << std::endl;
+        // find first one where not eq, use this to init flag
+
         swap = swap | colSwapFlag; // once we know there's a swap once, we keep it
+        swapInit = swapInit  | If(!eq, trueBit, falseBit);  // have we found the most significant column where they are not equal?
 
     } // end check for swap
 
 
     QueryTuple::compareAndSwap(lhs, rhs, swap);
 }
+/*     if((gt && direction == SortDirection::DESCENDING)  ||
+                (!gt && direction == SortDirection::ASCENDING)){
+                swap = true;
+                break;
+            }
+            else if (!eq) {
+                break; // no switch needed, they are already in the right order
+            }
+*/

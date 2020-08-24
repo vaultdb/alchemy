@@ -25,4 +25,3 @@ private:
     SortDefinition getReverseSortDefinition(const SortDefinition & aSortDef);
 };
 
-//void Sort(QueryTable *input, SortDefinition &s);

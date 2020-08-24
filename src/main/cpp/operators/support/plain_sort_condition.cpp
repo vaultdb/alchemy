@@ -20,6 +20,8 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
         SortDirection direction = sortDefinition.columnOrders[i].second;
 
+        std::cout << "Comparing " << lhsValue << " to " << rhsValue<< " gt? " << gt << " sort direction: " << (int) direction << std::endl;
+
 
         // is a swap needed?
         // if (lhs > rhs AND descending) OR (lhs < rhs AND ASCENDING)
@@ -32,7 +34,10 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
                 break; // no switch needed, they are already in the right order
             }
 
+        std::cout << "   Comparing " << lhs<<  " to " << rhs << " on col: " <<  sortDefinition.columnOrders[i].first << " toSwap? " << swap << std::endl;
+
     } // end check for swap
+
 
     if(swap) {
         QueryTuple tmp = lhs;

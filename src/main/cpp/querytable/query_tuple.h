@@ -37,6 +37,7 @@ public:
 
     QueryTuple reveal(const int &empParty) const;
     friend std::ostream& operator<<(std::ostream &strm, const QueryTuple &aTuple);
+    std::string toString() const;
 
     QueryTuple();
 

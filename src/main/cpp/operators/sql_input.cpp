@@ -7,11 +7,6 @@
 
 // read in the data from supplied SQL query
 std::shared_ptr<QueryTable> SqlInput::runSelf() {
-    PsqlDataProvider dataProvider;
-    std::unique_ptr<QueryTable> localOutput = dataProvider.getQueryTable(dbName, inputQuery, hasDummyTag);
-
-
-    output = std::move(localOutput);
-
+    // initialized in constructor
     return output;
 }

@@ -58,7 +58,7 @@ std::ostream &operator<<(std::ostream &os, const QuerySchema &schema) {
 QuerySchema &QuerySchema::operator=(const QuerySchema &other) {
 
     fieldCount_ = other.getFieldCount();
-
+    fields_.clear();
     fields_.reserve(fieldCount_);
 
     for (int i = 0; i < other.getFieldCount(); i++) {

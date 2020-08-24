@@ -6,6 +6,8 @@
 #define _SQL_INPUT_H
 
 
+#include <util/data_utilities.h>
+#include <data/PsqlDataProvider.h>
 #include "operator.h"
 
 // reads SQL input and stores in a plaintext array
@@ -20,10 +22,20 @@ public:
     // bool denotes whether the last col of the SQL statement should be interpreted as a dummy tag
     SqlInput(std::string db, std::string sql, bool dummyTag) : inputQuery(sql), dbName(db), hasDummyTag(dummyTag)  {
 
+        PsqlDataProvider dataProvider;
+        std::unique_ptr<QueryTable> localOutput = dataProvider.getQueryTable(dbName, inputQuery, hasDummyTag);
+
+
+        output = std::move(localOutput);
+
+    }
+
+    // simple union over two dbs -- TODO: implement for dummy flag too
+    SqlInput(const std::string & aliceDb, const std::string & bobDb, const std::string & sql) {
+        output = DataUtilities::getUnionedResults(aliceDb, bobDb, sql);
     }
 
     std::shared_ptr<QueryTable> runSelf() override;
-
 };
 
 

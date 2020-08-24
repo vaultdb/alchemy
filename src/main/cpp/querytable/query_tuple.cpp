@@ -78,6 +78,10 @@ void QueryTuple::setIsEncrypted(bool isEncrypted) {
 
 std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple) {
 
+    strm << aTuple.toString();
+
+    return strm;
+/*
     if((!aTuple.is_encrypted_ && !(aTuple.dummy_tag_.getBool())) // if it is real
        || aTuple.is_encrypted_) { // or its status is unknown
         strm << "(" << aTuple.getField(0);
@@ -89,9 +93,30 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple)
     }
     return strm;
 
+    */
+
 
 
 }
+
+
+
+std::string QueryTuple::toString() const {
+    std::stringstream sstream;
+
+    if((!is_encrypted_ && !(dummy_tag_.getBool())) // if it is real
+       || is_encrypted_) { // or its status is unknown
+         sstream <<   "(" <<  getField(0);
+
+        for (int i = 1; i < fieldCount_; ++i)
+            sstream << ", " << getField(i);
+
+        sstream << ")"; //  (dummy=" << aTuple.dummy_tag_.getValueString() + ")";
+    }
+    return sstream.str();
+
+}
+
 
 QueryTuple::QueryTuple() {
     fieldCount_  = 0;
@@ -187,5 +212,6 @@ void QueryTuple::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs, const emp::Bit
     }
 
 }
+
 
 

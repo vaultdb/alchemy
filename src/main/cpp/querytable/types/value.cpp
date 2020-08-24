@@ -272,7 +272,7 @@ void Value::setValue(const std::string & aString) {
                 return std::to_string(getFloat64());
 
             case TypeId::VARCHAR:
-                return  getVarchar();
+                return  "'" + getVarchar() + "'";
             case TypeId::ENCRYPTED_INTEGER32: {
                 // #ifdef NDEBUG
                 return std::string("SECRET INT32");

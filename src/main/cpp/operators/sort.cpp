@@ -15,122 +15,6 @@ int Sort::powerOfLessThanTwo(const int & n) {
   return k / 2;
 }
 
-// swap_tuples attempts to be an oblivious swap.
-// Ideally the execution trace of this will be the same
-// regardless if the swap occurs.
-//
-
-void swapTuples(int t1, int t2, QueryTable *t, types::Value *swap_condition) {
-  QueryTuple tup1 = t->getTuple(t1);
-  QueryTuple tup2 = t->getTuple(t2);
-
-/*  for (int i = 0; i < t->getSchema()->getFieldCount(); i++) {
-    vaultdb::expression::Expression ex(
-        swap_condition, tup1->GetMutableField(i)->GetMutableValue(),
-        tup2->GetMutableField(i)->GetMutableValue(),
-        vaultdb::expression::ExpressionId::SWAP);
-    ex.ExecuteMutable();
-  }
-  vaultdb::expression::Expression ex2(
-          swap_condition, tup1->GetMutableDummyTag(), tup2->GetMutableDummyTag(),
-          vaultdb::expression::ExpressionId::SWAP);
-  ex2.ExecuteMutable();*/
-
-}
-
-void Compare(int t1, int t2, QueryTable *t, SortDefinition &s, bool dir,
-             bool dummy_dir) {
-
-  types::Value comparator;
-  types::Value v_and;
-  bool comparator_init = false;
-  bool v_and_init = true;
-  if (t->isEncrypted()) {
-    emp::Bit b1(comparator_init, emp::BOB);
-    emp::Bit b2(v_and_init, emp::BOB);
-    comparator = types::Value(b1);
-    v_and = types::Value(b2);
-  } else {
-    comparator = types::Value(comparator_init);
-    v_and = types::Value(v_and_init);
-  }
-
-  /* TODO(Jennie): Fix this up with the new PredicateClass framework
-  vaultdb::expression::ExpressionId compare_dir =
-      dir ? vaultdb::expression::ExpressionId::GREATERTHAN
-          : vaultdb::expression::ExpressionId::LESSTHAN;
-
-  vaultdb::expression::ExpressionId dummy_compare_dir =
-      dummy_dir ? vaultdb::expression::ExpressionId::GREATERTHAN
-                : vaultdb::expression::ExpressionId::LESSTHAN;
-
-  // This complicated algorithm is here to enable sorting on multiple
-  // attributes, the comparison bit has to be carried.
-  for (auto idx : s.columnOrders) {
-    const vaultdb::types::Value *val1, *val2;
-    if (idx == -1) {
-      val1 = t->getTuple(t1)->GetDummyTag();
-      val2 = t->getTuple(t2)->getDummyTag();
-    } else {
-      val1 = t->getTuple(t1)->getField(idx)->GetValue(),
-      val2 = t->getTuple(t2)->getField(idx)->GetValue();
-    }
-    vaultdb::expression::Expression ex(
-        val1, val2, (idx == -1) ? dummy_compare_dir : compare_dir);
-    auto v = ex.execute();
-    vaultdb::expression::Expression ex_cascade(
-        &v, &v_and, vaultdb::expression::ExpressionId::AND);
-    auto v_cascade = ex_cascade.execute();
-    vaultdb::expression::Expression ex2(&comparator, &v_cascade,
-                                        vaultdb::expression::ExpressionId::OR);
-    comparator = ex2.execute();
-    vaultdb::expression::Expression ex_and(
-        val1, val2, vaultdb::expression::ExpressionId::EQUAL);
-    v_and = ex_and.execute();
-  }
-  SwapTuples(t1, t2, t, &comparator); */
-}
-
-/** The procedure BitonicMerge recursively sorts a bitonic sequence in
- * ascending order, if dir = ASCENDING, and in descending order
- * otherwise. The sequence to be sorted starts at index position lo,
- * the number of elements is cnt.
- **/
-/*void BitonicMerge(int lo, int n, QueryTable *t, SortDefinition &s, bool dir,
-                  bool dummy_dir) {
-  if (n > 1) {
-    int m = powerOfLessThanTwo(n);
-    for (int i = lo; i < lo + n - m; i++) {
-      Compare(i, i + m, t, s, dir, dummy_dir);
-    }
-    BitonicMerge(lo, m, t, s, dir, dummy_dir);
-    BitonicMerge(lo + m, n - m, t, s, dir, dummy_dir);
-  }
-}
-*/
-
-/** Procedure bitonicSort first produces a bitonic sequence by
- * recursively sorting its two halves in opposite directions, and then
- * calls bitonicMerge.
- **/
-
-
-/*void BitonicSort(int lo, int cnt, QueryTable *t, SortDefinition &s, bool dir,
-                 bool dummy_dir) {
-  if (cnt > 1) {
-    int k = cnt / 2;
-    BitonicSort(lo, k, t, s, !dir, !dummy_dir);
-    BitonicSort(lo + k, cnt - k, t, s, dir, dummy_dir);
-    BitonicMerge(lo, cnt, t, s, dir, dummy_dir);
-  }
-}*/
-
-void Sort(QueryTable *input, SortDefinition &s) {
-/*  bool dir = s.order == SortDirection::ASCENDING ? true : false;
-  bool dummy_dir = s.dummyOrder == SortDirection::ASCENDING ? true : false;
-  BitonicSort(0, input->getTupleCount(), input, s, dir, dummy_dir);*/
-}
-
 Sort::Sort(const SortDefinition &aSortDefinition, std::shared_ptr<Operator> &child) : Operator(child), sortDefinition(aSortDefinition) {
 
 
@@ -151,9 +35,18 @@ std::shared_ptr<QueryTable> Sort::runSelf() {
 
     // deep copy new output
     output = std::shared_ptr<QueryTable>(new QueryTable(*input));
+
+
     bitonicSort(0,  output->getTupleCount(), true);
     return output;
 }
+
+
+/** Procedure bitonicSort first produces a bitonic sequence by
+ * recursively sorting its two halves in opposite directions, and then
+ * calls bitonicMerge.
+ **/
+
 
 void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
     if (cnt > 1) {
@@ -161,8 +54,38 @@ void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
         bitonicSort(lo, k, !invertDir);
         bitonicSort(lo + k, cnt - k, invertDir);
         bitonicMerge(lo, cnt, invertDir);
+
+
+        /**** DEBUG ****/
+        std::cout << "Sorted with direction: " << invertDir << " have values: { ";
+
+        if(output->isEncrypted()) {
+            std::cout   << output->getTuple(lo).reveal(emp::PUBLIC);
+            for(int i = 1; i < cnt; ++i) {
+                std::cout << ", " << output->getTuple(lo + i).reveal(emp::PUBLIC);
+            }
+
+        }
+        else {
+            std::cout << output->getTuple(lo);
+            for(int i = 1; i < cnt; ++i) {
+                std::cout << ", " << output->getTuple(lo + i);
+            }
+
+        }
+        std::cout << "}" << std::endl;
+        /**** END DEBUG ****/
+
     }
 }
+
+
+/** The procedure BitonicMerge recursively sorts a bitonic sequence in
+ * ascending order, if dir = ASCENDING, and in descending order
+ * otherwise. The sequence to be sorted starts at index position lo,
+ * the number of elements is cnt.
+ **/
+
 
 void Sort::bitonicMerge(const int &lo, const int &n, bool invertDir) {
 

@@ -7,6 +7,7 @@
 
 
 #include <cstdint>
+#include <vaultdb.h>
 
 class DataUtilities {
 
@@ -20,6 +21,13 @@ class DataUtilities {
 public:
     static bool *bytesToBool(int8_t* bytes, int byteCount);
     static int8_t *boolsToBytes(bool *src, int bitCount);
+
+    // for use in MPC setting to union together the contents of two dbs
+    static std::unique_ptr<QueryTable>
+    getExpectedResults(const std::string &sql, const std::string &orderBy, const int &party, const std::string &aliceDb,
+                       const std::string &bobDb);
+
+    static std::unique_ptr<QueryTable>  getUnionedResults(const std::string & sql, const std::string & aliceDb, const std::string & bobDb);
 };
 
 
