@@ -157,6 +157,28 @@ TEST_F(tpch_q1_test, TpcHQ1FullObliviousTruncated) {
 
 
 
+                      std::string resultQuery = "select \n"
+                                                "  l_returnflag, \n"
+                                                "  l_linestatus, \n"
+                                                "  sum(l_quantity) as sum_qty, \n"
+                                                "  sum(l_extendedprice) as sum_base_price, \n"
+                                                "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, \n"
+                                                "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, \n"
+                                                "  avg(l_quantity) as avg_qty, \n"
+                                                "  avg(l_extendedprice) as avg_price, \n"
+                                                "  avg(l_discount) as avg_disc, \n"
+                                                "  count(*) as count_order \n"
+                                                "from \n"
+                                                "  (SELECT * FROM lineitem  ORDER BY l_returnflag LIMIT 10)\n"
+                                                " where \n"
+                                                "  l_shipdate <= date '1998-08-03' \n"
+                                                "group by \n"
+                                                "  l_returnflag, \n"
+                                                "  l_linestatus \n"
+                                                " \n"
+                                                "order by \n"
+                                                "  l_returnflag, \n"
+                                                "  l_linestatus";
     std::shared_ptr<Operator> input(new SecureSqlInput(db_name, inputQuery, true));
 
   // sort the input tuples
