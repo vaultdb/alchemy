@@ -5,7 +5,7 @@
 #ifndef _FILTER_H
 #define _FILTER_H
 
-#include <operators/support/predicate_class.h>
+#include <operators/support/predicate.h>
 #include "operator.h"
 
 

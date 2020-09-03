@@ -16,7 +16,7 @@
 #include <operators/filter.h>
 #include <util/emp_manager.h>
 #include <operators/secure_sql_input.h>
-#include <operators/support/predicate_class.h>
+#include <operators/support/predicate.h>
 
 
 using namespace emp;
