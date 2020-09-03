@@ -52,7 +52,7 @@ TEST_F(SortTest, testSingleIntColumn) {
 
     SortDefinition sortDefinition;
     ColumnSort aColumnSort(0, SortDirection::ASCENDING);
-    sortDefinition.columnOrders.push_back(aColumnSort);
+    sortDefinition.push_back(aColumnSort);
 
     runSortTest(sortDefinition, sql, expectedResult);
 
@@ -65,8 +65,8 @@ TEST_F(SortTest, tpchQ1Sort) {
     std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
 
     SortDefinition sortDefinition;
-    sortDefinition.columnOrders.emplace_back(0, SortDirection::ASCENDING);
-    sortDefinition.columnOrders.emplace_back(1, SortDirection::ASCENDING);
+    sortDefinition.emplace_back(0, SortDirection::ASCENDING);
+    sortDefinition.emplace_back(1, SortDirection::ASCENDING);
 
 
     runSortTest(sortDefinition, sql, expectedResult);
@@ -80,8 +80,8 @@ TEST_F(SortTest, tpchQ3Sort) {
     std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
 
     SortDefinition sortDefinition;
-    sortDefinition.columnOrders.emplace_back(1, SortDirection::DESCENDING);
-    sortDefinition.columnOrders.emplace_back(3, SortDirection::ASCENDING);
+    sortDefinition.emplace_back(1, SortDirection::DESCENDING);
+    sortDefinition.emplace_back(3, SortDirection::ASCENDING);
 
 
     runSortTest(sortDefinition, sql, expectedResult);
@@ -96,7 +96,7 @@ TEST_F(SortTest, tpchQ5Sort) {
     std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
 
     SortDefinition sortDefinition;
-    sortDefinition.columnOrders.emplace_back(1, SortDirection::DESCENDING);
+    sortDefinition.emplace_back(1, SortDirection::DESCENDING);
 
 
     runSortTest(sortDefinition, sql, expectedResult);
@@ -112,7 +112,7 @@ TEST_F(SortTest, tpchQ8Sort) {
     std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
 
     SortDefinition sortDefinition;
-    sortDefinition.columnOrders.emplace_back(0, SortDirection::ASCENDING);
+    sortDefinition.emplace_back(0, SortDirection::ASCENDING);
 
 
     runSortTest(sortDefinition, sql, expectedResult);
@@ -133,8 +133,8 @@ TEST_F(SortTest, tpchQ9Sort) {
     std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
 
     SortDefinition sortDefinition;
-    sortDefinition.columnOrders.emplace_back(2, SortDirection::ASCENDING);
-    sortDefinition.columnOrders.emplace_back(0, SortDirection::ASCENDING);
+    sortDefinition.emplace_back(2, SortDirection::ASCENDING);
+    sortDefinition.emplace_back(0, SortDirection::ASCENDING);
 
 
     runSortTest(sortDefinition, sql, expectedResult);
@@ -152,8 +152,8 @@ TEST_F(SortTest, tpchQ18Sort) {
     std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
 
     SortDefinition sortDefinition;
-    sortDefinition.columnOrders.emplace_back(2, SortDirection::DESCENDING);
-    sortDefinition.columnOrders.emplace_back(1, SortDirection::ASCENDING);
+    sortDefinition.emplace_back(2, SortDirection::DESCENDING);
+    sortDefinition.emplace_back(1, SortDirection::ASCENDING);
 
 
     runSortTest(sortDefinition, sql, expectedResult);

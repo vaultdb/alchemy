@@ -8,9 +8,9 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
     bool swap = false;
 
-    for(int i = 0; i < sortDefinition.columnOrders.size(); ++i) {
-        types::Value lhsValue = SortCondition::getValue(lhs, sortDefinition.columnOrders[i]);
-        types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition.columnOrders[i]);
+    for(int i = 0; i < sortDefinition.size(); ++i) {
+        types::Value lhsValue = SortCondition::getValue(lhs, sortDefinition[i]);
+        types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
 
         types::Value gtValue = lhsValue > rhsValue;
         bool gt = gtValue.getBool();
@@ -18,7 +18,7 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
         types::Value eqValue = lhsValue == rhsValue;
         bool eq = eqValue.getBool();
 
-        SortDirection direction = sortDefinition.columnOrders[i].second;
+        SortDirection direction = sortDefinition[i].second;
 
         std::cout << "Comparing " << lhsValue << " to " << rhsValue<< " gt? " << gt << " sort direction: " << (int) direction << std::endl;
 
@@ -34,7 +34,7 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
                 break; // no switch needed, they are already in the right order
             }
 
-        std::cout << "   Comparing " << lhs<<  " to " << rhs << " on col: " <<  sortDefinition.columnOrders[i].first << " toSwap? " << swap << std::endl;
+        std::cout << "   Comparing " << lhs<<  " to " << rhs << " on col: " <<  sortDefinition[i].first << " toSwap? " << swap << std::endl;
 
     } // end check for swap
 

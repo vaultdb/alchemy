@@ -14,10 +14,10 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
     emp::Bit falseBit(false);
 
 
-    for(int i = 0; i < sortDefinition.columnOrders.size(); ++i) {
-        int sortColIdx = sortDefinition.columnOrders[i].first;
-        types::Value lhsValue = SortCondition::getValue(lhs, sortDefinition.columnOrders[i]);
-        types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition.columnOrders[i]);
+    for(int i = 0; i < sortDefinition.size(); ++i) {
+        int sortColIdx = sortDefinition[i].first;
+        types::Value lhsValue = SortCondition::getValue(lhs, sortDefinition[i]);
+        types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
 
         types::Value gtValue = lhsValue > rhsValue;
         emp::Bit gt = gtValue.getEmpBit();
@@ -27,7 +27,7 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
 
 
-        SortDirection direction = sortDefinition.columnOrders[i].second;
+        SortDirection direction = sortDefinition[i].second;
 
         std::cout << "Comparing " << lhsValue.reveal(emp::PUBLIC) << " to " << rhsValue.reveal(emp::PUBLIC) << " gt? " << gt.reveal() << " sort direction: " << (int) direction << std::endl;
 

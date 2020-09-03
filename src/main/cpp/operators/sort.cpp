@@ -7,6 +7,7 @@
 #include <operators/support/secure_sort_condition.h>
 #include <operators/support/plain_sort_condition.h>
 
+
 int Sort::powerOfLessThanTwo(const int & n) {
   int k = 1;
   while (k > 0 && k < n) {
@@ -121,10 +122,10 @@ void Sort::compareAndSwap(const int &lhsIdx, const int &rhsIdx, bool invertDir) 
 SortDefinition Sort::getReverseSortDefinition(const SortDefinition & aSortDef) {
     SortDefinition reverseSortDefinition;
 
-    for(ColumnSort cs : aSortDef.columnOrders) {
+    for(ColumnSort cs : aSortDef) {
         ColumnSort reversed = cs;
         reversed.second = (reversed.second == SortDirection::ASCENDING) ?  SortDirection::DESCENDING : SortDirection::ASCENDING;
-        reverseSortDefinition.columnOrders.push_back(reversed);
+        reverseSortDefinition.push_back(reversed);
     }
 
     return reverseSortDefinition;

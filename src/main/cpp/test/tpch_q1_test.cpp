@@ -133,8 +133,8 @@ TEST_F(tpch_q1_test, TpcHQ1FullObliviousTruncated) {
   empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
 
   SortDefinition sortDef;
-  sortDef.columnOrders.push_back(ColumnSort (0, SortDirection::ASCENDING));
-  sortDef.columnOrders.push_back(ColumnSort (1, SortDirection::ASCENDING));
+  sortDef.push_back(ColumnSort (0, SortDirection::ASCENDING));
+  sortDef.push_back(ColumnSort (1, SortDirection::ASCENDING));
 
 
 
