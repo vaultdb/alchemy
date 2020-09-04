@@ -194,7 +194,7 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                 std::tm timeStruct = {};
                 strptime(dateStr.c_str(), "%Y-%m-%d", &timeStruct);
                 int64_t epoch = mktime(&timeStruct);
-                return QueryField(ordinal, types::Value(epoch));
+                return QueryField(ordinal, types::Value(types::TypeId::DATE, epoch));
 
                 /*std::chrono::steady_clock::time_point timePoint = src.as<std::chrono::steady_clock::time_point>();
                 int64_t epoch = std::chrono::duration_cast<std::chrono::seconds>(
