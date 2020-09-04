@@ -114,6 +114,7 @@ DataUtilities::getExpectedResults(const std::string &sql, const std::string &ord
 
 }
 
+// in some cases, like with LIMIT, we can't just run over tpch_unioned
 std::unique_ptr<QueryTable>
 DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql) {
 
@@ -141,4 +142,11 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
     unioned->setSchema(alice->getSchema());
     return unioned;
 }
+
+
+ std::shared_ptr<QueryTable> DataUtilities::getQueryResults(const std::string & sql, const std::string & dbName, const bool & hasDummyTag) {
+    PsqlDataProvider dataProvider;
+    return dataProvider.getQueryTable(dbName, sql, hasDummyTag);
+}
+
 

@@ -14,6 +14,7 @@ Value::Value(const Value &val) {
         setValue(val);
 }
 
+
 Value::Value(const int64_t & val) {
     setValue(val);
 }
@@ -137,6 +138,7 @@ void Value::setValue(const Value  & val) {
         case TypeId::INTEGER32:
             setValue(val.getInt32());
             break;
+        case TypeId::DATE:
         case TypeId::INTEGER64:
             setValue(val.getInt64());
             break;
@@ -263,6 +265,7 @@ void Value::setValue(const std::string & aString) {
             case TypeId::INTEGER32:
                  return std::to_string(getInt32());
 
+            case TypeId::DATE:
             case TypeId::INTEGER64:
                 return std::to_string(getInt64());
             case TypeId::NUMERIC:
@@ -353,6 +356,7 @@ void Value::setValue(const std::string & aString) {
                     memcpy(dst, (bool *) &value, valSize);
                     break;
                 }
+                case vaultdb::types::TypeId::DATE:
                 case vaultdb::types::TypeId::INTEGER64: {
                     int64_t value = getInt64();
                     memcpy(dst, (bool *) &value, valSize);
@@ -392,6 +396,7 @@ void Value::setValue(const std::string & aString) {
             case types::TypeId::FLOAT64:
             case types::TypeId::NUMERIC:
             case types::TypeId::VARCHAR:
+            case types::TypeId::DATE:
                 return Value(this); // copy the public field, no need to reveal
             case types::TypeId::ENCRYPTED_BOOLEAN: {
                 bool decrypted = this->getEmpBit().reveal<bool>((int) empParty); // returns a bool for both XOR and PUBLIC

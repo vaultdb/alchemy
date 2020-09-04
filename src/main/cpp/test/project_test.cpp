@@ -67,7 +67,10 @@ types::Value calculateRevenue(const QueryTuple & aTuple) {
 TEST_F(ProjectionTest, q3Lineitem) {
     std::string srcSql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 10";
     std::string expectedOutputSql = "SELECT l_orderkey, EXTRACT(epoch FROM l_shipdate) l_shipdate,  l_extendedprice * (1 - l_discount) revenue FROM (" + srcSql + ") src ";
-    std::cout << "Expected output from: " <<  expectedOutputSql << std::endl;
+    std::shared_ptr<QueryTable> expected =  DataUtilities::getQueryResults(expectedOutputSql, "tpch_alice", false);
+
+
+    std::cout << "Expected query results:\n" << *expected << std::endl;
 
     std::shared_ptr<Operator> input(new SqlInput("tpch_alice", srcSql, false));
 
@@ -80,8 +83,6 @@ TEST_F(ProjectionTest, q3Lineitem) {
     project.addExpression(revenueExpression, 2);
 
 
-    PsqlDataProvider dataProvider;
-    std::shared_ptr<QueryTable> expected =  dataProvider.getQueryTable("tpch_alice", expectedOutputSql, false);
 
     std::shared_ptr<QueryTable> observed = project.run();
 

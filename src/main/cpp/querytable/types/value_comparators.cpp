@@ -527,6 +527,14 @@ Value types::Value::obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs) {
   return Value();
 }
 
+types::Value::Value(const types::TypeId &type, const int64_t &val) {
+
+    type_ = type;
+    is_encrypted_ = false;
+    value_.unencrypted_val = val;
+
+}
+
 /*bool vaultdb::types::Value::operator==(const Value &rhs) {
     assert(!this->is_encrypted_ && !rhs.is_encrypted_); // only reveal this for encrypted vals
 

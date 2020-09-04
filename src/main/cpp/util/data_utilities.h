@@ -28,6 +28,8 @@ public:
                        const std::string &bobDb);
 
     static std::unique_ptr<QueryTable>  getUnionedResults(const std::string & sql, const std::string & aliceDb, const std::string & bobDb);
+
+    static std::shared_ptr<QueryTable> getQueryResults(const string &sql, const string &dbName, const bool &hasDummyTag);
 };
 
 

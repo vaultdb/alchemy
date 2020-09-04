@@ -4,6 +4,8 @@
     switch(typeId) {
         case vaultdb::types::TypeId::BOOLEAN:
             return std::string("bool");
+        case vaultdb::types::TypeId::DATE:
+            return std::string("date");
         case vaultdb::types::TypeId::INTEGER32:
             return std::string("int32");
         case vaultdb::types::TypeId::INTEGER64:

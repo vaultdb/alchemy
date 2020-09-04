@@ -84,7 +84,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
        }
 
 
-        result->appendField(fieldDesc);
+        result->putField(i, fieldDesc);
     }
 
    if(hasDummyTag) {
