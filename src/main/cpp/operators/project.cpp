@@ -41,7 +41,7 @@ std::shared_ptr<QueryTable> Project::runSelf() {
         bool isPrivate = expression.isPrivate();
         std::string alias = expression.getAlias();
 
-        QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, isPrivate, alias, "unknown", type);
+        QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, isPrivate, alias, "", type);
         dstSchema.putField(dstOrdinal, fieldDesc);
 
         fieldOrdinals.push_back(dstOrdinal);

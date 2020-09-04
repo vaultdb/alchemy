@@ -193,7 +193,7 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                 std::string dateStr = src.as<std::string>(); // YYYY-MM-DD
                 std::tm timeStruct = {};
                 strptime(dateStr.c_str(), "%Y-%m-%d", &timeStruct);
-                int64_t epoch = mktime(&timeStruct);
+                int64_t epoch = mktime(&timeStruct) - 21600; // date time function is 6 hours off from how psql does it, TODO: track this down
                 return QueryField(ordinal, types::Value(types::TypeId::DATE, epoch));
 
                 /*std::chrono::steady_clock::time_point timePoint = src.as<std::chrono::steady_clock::time_point>();
