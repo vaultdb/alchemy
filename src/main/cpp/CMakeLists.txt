@@ -111,6 +111,7 @@ set(sources
 		operators/support/sort_condition.cpp
 		operators/support/plain_sort_condition.cpp
 		operators/support/secure_sort_condition.cpp
+		operators/project.cpp
 		)
 
 

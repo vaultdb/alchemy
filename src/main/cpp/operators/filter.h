@@ -12,11 +12,11 @@
 // predicate function needs aware of encrypted or plaintext state of its inputs
 class Filter : public Operator {
 
-    std::shared_ptr<PredicateClass> predicate;
+    std::shared_ptr<Predicate> predicate;
 
 
 public:
-    Filter(std::shared_ptr<PredicateClass> &predicateClass, std::shared_ptr<Operator> &child);
+    Filter(std::shared_ptr<Predicate> &predicateClass, std::shared_ptr<Operator> &child);
     std::shared_ptr<QueryTable> runSelf() override;
 };
 

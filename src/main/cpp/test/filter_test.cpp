@@ -60,7 +60,7 @@ TEST_F(FilterTest, test_table_scan) {
 
 
 // unencrypted case
-class FilterPredicate : public PredicateClass {
+class FilterPredicate : public Predicate {
     Value cmp;
 public:
     FilterPredicate() {
@@ -91,7 +91,7 @@ TEST_F(FilterTest, test_filter) {
     std::shared_ptr<Operator> input(new SqlInput("tpch_alice", sql, false));
 
     // TODO: fix the warnings associated with this
-    std::shared_ptr<PredicateClass> predicateClass(new FilterPredicate());
+    std::shared_ptr<Predicate> predicateClass(new FilterPredicate());
     Filter *filterOp = new Filter(predicateClass, input); // heap allocate it
     std::shared_ptr<Operator> filter = filterOp->getPtr();
 

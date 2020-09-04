@@ -4,7 +4,7 @@
 
 #include "filter.h"
 
-Filter::Filter(std::shared_ptr<PredicateClass> &predicateClass, std::shared_ptr<Operator> &child) : Operator(child) {
+Filter::Filter(std::shared_ptr<Predicate> &predicateClass, std::shared_ptr<Operator> &child) : Operator(child) {
     predicate = predicateClass;
 }
 

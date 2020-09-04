@@ -28,7 +28,7 @@ DEFINE_int32(port, 54321, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 
-class SecureFilterPredicateClass : public PredicateClass {
+class SecureFilterPredicateClass : public Predicate {
 
     Value encryptedLineNumber;
 public:
@@ -117,7 +117,7 @@ TEST_F(SecureFilterTest, test_filter) {
 
     std::shared_ptr<Operator> input = std::make_shared<SecureSqlInput>(dbName, sql, false);
 
-    std::shared_ptr<PredicateClass> aPredicate(new SecureFilterPredicateClass(1));  // secret share the constant (1) just once
+    std::shared_ptr<Predicate> aPredicate(new SecureFilterPredicateClass(1));  // secret share the constant (1) just once
     Filter *filterOp = new Filter(aPredicate, input);  // deletion handled by shared_ptr
     std::shared_ptr<Operator> filter = filterOp->getPtr();
 

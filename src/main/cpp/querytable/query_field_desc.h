@@ -50,7 +50,7 @@ public:
         name_(f.name_), table_name(f.table_name), string_length(0)
         {};
 
-  QueryFieldDesc(QueryFieldDesc &f, int col_num)
+  QueryFieldDesc(const QueryFieldDesc &f, int col_num)
       :  ordinal_(col_num), is_private_(f.is_private_),
         name_(f.name_), table_name(f.table_name), string_length(0), type_(f.type_)
         {};

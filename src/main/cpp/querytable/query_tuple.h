@@ -6,6 +6,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <querytable/types/value.h>
 
 namespace vaultdb {
 class QueryTuple {
