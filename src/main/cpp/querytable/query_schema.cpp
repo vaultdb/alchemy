@@ -4,6 +4,11 @@
 QuerySchema::QuerySchema(const int &num_fields) : fieldCount_(num_fields) {
     fields_.reserve(num_fields);
 
+    // initialize all fields to blanks
+    for(int i = 0; i < num_fields; ++i) {
+        fields_.push_back(QueryFieldDesc());
+    }
+
 
 
 }

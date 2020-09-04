@@ -1,0 +1,91 @@
+//
+// Created by Jennie Rogers on 9/2/20.
+//
+
+
+#include <gflags/gflags.h>
+#include <gtest/gtest.h>
+#include <util/type_utilities.h>
+#include <stdexcept>
+#include <operators/sql_input.h>
+#include <operators/project.h>
+
+
+using namespace emp;
+using namespace vaultdb::types;
+
+
+
+class ProjectionTest : public ::testing::Test {
+
+
+protected:
+    void SetUp() override {};
+    void TearDown() override{};
+};
+
+
+
+
+// unencrypted case
+/*class RevenueExpression : public Expression {
+    Value oneValue;
+public:
+    RevenueExpression() : Expression("revenue", types::TypeId::FLOAT32) {
+        oneValue = Value((int32_t) 1);
+    }
+
+    ~RevenueExpression() {}
+
+    types::Value expressionCall(const QueryTuple & aTuple) const  {
+        Value extendedPrice = aTuple.getField(5).getValue();
+        Value discount = aTuple.getField(6).getValue();
+
+        // l.l_extendedprice * (1 - l.l_discount)
+        return extendedPrice * (oneValue - discount);
+    }
+
+    // needed for boost::variant
+    RevenueExpression& operator=(const RevenueExpression & src) {
+        this->alias = src.getAlias();
+        this->expressionType = types::TypeId::FLOAT32;
+
+    }
+
+};
+*/
+
+types::Value calculateRevenue(const QueryTuple & aTuple) {
+    Value extendedPrice = aTuple.getField(5).getValue();
+    Value discount = aTuple.getField(6).getValue();
+
+    // l.l_extendedprice * (1 - l.l_discount)
+    return extendedPrice * (Value((float) 1.0) - discount);
+}
+
+// variant of Q3 expressions
+TEST_F(ProjectionTest, q3Lineitem) {
+    std::string srcSql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 10";
+    std::string expectedOutputSql = "SELECT l_orderkey, EXTRACT(epoch FROM l_shipdate) l_shipdate,  l_extendedprice * (1 - l_discount) revenue FROM (" + srcSql + ") src ";
+    std::cout << "Expected output from: " <<  expectedOutputSql << std::endl;
+
+    std::shared_ptr<Operator> input(new SqlInput("tpch_alice", srcSql, false));
+
+    Expression revenueExpression(&calculateRevenue, "revenue", TypeId::FLOAT32);
+
+
+    Project project(input);
+    project.addColumnMapping(0, 0);
+    project.addColumnMapping(10, 1);
+    project.addExpression(revenueExpression, 2);
+
+
+    PsqlDataProvider dataProvider;
+    std::shared_ptr<QueryTable> expected =  dataProvider.getQueryTable("tpch_alice", expectedOutputSql, false);
+
+    std::shared_ptr<QueryTable> observed = project.run();
+
+
+    ASSERT_EQ(expected->toString(), observed->toString());
+}
+

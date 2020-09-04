@@ -4,16 +4,8 @@
 
 #include "project.h"
 
-Project::Project(const ProjectionDefinition &aDefinition, std::shared_ptr<Operator> &child) : Operator(child), srcSchema(0), dstSchema(aDefinition.size()) {
-
-    projectionDefinition = aDefinition;
-
-    colCount = projectionDefinition.size();
-
-    for(uint32_t i = 0; i < colCount; ++i) {
-        // verify that all ordinals are defined
-        assert(projectionDefinition.find(i) != projectionDefinition.end());
-    }
+// can't initialize schemas yet, don't have child schema
+Project::Project(std::shared_ptr<Operator> &child) : Operator(child), srcSchema(0), dstSchema(0), colCount(0) {
 
 
 }
@@ -21,13 +13,46 @@ Project::Project(const ProjectionDefinition &aDefinition, std::shared_ptr<Operat
 std::shared_ptr<QueryTable> Project::runSelf() {
     std::shared_ptr<QueryTable> srcTable = children[0]->getOutput();
     srcSchema = srcTable->getSchema();
+    colCount = expressions.size() + projectionMap.size();
+
     dstSchema = QuerySchema(colCount); // re-initialize it
     uint32_t tupleCount = srcTable->getTupleCount();
 
-    for(uint32_t ordinal = 0; ordinal < colCount; ++ordinal) {
-        QueryFieldDesc aField = getFieldDesc(ordinal, projectionDefinition.at(ordinal));
-        dstSchema.appendField(aField);
+    // put all of the fields into one data structure -- doubles as a verification that destination schema is fully specified
+
+    std::vector<uint32_t> fieldOrdinals;
+    fieldOrdinals.reserve(colCount);
+
+    for(ProjectionMapping mapping : projectionMap) {
+        uint32_t dstOrdinal = mapping.second;
+        QueryFieldDesc fieldDesc(srcSchema.getField(mapping.first), dstOrdinal);
+        dstSchema.putField(dstOrdinal, fieldDesc);
+
+        fieldOrdinals.push_back(dstOrdinal);
+
     }
+
+    std::map<uint32_t, Expression>::iterator exprPos = expressions.begin();
+    while(exprPos != expressions.end()) {
+        uint32_t dstOrdinal = exprPos->first;
+        Expression expression = exprPos->second;
+
+        types::TypeId type = expression.getType();
+        bool isPrivate = expression.isPrivate();
+        std::string alias = expression.getAlias();
+
+        QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, isPrivate, alias, "unknown", type);
+        dstSchema.putField(dstOrdinal, fieldDesc);
+
+        fieldOrdinals.push_back(dstOrdinal);
+        ++exprPos;
+    }
+
+    // confirm that all ordinals are defined
+    for(uint32_t i = 0; i < colCount; ++i) {
+        assert(std::find(fieldOrdinals.begin(), fieldOrdinals.end(), i) != fieldOrdinals.end());
+    }
+
 
 
     output = std::shared_ptr<QueryTable>(new QueryTable(tupleCount, colCount, srcTable->isEncrypted()));
@@ -42,51 +67,33 @@ std::shared_ptr<QueryTable> Project::runSelf() {
     return output;
 }
 
-QueryFieldDesc Project::getFieldDesc(const uint32_t & ordinal, const ColumnProjection &aProjection) {
-
-    // it's an expression
-    if(aProjection.which() == 0) {
-        Expression expression = boost::get<Expression>(aProjection);
-        types::TypeId type = expression.getType();
-        bool isPrivate = expression.isPrivate();
-        std::string alias = expression.getAlias();
-
-        return QueryFieldDesc(ordinal, isPrivate, alias, "unknown", type);
-
-    }
-
-    ProjectionMapping mapping = boost::get<ProjectionMapping>(aProjection);
-    uint32_t srcOrdinal = mapping.first;
-    uint32_t dstOrdinal = mapping.second;
-    const QueryFieldDesc srcField = srcSchema.getField(srcOrdinal);
-    return QueryFieldDesc(srcField, dstOrdinal);
-}
 
 QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
     QueryTuple dstTuple(colCount, children[0]->getOutput()->isEncrypted());
+    std::map<uint32_t, Expression>::const_iterator exprPos = expressions.begin();
 
-    for(uint32_t i = 0; i < colCount; ++i) {
-        dstTuple.putField(i, getField(srcTuple, i, projectionDefinition.at(i)));
+
+    // do all 1:1 mappings
+    for(ProjectionMapping mapping : projectionMap) {
+        uint32_t srcOrdinal = mapping.first;
+        uint32_t dstOrdinal = mapping.second;
+        QueryField dstField(dstOrdinal, srcTuple->getField(srcOrdinal).getValue());
+        dstTuple.putField(dstOrdinal, dstField);
+
+    }
+
+    // exec all expressions
+    while(exprPos != expressions.end()) {
+        uint32_t dstOrdinal = exprPos->first;
+        Expression expression = exprPos->second;
+        types::Value fieldValue = expression.expressionCall(*srcTuple);
+        QueryField dstField(dstOrdinal, fieldValue);
+        dstTuple.putField(dstOrdinal, dstField);
+        ++exprPos;
     }
 
     return dstTuple;
 
 
-}
-
-QueryField
-Project::getField(QueryTuple *const srcTuple, const uint32_t &ordinal, const ColumnProjection &aProjection) const {
-
-    if(aProjection.which() == 0) {
-        Expression expression = boost::get<Expression>(aProjection);
-        types::Value fieldValue = expression.expressionCall(*srcTuple);
-        return QueryField(ordinal, fieldValue);
-
-    }
-    ProjectionMapping mapping = boost::get<ProjectionMapping>(aProjection);
-    uint32_t srcOrdinal = mapping.first;
-    uint32_t dstOrdinal = mapping.second;
-
-    return QueryField(dstOrdinal, srcTuple->getField(srcOrdinal).getValue());
 }
 

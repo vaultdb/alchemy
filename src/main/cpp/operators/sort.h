@@ -4,6 +4,8 @@
 #include <operator.h>
 #include <operators/support/sort_condition.h>
 
+
+
 class Sort : public Operator {
     SortDefinition sortDefinition;
     std::unique_ptr<SortCondition> sortCondition; // pointer-izing it b/c it is an abstract class

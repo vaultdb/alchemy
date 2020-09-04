@@ -6,6 +6,7 @@
 #include "pq_oid_defs.h"
 #include "pqxx_compat.h"
 #include "util/type_utilities.h"
+#include <time.h>
 
 #include <chrono>
 
@@ -186,15 +187,22 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                 int64_t intVal = src.as<int64_t>();
                 return QueryField(ordinal, types::Value(intVal));
             }
-        /*    case vaultdb::types::TypeId::TIMESTAMP:
+
+           case vaultdb::types::TypeId::DATE:
             {
-                std::chrono::steady_clock::time_point timePoint = src.as<std::chrono::steady_clock::time_point>();
+                std::string dateStr = src.as<std::string>(); // YYYY-MM-DD
+                std::tm timeStruct = {};
+                strptime(dateStr.c_str(), "%Y-%m-%d", &timeStruct);
+                int64_t epoch = mktime(&timeStruct);
+                return QueryField(ordinal, types::Value(epoch));
+
+                /*std::chrono::steady_clock::time_point timePoint = src.as<std::chrono::steady_clock::time_point>();
                 int64_t epoch = std::chrono::duration_cast<std::chrono::seconds>(
                         timePoint.time_since_epoch()).count();
                value = types::Value(colType, epoch);
                result->setValue(&value);
-               break;
-            }*/
+               break;*/
+            }
             case vaultdb::types::TypeId::BOOLEAN:
             {
                 bool boolVal = src.as<bool>();

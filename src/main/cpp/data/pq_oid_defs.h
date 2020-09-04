@@ -180,12 +180,12 @@ static types::TypeId getFieldTypeFromOid(pqxx::oid oid) {
             return types::TypeId::FLOAT32;
         case OID_FLOAT8:
             return types::TypeId::FLOAT64;
-        /* case OID_TIMESTAMP:
-         case OID__TIMESTAMP:
-             return types::TypeId::TIMESTAMP;
+       // case OID_TIMESTAMP:
+       //  case OID__TIMESTAMP:
+       //      return types::TypeId::TIMESTAMP;
          case OID_DATE:
          case OID__DATE:
-             return types::TypeId::DATE;*/
+             return types::TypeId::DATE;
         case OID_BOOL:
         case OID__BOOL:
             return types::TypeId::BOOLEAN;

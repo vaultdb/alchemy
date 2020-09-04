@@ -12,28 +12,40 @@
 typedef std::pair<uint32_t, uint32_t> ProjectionMapping; // src ordinal, dst ordinal
 
 // single projection, it is either an expression over 2+ fields or it is a 1:1 mapping spec'd in projection mapping
-typedef boost::variant<Expression, ProjectionMapping> ColumnProjection;
 
-typedef std::map<uint32_t, ColumnProjection> ProjectionDefinition;
+//JR: variant too messy with inheritance for expression, perhaps debug this later
+//typedef boost::variant<Expression, ProjectionMapping> ColumnProjection;
+
+typedef std::map<uint32_t, Expression> ExpressionMap; // ordinal to expression
 
 
 
 class Project  : public Operator {
 
-    ProjectionDefinition  projectionDefinition;
+    std::vector<ProjectionMapping>  projectionMap;
+    ExpressionMap expressions;
+
     uint32_t colCount;
     QuerySchema srcSchema;
     QuerySchema dstSchema;
 
 public:
-    Project(const ProjectionDefinition  & aDefinition, std::shared_ptr<Operator> &child);
+    Project(std::shared_ptr<Operator> &child);
+
+    void addColumnMapping(const uint32_t & srcOrdinal, const uint32_t & dstOrdinal) {
+        ProjectionMapping mapping(srcOrdinal, dstOrdinal);
+        projectionMap.push_back(mapping);
+    }
+
+    void addExpression(const Expression & expression, const uint32_t & dstOrdinal) {
+        expressions[dstOrdinal] = expression;
+    }
+
     std::shared_ptr<QueryTable> runSelf() override;
 
 
 private:
-    QueryFieldDesc getFieldDesc(const uint32_t & ordinal, const ColumnProjection & aProjection);
     QueryTuple getTuple(QueryTuple * const srcTuple) const;
-    QueryField getField(QueryTuple *const srcTuple, const uint32_t &ordinal, const ColumnProjection &aProjection) const;
 };
 
 

@@ -18,18 +18,27 @@ class Expression {
         types::TypeId expressionType;
         // since we are in MPC, this will always be private, so hardcoding this
         const bool isPrivateField = true;
+        types::Value (*exprFunc)(const QueryTuple &) = nullptr;
 
 
     public:
-        Expression() : alias("anonymous"), expressionType(types::TypeId::INVALID) {};
+        Expression() : alias("anonymous"), expressionType(types::TypeId::INVALID) {}
 
-        Expression(const std::string & anAlias, const types::TypeId & aType)  : alias(anAlias), expressionType(aType) {};
 
-        Expression(const Expression & src) : alias(src.alias), expressionType(src.expressionType) {};
+        Expression(const Expression & src) : alias(src.alias), expressionType(src.expressionType) {
+            exprFunc = src.exprFunc;
+        }
+
+        Expression(types::Value (*funcPtr)(const QueryTuple &), const std::string & anAlias, const types::TypeId & aType)  :  alias(anAlias), expressionType(aType){
+            exprFunc = funcPtr;
+        }
+
         ~Expression() {}
 
-        // override when we instantiate a predicate
-        virtual types::Value expressionCall(const QueryTuple & aTuple) const { throw; } // we should never get here
+
+         types::Value expressionCall(const QueryTuple & aTuple) const {
+            return exprFunc(aTuple);
+        }
 
 
 
@@ -48,7 +57,9 @@ class Expression {
 
              this->alias = src.alias;
              this->expressionType = src.expressionType;
+             this->exprFunc = src.exprFunc;
 
+             return *this;
         }
 
 

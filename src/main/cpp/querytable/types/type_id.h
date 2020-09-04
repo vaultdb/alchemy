@@ -7,6 +7,8 @@ namespace vaultdb::types {
 enum class TypeId {
     INVALID = 0,
     BOOLEAN,
+    DATE,
+    //TIMESTAMP,
     INTEGER32,
     INTEGER64,
     FLOAT32,
