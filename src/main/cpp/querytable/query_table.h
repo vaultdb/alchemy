@@ -49,6 +49,9 @@ public:
     std::unique_ptr<QueryTable> reveal(int empParty) const;
 
     QueryTable & operator=(const QueryTable & src);
+
+    bool operator==(const QueryTable & other) const;
+
 };
 
 #endif // _QUERY_TABLE_H

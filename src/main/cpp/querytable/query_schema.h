@@ -21,7 +21,6 @@ public:
 
     [[nodiscard]] int getFieldCount() const;
 
-    void appendField(const QueryFieldDesc &fd);
   void putField(const int &index, const QueryFieldDesc &fd);
 
   // returns size in bits
@@ -32,6 +31,12 @@ public:
 
     friend std::ostream &operator<<(std::ostream &os, const QuerySchema &schema);
     QuerySchema& operator=(const QuerySchema& other);
+
+
+     bool operator==(const QuerySchema &other) const;
+
+     inline bool operator!=(const QuerySchema &other) const { return !(*this == other);  }
+
 
 };
 

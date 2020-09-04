@@ -66,6 +66,10 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const QueryFieldDesc &desc);
     QueryFieldDesc& operator=(const QueryFieldDesc& other);
 
+     bool operator==(const QueryFieldDesc& other);
+
+     inline bool operator!=(const QueryFieldDesc &other) {  return !(*this == other); }
+
 
 };
 

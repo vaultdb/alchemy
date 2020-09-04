@@ -71,4 +71,39 @@ QueryFieldDesc& QueryFieldDesc::operator=(const QueryFieldDesc& src)  {
     return *this;
 }
 
+bool QueryFieldDesc::operator==(const QueryFieldDesc& other) {
+
+    // if types are the same, or int32_t --> date
+    if (!(this->getType() == other.getType() ||
+          (this->getType() == types::TypeId::INTEGER32 && other.getType() == types::TypeId::DATE) ||
+          (other.getType() == types::TypeId::INTEGER32 && this->getType() == types::TypeId::DATE))) {
+        return false;
+    }
+
+    if(this->getIsPrivate() != other.getIsPrivate()) {
+        return false;
+    }
+
+    if(this->getName() != other.getName()) {
+        return false;
+    }
+
+    // if the table name is the same or one is blank
+    if(!((this->getTableName() == other.getTableName()) || this->getName() == "" || other.getName() == "")) {
+        return false;
+    }
+
+    if(other.getOrdinal() != other.getOrdinal()) {
+        return false;
+    }
+
+    if(other.string_length != this->string_length) {
+        return false;
+    }
+
+    return true;
+
+
+}
+
 

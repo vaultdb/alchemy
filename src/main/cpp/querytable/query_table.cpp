@@ -156,5 +156,21 @@ void QueryTable::setTupleDummyTag(const int &tupleIdx, const types::Value & dumm
 
 QueryTuple *QueryTable::getTuplePtr(const int &idx) const {
     return tuples_.get() + idx;
+}
+
+bool QueryTable::operator==(const QueryTable &other) const {
+
+    if(getSchema() != other.getSchema()) {
+        return false;
+    }
+
+    if(this->getTupleCount() != other.getTupleCount()) {   return false; }
+    for(int i = 0; i < getTupleCount(); ++i) {
+        QueryTuple thisTuple = getTuple(i);
+        QueryTuple otherTuple = other.getTuple(i);
+        if(thisTuple != otherTuple) { return false; }
+    }
+
+    return true;
 };
 

@@ -52,3 +52,12 @@ QueryField& QueryField::operator=(const QueryField& other) {
     return *this;
 
 }
+
+bool QueryField::operator==(const QueryField &other) const {
+    if(this->ordinal != other.getOrdinal()) { return false; }
+    // use string overload to verify the value
+    std::string thisValue = value_.getValueString();
+    std::string otherValue = other.getValue().getValueString();
+
+    return thisValue == otherValue;
+}

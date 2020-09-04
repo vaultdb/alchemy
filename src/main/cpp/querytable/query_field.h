@@ -33,6 +33,8 @@ public:
     void setValue(const types::Value & val);
 
     QueryField& operator=(const QueryField& other);
+    bool operator==(const QueryField &other) const;
+    inline bool operator!=(const QueryField &other) const { return !(*this == other); }
     friend std::ostream& operator<<(std::ostream &strm, const QueryField &aField);
 
 };

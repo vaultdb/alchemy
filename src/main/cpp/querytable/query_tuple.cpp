@@ -213,5 +213,17 @@ void QueryTuple::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs, const emp::Bit
 
 }
 
+bool QueryTuple::operator==(const QueryTuple &other) {
+    if(fieldCount_ != other.getFieldCount()) { return false; }
+
+    for(int i = 0; i < fieldCount_; ++i) {
+        QueryField thisField = getField(i);
+        QueryField otherField = other.getField(i);
+        if(thisField != otherField) {  return false; }
+    }
+
+    return true;
+}
+
 
 

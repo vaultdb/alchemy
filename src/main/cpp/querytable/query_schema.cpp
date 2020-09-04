@@ -74,8 +74,24 @@ QuerySchema &QuerySchema::operator=(const QuerySchema &other) {
     return *this;
 }
 
-void QuerySchema::appendField(const QueryFieldDesc & aFieldDesc) {
-    fields_.push_back(aFieldDesc);
+
+bool QuerySchema::operator==(const QuerySchema &other) const {
+
+
+    if(this->getFieldCount() != other.getFieldCount()) {
+        return false;
+    }
+
+    for(uint32_t i = 0; i < this->getFieldCount(); ++i) {
+        QueryFieldDesc thisFieldDesc = this->getField(i);
+        QueryFieldDesc otherFieldDesc = other.getField(i);
+
+        if(thisFieldDesc != otherFieldDesc) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 

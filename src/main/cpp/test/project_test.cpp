@@ -93,6 +93,6 @@ TEST_F(ProjectionTest, q3Lineitem) {
 
     std::cout << "Observed query results: \n" << *observed << std::endl;
 
-    ASSERT_EQ(expected->toString(), observed->toString());
+    ASSERT_EQ(*expected, *observed);
 }
 
