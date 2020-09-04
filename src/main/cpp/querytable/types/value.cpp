@@ -1,7 +1,6 @@
-#include <iso646.h>
-#include <vaultdb.h>
 #include <util/data_utilities.h>
-
+#include <iomanip>
+#include <sstream>
 #include "value.h"
 #include "util/type_utilities.h"
 
@@ -269,8 +268,12 @@ void Value::setValue(const std::string & aString) {
             case TypeId::INTEGER64:
                 return std::to_string(getInt64());
             case TypeId::NUMERIC:
-            case TypeId::FLOAT32:
-                return std::to_string(getFloat32());
+            case TypeId::FLOAT32: {
+                float value = getFloat32();
+                std::stringstream stream;
+                stream << std::fixed << std::setprecision(1) << value;
+                return stream.str();
+            }
             case TypeId::FLOAT64:
                 return std::to_string(getFloat64());
 
