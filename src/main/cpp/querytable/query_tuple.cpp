@@ -11,6 +11,11 @@ QueryTuple::QueryTuple(const  size_t & aFieldCount) {
     fieldCount_ = aFieldCount;
     fields_ =
         std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+
+    for(uint32_t i = 0; i < fieldCount_; ++i) {
+        fields_[i].setOrdinal(i); // initialize ordinal
+    }
+
 };
 
 QueryTuple::QueryTuple(const size_t & fieldCount, const  bool & is_encrypted) : is_encrypted_(is_encrypted), fieldCount_(fieldCount) {
@@ -22,6 +27,10 @@ QueryTuple::QueryTuple(const size_t & fieldCount, const  bool & is_encrypted) : 
 
     fields_ =
             std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+
+    for(uint32_t i = 0; i < fieldCount_; ++i) {
+        fields_[i].setOrdinal(i); // initialize ordinal
+    }
 
 }
 

@@ -95,6 +95,7 @@ public:
     Value operator/(const Value& rhs)const;
 
 
+
     static void compareAndSwap(Value & lhs, Value & rhs, const emp::Bit & cmp);
     static Value obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs);
 

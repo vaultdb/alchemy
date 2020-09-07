@@ -66,7 +66,7 @@ types::Value calculateRevenue(const QueryTuple & aTuple) {
 // variant of Q3 expressions
 TEST_F(ProjectionTest, q3Lineitem) {
     std::string srcSql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 10";
-    std::string expectedOutputSql = "SELECT l_orderkey, CAST(EXTRACT(epoch FROM l_shipdate) AS INTEGER) l_shipdate,  l_extendedprice * (1 - l_discount) revenue FROM (" + srcSql + ") src ";
+    std::string expectedOutputSql = "SELECT l_orderkey, CAST(EXTRACT(epoch FROM l_shipdate) AS BIGINT) l_shipdate,  l_extendedprice * (1 - l_discount) revenue FROM (" + srcSql + ") src ";
     std::shared_ptr<QueryTable> expected =  DataUtilities::getQueryResults(expectedOutputSql, "tpch_alice", false);
 
 

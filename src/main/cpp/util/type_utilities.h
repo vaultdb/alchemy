@@ -18,6 +18,10 @@ namespace vaultdb {
         static std::string getTypeIdString(vaultdb::types::TypeId aTypeid);
 
         static size_t getTypeSize(types::TypeId id);
+
+        // are these two types implemented identically?
+        // e.g., TypeId::NUMERIC is equal to TypeId::FLOAT32
+        static bool typesEqual(const vaultdb::types::TypeId  & lhs, const vaultdb::types::TypeId  & rhs);
     };
 
 }

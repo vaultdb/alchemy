@@ -244,7 +244,7 @@ Value Value::operator<(const Value &rhs) const {
 Value Value::operator<=(const Value &rhs) const {
     types::TypeId opType = getType();
 
-    assert(opType == rhs.getType()); // do not compare if they are not the same type
+    assert(TypeUtilities::typesEqual(opType, rhs.getType())); // do not compare if they are not the same type
 
     switch (opType) {
 
@@ -321,6 +321,7 @@ Value Value::operator<=(const Value &rhs) const {
 Value Value::operator==(const Value &rhs) const {
     types::TypeId opType = getType();
 
+
     assert(opType == rhs.getType()); // do not compare if they are not the same type
 
 
@@ -353,7 +354,7 @@ Value Value::operator==(const Value &rhs) const {
         case TypeId::ENCRYPTED_FLOAT32: {
             emp::Float32 lhsVal = this->getEmpFloat32();
             emp::Float32 rhsVal = rhs.getEmpFloat32();
-            return Value(lhsVal.equal(rhsVal)); // <=
+            return Value(lhsVal.equal(rhsVal));
         }
         case TypeId::ENCRYPTED_FLOAT64: {
             emp::Float lhsVal = this->getEmpFloat64();
@@ -379,13 +380,19 @@ Value Value::operator==(const Value &rhs) const {
         case TypeId::FLOAT32: {
             float lhsVal = this->getFloat32();
             float rhsVal = rhs.getFloat32();
-            return Value(lhsVal == rhsVal);
+            if(abs(lhsVal - rhsVal) <= 0.1) // wide tolerances because of deltas in how psql will calculate this and what we get from extracting fp #s
+                return Value(true);
+
+            return Value(false);
         }
 
         case TypeId::FLOAT64: {
             double_t lhsVal = this->getFloat64();
             double_t rhsVal = rhs.getFloat64();
-            return Value(lhsVal == rhsVal);
+            if(abs(lhsVal - rhsVal) <= 0.1) // wide tolerances because of deltas in how psql will calculate this and what we get from extracting fp #s
+                return Value(true);
+
+            return Value(false);
         }
         case TypeId::INVALID:
             break;
@@ -534,6 +541,7 @@ types::Value::Value(const types::TypeId &type, const int64_t &val) {
     value_.unencrypted_val = val;
 
 }
+
 
 /*bool vaultdb::types::Value::operator==(const Value &rhs) {
     assert(!this->is_encrypted_ && !rhs.is_encrypted_); // only reveal this for encrypted vals

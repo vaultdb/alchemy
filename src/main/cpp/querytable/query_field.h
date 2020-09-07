@@ -14,7 +14,7 @@ class QueryField {
 private:
 
 
-    int ordinal;
+    uint32_t ordinal;
   types::Value value_;
 
 public:
@@ -28,9 +28,12 @@ public:
   types::Value getValue() const;
 
   QueryField reveal(const int &party) const;
-    int getOrdinal() const { return ordinal; }
+    uint32_t getOrdinal() const { return ordinal; }
+
     void serialize(bool *dst);
     void setValue(const types::Value & val);
+
+    void setOrdinal(const uint32_t & anOrdinal) { ordinal = anOrdinal; }
 
     QueryField& operator=(const QueryField& other);
     bool operator==(const QueryField &other) const;

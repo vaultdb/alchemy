@@ -84,20 +84,19 @@ bool QueryFieldDesc::operator==(const QueryFieldDesc& other) {
         return false;
     }
 
-    if(this->getName() != other.getName()) {
-        return false;
-    }
 
-    // if the table name is the same or one is blank
-    if(!((this->getTableName() == other.getTableName()) || this->getName() == "" || other.getName() == "")) {
+    if(this->getTableName() != other.getTableName()) {
+
         return false;
     }
 
     if(other.getOrdinal() != other.getOrdinal()) {
+
         return false;
     }
 
     if(other.string_length != this->string_length) {
+
         return false;
     }
 

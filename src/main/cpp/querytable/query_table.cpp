@@ -165,6 +165,7 @@ bool QueryTable::operator==(const QueryTable &other) const {
     }
 
     if(this->getTupleCount() != other.getTupleCount()) {   return false; }
+
     for(int i = 0; i < getTupleCount(); ++i) {
         QueryTuple thisTuple = getTuple(i);
         QueryTuple otherTuple = other.getTuple(i);

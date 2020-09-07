@@ -1,6 +1,7 @@
 //
 // Created by Jennie Rogers on 8/14/20.
 //
+#include <util/type_utilities.h>
 #include "value.h"
 
 using vaultdb::types::Value;

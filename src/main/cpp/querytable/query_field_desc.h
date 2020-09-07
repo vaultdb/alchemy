@@ -59,7 +59,15 @@ public:
                  const std::string &tab, const vaultdb::types::TypeId & aType)
       : type_(aType), ordinal_(anOrdinal), is_private_(is_priv), name_(n),
         table_name(tab), string_length(0)
-        {};
+        {
+            // since we convert DATEs to int32_t in both operator land and in our verification pipeline,
+            // i.e., we compare the output of our queries to SELECT EXTRACT(EPOCH FROM date_)
+            // fields of type date have no source table
+            if(type_ == vaultdb::types::TypeId::DATE) {
+                table_name = "";
+                type_ = vaultdb::types::TypeId::INTEGER64; // we actually store it as an INT32, this is the result of EXTRACT(EPOCH..)
+            }
+        };
 
     void setStringLength(size_t i);
 

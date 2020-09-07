@@ -64,3 +64,23 @@ size_t TypeUtilities::getTypeSize(types::TypeId id) {
             throw;
     }
 }
+
+bool TypeUtilities::typesEqual(const types::TypeId &lhs, const types::TypeId &rhs) {
+
+    if(lhs == rhs)
+        return true;
+
+    // interchangeable types:
+    if((lhs ==  vaultdb::types::TypeId::INTEGER32 && rhs ==  vaultdb::types::TypeId::DATE) ||
+            ( lhs ==  vaultdb::types::TypeId::DATE && rhs ==  vaultdb::types::TypeId::INTEGER32)) {
+        return true;
+    }
+
+    if((lhs ==  vaultdb::types::TypeId::NUMERIC && rhs ==  vaultdb::types::TypeId::FLOAT32) ||
+       ( lhs ==  vaultdb::types::TypeId::FLOAT32 && rhs ==  vaultdb::types::TypeId::NUMERIC)) {
+        return true;
+    }
+
+    return false;
+
+}

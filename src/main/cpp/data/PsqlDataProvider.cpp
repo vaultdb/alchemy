@@ -72,7 +72,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
        types::TypeId type = getFieldTypeFromOid(input.column_type(i));
         int tableId = input.column_table(i);
 
-        srcTable = getTableName(tableId);
+        srcTable = getTableName(tableId); // once per col in case of joins
 
         QueryFieldDesc fieldDesc(i, true, colName, srcTable, type);
 
@@ -194,7 +194,7 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                 std::tm timeStruct = {};
                 strptime(dateStr.c_str(), "%Y-%m-%d", &timeStruct);
                 int64_t epoch = mktime(&timeStruct) - 21600; // date time function is 6 hours off from how psql does it, TODO: track this down
-                return QueryField(ordinal, types::Value(types::TypeId::DATE, epoch));
+                return QueryField(ordinal, types::Value(types::TypeId::INTEGER64, epoch));
 
                 /*std::chrono::steady_clock::time_point timePoint = src.as<std::chrono::steady_clock::time_point>();
                 int64_t epoch = std::chrono::duration_cast<std::chrono::seconds>(

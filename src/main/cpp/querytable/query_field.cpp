@@ -1,3 +1,4 @@
+#include <util/type_utilities.h>
 #include "query_field.h"
 using namespace vaultdb;
 
@@ -54,10 +55,11 @@ QueryField& QueryField::operator=(const QueryField& other) {
 }
 
 bool QueryField::operator==(const QueryField &other) const {
-    if(this->ordinal != other.getOrdinal()) { return false; }
-    // use string overload to verify the value
-    std::string thisValue = value_.getValueString();
-    std::string otherValue = other.getValue().getValueString();
 
-    return thisValue == otherValue;
+    if(this->getOrdinal() != other.getOrdinal()) {
+        return false;
+    }
+
+    types::Value cmp = (value_ == other.getValue());
+    return cmp.getBool(); // throws if we are in encrypted mode
 }
