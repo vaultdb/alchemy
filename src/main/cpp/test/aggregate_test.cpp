@@ -77,9 +77,9 @@ void AggregateTest::runAggregateTest(const AggregateDef &aggregateDef, const std
 
   std::shared_ptr<Operator> input(new SqlInput(dbName, sql, false));
   Aggregate *aggregateOp = new Aggregate(input, aggregateDef); // heap allocate it
-  std::shared_ptr<Operator> sort = aggregateOp->getPtr();
+  std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
 
-  std::shared_ptr<QueryTable> result = sort->run();
+  std::shared_ptr<QueryTable> result = aggregate->run();
 
   std::cout << "Observed aggregate result: " << std::endl;
   std::cout << *result << std::endl;
