@@ -61,7 +61,7 @@ TEST_F(SortTest, testSingleIntColumn) {
 
 TEST_F(SortTest, tpchQ1Sort) {
     std::string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
-    std:string expectedResultSql = "WITH input AS (SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment LIMIT 10) SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
+    std::string expectedResultSql = "WITH input AS (SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment LIMIT 10) SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
     std::string expectedResult = getExpectedResult(expectedResultSql, false)->toString();
 
     SortDefinition sortDefinition;

@@ -1,6 +1,7 @@
 #based on emp-tool pipeline
 # https://github.com/emp-toolkit/emp-tool
 cmake_minimum_required (VERSION 3.11)
+set(CMAKE_CXX_STANDARD 14)
 project (vaultdb-emp)
 set(NAME "vaultdb-emp")
 
