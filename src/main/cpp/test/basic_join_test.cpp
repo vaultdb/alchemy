@@ -139,6 +139,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
     std::cout << "project output: " << std::endl << project->getOutput()->toString(false) << std::endl;
 
 
+    ASSERT_EQ(project->getOutput()->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);
 
 }
