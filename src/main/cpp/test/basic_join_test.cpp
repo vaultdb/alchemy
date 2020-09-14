@@ -36,17 +36,13 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
     // first 3 customers, propagate this constraint up the join tree for the test
     std::string customerSql = "SELECT c_custkey, c_mktsegment = 'HOUSEHOLD' cdummy "
                               "FROM customer  "
-                              "WHERE c_custkey <= 3 "
+                              "WHERE c_custkey <= 5 "
                               "ORDER BY c_custkey";
 
     std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
                            "FROM orders "
-                           "WHERE o_custkey <= 3 "
+                           "WHERE o_custkey <= 5 "
                            "ORDER BY o_orderkey LIMIT 5";
-   /* std::string lineitemSql = "SELECT  l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, l.l_shipdate > date '1995-03-25 dummy "
-                              "FROM lineitem"
-                              "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 3) "
-                              "ORDER BY l_orderkey, l_line"; */
 
    std::string expectedResultSql = "WITH customerCTE AS (" + customerSql + "), "
                                         "ordersCTE AS (" + ordersSql + ") "
@@ -54,6 +50,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
                                         "FROM customerCTE, ordersCTE "
                                         "ORDER BY o_orderkey, o_custkey";
 
+   std::cout << "Expected results SQL: " << std::endl;
 
    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
@@ -68,13 +65,19 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
 
     BasicJoin *joinOp = new BasicJoin(customerOrdersPredicate, ordersInput, customerInput);
 
+
     Project *projectOp = new Project(joinOp->getPtr());
     projectOp->addColumnMapping(0, 0); // o_orderkey
     projectOp->addColumnMapping(1, 1); // o_custkey
     std::shared_ptr<Operator> project = projectOp->getPtr();
 
     std::shared_ptr<QueryTable> observed = project->run();
-    ASSERT_EQ(expected, observed);
+    ASSERT_EQ(*expected, *observed);
 
 }
 
+
+/* std::string lineitemSql = "SELECT  l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, l.l_shipdate > date '1995-03-25 dummy "
+                           "FROM lineitem"
+                           "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 3) "
+                           "ORDER BY l_orderkey, l_line"; */

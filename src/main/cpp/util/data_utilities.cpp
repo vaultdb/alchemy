@@ -90,9 +90,10 @@ DataUtilities::getExpectedResult(const std::string &sql, const std::string &orde
 
     colNames += ")";
 
-    std::string insertString = "INSERT INTO tmp " + colNames + " VALUES " + otherQueryTable->getTuple(0).toString();
+    std::string insertString = "INSERT INTO tmp " + colNames + " VALUES " + otherQueryTable->getTuple(0).toString(
+            false);
     for(int i = 1; i < otherQueryTable->getTupleCount();  ++i) {
-        insertString += ", " + otherQueryTable->getTuple(i).toString();
+        insertString += ", " + otherQueryTable->getTuple(i).toString(false);
     }
 
     w.exec(insertString);

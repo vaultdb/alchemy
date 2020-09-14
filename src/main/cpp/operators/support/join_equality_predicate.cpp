@@ -5,7 +5,7 @@
 #include "join_equality_predicate.h"
 
 JoinEqualityPredicate::JoinEqualityPredicate(const ConjunctiveEqualityPredicate &srcPredicates, bool isEncrypted)  : predicates(srcPredicates) {
-    defaultValue = isEncrypted ? types::Value(true) : types::Value(emp::Bit(true));
+    defaultValue = isEncrypted ?  types::Value(emp::Bit(true)) : types::Value(true);
 
 }
 

@@ -34,7 +34,7 @@ public:
   const QuerySchema & getSchema() const;
   QueryTuple getTuple(int idx) const;
   unsigned int getTupleCount() const;
-  std::string toString() const;
+  std::string toString(const bool & showDummies = false) const;
   void putTuple(int idx, const QueryTuple & tuple);
   void setTupleDummyTag(const int & tupleIdx, const types::Value & dummyTag);
 

@@ -87,7 +87,7 @@ void QueryTuple::setIsEncrypted(bool isEncrypted) {
 
 std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple) {
 
-    strm << aTuple.toString();
+    strm << aTuple.toString(false);
 
     return strm;
 /*
@@ -110,10 +110,11 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple)
 
 
 
-std::string QueryTuple::toString() const {
+std::string QueryTuple::toString(const bool &showDummies) const {
     std::stringstream sstream;
 
-    if((!is_encrypted_ && !(dummy_tag_.getBool())) // if it is real
+    if(showDummies
+       ||    (!is_encrypted_ && !(dummy_tag_.getBool())) // if it is real
        || is_encrypted_) { // or its status is unknown
          sstream <<   "(" <<  getField(0);
 

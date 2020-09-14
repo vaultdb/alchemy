@@ -98,17 +98,32 @@ std::ostream &operator<<(std::ostream &os, const QueryTable &table) {
 
     }
 
-
-
-
     return os;
 }
 
-std::string QueryTable::toString() const {
+std::string QueryTable::toString(const bool & showDummies) const {
 
-    std::ostringstream stream;
-    stream << *this;
-    return stream.str();
+    std::ostringstream os;
+
+    if(!showDummies) {
+        os << *this;
+        return os.str();
+    }
+
+    // show dummies case
+    os <<  getSchema() << " isEncrypted? " << is_encrypted_ << std::endl;
+
+    for(int i = 0; i < getTupleCount(); ++i) {
+        os << tuples_[i].toString(showDummies);
+        if(!isEncrypted()) {
+            os << "(dummy=" << tuples_[i].getDummyTag().getValueString()  << ")";
+        }
+        os << std::endl;
+
+    }
+
+    return os.str();
+
 }
 
 
