@@ -225,9 +225,20 @@ void QueryTuple::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs, const emp::Bit
 bool QueryTuple::operator==(const QueryTuple &other) {
     if(fieldCount_ != other.getFieldCount()) { return false; }
 
+    if(is_encrypted_ != other.is_encrypted_) { return false; }
+
+    if(!is_encrypted_) {
+       // std::cout << "Comparing dummy tags: " << dummy_tag_ << " vs "  << other.dummy_tag_ << std::endl;
+        types::Value cmp = (dummy_tag_ == other.dummy_tag_);
+        if(!cmp.getBool()) {// if we are in the clear and their dummy tags are not equal
+            return false;
+        }
+    }
+
     for(int i = 0; i < fieldCount_; ++i) {
         QueryField thisField = getField(i);
         QueryField otherField = other.getField(i);
+        //std::cout << "Comparing field: " << thisField << " to " << otherField << std::endl;
         if(thisField != otherField) {  return false; }
     }
 

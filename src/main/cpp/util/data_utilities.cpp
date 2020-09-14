@@ -41,13 +41,13 @@ bool *DataUtilities::bytesToBool(int8_t *bytes, int byteCount) {
     return ret;
 }
 
-int8_t *DataUtilities::boolsToBytes(bool *src, int bitCount) {
+int8_t *DataUtilities::boolsToBytes(const bool *const src, const uint32_t &bitCount) {
     int byteCount = bitCount / 8;
     assert(bitCount % 8 == 0); // no partial bytes supported
 
     int8_t *result = new int8_t[byteCount];
 
-    bool *cursor = src;
+    bool *cursor = const_cast<bool*>(src);
 
     for(int i = 0; i < byteCount; ++i) {
         result[i] = boolsToByte(cursor);
@@ -59,9 +59,9 @@ int8_t *DataUtilities::boolsToBytes(bool *src, int bitCount) {
 }
 
 std::unique_ptr<QueryTable>
-DataUtilities::getExpectedResults(const std::string &sql, const std::string &orderBy, const int &party,
-                                  const std::string &aliceDb,
-                                  const std::string &bobDb) {
+DataUtilities::getExpectedResult(const std::string &sql, const std::string &orderBy, const int &party,
+                  const std::string &aliceDb,
+                  const std::string &bobDb) {
 
     PsqlDataProvider dataProvider;
 
@@ -116,12 +116,13 @@ DataUtilities::getExpectedResults(const std::string &sql, const std::string &ord
 
 // in some cases, like with LIMIT, we can't just run over tpch_unioned
 std::unique_ptr<QueryTable>
-DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql) {
+DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
+                                 const bool &hasDummyTag) {
 
     PsqlDataProvider dataProvider;
 
-    std::unique_ptr<QueryTable> alice = dataProvider.getQueryTable("tpch_alice", sql, false); // dummyTag true not yet implemented
-    std::unique_ptr<QueryTable> bob = dataProvider.getQueryTable("tpch_bob", sql, false);
+    std::unique_ptr<QueryTable> alice = dataProvider.getQueryTable("tpch_alice", sql, hasDummyTag); // dummyTag true not yet implemented
+    std::unique_ptr<QueryTable> bob = dataProvider.getQueryTable("tpch_bob", sql, hasDummyTag);
 
 
     uint32_t tupleCount = alice->getTupleCount() + bob->getTupleCount();
@@ -135,18 +136,28 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
 
     int offset = alice->getTupleCount();
 
+    // add bob's tuples from last to first
+    int readIdx = bob->getTupleCount();
     for(int i = 0; i < bob->getTupleCount(); ++i) {
-        unioned->putTuple(i + offset, bob->getTuple(i));
+        --readIdx;
+        unioned->putTuple(i + offset, bob->getTuple(readIdx));
     }
 
-    unioned->setSchema(alice->getSchema());
+    QuerySchema schema = alice->getSchema();
+    unioned->setSchema(schema);
+
+
     return unioned;
 }
 
 
- std::shared_ptr<QueryTable> DataUtilities::getQueryResults(const std::string & sql, const std::string & dbName, const bool & hasDummyTag) {
+ std::shared_ptr<QueryTable> DataUtilities::getQueryResults(const std::string & dbName, const std::string & sql, const bool & hasDummyTag) {
     PsqlDataProvider dataProvider;
     return dataProvider.getQueryTable(dbName, sql, hasDummyTag);
+}
+
+std::string DataUtilities::queryDatetime(const string &colName) {
+    return "CAST(EXTRACT(epoch FROM " + colName + ") AS BIGINT) " + colName; // last colName for aliasing
 }
 
 

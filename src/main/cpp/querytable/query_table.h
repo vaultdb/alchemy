@@ -41,17 +41,20 @@ public:
     QueryTuple* getTuplePtr(const int & idx)  const;
 
 
-    // TODO for encryption/decryption
+    // retrieves # of tuples that are not dummies
+    // only works for unencrypted tables, o.w. returns getTupleCount()
+    uint32_t getTrueTupleCount() const;
+
   bool *serialize() const;
 
     friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
 
-    std::unique_ptr<QueryTable> reveal(int empParty) const;
+    std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
 
     QueryTable & operator=(const QueryTable & src);
 
     bool operator==(const QueryTable & other) const;
-
+    bool operator!=(const QueryTable & other) const { return !(*this == other); }
 };
 
 #endif // _QUERY_TABLE_H

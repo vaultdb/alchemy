@@ -2,6 +2,7 @@
 // Created by Jennie Rogers on 8/20/20.
 //
 
+#include <util/data_utilities.h>
 #include "secure_sort_condition.h"
 
 void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
@@ -19,35 +20,35 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
         types::Value lhsValue = SortCondition::getValue(lhs, sortDefinition[i]);
         types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
 
+
         types::Value gtValue = lhsValue > rhsValue;
         emp::Bit gt = gtValue.getEmpBit();
 
-        types::Value eqValue = lhsValue == rhsValue;
+        types::Value eqValue = (lhsValue == rhsValue);
         emp::Bit eq = eqValue.getEmpBit();
 
-
-
         SortDirection direction = sortDefinition[i].second;
-
-        std::cout << "Comparing " << lhsValue.reveal(emp::PUBLIC) << " to " << rhsValue.reveal(emp::PUBLIC) << " gt? " << gt.reveal() << " sort direction: " << (int) direction << std::endl;
-
 
         // is a swap needed?
         // if (lhs > rhs AND descending) OR (lhs < rhs AND ASCENDING)
         emp::Bit colSwapFlag;
         if(direction == vaultdb::SortDirection::ASCENDING) {
-            colSwapFlag = !gt & !swapInit;
+            colSwapFlag = !gt;
+        }
+        else if(direction == vaultdb::SortDirection::DESCENDING) {
+            colSwapFlag = gt;
         }
         else {
-            colSwapFlag = gt & !swapInit;
+            throw;
         }
 
 
-        std::cout << "   Comparing " << lhs.reveal(emp::PUBLIC) <<  " to " << rhs.reveal(emp::PUBLIC) << " on col: " <<  sortColIdx << " toSwap? " << colSwapFlag.reveal() << std::endl;
         // find first one where not eq, use this to init flag
 
-        swap = swap | colSwapFlag; // once we know there's a swap once, we keep it
+        swap = If(swapInit, swap, colSwapFlag); // once we know there's a swap once, we keep it
         swapInit = swapInit  | If(!eq, trueBit, falseBit);  // have we found the most significant column where they are not equal?
+       // std::cout << "   Comparing " << lhs.reveal(emp::PUBLIC) <<  " to " << rhs.reveal(emp::PUBLIC) << " on col: " <<  sortColIdx << " gt? " << gt.reveal() << " toSwap? " << swap.reveal() << std::endl;
+
 
     } // end check for swap
 

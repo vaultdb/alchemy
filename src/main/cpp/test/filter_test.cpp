@@ -15,16 +15,13 @@ using namespace vaultdb::types;
 
 
 
-DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54321, "port for EMP execution");
-DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
-
 class FilterTest : public ::testing::Test {
 
 
 protected:
     void SetUp() override {};
     void TearDown() override{};
+    const std::string dbName = "tpch_alice";
 };
 
 
@@ -34,24 +31,15 @@ protected:
 TEST_F(FilterTest, test_table_scan) {
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 10";
-    std::string expectedOutput = "(#0 int32 lineitem.l_orderkey, #1 int32 lineitem.l_linenumber, #2 varchar(1) lineitem.l_linestatus) isEncrypted? 0\n"
-                                 "(85090, 6, O)\n"
-                                 "(373158, 5, F)\n"
-                                 "(1028, 7, F)\n"
-                                 "(435171, 1, O)\n"
-                                 "(338759, 2, F)\n"
-                                 "(486753, 2, O)\n"
-                                 "(39460, 1, F)\n"
-                                 "(345252, 1, O)\n"
-                                 "(455171, 1, F)\n"
-                                 "(523878, 4, O)\n";
 
-    std::shared_ptr<Operator> input = std::make_shared<SqlInput>("tpch_alice", sql, false);
-    std::shared_ptr<QueryTable> output = input->run();
+
+    std::shared_ptr<Operator> input = std::make_shared<SqlInput>(dbName, sql, false);
+    std::shared_ptr<QueryTable> output = input->run(); // a smoke test for the operator infrastructure
+    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, sql, false);
 
     std::cout << *output << std::endl;
 
-    ASSERT_EQ(expectedOutput, output->toString());
+    ASSERT_EQ(*expected, *output);
 
 
 
@@ -60,6 +48,7 @@ TEST_F(FilterTest, test_table_scan) {
 
 
 // unencrypted case
+// l_linenumber == 1
 class FilterPredicate : public Predicate {
     Value cmp;
 public:
@@ -72,7 +61,7 @@ public:
 
         Value field = aTuple.getField(1).getValue();
         Value res = (field == cmp);
-        return  !res;  // (!) because dummy is false if our selection criteria is satisfied
+        return  res;
     }
 
 
@@ -82,13 +71,10 @@ public:
 
 TEST_F(FilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 10";
-    std::string expectedOutput = "(#0 int32 lineitem.l_orderkey, #1 int32 lineitem.l_linenumber, #2 varchar(1) lineitem.l_linestatus) isEncrypted? 0\n"
-                                 "(435171, 1, O)\n"
-                                 "(39460, 1, F)\n"
-                                 "(345252, 1, O)\n"
-                                 "(455171, 1, F)\n";
+    std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
+   std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
-    std::shared_ptr<Operator> input(new SqlInput("tpch_alice", sql, false));
+    std::shared_ptr<Operator> input(new SqlInput(dbName, sql, false));
 
     // TODO: fix the warnings associated with this
     std::shared_ptr<Predicate> predicateClass(new FilterPredicate());
@@ -96,10 +82,8 @@ TEST_F(FilterTest, test_filter) {
     std::shared_ptr<Operator> filter = filterOp->getPtr();
 
     std::shared_ptr<QueryTable> result = filter->run();
-    std::cout << "Result: " << *result << std::endl;
 
-
-    ASSERT_EQ(expectedOutput,  result->toString());
+    ASSERT_EQ(*expected,  *result);
 
 }
 

@@ -55,7 +55,8 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
             Value val(
                     input->getTuplePtr(0)->getField(idx).getValue());
             Value tick = zero_enc;
-            r_avg[idx] = std::make_pair(val, tick);
+            std::pair<Value, Value> thePair = std::make_pair(val, tick);
+            r_avg[idx] = thePair;
         }
     }
 

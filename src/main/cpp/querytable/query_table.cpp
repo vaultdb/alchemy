@@ -166,12 +166,29 @@ bool QueryTable::operator==(const QueryTable &other) const {
 
     if(this->getTupleCount() != other.getTupleCount()) {   return false; }
 
+
     for(int i = 0; i < getTupleCount(); ++i) {
         QueryTuple thisTuple = getTuple(i);
         QueryTuple otherTuple = other.getTuple(i);
+        //std::cout << "Comparing "  << thisTuple << " to " << otherTuple << std::endl;
+
         if(thisTuple != otherTuple) { return false; }
+
     }
 
     return true;
+}
+
+uint32_t QueryTable::getTrueTupleCount() const {
+    if(isEncrypted())
+        return getTupleCount();
+
+    uint32_t count = 0;
+    for(uint32_t i = 0; i < getTupleCount(); ++i) {
+        if(!tuples_[i].getDummyTag().getBool()) {
+            ++count;
+        }
+    }
+    return count;
 };
 

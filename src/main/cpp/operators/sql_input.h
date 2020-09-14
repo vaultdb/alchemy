@@ -32,7 +32,7 @@ public:
 
     // simple union over two dbs -- TODO: implement for dummy flag too
     SqlInput(const std::string & aliceDb, const std::string & bobDb, const std::string & sql) {
-        output = DataUtilities::getUnionedResults(aliceDb, bobDb, sql);
+        output = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
     }
 
     std::shared_ptr<QueryTable> runSelf() override;

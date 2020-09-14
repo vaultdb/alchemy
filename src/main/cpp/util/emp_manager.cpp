@@ -32,12 +32,11 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
 
     dstTable->setSchema(srcTable->getSchema());
 
-    int readTuple = aliceSize; // last tuple
 
 
+    // read alice in order
     for (int i = 0; i < aliceSize; ++i) {
-        --readTuple;
-        QueryTuple *srcTuple = (empParty_ == emp::ALICE) ? new QueryTuple(srcTable->getTuple(readTuple)) : nullptr;
+        QueryTuple *srcTuple = (empParty_ == emp::ALICE) ? new QueryTuple(srcTable->getTuple(i)) : nullptr;
         dstTuple = secretShareTuple(srcTuple, &srcTable->getSchema(), (int) emp::ALICE);
         dstTable->putTuple(i, dstTuple);
         if(srcTuple != nullptr)
@@ -45,11 +44,14 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(QueryTable *srcTable) {
     }
 
     netio_->flush();
-    std::cout << "Secret sharing bob's data!" << std::endl;
 
     int writeIdx = aliceSize;
+    // write bob last --> first to make bitonic sequence
+    int readTuple = bobSize; // last tuple
+
     for (int i = 0; i < bobSize; ++i) {
-        QueryTuple *srcTuple = (empParty_ == emp::BOB) ? new QueryTuple(srcTable->getTuple(i)) : nullptr;
+        --readTuple;
+        QueryTuple *srcTuple = (empParty_ == emp::BOB) ? new QueryTuple(srcTable->getTuple(readTuple)) : nullptr;
         dstTuple = secretShareTuple(srcTuple, &srcTable->getSchema(), (int) emp::BOB);
         dstTable->putTuple(writeIdx, dstTuple);
         ++writeIdx;
@@ -184,6 +186,7 @@ emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount
     delete [] bools;
     emp::Integer result(stringBitCount, bits);
 
+    delete[] bits;
 
     return result;
 

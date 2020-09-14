@@ -113,6 +113,9 @@ set(sources
 		operators/support/plain_sort_condition.cpp
 		operators/support/secure_sort_condition.cpp
 		operators/project.cpp
+		operators/support/join_equality_predicate.cpp
+		operators/join.cpp
+		operators/basic_join.cpp
 		)
 
 

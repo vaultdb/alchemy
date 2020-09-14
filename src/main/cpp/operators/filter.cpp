@@ -19,7 +19,7 @@ std::shared_ptr<QueryTable> Filter::runSelf() {
 
     for(int i = 0; i < output->getTupleCount(); ++i) {
         QueryTuple tuple = output->getTuple(i);
-        types::Value dummyTag = predicate->predicateCall(tuple);
+        types::Value dummyTag = !(predicate->predicateCall(tuple)); // (!) because dummyTag is false if our selection criteria is satisfied
         tuple.setDummyTag(dummyTag);
 
         output->setTupleDummyTag(i, dummyTag);

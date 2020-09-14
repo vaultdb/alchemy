@@ -9,8 +9,6 @@ std::shared_ptr<QueryTable> SecureSqlInput::runSelf() {
     std::shared_ptr<QueryTable> plaintextTable = SqlInput::runSelf();
     EmpManager *empManager = EmpManager::getInstance();
 
-    std::cout << "Secret sharing:\n" << *plaintextTable << std::endl;
-
     // secret share it
     output = empManager->secretShareTable(plaintextTable.get());
     empManager->flush();

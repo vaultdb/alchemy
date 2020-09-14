@@ -82,6 +82,12 @@ public:
     Value operator==(const Value &rhs) const;
     Value operator!=(const Value &rhs) const;
 
+    // boolean/bitwise ops
+    Value operator^(const Value & rhs) const; // XOR
+    Value operator&(const Value & rhs) const; // AND
+    Value operator|(const Value & rhs) const; // OR
+
+
     // for use only with unencrypted instances of Value
     // TODO: refactor this into encrypted value and unencrypted value, then overload an equality that returns an emp::Bit for the former
     //bool operator== (Value const & rhs);

@@ -25,7 +25,10 @@ std::shared_ptr<QueryTable> Project::runSelf() {
 
     for(ProjectionMapping mapping : projectionMap) {
         uint32_t dstOrdinal = mapping.second;
-        QueryFieldDesc fieldDesc(srcSchema.getField(mapping.first), dstOrdinal);
+        QueryFieldDesc srcField = srcSchema.getField(mapping.first);
+        QueryFieldDesc fieldDesc(srcField, dstOrdinal);
+        size_t srcStringLength = srcField.getStringLength();
+        fieldDesc.setStringLength(srcStringLength);
         dstSchema.putField(dstOrdinal, fieldDesc);
 
         fieldOrdinals.push_back(dstOrdinal);
@@ -41,7 +44,7 @@ std::shared_ptr<QueryTable> Project::runSelf() {
         bool isPrivate = expression.isPrivate();
         std::string alias = expression.getAlias();
 
-        QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, isPrivate, alias, "", type);
+        QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, isPrivate, alias, "", type); // NYI: string length for expressions
         dstSchema.putField(dstOrdinal, fieldDesc);
 
         fieldOrdinals.push_back(dstOrdinal);
@@ -70,6 +73,8 @@ std::shared_ptr<QueryTable> Project::runSelf() {
 
 QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
     QueryTuple dstTuple(colCount, children[0]->getOutput()->isEncrypted());
+    dstTuple.setDummyTag(srcTuple->getDummyTag());
+
     std::map<uint32_t, Expression>::const_iterator exprPos = expressions.begin();
 
 

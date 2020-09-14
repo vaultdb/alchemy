@@ -20,16 +20,20 @@ class DataUtilities {
 
 public:
     static bool *bytesToBool(int8_t* bytes, int byteCount);
-    static int8_t *boolsToBytes(bool *src, int bitCount);
+    static int8_t *boolsToBytes(const bool *const src, const uint32_t &bitCount);
+
 
     // for use in MPC setting to union together the contents of two dbs
     static std::unique_ptr<QueryTable>
-    getExpectedResults(const std::string &sql, const std::string &orderBy, const int &party, const std::string &aliceDb,
-                       const std::string &bobDb);
+    getExpectedResult(const std::string &sql, const std::string &orderBy, const int &party, const std::string &aliceDb,
+                      const std::string &bobDb);
 
-    static std::unique_ptr<QueryTable>  getUnionedResults(const std::string & sql, const std::string & aliceDb, const std::string & bobDb);
+    static std::unique_ptr<QueryTable>
+    getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
+                      const bool &hasDummyTag);
 
-    static std::shared_ptr<QueryTable> getQueryResults(const string &sql, const string &dbName, const bool &hasDummyTag);
+    static std::shared_ptr<QueryTable> getQueryResults(const string &dbName, const string &sql, const bool &hasDummyTag);
+    static std::string queryDatetime(const std::string & colName); // transform a column into an int64 for our expected output
 };
 
 

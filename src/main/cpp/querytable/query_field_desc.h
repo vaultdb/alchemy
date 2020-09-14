@@ -70,6 +70,8 @@ public:
         };
 
     void setStringLength(size_t i);
+    size_t getStringLength() const { return string_length; }
+
 
     friend std::ostream &operator<<(std::ostream &os, const QueryFieldDesc &desc);
     QueryFieldDesc& operator=(const QueryFieldDesc& other);

@@ -32,7 +32,7 @@ protected:
 
 
 
-// test overlod of assignment operator
+// test overload of assignment operator
 TEST_F(SecureValueExpressionTest, test_value_assignment) {
     Value src(true);
     Value dst = src;
@@ -40,6 +40,27 @@ TEST_F(SecureValueExpressionTest, test_value_assignment) {
     ASSERT_EQ(src.getBool(), dst.getBool());
 
 
+
+}
+
+TEST_F(SecureValueExpressionTest, test_string_compare) {
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
+
+    std::string lhsStr = "EGYPT                    ";
+    std::string rhsStr = "ARGENTINA                ";
+
+    types::Value lhsValue(lhsStr);
+    types::Value rhsValue(rhsStr);
+
+    types::Value lhsEncrypted = empManager->secretShareValue(&lhsValue, types::TypeId::VARCHAR, lhsStr.length() * 8, emp::ALICE);
+    types::Value rhsEncrypted = empManager->secretShareValue(&rhsValue, types::TypeId::VARCHAR, rhsStr.length() * 8, emp::ALICE);
+
+    types::Value gtEncrypted = (lhsValue > rhsValue);
+    bool gt = gtEncrypted.reveal().getBool();
+
+
+    ASSERT_TRUE(gt);
 
 }
 

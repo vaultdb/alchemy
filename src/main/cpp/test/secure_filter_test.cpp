@@ -56,9 +56,14 @@ public:
 class SecureFilterTest : public ::testing::Test {
 
 
+
 protected:
     void SetUp() override {};
     void TearDown() override{};
+
+    const std::string aliceDb = "tpch_alice";
+    const std::string bobDb = "tpch_bob";
+
 };
 
 
@@ -72,17 +77,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 5";
-    std::string expectedOutput = "(#0 int32 lineitem.l_orderkey, #1 int32 lineitem.l_linenumber, #2 varchar(1) lineitem.l_linestatus) isEncrypted? 0\n"
-                                 "(338759, 2, F)\n"
-                                 "(435171, 1, O)\n"
-                                 "(1028, 7, F)\n"
-                                 "(373158, 5, F)\n"
-                                 "(85090, 6, O)\n"
-                                 "(7299, 1, F)\n"
-                                 "(16452, 4, F)\n"
-                                 "(232579, 1, O)\n"
-                                 "(474533, 3, O)\n"
-                                 "(173698, 1, F)\n";
+    std::unique_ptr<QueryTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
 
     std::shared_ptr<SecureSqlInput> input(new SecureSqlInput(dbName, sql, false));
     std::shared_ptr<QueryTable> output = input->run();
@@ -90,7 +85,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::unique_ptr<QueryTable> revealed = output->reveal(emp::PUBLIC);
     std::cout << *revealed << std::endl;
 
-    ASSERT_EQ(expectedOutput, revealed->toString());
+    ASSERT_EQ(*expected, *revealed);
 
     empManager->close();
 
@@ -107,12 +102,9 @@ TEST_F(SecureFilterTest, test_filter) {
     std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 5";
+    std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
-    std::string expectedOutput = "(#0 int32 lineitem.l_orderkey, #1 int32 lineitem.l_linenumber, #2 varchar(1) lineitem.l_linestatus) isEncrypted? 0\n"
-                                 "(435171, 1, O)\n"
-                                 "(7299, 1, F)\n"
-                                 "(232579, 1, O)\n"
-                                 "(173698, 1, F)\n";
+    std::unique_ptr<QueryTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, expectedResultSql, true);
 
 
     std::shared_ptr<Operator> input = std::make_shared<SecureSqlInput>(dbName, sql, false);
@@ -126,7 +118,7 @@ TEST_F(SecureFilterTest, test_filter) {
     std::cout << "Result: " << *revealed << std::endl;
 
 
-    ASSERT_EQ(expectedOutput,  revealed->toString());
+    ASSERT_EQ(*expected,  *revealed);
 
 }
 

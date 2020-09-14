@@ -29,9 +29,9 @@ public:
         // date
 
         static const std::string inputQuery = "SELECT l_orderkey, l_comment, l_returnflag, l_discount, "
-                                              "EXTRACT(EPOCH FROM l_commitdate) AS l_commitdate "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
+                                              " l_commitdate "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
                                               "FROM lineitem "
-                                              "ORDER BY l_orderkey "
+                                              "ORDER BY l_shipdate "
                                               "LIMIT 10";
         return inputQuery;
     }
@@ -40,33 +40,36 @@ public:
 
         /*
          * Expected output:
-         * tpch_alice=# SELECT l_orderkey, l_comment, l_returnflag, l_discount, EXTRACT(EPOCH FROM l_commitdate) AS l_commitdate FROM lineitem ORDER BY l_orderkey LIMIT 10;
-          1 |  pending foxes. slyly re                   | N            |       0.10 |    826761600
-          1 | arefully slyly ex                          | N            |       0.07 |    823651200
-          3 | nal foxes wake.                            | A            |       0.06 |    753926400
-          5 | ts wake furiously                          | R            |       0.02 |    778291200
-          5 | sts use slyly quickly special instruc      | R            |       0.07 |    780451200
-          7 | es. instructions                           | N            |       0.08 |    825724800
-          7 |  unusual reques                            | N            |       0.10 |    827884800
-          7 | . slyly special requests haggl             | N            |       0.03 |    828921600
-          7 | jole. excuses wake carefully alongside of  | N            |       0.06 |    825033600
-         32 | lithely regular deposits. fluffily         | N            |       0.02 |    813024000
+         * tpch_alice=# SELECT l_orderkey, l_comment, l_returnflag, l_discount,  CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) l_commitdate  FROM lineitem ORDER BY l_orderkey LIMIT 10;
+ l_orderkey |              l_comment              | l_returnflag | l_discount | l_commitdate
+------------+-------------------------------------+--------------+------------+--------------
+          1 | egular courts above the             | N            |       0.04 |    824083200
+          1 | ly final dependencies: slyly bold   | N            |       0.09 |    825465600
+          1 | riously. regular, express dep       | N            |       0.10 |    825984000
+          1 | lites. fluffily even de             | N            |       0.09 |    828144000
+          1 |  pending foxes. slyly re            | N            |       0.10 |    826761600
+          1 | arefully slyly ex                   | N            |       0.07 |    823651200
+          2 | ven requests. deposits breach a     | N            |       0.00 |    853200000
+          3 | ongside of the furiously brave acco | R            |       0.06 |    757641600
+          3 |  unusual accounts. eve              | R            |       0.10 |    756345600
+          3 | nal foxes wake.                     | A            |       0.06 |    753926400
 (10 rows)
+
          */
 
 
         // N.B. l_commitdate has no table name because it is the output of an expression
-        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double .l_commitdate) isEncrypted? 0\n"
-                                               "(1,  pending foxes. slyly re, N, 0.100000, 826761600.000000)\n"
-                                               "(1, arefully slyly ex, N, 0.070000, 823651200.000000)\n"
-                                               "(3, nal foxes wake. , A, 0.060000, 753926400.000000)\n"
-                                               "(5, ts wake furiously , R, 0.020000, 778291200.000000)\n"
-                                               "(5, sts use slyly quickly special instruc, R, 0.070000, 780451200.000000)\n"
-                                               "(7, es. instructions, N, 0.080000, 825724800.000000)\n"
-                                               "(7,  unusual reques, N, 0.100000, 827884800.000000)\n"
-                                               "(7, . slyly special requests haggl, N, 0.030000, 828921600.000000)\n"
-                                               "(7, jole. excuses wake carefully alongside of , N, 0.060000, 825033600.000000)\n"
-                                               "(32, lithely regular deposits. fluffily , N, 0.020000, 813024000.000000)\n";
+        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 int64 .l_commitdate) isEncrypted? 0\n"
+                                               "(598849, 'ar courts wake fluf                         ', 'A', 0.04, 700531200)\n"
+                                               "(359170, ' the accounts. slyly                        ', 'R', 0.08, 698371200)\n"
+                                               "(434081, 'e. regular instructions among the doggedly  ', 'A', 0.02, 699840000)\n"
+                                               "(27137, 's above th                                  ', 'R', 0.06, 698371200)\n"
+                                               "(301446, ' slyly even foxes. fluffily ironic req      ', 'A', 0.09, 697075200)\n"
+                                               "(555654, 'fily in place of the evenly reg             ', 'R', 0.08, 699753600)\n"
+                                               "(530500, 'gular foxes are fluffily across the iron    ', 'A', 0.01, 698803200)\n"
+                                               "(515077, 'accounts use" ";                               ', 'R', 0.03, 701136000)\n"
+                                               "(27137, 'lthy packages might                         ', 'A', 0.03, 698889600)\n"
+                                               "(358471, 'kages nag carefully agains                  ', 'R', 0.03, 701740800)\n";
 
         return queryOutput;
 
@@ -81,12 +84,10 @@ public:
         // date
         // dummy tag
 
-        static const std::string inputQueryDummyTag = "SELECT l_orderkey, l_comment, l_returnflag, l_discount, "
-                                              "EXTRACT(EPOCH FROM l_commitdate) AS l_commitdate, "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
-                                              "l_returnflag <> 'N' AS dummy "  // simulate a filter for l_returnflag = 'N' -- all of the ones that dont match are dummies
-                                              "FROM lineitem "
-                                              "ORDER BY l_orderkey "
-                                              "LIMIT 10";
+        static const std::string inputQueryDummyTag = "SELECT l_orderkey, l_comment, l_returnflag, l_discount,  l_commitdate, l_shipinstruct <> 'NONE' AS dummy "
+                                                      "FROM lineitem "
+                                                      "ORDER BY l_shipdate "
+                                                      "LIMIT 10";
         return inputQueryDummyTag;
     }
 
@@ -94,30 +95,27 @@ public:
     static const std::string getExpectedOutputDummyTag() {
 
         /*
-         * Expected output:
-         * tpch_alice=# SELECT l_orderkey, l_comment, l_returnflag, l_discount, EXTRACT(EPOCH FROM l_commitdate) AS l_commitdate FROM lineitem ORDER BY l_orderkey LIMIT 10;
-          1 |  pending foxes. slyly re                   | N            |       0.10 |    826761600
-          1 | arefully slyly ex                          | N            |       0.07 |    823651200
-          3 | nal foxes wake.                            | A            |       0.06 |    753926400
-          5 | ts wake furiously                          | R            |       0.02 |    778291200
-          5 | sts use slyly quickly special instruc      | R            |       0.07 |    780451200
-          7 | es. instructions                           | N            |       0.08 |    825724800
-          7 |  unusual reques                            | N            |       0.10 |    827884800
-          7 | . slyly special requests haggl             | N            |       0.03 |    828921600
-          7 | jole. excuses wake carefully alongside of  | N            |       0.06 |    825033600
-         32 | lithely regular deposits. fluffily         | N            |       0.02 |    813024000
+         * tpch_alice=# SELECT l_orderkey, l_comment, l_returnflag, l_discount,  l_commitdate, l_shipinstruct <> 'NONE' AS dummy FROM lineitem ORDER BY l_shipdate LIMIT 10;
+ l_orderkey |                 l_comment                  | l_returnflag | l_discount | l_commitdate | dummy
+------------+--------------------------------------------+--------------+------------+--------------+-------
+     598849 | ar courts wake fluf                        | A            |       0.04 | 1992-03-14   | f
+     359170 |  the accounts. slyly                       | R            |       0.08 | 1992-02-18   | t
+     434081 | e. regular instructions among the doggedly | A            |       0.02 | 1992-03-06   | f
+      27137 | s above th                                 | R            |       0.06 | 1992-02-18   | t
+     301446 |  slyly even foxes. fluffily ironic req     | A            |       0.09 | 1992-02-03   | t
+     555654 | fily in place of the evenly reg            | R            |       0.08 | 1992-03-05   | t
+     530500 | gular foxes are fluffily across the iron   | A            |       0.01 | 1992-02-23   | t
+     515077 | accounts use;                              | R            |       0.03 | 1992-03-21   | t
+      27137 | lthy packages might                        | A            |       0.03 | 1992-02-24   | t
+     358471 | kages nag carefully agains                 | R            |       0.03 | 1992-03-28   | t
 (10 rows)
+
          */
 
         // N.B. l_commitdate has no table name because it is the output of an expression
-        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 double .l_commitdate) isEncrypted? 0\n"
-                                               "(1,  pending foxes. slyly re, N, 0.100000, 826761600.000000)\n"
-                                               "(1, arefully slyly ex, N, 0.070000, 823651200.000000)\n"
-                                               "(7, es. instructions, N, 0.080000, 825724800.000000)\n"
-                                               "(7,  unusual reques, N, 0.100000, 827884800.000000)\n"
-                                               "(7, . slyly special requests haggl, N, 0.030000, 828921600.000000)\n"
-                                               "(7, jole. excuses wake carefully alongside of , N, 0.060000, 825033600.000000)\n"
-                                               "(32, lithely regular deposits. fluffily , N, 0.020000, 813024000.000000)\n";
+        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 int64 .l_commitdate) isEncrypted? 0\n"
+                                               "(598849, 'ar courts wake fluf                         ', 'A', 0.04, 700531200)\n"
+                                               "(434081, 'e. regular instructions among the doggedly  ', 'A', 0.02, 699840000)\n";
 
         return queryOutput;
 

@@ -13,7 +13,7 @@
 #include "util/data_utilities.h"
 #include <gtest/gtest.h>
 #include <data/PsqlDataProvider.h>
-
+#include <operators/project.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -37,69 +37,59 @@ protected:
 
 
     };
-    void runSortTest(const SortDefinition & sortDefinition, const std::string & sql, const std::string & expectedResult);
+
+    bool correctOrder(const QueryTuple & lhs, const QueryTuple & rhs, const SortDefinition & sortDefinition);
+    bool isSorted(const std::shared_ptr<QueryTable> & table, const SortDefinition & sortDefinition);
 
 
 };
 
-void
-SecureSortTest::runSortTest(const SortDefinition &sortDefinition, const string &sql, const string &expectedResult) {
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
+// is lhs  <= rhs
+// fails if either tuple is encrypted
+bool SecureSortTest::correctOrder(const QueryTuple &lhs, const QueryTuple &rhs,  const SortDefinition & sortDefinition) {
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
-    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
-    std::shared_ptr<QueryTable> result = sort->run();
-    std::unique_ptr<QueryTable> revealed = result->reveal(emp::PUBLIC);
+    assert(lhs.getFieldCount() == rhs.getFieldCount());
 
-    std::cout << "Expected output: \n" << expectedResult;
+    for(int i = 0; i < lhs.getFieldCount(); ++i) {
+        types::Value lhsVal = lhs.getField(i).getValue();
+        types::Value rhsVal = rhs.getField(i).getValue();
 
-    std::cout << "Observed result: \n" << *revealed << std::endl;
-    ASSERT_EQ(revealed->toString(), expectedResult);
+        if(sortDefinition[i].second == SortDirection::ASCENDING) {
 
-    empManager->close();
+            if ((lhsVal == rhsVal).getBool()) continue;
+            types::Value gt = (lhs.getField(i).getValue() > rhs.getField(i).getValue());
+            return (gt.getBool()) ? false : true;
+        }
+        else if(sortDefinition[i].second == SortDirection::DESCENDING) {
+            if ((lhsVal == rhsVal).getBool()) continue;
+            types::Value lt = (lhsVal < rhsVal);
+            return (lt.getBool()) ? false : true;
+        }
+    }
+    return true;
+}
+
+bool SecureSortTest::isSorted(const std::shared_ptr<QueryTable> & table, const SortDefinition & sortDefinition) {
+    for(int i = 1; i < table->getTupleCount(); ++i) {
+
+        QueryTuple previousTuple = table->getTuple(i-1);
+        QueryTuple thisTuple = table->getTuple(i);
+
+        if(!correctOrder(previousTuple, thisTuple, sortDefinition))  {
+            return false;
+        }// each tuple correctly ordered wrt its predecessor
+
+    }
+    return true;
 }
 
 
-/*
-TEST_F(SecureSortTest,  testTwoIntColumns) {
-    std::string sql = "SELECT o_orderkey, o_custkey FROM orders ORDER BY o_comment LIMIT 5";  // o_comment "randomizes" the order
-
-    std::string expectedResult = "(#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey) isEncrypted? 0\n"
-                                 "(195488, 10849)\n"
-                                 "(206023, 11525)\n"
-                                 "(222786, 985)\n"
-                                 "(265414, 11266)\n"
-                                 "(317728, 8138)\n"
-                                 "(416930, 3689)\n"
-                                 "(466049, 1877)\n"
-                                 "(479106, 2077)\n"
-                                 "(527522, 1235)\n"
-                                 "(545762, 6976)\n";
-
-
-
-    SortDefinition sortDefinition;
-    sortDefinition.push_back(ColumnSort(0, SortDirection::ASCENDING));
-    sortDefinition.push_back(ColumnSort(1, SortDirection::ASCENDING));
-
-
-    runSortTest(sortDefinition, sql, expectedResult);
-
-
-
-} */
 
 
 // try the logic of Q1 in plaintext for warmup
 TEST_F(SecureSortTest, tpchQ1SortClear) {
 
     std::string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment LIMIT 5"; // order by to ensure order is reproducible and not sorted on the sort cols
-    std::string orderBy = "l_returnflag, l_linestatus";
-    std::string expectedResult = DataUtilities::getExpectedResults(sql, orderBy, FLAGS_party, "tpch_alice", "tpch_bob")->toString();
-    std::cout << "Expected result:\n " << expectedResult << std::endl;
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
@@ -113,15 +103,16 @@ TEST_F(SecureSortTest, tpchQ1SortClear) {
     std::shared_ptr<Operator> sort = sortOp->getPtr();
     std::shared_ptr<QueryTable> result = sort->run();
 
-    std::cout << "Observed result: "  << *result << std::endl;
-    ASSERT_EQ(result->toString(), expectedResult);
-
+    bool tableSorted = isSorted(result, sortDefinition);
+    ASSERT_TRUE(tableSorted);
 }
 
 TEST_F(SecureSortTest, tpchQ1Sort) {
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
+    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
+
     std::string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment LIMIT 5"; // order by to ensure order is reproducible and not sorted on the sort cols
-    std::string orderBy = "l_returnflag, l_linestatus";
-    std::string expectedResult = DataUtilities::getExpectedResults(sql, orderBy, FLAGS_party, "tpch_alice", "tpch_bob")->toString();
 
 
     SortDefinition sortDefinition;
@@ -129,56 +120,110 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
 
 
-    runSortTest(sortDefinition, sql, expectedResult);
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
+    std::shared_ptr<Operator> sort = sortOp->getPtr();
+    std::shared_ptr<QueryTable> result = sort->run();
+
+    std::shared_ptr<QueryTable> observed = result->reveal();
+    bool tableSorted = isSorted(observed, sortDefinition);
+
+    ASSERT_TRUE(tableSorted);
+
+    empManager->close();
 
 }
 
-/* TEST_F(SecureSortTest, tpchQ3Sort) {
 
-    std::string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, EXTRACT(epoch FROM o.o_orderdate) o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY l_comment LIMIT 5"; // order by to ensure order is reproducible and not sorted on the sort cols
-    std::string orderBy = "revenue DESC, o_orderdate";
-    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY " + orderBy;
-    std::string expectedResult = getExpectedResult(expectedResultSql, false, orderBy)->toString();
+TEST_F(SecureSortTest, tpchQ3Sort) {
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
+    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
+
+    std::string sql = "SELECT l_orderkey, l.l_extendedprice * (1.0 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
     sortDefinition.emplace_back(3, SortDirection::ASCENDING);
 
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
+    std::shared_ptr<Operator> sort = sortOp->getPtr();
 
-    runSortTest(sortDefinition, sql, expectedResult);
+
+    // project it down to $1, $3
+    Project *projectOp = new Project(sort);
+    std::shared_ptr<Operator> project = projectOp->getPtr();
+    projectOp->addColumnMapping(1, 0);
+    projectOp->addColumnMapping(3, 1);
+
+    std::shared_ptr<QueryTable> result = project->run();
+    std::shared_ptr<QueryTable> observed = result->reveal();
+
+    ASSERT_TRUE(isSorted(observed, sortDefinition));
+
+    empManager->close();
 
 }
 
 
 TEST_F(SecureSortTest, tpchQ5Sort) {
 
-    std::string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY l_comment LIMIT 5"; // order by to ensure order is reproducible and not sorted on the sort cols
-    std::string orderBy = " revenue DESC";
-    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY " + orderBy;
-    std::string expectedResult = getExpectedResult(expectedResultSql, false, orderBy)->toString();
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
+    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
+    std::string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
 
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
+    std::shared_ptr<Operator> sort = sortOp->getPtr();
 
-    runSortTest(sortDefinition, sql, expectedResult);
+
+    // project it down to $1
+    Project *projectOp = new Project(sort);
+    std::shared_ptr<Operator> project = projectOp->getPtr();
+    projectOp->addColumnMapping(1, 0);
+
+    std::shared_ptr<QueryTable> result = project->run();
+    std::shared_ptr<QueryTable> observed  = result->reveal();
+
+    ASSERT_TRUE(isSorted(observed, sortDefinition));
+
+    empManager->close();
+
 
 }
 
 
 
 TEST_F(SecureSortTest, tpchQ8Sort) {
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
+    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
 
-    std::string sql = "SELECT extract(year from o.o_orderdate) as o_year, o_orderkey FROM orders o  ORDER BY o_comment LIMIT 5"; // order by to ensure order is reproducible and not sorted on the sort cols
-    std::string orderBy = " o_year, o_orderkey DESC";
-    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY " + orderBy;  // orderkey DESC needed to align with psql's layout
-    std::string expectedResult = getExpectedResult(expectedResultSql, false, orderBy)->toString();
+    std::string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  ORDER BY o_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
 
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
+    std::shared_ptr<Operator> sort = sortOp->getPtr();
 
-    runSortTest(sortDefinition, sql, expectedResult);
+    Project *projectOp = new Project(sort);
+    std::shared_ptr<Operator> project = projectOp->getPtr();
+    projectOp->addColumnMapping(0, 0);
+
+    std::shared_ptr<QueryTable> result = project->run();
+    std::shared_ptr<QueryTable> observed  = result->reveal();
+
+    ASSERT_TRUE(isSorted(observed, sortDefinition));
+
+    empManager->close();
 
 }
 
@@ -186,49 +231,82 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
 
 
 TEST_F(SecureSortTest, tpchQ9Sort) {
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
+    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
 
-    std::string sql = "SELECT extract(year from o.o_orderdate) as o_year, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
+    std::string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
                       "  JOIN nation on n_nationkey = s_nationkey"
-                      " ORDER BY o_comment LIMIT 5"; // order by to ensure order is reproducible and not sorted on the sort cols
-                      std::string orderBy = "  n_name ASC, o_year ASC,  o_orderkey";
-    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY " + orderBy;  // o_orderkey might be needed to make this reproducible
+                      " ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
-    std::string expectedResult = getExpectedResult(expectedResultSql, false, orderBy)->toString();
+
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(2, SortDirection::ASCENDING);
-    sortDefinition.emplace_back(0, SortDirection::ASCENDING);
+    sortDefinition.emplace_back(0, SortDirection::DESCENDING);
 
 
-    runSortTest(sortDefinition, sql, expectedResult);
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
+    std::shared_ptr<Operator> sort = sortOp->getPtr();
+
+    // project it down to $2, $0
+    Project *projectOp = new Project(sort->getPtr());
+    std::shared_ptr<Operator> project = projectOp->getPtr();
+    projectOp->addColumnMapping(2, 0);
+    projectOp->addColumnMapping(0, 1);
+
+    std::shared_ptr<QueryTable> result = project->run();
+    std::shared_ptr<QueryTable> observed  = result->reveal();
+
+    std::cout << "Observed output: " << *observed << std::endl;
+    ASSERT_TRUE(isSorted(observed, sortDefinition));
+
+    empManager->close();
 
 }
 
 
-
 // 18
 TEST_F(SecureSortTest, tpchQ18Sort) {
+    EmpManager *empManager = EmpManager::getInstance();
+    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
+    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
 
-    std::string sql = "SELECT o_orderkey, EXTRACT(epoch FROM o_orderdate) o_orderdate, o_totalprice FROM orders"
-                      " ORDER BY o_comment LIMIT 5"; // order by to ensure order is reproducible and not sorted on the sort cols
-                      std::string orderBy = " o_totalprice DESC, o_orderdate";
-    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY " + orderBy;
-    std::string expectedResult = getExpectedResult(expectedResultSql, false, orderBy)->toString();
+    std::string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders"
+                      " ORDER BY o_comment, o_custkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(2, SortDirection::DESCENDING);
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
 
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
+    std::shared_ptr<Operator> sort = sortOp->getPtr();
 
-    runSortTest(sortDefinition, sql, expectedResult);
+
+    // project it down to $2, $1
+    Project *projectOp = new Project(sort->getPtr());
+    std::shared_ptr<Operator> project = projectOp->getPtr();
+    projectOp->addColumnMapping(2, 0);
+    projectOp->addColumnMapping(1, 1);
+
+    std::shared_ptr<QueryTable> result = project->run();
+    std::shared_ptr<QueryTable> observed  = result->reveal();
+
+
+    std::cout << "Observed output: " << *observed << std::endl;
+    ASSERT_TRUE(isSorted(observed, sortDefinition));
+
+    empManager->close();
 
 }
 
 
 
 
-*/
+
 
 
 

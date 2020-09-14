@@ -20,11 +20,9 @@ public:
     // override when we instantiate a predicate
     virtual types::Value predicateCall(const QueryTuple & aTuple) const = 0;
 
-
 };
 
 
 
 typedef  types::Value (Predicate::*predicateCall)(const QueryTuple & aTuple);
-
 #endif //_PREDICATE_CLASS_H

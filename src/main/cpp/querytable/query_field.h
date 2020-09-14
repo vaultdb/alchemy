@@ -22,7 +22,7 @@ public:
 
   QueryField(const QueryField &qf);
   QueryField(int fn) : ordinal(fn) {};
-  QueryField(const int &fn, const types::Value & aVal)  : ordinal(fn), value_(aVal){};
+  QueryField(const uint32_t &fn, const types::Value & aVal)  : ordinal(fn), value_(aVal){};
 
 
   types::Value getValue() const;

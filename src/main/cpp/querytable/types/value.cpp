@@ -271,7 +271,8 @@ void Value::setValue(const std::string & aString) {
             case TypeId::FLOAT32: {
                 float value = getFloat32();
                 std::stringstream stream;
-                stream << std::fixed << std::setprecision(1) << value;
+                //stream << std::fixed << std::setprecision(1) << value;
+                stream << value;
                 return stream.str();
             }
             case TypeId::FLOAT64:
@@ -451,7 +452,6 @@ void Value::setValue(const std::string & aString) {
 
                 delete [] bools;
                 delete [] decodedBytes;
-
                 return types::Value(dst);
             }
 
