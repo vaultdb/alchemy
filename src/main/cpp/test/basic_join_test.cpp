@@ -34,19 +34,18 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
 
     // get inputs from local oblivious ops
     // first 3 customers, propagate this constraint up the join tree for the test
-    std::string customerSql = "SELECT c_custkey, c_mktsegment = 'HOUSEHOLD' cdummy "
+    std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
                               "FROM customer  "
                               "WHERE c_custkey <= 5 "
                               "ORDER BY c_custkey";
 
     std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
                            "FROM orders "
-                           "WHERE o_custkey <= 5 "
-                           "ORDER BY o_orderkey LIMIT 5";
+                           "WHERE o_custkey <= 5 ";
 
    std::string expectedResultSql = "WITH customerCTE AS (" + customerSql + "), "
                                         "ordersCTE AS (" + ordersSql + ") "
-                                        "SELECT o_orderkey, o_custkey,(cdummy AND odummy AND o_custkey = c_custkey) dummy "
+                                        "SELECT o_orderkey, o_custkey,(cdummy OR odummy OR o_custkey <> c_custkey) dummy "
                                         "FROM customerCTE, ordersCTE "
                                         "ORDER BY o_orderkey, o_custkey";
 
@@ -76,9 +75,9 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
     std::cout << "customer input: " << std::endl << customerInput->getOutput()->toString(true);
     std::cout << "orders input: " << std::endl << ordersInput->getOutput()->toString(true);
 
-    std::cout << "join output: " << std::endl << joinOp->getOutput()->toString(true) << std::endl;
+    std::cout << "join output: " << std::endl << joinOp->getOutput()->toString(false) << std::endl;
 
-    std::cout << "project output: " << std::endl << project->getOutput()->toString(true) << std::endl;
+    std::cout << "project output: " << std::endl << project->getOutput()->toString(false) << std::endl;
 
 
     ASSERT_EQ(*expected, *observed);
