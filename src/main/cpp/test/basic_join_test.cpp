@@ -50,7 +50,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
                                         "FROM customerCTE, ordersCTE "
                                         "ORDER BY o_orderkey, o_custkey";
 
-   std::cout << "Expected results SQL: " << std::endl;
+   std::cout << "Expected results SQL: " << expectedResultSql <<  std::endl;
 
    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
@@ -59,7 +59,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
 
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
-    customerOrdersOrdinals.push_back(EqualityPredicate (0, 1)); // c_custkey, o_custkey
+    customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
 
     std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, false));
 
@@ -72,6 +72,15 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
     std::shared_ptr<Operator> project = projectOp->getPtr();
 
     std::shared_ptr<QueryTable> observed = project->run();
+
+    std::cout << "customer input: " << std::endl << customerInput->getOutput()->toString(true);
+    std::cout << "orders input: " << std::endl << ordersInput->getOutput()->toString(true);
+
+    std::cout << "join output: " << std::endl << joinOp->getOutput()->toString(true) << std::endl;
+
+    std::cout << "project output: " << std::endl << project->getOutput()->toString(true) << std::endl;
+
+
     ASSERT_EQ(*expected, *observed);
 
 }

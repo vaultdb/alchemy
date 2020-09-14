@@ -4,7 +4,7 @@
 
 #include "basic_join.h"
 
-BasicJoin::BasicJoin(std::shared_ptr<BinaryPredicate> &predicateClass, std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs)  : Join(predicate, lhs, rhs) {}
+BasicJoin::BasicJoin(std::shared_ptr<BinaryPredicate> &predicateClass, std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs)  : Join(predicateClass, lhs, rhs) {}
 
 std::shared_ptr<QueryTable> BasicJoin::runSelf() {
     std::shared_ptr<QueryTable> lhs = children[0]->getOutput();
@@ -20,6 +20,8 @@ std::shared_ptr<QueryTable> BasicJoin::runSelf() {
 
     // output size, colCount, isEncrypted
     output = std::shared_ptr<QueryTable>(new QueryTable(outputTupleCount, outputSchema.getFieldCount(), lhs->isEncrypted() | rhs->isEncrypted()));
+    output->setSchema(outputSchema);
+
     uint32_t cursor = 0;
 
     QueryTuple *lhsTuple, *rhsTuple;

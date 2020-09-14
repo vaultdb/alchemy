@@ -2,6 +2,7 @@
 // Created by Jennie Rogers on 9/13/20.
 //
 
+#include <util/type_utilities.h>
 #include "join.h"
 
 
@@ -16,12 +17,19 @@ QuerySchema Join::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySc
     uint32_t cursor = lhsSchema.getFieldCount();
 
     for(uint32_t i = 0; i < lhsSchema.getFieldCount(); ++i) {
-        result.putField(i, lhsSchema.getField(i));
-    }
+        QueryFieldDesc srcField = lhsSchema.getField(i);
+        QueryFieldDesc dstField(srcField, i);
+        size_t srcStringLength = srcField.getStringLength();
+        dstField.setStringLength(srcStringLength);
+        result.putField(i, dstField);
+   }
 
 
     for(uint32_t i = 0; i < rhsSchema.getFieldCount(); ++i) {
-        QueryFieldDesc dstField(rhsSchema.getField(i), cursor);
+        QueryFieldDesc srcField = lhsSchema.getField(i);
+        QueryFieldDesc dstField(srcField, cursor);
+        size_t srcStringLength = srcField.getStringLength();
+        dstField.setStringLength(srcStringLength);
         result.putField(cursor, dstField);
         ++cursor;
     }
@@ -54,6 +62,7 @@ QueryTuple Join::concatenateTuples( QueryTuple *lhs,  QueryTuple *rhs) {
 QueryTuple Join::compareTuples(QueryTuple *lhs, QueryTuple *rhs) {
     QueryTuple dstTuple = concatenateTuples(lhs, rhs);
     types::Value predicateEval = predicate->predicateCall(lhs, rhs);
+
     types::Value dummyTag = lhs->getDummyTag() | rhs->getDummyTag() | (!predicateEval);
     dstTuple.setDummyTag(dummyTag);
     return dstTuple;

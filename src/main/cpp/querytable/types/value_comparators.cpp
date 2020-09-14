@@ -364,7 +364,8 @@ Value types::Value::operator|(const Value &rhs) const {
     if(getType() == TypeId::ENCRYPTED_BOOLEAN) {
         return Value(this->getEmpBit() | rhs.getEmpBit());
     }
-    return Value(this->getBool() | rhs.getBool());
+    bool result = this->getBool() || rhs.getBool();
+    return Value(result);
 }
 
 Value types::Value::operator^(const Value &rhs) const {
@@ -374,7 +375,9 @@ Value types::Value::operator^(const Value &rhs) const {
     if(getType() == TypeId::ENCRYPTED_BOOLEAN) {
         return Value(this->getEmpBit() ^ rhs.getEmpBit());
     }
-    return Value(this->getBool() ^ rhs.getBool());
+
+    bool result = this->getBool() ^ rhs.getBool();
+    return Value(result);
 }
 
 Value types::Value::operator&(const Value &rhs) const {
@@ -385,7 +388,8 @@ Value types::Value::operator&(const Value &rhs) const {
     if(getType() == TypeId::ENCRYPTED_BOOLEAN) {
         return Value(this->getEmpBit() & rhs.getEmpBit());
     }
-    return Value(this->getBool() & rhs.getBool());
+    bool result = this->getBool() && rhs.getBool();
+    return Value(result);
 }
 
 
