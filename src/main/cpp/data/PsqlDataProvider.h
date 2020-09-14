@@ -30,6 +30,7 @@ private:
 
      std::string srcTable;
      std::string dbName;
+    std::unique_ptr<QuerySchema> tableSchema;
 
     size_t getVarCharLength(string table, string column) const;
 

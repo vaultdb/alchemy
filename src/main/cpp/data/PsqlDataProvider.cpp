@@ -43,9 +43,9 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
 
     std::unique_ptr<QueryTable> dstTable = std::make_unique<QueryTable>(rowCount, colCount, false);
-    std::unique_ptr<QuerySchema> schema = getSchema(pqxxResult, hasDummyTag);
+    tableSchema = getSchema(pqxxResult, hasDummyTag);
 
-    dstTable->setSchema(*schema);
+    dstTable->setSchema(*tableSchema);
 
     int counter = 0;
     for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
@@ -221,6 +221,12 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
             case types::TypeId::VARCHAR:
             {
                 string stringVal = src.as<string>();
+                size_t strLength = tableSchema->getField(ordinal).getStringLength();
+
+                while(stringVal.size() != strLength) {
+                    stringVal += " ";
+                }
+
                 return QueryField(ordinal, types::Value(stringVal));
             }
             default:
