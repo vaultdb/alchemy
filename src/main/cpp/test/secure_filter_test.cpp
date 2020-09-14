@@ -45,8 +45,7 @@ public:
 
         Value res = field == encryptedLineNumber;
 
-        res = !res;
-        return res;  // (!) because dummy is false if our selection criteria is satisfied
+        return res;
     }
 
 };
