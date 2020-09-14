@@ -26,7 +26,7 @@ QuerySchema Join::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySc
 
 
     for(uint32_t i = 0; i < rhsSchema.getFieldCount(); ++i) {
-        QueryFieldDesc srcField = lhsSchema.getField(i);
+        QueryFieldDesc srcField = rhsSchema.getField(i);
         QueryFieldDesc dstField(srcField, cursor);
         size_t srcStringLength = srcField.getStringLength();
         dstField.setStringLength(srcStringLength);
