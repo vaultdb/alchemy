@@ -9,9 +9,7 @@
 #include <operators/support/binary_predicate.h>
 #include <operators/support/join_equality_predicate.h>
 #include <operators/basic_join.h>
-#include <operators/project.h>
 #include <operators/common_table_expression_input.h>
-#include <operators/sort.h>
 
 
 using namespace emp;
@@ -158,7 +156,6 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                                  "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
-
 
     std::shared_ptr<Operator> customerInput(new SqlInput(dbName, customerSql, true));
     std::shared_ptr<Operator> ordersInput(new SqlInput(dbName, ordersSql, true));
