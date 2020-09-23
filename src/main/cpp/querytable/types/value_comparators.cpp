@@ -248,6 +248,7 @@ Value vaultdb::types::Value::operator!() const {
 
 }
 
+// lhs = (cmp) ? rhs  : lhs
 void vaultdb::types::Value::compareAndSwap(Value &lhs, Value &rhs, const emp::Bit &cmp) {
 
 

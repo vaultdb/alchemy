@@ -34,7 +34,7 @@ ProtoToQuerySchema(const dbquery::Schema &proto_schema) {
     col_info.type();
     QueryFieldDesc fd(i, col_info.is_private(), col_info.name(),
                       col_info.tablename(), ProtoToTypeId(col_info.type()));
-      s->putField(i, fd);
+      s->putField(fd);
   }
   return s;
 }
@@ -74,7 +74,7 @@ std::unique_ptr<QueryTable> ProtoToQueryTable(const dbquery::Table &t) {
       default:
         throw;
       }
-        tup.putField(c.first, *qf);
+        tup.putField(*qf);
     }
     index++;
   }

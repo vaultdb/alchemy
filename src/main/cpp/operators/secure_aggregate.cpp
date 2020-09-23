@@ -124,7 +124,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
         // creates resultant relation; inserting QueryField into tuple (just 1 row)
         for (int i = 0; i < def.scalarAggregates.size(); i++) {
             const QueryField f(i, res_vec[i]);
-            aggregate_output->getTuplePtr(0)->putField(i, f);
+            aggregate_output->getTuplePtr(0)->putField(f);
         }
 
         Value curr_dval(trueBool);
@@ -234,7 +234,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
             for (int i = 0; i < def.scalarAggregates.size(); i++) {
                 const QueryField f(i, res_vec[i]);
                 QueryTuple *tuple = aggregate_output->getTuplePtr(cursor);
-                tuple->putField(i, f);
+                tuple->putField(f);
                 aggregate_output->putTuple(cursor, *tuple);
             }
             Value curr_dval(is_not_dummy);

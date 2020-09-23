@@ -1,7 +1,7 @@
 #include <iostream>
 #include "query_schema.h"
 
-QuerySchema::QuerySchema(const int &num_fields) : fieldCount_(num_fields) {
+QuerySchema::QuerySchema(const size_t &num_fields) : fieldCount_(num_fields) {
     fields_.reserve(num_fields);
 
     // initialize all fields to blanks
@@ -14,8 +14,9 @@ QuerySchema::QuerySchema(const int &num_fields) : fieldCount_(num_fields) {
 }
 
 
-void QuerySchema::putField(const int &idx, const QueryFieldDesc &fd) {
-    fields_[idx]  = fd; // copy field desc out into newly-allocated member variable
+void QuerySchema::putField(const QueryFieldDesc &fd) {
+    uint32_t ordinal = fd.getOrdinal();
+    fields_[ordinal]  = fd; // copy field desc out into newly-allocated member variable
 
 }
 

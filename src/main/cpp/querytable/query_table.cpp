@@ -114,11 +114,7 @@ std::string QueryTable::toString(const bool & showDummies) const {
     os <<  getSchema() << " isEncrypted? " << is_encrypted_ << std::endl;
 
     for(int i = 0; i < getTupleCount(); ++i) {
-        os << tuples_[i].toString(showDummies);
-        if(!isEncrypted()) {
-            os << "(dummy=" << tuples_[i].getDummyTag().getValueString()  << ")";
-        }
-        os << std::endl;
+        os << tuples_[i].toString(showDummies) << std::endl;
 
     }
 
@@ -185,9 +181,12 @@ bool QueryTable::operator==(const QueryTable &other) const {
     for(int i = 0; i < getTupleCount(); ++i) {
         QueryTuple thisTuple = getTuple(i);
         QueryTuple otherTuple = other.getTuple(i);
-        //std::cout << "Comparing "  << thisTuple << " to " << otherTuple << std::endl;
+        //std::cout << "Comparing "  << thisTuple.toString(true) << " to " << otherTuple.toString(true) << std::endl;
 
-        if(thisTuple != otherTuple) { return false; }
+        if(thisTuple != otherTuple) {
+            //std::cout << "    Failed to match!" << std::endl;
+            return false;
+        }
 
     }
 

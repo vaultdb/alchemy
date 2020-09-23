@@ -16,12 +16,12 @@ private:
     size_t fieldCount_;
 
 public:
-    explicit QuerySchema(const int &num_fields);
+    explicit QuerySchema(const size_t &num_fields);
     QuerySchema(const QuerySchema &s);
 
     [[nodiscard]] int getFieldCount() const;
 
-  void putField(const int &index, const QueryFieldDesc &fd);
+  void putField(const QueryFieldDesc &fd);
 
   // returns size in bits
    size_t size() const;

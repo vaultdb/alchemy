@@ -77,7 +77,7 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
 
         const QueryField *srcField = ((int) empParty_ == party) ? new QueryField(srcTuple->getField(i)) : nullptr;
         QueryField dstField(secretShareField(srcField, i, schema->getField(i).getType(), schema->getField(i).size(), party));
-        dstTuple.putField(i, dstField);
+        dstTuple.putField(dstField);
         if(srcField != nullptr)
             delete srcField;
     }

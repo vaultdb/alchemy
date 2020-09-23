@@ -18,7 +18,7 @@ public:
 protected:
     static QuerySchema concatenateSchemas(const QuerySchema & lhsSchema, const QuerySchema & rhsSchema);
     static QueryTuple concatenateTuples( QueryTuple * lhs,  QueryTuple * rhs);
-    QueryTuple compareTuples(QueryTuple *lhs, QueryTuple *rhs);
+    QueryTuple compareTuples(QueryTuple *lhs, QueryTuple *rhs, const types::Value &predicateEval);
 
 
     // predicate function needs aware of encrypted or plaintext state of its inputs

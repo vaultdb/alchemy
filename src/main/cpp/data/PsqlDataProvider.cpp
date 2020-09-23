@@ -84,7 +84,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
        }
 
 
-        result->putField(i, fieldDesc);
+        result->putField(fieldDesc);
     }
 
    if(hasDummyTag) {
@@ -150,7 +150,7 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
             const pqxx::field srcField = row[i];
 
            QueryField parsedField = getField(srcField);
-            dstTuple.putField(i, parsedField);
+            dstTuple.putField(parsedField);
         }
 
         if(hasDummyTag) {

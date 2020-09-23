@@ -11,15 +11,11 @@ std::shared_ptr<QueryTable> BasicJoin::runSelf() {
     std::shared_ptr<QueryTable> rhs = children[1]->getOutput();
     uint32_t cursor = 0;
     QueryTuple *lhsTuple, *rhsTuple;
-
-
-    std::cout << "LHS: " << *lhs << std::endl;
-    std::cout << "RHS: " << *rhs << std::endl;
+    types::Value predicateEval;
 
     uint32_t outputTupleCount = lhs->getTupleCount() * rhs->getTupleCount();
     QuerySchema lhsSchema = lhs->getSchema();
     QuerySchema rhsSchema = rhs->getSchema();
-    std::cout << "Concatenating schema!" << std::endl;
     QuerySchema outputSchema = concatenateSchemas(lhsSchema, rhsSchema);
 
     assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC for now
@@ -28,14 +24,12 @@ std::shared_ptr<QueryTable> BasicJoin::runSelf() {
     output = std::shared_ptr<QueryTable>(new QueryTable(outputTupleCount, outputSchema.getFieldCount(), lhs->isEncrypted() | rhs->isEncrypted()));
     output->setSchema(outputSchema);
 
-
-    std::cout << "Done setup!" << std::endl;
-
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
         lhsTuple = lhs->getTuplePtr(i);
         for(uint32_t j = 0; j < rhs->getTupleCount(); ++j) {
             rhsTuple = rhs->getTuplePtr(j);
-            QueryTuple dstTuple = compareTuples(lhsTuple, rhsTuple);
+            predicateEval = predicate->predicateCall(lhsTuple, rhsTuple);
+            QueryTuple dstTuple = compareTuples(lhsTuple, rhsTuple, predicateEval);
             output->putTuple(cursor, dstTuple);
             ++cursor;
         }

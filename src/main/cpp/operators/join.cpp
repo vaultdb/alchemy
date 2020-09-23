@@ -21,7 +21,7 @@ QuerySchema Join::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySc
         QueryFieldDesc dstField(srcField, i);
         size_t srcStringLength = srcField.getStringLength();
         dstField.setStringLength(srcStringLength);
-        result.putField(i, dstField);
+        result.putField(dstField);
    }
 
 
@@ -30,7 +30,7 @@ QuerySchema Join::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySc
         QueryFieldDesc dstField(srcField, cursor);
         size_t srcStringLength = srcField.getStringLength();
         dstField.setStringLength(srcStringLength);
-        result.putField(cursor, dstField);
+        result.putField(dstField);
         ++cursor;
     }
 
@@ -45,13 +45,13 @@ QueryTuple Join::concatenateTuples( QueryTuple *lhs,  QueryTuple *rhs) {
     uint32_t cursor = lhsFieldCount;
 
     for(uint32_t i = 0; i < lhsFieldCount; ++i) {
-        result.putField(i, lhs->getField(i));
+        result.putField(lhs->getField(i));
     }
 
 
     for(uint32_t i = 0; i < rhs->getFieldCount(); ++i) {
         QueryField dstField(cursor, rhs->getField(i).getValue());
-        result.putField(cursor, dstField);
+        result.putField(dstField);
         ++cursor;
     }
 
@@ -59,9 +59,8 @@ QueryTuple Join::concatenateTuples( QueryTuple *lhs,  QueryTuple *rhs) {
 }
 
 // compare two tuples and return their entry in the output table
-QueryTuple Join::compareTuples(QueryTuple *lhs, QueryTuple *rhs) {
+QueryTuple Join::compareTuples(QueryTuple *lhs, QueryTuple *rhs, const types::Value &predicateEval) {
     QueryTuple dstTuple = concatenateTuples(lhs, rhs);
-    types::Value predicateEval = predicate->predicateCall(lhs, rhs);
 
     types::Value dummyTag = lhs->getDummyTag() | rhs->getDummyTag() | (!predicateEval);
     dstTuple.setDummyTag(dummyTag);

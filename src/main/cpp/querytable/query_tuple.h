@@ -24,14 +24,14 @@ public:
 
     QueryTuple(const size_t & fieldCount, const bool & is_encrypted);
 
-    QueryTuple(const size_t & aFieldCount);
+    explicit QueryTuple(const size_t & aFieldCount);
     QueryTuple(const QueryTuple &src);
 
     void initDummy();
 
   void setIsEncrypted(bool isEncrypted);
   const vaultdb::QueryField getField(int ordinal) const;
-  void putField(int ordinal, const QueryField &f);
+  void putField(const QueryField &f);
   void setDummyTag(const types::Value &v);
   const vaultdb::types::Value getDummyTag();
 

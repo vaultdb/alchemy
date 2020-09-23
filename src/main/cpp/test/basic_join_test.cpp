@@ -10,6 +10,8 @@
 #include <operators/support/join_equality_predicate.h>
 #include <operators/basic_join.h>
 #include <operators/project.h>
+#include <operators/common_table_expression_input.h>
+#include <operators/sort.h>
 
 
 using namespace emp;
@@ -41,13 +43,14 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
 
     std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
                            "FROM orders "
-                           "WHERE o_custkey <= 5 ";
+                           "WHERE o_custkey <= 5 "
+                           "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
    std::string expectedResultSql = "WITH customer_cte AS (" + customerSql + "), "
                                         "orders_cte AS (" + ordersSql + ") "
-                                        "SELECT o_orderkey, o_custkey,(cdummy OR odummy OR o_custkey <> c_custkey) dummy "
+                                        "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, (cdummy OR odummy OR o_custkey <> c_custkey) dummy "
                                         "FROM customer_cte, orders_cte "
-                                        "ORDER BY o_orderkey, o_custkey";
+                                        "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
    std::cout << "Expected results SQL: " << expectedResultSql <<  std::endl;
 
@@ -65,19 +68,13 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
     BasicJoin *joinOp = new BasicJoin(customerOrdersPredicate, ordersInput, customerInput);
 
 
-    Project *projectOp = new Project(joinOp->getPtr());
-    projectOp->addColumnMapping(0, 0); // o_orderkey
-    projectOp->addColumnMapping(1, 1); // o_custkey
-    std::shared_ptr<Operator> project = projectOp->getPtr();
-
-    std::shared_ptr<QueryTable> observed = project->run();
+    std::shared_ptr<QueryTable> observed = joinOp->run();
 
     std::cout << "customer input: " << std::endl << customerInput->getOutput()->toString(true);
     std::cout << "orders input: " << std::endl << ordersInput->getOutput()->toString(true);
 
     std::cout << "join output: " << std::endl << joinOp->getOutput()->toString(false) << std::endl;
 
-    std::cout << "project output: " << std::endl << project->getOutput()->toString(false) << std::endl;
 
 
     ASSERT_EQ(*expected, *observed);
@@ -94,19 +91,18 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
     std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
                             "FROM orders "
                             "WHERE o_custkey <= 5 "
-                            "ORDER BY o_orderkey, o_orderdate";
+                            "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority ";
 
     std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
                            "FROM lineitem "
                            "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 5)  "
-                           "ORDER BY l_orderkey, l_linenumber";
+                           "ORDER BY l_orderkey, revenue ";
+
     std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), "
                                         "lineitem_cte AS (" + lineitemSql + ") "
-                                        "SELECT l_orderkey, revenue, o_orderdate, o_shippriority,(odummy OR ldummy OR o_orderkey <> l_orderkey) dummy "
+                                        "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority,(odummy OR ldummy OR o_orderkey <> l_orderkey) dummy "
                                          "FROM lineitem_cte, orders_cte "
-                                          "ORDER BY l_orderkey, o_orderdate";
-
-    std::cout << "Expected results SQL: " << expectedResultSql <<  std::endl;
+                                          "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
@@ -122,28 +118,21 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
     BasicJoin *joinOp = new BasicJoin(customerOrdersPredicate, lineitemInput, ordersInput);
 
 
-    Project *projectOp = new Project(joinOp->getPtr());
-    projectOp->addColumnMapping(0, 0); // l_orderkey
-    projectOp->addColumnMapping(1, 1); // revenue
-    projectOp->addColumnMapping(4, 2); // o_orderdate
-    projectOp->addColumnMapping(5, 3); // o_shippriority
-    std::shared_ptr<Operator> project = projectOp->getPtr();
+    std::shared_ptr<QueryTable> observed = joinOp->run();
 
-    std::shared_ptr<QueryTable> observed = project->run();
-
-    std::cout << "customer input: " << std::endl << lineitemInput->getOutput()->toString(true);
+    std::cout << "lineitem input: " << std::endl << lineitemInput->getOutput()->toString(true);
     std::cout << "orders input: " << std::endl << ordersInput->getOutput()->toString(true);
 
-    std::cout << "join output: " << std::endl << joinOp->getOutput()->toString(false) << std::endl;
+    std::cout << "observed output: " << std::endl << observed->toString(true) << std::endl;
 
-    std::cout << "project output: " << std::endl << project->getOutput()->toString(false) << std::endl;
+    std::cout << "expected output: " << std::endl << expected->toString(true) << std::endl;
 
 
-    ASSERT_EQ(project->getOutput()->toString(false), expected->toString(false));
+    ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);
 
 }
-// compose C-O-L join shoud produce one output tuple, order ID 210945
+// compose C-O-L join should produce one output tuple, order ID 210945
 
 
 

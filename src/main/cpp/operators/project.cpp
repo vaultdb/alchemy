@@ -19,7 +19,6 @@ std::shared_ptr<QueryTable> Project::runSelf() {
     uint32_t tupleCount = srcTable->getTupleCount();
 
     // put all of the fields into one data structure -- doubles as a verification that destination schema is fully specified
-
     std::vector<uint32_t> fieldOrdinals;
     fieldOrdinals.reserve(colCount);
 
@@ -29,7 +28,7 @@ std::shared_ptr<QueryTable> Project::runSelf() {
         QueryFieldDesc fieldDesc(srcField, dstOrdinal);
         size_t srcStringLength = srcField.getStringLength();
         fieldDesc.setStringLength(srcStringLength);
-        dstSchema.putField(dstOrdinal, fieldDesc);
+        dstSchema.putField(fieldDesc);
 
         fieldOrdinals.push_back(dstOrdinal);
 
@@ -45,7 +44,7 @@ std::shared_ptr<QueryTable> Project::runSelf() {
         std::string alias = expression.getAlias();
 
         QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, isPrivate, alias, "", type); // NYI: string length for expressions
-        dstSchema.putField(dstOrdinal, fieldDesc);
+        dstSchema.putField(fieldDesc);
 
         fieldOrdinals.push_back(dstOrdinal);
         ++exprPos;
@@ -57,6 +56,8 @@ std::shared_ptr<QueryTable> Project::runSelf() {
     }
 
 
+
+    // *** Done defining schema and verifying setup
 
     output = std::shared_ptr<QueryTable>(new QueryTable(tupleCount, colCount, srcTable->isEncrypted()));
     output->setSchema(dstSchema);
@@ -83,7 +84,7 @@ QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
         uint32_t srcOrdinal = mapping.first;
         uint32_t dstOrdinal = mapping.second;
         QueryField dstField(dstOrdinal, srcTuple->getField(srcOrdinal).getValue());
-        dstTuple.putField(dstOrdinal, dstField);
+        dstTuple.putField(dstField);
 
     }
 
@@ -93,7 +94,7 @@ QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
         Expression expression = exprPos->second;
         types::Value fieldValue = expression.expressionCall(*srcTuple);
         QueryField dstField(dstOrdinal, fieldValue);
-        dstTuple.putField(dstOrdinal, dstField);
+        dstTuple.putField(dstField);
         ++exprPos;
     }
 

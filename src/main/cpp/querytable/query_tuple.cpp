@@ -57,7 +57,8 @@ const QueryField QueryTuple::getField(int ordinal) const {
 
 
 
-void QueryTuple::putField(int ordinal, const QueryField &f) {
+void QueryTuple::putField(const QueryField &f) {
+    uint32_t ordinal = f.getOrdinal();
     const types::Value src = f.getValue();
     fields_[ordinal].setValue(src);
 }
@@ -121,8 +122,13 @@ std::string QueryTuple::toString(const bool &showDummies) const {
         for (int i = 1; i < fieldCount_; ++i)
             sstream << ", " << getField(i);
 
-        sstream << ")"; //  (dummy=" << aTuple.dummy_tag_.getValueString() + ")";
+        sstream << ")";
     }
+
+    if(showDummies) {
+       sstream <<  " (dummy=" << dummy_tag_.getValueString() + ")";
+    }
+
     return sstream.str();
 
 }
@@ -189,7 +195,7 @@ QueryTuple QueryTuple::reveal(const int &empParty) const {
 
     for(int i = 0; i < fieldCount_; ++i) {
         QueryField dstField = fields_[i].reveal(empParty);
-        dstTuple.putField(i, dstField);
+        dstTuple.putField(dstField);
     }
 
     EmpManager *empManager = EmpManager::getInstance();
@@ -217,8 +223,8 @@ void QueryTuple::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs, const emp::Bit
 
         types::Value::compareAndSwap(lhsValue, rhsValue, cmp);
 
-        lhs.putField(i, QueryField(i, lhsValue));
-        rhs.putField(i, QueryField(i, rhsValue));
+        lhs.putField(QueryField(i, lhsValue));
+        rhs.putField(QueryField(i, rhsValue));
     }
 
 }

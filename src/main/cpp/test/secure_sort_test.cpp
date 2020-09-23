@@ -96,7 +96,7 @@ TEST_F(SecureSortTest, tpchQ1SortClear) {
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
 
 
-    SqlInput *sqlInputPtr = new SqlInput("tpch_alice", "tpch_bob", sql);
+    SqlInput *sqlInputPtr = new SqlInput("tpch_alice", "tpch_bob", sql, false);
     std::shared_ptr<Operator> input(sqlInputPtr);
 
     Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
