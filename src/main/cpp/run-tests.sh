@@ -10,6 +10,7 @@
 
 ./bin/sort_test
 
+./bin/basic_join_test
 
 ./bin/emp_manager_test --party=1 &
 ./bin/emp_manager_test --party=2

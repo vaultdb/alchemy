@@ -120,13 +120,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
 
     std::shared_ptr<QueryTable> observed = joinOp->run();
 
-    std::cout << "lineitem input: " << std::endl << lineitemInput->getOutput()->toString(true);
-    std::cout << "orders input: " << std::endl << ordersInput->getOutput()->toString(true);
-
-    std::cout << "observed output: " << std::endl << observed->toString(true) << std::endl;
-
-    std::cout << "expected output: " << std::endl << expected->toString(true) << std::endl;
-
+   
 
     ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);
