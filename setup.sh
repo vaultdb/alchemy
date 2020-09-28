@@ -1,14 +1,14 @@
 #!/bin/bash
 
 #setup test databases for unit tests
-echo "Populating test databases..."
-/bin/bash conf/workload/testDB/create_test_dbs.sh
-/bin/bash conf/workload/tpch/generate-and-load-data.sh
+#echo "Populating test databases..."
+#/bin/bash conf/workload/testDB/create_test_dbs.sh
+#/bin/bash conf/workload/tpch/generate-and-load-data.sh
 
-if (($?==1)); then
-    echo "Error populating test databases"
-    exit 1
-fi
+#if (($?==1)); then
+#    echo "Error populating test databases"
+#    exit 1
+#fi
 
 # needed for macosx, may need to check for os name on this first:
 ln -s /usr/local/opt/openssl/include/openssl /usr/local/include
@@ -21,12 +21,12 @@ cd deps/emp
 /bin/bash install.sh 
 
 #to install correct pqxx version
-cd ..
-git clone --branch 6.2.5 https://github.com/jtv/libpqxx.git
-cd libpqxx
-./configure  --disable-documentation --enable-shared
-make 
-sudo make install
+#cd ..
+#git clone --branch 6.2.5 https://github.com/jtv/libpqxx.git
+#cd libpqxx
+#./configure  --disable-documentation --enable-shared
+#make 
+#sudo make install
 
 
 #end
