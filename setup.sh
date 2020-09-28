@@ -18,7 +18,7 @@ ln -s /usr/local/opt/openssl/lib/libssl.dylib /usr/local/lib/
 
 #download emp to dep
 cd deps/emp
-/bin/bash emp/install.sh 
+/bin/bash install.sh 
 
 #to install correct pqxx version
 cd ..
