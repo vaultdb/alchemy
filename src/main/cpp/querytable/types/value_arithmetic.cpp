@@ -39,15 +39,11 @@ Value Value::operator+(const Value &rhs) const {
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = this->getEmpFloat32();
-            emp::Float32 rhsVal = rhs.getEmpFloat32();
+            emp::Float lhsVal = this->getEmpFloat32();
+            emp::Float rhsVal = rhs.getEmpFloat32();
             return Value(lhsVal + rhsVal);
         }
-        case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = this->getEmpFloat64();
-            emp::Float rhsVal = rhs.getEmpFloat64();
-            return Value(lhsVal + rhsVal);
-        }
+
 
         case TypeId::NUMERIC:
         case TypeId::FLOAT32: {
@@ -56,11 +52,6 @@ Value Value::operator+(const Value &rhs) const {
             return Value(lhsVal + rhsVal);
         }
 
-        case TypeId::FLOAT64: {
-            double_t lhsVal = this->getFloat64();
-            double_t rhsVal = rhs.getFloat64();
-            return Value(lhsVal + rhsVal);
-        }
         case TypeId::INVALID:
             break;
         case TypeId::ENCRYPTED_BOOLEAN:  // not supported - semantics not clear yet
@@ -105,15 +96,11 @@ Value Value::operator-(const Value &rhs) const {
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = this->getEmpFloat32();
-            emp::Float32 rhsVal = rhs.getEmpFloat32();
+            emp::Float lhsVal = this->getEmpFloat32();
+            emp::Float rhsVal = rhs.getEmpFloat32();
             return Value(lhsVal - rhsVal);
         }
-        case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = this->getEmpFloat64();
-            emp::Float rhsVal = rhs.getEmpFloat64();
-            return Value(lhsVal -  rhsVal);
-        }
+
 
 
         case TypeId::NUMERIC:
@@ -123,11 +110,7 @@ Value Value::operator-(const Value &rhs) const {
             return Value(lhsVal - rhsVal);
         }
 
-        case TypeId::FLOAT64: {
-            double_t lhsVal = this->getFloat64();
-            double_t rhsVal = rhs.getFloat64();
-            return Value(lhsVal - rhsVal);
-        }
+
         case TypeId::INVALID:
             break;
         case TypeId::VARCHAR:  // not supported - semantics not clear
@@ -170,15 +153,11 @@ Value Value::operator*(const Value &rhs) const {
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = this->getEmpFloat32();
-            emp::Float32 rhsVal = rhs.getEmpFloat32();
+            emp::Float lhsVal = this->getEmpFloat32();
+            emp::Float rhsVal = rhs.getEmpFloat32();
             return Value(lhsVal * rhsVal);
         }
-        case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = this->getEmpFloat64();
-            emp::Float rhsVal = rhs.getEmpFloat64();
-            return Value(lhsVal * rhsVal);
-        }
+
 
 
         case TypeId::NUMERIC:
@@ -188,11 +167,7 @@ Value Value::operator*(const Value &rhs) const {
             return Value(lhsVal * rhsVal);
         }
 
-        case TypeId::FLOAT64: {
-            double_t lhsVal = this->getFloat64();
-            double_t rhsVal = rhs.getFloat64();
-            return Value(lhsVal * rhsVal);
-        }
+
         case TypeId::INVALID:
             break;
         case TypeId::VARCHAR:  // not supported - semantics not clear
@@ -235,15 +210,11 @@ Value Value::operator/(const Value &rhs) const {
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = this->getEmpFloat32();
-            emp::Float32 rhsVal = rhs.getEmpFloat32();
+            emp::Float lhsVal = this->getEmpFloat32();
+            emp::Float rhsVal = rhs.getEmpFloat32();
             return Value(lhsVal / rhsVal);
         }
-        case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = this->getEmpFloat64();
-            emp::Float rhsVal = rhs.getEmpFloat64();
-            return Value(lhsVal / rhsVal);
-        }
+
 
 
         case TypeId::NUMERIC:
@@ -253,11 +224,7 @@ Value Value::operator/(const Value &rhs) const {
             return Value(lhsVal / rhsVal);
         }
 
-        case TypeId::FLOAT64: {
-            double_t lhsVal = this->getFloat64();
-            double_t rhsVal = rhs.getFloat64();
-            return Value(lhsVal / rhsVal);
-        }
+        
         case TypeId::INVALID:
             break;
         case TypeId::VARCHAR:  // not supported - semantics not clear

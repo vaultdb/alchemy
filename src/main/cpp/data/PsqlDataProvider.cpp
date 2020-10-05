@@ -213,11 +213,7 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                 float floatVal = src.as<float>();
                 return  QueryField(ordinal, types::Value(floatVal));
             }
-            case vaultdb::types::TypeId::FLOAT64:
-            {
-                double doubleVal = src.as<double>();
-                return QueryField(ordinal, types::Value(doubleVal));
-            }
+
             case types::TypeId::VARCHAR:
             {
                 string stringVal = src.as<string>();

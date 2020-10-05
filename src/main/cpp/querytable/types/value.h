@@ -25,12 +25,10 @@ public:
     Value(const bool & val);
     Value(const emp::Bit & val);
     Value(TypeId type, const emp::Integer & val);
-    Value(const double & val);
     Value(const float & val);
     Value(const Value & val);
 
     Value(const std::string & val);
-    Value(const emp::Float32 & float32);
     Value(const emp::Float & float32);
 
 
@@ -43,9 +41,7 @@ public:
   void setValue(const emp::Bit & val);
   void setValue(TypeId type, const emp::Integer & val);
   void setValue(const float & val);
-  void setValue(const double & val);
   void setValue(const std::string & aString);
-  void setValue(const emp::Float32 & val);
   void setValue(const emp::Float & val);
 
 
@@ -60,7 +56,7 @@ public:
   emp::Bit getEmpBit() const;
     std::string getVarchar() const;
     float getFloat32() const;
-    double getFloat64() const;
+
 
     string getValueString() const;
     friend std::ostream& operator<<(std::ostream &strm, const types::Value &aValue);
@@ -68,8 +64,8 @@ public:
 
     void serialize(bool *dst) const;
 
-    emp::Float32 getEmpFloat32() const ;
-    emp::Float getEmpFloat64() const ;
+    emp::Float getEmpFloat32() const ;
+
     Value reveal(const int &empParty =  emp::PUBLIC) const;
 
 
@@ -119,9 +115,9 @@ protected:
       boost::variant<bool, int32_t, int64_t, float_t, double_t, std::string> unencrypted_val;
     std::shared_ptr<emp::Bit> emp_bit_;
       std::shared_ptr<emp::Integer>  emp_integer_;
-      std::shared_ptr<emp::Float> emp_float_;
-      std::shared_ptr<emp::Float32> emp_float32_;
-  } value_   {false, nullptr, nullptr, nullptr, nullptr};
+      std::shared_ptr<emp::Float> emp_float32_;
+
+  } value_   {false, nullptr, nullptr, nullptr};
          // false, emp::Bit(false, emp::PUBLIC), emp::Integer(1, 0, emp::PUBLIC), emp::Float(24, 9, 0, emp::PUBLIC), emp::Float32(0.0, emp::PUBLIC)
  // };
 

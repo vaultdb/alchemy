@@ -30,7 +30,7 @@ Value::Value(const emp::Bit  & val) {
 }
 
 
-Value::Value(const  emp::Float32 & aFloat)  {
+Value::Value(const  emp::Float & aFloat)  {
     setValue(aFloat);
 }
 
@@ -39,9 +39,7 @@ Value::Value(TypeId type, const emp::Integer & val) {
     setValue(type, val);
 }
 
-Value::Value(const  double & val) {
-    setValue(val);
-}
+
 
 Value::Value(const  float & val) {
     setValue(val);
@@ -51,9 +49,7 @@ Value::Value(const string & val) {
         setValue(val);
     }
 
-    Value::Value(const  emp::Float & aFloat) {
-        setValue(aFloat);
-    }
+
 
 TypeId Value::getType() const { return Value::type_; }
 
@@ -84,11 +80,6 @@ int64_t Value::getInt64() const {
     }
 
 
-    double_t Value::getFloat64() const  {
-        if(value_.unencrypted_val.which() == 4) { // check that this converts to a int32_t
-            return boost::get<double_t>(value_.unencrypted_val);
-        }
-    }
 
     std::string Value::getVarchar() const  {
         if(value_.unencrypted_val.which() == 5) { // check that this converts to a int32_t
@@ -109,18 +100,14 @@ int64_t Value::getInt64() const {
        return *value_.emp_bit_;
     }
 
-    emp::Float32 Value::getEmpFloat32() const {
+    emp::Float Value::getEmpFloat32() const {
         assert(value_.emp_float32_.get() != nullptr); // do not return uninitialized vals
 
 
         return  *value_.emp_float32_;
     }
 
-    emp::Float Value::getEmpFloat64() const {
-        assert(value_.emp_float_.get() != nullptr); // do not return uninitialized vals
 
-        return  *value_.emp_float_;
-    }
 
 
     Value::~Value() {
@@ -154,15 +141,11 @@ void Value::setValue(const Value  & val) {
             break;
         }
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 floatVal = val.getEmpFloat32();
+            emp::Float floatVal = val.getEmpFloat32();
             setValue(floatVal);
             break;
         }
-        case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float floatVal = val.getEmpFloat64();
-            setValue(floatVal);
-            break;
-        }
+
         case TypeId::VARCHAR:
             setValue(val.getVarchar());
             break;
@@ -170,9 +153,6 @@ void Value::setValue(const Value  & val) {
         case TypeId::NUMERIC:
         case TypeId::FLOAT32:
             setValue(val.getFloat32());
-            break;
-        case TypeId::FLOAT64:
-            setValue(val.getFloat64());
             break;
 
         case TypeId::INVALID:
@@ -202,11 +182,7 @@ void Value::setValue(const bool & val) {
   value_.unencrypted_val = val;
 }
 
-void Value::setValue(const double & val) {
-  type_ = TypeId::FLOAT64;
-  is_encrypted_ = false;
-  value_.unencrypted_val = val;
-}
+
 
 void Value::setValue(const float & val) {
     type_ = TypeId::FLOAT32;
@@ -232,17 +208,13 @@ void Value::setValue(const std::string & aString) {
         value_.emp_integer_ = std::shared_ptr<emp::Integer>(new emp::Integer(val));
     }
 
-    void Value::setValue(const emp::Float32 & val) {
+    void Value::setValue(const emp::Float & val) {
         type_ = TypeId::ENCRYPTED_FLOAT32;
         is_encrypted_ = true;
-        value_.emp_float32_ = std::shared_ptr<emp::Float32>(new emp::Float32(val));
+        value_.emp_float32_ = std::shared_ptr<emp::Float>(new emp::Float(val));
     }
 
-    void Value::setValue(const emp::Float & val) {
-        type_ = TypeId::ENCRYPTED_FLOAT64;
-        is_encrypted_ = true;
-        value_.emp_float_ = std::shared_ptr<emp::Float>(new emp::Float(val));
-    }
+
 
 
 
@@ -275,8 +247,6 @@ void Value::setValue(const std::string & aString) {
                 stream << value;
                 return stream.str();
             }
-            case TypeId::FLOAT64:
-                return std::to_string(getFloat64());
 
             case TypeId::VARCHAR:
                 return  "'" + getVarchar() + "'";
@@ -303,7 +273,6 @@ void Value::setValue(const std::string & aString) {
 
             }
             case TypeId::ENCRYPTED_FLOAT32:
-            case TypeId::ENCRYPTED_FLOAT64:
                 {
                 return std::string("SECRET FLOAT");
 
@@ -355,11 +324,7 @@ void Value::setValue(const std::string & aString) {
                     memcpy(dst, (bool *) &value, valSize);
                     break;
                 }
-                case vaultdb::types::TypeId::FLOAT64: {
-                    double value = getFloat64();
-                    memcpy(dst, (bool *) &value, valSize);
-                    break;
-                }
+
                 case vaultdb::types::TypeId::DATE:
                 case vaultdb::types::TypeId::INTEGER64: {
                     int64_t value = getInt64();
@@ -397,7 +362,6 @@ void Value::setValue(const std::string & aString) {
             case types::TypeId::INTEGER32:
             case types::TypeId::INTEGER64:
             case types::TypeId::FLOAT32:
-            case types::TypeId::FLOAT64:
             case types::TypeId::NUMERIC:
             case types::TypeId::VARCHAR:
             case types::TypeId::DATE:
@@ -422,21 +386,15 @@ void Value::setValue(const std::string & aString) {
                 return types::Value(dst);
             }
 
-            case types::TypeId::ENCRYPTED_FLOAT64: {
-                emp::Float floatVal = this->getEmpFloat64();
-                double dst = floatVal.reveal<double_t>((int) empParty);
-                return types::Value(dst);
-
-            }
 
             case types::TypeId::ENCRYPTED_VARCHAR: {
 
                 emp::Integer encryptedString = this->getEmpInt();
-                long bitCount = encryptedString.length;
+                long bitCount = encryptedString.size();
                 long byteCount = bitCount / 8;
 
                 bool *bools = new bool[bitCount];
-                emp::ProtocolExecution::prot_exec->reveal(bools, (int) empParty, (emp::block *) encryptedString.bits, bitCount);
+                emp::ProtocolExecution::prot_exec->reveal(bools, (int) empParty, (emp::block *) &encryptedString.bits[0], bitCount);
 
                 char *decodedBytes = (char *) DataUtilities::boolsToBytes(bools, bitCount);
 

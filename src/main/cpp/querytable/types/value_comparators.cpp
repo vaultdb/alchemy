@@ -3,11 +3,14 @@
 //
 // based on emp's comparable.h
 
-#include <util/type_utilities.h>
-#include <util/data_utilities.h>
+
 #include "value.h"
+#include <emp-tool/circuits/float32.h>
 
 using vaultdb::types::Value;
+using namespace vaultdb;
+
+
 
 Value Value::operator>=(const Value &rhs) const {
     types::TypeId opType = getType();
@@ -54,8 +57,12 @@ Value Value::operator>=(const Value &rhs) const {
                 emp::Integer rhsChars[charCount];
 
                 for(int i = 0; i < charCount; ++i) {
-                    lhsChars[i] = emp::Integer(8, lhsVal.bits + i * 8);
-                    rhsChars[i] = emp::Integer(8, rhsVal.bits + i * 8);
+                    lhsChars[i] = emp::Integer(8, 'x');
+                    memcpy(&(lhsVal.bits[i * 8]), &(lhsChars[i].bits[0]), 8);
+
+                    rhsChars[i] = emp::Integer(8, 'x');
+                    memcpy(&(rhsVal.bits[i * 8]), &(rhsChars[i].bits[0]), 8);
+
                 }
 
                 emp::Bit geq = lhsChars[0].geq(rhsChars[0]); // bootstrap
@@ -72,22 +79,20 @@ Value Value::operator>=(const Value &rhs) const {
             }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = this->getEmpFloat32();
-            emp::Float32 rhsVal = rhs.getEmpFloat32();
+            emp::Float lhsVal = this->getEmpFloat32();
+            emp::Float rhsVal = rhs.getEmpFloat32();
             emp::Bit lt = lhsVal.less_than(rhsVal);
             return Value(!lt); // >=
         }
-        case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = this->getEmpFloat64();
-            emp::Float rhsVal = rhs.getEmpFloat64();
-            return Value( lhsVal.greater(rhsVal) | (lhsVal.equal(rhsVal)));
-        }
+
         case TypeId::ENCRYPTED_BOOLEAN: {
             emp::Bit lhsVal = this->getEmpBit();
             emp::Bit rhsVal = rhs.getEmpBit();
 
-            emp::Integer lhsInt(1, &lhsVal);
-            emp::Integer rhsInt(1, &rhsVal);
+            emp::Integer lhsInt(1, true);
+            lhsInt.bits[0] = lhsVal;
+            emp::Integer rhsInt(1, true);
+            lhsInt.bits[0] = rhsVal;
             return Value(lhsInt >= rhsInt);
         }
 
@@ -104,11 +109,6 @@ Value Value::operator>=(const Value &rhs) const {
             return Value(lhsVal >= rhsVal);
         }
 
-        case TypeId::FLOAT64: {
-            double_t lhsVal = this->getFloat64();
-            double_t rhsVal = rhs.getFloat64();
-            return Value(lhsVal >= rhsVal);
-        }
         case TypeId::INVALID:
             break;
         default:
@@ -167,21 +167,21 @@ Value Value::operator==(const Value &rhs) const {
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = this->getEmpFloat32();
-            emp::Float32 rhsVal = rhs.getEmpFloat32();
-            return Value(lhsVal.equal(rhsVal));
+            emp::Float lhsVal = this->getEmpFloat32();
+            emp::Float rhsVal = rhs.getEmpFloat32();
+
+            emp::Bit res(lhsVal.equal(rhsVal));
+            return Value(res);
         }
-        case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = this->getEmpFloat64();
-            emp::Float rhsVal = rhs.getEmpFloat64();
-            return Value(lhsVal.equal(rhsVal));
-        }
+
         case TypeId::ENCRYPTED_BOOLEAN: {
             emp::Bit lhsVal = this->getEmpBit();
             emp::Bit rhsVal = rhs.getEmpBit();
 
-            emp::Integer lhsInt(1, &lhsVal);
-            emp::Integer rhsInt(1, &rhsVal);
+            emp::Integer lhsInt(1, true);
+            lhsInt.bits[0] = lhsVal;
+            emp::Integer rhsInt(1, true);
+            rhsInt.bits[0] = rhsVal;
             return Value(lhsInt == rhsInt);
         }
 
@@ -201,14 +201,7 @@ Value Value::operator==(const Value &rhs) const {
             return Value(false);
         }
 
-        case TypeId::FLOAT64: {
-            double_t lhsVal = this->getFloat64();
-            double_t rhsVal = rhs.getFloat64();
-            if(abs(lhsVal - rhsVal) <= 0.1) // wide tolerances because of deltas in how psql will calculate this and what we get from extracting fp #s
-                return Value(true);
 
-            return Value(false);
-        }
         case TypeId::INVALID:
             break;
         default:
@@ -273,23 +266,15 @@ void vaultdb::types::Value::compareAndSwap(Value &lhs, Value &rhs, const emp::Bi
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float32 lhsVal = lhs.getEmpFloat32();
-            emp::Float32 rhsVal = rhs.getEmpFloat32();
+            emp::Float lhsVal = lhs.getEmpFloat32();
+            emp::Float rhsVal = rhs.getEmpFloat32();
             emp::swap(cmp, lhsVal, rhsVal);
             lhs.setValue(lhsVal);
             rhs.setValue(rhsVal);
             break;
 
         }
-        case TypeId::ENCRYPTED_FLOAT64: {
-            emp::Float lhsVal = lhs.getEmpFloat64();
-            emp::Float rhsVal = rhs.getEmpFloat64();
-            emp::swap(cmp, lhsVal, rhsVal);
-            lhs.setValue(lhsVal);
-            rhs.setValue(rhsVal);
-            break;
 
-        }
         case TypeId::ENCRYPTED_BOOLEAN: {
             emp::Bit lhsVal = lhs.getEmpBit();
             emp::Bit rhsVal = rhs.getEmpBit();
@@ -326,17 +311,12 @@ Value types::Value::obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs) {
   }
 
   case TypeId::ENCRYPTED_FLOAT32: {
-    emp::Float32 lhsVal = lhs.getEmpFloat32();
-    emp::Float32 rhsVal = rhs.getEmpFloat32();
-    emp::Float32 result = emp::If(cmp, lhsVal, rhsVal);
-    return Value(result);
-  }
-  case TypeId::ENCRYPTED_FLOAT64: {
-    emp::Float lhsVal = lhs.getEmpFloat64();
-    emp::Float rhsVal = rhs.getEmpFloat64();
+    emp::Float lhsVal = lhs.getEmpFloat32();
+    emp::Float rhsVal = rhs.getEmpFloat32();
     emp::Float result = emp::If(cmp, lhsVal, rhsVal);
     return Value(result);
   }
+
   case TypeId::ENCRYPTED_BOOLEAN: {
     emp::Bit lhsVal = lhs.getEmpBit();
     emp::Bit rhsVal = rhs.getEmpBit();

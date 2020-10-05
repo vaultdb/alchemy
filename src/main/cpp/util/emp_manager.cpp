@@ -129,14 +129,10 @@ types::Value EmpManager::secretShareValue(const types::Value *srcValue, types::T
         case vaultdb::types::TypeId::NUMERIC:
         case vaultdb::types::TypeId::FLOAT32: {
             float value = ((int) empParty_ == party) ? srcValue->getFloat32() : 0;
-            emp::Float32 floatVal(value, party);
+            emp::Float floatVal(value, party);
             return types::Value(floatVal);
         }
-        case vaultdb::types::TypeId::FLOAT64: {
-            double value = ((int) empParty_ == party) ? srcValue->getFloat64() : 0;
-            emp::Float floatVal(24, 9, value, party);
-            return types::Value(floatVal);
-        }
+
         case vaultdb::types::TypeId::INTEGER64: {
             int64_t value = ((int) empParty_ == party) ? srcValue->getInt64() : 0;
             emp::Integer intVal(64, value, party);
@@ -173,20 +169,19 @@ emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount
     }
 
     bool *bools = DataUtilities::bytesToBool((int8_t *) input.c_str(), stringByteCount);
-    emp::Bit *bits = new emp::Bit[stringBitCount];
+
+    emp::Integer result(stringBitCount, 0L, party);
     if(party == (int) empParty_) {
-        emp::init(bits, bools, stringBitCount, party);
+        ProtocolExecution::prot_exec->feed((block *)result.bits.data(), party, bools, stringBitCount);
     }
     else {
-        emp::init(bits, nullptr, stringBitCount, party);
+        ProtocolExecution::prot_exec->feed((block *)result.bits.data(), party, nullptr, stringBitCount);
     }
 
     flush();
 
     delete [] bools;
-    emp::Integer result(stringBitCount, bits);
 
-    delete[] bits;
 
     return result;
 

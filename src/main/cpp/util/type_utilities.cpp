@@ -12,8 +12,6 @@
             return std::string("int64");
         case vaultdb::types::TypeId::FLOAT32:
             return std::string("float");
-        case vaultdb::types::TypeId::FLOAT64:
-            return std::string("double");
         case vaultdb::types::TypeId::NUMERIC:
             return std::string("numeric");
         case vaultdb::types::TypeId::VARCHAR:
@@ -26,8 +24,7 @@
             return std::string("encrypted_bool" );
         case vaultdb::types::TypeId::ENCRYPTED_FLOAT32:
             return std::string("encrypted_float");
-        case vaultdb::types::TypeId::ENCRYPTED_FLOAT64:
-            return std::string("encrypted_double");
+
         case vaultdb::types::TypeId::ENCRYPTED_VARCHAR:
             return std::string("encrypted varchar");
         default:
@@ -52,7 +49,6 @@ size_t TypeUtilities::getTypeSize(types::TypeId id) {
         case vaultdb::types::TypeId::ENCRYPTED_FLOAT32:
             return 32;
 
-        case vaultdb::types::TypeId::FLOAT64:
         case vaultdb::types::TypeId::INTEGER64:
         case vaultdb::types::TypeId::ENCRYPTED_INTEGER64:
             return 64;

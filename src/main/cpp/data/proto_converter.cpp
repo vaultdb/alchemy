@@ -121,7 +121,6 @@ const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
       case types::TypeId::INTEGER32:
       case types::TypeId::INTEGER64:
       case types::TypeId::FLOAT32:
-      case types::TypeId::FLOAT64:
       case types::TypeId::NUMERIC:
       case types::TypeId::ENCRYPTED_BOOLEAN:
       case types::TypeId::VARCHAR:
