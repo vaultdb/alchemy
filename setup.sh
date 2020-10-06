@@ -21,12 +21,12 @@ cd deps/emp
 /bin/bash install.sh 
 
 #to install correct pqxx version
-#cd ..
-#git clone --branch 6.2.5 https://github.com/jtv/libpqxx.git
-#cd libpqxx
-#./configure  --disable-documentation --enable-shared
-#make 
-#sudo make install
+cd ..
+git clone --branch 6.2.5 https://github.com/jtv/libpqxx.git
+cd libpqxx
+./configure  --disable-documentation --enable-shared
+make 
+sudo make install
 
 
 #end
