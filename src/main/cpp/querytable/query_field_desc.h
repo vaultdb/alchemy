@@ -17,12 +17,13 @@
 class QueryFieldDesc {
 
 private:
-   int ordinal_;
    bool is_private_;
    std::string name_;
    std::string table_name;
+    size_t string_length_; // for varchars
     vaultdb::types::TypeId type_;
-  size_t string_length; // for varchars
+    int ordinal_;
+
 
 public:
     QueryFieldDesc();
@@ -40,25 +41,25 @@ public:
   [[nodiscard]] size_t size() const;
 
   QueryFieldDesc(const QueryFieldDesc &f)
-      : ordinal_(f.ordinal_),
-        is_private_(f.is_private_), name_(f.name_), table_name(f.table_name), string_length(f.string_length), type_(f.type_)
+      :
+        is_private_(f.is_private_), name_(f.name_), table_name(f.table_name), string_length_(f.string_length_), type_(f.type_), ordinal_(f.ordinal_)
         {};
 
   QueryFieldDesc(const QueryFieldDesc &f, vaultdb::types::TypeId type,
                  bool is_private)
-      : type_(type), ordinal_(f.ordinal_), is_private_(is_private),
-        name_(f.name_), table_name(f.table_name), string_length(0)
+      : is_private_(is_private),  name_(f.name_),   table_name(f.table_name),
+         string_length_(0), type_(type), ordinal_(f.ordinal_)
         {};
 
   QueryFieldDesc(const QueryFieldDesc &f, int col_num)
-      :  ordinal_(col_num), is_private_(f.is_private_),
-        name_(f.name_), table_name(f.table_name), string_length(0), type_(f.type_)
+      : is_private_(f.is_private_),
+        name_(f.name_), table_name(f.table_name), string_length_(0), type_(f.type_), ordinal_(col_num)
         {};
 
   QueryFieldDesc(int anOrdinal, bool is_priv, const std::string &n,
                  const std::string &tab, const vaultdb::types::TypeId & aType)
-      : type_(aType), ordinal_(anOrdinal), is_private_(is_priv), name_(n),
-        table_name(tab), string_length(0)
+      :  is_private_(is_priv), name_(n),
+        table_name(tab), string_length_(0), type_(aType), ordinal_(anOrdinal)
         {
             // since we convert DATEs to int32_t in both operator land and in our verification pipeline,
             // i.e., we compare the output of our queries to SELECT EXTRACT(EPOCH FROM date_)
@@ -70,7 +71,7 @@ public:
         };
 
     void setStringLength(size_t i);
-    size_t getStringLength() const { return string_length; }
+    size_t getStringLength() const { return string_length_; }
 
 
     friend std::ostream &operator<<(std::ostream &os, const QueryFieldDesc &desc);
