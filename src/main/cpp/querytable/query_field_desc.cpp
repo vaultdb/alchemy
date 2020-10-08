@@ -35,7 +35,7 @@ size_t QueryFieldDesc::size() const {
     vaultdb::types::TypeId typeId  = getType();
     size_t fieldSize = TypeUtilities::getTypeSize(typeId);
     if(QueryFieldDesc::type_ == vaultdb::types::TypeId::VARCHAR)  {
-        fieldSize *= string_length;
+        fieldSize *= string_length_;
     }
 
     return fieldSize;
@@ -44,14 +44,14 @@ size_t QueryFieldDesc::size() const {
 
 void QueryFieldDesc::setStringLength(size_t len) {
 
-    string_length = len;
+    string_length_ = len;
 
 }
 
 std::ostream &operator<<(std::ostream &os, const QueryFieldDesc &desc) {
     os << "#" << desc.ordinal_ << " " << TypeUtilities::getTypeIdString(desc.type_);
     if(desc.type_ == vaultdb::types::TypeId::VARCHAR) {
-        os << "(" << desc.string_length << ")";
+        os << "(" << desc.string_length_ << ")";
     }
 
     os << " " << desc.table_name << "." << desc.name_;
@@ -66,7 +66,7 @@ QueryFieldDesc& QueryFieldDesc::operator=(const QueryFieldDesc& src)  {
     this->ordinal_ = src.ordinal_;
     this->table_name = src.table_name;
     this->is_private_ = src.getIsPrivate();
-    this->string_length = src.string_length;
+    this->string_length_ = src.string_length_;
 
     return *this;
 }
@@ -95,7 +95,7 @@ bool QueryFieldDesc::operator==(const QueryFieldDesc& other) {
         return false;
     }
 
-    if(other.string_length != this->string_length) {
+    if(other.string_length_ != this->string_length_) {
 
         return false;
     }
