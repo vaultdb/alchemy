@@ -30,9 +30,9 @@ if(NOT WIN32)
 endif()
 
 #set(CMAKE_MACOSX_RPATH 0)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
 
@@ -41,10 +41,10 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include_directories(${CMAKE_SOURCE_DIR})
 
 #Compilation flags
-set(CMAKE_C_FLAGS "-pthread -Wall -march=native -O3 -maes -mrdseed")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++14 -fPIC")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -ggdb")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "-pthread -Wall -march=native -maes -mrdseed ")  # -Wc++17-extensions
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}  -fPIC")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g   -O0")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
 
 ## Build type
 if(NOT CMAKE_BUILD_TYPE)

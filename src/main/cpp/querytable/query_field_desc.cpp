@@ -1,7 +1,3 @@
-//
-// Created by madhav on 1/13/20.
-//
-
 #include "query_field_desc.h"
 #include "util/type_utilities.h"
 
