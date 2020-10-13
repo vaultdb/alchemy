@@ -1,7 +1,7 @@
 #include <querytable/query_table.h>
 #include <memory>
-#include <defs.h>
-#include <operator.h>
+#include "common/defs.h"
+#include "operator.h"
 #include <operators/support/sort_condition.h>
 
 

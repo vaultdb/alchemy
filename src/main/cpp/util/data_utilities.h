@@ -20,13 +20,9 @@ class DataUtilities {
 
 public:
     static bool *bytesToBool(int8_t* bytes, int byteCount);
-    static int8_t *boolsToBytes(const bool *const src, const uint32_t &bitCount);
+    static int8_t *boolsToBytes(const bool *src, const uint32_t &bitCount);
 
 
-    // for use in MPC setting to union together the contents of two dbs
-    static std::unique_ptr<QueryTable>
-    getExpectedResult(const std::string &sql, const std::string &orderBy, const int &party, const std::string &aliceDb,
-                      const std::string &bobDb);
 
     static std::unique_ptr<QueryTable>
     getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,

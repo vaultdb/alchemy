@@ -12,10 +12,12 @@
 
 ./bin/basic_join_test
 
+./bin/pkey_fkey_join_test
+
+#pairs for Alice and Bob
+
 ./bin/emp_manager_test --party=1 &
 ./bin/emp_manager_test --party=2
-
-#sleep 5
 
 ./bin/secure_value_expression_test --party=1 &
 ./bin/secure_value_expression_test --party=2
@@ -23,7 +25,6 @@
 ./bin/secure_filter_test --party=1 &
 ./bin/secure_filter_test --party=2
 
-#sleep 5
 
 ./bin/secure_sort_test --party=1 &
 ./bin/secure_sort_test --party=2

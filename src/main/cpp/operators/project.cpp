@@ -4,8 +4,9 @@
 
 #include "project.h"
 
+
 // can't initialize schemas yet, don't have child schema
-Project::Project(std::shared_ptr<Operator> &child) : Operator(child), srcSchema(0), dstSchema(0), colCount(0) {
+Project::Project(std::shared_ptr<Operator> &child) : Operator(child),  colCount(0), srcSchema(0), dstSchema(0){
 
 
 }

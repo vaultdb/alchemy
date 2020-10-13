@@ -1,5 +1,4 @@
 #include <util/data_utilities.h>
-#include <iomanip>
 #include <sstream>
 #include "value.h"
 #include "util/type_utilities.h"
@@ -58,6 +57,8 @@ int32_t Value::getInt32() const {
     if(value_.unencrypted_val.which() == 1) { // check that this converts to a int32_t
         return boost::get<int32_t>(value_.unencrypted_val);
     }
+    throw;
+
 }
 
 bool Value::getBool() const
@@ -65,18 +66,24 @@ bool Value::getBool() const
     if(value_.unencrypted_val.which() == 0) { // check that this converts to a int32_t
         return boost::get<bool>(value_.unencrypted_val);
     }
+    throw;
+
 }
 
 int64_t Value::getInt64() const {
     if(value_.unencrypted_val.which() == 2) { // check that this converts to a int32_t
         return boost::get<int64_t>(value_.unencrypted_val);
     }
+    throw;
+
 }
 
     float_t Value::getFloat32() const  {
         if(value_.unencrypted_val.which() == 3) { // check that this converts to a int32_t
             return boost::get<float_t>(value_.unencrypted_val);
         }
+        throw;
+
     }
 
 
@@ -85,6 +92,8 @@ int64_t Value::getInt64() const {
         if(value_.unencrypted_val.which() == 5) { // check that this converts to a int32_t
             return boost::get<std::string>(value_.unencrypted_val);
         }
+        throw;
+
     }
 
     emp::Integer Value::getEmpInt()  const {
@@ -365,7 +374,7 @@ void Value::setValue(const std::string & aString) {
             case types::TypeId::NUMERIC:
             case types::TypeId::VARCHAR:
             case types::TypeId::DATE:
-                return Value(this); // copy the public field, no need to reveal
+                return Value(*this); // copy the public field, no need to reveal
             case types::TypeId::ENCRYPTED_BOOLEAN: {
                 bool decrypted = this->getEmpBit().reveal<bool>((int) empParty); // returns a bool for both XOR and PUBLIC
                 return Value(decrypted);
@@ -415,7 +424,7 @@ void Value::setValue(const std::string & aString) {
 
             default: // all other types are unencrypted, so just copy out the value
                 if(!is_encrypted_) {
-                    return types::Value(this);
+                    return types::Value(*this);
                 }
                 else {
                     throw;

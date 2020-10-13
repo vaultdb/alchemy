@@ -20,7 +20,7 @@ unsigned int QueryTable::getTupleCount() const {
 
 
 QueryTable::QueryTable(const int & num_tuples, const  int & colCount, const bool & is_encrypted)
-    : is_encrypted_(is_encrypted), tupleCount_(num_tuples), schema_(QuerySchema(colCount)) {
+    : schema_(QuerySchema(colCount)), is_encrypted_(is_encrypted),  tupleCount_(num_tuples) {
     tuples_ =
             std::unique_ptr<QueryTuple[]>(new QueryTuple[tupleCount_]);
 
@@ -37,8 +37,8 @@ const bool QueryTable::isEncrypted() const { return is_encrypted_; }
 
 std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
     int colCount = getSchema().getFieldCount();
-    int tupleCount = getTupleCount();
-    bool isEncrypted = (empParty == emp::XOR) ? true : false;
+    uint32_t tupleCount = getTupleCount();
+    bool isEncrypted = (empParty == emp::XOR);
 
 
     std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, colCount, isEncrypted));
@@ -181,10 +181,10 @@ bool QueryTable::operator==(const QueryTable &other) const {
     for(int i = 0; i < getTupleCount(); ++i) {
         QueryTuple thisTuple = getTuple(i);
         QueryTuple otherTuple = other.getTuple(i);
-        //std::cout << "Comparing "  << thisTuple.toString(true) << " to " << otherTuple.toString(true) << std::endl;
+        std::cout << "Comparing "  << thisTuple.toString(true) << " to " << otherTuple.toString(true) << std::endl;
 
         if(thisTuple != otherTuple) {
-            //std::cout << "    Failed to match!" << std::endl;
+            std::cout << "    Failed to match!" << std::endl;
             return false;
         }
 
@@ -204,5 +204,10 @@ uint32_t QueryTable::getTrueTupleCount() const {
         }
     }
     return count;
+}
+
+std::shared_ptr<QueryTable> QueryTable::secretShare() const {
+    EmpManager *empManager = EmpManager::getInstance();
+    return  empManager->secretShareTable(this);
 };
 

@@ -87,7 +87,6 @@ Row get_row(pqxx::row pqrow, Schema &schema) {
 
 Table get_table_from_query(pqxx::result &res, Schema &schema) {
   Table t;
-  int counter = 0;
   for (auto psql_row : res) {
     Row row = get_row(psql_row, schema);
     t.add_row()->CopyFrom(row);

@@ -25,9 +25,6 @@ Operator::Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rh
 }
 
 
-Operator::~Operator() {
-  // placeholder for debug
-}
 
 std::shared_ptr<QueryTable> Operator::run() {
     for(std::shared_ptr<Operator> op : children) {

@@ -122,11 +122,15 @@ const dbquery::Table QueryTableToXorProto(const QueryTable *input_table) {
       case types::TypeId::INTEGER64:
       case types::TypeId::FLOAT32:
       case types::TypeId::NUMERIC:
-      case types::TypeId::ENCRYPTED_BOOLEAN:
       case types::TypeId::VARCHAR:
+      case types::TypeId ::DATE:
+      case types::TypeId::ENCRYPTED_BOOLEAN:
+          throw; // not yet implemented
+
       case types::TypeId::ENCRYPTED_INTEGER32:
-        throw;
       case types::TypeId::ENCRYPTED_INTEGER64:
+      case types::TypeId::ENCRYPTED_VARCHAR:
+      case types::TypeId::ENCRYPTED_FLOAT32:
         auto s = input_table->getTuple(i)
                 .getField(j)
                 .getValue()

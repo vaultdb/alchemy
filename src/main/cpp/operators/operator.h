@@ -23,7 +23,7 @@ public:
     Operator() {} // initialize children and parent later
     Operator(std::shared_ptr<Operator> &child);
     Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs);
-    ~Operator();
+    ~Operator() {};
 
     // recurses first, then invokes runSelf method
     std::shared_ptr<QueryTable> run();

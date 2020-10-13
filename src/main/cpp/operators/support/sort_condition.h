@@ -6,7 +6,7 @@
 #define _SORT_CONDITION_H
 
 #include  <querytable/query_tuple.h>
-#include "defs.h"
+#include "common/defs.h"
 
 using namespace  vaultdb;
 

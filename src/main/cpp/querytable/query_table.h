@@ -49,6 +49,7 @@ public:
 
     friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
 
+    std::shared_ptr<QueryTable> secretShare() const; // shared_ptr so we can pass it among Operator instances
     std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
 
     QueryTable & operator=(const QueryTable & src);

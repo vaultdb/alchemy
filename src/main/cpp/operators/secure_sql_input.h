@@ -16,8 +16,10 @@ class SecureSqlInput  : public SqlInput {
     // depends on EmpManager being configured in the calling method
     std::shared_ptr<QueryTable> runSelf() override;
 
+
 public:
     SecureSqlInput(std::string db, std::string sql, bool dummyTag) : SqlInput(db, sql, dummyTag) {}
+    ~SecureSqlInput() {};
 };
 
 

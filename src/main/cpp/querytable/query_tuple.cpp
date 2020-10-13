@@ -51,8 +51,7 @@ QueryTuple::QueryTuple(const QueryTuple &src) :
 }
 
 const QueryField QueryTuple::getField(int ordinal) const {
-    QueryField aField = fields_[ordinal];
-    return aField;
+    return  fields_[ordinal];
 }
 
 
@@ -250,6 +249,10 @@ bool QueryTuple::operator==(const QueryTuple &other) {
     }
 
     return true;
+}
+
+vaultdb::QueryField *QueryTuple::getFieldPtr(const uint32_t &ordinal) const {
+    return fields_.get() + ordinal;
 }
 
 

@@ -31,6 +31,7 @@ public:
 
   void setIsEncrypted(bool isEncrypted);
   const vaultdb::QueryField getField(int ordinal) const;
+  vaultdb::QueryField *getFieldPtr(const uint32_t &ordinal) const; // returns a pointer to the original field, mutable
   void putField(const QueryField &f);
   void setDummyTag(const types::Value &v);
   const vaultdb::types::Value getDummyTag();
@@ -38,7 +39,7 @@ public:
 
     QueryTuple reveal(const int &empParty) const;
     friend std::ostream& operator<<(std::ostream &strm, const QueryTuple &aTuple);
-    std::string toString(const bool &showDummies) const;
+    std::string toString(const bool &showDummies = false) const;
 
     QueryTuple();
 

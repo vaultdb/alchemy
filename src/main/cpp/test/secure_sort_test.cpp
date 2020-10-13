@@ -5,14 +5,9 @@
 
 #include <util/emp_manager.h>
 #include <operators/secure_sql_input.h>
-
 #include <gflags/gflags.h>
-
-
-#include "emp-tool/emp-tool.h"
 #include "util/data_utilities.h"
 #include <gtest/gtest.h>
-#include <data/PsqlDataProvider.h>
 #include <operators/project.h>
 
 
@@ -38,8 +33,8 @@ protected:
 
     };
 
-    bool correctOrder(const QueryTuple & lhs, const QueryTuple & rhs, const SortDefinition & sortDefinition);
-    bool isSorted(const std::shared_ptr<QueryTable> & table, const SortDefinition & sortDefinition);
+    static bool correctOrder(const QueryTuple & lhs, const QueryTuple & rhs, const SortDefinition & sortDefinition);
+    static bool isSorted(const std::shared_ptr<QueryTable> & table, const SortDefinition & sortDefinition);
 
 
 };

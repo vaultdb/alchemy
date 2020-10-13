@@ -27,6 +27,21 @@ protected:
     void SetUp() override {};
     void TearDown() override{};
     const std::string dbName = "tpch_unioned";
+
+    const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
+                                    "FROM customer  "
+                                    "WHERE c_custkey <= 5 "
+                                    "ORDER BY c_custkey";
+
+    const std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
+                                  "FROM orders "
+                                  "WHERE o_custkey <= 5 "
+                                  "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
+
+    const std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
+                                    "FROM lineitem "
+                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 5)  "
+                                    "ORDER BY l_orderkey, revenue ";
 };
 
 
@@ -34,19 +49,6 @@ protected:
 
 
 TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
-
-    // get inputs from local oblivious ops
-    // first 5 customers, propagate this constraint up the join tree for the test
-    std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
-                              "FROM customer  "
-                              "WHERE c_custkey <= 5 "
-                              "ORDER BY c_custkey";
-
-    // orders is outer relation
-    std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
-                            "FROM orders "
-                            "WHERE o_custkey <= 5 "
-                            "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     std::string expectedResultSql = "WITH customer_cte AS (" + customerSql + "), "
                                           "orders_cte AS (" + ordersSql + ") "
@@ -66,7 +68,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
     customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
     std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, false));
 
-    ForeignKeyPrimaryKeyJoin *joinOp = new ForeignKeyPrimaryKeyJoin(customerOrdersPredicate, ordersInput, customerInput);
+    auto *joinOp = new ForeignKeyPrimaryKeyJoin(customerOrdersPredicate, ordersInput, customerInput);
 
     std::shared_ptr<QueryTable> observed = joinOp->run();
 
@@ -83,21 +85,6 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
 
 TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
 
-    // get inputs from local oblivious ops
-    // first 3 customers, propagate this constraint up the join tree for the test
-
-
-    std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
-                            "FROM orders "
-                            "WHERE o_custkey <= 5 "
-                            "ORDER BY  o_orderkey, o_custkey, o_orderdate, o_shippriority "
-                            "LIMIT 10";
-
-    std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
-                              "FROM lineitem "
-                              "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 5)  "
-                              "ORDER BY l_orderkey, revenue "
-                              "LIMIT 10";
     std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), "
                                                                          "lineitem_cte AS (" + lineitemSql + "), "
                                                                                                              "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, (o_orderkey=l_orderkey) matched, (odummy OR ldummy) dummy \n"
@@ -119,7 +106,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
     lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
     std::shared_ptr<BinaryPredicate> lineitemOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, false));
 
-    ForeignKeyPrimaryKeyJoin *joinOp = new ForeignKeyPrimaryKeyJoin(lineitemOrdersPredicate, lineitemInput, ordersInput);
+    auto *joinOp = new ForeignKeyPrimaryKeyJoin(lineitemOrdersPredicate, lineitemInput, ordersInput);
 
     std::shared_ptr<QueryTable> observed = joinOp->run();
 
@@ -143,22 +130,6 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
 // compose C-O-L join should produce one output tuple, order ID 210945
 TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
-    // get inputs from local oblivious ops
-    // first 3 customers, propagate this constraint up the join tree for the test
-    std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
-                              "FROM customer  "
-                              "WHERE c_custkey <= 5 "
-                              "ORDER BY c_custkey";
-
-    std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
-                            "FROM orders "
-                            "WHERE o_custkey <= 5 "
-                            "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority ";
-
-    std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
-                              "FROM lineitem "
-                              "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 5)  "
-                              "ORDER BY l_orderkey, revenue ";
 
     std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
                                      "lineitem_cte AS (" + lineitemSql + "), \n"
