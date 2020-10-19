@@ -47,9 +47,9 @@ public:
 
   bool *serialize() const;
 
-    friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
+  friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
 
-    std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
+  std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
 
     QueryTable & operator=(const QueryTable & src);
 

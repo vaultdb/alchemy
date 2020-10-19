@@ -5,17 +5,17 @@
 #ifndef _SECURE_AGGREGATE_H
 #define _SECURE_AGGREGATE_H
 
-#include <querytable/query_table.h>
 #include "operators/support/aggregate_id.h"
-
+#include <operator.h>
+#include <querytable/query_table.h>
 
 struct ScalarAggregateDef {
   int ordinal;
   AggregateId id;
   string alias; // TODO: integrate this with QueryTable
 
-  ScalarAggregateDef(int anOrdinal, AggregateId aggregateId, string anAlias)  : ordinal(anOrdinal), id(aggregateId), alias(anAlias)
-    {}
+  ScalarAggregateDef(int anOrdinal, AggregateId aggregateId, string anAlias)
+      : ordinal(anOrdinal), id(aggregateId), alias(anAlias) {}
 };
 
 struct AggregateDef {
@@ -24,8 +24,8 @@ struct AggregateDef {
 };
 std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
                                       const AggregateDef &def);
+
 void AddToCount(types::Value count_so_far, types::Value add);
-//emp::Integer GetAggregateById(emp::Integer result_vector,
+// emp::Integer GetAggregateById(emp::Integer result_vector,
 //                              AggregateId agg_type, emp::Bit dummy);
 #endif // _SECURE_AGGREGATE_H
-
