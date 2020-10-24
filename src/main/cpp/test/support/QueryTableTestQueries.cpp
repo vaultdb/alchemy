@@ -17,7 +17,7 @@ std::string QueryTableTestQueries::getInputQuery()  {
             "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
             "FROM lineitem "
             "ORDER BY l_orderkey "
-            "LIMIT 10";
+            "LIMIT 5";
 
 }
 
@@ -41,7 +41,7 @@ std::string QueryTableTestQueries::getInputQueryDummyTag() {
                "l_returnflag <> 'N' AS dummy "  // simulate a filter for l_returnflag = 'N' -- all of the ones that dont match are dummies
                "FROM lineitem "
                "ORDER BY l_orderkey "
-               "LIMIT 10";
+               "LIMIT 5";
 
 
 }

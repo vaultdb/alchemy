@@ -9,8 +9,7 @@ QueryTuple::QueryTuple(const  size_t & aFieldCount) {
     dummy_tag_.setValue(false); // not a dummy
     is_encrypted_ = false; // by default
     fieldCount_ = aFieldCount;
-    fields_ =
-        std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+    fields_.resize(fieldCount_);
 
     for(uint32_t i = 0; i < fieldCount_; ++i) {
         fields_[i].setOrdinal(i); // initialize ordinal
@@ -25,8 +24,7 @@ QueryTuple::QueryTuple(const size_t & fieldCount, const  bool & is_encrypted) : 
         dummy_tag_.setValue(false);
     }
 
-    fields_ =
-            std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+    fields_.resize(fieldCount_);
 
     for(uint32_t i = 0; i < fieldCount_; ++i) {
         fields_[i].setOrdinal(i); // initialize ordinal
@@ -40,8 +38,7 @@ QueryTuple::QueryTuple(const QueryTuple &src) :
         dummy_tag_(src.dummy_tag_),
         fieldCount_(src.fieldCount_)
 {
-    fields_ =
-            std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+    fields_.resize(fieldCount_);
 
 
     for(int i = 0; i < fieldCount_; ++i) {
@@ -74,7 +71,7 @@ void QueryTuple::initDummy() {
   }
 }
 
-const vaultdb::types::Value QueryTuple::getDummyTag() {
+const vaultdb::types::Value QueryTuple::getDummyTag() const {
   return this->dummy_tag_;
 }
 
@@ -98,7 +95,7 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple)
         for (int i = 1; i < aTuple.fieldCount_; ++i)
             strm << ", " << aTuple.getField(i);
 
-        strm << ")"; //  (dummy=" << aTuple.dummy_tag_.getValueString() + ")";
+        strm << ")"; //  (dummy=" << aTuple.dummy_tag_.toString() + ")";
     }
     return strm;
 
@@ -115,7 +112,7 @@ std::string QueryTuple::toString(const bool &showDummies) const {
 
     if(showDummies
        ||    (!is_encrypted_ && !(dummy_tag_.getBool())) // if it is real
-       || is_encrypted_) { // or its status is unknown
+           || is_encrypted_) { // or its status is unknown
          sstream <<   "(" <<  getField(0);
 
         for (int i = 1; i < fieldCount_; ++i)
@@ -125,7 +122,7 @@ std::string QueryTuple::toString(const bool &showDummies) const {
     }
 
     if(showDummies) {
-       sstream <<  " (dummy=" << dummy_tag_.getValueString() + ")";
+       sstream <<  " (dummy=" << dummy_tag_.toString() + ")";
     }
 
     return sstream.str();
@@ -142,8 +139,8 @@ QueryTuple::QueryTuple() {
 void QueryTuple::setFieldCount(size_t fieldCount) {
     fieldCount_ = fieldCount;
 
-    fields_ =
-            std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+    fields_.resize(fieldCount_);
+
 }
 
 // only works for unencrypted tables
@@ -177,8 +174,7 @@ QueryTuple& QueryTuple::operator=(const QueryTuple& src) {
     this->dummy_tag_ = src.dummy_tag_;
     this->fieldCount_ = src.fieldCount_;
 
-    fields_ =
-            std::unique_ptr<QueryField[]>(new QueryField[fieldCount_]);
+    fields_.resize(fieldCount_);
 
 
     for(int i = 0; i < fieldCount_; ++i) {
@@ -197,8 +193,6 @@ QueryTuple QueryTuple::reveal(const int &empParty) const {
         dstTuple.putField(dstField);
     }
 
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->flush();
 
 
     emp::Bit dummyTag = dummy_tag_.getEmpBit();
@@ -235,24 +229,29 @@ bool QueryTuple::operator==(const QueryTuple &other) {
 
     if(!is_encrypted_) {
        // std::cout << "Comparing dummy tags: " << dummy_tag_ << " vs "  << other.dummy_tag_ << std::endl;
-        types::Value cmp = (dummy_tag_ == other.dummy_tag_);
-        if(!cmp.getBool()) {// if we are in the clear and their dummy tags are not equal
+        bool cmp = (dummy_tag_ == other.dummy_tag_).getBool();
+        if(!cmp) {// if we are in the clear and their dummy tags are not equal
             return false;
         }
     }
 
     for(int i = 0; i < fieldCount_; ++i) {
-        QueryField thisField = getField(i);
-        QueryField otherField = other.getField(i);
+        QueryField *thisField = getFieldPtr(i);
+        QueryField *otherField = other.getFieldPtr(i);
         //std::cout << "Comparing field: " << thisField << " to " << otherField << std::endl;
-        if(thisField != otherField) {  return false; }
+        if(*thisField != *otherField) {  return false; }
     }
 
     return true;
 }
 
 vaultdb::QueryField *QueryTuple::getFieldPtr(const uint32_t &ordinal) const {
-    return fields_.get() + ordinal;
+    return ((QueryField *) fields_.data()) + ordinal;
+}
+
+QueryTuple::~QueryTuple() {
+
+
 }
 
 

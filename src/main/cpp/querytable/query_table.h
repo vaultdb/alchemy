@@ -16,7 +16,7 @@ private:
   QuerySchema schema_;
   bool is_encrypted_;
 
-    std::unique_ptr<QueryTuple[]>  tuples_;
+    std::vector<QueryTuple> tuples_;
     size_t tupleCount_;
 
 
@@ -24,7 +24,6 @@ public:
     QueryTable(const int & num_tuples, const int & colCount, const bool & is_encrypted);
     QueryTable(const QueryTable & src);
     ~QueryTable() {
-        tuples_.release();
     }
 
     static std::string getQueryTableXorString(const QueryTable  & input_table) {throw; } // not yet implemented
@@ -49,8 +48,8 @@ public:
 
     friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
 
-    std::shared_ptr<QueryTable> secretShare() const; // shared_ptr so we can pass it among Operator instances
-    std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
+    std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &  party) const; // shared_ptr so we can pass it among Operator instances
+    [[nodiscard]] std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
 
     QueryTable & operator=(const QueryTable & src);
 

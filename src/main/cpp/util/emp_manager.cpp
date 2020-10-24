@@ -6,43 +6,42 @@
 #include "type_utilities.h"
 #include "data_utilities.h"
 
-EmpManager * EmpManager::instance_ = nullptr;
 
 
-std::shared_ptr<QueryTable> EmpManager::secretShareTable(const QueryTable *srcTable) {
+std::shared_ptr<QueryTable> EmpManager::secretShareTable(const QueryTable *srcTable,  NetIO *netio, int party) {
     size_t aliceSize = srcTable->getTupleCount(); // in tuples
     size_t bobSize = aliceSize;
     int colCount = srcTable->getSchema().getFieldCount();
     QueryTuple dstTuple(colCount, true);
 
-    if (empParty_ == emp::ALICE) {
-        netio_->send_data(&aliceSize, 4);
-        netio_->flush();
-        netio_->recv_data(&bobSize, 4);
-        netio_->flush();
-    } else if (empParty_ == emp::BOB) {
-        netio_->recv_data(&aliceSize, 4);
-        netio_->flush();
-        netio_->send_data(&bobSize, 4);
-        netio_->flush();
+    if (party == emp::ALICE) {
+        netio->send_data(&aliceSize, 4);
+        netio->flush();
+        netio->recv_data(&bobSize, 4);
+        netio->flush();
+    } else if (party == emp::BOB) {
+        netio->recv_data(&aliceSize, 4);
+        netio->flush();
+        netio->send_data(&bobSize, 4);
+        netio->flush();
     }
 
 
     std::shared_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, colCount, true));
 
     dstTable->setSchema(srcTable->getSchema());
+    const QuerySchema *schema = &srcTable->getSchema();
+
 
 
 
     // read alice in order
     for (int i = 0; i < aliceSize; ++i) {
-        QueryTuple *srcTuple = (empParty_ == emp::ALICE) ? srcTable->getTuplePtr(i) : nullptr;
-        dstTuple = secretShareTuple(srcTuple, &srcTable->getSchema(), (int) emp::ALICE);
+        QueryTuple *srcTuple = (party == emp::ALICE) ? srcTable->getTuplePtr(i) : nullptr;
+        dstTuple = secretShareTuple(srcTuple, schema, party, (int) emp::ALICE);
         dstTable->putTuple(i, dstTuple);
 
     }
-
-    netio_->flush();
 
     int writeIdx = aliceSize;
     // write bob last --> first to make bitonic sequence
@@ -50,12 +49,12 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(const QueryTable *srcTa
 
     for (int i = 0; i < bobSize; ++i) {
         --readTuple;
-        QueryTuple *srcTuple = (empParty_ == emp::BOB) ? srcTable->getTuplePtr(readTuple) : nullptr;
-        if(empParty_ == emp::BOB)
-            std::cout << "Secret sharing: " << *srcTuple << std::endl;
-        dstTuple = secretShareTuple(srcTuple, &srcTable->getSchema(),  emp::BOB);
-        std::string revealed = dstTuple.reveal(emp::PUBLIC).toString(false);
-         std::cout << "Encrypted: " << dstTuple.reveal(emp::PUBLIC) << std::endl;
+        QueryTuple *srcTuple = (party == emp::BOB) ? srcTable->getTuplePtr(readTuple) : nullptr;
+        //if(party == emp::BOB)
+        //    std::cout << "Secret sharing: " << *srcTuple << std::endl;
+        dstTuple = secretShareTuple(srcTuple, schema,  party, emp::BOB);
+        //std::string revealed = dstTuple.reveal(emp::PUBLIC).toString(false);
+         //std::cout << "Encrypted: " << dstTuple.reveal(emp::PUBLIC) << std::endl;
 
         // if(empParty_ == emp::BOB)  assert(revealed == srcTuple->toString());
 
@@ -63,7 +62,7 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(const QueryTable *srcTa
         ++writeIdx;
     }
 
-    netio_->flush();
+    netio->flush();
 
     return dstTable;
 
@@ -72,14 +71,18 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(const QueryTable *srcTa
 
 
 // srcTuple == nullptr if we are collecting secret shares of the other party's private data
-QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema *schema, int party) {
+QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema *schema, const int & myParty, const int & dstParty) {
     int fieldCount = schema->getFieldCount();
     QueryTuple dstTuple(fieldCount, true);
+    types::TypeId aType;
+    size_t aSize;
 
     for(int i = 0; i < fieldCount; ++i) {
 
-        const QueryField *srcField = (empParty_ == party) ? srcTuple->getFieldPtr(i) : nullptr;
-        QueryField dstField = secretShareField(srcField, i, schema->getField(i).getType(), schema->getField(i).size(), party);
+        const QueryField *srcField = (myParty == dstParty) ? srcTuple->getFieldPtr(i) : nullptr;
+        aType =  schema->getField(i).getType();
+        aSize = schema->getField(i).size();
+        QueryField dstField = secretShareField(srcField, i, aType, aSize, myParty, dstParty);
         dstTuple.putField(dstField);
 
     }
@@ -89,7 +92,7 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
          dummyTag = srcTuple->getDummyTag().getBool();
 
 
-    emp::Bit encryptedDummyTag(dummyTag, party);
+    emp::Bit encryptedDummyTag(dummyTag, dstParty);
 
     types::Value valueBit(encryptedDummyTag);
     dstTuple.setDummyTag(valueBit);
@@ -101,52 +104,54 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
 
 // slap on the ordinal for Value
 QueryField
-EmpManager::secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, size_t length, int party) {
+EmpManager::secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, size_t length,  const int & myParty, const int & dstParty) {
 
-    types::Value srcValue = ((int) empParty_ == party) ? srcField->getValue() : types::Value(0);
+    types::Value srcValue = (myParty == dstParty) ? srcField->getValue() : types::Value(0);
 
 
-    types::Value dstValue = secretShareValue(srcValue, type, length, party);
+    types::Value dstValue = secretShareValue(srcValue, type, length, myParty, dstParty);
     QueryField dstField(ordinal, dstValue);
 
 
     return dstField;
 }
 
-types::Value EmpManager::secretShareValue(const types::Value &srcValue, types::TypeId type, size_t length, int party) {
+types::Value EmpManager::secretShareValue(const types::Value &srcValue, types::TypeId type, size_t length, const int & myParty, const int & dstParty) {
 
 
     switch (type) {
         case vaultdb::types::TypeId::BOOLEAN: {
-            bool bit = ((int) empParty_ == party) ? srcValue.getBool() : 0;
-            emp::Bit eBit(bit, party);
+            bool bit = (myParty == dstParty) ? srcValue.getBool() : 0;
+            emp::Bit eBit(bit, dstParty);
             return types::Value(eBit);
         }
         case vaultdb::types::TypeId::INTEGER32: {
-            int32_t value = ((int) empParty_ == party) ? srcValue.getInt32() : 0;
-            emp::Integer intVal(32, value, party);
+            int32_t value = (myParty == dstParty) ? srcValue.getInt32() : 0;
+            emp::Integer intVal(32, value, dstParty);
+            //std::cout << "Encrypting int: " << value << " reveals to " << intVal.reveal<int32_t>() << " bits: " << intVal.reveal<std::string>() << std::endl;
+
             return types::Value(types::TypeId::ENCRYPTED_INTEGER32, intVal);
         }
         case vaultdb::types::TypeId::NUMERIC:
         case vaultdb::types::TypeId::FLOAT32: {
-            float value = ((int) empParty_ == party) ? srcValue.getFloat32() : 0;
-            emp::Float floatVal(value, party);
+            float value = (myParty == dstParty) ? srcValue.getFloat32() : 0;
+            emp::Float floatVal(value, dstParty);
             return types::Value(floatVal);
         }
 
         case vaultdb::types::TypeId::INTEGER64: {
-            int64_t value = ((int) empParty_ == party) ? srcValue.getInt64() : 0;
-            emp::Integer intVal(64, value, party);
+            int64_t value = (myParty == dstParty) ? srcValue.getInt64() : 0;
+            emp::Integer intVal(64, value, dstParty);
             return types::Value(types::TypeId::ENCRYPTED_INTEGER64, intVal);
         }
 
         case vaultdb::types::TypeId::VARCHAR: {
 
-            std::string valueStr = ((int) empParty_ == party) ?
+            std::string valueStr = (myParty == dstParty) ?
                 srcValue.getVarchar() :
                 std::to_string(0);
 
-            emp::Integer strVal = encryptVarchar(valueStr, length, party);
+            emp::Integer strVal = encryptVarchar(valueStr, length, myParty, dstParty);
             types::Value result(types::TypeId::ENCRYPTED_VARCHAR, strVal);;
             return result;
         }
@@ -159,7 +164,7 @@ types::Value EmpManager::secretShareValue(const types::Value &srcValue, types::T
 }
 
 
-emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, int party) {
+emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, const int & myParty, const int & dstParty) {
 
     size_t stringByteCount = stringBitCount / 8;
 
@@ -171,15 +176,14 @@ emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount
 
     bool *bools = DataUtilities::bytesToBool((int8_t *) input.c_str(), stringByteCount);
 
-    emp::Integer result(stringBitCount, 0L, party);
-    if(party == (int) empParty_) {
-        ProtocolExecution::prot_exec->feed((block *)result.bits.data(), party, bools, stringBitCount);
+    emp::Integer result(stringBitCount, 0L, dstParty);
+    if(myParty == dstParty) {
+        ProtocolExecution::prot_exec->feed((block *)result.bits.data(), dstParty, bools, stringBitCount);
     }
     else {
-        ProtocolExecution::prot_exec->feed((block *)result.bits.data(), party, nullptr, stringBitCount);
+        ProtocolExecution::prot_exec->feed((block *)result.bits.data(), dstParty, nullptr, stringBitCount);
     }
 
-    flush();
 
     delete [] bools;
 
@@ -187,41 +191,5 @@ emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount
     return result;
 
 }
-
-
-void EmpManager::flush() {
-    netio_->flush();
-}
-
-// reset
-void EmpManager::close() {
-
-    flush();
-    delete netio_;
-
-}
-
-EmpManager::~EmpManager() {
-    if(netio_) {
-       close();
-    }
-
-    if(instance_) delete instance_;
-}
-
-void EmpManager::configureEmpManager(const char *aliceHost, int port, int empParty) {
-
-        // TODO(jennie): debug this triggering at setup time
-        //  if(netio_) delete netio_;
-
-
-        std::cout << "Instantiating emp with host=" << aliceHost << " port=" << port << " empParty=" <<  empParty << std::endl;
-        netio_ =  new emp::NetIO(empParty == emp::ALICE ? nullptr : aliceHost, port);
-        empParty_ = empParty;
-        emp::setup_semi_honest(netio_, (int) empParty_);
-
-}
-
-
 
 

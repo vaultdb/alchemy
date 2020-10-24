@@ -16,7 +16,6 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
 
     for(int i = 0; i < sortDefinition.size(); ++i) {
-        int sortColIdx = sortDefinition[i].first;
         types::Value lhsValue = SortCondition::getValue(lhs, sortDefinition[i]);
         types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
 

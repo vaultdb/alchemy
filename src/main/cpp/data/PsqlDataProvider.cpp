@@ -26,7 +26,22 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
     dbName = dbname;
 
-    result pqxxResult = query("dbname=" + dbname, query_string);
+    // TODO: add in code to disconnect from psql when done
+    pqxx::result pqxxResult;
+    pqxx::connection dbConn("dbname=" + dbname);
+
+    try {
+        pqxx::work txn(dbConn);
+        pqxxResult = txn.exec(query_string);
+        txn.commit();
+
+
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+
+        throw e;
+    }
+
     pqxx::row firstRow = *(pqxxResult.begin());
     int colCount = firstRow.size();
     if(hasDummyTag)
@@ -54,6 +69,7 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
         ++counter;
     }
 
+    dbConn.disconnect();
 
     return dstTable;
 }
@@ -74,7 +90,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
 
         srcTable = getTableName(tableId); // once per col in case of joins
 
-        QueryFieldDesc fieldDesc(i, true, colName, srcTable, type);
+        QueryFieldDesc fieldDesc(i, false, colName, srcTable, type);
 
        if(type == vaultdb::types::TypeId::VARCHAR) {
 
@@ -171,9 +187,6 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         pqxx::oid oid = src.type();
         types::TypeId colType = getFieldTypeFromOid(oid);
         types::Value value;
-
-        std::unique_ptr<QueryField> result(new QueryField(ordinal));
-
 
         switch (colType) {
             case vaultdb::types::TypeId::INTEGER32:

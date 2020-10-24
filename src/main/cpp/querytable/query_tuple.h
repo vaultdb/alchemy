@@ -14,8 +14,8 @@ private:
 
     vaultdb::types::Value dummy_tag_;
     bool is_encrypted_{};
-    std::unique_ptr<QueryField[]>  fields_;
-    size_t fieldCount_;
+    uint32_t fieldCount_;
+    std::vector<QueryField>  fields_;
 public:
     void setFieldCount(size_t fieldCount);
 
@@ -23,6 +23,7 @@ public:
 public:
 
     QueryTuple(const size_t & fieldCount, const bool & is_encrypted);
+    ~QueryTuple();
 
     explicit QueryTuple(const size_t & aFieldCount);
     QueryTuple(const QueryTuple &src);
@@ -34,7 +35,7 @@ public:
   vaultdb::QueryField *getFieldPtr(const uint32_t &ordinal) const; // returns a pointer to the original field, mutable
   void putField(const QueryField &f);
   void setDummyTag(const types::Value &v);
-  const vaultdb::types::Value getDummyTag();
+  const vaultdb::types::Value getDummyTag() const;
 
 
     QueryTuple reveal(const int &empParty) const;

@@ -21,8 +21,7 @@ unsigned int QueryTable::getTupleCount() const {
 
 QueryTable::QueryTable(const int & num_tuples, const  int & colCount, const bool & is_encrypted)
     : schema_(QuerySchema(colCount)), is_encrypted_(is_encrypted),  tupleCount_(num_tuples) {
-    tuples_ =
-            std::unique_ptr<QueryTuple[]>(new QueryTuple[tupleCount_]);
+    tuples_.resize(tupleCount_);
 
     for(int i = 0; i < tupleCount_; ++i) {
         tuples_[i].setFieldCount(colCount); // initialize tuples
@@ -69,7 +68,7 @@ bool *QueryTable::serialize() const {
     bool *cursor = dst;
 
     for(int i = 0; i < tupleCount_; ++i) {
-        tuples_[i].serialize(cursor, schema_);
+        ((QueryTuple *) tuples_.data())->serialize(cursor, schema_);
         cursor += tupleWidth;
     }
 
@@ -131,8 +130,9 @@ QueryTable & QueryTable::operator=(const QueryTable & src) {
     this->is_encrypted_ = src.isEncrypted();
     this->tupleCount_ = src.getTupleCount();
 
-    tuples_ =
-            std::unique_ptr<QueryTuple[]>(new QueryTuple[tupleCount_]);
+    tuples_.resize(tupleCount_);
+    //=
+            //std::unique_ptr<QueryTuple[]>(new QueryTuple[tupleCount_]);
 
     for(int i = 0; i < tupleCount_; ++i) {
         tuples_[i] = src.tuples_[i];
@@ -152,8 +152,7 @@ QueryTable::QueryTable(const QueryTable &src) : schema_(src.getSchema()) {
     this->is_encrypted_ = src.isEncrypted();
     this->tupleCount_ = src.getTupleCount();
 
-    tuples_ =
-            std::unique_ptr<QueryTuple[]>(new QueryTuple[tupleCount_]);
+    tuples_.resize(tupleCount_);
 
     for(int i = 0; i < tupleCount_; ++i) {
         tuples_[i] = src.tuples_[i];
@@ -166,7 +165,7 @@ void QueryTable::setTupleDummyTag(const int &tupleIdx, const types::Value & dumm
 }
 
 QueryTuple *QueryTable::getTuplePtr(const int &idx) const {
-    return tuples_.get() + idx;
+    return ((QueryTuple *) tuples_.data()) + idx;
 }
 
 bool QueryTable::operator==(const QueryTable &other) const {
@@ -179,12 +178,12 @@ bool QueryTable::operator==(const QueryTable &other) const {
 
 
     for(int i = 0; i < getTupleCount(); ++i) {
-        QueryTuple thisTuple = getTuple(i);
-        QueryTuple otherTuple = other.getTuple(i);
-        std::cout << "Comparing "  << thisTuple.toString(true) << " to " << otherTuple.toString(true) << std::endl;
+        QueryTuple *thisTuple = getTuplePtr(i);
+        QueryTuple *otherTuple = other.getTuplePtr(i);
+        //std::cout << "Comparing "  << thisTuple->toString(true) << " to " << otherTuple->toString(true) << std::endl;
 
-        if(thisTuple != otherTuple) {
-            std::cout << "    Failed to match!" << std::endl;
+        if(*thisTuple != *otherTuple) {
+           // std::cout << "    Failed to match!" << std::endl;
             return false;
         }
 
@@ -198,16 +197,19 @@ uint32_t QueryTable::getTrueTupleCount() const {
         return getTupleCount();
 
     uint32_t count = 0;
-    for(uint32_t i = 0; i < getTupleCount(); ++i) {
-        if(!tuples_[i].getDummyTag().getBool()) {
+    for(auto pos = std::begin(tuples_); pos != std::end(tuples_); ++pos) {
+        if(!((*pos).getDummyTag().getBool())) {
             ++count;
         }
+    }
+    for(uint32_t i = 0; i < getTupleCount(); ++i) {
+
     }
     return count;
 }
 
-std::shared_ptr<QueryTable> QueryTable::secretShare() const {
-    EmpManager *empManager = EmpManager::getInstance();
-    return  empManager->secretShareTable(this);
-};
+std::shared_ptr<QueryTable> QueryTable::secretShare(emp::NetIO *io, const int & party) const {
+    return EmpManager::secretShareTable(this, io, party);
+}
+
 

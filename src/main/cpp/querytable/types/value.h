@@ -58,7 +58,7 @@ public:
     float getFloat32() const;
 
 
-    string getValueString() const;
+    string toString() const;
     friend std::ostream& operator<<(std::ostream &strm, const types::Value &aValue);
     Value& operator=(const Value& other); // copy assign operator overload
 
@@ -101,11 +101,11 @@ public:
     static void compareAndSwap(Value & lhs, Value & rhs, const emp::Bit & cmp);
     static Value obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs);
 
+    void setType(TypeId type);
+
 protected:
   bool is_encrypted_;
   TypeId type_;
-public:
-    void setType(TypeId type);
 
 protected:
 
@@ -120,6 +120,7 @@ protected:
   } value_   {false, nullptr, nullptr, nullptr};
          // false, emp::Bit(false, emp::PUBLIC), emp::Integer(1, 0, emp::PUBLIC), emp::Float(24, 9, 0, emp::PUBLIC), emp::Float32(0.0, emp::PUBLIC)
  // };
+
 
 
 };

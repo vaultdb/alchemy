@@ -120,8 +120,18 @@ int64_t Value::getInt64() const {
 
 
     Value::~Value() {
+        switch(getType()) {
+            case TypeId::ENCRYPTED_INTEGER32:
+            case TypeId::ENCRYPTED_INTEGER64:
+            case TypeId::ENCRYPTED_VARCHAR:
+                value_.emp_integer_.reset();
+            case TypeId::ENCRYPTED_FLOAT32:
+                value_.emp_float32_.reset();
+            case TypeId::ENCRYPTED_BOOLEAN:
+                value_.emp_bit_.reset();
+        }
 
-}
+    }
 
 
 void Value::setValue(const Value  & val) {
@@ -229,19 +239,21 @@ void Value::setValue(const std::string & aString) {
 
 
     std::ostream &vaultdb::types::operator<<(std::ostream &strm, const Value &aValue) {
-        string valueStr = aValue.getValueString();
+        string valueStr = aValue.toString();
         return strm << valueStr;
 
     }
 
 
-     string Value::getValueString() const {
+     string Value::toString() const {
 
         switch (type_) {
 
             case TypeId::BOOLEAN:
-                return  (getBool()) ? "true" : "false";
-                break;
+                if(getBool())
+                    return std::string("true");
+                else
+                    return std::string("false");
             case TypeId::INTEGER32:
                  return std::to_string(getInt32());
 
@@ -431,6 +443,7 @@ void Value::setValue(const std::string & aString) {
                 }
         };
 }
+
 
 
 

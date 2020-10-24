@@ -15,7 +15,10 @@ using namespace vaultdb;
 Value Value::operator>=(const Value &rhs) const {
     types::TypeId opType = getType();
 
-    assert(opType == rhs.getType()); // do not compare if they are not the same type
+    // do not compare if they are not the same type
+    if(opType != rhs.getType())
+        return false;
+
 
     switch (opType) {
 
@@ -136,9 +139,9 @@ Value Value::operator<=(const Value &rhs) const {
 Value Value::operator==(const Value &rhs) const {
     types::TypeId opType = getType();
 
-
-    assert(opType == rhs.getType()); // do not compare if they are not the same type
-
+    // do not compare if they are not the same type
+    if(opType != rhs.getType())
+        return false;
 
     switch (opType) {
 

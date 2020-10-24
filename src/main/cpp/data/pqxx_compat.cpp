@@ -26,7 +26,6 @@ OIDType get_OID_field_type(pqxx::oid oid) {
     return INTEGER;
   case INT8OID:
     return BIGINT;
-    // TODO(madhavsuresh): numeric was moved here because of TPC-H
   case NUMERIC:
   case FLOAT4OID:
   case FLOAT8OID:
@@ -110,7 +109,8 @@ pqxx::result query(std::string dbname, std::string query_string) {
 
     res = txn.exec(query_string);
     txn.commit();
-    // TODO(madhavsuresh): make this exception handling more robust
+
+
   } catch (const std::exception &e) {
     std::cerr << e.what() << std::endl;
 
