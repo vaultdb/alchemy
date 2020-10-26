@@ -87,20 +87,6 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple)
     strm << aTuple.toString(false);
 
     return strm;
-/*
-    if((!aTuple.is_encrypted_ && !(aTuple.dummy_tag_.getBool())) // if it is real
-       || aTuple.is_encrypted_) { // or its status is unknown
-        strm << "(" << aTuple.getField(0);
-
-        for (int i = 1; i < aTuple.fieldCount_; ++i)
-            strm << ", " << aTuple.getField(i);
-
-        strm << ")"; //  (dummy=" << aTuple.dummy_tag_.toString() + ")";
-    }
-    return strm;
-
-    */
-
 
 
 }
@@ -228,8 +214,8 @@ bool QueryTuple::operator==(const QueryTuple &other) {
     if(is_encrypted_ != other.is_encrypted_) { return false; }
 
     if(!is_encrypted_) {
-        std::cout << "Comparing dummy tags: " << dummy_tag_ << " vs ";
-        std::cout  << other.dummy_tag_ << std::endl;
+        //std::cout << "Comparing dummy tags: " << dummy_tag_ << " vs ";
+        //std::cout  << other.dummy_tag_ << std::endl;
         bool lhs = dummy_tag_.getBool();
         bool rhs = dummy_tag_.getBool();
         if(lhs != rhs) {// if we are in the clear and their dummy tags are not equal

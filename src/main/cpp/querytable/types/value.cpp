@@ -392,24 +392,22 @@ void Value::setValue(const std::string & aString) {
                 return Value(decrypted);
             }
             case types::TypeId::ENCRYPTED_INTEGER32: {
-                emp::Integer anInt = this->getEmpInt();
-                //nt32_t dst = anInt.reveal<int32_t>(empParty);
-                //return types::Value(dst);
+                int32_t dst = this->getEmpInt().reveal<int32_t>(empParty);
+                return types::Value(dst);
 
-                std::bitset<32> bs;
+                /*std::bitset<32> bs;
                 bs.reset();
                 bool b[32] = { false };
                 emp::ProtocolExecution::prot_exec->reveal(b, empParty, (emp::block *)anInt.bits.data(), 32);
                 for (int i = 0; i < 32; ++i)
                     bs.set(i, b[i]);
                 int32_t intValue = bs.to_ulong();
-                return types::Value(intValue);
+                return types::Value(intValue);*/
 
             }
 
             case types::TypeId::ENCRYPTED_INTEGER64: {
-                emp::Integer anInt = this->getEmpInt();
-                int64_t dst = anInt.reveal<int64_t>(empParty);
+                int64_t dst = this->getEmpInt().reveal<int64_t>(empParty);
                 return types::Value(dst);
             }
             case types::TypeId::ENCRYPTED_FLOAT32: {
@@ -442,12 +440,13 @@ void Value::setValue(const std::string & aString) {
 
 
                 std::string dst(intermediary);
+                Value dstValue(dst);
 
-                std::cout << "Decrypted |" << dst << "|" <<   " length " << dst.length() << std::endl;
                 delete [] decodedBytes;
                 delete [] bools;
                 delete [] intermediary;
-                return types::Value(dst);
+
+                return dstValue;
             }
 
             default: // all other types are unencrypted, so just copy out the value

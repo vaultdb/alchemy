@@ -19,7 +19,6 @@ DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 class EmpTableTypesTest : public EmpBaseTest {};
 
 
-
 // test more column types
 TEST_F(EmpTableTypesTest, encrypt_table) {
 
@@ -58,7 +57,7 @@ TEST_F(EmpTableTypesTest, encrypt_table) {
 
 }
 
-/*TEST_F(EmpTableTypesTest, encrypt_table_dummy_tag) {
+TEST_F(EmpTableTypesTest, encrypt_table_dummy_tag) {
 
     PsqlDataProvider dataProvider;
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
@@ -92,7 +91,7 @@ TEST_F(EmpTableTypesTest, encrypt_table) {
 
 
 
-}*/
+}
 
 
 

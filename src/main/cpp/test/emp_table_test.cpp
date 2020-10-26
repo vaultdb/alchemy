@@ -15,7 +15,7 @@ class EmpTableTest : public EmpBaseTest {};
 
 
 
-/*
+
 
 // test encrypting a query table with a single int in EMP
 TEST_F(EmpTableTest, encrypt_table_one_column) {
@@ -50,7 +50,8 @@ TEST_F(EmpTableTest, encrypt_table_one_column) {
 }
 
 
-*/
+
+
 
 // test encrypting a query table with a single int in EMP
 TEST_F(EmpTableTest, encrypt_table_varchar) {
@@ -73,19 +74,18 @@ TEST_F(EmpTableTest, encrypt_table_varchar) {
 
     netio->flush();
 
-   // std::unique_ptr<QueryTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery, false);
+    std::unique_ptr<QueryTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery, false);
     std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
-/*
 
 
 
-    ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";*/
 
+    ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
 
 }
 
 
-/*
+
 
 TEST_F(EmpTableTest, encrypt_table_two_cols) {
 
@@ -124,7 +124,7 @@ TEST_F(EmpTableTest, encrypt_table_two_cols) {
 
 }
 
-*/
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

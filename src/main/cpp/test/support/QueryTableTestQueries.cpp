@@ -41,7 +41,7 @@ std::string QueryTableTestQueries::getInputQueryDummyTag() {
                "l_returnflag <> 'N' AS dummy "  // simulate a filter for l_returnflag = 'N' -- all of the ones that dont match are dummies
                "FROM lineitem "
                "ORDER BY l_orderkey "
-               "LIMIT 5";
+               "LIMIT 10";
 
 
 }
