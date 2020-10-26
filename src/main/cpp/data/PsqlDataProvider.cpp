@@ -186,7 +186,6 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         int ordinal = src.num();
         pqxx::oid oid = src.type();
         types::TypeId colType = getFieldTypeFromOid(oid);
-        types::Value value;
 
         switch (colType) {
             case vaultdb::types::TypeId::INTEGER32:

@@ -171,7 +171,7 @@ QueryTuple& QueryTuple::operator=(const QueryTuple& src) {
 
     this->is_encrypted_ = src.is_encrypted_;
 
-    this->dummy_tag_ = src.dummy_tag_;
+    this->dummy_tag_.setValue(src.dummy_tag_);
     this->fieldCount_ = src.fieldCount_;
 
     fields_.resize(fieldCount_);
@@ -196,7 +196,7 @@ QueryTuple QueryTuple::reveal(const int &empParty) const {
 
 
     emp::Bit dummyTag = dummy_tag_.getEmpBit();
-    bool revealedBit = dummyTag.reveal((int) empParty);
+    bool revealedBit = dummyTag.reveal(empParty);
     types::Value revealedValue(revealedBit);
 
 
@@ -228,9 +228,11 @@ bool QueryTuple::operator==(const QueryTuple &other) {
     if(is_encrypted_ != other.is_encrypted_) { return false; }
 
     if(!is_encrypted_) {
-       // std::cout << "Comparing dummy tags: " << dummy_tag_ << " vs "  << other.dummy_tag_ << std::endl;
-        bool cmp = (dummy_tag_ == other.dummy_tag_).getBool();
-        if(!cmp) {// if we are in the clear and their dummy tags are not equal
+        std::cout << "Comparing dummy tags: " << dummy_tag_ << " vs ";
+        std::cout  << other.dummy_tag_ << std::endl;
+        bool lhs = dummy_tag_.getBool();
+        bool rhs = dummy_tag_.getBool();
+        if(lhs != rhs) {// if we are in the clear and their dummy tags are not equal
             return false;
         }
     }

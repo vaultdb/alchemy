@@ -12,7 +12,7 @@
 class DataUtilities {
 
     // convert 8 bits to a byte
-    static int8_t boolsToByte(bool *src);
+    static int8_t boolsToByte(const bool *src);
 
     // reverse the order of bits in a byte
     static unsigned char reverse(unsigned char b);

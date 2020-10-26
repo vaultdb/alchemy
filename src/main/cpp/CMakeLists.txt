@@ -1,7 +1,7 @@
 #based on emp-tool pipeline
 # https://github.com/emp-toolkit/emp-tool
 cmake_minimum_required (VERSION 3.11)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 project (vaultdb-emp)
 set(NAME "vaultdb-emp")
 
@@ -117,7 +117,9 @@ set(sources
 		operators/join.cpp
 		operators/basic_join.cpp
 		operators/common_table_expression_input.cpp
-        operators/fkey_pkey_join.cpp operators/fkey_pkey_join.h operators/support/replace_tuple.cpp operators/support/replace_tuple.h operators/support/secure_replace_tuple.cpp operators/support/secure_replace_tuple.h)
+        operators/fkey_pkey_join.cpp
+		operators/support/replace_tuple.cpp
+		operators/support/secure_replace_tuple.cpp)
 
 
 

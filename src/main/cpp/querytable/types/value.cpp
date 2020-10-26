@@ -89,7 +89,7 @@ int64_t Value::getInt64() const {
 
 
     std::string Value::getVarchar() const  {
-        if(value_.unencrypted_val.which() == 5) { // check that this converts to a int32_t
+        if(value_.unencrypted_val.which() == 5) { // check that this converts to a string
             return boost::get<std::string>(value_.unencrypted_val);
         }
         throw;
@@ -129,6 +129,8 @@ int64_t Value::getInt64() const {
                 value_.emp_float32_.reset();
             case TypeId::ENCRYPTED_BOOLEAN:
                 value_.emp_bit_.reset();
+            default:
+                return; // eliminate warnings
         }
 
     }
@@ -212,7 +214,7 @@ void Value::setValue(const float & val) {
 void Value::setValue(const std::string & aString) {
         type_ = TypeId::VARCHAR;
         is_encrypted_ = false;
-        value_.unencrypted_val = aString; // = ValueStruct(std::make_unique<std::string>(aString));
+        value_.unencrypted_val = aString;
 }
 
 
@@ -238,12 +240,10 @@ void Value::setValue(const std::string & aString) {
 
 
 
-    std::ostream &vaultdb::types::operator<<(std::ostream &strm, const Value &aValue) {
+    std::ostream &types::operator<<(std::ostream &os, const Value &aValue) {
         string valueStr = aValue.toString();
-        return strm << valueStr;
-
+        return os << valueStr;
     }
-
 
      string Value::toString() const {
 
@@ -388,22 +388,32 @@ void Value::setValue(const std::string & aString) {
             case types::TypeId::DATE:
                 return Value(*this); // copy the public field, no need to reveal
             case types::TypeId::ENCRYPTED_BOOLEAN: {
-                bool decrypted = this->getEmpBit().reveal<bool>((int) empParty); // returns a bool for both XOR and PUBLIC
+                bool decrypted = this->getEmpBit().reveal<bool>(empParty); // returns a bool for both XOR and PUBLIC
                 return Value(decrypted);
             }
             case types::TypeId::ENCRYPTED_INTEGER32: {
                 emp::Integer anInt = this->getEmpInt();
-                int32_t dst = anInt.reveal<int32_t>((int) empParty);
-                return types::Value(dst);
+                //nt32_t dst = anInt.reveal<int32_t>(empParty);
+                //return types::Value(dst);
+
+                std::bitset<32> bs;
+                bs.reset();
+                bool b[32] = { false };
+                emp::ProtocolExecution::prot_exec->reveal(b, empParty, (emp::block *)anInt.bits.data(), 32);
+                for (int i = 0; i < 32; ++i)
+                    bs.set(i, b[i]);
+                int32_t intValue = bs.to_ulong();
+                return types::Value(intValue);
+
             }
 
             case types::TypeId::ENCRYPTED_INTEGER64: {
                 emp::Integer anInt = this->getEmpInt();
-                int64_t dst = anInt.reveal<int64_t>((int) empParty);
+                int64_t dst = anInt.reveal<int64_t>(empParty);
                 return types::Value(dst);
             }
             case types::TypeId::ENCRYPTED_FLOAT32: {
-                float_t dst = this->getEmpFloat32().reveal<double>((int) empParty);
+                float_t dst = this->getEmpFloat32().reveal<double>(empParty);
                 return types::Value(dst);
             }
 
@@ -414,23 +424,29 @@ void Value::setValue(const std::string & aString) {
                 long bitCount = encryptedString.size();
                 long byteCount = bitCount / 8;
 
+
                 bool *bools = new bool[bitCount];
-                emp::ProtocolExecution::prot_exec->reveal(bools, (int) empParty, (emp::block *) &encryptedString.bits[0], bitCount);
+                //emp::ProtocolExecution::prot_exec->reveal(bools,  empParty, (emp::block *) encryptedString.bits.data(), bitCount);
+                std::string bitString = this->getEmpInt().reveal<std::string>(emp::PUBLIC);
+                std::string::iterator strPos = bitString.begin();
+                for(int i =  0; i < bitCount; ++i) {
+                    bools[i] = (*strPos == '1');
+                    ++strPos;
+                }
 
                 char *decodedBytes = (char *) DataUtilities::boolsToBytes(bools, bitCount);
+                char *intermediary = new char[byteCount + 1];
+                memcpy(intermediary, decodedBytes, byteCount);
+                intermediary[byteCount] = '\0';
 
-                // make the char * null terminated
-                char *tmp = new char[byteCount + 1];
-                memcpy(tmp, decodedBytes, byteCount);
-                tmp[byteCount] = '\0';
+
+
+                std::string dst(intermediary);
+
+                std::cout << "Decrypted |" << dst << "|" <<   " length " << dst.length() << std::endl;
                 delete [] decodedBytes;
-                decodedBytes = tmp;
-
-
-                std::string dst(decodedBytes);
-
                 delete [] bools;
-                delete [] decodedBytes;
+                delete [] intermediary;
                 return types::Value(dst);
             }
 

@@ -54,12 +54,14 @@ Value Value::operator+(const Value &rhs) const {
 
         case TypeId::INVALID:
             break;
-        case TypeId::ENCRYPTED_BOOLEAN:  // not supported - semantics not clear yet
+        case TypeId::ENCRYPTED_BOOLEAN:  // not supported - semantics not clear
         case TypeId::VARCHAR:
         default:
             throw;
     }
 
+    // to eliminate warnings
+    return Value(-1);
 
 }
 
@@ -119,6 +121,8 @@ Value Value::operator-(const Value &rhs) const {
             throw;
     }
 
+    // to eliminate warnings
+    return Value(-1);
 }
 
 Value Value::operator*(const Value &rhs) const {
@@ -175,6 +179,9 @@ Value Value::operator*(const Value &rhs) const {
         default:
             throw;
     }
+
+    // to eliminate warnings
+    return Value(-1);
 
 }
 
@@ -233,5 +240,7 @@ Value Value::operator/(const Value &rhs) const {
             throw;
     }
 
+    // to eliminate warnings
+    return Value(-1);
 }
 

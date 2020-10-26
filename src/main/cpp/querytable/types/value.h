@@ -59,7 +59,7 @@ public:
 
 
     string toString() const;
-    friend std::ostream& operator<<(std::ostream &strm, const types::Value &aValue);
+    friend std::ostream &operator<<(std::ostream &os, const Value &table);
     Value& operator=(const Value& other); // copy assign operator overload
 
     void serialize(bool *dst) const;

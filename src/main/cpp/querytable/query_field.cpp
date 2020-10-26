@@ -19,10 +19,8 @@ void QueryField::setValue(const types::Value & val) {
 QueryField QueryField::reveal(const int &party) const {
 
     types::Value value = this->value_;
-    QueryField result(*this);
     types::Value dstValue = value_.reveal(party);
-    result.setValue(dstValue);
-    return result;
+    return QueryField(this->getOrdinal(), dstValue);
 
 
 }

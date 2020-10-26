@@ -1,6 +1,7 @@
 
 include(../cmake/common.cmake)
 include(GoogleTest)
+cmake_minimum_required (VERSION 3.11)
 
 #include(FetchContent)
 #FetchContent_Declare(
@@ -24,7 +25,9 @@ include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}/../data
         ${CMAKE_CURRENT_BINARY_DIR}/../operators
         ${CMAKE_CURRENT_BINARY_DIR}/../querytable
-        ${CMAKE_CURRENT_BINARY_DIR}/../common)
+        ${CMAKE_CURRENT_BINARY_DIR}/../common
+		${CMAKE_CURRENT_BINARY_DIR}/support
+)
 
 
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
@@ -66,17 +69,21 @@ endmacro()
 
 
 #package_add_test(tpch_q1_test tpch_q1_test.cpp)
+#non-private tests
 package_add_test(query_table_test query_table_test.cpp)
-package_add_test(emp_test emp_test.cpp)
-package_add_test(emp_table_test emp_table_test.cpp)
-package_add_test(emp_table_types_test emp_table_types_test.cpp support/QueryTableTestQueries.cpp)
 package_add_test(value_expression_test value_expression_test.cpp)
-#package_add_test(secure_value_expression_test secure_value_expression_test.cpp)
 package_add_test(filter_test filter_test.cpp)
-#package_add_test(secure_filter_test secure_filter_test.cpp)
-#package_add_test(secure_sort_test secure_sort_test.cpp)
 package_add_test(sort_test sort_test.cpp)
 package_add_test(project_test project_test.cpp)
 package_add_test(basic_join_test basic_join_test.cpp)
 package_add_test(fkey_pkey_join_test fkey_pkey_join_test.cpp)
+
+#EMP-based tests
+package_add_test(emp_test emp_test.cpp support/EmpBaseTest.cpp)  #port 54321-54322
+package_add_test(emp_basic_table_test emp_basic_table_test.cpp support/EmpBaseTest.cpp  ) #port 54323
+package_add_test(emp_table_test  emp_table_test.cpp support/EmpBaseTest.cpp ) # port 54324-54325
+package_add_test(emp_table_types_test  emp_table_types_test.cpp support/EmpBaseTest.cpp support/QueryTableTestQueries.cpp) # port 54326-54327
+#package_add_test(secure_value_expression_test secure_value_expression_test.cpp)
+#package_add_test(secure_filter_test secure_filter_test.cpp)
+#package_add_test(secure_sort_test secure_sort_test.cpp)
 #package_add_test(secure_basic_join_test secure_basic_join_test.cpp)

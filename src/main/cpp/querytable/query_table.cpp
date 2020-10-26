@@ -131,8 +131,7 @@ QueryTable & QueryTable::operator=(const QueryTable & src) {
     this->tupleCount_ = src.getTupleCount();
 
     tuples_.resize(tupleCount_);
-    //=
-            //std::unique_ptr<QueryTuple[]>(new QueryTuple[tupleCount_]);
+
 
     for(int i = 0; i < tupleCount_; ++i) {
         tuples_[i] = src.tuples_[i];
@@ -180,10 +179,10 @@ bool QueryTable::operator==(const QueryTable &other) const {
     for(int i = 0; i < getTupleCount(); ++i) {
         QueryTuple *thisTuple = getTuplePtr(i);
         QueryTuple *otherTuple = other.getTuplePtr(i);
-        //std::cout << "Comparing "  << thisTuple->toString(true) << " to " << otherTuple->toString(true) << std::endl;
+        std::cout << "Comparing "  << thisTuple->toString(true) << " to " << otherTuple->toString(true) << std::endl;
 
         if(*thisTuple != *otherTuple) {
-           // std::cout << "    Failed to match!" << std::endl;
+            std::cout << "    Failed to match!" << std::endl;
             return false;
         }
 

@@ -3,44 +3,20 @@
 //
 
 #include <data/PsqlDataProvider.h>
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
-#include <emp-sh2pc/emp-sh2pc.h>
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
 #include "support/QueryTableTestQueries.h"
-
-
-using namespace emp;
-
+#include "support/EmpBaseTest.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54321, "port for EMP execution");
+DEFINE_int32(port, 54326, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 
 
 
-
-
-class EmpTableTypesTest : public ::testing::Test {
-
-
-protected:
-    void SetUp() override {
-        netio =  new emp::NetIO(FLAGS_party == emp::ALICE ? nullptr : FLAGS_alice_host.c_str(), FLAGS_port);
-        emp::setup_semi_honest(netio, FLAGS_party);
-        netio->flush();
-    };
-    void TearDown() override{
-        netio->flush();
-        delete netio;
-        sleep(3);
-    };
-
-    emp::NetIO *netio;
-
-};
+// all setup  handled in parent class
+class EmpTableTypesTest : public EmpBaseTest {};
 
 
 
@@ -68,7 +44,7 @@ TEST_F(EmpTableTypesTest, encrypt_table) {
 
     netio->flush();
 
-    std::unique_ptr<QueryTable> expectedTable = QueryTableTestQueries::getExpectedSecureOutput(); //DataUtilities::getUnionedResults("tpch_alice", "tpch_bob",  EmpManagerTestEnvironment::getInputQuery(), false);
+    std::unique_ptr<QueryTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob",  inputQuery, false);
 
     std::cout << "Expected:\n" << *expectedTable << std::endl;
 
@@ -82,7 +58,7 @@ TEST_F(EmpTableTypesTest, encrypt_table) {
 
 }
 
-TEST_F(EmpTableTypesTest, encrypt_table_dummy_tag) {
+/*TEST_F(EmpTableTypesTest, encrypt_table_dummy_tag) {
 
     PsqlDataProvider dataProvider;
     string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
@@ -103,8 +79,8 @@ TEST_F(EmpTableTypesTest, encrypt_table_dummy_tag) {
     std::cout << "Finished encrypting table with " << encryptedTable->getTupleCount() << " tuples." << std::endl;
     netio->flush();
 
-    std::unique_ptr<QueryTable> expectedTable = QueryTableTestQueries::getExpectedSecureOutputDummyTag(); //DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery,
-                                                  //                               true);
+    std::unique_ptr<QueryTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery,
+                                                                                true);
 
     std::cout << "Expected:\n" << *expectedTable << std::endl;
 
@@ -116,7 +92,7 @@ TEST_F(EmpTableTypesTest, encrypt_table_dummy_tag) {
 
 
 
-}
+}*/
 
 
 

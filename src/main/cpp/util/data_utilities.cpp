@@ -15,7 +15,7 @@ unsigned char DataUtilities::reverse(unsigned char b) {
 }
 
 
-signed char DataUtilities::boolsToByte(bool *src) {
+signed char DataUtilities::boolsToByte(const bool *src) {
     signed char dst = 0;
 
     for(int i = 0; i < 8; ++i) {
