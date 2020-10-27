@@ -45,7 +45,8 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
     types::Value lhsValue(lhsStr);
     types::Value rhsValue(rhsStr);
 
-    types::Value lhsEncrypted = EmpManager::secretShareValue(lhsValue,
+    types::Value lhsEncrypted =
+            EmpManager::secretShareValue(lhsValue,
                                                              TypeId::VARCHAR, lhsStr.length() * 8, FLAGS_party,
                                                              emp::ALICE);
     types::Value rhsEncrypted = EmpManager::secretShareValue(rhsValue,

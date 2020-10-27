@@ -424,6 +424,7 @@ void Value::setValue(const std::string & aString) {
 
                 bool *bools = new bool[bitCount];
                 //emp::ProtocolExecution::prot_exec->reveal(bools,  empParty, (emp::block *) encryptedString.bits.data(), bitCount);
+                // hackity, hack, hack!
                 std::string bitString = this->getEmpInt().reveal<std::string>(emp::PUBLIC);
                 std::string::iterator strPos = bitString.begin();
                 for(int i =  0; i < bitCount; ++i) {
