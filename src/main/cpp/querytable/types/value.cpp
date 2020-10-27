@@ -239,7 +239,6 @@ void Value::setValue(const std::string & aString) {
 
 
 
-
     std::ostream &types::operator<<(std::ostream &os, const Value &aValue) {
         string valueStr = aValue.toString();
         return os << valueStr;

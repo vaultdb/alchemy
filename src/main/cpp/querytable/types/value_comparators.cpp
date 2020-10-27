@@ -3,14 +3,11 @@
 //
 // based on emp's comparable.h
 
-
 #include "value.h"
 #include <emp-tool/circuits/float32.h>
 
 using vaultdb::types::Value;
 using namespace vaultdb;
-
-
 
 Value Value::operator>=(const Value &rhs) const {
     types::TypeId opType = getType();
@@ -117,24 +114,18 @@ Value Value::operator>=(const Value &rhs) const {
         default:
             throw;
     }
-
-
 }
 
 Value Value::operator>(const Value &rhs) const {
-    return !(rhs >= *static_cast<const Value *>(this));
-
+  return !(rhs >= *static_cast<const Value *>(this));
 }
 
 Value Value::operator<(const Value &rhs) const {
-    return !( (*static_cast<const Value*>(this))>= rhs );
-
+  return !((*static_cast<const Value *>(this)) >= rhs);
 }
 
-
-
 Value Value::operator<=(const Value &rhs) const {
-    return rhs >= *static_cast<const Value*>(this);
+  return rhs >= *static_cast<const Value *>(this);
 }
 Value Value::operator==(const Value &rhs) const {
     types::TypeId opType = getType();
@@ -210,99 +201,90 @@ Value Value::operator==(const Value &rhs) const {
         default:
             throw;
     }
-
-
 }
-
 
 Value Value::operator!=(const Value &rhs) const {
-    Value isEqual(*this == rhs);
-    if(isEqual.getType() == TypeId::ENCRYPTED_BOOLEAN) {
-        emp::Bit payload = isEqual.getEmpBit();
-        return Value(!payload);
-    }
-
-    bool payload = isEqual.getBool();
+  Value isEqual(*this == rhs);
+  if (isEqual.getType() == TypeId::ENCRYPTED_BOOLEAN) {
+    emp::Bit payload = isEqual.getEmpBit();
     return Value(!payload);
-}
+  }
 
+  bool payload = isEqual.getBool();
+  return Value(!payload);
+}
 
 // for use only with bool and emp::Bit
 Value vaultdb::types::Value::operator!() const {
-    TypeId valType = getType();
+  TypeId valType = getType();
 
-    assert(valType == TypeId::ENCRYPTED_BOOLEAN || valType == TypeId::BOOLEAN);
+  assert(valType == TypeId::ENCRYPTED_BOOLEAN || valType == TypeId::BOOLEAN);
 
-    if(valType == TypeId::ENCRYPTED_BOOLEAN) {
-        emp::Bit payload = getEmpBit();
-        payload = !payload;
-        return Value(payload); // setting up a new shared_ptr
-    }
+  if (valType == TypeId::ENCRYPTED_BOOLEAN) {
+    emp::Bit payload = getEmpBit();
+    payload = !payload;
+    return Value(payload); // setting up a new shared_ptr
+  }
 
-    bool payload = getBool();
-    return Value(!payload);
-
+  bool payload = getBool();
+  return Value(!payload);
 }
 
 // lhs = (cmp) ? rhs  : lhs
-void vaultdb::types::Value::compareAndSwap(Value &lhs, Value &rhs, const emp::Bit &cmp) {
+void vaultdb::types::Value::compareAndSwap(Value &lhs, Value &rhs,
+                                           const emp::Bit &cmp) {
 
+  types::TypeId opType = lhs.getType();
 
-    types::TypeId opType = lhs.getType();
+  assert(lhs.getType() ==
+         rhs.getType()); // do not compare if they are not the same type
+  assert(lhs.is_encrypted_);
+  assert(rhs.is_encrypted_); // don't need this for the plaintext setting
 
-    assert(lhs.getType() == rhs.getType()); // do not compare if they are not the same type
-    assert(lhs.is_encrypted_);
-    assert(rhs.is_encrypted_);  // don't need this for the plaintext setting
+  switch (opType) {
 
-    switch (opType) {
+  case TypeId::ENCRYPTED_INTEGER32:
+  case TypeId::ENCRYPTED_INTEGER64:
+  case TypeId::ENCRYPTED_VARCHAR: {
+    emp::Integer lhsVal = lhs.getEmpInt();
+    emp::Integer rhsVal = rhs.getEmpInt();
+    emp::swap(cmp, lhsVal, rhsVal);
+    lhs.setValue(opType, lhsVal);
+    rhs.setValue(opType, rhsVal);
+    break;
+  }
 
+  case TypeId::ENCRYPTED_FLOAT32: {
+    emp::Float lhsVal = lhs.getEmpFloat32();
+    emp::Float rhsVal = rhs.getEmpFloat32();
+    emp::swap(cmp, lhsVal, rhsVal);
+    lhs.setValue(lhsVal);
+    rhs.setValue(rhsVal);
+    break;
+  }
 
-        case TypeId::ENCRYPTED_INTEGER32:
-        case TypeId::ENCRYPTED_INTEGER64:
-        case TypeId::ENCRYPTED_VARCHAR: {
-            emp::Integer lhsVal = lhs.getEmpInt();
-            emp::Integer rhsVal = rhs.getEmpInt();
-            emp::swap(cmp, lhsVal, rhsVal);
-            lhs.setValue(opType, lhsVal);
-            rhs.setValue(opType, rhsVal);
-            break;
-        }
-
-        case TypeId::ENCRYPTED_FLOAT32: {
-            emp::Float lhsVal = lhs.getEmpFloat32();
-            emp::Float rhsVal = rhs.getEmpFloat32();
-            emp::swap(cmp, lhsVal, rhsVal);
-            lhs.setValue(lhsVal);
-            rhs.setValue(rhsVal);
-            break;
-
-        }
-
-        case TypeId::ENCRYPTED_BOOLEAN: {
-            emp::Bit lhsVal = lhs.getEmpBit();
-            emp::Bit rhsVal = rhs.getEmpBit();
-            emp::swap(cmp, lhsVal, rhsVal);
-            lhs.setValue(lhsVal);
-            rhs.setValue(rhsVal);
-            break;
-
-
-        }
-       default:
-            throw;
-    }
-
+  case TypeId::ENCRYPTED_BOOLEAN: {
+    emp::Bit lhsVal = lhs.getEmpBit();
+    emp::Bit rhsVal = rhs.getEmpBit();
+    emp::swap(cmp, lhsVal, rhsVal);
+    lhs.setValue(lhsVal);
+    rhs.setValue(rhsVal);
+    break;
+  }
+  default:
+    throw;
+  }
 }
 Value types::Value::obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs) {
 
   types::TypeId opType = lhs.getType();
 
-  assert(lhs.getType() == rhs.getType()); // do not compare if they are not the same type
+  assert(lhs.getType() ==
+         rhs.getType()); // do not compare if they are not the same type
   assert(lhs.is_encrypted_);
-  assert(rhs.is_encrypted_);  // don't need this for the plaintext setting
+  assert(rhs.is_encrypted_); // don't need this for the plaintext setting
 
   switch (opType) {
-
 
   case TypeId::ENCRYPTED_INTEGER32:
   case TypeId::ENCRYPTED_INTEGER64:
@@ -330,62 +312,51 @@ Value types::Value::obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs) {
     throw;
   }
 
-  return Value();
+
 }
 
 types::Value::Value(const types::TypeId &type, const int64_t &val) {
 
-    type_ = type;
-    is_encrypted_ = false;
-    value_.unencrypted_val = val;
-
+  type_ = type;
+  is_encrypted_ = false;
+  setValue(val);
 }
 
 Value types::Value::operator|(const Value &rhs) const {
-    assert(rhs.getType() == this->getType());  // must be of same type
-    assert(getType() == TypeId::BOOLEAN || getType() == TypeId::ENCRYPTED_BOOLEAN);
+  assert(rhs.getType() == this->getType()); // must be of same type
+  assert(getType() == TypeId::BOOLEAN ||
+         getType() == TypeId::ENCRYPTED_BOOLEAN);
 
-    if(getType() == TypeId::ENCRYPTED_BOOLEAN) {
-        return Value(this->getEmpBit() | rhs.getEmpBit());
-    }
-    bool result = this->getBool() || rhs.getBool();
-    return Value(result);
+  if (getType() == TypeId::ENCRYPTED_BOOLEAN) {
+    return Value(this->getEmpBit() | rhs.getEmpBit());
+  }
+  bool result = this->getBool() || rhs.getBool();
+  return Value(result);
 }
 
 Value types::Value::operator^(const Value &rhs) const {
-    assert(rhs.getType() == this->getType());  // must be of same type
-    assert(getType() == TypeId::BOOLEAN || getType() == TypeId::ENCRYPTED_BOOLEAN);
+  assert(rhs.getType() == this->getType()); // must be of same type
+  assert(getType() == TypeId::BOOLEAN ||
+         getType() == TypeId::ENCRYPTED_BOOLEAN);
 
-    if(getType() == TypeId::ENCRYPTED_BOOLEAN) {
-        return Value(this->getEmpBit() ^ rhs.getEmpBit());
-    }
+  if (getType() == TypeId::ENCRYPTED_BOOLEAN) {
+    return Value(this->getEmpBit() ^ rhs.getEmpBit());
+  }
 
-    bool result = this->getBool() ^ rhs.getBool();
-    return Value(result);
+  bool result = this->getBool() ^ rhs.getBool();
+  return Value(result);
 }
 
 Value types::Value::operator&(const Value &rhs) const {
 
-    assert(rhs.getType() == this->getType());  // must be of same type
-    assert(getType() == TypeId::BOOLEAN || getType() == TypeId::ENCRYPTED_BOOLEAN);
+  assert(rhs.getType() == this->getType()); // must be of same type
+  assert(getType() == TypeId::BOOLEAN ||
+         getType() == TypeId::ENCRYPTED_BOOLEAN);
 
-    if(getType() == TypeId::ENCRYPTED_BOOLEAN) {
-        return Value(this->getEmpBit() & rhs.getEmpBit());
-    }
-    bool result = this->getBool() && rhs.getBool();
-    return Value(result);
+  if (getType() == TypeId::ENCRYPTED_BOOLEAN) {
+    return Value(this->getEmpBit() & rhs.getEmpBit());
+  }
+  bool result = this->getBool() && rhs.getBool();
+  return Value(result);
 }
 
-
-/*bool vaultdb::types::Value::operator==(const Value &rhs) {
-    assert(!this->is_encrypted_ && !rhs.is_encrypted_); // only reveal this for encrypted vals
-
-    Value equality = (*this == rhs);
-    return equality.getBool();
-}
-
-bool vaultdb::types::Value::operator!=(const Value &rhs) {
-
-    return !(*this == rhs);
-}
-*/

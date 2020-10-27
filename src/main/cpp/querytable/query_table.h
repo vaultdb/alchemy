@@ -46,7 +46,7 @@ public:
 
   bool *serialize() const;
 
-    friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
+  friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
 
     std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &  party) const; // shared_ptr so we can pass it among Operator instances
     [[nodiscard]] std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;

@@ -169,6 +169,7 @@ EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &
 
 emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, const int & myParty, const int & dstParty) {
 
+
     size_t stringByteCount = stringBitCount / 8;
 
     assert(input.length() <= stringByteCount);   // while loop will be infinite if the string is already oversized
