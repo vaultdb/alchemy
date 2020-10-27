@@ -17,11 +17,12 @@ DECLARE_string(alice_host);
 
 class EmpBaseTest  : public ::testing::Test {
 protected:
-    void SetUp() override;
+    static void SetUpTestCase();
 
-    void TearDown() override;
 
-    emp::NetIO *netio;
+    static void TearDownTestCase();
+
+    static emp::NetIO *netio;
 
 };
 

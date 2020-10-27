@@ -82,6 +82,5 @@ TEST_F(EmpTableTest, encrypt_table_one_column) {
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
-
     return RUN_ALL_TESTS();
 }

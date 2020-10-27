@@ -86,7 +86,6 @@ TEST_F(EmpTableTest, encrypt_table_varchar) {
 
 
 
-
 TEST_F(EmpTableTest, encrypt_table_two_cols) {
 
     PsqlDataProvider dataProvider;
@@ -122,8 +121,8 @@ TEST_F(EmpTableTest, encrypt_table_two_cols) {
     ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
 
 
-}
 
+}
 
 
 int main(int argc, char **argv) {

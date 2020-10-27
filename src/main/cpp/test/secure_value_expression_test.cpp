@@ -10,6 +10,7 @@
 #include <util/type_utilities.h>
 #include <stdexcept>
 #include <util/emp_manager.h>
+#include <test/support/EmpBaseTest.h>
 
 
 using namespace emp;
@@ -21,13 +22,7 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54321, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
-class SecureValueExpressionTest : public ::testing::Test {
-
-
-protected:
-    void SetUp() override {};
-    void TearDown() override{};
-};
+class SecureValueExpressionTest : public EmpBaseTest {};
 
 
 
@@ -44,8 +39,6 @@ TEST_F(SecureValueExpressionTest, test_value_assignment) {
 }
 
 TEST_F(SecureValueExpressionTest, test_string_compare) {
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
 
     std::string lhsStr = "EGYPT                    ";
     std::string rhsStr = "ARGENTINA                ";
@@ -53,8 +46,8 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
     types::Value lhsValue(lhsStr);
     types::Value rhsValue(rhsStr);
 
-    types::Value lhsEncrypted = empManager->secretShareValue(&lhsValue, types::TypeId::VARCHAR, lhsStr.length() * 8, emp::ALICE);
-    types::Value rhsEncrypted = empManager->secretShareValue(&rhsValue, types::TypeId::VARCHAR, rhsStr.length() * 8, emp::ALICE);
+    types::Value lhsEncrypted = EmpManager::secretShareValue(&lhsValue, types::TypeId::VARCHAR, lhsStr.length() * 8, emp::ALICE,  emp::ALICE);
+    types::Value rhsEncrypted = EmpManager::secretShareValue(&rhsValue, types::TypeId::VARCHAR, rhsStr.length() * 8, emp::ALICE,  emp::ALICE);
 
     types::Value gtEncrypted = (lhsValue > rhsValue);
     bool gt = gtEncrypted.reveal().getBool();
@@ -67,8 +60,6 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
 
 TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
 
     // alice inputs 7, bob inputs 12
     int32_t inputValue =  FLAGS_party == emp::ALICE ? 7 : 12;
@@ -91,7 +82,6 @@ TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 
     ASSERT_EQ(revealed.getInt32(), 19*2);
 
-    empManager->close();
 
 
 }
@@ -100,9 +90,6 @@ TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 
 
 TEST_F(SecureValueExpressionTest, test_millionaires) {
-
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port,  FLAGS_party);
 
     // alice inputs 7, bob inputs 12
     int32_t inputValue =  FLAGS_party == emp::ALICE ? 7 : 12;
@@ -119,8 +106,6 @@ TEST_F(SecureValueExpressionTest, test_millionaires) {
     Value revealed = result.reveal(emp::PUBLIC);
 
     ASSERT_EQ(revealed.getBool(), false);
-
-    empManager->close();
 
 
 }

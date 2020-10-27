@@ -15,9 +15,19 @@
 ./bin/pkey_fkey_join_test
 
 #pairs for Alice and Bob
+bin/emp_test --party=1 & 
+bin/emp_test  --party=2
 
-./bin/emp_manager_test --party=1 &
-./bin/emp_manager_test --party=2
+bin/emp_basic_table_test --party=1 & 
+bin/emp_basic_table_test  --party=2
+
+bin/emp_table_test --party=1 & 
+bin/emp_table_test  --party=2
+
+bin/emp_table_types_test --party=1 & 
+bin/emp_table_types_test  --party=2
+
+
 
 ./bin/secure_value_expression_test --party=1 &
 ./bin/secure_value_expression_test --party=2
