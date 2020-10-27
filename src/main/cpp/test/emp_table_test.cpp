@@ -89,7 +89,7 @@ TEST_F(EmpTableTest, encrypt_table_varchar) {
 TEST_F(EmpTableTest, encrypt_table_two_cols) {
 
     PsqlDataProvider dataProvider;
-    string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+    string db_name =  FLAGS_party == emp::ALICE ? aliceDb : bobDb;
 
     std::string inputQuery = "SELECT l_orderkey, l_comment "
                              "FROM lineitem "

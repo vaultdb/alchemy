@@ -9,6 +9,7 @@
 #include "util/data_utilities.h"
 #include <gtest/gtest.h>
 #include <operators/project.h>
+#include <test/support/EmpBaseTest.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -18,9 +19,8 @@ DEFINE_bool(input, false, "input value");
 
 
 
-class SecureSortTest :  public  ::testing::Test  {
+class SecureSortTest :  public EmpBaseTest {
 protected:
-    void SetUp() override {};
 
     void TearDown() override {
 
@@ -102,38 +102,43 @@ TEST_F(SecureSortTest, tpchQ1SortClear) {
     ASSERT_TRUE(tableSorted);
 }
 
+// TODO: debug this and Q9.  Both are failing on string comparators
 TEST_F(SecureSortTest, tpchQ1Sort) {
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
+    std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
 
     std::string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment LIMIT 5"; // order by to ensure order is reproducible and not sorted on the sort cols
 
+    PsqlDataProvider dataProvider;
+
+    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
+                                                                         sql, false);
+    std::cout << "input table:  " << *inputTable << std::endl;
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
 
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
     Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
     std::shared_ptr<Operator> sort = sortOp->getPtr();
     std::shared_ptr<QueryTable> result = sort->run();
 
     std::shared_ptr<QueryTable> observed = result->reveal();
+
+    std::cout << "Sorted table: " << *observed << std::endl;
+
     bool tableSorted = isSorted(observed, sortDefinition);
 
     ASSERT_TRUE(tableSorted);
 
-    empManager->close();
 
 }
 
 
 TEST_F(SecureSortTest, tpchQ3Sort) {
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
+    std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
 
     std::string sql = "SELECT l_orderkey, l.l_extendedprice * (1.0 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
@@ -142,7 +147,7 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
     sortDefinition.emplace_back(3, SortDirection::ASCENDING);
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
     Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
     std::shared_ptr<Operator> sort = sortOp->getPtr();
 
@@ -158,22 +163,18 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
 
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
-    empManager->close();
-
 }
 
 
 TEST_F(SecureSortTest, tpchQ5Sort) {
 
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
+    std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
     std::string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
     Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
     std::shared_ptr<Operator> sort = sortOp->getPtr();
 
@@ -188,7 +189,6 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
 
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
-    empManager->close();
 
 
 }
@@ -196,16 +196,14 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
 
 
 TEST_F(SecureSortTest, tpchQ8Sort) {
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
+    std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
 
     std::string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  ORDER BY o_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
     Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
     std::shared_ptr<Operator> sort = sortOp->getPtr();
 
@@ -218,7 +216,6 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
 
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
-    empManager->close();
 
 }
 
@@ -226,9 +223,7 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
 
 
 TEST_F(SecureSortTest, tpchQ9Sort) {
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
+    std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
 
     std::string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
@@ -242,7 +237,7 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     sortDefinition.emplace_back(0, SortDirection::DESCENDING);
 
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
     Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
     std::shared_ptr<Operator> sort = sortOp->getPtr();
 
@@ -258,16 +253,13 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     std::cout << "Observed output: " << *observed << std::endl;
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
-    empManager->close();
-
 }
 
 
 // 18
 TEST_F(SecureSortTest, tpchQ18Sort) {
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-    std::string dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
+    std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
+
 
     std::string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders"
                       " ORDER BY o_comment, o_custkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
@@ -276,7 +268,7 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     sortDefinition.emplace_back(2, SortDirection::DESCENDING);
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false));
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
     Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
     std::shared_ptr<Operator> sort = sortOp->getPtr();
 
@@ -294,7 +286,6 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     std::cout << "Observed output: " << *observed << std::endl;
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
-    empManager->close();
 
 }
 
