@@ -47,6 +47,26 @@ protected:
 
 
 
+TEST_F(EmpTestMultipleStarts, emp_pass_plain_int) {
+    int32_t  aliceSize = 32;
+    int32_t bobSize = 16;
+
+    if (FLAGS_party == emp::ALICE) {
+        netio->send_data(&aliceSize, 4);
+        netio->flush();
+        netio->recv_data(&bobSize, 4);
+        netio->flush();
+    } else if (FLAGS_party == emp::BOB) {
+        netio->recv_data(&aliceSize, 4);
+        netio->flush();
+        netio->send_data(&bobSize, 4);
+        netio->flush();
+    }
+
+    ASSERT_EQ(aliceSize, 32);
+    ASSERT_EQ(bobSize, 16);
+
+}
 //  verify emp configuration for int32s from both ALICE and BOB
 TEST_F(EmpTestMultipleStarts, emp_test_int) {
 
