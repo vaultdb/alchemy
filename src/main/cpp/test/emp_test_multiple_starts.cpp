@@ -29,6 +29,8 @@ protected:
 
      void TearDown() override {
          netio->flush();
+         delete CircuitExecution::circ_exec;
+         delete ProtocolExecution::prot_exec;
          delete netio;
          sleep(2);
 
@@ -52,17 +54,17 @@ TEST_F(EmpTestMultipleStarts, emp_test_int) {
     // test encrypting an int from ALICE
     int32_t inputValue =  FLAGS_party == emp::ALICE ? 5 : 0;
     emp::Integer aliceSecretShared = emp::Integer(32, inputValue,  emp::ALICE);
-    int32_t decrypted = aliceSecretShared.reveal<int32_t>(emp::PUBLIC);
+    int32_t aliceRevealed = aliceSecretShared.reveal<int32_t>(emp::PUBLIC);
 
-    ASSERT_EQ(5, decrypted);
 
 
     // test encrypting int from BOB
     inputValue =  FLAGS_party == emp::ALICE ? 0 : 4;
     emp::Integer bobSecretShared = emp::Integer(32, inputValue,  emp::BOB);
-    decrypted = bobSecretShared.reveal<int32_t>(emp::PUBLIC);
+    int32_t bobRevealed = bobSecretShared.reveal<int32_t>(emp::PUBLIC);
 
-    ASSERT_EQ(4, decrypted);
+    ASSERT_EQ(5, aliceRevealed);
+    ASSERT_EQ(4, bobRevealed);
 
 }
 
