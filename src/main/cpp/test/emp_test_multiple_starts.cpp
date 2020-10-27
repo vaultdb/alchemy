@@ -54,17 +54,23 @@ TEST_F(EmpTestMultipleStarts, emp_test_int) {
     // test encrypting an int from ALICE
     int32_t inputValue =  FLAGS_party == emp::ALICE ? 5 : 0;
     emp::Integer aliceSecretShared = emp::Integer(32, inputValue,  emp::ALICE);
-    int32_t aliceRevealed = aliceSecretShared.reveal<int32_t>(emp::PUBLIC);
-
+    //int32_t aliceRevealed = aliceSecretShared.reveal<int32_t>(emp::PUBLIC);
+    std::string aliceRevealed = aliceSecretShared.reveal<std::string>(emp::PUBLIC);
 
 
     // test encrypting int from BOB
     inputValue =  FLAGS_party == emp::ALICE ? 0 : 4;
     emp::Integer bobSecretShared = emp::Integer(32, inputValue,  emp::BOB);
-    int32_t bobRevealed = bobSecretShared.reveal<int32_t>(emp::PUBLIC);
 
-    ASSERT_EQ(5, aliceRevealed);
-    ASSERT_EQ(4, bobRevealed);
+    std::string bobRevealed = bobSecretShared.reveal<std::string>(emp::PUBLIC);
+
+    std::cout << "Alice revealed: " << aliceRevealed << " expected 5" << std::endl;
+    std::cout << "Bob revealed: " << bobRevealed << " expected 4" << std::endl;
+
+    ASSERT_EQ(aliceRevealed, "10100000000000000000000000000000"); // 5
+    ASSERT_EQ(bobRevealed, "00100000000000000000000000000000"); // 4
+  //  ASSERT_EQ(5, aliceRevealed);
+  //  ASSERT_EQ(4, bobRevealed);
 
 }
 
