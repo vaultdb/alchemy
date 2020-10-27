@@ -43,35 +43,21 @@ protected:
     static int8_t *boolsToBytes(const bool *const src, const uint32_t &bitCount);
     static bool *bytesToBool(int8_t *bytes, int byteCount);
     static signed char boolsToByte(const bool *src);
+
+    void passPlainInt();
 };
 
 
 
 TEST_F(EmpTestMultipleStarts, emp_pass_plain_int) {
-    int32_t  aliceSize = 32;
-    int32_t bobSize = 16;
-
-    if (FLAGS_party == emp::ALICE) {
-        netio->send_data(&aliceSize, 4);
-        netio->flush();
-        netio->recv_data(&bobSize, 4);
-        netio->flush();
-    } else if (FLAGS_party == emp::BOB) {
-        netio->recv_data(&aliceSize, 4);
-        netio->flush();
-        netio->send_data(&bobSize, 4);
-        netio->flush();
-    }
-
-    ASSERT_EQ(aliceSize, 32);
-    ASSERT_EQ(bobSize, 16);
-
+  passPlainInt();
 }
 //  verify emp configuration for int32s from both ALICE and BOB
 TEST_F(EmpTestMultipleStarts, emp_test_int) {
 
 
     // test encrypting an int from ALICE
+    passPlainInt();
     int32_t inputValue =  FLAGS_party == emp::ALICE ? 5 : 0;
     emp::Integer aliceSecretShared = emp::Integer(32, inputValue,  emp::ALICE);
     //int32_t aliceRevealed = aliceSecretShared.reveal<int32_t>(emp::PUBLIC);
@@ -99,6 +85,7 @@ TEST_F(EmpTestMultipleStarts, emp_test_float) {
 
     // test encrypting float from ALICE
 
+    passPlainInt();
     float aliceInput =  FLAGS_party == emp::ALICE ? 7.5 : 0;
     emp::Float aliceSecretShared(aliceInput, emp::ALICE);
     float aliceRevealed = aliceSecretShared.reveal<double>(emp::PUBLIC);
@@ -122,6 +109,7 @@ TEST_F(EmpTestMultipleStarts, emp_test_varchar) {
 
 
     // TPC-H strings
+    passPlainInt();
 
     std::string lhsStr = "EGYPT                    ";
     std::string rhsStr = "ARGENTINA                ";
@@ -249,6 +237,27 @@ bool *EmpTestMultipleStarts::bytesToBool(int8_t *bytes, int byteCount) {
         }
     }
     return ret;
+}
+
+void EmpTestMultipleStarts::passPlainInt() {
+    int32_t  aliceSize = 32;
+    int32_t bobSize = 16;
+
+    if (FLAGS_party == emp::ALICE) {
+        netio->send_data(&aliceSize, 4);
+        netio->flush();
+        netio->recv_data(&bobSize, 4);
+        netio->flush();
+    } else if (FLAGS_party == emp::BOB) {
+        netio->recv_data(&aliceSize, 4);
+        netio->flush();
+        netio->send_data(&bobSize, 4);
+        netio->flush();
+    }
+
+    ASSERT_EQ(aliceSize, 32);
+    ASSERT_EQ(bobSize, 16);
+
 }
 
 
