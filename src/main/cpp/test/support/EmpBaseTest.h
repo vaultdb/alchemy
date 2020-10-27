@@ -23,6 +23,8 @@ protected:
     static void TearDownTestCase();
 
     static emp::NetIO *netio;
+    const std::string aliceDb = "tpch_alice";
+    const std::string bobDb = "tpch_bob";
 
 };
 

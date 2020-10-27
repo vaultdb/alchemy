@@ -28,7 +28,6 @@ bin/emp_table_types_test --party=1 &
 bin/emp_table_types_test  --party=2
 
 
-
 ./bin/secure_value_expression_test --party=1 &
 ./bin/secure_value_expression_test --party=2
 

@@ -74,13 +74,16 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(const QueryTable *srcTa
 QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema *schema, const int & myParty, const int & dstParty) {
     int fieldCount = schema->getFieldCount();
     QueryTuple dstTuple(fieldCount, true);
+    types::TypeId aType;
     size_t aSize;
+
 
     for(int i = 0; i < fieldCount; ++i) {
 
         const QueryField *srcField = (myParty == dstParty) ? srcTuple->getFieldPtr(i) : nullptr;
         aSize = schema->getField(i).size();
-        QueryField dstField = secretShareField(srcField, aSize, myParty, dstParty);
+        aType = schema->getField(i).getType();
+        QueryField dstField = secretShareField(srcField, aType, i, aSize, myParty, dstParty);
         dstTuple.putField(dstField);
 
     }
@@ -102,22 +105,23 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
 
 // slap on the ordinal for Value
 QueryField
-EmpManager::secretShareField(const QueryField *srcField,  size_t length,  const int & myParty, const int & dstParty) {
-    int ordinal = srcField->getOrdinal();
+EmpManager::secretShareField(const QueryField *srcField, const types::TypeId &type, const int32_t &ordinal,
+                             size_t length, const int &myParty, const int &dstParty) {
 
     types::Value srcValue = (myParty == dstParty) ? srcField->getValue() : types::Value(0);
 
 
-    types::Value dstValue = secretShareValue(srcValue, length, myParty, dstParty);
+    types::Value dstValue = secretShareValue(srcValue, type, length, myParty, dstParty);
     QueryField dstField(ordinal, dstValue);
 
 
     return dstField;
 }
 
-types::Value EmpManager::secretShareValue(const types::Value &srcValue, size_t length, const int & myParty, const int & dstParty) {
+types::Value
+EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &type, size_t length, const int &myParty,
+                             const int &dstParty) {
 
-    types::TypeId type = srcValue.getType();
     switch (type) {
         case vaultdb::types::TypeId::BOOLEAN: {
             bool bit = (myParty == dstParty) ? srcValue.getBool() : 0;

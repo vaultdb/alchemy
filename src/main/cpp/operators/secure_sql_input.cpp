@@ -10,7 +10,7 @@ std::shared_ptr<QueryTable> SecureSqlInput::runSelf() {
 
 
     // secret share it
-    output = EmpManager::secretShareTable(plaintextTable.get(), netio_, dstParty);
+    output = plaintextTable->secretShare(netio_, dstParty);
 
 
 

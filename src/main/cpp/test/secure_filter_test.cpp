@@ -17,6 +17,7 @@
 #include <util/emp_manager.h>
 #include <operators/secure_sql_input.h>
 #include <operators/support/predicate.h>
+#include <test/support/EmpBaseTest.h>
 
 
 using namespace emp;
@@ -52,33 +53,19 @@ public:
 
 
 
-class SecureFilterTest : public ::testing::Test {
-
-
-
-protected:
-    void SetUp() override {};
-    void TearDown() override{};
-
-    const std::string aliceDb = "tpch_alice";
-    const std::string bobDb = "tpch_bob";
-
-};
-
+class SecureFilterTest : public EmpBaseTest {};
 
 
 
 
 TEST_F(SecureFilterTest, test_table_scan) {
 
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port,  FLAGS_party);
-    std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+    std::string dbName =  FLAGS_party == emp::ALICE ? aliceDb : bobDb;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 5";
     std::unique_ptr<QueryTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
 
-    std::shared_ptr<SecureSqlInput> input(new SecureSqlInput(dbName, sql, false));
+    std::shared_ptr<SecureSqlInput> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
     std::shared_ptr<QueryTable> output = input->run();
 
     std::unique_ptr<QueryTable> revealed = output->reveal(emp::PUBLIC);
@@ -86,7 +73,6 @@ TEST_F(SecureFilterTest, test_table_scan) {
 
     ASSERT_EQ(*expected, *revealed);
 
-    empManager->close();
 
 
 }
@@ -97,9 +83,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
 // Testing for selecting l_linenumber=1
 
 TEST_F(SecureFilterTest, test_filter) {
-    EmpManager *empManager = EmpManager::getInstance();
-    empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-    std::string dbName =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+    std::string dbName =  FLAGS_party == emp::ALICE ? aliceDb : bobDb;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 5";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
@@ -107,7 +91,7 @@ TEST_F(SecureFilterTest, test_filter) {
     std::unique_ptr<QueryTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, expectedResultSql, true);
 
 
-    std::shared_ptr<Operator> input = std::make_shared<SecureSqlInput>(dbName, sql, false);
+    std::shared_ptr<Operator> input = std::make_shared<SecureSqlInput>(dbName, sql, false, netio, FLAGS_party);
 
     std::shared_ptr<Predicate> aPredicate(new SecureFilterPredicateClass(1));  // secret share the constant (1) just once
     Filter *filterOp = new Filter(aPredicate, input);  // deletion handled by shared_ptr
