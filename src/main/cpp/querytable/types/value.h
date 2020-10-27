@@ -53,12 +53,11 @@ public:
 
 
     string toString() const;
-    friend std::ostream &operator<<(std::ostream &os, const Value &table);
+    friend std::ostream &operator<<(std::ostream &os, const Value &value);
     Value& operator=(const Value& other); // copy assign operator overload
 
   string getValueString() const;
 
-  friend std::ostream &operator<<(std::ostream &os, const Value &table);
 
 
   void serialize(bool *dst) const;
