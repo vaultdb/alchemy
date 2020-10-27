@@ -9,9 +9,9 @@
 #include <operators/support/join_equality_predicate.h>
 #include <operators/basic_join.h>
 #include <gflags/gflags.h>
-#include <util/emp_manager.h>
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
+#include <test/support/EmpBaseTest.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -20,25 +20,10 @@ DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_bool(input, false, "input value");
 
 
-class SecureBasicJoinTest : public ::testing::Test {
-
-
+class SecureBasicJoinTest : public EmpBaseTest {
 protected:
-    void SetUp() override {
-        empManager = EmpManager::getInstance();
-        empManager->configureEmpManager(FLAGS_alice_host.c_str(), FLAGS_port, FLAGS_party);
-        dbName =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
-
-
-    };
-
-    void TearDown() override{
-        empManager->close();
-    };
-
 
     const std::string unionedDb = "tpch_unioned";
-    EmpManager *empManager = nullptr;
     std::string dbName = "tpch_unioned"; // default
 
     const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy \n"
@@ -90,8 +75,8 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
 
 std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
 
-std::shared_ptr<Operator> customerInput(new SecureSqlInput(dbName, customerSql, true));
-std::shared_ptr<Operator> ordersInput(new SecureSqlInput(dbName, ordersSql, true));
+std::shared_ptr<Operator> customerInput(new SecureSqlInput(dbName, customerSql, true, netio, FLAGS_party));
+std::shared_ptr<Operator> ordersInput(new SecureSqlInput(dbName, ordersSql, true, netio, FLAGS_party));
 
 
 ConjunctiveEqualityPredicate customerOrdersOrdinals;

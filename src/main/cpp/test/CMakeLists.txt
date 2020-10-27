@@ -86,4 +86,4 @@ package_add_test(emp_table_types_test  emp_table_types_test.cpp support/EmpBaseT
 package_add_test(secure_value_expression_test secure_value_expression_test.cpp support/EmpBaseTest.cpp  )
 package_add_test(secure_filter_test secure_filter_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_sort_test secure_sort_test.cpp support/EmpBaseTest.cpp )
-#package_add_test(secure_basic_join_test secure_basic_join_test.cpp)
+package_add_test(secure_basic_join_test secure_basic_join_test.cpp support/EmpBaseTest.cpp )
