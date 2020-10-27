@@ -74,15 +74,13 @@ std::shared_ptr<QueryTable> EmpManager::secretShareTable(const QueryTable *srcTa
 QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema *schema, const int & myParty, const int & dstParty) {
     int fieldCount = schema->getFieldCount();
     QueryTuple dstTuple(fieldCount, true);
-    types::TypeId aType;
     size_t aSize;
 
     for(int i = 0; i < fieldCount; ++i) {
 
         const QueryField *srcField = (myParty == dstParty) ? srcTuple->getFieldPtr(i) : nullptr;
-        aType =  schema->getField(i).getType();
         aSize = schema->getField(i).size();
-        QueryField dstField = secretShareField(srcField, i, aType, aSize, myParty, dstParty);
+        QueryField dstField = secretShareField(srcField, aSize, myParty, dstParty);
         dstTuple.putField(dstField);
 
     }
@@ -104,21 +102,22 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
 
 // slap on the ordinal for Value
 QueryField
-EmpManager::secretShareField(const QueryField *srcField, int ordinal, types::TypeId type, size_t length,  const int & myParty, const int & dstParty) {
+EmpManager::secretShareField(const QueryField *srcField,  size_t length,  const int & myParty, const int & dstParty) {
+    int ordinal = srcField->getOrdinal();
 
     types::Value srcValue = (myParty == dstParty) ? srcField->getValue() : types::Value(0);
 
 
-    types::Value dstValue = secretShareValue(srcValue, type, length, myParty, dstParty);
+    types::Value dstValue = secretShareValue(srcValue, length, myParty, dstParty);
     QueryField dstField(ordinal, dstValue);
 
 
     return dstField;
 }
 
-types::Value EmpManager::secretShareValue(const types::Value &srcValue, types::TypeId type, size_t length, const int & myParty, const int & dstParty) {
+types::Value EmpManager::secretShareValue(const types::Value &srcValue, size_t length, const int & myParty, const int & dstParty) {
 
-
+    types::TypeId type = srcValue.getType();
     switch (type) {
         case vaultdb::types::TypeId::BOOLEAN: {
             bool bit = (myParty == dstParty) ? srcValue.getBool() : 0;

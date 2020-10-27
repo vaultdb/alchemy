@@ -26,7 +26,6 @@ class SecureValueExpressionTest : public EmpBaseTest {};
 
 
 
-
 // test overload of assignment operator
 TEST_F(SecureValueExpressionTest, test_value_assignment) {
     Value src(true);
@@ -46,8 +45,8 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
     types::Value lhsValue(lhsStr);
     types::Value rhsValue(rhsStr);
 
-    types::Value lhsEncrypted = EmpManager::secretShareValue(&lhsValue, types::TypeId::VARCHAR, lhsStr.length() * 8, emp::ALICE,  emp::ALICE);
-    types::Value rhsEncrypted = EmpManager::secretShareValue(&rhsValue, types::TypeId::VARCHAR, rhsStr.length() * 8, emp::ALICE,  emp::ALICE);
+    types::Value lhsEncrypted = EmpManager::secretShareValue(&lhsValue, lhsStr.length() * 8, FLAGS_party,  emp::ALICE);
+    types::Value rhsEncrypted = EmpManager::secretShareValue(&rhsValue, rhsStr.length() * 8, FLAGS_party,  emp::ALICE);
 
     types::Value gtEncrypted = (lhsValue > rhsValue);
     bool gt = gtEncrypted.reveal().getBool();
