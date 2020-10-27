@@ -3,8 +3,6 @@
 //
 
 //
-// Created by Jennie Rogers on 8/2/20.
-//
 // set up to be self-contained
 
 #include <gflags/gflags.h>
