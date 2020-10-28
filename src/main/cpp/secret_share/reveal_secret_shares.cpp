@@ -1,6 +1,6 @@
 #include <emp-tool/emp-tool.h>
 #include <emp-sh2pc/emp-sh2pc.h>
-#include "utils.h"
+#include <emp-tool/utils/utils.h>
 
 using namespace  emp;
 using namespace  std;
