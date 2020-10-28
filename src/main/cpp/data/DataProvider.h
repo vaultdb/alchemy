@@ -1,7 +1,7 @@
 #ifndef DATA_PROVIDER_H
 #define DATA_PROVIDER_H
 
-#include <querytable/query_table.h>
+#include <query_table/query_table.h>
 
 class DataProvider {
 public:

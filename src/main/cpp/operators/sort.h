@@ -1,8 +1,11 @@
-#include <querytable/query_table.h>
 #include <memory>
 #include "common/defs.h"
 #include "operator.h"
 #include <operators/support/sort_condition.h>
+#include <query_table/query_table.h>
+#include <vector>
+#include <operators/support/secure_sort_condition.h>
+#include <operators/support/plain_sort_condition.h>
 
 
 

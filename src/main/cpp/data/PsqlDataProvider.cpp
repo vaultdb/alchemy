@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 7/18/20.
-//
-
 #include "PsqlDataProvider.h"
 #include "pq_oid_defs.h"
 #include "pqxx_compat.h"

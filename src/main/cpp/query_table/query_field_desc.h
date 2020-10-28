@@ -1,13 +1,9 @@
-//
-// Created by madhav on 1/13/20.
-//
-
 #ifndef _QUERY_FIELD_DESC_H
 #define _QUERY_FIELD_DESC_H
 
 #include <map>
 #include <memory>
-#include <querytable/types/type_id.h>
+#include <query_table/types/type_id.h>
 #include <string>
 #include <utility>
 #include <variant>

@@ -1,10 +1,4 @@
-//
-// Created by madhav on 12/27/19.
-//
 #include "proto_converter.h"
-#include "querytable/query_field_desc.h"
-#include "querytable/query_schema.h"
-#include "querytable/query_table.h"
 
 vaultdb::types::TypeId ProtoToTypeId(dbquery::OIDType oidtype) {
   switch (oidtype) {

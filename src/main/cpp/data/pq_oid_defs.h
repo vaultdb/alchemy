@@ -1,6 +1,3 @@
-//
-// Created by Jennie Rogers on 7/18/20.
-//
 // source: https://github.com/olt/libpq/blob/master/oid/types.go
 
 #ifndef PQ_OID_DEFS_H

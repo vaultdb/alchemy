@@ -7,7 +7,7 @@
 
 #include "operators/support/aggregate_id.h"
 #include <operator.h>
-#include <querytable/query_table.h>
+#include <query_table/query_table.h>
 
 struct ScalarAggregateDef {
   int ordinal;

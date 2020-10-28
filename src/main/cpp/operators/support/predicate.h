@@ -1,11 +1,7 @@
-//
-// Created by Jennie Rogers on 8/16/20.
-//
-
 #ifndef _PREDICATE_CLASS_H
 #define _PREDICATE_CLASS_H
 
-#include <querytable/query_tuple.h>
+#include <query_table/query_tuple.h>
 
 using namespace vaultdb;
 using namespace emp;

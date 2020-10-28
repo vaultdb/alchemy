@@ -1,11 +1,4 @@
 #include "sort.h"
-#include "querytable/types/type_id.h"
-#include "querytable/types/value.h"
-#include <emp-tool/circuits/swappable.h>
-#include <querytable/query_table.h>
-#include <vector>
-#include <operators/support/secure_sort_condition.h>
-#include <operators/support/plain_sort_condition.h>
 
 
 int Sort::powerOfLessThanTwo(const int & n) {

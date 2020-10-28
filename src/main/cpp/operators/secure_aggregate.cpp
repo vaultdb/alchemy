@@ -1,6 +1,6 @@
 #include "secure_aggregate.h"
 #include "operators/support/aggregate_id.h"
-#include <querytable/query_table.h>
+
 using namespace vaultdb::types;
 
 std::unique_ptr<QueryTable> Aggregate(QueryTable *input,

@@ -1,14 +1,10 @@
-//
-// Created by Jennie Rogers on 7/18/20.
-//
-
 #ifndef PSQL_DATA_PROVIDER_H
 #define PSQL_DATA_PROVIDER_H
 
 #include "DataProvider.h"
-#include "querytable/query_table.h"
-#include "querytable/query_tuple.h"
-#include "querytable/query_field.h"
+#include "query_table/query_table.h"
+#include "query_table/query_tuple.h"
+#include "query_table/query_field.h"
 
 #include <pqxx/pqxx>
 
@@ -38,4 +34,4 @@ private:
 };
 
 
-#endif //VAULTDB_EMP_PSQLDATAPROVIDER_H
+#endif //PSQL_DATA_PROVIDER_H

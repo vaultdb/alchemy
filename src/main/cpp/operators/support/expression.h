@@ -1,13 +1,9 @@
-//
-// Created by Jennie Rogers on 9/3/20.
-//
-
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
 
-#include <querytable/query_tuple.h>
-#include <querytable/query_schema.h>
+#include <query_table/query_tuple.h>
+#include <query_table/query_schema.h>
 
 using namespace vaultdb;
 

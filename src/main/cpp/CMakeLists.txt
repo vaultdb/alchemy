@@ -78,7 +78,7 @@ add_custom_command(
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc
 		${CMAKE_CURRENT_BINARY_DIR}/data
         ${CMAKE_CURRENT_BINARY_DIR}/operators
-        ${CMAKE_CURRENT_BINARY_DIR}/querytable
+        ${CMAKE_CURRENT_BINARY_DIR}/query_table
         ${CMAKE_CURRENT_BINARY_DIR}/common)
 
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR} ${GRPC_INCLUDE_DIR})
@@ -92,20 +92,20 @@ set(sources
         operators/sort.cpp
 		operators/filter.cpp
 		util/emp_manager.cpp
-		querytable/query_tuple.cpp
-		querytable/types/value.cpp
-		querytable/query_field.cpp
-		querytable/query_field_desc.cpp
-		querytable/query_schema.cpp
-		querytable/query_table.cpp
+		query_table/query_tuple.cpp
+		query_table/types/value.cpp
+		query_table/query_field.cpp
+		query_table/query_field_desc.cpp
+		query_table/query_schema.cpp
+		query_table/query_table.cpp
 		data/pqxx_compat.cpp
 		data/PQDataProvider.cpp
 		data/PsqlDataProvider.cpp
 		data/proto_converter.cpp
         util/type_utilities.cpp
 		util/data_utilities.cpp
-		querytable/types/value_comparators.cpp
-		querytable/types/value_arithmetic.cpp
+		query_table/types/value_comparators.cpp
+		query_table/types/value_arithmetic.cpp
 		operators/operator.cpp
 		operators/sql_input.cpp
         operators/secure_sql_input.cpp

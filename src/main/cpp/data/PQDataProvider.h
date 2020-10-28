@@ -1,7 +1,3 @@
-//
-// Created by madhav on 12/31/19.
-//
-
 #ifndef PQ_DATA_PROVIDER_H
 #define PQ_DATA_PROVIDER_H
 

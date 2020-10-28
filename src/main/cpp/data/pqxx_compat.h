@@ -1,7 +1,3 @@
-//
-// Created by madhav on 12/27/19.
-//
-
 #ifndef _PQXX_COMPAT_H
 #define _PQXX_COMPAT_H
 

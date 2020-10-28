@@ -7,7 +7,7 @@
 
 #include <functional>
 #include <vector>
-#include <querytable/query_table.h>
+#include <query_table/query_table.h>
 
 // for query operator tree and perhaps operator factory
 // operator may run in the clear or in MPC

@@ -1,7 +1,3 @@
-//
-// Created by madhav on 12/31/19.
-//
-
 #include "PQDataProvider.h"
 
 std::unique_ptr<QueryTable>
