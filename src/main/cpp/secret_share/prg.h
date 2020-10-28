@@ -2,13 +2,8 @@
 #define EMP_PRG_H__
 #include "aes.h"
 #include <memory>
-
-
-#ifdef ENABLE_RDSEED
-#include <x86intrin.h>
-#else 
 #include <random>
-#endif
+
 
 
 namespace emp {
@@ -25,28 +20,16 @@ namespace emp {
 		if (seed != nullptr) {
 			reseed((const block *)seed, id);
 		} else {
-			block v;
-#ifndef ENABLE_RDSEED
-			uint32_t * data = (uint32_t *)(&v);
-			std::random_device rand_div;
-			for (size_t i = 0; i < sizeof(block) / sizeof(uint32_t); ++i)
-				data[i] = rand_div();
-#else
-			unsigned long long r0, r1;
-			int i = 0;
-			for(; i < 10; ++i)
-				if(_rdseed64_step(&r0) == 1) break;
-			if(i == 10)error("RDSEED FAILURE");
-
-			for(i = 0; i < 10; ++i)
-				if(_rdseed64_step(&r1) == 1) break;
-			if(i == 10)error("RDSEED FAILURE");
-
-			v = makeBlock(r0, r1);
-#endif
+            block v;
+            uint32_t * data = (uint32_t *)(&v);
+            std::random_device rand_div;
+            for (size_t i = 0; i < sizeof(block) / sizeof(uint32_t); ++i)
+                data[i] = rand_div();
 			reseed(&v);
 		}
 	}
+
+
 	void reseed(const block* seed, uint64_t id = 0) {
 		block v = *seed;
 		v ^= makeBlock(0LL, id);
@@ -101,6 +84,8 @@ namespace emp {
 		AES_ecb_encrypt_blks(tmp, remain, &aes);
 		memcpy(data + (nblocks/AES_BATCH_SIZE)*AES_BATCH_SIZE, tmp, remain*sizeof(block));
 	}
+
+
 };
 }
 #endif// PRP_H__

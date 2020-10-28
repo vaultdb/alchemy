@@ -1,4 +1,4 @@
-template<class... Ts>
+ template<class... Ts>
 void run_function(void *function, const Ts&... args) {	
 	reinterpret_cast<void(*)(Ts...)>(function)(args...);
 }
