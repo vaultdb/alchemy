@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     int32_t r[4]; // random values
     int32_t rx[4]; // r XOR data
 
-    prg.random_data(&r, 4);
+    prg.random_data(&r, 16);
 
     for(int i = 0; i < 4; ++i) {
         rx[i] = r[i] ^ data[i];
