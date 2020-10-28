@@ -52,11 +52,25 @@
 #ifndef EMP_AES_H
 #define EMP_AES_H
 
-#include "block.h"
+#include <immintrin.h>
+#include <assert.h>
+#include <cstring>
+#include <iostream>
+#include <iomanip>
+
 
 namespace emp {
+    const static int AES_BATCH_SIZE = 8;
 
-typedef struct { block rd_key[11]; unsigned int rounds; } AES_KEY;
+    using block = __m128i;
+    __attribute__((target("sse2")))
+    inline block makeBlock(uint64_t high, uint64_t low) {
+        return _mm_set_epi64x(high, low);
+    }
+
+
+
+    typedef struct { block rd_key[11]; unsigned int rounds; } AES_KEY;
 
 #define EXPAND_ASSIST(v1,v2,v3,v4,shuff_const,aes_const)                    \
     v2 = _mm_aeskeygenassist_si128(v4,aes_const);                           \

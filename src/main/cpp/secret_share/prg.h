@@ -1,8 +1,8 @@
 #ifndef EMP_PRG_H__
 #define EMP_PRG_H__
 #include "aes.h"
-#include "constants.h"
 #include <memory>
+
 
 #ifdef ENABLE_RDSEED
 #include <x86intrin.h>
@@ -12,8 +12,6 @@
 
 
 namespace emp {
-
-
 
 
     class PRG {
