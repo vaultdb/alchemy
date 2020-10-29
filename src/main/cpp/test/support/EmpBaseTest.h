@@ -17,14 +17,19 @@ DECLARE_string(alice_host);
 
 class EmpBaseTest  : public ::testing::Test {
 protected:
-    static void SetUpTestCase();
+
+    void SetUp() override;
+    void TearDown() override;
 
 
-    static void TearDownTestCase();
-
-    static emp::NetIO *netio;
+    emp::NetIO *netio;
     const std::string aliceDb = "tpch_alice";
     const std::string bobDb = "tpch_bob";
+
+    //static void SetUpTestCase();
+    //static void TearDownTestCase();
+    //static emp::NetIO *netio;
+
 
 };
 

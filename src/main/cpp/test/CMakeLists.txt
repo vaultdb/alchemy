@@ -79,10 +79,8 @@ package_add_test(basic_join_test basic_join_test.cpp)
 package_add_test(fkey_pkey_join_test fkey_pkey_join_test.cpp)
 
 #EMP-based tests
-package_add_test(emp_test emp_test.cpp support/EmpBaseTest.cpp)  #port 54321-54322
-package_add_test(emp_basic_table_test emp_basic_table_test.cpp support/EmpBaseTest.cpp  ) #port 54323
-package_add_test(emp_table_test  emp_table_test.cpp support/EmpBaseTest.cpp ) # port 54324-54325
-package_add_test(emp_table_types_test  emp_table_types_test.cpp support/EmpBaseTest.cpp support/QueryTableTestQueries.cpp) # port 54326-54327
+package_add_test(emp_test emp_test.cpp support/EmpBaseTest.cpp)
+package_add_test(emp_table_test  emp_table_test.cpp support/EmpBaseTest.cpp support/QueryTableTestQueries.cpp) # port 54324-54325
 package_add_test(emp_test_multiple_starts emp_test_multiple_starts.cpp)
 package_add_test(secure_value_expression_test secure_value_expression_test.cpp support/EmpBaseTest.cpp  )
 package_add_test(secure_filter_test secure_filter_test.cpp support/EmpBaseTest.cpp )
