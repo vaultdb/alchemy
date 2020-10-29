@@ -12,12 +12,12 @@ fi
 echo "Creating test database..."
 
 dbPrefix='smcql_testdb'
-dropdb $dbPrefix
+dropdb --if-exists $dbPrefix
 createdb $dbPrefix
 psql $dbPrefix -f $path/conf/workload/testDB/test_schema.sql
 
 unionDB=$dbPrefix'_unioned'
-dropdb $unionDB
+dropdb --if-exists $unionDB
 createdb $unionDB
 psql $unionDB -f $path/conf/workload/testDB/test_schema.sql
 
@@ -25,9 +25,9 @@ psql $unionDB -f $path/conf/workload/testDB/test_schema.sql
 
 
 for i in 1 2
-do
+do 
     dbName=$dbPrefix'_site'$i
-    dropdb $dbName
+    dropdb --if-exists $dbName
     createdb $dbName
 
     psql $dbName -c "CREATE ROLE smcql"
