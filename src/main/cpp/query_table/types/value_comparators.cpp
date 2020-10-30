@@ -37,18 +37,22 @@ Value Value::operator>=(const Value &rhs) const {
 
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
-      //  case TypeId::ENCRYPTED_VARCHAR:
+        case TypeId::ENCRYPTED_VARCHAR:
          {
             emp::Integer lhsVal = this->getEmpInt();
             emp::Integer rhsVal = rhs.getEmpInt();
             return Value(lhsVal >= rhsVal);
         }
-        case TypeId::ENCRYPTED_VARCHAR:
+       /* case TypeId::ENCRYPTED_VARCHAR:
             {
                 emp::Integer lhsVal = this->getEmpInt();
                 emp::Integer rhsVal = rhs.getEmpInt();
                 size_t charCount = lhsVal.size() / 8;
                 assert(lhsVal.size() % 8 == 0); // no modulus
+                // already know that both sides are the same length owing to schema
+                //if(lhsVal.size() == 8) {
+                //    return lhsVal >= rhsVal;
+               // }
 
                 // test it one character at a time
                 // split it into an array of chars
@@ -76,7 +80,7 @@ Value Value::operator>=(const Value &rhs) const {
 	            }
             	return geq;
 
-            }
+            }*/
 
         case TypeId::ENCRYPTED_FLOAT32: {
             emp::Float lhsVal = this->getEmpFloat32();
@@ -117,7 +121,8 @@ Value Value::operator>=(const Value &rhs) const {
 }
 
 Value Value::operator>(const Value &rhs) const {
-  return !(rhs >= *static_cast<const Value *>(this));
+
+    return !(rhs >= *static_cast<const Value*>(this));
 }
 
 Value Value::operator<(const Value &rhs) const {
@@ -157,7 +162,8 @@ Value Value::operator==(const Value &rhs) const {
         case TypeId::ENCRYPTED_VARCHAR: {
             emp::Integer lhsVal = this->getEmpInt();
             emp::Integer rhsVal = rhs.getEmpInt();
-            return Value(lhsVal == rhsVal);
+            emp::Bit eq = lhsVal.equal(rhsVal);
+            return Value(eq);
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {

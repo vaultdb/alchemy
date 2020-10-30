@@ -395,14 +395,6 @@ void Value::setValue(const std::string & aString) {
                 int32_t dst = this->getEmpInt().reveal<int32_t>(empParty);
                 return types::Value(dst);
 
-                /*std::bitset<32> bs;
-                bs.reset();
-                bool b[32] = { false };
-                emp::ProtocolExecution::prot_exec->reveal(b, empParty, (emp::block *)anInt.bits.data(), 32);
-                for (int i = 0; i < 32; ++i)
-                    bs.set(i, b[i]);
-                int32_t intValue = bs.to_ulong();
-                return types::Value(intValue);*/
 
             }
 
@@ -441,6 +433,7 @@ void Value::setValue(const std::string & aString) {
 
 
                 std::string dst(intermediary);
+                std::reverse(dst.begin(), dst.end());
                 Value dstValue(dst);
 
                 delete [] decodedBytes;

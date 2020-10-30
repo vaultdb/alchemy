@@ -1,17 +1,20 @@
 #include <util/data_utilities.h>
+#include <util/emp_manager.h>
 #include "support/EmpBaseTest.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54321, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
-class EmpTest : public EmpBaseTest {};
+class EmpTest : public EmpBaseTest {
+};
 
 
 
 
 //  verify emp configuration for int32s from both ALICE and BOB
-TEST_F(EmpTest, emp_test_int) {
+
+ TEST_F(EmpTest, emp_test_int) {
 
 
     // test encrypting an int from ALICE
@@ -31,6 +34,8 @@ TEST_F(EmpTest, emp_test_int) {
 
 }
 
+
+
 // basic test to verify emp configuration for strings
 TEST_F(EmpTest, emp_test_varchar) {
 
@@ -43,6 +48,7 @@ TEST_F(EmpTest, emp_test_varchar) {
     while(initialString.length() != stringLength) {
         initialString += " ";
     }
+
 
 
     bool *bools = DataUtilities::bytesToBool((int8_t *) initialString.c_str(), stringLength);

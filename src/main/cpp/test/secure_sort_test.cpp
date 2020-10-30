@@ -91,7 +91,6 @@ TEST_F(SecureSortTest, tpchQ1SortClear) {
     ASSERT_TRUE(tableSorted);
 }
 
-// TODO: debug this and Q9.  Both are failing on string comparators
 TEST_F(SecureSortTest, tpchQ1Sort) {
     std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
 

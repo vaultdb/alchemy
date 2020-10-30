@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/20/20.
-//
-
 #include <util/data_utilities.h>
 #include "secure_sort_condition.h"
 
@@ -46,7 +42,6 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
         swap = If(swapInit, swap, colSwapFlag); // once we know there's a swap once, we keep it
         swapInit = swapInit  | If(!eq, trueBit, falseBit);  // have we found the most significant column where they are not equal?
-       // std::cout << "   Comparing " << lhs.reveal(emp::PUBLIC) <<  " to " << rhs.reveal(emp::PUBLIC) << " on col: " <<  sortColIdx << " gt? " << gt.reveal() << " toSwap? " << swap.reveal() << std::endl;
 
 
     } // end check for swap
@@ -62,4 +57,30 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
             else if (!eq) {
                 break; // no switch needed, they are already in the right order
             }
+*/
+
+/* debug code:
+ *     // variables to support debug statement
+        std::string lhsRevealed = lhsValue.reveal(emp::PUBLIC).getVarchar();
+        std::string rhsRevealed = rhsValue.reveal(emp::PUBLIC).getVarchar();
+        uint32_t sortColIdx = sortDefinition[i].first;
+
+        std::cout << "Lhs bytes: ";
+        for(int i = 0; i < lhsRevealed.size(); ++i)
+            std::cout << (int) lhsRevealed[i] << " ";
+        std::cout << " for |" << lhsRevealed << "| encrypted bits: " << lhsValue.getEmpInt().reveal<std::string>() << std::endl;
+
+        std::cout << "Rhs bytes: ";
+        for(int i = 0; i < rhsRevealed.size(); ++i)
+            std::cout << (int) rhsRevealed[i] << " ";
+        std::cout <<  " for |" << rhsRevealed  <<  "| encrypted bits: " << rhsValue.getEmpInt().reveal<std::string>() <<  std::endl;
+
+        bool expectedGT  = (lhsRevealed > rhsRevealed);
+        bool observedGT =  (lhsValue > rhsValue).getEmpBit().reveal();
+        std::cout << "Expected gt: " << expectedGT << " observed: " << observedGT << std::endl;
+        std::cout << "Makeup: " << (lhsValue <= rhsValue).getEmpBit().reveal() << " == " << (lhsRevealed[i] <= rhsRevealed[i]) << std::endl;
+
+        assert(expectedGT == observedGT);
+
+        std::cout << "   Comparing " << lhsRevealed <<  " to " << rhsRevealed << " on col: " <<  sortColIdx << " gt? " << (lhsValue > rhsValue).getEmpBit().reveal() << " toSwap? " << swap.reveal() << std::endl;
 */

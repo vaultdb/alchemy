@@ -53,10 +53,32 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
                                                              TypeId::VARCHAR, rhsStr.length() * 8, FLAGS_party,
                                                              emp::ALICE);
 
-    types::Value gtEncrypted = (lhsValue > rhsValue);
+
+    std::string lhsRevealed = lhsEncrypted.reveal(emp::PUBLIC).getVarchar();
+    std::string rhsRevealed = rhsEncrypted.reveal(emp::PUBLIC).getVarchar();
+
+    std::cout << "Lhs bytes: ";
+    for(int i = 0; i < lhsRevealed.size(); ++i)
+        std::cout << (int) lhsRevealed[i] << " ";
+    std::cout << " for " << lhsRevealed << " encrypted bits: " << lhsEncrypted.getEmpInt().reveal<std::string>() << std::endl;
+
+    std::cout << "Rhs bytes: ";
+    for(int i = 0; i < rhsRevealed.size(); ++i)
+        std::cout << (int) rhsRevealed[i] << " ";
+    std::cout <<  " for " << rhsRevealed  <<  " encrypted bits: " << rhsEncrypted.getEmpInt().reveal<std::string>() <<  std::endl;
+
+    Integer thisExtend(lhsEncrypted.getEmpInt()), rhsExtend(rhsEncrypted.getEmpInt());
+    size_t size = thisExtend.size();
+    thisExtend.resize(size+1, true);
+    rhsExtend.resize(size+1, true);
+    Integer tmp = thisExtend-rhsExtend;
+
+    // care about last bit, sign bit
+    // it is 1, which indicates "less than"
+    std::cout << "Geq temp: " << tmp.reveal<std::string>() << std::endl;
+
+    types::Value gtEncrypted = (lhsEncrypted > rhsEncrypted);
     bool gt = gtEncrypted.reveal().getBool();
-
-
     ASSERT_TRUE(gt);
 
 }
@@ -116,6 +138,54 @@ TEST_F(SecureValueExpressionTest, test_millionaires) {
 
 
 
+TEST_F(SecureValueExpressionTest, test_char_comparison) {
+    char lhs = 'O';
+    char rhs = 'F';
+
+    std::string lhsStr("O"), rhsStr("F");
+/*  char lhs = 'N'; // 78
+    char rhs = 'R'; // 82
+
+    std::string lhsStr("N"), rhsStr("R");
+*/
+
+    emp::Integer lhsSecretShared(8, (int8_t) (FLAGS_party == emp::ALICE) ?  lhs : 0,
+                                 emp::ALICE);
+
+    emp::Integer rhsSecretShared(8, (int8_t) (FLAGS_party == emp::BOB) ?   rhs : 0,
+                                 emp::BOB);
+    types::Value lhsPrivateValue = EmpManager::secretShareValue(types::Value(lhsStr), types::TypeId::VARCHAR, 8, FLAGS_party, emp::ALICE);
+    types::Value rhsPrivateValue = EmpManager::secretShareValue(types::Value(rhsStr), types::TypeId::VARCHAR, 8, FLAGS_party, emp::BOB);
+
+
+
+    // sanity check
+    bool publicEq = (lhs == rhs);
+    bool privateEq = (lhsSecretShared == rhsSecretShared).reveal();
+    bool publicGeq = lhs >= rhs;
+    bool privateGeq = (lhsSecretShared >= rhsSecretShared).reveal();
+    bool publicGt = lhsStr > rhsStr;
+    bool privateGt = (lhsSecretShared >= rhsSecretShared).reveal();
+
+
+    ASSERT_EQ(publicEq, privateEq);
+    ASSERT_EQ(publicGeq, privateGeq);
+    ASSERT_EQ(privateGt, publicGt);
+
+
+    // compare manual emp int to Value one
+    std::cout << "Manual secret shared int " << lhsSecretShared.reveal<std::string>() << std::endl
+              << "Value-based int:         " << lhsPrivateValue.getEmpInt().reveal<std::string>() << std::endl;
+
+    privateEq = (lhsPrivateValue == rhsPrivateValue).reveal().getBool();
+    privateGeq = (lhsPrivateValue >= rhsPrivateValue).reveal().getBool();
+    privateGt = (lhsPrivateValue > rhsPrivateValue).reveal().getBool();
+
+    ASSERT_EQ(publicEq, privateEq);
+    ASSERT_EQ(publicGeq, privateGeq);
+    ASSERT_EQ(privateGt, publicGt);
+
+}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

@@ -14,8 +14,6 @@ void EmpBaseTest::SetUp()  {
 }
 
 void EmpBaseTest::TearDown() {
-    std::cout << "Tearing down test suite!" << std::endl;
         netio->flush();
         delete netio;
-        //sleep(2);
 }

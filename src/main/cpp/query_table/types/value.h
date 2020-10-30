@@ -56,7 +56,6 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const Value &value);
     Value& operator=(const Value& other); // copy assign operator overload
 
-  string getValueString() const;
 
 
 
