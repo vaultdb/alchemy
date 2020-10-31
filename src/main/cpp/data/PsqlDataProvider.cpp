@@ -86,7 +86,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
 
         srcTable = getTableName(tableId); // once per col in case of joins
 
-        QueryFieldDesc fieldDesc(i, false, colName, srcTable, type);
+        QueryFieldDesc fieldDesc(i, colName, srcTable, type);
 
        if(type == vaultdb::types::TypeId::VARCHAR) {
 

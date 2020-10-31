@@ -1,6 +1,5 @@
 #include <util/emp_manager.h>
 #include "query_table.h"
-#include "../data/proto_converter.h"
 
 QueryTuple QueryTable::getTuple(int idx) const {
     return tuples_[idx];
@@ -170,6 +169,7 @@ QueryTuple *QueryTable::getTuplePtr(const int &idx) const {
 bool QueryTable::operator==(const QueryTable &other) const {
 
     if(getSchema() != other.getSchema()) {
+        //std::cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << std::endl;
         return false;
     }
 
@@ -179,10 +179,10 @@ bool QueryTable::operator==(const QueryTable &other) const {
     for(int i = 0; i < getTupleCount(); ++i) {
         QueryTuple *thisTuple = getTuplePtr(i);
         QueryTuple *otherTuple = other.getTuplePtr(i);
-        //std::cout << "Comparing "  << thisTuple->toString(true) << " to " << otherTuple->toString(true) << std::endl;
+       // std::cout << "Comparing "  << thisTuple->toString(true) << " to " << otherTuple->toString(true) << std::endl;
 
         if(*thisTuple != *otherTuple) {
-            //std::cout << "    Failed to match!" << std::endl;
+           // std::cout << "    Failed to match!" << std::endl;
             return false;
         }
 

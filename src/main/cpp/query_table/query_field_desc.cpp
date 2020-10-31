@@ -10,9 +10,6 @@ int QueryFieldDesc::getOrdinal() const {
   return QueryFieldDesc::ordinal_;
 }
 
-bool QueryFieldDesc::getIsPrivate() const {
-  return QueryFieldDesc::is_private_;
-}
 
 const std::string &QueryFieldDesc::getName() const {
   return QueryFieldDesc::name_;
@@ -61,12 +58,12 @@ QueryFieldDesc& QueryFieldDesc::operator=(const QueryFieldDesc& src)  {
     this->name_ = src.name_;
     this->ordinal_ = src.ordinal_;
     this->table_name = src.table_name;
-    this->is_private_ = src.getIsPrivate();
     this->string_length_ = src.string_length_;
 
     return *this;
 }
 
+// only checking for relation compatibility, so don't care about table name or field name
 bool QueryFieldDesc::operator==(const QueryFieldDesc& other) {
 
     // if types are the same, or int32_t --> date
@@ -76,15 +73,9 @@ bool QueryFieldDesc::operator==(const QueryFieldDesc& other) {
         return false;
     }
 
-    if(this->getIsPrivate() != other.getIsPrivate()) {
-        return false;
-    }
 
 
-    if(this->getTableName() != other.getTableName()) {
 
-        return false;
-    }
 
     if(other.getOrdinal() != other.getOrdinal()) {
 

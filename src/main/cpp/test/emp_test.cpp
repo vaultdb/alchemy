@@ -106,7 +106,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData : bobInputData;
 
     QuerySchema schema(1);
-    schema.putField(QueryFieldDesc(0, false, "test", "test_table", types::TypeId::INTEGER32));
+    schema.putField(QueryFieldDesc(0, "test", "test_table", types::TypeId::INTEGER32));
 
     std::unique_ptr<QueryTable> inputTable(new QueryTable(tupleCount, 1, false));
     inputTable->setSchema(schema);
