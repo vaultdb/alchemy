@@ -1,6 +1,5 @@
 #include "PsqlDataProvider.h"
 #include "pq_oid_defs.h"
-#include "pqxx_compat.h"
 #include "util/type_utilities.h"
 #include <time.h>
 
@@ -86,7 +85,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
 
         srcTable = getTableName(tableId); // once per col in case of joins
 
-        QueryFieldDesc fieldDesc(i, false, colName, srcTable, type);
+        QueryFieldDesc fieldDesc(i, colName, srcTable, type);
 
        if(type == vaultdb::types::TypeId::VARCHAR) {
 
@@ -240,6 +239,24 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
 
     }
 
+pqxx::result PsqlDataProvider::query(const string &dbname, const string &query_string) const {
+    pqxx::result res;
+    try {
+        pqxx::connection c(dbname);
+        pqxx::work txn(c);
+
+        res = txn.exec(query_string);
+        txn.commit();
+
+
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+
+        throw e;
+    }
+
+    return res;
+}
 
 
 

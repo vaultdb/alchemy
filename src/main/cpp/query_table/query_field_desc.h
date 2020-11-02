@@ -13,7 +13,6 @@
 class QueryFieldDesc {
 
 private:
-   bool is_private_;
    std::string name_;
    std::string table_name;
     size_t string_length_; // for varchars
@@ -26,7 +25,6 @@ public:
 
     [[nodiscard]] int getOrdinal() const;
 
-  [[nodiscard]] bool getIsPrivate() const;
 
   [[nodiscard]] const std::string &getName() const;
 
@@ -38,23 +36,20 @@ public:
 
   QueryFieldDesc(const QueryFieldDesc &f)
       :
-        is_private_(f.is_private_), name_(f.name_), table_name(f.table_name), string_length_(f.string_length_), type_(f.type_), ordinal_(f.ordinal_)
+         name_(f.name_), table_name(f.table_name), string_length_(f.string_length_), type_(f.type_), ordinal_(f.ordinal_)
         {};
 
-  QueryFieldDesc(const QueryFieldDesc &f, vaultdb::types::TypeId type,
-                 bool is_private)
-      : is_private_(is_private),  name_(f.name_),   table_name(f.table_name),
+  QueryFieldDesc(const QueryFieldDesc &f, vaultdb::types::TypeId type)
+      :  name_(f.name_),   table_name(f.table_name),
          string_length_(0), type_(type), ordinal_(f.ordinal_)
         {};
 
   QueryFieldDesc(const QueryFieldDesc &f, int col_num)
-      : is_private_(f.is_private_),
-        name_(f.name_), table_name(f.table_name), string_length_(0), type_(f.type_), ordinal_(col_num)
+      : name_(f.name_), table_name(f.table_name), string_length_(0), type_(f.type_), ordinal_(col_num)
         {};
 
-  QueryFieldDesc(int anOrdinal, bool is_priv, const std::string &n,
-                 const std::string &tab, const vaultdb::types::TypeId & aType)
-      :  is_private_(is_priv), name_(n),
+  QueryFieldDesc(int anOrdinal, const std::string &n, const std::string &tab, const vaultdb::types::TypeId &aType)
+      :   name_(n),
         table_name(tab), string_length_(0), type_(aType), ordinal_(anOrdinal)
         {
             // since we convert DATEs to int32_t in both operator land and in our verification pipeline,

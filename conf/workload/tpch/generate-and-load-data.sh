@@ -44,7 +44,7 @@ else  #default setup, SF = 0.1, use pre-generated files
 fi
 
 
-dropdb $DB_NAME
+dropdb --if-exists $DB_NAME
 createdb $DB_NAME
 
 psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-load.sql
@@ -61,10 +61,10 @@ psql $DB_NAME < $CONF_PATH/set-security-policy.sql
 #Alice: nations 0-12
 #Bob: nations 13-24
 
-dropdb $ALICE_DB
+dropdb --if-exists $ALICE_DB
 createdb $ALICE_DB
 
-dropdb $BOB_DB
+dropdb --if-exists $BOB_DB
 createdb $BOB_DB
 
 

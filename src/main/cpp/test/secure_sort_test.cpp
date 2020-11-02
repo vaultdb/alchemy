@@ -22,17 +22,6 @@ DEFINE_bool(input, false, "input value");
 class SecureSortTest :  public EmpBaseTest {
 protected:
 
-    void TearDown() override {
-
-        std::string leadDb =  FLAGS_party == 1 ? "tpch_alice" : "tpch_bob";
-        pqxx::connection c("dbname=" + leadDb);
-        pqxx::work w(c);
-
-        w.exec("DROP TABLE tmp");
-
-
-    };
-
     static bool correctOrder(const QueryTuple & lhs, const QueryTuple & rhs, const SortDefinition & sortDefinition);
     static bool isSorted(const std::shared_ptr<QueryTable> & table, const SortDefinition & sortDefinition);
 
@@ -53,12 +42,12 @@ bool SecureSortTest::correctOrder(const QueryTuple &lhs, const QueryTuple &rhs, 
 
             if ((lhsVal == rhsVal).getBool()) continue;
             types::Value gt = (lhs.getField(i).getValue() > rhs.getField(i).getValue());
-            return (gt.getBool()) ? false : true;
+            return !(gt.getBool());
         }
         else if(sortDefinition[i].second == SortDirection::DESCENDING) {
             if ((lhsVal == rhsVal).getBool()) continue;
             types::Value lt = (lhsVal < rhsVal);
-            return (lt.getBool()) ? false : true;
+            return !(lt.getBool());
         }
     }
     return true;
@@ -102,7 +91,6 @@ TEST_F(SecureSortTest, tpchQ1SortClear) {
     ASSERT_TRUE(tableSorted);
 }
 
-// TODO: debug this and Q9.  Both are failing on string comparators
 TEST_F(SecureSortTest, tpchQ1Sort) {
     std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
 

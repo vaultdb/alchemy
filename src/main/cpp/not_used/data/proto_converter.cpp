@@ -26,7 +26,7 @@ ProtoToQuerySchema(const dbquery::Schema &proto_schema) {
   for (int i = 0; i < proto_schema.numcolumns(); i++) {
     auto col_info = proto_schema.column().at(i);
     col_info.type();
-    QueryFieldDesc fd(i, col_info.is_private(), col_info.name(),
+    QueryFieldDesc fd(i, col_info.name(),
                       col_info.tablename(), ProtoToTypeId(col_info.type()));
       s->putField(fd);
   }

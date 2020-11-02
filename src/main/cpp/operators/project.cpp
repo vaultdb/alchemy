@@ -44,7 +44,7 @@ std::shared_ptr<QueryTable> Project::runSelf() {
         bool isPrivate = expression.isPrivate();
         std::string alias = expression.getAlias();
 
-        QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, isPrivate, alias, "", type); // NYI: string length for expressions
+        QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, alias, "", type); // NYI: string length for expressions
         dstSchema.putField(fieldDesc);
 
         fieldOrdinals.push_back(dstOrdinal);

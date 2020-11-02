@@ -178,7 +178,9 @@ emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount
         input += " ";
     }
 
-    bool *bools = DataUtilities::bytesToBool((int8_t *) input.c_str(), stringByteCount);
+    std::string inputReversed = input;
+    std::reverse(inputReversed.begin(), inputReversed.end());
+    bool *bools = DataUtilities::bytesToBool((int8_t *) inputReversed.c_str(), stringByteCount);
 
     emp::Integer result(stringBitCount, 0L, dstParty);
     if(myParty == dstParty) {

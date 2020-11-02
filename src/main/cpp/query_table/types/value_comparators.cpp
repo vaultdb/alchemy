@@ -37,47 +37,12 @@ Value Value::operator>=(const Value &rhs) const {
 
         case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::ENCRYPTED_INTEGER64:
-      //  case TypeId::ENCRYPTED_VARCHAR:
+        case TypeId::ENCRYPTED_VARCHAR:
          {
             emp::Integer lhsVal = this->getEmpInt();
             emp::Integer rhsVal = rhs.getEmpInt();
             return Value(lhsVal >= rhsVal);
         }
-        case TypeId::ENCRYPTED_VARCHAR:
-            {
-                emp::Integer lhsVal = this->getEmpInt();
-                emp::Integer rhsVal = rhs.getEmpInt();
-                size_t charCount = lhsVal.size() / 8;
-                assert(lhsVal.size() % 8 == 0); // no modulus
-
-                // test it one character at a time
-                // split it into an array of chars
-
-                emp::Integer lhsChars[charCount];
-                emp::Integer rhsChars[charCount];
-
-                for(int i = 0; i < charCount; ++i) {
-                    lhsChars[i] = emp::Integer(8, 'x');
-                    memcpy(&(lhsVal.bits[i * 8]), &(lhsChars[i].bits[0]), 8);
-
-                    rhsChars[i] = emp::Integer(8, 'x');
-                    memcpy(&(rhsVal.bits[i * 8]), &(rhsChars[i].bits[0]), 8);
-
-                }
-
-                emp::Bit geq = lhsChars[0].geq(rhsChars[0]); // bootstrap
-                emp::Bit eq = lhsChars[0].equal(rhsChars[0]); // has it been equal so far?
-
-                // while it remains equal
-                for(int i = 1; i < charCount; ++i) {
-	                // if it's been matched all along, save lhsChar[i] >= rhsChar[i]
-                    geq = emp::If(eq, lhsChars[i].geq(rhsChars[i]), geq);
-                    eq = eq & lhsChars[i].equal(rhsChars[i]);
-	            }
-            	return geq;
-
-            }
-
         case TypeId::ENCRYPTED_FLOAT32: {
             emp::Float lhsVal = this->getEmpFloat32();
             emp::Float rhsVal = rhs.getEmpFloat32();
@@ -117,7 +82,8 @@ Value Value::operator>=(const Value &rhs) const {
 }
 
 Value Value::operator>(const Value &rhs) const {
-  return !(rhs >= *static_cast<const Value *>(this));
+
+    return !(rhs >= *static_cast<const Value*>(this));
 }
 
 Value Value::operator<(const Value &rhs) const {
@@ -157,7 +123,8 @@ Value Value::operator==(const Value &rhs) const {
         case TypeId::ENCRYPTED_VARCHAR: {
             emp::Integer lhsVal = this->getEmpInt();
             emp::Integer rhsVal = rhs.getEmpInt();
-            return Value(lhsVal == rhsVal);
+            emp::Bit eq = lhsVal.equal(rhsVal);
+            return Value(eq);
         }
 
         case TypeId::ENCRYPTED_FLOAT32: {

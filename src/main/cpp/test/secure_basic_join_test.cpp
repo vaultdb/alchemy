@@ -95,7 +95,7 @@ std::shared_ptr<QueryTable> observed = joinOp->run()->reveal();
 
 std::cout << "customer input: " << std::endl << customerInput->getOutput()->reveal()->toString(true);
 std::cout << "orders input: " << std::endl << ordersInput->getOutput()->reveal()->toString(true);
-std::cout << "join output: " << std::endl << observed->reveal()->toString(true) << std::endl;
+std::cout << "join output: " << std::endl << observed->toString(true) << std::endl;
 
 
 ASSERT_EQ(*expected, *observed);

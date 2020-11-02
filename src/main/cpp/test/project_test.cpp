@@ -1,8 +1,3 @@
-//
-// Created by Jennie Rogers on 9/2/20.
-//
-
-
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
@@ -93,6 +88,7 @@ TEST_F(ProjectionTest, q3Lineitem) {
     std::shared_ptr<QueryTable> observed = project->run();
 
     std::cout << "Observed query results: \n" << *observed << std::endl;
+
 
     ASSERT_EQ(*expected, *observed);
 }
