@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/15/20.
-//
-
 #ifndef _OPERATOR_H
 #define _OPERATOR_H
 
@@ -20,7 +16,7 @@ protected:
 
 
 public:
-    Operator() {} // initialize children and parent later
+    Operator() = default;; // initialize children and parent later
     Operator(std::shared_ptr<Operator> &child);
     Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs);
     ~Operator() {};

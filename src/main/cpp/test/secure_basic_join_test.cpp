@@ -23,20 +23,17 @@ DEFINE_bool(input, false, "input value");
 class SecureBasicJoinTest : public EmpBaseTest {
 protected:
 
-    const std::string unionedDb = "tpch_unioned";
-    std::string dbName = "tpch_unioned"; // default
+
 
     const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy \n"
                                            "FROM customer  \n"
                                            "WHERE c_custkey <= 5 \n"
-                                           "ORDER BY c_custkey \n"
-                                           "LIMIT 2";
+                                           "ORDER BY c_custkey";
 
     const std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy \n"
                                   "FROM orders \n"
                                   "WHERE o_custkey <= 5 \n"
-                                  "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority \n"
-                                  "LIMIT 2";
+                                  "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     const std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
                                     "FROM lineitem "
@@ -75,6 +72,10 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
 
 std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
 
+std::cout << "Expected output query: " << expectedResultSql << std::endl;
+
+std::cout << "Expected output: \n" << *expected << std::endl;
+
 std::shared_ptr<Operator> customerInput(new SecureSqlInput(dbName, customerSql, true, netio, FLAGS_party));
 std::shared_ptr<Operator> ordersInput(new SecureSqlInput(dbName, ordersSql, true, netio, FLAGS_party));
 
@@ -86,16 +87,16 @@ std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredica
 
 BasicJoin *joinOp = new BasicJoin(customerOrdersPredicate, ordersInput, customerInput);
 
-std::shared_ptr<QueryTable> observed = joinOp->run()->reveal();
+std::shared_ptr<QueryTable> joinResult = joinOp->run()->reveal();
 
 
-//SortDefinition  sortDefinition = getSortDefinition(joinResult->getSchema().getFieldCount());
-//auto *sortOp  = new Sort(sortDefinition, joinOp->getPtr());
-//std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
+SortDefinition  sortDefinition = getSortDefinition(joinResult->getSchema().getFieldCount());
+auto *sortOp  = new Sort(sortDefinition, joinOp->getPtr());
+std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
 
 std::cout << "customer input: " << std::endl << customerInput->getOutput()->reveal()->toString(true);
 std::cout << "orders input: " << std::endl << ordersInput->getOutput()->reveal()->toString(true);
-std::cout << "join output: " << std::endl << observed->reveal()->toString(true) << std::endl;
+std::cout << "join output: " << std::endl << observed->toString(true) << std::endl;
 
 
 ASSERT_EQ(*expected, *observed);

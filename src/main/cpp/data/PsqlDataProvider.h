@@ -31,6 +31,7 @@ private:
     size_t getVarCharLength(string table, string column) const;
 
     string getTableName(int oid);
+    pqxx::result query(const std::string &  dbname, const std::string  & query_string) const;
 };
 
 

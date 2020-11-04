@@ -23,8 +23,12 @@ protected:
 
 
     emp::NetIO *netio;
+    const std::string unionedDb = "tpch_unioned";
     const std::string aliceDb = "tpch_alice";
     const std::string bobDb = "tpch_bob";
+
+    std::string dbName = unionedDb; // default, set in setUp()
+
 
     //static void SetUpTestCase();
     //static void TearDownTestCase();

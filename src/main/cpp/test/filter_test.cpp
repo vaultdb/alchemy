@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/16/20.
-//
-
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>

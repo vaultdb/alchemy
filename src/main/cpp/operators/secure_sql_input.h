@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/15/20.
-//
-
 #ifndef SECURE_SQL_INPUT_H
 #define SECURE_SQL_INPUT_H
 

@@ -70,7 +70,7 @@ message(STATUS "SSL Libs:  ${OPENSSL_LIBRARIES}")
 #Testing macro
 macro (add_test_with_lib _name libs)
 	add_executable(${_name} "test/${_name}.cpp")
-	target_link_libraries(${_name} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES}    ${PROTOBUF_LIBRARIES}  ${GRPC_LIBRARIES}  ${PQXX_LIBRARIES}  ${libs})
+	target_link_libraries(${_name} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES}     ${PQXX_LIBRARIES}  ${libs})
 endmacro()
 
 

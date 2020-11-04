@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/15/20.
-//
-
 #include <util/emp_manager.h>
 #include "secure_sql_input.h"
 

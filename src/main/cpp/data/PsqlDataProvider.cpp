@@ -1,6 +1,5 @@
 #include "PsqlDataProvider.h"
 #include "pq_oid_defs.h"
-#include "pqxx_compat.h"
 #include "util/type_utilities.h"
 #include <time.h>
 
@@ -240,6 +239,24 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
 
     }
 
+pqxx::result PsqlDataProvider::query(const string &dbname, const string &query_string) const {
+    pqxx::result res;
+    try {
+        pqxx::connection c(dbname);
+        pqxx::work txn(c);
+
+        res = txn.exec(query_string);
+        txn.commit();
+
+
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+
+        throw e;
+    }
+
+    return res;
+}
 
 
 

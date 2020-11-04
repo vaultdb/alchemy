@@ -34,9 +34,6 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(EMP REQUIRED)
 
 find_library(EMP_LIBRARIES NAMES emp-tool)
-find_library(PROTOBUF_LIBRARY protobuf)
-find_library(GRPC++ grpc++)
-find_library(GRPC grpc)
 find_library(GFLAGS_LIBRARY gflags)
 find_library(DL dl)
 
@@ -46,34 +43,7 @@ find_library(PQXX_LIBRARY pqxx)
 find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
 
-get_filename_component(vdb_proto "../proto/dbquery.proto" ABSOLUTE)
-get_filename_component(vdb_proto_path "${vdb_proto}" PATH)
-set(vdb_proto_srcs "rpc/dbquery.pb.cc")
-set(vdb_proto_hdrs "rpc/dbquery.pb.h")
 
-#find protobuf
-execute_process(COMMAND which protoc OUTPUT_VARIABLE PROTOC)
-string(REGEX REPLACE "\n$" "" PROTOC "${PROTOC}")  #delete trailing newline
-#execute_process(COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})
-
-
-add_custom_target(
-		protobuf_generate ALL
-		DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/placeholder.h
-)
-
-add_custom_command(
-		OUTPUT
-		${CMAKE_CURRENT_BINARY_DIR}/placeholder.h  # fake! unconditionally triggers regenerating code
-		${CMAKE_CURRENT_BINARY_DIR}/${vdb_proto_srcs}    # real generated file
-		${CMAKE_CURRENT_BINARY_DIR}/${vdb_proto_hdrs}    # real generated file
-		COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})
-
-
-#regenerate protobuf for every build
-#add_custom_target(TARGET protobuf-gen ALL
-#		PRE_BUILD
-#		COMMAND ${PROTOC} --cpp_out ${CMAKE_CURRENT_BINARY_DIR}/rpc -I${vdb_proto_path} ${vdb_proto})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc
 		${CMAKE_CURRENT_BINARY_DIR}/data
@@ -83,11 +53,10 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc
 
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR} ${GRPC_INCLUDE_DIR})
 
-link_directories(${CMAKE_SOURCE_DIR}/lib)
+#link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 
 set(sources
-		${vdb_proto_srcs}
 		operators/secure_aggregate.cpp
         operators/sort.cpp
 		operators/filter.cpp
@@ -98,10 +67,7 @@ set(sources
 		query_table/query_field_desc.cpp
 		query_table/query_schema.cpp
 		query_table/query_table.cpp
-		data/pqxx_compat.cpp
-		data/PQDataProvider.cpp
 		data/PsqlDataProvider.cpp
-		data/proto_converter.cpp
         util/type_utilities.cpp
 		util/data_utilities.cpp
 		query_table/types/value_comparators.cpp
@@ -119,7 +85,8 @@ set(sources
 		operators/common_table_expression_input.cpp
         operators/fkey_pkey_join.cpp
 		operators/support/replace_tuple.cpp
-		operators/support/secure_replace_tuple.cpp)
+		operators/support/secure_replace_tuple.cpp
+		data/CsvReader.cpp)
 
 
 
@@ -127,7 +94,7 @@ message("verify ${OPENSSL_LIBRARIES}:${Boost_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS
 
 
 add_library(${NAME} SHARED ${sources})
-target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES} ${PROTOBUF_LIBRARY} ${PQXX_LIBRARY} ${GFLAGS_LIBRARY} pthread gtest gmock gtest_main )
+target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES}  ${PQXX_LIBRARY} ${GFLAGS_LIBRARY} pthread gtest gmock gtest_main )
 
 
 install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)

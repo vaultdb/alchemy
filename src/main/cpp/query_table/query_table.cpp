@@ -1,4 +1,6 @@
 #include <util/emp_manager.h>
+
+#include <memory>
 #include "query_table.h"
 
 QueryTuple QueryTable::getTuple(int idx) const {
@@ -22,7 +24,7 @@ QueryTable::QueryTable(const int & num_tuples, const  int & colCount, const bool
     : schema_(QuerySchema(colCount)), is_encrypted_(is_encrypted),  tupleCount_(num_tuples) {
     tuples_.resize(tupleCount_);
 
-    for(int i = 0; i < tupleCount_; ++i) {
+    for(uint32_t i = 0; i < tupleCount_; ++i) {
         tuples_[i].setFieldCount(colCount); // initialize tuples
     }
 
@@ -38,12 +40,14 @@ std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
     uint32_t tupleCount = getTupleCount();
     bool isEncrypted = (empParty == emp::XOR);
 
+    if(!this->isEncrypted())
+        return std::make_unique<QueryTable>(*this);
 
     std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, colCount, isEncrypted));
     dstTable->setSchema(schema_);
     QueryTuple srcTuple; // initialized below
 
-    for(int i = 0; i < tupleCount; ++i)  {
+    for(uint32_t i = 0; i < tupleCount; ++i)  {
         srcTuple = getTuple(i);
 
         QueryTuple dstTuple(colCount, false);
@@ -66,7 +70,7 @@ bool *QueryTable::serialize() const {
     bool *dst = new bool[dstSize];
     bool *cursor = dst;
 
-    for(int i = 0; i < tupleCount_; ++i) {
+    for(uint32_t i = 0; i < tupleCount_; ++i) {
         ((QueryTuple *) tuples_.data())->serialize(cursor, schema_);
         cursor += tupleWidth;
     }
@@ -111,7 +115,7 @@ std::string QueryTable::toString(const bool & showDummies) const {
     // show dummies case
     os <<  getSchema() << " isEncrypted? " << is_encrypted_ << std::endl;
 
-    for(int i = 0; i < getTupleCount(); ++i) {
+    for(uint32_t i = 0; i < getTupleCount(); ++i) {
         os << tuples_[i].toString(showDummies) << std::endl;
 
     }
@@ -132,7 +136,7 @@ QueryTable & QueryTable::operator=(const QueryTable & src) {
     tuples_.resize(tupleCount_);
 
 
-    for(int i = 0; i < tupleCount_; ++i) {
+    for(uint32_t i = 0; i < tupleCount_; ++i) {
         tuples_[i] = src.tuples_[i];
     }
 
@@ -152,7 +156,7 @@ QueryTable::QueryTable(const QueryTable &src) : schema_(src.getSchema()) {
 
     tuples_.resize(tupleCount_);
 
-    for(int i = 0; i < tupleCount_; ++i) {
+    for(uint32_t i = 0; i < tupleCount_; ++i) {
         tuples_[i] = src.tuples_[i];
     }
 
@@ -176,7 +180,7 @@ bool QueryTable::operator==(const QueryTable &other) const {
     if(this->getTupleCount() != other.getTupleCount()) {   return false; }
 
 
-    for(int i = 0; i < getTupleCount(); ++i) {
+    for(uint32_t i = 0; i < getTupleCount(); ++i) {
         QueryTuple *thisTuple = getTuplePtr(i);
         QueryTuple *otherTuple = other.getTuplePtr(i);
        // std::cout << "Comparing "  << thisTuple->toString(true) << " to " << otherTuple->toString(true) << std::endl;
@@ -201,9 +205,7 @@ uint32_t QueryTable::getTrueTupleCount() const {
             ++count;
         }
     }
-    for(uint32_t i = 0; i < getTupleCount(); ++i) {
 
-    }
     return count;
 }
 

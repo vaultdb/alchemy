@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 9/13/20.
-//
-
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
 #include <stdexcept>
