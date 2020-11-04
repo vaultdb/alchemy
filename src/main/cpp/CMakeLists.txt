@@ -44,7 +44,6 @@ find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
 
 
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc
 		${CMAKE_CURRENT_BINARY_DIR}/data
         ${CMAKE_CURRENT_BINARY_DIR}/operators
@@ -53,7 +52,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc
 
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR} ${GRPC_INCLUDE_DIR})
 
-#link_directories(${CMAKE_SOURCE_DIR}/lib)
+
 
 
 set(sources

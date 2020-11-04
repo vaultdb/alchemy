@@ -1,0 +1,18 @@
+#include "PQDataProvider.h"
+
+std::unique_ptr<QueryTable>
+PQDataProvider::GetQueryTable(std::string dbname, std::string query_string) {
+
+  auto proto_table = GetPqTable(dbname, query_string);
+  auto t = ProtoToQueryTable(proto_table);
+  return t;
+}
+
+
+//  a placeholder
+
+std::unique_ptr<QueryTable> PQDataProvider::GetQueryTable(std::string dbname,
+                                          std::string query_string, bool hasDummmyFlag) {
+
+    return GetQueryTable(dbname, query_string);
+}
