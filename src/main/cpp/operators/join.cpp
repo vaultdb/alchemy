@@ -63,6 +63,7 @@ QueryTuple Join::compareTuples(QueryTuple *lhs, QueryTuple *rhs, const types::Va
     QueryTuple dstTuple = concatenateTuples(lhs, rhs);
 
     types::Value dummyTag = lhs->getDummyTag() | rhs->getDummyTag() | (!predicateEval);
+
     dstTuple.setDummyTag(dummyTag);
     return dstTuple;
 }

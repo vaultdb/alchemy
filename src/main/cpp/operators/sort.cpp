@@ -56,14 +56,14 @@ void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
         if(output->isEncrypted()) {
             std::cout   << output->getTuple(lo).reveal(emp::PUBLIC);
             for(int i = 1; i < cnt; ++i) {
-                std::cout << ", " << output->getTuple(lo + i).reveal(emp::PUBLIC);
+                std::cout << ", " << output->getTuple(lo + i).reveal(emp::PUBLIC).toString(true);
             }
 
         }
         else {
             std::cout << output->getTuple(lo);
             for(int i = 1; i < cnt; ++i) {
-                std::cout << ", " << output->getTuple(lo + i);
+                std::cout << ", " << output->getTuple(lo + i).toString(true);
             }
 
         }

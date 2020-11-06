@@ -27,6 +27,6 @@ private:
     void compareAndSwap(const int & lhsIdx, const int & rhsIdx, bool invertDir);
     int powerOfLessThanTwo(const int & n);
 
-    SortDefinition getReverseSortDefinition(const SortDefinition & aSortDef);
+    static SortDefinition getReverseSortDefinition(const SortDefinition & aSortDef);
 };
 

@@ -11,13 +11,13 @@ class SecureSqlInput  : public SqlInput {
 
 
     NetIO *netio_;
-    int dstParty;
+    int srcParty;
     // depends on EmpManager being configured in the calling method
     std::shared_ptr<QueryTable> runSelf() override;
 
 
 public:
-    SecureSqlInput(std::string db, std::string sql, bool dummyTag, emp::NetIO *netio, int aDstParty) : SqlInput(db, sql, dummyTag), dstParty(aDstParty) {
+    SecureSqlInput(std::string db, std::string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty) : SqlInput(db, sql, dummyTag), srcParty(aSrcParty) {
         netio_ = netio;
     }
 

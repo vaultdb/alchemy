@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 9/13/20.
-//
-
 #include "basic_join.h"
 
 BasicJoin::BasicJoin(std::shared_ptr<BinaryPredicate> &predicateClass, std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs)  : Join(predicateClass, lhs, rhs) {}

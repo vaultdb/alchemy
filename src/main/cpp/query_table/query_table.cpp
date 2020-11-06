@@ -173,7 +173,7 @@ QueryTuple *QueryTable::getTuplePtr(const int &idx) const {
 bool QueryTable::operator==(const QueryTable &other) const {
 
     if(getSchema() != other.getSchema()) {
-        //std::cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << std::endl;
+        std::cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << std::endl;
         return false;
     }
 
@@ -183,10 +183,10 @@ bool QueryTable::operator==(const QueryTable &other) const {
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
         QueryTuple *thisTuple = getTuplePtr(i);
         QueryTuple *otherTuple = other.getTuplePtr(i);
-       // std::cout << "Comparing "  << thisTuple->toString(true) << " to " << otherTuple->toString(true) << std::endl;
+       std::cout << "Comparing "  << thisTuple->toString(true) << " to " << otherTuple->toString(true) << std::endl;
 
         if(*thisTuple != *otherTuple) {
-           // std::cout << "    Failed to match!" << std::endl;
+            std::cout << "    Failed to match!" << std::endl;
             return false;
         }
 
@@ -197,14 +197,16 @@ bool QueryTable::operator==(const QueryTable &other) const {
 
 uint32_t QueryTable::getTrueTupleCount() const {
     if(isEncrypted())
-        return getTupleCount();
+        return getTupleCount(); // encrypted -- can't reveal true count
 
     uint32_t count = 0;
-    for(auto pos = std::begin(tuples_); pos != std::end(tuples_); ++pos) {
-        if(!((*pos).getDummyTag().getBool())) {
+
+    for (auto pos = std::begin(tuples_); pos != std::end(tuples_); ++pos) {
+        if (!((*pos).getDummyTag().getBool())) {
             ++count;
         }
     }
+
 
     return count;
 }

@@ -206,6 +206,13 @@ void QueryTuple::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs, const emp::Bit
         rhs.putField(QueryField(i, rhsValue));
     }
 
+    types::Value lhsDummyTag = lhs.getDummyTag();
+    types::Value rhsDummyTag = rhs.getDummyTag();
+
+    types::Value::compareAndSwap(lhsDummyTag, rhsDummyTag, cmp);
+    lhs.setDummyTag(lhsDummyTag);
+    rhs.setDummyTag(rhsDummyTag);
+
 }
 
 bool QueryTuple::operator==(const QueryTuple &other) {
