@@ -5,7 +5,6 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
     std::shared_ptr<QueryTable> input = children[0]->getOutput();
     std::vector<ScalarAggregateImpl *> aggregators;
     QueryTuple *tuple;
-    std::cout << "Starting with " <<  input->getTupleCount() << " tuples." << std::endl;
 
     for(ScalarAggregateDefinition agg : aggregateDefinitions) {
         aggregators.push_back(aggregateFactory(agg.type, agg.ordinal));
