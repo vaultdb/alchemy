@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 9/21/20.
-//
-
 #ifndef _REPLACE_TUPLE_H
 #define _REPLACE_TUPLE_H
 
@@ -22,7 +18,7 @@ class ReplaceTuple {
 
 public:
     explicit ReplaceTuple(std::shared_ptr<QueryTable> table);
-    void conditionalWrite(const uint32_t &writeIdx, const QueryTuple &inputTuple, const types::Value &toWrite);
+    virtual void conditionalWrite(const uint32_t &writeIdx, const QueryTuple &inputTuple, const types::Value &toWrite);
 
 protected:
     std::shared_ptr<QueryTable> dstTable;

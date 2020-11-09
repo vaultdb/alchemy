@@ -18,6 +18,9 @@ namespace vaultdb {
         // are these two types implemented identically?
         // e.g., TypeId::NUMERIC is equal to TypeId::FLOAT32
         static bool typesEqual(const vaultdb::types::TypeId  & lhs, const vaultdb::types::TypeId  & rhs);
+
+        // when reading data from ascii sources like csv
+        static types::Value decodeStringValue(const std::string & strValue, const QueryFieldDesc &fieldSpec);
     };
 
 }

@@ -1,51 +1,50 @@
-o_orderkey,o_custkey,o_orderstatus,o_totalprice,o_orderdate,o_orderpriority,o_clerk,o_shippriority,o_comment,o_orderyear
-2081,11924,O,196655.24,1997-07-05,2-HIGH         ,Clerk#000000136,0,ong the regular theo,1997
-2305,4198,F,163733.47,1993-01-26,2-HIGH         ,Clerk#000000440,0,ove the furiously even acco,1993
-2756,11656,F,217886.84,1994-04-18,1-URGENT       ,Clerk#000000537,0,arefully special warho,1994
-3685,1576,F,209508.66,1992-01-17,3-MEDIUM       ,Clerk#000000954,0, sleep fluffily special ide,1992
-3910,6286,O,61515.70,1996-08-26,3-MEDIUM       ,Clerk#000000270,0,ickly. furiously final packag,1996
-6247,4657,O,41576.38,1996-11-22,3-MEDIUM       ,Clerk#000000324,0,"dle, even accounts. ca",1996
-8325,7372,F,35672.88,1994-01-15,1-URGENT       ,Clerk#000000284,0,e. regular deposits nag carefully al,1994
-9223,3022,O,229176.10,1997-08-05,4-NOT SPECIFIED,Clerk#000000785,0,ully according to the blithely ,1997
-9671,1348,O,130086.60,1995-09-13,2-HIGH         ,Clerk#000000417,0,ages boost slyly against the furiously,1995
-11077,6088,F,51368.78,1994-03-21,5-LOW          ,Clerk#000000024,0,gularly pending deposits. quick,1994
-16833,10975,O,211376.42,1997-10-14,1-URGENT       ,Clerk#000000198,0, slow platelets alongside of,1997
-18690,13363,O,221220.55,1997-09-30,4-NOT SPECIFIED,Clerk#000000048,0,ut the foxes. regula,1997
-20288,13430,O,18933.38,1996-08-21,2-HIGH         ,Clerk#000000240,0,c packages use alongs,1996
-21411,13244,O,126772.94,1997-07-13,1-URGENT       ,Clerk#000000501,0, to the blithely pendin,1997
-23714,14449,O,78237.39,1996-04-06,1-URGENT       ,Clerk#000000061,0,ites haggle carefully.,1996
-26212,1948,O,224699.71,1996-04-06,5-LOW          ,Clerk#000000055,0,special packages-- carefully regula,1996
-27840,8398,F,214891.24,1994-07-04,2-HIGH         ,Clerk#000000399,0, deposits wake blithel,1994
-29089,4573,O,253287.29,1997-03-05,4-NOT SPECIFIED,Clerk#000000584,0, affix against the slyl,1997
-33094,1690,F,60941.18,1992-08-29,2-HIGH         ,Clerk#000000567,0,symptotes. blithely expr,1992
-34240,13849,O,188087.22,1997-09-17,5-LOW          ,Clerk#000000809,0,eposits haggle slyly. regular platelets against the ,1997
-34915,8762,F,50819.99,1994-08-29,2-HIGH         ,Clerk#000000801,0,s. final accounts haggle furio,1994
-35364,1366,F,231376.51,1994-12-13,1-URGENT       ,Clerk#000000327,0, realms nag alongsid,1994
-35588,1030,F,130074.38,1993-06-14,5-LOW          ,Clerk#000000448,0,he silently ironic packages h,1993
-36935,11927,O,10187.71,1995-11-06,5-LOW          ,Clerk#000000081,0,", regular deposits are fluffily around the ",1995
-39488,1855,F,47932.98,1994-06-23,5-LOW          ,Clerk#000000918,0,"ly. ironic, special instructions sublate regula",1994
-40097,649,F,187072.13,1994-01-10,5-LOW          ,Clerk#000000429,0,refully even instruc,1994
-40643,1300,P,241971.22,1995-04-06,1-URGENT       ,Clerk#000000659,0, wake instructions:,1995
-41063,9481,F,281995.90,1992-11-22,5-LOW          ,Clerk#000000580,0,inst the slyly regular instruc,1992
-44544,12419,O,227122.41,1998-03-04,1-URGENT       ,Clerk#000000154,0,ing to the bold requests. sl,1998
-48513,10342,O,158186.50,1995-11-18,2-HIGH         ,Clerk#000000261,0,ng dolphins cajole a,1995
-49408,7826,O,145591.49,1998-06-22,3-MEDIUM       ,Clerk#000000639,0,r foxes are-- deposits nag arou,1998
-49639,10087,F,43715.09,1993-10-23,2-HIGH         ,Clerk#000000831,0,g furiously across t,1993
-50597,12109,O,251604.04,1998-07-21,2-HIGH         ,Clerk#000000890,0,"regular, final patterns",1998
-51459,932,O,101862.09,1996-01-24,1-URGENT       ,Clerk#000000234,0,heodolites cajole slyly,1996
-51744,4753,O,75268.75,1996-10-28,2-HIGH         ,Clerk#000000251,0,uriously besides the bold,1996
-51910,10861,O,214653.08,1995-05-28,5-LOW          ,Clerk#000000717,0,y fluffily fluffy requests. even theodolites ,1995
-52387,8980,O,148691.65,1996-09-19,3-MEDIUM       ,Clerk#000000247,0,e slyly even accounts?,1996
-52835,8075,O,198152.60,1997-09-13,4-NOT SPECIFIED,Clerk#000000006,0,p furiously. furiously unusual reques,1997
-53285,1792,F,18294.62,1992-05-25,1-URGENT       ,Clerk#000000774,0,efully special ideas. notornis across the fluff,1992
-54054,11458,O,162597.02,1996-01-18,4-NOT SPECIFIED,Clerk#000000172,0,ess deposits-- slyly ironi,1996
-54465,6292,O,24012.96,1997-08-10,2-HIGH         ,Clerk#000000018,0,final packages engage bl,1997
-54914,10084,O,266430.36,1995-08-29,1-URGENT       ,Clerk#000000178,0, requests. bold accounts detect bli,1995
-61347,2657,F,71979.97,1993-05-16,1-URGENT       ,Clerk#000000271,0,usly final ideas eat carefully flu,1993
-63395,4660,F,117946.60,1994-04-17,3-MEDIUM       ,Clerk#000000240,0,boost against the fluffily regular requests,1994
-64773,1421,O,287829.53,1997-03-17,5-LOW          ,Clerk#000000985,0,uses solve accounts. slyly p,1997
-65671,1438,O,267344.96,1995-10-26,3-MEDIUM       ,Clerk#000000119,0,"attainments. idle, ironic acc",1995
-68226,10367,F,60540.81,1993-12-17,2-HIGH         ,Clerk#000000456,0,after the requests. even foxes affix carefully aft,1993
-68903,14651,F,170410.56,1993-04-03,4-NOT SPECIFIED,Clerk#000000914,0,ickly unusual instru,1993
-71681,5749,O,127679.07,1996-09-26,5-LOW          ,Clerk#000000111,0,ongside of the slyly pending deposit,1996
-71907,12316,F,125030.95,1992-07-17,1-URGENT       ,Clerk#000000833,0,"unusual, ironic instructio",1992
+1,3691,O,194029.55,1996-01-02,5-LOW          ,Clerk#000000951,0,nstructions sleep furiously among ,1996
+2,7801,O,60951.63,1996-12-01,1-URGENT       ,Clerk#000000880,0," foxes. pending accounts at the pending, silent asymptot",1996
+3,12332,F,247296.05,1993-10-14,5-LOW          ,Clerk#000000955,0,sly final accounts boost. carefully regular ideas cajole carefully. depos,1993
+4,13678,O,53829.87,1995-10-11,5-LOW          ,Clerk#000000124,0,"sits. slyly regular warthogs cajole. regular, regular theodolites acro",1995
+5,4450,F,139660.54,1994-07-30,5-LOW          ,Clerk#000000925,0,quickly. bold deposits sleep slyly. packages use slyly,1994
+6,5563,F,65843.52,1992-02-21,4-NOT SPECIFIED,Clerk#000000058,0,"ggle. special, final requests are against the furiously specia",1992
+7,3914,O,231037.28,1996-01-10,2-HIGH         ,Clerk#000000470,0,ly special requests ,1996
+32,13006,O,166802.63,1995-07-16,2-HIGH         ,Clerk#000000616,0,"ise blithely bold, regular requests. quickly unusual dep",1995
+33,6697,F,118518.56,1993-10-27,3-MEDIUM       ,Clerk#000000409,0,uriously. furiously final request,1993
+34,6101,O,75662.77,1998-07-21,3-MEDIUM       ,Clerk#000000223,0,ly final packages. fluffily final deposits wake blithely ideas. spe,1998
+35,12760,O,192885.43,1995-10-23,4-NOT SPECIFIED,Clerk#000000259,0,zzle. carefully enticing deposits nag furio,1995
+36,11527,O,72196.43,1995-11-03,1-URGENT       ,Clerk#000000358,0, quick packages are blithely. slyly silent accounts wake qu,1995
+37,8612,F,156440.15,1992-06-03,3-MEDIUM       ,Clerk#000000456,0,kly regular pinto beans. carefully unusual waters cajole never,1992
+38,12484,O,64695.26,1996-08-21,4-NOT SPECIFIED,Clerk#000000604,0,haggle blithely. furiously express ideas haggle blithely furiously regular re,1996
+39,8177,O,307811.89,1996-09-20,3-MEDIUM       ,Clerk#000000659,0,"ole express, ironic requests: ir",1996
+64,3212,F,30616.90,1994-07-16,3-MEDIUM       ,Clerk#000000661,0,wake fluffily. sometimes ironic pinto beans about the dolphin,1994
+65,1627,P,99763.79,1995-03-18,1-URGENT       ,Clerk#000000632,0,ular requests are blithely pending orbits-- even requests against the deposit,1995
+66,12920,F,100991.26,1994-01-20,5-LOW          ,Clerk#000000743,0,y pending requests integrate,1994
+67,5662,O,167270.36,1996-12-19,4-NOT SPECIFIED,Clerk#000000547,0,symptotes haggle slyly around the furiously iron,1996
+68,2855,O,305815.83,1998-04-18,3-MEDIUM       ,Clerk#000000440,0, pinto beans sleep carefully. blithely ironic deposits haggle furiously acro,1998
+69,8449,F,228015.94,1994-06-04,4-NOT SPECIFIED,Clerk#000000330,0, depths atop the slyly thin deposits detect among the furiously silent accou,1994
+70,6434,F,133507.10,1993-12-18,5-LOW          ,Clerk#000000322,0, carefully ironic request,1993
+71,338,O,244449.86,1998-01-24,4-NOT SPECIFIED,Clerk#000000271,0, express deposits along the blithely regul,1998
+96,10778,F,72504.36,1994-04-17,2-HIGH         ,Clerk#000000395,0,oost furiously. pinto,1994
+97,2107,F,128590.11,1993-01-29,3-MEDIUM       ,Clerk#000000547,0,hang blithely along the regular accounts. furiously even ideas after the,1993
+98,10448,F,62956.90,1994-09-25,1-URGENT       ,Clerk#000000448,0,c asymptotes. quickly regular packages should have to nag re,1994
+99,8891,F,136624.34,1994-03-13,4-NOT SPECIFIED,Clerk#000000973,0,e carefully ironic packages. pending,1994
+100,14701,O,204408.59,1998-02-28,4-NOT SPECIFIED,Clerk#000000577,0,heodolites detect slyly alongside of the ent,1998
+101,2800,O,142434.13,1996-03-17,3-MEDIUM       ,Clerk#000000419,0,ding accounts above the slyly final asymptote,1996
+102,73,O,172239.95,1997-05-09,2-HIGH         ,Clerk#000000596,0, slyly according to the asymptotes. carefully final packages integrate furious,1997
+103,2911,O,147675.81,1996-06-20,4-NOT SPECIFIED,Clerk#000000090,0,ges. carefully unusual instructions haggle quickly regular f,1996
+128,7396,F,57495.50,1992-06-15,1-URGENT       ,Clerk#000000385,0,ns integrate fluffily. ironic asymptotes after the regular excuses nag around ,1992
+129,7114,F,273469.52,1992-11-19,5-LOW          ,Clerk#000000859,0,ing tithes. carefully pending deposits boost about the silently express ,1992
+130,3697,F,169065.69,1992-05-08,2-HIGH         ,Clerk#000000036,0,"le slyly unusual, regular packages? express deposits det",1992
+131,9275,F,143898.91,1994-06-08,3-MEDIUM       ,Clerk#000000625,0,after the fluffily special foxes integrate s,1994
+132,2641,F,180897.80,1993-06-11,3-MEDIUM       ,Clerk#000000488,0,sits are daringly accounts. carefully regular foxes sleep slyly about the,1993
+133,4400,O,120535.39,1997-11-29,1-URGENT       ,Clerk#000000738,0,usly final asymptotes ,1997
+134,620,F,203218.79,1992-05-01,4-NOT SPECIFIED,Clerk#000000711,0,lar theodolites boos,1992
+135,6049,O,280793.15,1995-10-21,4-NOT SPECIFIED,Clerk#000000804,0,l platelets use according t,1995
+160,8251,O,114252.21,1996-12-19,4-NOT SPECIFIED,Clerk#000000342,0,thely special sauternes wake slyly of t,1996
+161,1663,F,22632.04,1994-08-31,2-HIGH         ,Clerk#000000322,0,carefully! special instructions sin,1994
+162,1412,O,3658.13,1995-05-08,3-MEDIUM       ,Clerk#000000378,0,"nts hinder fluffily ironic instructions. express, express excuses ",1995
+163,8776,O,172394.12,1997-09-05,3-MEDIUM       ,Clerk#000000379,0,y final packages. final foxes since the quickly even,1997
+164,79,F,315228.81,1992-10-21,5-LOW          ,Clerk#000000209,0,cajole ironic courts. slyly final ideas are slyly. blithely final Tiresias sub,1992
+165,2725,F,204566.92,1993-01-30,4-NOT SPECIFIED,Clerk#000000292,0,across the blithely regular accounts. bold,1993
+166,10783,O,152280.99,1995-09-12,2-HIGH         ,Clerk#000000440,0,"lets. ironic, bold asymptotes kindle",1995
+167,11941,F,53697.73,1993-01-04,4-NOT SPECIFIED,Clerk#000000731,0,s nag furiously bold excuses. fluffily iron,1993
+192,8257,O,151014.95,1997-11-25,5-LOW          ,Clerk#000000483,0,y unusual platelets among the final instructions integrate rut,1997
+193,7907,F,60599.97,1993-08-08,1-URGENT       ,Clerk#000000025,0,the furiously final pin,1993
+194,6173,F,169409.25,1992-04-05,3-MEDIUM       ,Clerk#000000352,0,"egular requests haggle slyly regular, regular pinto beans. asymptote",1992

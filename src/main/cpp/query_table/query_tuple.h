@@ -51,7 +51,8 @@ public:
     bool operator==(const QueryTuple & other);
     inline bool operator!=(const QueryTuple & other) { return !(*this == other);   }
 
-    static void compareAndSwap(QueryTuple & lhs, QueryTuple & rhs, const emp::Bit & cmp);
+    static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const emp::Bit & cmp);
+
 };
 
 } // namespace vaultdb

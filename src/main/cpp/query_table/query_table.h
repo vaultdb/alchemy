@@ -34,7 +34,7 @@ public:
   QueryTuple getTuple(int idx) const;
   unsigned int getTupleCount() const;
   std::string toString(const bool & showDummies = false) const;
-  void putTuple(int idx, const QueryTuple & tuple);
+  void putTuple(const int &idx, const QueryTuple & tuple);
   void setTupleDummyTag(const int & tupleIdx, const types::Value & dummyTag);
 
     QueryTuple* getTuplePtr(const int & idx)  const;

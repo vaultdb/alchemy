@@ -1,4 +1,6 @@
 #include "util/type_utilities.h"
+#include "boost/date_time/gregorian/gregorian.hpp"
+#include <string>
 
  std::string TypeUtilities::getTypeIdString(vaultdb::types::TypeId typeId) {
     switch(typeId) {
@@ -79,4 +81,45 @@ bool TypeUtilities::typesEqual(const types::TypeId &lhs, const types::TypeId &rh
 
     return false;
 
+}
+
+types::Value TypeUtilities::decodeStringValue(const string &strValue, const QueryFieldDesc &fieldSpec) {
+
+
+    switch (fieldSpec.getType()) {
+        case types::TypeId::INTEGER32: {
+            int32_t intValue = std::atoi(strValue.c_str());
+            return types::Value(intValue);
+        }
+        case types::TypeId::INTEGER64: {
+            int64_t intValue = std::atol(strValue.c_str());
+            return types::Value(intValue);
+        }
+        case types::TypeId::BOOLEAN: {
+            bool boolValue = (strValue == "1") ? true : false;
+            return types::Value(boolValue);
+        }
+        case types::TypeId::VARCHAR: {
+            std::string fieldStr = strValue;
+            while(fieldStr.length() < fieldSpec.getStringLength()) {
+                fieldStr += " ";
+            }
+            return types::Value(fieldStr);
+        }
+        case types::TypeId::FLOAT32:
+        case types::TypeId::NUMERIC: {
+            float_t floatValue = std::atof(strValue.c_str());
+            return types::Value(floatValue);
+        }
+        case types::TypeId::DATE: {
+            boost::gregorian::date date(boost::gregorian::from_string(strValue));
+            boost::gregorian::date epochStart(1970, 1, 1);
+            int64_t epochTime = (date - epochStart).days() * 24 * 3600;
+            return types::Value(epochTime);
+        }
+        default:
+            throw "Unsupported type for string decoding: " + TypeUtilities::getTypeIdString(fieldSpec.getType()) + "\n";
+
+
+    };
 }

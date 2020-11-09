@@ -47,7 +47,7 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
     } // end check for swap
 
 
-    QueryTuple::compareAndSwap(lhs, rhs, swap);
+    QueryTuple::compareAndSwap(&lhs, &rhs, swap);
 }
 /*     if((gt && direction == SortDirection::DESCENDING)  ||
                 (!gt && direction == SortDirection::ASCENDING)){

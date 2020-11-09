@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 9/22/20.
-//
-
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
 #include <stdexcept>
@@ -26,17 +22,17 @@ protected:
 
     const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy \n"
                                            "FROM customer  \n"
-                                           "WHERE c_custkey <= 5 \n"
+                                           "WHERE c_custkey < 3 \n"
                                            "ORDER BY c_custkey";
 
     const std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy \n"
                                   "FROM orders \n"
-                                  "WHERE o_custkey <= 5 \n"
+                                  "WHERE o_custkey < 3 \n"
                                   "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     const std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy \n"
                                     "FROM lineitem \n"
-                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 5)  \n"
+                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < 3)  \n"
                                     "ORDER BY l_orderkey, revenue ";
 
     // sort all columns one after another

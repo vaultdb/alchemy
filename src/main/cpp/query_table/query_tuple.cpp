@@ -191,27 +191,29 @@ QueryTuple QueryTuple::reveal(const int &empParty) const {
 
 }
 
-void QueryTuple::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs, const emp::Bit & cmp) {
 
-    assert(lhs.getFieldCount() == rhs.getFieldCount());
 
-    for(int i = 0; i < lhs.getFieldCount(); ++i) {
-        types::Value lhsValue = lhs.getField(i).getValue();
-        types::Value rhsValue = rhs.getField(i).getValue();
+void QueryTuple::compareAndSwap(QueryTuple *lhs, QueryTuple *rhs, const emp::Bit & cmp) {
+
+    assert(lhs->getFieldCount() == rhs->getFieldCount());
+
+    for(int i = 0; i < lhs->getFieldCount(); ++i) {
+        types::Value lhsValue = lhs->getField(i).getValue();
+        types::Value rhsValue = rhs->getField(i).getValue();
 
 
         types::Value::compareAndSwap(lhsValue, rhsValue, cmp);
 
-        lhs.putField(QueryField(i, lhsValue));
-        rhs.putField(QueryField(i, rhsValue));
+        lhs->putField(QueryField(i, lhsValue));
+        rhs->putField(QueryField(i, rhsValue));
     }
 
-    types::Value lhsDummyTag = lhs.getDummyTag();
-    types::Value rhsDummyTag = rhs.getDummyTag();
+    types::Value lhsDummyTag = lhs->getDummyTag();
+    types::Value rhsDummyTag = rhs->getDummyTag();
 
     types::Value::compareAndSwap(lhsDummyTag, rhsDummyTag, cmp);
-    lhs.setDummyTag(lhsDummyTag);
-    rhs.setDummyTag(rhsDummyTag);
+    lhs->setDummyTag(lhsDummyTag);
+    rhs->setDummyTag(rhsDummyTag);
 
 }
 

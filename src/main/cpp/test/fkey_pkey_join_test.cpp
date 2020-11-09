@@ -1,10 +1,3 @@
-//
-// Created by Jennie Rogers on 9/21/20.
-//
-//
-// Created by Jennie Rogers on 9/13/20.
-//
-
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
 #include <stdexcept>
@@ -68,7 +61,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
     customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
     std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, false));
 
-    auto *joinOp = new ForeignKeyPrimaryKeyJoin(customerOrdersPredicate, ordersInput, customerInput);
+    auto *joinOp = new KeyedJoin(customerOrdersPredicate, ordersInput, customerInput);
 
     std::shared_ptr<QueryTable> observed = joinOp->run();
 
@@ -94,7 +87,6 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
                                                                                                              "FROM cross_product \n"
                                                                                                              "WHERE matched";
 
-    std::cout << "Expected results SQL: " << expectedResultSql <<  std::endl;
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
@@ -106,7 +98,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
     lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
     std::shared_ptr<BinaryPredicate> lineitemOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, false));
 
-    auto *joinOp = new ForeignKeyPrimaryKeyJoin(lineitemOrdersPredicate, lineitemInput, ordersInput);
+    auto *joinOp = new KeyedJoin(lineitemOrdersPredicate, lineitemInput, ordersInput);
 
     std::shared_ptr<QueryTable> observed = joinOp->run();
 
@@ -159,9 +151,9 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<BinaryPredicate> lineitemOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, false));
 
 
-    auto *customerOrdersJoin = new ForeignKeyPrimaryKeyJoin(customerOrdersPredicate, ordersInput, customerInput);
+    auto *customerOrdersJoin = new KeyedJoin(customerOrdersPredicate, ordersInput, customerInput);
 
-    auto *fullJoin = new ForeignKeyPrimaryKeyJoin(lineitemOrdersPredicate, lineitemInput, customerOrdersJoin->getPtr());
+    auto *fullJoin = new KeyedJoin(lineitemOrdersPredicate, lineitemInput, customerOrdersJoin->getPtr());
 
 
     std::shared_ptr<QueryTable> observed = fullJoin->run();

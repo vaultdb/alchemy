@@ -1,18 +1,14 @@
-//
-// Created by Jennie Rogers on 9/21/20.
-//
-
 #include <operators/support/secure_replace_tuple.h>
 #include "fkey_pkey_join.h"
 
-ForeignKeyPrimaryKeyJoin::ForeignKeyPrimaryKeyJoin(std::shared_ptr<BinaryPredicate> &predicateClass,
-                                                   std::shared_ptr<Operator> &foreignKey,
-                                                   std::shared_ptr<Operator> &primaryKey) : Join(predicateClass,
+KeyedJoin::KeyedJoin(std::shared_ptr<BinaryPredicate> &predicateClass,
+                     std::shared_ptr<Operator> &foreignKey,
+                     std::shared_ptr<Operator> &primaryKey) : Join(predicateClass,
                                                                                                  foreignKey,
                                                                                                  primaryKey) {}
 
 
-std::shared_ptr<QueryTable> ForeignKeyPrimaryKeyJoin::runSelf() {
+std::shared_ptr<QueryTable> KeyedJoin::runSelf() {
     std::shared_ptr<QueryTable> foreignKeyTable = children[0]->getOutput();
     std::shared_ptr<QueryTable> primaryKeyTable = children[1]->getOutput();
     QueryTuple *lhsTuple, *rhsTuple;
@@ -31,7 +27,7 @@ std::shared_ptr<QueryTable> ForeignKeyPrimaryKeyJoin::runSelf() {
     // output size, colCount, isEncrypted
     output = std::shared_ptr<QueryTable>(new QueryTable(outputTupleCount, outputSchema.getFieldCount(), foreignKeyTable->isEncrypted() | primaryKeyTable->isEncrypted()));
     output->setSchema(outputSchema);
-    ReplaceTuple replaceTuple = (foreignKeyTable->isEncrypted()) ? SecureReplaceTuple(output) : ReplaceTuple(output);
+    ReplaceTuple *replaceTuple = (foreignKeyTable->isEncrypted()) ? new SecureReplaceTuple(output) : new ReplaceTuple(output);
 
 
     // TODO: create dst tuple and populate with LHS value
@@ -44,8 +40,7 @@ std::shared_ptr<QueryTable> ForeignKeyPrimaryKeyJoin::runSelf() {
         rhsTuple = primaryKeyTable->getTuplePtr(0);
         predicateEval = predicate->predicateCall(lhsTuple, rhsTuple);
         dstTuple = compareTuples(lhsTuple, rhsTuple, predicateEval);
-        // unconditionally write the first time so it gets initialized.  Some matches may  not happen if an input has a public filter before it.
-        // Here the output for this lhs tuple is a dummy
+        // unconditional write to first one to ensure it is initialized
         output->putTuple(i, dstTuple);
 
         for(uint32_t j = 1; j < primaryKeyTable->getTupleCount(); ++j) {
@@ -54,11 +49,17 @@ std::shared_ptr<QueryTable> ForeignKeyPrimaryKeyJoin::runSelf() {
 
             // std::cout << "Lhs tuple: " << lhsTuple->toString(true) << " rhs tuple: " << rhsTuple->toString(true) << std::endl;
              dstTuple = compareTuples(lhsTuple, rhsTuple, predicateEval);
+             //QueryTuple::compareAndSwap(dstTuple, newDstTuple, predicateEval);
 
             //std::cout << "Proposed output tuple: " << dstTuple.toString(true) << std::endl;
-            replaceTuple.conditionalWrite(i, dstTuple, predicateEval);
+
+            replaceTuple->conditionalWrite(i, dstTuple, predicateEval);
         }
+
     }
+
+    delete replaceTuple;
+
     return output;
 
 }

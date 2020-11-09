@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 9/21/20.
-//
-
 #include "secure_replace_tuple.h"
 
 SecureReplaceTuple::SecureReplaceTuple(std::shared_ptr<QueryTable> table) : ReplaceTuple(table) {}
@@ -10,19 +6,22 @@ void SecureReplaceTuple::conditionalWrite(const uint32_t &writeIdx, const QueryT
                                           const types::Value &toWrite) {
 
     assert(dstTable->isEncrypted());
+
+    QueryTuple srcTupleCopy(srcTuple);
     QueryTuple *dstTuple = dstTable->getTuplePtr(writeIdx);
-    assert(srcTuple.getFieldCount() == dstTuple->getFieldCount());
     emp::Bit writeCondition = toWrite.getEmpBit();
 
-    for(uint32_t i = 0; i < dstTuple->getFieldCount();  ++i) {
-        types::Value dstVal = dstTuple->getField(i).getValue();
-        types::Value srcVal = srcTuple.getField(i).getValue();
-        // only write if it is a match
-        dstVal = types::Value::obliviousIf(writeCondition, srcVal, dstVal);
-        QueryField dstField(i, dstVal);
-        dstTuple->putField(dstField);
+    for(int i = 0; i < dstTuple->getFieldCount(); ++i) {
+        types::Value originalValue = dstTuple->getField(i).getValue();
+        types::Value newValue = srcTuple.getField(i).getValue();
+
+        types::Value output = types::Value::obliviousIf(writeCondition, newValue, originalValue);
+        dstTuple->putField(QueryField(i, output));
     }
+    types::Value originalDummyTag = dstTuple->getDummyTag();
+    types::Value newDummyTag = srcTuple.getDummyTag();
 
-
+    types::Value outputDummyTag = types::Value::obliviousIf(writeCondition, newDummyTag, originalDummyTag);
+    dstTuple->setDummyTag(outputDummyTag);
 
 }

@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 9/21/20.
-//
-
 #include "replace_tuple.h"
 
 ReplaceTuple::ReplaceTuple(std::shared_ptr<QueryTable> table) {
