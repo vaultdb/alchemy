@@ -47,6 +47,8 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
         return output;
 }
 
+
+// TODO: update aggregate factory with min/max/avg
 ScalarAggregateImpl *ScalarAggregate::aggregateFactory(const AggregateId &aggregateType, const uint32_t & ordinal) const {
     switch(aggregateType) {
         case AggregateId::COUNT:

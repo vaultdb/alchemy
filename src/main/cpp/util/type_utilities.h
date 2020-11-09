@@ -24,6 +24,7 @@ namespace vaultdb {
 
         static types::Value getZero(types::TypeId & aType);
 
+        types::Value getOne(types::TypeId &aType);
     };
 
 }

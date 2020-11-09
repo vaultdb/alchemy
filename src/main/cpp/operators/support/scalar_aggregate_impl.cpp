@@ -57,3 +57,42 @@ types::TypeId ScalarSum::getType() {
     assert(initialized);
     return runningSum.getType();
 }
+
+
+/*
+
+void ScalarAverage::initialize(const QueryTuple &tuple) {
+
+    assert(!tuple.isEncrypted());
+    types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
+    types::TypeId sumType = tupleVal.getType();
+
+    // initialize member variable for use in accumulate()
+    zero = TypeUtilities::getZero(sumType);
+    runningSum = tuple.getDummyTag().getBool() ? zero : tupleVal;
+    runningCount = tuple.getDummyTag().getBool() ? zero : one;
+    initialized = true;
+
+}
+
+void ScalarAverage::accumulate(const QueryTuple &tuple) {
+
+    assert(!tuple.isEncrypted());
+    assert(initialized);
+
+    types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
+    types::Value toAdd = tuple.getDummyTag().getBool() ? zero : tupleVal;
+    runningSum =  runningSum + toAdd;
+    runningCount += tuple.getDummyTag().getBool() ? 0 : 1;
+}
+
+types::Value ScalarAverage::getResult() {
+    types::Value divisor =
+    return types::Value();
+}
+
+types::TypeId ScalarAverage::getType() {
+    assert(initialized);
+    return runningSum.getType();
+}
+*/

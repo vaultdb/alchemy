@@ -56,7 +56,7 @@ const QueryField QueryTuple::getField(int ordinal) const {
 void QueryTuple::putField(const QueryField &f) {
     uint32_t ordinal = f.getOrdinal();
     const types::Value src = f.getValue();
-    fields_[ordinal].setValue(src);
+    fields_[ordinal] = QueryField(ordinal, src);
 }
 
 void QueryTuple::setDummyTag(const types::Value &v) {
@@ -224,7 +224,7 @@ bool QueryTuple::operator==(const QueryTuple &other) {
 
     if(!is_encrypted_) {
         //std::cout << "Comparing dummy tags: " << dummy_tag_ << " vs ";
-        //std::cout  << other.dummy_tag_ << std::endl;
+        std::cout  << other.dummy_tag_ << std::endl;
         bool lhs = dummy_tag_.getBool();
         bool rhs = dummy_tag_.getBool();
         if(lhs != rhs) {// if we are in the clear and their dummy tags are not equal
@@ -235,7 +235,7 @@ bool QueryTuple::operator==(const QueryTuple &other) {
     for(int i = 0; i < fieldCount_; ++i) {
         QueryField *thisField = getFieldPtr(i);
         QueryField *otherField = other.getFieldPtr(i);
-        //std::cout << "Comparing field: " << thisField << " to " << otherField << std::endl;
+        //std::cout << "Comparing field: " << *thisField << " to " << *otherField << std::endl;
         if(*thisField != *otherField) {  return false; }
     }
 

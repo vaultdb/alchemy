@@ -48,5 +48,24 @@ namespace vaultdb {
         types::Value zero;
 
     };
+
+
+    // TODO: implement avg, min, max
+   /* class ScalarAverage : public ScalarAggregateImpl {
+    public:
+        ScalarAverage(const uint32_t & ordinal) :  ScalarAggregateImpl(ordinal) {};
+        void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
+        void accumulate(const QueryTuple & tuple) override;
+        types::Value getResult() override;
+        types::TypeId getType() override;
+
+    private:
+        types::Value runningSum;
+        types::Value runningCount;
+        types::Value zero;
+        types::Value one;
+
+    }; */
 }
+
 #endif

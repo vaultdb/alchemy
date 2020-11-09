@@ -184,10 +184,10 @@ bool QueryTable::operator==(const QueryTable &other) const {
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
         QueryTuple *thisTuple = getTuplePtr(i);
         QueryTuple *otherTuple = other.getTuplePtr(i);
-       std::cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << std::endl;
+       //std::cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << std::endl;
 
         if(*thisTuple != *otherTuple) {
-            std::cout << "    Failed to match!" << std::endl;
+           //std::cout << "    Failed to match!" << std::endl;
             return false;
         }
 

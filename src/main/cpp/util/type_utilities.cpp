@@ -142,8 +142,36 @@ types::Value TypeUtilities::getZero(types::TypeId &aType) {
             return types::Value(emp::Bit(0, emp::PUBLIC));
         case types::TypeId::ENCRYPTED_INTEGER32:
             return types::Value(types::TypeId::ENCRYPTED_INTEGER32, emp::Integer(32, 0, emp::PUBLIC));
+        case types::TypeId::ENCRYPTED_INTEGER64:
+            return types::Value(types::TypeId::ENCRYPTED_INTEGER64, emp::Integer(64, 0, emp::PUBLIC));
+        default:
+            throw "Type unsupported in getZero()";
 
+    };
+}
 
+types::Value TypeUtilities::getOne(types::TypeId &aType) {
+    switch(aType) {
+        case types::TypeId::BOOLEAN:
+            return types::Value(false);
+        case types::TypeId::INTEGER32:
+            return types::Value(types::TypeId::INTEGER32, (int32_t) 1);
+        case types::TypeId::DATE:
+        case types::TypeId::INTEGER64:
+            return types::Value((int64_t) 1);
+        case types::TypeId::NUMERIC:
+        case types::TypeId::FLOAT32:
+            return types::Value((float_t) 1.0);
+        case types::TypeId::VARCHAR:
+            return types::Value(std::string(" "));
+        case types::TypeId::ENCRYPTED_BOOLEAN:
+            return types::Value(emp::Bit(1, emp::PUBLIC));
+        case types::TypeId::ENCRYPTED_INTEGER32:
+            return types::Value(types::TypeId::ENCRYPTED_INTEGER32, emp::Integer(32, 1, emp::PUBLIC));
+        case types::TypeId::ENCRYPTED_INTEGER64:
+            return types::Value(types::TypeId::ENCRYPTED_INTEGER64, emp::Integer(64, 1, emp::PUBLIC));
+        default:
+            throw "Type unsupported in getZero()";
 
     };
 }

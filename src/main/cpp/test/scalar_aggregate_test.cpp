@@ -50,7 +50,7 @@ TEST_F(ScalarAggregateTest, test_count_dummies) {
     std::string query = "SELECT l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem ORDER BY (1)  LIMIT 54";
 
     // set up the expected results:
-    std::string expectedOutputQuery = "SELECT COUNT(*) FROM (" + query + ") selection WHERE NOT dummy";
+    std::string expectedOutputQuery = "SELECT COUNT(*) cnt FROM (" + query + ") selection WHERE NOT dummy";
     std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
     types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
@@ -68,12 +68,8 @@ TEST_F(ScalarAggregateTest, test_count_dummies) {
     // run it
     std::shared_ptr<QueryTable> output = aggregate->run();
 
-    // get the count
-    QueryTuple firstTuple = output->getTuple(0);
-    types::Value firstValue = firstTuple.getFieldPtr(0)->getValue();
 
-
-    ASSERT_TRUE((expectedValue == firstValue).getBool());
+    ASSERT_EQ(*expectedOutput, *output);
 
 }
 
