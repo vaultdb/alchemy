@@ -73,6 +73,10 @@ TEST_F(ScalarAggregateTest, test_count_dummies) {
 
 }
 
+
+// TODO: add unit tests for sum, min, max, avg
+// TODO: try this with multiple aggregates in a single SELECT
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
