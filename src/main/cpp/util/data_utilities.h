@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/5/20.
-//
-
 #ifndef DATA_UTILITIES_H
 #define DATA_UTILITIES_H
 
@@ -30,6 +26,10 @@ public:
 
     static std::shared_ptr<QueryTable> getQueryResults(const string &dbName, const string &sql, const bool &hasDummyTag);
     static std::string queryDatetime(const std::string & colName); // transform a column into an int64 for our expected output
+
+    // filenames have full path, otherwise in standard testing framework filenames are relative to src/main/cpp/bin
+    static void locallySecretShareTable(const std::unique_ptr<QueryTable> & table, const std::string & aliceFile, const std::string & bobFile);
+    static void writeFile(std::string fileName, const char *contents);
 };
 
 

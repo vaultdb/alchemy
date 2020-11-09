@@ -186,8 +186,8 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
             case vaultdb::types::TypeId::INTEGER32:
             {
                 int32_t intVal = src.as<int32_t>();
-                types::Value val(intVal);
-                return QueryField(ordinal, intVal);
+                types::Value val(colType, intVal);
+                return QueryField(ordinal, val);
             }
             case vaultdb::types::TypeId::INTEGER64:
             {

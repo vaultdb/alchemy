@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/15/20.
-//
-
 #include "filter.h"
 
 Filter::Filter(std::shared_ptr<Predicate> &predicateClass, std::shared_ptr<Operator> &child) : Operator(child) {

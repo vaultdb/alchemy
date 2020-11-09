@@ -16,7 +16,7 @@ protected:
 
 
 public:
-    Operator() = default;; // initialize children and parent later
+    Operator() = default; // initialize children and parent later
     Operator(std::shared_ptr<Operator> &child);
     Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs);
     ~Operator() {};

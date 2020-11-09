@@ -16,6 +16,7 @@ enum class TypeId {
     VARCHAR,
     ENCRYPTED_INTEGER32,
     ENCRYPTED_INTEGER64,
+    //ENCRYPTED_DATE, // stand-in for int64_t to preserve DATE designation
     ENCRYPTED_BOOLEAN,
     ENCRYPTED_FLOAT32,
     ENCRYPTED_VARCHAR, // need all types to have encrypted counterpart so that we can translate them back to query tables when we decrypt the results

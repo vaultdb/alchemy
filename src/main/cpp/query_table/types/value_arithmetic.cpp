@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/14/20.
-//
-#include <util/type_utilities.h>
 #include "value.h"
 
 using vaultdb::types::Value;
@@ -17,12 +13,12 @@ Value Value::operator+(const Value &rhs) const {
         case TypeId::BOOLEAN: { // treated as an int under the hood
             bool lhsVal = getBool();
             bool rhsVal = rhs.getBool();
-            return Value(lhsVal +  rhsVal);
+            return Value(types::TypeId::INTEGER32, lhsVal +  rhsVal);
         }
         case TypeId::INTEGER32: {
             int32_t lhsVal = this->getInt32();
             int32_t rhsVal = rhs.getInt32();
-            return Value(lhsVal + rhsVal);
+            return Value(types::TypeId::INTEGER32, lhsVal + rhsVal);
         }
         case TypeId::INTEGER64: {
             int64_t lhsVal = this->getInt64();
@@ -61,7 +57,7 @@ Value Value::operator+(const Value &rhs) const {
     }
 
     // to eliminate warnings
-    return Value(-1);
+    return Value(types::TypeId::INTEGER32, -1);
 
 }
 
@@ -76,12 +72,12 @@ Value Value::operator-(const Value &rhs) const {
         case TypeId::BOOLEAN: { // treated as an int under the hood
             bool lhsVal = getBool();
             bool rhsVal = rhs.getBool();
-            return Value(lhsVal -  rhsVal);
+            return Value(types::TypeId::INTEGER32,  lhsVal -  rhsVal);
         }
         case TypeId::INTEGER32: {
             int32_t lhsVal = this->getInt32();
             int32_t rhsVal = rhs.getInt32();
-            return Value(lhsVal - rhsVal);
+            return Value(types::TypeId::INTEGER32,  lhsVal - rhsVal);
         }
         case TypeId::INTEGER64: {
             int64_t lhsVal = this->getInt64();
@@ -122,7 +118,7 @@ Value Value::operator-(const Value &rhs) const {
     }
 
     // to eliminate warnings
-    return Value(-1);
+    return Value(types::TypeId::INTEGER32, -1);
 }
 
 Value Value::operator*(const Value &rhs) const {
@@ -135,12 +131,12 @@ Value Value::operator*(const Value &rhs) const {
         case TypeId::BOOLEAN: { // treated as an int under the hood
             bool lhsVal = getBool();
             bool rhsVal = rhs.getBool();
-            return Value(lhsVal *  rhsVal);
+            return Value(types::TypeId::INTEGER32, lhsVal *  rhsVal);
         }
         case TypeId::INTEGER32: {
             int32_t lhsVal = this->getInt32();
             int32_t rhsVal = rhs.getInt32();
-            return Value(lhsVal + rhsVal);
+            return Value(types::TypeId::INTEGER32, lhsVal + rhsVal);
         }
         case TypeId::INTEGER64: {
             int64_t lhsVal = this->getInt64();
@@ -181,7 +177,7 @@ Value Value::operator*(const Value &rhs) const {
     }
 
     // to eliminate warnings
-    return Value(-1);
+    return Value(types::TypeId::INTEGER32, -1);
 
 }
 
@@ -195,12 +191,12 @@ Value Value::operator/(const Value &rhs) const {
         case TypeId::BOOLEAN: { // treated as an int under the hood
             bool lhsVal = getBool();
             bool rhsVal = rhs.getBool();
-            return Value(lhsVal /  rhsVal);
+            return Value(types::TypeId::INTEGER32, lhsVal /  rhsVal);
         }
         case TypeId::INTEGER32: {
             int32_t lhsVal = this->getInt32();
             int32_t rhsVal = rhs.getInt32();
-            return Value(lhsVal / rhsVal);
+            return Value(types::TypeId::INTEGER32, lhsVal / rhsVal);
         }
         case TypeId::INTEGER64: {
             int64_t lhsVal = this->getInt64();
@@ -241,6 +237,6 @@ Value Value::operator/(const Value &rhs) const {
     }
 
     // to eliminate warnings
-    return Value(-1);
+    return Value(types::TypeId::INTEGER32, -1);
 }
 

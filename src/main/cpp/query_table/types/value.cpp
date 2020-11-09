@@ -17,9 +17,7 @@ Value::Value(const int64_t & val) {
     setValue(val);
 }
 
-Value::Value(const  int32_t & val) {
-    setValue(val);
-}
+
 Value::Value(const bool& val) {
     setValue(val);
 }
@@ -325,7 +323,6 @@ void Value::setValue(const std::string & aString) {
     return *this;
     }
 
-    // TODO: reverse the bit orders for this for emp
     void Value::serialize(bool *dst) const {
 
             size_t valSize = TypeUtilities::getTypeSize(type_);
@@ -393,7 +390,7 @@ void Value::setValue(const std::string & aString) {
             }
             case types::TypeId::ENCRYPTED_INTEGER32: {
                 int32_t dst = this->getEmpInt().reveal<int32_t>(empParty);
-                return types::Value(dst);
+                return types::Value(types::TypeId::INTEGER32, dst);
 
 
             }

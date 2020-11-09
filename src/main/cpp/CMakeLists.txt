@@ -85,7 +85,9 @@ set(sources
         operators/fkey_pkey_join.cpp
 		operators/support/replace_tuple.cpp
 		operators/support/secure_replace_tuple.cpp
-		data/CsvReader.cpp)
+		data/CsvReader.cpp
+		operators/support/scalar_aggregate_impl.cpp
+		operators/scalar_aggregate.cpp)
 
 
 

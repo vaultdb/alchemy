@@ -30,6 +30,8 @@ public:
 
     void initDummy();
 
+    bool  isEncrypted() const { return is_encrypted_; }
+
   void setIsEncrypted(bool isEncrypted);
   const vaultdb::QueryField getField(int ordinal) const;
   vaultdb::QueryField *getFieldPtr(const uint32_t &ordinal) const; // returns a pointer to the original field, mutable

@@ -31,8 +31,8 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
     Value zero_enc(vaultdb::types::TypeId::ENCRYPTED_INTEGER32,
                    zero);
 
-    Value one_int((int32_t)1);
-    Value zero_int((int32_t)0);
+    Value one_int((int64_t)1);
+    Value zero_int((int64_t)0);
 
     Value prev_dummy = falseBool;
 
@@ -51,7 +51,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
     // initializing running average (shadow vector)
     // same shadow vector can be used for each bin
     for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
-        if (def.scalarAggregates[idx].id == AggregateId ::AVG) {
+        if (def.scalarAggregates[idx].type == AggregateId ::AVG) {
             Value val(
                     input->getTuplePtr(0)->getField(idx).getValue());
             Value tick = zero_enc;
@@ -74,7 +74,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
             for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
 
                 // switch on the Aggregate ID
-                switch (def.scalarAggregates[idx].id) {
+                switch (def.scalarAggregates[idx].type) {
 
                     case AggregateId::COUNT: {
                         Value curr_val = res_vec[idx];
@@ -115,7 +115,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
             }
             // accumulating sum and count from the shadow vector and computing AVG()
             for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
-                if (def.scalarAggregates[idx].id == AggregateId ::AVG) {
+                if (def.scalarAggregates[idx].type == AggregateId ::AVG) {
                     res_vec[idx] = r_avg[idx].first / r_avg[idx].second;
                 }
             }
@@ -169,7 +169,7 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 
             for (int idx = 0; idx < def.scalarAggregates.size(); idx++) {
 
-                switch (def.scalarAggregates[idx].id) {
+                switch (def.scalarAggregates[idx].type) {
                     case AggregateId::COUNT: {
                         res_vec[idx] =
                                 Value::obliviousIf(is_not_dummy.getEmpBit(), one_enc, zero_enc) +

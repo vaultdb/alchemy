@@ -21,6 +21,9 @@ namespace vaultdb {
 
         // when reading data from ascii sources like csv
         static types::Value decodeStringValue(const std::string & strValue, const QueryFieldDesc &fieldSpec);
+
+        static types::Value getZero(types::TypeId & aType);
+
     };
 
 }

@@ -1,6 +1,7 @@
 #include <util/emp_manager.h>
-
+#include "secret_share/prg.h"
 #include <memory>
+#include <util/data_utilities.h>
 #include "query_table.h"
 
 QueryTuple QueryTable::getTuple(int idx) const {
@@ -213,6 +214,31 @@ uint32_t QueryTable::getTrueTupleCount() const {
 
 std::shared_ptr<QueryTable> QueryTable::secretShare(emp::NetIO *io, const int & party) const {
     return EmpManager::secretShareTable(this, io, party);
+}
+
+std::pair<int8_t *, int8_t *> QueryTable::generateSecretShares() const {
+    bool *secretBits = this->serialize();
+    size_t sharesSize = sizeof(secretBits);
+
+    int8_t *secrets = DataUtilities::boolsToBytes(secretBits, sharesSize);
+    sharesSize /= 8;
+
+
+    int8_t *alice = new int8_t[sharesSize];
+    int8_t *bob = new int8_t[sharesSize];
+    emp::PRG prg; // initializes with a random seed
+
+
+    prg.random_data(&alice, sharesSize);
+
+    for(size_t i = 0; i < sharesSize; ++i) {
+        bob[i] = alice[i] ^ secrets[i];
+    }
+
+    delete [] secrets;
+    delete [] secretBits;
+
+    return std::pair<int8_t *, int8_t *>(alice, bob);
 }
 
 

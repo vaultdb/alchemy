@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/15/20.
-//
-
 #ifndef _FILTER_H
 #define _FILTER_H
 

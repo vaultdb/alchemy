@@ -13,7 +13,6 @@ class Value {
 
 public:
   Value();
-  Value(const int32_t &val);
 
   // covers INT64, DATE
   Value(const types::TypeId &type, const int64_t &val);

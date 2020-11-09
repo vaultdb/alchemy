@@ -108,7 +108,7 @@ QueryField
 EmpManager::secretShareField(const QueryField *srcField, const types::TypeId &type, const int32_t &ordinal,
                              size_t length, const int &myParty, const int &dstParty) {
 
-    types::Value srcValue = (myParty == dstParty) ? srcField->getValue() : types::Value(0);
+    types::Value srcValue = (myParty == dstParty) ? srcField->getValue() : types::Value((int64_t) 0);
 
 
     types::Value dstValue = secretShareValue(srcValue, type, length, myParty, dstParty);

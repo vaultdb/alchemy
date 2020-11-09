@@ -1,6 +1,3 @@
-//
-// Created by Jennie Rogers on 9/13/20.
-//
 // creates a cross product of its input relations, sets the dummy tag in output to reflect selected tuples
 
 #ifndef _BASIC_JOIN_H

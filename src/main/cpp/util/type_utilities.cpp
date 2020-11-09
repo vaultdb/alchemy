@@ -89,7 +89,7 @@ types::Value TypeUtilities::decodeStringValue(const string &strValue, const Quer
     switch (fieldSpec.getType()) {
         case types::TypeId::INTEGER32: {
             int32_t intValue = std::atoi(strValue.c_str());
-            return types::Value(intValue);
+            return types::Value(types::TypeId::INTEGER32, intValue);
         }
         case types::TypeId::INTEGER64: {
             int64_t intValue = std::atol(strValue.c_str());
@@ -119,6 +119,30 @@ types::Value TypeUtilities::decodeStringValue(const string &strValue, const Quer
         }
         default:
             throw "Unsupported type for string decoding: " + TypeUtilities::getTypeIdString(fieldSpec.getType()) + "\n";
+
+
+    };
+}
+
+types::Value TypeUtilities::getZero(types::TypeId &aType) {
+    switch(aType) {
+        case types::TypeId::BOOLEAN:
+            return types::Value(false);
+        case types::TypeId::INTEGER32:
+            return types::Value(types::TypeId::INTEGER32, (int32_t) 0);
+        case types::TypeId::DATE:
+        case types::TypeId::INTEGER64:
+            return types::Value((int64_t) 0);
+        case types::TypeId::NUMERIC:
+        case types::TypeId::FLOAT32:
+            return types::Value((float_t) 0.0);
+        case types::TypeId::VARCHAR:
+            return types::Value(std::string(""));
+        case types::TypeId::ENCRYPTED_BOOLEAN:
+            return types::Value(emp::Bit(0, emp::PUBLIC));
+        case types::TypeId::ENCRYPTED_INTEGER32:
+            return types::Value(types::TypeId::ENCRYPTED_INTEGER32, emp::Integer(32, 0, emp::PUBLIC));
+
 
 
     };

@@ -1,21 +1,26 @@
-//
-// Created by shashank on 2/27/20.
-//
+#ifndef _AGGREGATE_ID_H
+#define _AGGREGATE_ID_H
 
-#ifndef TESTING_AGGREGATE_ID_H
-#define TESTING_AGGREGATE_ID_H
+#include <string>
 
 namespace vaultdb {
 
-enum class AggregateId {
-  MAX,
-  COUNT,
-  SUM,
-  AVG
+    enum class AggregateId {
+      COUNT,
+      SUM,
+      AVG,
+      MIN,
+      MAX
+    };
 
-};
 
+    struct ScalarAggregateDefinition {
+        int ordinal; // input ordinal
+        AggregateId type;
+        std::string alias;
 
-
+        ScalarAggregateDefinition(int anOrdinal, AggregateId aggregateId, std::string anAlias)
+                : ordinal(anOrdinal), type(aggregateId), alias(anAlias) {}
+    };
 }
-#endif // TESTING_AGGREGATE_ID_H
+#endif // _AGGREGATE_ID_H
