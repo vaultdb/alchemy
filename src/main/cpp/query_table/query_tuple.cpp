@@ -224,7 +224,7 @@ bool QueryTuple::operator==(const QueryTuple &other) {
 
     if(!is_encrypted_) {
         //std::cout << "Comparing dummy tags: " << dummy_tag_ << " vs ";
-        std::cout  << other.dummy_tag_ << std::endl;
+        // std::cout  << other.dummy_tag_ << std::endl;
         bool lhs = dummy_tag_.getBool();
         bool rhs = dummy_tag_.getBool();
         if(lhs != rhs) {// if we are in the clear and their dummy tags are not equal

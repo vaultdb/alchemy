@@ -89,3 +89,4 @@ package_add_test(secure_filter_test secure_filter_test.cpp support/EmpBaseTest.c
 package_add_test(secure_sort_test secure_sort_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_basic_join_test secure_basic_join_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_pkey_fkey_join_test secure_pkey_fkey_join_test.cpp support/EmpBaseTest.cpp )
+package_add_test(secure_scalar_aggregate_test secure_scalar_aggregate_test.cpp support/EmpBaseTest.cpp)

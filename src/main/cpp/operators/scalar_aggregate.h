@@ -21,7 +21,7 @@ namespace vaultdb {
     private:
         std::vector<ScalarAggregateDefinition> aggregateDefinitions;
 
-        ScalarAggregateImpl *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal) const;
+        ScalarAggregateImpl *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal, const bool &isEncrypted) const;
 
     };
 

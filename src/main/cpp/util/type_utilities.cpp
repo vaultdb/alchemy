@@ -118,7 +118,7 @@ types::Value TypeUtilities::decodeStringValue(const string &strValue, const Quer
             return types::Value(epochTime);
         }
         default:
-            throw "Unsupported type for string decoding: " + TypeUtilities::getTypeIdString(fieldSpec.getType()) + "\n";
+            throw std::invalid_argument("Unsupported type for string decoding: " + TypeUtilities::getTypeIdString(fieldSpec.getType()) + "\n");
 
 
     };
@@ -144,8 +144,12 @@ types::Value TypeUtilities::getZero(types::TypeId &aType) {
             return types::Value(types::TypeId::ENCRYPTED_INTEGER32, emp::Integer(32, 0, emp::PUBLIC));
         case types::TypeId::ENCRYPTED_INTEGER64:
             return types::Value(types::TypeId::ENCRYPTED_INTEGER64, emp::Integer(64, 0, emp::PUBLIC));
+        case types::TypeId::ENCRYPTED_FLOAT32:
+            return types::Value(emp::Float(0.0));
+        case types::TypeId::ENCRYPTED_VARCHAR:
+            return types::Value(types::TypeId::ENCRYPTED_VARCHAR, emp::Integer(8, 0));
         default:
-            throw "Type unsupported in getZero()";
+            throw std::invalid_argument("Type unsupported in getZero(): " + TypeUtilities::getTypeIdString(aType));
 
     };
 }
@@ -170,8 +174,12 @@ types::Value TypeUtilities::getOne(types::TypeId &aType) {
             return types::Value(types::TypeId::ENCRYPTED_INTEGER32, emp::Integer(32, 1, emp::PUBLIC));
         case types::TypeId::ENCRYPTED_INTEGER64:
             return types::Value(types::TypeId::ENCRYPTED_INTEGER64, emp::Integer(64, 1, emp::PUBLIC));
+        case types::TypeId::ENCRYPTED_FLOAT32:
+            return types::Value(emp::Float(1.0));
+        case types::TypeId::ENCRYPTED_VARCHAR:
+            return types::Value(types::TypeId::ENCRYPTED_VARCHAR, emp::Integer(8, (int)'1'));
         default:
-            throw "Type unsupported in getZero()";
+            throw std::invalid_argument("Type unsupported in getOne(): " + TypeUtilities::getTypeIdString(aType));
 
     };
 }

@@ -87,7 +87,8 @@ set(sources
 		operators/support/secure_replace_tuple.cpp
 		data/CsvReader.cpp
 		operators/support/scalar_aggregate_impl.cpp
-		operators/scalar_aggregate.cpp)
+		operators/scalar_aggregate.cpp
+		operators/support/secure_scalar_aggregate_impl.cpp)
 
 
 

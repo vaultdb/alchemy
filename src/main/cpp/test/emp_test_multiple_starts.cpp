@@ -1,8 +1,4 @@
 //
-// Created by Jennie Rogers on 10/27/20.
-//
-
-//
 // set up to be self-contained
 
 #include <gflags/gflags.h>
