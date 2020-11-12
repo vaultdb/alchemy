@@ -28,8 +28,8 @@ protected:
 
 TEST_F(ValueExpressionTest, test_int32) {
 
-    Value a((int32_t) 5);
-    Value b((int32_t) 10);
+    Value a(types::TypeId::INTEGER32, (int32_t) 5);
+    Value b(types::TypeId::INTEGER32, (int32_t) 10);
 
     Value sum = a + b;
     ASSERT_EQ(sum.getInt32(), 15);
@@ -40,8 +40,8 @@ TEST_F(ValueExpressionTest, test_int32) {
 
 TEST_F(ValueExpressionTest, test_int32_comparator) {
 
-    Value a((int32_t) 5);
-    Value b((int32_t) 10);
+    Value a(types::TypeId::INTEGER32, (int32_t) 5);
+    Value b(types::TypeId::INTEGER32, (int32_t) 10);
 
     Value gt = a < b;
     ASSERT_EQ(gt.getBool(), true);
@@ -57,9 +57,9 @@ TEST_F(ValueExpressionTest, test_int32_comparator) {
 // demo passing in an expression to query operator
 TEST_F(ValueExpressionTest, test_int32_expr) {
 
-    Value a((int32_t) 5);
-    Value b((int32_t) 10);
-    Value c((int32_t) 25);
+    Value a(types::TypeId::INTEGER32, (int32_t) 5);
+    Value b(types::TypeId::INTEGER32, (int32_t) 10);
+    Value c(types::TypeId::INTEGER32, (int32_t) 25);
 
     Value sum = a  + b;
     Value compare = sum < c;

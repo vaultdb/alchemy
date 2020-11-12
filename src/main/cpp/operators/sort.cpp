@@ -29,6 +29,7 @@ std::shared_ptr<QueryTable> Sort::runSelf() {
 
     // deep copy new output
     output = std::shared_ptr<QueryTable>(new QueryTable(*input));
+    output->setSortOrder(sortDefinition);
 
 
     bitonicSort(0,  output->getTupleCount(), true);

@@ -112,7 +112,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     inputTable->setSchema(schema);
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        types::Value val(inputData[i]);
+        types::Value val(types::TypeId::INTEGER32, inputData[i]);
         inputTable->getTuplePtr(i)->setDummyTag(false);
         QueryField *fieldPtr = inputTable->getTuplePtr(i)->getFieldPtr(0);
         fieldPtr->setValue(val);
@@ -132,7 +132,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     expectedTable->setSchema(schema);
     // insert alice data first to last
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        types::Value val(aliceInputData[i]);
+        types::Value val(types::TypeId::INTEGER32, aliceInputData[i]);
         expectedTable->getTuplePtr(i)->initDummy();
         QueryField *fieldPtr = expectedTable->getTuplePtr(i)->getFieldPtr(0);
         fieldPtr->setValue(val);
@@ -145,7 +145,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     int readIdx = tupleCount;
     for(uint32_t i = 0; i < tupleCount; ++i) {
         --readIdx;
-        types::Value val(bobInputData[readIdx]);
+        types::Value val(types::TypeId::INTEGER32, bobInputData[readIdx]);
         expectedTable->getTuplePtr(i+offset)->initDummy();
         QueryField *fieldPtr = expectedTable->getTuplePtr(i + offset)->getFieldPtr(0);
         fieldPtr->setValue(val);

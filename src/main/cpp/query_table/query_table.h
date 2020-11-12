@@ -19,6 +19,9 @@ private:
     std::vector<QueryTuple> tuples_;
     size_t tupleCount_;
 
+    // tuple order
+    SortDefinition orderBy;
+
 
 public:
     QueryTable(const int & num_tuples, const int & colCount, const bool & is_encrypted);
@@ -38,6 +41,8 @@ public:
   void setTupleDummyTag(const int & tupleIdx, const types::Value & dummyTag);
 
     QueryTuple* getTuplePtr(const int & idx)  const;
+    void setSortOrder(const SortDefinition & sortOrder);
+    SortDefinition getSortOrder() const;
 
 
     // retrieves # of tuples that are not dummies

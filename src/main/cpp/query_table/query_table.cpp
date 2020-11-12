@@ -161,6 +161,8 @@ QueryTable::QueryTable(const QueryTable &src) : schema_(src.getSchema()) {
         tuples_[i] = src.tuples_[i];
     }
 
+    orderBy = src.orderBy;
+
 }
 
 void QueryTable::setTupleDummyTag(const int &tupleIdx, const types::Value & dummyTag) {
@@ -177,6 +179,8 @@ bool QueryTable::operator==(const QueryTable &other) const {
         //std::cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << std::endl;
         return false;
     }
+
+    if(this->getSortOrder() != other.getSortOrder()) { return false;   }
 
     if(this->getTupleCount() != other.getTupleCount()) {   return false; }
 
@@ -239,6 +243,15 @@ std::pair<int8_t *, int8_t *> QueryTable::generateSecretShares() const {
     delete [] secretBits;
 
     return std::pair<int8_t *, int8_t *>(alice, bob);
+}
+
+void QueryTable::setSortOrder(const SortDefinition &sortOrder) {
+    orderBy = sortOrder;
+
+}
+
+SortDefinition QueryTable::getSortOrder() const {
+    return orderBy;
 }
 
 

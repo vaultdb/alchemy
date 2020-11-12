@@ -26,7 +26,7 @@ public:
     }
 
     std::shared_ptr<QueryTable> runSelf() override;
-    ~SqlInput() {};
+    ~SqlInput() = default;
 };
 
 
