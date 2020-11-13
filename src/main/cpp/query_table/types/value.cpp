@@ -13,6 +13,11 @@ Value::Value(const Value &val) {
 }
 
 
+types::Value::Value(const int32_t &val) {
+    setValue(val);
+}
+
+
 Value::Value(const int64_t & val) {
     setValue(val);
 }
@@ -390,7 +395,7 @@ void Value::setValue(const std::string & aString) {
             }
             case types::TypeId::ENCRYPTED_INTEGER32: {
                 int32_t dst = this->getEmpInt().reveal<int32_t>(empParty);
-                return types::Value(types::TypeId::INTEGER32, dst);
+                return types::Value( dst);
 
 
             }

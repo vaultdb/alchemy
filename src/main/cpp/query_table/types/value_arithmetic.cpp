@@ -11,14 +11,14 @@ Value Value::operator+(const Value &rhs) const {
     switch (opType) {
 
         case TypeId::BOOLEAN: { // treated as an int under the hood
-            bool lhsVal = getBool();
-            bool rhsVal = rhs.getBool();
-            return Value(types::TypeId::INTEGER32, lhsVal +  rhsVal);
+            int32_t lhsVal = getBool();
+            int32_t rhsVal = rhs.getBool();
+            return Value( lhsVal +  rhsVal);
         }
         case TypeId::INTEGER32: {
             int32_t lhsVal = this->getInt32();
             int32_t rhsVal = rhs.getInt32();
-            return Value(types::TypeId::INTEGER32, lhsVal + rhsVal);
+            return Value(lhsVal + rhsVal);
         }
         case TypeId::INTEGER64: {
             int64_t lhsVal = this->getInt64();
@@ -70,14 +70,14 @@ Value Value::operator-(const Value &rhs) const {
     switch (opType) {
 
         case TypeId::BOOLEAN: { // treated as an int under the hood
-            bool lhsVal = getBool();
-            bool rhsVal = rhs.getBool();
-            return Value(types::TypeId::INTEGER32,  lhsVal -  rhsVal);
+            int32_t lhsVal = getBool();
+            int32_t rhsVal = rhs.getBool();
+            return Value(lhsVal -  rhsVal);
         }
         case TypeId::INTEGER32: {
             int32_t lhsVal = this->getInt32();
             int32_t rhsVal = rhs.getInt32();
-            return Value(types::TypeId::INTEGER32,  lhsVal - rhsVal);
+            return Value( lhsVal - rhsVal);
         }
         case TypeId::INTEGER64: {
             int64_t lhsVal = this->getInt64();
@@ -129,14 +129,14 @@ Value Value::operator*(const Value &rhs) const {
     switch (opType) {
 
         case TypeId::BOOLEAN: { // treated as an int under the hood
-            bool lhsVal = getBool();
-            bool rhsVal = rhs.getBool();
-            return Value(types::TypeId::INTEGER32, lhsVal *  rhsVal);
+            int32_t lhsVal = getBool();
+            int32_t rhsVal = rhs.getBool();
+            return Value(lhsVal *  rhsVal);
         }
         case TypeId::INTEGER32: {
             int32_t lhsVal = this->getInt32();
             int32_t rhsVal = rhs.getInt32();
-            return Value(types::TypeId::INTEGER32, lhsVal + rhsVal);
+            return Value( lhsVal * rhsVal);
         }
         case TypeId::INTEGER64: {
             int64_t lhsVal = this->getInt64();
@@ -189,14 +189,14 @@ Value Value::operator/(const Value &rhs) const {
     switch (opType) {
 
         case TypeId::BOOLEAN: { // treated as an int under the hood
-            bool lhsVal = getBool();
-            bool rhsVal = rhs.getBool();
-            return Value(types::TypeId::INTEGER32, lhsVal /  rhsVal);
+            int32_t lhsVal = getBool();
+            int32_t rhsVal = rhs.getBool();
+            return Value(lhsVal /  rhsVal);
         }
         case TypeId::INTEGER32: {
             int32_t lhsVal = this->getInt32();
             int32_t rhsVal = rhs.getInt32();
-            return Value(types::TypeId::INTEGER32, lhsVal / rhsVal);
+            return Value(lhsVal / rhsVal);
         }
         case TypeId::INTEGER64: {
             int64_t lhsVal = this->getInt64();

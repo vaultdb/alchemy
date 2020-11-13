@@ -67,9 +67,8 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
 
-    std::cout << "Expected output query: " << expectedResultSql << std::endl;
 
-    std::cout << "Expected output: \n" << *expected << std::endl;
+    std::cout << "Expected output: \n" << expected->toString(true) << std::endl;
 
     std::shared_ptr<Operator> customerInput(new SecureSqlInput(dbName, customerSql, true, netio, FLAGS_party));
     std::shared_ptr<Operator> ordersInput(new SecureSqlInput(dbName, ordersSql, true, netio, FLAGS_party));
@@ -89,16 +88,18 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
     auto *sortOp  = new Sort(sortDefinition, joinOp->getPtr());
     std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
 
+
     std::cout << "customer input: " << std::endl << customerInput->getOutput()->reveal()->toString(true);
     std::cout << "orders input: " << std::endl << ordersInput->getOutput()->reveal()->toString(true);
     std::cout << "join output: " << std::endl << observed->toString(true) << std::endl;
 
+    ASSERT_EQ(expected->toString(true), observed->toString(true));
 
     ASSERT_EQ(*expected, *observed);
 
 }
 
-
+/*
 TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
 
 
@@ -186,7 +187,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     ASSERT_EQ(*expected, *observed);
 
 }
-
+*/
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 9/2/20.
-//
-
 #ifndef _PROJECT_H
 #define _PROJECT_H
 

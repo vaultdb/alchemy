@@ -20,8 +20,6 @@ std::unique_ptr<QueryTable>
 PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag) {
 
     dbName = dbname;
-
-    // TODO: add in code to disconnect from psql when done
     pqxx::result pqxxResult;
     pqxx::connection dbConn("dbname=" + dbname);
 
@@ -186,7 +184,7 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
             case vaultdb::types::TypeId::INTEGER32:
             {
                 int32_t intVal = src.as<int32_t>();
-                types::Value val(colType, intVal);
+                types::Value val(intVal);
                 return QueryField(ordinal, val);
             }
             case vaultdb::types::TypeId::INTEGER64:

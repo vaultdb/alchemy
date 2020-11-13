@@ -8,7 +8,7 @@
 
 
 
-std::shared_ptr<QueryTable> EmpManager::secretShareTable(const QueryTable *srcTable,  NetIO *netio, int party) {
+std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcTable,  NetIO *netio, int party) {
     size_t aliceSize = srcTable->getTupleCount(); // in tuples
     size_t bobSize = aliceSize;
     int colCount = srcTable->getSchema().getFieldCount();

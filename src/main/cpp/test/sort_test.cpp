@@ -68,6 +68,7 @@ TEST_F(SortTest, tpchQ1Sort) {
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
+    expected->setSortOrder(sortDefinition);
 
     std::shared_ptr<Operator> sort = getSort(sql, sortDefinition);
     std::shared_ptr<QueryTable> observed = sort->run();
@@ -89,6 +90,7 @@ TEST_F(SortTest, tpchQ3Sort) {
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
     sortDefinition.emplace_back(3, SortDirection::ASCENDING);
 
+
     std::shared_ptr<Sort> sort = getSort(sql, sortDefinition);
 
 
@@ -99,6 +101,12 @@ TEST_F(SortTest, tpchQ3Sort) {
     projectOp->addColumnMapping(3, 1);
 
     std::shared_ptr<QueryTable> observed = project->run();
+
+    // update sort def to account for projection -- also testing sort order carryover - the metadata in querytable describing sorted order of its contents
+    sortDefinition[0].first = 0;
+    sortDefinition[1].first = 1;
+
+    expected->setSortOrder(sortDefinition);
 
     ASSERT_EQ(*expected, *observed);
 
@@ -122,6 +130,11 @@ TEST_F(SortTest, tpchQ5Sort) {
     std::shared_ptr<Operator> project = projectOp->getPtr();
     projectOp->addColumnMapping(1, 0);
 
+
+    // update sort def to account for projection -- also testing sort order carryover - the metadata in querytable describing sorted order of its contents
+    sortDefinition[0].first = 0;
+    expected->setSortOrder(sortDefinition);
+
     std::shared_ptr<QueryTable> observed = project->run();
 
     ASSERT_EQ(*expected, *observed);
@@ -138,6 +151,7 @@ TEST_F(SortTest, tpchQ8Sort) {
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
+    expected->setSortOrder(sortDefinition);
 
 
     std::shared_ptr<Sort> sort = getSort(sql, sortDefinition);
@@ -165,7 +179,6 @@ TEST_F(SortTest, tpchQ9Sort) {
     sortDefinition.emplace_back(2, SortDirection::ASCENDING);
     sortDefinition.emplace_back(0, SortDirection::DESCENDING);
 
-
     std::shared_ptr<Sort> sort = getSort(sql, sortDefinition);
 
     // project it down to $0
@@ -175,6 +188,11 @@ TEST_F(SortTest, tpchQ9Sort) {
     projectOp->addColumnMapping(0, 1);
 
     std::shared_ptr<QueryTable> observed = project->run();
+
+
+    sortDefinition[0].first = 0;
+    sortDefinition[1].first = 1;
+    expected->setSortOrder(sortDefinition);
 
     ASSERT_EQ(*expected, *observed);
 
@@ -197,6 +215,7 @@ TEST_F(SortTest, tpchQ18Sort) {
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(2, SortDirection::DESCENDING);
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
+    expected->setSortOrder(sortDefinition);
 
 
     std::shared_ptr<Sort> sort = getSort(sql, sortDefinition);
@@ -208,6 +227,11 @@ TEST_F(SortTest, tpchQ18Sort) {
     projectOp->addColumnMapping(1, 1);
 
     std::shared_ptr<QueryTable> observed = project->run();
+
+
+    sortDefinition[0].first = 0;
+    sortDefinition[1].first = 1;
+    expected->setSortOrder(sortDefinition);
 
     ASSERT_EQ(*expected, *observed);
 

@@ -49,7 +49,7 @@ class FilterPredicate : public Predicate {
     Value cmp;
 public:
     FilterPredicate() {
-         cmp = Value(types::TypeId::INTEGER32, (int32_t) 1);
+         cmp = Value((int32_t) 1);
     }
 
     ~FilterPredicate() {}

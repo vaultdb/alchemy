@@ -69,7 +69,7 @@ bool SecureSortTest::isSorted(const std::shared_ptr<QueryTable> & table, const S
 
 
 
-
+/*
 // try the logic of Q1 in plaintext for warmup
 TEST_F(SecureSortTest, tpchQ1SortClear) {
 
@@ -123,7 +123,7 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
 
 }
-
+*/
 
 TEST_F(SecureSortTest, tpchQ3Sort) {
     std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;

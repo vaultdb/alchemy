@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 9/2/20.
-//
-
 #include "project.h"
 
 
@@ -13,6 +9,7 @@ Project::Project(std::shared_ptr<Operator> &child) : Operator(child),  colCount(
 
 std::shared_ptr<QueryTable> Project::runSelf() {
     std::shared_ptr<QueryTable> srcTable = children[0]->getOutput();
+    SortDefinition srcSortOrder = srcTable->getSortOrder();
     srcSchema = srcTable->getSchema();
     colCount = expressions.size() + projectionMap.size();
 
@@ -57,11 +54,27 @@ std::shared_ptr<QueryTable> Project::runSelf() {
     }
 
 
+    // *** Check to see if order-by carries over
+    bool sortCarryOver = true;
+    SortDefinition  dstSortDefinition;
+    for(ColumnSort columnSort : srcSortOrder) {
+        int srcOrdinal = columnSort.first;
+        bool found = false;
+        for(ProjectionMapping mapping : projectionMap) {
+            if(mapping.first == srcOrdinal) {
+                dstSortDefinition.push_back(ColumnSort (mapping.second, columnSort.second));
+                found = true;
+            }
+        } // end search for mapping
+        if(!found) { sortCarryOver = false; }
+    }
 
     // *** Done defining schema and verifying setup
 
     output = std::shared_ptr<QueryTable>(new QueryTable(tupleCount, colCount, srcTable->isEncrypted()));
     output->setSchema(dstSchema);
+    if(sortCarryOver) { output->setSortOrder(dstSortDefinition);  }
+
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
         QueryTuple *srcTuple = srcTable->getTuplePtr(i);

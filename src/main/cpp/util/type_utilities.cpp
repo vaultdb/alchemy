@@ -89,7 +89,7 @@ types::Value TypeUtilities::decodeStringValue(const string &strValue, const Quer
     switch (fieldSpec.getType()) {
         case types::TypeId::INTEGER32: {
             int32_t intValue = std::atoi(strValue.c_str());
-            return types::Value(types::TypeId::INTEGER32, intValue);
+            return types::Value( intValue);
         }
         case types::TypeId::INTEGER64: {
             int64_t intValue = std::atol(strValue.c_str());
@@ -129,7 +129,7 @@ types::Value TypeUtilities::getZero(types::TypeId &aType) {
         case types::TypeId::BOOLEAN:
             return types::Value(false);
         case types::TypeId::INTEGER32:
-            return types::Value(types::TypeId::INTEGER32, (int32_t) 0);
+            return types::Value((int32_t) 0);
         case types::TypeId::DATE:
         case types::TypeId::INTEGER64:
             return types::Value((int64_t) 0);
@@ -159,7 +159,7 @@ types::Value TypeUtilities::getOne(types::TypeId &aType) {
         case types::TypeId::BOOLEAN:
             return types::Value(false);
         case types::TypeId::INTEGER32:
-            return types::Value(types::TypeId::INTEGER32, (int32_t) 1);
+            return types::Value((int32_t) 1);
         case types::TypeId::DATE:
         case types::TypeId::INTEGER64:
             return types::Value((int64_t) 1);
