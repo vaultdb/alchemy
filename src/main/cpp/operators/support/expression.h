@@ -12,8 +12,6 @@ class Expression {
     protected:
         std::string alias;
         types::TypeId expressionType;
-        // since we are in MPC, this will always be private, so hardcoding this
-        const bool isPrivateField = true;
         types::Value (*exprFunc)(const QueryTuple &) = nullptr;
 
 
@@ -43,8 +41,6 @@ class Expression {
 
         // does it have an alias?
         std::string getAlias() const { return alias; }
-
-        bool isPrivate() const { return isPrivateField; }
 
 
          Expression& operator=(const Expression & src) {

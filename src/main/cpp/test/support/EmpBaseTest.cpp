@@ -1,8 +1,6 @@
 #include "EmpBaseTest.h"
 
 
-//NetIO *EmpBaseTest::netio = nullptr;
-
 void EmpBaseTest::SetUp()  {
 
     std::cout << "Connecting to " << FLAGS_alice_host << " on port " << FLAGS_port << " as " << FLAGS_party << std::endl;

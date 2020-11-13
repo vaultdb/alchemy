@@ -38,7 +38,6 @@ std::shared_ptr<QueryTable> Project::runSelf() {
         Expression expression = exprPos->second;
 
         types::TypeId type = expression.getType();
-        bool isPrivate = expression.isPrivate();
         std::string alias = expression.getAlias();
 
         QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, alias, "", type); // NYI: string length for expressions

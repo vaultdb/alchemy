@@ -15,34 +15,34 @@ typedef std::pair<uint32_t, uint32_t> ProjectionMapping; // src ordinal, dst ord
 typedef std::map<uint32_t, Expression> ExpressionMap; // ordinal to expression
 
 
+namespace vaultdb {
+    class Project : public Operator {
 
-class Project  : public Operator {
+        std::vector<ProjectionMapping> projectionMap;
+        ExpressionMap expressions;
 
-    std::vector<ProjectionMapping>  projectionMap;
-    ExpressionMap expressions;
+        uint32_t colCount;
+        QuerySchema srcSchema;
+        QuerySchema dstSchema;
 
-    uint32_t colCount;
-    QuerySchema srcSchema;
-    QuerySchema dstSchema;
+    public:
+        Project(std::shared_ptr<Operator> &child);
 
-public:
-    Project(std::shared_ptr<Operator> &child);
+        void addColumnMapping(const uint32_t &srcOrdinal, const uint32_t &dstOrdinal) {
+            ProjectionMapping mapping(srcOrdinal, dstOrdinal);
+            projectionMap.push_back(mapping);
+        }
 
-    void addColumnMapping(const uint32_t & srcOrdinal, const uint32_t & dstOrdinal) {
-        ProjectionMapping mapping(srcOrdinal, dstOrdinal);
-        projectionMap.push_back(mapping);
-    }
+        void addExpression(const Expression &expression, const uint32_t &dstOrdinal) {
+            expressions[dstOrdinal] = expression;
+        }
 
-    void addExpression(const Expression & expression, const uint32_t & dstOrdinal) {
-        expressions[dstOrdinal] = expression;
-    }
-
-    std::shared_ptr<QueryTable> runSelf() override;
-
-
-private:
-    QueryTuple getTuple(QueryTuple * const srcTuple) const;
-};
+        std::shared_ptr<QueryTable> runSelf() override;
 
 
+    private:
+        QueryTuple getTuple(QueryTuple *const srcTuple) const;
+    };
+
+}
 #endif //_PROJECT_H

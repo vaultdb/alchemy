@@ -3,7 +3,6 @@
 #include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
-#include <operators/filter.h>
 #include <operators/support/aggregate_id.h>
 #include <operators/scalar_aggregate.h>
 
@@ -25,7 +24,7 @@ protected:
 
 // should just count to 50
 TEST_F(ScalarAggregateTest, test_count) {
-    std::string query = "SELECT l_extendedprice FROM lineitem ORDER BY (1)  LIMIT 50";
+    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10";
 
     std::shared_ptr<Operator> input(new SqlInput(dbName, query, false));
 

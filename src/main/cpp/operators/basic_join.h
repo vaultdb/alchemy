@@ -7,14 +7,16 @@
 #include "join.h"
 
 
-class BasicJoin  : public Join {
+namespace vaultdb {
+
+    class BasicJoin : public Join {
 
     public:
-        BasicJoin(std::shared_ptr<BinaryPredicate> &predicateClass, std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs);
+        BasicJoin(std::shared_ptr<BinaryPredicate> &predicateClass, std::shared_ptr<Operator> &lhs,
+                  std::shared_ptr<Operator> &rhs);
+
         std::shared_ptr<QueryTable> runSelf() override;
-
-
-};
-
+    };
+}
 
 #endif //_BASIC_JOIN_H

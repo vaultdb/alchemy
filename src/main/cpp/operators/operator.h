@@ -7,38 +7,46 @@
 
 // for query operator tree and perhaps operator factory
 // operator may run in the clear or in MPC
-class Operator {
+namespace  vaultdb {
+    class Operator {
 
-protected:
-    std::shared_ptr<Operator> parent;
-    std::vector<std::shared_ptr<Operator> > children;
-    std::shared_ptr<QueryTable> output;
+    protected:
+        std::shared_ptr<Operator> parent;
+        std::vector<std::shared_ptr<Operator> > children;
+        std::shared_ptr<QueryTable> output;
 
 
-public:
-    Operator() = default; // initialize children and parent later
-    Operator(std::shared_ptr<Operator> &child);
-    Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs);
-    ~Operator() {};
+    public:
+        Operator() = default; // initialize children and parent later
+        Operator(std::shared_ptr<Operator> &child);
 
-    // recurses first, then invokes runSelf method
-    std::shared_ptr<QueryTable> run();
-    std::shared_ptr<QueryTable> getOutput();
-    std::shared_ptr<Operator> & getPtr(); // this is the shared_ptr / handle with which we refer to this operator
+        Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs);
 
-    std::shared_ptr<Operator> getParent() const;
-    std::shared_ptr<Operator> getChild(int idx  = 0) const;
+        ~Operator() {};
 
-    void setParent(std::shared_ptr<Operator> & aParent);
-    void setChild(std::shared_ptr<Operator>  aChild, int idx = 0);
+        // recurses first, then invokes runSelf method
+        std::shared_ptr<QueryTable> run();
 
-   // Operator& operator=(const Operator& other); // TODO: copy assign operator overload
+        std::shared_ptr<QueryTable> getOutput();
 
-protected:
-    // to be implemented by the operator classes, e.g., sort, filter, et cetera
-    virtual std::shared_ptr<QueryTable> runSelf() = 0;
-    std::shared_ptr<Operator> myRef; // TODO: for sharing among parents and children
-};
+        std::shared_ptr<Operator> &getPtr(); // this is the shared_ptr / handle with which we refer to this operator
 
+        std::shared_ptr<Operator> getParent() const;
+
+        std::shared_ptr<Operator> getChild(int idx = 0) const;
+
+        void setParent(std::shared_ptr<Operator> &aParent);
+
+        void setChild(std::shared_ptr<Operator> aChild, int idx = 0);
+
+        // Operator& operator=(const Operator& other); // TODO: copy assign operator overload
+
+    protected:
+        // to be implemented by the operator classes, e.g., sort, filter, et cetera
+        virtual std::shared_ptr<QueryTable> runSelf() = 0;
+
+        std::shared_ptr<Operator> myRef; // TODO: for sharing among parents and children
+    };
+}
 
 #endif //_OPERATOR_H
