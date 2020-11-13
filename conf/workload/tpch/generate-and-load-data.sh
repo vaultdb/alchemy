@@ -21,7 +21,8 @@ if [ "$#" -ne 0 ]; then
 
     pushd deps/tpch/dbgen
 
-
+    make
+    
     if [ -f dbgen ]; then
 	./dbgen -s $TPCH_SF
 	mv *.tbl /tmp/dss/data/
