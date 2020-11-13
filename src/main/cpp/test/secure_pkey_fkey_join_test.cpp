@@ -60,8 +60,8 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
 
     std::string expectedResultSql = "WITH customer_cte AS (" + customerSql + "), "
                                                                              "orders_cte AS (" + ordersSql + ") "
-                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, (cdummy OR odummy OR o_custkey <> c_custkey) dummy "
-                                                                                                             "FROM customer_cte, orders_cte "
+                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,(cdummy OR odummy) dummy "
+                                                                                                             "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
                                                                                                              "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
@@ -99,17 +99,20 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
 
 }
 
-/*
+
 TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
 
 
 // get inputs from local oblivious ops
 // first 3 customers, propagate this constraint up the join tree for the test
-    std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
-                                                                         "lineitem_cte AS (" + lineitemSql + ") "
-                                                                                                             "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority,(odummy OR ldummy OR o_orderkey <> l_orderkey) dummy "
-                                                                                                             "FROM lineitem_cte, orders_cte "
-                                                                                                             "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
+    std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), "
+                                                                         "lineitem_cte AS (" + lineitemSql + "), "
+                                                                                                             "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, (o_orderkey=l_orderkey) matched, (odummy OR ldummy) dummy \n"
+                                                                                                             "FROM lineitem_cte, orders_cte \n"
+                                                                                                             "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
+                                                                                                             "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, dummy \n"
+                                                                                                             "FROM cross_product \n"
+                                                                                                             "WHERE matched";
 
     std::cout << "Expected result query: " << expectedResultSql << std::endl;
 
@@ -148,12 +151,15 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
 // compose C-O-L join should produce one output tuple, order ID 210945
 TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
-    std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), "
-                                                                         "lineitem_cte AS (" + lineitemSql + "), "
-                                                                                                             "customer_cte AS (" + customerSql + ") "
-                                                                                                                                                 "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, (cdummy OR odummy OR ldummy OR o_orderkey <> l_orderkey OR c_custkey <> o_custkey) dummy "
-                                                                                                                                                 "FROM lineitem_cte, orders_cte, customer_cte "
-                                                                                                                                                 "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
+    std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
+                                                                         "lineitem_cte AS (" + lineitemSql + "), \n"
+                                                                                                             "customer_cte AS (" + customerSql + "),\n "
+                                                                                                                                                 "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (odummy OR ldummy OR cdummy) dummy \n"
+                                                                                                                                                 "FROM lineitem_cte, orders_cte, customer_cte  \n"
+                                                                                                                                                 "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
+                                                                                                                                                 "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, dummy \n"
+                                                                                                                                                 "FROM cross_product \n"
+                                                                                                                                                 "WHERE matched";
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
 
@@ -187,7 +193,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     ASSERT_EQ(*expected, *observed);
 
 }
-*/
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

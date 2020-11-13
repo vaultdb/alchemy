@@ -1,8 +1,3 @@
-//
-// Created by Jennie Rogers on 10/24/20.
-//
-
-
 #ifndef EMP_BASE_TEST_H
 #define EMP_BASE_TEST_H
 #include <gflags/gflags.h>

@@ -28,7 +28,6 @@ std::shared_ptr<QueryTable> KeyedJoin::runSelf() {
     output = std::shared_ptr<QueryTable>(new QueryTable(outputTupleCount, outputSchema.getFieldCount(), foreignKeyTable->isEncrypted() | primaryKeyTable->isEncrypted()));
     output->setSchema(outputSchema);
     ReplaceTuple *replaceTuple = (foreignKeyTable->isEncrypted()) ? new SecureReplaceTuple(output) : new ReplaceTuple(output);
-    int lhsOffset = lhsTuple->getFieldCount();
 
 
     // TODO: create dst tuple and populate with LHS value
@@ -47,18 +46,10 @@ std::shared_ptr<QueryTable> KeyedJoin::runSelf() {
         for(uint32_t j = 1; j < primaryKeyTable->getTupleCount(); ++j) {
             rhsTuple = primaryKeyTable->getTuplePtr(j);
             predicateEval = predicate->predicateCall(lhsTuple, rhsTuple);
-
-
-             std::cout << "Lhs tuple: " << lhsTuple->reveal(emp::PUBLIC).toString(true) << " rhs tuple: " << rhsTuple->reveal(emp::PUBLIC).toString(true) << std::endl;
              dstTuple = compareTuples(lhsTuple, rhsTuple, predicateEval);
-
-            std::cout << "Proposed output tuple: " << dstTuple.reveal(emp::PUBLIC).toString(true) << std::endl;
-
             replaceTuple->conditionalWrite(i, dstTuple, predicateEval);
 
         }
-
-
 
     }
 

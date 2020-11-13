@@ -20,6 +20,8 @@ std::shared_ptr<QueryTable> Filter::runSelf() {
 
         output->setTupleDummyTag(i, dummyTag);
     }
+
+    output->setSortOrder(input->getSortOrder());
     return output;
 }
 
