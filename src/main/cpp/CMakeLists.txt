@@ -30,7 +30,7 @@ add_subdirectory(test)
 
 find_package(OpenSSL REQUIRED)
 find_package(GMP REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system date_time)
 find_package(EMP REQUIRED)
 
 find_library(EMP_LIBRARIES NAMES emp-tool)
@@ -88,7 +88,9 @@ set(sources
 		data/CsvReader.cpp
 		operators/support/scalar_aggregate_impl.cpp
 		operators/scalar_aggregate.cpp
-		operators/support/secure_scalar_aggregate_impl.cpp)
+		operators/support/secure_scalar_aggregate_impl.cpp
+		operators/group_by_aggregate.cpp
+		operators/support/group_by_aggregate_impl.cpp)
 
 
 
