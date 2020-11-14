@@ -1,4 +1,5 @@
 #include <util/type_utilities.h>
+#include <util/data_utilities.h>
 #include "group_by_aggregate.h"
 
 
@@ -17,34 +18,41 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     // sorted on group-by cols
     assert(verifySortOrder(input));
     QuerySchema outputSchema = generateOutputSchema(input->getSchema(), aggregators);
+    // output sort order equal to first group-by-col-count entries in input sort order
+    SortDefinition inputSort = input->getSortOrder();
+    SortDefinition outputSort = std::vector<ColumnSort>(inputSort.begin(), inputSort.begin() + groupByOrdinals.size());
+
     std::shared_ptr<QueryTable> output(new QueryTable(input->getTupleCount(), outputSchema.getFieldCount(), input->isEncrypted()));
     output->setSchema(outputSchema);
+    output->setSortOrder(outputSort);
+
+
     QueryTuple *tuplePtr = output->getTuplePtr(0);
     tuplePtr->initDummy();
 
     predecessor = input->getTuplePtr(0);
     for(GroupByAggregateImpl *aggregator : aggregators) {
-        aggregator->initialize(*predecessor, types::Value(true));
+        aggregator->initialize(*predecessor, types::Value(false));
     }
 
     nonDummyBin = !(predecessor->getDummyTag()); // does this group-by bin contain at least one real (non-dummy) tuple?
 
-    // TODO: make it so that all but the last tuple in a bin are dummies
+
     for(int i = 1; i < input->getTupleCount(); ++i) {
         current = input->getTuplePtr(i);
         nonDummyBin = nonDummyBin | !(predecessor->getDummyTag());
         types::Value isGroupByMatch = groupByMatch(*predecessor, *current);
         outputTuple = generateOutputTuple(*predecessor, !isGroupByMatch, nonDummyBin, aggregators);
-        types::Value dummyTag = GroupByAggregateImpl::getDummyTag(!isGroupByMatch, nonDummyBin);
-        outputTuple.setDummyTag(dummyTag);
 
         for(GroupByAggregateImpl *aggregator : aggregators) {
-            aggregator->initialize(*current, !isGroupByMatch);
-            aggregator->accumulate(*current, isGroupByMatch);
+            aggregator->initialize(*current, isGroupByMatch);
+            aggregator->accumulate(*current, !isGroupByMatch);
         }
 
         output->putTuple(i-1, outputTuple);
         predecessor = current;
+        // reset the flag that denotes if we have one non-dummy tuple in the bin
+        aggregators[0]->updateGroupByBinBoundary(!isGroupByMatch, nonDummyBin);
     }
 
     nonDummyBin = nonDummyBin | predecessor->getDummyTag();
@@ -54,9 +62,14 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     outputTuple = generateOutputTuple(*predecessor, TypeUtilities::getOne(dummyType), nonDummyBin, aggregators);
     output->putTuple(input->getTupleCount() - 1, outputTuple);
 
-    for(int i = 0; i < aggregators.size(); ++i) {
+    // output sorted on group-by cols
+    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(groupByOrdinals.size());
+    output->setSortOrder(sortDefinition);
+
+    /* TODO: debug this cleanup later
+     * for(int i = 0; i < aggregators.size(); ++i) {
         delete aggregators[i];
-    }
+    }*/
 
     return output;
 
@@ -88,19 +101,15 @@ GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggr
 
 bool GroupByAggregate::verifySortOrder(const std::shared_ptr<QueryTable> &table) const {
     SortDefinition sortedOn = table->getSortOrder();
-
-    for(uint32_t colIdx : groupByOrdinals) {
-        bool found = false;
-        for(ColumnSort columnSort : sortedOn) {
-            if(columnSort.first == colIdx) {
-                found = true;
-                break;
-            }
+    for(int idx = 0; idx < groupByOrdinals.size(); ++idx) {
+        // ASC || DESC does not matter here
+        if(groupByOrdinals[idx] != sortedOn[idx].first) {
+            return false;
         }
-        if(!found)
-            return  false;
     }
+
     return true;
+
 }
 
 types::Value GroupByAggregate::groupByMatch(const QueryTuple &lhs, const QueryTuple &rhs) const {
@@ -157,9 +166,10 @@ QueryTuple GroupByAggregate::generateOutputTuple(const QueryTuple &lastTuple, co
     }
 
 
-    types::Value dummyTag = GroupByAggregateImpl::getDummyTag(lastEntryGroupByBin, nonDummyBin);
+    types::Value dummyTag = aggregators[0]->getDummyTag(lastEntryGroupByBin, nonDummyBin);
     dstTuple.setDummyTag(dummyTag);
 
     return dstTuple;
 
 }
+

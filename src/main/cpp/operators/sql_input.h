@@ -14,10 +14,11 @@ namespace  vaultdb {
         std::string inputQuery;
         std::string dbName;
         bool hasDummyTag;
+        SortDefinition sortedOn;
 
     public:
         // bool denotes whether the last col of the SQL statement should be interpreted as a dummy tag
-        SqlInput(std::string db, std::string sql, bool dummyTag) : inputQuery(sql), dbName(db), hasDummyTag(dummyTag) {
+        SqlInput(std::string db, std::string sql, bool dummyTag) : inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sortedOn() {
 
 
         }
@@ -26,6 +27,8 @@ namespace  vaultdb {
                  const bool &hasDummyTag) {
             output = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, hasDummyTag);
         }
+
+        void setSortDefinition(const SortDefinition & aSortDefinition) { sortedOn = aSortDefinition; };
 
         std::shared_ptr<QueryTable> runSelf() override;
 

@@ -1,11 +1,9 @@
-//
-// Created by Jennie Rogers on 8/5/20.
-//
-
 #include <cstddef>
 #include <assert.h>
 #include <data/PsqlDataProvider.h>
 #include "data_utilities.h"
+
+using namespace vaultdb;
 
 unsigned char DataUtilities::reverse(unsigned char b) {
     b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
@@ -120,9 +118,42 @@ void DataUtilities::locallySecretShareTable(const std::unique_ptr<QueryTable> &t
 void DataUtilities::writeFile(std::string fileName, const char *contents) {
     std::ofstream outFile(fileName.c_str(), std::ios::out | std::ios::binary);
     if(!outFile.is_open()) {
-        throw "Could not write output file " + fileName;
+        throw std::invalid_argument("Could not write output file " + fileName);
     }
     outFile.write(contents, 16);
     outFile.close();
 }
+
+SortDefinition DataUtilities::getDefaultSortDefinition(const uint32_t &colCount) {
+        SortDefinition  sortDefinition;
+
+        for(uint32_t i = 0; i < colCount; ++i) {
+            sortDefinition.push_back(ColumnSort(i, SortDirection::ASCENDING));
+        }
+
+        return sortDefinition;
+
+    }
+
+std::shared_ptr<QueryTable> DataUtilities::removeDummies(const std::shared_ptr<QueryTable> &input) {
+    // only works for plaintext tables
+    assert(!input->isEncrypted());
+    int outputTupleCount = input->getTrueTupleCount();
+
+    int writeCursor = 0;
+    std::shared_ptr<QueryTable> output(new QueryTable(outputTupleCount, input->getTupleCount(), false));
+    output->setSchema(input->getSchema());
+    output->setSortOrder(input->getSortOrder());
+
+    for(int i = 0; i < input->getTupleCount(); ++i) {
+        QueryTuple *tuple = input->getTuplePtr(i);
+        if(!tuple->getDummyTag().getBool()) {
+            output->putTuple(writeCursor, *tuple);
+            ++writeCursor;
+        }
+    }
+
+    return output;
+}
+
 

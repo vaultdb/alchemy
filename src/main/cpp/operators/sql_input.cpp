@@ -6,6 +6,9 @@ std::shared_ptr<QueryTable> SqlInput::runSelf() {
     PsqlDataProvider dataProvider;
     std::unique_ptr<QueryTable> localOutput = dataProvider.getQueryTable(dbName, inputQuery, hasDummyTag);
     output = std::move(localOutput);
+    if(!sortedOn.empty()) {  output->setSortOrder(sortedOn); }
+
     return output;
+
 
 }

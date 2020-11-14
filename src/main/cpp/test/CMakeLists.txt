@@ -79,6 +79,7 @@ package_add_test(basic_join_test basic_join_test.cpp)
 package_add_test(fkey_pkey_join_test fkey_pkey_join_test.cpp)
 package_add_test(csv_reader_test csv_reader_test.cpp)
 package_add_test(scalar_aggregate_test scalar_aggregate_test.cpp)
+package_add_test(group_by_aggregate_test group_by_aggregate_test.cpp)
 
 #EMP-based tests
 package_add_test(emp_test emp_test.cpp support/EmpBaseTest.cpp)

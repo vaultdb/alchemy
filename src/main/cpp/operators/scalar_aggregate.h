@@ -12,7 +12,7 @@
 namespace vaultdb {
     class ScalarAggregate : public Operator {
     public:
-        // aggregrates are sorted by their output order in aggregate's output schema
+        // aggregates are sorted by their output order in aggregate's output schema
         ScalarAggregate(std::shared_ptr<Operator> &child, const std::vector<ScalarAggregateDefinition> &aggregates)
                 : Operator(child), aggregateDefinitions(aggregates) {};
 

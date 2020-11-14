@@ -32,9 +32,9 @@ namespace vaultdb {
         QuerySchema generateOutputSchema(const QuerySchema & srcSchema,
                                          const std::vector<GroupByAggregateImpl *> & aggregators) const;
 
-        QueryTuple
-        generateOutputTuple(const QueryTuple &lastTuple, const types::Value &lastEntryGroupByBin,
+        QueryTuple generateOutputTuple(const QueryTuple &lastTuple, const types::Value &lastEntryGroupByBin,
                             const types::Value &nonDummyBin, const vector<GroupByAggregateImpl *> &aggregators) const;
+
 
     };
 }

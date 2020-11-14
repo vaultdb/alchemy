@@ -137,7 +137,9 @@ types::Value TypeUtilities::getZero(types::TypeId &aType) {
         case types::TypeId::FLOAT32:
             return types::Value((float_t) 0.0);
         case types::TypeId::VARCHAR:
-            return types::Value(std::string(""));
+            char oneChar[2]; //  null-terminated
+            oneChar[0]  = (int8_t) 0;
+            return types::Value(std::string(oneChar));
         case types::TypeId::ENCRYPTED_BOOLEAN:
             return types::Value(emp::Bit(0, emp::PUBLIC));
         case types::TypeId::ENCRYPTED_INTEGER32:
@@ -157,7 +159,7 @@ types::Value TypeUtilities::getZero(types::TypeId &aType) {
 types::Value TypeUtilities::getOne(types::TypeId &aType) {
     switch(aType) {
         case types::TypeId::BOOLEAN:
-            return types::Value(false);
+            return types::Value(true);
         case types::TypeId::INTEGER32:
             return types::Value((int32_t) 1);
         case types::TypeId::DATE:
@@ -167,7 +169,9 @@ types::Value TypeUtilities::getOne(types::TypeId &aType) {
         case types::TypeId::FLOAT32:
             return types::Value((float_t) 1.0);
         case types::TypeId::VARCHAR:
-            return types::Value(std::string(" "));
+            char oneChar[2]; //  null-terminated
+            oneChar[0]  = (int8_t) 1;
+            return types::Value(std::string(oneChar));
         case types::TypeId::ENCRYPTED_BOOLEAN:
             return types::Value(emp::Bit(1, emp::PUBLIC));
         case types::TypeId::ENCRYPTED_INTEGER32:
