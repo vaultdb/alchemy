@@ -55,6 +55,9 @@ psql $DB_NAME < $TPCH_SCRIPTS_PATH/tpch-index.sql
 #add permissions
 psql $DB_NAME < $CONF_PATH/set-security-policy.sql
 
+#add o_orderyear field for testing
+ALTER TABLE ADD CONSTRAINT o_orderyear_domain CHECK (((o_orderyear >= 1992) AND (o_orderyear <= 1998)));
+UPDATE orders SET o_orderyear=EXTRACT(YEAR FROM o_orderdate);
 
 
 #OK, DB is set up, now need to partition for Alice and Bob
