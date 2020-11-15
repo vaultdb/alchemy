@@ -21,3 +21,21 @@ void SecureGroupByAggregateImpl::updateGroupByBinBoundary(const types::Value &is
     nonDummyBinFlag.setValue(updatedFlag);
 
 }
+
+void SecureGroupByCountImpl::initialize(const QueryTuple &tuple, const types::Value &isDummy) {
+    runningCount = emp::If(!isDummy.getEmpBit() & !tuple.getDummyTag().getEmpBit(), one, zero);
+
+}
+
+void SecureGroupByCountImpl::accumulate(const QueryTuple &tuple, const types::Value &isDummy) {
+    runningCount = emp::If(!isDummy.getEmpBit() & !tuple.getDummyTag().getEmpBit(), runningCount + one, runningCount);
+
+}
+
+types::Value SecureGroupByCountImpl::getResult() {
+    return types::Value(types::TypeId::ENCRYPTED_INTEGER64, runningCount);
+}
+
+types::TypeId SecureGroupByCountImpl::getType() {
+    return types::TypeId::ENCRYPTED_INTEGER64;
+}
