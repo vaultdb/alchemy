@@ -8,7 +8,8 @@
 ./bin/sort_test && \
 ./bin/basic_join_test && \
 ./bin/fkey_pkey_join_test && \
-./bin/scalar_aggregate_test && \
+    ./bin/scalar_aggregate_test && \
+    ./bin/group_by_aggregate_test && \
 ./bin/csv_reader_test
 
 
