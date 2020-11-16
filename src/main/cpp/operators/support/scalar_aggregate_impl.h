@@ -93,7 +93,6 @@ namespace vaultdb {
         types::Value runningCount;
         types::Value zero;
         types::Value one;
-        types::Value average;
 
     };
 }

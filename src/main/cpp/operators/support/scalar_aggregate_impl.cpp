@@ -149,16 +149,19 @@ void ScalarAverage::accumulate(const QueryTuple &tuple) {
     types::Value tupleCount = tuple.getDummyTag().getBool() ? zero : one;
 
     runningSum =  runningSum + toAdd;
-    runningCount = (tuple.getDummyTag().getBool()) ? runningCount : tupleCount;
+    runningCount = runningCount + tupleCount;
 }
 
 types::Value ScalarAverage::getResult() {
 
-    average = (runningCount!=zero).getBool() ? zero : runningSum/runningCount;
-    return types::Value(average);
+    assert(initialized);
+
+    if((runningCount == zero).getBool()) { return zero; }
+
+    return types::Value(runningSum/runningCount);
 }
 
 types::TypeId ScalarAverage::getType() {
     assert(initialized);
-    return average.getType();
+    return runningCount.getType();
 }
