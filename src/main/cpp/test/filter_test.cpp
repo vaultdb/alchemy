@@ -17,7 +17,7 @@ class FilterTest : public ::testing::Test {
 protected:
     void SetUp() override {};
     void TearDown() override{};
-    const std::string dbName = "tpch_alice";
+    const std::string dbName = "tpch_unioned";
 };
 
 
@@ -26,7 +26,7 @@ protected:
 
 TEST_F(FilterTest, test_table_scan) {
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 10";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
 
 
     std::shared_ptr<Operator> input = std::make_shared<SqlInput>(dbName, sql, false);
@@ -66,7 +66,7 @@ public:
 
 
 TEST_F(FilterTest, test_filter) {
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 10";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
