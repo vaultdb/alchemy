@@ -25,7 +25,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     SortDefinition outputSort = std::vector<ColumnSort>(inputSort.begin(), inputSort.begin() + groupByOrdinals.size());
 
 
-    output = std::shared_ptr<QueryTable>(new QueryTable(input->getTupleCount(), outputSchema.getFieldCount(), input->isEncrypted()));
+    output = std::shared_ptr<QueryTable>(new QueryTable(input->getTupleCount(), outputSchema.getFieldCount()));
     output->setSchema(outputSchema);
     output->setSortOrder(outputSort);
 

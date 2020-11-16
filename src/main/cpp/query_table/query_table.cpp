@@ -2,6 +2,7 @@
 #include "secret_share/prg.h"
 #include <memory>
 #include <util/data_utilities.h>
+#include <util/type_utilities.h>
 #include "query_table.h"
 
 QueryTuple QueryTable::getTuple(int idx) const {
@@ -16,35 +17,42 @@ void QueryTable::setSchema(const QuerySchema & s) {
 const QuerySchema & QueryTable::getSchema() const { return schema_; }
 
 unsigned int QueryTable::getTupleCount() const {
-    return tupleCount_;
+    return tuples_.size();
 }
 
 
 
-QueryTable::QueryTable(const int &num_tuples, const bool &is_encrypted, const QuerySchema &schema,
-                       const SortDefinition &sortDefinition) : is_encrypted_(is_encrypted),  tupleCount_(num_tuples), schema_(schema), orderBy(sortDefinition) {
+QueryTable::QueryTable(const int &num_tuples, const QuerySchema &schema, const SortDefinition &sortDefinition)
+        :  schema_(schema), orderBy(sortDefinition) {
 
-    tuples_.resize(tupleCount_);
+    tuples_.resize(num_tuples);
 
-    for(uint32_t i = 0; i < tupleCount_; ++i) {
+    for(uint32_t i = 0; i < num_tuples; ++i) {
         tuples_[i].setFieldCount(schema.getFieldCount()); // initialize tuples
     }
 }
 
 
 
-QueryTable::QueryTable(const int & num_tuples, const  int & colCount, const bool & is_encrypted)
-    : schema_(QuerySchema(colCount)), is_encrypted_(is_encrypted),  tupleCount_(num_tuples) {
-    tuples_.resize(tupleCount_);
+QueryTable::QueryTable(const int &num_tuples, const int &colCount)
+    : schema_(QuerySchema(colCount)) {
+    tuples_.resize(num_tuples);
 
-    for(uint32_t i = 0; i < tupleCount_; ++i) {
+    for(uint32_t i = 0; i < num_tuples; ++i) {
         tuples_[i].setFieldCount(colCount); // initialize tuples
     }
 
 
 }
 
-const bool QueryTable::isEncrypted() const { return is_encrypted_; }
+const bool QueryTable::isEncrypted() const {
+    types::TypeId firstColType = schema_.getField(0).getType();
+
+    // if encrypted version of this column is the same as its original value
+    if(TypeUtilities::toSecure(firstColType) == firstColType)
+        return true;
+    return false;
+}
 
 
 
@@ -58,7 +66,7 @@ std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
 
     QuerySchema dstSchema = QuerySchema::toPlain(getSchema());
 
-    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, isEncrypted, dstSchema, getSortOrder()));
+    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, dstSchema, getSortOrder()));
 
     QueryTuple srcTuple; // initialized below
 
@@ -80,11 +88,11 @@ std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
 bool *QueryTable::serialize() const {
     // dst size is in bits
     size_t tupleWidth =  schema_.size();
-    size_t dstSize = tupleCount_ * tupleWidth;
+    size_t dstSize = getTupleCount() * tupleWidth;
     bool *dst = new bool[dstSize];
     bool *cursor = dst;
 
-    for(uint32_t i = 0; i < tupleCount_; ++i) {
+    for(uint32_t i = 0; i < getTupleCount(); ++i) {
         ((QueryTuple *) tuples_.data())->serialize(cursor, schema_);
         cursor += tupleWidth;
     }
@@ -95,7 +103,7 @@ bool *QueryTable::serialize() const {
 std::ostream &operator<<(std::ostream &os, const QueryTable &table) {
 
 
-    os <<  table.getSchema() << " isEncrypted? " << table.is_encrypted_ << std::endl;
+    os <<  table.getSchema() << " isEncrypted? " << table.isEncrypted() << std::endl;
 
     for(int i = 0; i < table.getTupleCount(); ++i) {
         os << table.tuples_[i];
@@ -127,7 +135,7 @@ std::string QueryTable::toString(const bool & showDummies) const {
     }
 
     // show dummies case
-    os <<  getSchema() << " isEncrypted? " << is_encrypted_ << std::endl;
+    os <<  getSchema() << " isEncrypted? " << isEncrypted() << std::endl;
 
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
         os << tuples_[i].toString(showDummies) << std::endl;
@@ -144,13 +152,11 @@ QueryTable & QueryTable::operator=(const QueryTable & src) {
         return *this;
 
     setSchema(src.getSchema());
-    this->is_encrypted_ = src.isEncrypted();
-    this->tupleCount_ = src.getTupleCount();
 
-    tuples_.resize(tupleCount_);
+    tuples_.resize(getTupleCount());
 
 
-    for(uint32_t i = 0; i < tupleCount_; ++i) {
+    for(uint32_t i = 0; i < getTupleCount(); ++i) {
         tuples_[i] = src.tuples_[i];
     }
 
@@ -162,19 +168,14 @@ void QueryTable::putTuple(const int &idx, const QueryTuple & tuple) {
 }
 
 
-QueryTable::QueryTable(const QueryTable &src) : schema_(src.getSchema()) {
+QueryTable::QueryTable(const QueryTable &src) : schema_(src.getSchema()), orderBy(src.getSortOrder()) {
 
 
-    this->is_encrypted_ = src.isEncrypted();
-    this->tupleCount_ = src.getTupleCount();
+    tuples_.resize(getTupleCount());
 
-    tuples_.resize(tupleCount_);
-
-    for(uint32_t i = 0; i < tupleCount_; ++i) {
+    for(uint32_t i = 0; i < getTupleCount(); ++i) {
         tuples_[i] = src.tuples_[i];
     }
-
-    orderBy = src.orderBy;
 
 }
 

@@ -108,7 +108,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     QuerySchema schema(1);
     schema.putField(QueryFieldDesc(0, "test", "test_table", types::TypeId::INTEGER32));
 
-    std::unique_ptr<QueryTable> inputTable(new QueryTable(tupleCount, 1, false));
+    std::unique_ptr<QueryTable> inputTable(new QueryTable(tupleCount, 1));
     inputTable->setSchema(schema);
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
@@ -128,7 +128,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 
     // set up expected result
-    std::unique_ptr<QueryTable> expectedTable(new QueryTable(2*tupleCount, 1, false));
+    std::unique_ptr<QueryTable> expectedTable(new QueryTable(2 * tupleCount, 1));
     expectedTable->setSchema(schema);
     // insert alice data first to last
     for(uint32_t i = 0; i < tupleCount; ++i) {

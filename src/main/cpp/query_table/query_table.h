@@ -13,19 +13,18 @@ using namespace vaultdb;
 
 class QueryTable {
 private:
-  QuerySchema schema_;
-  bool is_encrypted_;
+
 
     std::vector<QueryTuple> tuples_;
-    size_t tupleCount_;
 
     // tuple order
     SortDefinition orderBy;
+    QuerySchema schema_;
 
 
 public:
-    QueryTable(const int & num_tuples, const bool & is_encrypted, const QuerySchema & schema, const SortDefinition & sortDefinition);
-    QueryTable(const int & num_tuples, const int & colCount, const bool & is_encrypted);
+    QueryTable(const int &num_tuples, const QuerySchema &schema, const SortDefinition &sortDefinition);
+    QueryTable(const int &num_tuples, const int &colCount);
     QueryTable(const QueryTable & src);
     ~QueryTable() {
     }

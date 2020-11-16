@@ -71,7 +71,7 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
 
     uint32_t tupleCount = alice->getTupleCount() + bob->getTupleCount();
 
-    std::unique_ptr<QueryTable> unioned(new QueryTable(tupleCount, alice->getSchema().getFieldCount(), false));
+    std::unique_ptr<QueryTable> unioned(new QueryTable(tupleCount, alice->getSchema().getFieldCount()));
     unioned->setSchema(alice->getSchema());
 
     for(int i = 0; i < alice->getTupleCount(); ++i) {
@@ -141,7 +141,7 @@ std::shared_ptr<QueryTable> DataUtilities::removeDummies(const std::shared_ptr<Q
     int outputTupleCount = input->getTrueTupleCount();
 
     int writeCursor = 0;
-    std::shared_ptr<QueryTable> output(new QueryTable(outputTupleCount, false, input->getSchema(), input->getSortOrder()));
+    std::shared_ptr<QueryTable> output(new QueryTable(outputTupleCount, input->getSchema(), input->getSortOrder()));
     output->setSchema(input->getSchema());
     output->setSortOrder(input->getSortOrder());
 

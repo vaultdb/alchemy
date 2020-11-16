@@ -5,7 +5,7 @@
 std::unique_ptr<QueryTable> CsvReader::readCsv(const string &filename, const QuerySchema &schema) {
     std::vector<std::string> tupleEntries = readFile(filename);
 
-    std::unique_ptr<QueryTable> result(new QueryTable(tupleEntries.size(), schema.getFieldCount(), false));
+    std::unique_ptr<QueryTable> result(new QueryTable(tupleEntries.size(), schema.getFieldCount()));
     result->setSchema(schema);
     int cursor = 0;
 
