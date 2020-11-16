@@ -119,7 +119,7 @@ void vaultdb::SecureScalarMin::accumulate(const vaultdb::QueryTuple &tuple) {
   assert(initialized);
 
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::Value currMin = types::Value::obliviousIf((tupleVal < currMin).getEmpBit(), tupleVal, currMin);
+  types::Value currMin = types::Value::obliviousIf((tupleVal < currMin).getEmpBit(), tupleVal, runningMin);
   runningMin =  types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), runningMin , currMin);
 
 }
