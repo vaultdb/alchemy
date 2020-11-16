@@ -62,8 +62,12 @@ ScalarAggregateImpl *ScalarAggregate::aggregateFactory(const AggregateId &aggreg
             case AggregateId::SUM:
                 return new ScalarSum(ordinal);
             case AggregateId::AVG:
+                return new ScalarAverage(ordinal);
             case AggregateId::MIN:
+                return new ScalarMin(ordinal);
             case AggregateId::MAX:
+                return new ScalarMax(ordinal);
+            default:
                 throw std::invalid_argument("Not yet implemented!");
         };
     }

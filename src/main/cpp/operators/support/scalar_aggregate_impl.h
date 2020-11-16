@@ -51,7 +51,36 @@ namespace vaultdb {
 
 
     // TODO: implement avg, min, max
-   /* class ScalarAverage : public ScalarAggregateImpl {
+    class ScalarMin : public ScalarAggregateImpl {
+    public:
+      ScalarMin(const uint32_t & ordinal) :  ScalarAggregateImpl(ordinal) {};
+      void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
+      void accumulate(const QueryTuple & tuple) override;
+      types::Value getResult() override;
+      types::TypeId getType() override;
+
+    private:
+      types::Value runningMin;
+      types::Value zero;
+
+    };
+
+    class ScalarMax : public ScalarAggregateImpl {
+      public:
+        ScalarMax(const uint32_t & ordinal) :  ScalarAggregateImpl(ordinal) {};
+        void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
+        void accumulate(const QueryTuple & tuple) override;
+        types::Value getResult() override;
+        types::TypeId getType() override;
+
+      private:
+        types::Value runningMax;
+        types::Value zero;
+
+    };
+
+
+   class ScalarAverage : public ScalarAggregateImpl {
     public:
         ScalarAverage(const uint32_t & ordinal) :  ScalarAggregateImpl(ordinal) {};
         void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
@@ -64,8 +93,9 @@ namespace vaultdb {
         types::Value runningCount;
         types::Value zero;
         types::Value one;
+        types::Value average;
 
-    }; */
+    };
 }
 
 #endif
