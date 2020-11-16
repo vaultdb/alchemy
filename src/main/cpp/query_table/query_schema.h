@@ -19,7 +19,7 @@ public:
     explicit QuerySchema(const size_t &num_fields);
     QuerySchema(const QuerySchema &s);
 
-    [[nodiscard]] int getFieldCount() const;
+    int getFieldCount() const;
 
   void putField(const QueryFieldDesc &fd);
 
@@ -37,6 +37,8 @@ public:
 
      inline bool operator!=(const QuerySchema &other) const { return !(*this == other);  }
 
+     static QuerySchema toSecure(const QuerySchema & plainSchema);
+    static QuerySchema toPlain(const QuerySchema & secureSchema);
 
 };
 

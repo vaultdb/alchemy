@@ -1,5 +1,6 @@
 #include <iostream>
 #include "query_schema.h"
+#include <util/type_utilities.h>
 
 QuerySchema::QuerySchema(const size_t &num_fields) : fieldCount_(num_fields) {
     fields_.reserve(num_fields);
@@ -94,5 +95,26 @@ bool QuerySchema::operator==(const QuerySchema &other) const {
 
     return true;
 }
+
+QuerySchema QuerySchema::toSecure(const QuerySchema &plainSchema) {
+    QuerySchema dstSchema(plainSchema.getFieldCount());
+    for(QueryFieldDesc srcFieldDesc : plainSchema.fields_) {
+        QueryFieldDesc dstFieldDesc(srcFieldDesc, TypeUtilities::toSecure(srcFieldDesc.getType()));
+        dstSchema.putField(dstFieldDesc);
+    }
+    return dstSchema;
+}
+
+QuerySchema QuerySchema::toPlain(const QuerySchema &secureSchema) {
+    QuerySchema dstSchema(secureSchema.getFieldCount());
+    for(QueryFieldDesc srcFieldDesc : secureSchema.fields_) {
+        QueryFieldDesc dstFieldDesc(srcFieldDesc, TypeUtilities::toPlain(srcFieldDesc.getType()));
+        dstSchema.putField(dstFieldDesc);
+    }
+    return dstSchema;
+
+}
+
+
 
 

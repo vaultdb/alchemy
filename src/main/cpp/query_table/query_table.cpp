@@ -24,6 +24,11 @@ unsigned int QueryTable::getTupleCount() const {
 QueryTable::QueryTable(const int &num_tuples, const bool &is_encrypted, const QuerySchema &schema,
                        const SortDefinition &sortDefinition) : is_encrypted_(is_encrypted),  tupleCount_(num_tuples), schema_(schema), orderBy(sortDefinition) {
 
+    tuples_.resize(tupleCount_);
+
+    for(uint32_t i = 0; i < tupleCount_; ++i) {
+        tuples_[i].setFieldCount(schema.getFieldCount()); // initialize tuples
+    }
 }
 
 
@@ -51,8 +56,10 @@ std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
     if(!this->isEncrypted())
         return std::make_unique<QueryTable>(*this);
 
-    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, colCount, isEncrypted));
-    dstTable->setSchema(schema_);
+    QuerySchema dstSchema = QuerySchema::toPlain(getSchema());
+
+    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, isEncrypted, dstSchema, getSortOrder()));
+
     QueryTuple srcTuple; // initialized below
 
     for(uint32_t i = 0; i < tupleCount; ++i)  {

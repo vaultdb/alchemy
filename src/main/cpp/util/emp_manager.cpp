@@ -25,7 +25,7 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
 
     std::shared_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, colCount, true));
 
-    dstTable->setSchema(srcTable->getSchema());
+    dstTable->setSchema(QuerySchema::toSecure(srcTable->getSchema()));
     dstTable->setSortOrder(srcTable->getSortOrder());
 
     const QuerySchema *schema = &srcTable->getSchema();

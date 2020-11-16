@@ -53,9 +53,6 @@ TEST_F(SecureGroupByAggregateTest, test_count) {
     std::shared_ptr<QueryTable> aggregated = aggregate->run();
     std::shared_ptr<QueryTable> aggregatedReveal = aggregated->reveal();
 
-    std::cout << "Initial schema: " << input->getOutput()->getSchema() << std::endl;
-    std::cout << "Sort schema: " << sort->getOutput()->getSchema() << std::endl;
-    std::cout << "Aggregate schema: " << aggregate->getOutput()->getSchema() << std::endl;
 
 
     std::cout << "Observed output: " << aggregatedReveal->toString(true) << std::endl;

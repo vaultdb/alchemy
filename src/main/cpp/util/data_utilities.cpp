@@ -141,7 +141,7 @@ std::shared_ptr<QueryTable> DataUtilities::removeDummies(const std::shared_ptr<Q
     int outputTupleCount = input->getTrueTupleCount();
 
     int writeCursor = 0;
-    std::shared_ptr<QueryTable> output(new QueryTable(outputTupleCount, input->getTupleCount(), false));
+    std::shared_ptr<QueryTable> output(new QueryTable(outputTupleCount, false, input->getSchema(), input->getSortOrder()));
     output->setSchema(input->getSchema());
     output->setSortOrder(input->getSortOrder());
 

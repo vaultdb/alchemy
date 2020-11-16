@@ -30,7 +30,7 @@ public:
     ~QueryTable() {
     }
 
-    static std::string getQueryTableXorString(const QueryTable  & input_table) {throw; } // not yet implemented
+
 
   const bool isEncrypted() const;
   void setSchema(const QuerySchema & schema);
