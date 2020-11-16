@@ -1,6 +1,3 @@
-//
-// Created by Salome Kariuki on 4/29/20.
-//
 #include "sort.h"
 
 #include <util/emp_manager.h>
@@ -69,27 +66,6 @@ bool SecureSortTest::isSorted(const std::shared_ptr<QueryTable> & table, const S
 
 
 
-/*
-// try the logic of Q1 in plaintext for warmup
-TEST_F(SecureSortTest, tpchQ1SortClear) {
-
-    std::string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment LIMIT 5"; // order by to ensure order is reproducible and not sorted on the sort cols
-
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(0, SortDirection::ASCENDING);
-    sortDefinition.emplace_back(1, SortDirection::ASCENDING);
-
-
-    SqlInput *sqlInputPtr = new SqlInput("tpch_alice", "tpch_bob", sql, false);
-    std::shared_ptr<Operator> input(sqlInputPtr);
-
-    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
-    std::shared_ptr<QueryTable> result = sort->run();
-
-    bool tableSorted = isSorted(result, sortDefinition);
-    ASSERT_TRUE(tableSorted);
-}
 
 TEST_F(SecureSortTest, tpchQ1Sort) {
     std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
@@ -123,7 +99,7 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
 
 }
-*/
+
 
 TEST_F(SecureSortTest, tpchQ3Sort) {
     std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
@@ -209,7 +185,6 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
 
 
 
-
 TEST_F(SecureSortTest, tpchQ9Sort) {
     std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
 
@@ -276,8 +251,6 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
 
 }
-
-
 
 
 

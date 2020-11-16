@@ -32,7 +32,7 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
         outputSchema.putField(fieldDesc);
     }
 
-    std::shared_ptr<QueryTable> output(new QueryTable(1, outputSchema.getFieldCount(), input->isEncrypted()));
+    output = std::shared_ptr<QueryTable>(new QueryTable(1, outputSchema.getFieldCount(), input->isEncrypted()));
     output->setSchema(outputSchema);
     QueryTuple *tuplePtr = output->getTuplePtr(0);
     tuplePtr->initDummy();

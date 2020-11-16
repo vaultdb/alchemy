@@ -1,5 +1,6 @@
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
+#include <operators/support/secure_group_by_aggregate_impl.h>
 #include "group_by_aggregate.h"
 
 
@@ -8,6 +9,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     std::vector<GroupByAggregateImpl *> aggregators;
     QueryTuple *current, *predecessor;
     types::Value nonDummyBin;
+    types::TypeId boolType = input->isEncrypted() ? types::TypeId::ENCRYPTED_BOOLEAN : types::TypeId::BOOLEAN;
     QueryTuple outputTuple;
 
     for(ScalarAggregateDefinition agg : aggregateDefinitions) {
@@ -22,7 +24,8 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     SortDefinition inputSort = input->getSortOrder();
     SortDefinition outputSort = std::vector<ColumnSort>(inputSort.begin(), inputSort.begin() + groupByOrdinals.size());
 
-    std::shared_ptr<QueryTable> output(new QueryTable(input->getTupleCount(), outputSchema.getFieldCount(), input->isEncrypted()));
+
+    output = std::shared_ptr<QueryTable>(new QueryTable(input->getTupleCount(), outputSchema.getFieldCount(), input->isEncrypted()));
     output->setSchema(outputSchema);
     output->setSortOrder(outputSort);
 
@@ -30,9 +33,12 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     QueryTuple *tuplePtr = output->getTuplePtr(0);
     tuplePtr->initDummy();
 
-    predecessor = input->getTuplePtr(0);
+
+    predecessor = input->getTuplePtr(0);;
+    types::Value forceInit = TypeUtilities::getZero(boolType);
+
     for(GroupByAggregateImpl *aggregator : aggregators) {
-        aggregator->initialize(*predecessor, types::Value(false));
+        aggregator->initialize(*predecessor, forceInit);
     }
 
     nonDummyBin = !(predecessor->getDummyTag()); // does this group-by bin contain at least one real (non-dummy) tuple?
@@ -56,10 +62,9 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     }
 
     nonDummyBin = nonDummyBin | predecessor->getDummyTag();
-    types::TypeId dummyType = nonDummyBin.getType();
 
     // getOne to make it write out the last entry
-    outputTuple = generateOutputTuple(*predecessor, TypeUtilities::getOne(dummyType), nonDummyBin, aggregators);
+    outputTuple = generateOutputTuple(*predecessor, TypeUtilities::getOne(boolType), nonDummyBin, aggregators);
     output->putTuple(input->getTupleCount() - 1, outputTuple);
 
     // output sorted on group-by cols
@@ -90,8 +95,9 @@ GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggr
     }
 
     switch (aggregateType) {
-        case AggregateId::AVG:
         case AggregateId::COUNT:
+            return new SecureGroupByCountImpl(ordinal);
+        case AggregateId::AVG:
         case AggregateId::SUM:
         case AggregateId::MIN:
         case AggregateId::MAX:
@@ -101,6 +107,10 @@ GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggr
 
 bool GroupByAggregate::verifySortOrder(const std::shared_ptr<QueryTable> &table) const {
     SortDefinition sortedOn = table->getSortOrder();
+
+    std::cout << "Sorted on " << sortedOn.size() << " group by cols: " << groupByOrdinals.size() << std::endl;
+    assert(sortedOn.size() >= groupByOrdinals.size());
+
     for(int idx = 0; idx < groupByOrdinals.size(); ++idx) {
         // ASC || DESC does not matter here
         if(groupByOrdinals[idx] != sortedOn[idx].first) {
@@ -168,6 +178,7 @@ QueryTuple GroupByAggregate::generateOutputTuple(const QueryTuple &lastTuple, co
 
     types::Value dummyTag = aggregators[0]->getDummyTag(lastEntryGroupByBin, nonDummyBin);
     dstTuple.setDummyTag(dummyTag);
+
 
     return dstTuple;
 

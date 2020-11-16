@@ -8,7 +8,7 @@
 namespace vaultdb {
     class GroupByAggregateImpl {
     public:
-        GroupByAggregateImpl(const int32_t & ordinal) : aggregateOrdinal(ordinal) {};
+        explicit GroupByAggregateImpl(const int32_t & ordinal) : aggregateOrdinal(ordinal) {};
         virtual void initialize(const QueryTuple & tuple, const types::Value & isDummy) = 0; // run this when we start a new group-by bin
         virtual void accumulate(const QueryTuple & tuple, const types::Value & isDummy) = 0;
         virtual types::Value getResult() = 0;

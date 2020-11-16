@@ -35,6 +35,8 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
         throw e;
     }
 
+
+
     pqxx::row firstRow = *(pqxxResult.begin());
     int colCount = firstRow.size();
     if(hasDummyTag)

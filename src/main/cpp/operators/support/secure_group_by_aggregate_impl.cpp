@@ -7,7 +7,8 @@ types::Value SecureGroupByAggregateImpl::getDummyTag(const vaultdb::types::Value
     assert(isLastEntry.getType() == types::TypeId::ENCRYPTED_BOOLEAN &&
                    nonDummyBinFlag.getType() == types::TypeId::ENCRYPTED_BOOLEAN);
 
-    emp::Bit output = emp::If(isLastEntry.getEmpBit(), nonDummyBinFlag.getEmpBit(), emp::Bit(true, emp::PUBLIC));
+    // isLastEntry.getBool() ? !nonDummyBin : types::Value(true);
+    emp::Bit output = emp::If(isLastEntry.getEmpBit(), !nonDummyBinFlag.getEmpBit(), emp::Bit(true, emp::PUBLIC));
     return types::Value(output);
 
 }
@@ -17,18 +18,22 @@ void SecureGroupByAggregateImpl::updateGroupByBinBoundary(const types::Value &is
            nonDummyBinFlag.getType() == types::TypeId::ENCRYPTED_BOOLEAN);
 
     // ! nonDummy bin b/c if it is a real bin, we want dummyTag = false
-    emp::Bit updatedFlag = emp::If(isNewBin.getEmpBit(), !nonDummyBinFlag.getEmpBit(), emp::Bit(true, emp::PUBLIC));
+    //     bool updatedFlag = isNewBin.getBool() ? false : nonDummyBinFlag.getBool();
+    //    nonDummyBinFlag.setValue(updatedFlag);
+    emp::Bit updatedFlag = emp::If(isNewBin.getEmpBit(), emp::Bit(false, emp::PUBLIC), nonDummyBinFlag.getEmpBit());
     nonDummyBinFlag.setValue(updatedFlag);
 
 }
 
 void SecureGroupByCountImpl::initialize(const QueryTuple &tuple, const types::Value &isDummy) {
-    runningCount = emp::If(!isDummy.getEmpBit() & !tuple.getDummyTag().getEmpBit(), one, zero);
+    runningCount = emp::If(isDummy.getEmpBit(), runningCount, emp::If(tuple.getDummyTag().getEmpBit(), zero, one));
 
 }
 
 void SecureGroupByCountImpl::accumulate(const QueryTuple &tuple, const types::Value &isDummy) {
-    runningCount = emp::If(!isDummy.getEmpBit() & !tuple.getDummyTag().getEmpBit(), runningCount + one, runningCount);
+
+    emp::Bit toUpdate = !(isDummy.getEmpBit()) & !(tuple.getDummyTag().getEmpBit());
+    runningCount = emp::If(toUpdate, runningCount + one, runningCount);
 
 }
 

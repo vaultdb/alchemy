@@ -23,10 +23,11 @@ namespace  vaultdb {
 
         }
 
-        SqlInput(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
-                 const bool &hasDummyTag) {
-            output = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, hasDummyTag);
+        SqlInput(std::string db, std::string sql, bool dummyTag, const SortDefinition & sortDefinition) : inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sortedOn(sortDefinition) {
+
+
         }
+
 
         void setSortDefinition(const SortDefinition & aSortDefinition) { sortedOn = aSortDefinition; };
 

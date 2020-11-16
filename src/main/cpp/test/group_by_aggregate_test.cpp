@@ -28,10 +28,8 @@ TEST_F(GroupByAggregateTest, test_count) {
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
     std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*) FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
-
-    std::shared_ptr<Operator> input(new SqlInput(dbName, query, false));
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    ((SqlInput*) input.get())->setSortDefinition(sortDefinition);
+    std::shared_ptr<Operator> input(new SqlInput(dbName, query, false, sortDefinition));
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt"));

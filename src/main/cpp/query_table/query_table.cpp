@@ -21,6 +21,13 @@ unsigned int QueryTable::getTupleCount() const {
 
 
 
+QueryTable::QueryTable(const int &num_tuples, const bool &is_encrypted, const QuerySchema &schema,
+                       const SortDefinition &sortDefinition) : is_encrypted_(is_encrypted),  tupleCount_(num_tuples), schema_(schema), orderBy(sortDefinition) {
+
+}
+
+
+
 QueryTable::QueryTable(const int & num_tuples, const  int & colCount, const bool & is_encrypted)
     : schema_(QuerySchema(colCount)), is_encrypted_(is_encrypted),  tupleCount_(num_tuples) {
     tuples_.resize(tupleCount_);
@@ -176,7 +183,7 @@ QueryTuple *QueryTable::getTuplePtr(const int &idx) const {
 bool QueryTable::operator==(const QueryTable &other) const {
 
     if(getSchema() != other.getSchema()) {
-        //std::cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << std::endl;
+        std::cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << std::endl;
         return false;
     }
 
@@ -187,10 +194,10 @@ bool QueryTable::operator==(const QueryTable &other) const {
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
         QueryTuple *thisTuple = getTuplePtr(i);
         QueryTuple *otherTuple = other.getTuplePtr(i);
-      // std::cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << std::endl;
+       std::cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << std::endl;
 
         if(*thisTuple != *otherTuple) {
-//            std::cout << "    Failed to match!" << std::endl;
+            std::cout << "    Failed to match!" << std::endl;
             return false;
         }
 
@@ -252,5 +259,4 @@ void QueryTable::setSortOrder(const SortDefinition &sortOrder) {
 SortDefinition QueryTable::getSortOrder() const {
     return orderBy;
 }
-
 

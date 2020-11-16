@@ -40,7 +40,7 @@ public:
   const vaultdb::types::Value getDummyTag() const;
 
 
-    QueryTuple reveal(const int &empParty) const;
+    QueryTuple reveal(const int &empParty = emp::PUBLIC) const;
     friend std::ostream& operator<<(std::ostream &strm, const QueryTuple &aTuple);
     std::string toString(const bool &showDummies = false) const;
 

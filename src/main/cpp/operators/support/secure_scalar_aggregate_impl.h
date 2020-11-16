@@ -6,7 +6,7 @@
 namespace vaultdb {
     class SecureScalarAverage : public ScalarAggregateImpl {
      public:
-         SecureScalarAverage(const uint32_t & ordinal) :  ScalarAggregateImpl(ordinal) {};
+         explicit  SecureScalarAverage(const uint32_t & ordinal) :  ScalarAggregateImpl(ordinal) {};
          void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
          void accumulate(const QueryTuple & tuple) override;
          types::Value getResult() override;

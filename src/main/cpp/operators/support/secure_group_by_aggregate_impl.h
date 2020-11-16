@@ -14,9 +14,12 @@ namespace vaultdb {
     };
 
 
-    class SecureGroupByCountImpl : public  PlainGroupByAggregateImpl {
+    class SecureGroupByCountImpl : public  SecureGroupByAggregateImpl {
     public:
-        explicit SecureGroupByCountImpl(const int32_t & ordinal) : PlainGroupByAggregateImpl(ordinal), runningCount(64, 0, emp::PUBLIC), zero(64, 0, emp::PUBLIC), one(64, 1, emp::PUBLIC) {};
+        explicit SecureGroupByCountImpl(const int32_t & ordinal) : SecureGroupByAggregateImpl(ordinal),
+            runningCount(64, 0, emp::PUBLIC),
+            zero(64, 0, emp::PUBLIC),
+            one(64, 1, emp::PUBLIC) {}
         void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
         void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
         types::Value getResult() override;

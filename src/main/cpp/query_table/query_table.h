@@ -24,6 +24,7 @@ private:
 
 
 public:
+    QueryTable(const int & num_tuples, const bool & is_encrypted, const QuerySchema & schema, const SortDefinition & sortDefinition);
     QueryTable(const int & num_tuples, const int & colCount, const bool & is_encrypted);
     QueryTable(const QueryTable & src);
     ~QueryTable() {

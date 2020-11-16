@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 7/25/20.
-//
-
 #include "emp_manager.h"
 #include "type_utilities.h"
 #include "data_utilities.h"
@@ -30,6 +26,8 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
     std::shared_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, colCount, true));
 
     dstTable->setSchema(srcTable->getSchema());
+    dstTable->setSortOrder(srcTable->getSortOrder());
+
     const QuerySchema *schema = &srcTable->getSchema();
 
 
