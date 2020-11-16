@@ -27,6 +27,7 @@ namespace vaultdb {
         static types::Value getOne(types::TypeId &aType);
         static types::TypeId toSecure(const types::TypeId & plainType);
         static types::TypeId toPlain(const types::TypeId & secureType);
+        static bool  isEncrypted(const types::TypeId & type);
 
     };
 

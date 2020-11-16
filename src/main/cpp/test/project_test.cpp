@@ -8,7 +8,7 @@
 
 using namespace emp;
 using namespace vaultdb::types;
-
+using namespace vaultdb;
 
 
 class ProjectionTest : public ::testing::Test {

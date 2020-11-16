@@ -1,5 +1,7 @@
 #include "replace_tuple.h"
 
+using namespace vaultdb;
+
 ReplaceTuple::ReplaceTuple(std::shared_ptr<QueryTable> table) {
     dstTable = table;
 

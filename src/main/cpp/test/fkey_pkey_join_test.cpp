@@ -10,7 +10,7 @@
 
 using namespace emp;
 using namespace vaultdb::types;
-
+using namespace vaultdb;
 
 
 class ForeignKeyPrimaryKeyJoinTest : public ::testing::Test {

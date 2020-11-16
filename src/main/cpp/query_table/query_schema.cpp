@@ -2,6 +2,8 @@
 #include "query_schema.h"
 #include <util/type_utilities.h>
 
+using namespace vaultdb;
+
 QuerySchema::QuerySchema(const size_t &num_fields)  {
     fields_.reserve(num_fields);
 
@@ -48,14 +50,14 @@ size_t QuerySchema::size() const {
         return bitSize;
 }
 
-std::ostream &operator<<(std::ostream &os, const QuerySchema &schema) {
+std::ostream &vaultdb::operator<<(std::ostream &os, const QuerySchema &schema) {
     int fieldCount = schema.getFieldCount();
 
-    os << "(" << schema.fields_[0];
+    os << "(" << schema.getField(0);
 
 
     for(int i = 1; i < fieldCount; ++i) {
-        os << ", " << schema.fields_[i];
+        os << ", " << schema.getField(i);
     }
 
     os << ")";

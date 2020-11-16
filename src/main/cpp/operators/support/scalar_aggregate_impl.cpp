@@ -1,6 +1,8 @@
 #include <util/type_utilities.h>
 #include "scalar_aggregate_impl.h"
 
+using namespace vaultdb;
+
 void vaultdb::ScalarCount::initialize(const vaultdb::QueryTuple &tuple) {
 
     assert(!tuple.isEncrypted());

@@ -52,7 +52,7 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
 
 
-    std::unique_ptr<QueryTable> dstTable = std::make_unique<QueryTable>(rowCount, colCount, false);
+    std::unique_ptr<QueryTable> dstTable = std::make_unique<QueryTable>(rowCount, colCount);
     tableSchema = getSchema(pqxxResult, hasDummyTag);
 
     dstTable->setSchema(*tableSchema);
@@ -154,7 +154,6 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
 
         QueryTuple dstTuple(colCount);
 
-    dstTuple.setIsEncrypted(false);
 
 
         for (int i=0; i < colCount; i++) {

@@ -3,6 +3,7 @@
 #include <string>
  
  using namespace vaultdb::types;
+ using namespace vaultdb;
 
  std::string TypeUtilities::getTypeIdString(TypeId typeId) {
     switch(typeId) {
@@ -226,4 +227,18 @@ TypeId TypeUtilities::toPlain(const TypeId &secureType) {
             return secureType;
     }
 }
+
+bool TypeUtilities::isEncrypted(const TypeId &type) {
+    switch(type) {
+        case TypeId::ENCRYPTED_BOOLEAN:
+        case TypeId::ENCRYPTED_INTEGER32:
+        case TypeId::ENCRYPTED_INTEGER64:
+        case TypeId::ENCRYPTED_FLOAT32:
+        case TypeId::ENCRYPTED_VARCHAR:
+            return true;
+        default:
+            return false;
+    };
+
+ }
 

@@ -8,59 +8,77 @@
 #include <vaultdb.h>
 #include <ostream>
 
-using namespace vaultdb;
+
+namespace  vaultdb {
+
+    class QueryTuple;
+
+    class QueryTable {
+        private:
 
 
-class QueryTable {
-private:
+        // tuple order
+            SortDefinition orderBy;
+            QuerySchema schema_;
 
 
-    std::vector<QueryTuple> tuples_;
+    protected:
+        std::vector<QueryTuple> tuples_;
 
-    // tuple order
-    SortDefinition orderBy;
-    QuerySchema schema_;
+    public:
+            QueryTable(const int &num_tuples, const QuerySchema &schema, const SortDefinition &sortDefinition);
 
+            QueryTable(const int &num_tuples, const int &colCount);
 
-public:
-    QueryTable(const int &num_tuples, const QuerySchema &schema, const SortDefinition &sortDefinition);
-    QueryTable(const int &num_tuples, const int &colCount);
-    QueryTable(const QueryTable & src);
-    ~QueryTable() {
-    }
+            QueryTable(const QueryTable &src);
 
+            ~QueryTable() {
+            }
 
 
-  const bool isEncrypted() const;
-  void setSchema(const QuerySchema & schema);
-  const QuerySchema & getSchema() const;
-  QueryTuple getTuple(int idx) const;
-  unsigned int getTupleCount() const;
-  std::string toString(const bool & showDummies = false) const;
-  void putTuple(const int &idx, const QueryTuple & tuple);
-  void setTupleDummyTag(const int & tupleIdx, const types::Value & dummyTag);
+            const bool isEncrypted() const;
 
-    QueryTuple* getTuplePtr(const int & idx)  const;
-    void setSortOrder(const SortDefinition & sortOrder);
-    SortDefinition getSortOrder() const;
+            void setSchema(const QuerySchema &schema);
+
+            const QuerySchema &getSchema() const;
+
+            QueryTuple getTuple(int idx) const;
+
+            unsigned int getTupleCount() const;
+
+            std::string toString(const bool &showDummies = false) const;
+
+            void putTuple(const int &idx, const QueryTuple &tuple);
+
+            void setTupleDummyTag(const int &tupleIdx, const types::Value &dummyTag);
+
+            QueryTuple *getTuplePtr(const int &idx) const;
+
+            void setSortOrder(const SortDefinition &sortOrder);
+
+            SortDefinition getSortOrder() const;
 
 
-    // retrieves # of tuples that are not dummies
-    // only works for unencrypted tables, o.w. returns getTupleCount()
-    uint32_t getTrueTupleCount() const;
+            // retrieves # of tuples that are not dummies
+            // only works for unencrypted tables, o.w. returns getTupleCount()
+            uint32_t getTrueTupleCount() const;
 
-  bool *serialize() const;
+            bool *serialize() const;
 
-  friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
+            friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
 
-    std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &  party) const; // shared_ptr so we can pass it among Operator instances
-    std::pair<int8_t *, int8_t *> generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
-    [[nodiscard]] std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
+            std::shared_ptr<QueryTable>
+            secretShare(emp::NetIO *io, const int &party) const; // shared_ptr so we can pass it among Operator instances
+            std::pair<int8_t *, int8_t *>
+            generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
+            [[nodiscard]] std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
 
-    QueryTable & operator=(const QueryTable & src);
+            QueryTable &operator=(const QueryTable &src);
 
-    bool operator==(const QueryTable & other) const;
-    bool operator!=(const QueryTable & other) const { return !(*this == other); }
-};
+            bool operator==(const QueryTable &other) const;
 
+            bool operator!=(const QueryTable &other) const { return !(*this == other); }
+    };
+
+}
 #endif // _QUERY_TABLE_H

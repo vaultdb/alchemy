@@ -4,6 +4,8 @@
 #include "group_by_aggregate.h"
 
 
+using namespace vaultdb;
+
 std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     std::shared_ptr<QueryTable> input = children[0]->getOutput();
     std::vector<GroupByAggregateImpl *> aggregators;
@@ -31,7 +33,8 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
 
 
     QueryTuple *tuplePtr = output->getTuplePtr(0);
-    tuplePtr->initDummy();
+    types::Value dummyTag = output->isEncrypted() ? types::Value(emp::Bit(false)) : types::Value(false);
+    tuplePtr->setDummyTag(dummyTag);
 
 
     predecessor = input->getTuplePtr(0);;

@@ -4,7 +4,7 @@
 #include <util/type_utilities.h>
 
 using namespace emp;
-
+using namespace vaultdb;
 
 
 class QueryTableTestEnvironment : public ::testing::Environment {
@@ -144,7 +144,7 @@ TEST_F(QueryTableTest, read_table) {
                                                                          inputQuery, false);
 
 
-    string observedTable = inputTable.get()->toString();
+    string observedTable = inputTable->toString();
     string expectedTable = QueryTableTestEnvironment::getExpectedOutput();
 
     std::cout << "Expected:\n" << expectedTable << std::endl;

@@ -8,6 +8,7 @@
 
 
 using namespace emp;
+using namespace vaultdb;
 using namespace vaultdb::types;
 
 

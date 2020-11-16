@@ -5,6 +5,8 @@
 #include <util/type_utilities.h>
 #include "query_table.h"
 
+using namespace vaultdb;
+
 QueryTuple QueryTable::getTuple(int idx) const {
     return tuples_[idx];
 }
@@ -23,7 +25,7 @@ unsigned int QueryTable::getTupleCount() const {
 
 
 QueryTable::QueryTable(const int &num_tuples, const QuerySchema &schema, const SortDefinition &sortDefinition)
-        :  schema_(schema), orderBy(sortDefinition) {
+        :  orderBy(sortDefinition), schema_(schema) {
 
     tuples_.resize(num_tuples);
 
@@ -49,17 +51,13 @@ const bool QueryTable::isEncrypted() const {
     types::TypeId firstColType = schema_.getField(0).getType();
 
     // if encrypted version of this column is the same as its original value
-    if(TypeUtilities::toSecure(firstColType) == firstColType)
-        return true;
-    return false;
+    return TypeUtilities::isEncrypted(firstColType);
 }
 
 
 
 std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
-    int colCount = getSchema().getFieldCount();
     uint32_t tupleCount = getTupleCount();
-    bool isEncrypted = (empParty == emp::XOR);
 
     if(!this->isEncrypted())
         return std::make_unique<QueryTable>(*this);
@@ -100,13 +98,13 @@ bool *QueryTable::serialize() const {
     return dst;
 }
 
-std::ostream &operator<<(std::ostream &os, const QueryTable &table) {
+std::ostream &vaultdb::operator<<(std::ostream &os, const QueryTable &table) {
 
 
     os <<  table.getSchema() << " isEncrypted? " << table.isEncrypted() << std::endl;
 
     for(int i = 0; i < table.getTupleCount(); ++i) {
-        os << table.tuples_[i];
+        os << table.getTuple(i);
 
 
         bool isEncrypted = table.isEncrypted();
@@ -168,12 +166,12 @@ void QueryTable::putTuple(const int &idx, const QueryTuple & tuple) {
 }
 
 
-QueryTable::QueryTable(const QueryTable &src) : schema_(src.getSchema()), orderBy(src.getSortOrder()) {
+QueryTable::QueryTable(const QueryTable &src) : orderBy(src.getSortOrder()), schema_(src.getSchema()) {
 
 
-    tuples_.resize(getTupleCount());
+    tuples_.resize(src.getTupleCount());
 
-    for(uint32_t i = 0; i < getTupleCount(); ++i) {
+    for(uint32_t i = 0; i < src.getTupleCount(); ++i) {
         tuples_[i] = src.tuples_[i];
     }
 
@@ -209,6 +207,7 @@ bool QueryTable::operator==(const QueryTable &other) const {
         }
 
     }
+
 
     return true;
 }

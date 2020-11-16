@@ -1,6 +1,7 @@
 #include "operator.h"
 
 
+using namespace vaultdb;
 
 Operator::Operator(std::shared_ptr<Operator> &child) {
 

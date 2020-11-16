@@ -2,7 +2,7 @@
 #include "type_utilities.h"
 #include "data_utilities.h"
 
-
+using namespace vaultdb;
 
 std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcTable,  NetIO *netio, int party) {
     size_t aliceSize = srcTable->getTupleCount(); // in tuples

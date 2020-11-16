@@ -2,6 +2,7 @@
 #include <operators/support/secure_scalar_aggregate_impl.h>
 #include "scalar_aggregate.h"
 
+using namespace vaultdb;
 std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
     std::shared_ptr<QueryTable> input = children[0]->getOutput();
     std::vector<ScalarAggregateImpl *> aggregators;
@@ -32,10 +33,9 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
         outputSchema.putField(fieldDesc);
     }
 
-    output = std::shared_ptr<QueryTable>(new QueryTable(1, outputSchema.getFieldCount()));
-    output->setSchema(outputSchema);
+    output = std::shared_ptr<QueryTable>(new QueryTable(1, outputSchema, SortDefinition()));
+
     QueryTuple *tuplePtr = output->getTuplePtr(0);
-    tuplePtr->initDummy();
 
     for(int i = 0; i < aggregators.size(); ++i) {
         QueryField field(i, aggregators[i]->getResult());

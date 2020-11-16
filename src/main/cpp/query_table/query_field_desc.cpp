@@ -1,6 +1,8 @@
 #include "query_field_desc.h"
 #include "util/type_utilities.h"
 
+using namespace vaultdb;
+
 // default constructor setting up unique_ptr
 QueryFieldDesc::QueryFieldDesc() {
 
@@ -41,13 +43,13 @@ void QueryFieldDesc::setStringLength(size_t len) {
 
 }
 
-std::ostream &operator<<(std::ostream &os, const QueryFieldDesc &desc) {
-    os << "#" << desc.ordinal_ << " " << TypeUtilities::getTypeIdString(desc.type_);
-    if(desc.type_ == vaultdb::types::TypeId::VARCHAR) {
-        os << "(" << desc.string_length_ << ")";
+std::ostream &vaultdb::operator<<(std::ostream &os,  const QueryFieldDesc &desc)  {
+    os << "#" << desc.getOrdinal() << " " << TypeUtilities::getTypeIdString(desc.getType());
+    if(desc.getType() == vaultdb::types::TypeId::VARCHAR) {
+        os << "(" << desc.getStringLength() << ")";
     }
 
-    os << " " << desc.table_name << "." << desc.name_;
+    os << " " << desc.getTableName() << "." << desc.getName();
     return os;
 }
 

@@ -6,7 +6,7 @@
 
 using namespace emp;
 using namespace vaultdb::types;
-
+using namespace vaultdb;
 
 
 class ValueExpressionTest : public ::testing::Test {

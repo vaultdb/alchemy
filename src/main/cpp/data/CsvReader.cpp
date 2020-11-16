@@ -2,6 +2,8 @@
 #include "CsvReader.h"
 #include <boost/algorithm/string.hpp>
 
+using namespace vaultdb;
+
 std::unique_ptr<QueryTable> CsvReader::readCsv(const string &filename, const QuerySchema &schema) {
     std::vector<std::string> tupleEntries = readFile(filename);
 

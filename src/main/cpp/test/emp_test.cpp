@@ -6,6 +6,8 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54321, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
+using namespace vaultdb;
+
 class EmpTest : public EmpBaseTest {
 };
 
@@ -133,7 +135,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     // insert alice data first to last
     for(uint32_t i = 0; i < tupleCount; ++i) {
         types::Value val(aliceInputData[i]);
-        expectedTable->getTuplePtr(i)->initDummy();
+        expectedTable->getTuplePtr(i)->setDummyTag(types::Value(false));
         QueryField *fieldPtr = expectedTable->getTuplePtr(i)->getFieldPtr(0);
         fieldPtr->setValue(val);
         fieldPtr->setOrdinal(0);
@@ -146,7 +148,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     for(uint32_t i = 0; i < tupleCount; ++i) {
         --readIdx;
         types::Value val(bobInputData[readIdx]);
-        expectedTable->getTuplePtr(i+offset)->initDummy();
+        expectedTable->getTuplePtr(i + offset)->setDummyTag(types::Value(false));
         QueryField *fieldPtr = expectedTable->getTuplePtr(i + offset)->getFieldPtr(0);
         fieldPtr->setValue(val);
         fieldPtr->setOrdinal(0);

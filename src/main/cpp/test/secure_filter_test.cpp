@@ -1,13 +1,3 @@
-//
-// Created by Jennie Rogers on 8/16/20.
-//
-
-//
-// Created by Jennie Rogers on 8/16/20.
-//
-
-
-
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
@@ -22,6 +12,7 @@
 
 using namespace emp;
 using namespace vaultdb::types;
+using namespace vaultdb;
 
 
 DEFINE_int32(party, 1, "party for EMP execution");

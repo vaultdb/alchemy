@@ -10,69 +10,68 @@
 #include <vector>
 #include <ostream>
 
-class QueryFieldDesc {
+namespace  vaultdb {
+    class QueryFieldDesc {
 
-private:
-   std::string name_;
-   std::string table_name;
-    size_t string_length_; // for varchars
-    vaultdb::types::TypeId type_;
-    int ordinal_;
-
-
-public:
-    QueryFieldDesc();
-
-    [[nodiscard]] int getOrdinal() const;
+    protected:
+        std::string name_;
+        std::string table_name;
+        size_t string_length_; // for varchars
+        vaultdb::types::TypeId type_;
+        int ordinal_;
 
 
-  [[nodiscard]] const std::string &getName() const;
+    public:
+        QueryFieldDesc();
 
-  [[nodiscard]] vaultdb::types::TypeId getType() const;
+        [[nodiscard]] int getOrdinal() const;
 
-  [[nodiscard]] const std::string &getTableName() const;
 
-  [[nodiscard]] size_t size() const;
+        [[nodiscard]] const std::string &getName() const;
 
-  QueryFieldDesc(const QueryFieldDesc &f)
-      :
-         name_(f.name_), table_name(f.table_name), string_length_(f.string_length_), type_(f.type_), ordinal_(f.ordinal_)
-        {};
+        [[nodiscard]] vaultdb::types::TypeId getType() const;
 
-  QueryFieldDesc(const QueryFieldDesc &f, vaultdb::types::TypeId type)
-      :  name_(f.name_),   table_name(f.table_name),
-         string_length_(f.getStringLength()), type_(type), ordinal_(f.ordinal_)
-        {};
+        [[nodiscard]] const std::string &getTableName() const;
 
-  QueryFieldDesc(const QueryFieldDesc &f, int col_num)
-      : name_(f.name_), table_name(f.table_name), string_length_(0), type_(f.type_), ordinal_(col_num)
-        {};
+        [[nodiscard]] size_t size() const;
 
-  QueryFieldDesc(int anOrdinal, const std::string &n, const std::string &tab, const vaultdb::types::TypeId &aType)
-      :   name_(n),
-        table_name(tab), string_length_(0), type_(aType), ordinal_(anOrdinal)
-        {
+        QueryFieldDesc(const QueryFieldDesc &f)
+                :
+                name_(f.name_), table_name(f.table_name), string_length_(f.string_length_), type_(f.type_),
+                ordinal_(f.ordinal_) {};
+
+        QueryFieldDesc(const QueryFieldDesc &f, vaultdb::types::TypeId type)
+                : name_(f.name_), table_name(f.table_name),
+                  string_length_(f.getStringLength()), type_(type), ordinal_(f.ordinal_) {};
+
+        QueryFieldDesc(const QueryFieldDesc &f, int col_num)
+                : name_(f.name_), table_name(f.table_name), string_length_(0), type_(f.type_), ordinal_(col_num) {};
+
+        QueryFieldDesc(int anOrdinal, const std::string &n, const std::string &tab, const vaultdb::types::TypeId &aType)
+                : name_(n),
+                  table_name(tab), string_length_(0), type_(aType), ordinal_(anOrdinal) {
             // since we convert DATEs to int32_t in both operator land and in our verification pipeline,
             // i.e., we compare the output of our queries to SELECT EXTRACT(EPOCH FROM date_)
             // fields of type date have no source table
-            if(type_ == vaultdb::types::TypeId::DATE) {
+            if (type_ == vaultdb::types::TypeId::DATE) {
                 table_name = "";
                 type_ = vaultdb::types::TypeId::INTEGER64; // we actually store it as an INT32, this is the result of EXTRACT(EPOCH..)
             }
         };
 
-    void setStringLength(size_t i);
-    size_t getStringLength() const { return string_length_; }
+        void setStringLength(size_t i);
+
+        size_t getStringLength() const { return string_length_; }
+
+        friend std::ostream& operator<<(std::ostream &strm, const QueryFieldDesc &desc);
+
+        QueryFieldDesc &operator=(const QueryFieldDesc &other);
+
+        bool operator==(const QueryFieldDesc &other);
+
+        inline bool operator!=(const QueryFieldDesc &other) { return !(*this == other); }
 
 
-    friend std::ostream &operator<<(std::ostream &os, const QueryFieldDesc &desc);
-    QueryFieldDesc& operator=(const QueryFieldDesc& other);
-
-     bool operator==(const QueryFieldDesc& other);
-
-     inline bool operator!=(const QueryFieldDesc &other) {  return !(*this == other); }
-
-
-};
-
+    };
+}
 #endif // _QUERY_FIELD_DESC_H

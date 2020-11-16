@@ -2,6 +2,7 @@
 #include "operators/support/aggregate_id.h"
 
 using namespace vaultdb::types;
+using namespace vaultdb;
 
 std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
                                       const AggregateDef &def) {
@@ -17,10 +18,10 @@ std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
 
     if (def.groupByOrdinals.size() == 0) {
         aggregate_output =
-                std::make_unique<QueryTable>(1, aggregateCount, input->isEncrypted());
+                std::make_unique<QueryTable>(1, aggregateCount);
     } else {
         aggregate_output = std::make_unique<QueryTable>(
-                input->getTupleCount(), aggregateCount, input->isEncrypted());
+                input->getTupleCount(), aggregateCount);
     }
 
     emp::Integer one(64, 1, emp::PUBLIC);

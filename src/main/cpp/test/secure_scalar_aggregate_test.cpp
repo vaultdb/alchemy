@@ -11,6 +11,8 @@ DEFINE_int32(port, 54324, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 
+using namespace vaultdb;
+
 class SecureScalarAggregateTest : public EmpBaseTest {};
 
 

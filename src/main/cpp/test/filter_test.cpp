@@ -8,7 +8,7 @@
 
 using namespace emp;
 using namespace vaultdb::types;
-
+using namespace vaultdb;
 
 
 class FilterTest : public ::testing::Test {
@@ -78,6 +78,8 @@ TEST_F(FilterTest, test_filter) {
     std::shared_ptr<Operator> filter = filterOp->getPtr();
 
     std::shared_ptr<QueryTable> result = filter->run();
+
+    std::cout << "Filter output: " << result->toString(true) << std::endl;
 
     ASSERT_EQ(*expected,  *result);
 

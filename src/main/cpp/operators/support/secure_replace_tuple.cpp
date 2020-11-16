@@ -1,5 +1,7 @@
 #include "secure_replace_tuple.h"
 
+using namespace vaultdb;
+
 SecureReplaceTuple::SecureReplaceTuple(std::shared_ptr<QueryTable> table) : ReplaceTuple(table) {}
 
 void SecureReplaceTuple::conditionalWrite(const uint32_t &writeIdx, const QueryTuple &srcTuple,

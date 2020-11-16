@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/20/20.
-//
-
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
@@ -13,7 +9,7 @@
 
 using namespace emp;
 using namespace vaultdb::types;
-
+using namespace vaultdb;
 
 
 class SortTest : public ::testing::Test {

@@ -1,13 +1,10 @@
-//
-// Created by Jennie Rogers on 10/7/20.
-//
-
 #ifndef _QUERY_TABLE_TEST_QUERIES_H
 #define _QUERY_TABLE_TEST_QUERIES_H
 
 #include <gtest/gtest.h>
 #include <vaultdb.h>
 
+using namespace vaultdb;
 
 class QueryTableTestQueries : public ::testing::Environment {
 public:

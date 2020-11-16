@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 7/16/20.
-//
-
 #include "secure_aggregate.h"
 #include "sort.h"
 #include "support/tpch_queries.h"
@@ -16,6 +12,7 @@
 
 using namespace emp;
 using namespace std;
+using namespace vaultdb;
 
 
 DEFINE_int32(party, 1, "party for EMP execution");

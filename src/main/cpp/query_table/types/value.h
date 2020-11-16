@@ -1,4 +1,3 @@
-#include <iso646.h>
 #pragma once
 #include "common/defs.h"
 #include "emp-tool/emp-tool.h"
