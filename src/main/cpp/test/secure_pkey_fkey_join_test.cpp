@@ -76,6 +76,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
     auto *sortOp  = new Sort(sortDefinition, joinOp->getPtr());
     std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
+    expected->setSortOrder(sortDefinition);
 
 
     std::cout << "customer input: " << std::endl << customerInput->getOutput()->reveal()->toString(true);
@@ -126,6 +127,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
     auto *sortOp  = new Sort(sortDefinition, joinOp->getPtr());
     std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
+    expected->setSortOrder(sortDefinition);
 
 
 
@@ -177,6 +179,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
     auto *sortOp  = new Sort(sortDefinition, fullJoin->getPtr());
     std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
+    expected->setSortOrder(sortDefinition);
 
     ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);

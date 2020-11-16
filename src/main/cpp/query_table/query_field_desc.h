@@ -41,7 +41,7 @@ public:
 
   QueryFieldDesc(const QueryFieldDesc &f, vaultdb::types::TypeId type)
       :  name_(f.name_),   table_name(f.table_name),
-         string_length_(0), type_(type), ordinal_(f.ordinal_)
+         string_length_(f.getStringLength()), type_(type), ordinal_(f.ordinal_)
         {};
 
   QueryFieldDesc(const QueryFieldDesc &f, int col_num)

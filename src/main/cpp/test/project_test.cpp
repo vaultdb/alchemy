@@ -23,7 +23,9 @@ protected:
 
 
 // unencrypted case
-/*class RevenueExpression : public Expression {
+/* Deprecated
+ *
+ * class RevenueExpression : public Expression {
     Value oneValue;
 public:
     RevenueExpression() : Expression("revenue", types::TypeId::FLOAT32) {
@@ -60,7 +62,7 @@ types::Value calculateRevenue(const QueryTuple & aTuple) {
 
 // variant of Q3 expressions
 TEST_F(ProjectionTest, q3Lineitem) {
-    std::string srcSql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 10";
+    std::string srcSql = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
     std::string expectedOutputSql = "SELECT l_orderkey, " + DataUtilities::queryDatetime("l_shipdate") + ",  l_extendedprice * (1 - l_discount) revenue FROM (" + srcSql + ") src ";
 
     std::shared_ptr<QueryTable> expected =  DataUtilities::getQueryResults("tpch_alice", expectedOutputSql, false);

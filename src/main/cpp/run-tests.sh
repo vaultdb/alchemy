@@ -42,3 +42,5 @@ bin/emp_table_test  --party=2
 ./bin/secure_scalar_aggregate_test --party=1 &
 ./bin/secure_scalar_aggregate_test --party=2
 
+./bin/secure_group_by_aggregate_test --party=1 &
+./bin/secure_group_by_aggregate_test --party=2

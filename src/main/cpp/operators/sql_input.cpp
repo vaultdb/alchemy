@@ -8,8 +8,6 @@ std::shared_ptr<QueryTable> SqlInput::runSelf() {
     output = std::move(localOutput);
     if(!sortedOn.empty()) {  output->setSortOrder(sortedOn); }
 
-    std::cout << "Output sort order has " << sortedOn.size() << " entries." << std::endl;
-
     return output;
 
 
