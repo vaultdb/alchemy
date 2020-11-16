@@ -4,24 +4,87 @@
 #include "scalar_aggregate_impl.h"
 
 namespace vaultdb {
-    class SecureScalarAverage : public ScalarAggregateImpl {
-     public:
-         explicit  SecureScalarAverage(const uint32_t & ordinal) :  ScalarAggregateImpl(ordinal) {};
-         void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
-         void accumulate(const QueryTuple & tuple) override;
-         types::Value getResult() override;
-         types::TypeId getType() override;
+class SecureScalarAverage : public ScalarAggregateImpl {
+public:
+  explicit SecureScalarAverage(const uint32_t &ordinal)
+      : ScalarAggregateImpl(ordinal){};
+  void initialize(const QueryTuple &tuple)
+      override; // needs to run this once with first tuple to set up state
+  void accumulate(const QueryTuple &tuple) override;
+  types::Value getResult() override;
+  types::TypeId getType() override;
 
-     private:
-         types::Value runningSum;
-         types::Value runningCount;
-         types::Value zero;
-         types::Value one;
+private:
+  types::Value runningSum;
+  types::Value runningCount;
+  types::Value zero;
+  types::Value one;
+};
 
-     };
 
-}
+class SecureScalarCount : public ScalarAggregateImpl {
+public:
+  explicit SecureScalarCount(const uint32_t &ordinal)
+      : ScalarAggregateImpl(ordinal){};
+  void initialize(const QueryTuple &tuple)
+      override; // needs to run this once with first tuple to set up state
+  void accumulate(const QueryTuple &tuple) override;
+  types::Value getResult() override;
+  types::TypeId getType() override;
 
-// TODO: implement sum/count/min/max
+private:
+  types::Value runningCount;
+  types::Value zero;
+  types::Value one;
+};
+
+
+class SecureScalarSum : public ScalarAggregateImpl {
+public:
+  explicit SecureScalarSum(const uint32_t &ordinal)
+      : ScalarAggregateImpl(ordinal){};
+  void initialize(const QueryTuple &tuple)
+  override; // needs to run this once with first tuple to set up state
+  void accumulate(const QueryTuple &tuple) override;
+  types::Value getResult() override;
+  types::TypeId getType() override;
+
+private:
+  types::Value runningSum;
+  types::Value zero;
+};
+
+
+class SecureScalarMin : public ScalarAggregateImpl {
+public:
+  explicit SecureScalarMin(const uint32_t &ordinal)
+      : ScalarAggregateImpl(ordinal){};
+  void initialize(const QueryTuple &tuple)
+  override; // needs to run this once with first tuple to set up state
+  void accumulate(const QueryTuple &tuple) override;
+  types::Value getResult() override;
+  types::TypeId getType() override;
+
+private:
+  types::Value runningMin;
+  types::Value zero;
+};
+
+
+class SecureScalarMax : public ScalarAggregateImpl {
+public:
+  explicit SecureScalarMax(const uint32_t &ordinal)
+      : ScalarAggregateImpl(ordinal){};
+  void initialize(const QueryTuple &tuple)
+  override; // needs to run this once with first tuple to set up state
+  void accumulate(const QueryTuple &tuple) override;
+  types::Value getResult() override;
+  types::TypeId getType() override;
+
+private:
+  types::Value runningMax;
+  types::Value zero;
+};
+} // namespace vaultdb
 
 #endif //_SECURE_SCALAR_AGGREGATE_IMPL_H
