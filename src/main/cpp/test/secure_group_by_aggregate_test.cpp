@@ -65,6 +65,9 @@ TEST_F(SecureGroupByAggregateTest, test_count) {
 
 }
 
+
+
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);

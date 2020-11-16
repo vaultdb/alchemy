@@ -47,7 +47,7 @@ TEST_F(ScalarAggregateTest, test_count) {
 
 
 TEST_F(ScalarAggregateTest, test_count_dummies) {
-    std::string query = "SELECT l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem ORDER BY (1)  LIMIT 54";
+    std::string query = "SELECT l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem ORDER BY l_orderkey, l_linenumber  LIMIT 54";
 
     // set up the expected results:
     std::string expectedOutputQuery = "SELECT COUNT(*) cnt FROM (" + query + ") selection WHERE NOT dummy";

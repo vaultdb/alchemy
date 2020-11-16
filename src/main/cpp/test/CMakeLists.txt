@@ -45,10 +45,10 @@ mark_as_advanced(
 		gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
 )
 
-set_target_properties(gtest PROPERTIES FOLDER _deps)
-set_target_properties(gtest_main PROPERTIES FOLDER _deps)
-set_target_properties(gmock PROPERTIES FOLDER _deps)
-set_target_properties(gmock_main PROPERTIES FOLDER _deps)
+set_target_properties(gtest PROPERTIES FOLDER build)
+set_target_properties(gtest_main PROPERTIES FOLDER build)
+set_target_properties(gmock PROPERTIES FOLDER build)
+set_target_properties(gmock_main PROPERTIES FOLDER build)
 
 macro(package_add_test TESTNAME)
     # create an exectuable in which the tests will be stored
