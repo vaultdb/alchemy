@@ -1,4 +1,3 @@
-#include <data/PsqlDataProvider.h>
 #include <test/support/EmpBaseTest.h>
 #include <util/data_utilities.h>
 #include <operators/operator.h>

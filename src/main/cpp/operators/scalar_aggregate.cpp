@@ -44,7 +44,8 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
     }
 
     // TODO: handle the case where all input tuples are dummies
-    tuplePtr->setDummyTag(types::Value(emp::Bit(false)));
+    types::Value dummyTag = (output->isEncrypted()) ? types::Value(emp::Bit(false, emp::PUBLIC)) : types::Value(false);
+    tuplePtr->setDummyTag(dummyTag);
 
 
         return output;

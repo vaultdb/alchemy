@@ -13,7 +13,6 @@ class QuerySchema {
 private:
 
     std::vector<QueryFieldDesc> fields_;
-    size_t fieldCount_;
 
 public:
     explicit QuerySchema(const size_t &num_fields);

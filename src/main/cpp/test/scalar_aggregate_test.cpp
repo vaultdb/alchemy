@@ -24,7 +24,7 @@ protected:
 
 // should just count to 50
 TEST_F(ScalarAggregateTest, test_count) {
-    std::string query = "SELECT l_orderkey, l_lineitem FROM lineitem ORDER BY (1)  LIMIT 50";
+    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem ORDER BY (1)  LIMIT 50";
 
     std::shared_ptr<Operator> input(new SqlInput(dbName, query, false));
 

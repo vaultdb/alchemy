@@ -2,7 +2,7 @@
 #include "query_schema.h"
 #include <util/type_utilities.h>
 
-QuerySchema::QuerySchema(const size_t &num_fields) : fieldCount_(num_fields) {
+QuerySchema::QuerySchema(const size_t &num_fields)  {
     fields_.reserve(num_fields);
 
     // initialize all fields to blanks
@@ -26,12 +26,12 @@ const QueryFieldDesc QuerySchema::getField(const int &i) const {
 }
 
 int QuerySchema::getFieldCount() const {
-    return fieldCount_;
+    return fields_.size();
 }
 
 
-QuerySchema::QuerySchema(const QuerySchema &s) : fieldCount_(s.getFieldCount()){
-    fields_.reserve(fieldCount_);
+QuerySchema::QuerySchema(const QuerySchema &s) {
+    fields_.reserve(s.getFieldCount());
 
   for (int i = 0; i < s.getFieldCount(); i++) {
       fields_.push_back( s.getField(i));
@@ -64,9 +64,9 @@ std::ostream &operator<<(std::ostream &os, const QuerySchema &schema) {
 
 QuerySchema &QuerySchema::operator=(const QuerySchema &other) {
 
-    fieldCount_ = other.getFieldCount();
+    size_t fieldCount = other.getFieldCount();
     fields_.clear();
-    fields_.reserve(fieldCount_);
+    fields_.reserve(fieldCount);
 
     for (int i = 0; i < other.getFieldCount(); i++) {
         QueryFieldDesc aFieldDesc = other.fields_[i];

@@ -1,6 +1,7 @@
 #!/bin/bash -x
 
 
+make -j5
 ./bin/value_expression_test && \
 ./bin/query_table_test && \
 ./bin/filter_test && \
@@ -17,8 +18,8 @@
 ./bin/emp_test --party=1 & 
 ./bin/emp_test  --party=2
 
-bin/emp_table_test --party=1 & 
-bin/emp_table_test  --party=2
+./bin/emp_table_test --party=1 &
+./bin/emp_table_test  --party=2
 
 
 ./bin/secure_value_expression_test --party=1 &
