@@ -13,24 +13,29 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     types::Value nonDummyBin;
     types::TypeId boolType = input->isEncrypted() ? types::TypeId::ENCRYPTED_BOOLEAN : types::TypeId::BOOLEAN;
     QueryTuple outputTuple;
+    QuerySchema inputSchema = input->getSchema();
 
     for(ScalarAggregateDefinition agg : aggregateDefinitions) {
-        aggregators.push_back(aggregateFactory(agg.type, agg.ordinal, input->isEncrypted()));
+        // for most aggs the output type is the same as the input type
+        // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
+        types::TypeId aggValueType = (agg.ordinal >= 0) ?
+                    inputSchema.getField(agg.ordinal).getType() :
+                                     (input->isEncrypted() ? types::TypeId::ENCRYPTED_INTEGER64 : types::TypeId::INTEGER64);
+        aggregators.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
     }
 
 
     // sorted on group-by cols
     assert(verifySortOrder(input));
-    QuerySchema outputSchema = generateOutputSchema(input->getSchema(), aggregators);
+
+    QuerySchema outputSchema = generateOutputSchema(inputSchema, aggregators);
+
     // output sort order equal to first group-by-col-count entries in input sort order
     SortDefinition inputSort = input->getSortOrder();
     SortDefinition outputSort = std::vector<ColumnSort>(inputSort.begin(), inputSort.begin() + groupByOrdinals.size());
 
 
-    output = std::shared_ptr<QueryTable>(new QueryTable(input->getTupleCount(), outputSchema.getFieldCount()));
-    output->setSchema(outputSchema);
-    output->setSortOrder(outputSort);
-
+    output = std::shared_ptr<QueryTable>(new QueryTable(input->getTupleCount(), outputSchema, outputSort));
 
     QueryTuple *tuplePtr = output->getTuplePtr(0);
     types::Value dummyTag = output->isEncrypted() ? types::Value(emp::Bit(false)) : types::Value(false);
@@ -84,12 +89,15 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
 }
 
 GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                                         const bool &isEncrypted) const {
+                                                         const types::TypeId &aggregateValueType) const {
+
+    bool isEncrypted = TypeUtilities::isEncrypted(aggregateValueType);
     if (!isEncrypted) {
         switch (aggregateType) {
             case AggregateId::COUNT:
-                return new GroupByCountImpl(ordinal);
+                return new GroupByCountImpl(ordinal, aggregateValueType);
             case AggregateId::SUM:
+                return new GroupBySumImpl(ordinal, aggregateValueType);
             case AggregateId::AVG:
             case AggregateId::MIN:
             case AggregateId::MAX:
@@ -99,9 +107,10 @@ GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggr
 
     switch (aggregateType) {
         case AggregateId::COUNT:
-            return new SecureGroupByCountImpl(ordinal);
-        case AggregateId::AVG:
+            return new SecureGroupByCountImpl(ordinal, aggregateValueType);
         case AggregateId::SUM:
+            return new SecureGroupBySumImpl(ordinal, aggregateValueType);
+        case AggregateId::AVG:
         case AggregateId::MIN:
         case AggregateId::MAX:
             throw std::invalid_argument("Not yet implemented!");

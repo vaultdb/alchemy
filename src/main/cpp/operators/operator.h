@@ -17,7 +17,11 @@ namespace  vaultdb {
 
 
     public:
-        Operator() = default; // initialize children and parent later
+      /*  static std::shared_ptr<Operator> getOperatorTree(Operator *op, std::shared_ptr<Operator> child);
+
+        static std::shared_ptr<Operator> getOperatorTree(Operator *op, std::shared_ptr<Operator> lhs, std::shared_ptr<Operator> rhs);
+*/
+        Operator()  { myRef = std::shared_ptr<Operator>(this); }
         Operator(std::shared_ptr<Operator> &child);
 
         Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs);

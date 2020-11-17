@@ -8,11 +8,13 @@
 namespace vaultdb {
     class GroupByAggregateImpl {
     public:
-        explicit GroupByAggregateImpl(const int32_t & ordinal) : aggregateOrdinal(ordinal) {};
+        explicit GroupByAggregateImpl(const int32_t & ordinal, const types::TypeId & aggType) :
+                                                            aggregateOrdinal(ordinal), aggregateType(aggType),
+                                                            zero(TypeUtilities::getZero(aggregateType)), one(TypeUtilities::getOne(aggregateType)){};
         virtual void initialize(const QueryTuple & tuple, const types::Value & isDummy) = 0; // run this when we start a new group-by bin
         virtual void accumulate(const QueryTuple & tuple, const types::Value & isDummy) = 0;
         virtual types::Value getResult() = 0;
-        virtual types::TypeId getType() = 0;
+        types::TypeId getType() { return aggregateType; }
 
         // specialized in plain or secure version of aggregator
         virtual types::Value getDummyTag(const types::Value & isLastEntry, const types::Value & nonDummyBin) = 0;
@@ -21,13 +23,16 @@ namespace vaultdb {
 
         // signed int because -1 denotes *, as in COUNT(*)
         int32_t aggregateOrdinal;
+        types::TypeId aggregateType;
+        types::Value zero;
+        types::Value one;
 
     };
 
 
     class PlainGroupByAggregateImpl : public GroupByAggregateImpl {
     public:
-        explicit PlainGroupByAggregateImpl(const int32_t & ordinal) : GroupByAggregateImpl(ordinal) {};
+        explicit PlainGroupByAggregateImpl(const int32_t & ordinal, const types::TypeId & aggType) : GroupByAggregateImpl(ordinal, aggType) {};
 
          types::Value getDummyTag(const types::Value & isLastEntry, const types::Value & nonDummyBin) override;
          void updateGroupByBinBoundary(const types::Value & isNewBin, types::Value & nonDummyBinFlag) override;
@@ -37,15 +42,33 @@ namespace vaultdb {
 
     class GroupByCountImpl : public  PlainGroupByAggregateImpl {
     public:
-        explicit GroupByCountImpl(const int32_t & ordinal) : PlainGroupByAggregateImpl(ordinal), runningCount(0) {};
+        explicit GroupByCountImpl(const int32_t & ordinal, const types::TypeId & aggType) : PlainGroupByAggregateImpl(ordinal, aggType), runningCount(types::TypeId::INTEGER64, 0L) {};
         void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
         void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
         types::Value getResult() override;
-        types::TypeId getType() override;
         ~GroupByCountImpl() = default;
 
     private:
-        int64_t runningCount;
+        types::Value runningCount;
+
+    };
+
+    class GroupBySumImpl : public  PlainGroupByAggregateImpl {
+    public:
+        explicit GroupBySumImpl(const int32_t & ordinal, const types::TypeId & aggType) : PlainGroupByAggregateImpl(ordinal, aggType) {
+            if(aggregateType == types::TypeId::INTEGER32) {
+                aggregateType = types::TypeId::INTEGER64; // accommodate psql handling of sum for validation
+                zero = TypeUtilities::getZero(aggregateType);
+                one = TypeUtilities::getOne(aggregateType);
+            }
+        };
+        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
+        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
+        types::Value getResult() override;
+        ~GroupBySumImpl() = default;
+
+    private:
+        types::Value runningSum;
 
     };
 }

@@ -60,3 +60,11 @@ std::shared_ptr<Operator> & Operator::getPtr() {
     return myRef;
 }
 
+/* Insert new operator as root to tree
+ * std::shared_ptr<Operator> Operator::getOperatorTree(Operator *op, std::shared_ptr<Operator> child) {
+    std::shared_ptr<Operator> dst = op->getPtr();
+    child->setParent(dst);
+    dst->children.push_back(child);
+    return dst;
+} */
+
