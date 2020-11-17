@@ -19,7 +19,10 @@ DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_bool(input, false, "input value");
 
 
-class SecureGroupByAggregateTest : public EmpBaseTest {};
+class SecureGroupByAggregateTest : public EmpBaseTest {
+
+};
+
 
 
 TEST_F(SecureGroupByAggregateTest, test_count) {
@@ -28,10 +31,7 @@ TEST_F(SecureGroupByAggregateTest, test_count) {
 
     // set up expected output
     std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb, expectedOutputQuery, false);
-    SortDefinition expectedSortOrder;
-    expectedSortOrder.push_back(ColumnSort (0, SortDirection::ASCENDING));
-    expected->setSortOrder(expectedSortOrder);
+    std::shared_ptr<QueryTable> expected = EmpBaseTest::getExpectedOutput(expectedOutputQuery, 1);
 
     // run secure query
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
@@ -66,6 +66,80 @@ TEST_F(SecureGroupByAggregateTest, test_count) {
 }
 
 
+
+TEST_F(SecureGroupByAggregateTest, test_sum) {
+    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+
+    // set up expected outputs
+    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber) sum_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::shared_ptr<QueryTable> expected = EmpBaseTest::getExpectedOutput(expectedOutputQuery, 1);
+
+
+    // configure and run test
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, query, false, sortDefinition, netio, FLAGS_party));
+
+    // sort alice + bob inputs after union
+    Sort *sortOp = new Sort(sortDefinition, input);
+    std::shared_ptr<Operator> sort = sortOp->getPtr();
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
+
+    std::vector<int32_t> groupByCols;
+    groupByCols.push_back(0);
+
+    GroupByAggregate *aggregateOp = new GroupByAggregate(sort, groupByCols, aggregators);
+    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+
+    std::shared_ptr<QueryTable> aggregated = aggregate->run()->reveal();
+
+
+    // need to delete dummies from observed output to compare it to expected
+    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+
+    std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size();
+    ASSERT_EQ(*expected, *observed);
+
+}
+
+TEST_F(SecureGroupByAggregateTest, test_sum_dummies) {
+
+
+    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+
+    // set up expected output
+    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber) sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::shared_ptr<QueryTable> expected = EmpBaseTest::getExpectedOutput(expectedOutputQuery, 1);
+
+    // configure and run test
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, query, true, sortDefinition, netio, FLAGS_party));
+
+    // sort alice + bob inputs after union
+    Sort *sortOp = new Sort(sortDefinition, input);
+    std::shared_ptr<Operator> sort = sortOp->getPtr();
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
+
+    std::vector<int32_t> groupByCols;
+    groupByCols.push_back(0);
+
+    GroupByAggregate *aggregateOp = new GroupByAggregate(sort, groupByCols, aggregators);
+
+    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+    std::shared_ptr<QueryTable> aggregated = aggregate->run()->reveal();
+
+
+    // need to delete dummies from observed output to compare it to expected
+    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+
+    std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size();
+    ASSERT_EQ(*expected, *observed);
+
+}
 
 
 int main(int argc, char **argv) {

@@ -75,6 +75,7 @@ void GroupBySumImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
 
     if(!isDummy.getBool()) {
         Value toAdd = tuple.getDummyTag().getBool() ? zero :  tuple.getField(aggregateOrdinal).getValue();
+
         // re-cast sum as INT64_T in keeping with postgres convention
         if(toAdd.getType() == TypeId::INTEGER32) {
             toAdd = Value(TypeId::INTEGER64, (int64_t) toAdd.getInt32());

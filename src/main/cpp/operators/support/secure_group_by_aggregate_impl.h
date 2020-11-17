@@ -37,6 +37,7 @@ namespace vaultdb {
                 zero = TypeUtilities::getZero(aggregateType);
                 one = TypeUtilities::getOne(aggregateType);
             }
+            runningSum = zero;
         };
         void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
         void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;

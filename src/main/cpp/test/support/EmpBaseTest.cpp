@@ -1,5 +1,10 @@
+#include <util/data_utilities.h>
 #include "EmpBaseTest.h"
 
+
+const std::string EmpBaseTest::unionedDb = "tpch_unioned";
+const std::string EmpBaseTest::aliceDb = "tpch_alice";
+const std::string EmpBaseTest::bobDb = "tpch_bob";
 
 void EmpBaseTest::SetUp()  {
 
@@ -17,4 +22,11 @@ void EmpBaseTest::SetUp()  {
 void EmpBaseTest::TearDown() {
         netio->flush();
         delete netio;
+}
+
+std::shared_ptr<QueryTable> EmpBaseTest::getExpectedOutput(const string &sql, const int &sortColCount) {
+    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(EmpBaseTest::unionedDb, sql, false);
+    SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
+    expected->setSortOrder(expectedSortOrder);
+    return expected;
 }

@@ -56,8 +56,9 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
     std::unique_ptr<QueryTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
 
-    std::shared_ptr<SecureSqlInput> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
-    std::shared_ptr<QueryTable> output = input->run();
+    SqlInput *inputOp = new SecureSqlInput(dbName, sql, false, netio, FLAGS_party);
+    std::shared_ptr<Operator> input = inputOp->getPtr();
+    std::shared_ptr<QueryTable> output = input->run(); // a smoke test for the operator infrastructure
 
     std::unique_ptr<QueryTable> revealed = output->reveal(emp::PUBLIC);
     std::cout << *revealed << std::endl;

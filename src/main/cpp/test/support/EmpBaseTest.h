@@ -3,12 +3,14 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <emp-sh2pc/emp-sh2pc.h>
+#include <query_table/query_table.h>
 
 DECLARE_int32(party);
 DECLARE_int32(port);
 DECLARE_string(alice_host);
 
 
+using namespace vaultdb;
 
 class EmpBaseTest  : public ::testing::Test {
 protected:
@@ -18,16 +20,13 @@ protected:
 
 
     emp::NetIO *netio;
-    const std::string unionedDb = "tpch_unioned";
-    const std::string aliceDb = "tpch_alice";
-    const std::string bobDb = "tpch_bob";
+    static const std::string unionedDb;
+    static const std::string aliceDb;
+    static const std::string bobDb;
 
     std::string dbName = unionedDb; // default, set in setUp()
 
-
-    //static void SetUpTestCase();
-    //static void TearDownTestCase();
-    //static emp::NetIO *netio;
+    static std::shared_ptr<QueryTable> getExpectedOutput(const std::string & sql, const int & sortColCount);
 
 
 };

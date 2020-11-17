@@ -28,8 +28,8 @@ TEST_F(FilterTest, test_table_scan) {
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
 
-
-    std::shared_ptr<Operator> input = std::make_shared<SqlInput>(dbName, sql, false);
+    SqlInput *inputOp = new SqlInput(dbName, sql, false);
+    std::shared_ptr<Operator> input = inputOp->getPtr();
     std::shared_ptr<QueryTable> output = input->run(); // a smoke test for the operator infrastructure
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, sql, false);
 
