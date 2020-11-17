@@ -82,3 +82,34 @@ TEST_F(GroupByAggregateTest, test_sum) {
     ASSERT_EQ(*expected, *observed);
 
 }
+
+TEST_F(GroupByAggregateTest, test_sum_dummies) {
+
+
+    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber) sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+    std::shared_ptr<Operator> input(new SqlInput(dbName, query, true, sortDefinition));
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
+
+    std::vector<int32_t> groupByCols;
+    groupByCols.push_back(0);
+
+    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
+    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+
+    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+    SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(1);
+    expected->setSortOrder(expectedSortOrder);
+
+    // need to delete dummies from observed output to compare it to expected
+    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+
+    std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size();
+    ASSERT_EQ(*expected, *observed);
+
+}
