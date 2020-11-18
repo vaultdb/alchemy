@@ -3,6 +3,8 @@
 
 #include <operators/support/group_by_aggregate_impl.h>
 
+using namespace vaultdb::types;
+
 namespace vaultdb {
     class SecureGroupByAggregateImpl : public GroupByAggregateImpl {
     public:
@@ -53,11 +55,8 @@ namespace vaultdb {
     class SecureGroupByAvgImpl : public  SecureGroupByAggregateImpl {
     public:
         explicit SecureGroupByAvgImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType)  {
-            if(aggregateType == types::TypeId::ENCRYPTED_INTEGER32) {
-                aggregateType = types::TypeId::ENCRYPTED_INTEGER64; // accommodate psql handling of sum for validation
-                zero = TypeUtilities::getZero(aggregateType);
-                one = TypeUtilities::getOne(aggregateType);
-            }
+            // TODO: address how to convert from int to fixed-point or var-point float.
+            assert(aggregateType == TypeId::ENCRYPTED_FLOAT32);
             runningSum = zero;
             runningCount = zero;
         };
