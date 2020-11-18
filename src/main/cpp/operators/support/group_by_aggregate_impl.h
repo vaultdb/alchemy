@@ -4,6 +4,10 @@
 
 #include <cstdint>
 #include <query_table/query_tuple.h>
+#include <limits.h>
+#include <cfloat>
+
+using namespace vaultdb::types;
 
 namespace vaultdb {
     class GroupByAggregateImpl {
@@ -88,22 +92,22 @@ namespace vaultdb {
 
     class GroupByMinImpl : public  PlainGroupByAggregateImpl {
     public:
-        explicit GroupByMinImpl(const int32_t & ordinal, const types::TypeId & aggType) : PlainGroupByAggregateImpl(ordinal, aggType)  {};
+        explicit GroupByMinImpl(const int32_t & ordinal, const types::TypeId & aggType);
         void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
         void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
         types::Value getResult() override;
         ~GroupByMinImpl() = default;
 
     private:
-        types::Value runningMin;
-        // need to see at least one tuple to establish a min
-        bool initialized = false;
+        Value runningMin;
+        void resetRunningMin();
+
 
     };
 
     class GroupByMaxImpl : public  PlainGroupByAggregateImpl {
     public:
-        explicit GroupByMaxImpl(const int32_t & ordinal, const types::TypeId & aggType) : PlainGroupByAggregateImpl(ordinal, aggType)  {};
+         GroupByMaxImpl(const int32_t & ordinal, const types::TypeId & aggType);;
         void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
         void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
         types::Value getResult() override;
@@ -111,8 +115,8 @@ namespace vaultdb {
 
     private:
         types::Value runningMax;
-        // need to see at least one tuple to establish a min
-        bool initialized = false;
+        void resetRunningMax();
+
 
     };
 }

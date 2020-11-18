@@ -471,6 +471,8 @@ void Value::setValue(const std::string & aString) {
                 return Value((float_t) src.getInt32());
             case TypeId::INTEGER64:
                 return Value((float_t) src.getInt64());
+            case TypeId::FLOAT32:
+                return Value(src.getFloat32());
             default:
                 throw std::invalid_argument("Cannot convert value of type " + TypeUtilities::getTypeIdString(src.getType()) + " to float.");
 

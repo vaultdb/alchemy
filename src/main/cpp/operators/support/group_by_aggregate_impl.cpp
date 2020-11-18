@@ -138,16 +138,43 @@ Value GroupByAvgImpl::getResult() {
     return runningSum/runningCount;
 }
 
+void GroupByMinImpl::resetRunningMin()  {
+    switch(aggregateType) {
+        case TypeId::INTEGER32:
+            runningMin = Value(INT_MAX);
+            break;
+        case TypeId::INTEGER64:
+            runningMin = Value(aggregateType, LONG_MAX);
+            break;
+        case TypeId::BOOLEAN:
+            runningMin = Value(true);
+            break;
+        case TypeId::FLOAT32:
+            runningMin = Value(FLT_MAX);
+            break;
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MIN()");
+    }
+}
+
+
+GroupByMinImpl::GroupByMinImpl(const int32_t &ordinal, const TypeId &aggType) : PlainGroupByAggregateImpl(ordinal, aggType) {
+    resetRunningMin();
+
+}
+
 
 void GroupByMinImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
-    if(!isDummy.getBool() && !tuple.getDummyTag().getBool()) {
-        initialized = true;
-        runningMin = tuple.getField(aggregateOrdinal).getValue();
+
+    if(!isDummy.getBool()) {
+        resetRunningMin();
+        if(!tuple.getDummyTag().getBool()) {
+            runningMin = tuple.getField(aggregateOrdinal).getValue();
+        }
     }
 }
 
 void GroupByMinImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
-   assert(initialized);
 
     if(!isDummy.getBool() && !tuple.getDummyTag().getBool()) {
         Value aggInput = tuple.getField(aggregateOrdinal).getValue();
@@ -155,21 +182,29 @@ void GroupByMinImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
     }
 }
 
+// if not initialized the value will get discarded later because the whole group-by bin will have had dummies
 Value GroupByMinImpl::getResult() {
-    assert(initialized);
     return runningMin;
 }
 
 
+
+GroupByMaxImpl::GroupByMaxImpl(const int32_t &ordinal, const TypeId &aggType) : PlainGroupByAggregateImpl(ordinal, aggType) {
+    resetRunningMax();
+}
+
+
 void GroupByMaxImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
-    if(!isDummy.getBool() && !tuple.getDummyTag().getBool()) {
-        initialized = true;
-        runningMax = tuple.getField(aggregateOrdinal).getValue();
+    if(!isDummy.getBool()) {
+        resetRunningMax();
+        if(!tuple.getDummyTag().getBool()) {
+            runningMax = tuple.getField(aggregateOrdinal).getValue();
+        }
     }
 }
 
 void GroupByMaxImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
-    assert(initialized);
+
 
     if(!isDummy.getBool() && !tuple.getDummyTag().getBool()) {
         Value aggInput = tuple.getField(aggregateOrdinal).getValue();
@@ -179,6 +214,27 @@ void GroupByMaxImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
 }
 
 Value GroupByMaxImpl::getResult() {
-    assert(initialized);
+
     return runningMax;
 }
+
+void GroupByMaxImpl::resetRunningMax() {
+
+    switch(aggregateType) {
+        case TypeId::INTEGER32:
+            runningMax = Value(INT_MIN);
+            break;
+        case TypeId::INTEGER64:
+            runningMax = Value(aggregateType, LONG_MIN);
+            break;
+        case TypeId::BOOLEAN:
+            runningMax = Value(false);
+            break;
+        case TypeId::FLOAT32:
+            runningMax = Value(FLT_MIN);
+            break;
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MAX()");
+    }
+}
+

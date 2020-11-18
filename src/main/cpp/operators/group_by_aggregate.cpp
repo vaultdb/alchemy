@@ -157,6 +157,7 @@ QuerySchema GroupByAggregate::generateOutputSchema(const QuerySchema & srcSchema
     for(i = 0; i < groupByOrdinals.size(); ++i) {
         QueryFieldDesc srcField = srcSchema.getField(groupByOrdinals[i]);
         QueryFieldDesc dstField(i, srcField.getName(), srcField.getTableName(), srcField.getType());
+        dstField.setStringLength(srcField.getStringLength());
         outputSchema.putField(dstField);
     }
 

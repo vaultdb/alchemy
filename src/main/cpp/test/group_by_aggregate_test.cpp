@@ -160,11 +160,292 @@ TEST_F(GroupByAggregateTest, test_avg_dummies) {
 
     std::shared_ptr<QueryTable> aggregated = aggregate->run();
 
+    // need to delete dummies from observed output to compare it to expected
+    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+
+    std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size();
+    ASSERT_EQ(*expected, *observed);
+
+}
+
+
+TEST_F(GroupByAggregateTest, test_min) {
+    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 1);
+
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+    std::shared_ptr<Operator> input(new SqlInput(dbName, query, false, sortDefinition));
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno"));
+
+    std::vector<int32_t> groupByCols;
+    groupByCols.push_back(0);
+
+    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
+    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+
+    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
 
     std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size();
+    ASSERT_EQ(*expected, *observed);
+
+}
+
+TEST_F(GroupByAggregateTest, test_min_dummies) {
+
+
+    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 1);
+
+
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+    std::shared_ptr<Operator> input(new SqlInput(dbName, query, true, sortDefinition));
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno"));
+
+    std::vector<int32_t> groupByCols;
+    groupByCols.push_back(0);
+
+    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
+    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+
+    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+
+    // need to delete dummies from observed output to compare it to expected
+    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+    
+    std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size();
+    ASSERT_EQ(*expected, *observed);
+
+}
+
+
+TEST_F(GroupByAggregateTest, test_max) {
+    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 1);
+
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+    std::shared_ptr<Operator> input(new SqlInput(dbName, query, false, sortDefinition));
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno"));
+
+    std::vector<int32_t> groupByCols;
+    groupByCols.push_back(0);
+
+    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
+    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+
+    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+
+
+    // need to delete dummies from observed output to compare it to expected
+    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+
+    std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size();
+    ASSERT_EQ(*expected, *observed);
+
+}
+
+TEST_F(GroupByAggregateTest, test_max_dummies) {
+
+
+    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 1);
+
+
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+    std::shared_ptr<Operator> input(new SqlInput(dbName, query, true, sortDefinition));
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno"));
+
+    std::vector<int32_t> groupByCols;
+    groupByCols.push_back(0);
+
+    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
+    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+
+    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+
+    // need to delete dummies from observed output to compare it to expected
+    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+
+    std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size();
+    ASSERT_EQ(*expected, *observed);
+
+}
+
+TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    std::vector<int32_t> groupByCols{0, 1};
+
+    string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                        " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                        " FROM lineitem\n"
+                        " ORDER BY l_returnflag, l_linestatus "
+                        "LIMIT 100";
+
+    string expectedOutputQuery =  "select \n"
+                                  "  l_returnflag, \n"
+                                  "  l_linestatus, \n"
+                                  "  sum(l_quantity) as sum_qty, \n"
+                                  "  sum(l_extendedprice) as sum_base_price, \n"
+                                  "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, \n"
+                                  "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge \n"
+                                  "from \n"
+                                  " (SELECT * FROM  lineitem  ORDER BY l_returnflag, l_linestatus LIMIT 100) subq\n"
+                                  " where \n"
+                                  "  l_shipdate <= date '1998-08-03' \n"
+                                  "group by \n"
+                                  "  l_returnflag, \n"
+                                  "  l_linestatus \n"
+                                  " \n"
+                                  "order by \n"
+                                  "  l_returnflag, \n"
+                                  "  l_linestatus";
+
+    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
+
+    aggregators.emplace_back(ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"));
+    aggregators.emplace_back(ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"));
+    aggregators.emplace_back(ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"));
+    aggregators.emplace_back(ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"));
+
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+    std::shared_ptr<Operator> input(new SqlInput(dbName, inputQuery, true, sortDefinition));
+
+    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
+    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+
+    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+
+    // need to delete dummies from observed output to compare it to expected
+    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+
+    std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size();
+    ASSERT_EQ(*expected, *observed);
+
+}
+
+
+TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
+    std::vector<ScalarAggregateDefinition> aggregators;
+    std::vector<int32_t> groupByCols{0, 1};
+
+    string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                        " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                        " FROM lineitem\n"
+                        " ORDER BY l_returnflag, l_linestatus "
+                        "LIMIT 100";
+
+    string expectedOutputQuery =  "select \n"
+                                  "  l_returnflag, \n"
+                                  "  l_linestatus, \n"
+                                  "  avg(l_quantity) as avg_qty, \n"
+                                  "  avg(l_extendedprice) as avg_price, \n"
+                                  "  avg(l_discount) as avg_disc, \n"
+                                  "  count(*) as count_order \n"
+                                  "from \n"
+                                  " (SELECT * FROM  lineitem  ORDER BY l_returnflag, l_linestatus LIMIT 100) subq\n"
+                                  " where \n"
+                                  "  l_shipdate <= date '1998-08-03' \n"
+                                  "group by \n"
+                                  "  l_returnflag, \n"
+                                  "  l_linestatus \n"
+                                  " \n"
+                                  "order by \n"
+                                  "  l_returnflag, \n"
+                                  "  l_linestatus";
+
+    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
+
+    aggregators.emplace_back(ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"));
+    aggregators.emplace_back(ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"));
+    aggregators.emplace_back(ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"));
+    aggregators.emplace_back(ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order"));
+
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+    std::shared_ptr<Operator> input(new SqlInput(dbName, inputQuery, true, sortDefinition));
+
+    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
+    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+
+    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+
+    // need to delete dummies from observed output to compare it to expected
+    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+
+    ASSERT_EQ(*expected, *observed);
+
+}
+
+TEST_F(GroupByAggregateTest, tpch_q1) {
+    std::vector<ScalarAggregateDefinition> aggregators;
+    std::vector<int32_t> groupByCols{0, 1};
+
+    string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                        " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                        " FROM lineitem\n"
+                        " ORDER BY l_returnflag, l_linestatus"
+                        " LIMIT 100";
+
+    string expectedOutputQuery =  "select \n"
+                    "  l_returnflag, \n"
+                    "  l_linestatus, \n"
+                    "  sum(l_quantity) as sum_qty, \n"
+                    "  sum(l_extendedprice) as sum_base_price, \n"
+                    "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, \n"
+                    "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, \n"
+                    "  avg(l_quantity) as avg_qty, \n"
+                    "  avg(l_extendedprice) as avg_price, \n"
+                    "  avg(l_discount) as avg_disc, \n"
+                    "  count(*) as count_order \n"
+                    "from \n"
+                    " (SELECT * FROM  lineitem  ORDER BY l_returnflag, l_linestatus LIMIT 100) subq\n"
+                    " where \n"
+                    "  l_shipdate <= date '1998-08-03' \n"
+                    "group by \n"
+                    "  l_returnflag, \n"
+                    "  l_linestatus \n"
+                    " \n"
+                    "order by \n"
+                    "  l_returnflag, \n"
+                    "  l_linestatus";
+
+    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
+
+    aggregators.emplace_back(ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"));
+    aggregators.emplace_back(ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"));
+    aggregators.emplace_back(ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"));
+    aggregators.emplace_back(ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"));
+    aggregators.emplace_back(ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"));
+    aggregators.emplace_back(ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"));
+    aggregators.emplace_back(ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"));
+    aggregators.emplace_back(ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order"));
+
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+    std::shared_ptr<Operator> input(new SqlInput(dbName, inputQuery, true, sortDefinition));
+
+    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
+    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+
+    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+
+    // need to delete dummies from observed output to compare it to expected
+    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+
     ASSERT_EQ(*expected, *observed);
 
 }
