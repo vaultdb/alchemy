@@ -327,4 +327,9 @@ Value types::Value::operator&(const Value &rhs) const {
   return Value(result);
 }
 
+Value types::Value::obliviousIf(const Value &cmp, Value &lhs, Value &rhs) {
+    assert(cmp.getType() == TypeId::ENCRYPTED_BOOLEAN);
+    return obliviousIf(cmp.getEmpBit(), lhs, rhs);
+}
+
 

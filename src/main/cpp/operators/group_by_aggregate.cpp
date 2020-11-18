@@ -79,10 +79,9 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(groupByOrdinals.size());
     output->setSortOrder(sortDefinition);
 
-    /* TODO: debug this cleanup later
-     * for(int i = 0; i < aggregators.size(); ++i) {
+    for(int i = 0; i < aggregators.size(); ++i) {
         delete aggregators[i];
-    }*/
+    }
 
     return output;
 
@@ -99,10 +98,11 @@ GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggr
             case AggregateId::SUM:
                 return new GroupBySumImpl(ordinal, aggregateValueType);
             case AggregateId::AVG:
+                return new GroupByAvgImpl(ordinal, aggregateValueType);
             case AggregateId::MIN:
+                return new GroupByMinImpl(ordinal, aggregateValueType);
             case AggregateId::MAX:
-                throw std::invalid_argument("Not yet implemented!");
-        };
+                return new GroupByMaxImpl(ordinal, aggregateValueType);        };
     }
 
     switch (aggregateType) {
@@ -111,9 +111,12 @@ GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggr
         case AggregateId::SUM:
             return new SecureGroupBySumImpl(ordinal, aggregateValueType);
         case AggregateId::AVG:
+            return new SecureGroupByAvgImpl(ordinal, aggregateValueType);
         case AggregateId::MIN:
+            return new SecureGroupByMinImpl(ordinal, aggregateValueType);
         case AggregateId::MAX:
-            throw std::invalid_argument("Not yet implemented!");
+            return new SecureGroupByMaxImpl(ordinal, aggregateValueType);
+
     };
 }
 

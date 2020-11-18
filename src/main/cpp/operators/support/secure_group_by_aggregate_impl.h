@@ -49,6 +49,60 @@ namespace vaultdb {
 
     };
 
+
+    class SecureGroupByAvgImpl : public  SecureGroupByAggregateImpl {
+    public:
+        explicit SecureGroupByAvgImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType)  {
+            if(aggregateType == types::TypeId::ENCRYPTED_INTEGER32) {
+                aggregateType = types::TypeId::ENCRYPTED_INTEGER64; // accommodate psql handling of sum for validation
+                zero = TypeUtilities::getZero(aggregateType);
+                one = TypeUtilities::getOne(aggregateType);
+            }
+            runningSum = zero;
+            runningCount = zero;
+        };
+        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
+        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
+        types::Value getResult() override;
+        ~SecureGroupByAvgImpl() = default;
+
+    private:
+        types::Value runningSum;
+        types::Value runningCount;
+
+    };
+
+    class SecureGroupByMinImpl : public  SecureGroupByAggregateImpl {
+    public:
+        explicit SecureGroupByMinImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType), initialized(emp::Bit(false, emp::PUBLIC))  {};
+        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
+        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
+        types::Value getResult() override;
+        ~SecureGroupByMinImpl() = default;
+
+    private:
+        types::Value runningMin;
+        // need to see at least one tuple to establish a min, initialized is always an emp::Bit
+        // use secret initialized variable for debugging
+        types::Value initialized;
+
+    };
+
+    class SecureGroupByMaxImpl : public  SecureGroupByAggregateImpl {
+    public:
+        explicit SecureGroupByMaxImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType),  initialized(emp::Bit(false, emp::PUBLIC))  {};
+        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
+        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
+        types::Value getResult() override;
+        ~SecureGroupByMaxImpl() = default;
+
+    private:
+        types::Value runningMax;
+        // need to see at least one tuple to establish a max
+        // use secret initialized variable for debugging
+        types::Value initialized;
+
+    };
 }
 
 #endif //_SECURE_GROUP_BY_AGGREGATE_IMPL_H

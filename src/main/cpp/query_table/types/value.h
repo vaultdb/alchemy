@@ -92,6 +92,8 @@ public:
 
   static void compareAndSwap(Value &lhs, Value &rhs, const emp::Bit &cmp);
   static Value obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs);
+  // cmp is always an emp::Bit, this is just syntactic sugar
+  static Value obliviousIf(const Value &cmp, Value &lhs, Value &rhs);
 
     void setType(TypeId type);
 

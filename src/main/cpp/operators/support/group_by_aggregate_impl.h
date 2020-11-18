@@ -16,7 +16,7 @@ namespace vaultdb {
         virtual types::Value getResult() = 0;
         types::TypeId getType() { return aggregateType; }
 
-        // specialized in plain or secure version of aggregator
+        // specialized in plain or  version of aggregator
         virtual types::Value getDummyTag(const types::Value & isLastEntry, const types::Value & nonDummyBin) = 0;
         virtual void updateGroupByBinBoundary(const types::Value & isNewBin, types::Value & nonDummyBinFlag) = 0;
     protected:
@@ -69,6 +69,58 @@ namespace vaultdb {
 
     private:
         types::Value runningSum;
+
+    };
+
+    class GroupByAvgImpl : public  PlainGroupByAggregateImpl {
+    public:
+        explicit GroupByAvgImpl(const int32_t & ordinal, const types::TypeId & aggType) : PlainGroupByAggregateImpl(ordinal, aggType)  {
+            if(aggregateType == types::TypeId::ENCRYPTED_INTEGER32) {
+                aggregateType = types::TypeId::ENCRYPTED_INTEGER64; // accommodate psql handling of sum for validation
+                zero = TypeUtilities::getZero(aggregateType);
+                one = TypeUtilities::getOne(aggregateType);
+            }
+            runningSum = zero;
+            runningCount = zero;
+        };
+        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
+        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
+        types::Value getResult() override;
+        ~GroupByAvgImpl() = default;
+
+    private:
+        types::Value runningSum;
+        types::Value runningCount;
+
+    };
+
+    class GroupByMinImpl : public  PlainGroupByAggregateImpl {
+    public:
+        explicit GroupByMinImpl(const int32_t & ordinal, const types::TypeId & aggType) : PlainGroupByAggregateImpl(ordinal, aggType)  {};
+        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
+        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
+        types::Value getResult() override;
+        ~GroupByMinImpl() = default;
+
+    private:
+        types::Value runningMin;
+        // need to see at least one tuple to establish a min
+        bool initialized = false;
+
+    };
+
+    class GroupByMaxImpl : public  PlainGroupByAggregateImpl {
+    public:
+        explicit GroupByMaxImpl(const int32_t & ordinal, const types::TypeId & aggType) : PlainGroupByAggregateImpl(ordinal, aggType)  {};
+        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
+        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
+        types::Value getResult() override;
+        ~GroupByMaxImpl() = default;
+
+    private:
+        types::Value runningMax;
+        // need to see at least one tuple to establish a min
+        bool initialized = false;
 
     };
 }

@@ -90,3 +90,87 @@ Value GroupBySumImpl::getResult() {
 }
 
 
+
+void GroupByAvgImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
+    assert(!tuple.isEncrypted());
+    assert(isDummy.getType() == TypeId::BOOLEAN);
+
+    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+
+    // re-cast sum as INT64_T in keeping with postgres convention
+    if(aggInput.getType() == TypeId::INTEGER32) {
+        aggInput = Value(TypeId::INTEGER64, (int64_t) aggInput.getInt32());
+    }
+
+    if(!isDummy.getBool()) {
+        runningSum = tuple.getDummyTag().getBool() ? zero : aggInput;
+        runningCount = tuple.getDummyTag().getBool() ? zero : one;
+    }
+}
+
+void GroupByAvgImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
+
+
+    if(!isDummy.getBool()) {
+        Value toAdd = tuple.getDummyTag().getBool() ? zero :  tuple.getField(aggregateOrdinal).getValue();
+        Value toIncr = tuple.getDummyTag().getBool() ? zero : one;
+
+        // re-cast sum as INT64_T in keeping with postgres convention
+        if(toAdd.getType() == TypeId::INTEGER32) {
+            toAdd = Value(TypeId::INTEGER64, (int64_t) toAdd.getInt32());
+        }
+
+        runningSum = runningSum + toAdd;
+        runningCount = runningCount + toIncr;
+    }
+
+}
+
+Value GroupByAvgImpl::getResult() {
+    return runningSum/runningCount;
+}
+
+
+void GroupByMinImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
+    if(!isDummy.getBool() && !tuple.getDummyTag().getBool()) {
+        initialized = true;
+        runningMin = tuple.getField(aggregateOrdinal).getValue();
+    }
+}
+
+void GroupByMinImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
+   assert(initialized);
+
+    if(!isDummy.getBool() && !tuple.getDummyTag().getBool()) {
+        Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+        runningMin = (aggInput < runningMin).getBool() ? aggInput : runningMin;
+    }
+}
+
+Value GroupByMinImpl::getResult() {
+    assert(initialized);
+    return runningMin;
+}
+
+
+void GroupByMaxImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
+    if(!isDummy.getBool() && !tuple.getDummyTag().getBool()) {
+        initialized = true;
+        runningMax = tuple.getField(aggregateOrdinal).getValue();
+    }
+}
+
+void GroupByMaxImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
+    assert(initialized);
+
+    if(!isDummy.getBool() && !tuple.getDummyTag().getBool()) {
+        Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+        runningMax = (aggInput > runningMax).getBool() ? aggInput : runningMax;
+    }
+
+}
+
+Value GroupByMaxImpl::getResult() {
+    assert(initialized);
+    return runningMax;
+}

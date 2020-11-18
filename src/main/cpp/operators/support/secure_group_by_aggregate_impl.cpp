@@ -32,7 +32,7 @@ void SecureGroupByCountImpl::initialize(const QueryTuple &tuple, const Value &is
 
 void SecureGroupByCountImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
 
-    emp::Bit toUpdate = !(isDummy.getEmpBit()) & !(tuple.getDummyTag().getEmpBit());
+    Value toUpdate = !isDummy & !tuple.getDummyTag();
     Value incremented = runningCount + one;
     runningCount = Value::obliviousIf(toUpdate, incremented, runningCount);
 
@@ -53,8 +53,8 @@ void SecureGroupBySumImpl::initialize(const QueryTuple &tuple, const Value &isDu
         aggInput = Value(TypeId::ENCRYPTED_INTEGER64, empInt);
     }
 
-    Value resetValue = Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero, aggInput);
-    runningSum = Value::obliviousIf(isDummy.getEmpBit(), runningSum, resetValue);
+    Value resetValue = Value::obliviousIf(tuple.getDummyTag(), zero, aggInput);
+    runningSum = Value::obliviousIf(isDummy, runningSum, resetValue);
 }
 
 void SecureGroupBySumImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
@@ -68,11 +68,91 @@ void SecureGroupBySumImpl::accumulate(const QueryTuple &tuple, const Value &isDu
     }
 
 
-    emp::Bit toUpdate = !(isDummy.getEmpBit()) & !(tuple.getDummyTag().getEmpBit());
+    Value toUpdate = !isDummy & !(tuple.getDummyTag());
     Value incremented = runningSum + toAdd;
     runningSum = Value::obliviousIf(toUpdate, incremented, runningSum);
 }
 
 Value SecureGroupBySumImpl::getResult() {
     return runningSum;
+}
+
+void SecureGroupByAvgImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
+    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+
+    Value resetSum = Value::obliviousIf(tuple.getDummyTag(), zero, aggInput);
+    Value resetCount = Value::obliviousIf(tuple.getDummyTag(), zero, one);
+
+    runningSum = Value::obliviousIf(isDummy, runningSum, resetSum);
+    runningCount = Value::obliviousIf(isDummy, runningCount, resetCount);
+
+}
+
+void SecureGroupByAvgImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
+
+    Value toAdd = tuple.getField(aggregateOrdinal).getValue();
+
+
+    Value toUpdate = !isDummy & !(tuple.getDummyTag());
+    Value incremented = runningSum + toAdd;
+    Value incrementedCount = runningCount + one;
+
+    runningSum = Value::obliviousIf(toUpdate, incremented, runningSum);
+    runningCount = Value::obliviousIf(toUpdate, incrementedCount, runningCount);
+}
+
+Value SecureGroupByAvgImpl::getResult() {
+    return runningSum/runningCount;
+}
+
+
+void SecureGroupByMinImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
+    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+
+    // if the tuple is a dummy...
+    Value resetValue = Value::obliviousIf(tuple.getDummyTag(), runningMin, aggInput);
+
+    Value localInitialized = !isDummy & !(tuple.getDummyTag());
+
+    // use secret initialized variable for debugging
+    initialized = Value::obliviousIf(isDummy, initialized, localInitialized);
+
+    runningMin = Value::obliviousIf(isDummy, runningMin, resetValue);
+
+}
+
+void SecureGroupByMinImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
+    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+    Value toUpdate = !isDummy & !(tuple.getDummyTag()) & (aggInput < runningMin);
+    runningMin = Value::obliviousIf(toUpdate, aggInput, runningMin);
+}
+
+Value SecureGroupByMinImpl::getResult() {
+    return runningMin;
+}
+
+
+void SecureGroupByMaxImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
+    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+
+    // if the tuple is a dummy, don't update it
+    Value resetValue = Value::obliviousIf(tuple.getDummyTag(), runningMax, aggInput);
+
+    Value localInitialized = !isDummy & !(tuple.getDummyTag());
+
+    // use secret initialized variable for debugging
+    initialized = Value::obliviousIf(isDummy, initialized, localInitialized);
+    runningMax = Value::obliviousIf(isDummy, runningMax, resetValue);
+}
+
+void SecureGroupByMaxImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
+    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+    Value toUpdate = !isDummy & !(tuple.getDummyTag()) & (aggInput > runningMax);
+    runningMax = Value::obliviousIf(toUpdate, aggInput, runningMax);
+
+}
+
+Value SecureGroupByMaxImpl::getResult() {
+    //assert(initialized.getEmpBit().reveal());
+    return runningMax;
 }
