@@ -5,6 +5,7 @@
 
 #include "value.h"
 #include <emp-tool/circuits/float32.h>
+#include <util/type_utilities.h>
 
 using vaultdb::types::Value;
 using namespace vaultdb;
@@ -326,10 +327,4 @@ Value types::Value::operator&(const Value &rhs) const {
   bool result = this->getBool() && rhs.getBool();
   return Value(result);
 }
-
-Value types::Value::obliviousIf(const Value &cmp, Value &lhs, Value &rhs) {
-    assert(cmp.getType() == TypeId::ENCRYPTED_BOOLEAN);
-    return obliviousIf(cmp.getEmpBit(), lhs, rhs);
-}
-
 

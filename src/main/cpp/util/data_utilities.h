@@ -28,6 +28,9 @@ namespace vaultdb {
         static std::shared_ptr<QueryTable>
         getQueryResults(const string &dbName, const string &sql, const bool &hasDummyTag);
 
+        static std::shared_ptr<QueryTable> getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag, const int & sortColCount);
+
+
         static std::string
         queryDatetime(const std::string &colName); // transform a column into an int64 for our expected output
 

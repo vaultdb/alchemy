@@ -74,15 +74,7 @@ namespace vaultdb {
 
     class GroupByAvgImpl : public  PlainGroupByAggregateImpl {
     public:
-        explicit GroupByAvgImpl(const int32_t & ordinal, const types::TypeId & aggType) : PlainGroupByAggregateImpl(ordinal, aggType)  {
-            if(aggregateType == types::TypeId::ENCRYPTED_INTEGER32) {
-                aggregateType = types::TypeId::ENCRYPTED_INTEGER64; // accommodate psql handling of sum for validation
-                zero = TypeUtilities::getZero(aggregateType);
-                one = TypeUtilities::getOne(aggregateType);
-            }
-            runningSum = zero;
-            runningCount = zero;
-        };
+        GroupByAvgImpl(const int32_t & ordinal, const types::TypeId & aggType);
         void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
         void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
         types::Value getResult() override;

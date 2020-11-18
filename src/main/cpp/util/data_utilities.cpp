@@ -156,4 +156,14 @@ std::shared_ptr<QueryTable> DataUtilities::removeDummies(const std::shared_ptr<Q
     return output;
 }
 
+std::shared_ptr<QueryTable>
+DataUtilities::getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
+                                  const int &sortColCount) {
+
+    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, sql, false);
+    SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
+    expected->setSortOrder(expectedSortOrder);
+    return expected;
+}
+
 

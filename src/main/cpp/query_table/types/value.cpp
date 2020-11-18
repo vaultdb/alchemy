@@ -457,6 +457,28 @@ void Value::setValue(const std::string & aString) {
 
 
 
+    Value Value::obliviousIf(const Value &cmp, Value &lhs, Value &rhs) {
+        assert(cmp.getType() == TypeId::ENCRYPTED_BOOLEAN);
+        return obliviousIf(cmp.getEmpBit(), lhs, rhs);
+    }
+
+    Value Value::toFloat(const Value &src) {
+        assert(!TypeUtilities::isEncrypted(src.getType()));
+        switch(src.getType()) {
+            case TypeId::BOOLEAN:
+                return Value((float_t) src.getBool());
+            case TypeId::INTEGER32:
+                return Value((float_t) src.getInt32());
+            case TypeId::INTEGER64:
+                return Value((float_t) src.getInt64());
+            default:
+                throw std::invalid_argument("Cannot convert value of type " + TypeUtilities::getTypeIdString(src.getType()) + " to float.");
+
+        }
+
+    }
+
+
 
 
 } // namespace vaultdb::types

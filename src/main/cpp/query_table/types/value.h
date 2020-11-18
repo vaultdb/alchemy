@@ -94,6 +94,7 @@ public:
   static Value obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs);
   // cmp is always an emp::Bit, this is just syntactic sugar
   static Value obliviousIf(const Value &cmp, Value &lhs, Value &rhs);
+  static Value toFloat(const Value & src);
 
     void setType(TypeId type);
 

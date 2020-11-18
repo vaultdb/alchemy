@@ -90,6 +90,15 @@ Value GroupBySumImpl::getResult() {
 }
 
 
+GroupByAvgImpl::GroupByAvgImpl(const int32_t &ordinal, const TypeId &aggType) : PlainGroupByAggregateImpl(ordinal, aggType)  {
+    // this always becomes a float for computing AVG, using the precedent in psql
+    aggregateType = types::TypeId::FLOAT32;
+    zero = TypeUtilities::getZero(aggregateType);
+    one = TypeUtilities::getOne(aggregateType);
+    runningSum = zero;
+    runningCount = zero;
+}
+
 
 void GroupByAvgImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
     assert(!tuple.isEncrypted());
@@ -97,10 +106,8 @@ void GroupByAvgImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
 
     Value aggInput = tuple.getField(aggregateOrdinal).getValue();
 
-    // re-cast sum as INT64_T in keeping with postgres convention
-    if(aggInput.getType() == TypeId::INTEGER32) {
-        aggInput = Value(TypeId::INTEGER64, (int64_t) aggInput.getInt32());
-    }
+    // re-cast avg as float in keeping with postgres convention
+    aggInput = Value::toFloat(aggInput);
 
     if(!isDummy.getBool()) {
         runningSum = tuple.getDummyTag().getBool() ? zero : aggInput;
@@ -112,7 +119,8 @@ void GroupByAvgImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
 
 
     if(!isDummy.getBool()) {
-        Value toAdd = tuple.getDummyTag().getBool() ? zero :  tuple.getField(aggregateOrdinal).getValue();
+        Value aggInput = Value::toFloat(tuple.getField(aggregateOrdinal).getValue());
+        Value toAdd = tuple.getDummyTag().getBool() ? zero :  aggInput;
         Value toIncr = tuple.getDummyTag().getBool() ? zero : one;
 
         // re-cast sum as INT64_T in keeping with postgres convention
