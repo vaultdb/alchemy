@@ -3,6 +3,7 @@
 #include "data_utilities.h"
 
 using namespace vaultdb;
+using namespace emp;
 
 std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcTable,  NetIO *netio, int party) {
     size_t aliceSize = srcTable->getTupleCount(); // in tuples
@@ -10,12 +11,12 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
     int colCount = srcTable->getSchema().getFieldCount();
     QueryTuple dstTuple(colCount, true);
 
-    if (party == emp::ALICE) {
+    if (party == ALICE) {
         netio->send_data(&aliceSize, 4);
         netio->flush();
         netio->recv_data(&bobSize, 4);
         netio->flush();
-    } else if (party == emp::BOB) {
+    } else if (party == BOB) {
         netio->recv_data(&aliceSize, 4);
         netio->flush();
         netio->send_data(&bobSize, 4);
@@ -35,8 +36,8 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
 
     // read alice in order
     for (int i = 0; i < aliceSize; ++i) {
-        QueryTuple *srcTuple = (party == emp::ALICE) ? srcTable->getTuplePtr(i) : nullptr;
-        dstTuple = secretShareTuple(srcTuple, schema, party, (int) emp::ALICE);
+        QueryTuple *srcTuple = (party == ALICE) ? srcTable->getTuplePtr(i) : nullptr;
+        dstTuple = secretShareTuple(srcTuple, schema, party, (int) ALICE);
         dstTable->putTuple(i, dstTuple);
 
     }
@@ -47,14 +48,14 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
 
     for (int i = 0; i < bobSize; ++i) {
         --readTuple;
-        QueryTuple *srcTuple = (party == emp::BOB) ? srcTable->getTuplePtr(readTuple) : nullptr;
-        //if(party == emp::BOB)
+        QueryTuple *srcTuple = (party == BOB) ? srcTable->getTuplePtr(readTuple) : nullptr;
+        //if(party == BOB)
         //    std::cout << "Secret sharing: " << *srcTuple << std::endl;
-        dstTuple = secretShareTuple(srcTuple, schema,  party, emp::BOB);
-        //std::string revealed = dstTuple.reveal(emp::PUBLIC).toString(false);
-         //std::cout << "Encrypted: " << dstTuple.reveal(emp::PUBLIC) << std::endl;
+        dstTuple = secretShareTuple(srcTuple, schema,  party, BOB);
+        //std::string revealed = dstTuple.reveal(PUBLIC).toString(false);
+         //std::cout << "Encrypted: " << dstTuple.reveal(PUBLIC) << std::endl;
 
-        // if(empParty_ == emp::BOB)  assert(revealed == srcTuple->toString());
+        // if(empParty_ == BOB)  assert(revealed == srcTuple->toString());
 
         dstTable->putTuple(writeIdx, dstTuple);
         ++writeIdx;
@@ -91,7 +92,7 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
          dummyTag = srcTuple->getDummyTag().getBool();
 
 
-    emp::Bit encryptedDummyTag(dummyTag, dstParty);
+    Bit encryptedDummyTag(dummyTag, dstParty);
 
     types::Value valueBit(encryptedDummyTag);
     dstTuple.setDummyTag(valueBit);
@@ -123,12 +124,12 @@ EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &
     switch (type) {
         case vaultdb::types::TypeId::BOOLEAN: {
             bool bit = (myParty == dstParty) ? srcValue.getBool() : 0;
-            emp::Bit eBit(bit, dstParty);
+            Bit eBit(bit, dstParty);
             return types::Value(eBit);
         }
         case vaultdb::types::TypeId::INTEGER32: {
             int32_t value = (myParty == dstParty) ? srcValue.getInt32() : 0;
-            emp::Integer intVal(32, value, dstParty);
+            Integer intVal(32, value, dstParty);
             //std::cout << "Encrypting int: " << value << " reveals to " << intVal.reveal<int32_t>() << " bits: " << intVal.reveal<std::string>() << std::endl;
 
             return types::Value(types::TypeId::ENCRYPTED_INTEGER32, intVal);
@@ -136,13 +137,13 @@ EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &
         case vaultdb::types::TypeId::NUMERIC:
         case vaultdb::types::TypeId::FLOAT32: {
             float value = (myParty == dstParty) ? srcValue.getFloat32() : 0;
-            emp::Float floatVal(value, dstParty);
+            Float floatVal(value, dstParty);
             return types::Value(floatVal);
         }
 
         case vaultdb::types::TypeId::INTEGER64: {
             int64_t value = (myParty == dstParty) ? srcValue.getInt64() : 0;
-            emp::Integer intVal(64, value, dstParty);
+            Integer intVal(64, value, dstParty);
             return types::Value(types::TypeId::ENCRYPTED_INTEGER64, intVal);
         }
 
@@ -152,7 +153,7 @@ EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &
                 srcValue.getVarchar() :
                 std::to_string(0);
 
-            emp::Integer strVal = encryptVarchar(valueStr, length, myParty, dstParty);
+            Integer strVal = encryptVarchar(valueStr, length, myParty, dstParty);
             types::Value result(types::TypeId::ENCRYPTED_VARCHAR, strVal);;
             return result;
         }
@@ -165,7 +166,7 @@ EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &
 }
 
 
-emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, const int & myParty, const int & dstParty) {
+Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, const int & myParty, const int & dstParty) {
 
 
     size_t stringByteCount = stringBitCount / 8;
@@ -180,7 +181,7 @@ emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount
     std::reverse(inputReversed.begin(), inputReversed.end());
     bool *bools = DataUtilities::bytesToBool((int8_t *) inputReversed.c_str(), stringByteCount);
 
-    emp::Integer result(stringBitCount, 0L, dstParty);
+    Integer result(stringBitCount, 0L, dstParty);
     if(myParty == dstParty) {
         ProtocolExecution::prot_exec->feed((block *)result.bits.data(), dstParty, bools, stringBitCount);
     }
@@ -193,6 +194,76 @@ emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount
 
 
     return result;
+
+}
+
+// https://stackoverflow.com/questions/20302904/converting-int-to-float-or-float-to-int-using-bitwise-operations-software-float
+Float EmpManager::castIntToFloat(const Integer &input) {
+    Float output(0.0, PUBLIC);
+    Integer zero(0, PUBLIC);
+    Integer one(1, PUBLIC);
+    Integer twentyThree(23, PUBLIC);
+
+    Bit signBit = If(input < zero, Bit(true, PUBLIC), Bit(false, PUBLIC));
+    Integer unsignedInput = If(signBit, Integer(-1, PUBLIC) * input, input);
+
+    // find leading 1
+    Integer bitNum(31, PUBLIC);
+    Integer shiftCount = zero;
+    int i;
+    Bit oneFound(false, PUBLIC);
+    Bit predicate = oneFound;
+    Integer firstOneIdx(31, PUBLIC); // bit number of first 1 in the mantissa
+
+    for(i = 31; i >= 23; --i) {
+        bitNum = Integer(i, PUBLIC);
+        predicate = (unsignedInput & (one << i)) != zero;
+        predicate = predicate & (!oneFound);
+
+        // need to shift right
+        int shiftCount = 23 - i;
+        unsignedInput = If(predicate, unsignedInput >> shiftCount, unsignedInput);
+        // if this is our first 1, record it
+        firstOneIdx = If(!oneFound & predicate, bitNum, firstOneIdx);
+        // update the flag for recording first instance of 1 bit
+        oneFound = oneFound | predicate;
+    }
+
+    for(; i > 0; --i) {
+        bitNum = Integer(i, PUBLIC);
+        predicate = (unsignedInput & (one << i)) != zero;
+        predicate = predicate & (!oneFound);
+
+        // need to shift left
+        int shiftCount = 23 - i;
+        unsignedInput = If(predicate, unsignedInput << shiftCount, unsignedInput);
+
+        // if this is our first 1, record it
+        firstOneIdx = If(!oneFound & predicate, bitNum, firstOneIdx);
+        // update the flag for recording first instance of 1 bit
+        oneFound = oneFound | predicate;
+
+    }
+
+    // exponent is biased by 127
+    Integer exponent = firstOneIdx + Integer(127, PUBLIC);
+    // move exp to the right place
+    exponent = exponent << 23;
+
+    // clear leading 1 (bit #23) (it will implicitly be there but not stored)
+    Integer coefficient = unsignedInput;
+    coefficient.bits[22] = Bit(false, PUBLIC);
+
+    // bitwise OR the sign bit | exp | coeff
+    Integer outputInt(32, 0, PUBLIC);
+    outputInt.bits[FLOAT_LEN-1] = signBit; // bit 31 is sign bit
+    outputInt = outputInt | exponent | coefficient;
+
+    // cover the corner cases
+    output = If(input == zero, Float(0.0, PUBLIC), output);
+    output = If(input == Integer(INT_MIN, PUBLIC), Float((float) INT_MIN, PUBLIC), output);
+
+    return output;
 
 }
 

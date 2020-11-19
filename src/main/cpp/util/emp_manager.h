@@ -25,6 +25,7 @@ namespace  vaultdb {
         static emp::Integer
         encryptVarchar(std::string input, size_t stringBitCount, const int &myParty, const int &dstParty);
 
+        static emp::Float castIntToFloat(const emp::Integer & input);
 
     };
 
