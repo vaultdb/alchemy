@@ -266,7 +266,8 @@ Float EmpManager::castIntToFloat(const Integer &input) {
 
     // cover the corner cases
     output = If(input == zero, Float(0.0, PUBLIC), output);
-    output = If(input == Integer(32, INT_MIN, PUBLIC), Float(INT_MIN, PUBLIC), output);
+    output = If(input < minInt, Float(INT_MIN, PUBLIC), output);
+    output = If(input > maxInt, Float(INT_MAX, PUBLIC), output);
 
     return output;
 
