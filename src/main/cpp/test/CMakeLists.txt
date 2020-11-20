@@ -91,3 +91,4 @@ package_add_test(secure_basic_join_test secure_basic_join_test.cpp support/EmpBa
 package_add_test(secure_pkey_fkey_join_test secure_pkey_fkey_join_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_scalar_aggregate_test secure_scalar_aggregate_test.cpp support/EmpBaseTest.cpp)
 package_add_test(secure_group_by_aggregate_test secure_group_by_aggregate_test.cpp support/EmpBaseTest.cpp)
+package_add_test(emp_float_to_int emp_float_to_int.cpp support/EmpBaseTest.cpp)

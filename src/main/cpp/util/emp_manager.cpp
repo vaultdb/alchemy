@@ -197,74 +197,198 @@ Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, con
 
 }
 
+
 // https://stackoverflow.com/questions/20302904/converting-int-to-float-or-float-to-int-using-bitwise-operations-software-float
 Float EmpManager::castIntToFloat(const Integer &input) {
     Float output(0.0, PUBLIC);
-    Integer zero(0, PUBLIC);
-    Integer one(1, PUBLIC);
-    Integer twentyThree(23, PUBLIC);
+    Integer zero(32, 0, PUBLIC);
+    Integer one(32, 1, PUBLIC);
+    Integer twentyThree(32,23, PUBLIC);
 
     Bit signBit = If(input < zero, Bit(true, PUBLIC), Bit(false, PUBLIC));
-    Integer unsignedInput = If(signBit, Integer(-1, PUBLIC) * input, input);
+    Integer unsignedInput = If(signBit, Integer(32,-1, PUBLIC) * input, input);
 
-    // find leading 1
-    Integer bitNum(31, PUBLIC);
+
+    // find first 1 bit
     Integer shiftCount = zero;
     int i;
     Bit oneFound(false, PUBLIC);
     Bit predicate = oneFound;
-    Integer firstOneIdx(31, PUBLIC); // bit number of first 1 in the mantissa
+    Integer firstOneIdx(32,31, PUBLIC); // bit number of first 1 in the mantissa
+    int32_t shiftSize;
 
-    for(i = 31; i >= 23; --i) {
-        bitNum = Integer(i, PUBLIC);
-        predicate = (unsignedInput & (one << i)) != zero;
-        predicate = predicate & (!oneFound);
+    for(i = 31; i > 0; --i) {
 
-        // need to shift right
-        int shiftCount = 23 - i;
-        unsignedInput = If(predicate, unsignedInput >> shiftCount, unsignedInput);
+        predicate = unsignedInput[i] & !oneFound;
+        if(predicate.reveal(PUBLIC))
+            std::cout << "Found one bit at: " << i <<  std::endl;
+
+        if(i >= 23) {
+
+            shiftSize = i - 23;
+            //  shift right, using > 24 bits
+            Integer shifted = unsignedInput >> shiftSize;
+            unsignedInput = If(predicate, shifted, unsignedInput);
+        }
+        else {
+            shiftSize = 23 - i;
+            if(predicate.reveal())
+                std::cout << "Shifting " << shiftSize << " bits." << std::endl;
+            // shift left, using <= 24 bits
+            Integer shifted = unsignedInput << shiftSize;
+            if(predicate.reveal())
+                std::cout << "Shift result: " << shifted.reveal<std::string>() << ".  From " << unsignedInput.reveal<std::string>() << std::endl;
+            unsignedInput = If(predicate, shifted, unsignedInput);
+
+        }
+
         // if this is our first 1, record it
-        firstOneIdx = If(!oneFound & predicate, bitNum, firstOneIdx);
+        firstOneIdx = If(!oneFound & predicate, Integer(32, i, PUBLIC), firstOneIdx);
         // update the flag for recording first instance of 1 bit
         oneFound = oneFound | predicate;
     }
 
-    for(; i > 0; --i) {
-        bitNum = Integer(i, PUBLIC);
-        predicate = (unsignedInput & (one << i)) != zero;
-        predicate = predicate & (!oneFound);
 
-        // need to shift left
-        int shiftCount = 23 - i;
-        unsignedInput = If(predicate, unsignedInput << shiftCount, unsignedInput);
 
-        // if this is our first 1, record it
-        firstOneIdx = If(!oneFound & predicate, bitNum, firstOneIdx);
-        // update the flag for recording first instance of 1 bit
-        oneFound = oneFound | predicate;
-
-    }
+    std::cout << "Found one at idx: " << firstOneIdx.reveal<int32_t>() << std::endl;
 
     // exponent is biased by 127
-    Integer exponent = firstOneIdx + Integer(127, PUBLIC);
-    // move exp to the right place
+    Integer exponent = firstOneIdx + Integer(32, 127, PUBLIC);
+    // move exp to the right place in final output
+
+    Integer coefficient = unsignedInput;
+    // clear leading 1 (bit #23) (it will implicitly be there but not stored)
+    coefficient.bits[23] = Bit(false, PUBLIC);
+    std::cout << "Have coefficient: " << coefficient.reveal<std::string>() << " exponent: " << exponent.reveal<int32_t>() << " sign bit: " << signBit.reveal() << std::endl;
+
     exponent = exponent << 23;
 
-    // clear leading 1 (bit #23) (it will implicitly be there but not stored)
-    Integer coefficient = unsignedInput;
-    coefficient.bits[22] = Bit(false, PUBLIC);
 
     // bitwise OR the sign bit | exp | coeff
     Integer outputInt(32, 0, PUBLIC);
-    outputInt.bits[FLOAT_LEN-1] = signBit; // bit 31 is sign bit
-    outputInt = outputInt | exponent | coefficient;
+    outputInt.bits[31] = signBit; // bit 31 is sign bit
+
+    outputInt =  coefficient | exponent | outputInt;
+
+    std::cout << "Output bits:  " << outputInt.reveal<std::string>() << std::endl;
+
+    memcpy(&(output.value[0]), &(outputInt.bits[0]), 32 * sizeof(Bit));
+
+    std::string outputStr;
+
+    for(int i = 0; i < FLOAT_LEN; ++i) {
+        outputStr += (output.value[i].reveal()) ? "1" : "0";
+    }
+    std::cout << "Output float: " << outputStr << std::endl;
+
+
 
     // cover the corner cases
     output = If(input == zero, Float(0.0, PUBLIC), output);
-    output = If(input == Integer(INT_MIN, PUBLIC), Float((float) INT_MIN, PUBLIC), output);
+    output = If(input == Integer(32, INT_MIN, PUBLIC), Float(INT_MIN, PUBLIC), output);
 
     return output;
 
 }
 
+
+// https://stackoverflow.com/questions/20302904/converting-int-to-float-or-float-to-int-using-bitwise-operations-software-float
+//  handles range of [-2^24, 2^24]
+/*Float EmpManager::castIntToFloat(const Integer &input) {
+    // consts
+    const Bit trueBit(true, PUBLIC);
+    const Bit falseBit(false, PUBLIC);
+    const Integer zero(32, 0, PUBLIC);
+    const Integer one(32, 1, PUBLIC);
+    const int32_t maxRange = 1 << 24;
+    const Integer maxInt(32, maxRange, PUBLIC); // 2^24
+    const Integer minInt(32, -1 * maxRange, PUBLIC); // -2^24
+
+    Float output(0.0, PUBLIC);
+
+    Bit signBit = input.bits[31];
+    Integer unsignedInput(input);
+    unsignedInput.bits[31] =  falseBit;
+
+
+    // find first 1 bit
+    // have we found the first 1 yet?
+    Bit seekingOne = trueBit;
+    Bit predicate = seekingOne;
+    Integer firstOneIdx(32,0, PUBLIC); // bit number of first 1 in the mantissa
+    int32_t shiftSize;
+
+
+    for(int i = 31; i > 0; --i) {
+
+        predicate = unsignedInput[i] & seekingOne;
+
+
+        if(i >= 23) {
+
+             shiftSize = i - 23;
+
+            //  shift right, using > 24 bits
+            Integer shifted = unsignedInput >> shiftSize;
+            unsignedInput = If(predicate, shifted, unsignedInput);
+        }
+        else {
+            shiftSize = 23 - i;
+
+            // shift left, using <= 24 bits
+            Integer shifted = unsignedInput << shiftSize;
+            unsignedInput = If(predicate, shifted, unsignedInput);
+
+        }
+
+            // if this is our first 1, record it
+        firstOneIdx = If(predicate, Integer(32, i, PUBLIC), firstOneIdx);
+        // update the flag for recording first instance of 1 bit
+        seekingOne = If(seekingOne, If(predicate, falseBit, trueBit), falseBit);
+    }
+
+
+
+    std::cout << "Found one at idx: " << firstOneIdx.reveal<int32_t>() << std::endl;
+
+    // exponent is biased by 127
+    Integer exponent = firstOneIdx + Integer(32, 127, PUBLIC);
+
+
+    Integer coefficient = unsignedInput;
+    // clear leading 1 (bit #23) (it will implicitly be there but not stored)
+    coefficient.bits[23] = falseBit;
+    std::cout << "Have coefficient: " << coefficient.reveal<std::string>() << " exponent: " << exponent.reveal<int32_t>() << " sign bit: " << signBit.reveal() << std::endl;
+
+    // move exp to the right place in final output
+    exponent = exponent << 23;
+
+
+    // bitwise OR the sign bit | exp | coeff
+    Integer outputInt(32, 0, PUBLIC);
+    outputInt.bits[31] = signBit; // bit 31 is sign bit
+
+    outputInt =  coefficient | exponent | outputInt;
+
+
+    memcpy(&(output.value[0]), &(outputInt.bits[0]), 32 * sizeof(Bit));
+
+    std::string outputStr;
+
+    for(int i = 0; i < FLOAT_LEN; ++i) {
+        outputStr += (output.value[i].reveal()) ? "1" : "0";
+    }
+    std::cout << "Output float: " << outputStr << std::endl;
+
+
+
+    // cover the corner cases
+    output = If(input == zero, Float(0.0, PUBLIC), output);
+    output = If(input > maxInt, Float(INT_MAX, PUBLIC), output);
+    output = If(input < minInt, Float(INT_MIN, PUBLIC), output);
+
+    return output;
+
+}
+*/
 

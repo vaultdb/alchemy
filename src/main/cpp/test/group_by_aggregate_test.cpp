@@ -221,7 +221,7 @@ TEST_F(GroupByAggregateTest, test_min_dummies) {
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
-    
+
     std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size();
     ASSERT_EQ(*expected, *observed);
 

@@ -1,5 +1,4 @@
 #include <util/data_utilities.h>
-#include <util/emp_manager.h>
 #include "support/EmpBaseTest.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
