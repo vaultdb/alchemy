@@ -199,19 +199,19 @@ Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, con
 
 
 // https://stackoverflow.com/questions/20302904/converting-int-to-float-or-float-to-int-using-bitwise-operations-software-float
+// range: [-2^24, 2^24]
 Float EmpManager::castIntToFloat(const Integer &input) {
 
     const Integer zero(32, 0, PUBLIC);
     const Integer one(32, 1, PUBLIC);
-    const int32_t maxRange = 1 << 24;
-    const Integer maxInt(32, maxRange, PUBLIC); // 2^24
-    const Integer minInt(32, -1 * maxRange, PUBLIC); // -2^24
+    const Integer maxInt(32, 1 << 24, PUBLIC); // 2^24
+    const Integer minInt = Integer(32, -1 * (1 << 24), PUBLIC); // -2^24
     const Integer twentyThree(32, 23, PUBLIC);
 
     Float output(0.0, PUBLIC);
 
     Bit signBit = input.bits[31];
-    Integer unsignedInput = If(signBit, zero - input, input);
+    Integer unsignedInput = input.abs();
     Integer firstOneIdx = Integer(32, 31, PUBLIC) - unsignedInput.leading_zeros().resize(32);
 
     Bit leftShift = firstOneIdx >= twentyThree;
