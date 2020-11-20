@@ -14,6 +14,7 @@ class EmpFloatToIntTest : public EmpBaseTest {
 protected:
     void testIntToFloat(const int32_t & input) const;
     std::string printFloatBits(const Float & aFloat) const;
+    std::string printIntBits(const int32_t & anInt) const;
 
 };
 
@@ -23,16 +24,17 @@ void EmpFloatToIntTest::testIntToFloat(const int32_t & inputInt) const {
     std::cout << "****Input: " << inputInt << std::endl;
 
     int32_t input =  FLAGS_party == ALICE ? inputInt : 0;
-    emp::Integer xInt(32, input, ALICE);
-    int32_t check = xInt.reveal<int32_t>();
+    emp::Integer encryptedInt(32, input, ALICE);
+    int32_t check = encryptedInt.reveal<int32_t>();
+
+    std::string inputBitstring = printIntBits(inputInt);
     ASSERT_EQ(check, inputInt);
-    std::cout << "Int input bits: " << xInt.reveal<std::string>() << std::endl;
-
-    emp::Float xFloat = EmpManager::castIntToFloat(xInt);
-    float revealed = xFloat.reveal<double>(PUBLIC);
-    std::cout << "Encrypted bits: " << printFloatBits(xFloat) << std::endl;
 
 
+    emp::Float encryptedFloat = EmpManager::castIntToFloat(encryptedInt);
+    float revealed = encryptedFloat.reveal<double>(PUBLIC);
+
+    // support range: [-2^24, 2^24]
     float expectedOutput = (float) inputInt;
     if(inputInt > (1 << 24))  expectedOutput = (float) INT_MAX;
     if(inputInt < -1 * (1 << 24))  expectedOutput = (float) INT_MIN;
@@ -50,6 +52,16 @@ std::string EmpFloatToIntTest::printFloatBits(const Float &aFloat) const {
     return output;
 }
 
+std::string EmpFloatToIntTest::printIntBits(const int32_t &input) const {
+    bool* b = new bool[32];
+    int_to_bool<int64_t>(b, input, 32);
+    std::string output;
+    for(int i = 0; i < 32; ++i)
+        output +=  b[i] ? "1" : "0";
+    return output;
+}
+
+
 
 // pick a few examples
 TEST_F(EmpFloatToIntTest, basic_test) {
@@ -64,64 +76,21 @@ TEST_F(EmpFloatToIntTest, basic_test) {
     testIntToFloat( INT_MAX);
 }
 
-/*
-void EmpFloatToIntTest::testIntToFloat(const int32_t & inputInt) const {
-    std::cout << "******Input: " << inputInt << std::endl;
-
-    int32_t input =  FLAGS_party == ALICE ? inputInt : 0;
-    emp::Integer xInt(32, input, ALICE);
-    int32_t check = xInt.reveal<int32_t>();
-    ASSERT_EQ(check, inputInt);
-    std::cout << "Int input bits: " << xInt.reveal<std::string>() << std::endl;
-
-    emp::Float xFloat = EmpManager::castIntToFloat(xInt);
-    float revealed = xFloat.reveal<double>(PUBLIC);
-    std::cout << "Encrypted bits: " << printFloatBits(xFloat) << std::endl;
-    float expectedOutput = (float) inputInt;
-    if(inputInt > (1 << 24))  expectedOutput = (float) INT_MAX;
-    if(inputInt > -1 * (1 << 24))  expectedOutput = (float) INT_MIN;
-
-    ASSERT_EQ((float) inputInt, revealed );
-
-}
-
-std::string EmpFloatToIntTest::printFloatBits(const Float &aFloat) const {
-    std::string output;
-
-    for(int i = 0; i < FLOAT_LEN; ++i) {
-        output += (aFloat.value[i].reveal()) ? "1" : "0";
-    }
-
-    return output;
-}
-
-
-// pick a few examples
-TEST_F(EmpFloatToIntTest, basic_test) {
-    // encrypting int from alice, but input party doesn't matter
-    // using netio to test whole pipeline
-
-    testIntToFloat(3);
-    testIntToFloat(52);
-    testIntToFloat(7);
-    testIntToFloat(-5);
-    testIntToFloat((int) INT_MIN);
-    testIntToFloat((int) INT_MAX-1);
-}
-
-/*TODO: add this one next
- * TEST_F(EmpFloatToIntTest, randomized_test) {
-    PRG prg;
+ TEST_F(EmpFloatToIntTest, randomized_test) {
+    // seed to make alice and bob produce the same random bits
+    block seed = makeBlock(64, 0);
+    PRG prg(&seed, 0);
     int rnd;
+    int range = 1 << 24;
 
     for(int i = 0; i < 50; ++i) {
         prg.random_data(&rnd, 4);
-        rnd %= (int) FLT_MAX;
+        rnd %= range;
         testIntToFloat(rnd);
     }
 
 }
-*/
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

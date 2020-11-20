@@ -223,8 +223,6 @@ Float EmpManager::castIntToFloat(const Integer &input) {
     for(int i = 31; i > 0; --i) {
 
         predicate = unsignedInput[i] & seekingOne;
-        if(predicate.reveal(PUBLIC))
-            std::cout << "Found one bit at: " << i <<  std::endl;
 
         if(i >= 23) {
 
@@ -234,13 +232,10 @@ Float EmpManager::castIntToFloat(const Integer &input) {
             unsignedInput = If(predicate, shifted, unsignedInput);
         }
         else {
+
             int shiftSize = 23 - i;
-            if(predicate.reveal())
-                std::cout << "Shifting " << shiftSize << " bits." << std::endl;
             // shift left, using <= 24 bits
             Integer shifted = unsignedInput << shiftSize;
-            if(predicate.reveal())
-                std::cout << "Shift result: " << shifted.reveal<std::string>() << ".  From " << unsignedInput.reveal<std::string>() << std::endl;
             unsignedInput = If(predicate, shifted, unsignedInput);
 
         }
@@ -251,20 +246,14 @@ Float EmpManager::castIntToFloat(const Integer &input) {
         seekingOne = If(seekingOne, If(predicate, falseBit, trueBit), falseBit);
     }
 
-
-
-    std::cout << "Found one at idx: " << firstOneIdx.reveal<int32_t>() << std::endl;
-
     // exponent is biased by 127
     Integer exponent = firstOneIdx + Integer(32, 127, PUBLIC);
     // move exp to the right place in final output
+    exponent = exponent << 23;
 
     Integer coefficient = unsignedInput;
     // clear leading 1 (bit #23) (it will implicitly be there but not stored)
-    coefficient.bits[23] = Bit(false, PUBLIC);
-    std::cout << "Have coefficient: " << coefficient.reveal<std::string>() << " exponent: " << exponent.reveal<int32_t>() << " sign bit: " << signBit.reveal() << std::endl;
-
-    exponent = exponent << 23;
+    coefficient.bits[23] = falseBit;
 
 
     // bitwise OR the sign bit | exp | coeff
@@ -273,18 +262,7 @@ Float EmpManager::castIntToFloat(const Integer &input) {
 
     outputInt =  coefficient | exponent | outputInt;
 
-    std::cout << "Output bits:  " << outputInt.reveal<std::string>() << std::endl;
-
     memcpy(&(output.value[0]), &(outputInt.bits[0]), 32 * sizeof(Bit));
-
-    std::string outputStr;
-
-    for(int i = 0; i < FLOAT_LEN; ++i) {
-        outputStr += (output.value[i].reveal()) ? "1" : "0";
-    }
-    std::cout << "Output float: " << outputStr << std::endl;
-
-
 
     // cover the corner cases
     output = If(input == zero, Float(0.0, PUBLIC), output);
