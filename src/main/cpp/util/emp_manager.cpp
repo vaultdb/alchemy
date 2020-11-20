@@ -200,24 +200,23 @@ Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, con
 
 // https://stackoverflow.com/questions/20302904/converting-int-to-float-or-float-to-int-using-bitwise-operations-software-float
 Float EmpManager::castIntToFloat(const Integer &input) {
+    const Integer zero(32, 0, PUBLIC);
+    const Integer one(32, 1, PUBLIC);
+
     Float output(0.0, PUBLIC);
-    Integer zero(32, 0, PUBLIC);
-    Integer one(32, 1, PUBLIC);
-    Integer twentyThree(32,23, PUBLIC);
 
-    Bit signBit = If(input < zero, Bit(true, PUBLIC), Bit(false, PUBLIC));
+    Bit signBit = input.bits[31];
     Integer unsignedInput = If(signBit, Integer(32,-1, PUBLIC) * input, input);
+    std::cout << "Have sign bit: " << signBit.reveal() << " unsigned input: " << unsignedInput.reveal<int32_t>() << "(" << unsignedInput.reveal<string>() << ")" <<  std::endl;
 
 
-    // find first 1 bit
-    Integer shiftCount = zero;
-    int i;
+
     Bit oneFound(false, PUBLIC);
     Bit predicate = oneFound;
     Integer firstOneIdx(32,31, PUBLIC); // bit number of first 1 in the mantissa
     int32_t shiftSize;
 
-    for(i = 31; i > 0; --i) {
+    for(int i = 31; i > 0; --i) {
 
         predicate = unsignedInput[i] & !oneFound;
         if(predicate.reveal(PUBLIC))

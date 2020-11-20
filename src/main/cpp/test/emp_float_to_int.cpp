@@ -20,7 +20,7 @@ protected:
 
 
 void EmpFloatToIntTest::testIntToFloat(const int32_t & inputInt) const {
-    std::cout << "Input: " << inputInt << std::endl;
+    std::cout << "****Input: " << inputInt << std::endl;
 
     int32_t input =  FLAGS_party == ALICE ? inputInt : 0;
     emp::Integer xInt(32, input, ALICE);
@@ -31,7 +31,12 @@ void EmpFloatToIntTest::testIntToFloat(const int32_t & inputInt) const {
     emp::Float xFloat = EmpManager::castIntToFloat(xInt);
     float revealed = xFloat.reveal<double>(PUBLIC);
     std::cout << "Encrypted bits: " << printFloatBits(xFloat) << std::endl;
-    ASSERT_EQ((float) inputInt, revealed );
+
+
+    float expectedOutput = (float) inputInt;
+    if(inputInt > (1 << 24))  expectedOutput = (float) INT_MAX;
+    if(inputInt < -1 * (1 << 24))  expectedOutput = (float) INT_MIN;
+    ASSERT_FLOAT_EQ(expectedOutput, revealed);
 
 }
 
