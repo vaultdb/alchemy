@@ -21,7 +21,8 @@ protected:
 
 
 void EmpFloatToIntTest::testIntToFloat(const int32_t & inputInt) const {
-    
+
+    std::cout << "Input: " << inputInt << std::endl;
     int32_t input =  FLAGS_party == ALICE ? inputInt : 0;
     emp::Integer encryptedInt(32, input, ALICE);
     int32_t check = encryptedInt.reveal<int32_t>();
