@@ -200,37 +200,41 @@ Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, con
 
 // https://stackoverflow.com/questions/20302904/converting-int-to-float-or-float-to-int-using-bitwise-operations-software-float
 Float EmpManager::castIntToFloat(const Integer &input) {
+    const Bit trueBit(true, PUBLIC);
+    const Bit falseBit(false, PUBLIC);
     const Integer zero(32, 0, PUBLIC);
     const Integer one(32, 1, PUBLIC);
+    const int32_t maxRange = 1 << 24;
+    const Integer maxInt(32, maxRange, PUBLIC); // 2^24
+    const Integer minInt(32, -1 * maxRange, PUBLIC); // -2^24
 
     Float output(0.0, PUBLIC);
 
     Bit signBit = input.bits[31];
     Integer unsignedInput = If(signBit, Integer(32,-1, PUBLIC) * input, input);
-    std::cout << "Have sign bit: " << signBit.reveal() << " unsigned input: " << unsignedInput.reveal<int32_t>() << "(" << unsignedInput.reveal<string>() << ")" <<  std::endl;
 
 
-
-    Bit oneFound(false, PUBLIC);
-    Bit predicate = oneFound;
-    Integer firstOneIdx(32,31, PUBLIC); // bit number of first 1 in the mantissa
-    int32_t shiftSize;
+    // find first 1 bit
+    // have we found the first 1 yet?
+    Bit seekingOne = trueBit;
+    Bit predicate = seekingOne;
+    Integer firstOneIdx(32,0, PUBLIC); // bit number of first 1 in the mantissa
 
     for(int i = 31; i > 0; --i) {
 
-        predicate = unsignedInput[i] & !oneFound;
+        predicate = unsignedInput[i] & seekingOne;
         if(predicate.reveal(PUBLIC))
             std::cout << "Found one bit at: " << i <<  std::endl;
 
         if(i >= 23) {
 
-            shiftSize = i - 23;
+            int shiftSize = i - 23;
             //  shift right, using > 24 bits
             Integer shifted = unsignedInput >> shiftSize;
             unsignedInput = If(predicate, shifted, unsignedInput);
         }
         else {
-            shiftSize = 23 - i;
+            int shiftSize = 23 - i;
             if(predicate.reveal())
                 std::cout << "Shifting " << shiftSize << " bits." << std::endl;
             // shift left, using <= 24 bits
@@ -242,9 +246,9 @@ Float EmpManager::castIntToFloat(const Integer &input) {
         }
 
         // if this is our first 1, record it
-        firstOneIdx = If(!oneFound & predicate, Integer(32, i, PUBLIC), firstOneIdx);
+        firstOneIdx = If(predicate, Integer(32, i, PUBLIC), firstOneIdx);
         // update the flag for recording first instance of 1 bit
-        oneFound = oneFound | predicate;
+        seekingOne = If(seekingOne, If(predicate, falseBit, trueBit), falseBit);
     }
 
 
