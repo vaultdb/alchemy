@@ -70,7 +70,8 @@ namespace vaultdb {
 
     class SecureGroupByMinImpl : public  SecureGroupByAggregateImpl {
     public:
-        explicit SecureGroupByMinImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType), initialized(emp::Bit(false, emp::PUBLIC))  {};
+        explicit SecureGroupByMinImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType), runningMin(
+                getMaxValue()) {};
         void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
         void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
         types::Value getResult() override;
@@ -78,15 +79,13 @@ namespace vaultdb {
 
     private:
         types::Value runningMin;
-        // need to see at least one tuple to establish a min, initialized is always an emp::Bit
-        // use secret initialized variable for debugging
-        types::Value initialized;
+        Value getMaxValue() const;
 
     };
 
     class SecureGroupByMaxImpl : public  SecureGroupByAggregateImpl {
     public:
-        explicit SecureGroupByMaxImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType),  initialized(emp::Bit(false, emp::PUBLIC))  {};
+        explicit SecureGroupByMaxImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType), runningMax(getMinValue()) {};
         void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
         void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
         types::Value getResult() override;
@@ -94,9 +93,7 @@ namespace vaultdb {
 
     private:
         types::Value runningMax;
-        // need to see at least one tuple to establish a max
-        // use secret initialized variable for debugging
-        types::Value initialized;
+        Value getMinValue() const;
 
     };
 }

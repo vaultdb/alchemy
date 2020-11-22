@@ -123,8 +123,6 @@ GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggr
 
 bool GroupByAggregate::verifySortOrder(const std::shared_ptr<QueryTable> &table) const {
     SortDefinition sortedOn = table->getSortOrder();
-
-    std::cout << "Sorted on " << sortedOn.size() << " group by cols: " << groupByOrdinals.size() << std::endl;
     assert(sortedOn.size() >= groupByOrdinals.size());
 
     for(int idx = 0; idx < groupByOrdinals.size(); ++idx) {

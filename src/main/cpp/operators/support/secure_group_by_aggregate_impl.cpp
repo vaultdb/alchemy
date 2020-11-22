@@ -139,13 +139,10 @@ void SecureGroupByMinImpl::initialize(const QueryTuple &tuple, const Value &isDu
     Value aggInput = tuple.getField(aggregateOrdinal).getValue();
 
     // if the tuple is a dummy...
-    Value resetValue = Value::obliviousIf(tuple.getDummyTag(), runningMin, aggInput);
-
-    Value localInitialized = !isDummy & !(tuple.getDummyTag());
+    Value maxValue = getMaxValue();
+    Value resetValue = Value::obliviousIf(tuple.getDummyTag(), maxValue, aggInput);
 
     // use secret initialized variable for debugging
-    initialized = Value::obliviousIf(isDummy, initialized, localInitialized);
-
     runningMin = Value::obliviousIf(isDummy, runningMin, resetValue);
 
 }
@@ -161,16 +158,28 @@ Value SecureGroupByMinImpl::getResult() {
 }
 
 
+Value SecureGroupByMinImpl::getMaxValue() const  {
+    switch(aggregateType) {
+        case TypeId::ENCRYPTED_INTEGER32:
+            return Value(TypeId::ENCRYPTED_INTEGER32, Integer(32, INT_MAX, PUBLIC));
+        case TypeId::INTEGER64:
+            return Value(TypeId::ENCRYPTED_INTEGER64, Integer(64, LONG_MAX, PUBLIC));
+        case TypeId::BOOLEAN:
+            return Value(Bit(true, PUBLIC));
+        case TypeId::FLOAT32:
+            return Value(Float(FLT_MAX, PUBLIC));
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MIN()");
+    }
+}
+
+
+
 void SecureGroupByMaxImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
     Value aggInput = tuple.getField(aggregateOrdinal).getValue();
 
-    // if the tuple is a dummy, don't update it
-    Value resetValue = Value::obliviousIf(tuple.getDummyTag(), runningMax, aggInput);
-
-    Value localInitialized = !isDummy & !(tuple.getDummyTag());
-
-    // use secret initialized variable for debugging
-    initialized = Value::obliviousIf(isDummy, initialized, localInitialized);
+    Value minValue = getMinValue();
+    Value resetValue = Value::obliviousIf(tuple.getDummyTag(), minValue, aggInput);
     runningMax = Value::obliviousIf(isDummy, runningMax, resetValue);
 }
 
@@ -182,6 +191,20 @@ void SecureGroupByMaxImpl::accumulate(const QueryTuple &tuple, const Value &isDu
 }
 
 Value SecureGroupByMaxImpl::getResult() {
-    //assert(initialized.getEmpBit().reveal());
     return runningMax;
+}
+
+Value SecureGroupByMaxImpl::getMinValue() const {
+    switch(aggregateType) {
+        case TypeId::ENCRYPTED_INTEGER32:
+            return Value(TypeId::ENCRYPTED_INTEGER32, Integer(32, INT_MIN, PUBLIC));
+        case TypeId::INTEGER64:
+            return Value(TypeId::ENCRYPTED_INTEGER64, Integer(64, LONG_MIN, PUBLIC));
+        case TypeId::BOOLEAN:
+            return Value(Bit(false, PUBLIC));
+        case TypeId::FLOAT32:
+            return Value(Float(FLT_MIN, PUBLIC));
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MAX()");
+    }
 }
