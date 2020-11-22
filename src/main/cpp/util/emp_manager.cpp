@@ -202,6 +202,8 @@ Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, con
 // range: [-2^24, 2^24]
 Float EmpManager::castIntToFloat(const Integer &input) {
 
+    assert(input.size() == 32);
+
     const Integer zero(32, 0, PUBLIC);
     const Integer one(32, 1, PUBLIC);
     const Integer maxInt(32, 1 << 24, PUBLIC); // 2^24

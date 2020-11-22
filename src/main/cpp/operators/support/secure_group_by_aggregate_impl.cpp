@@ -1,7 +1,9 @@
+#include <util/emp_manager.h>
 #include "secure_group_by_aggregate_impl.h"
 
 using namespace vaultdb;
 using namespace vaultdb::types;
+using namespace emp;
 
 Value SecureGroupByAggregateImpl::getDummyTag(const Value &isLastEntry,
                                                                        const Value &nonDummyBinFlag) {
@@ -9,7 +11,7 @@ Value SecureGroupByAggregateImpl::getDummyTag(const Value &isLastEntry,
     assert(isLastEntry.getType() == TypeId::ENCRYPTED_BOOLEAN &&
                    nonDummyBinFlag.getType() == TypeId::ENCRYPTED_BOOLEAN);
 
-    emp::Bit output = emp::If(isLastEntry.getEmpBit(), !nonDummyBinFlag.getEmpBit(), emp::Bit(true, emp::PUBLIC));
+    Bit output = If(isLastEntry.getEmpBit(), !nonDummyBinFlag.getEmpBit(), Bit(true, PUBLIC));
     return Value(output);
 
 }
@@ -19,7 +21,7 @@ void SecureGroupByAggregateImpl::updateGroupByBinBoundary(const Value &isNewBin,
            nonDummyBinFlag.getType() == TypeId::ENCRYPTED_BOOLEAN);
 
     // ! nonDummy bin b/c if it is a real bin, we want dummyTag = false
-    emp::Bit updatedFlag = emp::If(isNewBin.getEmpBit(), emp::Bit(false, emp::PUBLIC), nonDummyBinFlag.getEmpBit());
+    Bit updatedFlag = If(isNewBin.getEmpBit(), Bit(false, PUBLIC), nonDummyBinFlag.getEmpBit());
     nonDummyBinFlag.setValue(updatedFlag);
 
 }
@@ -48,7 +50,7 @@ void SecureGroupBySumImpl::initialize(const QueryTuple &tuple, const Value &isDu
 
     // re-cast sum as INT64_T in keeping with postgres convention
     if(aggInput.getType() == TypeId::ENCRYPTED_INTEGER32) {
-        emp::Integer empInt = aggInput.getEmpInt();
+        Integer empInt = aggInput.getEmpInt();
         empInt.resize(64, true);
         aggInput = Value(TypeId::ENCRYPTED_INTEGER64, empInt);
     }
@@ -62,7 +64,7 @@ void SecureGroupBySumImpl::accumulate(const QueryTuple &tuple, const Value &isDu
 
     // re-cast sum as INT64_T in keeping with postgres convention
     if(toAdd.getType() == TypeId::ENCRYPTED_INTEGER32) {
-        emp::Integer empInt = toAdd.getEmpInt();
+        Integer empInt = toAdd.getEmpInt();
         empInt.resize(64, true);
         toAdd = Value(TypeId::ENCRYPTED_INTEGER64, empInt);
     }
@@ -77,11 +79,24 @@ Value SecureGroupBySumImpl::getResult() {
     return runningSum;
 }
 
-void SecureGroupByAvgImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
-    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+SecureGroupByAvgImpl::SecureGroupByAvgImpl(const int32_t &ordinal, const TypeId &aggType) : SecureGroupByAggregateImpl(ordinal, aggType)  {
+    runningSum = zero;
+    aggregateType = TypeId::ENCRYPTED_FLOAT32;
+    zeroFloat = TypeUtilities::getZero(aggregateType);
+    oneFloat = TypeUtilities::getOne(aggregateType);
+    runningCount = zeroFloat;
+    std::cout << "Avg constructor has value type: " << TypeUtilities::getTypeIdString(aggType)
+        << " running sum type: " << TypeUtilities::getTypeIdString(runningSum.getType()) << std::endl;
 
+
+}
+
+
+void SecureGroupByAvgImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
+
+    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
     Value resetSum = Value::obliviousIf(tuple.getDummyTag(), zero, aggInput);
-    Value resetCount = Value::obliviousIf(tuple.getDummyTag(), zero, one);
+    Value resetCount = Value::obliviousIf(tuple.getDummyTag(), zeroFloat, oneFloat);
 
     runningSum = Value::obliviousIf(isDummy, runningSum, resetSum);
     runningCount = Value::obliviousIf(isDummy, runningCount, resetCount);
@@ -89,21 +104,35 @@ void SecureGroupByAvgImpl::initialize(const QueryTuple &tuple, const Value &isDu
 }
 
 void SecureGroupByAvgImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
-
     Value toAdd = tuple.getField(aggregateOrdinal).getValue();
 
 
     Value toUpdate = !isDummy & !(tuple.getDummyTag());
     Value incremented = runningSum + toAdd;
-    Value incrementedCount = runningCount + one;
+    Value incrementedCount = runningCount + oneFloat;
 
     runningSum = Value::obliviousIf(toUpdate, incremented, runningSum);
     runningCount = Value::obliviousIf(toUpdate, incrementedCount, runningCount);
+
 }
 
+
+// average is implemented as float
+// have secure cast from int to float for this
 Value SecureGroupByAvgImpl::getResult() {
-    return runningSum/runningCount;
+
+    Float runningSumFloat = (runningSum.getType() == TypeId::ENCRYPTED_FLOAT32) ? runningSum.getEmpFloat32() : zeroFloat.getEmpFloat32();
+
+    if(runningSum.getType() == TypeId::ENCRYPTED_INTEGER64 || runningSum.getType() == TypeId::ENCRYPTED_INTEGER32) {
+        Integer empInt = runningSum.getEmpInt();
+        if(empInt.size() != 32) empInt.resize(32);
+        runningSumFloat = EmpManager::castIntToFloat(empInt);
+
+    }
+
+    return runningSumFloat/runningCount.getEmpFloat32();
 }
+
 
 
 void SecureGroupByMinImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {

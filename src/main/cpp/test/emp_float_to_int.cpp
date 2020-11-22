@@ -83,7 +83,7 @@ TEST_F(EmpFloatToIntTest, basic_test) {
     int rnd;
     int range = 1 << 24;
 
-    for(int i = 0; i < 50; ++i) {
+    for(int i = 0; i < 200; ++i) {
         prg.random_data(&rnd, 4);
         rnd %= range;
         testIntToFloat(rnd);

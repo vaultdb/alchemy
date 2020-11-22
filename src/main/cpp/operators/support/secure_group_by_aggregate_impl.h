@@ -54,12 +54,7 @@ namespace vaultdb {
 
     class SecureGroupByAvgImpl : public  SecureGroupByAggregateImpl {
     public:
-        explicit SecureGroupByAvgImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType)  {
-            // TODO: address how to convert from int to fixed-point or var-point float.
-            assert(aggregateType == TypeId::ENCRYPTED_FLOAT32);
-            runningSum = zero;
-            runningCount = zero;
-        };
+        explicit SecureGroupByAvgImpl(const int32_t & ordinal, const types::TypeId & aggType);;
         void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
         void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
         types::Value getResult() override;
@@ -68,6 +63,8 @@ namespace vaultdb {
     private:
         types::Value runningSum;
         types::Value runningCount;
+        types::Value zeroFloat;
+        types::Value oneFloat;
 
     };
 
