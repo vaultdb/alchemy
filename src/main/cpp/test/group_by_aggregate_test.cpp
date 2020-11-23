@@ -210,7 +210,6 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
     std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size() <<  std::endl;
     ASSERT_EQ(*expected, *observed);
 
-    ASSERT_FLOAT_EQ(0.0, 0.0001);
 }
 
 
