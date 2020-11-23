@@ -37,6 +37,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
 
     output = std::shared_ptr<QueryTable>(new QueryTable(input->getTupleCount(), outputSchema, outputSort));
 
+    // TODO: should this set dummy tag to input->getTuple(0).getDummyTag?
     QueryTuple *tuplePtr = output->getTuplePtr(0);
     types::Value dummyTag = output->isEncrypted() ? types::Value(emp::Bit(false)) : types::Value(false);
     tuplePtr->setDummyTag(dummyTag);

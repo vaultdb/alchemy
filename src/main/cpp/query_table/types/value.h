@@ -99,7 +99,6 @@ public:
     void setType(TypeId type);
 
 protected:
-  bool is_encrypted_;
   TypeId type_;
 
 
