@@ -37,6 +37,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
 
     output = std::shared_ptr<QueryTable>(new QueryTable(input->getTupleCount(), outputSchema, outputSort));
 
+    // TODO: should this set dummy tag to input->getTuple(0).getDummyTag?
     QueryTuple *tuplePtr = output->getTuplePtr(0);
     types::Value dummyTag = output->isEncrypted() ? types::Value(emp::Bit(false)) : types::Value(false);
     tuplePtr->setDummyTag(dummyTag);
@@ -123,8 +124,6 @@ GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggr
 
 bool GroupByAggregate::verifySortOrder(const std::shared_ptr<QueryTable> &table) const {
     SortDefinition sortedOn = table->getSortOrder();
-
-    std::cout << "Sorted on " << sortedOn.size() << " group by cols: " << groupByOrdinals.size() << std::endl;
     assert(sortedOn.size() >= groupByOrdinals.size());
 
     for(int idx = 0; idx < groupByOrdinals.size(); ++idx) {

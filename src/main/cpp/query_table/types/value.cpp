@@ -37,6 +37,12 @@ Value::Value(const  emp::Float & aFloat)  {
 }
 
 
+types::Value::Value(const types::TypeId &type, const int64_t &val) {
+
+        type_ = type;
+        value_.unencrypted_val = val;
+}
+
 Value::Value(TypeId type, const emp::Integer & val) {
     setValue(type, val);
 }
@@ -190,19 +196,16 @@ void Value::setValue(const Value  & val) {
 
 void Value::setValue(const int32_t &  val) {
   type_ = TypeId::INTEGER32;
-  is_encrypted_ = false;
   value_.unencrypted_val = val;
 }
 
 void Value::setValue(const int64_t & val) {
   type_ = TypeId::INTEGER64;
-  is_encrypted_ = false;
   value_.unencrypted_val = val;
 }
 
 void Value::setValue(const bool & val) {
   type_ = TypeId::BOOLEAN;
-  is_encrypted_ = false;
   value_.unencrypted_val = val;
 }
 
@@ -210,31 +213,26 @@ void Value::setValue(const bool & val) {
 
 void Value::setValue(const float & val) {
     type_ = TypeId::FLOAT32;
-    is_encrypted_ = false;
     value_.unencrypted_val = val;
 }
 
 void Value::setValue(const std::string & aString) {
         type_ = TypeId::VARCHAR;
-        is_encrypted_ = false;
         value_.unencrypted_val = aString;
 }
 
 
     void Value::setValue(const emp::Bit & val) {
         type_ = TypeId::ENCRYPTED_BOOLEAN;
-        is_encrypted_ = true;
         value_.emp_bit_ = std::shared_ptr<emp::Bit>(new emp::Bit(val.bit));
     }
     void Value::setValue(TypeId type, const emp::Integer & val) {
         type_ = type;
-        is_encrypted_ = true;
         value_.emp_integer_ = std::shared_ptr<emp::Integer>(new emp::Integer(val));
     }
 
     void Value::setValue(const emp::Float & val) {
         type_ = TypeId::ENCRYPTED_FLOAT32;
-        is_encrypted_ = true;
         value_.emp_float32_ = std::shared_ptr<emp::Float>(new emp::Float(val));
     }
 
@@ -446,7 +444,7 @@ void Value::setValue(const std::string & aString) {
             }
 
             default: // all other types are unencrypted, so just copy out the value
-                if(!is_encrypted_) {
+                if(!TypeUtilities::isEncrypted(getType())) {
                     return types::Value(*this);
                 }
                 else {
