@@ -161,40 +161,28 @@ TEST_F(GroupByAggregateTest, test_max_dummies) {
 
 TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
 
-    std::vector<ScalarAggregateDefinition> aggregators;
-    std::vector<int32_t> groupByCols{0, 1};
 
-    string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+    string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1.0 - l_discount) AS disc_price, l_extendedprice * (1.0 - l_discount) * (1.0 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
-                        " FROM lineitem\n"
-                        " ORDER BY l_returnflag, l_linestatus "
-                        "LIMIT 100";
+                        " FROM (SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 100) selection \n"
+                        " ORDER BY  l_returnflag, l_linestatus";
 
-    string expectedOutputQuery =  "select \n"
-                                  "  l_returnflag, \n"
-                                  "  l_linestatus, \n"
-                                  "  sum(l_quantity) as sum_qty, \n"
-                                  "  sum(l_extendedprice) as sum_base_price, \n"
-                                  "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, \n"
-                                  "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge \n"
-                                  "from \n"
-                                  " (SELECT * FROM  lineitem  ORDER BY l_returnflag, l_linestatus LIMIT 100) subq\n"
-                                  " where \n"
-                                  "  l_shipdate <= date '1998-08-03' \n"
-                                  "group by \n"
-                                  "  l_returnflag, \n"
-                                  "  l_linestatus \n"
-                                  " \n"
-                                  "order by \n"
-                                  "  l_returnflag, \n"
-                                  "  l_linestatus";
+    string expectedOutputQuery = "SELECT  l_returnflag, l_linestatus, "
+                                 "SUM(l_quantity) sum_qty, "
+                                 "SUM(l_extendedprice) sum_base_price, "
+                                 "SUM(disc_price) sum_disc_price, "
+                                 "SUM(charge) sum_charge "
+                                 "FROM (" + inputQuery + ") subquery WHERE NOT dummy "
+                                                         "GROUP BY l_returnflag, l_linestatus";
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
 
-    aggregators.emplace_back(ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"));
-    aggregators.emplace_back(ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"));
-    aggregators.emplace_back(ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"));
-    aggregators.emplace_back(ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"));
+    std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+                                                        ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+                                                        ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+                                                        ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge")};
+    std::vector<int32_t> groupByCols{0, 1};
+
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
     std::shared_ptr<Operator> input(new SqlInput(dbName, inputQuery, true, sortDefinition));
@@ -207,7 +195,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
 
-    std::cout << "Observed sort size: " << observed->getSortOrder().size() << " expected sort order size: " << expected->getSortOrder().size() <<  std::endl;
+
     ASSERT_EQ(*expected, *observed);
 
 }
@@ -219,9 +207,8 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
     string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
-                        " FROM lineitem\n"
-                        " ORDER BY l_returnflag, l_linestatus "
-                        "LIMIT 100";
+                        " FROM (SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 100) selection\n"
+                        " ORDER BY l_returnflag, l_linestatus ";
 
     string expectedOutputQuery =  "select \n"
                                   "  l_returnflag, \n"
@@ -230,17 +217,14 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
                                   "  avg(l_extendedprice) as avg_price, \n"
                                   "  avg(l_discount) as avg_disc, \n"
                                   "  count(*) as count_order \n"
-                                  "from \n"
-                                  " (SELECT * FROM  lineitem  ORDER BY l_returnflag, l_linestatus LIMIT 100) subq\n"
-                                  " where \n"
-                                  "  l_shipdate <= date '1998-08-03' \n"
+                                  "from (" + inputQuery + ") subq\n"
+                                  " where NOT dummy\n"
                                   "group by \n"
                                   "  l_returnflag, \n"
                                   "  l_linestatus \n"
                                   " \n"
                                   "order by \n"
-                                  "  l_returnflag, \n"
-                                  "  l_linestatus";
+                                  "  l_returnflag, l_linestatus";
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
 
@@ -270,29 +254,26 @@ TEST_F(GroupByAggregateTest, tpch_q1) {
 
     string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
-                        " FROM lineitem\n"
-                        " ORDER BY l_returnflag, l_linestatus"
-                        " LIMIT 100";
+                        " FROM (SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 100) selection \n"
+                        " ORDER BY l_returnflag, l_linestatus";
 
     string expectedOutputQuery =  "select \n"
                     "  l_returnflag, \n"
                     "  l_linestatus, \n"
-                    "  sum(l_quantity) as sum_qty, \n"
-                    "  sum(l_extendedprice) as sum_base_price, \n"
-                    "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, \n"
-                    "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, \n"
+                    "SUM(l_quantity) sum_qty, "
+                    "SUM(l_extendedprice) sum_base_price, "
+                    "SUM(disc_price) sum_disc_price, "
+                    "SUM(charge) sum_charge, "
                     "  avg(l_quantity) as avg_qty, \n"
                     "  avg(l_extendedprice) as avg_price, \n"
                     "  avg(l_discount) as avg_disc, \n"
                     "  count(*) as count_order \n"
                     "from \n"
-                    " (SELECT * FROM  lineitem  ORDER BY l_returnflag, l_linestatus LIMIT 100) subq\n"
-                    " where \n"
-                    "  l_shipdate <= date '1998-08-03' \n"
+                    " (" + inputQuery + ") subq\n"
+                    " where NOT dummy  \n"
                     "group by \n"
                     "  l_returnflag, \n"
                     "  l_linestatus \n"
-                    " \n"
                     "order by \n"
                     "  l_returnflag, \n"
                     "  l_linestatus";

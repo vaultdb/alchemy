@@ -158,8 +158,7 @@ Value Value::operator==(const Value &rhs) const {
             float lhsVal = this->getFloat32();
             float rhsVal = rhs.getFloat32();
             float delta = fabs(lhsVal - rhsVal);
-            std::cout << "Float difference: |" << lhsVal << " - " << rhsVal << "| = " << delta << std::endl;
-            if(delta <= 0.1) // wide tolerances because of deltas in how psql will calculate this and what we get from extracting fp #s
+            if(delta <= 0.25) // wide tolerances because of deltas in how psql will calculate this and what we get from extracting fp #s
                 return Value(true);
 
             return Value(false);

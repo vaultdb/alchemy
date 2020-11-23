@@ -264,10 +264,11 @@ void Value::setValue(const std::string & aString) {
             case TypeId::NUMERIC:
             case TypeId::FLOAT32: {
                 float value = getFloat32();
-                std::stringstream stream;
-                //stream << std::fixed << std::setprecision(1) << value;
-                stream << value;
-                return stream.str();
+                string valueStr = std::to_string(value);
+                valueStr.erase ( valueStr.find_last_not_of('0') + 1, std::string::npos );
+                if(valueStr[valueStr.size()-1] == '.') valueStr.erase(valueStr.find('.'));
+                return valueStr;
+
             }
 
             case TypeId::VARCHAR:
