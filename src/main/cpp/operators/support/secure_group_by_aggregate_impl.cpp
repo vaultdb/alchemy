@@ -85,8 +85,6 @@ SecureGroupByAvgImpl::SecureGroupByAvgImpl(const int32_t &ordinal, const TypeId 
     zeroFloat = TypeUtilities::getZero(aggregateType);
     oneFloat = TypeUtilities::getOne(aggregateType);
     runningCount = zeroFloat;
-    std::cout << "Avg constructor has value type: " << TypeUtilities::getTypeIdString(aggType)
-        << " running sum type: " << TypeUtilities::getTypeIdString(runningSum.getType()) << std::endl;
 
 
 }

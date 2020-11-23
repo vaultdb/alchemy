@@ -158,12 +158,13 @@ TEST_F(GroupByAggregateTest, test_max_dummies) {
 
 }
 
+// brings in about 200 tuples
 TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
 
 
     string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1.0 - l_discount) AS disc_price, l_extendedprice * (1.0 - l_discount) * (1.0 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
-                        " FROM (SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 200) selection \n"
+                        " FROM (SELECT * FROM lineitem WHERE l_orderkey <= 194  ORDER BY l_orderkey, l_linenumber) selection \n"
                         " ORDER BY  l_returnflag, l_linestatus";
 
     string expectedOutputQuery = "SELECT  l_returnflag, l_linestatus, "
@@ -204,7 +205,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
     string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
-                        " FROM (SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 100) selection\n"
+                        " FROM (SELECT * FROM lineitem WHERE l_orderkey <= 194  ORDER BY l_orderkey, l_linenumber) selection\n"
                         " ORDER BY l_returnflag, l_linestatus ";
 
     string expectedOutputQuery =  "select \n"
@@ -249,7 +250,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
 TEST_F(GroupByAggregateTest, tpch_q1) {
 
-    string inputTuples = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 200";
+    string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= 194 ORDER BY l_orderkey, l_linenumber";
     string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
                         " FROM (" + inputTuples + ") selection \n"
