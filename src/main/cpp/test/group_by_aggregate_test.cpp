@@ -201,8 +201,6 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
 
 
 TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
-    std::vector<ScalarAggregateDefinition> aggregators;
-    std::vector<int32_t> groupByCols{0, 1};
 
     string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
@@ -227,10 +225,12 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
 
-    aggregators.emplace_back(ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"));
-    aggregators.emplace_back(ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"));
-    aggregators.emplace_back(ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"));
-    aggregators.emplace_back(ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order"));
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+        ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+        ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+        ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+        ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
     std::shared_ptr<Operator> input(new SqlInput(dbName, inputQuery, true, sortDefinition));
@@ -248,8 +248,6 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
 }
 
 TEST_F(GroupByAggregateTest, tpch_q1) {
-    std::vector<ScalarAggregateDefinition> aggregators;
-    std::vector<int32_t> groupByCols{0, 1};
 
     string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
@@ -279,14 +277,16 @@ TEST_F(GroupByAggregateTest, tpch_q1) {
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
 
-    aggregators.emplace_back(ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"));
-    aggregators.emplace_back(ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"));
-    aggregators.emplace_back(ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"));
-    aggregators.emplace_back(ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"));
-    aggregators.emplace_back(ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"));
-    aggregators.emplace_back(ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"));
-    aggregators.emplace_back(ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"));
-    aggregators.emplace_back(ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order"));
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+        ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+        ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+        ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+        ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+        ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+        ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+        ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+        ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
     std::shared_ptr<Operator> input(new SqlInput(dbName, inputQuery, true, sortDefinition));
