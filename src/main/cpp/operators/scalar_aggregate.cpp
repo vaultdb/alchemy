@@ -9,7 +9,12 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
     QueryTuple *tuple;
 
     for(ScalarAggregateDefinition agg : aggregateDefinitions) {
-        aggregators.push_back(aggregateFactory(agg.type, agg.ordinal, input->isEncrypted()));
+        // for most aggs the output type is the same as the input type
+        // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
+        types::TypeId aggValueType = (agg.ordinal >= 0) ?
+                                     input->getSchema().getField(agg.ordinal).getType() :
+                                     (input->isEncrypted() ? types::TypeId::ENCRYPTED_INTEGER64 : types::TypeId::INTEGER64);
+        aggregators.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType, input->isEncrypted()));
     }
 
     QueryTuple *first = input->getTuplePtr(0);
@@ -54,19 +59,20 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
 
 // TODO: update aggregate factory with min/max/avg
 ScalarAggregateImpl *ScalarAggregate::aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
+                                                       const types::TypeId &aggregateValueType,
                                                        const bool &isEncrypted) const {
     if (!isEncrypted) {
         switch (aggregateType) {
             case AggregateId::COUNT:
-                return new ScalarCount(ordinal);
+                return new ScalarCount(ordinal, aggregateValueType);
             case AggregateId::SUM:
-                return new ScalarSum(ordinal);
+                return new ScalarSum(ordinal, aggregateValueType);
             case AggregateId::AVG:
-                return new ScalarAverage(ordinal);
+                return new ScalarAverage(ordinal, aggregateValueType);
             case AggregateId::MIN:
-                return new ScalarMin(ordinal);
+                return new ScalarMin(ordinal, aggregateValueType);
             case AggregateId::MAX:
-                return new ScalarMax(ordinal);
+                return new ScalarMax(ordinal, aggregateValueType);
             default:
                 throw std::invalid_argument("Not yet implemented!");
         };
@@ -74,7 +80,7 @@ ScalarAggregateImpl *ScalarAggregate::aggregateFactory(const AggregateId &aggreg
 
     switch (aggregateType) {
         case AggregateId::AVG:
-            return new SecureScalarAverage(ordinal);
+            return new SecureScalarAverage(ordinal, aggregateValueType);
         case AggregateId::COUNT:
         case AggregateId::SUM:
         case AggregateId::MIN:

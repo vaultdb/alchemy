@@ -62,14 +62,16 @@ types::TypeId ScalarSum::getType() {
 }
 
 
+ScalarMin::ScalarMin(const uint32_t & ordinal, const types::TypeId & aggType) :  ScalarAggregateImpl(ordinal, aggType) {
+  resetRunningMin();
+}
+
 void vaultdb::ScalarMin::initialize(const vaultdb::QueryTuple &tuple) {
 
   assert(!tuple.isEncrypted());
+  resetRunningMin();
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::TypeId sumType = tupleVal.getType();
-  zero = TypeUtilities::getZero(sumType);
-
-  runningMin = tuple.getDummyTag().getBool() ? zero : tupleVal;
+  zero = TypeUtilities::getZero(aggregateType);
   initialized = true;
 }
 
@@ -79,7 +81,7 @@ void vaultdb::ScalarMin::accumulate(const vaultdb::QueryTuple &tuple) {
   assert(initialized);
 
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::Value currMin = (tupleVal < currMin).getBool() ? tupleVal : currMin;
+  types::Value currMin = (tupleVal < runningMin).getBool() ? tupleVal : runningMin;
   runningMin = tuple.getDummyTag().getBool() ? runningMin : currMin;
 
 }
@@ -92,14 +94,36 @@ types::TypeId ScalarMin::getType() {
   return runningMin.getType();
 }
 
+void vaultdb::ScalarMin::resetRunningMin()  {
+
+  switch(aggregateType) {
+  case types::TypeId::INTEGER32:
+    runningMin = types::Value(INT_MAX);
+    break;
+  case types::TypeId::INTEGER64:
+    runningMin = types::Value(aggregateType, LONG_MAX);
+    break;
+  case types::TypeId::BOOLEAN:
+    runningMin = types::Value(true);
+    break;
+  case types::TypeId::FLOAT32:
+    runningMin = types::Value(FLT_MAX);
+    break;
+  default:
+    throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MIN()");
+  }
+}
+
+ScalarMax::ScalarMax(const uint32_t & ordinal, const types::TypeId & aggType) :  ScalarAggregateImpl(ordinal, aggType) {
+  resetRunningMax();
+}
 
 void vaultdb::ScalarMax::initialize(const vaultdb::QueryTuple &tuple) {
 
   assert(!tuple.isEncrypted());
+  resetRunningMax();
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::TypeId sumType = tupleVal.getType();
-  zero = TypeUtilities::getZero(sumType);
-
+  zero = TypeUtilities::getZero(aggregateType);
   runningMax = tuple.getDummyTag().getBool() ? zero : tupleVal;
   initialized = true;
 }
@@ -110,7 +134,7 @@ void vaultdb::ScalarMax::accumulate(const vaultdb::QueryTuple &tuple) {
   assert(initialized);
 
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::Value currMax = (tupleVal > currMax).getBool() ? tupleVal : currMax;
+  types::Value currMax = (tupleVal > runningMax).getBool() ? tupleVal : runningMax;
   runningMax = tuple.getDummyTag().getBool() ? runningMax : currMax;
 
 }
@@ -123,6 +147,25 @@ types::TypeId ScalarMax::getType() {
   return runningMax.getType();
 }
 
+void vaultdb::ScalarMax::resetRunningMax()  {
+
+  switch(runningMax.getType()) {
+  case types::TypeId::INTEGER32:
+    runningMax = types::Value(INT_MIN);
+    break;
+  case types::TypeId::INTEGER64:
+    runningMax = types::Value(maxType, LONG_MIN);
+    break;
+  case types::TypeId::BOOLEAN:
+    runningMax = types::Value(true);
+    break;
+  case types::TypeId::FLOAT32:
+    runningMax = types::Value(FLT_MIN);
+    break;
+  default:
+    throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(maxType) + " not supported by MAX()");
+  }
+}
 
 void ScalarAverage::initialize(const QueryTuple &tuple) {
 
