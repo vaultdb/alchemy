@@ -6,8 +6,8 @@
 namespace vaultdb {
 class SecureScalarAverage : public ScalarAggregateImpl {
 public:
-  explicit SecureScalarAverage(const uint32_t &ordinal)
-      : ScalarAggregateImpl(ordinal){};
+  explicit SecureScalarAverage(const uint32_t &ordinal, const types::TypeId & aggType)
+      : ScalarAggregateImpl(ordinal, aggType){};
   void initialize(const QueryTuple &tuple)
       override; // needs to run this once with first tuple to set up state
   void accumulate(const QueryTuple &tuple) override;
@@ -24,8 +24,8 @@ private:
 
 class SecureScalarCount : public ScalarAggregateImpl {
 public:
-  explicit SecureScalarCount(const uint32_t &ordinal)
-      : ScalarAggregateImpl(ordinal){};
+  explicit SecureScalarCount(const uint32_t &ordinal, const types::TypeId & aggType)
+      : ScalarAggregateImpl(ordinal, aggType){};
   void initialize(const QueryTuple &tuple)
       override; // needs to run this once with first tuple to set up state
   void accumulate(const QueryTuple &tuple) override;
@@ -41,8 +41,8 @@ private:
 
 class SecureScalarSum : public ScalarAggregateImpl {
 public:
-  explicit SecureScalarSum(const uint32_t &ordinal)
-      : ScalarAggregateImpl(ordinal){};
+  explicit SecureScalarSum(const uint32_t &ordinal, const types::TypeId & aggType)
+      : ScalarAggregateImpl(ordinal, aggType){};
   void initialize(const QueryTuple &tuple)
   override; // needs to run this once with first tuple to set up state
   void accumulate(const QueryTuple &tuple) override;
@@ -57,8 +57,8 @@ private:
 
 class SecureScalarMin : public ScalarAggregateImpl {
 public:
-  explicit SecureScalarMin(const uint32_t &ordinal)
-      : ScalarAggregateImpl(ordinal){};
+  explicit SecureScalarMin(const uint32_t &ordinal, const types::TypeId & aggType)
+      : ScalarAggregateImpl(ordinal, aggType){};
   void initialize(const QueryTuple &tuple)
   override; // needs to run this once with first tuple to set up state
   void accumulate(const QueryTuple &tuple) override;
@@ -73,8 +73,8 @@ private:
 
 class SecureScalarMax : public ScalarAggregateImpl {
 public:
-  explicit SecureScalarMax(const uint32_t &ordinal)
-      : ScalarAggregateImpl(ordinal){};
+  explicit SecureScalarMax(const uint32_t &ordinal, const types::TypeId & aggType)
+      : ScalarAggregateImpl(ordinal, aggType){};
   void initialize(const QueryTuple &tuple)
   override; // needs to run this once with first tuple to set up state
   void accumulate(const QueryTuple &tuple) override;
