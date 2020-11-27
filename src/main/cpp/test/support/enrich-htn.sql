@@ -26,7 +26,7 @@ DROP TABLE IF EXISTS  unioned_patients;
     WITH labeled as (
         SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0
                 WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1
-              WHEN age_days > 50*365 AND  age_days <= 39*365  AND age_days <= 50*365 THEN 2
+              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2
               WHEN age_days > 50*365 AND age_days <= 61*365 THEN 3
               WHEN age_days > 61*365 AND age_days <= 72*365 THEN 4
                 WHEN age_days > 72*365  AND age_days <= 83*365 THEN 5
