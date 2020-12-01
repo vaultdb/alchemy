@@ -63,12 +63,12 @@ struct PatientTuple {
     int numerator;  // actually bool
 
     string toString() const {
-        return std::to_string(patid) + ", "
-               + zip_marker + ", "
-               + std::to_string(age_days) + ", "
-               + std::to_string(gender) + ", "
-               + std::to_string(ethnicity) + ", "
-               + std::to_string(race) + ", "
+        return std::to_string(patid) + ","
+               + zip_marker + ","
+               + std::to_string(age_days) + ","
+               + std::to_string(gender) + ","
+               + std::to_string(ethnicity) + ","
+               + std::to_string(race) + ","
                + std::to_string(numerator);
     }
 };
@@ -79,7 +79,7 @@ struct PatientExclusionTuple {
     int denom_excl; // actually bool
 
     string toString() const {
-        return std::to_string(patid) + ", " + std::to_string(numerator) + ", " + std::to_string(denom_excl);
+        return std::to_string(patid) + "," + std::to_string(numerator) + "," + std::to_string(denom_excl);
     }
 };
 

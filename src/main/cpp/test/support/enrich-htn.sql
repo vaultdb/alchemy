@@ -5,13 +5,13 @@ CREATE TABLE patient (
     zip_marker varchar(3),
     age_days integer,
     sex varchar(1),
-    ethnicity bool,
+    ethnicity int, -- 0 || 1
     race int,
     numerator int default null -- denotes null = false, 1 = true
 );
 
-DROP TABLE IF EXISTS  patient_inclusion;
-CREATE TABLE patient_inclusion (
+DROP TABLE IF EXISTS  patient_exclusion;
+CREATE TABLE patient_exclusion (
     patid int,
     numerator int default  null,
     denom_excl int default null
@@ -34,7 +34,7 @@ DROP TABLE IF EXISTS  unioned_patients;
             sex, ethnicity, race, numerator
         FROM patient)
     SELECT p.patid, zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, CASE WHEN count(*) > 1 THEN 1 else NULL END AS multisite
-    FROM labeled p JOIN patient_inclusion pi ON p.patid = pi.patid
+    FROM labeled p JOIN patient_exclusion pe ON p.patid = pe.patid
     GROUP BY p.patid, zip_marker, age_strata, sex, ethnicity, race
     HAVING max(denom_excl) IS NULL);
 
