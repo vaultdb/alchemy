@@ -17,17 +17,18 @@ namespace  vaultdb {
 
 
     public:
-      /*  static std::shared_ptr<Operator> getOperatorTree(Operator *op, std::shared_ptr<Operator> child);
 
+        // insert op as new root to tree
+        static std::shared_ptr<Operator> getOperatorTree(Operator *op, std::shared_ptr<Operator> child);
+
+        // insert op as new root to tree with children lhs and rhs
         static std::shared_ptr<Operator> getOperatorTree(Operator *op, std::shared_ptr<Operator> lhs, std::shared_ptr<Operator> rhs);
-*/
+
         Operator()  { myRef = std::shared_ptr<Operator>(this); }
         Operator(std::shared_ptr<Operator> &child);
 
         Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs);
-
-        ~Operator() {};
-
+        
         // recurses first, then invokes runSelf method
         std::shared_ptr<QueryTable> run();
 

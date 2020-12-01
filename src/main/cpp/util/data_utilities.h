@@ -46,6 +46,8 @@ namespace vaultdb {
 
         // create a copy of the table without its dummy tuples
         static std::shared_ptr<QueryTable> removeDummies(const std::shared_ptr<QueryTable> & input);
+
+        static std::string getCurrentWorkingDirectory();
     };
 }
 

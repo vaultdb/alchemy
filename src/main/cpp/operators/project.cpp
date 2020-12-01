@@ -116,3 +116,11 @@ QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
 
 }
 
+void Project::addColumnMappings(const ProjectionMappingSet &mapSet) {
+    for(ProjectionMapping mapping: mapSet)
+    {
+        projectionMap.push_back(mapping);
+    }
+
+}
+

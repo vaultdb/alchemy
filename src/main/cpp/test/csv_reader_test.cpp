@@ -19,13 +19,7 @@ class CsvReaderTest : public ::testing::Test {
 protected:
     void SetUp() override {
 
-        char cwd[PATH_MAX];
-        getcwd(cwd, sizeof(cwd));
-        currentWorkingDirectory = std::string(cwd);
-        std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);
-        if(suffix == std::string("/bin")) {
-            currentWorkingDirectory = currentWorkingDirectory.substr(0, currentWorkingDirectory.length() - 4);
-        }
+        currentWorkingDirectory = DataUtilities::getCurrentWorkingDirectory();
 
     };
     void TearDown() override{};

@@ -72,10 +72,11 @@ TEST_F(FilterTest, test_filter) {
 
     std::shared_ptr<Operator> input(new SqlInput(dbName, sql, false));
 
-    // TODO: fix the warnings associated with this
     std::shared_ptr<Predicate> predicateClass(new FilterPredicate());
     Filter *filterOp = new Filter(predicateClass, input); // heap allocate it
     std::shared_ptr<Operator> filter = filterOp->getPtr();
+    //std::shared_ptr<Operator> filter = Operator::getOperatorTree(new Filter(predicateClass, input), input);
+
 
     std::shared_ptr<QueryTable> result = filter->run();
 

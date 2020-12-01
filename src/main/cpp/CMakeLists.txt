@@ -93,7 +93,8 @@ set(sources
 		operators/support/secure_scalar_aggregate_impl.cpp
 		operators/group_by_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp
-		operators/support/secure_group_by_aggregate_impl.cpp)
+		operators/support/secure_group_by_aggregate_impl.cpp
+		operators/csv_input.cpp)
 
 
 
@@ -102,9 +103,10 @@ message("verify ${OPENSSL_LIBRARIES}:${Boost_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS
 
 add_library(${NAME} SHARED ${sources})
 
+add_executable(generate_enrich_data test/support/generate_enrich_data.cpp)
+
 #shouldn't need this last one, should be in Boost_IIBRARIES var, debug this later
 target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES}  ${PQXX_LIBRARY} ${GFLAGS_LIBRARY} pthread gtest gmock gtest_main Boost::date_time )
 
 install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
-
 

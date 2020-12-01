@@ -127,7 +127,7 @@ Value TypeUtilities::decodeStringValue(const string &strValue, const QueryFieldD
     };
 }
 
-Value TypeUtilities::getZero(TypeId &aType) {
+Value TypeUtilities::getZero(const TypeId &aType) {
     switch(aType) {
         case TypeId::BOOLEAN:
             return Value(false);
@@ -159,7 +159,7 @@ Value TypeUtilities::getZero(TypeId &aType) {
     };
 }
 
-Value TypeUtilities::getOne(TypeId &aType) {
+Value TypeUtilities::getOne(const TypeId &aType) {
     switch(aType) {
         case TypeId::BOOLEAN:
             return Value(true);

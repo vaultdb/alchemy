@@ -166,4 +166,16 @@ DataUtilities::getExpectedResults(const string &dbName, const string &sql, const
     return expected;
 }
 
+std::string DataUtilities::getCurrentWorkingDirectory() {
+    char cwd[PATH_MAX];
+    getcwd(cwd, sizeof(cwd));
+    std::string  currentWorkingDirectory = std::string(cwd);
+    std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);
+    if(suffix == std::string("/bin")) {
+        currentWorkingDirectory = currentWorkingDirectory.substr(0, currentWorkingDirectory.length() - 4);
+    }
+
+    return currentWorkingDirectory;
+}
+
 
