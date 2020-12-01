@@ -1,4 +1,6 @@
 -- mock-up of the logic of HTN protocol
+-- starting from enrich_htn_unioned
+
 DROP TABLE IF EXISTS patient;
 CREATE TABLE patient (
     patid int,
