@@ -10,4 +10,4 @@ createdb enrich_htn_unioned
 createdb enrich_htn_alice
 createdb enrich_htn_bob
 
-psql enrich_htn < ../../load-generated-data.sql
+psql enrich_htn_unioned < ../../load-generated-data.sql

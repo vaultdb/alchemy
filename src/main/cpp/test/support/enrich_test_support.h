@@ -26,6 +26,10 @@ public:
     static Value projectMultisite(const QueryTuple &aTuple);
 
     static Value projectNumeratorMultisite(const QueryTuple &aTuple);
+
+    static QuerySchema getPatientSchema();
+
+    static QuerySchema getPatientInclusionSchema();
 };
 
 

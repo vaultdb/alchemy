@@ -9,40 +9,35 @@
 #include <operators/sort.h>
 #include <operators/group_by_aggregate.h>
 #include <operators/filter.h>
-#include "support/EmpBaseTest.h"
+#include <_deps/googletest-src/googletest/include/gtest/gtest.h>
 
-DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54321, "port for EMP execution");
-DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
+
 
 using namespace vaultdb;
 using namespace vaultdb::types;
 using namespace emp;
 
-class EnrichTest : public EmpBaseTest {
+// plaintext only test
+// to load test data, run from src/main/cpp the following:
+// bash test/support/load-generated-data.sh
+
+class EnrichTest :  public ::testing::Test  {
 
 protected:
     void SetUp() override {
-
-        std::string currentWorkingDirectory = DataUtilities::getCurrentWorkingDirectory();
-        std::string partyStr = (FLAGS_party == ALICE) ? "alice" : "bob";
-
-        srcPatientFile = currentWorkingDirectory + "/test/support/enrich-input/" + partyStr + "-patient.csv";
-        srcPatientExclusionFile = currentWorkingDirectory + "/test/support/enrich-input/" + partyStr + "-patient-inclusion.csv";
+        dbName = "enrich_htn_unioned";
     };
     void TearDown() override{};
-    QuerySchema getPatientSchema();
-    QuerySchema getPatientInclusionSchema();
-    std::string srcPatientFile;
-    std::string srcPatientExclusionFile;
+
 
 
     std::shared_ptr<Operator>
     getPatientCohort(const string &srcPatientFile, const string &srcPatientInclusionFile, bool isEncrypted);
 
-    std::shared_ptr<QueryTable>
+    static std::shared_ptr<QueryTable>
     rollUpAggregate(const int & ordinal, std::shared_ptr<Operator> src);
 
+    string dbName;
 };
 
 

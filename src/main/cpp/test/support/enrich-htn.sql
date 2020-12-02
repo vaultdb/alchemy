@@ -32,7 +32,8 @@ DROP TABLE IF EXISTS  unioned_patients;
                 WHEN age_days > 72*365  AND age_days <= 83*365 THEN 5
                 ELSE 6 END age_strata,
             sex, ethnicity, race, numerator
-        FROM patient)
+        FROM patient
+        ORDER BY patid)
     SELECT p.patid, zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, CASE WHEN count(*) > 1 THEN 1 else NULL END AS multisite
     FROM labeled p JOIN patient_exclusion pe ON p.patid = pe.patid
     GROUP BY p.patid, zip_marker, age_strata, sex, ethnicity, race

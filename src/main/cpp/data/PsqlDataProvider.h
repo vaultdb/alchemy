@@ -13,7 +13,7 @@ using namespace vaultdb;
 
 
 
-class PsqlDataProvider  { // :  DataProvider
+class  PsqlDataProvider  { // :  DataProvider
 public:
     std::unique_ptr<QueryTable> getQueryTable(std::string dbname, std::string query_string);
 

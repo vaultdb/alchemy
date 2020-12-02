@@ -66,7 +66,7 @@ struct PatientTuple {
         return std::to_string(patid) + ","
                + zip_marker + ","
                + std::to_string(age_days) + ","
-               + std::to_string(gender) + ","
+               + gender + ","
                + std::to_string(ethnicity) + ","
                + std::to_string(race) + ","
                + std::to_string(numerator);
@@ -104,7 +104,7 @@ PatientTuple generatePatientTuple(const int & aPatientId) {
     ss << std::setw(3) << std::setfill('0') << generateRandomInt(0, 50);
     result.zip_marker =  ss.str();
     result.age_days = generateRandomInt(18*365, 100*365);
-    result.gender =  generateRandomInt(0, 2);
+    result.gender =  generateRandomInt(0, 2) == 0 ? 'M' : 'F';
     result.ethnicity = generateRandomInt(0, 2);
     result.race = generateRandomInt(0, 6);
     result.numerator =  (generateRandomInt(0, 4) < 3) ? 0 : 1; // 25% in numerator

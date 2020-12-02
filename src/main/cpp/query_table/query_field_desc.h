@@ -47,7 +47,7 @@ namespace  vaultdb {
         QueryFieldDesc(const QueryFieldDesc &f, int col_num)
                 : name_(f.name_), table_name(f.table_name), string_length_(0), type_(f.type_), ordinal_(col_num) {};
 
-        QueryFieldDesc(int anOrdinal, const std::string &n, const std::string &tab, const vaultdb::types::TypeId &aType, const size_t & stringLength = -1)
+        QueryFieldDesc(int anOrdinal, const std::string &n, const std::string &tab, const vaultdb::types::TypeId &aType, const size_t & stringLength = 0)
                 : name_(n),
                   table_name(tab), string_length_(0), type_(aType), ordinal_(anOrdinal) {
             // since we convert DATEs to int32_t in both operator land and in our verification pipeline,

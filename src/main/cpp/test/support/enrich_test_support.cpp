@@ -17,6 +17,7 @@ Integer EnrichTestSupport::getEmpInt(const int32_t & value) {
 //                WHEN age_days > 72*365  AND age_days <= 83*365 THEN 5
 //                ELSE 6 END age_strata
 
+// TODO: set this up to memoize the emp ints so we don't have to generate them every time
 Value EnrichTestSupport::projectSecureAgeStrata(const QueryTuple & aTuple) {
     Integer ageDays = aTuple.getField(2).getValue().getEmpInt(); // age_days
 
@@ -35,14 +36,14 @@ Value EnrichTestSupport::projectSecureAgeStrata(const QueryTuple & aTuple) {
 Value EnrichTestSupport::projectPlainAgeStrata(const QueryTuple & aTuple) {
     int32_t ageDays = aTuple.getField(2).getValue().getInt32(); // age_days
 
-    if(ageDays <= 28*365) return  Value(TypeId::INTEGER32, 0);
-    else if(ageDays <= 39*365) return  Value(TypeId::INTEGER32, 1);
-    else if(ageDays <= 50*365) return  Value(TypeId::INTEGER32, 2);
-    else if(ageDays <= 61*365) return  Value(TypeId::INTEGER32, 3);
-    else if(ageDays <=72*365) return  Value(TypeId::INTEGER32, 4);
-    else if(ageDays <= 83*365) return  Value(TypeId::INTEGER32, 5);
+    if(ageDays <= 28*365) return  Value(0);
+    else if(ageDays <= 39*365) return  Value(1);
+    else if(ageDays <= 50*365) return  Value( 2);
+    else if(ageDays <= 61*365) return  Value( 3);
+    else if(ageDays <=72*365) return  Value(4);
+    else if(ageDays <= 83*365) return  Value( 5);
 
-    return Value(TypeId::INTEGER32, 6);
+    return Value( 6);
 
 }
 
@@ -88,5 +89,32 @@ Value EnrichTestSupport::projectNumeratorMultisite(const QueryTuple & aTuple) {
         return Value::obliviousIf(condition, one, zero);
 
     return condition.getBool() ? one : zero;
+
+}
+
+
+// patients(patid int, zip_marker varchar(3), age_days integer, sex varchar(1), ethnicity bool, race int, numerator int default null)
+QuerySchema EnrichTestSupport::getPatientSchema() {
+    QuerySchema patientSchema(7);
+    patientSchema.putField(QueryFieldDesc(0, "patid", "patient", TypeId::INTEGER32));
+    patientSchema.putField(QueryFieldDesc(1, "zip_marker", "patient", TypeId::VARCHAR, 3));
+    patientSchema.putField(QueryFieldDesc(2, "age_days", "patient", TypeId::INTEGER32));
+    patientSchema.putField(QueryFieldDesc(3, "sex", "patient", TypeId::VARCHAR, 1));
+    patientSchema.putField(QueryFieldDesc(4, "ethnicity", "patient", TypeId::BOOLEAN));
+    patientSchema.putField(QueryFieldDesc(5, "race", "patient", TypeId::INTEGER32));
+    // numerator: null = false, 1 = true
+    patientSchema.putField(QueryFieldDesc(6, "numerator", "patient", TypeId::INTEGER32));
+
+    return patientSchema;
+}
+
+// patient_inclusion(patid int, numerator int, denom_incl int)
+QuerySchema EnrichTestSupport::getPatientInclusionSchema() {
+    QuerySchema patientInclusionSchema(3);
+    patientInclusionSchema.putField(QueryFieldDesc(0, "patid", "patient_inclusion", TypeId::INTEGER32));
+    // numerator: null = false, 1 = true
+    patientInclusionSchema.putField(QueryFieldDesc(1, "numerator", "patient_inclusion", TypeId::INTEGER32));
+    // denom_excl: null = false, 1 = true
+    patientInclusionSchema.putField(QueryFieldDesc(2, "denom_incl", "patient_inclusion", TypeId::INTEGER32));
 
 }
