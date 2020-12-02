@@ -27,7 +27,7 @@ namespace  vaultdb {
         Operator()  { myRef = std::shared_ptr<Operator>(this); }
         Operator(std::shared_ptr<Operator> &child);
 
-        ~Operator() { std::cout << "Freeing Operator at " << this << std::endl; }
+        ~Operator() {  }
         Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs);
         
         // recurses first, then invokes runSelf method
@@ -52,6 +52,7 @@ namespace  vaultdb {
         virtual std::shared_ptr<QueryTable> runSelf() = 0;
 
         std::shared_ptr<Operator> myRef; // TODO: for sharing among parents and children
+        bool operatorExecuted = false; // set when runSelf() executed once
     };
 }
 

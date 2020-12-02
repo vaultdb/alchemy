@@ -1,5 +1,12 @@
 
-./bin/generate_enrich_data test/support/csv/enrich 100
+if [ "$#" -ne 1 ]; then
+    echo "usage: ./load-generated-data.sh <tuple count per host>"
+    exit
+fi
+
+TUPLE_COUNT=$1
+
+./bin/generate_enrich_data test/support/csv/enrich $TUPLE_COUNT
 cd test/support/csv/enrich
 
 cat alice-patient.csv  bob-patient.csv > unioned-patient.csv 

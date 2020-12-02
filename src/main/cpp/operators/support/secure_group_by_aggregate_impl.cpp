@@ -11,7 +11,12 @@ Value SecureGroupByAggregateImpl::getDummyTag(const Value &isLastEntry,
     assert(isLastEntry.getType() == TypeId::ENCRYPTED_BOOLEAN &&
                    nonDummyBinFlag.getType() == TypeId::ENCRYPTED_BOOLEAN);
 
+    // if it is the last bin, then we output if it's a non-dummy bin
+    // else set to dummy
     Bit output = If(isLastEntry.getEmpBit(), !nonDummyBinFlag.getEmpBit(), Bit(true, PUBLIC));
+    std::string outputStr = output.reveal() ? "true" : "false";
+    std::cout << "Getting dummy tag for " << isLastEntry.reveal() << " and " << nonDummyBinFlag.reveal() << " as " << outputStr << std::endl;
+
     return Value(output);
 
 }

@@ -83,7 +83,7 @@ set(sources
 		operators/support/join_equality_predicate.cpp
 		operators/join.cpp
 		operators/basic_join.cpp
-		operators/common_table_expression_input.cpp
+        operators/common_table_expression.cpp
         operators/fkey_pkey_join.cpp
 		operators/support/replace_tuple.cpp
 		operators/support/secure_replace_tuple.cpp

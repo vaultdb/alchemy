@@ -24,12 +24,16 @@ Operator::Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rh
 
 
 std::shared_ptr<QueryTable> Operator::run() {
+    if(operatorExecuted) // prevent duplicate executions of operator
+        return output;
+
     for(std::shared_ptr<Operator> op : children) {
         op->run();
     }
 
-    return runSelf(); // delegated to children
-
+    output = runSelf(); // delegated to children
+    operatorExecuted = true;
+    return output;
 }
 
 

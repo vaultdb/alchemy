@@ -10,7 +10,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     std::shared_ptr<QueryTable> input = children[0]->getOutput();
     std::vector<GroupByAggregateImpl *> aggregators;
     QueryTuple *current, *predecessor;
-    types::Value nonDummyBin;
+    types::Value realBin;
     types::TypeId boolType = input->isEncrypted() ? types::TypeId::ENCRYPTED_BOOLEAN : types::TypeId::BOOLEAN;
     QueryTuple outputTuple;
     QuerySchema inputSchema = input->getSchema();
@@ -50,14 +50,15 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
         aggregator->initialize(*predecessor, forceInit);
     }
 
-    nonDummyBin = !(predecessor->getDummyTag()); // does this group-by bin contain at least one real (non-dummy) tuple?
+    realBin = !(predecessor->getDummyTag()); // does this group-by bin contain at least one real (non-dummy) tuple?
 
 
     for(int i = 1; i < input->getTupleCount(); ++i) {
         current = input->getTuplePtr(i);
-        nonDummyBin = nonDummyBin | !(predecessor->getDummyTag());
+        realBin = realBin | !(predecessor->getDummyTag());
         types::Value isGroupByMatch = groupByMatch(*predecessor, *current);
-        outputTuple = generateOutputTuple(*predecessor, !isGroupByMatch, nonDummyBin, aggregators);
+        outputTuple = generateOutputTuple(*predecessor, !isGroupByMatch, realBin, aggregators);
+        std::cout << "Writing output tuple: " << outputTuple.reveal().toString(true) << std::endl;
 
         for(GroupByAggregateImpl *aggregator : aggregators) {
             aggregator->initialize(*current, isGroupByMatch);
@@ -65,22 +66,27 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
         }
 
         output->putTuple(i-1, outputTuple);
+
         predecessor = current;
         // reset the flag that denotes if we have one non-dummy tuple in the bin
-        aggregators[0]->updateGroupByBinBoundary(!isGroupByMatch, nonDummyBin);
+        aggregators[0]->updateGroupByBinBoundary(!isGroupByMatch, realBin);
     }
+    std::cout << "Updated non-dummy bin from " << realBin.reveal() << " | " << !(predecessor->getDummyTag()).reveal() << " to ";
 
-    nonDummyBin = nonDummyBin | predecessor->getDummyTag();
+    realBin = realBin | !predecessor->getDummyTag();
+
+    std::cout << realBin.reveal() << std::endl;
 
     // getOne to make it write out the last entry
-    outputTuple = generateOutputTuple(*predecessor, TypeUtilities::getOne(boolType), nonDummyBin, aggregators);
+    outputTuple = generateOutputTuple(*predecessor, TypeUtilities::getOne(boolType), realBin, aggregators);
+    std::cout << "Writing output tuple: " << outputTuple.reveal().toString(true) << std::endl;
     output->putTuple(input->getTupleCount() - 1, outputTuple);
 
     // output sorted on group-by cols
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(groupByOrdinals.size());
     output->setSortOrder(sortDefinition);
 
-    /* TODO: debug why this fails
+    /* TODO: set up destructors
      * for(int i = 0; i < aggregators.size(); ++i) {
         delete aggregators[i];
     }*/

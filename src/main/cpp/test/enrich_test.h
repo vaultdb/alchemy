@@ -9,32 +9,28 @@
 #include <operators/sort.h>
 #include <operators/group_by_aggregate.h>
 #include <operators/filter.h>
-#include <_deps/googletest-src/googletest/include/gtest/gtest.h>
-
+#include <test/support/EmpBaseTest.h>
 
 
 using namespace vaultdb;
 using namespace vaultdb::types;
 using namespace emp;
 
-// plaintext only test
-// to load test data, run from src/main/cpp the following:
-// bash test/support/load-generated-data.sh
 
-class EnrichTest :  public ::testing::Test  {
+// to load test data, run from src/main/cpp the following:
+// bash test/support/load-generated-data.sh <tuple count>
+
+
+DEFINE_int32(party, 1, "party for EMP execution");
+DEFINE_int32(port, 43439, "port for EMP execution");
+DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
+
+
+
+class EnrichTest : public EmpBaseTest  {
 
 protected:
-    void SetUp() override {
-    };
-    void TearDown() override{};
 
-
-
-    std::shared_ptr<Operator>
-    getPatientCohort(const string &srcPatientFile, const string &srcPatientInclusionFile, bool isEncrypted);
-
-    static std::shared_ptr<QueryTable>
-    rollUpAggregate(const int & ordinal, std::shared_ptr<Operator> src);
 
     const string unionedDbName = "enrich_htn_unioned";
     const string aliceDbName = "enrich_htn_alice";
@@ -48,6 +44,13 @@ protected:
 
     void validateTable(const string &dbName, const string &sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<QueryTable> &observedTable) const;
 
+    std::shared_ptr<Operator> getPatientCohort(const string &srcPatientFile, const string &srcPatientInclusionFile, bool isEncrypted);
+
+    static std::shared_ptr<QueryTable> rollUpAggregate(const int & ordinal, std::shared_ptr<Operator> src);
+
+    std::shared_ptr<Operator> loadUnionAndDeduplicateData() const;
+
+    void validateUnion(std::shared_ptr<Operator> sortOp, const SortDefinition &expectedSortOrder) const;
 };
 
 
