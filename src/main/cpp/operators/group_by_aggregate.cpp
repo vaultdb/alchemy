@@ -58,7 +58,6 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
         realBin = realBin | !(predecessor->getDummyTag());
         types::Value isGroupByMatch = groupByMatch(*predecessor, *current);
         outputTuple = generateOutputTuple(*predecessor, !isGroupByMatch, realBin, aggregators);
-        std::cout << "Writing output tuple: " << outputTuple.reveal().toString(true) << std::endl;
 
         for(GroupByAggregateImpl *aggregator : aggregators) {
             aggregator->initialize(*current, isGroupByMatch);
@@ -71,15 +70,11 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
         // reset the flag that denotes if we have one non-dummy tuple in the bin
         aggregators[0]->updateGroupByBinBoundary(!isGroupByMatch, realBin);
     }
-    std::cout << "Updated non-dummy bin from " << realBin.reveal() << " | " << !(predecessor->getDummyTag()).reveal() << " to ";
 
     realBin = realBin | !predecessor->getDummyTag();
 
-    std::cout << realBin.reveal() << std::endl;
-
     // getOne to make it write out the last entry
     outputTuple = generateOutputTuple(*predecessor, TypeUtilities::getOne(boolType), realBin, aggregators);
-    std::cout << "Writing output tuple: " << outputTuple.reveal().toString(true) << std::endl;
     output->putTuple(input->getTupleCount() - 1, outputTuple);
 
     // output sorted on group-by cols

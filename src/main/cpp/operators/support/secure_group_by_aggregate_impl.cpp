@@ -15,7 +15,6 @@ Value SecureGroupByAggregateImpl::getDummyTag(const Value &isLastEntry,
     // else set to dummy
     Bit output = If(isLastEntry.getEmpBit(), !nonDummyBinFlag.getEmpBit(), Bit(true, PUBLIC));
     std::string outputStr = output.reveal() ? "true" : "false";
-    std::cout << "Getting dummy tag for " << isLastEntry.reveal() << " and " << nonDummyBinFlag.reveal() << " as " << outputStr << std::endl;
 
     return Value(output);
 
