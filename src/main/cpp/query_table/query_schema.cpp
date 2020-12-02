@@ -117,6 +117,18 @@ QuerySchema QuerySchema::toPlain(const QuerySchema &secureSchema) {
 
 }
 
+int QuerySchema::getOrdinal(const std::string & fieldName) const {
+   int offset = 0;
+   for(QueryFieldDesc fieldDesc : fields_) {
+       if(fieldDesc.getName() == fieldName)
+           return offset;
+       ++offset;
+   }
+    // no match
+   return -1;
+
+}
+
 
 
 

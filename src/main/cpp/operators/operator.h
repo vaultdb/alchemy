@@ -27,6 +27,7 @@ namespace  vaultdb {
         Operator()  { myRef = std::shared_ptr<Operator>(this); }
         Operator(std::shared_ptr<Operator> &child);
 
+        ~Operator() { std::cout << "Freeing Operator at " << this << std::endl; }
         Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs);
         
         // recurses first, then invokes runSelf method

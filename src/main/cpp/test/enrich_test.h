@@ -25,7 +25,6 @@ class EnrichTest :  public ::testing::Test  {
 
 protected:
     void SetUp() override {
-        dbName = "enrich_htn_unioned";
     };
     void TearDown() override{};
 
@@ -37,7 +36,18 @@ protected:
     static std::shared_ptr<QueryTable>
     rollUpAggregate(const int & ordinal, std::shared_ptr<Operator> src);
 
-    string dbName;
+    const string unionedDbName = "enrich_htn_unioned";
+    const string aliceDbName = "enrich_htn_alice";
+    const string bobDbName = "enrich_htn_bob";
+
+    std::shared_ptr<Operator> loadAndProjectPatientData(const string &dbName) const;
+
+    std::shared_ptr<Operator> loadPatientExclusionData(const string &dbName) const;
+
+    std::shared_ptr<Operator> loadAndJoinLocalData(const string &dbName) const;
+
+    void validateTable(const string &dbName, const string &sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<QueryTable> &observedTable) const;
+
 };
 
 

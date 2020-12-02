@@ -44,6 +44,7 @@ namespace  vaultdb {
 
         static QuerySchema toPlain(const QuerySchema &secureSchema);
 
+        int getOrdinal(const std::string &fieldName) const;
     };
 }
 
