@@ -8,7 +8,6 @@ using namespace vaultdb;
 void vaultdb::SecureScalarAverage::initialize(const vaultdb::QueryTuple &tuple) {
     assert(tuple.isEncrypted());
     types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-    types::TypeId avgType = tupleVal.getType();
 
     // initialize member variable for use in accumulate()
 
@@ -56,12 +55,6 @@ SecureScalarAverage::SecureScalarAverage(const uint32_t &ordinal,
 
 void vaultdb::SecureScalarCount::initialize(const vaultdb::QueryTuple &tuple) {
   assert(tuple.isEncrypted());
-  types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::TypeId countType = tupleVal.getType();
-
-  // initialize member variable for use in accumulate()
-  //zero = TypeUtilities::getZero(countType);
-  //one = TypeUtilities::getOne(countType);
 
   //types::Value addValue = types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero, one);
   runningCount = runningCount + types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero, one);
@@ -73,12 +66,7 @@ void vaultdb::SecureScalarCount::accumulate(const vaultdb::QueryTuple &tuple) {
   assert(tuple.isEncrypted());
   assert(initialized);
 
-  runningCount = runningCount +
-                 types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero , one);
-
-//  types::Value toUpdate = !isDummy & !tuple.getDummyTag();
-  types::Value incremented = runningCount + one;
-  runningCount = types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), incremented, runningCount);
+  runningCount = runningCount + types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero, one);
 }
 
 vaultdb::types::Value vaultdb::SecureScalarCount::getResult() {
@@ -91,13 +79,9 @@ vaultdb::types::TypeId vaultdb::SecureScalarCount::getType() {
 }
 
 
-void vaultdb::SecureScalarSum::initialize(const vaultdb::QueryTuple &tuple) {
+void vaultdb::SecureScalarSum::initialize(const QueryTuple &tuple) {
   assert(tuple.isEncrypted());
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::TypeId sumType = tupleVal.getType();
-
-  // initialize member variable for use in accumulate()
-  //zero = TypeUtilities::getZero(sumType);
 
     // re-cast sum as INT64_T in keeping with postgres convention
     if(tupleVal.getType() == types::TypeId::ENCRYPTED_INTEGER32) {
@@ -106,7 +90,10 @@ void vaultdb::SecureScalarSum::initialize(const vaultdb::QueryTuple &tuple) {
         tupleVal = types::Value(types::TypeId::ENCRYPTED_INTEGER64, empInt);
     }
 
-  runningSum =  types::Value::obliviousIf(tuple.getDummyTag(), zero , tupleVal);
+  //
+  runningSum = types::Value::obliviousIf(tuple.getDummyTag(), zero, tupleVal);
+  // types::Value resetValue =  types::Value::obliviousIf(tuple.getDummyTag(), zero , tupleVal);
+  //runningSum = runningSum + types::Value::obliviousIf(tuple.getDummyTag(), zero, tupleVal);
   initialized = true;
 
 }
@@ -124,28 +111,21 @@ void vaultdb::SecureScalarSum::accumulate(const vaultdb::QueryTuple &tuple) {
         tupleVal = types::Value(types::TypeId::ENCRYPTED_INTEGER64, empInt);
   }
 
-  types::Value toAdd = types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero , tupleVal);
-  runningSum =  runningSum + toAdd;
+  types::Value toAdd = types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero, tupleVal);
+  runningSum = runningSum + toAdd;
+
 }
 
 vaultdb::types::Value vaultdb::SecureScalarSum::getResult() {
   return runningSum;
 }
 
-vaultdb::types::TypeId vaultdb::SecureScalarSum::getType() {
-  assert(initialized);
-  return runningSum.getType();
-}
-
 
 void vaultdb::SecureScalarMin::initialize(const vaultdb::QueryTuple &tuple) {
   assert(tuple.isEncrypted());
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::TypeId minType = tupleVal.getType();
 
   types::Value getMaxValue();
-  // initialize member variable for use in accumulate()
-  //zero = TypeUtilities::getZero(minType);
 
   runningMin =  types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero , tupleVal);
   initialized = true;
@@ -189,10 +169,6 @@ vaultdb::types::TypeId vaultdb::SecureScalarMin::getType() {
 void vaultdb::SecureScalarMax::initialize(const vaultdb::QueryTuple &tuple) {
   assert(tuple.isEncrypted());
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::TypeId maxType = tupleVal.getType();
-
-  // initialize member variable for use in accumulate()
-  //zero = TypeUtilities::getZero(maxType);
 
   runningMax =  types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero , tupleVal);
   initialized = true;

@@ -54,7 +54,7 @@ public:
       override; // needs to run this once with first tuple to set up state
   void accumulate(const QueryTuple &tuple) override;
   types::Value getResult() override;
-  types::TypeId getType() override;
+//  types::TypeId getType() override;
 
 private:
   types::Value runningSum;
