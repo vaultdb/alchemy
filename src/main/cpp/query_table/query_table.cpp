@@ -190,16 +190,16 @@ bool QueryTable::operator==(const QueryTable &other) const {
 
 
     if(getSchema() != other.getSchema()) {
-      // std::cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << std::endl;
+       std::cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << std::endl;
         return false;
     }
 
     if(this->getSortOrder() != other.getSortOrder()) {
-        //std::cout << "Failed to match on sort order "  << std::endl;
+        std::cout << "Failed to match on sort order "  << std::endl;
         return false;
     }
     if(this->getTupleCount() != other.getTupleCount()) {
-        //std::cout << "Failed to match on tuple count " << this->getTupleCount() << " vs " << other.getTupleCount() << std::endl;
+        std::cout << "Failed to match on tuple count " << this->getTupleCount() << " vs " << other.getTupleCount() << std::endl;
         return false;
     }
 
@@ -210,8 +210,9 @@ bool QueryTable::operator==(const QueryTable &other) const {
        //std::cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << std::endl;
 
         if(*thisTuple != *otherTuple) {
-           // std::cout << "    Failed to match!" << std::endl;
-            return false;
+            std::cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << std::endl;
+            std::cout << "    Failed to match!" << std::endl;
+           return false;
         }
 
     }
