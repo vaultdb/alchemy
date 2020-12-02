@@ -57,7 +57,6 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
 }
 
 
-// TODO: update aggregate factory with min/max/avg
 ScalarAggregateImpl *ScalarAggregate::aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
                                                        const types::TypeId &aggregateValueType,
                                                        const bool &isEncrypted) const {
@@ -82,9 +81,14 @@ ScalarAggregateImpl *ScalarAggregate::aggregateFactory(const AggregateId &aggreg
         case AggregateId::AVG:
             return new SecureScalarAverage(ordinal, aggregateValueType);
         case AggregateId::COUNT:
+            return new SecureScalarCount(ordinal, aggregateValueType);
         case AggregateId::SUM:
+            return new SecureScalarSum(ordinal, aggregateValueType);
         case AggregateId::MIN:
+            return new SecureScalarMin(ordinal, aggregateValueType);
         case AggregateId::MAX:
+            return new SecureScalarMax(ordinal, aggregateValueType);
+        default:
             throw std::invalid_argument("Not yet implemented!");
     };
 }
