@@ -55,7 +55,7 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
                                         const vector<ScalarAggregateDefinition> & aggregators) const {
 
   // produces 25 rows
-  std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+  std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
 
   std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults("tpch_unioned", expectedOutputQuery, false);
   //types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
@@ -157,6 +157,33 @@ TEST_F(SecureScalarAggregateTest, test_sum_dummies) {
   runDummiesTest(expectedOutputQuery, aggregators);
 }
 
+
+TEST_F(SecureScalarAggregateTest, test_sum_baseprice_dummies) {
+
+
+  std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+  std::string expectedOutputQuery = "SELECT SUM(l_extendedprice) sum_base_price FROM (" + query + ") subquery WHERE  NOT dummy";
+
+  std::vector<ScalarAggregateDefinition> aggregators;
+  aggregators.push_back(ScalarAggregateDefinition(2, AggregateId::SUM, "sum_base_price"));
+
+  runDummiesTest(expectedOutputQuery, aggregators);
+}
+
+
+TEST_F(SecureScalarAggregateTest, test_sum_lineno_baseprice) {
+
+
+  std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+  std::string expectedOutputQuery = "SELECT SUM(l_linenumber) sum_lineno, SUM(l_extendedprice) sum_base_price FROM (" + query + ") subquery WHERE  NOT dummy";
+
+  std::vector<ScalarAggregateDefinition> aggregators;
+  aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_linemno"));
+  aggregators.push_back(ScalarAggregateDefinition(2, AggregateId::SUM, "sum_base_price"));
+
+  runDummiesTest(expectedOutputQuery, aggregators);
+}
+
 //TEST_F(SecureScalarAggregateTest, test_min) {
 //  std::string expectedOutputQuery = "SELECT MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10";
 //  std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
@@ -181,7 +208,7 @@ TEST_F(SecureScalarAggregateTest, test_count) {
 }
 
 
-// // brings in about 200 tuples
+// brings in about 200 tuples
 TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
 
   string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= 194";

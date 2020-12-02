@@ -93,8 +93,8 @@ set(sources
 		operators/support/secure_scalar_aggregate_impl.cpp
 		operators/group_by_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp
-		operators/support/secure_group_by_aggregate_impl.cpp
-		operators/csv_input.cpp)
+		operators/support/secure_group_by_aggregate_impl.cpp)
+		#operators/csv_input.cpp)
 
 
 
