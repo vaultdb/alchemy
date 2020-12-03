@@ -42,15 +42,23 @@ protected:
 
     std::shared_ptr<Operator> loadAndJoinLocalData(const string &dbName) const;
 
+    std::shared_ptr<Operator> getPatientCohort();
+
     void validateTable(const string &dbName, const string &sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<QueryTable> &observedTable) const;
 
-    std::shared_ptr<Operator> getPatientCohort(const string &srcPatientFile, const string &srcPatientInclusionFile, bool isEncrypted);
+
+    //std::shared_ptr<Operator> getPatientCohort(const string &srcPatientFile, const string &srcPatientInclusionFile, bool isEncrypted);
 
     static std::shared_ptr<QueryTable> rollUpAggregate(const int & ordinal, std::shared_ptr<Operator> src);
 
     std::shared_ptr<Operator> loadUnionAndDeduplicateData() const;
 
     void validateUnion(std::shared_ptr<Operator> sortOp, const SortDefinition &expectedSortOrder) const;
+
+    std::shared_ptr<Operator> aggregatePatientData();
+
+
+    std::shared_ptr<Operator> filterPatients();
 };
 
 

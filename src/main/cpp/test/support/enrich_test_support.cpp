@@ -82,7 +82,7 @@ Value EnrichTestSupport::projectNumeratorMultisite(const QueryTuple & aTuple) {
     Value zero = TypeUtilities::getZero(siteCountType);
     Value one = TypeUtilities::getOne(siteCountType);
 
-    Value condition =  (siteCount > one) ^ (inNumerator == 1);
+    Value condition =  (siteCount > one) ^ (inNumerator == one);
 
     // get from Value::TypeId bool --> int
     if(TypeUtilities::isEncrypted(siteCountType))
