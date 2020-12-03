@@ -59,6 +59,8 @@ protected:
 
 
     std::shared_ptr<Operator> filterPatients();
+
+    std::string getRollupExpectedResultsSql(const std::string &groupByColName);
 };
 
 
