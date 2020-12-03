@@ -95,14 +95,10 @@ Value EnrichTestSupport::projectNumeratorMultisite(const QueryTuple & aTuple) {
     Integer inNumerator = aTuple.getFieldPtr(6)->getValue().getEmpInt();
     Integer siteCount = aTuple.getFieldPtr(7)->getValue().getEmpInt();
 
-    std::cout << "Received tuple: " << aTuple.reveal().toString(true) << std::endl;
     Bit multisite = siteCount > Integer(64, 1, PUBLIC);
     // only 0 || 1
     Bit numeratorTrue = inNumerator.bits[0];
-    std::cout << "Multisite? " << multisite.reveal() << ", in numerator? " << numeratorTrue.reveal() << std::endl;
     Bit condition = multisite & numeratorTrue;
-
-    std::cout << "Projecting numerator multisite from " << inNumerator.reveal<int32_t>() << ", " << siteCount.reveal<int64_t>() << " result: " << condition.reveal() << std::endl;
 
     // get from Value::TypeId bool --> int
     Integer result(32, 0, PUBLIC);
