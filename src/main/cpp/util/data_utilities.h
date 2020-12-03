@@ -48,6 +48,7 @@ namespace vaultdb {
         static std::shared_ptr<QueryTable> removeDummies(const std::shared_ptr<QueryTable> & input);
 
         static std::string getCurrentWorkingDirectory();
+        static std::string printSortDefinition(const SortDefinition  & sortDefinition);
     };
 }
 

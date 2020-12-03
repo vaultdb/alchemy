@@ -195,7 +195,8 @@ bool QueryTable::operator==(const QueryTable &other) const {
     }
 
     if(this->getSortOrder() != other.getSortOrder()) {
-        std::cout << "Failed to match on sort order "  << std::endl;
+        std::cout << "Failed to match on sort order expected="  << DataUtilities::printSortDefinition(this->getSortOrder())
+                  << "observed=" << DataUtilities::printSortDefinition(other.getSortOrder()) <<  std::endl;
         return false;
     }
     if(this->getTupleCount() != other.getTupleCount()) {

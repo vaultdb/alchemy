@@ -178,4 +178,17 @@ std::string DataUtilities::getCurrentWorkingDirectory() {
     return currentWorkingDirectory;
 }
 
+std::string DataUtilities::printSortDefinition(const SortDefinition &sortDefinition) {
+    std::stringstream  result;
+    result << "(";
+    for(ColumnSort c : sortDefinition) {
+        string direction = (c.second == SortDirection::ASCENDING) ? "ASC" : "DESC";
+        result << "<" << c.first << ", "
+                  << direction << "> " <<  std::endl;
+
+    }
+    result << ")";
+    return result.str();
+}
+
 

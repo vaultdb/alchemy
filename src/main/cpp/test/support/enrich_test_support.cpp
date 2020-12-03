@@ -58,8 +58,23 @@ Value EnrichTestSupport::projectAgeStrata(const QueryTuple & aTuple) {
 
 // Project #2
 //     CASE WHEN count(*) > 1 THEN 1 else 0 END AS multisite
+// MPC case only
 Value EnrichTestSupport::projectMultisite(const QueryTuple & aTuple) {
-    Value siteCount = aTuple.getField(6).getValue();
+    Integer siteCount = aTuple.getFieldPtr(7)->getValue().getEmpInt();
+
+    Bit condition = siteCount > Integer(64, 1, PUBLIC);
+
+    // get from Value::TypeId bool --> int
+    Integer result(32, 0, PUBLIC);
+    result.bits[0] = condition;
+    return Value(TypeId::ENCRYPTED_INTEGER32, result);
+
+
+
+}
+/* generic case:
+ *
+ *  /*  Value siteCount = aTuple.getField(7).getValue();
     TypeId siteCountType = siteCount.getType(); // can be MPC or plaintext
     Value zero = TypeUtilities::getZero(siteCountType);
     Value one = TypeUtilities::getOne(siteCountType);
@@ -70,25 +85,29 @@ Value EnrichTestSupport::projectMultisite(const QueryTuple & aTuple) {
         return Value::obliviousIf(condition, one, zero);
 
     return condition.getBool() ? one : zero;
-
-}
+ *
+ */
 
 //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
+// MPC case only
 Value EnrichTestSupport::projectNumeratorMultisite(const QueryTuple & aTuple) {
 
-    Value inNumerator = aTuple.getFieldPtr(5)->getValue();
-    Value siteCount = aTuple.getFieldPtr(6)->getValue();
-    TypeId siteCountType = siteCount.getType(); // can be MPC or plaintext
-    Value zero = TypeUtilities::getZero(siteCountType);
-    Value one = TypeUtilities::getOne(siteCountType);
+    Integer inNumerator = aTuple.getFieldPtr(6)->getValue().getEmpInt();
+    Integer siteCount = aTuple.getFieldPtr(7)->getValue().getEmpInt();
 
-    Value condition =  (siteCount > one) ^ (inNumerator == one);
+    std::cout << "Received tuple: " << aTuple.reveal().toString(true) << std::endl;
+    Bit multisite = siteCount > Integer(64, 1, PUBLIC);
+    // only 0 || 1
+    Bit numeratorTrue = inNumerator.bits[0];
+    std::cout << "Multisite? " << multisite.reveal() << ", in numerator? " << numeratorTrue.reveal() << std::endl;
+    Bit condition = multisite & numeratorTrue;
+
+    std::cout << "Projecting numerator multisite from " << inNumerator.reveal<int32_t>() << ", " << siteCount.reveal<int64_t>() << " result: " << condition.reveal() << std::endl;
 
     // get from Value::TypeId bool --> int
-    if(TypeUtilities::isEncrypted(siteCountType))
-        return Value::obliviousIf(condition, one, zero);
-
-    return condition.getBool() ? one : zero;
+    Integer result(32, 0, PUBLIC);
+    result.bits[0] = condition;
+    return Value(TypeId::ENCRYPTED_INTEGER32, result);
 
 }
 
