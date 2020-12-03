@@ -46,10 +46,8 @@ public:
     [[nodiscard]] types::Value predicateCall(const QueryTuple & aTuple) const override {
 
         QueryTuple decrypted = aTuple.reveal();
-        std::cout << "Filtering tuple: " << decrypted.toString(true) << std::endl;
         Value field = aTuple.getFieldPtr(8)->getValue();
         Value res = (field == cmp);
-        std::cout << "Filtering on denom_excl = " << field.reveal() << " predicate: " << res.reveal() << std::endl;
         return  res;
     }
 
