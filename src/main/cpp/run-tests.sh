@@ -40,12 +40,18 @@ make -j5
 ./bin/secure_pkey_fkey_join_test --party=1 &
 ./bin/secure_pkey_fkey_join_test --party=2
 
-./bin/secure_scalar_aggregate_test --party=1 &
-./bin/secure_scalar_aggregate_test --party=2
-
 ./bin/secure_group_by_aggregate_test --party=1 &
 ./bin/secure_group_by_aggregate_test --party=2
 
 
 ./bin/emp_float_to_int --party=1 &
 ./bin/emp_float_to_int --party=2 
+
+# regenerate test data
+bash  test/support/load-generated-data.sh 100
+./bin/enrich_test --party=1 &
+./bin/enrich_test --party=2 &
+
+
+./bin/secure_scalar_aggregate_test --party=1 &
+./bin/secure_scalar_aggregate_test --party=2
