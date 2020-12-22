@@ -29,7 +29,7 @@ const std::string &QueryFieldDesc::getTableName() const {
 size_t QueryFieldDesc::size() const {
     vaultdb::types::TypeId typeId  = getType();
     size_t fieldSize = TypeUtilities::getTypeSize(typeId);
-    if(QueryFieldDesc::type_ == vaultdb::types::TypeId::VARCHAR)  {
+    if(QueryFieldDesc::type_ == vaultdb::types::TypeId::VARCHAR || QueryFieldDesc::type_ == vaultdb::types::TypeId::ENCRYPTED_VARCHAR )  {
         fieldSize *= string_length_;
     }
 

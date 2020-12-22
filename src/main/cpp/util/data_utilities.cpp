@@ -107,20 +107,20 @@ std::string DataUtilities::queryDatetime(const string &colName) {
 
 void DataUtilities::locallySecretShareTable(const std::unique_ptr<QueryTable> &table, const string &aliceFile,
                                            const string &bobFile) {
-    std::pair<int8_t *, int8_t *> shares = table->generateSecretShares();
-    writeFile(aliceFile, (char *) shares.first);
-    writeFile(bobFile, (char *) shares.second);
+    SecretShares shares = table->generateSecretShares();
+    writeFile(aliceFile, shares.first);
+    writeFile(bobFile, shares.second);
 
 
 }
 
 
-void DataUtilities::writeFile(std::string fileName, const char *contents) {
+void DataUtilities::writeFile(std::string fileName, vector<int8_t> contents) {
     std::ofstream outFile(fileName.c_str(), std::ios::out | std::ios::binary);
     if(!outFile.is_open()) {
         throw std::invalid_argument("Could not write output file " + fileName);
     }
-    outFile.write(contents, 16);
+    outFile.write((char *) contents.data(), contents.size());
     outFile.close();
 }
 

@@ -11,6 +11,7 @@
 
 namespace  vaultdb {
 
+    typedef std::pair<std::vector<int8_t>, std::vector<int8_t> > SecretShares;
     class QueryTuple;
 
     class QueryTable {
@@ -63,14 +64,14 @@ namespace  vaultdb {
             // only works for unencrypted tables, o.w. returns getTupleCount()
             uint32_t getTrueTupleCount() const;
 
-            bool *serialize() const;
+            std::vector<int8_t> serialize() const;
 
             friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
 
-            std::shared_ptr<QueryTable>
-            secretShare(emp::NetIO *io, const int &party) const; // shared_ptr so we can pass it among Operator instances
-            std::pair<int8_t *, int8_t *>
-            generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
+            std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &party) const; // shared_ptr so we can pass it among Operator instances
+
+            SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
+
             [[nodiscard]] std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
 
             QueryTable &operator=(const QueryTable &src);
@@ -78,6 +79,8 @@ namespace  vaultdb {
             bool operator==(const QueryTable &other) const;
 
             bool operator!=(const QueryTable &other) const { return !(*this == other); }
+
+            static std::shared_ptr<QueryTable> deserialize(const QuerySchema & schema, const vector<int8_t> &tableBits);
     };
 
 }

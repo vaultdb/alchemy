@@ -108,16 +108,18 @@ void QueryTuple::setFieldCount(size_t fieldCount) {
 
 }
 
-// only works for unencrypted tables
-void QueryTuple::serialize(bool *dst, const QuerySchema &schema) {
+void QueryTuple::serialize(int8_t *dst, const QuerySchema &schema) {
 
     assert(!isEncrypted());
 
-    bool *cursor = dst;
+    int8_t *cursor = dst;
+
+    std::cout << "Serializing tuple: " << *this << std::endl;
 
     for(int fieldIdx = 0; fieldIdx < getFieldCount(); ++fieldIdx) {
         fields_[fieldIdx].serialize(cursor);
-        cursor += schema.getField(fieldIdx).size();
+        std::cout << "Advancing the cursor " << schema.getField(fieldIdx).size()/8  << " bytes for " << TypeUtilities::getTypeIdString(schema.getField(fieldIdx).getType()) << std::endl;
+        cursor += schema.getField(fieldIdx).size()/8;
     }
 
     *cursor = dummy_tag_.getBool();
@@ -223,6 +225,32 @@ bool QueryTuple::operator==(const QueryTuple &other) {
 
 vaultdb::QueryField *QueryTuple::getFieldPtr(const uint32_t &ordinal) const {
     return ((QueryField *) fields_.data()) + ordinal;
+}
+
+QueryTuple QueryTuple::deserialize(const QuerySchema &schema, int8_t *tupleBits) {
+    int fieldCount = schema.getFieldCount();
+    QueryTuple result(fieldCount);
+    int8_t *cursor = tupleBits;
+
+    for(int i = 0; i < fieldCount; ++i) {
+        QueryField aField = QueryField::deserialize(schema.getField(i), cursor);
+        result.putField(aField);
+        cursor += schema.getField(i).size()/8;
+    }
+
+    if(TypeUtilities::isEncrypted(schema.getField(0).getType())) {
+        // deserialize an emp::Bit
+        QueryFieldDesc dummyField(-1, "dummy", "dummy", types::TypeId::ENCRYPTED_BOOLEAN);
+        result.dummy_tag_ = types::Value::deserialize(dummyField, cursor);
+    }
+    else {
+        // deserialize a bool
+        QueryFieldDesc dummyField(-1, "dummy", "dummy", types::TypeId::BOOLEAN);
+        result.dummy_tag_ = types::Value::deserialize(dummyField, cursor);
+    }
+    std::cout << "Deserialized tuple: " << result << std::endl;
+    return result;
+
 }
 
 

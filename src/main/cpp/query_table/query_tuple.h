@@ -41,7 +41,7 @@ namespace vaultdb {
 
         void setFieldCount(size_t fieldCount);
 
-        void serialize(bool *dst, const QuerySchema &schema);
+        void serialize(int8_t *dst, const QuerySchema &schema);
         size_t getFieldCount() const;
 
         QueryTuple& operator=(const QueryTuple& other);
@@ -49,6 +49,7 @@ namespace vaultdb {
         inline bool operator!=(const QueryTuple & other) { return !(*this == other);   }
 
         static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const emp::Bit & cmp);
+        static QueryTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
 
     };
 

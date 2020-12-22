@@ -83,15 +83,17 @@ std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
 
 // iterate over all tuples and produce one long bit array for encrypting/decrypting in emp
 // only works in PUBLIC or XOR mode
-bool *QueryTable::serialize() const {
+std::vector<int8_t> QueryTable::serialize() const {
     // dst size is in bits
-    size_t tupleWidth =  schema_.size();
+    size_t tupleWidth =  schema_.size() / 8; // 496 / 8  = 62
     size_t dstSize = getTupleCount() * tupleWidth;
-    bool *dst = new bool[dstSize];
-    bool *cursor = dst;
+    std::vector<int8_t> dst;
+    dst.resize(dstSize);
+    int8_t *cursor = dst.data();
 
+    std::cout << "Serializing " << getTupleCount() << " tuples, each with width: " << tupleWidth << std::endl;
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
-        ((QueryTuple *) tuples_.data())->serialize(cursor, schema_);
+        getTuplePtr(i)->serialize(cursor, schema_);
         cursor += tupleWidth;
     }
 
@@ -242,29 +244,29 @@ std::shared_ptr<QueryTable> QueryTable::secretShare(emp::NetIO *io, const int & 
     return EmpManager::secretShareTable(this, io, party);
 }
 
-std::pair<int8_t *, int8_t *> QueryTable::generateSecretShares() const {
-    bool *secretBits = this->serialize();
-    size_t sharesSize = sizeof(secretBits);
+// use this for acting as a data sharing party in the PDF
+// generates alice and bob's shares and returns the pair
+SecretShares QueryTable::generateSecretShares() const {
+    std::vector<int8_t> serialized = this->serialize();
+    int8_t *secrets = serialized.data();
+    size_t sharesSize = serialized.size();
 
-    int8_t *secrets = DataUtilities::boolsToBytes(secretBits, sharesSize);
-    sharesSize /= 8;
-
-
-    int8_t *alice = new int8_t[sharesSize];
-    int8_t *bob = new int8_t[sharesSize];
+    vector<int8_t> aliceShares, bobShares;
+    aliceShares.resize(sharesSize);
+    bobShares.resize(sharesSize);
+    int8_t *alice = aliceShares.data();
+    int8_t *bob = bobShares.data();
     emp::PRG prg; // initializes with a random seed
 
 
-    prg.random_data(&alice, sharesSize);
+    prg.random_data(aliceShares.data(), sharesSize);
 
     for(size_t i = 0; i < sharesSize; ++i) {
         bob[i] = alice[i] ^ secrets[i];
     }
 
-    delete [] secrets;
-    delete [] secretBits;
 
-    return std::pair<int8_t *, int8_t *>(alice, bob);
+    return SecretShares(aliceShares, bobShares);
 }
 
 void QueryTable::setSortOrder(const SortDefinition &sortOrder) {
@@ -274,5 +276,26 @@ void QueryTable::setSortOrder(const SortDefinition &sortOrder) {
 
 SortDefinition QueryTable::getSortOrder() const {
     return orderBy;
+}
+
+std::shared_ptr<QueryTable> QueryTable::deserialize(const QuerySchema &schema, const vector<int8_t> & tableBits) {
+    int8_t *cursor = const_cast<int8_t *>(tableBits.data());
+    uint32_t tableSize = tableBits.size(); // in bytes
+    uint32_t tupleSize = schema.size() / 8; // in bytes
+    uint32_t tupleCount = tableSize / tupleSize;
+    SortDefinition emptySortDefinition;
+
+    std::cout << "Deserializing " << tupleCount << " tuples." << std::endl;
+    std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, schema, emptySortDefinition));
+
+    for(int i = 0; i < tupleCount; ++i) {
+        QueryTuple aTuple = QueryTuple::deserialize(schema, cursor);
+        result->putTuple(i, aTuple);
+        cursor += tupleSize;
+    }
+
+    return result;
+
+
 }
 

@@ -38,7 +38,7 @@ namespace vaultdb {
         static void locallySecretShareTable(const std::unique_ptr<QueryTable> &table, const std::string &aliceFile,
                                             const std::string &bobFile);
 
-        static void writeFile(std::string fileName, const char *contents);
+        static void writeFile(std::string fileName, vector<int8_t> contents);
 
         // sort all columns one after another
         // default setting for many tests

@@ -31,7 +31,7 @@ public:
   QueryField reveal(const int &party) const;
     uint32_t getOrdinal() const { return ordinal; }
 
-    void serialize(bool *dst);
+    void serialize(int8_t *dst);
     void setValue(const types::Value & val);
 
     void setOrdinal(const uint32_t & anOrdinal) { ordinal = anOrdinal; }
@@ -41,6 +41,7 @@ public:
     inline bool operator!=(const QueryField &other) const { return !(*this == other); }
     friend std::ostream& operator<<(std::ostream &strm, const QueryField &aField);
 
+    static QueryField deserialize(const QueryFieldDesc desc, int8_t *cursor);
 };
 
 } // namespace vaultdb

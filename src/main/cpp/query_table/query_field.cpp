@@ -32,7 +32,7 @@ std::ostream &vaultdb::operator<<(std::ostream &strm, const QueryField &aField) 
 
 
 
-void QueryField::serialize(bool *dst) {
+void QueryField::serialize(int8_t *dst) {
     value_.serialize(dst);
 }
 
@@ -62,4 +62,11 @@ bool QueryField::operator==(const QueryField &other) const {
     //std::cout << "Value check" << std::endl;
     types::Value cmp = (value_ == other.getValue());
     return cmp.getBool(); // throws if we are in encrypted mode
+}
+
+QueryField QueryField::deserialize(const QueryFieldDesc desc, int8_t *cursor) {
+    QueryField result(desc.getOrdinal());
+    types::Value aValue = types::Value::deserialize(desc, cursor);
+    result.setValue(aValue);
+    return result;
 }

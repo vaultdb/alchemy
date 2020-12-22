@@ -40,9 +40,12 @@ make -j5
 ./bin/secure_pkey_fkey_join_test --party=1 &
 ./bin/secure_pkey_fkey_join_test --party=2
 
+./secure_scalar_aggregate_test --party=1 &
+./secure_scalar_aggregate_test --party=2
+
+
 ./bin/secure_group_by_aggregate_test --party=1 &
 ./bin/secure_group_by_aggregate_test --party=2
-
 
 ./bin/emp_float_to_int --party=1 &
 ./bin/emp_float_to_int --party=2 

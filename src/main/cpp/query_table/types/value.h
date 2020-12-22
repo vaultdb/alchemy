@@ -5,7 +5,7 @@
 #include <boost/variant.hpp>
 #include <cstdint>
 #include <memory>
-
+#include <query_table/query_field_desc.h>
 class variant;
 namespace vaultdb::types {
 class Value {
@@ -58,7 +58,7 @@ public:
 
 
 
-  void serialize(bool *dst) const;
+  void serialize(int8_t *dst) const;
 
   emp::Float getEmpFloat32() const;
 
@@ -97,6 +97,8 @@ public:
   static Value toFloat(const Value & src);
 
     void setType(TypeId type);
+
+    static Value deserialize(QueryFieldDesc desc, int8_t *cursor);
 
 protected:
   TypeId type_;

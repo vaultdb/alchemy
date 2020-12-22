@@ -327,44 +327,65 @@ void Value::setValue(const std::string & aString) {
     return *this;
     }
 
-    void Value::serialize(bool *dst) const {
+    void Value::serialize(int8_t *dst) const {
 
-            size_t valSize = TypeUtilities::getTypeSize(type_);
+            size_t valSize = TypeUtilities::getTypeSize(type_)/8;
+        if(type_ == TypeId::ENCRYPTED_VARCHAR) {
+            valSize *= getEmpInt().bits.size();
+        }
 
-            switch (type_) {
+        if(type_ != TypeId::VARCHAR)
+            std::cout << "Preparing to write a value of size " << valSize << " for " << TypeUtilities::getTypeIdString(getType()) << std::endl;
+
+
+        switch (type_) {
                 case vaultdb::types::TypeId::BOOLEAN:
                     *dst = getBool();
                     break;
                 case vaultdb::types::TypeId::INTEGER32: {
                     int32_t value = getInt32();
-                    memcpy(dst, (bool *) &value, valSize);
+                    memcpy(dst, (int8_t *) &value, valSize);
                     break;
                 }
                 case vaultdb::types::TypeId::NUMERIC:
                 case vaultdb::types::TypeId::FLOAT32: {
                     float value = getFloat32();
-                    memcpy(dst, (bool *) &value, valSize);
+                    memcpy(dst, (int8_t *) &value, valSize);
                     break;
                 }
 
                 case vaultdb::types::TypeId::DATE:
                 case vaultdb::types::TypeId::INTEGER64: {
                     int64_t value = getInt64();
-                    memcpy(dst, (bool *) &value, valSize);
+                    memcpy(dst, (int8_t *) &value, valSize);
                     break;
                 }
 
                 case vaultdb::types::TypeId::VARCHAR: {
                     std::string valueStr = getVarchar();
-                    const char *value = valueStr.c_str();
-                    size_t strLen = valueStr.size();
-                    memcpy(dst, (bool *) value, strLen * 8);
+                    std::cout << "Preparing to write a value of size " << valueStr.size() << " for " << TypeUtilities::getTypeIdString(getType()) << std::endl;
+                    memcpy(dst, (int8_t *) valueStr.c_str(), valueStr.size());
                     break;
                 }
 
 
-            // only works for unencrypted values for now
-            // TODO: add support for XOR table
+                case TypeId::ENCRYPTED_BOOLEAN: {
+                    emp::Bit bit = getEmpBit();
+                    memcpy(dst, (int8_t *) &(bit.bit), valSize);
+                    break;
+                }
+
+                case TypeId::ENCRYPTED_INTEGER32:
+                case TypeId::ENCRYPTED_INTEGER64:
+                case TypeId::ENCRYPTED_VARCHAR:
+                    memcpy(dst, (int8_t *) getEmpInt().bits.data(), valSize);
+                    break;
+
+                case TypeId::ENCRYPTED_FLOAT32: {
+                    memcpy(dst, (int8_t *) getEmpFloat32().value.data(), valSize);
+                    break;
+                }
+
 
                 default: // unsupported type
                     throw;
@@ -373,6 +394,49 @@ void Value::setValue(const std::string & aString) {
 
         }
 
+
+    Value types::Value::deserialize(QueryFieldDesc desc, int8_t *cursor) {
+
+        uint32_t valSize = desc.size() / 8;
+        std::cout << "Deserializing " << valSize << " bytes for " << TypeUtilities::getTypeIdString(desc.getType()) << std::endl;
+
+        switch (desc.getType()) {
+            case vaultdb::types::TypeId::BOOLEAN:
+                return Value(*(bool *) cursor);
+            case vaultdb::types::TypeId::INTEGER32:
+                return Value(*(int32_t *) cursor);
+            case vaultdb::types::TypeId::NUMERIC:
+            case vaultdb::types::TypeId::FLOAT32:
+                return Value(*(float_t *) cursor);
+            case vaultdb::types::TypeId::DATE:
+            case vaultdb::types::TypeId::INTEGER64:
+                return Value(desc.getType(), *(int64_t *) cursor);
+            case vaultdb::types::TypeId::VARCHAR: {
+                string resultStr((char *) cursor, desc.getStringLength()); // string is null-terminated
+                return Value(resultStr);
+            }
+            // need this for final hand-off
+            case TypeId::ENCRYPTED_BOOLEAN: {
+              emp::Bit myBit(*(emp::block *) cursor);
+              return Value(myBit);
+            }
+            case TypeId::ENCRYPTED_INTEGER32:
+            case TypeId::ENCRYPTED_INTEGER64:
+            case TypeId::ENCRYPTED_VARCHAR: {
+                emp::Integer myInt(valSize, 0, emp::PUBLIC);
+                memcpy(myInt.bits.data(), cursor, valSize);
+                return Value(desc.getType(), myInt);
+            }
+            case TypeId::ENCRYPTED_FLOAT32: {
+                emp::Float aFloat(0, emp::PUBLIC);
+                memcpy(aFloat.value.data(), (emp::Bit *) cursor, valSize );
+                return Value(aFloat);
+
+            }
+
+        }
+
+    }
 
     Value Value::reveal(const int &empParty) const {
 

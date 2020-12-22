@@ -46,8 +46,10 @@ size_t QuerySchema::size() const {
         bitSize += fields_[i].size();
 
     }
-    ++bitSize; // account for dummy tag
-        return bitSize;
+    int dummySize = TypeUtilities::isEncrypted(fields_[0].getType()) ?   TypeUtilities::getTypeSize(types::TypeId::ENCRYPTED_BOOLEAN) :  TypeUtilities::getTypeSize(types::TypeId::BOOLEAN);
+
+    bitSize += dummySize; // for dummy tag
+    return bitSize;
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const QuerySchema &schema) {
