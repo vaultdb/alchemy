@@ -30,7 +30,6 @@ add_subdirectory(test)
 
 find_package(OpenSSL REQUIRED)
 find_package(GMP REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system date_time)
 find_package(EMP REQUIRED)
 
 find_library(EMP_LIBRARIES NAMES emp-tool)
@@ -39,6 +38,7 @@ find_library(DL dl)
 
 #depends on pqxx v6.2.5
 find_library(PQXX_LIBRARY pqxx)
+find_package(Boost REQUIRED COMPONENTS date_time system)
 
 find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
@@ -94,7 +94,8 @@ set(sources
 
 
 
-message("verify ${OPENSSL_LIBRARIES}:${Boost_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY} ")
+message("verify ${OPENSSL_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY} ")
+message("Boost Libs: ${Boost_LIBRARIES} " )	      
 
 
 add_library(${NAME} SHARED ${sources})

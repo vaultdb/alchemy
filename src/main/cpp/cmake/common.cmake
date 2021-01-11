@@ -40,6 +40,8 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include_directories(${CMAKE_SOURCE_DIR})
 
+find_package(Boost REQUIRED COMPONENTS date_time system)
+
 #Compilation flags
 set(CMAKE_C_FLAGS "-pthread -Wall -march=native -maes -mrdseed ")  # -Wc++17-extensions
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}  -fPIC")
@@ -66,6 +68,7 @@ set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 
 message(STATUS "SSL Libs:  ${OPENSSL_LIBRARIES}")
+
 
 #Testing macro
 macro (add_test_with_lib _name libs)
