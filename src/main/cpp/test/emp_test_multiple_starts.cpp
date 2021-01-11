@@ -1,6 +1,3 @@
-//
-// set up to be self-contained
-
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <emp-sh2pc/emp-sh2pc.h>

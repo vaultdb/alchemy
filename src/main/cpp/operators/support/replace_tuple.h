@@ -13,17 +13,20 @@
 //    dstTable[writeIdx] = inputTuple;
 
 // this is the base case, for writing in the plaintext case
-class ReplaceTuple {
+namespace vaultdb {
+    class ReplaceTuple {
 
 
-public:
-    explicit ReplaceTuple(std::shared_ptr<QueryTable> table);
-    virtual void conditionalWrite(const uint32_t &writeIdx, const QueryTuple &inputTuple, const types::Value &toWrite);
+    public:
+        explicit ReplaceTuple(std::shared_ptr<QueryTable> table);
 
-protected:
-    std::shared_ptr<QueryTable> dstTable;
+        virtual void
+        conditionalWrite(const uint32_t &writeIdx, const QueryTuple &inputTuple, const types::Value &toWrite);
 
-};
+    protected:
+        std::shared_ptr<QueryTable> dstTable;
 
+    };
+}
 
 #endif //_WRITE_TUPLE_H

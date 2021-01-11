@@ -63,6 +63,7 @@ ALTER TABLE orders DROP CONSTRAINT IF EXISTS o_orderdate_domain;
 ALTER TABLE orders DROP CONSTRAINT IF EXISTS o_orderpriority_domain;
 ALTER TABLE orders DROP CONSTRAINT IF EXISTS o_clerk_domain;
 ALTER TABLE orders DROP CONSTRAINT IF EXISTS o_shippriority_domain;
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS o_orderyear_domain;
 -- adding constraints
 -- orderkey unique within [scalingfactor * 1,500,000 * 4], constraint based on sf of 0.1
 ALTER TABLE orders ADD CONSTRAINT o_orderkey_domain CHECK
@@ -82,6 +83,7 @@ ALTER TABLE orders ADD CONSTRAINT o_clerk_domain CHECK
 ALTER TABLE orders ADD CONSTRAINT o_shippriority_domain CHECK
  (o_shippriority = 0);
 
+ ALTER TABLE ADD CONSTRAINT o_orderyear_domain CHECK (((o_orderyear >= 1992) AND (o_orderyear <= 1998)));
 
 -- nation
 -- start by dropping constraints if they already exist

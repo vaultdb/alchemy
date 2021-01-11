@@ -8,13 +8,13 @@
 
 
 struct AggregateDef {
-  std::vector<ScalarAggregateDefinition> scalarAggregates;
+  std::vector<vaultdb::ScalarAggregateDefinition> scalarAggregates;
   std::vector<int> groupByOrdinals;
 };
-std::unique_ptr<QueryTable> Aggregate(QueryTable *input,
+std::unique_ptr<vaultdb::QueryTable> Aggregate(vaultdb::QueryTable *input,
                                       const AggregateDef &def);
 
-void AddToCount(types::Value count_so_far, types::Value add);
+void AddToCount(vaultdb::types::Value count_so_far, vaultdb::types::Value add);
 // emp::Integer GetAggregateById(emp::Integer result_vector,
 //                              AggregateId agg_type, emp::Bit dummy);
 #endif // _SECURE_AGGREGATE_H

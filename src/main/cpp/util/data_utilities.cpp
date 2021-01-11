@@ -1,11 +1,9 @@
-//
-// Created by Jennie Rogers on 8/5/20.
-//
-
 #include <cstddef>
 #include <assert.h>
 #include <data/PsqlDataProvider.h>
 #include "data_utilities.h"
+
+using namespace vaultdb;
 
 unsigned char DataUtilities::reverse(unsigned char b) {
     b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
@@ -73,7 +71,7 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
 
     uint32_t tupleCount = alice->getTupleCount() + bob->getTupleCount();
 
-    std::unique_ptr<QueryTable> unioned(new QueryTable(tupleCount, alice->getSchema().getFieldCount(), false));
+    std::unique_ptr<QueryTable> unioned(new QueryTable(tupleCount, alice->getSchema().getFieldCount()));
     unioned->setSchema(alice->getSchema());
 
     for(int i = 0; i < alice->getTupleCount(); ++i) {
@@ -109,20 +107,88 @@ std::string DataUtilities::queryDatetime(const string &colName) {
 
 void DataUtilities::locallySecretShareTable(const std::unique_ptr<QueryTable> &table, const string &aliceFile,
                                            const string &bobFile) {
-    std::pair<int8_t *, int8_t *> shares = table->generateSecretShares();
-    writeFile(aliceFile, (char *) shares.first);
-    writeFile(bobFile, (char *) shares.second);
+    SecretShares shares = table->generateSecretShares();
+    writeFile(aliceFile, shares.first);
+    writeFile(bobFile, shares.second);
 
 
 }
 
 
-void DataUtilities::writeFile(std::string fileName, const char *contents) {
+void DataUtilities::writeFile(std::string fileName, vector<int8_t> contents) {
     std::ofstream outFile(fileName.c_str(), std::ios::out | std::ios::binary);
     if(!outFile.is_open()) {
-        throw "Could not write output file " + fileName;
+        throw std::invalid_argument("Could not write output file " + fileName);
     }
-    outFile.write(contents, 16);
+    outFile.write((char *) contents.data(), contents.size());
     outFile.close();
 }
+
+SortDefinition DataUtilities::getDefaultSortDefinition(const uint32_t &colCount) {
+        SortDefinition  sortDefinition;
+
+        for(uint32_t i = 0; i < colCount; ++i) {
+            sortDefinition.push_back(ColumnSort(i, SortDirection::ASCENDING));
+        }
+
+        return sortDefinition;
+
+    }
+
+std::shared_ptr<QueryTable> DataUtilities::removeDummies(const std::shared_ptr<QueryTable> &input) {
+    // only works for plaintext tables
+    assert(!input->isEncrypted());
+    int outputTupleCount = input->getTrueTupleCount();
+
+    int writeCursor = 0;
+    std::shared_ptr<QueryTable> output(new QueryTable(outputTupleCount, input->getSchema(), input->getSortOrder()));
+    output->setSchema(input->getSchema());
+    output->setSortOrder(input->getSortOrder());
+
+    for(int i = 0; i < input->getTupleCount(); ++i) {
+        QueryTuple *tuple = input->getTuplePtr(i);
+        if(!tuple->getDummyTag().getBool()) {
+            output->putTuple(writeCursor, *tuple);
+            ++writeCursor;
+        }
+    }
+
+    return output;
+}
+
+std::shared_ptr<QueryTable>
+DataUtilities::getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
+                                  const int &sortColCount) {
+
+    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, sql, false);
+    SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
+    expected->setSortOrder(expectedSortOrder);
+    return expected;
+}
+
+std::string DataUtilities::getCurrentWorkingDirectory() {
+    char cwd[PATH_MAX];
+    getcwd(cwd, sizeof(cwd));
+    std::string  currentWorkingDirectory = std::string(cwd);
+    std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);
+    if(suffix == std::string("/bin")) {
+        currentWorkingDirectory = currentWorkingDirectory.substr(0, currentWorkingDirectory.length() - 4);
+    }
+
+    return currentWorkingDirectory;
+}
+
+std::string DataUtilities::printSortDefinition(const SortDefinition &sortDefinition) {
+    std::stringstream  result;
+    result << "(";
+    for(ColumnSort c : sortDefinition) {
+        string direction = (c.second == SortDirection::ASCENDING) ? "ASC" : "DESC";
+        result << "<" << c.first << ", "
+                  << direction << "> " <<  std::endl;
+
+    }
+    result << ")";
+    return result.str();
+}
+
 

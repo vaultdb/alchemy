@@ -25,7 +25,7 @@ std::shared_ptr<QueryTable> KeyedJoin::runSelf() {
     assert(foreignKeyTable->isEncrypted() == primaryKeyTable->isEncrypted()); // only support all plaintext or all MPC for now
 
     // output size, colCount, isEncrypted
-    output = std::shared_ptr<QueryTable>(new QueryTable(outputTupleCount, outputSchema.getFieldCount(), foreignKeyTable->isEncrypted() | primaryKeyTable->isEncrypted()));
+    output = std::shared_ptr<QueryTable>(new QueryTable(outputTupleCount, outputSchema.getFieldCount()));
     output->setSchema(outputSchema);
     ReplaceTuple *replaceTuple = (foreignKeyTable->isEncrypted()) ? new SecureReplaceTuple(output) : new ReplaceTuple(output);
 

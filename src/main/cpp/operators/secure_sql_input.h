@@ -14,20 +14,18 @@ namespace  vaultdb {
         NetIO *netio_;
         int srcParty;
 
+
+    protected:
         // depends on EmpManager being configured in the calling method
         std::shared_ptr<QueryTable> runSelf() override;
 
 
     public:
-        SecureSqlInput(std::string db, std::string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty) : SqlInput(db,
-                                                                                                                    sql,
-                                                                                                                    dummyTag),
-                                                                                                           srcParty(
-                                                                                                                   aSrcParty) {
-            netio_ = netio;
-        }
+        SecureSqlInput(std::string db, std::string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty) : SqlInput(db, sql, dummyTag),
+                                                                                                           srcParty(aSrcParty), netio_(netio) {}
 
-        ~SecureSqlInput() {};
+        SecureSqlInput(const string &dbName, const string & sql, const bool &hasDummyTag, const SortDefinition &sortedOn, NetIO *netio, const int &party) : SqlInput(dbName, sql, hasDummyTag, sortedOn),
+                                                                                                                                                             srcParty(party), netio_(netio) {}
     };
 }
 

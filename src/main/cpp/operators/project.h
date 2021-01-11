@@ -13,7 +13,7 @@ typedef std::pair<uint32_t, uint32_t> ProjectionMapping; // src ordinal, dst ord
 //typedef boost::variant<Expression, ProjectionMapping> ColumnProjection;
 
 typedef std::map<uint32_t, Expression> ExpressionMap; // ordinal to expression
-
+typedef std::vector<ProjectionMapping> ProjectionMappingSet;
 
 namespace vaultdb {
     class Project : public Operator {
@@ -28,6 +28,7 @@ namespace vaultdb {
     public:
         Project(std::shared_ptr<Operator> &child);
 
+        void addColumnMappings(const ProjectionMappingSet & mapSet);
         void addColumnMapping(const uint32_t &srcOrdinal, const uint32_t &dstOrdinal) {
             ProjectionMapping mapping(srcOrdinal, dstOrdinal);
             projectionMap.push_back(mapping);

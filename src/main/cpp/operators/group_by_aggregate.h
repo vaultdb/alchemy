@@ -22,7 +22,8 @@ namespace vaultdb {
         std::shared_ptr<QueryTable> runSelf() override;
 
     private:
-        GroupByAggregateImpl *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal, const bool &isEncrypted) const;
+        GroupByAggregateImpl *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
+                                               const types::TypeId &aggregateValueType) const;
         // checks that input table is sorted by group-by cols
         bool verifySortOrder(const std::shared_ptr<QueryTable> & table) const;
 
@@ -32,9 +33,9 @@ namespace vaultdb {
         QuerySchema generateOutputSchema(const QuerySchema & srcSchema,
                                          const std::vector<GroupByAggregateImpl *> & aggregators) const;
 
-        QueryTuple
-        generateOutputTuple(const QueryTuple &lastTuple, const types::Value &lastEntryGroupByBin,
+        QueryTuple generateOutputTuple(const QueryTuple &lastTuple, const types::Value &lastEntryGroupByBin,
                             const types::Value &nonDummyBin, const vector<GroupByAggregateImpl *> &aggregators) const;
+
 
     };
 }

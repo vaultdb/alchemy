@@ -1,12 +1,9 @@
-//
-// Created by Jennie Rogers on 7/25/20.
-//
-
 #include "emp_manager.h"
 #include "type_utilities.h"
 #include "data_utilities.h"
 
-
+using namespace vaultdb;
+using namespace emp;
 
 std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcTable,  NetIO *netio, int party) {
     size_t aliceSize = srcTable->getTupleCount(); // in tuples
@@ -14,12 +11,12 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
     int colCount = srcTable->getSchema().getFieldCount();
     QueryTuple dstTuple(colCount, true);
 
-    if (party == emp::ALICE) {
+    if (party == ALICE) {
         netio->send_data(&aliceSize, 4);
         netio->flush();
         netio->recv_data(&bobSize, 4);
         netio->flush();
-    } else if (party == emp::BOB) {
+    } else if (party == BOB) {
         netio->recv_data(&aliceSize, 4);
         netio->flush();
         netio->send_data(&bobSize, 4);
@@ -27,9 +24,11 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
     }
 
 
-    std::shared_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, colCount, true));
+    std::shared_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, colCount));
 
-    dstTable->setSchema(srcTable->getSchema());
+    dstTable->setSchema(QuerySchema::toSecure(srcTable->getSchema()));
+    dstTable->setSortOrder(srcTable->getSortOrder());
+
     const QuerySchema *schema = &srcTable->getSchema();
 
 
@@ -37,8 +36,8 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
 
     // read alice in order
     for (int i = 0; i < aliceSize; ++i) {
-        QueryTuple *srcTuple = (party == emp::ALICE) ? srcTable->getTuplePtr(i) : nullptr;
-        dstTuple = secretShareTuple(srcTuple, schema, party, (int) emp::ALICE);
+        QueryTuple *srcTuple = (party == ALICE) ? srcTable->getTuplePtr(i) : nullptr;
+        dstTuple = secretShareTuple(srcTuple, schema, party, (int) ALICE);
         dstTable->putTuple(i, dstTuple);
 
     }
@@ -49,14 +48,14 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
 
     for (int i = 0; i < bobSize; ++i) {
         --readTuple;
-        QueryTuple *srcTuple = (party == emp::BOB) ? srcTable->getTuplePtr(readTuple) : nullptr;
-        //if(party == emp::BOB)
+        QueryTuple *srcTuple = (party == BOB) ? srcTable->getTuplePtr(readTuple) : nullptr;
+        //if(party == BOB)
         //    std::cout << "Secret sharing: " << *srcTuple << std::endl;
-        dstTuple = secretShareTuple(srcTuple, schema,  party, emp::BOB);
-        //std::string revealed = dstTuple.reveal(emp::PUBLIC).toString(false);
-         //std::cout << "Encrypted: " << dstTuple.reveal(emp::PUBLIC) << std::endl;
+        dstTuple = secretShareTuple(srcTuple, schema,  party, BOB);
+        //std::string revealed = dstTuple.reveal(PUBLIC).toString(false);
+         //std::cout << "Encrypted: " << dstTuple.reveal(PUBLIC) << std::endl;
 
-        // if(empParty_ == emp::BOB)  assert(revealed == srcTuple->toString());
+        // if(empParty_ == BOB)  assert(revealed == srcTuple->toString());
 
         dstTable->putTuple(writeIdx, dstTuple);
         ++writeIdx;
@@ -93,7 +92,7 @@ QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema 
          dummyTag = srcTuple->getDummyTag().getBool();
 
 
-    emp::Bit encryptedDummyTag(dummyTag, dstParty);
+    Bit encryptedDummyTag(dummyTag, dstParty);
 
     types::Value valueBit(encryptedDummyTag);
     dstTuple.setDummyTag(valueBit);
@@ -125,12 +124,12 @@ EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &
     switch (type) {
         case vaultdb::types::TypeId::BOOLEAN: {
             bool bit = (myParty == dstParty) ? srcValue.getBool() : 0;
-            emp::Bit eBit(bit, dstParty);
+            Bit eBit(bit, dstParty);
             return types::Value(eBit);
         }
         case vaultdb::types::TypeId::INTEGER32: {
             int32_t value = (myParty == dstParty) ? srcValue.getInt32() : 0;
-            emp::Integer intVal(32, value, dstParty);
+            Integer intVal(32, value, dstParty);
             //std::cout << "Encrypting int: " << value << " reveals to " << intVal.reveal<int32_t>() << " bits: " << intVal.reveal<std::string>() << std::endl;
 
             return types::Value(types::TypeId::ENCRYPTED_INTEGER32, intVal);
@@ -138,13 +137,13 @@ EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &
         case vaultdb::types::TypeId::NUMERIC:
         case vaultdb::types::TypeId::FLOAT32: {
             float value = (myParty == dstParty) ? srcValue.getFloat32() : 0;
-            emp::Float floatVal(value, dstParty);
+            Float floatVal(value, dstParty);
             return types::Value(floatVal);
         }
 
         case vaultdb::types::TypeId::INTEGER64: {
             int64_t value = (myParty == dstParty) ? srcValue.getInt64() : 0;
-            emp::Integer intVal(64, value, dstParty);
+            Integer intVal(64, value, dstParty);
             return types::Value(types::TypeId::ENCRYPTED_INTEGER64, intVal);
         }
 
@@ -154,7 +153,7 @@ EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &
                 srcValue.getVarchar() :
                 std::to_string(0);
 
-            emp::Integer strVal = encryptVarchar(valueStr, length, myParty, dstParty);
+            Integer strVal = encryptVarchar(valueStr, length, myParty, dstParty);
             types::Value result(types::TypeId::ENCRYPTED_VARCHAR, strVal);;
             return result;
         }
@@ -167,7 +166,7 @@ EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &
 }
 
 
-emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, const int & myParty, const int & dstParty) {
+Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, const int & myParty, const int & dstParty) {
 
 
     size_t stringByteCount = stringBitCount / 8;
@@ -182,7 +181,7 @@ emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount
     std::reverse(inputReversed.begin(), inputReversed.end());
     bool *bools = DataUtilities::bytesToBool((int8_t *) inputReversed.c_str(), stringByteCount);
 
-    emp::Integer result(stringBitCount, 0L, dstParty);
+    Integer result(stringBitCount, 0L, dstParty);
     if(myParty == dstParty) {
         ProtocolExecution::prot_exec->feed((block *)result.bits.data(), dstParty, bools, stringBitCount);
     }
@@ -198,4 +197,52 @@ emp::Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount
 
 }
 
+
+// https://stackoverflow.com/questions/20302904/converting-int-to-float-or-float-to-int-using-bitwise-operations-software-float
+// range: [-2^24, 2^24]
+Float EmpManager::castIntToFloat(const Integer &input) {
+
+    assert(input.size() == 32);
+
+    const Integer zero(32, 0, PUBLIC);
+    const Integer one(32, 1, PUBLIC);
+    const Integer maxInt(32, 1 << 24, PUBLIC); // 2^24
+    const Integer minInt = Integer(32, -1 * (1 << 24), PUBLIC); // -2^24
+    const Integer twentyThree(32, 23, PUBLIC);
+
+    Float output(0.0, PUBLIC);
+
+    Bit signBit = input.bits[31];
+    Integer unsignedInput = input.abs();
+    Integer firstOneIdx = Integer(32, 31, PUBLIC) - unsignedInput.leading_zeros().resize(32);
+
+    Bit leftShift = firstOneIdx >= twentyThree;
+    Integer shiftOffset = If(leftShift, firstOneIdx - twentyThree, twentyThree - firstOneIdx);
+    Integer shifted = If(leftShift, unsignedInput >> shiftOffset, unsignedInput << shiftOffset);
+
+    // exponent is biased by 127
+    Integer exponent = firstOneIdx + Integer(32, 127, PUBLIC);
+    // move exp to the right place in final output
+    exponent = exponent << 23;
+
+    Integer coefficient = shifted;
+    // clear leading 1 (bit #23) (it will implicitly be there but not stored)
+    coefficient.bits[23] = Bit(false, PUBLIC);
+
+
+    // bitwise OR the sign bit | exp | coeff
+    Integer outputInt(32, 0, PUBLIC);
+    outputInt.bits[31] = signBit; // bit 31 is sign bit
+
+    outputInt =  coefficient | exponent | outputInt;
+    memcpy(&(output.value[0]), &(outputInt.bits[0]), 32 * sizeof(Bit));
+
+    // cover the corner cases
+    output = If(input == zero, Float(0.0, PUBLIC), output);
+    output = If(input < minInt, Float(INT_MIN, PUBLIC), output);
+    output = If(input > maxInt, Float(INT_MAX, PUBLIC), output);
+
+    return output;
+
+}
 

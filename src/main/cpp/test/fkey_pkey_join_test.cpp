@@ -5,12 +5,12 @@
 #include <operators/support/binary_predicate.h>
 #include <operators/support/join_equality_predicate.h>
 #include <operators/fkey_pkey_join.h>
-#include <operators/common_table_expression_input.h>
+#include <operators/common_table_expression.h>
 
 
 using namespace emp;
 using namespace vaultdb::types;
-
+using namespace vaultdb;
 
 
 class ForeignKeyPrimaryKeyJoinTest : public ::testing::Test {

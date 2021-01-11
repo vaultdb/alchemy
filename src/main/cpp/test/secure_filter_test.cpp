@@ -1,13 +1,3 @@
-//
-// Created by Jennie Rogers on 8/16/20.
-//
-
-//
-// Created by Jennie Rogers on 8/16/20.
-//
-
-
-
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
@@ -22,6 +12,7 @@
 
 using namespace emp;
 using namespace vaultdb::types;
+using namespace vaultdb;
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -62,11 +53,12 @@ TEST_F(SecureFilterTest, test_table_scan) {
 
     std::string dbName =  FLAGS_party == emp::ALICE ? aliceDb : bobDb;
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 5";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
     std::unique_ptr<QueryTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
 
-    std::shared_ptr<SecureSqlInput> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
-    std::shared_ptr<QueryTable> output = input->run();
+    SqlInput *inputOp = new SecureSqlInput(dbName, sql, false, netio, FLAGS_party);
+    std::shared_ptr<Operator> input = inputOp->getPtr();
+    std::shared_ptr<QueryTable> output = input->run(); // a smoke test for the operator infrastructure
 
     std::unique_ptr<QueryTable> revealed = output->reveal(emp::PUBLIC);
     std::cout << *revealed << std::endl;
@@ -85,7 +77,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
 TEST_F(SecureFilterTest, test_filter) {
     std::string dbName =  FLAGS_party == emp::ALICE ? aliceDb : bobDb;
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 5";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
     std::unique_ptr<QueryTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, expectedResultSql, true);

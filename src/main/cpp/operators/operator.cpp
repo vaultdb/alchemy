@@ -1,6 +1,7 @@
 #include "operator.h"
 
 
+using namespace vaultdb;
 
 Operator::Operator(std::shared_ptr<Operator> &child) {
 
@@ -23,12 +24,16 @@ Operator::Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rh
 
 
 std::shared_ptr<QueryTable> Operator::run() {
+    if(operatorExecuted) // prevent duplicate executions of operator
+        return output;
+
     for(std::shared_ptr<Operator> op : children) {
         op->run();
     }
 
-    return runSelf(); // delegated to children
-
+    output = runSelf(); // delegated to children
+    operatorExecuted = true;
+    return output;
 }
 
 
@@ -57,5 +62,24 @@ void Operator::setChild(std::shared_ptr<Operator> aChild, int idx) {
 
 std::shared_ptr<Operator> & Operator::getPtr() {
     return myRef;
+}
+
+// Insert new operator as root to tree
+ std::shared_ptr<Operator> Operator::getOperatorTree(Operator *op, std::shared_ptr<Operator> child) {
+    std::shared_ptr<Operator> dst = op->getPtr();
+    child->setParent(dst);
+    dst->children.push_back(child);
+    return dst;
+}
+
+std::shared_ptr<Operator> Operator::getOperatorTree(Operator *op, std::shared_ptr<Operator> lhs, std::shared_ptr<Operator> rhs) {
+    std::shared_ptr<Operator> dst = op->getPtr();
+    lhs->setParent(dst);
+    dst->children.push_back(lhs);
+
+    rhs->setParent(dst);
+    dst->children.push_back(rhs);
+
+    return dst;
 }
 

@@ -1,4 +1,3 @@
-#include <iso646.h>
 #pragma once
 #include "common/defs.h"
 #include "emp-tool/emp-tool.h"
@@ -6,7 +5,7 @@
 #include <boost/variant.hpp>
 #include <cstdint>
 #include <memory>
-
+#include <query_table/query_field_desc.h>
 class variant;
 namespace vaultdb::types {
 class Value {
@@ -59,7 +58,7 @@ public:
 
 
 
-  void serialize(bool *dst) const;
+  void serialize(int8_t *dst) const;
 
   emp::Float getEmpFloat32() const;
 
@@ -93,11 +92,15 @@ public:
 
   static void compareAndSwap(Value &lhs, Value &rhs, const emp::Bit &cmp);
   static Value obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs);
+  // cmp is always an emp::Bit, this is just syntactic sugar
+  static Value obliviousIf(const Value &cmp, Value &lhs, Value &rhs);
+  static Value toFloat(const Value & src);
 
     void setType(TypeId type);
 
+    static Value deserialize(QueryFieldDesc desc, int8_t *cursor);
+
 protected:
-  bool is_encrypted_;
   TypeId type_;
 
 

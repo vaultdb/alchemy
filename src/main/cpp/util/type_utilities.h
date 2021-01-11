@@ -22,9 +22,13 @@ namespace vaultdb {
         // when reading data from ascii sources like csv
         static types::Value decodeStringValue(const std::string & strValue, const QueryFieldDesc &fieldSpec);
 
-        static types::Value getZero(types::TypeId & aType);
+        static types::Value getZero(const types::TypeId &aType);
 
-        static types::Value getOne(types::TypeId &aType);
+        static types::Value getOne(const types::TypeId &aType);
+        static types::TypeId toSecure(const types::TypeId & plainType);
+        static types::TypeId toPlain(const types::TypeId & secureType);
+        static bool  isEncrypted(const types::TypeId & type);
+
     };
 
 }

@@ -5,6 +5,7 @@
 
 #include "value.h"
 #include <emp-tool/circuits/float32.h>
+#include <util/type_utilities.h>
 
 using vaultdb::types::Value;
 using namespace vaultdb;
@@ -156,7 +157,9 @@ Value Value::operator==(const Value &rhs) const {
         case TypeId::FLOAT32: {
             float lhsVal = this->getFloat32();
             float rhsVal = rhs.getFloat32();
-            if(abs(lhsVal - rhsVal) <= 0.1) // wide tolerances because of deltas in how psql will calculate this and what we get from extracting fp #s
+            float delta = fabs(lhsVal - rhsVal);
+            //std::cout << "Float difference: abs(" << *this << " - " << rhs << ") = " << std::to_string(delta) << std::endl;
+            if(delta <= 1.0) // wide tolerances because of deltas in how psql will calculate this and what we get from extracting fp #s - deltas are cumulative over lifetime of query
                 return Value(true);
 
             return Value(false);
@@ -205,8 +208,6 @@ void vaultdb::types::Value::compareAndSwap(Value &lhs, Value &rhs,
 
   assert(lhs.getType() ==
          rhs.getType()); // do not compare if they are not the same type
-  assert(lhs.is_encrypted_);
-  assert(rhs.is_encrypted_); // don't need this for the plaintext setting
 
   switch (opType) {
 
@@ -248,8 +249,6 @@ Value types::Value::obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs) {
 
   assert(lhs.getType() ==
          rhs.getType()); // do not compare if they are not the same type
-  assert(lhs.is_encrypted_);
-  assert(rhs.is_encrypted_); // don't need this for the plaintext setting
 
   switch (opType) {
 
@@ -282,12 +281,6 @@ Value types::Value::obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs) {
 
 }
 
-types::Value::Value(const types::TypeId &type, const int64_t &val) {
-
-  type_ = type;
-  is_encrypted_ = false;
-  setValue(val);
-}
 
 Value types::Value::operator|(const Value &rhs) const {
   assert(rhs.getType() == this->getType()); // must be of same type
@@ -297,7 +290,7 @@ Value types::Value::operator|(const Value &rhs) const {
   if (getType() == TypeId::ENCRYPTED_BOOLEAN) {
     return Value(this->getEmpBit() | rhs.getEmpBit());
   }
-  bool result = this->getBool() || rhs.getBool();
+  bool result = this->getBool() | rhs.getBool();
   return Value(result);
 }
 

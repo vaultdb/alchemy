@@ -14,6 +14,7 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43439, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 
+using namespace vaultdb;
 
 class SecurePkeyFkeyJoinTest : public EmpBaseTest {
 protected:
@@ -35,18 +36,7 @@ protected:
                                     "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < 3)  \n"
                                     "ORDER BY l_orderkey, revenue ";
 
-    // sort all columns one after another
-    // default setting for tests
-    static SortDefinition getSortDefinition(const uint32_t & colCount) {
-        SortDefinition  sortDefinition;
 
-        for(uint32_t i = 0; i < colCount; ++i) {
-            sortDefinition.push_back(ColumnSort(i, SortDirection::ASCENDING));
-        }
-
-        return sortDefinition;
-
-    }
 
 
 
@@ -84,9 +74,10 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
     std::shared_ptr<QueryTable> joinResult = joinOp->run()->reveal();
 
 
-    SortDefinition  sortDefinition = getSortDefinition(joinResult->getSchema().getFieldCount());
+    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
     auto *sortOp  = new Sort(sortDefinition, joinOp->getPtr());
     std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
+    expected->setSortOrder(sortDefinition);
 
 
     std::cout << "customer input: " << std::endl << customerInput->getOutput()->reveal()->toString(true);
@@ -134,9 +125,10 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
     std::unique_ptr<QueryTable> joinResultDecrypted = joinResult->reveal();
 
 
-    SortDefinition  sortDefinition = getSortDefinition(joinResult->getSchema().getFieldCount());
+    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
     auto *sortOp  = new Sort(sortDefinition, joinOp->getPtr());
     std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
+    expected->setSortOrder(sortDefinition);
 
 
 
@@ -185,9 +177,10 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<QueryTable> joinResult = fullJoin->run()->reveal();
 
 
-    SortDefinition  sortDefinition = getSortDefinition(joinResult->getSchema().getFieldCount());
+    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
     auto *sortOp  = new Sort(sortDefinition, fullJoin->getPtr());
     std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
+    expected->setSortOrder(sortDefinition);
 
     ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);

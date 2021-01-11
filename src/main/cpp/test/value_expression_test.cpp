@@ -1,8 +1,3 @@
-//
-// Created by Jennie Rogers on 8/14/20.
-//
-
-
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
@@ -11,7 +6,7 @@
 
 using namespace emp;
 using namespace vaultdb::types;
-
+using namespace vaultdb;
 
 
 class ValueExpressionTest : public ::testing::Test {
@@ -28,8 +23,8 @@ protected:
 
 TEST_F(ValueExpressionTest, test_int32) {
 
-    Value a(types::TypeId::INTEGER32, (int32_t) 5);
-    Value b(types::TypeId::INTEGER32, (int32_t) 10);
+    Value a((int32_t) 5);
+    Value b((int32_t) 10);
 
     Value sum = a + b;
     ASSERT_EQ(sum.getInt32(), 15);
@@ -40,8 +35,8 @@ TEST_F(ValueExpressionTest, test_int32) {
 
 TEST_F(ValueExpressionTest, test_int32_comparator) {
 
-    Value a(types::TypeId::INTEGER32, (int32_t) 5);
-    Value b(types::TypeId::INTEGER32, (int32_t) 10);
+    Value a((int32_t) 5);
+    Value b((int32_t) 10);
 
     Value gt = a < b;
     ASSERT_EQ(gt.getBool(), true);
@@ -57,9 +52,9 @@ TEST_F(ValueExpressionTest, test_int32_comparator) {
 // demo passing in an expression to query operator
 TEST_F(ValueExpressionTest, test_int32_expr) {
 
-    Value a(types::TypeId::INTEGER32, (int32_t) 5);
-    Value b(types::TypeId::INTEGER32, (int32_t) 10);
-    Value c(types::TypeId::INTEGER32, (int32_t) 25);
+    Value a((int32_t) 5);
+    Value b((int32_t) 10);
+    Value c((int32_t) 25);
 
     Value sum = a  + b;
     Value compare = sum < c;

@@ -10,6 +10,6 @@ std::shared_ptr<QueryTable> SecureSqlInput::runSelf() {
 
 
 
-
     return output;
 }
+

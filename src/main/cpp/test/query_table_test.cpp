@@ -1,15 +1,10 @@
-//
-// Created by Jennie Rogers on 7/18/20.
-//
-
-
 #include <data/PsqlDataProvider.h>
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
 
 using namespace emp;
-
+using namespace vaultdb;
 
 
 class QueryTableTestEnvironment : public ::testing::Environment {
@@ -37,36 +32,34 @@ public:
 
         /*
          * Expected output:
-         * tpch_alice=# SELECT l_orderkey, l_comment, l_returnflag, l_discount,  CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) l_commitdate  FROM lineitem ORDER BY l_orderkey LIMIT 10;
- l_orderkey |              l_comment              | l_returnflag | l_discount | l_commitdate
-------------+-------------------------------------+--------------+------------+--------------
-          1 | egular courts above the             | N            |       0.04 |    824083200
-          1 | ly final dependencies: slyly bold   | N            |       0.09 |    825465600
-          1 | riously. regular, express dep       | N            |       0.10 |    825984000
-          1 | lites. fluffily even de             | N            |       0.09 |    828144000
-          1 |  pending foxes. slyly re            | N            |       0.10 |    826761600
-          1 | arefully slyly ex                   | N            |       0.07 |    823651200
-          2 | ven requests. deposits breach a     | N            |       0.00 |    853200000
-          3 | ongside of the furiously brave acco | R            |       0.06 |    757641600
-          3 |  unusual accounts. eve              | R            |       0.10 |    756345600
-          3 | nal foxes wake.                     | A            |       0.06 |    753926400
-(10 rows)
-
+         * tpch_unioned=# SELECT l_orderkey, l_comment, l_returnflag, l_discount,   CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) l_commitdate  FROM lineitem ORDER BY l_shipdate LIMIT 10;
+                 l_orderkey |                 l_comment                 | l_returnflag | l_discount | l_commitdate
+                ------------+-------------------------------------------+--------------+------------+--------------
+                    5018977 |  packages detect furiously quick          | A            |       0.00 |    700963200
+                    3973414 | eodolites. carefully pending packages hag | R            |       0.00 |    699753600
+                    5885633 | e ironic dolphins hag                     | R            |       0.00 |    700185600
+                    2167527 |  foxes sleep blithely along the idle exc  | R            |       0.00 |    698371200
+                     842980 | lly regular asymptotes. unu               | A            |       0.01 |    701049600
+                    5431079 | xes are fu                                | R            |       0.03 |    701827200
+                    1054181 | y unusual instructions. furiously reg     | R            |       0.03 |    697248000
+                    5002593 | ss accounts. ironic, sp                   | R            |       0.05 |    701913600
+                    2184032 |  even ideas breach slyly above the d      | A            |       0.06 |    698976000
+                    3273383 | the carefully ironic accounts hin         | R            |       0.06 |    700963200
          */
 
 
         // N.B. l_commitdate has no table name because it is the output of an expression
         static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 int64 .l_commitdate) isEncrypted? 0\n"
-                                               "(598849, 'ar courts wake fluf                         ', 'A', 0.04, 700531200)\n"
-                                               "(359170, ' the accounts. slyly                        ', 'R', 0.08, 698371200)\n"
-                                               "(434081, 'e. regular instructions among the doggedly  ', 'A', 0.02, 699840000)\n"
-                                               "(27137, 's above th                                  ', 'R', 0.06, 698371200)\n"
-                                               "(301446, ' slyly even foxes. fluffily ironic req      ', 'A', 0.09, 697075200)\n"
-                                               "(555654, 'fily in place of the evenly reg             ', 'R', 0.08, 699753600)\n"
-                                               "(530500, 'gular foxes are fluffily across the iron    ', 'A', 0.01, 698803200)\n"
-                                               "(515077, 'accounts use" ";                               ', 'R', 0.03, 701136000)\n"
-                                               "(27137, 'lthy packages might                         ', 'A', 0.03, 698889600)\n"
-                                               "(358471, 'kages nag carefully agains                  ', 'R', 0.03, 701740800)\n";
+                                               "(5018977, ' packages detect furiously quick            ', 'A', 0, 700963200)\n"
+                                               "(3973414, 'eodolites. carefully pending packages hag   ', 'R', 0, 699753600)\n"
+                                               "(5885633, 'e ironic dolphins hag                       ', 'R', 0, 700185600)\n"
+                                               "(2167527, ' foxes sleep blithely along the idle exc    ', 'R', 0, 698371200)\n"
+                                               "(842980, 'lly regular asymptotes. unu                 ', 'A', 0.01, 701049600)\n"
+                                               "(5431079, 'xes are fu                                  ', 'R', 0.03, 701827200)\n"
+                                               "(1054181, 'y unusual instructions. furiously reg       ', 'R', 0.03, 697248000)\n"
+                                               "(5002593, 'ss accounts. ironic, sp                     ', 'R', 0.05, 701913600)\n"
+                                               "(2184032, ' even ideas breach slyly above the d        ', 'A', 0.06, 698976000)\n"
+                                               "(3273383, 'the carefully ironic accounts hin           ', 'R', 0.06, 700963200)\n";
 
         return queryOutput;
 
@@ -110,10 +103,10 @@ public:
          */
 
         // N.B. l_commitdate has no table name because it is the output of an expression
-        static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 int64 .l_commitdate) isEncrypted? 0\n"
-                                               "(598849, 'ar courts wake fluf                         ', 'A', 0.04, 700531200)\n"
-                                               "(434081, 'e. regular instructions among the doggedly  ', 'A', 0.02, 699840000)\n";
-
+       static const std::string queryOutput = "(#0 int32 lineitem.l_orderkey, #1 varchar(44) lineitem.l_comment, #2 varchar(1) lineitem.l_returnflag, #3 float lineitem.l_discount, #4 int64 .l_commitdate) isEncrypted? 0\n"
+                                              "(5018977, ' packages detect furiously quick            ', 'A', 0, 700963200)\n"
+                                              "(5431079, 'xes are fu                                  ', 'R', 0.03, 701827200)\n"
+                                              "(1054181, 'y unusual instructions. furiously reg       ', 'R', 0.03, 697248000)\n";
         return queryOutput;
 
     }
@@ -134,11 +127,12 @@ protected:
 
 // tests how we handle each type
 // also validates overload of << operator
+// TODO: refactor this to use syscall to invoke psql and dump query results to a CSV file.  Compare this to the outputs here to account for diffs in the TPC-H datagen process.
 TEST_F(QueryTableTest, read_table) {
 
 
     PsqlDataProvider dataProvider;
-    string db_name =  "tpch_alice"; //FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
+    string db_name =  "tpch_unioned";
 
     std::string inputQuery = QueryTableTestEnvironment::getInputQuery();
     std::cout << "Querying " << db_name << " with: " << inputQuery << std::endl;
@@ -150,7 +144,7 @@ TEST_F(QueryTableTest, read_table) {
                                                                          inputQuery, false);
 
 
-    string observedTable = inputTable.get()->toString();
+    string observedTable = inputTable->toString();
     string expectedTable = QueryTableTestEnvironment::getExpectedOutput();
 
     std::cout << "Expected:\n" << expectedTable << std::endl;
@@ -169,7 +163,7 @@ TEST_F(QueryTableTest, read_table_dummy_tag) {
 
     PsqlDataProvider dataProvider;
 
-    string db_name =  "tpch_alice";
+    string db_name =  "tpch_unioned";
     string expectedTable = QueryTableTestEnvironment::getExpectedOutputDummyTag();
     std::string inputQuery = QueryTableTestEnvironment::getInputQueryDummyTag();
 

@@ -3,19 +3,6 @@ include(../cmake/common.cmake)
 include(GoogleTest)
 cmake_minimum_required (VERSION 3.11)
 
-#include(FetchContent)
-#FetchContent_Declare(
-#  googletest
-#  GIT_REPOSITORY https://github.com/google/googletest.git
-#  GIT_TAG        release-1.8.0
-#)
-
-#FetchContent_GetProperties(googletest)
-#if(NOT googletest_POPULATED)
-#  FetchContent_Populate(googletest)
-#  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
-#endif()
-
 
 
 include_directories(
@@ -50,7 +37,19 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 	    endif()
 	  endif()
-	  
+
+
+mark_as_advanced(
+		BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
+		gmock_build_tests gtest_build_samples gtest_build_tests
+		gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
+)
+
+set_target_properties(gtest PROPERTIES FOLDER build)
+set_target_properties(gtest_main PROPERTIES FOLDER build)
+set_target_properties(gmock PROPERTIES FOLDER build)
+set_target_properties(gmock_main PROPERTIES FOLDER build)
+
 macro(package_add_test TESTNAME)
     # create an exectuable in which the tests will be stored
     add_executable(${TESTNAME} ${ARGN})
@@ -70,7 +69,6 @@ endmacro()
 
 #package_add_test(tpch_q1_test tpch_q1_test.cpp)
 #non-private tests
-package_add_test(query_table_test query_table_test.cpp)
 package_add_test(value_expression_test value_expression_test.cpp)
 package_add_test(filter_test filter_test.cpp)
 package_add_test(sort_test sort_test.cpp)
@@ -79,6 +77,10 @@ package_add_test(basic_join_test basic_join_test.cpp)
 package_add_test(fkey_pkey_join_test fkey_pkey_join_test.cpp)
 package_add_test(csv_reader_test csv_reader_test.cpp)
 package_add_test(scalar_aggregate_test scalar_aggregate_test.cpp)
+package_add_test(group_by_aggregate_test group_by_aggregate_test.cpp)
+
+# disabling query_table_test because it is specific the the DB instance
+#package_add_test(query_table_test query_table_test.cpp)
 
 #EMP-based tests
 package_add_test(emp_test emp_test.cpp support/EmpBaseTest.cpp)
@@ -90,3 +92,9 @@ package_add_test(secure_sort_test secure_sort_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_basic_join_test secure_basic_join_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_pkey_fkey_join_test secure_pkey_fkey_join_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_scalar_aggregate_test secure_scalar_aggregate_test.cpp support/EmpBaseTest.cpp)
+package_add_test(secure_group_by_aggregate_test secure_group_by_aggregate_test.cpp support/EmpBaseTest.cpp)
+package_add_test(emp_float_to_int emp_float_to_int.cpp support/EmpBaseTest.cpp)
+package_add_test(enrich_test enrich_test.cpp  support/enrich_test_support.cpp support/EmpBaseTest.cpp)
+package_add_test(enrich_input_test enrich_input_test.cpp)
+package_add_test(secret_share_generator_test secret_share_generator_test.cpp)
+package_add_test(serialization_test serialization_test.cpp)

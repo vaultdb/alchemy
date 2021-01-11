@@ -17,7 +17,7 @@ std::shared_ptr<QueryTable> BasicJoin::runSelf() {
     assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC for now
 
     // output size, colCount, isEncrypted
-    output = std::shared_ptr<QueryTable>(new QueryTable(outputTupleCount, outputSchema.getFieldCount(), lhs->isEncrypted() | rhs->isEncrypted()));
+    output = std::shared_ptr<QueryTable>(new QueryTable(outputTupleCount, outputSchema.getFieldCount()));
     output->setSchema(outputSchema);
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {

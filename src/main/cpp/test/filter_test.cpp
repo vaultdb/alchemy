@@ -8,7 +8,7 @@
 
 using namespace emp;
 using namespace vaultdb::types;
-
+using namespace vaultdb;
 
 
 class FilterTest : public ::testing::Test {
@@ -17,7 +17,7 @@ class FilterTest : public ::testing::Test {
 protected:
     void SetUp() override {};
     void TearDown() override{};
-    const std::string dbName = "tpch_alice";
+    const std::string dbName = "tpch_unioned";
 };
 
 
@@ -26,10 +26,10 @@ protected:
 
 TEST_F(FilterTest, test_table_scan) {
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 10";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
 
-
-    std::shared_ptr<Operator> input = std::make_shared<SqlInput>(dbName, sql, false);
+    SqlInput *inputOp = new SqlInput(dbName, sql, false);
+    std::shared_ptr<Operator> input = inputOp->getPtr();
     std::shared_ptr<QueryTable> output = input->run(); // a smoke test for the operator infrastructure
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, sql, false);
 
@@ -66,18 +66,21 @@ public:
 
 
 TEST_F(FilterTest, test_filter) {
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY l_comment LIMIT 10";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     std::shared_ptr<Operator> input(new SqlInput(dbName, sql, false));
 
-    // TODO: fix the warnings associated with this
     std::shared_ptr<Predicate> predicateClass(new FilterPredicate());
     Filter *filterOp = new Filter(predicateClass, input); // heap allocate it
     std::shared_ptr<Operator> filter = filterOp->getPtr();
+    //std::shared_ptr<Operator> filter = Operator::getOperatorTree(new Filter(predicateClass, input), input);
+
 
     std::shared_ptr<QueryTable> result = filter->run();
+
+    std::cout << "Filter output: " << result->toString(true) << std::endl;
 
     ASSERT_EQ(*expected,  *result);
 

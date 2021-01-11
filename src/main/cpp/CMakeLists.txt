@@ -20,11 +20,13 @@ FetchContent_Declare(
 FetchContent_GetProperties(googletest)
 if(NOT googletest_POPULATED)
   FetchContent_Populate(googletest)
-  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
 
 enable_testing()
+
+
 add_subdirectory(test)
 
 
@@ -81,7 +83,7 @@ set(sources
 		operators/support/join_equality_predicate.cpp
 		operators/join.cpp
 		operators/basic_join.cpp
-		operators/common_table_expression_input.cpp
+        operators/common_table_expression.cpp
         operators/fkey_pkey_join.cpp
 		operators/support/replace_tuple.cpp
 		operators/support/secure_replace_tuple.cpp
@@ -90,7 +92,9 @@ set(sources
 		operators/scalar_aggregate.cpp
 		operators/support/secure_scalar_aggregate_impl.cpp
 		operators/group_by_aggregate.cpp
-		operators/support/group_by_aggregate_impl.cpp)
+		operators/support/group_by_aggregate_impl.cpp
+		operators/support/secure_group_by_aggregate_impl.cpp
+		operators/csv_input.cpp)
 
 
 
@@ -99,9 +103,11 @@ message("Boost Libs: ${Boost_LIBRARIES} " )
 
 
 add_library(${NAME} SHARED ${sources})
-target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES}  ${PQXX_LIBRARY} ${GFLAGS_LIBRARY} pthread gtest gmock gtest_main )
 
+add_executable(generate_enrich_data test/support/generate_enrich_data.cpp)
+
+#shouldn't need this last one, should be in Boost_LIBRARIES var, debug this later
+target_link_libraries(${NAME} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES}  ${PQXX_LIBRARY} ${GFLAGS_LIBRARY} pthread gtest gmock gtest_main Boost::date_time )
 
 install(TARGETS ${NAME} DESTINATION ${CMAKE_SOURCE_DIR}/lib)
-
 

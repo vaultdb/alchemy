@@ -2,7 +2,10 @@
 #include "secret_share/prg.h"
 #include <memory>
 #include <util/data_utilities.h>
+#include <util/type_utilities.h>
 #include "query_table.h"
+
+using namespace vaultdb;
 
 QueryTuple QueryTable::getTuple(int idx) const {
     return tuples_[idx];
@@ -16,43 +19,59 @@ void QueryTable::setSchema(const QuerySchema & s) {
 const QuerySchema & QueryTable::getSchema() const { return schema_; }
 
 unsigned int QueryTable::getTupleCount() const {
-    return tupleCount_;
+    return tuples_.size();
 }
 
 
 
-QueryTable::QueryTable(const int & num_tuples, const  int & colCount, const bool & is_encrypted)
-    : schema_(QuerySchema(colCount)), is_encrypted_(is_encrypted),  tupleCount_(num_tuples) {
-    tuples_.resize(tupleCount_);
+QueryTable::QueryTable(const int &num_tuples, const QuerySchema &schema, const SortDefinition &sortDefinition)
+        :  orderBy(sortDefinition), schema_(schema) {
 
-    for(uint32_t i = 0; i < tupleCount_; ++i) {
+    tuples_.resize(num_tuples);
+
+    for(uint32_t i = 0; i < num_tuples; ++i) {
+        tuples_[i].setFieldCount(schema.getFieldCount()); // initialize tuples
+    }
+}
+
+
+
+QueryTable::QueryTable(const int &num_tuples, const int &colCount)
+    : schema_(QuerySchema(colCount)) {
+    tuples_.resize(num_tuples);
+
+    for(uint32_t i = 0; i < num_tuples; ++i) {
         tuples_[i].setFieldCount(colCount); // initialize tuples
     }
 
 
 }
 
-const bool QueryTable::isEncrypted() const { return is_encrypted_; }
+const bool QueryTable::isEncrypted() const {
+    types::TypeId firstColType = schema_.getField(0).getType();
+
+    // if encrypted version of this column is the same as its original value
+    return TypeUtilities::isEncrypted(firstColType);
+}
 
 
 
 std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
-    int colCount = getSchema().getFieldCount();
     uint32_t tupleCount = getTupleCount();
-    bool isEncrypted = (empParty == emp::XOR);
 
     if(!this->isEncrypted())
         return std::make_unique<QueryTable>(*this);
 
-    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, colCount, isEncrypted));
-    dstTable->setSchema(schema_);
+    QuerySchema dstSchema = QuerySchema::toPlain(getSchema());
+
+    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, dstSchema, getSortOrder()));
+
     QueryTuple srcTuple; // initialized below
 
     for(uint32_t i = 0; i < tupleCount; ++i)  {
         srcTuple = getTuple(i);
 
-        QueryTuple dstTuple(colCount, false);
-        dstTuple = srcTuple.reveal(empParty);
+        QueryTuple dstTuple = srcTuple.reveal(empParty);
         dstTable->putTuple(i, dstTuple);
 
     }
@@ -64,28 +83,30 @@ std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
 
 // iterate over all tuples and produce one long bit array for encrypting/decrypting in emp
 // only works in PUBLIC or XOR mode
-bool *QueryTable::serialize() const {
+std::vector<int8_t> QueryTable::serialize() const {
     // dst size is in bits
-    size_t tupleWidth =  schema_.size();
-    size_t dstSize = tupleCount_ * tupleWidth;
-    bool *dst = new bool[dstSize];
-    bool *cursor = dst;
+    size_t tupleWidth =  schema_.size() / 8; // 496 / 8  = 62
+    size_t dstSize = getTupleCount() * tupleWidth;
+    std::vector<int8_t> dst;
+    dst.resize(dstSize);
+    int8_t *cursor = dst.data();
 
-    for(uint32_t i = 0; i < tupleCount_; ++i) {
-        ((QueryTuple *) tuples_.data())->serialize(cursor, schema_);
+    std::cout << "Serializing " << getTupleCount() << " tuples, each with width: " << tupleWidth << std::endl;
+    for(uint32_t i = 0; i < getTupleCount(); ++i) {
+        getTuplePtr(i)->serialize(cursor, schema_);
         cursor += tupleWidth;
     }
 
     return dst;
 }
 
-std::ostream &operator<<(std::ostream &os, const QueryTable &table) {
+std::ostream &vaultdb::operator<<(std::ostream &os, const QueryTable &table) {
 
 
-    os <<  table.getSchema() << " isEncrypted? " << table.is_encrypted_ << std::endl;
+    os <<  table.getSchema() << " isEncrypted? " << table.isEncrypted() << std::endl;
 
     for(int i = 0; i < table.getTupleCount(); ++i) {
-        os << table.tuples_[i];
+        os << table.getTuple(i);
 
 
         bool isEncrypted = table.isEncrypted();
@@ -114,7 +135,7 @@ std::string QueryTable::toString(const bool & showDummies) const {
     }
 
     // show dummies case
-    os <<  getSchema() << " isEncrypted? " << is_encrypted_ << std::endl;
+    os <<  getSchema() << " isEncrypted? " << isEncrypted() << std::endl;
 
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
         os << tuples_[i].toString(showDummies) << std::endl;
@@ -131,13 +152,11 @@ QueryTable & QueryTable::operator=(const QueryTable & src) {
         return *this;
 
     setSchema(src.getSchema());
-    this->is_encrypted_ = src.isEncrypted();
-    this->tupleCount_ = src.getTupleCount();
 
-    tuples_.resize(tupleCount_);
+    tuples_.resize(getTupleCount());
 
 
-    for(uint32_t i = 0; i < tupleCount_; ++i) {
+    for(uint32_t i = 0; i < getTupleCount(); ++i) {
         tuples_[i] = src.tuples_[i];
     }
 
@@ -149,19 +168,14 @@ void QueryTable::putTuple(const int &idx, const QueryTuple & tuple) {
 }
 
 
-QueryTable::QueryTable(const QueryTable &src) : schema_(src.getSchema()) {
+QueryTable::QueryTable(const QueryTable &src) : orderBy(src.getSortOrder()), schema_(src.getSchema()) {
 
 
-    this->is_encrypted_ = src.isEncrypted();
-    this->tupleCount_ = src.getTupleCount();
+    tuples_.resize(src.getTupleCount());
 
-    tuples_.resize(tupleCount_);
-
-    for(uint32_t i = 0; i < tupleCount_; ++i) {
+    for(uint32_t i = 0; i < src.getTupleCount(); ++i) {
         tuples_[i] = src.tuples_[i];
     }
-
-    orderBy = src.orderBy;
 
 }
 
@@ -175,14 +189,22 @@ QueryTuple *QueryTable::getTuplePtr(const int &idx) const {
 
 bool QueryTable::operator==(const QueryTable &other) const {
 
+
+
     if(getSchema() != other.getSchema()) {
-        //std::cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << std::endl;
+       std::cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << std::endl;
         return false;
     }
 
-    if(this->getSortOrder() != other.getSortOrder()) { return false;   }
-
-    if(this->getTupleCount() != other.getTupleCount()) {   return false; }
+    if(this->getSortOrder() != other.getSortOrder()) {
+        std::cout << "Failed to match on sort order expected="  << DataUtilities::printSortDefinition(this->getSortOrder())
+                  << "observed=" << DataUtilities::printSortDefinition(other.getSortOrder()) <<  std::endl;
+        return false;
+    }
+    if(this->getTupleCount() != other.getTupleCount()) {
+        std::cout << "Failed to match on tuple count " << this->getTupleCount() << " vs " << other.getTupleCount() << std::endl;
+        return false;
+    }
 
 
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
@@ -191,11 +213,13 @@ bool QueryTable::operator==(const QueryTable &other) const {
        //std::cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << std::endl;
 
         if(*thisTuple != *otherTuple) {
-         //  std::cout << "    Failed to match!" << std::endl;
-            return false;
+            std::cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << std::endl;
+            std::cout << "    Failed to match!" << std::endl;
+           return false;
         }
 
     }
+
 
     return true;
 }
@@ -220,29 +244,29 @@ std::shared_ptr<QueryTable> QueryTable::secretShare(emp::NetIO *io, const int & 
     return EmpManager::secretShareTable(this, io, party);
 }
 
-std::pair<int8_t *, int8_t *> QueryTable::generateSecretShares() const {
-    bool *secretBits = this->serialize();
-    size_t sharesSize = sizeof(secretBits);
+// use this for acting as a data sharing party in the PDF
+// generates alice and bob's shares and returns the pair
+SecretShares QueryTable::generateSecretShares() const {
+    std::vector<int8_t> serialized = this->serialize();
+    int8_t *secrets = serialized.data();
+    size_t sharesSize = serialized.size();
 
-    int8_t *secrets = DataUtilities::boolsToBytes(secretBits, sharesSize);
-    sharesSize /= 8;
-
-
-    int8_t *alice = new int8_t[sharesSize];
-    int8_t *bob = new int8_t[sharesSize];
+    vector<int8_t> aliceShares, bobShares;
+    aliceShares.resize(sharesSize);
+    bobShares.resize(sharesSize);
+    int8_t *alice = aliceShares.data();
+    int8_t *bob = bobShares.data();
     emp::PRG prg; // initializes with a random seed
 
 
-    prg.random_data(&alice, sharesSize);
+    prg.random_data(aliceShares.data(), sharesSize);
 
     for(size_t i = 0; i < sharesSize; ++i) {
         bob[i] = alice[i] ^ secrets[i];
     }
 
-    delete [] secrets;
-    delete [] secretBits;
 
-    return std::pair<int8_t *, int8_t *>(alice, bob);
+    return SecretShares(aliceShares, bobShares);
 }
 
 void QueryTable::setSortOrder(const SortDefinition &sortOrder) {
@@ -254,4 +278,24 @@ SortDefinition QueryTable::getSortOrder() const {
     return orderBy;
 }
 
+std::shared_ptr<QueryTable> QueryTable::deserialize(const QuerySchema &schema, const vector<int8_t> & tableBits) {
+    int8_t *cursor = const_cast<int8_t *>(tableBits.data());
+    uint32_t tableSize = tableBits.size(); // in bytes
+    uint32_t tupleSize = schema.size() / 8; // in bytes
+    uint32_t tupleCount = tableSize / tupleSize;
+    SortDefinition emptySortDefinition;
+
+    std::cout << "Deserializing " << tupleCount << " tuples." << std::endl;
+    std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, schema, emptySortDefinition));
+
+    for(int i = 0; i < tupleCount; ++i) {
+        QueryTuple aTuple = QueryTuple::deserialize(schema, cursor);
+        result->putTuple(i, aTuple);
+        cursor += tupleSize;
+    }
+
+    return result;
+
+
+}
 

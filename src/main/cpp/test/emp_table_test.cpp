@@ -8,6 +8,7 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54324, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
+using namespace vaultdb;
 
 class EmpTableTest : public EmpBaseTest {};
 
@@ -19,15 +20,14 @@ class EmpTableTest : public EmpBaseTest {};
 TEST_F(EmpTableTest, encrypt_table_one_column) {
 
     PsqlDataProvider dataProvider;
-    string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
     std::string inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
-    std::cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
+    std::cout << "Querying " << dbName << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
 
 
 
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(db_name,
+    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          inputQuery, false);
 
 
@@ -55,15 +55,14 @@ TEST_F(EmpTableTest, encrypt_table_one_column) {
 TEST_F(EmpTableTest, encrypt_table_varchar) {
 
     PsqlDataProvider dataProvider;
-    string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
     std::string inputQuery =  "SELECT l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
-    std::cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
+    std::cout << "Querying " << dbName << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
 
 
 
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(db_name,
+    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          inputQuery, false);
 
 
@@ -87,19 +86,18 @@ TEST_F(EmpTableTest, encrypt_table_varchar) {
 TEST_F(EmpTableTest, encrypt_table_two_cols) {
 
     PsqlDataProvider dataProvider;
-    string db_name =  FLAGS_party == emp::ALICE ? aliceDb : bobDb;
 
     std::string inputQuery = "SELECT l_orderkey, l_comment "
                              "FROM lineitem "
                              "ORDER BY l_orderkey, l_linenumber "
                              "LIMIT 10";
 
-    std::cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
+    std::cout << "Querying " << dbName << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
 
 
 
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(db_name,
+    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          inputQuery, false);
 
 
@@ -128,16 +126,14 @@ TEST_F(EmpTableTest, encrypt_table_two_cols) {
 TEST_F(EmpTableTest, encrypt_table) {
 
     PsqlDataProvider dataProvider;
-    string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
-
     std::string inputQuery = QueryTableTestQueries::getInputQuery();
 
-    std::cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
+    std::cout << "Querying " << dbName << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
 
 
 
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(db_name,
+    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          inputQuery, false);
 
     std::cout << "Initial table: " << *inputTable << std::endl;
@@ -165,16 +161,15 @@ TEST_F(EmpTableTest, encrypt_table) {
 TEST_F(EmpTableTest, encrypt_table_dummy_tag) {
 
     PsqlDataProvider dataProvider;
-    string db_name =  FLAGS_party == emp::ALICE ? "tpch_alice" : "tpch_bob";
 
     std::string inputQuery = QueryTableTestQueries::getInputQueryDummyTag();
 
-    std::cout << "Querying " << db_name << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
+    std::cout << "Querying " << dbName << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
 
 
 
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(db_name,
+    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          inputQuery, true);
 
 

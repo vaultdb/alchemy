@@ -70,7 +70,7 @@ std::shared_ptr<QueryTable> Project::runSelf() {
 
     // *** Done defining schema and verifying setup
 
-    output = std::shared_ptr<QueryTable>(new QueryTable(tupleCount, colCount, srcTable->isEncrypted()));
+    output = std::shared_ptr<QueryTable>(new QueryTable(tupleCount, colCount));
     output->setSchema(dstSchema);
     if(sortCarryOver) { output->setSortOrder(dstSortDefinition);  }
 
@@ -113,6 +113,14 @@ QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
 
     return dstTuple;
 
+
+}
+
+void Project::addColumnMappings(const ProjectionMappingSet &mapSet) {
+    for(ProjectionMapping mapping: mapSet)
+    {
+        projectionMap.push_back(mapping);
+    }
 
 }
 

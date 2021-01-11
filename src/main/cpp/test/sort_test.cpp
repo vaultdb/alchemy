@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/20/20.
-//
-
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
@@ -13,7 +9,7 @@
 
 using namespace emp;
 using namespace vaultdb::types;
-
+using namespace vaultdb;
 
 
 class SortTest : public ::testing::Test {
@@ -35,18 +31,10 @@ protected:
 
 TEST_F(SortTest, testSingleIntColumn) {
 
-    std::string sql = "SELECT c_custkey FROM customer ORDER BY c_address LIMIT 10";  // c_address "randomizes" the order
-    std::string expectedResult = "(#0 int32 customer.c_custkey) isEncrypted? 0\n"
-                                 "(1523)\n"
-                                 "(2310)\n"
-                                 "(3932)\n"
-                                 "(5345)\n"
-                                 "(6512)\n"
-                                 "(6578)\n"
-                                 "(7934)\n"
-                                 "(8702)\n"
-                                 "(11702)\n"
-                                 "(12431)\n";
+    std::string sql = "SELECT c_custkey FROM customer ORDER BY c_address, c_custkey LIMIT 10";  // c_address "randomizes" the order
+    std::string expectedSql = "SELECT c_custkey FROM (" + sql + ") subquery ORDER BY c_custkey";
+
+    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedSql, false);
 
     SortDefinition sortDefinition;
     ColumnSort aColumnSort(0, SortDirection::ASCENDING);
@@ -54,7 +42,9 @@ TEST_F(SortTest, testSingleIntColumn) {
 
     std::shared_ptr<Operator> sort = getSort(sql, sortDefinition);
     std::shared_ptr<QueryTable> observed = sort->run();
-    ASSERT_EQ(expectedResult, observed->toString());
+
+    expected->setSortOrder(observed->getSortOrder());
+    ASSERT_EQ(*expected, *observed);
 
 
 }
@@ -145,8 +135,8 @@ TEST_F(SortTest, tpchQ5Sort) {
 
 TEST_F(SortTest, tpchQ8Sort) {
 
-    std::string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  ORDER BY o_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
-    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
+    std::string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  ORDER BY o_comment, o_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    std:string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_orderyear FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
 
     SortDefinition sortDefinition;
@@ -155,7 +145,13 @@ TEST_F(SortTest, tpchQ8Sort) {
 
 
     std::shared_ptr<Sort> sort = getSort(sql, sortDefinition);
-    std::shared_ptr<QueryTable> observed = sort->run();
+
+
+    // project it down to $0
+    Project *projectOp = new Project(sort->getPtr());
+    std::shared_ptr<Operator> project = projectOp->getPtr();
+    projectOp->addColumnMapping(0, 0);
+    std::shared_ptr<QueryTable> observed = project->run();
 
     ASSERT_EQ(*expected, *observed);
 }

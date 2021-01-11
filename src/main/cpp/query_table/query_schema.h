@@ -9,35 +9,43 @@
 #include <vector>
 #include <ostream>
 
-class QuerySchema {
-private:
+namespace  vaultdb {
+    class QuerySchema {
 
-    std::vector<QueryFieldDesc> fields_;
-    size_t fieldCount_;
+    protected:
 
-public:
-    explicit QuerySchema(const size_t &num_fields);
-    QuerySchema(const QuerySchema &s);
+        std::vector<QueryFieldDesc> fields_;
 
-    [[nodiscard]] int getFieldCount() const;
+    public:
+        explicit QuerySchema(const size_t &num_fields);
 
-  void putField(const QueryFieldDesc &fd);
+        QuerySchema(const QuerySchema &s);
 
-  // returns size in bits
-   size_t size() const;
+        int getFieldCount() const;
 
+        void putField(const QueryFieldDesc &fd);
 
-    const QueryFieldDesc getField(const int &i) const;
-
-    friend std::ostream &operator<<(std::ostream &os, const QuerySchema &schema);
-    QuerySchema& operator=(const QuerySchema& other);
+        // returns size in bits
+        size_t size() const;
 
 
-     bool operator==(const QuerySchema &other) const;
+        const QueryFieldDesc getField(const int &i) const;
 
-     inline bool operator!=(const QuerySchema &other) const { return !(*this == other);  }
+        friend std::ostream &operator<<(std::ostream &os, const QuerySchema &schema);
+
+        QuerySchema &operator=(const QuerySchema &other);
 
 
-};
+        bool operator==(const QuerySchema &other) const;
+
+        inline bool operator!=(const QuerySchema &other) const { return !(*this == other); }
+
+        static QuerySchema toSecure(const QuerySchema &plainSchema);
+
+        static QuerySchema toPlain(const QuerySchema &secureSchema);
+
+        int getOrdinal(const std::string &fieldName) const;
+    };
+}
 
 #endif // _QUERY_SCHEMA_H

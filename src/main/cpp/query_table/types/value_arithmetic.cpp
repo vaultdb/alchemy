@@ -191,17 +191,18 @@ Value Value::operator/(const Value &rhs) const {
         case TypeId::BOOLEAN: { // treated as an int under the hood
             int32_t lhsVal = getBool();
             int32_t rhsVal = rhs.getBool();
-            return Value(lhsVal /  rhsVal);
+            return (rhsVal == 0) ? Value(rhsVal) : Value(lhsVal / rhsVal);
         }
         case TypeId::INTEGER32: {
             int32_t lhsVal = this->getInt32();
             int32_t rhsVal = rhs.getInt32();
-            return Value(lhsVal / rhsVal);
+            return (rhsVal == 0) ? Value(rhsVal) : Value(lhsVal / rhsVal);
+
         }
         case TypeId::INTEGER64: {
             int64_t lhsVal = this->getInt64();
             int64_t rhsVal = rhs.getInt64();
-            return Value(lhsVal / rhsVal);
+            return (rhsVal == 0) ? Value(rhsVal) : Value(lhsVal / rhsVal);
         }
 
         case TypeId::ENCRYPTED_INTEGER32:
@@ -224,7 +225,7 @@ Value Value::operator/(const Value &rhs) const {
         case TypeId::FLOAT32: {
             float lhsVal = this->getFloat32();
             float rhsVal = rhs.getFloat32();
-            return Value(lhsVal / rhsVal);
+            return (rhsVal == 0.0) ? Value(rhsVal) : Value(lhsVal / rhsVal);
         }
 
         

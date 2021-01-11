@@ -16,14 +16,14 @@ void writeFile(std::string fileName, const char *contents) {
 int main(int argc, char **argv) {
 
     emp::PRG prg; // initializes with a random seed
-    int32_t data[4] = {12345, 23456, 34567, 45678};
+    int32_t data[5] = {12345, 23456, 34567, 45678, 56789};
 
-    int32_t r[4]; // random values
-    int32_t rx[4]; // r XOR data
+    int32_t r[5]; // random values
+    int32_t rx[5]; // r XOR data
 
-    prg.random_data(&r, 16);
+    prg.random_data(&r, 20);
 
-    for(int i = 0; i < 4; ++i) {
+    for(int i = 0; i < 5; ++i) {
         rx[i] = r[i] ^ data[i];
     }
 

@@ -8,59 +8,80 @@
 #include <vaultdb.h>
 #include <ostream>
 
-using namespace vaultdb;
+
+namespace  vaultdb {
+
+    typedef std::pair<std::vector<int8_t>, std::vector<int8_t> > SecretShares;
+    class QueryTuple;
+
+    class QueryTable {
+        private:
 
 
-class QueryTable {
-private:
-  QuerySchema schema_;
-  bool is_encrypted_;
-
-    std::vector<QueryTuple> tuples_;
-    size_t tupleCount_;
-
-    // tuple order
-    SortDefinition orderBy;
+        // tuple order
+            SortDefinition orderBy;
+            QuerySchema schema_;
 
 
-public:
-    QueryTable(const int & num_tuples, const int & colCount, const bool & is_encrypted);
-    QueryTable(const QueryTable & src);
-    ~QueryTable() {
-    }
+    protected:
+        std::vector<QueryTuple> tuples_;
 
-    static std::string getQueryTableXorString(const QueryTable  & input_table) {throw; } // not yet implemented
+    public:
+            QueryTable(const int &num_tuples, const QuerySchema &schema, const SortDefinition &sortDefinition);
 
-  const bool isEncrypted() const;
-  void setSchema(const QuerySchema & schema);
-  const QuerySchema & getSchema() const;
-  QueryTuple getTuple(int idx) const;
-  unsigned int getTupleCount() const;
-  std::string toString(const bool & showDummies = false) const;
-  void putTuple(const int &idx, const QueryTuple & tuple);
-  void setTupleDummyTag(const int & tupleIdx, const types::Value & dummyTag);
+            QueryTable(const int &num_tuples, const int &colCount);
 
-    QueryTuple* getTuplePtr(const int & idx)  const;
-    void setSortOrder(const SortDefinition & sortOrder);
-    SortDefinition getSortOrder() const;
+            QueryTable(const QueryTable &src);
+
+            ~QueryTable() {
+            }
 
 
-    // retrieves # of tuples that are not dummies
-    // only works for unencrypted tables, o.w. returns getTupleCount()
-    uint32_t getTrueTupleCount() const;
+            const bool isEncrypted() const;
 
-  bool *serialize() const;
+            void setSchema(const QuerySchema &schema);
 
-  friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
+            const QuerySchema &getSchema() const;
 
-    std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &  party) const; // shared_ptr so we can pass it among Operator instances
-    std::pair<int8_t *, int8_t *> generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
-    [[nodiscard]] std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
+            QueryTuple getTuple(int idx) const;
 
-    QueryTable & operator=(const QueryTable & src);
+            unsigned int getTupleCount() const;
 
-    bool operator==(const QueryTable & other) const;
-    bool operator!=(const QueryTable & other) const { return !(*this == other); }
-};
+            std::string toString(const bool &showDummies = false) const;
 
+            void putTuple(const int &idx, const QueryTuple &tuple);
+
+            void setTupleDummyTag(const int &tupleIdx, const types::Value &dummyTag);
+
+            QueryTuple *getTuplePtr(const int &idx) const;
+
+            void setSortOrder(const SortDefinition &sortOrder);
+
+            SortDefinition getSortOrder() const;
+
+
+            // retrieves # of tuples that are not dummies
+            // only works for unencrypted tables, o.w. returns getTupleCount()
+            uint32_t getTrueTupleCount() const;
+
+            std::vector<int8_t> serialize() const;
+
+            friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
+
+            std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &party) const; // shared_ptr so we can pass it among Operator instances
+
+            SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
+
+            [[nodiscard]] std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
+
+            QueryTable &operator=(const QueryTable &src);
+
+            bool operator==(const QueryTable &other) const;
+
+            bool operator!=(const QueryTable &other) const { return !(*this == other); }
+
+            static std::shared_ptr<QueryTable> deserialize(const QuerySchema & schema, const vector<int8_t> &tableBits);
+    };
+
+}
 #endif // _QUERY_TABLE_H
