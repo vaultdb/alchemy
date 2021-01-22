@@ -299,3 +299,7 @@ std::shared_ptr<QueryTable> QueryTable::deserialize(const QuerySchema &schema, c
 
 }
 
+void QueryTable::resize(const size_t &tupleCount) {
+    tuples_.resize(tupleCount);
+}
+

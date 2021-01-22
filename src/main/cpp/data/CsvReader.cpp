@@ -75,7 +75,6 @@ QueryTuple CsvReader::parseTuple(const string &line, const QuerySchema &schema) 
     size_t fieldCount = schema.getFieldCount();
 
 
-    std::cout << "Parsing " << line << std::endl;
     tupleFields = split(line);
     assert(fieldCount == tupleFields.size()); // verify the field count
     QueryTuple newTuple(fieldCount);

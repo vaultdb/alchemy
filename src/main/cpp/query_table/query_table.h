@@ -37,6 +37,7 @@ namespace  vaultdb {
             }
 
 
+            void resize(const size_t & tupleCount);
             const bool isEncrypted() const;
 
             void setSchema(const QuerySchema &schema);
