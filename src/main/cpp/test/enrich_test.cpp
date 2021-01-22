@@ -3,6 +3,8 @@
 #include <operators/sql_input.h>
 #include <gflags/gflags.h>
 #include <operators/common_table_expression.h>
+#include <pilot/src/secret_share_csv.h>
+
 #include "enrich_test.h"
 
 
@@ -570,3 +572,4 @@ int main(int argc, char **argv) {
 
     return RUN_ALL_TESTS();
 }
+

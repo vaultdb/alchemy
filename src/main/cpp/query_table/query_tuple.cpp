@@ -114,11 +114,9 @@ void QueryTuple::serialize(int8_t *dst, const QuerySchema &schema) {
 
     int8_t *cursor = dst;
 
-    std::cout << "Serializing tuple: " << *this << std::endl;
 
     for(int fieldIdx = 0; fieldIdx < getFieldCount(); ++fieldIdx) {
         fields_[fieldIdx].serialize(cursor);
-        std::cout << "Advancing the cursor " << schema.getField(fieldIdx).size()/8  << " bytes for " << TypeUtilities::getTypeIdString(schema.getField(fieldIdx).getType()) << std::endl;
         cursor += schema.getField(fieldIdx).size()/8;
     }
 

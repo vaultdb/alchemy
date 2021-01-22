@@ -11,7 +11,6 @@
 #include <iostream>
 
 // this code is designed to be a stub - i.e., it is self-contained
-
 using namespace std;
 
 // CREATE TABLE patient (
@@ -74,7 +73,8 @@ struct PatientTuple {
                + gender + ","
                + std::to_string(ethnicity) + ","
                + std::to_string(race) + ","
-               + std::to_string(numerator);
+               + std::to_string(numerator) + ","
+               + std::to_string(denom_excl);
     }
 };
 

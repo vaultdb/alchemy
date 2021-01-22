@@ -4,7 +4,7 @@
 int main(int argc, char **argv) {
     // usage: generate_enrich_data <target dir> <tuple count>
     // target path is relative to $VAULTDB_ROOT/src/main/cpp
-    // e.g., ./generate_enrich_data test/support/csv/enrich 100
+    // e.g.,  ./bin/generate_enrich_data_three_parties pilot/secret_shares/input/ 100
 
     // each party provides <tuple count> tuples
     if(argc < 3) {

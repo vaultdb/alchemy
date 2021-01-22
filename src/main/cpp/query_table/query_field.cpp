@@ -54,12 +54,10 @@ QueryField& QueryField::operator=(const QueryField& other) {
 
 bool QueryField::operator==(const QueryField &other) const {
 
-    //std::cout << "Ordinal check: " << this->getOrdinal() << " vs " << other.getOrdinal() << std::endl;
     if(this->getOrdinal() != other.getOrdinal()) {
         return false;
     }
 
-    //std::cout << "Value check" << std::endl;
     types::Value cmp = (value_ == other.getValue());
     return cmp.getBool(); // throws if we are in encrypted mode
 }

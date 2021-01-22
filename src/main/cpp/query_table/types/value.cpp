@@ -334,8 +334,6 @@ void Value::setValue(const std::string & aString) {
             valSize *= getEmpInt().bits.size();
         }
 
-        if(type_ != TypeId::VARCHAR)
-            std::cout << "Preparing to write a value of size " << valSize << " for " << TypeUtilities::getTypeIdString(getType()) << std::endl;
 
 
         switch (type_) {
@@ -363,7 +361,6 @@ void Value::setValue(const std::string & aString) {
 
                 case vaultdb::types::TypeId::VARCHAR: {
                     std::string valueStr = getVarchar();
-                    std::cout << "Preparing to write a value of size " << valueStr.size() << " for " << TypeUtilities::getTypeIdString(getType()) << std::endl;
                     memcpy(dst, (int8_t *) valueStr.c_str(), valueStr.size());
                     break;
                 }
