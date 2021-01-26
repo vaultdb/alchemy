@@ -267,8 +267,6 @@ QueryTuple QueryTuple::deserialize(const QuerySchema &schema, Bit *tupleBits) {
 
 
 
-
-
     result.setDummyTag(*(cursor + 7)); // padded to 8 bits to be byte-aligned, LSB is last one
 
     return result;

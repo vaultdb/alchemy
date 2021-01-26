@@ -86,9 +86,7 @@ void UnionHybridData::readLocalInput(const string &localInputFile) {
 }
 
 
-/*std::string revealAndPrintBytes(Integer & i, int & byteCount) {
 
-}*/
 
 void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
 
@@ -155,7 +153,7 @@ shared_ptr<QueryTable> UnionHybridData::unionHybridData(const QuerySchema &schem
                                                         const string &secretSharesFile, NetIO *aNetIO,
                                                         const int &party) {
     UnionHybridData unioned(schema, aNetIO, party);
-    unioned.readLocalInput(localInputFile);
+    //unioned.readLocalInput(localInputFile);
     std::cout << "Local input has " << unioned.getInputTable()->getTupleCount() << " tuples" << std::endl;
     unioned.readSecretSharedInput(secretSharesFile);
     return unioned.getInputTable();

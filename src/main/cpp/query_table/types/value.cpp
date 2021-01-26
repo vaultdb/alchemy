@@ -440,18 +440,31 @@ void Value::setValue(const std::string & aString) {
 
         uint32_t valSize = desc.size();
 
+        TypeId myType =  desc.getType() == TypeId::INTEGER32 ? TypeId::ENCRYPTED_INTEGER32
+                        : desc.getType() == TypeId::INTEGER64 ? TypeId::ENCRYPTED_INTEGER64
+                        : desc.getType() == TypeId::VARCHAR ? TypeId::ENCRYPTED_VARCHAR
+                        : desc.getType();
+
+
+
         switch (desc.getType()) {
+            case TypeId::BOOLEAN:
             case TypeId::ENCRYPTED_BOOLEAN: {
                 emp::Bit myBit( *cursor);
                 return Value(myBit);
             }
+            case TypeId::INTEGER32:
+            case TypeId::INTEGER64:
+            case TypeId::VARCHAR:
             case TypeId::ENCRYPTED_INTEGER32:
             case TypeId::ENCRYPTED_INTEGER64:
             case TypeId::ENCRYPTED_VARCHAR: {
                 Integer myInt(valSize, 0, PUBLIC);
                 memcpy(myInt.bits.data(), cursor, valSize);
-                return Value(desc.getType(), myInt);
+                return Value(myType, myInt);
             }
+
+            case TypeId::FLOAT32:
             case TypeId::ENCRYPTED_FLOAT32: {
                 emp::Float aFloat(0, emp::PUBLIC);
                 memcpy(aFloat.value.data(), (emp::Bit *) cursor, valSize);

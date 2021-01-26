@@ -307,12 +307,9 @@ QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
     uint32_t tupleCount = tableSize / tupleSize;
     SortDefinition emptySortDefinition;
 
-    Bit expected = tableBits[1];
-    Bit observed = *(tableBits.data() + 1);
-    assert(expected.reveal() == observed.reveal());
 
     std::cout << "Deserializing " << tupleCount << " tuples." << std::endl;
-    std::cout << "Tuple size " << tupleSize << std::endl;
+    std::cout << "Tuple size " << tupleSize << " bits." <<  std::endl;
 
 
     std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, schema, emptySortDefinition));

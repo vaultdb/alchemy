@@ -235,3 +235,23 @@ std::string DataUtilities::printFirstBytes(vector<int8_t> &bytes, const int &byt
     return ss.str();
 
 }
+
+std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int & byteCount) {
+    Integer anInt(bits.size(), 0L);
+    anInt.bits = bits;
+    std::string bitString = anInt.reveal<std::string>(emp::PUBLIC);
+    int srcBits = bitString.length();
+    std::string::iterator strPos = bitString.begin();
+    bool *bools = new bool[srcBits];
+
+    for(int i =  0; i < srcBits; ++i) {
+        bools[i] = (*strPos == '1');
+        ++strPos;
+    }
+
+    vector<int8_t> decodedBytesVector = DataUtilities::boolsToBytes(bools, srcBits);
+    delete[] bools;
+
+    return printFirstBytes(decodedBytesVector, byteCount);
+
+}

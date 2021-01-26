@@ -53,6 +53,8 @@ namespace vaultdb {
         static vector<int8_t> readFile(const string &fileName);
 
         static string printFirstBytes(vector<int8_t> &bytes, const int &byteCount);
+
+        static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
     };
 }
 

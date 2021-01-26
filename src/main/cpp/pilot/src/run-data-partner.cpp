@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     if(TESTBED) {
         std::shared_ptr<QueryTable> revealed = inputData->reveal();
         string unionedDb = "enrich_htn_unioned";
-        string query = "SELECT * FROM patient ORDER BY patid, site_id";
+        string query = "SELECT * FROM patient WHERE site_id=3 ORDER BY patid, site_id";
         SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (8, SortDirection::ASCENDING)};
 
         validateTable(unionedDb, query, patientSortDef, revealed);

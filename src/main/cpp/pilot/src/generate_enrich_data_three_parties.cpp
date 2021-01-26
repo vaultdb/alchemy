@@ -182,6 +182,7 @@ int main(int argc, char **argv) {
 
     while(chiTupleCount < tupleCount) {
         PatientTuple chiPatient = GenerateEnrichDataThreeParties::generatePatientTuple(chiPatientId);
+        chiPatient.site_id = 3;
         chiPatientFile << chiPatient.toString() << std::endl;
         ++chiTupleCount;
         ++chiPatientId;
