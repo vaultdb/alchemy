@@ -252,25 +252,26 @@ QueryTuple QueryTuple::deserialize(const QuerySchema &schema, int8_t *tupleBits)
 }
 
 // only handles encrypted case
-QueryTuple QueryTuple::deserialize(const QuerySchema &schema, Bit *tupleBits, const bool &hasDummy) {
+// always has dummy
+QueryTuple QueryTuple::deserialize(const QuerySchema &schema, Bit *tupleBits) {
     int fieldCount = schema.getFieldCount();
-    QueryTuple result(fieldCount);
+    QueryTuple result(fieldCount, true);
     Bit *cursor = tupleBits;
 
-    std::cout << "Schema has " << schema.size() << " bits." << std::endl;
 
     for(int i = 0; i < fieldCount; ++i) {
         QueryField aField = QueryField::deserialize(schema.getField(i), cursor);
         result.putField(aField);
-        std::cout << "Incrementing " << schema.getField(i).size() << " bits for field: " << schema.getField(i) << std::endl;
         cursor += schema.getField(i).size();
     }
 
-    std::cout << "Cursor ended at " << cursor - tupleBits << " offset." << std::endl;
 
-    QueryFieldDesc dummyField(-1, "dummy", "dummy", types::TypeId::ENCRYPTED_BOOLEAN);
-    result.dummy_tag_ = (hasDummy) ? types::Value::deserialize(dummyField, cursor) : types::Value(emp::Bit(false, PUBLIC)) ;
 
+
+
+    result.setDummyTag(*(cursor + 7)); // padded to 8 bits to be byte-aligned, LSB is last one
+
+    return result;
 }
 
 

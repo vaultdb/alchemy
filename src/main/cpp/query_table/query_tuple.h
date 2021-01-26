@@ -52,7 +52,7 @@ namespace vaultdb {
 
         static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const emp::Bit & cmp);
         static QueryTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
-        static QueryTuple deserialize(const QuerySchema &schema, Bit *tupleBits, const bool &hasDummy);
+        static QueryTuple deserialize(const QuerySchema &schema, Bit *tupleBits);
 
     };
 

@@ -300,7 +300,7 @@ std::shared_ptr<QueryTable> QueryTable::deserialize(const QuerySchema &schema, c
 }
 
 std::shared_ptr<QueryTable>
-QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits, const bool &hasDummy) {
+QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
     Bit *cursor = (Bit *) tableBits.data();
     uint32_t tableSize = tableBits.size(); // in bits
     uint32_t tupleSize = schema.size(); // in bits
@@ -313,12 +313,12 @@ QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits, const
 
     std::cout << "Deserializing " << tupleCount << " tuples." << std::endl;
     std::cout << "Tuple size " << tupleSize << std::endl;
-    assert(tupleSize == 30*8);
+
 
     std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, schema, emptySortDefinition));
 
     for(int i = 0; i < tupleCount; ++i) {
-        QueryTuple aTuple = QueryTuple::deserialize(schema, cursor, true);
+        QueryTuple aTuple = QueryTuple::deserialize(schema, cursor);
         result->putTuple(i, aTuple);
         cursor += tupleSize;
     }

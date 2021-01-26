@@ -85,7 +85,7 @@ namespace  vaultdb {
 
             // encrypted version of deserialization using emp::Bit
             static std::shared_ptr<QueryTable>
-            deserialize(const QuerySchema &schema, vector<Bit> &tableBits, const bool &hasDummy);
+            deserialize(const QuerySchema &schema, vector<Bit> &tableBits);
 
     };
 
