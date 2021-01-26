@@ -97,3 +97,4 @@ package_add_test(enrich_test enrich_test.cpp  support/enrich_test_support.cpp su
 package_add_test(enrich_input_test enrich_input_test.cpp)
 package_add_test(secret_share_generator_test secret_share_generator_test.cpp)
 package_add_test(serialization_test serialization_test.cpp)
+package_add_test(secure_serialization_deserializaton_test secure_serialization_deserializaton_test.cpp support/EmpBaseTest.cpp)

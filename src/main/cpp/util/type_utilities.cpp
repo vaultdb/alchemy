@@ -44,28 +44,26 @@
 // size is in bits
 size_t TypeUtilities::getTypeSize(TypeId id) {
     switch (id) {
+        case TypeId::ENCRYPTED_BOOLEAN:
         case TypeId::BOOLEAN:
             return 8; // stored size when we serialize it
+
+        case TypeId::ENCRYPTED_FLOAT32:
+        case TypeId::ENCRYPTED_INTEGER32:
         case TypeId::INTEGER32:
         case TypeId::FLOAT32:
         case TypeId::NUMERIC:
             return 32;
+
+        case TypeId::ENCRYPTED_INTEGER64:
         case TypeId::INTEGER64:
             return 64;
 
+        case TypeId::ENCRYPTED_VARCHAR:
         case TypeId::VARCHAR: // to be multiplied by length in schema for true field size
             return 8;
 
-        case TypeId::ENCRYPTED_BOOLEAN:
-            return sizeof(emp::block)*8;
-        case TypeId::ENCRYPTED_FLOAT32:
-        case TypeId::ENCRYPTED_INTEGER32:
-            return 32 * sizeof(emp::block) * 8;
-        case TypeId::ENCRYPTED_VARCHAR:
-            return 8 * sizeof(emp::block); // multiply it out by string size in field desc
 
-        case TypeId::ENCRYPTED_INTEGER64:
-            return 64 * sizeof(emp::block) * 8;
 
         default: // unsupported type
             throw;

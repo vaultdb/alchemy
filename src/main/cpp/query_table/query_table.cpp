@@ -259,7 +259,7 @@ SecretShares QueryTable::generateSecretShares() const {
     emp::PRG prg; // initializes with a random seed
 
 
-    prg.random_data(aliceShares.data(), sharesSize);
+    prg.random_data(alice, sharesSize);
 
     for(size_t i = 0; i < sharesSize; ++i) {
         bob[i] = alice[i] ^ secrets[i];
@@ -296,6 +296,34 @@ std::shared_ptr<QueryTable> QueryTable::deserialize(const QuerySchema &schema, c
 
     return result;
 
+
+}
+
+std::shared_ptr<QueryTable>
+QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits, const bool &hasDummy) {
+    Bit *cursor = (Bit *) tableBits.data();
+    uint32_t tableSize = tableBits.size(); // in bits
+    uint32_t tupleSize = schema.size(); // in bits
+    uint32_t tupleCount = tableSize / tupleSize;
+    SortDefinition emptySortDefinition;
+
+    Bit expected = tableBits[1];
+    Bit observed = *(tableBits.data() + 1);
+    assert(expected.reveal() == observed.reveal());
+
+    std::cout << "Deserializing " << tupleCount << " tuples." << std::endl;
+    std::cout << "Tuple size " << tupleSize << std::endl;
+    assert(tupleSize == 30*8);
+
+    std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, schema, emptySortDefinition));
+
+    for(int i = 0; i < tupleCount; ++i) {
+        QueryTuple aTuple = QueryTuple::deserialize(schema, cursor, true);
+        result->putTuple(i, aTuple);
+        cursor += tupleSize;
+    }
+
+    return result;
 
 }
 

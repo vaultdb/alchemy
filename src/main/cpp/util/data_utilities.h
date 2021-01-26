@@ -18,7 +18,7 @@ namespace vaultdb {
     public:
         static bool *bytesToBool(int8_t *bytes, int byteCount);
 
-        static int8_t *boolsToBytes(const bool *src, const uint32_t &bitCount);
+        static vector<int8_t> boolsToBytes(const bool *const src, const uint32_t &bitCount);
 
 
         static std::unique_ptr<QueryTable>
@@ -49,6 +49,10 @@ namespace vaultdb {
 
         static std::string getCurrentWorkingDirectory();
         static std::string printSortDefinition(const SortDefinition  & sortDefinition);
+
+        static vector<int8_t> readFile(const string &fileName);
+
+        static string printFirstBytes(vector<int8_t> &bytes, const int &byteCount);
     };
 }
 

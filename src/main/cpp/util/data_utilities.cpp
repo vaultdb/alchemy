@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <assert.h>
 #include <data/PsqlDataProvider.h>
+#include <sys/stat.h>
 #include "data_utilities.h"
 
 using namespace vaultdb;
@@ -39,11 +40,12 @@ bool *DataUtilities::bytesToBool(int8_t *bytes, int byteCount) {
     return ret;
 }
 
-int8_t *DataUtilities::boolsToBytes(const bool *const src, const uint32_t &bitCount) {
+vector<int8_t> DataUtilities::boolsToBytes(const bool *const src, const uint32_t &bitCount) {
     int byteCount = bitCount / 8;
     assert(bitCount % 8 == 0); // no partial bytes supported
 
-    int8_t *result = new int8_t[byteCount];
+    std::vector<int8_t> result;
+    result.resize(byteCount);
 
     bool *cursor = const_cast<bool*>(src);
 
@@ -124,6 +126,33 @@ void DataUtilities::writeFile(std::string fileName, vector<int8_t> contents) {
     outFile.close();
 }
 
+// reads binary file
+vector<int8_t> DataUtilities::readFile(const std::string & fileName) {
+    // read in binary and then xor it with other side to secret share it.
+    // get file size
+    struct stat fileStats;
+    size_t fileSize; // bytes
+    if (stat(fileName.c_str(), &fileStats) == 0) {
+        fileSize = fileStats.st_size;
+    }
+    else {
+        throw std::invalid_argument("Can't open input file " + fileName + "!");
+    }
+
+    // 3000 bytes --> 30 bytes / tuple?
+    std::cout << "Secret share file has " << fileSize << " bytes." << std::endl;
+
+    std::vector<int8_t> fileBytes;
+    fileBytes.resize(fileSize);
+    int8_t  *shares = fileBytes.data();
+    std::ifstream inputFile(fileName, std::ios::in | std::ios::binary);
+    inputFile.read((char *) shares, fileSize);
+    inputFile.close();
+
+    return fileBytes;
+
+}
+
 SortDefinition DataUtilities::getDefaultSortDefinition(const uint32_t &colCount) {
         SortDefinition  sortDefinition;
 
@@ -192,3 +221,17 @@ std::string DataUtilities::printSortDefinition(const SortDefinition &sortDefinit
 }
 
 
+
+
+std::string DataUtilities::printFirstBytes(vector<int8_t> &bytes, const int &byteCount) {
+    std::stringstream ss;
+    assert(byteCount > 0 && byteCount <= bytes.size());
+    vector<int8_t>::iterator  readPos = bytes.begin();
+    ss << (int) *readPos;
+    while((readPos - bytes.begin()) < byteCount) {
+        ++readPos;
+        ss << "," << (int) *readPos;
+    }
+    return ss.str();
+
+}

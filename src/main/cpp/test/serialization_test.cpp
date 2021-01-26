@@ -3,13 +3,12 @@
 #include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
-#include <operators/filter.h>
-#include <operators/sort.h>
-#include <operators/project.h>
+#include <data/CsvReader.h>
 
 using namespace emp;
 using namespace vaultdb::types;
 using namespace vaultdb;
+using namespace std;
 
 
 class SerializationTest : public ::testing::Test {
@@ -22,6 +21,8 @@ protected:
 
     const std::string dbName = "tpch_unioned";
 
+
+    QuerySchema getInputSchema();
 };
 
 
@@ -48,4 +49,149 @@ TEST_F(SerializationTest, typesTest) {
 
 
 }
+
+
+
+QuerySchema SerializationTest::getInputSchema() {
+    // CREATE TABLE patient (
+//    patid int,
+//    zip_marker varchar(3),
+//    age_days integer,
+//    sex varchar(1),
+//    ethnicity bool,
+//    race int,
+//    numerator int default 0, -- denotes 0 = false, 1 = true
+//    denom_excl int default 0 -- denotes 0 = false, 1 = true
+//);
+    QuerySchema targetSchema(9);
+    targetSchema.putField(QueryFieldDesc(0, "patid", "patient", TypeId::INTEGER32));
+    targetSchema.putField(QueryFieldDesc(1, "zip_marker", "patient", TypeId::VARCHAR, 3));
+    targetSchema.putField(QueryFieldDesc(2, "age_days", "patient", TypeId::INTEGER32));
+    targetSchema.putField(QueryFieldDesc(3, "sex", "patient", TypeId::VARCHAR, 1));
+    targetSchema.putField(QueryFieldDesc(4, "ethnicity", "patient", TypeId::BOOLEAN));
+    targetSchema.putField(QueryFieldDesc(5, "race", "patient", TypeId::INTEGER32));
+    targetSchema.putField(QueryFieldDesc(6, "numerator", "patient", TypeId::INTEGER32));
+    targetSchema.putField(QueryFieldDesc(7, "denom_excl", "patient", TypeId::INTEGER32));
+    targetSchema.putField(QueryFieldDesc(8, "site_id", "patient", TypeId::INTEGER32));
+
+    return targetSchema;
+}
+
+
+TEST_F(SerializationTest, capricornTest) {
+
+    QuerySchema targetSchema = getInputSchema();
+
+    string currentWorkingDirectory = DataUtilities::getCurrentWorkingDirectory();
+    string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
+
+    std::unique_ptr<QueryTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
+    vector<int8_t> serialized = inputTable->serialize();
+    std::cout << "First bytes: " << DataUtilities::printFirstBytes(serialized, 10) << std::endl;
+
+    std::shared_ptr<QueryTable> deserialized = QueryTable::deserialize(targetSchema, serialized);
+
+    ASSERT_EQ(*inputTable, *deserialized);
+
+
+}
+
+
+TEST_F(SerializationTest, xored_serialization_test) {
+
+    QuerySchema targetSchema = getInputSchema();
+
+    string currentWorkingDirectory = DataUtilities::getCurrentWorkingDirectory();
+    string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
+
+    std::unique_ptr<QueryTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
+    vector<int8_t> serialized = inputTable->serialize();
+    std::cout << "First plaintext bytes: " << DataUtilities::printFirstBytes(serialized, 10) << std::endl;
+
+    // alice contains random values... ssh!
+    string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.alice";
+    vector<int8_t> randInts =  DataUtilities::readFile(aliceFile);
+
+    vector<int8_t>::iterator writePos = serialized.begin();
+    vector<int8_t>::iterator readPos = randInts.begin();
+
+    while(writePos != serialized.end()) {
+        *writePos ^= *readPos;
+        ++writePos;
+        ++readPos;
+    }
+
+    std::cout << "First xored bytes: " << DataUtilities::printFirstBytes(serialized, 10) << std::endl;
+
+    // repeat the process again to decrypt it
+
+    writePos = serialized.begin();
+    readPos = randInts.begin();
+
+    while(writePos != serialized.end()) {
+        *writePos ^= *readPos;
+        ++writePos;
+        ++readPos;
+    }
+
+
+    std::shared_ptr<QueryTable> deserialized = QueryTable::deserialize(targetSchema, serialized);
+
+    ASSERT_EQ(*inputTable, *deserialized);
+
+
+}
+
+
+
+TEST_F(SerializationTest, capricorn_deserialization) {
+
+    QuerySchema targetSchema = getInputSchema();
+    string currentWorkingDirectory = DataUtilities::getCurrentWorkingDirectory();
+    string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.alice";
+    string bobFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.bob";
+
+    vector<int8_t> aliceBits = DataUtilities::readFile(aliceFile);
+    vector<int8_t> bobBits = DataUtilities::readFile(bobFile);
+
+    //  bob has "xored bits"
+    std::cout << "First xored bits: " << DataUtilities::printFirstBytes(bobBits, 10) << std::endl;
+
+    vector<int8_t> serialized = aliceBits;
+
+    vector<int8_t>::iterator writePos = serialized.begin();
+    vector<int8_t>::iterator readPos = bobBits.begin();
+
+    while(writePos != serialized.end()) {
+        *writePos ^= *readPos;
+        ++writePos;
+        ++readPos;
+    }
+
+
+    std::cout << "First plaintext bytes: " << DataUtilities::printFirstBytes(serialized, 10) << std::endl;
+    std::shared_ptr<QueryTable> deserialized = QueryTable::deserialize(targetSchema, serialized);
+    /* Expected:
+
+     First plaintext bytes: 2,0,0,0,48,50,56,-60,49,0,0
+    First xored bytes: 44,-42,78,-12,-69,51,-4,67,88,114,-69
+
+     Observed:
+     First xored bits: 45,-42,78,-12,-69,48,-9,-12,58,114,-69
+    First plaintext bytes: 3,0,0,0,48,49,51,115,83,0,0
+
+     Deserialized tuple: (2, '028', 12740, 'F', false, 2, 0, 0, 3)
+Deserialized tuple: (11, '036', 18528, 'M', true, 5, 0, 1, 3)
+Deserialized tuple: (12, '030', 22768, 'M', true, 4, 0, 1, 3)
+Deserialized tuple: (13, '029', 36285, 'M', true, 2, 0, 0, 3)
+     */
+
+    string expectedCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
+    std::unique_ptr<QueryTable> expected = CsvReader::readCsv(expectedCsvFile, targetSchema);
+
+    ASSERT_EQ(*expected, *deserialized);
+
+
+}
+
 

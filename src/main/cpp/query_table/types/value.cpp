@@ -392,10 +392,10 @@ void Value::setValue(const std::string & aString) {
         }
 
 
+        // best effort on encrypted data
     Value types::Value::deserialize(QueryFieldDesc desc, int8_t *cursor) {
 
         uint32_t valSize = desc.size() / 8;
-        std::cout << "Deserializing " << valSize << " bytes for " << TypeUtilities::getTypeIdString(desc.getType()) << std::endl;
 
         switch (desc.getType()) {
             case vaultdb::types::TypeId::BOOLEAN:
@@ -432,6 +432,35 @@ void Value::setValue(const std::string & aString) {
             }
 
         }
+
+    }
+
+
+    Value types::Value::deserialize(QueryFieldDesc desc, Bit *cursor) {
+
+        uint32_t valSize = desc.size();
+
+        switch (desc.getType()) {
+            case TypeId::ENCRYPTED_BOOLEAN: {
+                emp::Bit myBit( *cursor);
+                return Value(myBit);
+            }
+            case TypeId::ENCRYPTED_INTEGER32:
+            case TypeId::ENCRYPTED_INTEGER64:
+            case TypeId::ENCRYPTED_VARCHAR: {
+                Integer myInt(valSize, 0, PUBLIC);
+                memcpy(myInt.bits.data(), cursor, valSize);
+                return Value(desc.getType(), myInt);
+            }
+            case TypeId::ENCRYPTED_FLOAT32: {
+                emp::Float aFloat(0, emp::PUBLIC);
+                memcpy(aFloat.value.data(), (emp::Bit *) cursor, valSize);
+                return Value(aFloat);
+
+            }
+
+        }
+        throw std::invalid_argument("Cannot deserialize a value of type " + TypeUtilities::getTypeIdString(desc.getType()) + " from an array of encrypted bits.");
 
     }
 
@@ -487,20 +516,14 @@ void Value::setValue(const std::string & aString) {
                     ++strPos;
                 }
 
-                char *decodedBytes = (char *) DataUtilities::boolsToBytes(bools, bitCount);
-                char *intermediary = new char[byteCount + 1];
-                memcpy(intermediary, decodedBytes, byteCount);
-                intermediary[byteCount] = '\0';
-
-
-
-                std::string dst(intermediary);
+                vector<int8_t> decodedBytesVector = DataUtilities::boolsToBytes(bools, bitCount);
+                decodedBytesVector.resize(byteCount + 1);
+                decodedBytesVector[byteCount] = '\0';
+                string dst((char * ) decodedBytesVector.data());
                 std::reverse(dst.begin(), dst.end());
                 Value dstValue(dst);
 
-                delete [] decodedBytes;
-                delete [] bools;
-                delete [] intermediary;
+                delete[] bools;
 
                 return dstValue;
             }

@@ -68,3 +68,10 @@ QueryField QueryField::deserialize(const QueryFieldDesc desc, int8_t *cursor) {
     result.setValue(aValue);
     return result;
 }
+
+QueryField QueryField::deserialize(const QueryFieldDesc desc, Bit *cursor) {
+    QueryField result(desc.getOrdinal());
+    types::Value aValue = types::Value::deserialize(desc, cursor);
+    result.setValue(aValue);
+    return result;
+}

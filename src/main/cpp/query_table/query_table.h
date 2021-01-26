@@ -82,6 +82,11 @@ namespace  vaultdb {
             bool operator!=(const QueryTable &other) const { return !(*this == other); }
 
             static std::shared_ptr<QueryTable> deserialize(const QuerySchema & schema, const vector<int8_t> &tableBits);
+
+            // encrypted version of deserialization using emp::Bit
+            static std::shared_ptr<QueryTable>
+            deserialize(const QuerySchema &schema, vector<Bit> &tableBits, const bool &hasDummy);
+
     };
 
 }

@@ -11,7 +11,7 @@ QuerySchema SharedSchema::getInputSchema() {
 //    numerator int default 0, -- denotes 0 = false, 1 = true
 //    denom_excl int default 0 -- denotes 0 = false, 1 = true
 //);
-    QuerySchema targetSchema(8);
+    QuerySchema targetSchema(9);
     targetSchema.putField(QueryFieldDesc(0, "patid", "patient", TypeId::INTEGER32));
     targetSchema.putField(QueryFieldDesc(1, "zip_marker", "patient", TypeId::VARCHAR, 3));
     targetSchema.putField(QueryFieldDesc(2, "age_days", "patient", TypeId::INTEGER32));
@@ -20,5 +20,7 @@ QuerySchema SharedSchema::getInputSchema() {
     targetSchema.putField(QueryFieldDesc(5, "race", "patient", TypeId::INTEGER32));
     targetSchema.putField(QueryFieldDesc(6, "numerator", "patient", TypeId::INTEGER32));
     targetSchema.putField(QueryFieldDesc(7, "denom_excl", "patient", TypeId::INTEGER32));
+    targetSchema.putField(QueryFieldDesc(8, "site_id", "patient", TypeId::INTEGER32));
+
     return targetSchema;
 }

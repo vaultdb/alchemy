@@ -7,6 +7,9 @@
 #include <memory>
 #include <query_table/query_field_desc.h>
 class variant;
+
+using namespace emp;
+
 namespace vaultdb::types {
 class Value {
 
@@ -33,11 +36,11 @@ public:
   void setValue(const int32_t &val);
   void setValue(const int64_t &val);
   void setValue(const bool &val);
-  void setValue(const emp::Bit &val);
-  void setValue(TypeId type, const emp::Integer &val);
+  void setValue(const Bit &val);
+  void setValue(TypeId type, const Integer &val);
   void setValue(const float &val);
-  void setValue(const std::string &aString);
-  void setValue(const emp::Float &val);
+  void setValue(const string &aString);
+  void setValue(const Float &val);
 
   ~Value();
 
@@ -45,8 +48,8 @@ public:
   int64_t getInt64() const;
   int32_t getInt32() const;
   bool getBool() const;
-  emp::Integer getEmpInt() const;
-  emp::Bit getEmpBit() const;
+  Integer getEmpInt() const;
+  Bit getEmpBit() const;
     std::string getVarchar() const;
     float getFloat32() const;
 
@@ -60,9 +63,9 @@ public:
 
   void serialize(int8_t *dst) const;
 
-  emp::Float getEmpFloat32() const;
+  Float getEmpFloat32() const;
 
-  Value reveal(const int &empParty = emp::PUBLIC) const;
+  Value reveal(const int &empParty = PUBLIC) const;
 
   // comparators
   Value operator>=(const Value &rhs) const;
@@ -90,8 +93,8 @@ public:
   Value operator*(const Value &rhs) const;
   Value operator/(const Value &rhs) const;
 
-  static void compareAndSwap(Value &lhs, Value &rhs, const emp::Bit &cmp);
-  static Value obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs);
+  static void compareAndSwap(Value &lhs, Value &rhs, const Bit &cmp);
+  static Value obliviousIf(const Bit &cmp, Value &lhs, Value &rhs);
   // cmp is always an emp::Bit, this is just syntactic sugar
   static Value obliviousIf(const Value &cmp, Value &lhs, Value &rhs);
   static Value toFloat(const Value & src);
@@ -99,22 +102,22 @@ public:
     void setType(TypeId type);
 
     static Value deserialize(QueryFieldDesc desc, int8_t *cursor);
-
+    static Value deserialize(QueryFieldDesc desc, Bit *cursor);
 protected:
   TypeId type_;
 
 
 protected:
   struct ValueStruct {
-    boost::variant<bool, int32_t, int64_t, float_t, double_t, std::string>
+    boost::variant<bool, int32_t, int64_t, float_t, double_t, string>
         unencrypted_val;
-    std::shared_ptr<emp::Bit> emp_bit_;
-    std::shared_ptr<emp::Integer> emp_integer_;
-    std::shared_ptr<emp::Float> emp_float32_;
+    std::shared_ptr<Bit> emp_bit_;
+    std::shared_ptr<Integer> emp_integer_;
+    std::shared_ptr<Float> emp_float32_;
 
   } value_{false, nullptr, nullptr, nullptr};
-  // false, emp::Bit(false, emp::PUBLIC), emp::Integer(1, 0, emp::PUBLIC),
-  // emp::Float(24, 9, 0, emp::PUBLIC), emp::Float32(0.0, emp::PUBLIC)
+  // false, Bit(false, PUBLIC), Integer(1, 0, PUBLIC),
+  // Float(24, 9, 0, PUBLIC), Float32(0.0, PUBLIC)
   // };
 };
 } // namespace vaultdb::types

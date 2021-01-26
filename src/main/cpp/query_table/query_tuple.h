@@ -9,6 +9,8 @@
 #include <query_table/types/value.h>
 #include <util/type_utilities.h>
 
+using namespace emp;
+
 namespace vaultdb {
     class QueryTuple {
     private:
@@ -35,7 +37,7 @@ namespace vaultdb {
       const vaultdb::types::Value getDummyTag() const;
 
 
-        QueryTuple reveal(const int &empParty = emp::PUBLIC) const;
+        QueryTuple reveal(const int &empParty = PUBLIC) const;
         friend std::ostream& operator<<(std::ostream &strm, const QueryTuple &aTuple);
         std::string toString(const bool &showDummies = false) const;
 
@@ -50,6 +52,7 @@ namespace vaultdb {
 
         static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const emp::Bit & cmp);
         static QueryTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
+        static QueryTuple deserialize(const QuerySchema &schema, Bit *tupleBits, const bool &hasDummy);
 
     };
 

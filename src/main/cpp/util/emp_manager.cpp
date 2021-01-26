@@ -181,6 +181,7 @@ Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, con
     std::reverse(inputReversed.begin(), inputReversed.end());
     bool *bools = DataUtilities::bytesToBool((int8_t *) inputReversed.c_str(), stringByteCount);
 
+
     Integer result(stringBitCount, 0L, dstParty);
     if(myParty == dstParty) {
         ProtocolExecution::prot_exec->feed((block *)result.bits.data(), dstParty, bools, stringBitCount);

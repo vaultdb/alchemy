@@ -76,17 +76,12 @@ TEST_F(EmpTest, emp_test_varchar) {
 
 
 
-    char *decodedBytes = (char *) DataUtilities::boolsToBytes(bools, stringBitCount);
-    // make the char * null terminated
-    char *tmp = new char[stringLength + 1];
-    memcpy(tmp, decodedBytes, stringLength);
-    tmp[stringLength] = '\0';
-    delete [] decodedBytes;
-    decodedBytes = tmp;
+    vector<int8_t> decodedBytes =  DataUtilities::boolsToBytes(bools, stringBitCount);
+    decodedBytes.resize(stringLength + 1);
+    decodedBytes[stringLength+1] = '\0';
 
 
-    std::string decodedString(decodedBytes);
-    delete [] decodedBytes;
+    std::string decodedString((char *) decodedBytes.data());
     delete [] bools;
 
     std::cout << "Decoded string: " << decodedString << std::endl;

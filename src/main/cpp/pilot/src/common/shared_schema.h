@@ -4,6 +4,7 @@
 #include <query_table/query_schema.h>
 
 using namespace vaultdb;
+using namespace vaultdb::types;
 
 class SharedSchema {
 public:

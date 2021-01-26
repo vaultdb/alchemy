@@ -28,12 +28,11 @@ void SecretShareCsv::SecretShareTable(const string &srcCsvFile, const QuerySchem
 
 // input generated with:
 // ./bin/generate_enrich_data_three_parties pilot/secret_shares/input/ 100
-// TODO: integrate host ID later for deduplication
 int main(int argc, char **argv) {
     // usage: secret_share_csv <src file> <destination root>
     // paths are relative to $VAULTDB_ROOT/src/main/cpp
-    // e.g., ./bin/secret_share_csv pilot/secret_shares/input/chi-patient.csv pilot/secret_shares/output/chi-patient
-    // writes to pilot/secret_shares/output/chi-patient.a pilot/secret_shares/output/chi-patient.b
+    // e.g., ./bin/secret_share_csv pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
+    // writes to pilot/test/output/chi-patient.alice pilot/secret_shares/output/chi-patient.bob
 
     if (argc < 3) {
         cout << "usage: secret_share_csv <src file> <destination root>" << endl;
@@ -41,7 +40,6 @@ int main(int argc, char **argv) {
     }
 
     QuerySchema targetSchema = SharedSchema::getInputSchema();
-
 
     SecretShareCsv::SecretShareTable(string(argv[1]), targetSchema, string(argv[2]));
 

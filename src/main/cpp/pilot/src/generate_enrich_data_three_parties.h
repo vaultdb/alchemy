@@ -22,6 +22,7 @@ using namespace std;
 //    race int,
 //    numerator int default 0, -- denotes 0 = false, 1 = true
 //    denom_excl int default 0 -- denotes 0 = false, 1 = true
+//    site_id int // alice = 1, bob = 2, chi = 3
 //);
 //
 //
@@ -38,24 +39,6 @@ using namespace std;
 // patid and numerator as before
 // denom_excl is when a relevant patient has a condition that disqualifies him or her, 1/10 chance de novo for patient.  Flip a 50/50 coin for overlapping patients to detect corner cases.
 
-std::string getCurrentWorkingDirectory() {
-    char cwd[PATH_MAX];
-    getcwd(cwd, sizeof(cwd));
-    std::string  currentWorkingDirectory = std::string(cwd);
-    std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);
-    if(suffix == std::string("/bin")) {
-        currentWorkingDirectory = currentWorkingDirectory.substr(0, currentWorkingDirectory.length() - 4);
-    }
-
-    return currentWorkingDirectory;
-}
-
-// generate [min, max)
-int generateRandomInt(int min, int max) {
-    return rand() % (max - min) + min;
-}
-
-
 struct PatientTuple {
     int patid;
     string zip_marker;
@@ -65,6 +48,7 @@ struct PatientTuple {
     int race;
     int numerator;  // actually bool
     int denom_excl; // actually bool
+    int site_id;
 
     string toString() const {
         return std::to_string(patid) + ","
@@ -74,7 +58,8 @@ struct PatientTuple {
                + std::to_string(ethnicity) + ","
                + std::to_string(race) + ","
                + std::to_string(numerator) + ","
-               + std::to_string(denom_excl);
+               + std::to_string(denom_excl) + ","
+               + std::to_string(site_id);
     }
 };
 
@@ -87,69 +72,13 @@ struct TupleSet {
 
 };
 
-
-PatientTuple generatePatientTuple(const int & aPatientId) {
-    PatientTuple result;
-    result.patid = aPatientId;
-
-    std::stringstream ss;
-    ss << std::setw(3) << std::setfill('0') << generateRandomInt(0, 50);
-    result.zip_marker =  ss.str();
-    result.age_days = generateRandomInt(18*365, 100*365);
-    result.gender =  generateRandomInt(0, 2) == 0 ? 'M' : 'F';
-    result.ethnicity = generateRandomInt(0, 2);
-    result.race = generateRandomInt(0, 6);
-    result.numerator =  (generateRandomInt(0, 4) < 3) ? 0 : 1; // 25% in numerator
-    result.denom_excl = generateRandomInt(0,10) < 9 ? 0 : 1; // 1-in-20 are excluded
-    return result;
-
-
-}
-
-
-
-
-TupleSet generateTuples(int alicePatientId) {
-    TupleSet output;
-
-    output.alicePatient = generatePatientTuple(alicePatientId);
-
-    // flip a 50/50 coin to decide if Bob's tuple in overlap set
-    bool bobOverlap = (rand() % 2) == 1;
-
-    // flip a 1/3 coin to decide if Chi's tuple in overlap set
-
-    bool chiOverlap = (rand() % 3) == 1;
-
-
-    if(bobOverlap) {
-        output.bobPatient = output.alicePatient;
-        // re-roll the dice on bob's patient's exclusion from study, 50/50 chance to ID corner cases more easily
-        bool flipExclusionBit = (rand() % 2) == 1;
-        if(flipExclusionBit)
-            output.bobPatient.denom_excl =  abs(output.alicePatient.denom_excl-1);
-
-    }
-    else {
-        output.bobPatient.patid = -1;
-
-    }
-
-    if(chiOverlap) {
-        output.chiPatient = output.alicePatient;
-
-        // re-roll the dice on chi's patient's exclusion from study, 1/3rd chance to ID corner cases
-        bool flipExclusionBit = (rand() % 3) == 1;
-        if(flipExclusionBit)
-            output.chiPatient.denom_excl =  abs(output.alicePatient.denom_excl-1);
-
-    }
-    else {
-        output.chiPatient.patid = -1;
-    }
-
-    return output;
-}
+class GenerateEnrichDataThreeParties {
+public:
+    static std::string getCurrentWorkingDirectory();
+    static int generateRandomInt(int min, int max);
+    static PatientTuple generatePatientTuple(const int & aPatientId);
+    static TupleSet generateTuples(int alicePatientId);
+};
 
 
 

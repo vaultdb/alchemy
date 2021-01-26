@@ -8,6 +8,7 @@
 #include <vector>
 #include "common/defs.h"
 
+using namespace emp;
 namespace vaultdb {
 
 class QueryField {
@@ -42,6 +43,8 @@ public:
     friend std::ostream& operator<<(std::ostream &strm, const QueryField &aField);
 
     static QueryField deserialize(const QueryFieldDesc desc, int8_t *cursor);
+    static QueryField deserialize(const QueryFieldDesc desc, Bit *cursor);
+
 };
 
 } // namespace vaultdb
