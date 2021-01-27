@@ -1,5 +1,6 @@
 #include <util/emp_manager.h>
 #include <util/type_utilities.h>
+#include <secure_sql_input.h>
 #include "query_tuple.h"
 #include "query_schema.h"
 

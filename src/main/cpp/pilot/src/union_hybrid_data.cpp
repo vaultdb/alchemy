@@ -114,7 +114,11 @@ void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
     }
 
     Integer additionalData = aliceBytes ^ bobBytes;
+    std::cout << "First bytes of add'l data: " << DataUtilities::revealAndPrintFirstBytes(additionalData.bits, 30) << std::endl;
 
+    // expected: First plaintext bytes: 0,0,0,0,48,51,50,108,86,0,0
+    // obs:  First bytes of add'l data: 0,0,0,0,48,51,50,108,86,0,0
+    // this part is ok, it is something in how we deserialize them.
      std::shared_ptr<QueryTable> additionalInputs = QueryTable::deserialize(inputTable->getSchema(),
                                                                             additionalData.bits);
 

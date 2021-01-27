@@ -301,7 +301,7 @@ std::shared_ptr<QueryTable> QueryTable::deserialize(const QuerySchema &schema, c
 
 std::shared_ptr<QueryTable>
 QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
-    Bit *cursor = (Bit *) tableBits.data();
+    Bit *cursor =  tableBits.data();
     uint32_t tableSize = tableBits.size(); // in bits
     uint32_t tupleSize = schema.size(); // in bits
     uint32_t tupleCount = tableSize / tupleSize;
@@ -312,10 +312,18 @@ QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
     std::cout << "Tuple size " << tupleSize << " bits." <<  std::endl;
 
 
-    std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, schema, emptySortDefinition));
+    QuerySchema encryptedSchema = QuerySchema::toSecure(schema);
+
+    std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, encryptedSchema, emptySortDefinition));
+
+    // first tuples:
+    // 0,032,22124,F,0,4,1,0,3
+    //5,025,10966,F,1,1,0,0,3
+    //12,034,22204,F,0,4,0,0,3
 
     for(int i = 0; i < tupleCount; ++i) {
-        QueryTuple aTuple = QueryTuple::deserialize(schema, cursor);
+        QueryTuple aTuple = QueryTuple::deserialize(encryptedSchema, cursor);
+        std::cout << "Deserializing " << aTuple.reveal() << std::endl;
         result->putTuple(i, aTuple);
         cursor += tupleSize;
     }

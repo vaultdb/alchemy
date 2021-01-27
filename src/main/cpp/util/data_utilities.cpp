@@ -225,7 +225,9 @@ std::string DataUtilities::printSortDefinition(const SortDefinition &sortDefinit
 
 std::string DataUtilities::printFirstBytes(vector<int8_t> &bytes, const int &byteCount) {
     std::stringstream ss;
+
     assert(byteCount > 0 && byteCount <= bytes.size());
+
     vector<int8_t>::iterator  readPos = bytes.begin();
     ss << (int) *readPos;
     while((readPos - bytes.begin()) < byteCount) {
@@ -240,8 +242,15 @@ std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int
     Integer anInt(bits.size(), 0L);
     anInt.bits = bits;
     std::string bitString = anInt.reveal<std::string>(emp::PUBLIC);
+
+    vector<int8_t> decodedBytes = boolsToBytes(bitString);
+    return printFirstBytes(decodedBytes, byteCount);
+
+}
+
+vector<int8_t> DataUtilities::boolsToBytes( string &bitString) {
     int srcBits = bitString.length();
-    std::string::iterator strPos = bitString.begin();
+    string::iterator strPos = bitString.begin();
     bool *bools = new bool[srcBits];
 
     for(int i =  0; i < srcBits; ++i) {
@@ -251,7 +260,5 @@ std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int
 
     vector<int8_t> decodedBytesVector = DataUtilities::boolsToBytes(bools, srcBits);
     delete[] bools;
-
-    return printFirstBytes(decodedBytesVector, byteCount);
-
+    return decodedBytesVector;
 }

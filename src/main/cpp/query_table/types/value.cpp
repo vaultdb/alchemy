@@ -421,12 +421,12 @@ void Value::setValue(const std::string & aString) {
             case TypeId::ENCRYPTED_INTEGER64:
             case TypeId::ENCRYPTED_VARCHAR: {
                 emp::Integer myInt(valSize, 0, emp::PUBLIC);
-                memcpy(myInt.bits.data(), cursor, valSize);
+                memcpy(myInt.bits.data(), cursor, valSize*sizeof(Bit));
                 return Value(desc.getType(), myInt);
             }
             case TypeId::ENCRYPTED_FLOAT32: {
                 emp::Float aFloat(0, emp::PUBLIC);
-                memcpy(aFloat.value.data(), (emp::Bit *) cursor, valSize );
+                memcpy(aFloat.value.data(), (emp::Bit *) cursor, valSize*sizeof(Bit) );
                 return Value(aFloat);
 
             }
@@ -440,34 +440,40 @@ void Value::setValue(const std::string & aString) {
 
         uint32_t valSize = desc.size();
 
-        TypeId myType =  desc.getType() == TypeId::INTEGER32 ? TypeId::ENCRYPTED_INTEGER32
-                        : desc.getType() == TypeId::INTEGER64 ? TypeId::ENCRYPTED_INTEGER64
-                        : desc.getType() == TypeId::VARCHAR ? TypeId::ENCRYPTED_VARCHAR
-                        : desc.getType();
-
-
 
         switch (desc.getType()) {
-            case TypeId::BOOLEAN:
             case TypeId::ENCRYPTED_BOOLEAN: {
                 emp::Bit myBit( *cursor);
                 return Value(myBit);
             }
-            case TypeId::INTEGER32:
-            case TypeId::INTEGER64:
-            case TypeId::VARCHAR:
             case TypeId::ENCRYPTED_INTEGER32:
-            case TypeId::ENCRYPTED_INTEGER64:
-            case TypeId::ENCRYPTED_VARCHAR: {
+            case TypeId::ENCRYPTED_INTEGER64: {
                 Integer myInt(valSize, 0, PUBLIC);
-                memcpy(myInt.bits.data(), cursor, valSize);
-                return Value(myType, myInt);
+                memcpy(myInt.bits.data(), cursor, valSize*sizeof(Bit));
+                return Value(desc.getType(), myInt);
             }
+            case TypeId::ENCRYPTED_VARCHAR: {
+                // need to reverse the character order to make >, <, = work
+                vector<Bit> reversed(valSize);
 
-            case TypeId::FLOAT32:
+                // start out with the last 8 bits, work backwards
+                Bit *readCursor = cursor + valSize;
+                Bit *writeCursor = reversed.data();
+                while(readCursor != cursor) {
+                    readCursor -= 8;
+                    memcpy(writeCursor, readCursor, 8 * sizeof(Bit));
+                    writeCursor += 8;
+
+                }
+
+                Integer myInt(valSize, 0, PUBLIC);
+                memcpy(myInt.bits.data(), reversed.data(), valSize*sizeof(Bit));
+                return Value(TypeId::ENCRYPTED_VARCHAR, myInt);
+
+            }
             case TypeId::ENCRYPTED_FLOAT32: {
                 emp::Float aFloat(0, emp::PUBLIC);
-                memcpy(aFloat.value.data(), (emp::Bit *) cursor, valSize);
+                memcpy(aFloat.value.data(), (emp::Bit *) cursor, valSize*sizeof(Bit));
                 return Value(aFloat);
 
             }

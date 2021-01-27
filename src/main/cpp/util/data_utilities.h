@@ -19,7 +19,7 @@ namespace vaultdb {
         static bool *bytesToBool(int8_t *bytes, int byteCount);
 
         static vector<int8_t> boolsToBytes(const bool *const src, const uint32_t &bitCount);
-
+        static vector<int8_t> boolsToBytes( string & src); // for the output of Integer::reveal<string>()
 
         static std::unique_ptr<QueryTable>
         getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
