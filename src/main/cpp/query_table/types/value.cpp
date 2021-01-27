@@ -453,12 +453,15 @@ void Value::setValue(const std::string & aString) {
                 return Value(desc.getType(), myInt);
             }
             case TypeId::ENCRYPTED_VARCHAR: {
+                Integer myInt(valSize, 0, PUBLIC);
                 // need to reverse the character order to make >, <, = work
-                vector<Bit> reversed(valSize);
+                //vector<Bit> reversed(valSize);
 
                 // start out with the last 8 bits, work backwards
+                // TODO: codify the reversal of these bits
+                // this should happen in the generate secret shares step.
                 Bit *readCursor = cursor + valSize;
-                Bit *writeCursor = reversed.data();
+                Bit *writeCursor = myInt.bits.data();
                 while(readCursor != cursor) {
                     readCursor -= 8;
                     memcpy(writeCursor, readCursor, 8 * sizeof(Bit));
@@ -466,8 +469,7 @@ void Value::setValue(const std::string & aString) {
 
                 }
 
-                Integer myInt(valSize, 0, PUBLIC);
-                memcpy(myInt.bits.data(), reversed.data(), valSize*sizeof(Bit));
+
                 return Value(TypeId::ENCRYPTED_VARCHAR, myInt);
 
             }

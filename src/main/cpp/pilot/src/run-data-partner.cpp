@@ -19,9 +19,9 @@ void validateTable(const std::string & dbName, const std::string & sql, const So
     expectedTable->setSortOrder(expectedSortDefinition);
 
     // sort the inputs
+    // ops deleted later using Operator framework
     CommonTableExpression *unionedData = new CommonTableExpression(testTable);
-
-    std::shared_ptr<Operator> sortOp( new Sort(expectedSortDefinition, unionedData->getPtr()));
+    Sort *sortOp = new Sort(expectedSortDefinition, unionedData->getPtr());
     std::shared_ptr<QueryTable> observedTable = sortOp->run();
 
 
