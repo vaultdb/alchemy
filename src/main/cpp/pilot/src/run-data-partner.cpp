@@ -18,30 +18,12 @@ void validateTable(const std::string & dbName, const std::string & sql, const So
     std::shared_ptr<QueryTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
     expectedTable->setSortOrder(expectedSortDefinition);
 
-    std::cout << "analyzing " << expectedTable->getTupleCount() << " tuples." << std::endl;
-    std::cout << "First tuple, test table: " << testTable->getTuple(0) << std::endl;
     // sort the inputs
     // ops deleted later using Operator framework
     CommonTableExpression *unionedData = new CommonTableExpression(testTable);
     Sort *sortOp = new Sort(expectedSortDefinition, unionedData->getPtr());
     std::shared_ptr<QueryTable> observedTable = sortOp->run();
 
-
-  //  std::cout << "Expected table: \n" << *expectedTable << std::endl;
-    /*
-     * (5, '011', 15589, 'F', true, 4, 0, 1, 1)
-       (5, '011', 15589, 'F', true, 4, 0, 0, 2)
-       (5, '011', 15589, 'F', true, 4, 0, 1, 3)
-     */
-
-  //  std::cout << "Observed table:\n" << *observedTable << std::endl;
-    /*
-     * (5, '011', 15589, 'F', true, 4, 0, 1, 1)
-       (5, '011', 15589, 'F', true, 4, 0, 1, 3)
-       (5, '011', 15589, 'F', true, 4, 0, 0, 2)
-       -- swapping on the last two.
-       -- how is sort determining the size of the array?
-     */
     assert(*expectedTable ==  *observedTable);
 
 }

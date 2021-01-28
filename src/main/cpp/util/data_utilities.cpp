@@ -139,8 +139,6 @@ vector<int8_t> DataUtilities::readFile(const std::string & fileName) {
         throw std::invalid_argument("Can't open input file " + fileName + "!");
     }
 
-    // 3000 bytes --> 30 bytes / tuple?
-    std::cout << "Secret share file has " << fileSize << " bytes." << std::endl;
 
     std::vector<int8_t> fileBytes;
     fileBytes.resize(fileSize);

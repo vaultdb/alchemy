@@ -50,27 +50,6 @@ void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
         bitonicSort(lo + k, cnt - k, invertDir);
         bitonicMerge(lo, cnt, invertDir);
 
-
-        /**** DEBUG ****
-        std::cout << "Sorted with direction: " << invertDir << " have values: { ";
-
-        if(output->isEncrypted()) {
-            std::cout   << output->getTuple(lo).reveal(emp::PUBLIC);
-            for(int i = 1; i < cnt; ++i) {
-                std::cout << ", " << output->getTuple(lo + i).reveal(emp::PUBLIC).toString(true);
-            }
-
-        }
-        else {
-            std::cout << output->getTuple(lo);
-            for(int i = 1; i < cnt; ++i) {
-                std::cout << ", " << output->getTuple(lo + i).toString(true);
-            }
-
-        }
-        std::cout << "}" << std::endl;
-        /**** END DEBUG ****/
-
     }
 }
 
