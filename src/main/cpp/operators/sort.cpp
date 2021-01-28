@@ -16,6 +16,7 @@ Sort::Sort(const SortDefinition &aSortDefinition, std::shared_ptr<Operator> &chi
 
 std::shared_ptr<QueryTable> Sort::runSelf() {
     std::shared_ptr<QueryTable> input = children[0]->getOutput();
+
     SortDefinition reverseSortDefinition = getReverseSortDefinition(sortDefinition);
 
     if(input->isEncrypted()) {
@@ -32,6 +33,7 @@ std::shared_ptr<QueryTable> Sort::runSelf() {
     bitonicSort(0,  output->getTupleCount(), true);
 
     output->setSortOrder(sortDefinition);
+
     return output;
 }
 
@@ -41,7 +43,6 @@ std::shared_ptr<QueryTable> Sort::runSelf() {
  * calls bitonicMerge.
  **/
 
-
 void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
     if (cnt > 1) {
         int k = cnt / 2;
@@ -50,7 +51,7 @@ void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
         bitonicMerge(lo, cnt, invertDir);
 
 
-        /**** DEBUG ****
+        /**** DEBUG ****/
         std::cout << "Sorted with direction: " << invertDir << " have values: { ";
 
         if(output->isEncrypted()) {

@@ -63,6 +63,7 @@ Integer UnionHybridData::readEncrypted(int8_t *secretSharedBits, const size_t &s
 void UnionHybridData::readLocalInput(const string &localInputFile) {
     std::unique_ptr<QueryTable> localInput = CsvReader::readCsv(localInputFile, inputTable->getSchema());
     std::shared_ptr<QueryTable> encryptedTable = localInput->secretShare(netio, party);
+
     if(!inputTableInit) {
         inputTable = encryptedTable;
     }
@@ -157,7 +158,7 @@ shared_ptr<QueryTable> UnionHybridData::unionHybridData(const QuerySchema &schem
                                                         const string &secretSharesFile, NetIO *aNetIO,
                                                         const int &party) {
     UnionHybridData unioned(schema, aNetIO, party);
-    //unioned.readLocalInput(localInputFile);
+    unioned.readLocalInput(localInputFile);
     std::cout << "Local input has " << unioned.getInputTable()->getTupleCount() << " tuples" << std::endl;
     unioned.readSecretSharedInput(secretSharesFile);
     return unioned.getInputTable();

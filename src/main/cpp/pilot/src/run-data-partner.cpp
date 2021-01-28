@@ -18,6 +18,8 @@ void validateTable(const std::string & dbName, const std::string & sql, const So
     std::shared_ptr<QueryTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
     expectedTable->setSortOrder(expectedSortDefinition);
 
+    std::cout << "analyzing " << expectedTable->getTupleCount() << " tuples." << std::endl;
+    std::cout << "First tuple, test table: " << testTable->getTuple(0) << std::endl;
     // sort the inputs
     // ops deleted later using Operator framework
     CommonTableExpression *unionedData = new CommonTableExpression(testTable);
@@ -25,6 +27,21 @@ void validateTable(const std::string & dbName, const std::string & sql, const So
     std::shared_ptr<QueryTable> observedTable = sortOp->run();
 
 
+  //  std::cout << "Expected table: \n" << *expectedTable << std::endl;
+    /*
+     * (5, '011', 15589, 'F', true, 4, 0, 1, 1)
+       (5, '011', 15589, 'F', true, 4, 0, 0, 2)
+       (5, '011', 15589, 'F', true, 4, 0, 1, 3)
+     */
+
+  //  std::cout << "Observed table:\n" << *observedTable << std::endl;
+    /*
+     * (5, '011', 15589, 'F', true, 4, 0, 1, 1)
+       (5, '011', 15589, 'F', true, 4, 0, 1, 3)
+       (5, '011', 15589, 'F', true, 4, 0, 0, 2)
+       -- swapping on the last two.
+       -- how is sort determining the size of the array?
+     */
     assert(*expectedTable ==  *observedTable);
 
 }
@@ -57,14 +74,24 @@ int main(int argc, char **argv) {
     if(TESTBED) {
         std::shared_ptr<QueryTable> revealed = inputData->reveal();
         string unionedDbName = "enrich_htn_unioned";
-        string query = "SELECT * FROM patient WHERE site_id=3 ORDER BY patid, site_id";
+        string query = "SELECT * FROM patient ORDER BY patid, site_id";
         SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (8, SortDirection::ASCENDING)};
 
-        validateTable(unionedDbName, query, patientSortDef, revealed);
+
+        CommonTableExpression *unionedData = new CommonTableExpression(inputData);
+        Sort *sortOp = new Sort(patientSortDef, unionedData->getPtr());
+        std::shared_ptr<QueryTable> observedTable = sortOp->run()->reveal();
+
+        std::shared_ptr<QueryTable> expectedTable = DataUtilities::getQueryResults(unionedDbName, query, false);
+        expectedTable->setSortOrder(patientSortDef);
+
+
+        assert(*observedTable == *expectedTable);
+        //validateTable(unionedDbName, query, patientSortDef, revealed);
 
         std::cout << "Input passed test!" << std::endl;
     }
 
-    // TODO: crib test code from enrich_test.cpp
+    // TODO: crib test query code from enrich_test.cpp
      emp::finalize_semi_honest();
 }

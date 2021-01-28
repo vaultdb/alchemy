@@ -91,7 +91,6 @@ std::vector<int8_t> QueryTable::serialize() const {
     dst.resize(dstSize);
     int8_t *cursor = dst.data();
 
-    std::cout << "Serializing " << getTupleCount() << " tuples, each with width: " << tupleWidth << std::endl;
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
         getTuplePtr(i)->serialize(cursor, schema_);
         cursor += tupleWidth;
@@ -213,7 +212,7 @@ bool QueryTable::operator==(const QueryTable &other) const {
        //std::cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << std::endl;
 
         if(*thisTuple != *otherTuple) {
-            std::cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << std::endl;
+            std::cout << "Comparing on idx " << i << " with "  << thisTuple->toString(true) << "\n           !=            " << otherTuple->toString(true) << std::endl;
             std::cout << "    Failed to match!" << std::endl;
            return false;
         }
@@ -323,7 +322,6 @@ QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
 
     for(int i = 0; i < tupleCount; ++i) {
         QueryTuple aTuple = QueryTuple::deserialize(encryptedSchema, cursor);
-        std::cout << "Deserializing " << aTuple.reveal() << std::endl;
         result->putTuple(i, aTuple);
         cursor += tupleSize;
     }

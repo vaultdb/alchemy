@@ -25,13 +25,14 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
         SortDirection direction = sortDefinition[i].second;
 
         // is a swap needed?
-        // if (lhs > rhs AND descending) OR (lhs < rhs AND ASCENDING)
+        // if (lhs > rhs AND DESCENDING) OR (lhs < rhs AND ASCENDING)
         emp::Bit colSwapFlag;
+
         if(direction == vaultdb::SortDirection::ASCENDING) {
-            colSwapFlag = !gt;
+            colSwapFlag = (rhsValue > lhsValue).getEmpBit();
         }
         else if(direction == vaultdb::SortDirection::DESCENDING) {
-            colSwapFlag = gt;
+            colSwapFlag = (lhsValue > rhsValue).getEmpBit();
         }
         else {
             throw;
@@ -39,12 +40,13 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
 
         // find first one where not eq, use this to init flag
-
         swap = If(swapInit, swap, colSwapFlag); // once we know there's a swap once, we keep it
         swapInit = swapInit  | If(!eq, trueBit, falseBit);  // have we found the most significant column where they are not equal?
 
 
+
     } // end check for swap
+
 
 
     QueryTuple::compareAndSwap(&lhs, &rhs, swap);

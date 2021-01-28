@@ -154,7 +154,9 @@ EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &
                 std::to_string(0);
 
             Integer strVal = encryptVarchar(valueStr, length, myParty, dstParty);
-            types::Value result(types::TypeId::ENCRYPTED_VARCHAR, strVal);;
+            types::Value result(types::TypeId::ENCRYPTED_VARCHAR, strVal);
+
+
             return result;
         }
 
