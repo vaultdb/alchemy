@@ -19,7 +19,6 @@ Integer UnionHybridData::readEncrypted(int8_t *secretSharedBits, const size_t &s
 
 
         bool *bools = DataUtilities::bytesToBool(secretSharedBits, sizeBytes);
-        std::cout << "Allocating " << sizeBytes * 8 << " bits for new integer." << std::endl;
 
         Integer result(sizeBytes * 8, 0L, dstParty);
 
@@ -74,17 +73,6 @@ void UnionHybridData::readLocalInput(const string &localInputFile) {
     inputTableInit = true;
 }
 
- string UnionHybridData::printFirstBytes(vector<int8_t> & bytes, const int &  byteCount) {
-    stringstream ss;
-    assert(byteCount > 0 && byteCount <= bytes.size());
-    vector<int8_t>::iterator  readPos = bytes.begin();
-    ss << (int) *readPos;
-    while((readPos - bytes.begin()) < byteCount) {
-        ++readPos;
-        ss << "," << (int) *readPos;
-    }
-    return ss.str();
-}
 
 
 
@@ -98,7 +86,6 @@ void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
     size_t srcBytes = srcData.size();
     size_t srcBits = srcBytes * 8;
     bool *bools = DataUtilities::bytesToBool(srcData.data(), srcBytes);
-    std::cout << "Allocating " << srcBits << " bits for new integer." << std::endl;
 
     Integer aliceBytes(srcBits, 0L, ALICE);
     Integer bobBytes(srcBits, 0L, BOB);
@@ -115,11 +102,6 @@ void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
     }
 
     Integer additionalData = aliceBytes ^ bobBytes;
-    std::cout << "First bytes of add'l data: " << DataUtilities::revealAndPrintFirstBytes(additionalData.bits, 30) << std::endl;
-
-    // expected: First plaintext bytes: 0,0,0,0,48,51,50,108,86,0,0
-    // obs:  First bytes of add'l data: 0,0,0,0,48,51,50,108,86,0,0
-    // this part is ok, it is something in how we deserialize them.
      std::shared_ptr<QueryTable> additionalInputs = QueryTable::deserialize(inputTable->getSchema(),
                                                                             additionalData.bits);
 
@@ -159,7 +141,6 @@ shared_ptr<QueryTable> UnionHybridData::unionHybridData(const QuerySchema &schem
                                                         const int &party) {
     UnionHybridData unioned(schema, aNetIO, party);
     unioned.readLocalInput(localInputFile);
-    std::cout << "Local input has " << unioned.getInputTable()->getTupleCount() << " tuples" << std::endl;
     unioned.readSecretSharedInput(secretSharesFile);
     return unioned.getInputTable();
 }
