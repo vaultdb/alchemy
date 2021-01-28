@@ -307,18 +307,9 @@ QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
     SortDefinition emptySortDefinition;
 
 
-    std::cout << "Deserializing " << tupleCount << " tuples." << std::endl;
-    std::cout << "Tuple size " << tupleSize << " bits." <<  std::endl;
-
-
     QuerySchema encryptedSchema = QuerySchema::toSecure(schema);
-
     std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, encryptedSchema, emptySortDefinition));
 
-    // first tuples:
-    // 0,032,22124,F,0,4,1,0,3
-    //5,025,10966,F,1,1,0,0,3
-    //12,034,22204,F,0,4,0,0,3
 
     for(int i = 0; i < tupleCount; ++i) {
         QueryTuple aTuple = QueryTuple::deserialize(encryptedSchema, cursor);

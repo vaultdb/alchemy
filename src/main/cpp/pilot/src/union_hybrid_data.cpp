@@ -54,7 +54,6 @@ Integer UnionHybridData::readEncrypted(int8_t *secretSharedBits, const size_t &s
 
         delete [] bools;
 
-        std::cout << "Result has " << result.bits.size() << " bits." << std::endl;
         return result;
 
     }
@@ -148,62 +147,3 @@ shared_ptr<QueryTable> UnionHybridData::unionHybridData(const QuerySchema &schem
 
 
 
-
-
-/*
- * Scratch:
- *     std::string bitString = additionalData.reveal<std::string>(emp::PUBLIC);
-    std::string::iterator strPos = bitString.begin();
-
-    for(int i =  0; i < srcBits; ++i) {
-        bools[i] = (*strPos == '1');
-        ++strPos;
-    }
-
-    vector<int8_t> decodedBytesVector = DataUtilities::boolsToBytes(bools, srcBits);
-
-    // expected:  First plaintext bytes: 2,0,0,0,48,50,56,-60,49,0,0
-    // observed:  First plaintext bytes: 2,0,0,0,48,50,56,-60,49,0,0
-
-    /* Bob:
-     * First plaintext bytes: 2,0,0,0,48,50,56,-60,49,0,0
-       Last bytes: -103, -72, -77
-
-       Alice:
-       First plaintext bytes: 2,0,0,0,48,50,56,-60,49,0,0
-
-
-
-std::cout << "First plaintext bytes: " << printFirstBytes(decodedBytesVector, 10) << std::endl;
-std::cout << "Last bytes: " << (int) decodedBytesVector[decodedBytesVector.size() - 1] << ", " <<  (int) decodedBytesVector[decodedBytesVector.size() - 2] << ", " <<  (int) decodedBytesVector[decodedBytesVector.size() - 3]  << std::endl;
-/* Reproducing
-*
-*
-for(int i = 0; i < 4; ++i) {
-    aliceShares[i] = (party == ALICE) ? Integer(32, shares[i], ALICE) : Integer(32, 0, ALICE);
-}
-
-for(int i = 0; i < 4; ++i) {
-    bobShares[i] = (party == BOB) ? Integer(32, shares[i], BOB) : Integer(32, 0, BOB);
-}
-
-for(int i = 0; i < 4; ++i) {
-    recoveredShares[i] = aliceShares[i] ^ bobShares[i];
-}
-But we can't just copy it in.
-Semantically, we are saying the plaintext integer is the one in the file.
-We set the Integer equal to it by following the procedure in Integer::Integer
-Then we XOR it later to cancel out the blinding.
-Since we are replicating the logic in encryted_varchar, what does this mean?   Can we use the basic case of public values here?
-
-//    Integer aliceBytes = readEncrypted(shares, srcData.size(), ALICE);
-//    Integer bobBytes = readEncrypted(shares, srcData.size(), BOB);
-// still one long bucket of bits.  Need to break it down into tuples
-
-
-
-std::cout << "Schema: " << inputTable->getSchema() << std::endl;
-std::cout << "Schema size: " << inputTable->getSchema().size() << " bits." << std::endl;
-std::cout << "Read in " << additionalData.size() << " bits, tupleCount = " << additionalData.size() / inputTable->getSchema().size()  << std::endl;
-
-*/
