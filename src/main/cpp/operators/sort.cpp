@@ -51,7 +51,7 @@ void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
         bitonicMerge(lo, cnt, invertDir);
 
 
-        /**** DEBUG ****/
+        /**** DEBUG ****
         std::cout << "Sorted with direction: " << invertDir << " have values: { ";
 
         if(output->isEncrypted()) {

@@ -51,15 +51,6 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
     QueryTuple::compareAndSwap(&lhs, &rhs, swap);
 }
-/*     if((gt && direction == SortDirection::DESCENDING)  ||
-                (!gt && direction == SortDirection::ASCENDING)){
-                swap = true;
-                break;
-            }
-            else if (!eq) {
-                break; // no switch needed, they are already in the right order
-            }
-*/
 
 /* debug code:
  *     // variables to support debug statement

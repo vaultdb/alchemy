@@ -78,16 +78,7 @@ int main(int argc, char **argv) {
         SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (8, SortDirection::ASCENDING)};
 
 
-        CommonTableExpression *unionedData = new CommonTableExpression(inputData);
-        Sort *sortOp = new Sort(patientSortDef, unionedData->getPtr());
-        std::shared_ptr<QueryTable> observedTable = sortOp->run()->reveal();
-
-        std::shared_ptr<QueryTable> expectedTable = DataUtilities::getQueryResults(unionedDbName, query, false);
-        expectedTable->setSortOrder(patientSortDef);
-
-
-        assert(*observedTable == *expectedTable);
-        //validateTable(unionedDbName, query, patientSortDef, revealed);
+        validateTable(unionedDbName, query, patientSortDef, revealed);
 
         std::cout << "Input passed test!" << std::endl;
     }
