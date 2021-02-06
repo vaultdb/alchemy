@@ -37,7 +37,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
     std::vector<ScalarAggregateDefinition> aggregators {
             ScalarAggregateDefinition(6, AggregateId::MAX, "numerator"),
             ScalarAggregateDefinition(-1, AggregateId::COUNT, "site_count"),
-            ScalarAggregateDefinition(8, AggregateId::MAX, "denom_excl")
+            ScalarAggregateDefinition(7, AggregateId::MAX, "denom_excl")
     };
 
     GroupByAggregate *unionedPatients = new GroupByAggregate(sortUnioned->getPtr(), groupByCols, aggregators );

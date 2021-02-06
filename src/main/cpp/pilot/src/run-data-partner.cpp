@@ -63,6 +63,12 @@ string getRollupExpectedResultsSql(const string &groupByColName) {
 
 }
 
+
+void validateRollup(int idx, string colName) {
+
+}
+
+
 int main(int argc, char **argv) {
 
     // local input file is an (unencrypted) csv of local site's data
@@ -78,6 +84,7 @@ int main(int argc, char **argv) {
     string localInputFile(argv[4]);
     string secretShareFile(argv[5]);
     string unionedDbName = "enrich_htn_unioned";
+    SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(1);
 
 
     QuerySchema schema = SharedSchema::getInputSchema();
@@ -103,18 +110,13 @@ int main(int argc, char **argv) {
 
     // zip marker (0)
     shared_ptr<QueryTable> zipMarkerStratified = enrich.rollUpAggregate(0);
-    cout << " cardinality: " << zipMarkerStratified->getTupleCount() << endl;
 
     // validate it against the DB for testing
     if(TESTBED) {
         shared_ptr<QueryTable> revealed = zipMarkerStratified->reveal();
-        cout << "revealed cardinality: " << revealed->getTupleCount() << endl;
         revealed = DataUtilities::removeDummies(revealed);
-        SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(1);
         string query = getRollupExpectedResultsSql("zip_marker");
-
         validateInputTable(unionedDbName, query, orderBy, revealed);
-        cout << "rollup 0 passed test!" << endl;
     }
 
     // age_strata (1)
