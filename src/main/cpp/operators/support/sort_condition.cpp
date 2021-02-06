@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/20/20.
-//
-
 #include "sort_condition.h"
 
 types::Value SortCondition::getValue(QueryTuple &aTuple, const ColumnSort &aColumnSort) {

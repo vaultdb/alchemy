@@ -18,8 +18,10 @@ EnrichHtnQuery::EnrichHtnQuery(shared_ptr<QueryTable> & input) : inputTable(inpu
 shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
 
     // sort it on group-by cols to prepare for aggregate
+    // patid, zip_marker, age_days, sex, ethnicity, race
     SortDefinition unionSortDefinition = DataUtilities::getDefaultSortDefinition(6);
-    unionSortDefinition.push_back(ColumnSort(9, SortDirection::ASCENDING)); // last sort makes it verifiable
+    // site_id
+    unionSortDefinition.push_back(ColumnSort(8, SortDirection::ASCENDING)); // last sort makes it verifiable
 
     // destructor handled within Operator
     CommonTableExpression *inputOp = new CommonTableExpression(inputTable);
@@ -35,7 +37,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
     std::vector<ScalarAggregateDefinition> aggregators {
             ScalarAggregateDefinition(6, AggregateId::MAX, "numerator"),
             ScalarAggregateDefinition(-1, AggregateId::COUNT, "site_count"),
-            ScalarAggregateDefinition(9, AggregateId::MAX, "denom_excl")
+            ScalarAggregateDefinition(8, AggregateId::MAX, "denom_excl")
     };
 
     GroupByAggregate *unionedPatients = new GroupByAggregate(sortUnioned->getPtr(), groupByCols, aggregators );

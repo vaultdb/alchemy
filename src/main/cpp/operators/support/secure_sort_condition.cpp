@@ -26,6 +26,7 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
         // is a swap needed?
         // if (lhs > rhs AND DESCENDING) OR (lhs < rhs AND ASCENDING)
+
         emp::Bit colSwapFlag;
 
         if(direction == vaultdb::SortDirection::ASCENDING) {

@@ -13,7 +13,7 @@ using namespace  emp;
 #define TESTBED 1
 
 
-void validateTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<QueryTable> & testTable)  {
+void validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<QueryTable> & testTable)  {
 
     std::shared_ptr<QueryTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
     expectedTable->setSortOrder(expectedSortDefinition);
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
         SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (8, SortDirection::ASCENDING)};
 
 
-        validateTable(unionedDbName, query, patientSortDef, revealed);
+        validateInputTable(unionedDbName, query, patientSortDef, revealed);
 
         std::cout << "Input passed test!" << std::endl;
     }
