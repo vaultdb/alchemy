@@ -1,10 +1,12 @@
 #include <util/type_utilities.h>
+#include <util/data_utilities.h>
 #include "CsvReader.h"
 #include <boost/algorithm/string.hpp>
 
 using namespace vaultdb;
 
 std::unique_ptr<QueryTable> CsvReader::readCsv(const string &filename, const QuerySchema &schema) {
+
     std::vector<std::string> tupleEntries = readFile(filename);
 
     std::unique_ptr<QueryTable> result(new QueryTable(tupleEntries.size(), schema.getFieldCount()));
@@ -26,9 +28,11 @@ std::vector<std::string> CsvReader::readFile(const string &filename) {
     std::ifstream inFile(filename);
     std::string line;
 
+
     if(!inFile)
     {
-        throw std::invalid_argument("Unable to open file: " + filename);
+        string cwd = DataUtilities::getCurrentWorkingDirectory();
+        throw std::invalid_argument("Unable to open file: " + filename + " from " + cwd);
     }
 
 

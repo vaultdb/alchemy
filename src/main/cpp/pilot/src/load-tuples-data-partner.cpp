@@ -28,6 +28,13 @@ void validateTable(const std::string & dbName, const std::string & sql, const So
 
 }
 
+// example run:
+// Alice:
+// ./bin/load-tuples-data-partner 127.0.0.1 54321 1 pilot/test/input/alice-patient.csv  pilot/test/output/chi-patient.alice
+// Bob:
+//  ./bin/load-tuples-data-partner 127.0.0.1 54321 2 pilot/test/input/bob-patient.csv  pilot/test/output/chi-patient.bob
+
+
 int main(int argc, char **argv) {
 
     // local input file is an (unencrypted) csv of local site's data

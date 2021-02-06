@@ -5,6 +5,7 @@
 #include <operators/common_table_expression.h>
 #include <operators/sort.h>
 #include "union_hybrid_data.h"
+#include "enrich_htn_query.h"
 
 using namespace  std;
 using namespace vaultdb;
@@ -65,6 +66,23 @@ int main(int argc, char **argv) {
         std::cout << "Input passed test!" << std::endl;
     }
 
-    // TODO: crib test query code from enrich_test.cpp
+    EnrichHtnQuery enrich(inputData);
+
+    // zip marker (0)
+    shared_ptr<QueryTable> zipMarkerStratified = enrich.rollUpAggregate(0);
+
+    // age_strata (1)
+    std::shared_ptr<QueryTable> ageStratified = enrich.rollUpAggregate(1);
+
+    // gender (2)
+    std::shared_ptr<QueryTable> genderStratified = enrich.rollUpAggregate(2);
+
+    // ethnicity (3)
+    std::shared_ptr<QueryTable> ethnicityStratified = enrich.rollUpAggregate(3);
+
+    // race (4)
+    std::shared_ptr<QueryTable> raceStratified = enrich.rollUpAggregate(4);
+
+
      emp::finalize_semi_honest();
 }
