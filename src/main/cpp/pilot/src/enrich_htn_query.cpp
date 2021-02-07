@@ -7,7 +7,11 @@
 
 using namespace vaultdb;
 
+//const vector<Integer> EnrichHtnQuery::ageStrata = {Integer(32, 1), Integer(32,2), Integer(32,3), Integer(32,4), Integer(32,5), Integer(32,6) };
+//const vector<Integer> EnrichHtnQuery::ageCutoff = {Integer(32, 28*365), Integer(32, 39*365), Integer(32, 50*365), Integer(32, 61*365), Integer(32, 72*365), Integer(32, 83*365)};
+
 EnrichHtnQuery::EnrichHtnQuery(shared_ptr<QueryTable> & input) : inputTable(input) {
+
     shared_ptr<QueryTable> filtered = filterPatients();
     shared_ptr<QueryTable> projected = projectPatients(filtered);
     aggregatePatients(projected);
@@ -67,8 +71,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> sr
     ProjectionMappingSet mappingSet{
             // zip_marker
             ProjectionMapping(1, 0),
-            // age_strata
-            ProjectionMapping(2, 1),
+            // age_strata --> 1
             // sex
             ProjectionMapping(3, 2),
             // ethnicity
@@ -78,16 +81,17 @@ shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> sr
             // numerator
             ProjectionMapping(6, 5),
 
-
             // 7: multisite int
             // 8: multisite ^ numerator
 
     };
 
+    Expression ageStrataExpression(&EnrichHtnQuery::projectSecureAgeStrata, "age_strata", intType);
     Expression multisiteExpression(&EnrichHtnQuery::projectMultisite, "multisite", intType);
     Expression multisiteNumeratorExpression(&EnrichHtnQuery::projectNumeratorMultisite, "numerator_multisite", intType);
 
     projectOp->addColumnMappings(mappingSet);
+    projectOp->addExpression(ageStrataExpression, 1);
     projectOp->addExpression(multisiteExpression, 6);
     projectOp->addExpression(multisiteNumeratorExpression, 7);
 
@@ -95,7 +99,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> sr
 
 }
 
-// TODO: initialize dataCube, aggregator here
+
 void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 
     std::shared_ptr<Operator> includedPatients(new CommonTableExpression(src));
@@ -122,7 +126,7 @@ void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 // input schema:
 // zip_marker (0) age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
 
-shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) {
+shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const {
     SortDefinition sortDefinition{ColumnSort(ordinal, SortDirection::ASCENDING)};
     Sort *sort = new Sort(sortDefinition, aggregator->getPtr());
 
@@ -169,3 +173,28 @@ Value EnrichHtnQuery::projectNumeratorMultisite(const QueryTuple &aTuple) {
 }
 
 
+// Project #1
+// CASE WHEN age_days <= 28*365 THEN 0
+//                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1
+//              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2
+//              WHEN age_days > 50*365 AND age_days <= 61*365 THEN 3
+//              WHEN age_days > 61*365 AND age_days <= 72*365 THEN 4
+//                WHEN age_days > 72*365  AND age_days <= 83*365 THEN 5
+//                ELSE 6 END age_strata
+
+// TODO: set this up to memoize the emp ints so we don't have to generate them every time
+Value EnrichHtnQuery::projectSecureAgeStrata(const QueryTuple & aTuple) {
+    Integer ageDays = aTuple.getField(2).getValue().getEmpInt(); // age_days
+     vector<Integer> ageStrata = {Integer(32, 0), Integer(32,1), Integer(32,2), Integer(32,3), Integer(32,4), Integer(32,5), Integer(32, 6) };
+     vector<Integer> ageCutoff = {Integer(32, 28*365), Integer(32, 39*365), Integer(32, 50*365), Integer(32, 61*365), Integer(32, 72*365), Integer(32, 83*365)};
+
+    Integer ageStratum = If(ageDays <= ageCutoff[0], ageStrata[0],
+                           If(ageDays <= ageCutoff[1], ageStrata[1],
+                              If(ageDays <= ageCutoff[2], ageStrata[2],
+                                 If(ageDays <= ageCutoff[3], ageStrata[3],
+                                    If(ageDays <= ageCutoff[4], ageStrata[4],
+                                       If(ageDays <= ageCutoff[5], ageStrata[5], ageStrata[6]))))));
+
+    return Value(TypeId::ENCRYPTED_INTEGER32, ageStratum);
+
+}

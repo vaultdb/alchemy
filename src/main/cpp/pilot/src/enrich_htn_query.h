@@ -10,9 +10,7 @@ using namespace std;
 namespace  vaultdb {
     class EnrichHtnQuery {
 
-        const string unionedDbName = "enrich_htn_unioned";
-        const string aliceDbName = "enrich_htn_alice";
-        const string bobDbName = "enrich_htn_bob";
+
         shared_ptr<QueryTable> inputTable;
         shared_ptr<QueryTable> dataCube;
         shared_ptr<GroupByAggregate> aggregator;
@@ -20,7 +18,7 @@ namespace  vaultdb {
     public:
         // compute initial data cube to prepare for rollups
         EnrichHtnQuery(shared_ptr<QueryTable> & input);
-        shared_ptr<QueryTable> rollUpAggregate(const int &ordinal);
+        shared_ptr<QueryTable> rollUpAggregate(const int &ordinal) const;
 
     private:
 
@@ -39,10 +37,11 @@ namespace  vaultdb {
 
         static Value projectMultisite(const QueryTuple &aTuple);
         static Value projectNumeratorMultisite(const QueryTuple &aTuple);
+        static Value projectSecureAgeStrata(const QueryTuple &aTuple);
 
-
-
-
+        // emp Integers for age cutoffs in age_strata projection:
+        //static const vector<Integer> ageStrata;
+        //static const vector<Integer> ageCutoff;
     };
 
 

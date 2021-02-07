@@ -64,8 +64,22 @@ string getRollupExpectedResultsSql(const string &groupByColName) {
 }
 
 
-void validateRollup(int idx, string colName) {
+void validateRollup(int idx, string colName, EnrichHtnQuery & enrich) {
 
+    cout << "validating rollup on " << idx << " col name: " << colName << endl;
+
+    shared_ptr<QueryTable> stratified = enrich.rollUpAggregate(idx);
+    string unionedDbName = "enrich_htn_unioned";
+    SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(1);
+
+    // validate it against the DB for testing
+    if(TESTBED) {
+        shared_ptr<QueryTable> revealed = stratified->reveal();
+        revealed = DataUtilities::removeDummies(revealed);
+        string query = getRollupExpectedResultsSql(colName);
+        std::cout << "Validation query: \n" << query << std::endl;
+        validateInputTable(unionedDbName, query, orderBy, revealed);
+    }
 }
 
 
@@ -84,7 +98,6 @@ int main(int argc, char **argv) {
     string localInputFile(argv[4]);
     string secretShareFile(argv[5]);
     string unionedDbName = "enrich_htn_unioned";
-    SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(1);
 
 
     QuerySchema schema = SharedSchema::getInputSchema();
@@ -108,29 +121,13 @@ int main(int argc, char **argv) {
 
     EnrichHtnQuery enrich(inputData);
 
+
     // zip marker (0)
-    shared_ptr<QueryTable> zipMarkerStratified = enrich.rollUpAggregate(0);
-
-    // validate it against the DB for testing
-    if(TESTBED) {
-        shared_ptr<QueryTable> revealed = zipMarkerStratified->reveal();
-        revealed = DataUtilities::removeDummies(revealed);
-        string query = getRollupExpectedResultsSql("zip_marker");
-        validateInputTable(unionedDbName, query, orderBy, revealed);
-    }
-
-    // age_strata (1)
-    shared_ptr<QueryTable> ageStratified = enrich.rollUpAggregate(1);
-
-    // gender (2)
-    shared_ptr<QueryTable> genderStratified = enrich.rollUpAggregate(2);
-
-    // ethnicity (3)
-    shared_ptr<QueryTable> ethnicityStratified = enrich.rollUpAggregate(3);
-
-    // race (4)
-    shared_ptr<QueryTable> raceStratified = enrich.rollUpAggregate(4);
-
+    validateRollup(0, "zip_marker", enrich);
+    validateRollup(1, "age_strata", enrich);
+    validateRollup(2, "sex", enrich);
+    validateRollup(3, "ethnicity", enrich);
+    validateRollup(4, "race", enrich);
 
      emp::finalize_semi_honest();
      cout << "Test completed." << endl;
