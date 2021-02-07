@@ -1,8 +1,3 @@
-//
-// Created by Jennie Rogers on 8/14/20.
-//
-// based on emp's comparable.h
-
 #include "value.h"
 #include <emp-tool/circuits/float32.h>
 #include <util/type_utilities.h>
@@ -58,7 +53,7 @@ Value Value::operator>=(const Value &rhs) const {
             emp::Bit eq = lhsVal == rhsVal;
 
             return eq | gt;
-            
+
         }
 
         case TypeId::VARCHAR: {
