@@ -139,6 +139,7 @@ bool GroupByAggregate::verifySortOrder(const std::shared_ptr<QueryTable> &table)
 }
 
 types::Value GroupByAggregate::groupByMatch(const QueryTuple &lhs, const QueryTuple &rhs) const {
+
     types::Value result = lhs.getFieldPtr(groupByOrdinals[0])->getValue() ==  rhs.getFieldPtr(groupByOrdinals[0])->getValue();
     int cursor = 1;
     while(cursor < groupByOrdinals.size()) {

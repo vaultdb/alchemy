@@ -44,8 +44,33 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
         swap = If(swapInit, swap, colSwapFlag); // once we know there's a swap once, we keep it
         swapInit = swapInit  | If(!eq, trueBit, falseBit);  // have we found the most significant column where they are not equal?
 
+        if(sortDefinition[i].first == 3) {
+            // *** START DEBUG CODE
+            types::Value lhsRevealed = lhsValue.reveal(emp::PUBLIC);
+            types::Value rhsRevealed = rhsValue.reveal(emp::PUBLIC);
+            uint32_t sortColIdx = sortDefinition[i].first;
+
+            bool expectedGT = (lhsRevealed > rhsRevealed).getBool();
+            bool observedGT = (lhsValue > rhsValue).getEmpBit().reveal();
+            std::cout << "Expected gt: " << expectedGT << " observed: " << observedGT << std::endl;
+            std::cout << "Makeup: " << (lhsValue <= rhsValue).getEmpBit().reveal() << " == "
+                      << (lhsRevealed <= rhsRevealed).getBool() << std::endl;
+
+            if(expectedGT != observedGT)
+            {
+                std::cout << "Fail!" << std::endl;
+            }
+            assert(expectedGT == observedGT);
+
+            string dirString = (direction == SortDirection::ASCENDING) ? " asc " : " desc ";
+
+            std::cout << "   Comparing " << lhsRevealed << " to " << rhsRevealed << " on col: " << sortColIdx
+                      << " sort dir: " << dirString
+                      << " gt? " << (lhsValue > rhsValue).getEmpBit().reveal() << " toSwap? " << swap.reveal()
+                      << std::endl;
 
 
+        }
     } // end check for swap
 
 

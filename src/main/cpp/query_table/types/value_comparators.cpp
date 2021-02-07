@@ -54,12 +54,11 @@ Value Value::operator>=(const Value &rhs) const {
         case TypeId::ENCRYPTED_BOOLEAN: {
             emp::Bit lhsVal = this->getEmpBit();
             emp::Bit rhsVal = rhs.getEmpBit();
+            emp::Bit gt = (lhsVal == emp::Bit(true)) & rhsVal == emp::Bit(false);
+            emp::Bit eq = lhsVal == rhsVal;
 
-            emp::Integer lhsInt(1, true);
-            lhsInt.bits[0] = lhsVal;
-            emp::Integer rhsInt(1, true);
-            lhsInt.bits[0] = rhsVal;
-            return Value(lhsInt >= rhsInt);
+            return eq | gt;
+            
         }
 
         case TypeId::VARCHAR: {
