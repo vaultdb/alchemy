@@ -7,6 +7,11 @@
 #include <sys/stat.h>
 #include <iostream>
 
+#ifndef PATH_MAX
+#define PATH_MAX (4096)
+#endif
+
+
 // this code is designed to be a stub - i.e., it is self-contained
 
 using namespace std;

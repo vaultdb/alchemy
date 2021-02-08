@@ -1,5 +1,10 @@
 #include "generate_enrich_data_three_parties.h"
 
+#ifndef PATH_MAX
+#define PATH_MAX (4096)
+#endif
+
+
 std::string GenerateEnrichDataThreeParties::getCurrentWorkingDirectory() {
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));

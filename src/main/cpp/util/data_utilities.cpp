@@ -4,6 +4,11 @@
 #include <sys/stat.h>
 #include "data_utilities.h"
 
+
+#ifndef PATH_MAX
+#define PATH_MAX (4096)
+#endif
+
 using namespace vaultdb;
 
 unsigned char DataUtilities::reverse(unsigned char b) {
