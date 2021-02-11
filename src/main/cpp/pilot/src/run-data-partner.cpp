@@ -11,7 +11,7 @@ using namespace  std;
 using namespace vaultdb;
 using namespace  emp;
 
-#define TESTBED 1
+#define TESTBED 0
 
 
 
@@ -86,6 +86,7 @@ shared_ptr<QueryTable> runRollup(int idx, string colName, EnrichHtnQuery & enric
 
 int main(int argc, char **argv) {
 
+    auto startTime = emp::clock_start();
     // local input file is an (unencrypted) csv of local site's data
     // secret share file is a binary, e.g., Chicago Alliance input
     if(argc < 6) {
@@ -130,5 +131,7 @@ int main(int argc, char **argv) {
     shared_ptr<QueryTable> raceRollup = runRollup(4, "race", enrich);
 
      emp::finalize_semi_honest();
-     cout << "Test completed." << endl;
+
+    double runtime = time_from(startTime);
+     cout << "Test completed on party " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." << endl;
 }
