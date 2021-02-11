@@ -66,7 +66,6 @@ string getRollupExpectedResultsSql(const string &groupByColName) {
 
 void validateRollup(int idx, string colName, EnrichHtnQuery & enrich) {
 
-    cout << "validating rollup on " << idx << " col name: " << colName << endl;
 
     shared_ptr<QueryTable> stratified = enrich.rollUpAggregate(idx);
     string unionedDbName = "enrich_htn_unioned";
@@ -77,7 +76,6 @@ void validateRollup(int idx, string colName, EnrichHtnQuery & enrich) {
         shared_ptr<QueryTable> revealed = stratified->reveal();
         revealed = DataUtilities::removeDummies(revealed);
         string query = getRollupExpectedResultsSql(colName);
-        std::cout << "Validation query: \n" << query << std::endl;
         validateInputTable(unionedDbName, query, orderBy, revealed);
     }
 }
@@ -103,7 +101,7 @@ int main(int argc, char **argv) {
     QuerySchema schema = SharedSchema::getInputSchema();
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
-
+    cout << "Finished netio setup" << endl;
 
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi

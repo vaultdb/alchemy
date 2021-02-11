@@ -127,7 +127,6 @@ void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 // zip_marker (0) age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
 
 shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const {
-    std::cout << "Sorting on ordinal: " << ordinal << std::endl;
 
     SortDefinition sortDefinition{ColumnSort(ordinal, SortDirection::ASCENDING)};
     Sort *sort = new Sort(sortDefinition, aggregator->getPtr());
@@ -144,18 +143,6 @@ shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const
 
     GroupByAggregate *rollupStrata = new GroupByAggregate(sort->getPtr(), groupByCols, aggregators );
     std::shared_ptr<QueryTable> rollupResult =  rollupStrata->getPtr()->run();
-
-    shared_ptr<QueryTable> output = sort->getOutput();
-    for(int i = 1; i < output->getTupleCount(); ++i) {
-        Value previous = output->getTuple(i-1).getField(ordinal).reveal(PUBLIC).getValue();
-        Value current = output->getTuple(i).getField(ordinal).reveal(PUBLIC).getValue();
-        assert((previous <= current).getBool());
-        if((previous < current).getBool()) {
-            std::cout << "new bin at " << i << std::endl;
-
-        }
-
-    }
     return rollupResult;
 
 
