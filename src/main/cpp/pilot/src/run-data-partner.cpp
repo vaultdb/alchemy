@@ -102,9 +102,11 @@ int main(int argc, char **argv) {
     string unionedDbName = "enrich_htn_unioned";
 
 
+    
     QuerySchema schema = SharedSchema::getInputSchema();
 
-    cout << "Starting netio setup" << endl;
+    cout << "Starting netio connection" << endl;
+
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
     cout << "Finished netio setup" << endl;
