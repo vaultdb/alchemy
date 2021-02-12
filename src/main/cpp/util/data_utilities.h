@@ -1,6 +1,16 @@
 #ifndef DATA_UTILITIES_H
 #define DATA_UTILITIES_H
 
+// For EMP memory instrumentation
+#if defined(__linux__)
+#include <sys/time.h>
+#include <sys/resource.h>
+#elif defined(__APPLE__)
+#include <unistd.h>
+#include <sys/resource.h>
+#include <mach/mach.h>
+#endif
+
 
 #include <cstdint>
 #include <vaultdb.h>
@@ -55,6 +65,8 @@ namespace vaultdb {
         static string printFirstBytes(vector<int8_t> &bytes, const int &byteCount);
 
         static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
+
+        static void checkMemoryUtilization();
     };
 }
 

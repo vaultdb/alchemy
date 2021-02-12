@@ -8,6 +8,7 @@ TUPLE_COUNT=$1
 mkdir -p pilot/test/input
 mkdir -p pilot/test/output
 
+cmake .  && \ 
 make && \
 ./bin/generate_enrich_data_three_parties pilot/test/input/ $TUPLE_COUNT
 ./bin/secret_share_csv  pilot/test/input/chi-patient.csv pilot/test/output/chi-patient

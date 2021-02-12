@@ -7,6 +7,7 @@
 #include "union_hybrid_data.h"
 #include "enrich_htn_query.h"
 
+
 using namespace  std;
 using namespace vaultdb;
 using namespace  emp;
@@ -84,6 +85,7 @@ shared_ptr<QueryTable> runRollup(int idx, string colName, EnrichHtnQuery & enric
 }
 
 
+
 int main(int argc, char **argv) {
 
 
@@ -117,6 +119,8 @@ int main(int argc, char **argv) {
     // expected order: alice, bob, chi
     shared_ptr<QueryTable> inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
 
+    cout << "Input size: " << inputData->getTupleCount() << " or approx " << inputData->getTupleCount() / 3.0 << " tuples / site." << endl;
+
     // validate it against the DB for testing
     if(TESTBED) {
         shared_ptr<QueryTable> revealed = inputData->reveal();
@@ -127,16 +131,29 @@ int main(int argc, char **argv) {
         cout << "Input reader passed test!" << endl;
     }
 
+    DataUtilities::checkMemoryUtilization();
+
     EnrichHtnQuery enrich(inputData);
+
+    DataUtilities::checkMemoryUtilization();
 
 
     shared_ptr<QueryTable> zipRollup = runRollup(0, "zip_marker", enrich);
-    shared_ptr<QueryTable> ageRollup = runRollup(1, "age_strata", enrich);
-    shared_ptr<QueryTable> genderRollup = runRollup(2, "sex", enrich);
-    shared_ptr<QueryTable> ethnicityRollup = runRollup(3, "ethnicity", enrich);
-    shared_ptr<QueryTable> raceRollup = runRollup(4, "race", enrich);
+    DataUtilities::checkMemoryUtilization();
 
-     emp::finalize_semi_honest();
+    shared_ptr<QueryTable> ageRollup = runRollup(1, "age_strata", enrich);
+    DataUtilities::checkMemoryUtilization();
+
+    shared_ptr<QueryTable> genderRollup = runRollup(2, "sex", enrich);
+    DataUtilities::checkMemoryUtilization();
+
+    shared_ptr<QueryTable> ethnicityRollup = runRollup(3, "ethnicity", enrich);
+    DataUtilities::checkMemoryUtilization();
+
+    shared_ptr<QueryTable> raceRollup = runRollup(4, "race", enrich);
+    DataUtilities::checkMemoryUtilization();
+
+    emp::finalize_semi_honest();
 
     double runtime = time_from(startTime);
      cout << "Test completed on party " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
