@@ -139,5 +139,5 @@ int main(int argc, char **argv) {
      emp::finalize_semi_honest();
 
     double runtime = time_from(startTime);
-     cout << "Test completed on party " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." << endl;
+     cout << "Test completed on party " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
 }
