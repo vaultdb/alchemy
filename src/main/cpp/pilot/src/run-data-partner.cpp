@@ -86,7 +86,7 @@ shared_ptr<QueryTable> runRollup(int idx, string colName, EnrichHtnQuery & enric
 
 int main(int argc, char **argv) {
 
-    auto startTime = emp::clock_start();
+
     // local input file is an (unencrypted) csv of local site's data
     // secret share file is a binary, e.g., Chicago Alliance input
     if(argc < 6) {
@@ -103,10 +103,14 @@ int main(int argc, char **argv) {
 
 
     QuerySchema schema = SharedSchema::getInputSchema();
+
+    cout << "Starting netio setup" << endl;
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
     cout << "Finished netio setup" << endl;
 
+    auto startTime = emp::clock_start();
+    
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
     shared_ptr<QueryTable> inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
