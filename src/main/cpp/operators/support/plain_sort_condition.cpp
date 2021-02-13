@@ -6,7 +6,7 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
 
 
-    for(int i = 0; i < sortDefinition.size(); ++i) {
+    for(size_t i = 0; i < sortDefinition.size(); ++i) {
         types::Value lhsValue = SortCondition::getValue(lhs, sortDefinition[i]);
         types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
 
