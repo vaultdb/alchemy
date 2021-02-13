@@ -16,9 +16,6 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
         types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
 
 
-        types::Value gtValue = lhsValue > rhsValue;
-        emp::Bit gt = gtValue.getEmpBit();
-
         types::Value eqValue = (lhsValue == rhsValue);
         emp::Bit eq = eqValue.getEmpBit();
 

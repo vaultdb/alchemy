@@ -10,9 +10,6 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
         types::Value lhsValue = SortCondition::getValue(lhs, sortDefinition[i]);
         types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
 
-        types::Value gtValue = lhsValue > rhsValue;
-        bool gt = gtValue.getBool();
-
         types::Value eqValue = lhsValue == rhsValue;
         bool eq = eqValue.getBool();
 
