@@ -115,11 +115,15 @@ protected:
   struct ValueStruct {
     boost::variant<bool, int32_t, int64_t, float_t, double_t, string>
         unencrypted_val;
-    std::shared_ptr<Bit> emp_bit_;
-    std::shared_ptr<Integer> emp_integer_;
-    std::shared_ptr<Float> emp_float32_;
 
-  } value_{false, nullptr, nullptr, nullptr};
+    Bit emp_bit_;
+    Integer emp_integer_;
+    Float emp_float32_;
+    // std::shared_ptr<Bit> emp_bit_;
+    //std::shared_ptr<Integer> emp_integer_;
+    //std::shared_ptr<Float> emp_float32_;
+
+  } value_{false, Bit(false), Integer(32,0), Float(0.0)};
   // false, Bit(false, PUBLIC), Integer(1, 0, PUBLIC),
   // Float(24, 9, 0, PUBLIC), Float32(0.0, PUBLIC)
   // };

@@ -143,7 +143,7 @@ QueryTuple& QueryTuple::operator=(const QueryTuple& src) {
     fields_.resize(src.getFieldCount());
 
 
-    for(int i = 0; i < src.getFieldCount(); ++i) {
+    for(size_t i = 0; i < src.getFieldCount(); ++i) {
         fields_[i] = src.fields_[i];
     }
 

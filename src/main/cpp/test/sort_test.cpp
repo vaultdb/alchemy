@@ -16,8 +16,13 @@ class SortTest : public ::testing::Test {
 
 
 protected:
-    void SetUp() override {};
-    void TearDown() override{};
+    void SetUp() override{
+        setup_plain_prot(false, "");
+    };
+
+    void TearDown() override{
+        finalize_plain_prot();
+    };
 
     std::shared_ptr<Sort> getSort(const std::string & srcSql, const SortDefinition & sortDefinition);
 

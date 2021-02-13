@@ -1,6 +1,5 @@
 #include "value.h"
 #include <emp-tool/circuits/float32.h>
-#include <util/type_utilities.h>
 
 using vaultdb::types::Value;
 using namespace vaultdb;

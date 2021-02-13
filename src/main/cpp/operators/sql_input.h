@@ -18,9 +18,9 @@ namespace  vaultdb {
 
     public:
         // bool denotes whether the last col of the SQL statement should be interpreted as a dummy tag
-        SqlInput(std::string db, std::string sql, bool dummyTag = false) : inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sortedOn(), Operator() {}
+        SqlInput(std::string db, std::string sql, bool dummyTag = false) :  Operator(), inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sortedOn() {}
 
-        SqlInput(std::string db, std::string sql, bool dummyTag, const SortDefinition & sortDefinition) : inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sortedOn(sortDefinition), Operator() {}
+        SqlInput(std::string db, std::string sql, bool dummyTag, const SortDefinition & sortDefinition) :  Operator(), inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sortedOn(sortDefinition){}
 
         void setSortDefinition(const SortDefinition & aSortDefinition) { sortedOn = aSortDefinition; };
 

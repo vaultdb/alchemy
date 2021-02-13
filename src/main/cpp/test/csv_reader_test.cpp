@@ -16,12 +16,15 @@ class CsvReaderTest : public ::testing::Test {
 
 
 protected:
-    void SetUp() override {
-
+    void SetUp() override{
+        setup_plain_prot(false, "");
         currentWorkingDirectory = DataUtilities::getCurrentWorkingDirectory();
-
     };
-    void TearDown() override{};
+    void TearDown() override{
+        finalize_plain_prot();
+    };
+
+
     std::string currentWorkingDirectory;
 
     QueryFieldDesc convertDateField(const QueryFieldDesc & srcField) {

@@ -39,10 +39,12 @@ int main(int argc, char **argv) {
         exit(-1);
     }
 
+    setup_plain_prot(false, "");
     QuerySchema targetSchema = SharedSchema::getInputSchema();
 
     SecretShareCsv::SecretShareTable(string(argv[1]), targetSchema, string(argv[2]));
-
+    finalize_plain_prot();
+    
 
 }
 

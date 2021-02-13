@@ -21,7 +21,7 @@ Integer UnionHybridData::readEncrypted(int8_t *secretSharedBits, const size_t &s
         bool *bools = DataUtilities::bytesToBool(secretSharedBits, sizeBytes);
 
         Integer result(sizeBytes * 8, 0L, dstParty);
-        
+
 
         if(party == dstParty) {
             ProtocolExecution::prot_exec->feed((block *)result.bits.data(), dstParty, bools, sizeBytes * 8);

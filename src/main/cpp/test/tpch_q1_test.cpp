@@ -24,8 +24,13 @@ class tpch_q1_test : public ::testing::Test {
 
 
 protected:
-    void SetUp() override {};
-    void TearDown() override{};
+    void SetUp() override{
+        setup_plain_prot(false, "");
+    };
+
+    void TearDown() override{
+        finalize_plain_prot();
+    };
 };
 
 /* TEST_F(tpch_q1_test, TpcHQ1FullOblivous) {

@@ -106,43 +106,21 @@ int64_t Value::getInt64() const {
     }
 
     emp::Integer Value::getEmpInt()  const {
-        assert(value_.emp_integer_.get() != nullptr); // do not return uninitialized vals
-
-
-        return  *value_.emp_integer_;
+        return  value_.emp_integer_;
     }
+
     emp::Bit Value::getEmpBit()  const {
-        assert(value_.emp_bit_.get() != nullptr); // do not return uninitialized vals
-
-
-       return *value_.emp_bit_;
+       return value_.emp_bit_;
     }
 
     emp::Float Value::getEmpFloat32() const {
-        assert(value_.emp_float32_.get() != nullptr); // do not return uninitialized vals
-
-
-        return  *value_.emp_float32_;
+        return  value_.emp_float32_;
     }
 
 
 
 
     Value::~Value() {
-    /* this should not be needed
-        switch(getType()) {
-            case TypeId::ENCRYPTED_INTEGER32:
-            case TypeId::ENCRYPTED_INTEGER64:
-            case TypeId::ENCRYPTED_VARCHAR:
-                value_.emp_integer_.reset();
-            case TypeId::ENCRYPTED_FLOAT32:
-                value_.emp_float32_.reset();
-            case TypeId::ENCRYPTED_BOOLEAN:
-                value_.emp_bit_.reset();
-            default:
-                return; // eliminate warnings
-        }*/
-
     }
 
 
@@ -225,16 +203,16 @@ void Value::setValue(const std::string & aString) {
 
     void Value::setValue(const emp::Bit & val) {
         type_ = TypeId::ENCRYPTED_BOOLEAN;
-        value_.emp_bit_ = std::shared_ptr<emp::Bit>(new emp::Bit(val.bit));
+        value_.emp_bit_ = val.bit;
     }
     void Value::setValue(TypeId type, const emp::Integer & val) {
         type_ = type;
-        value_.emp_integer_ = std::shared_ptr<emp::Integer>(new emp::Integer(val));
+        value_.emp_integer_ = val;
     }
 
     void Value::setValue(const emp::Float & val) {
         type_ = TypeId::ENCRYPTED_FLOAT32;
-        value_.emp_float32_ = std::shared_ptr<emp::Float>(new emp::Float(val));
+        value_.emp_float32_ = val;
     }
 
 

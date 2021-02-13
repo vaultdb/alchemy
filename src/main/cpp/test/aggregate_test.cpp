@@ -16,8 +16,12 @@ using namespace vaultdb::types;
 class AggregateTest : public ::testing::Test {
 
 protected:
-  void SetUp() override{};
-  void TearDown() override{};
+  void SetUp() override{
+      setup_plain_prot(false, "");
+  };
+  void TearDown() override{
+      finalize_plain_prot();
+  };
 
   void runAggregateTest(const AggregateDef & aggregateDef, const std::string & sql, const std::string & expectedResult);
   std::unique_ptr<QueryTable> getExpectedResult(std::string sql, bool dummyTag);

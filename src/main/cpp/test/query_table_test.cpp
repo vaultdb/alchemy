@@ -110,9 +110,15 @@ public:
         return queryOutput;
 
     }
-    virtual void SetUp() {
 
-    }
+    void SetUp() override{
+        setup_plain_prot(false, "");
+    };
+
+    void TearDown() override{
+        finalize_plain_prot();
+    };
+
 
 };
 

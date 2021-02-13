@@ -18,9 +18,14 @@ class SecretShareGeneratorTest : public ::testing::Test {
 
 
 protected:
-    void SetUp() override {};
+    void SetUp() override{
+        setup_plain_prot(false, "");
+    };
 
-    void TearDown() override {};
+    void TearDown() override{
+        finalize_plain_prot();
+    };
+
     const std::string dbName = "tpch_unioned";
 
     std::shared_ptr<QueryTable> assembleSecretShares(const QuerySchema & schema, const SecretShares & shares);

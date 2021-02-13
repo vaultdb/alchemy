@@ -35,7 +35,7 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
 
 
     // read alice in order
-    for (int i = 0; i < aliceSize; ++i) {
+    for (size_t i = 0; i < aliceSize; ++i) {
         QueryTuple *srcTuple = (party == ALICE) ? srcTable->getTuplePtr(i) : nullptr;
         dstTuple = secretShareTuple(srcTuple, schema, party, (int) ALICE);
         dstTable->putTuple(i, dstTuple);
@@ -46,7 +46,7 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
     // write bob last --> first to make bitonic sequence
     int readTuple = bobSize; // last tuple
 
-    for (int i = 0; i < bobSize; ++i) {
+    for (size_t i = 0; i < bobSize; ++i) {
         --readTuple;
         QueryTuple *srcTuple = (party == BOB) ? srcTable->getTuplePtr(readTuple) : nullptr;
         //if(party == BOB)

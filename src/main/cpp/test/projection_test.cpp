@@ -1,8 +1,3 @@
-//
-// Created by Jennie Rogers on 9/2/20.
-//
-
-
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
@@ -20,8 +15,13 @@ class ProjectionTest : public ::testing::Test {
 
 
 protected:
-    void SetUp() override {};
-    void TearDown() override{};
+    void SetUp() override{
+        setup_plain_prot(false, "");
+    };
+
+    void TearDown() override{
+        finalize_plain_prot();
+    };
 };
 
 
