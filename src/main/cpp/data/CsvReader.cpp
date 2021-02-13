@@ -52,7 +52,7 @@ vector<string> CsvReader::split(const string &tupleEntry) {
     boost::split(tokens, tupleEntry,boost::is_any_of(","));
 
     // make a pass and merge any strings
-    for(int i = 0; i < tokens.size(); ++i) {
+    for(size_t i = 0; i < tokens.size(); ++i) {
 
         std::string token = tokens[i];
         if(token[0] == '"' && latestEntry.empty()) {  // starts with " and the beginning of an entry
@@ -84,7 +84,7 @@ QueryTuple CsvReader::parseTuple(const string &line, const QuerySchema &schema) 
     QueryTuple newTuple(fieldCount);
 
     // TODO: split this into a parseLine method that takes in the string and schema and returns a tuple.  Use this to debug line 16
-    for(int i = 0; i < fieldCount; ++i) {
+    for(size_t i = 0; i < fieldCount; ++i) {
         types::Value fieldValue = TypeUtilities::decodeStringValue(tupleFields[i], schema.getField(i));
         QueryField queryField(i, fieldValue);
         newTuple.putField(queryField);

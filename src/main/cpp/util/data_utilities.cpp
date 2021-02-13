@@ -54,7 +54,7 @@ vector<int8_t> DataUtilities::boolsToBytes(const bool *const src, const uint32_t
 
     bool *cursor = const_cast<bool*>(src);
 
-    for(int i = 0; i < byteCount; ++i) {
+    for(uint32_t i = 0; i < byteCount; ++i) {
         result[i] = boolsToByte(cursor);
         cursor += 8;
     }
@@ -81,7 +81,7 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
     std::unique_ptr<QueryTable> unioned(new QueryTable(tupleCount, alice->getSchema().getFieldCount()));
     unioned->setSchema(alice->getSchema());
 
-    for(int i = 0; i < alice->getTupleCount(); ++i) {
+    for(size_t i = 0; i < alice->getTupleCount(); ++i) {
         unioned->putTuple(i, alice->getTuple(i));
     }
 
@@ -89,7 +89,7 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
 
     // add bob's tuples from last to first
     int readIdx = bob->getTupleCount();
-    for(int i = 0; i < bob->getTupleCount(); ++i) {
+    for(size_t i = 0; i < bob->getTupleCount(); ++i) {
         --readIdx;
         unioned->putTuple(i + offset, bob->getTuple(readIdx));
     }
@@ -177,7 +177,7 @@ std::shared_ptr<QueryTable> DataUtilities::removeDummies(const std::shared_ptr<Q
     output->setSchema(input->getSchema());
     output->setSortOrder(input->getSortOrder());
 
-    for(int i = 0; i < input->getTupleCount(); ++i) {
+    for(size_t i = 0; i < input->getTupleCount(); ++i) {
         QueryTuple *tuple = input->getTuplePtr(i);
         if(!tuple->getDummyTag().getBool()) {
             output->putTuple(writeCursor, *tuple);

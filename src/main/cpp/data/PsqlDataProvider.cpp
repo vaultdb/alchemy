@@ -71,14 +71,14 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
 std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, bool hasDummyTag) {
     pqxx::row firstRow = *(input.begin());
-    int colCount = firstRow.size();
+    size_t colCount = firstRow.size();
     if(hasDummyTag)
         --colCount; // don't include dummy tag as a separate column
 
 
     std::unique_ptr<QuerySchema> result(new QuerySchema(colCount));
 
-    for(int i = 0; i < colCount; ++i) {
+    for(uint32_t i = 0; i < colCount; ++i) {
        string colName =  input.column_name(i);
        types::TypeId type = getFieldTypeFromOid(input.column_type(i));
         int tableId = input.column_table(i);
