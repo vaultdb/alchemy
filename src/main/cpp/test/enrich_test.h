@@ -64,4 +64,4 @@ protected:
 };
 
 
-#endif _ENRICH_TEST_H
+#endif // _ENRICH_TEST_H

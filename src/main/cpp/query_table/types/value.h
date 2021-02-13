@@ -104,7 +104,7 @@ public:
     static Value deserialize(QueryFieldDesc desc, int8_t *cursor);
     static Value deserialize(QueryFieldDesc desc, Bit *cursor);
 protected:
-  TypeId type_;
+  TypeId type_ = TypeId::BOOLEAN; // default setting
 
 
 protected:
