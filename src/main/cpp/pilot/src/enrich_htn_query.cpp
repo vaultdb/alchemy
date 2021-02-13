@@ -129,7 +129,7 @@ void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const {
 
     SortDefinition sortDefinition{ColumnSort(ordinal, SortDirection::ASCENDING)};
-    Sort *sort = new Sort(sortDefinition, aggregator->getPtr());
+    Sort *sortOp = new Sort(sortDefinition, aggregator->getPtr());
 
 
     std::vector<int32_t> groupByCols{ordinal};
@@ -141,8 +141,10 @@ shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const
             ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
-    GroupByAggregate *rollupStrata = new GroupByAggregate(sort->getPtr(), groupByCols, aggregators );
+    GroupByAggregate *rollupStrata = new GroupByAggregate(sortOp->getPtr(), groupByCols, aggregators );
     std::shared_ptr<QueryTable> rollupResult =  rollupStrata->getPtr()->run();
+
+    delete rollupStrata;
     return rollupResult;
 
 

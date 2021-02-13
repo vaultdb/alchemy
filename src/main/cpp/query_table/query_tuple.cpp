@@ -36,7 +36,7 @@ QueryTuple::QueryTuple(const QueryTuple &src) {
     fields_.resize(src.getFieldCount());
 
 
-    for(int i = 0; i < src.getFieldCount(); ++i) {
+    for(size_t i = 0; i < src.getFieldCount(); ++i) {
         fields_[i] = src.fields_[i];
     }
 
@@ -116,7 +116,7 @@ void QueryTuple::serialize(int8_t *dst, const QuerySchema &schema) {
     int8_t *cursor = dst;
 
 
-    for(int fieldIdx = 0; fieldIdx < getFieldCount(); ++fieldIdx) {
+    for(size_t fieldIdx = 0; fieldIdx < getFieldCount(); ++fieldIdx) {
         fields_[fieldIdx].serialize(cursor);
         cursor += schema.getField(fieldIdx).size()/8;
     }
@@ -154,7 +154,7 @@ QueryTuple& QueryTuple::operator=(const QueryTuple& src) {
 QueryTuple QueryTuple::reveal(const int &empParty) const {
     QueryTuple dstTuple(fields_.size(), false);
 
-    for(int i = 0; i < fields_.size(); ++i) {
+    for(size_t i = 0; i < fields_.size(); ++i) {
         QueryField dstField = fields_[i].reveal(empParty);
         dstTuple.putField(dstField);
     }
@@ -177,7 +177,7 @@ void QueryTuple::compareAndSwap(QueryTuple *lhs, QueryTuple *rhs, const emp::Bit
 
     assert(lhs->getFieldCount() == rhs->getFieldCount());
 
-    for(int i = 0; i < lhs->getFieldCount(); ++i) {
+    for(size_t i = 0; i < lhs->getFieldCount(); ++i) {
         types::Value lhsValue = lhs->getField(i).getValue();
         types::Value rhsValue = rhs->getField(i).getValue();
 
@@ -212,7 +212,7 @@ bool QueryTuple::operator==(const QueryTuple &other) {
         }
     }
 
-    for(int i = 0; i < getFieldCount(); ++i) {
+    for(size_t i = 0; i < getFieldCount(); ++i) {
         QueryField *thisField = getFieldPtr(i);
         QueryField *otherField = other.getFieldPtr(i);
         //std::cout << "Comparing field: " << *thisField << " to " << *otherField << std::endl;
@@ -227,11 +227,11 @@ vaultdb::QueryField *QueryTuple::getFieldPtr(const uint32_t &ordinal) const {
 }
 
 QueryTuple QueryTuple::deserialize(const QuerySchema &schema, int8_t *tupleBits) {
-    int fieldCount = schema.getFieldCount();
+    size_t fieldCount = schema.getFieldCount();
     QueryTuple result(fieldCount);
     int8_t *cursor = tupleBits;
 
-    for(int i = 0; i < fieldCount; ++i) {
+    for(size_t i = 0; i < fieldCount; ++i) {
         QueryField aField = QueryField::deserialize(schema.getField(i), cursor);
         result.putField(aField);
         cursor += schema.getField(i).size()/8;
@@ -255,12 +255,12 @@ QueryTuple QueryTuple::deserialize(const QuerySchema &schema, int8_t *tupleBits)
 // only handles encrypted case
 // always has dummy
 QueryTuple QueryTuple::deserialize(const QuerySchema &schema, Bit *tupleBits) {
-    int fieldCount = schema.getFieldCount();
+    size_t fieldCount = schema.getFieldCount();
     QueryTuple result(fieldCount, true);
     Bit *cursor = tupleBits;
 
 
-    for(int i = 0; i < fieldCount; ++i) {
+    for(size_t i = 0; i < fieldCount; ++i) {
         QueryField aField = QueryField::deserialize(schema.getField(i), cursor);
         result.putField(aField);
         cursor += schema.getField(i).size();
