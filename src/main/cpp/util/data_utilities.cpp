@@ -229,7 +229,7 @@ std::string DataUtilities::printSortDefinition(const SortDefinition &sortDefinit
 std::string DataUtilities::printFirstBytes(vector<int8_t> &bytes, const int &byteCount) {
     std::stringstream ss;
 
-    assert(byteCount > 0 && byteCount <= bytes.size());
+    assert(byteCount > 0 && (size_t) byteCount <= bytes.size());
 
     vector<int8_t>::iterator  readPos = bytes.begin();
     ss << (int) *readPos;

@@ -21,28 +21,7 @@ Integer UnionHybridData::readEncrypted(int8_t *secretSharedBits, const size_t &s
         bool *bools = DataUtilities::bytesToBool(secretSharedBits, sizeBytes);
 
         Integer result(sizeBytes * 8, 0L, dstParty);
-
-// rather than proto-exec, what if we just copy it into the vector?  Nope, already encrypted.
-/* Reproducing
- *
- *
-    for(int i = 0; i < 4; ++i) {
-        aliceShares[i] = (party == ALICE) ? Integer(32, shares[i], ALICE) : Integer(32, 0, ALICE);
-    }
-
-    for(int i = 0; i < 4; ++i) {
-        bobShares[i] = (party == BOB) ? Integer(32, shares[i], BOB) : Integer(32, 0, BOB);
-    }
-
-    for(int i = 0; i < 4; ++i) {
-        recoveredShares[i] = aliceShares[i] ^ bobShares[i];
-    }
-    But we can't just copy it in.
-    Semantically, we are saying the plaintext integer is the one in the file.
-    We set the Integer equal to it by following the procedure in Integer::Integer
-    Then we XOR it later to cancel out the blinding.
-    Since we are replicating the logic in encryted_varchar, what does this mean?   Can we use the basic case of public values here?
- */
+        
 
         if(party == dstParty) {
             ProtocolExecution::prot_exec->feed((block *)result.bits.data(), dstParty, bools, sizeBytes * 8);
@@ -128,7 +107,7 @@ void UnionHybridData::resizeAndAppend(std::shared_ptr<QueryTable> toAdd) {
 
     int writeIdx = oldTupleCount;
 
-    for(int i = 0; i < toAdd->getTupleCount(); ++i) {
+    for(size_t i = 0; i < toAdd->getTupleCount(); ++i) {
         inputTable->putTuple(writeIdx, toAdd->getTuple(i));
         ++writeIdx;
     }
