@@ -129,6 +129,7 @@ int64_t Value::getInt64() const {
 
 
     Value::~Value() {
+    /* this should not be needed
         switch(getType()) {
             case TypeId::ENCRYPTED_INTEGER32:
             case TypeId::ENCRYPTED_INTEGER64:
@@ -140,7 +141,7 @@ int64_t Value::getInt64() const {
                 value_.emp_bit_.reset();
             default:
                 return; // eliminate warnings
-        }
+        }*/
 
     }
 
