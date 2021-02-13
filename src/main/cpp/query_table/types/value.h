@@ -110,6 +110,7 @@ protected:
 
 
 
+
 protected:
   struct ValueStruct {
     boost::variant<bool, int32_t, int64_t, float_t, double_t, string>
