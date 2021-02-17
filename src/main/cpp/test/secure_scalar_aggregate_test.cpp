@@ -77,37 +77,7 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
 }
 
 
-//TEST_F(SecureScalarAggregateTest, test_avg) {
-//    // predicates in WHERE clause instead of limit to line up selections in tpch_unioned verifier
-//    std::string query = "SELECT l_extendedprice FROM lineitem  WHERE l_extendedprice <= 911.0";
-//
-//
-//    // set up the expected results:
-//    std::string expectedOutputQuery = "SELECT AVG(l_extendedprice) avg FROM (" + query + ") selection";
-//
-//    std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults("tpch_unioned", expectedOutputQuery, false);
-//    types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
-//
-//    // provide the aggregator with inputs:
-//    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, query, false, netio, FLAGS_party));
-//
-//    // define the aggregate
-//    std::vector<ScalarAggregateDefinition> aggregators;
-//    aggregators.push_back(ScalarAggregateDefinition(0, AggregateId::AVG, "avg"));
-//
-//    // place aggregate definition in an Operator
-//    ScalarAggregate *aggregateOp = new ScalarAggregate(input, aggregators);
-//    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
-//
-//    // run it
-//    std::shared_ptr<QueryTable> output = aggregate->run();
-//    std::shared_ptr<QueryTable> observed = output->reveal();
-//    observed->setSchema(expectedOutput->getSchema());
-//
-//
-//    ASSERT_EQ(*expectedOutput, *observed);
-//
-//}
+
 
 
 TEST_F(SecureScalarAggregateTest, test_avg) {
@@ -205,11 +175,13 @@ TEST_F(SecureScalarAggregateTest, test_count) {
 }
 
 
-// brings in about 200 tuples
 TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
 
-  string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= 194";
-  string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1.0 - l_discount) AS disc_price, l_extendedprice * (1.0 - l_discount) * (1.0 + l_tax) AS charge, \n"
+    // was l_orderkey <= 194
+  string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= 100";
+  string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, "
+                      "l_extendedprice * (1.0 - l_discount) AS disc_price, "
+                      "l_extendedprice * (1.0 - l_discount) * (1.0 + l_tax) AS charge, \n"
                       " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
                       " FROM (" + inputTuples + ") selection";
 
@@ -229,6 +201,8 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
 
 
   SecureSqlInput input(dbName, inputQuery, true, netio, FLAGS_party);
+
+
   ScalarAggregate aggregate(&input, aggregators);
 
   std::shared_ptr<QueryTable> aggregated = aggregate.run()->reveal(PUBLIC);
@@ -239,6 +213,8 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
   ASSERT_EQ(*expected, *observed);
 
 }
+
+
 
 
 TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
@@ -280,7 +256,7 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
 
 TEST_F(SecureScalarAggregateTest, tpch_q1) {
 
-  string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= 194";
+  string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= 100";
   string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                       " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
                       " FROM (" + inputTuples + ") selection \n";
@@ -325,6 +301,8 @@ std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb,
   ASSERT_EQ(*expected, *observed);
 
 }
+
+
 
 
 // TODO: add tests for min/max/sum/count
