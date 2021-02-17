@@ -7,13 +7,16 @@
 #include "operator.h"
 
 // only serves plaintext inputs for now
-// TODO: extend this for secure case
+
 // TODO: handle case where all inputs are dummies?
 namespace vaultdb {
     class ScalarAggregate : public Operator {
     public:
         // aggregates are sorted by their output order in aggregate's output schema
-        ScalarAggregate(std::shared_ptr<Operator> &child, const std::vector<ScalarAggregateDefinition> &aggregates)
+        ScalarAggregate(Operator *child, const std::vector<ScalarAggregateDefinition> &aggregates)
+                : Operator(child), aggregateDefinitions(aggregates) {};
+
+        ScalarAggregate(shared_ptr<QueryTable> child, const std::vector<ScalarAggregateDefinition> &aggregates)
                 : Operator(child), aggregateDefinitions(aggregates) {};
 
         std::shared_ptr<QueryTable> runSelf() override;

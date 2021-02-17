@@ -15,6 +15,8 @@ namespace vaultdb {
         explicit GroupByAggregateImpl(const int32_t & ordinal, const types::TypeId & aggType) :
                                                             aggregateOrdinal(ordinal), aggregateType(aggType),
                                                             zero(TypeUtilities::getZero(aggregateType)), one(TypeUtilities::getOne(aggregateType)){};
+
+        virtual ~GroupByAggregateImpl() {}
         virtual void initialize(const QueryTuple & tuple, const types::Value & isDummy) = 0; // run this when we start a new group-by bin
         virtual void accumulate(const QueryTuple & tuple, const types::Value & isDummy) = 0;
         virtual types::Value getResult() = 0;
@@ -37,7 +39,7 @@ namespace vaultdb {
     class PlainGroupByAggregateImpl : public GroupByAggregateImpl {
     public:
         explicit PlainGroupByAggregateImpl(const int32_t & ordinal, const types::TypeId & aggType) : GroupByAggregateImpl(ordinal, aggType) {};
-
+        virtual ~PlainGroupByAggregateImpl() = default;
          types::Value getDummyTag(const types::Value & isLastEntry, const types::Value & nonDummyBin) override;
          void updateGroupByBinBoundary(const types::Value & isNewBin, types::Value & nonDummyBinFlag) override;
 

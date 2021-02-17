@@ -9,10 +9,15 @@ int Sort::powerOfLessThanTwo(const int & n) {
   return k / 2;
 }
 
-Sort::Sort(const SortDefinition &aSortDefinition, std::shared_ptr<Operator> &child) : Operator(child), sortDefinition(aSortDefinition) {
+Sort::Sort(Operator *child, const SortDefinition &aSortDefinition) : Operator(child), sortDefinition(aSortDefinition) {
 
 
 }
+
+Sort::Sort(shared_ptr<QueryTable> child, const SortDefinition &aSortDefinition) : Operator(child), sortDefinition(aSortDefinition){
+
+}
+
 
 std::shared_ptr<QueryTable> Sort::runSelf() {
     std::shared_ptr<QueryTable> input = children[0]->getOutput();
@@ -20,13 +25,14 @@ std::shared_ptr<QueryTable> Sort::runSelf() {
     SortDefinition reverseSortDefinition = getReverseSortDefinition(sortDefinition);
 
     if(input->isEncrypted()) {
-        sortCondition = std::unique_ptr<SortCondition>(new SecureSortCondition(sortDefinition));
-        reverseSortCondition = std::unique_ptr<SortCondition>(new SecureSortCondition(reverseSortDefinition));
+        sortCondition = new SecureSortCondition(sortDefinition);
+        reverseSortCondition = new SecureSortCondition(reverseSortDefinition);
     }
     else {
-        sortCondition = std::unique_ptr<SortCondition>(new PlainSortCondition(sortDefinition));
-        reverseSortCondition = std::unique_ptr<SortCondition>(new PlainSortCondition(reverseSortDefinition));
+        sortCondition = new PlainSortCondition(sortDefinition);
+        reverseSortCondition = new PlainSortCondition(reverseSortDefinition);
     }
+
 
     // deep copy new output
     output = std::shared_ptr<QueryTable>(new QueryTable(*input));
@@ -104,5 +110,13 @@ SortDefinition Sort::getReverseSortDefinition(const SortDefinition & aSortDef) {
     return reverseSortDefinition;
 
 }
+
+Sort::~Sort() {
+
+    if(sortCondition) delete sortCondition;
+    if(reverseSortCondition) delete reverseSortCondition;
+
+}
+
 
 

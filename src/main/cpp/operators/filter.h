@@ -14,7 +14,8 @@ namespace  vaultdb {
 
 
     public:
-        Filter(std::shared_ptr<Predicate> &predicateClass, std::shared_ptr<Operator> &child);
+        Filter(Operator *child, shared_ptr<Predicate> predicateClass);
+        Filter(shared_ptr<QueryTable> child, std::shared_ptr<Predicate> predicateClass);
 
         std::shared_ptr<QueryTable> runSelf() override;
     };

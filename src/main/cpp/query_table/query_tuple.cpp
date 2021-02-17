@@ -197,14 +197,12 @@ void QueryTuple::compareAndSwap(QueryTuple *lhs, QueryTuple *rhs, const emp::Bit
 
 }
 
-bool QueryTuple::operator==(const QueryTuple &other) {
+bool  QueryTuple::operator==(const QueryTuple &other) const {
     if(getFieldCount() != other.getFieldCount()) { return false; }
 
     if(isEncrypted() != other.isEncrypted()) { return false; }
 
     if(!isEncrypted()) {
-        //std::cout << "Comparing dummy tags: " << dummy_tag_ << " vs ";
-        // std::cout  << other.dummy_tag_ << std::endl;
         bool lhs = dummy_tag_.getBool();
         bool rhs = dummy_tag_.getBool();
         if(lhs != rhs) {// if we are in the clear and their dummy tags are not equal
@@ -247,7 +245,7 @@ QueryTuple QueryTuple::deserialize(const QuerySchema &schema, int8_t *tupleBits)
         QueryFieldDesc dummyField(-1, "dummy", "dummy", types::TypeId::BOOLEAN);
         result.dummy_tag_ = types::Value::deserialize(dummyField, cursor);
     }
-    std::cout << "Deserialized tuple: " << result << std::endl;
+
     return result;
 
 }

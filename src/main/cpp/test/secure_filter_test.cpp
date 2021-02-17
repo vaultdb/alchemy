@@ -24,6 +24,7 @@ class SecureFilterPredicateClass : public Predicate {
 
     Value encryptedLineNumber;
 public:
+    ~SecureFilterPredicateClass() {}
     SecureFilterPredicateClass(int32_t valueToEncrypt) {
         emp::Integer val(32, valueToEncrypt);
         // encrypting here so we don't have to secret share it for every comparison
@@ -56,12 +57,12 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
     std::unique_ptr<QueryTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
 
-    SqlInput *inputOp = new SecureSqlInput(dbName, sql, false, netio, FLAGS_party);
-    std::shared_ptr<Operator> input = inputOp->getPtr();
-    std::shared_ptr<QueryTable> output = input->run(); // a smoke test for the operator infrastructure
+    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
+
+    std::shared_ptr<QueryTable> output = input.run(); // a smoke test for the operator infrastructure
 
     std::unique_ptr<QueryTable> revealed = output->reveal(emp::PUBLIC);
-    std::cout << *revealed << std::endl;
+
 
     ASSERT_EQ(*expected, *revealed);
 
@@ -83,16 +84,13 @@ TEST_F(SecureFilterTest, test_filter) {
     std::unique_ptr<QueryTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, expectedResultSql, true);
 
 
-    std::shared_ptr<Operator> input = std::make_shared<SecureSqlInput>(dbName, sql, false, netio, FLAGS_party);
+   SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
 
     std::shared_ptr<Predicate> aPredicate(new SecureFilterPredicateClass(1));  // secret share the constant (1) just once
-    Filter *filterOp = new Filter(aPredicate, input);  // deletion handled by shared_ptr
-    std::shared_ptr<Operator> filter = filterOp->getPtr();
+    Filter filter(&input, aPredicate);  // deletion handled by shared_ptr
 
-    std::shared_ptr<QueryTable> result = filter->run();
+    std::shared_ptr<QueryTable> result = filter.run();
     std::unique_ptr<QueryTable> revealed = result->reveal(emp::PUBLIC);
-    std::cout << "Result: " << *revealed << std::endl;
-
 
     ASSERT_EQ(*expected,  *revealed);
 

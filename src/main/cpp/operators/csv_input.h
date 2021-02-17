@@ -13,7 +13,7 @@ protected:
     QuerySchema inputSchema;
 
 public:
-    CsvInput(std::string srcFile, const QuerySchema & srcSchema ) : inputFile(srcFile), inputSchema(srcSchema) {
+    CsvInput(string srcFile, const QuerySchema & srcSchema ) : inputFile(srcFile), inputSchema(srcSchema) {
 
 
     }
@@ -22,7 +22,7 @@ public:
 
     void setSortDefinition(const SortDefinition & aSortDefinition) { sortedOn = aSortDefinition; };
 
-    std::shared_ptr<QueryTable> runSelf() override;
+    shared_ptr<QueryTable> runSelf() override;
 
     ~CsvInput() = default;
 

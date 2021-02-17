@@ -1,9 +1,7 @@
 #include "sort.h"
 
-#include <util/emp_manager.h>
 #include <operators/secure_sql_input.h>
 #include <gflags/gflags.h>
-#include "util/data_utilities.h"
 #include <gtest/gtest.h>
 #include <operators/project.h>
 #include <test/support/EmpBaseTest.h>
@@ -77,7 +75,6 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          sql, false);
-    std::cout << "input table:  " << *inputTable << std::endl;
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
@@ -85,14 +82,12 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
 
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
-    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
-    std::shared_ptr<QueryTable> result = sort->run();
+    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
+    Sort sort(&input, sortDefinition);
+    std::shared_ptr<QueryTable> result = sort.run();
 
     std::shared_ptr<QueryTable> observed = result->reveal();
 
-    std::cout << "Sorted table: " << *observed << std::endl;
 
     bool tableSorted = isSorted(observed, sortDefinition);
 
@@ -112,18 +107,16 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
     sortDefinition.emplace_back(3, SortDirection::ASCENDING);
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
-    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
+    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
+    Sort sort(&input, sortDefinition);
 
 
     // project it down to $1, $3
-    Project *projectOp = new Project(sort);
-    std::shared_ptr<Operator> project = projectOp->getPtr();
-    projectOp->addColumnMapping(1, 0);
-    projectOp->addColumnMapping(3, 1);
+    Project project(&sort);
+    project.addColumnMapping(1, 0);
+    project.addColumnMapping(3, 1);
 
-    std::shared_ptr<QueryTable> result = project->run();
+    std::shared_ptr<QueryTable> result = project.run();
     std::shared_ptr<QueryTable> observed = result->reveal();
 
     ASSERT_TRUE(isSorted(observed, sortDefinition));
@@ -139,17 +132,15 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
-    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
+    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
+    Sort sort(&input, sortDefinition);
 
 
     // project it down to $1
-    Project *projectOp = new Project(sort);
-    std::shared_ptr<Operator> project = projectOp->getPtr();
-    projectOp->addColumnMapping(1, 0);
+    Project project(&sort);
+    project.addColumnMapping(1, 0);
 
-    std::shared_ptr<QueryTable> result = project->run();
+    std::shared_ptr<QueryTable> result = project.run();
     std::shared_ptr<QueryTable> observed  = result->reveal();
 
     ASSERT_TRUE(isSorted(observed, sortDefinition));
@@ -168,15 +159,13 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
-    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
+    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
+    Sort sort(&input, sortDefinition);
 
-    Project *projectOp = new Project(sort);
-    std::shared_ptr<Operator> project = projectOp->getPtr();
-    projectOp->addColumnMapping(0, 0);
+    Project project(&sort);
+    project.addColumnMapping(0, 0);
 
-    std::shared_ptr<QueryTable> result = project->run();
+    std::shared_ptr<QueryTable> result = project.run();
     std::shared_ptr<QueryTable> observed  = result->reveal();
 
     ASSERT_TRUE(isSorted(observed, sortDefinition));
@@ -201,20 +190,18 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     sortDefinition.emplace_back(0, SortDirection::DESCENDING);
 
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
-    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
+    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
+    Sort sort(&input, sortDefinition);
 
     // project it down to $2, $0
-    Project *projectOp = new Project(sort->getPtr());
-    std::shared_ptr<Operator> project = projectOp->getPtr();
-    projectOp->addColumnMapping(2, 0);
-    projectOp->addColumnMapping(0, 1);
+    Project project(&sort);
 
-    std::shared_ptr<QueryTable> result = project->run();
+    project.addColumnMapping(2, 0);
+    project.addColumnMapping(0, 1);
+
+    std::shared_ptr<QueryTable> result = project.run();
     std::shared_ptr<QueryTable> observed  = result->reveal();
 
-    std::cout << "Observed output: " << *observed << std::endl;
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
 }
@@ -232,22 +219,19 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     sortDefinition.emplace_back(2, SortDirection::DESCENDING);
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
 
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, sql, false, netio, FLAGS_party));
-    Sort *sortOp = new Sort(sortDefinition, input); // heap allocate it
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
+    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
+    Sort sort(&input, sortDefinition);
 
 
     // project it down to $2, $1
-    Project *projectOp = new Project(sort->getPtr());
-    std::shared_ptr<Operator> project = projectOp->getPtr();
-    projectOp->addColumnMapping(2, 0);
-    projectOp->addColumnMapping(1, 1);
 
-    std::shared_ptr<QueryTable> result = project->run();
+    Project project(&sort);
+    project.addColumnMapping(2, 0);
+    project.addColumnMapping(1, 1);
+
+    std::shared_ptr<QueryTable> result = project.run();
     std::shared_ptr<QueryTable> observed  = result->reveal();
 
-
-    std::cout << "Observed output: " << *observed << std::endl;
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
 

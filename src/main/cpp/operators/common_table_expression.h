@@ -4,12 +4,18 @@
 
 #include "operator.h"
 
+
+
 namespace vaultdb {
+
     // used for adding arbitrary tables as inputs, as in common table expressions (aka WITH clauses)
     class CommonTableExpression : public Operator {
 
     public:
-        CommonTableExpression(const std::shared_ptr<QueryTable> & inputTable) { output = std::move(inputTable); }
+        CommonTableExpression(const std::shared_ptr<QueryTable> & inputTable) {
+            output = std::move(inputTable);
+            operatorExecuted = true;
+        }
         std::shared_ptr<QueryTable> runSelf() override;
 
     };

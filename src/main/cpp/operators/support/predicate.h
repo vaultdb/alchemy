@@ -12,7 +12,7 @@ class Predicate {
 
 public:
     Predicate() {}
-    ~Predicate() {}
+    virtual ~Predicate() {}
     // override when we instantiate a predicate
     virtual types::Value predicateCall(const QueryTuple & aTuple) const = 0;
 

@@ -26,7 +26,8 @@ namespace vaultdb {
         QuerySchema dstSchema;
 
     public:
-        Project(std::shared_ptr<Operator> &child);
+        Project(Operator *child);
+        Project(shared_ptr<QueryTable> src);
 
         void addColumnMappings(const ProjectionMappingSet & mapSet);
         void addColumnMapping(const uint32_t &srcOrdinal, const uint32_t &dstOrdinal) {

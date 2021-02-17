@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/20/20.
-//
-
 #ifndef _SECURE_SORT_CONDITION_H
 #define _SECURE_SORT_CONDITION_H
 
@@ -12,6 +8,7 @@ class SecureSortCondition  : public SortCondition {
 
 public:
     explicit SecureSortCondition(const SortDefinition & aSortDefinition) : SortCondition(aSortDefinition) {};
+    ~SecureSortCondition() {}
     void compareAndSwap(QueryTuple  & lhs, QueryTuple & rhs) override;
 
 

@@ -1,8 +1,12 @@
 #include "basic_join.h"
 
-BasicJoin::BasicJoin(std::shared_ptr<BinaryPredicate> &predicateClass, std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs)  : Join(predicateClass, lhs, rhs) {}
+BasicJoin::BasicJoin(Operator *lhs, Operator *rhs, shared_ptr<BinaryPredicate> predicateClass)
+        : Join(lhs, rhs, predicateClass) {}
 
-std::shared_ptr<QueryTable> BasicJoin::runSelf() {
+BasicJoin::BasicJoin(shared_ptr<QueryTable> lhs, shared_ptr<QueryTable>rhs, shared_ptr<BinaryPredicate> predicateClass)
+        : Join(lhs, rhs, predicateClass) {}
+
+shared_ptr<QueryTable> BasicJoin::runSelf() {
     std::shared_ptr<QueryTable> lhs = children[0]->getOutput();
     std::shared_ptr<QueryTable> rhs = children[1]->getOutput();
     uint32_t cursor = 0;

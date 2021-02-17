@@ -29,7 +29,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
 
     // destructor handled within Operator
     CommonTableExpression *inputOp = new CommonTableExpression(inputTable);
-    Sort *sortUnioned = new Sort(unionSortDefinition, inputOp->getPtr());
+    Sort *sortUnioned = new Sort(inputOp->getPtr(), unionSortDefinition);
 
 
     // aggregate to deduplicate
@@ -50,7 +50,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
     // *** Filter
     // HAVING max(denom_excl) = 0
     std::shared_ptr<Predicate> predicateClass(new FilterExcludedPatients(true));
-    Filter *inclusionCohort = new Filter(predicateClass, unionedPatients->getPtr());
+    Filter *inclusionCohort = new Filter(unionedPatients->getPtr(), predicateClass);
 
     return  inclusionCohort->run();
 
@@ -105,7 +105,7 @@ void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
     std::shared_ptr<Operator> includedPatients(new CommonTableExpression(src));
 
     // sort it on cols [0,5)
-    Sort *sortOp = new Sort(DataUtilities::getDefaultSortDefinition(5), includedPatients->getPtr());
+    Sort *sortOp = new Sort(includedPatients->getPtr(), DataUtilities::getDefaultSortDefinition(5));
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
     std::vector<ScalarAggregateDefinition> aggregators {
@@ -129,7 +129,7 @@ void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const {
 
     SortDefinition sortDefinition{ColumnSort(ordinal, SortDirection::ASCENDING)};
-    Sort *sortOp = new Sort(sortDefinition, aggregator->getPtr());
+    Sort *sort = new Sort(aggregator->getPtr(), sortDefinition);
 
 
     std::vector<int32_t> groupByCols{ordinal};
@@ -141,10 +141,8 @@ shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const
             ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
-    GroupByAggregate *rollupStrata = new GroupByAggregate(sortOp->getPtr(), groupByCols, aggregators );
+    GroupByAggregate *rollupStrata = new GroupByAggregate(sort->getPtr(), groupByCols, aggregators );
     std::shared_ptr<QueryTable> rollupResult =  rollupStrata->getPtr()->run();
-
-    delete rollupStrata;
     return rollupResult;
 
 

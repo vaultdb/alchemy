@@ -7,6 +7,7 @@ namespace vaultdb {
 class SecureScalarAverage : public ScalarAggregateImpl {
 public:
   explicit SecureScalarAverage(const uint32_t &ordinal, const types::TypeId & aggType);
+  ~SecureScalarAverage() = default;
   void initialize(const QueryTuple &tuple)
       override; // needs to run this once with first tuple to set up state
   void accumulate(const QueryTuple &tuple) override;
@@ -25,7 +26,9 @@ public:
   explicit SecureScalarCount(const uint32_t &ordinal, const types::TypeId & aggType)
       : ScalarAggregateImpl(ordinal, types::TypeId::ENCRYPTED_INTEGER64),
         runningCount(types::TypeId::ENCRYPTED_INTEGER64,
-                     emp::Integer(64, 0L, emp::PUBLIC)){};
+                     emp::Integer(64, 0L, emp::PUBLIC)){}
+
+  ~SecureScalarCount() {}
   void initialize(const QueryTuple &tuple)
       override; // needs to run this once with first tuple to set up state
   void accumulate(const QueryTuple &tuple) override;
@@ -49,7 +52,9 @@ public:
       zero = TypeUtilities::getZero(aggregateType);
     }
     runningSum = zero;
-  };
+  }
+
+  ~SecureScalarSum() {}
   void initialize(const QueryTuple &tuple)
       override; // needs to run this once with first tuple to set up state
   void accumulate(const QueryTuple &tuple) override;
@@ -64,7 +69,9 @@ private:
 class SecureScalarMin : public ScalarAggregateImpl {
 public:
   explicit SecureScalarMin(const uint32_t &ordinal, const types::TypeId & aggType)
-      : ScalarAggregateImpl(ordinal, aggType){};
+      : ScalarAggregateImpl(ordinal, aggType){}
+
+  ~SecureScalarMin() {}
   void initialize(const QueryTuple &tuple)
   override; // needs to run this once with first tuple to set up state
   void accumulate(const QueryTuple &tuple) override;
@@ -81,7 +88,8 @@ private:
 class SecureScalarMax : public ScalarAggregateImpl {
 public:
   explicit SecureScalarMax(const uint32_t &ordinal, const types::TypeId & aggType)
-      : ScalarAggregateImpl(ordinal, aggType){};
+      : ScalarAggregateImpl(ordinal, aggType){}
+  ~SecureScalarMax() {}
   void initialize(const QueryTuple &tuple)
   override; // needs to run this once with first tuple to set up state
   void accumulate(const QueryTuple &tuple) override;

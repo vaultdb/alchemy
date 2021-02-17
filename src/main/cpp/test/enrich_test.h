@@ -36,32 +36,32 @@ protected:
     const string aliceDbName = "enrich_htn_alice";
     const string bobDbName = "enrich_htn_bob";
 
-    std::shared_ptr<Operator> loadAndProjectPatientData(const string &dbName) const;
+    shared_ptr<QueryTable> getAgeStrataProjection(shared_ptr<QueryTable> input, const bool & isEncrypted) const;
 
-    std::shared_ptr<Operator> loadPatientExclusionData(const string &dbName) const;
+    shared_ptr<QueryTable> loadAndProjectPatientData(const string &dbName) const;
 
-    std::shared_ptr<Operator> loadAndJoinLocalData(const string &dbName) const;
+    shared_ptr<QueryTable> loadPatientExclusionData(const string &dbName) const;
 
-    std::shared_ptr<Operator> getPatientCohort();
+    shared_ptr<QueryTable> loadAndJoinLocalData(const string &dbName) const;
+
+    shared_ptr<QueryTable> getPatientCohort();
 
     void validateTable(const string &dbName, const string &sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<QueryTable> &observedTable) const;
 
 
-    //std::shared_ptr<Operator> getPatientCohort(const string &srcPatientFile, const string &srcPatientInclusionFile, bool isEncrypted);
+    static std::shared_ptr<QueryTable> rollUpAggregate(const int & ordinal, shared_ptr<QueryTable> src);
 
-    static std::shared_ptr<QueryTable> rollUpAggregate(const int & ordinal, std::shared_ptr<Operator> src);
+    shared_ptr<QueryTable> loadUnionAndDeduplicateData() const;
 
-    std::shared_ptr<Operator> loadUnionAndDeduplicateData() const;
+    void validateUnion(Operator &sortOp, const SortDefinition &expectedSortOrder) const;
 
-    void validateUnion(std::shared_ptr<Operator> sortOp, const SortDefinition &expectedSortOrder) const;
-
-    std::shared_ptr<Operator> aggregatePatientData();
+    shared_ptr<QueryTable> aggregatePatientData();
 
 
-    std::shared_ptr<Operator> filterPatients();
+    shared_ptr<QueryTable> filterPatients();
 
     std::string getRollupExpectedResultsSql(const std::string &groupByColName);
 };
 
 
-#endif // _ENRICH_TEST_H
+#endif //  _ENRICH_TEST_H

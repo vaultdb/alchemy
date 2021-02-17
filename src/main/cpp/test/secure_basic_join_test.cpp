@@ -56,12 +56,8 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
 
-    std::cout << "Expected output query: " << expectedResultSql << std::endl;
-
-    std::cout << "Expected output: \n" << *expected << std::endl;
-
-    std::shared_ptr<Operator> customerInput(new SecureSqlInput(dbName, customerSql, true, netio, FLAGS_party));
-    std::shared_ptr<Operator> ordersInput(new SecureSqlInput(dbName, ordersSql, true, netio, FLAGS_party));
+    SecureSqlInput customerInput(dbName, customerSql, true, netio, FLAGS_party);
+    SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
 
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
@@ -69,18 +65,14 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
 
     std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, true));
 
-    BasicJoin *joinOp = new BasicJoin(customerOrdersPredicate, ordersInput, customerInput);
+    BasicJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
 
-    std::shared_ptr<QueryTable> joinResult = joinOp->run()->reveal();
+    std::shared_ptr<QueryTable> joinResult = join.run()->reveal();
 
 
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
-    auto *sortOp  = new Sort(sortDefinition, joinOp->getPtr());
-    std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
-
-    std::cout << "customer input: " << std::endl << customerInput->getOutput()->reveal()->toString(true);
-    std::cout << "orders input: " << std::endl << ordersInput->getOutput()->reveal()->toString(true);
-    std::cout << "join output: " << std::endl << observed->toString(true) << std::endl;
+    Sort sort(&join, sortDefinition);
+    std::shared_ptr<QueryTable> observed = sort.run()->reveal();
 
     expected->setSortOrder(sortDefinition);
     ASSERT_EQ(*expected, *observed);
@@ -99,12 +91,11 @@ std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
                                                                                                          "FROM lineitem_cte, orders_cte "
                                                                                                          "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
-std::cout << "Expected result query: " << expectedResultSql << std::endl;
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
 
-    std::shared_ptr<Operator> lineitemInput(new SecureSqlInput(dbName, lineitemSql, true, netio, FLAGS_party));
-    std::shared_ptr<Operator> ordersInput(new SecureSqlInput(dbName, ordersSql, true, netio, FLAGS_party));
+    SecureSqlInput lineitemInput(dbName, lineitemSql, true, netio, FLAGS_party);
+    SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
 
 
     ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
@@ -112,18 +103,16 @@ std::cout << "Expected result query: " << expectedResultSql << std::endl;
 
     std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, true));
 
-    auto *joinOp = new BasicJoin(customerOrdersPredicate, lineitemInput, ordersInput);
+    BasicJoin join(&lineitemInput, &ordersInput, customerOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> joinResult = joinOp->run();
+    std::shared_ptr<QueryTable> joinResult = join.run();
     std::unique_ptr<QueryTable> joinResultDecrypted = joinResult->reveal();
 
 
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
-    auto *sortOp  = new Sort(sortDefinition, joinOp->getPtr());
-    std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
-
-
+    Sort sort(&join, sortDefinition);
+    std::shared_ptr<QueryTable> observed = sort.run()->reveal();
 
     expected->setSortOrder(sortDefinition);
     ASSERT_EQ(observed->toString(true), expected->toString(true));
@@ -145,9 +134,9 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
 
-    std::shared_ptr<Operator> customerInput(new SecureSqlInput(dbName, customerSql, true, netio, FLAGS_party));
-    std::shared_ptr<Operator> ordersInput(new SecureSqlInput(dbName, ordersSql, true, netio, FLAGS_party));
-    std::shared_ptr<Operator> lineitemInput(new SecureSqlInput(dbName, lineitemSql, true, netio, FLAGS_party));
+    SecureSqlInput customerInput(dbName, customerSql, true, netio, FLAGS_party);
+    SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
+    SecureSqlInput lineitemInput(dbName, lineitemSql, true, netio, FLAGS_party);
 
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
@@ -159,17 +148,17 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<BinaryPredicate> lineitemOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, true));
 
 
-    BasicJoin *customerOrdersJoin = new BasicJoin(customerOrdersPredicate, ordersInput, customerInput);
+    BasicJoin customerOrdersJoin(&ordersInput, &customerInput, customerOrdersPredicate);
 
-    BasicJoin *fullJoin = new BasicJoin(lineitemOrdersPredicate, lineitemInput, customerOrdersJoin->getPtr());
+    BasicJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> joinResult = fullJoin->run()->reveal();
+    std::shared_ptr<QueryTable> joinResult = fullJoin.run()->reveal();
 
 
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
-    auto *sortOp  = new Sort(sortDefinition, fullJoin->getPtr());
-    std::shared_ptr<QueryTable> observed = sortOp->run()->reveal();
+    Sort sort(&fullJoin, sortDefinition);
+    std::shared_ptr<QueryTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
     ASSERT_EQ(observed->toString(false), expected->toString(false));

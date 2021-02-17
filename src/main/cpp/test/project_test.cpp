@@ -74,28 +74,22 @@ TEST_F(ProjectionTest, q3Lineitem) {
     std::shared_ptr<QueryTable> expected =  DataUtilities::getQueryResults("tpch_alice", expectedOutputSql, false);
 
 
-    std::cout << "Expected query results:\n" << *expected << std::endl;
+    SqlInput input("tpch_alice", srcSql, false);
 
-
-    std::shared_ptr<Operator> input(new SqlInput("tpch_alice", srcSql, false));
-
-    Project *projectOp = new Project(input);
-    // each op creates a shared_ptr to this
-    std::shared_ptr<Operator> project = projectOp->getPtr();
+    Project project(&input);
 
     Expression revenueExpression(&calculateRevenue, "revenue", TypeId::FLOAT32);
 
 
 
-    projectOp->addColumnMapping(0, 0);
-    projectOp->addColumnMapping(10, 1);
-    projectOp->addExpression(revenueExpression, 2);
+    project.addColumnMapping(0, 0);
+    project.addColumnMapping(10, 1);
+    project.addExpression(revenueExpression, 2);
 
 
 
-    std::shared_ptr<QueryTable> observed = project->run();
+    std::shared_ptr<QueryTable> observed = project.run();
 
-    std::cout << "Observed query results: \n" << *observed << std::endl;
 
 
     ASSERT_EQ(*expected, *observed);

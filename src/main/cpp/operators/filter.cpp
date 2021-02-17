@@ -1,9 +1,12 @@
 #include "filter.h"
 
-Filter::Filter(std::shared_ptr<Predicate> &predicateClass, std::shared_ptr<Operator> &child) : Operator(child) {
+Filter::Filter(Operator *child, shared_ptr<Predicate> predicateClass) : Operator(child) {
     predicate = predicateClass;
 }
 
+Filter::Filter(shared_ptr<QueryTable> child, shared_ptr<Predicate> predicateClass) : Operator(child) {
+    predicate = predicateClass;
+}
 
 std::shared_ptr<QueryTable> Filter::runSelf() {
 

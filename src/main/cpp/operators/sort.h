@@ -11,12 +11,14 @@
 namespace  vaultdb {
     class Sort : public Operator {
         SortDefinition sortDefinition;
-        std::unique_ptr<SortCondition> sortCondition; // pointer-izing it b/c it is an abstract class
-        std::unique_ptr<SortCondition> reverseSortCondition;  // for when we need to put tuples in the opposite of the desired final sort order
+
+        SortCondition *sortCondition = 0; // pointer-izing it b/c it is an abstract class
+        SortCondition *reverseSortCondition = 0;  // for when we need to put tuples in the opposite of the desired final sort order
 
     public:
-        Sort(const SortDefinition &aSortDefinition, std::shared_ptr<Operator> &child);
-
+        Sort(Operator *child, const SortDefinition &aSortDefinition);
+        ~Sort();
+        Sort(shared_ptr<QueryTable> child, const SortDefinition &aSortDefinition);
 
         std::shared_ptr<QueryTable> runSelf() override;
 

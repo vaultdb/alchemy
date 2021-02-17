@@ -2,6 +2,8 @@
 
 
 make -j5
+
+
 ./bin/value_expression_test && \
 #./bin/query_table_test && \
 ./bin/filter_test && \
@@ -11,7 +13,9 @@ make -j5
 ./bin/fkey_pkey_join_test && \
 ./bin/scalar_aggregate_test && \
 ./bin/group_by_aggregate_test && \
-./bin/csv_reader_test
+./bin/csv_reader_test && \ 
+./bin/secret_share_generator_test  && \
+    ./bin/serialization_test
 
 
 #pairs for Alice and Bob
@@ -56,5 +60,6 @@ bash  test/support/load-generated-data.sh 100
 ./bin/enrich_test --party=2 &
 
 
-./bin/secure_scalar_aggregate_test --party=1 &
-./bin/secure_scalar_aggregate_test --party=2
+
+./bin/secure_serialization_deserializaton_test --party=1 &
+./bin/secure_serialization_deserializaton_test --party=2

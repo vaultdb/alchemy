@@ -17,13 +17,8 @@ class ForeignKeyPrimaryKeyJoinTest : public ::testing::Test {
 
 
 protected:
-    void SetUp() override{
-        setup_plain_prot(false, "");
-    };
-
-    void TearDown() override{
-        finalize_plain_prot();
-    };
+    void SetUp() override { setup_plain_prot(false, ""); };
+    void TearDown() override{  finalize_plain_prot(); };
 
     const std::string dbName = "tpch_unioned";
 
@@ -55,26 +50,20 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
                                    "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
                                     "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
-    std::cout << "Expected results SQL: " << expectedResultSql <<  std::endl;
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
-    std::shared_ptr<Operator> customerInput(new SqlInput(dbName, customerSql, true));
-    std::shared_ptr<Operator> ordersInput(new SqlInput(dbName, ordersSql, true));
+    SqlInput customerInput(dbName, customerSql, true);
+    SqlInput ordersInput(dbName, ordersSql, true);
 
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
     customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
     std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, false));
 
-    auto *joinOp = new KeyedJoin(customerOrdersPredicate, ordersInput, customerInput);
+    KeyedJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
 
-    std::shared_ptr<QueryTable> observed = joinOp->run();
-
-    std::cout << "customer input: " << std::endl << customerInput->getOutput()->toString(true);
-    std::cout << "orders input: " << std::endl << ordersInput->getOutput()->toString(true);
-    std::cout << "join output: " << std::endl << joinOp->getOutput()->toString(false) << std::endl;
-
+    std::shared_ptr<QueryTable> observed = join.run();
 
 
     ASSERT_EQ(*expected, *observed);
@@ -96,26 +85,19 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
-    std::shared_ptr<Operator> lineitemInput(new SqlInput(dbName, lineitemSql, true));
-    std::shared_ptr<Operator> ordersInput(new SqlInput(dbName, ordersSql, true));
+    SqlInput lineitemInput(dbName, lineitemSql, true);
+    SqlInput ordersInput(dbName, ordersSql, true);
 
 
     ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
     lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
     std::shared_ptr<BinaryPredicate> lineitemOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, false));
 
-    auto *joinOp = new KeyedJoin(lineitemOrdersPredicate, lineitemInput, ordersInput);
+    KeyedJoin join(&lineitemInput, &ordersInput, lineitemOrdersPredicate);
 
-    std::shared_ptr<QueryTable> observed = joinOp->run();
-
-    std::cout << "lineitem input: " << std::endl << lineitemInput->getOutput()->toString(true);
-    std::cout << "orders input: " << std::endl << ordersInput->getOutput()->toString(true);
-
-    std::cout << "join output: " << std::endl << joinOp->getOutput()->toString(false) << std::endl;
+    std::shared_ptr<QueryTable> observed = join.run();
 
 
-    std::cout << "Observed: " << observed->toString(true) << std::endl;
-    std::cout << "Expected: " << expected->toString(true) << std::endl;
 
     ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);
@@ -143,9 +125,9 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
 
-    std::shared_ptr<Operator> customerInput(new SqlInput(dbName, customerSql, true));
-    std::shared_ptr<Operator> ordersInput(new SqlInput(dbName, ordersSql, true));
-    std::shared_ptr<Operator> lineitemInput(new SqlInput(dbName, lineitemSql, true));
+    SqlInput customerInput(dbName, customerSql, true);
+    SqlInput ordersInput(dbName, ordersSql, true);
+    SqlInput lineitemInput(dbName, lineitemSql, true);
 
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
@@ -157,12 +139,12 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<BinaryPredicate> lineitemOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, false));
 
 
-    auto *customerOrdersJoin = new KeyedJoin(customerOrdersPredicate, ordersInput, customerInput);
+    KeyedJoin customerOrdersJoin(&ordersInput, &customerInput, customerOrdersPredicate);
 
-    auto *fullJoin = new KeyedJoin(lineitemOrdersPredicate, lineitemInput, customerOrdersJoin->getPtr());
+    KeyedJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> observed = fullJoin->run();
+    std::shared_ptr<QueryTable> observed = fullJoin.run();
 
 
 

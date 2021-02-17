@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 8/18/20.
-//
-
 #ifndef _SORT_CONDITION_H
 #define _SORT_CONDITION_H
 
@@ -17,7 +13,8 @@ protected:
     types::Value getValue(QueryTuple & aTuple, const ColumnSort & aColumnSort);
 
 public:
-    SortCondition() {}; // placeholder
+    SortCondition() {} // placeholder
+    virtual ~SortCondition() {}
     SortCondition(const SortDefinition & aSortDefinition) :  sortDefinition(aSortDefinition) {};
 
     virtual void compareAndSwap(QueryTuple  & lhs, QueryTuple & rhs) = 0;

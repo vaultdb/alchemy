@@ -28,7 +28,7 @@ enable_testing()
 
 
 add_subdirectory(test)
-add_subdirectory(pilot)
+#add_subdirectory(pilot)
 
 
 find_package(OpenSSL REQUIRED)
@@ -59,7 +59,6 @@ include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_D
 
 
 set(sources
-		operators/secure_aggregate.cpp
         operators/sort.cpp
 		operators/filter.cpp
 		util/emp_manager.cpp

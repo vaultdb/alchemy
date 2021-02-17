@@ -1,12 +1,15 @@
 #include <operators/support/secure_replace_tuple.h>
 #include "fkey_pkey_join.h"
 
-KeyedJoin::KeyedJoin(std::shared_ptr<BinaryPredicate> &predicateClass,
-                     std::shared_ptr<Operator> &foreignKey,
-                     std::shared_ptr<Operator> &primaryKey) : Join(predicateClass,
-                                                                                                 foreignKey,
-                                                                                                 primaryKey) {}
+KeyedJoin::KeyedJoin(Operator *foreignKey, Operator *primaryKey, shared_ptr<BinaryPredicate> predicateClass)
+        : Join(
+        foreignKey,
+        primaryKey, predicateClass) {}
 
+KeyedJoin::KeyedJoin(shared_ptr<QueryTable> foreignKey, shared_ptr<QueryTable> primaryKey, shared_ptr<BinaryPredicate> predicateClass)
+        : Join(
+        foreignKey,
+        primaryKey, predicateClass) {}
 
 std::shared_ptr<QueryTable> KeyedJoin::runSelf() {
     std::shared_ptr<QueryTable> foreignKeyTable = children[0]->getOutput();

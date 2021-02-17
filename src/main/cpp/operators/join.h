@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 9/13/20.
-//
-
 #ifndef _JOIN_H
 #define _JOIN_H
 
@@ -13,9 +9,8 @@ namespace  vaultdb {
 
 
     public:
-        Join(std::shared_ptr<BinaryPredicate> &predicateClass, std::shared_ptr<Operator> &lhs,
-             std::shared_ptr<Operator> &rhs);
-
+        Join(Operator *lhs, Operator *rhs, shared_ptr<BinaryPredicate> predicateClass);
+        Join(shared_ptr<QueryTable> lhs, shared_ptr<QueryTable> rhs, shared_ptr<BinaryPredicate> &predicateClass);
     protected:
         static QuerySchema concatenateSchemas(const QuerySchema &lhsSchema, const QuerySchema &rhsSchema);
 

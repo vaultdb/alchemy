@@ -1,13 +1,13 @@
-//
-// Created by Jennie Rogers on 9/13/20.
-//
-
 #include <util/type_utilities.h>
 #include "join.h"
 
 
-Join::Join(std::shared_ptr<BinaryPredicate> &predicateClass, std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs) : Operator(lhs, rhs) {
+Join::Join(Operator *lhs, Operator *rhs, shared_ptr<BinaryPredicate> predicateClass) : Operator(lhs, rhs) {
         predicate = predicateClass;
+}
+
+Join::Join(shared_ptr<QueryTable> lhs, shared_ptr<QueryTable> rhs, shared_ptr<BinaryPredicate> &predicateClass) :  Operator(lhs, rhs) {
+    predicate = predicateClass;
 }
 
 
@@ -67,5 +67,6 @@ QueryTuple Join::compareTuples(QueryTuple *lhs, QueryTuple *rhs, const types::Va
     dstTuple.setDummyTag(dummyTag);
     return dstTuple;
 }
+
 
 

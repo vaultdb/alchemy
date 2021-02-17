@@ -47,7 +47,7 @@ namespace vaultdb {
         size_t getFieldCount() const;
 
         QueryTuple& operator=(const QueryTuple& other);
-        bool operator==(const QueryTuple & other);
+        bool operator==(const QueryTuple & other) const;
         inline bool operator!=(const QueryTuple & other) { return !(*this == other);   }
 
         static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const emp::Bit & cmp);

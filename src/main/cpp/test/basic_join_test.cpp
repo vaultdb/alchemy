@@ -16,12 +16,8 @@ class BasicJoinTest : public ::testing::Test {
 
 
 protected:
-    void SetUp() override{
-        setup_plain_prot(false, "");
-    };
-    void TearDown() override{
-        finalize_plain_prot();
-    };
+    void SetUp() override { setup_plain_prot(false, ""); };
+    void TearDown() override{  finalize_plain_prot(); };
 
     const std::string dbName = "tpch_unioned";
 
@@ -59,8 +55,8 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
 
    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
-    std::shared_ptr<Operator> customerInput(new SqlInput(dbName, customerSql, true));
-    std::shared_ptr<Operator> ordersInput(new SqlInput(dbName, ordersSql, true));
+    SqlInput customerInput(dbName, customerSql, true);
+    SqlInput ordersInput(dbName, ordersSql, true);
 
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
@@ -68,15 +64,11 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
 
     std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, false));
 
-    BasicJoin *joinOp = new BasicJoin(customerOrdersPredicate, ordersInput, customerInput);
+    BasicJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> observed = joinOp->run();
+    std::shared_ptr<QueryTable> observed = join.run();
 
-    std::cout << "customer input: " << std::endl << customerInput->getOutput()->toString(true);
-    std::cout << "orders input: " << std::endl << ordersInput->getOutput()->toString(true);
-
-    std::cout << "join output: " << std::endl << joinOp->getOutput()->toString(false) << std::endl;
 
 
 
@@ -95,8 +87,8 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
-    std::shared_ptr<Operator> lineitemInput(new SqlInput(dbName, lineitemSql, true));
-    std::shared_ptr<Operator> ordersInput(new SqlInput(dbName, ordersSql, true));
+    SqlInput lineitemInput(dbName, lineitemSql, true);
+    SqlInput ordersInput(dbName, ordersSql, true);
 
 
     ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
@@ -104,7 +96,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
 
     std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, false));
 
-    BasicJoin *joinOp = new BasicJoin(customerOrdersPredicate, lineitemInput, ordersInput);
+    BasicJoin *joinOp = new BasicJoin(&lineitemInput, &ordersInput, customerOrdersPredicate);
 
 
     std::shared_ptr<QueryTable> observed = joinOp->run();
@@ -131,9 +123,9 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
-    std::shared_ptr<Operator> customerInput(new SqlInput(dbName, customerSql, true));
-    std::shared_ptr<Operator> ordersInput(new SqlInput(dbName, ordersSql, true));
-    std::shared_ptr<Operator> lineitemInput(new SqlInput(dbName, lineitemSql, true));
+    SqlInput customerInput(dbName, customerSql, true);
+    SqlInput ordersInput(dbName, ordersSql, true);
+    SqlInput lineitemInput(dbName, lineitemSql, true);
 
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
@@ -145,12 +137,11 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<BinaryPredicate> lineitemOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, false));
 
 
-    BasicJoin *customerOrdersJoin = new BasicJoin(customerOrdersPredicate, ordersInput, customerInput);
+    BasicJoin customerOrdersJoin(&ordersInput, &customerInput, customerOrdersPredicate);
+    BasicJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
 
-    BasicJoin *fullJoin = new BasicJoin(lineitemOrdersPredicate, lineitemInput, customerOrdersJoin->getPtr());
 
-
-    std::shared_ptr<QueryTable> observed = fullJoin->run();
+    std::shared_ptr<QueryTable> observed = fullJoin.run();
 
 
 

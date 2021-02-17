@@ -17,13 +17,8 @@ class GroupByAggregateTest : public ::testing::Test {
 
 
 protected:
-    void SetUp() override{
-        setup_plain_prot(false, "");
-    };
-
-    void TearDown() override{
-        finalize_plain_prot();
-    };
+    void SetUp() override { setup_plain_prot(false, ""); };
+    void TearDown() override{  finalize_plain_prot(); };
 
     const std::string dbName = "tpch_unioned";
 
@@ -42,12 +37,11 @@ void GroupByAggregateTest::runTest(const string &expectedOutputQuery,
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
     std::vector<int32_t> groupByCols{0};
 
-    std::shared_ptr<Operator> input(new SqlInput(dbName, query, false, sortDefinition));
+    SqlInput input(dbName, query, false, sortDefinition);
 
-    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
-    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+    GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+    std::shared_ptr<QueryTable> aggregated = aggregate.run();
 
 
     // need to delete dummies from observed output to compare it to expected
@@ -66,12 +60,11 @@ void GroupByAggregateTest::runDummiesTest(const string &expectedOutputQuery,
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
     std::vector<int32_t> groupByCols{0};
 
-    std::shared_ptr<Operator> input(new SqlInput(dbName, query, true, sortDefinition));
+    SqlInput input(dbName, query, true, sortDefinition);
 
-    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
-    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+    GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+    std::shared_ptr<QueryTable> aggregated = aggregate.run();
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
@@ -191,12 +184,11 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
 
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    std::shared_ptr<Operator> input(new SqlInput(dbName, inputQuery, true, sortDefinition));
+    SqlInput input(dbName, inputQuery, true, sortDefinition);
 
-    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
-    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+    GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+    std::shared_ptr<QueryTable> aggregated = aggregate.run();
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
@@ -240,12 +232,11 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
         ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    std::shared_ptr<Operator> input(new SqlInput(dbName, inputQuery, true, sortDefinition));
+    SqlInput input(dbName, inputQuery, true, sortDefinition);
 
-    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
-    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+    GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+    std::shared_ptr<QueryTable> aggregated = aggregate.run();
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
@@ -297,12 +288,11 @@ TEST_F(GroupByAggregateTest, tpch_q1) {
         ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    std::shared_ptr<Operator> input(new SqlInput(dbName, inputQuery, true, sortDefinition));
+    SqlInput input(dbName, inputQuery, true, sortDefinition);
 
-    GroupByAggregate *aggregateOp = new GroupByAggregate(input, groupByCols, aggregators);
-    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+    GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+    std::shared_ptr<QueryTable> aggregated = aggregate.run();
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);

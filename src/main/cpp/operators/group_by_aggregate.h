@@ -13,12 +13,15 @@ namespace vaultdb {
         std::vector<int32_t> groupByOrdinals;
 
     public:
-        GroupByAggregate(std::shared_ptr<Operator> &child, const std::vector<int32_t> &groupBys,
-                         const std::vector<ScalarAggregateDefinition> &aggregates) : Operator(child),
+        GroupByAggregate(Operator *child, const vector<int32_t> &groupBys,
+                         const vector<ScalarAggregateDefinition> &aggregates) : Operator(child),
                          aggregateDefinitions(aggregates),
                          groupByOrdinals(groupBys) {};
 
-
+        GroupByAggregate(shared_ptr<QueryTable> child, const vector<int32_t> &groupBys,
+                         const vector<ScalarAggregateDefinition> &aggregates) : Operator(child),
+                                                                                     aggregateDefinitions(aggregates),
+                                                                                     groupByOrdinals(groupBys) {};
         std::shared_ptr<QueryTable> runSelf() override;
 
     private:

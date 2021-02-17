@@ -34,8 +34,9 @@ protected:
 
 TEST_F(CsvReaderTest, lineitemTest) {
 
+    // TODO: syscall the line below to generate the csv
  // generated input file by running:
- // psql  -t --csv  -c "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > lineitem.csv
+ // psql  -t --csv  -c "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/lineitem.csv
 
     std::string inputFile =  currentWorkingDirectory + "/test/support/csv/lineitem.csv";
     std::string query = "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50";
@@ -69,16 +70,14 @@ TEST_F(CsvReaderTest, quotedStringTest) {
     QueryTuple parsedTuple = CsvReader::parseTuple(testStr, expected->getSchema());
     QueryTuple expectedTuple = expected->getTuple(15);
 
-    assert(parsedTuple == expectedTuple);
 
-    // won't compile, don't know why yet.
-    //ASSERT_EQ(parsedTuple, expectedTuple);
+    ASSERT_EQ(parsedTuple, expectedTuple);
 }
 
 TEST_F(CsvReaderTest, customerTest) {
 
     // generated input file by running:
-    // psql --csv  -t -c "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > customer.csv
+    // psql --csv  -t -c "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/customer.csv
 
     std::string inputFile =  currentWorkingDirectory +  "/test/support/csv/customer.csv";
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
@@ -97,7 +96,7 @@ TEST_F(CsvReaderTest, customerTest) {
 TEST_F(CsvReaderTest, ordersTest) {
 
     // generated input file by running:
-    // psql --csv -t  -c "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > orders.csv
+    // psql --csv -t  -c "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/orders.csv
 
     std::string inputFile = currentWorkingDirectory +  "/test/support/csv/orders.csv";
     std::string query = "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50";

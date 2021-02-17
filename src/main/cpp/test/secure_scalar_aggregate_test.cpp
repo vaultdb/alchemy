@@ -32,19 +32,17 @@ void SecureScalarAggregateTest::runTest(const string &expectedOutputQuery,
   //types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
   // provide the aggregator with inputs:
-  std::shared_ptr<Operator> input(new SecureSqlInput(dbName, query, false, netio, FLAGS_party));
+  SecureSqlInput input(dbName, query, false, netio, FLAGS_party);
 
 
-  ScalarAggregate *aggregateOp = new ScalarAggregate(input, aggregators);
-  std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+  ScalarAggregate aggregate(&input, aggregators);
 
-  std::shared_ptr<QueryTable> aggregated = aggregate->run();
+  std::shared_ptr<QueryTable> aggregated = aggregate.run();
   std::shared_ptr<QueryTable> aggregatedReveal = aggregated->reveal();
 
 
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregatedReveal);
-  std::cout << "Observed output: " << observed->toString(true) << std::endl;
 
   ASSERT_EQ(*expectedOutput, *observed);
 
@@ -61,19 +59,18 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
   //types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
   // provide the aggregator with inputs:
-  std::shared_ptr<Operator> input(new SecureSqlInput(dbName, query, true, netio, FLAGS_party));
+  SecureSqlInput input(dbName, query, true, netio, FLAGS_party);
 
 
-  ScalarAggregate *aggregateOp = new ScalarAggregate(input, aggregators);
-  std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+  ScalarAggregate aggregate(&input, aggregators);
 
-  std::shared_ptr<QueryTable> aggregated = aggregate->run();
+  std::shared_ptr<QueryTable> aggregated = aggregate.run();
   std::shared_ptr<QueryTable> aggregatedReveal = aggregated->reveal();
 
 
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregatedReveal);
-  std::cout << "Observed output: " << observed->toString(true) << std::endl;
+
 
   ASSERT_EQ(*expectedOutput, *observed);
 
@@ -216,7 +213,6 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
                       " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
                       " FROM (" + inputTuples + ") selection";
 
-  std::cout << "Input query: " << inputQuery << std::endl;
 
   string expectedOutputQuery = "SELECT SUM(l_quantity) sum_qty, "
                                "SUM(l_extendedprice) sum_base_price, "
@@ -231,13 +227,11 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
                                                       ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
                                                       ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge")};
 
-  std::shared_ptr<Operator> input(new SecureSqlInput(dbName, inputQuery, true, netio, FLAGS_party));
 
+  SecureSqlInput input(dbName, inputQuery, true, netio, FLAGS_party);
+  ScalarAggregate aggregate(&input, aggregators);
 
-  ScalarAggregate *aggregateOp = new ScalarAggregate(input, aggregators);
-  std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
-
-  std::shared_ptr<QueryTable> aggregated = aggregate->run()->reveal(PUBLIC);
+  std::shared_ptr<QueryTable> aggregated = aggregate.run()->reveal(PUBLIC);
 
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
@@ -269,18 +263,16 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
       ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
       ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-  std::shared_ptr<Operator> input(new SecureSqlInput(dbName, inputQuery, true, netio, FLAGS_party));
+  SecureSqlInput input(dbName, inputQuery, true, netio, FLAGS_party);
 
   // sort alice + bob inputs after union
-  ScalarAggregate *aggregateOp = new ScalarAggregate(input, aggregators);
-  std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+  ScalarAggregate aggregate(&input, aggregators);
 
-  std::shared_ptr<QueryTable> aggregated = aggregate->run()->reveal(PUBLIC);
+  std::shared_ptr<QueryTable> aggregated = aggregate.run()->reveal(PUBLIC);
 
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
 
-  std::cout << "Observed output: " << observed->toString(true) << std::endl;
 
   ASSERT_EQ(*expected, *observed);
 
@@ -317,20 +309,18 @@ std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb,
       ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
       ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-  std::shared_ptr<Operator> input(new SecureSqlInput(dbName, inputQuery, true, netio, FLAGS_party));
+    SecureSqlInput input(dbName, inputQuery, true, netio, FLAGS_party);
 
 
   //std::shared_ptr<Operator> sort = sortOp->getPtr();
 
-  ScalarAggregate *aggregateOp = new ScalarAggregate(input, aggregators);
-  std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+    ScalarAggregate aggregate(&input, aggregators);
 
-  std::shared_ptr<QueryTable> aggregated = aggregate->run()->reveal(PUBLIC);
+
+  std::shared_ptr<QueryTable> aggregated = aggregate.run()->reveal(PUBLIC);
 
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
-
-  std::cout << "Observed output: " << observed->toString(true) << std::endl;
 
   ASSERT_EQ(*expected, *observed);
 

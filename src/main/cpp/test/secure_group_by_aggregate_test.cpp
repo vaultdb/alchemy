@@ -37,25 +37,22 @@ void SecureGroupByAggregateTest::runTest(const string &expectedOutputQuery,
 
     // run secure query
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, query, false, sortDefinition, netio, FLAGS_party));
+    SecureSqlInput input(dbName, query, false, sortDefinition, netio, FLAGS_party);
 
     // sort alice + bob inputs after union
-    Sort *sortOp = new Sort(sortDefinition, input);
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
+    Sort sort(&input, sortDefinition);
 
 
     std::vector<int32_t> groupByCols{0};
 
-    GroupByAggregate *aggregateOp = new GroupByAggregate(sort, groupByCols, aggregators);
-    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+    GroupByAggregate aggregate(&sort, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate->run();
+    std::shared_ptr<QueryTable> aggregated = aggregate.run();
     std::shared_ptr<QueryTable> aggregatedReveal = aggregated->reveal();
 
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregatedReveal);
-    std::cout << "Observed output: " << observed->toString(true) << std::endl;
 
     ASSERT_EQ(*expected, *observed);
 
@@ -72,19 +69,17 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expectedOutputQuer
 
     // configure and run test
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, query, true, sortDefinition, netio, FLAGS_party));
+    SecureSqlInput input(dbName, query, true, sortDefinition, netio, FLAGS_party);
 
     // sort alice + bob inputs after union
-    Sort *sortOp = new Sort(sortDefinition, input);
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
+    Sort sort(&input, sortDefinition);
 
     std::vector<int32_t> groupByCols;
     groupByCols.push_back(0);
 
-    GroupByAggregate *aggregateOp = new GroupByAggregate(sort, groupByCols, aggregators);
+    GroupByAggregate aggregate(&sort, groupByCols, aggregators);
 
-    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
-    std::shared_ptr<QueryTable> aggregated = aggregate->run()->reveal();
+    std::shared_ptr<QueryTable> aggregated = aggregate.run()->reveal();
 
 
     // need to delete dummies from observed output to compare it to expected
@@ -186,7 +181,6 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
                         " FROM (" + inputTuples + ") selection \n"
                         " ORDER BY  l_returnflag, l_linestatus";
 
-    std::cout << "Input query: " << inputQuery << std::endl;
 
     string expectedOutputQuery = "SELECT  l_returnflag, l_linestatus, "
                                  "SUM(l_quantity) sum_qty, "
@@ -207,16 +201,14 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
 
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, inputQuery, true, sortDefinition, netio, FLAGS_party));
+    SecureSqlInput input(dbName, inputQuery, true, sortDefinition, netio, FLAGS_party);
 
     // sort alice + bob inputs after union
-    Sort *sortOp = new Sort(sortDefinition, input);
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
+    Sort sort(&input, sortDefinition);
 
-    GroupByAggregate *aggregateOp = new GroupByAggregate(sort, groupByCols, aggregators);
-    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+    GroupByAggregate aggregate(&sort, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate->run()->reveal(PUBLIC);
+    std::shared_ptr<QueryTable> aggregated = aggregate.run()->reveal(PUBLIC);
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
@@ -260,16 +252,14 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, inputQuery, true, sortDefinition, netio, FLAGS_party));
+    SecureSqlInput input(dbName, inputQuery, true, sortDefinition, netio, FLAGS_party);
 
     // sort alice + bob inputs after union
-    Sort *sortOp = new Sort(sortDefinition, input);
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
+    Sort sort(&input, sortDefinition);
 
-    GroupByAggregate *aggregateOp = new GroupByAggregate(sort, groupByCols, aggregators);
-    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+    GroupByAggregate aggregate(&sort, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate->run()->reveal(PUBLIC);
+    std::shared_ptr<QueryTable> aggregated = aggregate.run()->reveal(PUBLIC);
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
@@ -321,15 +311,14 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    std::shared_ptr<Operator> input(new SecureSqlInput(dbName, inputQuery, true, sortDefinition, netio, FLAGS_party));
+    SecureSqlInput input(dbName, inputQuery, true, sortDefinition, netio, FLAGS_party);
 
     // sort alice + bob inputs after union
-    Sort *sortOp = new Sort(sortDefinition, input);
-    std::shared_ptr<Operator> sort = sortOp->getPtr();
+    Sort sort(&input, sortDefinition);
 
-    GroupByAggregate *aggregateOp = new GroupByAggregate(sort, groupByCols, aggregators);    std::shared_ptr<Operator> aggregate = aggregateOp->getPtr();
+    GroupByAggregate aggregate(&sort, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate->run()->reveal(PUBLIC);
+    std::shared_ptr<QueryTable> aggregated = aggregate.run()->reveal(PUBLIC);
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);

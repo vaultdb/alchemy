@@ -2,12 +2,19 @@
 
 
 // can't initialize schemas yet, don't have child schema
-Project::Project(std::shared_ptr<Operator> &child) : Operator(child),  colCount(0), srcSchema(0), dstSchema(0){
+Project::Project(Operator *child) : Operator(child), colCount(0), srcSchema(0), dstSchema(0){
 
 
 }
 
+Project::Project(shared_ptr<QueryTable> child) : Operator(child), colCount(0), srcSchema(0), dstSchema(0){
+
+
+}
+
+
 std::shared_ptr<QueryTable> Project::runSelf() {
+
     std::shared_ptr<QueryTable> srcTable = children[0]->getOutput();
     SortDefinition srcSortOrder = srcTable->getSortOrder();
     srcSchema = srcTable->getSchema();

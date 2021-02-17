@@ -3,19 +3,33 @@
 
 using namespace vaultdb;
 
-Operator::Operator(std::shared_ptr<Operator> &child) {
 
-    myRef = std::shared_ptr<Operator>(this);
-    child->setParent(myRef);
+Operator::Operator(shared_ptr<QueryTable> lhsSrc) {
+        lhs = new TableInput(lhsSrc);
+        setChild((Operator *) lhs);
+}
+
+Operator::Operator(shared_ptr<QueryTable> lhsSrc, shared_ptr<QueryTable> rhsSrc) {
+    lhs = new TableInput(lhsSrc);
+    setChild((Operator *) lhs, 0);
+
+    rhs = new TableInput(rhsSrc);
+    setChild((Operator *) rhs, 1);
+
+}
+
+
+Operator::Operator(Operator *child) {
+
+     child->setParent(this);
     children.push_back(child);
 
 }
 
-Operator::Operator(std::shared_ptr<Operator> &lhs, std::shared_ptr<Operator> &rhs) {
-    myRef = std::shared_ptr<Operator>(this);
+Operator::Operator(Operator *lhs, Operator *rhs) {
 
-    lhs->setParent(myRef);
-    rhs->setParent(myRef);
+    lhs->setParent(this);
+    rhs->setParent(this);
     children.push_back(lhs);
     children.push_back(rhs);
 
@@ -27,7 +41,7 @@ std::shared_ptr<QueryTable> Operator::run() {
     if(operatorExecuted) // prevent duplicate executions of operator
         return output;
 
-    for(std::shared_ptr<Operator> op : children) {
+    for(Operator *op : children) {
         op->run();
     }
 
@@ -44,42 +58,28 @@ std::shared_ptr<QueryTable> Operator::run() {
     return output;
 }
 
-std::shared_ptr<Operator> Operator::getParent() const {
+Operator * Operator::getParent() const {
     return parent;
 }
 
- std::shared_ptr<Operator> Operator::getChild(int idx) const {
+ Operator * Operator::getChild(int idx) const {
     return children[idx];
 }
 
-void Operator::setParent(std::shared_ptr<Operator> & aParent) {
+void Operator::setParent(Operator *aParent) {
   parent = aParent;
 }
 
-void Operator::setChild(std::shared_ptr<Operator> aChild, int idx) {
+void Operator::setChild(Operator *aChild, int idx) {
    children[idx] = aChild;
 }
 
-std::shared_ptr<Operator> & Operator::getPtr() {
-    return myRef;
+ Operator::~Operator() {
+    if(lhs) delete lhs;
+    if(rhs) delete rhs;
+
 }
 
-// Insert new operator as root to tree
- std::shared_ptr<Operator> Operator::getOperatorTree(Operator *op, std::shared_ptr<Operator> child) {
-    std::shared_ptr<Operator> dst = op->getPtr();
-    child->setParent(dst);
-    dst->children.push_back(child);
-    return dst;
-}
 
-std::shared_ptr<Operator> Operator::getOperatorTree(Operator *op, std::shared_ptr<Operator> lhs, std::shared_ptr<Operator> rhs) {
-    std::shared_ptr<Operator> dst = op->getPtr();
-    lhs->setParent(dst);
-    dst->children.push_back(lhs);
 
-    rhs->setParent(dst);
-    dst->children.push_back(rhs);
-
-    return dst;
-}
 

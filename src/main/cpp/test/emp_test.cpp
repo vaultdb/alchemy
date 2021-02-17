@@ -41,7 +41,6 @@ class EmpTest : public EmpBaseTest {
 TEST_F(EmpTest, emp_test_varchar) {
 
     std::string initialString = "lithely regular deposits. fluffily";
-    std::cout << "Encoding: " << initialString << std::endl;
 
     int stringLength = 44;
     int stringBitCount = stringLength * 8;
@@ -84,8 +83,6 @@ TEST_F(EmpTest, emp_test_varchar) {
     std::string decodedString((char *) decodedBytes.data());
     delete [] bools;
 
-    std::cout << "Decoded string: " << decodedString << std::endl;
-
 
     ASSERT_EQ(initialString, decodedString);
 
@@ -116,7 +113,6 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     }
 
 
-    std::cout << "Initial table: " << *inputTable << std::endl;
     std::shared_ptr<QueryTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
 
     netio->flush();

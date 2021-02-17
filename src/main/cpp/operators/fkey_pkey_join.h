@@ -10,8 +10,8 @@ namespace  vaultdb {
     class KeyedJoin : public Join {
 
     public:
-        KeyedJoin(std::shared_ptr<BinaryPredicate> &predicateClass, std::shared_ptr<Operator> &foreignKey,
-                  std::shared_ptr<Operator> &primaryKey);
+        KeyedJoin(Operator *foreignKey, Operator *primaryKey, shared_ptr<BinaryPredicate> predicateClass);
+        KeyedJoin(shared_ptr<QueryTable> foreignKey, shared_ptr<QueryTable> primaryKey, shared_ptr<BinaryPredicate> predicateClass);
 
         std::shared_ptr<QueryTable> runSelf() override;
 

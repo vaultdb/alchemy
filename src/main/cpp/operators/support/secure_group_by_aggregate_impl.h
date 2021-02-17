@@ -9,7 +9,7 @@ namespace vaultdb {
     class SecureGroupByAggregateImpl : public GroupByAggregateImpl {
     public:
         explicit SecureGroupByAggregateImpl(const int32_t & ordinal, const types::TypeId & aggType) : GroupByAggregateImpl(ordinal, aggType) {};
-
+        virtual ~SecureGroupByAggregateImpl() {}
         types::Value getDummyTag(const types::Value & isLastEntry, const types::Value & nonDummyBin) override;
         void updateGroupByBinBoundary(const types::Value & isNewBin, types::Value & nonDummyBinFlag) override;
 

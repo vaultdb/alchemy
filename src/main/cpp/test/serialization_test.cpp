@@ -93,7 +93,6 @@ TEST_F(SerializationTest, capricornTest) {
 
     std::unique_ptr<QueryTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
     vector<int8_t> serialized = inputTable->serialize();
-    std::cout << "First bytes: " << DataUtilities::printFirstBytes(serialized, 10) << std::endl;
 
     std::shared_ptr<QueryTable> deserialized = QueryTable::deserialize(targetSchema, serialized);
 
@@ -112,7 +111,6 @@ TEST_F(SerializationTest, xored_serialization_test) {
 
     std::unique_ptr<QueryTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
     vector<int8_t> serialized = inputTable->serialize();
-    std::cout << "First plaintext bytes: " << DataUtilities::printFirstBytes(serialized, 10) << std::endl;
 
     // alice contains random values... ssh!
     string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.alice";
@@ -127,7 +125,6 @@ TEST_F(SerializationTest, xored_serialization_test) {
         ++readPos;
     }
 
-    std::cout << "First xored bytes: " << DataUtilities::printFirstBytes(serialized, 10) << std::endl;
 
     // repeat the process again to decrypt it
 
@@ -161,8 +158,6 @@ TEST_F(SerializationTest, capricorn_deserialization) {
     vector<int8_t> bobBits = DataUtilities::readFile(bobFile);
 
     //  bob has "xored bits"
-    std::cout << "First xored bits: " << DataUtilities::printFirstBytes(bobBits, 10) << std::endl;
-
     vector<int8_t> serialized = aliceBits;
 
     vector<int8_t>::iterator writePos = serialized.begin();
@@ -175,7 +170,6 @@ TEST_F(SerializationTest, capricorn_deserialization) {
     }
 
 
-    std::cout << "First plaintext bytes: " << DataUtilities::printFirstBytes(serialized, 10) << std::endl;
     std::shared_ptr<QueryTable> deserialized = QueryTable::deserialize(targetSchema, serialized);
     /* Expected:
 
