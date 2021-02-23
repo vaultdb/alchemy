@@ -412,6 +412,7 @@ void Value::setValue(const std::string & aString) {
 
         }
 
+        throw std::invalid_argument("Could not deserialize " + TypeUtilities::getTypeIdString(desc.getType()));
     }
 
 

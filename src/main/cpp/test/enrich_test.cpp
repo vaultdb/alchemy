@@ -474,7 +474,7 @@ TEST_F(EnrichTest, testRollups) {
     ageStratified = DataUtilities::removeDummies(ageStratified);
     std::string expectedOutputSql = getRollupExpectedResultsSql("age_strata");
     validateTable(unionedDbName, expectedOutputSql, orderBy, ageStratified);
-    std::cout << "Validated age strata" <<  *ageStratified << std::endl;
+    //std::cout << "Validated age strata" <<  *ageStratified << std::endl;
 
     // gender (2)
     std::shared_ptr<QueryTable> genderStratified = rollUpAggregate(2, aggregator)->reveal();
@@ -482,21 +482,21 @@ TEST_F(EnrichTest, testRollups) {
     expectedOutputSql = getRollupExpectedResultsSql("sex");
     validateTable(unionedDbName, expectedOutputSql, orderBy, genderStratified);
 
-    std::cout << "Validated gender strata " << *genderStratified << std::endl;
+    //std::cout << "Validated gender strata " << *genderStratified << std::endl;
 
     // ethnicity (3)
     std::shared_ptr<QueryTable> ethnicityStratified = rollUpAggregate(3, aggregator)->reveal();
     ethnicityStratified = DataUtilities::removeDummies(ethnicityStratified);
     expectedOutputSql = getRollupExpectedResultsSql("ethnicity");
     validateTable(unionedDbName, expectedOutputSql, orderBy, ethnicityStratified);
-    std::cout << "Validated ethnicity strata " << *ethnicityStratified << std::endl;
+    //std::cout << "Validated ethnicity strata " << *ethnicityStratified << std::endl;
 
     // race (4)
     std::shared_ptr<QueryTable> raceStratified = rollUpAggregate(4, aggregator)->reveal();
     raceStratified = DataUtilities::removeDummies(raceStratified);
     expectedOutputSql = getRollupExpectedResultsSql("race");
     validateTable(unionedDbName, expectedOutputSql, orderBy, raceStratified);
-    std::cout << "Validated race strata " << *raceStratified << std::endl;
+    //std::cout << "Validated race strata " << *raceStratified << std::endl;
 
 
     // zip marker (0)
@@ -504,10 +504,11 @@ TEST_F(EnrichTest, testRollups) {
     zipMarkerStratified = DataUtilities::removeDummies(zipMarkerStratified);
     expectedOutputSql = getRollupExpectedResultsSql("zip_marker");
     validateTable(unionedDbName, expectedOutputSql, orderBy, zipMarkerStratified);
-    std::cout << "Validated zip marker stratified " << *zipMarkerStratified << std::endl;
+    //std::cout << "Validated zip marker stratified " << *zipMarkerStratified << std::endl;
 }
 
-
+// setup with 100 tuples:
+// bash test/support/load-generated-data.sh 100
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);

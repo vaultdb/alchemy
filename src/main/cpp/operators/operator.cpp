@@ -6,15 +6,15 @@ using namespace vaultdb;
 
 Operator::Operator(shared_ptr<QueryTable> lhsSrc) {
         lhs = new TableInput(lhsSrc);
-        setChild((Operator *) lhs);
+        children.push_back((Operator *) lhs);
 }
 
 Operator::Operator(shared_ptr<QueryTable> lhsSrc, shared_ptr<QueryTable> rhsSrc) {
     lhs = new TableInput(lhsSrc);
-    setChild((Operator *) lhs, 0);
+    children.push_back((Operator *) lhs);
 
     rhs = new TableInput(rhsSrc);
-    setChild((Operator *) rhs, 1);
+    children.push_back((Operator *) rhs);
 
 }
 
