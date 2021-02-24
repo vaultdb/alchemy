@@ -12,7 +12,7 @@ namespace  vaultdb {
     public:
         KeyedJoin(Operator *foreignKey, Operator *primaryKey, shared_ptr<BinaryPredicate> predicateClass);
         KeyedJoin(shared_ptr<QueryTable> foreignKey, shared_ptr<QueryTable> primaryKey, shared_ptr<BinaryPredicate> predicateClass);
-
+        ~KeyedJoin() = default;
         std::shared_ptr<QueryTable> runSelf() override;
 
     };

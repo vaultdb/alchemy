@@ -28,6 +28,7 @@ namespace vaultdb {
     public:
         Project(Operator *child);
         Project(shared_ptr<QueryTable> src);
+        ~Project() = default;
 
         void addColumnMappings(const ProjectionMappingSet & mapSet);
         void addColumnMapping(const uint32_t &srcOrdinal, const uint32_t &dstOrdinal) {

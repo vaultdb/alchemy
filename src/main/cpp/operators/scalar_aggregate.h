@@ -18,6 +18,7 @@ namespace vaultdb {
 
         ScalarAggregate(shared_ptr<QueryTable> child, const std::vector<ScalarAggregateDefinition> &aggregates)
                 : Operator(child), aggregateDefinitions(aggregates) {};
+        ~ScalarAggregate() = default;
 
         std::shared_ptr<QueryTable> runSelf() override;
 

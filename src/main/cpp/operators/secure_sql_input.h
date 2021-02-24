@@ -24,9 +24,11 @@ namespace  vaultdb {
         SecureSqlInput(std::string db, std::string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty) : SqlInput(db, sql, dummyTag),
                                                                                                            netio_(netio), srcParty(aSrcParty) {}
 
-        SecureSqlInput(const string &dbName, const string & sql, const bool &hasDummyTag, const SortDefinition &sortedOn, NetIO *netio, const int &party) : SqlInput(dbName, sql, hasDummyTag, sortedOn),  netio_(netio),
-                                                                                                                                                             srcParty(party) {}
+        SecureSqlInput(const string &dbName, const string & sql, const bool &hasDummyTag, const SortDefinition &sortedOn, NetIO *netio, const int &party) : SqlInput(dbName, sql, hasDummyTag, sortedOn),
+                        netio_(netio), srcParty(party) {}
+         ~SecureSqlInput() = default;
     };
+
 }
 
 #endif // ENCRYPTED_SQL_INPUT_H

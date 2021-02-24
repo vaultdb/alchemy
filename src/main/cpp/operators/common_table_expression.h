@@ -16,6 +16,7 @@ namespace vaultdb {
             output = std::move(inputTable);
             operatorExecuted = true;
         }
+        ~CommonTableExpression() = default;
         std::shared_ptr<QueryTable> runSelf() override;
 
     };

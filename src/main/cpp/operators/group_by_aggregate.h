@@ -23,6 +23,7 @@ namespace vaultdb {
                                                                                      aggregateDefinitions(aggregates),
                                                                                      groupByOrdinals(groupBys) {};
         std::shared_ptr<QueryTable> runSelf() override;
+        ~GroupByAggregate() = default;
 
     private:
         GroupByAggregateImpl *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,

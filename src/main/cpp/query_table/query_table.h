@@ -33,8 +33,7 @@ namespace  vaultdb {
 
             QueryTable(const QueryTable &src);
 
-            ~QueryTable() {
-            }
+            ~QueryTable() {}
 
 
             void resize(const size_t & tupleCount);

@@ -11,6 +11,7 @@ namespace  vaultdb {
     public:
         Join(Operator *lhs, Operator *rhs, shared_ptr<BinaryPredicate> predicateClass);
         Join(shared_ptr<QueryTable> lhs, shared_ptr<QueryTable> rhs, shared_ptr<BinaryPredicate> &predicateClass);
+        ~Join()  = default;
     protected:
         static QuerySchema concatenateSchemas(const QuerySchema &lhsSchema, const QuerySchema &rhsSchema);
 

@@ -23,7 +23,7 @@ namespace  vaultdb {
         SqlInput(std::string db, std::string sql, bool dummyTag, const SortDefinition & sortDefinition) :  Operator(), inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sortedOn(sortDefinition){}
 
         void setSortDefinition(const SortDefinition & aSortDefinition) { sortedOn = aSortDefinition; };
-
+        ~SqlInput() = default;
         std::shared_ptr<QueryTable> runSelf() override;
 
 
