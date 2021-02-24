@@ -8,7 +8,7 @@ QuerySchema::QuerySchema(const size_t &num_fields)  {
     fields_.reserve(num_fields);
 
     // initialize all fields to blanks
-    for(int i = 0; i < num_fields; ++i) {
+    for(size_t i = 0; i < num_fields; ++i) {
         fields_.push_back(QueryFieldDesc());
     }
 
@@ -35,14 +35,14 @@ int QuerySchema::getFieldCount() const {
 QuerySchema::QuerySchema(const QuerySchema &s) {
     fields_.reserve(s.getFieldCount());
 
-  for (int i = 0; i < s.getFieldCount(); i++) {
+  for (size_t i = 0; i < s.getFieldCount(); i++) {
       fields_.push_back( s.getField(i));
   }
 }
 
 size_t QuerySchema::size() const {
     size_t bitSize = 0L;
-    for (int i = 0; i < getFieldCount(); i++) {
+    for (size_t i = 0; i < getFieldCount(); i++) {
         bitSize += fields_[i].size();
 
     }
@@ -53,12 +53,12 @@ size_t QuerySchema::size() const {
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const QuerySchema &schema) {
-    int fieldCount = schema.getFieldCount();
+    size_t fieldCount = schema.getFieldCount();
 
     os << "(" << schema.getField(0);
 
 
-    for(int i = 1; i < fieldCount; ++i) {
+    for(size_t i = 1; i < fieldCount; ++i) {
         os << ", " << schema.getField(i);
     }
 
@@ -72,7 +72,7 @@ QuerySchema &QuerySchema::operator=(const QuerySchema &other) {
     fields_.clear();
     fields_.reserve(fieldCount);
 
-    for (int i = 0; i < other.getFieldCount(); i++) {
+    for (size_t i = 0; i < other.getFieldCount(); i++) {
         QueryFieldDesc aFieldDesc = other.fields_[i];
         fields_.push_back(aFieldDesc);
     }

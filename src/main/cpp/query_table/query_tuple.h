@@ -59,5 +59,7 @@ namespace vaultdb {
     std::ostream &operator<<(std::ostream &os, const QueryTuple &tuple);
 
 
+    ostream &operator<<(ostream &os, const QueryTuple &tuple);
+
 } // namespace vaultdb
 #endif // QUERY_TUPLE_H
