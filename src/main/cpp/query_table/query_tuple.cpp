@@ -86,7 +86,7 @@ string QueryTuple::toString(const bool &showDummies) const {
            || isEncrypted()) { // or its status is unknown
          sstream <<   "(" <<  getField(0);
 
-        for (int i = 1; i < getFieldCount(); ++i)
+        for (size_t i = 1; i < getFieldCount(); ++i)
             sstream << ", " << getField(i);
 
         sstream << ")";
