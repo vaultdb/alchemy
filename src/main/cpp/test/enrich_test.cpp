@@ -358,7 +358,7 @@ TEST_F(EnrichTest, loadUnionAndDeduplicateData) {
 
     std::shared_ptr<QueryTable> deduplicator = loadUnionAndDeduplicateData();
     std::shared_ptr<QueryTable> observedTable = deduplicator->reveal();
-    std::cout << "Observed table: " << observedTable->toString(true) << std::endl;
+    //std::cout << "Observed table: " << observedTable->toString(true) << std::endl;
     observedTable = DataUtilities::removeDummies(observedTable);
 
     validateTable(unionedDbName, expectedResultSql, DataUtilities::getDefaultSortDefinition(6), observedTable);
