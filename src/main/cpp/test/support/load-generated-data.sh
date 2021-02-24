@@ -13,6 +13,10 @@ cat alice-patient.csv  bob-patient.csv > unioned-patient.csv
 cat alice-patient-exclusion.csv bob-patient-exclusion.csv >  unioned-patient-exclusion.csv 
 
 
+dropdb enrich_htn_unioned
+dropdb enrich_htn_alice
+dropdb enrich_htn_bob
+
 createdb enrich_htn_unioned
 createdb enrich_htn_alice
 createdb enrich_htn_bob
