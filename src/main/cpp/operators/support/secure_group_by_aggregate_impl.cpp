@@ -38,7 +38,7 @@ void SecureGroupByCountImpl::initialize(const QueryTuple &tuple, const Value &is
 
 void SecureGroupByCountImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
 
-    Value toUpdate = !isDummy & !tuple.getDummyTag();
+    Value toUpdate = (!isDummy) & !tuple.getDummyTag();
     Value incremented = runningCount + one;
     runningCount = Value::obliviousIf(toUpdate, incremented, runningCount);
 
@@ -74,7 +74,7 @@ void SecureGroupBySumImpl::accumulate(const QueryTuple &tuple, const Value &isDu
     }
 
 
-    Value toUpdate = !isDummy & !(tuple.getDummyTag());
+    Value toUpdate = (!isDummy) & !(tuple.getDummyTag());
     Value incremented = runningSum + toAdd;
     runningSum = Value::obliviousIf(toUpdate, incremented, runningSum);
 }
@@ -109,7 +109,7 @@ void SecureGroupByAvgImpl::accumulate(const QueryTuple &tuple, const Value &isDu
     Value toAdd = tuple.getField(aggregateOrdinal).getValue();
 
 
-    Value toUpdate = !isDummy & !(tuple.getDummyTag());
+    Value toUpdate = (!isDummy) & !(tuple.getDummyTag());
     Value incremented = runningSum + toAdd;
     Value incrementedCount = runningCount + oneFloat;
 
@@ -151,7 +151,7 @@ void SecureGroupByMinImpl::initialize(const QueryTuple &tuple, const Value &isDu
 
 void SecureGroupByMinImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
     Value aggInput = tuple.getField(aggregateOrdinal).getValue();
-    Value toUpdate = !isDummy & !(tuple.getDummyTag()) & (aggInput < runningMin);
+    Value toUpdate = (!isDummy) & !(tuple.getDummyTag()) & (aggInput < runningMin);
     runningMin = Value::obliviousIf(toUpdate, aggInput, runningMin);
 }
 
@@ -187,7 +187,7 @@ void SecureGroupByMaxImpl::initialize(const QueryTuple &tuple, const Value &isDu
 
 void SecureGroupByMaxImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
     Value aggInput = tuple.getField(aggregateOrdinal).getValue();
-    Value toUpdate = !isDummy & !(tuple.getDummyTag()) & (aggInput > runningMax);
+    Value toUpdate = (!isDummy) & !(tuple.getDummyTag()) & (aggInput > runningMax);
     runningMax = Value::obliviousIf(toUpdate, aggInput, runningMax);
 
 }

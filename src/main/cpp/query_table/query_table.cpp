@@ -29,7 +29,7 @@ QueryTable::QueryTable(const int &num_tuples, const QuerySchema &schema, const S
 
     tuples_.resize(num_tuples);
 
-    for(uint32_t i = 0; i < num_tuples; ++i) {
+    for(int i = 0; i < num_tuples; ++i) {
         tuples_[i].setFieldCount(schema.getFieldCount()); // initialize tuples
     }
 }
@@ -40,7 +40,7 @@ QueryTable::QueryTable(const int &num_tuples, const int &colCount)
     : schema_(QuerySchema(colCount)) {
     tuples_.resize(num_tuples);
 
-    for(uint32_t i = 0; i < num_tuples; ++i) {
+    for(int i = 0; i < num_tuples; ++i) {
         tuples_[i].setFieldCount(colCount); // initialize tuples
     }
 
