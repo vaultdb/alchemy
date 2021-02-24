@@ -268,6 +268,11 @@ vector<int8_t> DataUtilities::boolsToBytes( string &bitString) {
 
 // From Chenkai Li's EMP memory instrumentation
 
+void DataUtilities::checkMemoryUtilization(string msg) {
+    cout << "Checking memory utilization after " << msg << endl;
+    DataUtilities::checkMemoryUtilization();
+}
+
 void DataUtilities::checkMemoryUtilization() {
 #if defined(__linux__)
     struct rusage rusage;

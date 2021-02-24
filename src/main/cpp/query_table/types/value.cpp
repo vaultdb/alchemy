@@ -286,6 +286,7 @@ void Value::setValue(const std::string & aString) {
                 return "invalid";
 
         }
+    return string("");
     }
 
 

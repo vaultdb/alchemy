@@ -39,7 +39,6 @@ namespace vaultdb {
 
 
         QueryTuple reveal(const int &empParty = PUBLIC) const;
-        friend ostream &operator<<(ostream &os, const QueryTuple &table);
 
         string toString(const bool &showDummies = false) const;
 
@@ -57,6 +56,8 @@ namespace vaultdb {
         static QueryTuple deserialize(const QuerySchema &schema, Bit *tupleBits);
 
     };
+
+    ostream &operator<<(ostream &os, const QueryTuple &tuple);
 
 } // namespace vaultdb
 #endif // QUERY_TUPLE_H

@@ -67,14 +67,6 @@ const vaultdb::types::Value QueryTuple::getDummyTag() const {
 
 
 
-ostream &vaultdb::operator<<(ostream &strm,  const QueryTuple &aTuple) {
-
-    strm << aTuple.toString(false);
-
-    return strm;
-
-
-}
 
 
 
@@ -273,3 +265,11 @@ QueryTuple QueryTuple::deserialize(const QuerySchema &schema, Bit *tupleBits) {
 
 
 
+ostream &vaultdb::operator<<(ostream &strm,  const QueryTuple &aTuple) {
+
+    strm << aTuple.toString(false);
+
+    return strm;
+
+
+}

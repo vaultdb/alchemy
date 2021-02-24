@@ -8,7 +8,7 @@ QuerySchema::QuerySchema(const size_t &num_fields)  {
     fields_.reserve(num_fields);
 
     // initialize all fields to blanks
-    for(int i = 0; i < num_fields; ++i) {
+    for(size_t i = 0; i < num_fields; ++i) {
         fields_.push_back(QueryFieldDesc());
     }
 
