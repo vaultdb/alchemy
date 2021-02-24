@@ -409,10 +409,10 @@ void Value::setValue(const std::string & aString) {
                 return Value(aFloat);
 
             }
+            default:
+                throw std::invalid_argument("Could not deserialize " + TypeUtilities::getTypeIdString(desc.getType()));
 
         }
-
-        throw std::invalid_argument("Could not deserialize " + TypeUtilities::getTypeIdString(desc.getType()));
     }
 
 

@@ -27,7 +27,7 @@ namespace  vaultdb {
         std::vector<QueryTuple> tuples_;
 
     public:
-            QueryTable(const int &num_tuples, const QuerySchema &schema, const SortDefinition &sortDefinition);
+            QueryTable(const int &num_tuples, const QuerySchema &schema, SortDefinition sortDefinition);
 
             QueryTable(const int &num_tuples, const int &colCount);
 
@@ -37,7 +37,7 @@ namespace  vaultdb {
 
 
             void resize(const size_t & tupleCount);
-            const bool isEncrypted() const;
+            bool isEncrypted() const;
 
             void setSchema(const QuerySchema &schema);
 

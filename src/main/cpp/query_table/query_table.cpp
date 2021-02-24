@@ -1,6 +1,7 @@
 #include <util/emp_manager.h>
 #include "secret_share/prg.h"
 #include <memory>
+#include <utility>
 #include <util/data_utilities.h>
 #include <util/type_utilities.h>
 #include "query_table.h"
@@ -24,8 +25,8 @@ unsigned int QueryTable::getTupleCount() const {
 
 
 
-QueryTable::QueryTable(const int &num_tuples, const QuerySchema &schema, const SortDefinition &sortDefinition)
-        :  orderBy(sortDefinition), schema_(schema) {
+QueryTable::QueryTable(const int &num_tuples, const QuerySchema &schema, SortDefinition sortDefinition)
+        :  orderBy(std::move(sortDefinition)), schema_(schema) {
 
     tuples_.resize(num_tuples);
 
@@ -47,7 +48,7 @@ QueryTable::QueryTable(const int &num_tuples, const int &colCount)
 
 }
 
-const bool QueryTable::isEncrypted() const {
+bool QueryTable::isEncrypted() const {
     types::TypeId firstColType = schema_.getField(0).getType();
 
     // if encrypted version of this column is the same as its original value
@@ -278,7 +279,7 @@ SortDefinition QueryTable::getSortOrder() const {
 }
 
 shared_ptr<QueryTable> QueryTable::deserialize(const QuerySchema &schema, const vector<int8_t> & tableBits) {
-    int8_t *cursor = const_cast<int8_t *>(tableBits.data());
+    auto *cursor = const_cast<int8_t *>(tableBits.data());
     uint32_t tableSize = tableBits.size(); // in bytes
     uint32_t tupleSize = schema.size() / 8; // in bytes
     uint32_t tupleCount = tableSize / tupleSize;

@@ -21,7 +21,7 @@ namespace  vaultdb {
 
         QuerySchema(const QuerySchema &s);
 
-        int getFieldCount() const;
+        uint32_t getFieldCount() const;
 
         void putField(const QueryFieldDesc &fd);
 

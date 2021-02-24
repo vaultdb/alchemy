@@ -35,10 +35,7 @@ namespace  vaultdb {
 
         [[nodiscard]] size_t size() const;
 
-        QueryFieldDesc(const QueryFieldDesc &f)
-                :
-                name_(f.name_), table_name(f.table_name), string_length_(f.string_length_), type_(f.type_),
-                ordinal_(f.ordinal_) {};
+        QueryFieldDesc(const QueryFieldDesc &f) = default;
 
         QueryFieldDesc(const QueryFieldDesc &f, vaultdb::types::TypeId type)
                 : name_(f.name_), table_name(f.table_name),
