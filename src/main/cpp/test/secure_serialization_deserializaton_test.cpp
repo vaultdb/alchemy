@@ -93,3 +93,12 @@ TEST_F(SecureSerializationDeserializationTest, deserialize_and_reveal_shares) {
 
     vector<int8_t> myShares = DataUtilities::readFile(srcShareFile);
 }
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}
+
+
