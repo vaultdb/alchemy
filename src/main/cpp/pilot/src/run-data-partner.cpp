@@ -2,7 +2,6 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <data/DataProvider.h>
 #include <util/data_utilities.h>
-#include <operators/common_table_expression.h>
 #include <operators/sort.h>
 #include "union_hybrid_data.h"
 #include "enrich_htn_query.h"
@@ -11,7 +10,7 @@ using namespace  std;
 using namespace vaultdb;
 using namespace  emp;
 
-#define TESTBED 0
+#define TESTBED 1
 
 
 
@@ -22,9 +21,8 @@ void validateInputTable(const string & dbName, const string & sql, const SortDef
 
     // sort the inputs
     // ops deleted later using Operator framework
-    CommonTableExpression *unionedData = new CommonTableExpression(testTable);
-    Sort *sortOp = new Sort(unionedData->getPtr(), expectedSortDefinition);
-    shared_ptr<QueryTable> observedTable = sortOp->run();
+    Sort sort(testTable, expectedSortDefinition);
+    shared_ptr<QueryTable> observedTable = sort.run();
 
     assert(*expectedTable ==  *observedTable);
 

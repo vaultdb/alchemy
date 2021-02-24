@@ -28,8 +28,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
     unionSortDefinition.push_back(ColumnSort(8, SortDirection::ASCENDING)); // last sort makes it verifiable
 
     // destructor handled within Operator
-    CommonTableExpression *inputOp = new CommonTableExpression(inputTable);
-    Sort *sortUnioned = new Sort(inputOp->getPtr(), unionSortDefinition);
+    Sort sortUnioned(inputTable, unionSortDefinition);
 
 
     // aggregate to deduplicate
@@ -44,15 +43,15 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
             ScalarAggregateDefinition(7, AggregateId::MAX, "denom_excl")
     };
 
-    GroupByAggregate *unionedPatients = new GroupByAggregate(sortUnioned->getPtr(), groupByCols, aggregators );
+    GroupByAggregate unionedPatients(&sortUnioned, groupByCols, aggregators );
 
     // filter ones with denom_excl = 1
     // *** Filter
     // HAVING max(denom_excl) = 0
     std::shared_ptr<Predicate> predicateClass(new FilterExcludedPatients(true));
-    Filter *inclusionCohort = new Filter(unionedPatients->getPtr(), predicateClass);
+    Filter inclusionCohort(&unionedPatients, predicateClass);
 
-    return  inclusionCohort->run();
+    return  inclusionCohort.run();
 
 
 }
@@ -64,8 +63,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> sr
     //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
     // output schema:
     // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
-    CommonTableExpression *srcExpression = new CommonTableExpression(src);
-    Project *projectOp = new Project(srcExpression->getPtr());
+    Project project(src);
     TypeId intType = TypeId::ENCRYPTED_INTEGER32;
 
     ProjectionMappingSet mappingSet{
@@ -90,22 +88,21 @@ shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> sr
     Expression multisiteExpression(&EnrichHtnQuery::projectMultisite, "multisite", intType);
     Expression multisiteNumeratorExpression(&EnrichHtnQuery::projectNumeratorMultisite, "numerator_multisite", intType);
 
-    projectOp->addColumnMappings(mappingSet);
-    projectOp->addExpression(ageStrataExpression, 1);
-    projectOp->addExpression(multisiteExpression, 6);
-    projectOp->addExpression(multisiteNumeratorExpression, 7);
+    project.addColumnMappings(mappingSet);
+    project.addExpression(ageStrataExpression, 1);
+    project.addExpression(multisiteExpression, 6);
+    project.addExpression(multisiteNumeratorExpression, 7);
 
-    return projectOp->run();
+    return project.run();
 
 }
 
 
 void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 
-    std::shared_ptr<Operator> includedPatients(new CommonTableExpression(src));
 
     // sort it on cols [0,5)
-    Sort *sortOp = new Sort(includedPatients->getPtr(), DataUtilities::getDefaultSortDefinition(5));
+    Sort sort(src, DataUtilities::getDefaultSortDefinition(5));
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
     std::vector<ScalarAggregateDefinition> aggregators {
@@ -118,8 +115,8 @@ void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 
     // output schema:
     // zip_marker (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-    aggregator = shared_ptr<GroupByAggregate>(new GroupByAggregate(sortOp->getPtr(), groupByCols, aggregators ));
-    dataCube = aggregator->run();
+    GroupByAggregate aggregator(&sort, groupByCols, aggregators);
+    dataCube = aggregator.run();
 }
 
 // roll up one group-by col at a time
@@ -129,7 +126,7 @@ void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const {
 
     SortDefinition sortDefinition{ColumnSort(ordinal, SortDirection::ASCENDING)};
-    Sort *sort = new Sort(aggregator->getPtr(), sortDefinition);
+    Sort sort(dataCube, sortDefinition);
 
 
     std::vector<int32_t> groupByCols{ordinal};
@@ -141,9 +138,8 @@ shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const
             ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
-    GroupByAggregate *rollupStrata = new GroupByAggregate(sort->getPtr(), groupByCols, aggregators );
-    std::shared_ptr<QueryTable> rollupResult =  rollupStrata->getPtr()->run();
-    return rollupResult;
+    GroupByAggregate rollupStrata(&sort, groupByCols, aggregators );
+    return rollupStrata.run();
 
 
 }
