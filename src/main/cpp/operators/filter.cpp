@@ -16,9 +16,9 @@ std::shared_ptr<QueryTable> Filter::runSelf() {
     // deep copy new output, then just modify the dummy tag
     output = std::shared_ptr<QueryTable>(new QueryTable(*input));
 
-    for(int i = 0; i < output->getTupleCount(); ++i) {
+    for(size_t i = 0; i < output->getTupleCount(); ++i) {
         QueryTuple tuple = output->getTuple(i);
-        types::Value dummyTag = !(predicate->predicateCall(tuple)) | tuple.getDummyTag(); // (!) because dummyTag is false if our selection criteria is satisfied
+        types::Value dummyTag = (!(predicate->predicateCall(tuple))) | tuple.getDummyTag(); // (!) because dummyTag is false if our selection criteria is satisfied
         tuple.setDummyTag(dummyTag);
 
         output->setTupleDummyTag(i, dummyTag);

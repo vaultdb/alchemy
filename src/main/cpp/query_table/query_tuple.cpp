@@ -1,6 +1,4 @@
-#include <util/emp_manager.h>
 #include <util/type_utilities.h>
-#include <secure_sql_input.h>
 #include "query_tuple.h"
 #include "query_schema.h"
 
@@ -69,7 +67,7 @@ const vaultdb::types::Value QueryTuple::getDummyTag() const {
 
 
 
-std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple) {
+ostream &vaultdb::operator<<(ostream &strm,  const QueryTuple &aTuple) {
 
     strm << aTuple.toString(false);
 
@@ -80,8 +78,8 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple)
 
 
 
-std::string QueryTuple::toString(const bool &showDummies) const {
-    std::stringstream sstream;
+string QueryTuple::toString(const bool &showDummies) const {
+    stringstream sstream;
 
     if(showDummies
        ||    (!isEncrypted() && !(dummy_tag_.getBool())) // if it is real
@@ -213,7 +211,7 @@ bool  QueryTuple::operator==(const QueryTuple &other) const {
     for(size_t i = 0; i < getFieldCount(); ++i) {
         QueryField *thisField = getFieldPtr(i);
         QueryField *otherField = other.getFieldPtr(i);
-        //std::cout << "Comparing field: " << *thisField << " to " << *otherField << std::endl;
+        //cout << "Comparing field: " << *thisField << " to " << *otherField << endl;
         if(*thisField != *otherField) {  return false; }
     }
 

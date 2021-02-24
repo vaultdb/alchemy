@@ -10,13 +10,14 @@
 #include <util/type_utilities.h>
 
 using namespace emp;
+using namespace std;
 
 namespace vaultdb {
     class QueryTuple {
     private:
 
-        vaultdb::types::Value dummy_tag_;
-        std::vector<QueryField>  fields_;
+        types::Value dummy_tag_;
+        vector<QueryField>  fields_;
 
 
     public:
@@ -30,16 +31,17 @@ namespace vaultdb {
 
         inline bool  isEncrypted() const { return dummy_tag_.getType() == types::TypeId::ENCRYPTED_BOOLEAN; }
 
-      const vaultdb::QueryField getField(int ordinal) const;
-      vaultdb::QueryField *getFieldPtr(const uint32_t &ordinal) const; // returns a pointer to the original field, mutable
+      const QueryField getField(int ordinal) const;
+      QueryField *getFieldPtr(const uint32_t &ordinal) const; // returns a pointer to the original field, mutable
       void putField(const QueryField &f);
       void setDummyTag(const types::Value &v);
-      const vaultdb::types::Value getDummyTag() const;
+      const types::Value getDummyTag() const;
 
 
         QueryTuple reveal(const int &empParty = PUBLIC) const;
-        friend std::ostream& operator<<(std::ostream &strm, const QueryTuple &aTuple);
-        std::string toString(const bool &showDummies = false) const;
+        friend ostream &operator<<(ostream &os, const QueryTuple &table);
+
+        string toString(const bool &showDummies = false) const;
 
         void setFieldCount(size_t fieldCount);
 
