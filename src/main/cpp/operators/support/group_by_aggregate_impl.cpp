@@ -143,14 +143,19 @@ void GroupByMinImpl::resetRunningMin()  {
         case TypeId::INTEGER32:
             runningMin = Value(INT_MAX);
             break;
+        case TypeId::DATE:
         case TypeId::INTEGER64:
             runningMin = Value(aggregateType, LONG_MAX);
             break;
         case TypeId::BOOLEAN:
             runningMin = Value(true);
             break;
+        case TypeId::NUMERIC:
         case TypeId::FLOAT32:
             runningMin = Value(FLT_MAX);
+            break;
+        case TypeId::VARCHAR:
+            runningMin = Value(string("ZZZZ"));
             break;
         default:
             throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MIN()");
@@ -224,14 +229,19 @@ void GroupByMaxImpl::resetRunningMax() {
         case TypeId::INTEGER32:
             runningMax = Value(INT_MIN);
             break;
+        case TypeId::DATE:
         case TypeId::INTEGER64:
             runningMax = Value(aggregateType, LONG_MIN);
             break;
         case TypeId::BOOLEAN:
             runningMax = Value(false);
             break;
+        case TypeId::NUMERIC:
         case TypeId::FLOAT32:
             runningMax = Value(FLT_MIN);
+            break;
+        case TypeId::VARCHAR:
+            runningMax = Value(string("a"));
             break;
         default:
             throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MAX()");

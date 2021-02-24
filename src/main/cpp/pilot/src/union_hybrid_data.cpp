@@ -18,7 +18,7 @@ UnionHybridData::UnionHybridData(const QuerySchema & srcSchema, NetIO *aNetio, c
 Integer UnionHybridData::readEncrypted(int8_t *secretSharedBits, const size_t &sizeBytes, const int & dstParty) {
 
 
-        bool *bools = DataUtilities::bytesToBool(secretSharedBits, sizeBytes);
+        bool *bools = Utilities::bytesToBool(secretSharedBits, sizeBytes);
 
         Integer result(sizeBytes * 8, 0L, dstParty);
 
@@ -63,7 +63,7 @@ void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
 
     size_t srcBytes = srcData.size();
     size_t srcBits = srcBytes * 8;
-    bool *bools = DataUtilities::bytesToBool(srcData.data(), srcBytes);
+    bool *bools = Utilities::bytesToBool(srcData.data(), srcBytes);
 
     Integer aliceBytes(srcBits, 0L, ALICE);
     Integer bobBytes(srcBits, 0L, BOB);

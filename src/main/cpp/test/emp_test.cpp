@@ -51,7 +51,7 @@ TEST_F(EmpTest, emp_test_varchar) {
 
 
 
-    bool *bools = DataUtilities::bytesToBool((int8_t *) initialString.c_str(), stringLength);
+    bool *bools = Utilities::bytesToBool((int8_t *) initialString.c_str(), stringLength);
 
     // encrypting as ALICE
     emp::Integer aliceSecretShared(stringBitCount, 0L, emp::ALICE);
@@ -75,7 +75,7 @@ TEST_F(EmpTest, emp_test_varchar) {
 
 
 
-    vector<int8_t> decodedBytes =  DataUtilities::boolsToBytes(bools, stringBitCount);
+    vector<int8_t> decodedBytes =  Utilities::boolsToBytes(bools, stringBitCount);
     decodedBytes.resize(stringLength + 1);
     decodedBytes[stringLength+1] = '\0';
 

@@ -7,6 +7,9 @@
 #include <memory>
 #include <vaultdb.h>
 #include <ostream>
+#include "util/utilities.h"
+
+
 
 
 namespace  vaultdb {
@@ -33,7 +36,11 @@ namespace  vaultdb {
 
             QueryTable(const QueryTable &src);
 
-            ~QueryTable() {}
+            ~QueryTable() {
+                //std::cout << "Freeing a query table at: " << std::endl
+                 //   << Utilities::getStackTrace();
+
+            }
 
 
             void resize(const size_t & tupleCount);

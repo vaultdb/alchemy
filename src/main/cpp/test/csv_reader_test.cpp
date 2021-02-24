@@ -18,7 +18,7 @@ class CsvReaderTest : public ::testing::Test {
 protected:
     void SetUp() override{
         setup_plain_prot(false, "");
-        currentWorkingDirectory = DataUtilities::getCurrentWorkingDirectory();
+        currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     };
     void TearDown() override{
         finalize_plain_prot();

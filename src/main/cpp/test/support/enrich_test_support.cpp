@@ -131,5 +131,5 @@ QuerySchema EnrichTestSupport::getPatientInclusionSchema() {
     patientInclusionSchema.putField(QueryFieldDesc(1, "numerator", "patient_inclusion", TypeId::INTEGER32));
     // denom_excl: null = false, 1 = true
     patientInclusionSchema.putField(QueryFieldDesc(2, "denom_incl", "patient_inclusion", TypeId::INTEGER32));
-
+    return patientInclusionSchema;
 }

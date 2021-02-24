@@ -62,6 +62,9 @@ set(sources
         operators/sort.cpp
 		operators/filter.cpp
 		util/emp_manager.cpp
+		util/utilities.cpp
+		util/type_utilities.cpp
+		util/data_utilities.cpp
 		query_table/query_tuple.cpp
 		query_table/types/value.cpp
 		query_table/query_field.cpp
@@ -69,8 +72,6 @@ set(sources
 		query_table/query_schema.cpp
 		query_table/query_table.cpp
 		data/PsqlDataProvider.cpp
-        util/type_utilities.cpp
-		util/data_utilities.cpp
 		query_table/types/value_comparators.cpp
 		query_table/types/value_arithmetic.cpp
 		operators/operator.cpp
@@ -103,6 +104,10 @@ message("Boost Libs: ${Boost_LIBRARIES} " )
 
 
 add_library(${NAME} SHARED ${sources})
+
+if(APPLE)
+  target_compile_definitions(${NAME} PUBLIC "-D_GNU_SOURCE")
+endif()
 
 add_executable(generate_enrich_data test/support/generate_enrich_data.cpp)
 

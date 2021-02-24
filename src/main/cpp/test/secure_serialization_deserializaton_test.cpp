@@ -1,12 +1,9 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
+#include <util/utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
-#include <operators/filter.h>
-#include <util/emp_manager.h>
-#include <operators/secure_sql_input.h>
-#include <operators/support/predicate.h>
 #include <test/support/EmpBaseTest.h>
 #include <data/CsvReader.h>
 
@@ -24,7 +21,7 @@ DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 class SecureSerializationDeserializationTest : public EmpBaseTest {
 protected:
-    string currentWorkingDirectory = DataUtilities::getCurrentWorkingDirectory();
+    string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
     string dstRoot = currentWorkingDirectory + "/pilot/test/output/chi-patient"; // chi-patient.alice || chi-patient.bob
 

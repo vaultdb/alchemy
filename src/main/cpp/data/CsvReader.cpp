@@ -1,5 +1,5 @@
 #include <util/type_utilities.h>
-#include <util/data_utilities.h>
+#include <util/utilities.h>
 #include "CsvReader.h"
 #include <boost/algorithm/string.hpp>
 
@@ -31,7 +31,7 @@ std::vector<std::string> CsvReader::readFile(const string &filename) {
 
     if(!inFile)
     {
-        string cwd = DataUtilities::getCurrentWorkingDirectory();
+        string cwd = Utilities::getCurrentWorkingDirectory();
         throw std::invalid_argument("Unable to open file: " + filename + " from " + cwd);
     }
 

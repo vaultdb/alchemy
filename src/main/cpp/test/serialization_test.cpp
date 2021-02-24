@@ -88,7 +88,7 @@ TEST_F(SerializationTest, capricornTest) {
 
     QuerySchema targetSchema = getInputSchema();
 
-    string currentWorkingDirectory = DataUtilities::getCurrentWorkingDirectory();
+    string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
 
     std::unique_ptr<QueryTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
@@ -106,7 +106,7 @@ TEST_F(SerializationTest, xored_serialization_test) {
 
     QuerySchema targetSchema = getInputSchema();
 
-    string currentWorkingDirectory = DataUtilities::getCurrentWorkingDirectory();
+    string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
 
     std::unique_ptr<QueryTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
@@ -150,7 +150,7 @@ TEST_F(SerializationTest, xored_serialization_test) {
 TEST_F(SerializationTest, capricorn_deserialization) {
 
     QuerySchema targetSchema = getInputSchema();
-    string currentWorkingDirectory = DataUtilities::getCurrentWorkingDirectory();
+    string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.alice";
     string bobFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.bob";
 

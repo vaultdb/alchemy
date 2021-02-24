@@ -11,25 +11,19 @@
 #include <mach/mach.h>
 #endif
 
-
 #include <cstdint>
 #include <vaultdb.h>
+#include "utilities.h"
 
 namespace vaultdb {
     class DataUtilities {
 
-        // convert 8 bits to a byte
-        static int8_t boolsToByte(const bool *src);
 
         // reverse the order of bits in a byte
         static unsigned char reverse(unsigned char b);
 
 
     public:
-        static bool *bytesToBool(int8_t *bytes, int byteCount);
-
-        static vector<int8_t> boolsToBytes(const bool *const src, const uint32_t &bitCount);
-        static vector<int8_t> boolsToBytes( string & src); // for the output of Integer::reveal<string>()
 
         static std::unique_ptr<QueryTable>
         getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
@@ -57,7 +51,6 @@ namespace vaultdb {
         // create a copy of the table without its dummy tuples
         static std::shared_ptr<QueryTable> removeDummies(const std::shared_ptr<QueryTable> & input);
 
-        static std::string getCurrentWorkingDirectory();
         static std::string printSortDefinition(const SortDefinition  & sortDefinition);
 
         static vector<int8_t> readFile(const string &fileName);
@@ -66,9 +59,6 @@ namespace vaultdb {
 
         static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
 
-        static void checkMemoryUtilization(string msg);
-
-        static void checkMemoryUtilization();
 
     };
 }

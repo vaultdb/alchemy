@@ -521,7 +521,7 @@ void Value::setValue(const std::string & aString) {
                     ++strPos;
                 }
 
-                vector<int8_t> decodedBytesVector = DataUtilities::boolsToBytes(bools, bitCount);
+                vector<int8_t> decodedBytesVector = Utilities::boolsToBytes(bools, bitCount);
                 decodedBytesVector.resize(byteCount + 1);
                 decodedBytesVector[byteCount] = '\0';
                 string dst((char * ) decodedBytesVector.data());

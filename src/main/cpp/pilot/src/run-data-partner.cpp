@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
     // expected order: alice, bob, chi
     shared_ptr<QueryTable> inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
 
-    DataUtilities::checkMemoryUtilization("read input");
+    Utilities::checkMemoryUtilization("read input");
 
     // validate it against the DB for testing
     if(TESTBED) {
@@ -124,23 +124,23 @@ int main(int argc, char **argv) {
 
     EnrichHtnQuery enrich(inputData);
 
-    DataUtilities::checkMemoryUtilization("initial aggregation");
+    Utilities::checkMemoryUtilization("initial aggregation");
 
 
     shared_ptr<QueryTable> zipRollup = runRollup(0, "zip_marker", enrich);
-    DataUtilities::checkMemoryUtilization("rollup 1");
+    Utilities::checkMemoryUtilization("rollup 1");
 
     shared_ptr<QueryTable> ageRollup = runRollup(1, "age_strata", enrich);
-    DataUtilities::checkMemoryUtilization("rollup 2");
+    Utilities::checkMemoryUtilization("rollup 2");
 
     shared_ptr<QueryTable> genderRollup = runRollup(2, "sex", enrich);
-    DataUtilities::checkMemoryUtilization("rollup 3");
+    Utilities::checkMemoryUtilization("rollup 3");
 
     shared_ptr<QueryTable> ethnicityRollup = runRollup(3, "ethnicity", enrich);
-    DataUtilities::checkMemoryUtilization("rollup 4");
+    Utilities::checkMemoryUtilization("rollup 4");
 
     shared_ptr<QueryTable> raceRollup = runRollup(4, "race", enrich);
-    DataUtilities::checkMemoryUtilization("rollup 5");
+    Utilities::checkMemoryUtilization("rollup 5");
 
      emp::finalize_semi_honest();
 

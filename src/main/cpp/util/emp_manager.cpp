@@ -181,7 +181,7 @@ Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, con
 
     std::string inputReversed = input;
     std::reverse(inputReversed.begin(), inputReversed.end());
-    bool *bools = DataUtilities::bytesToBool((int8_t *) inputReversed.c_str(), stringByteCount);
+    bool *bools = Utilities::bytesToBool((int8_t *) inputReversed.c_str(), stringByteCount);
 
 
     Integer result(stringBitCount, 0L, dstParty);
