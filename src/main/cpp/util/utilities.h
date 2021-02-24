@@ -26,7 +26,7 @@ namespace vaultdb {
 
         static std::string getCurrentWorkingDirectory();
 
-        static void checkMemoryUtilization(string msg);
+        static void checkMemoryUtilization(const string & msg);
 
         static void checkMemoryUtilization();
 

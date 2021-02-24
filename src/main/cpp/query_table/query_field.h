@@ -40,12 +40,13 @@ public:
     QueryField& operator=(const QueryField& other);
     bool operator==(const QueryField &other) const;
     inline bool operator!=(const QueryField &other) const { return !(*this == other); }
-    friend std::ostream& operator<<(std::ostream &strm, const QueryField &aField);
 
     static QueryField deserialize(const QueryFieldDesc desc, int8_t *cursor);
     static QueryField deserialize(const QueryFieldDesc desc, Bit *cursor);
 
 };
+
+    std::ostream& operator<<(std::ostream &strm, const QueryField &aField);
 
 } // namespace vaultdb
 #endif // QUERY_FIELD_H

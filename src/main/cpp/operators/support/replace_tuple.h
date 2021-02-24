@@ -23,6 +23,8 @@ namespace vaultdb {
         virtual void
         conditionalWrite(const uint32_t &writeIdx, const QueryTuple &inputTuple, const types::Value &toWrite);
 
+        virtual ~ReplaceTuple() = default;
+
     protected:
         std::shared_ptr<QueryTable> dstTable;
 

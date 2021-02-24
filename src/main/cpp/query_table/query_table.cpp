@@ -105,7 +105,7 @@ ostream &vaultdb::operator<<(ostream &os, const QueryTable &table) {
 
     os <<  table.getSchema() << " isEncrypted? " << table.isEncrypted() << endl;
 
-    for(int i = 0; i < table.getTupleCount(); ++i) {
+    for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
         os << table.getTuple(i);
 
 
@@ -288,7 +288,7 @@ shared_ptr<QueryTable> QueryTable::deserialize(const QuerySchema &schema, const 
     cout << "Deserializing " << tupleCount << " tuples." << endl;
     shared_ptr<QueryTable> result(new QueryTable(tupleCount, schema, emptySortDefinition));
 
-    for(int i = 0; i < tupleCount; ++i) {
+    for(uint32_t i = 0; i < tupleCount; ++i) {
         QueryTuple aTuple = QueryTuple::deserialize(schema, cursor);
         result->putTuple(i, aTuple);
         cursor += tupleSize;
@@ -312,7 +312,7 @@ QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
     shared_ptr<QueryTable> result(new QueryTable(tupleCount, encryptedSchema, emptySortDefinition));
 
 
-    for(int i = 0; i < tupleCount; ++i) {
+    for(uint32_t i = 0; i < tupleCount; ++i) {
         QueryTuple aTuple = QueryTuple::deserialize(encryptedSchema, cursor);
         result->putTuple(i, aTuple);
         cursor += tupleSize;

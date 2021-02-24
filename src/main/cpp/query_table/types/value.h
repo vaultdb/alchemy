@@ -55,7 +55,6 @@ public:
 
 
     string toString() const;
-    friend std::ostream &operator<<(std::ostream &os, const Value &value);
     Value& operator=(const Value& other); // copy assign operator overload
 
 
@@ -128,4 +127,6 @@ protected:
   // Float(24, 9, 0, PUBLIC), Float32(0.0, PUBLIC)
   // };
 };
+     std::ostream &operator<<(std::ostream &os, const Value &value);
+
 } // namespace vaultdb::types

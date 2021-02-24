@@ -30,7 +30,7 @@ std::string Utilities::getCurrentWorkingDirectory() {
 
 // From Chenkai Li's EMP memory instrumentation
 
-void Utilities::checkMemoryUtilization(string msg) {
+void Utilities::checkMemoryUtilization(const string & msg) {
     cout << "Checking memory utilization after " << msg << endl;
     Utilities::checkMemoryUtilization();
 }
@@ -82,7 +82,7 @@ vector<int8_t> Utilities::boolsToBytes(const bool *const src, const uint32_t &bi
 
     bool *cursor = const_cast<bool*>(src);
 
-    for(uint32_t i = 0; i < byteCount; ++i) {
+    for(int i = 0; i < byteCount; ++i) {
         result[i] = Utilities::boolsToByte(cursor);
         cursor += 8;
     }

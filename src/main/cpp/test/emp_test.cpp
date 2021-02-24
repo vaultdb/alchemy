@@ -42,7 +42,7 @@ TEST_F(EmpTest, emp_test_varchar) {
 
     std::string initialString = "lithely regular deposits. fluffily";
 
-    int stringLength = 44;
+    size_t stringLength = 44;
     int stringBitCount = stringLength * 8;
 
     while(initialString.length() != stringLength) {

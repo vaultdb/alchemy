@@ -64,7 +64,7 @@ std::shared_ptr<QueryTable> Project::runSelf() {
     bool sortCarryOver = true;
     SortDefinition  dstSortDefinition;
     for(ColumnSort columnSort : srcSortOrder) {
-        int srcOrdinal = columnSort.first;
+        uint32_t srcOrdinal = columnSort.first;
         bool found = false;
         for(ProjectionMapping mapping : projectionMap) {
             if(mapping.first == srcOrdinal) {

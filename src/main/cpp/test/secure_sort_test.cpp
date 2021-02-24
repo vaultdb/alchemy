@@ -30,7 +30,7 @@ bool SecureSortTest::correctOrder(const QueryTuple &lhs, const QueryTuple &rhs, 
 
     assert(lhs.getFieldCount() == rhs.getFieldCount());
 
-    for(int i = 0; i < lhs.getFieldCount(); ++i) {
+    for(uint32_t i = 0; i < lhs.getFieldCount(); ++i) {
         types::Value lhsVal = lhs.getField(i).getValue();
         types::Value rhsVal = rhs.getField(i).getValue();
 
@@ -50,7 +50,7 @@ bool SecureSortTest::correctOrder(const QueryTuple &lhs, const QueryTuple &rhs, 
 }
 
 bool SecureSortTest::isSorted(const std::shared_ptr<QueryTable> & table, const SortDefinition & sortDefinition) {
-    for(int i = 1; i < table->getTupleCount(); ++i) {
+    for(uint32_t i = 1; i < table->getTupleCount(); ++i) {
 
         QueryTuple previousTuple = table->getTuple(i-1);
         QueryTuple thisTuple = table->getTuple(i);

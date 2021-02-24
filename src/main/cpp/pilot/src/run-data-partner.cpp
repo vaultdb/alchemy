@@ -5,6 +5,7 @@
 #include <operators/sort.h>
 #include "union_hybrid_data.h"
 #include "enrich_htn_query.h"
+#include <util/utilities.h>
 
 using namespace  std;
 using namespace vaultdb;

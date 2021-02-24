@@ -43,7 +43,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 find_package(Boost REQUIRED COMPONENTS date_time system)
 
 #Compilation flags
-set(CMAKE_C_FLAGS "-pthread -Wall -march=native -maes -mrdseed ")  # -Wc++17-extensions -Weverything -Wno-padded -Wno-c++98-compat-pedantic -Wno-reserved-id-macro
+set(CMAKE_C_FLAGS "-pthread -Wall -Wsign-compare  -march=native -maes -mrdseed ")  # -Wc++17-extensions -Weverything -Wno-padded -Wno-c++98-compat-pedantic -Wno-reserved-id-macro
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}  -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g   -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")

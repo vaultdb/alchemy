@@ -27,7 +27,7 @@ QueryField QueryField::reveal(const int &party) const {
 
 std::ostream &vaultdb::operator<<(std::ostream &strm, const QueryField &aField) {
 
-    return strm << aField.value_;
+    return strm << aField.getValue();
 }
 
 
