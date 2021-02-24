@@ -81,10 +81,9 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(groupByOrdinals.size());
     output->setSortOrder(sortDefinition);
 
-    /* TODO: set up destructors
-     * for(int i = 0; i < aggregators.size(); ++i) {
+     for(int i = 0; i < aggregators.size(); ++i) {
         delete aggregators[i];
-    }*/
+    }
 
     return output;
 

@@ -66,7 +66,6 @@ namespace  vaultdb {
 
             std::vector<int8_t> serialize() const;
 
-            friend std::ostream &operator<<(std::ostream &os, const QueryTable &table);
 
             std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &party) const; // shared_ptr so we can pass it among Operator instances
 
@@ -85,8 +84,10 @@ namespace  vaultdb {
             // encrypted version of deserialization using emp::Bit
             static std::shared_ptr<QueryTable>
             deserialize(const QuerySchema &schema, vector<Bit> &tableBits);
-
     };
+    std::ostream &operator<<(std::ostream &os, const QueryTable &table);
+
+
 
 }
 #endif // _QUERY_TABLE_H

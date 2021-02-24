@@ -286,6 +286,7 @@ void Value::setValue(const std::string & aString) {
                 return "invalid";
 
         }
+    return string("");
     }
 
 
@@ -413,7 +414,9 @@ void Value::setValue(const std::string & aString) {
                 throw std::invalid_argument("Could not deserialize " + TypeUtilities::getTypeIdString(desc.getType()));
 
         }
-    }
+            return Value(0);
+
+        }
 
 
     Value types::Value::deserialize(QueryFieldDesc desc, Bit *cursor) {
@@ -459,10 +462,11 @@ void Value::setValue(const std::string & aString) {
                 return Value(aFloat);
 
             }
+            default:
+                throw std::invalid_argument("Could not deserialize " + TypeUtilities::getTypeIdString(desc.getType()));
 
         }
-        throw std::invalid_argument("Cannot deserialize a value of type " + TypeUtilities::getTypeIdString(desc.getType()) + " from an array of encrypted bits.");
-
+        return Value(0);
     }
 
     Value Value::reveal(const int &empParty) const {

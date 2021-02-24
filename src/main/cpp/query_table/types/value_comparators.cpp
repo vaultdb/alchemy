@@ -73,6 +73,8 @@ Value Value::operator>=(const Value &rhs) const {
         default:
             throw;
     }
+
+    return Value(types::TypeId::INTEGER32, -1);
 }
 
 Value Value::operator>(const Value &rhs) const {
@@ -164,6 +166,8 @@ Value Value::operator==(const Value &rhs) const {
         default:
             throw;
     }
+    return Value(types::TypeId::INTEGER32, -1);
+
 }
 
 Value Value::operator!=(const Value &rhs) const {
@@ -270,6 +274,8 @@ Value types::Value::obliviousIf(const emp::Bit &cmp, Value &lhs, Value &rhs) {
   default:
     throw;
   }
+
+    return Value(types::TypeId::INTEGER32, -1);
 
 
 }

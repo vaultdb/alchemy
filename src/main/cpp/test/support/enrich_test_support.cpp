@@ -74,7 +74,7 @@ Value EnrichTestSupport::projectMultisite(const QueryTuple & aTuple) {
 }
 /* generic case:
  *
- *  /*  Value siteCount = aTuple.getField(7).getValue();
+ *   Value siteCount = aTuple.getField(7).getValue();
     TypeId siteCountType = siteCount.getType(); // can be MPC or plaintext
     Value zero = TypeUtilities::getZero(siteCountType);
     Value one = TypeUtilities::getOne(siteCountType);

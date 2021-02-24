@@ -61,7 +61,6 @@ namespace  vaultdb {
 
         size_t getStringLength() const { return string_length_; }
 
-        friend std::ostream& operator<<(std::ostream &strm, const QueryFieldDesc &desc);
 
         QueryFieldDesc &operator=(const QueryFieldDesc &other);
 
@@ -69,7 +68,11 @@ namespace  vaultdb {
 
         inline bool operator!=(const QueryFieldDesc &other) { return !(*this == other); }
 
+        friend     std::ostream& operator<<(std::ostream &strm, const QueryFieldDesc &desc);
+
 
     };
+
 }
+
 #endif // _QUERY_FIELD_DESC_H

@@ -109,6 +109,8 @@ int main(int argc, char **argv) {
     // expected order: alice, bob, chi
     shared_ptr<QueryTable> inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
 
+    DataUtilities::checkMemoryUtilization("read input");
+
     // validate it against the DB for testing
     if(TESTBED) {
         shared_ptr<QueryTable> revealed = inputData->reveal();
@@ -119,14 +121,26 @@ int main(int argc, char **argv) {
         cout << "Input reader passed test!" << endl;
     }
 
+
     EnrichHtnQuery enrich(inputData);
+
+    DataUtilities::checkMemoryUtilization("initial aggregation");
 
 
     shared_ptr<QueryTable> zipRollup = runRollup(0, "zip_marker", enrich);
+    DataUtilities::checkMemoryUtilization("rollup 1");
+
     shared_ptr<QueryTable> ageRollup = runRollup(1, "age_strata", enrich);
+    DataUtilities::checkMemoryUtilization("rollup 2");
+
     shared_ptr<QueryTable> genderRollup = runRollup(2, "sex", enrich);
+    DataUtilities::checkMemoryUtilization("rollup 3");
+
     shared_ptr<QueryTable> ethnicityRollup = runRollup(3, "ethnicity", enrich);
+    DataUtilities::checkMemoryUtilization("rollup 4");
+
     shared_ptr<QueryTable> raceRollup = runRollup(4, "race", enrich);
+    DataUtilities::checkMemoryUtilization("rollup 5");
 
      emp::finalize_semi_honest();
 

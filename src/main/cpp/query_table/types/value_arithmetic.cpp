@@ -176,7 +176,6 @@ Value Value::operator*(const Value &rhs) const {
             throw;
     }
 
-    // to eliminate warnings
     return Value(types::TypeId::INTEGER32, -1);
 
 }

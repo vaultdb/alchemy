@@ -27,7 +27,7 @@ const QueryFieldDesc QuerySchema::getField(const int &i) const {
   return fields_.at(i);
 }
 
-uint32_t QuerySchema::getFieldCount() const {
+int QuerySchema::getFieldCount() const {
     return fields_.size();
 }
 

@@ -66,7 +66,10 @@ namespace vaultdb {
 
         static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
 
+        static void checkMemoryUtilization(string msg);
+
         static void checkMemoryUtilization();
+
     };
 }
 
