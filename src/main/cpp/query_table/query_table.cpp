@@ -28,6 +28,9 @@ unsigned int QueryTable::getTupleCount() const {
 QueryTable::QueryTable(const size_t &num_tuples, const QuerySchema &schema, SortDefinition sortDefinition)
         :  orderBy(std::move(sortDefinition)), schema_(schema) {
 
+    std::cout << "Instantiating a query table at: " << std::endl
+              << Utilities::getStackTrace();
+
     tuples_.resize(num_tuples);
 
     for(size_t i = 0; i < num_tuples; ++i) {
@@ -39,6 +42,10 @@ QueryTable::QueryTable(const size_t &num_tuples, const QuerySchema &schema, Sort
 
 QueryTable::QueryTable(const size_t &num_tuples, const int &colCount)
     : schema_(QuerySchema(colCount)) {
+
+    std::cout << "Instantiating a query table at: " << std::endl
+              << Utilities::getStackTrace();
+
     tuples_.resize(num_tuples);
 
     for(size_t i = 0; i < num_tuples; ++i) {
@@ -170,6 +177,8 @@ void QueryTable::putTuple(const int &idx, const QueryTuple & tuple) {
 
 QueryTable::QueryTable(const QueryTable &src) : orderBy(src.getSortOrder()), schema_(src.getSchema()) {
 
+    std::cout << "Instantiating a query table at: " << std::endl
+              << Utilities::getStackTrace();
 
     tuples_.resize(src.getTupleCount());
 

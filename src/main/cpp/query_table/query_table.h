@@ -37,8 +37,8 @@ namespace  vaultdb {
             QueryTable(const QueryTable &src);
 
             ~QueryTable() {
-                //std::cout << "Freeing a query table at: " << std::endl
-                 //   << Utilities::getStackTrace();
+                std::cout << "Freeing a query table at: " << std::endl
+                    << Utilities::getStackTrace();
 
             }
 

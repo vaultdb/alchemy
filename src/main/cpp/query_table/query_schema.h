@@ -31,7 +31,6 @@ namespace  vaultdb {
 
         const QueryFieldDesc getField(const int &i) const;
 
-        friend std::ostream &operator<<(std::ostream &os, const QuerySchema &schema);
 
         QuerySchema &operator=(const QuerySchema &other);
 
@@ -46,6 +45,9 @@ namespace  vaultdb {
 
         int getOrdinal(const std::string &fieldName) const;
     };
+
+    std::ostream &operator<<(std::ostream &os, const QuerySchema &schema);
+
 }
 
 #endif // _QUERY_SCHEMA_H

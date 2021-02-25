@@ -22,7 +22,7 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
         aggregator->initialize(*first);
     }
 
-    for(int i = 1; i < input->getTupleCount(); ++i) {
+    for(size_t i = 1; i < input->getTupleCount(); ++i) {
         tuple = input->getTuplePtr(i);
         for(ScalarAggregateImpl *aggregator : aggregators) {
             aggregator->accumulate(*tuple);
@@ -33,7 +33,7 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
     // generate output schema
     QuerySchema outputSchema(aggregators.size());
 
-    for(int i = 0; i < aggregators.size(); ++i) {
+    for(size_t i = 0; i < aggregators.size(); ++i) {
         QueryFieldDesc fieldDesc(i, aggregateDefinitions[i].alias, "", aggregators[i]->getType());
         outputSchema.putField(fieldDesc);
     }
@@ -42,7 +42,7 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
 
     QueryTuple *tuplePtr = output->getTuplePtr(0);
 
-    for(int i = 0; i < aggregators.size(); ++i) {
+    for(size_t i = 0; i < aggregators.size(); ++i) {
         QueryField field(i, aggregators[i]->getResult());
         tuplePtr->putField(field);
         delete aggregators[i];

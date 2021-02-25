@@ -124,9 +124,7 @@ vaultdb::types::Value vaultdb::SecureScalarSum::getResult() {
 void vaultdb::SecureScalarMin::initialize(const vaultdb::QueryTuple &tuple) {
   assert(tuple.isEncrypted());
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-
-  types::Value getMaxValue();
-
+  
   runningMin =  types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero , tupleVal);
   initialized = true;
 
@@ -137,7 +135,7 @@ void vaultdb::SecureScalarMin::accumulate(const vaultdb::QueryTuple &tuple) {
   assert(initialized);
 
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::Value currMin = types::Value::obliviousIf((tupleVal < currMin).getEmpBit(), tupleVal, runningMin);
+  types::Value currMin = types::Value::obliviousIf((tupleVal < runningMin).getEmpBit(), tupleVal, runningMin);
   runningMin =  types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), runningMin , currMin);
 
 }
@@ -180,7 +178,7 @@ void vaultdb::SecureScalarMax::accumulate(const vaultdb::QueryTuple &tuple) {
   assert(initialized);
 
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::Value currMax = types::Value::obliviousIf((tupleVal > currMax).getEmpBit(), tupleVal, currMax);
+  types::Value currMax = types::Value::obliviousIf((tupleVal > runningMax).getEmpBit(), tupleVal, runningMax);
   runningMax =  types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), runningMax , currMax);
 
 }

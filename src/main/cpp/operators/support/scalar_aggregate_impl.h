@@ -3,7 +3,7 @@
 
 
 #include <query_table/query_tuple.h>
-#include <limits.h>
+#include <climits>
 #include <cfloat>
 
 namespace vaultdb {
@@ -11,7 +11,7 @@ namespace vaultdb {
     public:
         ScalarAggregateImpl(const uint32_t & ordinal, const types::TypeId & aggType) : aggregateOrdinal(ordinal), aggregateType(aggType),
                                                                                        zero(TypeUtilities::getZero(aggregateType)), one(TypeUtilities::getOne(aggregateType)){};
-        virtual ~ScalarAggregateImpl() {}
+        virtual ~ScalarAggregateImpl() = default;
         virtual void initialize(const QueryTuple & tuple) = 0; // needs to run this once with first tuple to set up state
         virtual void accumulate(const QueryTuple & tuple) = 0;
         virtual types::Value getResult() = 0;
@@ -30,8 +30,8 @@ namespace vaultdb {
 
     class ScalarCount : public ScalarAggregateImpl {
     public:
-        ScalarCount(const uint32_t & ordinal, const types::TypeId & aggType) :  ScalarAggregateImpl(ordinal, aggType) {}
-        ~ScalarCount() {}
+        ScalarCount(const uint32_t & ordinal, const types::TypeId & aggType) :  ScalarAggregateImpl(ordinal, aggType), runningCount(0) {}
+        ~ScalarCount() = default;
         void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
         void accumulate(const QueryTuple & tuple) override;
         types::Value getResult() override;
@@ -69,7 +69,6 @@ namespace vaultdb {
 
     private:
       types::Value runningMin;
-      types::TypeId minType;
       void resetRunningMin();
 
     };
