@@ -40,7 +40,7 @@ std::shared_ptr<QueryTable> SecretShareGeneratorTest::assembleSecretShares(const
     const int8_t *aliceShares = shares.first.data();
     const int8_t *bobShares = shares.second.data();
 
-    for(int i = 0; i < shareCount; ++i) {
+    for(size_t i = 0; i < shareCount; ++i) {
         result[i] = aliceShares[i] ^ bobShares[i];
     }
 

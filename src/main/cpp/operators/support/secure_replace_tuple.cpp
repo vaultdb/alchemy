@@ -1,19 +1,20 @@
 #include "secure_replace_tuple.h"
 
+#include <utility>
+
 using namespace vaultdb;
 
-SecureReplaceTuple::SecureReplaceTuple(std::shared_ptr<QueryTable> table) : ReplaceTuple(table) {}
+SecureReplaceTuple::SecureReplaceTuple(std::shared_ptr<QueryTable> table) : ReplaceTuple(std::move(table)) {}
 
 void SecureReplaceTuple::conditionalWrite(const uint32_t &writeIdx, const QueryTuple &srcTuple,
                                           const types::Value &toWrite) {
 
     assert(dstTable->isEncrypted());
 
-    QueryTuple srcTupleCopy(srcTuple);
     QueryTuple *dstTuple = dstTable->getTuplePtr(writeIdx);
     emp::Bit writeCondition = toWrite.getEmpBit();
 
-    for(int i = 0; i < dstTuple->getFieldCount(); ++i) {
+    for(size_t i = 0; i < dstTuple->getFieldCount(); ++i) {
         types::Value originalValue = dstTuple->getField(i).getValue();
         types::Value newValue = srcTuple.getField(i).getValue();
 

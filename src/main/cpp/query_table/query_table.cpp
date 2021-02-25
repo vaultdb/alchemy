@@ -25,23 +25,23 @@ unsigned int QueryTable::getTupleCount() const {
 
 
 
-QueryTable::QueryTable(const int &num_tuples, const QuerySchema &schema, SortDefinition sortDefinition)
+QueryTable::QueryTable(const size_t &num_tuples, const QuerySchema &schema, SortDefinition sortDefinition)
         :  orderBy(std::move(sortDefinition)), schema_(schema) {
 
     tuples_.resize(num_tuples);
 
-    for(int i = 0; i < num_tuples; ++i) {
+    for(size_t i = 0; i < num_tuples; ++i) {
         tuples_[i].setFieldCount(schema.getFieldCount()); // initialize tuples
     }
 }
 
 
 
-QueryTable::QueryTable(const int &num_tuples, const int &colCount)
+QueryTable::QueryTable(const size_t &num_tuples, const int &colCount)
     : schema_(QuerySchema(colCount)) {
     tuples_.resize(num_tuples);
 
-    for(int i = 0; i < num_tuples; ++i) {
+    for(size_t i = 0; i < num_tuples; ++i) {
         tuples_[i].setFieldCount(colCount); // initialize tuples
     }
 

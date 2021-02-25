@@ -68,10 +68,11 @@ namespace  vaultdb {
 
         inline bool operator!=(const QueryFieldDesc &other) { return !(*this == other); }
 
-        friend     std::ostream& operator<<(std::ostream &strm, const QueryFieldDesc &desc);
 
 
     };
+
+         std::ostream& operator<<(std::ostream &strm, const QueryFieldDesc &desc);
 
 }
 

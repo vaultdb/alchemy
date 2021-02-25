@@ -30,9 +30,9 @@ namespace  vaultdb {
         std::vector<QueryTuple> tuples_;
 
     public:
-            QueryTable(const int &num_tuples, const QuerySchema &schema, SortDefinition sortDefinition);
+            QueryTable(const size_t &num_tuples, const QuerySchema &schema, SortDefinition sortDefinition);
 
-            QueryTable(const int &num_tuples, const int &colCount);
+            QueryTable(const size_t &num_tuples, const int &colCount);
 
             QueryTable(const QueryTable &src);
 

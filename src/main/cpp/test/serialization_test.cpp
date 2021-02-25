@@ -48,7 +48,8 @@ TEST_F(SerializationTest, typesTest) {
 
     std::shared_ptr<QueryTable> inputTable = DataUtilities::getQueryResults(dbName, inputQuery, false);
     vector<int8_t> tableData = inputTable->serialize();
-    ASSERT_EQ(tableData.size(), 620);
+    uint32_t expectedSize = 620;
+    ASSERT_EQ(tableData.size(), expectedSize);
     std::shared_ptr<QueryTable> deserialized = QueryTable::deserialize(inputTable->getSchema(), tableData);
 
     ASSERT_EQ(*inputTable, *deserialized);

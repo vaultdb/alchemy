@@ -53,7 +53,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     realBin = !(predecessor->getDummyTag()); // does this group-by bin contain at least one real (non-dummy) tuple?
 
 
-    for(int i = 1; i < input->getTupleCount(); ++i) {
+    for(uint32_t i = 1; i < input->getTupleCount(); ++i) {
         current = input->getTuplePtr(i);
         realBin = realBin | !(predecessor->getDummyTag());
         types::Value isGroupByMatch = groupByMatch(*predecessor, *current);
@@ -81,7 +81,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(groupByOrdinals.size());
     output->setSortOrder(sortDefinition);
 
-     for(int i = 0; i < aggregators.size(); ++i) {
+     for(size_t i = 0; i < aggregators.size(); ++i) {
         delete aggregators[i];
     }
 
@@ -104,7 +104,8 @@ GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggr
             case AggregateId::MIN:
                 return new GroupByMinImpl(ordinal, aggregateValueType);
             case AggregateId::MAX:
-                return new GroupByMaxImpl(ordinal, aggregateValueType);        };
+                return new GroupByMaxImpl(ordinal, aggregateValueType);
+        };
     }
 
     switch (aggregateType) {
@@ -126,7 +127,7 @@ bool GroupByAggregate::verifySortOrder(const std::shared_ptr<QueryTable> &table)
     SortDefinition sortedOn = table->getSortOrder();
     assert(sortedOn.size() >= groupByOrdinals.size());
 
-    for(int idx = 0; idx < groupByOrdinals.size(); ++idx) {
+    for(size_t idx = 0; idx < groupByOrdinals.size(); ++idx) {
         // ASC || DESC does not matter here
         if(groupByOrdinals[idx] != sortedOn[idx].first) {
             return false;
@@ -140,7 +141,7 @@ bool GroupByAggregate::verifySortOrder(const std::shared_ptr<QueryTable> &table)
 types::Value GroupByAggregate::groupByMatch(const QueryTuple &lhs, const QueryTuple &rhs) const {
 
     types::Value result = lhs.getFieldPtr(groupByOrdinals[0])->getValue() ==  rhs.getFieldPtr(groupByOrdinals[0])->getValue();
-    int cursor = 1;
+    size_t cursor = 1;
     while(cursor < groupByOrdinals.size()) {
         result = result &
                 lhs.getFieldPtr(groupByOrdinals[cursor])->getValue() ==  rhs.getFieldPtr(groupByOrdinals[cursor])->getValue();
@@ -152,7 +153,7 @@ types::Value GroupByAggregate::groupByMatch(const QueryTuple &lhs, const QueryTu
 
 QuerySchema GroupByAggregate::generateOutputSchema(const QuerySchema & srcSchema, const vector<GroupByAggregateImpl *> & aggregators) const {
     QuerySchema outputSchema(groupByOrdinals.size() + aggregateDefinitions.size());
-    int i;
+    size_t i;
 
     for(i = 0; i < groupByOrdinals.size(); ++i) {
         QueryFieldDesc srcField = srcSchema.getField(groupByOrdinals[i]);
@@ -175,7 +176,7 @@ QueryTuple GroupByAggregate::generateOutputTuple(const QueryTuple &lastTuple, co
                                                  const vector<GroupByAggregateImpl *> &aggregators) const {
 
     QueryTuple dstTuple(groupByOrdinals.size() + aggregators.size());
-    int i;
+    size_t i;
 
     // write group-by ordinals
     for(i = 0; i < groupByOrdinals.size(); ++i) {

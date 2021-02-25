@@ -13,7 +13,9 @@ using namespace vaultdb;
 
 std::string Utilities::getCurrentWorkingDirectory() {
     char cwd[PATH_MAX];
-    getcwd(cwd, sizeof(cwd));
+    char * ret = getcwd(cwd, sizeof(cwd));
+    ++ret; // for compile-time errors
+
     std::string  currentWorkingDirectory = std::string(cwd);
     std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);
     if(suffix == std::string("/bin")) {
