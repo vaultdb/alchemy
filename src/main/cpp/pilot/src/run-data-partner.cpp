@@ -11,7 +11,7 @@ using namespace  std;
 using namespace vaultdb;
 using namespace  emp;
 
-#define TESTBED 1
+#define TESTBED 0
 
 
 
@@ -119,17 +119,22 @@ int main(int argc, char **argv) {
         SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (8, SortDirection::ASCENDING)};
         validateInputTable(unionedDbName, query, patientSortDef, revealed);
 
-        cout << "Input reader passed test!" << endl;
+        double runtime = time_from(startTime);
+        cout << "Read and validated input on " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
+
     }
 
 
     EnrichHtnQuery enrich(inputData);
 
-    Utilities::checkMemoryUtilization("initial aggregation");
+
+    cout << "Completed cube aggregation at " << time_from(startTime)*1e6*1e-9 << " ms." << endl;
+    Utilities::checkMemoryUtilization();
 
 
     shared_ptr<QueryTable> zipRollup = runRollup(0, "zip_marker", enrich);
-    Utilities::checkMemoryUtilization("rollup 1");
+    cout << "Done first rollup at " << time_from(startTime)*1e6*1e-9 << " ms." << endl;
+    Utilities::checkMemoryUtilization();
 
     shared_ptr<QueryTable> ageRollup = runRollup(1, "age_strata", enrich);
     Utilities::checkMemoryUtilization("rollup 2");
@@ -146,5 +151,5 @@ int main(int argc, char **argv) {
      emp::finalize_semi_honest();
 
     double runtime = time_from(startTime);
-     cout << "Test completed on party " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." << endl;
+     cout << "Test completed on party " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
 }

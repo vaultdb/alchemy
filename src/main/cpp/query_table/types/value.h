@@ -118,9 +118,6 @@ protected:
     Bit emp_bit_;
     Integer emp_integer_;
     Float emp_float32_;
-    // std::shared_ptr<Bit> emp_bit_;
-    //std::shared_ptr<Integer> emp_integer_;
-    //std::shared_ptr<Float> emp_float32_;
 
   } value_{false, Bit(false), Integer(32,0), Float(0.0)};
   // false, Bit(false, PUBLIC), Integer(1, 0, PUBLIC),
