@@ -124,7 +124,7 @@ vaultdb::types::Value vaultdb::SecureScalarSum::getResult() {
 void vaultdb::SecureScalarMin::initialize(const vaultdb::QueryTuple &tuple) {
   assert(tuple.isEncrypted());
   types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  
+
   runningMin =  types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero , tupleVal);
   initialized = true;
 
@@ -149,20 +149,8 @@ vaultdb::types::TypeId vaultdb::SecureScalarMin::getType() {
   return runningMin.getType();
 }
 
-//vaultdb::types::Value SecureScalarMaxImpl::getMaxValue() const  {
-//  switch(aggregateType) {
-//  case TypeId::ENCRYPTED_INTEGER32:
-//    return Value(TypeId::ENCRYPTED_INTEGER32, Integer(32, INT_MIN, PUBLIC));
-//  case TypeId::INTEGER64:
-//    return Value(TypeId::ENCRYPTED_INTEGER64, Integer(64, LONG_MIN, PUBLIC));
-//  case TypeId::BOOLEAN:
-//    return Value(Bit(true, PUBLIC));
-//  case TypeId::FLOAT32:
-//    return Value(Float(FLT_MAX, PUBLIC));
-//  default:
-//    throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MIN()");
-//  }
-//}
+
+
 
 void vaultdb::SecureScalarMax::initialize(const vaultdb::QueryTuple &tuple) {
   assert(tuple.isEncrypted());

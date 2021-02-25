@@ -144,7 +144,7 @@ types::Value GroupByAggregate::groupByMatch(const QueryTuple &lhs, const QueryTu
     size_t cursor = 1;
     while(cursor < groupByOrdinals.size()) {
         result = result &
-                lhs.getFieldPtr(groupByOrdinals[cursor])->getValue() ==  rhs.getFieldPtr(groupByOrdinals[cursor])->getValue();
+                (lhs.getFieldPtr(groupByOrdinals[cursor])->getValue() ==  rhs.getFieldPtr(groupByOrdinals[cursor])->getValue());
         ++cursor;
     }
 

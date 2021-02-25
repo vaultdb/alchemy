@@ -26,9 +26,7 @@ protected:
     string dstRoot = currentWorkingDirectory + "/pilot/test/output/chi-patient"; // chi-patient.alice || chi-patient.bob
 
     static QuerySchema getInputSchema();
-    string printFirstBytes(vector<int8_t> & bytes, const int &  byteCount);
-    vector<int8_t> getAliceShares();
-    vector<int8_t> getBobShares();
+    string printFirstBytes(vector<int8_t> & bytes, const size_t &  byteCount);
 
 };
 
@@ -58,12 +56,12 @@ QuerySchema SecureSerializationDeserializationTest::getInputSchema() {
     return targetSchema;
 }
 
-string SecureSerializationDeserializationTest::printFirstBytes(vector<int8_t> & bytes, const int &  byteCount) {
+string SecureSerializationDeserializationTest::printFirstBytes(vector<int8_t> & bytes, const size_t &  byteCount) {
     stringstream ss;
     assert(byteCount > 0 && byteCount <= bytes.size());
     vector<int8_t>::iterator  readPos = bytes.begin();
     ss << (int) *readPos;
-    while((readPos - bytes.begin()) < byteCount) {
+    while((readPos - bytes.begin()) < (long) byteCount) {
         ++readPos;
         ss << "," << (int) *readPos;
     }

@@ -4,7 +4,6 @@
 #include <fstream>
 #include <map>
 #include <unistd.h>
-#include <sys/stat.h>
 #include <iostream>
 
 #ifndef PATH_MAX
@@ -42,7 +41,8 @@ using namespace std;
 
 std::string getCurrentWorkingDirectory() {
     char cwd[PATH_MAX];
-    getcwd(cwd, sizeof(cwd));
+    char * ret = getcwd(cwd, sizeof(cwd));
+    ++ret;
     std::string  currentWorkingDirectory = std::string(cwd);
     std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);
     if(suffix == std::string("/bin")) {
@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
 
    string targetPath = argv[1];
    int tupleCount = atoi(argv[2]);
-    srand (time(NULL));
+    srand (time(nullptr));
     bobPatientId = tupleCount;
 
     targetPath = getCurrentWorkingDirectory() + "/" + targetPath;

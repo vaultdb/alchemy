@@ -7,7 +7,9 @@
 
 std::string GenerateEnrichDataThreeParties::getCurrentWorkingDirectory() {
     char cwd[PATH_MAX];
-    getcwd(cwd, sizeof(cwd));
+    char * ret = getcwd(cwd, sizeof(cwd));
+    ++ret; // to address warnings
+
     std::string  currentWorkingDirectory = std::string(cwd);
     std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);
     if(suffix == std::string("/bin")) {
@@ -108,7 +110,7 @@ int main(int argc, char **argv) {
 
     string targetPath = argv[1];
     int tupleCount = atoi(argv[2]);
-    srand (time(NULL));
+    srand (time(nullptr));
     // maintain a running offset to bob's patient ID with respect to Alice's
     // increments when we generate a non-overlapping patient
     int bobPatientId = tupleCount;
