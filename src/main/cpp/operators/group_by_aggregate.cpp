@@ -121,6 +121,7 @@ GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggr
             return new SecureGroupByMaxImpl(ordinal, aggregateValueType);
 
     };
+    return nullptr;
 }
 
 bool GroupByAggregate::verifySortOrder(const std::shared_ptr<QueryTable> &table) const {
