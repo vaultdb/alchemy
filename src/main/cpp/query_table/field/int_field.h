@@ -13,16 +13,20 @@ namespace vaultdb {
     class IntField : public FieldInstance<IntField, int32_t, int32_t, bool> {
     public:
 
-        IntField() {}
-        IntField(const IntField & src) { payload = src.payload; }
-        IntField(const int32_t & src) { payload = src; }
+        IntField() : FieldInstance<IntField, int32_t, int32_t, bool>() {}
+        IntField(const IntField & src) : FieldInstance<IntField, int32_t, int32_t, bool>(src)
+                { payload = src.payload; }
+        IntField(const int32_t & src) : FieldInstance<IntField, int32_t, int32_t, bool>() { payload = src; }
+
         IntField& operator=(const IntField& other);
 
 
         void copy(const IntField & src) {payload = src.payload; }
         void assign(const int32_t & src) {payload = src; }
+        std::shared_ptr<Field>  reveal() const override;
 
         static FieldType type() { return FieldType::INT32; }
+        static FieldType decryptType() { return FieldType::INT32; }
         int32_t primitive() const { return payload; }
         int32_t decrypt() const { return payload; }
         std::string str() const { return std::to_string(payload); }

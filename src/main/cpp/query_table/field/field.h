@@ -37,8 +37,14 @@ namespace vaultdb {
             return *this;
         }
 
+        virtual std::shared_ptr<Field>  reveal() const = 0;
+
     protected:
         virtual void copyTo(const Field & other) = 0;
+        // Field class needs to be inherited
+        Field() = default;
+        Field(const Field&) = default;
+        Field(Field&&) = default;
 
 
 

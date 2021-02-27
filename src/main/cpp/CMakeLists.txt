@@ -98,7 +98,9 @@ set(sources
 		operators/csv_input.cpp
 		query_table/field/field_instance.cpp
 		query_table/field/int_field.cpp
-		query_table/field/example.cpp)
+#		query_table/field/example.cpp
+		query_table/field/field_factory.cpp
+		query_table/field/float_field.cpp)
 
 
 

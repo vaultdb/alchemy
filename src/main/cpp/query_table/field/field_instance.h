@@ -6,9 +6,7 @@
 // formerly known as Value
 
 #include "field.h"
-
-
-
+#include "field_factory.h"
 
 
 namespace vaultdb {
@@ -36,8 +34,21 @@ namespace vaultdb {
             return static_cast<T const &>(*this).str();
         }
 
-        R reveal() const {
+        // delegate to child
+       virtual std::shared_ptr<Field>  reveal() const = 0;
+
+        R revealPrimitive() const {
             return static_cast<T const &>(*this).decrypt();
+        }
+
+        void serialize(int8_t *dst) const;
+
+
+
+        // assignment
+        FieldInstance & operator=(const FieldInstance & other)  {
+            copyTo(other);
+            return *this;
         }
 
     protected:
@@ -46,11 +57,6 @@ namespace vaultdb {
             static_cast<T &>(*this).copy(otherObj);
         }
 
-       // assignment
-        Field & operator=(const Field& other) override {
-            copyTo(other);
-            return *this;
-        }
 /*
         // handle expressions
         //comparators based on emp-toolkit
@@ -117,6 +123,7 @@ namespace vaultdb {
 
         FieldInstance(FieldInstance &&) = default;
     };
+
 
 
 

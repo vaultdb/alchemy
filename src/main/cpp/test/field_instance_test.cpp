@@ -22,7 +22,7 @@ protected:
 };
 
 
-TEST_F(FieldInstanceTest, IntTest) {
+TEST_F(FieldInstanceTest, AssignmentTest) {
     Field *aField = new IntField(5);
     Field *cmp = new IntField(6);
 
@@ -31,7 +31,7 @@ TEST_F(FieldInstanceTest, IntTest) {
     int32_t value = ((IntField *) aField)->getValue();
     ASSERT_EQ(5, value);
 
-    int32_t decrypted = ((IntField *) aField)->reveal();
+    int32_t decrypted = ((IntField *) aField)->revealPrimitive();
     ASSERT_EQ(5, decrypted);
 
     *aField = *cmp;
@@ -44,6 +44,10 @@ TEST_F(FieldInstanceTest, IntTest) {
 
 }
 
+TEST_F(FieldInstanceTest, MultiTypeContainer) {
+    // TODO: store IntField and FloatField in same container
+
+}
 
 /*TEST_F(FieldInstanceTest, ExampleTest) {
 
