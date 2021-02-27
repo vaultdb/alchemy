@@ -11,6 +11,8 @@
 using namespace emp;
 namespace vaultdb {
 
+    // TODO: in the short term, refactor this to be Field.h instead of a wrapper for Value
+    // later circle back and make it nullable?
 class QueryField {
 private:
 
