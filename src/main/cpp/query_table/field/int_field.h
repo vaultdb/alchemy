@@ -18,18 +18,30 @@ namespace vaultdb {
                 { payload = src.payload; }
         IntField(const int32_t & src) : FieldInstance<IntField, int32_t, int32_t, bool>() { payload = src; }
 
-        IntField& operator=(const IntField& other);
+        IntField& operator=(const IntField& other) {
+                this->payload = other.payload;
+                return *this;
+        }
 
 
         void copy(const IntField & src) {payload = src.payload; }
         void assign(const int32_t & src) {payload = src; }
-        std::shared_ptr<Field>  reveal() const override;
 
         static FieldType type() { return FieldType::INT32; }
         static FieldType decryptType() { return FieldType::INT32; }
         int32_t primitive() const { return payload; }
         int32_t decrypt() const { return payload; }
         std::string str() const { return std::to_string(payload); }
+
+        size_t size() const { return 32; }
+
+        static IntField deserialize(const int8_t *cursor) {
+            IntField ret;
+            memcpy((int8_t *) &ret.payload, cursor, ret.size()/8);
+            return ret;
+
+        }
+
 /*
         // comparators
         bool geq(const IntField & cmp) { return payload >= cmp.payload; }
@@ -58,10 +70,6 @@ namespace vaultdb {
             return IntField(other);
         }
 */
-        size_t size() const { return 32; }
-
-        void serialize(int8_t *dst) const;
-        static IntField deserialize(const int8_t *cursor);
 
 
     protected:

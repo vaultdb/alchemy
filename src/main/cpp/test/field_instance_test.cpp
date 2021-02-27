@@ -39,6 +39,11 @@ TEST_F(FieldInstanceTest, AssignmentTest) {
     ASSERT_EQ(6, copiedValue);
 
 
+    std::shared_ptr<Field> revealed = aField->reveal();
+
+    ASSERT_EQ("6", revealed->toString());
+
+
     delete aField;
     delete cmp;
 

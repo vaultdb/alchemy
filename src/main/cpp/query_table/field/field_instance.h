@@ -13,9 +13,23 @@ namespace vaultdb {
 
 
     // This curiously recurring template pattern class implements clone() for derived types
+    //  need two of these: field instance, field primitive to make this more manageable
+    // will have:
+    /*
+     *         Field
+     *           |
+     *           v
+     *        FieldInstance<Derived,Plaintext>        FieldPrimitive<Primitive,Revealed,Bool>
+     *                  \                                    /
+     *                   \                                 /
+     *                           IntField, FloatField
+     *
+     *     Do we really need FieldPrimitive yet?  Not yet, but will eventually
+     */
     // T = derived class
+    //
     // P = underlying primitive of T
-    // R = revealed class type - after decrypting
+    // R = revealed primitive type - after decrypting
     // B = boolean type, bool for plaintext, emp::Bit for secure
     template<typename T, typename P, typename  R, typename B>
     class FieldInstance : public Field {
@@ -30,18 +44,35 @@ namespace vaultdb {
             return static_cast<T const &>(*this).primitive();
         }
 
+        // these methods need to be in header file to compile
+        // figure out why later - may need inline?
         std::string toString() const override {
             return static_cast<T const &>(*this).str();
         }
 
-        // delegate to child
-       virtual std::shared_ptr<Field>  reveal() const = 0;
+        void serialize(int8_t *dst) const override {
+            P payload = getValue();
+            size_t size  = static_cast<T const &>(*this).size() / 8; // bits --> bytes
+            memcpy(dst, (int8_t *) payload, size);
+
+        }
+
+        std::shared_ptr<Field>  reveal() const override {
+            T impl = static_cast<T const &>(*this);
+            R revealed = impl.decrypt();
+            FieldType type = impl.decryptType();
+            return std::shared_ptr<Field>(new T(revealed));
+
+            //return FieldFactory<R>::getField(revealed, type);
+
+        }
+
+
 
         R revealPrimitive() const {
             return static_cast<T const &>(*this).decrypt();
         }
 
-        void serialize(int8_t *dst) const;
 
 
 

@@ -29,7 +29,6 @@ namespace vaultdb {
 
         virtual std::unique_ptr<Field> clone() const = 0;
 
-        virtual std::string toString() const = 0;
 
 
         virtual Field & operator=(const Field& other) {
@@ -37,9 +36,15 @@ namespace vaultdb {
             return *this;
         }
 
+
+        virtual std::string toString() const = 0;
+        virtual void serialize(int8_t *dst) const = 0;
+        // TODO: figure out how to make this work w/o having to impl at every child
+        // pattern after toString()
         virtual std::shared_ptr<Field>  reveal() const = 0;
 
     protected:
+
         virtual void copyTo(const Field & other) = 0;
         // Field class needs to be inherited
         Field() = default;
