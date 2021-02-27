@@ -36,6 +36,7 @@ TEST_F(FieldInstanceTest, AssignmentTest) {
     ASSERT_EQ(5, ((IntField *)decrypted)->getValue());
 
     *aField = *cmp;
+
     int32_t copiedValue = ((IntField *) aField)->getValue();
     ASSERT_EQ(6, copiedValue);
 
@@ -46,6 +47,7 @@ TEST_F(FieldInstanceTest, AssignmentTest) {
 
     delete aField;
     delete cmp;
+    delete revealed;
 
 }
 

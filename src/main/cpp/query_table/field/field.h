@@ -39,8 +39,6 @@ namespace vaultdb {
 
         virtual std::string toString() const = 0;
         virtual void serialize(int8_t *dst) const = 0;
-        // TODO: figure out how to make this work w/o having to impl at every child
-        // pattern after toString()
         virtual Field *reveal() const = 0;
 
     protected:
