@@ -2,7 +2,6 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <data/DataProvider.h>
 #include <util/data_utilities.h>
-#include <operators/common_table_expression.h>
 #include <operators/sort.h>
 #include "union_hybrid_data.h"
 
@@ -10,7 +9,7 @@ using namespace  std;
 using namespace vaultdb;
 using namespace  emp;
 
-#define TESTBED 1
+#define TESTBED 0
 
 
 void validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<QueryTable> & testTable)  {
@@ -71,6 +70,10 @@ int main(int argc, char **argv) {
         std::cout << "Input passed test!" << std::endl;
     }
 
-    // TODO: crib test query code from enrich_test.cpp
+
+    Utilities::checkMemoryUtilization("max memory before reset: ");
+    inputData.reset(); // frees inputData
+    Utilities::checkMemoryUtilization("max memory after reset: ");
+
      emp::finalize_semi_honest();
 }

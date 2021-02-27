@@ -41,12 +41,20 @@ void UnionHybridData::readLocalInput(const string &localInputFile) {
     std::unique_ptr<QueryTable> localInput = CsvReader::readCsv(localInputFile, inputTable->getSchema());
     std::shared_ptr<QueryTable> encryptedTable = localInput->secretShare(netio, party);
 
+    Utilities::checkMemoryUtilization("before local read: ");
     if(!inputTableInit) {
         inputTable = encryptedTable;
     }
     else {
        resizeAndAppend(encryptedTable);
     }
+
+    Utilities::checkMemoryUtilization("after local read: ");
+    localInput.reset();
+    encryptedTable.reset();
+
+    localInput.reset();
+    encryptedTable.reset();
 
     inputTableInit = true;
 }
@@ -92,6 +100,7 @@ void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
 
     inputTableInit = true;
     delete [] bools;
+    additionalInputs.reset();
 
 
 }
@@ -118,8 +127,14 @@ shared_ptr<QueryTable> UnionHybridData::unionHybridData(const QuerySchema &schem
                                                         const string &secretSharesFile, NetIO *aNetIO,
                                                         const int &party) {
     UnionHybridData unioned(schema, aNetIO, party);
+    Utilities::checkMemoryUtilization("before local read call: ");
+
     unioned.readLocalInput(localInputFile);
+    Utilities::checkMemoryUtilization("after local read call: ");
+
     unioned.readSecretSharedInput(secretSharesFile);
+    Utilities::checkMemoryUtilization("after secret share read call: ");
+
     return unioned.getInputTable();
 }
 

@@ -112,6 +112,8 @@ int main(int argc, char **argv) {
 
     Utilities::checkMemoryUtilization("read input");
 
+    cout << "********* start processing ***************" << endl;
+
     // validate it against the DB for testing
     if(TESTBED) {
         shared_ptr<QueryTable> revealed = inputData->reveal();
@@ -126,7 +128,7 @@ int main(int argc, char **argv) {
 
 
     EnrichHtnQuery enrich(inputData);
-
+    inputData.reset();
 
     cout << "Completed cube aggregation at " << time_from(startTime)*1e6*1e-9 << " ms." << endl;
     Utilities::checkMemoryUtilization();

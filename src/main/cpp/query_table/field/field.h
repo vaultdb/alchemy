@@ -1,0 +1,47 @@
+#ifndef _FIELD_H
+#define _FIELD_H
+
+#include <cstdint>
+#include <string>
+
+
+namespace vaultdb {
+    enum class FieldType {
+        INVALID = 0,
+        BOOL,
+        DATE, // DATE is just a stand-in for long, TODO: delete this
+        INT32,
+        INT64,
+        FLOAT32,
+        STRING,
+        SECURE_INT32,
+        SECURE_INT64,
+        SECURE_BOOL,
+        SECURE_FLOAT32,
+        SECURE_STRING, // need all types to have encrypted counterpart so that we can translate them back to query tables when we decrypt the results
+    };
+
+    // top-level class so we can store heterogeneous types in the same container
+
+    class Field {
+    public:
+        virtual ~Field() = default;
+
+        virtual std::unique_ptr<Field> clone() const = 0;
+
+        virtual std::string toString() const = 0;
+
+
+        virtual Field & operator=(const Field& other) {
+            this->copyTo(other);
+            return *this;
+        }
+
+    protected:
+        virtual void copyTo(const Field & other) = 0;
+
+
+
+    };
+}
+#endif //_FIELD_H

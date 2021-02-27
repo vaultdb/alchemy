@@ -39,6 +39,7 @@ namespace  vaultdb {
         static Value projectNumeratorMultisite(const QueryTuple &aTuple);
         static Value projectSecureAgeStrata(const QueryTuple &aTuple);
 
+
         // emp Integers for age cutoffs in age_strata projection:
         //static const vector<Integer> ageStrata;
         //static const vector<Integer> ageCutoff;

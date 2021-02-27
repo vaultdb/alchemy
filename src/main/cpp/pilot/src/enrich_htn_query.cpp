@@ -15,6 +15,8 @@ EnrichHtnQuery::EnrichHtnQuery(shared_ptr<QueryTable> & input) : inputTable(inpu
     shared_ptr<QueryTable> filtered = filterPatients();
     shared_ptr<QueryTable> projected = projectPatients(filtered);
     aggregatePatients(projected);
+    filtered.reset();
+    projected.reset();
 
 }
 
@@ -28,10 +30,15 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
     unionSortDefinition.push_back(ColumnSort(8, SortDirection::ASCENDING)); // last sort makes it verifiable
 
     // destructor handled within Operator
-    Sort sortUnioned(inputTable, unionSortDefinition);
+    Sort *sortUnioned = new Sort(inputTable, unionSortDefinition);
+    shared_ptr<QueryTable> sorted = sortUnioned->run();
+    Utilities::checkMemoryUtilization("Alloc'd sort");
+
+    delete sortUnioned; // free up pointers to sorted
 
 
-    // aggregate to deduplicate
+
+              // aggregate to deduplicate
     // finds if a patient meets exclusion criteria, if a patient is in the numerator in at least one site
     // aka:
     //    SELECT  p.patid, zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*), max(denom_excl)
@@ -43,15 +50,25 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
             ScalarAggregateDefinition(7, AggregateId::MAX, "denom_excl")
     };
 
-    GroupByAggregate unionedPatients(&sortUnioned, groupByCols, aggregators );
+    GroupByAggregate *unionedPatients = new GroupByAggregate(sorted, groupByCols, aggregators );
+    shared_ptr<QueryTable> aggregated = unionedPatients->run();
+    delete unionedPatients;
+    sorted.reset();
+    Utilities::checkMemoryUtilization("Deleted sort");
+
 
     // filter ones with denom_excl = 1
     // *** Filter
     // HAVING max(denom_excl) = 0
     std::shared_ptr<Predicate> predicateClass(new FilterExcludedPatients(true));
-    Filter inclusionCohort(&unionedPatients, predicateClass);
+    Filter inclusionCohort(aggregated, predicateClass);
 
-    return  inclusionCohort.run();
+    shared_ptr<QueryTable> output =   inclusionCohort.run();
+    aggregated.reset();
+    Utilities::checkMemoryUtilization("Deleted aggregate");
+    return output;
+
+
 
 
 }
@@ -63,6 +80,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> sr
     //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
     // output schema:
     // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
+    Utilities::checkMemoryUtilization("before projection");
     Project project(src);
     TypeId intType = TypeId::ENCRYPTED_INTEGER32;
 
@@ -100,9 +118,13 @@ shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> sr
 
 void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 
+    Utilities::checkMemoryUtilization("Before sort");
 
     // sort it on cols [0,5)
-    Sort sort(src, DataUtilities::getDefaultSortDefinition(5));
+    Sort *sort = new Sort(src, DataUtilities::getDefaultSortDefinition(5));
+    shared_ptr<QueryTable> sorted = sort->run();
+    delete sort;
+    Utilities::checkMemoryUtilization("After deleting sort");
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
     std::vector<ScalarAggregateDefinition> aggregators {
@@ -115,8 +137,13 @@ void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 
     // output schema:
     // zip_marker (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-    GroupByAggregate aggregator(&sort, groupByCols, aggregators);
-    dataCube = aggregator.run();
+    GroupByAggregate *aggregator = new GroupByAggregate(sorted, groupByCols, aggregators);
+    dataCube = aggregator->run();
+    sorted.reset();
+    delete aggregator;
+    Utilities::checkMemoryUtilization("After deleting aggregate");
+
+
 }
 
 // roll up one group-by col at a time
@@ -126,8 +153,9 @@ void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const {
 
     SortDefinition sortDefinition{ColumnSort(ordinal, SortDirection::ASCENDING)};
-    Sort sort(dataCube, sortDefinition);
-
+    Sort *sort = new Sort(dataCube, sortDefinition);
+    shared_ptr<QueryTable> sorted = sort->run();
+    delete sort;
 
     std::vector<int32_t> groupByCols{ordinal};
     // ordinals 0...4 are group-by cols in input schema
@@ -138,8 +166,12 @@ shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const
             ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
-    GroupByAggregate rollupStrata(&sort, groupByCols, aggregators );
-    return rollupStrata.run();
+    GroupByAggregate *rollupStrata = new GroupByAggregate(sorted, groupByCols, aggregators );
+    shared_ptr<QueryTable> result = rollupStrata->run();
+    delete rollupStrata;
+    sorted.reset();
+
+    return result;
 
 
 }
@@ -180,7 +212,6 @@ Value EnrichHtnQuery::projectNumeratorMultisite(const QueryTuple &aTuple) {
 //                WHEN age_days > 72*365  AND age_days <= 83*365 THEN 5
 //                ELSE 6 END age_strata
 
-// TODO: set this up to memoize the emp ints so we don't have to generate them every time
 Value EnrichHtnQuery::projectSecureAgeStrata(const QueryTuple & aTuple) {
     Integer ageDays = aTuple.getField(2).getValue().getEmpInt(); // age_days
      vector<Integer> ageStrata = {Integer(32, 0), Integer(32,1), Integer(32,2), Integer(32,3), Integer(32,4), Integer(32,5), Integer(32, 6) };

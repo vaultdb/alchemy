@@ -95,7 +95,10 @@ set(sources
 		operators/group_by_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp
 		operators/support/secure_group_by_aggregate_impl.cpp
-		operators/csv_input.cpp)
+		operators/csv_input.cpp
+		query_table/field/field_instance.cpp
+		query_table/field/int_field.cpp
+		query_table/field/example.cpp)
 
 
 
