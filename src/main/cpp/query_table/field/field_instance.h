@@ -25,13 +25,17 @@ namespace vaultdb {
      *                           IntField, FloatField
      *
      *     Do we really need FieldPrimitive yet?  Not yet, but will eventually
+     *     Taking out:
+     *          P = underlying primitive of T
+                R = revealed primitive type - after decrypting
+                B = boolean type, bool for plaintext, emp::Bit for secure
+
      */
-    // T = derived class
-    //
-    // P = underlying primitive of T
-    // R = revealed primitive type - after decrypting
-    // B = boolean type, bool for plaintext, emp::Bit for secure
-    template<typename T, typename P, typename  R, typename B>
+    // T = derived field
+    // R = revealed field
+    // B = boolean field result
+    // P = primitive / payload of field, needed for serialize
+    template<typename T, typename R, typename B, typename P>
     class FieldInstance : public Field {
     public:
 
@@ -44,7 +48,7 @@ namespace vaultdb {
             return static_cast<T const &>(*this).primitive();
         }
 
-        // these methods need to be in header file to compile
+        // TODO: these methods need to be in header file to compile
         // figure out why later - may need inline?
         std::string toString() const override {
             return static_cast<T const &>(*this).str();
@@ -57,21 +61,11 @@ namespace vaultdb {
 
         }
 
-        std::shared_ptr<Field>  reveal() const override {
-            T impl = static_cast<T const &>(*this);
-            R revealed = impl.decrypt();
-            FieldType type = impl.decryptType();
-            return std::shared_ptr<Field>(new T(revealed));
-
-            //return FieldFactory<R>::getField(revealed, type);
-
-        }
-
-
-
-        R revealPrimitive() const {
+        Field  *reveal() const override {
             return static_cast<T const &>(*this).decrypt();
         }
+
+
 
 
 

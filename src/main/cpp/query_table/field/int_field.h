@@ -10,13 +10,19 @@
 
 
 namespace vaultdb {
-    class IntField : public FieldInstance<IntField, int32_t, int32_t, bool> {
+    //  // T = derived field
+    //    // R = revealed field
+    //    // B = boolean field result
+    //    // P = primitive / payload of field, needed for serialize
+    //    template<typename T, typename R, typename B, typename P>
+    // TODO: make the third one BoolField instead of bool
+    class IntField : public FieldInstance<IntField, IntField, bool, int32_t> {
     public:
 
-        IntField() : FieldInstance<IntField, int32_t, int32_t, bool>() {}
-        IntField(const IntField & src) : FieldInstance<IntField, int32_t, int32_t, bool>(src)
+        IntField() : FieldInstance<IntField, IntField, bool, int32_t>() {}
+        IntField(const IntField & src) : FieldInstance<IntField, IntField, bool, int32_t>(src)
                 { payload = src.payload; }
-        IntField(const int32_t & src) : FieldInstance<IntField, int32_t, int32_t, bool>() { payload = src; }
+        IntField(const int32_t & src) : FieldInstance<IntField, IntField, bool, int32_t>() { payload = src; }
 
         IntField& operator=(const IntField& other) {
                 this->payload = other.payload;
@@ -28,12 +34,10 @@ namespace vaultdb {
         void assign(const int32_t & src) {payload = src; }
 
         static FieldType type() { return FieldType::INT32; }
-        static FieldType decryptType() { return FieldType::INT32; }
-        int32_t primitive() const { return payload; }
-        int32_t decrypt() const { return payload; }
-        std::string str() const { return std::to_string(payload); }
-
         size_t size() const { return 32; }
+
+        Field *decrypt() const { return new IntField(*this); }
+
 
         static IntField deserialize(const int8_t *cursor) {
             IntField ret;
@@ -71,9 +75,14 @@ namespace vaultdb {
         }
 */
 
+        int32_t primitive() const { return payload; }
+        std::string str() const { return std::to_string(payload); }
+
 
     protected:
         int32_t payload = 0;
+
+
 
     };
 }

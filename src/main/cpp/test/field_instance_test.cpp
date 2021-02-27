@@ -28,19 +28,19 @@ TEST_F(FieldInstanceTest, AssignmentTest) {
 
     ASSERT_EQ("5", aField->toString());
 
+    // calling FieldInstance::getValue
     int32_t value = ((IntField *) aField)->getValue();
     ASSERT_EQ(5, value);
 
-    int32_t decrypted = ((IntField *) aField)->revealPrimitive();
-    ASSERT_EQ(5, decrypted);
+    Field *decrypted = aField->reveal();
+    ASSERT_EQ(5, ((IntField *)decrypted)->getValue());
 
     *aField = *cmp;
     int32_t copiedValue = ((IntField *) aField)->getValue();
     ASSERT_EQ(6, copiedValue);
 
 
-    std::shared_ptr<Field> revealed = aField->reveal();
-
+    Field *revealed = aField->reveal();
     ASSERT_EQ("6", revealed->toString());
 
 
