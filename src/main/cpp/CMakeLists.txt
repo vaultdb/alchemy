@@ -99,7 +99,7 @@ set(sources
 		query_table/field/field.h
 		query_table/field/field_instance.cpp
 		query_table/field/int_field.cpp
-		#query_table/field/bool_field.h
+		query_table/field/bool_field.h
 		#query_table/field/secure_bool_field.h
 		#		query_table/field/example.cpp
 		query_table/field/field_factory.cpp

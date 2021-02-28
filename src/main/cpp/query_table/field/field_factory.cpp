@@ -1,5 +1,6 @@
 #include "field_factory.h"
 #include "int_field.h"
+#include "bool_field.h"
 
 using namespace vaultdb;
 
@@ -10,6 +11,9 @@ Field * vaultdb::FieldFactory<T>::getField(const T &primitive, const FieldType &
     switch (fieldType) {
         case FieldType::INT32:
             return new IntField((int32_t) primitive);
+        case FieldType::BOOL:
+            return new BoolField((bool) primitive);
+
         default:
             return nullptr;
 
@@ -26,6 +30,9 @@ Field *FieldFactory<T>::getField(const int8_t *src, const FieldType &fieldType) 
     switch (fieldType) {
         case FieldType::INT32:
             return new IntField(src);
+        case FieldType::BOOL:
+            return new BoolField(src);
+
         default:
             return nullptr;
 

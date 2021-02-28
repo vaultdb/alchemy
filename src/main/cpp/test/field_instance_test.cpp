@@ -3,6 +3,7 @@
 
 #include <query_table/field/field_instance.h>
 #include <query_table/field/int_field.h>
+#include <query_table/field/bool_field.h>
 
 #include <emp-tool/emp-tool.h>
 
@@ -59,7 +60,7 @@ TEST_F(FieldInstanceTest, AssignmentTest) {
     Field *geq  = &(*aField >= *cmp);
 
     std::cout << "Is 7 >= 6?  " << geq->toString() << std::endl;
-    ASSERT_EQ("1", geq->toString());
+    ASSERT_EQ("true", geq->toString());
 
 
     delete aField;
@@ -71,8 +72,18 @@ TEST_F(FieldInstanceTest, AssignmentTest) {
 }
 
 TEST_F(FieldInstanceTest, MultiTypeContainer) {
-    // TODO: store IntField and FloatField in same container
+    std::vector<Field *> myFields;
+    myFields.emplace_back(new IntField(7));
+    myFields.emplace_back(new BoolField(true));
 
+
+    ASSERT_EQ(myFields.size(), 2);
+    for(auto field : myFields) {
+        std::cout << field->toString() << std::endl;
+        delete field;
+    }
+
+    myFields.clear();
 }
 
 /*TEST_F(FieldInstanceTest, ExampleTest) {

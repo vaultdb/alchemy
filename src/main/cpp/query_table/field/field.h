@@ -23,7 +23,7 @@ namespace vaultdb {
     };
 
     // top-level class so we can store heterogeneous types in the same container
-
+    // TODO: overload the << operator
     class Field {
     public:
         virtual ~Field() = default;
@@ -86,7 +86,6 @@ namespace vaultdb {
 
 
 
-
         virtual void copyTo(const Field & other) = 0;
         virtual Field & geq(const Field & rhs) const = 0;
         virtual Field & equal(const Field & rhs) const = 0;
@@ -103,5 +102,9 @@ namespace vaultdb {
 
 
     };
+    /*std::ostream &operator<<(std::ostream &os, const Field &field) {
+        return os << field.toString();
+    }*/
+
 }
 #endif //_FIELD_H

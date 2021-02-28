@@ -7,59 +7,82 @@
 namespace vaultdb {
 
 
-        class BoolField : public FieldInstance<BoolField, BoolField, bool, bool> {
+    class BoolField : public FieldInstance<BoolField, BoolField, BoolField, int32_t> {
+    protected:
+        bool payload = true;
 
-        public:
+    public:
 
-            BoolField() : FieldInstance<BoolField, BoolField, bool, bool>() {}
-            BoolField(const BoolField & src) : FieldInstance<BoolField, BoolField, bool, bool>(src)
-            { payload = src.payload; }
-            BoolField(const int32_t & src) : FieldInstance<BoolField, BoolField, bool, bool>() { payload = src; }
+        BoolField() : FieldInstance<BoolField, BoolField, BoolField, int32_t>() {}
+        BoolField(const BoolField & src) : FieldInstance<BoolField, BoolField, BoolField, int32_t>(src) { payload = src.payload; }
+        BoolField(const int32_t & src) : FieldInstance<BoolField, BoolField, BoolField, int32_t>() { payload = src; }
+        BoolField(const int8_t * src)  : FieldInstance<BoolField, BoolField, BoolField, int32_t>(){
+            memcpy((int8_t *) &payload, src, size()/8);
+        }
 
-            BoolField& operator=(const BoolField& other) {
-                this->payload = other.payload;
-                return *this;
-            }
-
-
-            void copy(const BoolField & src) {payload = src.payload; }
-            void assign(const int32_t & src) {payload = src; }
-
-            static FieldType type() { return FieldType::BOOL; }
-            size_t size() const { return 8; }
-
-            Field *decrypt() const { return new BoolField(*this); }
+        BoolField& operator=(const BoolField& other) {
+            this->payload = other.payload;
+            return *this;
+        }
 
 
-            static BoolField deserialize(const int8_t *cursor) {
-                BoolField ret;
-                memcpy((int8_t *) &ret.payload, cursor, ret.size()/8);
-                return ret;
+        void copy(const BoolField & src) {payload = src.payload; }
+        void assign(const int32_t & src) {payload = src; }
 
-            }
+        static FieldType type() { return FieldType::BOOL; }
+        size_t size() const override{ return 8; }
 
-            int32_t primitive() const { return payload; }
-            std::string str() const { return std::to_string(payload); }
+        Field *decrypt() const { return new BoolField(*this); }
 
 
-            BoolField  operator!() const {
-                return !payload;
-            }
 
 
-            BoolField & geq(const BoolField & rhs) const {
+        BoolField & operator+(const BoolField &rhs) const { return *(new BoolField(payload + rhs.payload)); }
+        BoolField & operator-(const BoolField &rhs) const { return *(new BoolField(payload - rhs.payload)); }
+        BoolField & operator*(const BoolField &rhs) const { return *(new BoolField(payload * rhs.payload)); }
+        BoolField & operator/(const BoolField &rhs) const { return *(new BoolField(payload / rhs.payload)); }
+        BoolField & operator%(const BoolField &rhs) const { return *(new BoolField(payload % rhs.payload)); }
 
-                return BoolField(payload >= rhs.payload);
-            }
+
+        Field &  operator !() const override {
+            return *(new BoolField(!payload));
+        }
+
+        BoolField & operator >= (const BoolField &cmp) const {
+            return *(new BoolField(payload >= cmp.payload));
+        }
+
+        BoolField & operator == (const BoolField &cmp) const {
+            return *(new BoolField(payload == cmp.payload));
+        }
 
 
-            BoolField & equal(const BoolField & rhs) const {
-                return  BoolField(payload == rhs.payload);
-            }
 
-        protected:
-            bool payload;
+        // bitwise ops
+        BoolField & operator&(const BoolField &rhs) const { return *(new BoolField(payload & rhs.payload)); }
+        BoolField & operator|(const BoolField &rhs) const { return *(new BoolField(payload | rhs.payload)); }
+        BoolField & operator^(const BoolField &rhs) const { return *(new BoolField(payload ^ rhs.payload)); }
 
-        };
+
+
+
+        int32_t primitive() const { return payload; }
+        std::string str() const {
+            return  payload ? "true" : "false";
+        }
+
+        // swappable
+        BoolField & select(const BoolField & choice, const BoolField & other) const {
+            bool selection = (bool) choice.payload;
+            return selection ? *(new BoolField(*this)) : *(new BoolField(other));
+        }
+
+
+
+
+
+
+    };
+
 }
 #endif //BOOL_FIELD_H
