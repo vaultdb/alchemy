@@ -46,7 +46,17 @@ namespace vaultdb {
 
         }
 
-/*
+        IntField & operator+(const IntField &rhs) const {
+            IntField *result = new IntField(payload + rhs.payload);
+            return *result;
+        }
+
+        IntField & operator >= (const IntField &cmp) const {
+            return *(new IntField(payload >= cmp.payload));
+        }
+
+
+        /*
         // comparators
         bool geq(const IntField & cmp) { return payload >= cmp.payload; }
         bool equal(const IntField & cmp) { return payload == cmp.payload; }

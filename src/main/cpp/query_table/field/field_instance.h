@@ -76,6 +76,21 @@ namespace vaultdb {
             return *this;
         }
 
+        Field & operator+(const Field &rhs) const override {
+            const T otherObj = static_cast<const T &>(rhs);
+            const T impl = static_cast<T const &>(*this);
+
+            return impl + otherObj;
+        }
+
+         Field & geq(const Field & rhs) const override {
+            return static_cast<T const &>(*this) >= (static_cast<const T &>(rhs));
+        }
+
+        
+
+
+
     protected:
         void copyTo(const Field & other) override {
             const T otherObj = static_cast<const T &>(other);
@@ -108,9 +123,6 @@ namespace vaultdb {
             return !(*static_cast<const T*>(this) == static_cast<const T>(rhs));
         }
 
-        Field operator+(const Field &rhs) const {
-            return static_cast<const T*>(this) + static_cast<const T>(rhs);
-        }
 
         Field operator-(const Field &rhs) const {
             return static_cast<const T*>(this) - static_cast<const T>(rhs);

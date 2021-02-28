@@ -41,9 +41,20 @@ namespace vaultdb {
         virtual void serialize(int8_t *dst) const = 0;
         virtual Field *reveal() const = 0;
 
+        // caution: these methods (comparison and math) will create memory leaks
+        // if we don't handle the output of this as a heap-allocated pointer!
+        virtual Field & operator+(const Field & rhs) const = 0;
+
+        Field & operator >=(const Field & rhs) const {
+            return geq(rhs);
+        }
+
     protected:
 
         virtual void copyTo(const Field & other) = 0;
+        virtual Field & geq(const Field & rhs) const = 0;
+
+
         // Field class needs to be inherited
         Field() = default;
         Field(const Field&) = default;

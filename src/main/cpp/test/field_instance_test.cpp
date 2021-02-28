@@ -45,9 +45,28 @@ TEST_F(FieldInstanceTest, AssignmentTest) {
     ASSERT_EQ("6", revealed->toString());
 
 
+    // downcast to IntType
+    // produces IntField &
+    //decltype(*aField) added = *aField + *cmp;
+
+    Field *addedField = static_cast<Field *>( &( *aField + *cmp));
+    std::cout << "Field: " << ((IntField *) aField)->getValue() << " + "  << ((IntField *) cmp)->getValue() << std::endl;
+    ASSERT_EQ("12", addedField->toString());
+
+
+    delete aField;
+    aField = new IntField(7);
+    Field *geq  = &(*aField >= *cmp);
+
+    std::cout << "Is 7 >= 6?  " << geq->toString() << std::endl;
+    ASSERT_EQ("1", geq->toString());
+
+
     delete aField;
     delete cmp;
     delete revealed;
+    delete addedField;
+    delete geq;
 
 }
 
