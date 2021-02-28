@@ -40,28 +40,65 @@ namespace vaultdb {
 
         virtual std::string toString() const = 0;
         virtual void serialize(int8_t *dst) const = 0;
+        virtual size_t size() const  = 0;
+
         virtual Field *reveal() const = 0;
 
         // caution: these methods (comparison and math) will create memory leaks
         // if we don't handle the output of this as a heap-allocated pointer!
         virtual Field & operator+(const Field & rhs) const = 0;
+        virtual Field & operator-(const Field & rhs) const = 0;
+        virtual Field & operator/(const Field & rhs) const = 0;
+        virtual Field & operator*(const Field & rhs) const = 0;
+        virtual Field & operator%(const Field & rhs) const = 0;
 
-        // comparators
+        virtual Field & compareAndSwap(const Field & select, const Field & rhs) const = 0;
+
+
+
+        // comparators - based on EMP-toolkit comparable.h
         Field & operator >=(const Field & rhs) const {
-            return geq(rhs);
+            return this->geq(rhs);
         }
 
-    protected:
+        Field & operator<(const Field & rhs) const {
+            return !( *this >= rhs );
+        }
+
+        Field & operator<=(const Field & rhs) const {
+            return rhs >= *this;
+        }
+
+        Field & operator>(const Field & rhs) const {
+            return !(rhs >= *this);
+        }
+
+        Field & operator==(const Field & rhs) const {
+            return this->equal(rhs);
+        }
+        Field & operator!=(const Field & rhs) const {
+            return !(*this == rhs);
+        }
+
+        virtual Field & operator &(const Field & rhs)  const = 0;
+        virtual Field & operator |(const Field & rhs)  const = 0;
+        virtual Field & operator ^(const Field & rhs)  const = 0;
+
+
+
 
         virtual void copyTo(const Field & other) = 0;
         virtual Field & geq(const Field & rhs) const = 0;
         virtual Field & equal(const Field & rhs) const = 0;
+        virtual Field &  operator !() const = 0;
 
+    protected:
 
         // Field class needs to be inherited
         Field() = default;
         Field(const Field&) = default;
         Field(Field&&) = default;
+
 
 
 

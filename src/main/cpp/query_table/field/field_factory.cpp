@@ -5,17 +5,37 @@ using namespace vaultdb;
 
 
 template<typename T>
-std::shared_ptr<Field> vaultdb::FieldFactory<T>::getField(const T &primitive, const FieldType &fieldType) {
+Field * vaultdb::FieldFactory<T>::getField(const T &primitive, const FieldType &fieldType) {
 
     switch (fieldType) {
         case FieldType::INT32:
-            return std::shared_ptr<Field>(new IntField((int32_t) primitive));
+            return new IntField((int32_t) primitive);
         default:
-            return std::shared_ptr<Field>();
+            return nullptr;
 
     }
 
-    return std::shared_ptr<Field>();
+    return nullptr;
 
 
+}
+
+template<typename T>
+Field *FieldFactory<T>::getField(const int8_t *src, const FieldType &fieldType) {
+
+    switch (fieldType) {
+        case FieldType::INT32:
+            return new IntField(src);
+        default:
+            return nullptr;
+
+    }
+
+    return nullptr;
+
+}
+
+template<typename T>
+Field *FieldFactory<T>::obliviousIf(const Field & choice, const Field & lhs,const Field & rhs) {
+    return &(lhs.compareAndSwap(choice, rhs));
 }

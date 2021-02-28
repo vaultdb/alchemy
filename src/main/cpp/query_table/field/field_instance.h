@@ -61,6 +61,10 @@ namespace vaultdb {
 
         }
 
+         size_t size() const override {
+            return static_cast<T const &>(*this).size();
+        }
+
         Field  *reveal() const override {
             return static_cast<T const &>(*this).decrypt();
         }
@@ -76,22 +80,26 @@ namespace vaultdb {
             return *this;
         }
 
-        Field & operator+(const Field &rhs) const override {
-            const T otherObj = static_cast<const T &>(rhs);
-            const T impl = static_cast<T const &>(*this);
-
-            return impl + otherObj;
+        Field & operator !() const override {
+            return !(static_cast<T const &>(*this));
         }
 
-         Field & geq(const Field & rhs) const override {
-            return static_cast<T const &>(*this) >= (static_cast<const T &>(rhs));
+        Field & operator+(const Field &rhs) const override {  return static_cast<T const &>(*this) + static_cast<const T &>(rhs); }
+        Field & operator-(const Field &rhs) const override {   return static_cast<const T &>(*this) - static_cast<T const &>(rhs); }
+        Field & operator*(const Field &rhs) const override {   return static_cast<const T &>(*this) * static_cast<T const &>(rhs); }
+        Field & operator/(const Field &rhs) const override {   return static_cast<const T &>(*this) / static_cast<T const &>(rhs); }
+        Field & operator%(const Field &rhs) const override {   return static_cast<const T &>(*this) % static_cast<T const &>(rhs); }
+
+
+        Field & geq(const Field & rhs) const override { return static_cast<T const &>(*this) >= (static_cast<const T &>(rhs)); }
+
+        Field & equal(const Field & rhs) const override { return static_cast<T const &>(*this) == (static_cast<const T &>(rhs)); }
+
+        Field & compareAndSwap(const Field & select, const Field & other)  const override {
+            const B choiceBit = static_cast<B const &> (select);
+            const T otherOne = static_cast<T const &> (other);
+            return  static_cast<T const &>(*this).select(choiceBit, otherOne);
         }
-
-        Field & equal(const Field & rhs) const override {
-            return static_cast<T const &>(*this) == (static_cast<const T &>(rhs));
-        }
-
-
 
 
     protected:
@@ -100,60 +108,20 @@ namespace vaultdb {
             static_cast<T &>(*this).copy(otherObj);
         }
 
-/*
+
         // handle expressions
         //comparators based on emp-toolkit
-        B operator>=(const Field &rhs) const {
-            return static_cast<const T*>(this)->geq(static_cast<const T>(rhs));
-        }
-        B operator<(const Field& rhs) const {
-            return !( (*static_cast<const T*>(this))>= static_cast<const T>(rhs) );
+        Field & operator&(const Field &rhs) const override {
+            return static_cast<const T&>(*this) & static_cast<const T&>(rhs);
         }
 
-        B operator<=(const Field& rhs) const {
-            return static_cast<const T>(rhs) >= *static_cast<const T*>(this);
+        Field & operator|(const Field &rhs) const override {
+            return static_cast<const T&>(*this) | static_cast<const T&>(rhs);
         }
 
-        B operator>(const Field& rhs) const {
-            return !(static_cast<const T>(rhs) >= *static_cast<const T*>(this));
+        Field & operator^(const Field &rhs) const override {
+            return static_cast<const T&>(*this) ^ static_cast<const T&>(rhs);
         }
-
-        B operator==(const Field& rhs) const {
-            return static_cast<const T*>(this)->equal(static_cast<const T>(rhs));
-        }
-
-        B operator!=(const Field & rhs) const {
-            return !(*static_cast<const T*>(this) == static_cast<const T>(rhs));
-        }
-
-
-        Field operator-(const Field &rhs) const {
-            return static_cast<const T*>(this) - static_cast<const T>(rhs);
-        }
-
-        Field operator*(const Field &rhs) const {
-            return static_cast<const T*>(this) * static_cast<const T>(rhs);
-        }
-
-        Field operator/(const Field &rhs) const {
-            return static_cast<const T*>(this) / static_cast<const T>(rhs);
-        }
-
-        Field operator%(const Field &rhs) const {
-            return static_cast<const T*>(this) % static_cast<const T>(rhs);
-        }
-
-        Field operator&(const Field &rhs) const {
-            return static_cast<const T*>(this) & static_cast<const T>(rhs);
-        }
-
-        Field operator|(const Field &rhs) const {
-            return static_cast<const T*>(this) | static_cast<const T>(rhs);
-        }
-
-        Field operator^(const Field &rhs) const {
-            return static_cast<const T*>(this) ^ static_cast<const T>(rhs);
-        } */
 
     protected:
         // set up vtable entries
