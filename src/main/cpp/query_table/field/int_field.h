@@ -51,8 +51,14 @@ namespace vaultdb {
             return *result;
         }
 
+        // TODO: make this return a BoolField when it becomes possible
         IntField & operator >= (const IntField &cmp) const {
             return *(new IntField(payload >= cmp.payload));
+        }
+
+        // TODO: make this return a BoolField when it becomes possible
+        IntField & operator == (const IntField &cmp) const {
+            return *(new IntField(payload == cmp.payload));
         }
 
 

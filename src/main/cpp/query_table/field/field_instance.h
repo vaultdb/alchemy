@@ -87,7 +87,10 @@ namespace vaultdb {
             return static_cast<T const &>(*this) >= (static_cast<const T &>(rhs));
         }
 
-        
+        Field & equal(const Field & rhs) const override {
+            return static_cast<T const &>(*this) == (static_cast<const T &>(rhs));
+        }
+
 
 
 

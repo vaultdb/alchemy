@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+//#include <memory>
 
 
 namespace vaultdb {
@@ -45,6 +46,7 @@ namespace vaultdb {
         // if we don't handle the output of this as a heap-allocated pointer!
         virtual Field & operator+(const Field & rhs) const = 0;
 
+        // comparators
         Field & operator >=(const Field & rhs) const {
             return geq(rhs);
         }
@@ -53,6 +55,7 @@ namespace vaultdb {
 
         virtual void copyTo(const Field & other) = 0;
         virtual Field & geq(const Field & rhs) const = 0;
+        virtual Field & equal(const Field & rhs) const = 0;
 
 
         // Field class needs to be inherited
