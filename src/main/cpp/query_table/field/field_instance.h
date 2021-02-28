@@ -57,7 +57,7 @@ namespace vaultdb {
         void serialize(int8_t *dst) const override {
             P payload = getValue();
             size_t size  = static_cast<T const &>(*this).size() / 8; // bits --> bytes
-            memcpy(dst, (int8_t *) payload, size);
+            std::memcpy(dst, (int8_t *) payload, size);
 
         }
 
