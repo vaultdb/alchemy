@@ -4,7 +4,7 @@
 // generic query field API for all field types, e.g., ints or floats
 // analogous to emp's Comparable
 // formerly known as Value
-
+#include <cstring>
 #include "field.h"
 #include "field_factory.h"
 
