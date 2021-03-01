@@ -2,22 +2,34 @@
 #define BOOL_FIELD_H
 
 #include "field_instance.h"
+#include "secure_bool_field.h"
+#include <emp-tool/circuits/bit.h>
 
 
 namespace vaultdb {
 
+    // TF = derived field
+    // TP = primitive / payload of field
+    // B = boolean field result
+    // RF = revealed field type / encrypted field type - e.g., BoolField has SecureBoolField and vice versa
+    // RP = revealed primitive
 
-    class BoolField : public FieldInstance<BoolField, BoolField, BoolField, int32_t> {
+    class BoolField : public FieldInstance<BoolField, bool, BoolField> {
     protected:
         bool payload = true;
 
     public:
 
-        BoolField() : FieldInstance<BoolField, BoolField, BoolField, int32_t>() {}
-        BoolField(const BoolField & src) : FieldInstance<BoolField, BoolField, BoolField, int32_t>(src) { payload = src.payload; }
-        BoolField(const int32_t & src) : FieldInstance<BoolField, BoolField, BoolField, int32_t>() { payload = src; }
-        BoolField(const int8_t * src)  : FieldInstance<BoolField, BoolField, BoolField, int32_t>(){
+        BoolField()   {}
+        BoolField(const BoolField & src)  { payload = src.payload; }
+        BoolField(const bool & src)  { payload = src; }
+        BoolField(const int8_t * src)  {
             memcpy((int8_t *) &payload, src, size()/8);
+        }
+
+        // constructor for decryption
+        BoolField(const emp::Bit & src, const int & party) {
+            payload = src.reveal(party);
         }
 
         BoolField& operator=(const BoolField& other) {
@@ -26,14 +38,22 @@ namespace vaultdb {
         }
 
 
+        bool encrypted() const { return false; }
         void copy(const BoolField & src) {payload = src.payload; }
-        void assign(const int32_t & src) {payload = src; }
+        void assign(const bool & src) {payload = src; }
 
         static FieldType type() { return FieldType::BOOL; }
+
         size_t size() const override{ return 8; }
 
-        Field *decrypt() const { return new BoolField(*this); }
+        /*bool decrypt(const int & party) const { return payload; } // do not invoke, FieldInstance should sidestep this in reveal()
 
+        SecureBoolField & encrypt(const int & myParty, const int & dstParty = emp::PUBLIC) const {
+            bool bit = (myParty == dstParty) ? payload : 0;
+            emp::Bit encrypted(bit, dstParty);
+
+            return *(new SecureBoolField(encrypted));
+        }*/
 
 
 
@@ -58,15 +78,8 @@ namespace vaultdb {
 
 
 
-        // bitwise ops
-        BoolField & operator&(const BoolField &rhs) const { return *(new BoolField(payload & rhs.payload)); }
-        BoolField & operator|(const BoolField &rhs) const { return *(new BoolField(payload | rhs.payload)); }
-        BoolField & operator^(const BoolField &rhs) const { return *(new BoolField(payload ^ rhs.payload)); }
 
-
-
-
-        int32_t primitive() const { return payload; }
+        bool primitive() const { return payload; }
         std::string str() const {
             return  payload ? "true" : "false";
         }
@@ -78,7 +91,23 @@ namespace vaultdb {
         }
 
 
+        void serialize(int8_t *dst) const override {
+            size_t len  = size() / 8;
+            std::memcpy(dst, (int8_t*) payload, len);
+        }
 
+        // bitwise ops
+        BoolField & operator&(const BoolField &right) const {
+            return *(new BoolField(payload & right.payload));
+        }
+
+        BoolField & operator^(const BoolField &right) const {
+            return *(new BoolField(payload ^ right.payload));
+        }
+
+        BoolField & operator|(const BoolField &right) const {
+            return *(new BoolField(payload | right.payload));
+        }
 
 
 

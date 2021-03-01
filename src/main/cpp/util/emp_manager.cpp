@@ -1,6 +1,5 @@
 #include "emp_manager.h"
 #include "type_utilities.h"
-#include "data_utilities.h"
 
 using namespace vaultdb;
 using namespace emp;

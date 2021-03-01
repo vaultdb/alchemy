@@ -5,37 +5,18 @@
 // analogous to emp's Comparable
 // formerly known as Value
 #include <cstring>
+#include <defs.h>
 #include "field.h"
-#include "field_factory.h"
+//#include "field_factory.h"
 
 
 namespace vaultdb {
 
 
-    // This curiously recurring template pattern class implements clone() for derived types
-    //  need two of these: field instance, field primitive to make this more manageable
-    // will have:
-    /*
-     *         Field
-     *           |
-     *           v
-     *        FieldInstance<Derived,Plaintext>        FieldPrimitive<Primitive,Revealed,Bool>
-     *                  \                                    /
-     *                   \                                 /
-     *                           IntField, FloatField
-     *
-     *     Do we really need FieldPrimitive yet?  Not yet, but will eventually
-     *     Taking out:
-     *          P = underlying primitive of T
-                R = revealed primitive type - after decrypting
-                B = boolean type, bool for plaintext, emp::Bit for secure
-
-     */
     // T = derived field
-    // R = revealed field
+    // P = primitive / payload of field
     // B = boolean field result
-    // P = primitive / payload of field, needed for serialize
-    template<typename T, typename R, typename B, typename P>
+    template<typename T, typename P, typename B>
     class FieldInstance : public Field {
     public:
 
@@ -48,30 +29,30 @@ namespace vaultdb {
             return static_cast<T const &>(*this).primitive();
         }
 
-        // TODO: these methods need to be in header file to compile
-        // figure out why later - may need inline?
+        // TODO: figure out why these methods need to be in header file to compile
+        //  may need inline?
         std::string toString() const override {
             return static_cast<T const &>(*this).str();
         }
 
         void serialize(int8_t *dst) const override {
-            P payload = getValue();
-            size_t size  = static_cast<T const &>(*this).size() / 8; // bits --> bytes
-            std::memcpy(dst, (int8_t *) payload, size);
-
+            T impl =  static_cast<T const &>(*this);
+            impl.serialize(dst);
         }
 
+        // TODO: convert this to bytes instead of bits to reduce CPU time
          size_t size() const override {
             return static_cast<T const &>(*this).size();
         }
 
-        Field  *reveal() const override {
-            return static_cast<T const &>(*this).decrypt();
+
+
+
+
+
+        FieldType getType() const override {
+            return static_cast<T const &>(*this).type();
         }
-
-
-
-
 
 
         // assignment
@@ -101,6 +82,13 @@ namespace vaultdb {
             return  static_cast<T const &>(*this).select(choiceBit, otherOne);
         }
 
+        // bitwise ops
+        Field & operator&(const Field &right) const override { return  static_cast<const T&>(*this) &  static_cast<const T&>(right); }
+        Field & operator|(const Field &right) const override { return  static_cast<const T&>(*this) |  static_cast<const T&>(right); }
+
+        Field & operator^(const Field &right) const override { return  static_cast<const T&>(*this) ^  static_cast<const T&>(right); }
+
+
 
     protected:
         void copyTo(const Field & other) override {
@@ -109,19 +97,7 @@ namespace vaultdb {
         }
 
 
-        // handle expressions
-        //comparators based on emp-toolkit
-        Field & operator&(const Field &rhs) const override {
-            return static_cast<const T&>(*this) & static_cast<const T&>(rhs);
-        }
 
-        Field & operator|(const Field &rhs) const override {
-            return static_cast<const T&>(*this) | static_cast<const T&>(rhs);
-        }
-
-        Field & operator^(const Field &rhs) const override {
-            return static_cast<const T&>(*this) ^ static_cast<const T&>(rhs);
-        }
 
     protected:
         // set up vtable entries

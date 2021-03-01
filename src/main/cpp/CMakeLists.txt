@@ -98,12 +98,20 @@ set(sources
 		operators/csv_input.cpp
 		query_table/field/field.h
 		query_table/field/field_instance.cpp
-		query_table/field/int_field.cpp
+		query_table/field/int_field.h
 		query_table/field/bool_field.h
+		query_table/field/float_field.h
+		query_table/field/long_field.h
+		query_table/field/string_field.h
+		query_table/field/secure_int_field.h
+		query_table/field/secure_bool_field.h
+		query_table/field/secure_float_field.h
+		query_table/field/secure_long_field.h
+		query_table/field/secure_string_field.h
+
 		#query_table/field/secure_bool_field.h
 		#		query_table/field/example.cpp
-		query_table/field/field_factory.cpp
-		#query_table/field/float_field.cpp
+		#query_table/field/field_factory.cpp
 		)
 
 

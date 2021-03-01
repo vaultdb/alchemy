@@ -41,8 +41,8 @@ namespace vaultdb {
         virtual std::string toString() const = 0;
         virtual void serialize(int8_t *dst) const = 0;
         virtual size_t size() const  = 0;
+        virtual FieldType getType() const = 0;
 
-        virtual Field *reveal() const = 0;
 
         // caution: these methods (comparison and math) will create memory leaks
         // if we don't handle the output of this as a heap-allocated pointer!

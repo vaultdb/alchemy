@@ -4,8 +4,11 @@
 #include <query_table/field/field_instance.h>
 #include <query_table/field/int_field.h>
 #include <query_table/field/bool_field.h>
+#include <query_table/field/secure_int_field.h>
+#include <query_table/field/secure_bool_field.h>
 
 #include <emp-tool/emp-tool.h>
+#include <util/emp_manager.h>
 
 using namespace vaultdb;
 
@@ -33,17 +36,14 @@ TEST_F(FieldInstanceTest, AssignmentTest) {
     int32_t value = ((IntField *) aField)->getValue();
     ASSERT_EQ(5, value);
 
-    Field *decrypted = aField->reveal();
-    ASSERT_EQ(5, ((IntField *)decrypted)->getValue());
 
+    // testing assignment
     *aField = *cmp;
 
     int32_t copiedValue = ((IntField *) aField)->getValue();
     ASSERT_EQ(6, copiedValue);
 
 
-    Field *revealed = aField->reveal();
-    ASSERT_EQ("6", revealed->toString());
 
 
     // downcast to IntType
@@ -65,7 +65,6 @@ TEST_F(FieldInstanceTest, AssignmentTest) {
 
     delete aField;
     delete cmp;
-    delete revealed;
     delete addedField;
     delete geq;
 
@@ -73,7 +72,7 @@ TEST_F(FieldInstanceTest, AssignmentTest) {
 
 TEST_F(FieldInstanceTest, MultiTypeContainer) {
     std::vector<Field *> myFields;
-    myFields.emplace_back(new IntField(7));
+/*    myFields.emplace_back(new IntField(7));
     myFields.emplace_back(new BoolField(true));
 
 
@@ -83,19 +82,56 @@ TEST_F(FieldInstanceTest, MultiTypeContainer) {
         delete field;
     }
 
-    myFields.clear();
+    myFields.clear();*/
 }
 
-/*TEST_F(FieldInstanceTest, ExampleTest) {
 
-    AbstractShape *aSquare = new Square();
-    AbstractShape *aCircle = new Circle();
+Field * encryptField(Field *srcField)  {
+    FieldType type = srcField->getType();
+    if(type == FieldType::BOOL) {
+        BoolField *src = (BoolField *) srcField;
+        bool toEncrypt = src->primitive();
+        return new SecureBoolField(toEncrypt, emp::ALICE, emp::ALICE);
+    }
+    else if(type == FieldType::INT32) {
+        IntField *src = (IntField *) srcField;
+        int32_t toEncrypt = src->primitive();
+        return new SecureIntField(toEncrypt, emp::ALICE, emp::ALICE);
+    }
 
-    ASSERT_EQ("square", aSquare->toString());
-    ASSERT_EQ("circle", aCircle->toString());
+    return nullptr;
 
-    delete aSquare;
-    delete aCircle;
+}
 
-}*/
 
+TEST_F(FieldInstanceTest, encryptTest) {
+    Field *boolField = new BoolField(true);
+    Field *intField = new IntField(7);
+
+    Field * encryptedBool = EmpManager::encryptField(boolField, emp::ALICE, emp::ALICE);
+    bool revealed = ((SecureBoolField *) encryptedBool)->decrypt(emp::PUBLIC);
+    ASSERT_EQ(true, revealed);
+
+   Field * encryptedInt = EmpManager::encryptField(intField, emp::ALICE, emp::ALICE);
+   int32_t revealedInt = ((SecureIntField *) encryptedInt)->decrypt(emp::PUBLIC);
+   ASSERT_EQ(7, revealedInt);
+
+    delete boolField;
+   delete intField;
+    delete encryptedBool;
+    delete encryptedInt;
+
+}
+
+
+TEST_F(FieldInstanceTest, decryptTest) {
+    Field *encrypted = new SecureBoolField(true, emp::ALICE, emp::ALICE);
+    Field *revealed = EmpManager::revealField( encrypted, emp::PUBLIC);
+    bool rValue = ((BoolField *)revealed)->primitive();
+
+    ASSERT_EQ(true, rValue);
+
+    delete encrypted;
+    delete revealed;
+
+}
