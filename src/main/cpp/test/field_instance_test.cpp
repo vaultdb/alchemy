@@ -14,7 +14,6 @@ using namespace vaultdb;
 
 class FieldInstanceTest : public ::testing::Test {
 
-
 protected:
     void SetUp() override{
         emp::setup_plain_prot(false, "");
