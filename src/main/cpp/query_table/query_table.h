@@ -1,13 +1,13 @@
-#ifndef _QUERY_TABLE_H
-#define _QUERY_TABLE_H
+#ifndef QUERY_TABLE_H
+#define QUERY_TABLE_H
 
-#include "emp-tool/emp-tool.h"
 #include "query_schema.h"
 #include "query_tuple.h"
 #include <memory>
 #include <vaultdb.h>
 #include <ostream>
 #include "util/utilities.h"
+#include <emp-tool/emp-tool.h>
 
 
 
@@ -30,17 +30,16 @@ namespace  vaultdb {
         std::vector<QueryTuple> tuples_;
 
     public:
-            QueryTable(const size_t &num_tuples, const QuerySchema &schema, SortDefinition sortDefinition);
+            QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition);
 
             QueryTable(const size_t &num_tuples, const int &colCount);
 
             QueryTable(const QueryTable &src);
 
-            ~QueryTable() {
-          /*      std::cout << "Freeing a query table at: " << std::endl
-                    << Utilities::getStackTrace();
-*/
-            }
+            ~QueryTable() = default;
+          /* {     std::cout << "Freeing a query table at: " << std::endl
+                    << Utilities::getStackTrace();} */
+
 
 
             void resize(const size_t & tupleCount);
@@ -58,7 +57,6 @@ namespace  vaultdb {
 
             void putTuple(const int &idx, const QueryTuple &tuple);
 
-            void setTupleDummyTag(const int &tupleIdx, const types::Value &dummyTag);
 
             QueryTuple *getTuplePtr(const int &idx) const;
 
@@ -74,9 +72,9 @@ namespace  vaultdb {
             std::vector<int8_t> serialize() const;
 
 
-            std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &party) const; // shared_ptr so we can pass it among Operator instances
+           // std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &party) const; // shared_ptr so we can pass it among Operator instances
 
-            SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
+           // SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
 
             [[nodiscard]] std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
 

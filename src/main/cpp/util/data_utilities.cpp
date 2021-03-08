@@ -40,10 +40,10 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
         unioned->putTuple(i, alice->getTuple(i));
     }
 
-    int offset = alice->getTupleCount();
+    size_t offset = alice->getTupleCount();
 
     // add bob's tuples from last to first
-    int readIdx = bob->getTupleCount();
+    size_t readIdx = bob->getTupleCount();
     for(size_t i = 0; i < bob->getTupleCount(); ++i) {
         --readIdx;
         unioned->putTuple(i + offset, bob->getTuple(readIdx));
@@ -67,6 +67,7 @@ std::string DataUtilities::queryDatetime(const string &colName) {
 }
 
 
+/*
 void DataUtilities::locallySecretShareTable(const std::unique_ptr<QueryTable> &table, const string &aliceFile,
                                            const string &bobFile) {
     SecretShares shares = table->generateSecretShares();
@@ -74,10 +75,10 @@ void DataUtilities::locallySecretShareTable(const std::unique_ptr<QueryTable> &t
     writeFile(bobFile, shares.second);
 
 
-}
+}*/
 
 
-void DataUtilities::writeFile(std::string fileName, vector<int8_t> contents) {
+void DataUtilities::writeFile(const string &fileName, vector<int8_t> contents) {
     std::ofstream outFile(fileName.c_str(), std::ios::out | std::ios::binary);
     if(!outFile.is_open()) {
         throw std::invalid_argument("Could not write output file " + fileName);
@@ -134,7 +135,7 @@ std::shared_ptr<QueryTable> DataUtilities::removeDummies(const std::shared_ptr<Q
 
     for(size_t i = 0; i < input->getTupleCount(); ++i) {
         QueryTuple *tuple = input->getTuplePtr(i);
-        if(!tuple->getDummyTag().getBool()) {
+        if(!tuple->getDummyTag().getValue<bool>()) {
             output->putTuple(writeCursor, *tuple);
             ++writeCursor;
         }

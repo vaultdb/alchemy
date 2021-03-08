@@ -8,13 +8,13 @@ ReplaceTuple::ReplaceTuple(std::shared_ptr<QueryTable> table) {
 }
 
 void
-ReplaceTuple::conditionalWrite(const uint32_t &writeIdx, const QueryTuple &inputTuple, const types::Value &toWrite) {
+ReplaceTuple::conditionalWrite(const uint32_t &writeIdx, const QueryTuple &inputTuple, const Field &toWrite) {
     assert(!dstTable->isEncrypted()); // this instance only supports plaintext case
 
     QueryTuple *dstTuple = dstTable->getTuplePtr(writeIdx);
 
     // if it is a dummy
-    if(toWrite.getBool()) {
+    if(TypeUtilities::getBool(toWrite)) {
         //std::cout << "Writing tuple " << writeIdx << " as " <<  inputTuple.toString(true) << std::endl;
         *dstTuple = inputTuple;
     }

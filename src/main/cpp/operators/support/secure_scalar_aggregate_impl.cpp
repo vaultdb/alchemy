@@ -28,7 +28,7 @@ void vaultdb::SecureScalarAverage::accumulate(const vaultdb::QueryTuple &tuple) 
             types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zeroFloat , oneFloat);
 }
 
-vaultdb::types::Value vaultdb::SecureScalarAverage::getResult() {
+const Field * vaultdb::SecureScalarAverage::getResult() {
 
   emp::Float runningSumFloat = (runningSum.getType() == types::TypeId::ENCRYPTED_FLOAT32) ? runningSum.getEmpFloat32() : TypeUtilities::getZero(types::TypeId::ENCRYPTED_FLOAT32).getEmpFloat32();
 
@@ -69,7 +69,7 @@ void vaultdb::SecureScalarCount::accumulate(const vaultdb::QueryTuple &tuple) {
   runningCount = runningCount + types::Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero, one);
 }
 
-vaultdb::types::Value vaultdb::SecureScalarCount::getResult() {
+const Field * vaultdb::SecureScalarCount::getResult() {
   return runningCount;
 }
 
@@ -116,7 +116,7 @@ void vaultdb::SecureScalarSum::accumulate(const vaultdb::QueryTuple &tuple) {
 
 }
 
-vaultdb::types::Value vaultdb::SecureScalarSum::getResult() {
+const Field * vaultdb::SecureScalarSum::getResult() {
   return runningSum;
 }
 
@@ -140,7 +140,7 @@ void vaultdb::SecureScalarMin::accumulate(const vaultdb::QueryTuple &tuple) {
 
 }
 
-vaultdb::types::Value vaultdb::SecureScalarMin::getResult() {
+const Field * vaultdb::SecureScalarMin::getResult() {
   return runningMin;
 }
 
@@ -171,7 +171,7 @@ void vaultdb::SecureScalarMax::accumulate(const vaultdb::QueryTuple &tuple) {
 
 }
 
-vaultdb::types::Value vaultdb::SecureScalarMax::getResult() {
+const Field * vaultdb::SecureScalarMax::getResult() {
   return runningMax;
 }
 
@@ -192,6 +192,6 @@ vaultdb::types::TypeId vaultdb::SecureScalarMax::getType() {
 //  case TypeId::FLOAT32:
 //    return Value(Float(FLT_MIN, PUBLIC));
 //  default:
-//    throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MAX()");
+//    throw std::invalid_argument("Type " + TypeUtilities::getTypeString(aggregateType) + " not supported by MAX()");
 //  }
 //}

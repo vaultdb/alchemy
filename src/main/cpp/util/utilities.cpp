@@ -32,8 +32,8 @@ std::string Utilities::getCurrentWorkingDirectory() {
 
 // From Chenkai Li's EMP memory instrumentation
 
-void Utilities::checkMemoryUtilization(const string & msg) {
-    cout << "Checking memory utilization after " << msg << endl;
+void Utilities::checkMemoryUtilization(const std::string & msg) {
+    std::cout << "Checking memory utilization after " << msg << std::endl;
     Utilities::checkMemoryUtilization();
 }
 
@@ -54,15 +54,15 @@ void Utilities::checkMemoryUtilization() {
 }
 
 
-string Utilities::getStackTrace() {
+std::string Utilities::getStackTrace() {
     std::ostringstream  os;
     os <<  boost::stacktrace::stacktrace();
     return os.str();
 }
 
-vector<int8_t> Utilities::boolsToBytes( string &bitString) {
+std::vector<int8_t> Utilities::boolsToBytes( std::string &bitString) {
     int srcBits = bitString.length();
-    string::iterator strPos = bitString.begin();
+    std::string::iterator strPos = bitString.begin();
     bool *bools = new bool[srcBits];
 
     for(int i =  0; i < srcBits; ++i) {
@@ -70,12 +70,12 @@ vector<int8_t> Utilities::boolsToBytes( string &bitString) {
         ++strPos;
     }
 
-    vector<int8_t> decodedBytesVector = Utilities::boolsToBytes(bools, srcBits);
+    std::vector<int8_t> decodedBytesVector = Utilities::boolsToBytes(bools, srcBits);
     delete[] bools;
     return decodedBytesVector;
 }
 
-vector<int8_t> Utilities::boolsToBytes(const bool *const src, const uint32_t &bitCount) {
+std::vector<int8_t> Utilities::boolsToBytes(const bool *const src, const uint32_t &bitCount) {
     int byteCount = bitCount / 8;
     assert(bitCount % 8 == 0); // no partial bytes supported
 

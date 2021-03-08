@@ -4,15 +4,17 @@
 #include <time.h>
 
 #include <chrono>
+#include "query_table/field/field.h"
+/*#include "query_table/field/bool_field.h"
+#include "query_table/field/int_field.h"
+#include "query_table/field/long_field.h"
+#include "query_table/field/float_field.h"
+#include "query_table/field/string_field.h"*/
 
 
 
 //typedef std::chrono::steady_clock::time_point time_point;
 
-std::unique_ptr<QueryTable> PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string) {
-
-   return getQueryTable(dbname, query_string, false);
-}
 
 // if hasDummyTag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
@@ -34,7 +36,6 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
         throw e;
     }
-
 
 
     pqxx::row firstRow = *(pqxxResult.begin());
@@ -80,14 +81,14 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
 
     for(uint32_t i = 0; i < colCount; ++i) {
        string colName =  input.column_name(i);
-       types::TypeId type = getFieldTypeFromOid(input.column_type(i));
+       FieldType type = getFieldTypeFromOid(input.column_type(i));
         int tableId = input.column_table(i);
 
         srcTable = getTableName(tableId); // once per col in case of joins
 
-        QueryFieldDesc fieldDesc(i, colName, srcTable, type);
+        QueryFieldDesc fieldDesc(i, colName, srcTable, type, 0);
 
-       if(type == vaultdb::types::TypeId::VARCHAR) {
+       if(type == FieldType::STRING) {
 
            size_t stringLength = getVarCharLength(srcTable, colName);
             fieldDesc.setStringLength(stringLength);
@@ -100,8 +101,8 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
 
    if(hasDummyTag) {
         pqxx::oid dummyTagOid = input.column_type((int) colCount);
-        vaultdb::types::TypeId dummyType = getFieldTypeFromOid(dummyTagOid);
-        assert(dummyType == vaultdb::types::TypeId::BOOLEAN); // check that dummy tag is a boolean
+        FieldType dummyType = getFieldTypeFromOid(dummyTagOid);
+        assert(dummyType == FieldType::BOOL); // check that dummy tag is a boolean
     }
 
     return result;
@@ -159,48 +160,45 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         for (int i=0; i < colCount; i++) {
             const pqxx::field srcField = row[i];
 
-           QueryField parsedField = getField(srcField);
-            dstTuple.putField(parsedField);
+           Field  parsedField = getField(srcField);
+            dstTuple.putField(i, parsedField);
         }
 
         if(hasDummyTag) {
 
-                QueryField parsedField(getField(row[colCount])); // get the last col
-                bool dummyTag = parsedField.getValue().getBool();
-                types::Value dummyTagValue(dummyTag);
-                dstTuple.setDummyTag(dummyTagValue);
+                Field parsedField = getField(row[colCount]); // get the last col
+                dstTuple.setDummyTag(parsedField);
         }
 
     return dstTuple;
     }
 
 
-    QueryField PsqlDataProvider::getField(pqxx::field src) {
+    Field PsqlDataProvider::getField(pqxx::field src) {
 
         int ordinal = src.num();
         pqxx::oid oid = src.type();
-        types::TypeId colType = getFieldTypeFromOid(oid);
+        FieldType colType = getFieldTypeFromOid(oid);
 
         switch (colType) {
-            case vaultdb::types::TypeId::INTEGER32:
+            case FieldType::INT32:
             {
                 int32_t intVal = src.as<int32_t>();
-                types::Value val(intVal);
-                return QueryField(ordinal, val);
+                return Field::createInt32(intVal);
             }
-            case vaultdb::types::TypeId::INTEGER64:
+            case FieldType::INT64:
             {
                 int64_t intVal = src.as<int64_t>();
-                return QueryField(ordinal, types::Value(intVal));
+                return Field::createInt64(intVal);
             }
 
-           case vaultdb::types::TypeId::DATE:
+           case FieldType::DATE:
             {
                 std::string dateStr = src.as<std::string>(); // YYYY-MM-DD
                 std::tm timeStruct = {};
                 strptime(dateStr.c_str(), "%Y-%m-%d", &timeStruct);
                 int64_t epoch = mktime(&timeStruct) - 21600; // date time function is 6 hours off from how psql does it, TODO: track this down, probably a timezone problem
-                return QueryField(ordinal, types::Value(types::TypeId::INTEGER64, epoch));
+                return Field::createInt64(epoch);
 
                 /*std::chrono::steady_clock::time_point timePoint = src.as<std::chrono::steady_clock::time_point>();
                 int64_t epoch = std::chrono::duration_cast<std::chrono::seconds>(
@@ -209,18 +207,18 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                result->setValue(&value);
                break;*/
             }
-            case vaultdb::types::TypeId::BOOLEAN:
+            case FieldType::BOOL:
             {
                 bool boolVal = src.as<bool>();
-                return QueryField(ordinal, types::Value(boolVal));
+                return Field::createBool(boolVal);
             }
-            case vaultdb::types::TypeId::FLOAT32:
+            case FieldType::FLOAT32:
             {
                 float floatVal = src.as<float>();
-                return  QueryField(ordinal, types::Value(floatVal));
+                return Field::createFloat32(floatVal);
             }
 
-            case types::TypeId::VARCHAR:
+            case FieldType::STRING:
             {
                 string stringVal = src.as<string>();
                 size_t strLength = tableSchema->getField(ordinal).getStringLength();
@@ -229,7 +227,7 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                     stringVal += " ";
                 }
 
-                return QueryField(ordinal, types::Value(stringVal));
+                return Field::createString(stringVal);
             }
             default:
                 throw std::invalid_argument("Unsupported column type " + std::to_string(oid));

@@ -1,24 +1,23 @@
-//
-// Created by Jennie Rogers on 9/13/20.
-//
-
 #include <util/type_utilities.h>
 #include "join_equality_predicate.h"
+#include <query_table/field/field_factory.h>
 
 JoinEqualityPredicate::JoinEqualityPredicate(const ConjunctiveEqualityPredicate &srcPredicates, bool isEncrypted)  : predicates(srcPredicates) {
-    defaultValue = isEncrypted ?  types::Value(emp::Bit(true)) : types::Value((bool) true);
-
+    if(isEncrypted)
+        resultType = FieldType::SECURE_BOOL;
 }
 
 
-types::Value JoinEqualityPredicate::predicateCall( QueryTuple *lhs,  QueryTuple *rhs) const {
+Field *JoinEqualityPredicate::predicateCall( QueryTuple *lhs,  QueryTuple *rhs) const {
 
-    types::Value result = defaultValue;
+    Field *result = FieldFactory::getOne(resultType);
    for(EqualityPredicate eq : predicates) {
-       types::Value lhsValue = lhs->getField(eq.first).getValue();
-       types::Value rhsValue = rhs->getField(eq.second).getValue();
+       Field *equal = &(*(lhs->getField(eq.first)) == *(rhs->getField(eq.second)));
+       Field *predResult = &(*result & *equal);
 
-       result = result & (lhsValue == rhsValue);
+       delete equal;
+       delete result;
+       result = predResult;
    }
 
    return result;

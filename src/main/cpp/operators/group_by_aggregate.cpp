@@ -10,7 +10,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     std::shared_ptr<QueryTable> input = children[0]->getOutput();
     std::vector<GroupByAggregateImpl *> aggregators;
     QueryTuple *current, *predecessor;
-    types::Value realBin;
+    Field *realBin;
     types::TypeId boolType = input->isEncrypted() ? types::TypeId::ENCRYPTED_BOOLEAN : types::TypeId::BOOLEAN;
     QueryTuple outputTuple;
     QuerySchema inputSchema = input->getSchema();
@@ -183,14 +183,14 @@ QueryTuple GroupByAggregate::generateOutputTuple(const QueryTuple &lastTuple, co
     for(i = 0; i < groupByOrdinals.size(); ++i) {
         QueryField *srcField = lastTuple.getFieldPtr(groupByOrdinals[i]);
         QueryField dstField(i, srcField->getValue());
-        dstTuple.putField(dstField);
+        dstTuple.putField(dstField, -1);
     }
 
     // write partial aggs
     for(GroupByAggregateImpl *aggregator : aggregators) {
-        types::Value currentResult = aggregator->getResult();
+        types::Value currentResult = aggregator->getResult() const;
         QueryField dstField(i, currentResult);
-        dstTuple.putField(dstField);
+        dstTuple.putField(dstField, -1);
         ++i;
     }
 

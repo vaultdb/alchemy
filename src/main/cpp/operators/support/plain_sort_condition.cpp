@@ -4,14 +4,18 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
     bool swap = false;
 
-
+    Field *eqValue;
 
     for(size_t i = 0; i < sortDefinition.size(); ++i) {
-        types::Value lhsValue = SortCondition::getValue(lhs, sortDefinition[i]);
-        types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
+        const Field *lhsValue = SortCondition::getValue(lhs, sortDefinition[i]);
+        const Field *rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
 
-        types::Value eqValue = lhsValue == rhsValue;
-        bool eq = eqValue.getBool();
+        eqValue = &(*lhsValue == *rhsValue);
+        bool eq =  ((BoolField *) eqValue)->primitive();
+
+        delete lhsValue;
+        delete rhsValue;
+        delete eqValue;
 
         SortDirection direction = sortDefinition[i].second;
 
@@ -19,16 +23,16 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
         // is a swap needed?
         // if (lhs > rhs AND descending) OR (lhs < rhs AND ASCENDING)
-        if((( lhsValue > rhsValue).getBool() && direction == SortDirection::DESCENDING)  ||
-                (( rhsValue > lhsValue).getBool() && direction == SortDirection::ASCENDING)){
+        if((( lhsValue > rhsValue) && direction == SortDirection::DESCENDING)  ||
+                (( rhsValue > lhsValue)&& direction == SortDirection::ASCENDING)){
                 swap = true;
                 break;
             }
             else if (!eq) {
-                break; // no switch needed, they are already in the right order
+            break; // no switch needed, they are already in the right order
             }
 
-        
+
     } // end check for swap
 
 

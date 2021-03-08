@@ -18,10 +18,14 @@ std::shared_ptr<QueryTable> Filter::runSelf() {
 
     for(size_t i = 0; i < output->getTupleCount(); ++i) {
         QueryTuple tuple = output->getTuple(i);
-        types::Value dummyTag = (!(predicate->predicateCall(tuple))) | tuple.getDummyTag(); // (!) because dummyTag is false if our selection criteria is satisfied
-        tuple.setDummyTag(dummyTag);
+        Field *predicateOut = predicate->predicateCall(tuple);
+        Field *select = &(!(*predicateOut));
 
-        output->setTupleDummyTag(i, dummyTag);
+        Field *dummyTag =   &(*select | *tuple.getDummyTag()); // (!) because dummyTag is false if our selection criteria is satisfied
+        delete select;
+        delete predicateOut;
+
+        output->getTuplePtr(i)->setDummyTag(dummyTag);
     }
 
     output->setSortOrder(input->getSortOrder());

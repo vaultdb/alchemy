@@ -1,110 +1,105 @@
-#ifndef _FIELD_H
-#define _FIELD_H
+#ifndef _FIELD_H_
+#define _FIELD_H_
 
-#include <cstdint>
-#include <string>
-#include <memory>
+
+#include "field_type.h"
+#include "query_table/query_field_desc.h"
+#include <emp-tool/circuits/bit.h>
+#include <emp-tool/circuits/integer.h>
+#include <emp-tool/circuits/float32.h>
+
 
 
 namespace vaultdb {
-    enum class FieldType {
-        INVALID = 0,
-        BOOL,
-        DATE, // DATE is just a stand-in for long, TODO: delete this
-        INT32,
-        INT64,
-        FLOAT32,
-        STRING,
-        SECURE_INT32,
-        SECURE_INT64,
-        SECURE_BOOL,
-        SECURE_FLOAT32,
-        SECURE_STRING, // need all types to have encrypted counterpart so that we can translate them back to query tables when we decrypt the results
-    };
-
-    // top-level class so we can store heterogeneous types in the same container
-    // TODO: overload the << operator
     class Field {
-    public:
-        virtual ~Field() = default;
-
-        virtual std::unique_ptr<Field> clone() const = 0;
-
-
-
-        virtual Field & operator=(const Field& other) {
-            this->copyTo(other);
-            return *this;
-        }
-
-
-        virtual std::string toString() const = 0;
-        virtual void serialize(int8_t *dst) const = 0;
-        virtual size_t size() const  = 0;
-        virtual FieldType getType() const = 0;
-
-
-        // caution: these methods (comparison and math) will create memory leaks
-        // if we don't handle the output of this as a heap-allocated pointer!
-        virtual Field & operator+(const Field & rhs) const = 0;
-        virtual Field & operator-(const Field & rhs) const = 0;
-        virtual Field & operator/(const Field & rhs) const = 0;
-        virtual Field & operator*(const Field & rhs) const = 0;
-        virtual Field & operator%(const Field & rhs) const = 0;
-
-        virtual Field & compareAndSwap(const Field & select, const Field & rhs) const = 0;
-
-
-
-        // comparators - based on EMP-toolkit comparable.h
-        Field & operator >=(const Field & rhs) const {
-            return this->geq(rhs);
-        }
-
-        Field & operator<(const Field & rhs) const {
-            return !( *this >= rhs );
-        }
-
-        Field & operator<=(const Field & rhs) const {
-            return rhs >= *this;
-        }
-
-        Field & operator>(const Field & rhs) const {
-            return !(rhs >= *this);
-        }
-
-        Field & operator==(const Field & rhs) const {
-            return this->equal(rhs);
-        }
-        Field & operator!=(const Field & rhs) const {
-            return !(*this == rhs);
-        }
-
-        virtual Field & operator &(const Field & rhs)  const = 0;
-        virtual Field & operator |(const Field & rhs)  const = 0;
-        virtual Field & operator ^(const Field & rhs)  const = 0;
-
-
-
-        virtual void copyTo(const Field & other) = 0;
-        virtual Field & geq(const Field & rhs) const = 0;
-        virtual Field & equal(const Field & rhs) const = 0;
-        virtual Field &  operator !() const = 0;
-
     protected:
+        FieldType  type_;
+        size_t allocated_size_;
+        // inspired by NoisePage: https://github.com/cmu-db/noisepage
+        std::unique_ptr<std::byte[]> managed_data_;
+        std::byte *data_;
 
-        // Field class needs to be inherited
-        Field() = default;
-        Field(const Field&) = default;
-        Field(Field&&) = default;
+
+    public:
+        Field() : type_(FieldType::INVALID) { }
+        Field(const FieldType & typeId, const int & strLength = 0);
+
+        Field(const Field & field);
+
+        Field & operator=(const Field & other);
+
+        ~Field() = default;
+
+        FieldType getType() const;
+
+        size_t getSize() const;
+
+        template<typename T>
+        T getValue()  const;
+
+        std::string getValue() const;
+
+        template<typename T>
+        void setValue(const T & src);
+
+        void setValue(const std::string & src);
+
+        std::byte *getData() const;
+
+
+        // only really meaningful for plain (not EMP) types
+        bool  operator == (const Field &cmp) const;
+
+        bool  operator != (const Field &cmp) const;
 
 
 
+        static Field createBool(const bool & value);
+
+
+        static Field createInt32(const int32_t & value);
+
+        static Field createInt64(const int64_t & value);
+
+        static Field createFloat32(const float_t & value);
+
+        // strings must be padded to max field length before calling this
+        // In other words: field length == string length
+        static Field createString(const std::string & value);
+
+        static Field createSecureBool(const emp::Bit & value);
+
+        static Field createSecureFloat(const emp::Float & value);
+
+        static Field createSecureInt32(const emp::Integer & value);
+
+        static Field createSecureInt64(const emp::Integer & value);
+
+
+        static Field createSecureString(const emp::Integer & value);
+
+
+        static void compareAndSwap(const bool & choice,  Field & lhs,  Field & rhs);
+
+        static void compareAndSwap(const emp::Bit & choice, const Field & lhs, const Field & rhs);
+
+
+        // TODO: refactor this out of impls, e.g., SecureBoolField
+        // if field is encrypted, decrypt
+        Field reveal(const int & party = emp::PUBLIC) const;
+
+        // TODO: handle strings
+        std::string toString() const;
+
+        void serialize(int8_t *dst) const;
+
+        static Field deserialize(const QueryFieldDesc & fieldDesc, const int8_t * src);
+        static Field deserialize(const FieldType & field, const int & strLength, const int8_t *src);
 
     };
-    /*std::ostream &operator<<(std::ostream &os, const Field &field) {
-        return os << field.toString();
-    }*/
+
+    std::ostream &operator<<(std::ostream &os, const Field &aValue);
+
 
 }
-#endif //_FIELD_H
+#endif

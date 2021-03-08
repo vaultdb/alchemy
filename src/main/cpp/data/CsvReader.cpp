@@ -2,6 +2,8 @@
 #include <util/utilities.h>
 #include "CsvReader.h"
 #include <boost/algorithm/string.hpp>
+#include <field/field.h>
+#include <field/field_factory.h>
 
 using namespace vaultdb;
 
@@ -83,11 +85,11 @@ QueryTuple CsvReader::parseTuple(const string &line, const QuerySchema &schema) 
     assert(fieldCount == tupleFields.size()); // verify the field count
     QueryTuple newTuple(fieldCount);
 
-    // TODO: split this into a parseLine method that takes in the string and schema and returns a tuple.  Use this to debug line 16
     for(size_t i = 0; i < fieldCount; ++i) {
-        types::Value fieldValue = TypeUtilities::decodeStringValue(tupleFields[i], schema.getField(i));
-        QueryField queryField(i, fieldValue);
-        newTuple.putField(queryField);
+        Field field = FieldFactory::getFieldFromString(schema.getField(i).getType(), schema.getField(i).getStringLength(), tupleFields[i]);
+        newTuple.putField(i, field);
+
+
     }
 
     return newTuple;

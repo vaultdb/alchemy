@@ -11,7 +11,7 @@ shared_ptr<QueryTable> BasicJoin::runSelf() {
     std::shared_ptr<QueryTable> rhs = children[1]->getOutput();
     uint32_t cursor = 0;
     QueryTuple *lhsTuple, *rhsTuple;
-    types::Value predicateEval;
+    Field *predicateEval;
 
     uint32_t outputTupleCount = lhs->getTupleCount() * rhs->getTupleCount();
     QuerySchema lhsSchema = lhs->getSchema();

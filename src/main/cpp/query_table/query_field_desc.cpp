@@ -17,7 +17,7 @@ const std::string &QueryFieldDesc::getName() const {
   return QueryFieldDesc::name_;
 }
 
-vaultdb::types::TypeId QueryFieldDesc::getType() const {
+FieldType QueryFieldDesc::getType() const {
     return type_;
 }
 
@@ -27,9 +27,9 @@ const std::string &QueryFieldDesc::getTableName() const {
 }
 
 size_t QueryFieldDesc::size() const {
-    vaultdb::types::TypeId typeId  = getType();
+    FieldType typeId  = getType();
     size_t fieldSize = TypeUtilities::getTypeSize(typeId);
-    if(QueryFieldDesc::type_ == vaultdb::types::TypeId::VARCHAR || QueryFieldDesc::type_ == vaultdb::types::TypeId::ENCRYPTED_VARCHAR )  {
+    if(QueryFieldDesc::type_ == FieldType::STRING || QueryFieldDesc::type_ == FieldType::SECURE_STRING )  {
         fieldSize *= string_length_;
     }
 
@@ -44,8 +44,8 @@ void QueryFieldDesc::setStringLength(size_t len) {
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &os,  const QueryFieldDesc &desc)  {
-    os << "#" << desc.getOrdinal() << " " << TypeUtilities::getTypeIdString(desc.getType());
-    if(desc.getType() == vaultdb::types::TypeId::VARCHAR) {
+    os << "#" << desc.getOrdinal() << " " << TypeUtilities::getTypeString(desc.getType());
+    if(desc.getType() == FieldType::STRING) {
         os << "(" << desc.getStringLength() << ")";
     }
 
@@ -70,8 +70,8 @@ bool QueryFieldDesc::operator==(const QueryFieldDesc& other) {
 
     // if types are the same, or int32_t --> date
     if (!(this->getType() == other.getType() ||
-          (this->getType() == types::TypeId::INTEGER32 && other.getType() == types::TypeId::DATE) ||
-          (other.getType() == types::TypeId::INTEGER32 && this->getType() == types::TypeId::DATE))) {
+          (this->getType() == FieldType::INT64 && other.getType() == FieldType::DATE) ||
+          (other.getType() == FieldType::INT64 && this->getType() == FieldType::DATE))) {
         return false;
     }
 

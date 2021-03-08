@@ -1,5 +1,6 @@
 #include <util/type_utilities.h>
 #include "join.h"
+#include <query_table/field/field_factory.h>
 
 
 Join::Join(Operator *lhs, Operator *rhs, shared_ptr<BinaryPredicate> predicateClass) : Operator(lhs, rhs) {
@@ -45,24 +46,24 @@ QueryTuple Join::concatenateTuples( QueryTuple *lhs,  QueryTuple *rhs) {
     uint32_t cursor = lhsFieldCount;
 
     for(uint32_t i = 0; i < lhsFieldCount; ++i) {
-        result.putField(lhs->getField(i));
+        result.putField(lhs->getField(i), -1);
     }
 
 
     for(uint32_t i = 0; i < rhs->getFieldCount(); ++i) {
-        QueryField dstField(cursor, rhs->getField(i).getValue());
-        result.putField(dstField);
-        ++cursor;
+
+        Field *dstField = FieldFactory::copyField(rhs->getField(i));
+        result.putField(dstField, cursor);
     }
 
     return result;
 }
 
 // compare two tuples and return their entry in the output table
-QueryTuple Join::compareTuples(QueryTuple *lhs, QueryTuple *rhs, const types::Value &predicateEval) {
+QueryTuple Join::compareTuples(QueryTuple *lhs, QueryTuple *rhs, const Field * predicateEval) {
     QueryTuple dstTuple = concatenateTuples(lhs, rhs);
 
-    types::Value dummyTag = lhs->getDummyTag() | rhs->getDummyTag() | (!predicateEval);
+   Field *dummyTag = &(*(lhs->getDummyTag()) | *(rhs->getDummyTag()) | (!*predicateEval));
 
     dstTuple.setDummyTag(dummyTag);
     return dstTuple;

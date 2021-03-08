@@ -11,33 +11,33 @@ class Expression {
 
     protected:
         std::string alias;
-        types::TypeId expressionType;
-        types::Value (*exprFunc)(const QueryTuple &) = nullptr;
+        FieldType expressionType;
+        Field * (*exprFunc)(const QueryTuple &) = nullptr;
 
 
     public:
-        Expression() : alias("anonymous"), expressionType(types::TypeId::INVALID) {}
+        Expression() : alias("anonymous"), expressionType(FieldType::INVALID) {}
 
 
         Expression(const Expression & src) : alias(src.alias), expressionType(src.expressionType) {
             exprFunc = src.exprFunc;
         }
 
-        Expression(types::Value (*funcPtr)(const QueryTuple &), const std::string & anAlias, const types::TypeId & aType)  :  alias(anAlias), expressionType(aType){
+        Expression(Field *(*funcPtr)(const QueryTuple &), const std::string & anAlias, const FieldType & aType)  :  alias(anAlias), expressionType(aType){
             exprFunc = funcPtr;
         }
 
         ~Expression() {}
 
 
-         types::Value expressionCall(const QueryTuple & aTuple) const {
+         Field * expressionCall(const QueryTuple & aTuple) const {
             return exprFunc(aTuple);
         }
 
 
 
         // what is the return type of the expression?
-        types::TypeId getType() const { return expressionType; }
+        FieldType getType() const { return expressionType; }
 
         // does it have an alias?
         std::string getAlias() const { return alias; }

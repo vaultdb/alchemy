@@ -16,11 +16,11 @@ public:
     virtual ~BinaryPredicate() {}
 
     // override when we instantiate a predicate -- only need to implement one of these per predicate class
-    virtual types::Value predicateCall( QueryTuple * lhs,  QueryTuple * rhs) const = 0;
+    virtual Field *predicateCall( QueryTuple * lhs,  QueryTuple * rhs) const = 0;
 
 };
 
-typedef  types::Value (BinaryPredicate::*binaryPredicateCall)(QueryTuple * lhs,  QueryTuple * rhs);
+typedef  Field * (BinaryPredicate::*binaryPredicateCall)(QueryTuple * lhs,  QueryTuple * rhs);
 
 
 #endif //_BINARY_PREDICATE_H

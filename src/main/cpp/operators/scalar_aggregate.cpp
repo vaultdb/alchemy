@@ -44,7 +44,7 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
 
     for(size_t i = 0; i < aggregators.size(); ++i) {
         QueryField field(i, aggregators[i]->getResult());
-        tuplePtr->putField(field);
+        tuplePtr->putField(field, -1);
         delete aggregators[i];
     }
 

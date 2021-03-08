@@ -16,7 +16,7 @@ std::shared_ptr<QueryTable> KeyedJoin::runSelf() {
     std::shared_ptr<QueryTable> primaryKeyTable = children[1]->getOutput();
     QueryTuple *lhsTuple, *rhsTuple;
     QueryTuple dstTuple;
-    types::Value predicateEval;
+    Field *predicateEval;
 
     uint32_t outputTupleCount = foreignKeyTable->getTupleCount(); // foreignKeyTable = foreign key
     QuerySchema lhsSchema = foreignKeyTable->getSchema();
@@ -50,7 +50,7 @@ std::shared_ptr<QueryTable> KeyedJoin::runSelf() {
             rhsTuple = primaryKeyTable->getTuplePtr(j);
             predicateEval = predicate->predicateCall(lhsTuple, rhsTuple);
              dstTuple = compareTuples(lhsTuple, rhsTuple, predicateEval);
-            replaceTuple->conditionalWrite(i, dstTuple, predicateEval);
+            replaceTuple->conditionalWrite(i, dstTuple, *predicateEval);
 
         }
 

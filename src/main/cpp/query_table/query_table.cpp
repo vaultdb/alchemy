@@ -25,7 +25,7 @@ unsigned int QueryTable::getTupleCount() const {
 
 
 
-QueryTable::QueryTable(const size_t &num_tuples, const QuerySchema &schema, SortDefinition sortDefinition)
+QueryTable::QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition)
         :  orderBy(std::move(sortDefinition)), schema_(schema) {
 
    /* std::cout << "Instantiating a query table at: " << std::endl
@@ -46,15 +46,13 @@ QueryTable::QueryTable(const size_t &num_tuples, const int &colCount)
                << Utilities::getStackTrace();*/
     tuples_.resize(num_tuples);
 
-    for(size_t i = 0; i < num_tuples; ++i) {
-        tuples_[i].setFieldCount(colCount); // initialize tuples
-    }
+
 
 
 }
 
 bool QueryTable::isEncrypted() const {
-    types::TypeId firstColType = schema_.getField(0).getType();
+    FieldType firstColType = schema_.getField(0).getType();
 
     // if encrypted version of this column is the same as its original value
     return TypeUtilities::isEncrypted(firstColType);
@@ -62,15 +60,15 @@ bool QueryTable::isEncrypted() const {
 
 
 
-unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
+std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
     uint32_t tupleCount = getTupleCount();
 
     if(!this->isEncrypted())
-        return make_unique<QueryTable>(*this);
+        return std::make_unique<QueryTable>(*this);
 
     QuerySchema dstSchema = QuerySchema::toPlain(getSchema());
 
-    unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, dstSchema, getSortOrder()));
+    std::unique_ptr<QueryTable> dstTable(new QueryTable(tupleCount, dstSchema, getSortOrder()));
 
     QueryTuple srcTuple; // initialized below
 
@@ -105,7 +103,7 @@ vector<int8_t> QueryTable::serialize() const {
     return dst;
 }
 
-ostream &vaultdb::operator<<(ostream &os, const QueryTable &table) {
+std::ostream &vaultdb::operator<<(std::ostream &os, const QueryTable &table) {
 
 
     os <<  table.getSchema() << " isEncrypted? " << table.isEncrypted() << endl;
@@ -119,7 +117,7 @@ ostream &vaultdb::operator<<(ostream &os, const QueryTable &table) {
             os << endl;
         }
         else {
-            bool isDummy = table.getTuple(i).getDummyTag().getBool();
+            bool isDummy = (table.getTuple(i).getDummyTag()).getValue<bool>();
             if(!isDummy)
                 os << endl;
         }
@@ -132,7 +130,7 @@ ostream &vaultdb::operator<<(ostream &os, const QueryTable &table) {
 
 string QueryTable::toString(const bool & showDummies) const {
 
-    ostringstream os;
+    std::ostringstream os;
 
     if(!showDummies) {
         os << *this;
@@ -184,9 +182,6 @@ QueryTable::QueryTable(const QueryTable &src) : orderBy(src.getSortOrder()), sch
 
 }
 
-void QueryTable::setTupleDummyTag(const int &tupleIdx, const types::Value & dummyTag) {
-    tuples_[tupleIdx].setDummyTag(dummyTag);
-}
 
 QueryTuple *QueryTable::getTuplePtr(const int &idx) const {
     return ((QueryTuple *) tuples_.data()) + idx;
@@ -197,17 +192,17 @@ bool QueryTable::operator==(const QueryTable &other) const {
 
 
     if(getSchema() != other.getSchema()) {
-       cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << endl;
+        std::cout << "Failed to match on schema: \n" << getSchema()  << "\n  == \n" << other.getSchema() << std::endl;
         return false;
     }
 
     if(this->getSortOrder() != other.getSortOrder()) {
-        cout << "Failed to match on sort order expected="  << DataUtilities::printSortDefinition(this->getSortOrder())
-                  << "observed=" << DataUtilities::printSortDefinition(other.getSortOrder()) <<  endl;
+        std::cout << "Failed to match on sort order expected="  << DataUtilities::printSortDefinition(this->getSortOrder())
+                  << "observed=" << DataUtilities::printSortDefinition(other.getSortOrder()) <<  std::endl;
         return false;
     }
     if(this->getTupleCount() != other.getTupleCount()) {
-        cout << "Failed to match on tuple count " << this->getTupleCount() << " vs " << other.getTupleCount() << endl;
+        std::cout << "Failed to match on tuple count " << this->getTupleCount() << " vs " << other.getTupleCount() << std::endl;
         return false;
     }
 
@@ -218,8 +213,8 @@ bool QueryTable::operator==(const QueryTable &other) const {
        //cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << endl;
 
         if(*thisTuple != *otherTuple) {
-            cout << "Comparing on idx " << i << " with "  << thisTuple->toString(true) << "\n           !=            " << otherTuple->toString(true) << endl;
-            cout << "    Failed to match!" << endl;
+            std::cout << "Comparing on idx " << i << " with "  << thisTuple->toString(true) << "\n           !=            " << otherTuple->toString(true) << endl;
+            std::cout << "    Failed to match!" << std::endl;
            return false;
         }
 
@@ -236,7 +231,9 @@ uint32_t QueryTable::getTrueTupleCount() const {
     uint32_t count = 0;
 
     for (auto pos = begin(tuples_); pos != end(tuples_); ++pos) {
-        if (!((*pos).getDummyTag().getBool())) {
+        bool dummyTag = ((*pos).getDummyTag()).getValue<bool>();
+
+        if (!dummyTag) {
             ++count;
         }
     }
@@ -245,7 +242,8 @@ uint32_t QueryTable::getTrueTupleCount() const {
     return count;
 }
 
-shared_ptr<QueryTable> QueryTable::secretShare(emp::NetIO *io, const int & party) const {
+/*
+std::shared_ptr<QueryTable> QueryTable::secretShare(emp::NetIO *io, const int & party) const {
     return EmpManager::secretShareTable(this, io, party);
 }
 
@@ -273,6 +271,7 @@ SecretShares QueryTable::generateSecretShares() const {
 
     return SecretShares(aliceShares, bobShares);
 }
+ */
 
 void QueryTable::setSortOrder(const SortDefinition &sortOrder) {
     orderBy = sortOrder;
@@ -283,15 +282,15 @@ SortDefinition QueryTable::getSortOrder() const {
     return orderBy;
 }
 
-shared_ptr<QueryTable> QueryTable::deserialize(const QuerySchema &schema, const vector<int8_t> & tableBits) {
+std::shared_ptr<QueryTable> QueryTable::deserialize(const QuerySchema &schema, const vector<int8_t> & tableBits) {
     auto *cursor = const_cast<int8_t *>(tableBits.data());
     uint32_t tableSize = tableBits.size(); // in bytes
     uint32_t tupleSize = schema.size() / 8; // in bytes
     uint32_t tupleCount = tableSize / tupleSize;
     SortDefinition emptySortDefinition;
 
-    cout << "Deserializing " << tupleCount << " tuples." << endl;
-    shared_ptr<QueryTable> result(new QueryTable(tupleCount, schema, emptySortDefinition));
+    std::cout << "Deserializing " << tupleCount << " tuples." << std::endl;
+    std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, schema, emptySortDefinition));
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
         QueryTuple aTuple = QueryTuple::deserialize(schema, cursor);
@@ -304,7 +303,7 @@ shared_ptr<QueryTable> QueryTable::deserialize(const QuerySchema &schema, const 
 
 }
 
-shared_ptr<QueryTable>
+std::shared_ptr<QueryTable>
 QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
     Bit *cursor =  tableBits.data();
     uint32_t tableSize = tableBits.size(); // in bits
@@ -314,11 +313,11 @@ QueryTable::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
 
 
     QuerySchema encryptedSchema = QuerySchema::toSecure(schema);
-    shared_ptr<QueryTable> result(new QueryTable(tupleCount, encryptedSchema, emptySortDefinition));
+    std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, encryptedSchema, emptySortDefinition));
 
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        QueryTuple aTuple = QueryTuple::deserialize(encryptedSchema, cursor);
+        QueryTuple aTuple = QueryTuple::deserialize(encryptedSchema, (int8_t *) cursor);
         result->putTuple(i, aTuple);
         cursor += tupleSize;
     }

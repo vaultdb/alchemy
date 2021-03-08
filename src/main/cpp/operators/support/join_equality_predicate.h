@@ -19,11 +19,11 @@ class JoinEqualityPredicate : public BinaryPredicate {
 public:
     JoinEqualityPredicate(const ConjunctiveEqualityPredicate & srcPredicates, bool isEncrypted);
 
-    types::Value predicateCall( QueryTuple * lhs,  QueryTuple * rhs) const override;
+    Field *predicateCall( QueryTuple * lhs,  QueryTuple * rhs) const override;
 
 private:
     std::vector<EqualityPredicate> predicates;
-    types::Value defaultValue;
+    FieldType resultType = FieldType::BOOL;
 
 };
 

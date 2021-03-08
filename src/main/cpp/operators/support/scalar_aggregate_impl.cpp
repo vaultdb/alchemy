@@ -1,12 +1,18 @@
 #include <util/type_utilities.h>
 #include "scalar_aggregate_impl.h"
+#include "query_table/field/bool_field.h"
+#include "query_table/field/int_field.h"
+#include "query_table/field/secure_long_field.h"
+#include "query_table/field/long_field.h"
+#include "query_table/field/float_field.h"
+
 
 using namespace vaultdb;
 
 void vaultdb::ScalarCount::initialize(const vaultdb::QueryTuple &tuple) {
 
     assert(!tuple.isEncrypted());
-    runningCount = tuple.getDummyTag().getBool() ? 0 : 1;
+    runningCount = TypeUtilities::getBool(*tuple.getDummyTag()) ? 0 : 1;
     initialized = true;
 }
 
@@ -15,30 +21,34 @@ void vaultdb::ScalarCount::accumulate(const vaultdb::QueryTuple &tuple) {
     assert(!tuple.isEncrypted());
     assert(initialized);
 
-    runningCount += tuple.getDummyTag().getBool() ? 0 : 1;
+    runningCount += TypeUtilities::getBool(*tuple.getDummyTag()) ? 0 : 1;
 
 
 }
 
 
-vaultdb::types::Value vaultdb::ScalarCount::getResult() {
-    return vaultdb::types::Value(runningCount);
+const Field * vaultdb::ScalarCount::getResult() const {
+    return new LongField(runningCount);
 }
 
-types::TypeId ScalarCount::getType() {
-    return types::TypeId::INTEGER64;
+FieldType ScalarCount::getType() {
+    return FieldType::INT64;
 }
 
 
 
 void vaultdb::ScalarSum::initialize(const vaultdb::QueryTuple &tuple) {
     assert(!tuple.isEncrypted());
-    types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-    types::TypeId sumType = tupleVal.getType();
+    const Field * tupleVal = tuple.getField(aggregateOrdinal);
+    FieldType sumType = tupleVal->getType();
 
     // initialize member variable for use in accumulate()
-    zero = TypeUtilities::getZero(sumType);
-    runningSum = tuple.getDummyTag().getBool() ? zero : tupleVal;
+    zero = FieldFactory::getZero(sumType);
+    if (TypeUtilities::getBool(*tuple.getDummyTag())) {
+        *runningSum = *zero;
+    } else {
+        *runningSum = *tupleVal;
+    }
     initialized = true;
 }
 
@@ -46,23 +56,23 @@ void vaultdb::ScalarSum::accumulate(const vaultdb::QueryTuple &tuple) {
     assert(!tuple.isEncrypted());
     assert(initialized);
 
-    types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-    types::Value toAdd = tuple.getDummyTag().getBool() ? zero : tupleVal;
-    runningSum =  runningSum + toAdd;
+    const Field * tupleVal = tuple.getField(aggregateOrdinal);
+    const Field * toAdd = TypeUtilities::getBool(*tuple.getDummyTag()) ? zero : tupleVal;
+    runningSum =  &(*runningSum + *toAdd);
 
 }
 
-vaultdb::types::Value vaultdb::ScalarSum::getResult() {
+const Field * vaultdb::ScalarSum::getResult() const {
     return runningSum;
 }
 
-types::TypeId ScalarSum::getType() {
+FieldType ScalarSum::getType() {
     assert(initialized);
-    return runningSum.getType();
+    return runningSum->getType();
 }
 
 
-ScalarMin::ScalarMin(const uint32_t & ordinal, const types::TypeId & aggType) :  ScalarAggregateImpl(ordinal, aggType) {
+ScalarMin::ScalarMin(const uint32_t & ordinal, const FieldType & aggType) :  ScalarAggregateImpl(ordinal, aggType) {
   resetRunningMin();
 }
 
@@ -70,8 +80,8 @@ void vaultdb::ScalarMin::initialize(const vaultdb::QueryTuple &tuple) {
 
   assert(!tuple.isEncrypted());
   resetRunningMin();
-  types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  zero = TypeUtilities::getZero(aggregateType);
+  const Field * tupleVal = tuple.getField(aggregateOrdinal);;
+  zero = FieldFactory::getZero(aggregateType);
   initialized = true;
 }
 
@@ -80,41 +90,45 @@ void vaultdb::ScalarMin::accumulate(const vaultdb::QueryTuple &tuple) {
   assert(!tuple.isEncrypted());
   assert(initialized);
 
-  types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::Value currMin = (tupleVal < runningMin).getBool() ? tupleVal : runningMin;
-  runningMin = tuple.getDummyTag().getBool() ? runningMin : currMin;
+  const Field * tupleVal = tuple.getField(aggregateOrdinal);
+  bool newMin = TypeUtilities::getBool(*tupleVal < *runningMin);
+
+  const Field * currMin = newMin ? tupleVal : runningMin;
+  bool isDummy =  TypeUtilities::getBool(*tuple.getDummyTag());
+  *runningMin = isDummy ? *runningMin : *currMin;
+
 
 }
 
-vaultdb::types::Value vaultdb::ScalarMin::getResult() {
-  return vaultdb::types::Value(runningMin);
+const Field * vaultdb::ScalarMin::getResult() const {
+  return runningMin;
 }
 
-types::TypeId ScalarMin::getType() {
-  return runningMin.getType();
+FieldType ScalarMin::getType() {
+  return runningMin->getType();
 }
 
 void vaultdb::ScalarMin::resetRunningMin()  {
-
+    delete runningMin;
   switch(aggregateType) {
-  case types::TypeId::INTEGER32:
-    runningMin = types::Value(INT_MAX);
+  case FieldType::INT32:
+    runningMin = new IntField(INT_MAX);
     break;
-  case types::TypeId::INTEGER64:
-    runningMin = types::Value(aggregateType, LONG_MAX);
+  case FieldType::INT64:
+    runningMin = new LongField(LONG_MAX);
     break;
-  case types::TypeId::BOOLEAN:
-    runningMin = types::Value(true);
+  case FieldType::BOOL:
+    runningMin = new BoolField(true);
     break;
-  case types::TypeId::FLOAT32:
-    runningMin = types::Value(FLT_MAX);
+  case FieldType::FLOAT32:
+    runningMin = new FloatField(FLT_MAX);
     break;
   default:
-    throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MIN()");
+    throw std::invalid_argument("Type " + TypeUtilities::getTypeString(aggregateType) + " not supported by MIN()");
   }
 }
 
-ScalarMax::ScalarMax(const uint32_t & ordinal, const types::TypeId & aggType) :  ScalarAggregateImpl(ordinal, aggType) {
+ScalarMax::ScalarMax(const uint32_t & ordinal, const FieldType & aggType) :  ScalarAggregateImpl(ordinal, aggType) {
   resetRunningMax();
 }
 
@@ -122,9 +136,9 @@ void vaultdb::ScalarMax::initialize(const vaultdb::QueryTuple &tuple) {
 
   assert(!tuple.isEncrypted());
   resetRunningMax();
-  types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  zero = TypeUtilities::getZero(aggregateType);
-  runningMax = tuple.getDummyTag().getBool() ? zero : tupleVal;
+  const Field * tupleVal = tuple.getField(aggregateOrdinal);;
+  zero = FieldFactory::getZero(aggregateType);
+  *runningMax = TypeUtilities::getBool(*tuple.getDummyTag()) ? *zero : *tupleVal;
   initialized = true;
 }
 
@@ -133,51 +147,64 @@ void vaultdb::ScalarMax::accumulate(const vaultdb::QueryTuple &tuple) {
   assert(!tuple.isEncrypted());
   assert(initialized);
 
-  types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::Value currMax = (tupleVal > runningMax).getBool() ? tupleVal : runningMax;
-  runningMax = tuple.getDummyTag().getBool() ? runningMax : currMax;
+  const Field * tupleVal = tuple.getField(aggregateOrdinal);
+  bool newMax = TypeUtilities::getBool(*tupleVal > *runningMax);
+  const Field * currMax = newMax ? tupleVal : runningMax;
+    if (TypeUtilities::getBool(*tuple.getDummyTag())) {
+        runningMax = runningMax;
+    } else {
+        *runningMax = *currMax;
+    }
 
 }
 
-vaultdb::types::Value vaultdb::ScalarMax::getResult() {
-  return vaultdb::types::Value(runningMax);
+const Field * vaultdb::ScalarMax::getResult() const {
+  return runningMax;
 }
 
-types::TypeId ScalarMax::getType() {
-  return runningMax.getType();
+FieldType ScalarMax::getType() {
+  return runningMax->getType();
 }
 
 void vaultdb::ScalarMax::resetRunningMax()  {
+    delete runningMax;
+    switch(aggregateType) {
+        case FieldType::INT32:
+            runningMax = new IntField(INT_MIN);
+            break;
+        case FieldType::INT64:
+            runningMax = new LongField(LONG_MIN);
+            break;
+        case FieldType::BOOL:
+            runningMax = new BoolField(false);
+            break;
+        case FieldType::FLOAT32:
+            runningMax = new FloatField(FLT_MIN);
+            break;
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(aggregateType) + " not supported by MIN()");
+    }
 
-  switch(runningMax.getType()) {
-  case types::TypeId::INTEGER32:
-    runningMax = types::Value(INT_MIN);
-    break;
-  case types::TypeId::INTEGER64:
-    runningMax = types::Value(maxType, LONG_MIN);
-    break;
-  case types::TypeId::BOOLEAN:
-    runningMax = types::Value(true);
-    break;
-  case types::TypeId::FLOAT32:
-    runningMax = types::Value(FLT_MIN);
-    break;
-  default:
-    throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(maxType) + " not supported by MAX()");
-  }
 }
 
 void ScalarAverage::initialize(const QueryTuple &tuple) {
 
     assert(!tuple.isEncrypted());
-    types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-    types::TypeId sumType = tupleVal.getType();
+    const Field * tupleVal = tuple.getField(aggregateOrdinal);;
+    FieldType sumType = tupleVal->getType();
 
     // initialize member variable for use in accumulate()
-    zero = TypeUtilities::getZero(sumType);
-    one = TypeUtilities::getOne(sumType);
-    runningSum = tuple.getDummyTag().getBool() ? zero : tupleVal;
-    runningCount = tuple.getDummyTag().getBool() ? zero : one;
+    zero =
+    one = FieldFactory::getOne(sumType);
+    bool isDummy = TypeUtilities::getBool(*tuple.getDummyTag());
+    if(isDummy) {
+        runningSum = FieldFactory::getZero(sumType);
+        runningCount = FieldFactory::getZero(sumType);
+    }
+    else {
+        runningSum = FieldFactory::copyField(tupleVal);
+        runningCount = FieldFactory::getOne(sumType);
+        }
     initialized = true;
 
 }
@@ -187,24 +214,24 @@ void ScalarAverage::accumulate(const QueryTuple &tuple) {
     assert(!tuple.isEncrypted());
     assert(initialized);
 
-    types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-    types::Value toAdd = tuple.getDummyTag().getBool() ? zero : tupleVal;
-    types::Value tupleCount = tuple.getDummyTag().getBool() ? zero : one;
+    const Field * tupleVal = tuple.getField(aggregateOrdinal);;
+    const Field * toAdd = TypeUtilities::getBool(*tuple.getDummyTag()) ? zero : tupleVal;
+    Field * tupleCount = TypeUtilities::getBool(*tuple.getDummyTag()) ? zero : one;
 
-    runningSum =  runningSum + toAdd;
-    runningCount = runningCount + tupleCount;
+    *runningSum =  *runningSum + *toAdd;
+    *runningCount = *runningCount + *tupleCount;
 }
 
-types::Value ScalarAverage::getResult() {
+const Field * ScalarAverage::getResult() const {
 
     assert(initialized);
 
-    if((runningCount == zero).getBool()) { return zero; }
+    if(TypeUtilities::getBool(*runningCount == *zero)) { return zero; }
 
-    return types::Value(runningSum/runningCount);
+    return &(*runningSum / *runningCount);
 }
 
-types::TypeId ScalarAverage::getType() {
+FieldType ScalarAverage::getType() {
     assert(initialized);
-    return runningCount.getType();
+    return runningCount->getType();
 }

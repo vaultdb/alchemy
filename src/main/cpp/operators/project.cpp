@@ -1,4 +1,5 @@
 #include "project.h"
+#include <query_table/field/field_factory.h>
 
 
 // can't initialize schemas yet, don't have child schema
@@ -44,7 +45,7 @@ std::shared_ptr<QueryTable> Project::runSelf() {
         uint32_t dstOrdinal = exprPos->first;
         Expression expression = exprPos->second;
 
-        types::TypeId type = expression.getType();
+        FieldType type = expression.getType();
         std::string alias = expression.getAlias();
 
         QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, alias, "", type); // NYI: string length for expressions
@@ -103,8 +104,8 @@ QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
     for(ProjectionMapping mapping : projectionMap) {
         uint32_t srcOrdinal = mapping.first;
         uint32_t dstOrdinal = mapping.second;
-        QueryField dstField(dstOrdinal, srcTuple->getField(srcOrdinal).getValue());
-        dstTuple.putField(dstField);
+        Field *dstField = FieldFactory::copyField(srcTuple->getField(srcOrdinal));
+        dstTuple.putField(dstField, dstOrdinal);
 
     }
 
@@ -112,9 +113,8 @@ QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
     while(exprPos != expressions.end()) {
         uint32_t dstOrdinal = exprPos->first;
         Expression expression = exprPos->second;
-        types::Value fieldValue = expression.expressionCall(*srcTuple);
-        QueryField dstField(dstOrdinal, fieldValue);
-        dstTuple.putField(dstField);
+        Field *fieldValue = expression.expressionCall(*srcTuple);
+        dstTuple.putField(fieldValue, dstOrdinal);
         ++exprPos;
     }
 

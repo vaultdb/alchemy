@@ -162,34 +162,34 @@
 #define OID__INT8RANGE 3927
 
 
-static types::TypeId getFieldTypeFromOid(pqxx::oid oid) {
+
+static FieldType getFieldTypeFromOid(pqxx::oid oid) {
     switch (oid) {
         case OID_BPCHAR:
         case OID_VARCHAR:
-            return types::TypeId::VARCHAR;
+            return FieldType::STRING;
         case OID_INT4:
-            return types::TypeId::INTEGER32;
+            return FieldType::INT32;
         case OID_INT8:
-            return types::TypeId::INTEGER64;
+            return FieldType::INT64;
         case OID__NUMERIC:
         case OID_NUMERIC:
         case OID_FLOAT4:
-            return types::TypeId::FLOAT32;
-       // case OID_FLOAT8:
-        //    return types::TypeId::FLOAT64;
-       // case OID_TIMESTAMP:
-       //  case OID__TIMESTAMP:
-       //      return types::TypeId::TIMESTAMP;
-         case OID_DATE:
-         case OID__DATE:
-             return types::TypeId::DATE;
+            return FieldType::FLOAT32;
+            // case OID_FLOAT8:
+            //    return types::TypeId::FLOAT64;
+            // case OID_TIMESTAMP:
+            //  case OID__TIMESTAMP:
+            //      return types::TypeId::TIMESTAMP;
+        case OID_DATE:
+        case OID__DATE:
+            return FieldType::DATE;
         case OID_BOOL:
         case OID__BOOL:
-            return types::TypeId::BOOLEAN;
+            return FieldType::BOOL;
         default: {
             throw std::invalid_argument("Unsupported column type " + std::to_string(oid));
         }
     }
 }
-
 #endif //PQ_OID_DEFS_H

@@ -12,7 +12,7 @@ namespace vaultdb {
         ~SecureReplaceTuple() = default;
         // override
         void
-        conditionalWrite(const uint32_t &writeIdx, const QueryTuple &inputTuple, const types::Value &toWrite) override;
+        conditionalWrite(const uint32_t &writeIdx, const QueryTuple &inputTuple, const Field &toWrite) override;
 
     };
 }

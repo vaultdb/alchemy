@@ -1,23 +1,22 @@
 #ifndef _QUERY_TUPLE_H
 #define _QUERY_TUPLE_H
 
-#include "query_field.h"
 #include "query_schema.h"
 #include <map>
 #include <memory>
 #include <vector>
-#include <query_table/types/value.h>
 #include <util/type_utilities.h>
+#include "field/bool_field.h"
+#include "field/secure_bool_field.h"
 
 using namespace emp;
-using namespace std;
 
 namespace vaultdb {
     class QueryTuple {
     private:
 
-        types::Value dummy_tag_;
-        vector<QueryField>  fields_;
+        Field dummy_tag_;
+        vector<Field>  fields_;
 
 
     public:
@@ -29,13 +28,13 @@ namespace vaultdb {
         QueryTuple(const QueryTuple &src);
 
 
-        inline bool  isEncrypted() const { return dummy_tag_.getType() == types::TypeId::ENCRYPTED_BOOLEAN; }
+        inline bool  isEncrypted() const;
 
-      const QueryField getField(int ordinal) const;
-      QueryField *getFieldPtr(const uint32_t &ordinal) const; // returns a pointer to the original field, mutable
-      void putField(const QueryField &f);
-      void setDummyTag(const types::Value &v);
-      const types::Value getDummyTag() const;
+      const Field getField(const int &ordinal) const;
+      void putField(const int &idx, const Field &f);
+      void setDummyTag(const Field &v);
+
+        const Field getDummyTag() const;
 
 
         QueryTuple reveal(const int &empParty = PUBLIC) const;
@@ -53,13 +52,12 @@ namespace vaultdb {
 
         static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const emp::Bit & cmp);
         static QueryTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
-        static QueryTuple deserialize(const QuerySchema &schema, Bit *tupleBits);
+        //static QueryTuple deserialize(const QuerySchema &schema, Bit *tupleBits);
 
     };
     std::ostream &operator<<(std::ostream &os, const QueryTuple &tuple);
 
 
-    ostream &operator<<(ostream &os, const QueryTuple &tuple);
 
 } // namespace vaultdb
 #endif // QUERY_TUPLE_H

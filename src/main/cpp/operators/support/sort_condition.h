@@ -3,6 +3,7 @@
 
 #include  <query_table/query_tuple.h>
 #include "common/defs.h"
+#include <query_table/field/field.h>
 
 using namespace  vaultdb;
 
@@ -10,7 +11,7 @@ class SortCondition {
 
 protected:
     SortDefinition sortDefinition;
-    types::Value getValue(QueryTuple & aTuple, const ColumnSort & aColumnSort);
+    const Field *getValue(QueryTuple & aTuple, const ColumnSort & aColumnSort);
 
 public:
     SortCondition() {} // placeholder

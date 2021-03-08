@@ -28,7 +28,8 @@ enable_testing()
 
 
 add_subdirectory(test)
-add_subdirectory(pilot)
+# TODO: re-add this when ready
+#add_subdirectory(pilot)
 
 
 find_package(OpenSSL REQUIRED)
@@ -59,59 +60,72 @@ include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_D
 
 
 set(sources
-        operators/sort.cpp
-		operators/filter.cpp
-		util/emp_manager.cpp
+		query_table/field/field_type.h
+		query_table/field/field.cpp
+		query_table/field/field_instance.h
+		query_table/field/bool_field.cpp
+		query_table/field/secure_bool_field.cpp
+
+		query_table/field/field_factory.cpp
+
+
 		util/utilities.cpp
 		util/type_utilities.cpp
 		util/data_utilities.cpp
 		query_table/query_tuple.cpp
-		query_table/types/value.cpp
-		query_table/query_field.cpp
+		#   util/emp_manager.cpp
+
+		#	query_table/types/value.cpp
+	#	query_table/query_field.cpp
+	#		query_table/types/value_comparators.cpp
+    #		query_table/types/value_arithmetic.cpp
+
 		query_table/query_field_desc.cpp
 		query_table/query_schema.cpp
 		query_table/query_table.cpp
 		data/PsqlDataProvider.cpp
-		query_table/types/value_comparators.cpp
-		query_table/types/value_arithmetic.cpp
-		operators/operator.cpp
-		operators/sql_input.cpp
-        operators/secure_sql_input.cpp
-		operators/support/sort_condition.cpp
-		operators/support/plain_sort_condition.cpp
-		operators/support/secure_sort_condition.cpp
-		operators/project.cpp
-		operators/support/join_equality_predicate.cpp
-		operators/join.cpp
-		operators/basic_join.cpp
-        operators/common_table_expression.cpp
-        operators/fkey_pkey_join.cpp
-		operators/support/replace_tuple.cpp
-		operators/support/secure_replace_tuple.cpp
 		data/CsvReader.cpp
-		operators/support/scalar_aggregate_impl.cpp
-		operators/scalar_aggregate.cpp
-		operators/support/secure_scalar_aggregate_impl.cpp
-		operators/group_by_aggregate.cpp
-		operators/support/group_by_aggregate_impl.cpp
-		operators/support/secure_group_by_aggregate_impl.cpp
-		operators/csv_input.cpp
-		query_table/field/field.h
-		query_table/field/field_instance.cpp
-		query_table/field/int_field.h
-		query_table/field/bool_field.h
-		query_table/field/float_field.h
-		query_table/field/long_field.h
-		query_table/field/string_field.h
-		query_table/field/secure_int_field.h
-		query_table/field/secure_bool_field.h
-		query_table/field/secure_float_field.h
-		query_table/field/secure_long_field.h
-		query_table/field/secure_string_field.h
 
-		#query_table/field/secure_bool_field.h
-		#		query_table/field/example.cpp
-		#query_table/field/field_factory.cpp
+		#operators/operator.cpp
+		#operators/sql_input.cpp
+        #operators/secure_sql_input.cpp
+
+
+		#operators/sort.cpp
+		#operators/filter.cpp
+		#operators/support/sort_condition.cpp
+		#operators/support/plain_sort_condition.cpp
+		#operators/support/secure_sort_condition.cpp
+		#operators/project.cpp
+		#operators/support/join_equality_predicate.cpp
+		#operators/join.cpp
+		#operators/basic_join.cpp
+        #operators/common_table_expression.cpp
+        #operators/fkey_pkey_join.cpp
+		#operators/support/replace_tuple.cpp
+		#operators/support/secure_replace_tuple.cpp
+		#operators/support/scalar_aggregate_impl.cpp
+		#operators/scalar_aggregate.cpp
+		#operators/support/secure_scalar_aggregate_impl.cpp
+		#operators/group_by_aggregate.cpp
+		#operators/support/group_by_aggregate_impl.cpp
+		#operators/support/secure_group_by_aggregate_impl.cpp
+		#operators/csv_input.cpp
+		#query_table/field/field_type.h
+		#query_table/field/field_impl.h
+
+	#	query_table/field/int_field.h
+	#	query_table/field/float_field.h
+	#	query_table/field/long_field.h
+	#	query_table/field/string_field.h
+	#	query_table/field/secure_int_field.h
+	#	query_table/field/secure_float_field.h
+	#	query_table/field/secure_long_field.h
+	#	query_table/field/secure_string_field.h
+		#query_table/field/comparator.h
+
+		# TODO: put field factory here
+		#util/field_utilities.h
 		)
 
 

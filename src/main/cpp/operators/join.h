@@ -17,7 +17,7 @@ namespace  vaultdb {
 
         static QueryTuple concatenateTuples(QueryTuple *lhs, QueryTuple *rhs);
 
-        static QueryTuple compareTuples(QueryTuple *lhs, QueryTuple *rhs, const types::Value &predicateEval);
+        static QueryTuple compareTuples(QueryTuple *lhs, QueryTuple *rhs, const Field *predicateEval);
 
 
         // predicate function needs aware of encrypted or plaintext state of its inputs

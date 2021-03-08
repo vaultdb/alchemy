@@ -46,7 +46,7 @@ size_t QuerySchema::size() const {
         bitSize += fields_[i].size();
 
     }
-    int dummySize = TypeUtilities::isEncrypted(fields_[0].getType()) ?   TypeUtilities::getTypeSize(types::TypeId::ENCRYPTED_BOOLEAN) :  TypeUtilities::getTypeSize(types::TypeId::BOOLEAN);
+    int dummySize = TypeUtilities::isEncrypted(fields_[0].getType()) ?   TypeUtilities::getTypeSize(FieldType::SECURE_BOOL) :  TypeUtilities::getTypeSize(FieldType::BOOL);
 
     bitSize += dummySize; // for dummy tag
     return bitSize;

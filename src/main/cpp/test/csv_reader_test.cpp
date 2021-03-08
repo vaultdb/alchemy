@@ -8,7 +8,6 @@
 
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -19,6 +18,7 @@ protected:
     void SetUp() override{
         setup_plain_prot(false, "");
         currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
+        //system("./test/support/setup-csv.sh ");
     };
     void TearDown() override{
         finalize_plain_prot();
@@ -28,7 +28,7 @@ protected:
     std::string currentWorkingDirectory;
 
     QueryFieldDesc convertDateField(const QueryFieldDesc & srcField) {
-        return QueryFieldDesc(srcField, types::TypeId::DATE);
+        return QueryFieldDesc(srcField, FieldType::DATE);
     }
 };
 
@@ -60,7 +60,9 @@ TEST_F(CsvReaderTest, lineitemTest) {
 
 
 TEST_F(CsvReaderTest, quotedStringTest) {
+    // trick is handling ',' character correctly
     std::string testStr = "16,Customer#000000016,\"cYiaeMLZSMAOQ2 d0W,\",10,20-781-609-3107,4681.03,FURNITURE ,kly silent courts. thinly regular theodolites sleep fluffily after ";
+
 
     // grab customer table for schema:
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";

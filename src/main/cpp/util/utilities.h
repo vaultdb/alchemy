@@ -18,7 +18,6 @@
 #include <vector>
 #include <string>
 
-using namespace std;
 
 namespace vaultdb {
     class Utilities {
@@ -26,17 +25,17 @@ namespace vaultdb {
 
         static std::string getCurrentWorkingDirectory();
 
-        static void checkMemoryUtilization(const string & msg);
+        static void checkMemoryUtilization(const std::string & msg);
 
         static void checkMemoryUtilization();
 
-        static string getStackTrace();
+        static std::string getStackTrace();
 
         static bool *bytesToBool(int8_t *bytes, int byteCount);
 
-        static vector<int8_t> boolsToBytes(const bool *const src, const uint32_t &bitCount);
+        static std::vector<int8_t> boolsToBytes(const bool *const src, const uint32_t &bitCount);
 
-        static vector<int8_t> boolsToBytes( string & src); // for the output of Integer::reveal<string>()
+        static std::vector<int8_t> boolsToBytes( std::string & src); // for the output of Integer::reveal<string>()
 
         // convert 8 bits to a byte
         static int8_t boolsToByte(const bool *src);

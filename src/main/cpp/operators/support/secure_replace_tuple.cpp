@@ -7,24 +7,12 @@ using namespace vaultdb;
 SecureReplaceTuple::SecureReplaceTuple(std::shared_ptr<QueryTable> table) : ReplaceTuple(std::move(table)) {}
 
 void SecureReplaceTuple::conditionalWrite(const uint32_t &writeIdx, const QueryTuple &srcTuple,
-                                          const types::Value &toWrite) {
+                                          const Field &toWrite) {
 
     assert(dstTable->isEncrypted());
-
+    QueryTuple toCopy(srcTuple);
     QueryTuple *dstTuple = dstTable->getTuplePtr(writeIdx);
-    emp::Bit writeCondition = toWrite.getEmpBit();
 
-    for(size_t i = 0; i < dstTuple->getFieldCount(); ++i) {
-        types::Value originalValue = dstTuple->getField(i).getValue();
-        types::Value newValue = srcTuple.getField(i).getValue();
-
-        types::Value output = types::Value::obliviousIf(writeCondition, newValue, originalValue);
-        dstTuple->putField(QueryField(i, output));
-    }
-    types::Value originalDummyTag = dstTuple->getDummyTag();
-    types::Value newDummyTag = srcTuple.getDummyTag();
-
-    types::Value outputDummyTag = types::Value::obliviousIf(writeCondition, newDummyTag, originalDummyTag);
-    dstTuple->setDummyTag(outputDummyTag);
+    QueryTuple::compareAndSwap(TypeUtilities::getSecureBool(toWrite), dstTuple, &toCopy);
 
 }
