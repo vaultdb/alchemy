@@ -1,0 +1,73 @@
+#ifndef INT_FIELD_H
+#define INT_FIELD_H
+
+#include "field_instance.h"
+#include "bool_field.h"
+#include <emp-tool/circuits/bit.h>
+
+
+namespace vaultdb {
+
+    // T = derived field
+    // B = boolean field result
+
+    // BoolField is a decorator for Field
+    // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
+    class IntField : public FieldInstance<IntField, BoolField> {
+    protected:
+
+        Field field_; // points to Field.data
+
+    public:
+
+        IntField() = default;
+        explicit IntField(const Field & srcField);
+
+        IntField(const IntField & src);
+
+        explicit IntField(const int32_t & src);
+        explicit IntField(const int8_t * src);
+
+
+        // constructor for decryption
+        IntField(const emp::Integer & src, const int & party);
+
+
+        Field getBaseField() const { return field_; }
+        int32_t getPayload() const { return field_.getValue<int32_t>(); }
+
+        IntField& operator=(const IntField& other);
+
+
+        IntField  operator+(const IntField &rhs) const  { return IntField(getPayload() + rhs.getPayload()); } // cast to int before doing arithmetic expressions
+        IntField  operator-(const IntField &rhs) const  { return IntField(getPayload() - rhs.getPayload()); }
+        IntField  operator*(const IntField &rhs) const  { return IntField(getPayload() * rhs.getPayload()); }
+        IntField  operator/(const IntField &rhs) const  { return IntField(getPayload() / rhs.getPayload()); }
+        IntField  operator%(const IntField &rhs) const  { return IntField(getPayload() % rhs.getPayload()); }
+
+
+        IntField negate() const { return IntField(!(getPayload())); }
+
+
+
+        BoolField  operator >= (const IntField &cmp) const;
+        BoolField  operator == (const IntField &cmp) const;
+
+
+        // swappable
+        IntField  select(const BoolField & choice, const IntField & other) const;
+
+
+
+        // bitwise ops
+        IntField  operator&(const IntField &right) const { return  IntField((field_.getValue<int32_t>()) & (right.field_.getValue<int32_t>())); }
+        IntField  operator^(const IntField &right) const { return  IntField((field_.getValue<int32_t>()) ^ (right.field_.getValue<int32_t>())); }
+        IntField  operator|(const IntField &right) const { return  IntField((field_.getValue<int32_t>()) | (right.field_.getValue<int32_t>())); }
+
+
+    };
+
+    std::ostream &operator<<(std::ostream &os, const IntField &aValue);
+
+}
+#endif //BOOL_FIELD_H

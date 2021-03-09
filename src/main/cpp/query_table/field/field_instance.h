@@ -26,33 +26,6 @@ namespace vaultdb {
         }
 
 
-        // TODO: figure out why these methods need to be in header file to compile
-        //  may need inline?
-       virtual std::string toString() const  {
-            return static_cast<T const &>(*this).str();
-        }
-
-        virtual void serialize(int8_t *dst) const  {
-            T impl =  static_cast<T const &>(*this);
-            impl.serialize(dst);
-        }
-
-        // TODO: convert this to bytes instead of bits to reduce CPU time
-         size_t getSize() const  {
-            return static_cast<T const &>(*this).size();
-        }
-
-
-
-         FieldType getType() const  {
-
-            return static_cast<T const &>(*this).type();
-        }
-
-
-       virtual bool encrypted() const  {
-            return static_cast<T const &>(*this).encrypted();
-        }
 
         // assignment
         FieldInstance & operator=(const FieldInstance & other)  {
@@ -73,9 +46,9 @@ namespace vaultdb {
          FieldInstance operator%(const FieldInstance&rhs) const  {   return static_cast<const T &>(*this) % static_cast<T const &>(rhs); }
 
 
-        virtual FieldInstance  geq(const FieldInstance & rhs) const  { return static_cast<T const &>(*this) >= (static_cast<const T &>(rhs)); }
+        virtual B  geq(const FieldInstance & rhs) const  { return static_cast<T const &>(*this) >= (static_cast<const T &>(rhs)); }
 
-        virtual FieldInstance equal(const FieldInstance & rhs) const  { return static_cast<T const &>(*this) == (static_cast<const T &>(rhs)); }
+        virtual B equal(const FieldInstance & rhs) const  { return static_cast<T const &>(*this) == (static_cast<const T &>(rhs)); }
 
         FieldInstance compareAndSwap(const FieldInstance & select, const FieldInstance & other)  const  {
             const B choiceBit = static_cast<B const &> (select);

@@ -16,7 +16,6 @@ namespace vaultdb {
     protected:
 
         Field field_; // points to Field.data
-        bool *payload_ = nullptr;
 
     public:
 
@@ -26,11 +25,7 @@ namespace vaultdb {
         BoolField(const BoolField & src);
 
         explicit BoolField(const bool & src);
-        explicit BoolField(const int8_t * src)  {
-            bool input = reinterpret_cast<const bool &>(*src);
-            field_ = Field::createBool(input);
-            payload_ = reinterpret_cast<bool *>(field_.getData());
-        }
+        explicit BoolField(const int8_t * src);
 
 
         // constructor for decryption
@@ -38,17 +33,9 @@ namespace vaultdb {
 
 
         Field getBaseField() const { return field_; }
+        bool getPayload() const { return field_.getValue<bool>(); }
 
         BoolField& operator=(const BoolField& other);
-
-
-        bool encrypted() const override { return false; }
-        //void copy(const BoolField & src) {*payload = *src.payload; }
-        //void assign(const bool & src) {*payload = src; }
-
-        static FieldType type() { return FieldType::BOOL; }
-
-        static size_t size()  { return FieldUtils::getPhysicalSize(type()); }
 
 
         BoolField  operator+(const BoolField &rhs) const  { throw; } // cast to int before doing arithmetic expressions
@@ -58,34 +45,23 @@ namespace vaultdb {
         BoolField  operator%(const BoolField &rhs) const  { throw; }
 
 
-        BoolField negate() const { return BoolField(!(*payload_)); }
+        BoolField negate() const { return BoolField(!(field_.getValue<bool>())); }
 
 
 
         BoolField  operator >= (const BoolField &cmp) const;
-
         BoolField  operator == (const BoolField &cmp) const;
 
-
-
-
-        bool primitive() const { return *payload_; }
-        std::string str() const { return  *payload_ ? "true" : "false"; }
 
         // swappable
         BoolField  select(const BoolField & choice, const BoolField & other) const;
 
 
-        void serialize(int8_t *dst) const override { field_.serialize(dst); }
 
         // bitwise ops
-        BoolField  operator&(const BoolField &right) const { return  BoolField((*payload_) & *(right.payload_)); }
-
-        BoolField  operator^(const BoolField &right) const { return  BoolField((*payload_) ^ *(right.payload_)); }
-
-        BoolField  operator|(const BoolField &right) const { return  BoolField((*payload_) | *(right.payload_)); }
-
-
+        BoolField  operator&(const BoolField &right) const { return  BoolField((field_.getValue<bool>()) & (right.field_.getValue<bool>())); }
+        BoolField  operator^(const BoolField &right) const { return  BoolField((field_.getValue<bool>()) ^ (right.field_.getValue<bool>())); }
+        BoolField  operator|(const BoolField &right) const { return  BoolField((field_.getValue<bool>()) | (right.field_.getValue<bool>())); }
 
 
     };

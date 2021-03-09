@@ -65,6 +65,9 @@ set(sources
 		query_table/field/field_instance.h
 		query_table/field/bool_field.cpp
 		query_table/field/secure_bool_field.cpp
+		query_table/field/int_field.cpp
+		query_table/field/secure_int_field.cpp
+
 
 		query_table/field/field_factory.cpp
 
@@ -114,7 +117,7 @@ set(sources
 		#query_table/field/field_type.h
 		#query_table/field/field_impl.h
 
-	#	query_table/field/int_field.h
+		query_table/field/int_field.h
 	#	query_table/field/float_field.h
 	#	query_table/field/long_field.h
 	#	query_table/field/string_field.h

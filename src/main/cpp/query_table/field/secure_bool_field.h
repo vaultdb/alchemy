@@ -17,46 +17,29 @@ namespace vaultdb {
     class SecureBoolField : public FieldInstance<SecureBoolField, SecureBoolField> {
     protected:
 
-        Field field_; // points to Field.data
-        emp::Bit *payload_ = nullptr;
+        Field field_;
 
     public:
 
         SecureBoolField() = default;
-        explicit SecureBoolField(const Field & srcField)   : field_(srcField) {
-            payload_ = reinterpret_cast<emp::Bit *>(field_.getData());
-        }
+        explicit SecureBoolField(const Field & srcField)   : field_(srcField) {}
 
-        SecureBoolField(const SecureBoolField & src)  {
-            field_ = Field::createSecureBool(src.primitive());
-            payload_ = reinterpret_cast<emp::Bit *>(field_.getData());
-        }
+        SecureBoolField(const SecureBoolField & src);
 
         explicit SecureBoolField(const emp::Bit & src)  {
             field_ = Field::createSecureBool(src);
-            payload_ = reinterpret_cast<emp::Bit *>(field_.getData());
         }
 
         explicit SecureBoolField(const int8_t * src);
-
-
 
         // constructor for encrypting a bit
         SecureBoolField(const bool & src, const int & myParty, const int & dstParty);
 
 
+        emp::Bit getPayload() const { return field_.getValue<emp::Bit>(); }
         Field getBaseField() const { return field_; }
 
         SecureBoolField& operator=(const SecureBoolField& other);
-
-
-        bool encrypted() const override { return true; }
-        //void copy(const SecureBoolField & src) {*payload = *src.payload; }
-        //void assign(const bool & src) {*payload = src; }
-
-        static FieldType type() { return FieldType::SECURE_BOOL; }
-        static size_t size()  { return FieldUtils::getPhysicalSize(type()); }
-
 
         SecureBoolField  operator+(const SecureBoolField &rhs) const  { throw; } // cast to int before doing arithmetic expressions
         SecureBoolField  operator-(const SecureBoolField &rhs) const { throw; }
@@ -65,29 +48,19 @@ namespace vaultdb {
         SecureBoolField  operator%(const SecureBoolField &rhs) const  { throw; }
 
 
-        SecureBoolField negate() const { return SecureBoolField(!(*payload_)); }
+        SecureBoolField negate() const { return SecureBoolField(!(getPayload())); }
 
         SecureBoolField  operator >= (const SecureBoolField &cmp) const;
         SecureBoolField  operator == (const SecureBoolField &cmp) const;
 
 
-
-
-        emp::Bit primitive() const { return *payload_; }
-        std::string str() const { return "SECURE BIT"; }
-
         // swappable
         SecureBoolField  select(const SecureBoolField & choice, const SecureBoolField & other) const;
 
-
-        void serialize(int8_t *dst) const override { field_.serialize(dst); }
-
         // bitwise ops
-        SecureBoolField  operator&(const SecureBoolField &right) const { return  SecureBoolField(*payload_ & *(right.payload_)); }
-
-        SecureBoolField  operator^(const SecureBoolField &right) const { return  SecureBoolField(*payload_ ^ *(right.payload_)); }
-
-        SecureBoolField  operator|(const SecureBoolField &right) const { return  SecureBoolField(*payload_ | *(right.payload_)); }
+        SecureBoolField  operator&(const SecureBoolField &right) const { return  SecureBoolField(getPayload() & (right.getPayload())); }
+        SecureBoolField  operator^(const SecureBoolField &right) const { return  SecureBoolField(getPayload() ^ (right.getPayload())); }
+        SecureBoolField  operator|(const SecureBoolField &right) const { return  SecureBoolField(getPayload() | (right.getPayload())); }
 
 
 

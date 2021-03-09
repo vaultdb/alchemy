@@ -69,11 +69,12 @@ namespace vaultdb {
 
         static Field createSecureBool(const emp::Bit & value);
 
-        static Field createSecureFloat(const emp::Float & value);
 
         static Field createSecureInt32(const emp::Integer & value);
 
         static Field createSecureInt64(const emp::Integer & value);
+
+        static Field createSecureFloat(const emp::Float & value);
 
 
         static Field createSecureString(const emp::Integer & value);
@@ -96,6 +97,8 @@ namespace vaultdb {
         static Field deserialize(const QueryFieldDesc & fieldDesc, const int8_t * src);
         static Field deserialize(const FieldType & field, const int & strLength, const int8_t *src);
 
+    private:
+        static std::string revealString(const emp::Integer & src, const int & party);
     };
 
     std::ostream &operator<<(std::ostream &os, const Field &aValue);

@@ -1,4 +1,5 @@
 #include "field.h"
+#include "util/utilities.h"
 
 using namespace vaultdb;
 
@@ -199,6 +200,7 @@ void Field::compareAndSwap(const emp::Bit &choice, const Field &lhs, const Field
 
 }
 
+// need to call getValue<T> on each type we use at least once or else it doesn't show up in symbol table
 Field Field::reveal(const int &party) const {
     switch (type_) {
         case FieldType::SECURE_BOOL: {
@@ -207,6 +209,34 @@ Field Field::reveal(const int &party) const {
             ret.setValue<bool>(src.reveal(party));
             return ret;
         }
+        case FieldType::SECURE_INT32: {
+            emp::Integer src = getValue<emp::Integer>();
+            assert(src.size() == 32);
+
+            Field ret(FieldType::INT32);
+            ret.setValue<int32_t>(src.reveal<int32_t>(party));
+            return ret;
+        }
+        case FieldType::SECURE_INT64: {
+            emp::Integer src = getValue<emp::Integer>();
+            assert(src.size() == 64);
+            Field ret(FieldType::INT64);
+            ret.setValue<int64_t>(src.reveal<int64_t>(party));
+            return ret;
+        }
+        case FieldType::SECURE_FLOAT32: {
+            emp::Float src = getValue<emp::Float>();
+            Field ret(FieldType::FLOAT32);
+            ret.setValue<float_t>(src.reveal<double>(party));
+            return ret;
+        }
+        case FieldType::SECURE_STRING: {
+            emp::Integer src = getValue<emp::Integer>();
+            std::string revealed = revealString(src, party);
+            Field ret = createString(revealed);
+            return ret;
+        }
+
             // already in the clear
         case FieldType::BOOL:
         case FieldType::INT32:
@@ -268,4 +298,29 @@ Field Field::deserialize(const FieldType & type, const int & strLength, const in
     Field f(type, strLength);
     memcpy(f.data_, src, f.allocated_size_);
     return f;
+}
+
+std::string Field::revealString(const emp::Integer &src, const int &party) {
+    long bitCount = src.size();
+    long byteCount = bitCount / 8;
+
+
+    bool *bools = new bool[bitCount];
+    std::string bitString = src.reveal<std::string>(party);
+    std::string::iterator strPos = bitString.begin();
+    for(int i =  0; i < bitCount; ++i) {
+        bools[i] = (*strPos == '1');
+        ++strPos;
+    }
+
+    vector<int8_t> decodedBytesVector = Utilities::boolsToBytes(bools, bitCount);
+    decodedBytesVector.resize(byteCount + 1);
+    decodedBytesVector[byteCount] = '\0';
+    std::string payload = string((char * ) decodedBytesVector.data());
+    std::reverse(payload.begin(), payload.end());
+
+    delete[] bools;
+
+    return payload;
+
 }
