@@ -39,7 +39,7 @@ QueryTuple::QueryTuple(const QueryTuple &src) {
         fields_[i] = std::unique_ptr<Field>(FieldFactory::deepCopy(src.getField(i)));
     }
 
-    *dummy_tag_ = *(src.getDummyTag());
+  dummy_tag_ = std::unique_ptr<Field>(FieldFactory::deepCopy(src.getDummyTag()));
 }
 
 const Field * QueryTuple::getField(const int &ordinal) const {
@@ -119,18 +119,16 @@ QueryTuple& QueryTuple::operator=(const QueryTuple& src) {
     if(&src == this)
         return *this;
 
-
-
-
-    *dummy_tag_ = *src.dummy_tag_;
-
-
     fields_.resize(src.getFieldCount());
 
-
     for(size_t i = 0; i < src.getFieldCount(); ++i) {
-        *fields_[i] = *src.fields_[i];
+        const Field *srcField = src.getField(i);
+        Field *dstField = FieldFactory::deepCopy(srcField);
+        fields_[i] = std::unique_ptr<Field>(dstField);
     }
+
+    dummy_tag_ = std::unique_ptr<Field>(FieldFactory::deepCopy(src.getDummyTag()));
+
 
     return *this;
 
