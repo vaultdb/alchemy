@@ -117,7 +117,7 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const QueryTable &table) {
             os << endl;
         }
         else {
-            bool isDummy = (table.getTuple(i).getDummyTag()).getValue<bool>();
+            bool isDummy = (table.getTuple(i).getDummyTag())->getValue<bool>();
             if(!isDummy)
                 os << endl;
         }
@@ -231,7 +231,7 @@ uint32_t QueryTable::getTrueTupleCount() const {
     uint32_t count = 0;
 
     for (auto pos = begin(tuples_); pos != end(tuples_); ++pos) {
-        bool dummyTag = ((*pos).getDummyTag()).getValue<bool>();
+        bool dummyTag = ((*pos).getDummyTag())->getValue<bool>();
 
         if (!dummyTag) {
             ++count;
@@ -242,11 +242,71 @@ uint32_t QueryTable::getTrueTupleCount() const {
     return count;
 }
 
-/*
-std::shared_ptr<QueryTable> QueryTable::secretShare(emp::NetIO *io, const int & party) const {
-    return EmpManager::secretShareTable(this, io, party);
-}
 
+std::shared_ptr<QueryTable> QueryTable::secretShare(emp::NetIO *netio, const int & party) const {
+
+    size_t aliceSize = this->getTupleCount();
+    size_t bobSize = aliceSize;
+    int colCount = this->getSchema().getFieldCount();
+    QueryTuple dstTuple(colCount, true);
+
+    if (party == ALICE) {
+        netio->send_data(&aliceSize, 4);
+        netio->flush();
+        netio->recv_data(&bobSize, 4);
+        netio->flush();
+    } else if (party == BOB) {
+        netio->recv_data(&aliceSize, 4);
+        netio->flush();
+        netio->send_data(&bobSize, 4);
+        netio->flush();
+    }
+
+
+    std::shared_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, colCount));
+
+    dstTable->setSchema(QuerySchema::toSecure(getSchema()));
+    dstTable->setSortOrder(getSortOrder());
+
+
+
+
+
+
+    // read alice in order
+    for (size_t i = 0; i < aliceSize; ++i) {
+        const QueryTuple *srcTuple = (party == ALICE) ? &(tuples_[i]) : nullptr;
+        dstTuple = QueryTuple::secretShare(srcTuple, schema_, party, emp::ALICE);
+        dstTable->putTuple(i, dstTuple);
+
+    }
+
+    int writeIdx = aliceSize;
+    // write bob last --> first to make bitonic sequence
+    int readTuple = bobSize; // last tuple
+
+    for (size_t i = 0; i < bobSize; ++i) {
+        --readTuple;
+        const QueryTuple *srcTuple = (party == BOB) ? &(tuples_[readTuple]) : nullptr;
+
+        //if(party == BOB)
+        //    std::cout << "Secret sharing: " << *srcTuple << std::endl;
+        dstTuple = QueryTuple::secretShare(srcTuple, schema_,  party, emp::BOB);
+        //std::string revealed = dstTuple.reveal(PUBLIC).toString(false);
+        //std::cout << "Encrypted: " << dstTuple.reveal(PUBLIC) << std::endl;
+
+        // if(empParty_ == BOB)  assert(revealed == srcTuple->toString());
+
+        dstTable->putTuple(writeIdx, dstTuple);
+        ++writeIdx;
+    }
+
+    netio->flush();
+
+    return dstTable;
+
+}
+/*
 // use this for acting as a data sharing party in the PDF
 // generates alice and bob's shares and returns the pair
 SecretShares QueryTable::generateSecretShares() const {

@@ -4,11 +4,12 @@
 #include <typeinfo>
 #include <query_table/field/field.h>
 #include <query_table/field/field_instance.h>
-//#include <query_table/field/int_field.h>
+#include <query_table/field/int_field.h>
 #include <query_table/field/bool_field.h>
-//#include <query_table/field/secure_int_field.h>
+#include <query_table/field/secure_int_field.h>
 #include <query_table/field/secure_bool_field.h>
 #include <emp-tool/emp-tool.h>
+#include <query_table/field/field_factory.h>
 //#include <util/emp_manager.h>
 
 #include <boost/mpl/range_c.hpp>
@@ -34,19 +35,19 @@ protected:
 TEST_F(FieldInstanceTest, AssignmentTest) {
     BoolField a(true);
     BoolField b(false);
-    Field aField = a.getBaseField();
-    Field bField = b.getBaseField();
+    Field *aField = &a;
+    Field *bField = &b;
 
-    ASSERT_EQ(aField.getValue<bool>(), true);
-    ASSERT_EQ(bField.getValue<bool>(), false);
+    ASSERT_EQ(aField->getValue<bool>(), true);
+    ASSERT_EQ(bField->getValue<bool>(), false);
 
-    aField = bField;
-    ASSERT_EQ(aField.getValue<bool>(), false);
+    *aField = *bField;
+    ASSERT_EQ(aField->getValue<bool>(), false);
 
-    BoolField c(aField);
+    BoolField c(*aField);
 
-    ASSERT_EQ(c.primitive(), false);
-    ASSERT_EQ(c.getBaseField().getValue<bool>(), false);
+    ASSERT_EQ(c.getPayload(), false);
+    ASSERT_EQ(c.getValue<bool>(), false);
 
 
 
@@ -58,20 +59,28 @@ TEST_F(FieldInstanceTest, MultiTypeContainer) {
     BoolField c(false);
     SecureBoolField d(false);
 
-    vector<Field> fields = {a.getBaseField(), b.getBaseField(), c.getBaseField(), d.getBaseField()};
+    vector<std::unique_ptr<Field> > fields;
+    fields.reserve(4);
+    fields.push_back(std::unique_ptr<Field>(new BoolField(true)));
 
-    ASSERT_EQ(fields[0].getType(), FieldType::BOOL);
-    ASSERT_EQ(fields[1].getType(), FieldType::SECURE_BOOL);
+    fields.push_back(std::unique_ptr<Field>(new SecureBoolField(true)));
+    fields.push_back(std::unique_ptr<Field>(new BoolField(false)));
+    fields.push_back(std::unique_ptr<Field>(new SecureBoolField(false)));
 
-    ASSERT_EQ(fields[0].getValue<bool>(), true);
-    ASSERT_EQ(fields[2].getValue<bool>(), false);
+    ASSERT_EQ(fields[0]->getType(), FieldType::BOOL);
+    ASSERT_EQ(fields[1]->getType(), FieldType::SECURE_BOOL);
 
-    ASSERT_EQ((fields[1].getValue<emp::Bit>()).reveal(), true);
-    ASSERT_EQ((fields[3].getValue<emp::Bit>()).reveal(), false);
+    ASSERT_EQ(fields[0]->getValue<bool>(), true);
+    ASSERT_EQ(fields[2]->getValue<bool>(), false);
+
+    ASSERT_EQ((fields[1]->getValue<emp::Bit>()).reveal(), true);
+    ASSERT_EQ((fields[3]->getValue<emp::Bit>()).reveal(), false);
 
 
 
 }
+
+
 
 
 

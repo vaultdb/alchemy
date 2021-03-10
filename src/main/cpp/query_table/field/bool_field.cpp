@@ -1,27 +1,31 @@
 #include "bool_field.h"
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const vaultdb::BoolField &aValue) {
-    return os << aValue.getBaseField();
+    return os << aValue.toString();
 }
 
-vaultdb::BoolField::BoolField(const vaultdb::Field &srcField) : field_(srcField) { }
-
-vaultdb::BoolField::BoolField(const vaultdb::BoolField &src) {
-    field_ =  Field(src.getBaseField());
+vaultdb::BoolField::BoolField(const vaultdb::Field &srcField) : Field(FieldType::BOOL) {
+    setValue(srcField.getValue<bool>());
 }
 
-vaultdb::BoolField::BoolField(const bool &src) {
-    field_ = Field::createBool(src);
+vaultdb::BoolField::BoolField(const vaultdb::BoolField &src) :Field(src) {
 }
 
-vaultdb::BoolField::BoolField(const emp::Bit &src, const int &party) {
-    bool revealed = src.reveal(party);
-    field_ = Field::createBool(revealed);
+vaultdb::BoolField::BoolField(const bool &src) : Field(FieldType::BOOL){
+    setValue(src);
 }
+
+vaultdb::BoolField::BoolField(const emp::Bit &src, const int &party)
+    : Field(FieldType::SECURE_BOOL){
+    setValue(src.reveal(party));
+}
+
+vaultdb::BoolField::BoolField(const int8_t *src) : Field(Field::deserialize(FieldType::BOOL, 0, src)){ }
+
 
 vaultdb::BoolField &vaultdb::BoolField::operator=(const vaultdb::BoolField &other) {
     if(this == &other) return *this;
-    this->field_ = Field(other.getBaseField());
+    copy(other);
     return *this;
 }
 
@@ -31,7 +35,7 @@ vaultdb::BoolField vaultdb::BoolField::operator>=(const vaultdb::BoolField &cmp)
 }
 
 vaultdb::BoolField vaultdb::BoolField::operator==(const vaultdb::BoolField &cmp) const {
-    bool res = (field_.getValue<bool>()) == (cmp.getBaseField().getValue<bool>());
+    bool res = (getPayload()) == (cmp.getPayload());
     return  BoolField(res);
 }
 
@@ -40,6 +44,3 @@ vaultdb::BoolField vaultdb::BoolField::select(const vaultdb::BoolField &choice, 
     return selection ? BoolField(*this) :  BoolField(other);
 }
 
-vaultdb::BoolField::BoolField(const int8_t *src) {
-    field_ = Field::deserialize(FieldType::BOOL, 0, src);
-}

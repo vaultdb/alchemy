@@ -72,7 +72,7 @@ namespace  vaultdb {
             std::vector<int8_t> serialize() const;
 
 
-           // std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &party) const; // shared_ptr so we can pass it among Operator instances
+            std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &party) const;
 
            // SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
 

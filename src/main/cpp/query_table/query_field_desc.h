@@ -51,7 +51,7 @@ namespace  vaultdb {
             // fields of type date have no source table
             if (type_ == FieldType::DATE) {
                 table_name = "";
-                type_ = FieldType::INT64; // we actually store it as an INT32, this is the result of EXTRACT(EPOCH..)
+                type_ = FieldType::LONG; // we actually store it as an INT32, this is the result of EXTRACT(EPOCH..)
             }
             string_length_ = stringLength;
         }

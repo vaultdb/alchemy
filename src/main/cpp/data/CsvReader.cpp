@@ -86,8 +86,9 @@ QueryTuple CsvReader::parseTuple(const string &line, const QuerySchema &schema) 
     QueryTuple newTuple(fieldCount);
 
     for(size_t i = 0; i < fieldCount; ++i) {
-        Field field = FieldFactory::getFieldFromString(schema.getField(i).getType(), schema.getField(i).getStringLength(), tupleFields[i]);
-        newTuple.putField(i, field);
+        Field *field = FieldFactory::getFieldFromString(schema.getField(i).getType(), schema.getField(i).getStringLength(), tupleFields[i]);
+        newTuple.putField(i, *field);
+        delete field;
 
 
     }

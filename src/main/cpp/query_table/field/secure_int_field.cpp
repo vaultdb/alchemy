@@ -3,38 +3,36 @@
 using namespace vaultdb;
 
 std::ostream &operator<<(std::ostream &os, const SecureIntField &aValue) {
-    return os << aValue.getBaseField();
+    return os << aValue.toString();
 }
 
 
-SecureIntField::SecureIntField(const Field &srcField) : field_(srcField) { }
-
-SecureIntField::SecureIntField(const SecureIntField &src) {
-    field_ =  Field(src.getBaseField());
+SecureIntField::SecureIntField(const Field &srcField) : Field(FieldType::SECURE_INT) {
+    setValue(srcField.getValue<emp::Integer>());
 }
 
+SecureIntField::SecureIntField(const SecureIntField &src) : Field(src) { }
 
 
-SecureIntField::SecureIntField(const int8_t *src) {
-    field_ = Field::deserialize(FieldType::SECURE_INT32, 0, src);
-}
 
-SecureIntField::SecureIntField(const int32_t &src, const int &myParty, const int &dstParty) {
-    int32_t toEncrypt = (myParty == dstParty) ? src : 0;
+SecureIntField::SecureIntField(const int8_t *src) : Field(Field::deserialize(FieldType::SECURE_INT, 0, src)) { }
+
+SecureIntField::SecureIntField(const Field *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_INT){
+    int32_t toEncrypt = (myParty == dstParty) ? src->getValue<int32_t>() : 0;
     emp::Integer payload = emp::Integer(32, toEncrypt, dstParty);
-    field_ = Field::createSecureInt32(payload);
+    setValue<emp::Integer>(payload);
 }
 
 
 
-SecureIntField::SecureIntField(const emp::Integer &src) {
-    field_ = Field::createSecureInt32(src);
+SecureIntField::SecureIntField(const emp::Integer &src) : Field(FieldType::SECURE_INT) {
+    setValue(src);
 }
 
 
 SecureIntField &SecureIntField::operator=(const SecureIntField &other) {
     if(this == &other) return *this;
-    this->field_ = Field(other.getBaseField());
+    copy(other);
     return *this;
 }
 
@@ -52,6 +50,12 @@ SecureIntField SecureIntField::select(const SecureBoolField &choice, const Secur
     emp::Bit selection =  choice.getPayload();
     emp::Integer res =  emp::If(selection, getPayload(), other.getPayload());
     return SecureIntField(res);
+}
+
+emp::Integer SecureIntField::getPayload() const {
+    emp::Integer res = getValue<emp::Integer>();
+    assert(res.size() == 32);
+    return res;
 }
 
 

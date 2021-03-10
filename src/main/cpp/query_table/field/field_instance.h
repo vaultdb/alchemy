@@ -1,13 +1,9 @@
-#ifndef _QUERYFIELD_H
-#define _QUERYFIELD_H
+#ifndef _QUERY_FIELD_H
+#define _QUERY_FIELD_H
 
-// generic query field API for all field types, e.g., ints or floats
-// analogous to emp's Comparable
-// formerly known as Value
 #include <cstring>
 #include <defs.h>
 #include "field.h"
-//#include "field_factory.h"
 
 
 namespace vaultdb {
@@ -17,7 +13,7 @@ namespace vaultdb {
     // P = primitive / payload of field
     // B = boolean field result
     template<typename T, typename B>
-    class FieldInstance {
+    class FieldInstance   {
     public:
 
 

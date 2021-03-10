@@ -135,7 +135,7 @@ std::shared_ptr<QueryTable> DataUtilities::removeDummies(const std::shared_ptr<Q
 
     for(size_t i = 0; i < input->getTupleCount(); ++i) {
         QueryTuple *tuple = input->getTuplePtr(i);
-        if(!tuple->getDummyTag().getValue<bool>()) {
+        if(!tuple->getDummyTag()->getValue<bool>()) {
             output->putTuple(writeCursor, *tuple);
             ++writeCursor;
         }

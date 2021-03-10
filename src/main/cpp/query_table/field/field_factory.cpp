@@ -1,16 +1,6 @@
 #include "field_factory.h"
 
-#include "query_table/field/secure_bool_field.h"
-#include "query_table/field/bool_field.h"
-/*
-#include "query_table/field/secure_int_field.h"
-#include "query_table/field/int_field.h"
-#include "query_table/field/secure_long_field.h"
-#include "query_table/field/long_field.h"
-#include "query_table/field/secure_float_field.h"
-#include "query_table/field/float_field.h"
-#include "query_table/field/secure_string_field.h"
-#include "query_table/field/string_field.h"*/
+
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include <util/type_utilities.h>
 
@@ -18,37 +8,37 @@
 using namespace vaultdb;
 
 
-Field FieldFactory::getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src) {
+Field * FieldFactory::getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src) {
     switch (type) {
         case FieldType::BOOL: {
             bool boolValue = (src == "1") ? true : false;
-            return Field::createBool(boolValue);
+            return new BoolField(boolValue);
         }
 
-        case FieldType::INT32: {
+        case FieldType::INT: {
             int32_t intValue = std::atoi(src.c_str());
-            return Field::createInt32( intValue);
+            return new IntField(intValue);
         }
-        case FieldType::INT64: {
+        case FieldType::LONG: {
             int64_t intValue = std::atol(src.c_str());
-            return Field::createInt64(intValue);
+            return new LongField(intValue);
         }
         case FieldType::STRING: {
             std::string fieldStr = src;
             while(fieldStr.length() < strLength) {
                 fieldStr += " ";
             }
-            return Field::createString(fieldStr);
+            return new StringField(fieldStr);
         }
-        case FieldType::FLOAT32: {
+        case FieldType::FLOAT: {
             float_t floatValue = std::atof(src.c_str());
-            return Field::createFloat32(floatValue);
+            return new FloatField(floatValue);
         }
         case FieldType::DATE: {
             boost::gregorian::date date(boost::gregorian::from_string(src));
             boost::gregorian::date epochStart(1970, 1, 1);
             int64_t epochTime = (date - epochStart).days() * 24 * 3600;
-            return Field::createInt64(epochTime);
+            return new FloatField(epochTime);
         }
         default:
             throw std::invalid_argument("Unsupported type for string decoding: " + TypeUtilities::getTypeString(type) + "\n");
@@ -57,6 +47,86 @@ Field FieldFactory::getFieldFromString(const FieldType &type, const size_t &strL
     };
 }
 
+
+// strings must be padded to max field length before calling this
+// In other words: field length == string length
+
+Field *FieldFactory::deepCopy(const Field *srcField) {
+    switch(srcField->getType()) {
+        case FieldType::BOOL:
+            return new BoolField(*srcField);
+        case FieldType::INT:
+            return new IntField(*srcField);
+        case FieldType::LONG:
+            return new LongField(*srcField);
+        case FieldType::FLOAT:
+            return new FloatField(*srcField);
+        case FieldType::STRING:
+            return new StringField(*srcField);
+        case FieldType::SECURE_BOOL:
+            return new SecureBoolField(*srcField);
+        case FieldType::SECURE_INT:
+            return new SecureIntField(*srcField);
+        case FieldType::SECURE_LONG:
+            return new SecureLongField(*srcField);
+        case FieldType::SECURE_FLOAT:
+            return new SecureFloatField(*srcField);
+        case FieldType::SECURE_STRING:
+            return new SecureStringField(*srcField);
+
+        default: // invalid
+            throw;
+    }
+}
+
+void FieldFactory::deleteHelper(Field *srcField) {
+std::cout << "deleting a " << TypeUtilities::getTypeString(srcField->getType()) << std::endl;
+
+    switch(srcField->getType()) {
+        case FieldType::BOOL:
+            delete (BoolField *) srcField;
+            break;
+        case FieldType::INT:
+            delete (IntField *) srcField;
+            break;
+        case FieldType::LONG:
+            delete (LongField *)srcField;
+            break;
+
+        case FieldType::FLOAT:
+            delete (FloatField *)srcField;
+            break;
+
+        case FieldType::STRING:
+            delete (StringField *) srcField;
+            break;
+
+        case FieldType::SECURE_BOOL:
+            delete (SecureBoolField *)srcField;
+            break;
+
+        case FieldType::SECURE_INT:
+            delete (SecureIntField *)srcField;
+            break;
+
+        case FieldType::SECURE_LONG:
+            delete (SecureLongField *)srcField;
+            break;
+
+        case FieldType::SECURE_FLOAT:
+            delete (SecureFloatField *)srcField;
+            break;
+
+        case FieldType::SECURE_STRING:
+            delete (SecureStringField *) srcField;
+            break;
+
+
+        default: // invalid
+            throw;
+    }
+
+}
 
 
 

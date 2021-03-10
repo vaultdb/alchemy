@@ -1,5 +1,15 @@
 #include "field.h"
 #include "util/utilities.h"
+#include "secure_bool_field.h"
+#include "secure_int_field.h"
+#include "secure_long_field.h"
+#include "secure_float_field.h"
+#include "secure_string_field.h"
+#include "bool_field.h"
+#include "int_field.h"
+#include "long_field.h"
+#include "float_field.h"
+#include "string_field.h"
 
 using namespace vaultdb;
 
@@ -9,14 +19,12 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const Field &aValue) {
 
 Field::Field(const FieldType &typeId, const int &strLength) : type_(typeId) {
 
-    allocated_size_ = FieldUtils::getPhysicalSize(typeId);
-
     // need strLen to be initialized for string fields
     if(typeId == FieldType::STRING || typeId == FieldType::SECURE_STRING) {
         assert(strLength >= 1);
-        allocated_size_ *= strLength;
     }
 
+    allocated_size_ = FieldUtils::getPhysicalSize(typeId, strLength);
 
     managed_data_ = std::unique_ptr<std::byte[]>(new std::byte[allocated_size_]);
     data_ = managed_data_.get();
@@ -56,10 +64,6 @@ size_t Field::getSize() const {
     return allocated_size_;
 }
 
-template<typename T>
-T Field::getValue() const {
-    return *(reinterpret_cast<T*>(data_));
-}
 
 std::string Field::getValue() const {
     if(type_ == FieldType::STRING) {
@@ -69,10 +73,6 @@ std::string Field::getValue() const {
         return toString();
 }
 
-template<typename T>
-void Field::setValue(const T &src) {
-    *(reinterpret_cast<T*>(data_)) = src;
-}
 
 void Field::setValue(const string &src) {
 
@@ -107,69 +107,6 @@ bool Field::operator!=(const Field &cmp) const {
     return !(*this == cmp);
 }
 
-Field Field::createBool(const bool &value) {
-    Field f(FieldType::BOOL);
-    f.setValue<bool>(value);
-    return f;
-}
-
-Field Field::createInt32(const int32_t &value) {
-    Field f(FieldType::INT32);
-    f.setValue<int32_t>(value);
-    return f;
-}
-
-Field Field::createInt64(const int64_t &value) {
-    Field f(FieldType::INT64);
-    f.setValue<int64_t>(value);
-    return f;
-}
-
-Field Field::createFloat32(const float_t &value) {
-    Field f(FieldType::FLOAT32);
-    f.setValue<float_t>(value);
-    return f;
-}
-
-Field Field::createString(const string &value) {
-    Field f(FieldType::STRING, value.length());
-    f.setValue(value);
-    return f;
-}
-
-Field Field::createSecureBool(const emp::Bit &value) {
-    Field f(FieldType::SECURE_BOOL);
-    f.setValue<emp::Bit>(value);
-    return f;
-}
-
-Field Field::createSecureFloat(const emp::Float &value) {
-    Field f(FieldType::SECURE_FLOAT32);
-    f.setValue<emp::Float>(value);
-    return f;
-}
-
-Field Field::createSecureInt32(const emp::Integer &value) {
-    assert(value.bits.size() == 32);
-
-    Field f(FieldType::SECURE_INT32);
-    f.setValue<emp::Integer>(value);
-    return f;
-}
-
-Field Field::createSecureInt64(const emp::Integer &value) {
-    assert(value.bits.size() == 64);
-
-    Field f(FieldType::SECURE_INT64);
-    f.setValue<emp::Integer>(value);
-    return f;
-}
-
-Field Field::createSecureString(const emp::Integer &value) {
-    Field f(FieldType::SECURE_STRING);
-    f.setValue<emp::Integer>(value);
-    return f;
-}
 
 void Field::compareAndSwap(const bool &choice, Field &lhs, Field &rhs) {
     if(choice) {
@@ -184,12 +121,12 @@ void Field::compareAndSwap(const emp::Bit &choice, const Field &lhs, const Field
         case FieldType::SECURE_BOOL:
             emp::swap(choice, reinterpret_cast<emp::Bit &>(*lhs.data_), reinterpret_cast<emp::Bit&>(*rhs.data_) );
             return;
-        case FieldType::SECURE_INT32:
-        case FieldType::SECURE_INT64:
+        case FieldType::SECURE_INT:
+        case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
             emp::swap(choice, reinterpret_cast<emp::Integer &>(*lhs.data_), reinterpret_cast<emp::Integer&>(*rhs.data_) );
             return;
-        case FieldType::SECURE_FLOAT32:
+        case FieldType::SECURE_FLOAT:
             emp::swap(choice, reinterpret_cast<emp::Float &>(*lhs.data_), reinterpret_cast<emp::Float &>(*rhs.data_) );
             return;
         default:
@@ -200,50 +137,38 @@ void Field::compareAndSwap(const emp::Bit &choice, const Field &lhs, const Field
 
 }
 
-// need to call getValue<T> on each type we use at least once or else it doesn't show up in symbol table
-Field Field::reveal(const int &party) const {
+Field * Field::reveal(const int &party) const {
     switch (type_) {
         case FieldType::SECURE_BOOL: {
-            emp::Bit src = getValue<emp::Bit>();
-            Field ret(FieldType::BOOL);
-            ret.setValue<bool>(src.reveal(party));
-            return ret;
+            auto src = getValue<emp::Bit>();
+            return new BoolField(src.reveal(party));
         }
-        case FieldType::SECURE_INT32: {
-            emp::Integer src = getValue<emp::Integer>();
+        case FieldType::SECURE_INT: {
+            auto src = getValue<emp::Integer>();
             assert(src.size() == 32);
-
-            Field ret(FieldType::INT32);
-            ret.setValue<int32_t>(src.reveal<int32_t>(party));
-            return ret;
+            return new IntField(src.reveal<int32_t>(party));
         }
-        case FieldType::SECURE_INT64: {
-            emp::Integer src = getValue<emp::Integer>();
+        case FieldType::SECURE_LONG: {
+            auto src = getValue<emp::Integer>();
             assert(src.size() == 64);
-            Field ret(FieldType::INT64);
-            ret.setValue<int64_t>(src.reveal<int64_t>(party));
-            return ret;
+            return new LongField(src.reveal<int64_t>(party));
         }
-        case FieldType::SECURE_FLOAT32: {
-            emp::Float src = getValue<emp::Float>();
-            Field ret(FieldType::FLOAT32);
-            ret.setValue<float_t>(src.reveal<double>(party));
-            return ret;
+        case FieldType::SECURE_FLOAT: {
+            auto src = getValue<emp::Float>();
+            return new FloatField(src.reveal<double>(party));
         }
         case FieldType::SECURE_STRING: {
-            emp::Integer src = getValue<emp::Integer>();
+            auto src = getValue<emp::Integer>();
             std::string revealed = revealString(src, party);
-            Field ret = createString(revealed);
-            return ret;
+            return new StringField(revealed);
         }
 
-            // already in the clear
+            // already in the clear, throw so we don't lose the impl object (e.g., IntField)
         case FieldType::BOOL:
-        case FieldType::INT32:
-        case FieldType::INT64:
-        case FieldType::FLOAT32:
+        case FieldType::INT:
+        case FieldType::LONG:
+        case FieldType::FLOAT:
         case FieldType::STRING:
-            return Field(*this);
         default:
             throw;
 
@@ -256,28 +181,28 @@ std::string Field::toString() const {
             bool res = getValue<bool>();
             return res ? "true" : "false";
         }
-        case FieldType::INT32: {
-            int32_t res = getValue<int32_t>();
+        case FieldType::INT: {
+            auto res = getValue<int32_t>();
             return std::to_string(res);
         }
-        case FieldType::INT64: {
-            int64_t res = getValue<int64_t>();
+        case FieldType::LONG: {
+            auto res = getValue<int64_t>();
             return std::to_string(res);
         }
-        case FieldType::FLOAT32: {
-            float_t res = getValue<float_t>();
+        case FieldType::FLOAT: {
+            auto res = getValue<float_t>();
             return std::to_string(res);
         }
         case FieldType::STRING: {
-            return getValue();
+            return std::string((char *) data_);
         }
         case FieldType::SECURE_BOOL:
             return "SECRET BIT";
-        case FieldType::SECURE_INT32:
+        case FieldType::SECURE_INT:
             return "SECRET INT32";
-        case FieldType::SECURE_INT64:
+        case FieldType::SECURE_LONG:
             return "SECURE INT64";
-        case FieldType::SECURE_FLOAT32:
+        case FieldType::SECURE_FLOAT:
             return "SECURE FLOAT";
         case FieldType::SECURE_STRING:
             return "SECURE STRING";
@@ -287,7 +212,7 @@ std::string Field::toString() const {
 }
 
 void Field::serialize(int8_t *dst) const {
-    memcpy(dst, data_, allocated_size_);
+        memcpy(dst, data_, allocated_size_);
 }
 
 Field Field::deserialize(const QueryFieldDesc &fieldDesc, const int8_t *src) {
@@ -297,6 +222,7 @@ Field Field::deserialize(const QueryFieldDesc &fieldDesc, const int8_t *src) {
 Field Field::deserialize(const FieldType & type, const int & strLength, const int8_t *src) {
     Field f(type, strLength);
     memcpy(f.data_, src, f.allocated_size_);
+
     return f;
 }
 
@@ -324,3 +250,29 @@ std::string Field::revealString(const emp::Integer &src, const int &party) {
     return payload;
 
 }
+
+Field * Field::secretShare(const Field *field, const FieldType &type, const size_t &strLength, const int &myParty,
+                           const int &dstParty) {
+    switch(type) {
+        case FieldType::BOOL:
+            return new SecureBoolField (field, myParty, dstParty);
+        case FieldType::INT:
+            return new  SecureIntField(field, myParty, dstParty);
+        case FieldType::LONG:
+            return new  SecureLongField(field, myParty, dstParty);
+        case FieldType::FLOAT:
+            return new  SecureFloatField(field, myParty, dstParty);
+        case FieldType::STRING:
+            return new SecureStringField(field, strLength, myParty, dstParty);
+        default:// may want to throw here
+            return new Field(*field);
+
+    }
+}
+
+void Field::copy(const Field &src) {
+    this->type_ = src.type_;
+    this->allocated_size_ = src.allocated_size_;
+    std::memcpy(data_, src.data_, allocated_size_);
+}
+

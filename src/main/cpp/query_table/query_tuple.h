@@ -15,8 +15,8 @@ namespace vaultdb {
     class QueryTuple {
     private:
 
-        Field dummy_tag_;
-        vector<Field>  fields_;
+        std::unique_ptr<Field> dummy_tag_;
+        vector<std::unique_ptr<Field> >  fields_;
 
 
     public:
@@ -30,11 +30,11 @@ namespace vaultdb {
 
         inline bool  isEncrypted() const;
 
-      const Field getField(const int &ordinal) const;
+      const Field * getField(const int &ordinal) const;
       void putField(const int &idx, const Field &f);
       void setDummyTag(const Field &v);
 
-        const Field getDummyTag() const;
+        const Field * getDummyTag() const;
 
 
         QueryTuple reveal(const int &empParty = PUBLIC) const;
@@ -52,8 +52,10 @@ namespace vaultdb {
 
         static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const emp::Bit & cmp);
         static QueryTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
-        //static QueryTuple deserialize(const QuerySchema &schema, Bit *tupleBits);
 
+
+        static QueryTuple
+        secretShare(const QueryTuple *srcTuple, const QuerySchema &schema, const int &myParty, const int &dstParty);
     };
     std::ostream &operator<<(std::ostream &os, const QueryTuple &tuple);
 

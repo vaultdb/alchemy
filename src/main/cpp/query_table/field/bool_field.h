@@ -12,10 +12,7 @@ namespace vaultdb {
 
     // BoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class BoolField : public FieldInstance<BoolField, BoolField> {
-    protected:
-
-        Field field_; // points to Field.data
+    class BoolField : public FieldInstance<BoolField, BoolField>, public Field {
 
     public:
 
@@ -26,14 +23,14 @@ namespace vaultdb {
 
         explicit BoolField(const bool & src);
         explicit BoolField(const int8_t * src);
-
+        ~BoolField() = default;
 
         // constructor for decryption
         BoolField(const emp::Bit & src, const int & party);
 
 
-        Field getBaseField() const { return field_; }
-        bool getPayload() const { return field_.getValue<bool>(); }
+     
+        bool getPayload() const { return this->getValue<bool>(); }
 
         BoolField& operator=(const BoolField& other);
 
@@ -45,7 +42,7 @@ namespace vaultdb {
         BoolField  operator%(const BoolField &rhs) const  { throw; }
 
 
-        BoolField negate() const { return BoolField(!(field_.getValue<bool>())); }
+        BoolField negate() const { return BoolField(!(getPayload())); }
 
 
 
@@ -59,9 +56,9 @@ namespace vaultdb {
 
 
         // bitwise ops
-        BoolField  operator&(const BoolField &right) const { return  BoolField((field_.getValue<bool>()) & (right.field_.getValue<bool>())); }
-        BoolField  operator^(const BoolField &right) const { return  BoolField((field_.getValue<bool>()) ^ (right.field_.getValue<bool>())); }
-        BoolField  operator|(const BoolField &right) const { return  BoolField((field_.getValue<bool>()) | (right.field_.getValue<bool>())); }
+        BoolField  operator&(const BoolField &right) const { return  BoolField((getPayload()) & (right.getPayload())); }
+        BoolField  operator^(const BoolField &right) const { return  BoolField((getPayload()) ^ (right.getPayload())); }
+        BoolField  operator|(const BoolField &right) const { return  BoolField((getPayload()) | (right.getPayload())); }
 
 
     };

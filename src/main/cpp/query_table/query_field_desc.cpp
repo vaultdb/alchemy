@@ -70,8 +70,8 @@ bool QueryFieldDesc::operator==(const QueryFieldDesc& other) {
 
     // if types are the same, or int32_t --> date
     if (!(this->getType() == other.getType() ||
-          (this->getType() == FieldType::INT64 && other.getType() == FieldType::DATE) ||
-          (other.getType() == FieldType::INT64 && this->getType() == FieldType::DATE))) {
+          (this->getType() == FieldType::LONG && other.getType() == FieldType::DATE) ||
+          (other.getType() == FieldType::LONG && this->getType() == FieldType::DATE))) {
         return false;
     }
 

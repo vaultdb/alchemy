@@ -14,30 +14,24 @@ namespace vaultdb {
 
     // SecureBoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class SecureBoolField : public FieldInstance<SecureBoolField, SecureBoolField> {
-    protected:
-
-        Field field_;
+    class SecureBoolField : public FieldInstance<SecureBoolField, SecureBoolField>, public Field  {
 
     public:
 
         SecureBoolField() = default;
-        explicit SecureBoolField(const Field & srcField)   : field_(srcField) {}
+        explicit SecureBoolField(const Field & srcField);
 
         SecureBoolField(const SecureBoolField & src);
 
-        explicit SecureBoolField(const emp::Bit & src)  {
-            field_ = Field::createSecureBool(src);
-        }
+        explicit SecureBoolField(const emp::Bit & src);
 
         explicit SecureBoolField(const int8_t * src);
 
         // constructor for encrypting a bit
-        SecureBoolField(const bool & src, const int & myParty, const int & dstParty);
+        SecureBoolField(const Field *src, const int & myParty, const int & dstParty);
+        ~SecureBoolField() = default;
 
-
-        emp::Bit getPayload() const { return field_.getValue<emp::Bit>(); }
-        Field getBaseField() const { return field_; }
+        emp::Bit getPayload() const { return getValue<emp::Bit>(); }
 
         SecureBoolField& operator=(const SecureBoolField& other);
 
@@ -75,4 +69,4 @@ namespace vaultdb {
     std::ostream &operator<<(std::ostream &os, const SecureBoolField &aValue);
 
 }
-#endif //BOOL_FIELD_H
+#endif //SECURE_BOOL_FIELD_H

@@ -11,14 +11,14 @@ namespace vaultdb {
         INVALID = 0,
         BOOL,
         DATE, // DATE is just a stand-in for long
-        INT32,
-        INT64,
-        FLOAT32,
+        INT,
+        LONG,
+        FLOAT,
         STRING,
-        SECURE_INT32,
-        SECURE_INT64,
+        SECURE_INT,
+        SECURE_LONG,
         SECURE_BOOL,
-        SECURE_FLOAT32,
+        SECURE_FLOAT,
         SECURE_STRING, // need all types to have encrypted counterpart so that we can translate them back to query tables when we decrypt the results
     };
 
@@ -27,31 +27,31 @@ namespace vaultdb {
     // TODO: give this its own class
     class FieldUtils {
     public:
-        static size_t getPhysicalSize(const FieldType &id) {
+        static size_t getPhysicalSize(const FieldType &id, const size_t & strLength = 0) {
             switch (id) {
                 case FieldType::SECURE_BOOL:
                     return sizeof(emp::Bit);
                 case FieldType::BOOL:
                     return sizeof(bool); // stored size when we serialize it
-                case FieldType::SECURE_FLOAT32:
+                case FieldType::SECURE_FLOAT:
                     return sizeof(emp::Float);
-                case FieldType::SECURE_INT32:
+                case FieldType::SECURE_INT:
                     return sizeof(emp::Integer(32, 0));
-                case FieldType::INT32:
+                case FieldType::INT:
                     return sizeof(int32_t);
-                case FieldType::FLOAT32:
+                case FieldType::FLOAT:
                     return sizeof(float_t);
-                case FieldType::SECURE_INT64:
+                case FieldType::SECURE_LONG:
                     return sizeof(emp::Integer(64, 0));
 
-                case FieldType::INT64:
+                case FieldType::LONG:
                     return sizeof(int64_t);
 
                 case FieldType::SECURE_STRING:
-                    return sizeof(emp::Integer(8, 0));
-                case FieldType::STRING: // to be multiplied by length in schema for true field size
-                    return sizeof(std::string("0"));
-
+                    return sizeof(emp::Integer(8*strLength, 0));
+                case FieldType::STRING: {
+                    return sizeof(std::string(strLength, '0'));
+                }
                 case FieldType::INVALID:
                 default: // unsupported type
                     throw;

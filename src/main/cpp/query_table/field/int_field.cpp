@@ -4,34 +4,33 @@
 using namespace vaultdb;
 
 std::ostream &operator<<(std::ostream &os, const IntField &aValue) {
-    return os << aValue.getBaseField();
+    return os << aValue.toString();
 }
 
 
-IntField::IntField(const Field &srcField) : field_(srcField) { }
+IntField::IntField(const Field &srcField) : Field(FieldType::INT) {
+    setValue(srcField.getValue<int32_t>());
 
-IntField::IntField(const IntField &src) {
-    field_ =  Field(src.getBaseField());
 }
 
-IntField::IntField(const int32_t &src) {
-    field_ = Field::createInt32(src);
-}
+IntField::IntField(const IntField &src) : Field(src) { }
 
-
-IntField::IntField(const int8_t *src) {
-    field_ = Field::deserialize(FieldType::INT32, 0, src);
+IntField::IntField(const int32_t &src) : Field(FieldType::INT){
+   setValue(src);
 }
 
 
-IntField::IntField(const emp::Integer &src, const int &party) {
+IntField::IntField(const int8_t *src) :Field(Field::deserialize(FieldType::INT, 0, src)) { }
+
+
+IntField::IntField(const emp::Integer &src, const int &party) : Field(FieldType::INT){
     int32_t revealed = src.reveal<int32_t>(party);
-    field_ = Field::createInt32(revealed);
+    setValue<int32_t>(revealed);
 }
 
 IntField &IntField::operator=(const IntField &other) {
     if(this == &other) return *this;
-    this->field_ = Field(other.getBaseField());
+    copy(other);
     return *this;
 }
 
@@ -41,7 +40,7 @@ BoolField IntField::operator>=(const IntField &cmp) const {
 }
 
 BoolField IntField::operator==(const IntField &cmp) const {
-    bool res = (field_.getValue<int32_t>()) == (cmp.getBaseField().getValue<int32_t>());
+    bool res = (getPayload()) == (getPayload());
     return  BoolField(res);
 }
 

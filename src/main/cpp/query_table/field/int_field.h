@@ -13,14 +13,12 @@ namespace vaultdb {
 
     // BoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class IntField : public FieldInstance<IntField, BoolField> {
-    protected:
-
-        Field field_; // points to Field.data
+    class IntField : public FieldInstance<IntField, BoolField>, public Field {
 
     public:
 
         IntField() = default;
+        ~IntField() = default;
         explicit IntField(const Field & srcField);
 
         IntField(const IntField & src);
@@ -33,8 +31,7 @@ namespace vaultdb {
         IntField(const emp::Integer & src, const int & party);
 
 
-        Field getBaseField() const { return field_; }
-        int32_t getPayload() const { return field_.getValue<int32_t>(); }
+        int32_t getPayload() const { return getValue<int32_t>(); }
 
         IntField& operator=(const IntField& other);
 
@@ -60,9 +57,9 @@ namespace vaultdb {
 
 
         // bitwise ops
-        IntField  operator&(const IntField &right) const { return  IntField((field_.getValue<int32_t>()) & (right.field_.getValue<int32_t>())); }
-        IntField  operator^(const IntField &right) const { return  IntField((field_.getValue<int32_t>()) ^ (right.field_.getValue<int32_t>())); }
-        IntField  operator|(const IntField &right) const { return  IntField((field_.getValue<int32_t>()) | (right.field_.getValue<int32_t>())); }
+        IntField  operator&(const IntField &right) const { return  IntField(getPayload() & (right.getPayload())); }
+        IntField  operator^(const IntField &right) const { return  IntField((getPayload() ^ (right.getPayload()))); }
+        IntField  operator|(const IntField &right) const { return  IntField((getPayload() | (right.getPayload()))); }
 
 
     };
@@ -70,4 +67,4 @@ namespace vaultdb {
     std::ostream &operator<<(std::ostream &os, const IntField &aValue);
 
 }
-#endif //BOOL_FIELD_H
+#endif //INT_FIELD_H

@@ -19,7 +19,7 @@ public:
 
 private:
     QueryTuple getTuple(pqxx::row row, bool hasDummyTag);
-    Field getField(pqxx::field src);
+     Field * getField(pqxx::field src);
     std::unique_ptr<QuerySchema> getSchema(pqxx::result input, bool hasDummyTag);
 
      std::string srcTable;

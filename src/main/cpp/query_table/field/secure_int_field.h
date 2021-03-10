@@ -13,25 +13,22 @@ namespace vaultdb {
 
     // BoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class SecureIntField : public FieldInstance<SecureIntField, SecureBoolField> {
-    protected:
-
-        Field field_; // points to Field.data
+    class SecureIntField : public FieldInstance<SecureIntField, SecureBoolField>, public Field  {
 
     public:
 
         SecureIntField() = default;
+        ~SecureIntField() = default;
         explicit SecureIntField(const Field & srcField);
 
         SecureIntField(const SecureIntField & src);
         SecureIntField(const emp::Integer & src);
 
-        explicit SecureIntField(const int32_t & src, const int & myParty, const int & dstParty);
+        explicit SecureIntField(const Field *src, const int & myParty, const int & dstParty);
         explicit SecureIntField(const int8_t * src);
 
 
-        Field getBaseField() const { return field_; }
-        emp::Integer getPayload() const { return field_.getValue<emp::Integer>(); }
+        emp::Integer getPayload() const;
 
         SecureIntField& operator=(const SecureIntField& other);
 

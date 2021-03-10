@@ -1,16 +1,16 @@
 #include "PsqlDataProvider.h"
 #include "pq_oid_defs.h"
-#include "util/type_utilities.h"
 #include <time.h>
+#include <typeinfo>
 
 #include <chrono>
 #include "query_table/field/field.h"
-/*#include "query_table/field/bool_field.h"
+#include "query_table/field/bool_field.h"
 #include "query_table/field/int_field.h"
 #include "query_table/field/long_field.h"
 #include "query_table/field/float_field.h"
-#include "query_table/field/string_field.h"*/
-
+#include "query_table/field/string_field.h"
+#include "query_table/field/field_factory.h"
 
 
 //typedef std::chrono::steady_clock::time_point time_point;
@@ -160,36 +160,38 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         for (int i=0; i < colCount; i++) {
             const pqxx::field srcField = row[i];
 
-           Field  parsedField = getField(srcField);
-            dstTuple.putField(i, parsedField);
+           Field  *parsedField = getField(srcField);
+            dstTuple.putField(i, *parsedField);
+            delete parsedField;
         }
 
         if(hasDummyTag) {
 
-                Field parsedField = getField(row[colCount]); // get the last col
-                dstTuple.setDummyTag(parsedField);
+                Field *parsedField = getField(row[colCount]); // get the last col
+                dstTuple.setDummyTag(*parsedField);
+                delete parsedField;
         }
 
     return dstTuple;
     }
 
 
-    Field PsqlDataProvider::getField(pqxx::field src) {
+    Field * PsqlDataProvider::getField(pqxx::field src) {
 
         int ordinal = src.num();
         pqxx::oid oid = src.type();
         FieldType colType = getFieldTypeFromOid(oid);
 
         switch (colType) {
-            case FieldType::INT32:
+            case FieldType::INT:
             {
-                int32_t intVal = src.as<int32_t>();
-                return Field::createInt32(intVal);
+                auto intVal = src.as<int32_t>();
+                return new IntField(intVal);
             }
-            case FieldType::INT64:
+            case FieldType::LONG:
             {
                 int64_t intVal = src.as<int64_t>();
-                return Field::createInt64(intVal);
+                return new LongField(intVal);
             }
 
            case FieldType::DATE:
@@ -198,7 +200,7 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                 std::tm timeStruct = {};
                 strptime(dateStr.c_str(), "%Y-%m-%d", &timeStruct);
                 int64_t epoch = mktime(&timeStruct) - 21600; // date time function is 6 hours off from how psql does it, TODO: track this down, probably a timezone problem
-                return Field::createInt64(epoch);
+                return new LongField(epoch);
 
                 /*std::chrono::steady_clock::time_point timePoint = src.as<std::chrono::steady_clock::time_point>();
                 int64_t epoch = std::chrono::duration_cast<std::chrono::seconds>(
@@ -210,12 +212,12 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
             case FieldType::BOOL:
             {
                 bool boolVal = src.as<bool>();
-                return Field::createBool(boolVal);
+                return new BoolField(boolVal);
             }
-            case FieldType::FLOAT32:
+            case FieldType::FLOAT:
             {
                 float floatVal = src.as<float>();
-                return Field::createFloat32(floatVal);
+                return new FloatField(floatVal);
             }
 
             case FieldType::STRING:
@@ -227,7 +229,7 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                     stringVal += " ";
                 }
 
-                return Field::createString(stringVal);
+                return new StringField(stringVal);
             }
             default:
                 throw std::invalid_argument("Unsupported column type " + std::to_string(oid));
