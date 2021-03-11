@@ -3,7 +3,9 @@
 #include <stdexcept>
 #include <emp-tool/emp-tool.h>
 
+
 #include <query_table/field/field.h>
+#include <query_table/field/int_field.h>
 
 using namespace emp;
 using namespace vaultdb;
@@ -28,13 +30,11 @@ protected:
 
 TEST_F(ValueExpressionTest, test_int32) {
 
-    Field a = Field::createInt32((int32_t) 5);
-    Field b = Field::createInt32((int32_t) 5);
-
-    IntField b((int32_t) 10);
+    IntField a(5);
+    IntField b(10);
 
     IntField sum = a + b;
-    ASSERT_EQ(sum.primitive(), 15);
+    ASSERT_EQ(sum.getPayload(), 15);
 
 }
 
@@ -42,11 +42,11 @@ TEST_F(ValueExpressionTest, test_int32) {
 
 TEST_F(ValueExpressionTest, test_int32_comparator) {
 
-    IntField a((int32_t) 5);
-    IntField b((int32_t) 10);
+    IntField a(5);
+    IntField b(10);
 
-    BoolField gt = &(a < b);
-    ASSERT_EQ(gt.primitive(), true);
+    BoolField gt = (a > b);
+    ASSERT_EQ(gt.getPayload(), false);
 
 }
 
@@ -64,13 +64,13 @@ TEST_F(ValueExpressionTest, test_int32_expr) {
     IntField c((int32_t) 25);
 
     IntField sum = a  + b;
-    BoolField compare = &(sum < c);
+    BoolField compare = (sum < c);
 
 
 
 
-    ASSERT_EQ(sum.primitive(), 15);
-    ASSERT_EQ(compare.primitive(), true);
+    ASSERT_EQ(sum.getPayload(), 15);
+    ASSERT_EQ(compare.getPayload(), true);
 
 }
 

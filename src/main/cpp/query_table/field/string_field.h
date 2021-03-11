@@ -45,7 +45,8 @@ namespace vaultdb {
         StringField  operator%(const StringField &rhs) const  { throw; }
 
 
-        StringField negate() const { throw; }
+        // only for bool types
+        BoolField negate() const { throw; }
 
 
 

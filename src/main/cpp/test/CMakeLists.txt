@@ -68,7 +68,7 @@ endmacro()
 #package_add_test(tpch_q1_test tpch_q1_test.cpp)
 #non-private tests
 package_add_test(field_instance_test field_instance_test.cpp)
-#package_add_test(value_expression_test value_expression_test.cpp)
+package_add_test(value_expression_test value_expression_test.cpp)
 package_add_test(csv_reader_test csv_reader_test.cpp)
 #package_add_test(filter_test filter_test.cpp)
 #package_add_test(sort_test sort_test.cpp)

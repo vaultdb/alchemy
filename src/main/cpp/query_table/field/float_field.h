@@ -42,7 +42,8 @@ namespace vaultdb {
         FloatField  operator%(const FloatField &rhs) const  {    throw;  }
 
 
-        FloatField negate() const { throw; }
+        // only for bool types
+        BoolField negate() const { throw; }
 
 
 

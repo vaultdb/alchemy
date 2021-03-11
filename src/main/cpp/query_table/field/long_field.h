@@ -44,7 +44,8 @@ namespace vaultdb {
         LongField  operator%(const LongField &rhs) const  { return LongField(getPayload() % rhs.getPayload()); }
 
 
-        LongField negate() const { return LongField(!(getPayload())); }
+        // only for bool types
+        BoolField negate() const { throw; }
 
 
 

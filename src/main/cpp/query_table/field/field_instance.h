@@ -31,20 +31,28 @@ namespace vaultdb {
 
 
 
-        virtual FieldInstance operator !() const  {
+        virtual B operator !() const  {
             return static_cast<T const &>(*this).negate();
         }
 
-         FieldInstance operator+(const FieldInstance &rhs) const  {  return static_cast<T const &>(*this) + static_cast<const T &>(rhs); }
-         FieldInstance operator-(const FieldInstance &rhs) const  {   return static_cast<const T &>(*this) - static_cast<T const &>(rhs); }
-         FieldInstance operator*(const FieldInstance &rhs) const  {   return static_cast<const T &>(*this) * static_cast<T const &>(rhs); }
-         FieldInstance operator/(const FieldInstance &rhs) const  {   return static_cast<const T &>(*this) / static_cast<T const &>(rhs); }
-         FieldInstance operator%(const FieldInstance&rhs) const  {   return static_cast<const T &>(*this) % static_cast<T const &>(rhs); }
+         T operator+(const T &rhs) const  {  return static_cast<T const &>(*this) + rhs; }
+         T operator-(const T &rhs) const  {   return static_cast<const T &>(*this) - rhs; }
+         T operator*(const T &rhs) const  {   return static_cast<const T &>(*this) * rhs; }
+         T operator/(const T &rhs) const  {   return static_cast<const T &>(*this) / rhs; }
+         T operator%(const T &rhs) const  {   return static_cast<const T &>(*this) % rhs; }
 
 
         virtual B  geq(const FieldInstance & rhs) const  { return static_cast<T const &>(*this) >= (static_cast<const T &>(rhs)); }
-
         virtual B equal(const FieldInstance & rhs) const  { return static_cast<T const &>(*this) == (static_cast<const T &>(rhs)); }
+
+        // based on emp::comaprable
+        virtual B operator>=(const FieldInstance & rhs) const { return static_cast<T const &>(*this).geq(static_cast<T const &>(rhs)); }
+        virtual B operator==(const FieldInstance & rhs) const { return static_cast<T const &>(*this).equal(static_cast<T const &>(rhs)); }
+        B operator<(const T& rhs) const { return !( (*static_cast<const T*>(this))>= rhs ); }
+        B operator<=(const T& rhs) const { return rhs >= *static_cast<const T*>(this); }
+        B operator>(const T& rhs) const { return !(rhs >= *static_cast<const T*>(this)); }
+        B operator==(const T& rhs) const { return static_cast<const T*>(this)->equal(rhs); }
+        B operator!=(const T& rhs) const { return !(*static_cast<const T*>(this) == rhs); }
 
         FieldInstance compareAndSwap(const FieldInstance & select, const FieldInstance & other)  const  {
             const B choiceBit = static_cast<B const &> (select);

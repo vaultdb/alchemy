@@ -43,7 +43,8 @@ namespace vaultdb {
         IntField  operator%(const IntField &rhs) const  { return IntField(getPayload() % rhs.getPayload()); }
 
 
-        IntField negate() const { return IntField(!(getPayload())); }
+        // only for bool types
+        BoolField negate() const { throw; }
 
 
 

@@ -41,7 +41,7 @@ namespace vaultdb {
 
 
         // not defined in EMP
-        SecureIntField negate() const { throw; }
+        SecureBoolField negate() const { throw; }
 
 
 

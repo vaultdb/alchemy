@@ -54,7 +54,7 @@ namespace vaultdb {
         SecureFloatField operator%(const SecureFloatField &rhs) const { throw; }
 
         // not defined in EMP
-        SecureFloatField negate() const { throw; }
+        SecureBoolField negate() const { throw; }
 
 
         SecureBoolField operator>=(const SecureFloatField &cmp) const;

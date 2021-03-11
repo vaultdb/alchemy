@@ -49,7 +49,7 @@ namespace vaultdb {
 
 
         // not defined in EMP
-        SecureStringField negate() const { throw; }
+        SecureBoolField negate() const { throw; }
 
 
         SecureBoolField operator>=(const SecureStringField &cmp) const;
