@@ -38,7 +38,7 @@ Field * FieldFactory::getFieldFromString(const FieldType &type, const size_t &st
             boost::gregorian::date date(boost::gregorian::from_string(src));
             boost::gregorian::date epochStart(1970, 1, 1);
             int64_t epochTime = (date - epochStart).days() * 24 * 3600;
-            return new FloatField(epochTime);
+            return new LongField(epochTime);
         }
         default:
             throw std::invalid_argument("Unsupported type for string decoding: " + TypeUtilities::getTypeString(type) + "\n");

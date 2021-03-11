@@ -118,6 +118,7 @@ TEST_F(CsvReaderTest, ordersTest) {
     std::unique_ptr<QueryTable> observed = CsvReader::readCsv(inputFile, csvSchema);
     observed->setSchema( expected->getSchema());
 
+    // RHS || observed is incorrect here.
     ASSERT_EQ(*expected, *observed);
 
 

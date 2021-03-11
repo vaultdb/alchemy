@@ -175,9 +175,11 @@ bool  QueryTuple::operator==(const QueryTuple &other) const {
 
 
     for(size_t i = 0; i < getFieldCount(); ++i) {
-        std::cout << "Comparing field: |" << *(fields_[i]) << "| len=" << fields_[i]->getSize()  <<  std::endl
-                  << " to              |" << *(other.fields_[i]) << "| len=" << fields_[i]->getSize()<<  std::endl;
-        if(*fields_[i] != *(other.fields_[i])) {  return false; }
+//        std::cout << "Comparing field: |" << *(fields_[i]) << "| len=" << fields_[i]->getSize()  <<  std::endl
+//                 << " to              |" << *(other.fields_[i]) << "| len=" << fields_[i]->getSize()<<  std::endl;
+        if(*fields_[i] != *(other.fields_[i])) {
+            return false;
+        }
     }
 
     return true;
