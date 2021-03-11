@@ -50,7 +50,7 @@ namespace vaultdb {
                 case FieldType::SECURE_STRING:
                     return sizeof(emp::Integer(8*strLength, 0));
                 case FieldType::STRING: {
-                    return sizeof(std::string(strLength, '0'));
+                    return sizeof(int8_t) * (strLength + 1); // just storing the character array, +1 for '\0'
                 }
                 case FieldType::INVALID:
                 default: // unsupported type

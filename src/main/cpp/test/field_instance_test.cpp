@@ -38,16 +38,16 @@ TEST_F(FieldInstanceTest, AssignmentTest) {
     Field *aField = &a;
     Field *bField = &b;
 
-    ASSERT_EQ(aField->getValue<bool>(), true);
-    ASSERT_EQ(bField->getValue<bool>(), false);
+    ASSERT_EQ(aField->getStringValue<bool>(), true);
+    ASSERT_EQ(bField->getStringValue<bool>(), false);
 
     *aField = *bField;
-    ASSERT_EQ(aField->getValue<bool>(), false);
+    ASSERT_EQ(aField->getStringValue<bool>(), false);
 
     BoolField c(*aField);
 
     ASSERT_EQ(c.getPayload(), false);
-    ASSERT_EQ(c.getValue<bool>(), false);
+    ASSERT_EQ(c.getStringValue<bool>(), false);
 
 
 
@@ -70,11 +70,11 @@ TEST_F(FieldInstanceTest, MultiTypeContainer) {
     ASSERT_EQ(fields[0]->getType(), FieldType::BOOL);
     ASSERT_EQ(fields[1]->getType(), FieldType::SECURE_BOOL);
 
-    ASSERT_EQ(fields[0]->getValue<bool>(), true);
-    ASSERT_EQ(fields[2]->getValue<bool>(), false);
+    ASSERT_EQ(fields[0]->getStringValue<bool>(), true);
+    ASSERT_EQ(fields[2]->getStringValue<bool>(), false);
 
-    ASSERT_EQ((fields[1]->getValue<emp::Bit>()).reveal(), true);
-    ASSERT_EQ((fields[3]->getValue<emp::Bit>()).reveal(), false);
+    ASSERT_EQ((fields[1]->getStringValue<emp::Bit>()).reveal(), true);
+    ASSERT_EQ((fields[3]->getStringValue<emp::Bit>()).reveal(), false);
 
 
 
@@ -85,7 +85,10 @@ TEST_F(FieldInstanceTest, MultiTypeContainer) {
 
 
 
-
+TEST_F(FieldInstanceTest, printLongTest) {
+    LongField l(830044800L);
+    ASSERT_EQ(l.toString(), "830044800");
+}
 
 TEST_F(FieldInstanceTest, encryptTest) {
   BoolField boolField(true);

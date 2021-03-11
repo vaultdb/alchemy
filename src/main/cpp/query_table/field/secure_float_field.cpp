@@ -21,7 +21,7 @@ SecureFloatField::SecureFloatField(const int8_t *src) : Field(Field::deserialize
 SecureFloatField::SecureFloatField(const Field *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_FLOAT){
     float_t toEncrypt = (myParty == dstParty) ? src->getValue<float_t>() : 0;
     emp::Float payload = emp::Float(toEncrypt, dstParty);
-    setValue<emp::Float>(payload);
+    setValue(payload);
 }
 
 

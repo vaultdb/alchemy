@@ -68,18 +68,18 @@ string QueryTuple::toString(const bool &showDummies) const {
     std::stringstream sstream;
 
     if(showDummies
-       ||    (!isEncrypted() && !(dummy_tag_->getValue<bool>())) // if it is real
+       || (!isEncrypted() && !(dummy_tag_->getValue<bool>())) // if it is real
            || isEncrypted()) { // or its status is unknown
-         sstream <<   "(" <<  fields_[0];
+         sstream <<   "(" <<  *fields_[0];
 
         for (size_t i = 1; i < getFieldCount(); ++i)
-            sstream << ", " << fields_[i];
+            sstream << ", " << *fields_[i];
 
         sstream << ")";
     }
 
     if(showDummies) {
-       sstream <<  " (dummy=" << dummy_tag_ <<  + ")";
+       sstream <<  " (dummy=" << *dummy_tag_ <<  + ")";
     }
 
     return sstream.str();
@@ -171,13 +171,13 @@ bool  QueryTuple::operator==(const QueryTuple &other) const {
 
     if(isEncrypted() != other.isEncrypted()) { return false; }
 
-    if(dummy_tag_ != other.dummy_tag_)  return false;
+    if(*dummy_tag_ != *(other.dummy_tag_))  return false;
 
 
     for(size_t i = 0; i < getFieldCount(); ++i) {
-        //std::cout << "Comparing field: |" << fields_[i] << "|" << std::endl
-        //         << " to              |" << other.fields_[i] << "|" <<  std::endl;
-        if(fields_[i] != other.fields_[i]) {  return false; }
+        std::cout << "Comparing field: |" << *(fields_[i]) << "| len=" << fields_[i]->getSize()  <<  std::endl
+                  << " to              |" << *(other.fields_[i]) << "| len=" << fields_[i]->getSize()<<  std::endl;
+        if(*fields_[i] != *(other.fields_[i])) {  return false; }
     }
 
     return true;

@@ -213,7 +213,7 @@ bool QueryTable::operator==(const QueryTable &other) const {
        //cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << endl;
 
         if(*thisTuple != *otherTuple) {
-            std::cout << "Comparing on idx " << i << " with "  << thisTuple->toString(true) << "\n           !=            " << otherTuple->toString(true) << endl;
+            std::cout << "Comparing on idx " << i << " with "  << thisTuple->toString(true) << "\n          !=            " << otherTuple->toString(true) << endl;
             std::cout << "    Failed to match!" << std::endl;
            return false;
         }

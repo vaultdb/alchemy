@@ -21,7 +21,7 @@ SecureStringField::SecureStringField(const int8_t *src, const size_t & strLength
 SecureStringField::SecureStringField(const Field *src, const size_t &strLength, const int &myParty,
                                      const int &dstParty) : Field(FieldType::SECURE_STRING, strLength){
     std::string input = (myParty == dstParty) ?
-                        src->getValue() :
+                        src->getStringValue() :
                         std::to_string(0);
 
     size_t stringByteCount = input.size();

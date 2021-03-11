@@ -1,7 +1,8 @@
 #include "secure_bool_field.h"
 
 vaultdb::SecureBoolField::SecureBoolField(const vaultdb::SecureBoolField &src) : Field(FieldType::SECURE_BOOL) {
-    setValue(src.getPayload());
+    emp::Bit p = src.getPayload();
+    setValue(p);
 }
 
 
@@ -9,7 +10,7 @@ vaultdb::SecureBoolField::SecureBoolField(const vaultdb::SecureBoolField &src) :
 vaultdb::SecureBoolField::SecureBoolField(const Field *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_BOOL){
     bool bit = (myParty == dstParty) ? src->getValue<bool>() : 0;
     emp::Bit payload = emp::Bit(bit, dstParty);
-    setValue<emp::Bit>(payload);
+    setValue(payload);
 }
 
 vaultdb::SecureBoolField::SecureBoolField(const int8_t *src) : Field(Field::deserialize(FieldType::SECURE_BOOL, 0, src)){

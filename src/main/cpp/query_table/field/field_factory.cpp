@@ -79,54 +79,6 @@ Field *FieldFactory::deepCopy(const Field *srcField) {
     }
 }
 
-void FieldFactory::deleteHelper(Field *srcField) {
-std::cout << "deleting a " << TypeUtilities::getTypeString(srcField->getType()) << std::endl;
-
-    switch(srcField->getType()) {
-        case FieldType::BOOL:
-            delete (BoolField *) srcField;
-            break;
-        case FieldType::INT:
-            delete (IntField *) srcField;
-            break;
-        case FieldType::LONG:
-            delete (LongField *)srcField;
-            break;
-
-        case FieldType::FLOAT:
-            delete (FloatField *)srcField;
-            break;
-
-        case FieldType::STRING:
-            delete (StringField *) srcField;
-            break;
-
-        case FieldType::SECURE_BOOL:
-            delete (SecureBoolField *)srcField;
-            break;
-
-        case FieldType::SECURE_INT:
-            delete (SecureIntField *)srcField;
-            break;
-
-        case FieldType::SECURE_LONG:
-            delete (SecureLongField *)srcField;
-            break;
-
-        case FieldType::SECURE_FLOAT:
-            delete (SecureFloatField *)srcField;
-            break;
-
-        case FieldType::SECURE_STRING:
-            delete (SecureStringField *) srcField;
-            break;
-
-
-        default: // invalid
-            throw;
-    }
-
-}
 
 
 

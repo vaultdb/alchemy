@@ -202,12 +202,6 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                 int64_t epoch = mktime(&timeStruct) - 21600; // date time function is 6 hours off from how psql does it, TODO: track this down, probably a timezone problem
                 return new LongField(epoch);
 
-                /*std::chrono::steady_clock::time_point timePoint = src.as<std::chrono::steady_clock::time_point>();
-                int64_t epoch = std::chrono::duration_cast<std::chrono::seconds>(
-                        timePoint.time_since_epoch()).count();
-               value = types::Value(colType, epoch);
-               result->setValue(&value);
-               break;*/
             }
             case FieldType::BOOL:
             {

@@ -14,7 +14,7 @@ StringField::StringField(const StringField &src) : Field(src) {
 }
 
 StringField::StringField(const std::string &src) :  Field(FieldType::STRING, src.length()){
-    setValue(src);
+    setStringValue(src);
 }
 
 
@@ -44,7 +44,7 @@ StringField::StringField(const emp::Integer &src, const int &party) : Field(Fiel
     std::string payload = string((char * ) decodedBytesVector.data());
     std::reverse(payload.begin(), payload.end());
 
-    setValue(payload);
+    setStringValue(payload);
     delete[] bools;
 }
 

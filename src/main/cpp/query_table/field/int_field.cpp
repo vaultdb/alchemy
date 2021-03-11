@@ -9,14 +9,17 @@ std::ostream &operator<<(std::ostream &os, const IntField &aValue) {
 
 
 IntField::IntField(const Field &srcField) : Field(FieldType::INT) {
-    setValue(srcField.getValue<int32_t>());
+    int32_t p = srcField.getValue<int32_t>();
+    setValue(p);
+
 
 }
 
 IntField::IntField(const IntField &src) : Field(src) { }
 
 IntField::IntField(const int32_t &src) : Field(FieldType::INT){
-   setValue(src);
+
+    setValue(src);
 }
 
 
@@ -25,7 +28,7 @@ IntField::IntField(const int8_t *src) :Field(Field::deserialize(FieldType::INT, 
 
 IntField::IntField(const emp::Integer &src, const int &party) : Field(FieldType::INT){
     int32_t revealed = src.reveal<int32_t>(party);
-    setValue<int32_t>(revealed);
+    setValue(revealed);
 }
 
 IntField &IntField::operator=(const IntField &other) {

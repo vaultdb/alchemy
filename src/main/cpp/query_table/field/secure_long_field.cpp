@@ -21,7 +21,7 @@ SecureLongField::SecureLongField(const int8_t *src) : Field(Field::deserialize(F
 SecureLongField::SecureLongField(const Field *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_LONG) {
     int64_t toEncrypt = (myParty == dstParty) ? src->getValue<int64_t>() : 0;
     emp::Integer payload = emp::Integer(64, toEncrypt, dstParty);
-    setValue<emp::Integer>(payload);
+    setValue(payload);
 }
 
 

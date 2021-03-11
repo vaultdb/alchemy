@@ -5,7 +5,8 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const vaultdb::BoolField &aV
 }
 
 vaultdb::BoolField::BoolField(const vaultdb::Field &srcField) : Field(FieldType::BOOL) {
-    setValue(srcField.getValue<bool>());
+    bool payload = srcField.getValue<bool>();
+    setValue(payload);
 }
 
 vaultdb::BoolField::BoolField(const vaultdb::BoolField &src) :Field(src) {
@@ -16,7 +17,8 @@ vaultdb::BoolField::BoolField(const bool &src) : Field(FieldType::BOOL){
 }
 
 vaultdb::BoolField::BoolField(const emp::Bit &src, const int &party)
-    : Field(FieldType::SECURE_BOOL){
+    : Field(FieldType::BOOL){
+
     setValue(src.reveal(party));
 }
 

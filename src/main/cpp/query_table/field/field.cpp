@@ -13,11 +13,14 @@
 
 using namespace vaultdb;
 
+
 std::ostream &vaultdb::operator<<(std::ostream &os, const Field &aValue) {
     return os << aValue.toString();
 }
 
 Field::Field(const FieldType &typeId, const int &strLength) : type_(typeId) {
+
+
 
     // need strLen to be initialized for string fields
     if(typeId == FieldType::STRING || typeId == FieldType::SECURE_STRING) {
@@ -65,25 +68,14 @@ size_t Field::getSize() const {
 }
 
 
-std::string Field::getValue() const {
-    if(type_ == FieldType::STRING) {
-        return std::string((char *) data_);
-    }
-    else 
-        return toString();
-}
 
 
-void Field::setValue(const string &src) {
 
+
+std::byte *Field::getData() const {
     assert(type_ == FieldType::STRING);
-    memcpy(data_, src.c_str(), allocated_size_);
-
+    return data_;
 }
-
-
-
-std::byte *Field::getData() const { return data_; }
 
 bool Field::operator==(const Field &cmp) const {
     if(type_ != cmp.type_) return false;
@@ -96,9 +88,9 @@ bool Field::operator==(const Field &cmp) const {
         }
     }
     else {
-        string lhs = this->getValue();
-        string rhs = cmp.getValue();
-        return lhs == rhs;
+        std::string lhs = this->getStringValue();
+        std::string rhs = cmp.getStringValue();
+        return (lhs == rhs);
     }
     return true;
 }
@@ -273,6 +265,22 @@ Field * Field::secretShare(const Field *field, const FieldType &type, const size
 void Field::copy(const Field &src) {
     this->type_ = src.type_;
     this->allocated_size_ = src.allocated_size_;
-    std::memcpy(data_, src.data_, allocated_size_);
+
+    if(type_ == FieldType::STRING) {
+        std::string srcData = src.getStringValue();
+        setStringValue(srcData);
+    }
+    else {
+        std::memcpy(data_, src.data_, allocated_size_);
+    }
+}
+
+void Field::setStringValue(const string &src) {
+    memcpy(data_, src.c_str(), allocated_size_-1);
+    *((char *) (data_ + allocated_size_ - 1)) = '\0'; // null-terminate the string
+}
+
+std::string Field::getStringValue() const {
+    return std::string((char *) data_);
 }
 

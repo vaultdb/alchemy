@@ -39,20 +39,24 @@ namespace vaultdb {
 
             template<typename T>
             inline T getValue()  const {
+                // use getStringValue for this case
+                assert(type_ != FieldType::STRING);
+
                 return *(reinterpret_cast<T*>(data_));
 
             }
 
-            std::string getValue() const;
 
-            template<typename T>
-            inline void setValue(const T & src) {
-                // need to invoke equality to correctly copy
-                *(reinterpret_cast<T*>(data_)) = src;
+        template<typename T>
+        inline void setValue(const T & src) {
+            // need to invoke equality to correctly copy
+            *(reinterpret_cast<T*>(data_)) = src;
 
-            }
+        }
 
-            void setValue(const std::string & src);
+        std::string getStringValue() const;
+
+        void setStringValue(const std::string & src);
 
             std::byte *getData() const;
 

@@ -10,11 +10,13 @@ std::ostream &operator<<(std::ostream &os, const LongField &aValue) {
 LongField::LongField(const LongField &src) : Field(src){ }
 
 LongField::LongField(const Field &srcField) : Field(FieldType::LONG) {
-    setValue(srcField.getValue<int64_t>());
+    auto v = srcField.getValue<int64_t>();
+    setValue(v);
 }
 
 LongField::LongField(const int64_t &src)  : Field(FieldType::LONG){
     setValue(src);
+
 }
 
 
@@ -23,7 +25,7 @@ LongField::LongField(const int8_t *src) : Field(Field::deserialize(FieldType::LO
 
 LongField::LongField(const emp::Integer &src, const int &party) : Field(FieldType::LONG) {
     int64_t revealed = src.reveal<int64_t>(party);
-    setValue<int64_t> (revealed);
+    setValue(revealed);
 }
 
 LongField &LongField::operator=(const LongField &other) {

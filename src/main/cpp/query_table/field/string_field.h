@@ -33,7 +33,7 @@ namespace vaultdb {
 
 
 
-        std::string getPayload() const { return getValue(); }
+        std::string getPayload() const { return getStringValue(); }
 
         StringField& operator=(const StringField& other);
 
