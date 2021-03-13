@@ -21,7 +21,8 @@ SecureIntField::SecureIntField(const int8_t *src) : Field(Field::deserialize(Fie
 SecureIntField::SecureIntField(const Field *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_INT){
     int32_t toEncrypt = (myParty == dstParty) ? src->getValue<int32_t>() : 0;
     emp::Integer payload = emp::Integer(32, toEncrypt, dstParty);
-    setValue(payload);
+    *((emp::Integer *) data_) = emp::Integer(payload);
+//    setValue(payload);
 }
 
 

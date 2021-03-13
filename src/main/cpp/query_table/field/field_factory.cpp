@@ -73,7 +73,8 @@ Field *FieldFactory::deepCopy(const Field *srcField) {
             return new SecureFloatField(*srcField);
         case FieldType::SECURE_STRING:
             return new SecureStringField(*srcField);
-
+        case FieldType::INVALID:
+            return new Field();
         default: // invalid
             throw;
     }

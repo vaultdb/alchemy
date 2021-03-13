@@ -1,5 +1,7 @@
 #include <util/data_utilities.h>
-#include <query_table/query_field.h>
+#include <query_table/field/int_field.h>
+#include <query_table/field/secure_int_field.h>
+
 #include "support/EmpBaseTest.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -98,23 +100,23 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     int32_t aliceInputData[10] = {1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
     int32_t bobInputData[10] = {4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
     int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData : bobInputData;
-
+    
     QuerySchema schema(1);
-    schema.putField(QueryFieldDesc(0, "test", "test_table", types::TypeId::INTEGER32));
+    schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
 
     std::unique_ptr<QueryTable> inputTable(new QueryTable(tupleCount, 1));
     inputTable->setSchema(schema);
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        types::Value val(inputData[i]);
+        IntField val(inputData[i]);
         inputTable->getTuplePtr(i)->setDummyTag(false);
-        QueryField *fieldPtr = inputTable->getTuplePtr(i)->getFieldPtr(0);
-        fieldPtr->setValue(val);
-        fieldPtr->setOrdinal(0);
+        inputTable->getTuplePtr(i)->putField(0, val);
     }
 
 
     std::shared_ptr<QueryTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+    emp::Integer decryptTest = ((SecureIntField *) encryptedTable->getTuplePtr(0)->getField(0))->getPayload();
+    ASSERT_EQ(1, decryptTest.reveal<int32_t>());
 
     netio->flush();
 
@@ -125,11 +127,9 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     expectedTable->setSchema(schema);
     // insert alice data first to last
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        types::Value val(aliceInputData[i]);
-        expectedTable->getTuplePtr(i)->setDummyTag(types::Value(false));
-        QueryField *fieldPtr = expectedTable->getTuplePtr(i)->getFieldPtr(0);
-        fieldPtr->setValue(val);
-        fieldPtr->setOrdinal(0);
+        IntField val(aliceInputData[i]);
+        expectedTable->getTuplePtr(i)->setDummyTag(BoolField(false));
+        expectedTable->getTuplePtr(i)->putField(0, val);
     }
 
     int offset = tupleCount;
@@ -138,11 +138,9 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     int readIdx = tupleCount;
     for(uint32_t i = 0; i < tupleCount; ++i) {
         --readIdx;
-        types::Value val(bobInputData[readIdx]);
-        expectedTable->getTuplePtr(i + offset)->setDummyTag(types::Value(false));
-        QueryField *fieldPtr = expectedTable->getTuplePtr(i + offset)->getFieldPtr(0);
-        fieldPtr->setValue(val);
-        fieldPtr->setOrdinal(0);
+        IntField val(bobInputData[readIdx]);
+        expectedTable->getTuplePtr(i + offset)->setDummyTag(BoolField(false));
+        expectedTable->getTuplePtr(i + offset)->putField(0, val);
     }
 
 

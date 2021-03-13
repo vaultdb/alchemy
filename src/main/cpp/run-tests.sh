@@ -3,7 +3,7 @@
 
 make -j5
 
-
+./bin/field_instance_test
 ./bin/value_expression_test
 ./bin/filter_test
 ./bin/project_test

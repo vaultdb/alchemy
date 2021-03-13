@@ -88,11 +88,6 @@ string QueryTuple::toString(const bool &showDummies) const {
 
 
 
-void QueryTuple::setFieldCount(size_t fieldCount) {
-    fields_.resize(fieldCount);
-
-}
-
 void QueryTuple::serialize(int8_t *dst, const QuerySchema &schema) {
 
     assert(!isEncrypted());
@@ -138,7 +133,10 @@ QueryTuple QueryTuple::reveal(const int &empParty) const {
     QueryTuple dstTuple(fields_.size(), false);
 
     for(size_t i = 0; i < fields_.size(); ++i) {
-        dstTuple.fields_.emplace_back(fields_[i]->reveal(empParty));
+        Field *revealed = fields_[i]->reveal(empParty);
+        dstTuple.putField(i, *revealed);
+        delete revealed;
+
     }
 
 
@@ -241,6 +239,14 @@ QueryTuple QueryTuple::secretShare(const QueryTuple *srcTuple, const QuerySchema
     delete encryptedDummyTag;
 
     return dstTuple;
+}
+
+void QueryTuple::setDummyTag(const bool &b) {
+    dummy_tag_ = std::unique_ptr<Field>(new BoolField(b));
+}
+
+void QueryTuple::setDummyTag(const Bit &b) {
+    dummy_tag_ = std::unique_ptr<Field>(new SecureBoolField(b));
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple) {

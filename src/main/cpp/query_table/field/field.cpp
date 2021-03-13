@@ -11,6 +11,8 @@
 #include "float_field.h"
 #include "string_field.h"
 
+#include <util/field_utilities.h>
+
 using namespace vaultdb;
 
 
@@ -19,18 +21,7 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const Field &aValue) {
 }
 
 Field::Field(const FieldType &typeId, const int &strLength) : type_(typeId) {
-
-
-
-    // need strLen to be initialized for string fields
-    if(typeId == FieldType::STRING || typeId == FieldType::SECURE_STRING) {
-        assert(strLength >= 1);
-    }
-
-    allocated_size_ = FieldUtils::getPhysicalSize(typeId, strLength);
-
-    managed_data_ = std::unique_ptr<std::byte[]>(new std::byte[allocated_size_]);
-    data_ = managed_data_.get();
+    initialize(typeId, strLength);
 }
 
 Field::Field(const Field &field) : type_(field.type_), allocated_size_(field.allocated_size_) {
@@ -72,25 +63,16 @@ size_t Field::getSize() const {
 
 
 
-std::byte *Field::getData() const {
-    assert(type_ == FieldType::STRING);
-    return data_;
-}
 
 bool Field::operator==(const Field &cmp) const {
     if(type_ != cmp.type_) return false;
     if(allocated_size_ != cmp.allocated_size_) return false;
 
-    if(type_ != FieldType::STRING) {
-        for (size_t i = 0; i < allocated_size_; ++i) {
-            if (data_[i] != cmp.data_[i])
+    // this still works for string because we are storing the character array
+    // might not work for emp types
+    for (size_t i = 0; i < allocated_size_; ++i) {
+        if (data_[i] != cmp.data_[i])
                 return false;
-        }
-    }
-    else {
-        std::string lhs = this->getStringValue();
-        std::string rhs = cmp.getStringValue();
-        return (lhs == rhs);
     }
     return true;
 }
@@ -282,5 +264,90 @@ void Field::setStringValue(const string &src) {
 
 std::string Field::getStringValue() const {
     return std::string((char *) data_);
+}
+
+
+// initialize by type
+void Field::initialize(const FieldType &type, const size_t &strLength) {
+    // need strLen to be initialized for string fields
+    if(type == FieldType::STRING || type == FieldType::SECURE_STRING) {
+        assert(strLength >= 1);
+    }
+
+
+
+
+    switch (type) {
+        case FieldType::BOOL: {
+            allocated_size_ = sizeof(bool);
+            managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(
+                                                                 new bool(false)));
+            break;
+        }
+        case FieldType::INT: {
+            allocated_size_ = sizeof(int32_t);
+            managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(
+                                                                 new int32_t(0)));
+            break;
+        }
+        case FieldType::LONG: {
+            allocated_size_ = sizeof(int64_t);
+            managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(
+                                                                 new int64_t (0L)));
+            break;
+        }
+        case FieldType::FLOAT: {
+            allocated_size_ = sizeof(float_t);
+            managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(
+                                                                 new float_t (0.0)));
+            break;
+        }
+        case FieldType::STRING: {
+            allocated_size_ = sizeof(char) * (strLength + 1); // +1 for '\0' null-termination
+            managed_data_ = std::unique_ptr<std::byte[]>(new std::byte[strLength+1]);
+            std::memset(managed_data_.get(), 0, strLength);
+            *((char *) managed_data_.get() + strLength - 1) = '\0'; // null-terminated
+            break;
+        }
+
+        case FieldType::SECURE_BOOL: {
+            allocated_size_ = sizeof(emp::Bit(false));
+            managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(
+                   new emp::Bit(false)));
+         break;
+        }
+        case FieldType::SECURE_INT:  {
+            allocated_size_ = sizeof(emp::Integer(32, 0));
+            managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(
+                                                                 new emp::Integer(32, 0)));
+            break;
+        }
+
+        case FieldType::SECURE_LONG:{
+            allocated_size_ = sizeof(emp::Integer(64, 0));
+            managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(
+                                                                 new emp::Integer(64, 0)));
+            break;
+        }
+        case FieldType::SECURE_FLOAT: {
+            allocated_size_ = sizeof(emp::Float(0.0));
+            managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(new emp::Float(0.0)));
+            break;
+        }
+        case FieldType::SECURE_STRING: {
+            allocated_size_ = sizeof(emp::Integer(strLength * 8, 0));
+            managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(
+                                                                 new emp::Integer(strLength * 8, 0)));
+        }
+        case FieldType::DATE:
+            throw; // we should never get here, date is handled in PsqlDataProvider
+        case FieldType::INVALID:
+            // do nothing, this is for warnings
+            return;
+    }// end switch statement
+
+    data_ = managed_data_.get();
+
+
 }
 

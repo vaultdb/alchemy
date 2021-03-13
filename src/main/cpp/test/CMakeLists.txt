@@ -78,11 +78,9 @@ package_add_test(csv_reader_test csv_reader_test.cpp)
 #package_add_test(scalar_aggregate_test scalar_aggregate_test.cpp)
 #package_add_test(group_by_aggregate_test group_by_aggregate_test.cpp)
 
-# disabling query_table_test because it is specific the the DB instance
-#package_add_test(query_table_test query_table_test.cpp)
 
 #EMP-based tests
-#package_add_test(emp_test emp_test.cpp support/EmpBaseTest.cpp)
+package_add_test(emp_test emp_test.cpp support/EmpBaseTest.cpp)
 #package_add_test(emp_table_test  emp_table_test.cpp support/EmpBaseTest.cpp support/QueryTableTestQueries.cpp) # port 54324-54325
 #package_add_test(emp_test_multiple_starts emp_test_multiple_starts.cpp)
 #package_add_test(secure_value_expression_test secure_value_expression_test.cpp support/EmpBaseTest.cpp  )

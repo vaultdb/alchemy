@@ -9,6 +9,8 @@
 #include <emp-tool/circuits/float32.h>
 #include <typeinfo>
 
+// TODO: adapt std::string to store payload as string object instead of character array
+//  - to unify our interface
 
 // carries payload for each attribute
 //  generic for storing heterogeneous types in the same container
@@ -45,20 +47,21 @@ namespace vaultdb {
                 return *(reinterpret_cast<T*>(data_));
 
             }
-
-
+//
+//            template <typename T>
+//            inline void initializePrimitive(const FieldType & fieldType) {
+//
+//                assert((fieldType == FieldType::BOOL) || (fieldType == FieldType::INT) || (fieldType == FieldType::LONG))
+//                allocated_size_ = sizeof(T);
+//            }
         template<typename T>
         inline void setValue(const T & src) {
-            // need to invoke equality to correctly copy
             *(reinterpret_cast<T*>(data_)) = src;
-
         }
 
         std::string getStringValue() const;
 
         void setStringValue(const std::string & src);
-
-            std::byte *getData() const;
 
 
             // only really meaningful for plain (not EMP) types
@@ -91,6 +94,7 @@ namespace vaultdb {
 
         private:
             static std::string revealString(const emp::Integer & src, const int & party);
+            void initialize(const FieldType &type, const size_t &strLength);
     };
 
     std::ostream &operator<<(std::ostream &os, const Field &aValue);

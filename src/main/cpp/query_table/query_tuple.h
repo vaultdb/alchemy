@@ -33,6 +33,10 @@ namespace vaultdb {
       const Field * getField(const int &ordinal) const;
       void putField(const int &idx, const Field &f);
       void setDummyTag(const Field &v);
+      void setDummyTag(const bool & b);
+
+        void setDummyTag(const emp::Bit & b);
+
 
         const Field * getDummyTag() const;
 
@@ -40,8 +44,6 @@ namespace vaultdb {
         QueryTuple reveal(const int &empParty = PUBLIC) const;
 
         string toString(const bool &showDummies = false) const;
-
-        void setFieldCount(size_t fieldCount);
 
         void serialize(int8_t *dst, const QuerySchema &schema);
         size_t getFieldCount() const;

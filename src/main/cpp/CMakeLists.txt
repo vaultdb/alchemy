@@ -73,13 +73,12 @@ set(sources
 		query_table/field/secure_float_field.cpp
 		query_table/field/string_field.cpp
 		query_table/field/secure_string_field.cpp
-
 		query_table/field/field_factory.cpp
-
-
 		util/utilities.cpp
 		util/type_utilities.cpp
 		util/data_utilities.cpp
+		util/field_utilities.cpp
+
 		query_table/query_tuple.cpp
 		#   util/emp_manager.cpp
 

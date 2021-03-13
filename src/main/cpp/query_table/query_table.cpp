@@ -30,10 +30,10 @@ QueryTable::QueryTable(const size_t &num_tuples, const QuerySchema &schema, cons
 
    /* std::cout << "Instantiating a query table at: " << std::endl
               << Utilities::getStackTrace();*/
-    tuples_.resize(num_tuples);
+    tuples_.reserve(num_tuples);
 
     for(size_t i = 0; i < num_tuples; ++i) {
-        tuples_[i].setFieldCount(schema.getFieldCount()); // initialize tuples
+        tuples_.emplace_back(QueryTuple(schema.getFieldCount()));
     }
 }
 
@@ -44,10 +44,11 @@ QueryTable::QueryTable(const size_t &num_tuples, const int &colCount)
 
     /* std::cout << "Instantiating a query table at: " << std::endl
                << Utilities::getStackTrace();*/
-    tuples_.resize(num_tuples);
+    tuples_.reserve(num_tuples);
 
-
-
+    for(size_t i = 0; i < num_tuples; ++i) {
+        tuples_.emplace_back(QueryTuple(colCount));
+    }
 
 }
 
@@ -262,15 +263,10 @@ std::shared_ptr<QueryTable> QueryTable::secretShare(emp::NetIO *netio, const int
         netio->flush();
     }
 
-
     std::shared_ptr<QueryTable> dstTable(new QueryTable(aliceSize + bobSize, colCount));
 
     dstTable->setSchema(QuerySchema::toSecure(getSchema()));
     dstTable->setSortOrder(getSortOrder());
-
-
-
-
 
 
     // read alice in order
