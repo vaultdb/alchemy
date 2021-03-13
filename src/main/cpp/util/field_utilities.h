@@ -13,7 +13,11 @@ namespace vaultdb {
     public:
         // size is in bytes
         static size_t getPhysicalSize(const FieldType &id, const size_t & strLength = 0);
-        static bool equals(const Field *lhs, const Field *rhs);
+        static bool equal(const Field *lhs, const Field *rhs);
+        static bool geq(const Field *lhs, const Field *rhs);
+
+        static emp::Bit secureEqual(const Field *lhs, const Field *rhs);
+        static emp::Bit secureGeq(const Field *lhs, const Field *rhs);
 
     };
 

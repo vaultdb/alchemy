@@ -1,4 +1,5 @@
 #include <util/data_utilities.h>
+#include <util/field_utilities.h>
 #include "secure_sort_condition.h"
 
 // TODO: pre-empt this with emp's sort impl in number.h?
@@ -17,8 +18,10 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
         const Field *rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
 
 
-        Field *eqValue = &(*lhsValue == *rhsValue);
-        emp::Bit eq = ((SecureBoolField *) eqValue)->primitive();
+        emp::Bit eq = FieldUtilities::secureEqual(lhsValue, rhsValue);
+        emp::Bit gt =  (FieldUtilities::secureGeq(lhsValue, rhsValue)
+                    & !eq);
+
 
         SortDirection direction = sortDefinition[i].second;
 
@@ -28,16 +31,11 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
         emp::Bit colSwapFlag;
 
         if(direction == vaultdb::SortDirection::ASCENDING) {
-            Field *cmp = &(*rhsValue > *lhsValue);
-            colSwapFlag = TypeUtilities::getSecureBool(*cmp);
-            delete cmp;
+            colSwapFlag = FieldUtilities::secureGeq(rhsValue, lhsValue) & !eq;
             //colSwapFlag = (rhsValue > lhsValue).getEmpBit();
         }
         else if(direction == vaultdb::SortDirection::DESCENDING) {
-            Field *cmp = &(*lhsValue > *rhsValue);
-            colSwapFlag = TypeUtilities::getSecureBool(*cmp);
-            delete cmp;
-
+            colSwapFlag = FieldUtilities::secureGeq(lhsValue, rhsValue) & !eq;
             // colSwapFlag = (lhsValue > rhsValue).getEmpBit();
         }
         else {
@@ -53,7 +51,7 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
 
 
-    QueryTuple::compareAndSwap(swap, &lhs, &rhs);
+    QueryTuple::compareAndSwap(&lhs, &rhs, swap);
 }
 
 /* debug code:

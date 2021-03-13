@@ -1,3 +1,4 @@
+#include <util/field_utilities.h>
 #include "plain_sort_condition.h"
 
 void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
@@ -10,21 +11,16 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
         const Field *lhsValue = SortCondition::getValue(lhs, sortDefinition[i]);
         const Field *rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
 
-        eqValue = &(*lhsValue == *rhsValue);
-        bool eq =  ((BoolField *) eqValue)->primitive();
-
-        delete lhsValue;
-        delete rhsValue;
-        delete eqValue;
-
+        bool eq = FieldUtilities::equal(lhsValue, rhsValue);
+        bool gt = (FieldUtilities::geq(lhsValue, rhsValue) && !eq);
         SortDirection direction = sortDefinition[i].second;
 
 
 
         // is a swap needed?
         // if (lhs > rhs AND descending) OR (lhs < rhs AND ASCENDING)
-        if((( lhsValue > rhsValue) && direction == SortDirection::DESCENDING)  ||
-                (( rhsValue > lhsValue)&& direction == SortDirection::ASCENDING)){
+        if((gt && direction == SortDirection::DESCENDING)  ||
+                ( !gt && direction == SortDirection::ASCENDING)){
                 swap = true;
                 break;
             }

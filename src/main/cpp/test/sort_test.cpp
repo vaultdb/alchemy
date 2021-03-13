@@ -8,7 +8,6 @@
 #include <operators/project.h>
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -21,7 +20,7 @@ protected:
 
     Sort getSort(const string & srcSql, const SortDefinition & sortDefinition);
 
-    const string dbName = "tpch_alice";
+    const string dbName = "tpch_unioned";
 
 };
 

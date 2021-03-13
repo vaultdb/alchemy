@@ -20,7 +20,10 @@ namespace  vaultdb {
         ~Sort();
         Sort(shared_ptr<QueryTable> child, const SortDefinition &aSortDefinition);
 
-        std::shared_ptr<QueryTable> runSelf() override;
+        std::shared_ptr<QueryTable> runSelf() override; // {throw; } // implemented in template specializations
+
+        static SortDefinition getReverseSortDefinition(const SortDefinition &aSortDef);
+
 
     private:
         void bitonicSort(const int &lo, const int &cnt, bool invertDir);
@@ -29,9 +32,12 @@ namespace  vaultdb {
 
         void compareAndSwap(const int &lhsIdx, const int &rhsIdx, bool invertDir);
 
+
         int powerOfLessThanTwo(const int &n);
 
-        static SortDefinition getReverseSortDefinition(const SortDefinition &aSortDef);
+
     };
 
+
 }
+
