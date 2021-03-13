@@ -30,8 +30,8 @@ std::shared_ptr<QueryTable> Project::runSelf() {
 
     for(ProjectionMapping mapping : projectionMap) {
         uint32_t dstOrdinal = mapping.second;
-        QueryFieldDesc srcField = srcSchema.getField(mapping.first);
-        QueryFieldDesc fieldDesc(srcField, dstOrdinal);
+        FieldDesc srcField = srcSchema.getField(mapping.first);
+        FieldDesc fieldDesc(srcField, dstOrdinal);
         size_t srcStringLength = srcField.getStringLength();
         fieldDesc.setStringLength(srcStringLength);
         dstSchema.putField(fieldDesc);
@@ -48,7 +48,7 @@ std::shared_ptr<QueryTable> Project::runSelf() {
         FieldType type = expression.getType();
         std::string alias = expression.getAlias();
 
-        QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, alias, "", type); // NYI: string length for expressions
+        FieldDesc fieldDesc = FieldDesc(dstOrdinal, alias, "", type); // NYI: string length for expressions
         dstSchema.putField(fieldDesc);
 
         fieldOrdinals.push_back(dstOrdinal);

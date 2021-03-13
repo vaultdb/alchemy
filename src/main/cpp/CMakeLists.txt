@@ -80,26 +80,18 @@ set(sources
 		util/field_utilities.cpp
 
 		query_table/query_tuple.cpp
-		#   util/emp_manager.cpp
-
-		#	query_table/types/value.cpp
-	#	query_table/query_field.cpp
-	#		query_table/types/value_comparators.cpp
-    #		query_table/types/value_arithmetic.cpp
-
 		query_table/query_field_desc.cpp
 		query_table/query_schema.cpp
 		query_table/query_table.cpp
+
 		data/PsqlDataProvider.cpp
 		data/CsvReader.cpp
 
-		#operators/operator.cpp
-		#operators/sql_input.cpp
-        #operators/secure_sql_input.cpp
-
-
+		operators/operator.cpp
+		operators/sql_input.cpp
+        operators/secure_sql_input.cpp
+		operators/filter.cpp
 		#operators/sort.cpp
-		#operators/filter.cpp
 		#operators/support/sort_condition.cpp
 		#operators/support/plain_sort_condition.cpp
 		#operators/support/secure_sort_condition.cpp
@@ -118,21 +110,6 @@ set(sources
 		#operators/support/group_by_aggregate_impl.cpp
 		#operators/support/secure_group_by_aggregate_impl.cpp
 		#operators/csv_input.cpp
-		#query_table/field/field_type.h
-		#query_table/field/field_impl.h
-
-#		query_table/field/int_field.h
-	#	query_table/field/float_field.h
-	#	query_table/field/long_field.h
-	#	query_table/field/string_field.h
-	#	query_table/field/secure_int_field.h
-	#	query_table/field/secure_float_field.h
-	#	query_table/field/secure_long_field.h
-	#	query_table/field/secure_string_field.h
-		#query_table/field/comparator.h
-
-		# TODO: put field factory here
-		#util/field_utilities.h
 		)
 
 

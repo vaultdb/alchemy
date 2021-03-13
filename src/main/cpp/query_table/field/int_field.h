@@ -17,7 +17,8 @@ namespace vaultdb {
 
     public:
 
-        IntField() = default;
+        // TODO: generalize default constructor to others
+        IntField();
         ~IntField() = default;
         explicit IntField(const Field & srcField);
 

@@ -290,6 +290,7 @@ void Field::initialize(const FieldType &type, const size_t &strLength) {
                                                                  new int32_t(0)));
             break;
         }
+        case FieldType::DATE:
         case FieldType::LONG: {
             allocated_size_ = sizeof(int64_t);
             managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(
@@ -339,8 +340,6 @@ void Field::initialize(const FieldType &type, const size_t &strLength) {
             managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(
                                                                  new emp::Integer(strLength * 8, 0)));
         }
-        case FieldType::DATE:
-            throw; // we should never get here, date is handled in PsqlDataProvider
         case FieldType::INVALID:
             // do nothing, this is for warnings
             return;

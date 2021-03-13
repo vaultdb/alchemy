@@ -6,7 +6,6 @@
 #include <cstdint>
 #include <boost/variant.hpp>
 
-//#include "operators/support/expression.h"
 
 
 namespace vaultdb {

@@ -13,7 +13,7 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
         // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
         types::TypeId aggValueType = (agg.ordinal >= 0) ?
                                      input->getSchema().getField(agg.ordinal).getType() :
-                                     (input->isEncrypted() ? types::TypeId::ENCRYPTED_INTEGER64 : types::TypeId::INTEGER64);
+                                     (input->isEncrypted() ? types::FieldType::SECURE_LONG : types::FieldType::LONG);
         aggregators.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType, input->isEncrypted()));
     }
 
@@ -34,7 +34,7 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
     QuerySchema outputSchema(aggregators.size());
 
     for(size_t i = 0; i < aggregators.size(); ++i) {
-        QueryFieldDesc fieldDesc(i, aggregateDefinitions[i].alias, "", aggregators[i]->getType());
+        FieldDesc fieldDesc(i, aggregateDefinitions[i].alias, "", aggregators[i]->getType());
         outputSchema.putField(fieldDesc);
     }
 
@@ -43,7 +43,7 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
     QueryTuple *tuplePtr = output->getTuplePtr(0);
 
     for(size_t i = 0; i < aggregators.size(); ++i) {
-        QueryField field(i, aggregators[i]->getResult());
+        Field field(i, aggregators[i]->getResult());
         tuplePtr->putField(field, -1);
         delete aggregators[i];
     }

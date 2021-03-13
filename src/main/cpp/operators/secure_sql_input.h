@@ -16,7 +16,6 @@ namespace  vaultdb {
 
 
     protected:
-        // depends on EmpManager being configured in the calling method
         std::shared_ptr<QueryTable> runSelf() override;
 
 

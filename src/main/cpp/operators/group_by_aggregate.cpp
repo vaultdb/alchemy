@@ -11,7 +11,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     std::vector<GroupByAggregateImpl *> aggregators;
     QueryTuple *current, *predecessor;
     Field *realBin;
-    types::TypeId boolType = input->isEncrypted() ? types::TypeId::ENCRYPTED_BOOLEAN : types::TypeId::BOOLEAN;
+    types::TypeId boolType = input->isEncrypted() ? types::FieldType::SECURE_BOOL : types::FieldType::BOOL;
     QueryTuple outputTuple;
     QuerySchema inputSchema = input->getSchema();
 
@@ -20,7 +20,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
         // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
         types::TypeId aggValueType = (agg.ordinal >= 0) ?
                     inputSchema.getField(agg.ordinal).getType() :
-                                     (input->isEncrypted() ? types::TypeId::ENCRYPTED_INTEGER64 : types::TypeId::INTEGER64);
+                                     (input->isEncrypted() ? types::FieldType::SECURE_LONG : types::FieldType::LONG);
         aggregators.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
     }
 
@@ -157,14 +157,14 @@ QuerySchema GroupByAggregate::generateOutputSchema(const QuerySchema & srcSchema
     size_t i;
 
     for(i = 0; i < groupByOrdinals.size(); ++i) {
-        QueryFieldDesc srcField = srcSchema.getField(groupByOrdinals[i]);
-        QueryFieldDesc dstField(i, srcField.getName(), srcField.getTableName(), srcField.getType());
+        FieldDesc srcField = srcSchema.getField(groupByOrdinals[i]);
+        FieldDesc dstField(i, srcField.getName(), srcField.getTableName(), srcField.getType());
         dstField.setStringLength(srcField.getStringLength());
         outputSchema.putField(dstField);
     }
 
     for(i = 0; i < aggregateDefinitions.size(); ++i) {
-        QueryFieldDesc fieldDesc(i + groupByOrdinals.size(), aggregateDefinitions[i].alias, "", aggregators[i]->getType());
+        FieldDesc fieldDesc(i + groupByOrdinals.size(), aggregateDefinitions[i].alias, "", aggregators[i]->getType());
         outputSchema.putField(fieldDesc);
     }
 
@@ -181,15 +181,15 @@ QueryTuple GroupByAggregate::generateOutputTuple(const QueryTuple &lastTuple, co
 
     // write group-by ordinals
     for(i = 0; i < groupByOrdinals.size(); ++i) {
-        QueryField *srcField = lastTuple.getFieldPtr(groupByOrdinals[i]);
-        QueryField dstField(i, srcField->getValue());
+        Field *srcField = lastTuple.getFieldPtr(groupByOrdinals[i]);
+        Field dstField(i, srcField->getValue());
         dstTuple.putField(dstField, -1);
     }
 
     // write partial aggs
     for(GroupByAggregateImpl *aggregator : aggregators) {
         types::Value currentResult = aggregator->getResult() const;
-        QueryField dstField(i, currentResult);
+        Field dstField(i, currentResult);
         dstTuple.putField(dstField, -1);
         ++i;
     }

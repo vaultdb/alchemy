@@ -55,9 +55,9 @@ namespace vaultdb {
 
         static Field * getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src);
         static Field *deepCopy(const Field *srcField);
-        //static Field *toFloat(const Field *src);
-        //         static Field *getZero(const FieldType & type);
-        //        static Field *getOne(const FieldType & type);
+        static Field *toFloat(const Field *src);
+        static Field *getZero(const FieldType & type);
+        static Field *getOne(const FieldType & type);
     };
 
 
