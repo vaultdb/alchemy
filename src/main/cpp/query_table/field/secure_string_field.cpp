@@ -18,25 +18,25 @@ SecureStringField::SecureStringField(const SecureStringField &src) : Field(src) 
 
 SecureStringField::SecureStringField(const int8_t *src, const size_t & strLength) : Field(Field::deserialize(FieldType::SECURE_STRING, strLength, src)) { }
 
+// src is a StringField
 SecureStringField::SecureStringField(const Field *src, const size_t &strLength, const int &myParty,
                                      const int &dstParty) : Field(FieldType::SECURE_STRING, strLength){
     std::string input = (myParty == dstParty) ?
                         src->getStringValue() :
                         std::to_string(0);
 
-    size_t stringByteCount = input.size();
 
-    assert(input.length() <= stringByteCount);   // while loop will be infinite if the string is already oversized
+    assert(input.length() <= strLength);   // while loop will be infinite if the string is already oversized
 
-    while(input.length() != stringByteCount) { // pad it to the right length
+    while(input.length() != strLength) { // pad it to the right length, -1 to remove null terminator
         input += " ";
     }
 
     std::string inputReversed = input;
     std::reverse(inputReversed.begin(), inputReversed.end());
-    bool *bools = Utilities::bytesToBool((int8_t *) inputReversed.c_str(), stringByteCount);
+    bool *bools = Utilities::bytesToBool((int8_t *) inputReversed.c_str(), strLength);
 
-    size_t stringBitCount = stringByteCount * 8;
+    size_t stringBitCount = strLength * 8;
 
     emp::Integer payload = emp::Integer(stringBitCount, 0L, dstParty);
     if(myParty == dstParty) {

@@ -339,6 +339,7 @@ void Field::initialize(const FieldType &type, const size_t &strLength) {
             allocated_size_ = sizeof(emp::Integer(strLength * 8, 0));
             managed_data_ = std::unique_ptr<std::byte[]>(reinterpret_cast<std::byte *>(
                                                                  new emp::Integer(strLength * 8, 0)));
+            break;
         }
         case FieldType::INVALID:
             // do nothing, this is for warnings

@@ -56,16 +56,19 @@ TEST_F(EmpTableTest, encrypt_table_varchar) {
     PsqlDataProvider dataProvider;
 
     std::string inputQuery =  "SELECT l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
+    std::unique_ptr<QueryTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery, false);
+
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          inputQuery, false);
 
     std::shared_ptr<QueryTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+    std::cout << "Done encrypting table!" << std::endl;
 
     netio->flush();
 
-    std::unique_ptr<QueryTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery, false);
     std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
+
 
 
 

@@ -141,7 +141,6 @@ QueryTuple QueryTuple::reveal(const int &empParty) const {
     }
 
 
-
     emp::Bit dummyTag = dummy_tag_->getValue<emp::Bit>();
     dstTuple.dummy_tag_  = std::unique_ptr<Field>(new BoolField(dummyTag.reveal(empParty)));
 

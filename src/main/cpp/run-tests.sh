@@ -22,10 +22,10 @@ sleep 2
 ./bin/emp_test --party=1 & 
 ./bin/emp_test  --party=2
 
-#sleep 2
+sleep 2
 
-#./bin/emp_table_test --party=1 &
-#./bin/emp_table_test  --party=2
+./bin/emp_table_test --party=1 &
+./bin/emp_table_test  --party=2
 
 #sleep 2
 

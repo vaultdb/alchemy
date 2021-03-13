@@ -72,9 +72,7 @@ std::unique_ptr<QueryTable> QueryTable::reveal(int empParty) const  {
     QueryTuple srcTuple; // initialized below
 
     for(uint32_t i = 0; i < tupleCount; ++i)  {
-        srcTuple = getTuple(i);
-
-        QueryTuple dstTuple = srcTuple.reveal(empParty);
+        QueryTuple dstTuple = tuples_[i].reveal(empParty);
         dstTable->putTuple(i, dstTuple);
 
     }
