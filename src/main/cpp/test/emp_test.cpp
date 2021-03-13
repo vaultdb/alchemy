@@ -143,7 +143,6 @@ TEST_F(EmpTest, encrypt_table_one_column) {
         expectedTable->getTuplePtr(i + offset)->putField(0, val);
     }
 
-
     //verify output
     ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
 

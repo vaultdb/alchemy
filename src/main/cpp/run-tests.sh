@@ -6,7 +6,7 @@ make -j5
 ./bin/field_instance_test
 ./bin/value_expression_test
 ./bin/filter_test
-#./bin/project_test
+./bin/project_test
 #./bin/sort_test
 #./bin/basic_join_test
 #./bin/fkey_pkey_join_test

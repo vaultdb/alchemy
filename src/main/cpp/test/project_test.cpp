@@ -4,10 +4,10 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/project.h>
+#include <query_table/field/float_field.h>
 
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -34,7 +34,7 @@ protected:
  * class RevenueExpression : public Expression {
     Value oneValue;
 public:
-    RevenueExpression() : Expression("revenue", types::TypeId::FLOAT32) {
+    RevenueExpression() : Expression("revenue", types::FieldType::FLOAT) {
         oneValue = Value((int32_t) 1);
     }
 
@@ -51,19 +51,20 @@ public:
     // needed for boost::variant
     RevenueExpression& operator=(const RevenueExpression & src) {
         this->alias = src.getAlias();
-        this->expressionType = types::TypeId::FLOAT32;
+        this->expressionType = types::FieldType::FLOAT;
 
     }
 
 };
 */
 
-types::Value calculateRevenue(const QueryTuple & aTuple) {
-    Value extendedPrice = aTuple.getField(5).getValue();
-    Value discount = aTuple.getField(6).getValue();
+Field *calculateRevenue(const QueryTuple & aTuple) {
+    const FloatField extendedPrice = *(static_cast<const FloatField *>(aTuple.getField(5)));
+    const FloatField discount = *(static_cast<const FloatField *>(aTuple.getField(6)));
+    const FloatField one = FloatField(1.0);
 
     // l.l_extendedprice * (1 - l.l_discount)
-    return extendedPrice * (Value((float) 1.0) - discount);
+    return new FloatField(extendedPrice * (one - discount));
 }
 
 // variant of Q3 expressions
@@ -78,7 +79,7 @@ TEST_F(ProjectionTest, q3Lineitem) {
 
     Project project(&input);
 
-    Expression revenueExpression(&calculateRevenue, "revenue", TypeId::FLOAT32);
+    Expression revenueExpression(&calculateRevenue, "revenue", FieldType::FLOAT);
 
 
 

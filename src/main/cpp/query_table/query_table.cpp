@@ -209,7 +209,6 @@ bool QueryTable::operator==(const QueryTable &other) const {
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
         QueryTuple *thisTuple = getTuplePtr(i);
         QueryTuple *otherTuple = other.getTuplePtr(i);
-       //cout << "Comparing "  << thisTuple->toString(true) << "\n    to    " << otherTuple->toString(true) << endl;
 
         if(*thisTuple != *otherTuple) {
             std::cout << "Comparing on idx " << i << " with "  << thisTuple->toString(true) << "\n          !=            " << otherTuple->toString(true) << endl;

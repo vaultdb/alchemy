@@ -3,6 +3,7 @@
 
 
 #include<type_traits>
+#include <query_table/field/field.h>
 
 #include "query_table/field/field_type.h"
 
@@ -12,6 +13,7 @@ namespace vaultdb {
     public:
         // size is in bytes
         static size_t getPhysicalSize(const FieldType &id, const size_t & strLength = 0);
+        static bool equals(const Field *lhs, const Field *rhs);
 
     };
 

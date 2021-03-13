@@ -1,4 +1,5 @@
 #include <util/type_utilities.h>
+#include <util/field_utilities.h>
 #include "query_tuple.h"
 #include "query_schema.h"
 #include "field/field_factory.h"
@@ -175,7 +176,8 @@ bool  QueryTuple::operator==(const QueryTuple &other) const {
     for(size_t i = 0; i < getFieldCount(); ++i) {
 //        std::cout << "Comparing field: |" << *(fields_[i]) << "| len=" << fields_[i]->getSize()  <<  std::endl
 //                 << " to              |" << *(other.fields_[i]) << "| len=" << fields_[i]->getSize()<<  std::endl;
-        if(*fields_[i] != *(other.fields_[i])) {
+        bool eq = FieldUtilities::equals(fields_[i].get(), other.fields_[i].get());
+        if(!eq) {
             return false;
         }
     }

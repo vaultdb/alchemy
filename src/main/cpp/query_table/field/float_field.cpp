@@ -38,9 +38,13 @@ BoolField FloatField::operator>=(const FloatField &cmp) const {
 }
 
 BoolField FloatField::operator==(const FloatField &cmp) const {
-    bool res = getPayload() == (cmp.getPayload());
-    return  BoolField(res);
-}
+
+    // inspired by NoisePage: https://github.com/cmu-db/noisepage
+        float_t right = cmp.getPayload();
+        const double epsilon = std::fabs(right) * 0.01;
+        return BoolField(std::fabs(getPayload() - right) <= epsilon);
+    }
+
 
 FloatField FloatField::select(const BoolField &choice, const FloatField &other) const {
     bool selection =  choice.getPayload();

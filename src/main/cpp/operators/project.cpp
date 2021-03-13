@@ -30,8 +30,8 @@ std::shared_ptr<QueryTable> Project::runSelf() {
 
     for(ProjectionMapping mapping : projectionMap) {
         uint32_t dstOrdinal = mapping.second;
-        FieldDesc srcField = srcSchema.getField(mapping.first);
-        FieldDesc fieldDesc(srcField, dstOrdinal);
+        QueryFieldDesc srcField = srcSchema.getField(mapping.first);
+        QueryFieldDesc fieldDesc(srcField, dstOrdinal);
         size_t srcStringLength = srcField.getStringLength();
         fieldDesc.setStringLength(srcStringLength);
         dstSchema.putField(fieldDesc);
@@ -48,7 +48,7 @@ std::shared_ptr<QueryTable> Project::runSelf() {
         FieldType type = expression.getType();
         std::string alias = expression.getAlias();
 
-        FieldDesc fieldDesc = FieldDesc(dstOrdinal, alias, "", type); // NYI: string length for expressions
+        QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, alias, "", type); // NYI: string length for expressions
         dstSchema.putField(fieldDesc);
 
         fieldOrdinals.push_back(dstOrdinal);
@@ -95,7 +95,7 @@ std::shared_ptr<QueryTable> Project::runSelf() {
 
 QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
     QueryTuple dstTuple(colCount, children[0]->getOutput()->isEncrypted());
-    dstTuple.setDummyTag(srcTuple->getDummyTag());
+    dstTuple.setDummyTag(*(srcTuple->getDummyTag()));
 
     std::map<uint32_t, Expression>::const_iterator exprPos = expressions.begin();
 
@@ -104,8 +104,8 @@ QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
     for(ProjectionMapping mapping : projectionMap) {
         uint32_t srcOrdinal = mapping.first;
         uint32_t dstOrdinal = mapping.second;
-        Field *dstField = FieldFactory::copyField(srcTuple->getField(srcOrdinal));
-        dstTuple.putField(dstField, dstOrdinal);
+        const Field *dstField = srcTuple->getField(srcOrdinal);
+        dstTuple.putField(dstOrdinal, *dstField);
 
     }
 
@@ -114,7 +114,9 @@ QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
         uint32_t dstOrdinal = exprPos->first;
         Expression expression = exprPos->second;
         Field *fieldValue = expression.expressionCall(*srcTuple);
-        dstTuple.putField(fieldValue, dstOrdinal);
+        dstTuple.putField(dstOrdinal, *fieldValue);
+        delete fieldValue;
+
         ++exprPos;
     }
 
