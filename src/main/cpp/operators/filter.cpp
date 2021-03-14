@@ -10,6 +10,9 @@ Filter<BoolField>::Filter(Operator *child, shared_ptr<Predicate<BoolField> > & p
 Filter<BoolField>::Filter(shared_ptr<QueryTable> child, shared_ptr<Predicate<BoolField> >&  predicateClass) :
      Operator(child), predicate(predicateClass) { }
 
+
+
+
 std::shared_ptr<QueryTable> Filter<BoolField>::runSelf() {
 
     std::shared_ptr<QueryTable> input = children[0]->getOutput();

@@ -54,7 +54,7 @@ public:
     BoolField predicateCall(const QueryTuple & aTuple) const override {
 
         const IntField *field = static_cast<const IntField *>(aTuple.getField(1));
-        return  BoolField((*field == cmp));
+        return  (*field == cmp);
     }
 
 

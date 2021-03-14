@@ -32,10 +32,10 @@ sleep 2
 ./bin/secure_value_expression_test --party=1 &
 ./bin/secure_value_expression_test --party=2
 
-#sleep 2
+sleep 2
 
-#./bin/secure_filter_test --party=1 &
-#./bin/secure_filter_test --party=2
+./bin/secure_filter_test --party=1 &
+./bin/secure_filter_test --party=2
 
 #sleep 2
 

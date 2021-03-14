@@ -16,7 +16,7 @@ namespace vaultdb {
 
     public:
 
-        FloatField() = default;
+        FloatField() :  Field(FieldType::FLOAT) {}
         ~FloatField() = default;
         explicit FloatField(const Field & srcField);
 

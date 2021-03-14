@@ -23,6 +23,7 @@ namespace vaultdb {
             // inspired by NoisePage: https://github.com/cmu-db/noisepage
             std::unique_ptr<std::byte[]> managed_data_;
             std::byte *data_;
+            // TODO: store a pointer to impl (BoolField/IntField, etc.) in a boost::variant for use in overloaded ops later?
 
 
         public:

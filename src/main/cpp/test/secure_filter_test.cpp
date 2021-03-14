@@ -4,14 +4,13 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/filter.h>
-#include <util/emp_manager.h>
 #include <operators/secure_sql_input.h>
 #include <operators/support/predicate.h>
 #include <test/support/EmpBaseTest.h>
+#include <query_table/field/secure_int_field.h>
 
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -20,25 +19,22 @@ DEFINE_int32(port, 54321, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 
-class SecureFilterPredicateClass : public Predicate {
+class SecureFilterPredicateClass : public Predicate<SecureBoolField> {
 
-    Field encryptedLineNumber;
+    SecureIntField encryptedLineNumber;
 public:
     ~SecureFilterPredicateClass() {}
     SecureFilterPredicateClass(int32_t valueToEncrypt) {
         emp::Integer val(32, valueToEncrypt);
         // encrypting here so we don't have to secret share it for every comparison
-        encryptedLineNumber = Value(FieldType::SECURE_INT, val);
+        encryptedLineNumber = SecureIntField(val);
 
     }
 
     // filtering for l_linenumber = 1
-    Field predicateCall(const QueryTuple & aTuple) const override {
-        Field field = aTuple.getField(1).getValue();
-
-        Field res = field == encryptedLineNumber;
-
-        return res;
+    SecureBoolField predicateCall(const QueryTuple & aTuple) const override {
+        const SecureIntField *f = static_cast<const SecureIntField *>(aTuple.getField(1));
+        return (*f == encryptedLineNumber);
     }
 
 };
@@ -86,8 +82,9 @@ TEST_F(SecureFilterTest, test_filter) {
 
    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
 
-    std::shared_ptr<Predicate> aPredicate(new SecureFilterPredicateClass(1));  // secret share the constant (1) just once
-    Filter filter(&input, aPredicate);  // deletion handled by shared_ptr
+    std::shared_ptr<Predicate<SecureBoolField> > aPredicate(new SecureFilterPredicateClass(1));  // secret share the constant (1) just once
+
+    Filter<SecureBoolField> filter(&input, aPredicate);  // deletion handled by shared_ptr
 
     std::shared_ptr<QueryTable> result = filter.run();
     std::unique_ptr<QueryTable> revealed = result->reveal(emp::PUBLIC);

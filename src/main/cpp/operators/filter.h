@@ -19,6 +19,7 @@ namespace  vaultdb {
     };
 
 
+
     // template specialization for plaintext
     template <>
         class Filter<BoolField> : public Operator {
@@ -38,8 +39,8 @@ namespace  vaultdb {
     class Filter<SecureBoolField>  : public Operator {
         std::shared_ptr<Predicate<SecureBoolField> > predicate;
     public:
-        Filter(Operator *child, shared_ptr<Predicate<SecureBoolField> > & predicateClass);
-        Filter(shared_ptr<QueryTable> child, shared_ptr<Predicate<SecureBoolField> > & predicateClass);
+        Filter(Operator *child, shared_ptr<Predicate<SecureBoolField> > & predicateClass) : Operator(child), predicate(predicateClass) {}
+        Filter(shared_ptr<QueryTable> child, shared_ptr<Predicate<SecureBoolField> > & predicateClass) :  Operator(child), predicate(predicateClass) {}
         ~Filter() = default;
 
 

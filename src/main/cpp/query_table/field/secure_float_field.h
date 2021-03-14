@@ -18,7 +18,7 @@ namespace vaultdb {
 
     public:
 
-        SecureFloatField() = default;
+        SecureFloatField()  : Field(FieldType::SECURE_FLOAT) {}
         ~SecureFloatField() = default;
 
         explicit SecureFloatField(const Field &srcField);

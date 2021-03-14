@@ -147,10 +147,12 @@ bool FieldUtilities::geq(const Field *lhs, const Field *rhs) {
             auto rhsField = static_cast<const StringField *>(rhs);
             return (*lhsField >= *rhsField).getPayload();
         }
-
+        case FieldType::INVALID:
+            throw;
+        default:
+            return true; // encrypted case, can't check!
 
     }
-    return true; // encrypted case, can't check!
 }
 
 emp::Bit FieldUtilities::secureGeq(const Field *lhs, const Field *rhs)  {

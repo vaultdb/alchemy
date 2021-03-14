@@ -17,7 +17,7 @@ namespace vaultdb {
 
     public:
 
-        SecureIntField() = default;
+        SecureIntField() : Field(FieldType::SECURE_INT) {}
         ~SecureIntField() = default;
         explicit SecureIntField(const Field & srcField);
 

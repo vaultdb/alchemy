@@ -18,7 +18,7 @@ namespace vaultdb {
 
     public:
 
-        SecureBoolField() = default;
+        SecureBoolField() :  Field(FieldType::SECURE_BOOL) {}
         explicit SecureBoolField(const Field & srcField);
 
         SecureBoolField(const SecureBoolField & src);

@@ -18,7 +18,7 @@ namespace vaultdb {
 
     public:
 
-        LongField() = default;
+        LongField() :  Field(FieldType::LONG) {}
         ~LongField() = default;
         explicit LongField(const Field & srcField);
 

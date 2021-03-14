@@ -18,7 +18,7 @@ namespace vaultdb {
 
     public:
 
-        StringField() = default;
+        StringField() :  Field(FieldType::STRING) {}
         ~StringField() = default;
         explicit StringField(const Field & srcField);
 

@@ -8,9 +8,6 @@ std::ostream &operator<<(std::ostream &os, const IntField &aValue) {
 }
 
 
-IntField::IntField() : Field(FieldType::INT) {
-
-}
 
 IntField::IntField(const Field &srcField) : Field(FieldType::INT) {
     int32_t p = srcField.getValue<int32_t>();

@@ -17,7 +17,7 @@ namespace vaultdb {
 
     public:
 
-        BoolField() = default;
+        BoolField() :  Field(FieldType::BOOL) {}
         explicit BoolField(const Field & srcField);
 
         BoolField(const BoolField & src);

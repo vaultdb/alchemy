@@ -16,7 +16,7 @@ namespace vaultdb {
 
     public:
 
-        SecureLongField() = default;
+        SecureLongField()  : Field(FieldType::SECURE_LONG) {}
         ~SecureLongField() = default;
 
         explicit SecureLongField(const Field &srcField);
