@@ -11,9 +11,9 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
     for(ScalarAggregateDefinition agg : aggregateDefinitions) {
         // for most aggs the output type is the same as the input type
         // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
-        types::TypeId aggValueType = (agg.ordinal >= 0) ?
+        TypeId aggValueType = (agg.ordinal >= 0) ?
                                      input->getSchema().getField(agg.ordinal).getType() :
-                                     (input->isEncrypted() ? types::FieldType::SECURE_LONG : types::FieldType::LONG);
+                                     (input->isEncrypted() ? FieldType::SECURE_LONG : FieldType::LONG);
         aggregators.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType, input->isEncrypted()));
     }
 
@@ -49,7 +49,7 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
     }
 
     // TODO: handle the case where all input tuples are dummies
-    types::Value dummyTag = (output->isEncrypted()) ? types::Value(emp::Bit(false, emp::PUBLIC)) : types::Value(false);
+    Field dummyTag = (output->isEncrypted()) ? Value(emp::Bit(false, emp::PUBLIC)) : Value(false);
     tuplePtr->setDummyTag(dummyTag);
 
 
@@ -58,7 +58,7 @@ std::shared_ptr<QueryTable> ScalarAggregate::runSelf() {
 
 
 ScalarAggregateImpl *ScalarAggregate::aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                                       const types::TypeId &aggregateValueType,
+                                                       const TypeId &aggregateValueType,
                                                        const bool &isEncrypted) const {
     if (!isEncrypted) {
         switch (aggregateType) {

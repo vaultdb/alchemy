@@ -82,7 +82,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> sr
     // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
     Utilities::checkMemoryUtilization("before projection");
     Project project(src);
-    TypeId intType = TypeId::ENCRYPTED_INTEGER32;
+    TypeId intType = FieldType::SECURE_INT;
 
     ProjectionMappingSet mappingSet{
             // zip_marker
@@ -176,7 +176,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const
 
 }
 
-Value EnrichHtnQuery::projectMultisite(const QueryTuple &aTuple) {
+Field EnrichHtnQuery::projectMultisite(const QueryTuple &aTuple) {
     Integer siteCount = aTuple.getFieldPtr(7)->getValue().getEmpInt();
 
     Bit condition = siteCount > Integer(64, 1, PUBLIC);
@@ -184,10 +184,10 @@ Value EnrichHtnQuery::projectMultisite(const QueryTuple &aTuple) {
     // get from Value::TypeId bool --> int
     Integer result(32, 0, PUBLIC);
     result.bits[0] = condition;
-    return Value(TypeId::ENCRYPTED_INTEGER32, result);
+    return Value(FieldType::SECURE_INT, result);
 }
 
-Value EnrichHtnQuery::projectNumeratorMultisite(const QueryTuple &aTuple) {
+Field EnrichHtnQuery::projectNumeratorMultisite(const QueryTuple &aTuple) {
     Integer inNumerator = aTuple.getFieldPtr(6)->getValue().getEmpInt();
     Integer siteCount = aTuple.getFieldPtr(7)->getValue().getEmpInt();
 
@@ -199,7 +199,7 @@ Value EnrichHtnQuery::projectNumeratorMultisite(const QueryTuple &aTuple) {
     // get from Value::TypeId bool --> int
     Integer result(32, 0, PUBLIC);
     result.bits[0] = condition;
-    return Value(TypeId::ENCRYPTED_INTEGER32, result);
+    return Value(FieldType::SECURE_INT, result);
 }
 
 
@@ -212,7 +212,7 @@ Value EnrichHtnQuery::projectNumeratorMultisite(const QueryTuple &aTuple) {
 //                WHEN age_days > 72*365  AND age_days <= 83*365 THEN 5
 //                ELSE 6 END age_strata
 
-Value EnrichHtnQuery::projectSecureAgeStrata(const QueryTuple & aTuple) {
+Field EnrichHtnQuery::projectSecureAgeStrata(const QueryTuple & aTuple) {
     Integer ageDays = aTuple.getField(2).getValue().getEmpInt(); // age_days
      vector<Integer> ageStrata = {Integer(32, 0), Integer(32,1), Integer(32,2), Integer(32,3), Integer(32,4), Integer(32,5), Integer(32, 6) };
      vector<Integer> ageCutoff = {Integer(32, 28*365), Integer(32, 39*365), Integer(32, 50*365), Integer(32, 61*365), Integer(32, 72*365), Integer(32, 83*365)};
@@ -224,6 +224,6 @@ Value EnrichHtnQuery::projectSecureAgeStrata(const QueryTuple & aTuple) {
                                     If(ageDays <= ageCutoff[4], ageStrata[4],
                                        If(ageDays <= ageCutoff[5], ageStrata[5], ageStrata[6]))))));
 
-    return Value(TypeId::ENCRYPTED_INTEGER32, ageStratum);
+    return Value(FieldType::SECURE_INT, ageStratum);
 
 }

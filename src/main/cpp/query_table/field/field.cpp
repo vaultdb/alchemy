@@ -351,3 +351,15 @@ void Field::initialize(const FieldType &type, const size_t &strLength) {
 
 }
 
+// only for bool types
+/*Field Field::operator!() const {
+    assert(type_ == FieldType::BOOL || type_ == FieldType::SECURE_BOOL);
+
+    if(type_ == FieldType::BOOL)
+        return static_cast<const BoolField *>(this)->negate();
+
+    return static_cast<const SecureBoolField *>(this)->negate();
+
+}*/
+
+

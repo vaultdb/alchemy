@@ -1,6 +1,7 @@
 #ifndef BOOL_FIELD_H
 #define BOOL_FIELD_H
 
+#include "field.h"
 #include "field_instance.h"
 #include <emp-tool/circuits/bit.h>
 

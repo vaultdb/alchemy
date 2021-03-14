@@ -5,32 +5,29 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
     bool swap = false;
 
-    Field *eqValue;
-
     for(size_t i = 0; i < sortDefinition.size(); ++i) {
         const Field *lhsValue = SortCondition::getValue(lhs, sortDefinition[i]);
         const Field *rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
 
         bool eq = FieldUtilities::equal(lhsValue, rhsValue);
-        bool gt = (FieldUtilities::geq(lhsValue, rhsValue) && !eq);
+        bool geq = FieldUtilities::geq(lhsValue, rhsValue);
         SortDirection direction = sortDefinition[i].second;
 
 
 
         // is a swap needed?
         // if (lhs > rhs AND descending) OR (lhs < rhs AND ASCENDING)
-        if((gt && direction == SortDirection::DESCENDING)  ||
-                ( !gt && direction == SortDirection::ASCENDING)){
-                swap = true;
-                break;
-            }
-            else if (!eq) {
+        if((geq && !eq && direction == SortDirection::DESCENDING)  ||
+           (!geq && direction == SortDirection::ASCENDING)){
+            swap = true;
+            break;
+        }
+        else if (!eq) {
             break; // no switch needed, they are already in the right order
-            }
+        }
 
 
     } // end check for swap
-
 
 
     if(swap) {
@@ -40,5 +37,4 @@ void PlainSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
     }
 
 }
-
 

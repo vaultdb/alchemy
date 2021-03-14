@@ -32,26 +32,26 @@ protected:
 /* Deprecated
  *
  * class RevenueExpression : public Expression {
-    Value oneValue;
+    Field oneValue;
 public:
-    RevenueExpression() : Expression("revenue", types::FieldType::FLOAT) {
-        oneValue = Value((int32_t) 1);
+    RevenueExpression() : Expression("revenue", FieldType::FLOAT) {
+        oneField = Value((int32_t) 1);
     }
 
     ~RevenueExpression() {}
 
-    types::Value expressionCall(const QueryTuple & aTuple) const  {
-        Value extendedPrice = aTuple.getField(5).getValue();
-        Value discount = aTuple.getField(6).getValue();
+    Field expressionCall(const QueryTuple & aTuple) const  {
+        Field extendedPrice = aTuple.getField(5).getValue();
+        Field discount = aTuple.getField(6).getValue();
 
         // l.l_extendedprice * (1 - l.l_discount)
-        return extendedPrice * (oneValue - discount);
+        return extendedPrice * (oneField - discount);
     }
 
     // needed for boost::variant
     RevenueExpression& operator=(const RevenueExpression & src) {
         this->alias = src.getAlias();
-        this->expressionType = types::FieldType::FLOAT;
+        this->expressionType = FieldType::FLOAT;
 
     }
 

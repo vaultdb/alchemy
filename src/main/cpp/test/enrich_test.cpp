@@ -12,7 +12,7 @@
 
 shared_ptr<QueryTable> EnrichTest::getAgeStrataProjection(shared_ptr<QueryTable> input, const bool & isEncrypted) const {
     Project project(input);
-    TypeId ageStrataType = isEncrypted ? TypeId::ENCRYPTED_INTEGER32 : TypeId::INTEGER32;
+    TypeId ageStrataType = isEncrypted ? FieldType::SECURE_INT : FieldType::INT;
 
     Expression ageStrataExpression(&EnrichTestSupport::projectPlainAgeStrata, "age_strata", ageStrataType);
     ProjectionMappingSet mappingSet{
@@ -148,7 +148,7 @@ shared_ptr<QueryTable> EnrichTest::getPatientCohort() {
     // output schema:
     // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
     Project project(inclusionCohort);
-    TypeId intType = TypeId::ENCRYPTED_INTEGER32;
+    TypeId intType = FieldType::SECURE_INT;
 
     ProjectionMappingSet mappingSet{
             // zip_marker

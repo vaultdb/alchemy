@@ -27,18 +27,18 @@ namespace vaultdb {
 
     private:
         GroupByAggregateImpl *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                               const types::TypeId &aggregateValueType) const;
+                                               const TypeId &aggregateValueType) const;
         // checks that input table is sorted by group-by cols
         bool verifySortOrder(const std::shared_ptr<QueryTable> & table) const;
 
         // returns boolean for whether two tuples are in the same group-by bin
-        types::Value groupByMatch(const QueryTuple & lhs, const QueryTuple & rhs) const;
+        Field groupByMatch(const QueryTuple & lhs, const QueryTuple & rhs) const;
 
         QuerySchema generateOutputSchema(const QuerySchema & srcSchema,
                                          const std::vector<GroupByAggregateImpl *> & aggregators) const;
 
-        QueryTuple generateOutputTuple(const QueryTuple &lastTuple, const types::Value &lastEntryGroupByBin,
-                            const types::Value &nonDummyBin, const vector<GroupByAggregateImpl *> &aggregators) const;
+        QueryTuple generateOutputTuple(const QueryTuple &lastTuple, const Field &lastEntryGroupByBin,
+                            const Field &nonDummyBin, const vector<GroupByAggregateImpl *> &aggregators) const;
 
 
     };

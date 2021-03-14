@@ -177,10 +177,10 @@ static FieldType getFieldTypeFromOid(pqxx::oid oid) {
         case OID_FLOAT4:
             return FieldType::FLOAT;
             // case OID_FLOAT8:
-            //    return types::TypeId::FLOAT64;
+            //    return TypeId::FLOAT64;
             // case OID_TIMESTAMP:
             //  case OID__TIMESTAMP:
-            //      return types::TypeId::TIMESTAMP;
+            //      return TypeId::TIMESTAMP;
         case OID_DATE:
         case OID__DATE:
             return FieldType::DATE;

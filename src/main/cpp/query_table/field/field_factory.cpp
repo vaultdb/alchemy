@@ -11,17 +11,17 @@ using namespace vaultdb;
 Field * FieldFactory::getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src) {
     switch (type) {
         case FieldType::BOOL: {
-            bool boolValue = (src == "1") ? true : false;
-            return new BoolField(boolValue);
+            bool boolField = (src == "1") ? true : false;
+            return new BoolField(boolField);
         }
 
         case FieldType::INT: {
-            int32_t intValue = std::atoi(src.c_str());
-            return new IntField(intValue);
+            int32_t intField = std::atoi(src.c_str());
+            return new IntField(intField);
         }
         case FieldType::LONG: {
-            int64_t intValue = std::atol(src.c_str());
-            return new LongField(intValue);
+            int64_t intField = std::atol(src.c_str());
+            return new LongField(intField);
         }
         case FieldType::STRING: {
             std::string fieldStr = src;
@@ -31,8 +31,8 @@ Field * FieldFactory::getFieldFromString(const FieldType &type, const size_t &st
             return new StringField(fieldStr);
         }
         case FieldType::FLOAT: {
-            float_t floatValue = std::atof(src.c_str());
-            return new FloatField(floatValue);
+            float_t floatField = std::atof(src.c_str());
+            return new FloatField(floatField);
         }
         case FieldType::DATE: {
             boost::gregorian::date date(boost::gregorian::from_string(src));

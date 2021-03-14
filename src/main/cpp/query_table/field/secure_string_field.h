@@ -40,11 +40,8 @@ namespace vaultdb {
 
         SecureStringField operator+(const SecureStringField &rhs) const { return SecureStringField(getPayload() + rhs.getPayload()); }
         SecureStringField operator-(const SecureStringField &rhs) const { throw; }
-
         SecureStringField operator*(const SecureStringField &rhs) const { throw;  }
-
         SecureStringField operator/(const SecureStringField &rhs) const { throw; }
-
         SecureStringField operator%(const SecureStringField &rhs) const { throw;  }
 
 

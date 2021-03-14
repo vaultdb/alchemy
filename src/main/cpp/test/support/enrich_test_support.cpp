@@ -18,7 +18,7 @@ Integer EnrichTestSupport::getEmpInt(const int32_t & value) {
 //                ELSE 6 END age_strata
 
 // TODO: set this up to memoize the emp ints so we don't have to generate them every time
-Value EnrichTestSupport::projectSecureAgeStrata(const QueryTuple & aTuple) {
+Field EnrichTestSupport::projectSecureAgeStrata(const QueryTuple & aTuple) {
     Integer ageDays = aTuple.getField(2).getValue().getEmpInt(); // age_days
 
 
@@ -29,11 +29,11 @@ Value EnrichTestSupport::projectSecureAgeStrata(const QueryTuple & aTuple) {
                                     If(ageDays <= getEmpInt(72*365), getEmpInt(4),
                                        If(ageDays <= getEmpInt(83*365), getEmpInt(5), getEmpInt(6)))))));
 
-    return Value(TypeId::ENCRYPTED_INTEGER32, ageStrata);
+    return Value(FieldType::SECURE_INT, ageStrata);
 
 }
 
-Value EnrichTestSupport::projectPlainAgeStrata(const QueryTuple & aTuple) {
+Field EnrichTestSupport::projectPlainAgeStrata(const QueryTuple & aTuple) {
     int32_t ageDays = aTuple.getField(2).getValue().getInt32(); // age_days
 
     if(ageDays <= 28*365) return  Value(0);
@@ -47,7 +47,7 @@ Value EnrichTestSupport::projectPlainAgeStrata(const QueryTuple & aTuple) {
 
 }
 
-Value EnrichTestSupport::projectAgeStrata(const QueryTuple & aTuple) {
+Field EnrichTestSupport::projectAgeStrata(const QueryTuple & aTuple) {
     TypeId ageType = aTuple.getFieldPtr(2)->getValue().getType();
     if(TypeUtilities::isEncrypted(ageType))
         return projectSecureAgeStrata(aTuple);
@@ -59,7 +59,7 @@ Value EnrichTestSupport::projectAgeStrata(const QueryTuple & aTuple) {
 // Project #2
 //     CASE WHEN count(*) > 1 THEN 1 else 0 END AS multisite
 // MPC case only
-Value EnrichTestSupport::projectMultisite(const QueryTuple & aTuple) {
+Field EnrichTestSupport::projectMultisite(const QueryTuple & aTuple) {
     Integer siteCount = aTuple.getFieldPtr(7)->getValue().getEmpInt();
 
     Bit condition = siteCount > Integer(64, 1, PUBLIC);
@@ -67,19 +67,19 @@ Value EnrichTestSupport::projectMultisite(const QueryTuple & aTuple) {
     // get from Value::TypeId bool --> int
     Integer result(32, 0, PUBLIC);
     result.bits[0] = condition;
-    return Value(TypeId::ENCRYPTED_INTEGER32, result);
+    return Value(FieldType::SECURE_INT, result);
 
 
 
 }
 /* generic case:
  *
- *   Value siteCount = aTuple.getField(7).getValue();
+ *   Field siteCount = aTuple.getField(7).getValue();
     TypeId siteCountType = siteCount.getType(); // can be MPC or plaintext
-    Value zero = TypeUtilities::getZero(siteCountType);
-    Value one = TypeUtilities::getOne(siteCountType);
+    Field zero = TypeUtilities::getZero(siteCountType);
+    Field one = TypeUtilities::getOne(siteCountType);
 
-    Value condition =  siteCount > one;
+    Field condition =  siteCount > one;
     // get from Value::TypeId bool --> int
     if(TypeUtilities::isEncrypted(siteCountType))
         return Value::obliviousIf(condition, one, zero);
@@ -90,7 +90,7 @@ Value EnrichTestSupport::projectMultisite(const QueryTuple & aTuple) {
 
 //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
 // MPC case only
-Value EnrichTestSupport::projectNumeratorMultisite(const QueryTuple & aTuple) {
+Field EnrichTestSupport::projectNumeratorMultisite(const QueryTuple & aTuple) {
 
     Integer inNumerator = aTuple.getFieldPtr(6)->getValue().getEmpInt();
     Integer siteCount = aTuple.getFieldPtr(7)->getValue().getEmpInt();
@@ -103,7 +103,7 @@ Value EnrichTestSupport::projectNumeratorMultisite(const QueryTuple & aTuple) {
     // get from Value::TypeId bool --> int
     Integer result(32, 0, PUBLIC);
     result.bits[0] = condition;
-    return Value(TypeId::ENCRYPTED_INTEGER32, result);
+    return Value(FieldType::SECURE_INT, result);
 
 }
 
@@ -111,14 +111,14 @@ Value EnrichTestSupport::projectNumeratorMultisite(const QueryTuple & aTuple) {
 // patients(patid int, zip_marker varchar(3), age_days integer, sex varchar(1), ethnicity bool, race int, numerator int default null)
 QuerySchema EnrichTestSupport::getPatientSchema() {
     QuerySchema patientSchema(7);
-    patientSchema.putField(QueryFieldDesc(0, "patid", "patient", TypeId::INTEGER32));
-    patientSchema.putField(QueryFieldDesc(1, "zip_marker", "patient", TypeId::VARCHAR, 3));
-    patientSchema.putField(QueryFieldDesc(2, "age_days", "patient", TypeId::INTEGER32));
-    patientSchema.putField(QueryFieldDesc(3, "sex", "patient", TypeId::VARCHAR, 1));
-    patientSchema.putField(QueryFieldDesc(4, "ethnicity", "patient", TypeId::BOOLEAN));
-    patientSchema.putField(QueryFieldDesc(5, "race", "patient", TypeId::INTEGER32));
+    patientSchema.putField(QueryFieldDesc(0, "patid", "patient", FieldType::INT));
+    patientSchema.putField(QueryFieldDesc(1, "zip_marker", "patient", FieldType::STRING, 3));
+    patientSchema.putField(QueryFieldDesc(2, "age_days", "patient", FieldType::INT));
+    patientSchema.putField(QueryFieldDesc(3, "sex", "patient", FieldType::STRING, 1));
+    patientSchema.putField(QueryFieldDesc(4, "ethnicity", "patient", FieldType::BOOL));
+    patientSchema.putField(QueryFieldDesc(5, "race", "patient", FieldType::INT));
     // numerator: null = false, 1 = true
-    patientSchema.putField(QueryFieldDesc(6, "numerator", "patient", TypeId::INTEGER32));
+    patientSchema.putField(QueryFieldDesc(6, "numerator", "patient", FieldType::INT));
 
     return patientSchema;
 }
@@ -126,10 +126,10 @@ QuerySchema EnrichTestSupport::getPatientSchema() {
 // patient_inclusion(patid int, numerator int, denom_incl int)
 QuerySchema EnrichTestSupport::getPatientInclusionSchema() {
     QuerySchema patientInclusionSchema(3);
-    patientInclusionSchema.putField(QueryFieldDesc(0, "patid", "patient_inclusion", TypeId::INTEGER32));
+    patientInclusionSchema.putField(QueryFieldDesc(0, "patid", "patient_inclusion", FieldType::INT));
     // numerator: null = false, 1 = true
-    patientInclusionSchema.putField(QueryFieldDesc(1, "numerator", "patient_inclusion", TypeId::INTEGER32));
+    patientInclusionSchema.putField(QueryFieldDesc(1, "numerator", "patient_inclusion", FieldType::INT));
     // denom_excl: null = false, 1 = true
-    patientInclusionSchema.putField(QueryFieldDesc(2, "denom_incl", "patient_inclusion", TypeId::INTEGER32));
+    patientInclusionSchema.putField(QueryFieldDesc(2, "denom_incl", "patient_inclusion", FieldType::INT));
     return patientInclusionSchema;
 }

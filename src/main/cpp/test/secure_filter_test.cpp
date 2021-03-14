@@ -22,21 +22,21 @@ DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 class SecureFilterPredicateClass : public Predicate {
 
-    Value encryptedLineNumber;
+    Field encryptedLineNumber;
 public:
     ~SecureFilterPredicateClass() {}
     SecureFilterPredicateClass(int32_t valueToEncrypt) {
         emp::Integer val(32, valueToEncrypt);
         // encrypting here so we don't have to secret share it for every comparison
-        encryptedLineNumber = Value(TypeId::ENCRYPTED_INTEGER32, val);
+        encryptedLineNumber = Value(FieldType::SECURE_INT, val);
 
     }
 
     // filtering for l_linenumber = 1
-    Value predicateCall(const QueryTuple & aTuple) const override {
-        Value field = aTuple.getField(1).getValue();
+    Field predicateCall(const QueryTuple & aTuple) const override {
+        Field field = aTuple.getField(1).getValue();
 
-        Value res = field == encryptedLineNumber;
+        Field res = field == encryptedLineNumber;
 
         return res;
     }

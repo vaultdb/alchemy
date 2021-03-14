@@ -44,10 +44,10 @@ TEST_F(ScalarAggregateTest, test_count) {
     std::shared_ptr<QueryTable> output = aggregate.run();
 
     QueryTuple firstTuple = output->getTuple(0);
-    types::Value firstValue = firstTuple.getFieldPtr(0)->getValue();
-    types::Value expectedValue((int64_t) 50);
+    Field firstField = firstTuple.getFieldPtr(0)->getValue();
+    Field expectedValue((int64_t) 50);
 
-    ASSERT_TRUE((expectedValue == firstValue).getBool());
+    ASSERT_TRUE((expectedField == firstValue).getBool());
 
 }
 
@@ -58,7 +58,7 @@ TEST_F(ScalarAggregateTest, test_count_dummies) {
     // set up the expected results:
     std::string expectedOutputQuery = "SELECT COUNT(*) cnt FROM (" + query + ") selection WHERE NOT dummy";
     std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
-    types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
+    Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
     // provide the aggregator with inputs:
     SqlInput input(dbName, query, true);
@@ -85,7 +85,7 @@ TEST_F(ScalarAggregateTest, test_min) {
     // set up the expected results:
     std::string expectedOutputQuery = "WITH input AS (" + query + ") SELECT MIN(l_quantity) min_quantity FROM input";
     std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
-    types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
+    Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
     // provide the aggregator with inputs:
     SqlInput input(dbName, query, false);
@@ -101,9 +101,9 @@ TEST_F(ScalarAggregateTest, test_min) {
     std::shared_ptr<QueryTable> output = aggregate.run();
 
     QueryTuple firstTuple = output->getTuple(0);
-    types::Value firstValue = firstTuple.getFieldPtr(0)->getValue();
+    Field firstField = firstTuple.getFieldPtr(0)->getValue();
 
-    ASSERT_TRUE((firstValue == expectedValue).getBool());
+    ASSERT_TRUE((firstField == expectedValue).getBool());
 
 }
 
@@ -114,7 +114,7 @@ TEST_F(ScalarAggregateTest, test_max) {
     // set up the expected results:
     std::string expectedOutputQuery = "WITH input AS (" + query + ") SELECT MAX(l_tax) max_tax FROM input";
     std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
-    types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
+    Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
     // provide the aggregator with inputs:
     SqlInput input(dbName, query, false);
@@ -130,9 +130,9 @@ TEST_F(ScalarAggregateTest, test_max) {
     std::shared_ptr<QueryTable> output = aggregate.run();
 
     QueryTuple firstTuple = output->getTuple(0);
-    types::Value firstValue = firstTuple.getFieldPtr(0)->getValue();
+    Field firstField = firstTuple.getFieldPtr(0)->getValue();
 
-    ASSERT_TRUE((firstValue == expectedValue).getBool());
+    ASSERT_TRUE((firstField == expectedValue).getBool());
 
 }
 
@@ -143,7 +143,7 @@ TEST_F(ScalarAggregateTest, test_sum) {
   // set up the expected results:
   std::string expectedOutputQuery = "WITH input AS (" + query + ") SELECT SUM(l_quantity) sum_qty FROM input";
   std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
-  types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
+  Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
   // provide the aggregator with inputs:
   SqlInput input(dbName, query, false);
@@ -159,9 +159,9 @@ TEST_F(ScalarAggregateTest, test_sum) {
   std::shared_ptr<QueryTable> output = aggregate.run();
 
   QueryTuple firstTuple = output->getTuple(0);
-  types::Value firstValue = firstTuple.getFieldPtr(0)->getValue();
+  Field firstField = firstTuple.getFieldPtr(0)->getValue();
 
-  ASSERT_TRUE((firstValue == expectedValue).getBool());
+  ASSERT_TRUE((firstField == expectedValue).getBool());
 
 }
 
@@ -171,7 +171,7 @@ TEST_F(ScalarAggregateTest, test_sum_dummies) {
   // set up the expected results:
   std::string expectedOutputQuery = "SELECT SUM(l_extendedprice) sum_base_price FROM (" + query + ") selection WHERE NOT dummy";
   std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
-  types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
+  Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
   // provide the aggregator with inputs:
     SqlInput input(dbName, query, true);
@@ -198,7 +198,7 @@ TEST_F(ScalarAggregateTest, test_avg) {
   // set up the expected results:
   std::string expectedOutputQuery = "WITH input AS (" + query + ") SELECT AVG(l_extendedprice) avg_price FROM input";
   std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
-  types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
+  Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
     // provide the aggregator with inputs:
       SqlInput input(dbName, query, false);
@@ -214,9 +214,9 @@ TEST_F(ScalarAggregateTest, test_avg) {
   std::shared_ptr<QueryTable> output = aggregate.run();
 
   QueryTuple firstTuple = output->getTuple(0);
-  types::Value firstValue = firstTuple.getFieldPtr(0)->getValue();
+  Field firstField = firstTuple.getFieldPtr(0)->getValue();
 
-  ASSERT_TRUE((firstValue == expectedValue).getBool());
+  ASSERT_TRUE((firstField == expectedValue).getBool());
 
 }
 
@@ -227,7 +227,7 @@ TEST_F(ScalarAggregateTest, test_avg_dummies) {
   // set up the expected results:
   std::string expectedOutputQuery = "SELECT AVG(l_discount) avg_disc FROM (" + query + ") selection WHERE NOT dummy";
   std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
-  types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
+  Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
     // provide the aggregator with inputs:
       SqlInput input(dbName, query, false);
@@ -267,7 +267,7 @@ TEST_F(ScalarAggregateTest, test_all_sum_dummies) {
                                     "SUM(l_charge) sum_charge "
                                     "FROM (" + query + ") selection WHERE NOT dummy";
   std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
-  types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
+  Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
     // provide the aggregator with inputs:
       SqlInput input(dbName, query, true);
@@ -302,7 +302,7 @@ TEST_F(ScalarAggregateTest, test_all_avg_dummies) {
                                     "AVG(l_discount) avg_disc "
                                     "FROM (" + query + ") selection WHERE NOT dummy";
   std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
-  types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
+  Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
     // provide the aggregator with inputs:
       SqlInput input(dbName, query, true);
@@ -386,7 +386,7 @@ TEST_F(ScalarAggregateTest, test_all_aggs_tpch_q1) {
                                     "COUNT(*) count_order "
                                     "FROM (" + query + ") selection WHERE NOT dummy";
   std::shared_ptr<QueryTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
-  types::Value expectedValue = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
+  Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
   // provide the aggregator with inputs:
     SqlInput input(dbName, query, true);

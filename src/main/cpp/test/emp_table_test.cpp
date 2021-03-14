@@ -22,7 +22,7 @@ TEST_F(EmpTableTest, encrypt_table_one_column) {
     PsqlDataProvider dataProvider;
 
     std::string inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
-    std::cout << "Querying " << dbName << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
+    //std::cout << "Querying " << dbName << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
 
 
 
@@ -63,7 +63,6 @@ TEST_F(EmpTableTest, encrypt_table_varchar) {
                                                                          inputQuery, false);
 
     std::shared_ptr<QueryTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
-    std::cout << "Done encrypting table!" << std::endl;
 
     netio->flush();
 

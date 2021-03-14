@@ -31,18 +31,18 @@ bool SecureSortTest::correctOrder(const QueryTuple &lhs, const QueryTuple &rhs, 
     assert(lhs.getFieldCount() == rhs.getFieldCount());
 
     for(uint32_t i = 0; i < lhs.getFieldCount(); ++i) {
-        types::Value lhsVal = lhs.getField(i).getValue();
-        types::Value rhsVal = rhs.getField(i).getValue();
+        Field lhsVal = lhs.getField(i).getValue();
+        Field rhsVal = rhs.getField(i).getValue();
 
         if(sortDefinition[i].second == SortDirection::ASCENDING) {
 
             if ((lhsVal == rhsVal).getBool()) continue;
-            types::Value gt = (lhs.getField(i).getValue() > rhs.getField(i).getValue());
+            Field gt = (lhs.getField(i).getValue() > rhs.getField(i).getValue());
             return !(gt.getBool());
         }
         else if(sortDefinition[i].second == SortDirection::DESCENDING) {
             if ((lhsVal == rhsVal).getBool()) continue;
-            types::Value lt = (lhsVal < rhsVal);
+            Field lt = (lhsVal < rhsVal);
             return !(lt.getBool());
         }
     }

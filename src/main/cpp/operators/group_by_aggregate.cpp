@@ -11,16 +11,16 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     std::vector<GroupByAggregateImpl *> aggregators;
     QueryTuple *current, *predecessor;
     Field *realBin;
-    types::TypeId boolType = input->isEncrypted() ? types::FieldType::SECURE_BOOL : types::FieldType::BOOL;
+    TypeId boolType = input->isEncrypted() ? FieldType::SECURE_BOOL : FieldType::BOOL;
     QueryTuple outputTuple;
     QuerySchema inputSchema = input->getSchema();
 
     for(ScalarAggregateDefinition agg : aggregateDefinitions) {
         // for most aggs the output type is the same as the input type
         // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
-        types::TypeId aggValueType = (agg.ordinal >= 0) ?
+        TypeId aggValueType = (agg.ordinal >= 0) ?
                     inputSchema.getField(agg.ordinal).getType() :
-                                     (input->isEncrypted() ? types::FieldType::SECURE_LONG : types::FieldType::LONG);
+                                     (input->isEncrypted() ? FieldType::SECURE_LONG : FieldType::LONG);
         aggregators.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
     }
 
@@ -39,12 +39,12 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
 
     // TODO: should this set dummy tag to input->getTuple(0).getDummyTag?
     QueryTuple *tuplePtr = output->getTuplePtr(0);
-    types::Value dummyTag = output->isEncrypted() ? types::Value(emp::Bit(false)) : types::Value(false);
+    Field dummyTag = output->isEncrypted() ? Value(emp::Bit(false)) : Value(false);
     tuplePtr->setDummyTag(dummyTag);
 
 
     predecessor = input->getTuplePtr(0);;
-    types::Value forceInit = TypeUtilities::getZero(boolType);
+    Field forceInit = TypeUtilities::getZero(boolType);
 
     for(GroupByAggregateImpl *aggregator : aggregators) {
         aggregator->initialize(*predecessor, forceInit);
@@ -56,7 +56,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
     for(uint32_t i = 1; i < input->getTupleCount(); ++i) {
         current = input->getTuplePtr(i);
         realBin = realBin | !(predecessor->getDummyTag());
-        types::Value isGroupByMatch = groupByMatch(*predecessor, *current);
+        Field isGroupByMatch = groupByMatch(*predecessor, *current);
         outputTuple = generateOutputTuple(*predecessor, !isGroupByMatch, realBin, aggregators);
 
         for(GroupByAggregateImpl *aggregator : aggregators) {
@@ -90,7 +90,7 @@ std::shared_ptr<QueryTable> GroupByAggregate::runSelf() {
 }
 
 GroupByAggregateImpl *GroupByAggregate::aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                                         const types::TypeId &aggregateValueType) const {
+                                                         const TypeId &aggregateValueType) const {
 
     bool isEncrypted = TypeUtilities::isEncrypted(aggregateValueType);
     if (!isEncrypted) {
@@ -139,9 +139,9 @@ bool GroupByAggregate::verifySortOrder(const std::shared_ptr<QueryTable> &table)
 
 }
 
-types::Value GroupByAggregate::groupByMatch(const QueryTuple &lhs, const QueryTuple &rhs) const {
+Field GroupByAggregate::groupByMatch(const QueryTuple &lhs, const QueryTuple &rhs) const {
 
-    types::Value result = lhs.getFieldPtr(groupByOrdinals[0])->getValue() ==  rhs.getFieldPtr(groupByOrdinals[0])->getValue();
+    Field result = lhs.getFieldPtr(groupByOrdinals[0])->getValue() ==  rhs.getFieldPtr(groupByOrdinals[0])->getValue();
     size_t cursor = 1;
     while(cursor < groupByOrdinals.size()) {
         result = result &
@@ -172,8 +172,8 @@ QuerySchema GroupByAggregate::generateOutputSchema(const QuerySchema & srcSchema
 
 }
 
-QueryTuple GroupByAggregate::generateOutputTuple(const QueryTuple &lastTuple, const types::Value &lastEntryGroupByBin,
-                                                 const types::Value &nonDummyBin,
+QueryTuple GroupByAggregate::generateOutputTuple(const QueryTuple &lastTuple, const Field &lastEntryGroupByBin,
+                                                 const Field &nonDummyBin,
                                                  const vector<GroupByAggregateImpl *> &aggregators) const {
 
     QueryTuple dstTuple(groupByOrdinals.size() + aggregators.size());
@@ -188,14 +188,14 @@ QueryTuple GroupByAggregate::generateOutputTuple(const QueryTuple &lastTuple, co
 
     // write partial aggs
     for(GroupByAggregateImpl *aggregator : aggregators) {
-        types::Value currentResult = aggregator->getResult() const;
+        Field currentResult = aggregator->getResult() const;
         Field dstField(i, currentResult);
         dstTuple.putField(dstField, -1);
         ++i;
     }
 
 
-    types::Value dummyTag = aggregators[0]->getDummyTag(lastEntryGroupByBin, nonDummyBin);
+    Field dummyTag = aggregators[0]->getDummyTag(lastEntryGroupByBin, nonDummyBin);
     dstTuple.setDummyTag(dummyTag);
 
 

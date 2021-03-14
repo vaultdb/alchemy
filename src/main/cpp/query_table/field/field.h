@@ -41,7 +41,7 @@ namespace vaultdb {
 
             template<typename T>
             inline T getValue()  const {
-                // use getStringValue for this case
+                // use getStringField for this case
                 assert(type_ != FieldType::STRING);
 
                 return *(reinterpret_cast<T*>(data_));
@@ -88,6 +88,18 @@ namespace vaultdb {
 
             static Field deserialize(const QueryFieldDesc & fieldDesc, const int8_t * src);
             static Field deserialize(const FieldType & field, const int & strLength, const int8_t *src);
+
+            // only for bool types
+            // TODO: remove previous overloads in FieldInstance before using them here
+            // meld this with FieldInstance?
+        //Field operator !() const;
+
+        /*Field operator+(const Field &rhs) const  {  return static_cast<T const &>(*this) + rhs; }
+        Field operator-(const Field &rhs) const  {   return static_cast<const T &>(*this) - rhs; }
+        Field operator*(const Field &rhs) const  {   return static_cast<const T &>(*this) * rhs; }
+        Field operator/(const Field &rhs) const  {   return static_cast<const T &>(*this) / rhs; }
+        Field operator%(const Field &rhs) const  {   return static_cast<const T &>(*this) % rhs; }*/
+
 
     protected:
         void copy(const Field & src);

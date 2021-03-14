@@ -31,7 +31,7 @@ void SecureGroupByAggregateImpl::updateGroupByBinBoundary(const Field *isNewBin,
 
 void SecureGroupByCountImpl::initialize(const QueryTuple &tuple, const Field *isDummy) {
     Bit dummyTag = TypeUtilities::getSecureBool(*tuple.getDummyTag());
-    Integer resetValue = emp::If(dummyTag, Integer(64, 0), emp::Integer(64, 1));
+    Integer resetField = emp::If(dummyTag, Integer(64, 0), emp::Integer(64, 1));
     runningCount = emp::If(TypeUtilities::getSecureBool(*isDummy), runningCount, resetValue);
 
 }
@@ -59,7 +59,7 @@ void SecureGroupBySumImpl::initialize(const QueryTuple &tuple, const Field *isDu
         *aggInput = SecureLongField(empInt);
     }
 
-    Field *resetValue = FieldFactory::obliviousIf(*tuple.getDummyTag(), *zero, *aggInput);
+    Field *resetField = FieldFactory::obliviousIf(*tuple.getDummyTag(), *zero, *aggInput);
     runningSum = FieldFactory::obliviousIf(*isDummy, *runningSum, *resetValue);
 }
 
@@ -98,7 +98,7 @@ void SecureGroupByAvgImpl::initialize(const QueryTuple &tuple, const Field *isDu
 
     Field *aggInput = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
     Field *resetSum = FieldFactory::obliviousIf(*tuple.getDummyTag(), *zero, *aggInput);
-    Value resetCount = FieldFactory::obliviousIf(*tuple.getDummyTag(), *zeroFloat, *oneFloat);
+    Field resetCount = FieldFactory::obliviousIf(*tuple.getDummyTag(), *zeroFloat, *oneFloat);
 
     runningSum = FieldFactory::obliviousIf(isDummy, runningSum, resetSum);
     runningCount = FieldFactory::obliviousIf(isDummy, runningCount, resetCount);
@@ -109,9 +109,9 @@ void SecureGroupByAvgImpl::accumulate(const QueryTuple &tuple, const Field *isDu
     Field *toAdd = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
 
 
-    Value toUpdate = (!isDummy) & !(tuple.getDummyTag());
-    Value incremented = runningSum + toAdd;
-    Value incrementedCount = runningCount + oneFloat;
+    Field toUpdate = (!isDummy) & !(tuple.getDummyTag());
+    Field incremented = runningSum + toAdd;
+    Field incrementedCount = runningCount + oneFloat;
 
     runningSum = FieldFactory::obliviousIf(toUpdate, incremented, runningSum);
     runningCount = FieldFactory::obliviousIf(toUpdate, incrementedCount, runningCount);
@@ -141,8 +141,8 @@ void SecureGroupByMinImpl::initialize(const QueryTuple &tuple, const Field *isDu
     Field *aggInput = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
 
     // if the tuple is a dummy...
-    Value maxValue = getMaxValue();
-    Value resetValue = FieldFactory::obliviousIf(tuple.getDummyTag(), maxValue, aggInput);
+    Field maxField = getMaxValue();
+    Field resetField = FieldFactory::obliviousIf(tuple.getDummyTag(), maxValue, aggInput);
 
     // use secret initialized variable for debugging
     runningMin = FieldFactory::obliviousIf(isDummy, runningMin, resetValue);
@@ -151,7 +151,7 @@ void SecureGroupByMinImpl::initialize(const QueryTuple &tuple, const Field *isDu
 
 void SecureGroupByMinImpl::accumulate(const QueryTuple &tuple, const Field *isDummy) {
     Field *aggInput = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
-    Value toUpdate = (!isDummy) & !(tuple.getDummyTag()) & (aggInput < runningMin);
+    Field toUpdate = (!isDummy) & !(tuple.getDummyTag()) & (aggInput < runningMin);
     runningMin = FieldFactory::obliviousIf(toUpdate, aggInput, runningMin);
 }
 
@@ -160,7 +160,7 @@ const Field * SecureGroupByMinImpl::getResult() const {
 }
 
 
-Value SecureGroupByMinImpl::getMaxValue() const  {
+Field SecureGroupByMinImpl::getMaxValue() const  {
     switch(aggregateType) {
         case FieldType::SECURE_INT32:
             return Value(FieldType::SECURE_INT32, Integer(32, INT_MAX, PUBLIC));
@@ -180,14 +180,14 @@ Value SecureGroupByMinImpl::getMaxValue() const  {
 void SecureGroupByMaxImpl::initialize(const QueryTuple &tuple, const Field *isDummy) {
     Field *aggInput = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
 
-    Value minValue = getMinValue();
-    Value resetValue = FieldFactory::obliviousIf(tuple.getDummyTag(), minValue, aggInput);
+    Field minField = getMinValue();
+    Field resetField = FieldFactory::obliviousIf(tuple.getDummyTag(), minValue, aggInput);
     runningMax = FieldFactory::obliviousIf(isDummy, runningMax, resetValue);
 }
 
 void SecureGroupByMaxImpl::accumulate(const QueryTuple &tuple, const Field *isDummy) {
     Field *aggInput = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
-    Value toUpdate = (!isDummy) & !(tuple.getDummyTag()) & (aggInput > runningMax);
+    Field toUpdate = (!isDummy) & !(tuple.getDummyTag()) & (aggInput > runningMax);
     runningMax = FieldFactory::obliviousIf(toUpdate, aggInput, runningMax);
 
 }

@@ -35,9 +35,9 @@ namespace  vaultdb {
         // aggregate the data cube
         void aggregatePatients(shared_ptr<QueryTable> src);
 
-        static Value projectMultisite(const QueryTuple &aTuple);
-        static Value projectNumeratorMultisite(const QueryTuple &aTuple);
-        static Value projectSecureAgeStrata(const QueryTuple &aTuple);
+        static Field projectMultisite(const QueryTuple &aTuple);
+        static Field projectNumeratorMultisite(const QueryTuple &aTuple);
+        static Field projectSecureAgeStrata(const QueryTuple &aTuple);
 
 
         // emp Integers for age cutoffs in age_strata projection:
@@ -48,18 +48,18 @@ namespace  vaultdb {
 
     class FilterExcludedPatients : public Predicate {
 
-        Value cmp;
+        Field cmp;
     public:
         explicit FilterExcludedPatients(const bool & isEncrypted) {
-            cmp = isEncrypted ? TypeUtilities::getZero(TypeId::ENCRYPTED_INTEGER32) : TypeUtilities::getZero(TypeId::INTEGER32);
+            cmp = isEncrypted ? TypeUtilities::getZero(FieldType::SECURE_INT) : TypeUtilities::getZero(FieldType::INT);
         }
 
         ~FilterExcludedPatients() = default;
-        [[nodiscard]] types::Value predicateCall(const QueryTuple & aTuple) const override {
+        [[nodiscard]] Field predicateCall(const QueryTuple & aTuple) const override {
 
             QueryTuple decrypted = aTuple.reveal();
-            Value field = aTuple.getFieldPtr(8)->getValue();
-            Value res = (field == cmp);
+            Field field = aTuple.getFieldPtr(8)->getValue();
+            Field res = (field == cmp);
             return  res;
         }
 

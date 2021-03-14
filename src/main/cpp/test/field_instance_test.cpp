@@ -110,7 +110,7 @@ TEST_F(FieldInstanceTest, decryptTest) {
 
   /*  Field *encrypted = new SecureBoolField(true, emp::ALICE, emp::ALICE);
     Field *revealed = EmpManager::revealField( encrypted, emp::PUBLIC);
-    bool rValue = ((BoolField *)revealed)->primitive();
+    bool rField = ((BoolField *)revealed)->primitive();
 
     ASSERT_EQ(true, rValue);
 

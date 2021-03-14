@@ -24,7 +24,7 @@ namespace vaultdb {
 
         // when reading data from ascii sources like csv
         // Moved this to FieldFactory
-        // static types::Value decodeStringValue(const std::string & strValue, const QueryFieldDesc &fieldSpec);
+        // static Field decodeStringValue(const std::string & strValue, const QueryFieldDesc &fieldSpec);
 
         static FieldType toSecure(const FieldType & plainType);
         static FieldType toPlain(const FieldType & secureType);

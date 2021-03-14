@@ -14,18 +14,18 @@ class EnrichTestSupport {
 
 public:
 
-        static Value projectSecureAgeStrata(const QueryTuple & aTuple);
+        static Field projectSecureAgeStrata(const QueryTuple & aTuple);
 
-        static Value projectPlainAgeStrata(const QueryTuple &aTuple);
+        static Field projectPlainAgeStrata(const QueryTuple &aTuple);
 
-        static Value projectAgeStrata(const QueryTuple &aTuple);
+        static Field projectAgeStrata(const QueryTuple &aTuple);
 
 
         static emp::Integer getEmpInt(const int32_t &value);
 
-    static Value projectMultisite(const QueryTuple &aTuple);
+    static Field projectMultisite(const QueryTuple &aTuple);
 
-    static Value projectNumeratorMultisite(const QueryTuple &aTuple);
+    static Field projectNumeratorMultisite(const QueryTuple &aTuple);
 
     static QuerySchema getPatientSchema();
 
@@ -36,18 +36,18 @@ public:
 
 class FilterExcludedPatients : public Predicate {
 
-    Value cmp;
+    Field cmp;
 public:
     explicit FilterExcludedPatients(const bool & isEncrypted) {
-        cmp = isEncrypted ? TypeUtilities::getZero(TypeId::ENCRYPTED_INTEGER32) : TypeUtilities::getZero(TypeId::INTEGER32);
+        cmp = isEncrypted ? TypeUtilities::getZero(FieldType::SECURE_INT) : TypeUtilities::getZero(FieldType::INT);
     }
 
     ~FilterExcludedPatients() = default;
-    [[nodiscard]] types::Value predicateCall(const QueryTuple & aTuple) const override {
+    [[nodiscard]] Field predicateCall(const QueryTuple & aTuple) const override {
 
         QueryTuple decrypted = aTuple.reveal();
-        Value field = aTuple.getFieldPtr(8)->getValue();
-        Value res = (field == cmp);
+        Field field = aTuple.getFieldPtr(8)->getValue();
+        Field res = (field == cmp);
         return  res;
     }
 
