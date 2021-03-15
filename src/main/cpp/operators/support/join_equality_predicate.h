@@ -1,7 +1,3 @@
-//
-// Created by Jennie Rogers on 9/13/20.
-//
-
 #ifndef _JOIN_EQUALITY_PREDICATE_H
 #define _JOIN_EQUALITY_PREDICATE_H
 
@@ -9,23 +5,44 @@
 
 // ordinals with respect to position in each source tuple
 // lhs.ordinal == rhs.ordinal
-typedef std::pair<uint32_t, uint32_t> EqualityPredicate;
+typedef std::pair<size_t, size_t> EqualityPredicate;
 typedef std::vector<EqualityPredicate> ConjunctiveEqualityPredicate;
 
 // conjunctive equality predicate
 // e.g., partsupp.suppkey = lineitem.suppkey AND partsupp.partkey = lineitem.partkey
 
-class JoinEqualityPredicate : public BinaryPredicate {
+template <typename T>
+class JoinEqualityPredicate : public BinaryPredicate<T> {
 public:
-    JoinEqualityPredicate(const ConjunctiveEqualityPredicate & srcPredicates, bool isEncrypted);
+    JoinEqualityPredicate(const ConjunctiveEqualityPredicate & srcPredicates, bool isEncrypted) {}
 
-    Field *predicateCall( QueryTuple * lhs,  QueryTuple * rhs) const override;
+    virtual T predicateCall( const QueryTuple * lhs, const QueryTuple * rhs) const override { throw; }; // we should never get here, use specializations below instead
 
-private:
-    std::vector<EqualityPredicate> predicates;
-    FieldType resultType = FieldType::BOOL;
 
 };
+
+
+
+template <>
+class JoinEqualityPredicate<BoolField> : public BinaryPredicate<BoolField> {
+public:
+    JoinEqualityPredicate(const ConjunctiveEqualityPredicate & srcPredicates);
+    BoolField predicateCall(const QueryTuple * lhs, const QueryTuple *rhs) const override;
+
+private:
+    ConjunctiveEqualityPredicate predicate;
+};
+
+template <>
+class JoinEqualityPredicate<SecureBoolField> : public BinaryPredicate<SecureBoolField> {
+public:
+    JoinEqualityPredicate(const ConjunctiveEqualityPredicate & srcPredicates);
+    SecureBoolField predicateCall(const QueryTuple * lhs, const QueryTuple *rhs) const override;
+
+private:
+    ConjunctiveEqualityPredicate predicate;
+};
+
 
 
 #endif //_JOIN_EQUALITY_PREDICATE_H

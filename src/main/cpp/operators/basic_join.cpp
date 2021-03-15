@@ -1,39 +1,45 @@
 #include "basic_join.h"
 
-BasicJoin::BasicJoin(Operator *lhs, Operator *rhs, shared_ptr<BinaryPredicate> predicateClass)
-        : Join(lhs, rhs, predicateClass) {}
+template<typename T>
+BasicJoin<T>::BasicJoin(Operator *lhs, Operator *rhs, shared_ptr<BinaryPredicate<T> > predicateClass)
+        : Join<T>(lhs, rhs, predicateClass) {}
 
-BasicJoin::BasicJoin(shared_ptr<QueryTable> lhs, shared_ptr<QueryTable>rhs, shared_ptr<BinaryPredicate> predicateClass)
-        : Join(lhs, rhs, predicateClass) {}
+template<typename T>
+BasicJoin<T>::BasicJoin(shared_ptr<QueryTable> lhs, shared_ptr<QueryTable>rhs, shared_ptr<BinaryPredicate<T> > predicateClass)
+        : Join<T>(lhs, rhs, predicateClass) {}
 
-shared_ptr<QueryTable> BasicJoin::runSelf() {
-    std::shared_ptr<QueryTable> lhs = children[0]->getOutput();
-    std::shared_ptr<QueryTable> rhs = children[1]->getOutput();
+template<typename T>
+shared_ptr<QueryTable> BasicJoin<T>::runSelf() {
+    std::shared_ptr<QueryTable> lhs = Join<T>::children[0]->getOutput();
+    std::shared_ptr<QueryTable> rhs = Join<T>::children[1]->getOutput();
     uint32_t cursor = 0;
     QueryTuple *lhsTuple, *rhsTuple;
-    Field *predicateEval;
+    T predicateEval;
 
     uint32_t outputTupleCount = lhs->getTupleCount() * rhs->getTupleCount();
     QuerySchema lhsSchema = lhs->getSchema();
     QuerySchema rhsSchema = rhs->getSchema();
-    QuerySchema outputSchema = concatenateSchemas(lhsSchema, rhsSchema);
+    QuerySchema outputSchema = Join<T>::concatenateSchemas(lhsSchema, rhsSchema);
 
-    assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC for now
+    assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC
 
     // output size, colCount, isEncrypted
-    output = std::shared_ptr<QueryTable>(new QueryTable(outputTupleCount, outputSchema.getFieldCount()));
-    output->setSchema(outputSchema);
+    Join<T>::output = std::shared_ptr<QueryTable>(new QueryTable(outputTupleCount, outputSchema.getFieldCount()));
+    Join<T>::output->setSchema(outputSchema);
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
         lhsTuple = lhs->getTuplePtr(i);
         for(uint32_t j = 0; j < rhs->getTupleCount(); ++j) {
             rhsTuple = rhs->getTuplePtr(j);
-            predicateEval = predicate->predicateCall(lhsTuple, rhsTuple);
-            QueryTuple dstTuple = compareTuples(lhsTuple, rhsTuple, predicateEval);
-            output->putTuple(cursor, dstTuple);
+            predicateEval = Join<T>::predicate->predicateCall(lhsTuple, rhsTuple);
+            QueryTuple dstTuple = Join<T>::compareTuples(lhsTuple, rhsTuple, predicateEval);
+            Join<T>::output->putTuple(cursor, dstTuple);
             ++cursor;
         }
     }
-    return output;
+    return Join<T>::output;
 }
 
+
+template class vaultdb::BasicJoin<BoolField>;
+template class vaultdb::BasicJoin<SecureBoolField>;

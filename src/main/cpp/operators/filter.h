@@ -45,7 +45,6 @@ namespace  vaultdb {
 
 
         std::shared_ptr<QueryTable> runSelf() override;
-        //SecureBoolField  predicateEvaluation(const QueryTuple & tuple) const;
     };
 
 }

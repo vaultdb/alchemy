@@ -9,11 +9,12 @@
 
 namespace vaultdb {
 
-    class BasicJoin : public Join {
+    template<typename  T>
+    class BasicJoin : public Join<T> {
 
     public:
-        BasicJoin(Operator *lhs, Operator *rhs, shared_ptr<BinaryPredicate> predicateClass);
-        BasicJoin(shared_ptr<QueryTable> lhs, shared_ptr<QueryTable> rhs, std::shared_ptr<BinaryPredicate> predicateClass);
+        BasicJoin(Operator *lhs, Operator *rhs, shared_ptr<BinaryPredicate<T>> predicateClass);
+        BasicJoin(shared_ptr<QueryTable> lhs, shared_ptr<QueryTable> rhs, std::shared_ptr<BinaryPredicate<T>> predicateClass);
         ~BasicJoin() = default;
         std::shared_ptr<QueryTable> runSelf() override;
     };

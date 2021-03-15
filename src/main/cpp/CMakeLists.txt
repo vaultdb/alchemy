@@ -97,9 +97,9 @@ set(sources
 		operators/support/sort_condition.cpp
 		operators/support/plain_sort_condition.cpp
 		operators/support/secure_sort_condition.cpp
-		#operators/support/join_equality_predicate.cpp
-		#operators/join.cpp
-		#operators/basic_join.cpp
+		operators/support/join_equality_predicate.cpp
+		operators/join.cpp
+		operators/basic_join.cpp
         #operators/common_table_expression.cpp
         #operators/fkey_pkey_join.cpp
 		#operators/support/replace_tuple.cpp

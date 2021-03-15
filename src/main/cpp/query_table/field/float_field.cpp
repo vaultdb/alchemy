@@ -37,7 +37,6 @@ BoolField FloatField::operator>=(const FloatField &cmp) const {
         return BoolField(true); // equality check
 
     float_t right = cmp.getPayload();
-    bool res = getPayload() > right;
     return BoolField(getPayload() > right);
 }
 

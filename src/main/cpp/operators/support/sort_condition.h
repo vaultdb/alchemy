@@ -7,6 +7,7 @@
 
 using namespace  vaultdb;
 
+// TODO: template this for BoolField || SecureBoolField
 class SortCondition {
 
 protected:

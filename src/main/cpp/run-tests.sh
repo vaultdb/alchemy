@@ -8,7 +8,7 @@ make -j5
 ./bin/filter_test
 ./bin/project_test
 ./bin/sort_test
-#./bin/basic_join_test
+./bin/basic_join_test
 #./bin/fkey_pkey_join_test
 #./bin/scalar_aggregate_test
 #./bin/group_by_aggregate_test

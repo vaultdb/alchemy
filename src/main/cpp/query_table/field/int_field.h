@@ -34,6 +34,7 @@ namespace vaultdb {
         int32_t getPayload() const { return getValue<int32_t>(); }
 
         IntField& operator=(const IntField& other);
+        IntField& operator=(const int32_t & other);
 
 
         IntField  operator+(const IntField &rhs) const  { return IntField(getPayload() + rhs.getPayload()); } // cast to int before doing arithmetic expressions

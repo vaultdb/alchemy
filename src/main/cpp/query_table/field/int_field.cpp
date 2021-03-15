@@ -38,6 +38,12 @@ IntField &IntField::operator=(const IntField &other) {
     return *this;
 }
 
+IntField &IntField::operator=(const int32_t &other) {
+    setValue(other);
+    return *this;
+}
+
+
 BoolField IntField::operator>=(const IntField &cmp) const {
     bool res =  getPayload() >= cmp.getPayload();
     return BoolField(res);
@@ -52,5 +58,6 @@ IntField IntField::select(const BoolField &choice, const IntField &other) const 
     bool selection =  choice.getPayload();
     return selection ? IntField(*this) :  IntField(other);
 }
+
 
 

@@ -19,9 +19,6 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
 
         emp::Bit eq = FieldUtilities::secureEqual(lhsField, rhsField);
-        emp::Bit gt =  (FieldUtilities::secureGeq(lhsField, rhsField)
-                    & !eq);
-
 
         SortDirection direction = sortDefinition[i].second;
 

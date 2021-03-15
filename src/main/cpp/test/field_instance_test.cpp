@@ -13,15 +13,17 @@
 
 #include <boost/variant2/variant.hpp>
 
-// for variant test
-#include <tuple>
-#include <boost/variant.hpp>
-
-
-
-
 using namespace vaultdb;
 using namespace boost::variant2;
+
+
+// for variant test
+//#include <tuple>
+//#include <boost/variant.hpp>
+
+
+
+
 
 
 class FieldInstanceTest : public ::testing::Test {
@@ -126,7 +128,7 @@ TEST_F(FieldInstanceTest, decryptTest) {
 
 // based on: https://wandbox.org/permlink/Q6EjjI4HsgR0asIO
 // returns typename of Nth element in Tuple
-template<int N, typename... Ts> using NthTypeOf =
+/*template<int N, typename... Ts> using NthTypeOf =
 typename std::tuple_element<N, std::tuple<Ts...>>::type;
 
 template<int N, typename... Ts>
@@ -139,30 +141,132 @@ template<int N, typename... Ts>
 auto &get(const boost::variant<Ts...> &v) {
     using target = NthTypeOf<N, Ts...>;
     return boost::get<target>(v);
-}
+}*/
 
 
 TEST_F(FieldInstanceTest, variantContainer) {
-    typedef boost::variant<BoolField &, IntField &, LongField &, FloatField &, StringField &, SecureBoolField &, SecureIntField &, SecureLongField &, SecureFloatField &, SecureStringField &> Instance;
+    typedef variant<BoolField *,
+                    IntField *,
+                    LongField *,
+                    FloatField *,
+                    StringField *,
+                    SecureBoolField *,
+                    SecureIntField *,
+                    SecureLongField *,
+                    SecureFloatField *,
+                    SecureStringField *> Instance;
     IntField *intField = new IntField(7);
     IntField *intField2 = new IntField(12);
 
-    const Instance i( *intField);
-    const Instance i2( *intField2);
+    const Instance i( intField);
+    const Instance i2(intField2);
     // index is 1 for IntField
-   // const int idx = i.which();
+    //const int idx = i.index();
 
 
-    std::cout << "Index: " << i.which() << std::endl;
+    std::cout << "Index: " << i.index() << std::endl;
     // Does not work, can't get from idx to hardcoded
-    //IntField *p = get<idx>(i);
+   // IntField *p = get<idx>(i);
 
     //std::cout << (get<1>(i)) << std::endl;
     //bool res = (i == i2);
 
 }
 
+
+
+
+template<typename T> struct identity { typedef T type; };
+
+template<typename T> void good(T *x, typename identity<T>::type value = 1) {
+    std::cout << typeid(x).name() << std::endl;
+
+    std::cout << typeid(value).name() << std::endl;
+}
+
+
 template<typename T>
 T add(const T & lhs, const T & rhs){
     return lhs + rhs;
 }
+
+
+/* https://stackoverflow.com/questions/38773865/is-it-possible-to-store-the-type-of-an-object-in-a-map-for-casting-purposes
+template<class...Ts>
+struct types { using type=types; };
+
+template<class T>struct tag_t{constexpr tag_t(){}; using type=T;};
+template<class T>constexpr tag_t<T> tag{};
+
+template<class T, class U>
+T* tag_dynamic_cast( tag_t<T>, U* u ) {
+    return dynamic_cast<T*>(u);
+}
+template<class T, class U>
+T& tag_dynamic_cast( tag_t<T>, U& u ) {
+    return dynamic_cast<T&>(u);
+}
+
+template<class F, class Sig>
+struct invoker;
+template<class F, class R, class...Args>
+struct invoker<F, R(Args...)> {
+    R(*)(void*, Args...) operator()() const {
+        return [](void* ptr, Args...args)->R {
+            return (*static_cast<F*>(ptr))(std::forward<Args>(args)...);
+        };
+    }
+};
+template<class F, class...Sigs>
+std::tuple<Sigs*...> invokers() {
+    return std::make_tuple( invoker<F, Sigs>{}()... );
+}
+
+
+TEST_F(FieldInstanceTest, deducedType) {
+
+    IntField intField(5);
+    IntField intField2(7);
+    Field *f = &intField;
+
+    std::map<std::string , types<BoolField, IntField> > myMap =
+                                                             {{"bool" ,tag<BoolField>}, {"int", tag<IntField>}};
+    myMap["int"]( [&](auto&& tag) {
+        auto* dfoo = tag_dynamic_cast(tag, f);
+    } );
+
+   // std::map<FieldType, auto> decltypeMap;
+
+   // std::map<std::string , types<BoolField, IntField> > myMap =
+   //         { {"BoolField", tag<BoolField>}, {"IntField",tag<IntField>}};
+
+    good(f, intField);
+
+    using type1 = decltype(IntField());
+    using type2 = decltype(intField);
+
+    if(std::is_same<type1,type2>{}) {
+        std::cout << "Same type!" << std::endl;
+    }
+
+    using type3 = decltype(f);
+
+    if(!std::is_same<type1,type3>{}) {
+        std::cout << "Parent type is different!" << std::endl;
+    }
+
+    type2 toImpl = static_cast<type2 &>(*f);
+
+   // type2 res = add(*f, intField2);
+}
+*/
+
+
+// https://ideone.com/u8kCcU
+
+TEST_F(FieldInstanceTest, template_name) {
+
+}
+
+// What if we create a map to a function pointer that casts to the right type and applies functors?
+// similar to: https://stackoverflow.com/questions/38773865/is-it-possible-to-store-the-type-of-an-object-in-a-map-for-casting-purposes
