@@ -4,16 +4,15 @@
 #include <operators/support/sort_condition.h>
 #include <query_table/query_table.h>
 #include <vector>
-#include <operators/support/secure_sort_condition.h>
-#include <operators/support/plain_sort_condition.h>
 
 
 namespace  vaultdb {
+    template<typename T>
     class Sort : public Operator {
         SortDefinition sortDefinition;
 
-        SortCondition *sortCondition = 0; // pointer-izing it b/c it is an abstract class
-        SortCondition *reverseSortCondition = 0;  // for when we need to put tuples in the opposite of the desired final sort order
+        SortCondition<T> sortCondition; // pointer-izing it b/c it is an abstract class
+        SortCondition<T> reverseSortCondition;  // for when we need to put tuples in the opposite of the desired final sort order
 
     public:
         Sort(Operator *child, const SortDefinition &aSortDefinition);

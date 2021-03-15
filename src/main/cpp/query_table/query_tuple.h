@@ -52,7 +52,11 @@ namespace vaultdb {
         bool operator==(const QueryTuple & other) const;
         inline bool operator!=(const QueryTuple & other) { return !(*this == other);   }
 
-        static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const emp::Bit & cmp);
+
+        // TODO: template-ize this to remove two C&Ss
+        static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const SecureBoolField & cmp);
+        static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const BoolField & cmp);
+
         static QueryTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
 
 

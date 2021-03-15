@@ -18,7 +18,7 @@ protected:
     void SetUp() override { setup_plain_prot(false, ""); };
     void TearDown() override{  finalize_plain_prot(); };
 
-    Sort getSort(const string & srcSql, const SortDefinition & sortDefinition);
+    Sort<BoolField> getSort(const string & srcSql, const SortDefinition & sortDefinition);
 
     const string dbName = "tpch_unioned";
 
@@ -39,7 +39,7 @@ TEST_F(SortTest, testSingleIntColumn) {
     ColumnSort aColumnSort(0, SortDirection::ASCENDING);
     sortDefinition.push_back(aColumnSort);
 
-    Sort sort = getSort(sql, sortDefinition);
+    Sort<BoolField> sort = getSort(sql, sortDefinition);
     shared_ptr<QueryTable> observed = sort.run();
 
     expected->setSortOrder(observed->getSortOrder());
@@ -59,7 +59,7 @@ TEST_F(SortTest, tpchQ1Sort) {
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
     expected->setSortOrder(sortDefinition);
 
-    Sort sort = getSort(sql, sortDefinition);
+    Sort<BoolField> sort = getSort(sql, sortDefinition);
     shared_ptr<QueryTable> observed = sort.run();
 
     // no projection needed here
@@ -80,7 +80,7 @@ TEST_F(SortTest, tpchQ3Sort) {
     sortDefinition.emplace_back(3, SortDirection::ASCENDING);
 
 
-   Sort sort = getSort(sql, sortDefinition);
+   Sort<BoolField> sort = getSort(sql, sortDefinition);
 
 
     // project it down to $1, $3
@@ -110,7 +110,7 @@ TEST_F(SortTest, tpchQ5Sort) {
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
 
-   Sort sort = getSort(sql, sortDefinition);
+   Sort<BoolField> sort = getSort(sql, sortDefinition);
 
 
     // project it down to $1
@@ -141,7 +141,7 @@ TEST_F(SortTest, tpchQ8Sort) {
     expected->setSortOrder(sortDefinition);
 
 
-   Sort sort = getSort(sql, sortDefinition);
+   Sort<BoolField> sort = getSort(sql, sortDefinition);
 
 
     // project it down to $0
@@ -171,7 +171,7 @@ TEST_F(SortTest, tpchQ9Sort) {
     sortDefinition.emplace_back(2, SortDirection::ASCENDING);
     sortDefinition.emplace_back(0, SortDirection::DESCENDING);
 
-   Sort sort = getSort(sql, sortDefinition);
+   Sort<BoolField> sort = getSort(sql, sortDefinition);
 
     // project it down to $0
     Project project(&sort);
@@ -209,7 +209,7 @@ TEST_F(SortTest, tpchQ18Sort) {
     expected->setSortOrder(sortDefinition);
 
 
-   Sort sort = getSort(sql, sortDefinition);
+   Sort<BoolField> sort = getSort(sql, sortDefinition);
 
     // project it down to $2, $1
     Project project(&sort);
@@ -233,9 +233,9 @@ TEST_F(SortTest, tpchQ18Sort) {
 
 
 
-Sort SortTest::getSort(const string &srcSql, const SortDefinition &sortDefinition) {
+Sort<BoolField> SortTest::getSort(const string &srcSql, const SortDefinition &sortDefinition) {
     SqlInput input(dbName, srcSql, false);
-    Sort sort(&input, sortDefinition); // heap allocate it
+    Sort<BoolField> sort(&input, sortDefinition); // heap allocate it
 
     // cache sort result
     sort.run();

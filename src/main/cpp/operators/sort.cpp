@@ -1,7 +1,9 @@
 #include "sort.h"
 
+using namespace vaultdb;
 
-int Sort::powerOfLessThanTwo(const int & n) {
+template<typename T>
+int Sort<T>::powerOfLessThanTwo(const int & n) {
   int k = 1;
   while (k > 0 && k < n) {
     k *= 2;
@@ -9,29 +11,25 @@ int Sort::powerOfLessThanTwo(const int & n) {
   return k / 2;
 }
 
-Sort::Sort(Operator *child, const SortDefinition &aSortDefinition) : Operator(child), sortDefinition(aSortDefinition) {
+template<typename T>
+Sort<T>::Sort(Operator *child, const SortDefinition &aSortDefinition) : Operator(child), sortDefinition(aSortDefinition) {
 
 
 }
 
-Sort::Sort(shared_ptr<QueryTable> child, const SortDefinition &aSortDefinition) : Operator(child), sortDefinition(aSortDefinition){
+template<typename T>
+Sort<T>::Sort(shared_ptr<QueryTable> child, const SortDefinition &aSortDefinition) : Operator(child), sortDefinition(aSortDefinition){
 
 }
 
 
-std::shared_ptr<QueryTable> Sort::runSelf() {
+template<typename T>
+std::shared_ptr<QueryTable> Sort<T>::runSelf() {
     std::shared_ptr<QueryTable> input = children[0]->getOutput();
 
+    sortCondition = SortCondition<T>(sortDefinition);
     SortDefinition reverseSortDefinition = getReverseSortDefinition(sortDefinition);
-
-    if(input->isEncrypted()) {
-        sortCondition = new SecureSortCondition(sortDefinition);
-        reverseSortCondition = new SecureSortCondition(reverseSortDefinition);
-    }
-    else {
-        sortCondition = new PlainSortCondition(sortDefinition);
-        reverseSortCondition = new PlainSortCondition(reverseSortDefinition);
-    }
+    reverseSortCondition = SortCondition<T>(reverseSortDefinition);
 
 
     // deep copy new output
@@ -49,7 +47,8 @@ std::shared_ptr<QueryTable> Sort::runSelf() {
  * calls bitonicMerge.
  **/
 
-void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
+template<typename T>
+void Sort<T>::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
     if (cnt > 1) {
         int k = cnt / 2;
         bitonicSort(lo, k, !invertDir);
@@ -66,8 +65,8 @@ void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
  * the number of elements is cnt.
  **/
 
-
-void Sort::bitonicMerge(const int &lo, const int &n, bool invertDir) {
+template<typename T>
+void Sort<T>::bitonicMerge(const int &lo, const int &n, bool invertDir) {
 
     if (n > 1) {
         int m = powerOfLessThanTwo(n);
@@ -79,15 +78,16 @@ void Sort::bitonicMerge(const int &lo, const int &n, bool invertDir) {
     }
 }
 
-void Sort::compareAndSwap(const int &lhsIdx, const int &rhsIdx, bool invertDir) {
+template<typename T>
+void Sort<T>::compareAndSwap(const int &lhsIdx, const int &rhsIdx, bool invertDir) {
     QueryTuple lhs = output->getTuple(lhsIdx);
     QueryTuple rhs = output->getTuple(rhsIdx);
 
     if(!invertDir) {
-        sortCondition->compareAndSwap(lhs, rhs);
+        sortCondition.compareAndSwap(lhs, rhs);
     }
     else {
-        reverseSortCondition->compareAndSwap(lhs, rhs);
+        reverseSortCondition.compareAndSwap(lhs, rhs);
     }
 
     output->putTuple(lhsIdx, lhs);
@@ -98,7 +98,8 @@ void Sort::compareAndSwap(const int &lhsIdx, const int &rhsIdx, bool invertDir) 
 
 }
 
-SortDefinition Sort::getReverseSortDefinition(const SortDefinition & aSortDef) {
+template<typename T>
+SortDefinition Sort<T>::getReverseSortDefinition(const SortDefinition & aSortDef) {
     SortDefinition reverseSortDefinition;
 
     for(ColumnSort cs : aSortDef) {
@@ -111,12 +112,17 @@ SortDefinition Sort::getReverseSortDefinition(const SortDefinition & aSortDef) {
 
 }
 
-Sort::~Sort() {
+template<typename T>
+Sort<T>::~Sort() {
 
-    if(sortCondition) delete sortCondition;
-    if(reverseSortCondition) delete reverseSortCondition;
+    //if(sortCondition) delete sortCondition;
+    //if(reverseSortCondition) delete reverseSortCondition;
 
 }
+
+template class vaultdb::Sort<BoolField>;
+template class vaultdb::Sort<SecureBoolField>;
+
 
 
 

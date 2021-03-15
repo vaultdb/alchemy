@@ -5,23 +5,24 @@
 #include "common/defs.h"
 #include <query_table/field/field.h>
 
-using namespace  vaultdb;
+namespace vaultdb {
+    template<typename T>
+    class SortCondition {
 
-// TODO: template this for BoolField || SecureBoolField
-class SortCondition {
+    protected:
+        SortDefinition sortDefinition;
 
-protected:
-    SortDefinition sortDefinition;
-    const Field *getValue(QueryTuple & aTuple, const ColumnSort & aColumnSort);
+        const Field *getValue(QueryTuple &aTuple, const ColumnSort &aColumnSort);
 
-public:
-    SortCondition() {} // placeholder
-    virtual ~SortCondition() {}
-    SortCondition(const SortDefinition & aSortDefinition) :  sortDefinition(aSortDefinition) {};
+    public:
+        SortCondition() {} // placeholder
+        virtual ~SortCondition() {}
 
-    virtual void compareAndSwap(QueryTuple  & lhs, QueryTuple & rhs) = 0;
+        SortCondition(const SortDefinition &aSortDefinition) : sortDefinition(aSortDefinition) {};
 
-};
+        void compareAndSwap(QueryTuple &lhs, QueryTuple &rhs);
 
+    };
+}
 
 #endif //VAULTDB_EMP_SORT_CONDITION_H

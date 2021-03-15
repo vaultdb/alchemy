@@ -11,19 +11,24 @@ typedef std::vector<EqualityPredicate> ConjunctiveEqualityPredicate;
 // conjunctive equality predicate
 // e.g., partsupp.suppkey = lineitem.suppkey AND partsupp.partkey = lineitem.partkey
 
-template <typename T>
-class JoinEqualityPredicate : public BinaryPredicate<T> {
-public:
-    JoinEqualityPredicate(const ConjunctiveEqualityPredicate & srcPredicates, bool isEncrypted) {}
+namespace vaultdb {
+    template<typename T>
+    class JoinEqualityPredicate : public BinaryPredicate<T> {
+    public:
+        JoinEqualityPredicate(const ConjunctiveEqualityPredicate &srcPredicates);
 
-    virtual T predicateCall( const QueryTuple * lhs, const QueryTuple * rhs) const override { throw; }; // we should never get here, use specializations below instead
+        T predicateCall(const QueryTuple *lhs, const QueryTuple *rhs) const override;
+
+    private:
+        ConjunctiveEqualityPredicate predicate;
 
 
-};
+    };
+
+}
 
 
-
-template <>
+/*template <>
 class JoinEqualityPredicate<BoolField> : public BinaryPredicate<BoolField> {
 public:
     JoinEqualityPredicate(const ConjunctiveEqualityPredicate & srcPredicates);
@@ -42,7 +47,7 @@ public:
 private:
     ConjunctiveEqualityPredicate predicate;
 };
-
+*/
 
 
 #endif //_JOIN_EQUALITY_PREDICATE_H

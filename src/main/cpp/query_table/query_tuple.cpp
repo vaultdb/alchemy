@@ -150,19 +150,37 @@ QueryTuple QueryTuple::reveal(const int &empParty) const {
 
 
 
-void QueryTuple::compareAndSwap(QueryTuple *lhs, QueryTuple *rhs, const emp::Bit & cmp) {
+void QueryTuple::compareAndSwap(QueryTuple *lhs, QueryTuple *rhs, const SecureBoolField & cmp) {
 
     assert(lhs->getFieldCount() == rhs->getFieldCount());
 
     for(size_t i = 0; i < lhs->getFieldCount(); ++i) {
 
-        Field::compareAndSwap(cmp, *(lhs->fields_[i]), *(rhs->fields_[i]));
+        Field::compareAndSwap(cmp.getPayload(), *(lhs->fields_[i]), *(rhs->fields_[i]));
 
     }
 
-    Field::compareAndSwap(cmp, *lhs->dummy_tag_, *rhs->dummy_tag_);
+    Field::compareAndSwap(cmp.getPayload(), *lhs->dummy_tag_, *rhs->dummy_tag_);
 
 }
+
+void QueryTuple::compareAndSwap(QueryTuple *lhs, QueryTuple *rhs, const BoolField & cmp) {
+
+    assert(lhs->getFieldCount() == rhs->getFieldCount());
+
+
+
+    for(size_t i = 0; i < lhs->getFieldCount(); ++i) {
+
+        Field::compareAndSwap(cmp.getPayload(), *(lhs->fields_[i]), *(rhs->fields_[i]));
+
+    }
+
+    Field::compareAndSwap(cmp.getPayload(), *lhs->dummy_tag_, *rhs->dummy_tag_);
+
+}
+
+
 
 bool  QueryTuple::operator==(const QueryTuple &other) const {
     if(getFieldCount() != other.getFieldCount()) { return false; }

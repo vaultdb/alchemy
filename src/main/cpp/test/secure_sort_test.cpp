@@ -82,7 +82,7 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort sort(&input, sortDefinition);
+    Sort<SecureBoolField> sort(&input, sortDefinition);
     std::shared_ptr<QueryTable> result = sort.run();
 
     std::shared_ptr<QueryTable> observed = result->reveal();
@@ -107,7 +107,7 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
     sortDefinition.emplace_back(3, SortDirection::ASCENDING);
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort sort(&input, sortDefinition);
+    Sort<SecureBoolField> sort(&input, sortDefinition);
 
 
     // project it down to $1, $3
@@ -132,7 +132,7 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort sort(&input, sortDefinition);
+    Sort<SecureBoolField> sort(&input, sortDefinition);
 
 
     // project it down to $1
@@ -159,7 +159,7 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort sort(&input, sortDefinition);
+    Sort<SecureBoolField> sort(&input, sortDefinition);
 
     Project project(&sort);
     project.addColumnMapping(0, 0);
@@ -190,7 +190,7 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
 
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort sort(&input, sortDefinition);
+    Sort<SecureBoolField> sort(&input, sortDefinition);
 
     // project it down to $2, $0
     Project project(&sort);
@@ -218,7 +218,7 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort sort(&input, sortDefinition);
+    Sort<SecureBoolField> sort(&input, sortDefinition);
 
 
     // project it down to $2, $1
