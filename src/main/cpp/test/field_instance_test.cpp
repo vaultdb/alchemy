@@ -10,14 +10,19 @@
 #include <query_table/field/secure_bool_field.h>
 #include <emp-tool/emp-tool.h>
 #include <query_table/field/field_factory.h>
-//#include <util/emp_manager.h>
 
-#include <boost/mpl/range_c.hpp>
-#include <boost/mpl/for_each.hpp>
-#include <boost/mpl/vector.hpp>
+#include <boost/variant2/variant.hpp>
+
+// for variant test
+#include <tuple>
+#include <boost/variant.hpp>
+
+
 
 
 using namespace vaultdb;
+using namespace boost::variant2;
+
 
 class FieldInstanceTest : public ::testing::Test {
 
@@ -117,4 +122,47 @@ TEST_F(FieldInstanceTest, decryptTest) {
     delete encrypted;
     delete revealed;
 */
+}
+
+// based on: https://wandbox.org/permlink/Q6EjjI4HsgR0asIO
+// returns typename of Nth element in Tuple
+template<int N, typename... Ts> using NthTypeOf =
+typename std::tuple_element<N, std::tuple<Ts...>>::type;
+
+template<int N, typename... Ts>
+auto &get(boost::variant<Ts...> &v) {
+    using target = NthTypeOf<N, Ts...>;
+    return boost::get<target>(v);
+}
+
+template<int N, typename... Ts>
+auto &get(const boost::variant<Ts...> &v) {
+    using target = NthTypeOf<N, Ts...>;
+    return boost::get<target>(v);
+}
+
+
+TEST_F(FieldInstanceTest, variantContainer) {
+    typedef boost::variant<BoolField &, IntField &, LongField &, FloatField &, StringField &, SecureBoolField &, SecureIntField &, SecureLongField &, SecureFloatField &, SecureStringField &> Instance;
+    IntField *intField = new IntField(7);
+    IntField *intField2 = new IntField(12);
+
+    const Instance i( *intField);
+    const Instance i2( *intField2);
+    // index is 1 for IntField
+   // const int idx = i.which();
+
+
+    std::cout << "Index: " << i.which() << std::endl;
+    // Does not work, can't get from idx to hardcoded
+    //IntField *p = get<idx>(i);
+
+    //std::cout << (get<1>(i)) << std::endl;
+    //bool res = (i == i2);
+
+}
+
+template<typename T>
+T add(const T & lhs, const T & rhs){
+    return lhs + rhs;
 }

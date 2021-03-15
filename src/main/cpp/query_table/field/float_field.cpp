@@ -33,15 +33,19 @@ FloatField &FloatField::operator=(const FloatField &other) {
 }
 
 BoolField FloatField::operator>=(const FloatField &cmp) const {
-    bool res =  getPayload() >= cmp.getPayload();
-    return BoolField(res);
+    if((*this == cmp).getPayload())
+        return BoolField(true); // equality check
+
+    float_t right = cmp.getPayload();
+    bool res = getPayload() > right;
+    return BoolField(getPayload() > right);
 }
 
 BoolField FloatField::operator==(const FloatField &cmp) const {
 
     // inspired by NoisePage: https://github.com/cmu-db/noisepage
         float_t right = cmp.getPayload();
-        const double epsilon = std::fabs(right) * 0.01;
+        const double epsilon = std::fabs(right) * 0.001; // was 0.01
         return BoolField(std::fabs(getPayload() - right) <= epsilon);
     }
 

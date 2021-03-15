@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include <operators/project.h>
 #include <test/support/EmpBaseTest.h>
+#include <util/field_utilities.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -31,19 +32,17 @@ bool SecureSortTest::correctOrder(const QueryTuple &lhs, const QueryTuple &rhs, 
     assert(lhs.getFieldCount() == rhs.getFieldCount());
 
     for(uint32_t i = 0; i < lhs.getFieldCount(); ++i) {
-        Field lhsVal = lhs.getField(i).getValue();
-        Field rhsVal = rhs.getField(i).getValue();
+        const Field *lhsVal = lhs.getField(i);
+        const Field *rhsVal = rhs.getField(i);
+
+        if (FieldUtilities::equal(lhsVal, rhsVal))
+            continue;
 
         if(sortDefinition[i].second == SortDirection::ASCENDING) {
-
-            if ((lhsVal == rhsVal).getBool()) continue;
-            Field gt = (lhs.getField(i).getValue() > rhs.getField(i).getValue());
-            return !(gt.getBool());
+            return !FieldUtilities::gt(lhsVal, rhsVal);
         }
         else if(sortDefinition[i].second == SortDirection::DESCENDING) {
-            if ((lhsVal == rhsVal).getBool()) continue;
-            Field lt = (lhsVal < rhsVal);
-            return !(lt.getBool());
+             return FieldUtilities::gt(lhsVal, rhsVal);
         }
     }
     return true;
@@ -205,7 +204,6 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
 }
-
 
 // 18
 TEST_F(SecureSortTest, tpchQ18Sort) {
