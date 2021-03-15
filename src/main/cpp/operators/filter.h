@@ -14,39 +14,18 @@ namespace  vaultdb {
 
 
     public:
-        ~Filter() = default;
-        std::shared_ptr<QueryTable> runSelf() override {throw; } // should only use specializations
-    };
+        Filter(Operator *child, shared_ptr<Predicate<T> > &predicateClass);
 
+        Filter(shared_ptr<QueryTable> child, shared_ptr<Predicate<T> > &predicateClass);
 
-
-    // template specialization for plaintext
-    template <>
-        class Filter<BoolField> : public Operator {
-            std::shared_ptr<Predicate<BoolField> > predicate;
-
-        public:
-            Filter(Operator *child, shared_ptr<Predicate<BoolField> > & predicateClass);
-            Filter(shared_ptr<QueryTable> child, shared_ptr<Predicate<BoolField> > & predicateClass);
-            ~Filter() = default;
-
-            std::shared_ptr<QueryTable> runSelf() override;
-
-        };
-
-
-    template <>
-    class Filter<SecureBoolField>  : public Operator {
-        std::shared_ptr<Predicate<SecureBoolField> > predicate;
-    public:
-        Filter(Operator *child, shared_ptr<Predicate<SecureBoolField> > & predicateClass) : Operator(child), predicate(predicateClass) {}
-        Filter(shared_ptr<QueryTable> child, shared_ptr<Predicate<SecureBoolField> > & predicateClass) :  Operator(child), predicate(predicateClass) {}
         ~Filter() = default;
 
+        std::shared_ptr<QueryTable> runSelf()  override;
 
-        std::shared_ptr<QueryTable> runSelf() override;
+
     };
 
 }
+
 
 #endif // _FILTER_H
