@@ -46,7 +46,7 @@ namespace vaultdb {
             size_t getSize() const;
 
             // instance to the wrapper around this field that overloads its operators
-            FieldInstance<B> *getInstance() const { return instance_; }
+            FieldInstance<B> *getInstance() const { return instance_.get(); }
 
             template<typename T>
             inline T getValue()  const {
@@ -68,19 +68,19 @@ namespace vaultdb {
 
 
             // delegate to instance_
-            B  operator == (const Field &cmp) const;
-            B  operator != (const Field &cmp) const;
-            B operator !() const;
-            B operator>=(const Field & rhs) const;
-            B operator<(const Field & rhs) const;
-            B operator<=(const Field & rhs) const;
-            B operator>(const Field & rhs) const;
+            virtual B  operator == (const Field &cmp) const;
+            virtual B  operator != (const Field &cmp) const;
+            virtual B operator !() const;
+            virtual B operator>=(const Field & rhs) const;
+            virtual B operator<(const Field & rhs) const;
+            virtual B operator<=(const Field & rhs) const;
+            virtual B operator>(const Field & rhs) const;
 
-            Field  operator+(const Field &rhs) const;
-            Field  operator-(const Field &rhs) const;
-            Field  operator*(const Field &rhs) const;
-            Field  operator/(const Field &rhs) const;
-            Field  operator%(const Field &rhs) const;
+            virtual Field  operator+(const Field &rhs) const;
+            virtual Field  operator-(const Field &rhs) const;
+            virtual Field  operator*(const Field &rhs) const;
+            virtual Field  operator/(const Field &rhs) const;
+            virtual Field  operator%(const Field &rhs) const;
 
 
         static Field If(const B & choice,const Field & lhs, const Field & rhs);
@@ -104,16 +104,6 @@ namespace vaultdb {
             static Field deserialize(const QueryFieldDesc & fieldDesc, const int8_t * src);
             static Field deserialize(const FieldType & field, const int & strLength, const int8_t *src);
 
-            // only for bool types
-            // TODO: remove previous overloads in FieldInstance before using them here
-            // meld this with FieldInstance?
-        //Field operator !() const;
-
-        /*Field operator+(const Field &rhs) const  {  return static_cast<T const &>(*this) + rhs; }
-        Field operator-(const Field &rhs) const  {   return static_cast<const T &>(*this) - rhs; }
-        Field operator*(const Field &rhs) const  {   return static_cast<const T &>(*this) * rhs; }
-        Field operator/(const Field &rhs) const  {   return static_cast<const T &>(*this) / rhs; }
-        Field operator%(const Field &rhs) const  {   return static_cast<const T &>(*this) % rhs; }*/
 
 
     protected:
@@ -122,7 +112,7 @@ namespace vaultdb {
         private:
             static std::string revealString(const emp::Integer & src, const int & party);
             void initialize(const FieldType &type, const size_t &strLength);
-            FieldInstance<B> *instance_; // TODO: initialize this
+            std::unique_ptr<FieldInstance<B> > instance_;
     };
 
    template<typename B>

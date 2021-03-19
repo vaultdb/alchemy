@@ -2,20 +2,15 @@
 #define SECURE_STRING_FIELD_H
 
 
-
-#include "field_impl.h"
 #include "field.h"
 #include "secure_bool_field.h"
 #include "string_field.h"
 
 namespace vaultdb {
 
-    // T = derived field
-    // B = boolean field result
-
-    // BoolField is a decorator for Field
+    // SecureStringField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class SecureStringField : public FieldImpl<SecureStringField, SecureBoolField>, public Field<SecureBoolField> {
+    class SecureStringField : public Field<SecureBoolField> {
 
     public:
 
@@ -48,6 +43,8 @@ namespace vaultdb {
 
         // not defined in EMP
         SecureBoolField neg() const { throw; }
+        std::string str() const { return "SECRET STRING"; }
+
 
 
         SecureBoolField operator>=(const SecureStringField &cmp) const;

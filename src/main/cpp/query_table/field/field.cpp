@@ -24,7 +24,7 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const Field<B> &aValue) {
 template<typename B>
 Field<B>::Field(const FieldType &typeId, const int &strLength) : type_(typeId) {
     initialize(typeId, strLength);
-    instance_ = FieldFactory<B>::getFieldInstance(this);
+    instance_ = std::unique_ptr<FieldInstance<B>>(FieldFactory<B>::getFieldInstance(this));
 }
 
 template<typename B>
@@ -35,7 +35,7 @@ Field<B>::Field(const Field<B> &field) : type_(field.type_), allocated_size_(fie
     data_ = managed_data_.get();
 
     std::memcpy(data_, field.data_, allocated_size_);
-    instance_ = FieldFactory<B>::getFieldInstance(this);
+    instance_ = std::unique_ptr<FieldInstance<B>>(FieldFactory<B>::getFieldInstance(this));
 
 }
 
@@ -51,7 +51,7 @@ Field<B> &Field<B>::operator=(const Field<B> &other) {
     type_ = other.type_;
     managed_data_ = std::unique_ptr<std::byte[]>(new std::byte[allocated_size_]);
     data_ = this->managed_data_.get();
-    instance_ = FieldFactory<B>::getFieldInstance(this);
+    instance_ = std::unique_ptr<FieldInstance<B>>(FieldFactory<B>::getFieldInstance(this));
 
 
     memcpy(data_, other.data_, allocated_size_);

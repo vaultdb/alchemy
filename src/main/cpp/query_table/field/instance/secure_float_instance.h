@@ -1,16 +1,16 @@
-#ifndef _SECURE_INT_INSTANCE_H
-#define _SECURE_INT_INSTANCE_H
+#ifndef _SECURE_FLOAT_INSTANCE_H
+#define _SECURE_FLOAT_INSTANCE_H
 
-#include <query_table/field/secure_int_field.h>
+#include <query_table/field/secure_float_field.h>
 
 
 namespace vaultdb {
-    class SecureIntInstance : public FieldInstance<SecureBoolField> {
+    class SecureFloatInstance : public FieldInstance<SecureBoolField> {
     public:
-        SecureIntInstance(Field<SecureBoolField> *src);
-        ~SecureIntInstance()= default;
+        SecureFloatInstance(Field<SecureBoolField> *src);
+        ~SecureFloatInstance() = default;
 
-        SecureIntInstance & operator=(const SecureIntInstance & other);
+        SecureFloatInstance & operator=(const SecureFloatInstance & other);
 
         Field<SecureBoolField> plus(const Field<SecureBoolField> &rhs) const override;
 
@@ -42,7 +42,7 @@ namespace vaultdb {
 
 
     private:
-        SecureIntField *ref;
+        SecureFloatField *ref;
 
     };
 }

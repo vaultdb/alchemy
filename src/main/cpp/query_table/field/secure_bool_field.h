@@ -2,7 +2,6 @@
 #define SECURE_BOOL_FIELD_H
 
 #include "field.h"
-#include "field_impl.h"
 #include "bool_field.h"
 #include <emp-tool/circuits/bit.h>
 
@@ -10,12 +9,9 @@
 namespace vaultdb {
 
 
-    // T = derived field
-    // B = boolean field result
-
     // SecureBoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class SecureBoolField : public Field<SecureBoolField>  { // public FieldImpl<SecureBoolField, SecureBoolField>,
+    class SecureBoolField : public Field<SecureBoolField>  {
 
     public:
 

@@ -2,7 +2,6 @@
 #define BOOL_FIELD_H
 
 #include "field.h"
-#include "field_impl.h"
 #include <emp-tool/circuits/bit.h>
 
 
@@ -11,7 +10,7 @@ namespace vaultdb {
 
     // BoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class BoolField :  public Field<BoolField>  { //: public FieldImpl<BoolField, BoolField>,{
+    class BoolField :  public Field<BoolField>  {
 
     public:
 

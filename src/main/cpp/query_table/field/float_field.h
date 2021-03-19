@@ -3,16 +3,12 @@
 
 #include "bool_field.h"
 #include "field.h"
-#include "field_impl.h"
 
 namespace vaultdb {
 
-    // T = derived field
-    // B = boolean field result
-
-    // BoolField is a decorator for Field
+    // FloatField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class FloatField : public FieldImpl<FloatField, BoolField>, public Field<BoolField>  {
+    class FloatField :  public Field<BoolField>  {
 
     public:
 
@@ -44,6 +40,8 @@ namespace vaultdb {
 
         // only for bool types
         BoolField neg() const { throw; }
+        std::string str() const { return std::to_string(getPayload());  }
+
 
 
 

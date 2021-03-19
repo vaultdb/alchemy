@@ -2,19 +2,15 @@
 #define _LONG_FIELD_H
 
 
-#include "field_impl.h"
 #include "bool_field.h"
 #include <emp-tool/circuits/bit.h>
 
 
 namespace vaultdb {
 
-    // T = derived field
-    // B = boolean field result
-
-    // BoolField is a decorator for Field
+    // LongField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class LongField : public FieldImpl<LongField, BoolField>, public Field<BoolField>  {
+    class LongField : public Field<BoolField>  {
 
     public:
 
@@ -46,6 +42,7 @@ namespace vaultdb {
 
         // only for bool types
         BoolField neg() const { throw; }
+        std::string str() const { return std::to_string(getPayload());  }
 
 
 

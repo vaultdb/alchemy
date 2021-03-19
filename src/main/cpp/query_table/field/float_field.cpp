@@ -1,4 +1,5 @@
 #include "float_field.h"
+#include <cmath>
 
 using namespace vaultdb;
 
@@ -11,7 +12,7 @@ FloatField::FloatField(const Field &srcField) : Field(FieldType::FLOAT) {
         setValue(srcField.getValue<float_t>());
 }
 
-FloatField::FloatField(const FloatField &src)  : Field(src) { }
+FloatField::FloatField(const FloatField &src)  = default;
 
 FloatField::FloatField(const float_t &src)  : Field(FieldType::FLOAT) {
     setValue(src);

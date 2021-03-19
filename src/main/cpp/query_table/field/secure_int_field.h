@@ -1,7 +1,6 @@
 #ifndef SECURE_INT_FIELD_H
 #define SECURE_INT_FIELD_H
 
-#include "field_impl.h"
 #include "secure_bool_field.h"
 #include "int_field.h"
 #include <emp-tool/circuits/bit.h>
@@ -9,12 +8,10 @@
 
 namespace vaultdb {
 
-    // T = derived field
-    // B = boolean field result
 
-    // SecureBoolField is a decorator for Field
+    // SecureIntField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class SecureIntField : public FieldImpl<SecureIntField, SecureBoolField>, public Field<SecureBoolField>  {
+    class SecureIntField : public Field<SecureBoolField>  {
 
     public:
 
@@ -43,6 +40,8 @@ namespace vaultdb {
 
         // not defined in EMP
         SecureBoolField neg() const { throw; }
+        std::string str() const { return "SECRET INT"; }
+
 
 
 

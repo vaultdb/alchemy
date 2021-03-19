@@ -62,7 +62,6 @@ include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_D
 set(sources
 		query_table/field/field_type.h
 		query_table/field/field.cpp
-        query_table/field/field_impl.h
 		query_table/field/bool_field.cpp
 		query_table/field/secure_bool_field.cpp
 		query_table/field/int_field.cpp
@@ -76,7 +75,15 @@ set(sources
 
 		query_table/field/instance/bool_instance.cpp
 		query_table/field/instance/int_instance.cpp
+		query_table/field/instance/long_instance.cpp
+		query_table/field/instance/float_instance.cpp
+		query_table/field/instance/string_instance.cpp
+
+		query_table/field/instance/secure_bool_instance.cpp
 		query_table/field/instance/secure_int_instance.cpp
+		query_table/field/instance/secure_long_instance.cpp
+		query_table/field/instance/secure_float_instance.cpp
+		query_table/field/instance/secure_string_instance.cpp
 
 		query_table/field/field_factory.cpp
 		util/utilities.cpp

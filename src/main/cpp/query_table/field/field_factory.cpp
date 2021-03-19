@@ -3,6 +3,12 @@
 
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include <util/type_utilities.h>
+#include <field/instance/long_instance.h>
+#include <field/instance/float_instance.h>
+#include <field/instance/string_instance.h>
+#include <field/instance/secure_bool_instance.h>
+#include <field/instance/secure_long_instance.h>
+#include <field/instance/secure_float_instance.h>
 
 #include "instance/bool_instance.h"
 #include "instance/int_instance.h"
@@ -125,15 +131,14 @@ FieldInstance<BoolField> *FieldFactory<BoolField>::getFieldInstance(Field<BoolFi
         case FieldType::BOOL:
             return new BoolInstance(src);
         case FieldType::INT:
-            return  new IntInstance(src);
-            /*case FieldType::DATE:
-            case FieldType::LONG:
-                return  LongField(1L);
-            case FieldType::FLOAT:
-                return  FloatField((float_t) 1.0);
-            case FieldType::STRING:
-                char oneChar[2]; //  null-terminated
-                oneChar[0]  = (int8_t) 1; */
+            return new IntInstance(src);
+        case FieldType::DATE:
+        case FieldType::LONG:
+            return new LongInstance(src);
+        case FieldType::FLOAT:
+            return new FloatInstance(src);
+        case FieldType::STRING:
+            return new StringInstance(src);
         default:
             throw std::invalid_argument("Type unsupported in getInstance(): " + TypeUtilities::getTypeString(aType));
 
@@ -221,16 +226,16 @@ FieldInstance<SecureBoolField> *FieldFactory<SecureBoolField>::getFieldInstance(
     FieldType aType = src->getType();
 
     switch(aType) {
-/*        case FieldType::SECURE_BOOL:
-            return  SecureBoolField(emp::Bit(1, emp::PUBLIC)); */
+        case FieldType::SECURE_BOOL:
+            return new SecureBoolInstance(src);
         case FieldType::SECURE_INT:
             return new SecureIntInstance(src);
-/*        case FieldType::SECURE_LONG:
-            return  SecureLongField(emp::Integer(64, 1, emp::PUBLIC));
+       case FieldType::SECURE_LONG:
+           return new SecureLongInstance(src);
         case FieldType::SECURE_FLOAT:
-            return  SecureFloatField(emp::Float(1.0));
+            return new SecureFloatInstance(src);
         case FieldType::SECURE_STRING:
-            return  SecureStringField(emp::Integer(8, (int)'1'));*/
+            return new SecureLongInstance(src);
         default:
             throw std::invalid_argument("Type unsupported in getInstance(): " + TypeUtilities::getTypeString(aType));
 

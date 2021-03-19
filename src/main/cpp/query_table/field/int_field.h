@@ -1,19 +1,15 @@
 #ifndef INT_FIELD_H
 #define INT_FIELD_H
 
-#include "field_impl.h"
 #include "bool_field.h"
 #include <emp-tool/circuits/bit.h>
 
 
 namespace vaultdb {
 
-    // T = derived field
-    // B = boolean field result
-
-    // BoolField is a decorator for Field
+    // IntField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class IntField : public FieldImpl<IntField, BoolField>, public Field<BoolField> {
+    class IntField :  public Field<BoolField> {
 
     public:
 
@@ -37,7 +33,7 @@ namespace vaultdb {
         IntField& operator=(const int32_t & other);
 
 
-        IntField  operator+(const IntField &rhs) const  { return IntField(getPayload() + rhs.getPayload()); } // cast to int before doing arithmetic expressions
+        IntField  operator+(const IntField &rhs) const  { return IntField(getPayload() + rhs.getPayload()); }
         IntField  operator-(const IntField &rhs) const  { return IntField(getPayload() - rhs.getPayload()); }
         IntField  operator*(const IntField &rhs) const  { return IntField(getPayload() * rhs.getPayload()); }
         IntField  operator/(const IntField &rhs) const  { return IntField(getPayload() / rhs.getPayload()); }

@@ -1,15 +1,15 @@
-#ifndef _BOOL_INSTANCE_H
-#define _BOOL_INSTANCE_H
+#ifndef _FLOAT_INSTANCE_H
+#define _FLOAT_INSTANCE_H
 
-#include <query_table/field/int_field.h>
+#include <query_table/field/float_field.h>
 
 namespace vaultdb {
-    class BoolInstance : public FieldInstance<BoolField> {
+    class FloatInstance : public FieldInstance<BoolField> {
     public:
-        BoolInstance(Field<BoolField> *src);
-        ~BoolInstance() = default;
+        FloatInstance(Field <BoolField> *src);
+        ~FloatInstance() = default;
 
-        BoolInstance & operator=(const BoolInstance & other);
+        FloatInstance & operator=(const FloatInstance & other);
 
         Field<BoolField> plus(const Field<BoolField> &rhs) const override;
 
@@ -41,9 +41,9 @@ namespace vaultdb {
 
 
     private:
-        BoolField *ref;
+        FloatField *ref;
 
     };
 }
 
-#endif //_BOOL_INSTANCE_H
+#endif //_INT_INSTANCE_H

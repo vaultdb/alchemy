@@ -1,16 +1,16 @@
-#ifndef _SECURE_INT_INSTANCE_H
-#define _SECURE_INT_INSTANCE_H
+#ifndef _SECURE_LONG_INSTANCE_H
+#define _SECURE_LONG_INSTANCE_H
 
-#include <query_table/field/secure_int_field.h>
+#include <query_table/field/secure_long_field.h>
 
 
 namespace vaultdb {
-    class SecureIntInstance : public FieldInstance<SecureBoolField> {
+    class SecureLongInstance : public FieldInstance<SecureBoolField> {
     public:
-        SecureIntInstance(Field<SecureBoolField> *src);
-        ~SecureIntInstance()= default;
+        SecureLongInstance(Field<SecureBoolField> *src);
+        ~SecureLongInstance() = default;
 
-        SecureIntInstance & operator=(const SecureIntInstance & other);
+        SecureLongInstance & operator=(const SecureLongInstance & other);
 
         Field<SecureBoolField> plus(const Field<SecureBoolField> &rhs) const override;
 
@@ -42,7 +42,7 @@ namespace vaultdb {
 
 
     private:
-        SecureIntField *ref;
+        SecureLongField *ref;
 
     };
 }
