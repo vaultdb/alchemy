@@ -70,7 +70,7 @@ SecureBoolField SecureFloatInstance::negate() const {
 }
 
 string SecureFloatInstance::str() const {
-    return ref->toString();
+    return ref->str();
 }
 
 void SecureFloatInstance::serialize(int8_t *dst) const {

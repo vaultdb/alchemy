@@ -51,7 +51,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
                                         "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-   std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+   std::shared_ptr<QueryTable<BoolField> > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput customerInput(dbName, customerSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
@@ -64,7 +64,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
     BasicJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> observed = join.run();
+    std::shared_ptr<QueryTable<BoolField> > observed = join.run();
 
 
     ASSERT_EQ(*expected, *observed);
@@ -80,7 +80,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
                                          "FROM lineitem_cte, orders_cte "
                                           "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<QueryTable<BoolField> > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput lineitemInput(dbName, lineitemSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
@@ -94,7 +94,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
     BasicJoin<BoolField> joinOp(&lineitemInput, &ordersInput, customerOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> observed = joinOp.run();
+    std::shared_ptr<QueryTable<BoolField> > observed = joinOp.run();
 
 
 
@@ -116,7 +116,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                                  "FROM lineitem_cte, orders_cte, customer_cte "
                                                  "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<QueryTable<BoolField> > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput customerInput(dbName, customerSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
@@ -136,7 +136,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     BasicJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> observed = fullJoin.run();
+    std::shared_ptr<QueryTable<BoolField> > observed = fullJoin.run();
 
 
 

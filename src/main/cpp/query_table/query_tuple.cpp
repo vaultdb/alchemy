@@ -60,10 +60,10 @@ string QueryTuple<B>::toString(const bool &showDummies) const {
     if(showDummies
        ||    (!isEncrypted() && !(dummy_tag_.getBool())) // if it is real
        || isEncrypted()) { // or its status is unknown
-        sstream <<   "(" <<  getField(0);
+        sstream <<   "(" <<  getField(0)->toString();
 
         for (size_t i = 1; i < getFieldCount(); ++i)
-            sstream << ", " << getField(i);
+            sstream << ", " << getField(i)->toString();
 
         sstream << ")";
     }

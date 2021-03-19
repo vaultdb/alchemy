@@ -69,7 +69,7 @@ BoolField BoolInstance::negate() const {
 }
 
 string BoolInstance::str() const {
-    return ref->toString();
+    return ref->str();
 }
 
 void BoolInstance::serialize(int8_t *dst) const {

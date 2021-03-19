@@ -42,6 +42,7 @@ namespace vaultdb {
 
         // only for bool types
         BoolField neg() const { throw; }
+        std::string str() const { return std::to_string(getPayload()); }
 
 
 

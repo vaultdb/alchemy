@@ -70,7 +70,7 @@ SecureBoolField SecureIntInstance::negate() const {
 }
 
 string SecureIntInstance::str() const {
-    return ref->toString();
+    return ref->str();
 }
 
 void SecureIntInstance::serialize(int8_t *dst) const {

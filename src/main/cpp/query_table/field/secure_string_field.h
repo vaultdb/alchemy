@@ -67,6 +67,7 @@ namespace vaultdb {
 
 
 
+
     };
 
     std::ostream &operator<<(std::ostream &os, const SecureStringField &aValue);
