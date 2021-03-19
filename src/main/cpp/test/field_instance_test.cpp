@@ -42,8 +42,8 @@ protected:
 TEST_F(FieldInstanceTest, AssignmentTest) {
     BoolField a(true);
     BoolField b(false);
-    Field *aField = &a;
-    Field *bField = &b;
+    Field<BoolField> *aField = &a;
+    Field<BoolField> *bField = &b;
 
     ASSERT_EQ(aField->getValue<bool>(), true);
     ASSERT_EQ(bField->getValue<bool>(), false);
@@ -66,23 +66,21 @@ TEST_F(FieldInstanceTest, MultiTypeContainer) {
     BoolField c(false);
     SecureBoolField d(false);
 
-    vector<std::unique_ptr<Field> > fields;
+    vector<Field<BoolField> > fields;
     fields.reserve(4);
-    fields.push_back(std::unique_ptr<Field>(new BoolField(true)));
+    fields.push_back(BoolField(true));
+    fields.push_back(IntField(7));
+    fields.push_back(BoolField(false));
+    fields.push_back(IntField(42));
 
-    fields.push_back(std::unique_ptr<Field>(new SecureBoolField(true)));
-    fields.push_back(std::unique_ptr<Field>(new BoolField(false)));
-    fields.push_back(std::unique_ptr<Field>(new SecureBoolField(false)));
+    ASSERT_EQ(fields[0].getType(), FieldType::BOOL);
+    ASSERT_EQ(fields[1].getType(), FieldType::INT);
 
-    ASSERT_EQ(fields[0]->getType(), FieldType::BOOL);
-    ASSERT_EQ(fields[1]->getType(), FieldType::SECURE_BOOL);
+    ASSERT_EQ(fields[0].getValue<bool>(), true);
+    ASSERT_EQ(fields[2].getValue<bool>(), false);
 
-    ASSERT_EQ(fields[0]->getValue<bool>(), true);
-    ASSERT_EQ(fields[2]->getValue<bool>(), false);
-
-    ASSERT_EQ((fields[1]->getValue<emp::Bit>()).reveal(), true);
-    ASSERT_EQ((fields[3]->getValue<emp::Bit>()).reveal(), false);
-
+    ASSERT_EQ(fields[1].getValue<int32_t>(), 7);
+    ASSERT_EQ(fields[3].getValue<int32_t>(), 42);
 
 
 }

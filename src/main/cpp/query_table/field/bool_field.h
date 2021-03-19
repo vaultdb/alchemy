@@ -31,7 +31,7 @@ namespace vaultdb {
         bool getPayload() const { return this->getValue<bool>(); }
 
         // for use in print statements, etc.
-        bool getBool() { return getPayload(); }
+        bool getBool() const { return getPayload(); }
 
         BoolField& operator=(const BoolField& other);
 
@@ -57,6 +57,7 @@ namespace vaultdb {
         // swappable
         BoolField  selectValue(const BoolField & choice, const BoolField & other) const;
 
+        std::string str() const {  return getPayload() ? "true" : "false"; }
 
 
         // bitwise ops

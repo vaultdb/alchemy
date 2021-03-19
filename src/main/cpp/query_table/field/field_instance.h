@@ -20,7 +20,7 @@ namespace vaultdb {
         // stateless, so this does not matter
         FieldInstance & operator=(const FieldInstance & other) { return *this;  }
 
-        FieldInstance(Field<B> *src)  {}
+        FieldInstance(Field <B> *src)  {}
 
         // this will work if we only return fields
         // field will call plus, minus, etc.

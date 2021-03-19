@@ -2,6 +2,8 @@
 
 using namespace vaultdb;
 
+
+
 SecureBoolField::SecureBoolField(const SecureBoolField &src) : Field(FieldType::SECURE_BOOL) {
     emp::Bit p = src.getPayload();
     setValue(p);
@@ -34,9 +36,6 @@ SecureBoolField::SecureBoolField(const bool &src) {
 }
 
 
-std::ostream &operator<<(std::ostream &os, const SecureBoolField &aValue) {
-    return os << aValue.toString();
-}
 
 SecureBoolField SecureBoolField::eq(const SecureBoolField &cmp) const {
     emp::Bit res = (getPayload() == cmp.getPayload());
@@ -76,4 +75,8 @@ void SecureBoolField::ser(int8_t *target) const {
 }
 
 
+
+std::ostream &operator<<(std::ostream &os, const SecureBoolField &aValue) {
+    return os << aValue.toString();
+}
 

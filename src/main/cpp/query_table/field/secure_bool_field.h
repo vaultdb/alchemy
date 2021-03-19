@@ -38,8 +38,9 @@ namespace vaultdb {
         emp::Bit getPayload() const { return getValue<emp::Bit>(); }
 
         // for use in print statements, etc.
-        bool getBool() { return true;  }
+        bool getBool() const { return true;  }
 
+        std::string str() const { return "SECRET BOOL";  }
 
         SecureBoolField& operator=(const SecureBoolField& other);
 

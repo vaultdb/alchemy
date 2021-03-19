@@ -1,6 +1,7 @@
 #include "secure_float_field.h"
 
 using namespace vaultdb;
+using namespace emp;
 
 std::ostream &operator<<(std::ostream &os, const SecureFloatField &aValue) {
     return os << aValue.toString();
@@ -75,4 +76,59 @@ vaultdb::SecureFloatField vaultdb::SecureFloatField::operator+(const vaultdb::Se
 
 void SecureFloatField::ser(int8_t *target) const {
     memcpy(target, (int8_t *) getPayload().value.data(), allocated_size_);
+}
+
+SecureFloatField SecureFloatField::toFloat(const emp::Integer &input) {
+
+        const Integer zero(32, 0, PUBLIC);
+        const Integer one(32, 1, PUBLIC);
+        const Integer maxInt(32, 1 << 24, PUBLIC); // 2^24
+        const Integer minInt = Integer(32, -1 * (1 << 24), PUBLIC); // -2^24
+        const Integer twentyThree(32, 23, PUBLIC);
+
+        Float output(0.0, PUBLIC);
+
+        Bit signBit = input.bits[31];
+        Integer unsignedInput = input.abs();
+
+        Integer firstOneIdx = Integer(32, 31, PUBLIC) - unsignedInput.leading_zeros().resize(32);
+
+        Bit leftShift = firstOneIdx >= twentyThree;
+        Integer shiftOffset = emp::If(leftShift, firstOneIdx - twentyThree, twentyThree - firstOneIdx);
+        Integer shifted = emp::If(leftShift, unsignedInput >> shiftOffset, unsignedInput << shiftOffset);
+
+        // exponent is biased by 127
+        Integer exponent = firstOneIdx + Integer(32, 127, PUBLIC);
+        // move exp to the right place in final output
+        exponent = exponent << 23;
+
+        Integer coefficient = shifted;
+        // clear leading 1 (bit #23) (it will implicitly be there but not stored)
+        coefficient.bits[23] = Bit(false, PUBLIC);
+
+
+        // bitwise OR the sign bit | exp | coeff
+        Integer outputInt(32, 0, PUBLIC);
+        outputInt.bits[31] = signBit; // bit 31 is sign bit
+
+        outputInt =  coefficient | exponent | outputInt;
+        memcpy(&(output.value[0]), &(outputInt.bits[0]), 32 * sizeof(Bit));
+
+        // cover the corner cases
+        output = emp::If(input == zero, Float(0.0, PUBLIC), output);
+        output = emp::If(input < minInt, Float(INT_MIN, PUBLIC), output);
+        output = emp::If(input > maxInt, Float(INT_MAX, PUBLIC), output);
+
+        return SecureFloatField(output);
+
+
+}
+
+SecureFloatField SecureFloatField::toFloat(const SecureIntField &f) {
+    return toFloat(f.getPayload());
+}
+
+
+SecureFloatField SecureFloatField::toFloat(const SecureLongField &f) {
+    return toFloat(f.getPayload());
 }

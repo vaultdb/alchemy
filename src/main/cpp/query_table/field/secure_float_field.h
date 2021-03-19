@@ -7,6 +7,8 @@
 #include "field.h"
 #include "secure_bool_field.h"
 #include "float_field.h"
+#include "secure_int_field.h"
+#include "secure_long_field.h"
 
 namespace vaultdb {
 
@@ -75,6 +77,12 @@ namespace vaultdb {
         SecureFloatField operator|(const SecureFloatField &right) const;
 
         void ser(int8_t * target) const;
+
+        static SecureFloatField toFloat(const SecureIntField & f);
+        static SecureFloatField toFloat(const SecureLongField & f);
+
+    private:
+        static SecureFloatField toFloat(const emp::Integer & src);
 
 
 

@@ -56,26 +56,20 @@ const B *QueryTuple<B>::getDummyTag() const {
 template<typename B>
 string QueryTuple<B>::toString(const bool &showDummies) const {
     std::stringstream sstream;
-    // what if the whole setup is encrypted?  This tactic won't work.
-    B isReal = B(!isEncrypted());
-    isReal = isReal & !dummy_tag_;
-    B encrypted = B(isEncrypted());
-
-
 
     if(showDummies
-       || (B(!isEncrypted()) & (!dummy_tag_)).getBool() // if it is real
-           || isEncrypted()) { // or its status is unknown
-         sstream <<   "(" <<  fields_[0];
+       ||    (!isEncrypted() && !(dummy_tag_.getBool())) // if it is real
+       || isEncrypted()) { // or its status is unknown
+        sstream <<   "(" <<  getField(0);
 
         for (size_t i = 1; i < getFieldCount(); ++i)
-            sstream << ", " << fields_[i];
+            sstream << ", " << getField(i);
 
         sstream << ")";
     }
 
     if(showDummies) {
-       sstream <<  " (dummy=" << dummy_tag_ <<  + ")";
+        sstream <<  " (dummy=" << dummy_tag_.toString() + ")";
     }
 
     return sstream.str();

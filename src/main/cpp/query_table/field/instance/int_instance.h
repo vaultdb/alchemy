@@ -6,7 +6,7 @@
 namespace vaultdb {
     class IntInstance : public FieldInstance<BoolField> {
     public:
-        IntInstance(Field<BoolField> *src);
+        IntInstance(Field <BoolField> *src);
 
         IntInstance & operator=(const IntInstance & other);
 

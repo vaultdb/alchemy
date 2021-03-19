@@ -22,47 +22,33 @@ namespace vaultdb {
 
     template<typename B>
     class FieldFactory {
-    public:
-/*
-        template<typename T>
-         static inline Field * getField(const FieldType & type, const T & src) {
-            switch(type) {
-                case FieldType::BOOL:
-                    return new BoolField((bool) src);
-                case FieldType::INT:
-                    return new IntField((int32_t) src);
-                case FieldType::LONG:
-                    return new LongField((int64_t) src);
 
-                case FieldType::FLOAT:
-                    return new FloatField((float_t) src);
-                case FieldType::STRING:
-                    return new StringField(std::string(src));
-                case FieldType::SECURE_BOOL:
-                    return new SecureBoolField((emp::Bit) src);
-                case FieldType::SECURE_INT:
-                    return new SecureIntField((emp::Integer) src);
-                case FieldType::SECURE_LONG:
-                    return new SecureLongField((emp::Integer) src);
-                case FieldType::SECURE_FLOAT:
-                    return new SecureFloatField((emp::Float) src);
-                case FieldType::SECURE_STRING:
-                    return new SecureStringField((emp::Integer) src);
-
-                default: // invalid
-                    throw;
-            }
-        }*/
-
-        static Field<B> * getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src);
-        static Field<B> *deepCopy(const Field<B> *srcField);
-        static Field<B> *toFloat(const Field<B> *src);
-        static Field<B> getZero(const FieldType & type);
-        static Field<B> getOne(const FieldType & type);
-        static FieldInstance<B> *getInstance(const Field<B> *src);
     };
 
 
+    template<>
+    class FieldFactory<BoolField> {
+    public:
+        static Field<BoolField> *getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src);
+        // deepCopy may not be needed anymore, TODO: revisit this
+        static Field<BoolField> *deepCopy(const Field<BoolField> *srcField);
+        static Field<BoolField> getZero(const FieldType & type);
+        static Field<BoolField> getOne(const FieldType & type);
+        static FloatField toFloat(const Field<BoolField> *src);
+        static FieldInstance<BoolField> *getFieldInstance(Field<BoolField> *src);
+    };
+
+
+    template<>
+    class FieldFactory<SecureBoolField> {
+    public:
+        // deepCopy may not be needed anymore, TODO: revisit this
+        static Field<SecureBoolField> *deepCopy(const Field<SecureBoolField> *srcField);
+        static Field<SecureBoolField> getZero(const FieldType & type);
+        static Field<SecureBoolField> getOne(const FieldType & type);
+        static Field<SecureBoolField> toFloat(const Field<SecureBoolField> *src);
+        static FieldInstance<SecureBoolField> *getFieldInstance(Field<SecureBoolField> *src);
+    };
 
 }
 
