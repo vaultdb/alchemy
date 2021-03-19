@@ -1,7 +1,7 @@
 #ifndef INT_FIELD_H
 #define INT_FIELD_H
 
-#include "field_instance.h"
+#include "field_impl.h"
 #include "bool_field.h"
 #include <emp-tool/circuits/bit.h>
 
@@ -13,7 +13,7 @@ namespace vaultdb {
 
     // BoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class IntField : public FieldInstance<IntField, BoolField>, public Field {
+    class IntField : public FieldImpl<IntField, BoolField>, public Field<BoolField> {
 
     public:
 
@@ -45,7 +45,7 @@ namespace vaultdb {
 
 
         // only for bool types
-        BoolField negate() const { throw; }
+        BoolField neg() const { throw; }
 
 
 
@@ -54,7 +54,7 @@ namespace vaultdb {
 
 
         // swappable
-        IntField  select(const BoolField & choice, const IntField & other) const;
+        IntField  selectValue(const BoolField & choice, const IntField & other) const;
 
 
 
@@ -63,10 +63,15 @@ namespace vaultdb {
         IntField  operator^(const IntField &right) const { return  IntField((getPayload() ^ (right.getPayload()))); }
         IntField  operator|(const IntField &right) const { return  IntField((getPayload() | (right.getPayload()))); }
 
+        // serialize
+        void ser(int8_t * target) const { *((int32_t *) target) = getPayload();  }
+
 
     };
 
     std::ostream &operator<<(std::ostream &os, const IntField &aValue);
+
+
 
 }
 #endif //INT_FIELD_H

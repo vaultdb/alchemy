@@ -44,7 +44,7 @@ BoolField LongField::operator==(const LongField &cmp) const {
     return  BoolField(res);
 }
 
-LongField LongField::select(const BoolField &choice, const LongField &other) const {
+LongField LongField::selectValue(const BoolField &choice, const LongField &other) const {
     bool selection =  choice.getPayload();
     return selection ? LongField(*this) :  LongField(other);
 }

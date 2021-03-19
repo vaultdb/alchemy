@@ -1,5 +1,5 @@
-#ifndef _GROUP_BY_AGGREGATE_IMPL_H
-#define _GROUP_BY_AGGREGATE_IMPL_H
+#ifndef GROUP_BY_AGGREGATE_IMPL_H
+#define GROUP_BY_AGGREGATE_IMPL_H
 
 
 #include "query_table/field/bool_field.h"
@@ -17,119 +17,171 @@
 
 
 namespace vaultdb {
+
+    // virtual class, wrapper for GroupByAggregateImpl below
+    template<typename B>
+    class GroupByAggregator {
+
+    public:
+        virtual ~GroupByAggregator() = default;
+        GroupByAggregator(const int32_t &ordinal, const FieldType & fieldType) : aggregateOrdinal(ordinal), aggregateType(fieldType) {}
+        virtual void initialize(const QueryTuple & tuple, const B & isDummy) = 0;
+        virtual void accumulate(const QueryTuple & tuple, const B & isDummy) = 0;
+        virtual Field getResult() const = 0;
+        virtual inline void updateGroupByBinBoundary(const B & isNewBin, B & nonDummyBinFlag) {
+            assert(isNewBin->getType() == nonDummyBinFlag->getType() && ( nonDummyBinFlag->getType() == FieldType::BOOL || nonDummyBinFlag.getType() == FieldType::SECURE_BOOL));
+
+           // B choice = static_cast<B &>(*isNewBin);
+            B f(false);
+            Field::compareAndSwap(isNewBin, nonDummyBinFlag, f);
+
+        }
+
+
+        virtual inline  B getDummyTag(const B & isLastEntry, const B & nonDummyBin)  const {
+            assert((isLastEntry->getType() == FieldType::BOOL || isLastEntry->getType() == FieldType::SECURE_BOOL)
+                   && ((nonDummyBin->getType() == FieldType::BOOL || nonDummyBin->getType() == FieldType::SECURE_BOOL)));
+            B nDummyBin = !nonDummyBin;
+            B other(true);
+
+            // if last entry, then return true nonDummyBin status, otherwise mark as dummy
+            // ! nonDummy bin b/c if it is a real bin, we want dummyTag = false
+
+            B res = nDummyBin.select(isLastEntry, other);
+            return res;
+        }
+
+         FieldType getType() const { return aggregateType; }
+         int32_t getOrdinal() const { return aggregateOrdinal; }
+
+    protected:
+        FieldType aggregateType;
+        int32_t aggregateOrdinal;
+        QueryTuple lastRealTuple;
+
+
+    };
+
+/*
+    // T = field type (e.g., BoolField), B = bool type (BoolField || SecureBoolField)
+    template<typename T, typename B>
     class GroupByAggregateImpl {
     public:
-        explicit GroupByAggregateImpl(const int32_t & ordinal, const FieldType & aggType) :
-                                                            aggregateOrdinal(ordinal), aggregateType(aggType),
-                                                            zero(FieldFactory::getZero(aggregateType)), one(FieldFactory::getOne(aggregateType)){};
+        explicit GroupByAggregateImpl(const int32_t &ordinal, const FieldType & fieldType) :
+                                                            zero(FieldFactory::getZero(fieldType)), one(FieldFactory::getOne(fieldType)){ };
 
-        virtual ~GroupByAggregateImpl() {}
-        virtual void initialize(const QueryTuple & tuple, const Field *isDummy) = 0; // run this when we start a new group-by bin
-        virtual void accumulate(const QueryTuple & tuple, const Field *isDummy) = 0;
-        virtual const Field * getResult() const = 0;
-        const FieldType getType() { return aggregateType; }
+        virtual ~GroupByAggregateImpl() = default;
 
-        // specialized in plain or  version of aggregator
-        virtual const Field * getDummyTag(const Field *isLastEntry, const Field *nonDummyBin) = 0;
-        virtual void updateGroupByBinBoundary(const Field *isNewBin, Field *nonDummyBinFlag) = 0;
+
     protected:
 
         // signed int because -1 denotes *, as in COUNT(*)
-        int32_t aggregateOrdinal;
-        FieldType aggregateType;
-        Field *zero;
-        Field *one;
+        T zero;
+        T one;
 
     };
+*/
 
 
-    class PlainGroupByAggregateImpl : public GroupByAggregateImpl {
-    public:
-        explicit PlainGroupByAggregateImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl(ordinal, aggType) {};
-        virtual ~PlainGroupByAggregateImpl() = default;
-         const Field * getDummyTag(const Field *isLastEntry, const Field *nonDummyBin) override;
-         void updateGroupByBinBoundary(const Field *isNewBin, Field *nonDummyBinFlag) override;
-
-
-    };
-
-    class GroupByCountImpl : public  PlainGroupByAggregateImpl {
+   // always a long / emp::Int for count
+    template<typename T, typename B>
+    class GroupByCountImpl :   public GroupByAggregator<B> {
     public:
         explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType)
-        : PlainGroupByAggregateImpl(ordinal, aggType), runningCount(new LongField((int64_t) 0L)) {};
-        void initialize(const QueryTuple & tuple, const Field *isDummy) override;
-        void accumulate(const QueryTuple & tuple, const Field *isDummy) override;
-        const Field * getResult() const override;
-        ~GroupByCountImpl() { delete runningCount; }
+        : GroupByAggregator<B>(ordinal, aggType) {
+            assert(aggType == FieldType::LONG || aggType == FieldType::SECURE_LONG);
+            zero =  FieldFactory::getZero(aggType);
+            one =  FieldFactory::getZero(aggType);
+
+            runningCount = zero;
+        };
+
+         void initialize(const QueryTuple & tuple, const B & isDummy) override;
+         void accumulate(const QueryTuple & tuple, const B  & isDummy) override;
+         Field getResult() const override;
+        ~GroupByCountImpl() = default; //{ delete runningCount; }
 
     private:
-        Field *runningCount;
+        T zero;
+        T one;
+        T runningCount;
 
     };
 
-    class GroupBySumImpl : public  PlainGroupByAggregateImpl {
+    /*
+    template<typename T, typename B>
+    class GroupBySumImpl : public  GroupByAggregateImpl<T,B>,   public GroupByAggregator<B> {
     public:
-        explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & aggType) : PlainGroupByAggregateImpl(ordinal, aggType) {
-            if(aggregateType == FieldType::INT32) {
-                aggregateType = FieldType::INT64; // accommodate psql handling of sum for validation
-                zero = FieldFactory::getZero(aggregateType);
-                one = FieldFactory::getOne(aggregateType);
+        explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl<T,B>(ordinal, aggType) {
+            if(GroupByAggregateImpl<T,B>::aggregateType == FieldType::INT) {
+                GroupByAggregateImpl<T,B>::aggregateType = FieldType::LONG; // accommodate psql handling of sum for validation
+                delete GroupByAggregateImpl<T,B>::zero;
+                delete GroupByAggregateImpl<T,B>::one;
+                GroupByAggregateImpl<T,B>::zero = FieldFactory::getZero(GroupByAggregateImpl<T,B>::aggregateType);
+                GroupByAggregateImpl<T,B>::one = FieldFactory::getOne(GroupByAggregateImpl<T,B>::aggregateType);
             }
         };
         void initialize(const QueryTuple & tuple, const Field *isDummy) override;
         void accumulate(const QueryTuple & tuple, const Field *isDummy) override;
-        const Field * getResult() const override;
+         Field getResult() const override;
         ~GroupBySumImpl() {
             delete runningSum;
         }
 
     private:
-        Field *runningSum;
+        T runningSum;
+        T readVal(const QueryTuple & tuple) const;
 
     };
 
-    class GroupByAvgImpl : public  PlainGroupByAggregateImpl {
+    template<typename T, typename B>
+    class GroupByAvgImpl :  public  GroupByAggregateImpl<T,B>,  public GroupByAggregator<B> {
     public:
         GroupByAvgImpl(const int32_t & ordinal, const FieldType & aggType);
         void initialize(const QueryTuple & tuple, const Field *isDummy) override;
         void accumulate(const QueryTuple & tuple, const Field *isDummy) override;
-        const Field * getResult() const override;
+        Field getResult() const override;
         ~GroupByAvgImpl() = default;
 
     private:
-        Field *runningSum;
-        Field *runningCount;
+        T runningSum;
+        T runningCount;
 
     };
 
-    class GroupByMinImpl : public  PlainGroupByAggregateImpl {
+    template<typename T, typename B>
+    class GroupByMinImpl : public  GroupByAggregateImpl<T,B>,  public GroupByAggregator<B> {
     public:
         explicit GroupByMinImpl(const int32_t & ordinal, const FieldType & aggType);
         void initialize(const QueryTuple & tuple, const Field *isDummy) override;
         void accumulate(const QueryTuple & tuple, const Field *isDummy) override;
-        const Field * getResult() const override;
+        Field getResult() const override;
         ~GroupByMinImpl() { delete runningMin; }
 
     private:
-        Field *runningMin;
+        T runningMin;
         void resetRunningMin();
 
 
     };
 
-    class GroupByMaxImpl : public  PlainGroupByAggregateImpl {
+    template<typename T, typename B>
+    class GroupByMaxImpl : public  GroupByAggregateImpl<T,B>,  public GroupByAggregator<B> {
     public:
-         GroupByMaxImpl(const int32_t & ordinal, const FieldType & aggType);;
+         GroupByMaxImpl(const int32_t & ordinal, const FieldType & aggType);
         void initialize(const QueryTuple & tuple, const Field *isDummy) override;
         void accumulate(const QueryTuple & tuple, const Field *isDummy) override;
-        const Field * getResult() const override;
+         Field getResult() const override;
         ~GroupByMaxImpl() { delete runningMax; }
 
     private:
-        Field *runningMax;
+        T runningMax;
         void resetRunningMax();
 
 
     };
+          */
+
 }
+
 #endif //_GROUP_BY_AGGREGATE_IMPL_H

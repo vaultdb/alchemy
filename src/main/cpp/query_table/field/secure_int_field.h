@@ -1,8 +1,9 @@
 #ifndef SECURE_INT_FIELD_H
 #define SECURE_INT_FIELD_H
 
-#include "field_instance.h"
+#include "field_impl.h"
 #include "secure_bool_field.h"
+#include "int_field.h"
 #include <emp-tool/circuits/bit.h>
 
 
@@ -11,9 +12,9 @@ namespace vaultdb {
     // T = derived field
     // B = boolean field result
 
-    // BoolField is a decorator for Field
+    // SecureBoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class SecureIntField : public FieldInstance<SecureIntField, SecureBoolField>, public Field  {
+    class SecureIntField : public FieldImpl<SecureIntField, SecureBoolField>, public Field<SecureBoolField>  {
 
     public:
 
@@ -24,7 +25,7 @@ namespace vaultdb {
         SecureIntField(const SecureIntField & src);
         SecureIntField(const emp::Integer & src);
 
-        explicit SecureIntField(const Field *src, const int & myParty, const int & dstParty);
+        explicit SecureIntField(const IntField *src, const int & myParty, const int & dstParty);
         explicit SecureIntField(const int8_t * src);
 
 
@@ -41,7 +42,7 @@ namespace vaultdb {
 
 
         // not defined in EMP
-        SecureBoolField negate() const { throw; }
+        SecureBoolField neg() const { throw; }
 
 
 
@@ -50,7 +51,7 @@ namespace vaultdb {
 
 
         // swappable
-        SecureIntField  select(const SecureBoolField & choice, const SecureIntField & other) const;
+        SecureIntField  selectValue(const SecureBoolField & choice, const SecureIntField & other) const;
 
 
 
@@ -59,10 +60,14 @@ namespace vaultdb {
         SecureIntField  operator^(const SecureIntField &right) const { return  SecureIntField((getPayload()) ^ (right.getPayload())); }
         SecureIntField  operator|(const SecureIntField &right) const { return  SecureIntField((getPayload()) | (right.getPayload())); }
 
+        void ser(int8_t * target) const {  memcpy(target, (int8_t *) getPayload().bits.data(), allocated_size_); }
+
 
     };
 
     std::ostream &operator<<(std::ostream &os, const SecureIntField &aValue);
+
+
 
 }
 #endif //BOOL_FIELD_H

@@ -12,16 +12,16 @@
 using namespace emp;
 
 namespace vaultdb {
+    template<typename B>
     class QueryTuple {
     private:
 
-        std::unique_ptr<Field> dummy_tag_;
-        vector<std::unique_ptr<Field> >  fields_;
+        B dummy_tag_;
+        vector<Field<B> >   fields_;
 
 
     public:
         QueryTuple() {};
-        QueryTuple(const size_t & fieldCount, const bool & is_encrypted);
         ~QueryTuple() { };
 
         explicit QueryTuple(const size_t & aFieldCount);
@@ -30,18 +30,18 @@ namespace vaultdb {
 
         inline bool  isEncrypted() const;
 
-      const Field * getField(const int &ordinal) const;
-      void putField(const int &idx, const Field &f);
-      void setDummyTag(const Field &v);
-      void setDummyTag(const bool & b);
+        const Field<B> * getField(const int &ordinal) const;
+      void putField(const int &idx, const Field<B> &f);
+      void setDummyTag(const B &v);
+      /*void setDummyTag(const bool & b);
 
         void setDummyTag(const emp::Bit & b);
+*/
+
+          const B *getDummyTag() const;
 
 
-        const Field * getDummyTag() const;
-
-
-        QueryTuple reveal(const int &empParty = PUBLIC) const;
+        QueryTuple<BoolField> reveal(const int &empParty = PUBLIC) const;
 
         string toString(const bool &showDummies = false) const;
 
@@ -49,21 +49,30 @@ namespace vaultdb {
         size_t getFieldCount() const;
 
         QueryTuple& operator=(const QueryTuple& other);
-        bool operator==(const QueryTuple & other) const;
-        inline bool operator!=(const QueryTuple & other) { return !(*this == other);   }
+        bool operator==(const QueryTuple<B> & other) const;
+        inline bool operator!=(const QueryTuple<B> & other) { return !(*this == other);   }
 
 
-        // TODO: template-ize this to remove two C&Ss
-        static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const SecureBoolField & cmp);
-        static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const BoolField & cmp);
+        static void compareAndSwap(const B &cmp, QueryTuple <B> *lhs, QueryTuple <B> *rhs);
+       // static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const BoolField & cmp);
+
 
         static QueryTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
 
 
-        static QueryTuple
-        secretShare(const QueryTuple *srcTuple, const QuerySchema &schema, const int &myParty, const int &dstParty);
+        static QueryTuple<SecureBoolField>
+        secretShare(const QueryTuple<BoolField> *srcTuple, const QuerySchema &schema, const int &myParty, const int &dstParty);
+
+        // already encrypted
+        static QueryTuple<SecureBoolField>
+        secretShare(const QueryTuple<SecureBoolField> *srcTuple, const QuerySchema &schema, const int &myParty, const int &dstParty) {
+            return QueryTuple<SecureBoolField>(*srcTuple);
+        }
+
     };
-    std::ostream &operator<<(std::ostream &os, const QueryTuple &tuple);
+
+    std::ostream &operator<<(std::ostream &os, const QueryTuple<BoolField> &tuple);
+    std::ostream &operator<<(std::ostream &os, const QueryTuple<SecureBoolField> &tuple);
 
 
 

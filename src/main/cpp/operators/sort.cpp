@@ -2,8 +2,8 @@
 
 using namespace vaultdb;
 
-template<typename T>
-int Sort<T>::powerOfLessThanTwo(const int & n) {
+template<typename B>
+int Sort<B>::powerOfLessThanTwo(const int & n) {
   int k = 1;
   while (k > 0 && k < n) {
     k *= 2;
@@ -11,34 +11,34 @@ int Sort<T>::powerOfLessThanTwo(const int & n) {
   return k / 2;
 }
 
-template<typename T>
-Sort<T>::Sort(Operator *child, const SortDefinition &aSortDefinition) : Operator(child), sortDefinition(aSortDefinition) {
+template<typename B>
+Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition) : Operator<B>(child), sortDefinition(aSortDefinition) {
 
 
 }
 
-template<typename T>
-Sort<T>::Sort(shared_ptr<QueryTable> child, const SortDefinition &aSortDefinition) : Operator(child), sortDefinition(aSortDefinition){
+template<typename B>
+Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition) : Operator<B>(child), sortDefinition(aSortDefinition){
 
 }
 
 
-template<typename T>
-std::shared_ptr<QueryTable> Sort<T>::runSelf() {
-    std::shared_ptr<QueryTable> input = children[0]->getOutput();
+template<typename B>
+std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
+    std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
 
-    sortCondition = SortCondition<T>(sortDefinition);
+    sortCondition = SortCondition<B>(sortDefinition);
     SortDefinition reverseSortDefinition = getReverseSortDefinition(sortDefinition);
-    reverseSortCondition = SortCondition<T>(reverseSortDefinition);
+    reverseSortCondition = SortCondition<B>(reverseSortDefinition);
 
 
     // deep copy new output
-    output = std::shared_ptr<QueryTable>(new QueryTable(*input));
-    bitonicSort(0,  output->getTupleCount(), true);
+    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable(*input));
+    bitonicSort(0,  Operator<B>::output->getTupleCount(), true);
 
-    output->setSortOrder(sortDefinition);
+    Operator<B>::output->setSortOrder(sortDefinition);
 
-    return output;
+    return Operator<B>::output;
 }
 
 
@@ -47,8 +47,8 @@ std::shared_ptr<QueryTable> Sort<T>::runSelf() {
  * calls bitonicMerge.
  **/
 
-template<typename T>
-void Sort<T>::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
+template<typename B>
+void Sort<B>::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
     if (cnt > 1) {
         int k = cnt / 2;
         bitonicSort(lo, k, !invertDir);
@@ -65,8 +65,8 @@ void Sort<T>::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
  * the number of elements is cnt.
  **/
 
-template<typename T>
-void Sort<T>::bitonicMerge(const int &lo, const int &n, bool invertDir) {
+template<typename B>
+void Sort<B>::bitonicMerge(const int &lo, const int &n, bool invertDir) {
 
     if (n > 1) {
         int m = powerOfLessThanTwo(n);
@@ -78,10 +78,10 @@ void Sort<T>::bitonicMerge(const int &lo, const int &n, bool invertDir) {
     }
 }
 
-template<typename T>
-void Sort<T>::compareAndSwap(const int &lhsIdx, const int &rhsIdx, bool invertDir) {
-    QueryTuple lhs = output->getTuple(lhsIdx);
-    QueryTuple rhs = output->getTuple(rhsIdx);
+template<typename B>
+void Sort<B>::compareAndSwap(const int &lhsIdx, const int &rhsIdx, bool invertDir) {
+    QueryTuple lhs = Operator<B>::output->getTuple(lhsIdx);
+    QueryTuple rhs = Operator<B>::output->getTuple(rhsIdx);
 
     if(!invertDir) {
         sortCondition.compareAndSwap(lhs, rhs);
@@ -90,16 +90,16 @@ void Sort<T>::compareAndSwap(const int &lhsIdx, const int &rhsIdx, bool invertDi
         reverseSortCondition.compareAndSwap(lhs, rhs);
     }
 
-    output->putTuple(lhsIdx, lhs);
-    output->putTuple(rhsIdx, rhs);
+    Operator<B>::output->putTuple(lhsIdx, lhs);
+    Operator<B>::output->putTuple(rhsIdx, rhs);
 
 
 
 
 }
 
-template<typename T>
-SortDefinition Sort<T>::getReverseSortDefinition(const SortDefinition & aSortDef) {
+template<typename B>
+SortDefinition Sort<B>::getReverseSortDefinition(const SortDefinition & aSortDef) {
     SortDefinition reverseSortDefinition;
 
     for(ColumnSort cs : aSortDef) {
@@ -112,8 +112,8 @@ SortDefinition Sort<T>::getReverseSortDefinition(const SortDefinition & aSortDef
 
 }
 
-template<typename T>
-Sort<T>::~Sort() {
+template<typename B>
+Sort<B>::~Sort() {
 
     //if(sortCondition) delete sortCondition;
     //if(reverseSortCondition) delete reverseSortCondition;

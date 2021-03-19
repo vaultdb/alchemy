@@ -7,19 +7,19 @@
 
 
 namespace  vaultdb {
-    template<typename T>
-    class Sort : public Operator {
+    template<typename B>
+    class Sort : public Operator<B> {
         SortDefinition sortDefinition;
 
-        SortCondition<T> sortCondition; // pointer-izing it b/c it is an abstract class
-        SortCondition<T> reverseSortCondition;  // for when we need to put tuples in the opposite of the desired final sort order
+        SortCondition<B> sortCondition; // pointer-izing it b/c it is an abstract class
+        SortCondition<B> reverseSortCondition;  // for when we need to put tuples in the opposite of the desired final sort order
 
     public:
-        Sort(Operator *child, const SortDefinition &aSortDefinition);
+        Sort(Operator<B> *child, const SortDefinition &aSortDefinition);
         ~Sort();
-        Sort(shared_ptr<QueryTable> child, const SortDefinition &aSortDefinition);
+        Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition);
 
-        std::shared_ptr<QueryTable> runSelf() override; // {throw; } // implemented in template specializations
+        std::shared_ptr<QueryTable<B> > runSelf() override; // {throw; } // implemented in template specializations
 
         static SortDefinition getReverseSortDefinition(const SortDefinition &aSortDef);
 

@@ -49,7 +49,7 @@ BoolField FloatField::operator==(const FloatField &cmp) const {
     }
 
 
-FloatField FloatField::select(const BoolField &choice, const FloatField &other) const {
+FloatField FloatField::selectValue(const BoolField &choice, const FloatField &other) const {
     bool selection =  choice.getPayload();
     return selection ? FloatField(*this) :  FloatField(other);
 }

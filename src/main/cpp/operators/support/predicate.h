@@ -8,14 +8,14 @@ using namespace emp;
 // predicates will inherit from this class
 // it is a shell for creating state for the predicate, e.g., encrypted constants for equality checks
 namespace vaultdb {
-    template<typename  T>
+    template<typename  B>
     class Predicate {
 
     public:
         Predicate() {}
         virtual ~Predicate() {}
         // override when we instantiate a predicate
-        virtual T predicateCall(const QueryTuple & aTuple) const = 0;
+        virtual B predicateCall(const QueryTuple<B> & aTuple) const = 0;
 
     };
 

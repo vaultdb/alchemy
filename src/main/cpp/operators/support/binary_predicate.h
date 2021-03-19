@@ -9,7 +9,7 @@ using namespace emp;
 
 // predicates will inherit from this class
 // it is a shell for creating state for the predicate, e.g., encrypted constants for equality checks
-template<typename T>
+template<typename B>
 class BinaryPredicate {
 
 public:
@@ -17,7 +17,7 @@ public:
     virtual ~BinaryPredicate() {}
 
     // override when we instantiate a predicate -- only need to implement one of these per predicate class
-    virtual T predicateCall(const QueryTuple * lhs, const QueryTuple * rhs) const = 0;
+    virtual B predicateCall(const QueryTuple<B> * lhs, const QueryTuple<B> * rhs) const = 0;
 
 };
 

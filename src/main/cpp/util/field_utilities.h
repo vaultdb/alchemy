@@ -13,9 +13,9 @@ namespace vaultdb {
     public:
         // size is in bytes
         static size_t getPhysicalSize(const FieldType &id, const size_t & strLength = 0);
-        static Field * equal(const Field *lhs, const Field *rhs);
+/*        static Field * equal(const Field *lhs, const Field *rhs);
         static Field * geq(const Field *lhs, const Field *rhs);
-        static Field * gt(const Field * lhs, const Field *rhs);
+        static Field * gt(const Field * lhs, const Field *rhs);*/
 
 
     };

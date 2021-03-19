@@ -1,94 +1,94 @@
-#ifndef _QUERY_FIELD_H
-#define _QUERY_FIELD_H
+#ifndef _FIELD_INSTANCE_H
+#define _FIELD_INSTANCE_H
 
-#include <cstring>
-#include <defs.h>
-#include "field.h"
-
-
+// JMR: this is one long, elaborate hack to get around needing the template type (e.g., IntField, FloatField) in Field declaration
+// this is necessary to store heterogenous fields in the same container/tuple.
 namespace vaultdb {
+    template<typename B>
+    class Field;
 
+    class BoolField;
+    class SecureBoolField;
 
-    // T = derived field
-    // P = primitive / payload of field
-    // B = boolean field result
-    template<typename T, typename B>
-    class FieldInstance   {
+    // FieldInstance, and the classes that inherit from it, contain no state of their own
+    // decorators to add operator overloads
+    template<typename B>
+    class FieldInstance {
     public:
+        virtual ~FieldInstance () = default;
+
+        // stateless, so this does not matter
+        FieldInstance & operator=(const FieldInstance & other) { return *this;  }
+
+        FieldInstance(Field<B> *src)  {}
+
+        // this will work if we only return fields
+        // field will call plus, minus, etc.
+
+        virtual Field<B> plus(const Field<B> &rhs) const  = 0;
+        virtual Field<B> minus(const Field<B> &rhs) const = 0;
+        virtual Field<B> multiply(const Field<B> &rhs) const = 0;
+        virtual Field<B> div(const Field<B> &rhs) const = 0;
+        virtual Field<B> modulus(const Field<B> &rhs) const = 0;
 
 
-        std::unique_ptr<FieldInstance > clone() const  {
-            return std::make_unique<T>(static_cast<T const &>(*this));
+        // private assignment
+        virtual Field<B> select(const B & choice, const Field<B> & other) const = 0;
+
+        static Field<B> If(const B & sel, const Field<B> & lhs, const Field<B> & rhs) {
+
+            FieldInstance<B> *lInstance = lhs.getInstance();
+
+            return lInstance->select(sel, rhs);
         }
 
 
+        static void compareAndSwap(const B & select, Field<B> & lhs, Field<B> & rhs) {
+            Field<B> t  = If(select, lhs, rhs);
+            lhs = If(select, rhs, lhs);
+            rhs = t;
 
-        // assignment
-        FieldInstance & operator=(const FieldInstance & other)  {
-            copyTo(other);
-            return *this;
         }
 
+        // connectors
+        virtual Field<B> operator&(const Field<B> &right) const  = 0;
+        virtual Field<B> operator^(const Field<B> &right) const  = 0;
+        virtual Field<B> operator|(const Field<B> &right) const  = 0;
 
 
-        virtual B operator !() const  {
-            return static_cast<T const &>(*this).negate();
+        // setup for comparators
+        virtual B  geq(const Field<B> & rhs) const = 0;
+        virtual B equal(const Field<B> & rhs) const = 0;
+        virtual B negate() const = 0;
+        virtual std::string str() const = 0;
+
+        B operator !() const  { return this->negate(); }
+        B operator>=(const Field<B> & rhs) const { return this->geq(rhs);  }
+        B operator==(const Field<B> & rhs) const { return this->equal(rhs); }
+        B operator!=(const Field<B> & rhs) const { return !(*this == rhs); }
+        B operator<(const Field<B> & rhs) const { return !(*this >= rhs); }
+        B operator<=(const Field<B> & rhs) const { return (*this < rhs) | (*this == rhs);  }
+        B operator>(const Field<B> & rhs) const {
+            B eq = this->equal(rhs);
+            B geq = this->geq(rhs);
+            return  geq & eq.neg();
         }
 
-         T operator+(const T &rhs) const  {  return static_cast<T const &>(*this) + rhs; }
-         T operator-(const T &rhs) const  {   return static_cast<const T &>(*this) - rhs; }
-         T operator*(const T &rhs) const  {   return static_cast<const T &>(*this) * rhs; }
-         T operator/(const T &rhs) const  {   return static_cast<const T &>(*this) / rhs; }
-         T operator%(const T &rhs) const  {   return static_cast<const T &>(*this) % rhs; }
-
-
-        virtual B  geq(const FieldInstance & rhs) const  { return static_cast<T const &>(*this) >= (static_cast<const T &>(rhs)); }
-        virtual B equal(const FieldInstance & rhs) const  { return static_cast<T const &>(*this) == (static_cast<const T &>(rhs)); }
-
-        // based on emp::comaprable
-        virtual B operator>=(const FieldInstance & rhs) const { return static_cast<T const &>(*this).geq(static_cast<T const &>(rhs)); }
-        virtual B operator==(const FieldInstance & rhs) const { return static_cast<T const &>(*this).equal(static_cast<T const &>(rhs)); }
-        B operator<(const T& rhs) const { return !( (*static_cast<const T*>(this))>= rhs ); }
-        B operator<=(const T& rhs) const { return rhs >= *static_cast<const T*>(this); }
-        B operator>(const T& rhs) const { return !(rhs >= *static_cast<const T*>(this)); }
-        B operator==(const T& rhs) const { return static_cast<const T*>(this)->equal(rhs); }
-        B operator!=(const T& rhs) const { return !(*static_cast<const T*>(this) == rhs); }
-
-        FieldInstance compareAndSwap(const FieldInstance & select, const FieldInstance & other)  const  {
-            const B choiceBit = static_cast<B const &> (select);
-            const T otherOne = static_cast<T const &> (other);
-            return  static_cast<T const &>(*this).select(choiceBit, otherOne);
-        }
-
-        // bitwise ops
-        virtual FieldInstance operator&(const FieldInstance &right) const  { return  static_cast<const T&>(*this) &  static_cast<const T&>(right); }
-        virtual FieldInstance operator|(const FieldInstance &right) const  { return  static_cast<const T&>(*this) |  static_cast<const T&>(right); }
-        virtual FieldInstance operator^(const FieldInstance &right) const  { return  static_cast<const T&>(*this) ^  static_cast<const T&>(right); }
-
-
-
-    protected:
-        void copyTo(const FieldInstance & other)  {
-            const T otherObj = static_cast<const T &>(other);
-            static_cast<T &>(*this).copy(otherObj);
-        }
+        virtual void serialize(int8_t *dst) const = 0;
+        // encrypt and decrypt -- table this for now
+        /*Field<BoolField> reveal(const int &party) const;
+        static Field<SecureBoolField> secretShare(const Field<BoolField> & field, const FieldType &type, const size_t &strLength, const int &myParty,
+                                        const int &dstParty); */
 
 
 
 
-    protected:
-        // set up vtable entries
-        FieldInstance() = default;
-
-        FieldInstance(const FieldInstance &) = default;
-
-        FieldInstance(FieldInstance &&) = default;
     };
-
-
-
 
 }
 
 
-#endif
+
+
+
+#endif //_FIELD_INSTANCE_H

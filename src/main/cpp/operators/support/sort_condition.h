@@ -6,13 +6,13 @@
 #include <query_table/field/field.h>
 
 namespace vaultdb {
-    template<typename T>
+    template<typename B>
     class SortCondition {
 
     protected:
         SortDefinition sortDefinition;
 
-        const Field *getValue(QueryTuple &aTuple, const ColumnSort &aColumnSort);
+        const Field<B> *getValue(QueryTuple<B> &aTuple, const ColumnSort &aColumnSort);
 
     public:
         SortCondition() {} // placeholder
@@ -20,7 +20,7 @@ namespace vaultdb {
 
         SortCondition(const SortDefinition &aSortDefinition) : sortDefinition(aSortDefinition) {};
 
-        void compareAndSwap(QueryTuple &lhs, QueryTuple &rhs);
+        void compareAndSwap(QueryTuple<B> &lhs, QueryTuple<B> &rhs);
 
     };
 }

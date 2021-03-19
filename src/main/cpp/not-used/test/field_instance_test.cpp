@@ -3,7 +3,7 @@
 
 #include <typeinfo>
 #include <query_table/field/field.h>
-#include <query_table/field/field_instance.h>
+#include <query_table/field/field_impl.h>
 //#include <query_table/field/int_field.h>
 #include <query_table/field/bool_field.h>
 //#include <query_table/field/secure_int_field.h>

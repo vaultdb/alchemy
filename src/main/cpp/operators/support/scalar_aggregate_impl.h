@@ -8,6 +8,8 @@
 #include <cfloat>
 
 namespace vaultdb {
+    // T = field type (e.g., BoolField), B = bool type (BoolField || SecureBoolField)
+   // template<typename T, typename B>
     class ScalarAggregateImpl {
     public:
         ScalarAggregateImpl(const uint32_t & ordinal, const FieldType & aggType) : aggregateOrdinal(ordinal), aggregateType(aggType),

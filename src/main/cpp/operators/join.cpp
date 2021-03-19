@@ -2,18 +2,18 @@
 #include "join.h"
 #include <query_table/field/field_factory.h>
 
-template<typename  T>
-Join<T>::Join(Operator *lhs, Operator *rhs, shared_ptr<BinaryPredicate<T> > predicateClass) : Operator(lhs, rhs) {
+template<typename  B>
+Join<B>::Join(Operator<B> *lhs, Operator<B> *rhs, shared_ptr<BinaryPredicate<B> > predicateClass) : Operator<B>(lhs, rhs) {
         predicate = predicateClass;
 }
 
-template<typename  T>
-Join<T>::Join(shared_ptr<QueryTable> lhs, shared_ptr<QueryTable> rhs, shared_ptr<BinaryPredicate<T> > &predicateClass) :  Operator(lhs, rhs) {
+template<typename  B>
+Join<B>::Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, shared_ptr<BinaryPredicate<B> > &predicateClass) :  Operator<B>(lhs, rhs) {
     predicate = predicateClass;
 }
 
-template<typename  T>
-QuerySchema Join<T>::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySchema &rhsSchema) {
+template<typename  B>
+QuerySchema Join<B>::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySchema &rhsSchema) {
     uint32_t outputColCount = lhsSchema.getFieldCount() + rhsSchema.getFieldCount();
     QuerySchema result(outputColCount);
     uint32_t cursor = lhsSchema.getFieldCount();
@@ -42,10 +42,10 @@ QuerySchema Join<T>::concatenateSchemas(const QuerySchema &lhsSchema, const Quer
 }
 
 // TODO: make this faster by heap-allocating everything once
-template <typename T>
-QueryTuple Join<T>::concatenateTuples( QueryTuple *lhs,  QueryTuple *rhs) {
+template <typename B>
+QueryTuple<B> Join<B>::concatenateTuples( QueryTuple<B> *lhs,  QueryTuple<B> *rhs) {
     const uint32_t outputFieldCount = lhs->getFieldCount() + rhs->getFieldCount();
-    QueryTuple result(outputFieldCount);
+    QueryTuple<B> result(outputFieldCount);
     uint32_t lhsFieldCount  = lhs->getFieldCount();
     uint32_t cursor = 0;
 
@@ -63,13 +63,13 @@ QueryTuple Join<T>::concatenateTuples( QueryTuple *lhs,  QueryTuple *rhs) {
 }
 
 // compare two tuples and return their entry in the output table
-template<typename T>
-QueryTuple Join<T>::compareTuples(QueryTuple *lhs, QueryTuple *rhs, const T &predicateEval) {
+template<typename B>
+QueryTuple<B> Join<B>::compareTuples(QueryTuple<B> *lhs, QueryTuple<B> *rhs, const B &predicateEval) {
     QueryTuple dstTuple = concatenateTuples(lhs, rhs);
-    T lhsDummyTag = static_cast<const T &> (*(lhs->getDummyTag()));
-    T rhsDummyTag = static_cast<const T &> (*(rhs->getDummyTag()));
+    B lhsDummyTag = static_cast<const B &> (*(lhs->getDummyTag()));
+    B rhsDummyTag = static_cast<const B &> (*(rhs->getDummyTag()));
 
-    T dummyTag = !predicateEval | lhsDummyTag | rhsDummyTag;
+    B dummyTag = !predicateEval | lhsDummyTag | rhsDummyTag;
     dstTuple.setDummyTag(dummyTag);
     return dstTuple;
 }

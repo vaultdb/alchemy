@@ -18,7 +18,7 @@ SecureIntField::SecureIntField(const SecureIntField &src) : Field(src) { }
 
 SecureIntField::SecureIntField(const int8_t *src) : Field(Field::deserialize(FieldType::SECURE_INT, 0, src)) { }
 
-SecureIntField::SecureIntField(const Field *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_INT){
+SecureIntField::SecureIntField(const IntField *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_INT){
     int32_t toEncrypt = (myParty == dstParty) ? src->getValue<int32_t>() : 0;
     emp::Integer payload = emp::Integer(32, toEncrypt, dstParty);
     *((emp::Integer *) data_) = emp::Integer(payload);
@@ -48,7 +48,7 @@ SecureBoolField SecureIntField::operator==(const SecureIntField &cmp) const {
     return  SecureBoolField(res);
 }
 
-SecureIntField SecureIntField::select(const SecureBoolField &choice, const SecureIntField &other) const {
+SecureIntField SecureIntField::selectValue(const SecureBoolField &choice, const SecureIntField &other) const {
     emp::Bit selection =  choice.getPayload();
     emp::Integer res =  emp::If(selection, getPayload(), other.getPayload());
     return SecureIntField(res);
@@ -59,6 +59,9 @@ emp::Integer SecureIntField::getPayload() const {
     assert(res.size() == 32);
     return res;
 }
+
+
+
 
 
 

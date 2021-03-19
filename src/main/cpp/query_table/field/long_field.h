@@ -2,7 +2,7 @@
 #define _LONG_FIELD_H
 
 
-#include "field_instance.h"
+#include "field_impl.h"
 #include "bool_field.h"
 #include <emp-tool/circuits/bit.h>
 
@@ -14,7 +14,7 @@ namespace vaultdb {
 
     // BoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class LongField : public FieldInstance<LongField, BoolField>, public Field  {
+    class LongField : public FieldImpl<LongField, BoolField>, public Field<BoolField>  {
 
     public:
 
@@ -45,7 +45,7 @@ namespace vaultdb {
 
 
         // only for bool types
-        BoolField negate() const { throw; }
+        BoolField neg() const { throw; }
 
 
 
@@ -54,7 +54,7 @@ namespace vaultdb {
 
 
         // swappable
-        LongField  select(const BoolField & choice, const LongField & other) const;
+        LongField  selectValue(const BoolField & choice, const LongField & other) const;
 
 
 
@@ -62,6 +62,9 @@ namespace vaultdb {
         LongField  operator&(const LongField &right) const { return  LongField(getPayload() & (right.getPayload())); }
         LongField  operator^(const LongField &right) const { return  LongField(getPayload() ^ (right.getPayload())); }
         LongField  operator|(const LongField &right) const { return  LongField(getPayload() | (right.getPayload())); }
+
+        // serialize
+        void ser(int8_t * target) const { *((int64_t *) target) = getPayload();  }
 
 
     };

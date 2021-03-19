@@ -15,8 +15,10 @@
 namespace  vaultdb {
 
     typedef std::pair<std::vector<int8_t>, std::vector<int8_t> > SecretShares;
-    class QueryTuple;
+    template class QueryTuple<BoolField>;
+    template class QueryTuple<SecureBoolField>;
 
+    template <typename B>
     class QueryTable {
         private:
 
@@ -27,12 +29,13 @@ namespace  vaultdb {
 
 
     protected:
-        std::vector<QueryTuple> tuples_;
+        std::vector<QueryTuple<B> > tuples_;
 
     public:
             QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition);
 
             QueryTable(const size_t &num_tuples, const int &colCount);
+
 
             QueryTable(const QueryTable &src);
 
@@ -49,16 +52,16 @@ namespace  vaultdb {
 
             const QuerySchema &getSchema() const;
 
-            QueryTuple getTuple(int idx) const;
+            QueryTuple<B> getTuple(int idx) const;
 
             unsigned int getTupleCount() const;
 
             std::string toString(const bool &showDummies = false) const;
 
-            void putTuple(const int &idx, const QueryTuple &tuple);
+            void putTuple(const int &idx, const QueryTuple<B> &tuple);
 
 
-            QueryTuple *getTuplePtr(const int &idx) const;
+            QueryTuple<B> *getTuplePtr(const int &idx) const;
 
             void setSortOrder(const SortDefinition &sortOrder);
 
@@ -72,25 +75,27 @@ namespace  vaultdb {
             std::vector<int8_t> serialize() const;
 
 
-            std::shared_ptr<QueryTable> secretShare(emp::NetIO *io, const int &party) const;
+            std::shared_ptr<QueryTable<SecureBoolField> > secretShare(emp::NetIO *io, const int &party) const;
 
            // SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
 
-            [[nodiscard]] std::unique_ptr<QueryTable> reveal(int empParty = emp::PUBLIC) const;
+            [[nodiscard]] std::unique_ptr<QueryTable<BoolField> > reveal(int empParty = emp::PUBLIC) const;
 
-            QueryTable &operator=(const QueryTable &src);
+            QueryTable<B> &operator=(const QueryTable<B> &src);
 
-            bool operator==(const QueryTable &other) const;
+            bool operator==(const QueryTable<B> &other) const;
 
             bool operator!=(const QueryTable &other) const { return !(*this == other); }
 
-            static std::shared_ptr<QueryTable> deserialize(const QuerySchema & schema, const vector<int8_t> &tableBits);
+            static std::shared_ptr<QueryTable<B> > deserialize(const QuerySchema & schema, const vector<int8_t> &tableBits);
 
             // encrypted version of deserialization using emp::Bit
             static std::shared_ptr<QueryTable>
             deserialize(const QuerySchema &schema, vector<Bit> &tableBits);
     };
-    std::ostream &operator<<(std::ostream &os, const QueryTable &table);
+
+    template <typename B>
+    std::ostream &operator<<(std::ostream &os, const QueryTable<B> &table);
 
 
 

@@ -3,6 +3,7 @@
 
 make -j5
 
+./bin/csv_reader_test 
 ./bin/field_instance_test
 ./bin/value_expression_test
 ./bin/filter_test
@@ -12,7 +13,6 @@ make -j5
 #./bin/fkey_pkey_join_test
 #./bin/scalar_aggregate_test
 #./bin/group_by_aggregate_test
-#./bin/csv_reader_test 
 #./bin/secret_share_generator_test 
 #./bin/serialization_test
 
@@ -47,10 +47,10 @@ sleep 2
 ./bin/secure_basic_join_test --party=1 &
 ./bin/secure_basic_join_test --party=2
 
-#sleep 2
+sleep 2
 
-#./bin/secure_pkey_fkey_join_test --party=1 &
-#./bin/secure_pkey_fkey_join_test --party=2
+./bin/secure_pkey_fkey_join_test --party=1 &
+./bin/secure_pkey_fkey_join_test --party=2
 
 #sleep 2
 

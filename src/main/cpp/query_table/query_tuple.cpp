@@ -1,86 +1,81 @@
 #include <util/type_utilities.h>
-#include <util/field_utilities.h>
 #include "query_tuple.h"
 #include "query_schema.h"
 #include "field/field_factory.h"
 
 using namespace vaultdb;
 
-QueryTuple::QueryTuple(const  size_t & aFieldCount) {
-    dummy_tag_ = std::unique_ptr<Field>(new BoolField(false));
+template<typename B>
+QueryTuple<B>::QueryTuple(const  size_t & aFieldCount) {
+    dummy_tag_ = B(false);
     fields_.resize(aFieldCount);
-
+/*
     for(size_t i = 0; i < aFieldCount; ++i) {
-        fields_[i]  = std::unique_ptr<Field>(new Field());
-    }
+        fields_[i]  = Field();
+    }*/
 
 };
 
-QueryTuple::QueryTuple(const size_t & fieldCount, const  bool & is_encrypted)  {
-    if (is_encrypted) {
-        dummy_tag_ = std::unique_ptr<Field>(new SecureBoolField(false)); // not a dummy
-    } else {
-        dummy_tag_ = std::unique_ptr<Field>(new BoolField(false));
-    }
 
-    fields_.resize(fieldCount);
-
-    for(size_t i = 0; i < fieldCount; ++i) {
-        fields_[i]  = std::unique_ptr<Field>(new Field());
-    }
-
-}
-
-
-QueryTuple::QueryTuple(const QueryTuple &src) {
+template<typename B>
+QueryTuple<B>::QueryTuple(const QueryTuple<B> &src) {
     fields_.resize(src.getFieldCount());
 
 
     for(size_t i = 0; i < src.getFieldCount(); ++i) {
-        fields_[i] = std::unique_ptr<Field>(FieldFactory::deepCopy(src.getField(i)));
+        fields_[i] = *src.getField(i);
     }
 
-  dummy_tag_ = std::unique_ptr<Field>(FieldFactory::deepCopy(src.getDummyTag()));
+  dummy_tag_ =  *src.getDummyTag();
 }
 
-const Field * QueryTuple::getField(const int &ordinal) const {
-    return  fields_[ordinal].get();
-}
-
-
-
-void QueryTuple::putField(const int &idx, const Field &f) {
-
-    *fields_[idx] = f;
-}
-
-void QueryTuple::setDummyTag(const Field & v) {
-    *dummy_tag_ = v;
+template<typename B>
+const Field<B> *QueryTuple<B>::getField(const int &ordinal) const {
+    return  &fields_[ordinal];
 }
 
 
-const Field * QueryTuple::getDummyTag() const {
-    return dummy_tag_.get();
+template<typename B>
+void QueryTuple<B>::putField(const int &idx, const Field<B> &f) {
+
+    fields_[idx] = f;
+}
+
+template<typename B>
+void QueryTuple<B>::setDummyTag(const B & v) {
+    dummy_tag_ = v;
+}
+
+template<typename B>
+const B *QueryTuple<B>::getDummyTag() const {
+    return &dummy_tag_;
 }
 
 
 
-string QueryTuple::toString(const bool &showDummies) const {
+template<typename B>
+string QueryTuple<B>::toString(const bool &showDummies) const {
     std::stringstream sstream;
+    // what if the whole setup is encrypted?  This tactic won't work.
+    B isReal = B(!isEncrypted());
+    isReal = isReal & !dummy_tag_;
+    B encrypted = B(isEncrypted());
+
+
 
     if(showDummies
-       || (!isEncrypted() && !(dummy_tag_->getValue<bool>())) // if it is real
+       || (B(!isEncrypted()) & (!dummy_tag_)).getBool() // if it is real
            || isEncrypted()) { // or its status is unknown
-         sstream <<   "(" <<  *fields_[0];
+         sstream <<   "(" <<  fields_[0];
 
         for (size_t i = 1; i < getFieldCount(); ++i)
-            sstream << ", " << *fields_[i];
+            sstream << ", " << fields_[i];
 
         sstream << ")";
     }
 
     if(showDummies) {
-       sstream <<  " (dummy=" << *dummy_tag_ <<  + ")";
+       sstream <<  " (dummy=" << dummy_tag_ <<  + ")";
     }
 
     return sstream.str();
@@ -89,7 +84,8 @@ string QueryTuple::toString(const bool &showDummies) const {
 
 
 
-void QueryTuple::serialize(int8_t *dst, const QuerySchema &schema) {
+template<typename B>
+void QueryTuple<B>::serialize(int8_t *dst, const QuerySchema &schema) {
 
     assert(!isEncrypted());
 
@@ -97,60 +93,59 @@ void QueryTuple::serialize(int8_t *dst, const QuerySchema &schema) {
 
 
     for(size_t fieldIdx = 0; fieldIdx < getFieldCount(); ++fieldIdx) {
-        fields_[fieldIdx]->serialize(cursor);
-        cursor += schema.getField(fieldIdx).size()/8;
+        fields_[fieldIdx].serialize(cursor);
+        cursor += schema.getField(fieldIdx).size();
     }
 
-    bool dummyTag = dummy_tag_->getValue<bool>();
-    *cursor = dummyTag;
+    dummy_tag_.serialize(cursor);
 
 }
 
-size_t QueryTuple::getFieldCount() const {
+template<typename B>
+size_t QueryTuple<B>::getFieldCount() const {
     return fields_.size();
 }
 
 
-QueryTuple& QueryTuple::operator=(const QueryTuple& src) {
+template<typename B>
+QueryTuple<B> & QueryTuple<B>::operator=(const QueryTuple& src) {
     if(&src == this)
         return *this;
 
     fields_.resize(src.getFieldCount());
 
     for(size_t i = 0; i < src.getFieldCount(); ++i) {
-        const Field *srcField = src.getField(i);
-        Field *dstField = FieldFactory::deepCopy(srcField);
-        fields_[i] = std::unique_ptr<Field>(dstField);
+        fields_[i] = *src.getField(i);
     }
 
-    dummy_tag_ = std::unique_ptr<Field>(FieldFactory::deepCopy(src.getDummyTag()));
+    dummy_tag_ = *src.getDummyTag();
 
 
     return *this;
 
 }
 
-QueryTuple QueryTuple::reveal(const int &empParty) const {
-    QueryTuple dstTuple(fields_.size(), false);
+template<typename B>
+QueryTuple<BoolField> QueryTuple<B>::reveal(const int &empParty) const {
+    QueryTuple<BoolField> dstTuple(fields_.size());
 
     for(size_t i = 0; i < fields_.size(); ++i) {
-        Field *revealed = fields_[i]->reveal(empParty);
+        Field<BoolField> *revealed = fields_[i].reveal(empParty);
         dstTuple.putField(i, *revealed);
         delete revealed;
 
     }
 
 
-    emp::Bit dummyTag = dummy_tag_->getValue<emp::Bit>();
-    dstTuple.dummy_tag_  = std::unique_ptr<Field>(new BoolField(dummyTag.reveal(empParty)));
+    dstTuple.setDummyTag(BoolField(dummy_tag_.reveal(empParty)));
 
     return dstTuple;
 
 }
 
-
-
-void QueryTuple::compareAndSwap(QueryTuple *lhs, QueryTuple *rhs, const SecureBoolField & cmp) {
+/*
+template<typename B>
+void QueryTuple<B>::compareAndSwap(QueryTuple *lhs, QueryTuple *rhs, const SecureBoolField & cmp) {
 
     assert(lhs->getFieldCount() == rhs->getFieldCount());
 
@@ -180,21 +175,45 @@ void QueryTuple::compareAndSwap(QueryTuple *lhs, QueryTuple *rhs, const BoolFiel
 
 }
 
+*/
 
 
-bool  QueryTuple::operator==(const QueryTuple &other) const {
+template<typename B>
+void QueryTuple<B>::compareAndSwap(const B &cmp, QueryTuple<B> *lhs, QueryTuple<B> *rhs) {
+
+    assert(lhs->getFieldCount() == rhs->getFieldCount());
+
+
+
+    for(size_t i = 0; i < lhs->getFieldCount(); ++i) {
+
+        Field<B>::compareAndSwap(cmp, lhs->fields_[i], rhs->fields_[i]);
+
+    }
+
+    Field<B>::compareAndSwap(cmp, lhs->dummy_tag_, rhs->dummy_tag_);
+
+}
+
+// only supported for plaintext
+template <typename B>
+bool  QueryTuple<B>::operator==(const QueryTuple<B> &other) const {
     if(getFieldCount() != other.getFieldCount()) { return false; }
 
     if(isEncrypted() != other.isEncrypted()) { return false; }
 
-    if(*dummy_tag_ != *(other.dummy_tag_))  return false;
+    if(!isEncrypted()) return true; // can't really check here, assume encrypted data is ok
+
+    // now know that <B> is BoolField
+    if((dummy_tag_ != other.getDummyTag()).getBool()) {
+        return false;
+    }
 
 
     for(size_t i = 0; i < getFieldCount(); ++i) {
 //        std::cout << "Comparing field: |" << *(fields_[i]) << "| len=" << fields_[i]->getSize()  <<  std::endl
 //                 << " to              |" << *(other.fields_[i]) << "| len=" << fields_[i]->getSize()<<  std::endl;
-        bool eq = FieldUtilities::equal(fields_[i].get(), other.fields_[i].get());
-        if(!eq) {
+        if ((fields_[i] != other.fields_[i]).getBool()) {
             return false;
         }
     }
@@ -202,73 +221,73 @@ bool  QueryTuple::operator==(const QueryTuple &other) const {
     return true;
 }
 
-
-QueryTuple QueryTuple::deserialize(const QuerySchema &schema, int8_t *tupleBits) {
+template <typename B>
+QueryTuple<B> QueryTuple<B>::deserialize(const QuerySchema &schema, int8_t *tupleBits) {
     size_t fieldCount = schema.getFieldCount();
     QueryTuple result(fieldCount);
     int8_t *cursor = tupleBits;
 
     for(size_t i = 0; i < fieldCount; ++i) {
-        result.fields_.emplace_back(std::make_unique<Field>(Field::deserialize(schema.getField(i), cursor)));
-        cursor += result.fields_[i]->getSize();
+        result.fields_.emplace_back(Field<B>::deserialize(schema.getField(i), cursor));
+        cursor += result.fields_[i].getSize();
     }
 
-    if(TypeUtilities::isEncrypted(schema.getField(0).getType())) {
-        // deserialize an emp::Bit
-        emp::Bit *bitPtr = (emp::Bit *) cursor;
-        result.dummy_tag_ = std::unique_ptr<Field> (new SecureBoolField(*bitPtr));
-    }
-    else {
-        // deserialize a bool
-        result.dummy_tag_ = std::unique_ptr<Field>(new BoolField(cursor));
-    }
+    B dt = B(cursor);
+    result.setDummyTag(dt);
 
     return result;
 
 }
 
 
-bool QueryTuple::isEncrypted() const { return dummy_tag_->getType() == FieldType::SECURE_BOOL; }
+template<typename B>
+bool QueryTuple<B>::isEncrypted() const { return dummy_tag_.getType() == FieldType::SECURE_BOOL; }
 
 
 
 // srcTuple == nullptr if we are collecting secret shares of the other party's private data
-QueryTuple QueryTuple::secretShare(const QueryTuple *srcTuple, const QuerySchema &schema, const int & myParty, const int & dstParty) {
+
+template<typename B>
+QueryTuple<SecureBoolField>  QueryTuple<B>::secretShare(const QueryTuple<BoolField> *srcTuple, const QuerySchema &schema, const int & myParty, const int & dstParty) {
     int fieldCount = schema.getFieldCount();
-    QueryTuple dstTuple(fieldCount, true);
+    QueryTuple<SecureBoolField> dstTuple(fieldCount);
 
 
     for(int i = 0; i < fieldCount; ++i) {
 
-        const Field *srcField = (myParty == dstParty) ? srcTuple->getField(i) : nullptr;
-        Field *dstField = Field::secretShare(srcField, schema.getField(i).getType(), schema.getField(i).getStringLength(), myParty,
+
+        const Field<BoolField> *srcField = (myParty == dstParty) ? srcTuple->getField(i) : nullptr;
+        Field<SecureBoolField> *dstField = Field<B>::secretShare(srcField, schema.getField(i).getType(), schema.getField(i).getStringLength(), myParty,
                                              dstParty);
         dstTuple.putField(i, *dstField);
         delete dstField;
     }
 
-    BoolField *dummyTag = nullptr;
-    if(srcTuple != nullptr)
-        dummyTag = (BoolField *) srcTuple->getDummyTag();
+     const BoolField *dummyTag = (myParty == dstParty) ? srcTuple->getDummyTag(): nullptr;
 
-
-    Field *encryptedDummyTag = Field::secretShare(dummyTag, FieldType::BOOL, 0, myParty, dstParty);
+    SecureBoolField *encryptedDummyTag = static_cast<SecureBoolField *>(Field<B>::secretShare(dummyTag, FieldType::BOOL,
+                                                                                            0, myParty, dstParty));
     dstTuple.setDummyTag(*encryptedDummyTag);
-
     delete encryptedDummyTag;
 
     return dstTuple;
 }
 
-void QueryTuple::setDummyTag(const bool &b) {
-    dummy_tag_ = std::unique_ptr<Field>(new BoolField(b));
+/*template <typename B>
+void QueryTuple<B>::setDummyTag(const bool &b) {
+    if(dummy_tag_.getType() == FieldType::BOOL)
+        dummy_tag_.setValue<bool>(b);
+    else
+
 }
 
-void QueryTuple::setDummyTag(const Bit &b) {
-    dummy_tag_ = std::unique_ptr<Field>(new SecureBoolField(b));
-}
+template <>
+void QueryTuple<SecureBoolField>::setDummyTag(const Bit &bit) {
+    dummy_tag_ = SecureBoolField(bit);
+}*/
 
-std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple) {
+
+std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple<BoolField> &aTuple) {
 
     strm << aTuple.toString(false);
 
@@ -276,3 +295,16 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple &aTuple)
 
 
 }
+
+std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple<SecureBoolField> &aTuple) {
+
+    strm << aTuple.toString(false);
+
+    return strm;
+
+
+}
+
+
+template class vaultdb::QueryTuple<BoolField>;
+template class vaultdb::QueryTuple<SecureBoolField>;

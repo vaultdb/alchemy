@@ -65,7 +65,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
     customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
 
-    std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, true));
+    std::shared_ptr<BinaryPredicate<SecureBoolField> > customerOrdersPredicate(new JoinEqualityPredicate<SecureBoolField> (customerOrdersOrdinals));
 
     KeyedJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
 
@@ -73,7 +73,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
 
 
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
-    Sort sort(&join, sortDefinition);
+    Sort<SecureBoolField> sort(&join, sortDefinition);
     shared_ptr<QueryTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
@@ -105,7 +105,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
     ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
     lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
 
-    std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, true));
+    std::shared_ptr<BinaryPredicate<SecureBoolField>  > customerOrdersPredicate(new JoinEqualityPredicate<SecureBoolField>(lineitemOrdersOrdinals));
 
     KeyedJoin join(&lineitemInput, &ordersInput, customerOrdersPredicate);
 
@@ -115,7 +115,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
 
 
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
-    Sort sort(&join, sortDefinition);
+    Sort<SecureBoolField>  sort(&join, sortDefinition);
     std::shared_ptr<QueryTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
@@ -151,11 +151,11 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
     customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, true));
+    std::shared_ptr<BinaryPredicate<SecureBoolField> > customerOrdersPredicate(new JoinEqualityPredicate<SecureBoolField>(customerOrdersOrdinals));
 
     ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
     lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate> lineitemOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, true));
+    std::shared_ptr<BinaryPredicate<SecureBoolField> > lineitemOrdersPredicate(new JoinEqualityPredicate<SecureBoolField>(lineitemOrdersOrdinals));
 
 
     KeyedJoin customerOrdersJoin(&ordersInput, &customerInput, customerOrdersPredicate);
@@ -167,7 +167,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
-    Sort sort(&fullJoin, sortDefinition);
+    Sort<SecureBoolField> sort(&fullJoin, sortDefinition);
     std::shared_ptr<QueryTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 

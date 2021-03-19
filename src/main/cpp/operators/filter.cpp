@@ -3,34 +3,34 @@
 using namespace vaultdb;
 
 
-template<typename T>
-Filter<T>::Filter(Operator *child, shared_ptr<Predicate<T> > & predicateClass) :
-     Operator(child), predicate(predicateClass) { }
+template<typename B>
+Filter<B>::Filter(Operator<B> *child, shared_ptr<Predicate<B> > & predicateClass) :
+     Operator<B>(child), predicate(predicateClass) { }
 
-template<typename T>
-Filter<T>::Filter(shared_ptr<QueryTable> child, shared_ptr<Predicate<T> >&  predicateClass) :
-     Operator(child), predicate(predicateClass) { }
+template<typename B>
+Filter<B>::Filter(shared_ptr<QueryTable<B> > child, shared_ptr<Predicate<B> >&  predicateClass) :
+     Operator<B>(child), predicate(predicateClass) { }
 
-template<typename T>
-std::shared_ptr<QueryTable> Filter<T>::runSelf() {
-    std::shared_ptr<QueryTable> input = children[0]->getOutput();
+template<typename B>
+std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
+    std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
 
 
     // deep copy new output, then just modify the dummy tag
-    output = std::shared_ptr<QueryTable>(new QueryTable(*input));
+    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
 
-    for(size_t i = 0; i < output->getTupleCount(); ++i) {
-        QueryTuple tuple = output->getTuple(i);
-        T dummyTag = static_cast<const T >(*tuple.getDummyTag());
-        T predicateOut = predicate->predicateCall(tuple);
+    for(size_t i = 0; i < Operator<B>::output->getTupleCount(); ++i) {
+        QueryTuple tuple = Operator<B>::output->getTuple(i);
+        B dummyTag = static_cast<const B >(*tuple.getDummyTag());
+        B predicateOut = predicate->predicateCall(tuple);
 
         dummyTag =  ((!predicateOut) | dummyTag); // (!) because dummyTag is false if our selection criteria is satisfied
 
-        output->getTuplePtr(i)->setDummyTag(dummyTag);
+        Operator<B>::output->getTuplePtr(i)->setDummyTag(dummyTag);
     }
 
-    output->setSortOrder(input->getSortOrder());
-    return output;
+    Operator<B>::output->setSortOrder(input->getSortOrder());
+    return Operator<B>::output;
 
 }
 

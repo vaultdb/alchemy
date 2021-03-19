@@ -7,20 +7,20 @@
 
 namespace  vaultdb {
 
-    template<typename T>
-    class Filter : public Operator {
+    template<typename B>
+    class Filter : public Operator<B> {
 
-        std::shared_ptr<Predicate<T> > predicate;
+        std::shared_ptr<Predicate<B> > predicate;
 
 
     public:
-        Filter(Operator *child, shared_ptr<Predicate<T> > &predicateClass);
+        Filter(Operator<B> *child, shared_ptr<Predicate<B> > &predicateClass);
 
-        Filter(shared_ptr<QueryTable> child, shared_ptr<Predicate<T> > &predicateClass);
+        Filter(shared_ptr<QueryTable<B> > child, shared_ptr<Predicate<B> > &predicateClass);
 
         ~Filter() = default;
 
-        std::shared_ptr<QueryTable> runSelf()  override;
+        std::shared_ptr<QueryTable<B> > runSelf()  override;
 
 
     };

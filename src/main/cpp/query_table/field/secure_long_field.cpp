@@ -14,11 +14,14 @@ SecureLongField::SecureLongField(const Field &srcField) : Field(FieldType::SECUR
 
 SecureLongField::SecureLongField(const SecureLongField &src) : Field(src) { }
 
+SecureLongField::SecureLongField(const int64_t & src) : Field(FieldType::SECURE_LONG){
+    setValue(emp::Integer(64, src));
+}
 
 
 SecureLongField::SecureLongField(const int8_t *src) : Field(Field::deserialize(FieldType::SECURE_LONG, 0, src)) { }
 
-SecureLongField::SecureLongField(const Field *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_LONG) {
+SecureLongField::SecureLongField(const LongField *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_LONG) {
     int64_t toEncrypt = (myParty == dstParty) ? src->getValue<int64_t>() : 0;
     emp::Integer payload = emp::Integer(64, toEncrypt, dstParty);
     setValue(payload);
@@ -47,7 +50,7 @@ SecureBoolField SecureLongField::operator==(const SecureLongField &cmp) const {
     return  SecureBoolField(res);
 }
 
-SecureLongField SecureLongField::select(const SecureBoolField &choice, const SecureLongField &other) const {
+SecureLongField SecureLongField::selectValue(const SecureBoolField &choice, const SecureLongField &other) const {
     emp::Bit selection =  choice.getPayload();
     emp::Integer res =  emp::If(selection, getPayload(), other.getPayload());
     return SecureLongField(res);
@@ -69,5 +72,29 @@ emp::Integer SecureLongField::getPayload() const {
     emp::Integer res = getValue<emp::Integer>();
     assert(res.size() == 64);
     return res;
+}
+
+SecureLongField SecureLongField::operator+(const SecureLongField &rhs) const {
+    return SecureLongField(getPayload() + rhs.getPayload());
+}
+
+SecureLongField SecureLongField::operator-(const SecureLongField &rhs) const {
+    return SecureLongField(getPayload() - rhs.getPayload());
+}
+
+SecureLongField SecureLongField::operator*(const SecureLongField &rhs) const {
+    return SecureLongField(getPayload() * rhs.getPayload());
+}
+
+SecureLongField SecureLongField::operator/(const SecureLongField &rhs) const {
+    return SecureLongField(getPayload() / rhs.getPayload());
+}
+
+SecureLongField SecureLongField::operator%(const SecureLongField &rhs) const {
+    return SecureLongField(getPayload() % rhs.getPayload());
+}
+
+void SecureLongField::ser(int8_t *target) const {
+    memcpy(target, (int8_t *) getPayload().bits.data(), allocated_size_);
 }
 

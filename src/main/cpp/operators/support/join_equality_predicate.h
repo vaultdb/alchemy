@@ -12,12 +12,12 @@ typedef std::vector<EqualityPredicate> ConjunctiveEqualityPredicate;
 // e.g., partsupp.suppkey = lineitem.suppkey AND partsupp.partkey = lineitem.partkey
 
 namespace vaultdb {
-    template<typename T>
-    class JoinEqualityPredicate : public BinaryPredicate<T> {
+    template<typename B>
+    class JoinEqualityPredicate : public BinaryPredicate<B> {
     public:
         JoinEqualityPredicate(const ConjunctiveEqualityPredicate &srcPredicates);
 
-        T predicateCall(const QueryTuple *lhs, const QueryTuple *rhs) const override;
+        B predicateCall(const QueryTuple<B> *lhs, const QueryTuple<B> *rhs) const override;
 
     private:
         ConjunctiveEqualityPredicate predicate;

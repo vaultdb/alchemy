@@ -1,9 +1,10 @@
 #ifndef _SECURE_LONG_FIELD_H
 #define _SECURE_LONG_FIELD_H
 
-#include "field_instance.h"
+#include "field_impl.h"
 #include "field.h"
 #include "secure_bool_field.h"
+#include "long_field.h"
 
 namespace vaultdb {
 
@@ -12,7 +13,7 @@ namespace vaultdb {
 
     // BoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class SecureLongField : public FieldInstance<SecureLongField, SecureBoolField>, public Field  {
+    class SecureLongField : public FieldImpl<SecureLongField, SecureBoolField>, public Field<SecureBoolField>  {
 
     public:
 
@@ -25,9 +26,11 @@ namespace vaultdb {
 
         SecureLongField(const emp::Integer &src);
 
-        explicit SecureLongField(const Field *src, const int &myParty, const int &dstParty);
+        explicit SecureLongField(const LongField *src, const int &myParty, const int &dstParty);
 
         explicit SecureLongField(const int8_t *src);
+        // encrypt from public
+        explicit SecureLongField(const int64_t & src);
 
 
 
@@ -37,28 +40,19 @@ namespace vaultdb {
         SecureLongField &operator=(const SecureLongField &other);
 
 
-        SecureLongField operator+(const SecureLongField &rhs) const {
-            return SecureLongField(getPayload() + rhs.getPayload());
-        } // cast to int before doing arithmetic expressions
-        SecureLongField operator-(const SecureLongField &rhs) const {
-            return SecureLongField(getPayload() - rhs.getPayload());
-        }
+        SecureLongField operator+(const SecureLongField &rhs) const;
 
-        SecureLongField operator*(const SecureLongField &rhs) const {
-            return SecureLongField(getPayload() * rhs.getPayload());
-        }
+        SecureLongField operator-(const SecureLongField &rhs) const;
 
-        SecureLongField operator/(const SecureLongField &rhs) const {
-            return SecureLongField(getPayload() / rhs.getPayload());
-        }
+        SecureLongField operator*(const SecureLongField &rhs) const;
 
-        SecureLongField operator%(const SecureLongField &rhs) const {
-            return SecureLongField(getPayload() % rhs.getPayload());
-        }
+        SecureLongField operator/(const SecureLongField &rhs) const;
+
+        SecureLongField operator%(const SecureLongField &rhs) const;
 
 
         // not defined in EMP
-        SecureBoolField negate() const { throw; }
+        SecureBoolField neg() const { throw; }
 
 
         SecureBoolField operator>=(const SecureLongField &cmp) const;
@@ -67,7 +61,7 @@ namespace vaultdb {
 
 
         // swappable
-        SecureLongField select(const SecureBoolField &choice, const SecureLongField &other) const;
+        SecureLongField selectValue(const SecureBoolField &choice, const SecureLongField &other) const;
 
 
         // bitwise ops
@@ -76,6 +70,8 @@ namespace vaultdb {
         SecureLongField operator^(const SecureLongField &right) const;
 
         SecureLongField operator|(const SecureLongField &right) const;
+
+        void ser(int8_t * target) const;
 
 
     };

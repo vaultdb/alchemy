@@ -1,5 +1,6 @@
 #include "field.h"
 #include "util/utilities.h"
+#include "field_factory.h"
 #include "secure_bool_field.h"
 #include "secure_int_field.h"
 #include "secure_long_field.h"
@@ -11,29 +12,35 @@
 #include "float_field.h"
 #include "string_field.h"
 
-#include <util/field_utilities.h>
 
 using namespace vaultdb;
 
 
-std::ostream &vaultdb::operator<<(std::ostream &os, const Field &aValue) {
+template<typename B>
+std::ostream &vaultdb::operator<<(std::ostream &os, const Field<B> &aValue) {
     return os << aValue.toString();
 }
 
-Field::Field(const FieldType &typeId, const int &strLength) : type_(typeId) {
+template<typename B>
+Field<B>::Field(const FieldType &typeId, const int &strLength) : type_(typeId) {
     initialize(typeId, strLength);
+    instance_ = FieldFactory<B>::getInstance(this);
 }
 
-Field::Field(const Field &field) : type_(field.type_), allocated_size_(field.allocated_size_) {
+template<typename B>
+Field<B>::Field(const Field<B> &field) : type_(field.type_), allocated_size_(field.allocated_size_) {
     assert(field.type_ != FieldType::INVALID);
 
     managed_data_ = std::unique_ptr<std::byte[]>(new std::byte[allocated_size_]);
     data_ = managed_data_.get();
 
     std::memcpy(data_, field.data_, allocated_size_);
+    instance_ = FieldFactory<B>::getInstance(this);
+
 }
 
-Field &Field::operator=(const Field &other) {
+template<typename B>
+Field<B> &Field<B>::operator=(const Field<B> &other) {
     assert(other.type_ != FieldType::INVALID);
 
     if(&other == this)
@@ -44,17 +51,21 @@ Field &Field::operator=(const Field &other) {
     type_ = other.type_;
     managed_data_ = std::unique_ptr<std::byte[]>(new std::byte[allocated_size_]);
     data_ = this->managed_data_.get();
+    instance_ = FieldFactory<B>::getInstance(this);
+
 
     memcpy(data_, other.data_, allocated_size_);
     return *this;
 
 }
 
-FieldType Field::getType() const {
+template<typename B>
+FieldType Field<B>::getType() const {
     return type_;
 }
 
-size_t Field::getSize() const {
+template<typename B>
+size_t Field<B>::getSize() const {
     return allocated_size_;
 }
 
@@ -63,72 +74,66 @@ size_t Field::getSize() const {
 
 
 
+template<typename B>
+B Field<B>::operator==(const Field<B> &cmp) const {
+    if(type_ != cmp.type_) return B(false);
+    if(allocated_size_ != cmp.allocated_size_) return B(false);
 
-bool Field::operator==(const Field &cmp) const {
-    if(type_ != cmp.type_) return false;
-    if(allocated_size_ != cmp.allocated_size_) return false;
-
-    // this still works for string because we are storing the character array
-    // might not work for emp types
-    for (size_t i = 0; i < allocated_size_; ++i) {
-        if (data_[i] != cmp.data_[i])
-                return false;
-    }
-    return true;
+    return *instance_ == cmp;
 }
 
-bool Field::operator!=(const Field &cmp) const {
-    return !(*this == cmp);
+template<typename B>
+B Field<B>::operator!=(const Field &cmp) const {
+    B eq = *this == cmp;
+
+    return eq.neg();
+}
+
+template<typename B>
+B Field<B>::operator!() const {
+    return !(*instance_);
+}
+
+template<typename B>
+B Field<B>::operator>=(const Field &rhs) const {
+    return  *instance_ >= rhs;
+}
+
+template<typename B>
+B Field<B>::operator<(const Field &rhs) const {
+    return  *instance_ < rhs;
+}
+
+template<typename B>
+B Field<B>::operator<=(const Field &rhs) const {
+    return *instance_ <= rhs;
+}
+
+template<typename B>
+B Field<B>::operator>(const Field &rhs) const {
+    return  *instance_ > rhs;
 }
 
 
-void Field::compareAndSwap(const bool &choice, Field &lhs, Field &rhs) {
-    if(choice) {
-        Field tmp = lhs;
-        lhs = rhs;
-        rhs = tmp;
-    }
-}
-
-void Field::compareAndSwap(const emp::Bit &choice, const Field &lhs, const Field &rhs) {
-    switch(lhs.type_) {
-        case FieldType::SECURE_BOOL:
-            emp::swap(choice, reinterpret_cast<emp::Bit &>(*lhs.data_), reinterpret_cast<emp::Bit&>(*rhs.data_) );
-            return;
-        case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-        case FieldType::SECURE_STRING:
-            emp::swap(choice, reinterpret_cast<emp::Integer &>(*lhs.data_), reinterpret_cast<emp::Integer&>(*rhs.data_) );
-            return;
-        case FieldType::SECURE_FLOAT:
-            emp::swap(choice, reinterpret_cast<emp::Float &>(*lhs.data_), reinterpret_cast<emp::Float &>(*rhs.data_) );
-            return;
-        default:
-            throw;
-
-    }
-
-
-}
-
-Field * Field::reveal(const int &party) const {
+template<typename B>
+Field<BoolField>  *Field<B>::reveal(const int &party) const {
     switch (type_) {
         case FieldType::SECURE_BOOL: {
             auto src = getValue<emp::Bit>();
-            return new BoolField(src.reveal(party));
+            return new  BoolField(src.reveal(party));
         }
         case FieldType::SECURE_INT: {
-            auto src = getValue<emp::Integer>();
+            emp::Integer src = getValue<emp::Integer>();
             assert(src.size() == 32);
             return new IntField(src.reveal<int32_t>(party));
         }
         case FieldType::SECURE_LONG: {
-            auto src = getValue<emp::Integer>();
+            emp::Integer src = getValue<emp::Integer>();
             assert(src.size() == 64);
             return new LongField(src.reveal<int64_t>(party));
         }
         case FieldType::SECURE_FLOAT: {
-            auto src = getValue<emp::Float>();
+            emp::Float src = getValue<emp::Float>();
             return new FloatField(src.reveal<double>(party));
         }
         case FieldType::SECURE_STRING: {
@@ -149,58 +154,32 @@ Field * Field::reveal(const int &party) const {
     }
 }
 
-std::string Field::toString() const {
-    switch(type_) {
-        case FieldType::BOOL: {
-            bool res = getValue<bool>();
-            return res ? "true" : "false";
-        }
-        case FieldType::INT: {
-            auto res = getValue<int32_t>();
-            return std::to_string(res);
-        }
-        case FieldType::LONG: {
-            auto res = getValue<int64_t>();
-            return std::to_string(res);
-        }
-        case FieldType::FLOAT: {
-            auto res = getValue<float_t>();
-            return std::to_string(res);
-        }
-        case FieldType::STRING: {
-            return std::string((char *) data_);
-        }
-        case FieldType::SECURE_BOOL:
-            return "SECRET BIT";
-        case FieldType::SECURE_INT:
-            return "SECRET INT32";
-        case FieldType::SECURE_LONG:
-            return "SECURE INT64";
-        case FieldType::SECURE_FLOAT:
-            return "SECURE FLOAT";
-        case FieldType::SECURE_STRING:
-            return "SECURE STRING";
-        default:
-            throw;
-    }
+
+template<typename B>
+std::string Field<B>::toString() const {
+    return instance_->str();
 }
 
-void Field::serialize(int8_t *dst) const {
-        memcpy(dst, data_, allocated_size_);
+template<typename B>
+void Field<B>::serialize(int8_t *dst) const {
+      instance_->serialize(dst);
 }
 
-Field Field::deserialize(const QueryFieldDesc &fieldDesc, const int8_t *src) {
+template<typename B>
+Field<B> Field<B>::deserialize(const QueryFieldDesc &fieldDesc, const int8_t *src) {
     return deserialize(fieldDesc.getType(), fieldDesc.getStringLength(), src);
 }
 
-Field Field::deserialize(const FieldType & type, const int & strLength, const int8_t *src) {
+template<typename B>
+Field<B> Field<B>::deserialize(const FieldType & type, const int & strLength, const int8_t *src) {
     Field f(type, strLength);
     memcpy(f.data_, src, f.allocated_size_);
 
     return f;
 }
 
-std::string Field::revealString(const emp::Integer &src, const int &party) {
+template<typename B>
+std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
     long bitCount = src.size();
     long byteCount = bitCount / 8;
 
@@ -225,26 +204,28 @@ std::string Field::revealString(const emp::Integer &src, const int &party) {
 
 }
 
-Field * Field::secretShare(const Field *field, const FieldType &type, const size_t &strLength, const int &myParty,
+template<typename B>
+Field<SecureBoolField> *Field<B>::secretShare(const Field<BoolField>  *field, const FieldType &type, const size_t &strLength, const int &myParty,
                            const int &dstParty) {
     switch(type) {
         case FieldType::BOOL:
-            return new SecureBoolField (field, myParty, dstParty);
+            return  new SecureBoolField (static_cast<const BoolField *>(field), myParty, dstParty);
         case FieldType::INT:
-            return new  SecureIntField(field, myParty, dstParty);
+            return   new SecureIntField(static_cast<const IntField *>(field), myParty, dstParty);
         case FieldType::LONG:
-            return new  SecureLongField(field, myParty, dstParty);
+            return   new SecureLongField(static_cast<const LongField *>(field), myParty, dstParty);
         case FieldType::FLOAT:
-            return new  SecureFloatField(field, myParty, dstParty);
+            return  new  SecureFloatField(static_cast<const FloatField *>(field), myParty, dstParty);
         case FieldType::STRING:
-            return new SecureStringField(field, strLength, myParty, dstParty);
+            return new SecureStringField(static_cast<const StringField *>(field), strLength, myParty, dstParty);
         default:// may want to throw here
-            return new Field(*field);
+            throw;
 
     }
 }
 
-void Field::copy(const Field &src) {
+template<typename B>
+void Field<B>::copy(const Field &src) {
     this->type_ = src.type_;
     this->allocated_size_ = src.allocated_size_;
 
@@ -257,25 +238,25 @@ void Field::copy(const Field &src) {
     }
 }
 
-void Field::setStringValue(const string &src) {
+template<typename B>
+void Field<B>::setStringValue(const string &src) {
     memcpy(data_, src.c_str(), allocated_size_-1);
     *((char *) (data_ + allocated_size_ - 1)) = '\0'; // null-terminate the string
 }
 
-std::string Field::getStringValue() const {
+template<typename B>
+std::string Field<B>::getStringValue() const {
     return std::string((char *) data_);
 }
 
 
 // initialize by type
-void Field::initialize(const FieldType &type, const size_t &strLength) {
+template<typename B>
+void Field<B>::initialize(const FieldType &type, const size_t &strLength) {
     // need strLen to be initialized for string fields
     if(type == FieldType::STRING || type == FieldType::SECURE_STRING) {
         assert(strLength >= 1);
     }
-
-
-
 
     switch (type) {
         case FieldType::BOOL: {
@@ -351,15 +332,45 @@ void Field::initialize(const FieldType &type, const size_t &strLength) {
 
 }
 
-// only for bool types
-/*Field Field::operator!() const {
-    assert(type_ == FieldType::BOOL || type_ == FieldType::SECURE_BOOL);
+template<typename B>
+void Field<B>::compareAndSwap(const B & choice, Field & lhs, Field & rhs) {
+    FieldInstance<B>::compareAndSwap(choice, lhs, rhs);
 
-    if(type_ == FieldType::BOOL)
-        return static_cast<const BoolField *>(this)->negate();
+}
 
-    return static_cast<const SecureBoolField *>(this)->negate();
 
-}*/
 
+template<typename B>
+Field<B> Field<B>::If(const B &choice, const Field &lhs, const Field &rhs) {
+    return FieldInstance<B>::If(choice,  lhs, rhs);
+}
+
+template<typename B>
+Field<B> Field<B>::operator+(const Field &rhs) const {
+    return instance_->plus(rhs);
+}
+
+template<typename B>
+Field<B> Field<B>::operator-(const Field &rhs) const {
+    return instance_->minus(rhs);
+}
+
+
+template<typename B>
+Field<B> Field<B>::operator*(const Field &rhs) const {
+    return instance_->multiply(rhs);
+}
+
+template<typename B>
+Field<B> Field<B>::operator/(const Field &rhs) const {
+    return instance_->div(rhs);
+}
+
+template<typename B>
+Field<B> Field<B>::operator%(const Field &rhs) const {
+    return instance_->modulus(rhs);
+}
+
+template class vaultdb::Field<BoolField>;
+template class vaultdb::Field<SecureBoolField>;
 

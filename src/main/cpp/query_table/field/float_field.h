@@ -3,7 +3,7 @@
 
 #include "bool_field.h"
 #include "field.h"
-#include "field_instance.h"
+#include "field_impl.h"
 
 namespace vaultdb {
 
@@ -12,7 +12,7 @@ namespace vaultdb {
 
     // BoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class FloatField : public FieldInstance<FloatField, BoolField>, public Field  {
+    class FloatField : public FieldImpl<FloatField, BoolField>, public Field<BoolField>  {
 
     public:
 
@@ -43,7 +43,7 @@ namespace vaultdb {
 
 
         // only for bool types
-        BoolField negate() const { throw; }
+        BoolField neg() const { throw; }
 
 
 
@@ -52,7 +52,7 @@ namespace vaultdb {
 
 
         // swappable
-        FloatField  select(const BoolField & choice, const FloatField & other) const;
+        FloatField  selectValue(const BoolField & choice, const FloatField & other) const;
 
 
 
@@ -61,6 +61,8 @@ namespace vaultdb {
         FloatField  operator^(const FloatField &right) const  {  throw; }
         FloatField  operator|(const FloatField &right) const   {  throw; }
 
+        // serialize
+        void ser(int8_t * target) const { *((int32_t *) target) = getPayload();  }
 
     };
 

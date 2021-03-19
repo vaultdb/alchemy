@@ -1,5 +1,6 @@
 #include "secure_string_field.h"
 #include "util/utilities.h"
+#include "field_factory.h"
 
 using namespace vaultdb;
 
@@ -19,7 +20,7 @@ SecureStringField::SecureStringField(const SecureStringField &src) : Field(src) 
 SecureStringField::SecureStringField(const int8_t *src, const size_t & strLength) : Field(Field::deserialize(FieldType::SECURE_STRING, strLength, src)) { }
 
 // src is a StringField
-SecureStringField::SecureStringField(const Field *src, const size_t &strLength, const int &myParty,
+SecureStringField::SecureStringField(const vaultdb::StringField *src, const size_t &strLength, const int &myParty,
                                      const int &dstParty) : Field(FieldType::SECURE_STRING, strLength){
     std::string input = (myParty == dstParty) ?
                         src->getStringValue() :
@@ -74,7 +75,7 @@ SecureBoolField SecureStringField::operator==(const SecureStringField &cmp) cons
     return  SecureBoolField(res);
 }
 
-SecureStringField SecureStringField::select(const SecureBoolField &choice, const SecureStringField &other) const {
+SecureStringField SecureStringField::selectValue(const SecureBoolField &choice, const SecureStringField &other) const {
     emp::Bit selection =  choice.getPayload();
     emp::Integer res =  emp::If(selection, getPayload(), other.getPayload());
     return SecureStringField(res);
@@ -90,5 +91,9 @@ SecureStringField SecureStringField::operator^(const SecureStringField &right) c
 
 SecureStringField SecureStringField::operator|(const SecureStringField &right) const {
     return SecureStringField((getPayload()) | (right.getPayload()));
+}
+
+void SecureStringField::ser(int8_t *target) const {
+    memcpy(target, (int8_t *) getPayload().bits.data(), allocated_size_);
 }
 

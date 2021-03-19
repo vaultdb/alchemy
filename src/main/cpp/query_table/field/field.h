@@ -3,6 +3,7 @@
 
 
 #include "field_type.h"
+#include "field_instance.h"
 #include "query_table/query_field_desc.h"
 #include <emp-tool/circuits/bit.h>
 #include <emp-tool/circuits/integer.h>
@@ -16,6 +17,11 @@
 //  generic for storing heterogeneous types in the same container
 //  downcast to impl (e.g., IntField, FloatField, etc.) as needed for expressions
 namespace vaultdb {
+    // forward declaration
+    class BoolField;
+    class SecureBoolField;
+
+   template <typename B>
     class Field {
         protected:
             FieldType  type_;
@@ -23,11 +29,10 @@ namespace vaultdb {
             // inspired by NoisePage: https://github.com/cmu-db/noisepage
             std::unique_ptr<std::byte[]> managed_data_;
             std::byte *data_;
-            // TODO: store a pointer to impl (BoolField/IntField, etc.) in a boost::variant for use in overloaded ops later?
 
 
         public:
-            Field() : type_(FieldType::INVALID) { }
+            Field() : type_(FieldType::INVALID), instance_(nullptr) { }
             Field(const FieldType & typeId, const int & strLength = 0);
 
             Field(const Field & field);
@@ -40,6 +45,9 @@ namespace vaultdb {
 
             size_t getSize() const;
 
+            // instance to the wrapper around this field that overloads its operators
+            FieldInstance<B> *getInstance() const { return instance_; }
+
             template<typename T>
             inline T getValue()  const {
                 // use getStringField for this case
@@ -48,13 +56,7 @@ namespace vaultdb {
                 return *(reinterpret_cast<T*>(data_));
 
             }
-//
-//            template <typename T>
-//            inline void initializePrimitive(const FieldType & fieldType) {
-//
-//                assert((fieldType == FieldType::BOOL) || (fieldType == FieldType::INT) || (fieldType == FieldType::LONG))
-//                allocated_size_ = sizeof(T);
-//            }
+
         template<typename T>
         inline void setValue(const T & src) {
             *(reinterpret_cast<T*>(data_)) = src;
@@ -65,27 +67,39 @@ namespace vaultdb {
         void setStringValue(const std::string & src);
 
 
-            // only really meaningful for plain (not EMP) types
-            bool  operator == (const Field &cmp) const;
+            // delegate to instance_
+            B  operator == (const Field &cmp) const;
+            B  operator != (const Field &cmp) const;
+            B operator !() const;
+            B operator>=(const Field & rhs) const;
+            B operator<(const Field & rhs) const;
+            B operator<=(const Field & rhs) const;
+            B operator>(const Field & rhs) const;
 
-            bool  operator != (const Field &cmp) const;
+            Field  operator+(const Field &rhs) const;
+            Field  operator-(const Field &rhs) const;
+            Field  operator*(const Field &rhs) const;
+            Field  operator/(const Field &rhs) const;
+            Field  operator%(const Field &rhs) const;
 
 
-            static void compareAndSwap(const bool & choice,  Field & lhs,  Field & rhs);
+        static Field If(const B & choice,const Field & lhs, const Field & rhs);
+            // need to keep BoolField out of header file to avoid circular dependency
 
-            static void compareAndSwap(const emp::Bit & choice, const Field & lhs, const Field & rhs);
+            static void compareAndSwap(const B & choice, Field & lhs, Field & rhs);
 
 
             // if field is encrypted, decrypt
-            Field * reveal(const int & party = emp::PUBLIC) const;
+            Field<BoolField> *reveal(const int & party = emp::PUBLIC) const;
 
-            static Field *
-            secretShare(const Field *field, const FieldType &type, const size_t &strLength, const int &myParty,
+            static Field<SecureBoolField> *
+            secretShare(const Field<BoolField> *field, const FieldType &type, const size_t &strLength, const int &myParty,
                         const int &dstParty);
 
             std::string toString() const;
 
             void serialize(int8_t *dst) const;
+
 
             static Field deserialize(const QueryFieldDesc & fieldDesc, const int8_t * src);
             static Field deserialize(const FieldType & field, const int & strLength, const int8_t *src);
@@ -108,9 +122,11 @@ namespace vaultdb {
         private:
             static std::string revealString(const emp::Integer & src, const int & party);
             void initialize(const FieldType &type, const size_t &strLength);
+            FieldInstance<B> *instance_; // TODO: initialize this
     };
 
-    std::ostream &operator<<(std::ostream &os, const Field &aValue);
+   template<typename B>
+    std::ostream &operator<<(std::ostream &os, const Field<B> &aValue);
 
 
 }

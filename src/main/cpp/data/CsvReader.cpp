@@ -1,4 +1,3 @@
-#include <util/type_utilities.h>
 #include <util/utilities.h>
 #include "CsvReader.h"
 #include <boost/algorithm/string.hpp>
@@ -7,11 +6,11 @@
 
 using namespace vaultdb;
 
-std::unique_ptr<QueryTable> CsvReader::readCsv(const string &filename, const QuerySchema &schema) {
+std::unique_ptr<QueryTable<BoolField> > CsvReader::readCsv(const string &filename, const QuerySchema &schema) {
 
     std::vector<std::string> tupleEntries = readFile(filename);
 
-    std::unique_ptr<QueryTable> result(new QueryTable(tupleEntries.size(), schema.getFieldCount()));
+    std::unique_ptr<QueryTable<BoolField> > result(new QueryTable<BoolField>(tupleEntries.size(), schema.getFieldCount()));
     result->setSchema(schema);
     int cursor = 0;
 
@@ -76,17 +75,17 @@ vector<string> CsvReader::split(const string &tupleEntry) {
     return result;
 }
 
-QueryTuple CsvReader::parseTuple(const string &line, const QuerySchema &schema) {
+QueryTuple<BoolField> CsvReader::parseTuple(const string &line, const QuerySchema &schema) {
     std::vector<std::string> tupleFields;
     size_t fieldCount = schema.getFieldCount();
 
 
     tupleFields = split(line);
     assert(fieldCount == tupleFields.size()); // verify the field count
-    QueryTuple newTuple(fieldCount);
+    QueryTuple<BoolField>  newTuple(fieldCount);
 
     for(size_t i = 0; i < fieldCount; ++i) {
-        Field *field = FieldFactory::getFieldFromString(schema.getField(i).getType(), schema.getField(i).getStringLength(), tupleFields[i]);
+        Field<BoolField> *field = FieldFactory<BoolField>::getFieldFromString(schema.getField(i).getType(), schema.getField(i).getStringLength(), tupleFields[i]);
         newTuple.putField(i, *field);
         delete field;
 

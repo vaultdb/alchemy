@@ -7,12 +7,13 @@
 
 using namespace vaultdb;
 
+template<typename B>
 class Expression {
 
     protected:
         std::string alias;
         FieldType expressionType;
-        Field * (*exprFunc)(const QueryTuple &) = nullptr;
+        Field<B> * (*exprFunc)(const QueryTuple<B> &) = nullptr;
 
 
     public:
@@ -23,14 +24,14 @@ class Expression {
             exprFunc = src.exprFunc;
         }
 
-        Expression(Field *(*funcPtr)(const QueryTuple &), const std::string & anAlias, const FieldType & aType)  :  alias(anAlias), expressionType(aType){
+        Expression(Field<B> *(*funcPtr)(const QueryTuple<B> &), const std::string & anAlias, const FieldType & aType)  :  alias(anAlias), expressionType(aType){
             exprFunc = funcPtr;
         }
 
-        ~Expression() {}
+        ~Expression() = default;
 
 
-         Field * expressionCall(const QueryTuple & aTuple) const {
+         Field<B> * expressionCall(const QueryTuple<B> & aTuple) const {
             return exprFunc(aTuple);
         }
 

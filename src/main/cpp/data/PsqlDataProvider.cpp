@@ -10,7 +10,6 @@
 #include "query_table/field/long_field.h"
 #include "query_table/field/float_field.h"
 #include "query_table/field/string_field.h"
-#include "query_table/field/field_factory.h"
 
 
 //typedef std::chrono::steady_clock::time_point time_point;
@@ -18,7 +17,7 @@
 
 // if hasDummyTag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
-std::unique_ptr<QueryTable>
+std::unique_ptr<QueryTable<BoolField> >
 PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag) {
 
     dbName = dbname;
@@ -43,7 +42,6 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
     if(hasDummyTag)
         --colCount;
 
-    QueryTuple tuple(colCount, false);
 
     size_t rowCount = 0;
     // just count the rows first
@@ -53,14 +51,14 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
 
 
-    std::unique_ptr<QueryTable> dstTable = std::make_unique<QueryTable>(rowCount, colCount);
     tableSchema = getSchema(pqxxResult, hasDummyTag);
+    std::unique_ptr<QueryTable<BoolField> > dstTable = std::make_unique<QueryTable<BoolField> >(rowCount, colCount);
 
     dstTable->setSchema(*tableSchema);
 
     int counter = 0;
     for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
-        tuple = getTuple(*resultPos, hasDummyTag);
+        QueryTuple<BoolField> tuple = getTuple(*resultPos, hasDummyTag);
         dstTable->putTuple(counter, tuple);
         ++counter;
     }
@@ -145,7 +143,7 @@ string PsqlDataProvider::getTableName(int oid) {
 
 }
 
-QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
+QueryTuple<BoolField>  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         int colCount = row.size();
 
 
@@ -153,22 +151,22 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
             --colCount;
         }
 
-        QueryTuple dstTuple(colCount);
+        QueryTuple<BoolField>  dstTuple(colCount);
 
 
 
         for (int i=0; i < colCount; i++) {
             const pqxx::field srcField = row[i];
 
-           Field  *parsedField = getField(srcField);
+           Field<BoolField>  *parsedField = getField(srcField);
             dstTuple.putField(i, *parsedField);
             delete parsedField;
         }
 
         if(hasDummyTag) {
 
-                Field *parsedField = getField(row[colCount]); // get the last col
-                dstTuple.setDummyTag(*parsedField);
+                Field<BoolField> *parsedField = getField(row[colCount]); // get the last col
+                dstTuple.setDummyTag(*((BoolField *) parsedField));
                 delete parsedField;
         }
 
@@ -176,7 +174,7 @@ QueryTuple PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
     }
 
 
-    Field * PsqlDataProvider::getField(pqxx::field src) {
+    Field<BoolField> * PsqlDataProvider::getField(pqxx::field src) {
 
         int ordinal = src.num();
         pqxx::oid oid = src.type();

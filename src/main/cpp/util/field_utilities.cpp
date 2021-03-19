@@ -46,6 +46,7 @@ size_t FieldUtilities::getPhysicalSize(const FieldType &id, const size_t &strLen
     }
 }
 
+/*
 Field * FieldUtilities::equal(const Field *lhs, const Field *rhs) {
 
     assert(lhs->getType() == rhs->getType());
@@ -230,5 +231,6 @@ Field * FieldUtilities::geq(const Field *lhs, const Field *rhs) {
     }
 
 }
+ */
 
 

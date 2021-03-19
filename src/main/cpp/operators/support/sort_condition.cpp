@@ -3,58 +3,52 @@
 
 using namespace vaultdb;
 
-template<typename T>
-const Field *SortCondition<T>::getValue(QueryTuple &aTuple, const ColumnSort &aColumnSort) {
+template<typename B>
+const Field<B> *SortCondition<B>::getValue(QueryTuple<B> &aTuple, const ColumnSort &aColumnSort) {
     return aColumnSort.first == -1 ? aTuple.getDummyTag() : aTuple.getField(aColumnSort.first);
 }
 
-template<typename T>
-void SortCondition<T>::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
+template<typename B>
+void SortCondition<B>::compareAndSwap(QueryTuple<B> &lhs, QueryTuple<B> &rhs) {
 
-    T swap(false);
+    B swap(false);
 
-    T swapInit = swap; // false
+    B swapInit = swap; // false
 
 
 
     for (size_t i = 0; i < sortDefinition.size(); ++i) {
-        const Field *lhsField = SortCondition::getValue(lhs, sortDefinition[i]);
-        const Field *rhsField = SortCondition::getValue(rhs, sortDefinition[i]);
+        const Field<B> *lhsField = SortCondition::getValue(lhs, sortDefinition[i]);
+        const Field<B> *rhsField = SortCondition::getValue(rhs, sortDefinition[i]);
 
+        B neq = *lhsField != *rhsField;
 
-        T *eq = static_cast<T *>(FieldUtilities::equal(lhsField, rhsField));
-        T neq = !(*eq);
 
         SortDirection direction = sortDefinition[i].second;
 
         // is a swap needed?
         // if (lhs > rhs AND DESCENDING) OR (lhs < rhs AND ASCENDING)
-        T colSwapFlag = neq; // true if we are not equal
+        B colSwapFlag = neq; // true if we are not equal
 
         if (direction == vaultdb::SortDirection::ASCENDING) {
-            Field *gt = FieldUtilities::gt(rhsField, lhsField);
-            colSwapFlag = static_cast<T &>(*gt);
-            delete gt;
+            colSwapFlag = *rhsField > *lhsField;
             //colSwapFlag = (rhsField > lhsValue).getEmpBit();
         } else if (direction == vaultdb::SortDirection::DESCENDING) {
-            Field *gt = FieldUtilities::gt(lhsField, rhsField);
-            colSwapFlag = static_cast<T &>(*gt);
+            colSwapFlag = *lhsField > *rhsField;
             // colSwapFlag = (lhsField > rhsValue).getEmpBit();
-            delete gt;
         } else {
             throw;
         }
 
 
         // find first one where not eq, use this to init flag
-        swap = swap.select(swapInit, colSwapFlag);
+        swap = static_cast<B>(Field<B>::If(swapInit, swap, colSwapFlag));
         //         If(swapInit, swap, colSwapFlag); // once we know there's a swap once, we keep it
         swapInit = swapInit | neq;  // have we found the most significant column where they are not equal?
 
-        delete eq;
     } // end check for swap
 
-    QueryTuple::compareAndSwap(&lhs, &rhs, swap);
+    QueryTuple<B>::compareAndSwap(swap, &lhs, &rhs);
 }
 
 template class vaultdb::SortCondition<BoolField>;

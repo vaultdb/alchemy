@@ -15,11 +15,11 @@ using namespace vaultdb;
 class  PsqlDataProvider  { // :  DataProvider
 public:
 
-    std::unique_ptr<QueryTable> getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag=false);
+    std::unique_ptr<QueryTable<BoolField> > getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag=false);
 
 private:
-    QueryTuple getTuple(pqxx::row row, bool hasDummyTag);
-     Field * getField(pqxx::field src);
+    QueryTuple<BoolField>  getTuple(pqxx::row row, bool hasDummyTag);
+     Field<BoolField> * getField(pqxx::field src);
     std::unique_ptr<QuerySchema> getSchema(pqxx::result input, bool hasDummyTag);
 
      std::string srcTable;

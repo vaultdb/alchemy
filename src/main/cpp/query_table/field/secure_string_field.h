@@ -3,9 +3,10 @@
 
 
 
-#include "field_instance.h"
+#include "field_impl.h"
 #include "field.h"
 #include "secure_bool_field.h"
+#include "string_field.h"
 
 namespace vaultdb {
 
@@ -14,7 +15,7 @@ namespace vaultdb {
 
     // BoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class SecureStringField : public FieldInstance<SecureStringField, SecureBoolField>, public Field {
+    class SecureStringField : public FieldImpl<SecureStringField, SecureBoolField>, public Field<SecureBoolField> {
 
     public:
 
@@ -27,7 +28,7 @@ namespace vaultdb {
 
         SecureStringField(const emp::Integer &src);
 
-        explicit SecureStringField(const Field *src, const size_t &strLength, const int &myParty,
+        explicit SecureStringField(const StringField *src, const size_t &strLength, const int &myParty,
                                    const int &dstParty);
 
         explicit SecureStringField(const int8_t *src, const size_t & strLength);
@@ -46,7 +47,7 @@ namespace vaultdb {
 
 
         // not defined in EMP
-        SecureBoolField negate() const { throw; }
+        SecureBoolField neg() const { throw; }
 
 
         SecureBoolField operator>=(const SecureStringField &cmp) const;
@@ -55,7 +56,7 @@ namespace vaultdb {
 
 
         // swappable
-        SecureStringField select(const SecureBoolField &choice, const SecureStringField &other) const;
+        SecureStringField selectValue(const SecureBoolField &choice, const SecureStringField &other) const;
 
 
         // bitwise ops
@@ -64,6 +65,9 @@ namespace vaultdb {
         SecureStringField operator^(const SecureStringField &right) const;
 
         SecureStringField operator|(const SecureStringField &right) const;
+
+        void ser(int8_t * target) const;
+
 
 
     };

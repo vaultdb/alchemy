@@ -10,7 +10,7 @@ std::ostream &operator<<(std::ostream &os, const IntField &aValue) {
 
 
 IntField::IntField(const Field &srcField) : Field(FieldType::INT) {
-    int32_t p = srcField.getValue<int32_t>();
+    auto p = srcField.getValue<int32_t>();
     setValue(p);
 
 
@@ -54,10 +54,9 @@ BoolField IntField::operator==(const IntField &cmp) const {
     return  BoolField(res);
 }
 
-IntField IntField::select(const BoolField &choice, const IntField &other) const {
+IntField IntField::selectValue(const BoolField &choice, const IntField &other) const {
     bool selection =  choice.getPayload();
     return selection ? IntField(*this) :  IntField(other);
 }
-
 
 

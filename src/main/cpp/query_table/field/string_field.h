@@ -2,7 +2,7 @@
 #define STRING_FIELD_H
 
 
-#include "field_instance.h"
+#include "field_impl.h"
 #include "bool_field.h"
 #include <emp-tool/circuits/bit.h>
 
@@ -14,7 +14,7 @@ namespace vaultdb {
 
     // BoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class StringField : public FieldInstance<StringField, BoolField>, public Field  {
+    class StringField : public FieldImpl<StringField, BoolField>, public Field<BoolField>  {
 
     public:
 
@@ -46,7 +46,7 @@ namespace vaultdb {
 
 
         // only for bool types
-        BoolField negate() const { throw; }
+        BoolField neg() const { throw; }
 
 
 
@@ -55,7 +55,7 @@ namespace vaultdb {
 
 
         // swappable
-        StringField  select(const BoolField & choice, const StringField & other) const;
+        StringField  selectValue(const BoolField & choice, const StringField & other) const;
 
 
 
@@ -63,6 +63,9 @@ namespace vaultdb {
         StringField  operator&(const StringField &right) const {  throw; }
         StringField  operator^(const StringField &right) const  {  throw; }
         StringField  operator|(const StringField &right) const   {  throw; }
+
+        // serialize
+        void ser(int8_t * target) const;
 
 
     };

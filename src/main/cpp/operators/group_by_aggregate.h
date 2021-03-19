@@ -7,6 +7,8 @@
 #include "operator.h"
 
 namespace vaultdb {
+    // TODO: template for B - bool || Bit
+    template<typename B>
     class GroupByAggregate : public Operator {
 
         std::vector<ScalarAggregateDefinition> aggregateDefinitions;
@@ -26,19 +28,19 @@ namespace vaultdb {
         ~GroupByAggregate() = default;
 
     private:
-        GroupByAggregateImpl *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                               const TypeId &aggregateValueType) const;
+        GroupByAggregator<B> *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
+                                               const FieldType &aggregateValueType) const;
         // checks that input table is sorted by group-by cols
         bool verifySortOrder(const std::shared_ptr<QueryTable> & table) const;
 
         // returns boolean for whether two tuples are in the same group-by bin
-        Field groupByMatch(const QueryTuple & lhs, const QueryTuple & rhs) const;
+        B groupByMatch(const QueryTuple & lhs, const QueryTuple & rhs) const;
 
         QuerySchema generateOutputSchema(const QuerySchema & srcSchema,
-                                         const std::vector<GroupByAggregateImpl *> & aggregators) const;
+                                         const std::vector<GroupByAggregator<B> *> & aggregators) const;
 
         QueryTuple generateOutputTuple(const QueryTuple &lastTuple, const Field &lastEntryGroupByBin,
-                            const Field &nonDummyBin, const vector<GroupByAggregateImpl *> &aggregators) const;
+                            const Field &nonDummyBin, const vector<GroupByAggregator<B> *> &aggregators) const;
 
 
     };

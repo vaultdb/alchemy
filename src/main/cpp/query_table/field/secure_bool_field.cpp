@@ -1,47 +1,56 @@
 #include "secure_bool_field.h"
 
-vaultdb::SecureBoolField::SecureBoolField(const vaultdb::SecureBoolField &src) : Field(FieldType::SECURE_BOOL) {
+using namespace vaultdb;
+
+SecureBoolField::SecureBoolField(const SecureBoolField &src) : Field(FieldType::SECURE_BOOL) {
     emp::Bit p = src.getPayload();
     setValue(p);
 }
 
 
-
-vaultdb::SecureBoolField::SecureBoolField(const Field *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_BOOL){
-    bool bit = (myParty == dstParty) ? src->getValue<bool>() : 0;
+SecureBoolField::SecureBoolField(const BoolField * src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_BOOL){
+    bool bit = (myParty == dstParty) ? src->getValue<bool>() : false;
     emp::Bit payload = emp::Bit(bit, dstParty);
     setValue(payload);
 }
 
-vaultdb::SecureBoolField::SecureBoolField(const int8_t *src) : Field(Field::deserialize(FieldType::SECURE_BOOL, 0, src)){
+SecureBoolField::SecureBoolField(const int8_t *src) : Field(Field::deserialize(FieldType::SECURE_BOOL, 0, src)){
 }
 
 
 
-vaultdb::SecureBoolField &vaultdb::SecureBoolField::operator=(const vaultdb::SecureBoolField &other)  {
+SecureBoolField &SecureBoolField::operator=(const SecureBoolField &other)  {
     if(this == &other) return *this;
     copy(other);
     return *this;
 }
 
 
-std::ostream &vaultdb::operator<<(std::ostream &os, const SecureBoolField &aValue) {
+SecureBoolField::SecureBoolField(const bool &src) {
+
+    emp::Bit s(src);
+    setValue(s);
+
+}
+
+
+std::ostream &operator<<(std::ostream &os, const SecureBoolField &aValue) {
     return os << aValue.toString();
 }
 
-vaultdb::SecureBoolField vaultdb::SecureBoolField::operator==(const vaultdb::SecureBoolField &cmp) const {
+SecureBoolField SecureBoolField::eq(const SecureBoolField &cmp) const {
     emp::Bit res = (getPayload() == cmp.getPayload());
     return  SecureBoolField(res);
 }
 
-vaultdb::SecureBoolField
-vaultdb::SecureBoolField::select(const vaultdb::SecureBoolField &choice, const vaultdb::SecureBoolField &other) const {
+SecureBoolField
+SecureBoolField::selectValue(const SecureBoolField &choice, const SecureBoolField &other) const {
     emp::Bit selection = choice.getPayload();
     emp::Bit result =  emp::If(selection, getPayload(), other.getPayload());
     return  SecureBoolField(result);
 }
 
-vaultdb::SecureBoolField vaultdb::SecureBoolField::operator>=(const vaultdb::SecureBoolField &cmp) const {
+SecureBoolField SecureBoolField::gteq(const SecureBoolField &cmp) const {
     emp::Bit lhsVal = getPayload();
     emp::Bit rhsVal = cmp.getPayload();
     emp::Bit gt = (lhsVal == emp::Bit(true)) & (rhsVal == emp::Bit(false));
@@ -52,13 +61,19 @@ vaultdb::SecureBoolField vaultdb::SecureBoolField::operator>=(const vaultdb::Sec
 
 }
 
-vaultdb::SecureBoolField::SecureBoolField(const vaultdb::Field &srcField) : Field(FieldType::SECURE_BOOL) {
+SecureBoolField::SecureBoolField(const Field &srcField) : Field(FieldType::SECURE_BOOL) {
     setValue(srcField.getValue<emp::Bit>());
 
 }
 
-vaultdb::SecureBoolField::SecureBoolField(const emp::Bit &src) : Field(FieldType::SECURE_BOOL) {
+SecureBoolField::SecureBoolField(const emp::Bit &src) : Field(FieldType::SECURE_BOOL) {
     setValue(src);
 }
+
+void SecureBoolField::ser(int8_t *target) const {
+    emp::Bit bit = getPayload();
+    memcpy(target, (int8_t *) &(bit.bit), allocated_size_);
+}
+
 
 

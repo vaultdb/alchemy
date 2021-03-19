@@ -64,8 +64,13 @@ BoolField StringField::operator==(const StringField &cmp) const {
     return  BoolField(res);
 }
 
-StringField StringField::select(const BoolField &choice, const StringField &other) const {
+StringField StringField::selectValue(const BoolField &choice, const StringField &other) const {
     bool selection =  choice.getPayload();
     return selection ? StringField(*this) :  StringField(other);
+}
+
+void StringField::ser(int8_t *target) const {
+    std::string p = getPayload();
+    memcpy(target, (int8_t *) p.c_str(), p.size());
 }
 

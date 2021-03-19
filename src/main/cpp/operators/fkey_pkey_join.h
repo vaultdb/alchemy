@@ -7,13 +7,14 @@
 // primary key - foreign key join
 // produces an output of size |foreign key| relation
 namespace  vaultdb {
-    class KeyedJoin : public Join {
+    template<typename B>
+    class KeyedJoin : public Join<B> {
 
     public:
-        KeyedJoin(Operator *foreignKey, Operator *primaryKey, shared_ptr<BinaryPredicate> predicateClass);
-        KeyedJoin(shared_ptr<QueryTable> foreignKey, shared_ptr<QueryTable> primaryKey, shared_ptr<BinaryPredicate> predicateClass);
+        KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, shared_ptr<BinaryPredicate<B> > predicateClass);
+        KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, shared_ptr<BinaryPredicate<B> > predicateClass);
         ~KeyedJoin() = default;
-        std::shared_ptr<QueryTable> runSelf() override;
+        std::shared_ptr<QueryTable<B> > runSelf() override;
 
     };
 
