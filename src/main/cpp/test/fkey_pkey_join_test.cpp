@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/support/binary_predicate.h>
@@ -49,7 +48,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
                                     "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<QueryTable<BoolField> > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput customerInput(dbName, customerSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
@@ -61,7 +60,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
 
     KeyedJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
 
-    std::shared_ptr<QueryTable> observed = join.run();
+    std::shared_ptr<QueryTable<BoolField> > observed = join.run();
 
 
     ASSERT_EQ(*expected, *observed);
@@ -81,7 +80,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
                                                                                                              "WHERE matched";
 
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<QueryTable<BoolField> > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput lineitemInput(dbName, lineitemSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
@@ -93,7 +92,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
 
     KeyedJoin join(&lineitemInput, &ordersInput, lineitemOrdersPredicate);
 
-    std::shared_ptr<QueryTable> observed = join.run();
+    std::shared_ptr<QueryTable<BoolField> > observed = join.run();
 
 
 
@@ -120,7 +119,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                           "WHERE matched";
 
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<QueryTable<BoolField> > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
 
     SqlInput customerInput(dbName, customerSql, true);
@@ -142,7 +141,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     KeyedJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> observed = fullJoin.run();
+    std::shared_ptr<QueryTable<BoolField> > observed = fullJoin.run();
 
 
 
