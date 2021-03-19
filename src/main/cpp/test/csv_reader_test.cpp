@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <data/CsvReader.h>
-#include <climits>
 
 
 using namespace emp;

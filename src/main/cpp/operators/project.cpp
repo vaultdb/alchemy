@@ -87,8 +87,8 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        QueryTuple srcTuple = srcTable->getTuplePtr(i);
-        QueryTuple dstTuple = getTuple(srcTuple);
+        QueryTuple<B> *srcTuple = srcTable->getTuplePtr(i);
+        QueryTuple<B> dstTuple = getTuple(srcTuple);
         Operator<B>::output->putTuple(i, dstTuple);
     }
 
@@ -98,7 +98,7 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
 template<typename B>
 QueryTuple<B> Project<B>::getTuple(QueryTuple<B> * const srcTuple) const {
-    QueryTuple dstTuple(colCount, Operator<B>::children[0]->getOutput()->isEncrypted());
+    QueryTuple<B> dstTuple(colCount);
     dstTuple.setDummyTag(*(srcTuple->getDummyTag()));
 
    auto exprPos = expressions.begin();
@@ -137,3 +137,6 @@ void Project<B>::addColumnMappings(const ProjectionMappingSet &mapSet) {
 
 }
 
+
+template class vaultdb::Project<BoolField>;
+template class vaultdb::Project<SecureBoolField>;

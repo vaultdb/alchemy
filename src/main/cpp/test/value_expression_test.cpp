@@ -4,7 +4,6 @@
 #include <emp-tool/emp-tool.h>
 
 
-#include <query_table/field/field.h>
 #include <query_table/field/int_field.h>
 
 using namespace emp;
