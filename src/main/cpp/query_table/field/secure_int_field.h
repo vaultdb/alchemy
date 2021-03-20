@@ -21,6 +21,7 @@ namespace vaultdb {
 
         SecureIntField(const SecureIntField & src);
         SecureIntField(const emp::Integer & src);
+        SecureIntField(const int32_t & src);
 
         explicit SecureIntField(const IntField *src, const int & myParty, const int & dstParty);
         explicit SecureIntField(const int8_t * src);

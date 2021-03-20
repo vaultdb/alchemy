@@ -158,7 +158,11 @@ PlainField  Field<B>::reveal(const int &party) const {
 
 template<typename B>
 std::string Field<B>::toString() const {
-    return instance_->str();
+    if(instance_ != nullptr)
+        return instance_->str();
+
+    return "INVALID";
+
 }
 
 template<typename B>

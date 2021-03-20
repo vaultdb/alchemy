@@ -6,28 +6,26 @@
 #include <operators/support/scalar_aggregate_impl.h>
 #include "operator.h"
 
-// only serves plaintext inputs for now
 
-// TODO: handle case where all inputs are dummies?
 namespace vaultdb {
-    class ScalarAggregate : public Operator {
+    template<typename B>
+    class ScalarAggregate : public Operator<B> {
     public:
         // aggregates are sorted by their output order in aggregate's output schema
-        ScalarAggregate(Operator *child, const std::vector<ScalarAggregateDefinition> &aggregates)
-                : Operator(child), aggregateDefinitions(aggregates) {};
+        ScalarAggregate(Operator<B> *child, const std::vector<ScalarAggregateDefinition> &aggregates)
+                : Operator<B>(child), aggregateDefinitions(aggregates) {};
 
-        ScalarAggregate(shared_ptr<QueryTable> child, const std::vector<ScalarAggregateDefinition> &aggregates)
-                : Operator(child), aggregateDefinitions(aggregates) {};
+        ScalarAggregate(shared_ptr<QueryTable<B> > child, const std::vector<ScalarAggregateDefinition> &aggregates)
+                : Operator<B>(child), aggregateDefinitions(aggregates) {};
         ~ScalarAggregate() = default;
 
-        std::shared_ptr<QueryTable> runSelf() override;
+        std::shared_ptr<QueryTable<B> > runSelf() override;
 
     private:
         std::vector<ScalarAggregateDefinition> aggregateDefinitions;
 
-        ScalarAggregateImpl *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                              const TypeId &aggregateValueType,
-                                              const bool &isEncrypted) const;
+        ScalarAggregateImpl <B> * aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
+                                                   const FieldType &aggregateValueType) const;
 
     };
 

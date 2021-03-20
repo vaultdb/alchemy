@@ -123,23 +123,57 @@ FieldInstance<BoolField> *FieldFactory<BoolField>::getFieldInstance(PlainField *
     }
 }
 
-FloatField FieldFactory<BoolField>::toFloat(const PlainField *src) {
-    switch(src->getType()) {
+FloatField FieldFactory<BoolField>::toFloat(const PlainField &src) {
+    switch(src.getType()) {
         case FieldType::BOOL:
-            return FloatField((float_t) ((BoolField *) src)->getPayload());
+            return FloatField((float_t) ((BoolField) src).getPayload());
         case FieldType::INT:
-            return FloatField((float_t) ((IntField *) src)->getPayload());
+            return FloatField((float_t) ((IntField) src).getPayload());
         case FieldType::LONG:
-            return FloatField((float_t) ((LongField *) src)->getPayload());
+            return FloatField((float_t) ((LongField) src).getPayload());
         case FieldType::FLOAT:
-            return FloatField(((FloatField *) src)->getPayload());
+            return FloatField(((FloatField) src).getPayload());
 
         default:
             throw std::invalid_argument("Cannot convert value of type " +
-                                        TypeUtilities::getTypeString(src->getType()) + " to float.");
+                                        TypeUtilities::getTypeString(src.getType()) + " to float.");
     }
 
 }
+
+PlainField FieldFactory<BoolField>::getMin(const FieldType & type) {
+    switch(type) {
+        case FieldType::BOOL:
+            return BoolField(false);
+        case FieldType::INT:
+            return IntField(INT_MIN);
+        case FieldType::LONG:
+            return  LongField(LONG_MIN);
+        case FieldType::FLOAT:
+            return FloatField(FLT_MIN);
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<BoolField>::getMin()");
+    }
+
+}
+
+PlainField FieldFactory<BoolField>::getMax(const FieldType & type) {
+    switch(type) {
+        case FieldType::BOOL:
+            return BoolField(true);
+        case FieldType::INT:
+            return IntField(INT_MAX);
+        case FieldType::LONG:
+            return  LongField(LONG_MAX);
+        case FieldType::FLOAT:
+            return FloatField(FLT_MAX);
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<BoolField>::getMax()");
+    }
+
+
+}
+
 
 // ************  Start SecureBoolField *************/
 
@@ -201,20 +235,56 @@ FieldInstance<SecureBoolField> *FieldFactory<SecureBoolField>::getFieldInstance(
     }
 }
 
-SecureField FieldFactory<SecureBoolField>::toFloat(const SecureField *src) {
+SecureField FieldFactory<SecureBoolField>::toFloat(const SecureField &src) {
 
-    switch (src->getType()) {
+    switch (src.getType()) {
         case FieldType::SECURE_INT:
-            return SecureFloatField::toFloat(*((SecureIntField *) src));
+            return SecureFloatField::toFloat((SecureIntField) src);
         case FieldType::SECURE_LONG:
-            return SecureFloatField::toFloat(*((SecureLongField *) src));
+            return SecureFloatField::toFloat((SecureLongField) src);
+        case FieldType::SECURE_FLOAT:
+            return SecureFloatField((SecureFloatField) src);
+
         default:
             throw std::invalid_argument("Cannot convert value of type " +
-                                        TypeUtilities::getTypeString(src->getType()) + " to emp::Float.");
+                                        TypeUtilities::getTypeString(src.getType()) + " to SecureFloat.");
 
 
     }
 }
 
 
+SecureField FieldFactory<SecureBoolField>::getMin(const FieldType & type) {
+    switch(type) {
+        case FieldType::SECURE_BOOL:
+            return SecureBoolField(false);
+        case FieldType::SECURE_INT:
+            return SecureIntField(INT_MIN);
+        case FieldType::SECURE_LONG:
+            return  SecureLongField(LONG_MIN);
+        case FieldType::SECURE_FLOAT:
+            return SecureFloatField(FLT_MIN);
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<SecureBoolField>::getMin()");
+    }
+
+}
+
+
+SecureField FieldFactory<SecureBoolField>::getMax(const FieldType & type) {
+    switch(type) {
+        case FieldType::SECURE_BOOL:
+            return SecureBoolField(true);
+        case FieldType::SECURE_INT:
+            return SecureIntField(INT_MAX);
+        case FieldType::SECURE_LONG:
+            return  SecureLongField(LONG_MAX);
+        case FieldType::SECURE_FLOAT:
+            return SecureFloatField(FLT_MAX);
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<SecureBoolField>::getMax()");
+    }
+
+
+}
 

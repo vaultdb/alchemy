@@ -75,9 +75,7 @@ package_add_test(project_test project_test.cpp)
 package_add_test(sort_test sort_test.cpp)
 package_add_test(basic_join_test basic_join_test.cpp)
 package_add_test(fkey_pkey_join_test fkey_pkey_join_test.cpp)
-
-#Tranche 2
-#package_add_test(scalar_aggregate_test scalar_aggregate_test.cpp)
+package_add_test(scalar_aggregate_test scalar_aggregate_test.cpp)
 #package_add_test(group_by_aggregate_test group_by_aggregate_test.cpp)
 
 

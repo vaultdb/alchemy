@@ -8,115 +8,100 @@
 #include <cfloat>
 
 namespace vaultdb {
-    // T = field type (e.g., BoolField), B = bool type (BoolField || SecureBoolField)
-   // template<typename T, typename B>
+    template<typename B>
     class ScalarAggregateImpl {
     public:
         ScalarAggregateImpl(const uint32_t & ordinal, const FieldType & aggType) : aggregateOrdinal(ordinal), aggregateType(aggType),
-                                                                                       zero(FieldFactory::getZero(aggregateType)), one(FieldFactory::getOne(aggregateType)){};
-        virtual ~ScalarAggregateImpl() {
-            delete zero;
-            delete one;
-        }
-        virtual void initialize(const QueryTuple & tuple) = 0; // needs to run this once with first tuple to set up state
-        virtual void accumulate(const QueryTuple & tuple) = 0;
-        virtual const Field * getResult() const = 0;
-        virtual FieldType getType() { return aggregateType; }
+                                                                                       zero(FieldFactory<B>::getZero(aggregateType)),
+                                                                                       one(FieldFactory<B>::getOne(aggregateType)){};
+        virtual ~ScalarAggregateImpl() = default;
+        virtual void accumulate(const QueryTuple<B> & tuple) = 0;
+        virtual  Field<B> getResult() const = 0;
+        FieldType getType() { return aggregateType; }
 
     protected:
 
         uint32_t aggregateOrdinal;
-        bool initialized = false;
         FieldType aggregateType;
-        Field *zero;
-        Field *one;
+        Field<B> zero;
+        Field<B> one;
 
     };
 
-
-    class ScalarCount : public ScalarAggregateImpl {
+    template<typename B>
+    class ScalarCountImpl : public ScalarAggregateImpl<B> {
     public:
-        ScalarCount(const uint32_t & ordinal, const FieldType & aggType) :  ScalarAggregateImpl(ordinal, aggType), runningCount(0) {}
-        ~ScalarCount() = default;
-        void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
-        void accumulate(const QueryTuple & tuple) override;
-        const Field * getResult() const override;
-        FieldType getType() override;
+        ScalarCountImpl(const uint32_t & ordinal, const FieldType & aggType);
+        ~ScalarCountImpl() = default;
+        void accumulate(const QueryTuple<B> & tuple) override;
+         Field<B> getResult() const override;
 
     private:
-        int64_t runningCount;
+        Field<B> runningCount;
 
     };
 
 
-    class ScalarSum : public ScalarAggregateImpl {
+    template<typename B>
+    class ScalarSumImpl : public ScalarAggregateImpl<B> {
     public:
-        ScalarSum(const uint32_t & ordinal, const FieldType & aggType) :  ScalarAggregateImpl(ordinal, aggType) {}
-        ~ScalarSum() {
-            delete runningSum;
-        }
-        void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
-        void accumulate(const QueryTuple & tuple) override;
-        const Field * getResult() const override;
-        FieldType getType() override;
+        ScalarSumImpl(const uint32_t & ordinal, const FieldType & aggType) :  ScalarAggregateImpl<B>(ordinal, aggType), runningSum(ScalarAggregateImpl<B>::zero) {}
+        ~ScalarSumImpl() = default;
+        void accumulate(const QueryTuple<B> & tuple) override;
+         Field<B> getResult() const override;
+
 
     private:
-        Field * runningSum;
+        Field<B> runningSum;
 
     };
 
 
-    class ScalarMin : public ScalarAggregateImpl {
+
+    template<typename B>
+    class ScalarMinImpl : public ScalarAggregateImpl<B> {
     public:
-      ScalarMin(const uint32_t & ordinal, const FieldType & aggType);
-      ~ScalarMin() {
-          delete runningMin;
-      }
-      void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
-      void accumulate(const QueryTuple & tuple) override;
-      const Field * getResult() const override;
-      FieldType getType() override;
+      ScalarMinImpl(const uint32_t & ordinal, const FieldType & aggType);
+      ~ScalarMinImpl()  = default;
+      void accumulate(const QueryTuple<B> & tuple) override;
+       Field<B> getResult() const override;
 
     private:
-      Field * runningMin;
-      void resetRunningMin();
+      Field<B> runningMin;
 
     };
 
-    class ScalarMax : public ScalarAggregateImpl {
+
+
+    template<typename B>
+    class ScalarMaxImpl : public ScalarAggregateImpl<B> {
       public:
-        ScalarMax(const uint32_t & ordinal, const FieldType & aggType);
-        ~ScalarMax() {
-            delete runningMax;
-        }
-        void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
-        void accumulate(const QueryTuple & tuple) override;
-        const Field * getResult() const override;
-        FieldType getType() override;
+        ScalarMaxImpl(const uint32_t & ordinal, const FieldType & aggType);
+        ~ScalarMaxImpl() = default;
+        void accumulate(const QueryTuple<B> & tuple) override;
+         Field<B> getResult() const override;
 
       private:
-        Field * runningMax;
+        Field<B> runningMax;
         void resetRunningMax();
     };
 
 
-   class ScalarAverage : public ScalarAggregateImpl {
+    template<typename B>
+    class ScalarAvgImpl : public ScalarAggregateImpl<B> {
     public:
-        ScalarAverage(const uint32_t & ordinal, const FieldType & aggType) :  ScalarAggregateImpl(ordinal, aggType) {}
-        ~ScalarAverage() {
-            delete runningSum;
-            delete runningCount;
-        }
-        void initialize(const QueryTuple & tuple) override; // needs to run this once with first tuple to set up state
-        void accumulate(const QueryTuple & tuple) override;
-        const Field * getResult() const override;
-        FieldType getType() override;
+        // following psql convention, only outputs floats
+        ScalarAvgImpl(const uint32_t & ordinal, const FieldType & aggType);
+        ~ScalarAvgImpl()  = default;
+        void accumulate(const QueryTuple<B> & tuple) override;
+         Field<B> getResult() const override;
 
     private:
-        Field * runningSum;
-        Field * runningCount;
+        Field<B> runningSum;
+        Field<B> runningCount;
 
     };
+
 }
 
 #endif

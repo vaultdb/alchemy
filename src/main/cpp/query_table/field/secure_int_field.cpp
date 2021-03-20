@@ -12,6 +12,12 @@ SecureIntField::SecureIntField(const Field &srcField) : Field(FieldType::SECURE_
     setValue(src);
 }
 
+SecureIntField::SecureIntField(const int32_t &srcField) : Field(FieldType::SECURE_INT) {
+    emp::Integer src(32, srcField);
+    setValue(src);
+}
+
+
 SecureIntField::SecureIntField(const SecureIntField &src) : Field(src) { }
 
 
@@ -59,6 +65,7 @@ emp::Integer SecureIntField::getPayload() const {
     assert(res.size() == 32);
     return res;
 }
+
 
 
 

@@ -31,13 +31,14 @@ template <typename B>
 QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition)
         :  orderBy(std::move(sortDefinition)), schema_(schema) {
 
-   /* std::cout << "Instantiating a query table at: " << std::endl
-              << Utilities::getStackTrace();*/
-    tuples_.reserve(num_tuples);
+   //std::cout << "Instantiating a query table at: " << std::endl
+   //           << Utilities::getStackTrace();
 
-    for(size_t i = 0; i < num_tuples; ++i) {
-        tuples_.emplace_back(QueryTuple<B>(schema.getFieldCount()));
-    }
+    tuples_.resize(num_tuples);
+    for(size_t i = 0; i < num_tuples; ++i)
+        tuples_[i] = QueryTuple<B>(schema.getFieldCount());
+
+
 }
 
 
@@ -47,7 +48,7 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const int &colCount)
     : schema_(QuerySchema(colCount)) {
 
     tuples_.resize(num_tuples);
-    for(int i = 0; i < tuples_.size(); ++i)
+    for(size_t i = 0; i < num_tuples; ++i)
         tuples_[i] = QueryTuple<B>(colCount);
 
 }
