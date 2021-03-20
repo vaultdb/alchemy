@@ -120,19 +120,13 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     inputTable->setSchema(schema);
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
-       // QueryTuple<BoolField> tuple(1);
         IntField val(inputData[i]);
-       // tuple.putField(0, v);
-   //     inputTable->putTuple(i, tuple);
-          inputTable->getTuplePtr(i)->setDummyTag(false);
-          inputTable->getTuplePtr(i)->putField(0, val);
+        inputTable->getTuplePtr(i)->setDummyTag(false);
+        inputTable->getTuplePtr(i)->putField(0, val);
     }
 
-    std::cout << "Input table: " << *inputTable << std::endl;
 
     std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
-    std::cout << "Encrypted: " << *inputTable << std::endl;
-
     emp::Integer decryptTest = ((SecureIntField *) encryptedTable->getTuplePtr(0)->getField(0))->getPayload();
     ASSERT_EQ(1, decryptTest.reveal<int32_t>());
 
