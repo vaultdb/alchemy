@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/support/binary_predicate.h>
 #include <operators/support/join_equality_predicate.h>
@@ -55,7 +54,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
                                                                                                              "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
 
 
     SecureSqlInput customerInput(dbName, customerSql, true, netio, FLAGS_party);
@@ -69,12 +68,12 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
 
     KeyedJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
 
-    std::shared_ptr<QueryTable> joinResult = join.run()->reveal();
+    std::shared_ptr<PlainTable> joinResult = join.run()->reveal();
 
 
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
     Sort<SecureBoolField> sort(&join, sortDefinition);
-    shared_ptr<QueryTable> observed = sort.run()->reveal();
+    shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
     ASSERT_EQ(expected->toString(true), observed->toString(true));
@@ -97,7 +96,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
                                                                                                              "FROM cross_product \n"
                                                                                                              "WHERE matched";
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
 
     SecureSqlInput lineitemInput(dbName, lineitemSql, true, netio, FLAGS_party);
     SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
@@ -110,13 +109,13 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
     KeyedJoin join(&lineitemInput, &ordersInput, customerOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> joinResult = join.run();
-    std::unique_ptr<QueryTable> joinResultDecrypted = joinResult->reveal();
+    std::shared_ptr<SecureTable> joinResult = join.run();
+    std::unique_ptr<PlainTable> joinResultDecrypted = joinResult->reveal();
 
 
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
     Sort<SecureBoolField>  sort(&join, sortDefinition);
-    std::shared_ptr<QueryTable> observed = sort.run()->reveal();
+    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
 
@@ -142,7 +141,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                                                                                                                                  "FROM cross_product \n"
                                                                                                                                                  "WHERE matched";
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
 
     SecureSqlInput customerInput(dbName, customerSql, true, netio, FLAGS_party);
     SecureSqlInput lineitemInput(dbName, lineitemSql, true, netio, FLAGS_party);
@@ -163,12 +162,12 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     KeyedJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> joinResult = fullJoin.run()->reveal();
+    std::shared_ptr<PlainTable> joinResult = fullJoin.run()->reveal();
 
 
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
     Sort<SecureBoolField> sort(&fullJoin, sortDefinition);
-    std::shared_ptr<QueryTable> observed = sort.run()->reveal();
+    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
     ASSERT_EQ(observed->toString(false), expected->toString(false));

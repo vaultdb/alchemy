@@ -82,15 +82,14 @@ package_add_test(fkey_pkey_join_test fkey_pkey_join_test.cpp)
 
 
 #EMP-based tests
-#Tranche 1
 package_add_test(emp_test emp_test.cpp support/EmpBaseTest.cpp)
 package_add_test(emp_table_test  emp_table_test.cpp support/EmpBaseTest.cpp support/QueryTableTestQueries.cpp) # port 54324-54325
 package_add_test(emp_test_multiple_starts emp_test_multiple_starts.cpp)
 package_add_test(secure_value_expression_test secure_value_expression_test.cpp support/EmpBaseTest.cpp  )
 package_add_test(secure_filter_test secure_filter_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_sort_test secure_sort_test.cpp support/EmpBaseTest.cpp )
-#package_add_test(secure_basic_join_test secure_basic_join_test.cpp support/EmpBaseTest.cpp )
-#package_add_test(secure_pkey_fkey_join_test secure_pkey_fkey_join_test.cpp support/EmpBaseTest.cpp )
+package_add_test(secure_basic_join_test secure_basic_join_test.cpp support/EmpBaseTest.cpp )
+package_add_test(secure_pkey_fkey_join_test secure_pkey_fkey_join_test.cpp support/EmpBaseTest.cpp )
 
 #Tranche 2
 #package_add_test(secure_scalar_aggregate_test secure_scalar_aggregate_test.cpp support/EmpBaseTest.cpp)
