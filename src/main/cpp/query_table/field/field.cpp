@@ -41,6 +41,8 @@ Field<B>::Field(const Field<B> &field) : type_(field.type_), allocated_size_(fie
 
 template<typename B>
 Field<B> &Field<B>::operator=(const Field<B> &other) {
+
+    if(type_ == FieldType::INVALID && other.type_ == FieldType::INVALID) return *this; // nothing to do here
     assert(other.type_ != FieldType::INVALID);
 
     if(&other == this)
@@ -85,7 +87,6 @@ B Field<B>::operator==(const Field<B> &cmp) const {
 template<typename B>
 B Field<B>::operator!=(const Field &cmp) const {
     B eq = *this == cmp;
-
     return eq.neg();
 }
 
@@ -205,7 +206,7 @@ std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
 }
 
 template<typename B>
-Field<SecureBoolField> *Field<B>::secretShare(const Field<BoolField>  *field, const FieldType &type, const size_t &strLength, const int &myParty,
+SecureField *Field<B>::secretShare(const PlainField  *field, const FieldType &type, const size_t &strLength, const int &myParty,
                            const int &dstParty) {
     switch(type) {
         case FieldType::BOOL:

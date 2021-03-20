@@ -21,7 +21,12 @@ namespace vaultdb {
     class BoolField;
     class SecureBoolField;
 
-   template <typename B>
+    template<typename B> class Field;
+    typedef Field<BoolField> PlainField;
+    typedef Field<SecureBoolField> SecureField;
+
+
+    template <typename B>
     class Field {
         protected:
             FieldType  type_;
@@ -90,10 +95,10 @@ namespace vaultdb {
 
 
             // if field is encrypted, decrypt
-            Field<BoolField> *reveal(const int & party = emp::PUBLIC) const;
+            PlainField *reveal(const int & party = emp::PUBLIC) const;
 
-            static Field<SecureBoolField> *
-            secretShare(const Field<BoolField> *field, const FieldType &type, const size_t &strLength, const int &myParty,
+            static SecureField *
+            secretShare(const PlainField *field, const FieldType &type, const size_t &strLength, const int &myParty,
                         const int &dstParty);
 
             std::string toString() const;
@@ -117,6 +122,7 @@ namespace vaultdb {
 
    template<typename B>
     std::ostream &operator<<(std::ostream &os, const Field<B> &aValue);
+
 
 
 }

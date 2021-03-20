@@ -12,6 +12,13 @@
 using namespace emp;
 
 namespace vaultdb {
+
+    template<typename B> class QueryTuple;
+
+    typedef vaultdb::QueryTuple<BoolField> PlainTuple;
+    typedef vaultdb::QueryTuple<SecureBoolField> SecureTuple;
+
+
     template<typename B>
     class QueryTuple {
     private:
@@ -30,18 +37,19 @@ namespace vaultdb {
 
         inline bool  isEncrypted() const;
 
+
         const Field<B> * getField(const int &ordinal) const;
       void putField(const int &idx, const Field<B> &f);
       void setDummyTag(const B &v);
-      /*void setDummyTag(const bool & b);
 
-        void setDummyTag(const emp::Bit & b);
-*/
-
-          const B *getDummyTag() const;
+      void setDummyTag(const bool & b);
 
 
-        QueryTuple<BoolField> reveal(const int &empParty = PUBLIC) const;
+
+      const B *getDummyTag() const;
+
+
+        PlainTuple reveal(const int &empParty = PUBLIC) const;
 
         string toString(const bool &showDummies = false) const;
 
@@ -60,13 +68,13 @@ namespace vaultdb {
         static QueryTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
 
 
-        static QueryTuple<SecureBoolField>
-        secretShare(const QueryTuple<BoolField> *srcTuple, const QuerySchema &schema, const int &myParty, const int &dstParty);
+        static SecureTuple
+        secretShare(const PlainTuple *srcTuple, const QuerySchema &schema, const int &myParty, const int &dstParty);
 
         // already encrypted
-        static QueryTuple<SecureBoolField>
-        secretShare(const QueryTuple<SecureBoolField> *srcTuple, const QuerySchema &schema, const int &myParty, const int &dstParty) {
-            return QueryTuple<SecureBoolField>(*srcTuple);
+        static SecureTuple
+        secretShare(const SecureTuple *srcTuple, const QuerySchema &schema, const int &myParty, const int &dstParty) {
+            return SecureTuple(*srcTuple);
         }
 
     };

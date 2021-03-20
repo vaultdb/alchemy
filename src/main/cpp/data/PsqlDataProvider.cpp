@@ -17,7 +17,7 @@
 
 // if hasDummyTag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
-std::unique_ptr<QueryTable<BoolField> >
+std::unique_ptr<PlainTable >
 PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag) {
 
     dbName = dbname;
@@ -52,7 +52,7 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
 
     tableSchema = getSchema(pqxxResult, hasDummyTag);
-    std::unique_ptr<QueryTable<BoolField> > dstTable = std::make_unique<QueryTable<BoolField> >(rowCount, colCount);
+    std::unique_ptr<PlainTable > dstTable = std::make_unique<PlainTable >(rowCount, colCount);
 
     dstTable->setSchema(*tableSchema);
 

@@ -9,10 +9,10 @@ template<typename B>
 QueryTuple<B>::QueryTuple(const  size_t & aFieldCount) {
     dummy_tag_ = B(false);
     fields_.resize(aFieldCount);
-/*
+
     for(size_t i = 0; i < aFieldCount; ++i) {
-        fields_[i]  = Field();
-    }*/
+        fields_[i]  = Field<B>();
+    }
 
 };
 
@@ -37,7 +37,6 @@ const Field<B> *QueryTuple<B>::getField(const int &ordinal) const {
 
 template<typename B>
 void QueryTuple<B>::putField(const int &idx, const Field<B> &f) {
-
     fields_[idx] = f;
 }
 
@@ -45,6 +44,12 @@ template<typename B>
 void QueryTuple<B>::setDummyTag(const B & v) {
     dummy_tag_ = v;
 }
+
+template<typename B>
+void QueryTuple<B>::setDummyTag(const bool & v) {
+    dummy_tag_ = B(v);
+}
+
 
 template<typename B>
 const B *QueryTuple<B>::getDummyTag() const {
@@ -106,13 +111,15 @@ QueryTuple<B> & QueryTuple<B>::operator=(const QueryTuple& src) {
     if(&src == this)
         return *this;
 
-    fields_.resize(src.getFieldCount());
-
-    for(size_t i = 0; i < src.getFieldCount(); ++i) {
-        fields_[i] = *src.getField(i);
+    if(fields_.size() != src.getFieldCount()) {
+        fields_.resize(src.getFieldCount());
     }
 
-    dummy_tag_ = *src.getDummyTag();
+    for(size_t i = 0; i < src.getFieldCount(); ++i) {
+        fields_[i] = src.fields_[i];
+    }
+
+    dummy_tag_ = src.dummy_tag_;
 
 
     return *this;
@@ -120,8 +127,8 @@ QueryTuple<B> & QueryTuple<B>::operator=(const QueryTuple& src) {
 }
 
 template<typename B>
-QueryTuple<BoolField> QueryTuple<B>::reveal(const int &empParty) const {
-    QueryTuple<BoolField> dstTuple(fields_.size());
+PlainTuple QueryTuple<B>::reveal(const int &empParty) const {
+    PlainTuple dstTuple(fields_.size());
 
     for(size_t i = 0; i < fields_.size(); ++i) {
         Field<BoolField> *revealed = fields_[i].reveal(empParty);
@@ -136,40 +143,6 @@ QueryTuple<BoolField> QueryTuple<B>::reveal(const int &empParty) const {
     return dstTuple;
 
 }
-
-/*
-template<typename B>
-void QueryTuple<B>::compareAndSwap(QueryTuple *lhs, QueryTuple *rhs, const SecureBoolField & cmp) {
-
-    assert(lhs->getFieldCount() == rhs->getFieldCount());
-
-    for(size_t i = 0; i < lhs->getFieldCount(); ++i) {
-
-        Field::compareAndSwap(cmp.getPayload(), *(lhs->fields_[i]), *(rhs->fields_[i]));
-
-    }
-
-    Field::compareAndSwap(cmp.getPayload(), *lhs->dummy_tag_, *rhs->dummy_tag_);
-
-}
-
-void QueryTuple::compareAndSwap(QueryTuple *lhs, QueryTuple *rhs, const BoolField & cmp) {
-
-    assert(lhs->getFieldCount() == rhs->getFieldCount());
-
-
-
-    for(size_t i = 0; i < lhs->getFieldCount(); ++i) {
-
-        Field::compareAndSwap(cmp.getPayload(), *(lhs->fields_[i]), *(rhs->fields_[i]));
-
-    }
-
-    Field::compareAndSwap(cmp.getPayload(), *lhs->dummy_tag_, *rhs->dummy_tag_);
-
-}
-
-*/
 
 
 template<typename B>
@@ -242,9 +215,9 @@ bool QueryTuple<B>::isEncrypted() const { return dummy_tag_.getType() == FieldTy
 // srcTuple == nullptr if we are collecting secret shares of the other party's private data
 
 template<typename B>
-QueryTuple<SecureBoolField>  QueryTuple<B>::secretShare(const QueryTuple<BoolField> *srcTuple, const QuerySchema &schema, const int & myParty, const int & dstParty) {
+SecureTuple  QueryTuple<B>::secretShare(const PlainTuple *srcTuple, const QuerySchema &schema, const int & myParty, const int & dstParty) {
     int fieldCount = schema.getFieldCount();
-    QueryTuple<SecureBoolField> dstTuple(fieldCount);
+    SecureTuple dstTuple(fieldCount);
 
 
     for(int i = 0; i < fieldCount; ++i) {
@@ -276,12 +249,12 @@ void QueryTuple<B>::setDummyTag(const bool &b) {
 }
 
 template <>
-void QueryTuple<SecureBoolField>::setDummyTag(const Bit &bit) {
+void SecureTuple::setDummyTag(const Bit &bit) {
     dummy_tag_ = SecureBoolField(bit);
 }*/
 
 
-std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple<BoolField> &aTuple) {
+std::ostream &vaultdb::operator<<(std::ostream &strm,  const PlainTuple &aTuple) {
 
     strm << aTuple.toString(false);
 
@@ -290,7 +263,7 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple<BoolFiel
 
 }
 
-std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple<SecureBoolField> &aTuple) {
+std::ostream &vaultdb::operator<<(std::ostream &strm,  const SecureTuple &aTuple) {
 
     strm << aTuple.toString(false);
 

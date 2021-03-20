@@ -46,10 +46,9 @@ template <typename B>
 QueryTable<B>::QueryTable(const size_t &num_tuples, const int &colCount)
     : schema_(QuerySchema(colCount)) {
 
-    /* std::cout << "Instantiating a query table at: " << std::endl
-               << Utilities::getStackTrace();*/
     tuples_.resize(num_tuples);
-
+    for(int i = 0; i < tuples_.size(); ++i)
+        tuples_[i] = QueryTuple<B>(colCount);
 
 }
 
@@ -64,7 +63,7 @@ bool QueryTable<B>::isEncrypted() const {
 
 
 template <typename B>
-std::unique_ptr<QueryTable<BoolField> > QueryTable<B>::reveal(int empParty) const  {
+std::unique_ptr<PlainTable> QueryTable<B>::reveal(int empParty) const  {
     uint32_t tupleCount = getTupleCount();
 
     if(!this->isEncrypted())
@@ -110,26 +109,27 @@ template <typename B>
 std::ostream &vaultdb::operator<<(std::ostream &os, const QueryTable<B> &table) {
 
 
-    os <<  table.getSchema() << " isEncrypted? " << table.isEncrypted() << endl;
+        os <<  table.getSchema() << " isEncrypted? " << table.isEncrypted() << endl;
 
-    for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
-        os << table.getTuple(i);
+        for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
+            os << table.getTuple(i);
 
 
-        bool isEncrypted = table.isEncrypted();
-        if(isEncrypted) {
-            os << endl;
-        }
-        else {
-            bool isDummy = ( (BoolField) (table.getTuple(i).getDummyTag())).getPayload();
-            if(!isDummy)
+            bool isEncrypted = table.isEncrypted();
+            if(isEncrypted) {
                 os << endl;
+            }
+            else {
+                bool isDummy = table.getTuple(i).getDummyTag()->getBool();
+                if(!isDummy)
+                    os << endl;
+            }
+
+
         }
 
+        return os;
 
-    }
-
-    return os;
 }
 
 template <typename B>
@@ -253,7 +253,7 @@ uint32_t QueryTable<B>::getTrueTupleCount() const {
 
 
 template<typename B>
-std::shared_ptr<QueryTable<SecureBoolField> > QueryTable<B>::secretShare(emp::NetIO *netio, const int & party) const {
+std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const int & party) const {
 
     size_t aliceSize = this->getTupleCount();
     size_t bobSize = aliceSize;
@@ -272,12 +272,15 @@ std::shared_ptr<QueryTable<SecureBoolField> > QueryTable<B>::secretShare(emp::Ne
         netio->flush();
     }
 
+    std::cout << "Alice encrypting " << aliceSize << " tuples, bob encrypting " << bobSize << " tuples. " << std::endl;
+
     std::shared_ptr<QueryTable<SecureBoolField> > dstTable(new QueryTable<SecureBoolField>(aliceSize + bobSize, colCount));
 
     dstTable->setSchema(QuerySchema::toSecure(getSchema()));
     dstTable->setSortOrder(getSortOrder());
 
 
+    std::cout << "Encrypting Alice" << std::endl;
     // read alice in order
     for (size_t i = 0; i < aliceSize; ++i) {
         const QueryTuple<B>  *srcTuple = (party == ALICE) ? &(tuples_[i]) : nullptr;
@@ -285,6 +288,8 @@ std::shared_ptr<QueryTable<SecureBoolField> > QueryTable<B>::secretShare(emp::Ne
         dstTable->putTuple(i, dstTuple);
 
     }
+
+    std::cout << "Encrypting Bob" << std::endl;
 
     int writeIdx = aliceSize;
     // write bob last --> first to make bitonic sequence

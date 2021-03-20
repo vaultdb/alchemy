@@ -29,25 +29,21 @@ namespace vaultdb {
     template<>
     class FieldFactory<BoolField> {
     public:
-        static Field<BoolField> *getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src);
-        // deepCopy may not be needed anymore, TODO: revisit this
-        static Field<BoolField> *deepCopy(const Field<BoolField> *srcField);
-        static Field<BoolField> getZero(const FieldType & type);
-        static Field<BoolField> getOne(const FieldType & type);
-        static FloatField toFloat(const Field<BoolField> *src);
-        static FieldInstance<BoolField> *getFieldInstance(Field<BoolField> *src);
+        static PlainField *getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src);
+        static PlainField getZero(const FieldType & type);
+        static PlainField getOne(const FieldType & type);
+        static FloatField toFloat(const PlainField *src);
+        static FieldInstance<BoolField> *getFieldInstance(PlainField *src);
     };
 
 
     template<>
     class FieldFactory<SecureBoolField> {
     public:
-        // deepCopy may not be needed anymore, TODO: revisit this
-        static Field<SecureBoolField> *deepCopy(const Field<SecureBoolField> *srcField);
-        static Field<SecureBoolField> getZero(const FieldType & type);
-        static Field<SecureBoolField> getOne(const FieldType & type);
-        static Field<SecureBoolField> toFloat(const Field<SecureBoolField> *src);
-        static FieldInstance<SecureBoolField> *getFieldInstance(Field<SecureBoolField> *src);
+        static SecureField getZero(const FieldType & type);
+        static SecureField getOne(const FieldType & type);
+        static SecureField toFloat(const SecureField *src);
+        static FieldInstance<SecureBoolField> *getFieldInstance(SecureField *src);
     };
 
 }

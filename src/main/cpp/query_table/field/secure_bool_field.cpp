@@ -16,6 +16,14 @@ SecureBoolField::SecureBoolField(const BoolField * src, const int &myParty, cons
     setValue(payload);
 }
 
+SecureBoolField::SecureBoolField(const bool &src) : Field(FieldType::SECURE_BOOL) {
+
+    emp::Bit s(src);
+    setValue(s);
+
+}
+
+
 SecureBoolField::SecureBoolField(const int8_t *src) : Field(Field::deserialize(FieldType::SECURE_BOOL, 0, src)){
 }
 
@@ -28,12 +36,6 @@ SecureBoolField &SecureBoolField::operator=(const SecureBoolField &other)  {
 }
 
 
-SecureBoolField::SecureBoolField(const bool &src) {
-
-    emp::Bit s(src);
-    setValue(s);
-
-}
 
 
 

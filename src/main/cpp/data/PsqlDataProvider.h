@@ -15,7 +15,7 @@ using namespace vaultdb;
 class  PsqlDataProvider  { // :  DataProvider
 public:
 
-    std::unique_ptr<QueryTable<BoolField> > getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag=false);
+    std::unique_ptr<PlainTable> getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag=false);
 
 private:
     QueryTuple<BoolField>  getTuple(pqxx::row row, bool hasDummyTag);

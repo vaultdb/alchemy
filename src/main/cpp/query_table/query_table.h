@@ -18,6 +18,11 @@ namespace  vaultdb {
     template class QueryTuple<BoolField>;
     template class QueryTuple<SecureBoolField>;
 
+    template<typename B> class QueryTable;
+
+    typedef  QueryTable<BoolField> PlainTable;
+    typedef  QueryTable<SecureBoolField> SecureTable;
+
     template <typename B>
     class QueryTable {
         private:
@@ -40,10 +45,6 @@ namespace  vaultdb {
             QueryTable(const QueryTable &src);
 
             ~QueryTable() = default;
-          /* {     std::cout << "Freeing a query table at: " << std::endl
-                    << Utilities::getStackTrace();} */
-
-
 
             void resize(const size_t & tupleCount);
             bool isEncrypted() const;

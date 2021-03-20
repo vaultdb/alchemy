@@ -76,9 +76,9 @@ namespace vaultdb {
 
         virtual void serialize(int8_t *dst) const = 0;
         // encrypt and decrypt -- table this for now
-        /*Field<BoolField> reveal(const int &party) const;
-        static Field<SecureBoolField> secretShare(const Field<BoolField> & field, const FieldType &type, const size_t &strLength, const int &myParty,
-                                        const int &dstParty); */
+        //Field<BoolField> reveal(const int &party) const;
+        //static Field<SecureBoolField> secretShare(const Field<BoolField> & field, const FieldType &type, const size_t &strLength, const int &myParty,
+         //                               const int &dstParty);
 
 
 

@@ -13,6 +13,18 @@ using namespace vaultdb;
 class EmpTest : public EmpBaseTest {
 };
 
+/*
+class EmpTest  : public ::testing::Test {
+
+protected:
+    void SetUp() override{
+        emp::setup_plain_prot(false, "");
+    };
+    void TearDown() override{
+        emp::finalize_plain_prot();
+    };
+};
+*/
 
 
 
@@ -104,26 +116,32 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     QuerySchema schema(1);
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
 
-    std::unique_ptr<QueryTable> inputTable(new QueryTable(tupleCount, 1));
+    std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, 1));
     inputTable->setSchema(schema);
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
+       // QueryTuple<BoolField> tuple(1);
         IntField val(inputData[i]);
-        inputTable->getTuplePtr(i)->setDummyTag(false);
-        inputTable->getTuplePtr(i)->putField(0, val);
+       // tuple.putField(0, v);
+   //     inputTable->putTuple(i, tuple);
+          inputTable->getTuplePtr(i)->setDummyTag(false);
+          inputTable->getTuplePtr(i)->putField(0, val);
     }
 
+    std::cout << "Input table: " << *inputTable << std::endl;
 
-    std::shared_ptr<QueryTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+    std::cout << "Encrypted: " << *inputTable << std::endl;
+
     emp::Integer decryptTest = ((SecureIntField *) encryptedTable->getTuplePtr(0)->getField(0))->getPayload();
     ASSERT_EQ(1, decryptTest.reveal<int32_t>());
 
     netio->flush();
 
-    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
+    std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 
     // set up expected result
-    std::unique_ptr<QueryTable> expectedTable(new QueryTable(2 * tupleCount, 1));
+    std::unique_ptr<PlainTable > expectedTable(new PlainTable(2 * tupleCount, 1));
     expectedTable->setSchema(schema);
     // insert alice data first to last
     for(uint32_t i = 0; i < tupleCount; ++i) {

@@ -1,6 +1,5 @@
 #include "field_factory.h"
 
-
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include <util/type_utilities.h>
 #include <field/instance/long_instance.h>
@@ -16,29 +15,7 @@
 
 using namespace vaultdb;
 
-// strings must be padded to max field length before calling this
-// In other words: field length == string length
-
-Field<BoolField> *FieldFactory<BoolField>::deepCopy(const Field<BoolField> *srcField) {
-    switch(srcField->getType()) {
-        case FieldType::BOOL:
-            return new BoolField(*srcField);
-        case FieldType::INT:
-            return new IntField(*srcField);
-        case FieldType::LONG:
-            return new LongField(*srcField);
-        case FieldType::FLOAT:
-            return new FloatField(*srcField);
-        case FieldType::STRING:
-            return new StringField(*srcField);
-        case FieldType::INVALID:
-            return new Field<BoolField>();
-        default: // invalid
-            throw;
-    }
-}
-
-Field<BoolField> * FieldFactory<BoolField>::getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src) {
+PlainField * FieldFactory<BoolField>::getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src) {
     switch (type) {
         case FieldType::BOOL: {
             bool boolField = (src == "1") ? true : false;
@@ -79,7 +56,7 @@ Field<BoolField> * FieldFactory<BoolField>::getFieldFromString(const FieldType &
 
 
 
-Field<BoolField> FieldFactory<BoolField>::getZero(const FieldType &aType) {
+PlainField FieldFactory<BoolField>::getZero(const FieldType &aType) {
     switch(aType) {
         case FieldType::BOOL:
             return  BoolField(false);
@@ -101,7 +78,7 @@ Field<BoolField> FieldFactory<BoolField>::getZero(const FieldType &aType) {
 }
 
 
-Field<BoolField> FieldFactory<BoolField>::getOne(const FieldType &aType) {
+PlainField FieldFactory<BoolField>::getOne(const FieldType &aType) {
     switch(aType) {
         case FieldType::BOOL:
             return  BoolField(true);
@@ -124,7 +101,7 @@ Field<BoolField> FieldFactory<BoolField>::getOne(const FieldType &aType) {
 
 
 
-FieldInstance<BoolField> *FieldFactory<BoolField>::getFieldInstance(Field<BoolField> *src) {
+FieldInstance<BoolField> *FieldFactory<BoolField>::getFieldInstance(PlainField *src) {
     FieldType aType = src->getType();
 
     switch(aType) {
@@ -145,7 +122,7 @@ FieldInstance<BoolField> *FieldFactory<BoolField>::getFieldInstance(Field<BoolFi
     }
 }
 
-FloatField FieldFactory<BoolField>::toFloat(const Field<BoolField> *src) {
+FloatField FieldFactory<BoolField>::toFloat(const PlainField *src) {
     switch(src->getType()) {
         case FieldType::BOOL:
             return FloatField((float_t) ((BoolField *) src)->getPayload());
@@ -164,29 +141,10 @@ FloatField FieldFactory<BoolField>::toFloat(const Field<BoolField> *src) {
 }
 
 // ************  Start SecureBoolField *************/
-Field<SecureBoolField> *FieldFactory<SecureBoolField>::deepCopy(const Field<SecureBoolField> *srcField) {
-    switch(srcField->getType()) {
-        case FieldType::SECURE_BOOL:
-            return new SecureBoolField(*srcField);
-        case FieldType::SECURE_INT:
-            return new SecureIntField(*srcField);
-        case FieldType::SECURE_LONG:
-            return new SecureLongField(*srcField);
-        case FieldType::SECURE_FLOAT:
-            return new SecureFloatField(*srcField);
-        case FieldType::SECURE_STRING:
-            return new SecureStringField(*srcField);
-        case FieldType::INVALID:
-            return new Field<SecureBoolField>();
-        default: // invalid
-            throw;
-    }
-}
 
 
 
-
-Field<SecureBoolField> FieldFactory<SecureBoolField>::getZero(const FieldType &aType) {
+SecureField FieldFactory<SecureBoolField>::getZero(const FieldType &aType) {
     switch(aType) {
         case FieldType::SECURE_BOOL:
             return  SecureBoolField(emp::Bit(0, emp::PUBLIC));
@@ -204,7 +162,7 @@ Field<SecureBoolField> FieldFactory<SecureBoolField>::getZero(const FieldType &a
     };
 }
 
-Field<SecureBoolField> FieldFactory<SecureBoolField>::getOne(const FieldType &aType) {
+SecureField FieldFactory<SecureBoolField>::getOne(const FieldType &aType) {
     switch(aType) {
         case FieldType::SECURE_BOOL:
             return  SecureBoolField(emp::Bit(1, emp::PUBLIC));
@@ -222,7 +180,7 @@ Field<SecureBoolField> FieldFactory<SecureBoolField>::getOne(const FieldType &aT
     };
 }
 
-FieldInstance<SecureBoolField> *FieldFactory<SecureBoolField>::getFieldInstance( Field<SecureBoolField> *src) {
+FieldInstance<SecureBoolField> *FieldFactory<SecureBoolField>::getFieldInstance( SecureField *src) {
     FieldType aType = src->getType();
 
     switch(aType) {
@@ -242,7 +200,7 @@ FieldInstance<SecureBoolField> *FieldFactory<SecureBoolField>::getFieldInstance(
     }
 }
 
-Field<SecureBoolField> FieldFactory<SecureBoolField>::toFloat(const Field<SecureBoolField> *src) {
+SecureField FieldFactory<SecureBoolField>::toFloat(const SecureField *src) {
 
     switch (src->getType()) {
         case FieldType::SECURE_INT:
