@@ -117,30 +117,30 @@ B Field<B>::operator>(const Field &rhs) const {
 
 
 template<typename B>
-Field<BoolField>  *Field<B>::reveal(const int &party) const {
+PlainField  Field<B>::reveal(const int &party) const {
     switch (type_) {
         case FieldType::SECURE_BOOL: {
             auto src = getValue<emp::Bit>();
-            return new  BoolField(src.reveal(party));
+            return BoolField(src.reveal(party));
         }
         case FieldType::SECURE_INT: {
             emp::Integer src = getValue<emp::Integer>();
             assert(src.size() == 32);
-            return new IntField(src.reveal<int32_t>(party));
+            return  IntField(src.reveal<int32_t>(party));
         }
         case FieldType::SECURE_LONG: {
             emp::Integer src = getValue<emp::Integer>();
             assert(src.size() == 64);
-            return new LongField(src.reveal<int64_t>(party));
+            return  LongField(src.reveal<int64_t>(party));
         }
         case FieldType::SECURE_FLOAT: {
             emp::Float src = getValue<emp::Float>();
-            return new FloatField(src.reveal<double>(party));
+            return  FloatField(src.reveal<double>(party));
         }
         case FieldType::SECURE_STRING: {
             auto src = getValue<emp::Integer>();
             std::string revealed = revealString(src, party);
-            return new StringField(revealed);
+            return  StringField(revealed);
         }
 
             // already in the clear, throw so we don't lose the impl object (e.g., IntField)
@@ -206,20 +206,20 @@ std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
 }
 
 template<typename B>
-SecureField *Field<B>::secretShare(const PlainField  *field, const FieldType &type, const size_t &strLength, const int &myParty,
+SecureField Field<B>::secretShare(const PlainField  *field, const FieldType &type, const size_t &strLength, const int &myParty,
                            const int &dstParty) {
     switch(type) {
         case FieldType::BOOL:
-            return  new SecureBoolField (static_cast<const BoolField *>(field), myParty, dstParty);
+            return   SecureBoolField (static_cast<const BoolField *>(field), myParty, dstParty);
         case FieldType::INT:
-            return   new SecureIntField(static_cast<const IntField *>(field), myParty, dstParty);
+            return    SecureIntField(static_cast<const IntField *>(field), myParty, dstParty);
         case FieldType::LONG:
-            return   new SecureLongField(static_cast<const LongField *>(field), myParty, dstParty);
+            return    SecureLongField(static_cast<const LongField *>(field), myParty, dstParty);
         case FieldType::FLOAT:
-            return  new  SecureFloatField(static_cast<const FloatField *>(field), myParty, dstParty);
+            return    SecureFloatField(static_cast<const FloatField *>(field), myParty, dstParty);
         case FieldType::STRING:
-            return new SecureStringField(static_cast<const StringField *>(field), strLength, myParty, dstParty);
-        default:// may want to throw here
+            return  SecureStringField(static_cast<const StringField *>(field), strLength, myParty, dstParty);
+        default:
             throw;
 
     }

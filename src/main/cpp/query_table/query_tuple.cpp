@@ -131,10 +131,8 @@ PlainTuple QueryTuple<B>::reveal(const int &empParty) const {
     PlainTuple dstTuple(fields_.size());
 
     for(size_t i = 0; i < fields_.size(); ++i) {
-        Field<BoolField> *revealed = fields_[i].reveal(empParty);
-        dstTuple.putField(i, *revealed);
-        delete revealed;
-
+        Field<BoolField> revealed = fields_[i].reveal(empParty);
+        dstTuple.putField(i, revealed);
     }
 
 
@@ -224,19 +222,16 @@ SecureTuple  QueryTuple<B>::secretShare(const PlainTuple *srcTuple, const QueryS
 
 
         const Field<BoolField> *srcField = (myParty == dstParty) ? srcTuple->getField(i) : nullptr;
-        Field<SecureBoolField> *dstField = Field<B>::secretShare(srcField, schema.getField(i).getType(), schema.getField(i).getStringLength(), myParty,
+        Field<SecureBoolField> dstField = Field<B>::secretShare(srcField, schema.getField(i).getType(), schema.getField(i).getStringLength(), myParty,
                                              dstParty);
-        dstTuple.putField(i, *dstField);
-        delete dstField;
+        dstTuple.putField(i, dstField);
     }
 
      const BoolField *dummyTag = (myParty == dstParty) ? srcTuple->getDummyTag(): nullptr;
 
-    SecureBoolField *encryptedDummyTag = static_cast<SecureBoolField *>(Field<B>::secretShare(dummyTag, FieldType::BOOL,
+    SecureBoolField encryptedDummyTag = static_cast<SecureBoolField>(Field<B>::secretShare(dummyTag, FieldType::BOOL,
                                                                                             0, myParty, dstParty));
-    dstTuple.setDummyTag(*encryptedDummyTag);
-    delete encryptedDummyTag;
-
+    dstTuple.setDummyTag(encryptedDummyTag);
     return dstTuple;
 }
 

@@ -72,7 +72,7 @@ TEST_F(ProjectionTest, q3Lineitem) {
     std::string srcSql = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
     std::string expectedOutputSql = "SELECT l_orderkey, " + DataUtilities::queryDatetime("l_shipdate") + ",  l_extendedprice * (1 - l_discount) revenue FROM (" + srcSql + ") src ";
 
-    std::shared_ptr<QueryTable<BoolField> > expected =  DataUtilities::getQueryResults("tpch_alice", expectedOutputSql, false);
+    std::shared_ptr<PlainTable > expected =  DataUtilities::getQueryResults("tpch_alice", expectedOutputSql, false);
 
 
     SqlInput input("tpch_alice", srcSql, false);
@@ -89,7 +89,7 @@ TEST_F(ProjectionTest, q3Lineitem) {
 
 
 
-    std::shared_ptr<QueryTable<BoolField> > observed = project.run();
+    std::shared_ptr<PlainTable > observed = project.run();
 
 
 

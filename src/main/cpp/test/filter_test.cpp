@@ -30,8 +30,8 @@ TEST_F(FilterTest, test_table_scan) {
 
     SqlInput input(dbName, sql, false);
 
-    std::shared_ptr<QueryTable<BoolField> > output = input.run(); // a smoke test for the operator infrastructure
-    std::shared_ptr<QueryTable<BoolField> > expected = DataUtilities::getQueryResults(dbName, sql, false);
+    std::shared_ptr<PlainTable > output = input.run(); // a smoke test for the operator infrastructure
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, sql, false);
 
     ASSERT_EQ(*expected, *output);
 
@@ -65,7 +65,7 @@ public:
 TEST_F(FilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
-   std::shared_ptr<QueryTable<BoolField> > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+   std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput input(dbName, sql, false);
 
@@ -74,7 +74,7 @@ TEST_F(FilterTest, test_filter) {
     //std::shared_ptr<Operator> filter = Operator::getOperatorTree(new Filter(predicateClass, input), input);
 
 
-    std::shared_ptr<QueryTable<BoolField> > result = filter.run();
+    std::shared_ptr<PlainTable > result = filter.run();
 
 
     ASSERT_EQ(*expected,  *result);

@@ -8,6 +8,7 @@
 #include <field/instance/secure_bool_instance.h>
 #include <field/instance/secure_long_instance.h>
 #include <field/instance/secure_float_instance.h>
+#include <field/instance/secure_string_instance.h>
 
 #include "instance/bool_instance.h"
 #include "instance/int_instance.h"
@@ -193,7 +194,7 @@ FieldInstance<SecureBoolField> *FieldFactory<SecureBoolField>::getFieldInstance(
         case FieldType::SECURE_FLOAT:
             return new SecureFloatInstance(src);
         case FieldType::SECURE_STRING:
-            return new SecureLongInstance(src);
+            return new SecureStringInstance(src);
         default:
             throw std::invalid_argument("Type unsupported in getInstance(): " + TypeUtilities::getTypeString(aType));
 

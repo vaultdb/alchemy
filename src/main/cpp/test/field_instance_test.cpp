@@ -88,20 +88,15 @@ TEST_F(FieldInstanceTest, printLongTest) {
 
 TEST_F(FieldInstanceTest, encryptTest) {
   BoolField boolField(true);
-  Field<SecureBoolField> *encrypted = Field<BoolField>::secretShare(&boolField, FieldType::BOOL, 0, emp::ALICE, emp::ALICE);
-  BoolField *revealed = (BoolField *) encrypted->reveal();
-  ASSERT_EQ(revealed->getPayload(), true);
+  Field<SecureBoolField> encrypted = Field<BoolField>::secretShare(&boolField, FieldType::BOOL, 0, emp::ALICE, emp::ALICE);
+  BoolField revealed =  (BoolField) encrypted.reveal();
+  ASSERT_EQ(revealed.getPayload(), true);
 
-  delete encrypted;
-  delete revealed;
 
   IntField intField(7);
   encrypted = Field<BoolField>::secretShare(&intField, FieldType::INT, 0, emp::ALICE, emp::ALICE);
-  IntField *revealedInt = (IntField *) encrypted->reveal();
-  ASSERT_EQ(revealedInt->getPayload(), 7);
-
-  delete encrypted;
-  delete revealedInt;
+  IntField revealedInt = (IntField) encrypted.reveal();
+  ASSERT_EQ(revealedInt.getPayload(), 7);
 
 }
 

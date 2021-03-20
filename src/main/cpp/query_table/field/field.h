@@ -95,9 +95,9 @@ namespace vaultdb {
 
 
             // if field is encrypted, decrypt
-            PlainField *reveal(const int & party = emp::PUBLIC) const;
+            PlainField reveal(const int & party = emp::PUBLIC) const;
 
-            static SecureField *
+            static SecureField
             secretShare(const PlainField *field, const FieldType &type, const size_t &strLength, const int &myParty,
                         const int &dstParty);
 

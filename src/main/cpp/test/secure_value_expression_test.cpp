@@ -52,7 +52,7 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
 
 
     SecureBoolField gtEncrypted = (lhsEncrypted > rhsEncrypted);
-    bool gt = gtEncrypted.reveal();
+    bool gt = ((BoolField) gtEncrypted.reveal()).getPayload();
     ASSERT_TRUE(gt);
 
 }
@@ -79,12 +79,11 @@ TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 
     SecureIntField result = (aliceEncryptedValue + bobEncryptedValue) * multiplierValue;
 
-    Field *revealed = result.reveal(emp::PUBLIC);
+    PlainField revealed = result.reveal(emp::PUBLIC);
 
-    ASSERT_EQ(revealed->getValue<int32_t>(), 19*2);
+    ASSERT_EQ(revealed.getValue<int32_t>(), 19*2);
 
 
-    delete revealed;
 
 }
 
@@ -105,11 +104,10 @@ TEST_F(SecureValueExpressionTest, test_millionaires) {
 
 
 
-    Field result = aliceEncryptedValue > bobEncryptedValue;
-    Field *revealed = result.reveal(emp::PUBLIC);
+    SecureBoolField result = aliceEncryptedValue > bobEncryptedValue;
+    PlainField revealed = result.reveal(emp::PUBLIC);
 
-    ASSERT_EQ(revealed->getValue<bool>(), false);
-    delete revealed;
+    ASSERT_EQ(revealed.getValue<bool>(), false);
 
 
 }
@@ -137,8 +135,8 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
     StringField lhsField(lhsStr);
     StringField rhsField(rhsStr);
 
-    SecureStringField *lhsPrivateField = static_cast<SecureStringField *>(Field::secretShare(&lhsField, FieldType::STRING, 8, FLAGS_party, emp::ALICE));
-    SecureStringField *rhsPrivateField = static_cast<SecureStringField *>(Field::secretShare(&rhsField, FieldType::STRING, 8, FLAGS_party, emp::BOB));
+    SecureStringField lhsPrivateField = static_cast<SecureStringField>(PlainField::secretShare(&lhsField, FieldType::STRING, 8, FLAGS_party, emp::ALICE));
+    SecureStringField rhsPrivateField = static_cast<SecureStringField>(PlainField::secretShare(&rhsField, FieldType::STRING, 8, FLAGS_party, emp::BOB));
 
 
 
@@ -158,17 +156,10 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
 
 
     // compare manual emp int to Field one
-    Field *revealed = (*lhsPrivateField == *rhsPrivateField).reveal();
-    privateEq = revealed->getValue<bool>();
-    delete revealed;
+    privateEq = ((BoolField)(lhsPrivateField == rhsPrivateField).reveal()).getPayload();
+    privateGeq = ((BoolField)(lhsPrivateField >= rhsPrivateField).reveal()).getPayload();
+    privateGt = ((BoolField)(lhsPrivateField > rhsPrivateField).reveal()).getPayload();
 
-    revealed = (*lhsPrivateField >= *rhsPrivateField).reveal();
-    privateGeq = revealed->getValue<bool>();
-    delete revealed;
-
-    revealed = (*lhsPrivateField > *rhsPrivateField).reveal();
-    privateGt = revealed->getValue<bool>();
-    delete revealed;
 
     ASSERT_EQ(publicEq, privateEq);
     ASSERT_EQ(publicGeq, privateGeq);

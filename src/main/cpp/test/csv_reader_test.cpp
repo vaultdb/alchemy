@@ -41,7 +41,7 @@ TEST_F(CsvReaderTest, lineitemTest) {
     std::string query = "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::unique_ptr<QueryTable<BoolField> > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
     QuerySchema csvSchema = expected->getSchema();
     // substitute longs with dates in the appropriate cols, fields 10, 11, 12
     csvSchema.putField(convertDateField(csvSchema.getField(10)));
@@ -49,7 +49,7 @@ TEST_F(CsvReaderTest, lineitemTest) {
     csvSchema.putField(convertDateField(csvSchema.getField(12)));
 
 
-    std::unique_ptr<QueryTable<BoolField> > observed = CsvReader::readCsv(inputFile, csvSchema);
+    std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, csvSchema);
     observed->setSchema(expected->getSchema()); // switch back from date schema
 
     ASSERT_EQ(*expected, *observed);
@@ -66,7 +66,7 @@ TEST_F(CsvReaderTest, quotedStringTest) {
     // grab customer table for schema:
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
     PsqlDataProvider dataProvider;
-    std::unique_ptr<QueryTable<BoolField> > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
     QueryTuple parsedTuple = CsvReader::parseTuple(testStr, expected->getSchema());
     QueryTuple expectedTuple = expected->getTuple(15);
@@ -89,9 +89,9 @@ TEST_F(CsvReaderTest, customerTest) {
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::unique_ptr<QueryTable<BoolField> > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
-    std::unique_ptr<QueryTable<BoolField> > observed = CsvReader::readCsv(inputFile, expected->getSchema());
+    std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, expected->getSchema());
 
     ASSERT_EQ(*expected, *observed);
 
@@ -108,13 +108,13 @@ TEST_F(CsvReaderTest, ordersTest) {
     std::string query = "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::unique_ptr<QueryTable<BoolField> > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
     QuerySchema csvSchema = expected->getSchema();
     // o_orderdate(4) set schema to date
     csvSchema.putField(convertDateField(csvSchema.getField(4)));
 
-    std::unique_ptr<QueryTable<BoolField> > observed = CsvReader::readCsv(inputFile, csvSchema);
+    std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, csvSchema);
     observed->setSchema( expected->getSchema());
 
     // RHS || observed is incorrect here.
