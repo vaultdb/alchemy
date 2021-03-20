@@ -21,7 +21,7 @@ std::string QueryTableTestQueries::getInputQuery()  {
 
 }
 
-std::unique_ptr<QueryTable> QueryTableTestQueries::getExpectedSecureOutput()  {
+std::unique_ptr<PlainTable> QueryTableTestQueries::getExpectedSecureOutput()  {
 
     return DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", getInputQuery(), false);
 
@@ -46,7 +46,7 @@ std::string QueryTableTestQueries::getInputQueryDummyTag() {
 
 }
 
-std::unique_ptr<QueryTable> QueryTableTestQueries::getExpectedSecureOutputDummyTag() {
+std::unique_ptr<PlainTable> QueryTableTestQueries::getExpectedSecureOutputDummyTag() {
 
         return DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", getInputQueryDummyTag(), true);
 
