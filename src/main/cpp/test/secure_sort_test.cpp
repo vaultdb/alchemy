@@ -19,40 +19,40 @@ using namespace vaultdb;
 class SecureSortTest :  public EmpBaseTest {
 protected:
 
-    static bool correctOrder(const QueryTuple & lhs, const QueryTuple & rhs, const SortDefinition & sortDefinition);
-    static bool isSorted(const std::shared_ptr<QueryTable> & table, const SortDefinition & sortDefinition);
+    static bool correctOrder(const PlainTuple & lhs, const PlainTuple & rhs, const SortDefinition & sortDefinition);
+    static bool isSorted(const std::shared_ptr<PlainTable> & table, const SortDefinition & sortDefinition);
 
 
 };
 
 // is lhs  <= rhs
 // fails if either tuple is encrypted
-bool SecureSortTest::correctOrder(const QueryTuple &lhs, const QueryTuple &rhs,  const SortDefinition & sortDefinition) {
+bool SecureSortTest::correctOrder(const PlainTuple &lhs, const PlainTuple &rhs,  const SortDefinition & sortDefinition) {
 
     assert(lhs.getFieldCount() == rhs.getFieldCount());
 
     for(uint32_t i = 0; i < lhs.getFieldCount(); ++i) {
-        const Field *lhsVal = lhs.getField(i);
-        const Field *rhsVal = rhs.getField(i);
+        const PlainField *lhsVal = lhs.getField(i);
+        const PlainField *rhsVal = rhs.getField(i);
 
-        if (FieldUtilities::equal(lhsVal, rhsVal))
+        if ((*lhsVal == *rhsVal).getBool())
             continue;
 
         if(sortDefinition[i].second == SortDirection::ASCENDING) {
-            return !FieldUtilities::gt(lhsVal, rhsVal);
+            return (*lhsVal <= *rhsVal).getBool(); //!FieldUtilities::gt(lhsVal, rhsVal);
         }
         else if(sortDefinition[i].second == SortDirection::DESCENDING) {
-             return FieldUtilities::gt(lhsVal, rhsVal);
+             return (*lhsVal >  *rhsVal).getBool();
         }
     }
     return true;
 }
 
-bool SecureSortTest::isSorted(const std::shared_ptr<QueryTable> & table, const SortDefinition & sortDefinition) {
+bool SecureSortTest::isSorted(const std::shared_ptr<PlainTable> & table, const SortDefinition & sortDefinition) {
     for(uint32_t i = 1; i < table->getTupleCount(); ++i) {
 
-        QueryTuple previousTuple = table->getTuple(i-1);
-        QueryTuple thisTuple = table->getTuple(i);
+        PlainTuple previousTuple = table->getTuple(i-1);
+        PlainTuple thisTuple = table->getTuple(i);
 
         if(!correctOrder(previousTuple, thisTuple, sortDefinition))  {
             return false;
@@ -72,7 +72,7 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
     PsqlDataProvider dataProvider;
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
+    std::unique_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          sql, false);
 
     SortDefinition sortDefinition;
@@ -83,9 +83,9 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
     Sort<SecureBoolField> sort(&input, sortDefinition);
-    std::shared_ptr<QueryTable> result = sort.run();
+    std::shared_ptr<SecureTable> result = sort.run();
 
-    std::shared_ptr<QueryTable> observed = result->reveal();
+    std::shared_ptr<PlainTable> observed = result->reveal();
 
 
     bool tableSorted = isSorted(observed, sortDefinition);
@@ -115,8 +115,8 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
     project.addColumnMapping(1, 0);
     project.addColumnMapping(3, 1);
 
-    std::shared_ptr<QueryTable> result = project.run();
-    std::shared_ptr<QueryTable> observed = result->reveal();
+    std::shared_ptr<SecureTable> result = project.run();
+    std::shared_ptr<PlainTable> observed = result->reveal();
 
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
@@ -139,8 +139,8 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
     Project project(&sort);
     project.addColumnMapping(1, 0);
 
-    std::shared_ptr<QueryTable> result = project.run();
-    std::shared_ptr<QueryTable> observed  = result->reveal();
+    std::shared_ptr<SecureTable> result = project.run();
+    std::shared_ptr<PlainTable> observed  = result->reveal();
 
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
@@ -164,8 +164,8 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
     Project project(&sort);
     project.addColumnMapping(0, 0);
 
-    std::shared_ptr<QueryTable> result = project.run();
-    std::shared_ptr<QueryTable> observed  = result->reveal();
+    std::shared_ptr<SecureTable> result = project.run();
+    std::shared_ptr<PlainTable> observed  = result->reveal();
 
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
@@ -198,8 +198,8 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     project.addColumnMapping(2, 0);
     project.addColumnMapping(0, 1);
 
-    std::shared_ptr<QueryTable> result = project.run();
-    std::shared_ptr<QueryTable> observed  = result->reveal();
+    std::shared_ptr<SecureTable> result = project.run();
+    std::shared_ptr<PlainTable> observed  = result->reveal();
 
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 
@@ -227,8 +227,8 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     project.addColumnMapping(2, 0);
     project.addColumnMapping(1, 1);
 
-    std::shared_ptr<QueryTable> result = project.run();
-    std::shared_ptr<QueryTable> observed  = result->reveal();
+    std::shared_ptr<SecureTable> result = project.run();
+    std::shared_ptr<PlainTable> observed  = result->reveal();
 
     ASSERT_TRUE(isSorted(observed, sortDefinition));
 

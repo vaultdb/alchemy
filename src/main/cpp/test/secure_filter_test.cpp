@@ -32,7 +32,7 @@ public:
     }
 
     // filtering for l_linenumber = 1
-    SecureBoolField predicateCall(const QueryTuple & aTuple) const override {
+    SecureBoolField predicateCall(const SecureTuple & aTuple) const override {
         const SecureIntField *f = static_cast<const SecureIntField *>(aTuple.getField(1));
         return (*f == encryptedLineNumber);
     }
@@ -51,13 +51,13 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::string dbName =  FLAGS_party == emp::ALICE ? aliceDb : bobDb;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
-    std::unique_ptr<QueryTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
+    std::unique_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
 
-    std::shared_ptr<QueryTable> output = input.run(); // a smoke test for the operator infrastructure
+    std::shared_ptr<SecureTable> output = input.run(); // a smoke test for the operator infrastructure
 
-    std::unique_ptr<QueryTable> revealed = output->reveal(emp::PUBLIC);
+    std::unique_ptr<PlainTable> revealed = output->reveal(emp::PUBLIC);
 
 
     ASSERT_EQ(*expected, *revealed);
@@ -77,7 +77,7 @@ TEST_F(SecureFilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
-    std::unique_ptr<QueryTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, expectedResultSql, true);
+    std::unique_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, expectedResultSql, true);
 
 
    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
@@ -86,8 +86,8 @@ TEST_F(SecureFilterTest, test_filter) {
 
     Filter<SecureBoolField> filter(&input, aPredicate);  // deletion handled by shared_ptr
 
-    std::shared_ptr<QueryTable> result = filter.run();
-    std::unique_ptr<QueryTable> revealed = result->reveal(emp::PUBLIC);
+    std::shared_ptr<SecureTable> result = filter.run();
+    std::unique_ptr<PlainTable> revealed = result->reveal(emp::PUBLIC);
 
     ASSERT_EQ(*expected,  *revealed);
 
