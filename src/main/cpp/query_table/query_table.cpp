@@ -272,7 +272,6 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
         netio->flush();
     }
 
-    std::cout << "Alice encrypting " << aliceSize << " tuples, bob encrypting " << bobSize << " tuples. " << std::endl;
 
     std::shared_ptr<QueryTable<SecureBoolField> > dstTable(new QueryTable<SecureBoolField>(aliceSize + bobSize, colCount));
 
@@ -280,7 +279,6 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
     dstTable->setSortOrder(getSortOrder());
 
 
-    std::cout << "Encrypting Alice" << std::endl;
     // read alice in order
     for (size_t i = 0; i < aliceSize; ++i) {
         const QueryTuple<B>  *srcTuple = (party == ALICE) ? &(tuples_[i]) : nullptr;
@@ -289,7 +287,6 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
 
     }
 
-    std::cout << "Encrypting Bob" << std::endl;
 
     int writeIdx = aliceSize;
     // write bob last --> first to make bitonic sequence
