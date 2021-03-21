@@ -1,27 +1,26 @@
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
-
 #include "group_by_aggregate.h"
-#include <util/field_utilities.h>
+
 
 using namespace vaultdb;
 
 template<typename B>
-std::shared_ptr<QueryTable> GroupByAggregate<B>::runSelf() {
-    std::shared_ptr<QueryTable> input = children[0]->getOutput();
-    std::vector<GroupByAggregator<B> *> aggregators;
-    QueryTuple *current, *predecessor;
+std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
+    std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
+    std::vector<GroupByAggregateImpl<B> *> aggregators;
+    QueryTuple<B> *current, *predecessor;
     B realBin;
-    FieldType boolType = input->isEncrypted() ? FieldType::SECURE_BOOL : FieldType::BOOL;
-    QueryTuple outputTuple;
+
+    QueryTuple<B> outputTuple;
     QuerySchema inputSchema = input->getSchema();
 
     for(ScalarAggregateDefinition agg : aggregateDefinitions) {
         // for most aggs the output type is the same as the input type
         // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
         FieldType aggValueType = (agg.ordinal >= 0) ?
-                    inputSchema.getField(agg.ordinal).getType() :
-                                     (input->isEncrypted() ? FieldType::SECURE_LONG : FieldType::LONG);
+                                     inputSchema.getField(agg.ordinal).getType() :
+                                     (input->isEncrypted() ? FieldType::SECURE_LONG :  FieldType::LONG);
         aggregators.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
     }
 
@@ -36,107 +35,92 @@ std::shared_ptr<QueryTable> GroupByAggregate<B>::runSelf() {
     SortDefinition outputSort = std::vector<ColumnSort>(inputSort.begin(), inputSort.begin() + groupByOrdinals.size());
 
 
-    output = std::shared_ptr<QueryTable>(new QueryTable(input->getTupleCount(), outputSchema, outputSort));
+    Operator<B>::output = std::shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), outputSchema, outputSort));
 
-    // TODO: should this set dummy tag to input->getTuple(0).getDummyTag?
-    QueryTuple *tuplePtr = output->getTuplePtr(0);
-    B dummyTag(false);
-    tuplePtr->setDummyTag(dummyTag);
+    QueryTuple<B> *tuplePtr = Operator<B>::output->getTuplePtr(0);
+    tuplePtr->setDummyTag(B(false));
 
 
     predecessor = input->getTuplePtr(0);;
-    B forceInit = static_cast<B>(FieldFactory::getZero(boolType));
 
-    for(GroupByAggregator<B> *aggregator : aggregators) {
-        aggregator->initialize(*predecessor, forceInit);
+    for(GroupByAggregateImpl<B> *aggregator : aggregators) {
+        aggregator->initialize(*predecessor, B(false));
     }
 
-    B previousDummyTag = static_cast<const B &>(*predecessor->getDummyTag());
-    realBin = !previousDummyTag; // does this group-by bin contain at least one real (non-dummy) tuple?
+    realBin = !(*predecessor->getDummyTag()); // does this group-by bin contain at least one real (non-dummy) tuple?
+
+    std::cout << "Processed tuple: " << *predecessor << std::endl;
 
 
     for(uint32_t i = 1; i < input->getTupleCount(); ++i) {
         current = input->getTuplePtr(i);
-        previousDummyTag = static_cast<const B &>(*predecessor->getDummyTag());
-        realBin = realBin | !previousDummyTag;
+        std::cout << "Processing tuple: " << current->toString(true) << std::endl;
+
+        realBin = realBin | !(*predecessor->getDummyTag());
         B isGroupByMatch = groupByMatch(*predecessor, *current);
         outputTuple = generateOutputTuple(*predecessor, !isGroupByMatch, realBin, aggregators);
+        std::cout << "New result: " << outputTuple.toString(true) << std::endl;
 
-        for(GroupByAggregator<B> *aggregator : aggregators) {
+        for(GroupByAggregateImpl<B> *aggregator : aggregators) {
             aggregator->initialize(*current, isGroupByMatch);
             aggregator->accumulate(*current, !isGroupByMatch);
         }
 
-        output->putTuple(i-1, outputTuple);
-
+        Operator<B>::output->putTuple(i-1, outputTuple);
         predecessor = current;
         // reset the flag that denotes if we have one non-dummy tuple in the bin
-        GroupByAggregator<B> * agg = aggregators[0];
-        agg->updateGroupByBinBoundary(!isGroupByMatch, realBin);
+        realBin = (B) Field<B>::If(!isGroupByMatch,B(false), realBin);
+
+        /* Call:         aggregators[0]->updateGroupByBinBoundary(!isGroupByMatch, realBin);
+
+         * updateGroupByBinBoundary(const Value &isNewBin, Value &nonDummyBinFlag) {
+    assert(isNewBin.getType() == TypeId::ENCRYPTED_BOOLEAN &&
+           nonDummyBinFlag.getType() == TypeId::ENCRYPTED_BOOLEAN);
+
+    // ! nonDummy bin b/c if it is a real bin, we want dummyTag = false
+    Bit updatedFlag = If(isNewBin.getEmpBit(), Bit(false, PUBLIC), nonDummyBinFlag.getEmpBit());
+    nonDummyBinFlag.setValue(updatedFlag);
+         */
     }
 
-    previousDummyTag = static_cast<const B &>(*predecessor->getDummyTag());
-    realBin = realBin | !previousDummyTag;
+    realBin = realBin | !predecessor->getDummyTag();
 
-    // getOne to make it write out the last entry
-    outputTuple = generateOutputTuple(*predecessor, FieldFactory::getOne(boolType), realBin, aggregators);
-    output->putTuple(input->getTupleCount() - 1, outputTuple);
+    // B(true) to make it write out the last entry
+    outputTuple = generateOutputTuple(*predecessor, B(true), realBin, aggregators);
+    Operator<B>::output->putTuple(input->getTupleCount() - 1, outputTuple);
 
     // output sorted on group-by cols
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(groupByOrdinals.size());
-    output->setSortOrder(sortDefinition);
+    Operator<B>::output->setSortOrder(sortDefinition);
 
-     for(size_t i = 0; i < aggregators.size(); ++i) {
+    for(size_t i = 0; i < aggregators.size(); ++i) {
         delete aggregators[i];
     }
 
-    return output;
+    return Operator<B>::output;
 
 }
 
 template<typename B>
-GroupByAggregator<B> *GroupByAggregate<B>::aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                                         const FieldType &fieldType) const {
+GroupByAggregateImpl<B> *GroupByAggregate<B>::aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
+                                                         const FieldType &aggregateValueType) const {
 
-    bool isEncrypted = TypeUtilities::isEncrypted(fieldType);
-    if (!isEncrypted) {
-        switch (aggregateType) {
+    switch (aggregateType) {
             case AggregateId::COUNT:
-               // GroupByCountImpl<LongField, BoolField> counter(ordinal, fieldType);
-                //GroupByAggregator<B> *out = static_cast<GroupByAggregator<B *>();
-                return new GroupByCountImpl<LongField, B>(ordinal, fieldType);
-        }
-    }
-
-/*            case AggregateId::SUM:
-                return new GroupBySumImpl(ordinal, fieldType);
+                return new GroupByCountImpl<B>(ordinal, aggregateValueType);
+            case AggregateId::SUM:
+                return new GroupBySumImpl<B>(ordinal, aggregateValueType);
             case AggregateId::AVG:
-                return new GroupByAvgImpl(ordinal, fieldType);
+                return new GroupByAvgImpl<B>(ordinal, aggregateValueType);
             case AggregateId::MIN:
-                return new GroupByMinImpl(ordinal, fieldType);
+                return new GroupByMinImpl<B>(ordinal, aggregateValueType);
             case AggregateId::MAX:
-                return new GroupByMaxImpl(ordinal, fieldType);
+                return new GroupByMaxImpl<B>(ordinal, aggregateValueType);
         };
     }
 
-    switch (aggregateType) {
-        case AggregateId::COUNT:
-            return new SecureGroupByCountImpl(ordinal, aggregateValueType);
-        case AggregateId::SUM:
-            return new SecureGroupBySumImpl(ordinal, aggregateValueType);
-        case AggregateId::AVG:
-            return new SecureGroupByAvgImpl(ordinal, aggregateValueType);
-        case AggregateId::MIN:
-            return new SecureGroupByMinImpl(ordinal, aggregateValueType);
-        case AggregateId::MAX:
-            return new SecureGroupByMaxImpl(ordinal, aggregateValueType);
-
-    };*/
-    return nullptr;
-}
-
 template<typename B>
-bool GroupByAggregate<B>::verifySortOrder(const std::shared_ptr<QueryTable> &table) const {
+bool GroupByAggregate<B>::verifySortOrder(const std::shared_ptr<QueryTable<B> > &table) const {
     SortDefinition sortedOn = table->getSortOrder();
     assert(sortedOn.size() >= groupByOrdinals.size());
 
@@ -152,17 +136,14 @@ bool GroupByAggregate<B>::verifySortOrder(const std::shared_ptr<QueryTable> &tab
 }
 
 template<typename B>
-B GroupByAggregate<B>::groupByMatch(const QueryTuple &lhs, const QueryTuple &rhs) const {
+B GroupByAggregate<B>::groupByMatch(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs) const {
 
-    Field *eq = FieldUtilities::equal(lhs.getField(groupByOrdinals[0]), rhs.getField(groupByOrdinals[0]));
-    B result = static_cast<B&>(*eq);
-    delete eq;
-
+    B result = *lhs.getField(groupByOrdinals[0]) ==  *rhs.getField(groupByOrdinals[0]);
     size_t cursor = 1;
+
     while(cursor < groupByOrdinals.size()) {
-        eq = FieldUtilities::equal(lhs.getField(groupByOrdinals[0]), rhs.getField(groupByOrdinals[0]));
-        result = result & static_cast<B&>(*eq);
-        delete eq;
+        result = result &
+                 (*lhs.getField(groupByOrdinals[cursor]) ==  *rhs.getField(groupByOrdinals[cursor]));
         ++cursor;
     }
 
@@ -170,7 +151,7 @@ B GroupByAggregate<B>::groupByMatch(const QueryTuple &lhs, const QueryTuple &rhs
 }
 
 template<typename B>
-QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & srcSchema, const vector<GroupByAggregator<B> *> & aggregators) const {
+QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & srcSchema, const vector<GroupByAggregateImpl<B> *> & aggregators) const {
     QuerySchema outputSchema(groupByOrdinals.size() + aggregateDefinitions.size());
     size_t i;
 
@@ -191,35 +172,36 @@ QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & srcSch
 }
 
 template<typename B>
-QueryTuple GroupByAggregate<B>::generateOutputTuple(const QueryTuple &lastTuple, const Field &lastEntryGroupByBin,
-                                                 const Field &nonDummyBin,
-                                                 const vector<GroupByAggregator<B> *> &aggregators) const {
+QueryTuple<B> GroupByAggregate<B>::generateOutputTuple(const QueryTuple<B> &lastTuple, const B &lastEntryGroupByBin,
+                                                 const B &realBin,
+                                                 const vector<GroupByAggregateImpl<B> *> &aggregators) const {
 
-    QueryTuple dstTuple(groupByOrdinals.size() + aggregators.size());
+    std::cout << "Is last entry in a group-by bin? " << lastEntryGroupByBin.toString() << ", is it part of a bin that's initialized? " << realBin.toString() << std::endl;
+
+    QueryTuple<B> dstTuple(groupByOrdinals.size() + aggregators.size());
     size_t i;
 
     // write group-by ordinals
     for(i = 0; i < groupByOrdinals.size(); ++i) {
-        const Field *srcField = lastTuple.getField(groupByOrdinals[i]);
+        const Field<B> *srcField = lastTuple.getField(groupByOrdinals[i]);
         dstTuple.putField(i, *srcField);
     }
 
     // write partial aggs
-    for(GroupByAggregator<B> *aggregator : aggregators) {
-        Field currentResult = aggregator->getResult();
+    for(GroupByAggregateImpl<B> *aggregator : aggregators) {
+        Field<B> currentResult = aggregator->getResult();
         dstTuple.putField(i, currentResult);
         ++i;
     }
 
 
-    B dummyTag = aggregators[0]->getDummyTag(lastEntryGroupByBin, nonDummyBin);
+    B dummyTag = (B) Field<B>::If(lastEntryGroupByBin, !realBin, B(true));
     dstTuple.setDummyTag(dummyTag);
 
 
     return dstTuple;
 
 }
-
 
 
 template class vaultdb::GroupByAggregate<BoolField>;

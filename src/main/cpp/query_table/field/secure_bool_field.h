@@ -65,6 +65,11 @@ namespace vaultdb {
         SecureBoolField  operator^(const SecureBoolField &right) const { return  SecureBoolField(getPayload() ^ (right.getPayload())); }
         SecureBoolField  operator|(const SecureBoolField &right) const { return  SecureBoolField(getPayload() | (right.getPayload())); }
 
+        SecureBoolField  operator&(const bool &right) const { return  SecureBoolField((getPayload()) & emp::Bit(right)); }
+        SecureBoolField  operator^(const bool &right) const { return  SecureBoolField((getPayload()) ^ emp::Bit(right)); }
+        SecureBoolField  operator|(const bool &right) const { return  SecureBoolField((getPayload()) | emp::Bit(right)); }
+
+
         void ser(int8_t * target) const;
 
 

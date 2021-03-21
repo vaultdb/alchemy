@@ -64,6 +64,10 @@ namespace vaultdb {
         BoolField  operator^(const BoolField &right) const { return  BoolField((getPayload()) ^ (right.getPayload())); }
         BoolField  operator|(const BoolField &right) const { return  BoolField((getPayload()) | (right.getPayload())); }
 
+        BoolField  operator&(const bool &right) const { return  BoolField((getPayload()) & right); }
+        BoolField  operator^(const bool &right) const { return  BoolField((getPayload()) ^ right); }
+        BoolField  operator|(const bool &right) const { return  BoolField((getPayload()) | right); }
+
         // serialize
         void ser(int8_t * target) const { *target = getPayload(); }
 

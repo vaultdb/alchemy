@@ -3,7 +3,9 @@
 
 using namespace  vaultdb;
 
-std::shared_ptr<QueryTable> CsvInput::runSelf() {
-    output = CsvReader::readCsv(inputFile, inputSchema);
-    return output;
+
+std::shared_ptr<QueryTable<BoolField> > CsvInput::runSelf() {
+    Operator<BoolField>::output = CsvReader::readCsv(inputFile, inputSchema);
+    return Operator<BoolField>::output;
 }
+

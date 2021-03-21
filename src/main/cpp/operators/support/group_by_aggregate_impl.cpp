@@ -3,247 +3,193 @@
 
 using namespace vaultdb;
 
+
+
 template<typename B>
-B PlainGroupByAggregateImpl::getDummyTag(const B &isLastEntry, const B &nonDummyBin) {
+GroupByCountImpl<B>::GroupByCountImpl(const int32_t &ordinal, const FieldType &aggType) : GroupByAggregateImpl<B>(ordinal, aggType)
+{
+    GroupByAggregateImpl<B>::aggregateType =
+            (TypeUtilities::isEncrypted(aggType)) ? FieldType::SECURE_LONG : FieldType::LONG;
 
-    assert(isLastEntry.getType() == TypeId::BOOLEAN && nonDummyBin.getType() == TypeId::BOOLEAN);
-    // if last entry, then return true nonDummyBin status, otherwise mark as dummy
-    // ! nonDummy bin b/c if it is a real bin, we want dummyTag = false
-    return isLastEntry.getBool() ? !nonDummyBin : Value(true);
-}
-
-void PlainGroupByAggregateImpl::updateGroupByBinBoundary(const Value &isNewBin, Value &nonDummyBinFlag) {
-    assert(isNewBin.getType() == nonDummyBinFlag.getType() && nonDummyBinFlag.getType() == TypeId::BOOLEAN);
-
-    bool updatedFlag = isNewBin.getBool() ? false : nonDummyBinFlag.getBool();
-    nonDummyBinFlag.setValue(updatedFlag);
-
-}
-
-void GroupByCountImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
-    assert(!tuple.isEncrypted());
-    assert(isDummy.getType() == TypeId::BOOLEAN);
-
-    if(!isDummy.getBool()) {
-        runningCount = tuple.getDummyTag().getBool() ? zero : one;
-
-    }
+    GroupByAggregateImpl<B>::zero = FieldFactory<B>::getZero(GroupByAggregateImpl<B>::aggregateType);
+    GroupByAggregateImpl<B>::one = FieldFactory<B>::getOne(GroupByAggregateImpl<B>::aggregateType);
+    runningCount = GroupByAggregateImpl<B>::zero;
 
 }
 
 
 
-void GroupByCountImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
+template<typename B>
+void GroupByCountImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
+    Field<B> resetValue = Field<B>::If(*tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, GroupByAggregateImpl<B>::one);
+    runningCount = Field<B>::If(isGroupByMatch, runningCount, resetValue);
 
-    assert(!tuple.isEncrypted());
-    assert(isDummy.getType() == TypeId::BOOLEAN);
-
-
-    if(!isDummy.getBool()) {
-        runningCount = runningCount + (tuple.getDummyTag().getBool() ? zero : one);
-    }
 }
 
-Value GroupByCountImpl::getResult() {
+
+
+template<typename B>
+void GroupByCountImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
+
+    B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag());
+    runningCount = runningCount + Field<B>::If(toUpdate, GroupByCountImpl<B>::one, GroupByCountImpl<B>::zero);
+
+}
+
+template<typename B>
+Field<B> GroupByCountImpl<B>::getResult() {
     return runningCount;
 }
 
 
 
 
-void GroupBySumImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
+template<typename B>
+void GroupBySumImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
 
-    assert(!tuple.isEncrypted());
-    assert(isDummy.getType() == TypeId::BOOLEAN);
+   Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
+   Field<B> resetValue = Field<B>::If(*tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, aggInput);
+   runningSum = Field<B>::If(isGroupByMatch, runningSum, resetValue);
 
-    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
-
-    // re-cast sum as INT64_T in keeping with postgres convention
-    if(aggInput.getType() == TypeId::INTEGER32) {
-        aggInput = Value(TypeId::INTEGER64, (int64_t) aggInput.getInt32());
-    }
-
-    if(!isDummy.getBool()) {
-        runningSum = tuple.getDummyTag().getBool() ? zero : aggInput;
-
-    }
 }
 
 
-void GroupBySumImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
-
-    if(!isDummy.getBool()) {
-        Value toAdd = tuple.getDummyTag().getBool() ? zero :  tuple.getField(aggregateOrdinal).getValue();
-
-        // re-cast sum as INT64_T in keeping with postgres convention
-        if(toAdd.getType() == TypeId::INTEGER32) {
-            toAdd = Value(TypeId::INTEGER64, (int64_t) toAdd.getInt32());
-        }
-
-        runningSum = runningSum + toAdd;
-    }
+template<typename B>
+void GroupBySumImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
+    Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
+    B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag());
+    runningSum = runningSum + Field<B>::If(toUpdate,aggInput, GroupByCountImpl<B>::zero);
 }
 
-Value GroupBySumImpl::getResult() {
+template<typename B>
+Field<B> GroupBySumImpl<B>::getResult() {
+    // extend this to a LONG to keep with PostgreSQL convention
+   if(runningSum.getType() == FieldType::INT || runningSum.getType() == FieldType::SECURE_INT)
+        return FieldFactory<B>::toLong(runningSum);
+
     return runningSum;
 }
 
 
-GroupByAvgImpl::GroupByAvgImpl(const int32_t &ordinal, const TypeId &aggType) : PlainGroupByAggregateImpl(ordinal, aggType)  {
+template<typename B>
+GroupByAvgImpl<B>::GroupByAvgImpl(const int32_t &ordinal, const FieldType &aggType) : GroupByAggregateImpl<B>(ordinal, aggType)  {
+    runningSum = GroupByAggregateImpl<B>::zero;
+    runningCount = GroupByAggregateImpl<B>::zero;
+}
+
+
+template<typename B>
+void GroupByAvgImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
+    Field<B> resetValue = Field<B>::If(*tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, GroupByAggregateImpl<B>::one);
+    runningCount = Field<B>::If(isGroupByMatch, runningCount, resetValue);
+
+
+    Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
+    resetValue = Field<B>::If(*tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, aggInput);
+    runningSum = Field<B>::If(isGroupByMatch, runningSum, resetValue);
+
+}
+
+template<typename B>
+void GroupByAvgImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
+
+    Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
+    B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag());
+    runningCount = runningCount + Field<B>::If(toUpdate, GroupByCountImpl<B>::one, GroupByCountImpl<B>::zero);
+    runningSum = runningSum +  Field<B>::If(toUpdate, aggInput, GroupByCountImpl<B>::zero);
+}
+
+template<typename B>
+Field<B> GroupByAvgImpl<B>::getResult() {
     // this always becomes a float for computing AVG, using the precedent in psql
-    aggregateType = types::TypeId::FLOAT32;
-    zero = TypeUtilities::getZero(aggregateType);
-    one = TypeUtilities::getOne(aggregateType);
-    runningSum = zero;
-    runningCount = zero;
+    Field<B> sumFloat = FieldFactory<B>::toFloat(runningSum);
+    Field<B> cntFloat = FieldFactory<B>::toFloat(runningCount);
+    return sumFloat / cntFloat;
 }
 
 
-void GroupByAvgImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
-    assert(!tuple.isEncrypted());
-    assert(isDummy.getType() == TypeId::BOOLEAN);
-
-    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
-
-    // re-cast avg as float in keeping with postgres convention
-    aggInput = Value::toFloat(aggInput);
-
-    if(!isDummy.getBool()) {
-        runningSum = tuple.getDummyTag().getBool() ? zero : aggInput;
-        runningCount = tuple.getDummyTag().getBool() ? zero : one;
-    }
-}
-
-void GroupByAvgImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
-
-
-    if(!isDummy.getBool()) {
-        Value aggInput = Value::toFloat(tuple.getField(aggregateOrdinal).getValue());
-        Value toAdd = tuple.getDummyTag().getBool() ? zero :  aggInput;
-        Value toIncr = tuple.getDummyTag().getBool() ? zero : one;
-
-        // re-cast sum as INT64_T in keeping with postgres convention
-        if(toAdd.getType() == TypeId::INTEGER32) {
-            toAdd = Value(TypeId::INTEGER64, (int64_t) toAdd.getInt32());
-        }
-
-        runningSum = runningSum + toAdd;
-        runningCount = runningCount + toIncr;
-    }
-
-}
-
-Value GroupByAvgImpl::getResult() {
-    return runningSum/runningCount;
-}
-
-void GroupByMinImpl::resetRunningMin()  {
-    switch(aggregateType) {
-        case TypeId::INTEGER32:
-            runningMin = Value(INT_MAX);
-            break;
-        case TypeId::DATE:
-        case TypeId::INTEGER64:
-            runningMin = Value(aggregateType, LONG_MAX);
-            break;
-        case TypeId::BOOLEAN:
-            runningMin = Value(true);
-            break;
-        case TypeId::NUMERIC:
-        case TypeId::FLOAT32:
-            runningMin = Value(FLT_MAX);
-            break;
-        case TypeId::VARCHAR:
-            runningMin = Value(string("ZZZZ"));
-            break;
-        default:
-            throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MIN()");
-    }
+template<typename B>
+GroupByMinImpl<B>::GroupByMinImpl(const int32_t &ordinal, const FieldType &aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {
+    runningMin = FieldFactory<B>::getMax(aggType);
 }
 
 
-GroupByMinImpl::GroupByMinImpl(const int32_t &ordinal, const TypeId &aggType) : PlainGroupByAggregateImpl(ordinal, aggType) {
-    resetRunningMin();
+template<typename B>
+void GroupByMinImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
 
+    Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
+    B sameMin = aggInput >= runningMin;
+    B noWrite = isGroupByMatch | *tuple.getDummyTag() | sameMin;
+
+    runningMin = Field<B>::If(noWrite, runningMin, aggInput);
 }
 
+template<typename B>
+void GroupByMinImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
 
-void GroupByMinImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
+    Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
+    B sameMin = aggInput >= runningMin;
+    B noWrite = isGroupByMatch | *tuple.getDummyTag() | sameMin;
 
-    if(!isDummy.getBool()) {
-        resetRunningMin();
-        if(!tuple.getDummyTag().getBool()) {
-            runningMin = tuple.getField(aggregateOrdinal).getValue();
-        }
-    }
-}
+    runningMin = Field<B>::If(noWrite, runningMin, aggInput);
 
-void GroupByMinImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
-
-    if(!isDummy.getBool() && !tuple.getDummyTag().getBool()) {
-        Value aggInput = tuple.getField(aggregateOrdinal).getValue();
-        runningMin = (aggInput < runningMin).getBool() ? aggInput : runningMin;
-    }
 }
 
 // if not initialized the value will get discarded later because the whole group-by bin will have had dummies
-Value GroupByMinImpl::getResult() {
+template<typename B>
+Field<B> GroupByMinImpl<B>::getResult() {
     return runningMin;
 }
 
 
 
-GroupByMaxImpl::GroupByMaxImpl(const int32_t &ordinal, const TypeId &aggType) : PlainGroupByAggregateImpl(ordinal, aggType) {
-    resetRunningMax();
+template<typename B>
+GroupByMaxImpl<B>::GroupByMaxImpl(const int32_t &ordinal, const FieldType &aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {
+    runningMax = FieldFactory<B>::getMin(aggType);
 }
 
 
-void GroupByMaxImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
-    if(!isDummy.getBool()) {
-        resetRunningMax();
-        if(!tuple.getDummyTag().getBool()) {
-            runningMax = tuple.getField(aggregateOrdinal).getValue();
-        }
-    }
-}
+template<typename B>
+void GroupByMaxImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
+    Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
+    B sameMax = aggInput <= runningMax;
+    B noWrite = isGroupByMatch | *tuple.getDummyTag() | sameMax;
 
-void GroupByMaxImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
+    runningMax = Field<B>::If(noWrite, runningMax, aggInput);
 
-
-    if(!isDummy.getBool() && !tuple.getDummyTag().getBool()) {
-        Value aggInput = tuple.getField(aggregateOrdinal).getValue();
-        runningMax = (aggInput > runningMax).getBool() ? aggInput : runningMax;
-    }
 
 }
 
-Value GroupByMaxImpl::getResult() {
+template<typename B>
+void GroupByMaxImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
+    Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
+    B sameMax = aggInput <= runningMax;
+    B noWrite = isGroupByMatch | *tuple.getDummyTag() | sameMax;
+
+    runningMax = Field<B>::If(noWrite, runningMax, aggInput);
+}
+
+template<typename B>
+Field<B> GroupByMaxImpl<B>::getResult() {
 
     return runningMax;
 }
 
-void GroupByMaxImpl::resetRunningMax() {
+template class vaultdb::GroupByAggregateImpl<BoolField>;
+template class vaultdb::GroupByAggregateImpl<SecureBoolField>;
 
-    switch(aggregateType) {
-        case TypeId::INTEGER32:
-            runningMax = Value(INT_MIN);
-            break;
-        case TypeId::DATE:
-        case TypeId::INTEGER64:
-            runningMax = Value(aggregateType, LONG_MIN);
-            break;
-        case TypeId::BOOLEAN:
-            runningMax = Value(false);
-            break;
-        case TypeId::NUMERIC:
-        case TypeId::FLOAT32:
-            runningMax = Value(FLT_MIN);
-            break;
-        case TypeId::VARCHAR:
-            runningMax = Value(string("a"));
-            break;
-        default:
-            throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MAX()");
-    }
-}
+template class vaultdb::GroupByCountImpl<BoolField>;
+template class vaultdb::GroupByCountImpl<SecureBoolField>;
+
+template class vaultdb::GroupBySumImpl<BoolField>;
+template class vaultdb::GroupBySumImpl<SecureBoolField>;
+
+template class vaultdb::GroupByMinImpl<BoolField>;
+template class vaultdb::GroupByMinImpl<SecureBoolField>;
+
+template class vaultdb::GroupByMaxImpl<BoolField>;
+template class vaultdb::GroupByMaxImpl<SecureBoolField>;
+
+template class vaultdb::GroupByAvgImpl<BoolField>;
+template class vaultdb::GroupByAvgImpl<SecureBoolField>;
 

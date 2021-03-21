@@ -141,6 +141,16 @@ FloatField FieldFactory<BoolField>::toFloat(const PlainField &src) {
 
 }
 
+LongField FieldFactory<BoolField>::toLong(const PlainField & field) {
+    if(field.getType() == FieldType::INT) {
+        int32_t payload = ((IntField) field).getPayload();
+        return LongField(payload);
+    }
+    throw std::invalid_argument("toLong not supported for " + TypeUtilities::getTypeString(field.getType()));
+
+}
+
+
 PlainField FieldFactory<BoolField>::getMin(const FieldType & type) {
     switch(type) {
         case FieldType::BOOL:
@@ -173,6 +183,7 @@ PlainField FieldFactory<BoolField>::getMax(const FieldType & type) {
 
 
 }
+
 
 
 // ************  Start SecureBoolField *************/
@@ -251,6 +262,16 @@ SecureField FieldFactory<SecureBoolField>::toFloat(const SecureField &src) {
 
 
     }
+}
+
+SecureLongField FieldFactory<SecureBoolField>::toLong(const SecureField & field) {
+    if(field.getType() == FieldType::SECURE_INT) {
+        emp::Integer payload = ((SecureIntField) field).getPayload();
+        payload.resize(64);
+        return SecureLongField(payload);
+    }
+    throw std::invalid_argument("toLong not supported for " + TypeUtilities::getTypeString(field.getType()));
+
 }
 
 

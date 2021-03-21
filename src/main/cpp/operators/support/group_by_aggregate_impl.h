@@ -18,18 +18,12 @@ namespace vaultdb {
                 zero(FieldFactory<B>::getZero(aggregateType)), one(FieldFactory<B>::getOne(aggregateType)){};
 
         virtual ~GroupByAggregateImpl() = default;
-        virtual void initialize(const QueryTuple<B> & tuple, const Field<B> & isDummy) = 0; // run this when we start a new group-by bin
-        virtual void accumulate(const QueryTuple<B> & tuple, const Field<B> & isDummy) = 0;
+        virtual void initialize(const QueryTuple<B> & tuple, const B &isGroupByMatch) = 0; // run this when we start a new group-by bin
+        virtual void accumulate(const QueryTuple<B> & tuple, const B &isGroupByMatch) = 0;
         virtual Field<B> getResult() = 0;
         FieldType getType() { return aggregateType; }
 
-        // specialized in plain or secure version of aggregator
-         B getDummyTag(const B & isLastEntry, const B & nonDummyBin);
-        void updateGroupByBinBoundary(const B & isNewBin, B & nonDummyBinFlag);
     protected:
-        void resetType(const FieldType & fieldType) {
-
-        }
 
         // signed int because -1 denotes *, as in COUNT(*)
         int32_t aggregateOrdinal;
@@ -40,24 +34,12 @@ namespace vaultdb {
     };
 
 
-   /* template<typename B>
-    class PlainGroupByAggregateImpl : public GroupByAggregateImpl {
-    public:
-        explicit PlainGroupByAggregateImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl(ordinal, aggType) {};
-        virtual ~PlainGroupByAggregateImpl() = default;
-        Field<B> getDummyTag(const Field<B> & isLastEntry, const Field<B> & nonDummyBin) override;
-        void updateGroupByBinBoundary(const Field<B> & isNewBin, Field<B> & nonDummyBinFlag) override;
-
-
-    };*/
-
    template<typename B>
    class GroupByCountImpl : public  GroupByAggregateImpl<B> {
     public:
-        explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl<B>(ordinal, aggType),
-                runningCount(FieldType::INTEGER64, 0L) {};
-        void initialize(const QueryTuple<B> & tuple, const Field<B> & isDummy) override;
-        void accumulate(const QueryTuple<B> & tuple, const Field<B> & isDummy) override;
+        explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType);
+        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         Field<B> getResult() override;
         ~GroupByCountImpl() = default;
 
@@ -66,20 +48,13 @@ namespace vaultdb {
 
     };
 
+
     template<typename B>
     class GroupBySumImpl : public  GroupByAggregateImpl<B> {
     public:
-        explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {
-            if(aggType == FieldType::INT) {
-                // TODO: move this to get result
-                GroupByAggregateImpl<B>::aggregateType = FieldType::LONG; // accommodate psql handling of sum for validation
-                GroupByAggregateImpl<B>::zero = FieldFactory<B>::getZero(GroupByAggregateImpl<B>::aggregateType);
-                GroupByAggregateImpl<B>::one = FieldFactory<B>::getOne(GroupByAggregateImpl<B>::aggregateType);
-
-            }
-        };
-        void initialize(const QueryTuple<B> & tuple, const Field<B> & isDummy) override;
-        void accumulate(const QueryTuple<B> & tuple, const Field<B> & isDummy) override;
+        explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl<B>(ordinal, aggType) { };
+        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         Field<B> getResult() override;
         ~GroupBySumImpl() = default;
 
@@ -92,8 +67,8 @@ namespace vaultdb {
     class GroupByAvgImpl : public  GroupByAggregateImpl<B> {
     public:
         GroupByAvgImpl(const int32_t & ordinal, const FieldType & aggType);
-        void initialize(const QueryTuple<B> & tuple, const Field<B> & isDummy) override;
-        void accumulate(const QueryTuple<B> & tuple, const Field<B> & isDummy) override;
+        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         Field<B> getResult() override;
         ~GroupByAvgImpl() = default;
 
@@ -107,8 +82,8 @@ namespace vaultdb {
     class GroupByMinImpl : public  GroupByAggregateImpl<B> {
     public:
         explicit GroupByMinImpl(const int32_t & ordinal, const FieldType & aggType);
-        void initialize(const QueryTuple<B> & tuple, const Field<B> & isDummy) override;
-        void accumulate(const QueryTuple<B> & tuple, const Field<B> & isDummy) override;
+        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         Field<B> getResult() override;
         ~GroupByMinImpl() = default;
 
@@ -122,8 +97,8 @@ namespace vaultdb {
     class GroupByMaxImpl : public  GroupByAggregateImpl<B> {
     public:
         GroupByMaxImpl(const int32_t & ordinal, const FieldType & aggType);;
-        void initialize(const QueryTuple<B> & tuple, const Field<B> & isDummy) override;
-        void accumulate(const QueryTuple<B> & tuple, const Field<B> & isDummy) override;
+        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         Field<B> getResult() override;
         ~GroupByMaxImpl() = default;
 

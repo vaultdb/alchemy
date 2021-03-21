@@ -68,6 +68,7 @@ namespace vaultdb {
         }
 
         std::string getStringValue() const;
+        std::byte *getData() const { return data_; }
 
         void setStringValue(const std::string & src);
 

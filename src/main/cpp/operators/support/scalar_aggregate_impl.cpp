@@ -6,15 +6,8 @@ template<typename B>
 ScalarCountImpl<B>::ScalarCountImpl(const uint32_t &ordinal, const FieldType &aggType) : ScalarAggregateImpl<B>(ordinal, aggType) {
     // initialize as long for count regardless of input ordinal
 
-    // aggregateType(aggType),
-    //                                                                                       zero(FieldFactory<B>::getZero(aggregateType)),
-    //                                                                                       one(FieldFactory<B>::getOne(aggregateType))
-    if(TypeUtilities::isEncrypted(aggType)) {
-        ScalarAggregateImpl<B>::aggregateType = FieldType::SECURE_LONG;
-    }
-    else {
-        ScalarAggregateImpl<B>::aggregateType = FieldType::LONG;
-    }
+    ScalarAggregateImpl<B>::aggregateType =
+            (TypeUtilities::isEncrypted(aggType)) ? FieldType::SECURE_LONG : FieldType::LONG;
 
     ScalarAggregateImpl<B>::zero = FieldFactory<B>::getZero(ScalarAggregateImpl<B>::aggregateType);
     ScalarAggregateImpl<B>::one = FieldFactory<B>::getOne(ScalarAggregateImpl<B>::aggregateType);
