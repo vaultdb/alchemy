@@ -72,7 +72,6 @@ TEST_F(CsvReaderTest, quotedStringTest) {
     QueryTuple expectedTuple = expected->getTuple(15);
 
 
-    std::cout <<"Testing on schema: " << expected->getSchema() << std::endl;
     // expected:
     // 16 | Customer#000000016 | cYiaeMLZSMAOQ2 d0W,                    |          10 | 20-781-609-3107 |   4681.03 | FURNITURE    | kly silent courts. thinly regular theodolites sleep fluffily after
     // both appear to be truncating last string

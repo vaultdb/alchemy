@@ -49,17 +49,13 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
     realBin = !(*predecessor->getDummyTag()); // does this group-by bin contain at least one real (non-dummy) tuple?
 
-    std::cout << "Processed tuple: " << *predecessor << std::endl;
-
 
     for(uint32_t i = 1; i < input->getTupleCount(); ++i) {
         current = input->getTuplePtr(i);
-        std::cout << "Processing tuple: " << current->toString(true) << std::endl;
 
         realBin = realBin | !(*predecessor->getDummyTag());
         B isGroupByMatch = groupByMatch(*predecessor, *current);
         outputTuple = generateOutputTuple(*predecessor, !isGroupByMatch, realBin, aggregators);
-        std::cout << "New result: " << outputTuple.toString(true) << std::endl;
 
         for(GroupByAggregateImpl<B> *aggregator : aggregators) {
             aggregator->initialize(*current, isGroupByMatch);
@@ -71,16 +67,6 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
         // reset the flag that denotes if we have one non-dummy tuple in the bin
         realBin = (B) Field<B>::If(!isGroupByMatch,B(false), realBin);
 
-        /* Call:         aggregators[0]->updateGroupByBinBoundary(!isGroupByMatch, realBin);
-
-         * updateGroupByBinBoundary(const Value &isNewBin, Value &nonDummyBinFlag) {
-    assert(isNewBin.getType() == TypeId::ENCRYPTED_BOOLEAN &&
-           nonDummyBinFlag.getType() == TypeId::ENCRYPTED_BOOLEAN);
-
-    // ! nonDummy bin b/c if it is a real bin, we want dummyTag = false
-    Bit updatedFlag = If(isNewBin.getEmpBit(), Bit(false, PUBLIC), nonDummyBinFlag.getEmpBit());
-    nonDummyBinFlag.setValue(updatedFlag);
-         */
     }
 
     realBin = realBin | !predecessor->getDummyTag();
@@ -175,8 +161,6 @@ template<typename B>
 QueryTuple<B> GroupByAggregate<B>::generateOutputTuple(const QueryTuple<B> &lastTuple, const B &lastEntryGroupByBin,
                                                  const B &realBin,
                                                  const vector<GroupByAggregateImpl<B> *> &aggregators) const {
-
-    std::cout << "Is last entry in a group-by bin? " << lastEntryGroupByBin.toString() << ", is it part of a bin that's initialized? " << realBin.toString() << std::endl;
 
     QueryTuple<B> dstTuple(groupByOrdinals.size() + aggregators.size());
     size_t i;

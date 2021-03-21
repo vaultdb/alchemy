@@ -12,7 +12,7 @@ make -j5
 ./bin/basic_join_test
 ./bin/fkey_pkey_join_test
 ./bin/scalar_aggregate_test
-#./bin/group_by_aggregate_test
+./bin/group_by_aggregate_test
 #./bin/secret_share_generator_test 
 #./bin/serialization_test
 
