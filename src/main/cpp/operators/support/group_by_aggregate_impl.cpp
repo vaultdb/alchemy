@@ -42,6 +42,10 @@ Field<B> GroupByCountImpl<B>::getResult() {
 }
 
 
+template<typename B>
+GroupBySumImpl<B>::GroupBySumImpl(const int32_t &ordinal, const FieldType &aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {
+    runningSum = GroupByAggregateImpl<B>::zero;
+}
 
 
 template<typename B>
@@ -68,6 +72,14 @@ Field<B> GroupBySumImpl<B>::getResult() {
         return FieldFactory<B>::toLong(runningSum);
 
     return runningSum;
+}
+
+template<typename B>
+FieldType GroupBySumImpl<B>::getType() const {
+    if(runningSum.getType() == FieldType::INT) return FieldType::LONG;
+    if(runningSum.getType() == FieldType::SECURE_INT) return FieldType::SECURE_LONG;
+
+    return GroupByAggregateImpl<B>::aggregateType;
 }
 
 
@@ -105,6 +117,15 @@ Field<B> GroupByAvgImpl<B>::getResult() {
     Field<B> sumFloat = FieldFactory<B>::toFloat(runningSum);
     Field<B> cntFloat = FieldFactory<B>::toFloat(runningCount);
     return sumFloat / cntFloat;
+}
+
+// always returns a float
+template<typename B>
+FieldType GroupByAvgImpl<B>::getType() const {
+    if(TypeUtilities::isEncrypted(runningSum.getType())) {
+        return FieldType::SECURE_FLOAT;
+    }
+    return FieldType::FLOAT;
 }
 
 

@@ -21,7 +21,7 @@ namespace vaultdb {
         virtual void initialize(const QueryTuple<B> & tuple, const B &isGroupByMatch) = 0; // run this when we start a new group-by bin
         virtual void accumulate(const QueryTuple<B> & tuple, const B &isGroupByMatch) = 0;
         virtual Field<B> getResult() = 0;
-        FieldType getType() { return aggregateType; }
+        virtual FieldType getType() const { return aggregateType; }
 
     protected:
 
@@ -52,10 +52,11 @@ namespace vaultdb {
     template<typename B>
     class GroupBySumImpl : public  GroupByAggregateImpl<B> {
     public:
-        explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl<B>(ordinal, aggType) { };
+        explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & aggType);
         void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         Field<B> getResult() override;
+        FieldType getType() const override;
         ~GroupBySumImpl() = default;
 
     private:
@@ -70,6 +71,7 @@ namespace vaultdb {
         void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         Field<B> getResult() override;
+        FieldType getType() const override;
         ~GroupByAvgImpl() = default;
 
     private:

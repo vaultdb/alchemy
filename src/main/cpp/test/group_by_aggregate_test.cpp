@@ -86,7 +86,7 @@ TEST_F(GroupByAggregateTest, test_sum) {
 
     runTest(expectedOutputQuery, aggregators);
 }
-/*
+
 TEST_F(GroupByAggregateTest, test_sum_dummies) {
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
     std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber) sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
@@ -298,4 +298,4 @@ TEST_F(GroupByAggregateTest, tpch_q1) {
 
     ASSERT_EQ(*expected, *observed);
 
-}*/
+}
