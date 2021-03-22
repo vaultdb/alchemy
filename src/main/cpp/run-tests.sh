@@ -51,14 +51,13 @@ sleep 2
 ./bin/secure_scalar_aggregate_test --party=1 &
 ./bin/secure_scalar_aggregate_test --party=2
 
-#sleep 2
-#./bin/secure_group_by_aggregate_test --party=1 &
-#./bin/secure_group_by_aggregate_test --party=2
+sleep 2
+./bin/secure_group_by_aggregate_test --party=1 &
+./bin/secure_group_by_aggregate_test --party=2
 
-#sleep 2
-
-#./bin/emp_float_to_int --party=1 &
-#./bin/emp_float_to_int --party=2 
+sleep 2
+./bin/emp_float_to_int --party=1 &
+./bin/emp_float_to_int --party=2 
 
 #sleep 2
 
