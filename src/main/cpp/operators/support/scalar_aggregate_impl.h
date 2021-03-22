@@ -17,7 +17,7 @@ namespace vaultdb {
         virtual ~ScalarAggregateImpl() = default;
         virtual void accumulate(const QueryTuple<B> & tuple) = 0;
         virtual  Field<B> getResult() const = 0;
-        FieldType getType() { return aggregateType; }
+        virtual FieldType getType() const { return aggregateType; }
 
     protected:
 
@@ -49,7 +49,7 @@ namespace vaultdb {
         ~ScalarSumImpl() = default;
         void accumulate(const QueryTuple<B> & tuple) override;
          Field<B> getResult() const override;
-
+        FieldType getType() const override;
 
     private:
         Field<B> runningSum;
@@ -83,7 +83,6 @@ namespace vaultdb {
 
       private:
         Field<B> runningMax;
-        void resetRunningMax();
     };
 
 
@@ -95,6 +94,7 @@ namespace vaultdb {
         ~ScalarAvgImpl()  = default;
         void accumulate(const QueryTuple<B> & tuple) override;
          Field<B> getResult() const override;
+        FieldType getType() const override;
 
     private:
         Field<B> runningSum;

@@ -35,7 +35,20 @@ void ScalarSumImpl<B>::accumulate(const QueryTuple<B> &tuple) {
 
 template<typename B>
  Field<B> ScalarSumImpl<B>::getResult() const {
+    // extend this to a LONG to keep with PostgreSQL convention
+    if(runningSum.getType() == FieldType::INT || runningSum.getType() == FieldType::SECURE_INT)
+        return FieldFactory<B>::toLong(runningSum);
+
     return runningSum;
+}
+
+template<typename B>
+FieldType ScalarSumImpl<B>::getType() const {
+    if(runningSum.getType() == FieldType::INT) return FieldType::LONG;
+    if(runningSum.getType() == FieldType::SECURE_INT) return FieldType::SECURE_LONG;
+
+    return ScalarAggregateImpl<B>::aggregateType;
+
 }
 
 
@@ -100,6 +113,16 @@ template<typename B>
     return sumFloat / cntFloat;
 
 }
+
+template<typename B>
+FieldType ScalarAvgImpl<B>::getType() const {
+    if(TypeUtilities::isEncrypted(runningSum.getType())) {
+        return FieldType::SECURE_FLOAT;
+    }
+    return FieldType::FLOAT;
+
+}
+
 
 template class vaultdb::ScalarCountImpl<BoolField>;
 template class vaultdb::ScalarCountImpl<SecureBoolField>;
