@@ -29,7 +29,7 @@ namespace vaultdb {
 
     public:
         QueryTuple() {};
-        ~QueryTuple() { };
+        ~QueryTuple() = default;
 
         explicit QueryTuple(const size_t & aFieldCount);
         QueryTuple(const QueryTuple &src);

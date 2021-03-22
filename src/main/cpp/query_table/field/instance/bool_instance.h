@@ -1,7 +1,7 @@
 #ifndef _BOOL_INSTANCE_H
 #define _BOOL_INSTANCE_H
 
-#include <query_table/field/int_field.h>
+#include <query_table/field/bool_field.h>
 
 namespace vaultdb {
     class BoolInstance : public FieldInstance<BoolField> {

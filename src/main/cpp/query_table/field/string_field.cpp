@@ -20,6 +20,8 @@ StringField::StringField(const std::string &src) :  Field(FieldType::STRING, src
 
 StringField::StringField(const int8_t *src, const size_t & strLength) : Field( Field::deserialize(FieldType::STRING, strLength, src)) {
 
+    std::cout << "Deserialized " << getPayload();
+
 
 }
 
@@ -60,6 +62,7 @@ BoolField StringField::operator>=(const StringField &cmp) const {
 }
 
 BoolField StringField::operator==(const StringField &cmp) const {
+    //std::cout << "Equality check: " << getPayload() << "==" << cmp.getPayload() << std::endl;
     bool res = (getPayload()) == (cmp.getPayload());
     return  BoolField(res);
 }
@@ -71,6 +74,6 @@ StringField StringField::selectValue(const BoolField &choice, const StringField 
 
 void StringField::ser(int8_t *target) const {
     std::string p = getPayload();
-    memcpy(target, (int8_t *) p.c_str(), p.size());
+    memcpy(target, (int8_t *) p.c_str(), allocated_size_ - 1); // null termination chopped
 }
 

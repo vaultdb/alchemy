@@ -16,8 +16,11 @@
 using namespace vaultdb;
 
 
-template<typename B>
-std::ostream &vaultdb::operator<<(std::ostream &os, const Field<B> &aValue) {
+std::ostream &vaultdb::operator<<(std::ostream &os, const Field<BoolField> &aValue) {
+    return os << aValue.toString();
+}
+
+std::ostream &vaultdb::operator<<(std::ostream &os, const Field<SecureBoolField> &aValue) {
     return os << aValue.toString();
 }
 
@@ -178,9 +181,15 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &fieldDesc, const int8_t *sr
 template<typename B>
 Field<B> Field<B>::deserialize(const FieldType & type, const int & strLength, const int8_t *src) {
     Field f(type, strLength);
-    memcpy(f.data_, src, f.allocated_size_);
+    if(type == FieldType::STRING) {
+        memcpy(f.data_, src, f.allocated_size_-1);
+        *((char *) (f.data_ + f.allocated_size_ - 1)) = '\0'; // null-terminate the string
+        return f;
+    }
 
+    memcpy(f.data_, src, f.allocated_size_);
     return f;
+
 }
 
 template<typename B>
@@ -291,9 +300,9 @@ void Field<B>::initialize(const FieldType &type, const size_t &strLength) {
         }
         case FieldType::STRING: {
             allocated_size_ = sizeof(char) * (strLength + 1); // +1 for '\0' null-termination
-            managed_data_ = std::unique_ptr<std::byte[]>(new std::byte[strLength+1]);
+            managed_data_ = std::unique_ptr<std::byte[]>(new std::byte[allocated_size_]);
             std::memset(managed_data_.get(), 0, strLength);
-            *((char *) managed_data_.get() + strLength - 1) = '\0'; // null-terminated
+            *((char *) managed_data_.get() + strLength) = '\0'; // null-terminated, WAS strLength - 1
             break;
         }
 

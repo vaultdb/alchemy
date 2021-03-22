@@ -92,14 +92,27 @@ std::unique_ptr<PlainTable> QueryTable<B>::reveal(int empParty) const  {
 template <typename B>
 vector<int8_t> QueryTable<B>::serialize() const {
     // dst size is in bits
-    size_t tupleWidth =  schema_.size() / 8; // 496 / 8  = 62
+    size_t tupleWidth =  schema_.size() / 8;
     size_t dstSize = getTupleCount() * tupleWidth;
     vector<int8_t> dst;
     dst.resize(dstSize);
     int8_t *cursor = dst.data();
 
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
-        getTuplePtr(i)->serialize(cursor, schema_);
+        QueryTuple<B> src = tuples_[i];
+        std::cout << "Serializing: " << src.toString(true) << std::endl;
+
+        src.serialize(cursor, schema_);
+        std::cout << "Serialized:  " << src.toString(true) << std::endl;
+
+        // DEBUG code
+        QueryTuple cycle = QueryTuple<B>::deserialize(schema_, cursor);
+        bool res = (cycle == src);
+        std::cout << "Tested" << cycle.toString(true) << " rse: " << (cycle == src) << std::endl;
+        assert(cycle == src);
+        assert(cycle.toString(true) == src.toString(true));
+        // end DEBUG code
+
         cursor += tupleWidth;
     }
 
@@ -361,10 +374,11 @@ std::shared_ptr<QueryTable<B> > QueryTable<B>::deserialize(const QuerySchema &sc
     SortDefinition emptySortDefinition;
 
     std::cout << "Deserializing " << tupleCount << " tuples." << std::endl;
-    std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, schema, emptySortDefinition));
+    std::shared_ptr<QueryTable<B> > result(new QueryTable<B>(tupleCount, schema, emptySortDefinition));
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
         QueryTuple<B> aTuple = QueryTuple<B>::deserialize(schema, cursor);
+        std::cout << "Deserialized: " << aTuple << std::endl;
         result->putTuple(i, aTuple);
         cursor += tupleSize;
     }

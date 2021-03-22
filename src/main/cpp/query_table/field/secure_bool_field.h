@@ -56,6 +56,9 @@ namespace vaultdb {
         SecureBoolField  operator != (const bool &cmp) const { return !(*this == cmp);   }
 
 
+        SecureBoolField  operator == (const SecureBoolField &cmp) const { return this->eq(cmp);   }
+        SecureBoolField  operator != (const SecureBoolField &cmp) const { return this->eq(cmp).neg();   }
+
 
         // swappable
         SecureBoolField  selectValue(const SecureBoolField & choice, const SecureBoolField & other) const;

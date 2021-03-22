@@ -52,6 +52,9 @@ namespace vaultdb {
         BoolField  operator == (const bool &cmp) const { return BoolField(getPayload() == cmp);   }
         BoolField  operator != (const bool &cmp) const { return BoolField(getPayload() != cmp);   }
 
+        BoolField  operator == (const BoolField &cmp) const { return this->eq(cmp);   }
+        BoolField  operator != (const BoolField &cmp) const { return this->eq(cmp).neg();   }
+
 
         // swappable
         BoolField  selectValue(const BoolField & choice, const BoolField & other) const;

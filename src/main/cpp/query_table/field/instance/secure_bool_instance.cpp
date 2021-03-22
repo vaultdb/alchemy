@@ -56,7 +56,7 @@ Field<SecureBoolField> SecureBoolInstance::operator|(const Field<SecureBoolField
 }
 
 SecureBoolField SecureBoolInstance::geq(const Field<SecureBoolField> &rhs) const {
-    return (*ref) >= static_cast<SecureBoolField>(rhs);
+    return ref->gteq(static_cast<SecureBoolField>(rhs));
 
 }
 

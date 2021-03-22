@@ -3,6 +3,10 @@
 using namespace vaultdb;
 
 
+std::ostream &operator<<(std::ostream &os, const SecureBoolField &aValue) {
+    return os << aValue.toString();
+}
+
 
 SecureBoolField::SecureBoolField(const SecureBoolField &src) : Field(FieldType::SECURE_BOOL) {
     emp::Bit p = src.getPayload();
@@ -78,7 +82,4 @@ void SecureBoolField::ser(int8_t *target) const {
 
 
 
-std::ostream &operator<<(std::ostream &os, const SecureBoolField &aValue) {
-    return os << aValue.toString();
-}
 

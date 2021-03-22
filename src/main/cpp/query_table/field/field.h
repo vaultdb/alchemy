@@ -121,8 +121,8 @@ namespace vaultdb {
             std::unique_ptr<FieldInstance<B> > instance_;
     };
 
-   template<typename B>
-    std::ostream &operator<<(std::ostream &os, const Field<B> &aValue);
+    std::ostream &operator<<(std::ostream &os, const Field<BoolField> &aValue);
+    std::ostream &operator<<(std::ostream &os, const Field<SecureBoolField> &aValue);
 
 
 

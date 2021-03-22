@@ -167,18 +167,20 @@ bool  QueryTuple<B>::operator==(const QueryTuple<B> &other) const {
 
     if(isEncrypted() != other.isEncrypted()) { return false; }
 
-    if(!isEncrypted()) return true; // can't really check here, assume encrypted data is ok
+    if(isEncrypted()) { throw new std::invalid_argument("Cannot do equality check for tuples with encrypted data!");} // can't really check here, assume encrypted data is ok
 
+    //std::cout << "QueryTuple::operator==: Comparing dummy tags " << dummy_tag_.toString() << ", " << (*other.getDummyTag()).toString() << std::endl;
     // now know that <B> is BoolField
-    if((dummy_tag_ != other.getDummyTag()).getBool()) {
+    if((dummy_tag_ != (*other.getDummyTag())).getBool()) {
         return false;
     }
 
 
     for(size_t i = 0; i < getFieldCount(); ++i) {
-//        std::cout << "Comparing field: |" << *(fields_[i]) << "| len=" << fields_[i]->getSize()  <<  std::endl
-//                 << " to              |" << *(other.fields_[i]) << "| len=" << fields_[i]->getSize()<<  std::endl;
+       // std::cout << "Comparing field: |" << fields_[i] << "| len=" << fields_[i].getSize()  <<  std::endl
+       //          << " to              |" << other.fields_[i] << "| len=" << fields_[i].getSize()<<  std::endl;
         if ((fields_[i] != other.fields_[i]).getBool()) {
+            //std::cout << "Failed to match!" << std::endl;
             return false;
         }
     }
@@ -193,7 +195,7 @@ QueryTuple<B> QueryTuple<B>::deserialize(const QuerySchema &schema, int8_t *tupl
     int8_t *cursor = tupleBits;
 
     for(size_t i = 0; i < fieldCount; ++i) {
-        result.fields_.emplace_back(Field<B>::deserialize(schema.getField(i), cursor));
+        result.fields_[i] = Field<B>::deserialize(schema.getField(i), cursor);
         cursor += result.fields_[i].getSize();
     }
 
@@ -235,18 +237,6 @@ SecureTuple  QueryTuple<B>::secretShare(const PlainTuple *srcTuple, const QueryS
     return dstTuple;
 }
 
-/*template <typename B>
-void QueryTuple<B>::setDummyTag(const bool &b) {
-    if(dummy_tag_.getType() == FieldType::BOOL)
-        dummy_tag_.setValue<bool>(b);
-    else
-
-}
-
-template <>
-void SecureTuple::setDummyTag(const Bit &bit) {
-    dummy_tag_ = SecureBoolField(bit);
-}*/
 
 
 std::ostream &vaultdb::operator<<(std::ostream &strm,  const PlainTuple &aTuple) {

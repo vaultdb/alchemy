@@ -33,10 +33,10 @@ size_t QuerySchema::getFieldCount() const {
 
 
 QuerySchema::QuerySchema(const QuerySchema &s) {
-    fields_.reserve(s.getFieldCount());
+    fields_.resize(s.getFieldCount());
 
   for (size_t i = 0; i < s.getFieldCount(); i++) {
-      fields_.push_back( s.getField(i));
+      fields_[i] = s.getField(i);
   }
 }
 
@@ -46,6 +46,7 @@ size_t QuerySchema::size() const {
         bitSize += fields_[i].size();
 
     }
+
     int dummySize = TypeUtilities::isEncrypted(fields_[0].getType()) ?   TypeUtilities::getTypeSize(FieldType::SECURE_BOOL) :  TypeUtilities::getTypeSize(FieldType::BOOL);
 
     bitSize += dummySize; // for dummy tag
