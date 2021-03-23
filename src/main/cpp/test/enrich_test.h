@@ -13,7 +13,6 @@
 
 
 using namespace vaultdb;
-using namespace vaultdb::types;
 using namespace emp;
 
 
@@ -36,29 +35,29 @@ protected:
     const string aliceDbName = "enrich_htn_alice";
     const string bobDbName = "enrich_htn_bob";
 
-    shared_ptr<QueryTable> getAgeStrataProjection(shared_ptr<QueryTable> input, const bool & isEncrypted) const;
+    shared_ptr<SecureTable> getAgeStrataProjection(shared_ptr<SecureTable> input, const bool & isEncrypted) const;
 
-    shared_ptr<QueryTable> loadAndProjectPatientData(const string &dbName) const;
+    shared_ptr<SecureTable> loadAndProjectPatientData(const string &dbName) const;
 
-    shared_ptr<QueryTable> loadPatientExclusionData(const string &dbName) const;
+    shared_ptr<SecureTable> loadPatientExclusionData(const string &dbName) const;
 
-    shared_ptr<QueryTable> loadAndJoinLocalData(const string &dbName) const;
+    shared_ptr<SecureTable> loadAndJoinLocalData(const string &dbName) const;
 
-    shared_ptr<QueryTable> getPatientCohort();
+    shared_ptr<SecureTable> getPatientCohort();
 
-    void validateTable(const string &dbName, const string &sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<QueryTable> &observedTable) const;
-
-
-    static std::shared_ptr<QueryTable> rollUpAggregate(const int & ordinal, shared_ptr<QueryTable> src);
-
-    shared_ptr<QueryTable> loadUnionAndDeduplicateData() const;
-
-    void validateUnion(Operator &sortOp, const SortDefinition &expectedSortOrder) const;
-
-    shared_ptr<QueryTable> aggregatePatientData();
+    void validateTable(const string &dbName, const string &sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<SecureTable> &observedTable) const;
 
 
-    shared_ptr<QueryTable> filterPatients();
+    static std::shared_ptr<SecureTable> rollUpAggregate(const int & ordinal, shared_ptr<SecureTable> src);
+
+    shared_ptr<SecureTable> loadUnionAndDeduplicateData() const;
+
+    void validateUnion(Operator<SecureBoolField> &sortOp, const SortDefinition &expectedSortOrder) const;
+
+    shared_ptr<SecureTable> aggregatePatientData();
+
+
+    shared_ptr<SecureTable> filterPatients();
 
     std::string getRollupExpectedResultsSql(const std::string &groupByColName);
 };

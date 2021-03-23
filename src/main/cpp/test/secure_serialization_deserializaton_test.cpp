@@ -9,7 +9,6 @@
 
 using namespace std;
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -72,7 +71,7 @@ string SecureSerializationDeserializationTest::printFirstBytes(vector<int8_t> & 
 
 TEST_F(SecureSerializationDeserializationTest, serialize_and_secret_share) {
     QuerySchema srcSchema = getInputSchema();
-    std::unique_ptr<QueryTable> inputTable = CsvReader::readCsv(srcCsvFile, srcSchema);
+    std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(srcCsvFile, srcSchema);
     vector<int8_t> serialized = inputTable->serialize();
     std::cout << "Initial bits, unencrypted: " << printFirstBytes(serialized, 10) << std::endl;
     SecretShares shares = inputTable->generateSecretShares();

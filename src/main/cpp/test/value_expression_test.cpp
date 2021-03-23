@@ -6,8 +6,7 @@
 
 #include <query_table/field/int_field.h>
 #include <PsqlDataProvider.h>
-#include "enrich_test.h"
-
+#include <util/data_utilities.h>
 using namespace emp;
 using namespace vaultdb;
 
