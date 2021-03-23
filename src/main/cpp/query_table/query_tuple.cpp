@@ -93,7 +93,8 @@ void QueryTuple<B>::serialize(int8_t *dst, const QuerySchema &schema) {
 
     for(size_t fieldIdx = 0; fieldIdx < getFieldCount(); ++fieldIdx) {
         fields_[fieldIdx].serialize(cursor);
-        cursor += schema.getField(fieldIdx).size();
+        std::cout << "Advancing cursor " << schema.getField(fieldIdx).size()/8 << " bytes." << std::endl;
+        cursor += schema.getField(fieldIdx).size()/8;
     }
 
     dummy_tag_.serialize(cursor);
@@ -169,7 +170,7 @@ bool  QueryTuple<B>::operator==(const QueryTuple<B> &other) const {
 
     if(isEncrypted()) { throw new std::invalid_argument("Cannot do equality check for tuples with encrypted data!");} // can't really check here, assume encrypted data is ok
 
-    //std::cout << "QueryTuple::operator==: Comparing dummy tags " << dummy_tag_.toString() << ", " << (*other.getDummyTag()).toString() << std::endl;
+    std::cout << "QueryTuple::operator==: Comparing dummy tags " << dummy_tag_.toString() << ", " << (*other.getDummyTag()).toString() << std::endl;
     // now know that <B> is BoolField
     if((dummy_tag_ != (*other.getDummyTag())).getBool()) {
         return false;
@@ -177,10 +178,10 @@ bool  QueryTuple<B>::operator==(const QueryTuple<B> &other) const {
 
 
     for(size_t i = 0; i < getFieldCount(); ++i) {
-       // std::cout << "Comparing field: |" << fields_[i] << "| len=" << fields_[i].getSize()  <<  std::endl
-       //          << " to              |" << other.fields_[i] << "| len=" << fields_[i].getSize()<<  std::endl;
+        std::cout << "Comparing field: |" << fields_[i] << "| len=" << fields_[i].getSize()  <<  std::endl
+                 << " to              |" << other.fields_[i] << "| len=" << fields_[i].getSize()<<  std::endl;
         if ((fields_[i] != other.fields_[i]).getBool()) {
-            //std::cout << "Failed to match!" << std::endl;
+            std::cout << "Failed to match!" << std::endl;
             return false;
         }
     }
@@ -196,7 +197,9 @@ QueryTuple<B> QueryTuple<B>::deserialize(const QuerySchema &schema, int8_t *tupl
 
     for(size_t i = 0; i < fieldCount; ++i) {
         result.fields_[i] = Field<B>::deserialize(schema.getField(i), cursor);
-        cursor += result.fields_[i].getSize();
+        cursor += schema.getField(i).size()/8;
+        std::cout << "Deserialize advancing cursor " << schema.getField(i).size()/8 << " bytes." << std::endl;
+
     }
 
     B dt = B(cursor);

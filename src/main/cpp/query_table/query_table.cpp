@@ -99,6 +99,7 @@ vector<int8_t> QueryTable<B>::serialize() const {
     int8_t *cursor = dst.data();
 
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
+        std::cout << "Idx: " << i << std::endl;
         QueryTuple<B> src = tuples_[i];
         std::cout << "Serializing: " << src.toString(true) << std::endl;
 
@@ -113,6 +114,7 @@ vector<int8_t> QueryTable<B>::serialize() const {
         assert(cycle.toString(true) == src.toString(true));
         // end DEBUG code
 
+        std::cout << "Advancing tuple cursor " << tupleWidth << " bytes." << std::endl;
         cursor += tupleWidth;
     }
 

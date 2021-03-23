@@ -105,7 +105,6 @@ set(sources
 		operators/filter.cpp
 		operators/project.cpp
 		operators/sort.cpp
-		operators/support/sort_condition.cpp
 		operators/support/join_equality_predicate.cpp
 		operators/join.cpp
 		operators/basic_join.cpp
@@ -117,6 +116,7 @@ set(sources
 		operators/support/group_by_aggregate_impl.cpp
 		operators/csv_input.cpp
 
+		#operators/support/sort_condition.cpp
 		#operators/support/plain_sort_condition.cpp
 		#operators/support/secure_sort_condition.cpp
 		#operators/common_table_expression.cpp

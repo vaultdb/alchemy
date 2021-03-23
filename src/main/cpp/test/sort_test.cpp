@@ -72,8 +72,7 @@ TEST_F(SortTest, cmpSwap) {
 }
 
 TEST_F(SortTest, tpchQ1Sort) {
-    // was LIMIT 10
-    string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_linenumber, l_comment LIMIT 4"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_linenumber, l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
     shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
 
@@ -92,7 +91,8 @@ TEST_F(SortTest, tpchQ1Sort) {
 }
 
 TEST_F(SortTest, tpchQ3Sort) {
-    // casting revenue to INT for now b/c floating point is more complicated to debug - TODO: needs its own testbed
+    // casting revenue to float for these trials
+    // TODO: set up discrete testbed to deal with floating point errors
     string sql = "SELECT l_orderkey, (l.l_extendedprice * (1 - l.l_discount))::INT revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY  l_linenumber, l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate")  + " FROM input ORDER BY revenue DESC, o_orderdate";

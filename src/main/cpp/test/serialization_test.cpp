@@ -34,18 +34,31 @@ protected:
 TEST_F(SerializationTest, typesTest) {
     // selecting one of each type:
     // int
-    // varchar
-    // fixed char
+    // varchar(44)
+    // fixed char(1)
     // numeric
     // date
 
-   std::string inputQuery = "SELECT l_orderkey, l_comment, l_returnflag, l_discount, l_comment, "
+   std::string inputQuery = "SELECT l_orderkey, l_comment, l_returnflag, l_discount, "
                             "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate "
                             "FROM lineitem "
                             "ORDER BY l_shipdate "
                             "LIMIT 10";
 
     std::shared_ptr<PlainTable> inputTable = DataUtilities::getQueryResults(dbName, inputQuery, false);
+    std::cout << "Start schema: " << inputTable->getSchema() << std::endl;
+
+    // try serializing tuple 5, it has a weird float val
+    PlainTuple suspect = (*inputTable)[4];
+    std::cout << "Initial tuple: " << suspect  << std::endl;
+
+    byte vals[62];
+    suspect.serialize((int8_t *)&vals, inputTable->getSchema());
+    PlainTuple result = PlainTuple::deserialize(inputTable->getSchema(), (int8_t *)&vals);
+    std::cout << "Result tuple: " << result << std::endl;
+    ASSERT_EQ(suspect, result);
+
+
     vector<int8_t> tableData = inputTable->serialize();
     uint32_t expectedSize = inputTable->getSchema().size()/8 * 10;
     ASSERT_EQ(tableData.size(), expectedSize);
@@ -102,10 +115,8 @@ TEST_F(SerializationTest, capricornTest) {
     std::cout << "Deserializing" << std::endl;
     std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
 
-    std::cout << "Comparing values" << std::endl;
     ASSERT_EQ(*inputTable, *deserialized);
 
-    std::cout << "Cleanup." << std::endl;
 
 
 }

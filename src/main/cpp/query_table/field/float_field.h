@@ -60,7 +60,7 @@ namespace vaultdb {
         FloatField  operator|(const FloatField &right) const   {  throw; }
 
         // serialize
-        void ser(int8_t * target) const { *((int32_t *) target) = getPayload();  }
+        void ser(int8_t * target) const { *((float_t *) target) = getPayload();  }
 
     };
 

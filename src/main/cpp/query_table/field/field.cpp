@@ -182,8 +182,8 @@ template<typename B>
 Field<B> Field<B>::deserialize(const FieldType & type, const int & strLength, const int8_t *src) {
     Field f(type, strLength);
     if(type == FieldType::STRING) {
-        memcpy(f.data_, src, f.allocated_size_-1);
-        *((char *) (f.data_ + f.allocated_size_ - 1)) = '\0'; // null-terminate the string
+        memcpy(f.data_, src, strLength);
+        *((char *) (f.data_ + strLength)) = '\0'; // null-terminate the string
         return f;
     }
 
