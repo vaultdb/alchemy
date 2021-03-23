@@ -10,7 +10,6 @@
 // then zips them together and verifies that it produces the same table
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -28,10 +27,10 @@ protected:
 
     const std::string dbName = "tpch_unioned";
 
-    std::shared_ptr<QueryTable> assembleSecretShares(const QuerySchema & schema, const SecretShares & shares);
+    std::shared_ptr<PlainTable> assembleSecretShares(const QuerySchema & schema, const SecretShares & shares);
 };
 
-std::shared_ptr<QueryTable> SecretShareGeneratorTest::assembleSecretShares(const QuerySchema &schema, const SecretShares & shares) {
+std::shared_ptr<PlainTable> SecretShareGeneratorTest::assembleSecretShares(const QuerySchema &schema, const SecretShares & shares) {
     size_t shareCount = shares.first.size();
     std::vector<int8_t> resultShares;
     resultShares.resize(shareCount);
@@ -44,7 +43,7 @@ std::shared_ptr<QueryTable> SecretShareGeneratorTest::assembleSecretShares(const
         result[i] = aliceShares[i] ^ bobShares[i];
     }
 
-    return QueryTable::deserialize(schema, resultShares);
+    return PlainTable::deserialize(schema, resultShares);
 
 }
 
@@ -55,10 +54,10 @@ TEST_F(SecretShareGeneratorTest, lineitem_sample) {
                              "ORDER BY l_shipdate "
                              "LIMIT 10";
 
-    std::shared_ptr<QueryTable> initialTable = DataUtilities::getQueryResults(dbName, query, false);
+    std::shared_ptr<PlainTable> initialTable = DataUtilities::getQueryResults(dbName, query, false);
     SecretShares secretShares = initialTable->generateSecretShares();
 
-    std::shared_ptr<QueryTable> finalTable = assembleSecretShares(initialTable->getSchema(), secretShares);
+    std::shared_ptr<PlainTable> finalTable = assembleSecretShares(initialTable->getSchema(), secretShares);
 
     ASSERT_EQ(*initialTable, *finalTable);
 
@@ -72,10 +71,10 @@ TEST_F(SecretShareGeneratorTest, lineitem_dummy_tag_sample) {
                         "ORDER BY l_shipdate "
                         "LIMIT 10";
 
-    std::shared_ptr<QueryTable> initialTable = DataUtilities::getQueryResults(dbName, query, true);
+    std::shared_ptr<PlainTable> initialTable = DataUtilities::getQueryResults(dbName, query, true);
     SecretShares secretShares = initialTable->generateSecretShares();
 
-    std::shared_ptr<QueryTable> finalTable = assembleSecretShares(initialTable->getSchema(), secretShares);
+    std::shared_ptr<PlainTable> finalTable = assembleSecretShares(initialTable->getSchema(), secretShares);
 
     ASSERT_EQ(*initialTable, *finalTable);
 
