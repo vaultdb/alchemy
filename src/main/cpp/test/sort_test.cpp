@@ -106,8 +106,6 @@ TEST_F(SortTest, tpchQ3Sort) {
 
     Sort sort = getSort(sql, sortDefinition);
 
-    std::cout << "Sort output: " << *(sort.run()) << std::endl;
-
 
     // project it down to $1, $3
     Project project(&sort);

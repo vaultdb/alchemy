@@ -45,7 +45,7 @@ BoolField FloatField::operator==(const FloatField &cmp) const {
 
     // inspired by NoisePage: https://github.com/cmu-db/noisepage
         float_t right = cmp.getPayload();
-        const double epsilon = std::fabs(right) * 0.001; // was 0.01
+        const double epsilon = std::fabs(right) * 0.01; // was 0.01 OR 0.001
         const double delta = std::fabs(getPayload() - right);
         return BoolField(delta <= epsilon);
     }

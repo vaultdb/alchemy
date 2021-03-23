@@ -35,8 +35,6 @@ Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefin
 template<typename B>
 std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
-    std::cout << "Initial input: " << *input << std::endl;
-
 
     // deep copy new output
     Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
@@ -122,7 +120,6 @@ B Sort<B>::swapTuples(const int &lhsIdx, const int &rhsIdx, const bool &invertDi
 
     }
 
-    std::cout << "Comparing " << lhs << " to " << rhs << ", invert=" << invertDir << ", toSwap? " << swap.toString() << std::endl;
     return swap;
 }
 
