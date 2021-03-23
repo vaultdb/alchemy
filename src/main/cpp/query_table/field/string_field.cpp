@@ -22,9 +22,6 @@ StringField::StringField(const int8_t *src, const size_t & strLength) : Field(Fi
     memcpy(data_, src, strLength);
     *((char *) (data_ + strLength)) = '\0'; // null-terminate the string
 
-    std::cout << "Deserialized " << getPayload();
-
-
 }
 
 
@@ -76,8 +73,6 @@ StringField StringField::selectValue(const BoolField &choice, const StringField 
 
 void StringField::ser(int8_t *target) const {
     std::string p = getPayload();
-    std::cout << "Writing out " << allocated_size_ - 1 << " chars for string serialize." << std::endl;
-   // std::cout << Utilities::getStackTrace() << std::endl << std::endl;
     memcpy(target, (int8_t *) p.c_str(), allocated_size_ - 1); // null termination chopped
 
 

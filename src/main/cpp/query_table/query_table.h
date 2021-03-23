@@ -78,7 +78,7 @@ namespace  vaultdb {
 
             std::shared_ptr<QueryTable<SecureBoolField> > secretShare(emp::NetIO *io, const int &party) const;
 
-           // SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
+            SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
 
             [[nodiscard]] std::unique_ptr<QueryTable<BoolField> > reveal(int empParty = emp::PUBLIC) const;
 

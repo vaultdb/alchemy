@@ -14,8 +14,8 @@ bash test/support/setup-csv.sh
 ./bin/fkey_pkey_join_test
 ./bin/scalar_aggregate_test
 ./bin/group_by_aggregate_test
-#./bin/secret_share_generator_test 
-#./bin/serialization_test
+./bin/secret_share_generator_test 
+./bin/serialization_test
 
 sleep 2
 

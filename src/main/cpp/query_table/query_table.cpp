@@ -99,22 +99,8 @@ vector<int8_t> QueryTable<B>::serialize() const {
     int8_t *cursor = dst.data();
 
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
-        std::cout << "Idx: " << i << std::endl;
         QueryTuple<B> src = tuples_[i];
-        std::cout << "Serializing: " << src.toString(true) << std::endl;
-
         src.serialize(cursor, schema_);
-        std::cout << "Serialized:  " << src.toString(true) << std::endl;
-
-        // DEBUG code
-        QueryTuple cycle = QueryTuple<B>::deserialize(schema_, cursor);
-        bool res = (cycle == src);
-        std::cout << "Tested" << cycle.toString(true) << " rse: " << (cycle == src) << std::endl;
-        assert(cycle == src);
-        assert(cycle.toString(true) == src.toString(true));
-        // end DEBUG code
-
-        std::cout << "Advancing tuple cursor " << tupleWidth << " bytes." << std::endl;
         cursor += tupleWidth;
     }
 
@@ -329,10 +315,11 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
     return dstTable;
 
 }
-/*
+
 // use this for acting as a data sharing party in the PDF
 // generates alice and bob's shares and returns the pair
-SecretShares QueryTable::generateSecretShares() const {
+template<typename B>
+SecretShares QueryTable<B>::generateSecretShares() const {
     vector<int8_t> serialized = this->serialize();
     int8_t *secrets = serialized.data();
     size_t sharesSize = serialized.size();
@@ -354,7 +341,7 @@ SecretShares QueryTable::generateSecretShares() const {
 
     return SecretShares(aliceShares, bobShares);
 }
- */
+
 
 template <typename B>
 void QueryTable<B>::setSortOrder(const SortDefinition &sortOrder) {
@@ -375,12 +362,10 @@ std::shared_ptr<QueryTable<B> > QueryTable<B>::deserialize(const QuerySchema &sc
     uint32_t tupleCount = tableSize / tupleSize;
     SortDefinition emptySortDefinition;
 
-    std::cout << "Deserializing " << tupleCount << " tuples." << std::endl;
     std::shared_ptr<QueryTable<B> > result(new QueryTable<B>(tupleCount, schema, emptySortDefinition));
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
         QueryTuple<B> aTuple = QueryTuple<B>::deserialize(schema, cursor);
-        std::cout << "Deserialized: " << aTuple << std::endl;
         result->putTuple(i, aTuple);
         cursor += tupleSize;
     }

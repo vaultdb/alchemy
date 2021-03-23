@@ -5,6 +5,8 @@
 
 
 #include <query_table/field/int_field.h>
+#include <PsqlDataProvider.h>
+#include "enrich_test.h"
 
 using namespace emp;
 using namespace vaultdb;
@@ -72,6 +74,30 @@ TEST_F(ValueExpressionTest, test_int32_expr) {
     ASSERT_EQ(compare.getPayload(), true);
 
 }
+
+TEST_F(ValueExpressionTest, cmpSwap) {
+    string sql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    std::shared_ptr<PlainTable > data = DataUtilities::getQueryResults("tpch_unioned", sql, false);
+
+    PlainTuple a = (*data)[0];
+    PlainTuple b = (*data)[1];
+    BoolField swap(true);
+
+    PlainTuple::compareAndSwap(swap, &a, &b);
+
+    // swapped
+    ASSERT_EQ(a, (*data)[1]);
+    ASSERT_EQ(b, (*data)[0]);
+
+
+    // no swap
+    swap = BoolField(false);
+    PlainTuple::compareAndSwap(swap, &a, &b);
+    ASSERT_EQ(a, (*data)[1]);
+    ASSERT_EQ(b, (*data)[0]);
+
+}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

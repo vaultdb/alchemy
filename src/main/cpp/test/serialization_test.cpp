@@ -46,24 +46,12 @@ TEST_F(SerializationTest, typesTest) {
                             "LIMIT 10";
 
     std::shared_ptr<PlainTable> inputTable = DataUtilities::getQueryResults(dbName, inputQuery, false);
-    std::cout << "Start schema: " << inputTable->getSchema() << std::endl;
-
-    // try serializing tuple 5, it has a weird float val
-    PlainTuple suspect = (*inputTable)[4];
-    std::cout << "Initial tuple: " << suspect  << std::endl;
-
-    byte vals[62];
-    suspect.serialize((int8_t *)&vals, inputTable->getSchema());
-    PlainTuple result = PlainTuple::deserialize(inputTable->getSchema(), (int8_t *)&vals);
-    std::cout << "Result tuple: " << result << std::endl;
-    ASSERT_EQ(suspect, result);
-
 
     vector<int8_t> tableData = inputTable->serialize();
     uint32_t expectedSize = inputTable->getSchema().size()/8 * 10;
     ASSERT_EQ(tableData.size(), expectedSize);
-    std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(inputTable->getSchema(), tableData);
 
+    std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(inputTable->getSchema(), tableData);
     ASSERT_EQ(*inputTable, *deserialized);
 
 
@@ -108,12 +96,10 @@ TEST_F(SerializationTest, capricornTest) {
 
     // temporarily truncate this to first 5 tuples
     inputTable->resize(5);
-    std::cout << "Input table: " << *inputTable << std::endl;
 
     vector<int8_t> serialized = inputTable->serialize();
 
-    std::cout << "Deserializing" << std::endl;
-    std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
+     std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
 
     ASSERT_EQ(*inputTable, *deserialized);
 

@@ -47,8 +47,6 @@ BoolField FloatField::operator==(const FloatField &cmp) const {
         float_t right = cmp.getPayload();
         const double epsilon = std::fabs(right) * 0.01;
         const double delta = std::fabs(getPayload() - right);
-        std::cout << "Delta: " << delta << "(" << getPayload() << " - " << right << ")" << std::endl;
-        std::cout << "Epsilon: " << epsilon << std::endl;
         return BoolField(delta <= epsilon);
     }
 
