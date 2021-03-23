@@ -69,9 +69,9 @@ namespace vaultdb {
         B operator<(const Field<B> & rhs) const { return !(*this >= rhs); }
         B operator<=(const Field<B> & rhs) const { return (*this < rhs) | (*this == rhs);  }
         B operator>(const Field<B> & rhs) const {
-            B eq = this->equal(rhs);
+            B neq = this->equal(rhs).neg();
             B geq = this->geq(rhs);
-            return  geq & eq.neg();
+            return  geq & neq;
         }
 
         virtual void serialize(int8_t *dst) const = 0;

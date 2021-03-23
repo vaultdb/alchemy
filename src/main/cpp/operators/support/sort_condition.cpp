@@ -10,8 +10,48 @@ const Field<B> *SortCondition<B>::getValue(QueryTuple<B> &aTuple, const ColumnSo
 
 template<typename B>
 void SortCondition<B>::compareAndSwap(QueryTuple<B> &lhs, QueryTuple<B> &rhs) {
-
     B swap(false);
+
+    B swapInit = swap; // false
+
+
+
+    for(size_t i = 0; i < sortDefinition.size(); ++i) {
+        const Field<B> *lhsField = SortCondition::getValue(lhs, sortDefinition[i]);
+        const Field<B> *rhsField = SortCondition::getValue(rhs, sortDefinition[i]);
+
+
+        B eq = (*lhsField == *rhsField);
+        SortDirection direction = sortDefinition[i].second;
+
+        // is a swap needed?
+        // if (lhs > rhs AND DESCENDING) OR (lhs < rhs AND ASCENDING)
+
+        B colSwapFlag;
+
+        if(direction == vaultdb::SortDirection::ASCENDING) {
+            colSwapFlag = (*rhsField > *lhsField);
+        }
+        else if(direction == vaultdb::SortDirection::DESCENDING) {
+            colSwapFlag = (*lhsField > *rhsField);
+        }
+        else {
+            throw;
+        }
+
+
+        // find first one where not eq, use this to init flag
+        swap = (B) Field<B>::If(swapInit, swap, colSwapFlag); // once we know there's a swap once, we keep it
+        swapInit = swapInit  | (B) Field<B>::If(!eq, B(true), B(false));  // have we found the most significant column where they are not equal?
+
+    } // end check for swap
+
+
+
+    QueryTuple<B>::compareAndSwap(swap, &lhs, &rhs);
+}
+
+/*    B swap(false);
 
     B swapInit = swap; // false
 
@@ -28,7 +68,7 @@ void SortCondition<B>::compareAndSwap(QueryTuple<B> &lhs, QueryTuple<B> &rhs) {
 
         // is a swap needed?
         // if (lhs > rhs AND DESCENDING) OR (lhs < rhs AND ASCENDING)
-        B colSwapFlag = neq; // true if we are not equal
+        B colSwapFlag = neq; // true if the two sides are not equal
 
         if (direction == vaultdb::SortDirection::ASCENDING) {
             colSwapFlag = *rhsField > *lhsField;
@@ -48,8 +88,9 @@ void SortCondition<B>::compareAndSwap(QueryTuple<B> &lhs, QueryTuple<B> &rhs) {
 
     } // end check for swap
 
-    QueryTuple<B>::compareAndSwap(swap, &lhs, &rhs);
-}
+    QueryTuple<B>::compareAndSwap(swap, &lhs, &rhs);*/
+
+
 
 template class vaultdb::SortCondition<BoolField>;
 template class vaultdb::SortCondition<SecureBoolField>;

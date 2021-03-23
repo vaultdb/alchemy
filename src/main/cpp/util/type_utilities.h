@@ -3,9 +3,6 @@
 
 #include <string>
 
-//#include <emp-tool/circuits/integer.h>
-//#include <emp-tool/circuits/float32.h>
-//#include <emp-tool/circuits/bit.h>
 #include "query_table/field/field.h"
 
 

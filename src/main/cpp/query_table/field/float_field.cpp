@@ -29,7 +29,7 @@ FloatField::FloatField(const emp::Float &src, const int &party) : Field(FieldTyp
 
 FloatField &FloatField::operator=(const FloatField &other) {
     if(this == &other) return *this;
-    copy(other);
+    this->setValue(other.getPayload());
     return *this;
 }
 
@@ -46,7 +46,8 @@ BoolField FloatField::operator==(const FloatField &cmp) const {
     // inspired by NoisePage: https://github.com/cmu-db/noisepage
         float_t right = cmp.getPayload();
         const double epsilon = std::fabs(right) * 0.001; // was 0.01
-        return BoolField(std::fabs(getPayload() - right) <= epsilon);
+        const double delta = std::fabs(getPayload() - right);
+        return BoolField(delta <= epsilon);
     }
 
 

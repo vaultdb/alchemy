@@ -132,6 +132,7 @@ FieldType GroupByAvgImpl<B>::getType() const {
 template<typename B>
 GroupByMinImpl<B>::GroupByMinImpl(const int32_t &ordinal, const FieldType &aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {
     runningMin = FieldFactory<B>::getMax(aggType);
+    resetMin = runningMin;
 }
 
 
@@ -139,20 +140,15 @@ template<typename B>
 void GroupByMinImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
 
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-    B sameMin = aggInput >= runningMin;
-    B noWrite = isGroupByMatch | *tuple.getDummyTag() | sameMin;
-
-    runningMin = Field<B>::If(noWrite, runningMin, aggInput);
+    Field<B> newValue = Field<B>::If(*tuple.getDummyTag(), resetMin, aggInput);
+    runningMin = Field<B>::If(isGroupByMatch, runningMin, newValue);
 }
 
 template<typename B>
 void GroupByMinImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
-
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-    B sameMin = aggInput >= runningMin;
-    B noWrite = isGroupByMatch | *tuple.getDummyTag() | sameMin;
-
-    runningMin = Field<B>::If(noWrite, runningMin, aggInput);
+    B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag()) & (aggInput < runningMin);
+    runningMin = Field<B>::If(toUpdate, aggInput, runningMin);
 
 }
 
@@ -167,28 +163,26 @@ Field<B> GroupByMinImpl<B>::getResult() {
 template<typename B>
 GroupByMaxImpl<B>::GroupByMaxImpl(const int32_t &ordinal, const FieldType &aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {
     runningMax = FieldFactory<B>::getMin(aggType);
+    resetMax = runningMax;
 }
 
 
 template<typename B>
 void GroupByMaxImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
+
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-    B sameMax = aggInput <= runningMax;
-    B noWrite = isGroupByMatch | *tuple.getDummyTag() | sameMax;
-
-    runningMax = Field<B>::If(noWrite, runningMax, aggInput);
-
+    Field<B> newValue = Field<B>::If(*tuple.getDummyTag(), resetMax, aggInput);
+    runningMax = Field<B>::If(isGroupByMatch, runningMax, newValue);
 
 }
 
 template<typename B>
 void GroupByMaxImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-    B sameMax = aggInput <= runningMax;
-    B noWrite = isGroupByMatch | *tuple.getDummyTag() | sameMax;
-
-    runningMax = Field<B>::If(noWrite, runningMax, aggInput);
+    B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag()) & (aggInput > runningMax);
+    runningMax = Field<B>::If(toUpdate, aggInput, runningMax);
 }
+
 
 template<typename B>
 Field<B> GroupByMaxImpl<B>::getResult() {

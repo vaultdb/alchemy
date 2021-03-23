@@ -87,6 +87,7 @@ namespace  vaultdb {
             bool operator==(const QueryTable<B> &other) const;
 
             bool operator!=(const QueryTable &other) const { return !(*this == other); }
+            QueryTuple<B> operator[](const int & idx) const { return this->getTuple(idx); }
 
             static std::shared_ptr<QueryTable<B> > deserialize(const QuerySchema & schema, const vector<int8_t> &tableBits);
 

@@ -1,6 +1,5 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
-#include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/filter.h>

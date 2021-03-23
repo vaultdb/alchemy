@@ -3,6 +3,7 @@
 
 make -j5
 
+bash test/support/setup-csv.sh 
 ./bin/csv_reader_test 
 ./bin/field_instance_test
 ./bin/value_expression_test

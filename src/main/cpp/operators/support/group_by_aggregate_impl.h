@@ -91,6 +91,7 @@ namespace vaultdb {
 
     private:
         Field<B> runningMin;
+        Field<B> resetMin;
 
 
     };
@@ -106,6 +107,7 @@ namespace vaultdb {
 
     private:
         Field<B> runningMax;
+        Field<B> resetMax;
 
 
     };

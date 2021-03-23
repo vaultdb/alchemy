@@ -1,6 +1,5 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
-#include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/support/aggregate_id.h>
@@ -165,10 +164,12 @@ TEST_F(ScalarAggregateTest, test_sum_dummies) {
 
 
 TEST_F(ScalarAggregateTest, test_avg) {
-  std::string query =  "SELECT l_extendedprice FROM lineitem WHERE l_orderkey <= 50";
+
+    std::string query =  "SELECT l_linenumber FROM lineitem WHERE l_orderkey <= 50  ORDER BY (1)";
 
   // set up the expected results:
-  std::string expectedOutputQuery = "WITH input AS (" + query + ") SELECT AVG(l_extendedprice) avg_price FROM input";
+    std::string expectedOutputQuery = "SELECT AVG(l_linenumber) avg_lno  FROM (" + query + ") q";
+
   std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
 
   // provide the aggregator with inputs:
@@ -186,10 +187,11 @@ TEST_F(ScalarAggregateTest, test_avg) {
 
 
 TEST_F(ScalarAggregateTest, test_avg_dummies) {
-  std::string query =  "SELECT l_discount, l_shipinstruct <> 'NONE' AS dummy FROM lineitem WHERE l_orderkey <= 100 ";
+    std::string query = "SELECT l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <= 100 ORDER BY (1), (2)";
+
 
   // set up the expected results:
-  std::string expectedOutputQuery = "SELECT AVG(l_discount) avg_disc FROM (" + query + ") selection WHERE NOT dummy";
+  std::string expectedOutputQuery = "SELECT AVG(l_linenumber) avg_disc FROM (" + query + ") selection WHERE NOT dummy";
   std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
 
   SqlInput input(dbName, query, false);
