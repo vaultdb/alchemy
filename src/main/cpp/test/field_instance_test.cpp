@@ -72,7 +72,6 @@ TEST_F(FieldInstanceTest, MultiTypeContainer) {
     ASSERT_EQ(fields[1].getValue<int32_t>(), 7);
     ASSERT_EQ(fields[3].getValue<int32_t>(), 42);
 
-    std::cout << "Entering cleanup!" << std::endl;
 
 }
 

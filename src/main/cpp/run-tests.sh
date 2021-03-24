@@ -60,17 +60,14 @@ sleep 2
 ./bin/emp_float_to_int --party=1 &
 ./bin/emp_float_to_int --party=2 
 
-#sleep 2
 
-#./bin/secure_serialization_deserializaton_test --party=1 &
-#./bin/secure_serialization_deserializaton_test --party=2
 
-#sleep 2
+sleep 2
 
 # regenerate test data
-#bash  test/support/load-generated-data.sh 100
-#./bin/enrich_test --party=1 &
-#./bin/enrich_test --party=2 
+bash  test/support/load-generated-data.sh 100
+./bin/enrich_test --party=1 &
+./bin/enrich_test --party=2 
 
 
 

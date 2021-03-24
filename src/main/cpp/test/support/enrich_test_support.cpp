@@ -42,10 +42,7 @@ Field<B> EnrichTestSupport<B>::projectMultisite(const QueryTuple<B> & aTuple) {
 
     B cmp = siteCount > FieldFactory<B>::getOne(siteCount.getType());
 
-    Field<B> res =  Field<B>::If(cmp, one, zero);
-    assert(res.getType() == FieldType::INT || res.getType() == FieldType::SECURE_INT);
-    std::cout << "Result: " << res.toString() <<  ", " << TypeUtilities::getTypeString(res.getType()) << std::endl;
-    return res;
+    return Field<B>::If(cmp, one, zero);
 
 }
 
