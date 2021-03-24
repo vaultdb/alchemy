@@ -1,104 +1,80 @@
 #ifndef _SECURE_LONG_FIELD_H
 #define _SECURE_LONG_FIELD_H
 
-#include <emp-tool/circuits/integer.h>
+#include "field.h"
+#include "secure_bool_field.h"
+#include "long_field.h"
 
-namespace  vaultdb {
-//  // T = derived field
-//    // P = primitive / payload of field, needed for serialize
-//    // B = boolean field result
-//    template<typename T, typename P, typename B>
-class SecureLongField : public FieldInstance<SecureLongField, emp::Integer, SecureBoolField> {
-    protected:
-        emp::Integer payload = emp::Integer(64, 0);
+namespace vaultdb {
+
+    // SecureLongField is a decorator for Field
+    // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
+    class SecureLongField :  public Field<SecureBoolField>  {
 
     public:
 
-        SecureLongField() {}
+        SecureLongField()  : Field(FieldType::SECURE_LONG) {}
+        ~SecureLongField() = default;
 
-        SecureLongField(const SecureLongField &src)
-                { payload = src.payload; }
+        explicit SecureLongField(const Field &srcField);
 
-        SecureLongField(const emp::Integer &src)  { payload = src; }
+        SecureLongField(const SecureLongField &src);
 
-        SecureLongField(const int8_t *src) {
-            memcpy((int8_t *) &payload, src, size() * sizeof(emp::Bit));
-        }
+        SecureLongField(const emp::Integer &src);
 
-        SecureLongField(const int64_t & toEncrypt, const int & myParty, const int & dstParty) {
-            int64_t value = (myParty == dstParty) ? toEncrypt : 0L;
-            payload = emp::Integer(64, value, dstParty);
-        }
+        explicit SecureLongField(const LongField *src, const int &myParty, const int &dstParty);
 
-        SecureLongField &operator=(const SecureLongField &other) {
-            this->payload = other.payload;
-            return *this;
-        }
+        explicit SecureLongField(const int8_t *src);
+        // encrypt from public
+        explicit SecureLongField(const int64_t & src);
 
 
-        bool encrypted() { return true; }
-        static FieldType type() { return FieldType::SECURE_INT64; }
 
 
-        size_t size() const override { return 64; }
+        emp::Integer getPayload() const;
 
-        void copy(const SecureLongField &src) { payload = src.payload; }
-
-        void assign(const emp::Integer &src) { payload = src; }
+        SecureLongField &operator=(const SecureLongField &other);
 
 
-        int64_t decrypt(const int & party) const { return payload.reveal<int64_t>(party); }
+        SecureLongField operator+(const SecureLongField &rhs) const;
 
-        emp::Integer primitive() const { return payload; }
+        SecureLongField operator-(const SecureLongField &rhs) const;
 
+        SecureLongField operator*(const SecureLongField &rhs) const;
+
+        SecureLongField operator/(const SecureLongField &rhs) const;
+
+        SecureLongField operator%(const SecureLongField &rhs) const;
+
+
+        // not defined in EMP
+        SecureBoolField neg() const { throw; }
         std::string str() const { return "SECRET LONG"; }
 
 
-        SecureLongField &operator+(const SecureLongField &rhs) const { return *(new SecureLongField(payload + rhs.payload)); }
+        SecureBoolField operator>=(const SecureLongField &cmp) const;
 
-        SecureLongField &operator-(const SecureLongField &rhs) const { return *(new SecureLongField(payload - rhs.payload)); }
-
-        SecureLongField &operator*(const SecureLongField &rhs) const { return *(new SecureLongField(payload * rhs.payload)); }
-
-        SecureLongField &operator/(const SecureLongField &rhs) const { return *(new SecureLongField(payload / rhs.payload)); }
-
-        SecureLongField &operator%(const SecureLongField &rhs) const { return *(new SecureLongField(payload % rhs.payload)); }
-
-
-        // comparators
-        Field &operator!() const override { throw;  }
-
-        SecureBoolField &operator>=(const SecureLongField &cmp) const { return *(new SecureBoolField(payload >= cmp.payload)); }
-
-        SecureBoolField &operator==(const SecureLongField &cmp) const { return *(new SecureBoolField(payload == cmp.payload)); }
+        SecureBoolField operator==(const SecureLongField &cmp) const;
 
 
         // swappable
-        SecureLongField &select(const SecureBoolField &choice, const SecureLongField &other) const {
-            emp::Bit selection = choice.primitive();
-            emp::Integer result = emp::If(selection, payload, other.payload);
-            return  *(new SecureLongField(result));
-        }
+        SecureLongField selectValue(const SecureBoolField &choice, const SecureLongField &other) const;
 
-        void serialize(int8_t *dst) const override {
-            std::memcpy(dst, payload.bits.data(), size() * sizeof(emp::Bit));
-        }
 
         // bitwise ops
-        SecureLongField & operator&(const SecureLongField &right) const {
-            return *(new SecureLongField(payload & right.payload));
-        }
+        SecureLongField operator&(const SecureLongField &right) const;
 
-        SecureLongField & operator^(const SecureLongField &right) const {
-            return *(new SecureLongField(payload ^ right.payload));
-        }
+        SecureLongField operator^(const SecureLongField &right) const;
 
-        SecureLongField & operator|(const SecureLongField &right) const {
-            return *(new SecureLongField(payload | right.payload));
-        }
+        SecureLongField operator|(const SecureLongField &right) const;
+
+        void ser(int8_t * target) const;
 
 
     };
+
+    std::ostream &operator<<(std::ostream &os, const SecureLongField &aValue);
+
 }
 
-#endif //_LONG_FIELD_H
+#endif //_SECURE_LONG_FIELD_H

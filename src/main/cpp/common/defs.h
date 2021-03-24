@@ -6,7 +6,6 @@
 #include <cstdint>
 #include <boost/variant.hpp>
 
-//#include "operators/support/expression.h"
 
 
 namespace vaultdb {
@@ -14,7 +13,7 @@ namespace vaultdb {
     // forward declaration -- included in project.h
     //class Expression;
 
-    enum class SortDirection { INVALID = 0, ASCENDING, DESCENDING};
+    enum class SortDirection { ASCENDING = 0, DESCENDING = 1, INVALID = 2};
 
 // ordinal == -1 is for dummy tag, order of columns in vector defines comparison thereof
     typedef std::pair<int32_t, SortDirection> ColumnSort;  // ordinal, direction

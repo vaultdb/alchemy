@@ -1,15 +1,12 @@
 #include <gtest/gtest.h>
-#include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/support/binary_predicate.h>
 #include <operators/support/join_equality_predicate.h>
 #include <operators/fkey_pkey_join.h>
-#include <operators/common_table_expression.h>
 
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -51,7 +48,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
                                     "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput customerInput(dbName, customerSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
@@ -59,11 +56,11 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
     customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, false));
+    std::shared_ptr<BinaryPredicate<BoolField> > customerOrdersPredicate(new JoinEqualityPredicate<BoolField> (customerOrdersOrdinals));
 
     KeyedJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
 
-    std::shared_ptr<QueryTable> observed = join.run();
+    std::shared_ptr<PlainTable > observed = join.run();
 
 
     ASSERT_EQ(*expected, *observed);
@@ -83,7 +80,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
                                                                                                              "WHERE matched";
 
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput lineitemInput(dbName, lineitemSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
@@ -91,11 +88,11 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
 
     ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
     lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate> lineitemOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, false));
+    std::shared_ptr<BinaryPredicate<BoolField> > lineitemOrdersPredicate(new JoinEqualityPredicate<BoolField> (lineitemOrdersOrdinals));
 
     KeyedJoin join(&lineitemInput, &ordersInput, lineitemOrdersPredicate);
 
-    std::shared_ptr<QueryTable> observed = join.run();
+    std::shared_ptr<PlainTable > observed = join.run();
 
 
 
@@ -122,7 +119,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                           "WHERE matched";
 
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
 
     SqlInput customerInput(dbName, customerSql, true);
@@ -132,11 +129,11 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
     customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, false));
+    std::shared_ptr<BinaryPredicate<BoolField> > customerOrdersPredicate(new JoinEqualityPredicate<BoolField>(customerOrdersOrdinals));
 
     ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
     lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate> lineitemOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, false));
+    std::shared_ptr<BinaryPredicate<BoolField> > lineitemOrdersPredicate(new JoinEqualityPredicate<BoolField> (lineitemOrdersOrdinals));
 
 
     KeyedJoin customerOrdersJoin(&ordersInput, &customerInput, customerOrdersPredicate);
@@ -144,7 +141,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     KeyedJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> observed = fullJoin.run();
+    std::shared_ptr<PlainTable > observed = fullJoin.run();
 
 
 

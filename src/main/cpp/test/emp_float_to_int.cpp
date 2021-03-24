@@ -1,5 +1,7 @@
 #include <util/data_utilities.h>
-#include <util/emp_manager.h>
+#include <query_table/field/secure_int_field.h>
+#include <query_table/field/secure_float_field.h>
+
 #include "support/EmpBaseTest.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -29,15 +31,15 @@ void EmpFloatToIntTest::testIntToFloat(const int32_t & inputInt) const {
     std::string inputBitstring = printIntBits(inputInt);
     ASSERT_EQ(check, inputInt);
 
-
-    emp::Float encryptedFloat = EmpManager::castIntToFloat(encryptedInt);
-    float revealed = encryptedFloat.reveal<double>(PUBLIC);
+    SecureIntField f(encryptedInt);
+    SecureFloatField encryptedFloat =  SecureFloatField::toFloat(f);
+    FloatField revealed = (FloatField) encryptedFloat.reveal(PUBLIC);
 
     // support range: [-2^24, 2^24]
     float expectedOutput = (float) inputInt;
     if(inputInt > (1 << 24))  expectedOutput = (float) INT_MAX;
     if(inputInt < -1 * (1 << 24))  expectedOutput = (float) INT_MIN;
-    ASSERT_FLOAT_EQ(expectedOutput, revealed);
+    ASSERT_FLOAT_EQ(expectedOutput, revealed.getPayload());
 
 }
 

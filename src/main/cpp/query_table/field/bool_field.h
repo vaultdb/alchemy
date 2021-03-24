@@ -1,117 +1,84 @@
 #ifndef BOOL_FIELD_H
 #define BOOL_FIELD_H
 
-#include "field_instance.h"
-#include "secure_bool_field.h"
+#include "field.h"
 #include <emp-tool/circuits/bit.h>
 
 
 namespace vaultdb {
 
-    // TF = derived field
-    // TP = primitive / payload of field
-    // B = boolean field result
-    // RF = revealed field type / encrypted field type - e.g., BoolField has SecureBoolField and vice versa
-    // RP = revealed primitive
 
-    class BoolField : public FieldInstance<BoolField, bool, BoolField> {
-    protected:
-        bool payload = true;
+    // BoolField is a decorator for Field
+    // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
+    class BoolField :  public Field<BoolField>  {
 
     public:
 
-        BoolField()   {}
-        BoolField(const BoolField & src)  { payload = src.payload; }
-        BoolField(const bool & src)  { payload = src; }
-        BoolField(const int8_t * src)  {
-            memcpy((int8_t *) &payload, src, size()/8);
-        }
+        BoolField() :  Field(FieldType::BOOL) {}
+        explicit BoolField(const Field & srcField);
+
+        BoolField(const BoolField & src);
+
+        explicit BoolField(const bool & src);
+        explicit BoolField(const int8_t * src);
+        ~BoolField() = default;
+
 
         // constructor for decryption
-        BoolField(const emp::Bit & src, const int & party) {
-            payload = src.reveal(party);
-        }
+        BoolField(const emp::Bit & src, const int & party);
+     
+        bool getPayload() const { return this->getValue<bool>(); }
 
-        BoolField& operator=(const BoolField& other) {
-            this->payload = other.payload;
-            return *this;
-        }
+        // for use in print statements, etc.
+        bool getBool() const { return getPayload(); }
+
+        BoolField& operator=(const BoolField& other);
 
 
-        bool encrypted() const { return false; }
-        void copy(const BoolField & src) {payload = src.payload; }
-        void assign(const bool & src) {payload = src; }
+        BoolField  operator+(const BoolField &rhs) const  { throw; } // cast to int before doing arithmetic expressions
+        BoolField  operator-(const BoolField &rhs) const { throw; }
+        BoolField  operator*(const BoolField &rhs) const  { throw; }
+        BoolField  operator/(const BoolField &rhs) const  { throw; }
+        BoolField  operator%(const BoolField &rhs) const  { throw; }
 
-        static FieldType type() { return FieldType::BOOL; }
 
-        size_t size() const override{ return 8; }
-
-        /*bool decrypt(const int & party) const { return payload; } // do not invoke, FieldInstance should sidestep this in reveal()
-
-        SecureBoolField & encrypt(const int & myParty, const int & dstParty = emp::PUBLIC) const {
-            bool bit = (myParty == dstParty) ? payload : 0;
-            emp::Bit encrypted(bit, dstParty);
-
-            return *(new SecureBoolField(encrypted));
-        }*/
+        BoolField neg() const;
 
 
 
-        BoolField & operator+(const BoolField &rhs) const { return *(new BoolField(payload + rhs.payload)); }
-        BoolField & operator-(const BoolField &rhs) const { return *(new BoolField(payload - rhs.payload)); }
-        BoolField & operator*(const BoolField &rhs) const { return *(new BoolField(payload * rhs.payload)); }
-        BoolField & operator/(const BoolField &rhs) const { return *(new BoolField(payload / rhs.payload)); }
-        BoolField & operator%(const BoolField &rhs) const { return *(new BoolField(payload % rhs.payload)); }
+        BoolField  eq(const BoolField & cmp) const;
+        BoolField gteq(const BoolField & cmp) const;
 
+        BoolField  operator == (const bool &cmp) const { return BoolField(getPayload() == cmp);   }
+        BoolField  operator != (const bool &cmp) const { return BoolField(getPayload() != cmp);   }
 
-        Field &  operator !() const override {
-            return *(new BoolField(!payload));
-        }
+        BoolField  operator == (const BoolField &cmp) const { return this->eq(cmp);   }
+        BoolField  operator != (const BoolField &cmp) const { return this->eq(cmp).neg();   }
 
-        BoolField & operator >= (const BoolField &cmp) const {
-            return *(new BoolField(payload >= cmp.payload));
-        }
-
-        BoolField & operator == (const BoolField &cmp) const {
-            return *(new BoolField(payload == cmp.payload));
-        }
-
-
-
-
-        bool primitive() const { return payload; }
-        std::string str() const {
-            return  payload ? "true" : "false";
-        }
 
         // swappable
-        BoolField & select(const BoolField & choice, const BoolField & other) const {
-            bool selection = (bool) choice.payload;
-            return selection ? *(new BoolField(*this)) : *(new BoolField(other));
-        }
+        BoolField  selectValue(const BoolField & choice, const BoolField & other) const;
 
+        std::string str() const {  return getPayload() ? "true" : "false"; }
 
-        void serialize(int8_t *dst) const override {
-            size_t len  = size() / 8;
-            std::memcpy(dst, (int8_t*) payload, len);
-        }
 
         // bitwise ops
-        BoolField & operator&(const BoolField &right) const {
-            return *(new BoolField(payload & right.payload));
-        }
+        BoolField  operator&(const BoolField &right) const { return  BoolField((getPayload()) & (right.getPayload())); }
+        BoolField  operator^(const BoolField &right) const { return  BoolField((getPayload()) ^ (right.getPayload())); }
+        BoolField  operator|(const BoolField &right) const { return  BoolField((getPayload()) | (right.getPayload())); }
 
-        BoolField & operator^(const BoolField &right) const {
-            return *(new BoolField(payload ^ right.payload));
-        }
+        BoolField  operator&(const bool &right) const { return  BoolField((getPayload()) & right); }
+        BoolField  operator^(const bool &right) const { return  BoolField((getPayload()) ^ right); }
+        BoolField  operator|(const bool &right) const { return  BoolField((getPayload()) | right); }
 
-        BoolField & operator|(const BoolField &right) const {
-            return *(new BoolField(payload | right.payload));
-        }
+        // serialize
+        void ser(int8_t * target) const { *target = getPayload(); }
 
 
 
     };
+
+    std::ostream &operator<<(std::ostream &os, const BoolField &aValue);
 
 }
 #endif //BOOL_FIELD_H

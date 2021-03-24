@@ -3,9 +3,6 @@
 using namespace emp;
 
 
-Integer EnrichTestSupport::getEmpInt(const int32_t & value) {
-    return Integer(32, value, PUBLIC);
-}
 
 
 // Project #1
@@ -17,119 +14,90 @@ Integer EnrichTestSupport::getEmpInt(const int32_t & value) {
 //                WHEN age_days > 72*365  AND age_days <= 83*365 THEN 5
 //                ELSE 6 END age_strata
 
-// TODO: set this up to memoize the emp ints so we don't have to generate them every time
-Value EnrichTestSupport::projectSecureAgeStrata(const QueryTuple & aTuple) {
-    Integer ageDays = aTuple.getField(2).getValue().getEmpInt(); // age_days
+template<typename B>
+Field<B> EnrichTestSupport<B>::projectAgeStrata(const QueryTuple<B> & aTuple) {
 
+    Field<B> ageDays = aTuple[2]; // age_days
+    // either an IntField or SecureIntField
 
-    Integer ageStrata = If(ageDays <= getEmpInt(28*365), getEmpInt(0),
-                           If(ageDays <= getEmpInt(39*365), getEmpInt(1),
-                              If(ageDays <= getEmpInt(50*365), getEmpInt(2),
-                                 If(ageDays <= getEmpInt(61*365), getEmpInt(3),
-                                    If(ageDays <= getEmpInt(72*365), getEmpInt(4),
-                                       If(ageDays <= getEmpInt(83*365), getEmpInt(5), getEmpInt(6)))))));
+    Field<B> ageStrata = Field<B>::If(ageDays <= FieldFactory<B>::getInt(28*365), FieldFactory<B>::getInt(0),
+                                      Field<B>::If(ageDays <= FieldFactory<B>::getInt(39*365), FieldFactory<B>::getInt(1),
+                                                   Field<B>::If(ageDays <= FieldFactory<B>::getInt(50*365), FieldFactory<B>::getInt(2),
+                                                                Field<B>::If(ageDays <= FieldFactory<B>::getInt(61*365), FieldFactory<B>::getInt(3),
+                                                                             Field<B>::If(ageDays <= FieldFactory<B>::getInt(72*365), FieldFactory<B>::getInt(4),
+                                                                                          Field<B>::If(ageDays <= FieldFactory<B>::getInt(83*365), FieldFactory<B>::getInt(5), FieldFactory<B>::getInt(6)))))));
 
-    return Value(TypeId::ENCRYPTED_INTEGER32, ageStrata);
-
-}
-
-Value EnrichTestSupport::projectPlainAgeStrata(const QueryTuple & aTuple) {
-    int32_t ageDays = aTuple.getField(2).getValue().getInt32(); // age_days
-
-    if(ageDays <= 28*365) return  Value(0);
-    else if(ageDays <= 39*365) return  Value(1);
-    else if(ageDays <= 50*365) return  Value( 2);
-    else if(ageDays <= 61*365) return  Value( 3);
-    else if(ageDays <=72*365) return  Value(4);
-    else if(ageDays <= 83*365) return  Value( 5);
-
-    return Value( 6);
-
-}
-
-Value EnrichTestSupport::projectAgeStrata(const QueryTuple & aTuple) {
-    TypeId ageType = aTuple.getFieldPtr(2)->getValue().getType();
-    if(TypeUtilities::isEncrypted(ageType))
-        return projectSecureAgeStrata(aTuple);
-
-    return projectPlainAgeStrata(aTuple);
+    return ageStrata;
 }
 
 
 // Project #2
 //     CASE WHEN count(*) > 1 THEN 1 else 0 END AS multisite
-// MPC case only
-Value EnrichTestSupport::projectMultisite(const QueryTuple & aTuple) {
-    Integer siteCount = aTuple.getFieldPtr(7)->getValue().getEmpInt();
+template<typename B>
+Field<B> EnrichTestSupport<B>::projectMultisite(const QueryTuple<B> & aTuple) {
+    // int32_t
+    Field<B> siteCount = aTuple[7];
+    Field<B> zero =  FieldFactory<B>::getInt(0);
+    Field<B> one =  FieldFactory<B>::getInt(1);
 
-    Bit condition = siteCount > Integer(64, 1, PUBLIC);
+    B cmp = siteCount > FieldFactory<B>::getOne(siteCount.getType());
 
-    // get from Value::TypeId bool --> int
-    Integer result(32, 0, PUBLIC);
-    result.bits[0] = condition;
-    return Value(TypeId::ENCRYPTED_INTEGER32, result);
-
-
+    return Field<B>::If(cmp, one, zero);
 
 }
-/* generic case:
- *
- *   Value siteCount = aTuple.getField(7).getValue();
-    TypeId siteCountType = siteCount.getType(); // can be MPC or plaintext
-    Value zero = TypeUtilities::getZero(siteCountType);
-    Value one = TypeUtilities::getOne(siteCountType);
 
-    Value condition =  siteCount > one;
-    // get from Value::TypeId bool --> int
-    if(TypeUtilities::isEncrypted(siteCountType))
-        return Value::obliviousIf(condition, one, zero);
-
-    return condition.getBool() ? one : zero;
- *
- */
 
 //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
 // MPC case only
-Value EnrichTestSupport::projectNumeratorMultisite(const QueryTuple & aTuple) {
+template<typename B>
+Field<B> EnrichTestSupport<B>::projectNumeratorMultisite(const QueryTuple<B> & aTuple) {
 
-    Integer inNumerator = aTuple.getFieldPtr(6)->getValue().getEmpInt();
-    Integer siteCount = aTuple.getFieldPtr(7)->getValue().getEmpInt();
+    Field<B> inNumerator = aTuple[6];
+    Field<B> siteCount = aTuple[7];
+    Field<B> zero = FieldFactory<B>::getInt(0);
+    Field<B> one = FieldFactory<B>::getInt(1);
 
-    Bit multisite = siteCount > Integer(64, 1, PUBLIC);
+
+    B multisite = (siteCount > FieldFactory<B>::getOne(siteCount.getType()));
     // only 0 || 1
-    Bit numeratorTrue = inNumerator.bits[0];
-    Bit condition = multisite & numeratorTrue;
+    B numeratorTrue = inNumerator > FieldFactory<B>::getZero(inNumerator.getType());
+    B condition = multisite & numeratorTrue;
 
-    // get from Value::TypeId bool --> int
-    Integer result(32, 0, PUBLIC);
-    result.bits[0] = condition;
-    return Value(TypeId::ENCRYPTED_INTEGER32, result);
+    return Field<B>::If(condition, one, zero);
 
 }
 
 
 // patients(patid int, zip_marker varchar(3), age_days integer, sex varchar(1), ethnicity bool, race int, numerator int default null)
-QuerySchema EnrichTestSupport::getPatientSchema() {
+template<typename B>
+QuerySchema EnrichTestSupport<B>::getPatientSchema() {
     QuerySchema patientSchema(7);
-    patientSchema.putField(QueryFieldDesc(0, "patid", "patient", TypeId::INTEGER32));
-    patientSchema.putField(QueryFieldDesc(1, "zip_marker", "patient", TypeId::VARCHAR, 3));
-    patientSchema.putField(QueryFieldDesc(2, "age_days", "patient", TypeId::INTEGER32));
-    patientSchema.putField(QueryFieldDesc(3, "sex", "patient", TypeId::VARCHAR, 1));
-    patientSchema.putField(QueryFieldDesc(4, "ethnicity", "patient", TypeId::BOOLEAN));
-    patientSchema.putField(QueryFieldDesc(5, "race", "patient", TypeId::INTEGER32));
+    patientSchema.putField(QueryFieldDesc(0, "patid", "patient", FieldType::INT));
+    patientSchema.putField(QueryFieldDesc(1, "zip_marker", "patient", FieldType::STRING, 3));
+    patientSchema.putField(QueryFieldDesc(2, "age_days", "patient", FieldType::INT));
+    patientSchema.putField(QueryFieldDesc(3, "sex", "patient", FieldType::STRING, 1));
+    patientSchema.putField(QueryFieldDesc(4, "ethnicity", "patient", FieldType::BOOL));
+    patientSchema.putField(QueryFieldDesc(5, "race", "patient", FieldType::INT));
     // numerator: null = false, 1 = true
-    patientSchema.putField(QueryFieldDesc(6, "numerator", "patient", TypeId::INTEGER32));
+    patientSchema.putField(QueryFieldDesc(6, "numerator", "patient", FieldType::INT));
 
     return patientSchema;
 }
 
 // patient_inclusion(patid int, numerator int, denom_incl int)
-QuerySchema EnrichTestSupport::getPatientInclusionSchema() {
+template<typename B>
+QuerySchema EnrichTestSupport<B>::getPatientInclusionSchema() {
     QuerySchema patientInclusionSchema(3);
-    patientInclusionSchema.putField(QueryFieldDesc(0, "patid", "patient_inclusion", TypeId::INTEGER32));
+    patientInclusionSchema.putField(QueryFieldDesc(0, "patid", "patient_inclusion", FieldType::INT));
     // numerator: null = false, 1 = true
-    patientInclusionSchema.putField(QueryFieldDesc(1, "numerator", "patient_inclusion", TypeId::INTEGER32));
+    patientInclusionSchema.putField(QueryFieldDesc(1, "numerator", "patient_inclusion", FieldType::INT));
     // denom_excl: null = false, 1 = true
-    patientInclusionSchema.putField(QueryFieldDesc(2, "denom_incl", "patient_inclusion", TypeId::INTEGER32));
+    patientInclusionSchema.putField(QueryFieldDesc(2, "denom_incl", "patient_inclusion", FieldType::INT));
     return patientInclusionSchema;
 }
+
+template class vaultdb::FilterExcludedPatients<BoolField>;
+template class vaultdb::FilterExcludedPatients<SecureBoolField>;
+
+template class vaultdb::EnrichTestSupport<BoolField>;
+template class vaultdb::EnrichTestSupport<SecureBoolField>;

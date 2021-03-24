@@ -1,46 +1,48 @@
 #include "sort.h"
 
 
-int Sort::powerOfLessThanTwo(const int & n) {
-  int k = 1;
-  while (k > 0 && k < n) {
-    k *= 2;
-  }
-  return k / 2;
-}
+using namespace vaultdb;
 
-Sort::Sort(Operator *child, const SortDefinition &aSortDefinition) : Operator(child), sortDefinition(aSortDefinition) {
-
-
-}
-
-Sort::Sort(shared_ptr<QueryTable> child, const SortDefinition &aSortDefinition) : Operator(child), sortDefinition(aSortDefinition){
-
-}
-
-
-std::shared_ptr<QueryTable> Sort::runSelf() {
-    std::shared_ptr<QueryTable> input = children[0]->getOutput();
-
-    SortDefinition reverseSortDefinition = getReverseSortDefinition(sortDefinition);
-
-    if(input->isEncrypted()) {
-        sortCondition = new SecureSortCondition(sortDefinition);
-        reverseSortCondition = new SecureSortCondition(reverseSortDefinition);
+template<typename B>
+int Sort<B>::powerOfLessThanTwo(const int & n) {
+    int k = 1;
+    while (k > 0 && k < n) {
+        k *= 2;
     }
-    else {
-        sortCondition = new PlainSortCondition(sortDefinition);
-        reverseSortCondition = new PlainSortCondition(reverseSortDefinition);
+    return k / 2;
+}
+
+template<typename B>
+Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition) : Operator<B>(child), sortDefinition(aSortDefinition) {
+
+    for(ColumnSort s : sortDefinition) {
+        if(s.second == SortDirection::INVALID)
+            throw; // invalid sort definition
     }
 
+}
+
+template<typename B>
+Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition) : Operator<B>(child), sortDefinition(aSortDefinition){
+
+    for(ColumnSort s : sortDefinition) {
+        if(s.second == SortDirection::INVALID)
+            throw; // invalid sort definition
+    }
+
+}
+
+template<typename B>
+std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
+    std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
 
     // deep copy new output
-    output = std::shared_ptr<QueryTable>(new QueryTable(*input));
-    bitonicSort(0,  output->getTupleCount(), true);
+    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
+    bitonicSort(0,  Operator<B>::output->getTupleCount(), true);
 
-    output->setSortOrder(sortDefinition);
+    Operator<B>::output->setSortOrder(sortDefinition);
 
-    return output;
+    return Operator<B>::output;
 }
 
 
@@ -49,7 +51,8 @@ std::shared_ptr<QueryTable> Sort::runSelf() {
  * calls bitonicMerge.
  **/
 
-void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
+template<typename B>
+void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &invertDir) {
     if (cnt > 1) {
         int k = cnt / 2;
         bitonicSort(lo, k, !invertDir);
@@ -66,8 +69,8 @@ void Sort::bitonicSort(const int &lo, const int &cnt, bool invertDir) {
  * the number of elements is cnt.
  **/
 
-
-void Sort::bitonicMerge(const int &lo, const int &n, bool invertDir) {
+template<typename B>
+void Sort<B>::bitonicMerge(const int &lo, const int &n, const bool &invertDir) {
 
     if (n > 1) {
         int m = powerOfLessThanTwo(n);
@@ -79,44 +82,53 @@ void Sort::bitonicMerge(const int &lo, const int &n, bool invertDir) {
     }
 }
 
-void Sort::compareAndSwap(const int &lhsIdx, const int &rhsIdx, bool invertDir) {
-    QueryTuple lhs = output->getTuple(lhsIdx);
-    QueryTuple rhs = output->getTuple(rhsIdx);
-
-    if(!invertDir) {
-        sortCondition->compareAndSwap(lhs, rhs);
-    }
-    else {
-        reverseSortCondition->compareAndSwap(lhs, rhs);
-    }
-
-    output->putTuple(lhsIdx, lhs);
-    output->putTuple(rhsIdx, rhs);
-
-
-
+template<typename B>
+void Sort<B>::compareAndSwap(const int &lhsIdx, const int &rhsIdx, const bool &invertDir) {
+    B toSwap = swapTuples(lhsIdx, rhsIdx, invertDir);
+    QueryTuple<B>::compareAndSwap(toSwap, Operator<B>::output->getTuplePtr(lhsIdx), Operator<B>::output->getTuplePtr(rhsIdx));
 
 }
 
-SortDefinition Sort::getReverseSortDefinition(const SortDefinition & aSortDef) {
-    SortDefinition reverseSortDefinition;
+template<typename B>
+Sort<B>::~Sort() {
 
-    for(ColumnSort cs : aSortDef) {
-        ColumnSort reversed = cs;
-        reversed.second = (reversed.second == SortDirection::ASCENDING) ?  SortDirection::DESCENDING : SortDirection::ASCENDING;
-        reverseSortDefinition.push_back(reversed);
+}
+
+template<typename B>
+B Sort<B>::swapTuples(const int &lhsIdx, const int &rhsIdx, const bool &invertDir) {
+    B swap(false);
+    B swapInit = swap;
+
+    QueryTuple<B> lhs = (*Operator<B>::output)[lhsIdx];
+    QueryTuple<B> rhs = (*Operator<B>::output)[rhsIdx];
+    //std::cout << "Comparing " << lhs.reveal().toString(true) << " to " << rhs.reveal().toString() << std::endl;
+
+    for (size_t i = 0; i < sortDefinition.size(); ++i) {
+        const Field<B> *lhsField = sortDefinition[i].first == -1 ? lhs.getDummyTag()
+                                                                 : lhs.getField(sortDefinition[i].first);
+        const Field<B> *rhsField = sortDefinition[i].first == -1 ? rhs.getDummyTag()
+                                                                 : rhs.getField(sortDefinition[i].first);
+
+        bool asc = (sortDefinition[i].second == SortDirection::ASCENDING);
+        if (invertDir)
+            asc = !asc;
+
+        B colSwapFlag = (*lhsField < *rhsField) == B(asc);
+
+        // find first one where not eq, use this to init flag
+        swap = (B) Field<B>::If(swapInit, swap, colSwapFlag); // once we know there's a swap once, we keep it
+
+        B neq = *lhsField != *rhsField;
+        swapInit = swapInit | (*lhsField != *rhsField);  // have we found the first  column where they are not equal?
+        //std::cout << "Fields: " << lhsField->reveal().toString() << ", " << rhsField->reveal().toString() << ", colSwapFlag: " << colSwapFlag.reveal().toString() << ", toSwap: " << swap.reveal().toString()  << ", swapInit: " << swapInit.reveal().toString() <<  std::endl;
+
     }
 
-    return reverseSortDefinition;
-
-}
-
-Sort::~Sort() {
-
-    if(sortCondition) delete sortCondition;
-    if(reverseSortCondition) delete reverseSortCondition;
-
+//    std::cout << "With invertDir=" << invertDir << " toSwap? " << swap.reveal().toString() << std::endl;
+    return swap;
 }
 
 
+template class vaultdb::Sort<BoolField>;
+template class vaultdb::Sort<SecureBoolField>;
 

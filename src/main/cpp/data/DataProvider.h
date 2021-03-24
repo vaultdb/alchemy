@@ -6,10 +6,10 @@
 namespace  vaultdb {
     class DataProvider {
     public:
-        std::unique_ptr<QueryTable> GetQueryTable(std::string dbname,
+        std::unique_ptr<QueryTable<BoolField> > GetQueryTable(std::string dbname,
                                                   std::string query_string);
 
-        std::unique_ptr<QueryTable> GetQueryTable(std::string dbname,
+        std::unique_ptr<QueryTable<BoolField> > GetQueryTable(std::string dbname,
                                                   std::string query_string,
                                                   bool hasDummyFlag);
 

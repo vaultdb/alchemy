@@ -22,21 +22,21 @@ TEST_F(EmpTableTest, encrypt_table_one_column) {
     PsqlDataProvider dataProvider;
 
     std::string inputQuery =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
-    std::cout << "Querying " << dbName << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
+    //std::cout << "Querying " << dbName << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << inputQuery << std::endl;
 
 
 
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
+    std::unique_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          inputQuery, false);
 
 
-    std::shared_ptr<QueryTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
 
     netio->flush();
 
-    std::unique_ptr<QueryTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery, false);
-    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
+    std::unique_ptr<PlainTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery, false);
+    std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 
 
 
@@ -56,16 +56,18 @@ TEST_F(EmpTableTest, encrypt_table_varchar) {
     PsqlDataProvider dataProvider;
 
     std::string inputQuery =  "SELECT l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
+    std::unique_ptr<PlainTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery, false);
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
+
+    std::unique_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          inputQuery, false);
 
-    std::shared_ptr<QueryTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
 
     netio->flush();
 
-    std::unique_ptr<QueryTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery, false);
-    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
+    std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
+
 
 
 
@@ -85,14 +87,14 @@ TEST_F(EmpTableTest, encrypt_table_two_cols) {
                              "ORDER BY l_orderkey, l_linenumber "
                              "LIMIT 10";
 
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
+    std::unique_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          inputQuery, false);
 
-    std::shared_ptr<QueryTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
     netio->flush();
 
-    std::unique_ptr<QueryTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery, false);
-    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
+    std::unique_ptr<PlainTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery, false);
+    std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 
     ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
 
@@ -107,15 +109,15 @@ TEST_F(EmpTableTest, encrypt_table) {
 
     PsqlDataProvider dataProvider;
     std::string inputQuery = QueryTableTestQueries::getInputQuery();
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
+    std::unique_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          inputQuery, false);
 
-    std::shared_ptr<QueryTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
 
     netio->flush();
 
-    std::unique_ptr<QueryTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob",  inputQuery, false);
-    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
+    std::unique_ptr<PlainTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob",  inputQuery, false);
+    std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 
 
     ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
@@ -129,17 +131,17 @@ TEST_F(EmpTableTest, encrypt_table_dummy_tag) {
     PsqlDataProvider dataProvider;
 
     std::string inputQuery = QueryTableTestQueries::getInputQueryDummyTag();
-    std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(dbName,
+    std::unique_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          inputQuery, true);
 
-    std::shared_ptr<QueryTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
 
     netio->flush();
 
-    std::unique_ptr<QueryTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery,
+    std::unique_ptr<PlainTable> expectedTable = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", inputQuery,
                                                                                  true);
 
-    std::unique_ptr<QueryTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
+    std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 
     ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
 

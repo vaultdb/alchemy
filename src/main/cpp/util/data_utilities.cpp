@@ -21,29 +21,29 @@ unsigned char DataUtilities::reverse(unsigned char b) {
 
 
 // in some cases, like with LIMIT, we can't just run over tpch_unioned
-std::unique_ptr<QueryTable>
+std::unique_ptr<PlainTable >
 DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
                                  const bool &hasDummyTag) {
 
     PsqlDataProvider dataProvider;
 
-    std::unique_ptr<QueryTable> alice = dataProvider.getQueryTable(aliceDb, sql, hasDummyTag); // dummyTag true not yet implemented
-    std::unique_ptr<QueryTable> bob = dataProvider.getQueryTable(bobDb, sql, hasDummyTag);
+    std::unique_ptr<PlainTable > alice = dataProvider.getQueryTable(aliceDb, sql, hasDummyTag); // dummyTag true not yet implemented
+    std::unique_ptr<PlainTable > bob = dataProvider.getQueryTable(bobDb, sql, hasDummyTag);
 
 
     uint32_t tupleCount = alice->getTupleCount() + bob->getTupleCount();
 
-    std::unique_ptr<QueryTable> unioned(new QueryTable(tupleCount, alice->getSchema().getFieldCount()));
+    std::unique_ptr<PlainTable > unioned(new PlainTable(tupleCount, alice->getSchema().getFieldCount()));
     unioned->setSchema(alice->getSchema());
 
     for(size_t i = 0; i < alice->getTupleCount(); ++i) {
         unioned->putTuple(i, alice->getTuple(i));
     }
 
-    int offset = alice->getTupleCount();
+    size_t offset = alice->getTupleCount();
 
     // add bob's tuples from last to first
-    int readIdx = bob->getTupleCount();
+    size_t readIdx = bob->getTupleCount();
     for(size_t i = 0; i < bob->getTupleCount(); ++i) {
         --readIdx;
         unioned->putTuple(i + offset, bob->getTuple(readIdx));
@@ -57,7 +57,7 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
 }
 
 
- std::shared_ptr<QueryTable> DataUtilities::getQueryResults(const std::string & dbName, const std::string & sql, const bool & hasDummyTag) {
+ std::shared_ptr<PlainTable > DataUtilities::getQueryResults(const std::string & dbName, const std::string & sql, const bool & hasDummyTag) {
     PsqlDataProvider dataProvider;
     return dataProvider.getQueryTable(dbName, sql, hasDummyTag);
 }
@@ -67,6 +67,7 @@ std::string DataUtilities::queryDatetime(const string &colName) {
 }
 
 
+/*
 void DataUtilities::locallySecretShareTable(const std::unique_ptr<QueryTable> &table, const string &aliceFile,
                                            const string &bobFile) {
     SecretShares shares = table->generateSecretShares();
@@ -74,10 +75,10 @@ void DataUtilities::locallySecretShareTable(const std::unique_ptr<QueryTable> &t
     writeFile(bobFile, shares.second);
 
 
-}
+}*/
 
 
-void DataUtilities::writeFile(std::string fileName, vector<int8_t> contents) {
+void DataUtilities::writeFile(const string &fileName, vector<int8_t> contents) {
     std::ofstream outFile(fileName.c_str(), std::ios::out | std::ios::binary);
     if(!outFile.is_open()) {
         throw std::invalid_argument("Could not write output file " + fileName);
@@ -122,19 +123,17 @@ SortDefinition DataUtilities::getDefaultSortDefinition(const uint32_t &colCount)
 
     }
 
-std::shared_ptr<QueryTable> DataUtilities::removeDummies(const std::shared_ptr<QueryTable> &input) {
+std::shared_ptr<PlainTable > DataUtilities::removeDummies(const std::shared_ptr<PlainTable  > &input) {
     // only works for plaintext tables
     assert(!input->isEncrypted());
     int outputTupleCount = input->getTrueTupleCount();
 
     int writeCursor = 0;
-    std::shared_ptr<QueryTable> output(new QueryTable(outputTupleCount, input->getSchema(), input->getSortOrder()));
-    output->setSchema(input->getSchema());
-    output->setSortOrder(input->getSortOrder());
+    std::shared_ptr<PlainTable > output(new PlainTable(outputTupleCount, input->getSchema(), input->getSortOrder()));
 
     for(size_t i = 0; i < input->getTupleCount(); ++i) {
-        QueryTuple *tuple = input->getTuplePtr(i);
-        if(!tuple->getDummyTag().getBool()) {
+        QueryTuple<BoolField> *tuple = input->getTuplePtr(i);
+        if(!tuple->getDummyTag()->getBool()) {
             output->putTuple(writeCursor, *tuple);
             ++writeCursor;
         }
@@ -143,11 +142,11 @@ std::shared_ptr<QueryTable> DataUtilities::removeDummies(const std::shared_ptr<Q
     return output;
 }
 
-std::shared_ptr<QueryTable>
+std::shared_ptr<PlainTable >
 DataUtilities::getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
                                   const int &sortColCount) {
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, sql, false);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, sql, false);
     SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
     expected->setSortOrder(expectedSortOrder);
     return expected;

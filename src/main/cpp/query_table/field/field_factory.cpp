@@ -1,76 +1,311 @@
 #include "field_factory.h"
 
+#include "boost/date_time/gregorian/gregorian.hpp"
+#include <util/type_utilities.h>
+#include <field/instance/long_instance.h>
+#include <field/instance/float_instance.h>
+#include <field/instance/string_instance.h>
+#include <field/instance/secure_bool_instance.h>
+#include <field/instance/secure_long_instance.h>
+#include <field/instance/secure_float_instance.h>
+#include <field/instance/secure_string_instance.h>
+
+#include "instance/bool_instance.h"
+#include "instance/int_instance.h"
+#include "instance/secure_int_instance.h"
+
 using namespace vaultdb;
 
-/* Can't seem to get past it failing on:
- * /src/main/cpp/query_table/field/field_factory.cpp:22:87: error: no matching conversion for C-style cast from 'const bool' to 'std::string' (aka 'basic_string<char, char_traits<char>, allocator<char> >')
-    if(std::is_same<decltype(primitive), std::string>::value)  return new StringField((std::string) primitive);
-template<typename T>
-Field * vaultdb::FieldFactory<T>::getField(const T &primitive, const FieldType & fieldType) {
-
-    if(std::is_same<decltype(primitive), bool>::value) return new BoolField((bool) primitive);
-    if(std::is_same<decltype(primitive), int32_t>::value)      return new IntField((int32_t) primitive);
-    if(std::is_same<decltype(primitive), int64_t>::value)      return new LongField((int64_t) primitive);
-    if(std::is_same<decltype(primitive), float_t>::value)      return new FloatField((float_t) primitive);
-    if(std::is_same<decltype(primitive), std::string>::value)  return new StringField((std::string) primitive);
-    if(std::is_same<decltype(primitive), emp::Bit>::value)     return new SecureBoolField((emp::Bit) primitive);
-    if(std::is_same<decltype(primitive), emp::Float>::value)     return new SecureFloatField((emp::Float) primitive);
-
-    if(std::is_same<decltype(primitive), emp::Integer>::value) {
-        switch (fieldType) {
-            case FieldType::SECURE_INT32:
-                return new SecureIntField((emp::Integer) primitive);
-            case FieldType::SECURE_INT64:
-                return new SecureLongField((emp::Integer) primitive);
-            case FieldType::SECURE_STRING:
-                return new SecureStringField((emp::Integer) primitive);
-            default:
-                throw;
+PlainField * FieldFactory<BoolField>::getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src) {
+    switch (type) {
+        case FieldType::BOOL: {
+            bool boolField = (src == "1") ? true : false;
+            return new BoolField(boolField);
         }
-    }
+
+        case FieldType::INT: {
+            int32_t intField = std::atoi(src.c_str());
+            return new IntField(intField);
+        }
+        case FieldType::LONG: {
+            int64_t intField = std::atol(src.c_str());
+            return new LongField(intField);
+        }
+        case FieldType::STRING: {
+            std::string fieldStr = src;
+            while(fieldStr.length() < strLength) {
+                fieldStr += " ";
+            }
+            return new StringField(fieldStr);
+        }
+        case FieldType::FLOAT: {
+            float_t floatField = std::atof(src.c_str());
+            return new FloatField(floatField);
+        }
+        case FieldType::DATE: {
+            boost::gregorian::date date(boost::gregorian::from_string(src));
+            boost::gregorian::date epochStart(1970, 1, 1);
+            int64_t epochTime = (date - epochStart).days() * 24 * 3600;
+            return new LongField(epochTime);
+        }
+        default:
+            throw std::invalid_argument("Unsupported type for string decoding: " + TypeUtilities::getTypeString(type) + "\n");
 
 
+    };
 }
- */
 
-Field *FieldFactory::getField(const int8_t *src, const FieldType &fieldType, const size_t &strLength) {
 
-    switch (fieldType) {
+
+PlainField FieldFactory<BoolField>::getZero(const FieldType &aType) {
+    switch(aType) {
         case FieldType::BOOL:
-            return new BoolField(src);
-//        case FieldType::INT32:
-//            return new IntField(src);
-//        case FieldType::INT64:
-//            return new LongField(src);
-//
-//        case FieldType::FLOAT32:
-//            return new FloatField(src);
-//
-//        case FieldType::STRING:
-//            return new StringField(src, strLength);
-//
-        case FieldType::SECURE_BOOL:
-            return new SecureBoolField(src);
-//        case FieldType::SECURE_INT32:
-//            return new SecureIntField(src);
-//        case FieldType::SECURE_INT64:
-//            return new SecureLongField(src);
-//
-//        case FieldType::SECURE_FLOAT32:
-//            return new SecureFloatField(src);
-//
-//        case FieldType::SECURE_STRING:
-//            return new SecureStringField(src, strLength);
-//
-//
-       default:
-            return nullptr;
+            return  BoolField(false);
+        case FieldType::INT:
+            return  IntField((int32_t) 0);
+        case FieldType::DATE:
+        case FieldType::LONG:
+            return  LongField((int64_t ) 0);
+        case FieldType::FLOAT:
+            return  FloatField((float_t) 0.0);
+        case FieldType::STRING:
+            char oneChar[2]; //  null-terminated
+            oneChar[0]  = (int8_t) 0;
+            return  StringField(std::string(oneChar));
+        default:
+            throw std::invalid_argument("Type unsupported in getZero(): " + TypeUtilities::getTypeString(aType));
 
+    };
+}
+
+
+PlainField FieldFactory<BoolField>::getOne(const FieldType &aType) {
+    switch(aType) {
+        case FieldType::BOOL:
+            return  BoolField(true);
+        case FieldType::INT:
+            return  IntField((int32_t) 1);
+        case FieldType::DATE:
+        case FieldType::LONG:
+            return  LongField(1L);
+        case FieldType::FLOAT:
+            return  FloatField((float_t) 1.0);
+        case FieldType::STRING:
+            char oneChar[2]; //  null-terminated
+            oneChar[0]  = (int8_t) 1;
+            return  StringField(std::string(oneChar));
+        default:
+            throw std::invalid_argument("Type unsupported in getOne(): " + TypeUtilities::getTypeString(aType));
+
+    };
+}
+
+
+
+FieldInstance<BoolField> *FieldFactory<BoolField>::getFieldInstance(PlainField *src) {
+    FieldType aType = src->getType();
+
+    switch(aType) {
+        case FieldType::BOOL:
+            return new BoolInstance(src);
+        case FieldType::INT:
+            return new IntInstance(src);
+        case FieldType::DATE:
+        case FieldType::LONG:
+            return new LongInstance(src);
+        case FieldType::FLOAT:
+            return new FloatInstance(src);
+        case FieldType::STRING:
+            return new StringInstance(src);
+        default:
+            throw std::invalid_argument("Type unsupported in getInstance(): " + TypeUtilities::getTypeString(aType));
+
+    }
+}
+
+FloatField FieldFactory<BoolField>::toFloat(const PlainField &src) {
+    switch(src.getType()) {
+        case FieldType::BOOL:
+            return FloatField((float_t) ((BoolField) src).getPayload());
+        case FieldType::INT:
+            return FloatField((float_t) ((IntField) src).getPayload());
+        case FieldType::LONG:
+            return FloatField((float_t) ((LongField) src).getPayload());
+        case FieldType::FLOAT:
+            return FloatField(((FloatField) src).getPayload());
+
+        default:
+            throw std::invalid_argument("Cannot convert value of type " +
+                                        TypeUtilities::getTypeString(src.getType()) + " to float.");
+    }
+
+}
+
+LongField FieldFactory<BoolField>::toLong(const PlainField & field) {
+    if(field.getType() == FieldType::INT) {
+        int32_t payload = ((IntField) field).getPayload();
+        return LongField(payload);
+    }
+    throw std::invalid_argument("toLong not supported for " + TypeUtilities::getTypeString(field.getType()));
+
+}
+
+
+PlainField FieldFactory<BoolField>::getMin(const FieldType & type) {
+    switch(type) {
+        case FieldType::BOOL:
+            return BoolField(false);
+        case FieldType::INT:
+            return IntField(INT_MIN);
+        case FieldType::LONG:
+            return  LongField(LONG_MIN);
+        case FieldType::FLOAT:
+            return FloatField(FLT_MIN);
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<BoolField>::getMin()");
+    }
+
+}
+
+PlainField FieldFactory<BoolField>::getMax(const FieldType & type) {
+    switch(type) {
+        case FieldType::BOOL:
+            return BoolField(true);
+        case FieldType::INT:
+            return IntField(INT_MAX);
+        case FieldType::LONG:
+            return  LongField(LONG_MAX);
+        case FieldType::FLOAT:
+            return FloatField(FLT_MAX);
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<BoolField>::getMax()");
     }
 
 
 }
 
-Field *FieldFactory::obliviousIf(const Field & choice, const Field & lhs,const Field & rhs) {
-    return &(lhs.compareAndSwap(choice, rhs));
+
+
+// ************  Start SecureBoolField *************/
+
+
+
+SecureField FieldFactory<SecureBoolField>::getZero(const FieldType &aType) {
+    switch(aType) {
+        case FieldType::SECURE_BOOL:
+            return  SecureBoolField(emp::Bit(0, emp::PUBLIC));
+        case FieldType::SECURE_INT:
+            return  SecureIntField(emp::Integer(32, 0, emp::PUBLIC));
+        case FieldType::SECURE_LONG:
+            return  SecureLongField(emp::Integer(64, 0, emp::PUBLIC));
+        case FieldType::SECURE_FLOAT:
+            return  SecureFloatField(emp::Float(0.0));
+        case FieldType::SECURE_STRING:
+            return  SecureStringField(emp::Integer(8, (int)'0'));
+        default:
+            throw std::invalid_argument("Type unsupported in getZero(): " + TypeUtilities::getTypeString(aType));
+
+    };
 }
+
+SecureField FieldFactory<SecureBoolField>::getOne(const FieldType &aType) {
+    switch(aType) {
+        case FieldType::SECURE_BOOL:
+            return  SecureBoolField(emp::Bit(1, emp::PUBLIC));
+        case FieldType::SECURE_INT:
+            return  SecureIntField(emp::Integer(32, 1, emp::PUBLIC));
+        case FieldType::SECURE_LONG:
+            return  SecureLongField(emp::Integer(64, 1, emp::PUBLIC));
+        case FieldType::SECURE_FLOAT:
+            return  SecureFloatField(emp::Float(1.0));
+        case FieldType::SECURE_STRING:
+            return  SecureStringField(emp::Integer(8, (int)'1'));
+        default:
+            throw std::invalid_argument("Type unsupported in getOne(): " + TypeUtilities::getTypeString(aType));
+
+    };
+}
+
+FieldInstance<SecureBoolField> *FieldFactory<SecureBoolField>::getFieldInstance( SecureField *src) {
+    FieldType aType = src->getType();
+
+    switch(aType) {
+        case FieldType::SECURE_BOOL:
+            return new SecureBoolInstance(src);
+        case FieldType::SECURE_INT:
+            return new SecureIntInstance(src);
+       case FieldType::SECURE_LONG:
+           return new SecureLongInstance(src);
+        case FieldType::SECURE_FLOAT:
+            return new SecureFloatInstance(src);
+        case FieldType::SECURE_STRING:
+            return new SecureStringInstance(src);
+        default:
+            throw std::invalid_argument("Type unsupported in getInstance(): " + TypeUtilities::getTypeString(aType));
+
+    }
+}
+
+SecureField FieldFactory<SecureBoolField>::toFloat(const SecureField &src) {
+
+    switch (src.getType()) {
+        case FieldType::SECURE_INT:
+            return SecureFloatField::toFloat((SecureIntField) src);
+        case FieldType::SECURE_LONG:
+            return SecureFloatField::toFloat((SecureLongField) src);
+        case FieldType::SECURE_FLOAT:
+            return SecureFloatField((SecureFloatField) src);
+
+        default:
+            throw std::invalid_argument("Cannot convert value of type " +
+                                        TypeUtilities::getTypeString(src.getType()) + " to SecureFloat.");
+
+
+    }
+}
+
+SecureLongField FieldFactory<SecureBoolField>::toLong(const SecureField & field) {
+    if(field.getType() == FieldType::SECURE_INT) {
+        emp::Integer payload = ((SecureIntField) field).getPayload();
+        payload.resize(64);
+        return SecureLongField(payload);
+    }
+    throw std::invalid_argument("toLong not supported for " + TypeUtilities::getTypeString(field.getType()));
+
+}
+
+
+SecureField FieldFactory<SecureBoolField>::getMin(const FieldType & type) {
+    switch(type) {
+        case FieldType::SECURE_BOOL:
+            return SecureBoolField(false);
+        case FieldType::SECURE_INT:
+            return SecureIntField(INT_MIN);
+        case FieldType::SECURE_LONG:
+            return  SecureLongField(LONG_MIN);
+        case FieldType::SECURE_FLOAT:
+            return SecureFloatField(FLT_MIN);
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<SecureBoolField>::getMin()");
+    }
+
+}
+
+
+SecureField FieldFactory<SecureBoolField>::getMax(const FieldType & type) {
+    switch(type) {
+        case FieldType::SECURE_BOOL:
+            return SecureBoolField(true);
+        case FieldType::SECURE_INT:
+            return SecureIntField(INT_MAX);
+        case FieldType::SECURE_LONG:
+            return  SecureLongField(LONG_MAX);
+        case FieldType::SECURE_FLOAT:
+            return SecureFloatField(FLT_MAX);
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<SecureBoolField>::getMax()");
+    }
+
+
+}
+

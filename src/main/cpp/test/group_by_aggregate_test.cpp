@@ -1,6 +1,5 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
-#include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/filter.h>
@@ -9,7 +8,6 @@
 
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -31,7 +29,7 @@ void GroupByAggregateTest::runTest(const string &expectedOutputQuery,
 
 
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 1);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 1);
 
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
@@ -41,11 +39,11 @@ void GroupByAggregateTest::runTest(const string &expectedOutputQuery,
 
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate.run();
+    std::shared_ptr<PlainTable> aggregated = aggregate.run();
 
 
     // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
     ASSERT_EQ(*expected, *observed);
 
@@ -54,7 +52,7 @@ void GroupByAggregateTest::runTest(const string &expectedOutputQuery,
 void GroupByAggregateTest::runDummiesTest(const string &expectedOutputQuery,
                                           const vector<ScalarAggregateDefinition> &aggregators) const {
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 1);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 1);
 
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
@@ -64,10 +62,10 @@ void GroupByAggregateTest::runDummiesTest(const string &expectedOutputQuery,
 
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate.run();
+    std::shared_ptr<PlainTable> aggregated = aggregate.run();
 
     // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
     ASSERT_EQ(*expected, *observed);
 
@@ -174,7 +172,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
                                  "FROM (" + inputQuery + ") subquery WHERE NOT dummy "
                                                          "GROUP BY l_returnflag, l_linestatus";
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
 
     std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -188,10 +186,10 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
 
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate.run();
+    std::shared_ptr<PlainTable> aggregated = aggregate.run();
 
     // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
 
     ASSERT_EQ(*expected, *observed);
@@ -222,7 +220,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
                                   "order by \n"
                                   "  l_returnflag, l_linestatus";
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -236,10 +234,10 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate.run();
+    std::shared_ptr<PlainTable> aggregated = aggregate.run();
 
     // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
     ASSERT_EQ(*expected, *observed);
 
@@ -274,7 +272,7 @@ TEST_F(GroupByAggregateTest, tpch_q1) {
                                   "  l_returnflag, \n"
                                   "  l_linestatus";
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -292,10 +290,10 @@ TEST_F(GroupByAggregateTest, tpch_q1) {
 
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
-    std::shared_ptr<QueryTable> aggregated = aggregate.run();
+    std::shared_ptr<PlainTable> aggregated = aggregate.run();
 
     // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<QueryTable> observed = DataUtilities::removeDummies(aggregated);
+    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
     ASSERT_EQ(*expected, *observed);
 

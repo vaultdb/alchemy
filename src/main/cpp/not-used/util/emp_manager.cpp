@@ -72,35 +72,31 @@ std::shared_ptr<QueryTable> EmpManager:: secretShareTable(const QueryTable *srcT
 QueryTuple EmpManager::secretShareTuple(QueryTuple *srcTuple, const QuerySchema *schema, const int & myParty, const int & dstParty) {
     int fieldCount = schema->getFieldCount();
     QueryTuple dstTuple(fieldCount, true);
-    types::TypeId aType;
-    size_t aSize;
 
 
     for(int i = 0; i < fieldCount; ++i) {
 
-        const QueryField *srcField = (myParty == dstParty) ? srcTuple->getFieldPtr(i) : nullptr;
-        aSize = schema->getField(i).size();
-        aType = schema->getField(i).getType();
-        QueryField dstField = secretShareField(srcField, aType, i, aSize, myParty, dstParty);
-        dstTuple.putField(dstField);
-
+        const Field *srcField = (myParty == dstParty) ? srcTuple->getField(i) : nullptr;
+        Field *dstField = secretShareField(srcField, myParty, dstParty);
+        dstTuple.putField(dstField, i);
+        delete dstField;
     }
 
-    bool dummyTag = 0;
+    BoolField *dummyTag = nullptr;
     if(srcTuple != nullptr)
-         dummyTag = srcTuple->getDummyTag().getBool();
+         dummyTag = (BoolField *) srcTuple->getDummyTag();
 
 
-    Bit encryptedDummyTag(dummyTag, dstParty);
+    SecureBoolField *encryptedDummyTag = (SecureBoolField *) secretShareField(dummyTag, myParty, dstParty);
+    dstTuple.setDummyTag(encryptedDummyTag);
 
-    types::Value valueBit(encryptedDummyTag);
-    dstTuple.setDummyTag(valueBit);
-
-
+    delete dummyTag;
+    delete encryptedDummyTag;
 
     return dstTuple;
 }
 
+/*
 // slap on the ordinal for Value
 QueryField
 EmpManager::secretShareField(const QueryField *srcField, const types::TypeId &type, const int32_t &ordinal,
@@ -165,6 +161,7 @@ EmpManager::secretShareValue(const types::Value &srcValue, const types::TypeId &
 
 
 }
+ */
 
 
 Integer EmpManager::encryptVarchar(std::string input, size_t stringBitCount, const int & myParty, const int & dstParty) {
@@ -247,4 +244,65 @@ Float EmpManager::castIntToFloat(const Integer &input) {
     return output;
 
 }
+
+Field *EmpManager::revealField(const Field *srcField, const int &party){
+    FieldType type = srcField->getType();
+    if(type == FieldType::SECURE_BOOL) {
+        SecureBoolField *src = (SecureBoolField *) srcField;
+        emp::Bit toReveal = src->primitive();
+        return new BoolField(toReveal, party);
+    }
+    else if(type == FieldType::SECURE_INT32) {
+        SecureIntField *src = (SecureIntField *) srcField;
+        emp::Integer toReveal = src->primitive();
+        return new IntField(toReveal, party);
+    }
+    else if(type == FieldType::SECURE_INT64) {
+        SecureLongField *src = (SecureLongField *) srcField;
+        emp::Integer toReveal = src->primitive();
+        return new LongField(toReveal, party);
+    }
+    else if(type == FieldType::SECURE_FLOAT32) {
+        SecureFloatField *src = (SecureFloatField *) srcField;
+        emp::Float toReveal = src->primitive();
+        return new FloatField(toReveal, party);
+    }
+    else if(type == FieldType::SECURE_STRING) {
+        SecureStringField *src = (SecureStringField *) srcField;
+        emp::Integer toReveal = src->primitive();
+        return new StringField(toReveal, party);
+    }
+
+    return nullptr;
+
+}
+
+Field *EmpManager::secretShareField(const Field *srcField, const int &myParty, const int &dstParty) {
+    FieldType type = srcField->getType();
+    if(type == FieldType::BOOL) {
+        BoolField *src = (BoolField *) srcField;
+        bool toEncrypt = src->primitive();
+        return new SecureBoolField(toEncrypt, myParty, dstParty);
+    }
+    else if(type == FieldType::INT32) {
+        IntField *src = (IntField *) srcField;
+        int32_t toEncrypt = src->primitive();
+        return new SecureIntField(toEncrypt, myParty, dstParty);
+    }
+    else if(type == FieldType::INT64) {
+        LongField *src = (LongField *) srcField;
+        int64_t toEncrypt = src->primitive();
+        return new SecureLongField(toEncrypt, myParty, dstParty);
+    }
+    else if(type == FieldType::FLOAT32) {
+        FloatField *src = (FloatField *) srcField;
+        float_t toEncrypt = src->primitive();
+        return new SecureFloatField(toEncrypt, myParty, dstParty);
+    }
+
+
+    return nullptr;
+
+}
+
 

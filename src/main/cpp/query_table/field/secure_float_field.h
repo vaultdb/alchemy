@@ -1,103 +1,97 @@
-#ifndef _SECURE_FLOAT_FIELD_H
-#define _SECURE_FLOAT_FIELD_H
+#ifndef SECURE_FLOAT_FIELD_H
+#define SECURE_FLOAT_FIELD_H
 
 
-#include "field_instance.h"
-#include "bool_field.h"
-#include <emp-tool/circuits/float32.h>
 
-#include <cstdint>
-#include <cstring>
-
-
+#include "field.h"
+#include "secure_bool_field.h"
+#include "float_field.h"
+#include "secure_int_field.h"
+#include "secure_long_field.h"
 
 namespace vaultdb {
-    //  // T = derived field
-    //    // P = primitive / payload of field, needed for serialize
-    //    // B = boolean field result
-    //    template<typename T, typename P, typename B>
-    class SecureFloatField : public FieldInstance<SecureFloatField, emp::Float, SecureBoolField> {
-    protected:
-        emp::Float payload = emp::Float(0.0);
+
+    // T = derived field
+    // B = boolean field result
+
+    // SecureFloatField is a decorator for Field
+    // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
+    class SecureFloatField :  public Field<SecureBoolField> {
 
     public:
 
-        SecureFloatField()   {}
-        SecureFloatField(const SecureFloatField & src) { payload = src.payload; }
-        SecureFloatField(const emp::Float & src)  { payload = src; }
-        SecureFloatField(const int8_t * src)  {
-            memcpy(payload.value.data(), (emp::Bit *) src, size()*sizeof(emp::Bit) );
+        SecureFloatField()  : Field(FieldType::SECURE_FLOAT) {}
+        ~SecureFloatField() = default;
+
+        explicit SecureFloatField(const Field &srcField);
+
+        SecureFloatField(const SecureFloatField &src);
+
+        SecureFloatField(const emp::Float &src);
+
+        explicit SecureFloatField(const FloatField *src, const int &myParty, const int &dstParty);
+
+        explicit SecureFloatField(const int8_t *src);
+
+
+
+        emp::Float getPayload() const { return getValue<emp::Float>(); }
+
+        SecureFloatField &operator=(const SecureFloatField &other);
+
+
+        SecureFloatField operator+(const SecureFloatField &rhs) const; // cast to int before doing arithmetic expressions
+        SecureFloatField operator-(const SecureFloatField &rhs) const {
+            return SecureFloatField(getPayload() - rhs.getPayload());
         }
 
-        SecureFloatField(const float_t & src, const int & myParty, const int & dstParty) {
-            float_t toEncode = (myParty == dstParty) ? src : 0.0;
-            payload = emp::Float(toEncode, dstParty);
+        SecureFloatField operator*(const SecureFloatField &rhs) const {
+            return SecureFloatField(getPayload() * rhs.getPayload());
         }
 
-        SecureFloatField& operator=(const SecureFloatField& other) {
-            this->payload = other.payload;
-            return *this;
+        SecureFloatField operator/(const SecureFloatField &rhs) const {
+            return SecureFloatField(getPayload() / rhs.getPayload());
         }
 
+        SecureFloatField operator%(const SecureFloatField &rhs) const { throw; }
 
-        void copy(const SecureFloatField & src) { payload = src.payload; }
-        void assign(const float_t & src) {payload = src; }
-
-        static FieldType type() { return FieldType::SECURE_FLOAT32; }
-        static FieldType revealedType() { return FieldType::FLOAT32; }
-
-        size_t size() const override { return 32; }
-        Field & encrypt(const int & myParty, const int & dstParty = emp::PUBLIC) const { return *(new SecureFloatField(*this)); }
-
-        float_t decrypt(const int & party) const { return payload.reveal<float_t>(party); }
-
-
-
-
-        SecureFloatField & operator+(const SecureFloatField &rhs) const { return *(new SecureFloatField(payload + rhs.payload)); }
-        SecureFloatField & operator-(const SecureFloatField &rhs) const { return *(new SecureFloatField(payload - rhs.payload)); }
-        SecureFloatField & operator*(const SecureFloatField &rhs) const { return *(new SecureFloatField(payload * rhs.payload)); }
-        SecureFloatField & operator/(const SecureFloatField &rhs) const { return *(new SecureFloatField(payload / rhs.payload)); }
-        SecureFloatField & operator%(const SecureFloatField &rhs) const { throw; }
-
-
-        Field &  operator !() const override { throw; }
-
-        SecureBoolField & operator >= (const SecureFloatField &cmp) const {
-            emp::Bit lt = payload.less_than(cmp.payload);
-            return *(new SecureBoolField(!lt)); // >=
-        }
-
-        SecureBoolField & operator == (const SecureFloatField &cmp) const {
-            return *(new SecureBoolField(payload.equal(cmp.payload)));
-        }
-
-
-        bool encrypted() { return true; }
-
-        emp::Float primitive() const { return payload; }
+        // not defined in EMP
+        SecureBoolField neg() const { throw; }
         std::string str() const { return "SECRET FLOAT"; }
 
+
+
+        SecureBoolField operator>=(const SecureFloatField &cmp) const;
+
+        SecureBoolField operator==(const SecureFloatField &cmp) const;
+
+
         // swappable
-        SecureFloatField & select(const SecureBoolField & choice, const SecureFloatField & other) const {
-            emp::Bit selection = choice.primitive();
-            emp::Float result = emp::If(selection, payload, other.payload);
-            return *(new SecureFloatField(result));
-        }
+        SecureFloatField selectValue(const SecureBoolField &choice, const SecureFloatField &other) const;
 
-        void serialize(int8_t *dst) const override {
-            size_t len  = size() / 8;
-            std::memcpy(dst,  (int8_t *) &payload, len);
-        }
 
-        SecureFloatField & operator&(const SecureFloatField &right) const { throw; } // bitwise ops not defined for float
-        SecureFloatField & operator^(const SecureFloatField &right) const { throw; } // bitwise ops not defined for float
-        SecureFloatField & operator|(const SecureFloatField &right) const { throw; } // bitwise ops not defined for float
+        // bitwise ops
+        SecureFloatField operator&(const SecureFloatField &right) const;
 
+        SecureFloatField operator^(const SecureFloatField &right) const;
+
+        SecureFloatField operator|(const SecureFloatField &right) const;
+
+        void ser(int8_t * target) const;
+
+        static SecureFloatField toFloat(const SecureIntField & f);
+        static SecureFloatField toFloat(const SecureLongField & f);
+
+    private:
+        static SecureFloatField toFloat(const emp::Integer & src);
 
 
 
     };
+
+    std::ostream &operator<<(std::ostream &os, const SecureFloatField &aValue);
+
 }
 
-#endif //_FLOAT_FIELD_H
+
+#endif //SECURE_FLOAT_FIELD_H

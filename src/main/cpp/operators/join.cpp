@@ -1,17 +1,19 @@
 #include <util/type_utilities.h>
 #include "join.h"
+#include <query_table/field/field_factory.h>
 
-
-Join::Join(Operator *lhs, Operator *rhs, shared_ptr<BinaryPredicate> predicateClass) : Operator(lhs, rhs) {
+template<typename  B>
+Join<B>::Join(Operator<B> *lhs, Operator<B> *rhs, shared_ptr<BinaryPredicate<B> > predicateClass) : Operator<B>(lhs, rhs) {
         predicate = predicateClass;
 }
 
-Join::Join(shared_ptr<QueryTable> lhs, shared_ptr<QueryTable> rhs, shared_ptr<BinaryPredicate> &predicateClass) :  Operator(lhs, rhs) {
+template<typename  B>
+Join<B>::Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, shared_ptr<BinaryPredicate<B> > &predicateClass) :  Operator<B>(lhs, rhs) {
     predicate = predicateClass;
 }
 
-
-QuerySchema Join::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySchema &rhsSchema) {
+template<typename  B>
+QuerySchema Join<B>::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySchema &rhsSchema) {
     uint32_t outputColCount = lhsSchema.getFieldCount() + rhsSchema.getFieldCount();
     QuerySchema result(outputColCount);
     uint32_t cursor = lhsSchema.getFieldCount();
@@ -19,6 +21,7 @@ QuerySchema Join::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySc
     for(uint32_t i = 0; i < lhsSchema.getFieldCount(); ++i) {
         QueryFieldDesc srcField = lhsSchema.getField(i);
         QueryFieldDesc dstField(srcField, i);
+
         size_t srcStringLength = srcField.getStringLength();
         dstField.setStringLength(srcStringLength);
         result.putField(dstField);
@@ -28,6 +31,7 @@ QuerySchema Join::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySc
     for(uint32_t i = 0; i < rhsSchema.getFieldCount(); ++i) {
         QueryFieldDesc srcField = rhsSchema.getField(i);
         QueryFieldDesc dstField(srcField, cursor);
+
         size_t srcStringLength = srcField.getStringLength();
         dstField.setStringLength(srcStringLength);
         result.putField(dstField);
@@ -38,20 +42,20 @@ QuerySchema Join::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySc
 }
 
 // TODO: make this faster by heap-allocating everything once
-QueryTuple Join::concatenateTuples( QueryTuple *lhs,  QueryTuple *rhs) {
+template <typename B>
+QueryTuple<B> Join<B>::concatenateTuples( QueryTuple<B> *lhs,  QueryTuple<B> *rhs) {
     const uint32_t outputFieldCount = lhs->getFieldCount() + rhs->getFieldCount();
-    QueryTuple result(outputFieldCount);
+    QueryTuple<B> result(outputFieldCount);
     uint32_t lhsFieldCount  = lhs->getFieldCount();
-    uint32_t cursor = lhsFieldCount;
+    uint32_t cursor = 0;
 
-    for(uint32_t i = 0; i < lhsFieldCount; ++i) {
-        result.putField(lhs->getField(i));
+    for(; cursor < lhsFieldCount; ++cursor) {
+        result.putField(cursor, *(lhs->getField(cursor)));
     }
 
 
     for(uint32_t i = 0; i < rhs->getFieldCount(); ++i) {
-        QueryField dstField(cursor, rhs->getField(i).getValue());
-        result.putField(dstField);
+        result.putField(cursor, *(rhs->getField(i)));
         ++cursor;
     }
 
@@ -59,14 +63,18 @@ QueryTuple Join::concatenateTuples( QueryTuple *lhs,  QueryTuple *rhs) {
 }
 
 // compare two tuples and return their entry in the output table
-QueryTuple Join::compareTuples(QueryTuple *lhs, QueryTuple *rhs, const types::Value &predicateEval) {
+template<typename B>
+QueryTuple<B> Join<B>::compareTuples(QueryTuple<B> *lhs, QueryTuple<B> *rhs, const B &predicateEval) {
     QueryTuple dstTuple = concatenateTuples(lhs, rhs);
+    B lhsDummyTag = static_cast<const B &> (*(lhs->getDummyTag()));
+    B rhsDummyTag = static_cast<const B &> (*(rhs->getDummyTag()));
 
-    types::Value dummyTag = lhs->getDummyTag() | rhs->getDummyTag() | (!predicateEval);
-
+    B dummyTag = !predicateEval | lhsDummyTag | rhsDummyTag;
     dstTuple.setDummyTag(dummyTag);
     return dstTuple;
 }
 
 
 
+template class vaultdb::Join<BoolField>;
+template class vaultdb::Join<SecureBoolField>;

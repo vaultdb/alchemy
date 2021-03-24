@@ -25,31 +25,31 @@ namespace vaultdb {
 
     public:
 
-        static std::unique_ptr<QueryTable>
+        static std::unique_ptr<QueryTable<BoolField> >
         getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
                           const bool &hasDummyTag);
 
-        static std::shared_ptr<QueryTable>
+        static std::shared_ptr<QueryTable<BoolField> >
         getQueryResults(const string &dbName, const string &sql, const bool &hasDummyTag);
 
-        static std::shared_ptr<QueryTable> getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag, const int & sortColCount);
+        static std::shared_ptr<QueryTable<BoolField> > getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag, const int & sortColCount);
 
 
         static std::string
         queryDatetime(const std::string &colName); // transform a column into an int64 for our expected output
 
         // filenames have full path, otherwise in standard testing framework filenames are relative to src/main/cpp/bin
-        static void locallySecretShareTable(const std::unique_ptr<QueryTable> &table, const std::string &aliceFile,
+        static void locallySecretShareTable(const std::unique_ptr<QueryTable<BoolField> > &table, const std::string &aliceFile,
                                             const std::string &bobFile);
 
-        static void writeFile(std::string fileName, vector<int8_t> contents);
+        static void writeFile(const string &fileName, vector<int8_t> contents);
 
         // sort all columns one after another
         // default setting for many tests
         static SortDefinition getDefaultSortDefinition(const uint32_t &colCount);
 
         // create a copy of the table without its dummy tuples
-        static std::shared_ptr<QueryTable> removeDummies(const std::shared_ptr<QueryTable> & input);
+        static std::shared_ptr<QueryTable<BoolField> > removeDummies(const std::shared_ptr<QueryTable<BoolField> > & input);
 
         static std::string printSortDefinition(const SortDefinition  & sortDefinition);
 

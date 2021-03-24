@@ -1,210 +1,140 @@
-#include <util/type_utilities.h>
 #include "scalar_aggregate_impl.h"
 
 using namespace vaultdb;
 
-void vaultdb::ScalarCount::initialize(const vaultdb::QueryTuple &tuple) {
+template<typename B>
+ScalarCountImpl<B>::ScalarCountImpl(const uint32_t &ordinal, const FieldType &aggType) : ScalarAggregateImpl<B>(ordinal, aggType) {
+    // initialize as long for count regardless of input ordinal
 
-    assert(!tuple.isEncrypted());
-    runningCount = tuple.getDummyTag().getBool() ? 0 : 1;
-    initialized = true;
-}
+    ScalarAggregateImpl<B>::aggregateType =
+            (TypeUtilities::isEncrypted(aggType)) ? FieldType::SECURE_LONG : FieldType::LONG;
 
-
-void vaultdb::ScalarCount::accumulate(const vaultdb::QueryTuple &tuple) {
-    assert(!tuple.isEncrypted());
-    assert(initialized);
-
-    runningCount += tuple.getDummyTag().getBool() ? 0 : 1;
-
+    ScalarAggregateImpl<B>::zero = FieldFactory<B>::getZero(ScalarAggregateImpl<B>::aggregateType);
+    ScalarAggregateImpl<B>::one = FieldFactory<B>::getOne(ScalarAggregateImpl<B>::aggregateType);
+    runningCount = ScalarAggregateImpl<B>::zero;
 
 }
 
-
-vaultdb::types::Value vaultdb::ScalarCount::getResult() {
-    return vaultdb::types::Value(runningCount);
+template<typename B>
+void ScalarCountImpl<B>::accumulate(const QueryTuple<B> &tuple) {
+    runningCount = Field<B>::If(*tuple.getDummyTag(), runningCount, runningCount + ScalarAggregateImpl<B>::one);
 }
 
-types::TypeId ScalarCount::getType() {
-    return types::TypeId::INTEGER64;
+template<typename B>
+ Field<B> ScalarCountImpl<B>::getResult() const {
+    return runningCount;
 }
 
 
 
-void vaultdb::ScalarSum::initialize(const vaultdb::QueryTuple &tuple) {
-    assert(!tuple.isEncrypted());
-    types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-    types::TypeId sumType = tupleVal.getType();
-
-    // initialize member variable for use in accumulate()
-    zero = TypeUtilities::getZero(sumType);
-    runningSum = tuple.getDummyTag().getBool() ? zero : tupleVal;
-    initialized = true;
+template<typename B>
+void ScalarSumImpl<B>::accumulate(const QueryTuple<B> &tuple) {
+    Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
+    runningSum = Field<B>::If(*tuple.getDummyTag(), runningSum, runningSum + aggInput);
 }
 
-void vaultdb::ScalarSum::accumulate(const vaultdb::QueryTuple &tuple) {
-    assert(!tuple.isEncrypted());
-    assert(initialized);
+template<typename B>
+ Field<B> ScalarSumImpl<B>::getResult() const {
+    // extend this to a LONG to keep with PostgreSQL convention
+    if(runningSum.getType() == FieldType::INT || runningSum.getType() == FieldType::SECURE_INT)
+        return FieldFactory<B>::toLong(runningSum);
 
-    types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-    types::Value toAdd = tuple.getDummyTag().getBool() ? zero : tupleVal;
-    runningSum =  runningSum + toAdd;
-
-}
-
-vaultdb::types::Value vaultdb::ScalarSum::getResult() {
     return runningSum;
 }
 
-types::TypeId ScalarSum::getType() {
-    assert(initialized);
-    return runningSum.getType();
-}
+template<typename B>
+FieldType ScalarSumImpl<B>::getType() const {
+    if(runningSum.getType() == FieldType::INT) return FieldType::LONG;
+    if(runningSum.getType() == FieldType::SECURE_INT) return FieldType::SECURE_LONG;
 
-
-ScalarMin::ScalarMin(const uint32_t & ordinal, const types::TypeId & aggType) :  ScalarAggregateImpl(ordinal, aggType) {
-  resetRunningMin();
-}
-
-void vaultdb::ScalarMin::initialize(const vaultdb::QueryTuple &tuple) {
-
-  assert(!tuple.isEncrypted());
-  resetRunningMin();
-  types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  zero = TypeUtilities::getZero(aggregateType);
-  initialized = true;
-}
-
-
-void vaultdb::ScalarMin::accumulate(const vaultdb::QueryTuple &tuple) {
-  assert(!tuple.isEncrypted());
-  assert(initialized);
-
-  types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::Value currMin = (tupleVal < runningMin).getBool() ? tupleVal : runningMin;
-  runningMin = tuple.getDummyTag().getBool() ? runningMin : currMin;
+    return ScalarAggregateImpl<B>::aggregateType;
 
 }
 
-vaultdb::types::Value vaultdb::ScalarMin::getResult() {
-  return vaultdb::types::Value(runningMin);
-}
 
-types::TypeId ScalarMin::getType() {
-  return runningMin.getType();
-}
-
-void vaultdb::ScalarMin::resetRunningMin()  {
-
-  switch(aggregateType) {
-  case types::TypeId::INTEGER32:
-    runningMin = types::Value(INT_MAX);
-    break;
-  case types::TypeId::INTEGER64:
-    runningMin = types::Value(aggregateType, LONG_MAX);
-    break;
-  case types::TypeId::BOOLEAN:
-    runningMin = types::Value(true);
-    break;
-  case types::TypeId::FLOAT32:
-    runningMin = types::Value(FLT_MAX);
-    break;
-  default:
-    throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MIN()");
-  }
-}
-
-ScalarMax::ScalarMax(const uint32_t & ordinal, const types::TypeId & aggType) :  ScalarAggregateImpl(ordinal, aggType) {
-  resetRunningMax();
-}
-
-void vaultdb::ScalarMax::initialize(const vaultdb::QueryTuple &tuple) {
-
-  assert(!tuple.isEncrypted());
-  resetRunningMax();
-  types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  zero = TypeUtilities::getZero(aggregateType);
-  runningMax = tuple.getDummyTag().getBool() ? zero : tupleVal;
-  initialized = true;
-}
-
-
-void vaultdb::ScalarMax::accumulate(const vaultdb::QueryTuple &tuple) {
-  assert(!tuple.isEncrypted());
-  assert(initialized);
-
-  types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-  types::Value currMax = (tupleVal > runningMax).getBool() ? tupleVal : runningMax;
-  runningMax = tuple.getDummyTag().getBool() ? runningMax : currMax;
+template<typename B>
+ScalarMinImpl<B>::ScalarMinImpl(const uint32_t &ordinal, const FieldType &aggType):ScalarAggregateImpl<B>(ordinal, aggType) {
+    runningMin = FieldFactory<B>::getMax(aggType);
 
 }
 
-vaultdb::types::Value vaultdb::ScalarMax::getResult() {
-  return vaultdb::types::Value(runningMax);
+template<typename B>
+void ScalarMinImpl<B>::accumulate(const QueryTuple<B> &tuple) {
+    Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
+    B sameMin = aggInput >= runningMin;
+    runningMin = Field<B>::If(sameMin | *tuple.getDummyTag(), runningMin, aggInput);
 }
 
-types::TypeId ScalarMax::getType() {
-  return runningMax.getType();
+template<typename B>
+ Field<B> ScalarMinImpl<B>::getResult() const {
+    return runningMin;
 }
 
-void vaultdb::ScalarMax::resetRunningMax()  {
 
-  switch(runningMax.getType()) {
-  case types::TypeId::INTEGER32:
-    runningMax = types::Value(INT_MIN);
-    break;
-  case types::TypeId::INTEGER64:
-    runningMax = types::Value(maxType, LONG_MIN);
-    break;
-  case types::TypeId::BOOLEAN:
-    runningMax = types::Value(true);
-    break;
-  case types::TypeId::FLOAT32:
-    runningMax = types::Value(FLT_MIN);
-    break;
-  default:
-    throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(maxType) + " not supported by MAX()");
-  }
-}
-
-void ScalarAverage::initialize(const QueryTuple &tuple) {
-
-    assert(!tuple.isEncrypted());
-    types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-    types::TypeId sumType = tupleVal.getType();
-
-    // initialize member variable for use in accumulate()
-    zero = TypeUtilities::getZero(sumType);
-    one = TypeUtilities::getOne(sumType);
-    runningSum = tuple.getDummyTag().getBool() ? zero : tupleVal;
-    runningCount = tuple.getDummyTag().getBool() ? zero : one;
-    initialized = true;
+template<typename B>
+ScalarMaxImpl<B>::ScalarMaxImpl(const uint32_t &ordinal, const FieldType &aggType):ScalarAggregateImpl<B>(ordinal, aggType) {
+    runningMax = FieldFactory<B>::getMin(aggType);
 
 }
 
-void ScalarAverage::accumulate(const QueryTuple &tuple) {
+template<typename B>
+void ScalarMaxImpl<B>::accumulate(const QueryTuple<B> &tuple) {
+    Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
+    B sameMax = aggInput <= runningMax;
+    runningMax = Field<B>::If(sameMax | *tuple.getDummyTag(), runningMax, aggInput);
 
-    assert(!tuple.isEncrypted());
-    assert(initialized);
-
-    types::Value tupleVal = tuple.getFieldPtr(aggregateOrdinal)->getValue();
-    types::Value toAdd = tuple.getDummyTag().getBool() ? zero : tupleVal;
-    types::Value tupleCount = tuple.getDummyTag().getBool() ? zero : one;
-
-    runningSum =  runningSum + toAdd;
-    runningCount = runningCount + tupleCount;
 }
 
-types::Value ScalarAverage::getResult() {
-
-    assert(initialized);
-
-    if((runningCount == zero).getBool()) { return zero; }
-
-    return types::Value(runningSum/runningCount);
+template<typename B>
+ Field<B> ScalarMaxImpl<B>::getResult() const {
+    return runningMax;
 }
 
-types::TypeId ScalarAverage::getType() {
-    assert(initialized);
-    return runningCount.getType();
+
+template<typename B>
+ScalarAvgImpl<B>::ScalarAvgImpl(const uint32_t &ordinal, const FieldType &aggType) :  ScalarAggregateImpl<B>(ordinal, aggType) {
+    runningSum = ScalarAggregateImpl<B>::zero;
+    runningCount = ScalarAggregateImpl<B>::zero;
+
 }
+
+template<typename B>
+void ScalarAvgImpl<B>::accumulate(const QueryTuple<B> &tuple) {
+    Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
+    runningSum = Field<B>::If(*tuple.getDummyTag(), runningSum, runningSum + aggInput);
+    runningCount = Field<B>::If(*tuple.getDummyTag(), runningCount, runningCount + ScalarAggregateImpl<B>::one);
+
+}
+
+template<typename B>
+ Field<B> ScalarAvgImpl<B>::getResult() const {
+    Field<B> sumFloat = FieldFactory<B>::toFloat(runningSum);
+    Field<B> cntFloat = FieldFactory<B>::toFloat(runningCount);
+    return sumFloat / cntFloat;
+
+}
+
+template<typename B>
+FieldType ScalarAvgImpl<B>::getType() const {
+    if(TypeUtilities::isEncrypted(runningSum.getType())) {
+        return FieldType::SECURE_FLOAT;
+    }
+    return FieldType::FLOAT;
+
+}
+
+
+template class vaultdb::ScalarCountImpl<BoolField>;
+template class vaultdb::ScalarCountImpl<SecureBoolField>;
+
+template class vaultdb::ScalarSumImpl<BoolField>;
+template class vaultdb::ScalarSumImpl<SecureBoolField>;
+
+template class vaultdb::ScalarMinImpl<BoolField>;
+template class vaultdb::ScalarMinImpl<SecureBoolField>;
+
+template class vaultdb::ScalarMaxImpl<BoolField>;
+template class vaultdb::ScalarMaxImpl<SecureBoolField>;
+
+template class vaultdb::ScalarAvgImpl<BoolField>;
+template class vaultdb::ScalarAvgImpl<SecureBoolField>;

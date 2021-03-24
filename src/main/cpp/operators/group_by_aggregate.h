@@ -7,38 +7,40 @@
 #include "operator.h"
 
 namespace vaultdb {
-    class GroupByAggregate : public Operator {
+    // TODO: template for B - bool || Bit
+    template<typename B>
+    class GroupByAggregate : public Operator<B> {
 
         std::vector<ScalarAggregateDefinition> aggregateDefinitions;
         std::vector<int32_t> groupByOrdinals;
 
     public:
-        GroupByAggregate(Operator *child, const vector<int32_t> &groupBys,
-                         const vector<ScalarAggregateDefinition> &aggregates) : Operator(child),
+        GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+                         const vector<ScalarAggregateDefinition> &aggregates) : Operator<B>(child),
                          aggregateDefinitions(aggregates),
                          groupByOrdinals(groupBys) {};
 
-        GroupByAggregate(shared_ptr<QueryTable> child, const vector<int32_t> &groupBys,
-                         const vector<ScalarAggregateDefinition> &aggregates) : Operator(child),
+        GroupByAggregate(shared_ptr<QueryTable<B> > child, const vector<int32_t> &groupBys,
+                         const vector<ScalarAggregateDefinition> &aggregates) : Operator<B>(child),
                                                                                      aggregateDefinitions(aggregates),
                                                                                      groupByOrdinals(groupBys) {};
-        std::shared_ptr<QueryTable> runSelf() override;
+        std::shared_ptr<QueryTable<B> > runSelf() override;
         ~GroupByAggregate() = default;
 
     private:
-        GroupByAggregateImpl *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                               const types::TypeId &aggregateValueType) const;
+        GroupByAggregateImpl<B> *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
+                                               const FieldType &aggregateValueType) const;
         // checks that input table is sorted by group-by cols
-        bool verifySortOrder(const std::shared_ptr<QueryTable> & table) const;
+        bool verifySortOrder(const std::shared_ptr<QueryTable<B> > & table) const;
 
         // returns boolean for whether two tuples are in the same group-by bin
-        types::Value groupByMatch(const QueryTuple & lhs, const QueryTuple & rhs) const;
+        B groupByMatch(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs) const;
 
         QuerySchema generateOutputSchema(const QuerySchema & srcSchema,
-                                         const std::vector<GroupByAggregateImpl *> & aggregators) const;
+                                         const std::vector<GroupByAggregateImpl<B> *> & aggregators) const;
 
-        QueryTuple generateOutputTuple(const QueryTuple &lastTuple, const types::Value &lastEntryGroupByBin,
-                            const types::Value &nonDummyBin, const vector<GroupByAggregateImpl *> &aggregators) const;
+        QueryTuple<B> generateOutputTuple(const QueryTuple<B> &lastTuple, const B &lastEntryGroupByBin,
+                            const B &nonDummyBin, const vector<GroupByAggregateImpl<B> *> &aggregators) const;
 
 
     };

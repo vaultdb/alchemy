@@ -1,16 +1,18 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 
-#include <query_table/field/field_instance.h>
+#include <typeinfo>
+#include <emp-tool/emp-tool.h>
+#include <query_table/field/field.h>
 #include <query_table/field/int_field.h>
 #include <query_table/field/bool_field.h>
-#include <query_table/field/secure_int_field.h>
 #include <query_table/field/secure_bool_field.h>
+#include <query_table/field/long_field.h>
 
-#include <emp-tool/emp-tool.h>
-#include <util/emp_manager.h>
 
 using namespace vaultdb;
+
+
 
 class FieldInstanceTest : public ::testing::Test {
 
@@ -26,111 +28,75 @@ protected:
 
 
 TEST_F(FieldInstanceTest, AssignmentTest) {
-    Field *aField = new IntField(5);
-    Field *cmp = new IntField(6);
+    BoolField a(true);
+    BoolField b(false);
+    Field<BoolField> *aField = &a;
+    Field<BoolField> *bField = &b;
 
-    ASSERT_EQ("5", aField->toString());
+    ASSERT_EQ(aField->getValue<bool>(), true);
+    ASSERT_EQ(bField->getValue<bool>(), false);
 
-    // calling FieldInstance::getValue
-    int32_t value = ((IntField *) aField)->getValue();
-    ASSERT_EQ(5, value);
+    *aField = *bField;
+    ASSERT_EQ(aField->getValue<bool>(), false);
 
+    BoolField c(*aField);
 
-    // testing assignment
-    *aField = *cmp;
-
-    int32_t copiedValue = ((IntField *) aField)->getValue();
-    ASSERT_EQ(6, copiedValue);
-
-
+    ASSERT_EQ(c.getPayload(), false);
+    ASSERT_EQ(c.getValue<bool>(), false);
 
 
-    // downcast to IntType
-    // produces IntField &
-    //decltype(*aField) added = *aField + *cmp;
 
-    Field *addedField = static_cast<Field *>( &( *aField + *cmp));
-    std::cout << "Field: " << ((IntField *) aField)->getValue() << " + "  << ((IntField *) cmp)->getValue() << std::endl;
-    ASSERT_EQ("12", addedField->toString());
-
-
-    delete aField;
-    aField = new IntField(7);
-    Field *geq  = &(*aField >= *cmp);
-
-    std::cout << "Is 7 >= 6?  " << geq->toString() << std::endl;
-    ASSERT_EQ("true", geq->toString());
-
-
-    delete aField;
-    delete cmp;
-    delete addedField;
-    delete geq;
 
 }
-
 TEST_F(FieldInstanceTest, MultiTypeContainer) {
-    std::vector<Field *> myFields;
-/*    myFields.emplace_back(new IntField(7));
-    myFields.emplace_back(new BoolField(true));
+    BoolField a(true);
+    IntField b(7);
+    BoolField c(false);
+    IntField d(42);
+
+    vector<Field<BoolField> > fields;
+    fields.reserve(4);
+    fields.push_back(a);
+    fields.push_back(b);
+    fields.push_back(c);
+    fields.push_back(d);
 
 
-    ASSERT_EQ(myFields.size(), 2);
-    for(auto field : myFields) {
-        std::cout << field->toString() << std::endl;
-        delete field;
-    }
 
-    myFields.clear();*/
+    ASSERT_EQ(fields[0].getType(), FieldType::BOOL);
+    ASSERT_EQ(fields[1].getType(), FieldType::INT);
+
+    ASSERT_EQ(fields[0].getValue<bool>(), true);
+    ASSERT_EQ(fields[2].getValue<bool>(), false);
+
+    ASSERT_EQ(fields[1].getValue<int32_t>(), 7);
+    ASSERT_EQ(fields[3].getValue<int32_t>(), 42);
+
+
 }
 
 
-Field * encryptField(Field *srcField)  {
-    FieldType type = srcField->getType();
-    if(type == FieldType::BOOL) {
-        BoolField *src = (BoolField *) srcField;
-        bool toEncrypt = src->primitive();
-        return new SecureBoolField(toEncrypt, emp::ALICE, emp::ALICE);
-    }
-    else if(type == FieldType::INT32) {
-        IntField *src = (IntField *) srcField;
-        int32_t toEncrypt = src->primitive();
-        return new SecureIntField(toEncrypt, emp::ALICE, emp::ALICE);
-    }
 
-    return nullptr;
 
+
+
+TEST_F(FieldInstanceTest, printLongTest) {
+    LongField l(830044800L);
+    ASSERT_EQ(l.toString(), "830044800");
 }
-
 
 TEST_F(FieldInstanceTest, encryptTest) {
-    Field *boolField = new BoolField(true);
-    Field *intField = new IntField(7);
+  BoolField boolField(true);
+  Field<SecureBoolField> encrypted = Field<BoolField>::secretShare(&boolField, FieldType::BOOL, 0, emp::ALICE, emp::ALICE);
+  BoolField revealed =  (BoolField) encrypted.reveal();
+  ASSERT_EQ(revealed.getPayload(), true);
 
-    Field * encryptedBool = EmpManager::encryptField(boolField, emp::ALICE, emp::ALICE);
-    bool revealed = ((SecureBoolField *) encryptedBool)->decrypt(emp::PUBLIC);
-    ASSERT_EQ(true, revealed);
 
-   Field * encryptedInt = EmpManager::encryptField(intField, emp::ALICE, emp::ALICE);
-   int32_t revealedInt = ((SecureIntField *) encryptedInt)->decrypt(emp::PUBLIC);
-   ASSERT_EQ(7, revealedInt);
-
-    delete boolField;
-   delete intField;
-    delete encryptedBool;
-    delete encryptedInt;
+  IntField intField(7);
+  encrypted = Field<BoolField>::secretShare(&intField, FieldType::INT, 0, emp::ALICE, emp::ALICE);
+  IntField revealedInt = (IntField) encrypted.reveal();
+  ASSERT_EQ(revealedInt.getPayload(), 7);
 
 }
 
 
-TEST_F(FieldInstanceTest, decryptTest) {
-    Field *encrypted = new SecureBoolField(true, emp::ALICE, emp::ALICE);
-    Field *revealed = EmpManager::revealField( encrypted, emp::PUBLIC);
-    bool rValue = ((BoolField *)revealed)->primitive();
-
-    ASSERT_EQ(true, rValue);
-
-    delete encrypted;
-    delete revealed;
-
-}

@@ -7,37 +7,39 @@
 
 using namespace vaultdb;
 
+template<typename B>
 class Expression {
 
     protected:
         std::string alias;
-        types::TypeId expressionType;
-        types::Value (*exprFunc)(const QueryTuple &) = nullptr;
+        FieldType expressionType;
+        // function pointer for expression
+        Field<B> (*exprFunc)(const QueryTuple<B> &) = nullptr;
 
 
     public:
-        Expression() : alias("anonymous"), expressionType(types::TypeId::INVALID) {}
+        Expression() : alias("anonymous"), expressionType(FieldType::INVALID) {}
 
 
         Expression(const Expression & src) : alias(src.alias), expressionType(src.expressionType) {
             exprFunc = src.exprFunc;
         }
 
-        Expression(types::Value (*funcPtr)(const QueryTuple &), const std::string & anAlias, const types::TypeId & aType)  :  alias(anAlias), expressionType(aType){
+        Expression(Field<B> (*funcPtr)(const QueryTuple<B> &), const std::string & anAlias, const FieldType & aType)  :  alias(anAlias), expressionType(aType){
             exprFunc = funcPtr;
         }
 
-        ~Expression() {}
+        ~Expression() = default;
 
 
-         types::Value expressionCall(const QueryTuple & aTuple) const {
+         Field<B> expressionCall(const QueryTuple<B> & aTuple) const {
             return exprFunc(aTuple);
         }
 
 
 
         // what is the return type of the expression?
-        types::TypeId getType() const { return expressionType; }
+        FieldType getType() const { return expressionType; }
 
         // does it have an alias?
         std::string getAlias() const { return alias; }

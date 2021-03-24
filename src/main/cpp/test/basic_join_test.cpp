@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/support/binary_predicate.h>
@@ -8,7 +7,6 @@
 
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -24,12 +22,12 @@ protected:
     const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
                                     "FROM customer  "
                                     "WHERE c_custkey <= 5 "
-                                    "ORDER BY c_custkey";
+                                    "ORDER BY c_custkey ";
 
     const std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
                                   "FROM orders "
                                   "WHERE o_custkey <= 5 "
-                                  "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
+                                  "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority ";
 
     const std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
                                     "FROM lineitem "
@@ -53,23 +51,20 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
                                         "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-   std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+   std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput customerInput(dbName, customerSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
 
 
-    ConjunctiveEqualityPredicate customerOrdersOrdinals;
-    customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
+    ConjunctiveEqualityPredicate customerOrdersOrdinals = {EqualityPredicate(1, 0)}; //  o_custkey, c_custkey
 
-    std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, false));
+    std::shared_ptr<BinaryPredicate<BoolField> > customerOrdersPredicate(new JoinEqualityPredicate<BoolField>(customerOrdersOrdinals));
 
     BasicJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> observed = join.run();
-
-
+    std::shared_ptr<PlainTable > observed = join.run();
 
 
     ASSERT_EQ(*expected, *observed);
@@ -85,7 +80,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
                                          "FROM lineitem_cte, orders_cte "
                                           "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput lineitemInput(dbName, lineitemSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
@@ -94,12 +89,12 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
     ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
     lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
 
-    std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, false));
+    std::shared_ptr<BinaryPredicate<BoolField> > customerOrdersPredicate(new JoinEqualityPredicate<BoolField>(lineitemOrdersOrdinals));
 
-    BasicJoin *joinOp = new BasicJoin(&lineitemInput, &ordersInput, customerOrdersPredicate);
+    BasicJoin<BoolField> joinOp(&lineitemInput, &ordersInput, customerOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> observed = joinOp->run();
+    std::shared_ptr<PlainTable > observed = joinOp.run();
 
 
 
@@ -121,7 +116,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                                  "FROM lineitem_cte, orders_cte, customer_cte "
                                                  "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput customerInput(dbName, customerSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
@@ -130,18 +125,18 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
     customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate> customerOrdersPredicate(new JoinEqualityPredicate(customerOrdersOrdinals, false));
+    std::shared_ptr<BinaryPredicate<BoolField> > customerOrdersPredicate(new JoinEqualityPredicate<BoolField>(customerOrdersOrdinals));
 
     ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
     lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate> lineitemOrdersPredicate(new JoinEqualityPredicate(lineitemOrdersOrdinals, false));
+    std::shared_ptr<BinaryPredicate<BoolField> > lineitemOrdersPredicate(new JoinEqualityPredicate<BoolField>(lineitemOrdersOrdinals));
 
 
     BasicJoin customerOrdersJoin(&ordersInput, &customerInput, customerOrdersPredicate);
     BasicJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
 
 
-    std::shared_ptr<QueryTable> observed = fullJoin.run();
+    std::shared_ptr<PlainTable > observed = fullJoin.run();
 
 
 

@@ -6,7 +6,6 @@
 #include <data/CsvReader.h>
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 using namespace std;
 
@@ -35,8 +34,8 @@ protected:
 TEST_F(SerializationTest, typesTest) {
     // selecting one of each type:
     // int
-    // varchar
-    // fixed char
+    // varchar(44)
+    // fixed char(1)
     // numeric
     // date
 
@@ -46,12 +45,13 @@ TEST_F(SerializationTest, typesTest) {
                             "ORDER BY l_shipdate "
                             "LIMIT 10";
 
-    std::shared_ptr<QueryTable> inputTable = DataUtilities::getQueryResults(dbName, inputQuery, false);
-    vector<int8_t> tableData = inputTable->serialize();
-    uint32_t expectedSize = 620;
-    ASSERT_EQ(tableData.size(), expectedSize);
-    std::shared_ptr<QueryTable> deserialized = QueryTable::deserialize(inputTable->getSchema(), tableData);
+    std::shared_ptr<PlainTable> inputTable = DataUtilities::getQueryResults(dbName, inputQuery, false);
 
+    vector<int8_t> tableData = inputTable->serialize();
+    uint32_t expectedSize = inputTable->getSchema().size()/8 * 10;
+    ASSERT_EQ(tableData.size(), expectedSize);
+
+    std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(inputTable->getSchema(), tableData);
     ASSERT_EQ(*inputTable, *deserialized);
 
 
@@ -71,15 +71,15 @@ QuerySchema SerializationTest::getInputSchema() {
 //    denom_excl int default 0 -- denotes 0 = false, 1 = true
 //);
     QuerySchema targetSchema(9);
-    targetSchema.putField(QueryFieldDesc(0, "patid", "patient", TypeId::INTEGER32));
-    targetSchema.putField(QueryFieldDesc(1, "zip_marker", "patient", TypeId::VARCHAR, 3));
-    targetSchema.putField(QueryFieldDesc(2, "age_days", "patient", TypeId::INTEGER32));
-    targetSchema.putField(QueryFieldDesc(3, "sex", "patient", TypeId::VARCHAR, 1));
-    targetSchema.putField(QueryFieldDesc(4, "ethnicity", "patient", TypeId::BOOLEAN));
-    targetSchema.putField(QueryFieldDesc(5, "race", "patient", TypeId::INTEGER32));
-    targetSchema.putField(QueryFieldDesc(6, "numerator", "patient", TypeId::INTEGER32));
-    targetSchema.putField(QueryFieldDesc(7, "denom_excl", "patient", TypeId::INTEGER32));
-    targetSchema.putField(QueryFieldDesc(8, "site_id", "patient", TypeId::INTEGER32));
+    targetSchema.putField(QueryFieldDesc(0, "patid", "patient", FieldType::INT));
+    targetSchema.putField(QueryFieldDesc(1, "zip_marker", "patient", FieldType::STRING, 3));
+    targetSchema.putField(QueryFieldDesc(2, "age_days", "patient", FieldType::INT));
+    targetSchema.putField(QueryFieldDesc(3, "sex", "patient", FieldType::STRING, 1));
+    targetSchema.putField(QueryFieldDesc(4, "ethnicity", "patient", FieldType::BOOL));
+    targetSchema.putField(QueryFieldDesc(5, "race", "patient", FieldType::INT));
+    targetSchema.putField(QueryFieldDesc(6, "numerator", "patient", FieldType::INT));
+    targetSchema.putField(QueryFieldDesc(7, "denom_excl", "patient", FieldType::INT));
+    targetSchema.putField(QueryFieldDesc(8, "site_id", "patient", FieldType::INT));
 
     return targetSchema;
 }
@@ -92,12 +92,17 @@ TEST_F(SerializationTest, capricornTest) {
     string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
 
-    std::unique_ptr<QueryTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
+    std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
+
+    // temporarily truncate this to first 5 tuples
+    inputTable->resize(5);
+
     vector<int8_t> serialized = inputTable->serialize();
 
-    std::shared_ptr<QueryTable> deserialized = QueryTable::deserialize(targetSchema, serialized);
+     std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
 
     ASSERT_EQ(*inputTable, *deserialized);
+
 
 
 }
@@ -110,7 +115,7 @@ TEST_F(SerializationTest, xored_serialization_test) {
     string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
 
-    std::unique_ptr<QueryTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
+    std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
     vector<int8_t> serialized = inputTable->serialize();
 
     // alice contains random values... ssh!
@@ -139,7 +144,7 @@ TEST_F(SerializationTest, xored_serialization_test) {
     }
 
 
-    std::shared_ptr<QueryTable> deserialized = QueryTable::deserialize(targetSchema, serialized);
+    std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
 
     ASSERT_EQ(*inputTable, *deserialized);
 
@@ -171,7 +176,7 @@ TEST_F(SerializationTest, capricorn_deserialization) {
     }
 
 
-    std::shared_ptr<QueryTable> deserialized = QueryTable::deserialize(targetSchema, serialized);
+    std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
     /* Expected:
 
      First plaintext bytes: 2,0,0,0,48,50,56,-60,49,0,0
@@ -188,7 +193,7 @@ Deserialized tuple: (13, '029', 36285, 'M', true, 2, 0, 0, 3)
      */
 
     string expectedCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
-    std::unique_ptr<QueryTable> expected = CsvReader::readCsv(expectedCsvFile, targetSchema);
+    std::unique_ptr<PlainTable> expected = CsvReader::readCsv(expectedCsvFile, targetSchema);
 
     ASSERT_EQ(*expected, *deserialized);
 

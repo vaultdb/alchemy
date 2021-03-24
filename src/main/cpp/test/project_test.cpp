@@ -4,10 +4,10 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/project.h>
+#include <query_table/field/float_field.h>
 
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -32,38 +32,39 @@ protected:
 /* Deprecated
  *
  * class RevenueExpression : public Expression {
-    Value oneValue;
+    Field oneValue;
 public:
-    RevenueExpression() : Expression("revenue", types::TypeId::FLOAT32) {
-        oneValue = Value((int32_t) 1);
+    RevenueExpression() : Expression("revenue", FieldType::FLOAT) {
+        oneField = Value((int32_t) 1);
     }
 
     ~RevenueExpression() {}
 
-    types::Value expressionCall(const QueryTuple & aTuple) const  {
-        Value extendedPrice = aTuple.getField(5).getValue();
-        Value discount = aTuple.getField(6).getValue();
+    Field expressionCall(const QueryTuple & aTuple) const  {
+        Field extendedPrice = aTuple.getField(5).getValue();
+        Field discount = aTuple.getField(6).getValue();
 
         // l.l_extendedprice * (1 - l.l_discount)
-        return extendedPrice * (oneValue - discount);
+        return extendedPrice * (oneField - discount);
     }
 
     // needed for boost::variant
     RevenueExpression& operator=(const RevenueExpression & src) {
         this->alias = src.getAlias();
-        this->expressionType = types::TypeId::FLOAT32;
+        this->expressionType = FieldType::FLOAT;
 
     }
 
 };
 */
 
-types::Value calculateRevenue(const QueryTuple & aTuple) {
-    Value extendedPrice = aTuple.getField(5).getValue();
-    Value discount = aTuple.getField(6).getValue();
+Field<BoolField> calculateRevenue(const QueryTuple<BoolField> & aTuple) {
+    const FloatField extendedPrice = *(static_cast<const FloatField *>(aTuple.getField(5)));
+    const FloatField discount = *(static_cast<const FloatField *>(aTuple.getField(6)));
+    const FloatField one = FloatField(1.0);
 
     // l.l_extendedprice * (1 - l.l_discount)
-    return extendedPrice * (Value((float) 1.0) - discount);
+    return FloatField(extendedPrice * (one - discount));
 }
 
 // variant of Q3 expressions
@@ -71,14 +72,14 @@ TEST_F(ProjectionTest, q3Lineitem) {
     std::string srcSql = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
     std::string expectedOutputSql = "SELECT l_orderkey, " + DataUtilities::queryDatetime("l_shipdate") + ",  l_extendedprice * (1 - l_discount) revenue FROM (" + srcSql + ") src ";
 
-    std::shared_ptr<QueryTable> expected =  DataUtilities::getQueryResults("tpch_alice", expectedOutputSql, false);
+    std::shared_ptr<PlainTable > expected =  DataUtilities::getQueryResults("tpch_alice", expectedOutputSql, false);
 
 
     SqlInput input("tpch_alice", srcSql, false);
 
     Project project(&input);
 
-    Expression revenueExpression(&calculateRevenue, "revenue", TypeId::FLOAT32);
+    Expression revenueExpression(&calculateRevenue, "revenue", FieldType::FLOAT);
 
 
 
@@ -88,7 +89,7 @@ TEST_F(ProjectionTest, q3Lineitem) {
 
 
 
-    std::shared_ptr<QueryTable> observed = project.run();
+    std::shared_ptr<PlainTable > observed = project.run();
 
 
 

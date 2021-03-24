@@ -2,57 +2,54 @@
 #define _ENRICH_TEST_SUPPORT_H
 
 #include <operators/project.h>
-#include <query_table/types/value.h>
 #include <operators/support/predicate.h>
+#include <query_table/field/field_factory.h>
 
 using namespace vaultdb;
-using namespace vaultdb::types;
 
 // container for projection expressions, filter expressions, etc.
 
-class EnrichTestSupport {
+namespace vaultdb {
+    template<typename B>
+    class EnrichTestSupport {
 
-public:
-
-        static Value projectSecureAgeStrata(const QueryTuple & aTuple);
-
-        static Value projectPlainAgeStrata(const QueryTuple &aTuple);
-
-        static Value projectAgeStrata(const QueryTuple &aTuple);
+    public:
 
 
-        static emp::Integer getEmpInt(const int32_t &value);
-
-    static Value projectMultisite(const QueryTuple &aTuple);
-
-    static Value projectNumeratorMultisite(const QueryTuple &aTuple);
-
-    static QuerySchema getPatientSchema();
-
-    static QuerySchema getPatientInclusionSchema();
-};
+        static Field<B> projectAgeStrata(const QueryTuple<B> &aTuple);
 
 
+        static Field<B> projectMultisite(const QueryTuple<B> &aTuple);
 
-class FilterExcludedPatients : public Predicate {
+        static Field<B> projectNumeratorMultisite(const QueryTuple<B> &aTuple);
 
-    Value cmp;
-public:
-    explicit FilterExcludedPatients(const bool & isEncrypted) {
-        cmp = isEncrypted ? TypeUtilities::getZero(TypeId::ENCRYPTED_INTEGER32) : TypeUtilities::getZero(TypeId::INTEGER32);
-    }
+        static QuerySchema getPatientSchema();
 
-    ~FilterExcludedPatients() = default;
-    [[nodiscard]] types::Value predicateCall(const QueryTuple & aTuple) const override {
-
-        QueryTuple decrypted = aTuple.reveal();
-        Value field = aTuple.getFieldPtr(8)->getValue();
-        Value res = (field == cmp);
-        return  res;
-    }
+        static QuerySchema getPatientInclusionSchema();
+    };
 
 
-};
+    template<typename B>
+    class FilterExcludedPatients : public Predicate<B> {
 
+        Field<B> cmp;
+    public:
+        explicit FilterExcludedPatients(const bool &isEncrypted) {
+            cmp = isEncrypted ? FieldFactory<B>::getZero(FieldType::SECURE_INT) : FieldFactory<B>::getZero(
+                    FieldType::INT);
+        }
+
+        ~FilterExcludedPatients() = default;
+
+        [[nodiscard]] B predicateCall(const QueryTuple<B> &aTuple) const override {
+
+            const Field<B> *field = aTuple.getField(8);
+            return  (*field == cmp);
+        }
+
+
+    };
+
+}
 
 #endif //_ENRICH_TEST_SUPPORT_H

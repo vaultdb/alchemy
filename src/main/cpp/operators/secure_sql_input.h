@@ -8,24 +8,28 @@
 // reads SQL input and secret shares it
 // alice and bob need to run at the same time for this
 namespace  vaultdb {
-    class SecureSqlInput : public SqlInput {
+    class SecureSqlInput : public Operator<SecureBoolField> {
 
 
         NetIO *netio_;
         int srcParty;
 
+        std::string inputQuery;
+        std::string dbName;
+        bool hasDummyTag;
+        SortDefinition sortedOn;
+
 
     protected:
-        // depends on EmpManager being configured in the calling method
-        std::shared_ptr<QueryTable> runSelf() override;
+        std::shared_ptr<QueryTable<SecureBoolField> > runSelf() override;
 
 
     public:
-        SecureSqlInput(std::string db, std::string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty) : SqlInput(db, sql, dummyTag),
-                                                                                                           netio_(netio), srcParty(aSrcParty) {}
+        SecureSqlInput(std::string db, std::string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty) :     netio_(netio), srcParty(aSrcParty),
+            inputQuery(sql), dbName(db), hasDummyTag(dummyTag) {}
 
-        SecureSqlInput(const string &dbName, const string & sql, const bool &hasDummyTag, const SortDefinition &sortedOn, NetIO *netio, const int &party) : SqlInput(dbName, sql, hasDummyTag, sortedOn),
-                        netio_(netio), srcParty(party) {}
+        SecureSqlInput(const string &db, const string & sql, const bool &dummyTag, const SortDefinition &sortDefinition, NetIO *netio, const int &party) :
+                        netio_(netio), srcParty(party),  inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sortedOn(sortDefinition) {}
          ~SecureSqlInput() = default;
     };
 

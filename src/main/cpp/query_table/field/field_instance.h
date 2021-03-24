@@ -1,117 +1,94 @@
-#ifndef _QUERYFIELD_H
-#define _QUERYFIELD_H
+#ifndef _FIELD_INSTANCE_H
+#define _FIELD_INSTANCE_H
 
-// generic query field API for all field types, e.g., ints or floats
-// analogous to emp's Comparable
-// formerly known as Value
-#include <cstring>
-#include <defs.h>
-#include "field.h"
-//#include "field_factory.h"
-
-
+// JMR: this is one long, elaborate hack to get around needing the template type (e.g., IntField, FloatField) in Field declaration
+// this is necessary to store heterogenous fields in the same container/tuple.
 namespace vaultdb {
+    template<typename B>
+    class Field;
 
+    class BoolField;
+    class SecureBoolField;
 
-    // T = derived field
-    // P = primitive / payload of field
-    // B = boolean field result
-    template<typename T, typename P, typename B>
-    class FieldInstance : public Field {
+    // FieldInstance, and the classes that inherit from it, contain no state of their own
+    // decorators to add operator overloads
+    template<typename B>
+    class FieldInstance {
     public:
 
+        // stateless, so this does not matter
+        FieldInstance & operator=(const FieldInstance & other) { return *this;  }
 
-        std::unique_ptr<Field> clone() const override {
-            return std::make_unique<T>(static_cast<T const &>(*this));
-        }
+        FieldInstance(Field <B> *src)  {}
+        virtual ~FieldInstance () = default;
 
-        P getValue() const {
-            return static_cast<T const &>(*this).primitive();
-        }
+        // this will work if we only return fields
+        // field will call plus, minus, etc.
 
-        // TODO: figure out why these methods need to be in header file to compile
-        //  may need inline?
-        std::string toString() const override {
-            return static_cast<T const &>(*this).str();
-        }
-
-        void serialize(int8_t *dst) const override {
-            T impl =  static_cast<T const &>(*this);
-            impl.serialize(dst);
-        }
-
-        // TODO: convert this to bytes instead of bits to reduce CPU time
-         size_t size() const override {
-            return static_cast<T const &>(*this).size();
-        }
+        virtual Field<B> plus(const Field<B> &rhs) const  = 0;
+        virtual Field<B> minus(const Field<B> &rhs) const = 0;
+        virtual Field<B> multiply(const Field<B> &rhs) const = 0;
+        virtual Field<B> div(const Field<B> &rhs) const = 0;
+        virtual Field<B> modulus(const Field<B> &rhs) const = 0;
 
 
+        // private assignment
+        virtual Field<B> select(const B & choice, const Field<B> & other) const = 0;
 
+        static Field<B> If(const B & sel, const Field<B> & lhs, const Field<B> & rhs) {
 
+            FieldInstance<B> *lInstance = lhs.getInstance();
 
-
-        FieldType getType() const override {
-            return static_cast<T const &>(*this).type();
+            return lInstance->select(sel, rhs);
         }
 
 
-        // assignment
-        FieldInstance & operator=(const FieldInstance & other)  {
-            copyTo(other);
-            return *this;
+        static void compareAndSwap(const B & select, Field<B> & lhs, Field<B> & rhs) {
+            Field<B> t  = If(select, lhs, rhs);
+            lhs = If(select, rhs, lhs);
+            rhs = t;
+
         }
 
-        Field & operator !() const override {
-            return !(static_cast<T const &>(*this));
+        // connectors
+        virtual Field<B> operator&(const Field<B> &right) const  = 0;
+        virtual Field<B> operator^(const Field<B> &right) const  = 0;
+        virtual Field<B> operator|(const Field<B> &right) const  = 0;
+
+
+        // setup for comparators
+        virtual B  geq(const Field<B> & rhs) const = 0;
+        virtual B equal(const Field<B> & rhs) const = 0;
+        virtual B negate() const = 0;
+        virtual std::string str() const = 0;
+
+        B operator !() const  { return this->negate(); }
+        B operator>=(const Field<B> & rhs) const { return this->geq(rhs);  }
+        B operator==(const Field<B> & rhs) const { return this->equal(rhs); }
+        B operator!=(const Field<B> & rhs) const { return !(*this == rhs); }
+        B operator<(const Field<B> & rhs) const { return !(*this >= rhs); }
+        B operator<=(const Field<B> & rhs) const { return (*this < rhs) | (*this == rhs);  }
+        B operator>(const Field<B> & rhs) const {
+            B neq = this->equal(rhs).neg();
+            B geq = this->geq(rhs);
+            return  geq & neq;
         }
 
-        Field & operator+(const Field &rhs) const override {  return static_cast<T const &>(*this) + static_cast<const T &>(rhs); }
-        Field & operator-(const Field &rhs) const override {   return static_cast<const T &>(*this) - static_cast<T const &>(rhs); }
-        Field & operator*(const Field &rhs) const override {   return static_cast<const T &>(*this) * static_cast<T const &>(rhs); }
-        Field & operator/(const Field &rhs) const override {   return static_cast<const T &>(*this) / static_cast<T const &>(rhs); }
-        Field & operator%(const Field &rhs) const override {   return static_cast<const T &>(*this) % static_cast<T const &>(rhs); }
-
-
-        Field & geq(const Field & rhs) const override { return static_cast<T const &>(*this) >= (static_cast<const T &>(rhs)); }
-
-        Field & equal(const Field & rhs) const override { return static_cast<T const &>(*this) == (static_cast<const T &>(rhs)); }
-
-        Field & compareAndSwap(const Field & select, const Field & other)  const override {
-            const B choiceBit = static_cast<B const &> (select);
-            const T otherOne = static_cast<T const &> (other);
-            return  static_cast<T const &>(*this).select(choiceBit, otherOne);
-        }
-
-        // bitwise ops
-        Field & operator&(const Field &right) const override { return  static_cast<const T&>(*this) &  static_cast<const T&>(right); }
-        Field & operator|(const Field &right) const override { return  static_cast<const T&>(*this) |  static_cast<const T&>(right); }
-
-        Field & operator^(const Field &right) const override { return  static_cast<const T&>(*this) ^  static_cast<const T&>(right); }
-
-
-
-    protected:
-        void copyTo(const Field & other) override {
-            const T otherObj = static_cast<const T &>(other);
-            static_cast<T &>(*this).copy(otherObj);
-        }
+        virtual void serialize(int8_t *dst) const = 0;
+        // encrypt and decrypt -- table this for now
+        //Field<BoolField> reveal(const int &party) const;
+        //static Field<SecureBoolField> secretShare(const Field<BoolField> & field, const FieldType &type, const size_t &strLength, const int &myParty,
+         //                               const int &dstParty);
 
 
 
 
-    protected:
-        // set up vtable entries
-        FieldInstance() = default;
-
-        FieldInstance(const FieldInstance &) = default;
-
-        FieldInstance(FieldInstance &&) = default;
     };
-
-
-
 
 }
 
 
-#endif
+
+
+
+#endif //_FIELD_INSTANCE_H

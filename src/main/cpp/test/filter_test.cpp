@@ -1,13 +1,12 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
-#include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/filter.h>
+#include <query_table/field/field_factory.h>
 
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -31,8 +30,8 @@ TEST_F(FilterTest, test_table_scan) {
 
     SqlInput input(dbName, sql, false);
 
-    std::shared_ptr<QueryTable> output = input.run(); // a smoke test for the operator infrastructure
-    std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, sql, false);
+    std::shared_ptr<PlainTable > output = input.run(); // a smoke test for the operator infrastructure
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, sql, false);
 
     ASSERT_EQ(*expected, *output);
 
@@ -44,19 +43,18 @@ TEST_F(FilterTest, test_table_scan) {
 
 // unencrypted case
 // l_linenumber == 1
-class FilterPredicate : public Predicate {
-    Value cmp;
+class FilterPredicate : public Predicate<BoolField> {
+    IntField cmp;
 public:
     FilterPredicate() {
-         cmp = Value((int32_t) 1);
+          cmp = IntField(1);
     }
 
-    ~FilterPredicate() {}
-    types::Value predicateCall(const QueryTuple & aTuple) const override {
+    ~FilterPredicate() = default;
+    BoolField predicateCall(const QueryTuple<BoolField> & aTuple) const override {
 
-        Value field = aTuple.getField(1).getValue();
-        Value res = (field == cmp);
-        return  res;
+        const IntField *field = static_cast<const IntField *>(aTuple.getField(1));
+        return  (*field == cmp);
     }
 
 
@@ -67,16 +65,16 @@ public:
 TEST_F(FilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
-   std::shared_ptr<QueryTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+   std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput input(dbName, sql, false);
 
-    std::shared_ptr<Predicate> predicateClass(new FilterPredicate());
-    Filter filter(&input, predicateClass); // heap allocate it
+    std::shared_ptr<Predicate<BoolField> > predicateClass(new FilterPredicate());
+    Filter<BoolField> filter(&input, predicateClass); // heap allocate it
     //std::shared_ptr<Operator> filter = Operator::getOperatorTree(new Filter(predicateClass, input), input);
 
 
-    std::shared_ptr<QueryTable> result = filter.run();
+    std::shared_ptr<PlainTable > result = filter.run();
 
 
     ASSERT_EQ(*expected,  *result);

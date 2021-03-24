@@ -1,100 +1,72 @@
 #ifndef _LONG_FIELD_H
 #define _LONG_FIELD_H
 
-#include <emp-tool/circuits/integer.h>
 
-namespace  vaultdb {
-//  // T = derived field
-//    // P = primitive field
-//    // B = boolean field result
-//    template<typename T, typename R, typename B, typename P>
-    class LongField : public FieldInstance<LongField, int64_t, BoolField> {
-    protected:
-        int64_t payload = 0;
+#include "bool_field.h"
+#include <emp-tool/circuits/bit.h>
+
+
+namespace vaultdb {
+
+    // LongField is a decorator for Field
+    // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
+    class LongField : public Field<BoolField>  {
 
     public:
 
-        LongField()  {}
+        LongField() :  Field(FieldType::LONG) {}
+        ~LongField() = default;
+        explicit LongField(const Field & srcField);
 
-        LongField(const LongField &src)  { payload = src.payload; }
+        LongField(const LongField & src);
 
-        LongField(const int64_t &src)  { payload = src; }
-
-        LongField(const int8_t *src) {
-            memcpy((int8_t *) &payload, src, size() / 8);
-        }
-
-        LongField(const emp::Integer & toEncrypt, const int & party) {
-            payload =  toEncrypt.reveal<int64_t>(party);
-        }
-
-        LongField &operator=(const LongField &other) {
-            this->payload = other.payload;
-            return *this;
-        }
-
-        bool encrypted() const { return false; }
-        static FieldType type() { return FieldType::INT64; }
-
-        size_t size() const override { return 64; }
-
-        void copy(const LongField &src) { payload = src.payload; }
-
-        void assign(const int64_t &src) { payload = src; }
+        explicit LongField(const int64_t & src);
+        explicit LongField(const int8_t * src);
 
 
-        int64_t decrypt(const int & party) const { return payload; }
-
-        int64_t primitive() const { return payload; }
-
-        std::string str() const { return std::to_string(payload); }
+        // constructor for decryption
+        LongField(const emp::Integer & src, const int & party);
 
 
-        LongField &operator+(const LongField &rhs) const { return *(new LongField(payload + rhs.payload)); }
+        int64_t getPayload() const { return getValue<int64_t>(); }
 
-        LongField &operator-(const LongField &rhs) const { return *(new LongField(payload - rhs.payload)); }
-
-        LongField &operator*(const LongField &rhs) const { return *(new LongField(payload * rhs.payload)); }
-
-        LongField &operator/(const LongField &rhs) const { return *(new LongField(payload / rhs.payload)); }
-
-        LongField &operator%(const LongField &rhs) const { return *(new LongField(payload % rhs.payload)); }
+        LongField& operator=(const LongField& other);
 
 
-        // comparators
-        Field &operator!() const override { return *(new LongField(!payload)); }
+        LongField  operator+(const LongField &rhs) const  { return LongField(getPayload() + rhs.getPayload()); } // cast to int before doing arithmetic expressions
+        LongField  operator-(const LongField &rhs) const  { return LongField(getPayload() - rhs.getPayload()); }
+        LongField  operator*(const LongField &rhs) const  { return LongField(getPayload() * rhs.getPayload()); }
+        LongField  operator/(const LongField &rhs) const  { return LongField(getPayload() / rhs.getPayload()); }
+        LongField  operator%(const LongField &rhs) const  { return LongField(getPayload() % rhs.getPayload()); }
 
-        BoolField &operator>=(const LongField &cmp) const { return *(new BoolField(payload >= cmp.payload)); }
 
-        BoolField &operator==(const LongField &cmp) const { return *(new BoolField(payload == cmp.payload)); }
+        // only for bool types
+        BoolField neg() const { throw; }
+        std::string str() const { return std::to_string(getPayload());  }
+
+
+
+        BoolField  operator >= (const LongField &cmp) const;
+        BoolField  operator == (const LongField &cmp) const;
 
 
         // swappable
-        LongField &select(const BoolField &choice, const LongField &other) const {
-            bool selection = choice.primitive();
-            return selection ? *(new LongField(*this)) : *(new LongField(other));
-        }
+        LongField  selectValue(const BoolField & choice, const LongField & other) const;
 
-        void serialize(int8_t *dst) const override {
-            size_t len  = size() / 8;
-            std::memcpy(dst, (int8_t*) payload, len);
-        }
+
 
         // bitwise ops
-        LongField & operator&(const LongField &right) const {
-            return *(new LongField(payload & right.payload));
-        }
+        LongField  operator&(const LongField &right) const { return  LongField(getPayload() & (right.getPayload())); }
+        LongField  operator^(const LongField &right) const { return  LongField(getPayload() ^ (right.getPayload())); }
+        LongField  operator|(const LongField &right) const { return  LongField(getPayload() | (right.getPayload())); }
 
-        LongField & operator^(const LongField &right) const {
-            return *(new LongField(payload ^ right.payload));
-        }
-
-        LongField & operator|(const LongField &right) const {
-            return *(new LongField(payload | right.payload));
-        }
+        // serialize
+        void ser(int8_t * target) const { *((int64_t *) target) = getPayload();  }
 
 
     };
-}
 
-#endif //_LONG_FIELD_H
+    std::ostream &operator<<(std::ostream &os, const LongField &aValue);
+
+}
+#endif //VAULTDB_EMP_LONG_FIELD_H

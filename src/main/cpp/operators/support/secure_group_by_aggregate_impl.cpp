@@ -2,130 +2,130 @@
 #include "secure_group_by_aggregate_impl.h"
 
 using namespace vaultdb;
-using namespace vaultdb::types;
 using namespace emp;
 
-Value SecureGroupByAggregateImpl::getDummyTag(const Value &isLastEntry,
-                                                                       const Value &nonDummyBinFlag) {
+Field *SecureGroupByAggregateImpl::getDummyTag(const Field *isLastEntry,
+                                                                       const Field *nonDummyBinFlag) {
 
-    assert(isLastEntry.getType() == TypeId::ENCRYPTED_BOOLEAN &&
-                   nonDummyBinFlag.getType() == TypeId::ENCRYPTED_BOOLEAN);
+    assert(isLastEntry->getType() == FieldType::SECURE_BOOL &&
+                   nonDummyBinFlag->getType() == FieldType::SECURE_BOOL);
 
     // if it is the last bin, then we output if it's a non-dummy bin
     // else set to dummy
-    Bit output = If(isLastEntry.getEmpBit(), !nonDummyBinFlag.getEmpBit(), Bit(true, PUBLIC));
+    Bit output = If(TypeUtilities::getSecureBool(*isLastEntry), !TypeUtilities::getSecureBool(*nonDummyBinFlag), Bit(true, PUBLIC));
     std::string outputStr = output.reveal() ? "true" : "false";
 
-    return Value(output);
+    return new SecureBoolField(output);
 
 }
 
-void SecureGroupByAggregateImpl::updateGroupByBinBoundary(const Value &isNewBin, Value &nonDummyBinFlag) {
-    assert(isNewBin.getType() == TypeId::ENCRYPTED_BOOLEAN &&
-           nonDummyBinFlag.getType() == TypeId::ENCRYPTED_BOOLEAN);
+void SecureGroupByAggregateImpl::updateGroupByBinBoundary(const Field *isNewBin, Field *nonDummyBinFlag) {
+    assert(isNewBin->getType() == FieldType::SECURE_BOOL &&
+           nonDummyBinFlag->getType() == FieldType::SECURE_BOOL);
 
     // ! nonDummy bin b/c if it is a real bin, we want dummyTag = false
-    Bit updatedFlag = If(isNewBin.getEmpBit(), Bit(false, PUBLIC), nonDummyBinFlag.getEmpBit());
-    nonDummyBinFlag.setValue(updatedFlag);
+    Bit updatedFlag = If(TypeUtilities::getSecureBool(*isNewBin), Bit(false, PUBLIC), TypeUtilities::getSecureBool(*nonDummyBinFlag));
+    *nonDummyBinFlag = SecureBoolField(updatedFlag);
 
 }
 
-void SecureGroupByCountImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
-    Value resetValue = Value::obliviousIf(tuple.getDummyTag().getEmpBit(), zero, one);
-    runningCount = Value::obliviousIf(isDummy.getEmpBit(), runningCount, resetValue);
+void SecureGroupByCountImpl::initialize(const QueryTuple &tuple, const Field *isDummy) {
+    Bit dummyTag = TypeUtilities::getSecureBool(*tuple.getDummyTag());
+    Integer resetField = emp::If(dummyTag, Integer(64, 0), emp::Integer(64, 1));
+    runningCount = emp::If(TypeUtilities::getSecureBool(*isDummy), runningCount, resetValue);
 
 }
 
-void SecureGroupByCountImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
+void SecureGroupByCountImpl::accumulate(const QueryTuple &tuple, const Field *isDummy) {
 
-    Value toUpdate = (!isDummy) & !tuple.getDummyTag();
-    Value incremented = runningCount + one;
-    runningCount = Value::obliviousIf(toUpdate, incremented, runningCount);
+    emp::Bit toUpdate = (!TypeUtilities::getSecureBool((*isDummy)) & (!(TypeUtilities::getSecureBool(*tuple.getDummyTag()))));
+    Integer incremented = runningCount + TypeUtilities::getSecureInt(*one);
+    runningCount = emp::If(toUpdate, incremented, runningCount);
 
 }
 
-Value SecureGroupByCountImpl::getResult() {
-    return runningCount;
+const Field *SecureGroupByCountImpl::getResult() const {
+    return (Field *) (new SecureLongField(runningCount));
 }
 
 
-void SecureGroupBySumImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
-    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+void SecureGroupBySumImpl::initialize(const QueryTuple &tuple, const Field *isDummy) {
+     Field *aggInput = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
 
     // re-cast sum as INT64_T in keeping with postgres convention
-    if(aggInput.getType() == TypeId::ENCRYPTED_INTEGER32) {
-        Integer empInt = aggInput.getEmpInt();
+    if(aggInput->getType() == FieldType::SECURE_INT32) {
+        Integer empInt = TypeUtilities::getSecureInt(*aggInput);
         empInt.resize(64, true);
-        aggInput = Value(TypeId::ENCRYPTED_INTEGER64, empInt);
+        *aggInput = SecureLongField(empInt);
     }
 
-    Value resetValue = Value::obliviousIf(tuple.getDummyTag(), zero, aggInput);
-    runningSum = Value::obliviousIf(isDummy, runningSum, resetValue);
+    Field *resetField = FieldFactory::obliviousIf(*tuple.getDummyTag(), *zero, *aggInput);
+    runningSum = FieldFactory::obliviousIf(*isDummy, *runningSum, *resetValue);
 }
 
-void SecureGroupBySumImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
-    Value toAdd = tuple.getField(aggregateOrdinal).getValue();
+void SecureGroupBySumImpl::accumulate(const QueryTuple &tuple, const Field *isDummy) {
+     Field *toAdd =  FieldFactory::copyField(tuple.getField(aggregateOrdinal));
 
     // re-cast sum as INT64_T in keeping with postgres convention
-    if(toAdd.getType() == TypeId::ENCRYPTED_INTEGER32) {
-        Integer empInt = toAdd.getEmpInt();
+    if(toAdd->getType() == FieldType::SECURE_INT32) {
+        Integer empInt = TypeUtilities::getSecureInt(*toAdd);
         empInt.resize(64, true);
-        toAdd = Value(TypeId::ENCRYPTED_INTEGER64, empInt);
+        *toAdd = SecureLongField(empInt);
     }
 
 
-    Value toUpdate = (!isDummy) & !(tuple.getDummyTag());
-    Value incremented = runningSum + toAdd;
-    runningSum = Value::obliviousIf(toUpdate, incremented, runningSum);
+    const Field *toUpdate = &((!isDummy) & !(tuple.getDummyTag()));
+    const Field *incremented = &(*runningSum + *toAdd);
+    *runningSum = *(FieldFactory::obliviousIf(*toUpdate, *incremented, *runningSum));
 }
 
-Value SecureGroupBySumImpl::getResult() {
+const Field *SecureGroupBySumImpl::getResult() const {
     return runningSum;
 }
 
-SecureGroupByAvgImpl::SecureGroupByAvgImpl(const int32_t &ordinal, const TypeId &aggType) : SecureGroupByAggregateImpl(ordinal, aggType)  {
+SecureGroupByAvgImpl::SecureGroupByAvgImpl(const int32_t &ordinal, const FieldType &aggType) : SecureGroupByAggregateImpl(ordinal, aggType)  {
     runningSum = zero;
-    aggregateType = TypeId::ENCRYPTED_FLOAT32;
-    zeroFloat = TypeUtilities::getZero(aggregateType);
-    oneFloat = TypeUtilities::getOne(aggregateType);
+    aggregateType = FieldType::SECURE_FLOAT32;
+    zeroFloat = FieldFactory::getZero(aggregateType);
+    oneFloat = FieldFactory::getOne(aggregateType);
     runningCount = zeroFloat;
 
 
 }
 
 
-void SecureGroupByAvgImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
+void SecureGroupByAvgImpl::initialize(const QueryTuple &tuple, const Field *isDummy) {
 
-    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
-    Value resetSum = Value::obliviousIf(tuple.getDummyTag(), zero, aggInput);
-    Value resetCount = Value::obliviousIf(tuple.getDummyTag(), zeroFloat, oneFloat);
+    Field *aggInput = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
+    Field *resetSum = FieldFactory::obliviousIf(*tuple.getDummyTag(), *zero, *aggInput);
+    Field resetCount = FieldFactory::obliviousIf(*tuple.getDummyTag(), *zeroFloat, *oneFloat);
 
-    runningSum = Value::obliviousIf(isDummy, runningSum, resetSum);
-    runningCount = Value::obliviousIf(isDummy, runningCount, resetCount);
+    runningSum = FieldFactory::obliviousIf(isDummy, runningSum, resetSum);
+    runningCount = FieldFactory::obliviousIf(isDummy, runningCount, resetCount);
 
 }
 
-void SecureGroupByAvgImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
-    Value toAdd = tuple.getField(aggregateOrdinal).getValue();
+void SecureGroupByAvgImpl::accumulate(const QueryTuple &tuple, const Field *isDummy) {
+    Field *toAdd = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
 
 
-    Value toUpdate = (!isDummy) & !(tuple.getDummyTag());
-    Value incremented = runningSum + toAdd;
-    Value incrementedCount = runningCount + oneFloat;
+    Field toUpdate = (!isDummy) & !(tuple.getDummyTag());
+    Field incremented = runningSum + toAdd;
+    Field incrementedCount = runningCount + oneFloat;
 
-    runningSum = Value::obliviousIf(toUpdate, incremented, runningSum);
-    runningCount = Value::obliviousIf(toUpdate, incrementedCount, runningCount);
+    runningSum = FieldFactory::obliviousIf(toUpdate, incremented, runningSum);
+    runningCount = FieldFactory::obliviousIf(toUpdate, incrementedCount, runningCount);
 
 }
 
 
 // average is implemented as float
 // have secure cast from int to float for this
-Value SecureGroupByAvgImpl::getResult() {
+const Field *SecureGroupByAvgImpl::getResult() const {
 
-    Float runningSumFloat = (runningSum.getType() == TypeId::ENCRYPTED_FLOAT32) ? runningSum.getEmpFloat32() : zeroFloat.getEmpFloat32();
+    Float runningSumFloat = (runningSum->getType() == FieldType::ENCRYPTED_FLOAT32) ? runningSum.getEmpFloat32() : zeroFloat.getEmpFloat32();
 
-    if(runningSum.getType() == TypeId::ENCRYPTED_INTEGER64 || runningSum.getType() == TypeId::ENCRYPTED_INTEGER32) {
+    if(runningSum->getType() == FieldType::SECURE_INT64 || runningSum->getType() == FieldType::SECURE_INT32) {
         Integer empInt = runningSum.getEmpInt();
         if(empInt.size() != 32) empInt.resize(32);
         runningSumFloat = EmpManager::castIntToFloat(empInt);
@@ -137,76 +137,76 @@ Value SecureGroupByAvgImpl::getResult() {
 
 
 
-void SecureGroupByMinImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
-    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+void SecureGroupByMinImpl::initialize(const QueryTuple &tuple, const Field *isDummy) {
+    Field *aggInput = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
 
     // if the tuple is a dummy...
-    Value maxValue = getMaxValue();
-    Value resetValue = Value::obliviousIf(tuple.getDummyTag(), maxValue, aggInput);
+    Field maxField = getMaxValue();
+    Field resetField = FieldFactory::obliviousIf(tuple.getDummyTag(), maxValue, aggInput);
 
     // use secret initialized variable for debugging
-    runningMin = Value::obliviousIf(isDummy, runningMin, resetValue);
+    runningMin = FieldFactory::obliviousIf(isDummy, runningMin, resetValue);
 
 }
 
-void SecureGroupByMinImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
-    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
-    Value toUpdate = (!isDummy) & !(tuple.getDummyTag()) & (aggInput < runningMin);
-    runningMin = Value::obliviousIf(toUpdate, aggInput, runningMin);
+void SecureGroupByMinImpl::accumulate(const QueryTuple &tuple, const Field *isDummy) {
+    Field *aggInput = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
+    Field toUpdate = (!isDummy) & !(tuple.getDummyTag()) & (aggInput < runningMin);
+    runningMin = FieldFactory::obliviousIf(toUpdate, aggInput, runningMin);
 }
 
-Value SecureGroupByMinImpl::getResult() {
+const Field * SecureGroupByMinImpl::getResult() const {
     return runningMin;
 }
 
 
-Value SecureGroupByMinImpl::getMaxValue() const  {
+Field SecureGroupByMinImpl::getMaxValue() const  {
     switch(aggregateType) {
-        case TypeId::ENCRYPTED_INTEGER32:
-            return Value(TypeId::ENCRYPTED_INTEGER32, Integer(32, INT_MAX, PUBLIC));
-        case TypeId::INTEGER64:
-            return Value(TypeId::ENCRYPTED_INTEGER64, Integer(64, LONG_MAX, PUBLIC));
-        case TypeId::BOOLEAN:
+        case FieldType::SECURE_INT32:
+            return Value(FieldType::SECURE_INT32, Integer(32, INT_MAX, PUBLIC));
+        case FieldType::INTEGER64:
+            return Value(FieldType::SECURE_INT64, Integer(64, LONG_MAX, PUBLIC));
+        case FieldType::BOOLEAN:
             return Value(Bit(true, PUBLIC));
-        case TypeId::FLOAT32:
+        case FieldType::FLOAT32:
             return Value(Float(FLT_MAX, PUBLIC));
         default:
-            throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MIN()");
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(aggregateType) + " not supported by MIN()");
     }
 }
 
 
 
-void SecureGroupByMaxImpl::initialize(const QueryTuple &tuple, const Value &isDummy) {
-    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
+void SecureGroupByMaxImpl::initialize(const QueryTuple &tuple, const Field *isDummy) {
+    Field *aggInput = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
 
-    Value minValue = getMinValue();
-    Value resetValue = Value::obliviousIf(tuple.getDummyTag(), minValue, aggInput);
-    runningMax = Value::obliviousIf(isDummy, runningMax, resetValue);
+    Field minField = getMinValue();
+    Field resetField = FieldFactory::obliviousIf(tuple.getDummyTag(), minValue, aggInput);
+    runningMax = FieldFactory::obliviousIf(isDummy, runningMax, resetValue);
 }
 
-void SecureGroupByMaxImpl::accumulate(const QueryTuple &tuple, const Value &isDummy) {
-    Value aggInput = tuple.getField(aggregateOrdinal).getValue();
-    Value toUpdate = (!isDummy) & !(tuple.getDummyTag()) & (aggInput > runningMax);
-    runningMax = Value::obliviousIf(toUpdate, aggInput, runningMax);
+void SecureGroupByMaxImpl::accumulate(const QueryTuple &tuple, const Field *isDummy) {
+    Field *aggInput = FieldFactory::copyField(tuple.getField(aggregateOrdinal));
+    Field toUpdate = (!isDummy) & !(tuple.getDummyTag()) & (aggInput > runningMax);
+    runningMax = FieldFactory::obliviousIf(toUpdate, aggInput, runningMax);
 
 }
 
-Value SecureGroupByMaxImpl::getResult() {
+const Field * SecureGroupByMaxImpl::getResult() const {
     return runningMax;
 }
 
-Value SecureGroupByMaxImpl::getMinValue() const {
+Field *SecureGroupByMaxImpl::getMinValue() const {
     switch(aggregateType) {
-        case TypeId::ENCRYPTED_INTEGER32:
-            return Value(TypeId::ENCRYPTED_INTEGER32, Integer(32, INT_MIN, PUBLIC));
-        case TypeId::INTEGER64:
-            return Value(TypeId::ENCRYPTED_INTEGER64, Integer(64, LONG_MIN, PUBLIC));
-        case TypeId::BOOLEAN:
-            return Value(Bit(false, PUBLIC));
-        case TypeId::FLOAT32:
-            return Value(Float(FLT_MIN, PUBLIC));
+        case FieldType::SECURE_INT32:
+            return new SecureIntField(Integer(32, INT_MIN, PUBLIC));
+        case FieldType::SECURE_INT64:
+            return new SecureLongField(Integer(64, LONG_MIN, PUBLIC));
+        case FieldType::SECURE_BOOL:
+            return new SecureBoolField(Bit(false, PUBLIC));
+        case FieldType::SECURE_FLOAT32:
+            return new SecureFloatField(Float(FLT_MIN, PUBLIC));
         default:
-            throw std::invalid_argument("Type " + TypeUtilities::getTypeIdString(aggregateType) + " not supported by MAX()");
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(aggregateType) + " not supported by MAX()");
     }
 }

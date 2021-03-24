@@ -1,32 +1,38 @@
 #include "filter.h"
 
-Filter::Filter(Operator *child, shared_ptr<Predicate> predicateClass) : Operator(child) {
-    predicate = predicateClass;
-}
+using namespace vaultdb;
 
-Filter::Filter(shared_ptr<QueryTable> child, shared_ptr<Predicate> predicateClass) : Operator(child) {
-    predicate = predicateClass;
-}
 
-std::shared_ptr<QueryTable> Filter::runSelf() {
+template<typename B>
+Filter<B>::Filter(Operator<B> *child, shared_ptr<Predicate<B> > & predicateClass) :
+     Operator<B>(child), predicate(predicateClass) { }
 
-    std::shared_ptr<QueryTable> input = children[0]->getOutput();
+template<typename B>
+Filter<B>::Filter(shared_ptr<QueryTable<B> > child, shared_ptr<Predicate<B> >&  predicateClass) :
+     Operator<B>(child), predicate(predicateClass) { }
+
+template<typename B>
+std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
+    std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
 
 
     // deep copy new output, then just modify the dummy tag
-    output = std::shared_ptr<QueryTable>(new QueryTable(*input));
+    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
 
-    for(size_t i = 0; i < output->getTupleCount(); ++i) {
-        QueryTuple tuple = output->getTuple(i);
-        types::Value dummyTag = (!(predicate->predicateCall(tuple))) | tuple.getDummyTag(); // (!) because dummyTag is false if our selection criteria is satisfied
-        tuple.setDummyTag(dummyTag);
+    for(size_t i = 0; i < Operator<B>::output->getTupleCount(); ++i) {
+        QueryTuple tuple = Operator<B>::output->getTuple(i);
+        B dummyTag = static_cast<const B >(*tuple.getDummyTag());
+        B predicateOut = predicate->predicateCall(tuple);
 
-        output->setTupleDummyTag(i, dummyTag);
+        dummyTag =  ((!predicateOut) | dummyTag); // (!) because dummyTag is false if our selection criteria is satisfied
+
+        Operator<B>::output->getTuplePtr(i)->setDummyTag(dummyTag);
     }
 
-    output->setSortOrder(input->getSortOrder());
-    return output;
+    Operator<B>::output->setSortOrder(input->getSortOrder());
+    return Operator<B>::output;
+
 }
 
-
-
+template class vaultdb::Filter<BoolField>;
+template class vaultdb::Filter<SecureBoolField>;

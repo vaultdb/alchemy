@@ -4,120 +4,111 @@
 
 #include <cstdint>
 #include <query_table/query_tuple.h>
+#include <query_table/field/field_factory.h>
 #include <limits.h>
 #include <cfloat>
 
-using namespace vaultdb::types;
 
 namespace vaultdb {
+    template<typename B>
     class GroupByAggregateImpl {
     public:
-        explicit GroupByAggregateImpl(const int32_t & ordinal, const types::TypeId & aggType) :
-                                                            aggregateOrdinal(ordinal), aggregateType(aggType),
-                                                            zero(TypeUtilities::getZero(aggregateType)), one(TypeUtilities::getOne(aggregateType)){};
+        explicit GroupByAggregateImpl(const int32_t & ordinal, const FieldType & aggType) :
+                aggregateOrdinal(ordinal), aggregateType(aggType),
+                zero(FieldFactory<B>::getZero(aggregateType)), one(FieldFactory<B>::getOne(aggregateType)){};
 
-        virtual ~GroupByAggregateImpl() {}
-        virtual void initialize(const QueryTuple & tuple, const types::Value & isDummy) = 0; // run this when we start a new group-by bin
-        virtual void accumulate(const QueryTuple & tuple, const types::Value & isDummy) = 0;
-        virtual types::Value getResult() = 0;
-        types::TypeId getType() { return aggregateType; }
+        virtual ~GroupByAggregateImpl() = default;
+        virtual void initialize(const QueryTuple<B> & tuple, const B &isGroupByMatch) = 0; // run this when we start a new group-by bin
+        virtual void accumulate(const QueryTuple<B> & tuple, const B &isGroupByMatch) = 0;
+        virtual Field<B> getResult() = 0;
+        virtual FieldType getType() const { return aggregateType; }
 
-        // specialized in plain or  version of aggregator
-        virtual types::Value getDummyTag(const types::Value & isLastEntry, const types::Value & nonDummyBin) = 0;
-        virtual void updateGroupByBinBoundary(const types::Value & isNewBin, types::Value & nonDummyBinFlag) = 0;
     protected:
 
         // signed int because -1 denotes *, as in COUNT(*)
         int32_t aggregateOrdinal;
-        types::TypeId aggregateType;
-        types::Value zero;
-        types::Value one;
+        FieldType aggregateType;
+        Field<B> zero;
+        Field<B> one;
 
     };
 
 
-    class PlainGroupByAggregateImpl : public GroupByAggregateImpl {
+   template<typename B>
+   class GroupByCountImpl : public  GroupByAggregateImpl<B> {
     public:
-        explicit PlainGroupByAggregateImpl(const int32_t & ordinal, const types::TypeId & aggType) : GroupByAggregateImpl(ordinal, aggType) {};
-        virtual ~PlainGroupByAggregateImpl() = default;
-         types::Value getDummyTag(const types::Value & isLastEntry, const types::Value & nonDummyBin) override;
-         void updateGroupByBinBoundary(const types::Value & isNewBin, types::Value & nonDummyBinFlag) override;
-
-
-    };
-
-    class GroupByCountImpl : public  PlainGroupByAggregateImpl {
-    public:
-        explicit GroupByCountImpl(const int32_t & ordinal, const types::TypeId & aggType) : PlainGroupByAggregateImpl(ordinal, aggType), runningCount(types::TypeId::INTEGER64, 0L) {};
-        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
-        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
-        types::Value getResult() override;
-        ~GroupByCountImpl() = default;
+        explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType);
+        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        Field<B> getResult() override;
+        FieldType getType() const override;
+       ~GroupByCountImpl() = default;
 
     private:
-        types::Value runningCount;
+        Field<B> runningCount;
 
     };
 
-    class GroupBySumImpl : public  PlainGroupByAggregateImpl {
+
+    template<typename B>
+    class GroupBySumImpl : public  GroupByAggregateImpl<B> {
     public:
-        explicit GroupBySumImpl(const int32_t & ordinal, const types::TypeId & aggType) : PlainGroupByAggregateImpl(ordinal, aggType) {
-            if(aggregateType == types::TypeId::INTEGER32) {
-                aggregateType = types::TypeId::INTEGER64; // accommodate psql handling of sum for validation
-                zero = TypeUtilities::getZero(aggregateType);
-                one = TypeUtilities::getOne(aggregateType);
-            }
-        };
-        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
-        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
-        types::Value getResult() override;
+        explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & aggType);
+        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        Field<B> getResult() override;
+        FieldType getType() const override;
         ~GroupBySumImpl() = default;
 
     private:
-        types::Value runningSum;
+        Field<B> runningSum;
 
     };
 
-    class GroupByAvgImpl : public  PlainGroupByAggregateImpl {
+    template<typename B>
+    class GroupByAvgImpl : public  GroupByAggregateImpl<B> {
     public:
-        GroupByAvgImpl(const int32_t & ordinal, const types::TypeId & aggType);
-        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
-        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
-        types::Value getResult() override;
+        GroupByAvgImpl(const int32_t & ordinal, const FieldType & aggType);
+        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        Field<B> getResult() override;
+        FieldType getType() const override;
         ~GroupByAvgImpl() = default;
 
     private:
-        types::Value runningSum;
-        types::Value runningCount;
+        Field<B> runningSum;
+        Field<B> runningCount;
 
     };
 
-    class GroupByMinImpl : public  PlainGroupByAggregateImpl {
+    template<typename B>
+    class GroupByMinImpl : public  GroupByAggregateImpl<B> {
     public:
-        explicit GroupByMinImpl(const int32_t & ordinal, const types::TypeId & aggType);
-        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
-        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
-        types::Value getResult() override;
+        explicit GroupByMinImpl(const int32_t & ordinal, const FieldType & aggType);
+        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        Field<B> getResult() override;
         ~GroupByMinImpl() = default;
 
     private:
-        Value runningMin;
-        void resetRunningMin();
+        Field<B> runningMin;
+        Field<B> resetMin;
 
 
     };
 
-    class GroupByMaxImpl : public  PlainGroupByAggregateImpl {
+    template<typename B>
+    class GroupByMaxImpl : public  GroupByAggregateImpl<B> {
     public:
-         GroupByMaxImpl(const int32_t & ordinal, const types::TypeId & aggType);;
-        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
-        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
-        types::Value getResult() override;
+        GroupByMaxImpl(const int32_t & ordinal, const FieldType & aggType);;
+        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        Field<B> getResult() override;
         ~GroupByMaxImpl() = default;
 
     private:
-        types::Value runningMax;
-        void resetRunningMax();
+        Field<B> runningMax;
+        Field<B> resetMax;
 
 
     };

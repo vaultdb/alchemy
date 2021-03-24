@@ -3,97 +3,99 @@
 
 #include <operators/support/group_by_aggregate_impl.h>
 
-using namespace vaultdb::types;
 
 namespace vaultdb {
     class SecureGroupByAggregateImpl : public GroupByAggregateImpl {
     public:
-        explicit SecureGroupByAggregateImpl(const int32_t & ordinal, const types::TypeId & aggType) : GroupByAggregateImpl(ordinal, aggType) {};
+        explicit SecureGroupByAggregateImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl(
+                ordinal) {};
         virtual ~SecureGroupByAggregateImpl() {}
-        types::Value getDummyTag(const types::Value & isLastEntry, const types::Value & nonDummyBin) override;
-        void updateGroupByBinBoundary(const types::Value & isNewBin, types::Value & nonDummyBinFlag) override;
+        Field * getDummyTag(const Field * isLastEntry, const Field * nonDummyBin) override;
+        void updateGroupByBinBoundary(const Field * isNewBin, Field * nonDummyBinFlag) override;
 
     };
 
 
     class SecureGroupByCountImpl : public  SecureGroupByAggregateImpl {
     public:
-        explicit SecureGroupByCountImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType),
-            runningCount(types::TypeId::ENCRYPTED_INTEGER64, emp::Integer(64, 0L, emp::PUBLIC)) {}
-        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
-        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
-        types::Value getResult() override;
+        explicit SecureGroupByCountImpl(const int32_t & ordinal, const FieldType & aggType) : SecureGroupByAggregateImpl(ordinal, aggType),
+            runningCount(emp::Integer(64, 0L, emp::PUBLIC)) {}
+        void initialize(const QueryTuple & tuple, const Field * isDummy) override;
+        void accumulate(const QueryTuple & tuple, const Field * isDummy) override;
+        const Field * getResult() const override;
         ~SecureGroupByCountImpl() = default;
 
     private:
-        types::Value runningCount;
+        emp::Integer runningCount;
 
 
     };
 
     class SecureGroupBySumImpl : public  SecureGroupByAggregateImpl {
     public:
-        explicit SecureGroupBySumImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType)  {
-            if(aggregateType == types::TypeId::ENCRYPTED_INTEGER32) {
-                aggregateType = types::TypeId::ENCRYPTED_INTEGER64; // accommodate psql handling of sum for validation
-                zero = TypeUtilities::getZero(aggregateType);
-                one = TypeUtilities::getOne(aggregateType);
+        explicit SecureGroupBySumImpl(const int32_t & ordinal, const FieldType & aggType) : SecureGroupByAggregateImpl(ordinal, aggType)  {
+            if(aggregateType == FieldType::SECURE_INT32) {
+                aggregateType = FieldType::SECURE_INT64; // accommodate psql handling of sum for validation
+                zero = FieldFactory::getZero(aggregateType);
+                one = FieldFactory::getOne(aggregateType);
             }
             runningSum = zero;
         };
-        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
-        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
-        types::Value getResult() override;
-        ~SecureGroupBySumImpl() = default;
+        void initialize(const QueryTuple & tuple, const Field * isDummy) override;
+        void accumulate(const QueryTuple & tuple, const Field * isDummy) override;
+        const Field * getResult() const override;
+        ~SecureGroupBySumImpl() { delete runningSum; }
 
     private:
-        types::Value runningSum;
+        Field * runningSum;
 
     };
 
 
+    // TODO: convert this to emp::Float instead of Field* for member variables
+    //  repeat the process for other 3 avg impls
     class SecureGroupByAvgImpl : public  SecureGroupByAggregateImpl {
     public:
-        explicit SecureGroupByAvgImpl(const int32_t & ordinal, const types::TypeId & aggType);;
-        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
-        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
-        types::Value getResult() override;
-        ~SecureGroupByAvgImpl() = default;
+        explicit SecureGroupByAvgImpl(const int32_t & ordinal, const FieldType & aggType);;
+        void initialize(const QueryTuple & tuple, const Field * isDummy) override;
+        void accumulate(const QueryTuple & tuple, const Field * isDummy) override;
+        const Field * getResult() const override;
+        ~SecureGroupByAvgImpl()  = default;
 
     private:
-        types::Value runningSum;
-        types::Value runningCount;
-        types::Value zeroFloat;
-        types::Value oneFloat;
+        emp::Float runningSum;
+        emp::Float runningCount;
+        emp::Float zeroFloat;
+        emp::Float oneFloat;
 
     };
 
     class SecureGroupByMinImpl : public  SecureGroupByAggregateImpl {
     public:
-        explicit SecureGroupByMinImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType), runningMin(
+        explicit SecureGroupByMinImpl(const int32_t & ordinal, const FieldType & aggType) : SecureGroupByAggregateImpl(ordinal, aggType), runningMin(
                 getMaxValue()) {};
-        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
-        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
-        types::Value getResult() override;
-        ~SecureGroupByMinImpl() = default;
+        void initialize(const QueryTuple & tuple, const Field * isDummy) override;
+        void accumulate(const QueryTuple & tuple, const Field * isDummy) override;
+        const Field * getResult() const override;
+        ~SecureGroupByMinImpl()  { delete runningMin; }
 
     private:
-        types::Value runningMin;
-        Value getMaxValue() const;
+        Field * runningMin;
+        Field *getMaxValue() const;
 
     };
 
     class SecureGroupByMaxImpl : public  SecureGroupByAggregateImpl {
     public:
-        explicit SecureGroupByMaxImpl(const int32_t & ordinal, const types::TypeId & aggType) : SecureGroupByAggregateImpl(ordinal, aggType), runningMax(getMinValue()) {};
-        void initialize(const QueryTuple & tuple, const types::Value & isDummy) override;
-        void accumulate(const QueryTuple & tuple, const types::Value & isDummy) override;
-        types::Value getResult() override;
-        ~SecureGroupByMaxImpl() = default;
+        explicit SecureGroupByMaxImpl(const int32_t & ordinal, const FieldType & aggType) : SecureGroupByAggregateImpl(ordinal, aggType), runningMax(getMinValue()) {};
+        void initialize(const QueryTuple & tuple, const Field * isDummy) override;
+        void accumulate(const QueryTuple & tuple, const Field * isDummy) override;
+        const Field * getResult() const override;
+        ~SecureGroupByMaxImpl() { delete runningMax; }
 
     private:
-        types::Value runningMax;
-        Value getMinValue() const;
+        Field * runningMax;
+        Field *getMinValue() const;
 
     };
 }

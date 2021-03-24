@@ -1,6 +1,8 @@
 #include <util/data_utilities.h>
+#include <util/field_utilities.h>
 #include "secure_sort_condition.h"
 
+// TODO: pre-empt this with emp's sort impl in number.h?
 void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
     emp::Bit swap(false);
@@ -12,12 +14,11 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
 
 
     for(size_t i = 0; i < sortDefinition.size(); ++i) {
-        types::Value lhsValue = SortCondition::getValue(lhs, sortDefinition[i]);
-        types::Value rhsValue = SortCondition::getValue(rhs, sortDefinition[i]);
+        const Field *lhsField = SortCondition::getValue(lhs, sortDefinition[i]);
+        const Field *rhsField = SortCondition::getValue(rhs, sortDefinition[i]);
 
 
-        types::Value eqValue = (lhsValue == rhsValue);
-        emp::Bit eq = eqValue.getEmpBit();
+        emp::Bit eq = FieldUtilities::secureEqual(lhsField, rhsField);
 
         SortDirection direction = sortDefinition[i].second;
 
@@ -27,10 +28,12 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
         emp::Bit colSwapFlag;
 
         if(direction == vaultdb::SortDirection::ASCENDING) {
-            colSwapFlag = (rhsValue > lhsValue).getEmpBit();
+            colSwapFlag = FieldUtilities::secureGeq(rhsField, lhsField) & !eq;
+            //colSwapFlag = (rhsField > lhsValue).getEmpBit();
         }
         else if(direction == vaultdb::SortDirection::DESCENDING) {
-            colSwapFlag = (lhsValue > rhsValue).getEmpBit();
+            colSwapFlag = FieldUtilities::secureGeq(lhsField, rhsField) & !eq;
+            // colSwapFlag = (lhsField > rhsValue).getEmpBit();
         }
         else {
             throw;
@@ -65,11 +68,11 @@ void SecureSortCondition::compareAndSwap(QueryTuple &lhs, QueryTuple &rhs) {
         std::cout <<  " for |" << rhsRevealed  <<  "| encrypted bits: " << rhsValue.getEmpInt().reveal<std::string>() <<  std::endl;
 
         bool expectedGT  = (lhsRevealed > rhsRevealed);
-        bool observedGT =  (lhsValue > rhsValue).getEmpBit().reveal();
+        bool observedGT =  (lhsField > rhsValue).getEmpBit().reveal();
         std::cout << "Expected gt: " << expectedGT << " observed: " << observedGT << std::endl;
-        std::cout << "Makeup: " << (lhsValue <= rhsValue).getEmpBit().reveal() << " == " << (lhsRevealed[i] <= rhsRevealed[i]) << std::endl;
+        std::cout << "Makeup: " << (lhsField <= rhsValue).getEmpBit().reveal() << " == " << (lhsRevealed[i] <= rhsRevealed[i]) << std::endl;
 
         assert(expectedGT == observedGT);
 
-        std::cout << "   Comparing " << lhsRevealed <<  " to " << rhsRevealed << " on col: " <<  sortColIdx << " gt? " << (lhsValue > rhsValue).getEmpBit().reveal() << " toSwap? " << swap.reveal() << std::endl;
+        std::cout << "   Comparing " << lhsRevealed <<  " to " << rhsRevealed << " on col: " <<  sortColIdx << " gt? " << (lhsField > rhsValue).getEmpBit().reveal() << " toSwap? " << swap.reveal() << std::endl;
 */

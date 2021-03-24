@@ -4,11 +4,9 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <data/CsvReader.h>
-#include <limits.h>
 
 
 using namespace emp;
-using namespace vaultdb::types;
 using namespace vaultdb;
 
 
@@ -19,6 +17,7 @@ protected:
     void SetUp() override{
         setup_plain_prot(false, "");
         currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
+        //system("./test/support/setup-csv.sh ");
     };
     void TearDown() override{
         finalize_plain_prot();
@@ -28,7 +27,7 @@ protected:
     std::string currentWorkingDirectory;
 
     QueryFieldDesc convertDateField(const QueryFieldDesc & srcField) {
-        return QueryFieldDesc(srcField, types::TypeId::DATE);
+        return QueryFieldDesc(srcField, FieldType::DATE);
     }
 };
 
@@ -42,7 +41,7 @@ TEST_F(CsvReaderTest, lineitemTest) {
     std::string query = "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::unique_ptr<QueryTable> expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
     QuerySchema csvSchema = expected->getSchema();
     // substitute longs with dates in the appropriate cols, fields 10, 11, 12
     csvSchema.putField(convertDateField(csvSchema.getField(10)));
@@ -50,7 +49,7 @@ TEST_F(CsvReaderTest, lineitemTest) {
     csvSchema.putField(convertDateField(csvSchema.getField(12)));
 
 
-    std::unique_ptr<QueryTable> observed = CsvReader::readCsv(inputFile, csvSchema);
+    std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, csvSchema);
     observed->setSchema(expected->getSchema()); // switch back from date schema
 
     ASSERT_EQ(*expected, *observed);
@@ -60,16 +59,22 @@ TEST_F(CsvReaderTest, lineitemTest) {
 
 
 TEST_F(CsvReaderTest, quotedStringTest) {
+    // trick is handling ',' character correctly
     std::string testStr = "16,Customer#000000016,\"cYiaeMLZSMAOQ2 d0W,\",10,20-781-609-3107,4681.03,FURNITURE ,kly silent courts. thinly regular theodolites sleep fluffily after ";
+
 
     // grab customer table for schema:
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
     PsqlDataProvider dataProvider;
-    std::unique_ptr<QueryTable> expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
     QueryTuple parsedTuple = CsvReader::parseTuple(testStr, expected->getSchema());
     QueryTuple expectedTuple = expected->getTuple(15);
 
+
+    // expected:
+    // 16 | Customer#000000016 | cYiaeMLZSMAOQ2 d0W,                    |          10 | 20-781-609-3107 |   4681.03 | FURNITURE    | kly silent courts. thinly regular theodolites sleep fluffily after
+    // both appear to be truncating last string
 
     ASSERT_EQ(parsedTuple, expectedTuple);
 }
@@ -83,9 +88,9 @@ TEST_F(CsvReaderTest, customerTest) {
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::unique_ptr<QueryTable> expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
-    std::unique_ptr<QueryTable> observed = CsvReader::readCsv(inputFile, expected->getSchema());
+    std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, expected->getSchema());
 
     ASSERT_EQ(*expected, *observed);
 
@@ -102,15 +107,16 @@ TEST_F(CsvReaderTest, ordersTest) {
     std::string query = "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::unique_ptr<QueryTable> expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
     QuerySchema csvSchema = expected->getSchema();
     // o_orderdate(4) set schema to date
     csvSchema.putField(convertDateField(csvSchema.getField(4)));
 
-    std::unique_ptr<QueryTable> observed = CsvReader::readCsv(inputFile, csvSchema);
+    std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, csvSchema);
     observed->setSchema( expected->getSchema());
 
+    // RHS || observed is incorrect here.
     ASSERT_EQ(*expected, *observed);
 
 

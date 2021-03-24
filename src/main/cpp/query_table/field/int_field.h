@@ -1,100 +1,74 @@
-#ifndef _INTFIELD_H
-#define _INTFIELD_H
+#ifndef INT_FIELD_H
+#define INT_FIELD_H
 
-#include "field_instance.h"
 #include "bool_field.h"
-#include <cstdint>
-
-#include <cstdint>
-#include <cstring>
-#include <emp-tool/circuits/integer.h>
-
+#include <emp-tool/circuits/bit.h>
 
 
 namespace vaultdb {
-    //     T = derived field
-    //     P = primitive field
-    //     B = boolean field result
-    //    template<typename T, typename P, typename B>
-    class IntField : public FieldInstance<IntField, int32_t, BoolField> {
-    protected:
-        int32_t payload = 0;
+
+    // IntField is a decorator for Field
+    // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
+    class IntField :  public Field<BoolField> {
 
     public:
 
-        IntField()  {}
-        IntField(const IntField & src)  { payload = src.payload; }
-        IntField(const int32_t & src) { payload = src; }
-        IntField(const int8_t * src) { memcpy((int8_t *) &payload, src, size()/8); }
-        IntField(const emp::Integer & src, const int & party) { // for decryption
-            payload = src.reveal<int32_t>(party);
-        }
+        IntField() :  Field(FieldType::INT) {}
+        ~IntField() = default;
+        explicit IntField(const Field & srcField);
 
-        IntField& operator=(const IntField& other) {
-                this->payload = other.payload;
-                return *this;
-        }
+        IntField(const IntField & src);
+
+        explicit IntField(const int32_t & src);
+        explicit IntField(const int8_t * src);
 
 
-        static FieldType type() { return FieldType::INT32; }
-
-        bool encrypted() { return false; }
-        size_t size() const override { return 32; }
-        void copy(const IntField & src) { payload = src.payload; }
-        void assign(const int32_t & src) {payload = src; }
-        int32_t decrypt(const int & party) const { return payload; }
-
-        int32_t primitive() const { return payload; }
-        std::string str() const { return std::to_string(payload); }
+        // constructor for decryption
+        IntField(const emp::Integer & src, const int & party);
 
 
-        IntField & operator+(const IntField &rhs) const { return *(new IntField(payload + rhs.payload)); }
-        IntField & operator-(const IntField &rhs) const { return *(new IntField(payload - rhs.payload)); }
-        IntField & operator*(const IntField &rhs) const { return *(new IntField(payload * rhs.payload)); }
-        IntField & operator/(const IntField &rhs) const { return *(new IntField(payload / rhs.payload)); }
-        IntField & operator%(const IntField &rhs) const { return *(new IntField(payload % rhs.payload)); }
+        int32_t getPayload() const { return getValue<int32_t>(); }
+
+        IntField& operator=(const IntField& other);
+        IntField& operator=(const int32_t & other);
 
 
-        // comparators
-        Field &  operator !() const override { return *(new IntField(!payload)); }
-        BoolField & operator >= (const IntField &cmp) const { return *(new BoolField(payload >= cmp.payload)); }
-        BoolField & operator == (const IntField &cmp) const { return *(new BoolField(payload == cmp.payload)); }
+        IntField  operator+(const IntField &rhs) const  { return IntField(getPayload() + rhs.getPayload()); }
+        IntField  operator-(const IntField &rhs) const  { return IntField(getPayload() - rhs.getPayload()); }
+        IntField  operator*(const IntField &rhs) const  { return IntField(getPayload() * rhs.getPayload()); }
+        IntField  operator/(const IntField &rhs) const  { return IntField(getPayload() / rhs.getPayload()); }
+        IntField  operator%(const IntField &rhs) const  { return IntField(getPayload() % rhs.getPayload()); }
+
+
+        // only for bool types
+        BoolField neg() const { throw; }
+        std::string str() const { return std::to_string(getPayload()); }
+
+
+
+        BoolField  operator >= (const IntField &cmp) const;
+        BoolField  operator == (const IntField &cmp) const;
 
 
         // swappable
-        IntField & select(const BoolField & choice, const IntField & other) const {
-            bool selection =  choice.primitive();
-            return selection ? *(new IntField(*this)) : *(new IntField(other));
-        }
+        IntField  selectValue(const BoolField & choice, const IntField & other) const;
 
-        void serialize(int8_t *dst) const override {
-            size_t len  = size() / 8;
-            std::memcpy(dst, (int8_t*) payload, len);
-        }
 
-       /* Field & encrypt(const int & myParty, const int & dstParty = emp::PUBLIC) const {
-            int32_t value = (myParty == dstParty) ? payload : 0;
-            emp::Integer intVal(32, value, dstParty);
-
-            return *(new SecureIntField(intVal));
-        }*/
 
         // bitwise ops
-        IntField & operator&(const IntField &right) const {
-            return *(new IntField(payload & right.payload));
-        }
+        IntField  operator&(const IntField &right) const { return  IntField(getPayload() & (right.getPayload())); }
+        IntField  operator^(const IntField &right) const { return  IntField((getPayload() ^ (right.getPayload()))); }
+        IntField  operator|(const IntField &right) const { return  IntField((getPayload() | (right.getPayload()))); }
 
-        IntField & operator^(const IntField &right) const {
-            return *(new IntField(payload ^ right.payload));
-        }
-
-        IntField & operator|(const IntField &right) const {
-            return *(new IntField(payload | right.payload));
-        }
+        // serialize
+        void ser(int8_t * target) const { *((int32_t *) target) = getPayload();  }
 
 
     };
+
+    std::ostream &operator<<(std::ostream &os, const IntField &aValue);
+
+
+
 }
-
-
-#endif //_INTFIELD_H
+#endif //INT_FIELD_H

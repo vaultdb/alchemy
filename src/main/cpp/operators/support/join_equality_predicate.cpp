@@ -1,27 +1,28 @@
-//
-// Created by Jennie Rogers on 9/13/20.
-//
-
-#include <util/type_utilities.h>
 #include "join_equality_predicate.h"
 
-JoinEqualityPredicate::JoinEqualityPredicate(const ConjunctiveEqualityPredicate &srcPredicates, bool isEncrypted)  : predicates(srcPredicates) {
-    defaultValue = isEncrypted ?  types::Value(emp::Bit(true)) : types::Value((bool) true);
+
+using namespace vaultdb;
+
+template<typename B>
+JoinEqualityPredicate<B>::JoinEqualityPredicate(const ConjunctiveEqualityPredicate &srcPredicates)  : predicate(srcPredicates) {
 
 }
 
+template<typename B>
+B JoinEqualityPredicate<B>::predicateCall(const  QueryTuple<B> *lhs, const QueryTuple<B> *rhs) const {
 
-types::Value JoinEqualityPredicate::predicateCall( QueryTuple *lhs,  QueryTuple *rhs) const {
+    B result = B(true);
+   for(EqualityPredicate p : predicate) {
+       B eq = *lhs->getField(p.first) == *rhs->getField(p.second);
+       result = result & eq;
 
-    types::Value result = defaultValue;
-   for(EqualityPredicate eq : predicates) {
-       types::Value lhsValue = lhs->getField(eq.first).getValue();
-       types::Value rhsValue = rhs->getField(eq.second).getValue();
-
-       result = result & (lhsValue == rhsValue);
    }
 
    return result;
 
 }
+
+
+template class vaultdb::JoinEqualityPredicate<BoolField>;
+template class vaultdb::JoinEqualityPredicate<SecureBoolField>;
 

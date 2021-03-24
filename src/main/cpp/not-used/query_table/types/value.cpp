@@ -409,7 +409,7 @@ void Value::setValue(const std::string & aString) {
 
             }
             default:
-                throw std::invalid_argument("Could not deserialize " + TypeUtilities::getTypeIdString(desc.getType()));
+                throw std::invalid_argument("Could not deserialize " + TypeUtilities::getTypeString(desc.getType()));
 
         }
             return Value(0);
@@ -461,7 +461,7 @@ void Value::setValue(const std::string & aString) {
 
             }
             default:
-                throw std::invalid_argument("Could not deserialize " + TypeUtilities::getTypeIdString(desc.getType()));
+                throw std::invalid_argument("Could not deserialize " + TypeUtilities::getTypeString(desc.getType()));
 
         }
         return Value(0);
@@ -560,7 +560,8 @@ void Value::setValue(const std::string & aString) {
             case TypeId::FLOAT32:
                 return Value(src.getFloat32());
             default:
-                throw std::invalid_argument("Cannot convert value of type " + TypeUtilities::getTypeIdString(src.getType()) + " to float.");
+                throw std::invalid_argument("Cannot convert value of type " +
+                                                    TypeUtilities::getTypeString(src.getType()) + " to float.");
 
         }
 

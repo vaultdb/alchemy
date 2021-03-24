@@ -1,96 +1,71 @@
-#ifndef _FLOAT_FIELD_H
-#define _FLOAT_FIELD_H
+#ifndef FLOAT_FIELD_H
+#define FLOAT_FIELD_H
 
-
-#include "field_instance.h"
 #include "bool_field.h"
-#include <cstdint>
-#include <emp-tool/circuits/float32.h>
-
-#include <cstdint>
-#include <cstring>
-
-
+#include "field.h"
 
 namespace vaultdb {
-    //  // T = derived field
-    //    // P = primitive / payload of field, needed for serialize
-    //    // B = boolean field result
-    //    template<typename T, typename P, typename B>
-    class FloatField : public FieldInstance<FloatField, float_t, BoolField> {
-    protected:
-        float_t payload = 0.0;
+
+    // FloatField is a decorator for Field
+    // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
+    class FloatField :  public Field<BoolField>  {
 
     public:
 
-        FloatField()  {}
-        FloatField(const FloatField & src)   { payload = src.payload; }
-        FloatField(const float_t & src)   { payload = src; }
-        FloatField(const int8_t * src)   { memcpy((int8_t *) &payload, src, size()/8); }
-        FloatField(const emp::Float & src, const int & party) {
-            payload = src.reveal<double>(party);
-        }
+        FloatField() :  Field(FieldType::FLOAT) {}
+        ~FloatField() = default;
+        explicit FloatField(const Field & srcField);
 
-        FloatField& operator=(const FloatField& other) {
-            this->payload = other.payload;
-            return *this;
-        }
+        FloatField(const FloatField & src);
+
+        explicit FloatField(const float_t & src);
+        explicit FloatField(const int8_t * src);
 
 
-        bool encrypted() const { return false; }
-        void copy(const FloatField & src) { payload = src.payload; }
-        void assign(const float_t & src) {payload = src; }
-
-        static FieldType type() { return FieldType::FLOAT32; }
-
-        size_t size() const override { return 32; }
+        // constructor for decryption
+        FloatField(const emp::Float & src, const int & party);
 
 
+        float_t getPayload() const { return getValue<float_t>(); }
+
+        FloatField& operator=(const FloatField& other);
 
 
-        FloatField & operator+(const FloatField &rhs) const { return *(new FloatField(payload + rhs.payload)); }
-        FloatField & operator-(const FloatField &rhs) const { return *(new FloatField(payload - rhs.payload)); }
-        FloatField & operator*(const FloatField &rhs) const { return *(new FloatField(payload * rhs.payload)); }
-        FloatField & operator/(const FloatField &rhs) const { return *(new FloatField(payload / rhs.payload)); }
-        FloatField & operator%(const FloatField &rhs) const { throw; }
+        FloatField  operator+(const FloatField &rhs) const  {    return FloatField(getPayload() + rhs.getPayload());  }
+        FloatField  operator-(const FloatField &rhs) const  {    return FloatField(getPayload() - rhs.getPayload());  }
+        FloatField  operator*(const FloatField &rhs) const  {    return FloatField(getPayload() * rhs.getPayload());  }
+        FloatField  operator/(const FloatField &rhs) const  {    return FloatField(getPayload() / rhs.getPayload());  }
+        FloatField  operator%(const FloatField &rhs) const  {    throw;  }
 
 
-        Field &  operator !() const override {
-            return *(new FloatField(!payload));
-        }
-
-        BoolField & operator >= (const FloatField &cmp) const {
-            return *(new BoolField(payload >= cmp.payload));
-        }
-
-        BoolField & operator == (const FloatField &cmp) const {
-            return *(new BoolField(payload == cmp.payload));
-        }
+        // only for bool types
+        BoolField neg() const { throw; }
+        std::string str() const { return std::to_string(getPayload());  }
 
 
 
-        float_t primitive() const { return payload; }
-        std::string str() const { return std::to_string(payload); }
+
+        BoolField  operator >= (const FloatField &cmp) const;
+        BoolField  operator == (const FloatField &cmp) const;
+
 
         // swappable
-        FloatField & select(const BoolField & choice, const FloatField & other) const {
-            bool selection =  choice.primitive();
-            return selection ? *(new FloatField(*this)) : *(new FloatField(other));
-        }
-
-        void serialize(int8_t *dst) const override {
-            size_t len  = size() / 8;
-            std::memcpy(dst,  (int8_t *) &payload, len);
-        }
-
-        FloatField & operator&(const FloatField &right) const { throw; } // bitwise ops not defined for float
-        FloatField & operator^(const FloatField &right) const { throw; } // bitwise ops not defined for float
-        FloatField & operator|(const FloatField &right) const { throw; } // bitwise ops not defined for float
+        FloatField  selectValue(const BoolField & choice, const FloatField & other) const;
 
 
 
+        // bitwise ops
+        FloatField  operator&(const FloatField &right) const {  throw; }
+        FloatField  operator^(const FloatField &right) const  {  throw; }
+        FloatField  operator|(const FloatField &right) const   {  throw; }
+
+        // serialize
+        void ser(int8_t * target) const { *((float_t *) target) = getPayload();  }
 
     };
+
+    std::ostream &operator<<(std::ostream &os, const FloatField &aValue);
+
 }
 
-#endif //_FLOAT_FIELD_H
+#endif //FLOAT_FIELD_H

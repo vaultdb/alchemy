@@ -1,97 +1,73 @@
-#ifndef _SECURE_INT_FIELD_H
-#define _SECURE_INT_FIELD_H
+#ifndef SECURE_INT_FIELD_H
+#define SECURE_INT_FIELD_H
 
-#include "field_instance.h"
-#include <cstdint>
-
-#include <cstdint>
-#include <cstring>
-#include <emp-tool/circuits/integer.h>
-
+#include "secure_bool_field.h"
+#include "int_field.h"
+#include <emp-tool/circuits/bit.h>
 
 
 namespace vaultdb {
 
-    class IntField;
 
-    //  // T = derived field
-    //    // P =  primitive
-    //    // B = boolean field result
-    //    template<typename T, typename P, typename B>
-class SecureIntField : public FieldInstance<SecureIntField, emp::Integer, SecureBoolField> {
-    protected:
-        emp::Integer payload = emp::Integer(32, 0);
+    // SecureIntField is a decorator for Field
+    // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
+    class SecureIntField : public Field<SecureBoolField>  {
 
     public:
 
-        SecureIntField() {}
-        SecureIntField(const SecureIntField & src)  { payload = src.payload; }
-        SecureIntField(const emp::Integer & src) { payload = src; }
-        SecureIntField(const int8_t * src)
-                { memcpy((int8_t *) payload.bits.data(), src, size()/8); }
+        SecureIntField() : Field(FieldType::SECURE_INT) {}
+        ~SecureIntField() = default;
+        explicit SecureIntField(const Field & srcField);
 
-        SecureIntField(const int32_t & src, const int & myParty, const int & dstParty) {
-            int32_t toEncrypt = (myParty == dstParty) ? src : 0;
-            payload = emp::Integer(32, toEncrypt, dstParty);
-        }
+        SecureIntField(const SecureIntField & src);
+        SecureIntField(const emp::Integer & src);
+        SecureIntField(const int32_t & src);
 
-        SecureIntField& operator=(const SecureIntField& other) {
-                this->payload = other.payload;
-                return *this;
-        }
+        explicit SecureIntField(const IntField *src, const int & myParty, const int & dstParty);
+        explicit SecureIntField(const int8_t * src);
 
-        bool encrypted() { return true; }
-        static FieldType type() { return FieldType::SECURE_INT32; }
 
-        size_t size() const override { return 32; }
-        void copy(const SecureIntField & src) { payload = src.payload; }
-        void assign(const emp::Integer & src) {payload = src; }
-        int32_t decrypt(const int & party) const { return payload.reveal<int32_t>(party); }
-        emp::Integer primitive() const { return payload; }
+        emp::Integer getPayload() const;
+
+        SecureIntField& operator=(const SecureIntField& other);
+
+
+        SecureIntField  operator+(const SecureIntField &rhs) const  { return SecureIntField(getPayload() + rhs.getPayload());  } // cast to int before doing arithmetic expressions
+        SecureIntField  operator-(const SecureIntField &rhs) const { return SecureIntField(getPayload() - rhs.getPayload()); }
+        SecureIntField  operator*(const SecureIntField &rhs) const  { return SecureIntField(getPayload() * rhs.getPayload()); }
+        SecureIntField  operator/(const SecureIntField &rhs) const  { return SecureIntField(getPayload() / rhs.getPayload()); }
+        SecureIntField  operator%(const SecureIntField &rhs) const  { return SecureIntField(getPayload() % rhs.getPayload()); }
+
+
+        // not defined in EMP
+        SecureBoolField neg() const { throw; }
         std::string str() const { return "SECRET INT"; }
 
 
-        SecureIntField & operator+(const SecureIntField &rhs) const { return *(new SecureIntField(payload + rhs.payload)); }
-        SecureIntField & operator-(const SecureIntField &rhs) const { return *(new SecureIntField(payload - rhs.payload)); }
-        SecureIntField & operator*(const SecureIntField &rhs) const { return *(new SecureIntField(payload * rhs.payload)); }
-        SecureIntField & operator/(const SecureIntField &rhs) const { return *(new SecureIntField(payload / rhs.payload)); }
-        SecureIntField & operator%(const SecureIntField &rhs) const { return *(new SecureIntField(payload % rhs.payload)); }
 
 
-        // comparators
-        Field &  operator !() const override { throw; } // TODO: implement NOT'ing the bits
-        SecureBoolField & operator >= (const SecureIntField &cmp) const { return *(new SecureBoolField(payload >= cmp.payload)); }
-        SecureBoolField & operator == (const SecureIntField &cmp) const { return *(new SecureBoolField(payload == cmp.payload)); }
+        SecureBoolField  operator >= (const SecureIntField &cmp) const;
+        SecureBoolField  operator == (const SecureIntField &cmp) const;
 
 
         // swappable
-        SecureIntField & select(const SecureBoolField & choice, const SecureIntField & other) const {
-            emp::Bit selection = choice.primitive();
-            emp::Integer result = emp::If(selection, payload, other.payload);
-            return *(new SecureIntField(result));
-        }
+        SecureIntField  selectValue(const SecureBoolField & choice, const SecureIntField & other) const;
 
-        void serialize(int8_t *dst) const override {
-            std::memcpy(dst, payload.bits.data(), size() * sizeof(emp::Bit));
-        }
 
 
         // bitwise ops
-        SecureIntField & operator&(const SecureIntField &right) const {
-            return *(new SecureIntField(payload & right.payload));
-        }
+        SecureIntField  operator&(const SecureIntField &right) const { return  SecureIntField((getPayload()) & right.getPayload()); }
+        SecureIntField  operator^(const SecureIntField &right) const { return  SecureIntField((getPayload()) ^ (right.getPayload())); }
+        SecureIntField  operator|(const SecureIntField &right) const { return  SecureIntField((getPayload()) | (right.getPayload())); }
 
-        SecureIntField & operator^(const SecureIntField &right) const {
-            return *(new SecureIntField(payload ^ right.payload));
-        }
-
-        SecureIntField & operator|(const SecureIntField &right) const {
-            return *(new SecureIntField(payload | right.payload));
-        }
+        void ser(int8_t * target) const {  memcpy(target, (int8_t *) getPayload().bits.data(), allocated_size_); }
 
 
     };
+
+    std::ostream &operator<<(std::ostream &os, const SecureIntField &aValue);
+
+
+
 }
-
-
-#endif //_SecureIntField_H
+#endif //BOOL_FIELD_H

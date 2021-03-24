@@ -1,36 +1,35 @@
-#include <operators/support/secure_replace_tuple.h>
 #include "fkey_pkey_join.h"
 
-KeyedJoin::KeyedJoin(Operator *foreignKey, Operator *primaryKey, shared_ptr<BinaryPredicate> predicateClass)
-        : Join(
-        foreignKey,
-        primaryKey, predicateClass) {}
+template<typename B>
+KeyedJoin<B>::KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, shared_ptr<BinaryPredicate<B> > predicateClass)
+        : Join<B>(foreignKey, primaryKey, predicateClass) {}
 
-KeyedJoin::KeyedJoin(shared_ptr<QueryTable> foreignKey, shared_ptr<QueryTable> primaryKey, shared_ptr<BinaryPredicate> predicateClass)
-        : Join(
-        foreignKey,
-        primaryKey, predicateClass) {}
+template<typename B>
+KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, shared_ptr<BinaryPredicate<B> > predicateClass)
+        : Join<B>(foreignKey, primaryKey, predicateClass) {}
 
-std::shared_ptr<QueryTable> KeyedJoin::runSelf() {
-    std::shared_ptr<QueryTable> foreignKeyTable = children[0]->getOutput();
-    std::shared_ptr<QueryTable> primaryKeyTable = children[1]->getOutput();
-    QueryTuple *lhsTuple, *rhsTuple;
-    QueryTuple dstTuple;
-    types::Value predicateEval;
+
+
+template<typename B>
+std::shared_ptr<QueryTable<B> > KeyedJoin<B>::runSelf() {
+    std::shared_ptr<QueryTable<B> > foreignKeyTable = Join<B>::children[0]->getOutput();
+    std::shared_ptr<QueryTable<B> > primaryKeyTable = Join<B>::children[1]->getOutput();
+    QueryTuple<B> *lhsTuple, *rhsTuple;
+    QueryTuple<B> dstTuple;
 
     uint32_t outputTupleCount = foreignKeyTable->getTupleCount(); // foreignKeyTable = foreign key
     QuerySchema lhsSchema = foreignKeyTable->getSchema();
     QuerySchema rhsSchema = primaryKeyTable->getSchema();
-    QuerySchema outputSchema = concatenateSchemas(lhsSchema, rhsSchema);
+    QuerySchema outputSchema = Join<B>::concatenateSchemas(lhsSchema, rhsSchema);
 
 
 
     assert(foreignKeyTable->isEncrypted() == primaryKeyTable->isEncrypted()); // only support all plaintext or all MPC for now
 
     // output size, colCount, isEncrypted
-    output = std::shared_ptr<QueryTable>(new QueryTable(outputTupleCount, outputSchema.getFieldCount()));
-    output->setSchema(outputSchema);
-    ReplaceTuple *replaceTuple = (foreignKeyTable->isEncrypted()) ? new SecureReplaceTuple(output) : new ReplaceTuple(output);
+    Join<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(outputTupleCount, outputSchema.getFieldCount()));
+    Join<B>::output->setSchema(outputSchema);
+
 
 
     // TODO: create dst tuple and populate with LHS value
@@ -41,26 +40,26 @@ std::shared_ptr<QueryTable> KeyedJoin::runSelf() {
 
         // for first tuple comparison, initialize output tuple -- just in case there are no matches
         rhsTuple = primaryKeyTable->getTuplePtr(0);
-        predicateEval = predicate->predicateCall(lhsTuple, rhsTuple);
-        dstTuple = compareTuples(lhsTuple, rhsTuple, predicateEval);
-        // unconditional write to first one to ensure it is initialized
-        output->putTuple(i, dstTuple);
+        B predicateEval = Join<B>::predicate->predicateCall(lhsTuple, rhsTuple);
+        dstTuple = Join<B>::compareTuples(lhsTuple, rhsTuple, predicateEval);
+        // unconditional write to first one to initialize it
+        Join<B>::output->putTuple(i, dstTuple);
 
         for(uint32_t j = 1; j < primaryKeyTable->getTupleCount(); ++j) {
             rhsTuple = primaryKeyTable->getTuplePtr(j);
-            predicateEval = predicate->predicateCall(lhsTuple, rhsTuple);
-             dstTuple = compareTuples(lhsTuple, rhsTuple, predicateEval);
-            replaceTuple->conditionalWrite(i, dstTuple, predicateEval);
+            predicateEval = Join<B>::predicate->predicateCall(lhsTuple, rhsTuple);
+             dstTuple = Join<B>::compareTuples(lhsTuple, rhsTuple, predicateEval);
 
+            QueryTuple<B>::compareAndSwap(predicateEval, Join<B>::output->getTuplePtr(i), &dstTuple);
         }
 
     }
-
-    delete replaceTuple;
-
-    return output;
+    return Join<B>::output;
 
 }
 
+
+template class vaultdb::KeyedJoin<BoolField>;
+template class vaultdb::KeyedJoin<SecureBoolField>;
 
 

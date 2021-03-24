@@ -1,21 +1,25 @@
 #include "project.h"
+#include <query_table/field/field_factory.h>
 
 
 // can't initialize schemas yet, don't have child schema
-Project::Project(Operator *child) : Operator(child), colCount(0), srcSchema(0), dstSchema(0){
+template<typename B>
+Project<B>::Project(Operator<B> *child) : Operator<B>(child), colCount(0), srcSchema(0), dstSchema(0){
 
 
 }
 
-Project::Project(shared_ptr<QueryTable> child) : Operator(child), colCount(0), srcSchema(0), dstSchema(0){
+template<typename B>
+Project<B>::Project(shared_ptr<QueryTable<B> > child) : Operator<B>(child), colCount(0), srcSchema(0), dstSchema(0){
 
 
 }
 
 
-std::shared_ptr<QueryTable> Project::runSelf() {
+template<typename B>
+std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
-    std::shared_ptr<QueryTable> srcTable = children[0]->getOutput();
+    std::shared_ptr<QueryTable<B> > srcTable = Operator<B>::children[0]->getOutput();
     SortDefinition srcSortOrder = srcTable->getSortOrder();
     srcSchema = srcTable->getSchema();
     colCount = expressions.size() + projectionMap.size();
@@ -39,12 +43,12 @@ std::shared_ptr<QueryTable> Project::runSelf() {
 
     }
 
-    std::map<uint32_t, Expression>::iterator exprPos = expressions.begin();
+    auto exprPos = expressions.begin();
     while(exprPos != expressions.end()) {
         uint32_t dstOrdinal = exprPos->first;
         Expression expression = exprPos->second;
 
-        types::TypeId type = expression.getType();
+        FieldType type = expression.getType();
         std::string alias = expression.getAlias();
 
         QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, alias, "", type); // NYI: string length for expressions
@@ -77,34 +81,35 @@ std::shared_ptr<QueryTable> Project::runSelf() {
 
     // *** Done defining schema and verifying setup
 
-    output = std::shared_ptr<QueryTable>(new QueryTable(tupleCount, colCount));
-    output->setSchema(dstSchema);
-    if(sortCarryOver) { output->setSortOrder(dstSortDefinition);  }
+    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tupleCount, colCount));
+    Operator<B>::output->setSchema(dstSchema);
+    if(sortCarryOver) { Operator<B>::output->setSortOrder(dstSortDefinition);  }
 
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        QueryTuple *srcTuple = srcTable->getTuplePtr(i);
-        QueryTuple dstTuple = getTuple(srcTuple);
-        output->putTuple(i, dstTuple);
+        QueryTuple<B> *srcTuple = srcTable->getTuplePtr(i);
+        QueryTuple<B> dstTuple = getTuple(srcTuple);
+        Operator<B>::output->putTuple(i, dstTuple);
     }
 
-    return output;
+    return Operator<B>::output;
 }
 
 
-QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
-    QueryTuple dstTuple(colCount, children[0]->getOutput()->isEncrypted());
-    dstTuple.setDummyTag(srcTuple->getDummyTag());
+template<typename B>
+QueryTuple<B> Project<B>::getTuple(QueryTuple<B> * const srcTuple) const {
+    QueryTuple<B> dstTuple(colCount);
+    dstTuple.setDummyTag(*(srcTuple->getDummyTag()));
 
-    std::map<uint32_t, Expression>::const_iterator exprPos = expressions.begin();
+   auto exprPos = expressions.begin();
 
 
     // do all 1:1 mappings
     for(ProjectionMapping mapping : projectionMap) {
         uint32_t srcOrdinal = mapping.first;
         uint32_t dstOrdinal = mapping.second;
-        QueryField dstField(dstOrdinal, srcTuple->getField(srcOrdinal).getValue());
-        dstTuple.putField(dstField);
+        const Field<B> *dstField = srcTuple->getField(srcOrdinal);
+        dstTuple.putField(dstOrdinal, *dstField);
 
     }
 
@@ -112,9 +117,9 @@ QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
     while(exprPos != expressions.end()) {
         uint32_t dstOrdinal = exprPos->first;
         Expression expression = exprPos->second;
-        types::Value fieldValue = expression.expressionCall(*srcTuple);
-        QueryField dstField(dstOrdinal, fieldValue);
-        dstTuple.putField(dstField);
+        Field<B> fieldValue = expression.expressionCall(*srcTuple);
+        dstTuple.putField(dstOrdinal, fieldValue);
+
         ++exprPos;
     }
 
@@ -122,8 +127,8 @@ QueryTuple Project::getTuple(QueryTuple * const srcTuple) const {
 
 
 }
-
-void Project::addColumnMappings(const ProjectionMappingSet &mapSet) {
+template<typename B>
+void Project<B>::addColumnMappings(const ProjectionMappingSet &mapSet) {
     for(ProjectionMapping mapping: mapSet)
     {
         projectionMap.push_back(mapping);
@@ -131,3 +136,6 @@ void Project::addColumnMappings(const ProjectionMappingSet &mapSet) {
 
 }
 
+
+template class vaultdb::Project<BoolField>;
+template class vaultdb::Project<SecureBoolField>;
