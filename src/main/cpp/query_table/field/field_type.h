@@ -1,10 +1,6 @@
 #ifndef _FIELDTYPE_H
 #define _FIELDTYPE_H
 
-#include <emp-tool/circuits/Bit.h>
-#include <emp-tool/circuits/Float32.h>
-#include <emp-tool/circuits/Integer.h>
-
 
 namespace vaultdb {
     enum class FieldType {
