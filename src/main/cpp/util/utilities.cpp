@@ -119,3 +119,15 @@ signed char Utilities::boolsToByte(const bool *src) {
 
     return dst;
 }
+
+
+string Utilities::revealAndPrintBytes(emp::Bit *bits, const int &byteCount) {
+    std::stringstream ss;
+
+    for(int i = 0; i < byteCount * 8; ++i) {
+        ss << bits[i].reveal();
+        if((i+1) % 8 == 0) std::cout << " ";
+    }
+
+    return ss.str();
+}

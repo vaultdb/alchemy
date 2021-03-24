@@ -1,15 +1,6 @@
 #include "util/type_utilities.h"
 #include "query_table/field/secure_bool_field.h"
 #include "query_table/field/bool_field.h"
-/*#include "query_table/field/secure_int_field.h"
-#include "query_table/field/int_field.h"
-#include "query_table/field/secure_long_field.h"
-#include "query_table/field/long_field.h"
-#include "query_table/field/secure_float_field.h"
-#include "query_table/field/float_field.h"
-#include "query_table/field/secure_string_field.h"
-#include "query_table/field/string_field.h"
-*/
 
 #include <string>
  

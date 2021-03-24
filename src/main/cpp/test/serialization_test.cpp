@@ -94,10 +94,7 @@ TEST_F(SerializationTest, capricornTest) {
 
     std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
 
-    // temporarily truncate this to first 5 tuples
-    inputTable->resize(5);
-
-    vector<int8_t> serialized = inputTable->serialize();
+     vector<int8_t> serialized = inputTable->serialize();
 
      std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
 
@@ -177,20 +174,7 @@ TEST_F(SerializationTest, capricorn_deserialization) {
 
 
     std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
-    /* Expected:
 
-     First plaintext bytes: 2,0,0,0,48,50,56,-60,49,0,0
-    First xored bytes: 44,-42,78,-12,-69,51,-4,67,88,114,-69
-
-     Observed:
-     First xored bits: 45,-42,78,-12,-69,48,-9,-12,58,114,-69
-    First plaintext bytes: 3,0,0,0,48,49,51,115,83,0,0
-
-     Deserialized tuple: (2, '028', 12740, 'F', false, 2, 0, 0, 3)
-Deserialized tuple: (11, '036', 18528, 'M', true, 5, 0, 1, 3)
-Deserialized tuple: (12, '030', 22768, 'M', true, 4, 0, 1, 3)
-Deserialized tuple: (13, '029', 36285, 'M', true, 2, 0, 0, 3)
-     */
 
     string expectedCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
     std::unique_ptr<PlainTable> expected = CsvReader::readCsv(expectedCsvFile, targetSchema);

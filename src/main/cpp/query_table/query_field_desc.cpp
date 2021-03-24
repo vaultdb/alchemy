@@ -45,7 +45,7 @@ void QueryFieldDesc::setStringLength(size_t len) {
 
 std::ostream &vaultdb::operator<<(std::ostream &os,  const QueryFieldDesc &desc)  {
     os << "#" << desc.getOrdinal() << " " << TypeUtilities::getTypeString(desc.getType());
-    if(desc.getType() == FieldType::STRING) {
+    if(desc.getType() == FieldType::STRING || desc.getType() == FieldType::SECURE_STRING) {
         os << "(" << desc.getStringLength() << ")";
     }
 

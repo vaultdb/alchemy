@@ -40,7 +40,10 @@ namespace vaultdb {
         static PlainField getMax(const FieldType & type);
 
         static PlainField getInt(const int32_t & src) { return IntField(src);  }
+        static PlainField deserialize(const FieldType &type, const size_t &strLength, const int8_t *src);
+
         static FieldInstance<BoolField> *getFieldInstance(PlainField *src);
+
     };
 
 
@@ -57,7 +60,10 @@ namespace vaultdb {
         static SecureField getMax(const FieldType & type);
 
         static SecureField getInt(const int32_t & src) { return SecureIntField(src);  }
+        static SecureField deserialize(const FieldType &type, const size_t &strLength, const int8_t *src);
+
         static FieldInstance<SecureBoolField> *getFieldInstance(SecureField *src);
+
 
     };
 

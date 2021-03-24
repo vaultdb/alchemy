@@ -173,24 +173,6 @@ void Field<B>::serialize(int8_t *dst) const {
       instance_->serialize(dst);
 }
 
-template<typename B>
-Field<B> Field<B>::deserialize(const QueryFieldDesc &fieldDesc, const int8_t *src) {
-    return deserialize(fieldDesc.getType(), fieldDesc.getStringLength(), src);
-}
-
-template<typename B>
-Field<B> Field<B>::deserialize(const FieldType & type, const int & strLength, const int8_t *src) {
-    Field f(type, strLength);
-    if(type == FieldType::STRING) {
-        memcpy(f.data_, src, strLength);
-        *((char *) (f.data_ + strLength)) = '\0'; // null-terminate the string
-        return f;
-    }
-
-    memcpy(f.data_, src, f.allocated_size_);
-    return f;
-
-}
 
 template<typename B>
 std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
@@ -199,7 +181,8 @@ std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
 
 
     bool *bools = new bool[bitCount];
-    std::string bitString = src.reveal<std::string>(party);
+    std::string bitString = src.reveal<std::string>(emp::PUBLIC);
+    std::cout << "Bitstring: " << bitString << ", len=" << bitString.size() << std::endl;
     std::string::iterator strPos = bitString.begin();
     for(int i =  0; i < bitCount; ++i) {
         bools[i] = (*strPos == '1');
@@ -208,14 +191,22 @@ std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
 
     vector<int8_t> decodedBytesVector = Utilities::boolsToBytes(bools, bitCount);
     decodedBytesVector.resize(byteCount + 1);
-    decodedBytesVector[byteCount] = '\0';
-    std::string payload = string((char * ) decodedBytesVector.data());
-    std::reverse(payload.begin(), payload.end());
+    decodedBytesVector[byteCount] = '\0'; // TODO: check if this might be extending our length twice with constructor
+    string dst((char * ) decodedBytesVector.data());
+
+    std::cout << "Revealing characters: (" << (unsigned  int) dst[0] << ", " << dst[0] << ") ";
+    for(int i = 1; i < byteCount; ++i) {
+        std::cout << ", (" << (unsigned int) dst[i] << ", " << dst[i] << ") ";
+    }
+
+    std::cout << std::endl;
+
+    std::reverse(dst.begin(), dst.end());
+
+    std::cout << "Decoded string " << dst << std::endl;
 
     delete[] bools;
-
-    return payload;
-
+    return dst;
 }
 
 template<typename B>

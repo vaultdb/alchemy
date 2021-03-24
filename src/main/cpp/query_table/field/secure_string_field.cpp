@@ -1,5 +1,6 @@
 #include "secure_string_field.h"
 #include "util/utilities.h"
+#include <util/type_utilities.h>
 #include "field_factory.h"
 
 using namespace vaultdb;
@@ -17,7 +18,18 @@ SecureStringField::SecureStringField(const SecureStringField &src) : Field(src) 
 
 
 
-SecureStringField::SecureStringField(const int8_t *src, const size_t & strLength) : Field(Field::deserialize(FieldType::SECURE_STRING, strLength, src)) { }
+SecureStringField::SecureStringField(const int8_t *src, const size_t & strLength) : Field(FieldType::SECURE_STRING, strLength) {
+    emp::Bit *srcPtr = (emp::Bit *) src;
+    size_t bitCount = strLength * 8;
+
+    std::cout << "Input to SecureStringField: " << Utilities::revealAndPrintBytes(srcPtr, strLength) << ", bit count=" << bitCount << std::endl;
+
+    emp::Integer v(bitCount, 0, emp::PUBLIC);
+    memcpy(v.bits.data(), srcPtr, sizeof(emp::Bit)*bitCount);
+    std::cout << "Secure field has bitstring: " << v.reveal<std::string>() <<  ", len=" << v.size() << std::endl;
+    *((emp::Integer *) data_) = v;
+
+}
 
 // src is a StringField
 SecureStringField::SecureStringField(const vaultdb::StringField *src, const size_t &strLength, const int &myParty,
@@ -94,6 +106,8 @@ SecureStringField SecureStringField::operator|(const SecureStringField &right) c
 }
 
 void SecureStringField::ser(int8_t *target) const {
-    memcpy(target, (int8_t *) getPayload().bits.data(), allocated_size_);
+    size_t strLen = getPayload().size()/8;
+    size_t len = (TypeUtilities::getTypeSize(type_)/8) * strLen;
+    memcpy(target, (int8_t *) getPayload().bits.data(), len);
 }
 

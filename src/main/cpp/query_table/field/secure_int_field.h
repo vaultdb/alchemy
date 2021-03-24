@@ -60,7 +60,7 @@ namespace vaultdb {
         SecureIntField  operator^(const SecureIntField &right) const { return  SecureIntField((getPayload()) ^ (right.getPayload())); }
         SecureIntField  operator|(const SecureIntField &right) const { return  SecureIntField((getPayload()) | (right.getPayload())); }
 
-        void ser(int8_t * target) const {  memcpy(target, (int8_t *) getPayload().bits.data(), allocated_size_); }
+        void ser(int8_t * target) const;
 
 
     };

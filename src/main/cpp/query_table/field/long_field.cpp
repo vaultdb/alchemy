@@ -20,7 +20,9 @@ LongField::LongField(const int64_t &src)  : Field(FieldType::LONG){
 }
 
 
-LongField::LongField(const int8_t *src) : Field(Field::deserialize(FieldType::LONG, 0, src)) { }
+LongField::LongField(const int8_t *src) : Field(FieldType::LONG) {
+        *((int64_t *) data_) =  *((int64_t *) src);
+}
 
 
 LongField::LongField(const emp::Integer &src, const int &party) : Field(FieldType::LONG) {

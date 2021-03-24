@@ -67,6 +67,7 @@ namespace vaultdb {
 
 
         static QueryTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
+        static QueryTuple deserialize(const QuerySchema & schema, emp::Bit *tupleBits);
 
 
         static SecureTuple

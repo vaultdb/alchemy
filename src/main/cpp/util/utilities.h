@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <emp-tool/circuits/bit.h>
 
 
 namespace vaultdb {
@@ -39,6 +40,9 @@ namespace vaultdb {
 
         // convert 8 bits to a byte
         static int8_t boolsToByte(const bool *src);
+
+        static std::string revealAndPrintBytes(emp::Bit *bits, const int &byteCount);
+
 
 
     };

@@ -17,7 +17,12 @@ SecureFloatField::SecureFloatField(const SecureFloatField &src) : Field(src) { }
 
 
 
-SecureFloatField::SecureFloatField(const int8_t *src) : Field(Field::deserialize(FieldType::SECURE_INT, 0, src)){ }
+SecureFloatField::SecureFloatField(const int8_t *src) : Field(FieldType::SECURE_FLOAT){
+    emp::Float v(0, emp::PUBLIC);
+    memcpy(v.value.data(), (emp::Bit *) src, 4*sizeof(Bit) );
+    *((emp::Float *) data_) = v;
+
+}
 
 SecureFloatField::SecureFloatField(const FloatField *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_FLOAT){
     float_t toEncrypt = (myParty == dstParty) ? src->getValue<float_t>() : 0;

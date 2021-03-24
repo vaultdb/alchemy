@@ -19,7 +19,10 @@ FloatField::FloatField(const float_t &src)  : Field(FieldType::FLOAT) {
 }
 
 
-FloatField::FloatField(const int8_t *src) : Field(Field::deserialize(FieldType::FLOAT, 0, src)) { }
+FloatField::FloatField(const int8_t *src) : Field(FieldType::FLOAT) {
+    *((float_t *) data_) =  *((float_t *) src);
+
+}
 
 
 // decrypt

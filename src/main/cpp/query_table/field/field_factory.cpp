@@ -184,6 +184,23 @@ PlainField FieldFactory<BoolField>::getMax(const FieldType & type) {
 
 }
 
+PlainField FieldFactory<BoolField>::deserialize(const FieldType &type, const size_t &strLength, const int8_t *src) {
+    switch (type) {
+        case FieldType::BOOL:
+            return BoolField(src);
+        case FieldType::INT:
+            return IntField(src);
+        case FieldType::LONG:
+            return LongField(src);
+        case FieldType::FLOAT:
+            return FloatField(src);
+        case FieldType::STRING:
+            return StringField(src, strLength);
+        default:
+            throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<BoolField>::deserialize()!");
+    }
+}
+
 
 
 // ************  Start SecureBoolField *************/
@@ -308,4 +325,24 @@ SecureField FieldFactory<SecureBoolField>::getMax(const FieldType & type) {
 
 
 }
+
+
+SecureField FieldFactory<SecureBoolField>::deserialize(const FieldType &type, const size_t &strLength, const int8_t *src) {
+    switch (type) {
+        case FieldType::SECURE_BOOL:
+            return SecureBoolField(src);
+        case FieldType::SECURE_INT:
+            return SecureIntField(src);
+        case FieldType::SECURE_LONG:
+            return SecureLongField(src);
+        case FieldType::SECURE_FLOAT:
+            return SecureFloatField(src);
+        case FieldType::SECURE_STRING:
+            return SecureStringField(src, strLength);
+        default:
+            throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<SecureBoolField>::deserialize()!");
+    }
+}
+
+
 

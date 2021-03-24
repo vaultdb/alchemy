@@ -1,4 +1,5 @@
 #include "secure_bool_field.h"
+#include <util/type_utilities.h>
 
 using namespace vaultdb;
 
@@ -28,7 +29,9 @@ SecureBoolField::SecureBoolField(const bool &src) : Field(FieldType::SECURE_BOOL
 }
 
 
-SecureBoolField::SecureBoolField(const int8_t *src) : Field(Field::deserialize(FieldType::SECURE_BOOL, 0, src)){
+SecureBoolField::SecureBoolField(const int8_t *src) : Field(FieldType::SECURE_BOOL){
+    emp::Bit myBit(*(emp::block *) src);
+    *((emp::Bit *)data_) = myBit;
 }
 
 
@@ -77,7 +80,8 @@ SecureBoolField::SecureBoolField(const emp::Bit &src) : Field(FieldType::SECURE_
 
 void SecureBoolField::ser(int8_t *target) const {
     emp::Bit bit = getPayload();
-    memcpy(target, (int8_t *) &(bit.bit), allocated_size_);
+    size_t len = TypeUtilities::getTypeSize(type_)/8;
+    memcpy(target, (int8_t *) &(bit.bit), len);
 }
 
 

@@ -107,9 +107,6 @@ namespace vaultdb {
             void serialize(int8_t *dst) const;
 
 
-            static Field deserialize(const QueryFieldDesc & fieldDesc, const int8_t * src);
-            static Field deserialize(const FieldType & field, const int & strLength, const int8_t *src);
-
 
 
     protected:

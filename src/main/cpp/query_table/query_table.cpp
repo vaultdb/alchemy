@@ -74,7 +74,6 @@ std::unique_ptr<PlainTable> QueryTable<B>::reveal(int empParty) const  {
 
     std::unique_ptr<QueryTable<BoolField> > dstTable(new QueryTable<BoolField>(tupleCount, dstSchema, getSortOrder()));
 
-    QueryTuple<B> srcTuple; // initialized below
 
     for(uint32_t i = 0; i < tupleCount; ++i)  {
         QueryTuple<BoolField> dstTuple = tuples_[i].reveal(empParty);
@@ -329,6 +328,7 @@ SecretShares QueryTable<B>::generateSecretShares() const {
     bobShares.resize(sharesSize);
     int8_t *alice = aliceShares.data();
     int8_t *bob = bobShares.data();
+
     emp::PRG prg; // initializes with a random seed
 
 
@@ -384,13 +384,12 @@ QueryTable<B>::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
     uint32_t tupleCount = tableSize / tupleSize;
     SortDefinition emptySortDefinition;
 
-
     QuerySchema encryptedSchema = QuerySchema::toSecure(schema);
     std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, encryptedSchema, emptySortDefinition));
 
-
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        QueryTuple<B> aTuple = QueryTuple<B>::deserialize(encryptedSchema, (int8_t *) cursor);
+        QueryTuple<B> aTuple = QueryTuple<B>::deserialize(encryptedSchema, cursor);
+        //std::cout << "Deserialized " << aTuple.reveal().toString(true);
         result->putTuple(i, aTuple);
         cursor += tupleSize;
     }

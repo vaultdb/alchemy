@@ -1,4 +1,5 @@
 #include "secure_int_field.h"
+#include <util/type_utilities.h>
 
 using namespace vaultdb;
 
@@ -22,7 +23,12 @@ SecureIntField::SecureIntField(const SecureIntField &src) : Field(src) { }
 
 
 
-SecureIntField::SecureIntField(const int8_t *src) : Field(Field::deserialize(FieldType::SECURE_INT, 0, src)) { }
+SecureIntField::SecureIntField(const int8_t *src) : Field(FieldType::SECURE_INT) {
+    emp::Bit *srcPtr = (emp::Bit *) src;
+    emp::Integer v(32, 0, emp::PUBLIC);
+    memcpy(v.bits.data(), srcPtr, 32*sizeof(emp::Bit));
+    *((emp::Integer *) data_) = v;
+}
 
 SecureIntField::SecureIntField(const IntField *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_INT){
     int32_t toEncrypt = (myParty == dstParty) ? src->getValue<int32_t>() : 0;
@@ -63,6 +69,11 @@ emp::Integer SecureIntField::getPayload() const {
     emp::Integer res = getValue<emp::Integer>();
     assert(res.size() == 32);
     return res;
+}
+
+void SecureIntField::ser(int8_t *target) const {
+    size_t len = TypeUtilities::getTypeSize(type_)/8;
+    memcpy(target, (int8_t *) getPayload().bits.data(), len);
 }
 
 

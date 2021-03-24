@@ -1,4 +1,5 @@
 #include "secure_long_field.h"
+#include <util/type_utilities.h>
 
 using namespace vaultdb;
 
@@ -19,7 +20,13 @@ SecureLongField::SecureLongField(const int64_t & src) : Field(FieldType::SECURE_
 }
 
 
-SecureLongField::SecureLongField(const int8_t *src) : Field(Field::deserialize(FieldType::SECURE_LONG, 0, src)) { }
+SecureLongField::SecureLongField(const int8_t *src) : Field(FieldType::SECURE_LONG) {
+    emp::Bit *srcPtr = (emp::Bit *) src;
+    emp::Integer v(64, 0, emp::PUBLIC);
+    memcpy(v.bits.data(), srcPtr, 64*sizeof(emp::Bit));
+    *((emp::Integer *) data_) = v;
+
+}
 
 SecureLongField::SecureLongField(const LongField *src, const int &myParty, const int &dstParty) : Field(FieldType::SECURE_LONG) {
     int64_t toEncrypt = (myParty == dstParty) ? src->getValue<int64_t>() : 0;
@@ -95,6 +102,7 @@ SecureLongField SecureLongField::operator%(const SecureLongField &rhs) const {
 }
 
 void SecureLongField::ser(int8_t *target) const {
-    memcpy(target, (int8_t *) getPayload().bits.data(), allocated_size_);
+    size_t len = TypeUtilities::getTypeSize(type_)/8;
+    memcpy(target, (int8_t *) getPayload().bits.data(), len);
 }
 

@@ -9,7 +9,7 @@ using namespace  std;
 using namespace vaultdb;
 using namespace  emp;
 
-#define TESTBED 0
+#define TESTBED 1
 
 
 void validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> & testTable)  {
@@ -72,9 +72,7 @@ int main(int argc, char **argv) {
     }
 
 
-    Utilities::checkMemoryUtilization("max memory before reset: ");
     inputData.reset(); // frees inputData
-    Utilities::checkMemoryUtilization("max memory after reset: ");
 
      emp::finalize_semi_honest();
     double runtime = time_from(startTime);

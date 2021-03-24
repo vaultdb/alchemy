@@ -2,6 +2,7 @@
 #include "query_tuple.h"
 #include "query_schema.h"
 #include "field/field_factory.h"
+#include <util/utilities.h>
 
 using namespace vaultdb;
 
@@ -198,12 +199,34 @@ QueryTuple<B> QueryTuple<B>::deserialize(const QuerySchema &schema, int8_t *tupl
     int8_t *cursor = tupleBits;
 
     for(size_t i = 0; i < fieldCount; ++i) {
-        result.fields_[i] = Field<B>::deserialize(schema.getField(i), cursor);
-        cursor += schema.getField(i).size()/8;
-
+        QueryFieldDesc fieldDesc = schema.getField(i);
+        result.fields_[i] = FieldFactory<B>::deserialize(fieldDesc.getType(), fieldDesc.getStringLength(), cursor);
+        cursor += fieldDesc.size()/8;
     }
 
     B dt = B(cursor);
+    result.setDummyTag(dt);
+
+    return result;
+
+}
+
+template <typename B>
+QueryTuple<B> QueryTuple<B>::deserialize(const QuerySchema &schema, emp::Bit *tupleBits) {
+    size_t fieldCount = schema.getFieldCount();
+    QueryTuple result(fieldCount);
+    Bit *cursor = tupleBits;
+
+    for(size_t i = 0; i < fieldCount; ++i) {
+        QueryFieldDesc fieldDesc = schema.getField(i);
+        std::cout << "Inputting: " << Utilities::revealAndPrintBytes(cursor, 4) << std::endl;
+        result.fields_[i] = FieldFactory<B>::deserialize(fieldDesc.getType(), fieldDesc.getStringLength(), (int8_t *) cursor);
+        std::cout << "Deserialized " << result.fields_[i].reveal() << std::endl;
+        std::cout << "Advancing cursor " << fieldDesc.size() << " bits." << std::endl;
+        cursor += fieldDesc.size();
+    }
+
+    B dt = (B) FieldFactory<B>::deserialize(FieldType::SECURE_BOOL, 0, (int8_t *) cursor);
     result.setDummyTag(dt);
 
     return result;

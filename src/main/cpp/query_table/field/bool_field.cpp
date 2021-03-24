@@ -24,7 +24,10 @@ BoolField::BoolField(const emp::Bit &src, const int &party)
     setValue(src.reveal(party));
 }
 
-BoolField::BoolField(const int8_t *src) : Field(Field::deserialize(FieldType::BOOL, 0, src)){ }
+BoolField::BoolField(const int8_t *src) : Field(FieldType::BOOL){
+    *((bool *) data_) =  *((bool *) src);
+
+}
 
 
 BoolField &BoolField::operator=(const BoolField &other) {

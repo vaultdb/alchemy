@@ -24,7 +24,9 @@ IntField::IntField(const int32_t &src) : Field(FieldType::INT){
 }
 
 
-IntField::IntField(const int8_t *src) :Field(Field::deserialize(FieldType::INT, 0, src)) { }
+IntField::IntField(const int8_t *src) :Field(FieldType::INT) {
+    *((int32_t *) data_) =  *((int32_t *) src);
+}
 
 
 IntField::IntField(const emp::Integer &src, const int &party) : Field(FieldType::INT){
