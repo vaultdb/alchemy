@@ -2,19 +2,18 @@
 #include <data/PsqlDataProvider.h>
 #include <operators/sql_input.h>
 #include <gflags/gflags.h>
-#include <operators/common_table_expression.h>
-#include <pilot/src/secret_share_csv.h>
+#include <operators/support/join_equality_predicate.h>
 
 #include "enrich_test.h"
 
 
 
 
-shared_ptr<QueryTable> EnrichTest::getAgeStrataProjection(shared_ptr<QueryTable> input, const bool & isEncrypted) const {
+shared_ptr<PlainTable> EnrichTest::getAgeStrataProjection(shared_ptr<PlainTable> input, const bool & isEncrypted) const {
     Project project(input);
-    TypeId ageStrataType = isEncrypted ? FieldType::SECURE_INT : FieldType::INT;
+    FieldType ageStrataType = isEncrypted ? FieldType::SECURE_INT : FieldType::INT;
 
-    Expression ageStrataExpression(&EnrichTestSupport::projectPlainAgeStrata, "age_strata", ageStrataType);
+    Expression<BoolField> ageStrataExpression(&(EnrichTestSupport<BoolField>::projectAgeStrata), "age_strata", ageStrataType);
     ProjectionMappingSet mappingSet{
             ProjectionMapping(0, 0),
             ProjectionMapping(1, 1),
@@ -38,7 +37,7 @@ shared_ptr<QueryTable> EnrichTest::getAgeStrataProjection(shared_ptr<QueryTable>
 // roll up one group-by col at a time
 // input schema:
 // zip_marker (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-std::shared_ptr<QueryTable> EnrichTest::rollUpAggregate(const int &ordinal, shared_ptr<QueryTable> src) {
+std::shared_ptr<SecureTable> EnrichTest::rollUpAggregate(const int &ordinal, shared_ptr<SecureTable> src) {
     SortDefinition sortDefinition{ColumnSort(ordinal, SortDirection::ASCENDING)};
     Sort sort(src, sortDefinition);
 
@@ -52,13 +51,13 @@ std::shared_ptr<QueryTable> EnrichTest::rollUpAggregate(const int &ordinal, shar
     };
 
     GroupByAggregate rollupStrata(&sort, groupByCols, aggregators );
-    std::shared_ptr<QueryTable> rollupResult =  rollupStrata.run();
+    std::shared_ptr<SecureTable> rollupResult =  rollupStrata.run();
     return rollupResult;
 }
 
 // returns the data loaded from a single DB with age projection
 // plaintext only
-shared_ptr<QueryTable> EnrichTest::loadAndProjectPatientData(const std::string &dbName) const {
+shared_ptr<PlainTable> EnrichTest::loadAndProjectPatientData(const std::string &dbName) const {
 
     SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING)};
     string inputPatientSql = "SELECT * FROM patient ORDER BY patid";
@@ -69,14 +68,14 @@ shared_ptr<QueryTable> EnrichTest::loadAndProjectPatientData(const std::string &
 
 
     // *** project on patient table
-    shared_ptr<QueryTable> ageStrataProjection = getAgeStrataProjection(patientInput.run(), false);
+    shared_ptr<PlainTable> ageStrataProjection = getAgeStrataProjection(patientInput.run(), false);
     return ageStrataProjection;
 }
 
 
 // returns the data loaded from a single DB with age projection
 // plaintext only
-shared_ptr<QueryTable> EnrichTest::loadPatientExclusionData(const std::string &dbName) const {
+shared_ptr<PlainTable> EnrichTest::loadPatientExclusionData(const std::string &dbName) const {
 
     SortDefinition patientExclusionSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (2, SortDirection::ASCENDING)};
     string inputPatientExclusionSql = "SELECT * FROM patient_exclusion ORDER BY patid, denom_excl";
@@ -84,30 +83,38 @@ shared_ptr<QueryTable> EnrichTest::loadPatientExclusionData(const std::string &d
     return input.run();
 }
 
-shared_ptr<QueryTable> EnrichTest::loadAndJoinLocalData(const std::string & dbName) const {
-    shared_ptr<QueryTable> patientInput = loadAndProjectPatientData(dbName);
-    shared_ptr<QueryTable> patientExclusionInput =  loadPatientExclusionData(dbName);
+shared_ptr<PlainTable> EnrichTest::loadAndJoinLocalData(const std::string & dbName) const {
+    shared_ptr<PlainTable> patientInput = loadAndProjectPatientData(dbName);
+    shared_ptr<PlainTable> patientExclusionInput =  loadPatientExclusionData(dbName);
 
     ConjunctiveEqualityPredicate patientJoinPredicate;
     patientJoinPredicate.push_back(EqualityPredicate (0, 0)); //  patid = patid
-    std::shared_ptr<BinaryPredicate> patientJoinCriteria(new JoinEqualityPredicate(patientJoinPredicate, false));
-    KeyedJoin join(patientInput, patientExclusionInput, patientJoinCriteria);
+    std::shared_ptr<BinaryPredicate<BoolField> > patientJoinCriteria(new JoinEqualityPredicate<BoolField>(patientJoinPredicate));
+    KeyedJoin<BoolField> join(patientInput, patientExclusionInput, patientJoinCriteria);
     return join.run();
 }
 
-shared_ptr<QueryTable> EnrichTest::loadUnionAndDeduplicateData() const{
+shared_ptr<SecureTable> EnrichTest::loadUnionAndDeduplicateData() const{
     string dbName = (FLAGS_party == ALICE) ? aliceDbName : bobDbName;
-    shared_ptr<QueryTable>  localData = loadAndJoinLocalData(dbName);
-    std::shared_ptr<QueryTable> unionedAndEncryptedData = localData->secretShare(netio, FLAGS_party);
+    shared_ptr<PlainTable>  localData = loadAndJoinLocalData(dbName);
+    std::cout << "local input: " << std::endl << *localData << std::endl;
+    std::shared_ptr<SecureTable> unionedAndEncryptedData = localData->secretShare(netio, FLAGS_party);
 
 
     // TODO: do bitonic merge instead of full-fledged sort here.  Inputs are sorted locally and each side makes up half of a bitonic sequence
     // sort it on group-by cols to prepare for aggregate
     SortDefinition unionSortDefinition = DataUtilities::getDefaultSortDefinition(6);
-    unionSortDefinition.push_back(ColumnSort(9, SortDirection::ASCENDING)); // last sort makes it verifiable
-    Sort sortUnioned(unionedAndEncryptedData, unionSortDefinition);
-    validateUnion(sortUnioned, unionSortDefinition);
 
+    unionSortDefinition.push_back(ColumnSort(9, SortDirection::ASCENDING)); // last sort makes it verifiable
+    std::cout << "Sort definition: " << DataUtilities::printSortDefinition(unionSortDefinition) << std::endl;
+
+    Sort<SecureBoolField> sortUnioned(unionedAndEncryptedData, unionSortDefinition);
+    shared_ptr<PlainTable> result = sortUnioned.run()->reveal();
+    std::cout << "Post-sort: " << *result << std::endl;
+
+
+    validateUnion(sortUnioned, unionSortDefinition);
+    std::cout << "Validated union!" << *sortUnioned.getOutput()->reveal()  << std::endl;
 
     // aggregate to complete the union
     //      p.patid, zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*), max(denom_excl)
@@ -119,28 +126,28 @@ shared_ptr<QueryTable> EnrichTest::loadUnionAndDeduplicateData() const{
             ScalarAggregateDefinition(9, AggregateId::MAX, "denom_excl")
     };
 
-    GroupByAggregate unionedPatients(&sortUnioned, groupByCols, unionAggregators );
+    GroupByAggregate<SecureBoolField> unionedPatients(&sortUnioned, groupByCols, unionAggregators );
     return unionedPatients.run();
 
 }
 
 
-shared_ptr<QueryTable> EnrichTest::filterPatients() {
+shared_ptr<SecureTable> EnrichTest::filterPatients() {
 
-    std::shared_ptr<QueryTable> deduplicatedPatients = loadUnionAndDeduplicateData();
+    std::shared_ptr<SecureTable> deduplicatedPatients = loadUnionAndDeduplicateData();
 
     // *** Filter
     // HAVING max(denom_excl) = 0
-    std::shared_ptr<Predicate> predicateClass(new FilterExcludedPatients(true));
+    std::shared_ptr<Predicate<SecureBoolField> > predicateClass(new FilterExcludedPatients<SecureBoolField>(true));
     Filter inclusionCohort(deduplicatedPatients, predicateClass);
 
     return  inclusionCohort.run();
 
 }
 
-shared_ptr<QueryTable> EnrichTest::getPatientCohort() {
+shared_ptr<SecureTable> EnrichTest::getPatientCohort() {
 
-    std::shared_ptr<QueryTable> inclusionCohort = filterPatients();
+    std::shared_ptr<SecureTable> inclusionCohort = filterPatients();
 
     // *** Project on aggregate outputs:
     //     CASE WHEN count(*) > 1 THEN 1 else 0 END AS multisite
@@ -148,7 +155,6 @@ shared_ptr<QueryTable> EnrichTest::getPatientCohort() {
     // output schema:
     // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
     Project project(inclusionCohort);
-    TypeId intType = FieldType::SECURE_INT;
 
     ProjectionMappingSet mappingSet{
             // zip_marker
@@ -170,8 +176,8 @@ shared_ptr<QueryTable> EnrichTest::getPatientCohort() {
 
     };
 
-    Expression multisiteExpression(&EnrichTestSupport::projectMultisite, "multisite", intType);
-    Expression multisiteNumeratorExpression(&EnrichTestSupport::projectNumeratorMultisite, "numerator_multisite", intType);
+    Expression multisiteExpression(&(EnrichTestSupport<SecureBoolField>::projectMultisite), "multisite", FieldType::SECURE_INT);
+    Expression multisiteNumeratorExpression(&(EnrichTestSupport<SecureBoolField>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
 
     project.addColumnMappings(mappingSet);
     project.addExpression(multisiteExpression, 6);
@@ -181,8 +187,8 @@ shared_ptr<QueryTable> EnrichTest::getPatientCohort() {
 
 }
 
-shared_ptr<QueryTable> EnrichTest::aggregatePatientData() {
-    std::shared_ptr<QueryTable> includedPatients = getPatientCohort();
+shared_ptr<SecureTable> EnrichTest::aggregatePatientData() {
+    std::shared_ptr<SecureTable> includedPatients = getPatientCohort();
 
     // sort it on cols [0,5)
     Sort sort(includedPatients, DataUtilities::getDefaultSortDefinition(5));
@@ -239,7 +245,7 @@ std::string EnrichTest::getRollupExpectedResultsSql(const std::string &groupByCo
 
 }
 
-void EnrichTest::validateUnion(Operator &sortOp, const SortDefinition &expectedSortOrder) const {
+void EnrichTest::validateUnion(Operator<SecureBoolField> &sortOp, const SortDefinition &expectedSortOrder) const {
     std::string expectedResultSql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
@@ -255,16 +261,18 @@ void EnrichTest::validateUnion(Operator &sortOp, const SortDefinition &expectedS
                                     "    FROM labeled p JOIN patient_exclusion pe ON p.patid = pe.patid AND p.site_id = pe.site_id"
                                     "    ORDER BY p.patid, zip_marker, age_strata, sex, ethnicity, race, denom_excl";
 
-    std::shared_ptr<QueryTable> observedTable = sortOp.run()->reveal();
+    std::shared_ptr<PlainTable> observedTable = sortOp.run()->reveal();
+    std::cout << "Merged table: " << *observedTable << std::endl;
+
     validateTable(unionedDbName, expectedResultSql, expectedSortOrder, observedTable);
 
 }
 
 
-void EnrichTest::validateTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<QueryTable> & observedTable) const {
+void EnrichTest::validateTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> & observedTable) const {
 
     PsqlDataProvider dataProvider;
-    std::shared_ptr<QueryTable> expectedTable = dataProvider.getQueryTable(dbName, sql);
+    std::shared_ptr<PlainTable> expectedTable = dataProvider.getQueryTable(dbName, sql);
     expectedTable->setSortOrder(expectedSortDefinition);
 
     ASSERT_EQ(*expectedTable, *observedTable);
@@ -272,7 +280,6 @@ void EnrichTest::validateTable(const std::string & dbName, const std::string & s
 }
 
 /**** end verification methods ****/
-
 
 
 TEST_F(EnrichTest, loadAndPrepData) {
@@ -292,17 +299,17 @@ TEST_F(EnrichTest, loadAndPrepData) {
     SortDefinition patientExclusionSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(2, SortDirection::ASCENDING)};
 
     // *** alice test
-    std::shared_ptr<QueryTable> alicePatient = loadAndProjectPatientData(aliceDbName);
+    std::shared_ptr<PlainTable> alicePatient = loadAndProjectPatientData(aliceDbName);
     // this is more of a smoke test to make sure the setup is aligned correctly, not testing query reading facility
-    std::shared_ptr<QueryTable> alicePatientExclusion = loadPatientExclusionData(aliceDbName);
+    std::shared_ptr<PlainTable> alicePatientExclusion = loadPatientExclusionData(aliceDbName);
 
     validateTable(aliceDbName, expectedResultPatientSql, patientSortDef, alicePatient);
     validateTable(aliceDbName, expectedResultPatientExclusionSql, patientExclusionSortDef, alicePatientExclusion);
 
 
     // *** bob test
-    std::shared_ptr<QueryTable> bobPatient = loadAndProjectPatientData(bobDbName);
-    std::shared_ptr<QueryTable> bobPatientExclusion = loadPatientExclusionData(bobDbName);
+    std::shared_ptr<PlainTable> bobPatient = loadAndProjectPatientData(bobDbName);
+    std::shared_ptr<PlainTable> bobPatientExclusion = loadPatientExclusionData(bobDbName);
 
     validateTable(bobDbName, expectedResultPatientSql, patientSortDef, bobPatient);
     validateTable(bobDbName, expectedResultPatientExclusionSql, patientExclusionSortDef, bobPatientExclusion);
@@ -328,10 +335,10 @@ TEST_F(EnrichTest, loadAndJoinData) {
 
     SortDefinition emptySort; // leaving this empty for now, TODO: propagate sort trait through join op
 
-    std::shared_ptr<QueryTable> aliceJoined = loadAndJoinLocalData(aliceDbName);
+    std::shared_ptr<PlainTable> aliceJoined = loadAndJoinLocalData(aliceDbName);
     validateTable(aliceDbName, expectedResultSql, emptySort, aliceJoined);
 
-    std::shared_ptr<QueryTable> bobJoined = loadAndJoinLocalData(bobDbName);
+    std::shared_ptr<PlainTable> bobJoined = loadAndJoinLocalData(bobDbName);
     validateTable(bobDbName, expectedResultSql, emptySort, bobJoined);
 
 }
@@ -356,9 +363,8 @@ TEST_F(EnrichTest, loadUnionAndDeduplicateData) {
                                     "    GROUP BY p.patid, zip_marker, age_strata, sex, ethnicity, race "
                                     "    ORDER BY p.patid, zip_marker, age_strata, sex, ethnicity, race ";
 
-    std::shared_ptr<QueryTable> deduplicator = loadUnionAndDeduplicateData();
-    std::shared_ptr<QueryTable> observedTable = deduplicator->reveal();
-    //std::cout << "Observed table: " << observedTable->toString(true) << std::endl;
+    std::shared_ptr<SecureTable> deduplicated = loadUnionAndDeduplicateData();
+    std::shared_ptr<PlainTable> observedTable = deduplicated->reveal();
     observedTable = DataUtilities::removeDummies(observedTable);
 
     validateTable(unionedDbName, expectedResultSql, DataUtilities::getDefaultSortDefinition(6), observedTable);
@@ -385,8 +391,8 @@ TEST_F(EnrichTest, testExclusionCriteria) {
                                     "    ORDER BY p.patid, zip_marker, age_strata, sex, ethnicity, race ";
 
 
-    std::shared_ptr<QueryTable> filter = filterPatients();
-    std::shared_ptr<QueryTable> observedTable = filter->reveal();
+    std::shared_ptr<SecureTable> filter = filterPatients();
+    std::shared_ptr<PlainTable> observedTable = filter->reveal();
     observedTable = DataUtilities::removeDummies(observedTable);
 
     validateTable(unionedDbName, expectedResultSql, DataUtilities::getDefaultSortDefinition(6), observedTable);
@@ -417,8 +423,8 @@ TEST_F(EnrichTest, testPatientCohort) {
                                     "  FROM deduplicated";
 
 
-    std::shared_ptr<QueryTable> patientCohort = getPatientCohort();
-    std::shared_ptr<QueryTable> observedTable = patientCohort->reveal();
+    std::shared_ptr<SecureTable> patientCohort = getPatientCohort();
+    std::shared_ptr<PlainTable> observedTable = patientCohort->reveal();
     observedTable = DataUtilities::removeDummies(observedTable);
     // empty sort definition, first column in prior sort is no longer in play
     SortDefinition  emptySort;
@@ -451,8 +457,8 @@ TEST_F(EnrichTest, testPatientAgggregation) {
                                     "  GROUP BY zip_marker, age_strata, sex, ethnicity, race \n"
                                     "  ORDER BY zip_marker, age_strata, sex, ethnicity, race ";
 
-  std::shared_ptr<QueryTable> aggregator = aggregatePatientData();
-    std::shared_ptr<QueryTable> observedTable = aggregator->reveal();
+  std::shared_ptr<SecureTable> aggregator = aggregatePatientData();
+    std::shared_ptr<PlainTable> observedTable = aggregator->reveal();
     observedTable = DataUtilities::removeDummies(observedTable);
 
 
@@ -463,21 +469,21 @@ TEST_F(EnrichTest, testPatientAgggregation) {
 
 
 TEST_F(EnrichTest, testRollups) {
-    std::shared_ptr<QueryTable> aggregator = aggregatePatientData();
+    std::shared_ptr<SecureTable> aggregator = aggregatePatientData();
     SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(1);
 
 
     // TODO: make this more efficient by doing a single scan for multiple rollups
     // roll-ups:
     // age_strata (1)
-    std::shared_ptr<QueryTable> ageStratified = rollUpAggregate(1, aggregator)->reveal();
+    std::shared_ptr<PlainTable> ageStratified = rollUpAggregate(1, aggregator)->reveal();
     ageStratified = DataUtilities::removeDummies(ageStratified);
     std::string expectedOutputSql = getRollupExpectedResultsSql("age_strata");
     validateTable(unionedDbName, expectedOutputSql, orderBy, ageStratified);
     //std::cout << "Validated age strata" <<  *ageStratified << std::endl;
 
     // gender (2)
-    std::shared_ptr<QueryTable> genderStratified = rollUpAggregate(2, aggregator)->reveal();
+    std::shared_ptr<PlainTable> genderStratified = rollUpAggregate(2, aggregator)->reveal();
     genderStratified = DataUtilities::removeDummies(genderStratified);
     expectedOutputSql = getRollupExpectedResultsSql("sex");
     validateTable(unionedDbName, expectedOutputSql, orderBy, genderStratified);
@@ -485,14 +491,14 @@ TEST_F(EnrichTest, testRollups) {
     //std::cout << "Validated gender strata " << *genderStratified << std::endl;
 
     // ethnicity (3)
-    std::shared_ptr<QueryTable> ethnicityStratified = rollUpAggregate(3, aggregator)->reveal();
+    std::shared_ptr<PlainTable> ethnicityStratified = rollUpAggregate(3, aggregator)->reveal();
     ethnicityStratified = DataUtilities::removeDummies(ethnicityStratified);
     expectedOutputSql = getRollupExpectedResultsSql("ethnicity");
     validateTable(unionedDbName, expectedOutputSql, orderBy, ethnicityStratified);
     //std::cout << "Validated ethnicity strata " << *ethnicityStratified << std::endl;
 
     // race (4)
-    std::shared_ptr<QueryTable> raceStratified = rollUpAggregate(4, aggregator)->reveal();
+    std::shared_ptr<PlainTable> raceStratified = rollUpAggregate(4, aggregator)->reveal();
     raceStratified = DataUtilities::removeDummies(raceStratified);
     expectedOutputSql = getRollupExpectedResultsSql("race");
     validateTable(unionedDbName, expectedOutputSql, orderBy, raceStratified);
@@ -500,7 +506,7 @@ TEST_F(EnrichTest, testRollups) {
 
 
     // zip marker (0)
-    std::shared_ptr<QueryTable> zipMarkerStratified = rollUpAggregate(0, aggregator)->reveal();
+    std::shared_ptr<PlainTable> zipMarkerStratified = rollUpAggregate(0, aggregator)->reveal();
     zipMarkerStratified = DataUtilities::removeDummies(zipMarkerStratified);
     expectedOutputSql = getRollupExpectedResultsSql("zip_marker");
     validateTable(unionedDbName, expectedOutputSql, orderBy, zipMarkerStratified);

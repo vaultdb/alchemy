@@ -50,8 +50,8 @@ SecureBoolField SecureIntField::operator>=(const SecureIntField &cmp) const {
 }
 
 SecureBoolField SecureIntField::operator==(const SecureIntField &cmp) const {
-    emp::Bit res = ((getPayload()) == (cmp.getPayload()));
-    return  SecureBoolField(res);
+
+    return  SecureBoolField(getPayload() == cmp.getPayload());
 }
 
 SecureIntField SecureIntField::selectValue(const SecureBoolField &choice, const SecureIntField &other) const {

@@ -101,6 +101,7 @@ B Sort<B>::swapTuples(const int &lhsIdx, const int &rhsIdx, const bool &invertDi
 
     QueryTuple<B> lhs = (*Operator<B>::output)[lhsIdx];
     QueryTuple<B> rhs = (*Operator<B>::output)[rhsIdx];
+    std::cout << "Comparing " << lhs.reveal().toString(true) << " to " << rhs.reveal().toString() << std::endl;
 
     for (size_t i = 0; i < sortDefinition.size(); ++i) {
         const Field<B> *lhsField = sortDefinition[i].first == -1 ? lhs.getDummyTag()
@@ -116,10 +117,15 @@ B Sort<B>::swapTuples(const int &lhsIdx, const int &rhsIdx, const bool &invertDi
 
         // find first one where not eq, use this to init flag
         swap = (B) Field<B>::If(swapInit, swap, colSwapFlag); // once we know there's a swap once, we keep it
-        swapInit = swapInit | *lhsField != *rhsField;  // have we found the first  column where they are not equal?
+
+        B neq = *lhsField != *rhsField;
+        std::cout << "Neq: " << neq.reveal().toString() << std::endl;
+        swapInit = swapInit | (*lhsField != *rhsField);  // have we found the first  column where they are not equal?
+        std::cout << "Fields: " << lhsField->reveal().toString() << ", " << rhsField->reveal().toString() << ", colSwapFlag: " << colSwapFlag.reveal().toString() << ", toSwap: " << swap.reveal().toString()  << ", swapInit: " << swapInit.reveal().toString() <<  std::endl;
 
     }
 
+    std::cout << "With invertDir=" << invertDir << " toSwap? " << swap.reveal().toString() << std::endl;
     return swap;
 }
 

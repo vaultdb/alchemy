@@ -46,7 +46,7 @@ SecureBoolField SecureLongField::operator>=(const SecureLongField &cmp) const {
 }
 
 SecureBoolField SecureLongField::operator==(const SecureLongField &cmp) const {
-    emp::Bit res = ((getPayload()) == (cmp.getPayload()));
+    emp::Bit res = (getPayload() == cmp.getPayload());
     return  SecureBoolField(res);
 }
 

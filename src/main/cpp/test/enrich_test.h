@@ -35,17 +35,17 @@ protected:
     const string aliceDbName = "enrich_htn_alice";
     const string bobDbName = "enrich_htn_bob";
 
-    shared_ptr<SecureTable> getAgeStrataProjection(shared_ptr<SecureTable> input, const bool & isEncrypted) const;
+    shared_ptr<PlainTable> getAgeStrataProjection(shared_ptr<PlainTable> input, const bool & isEncrypted) const;
 
-    shared_ptr<SecureTable> loadAndProjectPatientData(const string &dbName) const;
+    shared_ptr<PlainTable> loadAndProjectPatientData(const string &dbName) const;
 
-    shared_ptr<SecureTable> loadPatientExclusionData(const string &dbName) const;
+    shared_ptr<PlainTable> loadPatientExclusionData(const string &dbName) const;
 
-    shared_ptr<SecureTable> loadAndJoinLocalData(const string &dbName) const;
+    shared_ptr<PlainTable> loadAndJoinLocalData(const string &dbName) const;
 
     shared_ptr<SecureTable> getPatientCohort();
 
-    void validateTable(const string &dbName, const string &sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<SecureTable> &observedTable) const;
+    void validateTable(const string &dbName, const string &sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> &observedTable) const;
 
 
     static std::shared_ptr<SecureTable> rollUpAggregate(const int & ordinal, shared_ptr<SecureTable> src);

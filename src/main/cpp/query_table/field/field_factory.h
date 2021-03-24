@@ -32,10 +32,14 @@ namespace vaultdb {
         static PlainField *getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src);
         static PlainField getZero(const FieldType & type);
         static PlainField getOne(const FieldType & type);
+
         static FloatField toFloat(const PlainField &src);
         static LongField toLong(const PlainField &src);
+
         static PlainField getMin(const FieldType & type);
         static PlainField getMax(const FieldType & type);
+
+        static PlainField getInt(const int32_t & src) { return IntField(src);  }
         static FieldInstance<BoolField> *getFieldInstance(PlainField *src);
     };
 
@@ -45,10 +49,14 @@ namespace vaultdb {
     public:
         static SecureField getZero(const FieldType & type);
         static SecureField getOne(const FieldType & type);
+
         static SecureField toFloat(const SecureField &src);
         static SecureLongField toLong(const SecureField &field);
+
         static SecureField getMin(const FieldType & type);
         static SecureField getMax(const FieldType & type);
+
+        static SecureField getInt(const int32_t & src) { return SecureIntField(src);  }
         static FieldInstance<SecureBoolField> *getFieldInstance(SecureField *src);
 
     };

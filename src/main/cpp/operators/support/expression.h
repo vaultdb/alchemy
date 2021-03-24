@@ -13,7 +13,8 @@ class Expression {
     protected:
         std::string alias;
         FieldType expressionType;
-        Field<B> * (*exprFunc)(const QueryTuple<B> &) = nullptr;
+        // function pointer for expression
+        Field<B> (*exprFunc)(const QueryTuple<B> &) = nullptr;
 
 
     public:
@@ -24,14 +25,14 @@ class Expression {
             exprFunc = src.exprFunc;
         }
 
-        Expression(Field<B> *(*funcPtr)(const QueryTuple<B> &), const std::string & anAlias, const FieldType & aType)  :  alias(anAlias), expressionType(aType){
+        Expression(Field<B> (*funcPtr)(const QueryTuple<B> &), const std::string & anAlias, const FieldType & aType)  :  alias(anAlias), expressionType(aType){
             exprFunc = funcPtr;
         }
 
         ~Expression() = default;
 
 
-         Field<B> * expressionCall(const QueryTuple<B> & aTuple) const {
+         Field<B> expressionCall(const QueryTuple<B> & aTuple) const {
             return exprFunc(aTuple);
         }
 

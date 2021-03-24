@@ -64,12 +64,14 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
         Operator<B>::output->putTuple(i-1, outputTuple);
         predecessor = current;
-        // reset the flag that denotes if we have one non-dummy tuple in the bin
+        // reset the flag at the end of each group-by bin
+        // flag denotes if we have one non-dummy tuple in the bin
         realBin = (B) Field<B>::If(!isGroupByMatch,B(false), realBin);
 
     }
 
-    realBin = realBin | !predecessor->getDummyTag();
+    realBin = realBin | !(*(predecessor->getDummyTag()));
+
 
     // B(true) to make it write out the last entry
     outputTuple = generateOutputTuple(*predecessor, B(true), realBin, aggregators);

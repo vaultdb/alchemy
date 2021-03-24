@@ -58,7 +58,8 @@ namespace vaultdb {
 
         QueryTuple& operator=(const QueryTuple& other);
         bool operator==(const QueryTuple<B> & other) const;
-        inline bool operator!=(const QueryTuple<B> & other) { return !(*this == other);   }
+        inline bool operator!=(const QueryTuple<B> & other) const { return !(*this == other);   }
+        inline Field<B> operator[](const int32_t & idx) const { return fields_[idx]; }
 
 
         static void compareAndSwap(const B &cmp, QueryTuple <B> *lhs, QueryTuple <B> *rhs);

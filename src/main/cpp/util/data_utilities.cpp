@@ -130,12 +130,10 @@ std::shared_ptr<PlainTable > DataUtilities::removeDummies(const std::shared_ptr<
 
     int writeCursor = 0;
     std::shared_ptr<PlainTable > output(new PlainTable(outputTupleCount, input->getSchema(), input->getSortOrder()));
-    output->setSchema(input->getSchema());
-    output->setSortOrder(input->getSortOrder());
 
     for(size_t i = 0; i < input->getTupleCount(); ++i) {
         QueryTuple<BoolField> *tuple = input->getTuplePtr(i);
-        if(!tuple->getDummyTag()->getValue<bool>()) {
+        if(!tuple->getDummyTag()->getBool()) {
             output->putTuple(writeCursor, *tuple);
             ++writeCursor;
         }

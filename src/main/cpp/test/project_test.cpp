@@ -58,13 +58,13 @@ public:
 };
 */
 
-Field<BoolField> *calculateRevenue(const QueryTuple<BoolField> & aTuple) {
+Field<BoolField> calculateRevenue(const QueryTuple<BoolField> & aTuple) {
     const FloatField extendedPrice = *(static_cast<const FloatField *>(aTuple.getField(5)));
     const FloatField discount = *(static_cast<const FloatField *>(aTuple.getField(6)));
     const FloatField one = FloatField(1.0);
 
     // l.l_extendedprice * (1 - l.l_discount)
-    return new FloatField(extendedPrice * (one - discount));
+    return FloatField(extendedPrice * (one - discount));
 }
 
 // variant of Q3 expressions

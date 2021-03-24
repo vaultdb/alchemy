@@ -51,8 +51,8 @@ GroupBySumImpl<B>::GroupBySumImpl(const int32_t &ordinal, const FieldType &aggTy
 template<typename B>
 void GroupBySumImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
 
-   Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-   Field<B> resetValue = Field<B>::If(*tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, aggInput);
+   const Field<B> *aggInput = tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
+   Field<B> resetValue = Field<B>::If(*tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, *aggInput);
    runningSum = Field<B>::If(isGroupByMatch, runningSum, resetValue);
 
 }

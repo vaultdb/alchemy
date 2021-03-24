@@ -117,9 +117,8 @@ QueryTuple<B> Project<B>::getTuple(QueryTuple<B> * const srcTuple) const {
     while(exprPos != expressions.end()) {
         uint32_t dstOrdinal = exprPos->first;
         Expression expression = exprPos->second;
-        Field<B> *fieldValue = expression.expressionCall(*srcTuple);
-        dstTuple.putField(dstOrdinal, *fieldValue);
-        delete fieldValue;
+        Field<B> fieldValue = expression.expressionCall(*srcTuple);
+        dstTuple.putField(dstOrdinal, fieldValue);
 
         ++exprPos;
     }

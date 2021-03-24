@@ -7,7 +7,6 @@
 
 using namespace std;
 using namespace vaultdb;
-using namespace vaultdb::types;
 
 class SecretShareCsv {
 public:
