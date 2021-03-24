@@ -69,7 +69,7 @@ template<typename B>
 void GroupBySumImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
     B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag());
-    runningSum = runningSum + Field<B>::If(toUpdate,aggInput, GroupByCountImpl<B>::zero);
+    runningSum = runningSum + Field<B>::If(toUpdate,aggInput, GroupByAggregateImpl<B>::zero);
 }
 
 template<typename B>
@@ -114,8 +114,8 @@ void GroupByAvgImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupB
 
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
     B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag());
-    runningCount = runningCount + Field<B>::If(toUpdate, GroupByCountImpl<B>::one, GroupByCountImpl<B>::zero);
-    runningSum = runningSum +  Field<B>::If(toUpdate, aggInput, GroupByCountImpl<B>::zero);
+    runningCount = runningCount + Field<B>::If(toUpdate, GroupByAggregateImpl<B>::one, GroupByAggregateImpl<B>::zero);
+    runningSum = runningSum +  Field<B>::If(toUpdate, aggInput, GroupByAggregateImpl<B>::zero);
 }
 
 template<typename B>
