@@ -15,7 +15,7 @@ void SecretShareCsv::writeFile(const std::string &  fileName, const std::vector<
 void SecretShareCsv::SecretShareTable(const string &srcCsvFile, const QuerySchema &srcSchema, const string &dstRoot) {
 
 
-    std::unique_ptr<QueryTable> inputTable = CsvReader::readCsv(srcCsvFile, srcSchema);
+    std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(srcCsvFile, srcSchema);
     SecretShares shares = inputTable->generateSecretShares();
 
     writeFile(dstRoot + ".alice", shares.first);
@@ -44,7 +44,8 @@ int main(int argc, char **argv) {
 
     SecretShareCsv::SecretShareTable(string(argv[1]), targetSchema, string(argv[2]));
     finalize_plain_prot();
-    
+
+    std::cout << "Success." << std::endl;
 
 }
 

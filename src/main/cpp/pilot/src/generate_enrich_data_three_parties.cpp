@@ -99,7 +99,7 @@ TupleSet GenerateEnrichDataThreeParties::generateTuples(int alicePatientId)  {
 int main(int argc, char **argv) {
     // usage: generate_enrich_data <target dir> <tuple count>
     // target path is relative to $VAULTDB_ROOT/src/main/cpp
-    // e.g.,  ./bin/generate_enrich_data_three_parties pilot/secret_shares/input/ 100
+    // e.g.,  ./bin/generate_enrich_data_three_parties pilot/test/input/ 100
 
     // each party provides <tuple count> tuples
     if(argc < 3) {
@@ -196,6 +196,6 @@ int main(int argc, char **argv) {
     }
 
     chiPatientFile.close();
-    std::cout << "finished generating " << tupleCount << " patients per host!" << std::endl;
+    std::cout << "Finished generating " << tupleCount << " patients per host!" << std::endl;
 
 }

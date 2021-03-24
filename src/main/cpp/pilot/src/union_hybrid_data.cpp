@@ -10,7 +10,7 @@ UnionHybridData::UnionHybridData(const QuerySchema & srcSchema, NetIO *aNetio, c
     QuerySchema inputSchema = srcSchema;
     SortDefinition emptySortDefinition;
     // placeholder, retains schema
-    inputTable = std::shared_ptr<QueryTable>(new QueryTable(1, inputSchema, emptySortDefinition));
+    inputTable = std::shared_ptr<SecureTable>(new SecureTable(1, inputSchema, emptySortDefinition));
 
 }
 
@@ -38,8 +38,8 @@ Integer UnionHybridData::readEncrypted(int8_t *secretSharedBits, const size_t &s
     }
 
 void UnionHybridData::readLocalInput(const string &localInputFile) {
-    std::unique_ptr<QueryTable> localInput = CsvReader::readCsv(localInputFile, inputTable->getSchema());
-    std::shared_ptr<QueryTable> encryptedTable = localInput->secretShare(netio, party);
+    std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, inputTable->getSchema());
+    std::shared_ptr<SecureTable> encryptedTable = localInput->secretShare(netio, party);
 
     Utilities::checkMemoryUtilization("before local read: ");
     if(!inputTableInit) {
@@ -66,7 +66,6 @@ void UnionHybridData::readLocalInput(const string &localInputFile) {
 void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
 
     // read in binary and then xor it with other side to secret share it.
-
     std::vector<int8_t> srcData = DataUtilities::readFile(secretSharesFile);
 
     size_t srcBytes = srcData.size();
@@ -88,7 +87,7 @@ void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
     }
 
     Integer additionalData = aliceBytes ^ bobBytes;
-     std::shared_ptr<QueryTable> additionalInputs = QueryTable::deserialize(inputTable->getSchema(),
+     std::shared_ptr<SecureTable> additionalInputs = SecureTable::deserialize(inputTable->getSchema(),
                                                                             additionalData.bits);
 
     if(!inputTableInit) {
@@ -105,11 +104,11 @@ void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
 
 }
 
-std::shared_ptr<QueryTable> UnionHybridData::getInputTable() {
+std::shared_ptr<SecureTable> UnionHybridData::getInputTable() {
     return inputTable;
 }
 
-void UnionHybridData::resizeAndAppend(std::shared_ptr<QueryTable> toAdd) {
+void UnionHybridData::resizeAndAppend(std::shared_ptr<SecureTable> toAdd) {
     size_t oldTupleCount = inputTable->getTupleCount();
     size_t newTupleCount = oldTupleCount + toAdd->getTupleCount();
     inputTable->resize(newTupleCount);
@@ -123,7 +122,7 @@ void UnionHybridData::resizeAndAppend(std::shared_ptr<QueryTable> toAdd) {
 
 }
 
-shared_ptr<QueryTable> UnionHybridData::unionHybridData(const QuerySchema &schema, const string &localInputFile,
+shared_ptr<SecureTable> UnionHybridData::unionHybridData(const QuerySchema &schema, const string &localInputFile,
                                                         const string &secretSharesFile, NetIO *aNetIO,
                                                         const int &party) {
     UnionHybridData unioned(schema, aNetIO, party);

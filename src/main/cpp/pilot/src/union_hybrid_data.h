@@ -16,22 +16,22 @@ namespace vaultdb {
         UnionHybridData(const QuerySchema & srcSchema, NetIO *netio, const int & party);
         void readLocalInput(const string & localInputFile);
         void readSecretSharedInput(const string & secretSharesFile);
-        std::shared_ptr<QueryTable> getInputTable();
+        std::shared_ptr<SecureTable> getInputTable();
 
-        static shared_ptr<QueryTable> unionHybridData(const QuerySchema & schema, const std::string & localInputFile,  const std::string & secretSharesFile, NetIO *aNetIO, const int & party);
+        static shared_ptr<SecureTable> unionHybridData(const QuerySchema & schema, const std::string & localInputFile,  const std::string & secretSharesFile, NetIO *aNetIO, const int & party);
 
     private:
         int party;
         NetIO *netio;
         bool inputTableInit = false;
 
-        std::shared_ptr<QueryTable> inputTable;
+        std::shared_ptr<SecureTable> inputTable;
 
         Integer readEncrypted(int8_t *secretSharedBits, const size_t & sizeBytes, // size in bytes
                               const int & dstParty);
 
         // add on to inputTable
-        void resizeAndAppend(std::shared_ptr<QueryTable> toAdd);
+        void resizeAndAppend(std::shared_ptr<SecureTable> toAdd);
 
         string printFirstBytes(vector<int8_t> &bytes, const int &byteCount);
     };

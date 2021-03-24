@@ -28,8 +28,7 @@ enable_testing()
 
 
 add_subdirectory(test)
-# TODO: re-add this when ready
-#add_subdirectory(pilot)
+add_subdirectory(pilot)
 
 
 find_package(OpenSSL REQUIRED)
