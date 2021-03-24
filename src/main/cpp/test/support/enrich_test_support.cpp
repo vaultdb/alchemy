@@ -48,7 +48,6 @@ Field<B> EnrichTestSupport<B>::projectMultisite(const QueryTuple<B> & aTuple) {
 
 
 //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
-// MPC case only
 template<typename B>
 Field<B> EnrichTestSupport<B>::projectNumeratorMultisite(const QueryTuple<B> & aTuple) {
 

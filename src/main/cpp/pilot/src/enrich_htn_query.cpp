@@ -1,7 +1,6 @@
 #include "enrich_htn_query.h"
 #include <util/data_utilities.h>
 #include <sort.h>
-#include <common_table_expression.h>
 #include <filter.h>
 #include <project.h>
 
@@ -10,10 +9,10 @@ using namespace vaultdb;
 //const vector<Integer> EnrichHtnQuery::ageStrata = {... };
 //const vector<Integer> EnrichHtnQuery::ageCutoff = {Integer(32, 28*365), Integer(32, 39*365), Integer(32, 50*365), Integer(32, 61*365), Integer(32, 72*365), Integer(32, 83*365)};
 
-EnrichHtnQuery::EnrichHtnQuery(shared_ptr<QueryTable> & input) : inputTable(input) {
+EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input) : inputTable(input) {
 
-    shared_ptr<QueryTable> filtered = filterPatients();
-    shared_ptr<QueryTable> projected = projectPatients(filtered);
+    shared_ptr<SecureTable> filtered = filterPatients();
+    shared_ptr<SecureTable> projected = projectPatients(filtered);
     aggregatePatients(projected);
     filtered.reset();
     projected.reset();
@@ -21,7 +20,7 @@ EnrichHtnQuery::EnrichHtnQuery(shared_ptr<QueryTable> & input) : inputTable(inpu
 }
 
 
-shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
+shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
     // sort it on group-by cols to prepare for aggregate
     // patid, zip_marker, age_days, sex, ethnicity, race
@@ -30,11 +29,9 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
     unionSortDefinition.push_back(ColumnSort(8, SortDirection::ASCENDING)); // last sort makes it verifiable
 
     // destructor handled within Operator
-    Sort *sortUnioned = new Sort(inputTable, unionSortDefinition);
-    shared_ptr<QueryTable> sorted = sortUnioned->run();
-    Utilities::checkMemoryUtilization("Alloc'd sort");
+    Sort<SecureBoolField> sortUnioned(inputTable, unionSortDefinition);
+    shared_ptr<SecureTable> sorted = sortUnioned.run();
 
-    delete sortUnioned; // free up pointers to sorted
 
 
 
@@ -50,9 +47,9 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
             ScalarAggregateDefinition(7, AggregateId::MAX, "denom_excl")
     };
 
-    GroupByAggregate *unionedPatients = new GroupByAggregate(sorted, groupByCols, aggregators );
-    shared_ptr<QueryTable> aggregated = unionedPatients->run();
-    delete unionedPatients;
+    GroupByAggregate unionedPatients(sorted, groupByCols, aggregators );
+    shared_ptr<SecureTable> aggregated = unionedPatients.run();
+
     sorted.reset();
     Utilities::checkMemoryUtilization("Deleted sort");
 
@@ -60,11 +57,12 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
     // filter ones with denom_excl = 1
     // *** Filter
     // HAVING max(denom_excl) = 0
-    std::shared_ptr<Predicate> predicateClass(new FilterExcludedPatients(true));
+    std::shared_ptr<Predicate<SecureBoolField> > predicateClass(new FilterExcludedPatients<SecureBoolField>(true));
     Filter inclusionCohort(aggregated, predicateClass);
 
-    shared_ptr<QueryTable> output =   inclusionCohort.run();
+    shared_ptr<SecureTable> output =   inclusionCohort.run();
     aggregated.reset();
+
     Utilities::checkMemoryUtilization("Deleted aggregate");
     return output;
 
@@ -73,7 +71,7 @@ shared_ptr<QueryTable> EnrichHtnQuery::filterPatients() {
 
 }
 
-shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> src) {
+shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(shared_ptr<SecureTable> src) {
 
     // *** Project on aggregate outputs:
     //     CASE WHEN count(*) > 1 THEN 1 else 0 END AS multisite
@@ -82,7 +80,6 @@ shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> sr
     // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
     Utilities::checkMemoryUtilization("before projection");
     Project project(src);
-    TypeId intType = FieldType::SECURE_INT;
 
     ProjectionMappingSet mappingSet{
             // zip_marker
@@ -102,9 +99,9 @@ shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> sr
 
     };
 
-    Expression ageStrataExpression(&EnrichHtnQuery::projectSecureAgeStrata, "age_strata", intType);
-    Expression multisiteExpression(&EnrichHtnQuery::projectMultisite, "multisite", intType);
-    Expression multisiteNumeratorExpression(&EnrichHtnQuery::projectNumeratorMultisite, "numerator_multisite", intType);
+    Expression ageStrataExpression(&EnrichHtnQuery::projectAgeStrata<SecureBoolField>, "age_strata", FieldType::SECURE_INT);
+    Expression multisiteExpression(&EnrichHtnQuery::projectMultisite<SecureBoolField>, "multisite", FieldType::SECURE_INT);
+    Expression multisiteNumeratorExpression(&EnrichHtnQuery::projectNumeratorMultisite<SecureBoolField>, "numerator_multisite", FieldType::SECURE_INT);
 
     project.addColumnMappings(mappingSet);
     project.addExpression(ageStrataExpression, 1);
@@ -116,14 +113,14 @@ shared_ptr<QueryTable> EnrichHtnQuery::projectPatients(shared_ptr<QueryTable> sr
 }
 
 
-void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
+void EnrichHtnQuery::aggregatePatients(shared_ptr<SecureTable> src) {
 
     Utilities::checkMemoryUtilization("Before sort");
 
     // sort it on cols [0,5)
-    Sort *sort = new Sort(src, DataUtilities::getDefaultSortDefinition(5));
-    shared_ptr<QueryTable> sorted = sort->run();
-    delete sort;
+    Sort sort(src, DataUtilities::getDefaultSortDefinition(5));
+    shared_ptr<SecureTable> sorted = sort.run();
+
     Utilities::checkMemoryUtilization("After deleting sort");
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
@@ -137,10 +134,10 @@ void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 
     // output schema:
     // zip_marker (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-    GroupByAggregate *aggregator = new GroupByAggregate(sorted, groupByCols, aggregators);
-    dataCube = aggregator->run();
+    GroupByAggregate aggregator(sorted, groupByCols, aggregators);
+    dataCube = aggregator.run();
     sorted.reset();
-    delete aggregator;
+
     Utilities::checkMemoryUtilization("After deleting aggregate");
 
 
@@ -150,12 +147,11 @@ void EnrichHtnQuery::aggregatePatients(shared_ptr<QueryTable> src) {
 // input schema:
 // zip_marker (0) age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
 
-shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const {
+shared_ptr<SecureTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const {
 
     SortDefinition sortDefinition{ColumnSort(ordinal, SortDirection::ASCENDING)};
-    Sort *sort = new Sort(dataCube, sortDefinition);
-    shared_ptr<QueryTable> sorted = sort->run();
-    delete sort;
+    Sort sort(dataCube, sortDefinition);
+    shared_ptr<SecureTable> sorted = sort.run();
 
     std::vector<int32_t> groupByCols{ordinal};
     // ordinals 0...4 are group-by cols in input schema
@@ -166,64 +162,16 @@ shared_ptr<QueryTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const
             ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
-    GroupByAggregate *rollupStrata = new GroupByAggregate(sorted, groupByCols, aggregators );
-    shared_ptr<QueryTable> result = rollupStrata->run();
-    delete rollupStrata;
-    sorted.reset();
+    GroupByAggregate rollupStrata(sorted, groupByCols, aggregators );
+    shared_ptr<SecureTable> result = rollupStrata.run();
 
     return result;
 
 
 }
 
-Field EnrichHtnQuery::projectMultisite(const QueryTuple &aTuple) {
-    Integer siteCount = aTuple.getFieldPtr(7)->getValue().getEmpInt();
-
-    Bit condition = siteCount > Integer(64, 1, PUBLIC);
-
-    // get from Value::TypeId bool --> int
-    Integer result(32, 0, PUBLIC);
-    result.bits[0] = condition;
-    return Value(FieldType::SECURE_INT, result);
-}
-
-Field EnrichHtnQuery::projectNumeratorMultisite(const QueryTuple &aTuple) {
-    Integer inNumerator = aTuple.getFieldPtr(6)->getValue().getEmpInt();
-    Integer siteCount = aTuple.getFieldPtr(7)->getValue().getEmpInt();
-
-    Bit multisite = siteCount > Integer(64, 1, PUBLIC);
-    // only 0 || 1
-    Bit numeratorTrue = inNumerator.bits[0];
-    Bit condition = multisite & numeratorTrue;
-
-    // get from Value::TypeId bool --> int
-    Integer result(32, 0, PUBLIC);
-    result.bits[0] = condition;
-    return Value(FieldType::SECURE_INT, result);
-}
 
 
-// Project #1
-// CASE WHEN age_days <= 28*365 THEN 0
-//                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1
-//              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2
-//              WHEN age_days > 50*365 AND age_days <= 61*365 THEN 3
-//              WHEN age_days > 61*365 AND age_days <= 72*365 THEN 4
-//                WHEN age_days > 72*365  AND age_days <= 83*365 THEN 5
-//                ELSE 6 END age_strata
+template class vaultdb::FilterExcludedPatients<BoolField>;
+template class vaultdb::FilterExcludedPatients<SecureBoolField>;
 
-Field EnrichHtnQuery::projectSecureAgeStrata(const QueryTuple & aTuple) {
-    Integer ageDays = aTuple.getField(2).getValue().getEmpInt(); // age_days
-     vector<Integer> ageStrata = {Integer(32, 0), Integer(32,1), Integer(32,2), Integer(32,3), Integer(32,4), Integer(32,5), Integer(32, 6) };
-     vector<Integer> ageCutoff = {Integer(32, 28*365), Integer(32, 39*365), Integer(32, 50*365), Integer(32, 61*365), Integer(32, 72*365), Integer(32, 83*365)};
-
-    Integer ageStratum = If(ageDays <= ageCutoff[0], ageStrata[0],
-                           If(ageDays <= ageCutoff[1], ageStrata[1],
-                              If(ageDays <= ageCutoff[2], ageStrata[2],
-                                 If(ageDays <= ageCutoff[3], ageStrata[3],
-                                    If(ageDays <= ageCutoff[4], ageStrata[4],
-                                       If(ageDays <= ageCutoff[5], ageStrata[5], ageStrata[6]))))));
-
-    return Value(FieldType::SECURE_INT, ageStratum);
-
-}

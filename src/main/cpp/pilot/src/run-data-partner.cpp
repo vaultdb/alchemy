@@ -11,19 +11,19 @@ using namespace  std;
 using namespace vaultdb;
 using namespace  emp;
 
-#define TESTBED 0
+#define TESTBED 1
 
 
 
-void validateInputTable(const string & dbName, const string & sql, const SortDefinition  & expectedSortDefinition, const shared_ptr<QueryTable> & testTable)  {
+void validateInputTable(const string & dbName, const string & sql, const SortDefinition  & expectedSortDefinition, const shared_ptr<PlainTable> & testTable)  {
 
-    shared_ptr<QueryTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
+    shared_ptr<PlainTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
     expectedTable->setSortOrder(expectedSortDefinition);
 
     // sort the inputs
     // ops deleted later using Operator framework
     Sort sort(testTable, expectedSortDefinition);
-    shared_ptr<QueryTable> observedTable = sort.run();
+    shared_ptr<PlainTable> observedTable = sort.run();
 
     assert(*expectedTable ==  *observedTable);
 
@@ -63,17 +63,17 @@ string getRollupExpectedResultsSql(const string &groupByColName) {
 }
 
 
-shared_ptr<QueryTable> runRollup(int idx, string colName, EnrichHtnQuery & enrich) {
+shared_ptr<SecureTable> runRollup(int idx, string colName, EnrichHtnQuery & enrich) {
 
 
-    shared_ptr<QueryTable> stratified = enrich.rollUpAggregate(idx);
+    shared_ptr<SecureTable> stratified = enrich.rollUpAggregate(idx);
 
     // validate it against the DB for testing
     if(TESTBED) {
         string unionedDbName = "enrich_htn_unioned";
         SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(1);
 
-        shared_ptr<QueryTable> revealed = stratified->reveal();
+        shared_ptr<PlainTable> revealed = stratified->reveal();
         revealed = DataUtilities::removeDummies(revealed);
         string query = getRollupExpectedResultsSql(colName);
         validateInputTable(unionedDbName, query, orderBy, revealed);
@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
-    shared_ptr<QueryTable> inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
+    shared_ptr<SecureTable> inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
 
     Utilities::checkMemoryUtilization("read input");
 
@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
 
     // validate it against the DB for testing
     if(TESTBED) {
-        shared_ptr<QueryTable> revealed = inputData->reveal();
+        shared_ptr<PlainTable> revealed = inputData->reveal();
         string query = "SELECT * FROM patient ORDER BY patid, site_id";
         SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (8, SortDirection::ASCENDING)};
         validateInputTable(unionedDbName, query, patientSortDef, revealed);
@@ -134,20 +134,20 @@ int main(int argc, char **argv) {
     Utilities::checkMemoryUtilization();
 
 
-    shared_ptr<QueryTable> zipRollup = runRollup(0, "zip_marker", enrich);
+    shared_ptr<SecureTable> zipRollup = runRollup(0, "zip_marker", enrich);
     cout << "Done first rollup at " << time_from(startTime)*1e6*1e-9 << " ms." << endl;
     Utilities::checkMemoryUtilization();
 
-    shared_ptr<QueryTable> ageRollup = runRollup(1, "age_strata", enrich);
+    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", enrich);
     Utilities::checkMemoryUtilization("rollup 2");
 
-    shared_ptr<QueryTable> genderRollup = runRollup(2, "sex", enrich);
+    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", enrich);
     Utilities::checkMemoryUtilization("rollup 3");
 
-    shared_ptr<QueryTable> ethnicityRollup = runRollup(3, "ethnicity", enrich);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", enrich);
     Utilities::checkMemoryUtilization("rollup 4");
 
-    shared_ptr<QueryTable> raceRollup = runRollup(4, "race", enrich);
+    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", enrich);
     Utilities::checkMemoryUtilization("rollup 5");
 
      emp::finalize_semi_honest();
