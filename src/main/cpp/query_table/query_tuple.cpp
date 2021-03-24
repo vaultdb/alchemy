@@ -219,10 +219,7 @@ QueryTuple<B> QueryTuple<B>::deserialize(const QuerySchema &schema, emp::Bit *tu
 
     for(size_t i = 0; i < fieldCount; ++i) {
         QueryFieldDesc fieldDesc = schema.getField(i);
-        std::cout << "Inputting: " << Utilities::revealAndPrintBytes(cursor, 4) << std::endl;
         result.fields_[i] = FieldFactory<B>::deserialize(fieldDesc.getType(), fieldDesc.getStringLength(), (int8_t *) cursor);
-        std::cout << "Deserialized " << result.fields_[i].reveal() << std::endl;
-        std::cout << "Advancing cursor " << fieldDesc.size() << " bits." << std::endl;
         cursor += fieldDesc.size();
     }
 

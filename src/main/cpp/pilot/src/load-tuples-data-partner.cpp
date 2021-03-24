@@ -17,8 +17,6 @@ void validateInputTable(const std::string & dbName, const std::string & sql, con
     std::shared_ptr<PlainTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
     expectedTable->setSortOrder(expectedSortDefinition);
 
-    std::cout << "first tuples: " << (*expectedTable)[0] << (*expectedTable)[1] << std::endl;
-    std::cout << "Test table: " << *testTable << std::endl;
 
     // sort the inputs
     Sort sortOp(testTable, expectedSortDefinition);

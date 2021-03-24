@@ -182,7 +182,6 @@ std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
 
     bool *bools = new bool[bitCount];
     std::string bitString = src.reveal<std::string>(emp::PUBLIC);
-    std::cout << "Bitstring: " << bitString << ", len=" << bitString.size() << std::endl;
     std::string::iterator strPos = bitString.begin();
     for(int i =  0; i < bitCount; ++i) {
         bools[i] = (*strPos == '1');
@@ -191,19 +190,12 @@ std::string Field<B>::revealString(const emp::Integer &src, const int &party) {
 
     vector<int8_t> decodedBytesVector = Utilities::boolsToBytes(bools, bitCount);
     decodedBytesVector.resize(byteCount + 1);
-    decodedBytesVector[byteCount] = '\0'; // TODO: check if this might be extending our length twice with constructor
+    decodedBytesVector[byteCount] = '\0';
     string dst((char * ) decodedBytesVector.data());
 
-    std::cout << "Revealing characters: (" << (unsigned  int) dst[0] << ", " << dst[0] << ") ";
-    for(int i = 1; i < byteCount; ++i) {
-        std::cout << ", (" << (unsigned int) dst[i] << ", " << dst[i] << ") ";
-    }
-
-    std::cout << std::endl;
 
     std::reverse(dst.begin(), dst.end());
 
-    std::cout << "Decoded string " << dst << std::endl;
 
     delete[] bools;
     return dst;

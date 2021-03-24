@@ -22,11 +22,9 @@ SecureStringField::SecureStringField(const int8_t *src, const size_t & strLength
     emp::Bit *srcPtr = (emp::Bit *) src;
     size_t bitCount = strLength * 8;
 
-    std::cout << "Input to SecureStringField: " << Utilities::revealAndPrintBytes(srcPtr, strLength) << ", bit count=" << bitCount << std::endl;
-
     emp::Integer v(bitCount, 0, emp::PUBLIC);
     memcpy(v.bits.data(), srcPtr, sizeof(emp::Bit)*bitCount);
-    std::cout << "Secure field has bitstring: " << v.reveal<std::string>() <<  ", len=" << v.size() << std::endl;
+
     *((emp::Integer *) data_) = v;
 
 }

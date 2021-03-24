@@ -50,9 +50,6 @@ void UnionHybridData::readLocalInput(const string &localInputFile) {
     }
 
 
-    PlainTuple test = (*inputTable)[0].reveal();
-    std::cout << "Sanity check: " << test << std::endl;
-
     Utilities::checkMemoryUtilization("after local read: ");
 
     inputTableInit = true;
@@ -65,7 +62,6 @@ void UnionHybridData::readLocalInput(const string &localInputFile) {
 void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
 
     // read in binary and then xor it with other side to secret share it.
-    std::cout << "Reading " << secretSharesFile << std::endl;
     std::vector<int8_t> srcData = DataUtilities::readFile(secretSharesFile);
 
     size_t srcBytes = srcData.size();
@@ -88,19 +84,10 @@ void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
 
     Integer additionalData = aliceBytes ^ bobBytes;
 
-    std::cout << "****First bits: ";
-    for(int i = 0; i < 56; ++i) {
-        std::cout << additionalData.bits[i].reveal();
-        if((i+1) % 8 == 0) std::cout << " ";
-    }
-
-    std::cout  << std::endl;
 
      std::shared_ptr<SecureTable> additionalInputs = SecureTable::deserialize(inputTable->getSchema(),
                                                                             additionalData.bits);
 
-    PlainTuple test = (*additionalInputs)[0].reveal();
-    std::cout << "Sanity check 2: " << test << std::endl;
 
     if(!inputTableInit) {
         inputTable = additionalInputs;
@@ -127,8 +114,6 @@ void UnionHybridData::resizeAndAppend(std::shared_ptr<SecureTable> toAdd) {
 
     int writeIdx = oldTupleCount;
 
-    std::cout << "Appending at idx: " << writeIdx << std::endl;
-
     for(size_t i = 0; i < toAdd->getTupleCount(); ++i) {
         inputTable->putTuple(writeIdx, toAdd->getTuple(i));
         ++writeIdx;
@@ -141,13 +126,8 @@ shared_ptr<SecureTable> UnionHybridData::unionHybridData(const QuerySchema &sche
                                                         const int &party) {
     UnionHybridData unioned(schema, aNetIO, party);
     unioned.readLocalInput(localInputFile);
-    shared_ptr<PlainTable> revealed = unioned.getInputTable()->reveal();
-
     unioned.readSecretSharedInput(secretSharesFile);
-    revealed = unioned.getInputTable()->reveal();
 
-    PlainTuple test = (*unioned.getInputTable())[0].reveal();
-    std::cout << "Sanity check 3: " << test << std::endl;
 
 
     return unioned.getInputTable();
