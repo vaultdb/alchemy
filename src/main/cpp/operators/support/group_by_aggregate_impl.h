@@ -41,7 +41,8 @@ namespace vaultdb {
         void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         Field<B> getResult() override;
-        ~GroupByCountImpl() = default;
+        FieldType getType() const override;
+       ~GroupByCountImpl() = default;
 
     private:
         Field<B> runningCount;

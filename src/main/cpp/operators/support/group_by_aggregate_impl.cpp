@@ -41,6 +41,13 @@ Field<B> GroupByCountImpl<B>::getResult() {
     return runningCount;
 }
 
+template<typename B>
+FieldType GroupByCountImpl<B>::getType() const {
+    if(TypeUtilities::isEncrypted(GroupByAggregateImpl<B>::aggregateType))
+        return FieldType::SECURE_LONG;
+    return FieldType::LONG;  // count always returns a long
+}
+
 
 template<typename B>
 GroupBySumImpl<B>::GroupBySumImpl(const int32_t &ordinal, const FieldType &aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {

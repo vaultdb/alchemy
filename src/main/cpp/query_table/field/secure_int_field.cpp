@@ -28,7 +28,6 @@ SecureIntField::SecureIntField(const IntField *src, const int &myParty, const in
     int32_t toEncrypt = (myParty == dstParty) ? src->getValue<int32_t>() : 0;
     emp::Integer payload = emp::Integer(32, toEncrypt, dstParty);
     *((emp::Integer *) data_) = emp::Integer(payload);
-//    setValue(payload);
 }
 
 

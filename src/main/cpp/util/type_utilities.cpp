@@ -30,16 +30,16 @@
         case FieldType::STRING:
             return std::string("varchar");
         case FieldType::SECURE_INT:
-            return std::string("SECURE_int32");
+            return std::string("encrypted-int32");
         case FieldType::SECURE_LONG:
-            return std::string("SECURE_int64") ;
+            return std::string("encrypted-int64") ;
         case FieldType::SECURE_BOOL:
-            return std::string("SECURE_bool" );
+            return std::string("encrypted-bool" );
         case FieldType::SECURE_FLOAT:
-            return std::string("SECURE_float");
+            return std::string("encrypted-float");
 
         case FieldType::SECURE_STRING:
-            return std::string("encrypted varchar");
+            return std::string("encrypted-varchar");
         default:
             std::string FieldTypeStr = std::to_string((int) FieldType);
             return std::string("unsupported type! " + FieldTypeStr);

@@ -106,15 +106,12 @@ shared_ptr<SecureTable> EnrichTest::loadUnionAndDeduplicateData() const{
     SortDefinition unionSortDefinition = DataUtilities::getDefaultSortDefinition(6);
 
     unionSortDefinition.push_back(ColumnSort(9, SortDirection::ASCENDING)); // last sort makes it verifiable
-    std::cout << "Sort definition: " << DataUtilities::printSortDefinition(unionSortDefinition) << std::endl;
 
     Sort<SecureBoolField> sortUnioned(unionedAndEncryptedData, unionSortDefinition);
     shared_ptr<PlainTable> result = sortUnioned.run()->reveal();
-    std::cout << "Post-sort: " << *result << std::endl;
 
 
     validateUnion(sortUnioned, unionSortDefinition);
-    std::cout << "Validated union!" << *sortUnioned.getOutput()->reveal()  << std::endl;
 
     // aggregate to complete the union
     //      p.patid, zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*), max(denom_excl)
@@ -275,9 +272,26 @@ void EnrichTest::validateTable(const std::string & dbName, const std::string & s
     std::shared_ptr<PlainTable> expectedTable = dataProvider.getQueryTable(dbName, sql);
     expectedTable->setSortOrder(expectedSortDefinition);
 
+    ASSERT_EQ(expectedTable->getSchema(), observedTable->getSchema());
+
+    // check that the types are faithfully aligned
+    for(size_t i = 0; i < observedTable->getSchema().getFieldCount(); ++i) {
+        FieldType schemaType = observedTable->getSchema().getField(i).getType();
+        FieldType instanceType = (*observedTable)[0][i].getType();
+        FieldType expectedType = (*expectedTable)[0][i].getType();
+        if(schemaType != instanceType) {
+            std::cout << "Instance type not aligned! " << observedTable->getSchema().getField(i) << " expected: " << TypeUtilities::getTypeString(expectedType) << " received " << TypeUtilities::getTypeString(instanceType) << std::endl;
+        }
+
+        ASSERT_EQ(schemaType, instanceType);
+        ASSERT_EQ(schemaType, expectedType);
+
+    }
+
     ASSERT_EQ(*expectedTable, *observedTable);
 
 }
+
 
 /**** end verification methods ****/
 
@@ -425,6 +439,8 @@ TEST_F(EnrichTest, testPatientCohort) {
 
     std::shared_ptr<SecureTable> patientCohort = getPatientCohort();
     std::shared_ptr<PlainTable> observedTable = patientCohort->reveal();
+
+
     observedTable = DataUtilities::removeDummies(observedTable);
     // empty sort definition, first column in prior sort is no longer in play
     SortDefinition  emptySort;

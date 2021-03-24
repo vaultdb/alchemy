@@ -177,10 +177,13 @@ bool  QueryTuple<B>::operator==(const QueryTuple<B> &other) const {
 
 
     for(size_t i = 0; i < getFieldCount(); ++i) {
-        //std::cout << "Comparing field: |" << fields_[i] << "| len=" << fields_[i].getSize()  <<  std::endl
-        //         << " to              |" << other.fields_[i] << "| len=" << fields_[i].getSize()<<  std::endl;
         if ((fields_[i] != other.fields_[i]).getBool()) {
-           // std::cout << "Failed to match!" << std::endl;
+            std::cout << "Comparing field " << i << ": |" << fields_[i] << "| len=" << fields_[i].getSize()  <<  std::endl
+                      << " to              |" << other.fields_[i] << "| len=" << fields_[i].getSize()<<  std::endl;
+            // stand-in -- it has an INT and a LONG - why wasn't this caught earlier with the schemas not matching?
+            B res = fields_[i] != other.fields_[i];
+
+            std::cout << "Failed to match!" << std::endl;
             return false;
         }
     }

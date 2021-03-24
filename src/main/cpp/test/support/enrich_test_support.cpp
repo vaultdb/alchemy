@@ -37,11 +37,15 @@ template<typename B>
 Field<B> EnrichTestSupport<B>::projectMultisite(const QueryTuple<B> & aTuple) {
     // int32_t
     Field<B> siteCount = aTuple[7];
-    Field<B> zero =  FieldFactory<B>::getZero(siteCount.getType());
-    Field<B> one =  FieldFactory<B>::getOne(siteCount.getType());
+    Field<B> zero =  FieldFactory<B>::getInt(0);
+    Field<B> one =  FieldFactory<B>::getInt(1);
 
-    return Field<B>::If(siteCount > one, one, zero);
+    B cmp = siteCount > FieldFactory<B>::getOne(siteCount.getType());
 
+    Field<B> res =  Field<B>::If(cmp, one, zero);
+    assert(res.getType() == FieldType::INT || res.getType() == FieldType::SECURE_INT);
+    std::cout << "Result: " << res.toString() <<  ", " << TypeUtilities::getTypeString(res.getType()) << std::endl;
+    return res;
 
 }
 
@@ -51,14 +55,13 @@ Field<B> EnrichTestSupport<B>::projectMultisite(const QueryTuple<B> & aTuple) {
 template<typename B>
 Field<B> EnrichTestSupport<B>::projectNumeratorMultisite(const QueryTuple<B> & aTuple) {
 
-    // numerator is int32, site_count is int64 owing to psql convention
     Field<B> inNumerator = aTuple[6];
     Field<B> siteCount = aTuple[7];
-    Field<B> zero = FieldFactory<B>::getZero(siteCount.getType());
-    Field<B> one = FieldFactory<B>::getOne(siteCount.getType());
+    Field<B> zero = FieldFactory<B>::getInt(0);
+    Field<B> one = FieldFactory<B>::getInt(1);
 
 
-    B multisite = (siteCount > one);
+    B multisite = (siteCount > FieldFactory<B>::getOne(siteCount.getType()));
     // only 0 || 1
     B numeratorTrue = inNumerator > FieldFactory<B>::getZero(inNumerator.getType());
     B condition = multisite & numeratorTrue;
