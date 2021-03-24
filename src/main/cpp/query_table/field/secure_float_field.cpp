@@ -1,4 +1,5 @@
 #include "secure_float_field.h"
+#include <climits>
 
 using namespace vaultdb;
 using namespace emp;
