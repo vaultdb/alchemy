@@ -21,7 +21,7 @@ namespace vaultdb {
         FieldInstance & operator=(const FieldInstance & other) { return *this;  }
 
         FieldInstance(Field <B> *src)  {}
-        virtual ~FieldInstance () = default;
+        virtual ~FieldInstance () {}
 
         // this will work if we only return fields
         // field will call plus, minus, etc.

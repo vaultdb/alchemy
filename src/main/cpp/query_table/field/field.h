@@ -44,7 +44,10 @@ namespace vaultdb {
 
             Field & operator=(const Field & other);
             // all state is held here, not in impls (e.g., IntField, BoolField)
-             virtual ~Field() = default;
+            ~Field() {
+                managed_data_.reset();
+                data_  = nullptr;
+            }
 
             FieldType getType() const;
 
@@ -74,19 +77,19 @@ namespace vaultdb {
 
 
             // delegate to instance_
-            virtual B  operator == (const Field &cmp) const;
-            virtual B  operator != (const Field &cmp) const;
-            virtual B operator !() const;
-            virtual B operator>=(const Field & rhs) const;
-            virtual B operator<(const Field & rhs) const;
-            virtual B operator<=(const Field & rhs) const;
-            virtual B operator>(const Field & rhs) const;
+             B  operator == (const Field &cmp) const;
+             B  operator != (const Field &cmp) const;
+             B operator !() const;
+             B operator>=(const Field & rhs) const;
+             B operator<(const Field & rhs) const;
+             B operator<=(const Field & rhs) const;
+             B operator>(const Field & rhs) const;
 
-            virtual Field  operator+(const Field &rhs) const;
-            virtual Field  operator-(const Field &rhs) const;
-            virtual Field  operator*(const Field &rhs) const;
-            virtual Field  operator/(const Field &rhs) const;
-            virtual Field  operator%(const Field &rhs) const;
+             Field  operator+(const Field &rhs) const;
+             Field  operator-(const Field &rhs) const;
+             Field  operator*(const Field &rhs) const;
+             Field  operator/(const Field &rhs) const;
+             Field  operator%(const Field &rhs) const;
 
 
         static Field If(const B & choice,const Field & lhs, const Field & rhs);

@@ -8,6 +8,7 @@ namespace vaultdb {
     class SecureStringInstance : public FieldInstance<SecureBoolField> {
     public:
         SecureStringInstance(Field<SecureBoolField> *src);
+        ~SecureStringInstance() = default;
 
         SecureStringInstance & operator=(const SecureStringInstance & other);
 
