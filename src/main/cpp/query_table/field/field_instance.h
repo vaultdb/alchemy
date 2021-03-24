@@ -1,6 +1,7 @@
 #ifndef _FIELD_INSTANCE_H
 #define _FIELD_INSTANCE_H
 
+#include <string>
 // JMR: this is one long, elaborate hack to get around needing the template type (e.g., IntField, FloatField) in Field declaration
 // this is necessary to store heterogenous fields in the same container/tuple.
 namespace vaultdb {
