@@ -19,7 +19,10 @@ StringField::StringField(const std::string &src) :  Field(FieldType::STRING, src
 
 
 StringField::StringField(const int8_t *src, const size_t & strLength) : Field(FieldType::STRING, strLength) {
-    memcpy(data_, src, strLength);
+    std::string input((char *) src, strLength);
+    std::reverse(input.begin(), input.end()); // serialize in reverse for EMP format
+
+    memcpy(data_, input.c_str(), strLength);
     *((char *) (data_ + strLength)) = '\0'; // null-terminate the string
 
 }
@@ -73,6 +76,8 @@ StringField StringField::selectValue(const BoolField &choice, const StringField 
 
 void StringField::ser(int8_t *target) const {
     std::string p = getPayload();
+    std::reverse(p.begin(), p.end()); // reverse it so we can more easily conver to EMP format
+
     std::cout << "Serializing string field with " << allocated_size_ - 1 << " characters: (" << (int) p[0] << ", " << p[0] << ") ";
     for(int i = 1; i < allocated_size_ - 1; ++i) {
         std::cout << ", (" << (int) p[i] << ", " << p[i] << ") ";
