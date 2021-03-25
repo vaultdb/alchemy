@@ -104,6 +104,8 @@ GroupByAggregateImpl<B> *GroupByAggregate<B>::aggregateFactory(const AggregateId
                 return new GroupByMinImpl<B>(ordinal, aggregateValueType);
             case AggregateId::MAX:
                 return new GroupByMaxImpl<B>(ordinal, aggregateValueType);
+        default:
+            throw;
         };
     }
 

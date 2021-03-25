@@ -69,7 +69,7 @@ QueryTuple<B> Join<B>::compareTuples(QueryTuple<B> *lhs, QueryTuple<B> *rhs, con
     B lhsDummyTag = static_cast<const B &> (*(lhs->getDummyTag()));
     B rhsDummyTag = static_cast<const B &> (*(rhs->getDummyTag()));
 
-    B dummyTag = !predicateEval | lhsDummyTag | rhsDummyTag;
+    B dummyTag = (!predicateEval) | lhsDummyTag | rhsDummyTag;
     dstTuple.setDummyTag(dummyTag);
     return dstTuple;
 }
