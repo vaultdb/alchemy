@@ -132,8 +132,8 @@ std::shared_ptr<PlainTable > DataUtilities::removeDummies(const std::shared_ptr<
     std::shared_ptr<PlainTable > output(new PlainTable(outputTupleCount, input->getSchema(), input->getSortOrder()));
 
     for(size_t i = 0; i < input->getTupleCount(); ++i) {
-        QueryTuple<BoolField> *tuple = input->getTuplePtr(i);
-        if(!tuple->getDummyTag()->getBool()) {
+        PlainTuple *tuple = input->getTuplePtr(i);
+        if(!tuple->getDummyTag()) {
             output->putTuple(writeCursor, *tuple);
             ++writeCursor;
         }

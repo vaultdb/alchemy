@@ -50,12 +50,12 @@ QueryTuple<B> Join<B>::concatenateTuples( QueryTuple<B> *lhs,  QueryTuple<B> *rh
     uint32_t cursor = 0;
 
     for(; cursor < lhsFieldCount; ++cursor) {
-        result.putField(cursor, *(lhs->getField(cursor)));
+        result.setField(cursor, *(lhs->getField(cursor)));
     }
 
 
     for(uint32_t i = 0; i < rhs->getFieldCount(); ++i) {
-        result.putField(cursor, *(rhs->getField(i)));
+        result.setField(cursor, *(rhs->getField(i)));
         ++cursor;
     }
 
@@ -64,17 +64,17 @@ QueryTuple<B> Join<B>::concatenateTuples( QueryTuple<B> *lhs,  QueryTuple<B> *rh
 
 // compare two tuples and return their entry in the output table
 template<typename B>
-QueryTuple<B> Join<B>::compareTuples(QueryTuple<B> *lhs, QueryTuple<B> *rhs, const B &predicateEval) {
+QueryTuple<B> Join<B>::compareTuples(QueryTuple<B> *lhs, QueryTuple<B> *rhs, const Field<B> &predicateEval) {
     QueryTuple dstTuple = concatenateTuples(lhs, rhs);
-    B lhsDummyTag = static_cast<const B &> (*(lhs->getDummyTag()));
-    B rhsDummyTag = static_cast<const B &> (*(rhs->getDummyTag()));
+    B lhsDummyTag = lhs->getDummyTag();
+    B rhsDummyTag = rhs->getDummyTag();
 
-    B dummyTag = (!predicateEval) | lhsDummyTag | rhsDummyTag;
+    Field<B> dummyTag = (!predicateEval) | lhsDummyTag | rhsDummyTag;
     dstTuple.setDummyTag(dummyTag);
     return dstTuple;
 }
 
 
 
-template class vaultdb::Join<BoolField>;
-template class vaultdb::Join<SecureBoolField>;
+template class vaultdb::Join<bool>;
+template class vaultdb::Join<emp::Bit>;

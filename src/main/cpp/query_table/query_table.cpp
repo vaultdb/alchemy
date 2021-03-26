@@ -72,11 +72,11 @@ std::unique_ptr<PlainTable> QueryTable<B>::reveal(int empParty) const  {
 
     QuerySchema dstSchema = QuerySchema::toPlain(getSchema());
 
-    std::unique_ptr<QueryTable<BoolField> > dstTable(new QueryTable<BoolField>(tupleCount, dstSchema, getSortOrder()));
+    std::unique_ptr<PlainTable > dstTable(new PlainTable(tupleCount, dstSchema, getSortOrder()));
 
 
     for(uint32_t i = 0; i < tupleCount; ++i)  {
-        QueryTuple<BoolField> dstTuple = tuples_[i].reveal(empParty);
+        PlainTuple dstTuple = tuples_[i].reveal(empParty);
         dstTable->putTuple(i, dstTuple);
 
     }
@@ -106,32 +106,37 @@ vector<int8_t> QueryTable<B>::serialize() const {
     return dst;
 }
 
-template <typename B>
-std::ostream &vaultdb::operator<<(std::ostream &os, const QueryTable<B> &table) {
+std::ostream &vaultdb::operator<<(std::ostream &os, const PlainTable &table) {
 
 
         os <<  table.getSchema() << " isEncrypted? " << table.isEncrypted() << endl;
 
         for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
-            os << table.getTuple(i);
-
-
-            bool isEncrypted = table.isEncrypted();
-            if(isEncrypted) {
+            os << table[i];
+            bool isDummy = table.getTuple(i).getDummyTag();
+            if(!isDummy)
                 os << endl;
-            }
-            else {
-                bool isDummy = table.getTuple(i).getDummyTag()->getBool();
-                if(!isDummy)
-                    os << endl;
-            }
-
 
         }
 
         return os;
 
 }
+
+std::ostream &vaultdb::operator<<(std::ostream &os, const SecureTable &table) {
+
+
+    os <<  table.getSchema() << " isEncrypted? " << table.isEncrypted() << endl;
+
+    for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
+        os << table[i] << endl;
+
+    }
+
+    return os;
+
+}
+
 
 template <typename B>
 string QueryTable<B>::toString(const bool & showDummies) const {
@@ -241,7 +246,7 @@ uint32_t QueryTable<B>::getTrueTupleCount() const {
     uint32_t count = 0;
 
     for (auto pos = begin(tuples_); pos != end(tuples_); ++pos) {
-        bool dummyTag = ( (BoolField *) ((pos)->getDummyTag()))->getPayload();
+        bool dummyTag = Field<B>(pos->getDummyTag()).template getValue<bool>();
 
         if (!dummyTag) {
             ++count;
@@ -259,7 +264,7 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
     size_t aliceSize = this->getTupleCount();
     size_t bobSize = aliceSize;
     int colCount = this->getSchema().getFieldCount();
-    QueryTuple<SecureBoolField> dstTuple;
+    SecureTuple dstTuple;
 
     if (party == ALICE) {
         netio->send_data(&aliceSize, 4);
@@ -274,7 +279,7 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
     }
 
 
-    std::shared_ptr<QueryTable<SecureBoolField> > dstTable(new QueryTable<SecureBoolField>(aliceSize + bobSize, colCount));
+    std::shared_ptr<SecureTable> dstTable(new SecureTable(aliceSize + bobSize, colCount));
 
     dstTable->setSchema(QuerySchema::toSecure(getSchema()));
     dstTable->setSortOrder(getSortOrder());
@@ -282,8 +287,8 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
 
     // read alice in order
     for (size_t i = 0; i < aliceSize; ++i) {
-        const QueryTuple<B>  *srcTuple = (party == ALICE) ? &(tuples_[i]) : nullptr;
-        dstTuple = QueryTuple<SecureBoolField>::secretShare(srcTuple, schema_, party, emp::ALICE);
+        const QueryTuple<B>  *srcTuple = (party == ALICE) ? &tuples_[i] : nullptr;
+        dstTuple = SecureTuple::secretShare(srcTuple, schema_, party, emp::ALICE);
         dstTable->putTuple(i, dstTuple);
 
     }
@@ -355,17 +360,17 @@ SortDefinition QueryTable<B>::getSortOrder() const {
 }
 
 template <typename B>
-std::shared_ptr<QueryTable<B> > QueryTable<B>::deserialize(const QuerySchema &schema, const vector<int8_t> & tableBits) {
+std::shared_ptr<PlainTable> QueryTable<B>::deserialize(const QuerySchema &schema, const vector<int8_t> & tableBits) {
     auto *cursor = const_cast<int8_t *>(tableBits.data());
     uint32_t tableSize = tableBits.size(); // in bytes
     uint32_t tupleSize = schema.size() / 8; // in bytes
     uint32_t tupleCount = tableSize / tupleSize;
     SortDefinition emptySortDefinition;
 
-    std::shared_ptr<QueryTable<B> > result(new QueryTable<B>(tupleCount, schema, emptySortDefinition));
+    std::shared_ptr<PlainTable > result(new PlainTable(tupleCount, schema, emptySortDefinition));
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        QueryTuple<B> aTuple = QueryTuple<B>::deserialize(schema, cursor);
+        PlainTuple aTuple = QueryTuple<bool>::deserialize(schema, cursor);
         result->putTuple(i, aTuple);
         cursor += tupleSize;
     }
@@ -376,7 +381,7 @@ std::shared_ptr<QueryTable<B> > QueryTable<B>::deserialize(const QuerySchema &sc
 }
 
 template<typename B>
-std::shared_ptr<QueryTable<B> >
+std::shared_ptr<SecureTable >
 QueryTable<B>::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
     Bit *cursor =  tableBits.data();
     uint32_t tableSize = tableBits.size(); // in bits
@@ -385,10 +390,10 @@ QueryTable<B>::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
     SortDefinition emptySortDefinition;
 
     QuerySchema encryptedSchema = QuerySchema::toSecure(schema);
-    std::shared_ptr<QueryTable> result(new QueryTable(tupleCount, encryptedSchema, emptySortDefinition));
+    std::shared_ptr<SecureTable> result(new SecureTable(tupleCount, encryptedSchema, emptySortDefinition));
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        QueryTuple<B> aTuple = QueryTuple<B>::deserialize(encryptedSchema, cursor);
+        SecureTuple aTuple = QueryTuple<emp::Bit>::deserialize(encryptedSchema, cursor);
         //std::cout << "Deserialized " << aTuple.reveal().toString(true);
         result->putTuple(i, aTuple);
         cursor += tupleSize;
@@ -404,6 +409,5 @@ void QueryTable<B>::resize(const size_t &tupleCount) {
 }
 
 
-
-template class vaultdb::QueryTable<BoolField>;
-template class vaultdb::QueryTable<SecureBoolField>;
+template class vaultdb::QueryTable<bool>;
+template class vaultdb::QueryTable<emp::Bit>;

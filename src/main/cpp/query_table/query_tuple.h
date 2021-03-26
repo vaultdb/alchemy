@@ -6,8 +6,6 @@
 #include <memory>
 #include <vector>
 #include <util/type_utilities.h>
-#include "field/bool_field.h"
-#include "field/secure_bool_field.h"
 
 using namespace emp;
 
@@ -15,17 +13,16 @@ namespace vaultdb {
 
     template<typename B> class QueryTuple;
 
-    typedef vaultdb::QueryTuple<BoolField> PlainTuple;
-    typedef vaultdb::QueryTuple<SecureBoolField> SecureTuple;
+    typedef vaultdb::QueryTuple<bool> PlainTuple;
+    typedef vaultdb::QueryTuple<emp::Bit> SecureTuple;
 
 
     template<typename B>
     class QueryTuple {
-    private:
 
-        B dummy_tag_;
+    protected:
         vector<Field<B> >   fields_;
-
+        B dummy_tag_;
 
     public:
         QueryTuple() {};
@@ -38,15 +35,13 @@ namespace vaultdb {
         inline bool  isEncrypted() const;
 
 
-        const Field<B> * getField(const int &ordinal) const;
-      void putField(const int &idx, const Field<B> &f);
-      void setDummyTag(const B &v);
-
+      const Field<B> * getField(const int &ordinal) const;
+      void setField(const int &idx, const Field<B> &f);
       void setDummyTag(const bool & b);
+      void setDummyTag(const Field<B> & d);
 
 
-
-      const B *getDummyTag() const;
+      const B getDummyTag() const;
 
 
         PlainTuple reveal(const int &empParty = PUBLIC) const;
@@ -63,11 +58,10 @@ namespace vaultdb {
 
 
         static void compareAndSwap(const B &cmp, QueryTuple <B> *lhs, QueryTuple <B> *rhs);
-       // static void compareAndSwap(QueryTuple  *lhs, QueryTuple *rhs, const BoolField & cmp);
 
 
-        static QueryTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
-        static QueryTuple deserialize(const QuerySchema & schema, emp::Bit *tupleBits);
+        static PlainTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
+        static SecureTuple deserialize(const QuerySchema & schema, emp::Bit *tupleBits);
 
 
         static SecureTuple
@@ -79,10 +73,17 @@ namespace vaultdb {
             return SecureTuple(*srcTuple);
         }
 
+
+    private:
+        std::string specializedToString(const PlainTuple & tuple, const bool & showDummies) const;
+        std::string specializedToString(const SecureTuple & tuple, const bool & showDummies) const;
+        static bool tuplesEqual(const PlainTuple &t1, const PlainTuple & t2);
+        static bool tuplesEqual(const SecureTuple &t1, const SecureTuple & t2);
+
     };
 
-    std::ostream &operator<<(std::ostream &os, const QueryTuple<BoolField> &tuple);
-    std::ostream &operator<<(std::ostream &os, const QueryTuple<SecureBoolField> &tuple);
+    std::ostream &operator<<(std::ostream &os, const PlainTuple &tuple);
+    std::ostream &operator<<(std::ostream &os, const SecureTuple &tuple);
 
 
 

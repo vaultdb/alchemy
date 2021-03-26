@@ -122,7 +122,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     for(uint32_t i = 0; i < tupleCount; ++i) {
         IntField val(inputData[i]);
         inputTable->getTuplePtr(i)->setDummyTag(false);
-        inputTable->getTuplePtr(i)->putField(0, val);
+        inputTable->getTuplePtr(i)->setField(0, val);
     }
 
 
@@ -141,7 +141,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     for(uint32_t i = 0; i < tupleCount; ++i) {
         IntField val(aliceInputData[i]);
         expectedTable->getTuplePtr(i)->setDummyTag(BoolField(false));
-        expectedTable->getTuplePtr(i)->putField(0, val);
+        expectedTable->getTuplePtr(i)->setField(0, val);
     }
 
     int offset = tupleCount;
@@ -152,7 +152,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
         --readIdx;
         IntField val(bobInputData[readIdx]);
         expectedTable->getTuplePtr(i + offset)->setDummyTag(BoolField(false));
-        expectedTable->getTuplePtr(i + offset)->putField(0, val);
+        expectedTable->getTuplePtr(i + offset)->setField(0, val);
     }
 
     //verify output

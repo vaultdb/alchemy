@@ -1,36 +1,36 @@
 #ifndef BOOL_FIELD_H
 #define BOOL_FIELD_H
 
-#include "field.h"
 #include <emp-tool/circuits/bit.h>
-
+#include "field_instance_impl.h"
 
 namespace vaultdb {
 
 
-    // BoolField is a decorator for Field
-    // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class BoolField :  public Field<BoolField>  {
+    class BoolField : public FieldInstanceImpl<BoolField, BoolField> {
 
     public:
 
-        BoolField() :  Field(FieldType::BOOL) {}
-        explicit BoolField(const Field & srcField);
+        BoolField()  {}
+        explicit BoolField(const FieldInstance<BoolField> & srcField);
 
         BoolField(const BoolField & src);
 
         explicit BoolField(const bool & src);
         explicit BoolField(const int8_t * src);
+
+        FieldType getType() const { return FieldType::BOOL; }
         ~BoolField() = default;
 
 
         // constructor for decryption
         BoolField(const emp::Bit & src, const int & party);
      
-        bool getPayload() const { return this->getValue<bool>(); }
+        bool getPayload() const { return payload_; }
 
         // for use in print statements, etc.
-        bool getBool() const { return getPayload(); }
+        bool getBool() const { return payload_; }
+
 
         BoolField& operator=(const BoolField& other);
 
@@ -72,8 +72,11 @@ namespace vaultdb {
         BoolField  operator|(const bool &right) const { return  BoolField((getPayload()) | right); }
 
         // serialize
-        void ser(int8_t * target) const { *target = getPayload(); }
+        void ser(int8_t * target) const { *target = payload_; }
 
+
+    private:
+        bool payload_ = false;
 
 
     };

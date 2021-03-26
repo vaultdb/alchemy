@@ -19,8 +19,8 @@ namespace vaultdb {
 
     };
 
-    template class Predicate<BoolField>;
-    template class Predicate<SecureBoolField>;
+    template class Predicate<bool>;
+    template class Predicate<emp::Bit>;
 
 }
 

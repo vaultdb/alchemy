@@ -21,15 +21,13 @@ SecureBoolField::SecureBoolField(const BoolField * src, const int &myParty, cons
     setValue(payload);
 }
 
-SecureBoolField::SecureBoolField(const bool &src) : Field(FieldType::SECURE_BOOL) {
-
-    emp::Bit s(src);
-    setValue(s);
+SecureBoolField::SecureBoolField(const bool &src)  {
+    payload = emp::Bit(src);
 
 }
 
 
-SecureBoolField::SecureBoolField(const int8_t *src) : Field(FieldType::SECURE_BOOL){
+SecureBoolField::SecureBoolField(const int8_t *src) {
     emp::Bit myBit(*(emp::block *) src);
     *((emp::Bit *)data_) = myBit;
 }

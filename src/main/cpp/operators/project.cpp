@@ -99,7 +99,7 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 template<typename B>
 QueryTuple<B> Project<B>::getTuple(QueryTuple<B> * const srcTuple) const {
     QueryTuple<B> dstTuple(colCount);
-    dstTuple.setDummyTag(*(srcTuple->getDummyTag()));
+    dstTuple.setDummyTag(srcTuple->getDummyTag());
 
    auto exprPos = expressions.begin();
 
@@ -109,7 +109,7 @@ QueryTuple<B> Project<B>::getTuple(QueryTuple<B> * const srcTuple) const {
         uint32_t srcOrdinal = mapping.first;
         uint32_t dstOrdinal = mapping.second;
         const Field<B> *dstField = srcTuple->getField(srcOrdinal);
-        dstTuple.putField(dstOrdinal, *dstField);
+        dstTuple.setField(dstOrdinal, *dstField);
 
     }
 
@@ -118,7 +118,7 @@ QueryTuple<B> Project<B>::getTuple(QueryTuple<B> * const srcTuple) const {
         uint32_t dstOrdinal = exprPos->first;
         Expression expression = exprPos->second;
         Field<B> fieldValue = expression.expressionCall(*srcTuple);
-        dstTuple.putField(dstOrdinal, fieldValue);
+        dstTuple.setField(dstOrdinal, fieldValue);
 
         ++exprPos;
     }
@@ -137,5 +137,5 @@ void Project<B>::addColumnMappings(const ProjectionMappingSet &mapSet) {
 }
 
 
-template class vaultdb::Project<BoolField>;
-template class vaultdb::Project<SecureBoolField>;
+template class vaultdb::Project<bool>;
+template class vaultdb::Project<emp::Bit>;

@@ -1,9 +1,9 @@
 #ifndef SECURE_BOOL_FIELD_H
 #define SECURE_BOOL_FIELD_H
 
-#include "field.h"
 #include "bool_field.h"
 #include <emp-tool/circuits/bit.h>
+#include "field_instance_impl.h"
 
 
 namespace vaultdb {
@@ -11,12 +11,14 @@ namespace vaultdb {
 
     // SecureBoolField is a decorator for Field
     // it implements all of the type-specific functionalities, but delegates storing the payload to the Field class
-    class SecureBoolField : public Field<SecureBoolField>  {
+    class SecureBoolField : public FieldInstanceImpl<SecureBoolField, SecureBoolField>  {
 
     public:
 
-        SecureBoolField() :  Field(FieldType::SECURE_BOOL) {}
-        explicit SecureBoolField(const Field & srcField);
+        SecureBoolField()  {}
+        ~SecureBoolField() = default;
+
+        explicit SecureBoolField(const FieldInstanceImpl & srcField);
 
         SecureBoolField(const SecureBoolField & src);
 
@@ -29,9 +31,9 @@ namespace vaultdb {
         // constructor for encrypting a bit
         SecureBoolField(const BoolField *src, const int & myParty, const int & dstParty);
 
-        ~SecureBoolField() = default;
 
-        emp::Bit getPayload() const { return getValue<emp::Bit>(); }
+
+        emp::Bit getPayload() const { return payload; }
 
         // for use in print statements, etc.
         bool getBool() const { return true;  }
@@ -52,6 +54,7 @@ namespace vaultdb {
         SecureBoolField  gteq(const SecureBoolField &cmp) const;
         SecureBoolField  eq(const SecureBoolField &cmp) const;
 
+        SecureBoolField  operator!() const { return SecureBoolField(!payload);   }
         SecureBoolField  operator == (const bool &cmp) const { return SecureBoolField(getPayload() == emp::Bit(cmp));   }
         SecureBoolField  operator != (const bool &cmp) const { return !(*this == cmp);   }
 
@@ -75,6 +78,8 @@ namespace vaultdb {
 
         void ser(int8_t * target) const;
 
+    private:
+        emp::Bit payload;
 
     };
 

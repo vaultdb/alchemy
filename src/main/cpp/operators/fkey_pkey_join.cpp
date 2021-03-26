@@ -59,7 +59,7 @@ std::shared_ptr<QueryTable<B> > KeyedJoin<B>::runSelf() {
 }
 
 
-template class vaultdb::KeyedJoin<BoolField>;
-template class vaultdb::KeyedJoin<SecureBoolField>;
+template class vaultdb::KeyedJoin<bool>;
+template class vaultdb::KeyedJoin<emp::Bit>;
 
 

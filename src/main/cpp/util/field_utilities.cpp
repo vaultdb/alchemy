@@ -1,44 +1,31 @@
 #include "field_utilities.h"
 
-#include <query_table/field/bool_field.h>
-#include <query_table/field/int_field.h>
-#include <query_table/field/long_field.h>
-#include <query_table/field/float_field.h>
-#include <query_table/field/string_field.h>
-
-#include <query_table/field/secure_bool_field.h>
-#include <query_table/field/secure_int_field.h>
-#include <query_table/field/secure_long_field.h>
-#include <query_table/field/secure_float_field.h>
-#include <query_table/field/secure_string_field.h>
 
 using namespace vaultdb;
+using namespace  emp;
 
 size_t FieldUtilities::getPhysicalSize(const FieldType &id, const size_t &strLength) {
     switch (id) {
-        case FieldType::SECURE_BOOL:
-            return sizeof(emp::Bit);
         case FieldType::BOOL:
             return sizeof(bool); // stored size when we serialize it
-        case FieldType::SECURE_FLOAT:
-            return sizeof(emp::Float);
-        case FieldType::SECURE_INT:
-            return sizeof(emp::Integer(32, 0));
         case FieldType::INT:
-            return sizeof(int);
-        case FieldType::FLOAT:
-            return sizeof(float);
-        case FieldType::SECURE_LONG:
-            return sizeof(emp::Integer(64, 0));
-
+            return sizeof(int32_t);
         case FieldType::LONG:
-            return sizeof(long long int);
+            return sizeof(int64_t);
+        case FieldType::FLOAT:
+            return sizeof(float_t);
+        case FieldType::STRING:
+            return strLength;
+        case FieldType::SECURE_BOOL:
+            return sizeof(emp::block);
+        case FieldType::SECURE_INT:
+        case FieldType::SECURE_FLOAT:
+            return sizeof(emp::block) * 32;
+        case FieldType::SECURE_LONG:
+            return sizeof(emp::block) * 64;
 
         case FieldType::SECURE_STRING:
-            return sizeof(emp::Integer(8*strLength, 0));
-        case FieldType::STRING: {
-            return sizeof(signed char) * (strLength + 1); // just storing the character array, +1 for '\0'
-        }
+            return sizeof(emp::block) * strLength * 8;
         case FieldType::INVALID:
         default: // unsupported type
             throw;
@@ -46,191 +33,47 @@ size_t FieldUtilities::getPhysicalSize(const FieldType &id, const size_t &strLen
     }
 }
 
-/*
-Field * FieldUtilities::equal(const Field *lhs, const Field *rhs) {
+emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
+    const Integer zero(32, 0, PUBLIC);
+    const Integer one(32, 1, PUBLIC);
+    const Integer maxInt(32, 1 << 24, PUBLIC); // 2^24
+    const Integer minInt = Integer(32, -1 * (1 << 24), PUBLIC); // -2^24
+    const Integer twentyThree(32, 23, PUBLIC);
 
-    assert(lhs->getType() == rhs->getType());
+    Float output(0.0, PUBLIC);
 
-    switch(lhs->getType()) {
-        case FieldType::BOOL: {
-            auto lhsField = static_cast<const BoolField *>(lhs);
-            auto rhsField = static_cast<const BoolField *>(rhs);
-            return new BoolField(*lhsField == *rhsField);
-        }
-        case FieldType::INT: {
-            auto lhsField = static_cast<const IntField *>(lhs);
-            auto rhsField = static_cast<const IntField *>(rhs);
-            return new BoolField(*lhsField == *rhsField);
-        }
-        case FieldType::LONG: {
-            auto lhsField = static_cast<const LongField *>(lhs);
-            auto rhsField = static_cast<const LongField *>(rhs);
-            return new BoolField(*lhsField == *rhsField);
-        }
-        case FieldType::FLOAT: {
-            auto lhsField = static_cast<const FloatField *>(lhs);
-            auto rhsField = static_cast<const FloatField *>(rhs);
-            return new BoolField(*lhsField == *rhsField);
-        }
-        case FieldType::STRING: {
-            auto lhsField = static_cast<const StringField *>(lhs);
-            auto rhsField = static_cast<const StringField *>(rhs);
-            return new BoolField(*lhsField == *rhsField);
-        }
-        case FieldType::SECURE_BOOL: {
-            auto lhsField = static_cast<const SecureBoolField *>(lhs);
-            auto rhsField = static_cast<const SecureBoolField *>(rhs);
-            return new SecureBoolField(*lhsField == *rhsField);
-        }
-        case FieldType::SECURE_INT: {
-            auto lhsField = static_cast<const SecureIntField *>(lhs);
-            auto rhsField = static_cast<const SecureIntField *>(rhs);
-            return new SecureBoolField(*lhsField == *rhsField);
-        }
-        case FieldType::SECURE_LONG: {
-            auto lhsField = static_cast<const SecureLongField *>(lhs);
-            auto rhsField = static_cast<const SecureLongField *>(rhs);
-            return new SecureBoolField(*lhsField == *rhsField);
-        }
-        case FieldType::SECURE_FLOAT: {
-            auto lhsField = static_cast<const SecureFloatField *>(lhs);
-            auto rhsField = static_cast<const SecureFloatField *>(rhs);
-            return new SecureBoolField(*lhsField == *rhsField);
-        }
-        case FieldType::SECURE_STRING: {
-            auto lhsField = static_cast<const SecureStringField *>(lhs);
-            auto rhsField = static_cast<const SecureStringField *>(rhs);
-            return new SecureBoolField(*lhsField == *rhsField);
-        }
-        case FieldType::INVALID:
-            throw;
+    Bit signBit = input.bits[31];
+    Integer unsignedInput = input.abs();
 
-    }
+    Integer firstOneIdx = Integer(32, 31, PUBLIC) - unsignedInput.leading_zeros().resize(32);
+
+    Bit leftShift = firstOneIdx >= twentyThree;
+    Integer shiftOffset = emp::If(leftShift, firstOneIdx - twentyThree, twentyThree - firstOneIdx);
+    Integer shifted = emp::If(leftShift, unsignedInput >> shiftOffset, unsignedInput << shiftOffset);
+
+    // exponent is biased by 127
+    Integer exponent = firstOneIdx + Integer(32, 127, PUBLIC);
+    // move exp to the right place in final output
+    exponent = exponent << 23;
+
+    Integer coefficient = shifted;
+    // clear leading 1 (bit #23) (it will implicitly be there but not stored)
+    coefficient.bits[23] = Bit(false, PUBLIC);
+
+
+    // bitwise OR the sign bit | exp | coeff
+    Integer outputInt(32, 0, PUBLIC);
+    outputInt.bits[31] = signBit; // bit 31 is sign bit
+
+    outputInt =  coefficient | exponent | outputInt;
+    memcpy(&(output.value[0]), &(outputInt.bits[0]), 32 * sizeof(Bit));
+
+    // cover the corner cases
+    output = emp::If(input == zero, Float(0.0, PUBLIC), output);
+    output = emp::If(input < minInt, Float(INT_MIN, PUBLIC), output);
+    output = emp::If(input > maxInt, Float(INT_MAX, PUBLIC), output);
+
+    return output;
 }
-
-Field *FieldUtilities::gt(const Field *lhs, const Field *rhs) {
-    assert(lhs->getType() == rhs->getType());
-
-    switch(lhs->getType()) {
-        case FieldType::BOOL: {
-            auto lhsField = static_cast<const BoolField *>(lhs);
-            auto rhsField = static_cast<const BoolField *>(rhs);
-            return new BoolField(*lhsField > *rhsField);
-        }
-        case FieldType::INT: {
-            auto lhsField = static_cast<const IntField *>(lhs);
-            auto rhsField = static_cast<const IntField *>(rhs);
-            return new BoolField(*lhsField > *rhsField);
-        }
-        case FieldType::LONG: {
-            auto lhsField = static_cast<const LongField *>(lhs);
-            auto rhsField = static_cast<const LongField *>(rhs);
-            return new BoolField(*lhsField > *rhsField);
-        }
-        case FieldType::FLOAT: {
-            auto lhsField = static_cast<const FloatField *>(lhs);
-            auto rhsField = static_cast<const FloatField *>(rhs);
-            return new BoolField(*lhsField > *rhsField);
-        }
-        case FieldType::STRING: {
-            auto lhsField = static_cast<const StringField *>(lhs);
-            auto rhsField = static_cast<const StringField *>(rhs);
-            return new BoolField(*lhsField > *rhsField);
-        }
-        case FieldType::SECURE_BOOL: {
-            auto lhsField = static_cast<const SecureBoolField *>(lhs);
-            auto rhsField = static_cast<const SecureBoolField *>(rhs);
-            return new SecureBoolField(*lhsField > *rhsField);
-        }
-        case FieldType::SECURE_INT: {
-            auto lhsField = static_cast<const SecureIntField *>(lhs);
-            auto rhsField = static_cast<const SecureIntField *>(rhs);
-            return new SecureBoolField(*lhsField > *rhsField);
-        }
-        case FieldType::SECURE_LONG: {
-            auto lhsField = static_cast<const SecureLongField *>(lhs);
-            auto rhsField = static_cast<const SecureLongField *>(rhs);
-            return new SecureBoolField(*lhsField > *rhsField);
-        }
-        case FieldType::SECURE_FLOAT: {
-            auto lhsField = static_cast<const SecureFloatField *>(lhs);
-            auto rhsField = static_cast<const SecureFloatField *>(rhs);
-            return new SecureBoolField(*lhsField > *rhsField);
-        }
-        case FieldType::SECURE_STRING: {
-            auto lhsField = static_cast<const SecureStringField *>(lhs);
-            auto rhsField = static_cast<const SecureStringField *>(rhs);
-            return new SecureBoolField(*lhsField > *rhsField);
-        }
-        case FieldType::INVALID:
-            throw;
-
-    }
-
-}
-
-
-Field * FieldUtilities::geq(const Field *lhs, const Field *rhs) {
-    assert(lhs->getType() == rhs->getType());
-
-    switch (lhs->getType()) {
-        case FieldType::BOOL: {
-            auto lhsField = static_cast<const BoolField *>(lhs);
-            auto rhsField = static_cast<const BoolField *>(rhs);
-            return new BoolField(*lhsField >= *rhsField);
-        }
-        case FieldType::INT: {
-            auto lhsField = static_cast<const IntField *>(lhs);
-            auto rhsField = static_cast<const IntField *>(rhs);
-            return new BoolField(*lhsField >= *rhsField);
-        }
-        case FieldType::LONG: {
-            auto lhsField = static_cast<const LongField *>(lhs);
-            auto rhsField = static_cast<const LongField *>(rhs);
-            return new BoolField(*lhsField >= *rhsField);
-        }
-        case FieldType::FLOAT: {
-            auto lhsField = static_cast<const FloatField *>(lhs);
-            auto rhsField = static_cast<const FloatField *>(rhs);
-            return new BoolField(*lhsField >= *rhsField);
-        }
-        case FieldType::STRING: {
-            auto lhsField = static_cast<const StringField *>(lhs);
-            auto rhsField = static_cast<const StringField *>(rhs);
-            return new BoolField(*lhsField >= *rhsField);
-        }
-        case FieldType::SECURE_BOOL: {
-            auto lhsField = static_cast<const SecureBoolField *>(lhs);
-            auto rhsField = static_cast<const SecureBoolField *>(rhs);
-            return new SecureBoolField(*lhsField >= *rhsField);
-        }
-        case FieldType::SECURE_INT: {
-            auto lhsField = static_cast<const SecureIntField *>(lhs);
-            auto rhsField = static_cast<const SecureIntField *>(rhs);
-            return new SecureBoolField(*lhsField >= *rhsField);
-        }
-        case FieldType::SECURE_LONG: {
-            auto lhsField = static_cast<const SecureLongField *>(lhs);
-            auto rhsField = static_cast<const SecureLongField *>(rhs);
-            return new SecureBoolField(*lhsField >= *rhsField);
-        }
-        case FieldType::SECURE_FLOAT: {
-            auto lhsField = static_cast<const SecureFloatField *>(lhs);
-            auto rhsField = static_cast<const SecureFloatField *>(rhs);
-            return new SecureBoolField(*lhsField >= *rhsField);
-        }
-        case FieldType::SECURE_STRING: {
-            auto lhsField = static_cast<const SecureStringField *>(lhs);
-            auto rhsField = static_cast<const SecureStringField *>(rhs);
-            return new SecureBoolField(*lhsField >= *rhsField);
-        }
-
-        case FieldType::INVALID:
-            throw;
-
-    }
-
-}
- */
 
 
