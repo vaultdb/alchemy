@@ -149,10 +149,10 @@ string QueryTable<B>::toString(const bool & showDummies) const {
     }
 
     // show dummies case
-    os <<  getSchema() << " isEncrypted? " << isEncrypted() << endl;
+    os <<  getSchema() << " isEncrypted? " << isEncrypted() << std::endl;
 
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
-        os << tuples_[i].toString(showDummies) << endl;
+        os << tuples_[i].toString(showDummies) << std::endl;
 
     }
 

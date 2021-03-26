@@ -80,7 +80,11 @@ namespace vaultdb {
 
         Value operator()(int64_t i) const { return i == boost::get<int64_t>(rhs); }
 
-        Value operator()(float_t f) const { return f == boost::get<float_t>(rhs); }
+        Value operator()(float_t f) const {  // approx float equality
+            double epsilon = f * 0.01;
+            float_t r = boost::get<float_t>(rhs);
+            return std::fabs(r - f) <=  epsilon;
+        }
 
         Value operator()(std::string s) const { return s == boost::get<std::string>(rhs); }
 

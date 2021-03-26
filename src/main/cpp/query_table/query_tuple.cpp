@@ -250,7 +250,7 @@ std::string QueryTuple<B>::specializedToString(const PlainTuple &tuple, const bo
     bool printValue = showDummies || !tuple.getDummyTag();
 
     if(printValue) {
-        sstream <<   "(" <<  getField(0);
+        sstream <<   "(" <<  *getField(0);
 
         for (size_t i = 1; i < getFieldCount(); ++i)
             sstream << ", " << *getField(i);
