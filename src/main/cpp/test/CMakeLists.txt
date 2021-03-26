@@ -67,7 +67,6 @@ endmacro()
 
 #package_add_test(tpch_q1_test tpch_q1_test.cpp)
 #non-private tests
-package_add_test(field_instance_test field_instance_test.cpp)
 package_add_test(value_expression_test value_expression_test.cpp)
 package_add_test(csv_reader_test csv_reader_test.cpp)
 package_add_test(filter_test filter_test.cpp)
@@ -89,8 +88,6 @@ package_add_test(secure_filter_test secure_filter_test.cpp support/EmpBaseTest.c
 package_add_test(secure_sort_test secure_sort_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_basic_join_test secure_basic_join_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_pkey_fkey_join_test secure_pkey_fkey_join_test.cpp support/EmpBaseTest.cpp )
-
-#Tranche 2
 package_add_test(secure_scalar_aggregate_test secure_scalar_aggregate_test.cpp support/EmpBaseTest.cpp)
 package_add_test(secure_group_by_aggregate_test secure_group_by_aggregate_test.cpp support/EmpBaseTest.cpp)
 package_add_test(emp_float_to_int emp_float_to_int.cpp support/EmpBaseTest.cpp)

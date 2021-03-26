@@ -111,7 +111,7 @@ B Field<B>::operator>=(const Field &r) const {
 
 template<typename B>
 B Field<B>::operator<(const Field &rhs) const {
-    B geq = (rhs >= *this);
+    B geq = (*this >= rhs);
     return  !geq;
 }
 
@@ -122,7 +122,7 @@ B Field<B>::operator<=(const Field &rhs) const {
 
 template<typename B>
 B Field<B>::operator>(const Field &rhs) const {
-    return  rhs < *this;
+    return  !(rhs >= *this);
 }
 
 
