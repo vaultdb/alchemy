@@ -21,17 +21,17 @@ protected:
 
     const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
                                     "FROM customer  "
-                                    "WHERE c_custkey <= 5 "
+                                    "WHERE c_custkey <= 10 "
                                     "ORDER BY c_custkey";
 
     const std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
                                   "FROM orders "
-                                  "WHERE o_custkey <= 5 "
+                                  "WHERE o_custkey <= 10 "
                                   "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     const std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
                                     "FROM lineitem "
-                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 5)  "
+                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 10)  "
                                     "ORDER BY l_orderkey, revenue ";
 };
 
@@ -144,6 +144,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<PlainTable > observed = fullJoin.run();
 
 
+    std::cout << "Observed output: " << observed->toString(false) << std::endl;
 
     ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);

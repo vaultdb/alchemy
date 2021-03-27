@@ -114,18 +114,19 @@ TEST_F(TpcHTest, testQ1Truncated) {
 TEST_F(TpcHTest, testQ3Truncated)  {
     const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
                                     "FROM customer  "
-                                    "WHERE c_custkey <= 5 "
+                                    "WHERE c_custkey <= 100 "
                                     "ORDER BY c_custkey";
 
     const std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
                                   "FROM orders "
-                                  "WHERE o_custkey <= 5 "
+                                  "WHERE o_custkey <= 100 "
                                   "ORDER BY o_orderkey, o_orderdate, o_shippriority, o_custkey";
 
     const std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
                                     "FROM lineitem "
-                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 5)  "
+                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 100)  "
                                     "ORDER BY l_orderkey, revenue ";
+
 
     std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
                                           "lineitem_cte AS (" + lineitemSql + "), \n"
@@ -158,11 +159,14 @@ TEST_F(TpcHTest, testQ3Truncated)  {
 
     KeyedJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
     std::shared_ptr<PlainTable > joined = fullJoin.run();
+    std::cout << "After joins " << joined->toString(false) << std::endl;
 
     // align the sort definitions for aggregate
     // TODO: make sort order checker more forgiving later
+    // TODO: solve for how to line up the joins to skip this extra sort
     SortDefinition aggInputSort { ColumnSort(0, SortDirection::ASCENDING), ColumnSort(4, SortDirection::ASCENDING), ColumnSort(5, SortDirection::ASCENDING)};
-    joined->setSortOrder(aggInputSort);
+   // Sort joinSort(joined, aggInputSort);
+
 
     // Join output schema:
     // (#0 int32 lineitem.l_orderkey, #1 float .revenue, #2 int32 orders.o_orderkey, #3 int32 orders.o_custkey, #4 int64 .o_orderdate, #5 int32 orders.o_shippriority, #6 int32 customer.c_custkey)
@@ -173,6 +177,7 @@ TEST_F(TpcHTest, testQ3Truncated)  {
 
     std::vector<int32_t> groupByCols{0, 4, 5};
     std::vector<ScalarAggregateDefinition> aggregators{ ScalarAggregateDefinition(1, vaultdb::AggregateId::SUM, "revenue")};
+
     GroupByAggregate aggregate(joined, groupByCols, aggregators);
 
     shared_ptr<PlainTable> aggregated = aggregate.run();
@@ -189,7 +194,7 @@ TEST_F(TpcHTest, testQ3Truncated)  {
     //                "  o.o_orderdate,\n"
     //                "  o.o_shippriority\n"
     // from: l_orderkey, o_orderdate, o_shippriority, revenue
-    Project project(&aggregate);
+    Project project(&sort);
 
     project.addColumnMapping(0, 0);
     project.addColumnMapping(3, 1);
