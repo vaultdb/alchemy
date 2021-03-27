@@ -81,7 +81,7 @@ package_add_test(secret_share_generator_test secret_share_generator_test.cpp)
 
 
 #EMP-based tests
-#package_add_test(emp_test emp_test.cpp support/EmpBaseTest.cpp)
+package_add_test(emp_test emp_test.cpp support/EmpBaseTest.cpp)
 #package_add_test(emp_table_test  emp_table_test.cpp support/EmpBaseTest.cpp support/QueryTableTestQueries.cpp) # port 54324-54325
 #package_add_test(emp_test_multiple_starts emp_test_multiple_starts.cpp)
 #package_add_test(secure_value_expression_test secure_value_expression_test.cpp support/EmpBaseTest.cpp  )

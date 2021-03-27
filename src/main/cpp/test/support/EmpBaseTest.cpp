@@ -24,8 +24,8 @@ void EmpBaseTest::TearDown() {
         emp::finalize_semi_honest();
 }
 
-std::shared_ptr<QueryTable<BoolField> > EmpBaseTest::getExpectedOutput(const string &sql, const int &sortColCount) {
-    std::shared_ptr<QueryTable<BoolField> > expected = DataUtilities::getQueryResults(EmpBaseTest::unionedDb, sql, false);
+std::shared_ptr<PlainTable> EmpBaseTest::getExpectedOutput(const string &sql, const int &sortColCount) {
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(EmpBaseTest::unionedDb, sql, false);
     SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
     expected->setSortOrder(expectedSortOrder);
     return expected;

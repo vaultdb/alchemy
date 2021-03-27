@@ -171,7 +171,7 @@ SecureField Field<B>::secretShare(const PlainField  *field, const FieldType &typ
     SecretShareVisitor visitor;
     visitor.dstParty = dstParty;
     visitor.myParty = myParty;
-    Value input = (myParty == dstParty) ? field->payload_ : FieldFactory<B>::getZero(type).payload_; // won't be used if receiving encrypted value from other party
+    Value input = (myParty == dstParty) ? field->payload_ : FieldFactory<bool>::getZero(type).payload_; // won't be used if receiving encrypted value from other party
 
 
     Value result = boost::apply_visitor(visitor, input);

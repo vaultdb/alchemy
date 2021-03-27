@@ -234,9 +234,11 @@ SecureTuple  QueryTuple<B>::secretShare(const PlainTuple *srcTuple, const QueryS
 
     PlainField *dummyTagField = nullptr;
     if(myParty == dstParty)
-        *dummyTagField = PlainField(srcTuple->getDummyTag());
+        dummyTagField = new PlainField(srcTuple->getDummyTag());
 
     SecureField encryptedDummyTag = Field<B>::secretShare(dummyTagField, FieldType::BOOL, 0, myParty, dstParty);
+    delete dummyTagField;
+
     dstTuple.setDummyTag(encryptedDummyTag);
     return dstTuple;
 }
