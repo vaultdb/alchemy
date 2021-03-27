@@ -24,7 +24,7 @@ std::shared_ptr<QueryTable<B> > KeyedJoin<B>::runSelf() {
 
 
 
-    assert(foreignKeyTable->isEncrypted() == primaryKeyTable->isEncrypted()); // only support all plaintext or all MPC for now
+    assert(foreignKeyTable->isEncrypted() == primaryKeyTable->isEncrypted()); // only support all plaintext or all MPC
 
     // output size, colCount, isEncrypted
     Join<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(outputTupleCount, outputSchema.getFieldCount()));
@@ -49,8 +49,9 @@ std::shared_ptr<QueryTable<B> > KeyedJoin<B>::runSelf() {
             rhsTuple = primaryKeyTable->getTuplePtr(j);
             predicateEval = Join<B>::predicate->predicateCall(lhsTuple, rhsTuple);
              dstTuple = Join<B>::compareTuples(lhsTuple, rhsTuple, predicateEval);
-
             QueryTuple<B>::compareAndSwap(predicateEval, Join<B>::output->getTuplePtr(i), &dstTuple);
+
+
         }
 
     }

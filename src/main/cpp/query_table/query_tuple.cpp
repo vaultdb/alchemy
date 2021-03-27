@@ -148,18 +148,17 @@ void QueryTuple<B>::compareAndSwap(const B &cmp, QueryTuple<B> *lhs, QueryTuple<
 
     assert(lhs->getFieldCount() == rhs->getFieldCount());
 
-
-
     for(size_t i = 0; i < lhs->getFieldCount(); ++i) {
-
         Field<B>::compareAndSwap(cmp, lhs->fields_[i], rhs->fields_[i]);
-
     }
 
     Field<B> ldt =  Field<B>(lhs->dummy_tag_);
     Field<B> rdt =  Field<B>(rhs->dummy_tag_);
 
     Field<B>::compareAndSwap(cmp, ldt, rdt);
+
+    lhs->setDummyTag(ldt.template getValue<B>());
+    rhs->setDummyTag(rdt.template getValue<B>());
 
 }
 
