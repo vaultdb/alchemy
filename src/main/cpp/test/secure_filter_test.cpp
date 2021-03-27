@@ -7,7 +7,6 @@
 #include <operators/secure_sql_input.h>
 #include <operators/support/predicate.h>
 #include <test/support/EmpBaseTest.h>
-#include <query_table/field/secure_int_field.h>
 
 
 using namespace emp;
@@ -19,21 +18,21 @@ DEFINE_int32(port, 54321, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 
-class SecureFilterPredicateClass : public Predicate<SecureBoolField> {
+class SecureFilterPredicateClass : public Predicate<emp::Bit> {
 
-    SecureIntField encryptedLineNumber;
+    SecureField encryptedLineNumber;
 public:
     ~SecureFilterPredicateClass() {}
     SecureFilterPredicateClass(int32_t valueToEncrypt) {
         emp::Integer val(32, valueToEncrypt);
         // encrypting here so we don't have to secret share it for every comparison
-        encryptedLineNumber = SecureIntField(val);
+        encryptedLineNumber = SecureField(FieldType::SECURE_INT, val);
 
     }
 
     // filtering for l_linenumber = 1
-    SecureBoolField predicateCall(const SecureTuple & aTuple) const override {
-        const SecureIntField *f = static_cast<const SecureIntField *>(aTuple.getField(1));
+    emp::Bit predicateCall(const SecureTuple & aTuple) const override {
+        const SecureField *f =  aTuple.getField(1);
         return (*f == encryptedLineNumber);
     }
 
@@ -82,9 +81,9 @@ TEST_F(SecureFilterTest, test_filter) {
 
    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
 
-    std::shared_ptr<Predicate<SecureBoolField> > aPredicate(new SecureFilterPredicateClass(1));  // secret share the constant (1) just once
+    std::shared_ptr<Predicate<emp::Bit> > aPredicate(new SecureFilterPredicateClass(1));  // secret share the constant (1) just once
 
-    Filter<SecureBoolField> filter(&input, aPredicate);  // deletion handled by shared_ptr
+    Filter<emp::Bit> filter(&input, aPredicate);  // deletion handled by shared_ptr
 
     std::shared_ptr<SecureTable> result = filter.run();
     std::unique_ptr<PlainTable> revealed = result->reveal(emp::PUBLIC);
