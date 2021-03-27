@@ -37,8 +37,8 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
     std::string lhsStr = "EGYPT                    ";
     std::string rhsStr = "ARGENTINA                ";
 
-    PlainField lhsValue(FieldType::STRING, lhsStr);
-    PlainField rhsValue(FieldType::STRING, rhsStr);
+    PlainField lhsValue(FieldType::STRING, lhsStr, lhsStr.size());
+    PlainField rhsValue(FieldType::STRING, rhsStr, rhsStr.size());
 
     SecureField lhsEncrypted = PlainField::secretShare(&lhsValue, FieldType::STRING, lhsStr.length(), FLAGS_party, emp::ALICE);
     SecureField rhsEncrypted = PlainField::secretShare(&rhsValue, FieldType::STRING, rhsStr.length(), FLAGS_party, emp::ALICE);
@@ -125,8 +125,8 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
                                  emp::BOB);
 
 
-    PlainField lhsField(FieldType::STRING, lhsStr);
-    PlainField rhsField(FieldType::STRING, rhsStr);
+    PlainField lhsField(FieldType::STRING, lhsStr, 1);
+    PlainField rhsField(FieldType::STRING, rhsStr, 1);
 
     SecureField lhsPrivateField = PlainField::secretShare(&lhsField, FieldType::STRING, 8, FLAGS_party, emp::ALICE);
     SecureField rhsPrivateField = PlainField::secretShare(&rhsField, FieldType::STRING, 8, FLAGS_party, emp::BOB);

@@ -177,7 +177,7 @@ PlainField FieldFactory<bool>::deserialize(const FieldType &type, const size_t &
             char *val = (char *) src;
             std::string str(val, strLength);
             std::reverse(str.begin(), str.end());
-            return PlainField(type, str);
+            return PlainField(type, str, str.size());
         }
         default:
             throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<bool>::deserialize()!");
@@ -199,7 +199,7 @@ SecureField FieldFactory<emp::Bit>::getZero(const FieldType &aType) {
         case FieldType::SECURE_FLOAT:
             return SecureField(aType, emp::Float(0.0));
         case FieldType::SECURE_STRING: {
-            return SecureField(aType, emp::Integer(8, 0)); // single character
+            return SecureField(aType, emp::Integer(8, 0), 1); // single character
         }
         default:
             throw std::invalid_argument("Type unsupported in getZero(): " + TypeUtilities::getTypeString(aType));
@@ -218,7 +218,7 @@ SecureField FieldFactory<emp::Bit>::getOne(const FieldType &aType) {
         case FieldType::SECURE_FLOAT:
             return SecureField(aType, emp::Float(1.0));
         case FieldType::SECURE_STRING: {
-            return SecureField(aType, emp::Integer(8, 1));
+            return SecureField(aType, emp::Integer(8, 1), 1);
         }
         default:
             throw std::invalid_argument("Type unsupported in getOne(): " + TypeUtilities::getTypeString(aType));
@@ -321,7 +321,7 @@ SecureField FieldFactory<emp::Bit>::deserialize(const FieldType &type, const siz
 
             emp::Integer v(bitCount, 0, emp::PUBLIC);
             memcpy(v.bits.data(), srcPtr, sizeof(emp::Bit)*bitCount);
-            return SecureField(type, v);
+            return SecureField(type, v, bitCount / 8);
 
         }
         default:

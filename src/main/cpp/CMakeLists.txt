@@ -28,7 +28,7 @@ enable_testing()
 
 
 add_subdirectory(test)
-#add_subdirectory(pilot)
+add_subdirectory(pilot)
 
 
 find_package(OpenSSL REQUIRED)
@@ -92,18 +92,6 @@ set(sources
 		operators/group_by_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp
 		operators/csv_input.cpp
-
-		#operators/support/sort_condition.cpp
-		#operators/support/plain_sort_condition.cpp
-		#operators/support/secure_sort_condition.cpp
-		#operators/common_table_expression.cpp
-		#operators/support/replace_tuple.cpp
-		#operators/support/secure_replace_tuple.cpp
-		#operators/support/secure_scalar_aggregate_impl.cpp
-		#operators/support/secure_group_by_aggregate_impl.cpp
-
-
-
 
 		)
 

@@ -19,16 +19,13 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const Field<emp::Bit> &aValu
 template<typename B>
 Field<B>::Field() :  payload_(false), type_(FieldType::INVALID), string_length_(0) {
     assert(FieldUtilities::validateTypeAlignment(*this));
-    if(type_ == FieldType::STRING)
-        assert(string_length_ > 0);
+
 }
-
-
 
 template<typename B>
 Field<B>::Field(const FieldType &fieldType, const Value &val, const int &strLength) : payload_(val), type_(fieldType), string_length_(strLength) {
     assert(FieldUtilities::validateTypeAlignment(*this));
-    if(type_ == FieldType::STRING)
+    if(type_ == FieldType::STRING || type_ == FieldType::SECURE_STRING)
         assert(string_length_ > 0);
 }
 
@@ -36,7 +33,7 @@ Field<B>::Field(const FieldType &fieldType, const Value &val, const int &strLeng
 template<typename B>
 Field<B>::Field(const Field<B> &field) :  payload_(field.payload_), type_(field.type_), string_length_(field.string_length_) {
     assert(FieldUtilities::validateTypeAlignment(*this));
-    if(type_ == FieldType::STRING)
+    if(type_ == FieldType::STRING || type_ == FieldType::SECURE_STRING)
         assert(string_length_ > 0);
 }
 
@@ -140,9 +137,10 @@ PlainField  Field<B>::reveal(const int &party) const {
     FieldType resType = TypeUtilities::toPlain(type_);
 
     size_t strLength = 0;
-    if (type_ == FieldType::SECURE_STRING || type_ == FieldType::STRING) {
-        assert(string_length_ > 0);
-        strLength = string_length_;
+    if (type_ == FieldType::SECURE_STRING) {
+        strLength = boost::get<emp::Integer>(payload_).size() / 8;
+        assert(strLength > 0);
+
     }
     return PlainField(resType, revealed, strLength);
 }

@@ -130,7 +130,7 @@ PlainTuple QueryTuple<B>::reveal(const int &empParty) const {
     PlainTuple dstTuple(fields_.size());
 
     for(size_t i = 0; i < fields_.size(); ++i) {
-        Field<bool> revealed = fields_[i].reveal(empParty);
+        PlainField revealed = fields_[i].reveal(empParty);
         dstTuple.setField(i, revealed);
     }
 

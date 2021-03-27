@@ -46,6 +46,8 @@ std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
 }
 
 
+
+
 /** Procedure bitonicSort first produces a bitonic sequence by
  * recursively sorting its two halves in opposite directions, and then
  * calls bitonicMerge.

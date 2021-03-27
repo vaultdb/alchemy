@@ -13,7 +13,7 @@ namespace  vaultdb {
 
         shared_ptr<SecureTable> inputTable;
         shared_ptr<SecureTable> dataCube;
-        shared_ptr<GroupByAggregate<SecureBoolField> > aggregator;
+        shared_ptr<GroupByAggregate<emp::Bit> > aggregator;
 
     public:
         // compute initial data cube to prepare for rollups
@@ -30,10 +30,10 @@ namespace  vaultdb {
 
 
         // project it into the right format
-        shared_ptr<SecureTable> projectPatients(shared_ptr<SecureTable> src);
+        shared_ptr<SecureTable> projectPatients(const shared_ptr<SecureTable> &src);
 
         // aggregate the data cube
-        void aggregatePatients(shared_ptr<SecureTable> src);
+        void aggregatePatients(const shared_ptr<SecureTable> &src);
 
 
 // Project #1
