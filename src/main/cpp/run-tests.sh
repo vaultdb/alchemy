@@ -29,35 +29,33 @@ sleep 2
 ./bin/emp_table_test --party=1 &
 ./bin/emp_table_test  --party=2
 
+sleep 2
+./bin/secure_filter_test --party=1 &
+./bin/secure_filter_test --party=2
 
+sleep 2
+./bin/secure_sort_test --party=1 &
+./bin/secure_sort_test --party=2
 
-#sleep 2
-#./bin/secure_filter_test --party=1 &
-#./bin/secure_filter_test --party=2
+sleep 2
+./bin/secure_basic_join_test --party=1 &
+./bin/secure_basic_join_test --party=2
 
-#sleep 2
-#./bin/secure_sort_test --party=1 &
-#./bin/secure_sort_test --party=2
+sleep 2
+./bin/secure_pkey_fkey_join_test --party=1 &
+./bin/secure_pkey_fkey_join_test --party=2
 
-#sleep 2
-#./bin/secure_basic_join_test --party=1 &
-#./bin/secure_basic_join_test --party=2
+sleep 2
+./bin/secure_scalar_aggregate_test --party=1 &
+./bin/secure_scalar_aggregate_test --party=2
 
-#sleep 2
-#./bin/secure_pkey_fkey_join_test --party=1 &
-#./bin/secure_pkey_fkey_join_test --party=2
+sleep 2
+./bin/secure_group_by_aggregate_test --party=1 &
+./bin/secure_group_by_aggregate_test --party=2
 
-#sleep 2
-#./bin/secure_scalar_aggregate_test --party=1 &
-#./bin/secure_scalar_aggregate_test --party=2
-
-#sleep 2
-#./bin/secure_group_by_aggregate_test --party=1 &
-#./bin/secure_group_by_aggregate_test --party=2
-
-#sleep 2
-#./bin/emp_float_to_int --party=1 &
-#./bin/emp_float_to_int --party=2 
+sleep 2
+./bin/emp_float_to_int --party=1 &
+./bin/emp_float_to_int --party=2 
 
 
 

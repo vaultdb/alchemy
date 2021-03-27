@@ -27,7 +27,7 @@ PlainField FieldFactory<bool>::getFieldFromString(const FieldType &type, const s
             while(fieldStr.length() < strLength) {
                 fieldStr += " ";
             }
-            return PlainField(type, fieldStr);
+            return PlainField(type, fieldStr, strLength);
 
         }
         case FieldType::FLOAT: {
@@ -250,7 +250,7 @@ SecureField FieldFactory<emp::Bit>::toLong(const SecureField & field) {
     if(field.getType() == FieldType::SECURE_INT) {
         emp::Integer payload = field.getValue<emp::Integer>();
         payload.resize(64);
-        return SecureField(FieldType::LONG, payload);
+        return SecureField(FieldType::SECURE_LONG, payload);
     }
     throw std::invalid_argument("toLong not supported for " + TypeUtilities::getTypeString(field.getType()));
 

@@ -19,31 +19,32 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const Field<emp::Bit> &aValu
 template<typename B>
 Field<B>::Field() :  payload_(false), type_(FieldType::INVALID), string_length_(0) {
     assert(FieldUtilities::validateTypeAlignment(*this));
+    if(type_ == FieldType::STRING)
+        assert(string_length_ > 0);
 }
 
 
-/*template<typename B>
-Field<B>::Field(const FieldType &typeId, const int &strLength) : type_(typeId), string_length_(strLength) {
-    assert(FieldUtilities::validateTypeAlignment(*this));
-}*/
 
 template<typename B>
 Field<B>::Field(const FieldType &fieldType, const Value &val, const int &strLength) : payload_(val), type_(fieldType), string_length_(strLength) {
     assert(FieldUtilities::validateTypeAlignment(*this));
-
+    if(type_ == FieldType::STRING)
+        assert(string_length_ > 0);
 }
 
 
 template<typename B>
 Field<B>::Field(const Field<B> &field) :  payload_(field.payload_), type_(field.type_), string_length_(field.string_length_) {
     assert(FieldUtilities::validateTypeAlignment(*this));
-
+    if(type_ == FieldType::STRING)
+        assert(string_length_ > 0);
 }
 
 template<typename B>
 Field<B>::Field(const B &value) : string_length_(0) {
     payload_ = value;
     type_ = (std::is_same_v<bool, B>)  ? FieldType::BOOL : FieldType::SECURE_BOOL;
+
 }
 
 

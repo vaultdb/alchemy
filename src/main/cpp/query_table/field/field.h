@@ -33,7 +33,6 @@ namespace vaultdb {
 
         public:
             Field();
-            //Field(const FieldType & typeId, const int & strLength = 0);
             Field(const FieldType & fieldType,  const Value & val,  const int & strLength = 0);
             Field(const B & value);
 

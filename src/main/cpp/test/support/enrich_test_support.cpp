@@ -95,8 +95,8 @@ QuerySchema EnrichTestSupport<B>::getPatientInclusionSchema() {
     return patientInclusionSchema;
 }
 
-template class vaultdb::FilterExcludedPatients<BoolField>;
-template class vaultdb::FilterExcludedPatients<SecureBoolField>;
+template class vaultdb::FilterExcludedPatients<bool>;
+template class vaultdb::FilterExcludedPatients<emp::Bit>;
 
-template class vaultdb::EnrichTestSupport<BoolField>;
-template class vaultdb::EnrichTestSupport<SecureBoolField>;
+template class vaultdb::EnrichTestSupport<bool>;
+template class vaultdb::EnrichTestSupport<emp::Bit>;
