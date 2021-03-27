@@ -17,7 +17,7 @@ ScalarCountImpl<B>::ScalarCountImpl(const uint32_t &ordinal, const FieldType &ag
 
 template<typename B>
 void ScalarCountImpl<B>::accumulate(const QueryTuple<B> &tuple) {
-    runningCount = Field<B>::If(*tuple.getDummyTag(), runningCount, runningCount + ScalarAggregateImpl<B>::one);
+    runningCount = Field<B>::If(tuple.getDummyTag(), runningCount, runningCount + ScalarAggregateImpl<B>::one);
 }
 
 template<typename B>
@@ -30,7 +30,7 @@ template<typename B>
 template<typename B>
 void ScalarSumImpl<B>::accumulate(const QueryTuple<B> &tuple) {
     Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
-    runningSum = Field<B>::If(*tuple.getDummyTag(), runningSum, runningSum + aggInput);
+    runningSum = Field<B>::If(tuple.getDummyTag(), runningSum, runningSum + aggInput);
 }
 
 template<typename B>
@@ -62,7 +62,7 @@ template<typename B>
 void ScalarMinImpl<B>::accumulate(const QueryTuple<B> &tuple) {
     Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
     B sameMin = aggInput >= runningMin;
-    runningMin = Field<B>::If(sameMin | *tuple.getDummyTag(), runningMin, aggInput);
+    runningMin = Field<B>::If(sameMin | tuple.getDummyTag(), runningMin, aggInput);
 }
 
 template<typename B>
@@ -81,7 +81,7 @@ template<typename B>
 void ScalarMaxImpl<B>::accumulate(const QueryTuple<B> &tuple) {
     Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
     B sameMax = aggInput <= runningMax;
-    runningMax = Field<B>::If(sameMax | *tuple.getDummyTag(), runningMax, aggInput);
+    runningMax = Field<B>::If(sameMax | tuple.getDummyTag(), runningMax, aggInput);
 
 }
 
@@ -101,8 +101,8 @@ ScalarAvgImpl<B>::ScalarAvgImpl(const uint32_t &ordinal, const FieldType &aggTyp
 template<typename B>
 void ScalarAvgImpl<B>::accumulate(const QueryTuple<B> &tuple) {
     Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
-    runningSum = Field<B>::If(*tuple.getDummyTag(), runningSum, runningSum + aggInput);
-    runningCount = Field<B>::If(*tuple.getDummyTag(), runningCount, runningCount + ScalarAggregateImpl<B>::one);
+    runningSum = Field<B>::If(tuple.getDummyTag(), runningSum, runningSum + aggInput);
+    runningCount = Field<B>::If(tuple.getDummyTag(), runningCount, runningCount + ScalarAggregateImpl<B>::one);
 
 }
 
@@ -124,17 +124,17 @@ FieldType ScalarAvgImpl<B>::getType() const {
 }
 
 
-template class vaultdb::ScalarCountImpl<BoolField>;
-template class vaultdb::ScalarCountImpl<SecureBoolField>;
+template class vaultdb::ScalarCountImpl<bool>;
+template class vaultdb::ScalarCountImpl<emp::Bit>;
 
-template class vaultdb::ScalarSumImpl<BoolField>;
-template class vaultdb::ScalarSumImpl<SecureBoolField>;
+template class vaultdb::ScalarSumImpl<bool>;
+template class vaultdb::ScalarSumImpl<emp::Bit>;
 
-template class vaultdb::ScalarMinImpl<BoolField>;
-template class vaultdb::ScalarMinImpl<SecureBoolField>;
+template class vaultdb::ScalarMinImpl<bool>;
+template class vaultdb::ScalarMinImpl<emp::Bit>;
 
-template class vaultdb::ScalarMaxImpl<BoolField>;
-template class vaultdb::ScalarMaxImpl<SecureBoolField>;
+template class vaultdb::ScalarMaxImpl<bool>;
+template class vaultdb::ScalarMaxImpl<emp::Bit>;
 
-template class vaultdb::ScalarAvgImpl<BoolField>;
-template class vaultdb::ScalarAvgImpl<SecureBoolField>;
+template class vaultdb::ScalarAvgImpl<bool>;
+template class vaultdb::ScalarAvgImpl<emp::Bit>;

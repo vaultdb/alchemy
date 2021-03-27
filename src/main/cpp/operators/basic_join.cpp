@@ -41,5 +41,5 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
 }
 
 
-template class vaultdb::BasicJoin<BoolField>;
-template class vaultdb::BasicJoin<SecureBoolField>;
+template class vaultdb::BasicJoin<bool>;
+template class vaultdb::BasicJoin<emp::Bit>;

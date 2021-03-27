@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/project.h>
-#include <query_table/field/float_field.h>
 
 
 using namespace emp;
@@ -58,13 +57,13 @@ public:
 };
 */
 
-Field<BoolField> calculateRevenue(const QueryTuple<BoolField> & aTuple) {
-    const FloatField extendedPrice = *(static_cast<const FloatField *>(aTuple.getField(5)));
-    const FloatField discount = *(static_cast<const FloatField *>(aTuple.getField(6)));
-    const FloatField one = FloatField(1.0);
+PlainField calculateRevenue(const PlainTuple & aTuple) {
+    const PlainField extendedPrice = *aTuple.getField(5);
+    const PlainField discount = *aTuple.getField(6);
+    const PlainField one(FieldType::FLOAT, (float_t) 1.0);
 
     // l.l_extendedprice * (1 - l.l_discount)
-    return FloatField(extendedPrice * (one - discount));
+    return extendedPrice * (one - discount);
 }
 
 // variant of Q3 expressions
@@ -79,7 +78,7 @@ TEST_F(ProjectionTest, q3Lineitem) {
 
     Project project(&input);
 
-    Expression revenueExpression(&calculateRevenue, "revenue", FieldType::FLOAT);
+    Expression<bool> revenueExpression(&calculateRevenue, "revenue", FieldType::FLOAT);
 
 
 

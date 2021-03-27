@@ -5,12 +5,11 @@
 #include <util/data_utilities.h>
 #include <data/PsqlDataProvider.h>
 #include "operator.h"
-#include <query_table/field/bool_field.h>
 
 // reads SQL input and stores in a plaintext array
 namespace  vaultdb {
 
-    class SqlInput : public Operator<BoolField> {
+    class SqlInput : public Operator<bool> {
 
     protected:
         std::string inputQuery;
@@ -26,7 +25,7 @@ namespace  vaultdb {
 
         void setSortDefinition(const SortDefinition & aSortDefinition) { sortedOn = aSortDefinition; };
         ~SqlInput() = default;
-        std::shared_ptr<QueryTable<BoolField> > runSelf() override;
+        std::shared_ptr<PlainTable> runSelf() override;
 
 
     };

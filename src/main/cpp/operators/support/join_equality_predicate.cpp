@@ -23,6 +23,6 @@ B JoinEqualityPredicate<B>::predicateCall(const  QueryTuple<B> *lhs, const Query
 }
 
 
-template class vaultdb::JoinEqualityPredicate<BoolField>;
-template class vaultdb::JoinEqualityPredicate<SecureBoolField>;
+template class vaultdb::JoinEqualityPredicate<bool>;
+template class vaultdb::JoinEqualityPredicate<emp::Bit>;
 

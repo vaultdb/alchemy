@@ -1,6 +1,4 @@
 #include "util/type_utilities.h"
-#include "query_table/field/secure_bool_field.h"
-#include "query_table/field/bool_field.h"
 
 #include <string>
  

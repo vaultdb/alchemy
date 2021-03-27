@@ -87,8 +87,8 @@ template<typename B>
 
 }
 
-template class vaultdb::Operator<BoolField>;
-template class vaultdb::Operator<SecureBoolField>;
+template class vaultdb::Operator<bool>;
+template class vaultdb::Operator<emp::Bit>;
 
 
 

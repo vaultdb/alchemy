@@ -5,9 +5,6 @@
 #include <test/support/EmpBaseTest.h>
 #include <util/field_utilities.h>
 #include <operators/sort.h>
-#include <operators/secure_sql_input.h>
-#include <operators/support/join_equality_predicate.h>
-#include <operators/basic_join.h>
 
 
 
@@ -39,14 +36,14 @@ bool SecureSortTest::correctOrder(const PlainTuple &lhs, const PlainTuple &rhs, 
         const PlainField *lhsVal = lhs.getField(i);
         const PlainField *rhsVal = rhs.getField(i);
 
-        if ((*lhsVal == *rhsVal).getBool())
+        if (*lhsVal == *rhsVal)
             continue;
 
         if(sortDefinition[i].second == SortDirection::ASCENDING) {
-            return (*lhsVal <= *rhsVal).getBool(); //!FieldUtilities::gt(lhsVal, rhsVal);
+            return *lhsVal <= *rhsVal; //!FieldUtilities::gt(lhsVal, rhsVal);
         }
         else if(sortDefinition[i].second == SortDirection::DESCENDING) {
-             return (*lhsVal >  *rhsVal).getBool();
+             return *lhsVal >  *rhsVal;
         }
     }
     return true;
@@ -97,7 +94,7 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort<SecureBoolField> sort(&input, sortDefinition);
+    Sort<emp::Bit> sort(&input, sortDefinition);
     std::shared_ptr<SecureTable> result = sort.run();
 
     std::shared_ptr<PlainTable> observed = result->reveal();
@@ -123,7 +120,7 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
 
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort<SecureBoolField> sort(&input, sortDefinition);
+    Sort<emp::Bit> sort(&input, sortDefinition);
 
     // project it down to $1, $3
     Project project(&sort);
@@ -152,7 +149,7 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort<SecureBoolField> sort(&input, sortDefinition);
+    Sort<emp::Bit> sort(&input, sortDefinition);
 
 
     // project it down to $1
@@ -185,7 +182,7 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
 
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort<SecureBoolField> sort(&input, sortDefinition);
+    Sort<emp::Bit> sort(&input, sortDefinition);
 
     Project project(&sort);
     project.addColumnMapping(0, 0);
@@ -274,16 +271,16 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
 
     ConjunctiveEqualityPredicate lineitemSupplierOrdinals = {EqualityPredicate(2, 0)}; //  l_suppkey, s_suppkey
 
-    std::shared_ptr<BinaryPredicate<SecureBoolField> > lineitemSupplierPredicate(new JoinEqualityPredicate<SecureBoolField>(lineitemSupplierOrdinals));
+    std::shared_ptr<BinaryPredicate<emp::Bit> > lineitemSupplierPredicate(new JoinEqualityPredicate<emp::Bit>(lineitemSupplierOrdinals));
 
-    BasicJoin<SecureBoolField> join(&lineitemInput, &supplierInput, lineitemSupplierPredicate);
+    BasicJoin<emp::Bit> join(&lineitemInput, &supplierInput, lineitemSupplierPredicate);
 
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(4, SortDirection::ASCENDING);
     sortDefinition.emplace_back(0, SortDirection::DESCENDING);
 
-    Sort<SecureBoolField> sort(&join, sortDefinition);
+    Sort<emp::Bit> sort(&join, sortDefinition);
 
     // project it down to $5, $0
     Project project(&sort);
@@ -318,7 +315,7 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort<SecureBoolField> sort(&input, sortDefinition);
+    Sort<emp::Bit> sort(&input, sortDefinition);
 
 
     // project it down to $2, $1

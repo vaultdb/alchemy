@@ -52,7 +52,7 @@ protected:
 
     shared_ptr<SecureTable> loadUnionAndDeduplicateData() const;
 
-    void validateUnion(Operator<SecureBoolField> &sortOp, const SortDefinition &expectedSortOrder) const;
+    void validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition &expectedSortOrder) const;
 
     shared_ptr<SecureTable> aggregatePatientData();
 

@@ -8,7 +8,7 @@
 // reads SQL input and secret shares it
 // alice and bob need to run at the same time for this
 namespace  vaultdb {
-    class SecureSqlInput : public Operator<SecureBoolField> {
+    class SecureSqlInput : public Operator<emp::Bit> {
 
 
         NetIO *netio_;
@@ -21,7 +21,7 @@ namespace  vaultdb {
 
 
     protected:
-        std::shared_ptr<QueryTable<SecureBoolField> > runSelf() override;
+        std::shared_ptr<SecureTable> runSelf() override;
 
 
     public:

@@ -21,7 +21,7 @@ std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
 
     for(size_t i = 0; i < Operator<B>::output->getTupleCount(); ++i) {
         QueryTuple tuple = Operator<B>::output->getTuple(i);
-        B dummyTag = static_cast<const B >(*tuple.getDummyTag());
+        B dummyTag = tuple.getDummyTag();
         B predicateOut = predicate->predicateCall(tuple);
 
         dummyTag =  ((!predicateOut) | dummyTag); // (!) because dummyTag is false if our selection criteria is satisfied
@@ -34,5 +34,5 @@ std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
 
 }
 
-template class vaultdb::Filter<BoolField>;
-template class vaultdb::Filter<SecureBoolField>;
+template class vaultdb::Filter<bool>;
+template class vaultdb::Filter<emp::Bit>;
