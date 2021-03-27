@@ -1,16 +1,9 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <emp-tool/emp-tool.h>
-#include <util/type_utilities.h>
 #include <stdexcept>
 #include <test/support/EmpBaseTest.h>
 #include <query_table/field/field.h>
-#include <query_table/field/string_field.h>
-#include <query_table/field/secure_string_field.h>
-#include <query_table/field/secure_int_field.h>
-#include <query_table/field/secure_bool_field.h>
-#include <query_table/field/secure_long_field.h>
-#include <query_table/field/secure_float_field.h>
 
 
 
@@ -31,10 +24,10 @@ class SecureValueExpressionTest : public EmpBaseTest {
 
 // test overload of assignment operator
 TEST_F(SecureValueExpressionTest, test_value_assignment) {
-    BoolField src(true);
-    BoolField dst = src;
+    SecureField src(emp::Bit(true));
+    SecureField dst = src;
 
-    ASSERT_EQ(src.getPayload(), dst.getPayload());
+    ASSERT_EQ(src.getValue<emp::Bit>().reveal(), dst.getValue<emp::Bit>().reveal());
 
 
 }
@@ -44,15 +37,15 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
     std::string lhsStr = "EGYPT                    ";
     std::string rhsStr = "ARGENTINA                ";
 
-    StringField lhsValue(lhsStr);
-    StringField rhsValue(rhsStr);
+    PlainField lhsValue(FieldType::STRING, lhsStr);
+    PlainField rhsValue(FieldType::STRING, rhsStr);
 
-    SecureStringField lhsEncrypted(&lhsValue, lhsStr.length(), FLAGS_party, emp::ALICE);
-    SecureStringField rhsEncrypted(&rhsValue, rhsStr.length(), FLAGS_party, emp::ALICE);
+    SecureField lhsEncrypted = PlainField::secretShare(&lhsValue, FieldType::STRING, lhsStr.length(), FLAGS_party, emp::ALICE);
+    SecureField rhsEncrypted = PlainField::secretShare(&rhsValue, FieldType::STRING, rhsStr.length(), FLAGS_party, emp::ALICE);
 
 
-    SecureBoolField gtEncrypted = (lhsEncrypted > rhsEncrypted);
-    bool gt = ((BoolField) gtEncrypted.reveal()).getPayload();
+    emp::Bit gtEncrypted = (lhsEncrypted > rhsEncrypted);
+    bool gt =  gtEncrypted.reveal();
     ASSERT_TRUE(gt);
 
 }
@@ -66,18 +59,18 @@ TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 
     emp::Integer aliceSecretShared = emp::Integer(32, FLAGS_party == emp::ALICE ? inputField : 0,   emp::ALICE);
 
-    SecureIntField aliceEncryptedValue(aliceSecretShared);
+    SecureField aliceEncryptedValue(FieldType::SECURE_INT, aliceSecretShared);
 
     emp::Integer bobSecretShared = emp::Integer(32, FLAGS_party == emp::ALICE ? 0 : inputField,   emp::BOB);
-    SecureIntField bobEncryptedValue(bobSecretShared);
+    SecureField bobEncryptedValue(FieldType::SECURE_INT, bobSecretShared);
 
 
     emp::Integer multiplier(32, 2); // set multiplier to two
-    SecureIntField multiplierValue(multiplier);
+    SecureField multiplierValue(FieldType::SECURE_INT, multiplier);
 
 
 
-    SecureIntField result = (aliceEncryptedValue + bobEncryptedValue) * multiplierValue;
+    SecureField result = (aliceEncryptedValue + bobEncryptedValue) * multiplierValue;
 
     PlainField revealed = result.reveal(emp::PUBLIC);
 
@@ -97,14 +90,14 @@ TEST_F(SecureValueExpressionTest, test_millionaires) {
 
 
     emp::Integer aliceSecretShared = emp::Integer(32, FLAGS_party == emp::ALICE ? inputField : 0,   emp::ALICE);
-    SecureIntField aliceEncryptedValue(aliceSecretShared);
+    SecureField aliceEncryptedValue(FieldType::SECURE_INT, aliceSecretShared);
 
     emp::Integer bobSecretShared = emp::Integer(32, FLAGS_party == emp::ALICE ? 0 : inputField,   emp::BOB);
-    SecureIntField bobEncryptedValue(bobSecretShared);
+    SecureField bobEncryptedValue(FieldType::SECURE_INT, bobSecretShared);
 
 
 
-    SecureBoolField result = aliceEncryptedValue > bobEncryptedValue;
+    emp::Bit result = aliceEncryptedValue > bobEncryptedValue;
     PlainField revealed = result.reveal(emp::PUBLIC);
 
     ASSERT_EQ(revealed.getValue<bool>(), false);
@@ -132,11 +125,11 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
                                  emp::BOB);
 
 
-    StringField lhsField(lhsStr);
-    StringField rhsField(rhsStr);
+    PlainField lhsField(FieldType::STRING, lhsStr);
+    PlainField rhsField(FieldType::STRING, rhsStr);
 
-    SecureStringField lhsPrivateField = static_cast<SecureStringField>(PlainField::secretShare(&lhsField, FieldType::STRING, 8, FLAGS_party, emp::ALICE));
-    SecureStringField rhsPrivateField = static_cast<SecureStringField>(PlainField::secretShare(&rhsField, FieldType::STRING, 8, FLAGS_party, emp::BOB));
+    SecureField lhsPrivateField = PlainField::secretShare(&lhsField, FieldType::STRING, 8, FLAGS_party, emp::ALICE);
+    SecureField rhsPrivateField = PlainField::secretShare(&rhsField, FieldType::STRING, 8, FLAGS_party, emp::BOB);
 
 
 
@@ -156,9 +149,9 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
 
 
     // compare manual emp int to Field one
-    privateEq = ((BoolField)(lhsPrivateField == rhsPrivateField).reveal()).getPayload();
-    privateGeq = ((BoolField)(lhsPrivateField >= rhsPrivateField).reveal()).getPayload();
-    privateGt = ((BoolField)(lhsPrivateField > rhsPrivateField).reveal()).getPayload();
+    privateEq = (lhsPrivateField == rhsPrivateField).reveal();
+    privateGeq = (lhsPrivateField >= rhsPrivateField).reveal();
+    privateGt = (lhsPrivateField > rhsPrivateField).reveal();
 
 
     ASSERT_EQ(publicEq, privateEq);
