@@ -76,7 +76,8 @@ package_add_test(basic_join_test basic_join_test.cpp)
 package_add_test(fkey_pkey_join_test fkey_pkey_join_test.cpp)
 package_add_test(scalar_aggregate_test scalar_aggregate_test.cpp)
 package_add_test(group_by_aggregate_test group_by_aggregate_test.cpp)
-#package_add_test(serialization_test serialization_test.cpp)
+package_add_test(serialization_test serialization_test.cpp)
+package_add_test(secret_share_generator_test secret_share_generator_test.cpp)
 
 
 #EMP-based tests
@@ -92,5 +93,4 @@ package_add_test(group_by_aggregate_test group_by_aggregate_test.cpp)
 #package_add_test(secure_group_by_aggregate_test secure_group_by_aggregate_test.cpp support/EmpBaseTest.cpp)
 #package_add_test(emp_float_to_int emp_float_to_int.cpp support/EmpBaseTest.cpp)
 #package_add_test(enrich_test enrich_test.cpp  support/enrich_test_support.cpp support/EmpBaseTest.cpp)
-#package_add_test(secret_share_generator_test secret_share_generator_test.cpp)
 
