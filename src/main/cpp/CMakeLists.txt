@@ -88,6 +88,7 @@ set(sources
         operators/fkey_pkey_join.cpp
 		operators/support/scalar_aggregate_impl.cpp
 		operators/scalar_aggregate.cpp
+		operators/limit.cpp
 
 		operators/group_by_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp
