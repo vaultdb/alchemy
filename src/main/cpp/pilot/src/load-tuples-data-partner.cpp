@@ -3,7 +3,7 @@
 #include <data/DataProvider.h>
 #include <util/data_utilities.h>
 #include <operators/sort.h>
-#include "union_hybrid_data.h"
+#include "common/union_hybrid_data.h"
 
 using namespace  std;
 using namespace vaultdb;

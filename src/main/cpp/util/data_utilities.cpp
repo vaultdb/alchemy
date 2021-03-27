@@ -78,6 +78,7 @@ void DataUtilities::locallySecretShareTable(const std::unique_ptr<QueryTable> &t
 }*/
 
 
+
 void DataUtilities::writeFile(const string &fileName, vector<int8_t> contents) {
     std::ofstream outFile(fileName.c_str(), std::ios::out | std::ios::binary);
     if(!outFile.is_open()) {
@@ -86,6 +87,16 @@ void DataUtilities::writeFile(const string &fileName, vector<int8_t> contents) {
     outFile.write((char *) contents.data(), contents.size());
     outFile.close();
 }
+
+void DataUtilities::writeFile(const string &fileName, const string &contents) {
+    std::ofstream outFile(fileName.c_str(), std::ios::out);
+    if(!outFile.is_open()) {
+        throw std::invalid_argument("Could not write output file " + fileName);
+    }
+    outFile.write(contents.c_str(), contents.size());
+    outFile.close();
+}
+
 
 // reads binary file
 vector<int8_t> DataUtilities::readFile(const std::string & fileName) {
@@ -192,5 +203,6 @@ std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int
     return printFirstBytes(decodedBytes, byteCount);
 
 }
+
 
 

@@ -34,6 +34,7 @@ endmacro()
 
 package_add_binary(secret_share_csv src/secret_share_csv.cpp src/common/shared_schema.cpp)
 package_add_binary(generate_enrich_data_three_parties src/generate_enrich_data_three_parties.cpp)
-package_add_binary(load_tuples_data_partner src/load-tuples-data-partner.cpp src/union_hybrid_data.cpp src/common/shared_schema.cpp)
-package_add_binary(run_data_partner src/run-data-partner.cpp src/union_hybrid_data.cpp src/common/shared_schema.cpp src/enrich_htn_query.cpp)
+package_add_binary(load_tuples_data_partner src/load-tuples-data-partner.cpp src/common/union_hybrid_data.cpp src/common/shared_schema.cpp)
+package_add_binary(run_data_partner src/run-data-partner.cpp src/common/union_hybrid_data.cpp src/common/shared_schema.cpp src/enrich_htn_query.cpp)
+package_add_binary(assemble_secret_shares src/assemble_secret_shares.cpp src/common/shared_schema.cpp)
 

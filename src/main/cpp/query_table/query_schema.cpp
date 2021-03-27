@@ -132,6 +132,15 @@ int QuerySchema::getOrdinal(const std::string & fieldName) const {
 
 }
 
+const QueryFieldDesc QuerySchema::getField(const string &fieldName) const {
+    for(QueryFieldDesc fieldDesc : fields_) {
+        if(fieldDesc.getName() == fieldName)
+            return fieldDesc;
+    }
+
+    throw; // not found
+}
+
 
 
 

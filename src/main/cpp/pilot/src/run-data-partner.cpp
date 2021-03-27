@@ -3,7 +3,7 @@
 #include <data/DataProvider.h>
 #include <util/data_utilities.h>
 #include <operators/sort.h>
-#include "union_hybrid_data.h"
+#include "common/union_hybrid_data.h"
 #include "enrich_htn_query.h"
 #include <util/utilities.h>
 
@@ -63,10 +63,15 @@ string getRollupExpectedResultsSql(const string &groupByColName) {
 }
 
 
-shared_ptr<SecureTable> runRollup(int idx, string colName, EnrichHtnQuery & enrich) {
+shared_ptr<SecureTable> runRollup(int idx, string colName, int party, EnrichHtnQuery & enrich) {
 
 
     shared_ptr<SecureTable> stratified = enrich.rollUpAggregate(idx);
+    std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
+
+    std::string suffix = (party == emp::ALICE) ? "alice" : "bob";
+    std::string outputFile = colName + "." + suffix;
+    DataUtilities::writeFile(outputFile, results);
 
     // validate it against the DB for testing
     if(TESTBED) {
@@ -134,20 +139,20 @@ int main(int argc, char **argv) {
     Utilities::checkMemoryUtilization();
 
 
-    shared_ptr<SecureTable> zipRollup = runRollup(0, "zip_marker", enrich);
+    shared_ptr<SecureTable> zipRollup = runRollup(0, "zip_marker", party, enrich);
     cout << "Done first rollup at " << time_from(startTime)*1e6*1e-9 << " ms." << endl;
     Utilities::checkMemoryUtilization();
 
-    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", enrich);
+    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich);
     Utilities::checkMemoryUtilization("rollup 2");
 
-    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", enrich);
+    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich);
     Utilities::checkMemoryUtilization("rollup 3");
 
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", enrich);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich);
     Utilities::checkMemoryUtilization("rollup 4");
 
-    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", enrich);
+    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich);
     Utilities::checkMemoryUtilization("rollup 5");
 
 

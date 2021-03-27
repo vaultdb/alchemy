@@ -44,6 +44,7 @@ namespace vaultdb {
 
         static void writeFile(const string &fileName, vector<int8_t> contents);
 
+        static void writeFile(const string  &filename,const string & contents);
         // sort all columns one after another
         // default setting for many tests
         static SortDefinition getDefaultSortDefinition(const uint32_t &colCount);
