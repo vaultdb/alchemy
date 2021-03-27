@@ -151,7 +151,8 @@ namespace vaultdb {
 
 
             bool *bools = new bool[bitCount];
-            std::string bitString = src.reveal<std::string>(emp::PUBLIC);
+            std::string bitString = src.reveal<std::string>(party);
+
             std::string::iterator strPos = bitString.begin();
             for (int i = 0; i < bitCount; ++i) {
                 bools[i] = (*strPos == '1');

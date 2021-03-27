@@ -134,8 +134,7 @@ PlainTuple QueryTuple<B>::reveal(const int &empParty) const {
         dstTuple.setField(i, revealed);
     }
 
-
-    bool dummyTag =  Field<B>(dummy_tag_).reveal(empParty).template getValue<bool>();
+    bool dummyTag = revealBool(dummy_tag_, empParty);
     dstTuple.setDummyTag(dummyTag);
 
     return dstTuple;

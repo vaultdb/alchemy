@@ -75,10 +75,14 @@ namespace vaultdb {
 
 
     private:
+        // specializations for B template
         std::string specializedToString(const PlainTuple & tuple, const bool & showDummies) const;
         std::string specializedToString(const SecureTuple & tuple, const bool & showDummies) const;
         static bool tuplesEqual(const PlainTuple &t1, const PlainTuple & t2);
         static bool tuplesEqual(const SecureTuple &t1, const SecureTuple & t2);
+
+        bool revealBool(const bool & src, const int & party) const { return src; }
+        bool revealBool(const emp::Bit & src, const int & party) const { return src.reveal(party); }
 
     };
 

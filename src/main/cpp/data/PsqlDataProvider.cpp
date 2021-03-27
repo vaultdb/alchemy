@@ -214,7 +214,7 @@ PlainTuple  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                 while(stringVal.size() != strLength) {
                     stringVal += " ";
                 }
-                return new PlainField(colType, stringVal);
+                return new PlainField(colType, stringVal, strLength);
             }
             default:
                 throw std::invalid_argument("Unsupported column type " + std::to_string(oid));

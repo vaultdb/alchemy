@@ -27,8 +27,8 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
 
     PsqlDataProvider dataProvider;
 
-    std::unique_ptr<PlainTable > alice = dataProvider.getQueryTable(aliceDb, sql, hasDummyTag); // dummyTag true not yet implemented
-    std::unique_ptr<PlainTable > bob = dataProvider.getQueryTable(bobDb, sql, hasDummyTag);
+    std::unique_ptr<PlainTable> alice = dataProvider.getQueryTable(aliceDb, sql, hasDummyTag); // dummyTag true not yet implemented
+    std::unique_ptr<PlainTable> bob = dataProvider.getQueryTable(bobDb, sql, hasDummyTag);
 
 
     uint32_t tupleCount = alice->getTupleCount() + bob->getTupleCount();

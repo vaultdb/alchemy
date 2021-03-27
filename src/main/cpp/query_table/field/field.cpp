@@ -53,6 +53,9 @@ Field<B> &Field<B>::operator=(const Field<B> &other) {
     if(type_ == FieldType::INVALID && other.type_ == FieldType::INVALID) return *this; // nothing to do here
     assert(other.type_ != FieldType::INVALID);
 
+    if(other.type_ == FieldType::STRING)
+        assert(other.string_length_ > 0);
+
     if(&other == this)
         return *this;
 
@@ -137,6 +140,7 @@ PlainField  Field<B>::reveal(const int &party) const {
 
     size_t strLength = 0;
     if (type_ == FieldType::SECURE_STRING || type_ == FieldType::STRING) {
+        assert(string_length_ > 0);
         strLength = string_length_;
     }
     return PlainField(resType, revealed, strLength);
@@ -173,6 +177,13 @@ SecureField Field<B>::secretShare(const PlainField  *field, const FieldType &typ
     visitor.myParty = myParty;
     Value input = (myParty == dstParty) ? field->payload_ : FieldFactory<bool>::getZero(type).payload_; // won't be used if receiving encrypted value from other party
 
+    if(type == FieldType::STRING) {
+        std::string p = boost::get<std::string>(input);
+        while(p.length() < strLength) {
+            p += " ";
+        }
+        input = p;
+    }
 
     Value result = boost::apply_visitor(visitor, input);
     FieldType resType = TypeUtilities::toSecure(type);
