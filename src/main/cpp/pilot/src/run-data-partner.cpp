@@ -150,6 +150,7 @@ int main(int argc, char **argv) {
     shared_ptr<SecureTable> raceRollup = runRollup(4, "race", enrich);
     Utilities::checkMemoryUtilization("rollup 5");
 
+
      emp::finalize_semi_honest();
 
     double runtime = time_from(startTime);

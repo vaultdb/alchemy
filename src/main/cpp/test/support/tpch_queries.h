@@ -33,6 +33,7 @@ namespace vaultdb {
                 "order by \n"
                 "  l_returnflag, \n"
                 "  l_linestatus"},
+
             {3, "select\n"
                 "  l.l_orderkey,\n"
                 "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue,\n"
