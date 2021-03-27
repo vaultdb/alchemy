@@ -13,7 +13,7 @@ shared_ptr<PlainTable> EnrichTest::getAgeStrataProjection(shared_ptr<PlainTable>
     Project project(input);
     FieldType ageStrataType = isEncrypted ? FieldType::SECURE_INT : FieldType::INT;
 
-    Expression<BoolField> ageStrataExpression(&(EnrichTestSupport<BoolField>::projectAgeStrata), "age_strata", ageStrataType);
+    Expression<bool> ageStrataExpression(&(EnrichTestSupport<bool>::projectAgeStrata), "age_strata", ageStrataType);
     ProjectionMappingSet mappingSet{
             ProjectionMapping(0, 0),
             ProjectionMapping(1, 1),
@@ -89,8 +89,8 @@ shared_ptr<PlainTable> EnrichTest::loadAndJoinLocalData(const std::string & dbNa
 
     ConjunctiveEqualityPredicate patientJoinPredicate;
     patientJoinPredicate.push_back(EqualityPredicate (0, 0)); //  patid = patid
-    std::shared_ptr<BinaryPredicate<BoolField> > patientJoinCriteria(new JoinEqualityPredicate<BoolField>(patientJoinPredicate));
-    KeyedJoin<BoolField> join(patientInput, patientExclusionInput, patientJoinCriteria);
+    std::shared_ptr<BinaryPredicate<bool> > patientJoinCriteria(new JoinEqualityPredicate<bool>(patientJoinPredicate));
+    KeyedJoin<bool> join(patientInput, patientExclusionInput, patientJoinCriteria);
     return join.run();
 }
 
@@ -106,7 +106,7 @@ shared_ptr<SecureTable> EnrichTest::loadUnionAndDeduplicateData() const{
 
     unionSortDefinition.push_back(ColumnSort(9, SortDirection::ASCENDING)); // last sort makes it verifiable
 
-    Sort<SecureBoolField> sortUnioned(unionedAndEncryptedData, unionSortDefinition);
+    Sort<emp::Bit> sortUnioned(unionedAndEncryptedData, unionSortDefinition);
     shared_ptr<PlainTable> result = sortUnioned.run()->reveal();
 
 
@@ -122,7 +122,7 @@ shared_ptr<SecureTable> EnrichTest::loadUnionAndDeduplicateData() const{
             ScalarAggregateDefinition(9, AggregateId::MAX, "denom_excl")
     };
 
-    GroupByAggregate<SecureBoolField> unionedPatients(&sortUnioned, groupByCols, unionAggregators );
+    GroupByAggregate<emp::Bit> unionedPatients(&sortUnioned, groupByCols, unionAggregators );
     return unionedPatients.run();
 
 }
@@ -134,7 +134,7 @@ shared_ptr<SecureTable> EnrichTest::filterPatients() {
 
     // *** Filter
     // HAVING max(denom_excl) = 0
-    std::shared_ptr<Predicate<SecureBoolField> > predicateClass(new FilterExcludedPatients<SecureBoolField>(true));
+    std::shared_ptr<Predicate<emp::Bit> > predicateClass(new FilterExcludedPatients<emp::Bit>(true));
     Filter inclusionCohort(deduplicatedPatients, predicateClass);
 
     return  inclusionCohort.run();
@@ -172,8 +172,8 @@ shared_ptr<SecureTable> EnrichTest::getPatientCohort() {
 
     };
 
-    Expression multisiteExpression(&(EnrichTestSupport<SecureBoolField>::projectMultisite), "multisite", FieldType::SECURE_INT);
-    Expression multisiteNumeratorExpression(&(EnrichTestSupport<SecureBoolField>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
+    Expression multisiteExpression(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT);
+    Expression multisiteNumeratorExpression(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
 
     project.addColumnMappings(mappingSet);
     project.addExpression(multisiteExpression, 6);
@@ -241,7 +241,7 @@ std::string EnrichTest::getRollupExpectedResultsSql(const std::string &groupByCo
 
 }
 
-void EnrichTest::validateUnion(Operator<SecureBoolField> &sortOp, const SortDefinition &expectedSortOrder) const {
+void EnrichTest::validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition &expectedSortOrder) const {
     std::string expectedResultSql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"

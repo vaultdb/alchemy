@@ -3,126 +3,102 @@
 
 
 #include "field_type.h"
-#include "field_instance.h"
 #include "query_table/query_field_desc.h"
-#include <emp-tool/circuits/bit.h>
-#include <emp-tool/circuits/integer.h>
-#include <emp-tool/circuits/float32.h>
 #include <typeinfo>
+#include <boost/variant.hpp>
 
-// TODO: adapt std::string to store payload as string object instead of character array
-//  - to unify our interface
+
+// 2:17
 
 // carries payload for each attribute
 //  generic for storing heterogeneous types in the same container
 //  downcast to impl (e.g., IntField, FloatField, etc.) as needed for expressions
 namespace vaultdb {
-    // forward declaration
-    class BoolField;
-    class SecureBoolField;
+
 
     template<typename B> class Field;
-    typedef Field<BoolField> PlainField;
-    typedef Field<SecureBoolField> SecureField;
+    typedef Field<bool> PlainField;
+    typedef Field<emp::Bit> SecureField;
 
 
     template <typename B>
     class Field {
-        protected:
+        public:
+            Value payload_;
             FieldType  type_;
-            size_t allocated_size_;
-            // inspired by NoisePage: https://github.com/cmu-db/noisepage
-            std::unique_ptr<std::byte[]> managed_data_;
-            std::byte *data_;
+            size_t string_length_;
+
+
 
 
         public:
-            Field() : type_(FieldType::INVALID), instance_(nullptr) { }
-            Field(const FieldType & typeId, const int & strLength = 0);
+            Field();
+            Field(const FieldType & fieldType,  const Value & val,  const int & strLength = 0);
+            Field(const B & value);
 
             Field(const Field & field);
 
             Field & operator=(const Field & other);
             // all state is held here, not in impls (e.g., IntField, BoolField)
-            ~Field() {
-                managed_data_.reset();
-                data_  = nullptr;
-            }
+            ~Field()  = default;
 
             FieldType getType() const;
 
+            // TODO: automate this further
             size_t getSize() const;
 
-            // instance to the wrapper around this field that overloads its operators
-            FieldInstance<B> *getInstance() const { return instance_.get(); }
 
             template<typename T>
             inline T getValue()  const {
-                // use getStringField for this case
-                assert(type_ != FieldType::STRING);
-
-                return *(reinterpret_cast<T*>(data_));
-
+                return boost::get<T>(payload_);
             }
 
         template<typename T>
         inline void setValue(const T & src) {
-            *(reinterpret_cast<T*>(data_)) = src;
+           payload_ = src;
         }
 
-        std::string getStringValue() const;
-        std::byte *getData() const { return data_; }
 
-        void setStringValue(const std::string & src);
+        // delegate to visitor
+        B  operator == (const Field &cmp) const;
+        B  operator != (const Field &cmp) const;
+        B operator !() const;
+        B operator>=(const Field & rhs) const;
+        B operator<(const Field & rhs) const;
+        B operator<=(const Field & rhs) const;
+        B operator>(const Field & rhs) const;
 
-
-            // delegate to instance_
-             B  operator == (const Field &cmp) const;
-             B  operator != (const Field &cmp) const;
-             B operator !() const;
-             B operator>=(const Field & rhs) const;
-             B operator<(const Field & rhs) const;
-             B operator<=(const Field & rhs) const;
-             B operator>(const Field & rhs) const;
-
-             Field  operator+(const Field &rhs) const;
-             Field  operator-(const Field &rhs) const;
-             Field  operator*(const Field &rhs) const;
-             Field  operator/(const Field &rhs) const;
-             Field  operator%(const Field &rhs) const;
+        Field  operator+(const Field &rhs) const;
+        Field  operator-(const Field &rhs) const;
+        Field  operator*(const Field &rhs) const;
+        Field  operator/(const Field &rhs) const;
+        Field  operator%(const Field &rhs) const;
 
 
         static Field If(const B & choice,const Field & lhs, const Field & rhs);
-            // need to keep BoolField out of header file to avoid circular dependency
-
-            static void compareAndSwap(const B & choice, Field & lhs, Field & rhs);
+        static void compareAndSwap(const B & choice, Field & lhs, Field & rhs);
 
 
-            // if field is encrypted, decrypt
-            PlainField reveal(const int & party = emp::PUBLIC) const;
+        // if field is encrypted, decrypt
+        PlainField reveal(const int & party = emp::PUBLIC) const;
 
-            static SecureField
-            secretShare(const PlainField *field, const FieldType &type, const size_t &strLength, const int &myParty,
+        static SecureField secretShare(const PlainField *field, const FieldType &type, const size_t &strLength, const int &myParty,
                         const int &dstParty);
 
-            std::string toString() const;
+        std::string toString() const;
 
-            void serialize(int8_t *dst) const;
-
-
+        void serialize(int8_t *dst) const;
 
 
-    protected:
-        void copy(const Field & src);
+
+
 
         private:
             static std::string revealString(const emp::Integer & src, const int & party);
-            void initialize(const FieldType &type, const size_t &strLength);
-            std::unique_ptr<FieldInstance<B> > instance_;
     };
 
-    std::ostream &operator<<(std::ostream &os, const Field<BoolField> &aValue);
-    std::ostream &operator<<(std::ostream &os, const Field<SecureBoolField> &aValue);
+    std::ostream &operator<<(std::ostream &os, const Field<bool> &aValue);
+    std::ostream &operator<<(std::ostream &os, const Field<emp::Bit> &aValue);
 
 
 

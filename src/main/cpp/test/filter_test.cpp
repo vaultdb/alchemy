@@ -43,17 +43,17 @@ TEST_F(FilterTest, test_table_scan) {
 
 // unencrypted case
 // l_linenumber == 1
-class FilterPredicate : public Predicate<BoolField> {
-    IntField cmp;
+class FilterPredicate : public Predicate<bool> {
+    PlainField cmp;
 public:
     FilterPredicate() {
-          cmp = IntField(1);
+          cmp = Field<bool>(FieldType::INT, 1);
     }
 
     ~FilterPredicate() = default;
-    BoolField predicateCall(const QueryTuple<BoolField> & aTuple) const override {
+    bool predicateCall(const PlainTuple & aTuple) const override {
 
-        const IntField *field = static_cast<const IntField *>(aTuple.getField(1));
+        const PlainField *field = aTuple.getField(1);
         return  (*field == cmp);
     }
 
@@ -69,8 +69,8 @@ TEST_F(FilterTest, test_filter) {
 
     SqlInput input(dbName, sql, false);
 
-    std::shared_ptr<Predicate<BoolField> > predicateClass(new FilterPredicate());
-    Filter<BoolField> filter(&input, predicateClass); // heap allocate it
+    std::shared_ptr<Predicate<bool> > predicateClass(new FilterPredicate());
+    Filter<bool> filter(&input, predicateClass); // heap allocate it
     //std::shared_ptr<Operator> filter = Operator::getOperatorTree(new Filter(predicateClass, input), input);
 
 

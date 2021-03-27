@@ -21,7 +21,7 @@ GroupByCountImpl<B>::GroupByCountImpl(const int32_t &ordinal, const FieldType &a
 
 template<typename B>
 void GroupByCountImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
-    Field<B> resetValue = Field<B>::If(*tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, GroupByAggregateImpl<B>::one);
+    Field<B> resetValue = Field<B>::If(tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, GroupByAggregateImpl<B>::one);
     runningCount = Field<B>::If(isGroupByMatch, runningCount, resetValue);
 
 }
@@ -31,7 +31,7 @@ void GroupByCountImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGrou
 template<typename B>
 void GroupByCountImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
 
-    B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag());
+    B toUpdate = (!isGroupByMatch) & !(tuple.getDummyTag());
     runningCount = runningCount + Field<B>::If(toUpdate, GroupByCountImpl<B>::one, GroupByCountImpl<B>::zero);
 
 }
@@ -59,7 +59,7 @@ template<typename B>
 void GroupBySumImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
 
    const Field<B> *aggInput = tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-   Field<B> resetValue = Field<B>::If(*tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, *aggInput);
+   Field<B> resetValue = Field<B>::If(tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, *aggInput);
    runningSum = Field<B>::If(isGroupByMatch, runningSum, resetValue);
 
 }
@@ -68,7 +68,7 @@ void GroupBySumImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupB
 template<typename B>
 void GroupBySumImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-    B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag());
+    B toUpdate = (!isGroupByMatch) & !tuple.getDummyTag();
     runningSum = runningSum + Field<B>::If(toUpdate,aggInput, GroupByAggregateImpl<B>::zero);
 }
 
@@ -99,12 +99,12 @@ GroupByAvgImpl<B>::GroupByAvgImpl(const int32_t &ordinal, const FieldType &aggTy
 
 template<typename B>
 void GroupByAvgImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
-    Field<B> resetValue = Field<B>::If(*tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, GroupByAggregateImpl<B>::one);
+    Field<B> resetValue = Field<B>::If(tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, GroupByAggregateImpl<B>::one);
     runningCount = Field<B>::If(isGroupByMatch, runningCount, resetValue);
 
 
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-    resetValue = Field<B>::If(*tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, aggInput);
+    resetValue = Field<B>::If(tuple.getDummyTag(), GroupByAggregateImpl<B>::zero, aggInput);
     runningSum = Field<B>::If(isGroupByMatch, runningSum, resetValue);
 
 }
@@ -113,7 +113,7 @@ template<typename B>
 void GroupByAvgImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
 
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-    B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag());
+    B toUpdate = (!isGroupByMatch) & !(tuple.getDummyTag());
     runningCount = runningCount + Field<B>::If(toUpdate, GroupByAggregateImpl<B>::one, GroupByAggregateImpl<B>::zero);
     runningSum = runningSum +  Field<B>::If(toUpdate, aggInput, GroupByAggregateImpl<B>::zero);
 }
@@ -147,14 +147,14 @@ template<typename B>
 void GroupByMinImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
 
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-    Field<B> newValue = Field<B>::If(*tuple.getDummyTag(), resetMin, aggInput);
+    Field<B> newValue = Field<B>::If(tuple.getDummyTag(), resetMin, aggInput);
     runningMin = Field<B>::If(isGroupByMatch, runningMin, newValue);
 }
 
 template<typename B>
 void GroupByMinImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-    B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag()) & (aggInput < runningMin);
+    B toUpdate = (!isGroupByMatch) & !(tuple.getDummyTag()) & (aggInput < runningMin);
     runningMin = Field<B>::If(toUpdate, aggInput, runningMin);
 
 }
@@ -178,7 +178,7 @@ template<typename B>
 void GroupByMaxImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
 
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-    Field<B> newValue = Field<B>::If(*tuple.getDummyTag(), resetMax, aggInput);
+    Field<B> newValue = Field<B>::If(tuple.getDummyTag(), resetMax, aggInput);
     runningMax = Field<B>::If(isGroupByMatch, runningMax, newValue);
 
 }
@@ -186,7 +186,7 @@ void GroupByMaxImpl<B>::initialize(const QueryTuple<B> &tuple, const B &isGroupB
 template<typename B>
 void GroupByMaxImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupByMatch) {
     Field<B> aggInput = *tuple.getField(GroupByAggregateImpl<B>::aggregateOrdinal);
-    B toUpdate = (!isGroupByMatch) & !(*tuple.getDummyTag()) & (aggInput > runningMax);
+    B toUpdate = (!isGroupByMatch) & !(tuple.getDummyTag()) & (aggInput > runningMax);
     runningMax = Field<B>::If(toUpdate, aggInput, runningMax);
 }
 
@@ -197,21 +197,21 @@ Field<B> GroupByMaxImpl<B>::getResult() {
     return runningMax;
 }
 
-template class vaultdb::GroupByAggregateImpl<BoolField>;
-template class vaultdb::GroupByAggregateImpl<SecureBoolField>;
+template class vaultdb::GroupByAggregateImpl<bool>;
+template class vaultdb::GroupByAggregateImpl<emp::Bit>;
 
-template class vaultdb::GroupByCountImpl<BoolField>;
-template class vaultdb::GroupByCountImpl<SecureBoolField>;
+template class vaultdb::GroupByCountImpl<bool>;
+template class vaultdb::GroupByCountImpl<emp::Bit>;
 
-template class vaultdb::GroupBySumImpl<BoolField>;
-template class vaultdb::GroupBySumImpl<SecureBoolField>;
+template class vaultdb::GroupBySumImpl<bool>;
+template class vaultdb::GroupBySumImpl<emp::Bit>;
 
-template class vaultdb::GroupByMinImpl<BoolField>;
-template class vaultdb::GroupByMinImpl<SecureBoolField>;
+template class vaultdb::GroupByMinImpl<bool>;
+template class vaultdb::GroupByMinImpl<emp::Bit>;
 
-template class vaultdb::GroupByMaxImpl<BoolField>;
-template class vaultdb::GroupByMaxImpl<SecureBoolField>;
+template class vaultdb::GroupByMaxImpl<bool>;
+template class vaultdb::GroupByMaxImpl<emp::Bit>;
 
-template class vaultdb::GroupByAvgImpl<BoolField>;
-template class vaultdb::GroupByAvgImpl<SecureBoolField>;
+template class vaultdb::GroupByAvgImpl<bool>;
+template class vaultdb::GroupByAvgImpl<emp::Bit>;
 

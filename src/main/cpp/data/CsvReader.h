@@ -7,9 +7,9 @@
 namespace  vaultdb {
     class CsvReader {
     public:
-        static std::unique_ptr<QueryTable<BoolField> > readCsv(const std::string &filename, const QuerySchema &schema);
+        static std::unique_ptr<PlainTable > readCsv(const std::string &filename, const QuerySchema &schema);
 
-        static QueryTuple<BoolField> parseTuple(const std::string &csvLine, const QuerySchema &schema);
+        static PlainTuple parseTuple(const std::string &csvLine, const QuerySchema &schema);
 
     private:
         static std::vector<std::string> readFile(const std::string &filename);

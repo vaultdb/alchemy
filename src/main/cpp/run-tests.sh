@@ -5,7 +5,6 @@ make -j5
 
 bash test/support/setup-csv.sh 
 ./bin/csv_reader_test 
-./bin/field_instance_test
 ./bin/value_expression_test
 ./bin/filter_test
 ./bin/project_test
@@ -17,20 +16,18 @@ bash test/support/setup-csv.sh
 ./bin/secret_share_generator_test 
 ./bin/serialization_test
 
-sleep 2
 
 #pairs for Alice and Bob
 ./bin/emp_test --party=1 & 
 ./bin/emp_test  --party=2
 
 sleep 2
-
-./bin/emp_table_test --party=1 &
-./bin/emp_table_test  --party=2
-
-sleep 2
 ./bin/secure_value_expression_test --party=1 &
 ./bin/secure_value_expression_test --party=2
+
+sleep 2
+./bin/emp_table_test --party=1 &
+./bin/emp_table_test  --party=2
 
 sleep 2
 ./bin/secure_filter_test --party=1 &
@@ -63,7 +60,6 @@ sleep 2
 
 
 sleep 2
-
 # regenerate test data
 bash  test/support/load-generated-data.sh 100
 ./bin/enrich_test --party=1 &

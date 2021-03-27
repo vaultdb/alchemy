@@ -67,7 +67,6 @@ endmacro()
 
 #package_add_test(tpch_q1_test tpch_q1_test.cpp)
 #non-private tests
-package_add_test(field_instance_test field_instance_test.cpp)
 package_add_test(value_expression_test value_expression_test.cpp)
 package_add_test(csv_reader_test csv_reader_test.cpp)
 package_add_test(filter_test filter_test.cpp)
@@ -78,23 +77,20 @@ package_add_test(fkey_pkey_join_test fkey_pkey_join_test.cpp)
 package_add_test(scalar_aggregate_test scalar_aggregate_test.cpp)
 package_add_test(group_by_aggregate_test group_by_aggregate_test.cpp)
 package_add_test(serialization_test serialization_test.cpp)
+package_add_test(secret_share_generator_test secret_share_generator_test.cpp)
 
 
 #EMP-based tests
 package_add_test(emp_test emp_test.cpp support/EmpBaseTest.cpp)
-package_add_test(emp_table_test  emp_table_test.cpp support/EmpBaseTest.cpp support/QueryTableTestQueries.cpp) # port 54324-54325
-package_add_test(emp_test_multiple_starts emp_test_multiple_starts.cpp)
 package_add_test(secure_value_expression_test secure_value_expression_test.cpp support/EmpBaseTest.cpp  )
+package_add_test(emp_table_test  emp_table_test.cpp support/EmpBaseTest.cpp support/QueryTableTestQueries.cpp) # port 54324-54325
+#package_add_test(emp_test_multiple_starts emp_test_multiple_starts.cpp)
 package_add_test(secure_filter_test secure_filter_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_sort_test secure_sort_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_basic_join_test secure_basic_join_test.cpp support/EmpBaseTest.cpp )
 package_add_test(secure_pkey_fkey_join_test secure_pkey_fkey_join_test.cpp support/EmpBaseTest.cpp )
-
-#Tranche 2
 package_add_test(secure_scalar_aggregate_test secure_scalar_aggregate_test.cpp support/EmpBaseTest.cpp)
 package_add_test(secure_group_by_aggregate_test secure_group_by_aggregate_test.cpp support/EmpBaseTest.cpp)
 package_add_test(emp_float_to_int emp_float_to_int.cpp support/EmpBaseTest.cpp)
 package_add_test(enrich_test enrich_test.cpp  support/enrich_test_support.cpp support/EmpBaseTest.cpp)
-package_add_test(secret_share_generator_test secret_share_generator_test.cpp)
-#TODO: delete this test, it is incomplete
-#package_add_test(secure_serialization_deserializaton_test secure_serialization_deserializaton_test.cpp support/EmpBaseTest.cpp)
+

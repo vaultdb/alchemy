@@ -26,7 +26,7 @@ protected:
 
     std::string dbName = unionedDb; // default, set in setUp()
 
-    static std::shared_ptr<QueryTable<BoolField> > getExpectedOutput(const std::string & sql, const int & sortColCount);
+    static std::shared_ptr<PlainTable> getExpectedOutput(const std::string & sql, const int & sortColCount);
 
 
 };

@@ -42,7 +42,7 @@ std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
 
     for(size_t i = 0; i < aggregators.size(); ++i) {
         Field f = aggregators[i]->getResult();
-        outputTuple.putField(i, f);
+        outputTuple.setField(i, f);
     }
 
     Operator<B>::output->putTuple(0, outputTuple);
@@ -72,7 +72,7 @@ ScalarAggregateImpl<B> * ScalarAggregate<B>::aggregateFactory(const AggregateId 
         };
     }
 
-template class vaultdb::ScalarAggregate<BoolField>;
-template class vaultdb::ScalarAggregate<SecureBoolField>;
+template class vaultdb::ScalarAggregate<bool>;
+template class vaultdb::ScalarAggregate<emp::Bit>;
 
 

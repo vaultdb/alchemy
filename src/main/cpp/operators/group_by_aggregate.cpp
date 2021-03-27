@@ -47,13 +47,13 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
         aggregator->initialize(*predecessor, B(false));
     }
 
-    realBin = !(*predecessor->getDummyTag()); // does this group-by bin contain at least one real (non-dummy) tuple?
+    realBin = !predecessor->getDummyTag(); // does this group-by bin contain at least one real (non-dummy) tuple?
 
 
     for(uint32_t i = 1; i < input->getTupleCount(); ++i) {
         current = input->getTuplePtr(i);
 
-        realBin = realBin | !(*predecessor->getDummyTag());
+        realBin = realBin | !predecessor->getDummyTag();
         B isGroupByMatch = groupByMatch(*predecessor, *current);
         outputTuple = generateOutputTuple(*predecessor, !isGroupByMatch, realBin, aggregators);
 
@@ -66,11 +66,11 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
         predecessor = current;
         // reset the flag at the end of each group-by bin
         // flag denotes if we have one non-dummy tuple in the bin
-        realBin = (B) Field<B>::If(!isGroupByMatch,B(false), realBin);
+        realBin = Field<B>::If(!isGroupByMatch,B(false), Field<B>(realBin)).template getValue<B>();
 
     }
 
-    realBin = realBin | !(*(predecessor->getDummyTag()));
+    realBin = realBin | !predecessor->getDummyTag();
 
 
     // B(true) to make it write out the last entry
@@ -172,18 +172,18 @@ QueryTuple<B> GroupByAggregate<B>::generateOutputTuple(const QueryTuple<B> &last
     // write group-by ordinals
     for(i = 0; i < groupByOrdinals.size(); ++i) {
         const Field<B> *srcField = lastTuple.getField(groupByOrdinals[i]);
-        dstTuple.putField(i, *srcField);
+        dstTuple.setField(i, *srcField);
     }
 
     // write partial aggs
     for(GroupByAggregateImpl<B> *aggregator : aggregators) {
         Field<B> currentResult = aggregator->getResult();
-        dstTuple.putField(i, currentResult);
+        dstTuple.setField(i, currentResult);
         ++i;
     }
 
 
-    B dummyTag = (B) Field<B>::If(lastEntryGroupByBin, !realBin, B(true));
+    B dummyTag = Field<B>::If(lastEntryGroupByBin, Field<B>(!realBin), B(true)).template getValue<B>();
     dstTuple.setDummyTag(dummyTag);
 
 
@@ -192,5 +192,5 @@ QueryTuple<B> GroupByAggregate<B>::generateOutputTuple(const QueryTuple<B> &last
 }
 
 
-template class vaultdb::GroupByAggregate<BoolField>;
-template class vaultdb::GroupByAggregate<SecureBoolField>;
+template class vaultdb::GroupByAggregate<bool>;
+template class vaultdb::GroupByAggregate<emp::Bit>;

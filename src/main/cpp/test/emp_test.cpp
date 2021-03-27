@@ -1,7 +1,4 @@
 #include <util/data_utilities.h>
-#include <query_table/field/int_field.h>
-#include <query_table/field/secure_int_field.h>
-
 #include "support/EmpBaseTest.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -13,18 +10,7 @@ using namespace vaultdb;
 class EmpTest : public EmpBaseTest {
 };
 
-/*
-class EmpTest  : public ::testing::Test {
 
-protected:
-    void SetUp() override{
-        emp::setup_plain_prot(false, "");
-    };
-    void TearDown() override{
-        emp::finalize_plain_prot();
-    };
-};
-*/
 
 
 
@@ -120,14 +106,14 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     inputTable->setSchema(schema);
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        IntField val(inputData[i]);
+        Field<bool> val(FieldType::INT,inputData[i]);
         inputTable->getTuplePtr(i)->setDummyTag(false);
-        inputTable->getTuplePtr(i)->putField(0, val);
+        inputTable->getTuplePtr(i)->setField(0, val);
     }
 
 
     std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
-    emp::Integer decryptTest = ((SecureIntField *) encryptedTable->getTuplePtr(0)->getField(0))->getPayload();
+    emp::Integer decryptTest = encryptedTable->getTuplePtr(0)->getField(0)->getValue<emp::Integer>();
     ASSERT_EQ(1, decryptTest.reveal<int32_t>());
 
     netio->flush();
@@ -139,9 +125,9 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     expectedTable->setSchema(schema);
     // insert alice data first to last
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        IntField val(aliceInputData[i]);
-        expectedTable->getTuplePtr(i)->setDummyTag(BoolField(false));
-        expectedTable->getTuplePtr(i)->putField(0, val);
+        Field<bool> val(FieldType::INT, aliceInputData[i]);
+        expectedTable->getTuplePtr(i)->setDummyTag(false);
+        expectedTable->getTuplePtr(i)->setField(0, val);
     }
 
     int offset = tupleCount;
@@ -150,9 +136,9 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     int readIdx = tupleCount;
     for(uint32_t i = 0; i < tupleCount; ++i) {
         --readIdx;
-        IntField val(bobInputData[readIdx]);
-        expectedTable->getTuplePtr(i + offset)->setDummyTag(BoolField(false));
-        expectedTable->getTuplePtr(i + offset)->putField(0, val);
+        Field<bool> val(FieldType::INT, bobInputData[readIdx]);
+        expectedTable->getTuplePtr(i + offset)->setDummyTag(false);
+        expectedTable->getTuplePtr(i + offset)->setField(0, val);
     }
 
     //verify output

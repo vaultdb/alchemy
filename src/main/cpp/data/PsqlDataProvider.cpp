@@ -5,12 +5,6 @@
 
 #include <chrono>
 #include "query_table/field/field.h"
-#include "query_table/field/bool_field.h"
-#include "query_table/field/int_field.h"
-#include "query_table/field/long_field.h"
-#include "query_table/field/float_field.h"
-#include "query_table/field/string_field.h"
-
 
 //typedef std::chrono::steady_clock::time_point time_point;
 
@@ -58,7 +52,7 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
     int counter = 0;
     for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
-        QueryTuple<BoolField> tuple = getTuple(*resultPos, hasDummyTag);
+        PlainTuple tuple = getTuple(*resultPos, hasDummyTag);
         dstTable->putTuple(counter, tuple);
         ++counter;
     }
@@ -143,7 +137,7 @@ string PsqlDataProvider::getTableName(int oid) {
 
 }
 
-QueryTuple<BoolField>  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
+PlainTuple  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         int colCount = row.size();
 
 
@@ -151,22 +145,22 @@ QueryTuple<BoolField>  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTa
             --colCount;
         }
 
-        QueryTuple<BoolField>  dstTuple(colCount);
+        PlainTuple  dstTuple(colCount);
 
 
 
         for (int i=0; i < colCount; i++) {
             const pqxx::field srcField = row[i];
 
-           Field<BoolField>  *parsedField = getField(srcField);
-            dstTuple.putField(i, *parsedField);
+           PlainField  *parsedField = getField(srcField);
+            dstTuple.setField(i, *parsedField);
             delete parsedField;
         }
 
         if(hasDummyTag) {
 
-                Field<BoolField> *parsedField = getField(row[colCount]); // get the last col
-                dstTuple.setDummyTag(*((BoolField *) parsedField));
+                PlainField *parsedField = getField(row[colCount]); // get the last col
+                dstTuple.setDummyTag(*((PlainField *) parsedField));
                 delete parsedField;
         }
 
@@ -174,7 +168,7 @@ QueryTuple<BoolField>  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTa
     }
 
 
-    Field<BoolField> * PsqlDataProvider::getField(pqxx::field src) {
+    PlainField * PsqlDataProvider::getField(pqxx::field src) {
 
         int ordinal = src.num();
         pqxx::oid oid = src.type();
@@ -184,12 +178,12 @@ QueryTuple<BoolField>  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTa
             case FieldType::INT:
             {
                 auto intVal = src.as<int32_t>();
-                return new IntField(intVal);
+                return new PlainField(colType, intVal);
             }
             case FieldType::LONG:
             {
                 int64_t intVal = src.as<int64_t>();
-                return new LongField(intVal);
+                return new PlainField(colType, intVal);
             }
 
            case FieldType::DATE:
@@ -198,18 +192,18 @@ QueryTuple<BoolField>  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTa
                 std::tm timeStruct = {};
                 strptime(dateStr.c_str(), "%Y-%m-%d", &timeStruct);
                 int64_t epoch = mktime(&timeStruct) - 21600; // date time function is 6 hours off from how psql does it, TODO: track this down, probably a timezone problem
-                return new LongField(epoch);
+                return new PlainField(FieldType::LONG, epoch);
 
             }
             case FieldType::BOOL:
             {
                 bool boolVal = src.as<bool>();
-                return new BoolField(boolVal);
+                return new PlainField(colType, boolVal);
             }
             case FieldType::FLOAT:
             {
                 float floatVal = src.as<float>();
-                return new FloatField(floatVal);
+                return new PlainField(colType, floatVal);
             }
 
             case FieldType::STRING:
@@ -220,8 +214,7 @@ QueryTuple<BoolField>  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTa
                 while(stringVal.size() != strLength) {
                     stringVal += " ";
                 }
-
-                return new StringField(stringVal);
+                return new PlainField(colType, stringVal, strLength);
             }
             default:
                 throw std::invalid_argument("Unsupported column type " + std::to_string(oid));

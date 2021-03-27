@@ -59,7 +59,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals = {EqualityPredicate(1, 0)}; //  o_custkey, c_custkey
 
-    std::shared_ptr<BinaryPredicate<BoolField> > customerOrdersPredicate(new JoinEqualityPredicate<BoolField>(customerOrdersOrdinals));
+    std::shared_ptr<BinaryPredicate<bool> > customerOrdersPredicate(new JoinEqualityPredicate<bool>(customerOrdersOrdinals));
 
     BasicJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
 
@@ -89,9 +89,9 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
     ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
     lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
 
-    std::shared_ptr<BinaryPredicate<BoolField> > customerOrdersPredicate(new JoinEqualityPredicate<BoolField>(lineitemOrdersOrdinals));
+    std::shared_ptr<BinaryPredicate<bool> > customerOrdersPredicate(new JoinEqualityPredicate<bool>(lineitemOrdersOrdinals));
 
-    BasicJoin<BoolField> joinOp(&lineitemInput, &ordersInput, customerOrdersPredicate);
+    BasicJoin<bool> joinOp(&lineitemInput, &ordersInput, customerOrdersPredicate);
 
 
     std::shared_ptr<PlainTable > observed = joinOp.run();
@@ -125,11 +125,11 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals;
     customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate<BoolField> > customerOrdersPredicate(new JoinEqualityPredicate<BoolField>(customerOrdersOrdinals));
+    std::shared_ptr<BinaryPredicate<bool> > customerOrdersPredicate(new JoinEqualityPredicate<bool>(customerOrdersOrdinals));
 
     ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
     lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate<BoolField> > lineitemOrdersPredicate(new JoinEqualityPredicate<BoolField>(lineitemOrdersOrdinals));
+    std::shared_ptr<BinaryPredicate<bool> > lineitemOrdersPredicate(new JoinEqualityPredicate<bool>(lineitemOrdersOrdinals));
 
 
     BasicJoin customerOrdersJoin(&ordersInput, &customerInput, customerOrdersPredicate);

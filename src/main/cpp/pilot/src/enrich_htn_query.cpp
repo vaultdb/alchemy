@@ -29,7 +29,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     unionSortDefinition.push_back(ColumnSort(8, SortDirection::ASCENDING)); // last sort makes it verifiable
 
     // destructor handled within Operator
-    Sort<SecureBoolField> sortUnioned(inputTable, unionSortDefinition);
+    Sort<emp::Bit> sortUnioned(inputTable, unionSortDefinition);
     shared_ptr<SecureTable> sorted = sortUnioned.run();
 
 
@@ -57,7 +57,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     // filter ones with denom_excl = 1
     // *** Filter
     // HAVING max(denom_excl) = 0
-    std::shared_ptr<Predicate<SecureBoolField> > predicateClass(new FilterExcludedPatients<SecureBoolField>(true));
+    std::shared_ptr<Predicate<emp::Bit> > predicateClass(new FilterExcludedPatients<emp::Bit>(true));
     Filter inclusionCohort(aggregated, predicateClass);
 
     shared_ptr<SecureTable> output =   inclusionCohort.run();
@@ -71,7 +71,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
 }
 
-shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(shared_ptr<SecureTable> src) {
+shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(const shared_ptr<SecureTable> &src) {
 
     // *** Project on aggregate outputs:
     //     CASE WHEN count(*) > 1 THEN 1 else 0 END AS multisite
@@ -99,9 +99,9 @@ shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(shared_ptr<SecureTable> 
 
     };
 
-    Expression ageStrataExpression(&EnrichHtnQuery::projectAgeStrata<SecureBoolField>, "age_strata", FieldType::SECURE_INT);
-    Expression multisiteExpression(&EnrichHtnQuery::projectMultisite<SecureBoolField>, "multisite", FieldType::SECURE_INT);
-    Expression multisiteNumeratorExpression(&EnrichHtnQuery::projectNumeratorMultisite<SecureBoolField>, "numerator_multisite", FieldType::SECURE_INT);
+    Expression ageStrataExpression(&EnrichHtnQuery::projectAgeStrata<emp::Bit>, "age_strata", FieldType::SECURE_INT);
+    Expression multisiteExpression(&EnrichHtnQuery::projectMultisite<emp::Bit>, "multisite", FieldType::SECURE_INT);
+    Expression multisiteNumeratorExpression(&EnrichHtnQuery::projectNumeratorMultisite<emp::Bit>, "numerator_multisite", FieldType::SECURE_INT);
 
     project.addColumnMappings(mappingSet);
     project.addExpression(ageStrataExpression, 1);
@@ -113,7 +113,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(shared_ptr<SecureTable> 
 }
 
 
-void EnrichHtnQuery::aggregatePatients(shared_ptr<SecureTable> src) {
+void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
 
     Utilities::checkMemoryUtilization("Before sort");
 
@@ -172,6 +172,6 @@ shared_ptr<SecureTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) cons
 
 
 
-template class vaultdb::FilterExcludedPatients<BoolField>;
-template class vaultdb::FilterExcludedPatients<SecureBoolField>;
+template class vaultdb::FilterExcludedPatients<bool>;
+template class vaultdb::FilterExcludedPatients<emp::Bit>;
 

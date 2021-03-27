@@ -46,6 +46,8 @@ std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
 }
 
 
+
+
 /** Procedure bitonicSort first produces a bitonic sequence by
  * recursively sorting its two halves in opposite directions, and then
  * calls bitonicMerge.
@@ -103,10 +105,14 @@ B Sort<B>::swapTuples(const int &lhsIdx, const int &rhsIdx, const bool &invertDi
     QueryTuple<B> rhs = (*Operator<B>::output)[rhsIdx];
     //std::cout << "Comparing " << lhs.reveal().toString(true) << " to " << rhs.reveal().toString() << std::endl;
 
+    Field<B> lhsDummyTag = Field<B>(lhs.getDummyTag());
+    Field<B> rhsDummyTag = Field<B>(rhs.getDummyTag());
+
     for (size_t i = 0; i < sortDefinition.size(); ++i) {
-        const Field<B> *lhsField = sortDefinition[i].first == -1 ? lhs.getDummyTag()
+
+        const Field<B> *lhsField = sortDefinition[i].first == -1 ? &lhsDummyTag
                                                                  : lhs.getField(sortDefinition[i].first);
-        const Field<B> *rhsField = sortDefinition[i].first == -1 ? rhs.getDummyTag()
+        const Field<B> *rhsField = sortDefinition[i].first == -1 ? &rhsDummyTag
                                                                  : rhs.getField(sortDefinition[i].first);
 
         bool asc = (sortDefinition[i].second == SortDirection::ASCENDING);
@@ -116,9 +122,8 @@ B Sort<B>::swapTuples(const int &lhsIdx, const int &rhsIdx, const bool &invertDi
         B colSwapFlag = (*lhsField < *rhsField) == B(asc);
 
         // find first one where not eq, use this to init flag
-        swap = (B) Field<B>::If(swapInit, swap, colSwapFlag); // once we know there's a swap once, we keep it
+        swap =  Field<B>::If(swapInit, Field<B>(swap), Field<B>(colSwapFlag)).template getValue<B>(); // once we know there's a swap once, we keep it
 
-        B neq = *lhsField != *rhsField;
         swapInit = swapInit | (*lhsField != *rhsField);  // have we found the first  column where they are not equal?
         //std::cout << "Fields: " << lhsField->reveal().toString() << ", " << rhsField->reveal().toString() << ", colSwapFlag: " << colSwapFlag.reveal().toString() << ", toSwap: " << swap.reveal().toString()  << ", swapInit: " << swapInit.reveal().toString() <<  std::endl;
 
@@ -129,6 +134,6 @@ B Sort<B>::swapTuples(const int &lhsIdx, const int &rhsIdx, const bool &invertDi
 }
 
 
-template class vaultdb::Sort<BoolField>;
-template class vaultdb::Sort<SecureBoolField>;
+template class vaultdb::Sort<bool>;
+template class vaultdb::Sort<emp::Bit>;
 

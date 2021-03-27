@@ -36,7 +36,7 @@ TEST_F(ScalarAggregateTest, test_count) {
 
     std::vector<ScalarAggregateDefinition> aggregators  = {ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
 
-    ScalarAggregate<BoolField> aggregate(&input, aggregators);
+    ScalarAggregate<bool> aggregate(&input, aggregators);
 
 
     std::shared_ptr<PlainTable> output = aggregate.run();

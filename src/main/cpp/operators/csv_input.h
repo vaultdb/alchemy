@@ -5,7 +5,7 @@
 
 namespace vaultdb {
 
-class CsvInput : public Operator<BoolField> {
+class CsvInput : public Operator<bool> {
 
 protected:
     std::string inputFile;
@@ -22,7 +22,7 @@ public:
 
     void setSortDefinition(const SortDefinition & aSortDefinition) { sortedOn = aSortDefinition; };
 
-    shared_ptr<QueryTable<BoolField> > runSelf() override;
+    shared_ptr<PlainTable> runSelf() override;
 
     ~CsvInput() = default;
 
