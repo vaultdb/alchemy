@@ -78,6 +78,7 @@ package_add_test(scalar_aggregate_test scalar_aggregate_test.cpp)
 package_add_test(group_by_aggregate_test group_by_aggregate_test.cpp)
 package_add_test(serialization_test serialization_test.cpp)
 package_add_test(secret_share_generator_test secret_share_generator_test.cpp)
+package_add_test(tpch_test tpch_test.cpp)
 
 
 #EMP-based tests
