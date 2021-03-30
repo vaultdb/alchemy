@@ -46,7 +46,7 @@ namespace vaultdb {
 
 
     private:
-        QueryTuple<B> getTuple(QueryTuple<B>  *const srcTuple) const;
+        void project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const;
     };
 
 }

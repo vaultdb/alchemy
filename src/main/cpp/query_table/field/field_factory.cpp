@@ -38,6 +38,7 @@ PlainField FieldFactory<bool>::getFieldFromString(const FieldType &type, const s
             boost::gregorian::date date(boost::gregorian::from_string(src));
             boost::gregorian::date epochStart(1970, 1, 1);
             int64_t epochTime = (date - epochStart).days() * 24 * 3600;
+            std::cout << "Epoch: " << epochTime << " from " << src << std::endl;
             return PlainField(FieldType::LONG, epochTime);
 
         }
@@ -164,6 +165,7 @@ PlainField FieldFactory<bool>::deserialize(const FieldType &type, const size_t &
             int32_t val = *((int32_t *) src);
             return PlainField(type, val);
         }
+        case FieldType::DATE:
         case FieldType::LONG: {
             int64_t val = *((int64_t *) src);
             return PlainField(type, val);
@@ -177,7 +179,7 @@ PlainField FieldFactory<bool>::deserialize(const FieldType &type, const size_t &
             char *val = (char *) src;
             std::string str(val, strLength);
             std::reverse(str.begin(), str.end());
-            return PlainField(type, str, str.size());
+            return PlainField(type, str, strLength);
         }
         default:
             throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<bool>::deserialize()!");
@@ -291,7 +293,7 @@ SecureField FieldFactory<emp::Bit>::getMax(const FieldType & type) {
 }
 
 
-SecureField FieldFactory<emp::Bit>::deserialize(const FieldType &type, const size_t &strLength, const int8_t *src) {
+SecureField FieldFactory<emp::Bit>::deserialize(const FieldType &type, const size_t &strLength, const emp::Bit *src) {
     switch (type) {
         case FieldType::SECURE_BOOL: {
             emp::Bit myBit(*(emp::block *) src);
@@ -299,28 +301,25 @@ SecureField FieldFactory<emp::Bit>::deserialize(const FieldType &type, const siz
         }
         case FieldType::SECURE_INT: {
             emp::Integer payload(32, 0);
-            emp::Bit *srcPtr = (emp::Bit *) src;
-            memcpy(payload.bits.data(), srcPtr, 32*sizeof(emp::Bit));
+            memcpy(payload.bits.data(), src, 32*sizeof(emp::Bit));
             return SecureField(type, payload);
         }
         case FieldType::SECURE_LONG: {
             emp::Integer payload(64, 0);
-            emp::Bit *srcPtr = (emp::Bit *) src;
-            memcpy(payload.bits.data(), srcPtr, 64*sizeof(emp::Bit));
+            memcpy(payload.bits.data(), src, 64*sizeof(emp::Bit));
             return SecureField(type, payload);
         }
         case FieldType::SECURE_FLOAT: {
             emp::Float v(0, emp::PUBLIC);
-            memcpy(v.value.data(), (emp::Bit *) src, 4*sizeof(emp::Bit) );
+            memcpy(v.value.data(), src, 32*sizeof(emp::Bit) );
             return SecureField(type, v);
         }
 
         case FieldType::SECURE_STRING: {
-            emp::Bit *srcPtr = (emp::Bit *) src;
             size_t bitCount = strLength * 8;
 
             emp::Integer v(bitCount, 0, emp::PUBLIC);
-            memcpy(v.bits.data(), srcPtr, sizeof(emp::Bit)*bitCount);
+            memcpy(v.bits.data(), src, sizeof(emp::Bit)*bitCount);
             return SecureField(type, v, bitCount / 8);
 
         }

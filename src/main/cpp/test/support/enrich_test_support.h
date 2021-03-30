@@ -43,8 +43,8 @@ namespace vaultdb {
 
         [[nodiscard]] B predicateCall(const QueryTuple<B> &aTuple) const override {
 
-            const Field<B> *field = aTuple.getField(8);
-            return  (*field == cmp);
+            const Field<B> field = aTuple.getField(8);
+            return  (field == cmp);
         }
 
 

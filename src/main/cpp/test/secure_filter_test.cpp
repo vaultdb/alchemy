@@ -7,6 +7,7 @@
 #include <operators/secure_sql_input.h>
 #include <operators/support/predicate.h>
 #include <test/support/EmpBaseTest.h>
+#include <query_table/secure_tuple.h>
 
 
 using namespace emp;
@@ -32,8 +33,8 @@ public:
 
     // filtering for l_linenumber = 1
     emp::Bit predicateCall(const SecureTuple & aTuple) const override {
-        const SecureField *f =  aTuple.getField(1);
-        return (*f == encryptedLineNumber);
+        const SecureField f =  aTuple.getField(1);
+        return (f == encryptedLineNumber);
     }
 
 };

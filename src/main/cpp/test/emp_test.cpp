@@ -1,5 +1,7 @@
 #include <util/data_utilities.h>
 #include "support/EmpBaseTest.h"
+#include "query_table/secure_tuple.h"
+#include "query_table/plain_tuple.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54321, "port for EMP execution");
@@ -102,18 +104,20 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     QuerySchema schema(1);
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
 
-    std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, 1));
-    inputTable->setSchema(schema);
+    std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, schema));
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
         Field<bool> val(FieldType::INT,inputData[i]);
-        inputTable->getTuplePtr(i)->setDummyTag(false);
-        inputTable->getTuplePtr(i)->setField(0, val);
+        PlainTuple tuple = (*inputTable)[i];
+
+        tuple.setDummyTag(false);
+        tuple.setField(0, val);
     }
 
 
     std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
-    emp::Integer decryptTest = encryptedTable->getTuplePtr(0)->getField(0)->getValue<emp::Integer>();
+    SecureTuple secureTuple = (*encryptedTable)[0];
+    emp::Integer decryptTest = secureTuple.getField(0).getValue<emp::Integer>();
     ASSERT_EQ(1, decryptTest.reveal<int32_t>());
 
     netio->flush();
@@ -121,13 +125,13 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 
     // set up expected result
-    std::unique_ptr<PlainTable > expectedTable(new PlainTable(2 * tupleCount, 1));
-    expectedTable->setSchema(schema);
+    std::unique_ptr<PlainTable > expectedTable(new PlainTable(2 * tupleCount, schema));
     // insert alice data first to last
     for(uint32_t i = 0; i < tupleCount; ++i) {
         Field<bool> val(FieldType::INT, aliceInputData[i]);
-        expectedTable->getTuplePtr(i)->setDummyTag(false);
-        expectedTable->getTuplePtr(i)->setField(0, val);
+        PlainTuple tuple = (*expectedTable)[i];
+        tuple.setDummyTag(false);
+        tuple.setField(0, val);
     }
 
     int offset = tupleCount;
@@ -137,8 +141,9 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     for(uint32_t i = 0; i < tupleCount; ++i) {
         --readIdx;
         Field<bool> val(FieldType::INT, bobInputData[readIdx]);
-        expectedTable->getTuplePtr(i + offset)->setDummyTag(false);
-        expectedTable->getTuplePtr(i + offset)->setField(0, val);
+        PlainTuple tuple = (*expectedTable)[i + offset];
+        tuple.setDummyTag(false);
+        tuple.setField(0, val);
     }
 
     //verify output

@@ -18,8 +18,8 @@ public:
     std::unique_ptr<PlainTable> getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag=false);
 
 private:
-    PlainTuple  getTuple(pqxx::row row, bool hasDummyTag);
-     PlainField * getField(pqxx::field src);
+    void getTuple(pqxx::row row, bool hasDummyTag, PlainTable &dst_table, const size_t &idx);
+     PlainField getField(pqxx::field src);
     std::unique_ptr<QuerySchema> getSchema(pqxx::result input, bool hasDummyTag);
 
      std::string srcTable;

@@ -71,7 +71,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
     std::shared_ptr<PlainTable> joinResult = join.run()->reveal();
 
 
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
+    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema()->getFieldCount());
     Sort<emp::Bit> sort(&join, sortDefinition);
     shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
@@ -113,7 +113,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
     std::unique_ptr<PlainTable> joinResultDecrypted = joinResult->reveal();
 
 
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
+    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema()->getFieldCount());
     Sort<emp::Bit>  sort(&join, sortDefinition);
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
@@ -165,7 +165,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<PlainTable> joinResult = fullJoin.run()->reveal();
 
 
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
+    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema()->getFieldCount());
     Sort<emp::Bit> sort(&fullJoin, sortDefinition);
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);

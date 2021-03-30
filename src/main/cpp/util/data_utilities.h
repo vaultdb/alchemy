@@ -60,6 +60,8 @@ namespace vaultdb {
 
         static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
 
+//        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
+
 
     };
 }

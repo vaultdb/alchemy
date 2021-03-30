@@ -55,7 +55,7 @@ TEST_F(SortTest, cmpSwap) {
     PlainTuple b = (*data)[1];
     bool swap(true);
 
-    PlainTuple::compareAndSwap(swap, &a, &b);
+    PlainTuple::compare_swap(swap, a, b);
 
     // swapped
     ASSERT_EQ(a, (*data)[1]);
@@ -64,7 +64,7 @@ TEST_F(SortTest, cmpSwap) {
 
     // no swap
     swap = false;
-    PlainTuple::compareAndSwap(swap, &a, &b);
+    PlainTuple::compare_swap(swap, a, b);
     ASSERT_EQ(a, (*data)[1]);
     ASSERT_EQ(b, (*data)[0]);
 

@@ -95,6 +95,7 @@ namespace vaultdb {
 
         private:
             static std::string revealString(const emp::Integer & src, const int & party);
+
     };
 
     std::ostream &operator<<(std::ostream &os, const Field<bool> &aValue);

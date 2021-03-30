@@ -1,4 +1,6 @@
 #include "filter.h"
+#include "plain_tuple.h"
+#include "secure_tuple.h"
 
 using namespace vaultdb;
 
@@ -26,7 +28,12 @@ std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
 
         dummyTag =  ((!predicateOut) | dummyTag); // (!) because dummyTag is false if our selection criteria is satisfied
 
-        Operator<B>::output->getTuplePtr(i)->setDummyTag(dummyTag);
+        QueryTuple<B> to_write = Operator<B>::output->getTuple(i); // container pointer to source data
+        std::cout << "Writing to " << to_write << " with dummy tag " << dummyTag << std::endl;
+
+        to_write.setDummyTag(dummyTag);
+
+        std::cout << "Result: " << to_write.toString(true) << ", " << Operator<B>::output->getTuple(i).toString(true) << std::endl;
     }
 
     Operator<B>::output->setSortOrder(input->getSortOrder());

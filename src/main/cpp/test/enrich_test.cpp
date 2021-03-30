@@ -273,8 +273,8 @@ void EnrichTest::validateTable(const std::string & dbName, const std::string & s
     ASSERT_EQ(expectedTable->getSchema(), observedTable->getSchema());
 
     // check that the types are faithfully aligned
-    for(size_t i = 0; i < observedTable->getSchema().getFieldCount(); ++i) {
-        FieldType schemaType = observedTable->getSchema().getField(i).getType();
+    for(size_t i = 0; i < observedTable->getSchema()->getFieldCount(); ++i) {
+        FieldType schemaType = observedTable->getSchema()->getField(i).getType();
         FieldType instanceType = (*observedTable)[0][i].getType();
         FieldType expectedType = (*expectedTable)[0][i].getType();
         /*if(schemaType != instanceType) {

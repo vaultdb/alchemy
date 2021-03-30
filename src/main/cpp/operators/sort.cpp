@@ -1,5 +1,8 @@
 #include "sort.h"
 
+#include "plain_tuple.h"
+#include "secure_tuple.h"
+
 
 using namespace vaultdb;
 
@@ -87,7 +90,9 @@ void Sort<B>::bitonicMerge(const int &lo, const int &n, const bool &invertDir) {
 template<typename B>
 void Sort<B>::compareAndSwap(const int &lhsIdx, const int &rhsIdx, const bool &invertDir) {
     B toSwap = swapTuples(lhsIdx, rhsIdx, invertDir);
-    QueryTuple<B>::compareAndSwap(toSwap, Operator<B>::output->getTuplePtr(lhsIdx), Operator<B>::output->getTuplePtr(rhsIdx));
+    QueryTuple<B> lhs = Operator<B>::output->getTuple(lhsIdx);
+    QueryTuple<B> rhs =  Operator<B>::output->getTuple(rhsIdx);
+    QueryTuple<B>::compare_swap(toSwap,lhs, rhs);
 
 }
 
@@ -103,33 +108,28 @@ B Sort<B>::swapTuples(const int &lhsIdx, const int &rhsIdx, const bool &invertDi
 
     QueryTuple<B> lhs = (*Operator<B>::output)[lhsIdx];
     QueryTuple<B> rhs = (*Operator<B>::output)[rhsIdx];
-    //std::cout << "Comparing " << lhs.reveal().toString(true) << " to " << rhs.reveal().toString() << std::endl;
 
     Field<B> lhsDummyTag = Field<B>(lhs.getDummyTag());
     Field<B> rhsDummyTag = Field<B>(rhs.getDummyTag());
 
     for (size_t i = 0; i < sortDefinition.size(); ++i) {
 
-        const Field<B> *lhsField = sortDefinition[i].first == -1 ? &lhsDummyTag
+        const Field<B> lhsField = sortDefinition[i].first == -1 ? lhsDummyTag
                                                                  : lhs.getField(sortDefinition[i].first);
-        const Field<B> *rhsField = sortDefinition[i].first == -1 ? &rhsDummyTag
+        const Field<B> rhsField = sortDefinition[i].first == -1 ? rhsDummyTag
                                                                  : rhs.getField(sortDefinition[i].first);
 
         bool asc = (sortDefinition[i].second == SortDirection::ASCENDING);
         if (invertDir)
             asc = !asc;
 
-        B colSwapFlag = (*lhsField < *rhsField) == B(asc);
+        B colSwapFlag = (lhsField < rhsField) == B(asc);
 
         // find first one where not eq, use this to init flag
         swap =  Field<B>::If(swapInit, Field<B>(swap), Field<B>(colSwapFlag)).template getValue<B>(); // once we know there's a swap once, we keep it
-
-        swapInit = swapInit | (*lhsField != *rhsField);  // have we found the first  column where they are not equal?
-        //std::cout << "Fields: " << lhsField->reveal().toString() << ", " << rhsField->reveal().toString() << ", colSwapFlag: " << colSwapFlag.reveal().toString() << ", toSwap: " << swap.reveal().toString()  << ", swapInit: " << swapInit.reveal().toString() <<  std::endl;
-
+        swapInit = swapInit | (lhsField != rhsField);  // have we found the first  column where they are not equal?
     }
 
-//    std::cout << "With invertDir=" << invertDir << " toSwap? " << swap.reveal().toString() << std::endl;
     return swap;
 }
 

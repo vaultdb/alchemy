@@ -49,6 +49,7 @@ size_t TypeUtilities::getTypeSize(const FieldType & id) {
         case FieldType::SECURE_INT:
         case FieldType::INT:
         case FieldType::FLOAT:
+        case FieldType::DATE:
             return 32;
 
         case FieldType::SECURE_LONG:
@@ -120,3 +121,12 @@ bool TypeUtilities::isEncrypted(const FieldType &type) {
 
  }
 
+bool TypeUtilities::types_equivalent(const FieldType & lhs, const FieldType & rhs) {
+     if(lhs == rhs)
+         return true;
+
+     if(lhs == FieldType::DATE && rhs == FieldType::LONG) return true;
+     if(rhs == FieldType::DATE && lhs == FieldType::LONG) return true;
+
+     return false;
+ }

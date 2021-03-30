@@ -33,8 +33,8 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
 
     uint32_t tupleCount = alice->getTupleCount() + bob->getTupleCount();
 
-    std::unique_ptr<PlainTable > unioned(new PlainTable(tupleCount, alice->getSchema().getFieldCount()));
-    unioned->setSchema(alice->getSchema());
+    std::unique_ptr<PlainTable > unioned(new PlainTable(tupleCount, *alice->getSchema()));
+    unioned->setSchema(*alice->getSchema());
 
     for(size_t i = 0; i < alice->getTupleCount(); ++i) {
         unioned->putTuple(i, alice->getTuple(i));
@@ -49,7 +49,7 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
         unioned->putTuple(i + offset, bob->getTuple(readIdx));
     }
 
-    QuerySchema schema = alice->getSchema();
+    QuerySchema schema = *alice->getSchema();
     unioned->setSchema(schema);
 
 
@@ -134,18 +134,18 @@ SortDefinition DataUtilities::getDefaultSortDefinition(const uint32_t &colCount)
 
     }
 
-std::shared_ptr<PlainTable > DataUtilities::removeDummies(const std::shared_ptr<PlainTable  > &input) {
+std::shared_ptr<PlainTable > DataUtilities::removeDummies(const std::shared_ptr<PlainTable> &input) {
     // only works for plaintext tables
     assert(!input->isEncrypted());
     int outputTupleCount = input->getTrueTupleCount();
 
     int writeCursor = 0;
-    std::shared_ptr<PlainTable > output(new PlainTable(outputTupleCount, input->getSchema(), input->getSortOrder()));
+    std::shared_ptr<PlainTable > output(new PlainTable(outputTupleCount, *input->getSchema(), input->getSortOrder()));
 
     for(size_t i = 0; i < input->getTupleCount(); ++i) {
-        PlainTuple *tuple = input->getTuplePtr(i);
-        if(!tuple->getDummyTag()) {
-            output->putTuple(writeCursor, *tuple);
+        PlainTuple tuple = input->getTuple(i);
+        if(!tuple.getDummyTag()) {
+            output->putTuple(writeCursor, tuple);
             ++writeCursor;
         }
     }
@@ -203,6 +203,14 @@ std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int
     return printFirstBytes(decodedBytes, byteCount);
 
 }
+
+// actually an array of emp::Bits.  Each bit is sizeof(emp::block) length
+/*emp::Integer toEmpInteger(const vector<int8_t> & src_bytes) {
+
+    emp::Integer dst(src_bytes.size() / sizeof(emp::block), 0);
+
+} */
+
 
 
 

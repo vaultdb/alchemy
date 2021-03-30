@@ -33,17 +33,17 @@ bool SecureSortTest::correctOrder(const PlainTuple &lhs, const PlainTuple &rhs, 
     assert(lhs.getFieldCount() == rhs.getFieldCount());
 
     for(uint32_t i = 0; i < lhs.getFieldCount(); ++i) {
-        const PlainField *lhsVal = lhs.getField(i);
-        const PlainField *rhsVal = rhs.getField(i);
+        const PlainField lhsVal = lhs.getField(i);
+        const PlainField rhsVal = rhs.getField(i);
 
-        if (*lhsVal == *rhsVal)
+        if (lhsVal == rhsVal)
             continue;
 
         if(sortDefinition[i].second == SortDirection::ASCENDING) {
-            return *lhsVal <= *rhsVal; //!FieldUtilities::gt(lhsVal, rhsVal);
+            return lhsVal <= rhsVal; //!FieldUtilities::gt(lhsVal, rhsVal);
         }
         else if(sortDefinition[i].second == SortDirection::DESCENDING) {
-             return *lhsVal >  *rhsVal;
+             return lhsVal >  rhsVal;
         }
     }
     return true;

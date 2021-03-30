@@ -14,7 +14,7 @@ std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
         // -1 ordinal for COUNT(*)
         FieldType aggValueType = (agg.ordinal == -1) ?
                 input->isEncrypted() ? FieldType::SECURE_LONG : FieldType::LONG :
-                input->getSchema().getField(agg.ordinal).getType();
+                input->getSchema()->getField(agg.ordinal).getType();
         aggregators.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
     }
 

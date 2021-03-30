@@ -42,7 +42,7 @@ TEST_F(CsvReaderTest, lineitemTest) {
 
     PsqlDataProvider dataProvider;
     std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
-    QuerySchema csvSchema = expected->getSchema();
+    QuerySchema csvSchema = *expected->getSchema();
     // substitute longs with dates in the appropriate cols, fields 10, 11, 12
     csvSchema.putField(convertDateField(csvSchema.getField(10)));
     csvSchema.putField(convertDateField(csvSchema.getField(11)));
@@ -50,7 +50,7 @@ TEST_F(CsvReaderTest, lineitemTest) {
 
 
     std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, csvSchema);
-    observed->setSchema(expected->getSchema()); // switch back from date schema
+    observed->setSchema(*expected->getSchema()); // switch back from date schema
 
     ASSERT_EQ(*expected, *observed);
 
@@ -68,9 +68,15 @@ TEST_F(CsvReaderTest, quotedStringTest) {
     PsqlDataProvider dataProvider;
     std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
-    QueryTuple parsedTuple = CsvReader::parseTuple(testStr, expected->getSchema());
-    QueryTuple expectedTuple = expected->getTuple(15);
+    std::unique_ptr<PlainTable> parse_test = std::unique_ptr<PlainTable>(new PlainTable(*expected));
 
+    CsvReader::parseTuple(testStr, *expected->getSchema(), parse_test, 15);
+
+    QueryTuple expectedTuple = expected->getTuple(15);
+    QueryTuple parsedTuple = parse_test->getTuple(15);
+
+    std::string customer_id = parsedTuple.getField(1).toString();
+    ASSERT_EQ(customer_id, "Customer#000000016       ");
 
     // expected:
     // 16 | Customer#000000016 | cYiaeMLZSMAOQ2 d0W,                    |          10 | 20-781-609-3107 |   4681.03 | FURNITURE    | kly silent courts. thinly regular theodolites sleep fluffily after
@@ -90,7 +96,7 @@ TEST_F(CsvReaderTest, customerTest) {
     PsqlDataProvider dataProvider;
     std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
-    std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, expected->getSchema());
+    std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, *expected->getSchema());
 
     ASSERT_EQ(*expected, *observed);
 
@@ -109,12 +115,14 @@ TEST_F(CsvReaderTest, ordersTest) {
     PsqlDataProvider dataProvider;
     std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
-    QuerySchema csvSchema = expected->getSchema();
+    std::cout << "Schema: " << *(expected->getSchema())  << std::endl;
+
+    QuerySchema csvSchema = *expected->getSchema();
     // o_orderdate(4) set schema to date
     csvSchema.putField(convertDateField(csvSchema.getField(4)));
 
     std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, csvSchema);
-    observed->setSchema( expected->getSchema());
+    observed->setSchema( *expected->getSchema());
 
     // RHS || observed is incorrect here.
     ASSERT_EQ(*expected, *observed);

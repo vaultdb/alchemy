@@ -69,6 +69,9 @@ set(sources
 		util/field_utilities.cpp
 
 		query_table/query_tuple.cpp
+		query_table/plain_tuple.cpp
+		query_table/secure_tuple.cpp
+
 		query_table/query_field_desc.cpp
 		query_table/query_schema.cpp
 		query_table/query_table.cpp

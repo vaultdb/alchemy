@@ -17,7 +17,7 @@ namespace vaultdb {
     public:
         JoinEqualityPredicate(const ConjunctiveEqualityPredicate &srcPredicates);
 
-        B predicateCall(const QueryTuple<B> *lhs, const QueryTuple<B> *rhs) const override;
+        B predicateCall(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs) const override;
 
     private:
         ConjunctiveEqualityPredicate predicate;

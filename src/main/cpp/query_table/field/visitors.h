@@ -78,7 +78,10 @@ namespace vaultdb {
 
         Value operator()(int32_t i) const { return i == boost::get<int32_t>(rhs); }
 
-        Value operator()(int64_t i) const { return i == boost::get<int64_t>(rhs); }
+        Value operator()(int64_t i) const {
+            std::cout << "Cmp: " << i << " == " << boost::get<int64_t>(rhs) << std::endl;
+            return i == boost::get<int64_t>(rhs);
+        }
 
         Value operator()(float_t f) const {  // approx float equality
             double epsilon = std::fabs(f * 0.01);
@@ -279,6 +282,95 @@ namespace vaultdb {
 
         Value choiceBit;
         Value rhs;
+
+
+    };
+
+    template<typename T>
+    static inline void swap(Value * lhs, Value * rhs) {
+        T l = boost::get<T>(*lhs);
+        T r = boost::get<T>(*rhs);
+
+        l = l ^ r;
+        r = r ^ l;
+        l = l ^ r;
+
+        *lhs = Value(l);
+        *rhs = Value(r);
+    }
+
+
+    // return value is swapped input
+    struct SwapVisitor : public boost::static_visitor<> {
+        void operator()(bool b) const {
+            if (boost::get<bool>(choiceBit)) {
+                swap<bool>(lhs, rhs);
+            }
+        }
+
+        void operator()(int32_t i) const {
+            if (boost::get<bool>(choiceBit)) {
+                swap<int32_t>(lhs, rhs);
+            }
+
+        }
+
+        void operator()(int64_t i) const {
+            if (boost::get<int64_t>(choiceBit)) {
+                swap<int64_t>(lhs, rhs);
+            }
+
+        }
+
+        // XOR write won't work for float
+        void operator()(float_t f) const {
+            bool select = boost::get<bool>(choiceBit);
+            if(select) {
+                float_t l = boost::get<float_t>(*lhs);
+                float_t r = boost::get<float_t>(*rhs);
+                *lhs = r;
+                *rhs = l;
+            }
+        }
+
+        void operator()(std::string s) const {
+            if (boost::get<bool>(choiceBit)) {
+                string tmp = boost::get<std::string>(*lhs);
+                *lhs = boost::get<std::string>(*rhs);
+                *rhs = tmp;
+            }
+        }
+
+        void operator()(emp::Bit b) const {
+            emp::Bit choice = boost::get<emp::Bit>(choiceBit);
+            emp::Bit l = boost::get<emp::Bit>(*lhs);
+            emp::Bit r = boost::get<emp::Bit>(*rhs);
+            emp::swap(choice, l, r);
+            *lhs = l;
+            *rhs = r;
+        }
+
+        void operator()(emp::Integer i) const {
+            emp::Bit choice = boost::get<emp::Bit>(choiceBit);
+            emp::Integer l = boost::get<emp::Integer>(*lhs);
+            emp::Integer r = boost::get<emp::Integer>(*rhs);
+            emp::swap(choice, l, r);
+            *lhs = l;
+            *rhs = r;
+        }
+
+        void operator()(emp::Float f) const {
+            emp::Bit choice = boost::get<emp::Bit>(choiceBit);
+            emp::Float l = boost::get<emp::Float>(*lhs);
+            emp::Float r = boost::get<emp::Float>(*rhs);
+            emp::swap(choice, l, r);
+            *lhs = l;
+            *rhs = r;
+        }
+
+        Value choiceBit;
+        Value *rhs; // ptr to write to it
+        Value *lhs;
 
 
     };

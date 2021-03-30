@@ -120,17 +120,6 @@ QuerySchema QuerySchema::toPlain(const QuerySchema &secureSchema) {
 
 }
 
-int QuerySchema::getOrdinal(const std::string & fieldName) const {
-   int offset = 0;
-   for(QueryFieldDesc fieldDesc : fields_) {
-       if(fieldDesc.getName() == fieldName)
-           return offset;
-       ++offset;
-   }
-    // no match
-   return -1;
-
-}
 
 const QueryFieldDesc QuerySchema::getField(const string &fieldName) const {
     for(QueryFieldDesc fieldDesc : fields_) {
@@ -139,6 +128,17 @@ const QueryFieldDesc QuerySchema::getField(const string &fieldName) const {
     }
 
     throw; // not found
+}
+
+// in bits
+size_t QuerySchema::getFieldOffset(const size_t idx) const {
+    size_t bitSize = 0L;
+    for (size_t i = 0; i < idx; i++) {
+        bitSize += fields_[i].size();
+
+    }
+    return  bitSize;
+
 }
 
 
