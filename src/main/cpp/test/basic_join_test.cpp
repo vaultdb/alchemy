@@ -56,6 +56,13 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
     SqlInput customerInput(dbName, customerSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
 
+/*
+    std::shared_ptr<PlainTable> customers = customerInput.run();
+    std::cout << "customer input: " << customers->toString(true) << std::endl;
+
+    std::shared_ptr<PlainTable> orders = ordersInput.run();
+    std::cout << "orders input: " << orders->toString(true) << std::endl;
+*/
 
     ConjunctiveEqualityPredicate customerOrdersOrdinals = {EqualityPredicate(1, 0)}; //  o_custkey, c_custkey
 
@@ -65,6 +72,8 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
 
 
     std::shared_ptr<PlainTable > observed = join.run();
+
+    std::cout << "Expected result size: " << expected->getTupleCount() << std::endl;
 
 
     ASSERT_EQ(*expected, *observed);

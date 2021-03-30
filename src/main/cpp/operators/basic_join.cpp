@@ -13,7 +13,6 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > lhs = Join<B>::children[0]->getOutput();
     std::shared_ptr<QueryTable<B> > rhs = Join<B>::children[1]->getOutput();
     uint32_t cursor = 0;
-    QueryTuple<B> lhs_tuple, rhs_tuple;
     B predicateEval;
 
     uint32_t outputTupleCount = lhs->getTupleCount() * rhs->getTupleCount();
@@ -27,15 +26,15 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
     Join<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(outputTupleCount, outputSchema));
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
-        lhs_tuple = (*lhs)[i];
+        QueryTuple<B> lhs_tuple = (*lhs)[i];
         for(uint32_t j = 0; j < rhs->getTupleCount(); ++j) {
-            rhs_tuple = (*rhs)[j];
+            QueryTuple<B> rhs_tuple = (*rhs)[j];
             predicateEval = Join<B>::predicate->predicateCall(lhs_tuple, rhs_tuple);
             B dst_dummy_tag = Join<B>::compareTuples(lhs_tuple, rhs_tuple, predicateEval);
             QueryTuple<B> out = (*Join<B>::output)[cursor];
             out.setDummyTag(dst_dummy_tag);
-            Join<B>::write_left(dst_dummy_tag, out, lhs_tuple);
-            Join<B>::write_right(dst_dummy_tag, out, rhs_tuple);
+            Join<B>::write_left(true, out, lhs_tuple); // all writes happen because we do the full cross product
+            Join<B>::write_right(true, out, rhs_tuple);
             ++cursor;
         }
     }

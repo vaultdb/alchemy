@@ -102,11 +102,12 @@ void Join<B>::write_left(const emp::Bit &write, SecureTuple &dst_tuple, const Se
 template<typename B>
 void Join<B>::write_right(const bool &write, PlainTuple &dst_tuple, const PlainTuple &src_tuple) {
     if(write) {
-        size_t write_size = src_tuple.getSchema()->size()/8;
-        size_t dst_bit_cnt = dst_tuple.getSchema()->size();
-        size_t write_offset = dst_bit_cnt - write_size;
+        size_t write_size = src_tuple.getSchema()->size()/8 - sizeof(bool); // don't overwrite dummy tag
+        size_t dst_byte_cnt = dst_tuple.getSchema()->size()/8;
+        size_t write_offset = dst_byte_cnt - write_size - 1;
 
-
+// expect offset of 20 for
+// (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 .o_orderdate, #3 int32 orders.o_shippriority)
         memcpy(dst_tuple.getData() + write_offset, src_tuple.getData(), write_size);
     }
 }

@@ -79,7 +79,6 @@ namespace vaultdb {
         Value operator()(int32_t i) const { return i == boost::get<int32_t>(rhs); }
 
         Value operator()(int64_t i) const {
-            std::cout << "Cmp: " << i << " == " << boost::get<int64_t>(rhs) << std::endl;
             return i == boost::get<int64_t>(rhs);
         }
 

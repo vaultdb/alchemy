@@ -38,7 +38,6 @@ PlainField FieldFactory<bool>::getFieldFromString(const FieldType &type, const s
             boost::gregorian::date date(boost::gregorian::from_string(src));
             boost::gregorian::date epochStart(1970, 1, 1);
             int64_t epochTime = (date - epochStart).days() * 24 * 3600;
-            std::cout << "Epoch: " << epochTime << " from " << src << std::endl;
             return PlainField(FieldType::LONG, epochTime);
 
         }
