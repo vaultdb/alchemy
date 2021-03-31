@@ -225,7 +225,6 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
         netio->flush();
     }
 
-    std::cout << " tuple counts: " << alice_tuple_cnt << ", " << bob_tuple_cnt << std::endl;
 
     QuerySchema dst_schema = QuerySchema::toSecure(*schema_);
     std::shared_ptr<SecureTable> dst_table(new SecureTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, getSortOrder()));
@@ -245,7 +244,7 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
     netio->flush();
 
     std::cout << "Encrypted: " << *dst_table->reveal()  << std::endl;
-    
+
     // TODO: REVERSE READ ORDER OF BOB, INSERT BITONIC MERGE HERE
     return dst_table;
 
@@ -386,12 +385,7 @@ std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable &table,
     for(uint32_t i = 0; i < tupleCount; ++i)  {
         const SecureTuple tuple = table.getImmutableTuple(i);
         PlainTuple dst_tuple = tuple.reveal(party);
-        std::cout << i  << ": revealed tuple: " << dst_tuple.toString(true);
         dst_table->putTuple(i, dst_tuple);
-
-        PlainTuple read = dst_table->getTuple(i);
-        std::cout << " verifying " << read.toString(true) << std::endl;
-        assert(read == dst_tuple);
     }
 
     return dst_table;
@@ -413,17 +407,7 @@ QueryTable<B>::secret_share_send(const int &party, std::shared_ptr<SecureTable> 
         for(int32_t i = getTupleCount() - 1; i >= 0; --i) {
             SecureTuple dst_tuple = dst_table->getTuple(cursor);
             PlainTuple src_tuple = this->getPlainTuple(i);
-            std::cout << "*******Secret sharing tuple " << i << ", " << src_tuple.toString(true) << ", to idx: " << cursor <<  std::endl;
             FieldUtilities::secret_share_send(src_tuple, dst_tuple, party);
-
-            PlainTuple revealed = dst_tuple.reveal(emp::PUBLIC);
-            std::cout << "      revealed=" << revealed.toString(true) << std::endl;
-
-            int32_t input = src_tuple.getField(0).template getValue<int32_t>();
-            int32_t output = revealed.getField(0).template getValue<int32_t>();
-
-            assert(input == output);
-
             ++cursor;
         }
 
@@ -435,17 +419,7 @@ QueryTable<B>::secret_share_send(const int &party, std::shared_ptr<SecureTable> 
     for(size_t i = 0; i < getTupleCount(); ++i) {
         SecureTuple dst_tuple = dst_table->getTuple(cursor);
         PlainTuple src_tuple = this->getPlainTuple(i);
-        std::cout << "*******Secret sharing tuple " << i << ", " << src_tuple.toString(true) << ", to idx: " << cursor <<  std::endl;
         FieldUtilities::secret_share_send(src_tuple, dst_tuple, party);
-
-        PlainTuple revealed = dst_tuple.reveal(emp::PUBLIC);
-        std::cout << "      revealed=" << revealed.toString(true) << std::endl;
-
-        int32_t input = src_tuple.getField(0).template getValue<int32_t>();
-        int32_t output = revealed.getField(0).template getValue<int32_t>();
-
-        assert(input == output);
-
         ++cursor;
     }
 
@@ -462,13 +436,7 @@ void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_
 
         for(int32_t i = tuple_count - 1; i >= 0; --i) {
             SecureTuple dst_tuple = dst_table->getTuple(cursor);
-            std::cout << "*******Receiving tuple " << cursor << std::endl;
             FieldUtilities::secret_share_recv(*schema_, dst_tuple, dst_party);
-
-
-            PlainTuple revealed = dst_tuple.reveal(emp::PUBLIC);
-            std::cout << "      revealed=" << revealed.toString(true) << std::endl;
-
             ++cursor;
         }
 
@@ -480,13 +448,7 @@ void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_
     // else
     for(size_t i = 0; i < tuple_count; ++i) {
         SecureTuple dst_tuple = dst_table->getTuple(cursor);
-        std::cout << "*******Receiving tuple " << cursor << std::endl;
         FieldUtilities::secret_share_recv(*schema_, dst_tuple, dst_party);
-
-
-        PlainTuple revealed = dst_tuple.reveal(emp::PUBLIC);
-        std::cout << "      revealed=" << revealed.toString(true) << std::endl;
-
         ++cursor;
     }
 

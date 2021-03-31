@@ -85,28 +85,12 @@ void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple
     for (size_t i = 0; i < field_count; ++i) {
         PlainField src_field = src_tuple.getField(i);
         SecureField dst_field = SecureField::secret_share_send(src_field, dst_party);
-
-
-
         dst_tuple.setField(i, dst_field);
-
-        SecureField debug = dst_tuple.getField(i);
-        PlainField revealed = dst_field.reveal(emp::PUBLIC);
-
-        std::cout << "FieldUtilities::secret_share_send:Secret share sent field: " << revealed << " vs " << src_field <<  std::endl;
-
-
-        assert(revealed == src_field);
     }
 
-    //bool dummy_tag = src_tuple.getDummyTag();
     PlainField plain_dummy_tag =  PlainField(src_tuple.getDummyTag());
     SecureField dummy_tag = SecureField::secret_share_send(plain_dummy_tag, dst_party);
-
     dst_tuple.setDummyTag(dummy_tag);
-
-    PlainTuple tuple = dst_tuple.reveal(emp::PUBLIC);
-    std::cout << "Secret shared: " << tuple.toString(true);
 
 }
 
@@ -116,23 +100,12 @@ void FieldUtilities::secret_share_recv(const QuerySchema & src_schema, SecureTup
     for(size_t i = 0;  i < field_count; ++i) {
         QueryFieldDesc field_desc = src_schema.getField(i);
         SecureField  dst_field = SecureField::secret_share_recv(field_desc.getType(), field_desc.getStringLength(), dst_party);
-
-        PlainField revealed = dst_field.reveal(emp::PUBLIC);
-        std::cout << "Secret shared field: " << revealed.toString() << std::endl;
-
         dst_tuple.setField(i, dst_field);
-
-        SecureField debug = dst_tuple.getField(i);
-
-
     }
 
     SecureField d = SecureField::secret_share_recv(FieldType::BOOL, 0, dst_party);
     dst_tuple.setDummyTag(d);
 
-
-    PlainTuple tuple = dst_tuple.reveal(emp::PUBLIC);
-    std::cout << "Secret shared: " << tuple.toString(true);
 }
 
 

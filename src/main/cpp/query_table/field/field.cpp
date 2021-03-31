@@ -179,15 +179,7 @@ SecureField Field<B>::secret_share_send(const PlainField & src, const int & dst_
 
     FieldType resType = TypeUtilities::toSecure(src.type_);
 
-     SecureField r(resType, result, src.string_length_);
-
-     PlainField revealed = r.reveal(emp::PUBLIC);
-
-     std::cout << "Field<B>::secret_share_send::Encrypted " << src << " revealed " << revealed << std::endl;
-
-     assert(revealed == src);
-     return r;
-
+     return SecureField(resType, result, src.string_length_);
 }
 
 template<typename B>
@@ -202,13 +194,8 @@ SecureField Field<B>::secret_share_recv(const FieldType & type, const size_t & s
     Value result = boost::apply_visitor(visitor, input);
 
     FieldType resType = TypeUtilities::toSecure(type);
-    SecureField r(resType, result, str_length);
+    return SecureField(resType, result, str_length);
 
-    PlainField revealed = r.reveal(emp::PUBLIC);
-
-    std::cout << "Field reveal: " << revealed << std::endl;
-
-    return r;
 
 }
 
