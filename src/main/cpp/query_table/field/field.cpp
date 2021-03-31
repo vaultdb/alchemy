@@ -162,14 +162,57 @@ void Field<B>::serialize(int8_t *dst) const {
     assert(dst != nullptr);
 
     SerializeVisitor visitor;
-    visitor.string_length_ = string_length_;
     visitor.dst_ = dst;
     boost::apply_visitor(visitor, payload_);
 }
 
 
+template<typename B>
+SecureField Field<B>::secret_share_send(const PlainField & src, const int & dst_party) {
+    Value input = src.payload_;
+
+    SecretShareVisitor visitor;
+    visitor.dstParty = dst_party;
+    visitor.send = false;
+
+    Value result = boost::apply_visitor(visitor, input);
+
+    FieldType resType = TypeUtilities::toSecure(src.type_);
+
+     SecureField r(resType, result, src.string_length_);
+
+     PlainField revealed = r.reveal(emp::PUBLIC);
+
+     std::cout << "Field<B>::secret_share_send::Encrypted " << src << " revealed " << revealed << std::endl;
+
+     assert(revealed == src);
+     return r;
+
+}
 
 template<typename B>
+SecureField Field<B>::secret_share_recv(const FieldType & type, const size_t & str_length, const int & dst_party) {
+    Value input = FieldFactory<bool>::getZero(type).payload_;
+
+
+    SecretShareVisitor visitor;
+    visitor.dstParty = dst_party;
+    visitor.send = false;
+
+    Value result = boost::apply_visitor(visitor, input);
+
+    FieldType resType = TypeUtilities::toSecure(type);
+    SecureField r(resType, result, str_length);
+
+    PlainField revealed = r.reveal(emp::PUBLIC);
+
+    std::cout << "Field reveal: " << revealed << std::endl;
+
+    return r;
+
+}
+
+/*template<typename B>
 SecureField Field<B>::secretShare(const PlainField  *field, const FieldType &type, const size_t &strLength, const int &myParty,
                            const int &dstParty) {
 
@@ -191,7 +234,7 @@ SecureField Field<B>::secretShare(const PlainField  *field, const FieldType &typ
     FieldType resType = TypeUtilities::toSecure(type);
     return SecureField(resType, result, strLength);
 
-}
+} */
 
 template<typename B>
 void Field<B>::compareAndSwap(const B & choice, Field & lhs, Field & rhs) {

@@ -39,7 +39,7 @@ class EmpTest : public EmpBaseTest {
 }
 
 
-
+/*
 // basic test to verify emp configuration for strings
 TEST_F(EmpTest, emp_test_varchar) {
 
@@ -92,6 +92,7 @@ TEST_F(EmpTest, emp_test_varchar) {
 
 }
 
+*/
 
 // test encrypting a query table with a single int in EMP
 // Testing absent psql dependency

@@ -2,6 +2,7 @@
 #include <utility>
 #include <util/data_utilities.h>
 #include <util/type_utilities.h>
+#include <util/field_utilities.h>
 #include "query_table.h"
 #include "plain_tuple.h"
 #include "secure_tuple.h"
@@ -47,15 +48,6 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
 
 
 
-/*template <typename B>
-QueryTable<B>::QueryTable(const size_t &num_tuples, const int &colCount) {
-    schema_ = std::make_shared<QuerySchema>(QuerySchema(colCount));
-    tuples_.resize(num_tuples);
-    for(size_t i = 0; i < num_tuples; ++i)
-        tuples_[i] = QueryTuple<B>(schema_);
-
-} */
-
 
 template <typename B>
 bool QueryTable<B>::isEncrypted() const {
@@ -66,34 +58,12 @@ bool QueryTable<B>::isEncrypted() const {
 
 template <typename B>
 std::unique_ptr<PlainTable> QueryTable<B>::reveal(int empParty) const  {
-    assert(isEncrypted());
+   return revealTable(*this, empParty);
 
-    QuerySchema dst_schema = QuerySchema::toPlain(*schema_);
-    std::unique_ptr<QueryTable<bool>> dst_table = std::unique_ptr<QueryTable<bool>>(new QueryTable<bool>(getTupleCount(), dst_schema));
-
-    // secret share the entire serialized table
-    size_t tuple_bits = dst_schema.size();
-
-
-    emp::Integer dst_bytes(tuple_bits, 0L, empParty);
-    memcpy(dst_bytes.bits.data(), tuple_data_.data(), tuple_bits * sizeof(emp::block));
-
-
-    bool *bools = new bool[tuple_bits];
-    std::string revealed_bits = dst_bytes.reveal<std::string>(empParty);
-    int i = 0;
-    for(char b : revealed_bits) {
-        bools[i] = (b == '1');
-       ++i;
-    }
-
-    vector<int8_t> decodedBytesVector = Utilities::boolsToBytes(bools, tuple_bits);
-    memcpy(dst_table->tuple_data_.data(), decodedBytesVector.data(), decodedBytesVector.size());
-
-    delete[] bools;
-    return dst_table;
 
 }
+
+
 
 // iterate over all tuples and produce one long bit array for encrypting/decrypting in emp
 // only tested in PUBLIC or XOR mode
@@ -255,34 +225,31 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
         netio->flush();
     }
 
+    std::cout << " tuple counts: " << alice_tuple_cnt << ", " << bob_tuple_cnt << std::endl;
 
-    QuerySchema dstSchema = QuerySchema::toSecure(*schema_);
-
-    std::shared_ptr<SecureTable> dstTable(new SecureTable(alice_tuple_cnt + bob_tuple_cnt, dstSchema, getSortOrder()));
-    bool *bools = Utilities::bytesToBool((int8_t *) tuple_data_.data(), tuple_data_.size());
+    QuerySchema dst_schema = QuerySchema::toSecure(*schema_);
+    std::shared_ptr<SecureTable> dst_table(new SecureTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, getSortOrder()));
 
     if(party == emp::ALICE) {
-        // feed through A data first, then wait for B
-        auto dst = (emp::block *) dstTable->tuple_data_.data();
-        emp::ProtocolExecution::prot_exec->feed(dst, emp::ALICE, bools, alice_tuple_cnt * tuple_size_  * 8);
-        dst += alice_tuple_cnt * tuple_size_  * 8;
-        emp::ProtocolExecution::prot_exec->feed(dst, emp::BOB, nullptr, bob_tuple_cnt * tuple_size_  * 8);
+        secret_share_send(emp::ALICE, dst_table, 0, false);
+        secret_share_recv(bob_tuple_cnt, emp::BOB, dst_table, alice_tuple_cnt, true);
     }
     else { // bob
-        auto dst = (emp::block *) dstTable->tuple_data_.data();
-        emp::ProtocolExecution::prot_exec->feed(dst, emp::ALICE, nullptr, alice_tuple_cnt * tuple_size_  * 8);
-        dst += alice_tuple_cnt * tuple_size_  * 8;
-        emp::ProtocolExecution::prot_exec->feed(dst, emp::BOB, bools, bob_tuple_cnt * tuple_size_  * 8);
-    }
 
-    delete[] bools;
+        secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table, 0, false);
+        secret_share_send(emp::BOB, dst_table, alice_tuple_cnt, true);
+
+
+    }
 
     netio->flush();
 
-    return dstTable;
+    std::cout << "Encrypted: " << *dst_table->reveal()  << std::endl;
+    
+    // TODO: REVERSE READ ORDER OF BOB, INSERT BITONIC MERGE HERE
+    return dst_table;
 
 }
-
 // use this for acting as a data sharing party in the PDF
 // generates alice and bob's shares and returns the pair
 template<typename B>
@@ -365,6 +332,12 @@ QueryTuple<B> QueryTable<B>::getTuple(int idx)   {
 }
 
 template<typename B>
+const QueryTuple<B> QueryTable<B>::getImmutableTuple(int idx)  const  {
+    int8_t *write_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
+    return QueryTuple<B>(schema_,  write_ptr);
+}
+
+template<typename B>
 size_t QueryTable<B>::getTrueTupleCount() const {
     assert(!isEncrypted());
     size_t count = 0;
@@ -398,6 +371,127 @@ const QueryTuple<B> QueryTable<B>::operator[](const int &idx) const {
 
     const QueryTuple<B> tuple(schema_, read_ptr);
     return tuple;
+}
+
+template<typename B>
+std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable &table, const int & party) {
+    uint32_t tupleCount = table.getTupleCount();
+
+
+    QuerySchema dst_schema = QuerySchema::toPlain(*table.getSchema());
+
+    std::unique_ptr<PlainTable > dst_table(new PlainTable(tupleCount, dst_schema, table.getSortOrder()));
+
+
+    for(uint32_t i = 0; i < tupleCount; ++i)  {
+        const SecureTuple tuple = table.getImmutableTuple(i);
+        PlainTuple dst_tuple = tuple.reveal(party);
+        std::cout << i  << ": revealed tuple: " << dst_tuple.toString(true);
+        dst_table->putTuple(i, dst_tuple);
+
+        PlainTuple read = dst_table->getTuple(i);
+        std::cout << " verifying " << read.toString(true) << std::endl;
+        assert(read == dst_tuple);
+    }
+
+    return dst_table;
+}
+
+template<typename B>
+std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const PlainTable & table, const int & party) {
+    return std::make_unique<PlainTable>(table);
+}
+
+template<typename B>
+void
+QueryTable<B>::secret_share_send(const int &party, std::shared_ptr<SecureTable> &dst_table, const int &write_offset,
+                                 const bool &reverse_read_order) const {
+
+    int32_t cursor = (int32_t) write_offset;
+
+    if(reverse_read_order) {
+        for(int32_t i = getTupleCount() - 1; i >= 0; --i) {
+            SecureTuple dst_tuple = dst_table->getTuple(cursor);
+            PlainTuple src_tuple = this->getPlainTuple(i);
+            std::cout << "*******Secret sharing tuple " << i << ", " << src_tuple.toString(true) << ", to idx: " << cursor <<  std::endl;
+            FieldUtilities::secret_share_send(src_tuple, dst_tuple, party);
+
+            PlainTuple revealed = dst_tuple.reveal(emp::PUBLIC);
+            std::cout << "      revealed=" << revealed.toString(true) << std::endl;
+
+            int32_t input = src_tuple.getField(0).template getValue<int32_t>();
+            int32_t output = revealed.getField(0).template getValue<int32_t>();
+
+            assert(input == output);
+
+            ++cursor;
+        }
+
+        return;
+
+    }
+
+    // else
+    for(size_t i = 0; i < getTupleCount(); ++i) {
+        SecureTuple dst_tuple = dst_table->getTuple(cursor);
+        PlainTuple src_tuple = this->getPlainTuple(i);
+        std::cout << "*******Secret sharing tuple " << i << ", " << src_tuple.toString(true) << ", to idx: " << cursor <<  std::endl;
+        FieldUtilities::secret_share_send(src_tuple, dst_tuple, party);
+
+        PlainTuple revealed = dst_tuple.reveal(emp::PUBLIC);
+        std::cout << "      revealed=" << revealed.toString(true) << std::endl;
+
+        int32_t input = src_tuple.getField(0).template getValue<int32_t>();
+        int32_t output = revealed.getField(0).template getValue<int32_t>();
+
+        assert(input == output);
+
+        ++cursor;
+    }
+
+}
+
+template<typename B>
+void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_party,
+                                      std::shared_ptr<SecureTable> &dst_table, const size_t &write_offset,
+                                      const bool &reverse_read_order) const {
+
+    int32_t cursor = (int32_t) write_offset;
+
+    if(reverse_read_order) {
+
+        for(int32_t i = tuple_count - 1; i >= 0; --i) {
+            SecureTuple dst_tuple = dst_table->getTuple(cursor);
+            std::cout << "*******Receiving tuple " << cursor << std::endl;
+            FieldUtilities::secret_share_recv(*schema_, dst_tuple, dst_party);
+
+
+            PlainTuple revealed = dst_tuple.reveal(emp::PUBLIC);
+            std::cout << "      revealed=" << revealed.toString(true) << std::endl;
+
+            ++cursor;
+        }
+
+
+
+        return;
+    }
+
+    // else
+    for(size_t i = 0; i < tuple_count; ++i) {
+        SecureTuple dst_tuple = dst_table->getTuple(cursor);
+        std::cout << "*******Receiving tuple " << cursor << std::endl;
+        FieldUtilities::secret_share_recv(*schema_, dst_tuple, dst_party);
+
+
+        PlainTuple revealed = dst_tuple.reveal(emp::PUBLIC);
+        std::cout << "      revealed=" << revealed.toString(true) << std::endl;
+
+        ++cursor;
+    }
+
+
+
 }
 
 

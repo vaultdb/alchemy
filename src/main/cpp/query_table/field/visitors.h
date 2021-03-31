@@ -191,22 +191,20 @@ namespace vaultdb {
         }
 
         void operator()(emp::Bit l) const {
-            memcpy(dst_, (int8_t *) &(l.bit), 1);
+            memcpy(dst_, (int8_t *) &(l.bit), sizeof(emp::block));
         }
 
         void operator()(emp::Integer l) const {
-            memcpy(dst_, (int8_t *) l.bits.data(), l.size());
+            memcpy(dst_, (int8_t *) l.bits.data(), l.size() * sizeof(emp::block));
         }
 
         void operator()(emp::Float l) const {
-            memcpy(dst_, (int8_t *) l.value.data(), 4);
+            memcpy(dst_, (int8_t *) l.value.data(), l.size() * sizeof(emp::block));
         }
 
         std::int8_t *dst_;
-        size_t string_length_;
 
     };
-
 
     struct SecretShareVisitor : public boost::static_visitor<Value> {
         Value operator()(bool b) const { return emp::Bit(b, dstParty); }
@@ -225,7 +223,7 @@ namespace vaultdb {
             size_t stringBitCount = input.size() * 8;
 
             emp::Integer payload = emp::Integer(stringBitCount, 0L, dstParty);
-            if (myParty == dstParty) {
+            if (send) {
                 emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dstParty, bools,
                                                         stringBitCount);
             } else {
@@ -246,7 +244,7 @@ namespace vaultdb {
         Value operator()(emp::Float l) const { return l; }
 
         int dstParty = emp::PUBLIC;
-        int myParty = emp::PUBLIC;
+        bool send = false;
 
 
     };

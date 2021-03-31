@@ -57,8 +57,10 @@ namespace  vaultdb {
             const std::shared_ptr<QuerySchema> getSchema() const;
 
             QueryTuple<B> getTuple(int idx);
+            const QueryTuple<B> getImmutableTuple(int idx) const;
 
-            unsigned int getTupleCount() const;
+
+        unsigned int getTupleCount() const;
 
             std::string toString(const bool &showDummies = false) const;
 
@@ -96,8 +98,17 @@ namespace  vaultdb {
 
             size_t getTrueTupleCount() const;
 
-    private:
         PlainTuple getPlainTuple(size_t idx) const;
+
+    private:
+        static std::unique_ptr<PlainTable> revealTable(const SecureTable & table, const int & party);
+        static std::unique_ptr<PlainTable> revealTable(const PlainTable & table, const int & party);
+        void secret_share_send(const int &party, std::shared_ptr<SecureTable> &dst_table, const int &write_offset,
+                               const bool &reverse_read_order) const;
+        void secret_share_recv(const size_t &tuple_count, const int &dst_party,
+                               std::shared_ptr<SecureTable> &dst_table, const size_t &write_offset,
+                               const bool &reverse_read_order) const;
+
     };
 
     std::ostream &operator<<(std::ostream &os, const PlainTable &table);

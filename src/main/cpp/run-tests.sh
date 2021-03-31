@@ -8,13 +8,13 @@ bash test/support/setup-csv.sh
 ./bin/value_expression_test
 ./bin/filter_test
 ./bin/project_test
-./bin/sort_test
 ./bin/basic_join_test
 ./bin/fkey_pkey_join_test
-./bin/scalar_aggregate_test
-./bin/group_by_aggregate_test
-./bin/secret_share_generator_test 
-./bin/serialization_test
+./bin/sort_test
+#./bin/scalar_aggregate_test
+#./bin/group_by_aggregate_test
+#./bin/secret_share_generator_test 
+#./bin/serialization_test
 
 
 #pairs for Alice and Bob

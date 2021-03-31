@@ -1,5 +1,7 @@
+#include <query_schema.h>
 #include "field_utilities.h"
-
+#include <plain_tuple.h>
+#include <secure_tuple.h>
 
 using namespace vaultdb;
 using namespace  emp;
@@ -77,3 +79,91 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
 }
 
 
+void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple & dst_tuple, const int & dst_party) {
+    size_t field_count = dst_tuple.getSchema()->getFieldCount();
+
+    for (size_t i = 0; i < field_count; ++i) {
+        PlainField src_field = src_tuple.getField(i);
+        SecureField dst_field = SecureField::secret_share_send(src_field, dst_party);
+
+
+
+        dst_tuple.setField(i, dst_field);
+
+        SecureField debug = dst_tuple.getField(i);
+        PlainField revealed = dst_field.reveal(emp::PUBLIC);
+
+        std::cout << "FieldUtilities::secret_share_send:Secret share sent field: " << revealed << " vs " << src_field <<  std::endl;
+
+
+        assert(revealed == src_field);
+    }
+
+    //bool dummy_tag = src_tuple.getDummyTag();
+    PlainField plain_dummy_tag =  PlainField(src_tuple.getDummyTag());
+    SecureField dummy_tag = SecureField::secret_share_send(plain_dummy_tag, dst_party);
+
+    dst_tuple.setDummyTag(dummy_tag);
+
+    PlainTuple tuple = dst_tuple.reveal(emp::PUBLIC);
+    std::cout << "Secret shared: " << tuple.toString(true);
+
+}
+
+void FieldUtilities::secret_share_recv(const QuerySchema & src_schema, SecureTuple &dst_tuple, const int &dst_party) {
+    size_t field_count = dst_tuple.getSchema()->getFieldCount();
+
+    for(size_t i = 0;  i < field_count; ++i) {
+        QueryFieldDesc field_desc = src_schema.getField(i);
+        SecureField  dst_field = SecureField::secret_share_recv(field_desc.getType(), field_desc.getStringLength(), dst_party);
+
+        PlainField revealed = dst_field.reveal(emp::PUBLIC);
+        std::cout << "Secret shared field: " << revealed.toString() << std::endl;
+
+        dst_tuple.setField(i, dst_field);
+
+        SecureField debug = dst_tuple.getField(i);
+
+
+    }
+
+    SecureField d = SecureField::secret_share_recv(FieldType::BOOL, 0, dst_party);
+    dst_tuple.setDummyTag(d);
+
+
+    PlainTuple tuple = dst_tuple.reveal(emp::PUBLIC);
+    std::cout << "Secret shared: " << tuple.toString(true);
+}
+
+
+
+/* void FieldUtilities::secret_share(const PlainTuple *src_tuple,  const std::shared_ptr<QuerySchema> &src_schema, SecureTuple & dst_tuple, const int &myParty, const int &dstParty) {
+    size_t field_count = dst_tuple.getSchema()->getFieldCount();
+
+
+
+    for(size_t i = 0; i < field_count; ++i) {
+
+
+        if(myParty == dstParty) {
+            PlainField f = src_tuple->getField(i);
+            SecureField dst_field = Field<emp::Bit>::secret_share_send(f, src_schema->getField(i).getType(), src_schema->getField(i).getStringLength(), myParty, dstParty);
+            dst_tuple.setField(i, dst_field);
+        }
+        else {
+            SecureField dst_field = Field<emp::Bit>::secretShare(nullptr, src_schema->getField(i).getType(), src_schema->getField(i).getStringLength(), myParty, dstParty);
+            dst_tuple.setField(i, dst_field);
+        }
+    }
+
+    PlainField *dummyTagField = nullptr;
+    if(myParty == dstParty)
+        dummyTagField = new PlainField(src_tuple->getDummyTag());
+
+    SecureField encryptedDummyTag = Field<emp::Bit>::secretShare(dummyTagField, FieldType::BOOL, 0, myParty, dstParty);
+    delete dummyTagField;
+
+    dst_tuple.setDummyTag(encryptedDummyTag.template getValue<emp::Bit>());
+}
+
+*/
