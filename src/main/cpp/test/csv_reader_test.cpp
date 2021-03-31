@@ -115,8 +115,6 @@ TEST_F(CsvReaderTest, ordersTest) {
     PsqlDataProvider dataProvider;
     std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
-    std::cout << "Schema: " << *(expected->getSchema())  << std::endl;
-
     QuerySchema csvSchema = *expected->getSchema();
     // o_orderdate(4) set schema to date
     csvSchema.putField(convertDateField(csvSchema.getField(4)));

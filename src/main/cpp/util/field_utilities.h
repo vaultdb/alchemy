@@ -4,8 +4,7 @@
 
 #include<type_traits>
 #include <query_table/field/field.h>
-#include <query_tuple.h>
-
+#include <query_table/query_tuple.h>
 #include "query_table/field/field_type.h"
 
 namespace vaultdb {

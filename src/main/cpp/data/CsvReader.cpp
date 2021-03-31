@@ -21,13 +21,11 @@ std::unique_ptr<PlainTable> CsvReader::readCsv(const string &filename, const Que
         }
     }
 
-    std::cout << "Rewrote schema " << std::endl;
     std::unique_ptr<PlainTable> result(new PlainTable(tupleEntries.size(), dst_schema));
     int cursor = 0;
 
     for(std::string line : tupleEntries) {
         parseTuple(line, schema, result, cursor);
-        std::cout << "Parsed tuple " << result->getTuple(cursor) <<  std::endl << " from "  << line << std::endl;
         ++cursor;
 
     }
@@ -102,8 +100,6 @@ void CsvReader::parseTuple(const std::string &csvLine, const QuerySchema &src_sc
     for(size_t i = 0; i < fieldCount; ++i) {
         PlainField field = FieldFactory<bool>::getFieldFromString(src_schema.getField(i).getType(), schema->getField(i).getStringLength(), tupleFields[i]);
         newTuple.setField(i, field);
-        std::cout << "Tuple: " << newTuple << std::endl;
-
     }
 
 }

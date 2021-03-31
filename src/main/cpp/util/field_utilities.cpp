@@ -1,7 +1,7 @@
 #include <query_schema.h>
 #include "field_utilities.h"
-#include <plain_tuple.h>
-#include <secure_tuple.h>
+#include <query_table/plain_tuple.h>
+#include <query_table/secure_tuple.h>
 
 using namespace vaultdb;
 using namespace  emp;

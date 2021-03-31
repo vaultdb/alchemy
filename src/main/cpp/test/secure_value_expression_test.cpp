@@ -40,9 +40,15 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
     PlainField lhsValue(FieldType::STRING, lhsStr, lhsStr.size());
     PlainField rhsValue(FieldType::STRING, rhsStr, rhsStr.size());
 
-    SecureField lhsEncrypted = PlainField::secretShare(&lhsValue, FieldType::STRING, lhsStr.length(), FLAGS_party, emp::ALICE);
-    SecureField rhsEncrypted = PlainField::secretShare(&rhsValue, FieldType::STRING, rhsStr.length(), FLAGS_party, emp::ALICE);
-
+    SecureField  lhsEncrypted, rhsEncrypted;
+    if(FLAGS_party == emp::ALICE) {
+        lhsEncrypted = PlainField ::secret_share_send(lhsValue, emp::ALICE);
+        rhsEncrypted = PlainField ::secret_share_send(rhsValue, emp::ALICE);
+    }
+    else {
+        lhsEncrypted = PlainField ::secret_share_recv(FieldType::STRING, lhsStr.size(), emp::ALICE);
+        rhsEncrypted = PlainField ::secret_share_recv(FieldType::STRING, rhsStr.size(), emp::ALICE);
+    }
 
     emp::Bit gtEncrypted = (lhsEncrypted > rhsEncrypted);
     bool gt =  gtEncrypted.reveal();
@@ -115,7 +121,6 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
 /*  char lhs = 'N'; // 78
     char rhs = 'R'; // 82
 
-    std::string lhsStr("N"), rhsStr("R");
 */
 
     emp::Integer lhsSecretShared(8, (int8_t) (FLAGS_party == emp::ALICE) ?  lhs : 0,
@@ -128,8 +133,17 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
     PlainField lhsField(FieldType::STRING, lhsStr, 1);
     PlainField rhsField(FieldType::STRING, rhsStr, 1);
 
-    SecureField lhsPrivateField = PlainField::secretShare(&lhsField, FieldType::STRING, 8, FLAGS_party, emp::ALICE);
-    SecureField rhsPrivateField = PlainField::secretShare(&rhsField, FieldType::STRING, 8, FLAGS_party, emp::BOB);
+    SecureField  lhsPrivateField, rhsPrivateField;
+    if(FLAGS_party == emp::ALICE) {
+        lhsPrivateField = PlainField ::secret_share_send(lhsField, emp::ALICE);
+        rhsPrivateField = PlainField ::secret_share_send(rhsField, emp::ALICE);
+    }
+    else {
+        lhsPrivateField = PlainField ::secret_share_recv(FieldType::STRING, 1, emp::ALICE);
+        rhsPrivateField = PlainField ::secret_share_recv(FieldType::STRING, 1, emp::ALICE);
+    }
+
+
 
 
 

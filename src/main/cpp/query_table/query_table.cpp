@@ -164,8 +164,6 @@ QueryTable<B>::QueryTable(const QueryTable<B> &src) : orderBy(src.getSortOrder()
 template <typename B>
 bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 
-    std::cout << "Equality predicate on QueryTable: " << std::endl;
-
     assert(!isEncrypted()); // reveal this for tables in the clear
 
     if(*getSchema() != *other.getSchema()) {
@@ -243,7 +241,6 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
 
     netio->flush();
 
-    std::cout << "Encrypted: " << *dst_table->reveal()  << std::endl;
 
     // TODO: REVERSE READ ORDER OF BOB, INSERT BITONIC MERGE HERE
     return dst_table;
