@@ -105,6 +105,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     QuerySchema schema(1);
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
 
+
     std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, schema));
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
@@ -147,6 +148,65 @@ TEST_F(EmpTest, encrypt_table_one_column) {
         tuple.setField(0, val);
     }
 
+    std::cout << "Output: " << *decryptedTable << std::endl;
+    //verify output
+    ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
+
+
+
+
+}
+
+
+
+TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
+    const uint32_t tupleCount = 10;
+    vector<int32_t> aliceInputData{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
+    vector<int32_t> bobInputData{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
+
+    /*const size_t tupleCount = 4;
+    vector<int32_t> aliceInputData{1, 3, 4, 7};
+    vector<int32_t> bobInputData{2, 5, 6, 8}; */
+    int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData.data() : bobInputData.data();
+
+    QuerySchema schema(1);
+    schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
+
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1);
+    std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, schema, sortDefinition));
+
+    for(uint32_t i = 0; i < tupleCount; ++i) {
+        Field<bool> val(FieldType::INT,inputData[i]);
+        PlainTuple tuple = (*inputTable)[i];
+
+        tuple.setDummyTag(false);
+        tuple.setField(0, val);
+    }
+
+
+    std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+
+    netio->flush();
+
+    std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
+
+    // set up expected result
+
+    std::vector<int32_t> input_tuples = aliceInputData;
+    input_tuples.insert(input_tuples.end(), bobInputData.begin(), bobInputData.end());
+    std::sort(input_tuples.begin(), input_tuples.end());
+
+
+    std::unique_ptr<PlainTable > expectedTable(new PlainTable(input_tuples.size(), schema, sortDefinition));
+
+    for(uint32_t i = 0; i < input_tuples.size(); ++i) {
+        Field<bool> val(FieldType::INT, input_tuples[i]);
+        PlainTuple tuple = (*expectedTable)[i];
+        tuple.setDummyTag(false);
+        tuple.setField(0, val);
+    }
+
+    std::cout << "Output: " << *decryptedTable << std::endl;
     //verify output
     ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
 

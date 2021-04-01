@@ -7,6 +7,8 @@
 #include "plain_tuple.h"
 #include "secure_tuple.h"
 
+#include <operators/sort.h>
+
 using namespace vaultdb;
 
 
@@ -77,7 +79,7 @@ vector<int8_t> QueryTable<B>::serialize() const {
 std::ostream &vaultdb::operator<<(std::ostream &os, const PlainTable &table) {
 
 
-        os <<  *table.getSchema() << " isEncrypted? " << table.isEncrypted() << endl;
+        os <<  *(table.getSchema()) << " isEncrypted? " << table.isEncrypted() << endl;
 
         for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
             PlainTuple tuple = table[i];
@@ -242,7 +244,12 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
     netio->flush();
 
 
-    // TODO: REVERSE READ ORDER OF BOB, INSERT BITONIC MERGE HERE
+    // if we carry over a sorted order, need to merge the inputs
+    if(!orderBy.empty()) {
+        std::cout << "Bitonic merge on table: " << *dst_table->reveal() << std::endl;
+       Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true);
+    }
+
     return dst_table;
 
 }

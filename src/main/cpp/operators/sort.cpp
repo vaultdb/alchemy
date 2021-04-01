@@ -2,6 +2,7 @@
 
 #include "plain_tuple.h"
 #include "secure_tuple.h"
+#include <util/field_utilities.h>
 
 
 using namespace vaultdb;
@@ -62,7 +63,7 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &invertDir) 
         int k = cnt / 2;
         bitonicSort(lo, k, !invertDir);
         bitonicSort(lo + k, cnt - k, invertDir);
-        bitonicMerge(lo, cnt, invertDir);
+        bitonicMerge(Operator<B>::output, sortDefinition, lo, cnt, invertDir);
 
     }
 }
@@ -75,23 +76,33 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &invertDir) 
  **/
 
 template<typename B>
-void Sort<B>::bitonicMerge(const int &lo, const int &n, const bool &invertDir) {
+void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &invertDir) {
 
     if (n > 1) {
         int m = powerOfLessThanTwo(n);
         for (int i = lo; i < lo + n - m; i++) {
-            compareAndSwap(i, i + m, invertDir);
+            QueryTuple<B> lhs = table->getTuple(i);
+            QueryTuple<B> rhs =  table->getTuple(i+m);
+            B to_swap = swapTuples(lhs, rhs, sort_def, invertDir);
+            bool swap_revealed = FieldUtilities::extract_bool(to_swap);
+            std::cout << "Testing C&S on indexes " << i << ", " << i+m <<  std::endl;
+            QueryTuple<B>::compare_swap(to_swap,lhs, rhs);
+            if(swap_revealed)
+                std::cout << "     Swapped: " << *(table->reveal()) <<  std::endl;
+
+
         }
-        bitonicMerge(lo, m, invertDir);
-        bitonicMerge(lo + m, n - m, invertDir);
+        bitonicMerge(table, sort_def, lo, m,  invertDir);
+        bitonicMerge(table, sort_def, lo + m, n - m, invertDir);
     }
 }
 
 template<typename B>
 void Sort<B>::compareAndSwap(const int &lhsIdx, const int &rhsIdx, const bool &invertDir) {
-    B toSwap = swapTuples(lhsIdx, rhsIdx, invertDir);
     QueryTuple<B> lhs = Operator<B>::output->getTuple(lhsIdx);
     QueryTuple<B> rhs =  Operator<B>::output->getTuple(rhsIdx);
+    B toSwap = swapTuples(lhs, rhs, sortDefinition, invertDir);
+
     QueryTuple<B>::compare_swap(toSwap,lhs, rhs);
 
 }
@@ -102,24 +113,22 @@ Sort<B>::~Sort() {
 }
 
 template<typename B>
-B Sort<B>::swapTuples(const int &lhsIdx, const int &rhsIdx, const bool &invertDir) {
+B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, const SortDefinition  & sort_definition, const bool & invertDir)  {
     B swap(false);
     B swapInit = swap;
 
-    QueryTuple<B> lhs = (*Operator<B>::output)[lhsIdx];
-    QueryTuple<B> rhs = (*Operator<B>::output)[rhsIdx];
 
     Field<B> lhsDummyTag = Field<B>(lhs.getDummyTag());
     Field<B> rhsDummyTag = Field<B>(rhs.getDummyTag());
 
-    for (size_t i = 0; i < sortDefinition.size(); ++i) {
+    for (size_t i = 0; i < sort_definition.size(); ++i) {
 
-        const Field<B> lhsField = sortDefinition[i].first == -1 ? lhsDummyTag
-                                                                 : lhs.getField(sortDefinition[i].first);
-        const Field<B> rhsField = sortDefinition[i].first == -1 ? rhsDummyTag
-                                                                 : rhs.getField(sortDefinition[i].first);
+        const Field<B> lhsField = sort_definition[i].first == -1 ? lhsDummyTag
+                                                                 : lhs.getField(sort_definition[i].first);
+        const Field<B> rhsField = sort_definition[i].first == -1 ? rhsDummyTag
+                                                                 : rhs.getField(sort_definition[i].first);
 
-        bool asc = (sortDefinition[i].second == SortDirection::ASCENDING);
+        bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
         if (invertDir)
             asc = !asc;
 
