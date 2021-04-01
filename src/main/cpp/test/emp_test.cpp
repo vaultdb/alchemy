@@ -98,9 +98,10 @@ TEST_F(EmpTest, emp_test_varchar) {
 // Testing absent psql dependency
 TEST_F(EmpTest, encrypt_table_one_column) {
     const uint32_t tupleCount = 10;
-    int32_t aliceInputData[10] = {1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
-    int32_t bobInputData[10] = {4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
-    int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData : bobInputData;
+    vector<int32_t> aliceInputData{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
+    vector<int32_t> bobInputData{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
+
+    int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData.data() : bobInputData.data();
     
     QuerySchema schema(1);
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
@@ -120,7 +121,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
     SecureTuple secureTuple = (*encryptedTable)[0];
     emp::Integer decryptTest = secureTuple.getField(0).getValue<emp::Integer>();
-    ASSERT_EQ(1, decryptTest.reveal<int32_t>());
+    ASSERT_EQ(3, decryptTest.reveal<int32_t>());
 
     netio->flush();
 
@@ -128,7 +129,9 @@ TEST_F(EmpTest, encrypt_table_one_column) {
 
     // set up expected result
     std::unique_ptr<PlainTable > expectedTable(new PlainTable(2 * tupleCount, schema));
-    // insert alice data first to last
+
+    // insert alice data last to first
+    std::reverse(aliceInputData.begin(), aliceInputData.end());
     for(uint32_t i = 0; i < tupleCount; ++i) {
         Field<bool> val(FieldType::INT, aliceInputData[i]);
         PlainTuple tuple = (*expectedTable)[i];
@@ -136,14 +139,10 @@ TEST_F(EmpTest, encrypt_table_one_column) {
         tuple.setField(0, val);
     }
 
-    int offset = tupleCount;
-
-    // add bob's tuples from last to first
-    int readIdx = tupleCount;
+    // add bob's tuples from first to last
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        --readIdx;
-        Field<bool> val(FieldType::INT, bobInputData[readIdx]);
-        PlainTuple tuple = (*expectedTable)[i + offset];
+        Field<bool> val(FieldType::INT, bobInputData[i]);
+        PlainTuple tuple = (*expectedTable)[i+tupleCount];
         tuple.setDummyTag(false);
         tuple.setField(0, val);
     }

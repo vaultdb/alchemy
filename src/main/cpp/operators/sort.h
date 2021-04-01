@@ -5,6 +5,7 @@
 #include <vector>
 
 
+// based on EMP Sort
 namespace  vaultdb {
     template<typename B>
     class Sort : public Operator<B> {
@@ -13,8 +14,8 @@ namespace  vaultdb {
 
     public:
         Sort(Operator<B> *child, const SortDefinition &aSortDefinition);
-        ~Sort();
         Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition);
+        ~Sort();
 
         std::shared_ptr<QueryTable<B> > runSelf() override;
 
