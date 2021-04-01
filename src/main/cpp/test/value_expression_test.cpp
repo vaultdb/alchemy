@@ -71,12 +71,14 @@ TEST_F(ValueExpressionTest, test_int32_expr) {
 
 }
 
-TEST_F(ValueExpressionTest, cmpSwap) {
-    string sql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+TEST_F(ValueExpressionTest, cmp_swap) {
+    string sql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 3"; // order by to ensure order is reproducible and not sorted on the sort cols
     std::shared_ptr<PlainTable > data = DataUtilities::getQueryResults("tpch_unioned", sql, false);
 
-    PlainTuple a = (*data)[0];
-    PlainTuple b = (*data)[1];
+    // deep copy
+    PlainTuple a(*data->getSchema()), b(*data->getSchema());
+    a = (*data)[0];
+    b = (*data)[1];
     bool swap(true);
 
     PlainTuple::compare_swap(swap, a, b);

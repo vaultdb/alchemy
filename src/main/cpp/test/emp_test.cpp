@@ -147,7 +147,6 @@ TEST_F(EmpTest, encrypt_table_one_column) {
         tuple.setField(0, val);
     }
 
-    std::cout << "Output: " << *decryptedTable << std::endl;
     //verify output
     ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
 
@@ -205,7 +204,6 @@ TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
         tuple.setField(0, val);
     }
 
-    std::cout << "Output: " << *decryptedTable << std::endl;
     //verify output
     ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
 

@@ -246,7 +246,6 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
 
     // if we carry over a sorted order, need to merge the inputs
     if(!orderBy.empty()) {
-        std::cout << "Bitonic merge on table: " << *dst_table->reveal() << std::endl;
        Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true);
     }
 

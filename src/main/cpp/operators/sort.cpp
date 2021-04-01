@@ -62,7 +62,6 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &invertDir) 
         int k = cnt / 2;
         bitonicSort(lo, k, !invertDir);
         bitonicSort(lo + k, cnt - k, invertDir);
-        std::cout << "Input for bitonic merge over (" << lo << ", " << lo + cnt - 1 << "]: " << *Operator<B>::output << std::endl;
         bitonicMerge(Operator<B>::output, sortDefinition, lo, cnt, invertDir);
 
     }
@@ -74,15 +73,6 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &invertDir) 
  * otherwise. The sequence to be sorted starts at index position lo,
  * the number of elements is cnt.
  **/
-/*
- * 	if (n > 1) {
-		int m = greatestPowerOfTwoLessThan(n);
-		for (int i = lo; i < lo + n - m; i++)
-			cmp_swap(key, data, i, i + m, acc);
-		bitonic_merge(key, data, lo, m, acc);
-		bitonic_merge(key, data, lo + m, n - m, acc);
-	}
- */
 template<typename B>
 void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &invertDir) {
 
@@ -94,13 +84,6 @@ void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortD
 
             B to_swap = swapTuples(lhs, rhs, sort_def, invertDir);
             QueryTuple<B>::compare_swap(to_swap,lhs, rhs);
-
-
-            bool swap_revealed = FieldUtilities::extract_bool(to_swap);
-            std::cout << "Testing C&S on indexes " << i << ", " << i+m <<  std::endl;
-            if(swap_revealed)
-                std::cout << "     Swapped: " << lhs.getField(0).reveal() << ", " << rhs.getField(0).reveal() <<  std::endl;
-
 
         }
         bitonicMerge(table, sort_def, lo, m,  invertDir);
