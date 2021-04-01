@@ -47,29 +47,6 @@ TEST_F(SortTest, testSingleIntColumn) {
 }
 
 
-TEST_F(SortTest, cmpSwap) {
-    string sql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
-    shared_ptr<PlainTable > data = DataUtilities::getQueryResults(dbName, sql, false);
-
-    PlainTuple a = (*data)[0];
-    PlainTuple b = (*data)[1];
-    bool swap(true);
-
-    PlainTuple::compare_swap(swap, a, b);
-
-    // swapped
-    ASSERT_EQ(a, (*data)[1]);
-    ASSERT_EQ(b, (*data)[0]);
-
-
-    // no swap
-    swap = false;
-    PlainTuple::compare_swap(swap, a, b);
-    ASSERT_EQ(a, (*data)[1]);
-    ASSERT_EQ(b, (*data)[0]);
-
-}
-
 TEST_F(SortTest, tpchQ1Sort) {
     string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_linenumber, l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
