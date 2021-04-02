@@ -228,7 +228,6 @@ std::shared_ptr<SecureTable> QueryTable<B>::secret_share(emp::NetIO *netio, cons
 
     QuerySchema dst_schema = QuerySchema::toSecure(*schema_);
 
-    std::cout << "Secret sharing " << alice_tuple_cnt << " + " << bob_tuple_cnt << " tuples.   Schema: " << dst_schema << std::endl;
     std::shared_ptr<SecureTable> dst_table(new SecureTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, getSortOrder()));
 
     // preserve sort order
@@ -427,7 +426,6 @@ QueryTable<B>::secret_share_send(const int &party, std::shared_ptr<SecureTable> 
 
     // else
     for(size_t i = 0; i < getTupleCount(); ++i) {
-        std::cout << "Secret share send is sharing tuple " << cursor << std::endl;
         SecureTuple dst_tuple = dst_table->getTuple(cursor);
         PlainTuple src_tuple = this->getPlainTuple(i);
         FieldUtilities::secret_share_send(src_tuple, dst_tuple, party);
@@ -458,8 +456,6 @@ void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_
 
     // else
     for(size_t i = 0; i < tuple_count; ++i) {
-        std::cout << "Secret share recv is recving tuple " << cursor << std::endl;
-
         SecureTuple dst_tuple = dst_table->getTuple(cursor);
         FieldUtilities::secret_share_recv(*schema_, dst_tuple, dst_party);
         ++cursor;

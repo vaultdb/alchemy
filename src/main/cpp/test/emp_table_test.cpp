@@ -23,18 +23,12 @@ TEST_F(EmpTableTest, encrypt_table_one_column) {
     PsqlDataProvider dataProvider;
 
     std::string input_query =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
-    //std::cout << "Querying " << dbName << " at " << FLAGS_alice_host <<  ":" << FLAGS_port <<  " with: " << input_query << std::endl;
-
-
-
-
     std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(dbName,
                                                                           input_query, false);
 
     SortDefinition  sort_definition = DataUtilities::getDefaultSortDefinition(1);
     input_table->setSortOrder(sort_definition);
 
-    std::cout << "Secret sharing: " << *input_table << std::endl;
     std::shared_ptr<SecureTable> encrypted = input_table->secret_share(netio, FLAGS_party);
 
     netio->flush();
@@ -141,8 +135,6 @@ TEST_F(EmpTableTest, encrypt_table_dummy_tag) {
     std::string input_query = QueryTableTestQueries::getInputQueryDummyTag();
     std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(dbName,
                                                                          input_query, true);
-
-    std::cout << "Input query: " << input_query << std::endl;
 
     std::shared_ptr<SecureTable> encrypted = input_table->secret_share(netio, FLAGS_party);
 

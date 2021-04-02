@@ -89,15 +89,8 @@ void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple
     }
 
     PlainField plain_dummy_tag =  PlainField(src_tuple.getDummyTag());
-    std::cout << "Sent dummy tag of " << plain_dummy_tag.getValue<bool>() << std::endl;
-
     SecureField dummy_tag = SecureField::secret_share_send(plain_dummy_tag, dst_party);
-    std::cout << "Storing dummy tag of " << FieldUtilities::extract_bool(dummy_tag.getValue<emp::Bit>()) << std::endl;
-
     dst_tuple.setDummyTag(dummy_tag);
-
-    emp::Bit test = dst_tuple.getDummyTag();
-    std::cout << "Revealed " << test.reveal() << std::endl;
 
 
 }
@@ -112,43 +105,9 @@ void FieldUtilities::secret_share_recv(const QuerySchema & src_schema, SecureTup
     }
 
     SecureField d = SecureField::secret_share_recv(FieldType::BOOL, 0, dst_party);
-    std::cout << "Received dummy tag of " << FieldUtilities::extract_bool(d.getValue<emp::Bit>()) << std::endl;
     dst_tuple.setDummyTag(d);
 
-    emp::Bit test = dst_tuple.getDummyTag();
-    std::cout << "Revealed " << test.reveal() << std::endl;
-
 }
 
 
 
-/* void FieldUtilities::secret_share(const PlainTuple *src_tuple,  const std::shared_ptr<QuerySchema> &src_schema, SecureTuple & dst_tuple, const int &myParty, const int &dstParty) {
-    size_t field_count = dst_tuple.getSchema()->getFieldCount();
-
-
-
-    for(size_t i = 0; i < field_count; ++i) {
-
-
-        if(myParty == dstParty) {
-            PlainField f = src_tuple->getField(i);
-            SecureField dst_field = Field<emp::Bit>::secret_share_send(f, src_schema->getField(i).getType(), src_schema->getField(i).getStringLength(), myParty, dstParty);
-            dst_tuple.setField(i, dst_field);
-        }
-        else {
-            SecureField dst_field = Field<emp::Bit>::secretShare(nullptr, src_schema->getField(i).getType(), src_schema->getField(i).getStringLength(), myParty, dstParty);
-            dst_tuple.setField(i, dst_field);
-        }
-    }
-
-    PlainField *dummyTagField = nullptr;
-    if(myParty == dstParty)
-        dummyTagField = new PlainField(src_tuple->getDummyTag());
-
-    SecureField encryptedDummyTag = Field<emp::Bit>::secretShare(dummyTagField, FieldType::BOOL, 0, myParty, dstParty);
-    delete dummyTagField;
-
-    dst_tuple.setDummyTag(encryptedDummyTag.template getValue<emp::Bit>());
-}
-
-*/
