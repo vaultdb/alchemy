@@ -208,7 +208,7 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 
 
 template<typename B>
-std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const int & party) const {
+std::shared_ptr<SecureTable> QueryTable<B>::secret_share(emp::NetIO *netio, const int & party) const {
 
     size_t alice_tuple_cnt = this->getTupleCount();
     size_t bob_tuple_cnt = alice_tuple_cnt;
@@ -227,27 +227,34 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(emp::NetIO *netio, const
 
 
     QuerySchema dst_schema = QuerySchema::toSecure(*schema_);
+
+    std::cout << "Secret sharing " << alice_tuple_cnt << " + " << bob_tuple_cnt << " tuples.   Schema: " << dst_schema << std::endl;
     std::shared_ptr<SecureTable> dst_table(new SecureTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, getSortOrder()));
 
-    if(party == emp::ALICE) {
-        secret_share_send(emp::ALICE, dst_table, 0, true);
-        secret_share_recv(bob_tuple_cnt, emp::BOB, dst_table, alice_tuple_cnt, false);
+    // preserve sort order
+    if(!orderBy.empty()) {
+        if (party == emp::ALICE) {
+            secret_share_send(emp::ALICE, dst_table, 0, true);
+            secret_share_recv(bob_tuple_cnt, emp::BOB, dst_table, alice_tuple_cnt, false);
+        } else { // bob
+
+            secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table, 0, true);
+            secret_share_send(emp::BOB, dst_table, alice_tuple_cnt, false);
+        }
+
+        Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true);
     }
-    else { // bob
-
-        secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table, 0, true);
-        secret_share_send(emp::BOB, dst_table, alice_tuple_cnt, false);
-
-
+    else { // concatenate Alice and Bob
+        if (party == emp::ALICE) {
+            secret_share_send(emp::ALICE, dst_table, 0, false);
+            secret_share_recv(bob_tuple_cnt, emp::BOB, dst_table, alice_tuple_cnt, false);
+        } else { // bob
+            secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table, 0, false);
+            secret_share_send(emp::BOB, dst_table, alice_tuple_cnt, false);
+        }
     }
-
     netio->flush();
 
-
-    // if we carry over a sorted order, need to merge the inputs
-    if(!orderBy.empty()) {
-       Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true);
-    }
 
     return dst_table;
 
@@ -420,6 +427,7 @@ QueryTable<B>::secret_share_send(const int &party, std::shared_ptr<SecureTable> 
 
     // else
     for(size_t i = 0; i < getTupleCount(); ++i) {
+        std::cout << "Secret share send is sharing tuple " << cursor << std::endl;
         SecureTuple dst_tuple = dst_table->getTuple(cursor);
         PlainTuple src_tuple = this->getPlainTuple(i);
         FieldUtilities::secret_share_send(src_tuple, dst_tuple, party);
@@ -450,6 +458,8 @@ void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_
 
     // else
     for(size_t i = 0; i < tuple_count; ++i) {
+        std::cout << "Secret share recv is recving tuple " << cursor << std::endl;
+
         SecureTuple dst_tuple = dst_table->getTuple(cursor);
         FieldUtilities::secret_share_recv(*schema_, dst_tuple, dst_party);
         ++cursor;

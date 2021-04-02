@@ -25,7 +25,7 @@ namespace vaultdb {
 
     public:
 
-        static std::unique_ptr<PlainTable >
+        static std::shared_ptr<PlainTable>
         getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
                           const bool &hasDummyTag);
 

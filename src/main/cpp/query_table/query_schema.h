@@ -36,7 +36,7 @@ namespace  vaultdb {
 
         QuerySchema &operator=(const QuerySchema &other);
 
-        size_t getFieldOffset(const size_t idx) const;
+        size_t getFieldOffset(const int32_t idx) const;
 
 
         bool operator==(const QuerySchema &other) const;

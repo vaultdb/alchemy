@@ -42,7 +42,7 @@ void UnionHybridData::readLocalInput(const string &localInputFile) {
     Utilities::checkMemoryUtilization(" read csv: ");
     std::cout << "Read " << localInput->getTupleCount() << " tuples of local input." << std::endl;
 
-    std::shared_ptr<SecureTable> encryptedTable = localInput->secretShare(netio, party);
+    std::shared_ptr<SecureTable> encryptedTable = localInput->secret_share(netio, party);
 
     if(!inputTableInit) {
         inputTable = encryptedTable;

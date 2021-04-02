@@ -2,12 +2,10 @@
 
 std::shared_ptr<SecureTable> SecureSqlInput::runSelf() {
     PsqlDataProvider dataProvider;
-    std::unique_ptr<PlainTable> plaintextTable = dataProvider.getQueryTable(dbName, inputQuery, hasDummyTag);
+    std::shared_ptr<PlainTable> plaintextTable = dataProvider.getQueryTable(dbName, inputQuery, hasDummyTag);
 
     // secret share it
-    output = plaintextTable->secretShare(netio_, srcParty);
-    if(!sortedOn.empty()) {  output->setSortOrder(sortedOn); }
-
+    output = plaintextTable->secret_share(netio_, srcParty);
 
     return output;
 }

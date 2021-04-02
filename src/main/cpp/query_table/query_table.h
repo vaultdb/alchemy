@@ -41,10 +41,6 @@ namespace  vaultdb {
 
         // empty sort definition for default case
             QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition = SortDefinition());
-
-            //QueryTable(const size_t &num_tuples, const int &colCount);
-
-
             QueryTable(const QueryTable &src);
 
             ~QueryTable() = default;
@@ -76,7 +72,7 @@ namespace  vaultdb {
             std::vector<int8_t> serialize() const;
 
 
-            std::shared_ptr<QueryTable<emp::Bit> > secretShare(emp::NetIO *io, const int &party) const;
+            std::shared_ptr<QueryTable<emp::Bit> > secret_share(emp::NetIO *io, const int &party) const;
 
             SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
 

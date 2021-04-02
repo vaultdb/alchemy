@@ -216,23 +216,26 @@ namespace vaultdb {
         Value operator()(float_t f) const { return emp::Float(f, dstParty); }
 
         Value operator()(std::string s) const {
-            std::string input = s;
-            std::reverse(input.begin(), input.end());
-            bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), input.size());
+            assert(string_length_ > 0);
 
-            size_t stringBitCount = input.size() * 8;
+            size_t string_bit_count = string_length_ * 8;
 
-            emp::Integer payload = emp::Integer(stringBitCount, 0L, dstParty);
+            emp::Integer payload = emp::Integer(string_bit_count, 0L, dstParty);
             if (send) {
+                std::string input = s;
+                std::reverse(input.begin(), input.end());
+                bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), string_length_);
+
                 emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dstParty, bools,
-                                                        stringBitCount);
+                                                        string_bit_count);
+                delete[] bools;
+
             } else {
                 emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dstParty, nullptr,
-                                                        stringBitCount);
+                                                        string_bit_count);
             }
 
 
-            delete[] bools;
 
             return payload;
         }
@@ -245,6 +248,8 @@ namespace vaultdb {
 
         int dstParty = emp::PUBLIC;
         bool send = false;
+        size_t string_length_ = 0;
+
 
 
     };

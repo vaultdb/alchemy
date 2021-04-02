@@ -118,7 +118,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     }
 
 
-    std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = inputTable->secret_share(netio, FLAGS_party);
     SecureTuple secureTuple = (*encryptedTable)[0];
     emp::Integer decryptTest = secureTuple.getField(0).getValue<emp::Integer>();
     ASSERT_EQ(3, decryptTest.reveal<int32_t>());
@@ -182,7 +182,7 @@ TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
     }
 
 
-    std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = inputTable->secret_share(netio, FLAGS_party);
 
     netio->flush();
 

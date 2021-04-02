@@ -89,8 +89,16 @@ void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple
     }
 
     PlainField plain_dummy_tag =  PlainField(src_tuple.getDummyTag());
+    std::cout << "Sent dummy tag of " << plain_dummy_tag.getValue<bool>() << std::endl;
+
     SecureField dummy_tag = SecureField::secret_share_send(plain_dummy_tag, dst_party);
+    std::cout << "Storing dummy tag of " << FieldUtilities::extract_bool(dummy_tag.getValue<emp::Bit>()) << std::endl;
+
     dst_tuple.setDummyTag(dummy_tag);
+
+    emp::Bit test = dst_tuple.getDummyTag();
+    std::cout << "Revealed " << test.reveal() << std::endl;
+
 
 }
 
@@ -104,7 +112,11 @@ void FieldUtilities::secret_share_recv(const QuerySchema & src_schema, SecureTup
     }
 
     SecureField d = SecureField::secret_share_recv(FieldType::BOOL, 0, dst_party);
+    std::cout << "Received dummy tag of " << FieldUtilities::extract_bool(d.getValue<emp::Bit>()) << std::endl;
     dst_tuple.setDummyTag(d);
+
+    emp::Bit test = dst_tuple.getDummyTag();
+    std::cout << "Revealed " << test.reveal() << std::endl;
 
 }
 

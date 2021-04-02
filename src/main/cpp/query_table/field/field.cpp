@@ -173,7 +173,8 @@ SecureField Field<B>::secret_share_send(const PlainField & src, const int & dst_
 
     SecretShareVisitor visitor;
     visitor.dstParty = dst_party;
-    visitor.send = false;
+    visitor.send = true;
+    visitor.string_length_ = src.string_length_;
 
     Value result = boost::apply_visitor(visitor, input);
 
@@ -190,6 +191,7 @@ SecureField Field<B>::secret_share_recv(const FieldType & type, const size_t & s
     SecretShareVisitor visitor;
     visitor.dstParty = dst_party;
     visitor.send = false;
+    visitor.string_length_ = str_length;
 
     Value result = boost::apply_visitor(visitor, input);
 
