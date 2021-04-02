@@ -30,11 +30,11 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
         for(uint32_t j = 0; j < rhs->getTupleCount(); ++j) {
             QueryTuple<B> rhs_tuple = (*rhs)[j];
             predicateEval = Join<B>::predicate->predicateCall(lhs_tuple, rhs_tuple);
-            B dst_dummy_tag = Join<B>::compareTuples(lhs_tuple, rhs_tuple, predicateEval);
+            B dst_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicateEval);
             QueryTuple<B> out = (*Join<B>::output)[cursor];
-            out.setDummyTag(dst_dummy_tag);
             Join<B>::write_left(true, out, lhs_tuple); // all writes happen because we do the full cross product
             Join<B>::write_right(true, out, rhs_tuple);
+            out.setDummyTag(dst_dummy_tag);
             ++cursor;
         }
     }

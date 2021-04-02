@@ -20,7 +20,7 @@ namespace  vaultdb {
 
         static QueryTuple<B> concatenateTuples(QueryTuple<B> *lhs, QueryTuple<B> *rhs);
 
-        static B compareTuples(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const Field<B> & predicateEval);
+        static B get_dummy_tag(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const B & predicateEval);
 
 
         // predicate function needs aware of encrypted or plaintext state of its inputs
