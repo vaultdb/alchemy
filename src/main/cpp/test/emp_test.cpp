@@ -119,30 +119,19 @@ TEST_F(EmpTest, encrypt_table_one_column) {
 
 
     std::shared_ptr<SecureTable> encryptedTable = inputTable->secret_share(netio, FLAGS_party);
-    SecureTuple secureTuple = (*encryptedTable)[0];
-    emp::Integer decryptTest = secureTuple.getField(0).getValue<emp::Integer>();
-    ASSERT_EQ(3, decryptTest.reveal<int32_t>());
 
     netio->flush();
 
     std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 
-    // set up expected result
+    // set up expected result by concatenating input tables
     std::unique_ptr<PlainTable > expectedTable(new PlainTable(2 * tupleCount, schema));
+    std::vector<int32_t> input_tuples = aliceInputData;
+    input_tuples.insert(input_tuples.end(), bobInputData.begin(), bobInputData.end());
 
-    // insert alice data last to first
-    std::reverse(aliceInputData.begin(), aliceInputData.end());
-    for(uint32_t i = 0; i < tupleCount; ++i) {
-        Field<bool> val(FieldType::INT, aliceInputData[i]);
+    for(uint32_t i = 0; i < input_tuples.size(); ++i) {
+        Field<bool> val(FieldType::INT, input_tuples[i]);
         PlainTuple tuple = (*expectedTable)[i];
-        tuple.setDummyTag(false);
-        tuple.setField(0, val);
-    }
-
-    // add bob's tuples from first to last
-    for(uint32_t i = 0; i < tupleCount; ++i) {
-        Field<bool> val(FieldType::INT, bobInputData[i]);
-        PlainTuple tuple = (*expectedTable)[i+tupleCount];
         tuple.setDummyTag(false);
         tuple.setField(0, val);
     }

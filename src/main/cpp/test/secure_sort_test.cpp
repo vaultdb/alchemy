@@ -83,7 +83,7 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
     PsqlDataProvider dataProvider;
 
-    std::unique_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(dbName,
+    std::shared_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          sql, false);
 
     SortDefinition sortDefinition;

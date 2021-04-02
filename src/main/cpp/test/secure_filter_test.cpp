@@ -51,7 +51,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::string dbName =  FLAGS_party == emp::ALICE ? aliceDb : bobDb;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
-    std::unique_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
 
@@ -77,7 +77,7 @@ TEST_F(SecureFilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
-    std::unique_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, expectedResultSql, true);
 
 
    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);

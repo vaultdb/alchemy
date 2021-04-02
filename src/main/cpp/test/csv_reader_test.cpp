@@ -41,7 +41,7 @@ TEST_F(CsvReaderTest, lineitemTest) {
     std::string query = "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
     QuerySchema csvSchema = *expected->getSchema();
     // substitute longs with dates in the appropriate cols, fields 10, 11, 12
     csvSchema.putField(convertDateField(csvSchema.getField(10)));
@@ -66,7 +66,7 @@ TEST_F(CsvReaderTest, quotedStringTest) {
     // grab customer table for schema:
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
     PsqlDataProvider dataProvider;
-    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
     std::unique_ptr<PlainTable> parse_test = std::unique_ptr<PlainTable>(new PlainTable(*expected));
 
@@ -94,7 +94,7 @@ TEST_F(CsvReaderTest, customerTest) {
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
     std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, *expected->getSchema());
 
@@ -113,7 +113,7 @@ TEST_F(CsvReaderTest, ordersTest) {
     std::string query = "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::unique_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
     QuerySchema csvSchema = *expected->getSchema();
     // o_orderdate(4) set schema to date

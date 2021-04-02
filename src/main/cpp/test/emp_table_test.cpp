@@ -16,7 +16,7 @@ class EmpTableTest : public EmpBaseTest {};
 
 
 
-/*
+
 // test encrypting a query table with a single int in EMP
 TEST_F(EmpTableTest, encrypt_table_one_column) {
 
@@ -132,7 +132,7 @@ TEST_F(EmpTableTest, encrypt_table) {
 
 
 }
- */
+
 
 TEST_F(EmpTableTest, encrypt_table_dummy_tag) {
 
