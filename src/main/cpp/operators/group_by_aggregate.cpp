@@ -1,6 +1,8 @@
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
 #include "group_by_aggregate.h"
+#include <query_table/plain_tuple.h>
+#include <query_table/secure_tuple.h>
 
 
 using namespace vaultdb;
@@ -9,11 +11,11 @@ template<typename B>
 std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
     std::vector<GroupByAggregateImpl<B> *> aggregators;
-    QueryTuple<B> current, predecessor;
     B realBin;
 
-    QueryTuple<B> output_tuple;
     QuerySchema inputSchema = *input->getSchema();
+    QueryTuple<B> current(inputSchema), predecessor(inputSchema);
+
 
     for(ScalarAggregateDefinition agg : aggregateDefinitions) {
         // for most aggs the output type is the same as the input type
@@ -29,6 +31,7 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     assert(verifySortOrder(input));
 
     QuerySchema outputSchema = generateOutputSchema(inputSchema, aggregators);
+
 
     // output sort order equal to first group-by-col-count entries in input sort order
     SortDefinition inputSort = input->getSortOrder();
@@ -56,7 +59,7 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
         realBin = realBin | !predecessor.getDummyTag();
         B isGroupByMatch = groupByMatch(predecessor, current);
-        output_tuple = GroupByAggregate<B>::output->getTuple(i-1);
+        QueryTuple<B> output_tuple = GroupByAggregate<B>::output->getTuple(i-1); // to write to it in place
         generateOutputTuple(output_tuple, predecessor, !isGroupByMatch, realBin, aggregators);
 
         for(GroupByAggregateImpl<B> *aggregator : aggregators) {
@@ -75,7 +78,7 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
 
     // B(true) to make it write out the last entry
-    output_tuple = GroupByAggregate<B>::output->getTuple(input->getTupleCount() - 1);
+    QueryTuple<B> output_tuple = GroupByAggregate<B>::output->getTuple(input->getTupleCount() - 1);
     generateOutputTuple(output_tuple, predecessor, B(true), realBin, aggregators);
 
     // output sorted on group-by cols

@@ -72,7 +72,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
 
 
     std::shared_ptr<PlainTable > observed = join.run();
-    
+
 
     ASSERT_EQ(*expected, *observed);
 

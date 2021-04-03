@@ -1,5 +1,8 @@
 #include <operators/support/scalar_aggregate_impl.h>
 #include "scalar_aggregate.h"
+#include <query_table/plain_tuple.h>
+#include <query_table/secure_tuple.h>
+
 
 using namespace vaultdb;
 
@@ -7,7 +10,7 @@ template<typename B>
 std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = ScalarAggregate<B>::children[0]->getOutput();
     std::vector<ScalarAggregateImpl<B> *> aggregators;
-    QueryTuple<B> tuple;
+    QueryTuple<B> tuple(*input->getSchema());
 
     for(ScalarAggregateDefinition agg : aggregateDefinitions) {
 

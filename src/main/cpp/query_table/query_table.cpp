@@ -79,9 +79,6 @@ vector<int8_t> QueryTable<B>::serialize() const {
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const PlainTable &table) {
-        //os << table.toString(true);
-        //return os;
-
         os <<  *(table.getSchema()) << " isEncrypted? " << table.isEncrypted() << endl;
 
         for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
@@ -357,7 +354,7 @@ size_t QueryTable<B>::getTrueTupleCount() const {
 
     for(size_t i = 0; i < tuple_data_.size() / tuple_size_; ++i) {
         PlainTuple p = getPlainTuple(i);
-        if(!p.isEncrypted())
+        if(!p.getDummyTag())
             ++count;
     }
 
