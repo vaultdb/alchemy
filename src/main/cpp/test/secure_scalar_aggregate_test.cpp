@@ -32,12 +32,8 @@ void SecureScalarAggregateTest::runTest(const string &expectedOutputQuery,
 
   // provide the aggregator with inputs:
   SecureSqlInput input(dbName, query, false, netio, FLAGS_party);
-
-
   ScalarAggregate aggregate(&input, aggregators);
-
   std::shared_ptr<PlainTable> observed = aggregate.run()->reveal();
-
 
   ASSERT_EQ(*expectedOutput, *observed);
 

@@ -116,7 +116,7 @@ GroupByAggregateImpl<B> *GroupByAggregate<B>::aggregateFactory(const AggregateId
 template<typename B>
 bool GroupByAggregate<B>::verifySortOrder(const std::shared_ptr<QueryTable<B> > &table) const {
     SortDefinition sortedOn = table->getSortOrder();
-    assert(sortedOn.size() >= groupByOrdinals.size());
+    assert(sortedOn.size() <= groupByOrdinals.size());
 
     for(size_t idx = 0; idx < groupByOrdinals.size(); ++idx) {
         // ASC || DESC does not matter here
