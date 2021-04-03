@@ -79,7 +79,8 @@ vector<int8_t> QueryTable<B>::serialize() const {
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const PlainTable &table) {
-
+        //os << table.toString(true);
+        //return os;
 
         os <<  *(table.getSchema()) << " isEncrypted? " << table.isEncrypted() << endl;
 
