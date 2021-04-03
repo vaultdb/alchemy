@@ -1,4 +1,6 @@
 #include "scalar_aggregate_impl.h"
+#include <query_table/plain_tuple.h>
+#include <query_table/secure_tuple.h>
 
 using namespace vaultdb;
 

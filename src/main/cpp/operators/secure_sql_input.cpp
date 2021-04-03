@@ -7,6 +7,7 @@ std::shared_ptr<SecureTable> SecureSqlInput::runSelf() {
     // secret share it
     output = plaintextTable->secret_share(netio_, srcParty);
 
+    //std::cout << "Secret shared input: " << output->reveal()->toString(true) << std::endl;
     return output;
 }
 

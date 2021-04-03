@@ -29,7 +29,6 @@ void SecureScalarAggregateTest::runTest(const string &expectedOutputQuery,
 
 
   std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults("tpch_unioned", expectedOutputQuery, false);
-  //Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
   // provide the aggregator with inputs:
   SecureSqlInput input(dbName, query, false, netio, FLAGS_party);
@@ -37,12 +36,8 @@ void SecureScalarAggregateTest::runTest(const string &expectedOutputQuery,
 
   ScalarAggregate aggregate(&input, aggregators);
 
-  std::shared_ptr<SecureTable> aggregated = aggregate.run();
-  std::shared_ptr<PlainTable> aggregatedReveal = aggregated->reveal();
+  std::shared_ptr<PlainTable> observed = aggregate.run()->reveal();
 
-
-  // need to delete dummies from observed output to compare it to expected
-  std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregatedReveal);
 
   ASSERT_EQ(*expectedOutput, *observed);
 
@@ -76,6 +71,31 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
 
 }
 
+
+
+TEST_F(SecureScalarAggregateTest, test_count) {
+    // set up expected output
+    std::string expectedOutputQuery = "SELECT COUNT(*) cnt FROM lineitem WHERE l_orderkey <= 10";
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    aggregators.push_back(ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt"));
+    runTest(expectedOutputQuery, aggregators);
+
+}
+
+
+
+TEST_F(SecureScalarAggregateTest, test_count_dummies) {
+    // set up expected output
+    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+    std::string expectedOutputQuery = "SELECT COUNT(*) cnt_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
+
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    aggregators.push_back(ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt"));
+    runDummiesTest(expectedOutputQuery, aggregators);
+
+}
 
 
 
@@ -151,27 +171,17 @@ TEST_F(SecureScalarAggregateTest, test_sum_lineno_baseprice) {
   runDummiesTest(expectedOutputQuery, aggregators);
 }
 
-//TEST_F(SecureScalarAggregateTest, test_min) {
-//  std::string expectedOutputQuery = "SELECT MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10";
-//  std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
-//  runTest(expectedOutputQuery, aggregators);
-//}
-//
-//
-//TEST_F(SecureScalarAggregateTest, test_max) {
-//  std::string expectedOutputQuery = "SELECT MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10";
-//  std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
-//  runTest(expectedOutputQuery, aggregators);
-//}
+TEST_F(SecureScalarAggregateTest, test_min) {
+  std::string expectedOutputQuery = "SELECT MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10";
+  std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
+   runTest(expectedOutputQuery, aggregators);
+}
 
-TEST_F(SecureScalarAggregateTest, test_count) {
-    // set up expected output
-    std::string expectedOutputQuery = "SELECT COUNT(*) cnt FROM lineitem WHERE l_orderkey <= 10";
 
-    std::vector<ScalarAggregateDefinition> aggregators;
-    aggregators.push_back(ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt"));
-    runTest(expectedOutputQuery, aggregators);
-
+TEST_F(SecureScalarAggregateTest, test_max) {
+  std::string expectedOutputQuery = "SELECT MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10";
+  std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
+  runTest(expectedOutputQuery, aggregators);
 }
 
 
@@ -305,8 +315,6 @@ std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb,
 
 
 
-// TODO: add tests for min/max/sum/count
-// TODO: run this with multiple aggregates, e.g., SELECT AVG(x), SUM(y) FROM z;
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
