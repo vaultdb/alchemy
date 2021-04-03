@@ -1,5 +1,6 @@
 #include "project.h"
 #include <query_table/field/field_factory.h>
+#include <query_table/secure_tuple.h>
 
 
 // can't initialize schemas yet, don't have child schema
@@ -19,13 +20,14 @@ Project<B>::Project(shared_ptr<QueryTable<B> > child) : Operator<B>(child), colC
 template<typename B>
 std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
-    std::shared_ptr<QueryTable<B> > srcTable = Operator<B>::children[0]->getOutput();
-    SortDefinition srcSortOrder = srcTable->getSortOrder();
-    srcSchema = *srcTable->getSchema();
+    std::shared_ptr<QueryTable<B> > src_table = Operator<B>::children[0]->getOutput();
+
+    SortDefinition srcSortOrder = src_table->getSortOrder();
+    srcSchema = *src_table->getSchema();
     colCount = expressions.size() + projectionMap.size();
 
     dstSchema = QuerySchema(colCount); // re-initialize it
-    uint32_t tupleCount = srcTable->getTupleCount();
+    uint32_t tupleCount = src_table->getTupleCount();
 
     // put all of the fields into one data structure -- doubles as a verification that destination schema is fully specified
     std::vector<uint32_t> fieldOrdinals;
@@ -35,8 +37,6 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
         uint32_t dstOrdinal = mapping.second;
         QueryFieldDesc srcField = srcSchema.getField(mapping.first);
         QueryFieldDesc fieldDesc(srcField, dstOrdinal);
-        size_t srcStringLength = srcField.getStringLength();
-        fieldDesc.setStringLength(srcStringLength);
         dstSchema.putField(fieldDesc);
 
         fieldOrdinals.push_back(dstOrdinal);
@@ -57,6 +57,7 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
         fieldOrdinals.push_back(dstOrdinal);
         ++exprPos;
     }
+
 
     // confirm that all ordinals are defined
     for(uint32_t i = 0; i < colCount; ++i) {
@@ -86,7 +87,7 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
-        QueryTuple<B> src_tuple = (*srcTable)[i];
+        QueryTuple<B> src_tuple = src_table->getTuple(i);
         QueryTuple<B> dst_tuple = Operator<B>::output->getTuple(i);
         project_tuple(dst_tuple, src_tuple);
     }

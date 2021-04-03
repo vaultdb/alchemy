@@ -33,14 +33,16 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
         :  orderBy(std::move(sortDefinition)), schema_(std::make_shared<QuerySchema>(schema)) {
 
      tuple_size_ = schema_->size()/8; // bytes for plaintext
+
     if(std::is_same_v<emp::Bit, B>) {
-        tuple_size_ *= 8 * sizeof(emp::block); // bits, one block per bit
+        size_t tuple_bits = schema_->size();
+        tuple_size_ = tuple_bits * sizeof(emp::block); // bits, one block per bit
     }
 
     tuple_data_.resize(num_tuples * tuple_size_);
     if(std::is_same_v<emp::Bit, B>) {
         emp::Integer tmp(schema_->size() * num_tuples, 0, emp::PUBLIC);
-        memcpy(tuple_data_.data(), tmp.bits.data(), tuple_size_ * num_tuples);
+        memcpy(tuple_data_.data(), tmp.bits.data(), schema_->size() * num_tuples);
     }
     else {
         std::memset(tuple_data_.data(), 0, tuple_data_.size());
@@ -335,8 +337,10 @@ void QueryTable<B>::resize(const size_t &tupleCount) {
 
 template<typename B>
 QueryTuple<B> QueryTable<B>::getTuple(int idx)   {
-    int8_t *write_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
-    return QueryTuple<B>(schema_,  write_ptr);
+    size_t offset_bytes = tuple_size_ * idx;
+    int8_t *dst = tuple_data_.data();
+    dst += offset_bytes;
+    return QueryTuple<B>(schema_,  dst);
 }
 
 template<typename B>
