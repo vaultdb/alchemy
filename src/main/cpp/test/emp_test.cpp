@@ -1,5 +1,7 @@
 #include <util/data_utilities.h>
 #include "support/EmpBaseTest.h"
+#include "query_table/secure_tuple.h"
+#include "query_table/plain_tuple.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54321, "port for EMP execution");
@@ -91,54 +93,104 @@ TEST_F(EmpTest, emp_test_varchar) {
 }
 
 
+
 // test encrypting a query table with a single int in EMP
 // Testing absent psql dependency
 TEST_F(EmpTest, encrypt_table_one_column) {
     const uint32_t tupleCount = 10;
-    int32_t aliceInputData[10] = {1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
-    int32_t bobInputData[10] = {4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
-    int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData : bobInputData;
+    vector<int32_t> aliceInputData{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
+    vector<int32_t> bobInputData{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
+
+    int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData.data() : bobInputData.data();
     
     QuerySchema schema(1);
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
 
-    std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, 1));
-    inputTable->setSchema(schema);
+
+    std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, schema));
 
     for(uint32_t i = 0; i < tupleCount; ++i) {
         Field<bool> val(FieldType::INT,inputData[i]);
-        inputTable->getTuplePtr(i)->setDummyTag(false);
-        inputTable->getTuplePtr(i)->setField(0, val);
+        PlainTuple tuple = (*inputTable)[i];
+
+        tuple.setDummyTag(false);
+        tuple.setField(0, val);
     }
 
 
-    std::shared_ptr<SecureTable> encryptedTable = inputTable->secretShare(netio, FLAGS_party);
-    emp::Integer decryptTest = encryptedTable->getTuplePtr(0)->getField(0)->getValue<emp::Integer>();
-    ASSERT_EQ(1, decryptTest.reveal<int32_t>());
+    std::shared_ptr<SecureTable> encryptedTable = inputTable->secret_share(netio, FLAGS_party);
+
+    netio->flush();
+
+    std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
+
+    // set up expected result by concatenating input tables
+    std::unique_ptr<PlainTable > expectedTable(new PlainTable(2 * tupleCount, schema));
+    std::vector<int32_t> input_tuples = aliceInputData;
+    input_tuples.insert(input_tuples.end(), bobInputData.begin(), bobInputData.end());
+
+    for(uint32_t i = 0; i < input_tuples.size(); ++i) {
+        Field<bool> val(FieldType::INT, input_tuples[i]);
+        PlainTuple tuple = (*expectedTable)[i];
+        tuple.setDummyTag(false);
+        tuple.setField(0, val);
+    }
+
+    //verify output
+    ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
+
+
+
+
+}
+
+
+
+TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
+    const uint32_t tupleCount = 10;
+    vector<int32_t> aliceInputData{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
+    vector<int32_t> bobInputData{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
+
+    /*const size_t tupleCount = 4;
+    vector<int32_t> aliceInputData{1, 3, 4, 7};
+    vector<int32_t> bobInputData{2, 5, 6, 8}; */
+    int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData.data() : bobInputData.data();
+
+    QuerySchema schema(1);
+    schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
+
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1);
+    std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, schema, sortDefinition));
+
+    for(uint32_t i = 0; i < tupleCount; ++i) {
+        Field<bool> val(FieldType::INT,inputData[i]);
+        PlainTuple tuple = (*inputTable)[i];
+
+        tuple.setDummyTag(false);
+        tuple.setField(0, val);
+    }
+
+
+    std::shared_ptr<SecureTable> encryptedTable = inputTable->secret_share(netio, FLAGS_party);
 
     netio->flush();
 
     std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 
     // set up expected result
-    std::unique_ptr<PlainTable > expectedTable(new PlainTable(2 * tupleCount, 1));
-    expectedTable->setSchema(schema);
-    // insert alice data first to last
-    for(uint32_t i = 0; i < tupleCount; ++i) {
-        Field<bool> val(FieldType::INT, aliceInputData[i]);
-        expectedTable->getTuplePtr(i)->setDummyTag(false);
-        expectedTable->getTuplePtr(i)->setField(0, val);
-    }
 
-    int offset = tupleCount;
+    std::vector<int32_t> input_tuples = aliceInputData;
+    input_tuples.insert(input_tuples.end(), bobInputData.begin(), bobInputData.end());
+    std::sort(input_tuples.begin(), input_tuples.end());
 
-    // add bob's tuples from last to first
-    int readIdx = tupleCount;
-    for(uint32_t i = 0; i < tupleCount; ++i) {
-        --readIdx;
-        Field<bool> val(FieldType::INT, bobInputData[readIdx]);
-        expectedTable->getTuplePtr(i + offset)->setDummyTag(false);
-        expectedTable->getTuplePtr(i + offset)->setField(0, val);
+
+    std::unique_ptr<PlainTable > expectedTable(new PlainTable(input_tuples.size(), schema, sortDefinition));
+
+    for(uint32_t i = 0; i < input_tuples.size(); ++i) {
+        Field<bool> val(FieldType::INT, input_tuples[i]);
+        PlainTuple tuple = (*expectedTable)[i];
+        tuple.setDummyTag(false);
+        tuple.setField(0, val);
     }
 
     //verify output

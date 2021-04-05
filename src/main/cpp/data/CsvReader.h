@@ -9,7 +9,9 @@ namespace  vaultdb {
     public:
         static std::unique_ptr<PlainTable > readCsv(const std::string &filename, const QuerySchema &schema);
 
-        static PlainTuple parseTuple(const std::string &csvLine, const QuerySchema &schema);
+        static void
+        parseTuple(const std::string &csvLine, const QuerySchema &src_schema, std::unique_ptr<PlainTable> &dst,
+                   const size_t &tupleIdx);
 
     private:
         static std::vector<std::string> readFile(const std::string &filename);

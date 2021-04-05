@@ -41,7 +41,7 @@ namespace  vaultdb {
                   string_length_(f.getStringLength()), type_(type), ordinal_(f.ordinal_) {}
 
         QueryFieldDesc(const QueryFieldDesc &f, int col_num)
-                : name_(f.name_), table_name(f.table_name), string_length_(0), type_(f.type_), ordinal_(col_num) {}
+                : name_(f.name_), table_name(f.table_name), string_length_(f.string_length_), type_(f.type_), ordinal_(col_num) {}
 
         QueryFieldDesc(uint32_t anOrdinal, const std::string &n, const std::string &tab, const FieldType &aType, const size_t & stringLength = 0)
                 : name_(n),

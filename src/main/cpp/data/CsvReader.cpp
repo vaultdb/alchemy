@@ -3,6 +3,8 @@
 #include <boost/algorithm/string.hpp>
 #include <field/field.h>
 #include <field/field_factory.h>
+#include <query_table.h>
+#include <plain_tuple.h>
 
 using namespace vaultdb;
 
@@ -10,14 +12,22 @@ std::unique_ptr<PlainTable> CsvReader::readCsv(const string &filename, const Que
 
     std::vector<std::string> tupleEntries = readFile(filename);
 
-    std::unique_ptr<PlainTable> result(new PlainTable(tupleEntries.size(), schema.getFieldCount()));
-    result->setSchema(schema);
+    // replace dates with LONG
+    QuerySchema dst_schema(schema);
+    for(size_t i = 0; i < schema.getFieldCount(); ++i) {
+        if(schema.getField(i).getType() == FieldType::DATE) {
+            QueryFieldDesc dst_field_desc(schema.getField(i), FieldType::LONG);
+            dst_schema.putField(dst_field_desc);
+        }
+    }
+
+    std::unique_ptr<PlainTable> result(new PlainTable(tupleEntries.size(), dst_schema));
     int cursor = 0;
 
     for(std::string line : tupleEntries) {
-        QueryTuple newTuple = parseTuple(line, schema);
-        result->putTuple(cursor, newTuple);
+        parseTuple(line, schema, result, cursor);
         ++cursor;
+
     }
 
     return result;
@@ -75,22 +85,23 @@ vector<string> CsvReader::split(const string &tupleEntry) {
     return result;
 }
 
-PlainTuple CsvReader::parseTuple(const string &line, const QuerySchema &schema) {
+void CsvReader::parseTuple(const std::string &csvLine, const QuerySchema &src_schema, std::unique_ptr<PlainTable> &dst,
+                           const size_t &tupleIdx) {
+
     std::vector<std::string> tupleFields;
-    size_t fieldCount = schema.getFieldCount();
+    std::shared_ptr<QuerySchema> schema = dst->getSchema();
+    size_t fieldCount = schema->getFieldCount();
 
 
-    tupleFields = split(line);
+    tupleFields = split(csvLine);
     assert(fieldCount == tupleFields.size()); // verify the field count
-    PlainTuple  newTuple(fieldCount);
+    PlainTuple newTuple = dst->getTuple(tupleIdx);
 
     for(size_t i = 0; i < fieldCount; ++i) {
-        PlainField field = FieldFactory<bool>::getFieldFromString(schema.getField(i).getType(), schema.getField(i).getStringLength(), tupleFields[i]);
+        PlainField field = FieldFactory<bool>::getFieldFromString(src_schema.getField(i).getType(), schema->getField(i).getStringLength(), tupleFields[i]);
         newTuple.setField(i, field);
-
     }
 
-    return newTuple;
 }
 
 

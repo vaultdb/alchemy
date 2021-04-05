@@ -97,7 +97,7 @@ shared_ptr<PlainTable> EnrichTest::loadAndJoinLocalData(const std::string & dbNa
 shared_ptr<SecureTable> EnrichTest::loadUnionAndDeduplicateData() const{
     string dbName = (FLAGS_party == ALICE) ? aliceDbName : bobDbName;
     shared_ptr<PlainTable>  localData = loadAndJoinLocalData(dbName);
-    std::shared_ptr<SecureTable> unionedAndEncryptedData = localData->secretShare(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> unionedAndEncryptedData = localData->secret_share(netio, FLAGS_party);
 
 
     // TODO: do bitonic merge instead of full-fledged sort here.  Inputs are sorted locally and each side makes up half of a bitonic sequence
@@ -270,11 +270,11 @@ void EnrichTest::validateTable(const std::string & dbName, const std::string & s
     std::shared_ptr<PlainTable> expectedTable = dataProvider.getQueryTable(dbName, sql);
     expectedTable->setSortOrder(expectedSortDefinition);
 
-    ASSERT_EQ(expectedTable->getSchema(), observedTable->getSchema());
+    ASSERT_EQ(*expectedTable->getSchema(), *observedTable->getSchema());
 
     // check that the types are faithfully aligned
-    for(size_t i = 0; i < observedTable->getSchema().getFieldCount(); ++i) {
-        FieldType schemaType = observedTable->getSchema().getField(i).getType();
+    for(size_t i = 0; i < observedTable->getSchema()->getFieldCount(); ++i) {
+        FieldType schemaType = observedTable->getSchema()->getField(i).getType();
         FieldType instanceType = (*observedTable)[0][i].getType();
         FieldType expectedType = (*expectedTable)[0][i].getType();
         /*if(schemaType != instanceType) {
@@ -345,13 +345,12 @@ TEST_F(EnrichTest, loadAndJoinData) {
                                       "ORDER BY p.patid, denom_excl";
 
 
-    SortDefinition emptySort; // leaving this empty for now, TODO: propagate sort trait through join op
-
+    SortDefinition  expectedSort{ColumnSort(0, SortDirection::ASCENDING)};
     std::shared_ptr<PlainTable> aliceJoined = loadAndJoinLocalData(aliceDbName);
-    validateTable(aliceDbName, expectedResultSql, emptySort, aliceJoined);
+    validateTable(aliceDbName, expectedResultSql, expectedSort, aliceJoined);
 
     std::shared_ptr<PlainTable> bobJoined = loadAndJoinLocalData(bobDbName);
-    validateTable(bobDbName, expectedResultSql, emptySort, bobJoined);
+    validateTable(bobDbName, expectedResultSql, expectedSort, bobJoined);
 
 }
 
@@ -527,7 +526,7 @@ TEST_F(EnrichTest, testRollups) {
     //std::cout << "Validated zip marker stratified " << *zipMarkerStratified << std::endl;
 }
 
-// setup with 100 tuples:
+// set up with 100 tuples:
 // bash test/support/load-generated-data.sh 100
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

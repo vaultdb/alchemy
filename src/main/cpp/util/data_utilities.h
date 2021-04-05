@@ -25,7 +25,7 @@ namespace vaultdb {
 
     public:
 
-        static std::unique_ptr<PlainTable >
+        static std::shared_ptr<PlainTable>
         getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
                           const bool &hasDummyTag);
 
@@ -59,6 +59,8 @@ namespace vaultdb {
         static string printFirstBytes(vector<int8_t> &bytes, const int &byteCount);
 
         static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
+
+//        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
 
 
     };

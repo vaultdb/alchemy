@@ -120,17 +120,6 @@ QuerySchema QuerySchema::toPlain(const QuerySchema &secureSchema) {
 
 }
 
-int QuerySchema::getOrdinal(const std::string & fieldName) const {
-   int offset = 0;
-   for(QueryFieldDesc fieldDesc : fields_) {
-       if(fieldDesc.getName() == fieldName)
-           return offset;
-       ++offset;
-   }
-    // no match
-   return -1;
-
-}
 
 const QueryFieldDesc QuerySchema::getField(const string &fieldName) const {
     for(QueryFieldDesc fieldDesc : fields_) {
@@ -139,6 +128,19 @@ const QueryFieldDesc QuerySchema::getField(const string &fieldName) const {
     }
 
     throw; // not found
+}
+
+// in bits, idx == -1 means dummy_tag
+size_t QuerySchema::getFieldOffset(const int32_t idx) const {
+    // if dummy tag, go to max offset
+    size_t seek_to = (idx == -1) ? fields_.size() : idx;
+
+    size_t bitSize = 0L;
+    for (size_t i = 0; i < seek_to; i++) {
+        bitSize += fields_[i].size();
+    }
+    return  bitSize;
+
 }
 
 

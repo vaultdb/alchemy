@@ -17,7 +17,7 @@ public:
     virtual ~BinaryPredicate() {}
 
     // override when we instantiate a predicate -- only need to implement one of these per predicate class
-    virtual B predicateCall(const QueryTuple<B> * lhs, const QueryTuple<B> * rhs) const = 0;
+    virtual B predicateCall(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs) const = 0;
 
 };
 

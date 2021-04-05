@@ -17,7 +17,7 @@ namespace  vaultdb {
         std::string inputQuery;
         std::string dbName;
         bool hasDummyTag;
-        SortDefinition sortedOn;
+        SortDefinition sorted_on_;
 
 
     protected:
@@ -29,7 +29,7 @@ namespace  vaultdb {
             inputQuery(sql), dbName(db), hasDummyTag(dummyTag) {}
 
         SecureSqlInput(const string &db, const string & sql, const bool &dummyTag, const SortDefinition &sortDefinition, NetIO *netio, const int &party) :
-                        netio_(netio), srcParty(party),  inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sortedOn(sortDefinition) {}
+                        netio_(netio), srcParty(party),  inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sorted_on_(sortDefinition) {}
          ~SecureSqlInput() = default;
     };
 

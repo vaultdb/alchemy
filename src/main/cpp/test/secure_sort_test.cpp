@@ -5,6 +5,7 @@
 #include <test/support/EmpBaseTest.h>
 #include <util/field_utilities.h>
 #include <operators/sort.h>
+#include <query_table/secure_tuple.h>
 
 
 
@@ -33,17 +34,17 @@ bool SecureSortTest::correctOrder(const PlainTuple &lhs, const PlainTuple &rhs, 
     assert(lhs.getFieldCount() == rhs.getFieldCount());
 
     for(uint32_t i = 0; i < lhs.getFieldCount(); ++i) {
-        const PlainField *lhsVal = lhs.getField(i);
-        const PlainField *rhsVal = rhs.getField(i);
+        const PlainField lhsVal = lhs.getField(i);
+        const PlainField rhsVal = rhs.getField(i);
 
-        if (*lhsVal == *rhsVal)
+        if (lhsVal == rhsVal)
             continue;
 
         if(sortDefinition[i].second == SortDirection::ASCENDING) {
-            return *lhsVal <= *rhsVal; //!FieldUtilities::gt(lhsVal, rhsVal);
+            return lhsVal <= rhsVal; //!FieldUtilities::gt(lhsVal, rhsVal);
         }
         else if(sortDefinition[i].second == SortDirection::DESCENDING) {
-             return *lhsVal >  *rhsVal;
+             return lhsVal >  rhsVal;
         }
     }
     return true;
@@ -83,7 +84,7 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
     PsqlDataProvider dataProvider;
 
-    std::unique_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(dbName,
+    std::shared_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(dbName,
                                                                          sql, false);
 
     SortDefinition sortDefinition;
@@ -110,9 +111,7 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate")  + " FROM input ORDER BY revenue DESC, o_orderdate";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults("tpch_unioned", expectedResultSql, false);
-
-
+    shared_ptr<PlainTable> expected = DataUtilities::getQueryResults("tpch_unioned", expectedResultSql, false);
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
@@ -121,6 +120,16 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
     Sort<emp::Bit> sort(&input, sortDefinition);
+
+    /*shared_ptr<SecureTable> sorted = sort.run();
+    shared_ptr<PlainTable> revealed = sorted->reveal();
+    netio->flush();
+
+
+    // 25 tuples, 16 bytes per bit
+    // tuple is 160 bits + dummy_tag = 161 bits * 16 bytes /emp::Bit = 256 tuple size
+    ASSERT_EQ(sorted->tuple_size_, 2576);*/
+
 
     // project it down to $1, $3
     Project project(&sort);

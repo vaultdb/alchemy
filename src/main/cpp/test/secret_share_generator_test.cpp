@@ -57,7 +57,7 @@ TEST_F(SecretShareGeneratorTest, lineitem_sample) {
     std::shared_ptr<PlainTable> initialTable = DataUtilities::getQueryResults(dbName, query, false);
     SecretShares secretShares = initialTable->generateSecretShares();
 
-    std::shared_ptr<PlainTable> finalTable = assembleSecretShares(initialTable->getSchema(), secretShares);
+    std::shared_ptr<PlainTable> finalTable = assembleSecretShares(*initialTable->getSchema(), secretShares);
 
     ASSERT_EQ(*initialTable, *finalTable);
 
@@ -74,7 +74,7 @@ TEST_F(SecretShareGeneratorTest, lineitem_dummy_tag_sample) {
     std::shared_ptr<PlainTable> initialTable = DataUtilities::getQueryResults(dbName, query, true);
     SecretShares secretShares = initialTable->generateSecretShares();
 
-    std::shared_ptr<PlainTable> finalTable = assembleSecretShares(initialTable->getSchema(), secretShares);
+    std::shared_ptr<PlainTable> finalTable = assembleSecretShares(*initialTable->getSchema(), secretShares);
 
     ASSERT_EQ(*initialTable, *finalTable);
 

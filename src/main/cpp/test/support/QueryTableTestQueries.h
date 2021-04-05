@@ -16,11 +16,11 @@ public:
     // hold the timestamp as a const static local variable and expose it through a
     // static member function
     static std::string getInputQuery();
-    static std::unique_ptr<PlainTable> getExpectedSecureOutput();
+    static std::shared_ptr<PlainTable> getExpectedSecureOutput();
 
     static std::string getInputQueryDummyTag();
 
-    static std::unique_ptr<PlainTable> getExpectedSecureOutputDummyTag();
+    static std::shared_ptr<PlainTable> getExpectedSecureOutputDummyTag();
 
 
 

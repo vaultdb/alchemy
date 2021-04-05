@@ -4,6 +4,7 @@
 #include <typeinfo>
 
 #include <chrono>
+#include <plain_tuple.h>
 #include "query_table/field/field.h"
 
 //typedef std::chrono::steady_clock::time_point time_point;
@@ -11,7 +12,7 @@
 
 // if hasDummyTag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
-std::unique_ptr<PlainTable >
+std::shared_ptr<PlainTable>
 PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag) {
 
     dbName = dbname;
@@ -46,20 +47,18 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
 
     tableSchema = getSchema(pqxxResult, hasDummyTag);
-    std::unique_ptr<PlainTable > dstTable = std::make_unique<PlainTable >(rowCount, colCount);
+    std::shared_ptr<PlainTable > dst_table = std::make_shared<PlainTable>(rowCount, *tableSchema);
 
-    dstTable->setSchema(*tableSchema);
 
     int counter = 0;
     for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
-        PlainTuple tuple = getTuple(*resultPos, hasDummyTag);
-        dstTable->putTuple(counter, tuple);
+        getTuple(*resultPos, hasDummyTag, *dst_table, counter);
         ++counter;
     }
 
     dbConn.disconnect();
 
-    return dstTable;
+    return dst_table;
 }
 
 std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, bool hasDummyTag) {
@@ -137,7 +136,8 @@ string PsqlDataProvider::getTableName(int oid) {
 
 }
 
-PlainTuple  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
+void
+PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag, PlainTable &dst_table, const size_t &idx) {
         int colCount = row.size();
 
 
@@ -145,30 +145,26 @@ PlainTuple  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
             --colCount;
         }
 
-        PlainTuple  dstTuple(colCount);
 
 
-
+        PlainTuple dst_tuple = dst_table.getTuple(idx); // writes in place
         for (int i=0; i < colCount; i++) {
             const pqxx::field srcField = row[i];
 
-           PlainField  *parsedField = getField(srcField);
-            dstTuple.setField(i, *parsedField);
-            delete parsedField;
+           PlainField  parsedField = getField(srcField);
+            dst_tuple.setField(i, parsedField);
         }
 
         if(hasDummyTag) {
 
-                PlainField *parsedField = getField(row[colCount]); // get the last col
-                dstTuple.setDummyTag(*((PlainField *) parsedField));
-                delete parsedField;
+                PlainField parsedField = getField(row[colCount]); // get the last col
+                dst_tuple.setDummyTag(parsedField);
         }
 
-    return dstTuple;
     }
 
 
-    PlainField * PsqlDataProvider::getField(pqxx::field src) {
+    PlainField PsqlDataProvider::getField(pqxx::field src) {
 
         int ordinal = src.num();
         pqxx::oid oid = src.type();
@@ -177,13 +173,13 @@ PlainTuple  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
         switch (colType) {
             case FieldType::INT:
             {
-                auto intVal = src.as<int32_t>();
-                return new PlainField(colType, intVal);
+                int32_t intVal = src.as<int32_t>();
+                return  PlainField(colType, intVal);
             }
             case FieldType::LONG:
             {
                 int64_t intVal = src.as<int64_t>();
-                return new PlainField(colType, intVal);
+                return  PlainField(colType, intVal);
             }
 
            case FieldType::DATE:
@@ -192,18 +188,18 @@ PlainTuple  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                 std::tm timeStruct = {};
                 strptime(dateStr.c_str(), "%Y-%m-%d", &timeStruct);
                 int64_t epoch = mktime(&timeStruct) - 21600; // date time function is 6 hours off from how psql does it, TODO: track this down, probably a timezone problem
-                return new PlainField(FieldType::LONG, epoch);
+                return  PlainField(FieldType::LONG, epoch);
 
             }
             case FieldType::BOOL:
             {
                 bool boolVal = src.as<bool>();
-                return new PlainField(colType, boolVal);
+                return  PlainField(colType, boolVal);
             }
             case FieldType::FLOAT:
             {
                 float floatVal = src.as<float>();
-                return new PlainField(colType, floatVal);
+                return  PlainField(colType, floatVal);
             }
 
             case FieldType::STRING:
@@ -214,7 +210,9 @@ PlainTuple  PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag) {
                 while(stringVal.size() != strLength) {
                     stringVal += " ";
                 }
-                return new PlainField(colType, stringVal, strLength);
+
+
+                return  PlainField(colType, stringVal, strLength);
             }
             default:
                 throw std::invalid_argument("Unsupported column type " + std::to_string(oid));

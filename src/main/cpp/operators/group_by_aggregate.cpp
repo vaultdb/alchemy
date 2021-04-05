@@ -1,6 +1,8 @@
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
 #include "group_by_aggregate.h"
+#include <query_table/plain_tuple.h>
+#include <query_table/secure_tuple.h>
 
 
 using namespace vaultdb;
@@ -9,11 +11,11 @@ template<typename B>
 std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
     std::vector<GroupByAggregateImpl<B> *> aggregators;
-    QueryTuple<B> *current, *predecessor;
     B realBin;
 
-    QueryTuple<B> outputTuple;
-    QuerySchema inputSchema = input->getSchema();
+    QuerySchema inputSchema = *input->getSchema();
+    QueryTuple<B> current(inputSchema), predecessor(inputSchema);
+
 
     for(ScalarAggregateDefinition agg : aggregateDefinitions) {
         // for most aggs the output type is the same as the input type
@@ -30,6 +32,7 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
     QuerySchema outputSchema = generateOutputSchema(inputSchema, aggregators);
 
+
     // output sort order equal to first group-by-col-count entries in input sort order
     SortDefinition inputSort = input->getSortOrder();
     SortDefinition outputSort = std::vector<ColumnSort>(inputSort.begin(), inputSort.begin() + groupByOrdinals.size());
@@ -37,32 +40,33 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
     Operator<B>::output = std::shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), outputSchema, outputSort));
 
-    QueryTuple<B> *tuplePtr = Operator<B>::output->getTuplePtr(0);
-    tuplePtr->setDummyTag(B(false));
+    QueryTuple<B> tuple = (*Operator<B>::output)[0];
+    B dummy_tag(false);
+    tuple.setDummyTag(dummy_tag);
 
 
-    predecessor = input->getTuplePtr(0);;
+    predecessor = (*input)[0];
 
     for(GroupByAggregateImpl<B> *aggregator : aggregators) {
-        aggregator->initialize(*predecessor, B(false));
+        aggregator->initialize(predecessor, B(false));
     }
 
-    realBin = !predecessor->getDummyTag(); // does this group-by bin contain at least one real (non-dummy) tuple?
+    realBin = !predecessor.getDummyTag(); // does this group-by bin contain at least one real (non-dummy) tuple?
 
 
     for(uint32_t i = 1; i < input->getTupleCount(); ++i) {
-        current = input->getTuplePtr(i);
+        current = (*input)[i];
 
-        realBin = realBin | !predecessor->getDummyTag();
-        B isGroupByMatch = groupByMatch(*predecessor, *current);
-        outputTuple = generateOutputTuple(*predecessor, !isGroupByMatch, realBin, aggregators);
+        realBin = realBin | !predecessor.getDummyTag();
+        B isGroupByMatch = groupByMatch(predecessor, current);
+        QueryTuple<B> output_tuple = GroupByAggregate<B>::output->getTuple(i-1); // to write to it in place
+        generateOutputTuple(output_tuple, predecessor, !isGroupByMatch, realBin, aggregators);
 
         for(GroupByAggregateImpl<B> *aggregator : aggregators) {
-            aggregator->initialize(*current, isGroupByMatch);
-            aggregator->accumulate(*current, !isGroupByMatch);
+            aggregator->initialize(current, isGroupByMatch);
+            aggregator->accumulate(current, !isGroupByMatch);
         }
 
-        Operator<B>::output->putTuple(i-1, outputTuple);
         predecessor = current;
         // reset the flag at the end of each group-by bin
         // flag denotes if we have one non-dummy tuple in the bin
@@ -70,12 +74,12 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
     }
 
-    realBin = realBin | !predecessor->getDummyTag();
+    realBin = realBin | !predecessor.getDummyTag();
 
 
     // B(true) to make it write out the last entry
-    outputTuple = generateOutputTuple(*predecessor, B(true), realBin, aggregators);
-    Operator<B>::output->putTuple(input->getTupleCount() - 1, outputTuple);
+    QueryTuple<B> output_tuple = GroupByAggregate<B>::output->getTuple(input->getTupleCount() - 1);
+    generateOutputTuple(output_tuple, predecessor, B(true), realBin, aggregators);
 
     // output sorted on group-by cols
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(groupByOrdinals.size());
@@ -128,12 +132,12 @@ bool GroupByAggregate<B>::verifySortOrder(const std::shared_ptr<QueryTable<B> > 
 template<typename B>
 B GroupByAggregate<B>::groupByMatch(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs) const {
 
-    B result = *lhs.getField(groupByOrdinals[0]) ==  *rhs.getField(groupByOrdinals[0]);
+    B result = (lhs.getField(groupByOrdinals[0]) ==  rhs.getField(groupByOrdinals[0]));
     size_t cursor = 1;
 
     while(cursor < groupByOrdinals.size()) {
         result = result &
-                 (*lhs.getField(groupByOrdinals[cursor]) ==  *rhs.getField(groupByOrdinals[cursor]));
+                 (lhs.getField(groupByOrdinals[cursor]) ==  rhs.getField(groupByOrdinals[cursor]));
         ++cursor;
     }
 
@@ -162,17 +166,16 @@ QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & srcSch
 }
 
 template<typename B>
-QueryTuple<B> GroupByAggregate<B>::generateOutputTuple(const QueryTuple<B> &lastTuple, const B &lastEntryGroupByBin,
-                                                 const B &realBin,
-                                                 const vector<GroupByAggregateImpl<B> *> &aggregators) const {
+void GroupByAggregate<B>::generateOutputTuple(QueryTuple<B> &dstTuple, const QueryTuple<B> &lastTuple,
+                                                       const B &lastEntryGroupByBin, const B &realBin,
+                                                       const vector<GroupByAggregateImpl<B> *> &aggregators) const {
 
-    QueryTuple<B> dstTuple(groupByOrdinals.size() + aggregators.size());
     size_t i;
 
     // write group-by ordinals
     for(i = 0; i < groupByOrdinals.size(); ++i) {
-        const Field<B> *srcField = lastTuple.getField(groupByOrdinals[i]);
-        dstTuple.setField(i, *srcField);
+        const Field<B> srcField = lastTuple.getField(groupByOrdinals[i]);
+        dstTuple.setField(i, srcField);
     }
 
     // write partial aggs
@@ -186,8 +189,6 @@ QueryTuple<B> GroupByAggregate<B>::generateOutputTuple(const QueryTuple<B> &last
     B dummyTag = Field<B>::If(lastEntryGroupByBin, Field<B>(!realBin), B(true)).template getValue<B>();
     dstTuple.setDummyTag(dummyTag);
 
-
-    return dstTuple;
 
 }
 

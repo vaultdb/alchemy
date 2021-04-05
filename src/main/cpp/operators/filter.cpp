@@ -1,4 +1,6 @@
 #include "filter.h"
+#include "plain_tuple.h"
+#include "secure_tuple.h"
 
 using namespace vaultdb;
 
@@ -15,7 +17,6 @@ template<typename B>
 std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
 
-
     // deep copy new output, then just modify the dummy tag
     Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
 
@@ -26,7 +27,9 @@ std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
 
         dummyTag =  ((!predicateOut) | dummyTag); // (!) because dummyTag is false if our selection criteria is satisfied
 
-        Operator<B>::output->getTuplePtr(i)->setDummyTag(dummyTag);
+        QueryTuple<B> to_write = Operator<B>::output->getTuple(i); // container pointer to source data
+        to_write.setDummyTag(dummyTag);
+
     }
 
     Operator<B>::output->setSortOrder(input->getSortOrder());

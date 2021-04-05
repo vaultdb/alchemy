@@ -8,9 +8,9 @@ bash test/support/setup-csv.sh
 ./bin/value_expression_test
 ./bin/filter_test
 ./bin/project_test
-./bin/sort_test
 ./bin/basic_join_test
 ./bin/fkey_pkey_join_test
+./bin/sort_test
 ./bin/scalar_aggregate_test
 ./bin/group_by_aggregate_test
 ./bin/secret_share_generator_test 
@@ -63,7 +63,7 @@ sleep 2
 # regenerate test data
 bash  test/support/load-generated-data.sh 100
 ./bin/enrich_test --party=1 &
-./bin/enrich_test --party=2 
+./bin/enrich_test --party=2
 
 
 

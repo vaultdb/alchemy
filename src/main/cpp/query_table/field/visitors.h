@@ -78,7 +78,9 @@ namespace vaultdb {
 
         Value operator()(int32_t i) const { return i == boost::get<int32_t>(rhs); }
 
-        Value operator()(int64_t i) const { return i == boost::get<int64_t>(rhs); }
+        Value operator()(int64_t i) const {
+            return i == boost::get<int64_t>(rhs);
+        }
 
         Value operator()(float_t f) const {  // approx float equality
             double epsilon = std::fabs(f * 0.01);
@@ -189,22 +191,20 @@ namespace vaultdb {
         }
 
         void operator()(emp::Bit l) const {
-            memcpy(dst_, (int8_t *) &(l.bit), 1);
+            memcpy(dst_, (int8_t *) &(l.bit), sizeof(emp::block));
         }
 
         void operator()(emp::Integer l) const {
-            memcpy(dst_, (int8_t *) l.bits.data(), l.size());
+            memcpy(dst_, (int8_t *) l.bits.data(), l.size() * sizeof(emp::block));
         }
 
         void operator()(emp::Float l) const {
-            memcpy(dst_, (int8_t *) l.value.data(), 4);
+            memcpy(dst_, (int8_t *) l.value.data(), l.size() * sizeof(emp::block));
         }
 
         std::int8_t *dst_;
-        size_t string_length_;
 
     };
-
 
     struct SecretShareVisitor : public boost::static_visitor<Value> {
         Value operator()(bool b) const { return emp::Bit(b, dstParty); }
@@ -216,23 +216,26 @@ namespace vaultdb {
         Value operator()(float_t f) const { return emp::Float(f, dstParty); }
 
         Value operator()(std::string s) const {
-            std::string input = s;
-            std::reverse(input.begin(), input.end());
-            bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), input.size());
+            assert(string_length_ > 0);
 
-            size_t stringBitCount = input.size() * 8;
+            size_t string_bit_count = string_length_ * 8;
 
-            emp::Integer payload = emp::Integer(stringBitCount, 0L, dstParty);
-            if (myParty == dstParty) {
+            emp::Integer payload = emp::Integer(string_bit_count, 0L, dstParty);
+            if (send) {
+                std::string input = s;
+                std::reverse(input.begin(), input.end());
+                bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), string_length_);
+
                 emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dstParty, bools,
-                                                        stringBitCount);
+                                                        string_bit_count);
+                delete[] bools;
+
             } else {
                 emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dstParty, nullptr,
-                                                        stringBitCount);
+                                                        string_bit_count);
             }
 
 
-            delete[] bools;
 
             return payload;
         }
@@ -244,7 +247,9 @@ namespace vaultdb {
         Value operator()(emp::Float l) const { return l; }
 
         int dstParty = emp::PUBLIC;
-        int myParty = emp::PUBLIC;
+        bool send = false;
+        size_t string_length_ = 0;
+
 
 
     };
@@ -279,6 +284,95 @@ namespace vaultdb {
 
         Value choiceBit;
         Value rhs;
+
+
+    };
+
+    template<typename T>
+    static inline void swap(Value * lhs, Value * rhs) {
+        T l = boost::get<T>(*lhs);
+        T r = boost::get<T>(*rhs);
+
+        l = l ^ r;
+        r = r ^ l;
+        l = l ^ r;
+
+        *lhs = Value(l);
+        *rhs = Value(r);
+    }
+
+
+    // return value is swapped input
+    struct SwapVisitor : public boost::static_visitor<> {
+        void operator()(bool b) const {
+            if (boost::get<bool>(choiceBit)) {
+                swap<bool>(lhs, rhs);
+            }
+        }
+
+        void operator()(int32_t i) const {
+            if (boost::get<bool>(choiceBit)) {
+                swap<int32_t>(lhs, rhs);
+            }
+
+        }
+
+        void operator()(int64_t i) const {
+            if (boost::get<int64_t>(choiceBit)) {
+                swap<int64_t>(lhs, rhs);
+            }
+
+        }
+
+        // XOR write won't work for float
+        void operator()(float_t f) const {
+            bool select = boost::get<bool>(choiceBit);
+            if(select) {
+                float_t l = boost::get<float_t>(*lhs);
+                float_t r = boost::get<float_t>(*rhs);
+                *lhs = r;
+                *rhs = l;
+            }
+        }
+
+        void operator()(std::string s) const {
+            if (boost::get<bool>(choiceBit)) {
+                string tmp = boost::get<std::string>(*lhs);
+                *lhs = boost::get<std::string>(*rhs);
+                *rhs = tmp;
+            }
+        }
+
+        void operator()(emp::Bit b) const {
+            emp::Bit choice = boost::get<emp::Bit>(choiceBit);
+            emp::Bit l = boost::get<emp::Bit>(*lhs);
+            emp::Bit r = boost::get<emp::Bit>(*rhs);
+            emp::swap(choice, l, r);
+            *lhs = l;
+            *rhs = r;
+        }
+
+        void operator()(emp::Integer i) const {
+            emp::Bit choice = boost::get<emp::Bit>(choiceBit);
+            emp::Integer l = boost::get<emp::Integer>(*lhs);
+            emp::Integer r = boost::get<emp::Integer>(*rhs);
+            emp::swap(choice, l, r);
+            *lhs = l;
+            *rhs = r;
+        }
+
+        void operator()(emp::Float f) const {
+            emp::Bit choice = boost::get<emp::Bit>(choiceBit);
+            emp::Float l = boost::get<emp::Float>(*lhs);
+            emp::Float r = boost::get<emp::Float>(*rhs);
+            emp::swap(choice, l, r);
+            *lhs = l;
+            *rhs = r;
+        }
+
+        Value choiceBit;
+        Value *rhs; // ptr to write to it
+        Value *lhs;
 
 
     };

@@ -47,7 +47,7 @@ void revealRollup(const std::string & rollupName) {
     std::shared_ptr<PlainTable> result = PlainTable::deserialize(rollupSchema, revealed);
 
     std::string csv;
-    for(int i = 0; i < result->getTupleCount(); ++i)
+    for(size_t i = 0; i < result->getTupleCount(); ++i)
         csv += (*result)[i].toString() + "\n";
 
     std::string outputFileName = rollupName + ".csv";
