@@ -1,5 +1,7 @@
+#include <query_schema.h>
 #include "field_utilities.h"
-
+#include <query_table/plain_tuple.h>
+#include <query_table/secure_tuple.h>
 
 using namespace vaultdb;
 using namespace  emp;
@@ -75,5 +77,37 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
 
     return output;
 }
+
+
+void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple & dst_tuple, const int & dst_party) {
+    size_t field_count = dst_tuple.getSchema()->getFieldCount();
+
+    for (size_t i = 0; i < field_count; ++i) {
+        PlainField src_field = src_tuple.getField(i);
+        SecureField dst_field = SecureField::secret_share_send(src_field, dst_party);
+        dst_tuple.setField(i, dst_field);
+    }
+
+    PlainField plain_dummy_tag =  PlainField(src_tuple.getDummyTag());
+    SecureField dummy_tag = SecureField::secret_share_send(plain_dummy_tag, dst_party);
+    dst_tuple.setDummyTag(dummy_tag);
+
+
+}
+
+void FieldUtilities::secret_share_recv(const QuerySchema & src_schema, SecureTuple &dst_tuple, const int &dst_party) {
+    size_t field_count = dst_tuple.getSchema()->getFieldCount();
+
+    for(size_t i = 0;  i < field_count; ++i) {
+        QueryFieldDesc field_desc = src_schema.getField(i);
+        SecureField  dst_field = SecureField::secret_share_recv(field_desc.getType(), field_desc.getStringLength(), dst_party);
+        dst_tuple.setField(i, dst_field);
+    }
+
+    SecureField d = SecureField::secret_share_recv(FieldType::BOOL, 0, dst_party);
+    dst_tuple.setDummyTag(d);
+
+}
+
 
 

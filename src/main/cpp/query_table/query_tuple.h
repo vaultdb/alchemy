@@ -6,88 +6,43 @@
 #include <memory>
 #include <vector>
 #include <util/type_utilities.h>
+#include <emp-tool/circuits/bit.h>
 
 using namespace emp;
 
 namespace vaultdb {
 
-    template<typename B> class QueryTuple;
+    // QueryTuple is a thin wrapper around one entry in a QueryTable.  Its data is managed by the parent table.
+    // specialized for pointer arithmetic in PlainTuple and SecureTuple
 
-    typedef vaultdb::QueryTuple<bool> PlainTuple;
-    typedef vaultdb::QueryTuple<emp::Bit> SecureTuple;
-
+    // methods have to be real, i.e., not virtual, to be visible to projects and enable instantiating objects instead of ptrs
 
     template<typename B>
     class QueryTuple {
-
-    protected:
-        vector<Field<B> >   fields_;
-        B dummy_tag_;
-
     public:
         QueryTuple() {};
         ~QueryTuple() = default;
 
-        explicit QueryTuple(const size_t & aFieldCount);
-        QueryTuple(const QueryTuple &src);
+        QueryTuple(std::shared_ptr<QuerySchema> & query_schema, int8_t *src) { assert(src != nullptr); }
+        QueryTuple(const std::shared_ptr<QuerySchema> & query_schema, const int8_t *src) { assert(src != nullptr); } // immutable case
 
+        bool operator==(const QueryTuple<B> & other) const {throw; } // implement in instances
+        bool operator!=(const QueryTuple<B> & other) const {throw; } // implement in instances, not supported for SecureTuple/emp case
+        QueryTuple<B>& operator=(const QueryTuple<B> & other) { throw; } // need to do this in child classes for now
+        Field<B> operator[](const int32_t & idx ) { throw; }
+        const Field<B> operator[](const int32_t & idx ) const {throw; }
+        void setField(const size_t & idx, const Field<B> & field) { throw; }
+        Field<B> getField(const int & ordinal) const { throw; }
+        void setDummyTag(const bool & b) { throw; }
+        void setDummyTag(const emp::Bit & b) { throw; }
 
-        inline bool  isEncrypted() const;
-
-
-      const Field<B> * getField(const int &ordinal) const;
-      void setField(const int &idx, const Field<B> &f);
-      void setDummyTag(const bool & b);
-      void setDummyTag(const Field<B> & d);
-
-
-      const B getDummyTag() const;
-
-
-        PlainTuple reveal(const int &empParty = PUBLIC) const;
-
-        string toString(const bool &showDummies = false) const;
-
-        void serialize(int8_t *dst, const QuerySchema &schema);
-        size_t getFieldCount() const;
-
-        QueryTuple& operator=(const QueryTuple& other);
-        bool operator==(const QueryTuple<B> & other) const;
-        inline bool operator!=(const QueryTuple<B> & other) const { return !(*this == other);   }
-        inline Field<B> operator[](const int32_t & idx) const { return fields_[idx]; }
-
-
-        static void compareAndSwap(const B &cmp, QueryTuple <B> *lhs, QueryTuple <B> *rhs);
-
-
-        static PlainTuple deserialize(const QuerySchema & schema, int8_t *tupleBits);
-        static SecureTuple deserialize(const QuerySchema & schema, emp::Bit *tupleBits);
-
-
-        static SecureTuple
-        secretShare(const PlainTuple *srcTuple, const QuerySchema &schema, const int &myParty, const int &dstParty);
-
-        // already encrypted
-        static SecureTuple
-        secretShare(const SecureTuple *srcTuple, const QuerySchema &schema, const int &myParty, const int &dstParty) {
-            return SecureTuple(*srcTuple);
-        }
-
-
-    private:
-        // specializations for B template
-        std::string specializedToString(const PlainTuple & tuple, const bool & showDummies) const;
-        std::string specializedToString(const SecureTuple & tuple, const bool & showDummies) const;
-        static bool tuplesEqual(const PlainTuple &t1, const PlainTuple & t2);
-        static bool tuplesEqual(const SecureTuple &t1, const SecureTuple & t2);
-
-        bool revealBool(const bool & src, const int & party) const { return src; }
-        bool revealBool(const emp::Bit & src, const int & party) const { return src.reveal(party); }
-
+        bool getDummyTag() const { throw; }
+        string toString(const bool &showDummies = false) const { throw; }
+        int8_t *getData() const { return nullptr; }
+        static void compare_swap(const B & cmp, QueryTuple<B> & lhs, QueryTuple<B> & rhs) { throw; } // implemented in template specializations
+        //QueryTuple<B> reveal(const int &empParty,  std::shared_ptr<QuerySchema> & dst_schema, int8_t *dst) const { throw; }  // only for SecureTuple
+       // static QueryTuple<B> secret_share(const QueryTuple<bool> *srcTuple,  std::shared_ptr<QuerySchema> &schema, int8_t *dst_bits, const int &myParty, const int &dstParty) { throw; } // only for PlainTuple, no reason in principle to not put this here
     };
-
-    std::ostream &operator<<(std::ostream &os, const PlainTuple &tuple);
-    std::ostream &operator<<(std::ostream &os, const SecureTuple &tuple);
 
 
 

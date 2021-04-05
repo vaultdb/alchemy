@@ -83,6 +83,7 @@ size_t Field<B>::getSize() const {
 
 template<typename B>
 B Field<B>::operator==(const Field<B> &cmp) const {
+
     if(type_ != cmp.type_) return B(false);
     if(getSize() != cmp.getSize()) return B(false);
 
@@ -158,15 +159,49 @@ std::string Field<B>::toString() const {
 
 template<typename B>
 void Field<B>::serialize(int8_t *dst) const {
+    assert(dst != nullptr);
+
     SerializeVisitor visitor;
-    visitor.string_length_ = string_length_;
     visitor.dst_ = dst;
     boost::apply_visitor(visitor, payload_);
 }
 
 
+template<typename B>
+SecureField Field<B>::secret_share_send(const PlainField & src, const int & dst_party) {
+    Value input = src.payload_;
+
+    SecretShareVisitor visitor;
+    visitor.dstParty = dst_party;
+    visitor.send = true;
+    visitor.string_length_ = src.string_length_;
+
+    Value result = boost::apply_visitor(visitor, input);
+
+    FieldType resType = TypeUtilities::toSecure(src.type_);
+
+     return SecureField(resType, result, src.string_length_);
+}
 
 template<typename B>
+SecureField Field<B>::secret_share_recv(const FieldType & type, const size_t & str_length, const int & dst_party) {
+    Value input = FieldFactory<bool>::getZero(type).payload_;
+
+
+    SecretShareVisitor visitor;
+    visitor.dstParty = dst_party;
+    visitor.send = false;
+    visitor.string_length_ = str_length;
+
+    Value result = boost::apply_visitor(visitor, input);
+
+    FieldType resType = TypeUtilities::toSecure(type);
+    return SecureField(resType, result, str_length);
+
+
+}
+
+/*template<typename B>
 SecureField Field<B>::secretShare(const PlainField  *field, const FieldType &type, const size_t &strLength, const int &myParty,
                            const int &dstParty) {
 
@@ -188,17 +223,17 @@ SecureField Field<B>::secretShare(const PlainField  *field, const FieldType &typ
     FieldType resType = TypeUtilities::toSecure(type);
     return SecureField(resType, result, strLength);
 
-}
-
+} */
 
 template<typename B>
 void Field<B>::compareAndSwap(const B & choice, Field & lhs, Field & rhs) {
-    Field<B> t  = If(choice, lhs, rhs);
-    lhs = If(choice, rhs, lhs);
-    rhs = t;
+   SwapVisitor visitor;
+   visitor.lhs = &lhs.payload_;
+   visitor.rhs = &rhs.payload_;
+   visitor.choiceBit = choice;
+
+    boost::apply_visitor(visitor, lhs.payload_);  // passing in lhs.payload only to establish type
 }
-
-
 
 template<typename B>
 Field<B> Field<B>::If(const B &choice, const Field &lhs, const Field &rhs) {
@@ -268,6 +303,7 @@ Field<B> Field<B>::operator%(const Field &rhs) const {
     Value result = boost::apply_visitor(visitor, payload_);
     return Field(type_, boost::apply_visitor(visitor, payload_), string_length_);
 }
+
 
 
 template class vaultdb::Field<bool>;

@@ -42,6 +42,7 @@
 size_t TypeUtilities::getTypeSize(const FieldType & id) {
     switch (id) {
         case FieldType::SECURE_BOOL:
+            return 1;
         case FieldType::BOOL:
             return 8; // stored size when we serialize it
 
@@ -49,6 +50,7 @@ size_t TypeUtilities::getTypeSize(const FieldType & id) {
         case FieldType::SECURE_INT:
         case FieldType::INT:
         case FieldType::FLOAT:
+        case FieldType::DATE:
             return 32;
 
         case FieldType::SECURE_LONG:
@@ -58,8 +60,6 @@ size_t TypeUtilities::getTypeSize(const FieldType & id) {
         case FieldType::SECURE_STRING:
         case FieldType::STRING: // to be multiplied by length in schema for true field size
             return 8;
-
-
 
         default: // unsupported type
             throw;
@@ -120,3 +120,12 @@ bool TypeUtilities::isEncrypted(const FieldType &type) {
 
  }
 
+bool TypeUtilities::types_equivalent(const FieldType & lhs, const FieldType & rhs) {
+     if(lhs == rhs)
+         return true;
+
+     if(lhs == FieldType::DATE && rhs == FieldType::LONG) return true;
+     if(rhs == FieldType::DATE && lhs == FieldType::LONG) return true;
+
+     return false;
+ }

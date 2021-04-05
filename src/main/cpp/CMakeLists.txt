@@ -69,6 +69,9 @@ set(sources
 		util/field_utilities.cpp
 
 		query_table/query_tuple.cpp
+		query_table/plain_tuple.cpp
+		query_table/secure_tuple.cpp
+
 		query_table/query_field_desc.cpp
 		query_table/query_schema.cpp
 		query_table/query_table.cpp
@@ -89,6 +92,7 @@ set(sources
 		operators/support/scalar_aggregate_impl.cpp
 		operators/scalar_aggregate.cpp
 		operators/limit.cpp
+		operators/union.cpp
 
 		operators/group_by_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp

@@ -4,6 +4,8 @@
 #include <operators/project.h>
 #include <operators/support/predicate.h>
 #include <query_table/field/field_factory.h>
+#include <query_table/plain_tuple.h>
+#include <query_table/secure_tuple.h>
 
 using namespace vaultdb;
 
@@ -42,9 +44,8 @@ namespace vaultdb {
         ~FilterExcludedPatients() = default;
 
         [[nodiscard]] B predicateCall(const QueryTuple<B> &aTuple) const override {
-
-            const Field<B> *field = aTuple.getField(8);
-            return  (*field == cmp);
+            const Field<B> field = aTuple.getField(8);
+            return  (field == cmp);
         }
 
 

@@ -35,16 +35,14 @@ void SecureGroupByAggregateTest::runTest(const string &expectedOutputQuery,
     std::shared_ptr<PlainTable> expected = EmpBaseTest::getExpectedOutput(expectedOutputQuery, 1);
 
     // run secure query
-    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1); // actually 2
     SecureSqlInput input(dbName, query, false, sortDefinition, netio, FLAGS_party);
 
-    // sort alice + bob inputs after union
-    Sort sort(&input, sortDefinition);
 
 
     std::vector<int32_t> groupByCols{0};
 
-    GroupByAggregate aggregate(&sort, groupByCols, aggregators);
+    GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
     std::shared_ptr<SecureTable> aggregated = aggregate.run();
     std::shared_ptr<PlainTable> aggregatedReveal = aggregated->reveal();
@@ -67,16 +65,14 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expectedOutputQuer
     std::shared_ptr<PlainTable> expected = EmpBaseTest::getExpectedOutput(expectedOutputQuery, 1);
 
     // configure and run test
-    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
+    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1);
     SecureSqlInput input(dbName, query, true, sortDefinition, netio, FLAGS_party);
 
-    // sort alice + bob inputs after union
-    Sort sort(&input, sortDefinition);
 
     std::vector<int32_t> groupByCols;
     groupByCols.push_back(0);
 
-    GroupByAggregate aggregate(&sort, groupByCols, aggregators);
+    GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
     std::shared_ptr<PlainTable> aggregated = aggregate.run()->reveal();
 
@@ -91,8 +87,7 @@ TEST_F(SecureGroupByAggregateTest, test_count) {
     // set up expected output
     std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
-    std::vector<ScalarAggregateDefinition> aggregators;
-    aggregators.push_back(ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt"));
+    std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
     runTest(expectedOutputQuery, aggregators);
 
 }

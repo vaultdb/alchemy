@@ -1,4 +1,6 @@
 #include "join_equality_predicate.h"
+#include "plain_tuple.h"
+#include "secure_tuple.h"
 
 
 using namespace vaultdb;
@@ -9,11 +11,11 @@ JoinEqualityPredicate<B>::JoinEqualityPredicate(const ConjunctiveEqualityPredica
 }
 
 template<typename B>
-B JoinEqualityPredicate<B>::predicateCall(const  QueryTuple<B> *lhs, const QueryTuple<B> *rhs) const {
+B JoinEqualityPredicate<B>::predicateCall(const  QueryTuple<B>  & lhs, const QueryTuple<B>  & rhs) const {
 
     B result = B(true);
    for(EqualityPredicate p : predicate) {
-       B eq = *lhs->getField(p.first) == *rhs->getField(p.second);
+       B eq = lhs.getField(p.first) == rhs.getField(p.second);
        result = result & eq;
 
    }

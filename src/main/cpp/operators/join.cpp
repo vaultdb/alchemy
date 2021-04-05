@@ -41,39 +41,75 @@ QuerySchema Join<B>::concatenateSchemas(const QuerySchema &lhsSchema, const Quer
     return result;
 }
 
-// TODO: make this faster by heap-allocating everything once
-template <typename B>
-QueryTuple<B> Join<B>::concatenateTuples( QueryTuple<B> *lhs,  QueryTuple<B> *rhs) {
-    const uint32_t outputFieldCount = lhs->getFieldCount() + rhs->getFieldCount();
-    QueryTuple<B> result(outputFieldCount);
-    uint32_t lhsFieldCount  = lhs->getFieldCount();
-    uint32_t cursor = 0;
-
-    for(; cursor < lhsFieldCount; ++cursor) {
-        result.setField(cursor, *(lhs->getField(cursor)));
-    }
-
-
-    for(uint32_t i = 0; i < rhs->getFieldCount(); ++i) {
-        result.setField(cursor, *(rhs->getField(i)));
-        ++cursor;
-    }
-
-    return result;
-}
-
-// compare two tuples and return their entry in the output table
+// compare two tuples and return the dummy tag for this entry
 template<typename B>
-QueryTuple<B> Join<B>::compareTuples(QueryTuple<B> *lhs, QueryTuple<B> *rhs, const Field<B> &predicateEval) {
-    QueryTuple dstTuple = concatenateTuples(lhs, rhs);
-    B lhsDummyTag = lhs->getDummyTag();
-    B rhsDummyTag = rhs->getDummyTag();
+B Join<B>::get_dummy_tag(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const B &predicateEval) {
+    B lhsDummyTag = lhs.getDummyTag();
+    B rhsDummyTag = rhs.getDummyTag();
 
-    Field<B> dummyTag = (!predicateEval) | lhsDummyTag | rhsDummyTag;
-    dstTuple.setDummyTag(dummyTag);
-    return dstTuple;
+    return (!predicateEval) | lhsDummyTag | rhsDummyTag;
 }
 
+// copy src_tuple to lhs of dst for its half of the join
+template<typename B>
+void Join<B>::write_left(const bool &write, PlainTuple &dst_tuple, const PlainTuple &src_tuple) {
+    if(write) {
+        size_t tuple_size = src_tuple.getSchema()->size()/8;
+        memcpy(dst_tuple.getData(), src_tuple.getData(), tuple_size);
+    }
+}
+
+
+template<typename B>
+void Join<B>::write_left(const emp::Bit &write, SecureTuple &dst_tuple, const SecureTuple &src_tuple) {
+    size_t write_bit_cnt = src_tuple.getSchema()->size();
+    size_t write_size = write_bit_cnt * sizeof(emp::block);
+
+    emp::Integer src(write_bit_cnt, 0), dst(write_bit_cnt, 0);
+
+    memcpy(src.bits.data(), src_tuple.getData(), write_size);
+    memcpy(dst.bits.data(), dst_tuple.getData(), write_size);
+
+    dst = dst.select(write, src);
+
+    memcpy(dst_tuple.getData(), dst.bits.data(), write_size);
+
+}
+
+template<typename B>
+void Join<B>::write_right(const bool &write, PlainTuple &dst_tuple, const PlainTuple &src_tuple) {
+    if(write) {
+        size_t write_size = src_tuple.getSchema()->size()/8 - sizeof(bool); // don't overwrite dummy tag
+        size_t dst_byte_cnt = dst_tuple.getSchema()->size()/8;
+        size_t write_offset = dst_byte_cnt - write_size - 1;
+
+        memcpy(dst_tuple.getData() + write_offset, src_tuple.getData(), write_size);
+        dst_tuple.setDummyTag(false);
+    }
+}
+
+
+template<typename B>
+void Join<B>::write_right(const emp::Bit &write, SecureTuple &dst_tuple, const SecureTuple &src_tuple) {
+    size_t write_bit_cnt = src_tuple.getSchema()->size();
+    size_t dst_bit_cnt = dst_tuple.getSchema()->size();
+    size_t write_offset = dst_bit_cnt - write_bit_cnt;
+    size_t write_size = write_bit_cnt * sizeof(emp::block);
+
+    emp::Integer src(write_bit_cnt, 0), dst(write_bit_cnt, 0);
+
+    memcpy(src.bits.data(), src_tuple.getData(), write_size);
+    memcpy(dst.bits.data(), dst_tuple.getData() + write_offset, write_size);
+
+
+    dst = dst.select(write, src);
+
+    memcpy(dst_tuple.getData() + write_offset, dst.bits.data(), write_size);
+
+    emp::Bit dummy_tag = emp::If(write, emp::Bit(false), dst_tuple.getDummyTag());
+    dst_tuple.setDummyTag(dummy_tag);
+
+}
 
 
 template class vaultdb::Join<bool>;

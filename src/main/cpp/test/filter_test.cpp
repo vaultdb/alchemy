@@ -53,8 +53,8 @@ public:
     ~FilterPredicate() = default;
     bool predicateCall(const PlainTuple & aTuple) const override {
 
-        const PlainField *field = aTuple.getField(1);
-        return  (*field == cmp);
+        const PlainField field = aTuple.getField(1);
+        return  (field == cmp);
     }
 
 
@@ -65,13 +65,14 @@ public:
 TEST_F(FilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
+
+
    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
     SqlInput input(dbName, sql, false);
 
     std::shared_ptr<Predicate<bool> > predicateClass(new FilterPredicate());
-    Filter<bool> filter(&input, predicateClass); // heap allocate it
-    //std::shared_ptr<Operator> filter = Operator::getOperatorTree(new Filter(predicateClass, input), input);
+    Filter<bool> filter(&input, predicateClass);
 
 
     std::shared_ptr<PlainTable > result = filter.run();

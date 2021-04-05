@@ -28,7 +28,8 @@ namespace vaultdb {
         static bool  isEncrypted(const FieldType & type);
 
 
-};
+        static bool types_equivalent(const FieldType &lhs, const FieldType &rhs);
+    };
 
 }
 

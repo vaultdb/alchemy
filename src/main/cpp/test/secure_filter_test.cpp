@@ -7,6 +7,7 @@
 #include <operators/secure_sql_input.h>
 #include <operators/support/predicate.h>
 #include <test/support/EmpBaseTest.h>
+#include <query_table/secure_tuple.h>
 
 
 using namespace emp;
@@ -32,8 +33,8 @@ public:
 
     // filtering for l_linenumber = 1
     emp::Bit predicateCall(const SecureTuple & aTuple) const override {
-        const SecureField *f =  aTuple.getField(1);
-        return (*f == encryptedLineNumber);
+        const SecureField f =  aTuple.getField(1);
+        return (f == encryptedLineNumber);
     }
 
 };
@@ -50,7 +51,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::string dbName =  FLAGS_party == emp::ALICE ? aliceDb : bobDb;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
-    std::unique_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
 
@@ -76,7 +77,7 @@ TEST_F(SecureFilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
-    std::unique_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, expectedResultSql, true);
 
 
    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);

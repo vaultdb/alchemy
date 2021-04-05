@@ -59,9 +59,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
     std::shared_ptr<BinaryPredicate<bool> > customerOrdersPredicate(new JoinEqualityPredicate<bool> (customerOrdersOrdinals));
 
     KeyedJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
-
     std::shared_ptr<PlainTable > observed = join.run();
-
 
     ASSERT_EQ(*expected, *observed);
 
@@ -143,8 +141,6 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     std::shared_ptr<PlainTable > observed = fullJoin.run();
 
-
-    std::cout << "Observed output: " << observed->toString(false) << std::endl;
 
     ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);

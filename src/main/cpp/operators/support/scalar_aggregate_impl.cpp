@@ -1,4 +1,6 @@
 #include "scalar_aggregate_impl.h"
+#include <query_table/plain_tuple.h>
+#include <query_table/secure_tuple.h>
 
 using namespace vaultdb;
 
@@ -29,7 +31,7 @@ template<typename B>
 
 template<typename B>
 void ScalarSumImpl<B>::accumulate(const QueryTuple<B> &tuple) {
-    Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
+    Field<B> aggInput = tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
     runningSum = Field<B>::If(tuple.getDummyTag(), runningSum, runningSum + aggInput);
 }
 
@@ -60,7 +62,7 @@ ScalarMinImpl<B>::ScalarMinImpl(const uint32_t &ordinal, const FieldType &aggTyp
 
 template<typename B>
 void ScalarMinImpl<B>::accumulate(const QueryTuple<B> &tuple) {
-    Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
+    Field<B> aggInput = tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
     B sameMin = aggInput >= runningMin;
     runningMin = Field<B>::If(sameMin | tuple.getDummyTag(), runningMin, aggInput);
 }
@@ -79,7 +81,7 @@ ScalarMaxImpl<B>::ScalarMaxImpl(const uint32_t &ordinal, const FieldType &aggTyp
 
 template<typename B>
 void ScalarMaxImpl<B>::accumulate(const QueryTuple<B> &tuple) {
-    Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
+    Field<B> aggInput = tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
     B sameMax = aggInput <= runningMax;
     runningMax = Field<B>::If(sameMax | tuple.getDummyTag(), runningMax, aggInput);
 
@@ -100,7 +102,7 @@ ScalarAvgImpl<B>::ScalarAvgImpl(const uint32_t &ordinal, const FieldType &aggTyp
 
 template<typename B>
 void ScalarAvgImpl<B>::accumulate(const QueryTuple<B> &tuple) {
-    Field<B> aggInput = *tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
+    Field<B> aggInput = tuple.getField(ScalarAggregateImpl<B>::aggregateOrdinal);
     runningSum = Field<B>::If(tuple.getDummyTag(), runningSum, runningSum + aggInput);
     runningCount = Field<B>::If(tuple.getDummyTag(), runningCount, runningCount + ScalarAggregateImpl<B>::one);
 

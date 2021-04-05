@@ -36,6 +36,8 @@ namespace  vaultdb {
 
         QuerySchema &operator=(const QuerySchema &other);
 
+        size_t getFieldOffset(const int32_t idx) const;
+
 
         bool operator==(const QuerySchema &other) const;
 
@@ -45,7 +47,7 @@ namespace  vaultdb {
 
         static QuerySchema toPlain(const QuerySchema &secureSchema);
 
-        int getOrdinal(const std::string &fieldName) const;
+
     };
 
     std::ostream &operator<<(std::ostream &os, const QuerySchema &schema);

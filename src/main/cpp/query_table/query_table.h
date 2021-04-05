@@ -8,6 +8,7 @@
 #include <vaultdb.h>
 #include <ostream>
 #include "util/utilities.h"
+#include "plain_tuple.h"
 #include <emp-tool/emp-tool.h>
 
 
@@ -16,8 +17,6 @@
 namespace  vaultdb {
 
     typedef std::pair<std::vector<int8_t>, std::vector<int8_t> > SecretShares;
-    template class QueryTuple<bool>;
-    template class QueryTuple<emp::Bit>;
 
     template<typename B> class QueryTable;
 
@@ -31,18 +30,17 @@ namespace  vaultdb {
 
         // tuple order
             SortDefinition orderBy;
-            QuerySchema schema_;
+            std::shared_ptr<QuerySchema> schema_;
 
 
-    protected:
-        std::vector<QueryTuple<B> > tuples_;
 
     public:
-            QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition);
+        std::vector<int8_t> tuple_data_;
+        // size of each tuple in bytes
+        size_t tuple_size_;
 
-            QueryTable(const size_t &num_tuples, const int &colCount);
-
-
+        // empty sort definition for default case
+            QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition = SortDefinition());
             QueryTable(const QueryTable &src);
 
             ~QueryTable() = default;
@@ -52,32 +50,29 @@ namespace  vaultdb {
 
             void setSchema(const QuerySchema &schema);
 
-            const QuerySchema &getSchema() const;
+            const std::shared_ptr<QuerySchema> getSchema() const;
 
-            QueryTuple<B> getTuple(int idx) const;
+            QueryTuple<B> getTuple(int idx);
+            const QueryTuple<B> getImmutableTuple(int idx) const;
 
-            unsigned int getTupleCount() const;
+
+        unsigned int getTupleCount() const;
 
             std::string toString(const bool &showDummies = false) const;
 
             void putTuple(const int &idx, const QueryTuple<B> &tuple);
 
 
-            QueryTuple<B> *getTuplePtr(const int &idx) const;
-
             void setSortOrder(const SortDefinition &sortOrder);
 
             SortDefinition getSortOrder() const;
 
 
-            // retrieves # of tuples that are not dummies
-            // only works for unencrypted tables, o.w. returns getTupleCount()
-            uint32_t getTrueTupleCount() const;
 
             std::vector<int8_t> serialize() const;
 
 
-            std::shared_ptr<QueryTable<emp::Bit> > secretShare(emp::NetIO *io, const int &party) const;
+            std::shared_ptr<QueryTable<emp::Bit> > secret_share(emp::NetIO *io, const int &party) const;
 
             SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
 
@@ -88,12 +83,28 @@ namespace  vaultdb {
             bool operator==(const QueryTable<B> &other) const;
 
             bool operator!=(const QueryTable &other) const { return !(*this == other); }
-            QueryTuple<B> operator[](const int & idx) const { return this->getTuple(idx); }
+            QueryTuple<B> operator[](const int & idx);
+
+            const QueryTuple<B> operator[](const int & idx) const;
 
             static std::shared_ptr<PlainTable> deserialize(const QuerySchema & schema, const vector<int8_t> &tableBits);
 
             // encrypted version of deserialization using emp::Bit
             static std::shared_ptr<SecureTable> deserialize(const QuerySchema &schema, vector<Bit> &tableBits);
+
+            size_t getTrueTupleCount() const;
+
+        PlainTuple getPlainTuple(size_t idx) const;
+
+    private:
+        static std::unique_ptr<PlainTable> revealTable(const SecureTable & table, const int & party);
+        static std::unique_ptr<PlainTable> revealTable(const PlainTable & table, const int & party);
+        void secret_share_send(const int &party, std::shared_ptr<SecureTable> &dst_table, const int &write_offset,
+                               const bool &reverse_read_order) const;
+        void secret_share_recv(const size_t &tuple_count, const int &dst_party,
+                               std::shared_ptr<SecureTable> &dst_table, const size_t &write_offset,
+                               const bool &reverse_read_order) const;
+
     };
 
     std::ostream &operator<<(std::ostream &os, const PlainTable &table);

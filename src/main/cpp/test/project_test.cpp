@@ -58,8 +58,8 @@ public:
 */
 
 PlainField calculateRevenue(const PlainTuple & aTuple) {
-    const PlainField extendedPrice = *aTuple.getField(5);
-    const PlainField discount = *aTuple.getField(6);
+    const PlainField extendedPrice = aTuple.getField(5);
+    const PlainField discount = aTuple.getField(6);
     const PlainField one(FieldType::FLOAT, (float_t) 1.0);
 
     // l.l_extendedprice * (1 - l.l_discount)

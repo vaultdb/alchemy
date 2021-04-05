@@ -47,29 +47,6 @@ TEST_F(SortTest, testSingleIntColumn) {
 }
 
 
-TEST_F(SortTest, cmpSwap) {
-    string sql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
-    shared_ptr<PlainTable > data = DataUtilities::getQueryResults(dbName, sql, false);
-
-    PlainTuple a = (*data)[0];
-    PlainTuple b = (*data)[1];
-    bool swap(true);
-
-    PlainTuple::compareAndSwap(swap, &a, &b);
-
-    // swapped
-    ASSERT_EQ(a, (*data)[1]);
-    ASSERT_EQ(b, (*data)[0]);
-
-
-    // no swap
-    swap = false;
-    PlainTuple::compareAndSwap(swap, &a, &b);
-    ASSERT_EQ(a, (*data)[1]);
-    ASSERT_EQ(b, (*data)[0]);
-
-}
-
 TEST_F(SortTest, tpchQ1Sort) {
     string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_linenumber, l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
@@ -263,6 +240,45 @@ TEST_F(SortTest, tpchQ18Sort) {
 
 }
 
+
+TEST_F(SortTest, sort_and_encrypt_table_one_column) {
+    vector<int32_t> input_tuples{1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 35, 35, 35, 35, 35, 33, 33, 33, 33, 4};
+    SortDefinition sort_definition = DataUtilities::getDefaultSortDefinition(1);
+    QuerySchema schema(1);
+    schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
+
+
+    std::shared_ptr<PlainTable> input_table(new PlainTable(input_tuples.size(), schema, sort_definition));
+
+
+    for(uint32_t i = 0; i < input_tuples.size(); ++i) {
+        Field<bool> val(FieldType::INT, input_tuples[i]);
+        PlainTuple tuple = (*input_table)[i];
+        tuple.setDummyTag(false);
+        tuple.setField(0, val);
+    }
+
+
+    Sort<bool> sorter(input_table, sort_definition);
+    std::shared_ptr<PlainTable> sorted_table = sorter.run();
+
+
+    //set up expected results
+    std::sort(input_tuples.begin(), input_tuples.end());
+    std::unique_ptr<PlainTable > expected_table(new PlainTable(input_tuples.size(), schema, sort_definition));
+
+    for(uint32_t i = 0; i < input_tuples.size(); ++i) {
+        Field<bool> val(FieldType::INT, input_tuples[i]);
+        PlainTuple tuple = (*expected_table)[i];
+        tuple.setDummyTag(false);
+        tuple.setField(0, val);
+    }
+
+    ASSERT_EQ(*expected_table, *sorted_table);
+
+
+
+}
 
 
 

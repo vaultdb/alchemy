@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <data/PsqlDataProvider.h>
 #include <sys/stat.h>
+#include <union.h>
 #include "data_utilities.h"
 
 
@@ -21,40 +22,20 @@ unsigned char DataUtilities::reverse(unsigned char b) {
 
 
 // in some cases, like with LIMIT, we can't just run over tpch_unioned
-std::unique_ptr<PlainTable >
+std::shared_ptr<PlainTable>
 DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
                                  const bool &hasDummyTag) {
 
     PsqlDataProvider dataProvider;
 
-    std::unique_ptr<PlainTable> alice = dataProvider.getQueryTable(aliceDb, sql, hasDummyTag); // dummyTag true not yet implemented
-    std::unique_ptr<PlainTable> bob = dataProvider.getQueryTable(bobDb, sql, hasDummyTag);
+    std::shared_ptr<PlainTable> alice = dataProvider.getQueryTable(aliceDb, sql,
+                                                                   hasDummyTag); // dummyTag true not yet implemented
+    std::shared_ptr<PlainTable> bob = dataProvider.getQueryTable(bobDb, sql, hasDummyTag);
 
-
-    uint32_t tupleCount = alice->getTupleCount() + bob->getTupleCount();
-
-    std::unique_ptr<PlainTable > unioned(new PlainTable(tupleCount, alice->getSchema().getFieldCount()));
-    unioned->setSchema(alice->getSchema());
-
-    for(size_t i = 0; i < alice->getTupleCount(); ++i) {
-        unioned->putTuple(i, alice->getTuple(i));
-    }
-
-    size_t offset = alice->getTupleCount();
-
-    // add bob's tuples from last to first
-    size_t readIdx = bob->getTupleCount();
-    for(size_t i = 0; i < bob->getTupleCount(); ++i) {
-        --readIdx;
-        unioned->putTuple(i + offset, bob->getTuple(readIdx));
-    }
-
-    QuerySchema schema = alice->getSchema();
-    unioned->setSchema(schema);
-
-
-    return unioned;
+    Union<bool> result(alice, bob);
+    return result.run();
 }
+
 
 
  std::shared_ptr<PlainTable > DataUtilities::getQueryResults(const std::string & dbName, const std::string & sql, const bool & hasDummyTag) {
@@ -134,18 +115,18 @@ SortDefinition DataUtilities::getDefaultSortDefinition(const uint32_t &colCount)
 
     }
 
-std::shared_ptr<PlainTable > DataUtilities::removeDummies(const std::shared_ptr<PlainTable  > &input) {
+std::shared_ptr<PlainTable > DataUtilities::removeDummies(const std::shared_ptr<PlainTable> &input) {
     // only works for plaintext tables
     assert(!input->isEncrypted());
     int outputTupleCount = input->getTrueTupleCount();
 
     int writeCursor = 0;
-    std::shared_ptr<PlainTable > output(new PlainTable(outputTupleCount, input->getSchema(), input->getSortOrder()));
+    std::shared_ptr<PlainTable > output(new PlainTable(outputTupleCount, *input->getSchema(), input->getSortOrder()));
 
     for(size_t i = 0; i < input->getTupleCount(); ++i) {
-        PlainTuple *tuple = input->getTuplePtr(i);
-        if(!tuple->getDummyTag()) {
-            output->putTuple(writeCursor, *tuple);
+        PlainTuple tuple = input->getTuple(i);
+        if(!tuple.getDummyTag()) {
+            output->putTuple(writeCursor, tuple);
             ++writeCursor;
         }
     }
@@ -170,7 +151,7 @@ std::string DataUtilities::printSortDefinition(const SortDefinition &sortDefinit
     for(ColumnSort c : sortDefinition) {
         string direction = (c.second == SortDirection::ASCENDING) ? "ASC" : "DESC";
         result << "<" << c.first << ", "
-                  << direction << "> " <<  std::endl;
+                  << direction << "> ";
 
     }
     result << ")";
@@ -203,6 +184,14 @@ std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int
     return printFirstBytes(decodedBytes, byteCount);
 
 }
+
+// actually an array of emp::Bits.  Each bit is sizeof(emp::block) length
+/*emp::Integer toEmpInteger(const vector<int8_t> & src_bytes) {
+
+    emp::Integer dst(src_bytes.size() / sizeof(emp::block), 0);
+
+} */
+
 
 
 

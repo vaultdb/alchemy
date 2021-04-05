@@ -4,6 +4,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <util/data_utilities.h>
+#include <query_table/plain_tuple.h>
+#include <query_table/secure_tuple.h>
 
 
 UnionHybridData::UnionHybridData(const QuerySchema & srcSchema, NetIO *aNetio, const int & aParty)  :  party(aParty), netio(aNetio){
@@ -38,10 +40,12 @@ Integer UnionHybridData::readEncrypted(int8_t *secretSharedBits, const size_t &s
     }
 
 void UnionHybridData::readLocalInput(const string &localInputFile) {
-    std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, inputTable->getSchema());
-    std::shared_ptr<SecureTable> encryptedTable = localInput->secretShare(netio, party);
+    std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, *inputTable->getSchema());
+    Utilities::checkMemoryUtilization(" read csv: ");
+    std::cout << "Read " << localInput->getTupleCount() << " tuples of local input." << std::endl;
 
-    Utilities::checkMemoryUtilization("before local read: ");
+    std::shared_ptr<SecureTable> encryptedTable = localInput->secret_share(netio, party);
+
     if(!inputTableInit) {
         inputTable = encryptedTable;
     }
@@ -50,7 +54,7 @@ void UnionHybridData::readLocalInput(const string &localInputFile) {
     }
 
 
-    Utilities::checkMemoryUtilization("after local read: ");
+    Utilities::checkMemoryUtilization(" local read: ");
 
     inputTableInit = true;
 }
@@ -85,7 +89,7 @@ void UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
     Integer additionalData = aliceBytes ^ bobBytes;
 
 
-     std::shared_ptr<SecureTable> additionalInputs = SecureTable::deserialize(inputTable->getSchema(),
+     std::shared_ptr<SecureTable> additionalInputs = SecureTable::deserialize(*inputTable->getSchema(),
                                                                             additionalData.bits);
 
 
@@ -125,7 +129,9 @@ shared_ptr<SecureTable> UnionHybridData::unionHybridData(const QuerySchema &sche
                                                         const string &secretSharesFile, NetIO *aNetIO,
                                                         const int &party) {
     UnionHybridData unioned(schema, aNetIO, party);
+
     unioned.readLocalInput(localInputFile);
+
     unioned.readSecretSharedInput(secretSharesFile);
 
 
