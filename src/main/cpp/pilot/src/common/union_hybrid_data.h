@@ -14,8 +14,8 @@ namespace vaultdb {
     class UnionHybridData {
     public:
         UnionHybridData(const QuerySchema & srcSchema, NetIO *netio, const int & party);
-        void readLocalInput(const string & localInputFile);
-        void readSecretSharedInput(const string & secretSharesFile);
+        std::shared_ptr<SecureTable> readLocalInput(const string & localInputFile);
+        std::shared_ptr<SecureTable> readSecretSharedInput(const string & secretSharesFile);
         std::shared_ptr<SecureTable> getInputTable();
 
         static shared_ptr<SecureTable> unionHybridData(const QuerySchema & schema, const std::string & localInputFile,  const std::string & secretSharesFile, NetIO *aNetIO, const int & party);
