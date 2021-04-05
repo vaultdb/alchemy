@@ -17,7 +17,6 @@ template<typename B>
 std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
 
-
     // deep copy new output, then just modify the dummy tag
     Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
 

@@ -270,7 +270,7 @@ void EnrichTest::validateTable(const std::string & dbName, const std::string & s
     std::shared_ptr<PlainTable> expectedTable = dataProvider.getQueryTable(dbName, sql);
     expectedTable->setSortOrder(expectedSortDefinition);
 
-    ASSERT_EQ(expectedTable->getSchema(), observedTable->getSchema());
+    ASSERT_EQ(*expectedTable->getSchema(), *observedTable->getSchema());
 
     // check that the types are faithfully aligned
     for(size_t i = 0; i < observedTable->getSchema()->getFieldCount(); ++i) {
@@ -345,13 +345,12 @@ TEST_F(EnrichTest, loadAndJoinData) {
                                       "ORDER BY p.patid, denom_excl";
 
 
-    SortDefinition emptySort; // leaving this empty for now, TODO: propagate sort trait through join op
-
+    SortDefinition  expectedSort{ColumnSort(0, SortDirection::ASCENDING)};
     std::shared_ptr<PlainTable> aliceJoined = loadAndJoinLocalData(aliceDbName);
-    validateTable(aliceDbName, expectedResultSql, emptySort, aliceJoined);
+    validateTable(aliceDbName, expectedResultSql, expectedSort, aliceJoined);
 
     std::shared_ptr<PlainTable> bobJoined = loadAndJoinLocalData(bobDbName);
-    validateTable(bobDbName, expectedResultSql, emptySort, bobJoined);
+    validateTable(bobDbName, expectedResultSql, expectedSort, bobJoined);
 
 }
 
@@ -527,7 +526,7 @@ TEST_F(EnrichTest, testRollups) {
     //std::cout << "Validated zip marker stratified " << *zipMarkerStratified << std::endl;
 }
 
-// setup with 100 tuples:
+// set up with 100 tuples:
 // bash test/support/load-generated-data.sh 100
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
