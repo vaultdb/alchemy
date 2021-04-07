@@ -73,8 +73,8 @@ std::shared_ptr<SecureTable> UnionHybridData::readSecretSharedInput(const string
     size_t srcBits = srcBytes * 8;
     bool *bools = Utilities::bytesToBool(srcData.data(), srcBytes);
 
-    Integer aliceBytes(srcBits, 0L, ALICE);
-    Integer bobBytes(srcBits, 0L, BOB);
+    Integer aliceBytes(srcBits, 0L, emp::PUBLIC);
+    Integer bobBytes(srcBits, 0L, emp::PUBLIC);
 
     if(party == ALICE) {
         // feed through my data, then wait for Bob's
