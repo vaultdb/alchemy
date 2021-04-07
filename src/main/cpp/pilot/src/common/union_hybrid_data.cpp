@@ -80,6 +80,8 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
     size_t dst_bit_cnt = tuple_cnt * secure_schema.size();
     bool *dst_bools = new bool[dst_bit_cnt];
+    assert(dst_bools != nullptr);
+
     plain_to_secure_bits(src_bools, dst_bools, plain_schema, secure_schema, tuple_cnt);
 
     delete [] src_bools;
