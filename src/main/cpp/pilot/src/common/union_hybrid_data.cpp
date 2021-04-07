@@ -89,10 +89,38 @@ std::shared_ptr<SecureTable> UnionHybridData::readSecretSharedInput(const string
     }
 
     Integer additionalData = aliceBytes ^ bobBytes;
+    // issue: serialize this to byte-aligned bitstring.   Hence bools and dummy tags have 8 bits instead of 1.
+    // solution: only retain the bits we need
+    size_t src_pos = 0;
+    size_t dst_pos = 0;
+    QuerySchema plain_schema = *inputTable->getSchema();
+    QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
+    size_t tuple_cnt = src_bit_cnt / plain_schema.size();
+    assert(src_bit_cnt % plain_schema.size() == 0);
+
+    Integer downsized_bits(tuple_cnt * secure_schema.size(), 0, emp::PUBLIC);
+    emp::Bit *src = (emp::Bit *) additionalData.bits.data();
+    emp::Bit *dst = (emp::Bit *) downsized_bits.bits.data();
 
 
-     std::shared_ptr<SecureTable> additionalInputs = SecureTable::deserialize(*inputTable->getSchema(),
-                                                                            additionalData.bits);
+    for(size_t i = 0; i < tuple_cnt; ++i) {
+        for(size_t j = 0; j < plain_schema.getFieldCount(); ++j) {
+            QueryFieldDesc plain_field = plain_schema.getField(j);
+            QueryFieldDesc secure_field = secure_schema.getField(j);
+            memcpy(dst + dst_pos, src + src_pos, secure_field.size() * sizeof(emp::block));
+            dst_pos += secure_field.size();
+            src_pos += plain_field.size();
+        }
+        // handle dummy tag
+        memcpy(dst + dst_pos, src + src_pos,  sizeof(emp::block));
+        src_pos += 8; // original, byte-aligned bool
+        dst_pos += 1; // emp::Bit, semantically a bool
+    }
+
+
+
+     std::shared_ptr<SecureTable> additionalInputs = SecureTable::deserialize(secure_schema,
+                                                                            downsized_bits.bits);
 
 
      delete [] bools;
