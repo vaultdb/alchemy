@@ -69,21 +69,22 @@ std::shared_ptr<SecureTable> UnionHybridData::readSecretSharedInput(const string
     // read in binary and then xor it with other side to secret share it.
     std::vector<int8_t> srcData = DataUtilities::readFile(secretSharesFile);
 
-    size_t srcBytes = srcData.size();
-    size_t srcBits = srcBytes * 8;
-    bool *bools = Utilities::bytesToBool(srcData.data(), srcBytes);
+    size_t src_byte_cnt = srcData.size();
+    size_t src_bit_cnt = src_byte_cnt * 8;
+    bool *bools = new bool[src_bit_cnt];
+    emp::to_bool(bools, srcData.data(), src_bit_cnt, false);
 
-    Integer aliceBytes(srcBits, 0L, emp::PUBLIC);
-    Integer bobBytes(srcBits, 0L, emp::PUBLIC);
+    Integer aliceBytes(src_bit_cnt, 0L, emp::PUBLIC);
+    Integer bobBytes(src_bit_cnt, 0L, emp::PUBLIC);
 
     if(party == ALICE) {
-        // feed through my data, then wait for Bob's
-        ProtocolExecution::prot_exec->feed((block *)aliceBytes.bits.data(), ALICE, bools, srcBits);
-        ProtocolExecution::prot_exec->feed((block *)bobBytes.bits.data(), BOB, nullptr, srcBits);
+        // feed through Alice's data, then wait for Bob's
+        ProtocolExecution::prot_exec->feed((block *)aliceBytes.bits.data(), ALICE, bools, src_bit_cnt);
+        ProtocolExecution::prot_exec->feed((block *)bobBytes.bits.data(), BOB, nullptr, src_bit_cnt);
     }
     else {
-        ProtocolExecution::prot_exec->feed((block *)aliceBytes.bits.data(), ALICE, nullptr, srcBits);
-        ProtocolExecution::prot_exec->feed((block *)bobBytes.bits.data(), BOB, bools, srcBits);
+        ProtocolExecution::prot_exec->feed((block *)aliceBytes.bits.data(), ALICE, nullptr, src_bit_cnt);
+        ProtocolExecution::prot_exec->feed((block *)bobBytes.bits.data(), BOB, bools, src_bit_cnt);
 
     }
 
