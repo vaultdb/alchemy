@@ -40,8 +40,10 @@ Integer UnionHybridData::readEncrypted(int8_t *secretSharedBits, const size_t &s
 
     }
 
-std::shared_ptr<SecureTable> UnionHybridData::readLocalInput(const string &localInputFile) {
-    std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, *inputTable->getSchema());
+shared_ptr<SecureTable>
+UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema &src_schema, NetIO *netio,
+                                const int &party) {
+    std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, src_schema);
     Utilities::checkMemoryUtilization(" read csv: ");
     std::cout << "Read " << localInput->getTupleCount() << " tuples of local input." << std::endl;
 
@@ -64,16 +66,21 @@ std::shared_ptr<SecureTable> UnionHybridData::readLocalInput(const string &local
 
 
 
-std::shared_ptr<SecureTable> UnionHybridData::readSecretSharedInput(const string &secretSharesFile) {
+// plaintext input schema, setup for XOR-shared data
+shared_ptr<SecureTable>
+UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const QuerySchema &plain_schema,
+                                       const int &party) {
 
     // read in binary and then xor it with other side to secret share it.
-    std::vector<int8_t> srcData = DataUtilities::readFile(secretSharesFile);
-
-    size_t src_byte_cnt = srcData.size();
+    std::vector<int8_t> src_data = DataUtilities::readFile(secretSharesFile);
+    size_t src_byte_cnt = src_data.size();
+    size_t tuple_size = plain_schema.size();
     size_t src_bit_cnt = src_byte_cnt * 8;
+    assert(src_bit_cnt % tuple_size == 0);
+
     bool *bools = new bool[src_bit_cnt];
     std::cout << " allocated " << src_bit_cnt << " bools for reading in secret shared data " << std::endl;
-    emp::to_bool(bools, srcData.data(), src_bit_cnt, false);
+    emp::to_bool<int8_t>(bools, src_data.data(), src_bit_cnt, false);
 
     Integer alice_bytes(src_bit_cnt, 0L, emp::PUBLIC);
     Integer bob_bytes(src_bit_cnt, 0L, emp::PUBLIC);
@@ -94,7 +101,7 @@ std::shared_ptr<SecureTable> UnionHybridData::readSecretSharedInput(const string
     // solution: only retain the bits we need
     size_t src_pos = 0;
     size_t dst_pos = 0;
-    QuerySchema plain_schema = *inputTable->getSchema();
+
     QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
     size_t tuple_cnt = src_bit_cnt / plain_schema.size();
     assert(src_bit_cnt % plain_schema.size() == 0);
@@ -160,15 +167,15 @@ void UnionHybridData::resizeAndAppend(std::shared_ptr<SecureTable> toAdd) {
 shared_ptr<SecureTable> UnionHybridData::unionHybridData(const QuerySchema &schema, const string &localInputFile,
                                                         const string &secretSharesFile, NetIO *aNetIO,
                                                         const int &party) {
-    UnionHybridData unioned(schema, aNetIO, party);
 
-    std::shared_ptr<SecureTable> local = unioned.readLocalInput(localInputFile);
-    std::shared_ptr<SecureTable> remote = unioned.readSecretSharedInput(secretSharesFile);
+    std::shared_ptr<SecureTable> local = UnionHybridData::readLocalInput(localInputFile, schema, aNetIO,
+                                                                party);
+    
+    std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, schema, party);
 
     Union<emp::Bit> union_op(local, remote);
     return union_op.run();
 
-    //return unioned.getInputTable();
 }
 
 
