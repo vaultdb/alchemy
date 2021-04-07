@@ -72,23 +72,24 @@ std::shared_ptr<SecureTable> UnionHybridData::readSecretSharedInput(const string
     size_t src_byte_cnt = srcData.size();
     size_t src_bit_cnt = src_byte_cnt * 8;
     bool *bools = new bool[src_bit_cnt];
+    std::cout << " allocated " << src_bit_cnt << " bools for reading in secret shared data " << std::endl;
     emp::to_bool(bools, srcData.data(), src_bit_cnt, false);
 
-    Integer aliceBytes(src_bit_cnt, 0L, emp::PUBLIC);
-    Integer bobBytes(src_bit_cnt, 0L, emp::PUBLIC);
+    Integer alice_bytes(src_bit_cnt, 0L, emp::PUBLIC);
+    Integer bob_bytes(src_bit_cnt, 0L, emp::PUBLIC);
 
     if(party == ALICE) {
         // feed through Alice's data, then wait for Bob's
-        ProtocolExecution::prot_exec->feed((block *)aliceBytes.bits.data(), ALICE, bools, src_bit_cnt);
-        ProtocolExecution::prot_exec->feed((block *)bobBytes.bits.data(), BOB, nullptr, src_bit_cnt);
+        ProtocolExecution::prot_exec->feed((block *)alice_bytes.bits.data(), ALICE, bools, src_bit_cnt);
+        ProtocolExecution::prot_exec->feed((block *)bob_bytes.bits.data(), BOB, nullptr, src_bit_cnt);
     }
     else {
-        ProtocolExecution::prot_exec->feed((block *)aliceBytes.bits.data(), ALICE, nullptr, src_bit_cnt);
-        ProtocolExecution::prot_exec->feed((block *)bobBytes.bits.data(), BOB, bools, src_bit_cnt);
+        ProtocolExecution::prot_exec->feed((block *)alice_bytes.bits.data(), ALICE, nullptr, src_bit_cnt);
+        ProtocolExecution::prot_exec->feed((block *)bob_bytes.bits.data(), BOB, bools, src_bit_cnt);
 
     }
 
-    Integer additionalData = aliceBytes ^ bobBytes;
+    Integer additionalData = alice_bytes ^ bob_bytes;
     // issue: serialize this to byte-aligned bitstring.   Hence bools and dummy tags have 8 bits instead of 1.
     // solution: only retain the bits we need
     size_t src_pos = 0;
