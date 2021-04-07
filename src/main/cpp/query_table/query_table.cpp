@@ -17,6 +17,12 @@ using namespace vaultdb;
 template <typename B>
 void QueryTable<B>::setSchema(const QuerySchema & s) {
     schema_ = std::make_shared<QuerySchema>(s);
+    tuple_size_ = schema_->size()/8; // bytes for plaintext
+
+    if(std::is_same_v<emp::Bit, B>) {
+        size_t tuple_bits = schema_->size();
+        tuple_size_ = tuple_bits * sizeof(emp::block); // bits, one block per bit
+    }
 }
 
 template <typename B>
@@ -143,6 +149,8 @@ QueryTable<B> & QueryTable<B>::operator=(const QueryTable<B> & src) {
     setSchema(*src.getSchema());
 
     tuple_data_.resize(src.tuple_data_.size());
+    std::cout << "Allocating " << src.tuple_data_.size()  << " bytes." << std::endl;
+
     memcpy(tuple_data_.data(), src.tuple_data_.data(), tuple_data_.size());
     return *this;
 }
@@ -160,6 +168,8 @@ template <typename B>
 QueryTable<B>::QueryTable(const QueryTable<B> &src) : orderBy(src.getSortOrder()), tuple_size_(src.tuple_size_) {
     schema_ = std::make_shared<QuerySchema>(*src.getSchema());
     tuple_data_ = src.tuple_data_;
+    std::cout << "Allocating " << tuple_data_.size()  << " bytes." << std::endl;
+
 }
 
 

@@ -43,7 +43,9 @@ namespace  vaultdb {
             QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition = SortDefinition());
             QueryTable(const QueryTable &src);
 
-            ~QueryTable() = default;
+            ~QueryTable() {
+                std::cout << "Freeing " << tuple_data_.size() << " bytes." << std::endl;
+            }
 
             void resize(const size_t & tupleCount);
             bool isEncrypted() const;

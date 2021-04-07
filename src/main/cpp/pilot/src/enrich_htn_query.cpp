@@ -117,13 +117,13 @@ shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(const shared_ptr<SecureT
 
 void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
 
-    Utilities::checkMemoryUtilization("Before sort");
+    Utilities::checkMemoryUtilization("before sort");
 
     // sort it on cols [0,5)
     Sort sort(src, DataUtilities::getDefaultSortDefinition(5));
     shared_ptr<SecureTable> sorted = sort.run();
 
-    Utilities::checkMemoryUtilization("After deleting sort");
+    Utilities::checkMemoryUtilization("deleting sort");
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
     std::vector<ScalarAggregateDefinition> aggregators {
@@ -140,7 +140,7 @@ void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
     dataCube = aggregator.run();
     sorted.reset();
 
-    Utilities::checkMemoryUtilization("After deleting aggregate");
+    Utilities::checkMemoryUtilization("deleting aggregate");
 
 
 }
