@@ -117,8 +117,6 @@ int main(int argc, char **argv) {
 
     Utilities::checkMemoryUtilization("read input");
 
-    cout << "********* start processing ***************" << endl;
-
     // validate it against the DB for testing
     if(TESTBED) {
         shared_ptr<PlainTable> revealed = inputData->reveal();
@@ -130,6 +128,8 @@ int main(int argc, char **argv) {
         cout << "Read and validated input on " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
 
     }
+
+    cout << "********* start processing ***************" << endl;
 
 
     EnrichHtnQuery enrich(inputData);

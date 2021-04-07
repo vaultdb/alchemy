@@ -50,16 +50,7 @@ UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema 
     std::shared_ptr<SecureTable> encryptedTable = localInput->secret_share(netio, party);
     Utilities::checkMemoryUtilization(" local read: ");
     return encryptedTable;
-    /*if(!inputTableInit) {
-        inputTable = encryptedTable;
-    }
-    else {
-       resizeAndAppend(encryptedTable);
-    }
 
-
-
-    inputTableInit = true; */
 }
 
 
@@ -76,73 +67,47 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     size_t src_byte_cnt = src_data.size();
     size_t tuple_size = plain_schema.size();
     size_t src_bit_cnt = src_byte_cnt * 8;
+    size_t tuple_cnt = src_bit_cnt / plain_schema.size();
+
     assert(src_bit_cnt % tuple_size == 0);
 
-    bool *bools = new bool[src_bit_cnt];
+    bool *src_bools = new bool[src_bit_cnt];
     std::cout << " allocated " << src_bit_cnt << " bools for reading in secret shared data " << std::endl;
-    emp::to_bool<int8_t>(bools, src_data.data(), src_bit_cnt, false);
 
-    Integer alice_bytes(src_bit_cnt, 0L, emp::PUBLIC);
-    Integer bob_bytes(src_bit_cnt, 0L, emp::PUBLIC);
+    emp::to_bool<int8_t>(src_bools, src_data.data(), src_bit_cnt, false);
+
+    // convert serialized representation from byte-aligned to bit-by-bit
+    QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
+    size_t dst_bit_cnt = tuple_cnt * secure_schema.size();
+    bool *dst_bools = new bool[dst_bit_cnt];
+    plain_to_secure_bits(src_bools, dst_bools, plain_schema, secure_schema, tuple_cnt);
+
+    delete [] src_bools;
+
+    Integer alice(dst_bit_cnt, 0L, emp::PUBLIC);
+    Integer bob(dst_bit_cnt, 0L, emp::PUBLIC);
 
     if(party == ALICE) {
         // feed through Alice's data, then wait for Bob's
-        ProtocolExecution::prot_exec->feed((block *)alice_bytes.bits.data(), ALICE, bools, src_bit_cnt);
-        ProtocolExecution::prot_exec->feed((block *)bob_bytes.bits.data(), BOB, nullptr, src_bit_cnt);
+        ProtocolExecution::prot_exec->feed((block *)alice.bits.data(), ALICE, dst_bools, dst_bit_cnt);
+        ProtocolExecution::prot_exec->feed((block *)bob.bits.data(), BOB, nullptr, dst_bit_cnt);
     }
     else {
-        ProtocolExecution::prot_exec->feed((block *)alice_bytes.bits.data(), ALICE, nullptr, src_bit_cnt);
-        ProtocolExecution::prot_exec->feed((block *)bob_bytes.bits.data(), BOB, bools, src_bit_cnt);
+        ProtocolExecution::prot_exec->feed((block *)alice.bits.data(), ALICE, nullptr, dst_bit_cnt);
+        ProtocolExecution::prot_exec->feed((block *)bob.bits.data(), BOB, dst_bools, dst_bit_cnt);
 
     }
 
-    Integer additionalData = alice_bytes ^ bob_bytes;
-    // issue: serialize this to byte-aligned bitstring.   Hence bools and dummy tags have 8 bits instead of 1.
-    // solution: only retain the bits we need
-    size_t src_pos = 0;
-    size_t dst_pos = 0;
-
-    QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
-    size_t tuple_cnt = src_bit_cnt / plain_schema.size();
-    assert(src_bit_cnt % plain_schema.size() == 0);
-
-    Integer downsized_bits(tuple_cnt * secure_schema.size(), 0, emp::PUBLIC);
-    emp::Bit *src = (emp::Bit *) additionalData.bits.data();
-    emp::Bit *dst = (emp::Bit *) downsized_bits.bits.data();
-
-
-    for(size_t i = 0; i < tuple_cnt; ++i) {
-        for(size_t j = 0; j < plain_schema.getFieldCount(); ++j) {
-            QueryFieldDesc plain_field = plain_schema.getField(j);
-            QueryFieldDesc secure_field = secure_schema.getField(j);
-            memcpy(dst + dst_pos, src + src_pos, secure_field.size() * sizeof(emp::block));
-            dst_pos += secure_field.size();
-            src_pos += plain_field.size();
-        }
-        // handle dummy tag
-        memcpy(dst + dst_pos, src + src_pos,  sizeof(emp::block));
-        src_pos += 8; // original, byte-aligned bool
-        dst_pos += 1; // emp::Bit, semantically a bool
-    }
+    Integer shared_data = alice ^ bob;
 
 
 
-     std::shared_ptr<SecureTable> additionalInputs = SecureTable::deserialize(secure_schema,
-                                                                            downsized_bits.bits);
+     std::shared_ptr<SecureTable> shared_table = SecureTable::deserialize(secure_schema,
+                                                                              shared_data.bits);
 
 
-     delete [] bools;
-     return additionalInputs;
-  /*  if(!inputTableInit) {
-        inputTable = additionalInputs;
-    }
-    else {
-        resizeAndAppend(additionalInputs);
-    }
-
-
-    inputTableInit = true;
-    */
+     delete [] dst_bools;
+     return shared_table;
 
 }
 
@@ -170,11 +135,39 @@ shared_ptr<SecureTable> UnionHybridData::unionHybridData(const QuerySchema &sche
 
     std::shared_ptr<SecureTable> local = UnionHybridData::readLocalInput(localInputFile, schema, aNetIO,
                                                                 party);
-    
+
     std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, schema, party);
 
     Union<emp::Bit> union_op(local, remote);
     return union_op.run();
+
+}
+
+void UnionHybridData::plain_to_secure_bits(bool *src, bool *dst, const QuerySchema &plain_schema,
+                                           const QuerySchema &secure_schema, const size_t &tuple_cnt) {
+
+    // issue: serialize this to byte-aligned bitstring.   Hence bools and dummy tags have 8 bits instead of 1.
+    // solution: only retain the bits we need
+    size_t src_pos = 0;
+    size_t dst_pos = 0;
+
+
+    for(size_t i = 0; i < tuple_cnt; ++i) {
+        for(size_t j = 0; j < plain_schema.getFieldCount(); ++j) {
+            QueryFieldDesc plain_field = plain_schema.getField(j);
+            QueryFieldDesc secure_field = secure_schema.getField(j);
+            memcpy(dst + dst_pos, src + src_pos, secure_field.size());
+            dst_pos += secure_field.size();
+            src_pos += plain_field.size();
+        }
+        // handle dummy tag
+        dst[dst_pos] = src[src_pos + 7];
+        memcpy(dst + dst_pos, src + src_pos, 1);
+        src_pos += 8; // original, byte-aligned bool
+        dst_pos += 1; // emp::Bit, semantically a bool
+    }
+
+
 
 }
 

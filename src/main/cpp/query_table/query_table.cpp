@@ -341,6 +341,7 @@ QueryTable<B>::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
     std::cout << "Schema: " << encrypted_schema << std::endl; // remember to include the dummy tag
     std::cout << "table bits size: " << tableBits.size() << " vs schema size " << result->tuple_data_.size()/sizeof(emp::block) << std::endl;
     assert(result->tuple_data_.size() / sizeof(emp::block)  == tableBits.size());
+
     memcpy(result->tuple_data_.data(), tableBits.data(), tableSize * sizeof(emp::block));
 
     return result;

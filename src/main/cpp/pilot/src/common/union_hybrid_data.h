@@ -36,6 +36,11 @@ namespace vaultdb {
         Integer readEncrypted(int8_t *secretSharedBits, const size_t & sizeBytes, // size in bytes
                               const int & dstParty);
 
+        // convert all instances of bool and dummy tag to be 1 bool instead of 8 from previous serialization
+        static void
+        plain_to_secure_bits(bool *src, bool *dst, const QuerySchema &plain_schema,
+                             const QuerySchema &secure_schema, const size_t &tuple_cnt);
+
         // add on to inputTable
         void resizeAndAppend(std::shared_ptr<SecureTable> toAdd);
 
