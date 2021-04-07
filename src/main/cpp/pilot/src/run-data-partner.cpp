@@ -11,7 +11,7 @@ using namespace  std;
 using namespace vaultdb;
 using namespace  emp;
 
-#define TESTBED 0
+#define TESTBED 1
 
 
 
