@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
     shared_ptr<SecureTable> zipRollup = runRollup(0, "zip_marker", party, enrich);
     cout << "Done first rollup at " << time_from(startTime)*1e6*1e-9 << " ms." << endl;
     Utilities::checkMemoryUtilization();
-
+/*
     shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich);
     Utilities::checkMemoryUtilization("rollup 2");
 
@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
     Utilities::checkMemoryUtilization("rollup 4");
 
     shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich);
-    Utilities::checkMemoryUtilization("rollup 5");
+    Utilities::checkMemoryUtilization("rollup 5");*/
 
 
      emp::finalize_semi_honest();
