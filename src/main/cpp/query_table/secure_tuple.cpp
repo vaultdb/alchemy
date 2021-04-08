@@ -103,18 +103,18 @@ PlainTuple QueryTuple<emp::Bit>::reveal(const int &empParty) const {
 
 
 void QueryTuple<emp::Bit>::compare_swap(const Bit &cmp, SecureTuple  & lhs, SecureTuple  & rhs) {
-    size_t tuple_size = lhs.getSchema()->size()  * sizeof(emp::block); // size in bytes
+    size_t tuple_size = lhs.getSchema()->size(); // size in bytes
 
     emp::Integer lhs_payload(tuple_size, 0, emp::PUBLIC);
     emp::Integer rhs_payload(tuple_size, 0, emp::PUBLIC);
 
-    memcpy(lhs_payload.bits.data(), lhs.getData(), tuple_size);
-    memcpy(rhs_payload.bits.data(), rhs.getData(), tuple_size);
+    memcpy(lhs_payload.bits.data(), lhs.getData(), tuple_size * sizeof(emp::block));
+    memcpy(rhs_payload.bits.data(), rhs.getData(), tuple_size * sizeof(emp::block));
 
     emp::swap(cmp, lhs_payload, rhs_payload);
 
-    memcpy(lhs.getData(), lhs_payload.bits.data(), tuple_size);
-    memcpy(rhs.getData(), rhs_payload.bits.data(), tuple_size);
+    memcpy(lhs.getData(), lhs_payload.bits.data(), tuple_size * sizeof(emp::block));
+    memcpy(rhs.getData(), rhs_payload.bits.data(), tuple_size * sizeof(emp::block));
 
 }
 
