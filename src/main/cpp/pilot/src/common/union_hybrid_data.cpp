@@ -79,8 +79,9 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     // convert serialized representation from byte-aligned to bit-by-bit
     QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
     size_t dst_bit_cnt = tuple_cnt * secure_schema.size();
-    bool *dst_bools = new bool[22656];
-    std::cout << "Dst bit count is " << dst_bit_cnt << std::endl;
+    size_t remainder = dst_bit_cnt % 128; // pad it to 128-bit increments
+    size_t dst_bit_alloc = dst_bit_cnt + remainder;
+    bool *dst_bools = new bool[dst_bit_alloc];
     assert(dst_bools != nullptr);
 
     plain_to_secure_bits(src_bools, dst_bools, plain_schema, secure_schema, tuple_cnt);
