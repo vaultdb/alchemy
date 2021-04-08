@@ -45,7 +45,6 @@ UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema 
                                 const int &party) {
     std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, src_schema);
     Utilities::checkMemoryUtilization(" read csv: ");
-    std::cout << "Read " << localInput->getTupleCount() << " tuples of local input." << std::endl;
 
     std::shared_ptr<SecureTable> encryptedTable = localInput->secret_share(netio, party);
     Utilities::checkMemoryUtilization(" local read: ");
@@ -72,8 +71,6 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     assert(src_bit_cnt % tuple_size == 0);
 
     bool *src_bools = new bool[src_bit_cnt];
-    std::cout << " allocated " << src_bit_cnt << " bools for reading in secret shared data " << std::endl;
-
     emp::to_bool<int8_t>(src_bools, src_data.data(), src_bit_cnt, false);
 
     // convert serialized representation from byte-aligned to bit-by-bit

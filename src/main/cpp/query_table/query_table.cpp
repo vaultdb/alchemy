@@ -45,7 +45,6 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
         tuple_size_ = tuple_bits * sizeof(emp::block); // bits, one block per bit
     }
 
-    std::cout << "Allocating " << num_tuples * tuple_size_  << " bytes." << std::endl;
     tuple_data_.resize(num_tuples * tuple_size_);
     if(std::is_same_v<emp::Bit, B>) {
         emp::Integer tmp(schema_->size() * num_tuples, 0, emp::PUBLIC);
@@ -149,8 +148,6 @@ QueryTable<B> & QueryTable<B>::operator=(const QueryTable<B> & src) {
     setSchema(*src.getSchema());
 
     tuple_data_.resize(src.tuple_data_.size());
-    std::cout << "Allocating " << src.tuple_data_.size()  << " bytes." << std::endl;
-
     memcpy(tuple_data_.data(), src.tuple_data_.data(), tuple_data_.size());
     return *this;
 }
@@ -168,7 +165,6 @@ template <typename B>
 QueryTable<B>::QueryTable(const QueryTable<B> &src) : orderBy(src.getSortOrder()), tuple_size_(src.tuple_size_) {
     schema_ = std::make_shared<QuerySchema>(*src.getSchema());
     tuple_data_ = src.tuple_data_;
-    std::cout << "Allocating " << tuple_data_.size()  << " bytes." << std::endl;
 
 }
 
@@ -334,12 +330,6 @@ QueryTable<B>::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
     uint32_t tupleCount = tableSize / tupleSize;
 
     std::shared_ptr<SecureTable> result(new SecureTable(tupleCount, encrypted_schema));
-    // 2400 bits allocated in vector of bits
-    //  (#0 int32 patient.patid, #1 varchar(3) patient.zip_marker, #2 int32 patient.age_days, #3 varchar(1) patient.sex, #4 bool patient.ethnicity, #5 int32 patient.race, #6 int32 patient.numerator, #7 int32 patient.denom_excl, #8 int32 patient.site_id) (dummy=bool)
-    // 32 + 24 + 32 + 8 + 1 + 32 + 3 * 32 + 1 = 226 bits
-    // expected size = 22600, but received: 24000 - there's something off with how we are encoding this.
-    std::cout << "Schema: " << encrypted_schema << std::endl; // remember to include the dummy tag
-    std::cout << "table bits size: " << tableBits.size() << " vs schema size " << result->tuple_data_.size()/sizeof(emp::block) << std::endl;
     assert(result->tuple_data_.size() / sizeof(emp::block)  == tableBits.size());
 
     memcpy(result->tuple_data_.data(), tableBits.data(), tableSize * sizeof(emp::block));
