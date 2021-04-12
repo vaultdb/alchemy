@@ -70,10 +70,10 @@ void ZkFilterTest::SetUp() {
 }
 
 void ZkFilterTest::TearDown() {
-  //  for(int i = 0; i < threads; ++i) {
-  //      if(ios[i]->io != nullptr) delete ios[i]->io;
- //       if(ios[i] != nullptr) delete ios[i];
-  //  }
+  for(int i = 0; i < threads; ++i) {
+        delete ios[i]->io;
+        delete ios[i];
+    }
 
 }
 
