@@ -33,7 +33,6 @@ public:
     // filtering for l_linenumber = 1
     emp::Bit predicateCall(const SecureTuple & tuple) const override {
         const SecureField f =  tuple.getField(1);
-        std::cout << "For tuple " << tuple.reveal() << " have value " << (f == line_no).reveal() << std::endl;
         return (f == line_no);
     }
 
@@ -115,7 +114,6 @@ TEST_F(ZkFilterTest, test_table_scan) {
     bool cheat = finalize_zk_bool<BoolIO<NetIO>>();
 
     ASSERT_FALSE(cheat);
-    std::cout << "Completed successfully!" << std::endl;
 
 }
 
@@ -133,12 +131,7 @@ TEST_F(ZkFilterTest, test_filter) {
     Filter<emp::Bit> filter(shared, aPredicate);  // deletion handled by shared_ptr
 
     std::shared_ptr<SecureTable> result = filter.run();
-    std::cout << "Last check: " << result->getTuple(4).reveal().toString(true) << std::endl;
-
     std::unique_ptr<PlainTable> revealed = result->reveal(emp::PUBLIC);
-    std::cout << "Last check plain: " << revealed->getTuple(4).toString(true) << std::endl;
-
-
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, expected_result_sql, true, 2);
 

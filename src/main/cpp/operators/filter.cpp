@@ -29,7 +29,6 @@ std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
 
         QueryTuple<B> to_write = Operator<B>::output->getTuple(i); // container pointer to source data
         to_write.setDummyTag(dummyTag);
-        std::cout << "Filter output: " << Operator<B>::output->getTuple(i).reveal() << std::endl;
 
     }
 

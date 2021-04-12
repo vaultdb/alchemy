@@ -431,9 +431,7 @@ std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable &table,
     for(uint32_t i = 0; i < tupleCount; ++i)  {
         const SecureTuple tuple = table.getImmutableTuple(i);
         PlainTuple dst_tuple = tuple.reveal(party);
-        std::cout << " revealed: " << dst_tuple.toString(true) << std::endl;
         dst_table->putTuple(i, dst_tuple);
-        std::cout << "Writing out tuple " << dst_table->getPlainTuple(i).toString(true) << std::endl;
     }
 
     return dst_table;
