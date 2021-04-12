@@ -87,11 +87,8 @@ TEST_F(ZkFilterTest, test_table_scan) {
 
     std::unique_ptr<PlainTable> revealed = shared->reveal(emp::PUBLIC);
     std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, sql, false, 2);
-
-
-
+    
     ASSERT_EQ(*expected, *revealed);
-    std::cout << "Tearing down!" << std::endl;
     // cheat check handledd in ZkBaseTest
 
 
@@ -103,7 +100,6 @@ TEST_F(ZkFilterTest, test_table_scan) {
 // Testing for selecting l_linenumber=1
 
 TEST_F(ZkFilterTest, test_filter) {
-    std::cout << "Starting up!" << std::endl;
     std::string expected_result_sql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
     std::shared_ptr<SecureTable> shared = secret_share_input();
     std::shared_ptr<Predicate<emp::Bit> > aPredicate(new ZkFilterPredicateClass(1));  // secret share the constant (1) just once
@@ -115,11 +111,6 @@ TEST_F(ZkFilterTest, test_filter) {
     std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, expected_result_sql, true, 2);
 
     ASSERT_EQ(*expected,  *revealed);
-    std::cout << "Tearing down!" << std::endl;
-
-
-
-
 }
 
 
