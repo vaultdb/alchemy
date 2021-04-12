@@ -95,9 +95,7 @@ set(sources
 		operators/union.cpp
 		operators/group_by_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp
-		operators/csv_input.cpp
-
-		)
+		operators/csv_input.cpp)
 
 
 

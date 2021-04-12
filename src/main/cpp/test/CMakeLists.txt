@@ -94,5 +94,5 @@ package_add_test(secure_scalar_aggregate_test secure_scalar_aggregate_test.cpp s
 package_add_test(secure_group_by_aggregate_test secure_group_by_aggregate_test.cpp support/EmpBaseTest.cpp)
 package_add_test(emp_float_to_int emp_float_to_int.cpp support/EmpBaseTest.cpp)
 package_add_test(enrich_test enrich_test.cpp  support/enrich_test_support.cpp support/EmpBaseTest.cpp)
-package_add_test(zk_test zk_test.cpp)
-package_add_test(zk_filter_test zk_filter_test.cpp)
+package_add_test(zk_test zk_test.cpp support/ZkBaseTest.cpp)
+package_add_test(zk_filter_test zk_filter_test.cpp support/ZkBaseTest.cpp)

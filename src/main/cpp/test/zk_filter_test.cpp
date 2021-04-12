@@ -6,6 +6,7 @@
 #include <operators/filter.h>
 #include <operators/support/predicate.h>
 #include <query_table/secure_tuple.h>
+#include <test/support/ZkBaseTest.h>
 #include <emp-zk/emp-zk.h>
 
 
@@ -39,15 +40,9 @@ public:
 };
 
 
-
-class ZkFilterTest : public ::testing::Test {
+class ZkFilterTest : public ZkBaseTest {
 protected:
     void SetUp() override;
-    void TearDown() override;
-
-    std::string alice_db = "tpch_alice";
-    std::string bob_db = "tpch_bob";
-    static const int threads = 1;
     static const int tuple_cnt = 10;
     std::string sql;
 
@@ -58,27 +53,13 @@ protected:
 };
 
 void ZkFilterTest::SetUp() {
-
-    for(int i = 0; i < threads; ++i)
-        ios[i] = new BoolIO<NetIO>(new NetIO(FLAGS_party == ALICE?nullptr: FLAGS_alice_host.c_str(),FLAGS_port+i), FLAGS_party==ALICE);
-
+    ZkBaseTest::SetUp();
     sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT " + std::to_string(tuple_cnt);
-
-    setup_zk_bool<BoolIO<NetIO>>(ios, threads, FLAGS_party);
-
-}
-
-void ZkFilterTest::TearDown() {
-  for(int i = 0; i < threads; ++i) {
-        delete ios[i]->io;
-        delete ios[i];
-    }
 
 }
 
 
 shared_ptr<SecureTable> ZkFilterTest::secret_share_input() const {
-    std::string db_name = FLAGS_party == emp::ALICE ? alice_db : bob_db;
     SortDefinition  order_by = DataUtilities::getDefaultSortDefinition(2);
 
     // only alice can secret share in ZK land
@@ -110,9 +91,9 @@ TEST_F(ZkFilterTest, test_table_scan) {
 
 
     ASSERT_EQ(*expected, *revealed);
-    bool cheat = finalize_zk_bool<BoolIO<NetIO>>();
+    std::cout << "Tearing down!" << std::endl;
+    // cheat check handledd in ZkBaseTest
 
-    ASSERT_FALSE(cheat);
 
 }
 
@@ -122,8 +103,7 @@ TEST_F(ZkFilterTest, test_table_scan) {
 // Testing for selecting l_linenumber=1
 
 TEST_F(ZkFilterTest, test_filter) {
-    std::string db_name =  FLAGS_party == emp::ALICE ? alice_db : bob_db;
-
+    std::cout << "Starting up!" << std::endl;
     std::string expected_result_sql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
     std::shared_ptr<SecureTable> shared = secret_share_input();
     std::shared_ptr<Predicate<emp::Bit> > aPredicate(new ZkFilterPredicateClass(1));  // secret share the constant (1) just once
@@ -135,10 +115,8 @@ TEST_F(ZkFilterTest, test_filter) {
     std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, expected_result_sql, true, 2);
 
     ASSERT_EQ(*expected,  *revealed);
+    std::cout << "Tearing down!" << std::endl;
 
-    bool cheat = finalize_zk_bool<BoolIO<NetIO>>();
-
-    ASSERT_FALSE(cheat);
 
 
 

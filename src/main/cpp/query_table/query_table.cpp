@@ -476,7 +476,6 @@ void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_
                                       const bool &reverse_read_order)  {
 
     int32_t cursor = (int32_t) write_offset;
-    QuerySchema src_schema = QuerySchema::toPlain(*dst_table.getSchema());
 
     if(reverse_read_order) {
 
