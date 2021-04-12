@@ -8,8 +8,6 @@
 
 using namespace vaultdb;
 
-//const vector<Integer> EnrichHtnQuery::ageStrata = {... };
-//const vector<Integer> EnrichHtnQuery::ageCutoff = {Integer(32, 28*365), Integer(32, 39*365), Integer(32, 50*365), Integer(32, 61*365), Integer(32, 72*365), Integer(32, 83*365)};
 
 EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input) : inputTable(input) {
 

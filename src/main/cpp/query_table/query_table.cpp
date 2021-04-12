@@ -238,7 +238,7 @@ std::shared_ptr<SecureTable> QueryTable<B>::secret_share(const PlainTable & inpu
 
     std::shared_ptr<SecureTable> dst_table(new SecureTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, input.getSortOrder()));
 
-    // preserve sort order
+    // preserve sort order - reverse input order for latter half to do bitonic merge
     if(!input.getSortOrder().empty()) {
         if (party == emp::ALICE) {
             secret_share_send(emp::ALICE, input, *dst_table, 0, true);
@@ -248,7 +248,6 @@ std::shared_ptr<SecureTable> QueryTable<B>::secret_share(const PlainTable & inpu
             secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, true);
             secret_share_send(emp::BOB, input, *dst_table, alice_tuple_cnt, false);
         }
-
         Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true);
     }
     else { // concatenate Alice and Bob

@@ -91,15 +91,6 @@ void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortD
     }
 }
 
-template<typename B>
-void Sort<B>::compareAndSwap(const int &lhsIdx, const int &rhsIdx, const bool &invertDir) {
-    QueryTuple<B> lhs = Operator<B>::output->getTuple(lhsIdx);
-    QueryTuple<B> rhs =  Operator<B>::output->getTuple(rhsIdx);
-    B toSwap = swapTuples(lhs, rhs, sortDefinition, invertDir);
-
-    QueryTuple<B>::compare_swap(toSwap,lhs, rhs);
-
-}
 
 template<typename B>
 Sort<B>::~Sort() {
@@ -131,8 +122,9 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
         B colSwapFlag = (lt == asc);
 
         // find first one where not eq, use this to init flag
-        swap =  FieldUtilities::select(swapInit, swap, colSwapFlag);
+        swap = FieldUtilities::select(swapInit, swap, colSwapFlag);
         swapInit = swapInit | neq;
+
     }
 
     return swap;

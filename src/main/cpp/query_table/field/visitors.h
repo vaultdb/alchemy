@@ -130,7 +130,7 @@ namespace vaultdb {
                 case FieldType::SECURE_INT:
                     return l.reveal<int32_t>(party);
                 case FieldType::SECURE_LONG:
-                    return l.reveal<int64_t>();
+                    return l.reveal<int64_t>(party);
                 case FieldType::SECURE_STRING:
                     return revealString(l, party);
                 default:
@@ -149,7 +149,7 @@ namespace vaultdb {
 
         std::string revealString(const emp::Integer &src, const int &party) const {
             long bitCount = src.size();
-            long byteCount = bitCount / 8;
+            //long byteCount = bitCount / 8;
 
 
             bool *bools = new bool[bitCount];
@@ -162,9 +162,13 @@ namespace vaultdb {
             }
 
             vector<int8_t> decodedBytesVector = Utilities::boolsToBytes(bools, bitCount);
-            decodedBytesVector.resize(byteCount + 1);
-            decodedBytesVector[byteCount] = '\0';
-            string dst((char *) decodedBytesVector.data());
+            /*if(party == emp::PUBLIC) {
+                decodedBytesVector.resize(byteCount + 1);
+                decodedBytesVector[byteCount] = '\0';
+            } // null-terminated, might not be needed here
+*/
+
+            string dst((char *) decodedBytesVector.data(), decodedBytesVector.size());
 
 
             std::reverse(dst.begin(), dst.end());

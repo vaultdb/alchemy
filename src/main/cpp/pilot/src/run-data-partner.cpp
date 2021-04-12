@@ -67,12 +67,12 @@ shared_ptr<SecureTable> runRollup(int idx, string colName, int party, EnrichHtnQ
 
 
     shared_ptr<SecureTable> stratified = enrich.rollUpAggregate(idx);
-  /*  std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
+   std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
 
     std::string suffix = (party == emp::ALICE) ? "alice" : "bob";
     std::string outputFile = colName + "." + suffix;
     DataUtilities::writeFile(outputFile, results);
-*/
+
     // validate it against the DB for testing
     if(TESTBED) {
         string unionedDbName = "enrich_htn_unioned";

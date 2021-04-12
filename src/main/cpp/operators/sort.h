@@ -27,8 +27,6 @@ namespace  vaultdb {
     private:
         void bitonicSort(const int &lo, const int &cnt, const bool &invertDir);
 
-        void compareAndSwap(const int &lhsIdx, const int &rhsIdx, const bool &invertDir);
-
         static B swapTuples(const QueryTuple<B> & lhsTuple, const QueryTuple<B> & rhsTuple, const SortDefinition  & sort_definition, const bool & invertDir);
 
         static int powerOfLessThanTwo(const int &n);

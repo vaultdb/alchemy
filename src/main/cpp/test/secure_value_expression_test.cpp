@@ -46,8 +46,8 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
         rhsEncrypted = PlainField ::secret_share_send(rhsValue, emp::ALICE);
     }
     else {
-        lhsEncrypted = PlainField ::secret_share_recv(FieldType::STRING, lhsStr.size(), emp::ALICE);
-        rhsEncrypted = PlainField ::secret_share_recv(FieldType::STRING, rhsStr.size(), emp::ALICE);
+        lhsEncrypted = PlainField ::secret_share_recv(FieldType::SECURE_STRING, lhsStr.size(), emp::ALICE);
+        rhsEncrypted = PlainField ::secret_share_recv(FieldType::SECURE_STRING, rhsStr.size(), emp::ALICE);
     }
 
     emp::Bit gtEncrypted = (lhsEncrypted > rhsEncrypted);
@@ -139,8 +139,8 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
         rhsPrivateField = PlainField ::secret_share_send(rhsField, emp::ALICE);
     }
     else {
-        lhsPrivateField = PlainField ::secret_share_recv(FieldType::STRING, 1, emp::ALICE);
-        rhsPrivateField = PlainField ::secret_share_recv(FieldType::STRING, 1, emp::ALICE);
+        lhsPrivateField = PlainField ::secret_share_recv(FieldType::SECURE_STRING, 1, emp::ALICE);
+        rhsPrivateField = PlainField ::secret_share_recv(FieldType::SECURE_STRING, 1, emp::ALICE);
     }
 
 

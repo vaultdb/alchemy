@@ -116,7 +116,7 @@ bool FieldUtilities::select(const bool &choice, const bool &lhs, const bool &rhs
 }
 
 emp::Bit FieldUtilities::select(const Bit &choice, const Bit &lhs, const Bit &rhs) {
-   return lhs.select(choice, rhs);
+    return emp::If(choice, lhs, rhs);
 }
 
 
