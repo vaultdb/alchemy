@@ -9,7 +9,7 @@
 #include <operators/sort.h>
 #include <operators/group_by_aggregate.h>
 #include <operators/filter.h>
-#include <test/support/EmpBaseTest.h>
+#include <test/mpc/emp_base_test.h>
 
 
 using namespace vaultdb;

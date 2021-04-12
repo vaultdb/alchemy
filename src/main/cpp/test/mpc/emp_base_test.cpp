@@ -1,5 +1,5 @@
 #include <util/data_utilities.h>
-#include "EmpBaseTest.h"
+#include "emp_base_test.h"
 
 
 const std::string EmpBaseTest::unionedDb = "tpch_unioned";

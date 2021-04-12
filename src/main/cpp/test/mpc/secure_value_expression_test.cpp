@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <emp-tool/emp-tool.h>
 #include <stdexcept>
-#include <test/support/EmpBaseTest.h>
+#include <test/mpc/emp_base_test.h>
 #include <query_table/field/field.h>
 
 

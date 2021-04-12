@@ -5,7 +5,7 @@
 #include <operators/sql_input.h>
 #include <operators/support/aggregate_id.h>
 #include <operators/group_by_aggregate.h>
-#include <test/support/EmpBaseTest.h>
+#include <test/mpc/emp_base_test.h>
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
 

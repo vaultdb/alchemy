@@ -1,5 +1,5 @@
 #include <data/PsqlDataProvider.h>
-#include <test/support/EmpBaseTest.h>
+#include <test/mpc/emp_base_test.h>
 #include <util/data_utilities.h>
 #include <test/support/QueryTableTestQueries.h>
 #include <sort.h>

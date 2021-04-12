@@ -1,5 +1,5 @@
 #include <util/data_utilities.h>
-#include "support/EmpBaseTest.h"
+#include "emp_base_test.h"
 #include "query_table/secure_tuple.h"
 #include "query_table/plain_tuple.h"
 

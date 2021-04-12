@@ -1,12 +1,13 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>
+#include <util/data_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/filter.h>
 #include <operators/support/predicate.h>
 #include <query_table/secure_tuple.h>
-#include <test/support/ZkBaseTest.h>
+#include <test/zk/zk_base_test.h>
 #include <emp-zk/emp-zk.h>
 
 
@@ -40,7 +41,7 @@ public:
 };
 
 
-class ZkFilterTest : public ZkBaseTest {
+class ZkFilterTest : public ZkTest {
 protected:
     void SetUp() override;
     static const int tuple_cnt = 10;
@@ -53,10 +54,11 @@ protected:
 };
 
 void ZkFilterTest::SetUp() {
-    ZkBaseTest::SetUp();
+    ZkTest::SetUp();
     sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT " + std::to_string(tuple_cnt);
 
 }
+
 
 
 shared_ptr<SecureTable> ZkFilterTest::secret_share_input() const {
@@ -83,11 +85,12 @@ shared_ptr<SecureTable> ZkFilterTest::secret_share_input() const {
 TEST_F(ZkFilterTest, test_table_scan) {
 
     // smoke test for basic infrastructure
-    std::shared_ptr<SecureTable> shared = secret_share_input();
+    SortDefinition  order_by = DataUtilities::getDefaultSortDefinition(2);
+    std::shared_ptr<SecureTable> shared = ZkTest::secret_share_input(sql, false, order_by);
 
     std::unique_ptr<PlainTable> revealed = shared->reveal(emp::PUBLIC);
     std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, sql, false, 2);
-    
+
     ASSERT_EQ(*expected, *revealed);
     // cheat check handledd in ZkBaseTest
 
@@ -101,7 +104,10 @@ TEST_F(ZkFilterTest, test_table_scan) {
 
 TEST_F(ZkFilterTest, test_filter) {
     std::string expected_result_sql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
-    std::shared_ptr<SecureTable> shared = secret_share_input();
+
+    SortDefinition  order_by = DataUtilities::getDefaultSortDefinition(2);
+    std::shared_ptr<SecureTable> shared = ZkTest::secret_share_input(sql, false, order_by);
+
     std::shared_ptr<Predicate<emp::Bit> > aPredicate(new ZkFilterPredicateClass(1));  // secret share the constant (1) just once
     Filter<emp::Bit> filter(shared, aPredicate);  // deletion handled by shared_ptr
 

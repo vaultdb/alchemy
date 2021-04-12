@@ -6,7 +6,7 @@
 #include <operators/filter.h>
 #include <operators/secure_sql_input.h>
 #include <operators/support/predicate.h>
-#include <test/support/EmpBaseTest.h>
+#include <test/mpc/emp_base_test.h>
 #include <query_table/secure_tuple.h>
 
 

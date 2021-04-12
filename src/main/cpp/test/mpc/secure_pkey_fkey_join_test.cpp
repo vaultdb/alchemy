@@ -5,7 +5,7 @@
 #include <gflags/gflags.h>
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
-#include <test/support/EmpBaseTest.h>
+#include <test/mpc/emp_base_test.h>
 #include <operators/fkey_pkey_join.h>
 
 

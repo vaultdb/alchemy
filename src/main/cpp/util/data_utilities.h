@@ -60,6 +60,8 @@ namespace vaultdb {
 
         static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
 
+        static size_t get_tuple_cnt(const std::string & db_name, const std::string &  sql, bool has_dummy_tag);
+
 //        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
 
 

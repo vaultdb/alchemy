@@ -1,6 +1,6 @@
 #include <util/data_utilities.h>
 
-#include "support/EmpBaseTest.h"
+#include "emp_base_test.h"
 #include <query_table/field/field_factory.h>
 
 DEFINE_int32(party, 1, "party for EMP execution");

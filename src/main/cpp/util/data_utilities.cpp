@@ -175,6 +175,18 @@ std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int
 
 }
 
+size_t DataUtilities::get_tuple_cnt(const string &db_name, const string &sql, bool has_dummy_tag) {
+    if(has_dummy_tag)  { // run it and count
+        shared_ptr<PlainTable> res = DataUtilities::getQueryResults(db_name, sql, true);
+        return res->getTrueTupleCount();
+    }
+
+    string query = "SELECT COUNT(*) FROM (" + sql + ") q";
+    shared_ptr<PlainTable> res = DataUtilities::getQueryResults(db_name, query, false);
+    return res->getTuple(0).getField(0).getValue<int64_t>();
+
+}
+
 // actually an array of emp::Bits.  Each bit is sizeof(emp::block) length
 /*emp::Integer toEmpInteger(const vector<int8_t> & src_bytes) {
 
