@@ -59,7 +59,6 @@ protected:
 
 void ZkFilterTest::SetUp() {
 
-    BoolIO<NetIO>* ios[threads];
     for(int i = 0; i < threads; ++i)
         ios[i] = new BoolIO<NetIO>(new NetIO(FLAGS_party == ALICE?nullptr: FLAGS_alice_host.c_str(),FLAGS_port+i), FLAGS_party==ALICE);
 
