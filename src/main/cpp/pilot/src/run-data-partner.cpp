@@ -11,7 +11,7 @@ using namespace  std;
 using namespace vaultdb;
 using namespace  emp;
 
-#define TESTBED 1
+#define TESTBED 0
 
 
 
@@ -92,12 +92,15 @@ runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const stri
         string out_file = out_path + "/" + colName + ".csv";
         Utilities::mkdir(out_path);
         shared_ptr<PlainTable> result = DataUtilities::getExpectedResults(unionedDbName, query, false, 1);
+
+        std::stringstream schema_str;
+        schema_str << *result->getSchema() << std::endl;
+        csv = schema_str.str();
+
         for(size_t i = 0; i < result->getTupleCount(); ++i) {
                 csv += (*result)[i].toString() + "\n";
         }
         DataUtilities::writeFile(out_file, csv);
-
-        std::cout << "result " << *result << std::endl;
 
 
     }
