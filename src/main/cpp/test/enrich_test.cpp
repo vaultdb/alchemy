@@ -97,7 +97,7 @@ shared_ptr<PlainTable> EnrichTest::loadAndJoinLocalData(const std::string & dbNa
 shared_ptr<SecureTable> EnrichTest::loadUnionAndDeduplicateData() const{
     string dbName = (FLAGS_party == ALICE) ? aliceDbName : bobDbName;
     shared_ptr<PlainTable>  localData = loadAndJoinLocalData(dbName);
-    std::shared_ptr<SecureTable> unionedAndEncryptedData = localData->secret_share(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> unionedAndEncryptedData =  PlainTable::secret_share(*localData, netio, FLAGS_party);
 
 
     // TODO: do bitonic merge instead of full-fledged sort here.  Inputs are sorted locally and each side makes up half of a bitonic sequence

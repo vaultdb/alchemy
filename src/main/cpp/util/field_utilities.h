@@ -5,6 +5,7 @@
 #include<type_traits>
 #include <query_table/field/field.h>
 #include <query_table/query_tuple.h>
+#include <query_table/secure_tuple.h>
 #include "query_table/field/field_type.h"
 
 namespace vaultdb {
@@ -47,11 +48,14 @@ namespace vaultdb {
 
 
         static void secret_share_send(const QueryTuple<bool> &src_tuple, QueryTuple<Bit> &dst_tuple, const int &dst_party);
-        static void secret_share_recv(const QuerySchema & src_schema, QueryTuple<Bit> &dst_tuple, const int &dst_party);
+        static void secret_share_recv(SecureTuple &dst_tuple, const int &dst_party);
 
         // for template<typename T> debug
         static bool extract_bool(const emp::Bit & b) { return b.reveal();  }
         static bool extract_bool(const bool & b) { return b; }
+
+        static bool select(const bool & choice, const bool & lhs, const bool & rhs);
+        static emp::Bit select(const emp::Bit & choice, const emp::Bit & lhs, const emp::Bit & rhs);
     };
 
 

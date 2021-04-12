@@ -48,16 +48,6 @@ std::string DataUtilities::queryDatetime(const string &colName) {
 }
 
 
-/*
-void DataUtilities::locallySecretShareTable(const std::unique_ptr<QueryTable> &table, const string &aliceFile,
-                                           const string &bobFile) {
-    SecretShares shares = table->generateSecretShares();
-    writeFile(aliceFile, shares.first);
-    writeFile(bobFile, shares.second);
-
-
-}*/
-
 
 
 void DataUtilities::writeFile(const string &fileName, vector<int8_t> contents) {
@@ -138,7 +128,7 @@ std::shared_ptr<PlainTable >
 DataUtilities::getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
                                   const int &sortColCount) {
 
-    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, sql, false);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, sql, hasDummyTag);
     SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
     expected->setSortOrder(expectedSortOrder);
     return expected;

@@ -67,7 +67,7 @@ bool SecureSortTest::isSorted(const std::shared_ptr<PlainTable> & table, const S
 }
 
 
-
+/*
 
 TEST_F(SecureSortTest, tpchQ1Sort) {
     std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
@@ -120,15 +120,6 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
 
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
     Sort<emp::Bit> sort(&input, sortDefinition);
-
-    /*shared_ptr<SecureTable> sorted = sort.run();
-    shared_ptr<PlainTable> revealed = sorted->reveal();
-    netio->flush();
-
-
-    // 25 tuples, 16 bytes per bit
-    // tuple is 160 bits + dummy_tag = 161 bits * 16 bytes /emp::Bit = 256 tuple size
-    ASSERT_EQ(sorted->tuple_size_, 2576);*/
 
 
     // project it down to $1, $3
@@ -209,14 +200,14 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
 }
 
 
-
+*/
 TEST_F(SecureSortTest, tpchQ9Sort) {
     std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
 
     std::string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
                       "  JOIN nation on n_nationkey = s_nationkey"
-                      " ORDER BY l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+                      " ORDER BY l_comment LIMIT 1000"; //  order by to ensure order is reproducible and not sorted on the sort cols
 
 
 
@@ -307,7 +298,7 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
 
 
 }
-
+/*
 // 18
 TEST_F(SecureSortTest, tpchQ18Sort) {
     std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
@@ -345,7 +336,7 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
 
 }
-
+*/
 
 
 

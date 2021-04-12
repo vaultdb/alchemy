@@ -108,7 +108,7 @@ Sort<B>::~Sort() {
 
 template<typename B>
 B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, const SortDefinition  & sort_definition, const bool & invertDir)  {
-    B swap(false);
+    B swap = false;
     B swapInit = swap;
 
 
@@ -126,15 +126,18 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
         if (invertDir)
             asc = !asc;
 
-        B colSwapFlag = (lhsField < rhsField) == B(asc);
+        B neq = lhsField != rhsField;
+        B lt = lhsField < rhsField;
+        B colSwapFlag = (lt == asc);
 
         // find first one where not eq, use this to init flag
-        swap =  Field<B>::If(swapInit, Field<B>(swap), Field<B>(colSwapFlag)).template getValue<B>(); // once we know there's a swap once, we keep it
-        swapInit = swapInit | (lhsField != rhsField);  // have we found the first  column where they are not equal?
+        swap =  FieldUtilities::select(swapInit, swap, colSwapFlag);
+        swapInit = swapInit | neq;
     }
 
     return swap;
 }
+
 
 
 template class vaultdb::Sort<bool>;

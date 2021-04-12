@@ -3,6 +3,11 @@
 #include "query_table/secure_tuple.h"
 #include "query_table/plain_tuple.h"
 
+#include <emp-zk/emp-zk.h>
+#include <iostream>
+#include "emp-tool/emp-tool.h"
+
+
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54321, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
@@ -118,7 +123,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     }
 
 
-    std::shared_ptr<SecureTable> encryptedTable = inputTable->secret_share(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secret_share(*inputTable, netio, FLAGS_party);
 
     netio->flush();
 
@@ -171,7 +176,7 @@ TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
     }
 
 
-    std::shared_ptr<SecureTable> encryptedTable = inputTable->secret_share(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secret_share(*inputTable, netio, FLAGS_party);
 
     netio->flush();
 
@@ -202,6 +207,35 @@ TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
 }
 
 
+
+TEST_F(EmpTest, test_zk_int) {
+    ++FLAGS_port;
+
+    int threads = 1;
+    BoolIO<NetIO>* ios[threads];
+    for(int i = 0; i < threads; ++i)
+        ios[i] = new BoolIO<NetIO>(new NetIO(FLAGS_party == ALICE?nullptr:"127.0.0.1",FLAGS_port+i), FLAGS_party==ALICE);
+
+
+
+    // test encrypting an int from ALICE
+    int32_t inputValue =  FLAGS_party == emp::ALICE ? 5 : 0;
+    emp::Integer aliceSecretShared = emp::Integer(32, inputValue,  emp::ALICE);
+    int32_t decrypted = aliceSecretShared.reveal<int32_t>(emp::PUBLIC);
+
+    ASSERT_EQ(5, decrypted);
+
+
+    // test encrypting int from BOB
+    inputValue =  FLAGS_party == emp::ALICE ? 0 : 4;
+    emp::Integer bobSecretShared = emp::Integer(32, inputValue,  emp::BOB);
+    decrypted = bobSecretShared.reveal<int32_t>(emp::PUBLIC);
+
+    ASSERT_EQ(4, decrypted);
+
+
+
+ }
 
 
 int main(int argc, char **argv) {

@@ -185,8 +185,9 @@ SecureField Field<B>::secret_share_send(const PlainField & src, const int & dst_
 
 template<typename B>
 SecureField Field<B>::secret_share_recv(const FieldType & type, const size_t & str_length, const int & dst_party) {
-    Value input = FieldFactory<bool>::getZero(type).payload_;
+    assert(TypeUtilities::isEncrypted(type));
 
+    Value input = FieldFactory<bool>::getZero(TypeUtilities::toPlain(type)).payload_;
 
     SecretShareVisitor visitor;
     visitor.dstParty = dst_party;
@@ -195,8 +196,7 @@ SecureField Field<B>::secret_share_recv(const FieldType & type, const size_t & s
 
     Value result = boost::apply_visitor(visitor, input);
 
-    FieldType resType = TypeUtilities::toSecure(type);
-    return SecureField(resType, result, str_length);
+    return SecureField(type, result, str_length);
 
 
 }

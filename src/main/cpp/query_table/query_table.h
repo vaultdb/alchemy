@@ -72,7 +72,13 @@ namespace  vaultdb {
             std::vector<int8_t> serialize() const;
 
 
-            std::shared_ptr<QueryTable<emp::Bit> > secret_share(emp::NetIO *io, const int &party) const;
+            static std::shared_ptr<SecureTable> secret_share(const PlainTable & input, emp::NetIO *io, const int &party);
+            static std::shared_ptr<SecureTable>
+            secret_share_send_table(const std::shared_ptr<PlainTable> &input, const int &sharing_party);
+            static std::shared_ptr<SecureTable>
+            secret_share_recv_table(const size_t &tuple_cnt, const QuerySchema &src_schema,
+                                    const SortDefinition &sortDefinition, const int &sharing_party);
+
 
             SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
 
@@ -99,11 +105,11 @@ namespace  vaultdb {
     private:
         static std::unique_ptr<PlainTable> revealTable(const SecureTable & table, const int & party);
         static std::unique_ptr<PlainTable> revealTable(const PlainTable & table, const int & party);
-        void secret_share_send(const int &party, std::shared_ptr<SecureTable> &dst_table, const int &write_offset,
-                               const bool &reverse_read_order) const;
-        void secret_share_recv(const size_t &tuple_count, const int &dst_party,
-                               std::shared_ptr<SecureTable> &dst_table, const size_t &write_offset,
-                               const bool &reverse_read_order) const;
+        static void secret_share_send(const int &party, const PlainTable & src_table, SecureTable &dst_table, const int &write_offset,
+                               const bool &reverse_read_order);
+        static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
+                               SecureTable &dst_table, const size_t &write_offset,
+                               const bool &reverse_read_order);
 
     };
 

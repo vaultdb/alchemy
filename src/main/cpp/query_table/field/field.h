@@ -74,6 +74,8 @@ namespace vaultdb {
         Field  operator/(const Field &rhs) const;
         Field  operator%(const Field &rhs) const;
 
+        //Field operator|(const Field &rhs) const; // for sort need bitwise OR
+
 
         static Field If(const B & choice,const Field & lhs, const Field & rhs);
         static void compareAndSwap(const B & choice, Field & lhs, Field & rhs);

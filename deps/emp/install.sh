@@ -7,3 +7,12 @@ make clean all
 
 sudo make install
 
+
+cd ..
+git clone https://github.com/emp-toolkit/emp-zk.git
+cd emp-zk
+
+cmake -DENABLE_FLOAT=On .
+make clean all
+
+sudo make install
