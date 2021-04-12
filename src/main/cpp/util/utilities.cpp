@@ -4,6 +4,7 @@
 #include <boost/stacktrace.hpp>
 #include <sstream>
 #include <iostream>
+#include <filesystem>
 
 #ifndef PATH_MAX
 #define PATH_MAX (4096)
@@ -130,4 +131,8 @@ string Utilities::revealAndPrintBytes(emp::Bit *bits, const int &byteCount) {
     }
 
     return ss.str();
+}
+
+void Utilities::mkdir(const string &path) {
+    std::filesystem::create_directory(path);
 }

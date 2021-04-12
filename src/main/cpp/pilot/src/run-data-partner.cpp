@@ -11,7 +11,7 @@ using namespace  std;
 using namespace vaultdb;
 using namespace  emp;
 
-#define TESTBED 0
+#define TESTBED 1
 
 
 
@@ -26,6 +26,7 @@ void validateInputTable(const string & dbName, const string & sql, const SortDef
     shared_ptr<PlainTable> observedTable = sort.run();
 
     assert(*expectedTable ==  *observedTable);
+
 
 }
 
@@ -63,15 +64,16 @@ string getRollupExpectedResultsSql(const string &groupByColName) {
 }
 
 
-shared_ptr<SecureTable> runRollup(int idx, string colName, int party, EnrichHtnQuery & enrich) {
+shared_ptr<SecureTable>
+runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const string &output_path) {
 
 
     shared_ptr<SecureTable> stratified = enrich.rollUpAggregate(idx);
    std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
 
     std::string suffix = (party == emp::ALICE) ? "alice" : "bob";
-    std::string outputFile = colName + "." + suffix;
-    DataUtilities::writeFile(outputFile, results);
+    std::string output_file = output_path + "/" + colName + "." + suffix;
+    DataUtilities::writeFile(output_file, results);
 
     // validate it against the DB for testing
     if(TESTBED) {
@@ -80,8 +82,24 @@ shared_ptr<SecureTable> runRollup(int idx, string colName, int party, EnrichHtnQ
 
         shared_ptr<PlainTable> revealed = stratified->reveal();
         revealed = DataUtilities::removeDummies(revealed);
+
         string query = getRollupExpectedResultsSql(colName);
         validateInputTable(unionedDbName, query, orderBy, revealed);
+
+        // write it out
+        string csv, schema;
+        string out_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/validate";
+        string out_file = out_path + "/" + colName + ".csv";
+        Utilities::mkdir(out_path);
+        shared_ptr<PlainTable> result = DataUtilities::getExpectedResults(unionedDbName, query, false, 1);
+        for(size_t i = 0; i < result->getTupleCount(); ++i) {
+                csv += (*result)[i].toString() + "\n";
+        }
+        DataUtilities::writeFile(out_file, csv);
+
+        std::cout << "result " << *result << std::endl;
+
+
     }
 
     return stratified;
@@ -103,7 +121,8 @@ int main(int argc, char **argv) {
     int party = atoi(argv[3]);
     string localInputFile(argv[4]);
     string secretShareFile(argv[5]);
-    string unionedDbName = "enrich_htn_unioned";
+
+    string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
 
 
     QuerySchema schema = SharedSchema::getInputSchema();
@@ -119,6 +138,8 @@ int main(int argc, char **argv) {
 
     // validate it against the DB for testing
     if(TESTBED) {
+        string unionedDbName = "enrich_htn_unioned";
+
         shared_ptr<PlainTable> revealed = inputData->reveal();
         string query = "SELECT * FROM patient ORDER BY patid, site_id";
         SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (8, SortDirection::ASCENDING)};
@@ -131,6 +152,8 @@ int main(int argc, char **argv) {
 
     cout << "********* start processing ***************" << endl;
 
+    // create output dir:
+    Utilities::mkdir(output_path);
 
     EnrichHtnQuery enrich(inputData);
     inputData.reset();
@@ -139,20 +162,20 @@ int main(int argc, char **argv) {
     Utilities::checkMemoryUtilization();
 
 
-    shared_ptr<SecureTable> zipRollup = runRollup(0, "zip_marker", party, enrich);
+    shared_ptr<SecureTable> zipRollup = runRollup(0, "zip_marker", party, enrich, output_path);
     cout << "Done first rollup at " << time_from(startTime)*1e6*1e-9 << " ms." << endl;
     Utilities::checkMemoryUtilization();
 
-    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich);
+    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich, output_path);
     Utilities::checkMemoryUtilization("rollup 2");
 
-    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich);
+    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich, output_path);
     Utilities::checkMemoryUtilization("rollup 3");
 
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich, output_path);
     Utilities::checkMemoryUtilization("rollup 4");
 
-    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich);
+    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich, output_path);
     Utilities::checkMemoryUtilization("rollup 5");
 
 

@@ -149,8 +149,6 @@ namespace vaultdb {
 
         std::string revealString(const emp::Integer &src, const int &party) const {
             long bitCount = src.size();
-            //long byteCount = bitCount / 8;
-
 
             bool *bools = new bool[bitCount];
             std::string bitString = src.reveal<std::string>(party);
@@ -162,11 +160,6 @@ namespace vaultdb {
             }
 
             vector<int8_t> decodedBytesVector = Utilities::boolsToBytes(bools, bitCount);
-            /*if(party == emp::PUBLIC) {
-                decodedBytesVector.resize(byteCount + 1);
-                decodedBytesVector[byteCount] = '\0';
-            } // null-terminated, might not be needed here
-*/
 
             string dst((char *) decodedBytesVector.data(), decodedBytesVector.size());
 

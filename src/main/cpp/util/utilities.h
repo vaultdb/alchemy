@@ -43,6 +43,8 @@ namespace vaultdb {
 
         static std::string revealAndPrintBytes(emp::Bit *bits, const int &byteCount);
 
+        static void mkdir(const std::string & path);
+
 
 
     };

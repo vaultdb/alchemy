@@ -60,6 +60,8 @@ namespace  vaultdb {
 
         size_t getStringLength() const { return string_length_; }
 
+        void setOrdinal(const size_t &  ordinal) { ordinal_ = ordinal; }
+
 
         QueryFieldDesc &operator=(const QueryFieldDesc &other);
 

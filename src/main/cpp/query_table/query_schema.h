@@ -29,9 +29,9 @@ namespace  vaultdb {
         size_t size() const;
 
 
-        const QueryFieldDesc getField(const int &i) const;
+        QueryFieldDesc getField(const int &i) const;
 
-        const QueryFieldDesc getField(const std::string & fieldName) const;
+        QueryFieldDesc getField(const std::string & fieldName) const;
 
 
         QuerySchema &operator=(const QuerySchema &other);
