@@ -98,7 +98,8 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
     std::shared_ptr<SecureTable> result = sort.run();
 
     std::shared_ptr<PlainTable> observed = result->reveal();
-    ASSERT_EQ(*expected, *observed);
+    if(!IGNORE_BOB)
+        ASSERT_EQ(*expected, *observed);
 
 
 }
@@ -133,7 +134,8 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
     expected->setSortOrder(observed->getSortOrder());
 
 
-    ASSERT_EQ(*expected, *observed);
+    if(!IGNORE_BOB)
+        ASSERT_EQ(*expected, *observed);
 
 }
 
@@ -161,7 +163,8 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
     // copy out the projected sort order
     expected->setSortOrder(observed->getSortOrder());
 
-    ASSERT_EQ(*expected, *observed);
+    if(!IGNORE_BOB)
+        ASSERT_EQ(*expected, *observed);
 
 
 
@@ -192,8 +195,8 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
     // copy out the projected sort order
     expected->setSortOrder(observed->getSortOrder());
 
-
-    ASSERT_EQ(*expected, *observed);
+    if(!IGNORE_BOB)
+        ASSERT_EQ(*expected, *observed);
 
 
 }
@@ -227,8 +230,68 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
 
-    ASSERT_TRUE(isSorted(observed, sortDefinition));
+    if(!IGNORE_BOB)
+        ASSERT_TRUE(isSorted(observed, sortDefinition));
 
+
+}
+
+// 18
+TEST_F(SecureSortTest, tpchQ18Sort) {
+    std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
+
+    string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders WHERE o_orderkey <= 10 "
+                 " ORDER BY o_comment, o_custkey"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_totalprice, " + DataUtilities::queryDatetime("o_orderdate") + "  FROM input ORDER BY o_totalprice DESC, o_orderdate";
+
+
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults("tpch_unioned", expectedResultSql, false);
+
+    SortDefinition sortDefinition;
+    sortDefinition.emplace_back(2, SortDirection::DESCENDING);
+    sortDefinition.emplace_back(1, SortDirection::ASCENDING);
+
+    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
+    Sort<emp::Bit> sort(&input, sortDefinition);
+
+
+    // project it down to $2, $1
+
+    Project project(&sort);
+    project.addColumnMapping(2, 0);
+    project.addColumnMapping(1, 1);
+
+    std::shared_ptr<SecureTable> result = project.run();
+    std::shared_ptr<PlainTable> observed  = result->reveal();
+
+    // copy out the projected sort order
+    expected->setSortOrder(observed->getSortOrder());
+
+
+    // verify that first col is DESC, second is ASC
+    if(!IGNORE_BOB)
+        ASSERT_EQ(*expected, *observed);
+
+
+}
+
+
+
+
+
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}
+
+
+
+
+
+// Alt Q9:
     // JMR: can't easily do this one securely owing to lineitem-supplier join -- tried with pkey/fkey join, but takes 1000s of tuples.
     // validating this one manually instead
 
@@ -294,61 +357,3 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     expected->setSortOrder(observed->getSortOrder());
 
     ASSERT_EQ(*expected, *observed); */
-
-
-}
-
-// 18
-TEST_F(SecureSortTest, tpchQ18Sort) {
-    std::string dbName =  FLAGS_party == 1 ? aliceDb : bobDb;
-
-    string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders WHERE o_orderkey <= 10 "
-                 " ORDER BY o_comment, o_custkey"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_totalprice, " + DataUtilities::queryDatetime("o_orderdate") + "  FROM input ORDER BY o_totalprice DESC, o_orderdate";
-
-
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults("tpch_unioned", expectedResultSql, false);
-
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(2, SortDirection::DESCENDING);
-    sortDefinition.emplace_back(1, SortDirection::ASCENDING);
-
-    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
-    Sort<emp::Bit> sort(&input, sortDefinition);
-
-
-    // project it down to $2, $1
-
-    Project project(&sort);
-    project.addColumnMapping(2, 0);
-    project.addColumnMapping(1, 1);
-
-    std::shared_ptr<SecureTable> result = project.run();
-    std::shared_ptr<PlainTable> observed  = result->reveal();
-
-    // copy out the projected sort order
-    expected->setSortOrder(observed->getSortOrder());
-
-
-    // verify that first col is DESC, second is ASC
-    ASSERT_EQ(*expected, *observed);
-
-
-}
-
-
-
-
-
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    gflags::ParseCommandLineFlags(&argc, &argv, false);
-
-    return RUN_ALL_TESTS();
-}
-
-
-
-
-

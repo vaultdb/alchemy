@@ -75,7 +75,8 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
     shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
-    ASSERT_EQ(*expected, *observed);
+    if(!IGNORE_BOB)
+        ASSERT_EQ(*expected, *observed);
 
 }
 
@@ -118,8 +119,8 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
 
 
 
-
-    ASSERT_EQ(*expected, *observed);
+    if(!IGNORE_BOB)
+        ASSERT_EQ(*expected, *observed);
 
 }
 
@@ -167,8 +168,8 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
-    ASSERT_EQ(observed->toString(false), expected->toString(false));
-    ASSERT_EQ(*expected, *observed);
+    if(!IGNORE_BOB)
+        ASSERT_EQ(*expected, *observed);
 
 }
 

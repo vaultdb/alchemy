@@ -36,13 +36,11 @@ void ZkGroupByAggregateTest::runTest(const string &expectedOutputQuery,
     expected->setSortOrder(expected_order_by);
 
     // run secure query
-    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1); // actually 2
+    SortDefinition order_by = DataUtilities::getDefaultSortDefinition(1); // actually 2
     shared_ptr<SecureTable> input = ZkTest::secret_share_input(query, false);
-
-
+    input->setSortOrder(order_by);
 
     std::vector<int32_t> groupByCols{0};
-
     GroupByAggregate aggregate(input, groupByCols, aggregators);
 
     std::shared_ptr<SecureTable> aggregated = aggregate.run();
@@ -63,17 +61,15 @@ void ZkGroupByAggregateTest::runDummiesTest(const string &expectedOutputQuery,
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
-    std::shared_ptr<PlainTable> expected =  DataUtilities::getQueryResults(alice_db, expectedOutputQuery, true);
+    std::shared_ptr<PlainTable> expected =  DataUtilities::getQueryResults(alice_db, expectedOutputQuery, false);
     expected->setSortOrder(DataUtilities::getDefaultSortDefinition(1));
 
     // configure and run test
-    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1);
+    SortDefinition order_by = DataUtilities::getDefaultSortDefinition(1);
     shared_ptr<SecureTable> input = ZkTest::secret_share_input(query, true);
+    input->setSortOrder(order_by);
 
-
-    std::vector<int32_t> groupByCols;
-    groupByCols.push_back(0);
-
+    std::vector<int32_t> groupByCols{0};
     GroupByAggregate aggregate(input, groupByCols, aggregators);
 
     std::shared_ptr<PlainTable> aggregated = aggregate.run()->reveal();

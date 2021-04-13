@@ -74,7 +74,9 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
 
     expected->setSortOrder(sortDefinition);
-    ASSERT_EQ(*expected, *observed);
+
+    if(!IGNORE_BOB)
+        ASSERT_EQ(*expected, *observed);
 
 }
 
@@ -114,8 +116,8 @@ std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
 
     expected->setSortOrder(sortDefinition);
-    ASSERT_EQ(observed->toString(true), expected->toString(true));
-    ASSERT_EQ(*expected, *observed);
+    if(!IGNORE_BOB)
+        ASSERT_EQ(*expected, *observed);
 
 }
 
@@ -160,8 +162,8 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
-    ASSERT_EQ(observed->toString(false), expected->toString(false));
-    ASSERT_EQ(*expected, *observed);
+    if(!IGNORE_BOB)
+        ASSERT_EQ(*expected, *observed);
 
 }
 

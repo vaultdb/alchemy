@@ -11,6 +11,8 @@
 #include "plain_tuple.h"
 #include <emp-tool/emp-tool.h>
 
+// ignore bob when secret sharing for ZK
+//#define IGNORE_BOB 1
 
 
 

@@ -9,6 +9,8 @@ DECLARE_int32(party);
 DECLARE_int32(port);
 DECLARE_string(alice_host);
 
+// ignore bob's inputs for emp eval
+#define IGNORE_BOB 0
 
 using namespace vaultdb;
 
