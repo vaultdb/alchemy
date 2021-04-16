@@ -12,7 +12,7 @@
 #include <emp-tool/emp-tool.h>
 
 // ignore bob when secret sharing for ZK
-//#define IGNORE_BOB 1
+#define IGNORE_BOB 1
 
 
 
@@ -74,7 +74,7 @@ namespace  vaultdb {
             std::vector<int8_t> serialize() const;
 
 
-            static std::shared_ptr<SecureTable> secret_share(const PlainTable & input, emp::NetIO *io, const int &party);
+            static std::shared_ptr<SecureTable> secretShare(const PlainTable & input, emp::NetIO *io, const int &party);
             static std::shared_ptr<SecureTable>
             secret_share_send_table(const std::shared_ptr<PlainTable> &input, const int &sharing_party);
             static std::shared_ptr<SecureTable>
@@ -98,7 +98,7 @@ namespace  vaultdb {
             static std::shared_ptr<PlainTable> deserialize(const QuerySchema & schema, const vector<int8_t> &tableBits);
 
             // encrypted version of deserialization using emp::Bit
-            static std::shared_ptr<SecureTable> deserialize(const QuerySchema &schema, vector<Bit> &tableBits);
+            static std::shared_ptr<SecureTable> deserialize(const QuerySchema &schema, vector<Bit> &table_bits);
 
             size_t getTrueTupleCount() const;
 

@@ -6,11 +6,12 @@
 
 
 using namespace vaultdb;
+using namespace std;
 
 template<typename B>
-std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
-    std::vector<GroupByAggregateImpl<B> *> aggregators;
+shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
+    shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
+    vector<GroupByAggregateImpl<B> *> aggregators;
     B realBin;
 
     QuerySchema inputSchema = *input->getSchema();
@@ -22,7 +23,7 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
         // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
         FieldType aggValueType = (agg.ordinal >= 0) ?
                                      inputSchema.getField(agg.ordinal).getType() :
-                                     (input->isEncrypted() ? FieldType::SECURE_LONG :  FieldType::LONG);
+                                     (input->isEncrypted() ? FieldType::SECURE_LONG : FieldType::LONG);
         aggregators.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
     }
 
@@ -35,10 +36,10 @@ std::shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
     // output sort order equal to first group-by-col-count entries in input sort order
     SortDefinition inputSort = input->getSortOrder();
-    SortDefinition outputSort = std::vector<ColumnSort>(inputSort.begin(), inputSort.begin() + groupByOrdinals.size());
+    SortDefinition outputSort = vector<ColumnSort>(inputSort.begin(), inputSort.begin() + groupByOrdinals.size());
 
 
-    Operator<B>::output = std::shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), outputSchema, outputSort));
+    Operator<B>::output = shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), outputSchema, outputSort));
 
     QueryTuple<B> tuple = (*Operator<B>::output)[0];
     B dummy_tag(false);
@@ -114,7 +115,7 @@ GroupByAggregateImpl<B> *GroupByAggregate<B>::aggregateFactory(const AggregateId
     }
 
 template<typename B>
-bool GroupByAggregate<B>::verifySortOrder(const std::shared_ptr<QueryTable<B> > &table) const {
+bool GroupByAggregate<B>::verifySortOrder(const shared_ptr<QueryTable<B> > &table) const {
     SortDefinition sortedOn = table->getSortOrder();
     assert(sortedOn.size() >= groupByOrdinals.size());
 

@@ -18,11 +18,11 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
     uint32_t outputTupleCount = lhs->getTupleCount() * rhs->getTupleCount();
     QuerySchema lhsSchema = *lhs->getSchema();
     QuerySchema rhsSchema = *rhs->getSchema();
-    QuerySchema outputSchema = Join<B>::concatenateSchemas(lhsSchema, rhsSchema);
+    QuerySchema outputSchema = Join<B>::concatenateSchemas(lhsSchema, rhsSchema, false);
 
     assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC
 
-    // output size, colCount, isEncrypted
+    // output size, colCount, is_encrypted
     Join<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(outputTupleCount, outputSchema));
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {

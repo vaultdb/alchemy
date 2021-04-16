@@ -123,7 +123,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     }
 
 
-    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secret_share(*inputTable, netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*inputTable, netio, FLAGS_party);
 
     netio->flush();
 
@@ -176,7 +176,7 @@ TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
     }
 
 
-    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secret_share(*inputTable, netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*inputTable, netio, FLAGS_party);
 
     netio->flush();
 

@@ -97,7 +97,7 @@ shared_ptr<PlainTable> EnrichTest::loadAndJoinLocalData(const std::string & dbNa
 shared_ptr<SecureTable> EnrichTest::loadUnionAndDeduplicateData() const{
     string dbName = (FLAGS_party == ALICE) ? aliceDbName : bobDbName;
     shared_ptr<PlainTable>  localData = loadAndJoinLocalData(dbName);
-    std::shared_ptr<SecureTable> unionedAndEncryptedData =  PlainTable::secret_share(*localData, netio, FLAGS_party);
+    std::shared_ptr<SecureTable> unionedAndEncryptedData = PlainTable::secretShare(*localData, netio, FLAGS_party);
 
 
     // TODO: do bitonic merge instead of full-fledged sort here.  Inputs are sorted locally and each side makes up half of a bitonic sequence
@@ -278,7 +278,7 @@ void EnrichTest::validateTable(const std::string & dbName, const std::string & s
         FieldType instanceType = (*observedTable)[0][i].getType();
         FieldType expectedType = (*expectedTable)[0][i].getType();
         /*if(schemaType != instanceType) {
-            std::cout << "Instance type not aligned! " << observedTable->getSchema().getField(i) << " expected: " << TypeUtilities::getTypeString(expectedType) << " received " << TypeUtilities::getTypeString(instanceType) << std::endl;
+            std::cout << "Instance type not aligned! " << observedTable->get_schema().getField(i) << " expected: " << TypeUtilities::getTypeString(expectedType) << " received " << TypeUtilities::getTypeString(instanceType) << std::endl;
         }*/
 
         ASSERT_EQ(schemaType, instanceType);

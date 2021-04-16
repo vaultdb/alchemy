@@ -81,7 +81,7 @@ TEST_F(ValueExpressionTest, cmp_swap) {
     b = (*data)[1];
     bool swap(true);
 
-    PlainTuple::compare_swap(swap, a, b);
+    PlainTuple::compareSwap(swap, a, b);
 
     // swapped
     ASSERT_EQ(a, (*data)[1]);
@@ -90,7 +90,7 @@ TEST_F(ValueExpressionTest, cmp_swap) {
 
     // no swap
     swap = false;
-    PlainTuple::compare_swap(swap, a, b);
+    PlainTuple::compareSwap(swap, a, b);
     ASSERT_EQ(a, (*data)[1]);
     ASSERT_EQ(b, (*data)[0]);
 

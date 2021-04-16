@@ -16,6 +16,12 @@ template<typename B>
 shared_ptr<QueryTable<B>> Limit<B>::runSelf() {
    std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
     Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
+
+    // validate setup
+    SortDefinition orderBy = input->getSortOrder();
+    assert(orderBy.size() >= 1 && orderBy[0].first == -1); // dummy tags are at the end, otherwise output won't make sense.
+
+
     std::cout << "Limit received " << input->getTupleCount() << " tuples." << std::endl;
 
    if(Operator<B>::output->getTupleCount() < limit) {

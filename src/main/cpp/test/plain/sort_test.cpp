@@ -98,7 +98,7 @@ TEST_F(SortTest, tpchQ3Sort) {
 
     ASSERT_EQ(*expected, *observed);
     /* Expected:
-     *  (#0 float .revenue, #1 int64 .o_orderdate) isEncrypted? 0
+     *  (#0 float .revenue, #1 int64 .o_orderdate) is_encrypted? 0
 (64962.171875, 698457600)
 (63833.101562, 856569600)
 (52544.890625, 855619200)

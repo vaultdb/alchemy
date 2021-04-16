@@ -20,12 +20,12 @@ std::shared_ptr<QueryTable<B> > KeyedJoin<B>::runSelf() {
     uint32_t output_tuple_cnt = foreign_key_table->getTupleCount(); // foreignKeyTable = foreign key
     QuerySchema lhs_schema = *foreign_key_table->getSchema();
     QuerySchema rhs_schema = *primary_key_table->getSchema();
-    QuerySchema output_schema = Join<B>::concatenateSchemas(lhs_schema, rhs_schema);
+    QuerySchema output_schema = Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false);
 
 
     assert(foreign_key_table->isEncrypted() == primary_key_table->isEncrypted()); // only support all plaintext or all MPC
 
-    // output size, colCount, isEncrypted
+    // output size, colCount, is_encrypted
     Join<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(output_tuple_cnt, output_schema, foreign_key_table->getSortOrder()));
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation

@@ -1,0 +1,28 @@
+#ifndef _SORT_MERGE_JOIN_H
+#define _SORT_MERGE_JOIN_H
+
+#include "join.h"
+
+namespace vaultdb {
+    template<typename B>
+    class SortMergeJoin : public Join<B> {
+    public:
+        // simplified version of https://arxiv.org/pdf/2003.09481.pdf
+        // only for foreign key / primary key join
+        SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key, const shared_ptr<BinaryPredicate<B> > & predicateClass);
+        SortMergeJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, shared_ptr<BinaryPredicate<B> > predicateClass);
+        ~SortMergeJoin() = default;
+        std::shared_ptr<QueryTable<B> > runSelf() override;
+
+
+    private:
+        shared_ptr<QueryTable<B> > augmentTable(shared_ptr<SecureTable> & src_table, const QuerySchema & dst_schema, const bool & foreign_key);
+        shared_ptr<QueryTable<B> > augmentTable(shared_ptr<PlainTable> & src_table, const QuerySchema & dst_schema, const bool & foreign_key);
+
+    };
+
+
+}
+
+
+#endif //_SORT_MERGE_JOIN_H

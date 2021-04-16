@@ -16,9 +16,8 @@ namespace  vaultdb {
         Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, shared_ptr<BinaryPredicate<B> > &predicateClass);
         ~Join()  = default;
     protected:
-        static QuerySchema concatenateSchemas(const QuerySchema &lhsSchema, const QuerySchema &rhsSchema);
+        static QuerySchema concatenateSchemas(const QuerySchema &lhs_schema, const QuerySchema &rhs_schema, const bool &append_bool = false);
 
-        static QueryTuple<B> concatenateTuples(QueryTuple<B> *lhs, QueryTuple<B> *rhs);
 
         static B get_dummy_tag(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const B & predicateEval);
 

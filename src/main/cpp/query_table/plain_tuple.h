@@ -77,7 +77,7 @@ namespace  vaultdb {
 
         const PlainField operator[](const int32_t & idx) const;
 
-        static void compare_swap(const bool &cmp, PlainTuple  & lhs, PlainTuple & rhs);
+        static void compareSwap(const bool &cmp, PlainTuple  & lhs, PlainTuple & rhs);
 
 
         static PlainTuple deserialize(int8_t *dst_bits, std::shared_ptr<QuerySchema> & schema, int8_t *src_bits);

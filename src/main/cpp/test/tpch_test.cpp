@@ -10,7 +10,8 @@
 #include <sort.h>
 #include <limit.h>
 #include <project.h>
-
+#include <algorithm>
+#include <boost/algorithm/string/replace.hpp>
 
 using namespace emp;
 using namespace vaultdb;
@@ -22,14 +23,44 @@ class TpcHTest : public ::testing::Test {
 protected:
     void SetUp() override{
         setup_plain_prot(false, "");
+        string q3_limit = std::to_string(q3_cutoff);
+
+
+        boost::replace_all(q3_customer_sql, "$CUTOFF", q3_limit.c_str());
+        boost::replace_all(q3_orders_sql, "$CUTOFF", q3_limit.c_str());
+        boost::replace_all(q3_lineitem_sql, "$CUTOFF", q3_limit.c_str());
+
     };
 
     void TearDown() override{
         finalize_plain_prot();
     };
 
-    std::string dbName = "tpch_unioned";
+    string db_name = "tpch_unioned";
+
+
+    void validate_q3_join(const shared_ptr<PlainTable> & observed);
+
+    size_t q3_cutoff = 100;
+    string q3_customer_sql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
+                          "FROM customer  "
+                          "WHERE c_custkey <=  $CUTOFF"
+                          " ORDER BY c_custkey";
+
+    string q3_orders_sql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
+                        "FROM orders "
+                        "WHERE o_custkey <= $CUTOFF "
+                        "ORDER BY o_orderkey, o_orderdate, o_shippriority"; // was o_orderkey, o_custkey, o_orderdate, o_shippriority
+
+
+    string q3_lineitem_sql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
+                          "FROM lineitem "
+                          "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= $CUTOFF)  "
+                          "ORDER BY l_orderkey, revenue ";
+
+
 };
+
 
 TEST_F(TpcHTest, testQ1Truncated) {
     string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= 500 ORDER BY l_orderkey, l_linenumber";
@@ -59,10 +90,10 @@ TEST_F(TpcHTest, testQ1Truncated) {
                                                            "  l_returnflag, \n"
                                                            "  l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
+    shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name, expectedOutputQuery, false, 2);
 
-    std::vector<int32_t> groupByCols{0, 1};
-    std::vector<ScalarAggregateDefinition> aggregators{
+    vector<int32_t> groupByCols{0, 1};
+    vector<ScalarAggregateDefinition> aggregators{
             ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
             ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
             ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
@@ -73,17 +104,18 @@ TEST_F(TpcHTest, testQ1Truncated) {
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    SqlInput input(dbName, inputQuery, true, sortDefinition);
+    SqlInput input(db_name, inputQuery, true, sortDefinition);
 
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
-    std::shared_ptr<PlainTable> aggregated = aggregate.run();
+    shared_ptr<PlainTable> aggregated = aggregate.run();
 
     // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
+    shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
     ASSERT_EQ(*expected, *observed);
 }
+
 
 
 
@@ -101,6 +133,7 @@ TEST_F(TpcHTest, testQ1Truncated) {
                 "  c.c_mktsegment = 'HOUSEHOLD'\n"
                 "  and o.o_orderdate < date '1995-03-25'\n"
                 "  and l.l_shipdate > date '1995-03-25'\n"
+                " and c_custkey <= $CUTOFF" -- added for test
                 "\n"
                 " group by\n"
                 "  l.l_orderkey,\n"
@@ -112,102 +145,102 @@ TEST_F(TpcHTest, testQ1Truncated) {
                 " limit 10"
  */
 TEST_F(TpcHTest, testQ3Truncated)  {
-    const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
-                                    "FROM customer  "
-                                    "WHERE c_custkey <= 100 "
-                                    "ORDER BY c_custkey";
 
-    const std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
-                                  "FROM orders "
-                                  "WHERE o_custkey <= 100 "
-                                  "ORDER BY o_orderkey, o_orderdate, o_shippriority, o_custkey";
-
-    const std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
-                                    "FROM lineitem "
-                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 100)  "
-                                    "ORDER BY l_orderkey, revenue ";
+    string expected_join_sql = "WITH orders_cte AS (" + q3_orders_sql + "), \n"
+                                  "lineitem_cte AS (" + q3_lineitem_sql + "), \n"
+                                  "customer_cte AS (" + q3_customer_sql + "),\n "
+                                  "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (odummy OR ldummy OR cdummy) dummy \n"
+                                                     "FROM lineitem_cte, orders_cte, customer_cte  \n"
+                                                     "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
+                                  "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, dummy \n"
+                                  "FROM cross_product \n"
+                                  "WHERE matched";
 
 
-    std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
-                                          "lineitem_cte AS (" + lineitemSql + "), \n"
-                                          "customer_cte AS (" + customerSql + "),\n "
-                                          "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (odummy OR ldummy OR cdummy) dummy \n"
-                                          "FROM lineitem_cte, orders_cte, customer_cte  \n"
-                                          "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
-                                      "SELECT l_orderkey, sum(revenue) revenue, o_orderdate, o_shippriority \n"
-                                      "FROM cross_product \n"
-                                      "WHERE matched \n"
-                                      "GROUP BY l_orderkey, o_orderdate, o_shippriority \n"
-                                      "ORDER BY revenue DESC, o_orderdate \n"
-                                      "LIMIT 10";
-
-    SqlInput customerInput(dbName, customerSql, true);
-    SqlInput ordersInput(dbName, ordersSql, true);
-    SqlInput lineitemInput(dbName, lineitemSql, true);
+    string expected_results_sql = tpch_queries[3];
+    boost::replace_first(expected_results_sql, "where", "where c_custkey <= " + std::to_string(q3_cutoff) + " AND ");
 
 
-    ConjunctiveEqualityPredicate customerOrdersOrdinals;
-    customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate<bool> > customerOrdersPredicate(new JoinEqualityPredicate<bool>(customerOrdersOrdinals));
-
-    ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
-    lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate<bool> > lineitemOrdersPredicate(new JoinEqualityPredicate<bool> (lineitemOrdersOrdinals));
+    SqlInput customer_input(db_name, q3_customer_sql, true);
+    SqlInput orders_input(db_name, q3_orders_sql, true);
+    SqlInput lineitem_input(db_name, q3_lineitem_sql, true);
 
 
-    KeyedJoin customerOrdersJoin(&ordersInput, &customerInput, customerOrdersPredicate);
+    ConjunctiveEqualityPredicate customer_orders_ordinals{EqualityPredicate (1, 0)}; //  o_custkey, c_custkey
+    shared_ptr<BinaryPredicate<bool> > customer_orders_predicate(new JoinEqualityPredicate<bool>(customer_orders_ordinals));
 
-    KeyedJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
-    std::shared_ptr<PlainTable > joined = fullJoin.run();
-    std::cout << "After joins " << joined->toString(false) << std::endl;
-
-    // align the sort definitions for aggregate
-    // TODO: make sort order checker more forgiving later
-    // TODO: solve for how to line up the joins to skip this extra sort
-    SortDefinition aggInputSort { ColumnSort(0, SortDirection::ASCENDING), ColumnSort(4, SortDirection::ASCENDING), ColumnSort(5, SortDirection::ASCENDING)};
-   // Sort joinSort(joined, aggInputSort);
+    ConjunctiveEqualityPredicate lineitem_orders_ordinals{EqualityPredicate (0, 0)}; //  l_orderkey, o_orderkey
+    shared_ptr<BinaryPredicate<bool> > lineitem_orders_predicate(new JoinEqualityPredicate<bool> (lineitem_orders_ordinals));
 
 
-    // Join output schema:
-    // (#0 int32 lineitem.l_orderkey, #1 float .revenue, #2 int32 orders.o_orderkey, #3 int32 orders.o_custkey, #4 int64 .o_orderdate, #5 int32 orders.o_shippriority, #6 int32 customer.c_custkey)
+    // preserves sort order of orders
+    KeyedJoin customer_orders_join(&orders_input, &customer_input, customer_orders_predicate);
 
-    // aggregate group-bys:
-    // l_orderkey (0), o_orderdate (4), o_shippriority (5)
-    // aggregate: sum(revenue(1) )
+    // follows ORDER  BY of lineitem
+    KeyedJoin full_join(&lineitem_input, &customer_orders_join, lineitem_orders_predicate);
+    shared_ptr<PlainTable> joined = full_join.run();
+    validate_q3_join(joined);
 
-    std::vector<int32_t> groupByCols{0, 4, 5};
-    std::vector<ScalarAggregateDefinition> aggregators{ ScalarAggregateDefinition(1, vaultdb::AggregateId::SUM, "revenue")};
+    // to avoid extra sort, need lineitem sorted on l_orderkey, order sorted on o_orderkey, o_orderdate, o_shippriority
+    // functional dependencies and transitivity address the rest
+    SortDefinition joined_sort_order{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(4, SortDirection::ASCENDING),ColumnSort(5, SortDirection::ASCENDING)};
+    joined->setSortOrder(joined_sort_order);
 
-    GroupByAggregate aggregate(joined, groupByCols, aggregators);
 
+    vector<int32_t> group_by_cols{0, 4, 5};
+    vector<ScalarAggregateDefinition> aggregators{ ScalarAggregateDefinition(1, vaultdb::AggregateId::SUM, "revenue")};
+
+    GroupByAggregate aggregate(joined, group_by_cols, aggregators);
     shared_ptr<PlainTable> aggregated = aggregate.run();
-    std::shared_ptr<PlainTable> aggNoDummies = DataUtilities::removeDummies(aggregated);
 
-    std::cout << "After aggregate: " << aggNoDummies->toString(true) << std::endl;
-
-    // sort by revenue desc, o.o_orderdate ASC
-    SortDefinition sortDefinition{ ColumnSort(3, SortDirection::DESCENDING), ColumnSort(1, SortDirection::ASCENDING)};
-    Sort sort(aggNoDummies, sortDefinition);
 
     // project to    l.l_orderkey,\n"
     //                "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue,\n"
     //                "  o.o_orderdate,\n"
     //                "  o.o_shippriority\n"
     // from: l_orderkey, o_orderdate, o_shippriority, revenue
-    Project project(&sort);
 
-    project.addColumnMapping(0, 0);
-    project.addColumnMapping(3, 1);
-    project.addColumnMapping(1, 2);
-    project.addColumnMapping(2, 3);
+    Project project(&aggregate);
+    project.addColumnMapping(0, 0); // l_orderkey
+    project.addColumnMapping(3, 1); // revenue
+    project.addColumnMapping(1, 2); // o_orderdate
+    project.addColumnMapping(2, 3); // o_shippriority
 
 
-    Limit limit(&project, 10);
+
+    // sort by dummy_tag, revenue desc, o.o_orderdate ASC
+    SortDefinition sortDefinition{ ColumnSort(-1, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING), ColumnSort(2, SortDirection::ASCENDING)};
+    Sort sort(&project, sortDefinition);
+    Limit limit(&sort, 10);
+
+
+
 
     shared_ptr<PlainTable> observed = limit.run();
-    std::cout << "Observed: " << observed->toString(true) << std::endl;
-    shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
+    observed = DataUtilities::removeDummies(observed);
+    cout << "Observed: " << observed->toString(true) << endl;
+    shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name, expected_results_sql, false);
     expected->setSortOrder(observed->getSortOrder());
 
     ASSERT_EQ(*expected, *observed);
+}
+
+
+void TpcHTest::validate_q3_join(const shared_ptr<PlainTable> &joined) {
+
+    string expected_join_sql =    "WITH orders_cte AS (" + q3_orders_sql + "), \n"
+                                        "lineitem_cte AS (" + q3_lineitem_sql + "), \n"
+                                        "customer_cte AS (" + q3_customer_sql + "),\n "
+                                        "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (odummy OR ldummy OR cdummy) dummy \n"
+                                                           "FROM lineitem_cte, orders_cte, customer_cte  \n"
+                                                           "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
+                                        "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, dummy \n"
+                                        "FROM cross_product \n"
+                                        "WHERE matched";
+
+    shared_ptr<PlainTable > expected_join_result = DataUtilities::getQueryResults(db_name, expected_join_sql, true);
+    ASSERT_EQ(*joined, *expected_join_result);
+
+
+
 }

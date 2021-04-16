@@ -71,7 +71,7 @@ namespace vaultdb {
         SecureField operator[](const int32_t & idx);
         const SecureField operator[](const int32_t & idx) const;
 
-        static void compare_swap(const emp::Bit & cmp, QueryTuple<emp::Bit> & lhs, QueryTuple<emp::Bit> & rhs);
+        static void compareSwap(const emp::Bit & cmp, QueryTuple<emp::Bit> & lhs, QueryTuple<emp::Bit> & rhs);
 
 
         static SecureTuple

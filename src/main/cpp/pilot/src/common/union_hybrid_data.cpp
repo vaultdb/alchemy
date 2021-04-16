@@ -46,7 +46,7 @@ UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema 
     std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, src_schema);
     Utilities::checkMemoryUtilization(" read csv: ");
 
-    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secret_share(*localInput, netio, party);
+    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*localInput, netio, party);
     Utilities::checkMemoryUtilization(" local read: ");
     return encryptedTable;
 

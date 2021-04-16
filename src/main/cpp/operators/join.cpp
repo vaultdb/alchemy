@@ -13,29 +13,37 @@ Join<B>::Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, sh
 }
 
 template<typename  B>
-QuerySchema Join<B>::concatenateSchemas(const QuerySchema &lhsSchema, const QuerySchema &rhsSchema) {
-    uint32_t outputColCount = lhsSchema.getFieldCount() + rhsSchema.getFieldCount();
-    QuerySchema result(outputColCount);
-    uint32_t cursor = lhsSchema.getFieldCount();
+QuerySchema
+Join<B>::concatenateSchemas(const QuerySchema &lhs_schema, const QuerySchema &rhs_schema, const bool &append_bool) {
+    uint32_t output_cols = lhs_schema.getFieldCount() + rhs_schema.getFieldCount() + append_bool;
+    QuerySchema result(output_cols);
+    uint32_t cursor = lhs_schema.getFieldCount();
 
-    for(uint32_t i = 0; i < lhsSchema.getFieldCount(); ++i) {
-        QueryFieldDesc srcField = lhsSchema.getField(i);
-        QueryFieldDesc dstField(srcField, i);
+    for(uint32_t i = 0; i < lhs_schema.getFieldCount(); ++i) {
+        QueryFieldDesc src_field = lhs_schema.getField(i);
+        QueryFieldDesc dst_field(src_field, i);
 
-        size_t srcStringLength = srcField.getStringLength();
-        dstField.setStringLength(srcStringLength);
-        result.putField(dstField);
+        size_t srcStringLength = src_field.getStringLength();
+        dst_field.setStringLength(srcStringLength);
+        result.putField(dst_field);
    }
 
 
-    for(uint32_t i = 0; i < rhsSchema.getFieldCount(); ++i) {
-        QueryFieldDesc srcField = rhsSchema.getField(i);
-        QueryFieldDesc dstField(srcField, cursor);
+    for(uint32_t i = 0; i < rhs_schema.getFieldCount(); ++i) {
+        QueryFieldDesc src_field = rhs_schema.getField(i);
+        QueryFieldDesc dst_field(src_field, cursor);
 
-        size_t srcStringLength = srcField.getStringLength();
-        dstField.setStringLength(srcStringLength);
-        result.putField(dstField);
+        size_t srcStringLength = src_field.getStringLength();
+        dst_field.setStringLength(srcStringLength);
+        result.putField(dst_field);
         ++cursor;
+    }
+
+    // bool denotes whether table comes from primary key side (0) or foreign key side (1)
+    if(append_bool) {
+        FieldType field_type = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+        QueryFieldDesc bool_field(output_cols-1, "table_id", "", field_type, 0);
+        result.putField(bool_field);
     }
 
     return result;

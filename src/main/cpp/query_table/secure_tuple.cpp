@@ -102,7 +102,7 @@ PlainTuple QueryTuple<emp::Bit>::reveal(const int &empParty) const {
 }
 
 
-void QueryTuple<emp::Bit>::compare_swap(const Bit &cmp, SecureTuple  & lhs, SecureTuple  & rhs) {
+void QueryTuple<emp::Bit>::compareSwap(const Bit &cmp, SecureTuple  & lhs, SecureTuple  & rhs) {
     size_t tuple_size = lhs.getSchema()->size(); // size in bytes
 
     emp::Integer lhs_payload(tuple_size, 0, emp::PUBLIC);

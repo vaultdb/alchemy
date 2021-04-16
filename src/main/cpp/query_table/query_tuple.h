@@ -41,7 +41,7 @@ namespace vaultdb {
         int8_t *getData() const { return nullptr; }
         static void compare_swap(const B & cmp, QueryTuple<B> & lhs, QueryTuple<B> & rhs) { throw; } // implemented in template specializations
         //QueryTuple<B> reveal(const int &empParty,  std::shared_ptr<QuerySchema> & dst_schema, int8_t *dst) const { throw; }  // only for SecureTuple
-       // static QueryTuple<B> secret_share(const QueryTuple<bool> *srcTuple,  std::shared_ptr<QuerySchema> &schema, int8_t *dst_bits, const int &myParty, const int &dstParty) { throw; } // only for PlainTuple, no reason in principle to not put this here
+       // static QueryTuple<B> secretShare(const QueryTuple<bool> *srcTuple,  std::shared_ptr<QuerySchema> &schema, int8_t *dst_bits, const int &myParty, const int &dstParty) { throw; } // only for PlainTuple, no reason in principle to not put this here
     };
 
 

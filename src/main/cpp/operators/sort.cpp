@@ -83,7 +83,7 @@ void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortD
             QueryTuple<B> rhs =  table->getTuple(i+m);
 
             B to_swap = swapTuples(lhs, rhs, sort_def, invertDir);
-            QueryTuple<B>::compare_swap(to_swap,lhs, rhs);
+            QueryTuple<B>::compareSwap(to_swap, lhs, rhs);
 
         }
         bitonicMerge(table, sort_def, lo, m,  invertDir);

@@ -15,7 +15,7 @@ namespace vaultdb {
         // size is in bytes
         static size_t getPhysicalSize(const FieldType &id, const size_t & strLength = 0);
         static emp::Float toFloat(const emp::Integer &input);
-        //static void secret_share(const QueryTuple<bool> *src_tuple,  const std::shared_ptr<QuerySchema> &src_schema, QueryTuple<emp::Bit> & dst_tuple, const int &myParty, const int &dstParty);
+        //static void secretShare(const QueryTuple<bool> *src_tuple,  const std::shared_ptr<QuerySchema> &src_schema, QueryTuple<emp::Bit> & dst_tuple, const int &myParty, const int &dstParty);
 
         template<typename B>
         static inline bool validateTypeAlignment(const Field<B> &field) {

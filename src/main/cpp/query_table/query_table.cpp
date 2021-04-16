@@ -84,14 +84,14 @@ vector<int8_t> QueryTable<B>::serialize() const {
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const PlainTable &table) {
-        os <<  *(table.getSchema()) << " isEncrypted? " << table.isEncrypted() << endl;
+        os << *(table.getSchema()) << " isEncrypted? " << table.isEncrypted() << endl;
 
         for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
             PlainTuple tuple = table[i];
 
             os << tuple;
-            const bool isDummy = tuple.getDummyTag();
-            if(!isDummy)
+            const bool is_dummy = tuple.getDummyTag();
+            if(!is_dummy)
                 os << endl;
 
         }
@@ -103,7 +103,7 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const PlainTable &table) {
 std::ostream &vaultdb::operator<<(std::ostream &os, const SecureTable &table) {
 
 
-    os <<  table.getSchema() << " isEncrypted? " << table.isEncrypted() << endl;
+    os << table.getSchema() << " isEncrypted? " << table.isEncrypted() << endl;
 
     for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
         SecureTuple tuple = table[i];
@@ -127,7 +127,7 @@ string QueryTable<B>::toString(const bool & showDummies) const {
     }
 
     // show dummies case
-    os <<  *getSchema() << " isEncrypted? " << isEncrypted() << std::endl;
+    os << *getSchema() << " isEncrypted? " << isEncrypted() << std::endl;
 
 
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
@@ -177,7 +177,7 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
     assert(!isEncrypted()); // reveal this for tables in the clear
 
     if(*getSchema() != *other.getSchema()) {
-        std::cout << "Failed to match on schema: \n" << *getSchema()  << "\n  == \n" << *other.getSchema() << std::endl;
+        std::cout << "Failed to match on schema: \n" << *getSchema() << "\n  == \n" << *other.getSchema() << std::endl;
         return false;
     }
 
@@ -197,11 +197,11 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
     std::shared_ptr<QuerySchema> q = schema_;
 
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
-        PlainTuple thisTuple(q, (int8_t *) (tuple_data_.data() + tuple_offset));
-        PlainTuple otherTuple(q, (int8_t *) (other.tuple_data_.data() + tuple_offset));
+        PlainTuple this_tuple(q, (int8_t *) (tuple_data_.data() + tuple_offset));
+        PlainTuple other_tuple(q, (int8_t *) (other.tuple_data_.data() + tuple_offset));
 
-        if(thisTuple != otherTuple) {
-            std::cout << "Comparing on idx " << i << " with "  << thisTuple.toString(true) << "\n          !=            " << otherTuple.toString(true) << endl;
+        if(this_tuple != other_tuple) {
+            std::cout << "Comparing on idx " << i << " with " << this_tuple.toString(true) << "\n          !=            " << other_tuple.toString(true) << endl;
             std::cout << "    Failed to match!" << std::endl;
            return false;
         }
@@ -216,12 +216,12 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 
 
 template<typename B>
-std::shared_ptr<SecureTable> QueryTable<B>::secret_share(const PlainTable & input, emp::NetIO *netio, const int & party)  {
+std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input, emp::NetIO *netio, const int & party)  {
 
     PlainTable empty(0, *input.getSchema());
     // if ignoring bob's inputs for ZK, then point to empty
-   // const PlainTable & local_input = (IGNORE_BOB && party == emp::BOB) ? empty : input;
-    const PlainTable & local_input = input;
+    const PlainTable & local_input = (IGNORE_BOB && party == emp::BOB) ? empty : input;
+   // const PlainTable & local_input = input;
 
     size_t alice_tuple_cnt = local_input.getTupleCount();
     size_t bob_tuple_cnt = alice_tuple_cnt;
@@ -352,17 +352,17 @@ std::shared_ptr<PlainTable> QueryTable<B>::deserialize(const QuerySchema &schema
 
 template<typename B>
 std::shared_ptr<SecureTable>
-QueryTable<B>::deserialize(const QuerySchema &schema, vector<Bit> &tableBits) {
+QueryTable<B>::deserialize(const QuerySchema &schema, vector<Bit> &table_bits) {
     QuerySchema encrypted_schema = QuerySchema::toSecure(schema);
-    uint32_t tableSize = tableBits.size(); // in bits
-    uint32_t tupleSize = encrypted_schema.size(); // in bits
-    assert(tableSize % tupleSize == 0);
-    uint32_t tupleCount = tableSize / tupleSize;
+    uint32_t table_size = table_bits.size(); // in bits
+    uint32_t tuple_size = encrypted_schema.size(); // in bits
+    assert(table_size % tuple_size == 0);
+    uint32_t tuple_cnt = table_size / tuple_size;
 
-    std::shared_ptr<SecureTable> result(new SecureTable(tupleCount, encrypted_schema));
-    assert(result->tuple_data_.size() / sizeof(emp::block)  == tableBits.size());
+    std::shared_ptr<SecureTable> result(new SecureTable(tuple_cnt, encrypted_schema));
+    assert(result->tuple_data_.size() / sizeof(emp::block) == table_bits.size());
 
-    memcpy(result->tuple_data_.data(), tableBits.data(), tableSize * sizeof(emp::block));
+    memcpy(result->tuple_data_.data(), table_bits.data(), table_size * sizeof(emp::block));
 
     return result;
 
@@ -425,15 +425,15 @@ const QueryTuple<B> QueryTable<B>::operator[](const int &idx) const {
 
 template<typename B>
 std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable &table, const int & party) {
-    uint32_t tupleCount = table.getTupleCount();
+    uint32_t tuple_cnt = table.getTupleCount();
 
 
     QuerySchema dst_schema = QuerySchema::toPlain(*table.getSchema());
 
-    std::unique_ptr<PlainTable > dst_table(new PlainTable(tupleCount, dst_schema, table.getSortOrder()));
+    std::unique_ptr<PlainTable > dst_table(new PlainTable(tuple_cnt, dst_schema, table.getSortOrder()));
 
 
-    for(uint32_t i = 0; i < tupleCount; ++i)  {
+    for(uint32_t i = 0; i < tuple_cnt; ++i)  {
         const SecureTuple tuple = table.getImmutableTuple(i);
         PlainTuple dst_tuple = tuple.reveal(party);
         dst_table->putTuple(i, dst_tuple);

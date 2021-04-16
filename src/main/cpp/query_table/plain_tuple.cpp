@@ -74,7 +74,7 @@ std::shared_ptr<QuerySchema> QueryTuple<bool>::getSchema() const {
     return query_schema_;
 }
 
-void QueryTuple<bool>::compare_swap(const bool &cmp, PlainTuple &lhs, PlainTuple &rhs) {
+void QueryTuple<bool>::compareSwap(const bool &cmp, PlainTuple &lhs, PlainTuple &rhs) {
 
     if(cmp) {
         assert(*lhs.getSchema() == *rhs.getSchema());
@@ -125,37 +125,6 @@ bool QueryTuple<bool>::operator==(const PlainTuple &other) const {
     }
     return true;
 }
-
-/*QueryTuple<emp::Bit>
-QueryTuple<bool>::secret_share(const PlainTuple *srcTuple, std::shared_ptr<QuerySchema> &dst_schema, int8_t *dst_bits,
-                               const int &myParty, const int &dstParty) {
-
-    QueryTuple<emp::Bit> dst_tuple(dst_schema, dst_bits);
-
-    // serialize the whole tuple, then secret share it
-    size_t tuple_bits = dst_schema->size();
-    size_t tuple_bytes = tuple_bits/8;
-
-
-    emp::Integer dst_bytes(tuple_bits, 0L, dstParty);
-
-    if(srcTuple != nullptr) {
-
-        std::vector<int8_t> srcData(dst_schema->size() / 8);
-        bool *bools = Utilities::bytesToBool(srcData.data(), tuple_bytes);
-        ProtocolExecution::prot_exec->feed((block *)dst_bytes.bits.data(), dstParty, bools, tuple_bits);
-        delete [] bools;
-    }
-    else {
-        ProtocolExecution::prot_exec->feed((block *)dst_bytes.bits.data(), dstParty, nullptr, tuple_bits);
-    }
-
-
-
-    memcpy(dst_bits, (int8_t *) dst_bytes.bits.data(), tuple_bits * sizeof(emp::block));
-    return dst_tuple;
-}
-*/
 
 string QueryTuple<bool>::toString(const bool &showDummies) const {
     std::stringstream sstream;
