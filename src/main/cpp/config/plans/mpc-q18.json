@@ -1,0 +1,338 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_orderkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_quantity"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "o_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_custkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "o_totalprice"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "o_orderdate"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalAggregate",
+      "group": [
+        0
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            1
+          ],
+          "name": null
+        }
+      ],
+      "inputs": [
+        "0"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": ">",
+          "kind": "GREATER_THAN",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "literal": 313,
+            "type": {
+              "type": "INTEGER",
+              "nullable": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalProject",
+      "fields": [
+        "l_orderkey"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "relOp": "LogicalJoin",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "inputs": [
+        "1",
+        "4"
+      ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalProject",
+      "fields": [
+        "o_orderkey",
+        "o_custkey",
+        "o_orderdate",
+        "o_totalprice"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalJoin",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "inputs": [
+        "0",
+        "6"
+      ]
+    },
+    {
+      "id": "8",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "c_custkey"
+        },
+        {
+          "type": "VARCHAR",
+          "nullable": true,
+          "precision": 25,
+          "name": "c_name"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "9",
+      "relOp": "LogicalJoin",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "inputs": [
+        "7",
+        "8"
+      ]
+    },
+    {
+      "id": "10",
+      "relOp": "LogicalProject",
+      "fields": [
+        "c_name",
+        "c_custkey",
+        "o_orderkey",
+        "o_orderdate",
+        "o_totalprice",
+        "l_quantity"
+      ],
+      "exprs": [
+        {
+          "input": 7,
+          "name": "$7"
+        },
+        {
+          "input": 6,
+          "name": "$6"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "relOp": "LogicalAggregate",
+      "group": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            5
+          ],
+          "name": "EXPR$5"
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 4,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        },
+        {
+          "field": 3,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        }
+      ],
+      "fetch": {
+        "literal": 100,
+        "type": {
+          "type": "INTEGER",
+          "nullable": false
+        }
+      }
+    }
+  ]
+}

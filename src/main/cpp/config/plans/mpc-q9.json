@@ -1,0 +1,317 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "n_nationkey"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 25,
+          "name": "n_name"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "s_suppkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "s_nationkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "ps_partkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "ps_suppkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "ps_supplycost"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "p_partkey"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "l_partkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "l_suppkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_quantity"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_extendedprice"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_discount"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "condition": {
+        "op": {
+          "name": "AND",
+          "kind": "AND",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "input": 10,
+                "name": "$10"
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "input": 9,
+                "name": "$9"
+              }
+            ]
+          }
+        ]
+      },
+      "joinType": "inner",
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_year"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "o_orderkey"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalJoin",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 15,
+            "name": "$15"
+          },
+          {
+            "input": 8,
+            "name": "$8"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "inputs": [
+        "2",
+        "3"
+      ]
+    },
+    {
+      "id": "5",
+      "relOp": "LogicalProject",
+      "fields": [
+        "nation",
+        "o_year",
+        "amount"
+      ],
+      "exprs": [
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 14,
+          "name": "$14"
+        },
+        {
+          "op": {
+            "name": "-",
+            "kind": "MINUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 12,
+                  "name": "$12"
+                },
+                {
+                  "op": {
+                    "name": "-",
+                    "kind": "MINUS",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "literal": 1,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 13,
+                      "name": "$13"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 6,
+                  "name": "$6"
+                },
+                {
+                  "input": 11,
+                  "name": "$11"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalAggregate",
+      "group": [
+        0,
+        1
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            2
+          ],
+          "name": "sum_profit"
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        }
+      ]
+    }
+  ]
+}
