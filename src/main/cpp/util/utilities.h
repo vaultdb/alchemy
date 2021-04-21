@@ -18,6 +18,7 @@
 #include <vector>
 #include <string>
 #include <emp-tool/circuits/bit.h>
+#include <support/aggregate_id.h>
 
 
 namespace vaultdb {
@@ -44,6 +45,9 @@ namespace vaultdb {
         static std::string revealAndPrintBytes(emp::Bit *bits, const int &byteCount);
 
         static void mkdir(const std::string & path);
+
+        // for use in plan reader
+        static AggregateId getAggregateId(const std::string & src);
 
 
 

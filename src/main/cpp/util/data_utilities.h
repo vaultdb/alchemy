@@ -12,8 +12,8 @@
 #endif
 
 #include <cstdint>
-#include <vaultdb.h>
 #include "utilities.h"
+#include <query_table/query_table.h>
 
 namespace vaultdb {
     class DataUtilities {
@@ -63,6 +63,8 @@ namespace vaultdb {
         static size_t get_tuple_cnt(const std::string & db_name, const std::string &  sql, bool has_dummy_tag);
 
 //        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
+
+       static vector<string> readTextFile(const string & filename);
 
 
     };

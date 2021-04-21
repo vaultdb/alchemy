@@ -136,3 +136,15 @@ string Utilities::revealAndPrintBytes(emp::Bit *bits, const int &byteCount) {
 void Utilities::mkdir(const string &path) {
     std::filesystem::create_directory(path);
 }
+
+AggregateId Utilities::getAggregateId(const string &src) {
+    if(src ==  "AVG")         return AggregateId::AVG;
+    if(src ==  "COUNT")       return AggregateId::COUNT;
+    if(src ==  "MIN")         return AggregateId::MIN;
+    if(src ==  "MAX")         return AggregateId::MAX;
+    if(src ==  "SUM")         return AggregateId::SUM;
+
+    // else
+    throw std::invalid_argument("Can't decode aggregate from " + src);
+
+}

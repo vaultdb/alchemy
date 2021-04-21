@@ -5,12 +5,13 @@
 #include <field/field_factory.h>
 #include <query_table.h>
 #include <plain_tuple.h>
+#include <util/data_utilities.h>
 
 using namespace vaultdb;
 
 std::unique_ptr<PlainTable> CsvReader::readCsv(const string &filename, const QuerySchema &schema) {
 
-    std::vector<std::string> tupleEntries = readFile(filename);
+    std::vector<std::string> tupleEntries = DataUtilities::readTextFile(filename);
 
     // replace dates with LONG
     QuerySchema dst_schema(schema);
@@ -32,27 +33,6 @@ std::unique_ptr<PlainTable> CsvReader::readCsv(const string &filename, const Que
 
     return result;
 
-}
-
-std::vector<std::string> CsvReader::readFile(const string &filename) {
-    std::vector<std::string> csvLines;
-    std::ifstream inFile(filename);
-    std::string line;
-
-
-    if(!inFile)
-    {
-        string cwd = Utilities::getCurrentWorkingDirectory();
-        throw std::invalid_argument("Unable to open file: " + filename + " from " + cwd);
-    }
-
-
-    while (std::getline(inFile, line))
-    {
-        csvLines.push_back(line);
-    }
-
-    return csvLines;
 }
 
 

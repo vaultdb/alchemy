@@ -14,7 +14,6 @@ namespace  vaultdb {
                    const size_t &tupleIdx);
 
     private:
-        static std::vector<std::string> readFile(const std::string &filename);
 
         static vector<string> split(const string &tupleEntry);
     };

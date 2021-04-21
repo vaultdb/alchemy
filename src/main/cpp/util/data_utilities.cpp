@@ -187,6 +187,27 @@ size_t DataUtilities::get_tuple_cnt(const string &db_name, const string &sql, bo
 
 }
 
+vector<string> DataUtilities::readTextFile(const string &filename) {
+    std::vector<std::string> lines;
+    std::ifstream inFile(filename);
+    std::string line;
+
+
+    if(!inFile)
+    {
+        string cwd = Utilities::getCurrentWorkingDirectory();
+        throw std::invalid_argument("Unable to open file: " + filename + " from " + cwd);
+    }
+
+
+    while (std::getline(inFile, line))
+    {
+        lines.push_back(line);
+    }
+
+    return lines;
+}
+
 // actually an array of emp::Bits.  Each bit is sizeof(emp::block) length
 /*emp::Integer toEmpInteger(const vector<int8_t> & src_bytes) {
 

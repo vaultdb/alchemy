@@ -15,12 +15,19 @@ namespace vaultdb {
 
 
     struct ScalarAggregateDefinition {
-        int ordinal; // input ordinal
+        int ordinal; // input ordinal/operand
         AggregateId type;
         std::string alias;
+        bool is_distinct = false; // TODO: implement DISTINCT aggregates
 
         ScalarAggregateDefinition(int anOrdinal, AggregateId aggregateId, std::string anAlias)
                 : ordinal(anOrdinal), type(aggregateId), alias(anAlias) {}
+
+        ScalarAggregateDefinition() {}
     };
+
+
+
+
 }
 #endif // _AGGREGATE_ID_H

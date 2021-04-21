@@ -16,6 +16,7 @@
 using namespace emp;
 using namespace vaultdb;
 
+// TODO: create a utility that invokes the SQL-to-MPC translator to create a JSON plan
 
 class TpcHTest : public ::testing::Test {
 
@@ -240,6 +241,37 @@ void TpcHTest::validate_q3_join(const shared_ptr<PlainTable> &joined) {
 
     shared_ptr<PlainTable > expected_join_result = DataUtilities::getQueryResults(db_name, expected_join_sql, true);
     ASSERT_EQ(*joined, *expected_join_result);
+
+
+
+}
+
+
+//                "select\n"
+//                "  n.n_name,\n"
+//                "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue\n"
+//                " from\n"
+//                "  customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"
+//                "     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
+//                "     JOIN supplier s ON l.l_suppkey = s.s_suppkey\n"
+//                "     JOIN nation n ON s.s_nationkey = n.n_nationkey\n"
+//                "     JOIN region r ON n.n_regionkey = r.r_regionkey\n"
+//                "where\n"
+//                "   c.c_nationkey = s.s_nationkey\n"
+//                "  and r.r_name = 'EUROPE'\n"
+//                "  and o.o_orderdate >= date '1997-01-01'\n"
+//                "  and o.o_orderdate < date '1998-01-01'\n"
+//                " group by\n"
+//                "  n.n_name\n"
+//                " order by\n"
+//                "  revenue desc",
+// basically customer -- orders -- lineitem -- supplier -- nation -- region
+//  supplier -- nation -- region in plaintext
+//
+// Consider using something like MapD for getting from SQL to C++
+// they used a JSON spec for their query trees to invoke them in C++
+// https://www.omnisci.com/blog/fast-and-flexible-query-analysis-at-mapd-with-apache-calcite-2
+TEST_F(TpcHTest, testQ5Truncated)  {
 
 
 

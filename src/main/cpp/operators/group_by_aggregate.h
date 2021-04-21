@@ -7,7 +7,6 @@
 #include "operator.h"
 
 namespace vaultdb {
-    // TODO: template for B - bool || Bit
     template<typename B>
     class GroupByAggregate : public Operator<B> {
 

@@ -64,6 +64,7 @@ set(sources
 		util/type_utilities.cpp
 		util/data_utilities.cpp
 		util/field_utilities.cpp
+		util/plan_reader.cpp
 
 		query_table/field/field_type.h
 		query_table/field/field.cpp
