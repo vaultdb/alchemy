@@ -28,16 +28,23 @@ namespace vaultdb {
 
         void parseSqlInputs(const std::string & input_file);
         void parseSecurePlan(const std::string & plan_file);
-        void print(const boost::property_tree::ptree &pt, const std::string &prefix);
 
+        // operator parsers
+        void parseOperator(const int & operator_id, const std::string & op_name, const  boost::property_tree::ptree &pt);
+        // TODO: consider making this a static method in each operator
         void parseSort(const int &operator_id, const boost::property_tree::ptree &pt);
         void parseAggregate(const int & operator_id, const boost::property_tree::ptree &pt);
-        const std::shared_ptr<Operator<B> > getChildOperator(const int & my_operator_id) const;
-
+        void parseJoin(const int & operator_id, const boost::property_tree::ptree &pt);
+        void parseFilter(const int & operator_id, const boost::property_tree::ptree &pt);
+        void parseProjection(const int & operator_id, const boost::property_tree::ptree &pt);
 
         // faux template specialization
         shared_ptr<Operator<bool> > createInputOperator(const std::string & sql, const bool & has_dummy_tag);
         shared_ptr<Operator<emp::Bit> > createInputOperator(const std::string & sql, const emp::Bit & has_dummy_tag);
+
+        // utils
+        const std::shared_ptr<Operator<B> > getChildOperator(const int & my_operator_id) const;
+        void print(const boost::property_tree::ptree &pt, const std::string &prefix);
 
     };
 }

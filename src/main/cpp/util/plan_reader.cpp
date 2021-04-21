@@ -95,24 +95,25 @@ void PlanReader<B>::parseSecurePlan(const string & plan_file) {
                     int operator_id = v.second.get_child("id").template get_value<int>();
                     string op_name =  (std::string) v.second.get_child("relOp").data();
                     std::cout << "***Parsed op " << operator_id << ": " << op_name << std::endl;
-
-                    if(op_name == "LogicalSort")
-                        parseSort(operator_id, v.second);
-                    else if(op_name == "LogicalAggregate") {
-                        parseAggregate(operator_id, v.second);
-                    }
+                    parseOperator(operator_id, op_name, v.second);
                 }
 }
 
-template<typename B>
-void PlanReader<B>::print(const boost::property_tree::ptree &pt, const std::string &prefix) {
 
-    ptree::const_iterator end = pt.end();
-    for (ptree::const_iterator it = pt.begin(); it != end; ++it) {
-        std::cout << prefix <<  it->first << ": " << it->second.get_value<std::string>() << std::endl;
-        print(it->second, prefix + "   ");
-    }
+
+template<typename B>
+void PlanReader<B>::parseOperator(const int &operator_id, const string &op_name, const ptree & tree) {
+    if(op_name == "LogicalValues") return; // handled in createInput
+    if(op_name == "LogicalSort") return parseSort(operator_id, tree);
+    if(op_name == "LogicalAggregate") return parseAggregate(operator_id, tree);
+    if(op_name == "LogicalJoin") return parseJoin(operator_id, tree);
+    if(op_name == "LogicalProjection") return parseProjection(operator_id, tree);
+    if(op_name == "LogicalFilter") return parseFilter(operator_id, tree);
+
+    throw std::invalid_argument("Unknown operator type: " + op_name);
+
 }
+
 
 template<typename B>
 void PlanReader<B>::parseSort(const int &operator_id, const boost::property_tree::ptree &sort_tree) {
@@ -148,6 +149,8 @@ shared_ptr<Operator<emp::Bit>> PlanReader<B>::createInputOperator(const string &
     bool dummy_tag = has_dummy_tag.template reveal(); // just a loop with above, so no security - just aligns template defs
     return  std::shared_ptr<Operator<emp::Bit> >(new SecureSqlInput(db_name_, sql, dummy_tag, netio_, party_));
 }
+
+
 
 template<typename B>
 void PlanReader<B>::parseAggregate(const int &operator_id, const boost::property_tree::ptree &aggregate_json) {
@@ -202,6 +205,26 @@ void PlanReader<B>::parseAggregate(const int &operator_id, const boost::property
 
 }
 
+template<typename B>
+void PlanReader<B>::parseJoin(const int &operator_id, const ptree &pt) {
+ throw; // not yet implemented
+}
+
+template<typename B>
+void PlanReader<B>::parseFilter(const int &operator_id, const ptree &pt) {
+    throw; // not yet implemented
+
+}
+
+template<typename B>
+void PlanReader<B>::parseProjection(const int &operator_id, const ptree &pt) {
+    throw; // not yet implemented
+
+}
+
+
+// *** Utilities ***
+
 // child is always the "-1" operator if unspecified
 template<typename B>
 const std::shared_ptr<Operator<B> > PlanReader<B>::getChildOperator(const int &my_operator_id) const {
@@ -209,6 +232,20 @@ const std::shared_ptr<Operator<B> > PlanReader<B>::getChildOperator(const int &m
     assert(operators_.count(child_id) != 0); // the key exists
    return operators_.at(child_id);
 }
+
+
+
+
+template<typename B>
+void PlanReader<B>::print(const boost::property_tree::ptree &pt, const std::string &prefix) {
+
+    ptree::const_iterator end = pt.end();
+    for (ptree::const_iterator it = pt.begin(); it != end; ++it) {
+        std::cout << prefix <<  it->first << ": " << it->second.get_value<std::string>() << std::endl;
+        print(it->second, prefix + "   ");
+    }
+}
+
 
 
 template class vaultdb::PlanReader<bool>;
