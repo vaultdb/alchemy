@@ -11,11 +11,11 @@ FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey
 SELECT o_orderkey, o_custkey, o_orderdate, NOT (o_orderdate >= DATE '1997-01-01' AND o_orderdate < DATE '1998-01-01') AS dummy_tag
 FROM orders
 ORDER BY o_orderkey, o_custkey, o_orderdate
--- 2
+-- 3
 SELECT l_orderkey, l_suppkey, l_extendedprice, l_discount
 FROM lineitem
 ORDER BY l_orderkey, l_suppkey, l_extendedprice, l_discount
--- 3
+-- 5
 SELECT t2.s_suppkey, t2.s_nationkey
 FROM (SELECT r_regionkey, r_name
 FROM region

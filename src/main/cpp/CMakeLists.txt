@@ -64,7 +64,7 @@ set(sources
 		util/type_utilities.cpp
 		util/data_utilities.cpp
 		util/field_utilities.cpp
-		util/plan_reader.cpp
+        util/plan_parser.cpp
 
 		query_table/field/field_type.h
 		query_table/field/field.cpp
@@ -87,6 +87,7 @@ set(sources
 		operators/project.cpp
 		operators/sort.cpp
 		operators/support/join_equality_predicate.cpp
+		operators/support/property_tree_expression.cpp
 		operators/join.cpp
 		operators/basic_join.cpp
         operators/fkey_pkey_join.cpp

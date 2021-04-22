@@ -13,7 +13,7 @@ WHERE p_name LIKE '%yellow%') AS t3 ON t1.ps_partkey = t3.p_partkey
 SELECT l_orderkey, l_partkey, l_suppkey, l_quantity, l_extendedprice, l_discount
 FROM lineitem
 ORDER BY l_orderkey, l_partkey, l_suppkey, l_quantity, l_extendedprice, l_discount
--- 2
+-- 3
 SELECT o_orderyear AS o_year, o_orderkey
 FROM orders
 ORDER BY o_orderkey

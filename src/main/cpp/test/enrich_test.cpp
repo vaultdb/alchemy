@@ -13,7 +13,7 @@ shared_ptr<PlainTable> EnrichTest::getAgeStrataProjection(shared_ptr<PlainTable>
     Project project(input);
     FieldType ageStrataType = isEncrypted ? FieldType::SECURE_INT : FieldType::INT;
 
-    Expression<bool> ageStrataExpression(&(EnrichTestSupport<bool>::projectAgeStrata), "age_strata", ageStrataType);
+    FunctionExpression<bool> ageStrataExpression(&(EnrichTestSupport<bool>::projectAgeStrata), "age_strata", ageStrataType);
     ProjectionMappingSet mappingSet{
             ProjectionMapping(0, 0),
             ProjectionMapping(1, 1),
@@ -172,8 +172,8 @@ shared_ptr<SecureTable> EnrichTest::getPatientCohort() {
 
     };
 
-    Expression multisiteExpression(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT);
-    Expression multisiteNumeratorExpression(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
+    FunctionExpression multisiteExpression(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT);
+    FunctionExpression multisiteNumeratorExpression(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
 
     project.addColumnMappings(mappingSet);
     project.addExpression(multisiteExpression, 6);

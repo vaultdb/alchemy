@@ -80,7 +80,7 @@ package_add_test(group_by_aggregate_test plain/group_by_aggregate_test.cpp)
 package_add_test(serialization_test serialization_test.cpp)
 package_add_test(secret_share_generator_test secret_share_generator_test.cpp)
 package_add_test(tpch_test tpch_test.cpp)
-package_add_test(plan_reader_test plan_reader_test.cpp)
+package_add_test(plan_reader_test plan_parser_test.cpp)
 
 
 #EMP-based tests

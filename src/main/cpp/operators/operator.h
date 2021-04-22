@@ -15,6 +15,12 @@ namespace  vaultdb {
 
     template<typename B> class TableInput;
 
+    template<typename B> class Operator;
+
+    typedef  Operator<bool> PlainOperator;
+    typedef  Operator<emp::Bit> SecureOperator;
+
+
     template<typename B>
     class Operator {
 

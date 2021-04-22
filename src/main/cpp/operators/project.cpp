@@ -46,7 +46,7 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
     auto exprPos = expressions.begin();
     while(exprPos != expressions.end()) {
         uint32_t dstOrdinal = exprPos->first;
-        Expression expression = exprPos->second;
+        FunctionExpression expression = exprPos->second;
 
         FieldType type = expression.getType();
         std::string alias = expression.getAlias();
@@ -115,7 +115,7 @@ void Project<B>::project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tupl
     // exec all expressions
     while(exprPos != expressions.end()) {
         uint32_t dst_ordinal = exprPos->first;
-        Expression expression = exprPos->second;
+        FunctionExpression expression = exprPos->second;
         Field<B> field_value = expression.expressionCall(src_tuple);
         dst_tuple.setField(dst_ordinal, field_value);
 

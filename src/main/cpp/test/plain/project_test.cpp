@@ -78,7 +78,7 @@ TEST_F(ProjectionTest, q3Lineitem) {
 
     Project project(&input);
 
-    Expression<bool> revenueExpression(&calculateRevenue, "revenue", FieldType::FLOAT);
+    FunctionExpression<bool> revenueExpression(&calculateRevenue, "revenue", FieldType::FLOAT);
 
 
 

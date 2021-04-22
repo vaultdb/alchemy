@@ -3,7 +3,7 @@
 
 #include "operator.h"
 #include "common/defs.h"
-#include "operators/support/expression.h"
+#include "operators/support/function_expression.h"
 
 typedef std::pair<uint32_t, uint32_t> ProjectionMapping; // src ordinal, dst ordinal
 
@@ -21,7 +21,8 @@ namespace vaultdb {
     class Project : public Operator<B> {
 
         std::vector<ProjectionMapping> projectionMap;
-        std::map<uint32_t, Expression<B> > expressions;
+        // TODO: generalize to Expression
+        std::map<uint32_t, FunctionExpression<B> > expressions;
 
         uint32_t colCount;
         QuerySchema srcSchema;
@@ -38,7 +39,7 @@ namespace vaultdb {
             projectionMap.push_back(mapping);
         }
 
-        void addExpression(const Expression<B> &expression, const uint32_t &dstOrdinal) {
+        void addExpression(const FunctionExpression<B> &expression, const uint32_t &dstOrdinal) {
             expressions[dstOrdinal] = expression;
         }
 

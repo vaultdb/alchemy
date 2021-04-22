@@ -83,23 +83,16 @@
           "name": "l_orderkey"
         },
         {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "l_extendedprice"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "l_discount"
-        },
-        {
           "type": "DATE",
           "nullable": true,
           "name": "l_shipdate"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "revenue"
         }
       ],
       "tuples": [],
@@ -138,7 +131,7 @@
         "l_orderkey",
         "o_orderdate",
         "o_shippriority",
-        "$f3"
+        "revenue"
       ],
       "exprs": [
         {
@@ -154,37 +147,8 @@
           "name": "$5"
         },
         {
-          "op": {
-            "name": "*",
-            "kind": "TIMES",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 7,
-              "name": "$7"
-            },
-            {
-              "op": {
-                "name": "-",
-                "kind": "MINUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "literal": 1,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                },
-                {
-                  "input": 8,
-                  "name": "$8"
-                }
-              ]
-            }
-          ]
+          "input": 8,
+          "name": "$8"
         }
       ]
     },

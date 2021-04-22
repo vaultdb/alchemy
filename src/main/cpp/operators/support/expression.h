@@ -1,63 +1,35 @@
-#ifndef _EXPRESSION_H
-#define _EXPRESSION_H
-
+#ifndef _EXPRESSION_H_
+#define _EXPRESSION_H_
 
 #include <query_table/query_tuple.h>
 #include <query_table/query_schema.h>
 
-using namespace vaultdb;
-
+namespace  vaultdb {
 template<typename B>
-class Expression {
-
-    protected:
-        std::string alias;
-        FieldType expressionType;
-        // function pointer for expression
-        Field<B> (*exprFunc)(const QueryTuple<B> &) = nullptr;
-
-
+    class Expression {
     public:
-        Expression() : alias("anonymous"), expressionType(FieldType::INVALID) {}
+        Expression(const FieldType & type, const std::string & alias)
+            : expression_type_(type), alias_(alias) {}
 
-
-        Expression(const Expression & src) : alias(src.alias), expressionType(src.expressionType) {
-            exprFunc = src.exprFunc;
-        }
-
-        Expression(Field<B> (*funcPtr)(const QueryTuple<B> &), const std::string & anAlias, const FieldType & aType)  :  alias(anAlias), expressionType(aType){
-            exprFunc = funcPtr;
-        }
-
-        ~Expression() = default;
-
-
-         Field<B> expressionCall(const QueryTuple<B> & aTuple) const {
-            return exprFunc(aTuple);
-        }
+       // implemented by child methods
+        virtual Field<B> expressionCall(const QueryTuple<B> & aTuple) const = 0;
+        //virtual Expression& operator=(const Expression & src) = 0;
 
 
 
         // what is the return type of the expression?
-        FieldType getType() const { return expressionType; }
+        FieldType getType() const { return expression_type_; }
 
         // does it have an alias?
-        std::string getAlias() const { return alias; }
+        std::string getAlias() const { return alias_; }
+
+    protected:
+        FieldType expression_type_;
+        std::string alias_;
 
 
-         Expression& operator=(const Expression & src) {
-             if(&src == this)
-                 return *this;
+    };
 
-             this->alias = src.alias;
-             this->expressionType = src.expressionType;
-             this->exprFunc = src.exprFunc;
+}
 
-             return *this;
-        }
-
-
-};
-
-
-#endif //_EXPRESSION_H
+#endif //VAULTDB_EMP_EXPRESSION_H
