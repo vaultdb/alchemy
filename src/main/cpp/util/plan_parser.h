@@ -41,7 +41,7 @@ namespace vaultdb {
         std::shared_ptr<Operator<B>> parseAggregate(const int & operator_id, const boost::property_tree::ptree &pt);
         std::shared_ptr<Operator<B>> parseJoin(const int & operator_id, const boost::property_tree::ptree &pt);
         std::shared_ptr<Operator<B>> parseFilter(const int & operator_id, const boost::property_tree::ptree &pt);
-        std::shared_ptr<Operator<B>> parseProjection(const int & operator_id, const boost::property_tree::ptree &pt);
+        std::shared_ptr<Operator<B>> parseProjection(const int & operator_id, const boost::property_tree::ptree &project_tree);
 
         // faux template specialization
         shared_ptr<Operator<bool>> createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag);
@@ -55,6 +55,7 @@ namespace vaultdb {
 
         void print(const boost::property_tree::ptree &pt, const std::string &prefix);
 
+        static bool isOrdinal(const string &s);
     };
 }
 

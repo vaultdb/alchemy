@@ -3,6 +3,7 @@
 #include <operators/sql_input.h>
 #include <gflags/gflags.h>
 #include <operators/support/join_equality_predicate.h>
+#include <operators/expression/function_expression.h>
 
 #include "enrich_test.h"
 
@@ -13,7 +14,8 @@ shared_ptr<PlainTable> EnrichTest::getAgeStrataProjection(shared_ptr<PlainTable>
     Project project(input);
     FieldType ageStrataType = isEncrypted ? FieldType::SECURE_INT : FieldType::INT;
 
-    FunctionExpression<bool> ageStrataExpression(&(EnrichTestSupport<bool>::projectAgeStrata), "age_strata", ageStrataType);
+    shared_ptr<Expression<bool>> ageStrataExpression(new FunctionExpression<bool>(&EnrichTestSupport<bool>::projectAgeStrata, "age_strata", ageStrataType));
+    //FunctionExpression<bool> ageStrataExpression(&EnrichTestSupport<bool>::projectAgeStrata, "age_strata", ageStrataType);
     ProjectionMappingSet mappingSet{
             ProjectionMapping(0, 0),
             ProjectionMapping(1, 1),
@@ -172,8 +174,10 @@ shared_ptr<SecureTable> EnrichTest::getPatientCohort() {
 
     };
 
-    FunctionExpression multisiteExpression(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT);
-    FunctionExpression multisiteNumeratorExpression(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
+    shared_ptr<Expression<emp::Bit> > multisiteExpression(new FunctionExpression<emp::Bit>(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT));
+    shared_ptr<Expression<emp::Bit> > multisiteNumeratorExpression(new FunctionExpression<emp::Bit>(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT));
+    //Expression multisiteExpression(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT);
+    //Expression multisiteNumeratorExpression(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
 
     project.addColumnMappings(mappingSet);
     project.addExpression(multisiteExpression, 6);

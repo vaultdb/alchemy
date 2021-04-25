@@ -98,7 +98,6 @@ TEST_F(PlanParserTest, tpch_q1) {
 
     // failing to run query tree because additional operators are being stored as shared_ptrs.
     /// when we delete PlanParser, we delete the pointers
-
     shared_ptr<PlainTable> observed = root->run();
     observed = DataUtilities::removeDummies(observed);
 
@@ -109,7 +108,38 @@ TEST_F(PlanParserTest, tpch_q1) {
 
 TEST_F(PlanParserTest, tpch_q3) {
     string test_name = "q3";
-    PlanParser<bool> plan_reader(db_name_, test_name, limit_);
+    string query = tpch_queries[3];
+
+    // set up expected output
+    string customer_sql = "(SELECT * FROM customer ORDER BY c_custkey LIMIT " + limit_str_ + ")";
+
+    string orders_sql = "(SELECT * "
+                           "FROM orders "
+                           "ORDER BY o_orderkey, o_orderdate, o_shippriority " // was o_orderkey, o_custkey, o_orderdate, o_shippriority
+                           "LIMIT " + limit_str_ + ")";
+
+
+    string lineitem_sql = "(SELECT * FROM lineitem ORDER BY l_orderkey, l_shipdate LIMIT " + limit_str_ + ")";
+
+    boost::replace_first(query, "customer", customer_sql);
+    boost::replace_first(query, "orders", orders_sql);
+    boost::replace_first(query, "lineitem", lineitem_sql);
+
+
+    shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
+    // 1 DESC, 2 ASC
+    SortDefinition expected_sort{ColumnSort(1, SortDirection::DESCENDING), ColumnSort(2, SortDirection::ASCENDING)};
+    expected->setSortOrder(expected_sort);
+
+    // run test
+    PlanParser<bool> parser(db_name_, test_name, limit_);
+    shared_ptr<PlainOperator> root = parser.getRoot();
+    shared_ptr<PlainTable> observed = root->run();
+    observed = DataUtilities::removeDummies(observed);
+
+    ASSERT_EQ(*expected, *observed);
+
+
 }
 
 

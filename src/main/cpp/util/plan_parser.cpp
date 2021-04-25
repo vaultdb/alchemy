@@ -14,6 +14,10 @@
 #include <operators/sort.h>
 #include <operators/group_by_aggregate.h>
 #include <operators/scalar_aggregate.h>
+#include <operators/support/join_equality_predicate.h>
+#include <operators/basic_join.h>
+#include <operators/filter.h>
+#include <operators/project.h>
 
 using namespace vaultdb;
 using boost::property_tree::ptree;
@@ -74,6 +78,7 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
                 query_id = input_parameters.first;
 
                 operators_[query_id] = createInputOperator(query, input_parameters.second, has_dummy);
+                std::cout << "Adding operator " << query_id << " with sql input " << query << std::endl;
 
             }
             // set up the next header
@@ -88,7 +93,11 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
 
     // output the last one
     has_dummy = (query.find("dummy") != std::string::npos);
+    query_id = input_parameters.first;
+
     operators_[query_id] = createInputOperator(query, input_parameters.second, has_dummy);
+    std::cout << "Adding operator " << query_id << " with sql input: " <<  query << std::endl;
+
 }
 
 template<typename B>
@@ -101,7 +110,6 @@ void PlanParser<B>::parseSecurePlan(const string & plan_file) {
     boost::property_tree::ptree pt;
     boost::property_tree::read_json(ss, pt);
 
-    //using boost::property_tree::ptree;
 
     BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pt.get_child("rels."))
                 {
@@ -124,15 +132,18 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "LogicalSort")   op = parseSort(operator_id, tree);
     if(op_name == "LogicalAggregate")  op = parseAggregate(operator_id, tree);
     if(op_name == "LogicalJoin")  op = parseJoin(operator_id, tree);
-    if(op_name == "LogicalProjection")  op = parseProjection(operator_id, tree);
+    if(op_name == "LogicalProject")  op = parseProjection(operator_id, tree);
     if(op_name == "LogicalFilter")  op = parseFilter(operator_id, tree);
 
     if(op.get() != nullptr) {
         operators_[operator_id] = op;
+        std::cout << "Adding operator with id " << operator_id << std::endl;
         root_ = op;
     }
     else
         throw std::invalid_argument("Unknown operator type: " + op_name);
+
+
 
 }
 
@@ -194,7 +205,8 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_i
     // parse the aggregators
     std::vector<int> group_by_ordinals;
     vector<ScalarAggregateDefinition> aggregators;
-    assert(aggregate_json.count("group") > 0);
+    //assert(aggregate_json.count("group") > 0);
+
     if(aggregate_json.count("group") > 0) {
         ptree group_by = aggregate_json.get_child("group.");
 
@@ -243,10 +255,32 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_i
 }
 
 template<typename B>
-std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, const ptree &pt) {
+std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_tree) {
+    boost::property_tree::ptree join_condition = join_tree.get_child("condition");
+    int lhs_idx, rhs_idx;
+    // TODO: parse full expressions here, for now only cover conjunctive equality predicates
+    print(join_condition, "");
 
-    // only cover conjunctive equality predicates
- throw; // not yet implemented
+    assert(join_condition.get_child("op.kind").template get_value<std::string>() == std::string("EQUALS")); // simple equality predicate for now
+
+    ptree::const_iterator operand_pos = join_condition.get_child("operands").begin();
+    lhs_idx = operand_pos->second.get_child("input").template get_value<int>();
+    ++operand_pos;
+    rhs_idx = operand_pos->second.get_child("input").template get_value<int>();
+
+    ConjunctiveEqualityPredicate cp{EqualityPredicate(lhs_idx, rhs_idx)};
+    std::shared_ptr<BinaryPredicate<B> > predicate(new JoinEqualityPredicate<B>(cp));
+
+    ptree input_list = join_tree.get_child("inputs.");
+    ptree::const_iterator it = input_list.begin();
+    int lhs_id = it->second.get_value<int>();
+    shared_ptr<Operator<B> > lhs  = operators_.at(lhs_id);
+    ++it;
+    int rhs_id = it->second.get_value<int>();
+    shared_ptr<Operator<B> > rhs  = operators_.at(rhs_id);
+
+    return shared_ptr<Operator<B> > (new BasicJoin<B>(lhs.get(), rhs.get(), predicate));
+
 }
 
 template<typename B>
@@ -256,15 +290,36 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseFilter(const int &operator_id, 
 }
 
 template<typename B>
-std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_id, const ptree &pt) {
-    throw; // not yet implemented
+std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_id, const ptree &project_tree) {
 
+    shared_ptr<Operator<B> > child_operator = getChildOperator(operator_id);
+    shared_ptr<Project<B> > project(new Project<B>(child_operator.get()));
+
+    ptree expressions = project_tree.get_child("exprs");
+    uint32_t src_ordinal, dst_ordinal = 0;
+
+    for (ptree::const_iterator it = expressions.begin(); it != expressions.end(); ++it) {
+        std::string expr = it->second.get_child("input").get_value<std::string>();
+        if(isOrdinal(expr)) { // mapping a column from one position to another
+            src_ordinal = std::atoi(expr.c_str());
+        }
+        else {
+            throw std::invalid_argument("Expression " + expr + " is not yet supported.");
+        }
+
+
+        project->addColumnMapping(src_ordinal, dst_ordinal);
+
+      ++dst_ordinal;
+    }
+
+    return project;
 }
 
 
 // *** Utilities ***
 
-// child is always the "-1" operator if unspecified
+// child is always the "N-1" operator if unspecified, i.e., if my_op_id is 5, then it is 4.
 template<typename B>
 const std::shared_ptr<Operator<B> > PlanParser<B>::getChildOperator(const int &my_operator_id) const {
     int child_id = my_operator_id - 1;
@@ -334,6 +389,12 @@ pair<int, SortDefinition> PlanParser<B>::parseSqlHeader(const string &header) {
     return result;
 }
 
+template<typename B>
+bool PlanParser<B>::isOrdinal(const std::string& s)
+{
+    return !s.empty() && std::find_if(s.begin(),
+                                      s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+}
 
 template class vaultdb::PlanParser<bool>;
 template class vaultdb::PlanParser<emp::Bit>;

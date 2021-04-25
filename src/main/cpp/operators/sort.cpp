@@ -16,22 +16,29 @@ int Sort<B>::powerOfLessThanTwo(const int & n) {
 }
 
 template<typename B>
-Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child), sortDefinition(aSortDefinition) {
+Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child), sortDefinition(aSortDefinition), limit_(limit) {
 
     for(ColumnSort s : sortDefinition) {
         if(s.second == SortDirection::INVALID)
             throw; // invalid sort definition
     }
+
+    if(limit_ > 0)
+        assert(sortDefinition[0].first == -1); // Need to sort on dummy tag to make resizing not delete real tuples
+
 
 }
 
 template<typename B>
-Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child), sortDefinition(aSortDefinition){
+Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child), sortDefinition(aSortDefinition), limit_(limit) {
 
     for(ColumnSort s : sortDefinition) {
         if(s.second == SortDirection::INVALID)
             throw; // invalid sort definition
     }
+
+    if(limit_ > 0)
+        assert(sortDefinition[0].first == -1); // Need to sort on dummy tag to make resizing not delete real tuples
 
 }
 
@@ -46,7 +53,6 @@ std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
     Operator<B>::output->setSortOrder(sortDefinition);
 
     if(limit_ > 0) {
-        assert(sortDefinition[0].first == -1); // Need to sort on dummy tag to make resizing not delete real tuples
         Operator<B>::output->resize(limit_);
     }
     return Operator<B>::output;

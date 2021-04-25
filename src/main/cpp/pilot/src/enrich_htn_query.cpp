@@ -5,6 +5,7 @@
 #include <project.h>
 #include <query_table/secure_tuple.h>
 #include <query_table/plain_tuple.h>
+#include <operators/expression/function_expression.h>
 
 using namespace vaultdb;
 
@@ -99,9 +100,9 @@ shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(const shared_ptr<SecureT
 
     };
 
-    FunctionExpression ageStrataExpression(&EnrichHtnQuery::projectAgeStrata<emp::Bit>, "age_strata", FieldType::SECURE_INT);
-    FunctionExpression multisiteExpression(&EnrichHtnQuery::projectMultisite<emp::Bit>, "multisite", FieldType::SECURE_INT);
-    FunctionExpression multisiteNumeratorExpression(&EnrichHtnQuery::projectNumeratorMultisite<emp::Bit>, "numerator_multisite", FieldType::SECURE_INT);
+    shared_ptr<Expression<emp::Bit> > ageStrataExpression(new FunctionExpression(&EnrichHtnQuery::projectAgeStrata<emp::Bit>, "age_strata", FieldType::SECURE_INT));
+    shared_ptr<Expression<emp::Bit> >  multisiteExpression(new FunctionExpression(&EnrichHtnQuery::projectMultisite<emp::Bit>, "multisite", FieldType::SECURE_INT));
+    shared_ptr<Expression<emp::Bit> >  multisiteNumeratorExpression(new FunctionExpression(&EnrichHtnQuery::projectNumeratorMultisite<emp::Bit>, "numerator_multisite", FieldType::SECURE_INT));
 
     project.addColumnMappings(mappingSet);
     project.addExpression(ageStrataExpression, 1);

@@ -87,7 +87,7 @@ set(sources
 		operators/project.cpp
 		operators/sort.cpp
 		operators/support/join_equality_predicate.cpp
-		operators/support/property_tree_expression.cpp
+		#operators/support/property_tree_expression.cpp
 		operators/join.cpp
 		operators/basic_join.cpp
         operators/fkey_pkey_join.cpp
@@ -98,7 +98,8 @@ set(sources
 		operators/group_by_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp
 		operators/csv_input.cpp
-		operators/sort_merge_join.cpp)
+		operators/sort_merge_join.cpp
+		operators/expression/function_expression.cpp)
 
 
 

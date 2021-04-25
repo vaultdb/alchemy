@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/project.h>
+#include <operators/expression/function_expression.h>
 
 
 using namespace emp;
@@ -78,7 +79,7 @@ TEST_F(ProjectionTest, q3Lineitem) {
 
     Project project(&input);
 
-    FunctionExpression<bool> revenueExpression(&calculateRevenue, "revenue", FieldType::FLOAT);
+    std::shared_ptr<Expression<bool> > revenueExpression(new FunctionExpression<bool>(&calculateRevenue, "revenue", FieldType::FLOAT));
 
 
 

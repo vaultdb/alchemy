@@ -218,10 +218,10 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 template<typename B>
 std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input, emp::NetIO *netio, const int & party)  {
 
-    PlainTable empty(0, *input.getSchema());
+    //PlainTable empty(0, *input.getSchema());
     // if ignoring bob's inputs for ZK, then point to empty
-    const PlainTable & local_input = (IGNORE_BOB && party == emp::BOB) ? empty : input;
-   // const PlainTable & local_input = input;
+    //const PlainTable & local_input = (IGNORE_BOB && party == emp::BOB) ? empty : input;
+   const PlainTable & local_input = input;
 
     size_t alice_tuple_cnt = local_input.getTupleCount();
     size_t bob_tuple_cnt = alice_tuple_cnt;
