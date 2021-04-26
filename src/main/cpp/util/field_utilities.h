@@ -54,6 +54,12 @@ namespace vaultdb {
         static bool extract_bool(const emp::Bit & b) { return b.reveal();  }
         static bool extract_bool(const bool & b) { return b; }
 
+        static Field<bool> getBoolField(const bool & input) { return Field<bool>(FieldType::BOOL, input, 0); }
+        static Field<emp::Bit> getBoolField(const emp::Bit & input) { return Field<emp::Bit>(FieldType::SECURE_BOOL, input, 0); }
+
+        static bool getBoolPrimitive(const Field<bool> & input) { return input.getValue<bool>(); }
+        static emp::Bit getBoolPrimitive(const Field<emp::Bit> & input) { return input.getValue<emp::Bit>(); }
+
         static bool select(const bool & choice, const bool & lhs, const bool & rhs);
         static emp::Bit select(const emp::Bit & choice, const emp::Bit & lhs, const emp::Bit & rhs);
     };

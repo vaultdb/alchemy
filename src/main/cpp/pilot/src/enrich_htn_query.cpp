@@ -6,6 +6,7 @@
 #include <query_table/secure_tuple.h>
 #include <query_table/plain_tuple.h>
 #include <operators/expression/function_expression.h>
+#include <operators/expression/comparator_expression_nodes.h>
 
 using namespace vaultdb;
 
@@ -58,8 +59,13 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     // filter ones with denom_excl = 1
     // *** Filter
     // HAVING max(denom_excl) = 0
-    std::shared_ptr<Predicate<emp::Bit> > predicateClass(new FilterExcludedPatients<emp::Bit>(true));
-    Filter inclusionCohort(aggregated, predicateClass);
+    shared_ptr<ExpressionNode<emp::Bit> > zero(new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_INT, emp::Integer(32, 0))));;
+    shared_ptr<ExpressionNode<emp::Bit> > input(new InputReferenceNode<emp::Bit>(8));
+    shared_ptr<ExpressionNode<emp::Bit> > equality(new EqualNode<emp::Bit>(input, zero));
+
+    BoolExpression<emp::Bit> equality_expr(equality);
+
+    Filter inclusionCohort(aggregated, equality_expr);
 
     shared_ptr<SecureTable> output =   inclusionCohort.run();
     aggregated.reset();
@@ -172,7 +178,4 @@ shared_ptr<SecureTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) cons
 }
 
 
-
-template class vaultdb::FilterExcludedPatients<bool>;
-template class vaultdb::FilterExcludedPatients<emp::Bit>;
 

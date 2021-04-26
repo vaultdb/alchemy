@@ -63,6 +63,9 @@ namespace vaultdb {
         B  operator == (const Field &cmp) const;
         B  operator != (const Field &cmp) const;
         B operator !() const;
+        B  operator && (const Field &cmp) const;
+        B  operator || (const Field &cmp) const;
+
         B operator>=(const Field & rhs) const;
         B operator<(const Field & rhs) const;
         B operator<=(const Field & rhs) const;

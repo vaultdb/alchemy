@@ -4,6 +4,8 @@
 #include <operators/sql_input.h>
 #include <operators/filter.h>
 #include <query_table/field/field_factory.h>
+#include <operators/expression/generic_expression.h>
+#include <operators/expression/comparator_expression_nodes.h>
 
 
 using namespace emp;
@@ -41,26 +43,6 @@ TEST_F(FilterTest, test_table_scan) {
 
 
 
-// unencrypted case
-// l_linenumber == 1
-class FilterPredicate : public Predicate<bool> {
-    PlainField cmp;
-public:
-    FilterPredicate() {
-          cmp = Field<bool>(FieldType::INT, 1);
-    }
-
-    ~FilterPredicate() = default;
-    bool predicateCall(const PlainTuple & aTuple) const override {
-
-        const PlainField field = aTuple.getField(1);
-        return  (field == cmp);
-    }
-
-
-};
-
-
 
 TEST_F(FilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
@@ -69,10 +51,15 @@ TEST_F(FilterTest, test_filter) {
 
    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
 
-    SqlInput input(dbName, sql, false);
+   // expression setup
+    // l_linenumber == 1
+    shared_ptr<InputReferenceNode<bool> > read_field(new InputReferenceNode<bool>(1));
+   shared_ptr<LiteralNode<bool> > constant_input(new LiteralNode<bool>(Field<bool>(FieldType::INT, 1)));
+   shared_ptr<ExpressionNode<bool> > equality_check(new EqualNode<bool>(read_field, constant_input));
+   BoolExpression<bool> expression(equality_check);
 
-    std::shared_ptr<Predicate<bool> > predicateClass(new FilterPredicate());
-    Filter<bool> filter(&input, predicateClass);
+    SqlInput input(dbName, sql, false);
+    Filter<bool> filter(&input, expression);
 
 
     std::shared_ptr<PlainTable > result = filter.run();

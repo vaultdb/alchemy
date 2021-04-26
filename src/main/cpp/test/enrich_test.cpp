@@ -3,7 +3,9 @@
 #include <operators/sql_input.h>
 #include <gflags/gflags.h>
 #include <operators/support/join_equality_predicate.h>
+#include <operators/expression/comparator_expression_nodes.h>
 #include <operators/expression/function_expression.h>
+#include <operators/expression/generic_expression.h>
 
 #include "enrich_test.h"
 
@@ -136,8 +138,14 @@ shared_ptr<SecureTable> EnrichTest::filterPatients() {
 
     // *** Filter
     // HAVING max(denom_excl) = 0
-    std::shared_ptr<Predicate<emp::Bit> > predicateClass(new FilterExcludedPatients<emp::Bit>(true));
-    Filter inclusionCohort(deduplicatedPatients, predicateClass);
+    shared_ptr<ExpressionNode<emp::Bit> > zero(new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_INT, emp::Integer(32, 0))));;
+    shared_ptr<ExpressionNode<emp::Bit> > input(new InputReferenceNode<emp::Bit>(8));
+    shared_ptr<ExpressionNode<emp::Bit> > equality(new EqualNode<emp::Bit>(input, zero));
+
+    BoolExpression<emp::Bit> equality_expr(equality);
+
+    //std::shared_ptr<Predicate<emp::Bit> > predicateClass(new FilterExcludedPatients<emp::Bit>(true));
+    Filter inclusionCohort(deduplicatedPatients, equality_expr);
 
     return  inclusionCohort.run();
 

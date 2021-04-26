@@ -9,7 +9,7 @@ FunctionExpression<B>::FunctionExpression(Field<B> (*funcPtr)(const QueryTuple<B
 }
 
 template<typename B>
-Field<B> FunctionExpression<B>::expressionCall(const QueryTuple<B> &aTuple) const {
+Field<B> FunctionExpression<B>::call(const QueryTuple<B> &aTuple) const {
     return expr_func_(aTuple);
 }
 //

@@ -6,6 +6,11 @@
 #include <operators/project.h>
 #include <operators/expression/function_expression.h>
 
+#include <operators/expression/generic_expression.h>
+#include <operators/expression/expression_node.h>
+#include <operators/expression/math_expression_nodes.h>
+
+
 
 using namespace emp;
 using namespace vaultdb;
@@ -58,6 +63,7 @@ public:
 };
 */
 
+/* version 2
 PlainField calculateRevenue(const PlainTuple & aTuple) {
     const PlainField extendedPrice = aTuple.getField(5);
     const PlainField discount = aTuple.getField(6);
@@ -65,7 +71,21 @@ PlainField calculateRevenue(const PlainTuple & aTuple) {
 
     // l.l_extendedprice * (1 - l.l_discount)
     return extendedPrice * (one - discount);
+} */
+
+// l.l_extendedprice * (1 - l.l_discount)
+shared_ptr<ExpressionNode<bool> > getRevenueExpression() {
+    shared_ptr<ExpressionNode<bool> > extended_price(new InputReferenceNode<bool>(5));
+    shared_ptr<ExpressionNode<bool> > discount(new InputReferenceNode<bool>(6));
+    shared_ptr<ExpressionNode<bool> > one(new LiteralNode<bool>(Field<bool>(FieldType::FLOAT, (float_t) 1.0)));
+
+    shared_ptr<ExpressionNode<bool> > minus(new MinusNode<bool>(one, discount));
+
+    return shared_ptr<ExpressionNode<bool>> (new TimesNode<bool>(extended_price, minus));
+
+
 }
+
 
 // variant of Q3 expressions
 TEST_F(ProjectionTest, q3Lineitem) {
@@ -77,15 +97,16 @@ TEST_F(ProjectionTest, q3Lineitem) {
 
     SqlInput input("tpch_alice", srcSql, false);
 
+
+    //std::shared_ptr<Expression<bool> > revenueExpression(new FunctionExpression<bool>(&calculateRevenue, "revenue", FieldType::FLOAT));
+
+
     Project project(&input);
-
-    std::shared_ptr<Expression<bool> > revenueExpression(new FunctionExpression<bool>(&calculateRevenue, "revenue", FieldType::FLOAT));
-
-
+    shared_ptr<Expression<bool> > revenue_expression(new GenericExpression<bool>(getRevenueExpression(), "revenue", FieldType::FLOAT));
 
     project.addColumnMapping(0, 0);
     project.addColumnMapping(10, 1);
-    project.addExpression(revenueExpression, 2);
+    project.addExpression(revenue_expression, 2);
 
 
 

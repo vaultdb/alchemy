@@ -99,7 +99,7 @@ namespace  vaultdb {
 
     };
 
-    template<typename B>
+ /*   template<typename B>
     class FilterExcludedPatients : public Predicate<B> {
 
         Field<B> cmp;
@@ -118,7 +118,7 @@ namespace  vaultdb {
         }
 
 
-    };
+    }; */
 
 }
 

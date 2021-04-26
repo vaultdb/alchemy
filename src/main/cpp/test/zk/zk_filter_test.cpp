@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/filter.h>
-#include <operators/support/predicate.h>
+#include <operators/expression/comparator_expression_nodes.h>
 #include <query_table/secure_tuple.h>
 #include <test/zk/zk_base_test.h>
 #include <emp-zk/emp-zk.h>
@@ -19,26 +19,6 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54321, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
-
-class ZkFilterPredicateClass : public Predicate<emp::Bit> {
-
-    SecureField line_no;
-public:
-    ~ZkFilterPredicateClass() {}
-    ZkFilterPredicateClass(int32_t to_match) {
-        emp::Integer val(32, to_match);
-        // encrypting here so we don't have to secret share it for every comparison
-        line_no = SecureField(FieldType::SECURE_INT, val);
-
-    }
-
-    // filtering for l_linenumber = 1
-    emp::Bit predicateCall(const SecureTuple & tuple) const override {
-        const SecureField f =  tuple.getField(1);
-        return (f == line_no);
-    }
-
-};
 
 
 class ZkFilterTest : public ZkTest {
@@ -108,8 +88,15 @@ TEST_F(ZkFilterTest, test_filter) {
     SortDefinition  order_by = DataUtilities::getDefaultSortDefinition(2);
     std::shared_ptr<SecureTable> shared = ZkTest::secret_share_input(sql, false, order_by);
 
-    std::shared_ptr<Predicate<emp::Bit> > aPredicate(new ZkFilterPredicateClass(1));  // secret share the constant (1) just once
-    Filter<emp::Bit> filter(shared, aPredicate);  // deletion handled by shared_ptr
+    // expression setup
+    // filtering for l_linenumber = 1
+    shared_ptr<InputReferenceNode<emp::Bit> > read_field(new InputReferenceNode<emp::Bit>(1));
+    Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
+    shared_ptr<LiteralNode<emp::Bit> > constant_input(new LiteralNode<emp::Bit>(one));
+    shared_ptr<ExpressionNode<emp::Bit> > equality_check(new EqualNode<emp::Bit>(read_field, constant_input));
+    BoolExpression<emp::Bit> expression(equality_check);
+
+    Filter<emp::Bit> filter(shared, expression);  // deletion handled by shared_ptr
 
     std::shared_ptr<SecureTable> result = filter.run();
     std::unique_ptr<PlainTable> revealed = result->reveal(emp::PUBLIC);

@@ -5,10 +5,9 @@
 #include <operators/sql_input.h>
 #include <operators/filter.h>
 #include <operators/secure_sql_input.h>
-#include <operators/support/predicate.h>
 #include <test/mpc/emp_base_test.h>
 #include <query_table/secure_tuple.h>
-
+#include <operators/expression/comparator_expression_nodes.h>
 
 using namespace emp;
 using namespace vaultdb;
@@ -18,7 +17,7 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54321, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
-
+/*
 class SecureFilterPredicateClass : public Predicate<emp::Bit> {
 
     SecureField encryptedLineNumber;
@@ -38,7 +37,7 @@ public:
     }
 
 };
-
+*/
 
 
 class SecureFilterTest : public EmpBaseTest {};
@@ -83,9 +82,16 @@ TEST_F(SecureFilterTest, test_filter) {
 
    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
 
-    std::shared_ptr<Predicate<emp::Bit> > aPredicate(new SecureFilterPredicateClass(1));  // secret share the constant (1) just once
 
-    Filter<emp::Bit> filter(&input, aPredicate);  // deletion handled by shared_ptr
+    // expression setup
+    // filtering for l_linenumber = 1
+    shared_ptr<InputReferenceNode<emp::Bit> > read_field(new InputReferenceNode<emp::Bit>(1));
+    Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
+    shared_ptr<LiteralNode<emp::Bit> > constant_input(new LiteralNode<emp::Bit>(one));
+    shared_ptr<ExpressionNode<emp::Bit> > equality_check(new EqualNode<emp::Bit>(read_field, constant_input));
+    BoolExpression<emp::Bit> expression(equality_check);
+
+    Filter<emp::Bit> filter(&input, expression);  // deletion handled by shared_ptr
 
     std::shared_ptr<SecureTable> result = filter.run();
     std::unique_ptr<PlainTable> revealed = result->reveal(emp::PUBLIC);

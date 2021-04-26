@@ -6,12 +6,12 @@ using namespace vaultdb;
 
 
 template<typename B>
-Filter<B>::Filter(Operator<B> *child, shared_ptr<Predicate<B> > & predicateClass) :
-     Operator<B>(child), predicate(predicateClass) { }
+Filter<B>::Filter(Operator<B> *child, BoolExpression<B> & predicate) :
+     Operator<B>(child), predicate_(predicate) { }
 
 template<typename B>
-Filter<B>::Filter(shared_ptr<QueryTable<B> > child, shared_ptr<Predicate<B> >&  predicateClass) :
-     Operator<B>(child), predicate(predicateClass) { }
+Filter<B>::Filter(shared_ptr<QueryTable<B> > child, BoolExpression<B> & predicate) :
+     Operator<B>(child), predicate_(predicate) { }
 
 template<typename B>
 std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
@@ -23,7 +23,7 @@ std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
     for(size_t i = 0; i < Operator<B>::output->getTupleCount(); ++i) {
         QueryTuple tuple = Operator<B>::output->getTuple(i);
         B dummyTag = tuple.getDummyTag();
-        B predicateOut = predicate->predicateCall(tuple);
+        B predicateOut = predicate_.callBoolExpression(tuple);
 
         dummyTag =  ((!predicateOut) | dummyTag); // (!) because dummyTag is false if our selection criteria is satisfied
 

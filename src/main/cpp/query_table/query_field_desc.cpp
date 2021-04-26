@@ -4,7 +4,7 @@
 using namespace vaultdb;
 
 // default constructor setting up unique_ptr
-QueryFieldDesc::QueryFieldDesc() {
+QueryFieldDesc::QueryFieldDesc() : type_(FieldType::INVALID) {
 
 }
 

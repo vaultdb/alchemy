@@ -301,9 +301,31 @@ Field<B> Field<B>::operator%(const Field &rhs) const {
     visitor.rhs = rhs.payload_;
 
     Value result = boost::apply_visitor(visitor, payload_);
-    return Field(type_, boost::apply_visitor(visitor, payload_), string_length_);
+    return Field(type_, result, string_length_);
 }
 
+template<typename B>
+B Field<B>::operator&&(const Field &cmp) const {
+    assert(type_ == cmp.getType());
+
+    AndVisitor visitor;
+    visitor.rhs = cmp.payload_;
+
+    Value result = boost::apply_visitor(visitor, payload_);
+    return boost::get<B>(result);
+}
+
+template<typename B>
+B Field<B>::operator||(const Field &cmp) const {
+    assert(type_ == cmp.getType());
+
+    OrVisitor visitor;
+    visitor.rhs = cmp.payload_;
+
+    Value result = boost::apply_visitor(visitor, payload_);
+    return boost::get<B>(result);
+
+}
 
 
 template class vaultdb::Field<bool>;

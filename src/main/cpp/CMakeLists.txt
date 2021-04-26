@@ -64,7 +64,6 @@ set(sources
 		util/type_utilities.cpp
 		util/data_utilities.cpp
 		util/field_utilities.cpp
-        util/plan_parser.cpp
 
 		query_table/field/field_type.h
 		query_table/field/field.cpp
@@ -99,7 +98,15 @@ set(sources
 		operators/support/group_by_aggregate_impl.cpp
 		operators/csv_input.cpp
 		operators/sort_merge_join.cpp
-		operators/expression/function_expression.cpp)
+
+		operators/expression/function_expression.cpp
+		operators/expression/generic_expression.cpp
+		operators/expression/expression_node.cpp
+		operators/expression/math_expression_nodes.cpp
+		operators/expression/comparator_expression_nodes.cpp
+		operators/expression/connector_expression_nodes.cpp
+
+		util/plan_parser.cpp)
 
 
 

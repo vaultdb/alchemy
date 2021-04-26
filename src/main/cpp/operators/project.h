@@ -18,24 +18,23 @@ namespace vaultdb {
     template<typename B>
     class Project : public Operator<B> {
 
-        std::vector<ProjectionMapping> projection_map_;
-        // TODO: generalize to Expression
-        std::map<uint32_t, shared_ptr<Expression<B> > > expressions;
+        //std::vector<ProjectionMapping> projection_map_;
+        std::map<uint32_t, shared_ptr<Expression<B> > > expressions_; // key = dst_idx, value is expression to evaluate
 
-        uint32_t colCount;
-        QuerySchema srcSchema;
-        QuerySchema dstSchema;
+        //uint32_t col_count_;
+        //QuerySchema src_schema_;
+        //QuerySchema dst_schema_;
+        ProjectionMappingSet column_mappings_;
 
     public:
         Project(Operator<B> *child);
         Project(shared_ptr<QueryTable<B> > src);
+        Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map);
+        Project(shared_ptr<QueryTable<B> > src, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map);
         ~Project() = default;
 
         void addColumnMappings(const ProjectionMappingSet & mapSet);
-        void addColumnMapping(const uint32_t &srcOrdinal, const uint32_t &dstOrdinal) {
-            ProjectionMapping mapping(srcOrdinal, dstOrdinal);
-            projection_map_.push_back(mapping);
-        }
+        void addColumnMapping(const uint32_t &src_ordinal, const uint32_t &dst_ordinal);
 
         void addExpression(const shared_ptr<Expression<B> > &expression, const uint32_t &dstOrdinal);
 

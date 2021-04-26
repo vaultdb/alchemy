@@ -486,5 +486,49 @@ namespace vaultdb {
 
     };
 
+    struct AndVisitor : public boost::static_visitor<Value> {
+        Value operator()(bool b) const { return b & boost::get<bool>(rhs); }
+
+        Value operator()(int32_t i) const { throw; }
+
+        Value operator()(int64_t i) const { throw; }
+
+        Value operator()(float_t f) const { throw; }
+
+        Value operator()(std::string s) const { throw;  }
+
+        Value operator()(emp::Bit l) const { return l & boost::get<emp::Bit>(rhs); }
+
+        Value operator()(emp::Integer l) const { throw; }
+
+        Value operator()(emp::Float l) const { throw;  }
+
+        Value rhs;
+
+    };
+
+    struct OrVisitor : public boost::static_visitor<Value> {
+        Value operator()(bool b) const { return b | boost::get<bool>(rhs); }
+
+        Value operator()(int32_t i) const { throw; }
+
+        Value operator()(int64_t i) const { throw; }
+
+        Value operator()(float_t f) const { throw; }
+
+        Value operator()(std::string s) const { throw;  }
+
+        Value operator()(emp::Bit l) const { return l | boost::get<emp::Bit>(rhs); }
+
+        Value operator()(emp::Integer l) const { throw; }
+
+        Value operator()(emp::Float l) const { throw;  }
+
+        Value rhs;
+
+    };
+
+
+
 }
 #endif //_VISITORS_H

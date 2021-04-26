@@ -9,7 +9,7 @@ using namespace emp;
 using namespace vaultdb;
 
 
-class ValueExpressionTest : public ::testing::Test {
+class FieldExpressionTest : public ::testing::Test {
 
 
 protected:
@@ -26,7 +26,7 @@ protected:
 
 
 
-TEST_F(ValueExpressionTest, test_int32) {
+TEST_F(FieldExpressionTest, test_int32) {
 
     Field<bool> a(FieldType::INT, 5);
     Field<bool> b(FieldType::INT, 10);
@@ -38,7 +38,7 @@ TEST_F(ValueExpressionTest, test_int32) {
 
 
 
-TEST_F(ValueExpressionTest, test_int32_comparator) {
+TEST_F(FieldExpressionTest, test_int32_comparator) {
 
     Field<bool> a(FieldType::INT,  5);
     Field<bool> b(FieldType::INT, 10);
@@ -55,7 +55,7 @@ TEST_F(ValueExpressionTest, test_int32_comparator) {
 
 
 // demo passing in an expression to query operator
-TEST_F(ValueExpressionTest, test_int32_expr) {
+TEST_F(FieldExpressionTest, test_int32_expr) {
 
     Field<bool> a(FieldType::INT, 5);
     Field<bool> b(FieldType::INT, 10);
@@ -71,7 +71,7 @@ TEST_F(ValueExpressionTest, test_int32_expr) {
 
 }
 
-TEST_F(ValueExpressionTest, cmp_swap) {
+TEST_F(FieldExpressionTest, cmp_swap) {
     string sql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 3"; // order by to ensure order is reproducible and not sorted on the sort cols
     std::shared_ptr<PlainTable > data = DataUtilities::getQueryResults("tpch_unioned", sql, false);
 
