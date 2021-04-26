@@ -148,3 +148,4 @@ AggregateId Utilities::getAggregateId(const string &src) {
     throw std::invalid_argument("Can't decode aggregate from " + src);
 
 }
+

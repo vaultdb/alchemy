@@ -1,0 +1,97 @@
+#include "expression_parser.h"
+#include <boost/property_tree/json_parser.hpp>
+#include <util/data_utilities.h>
+#include <operators/expression/expression_factory.h>
+
+using namespace vaultdb;
+using namespace std;
+
+template<typename B>
+std::shared_ptr<Expression<B>> ExpressionParser<B>::parseJSONExpression(const string &json) {
+    stringstream ss;
+    ss << json << endl;
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_json(ss, pt);
+    return parseExpression(pt);
+}
+
+// starts with:
+// {
+//   "op": {
+// ...
+// handle "input" / raw value copies separately in parse_projection
+template<typename B>
+shared_ptr<Expression<B>> ExpressionParser<B>::parseExpression(const ptree &tree) {
+   shared_ptr<ExpressionNode<B> > expression_root = parseHelper(tree);
+   return shared_ptr<Expression<B> >(new GenericExpression<B>(expression_root));
+}
+
+template<typename B>
+BoolExpression<B> ExpressionParser<B>::parseBoolExpression(const ptree &tree) {
+    shared_ptr<ExpressionNode<B> > expression_root = parseHelper(tree);
+    return BoolExpression<B>(expression_root);
+}
+
+
+template<typename B>
+shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseHelper(const ptree &tree) {
+
+    if((tree.count("op") > 0 && tree.count("operands") > 0))
+       return parseSubExpression(tree);
+
+    return parseInput(tree);
+
+}
+
+template<typename B>
+shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseSubExpression(const ptree &tree) {
+    ptree op = tree.get_child("op");
+    ptree operands = tree.get_child("operands");
+
+    string op_name = op.get_child("kind").template get_value<string>();
+
+    std::vector<shared_ptr<ExpressionNode<B> > > children;
+    int i = 0;
+    children.resize(2);
+
+    // iterate over operands, invoke helper on each one
+    for (ptree::const_iterator it = operands.begin(); it != operands.end(); ++it) {
+        children[i] = parseHelper(it->second);
+        ++i;
+    }
+    return ExpressionFactory<B>::getExpressionNode(op_name, children[0], children[1]);
+}
+
+template<typename B>
+shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree) {
+    if(tree.count("literal")  > 0) {
+        ptree literal = tree.get_child("literal");
+        std::string type_str = tree.get_child("type").get_child("type").template get_value<std::string>();
+        assert(type_str == "INTEGER");     // only support int32 literals for now
+
+        int32_t literal_int = literal.template get_value<int32_t>();
+
+        Field<B> input_field = (std::is_same_v<B, bool>) ?
+                Field<B>(FieldType::INT, Value((int32_t) literal_int))
+                        :  Field<B>(FieldType::INT, emp::Integer(32, literal_int));
+        return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
+    }
+    // else it is an input
+    std::string expr = tree.get_child("input").get_value<std::string>();
+    uint32_t src_ordinal;
+    if(DataUtilities::isOrdinal(expr)) { // mapping a column from one position to another
+        src_ordinal = std::atoi(expr.c_str());
+    }
+    else {
+        throw std::invalid_argument("Expression " + expr + " is not a properly formed input");
+    }
+
+    return shared_ptr<ExpressionNode<B> > (new InputReferenceNode<B>(src_ordinal));
+
+
+}
+
+
+
+template class vaultdb::ExpressionParser<bool>;
+template class vaultdb::ExpressionParser<emp::Bit>;

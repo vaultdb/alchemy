@@ -4,13 +4,13 @@ using namespace vaultdb;
 
 template<typename B>
 SortMergeJoin<B>::SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key,
-                                const shared_ptr<BinaryPredicate<B>> &predicateClass)  : Join<B>(foreign_key, primary_key, predicateClass) {
+                                 const BoolExpression<B> & predicate)  : Join<B>(foreign_key, primary_key, predicate) {
 
 }
 
 template<typename B>
 SortMergeJoin<B>::SortMergeJoin(shared_ptr<QueryTable<B>> foreign_key, shared_ptr<QueryTable<B>> primary_key,
-                                shared_ptr<BinaryPredicate<B>> predicate_class) : Join<B>(foreign_key, primary_key, predicate_class) {
+                                const BoolExpression<B> & predicate) : Join<B>(foreign_key, primary_key, predicate) {
 
 }
 

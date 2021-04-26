@@ -2,9 +2,14 @@
 #define _EXPRESSION_NODE_H
 
 #include <query_table/query_tuple.h>
+#include <operators/expression/expression_kind.h>
 
 // building blocks for composing arbitrary expressions
 // initially building around Calcite JSON expression format, but may extend this to join and filter expressions (etc.)
+
+// TODO: add utility method for checking if an expression is just an input -
+//  needed for handling projection column copies correctly
+// check if it's an input by seeing if all children are null
 
 namespace vaultdb {
 
@@ -16,6 +21,7 @@ namespace vaultdb {
         ExpressionNode(std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs);
 
         virtual Field<B> call(const QueryTuple<B> & target) const = 0;
+        virtual ExpressionKind kind() const = 0;
         virtual ~ExpressionNode() {}
     protected:
         std::shared_ptr<ExpressionNode<B> > lhs_;
@@ -33,7 +39,8 @@ namespace vaultdb {
 
         Field<B> call(const QueryTuple<B> & target) const override;
 
-    private:
+        ExpressionKind kind() const override;
+
         uint32_t read_idx_;
     };
 
@@ -44,6 +51,8 @@ namespace vaultdb {
         ~LiteralNode() = default;
 
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
 
     private:
         Field<B> payload_;

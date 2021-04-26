@@ -1,13 +1,11 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
-#include <operators/support/binary_predicate.h>
-#include <operators/support/join_equality_predicate.h>
 #include <gflags/gflags.h>
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
 #include <test/mpc/emp_base_test.h>
-#include <operators/fkey_pkey_join.h>
-
+#include <operators/keyed_join.h>
+#include <operators/expression/comparator_expression_nodes.h>
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43439, "port for EMP execution");
@@ -62,12 +60,12 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
     SecureSqlInput customerInput(dbName, customerSql, true, cust_sort, netio, FLAGS_party);
     SecureSqlInput ordersInput(dbName, ordersSql, true, orders_sort, netio, FLAGS_party);
 
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
 
-    ConjunctiveEqualityPredicate customerOrdersOrdinals{EqualityPredicate (1, 0)}; //  o_custkey, c_custkey
 
-    std::shared_ptr<BinaryPredicate<emp::Bit> > customerOrdersPredicate(new JoinEqualityPredicate<emp::Bit> (customerOrdersOrdinals));
-
-    KeyedJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
+    KeyedJoin join(&ordersInput, &customerInput, predicate);
     std::shared_ptr<SecureTable> join_result = join.run();
 
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(join_result->getSchema()->getFieldCount());
@@ -100,12 +98,13 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
     SecureSqlInput lineitemInput(dbName, lineitemSql, true, netio, FLAGS_party);
     SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
 
-    ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
-    lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
 
-    std::shared_ptr<BinaryPredicate<emp::Bit>  > customerOrdersPredicate(new JoinEqualityPredicate<emp::Bit>(lineitemOrdersOrdinals));
+    // join output schema:
+    //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
-    KeyedJoin join(&lineitemInput, &ordersInput, customerOrdersPredicate);
+
+    KeyedJoin join(&lineitemInput, &ordersInput, predicate);
 
 
     std::shared_ptr<SecureTable> joinResult = join.run();
@@ -146,18 +145,18 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
 
 
-    ConjunctiveEqualityPredicate customerOrdersOrdinals;
-    customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate<emp::Bit> > customerOrdersPredicate(new JoinEqualityPredicate<emp::Bit>(customerOrdersOrdinals));
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<emp::Bit> customer_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
 
-    ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
-    lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate<emp::Bit> > lineitemOrdersPredicate(new JoinEqualityPredicate<emp::Bit>(lineitemOrdersOrdinals));
+    // join output schema:
+    //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<emp::Bit> lineitem_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
-    KeyedJoin customerOrdersJoin(&ordersInput, &customerInput, customerOrdersPredicate);
+    KeyedJoin customerOrdersJoin(&ordersInput, &customerInput, customer_orders_predicate);
 
-    KeyedJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
+    KeyedJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitem_orders_predicate);
 
 
     std::shared_ptr<PlainTable> joinResult = fullJoin.run()->reveal();

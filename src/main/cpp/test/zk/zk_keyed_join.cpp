@@ -1,12 +1,11 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
-#include <operators/support/binary_predicate.h>
-#include <operators/support/join_equality_predicate.h>
 #include <gflags/gflags.h>
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
 #include <test/zk/zk_base_test.h>
-#include <operators/fkey_pkey_join.h>
+#include <operators/keyed_join.h>
+#include <operators/expression/comparator_expression_nodes.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -59,11 +58,12 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_customer_orders) {
     shared_ptr<SecureTable> orders_input  = ZkTest::secret_share_input(orders_sql, true);
 
 
-    ConjunctiveEqualityPredicate customer_orders_ordinals;
-    customer_orders_ordinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate<emp::Bit> > customer_orders_predicate(new JoinEqualityPredicate<emp::Bit>(customer_orders_ordinals));
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
 
-    KeyedJoin join(orders_input, customer_input, customer_orders_predicate);
+
+    KeyedJoin join(orders_input, customer_input, predicate);
 
     std::shared_ptr<PlainTable> joinResult = join.run()->reveal();
 
@@ -84,10 +84,10 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 // get inputs from local oblivious ops
 // first 3 customers, propagate this constraint up the join tree for the test
     std::string expectedResultSql = "WITH orders_cte AS (" + orders_sql + "), \n"
-                                                                          "lineitem_cte AS (" + lineitem_sql + ") "
-                                                                                                               "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority,(odummy OR ldummy OR o_orderkey <> l_orderkey) dummy "
+                                                                          "lineitem_cte AS (" + lineitem_sql + ") ""SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority,(odummy OR ldummy OR o_orderkey <> l_orderkey) dummy "
                                                                                                                "FROM lineitem_cte, orders_cte "
                                                                                                                "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
+    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(alice_db, expectedResultSql, true);
@@ -95,12 +95,9 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders) {
     shared_ptr<SecureTable> lineitem_input = ZkTest::secret_share_input(lineitem_sql, true);
     shared_ptr<SecureTable> orders_input  = ZkTest::secret_share_input(orders_sql, true);
 
-    ConjunctiveEqualityPredicate lineitem_orders_ordinals;
-    lineitem_orders_ordinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate<emp::Bit> > lineitem_orders_predicate(new JoinEqualityPredicate<emp::Bit>(lineitem_orders_ordinals));
 
 
-    KeyedJoin join(lineitem_input, orders_input, lineitem_orders_predicate);
+    KeyedJoin join(lineitem_input, orders_input, predicate);
 
 
     std::shared_ptr<SecureTable> joinResult = join.run();
@@ -136,14 +133,17 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
     shared_ptr<SecureTable> orders_input  = ZkTest::secret_share_input(orders_sql, true);
 
 
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    shared_ptr<InputReferenceNode<emp::Bit> > lhs_input(new InputReferenceNode<emp::Bit>(1));
+    shared_ptr<InputReferenceNode<emp::Bit> > rhs_input(new InputReferenceNode<emp::Bit>(4));
+    shared_ptr<ExpressionNode<emp::Bit> > equality_node(new EqualNode<emp::Bit>(lhs_input, rhs_input));
+    BoolExpression<emp::Bit> customer_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
 
-    ConjunctiveEqualityPredicate customer_orders_ordinals;
-    customer_orders_ordinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate<emp::Bit> > customer_orders_predicate(new JoinEqualityPredicate<emp::Bit>(customer_orders_ordinals));
+    // join output schema:
+    //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<emp::Bit> lineitem_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
-    ConjunctiveEqualityPredicate lineitem_orders_ordinals;
-    lineitem_orders_ordinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate<emp::Bit> > lineitem_orders_predicate(new JoinEqualityPredicate<emp::Bit>(lineitem_orders_ordinals));
 
 
     KeyedJoin<emp::Bit> customerOrdersJoin(orders_input, customer_input, customer_orders_predicate);

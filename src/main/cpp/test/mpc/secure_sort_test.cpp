@@ -127,6 +127,9 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
     project.addColumnMapping(1, 0);
     project.addColumnMapping(3, 1);
 
+    project.addInputReference(1, 0);
+    project.addInputReference(3, 1);
+
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed = result->reveal();
 
@@ -156,6 +159,7 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
     // project it down to $1
     Project project(&sort);
     project.addColumnMapping(1, 0);
+    project.addInputReference(1, 0);
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
@@ -188,6 +192,7 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
 
     Project project(&sort);
     project.addColumnMapping(0, 0);
+    project.addInputReference(0, 0);
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
@@ -227,6 +232,9 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     project.addColumnMapping(2, 0);
     project.addColumnMapping(0, 1);
 
+    project.addInputReference(2, 0);
+    project.addInputReference(0, 1);
+
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
 
@@ -260,6 +268,10 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     Project project(&sort);
     project.addColumnMapping(2, 0);
     project.addColumnMapping(1, 1);
+
+    project.addInputReference(2, 0);
+    project.addInputReference(1, 1);
+
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();

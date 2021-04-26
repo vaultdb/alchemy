@@ -12,6 +12,8 @@ namespace vaultdb {
         FunctionExpression(Field<B> (*funcPtr)(const QueryTuple<B> &), const std::string & anAlias, const FieldType & aType);
 
         Field<B> call(const QueryTuple<B> & aTuple) const override;
+        ExpressionKind kind() const override { return ExpressionKind::FUNCTION; }
+
 
         ~FunctionExpression() = default;
 

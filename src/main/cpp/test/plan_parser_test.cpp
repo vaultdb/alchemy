@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <data/CsvReader.h>
-#include <util/plan_parser.h>
+#include <parser/plan_parser.h>
 #include "support/tpch_queries.h"
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/tokenizer.hpp>

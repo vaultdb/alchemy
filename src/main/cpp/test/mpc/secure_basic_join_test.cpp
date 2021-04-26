@@ -1,12 +1,11 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
-#include <operators/support/binary_predicate.h>
-#include <operators/support/join_equality_predicate.h>
 #include <operators/basic_join.h>
 #include <gflags/gflags.h>
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
 #include <test/mpc/emp_base_test.h>
+#include <operators/expression/comparator_expression_nodes.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -59,12 +58,11 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
     SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
 
 
-    ConjunctiveEqualityPredicate customerOrdersOrdinals;
-    customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
 
-    std::shared_ptr<BinaryPredicate<emp::Bit> > customerOrdersPredicate(new JoinEqualityPredicate<emp::Bit>(customerOrdersOrdinals));
-
-    BasicJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
+    BasicJoin join(&ordersInput, &customerInput, predicate);
 
     std::shared_ptr<PlainTable> joinResult = join.run()->reveal();
 
@@ -99,12 +97,11 @@ std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
     SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
 
 
-    ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
-    lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
-    std::shared_ptr<BinaryPredicate<emp::Bit> > customerOrdersPredicate(new JoinEqualityPredicate<emp::Bit>(lineitemOrdersOrdinals));
-
-    BasicJoin join(&lineitemInput, &ordersInput, customerOrdersPredicate);
+    BasicJoin join(&lineitemInput, &ordersInput, predicate);
 
 
     std::shared_ptr<SecureTable> joinResult = join.run();
@@ -139,19 +136,18 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
     SecureSqlInput lineitemInput(dbName, lineitemSql, true, netio, FLAGS_party);
 
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<emp::Bit> customer_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
 
-    ConjunctiveEqualityPredicate customerOrdersOrdinals;
-    customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate<emp::Bit> > customerOrdersPredicate(new JoinEqualityPredicate<emp::Bit>(customerOrdersOrdinals));
-
-    ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
-    lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate<emp::Bit> > lineitemOrdersPredicate(new JoinEqualityPredicate<emp::Bit>(lineitemOrdersOrdinals));
+    // join output schema:
+    //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<emp::Bit> lineitem_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
-    BasicJoin customerOrdersJoin(&ordersInput, &customerInput, customerOrdersPredicate);
+    BasicJoin customerOrdersJoin(&ordersInput, &customerInput, customer_orders_predicate);
 
-    BasicJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
+    BasicJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitem_orders_predicate);
 
 
     std::shared_ptr<PlainTable> joinResult = fullJoin.run()->reveal();

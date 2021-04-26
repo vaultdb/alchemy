@@ -208,12 +208,10 @@ vector<string> DataUtilities::readTextFile(const string &filename) {
     return lines;
 }
 
-// actually an array of emp::Bits.  Each bit is sizeof(emp::block) length
-/*emp::Integer toEmpInteger(const vector<int8_t> & src_bytes) {
-
-    emp::Integer dst(src_bytes.size() / sizeof(emp::block), 0);
-
-} */
+bool DataUtilities::isOrdinal(const string &s) {
+    return !s.empty() && std::find_if(s.begin(),
+                                      s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+}
 
 
 

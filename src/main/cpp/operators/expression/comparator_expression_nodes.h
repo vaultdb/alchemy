@@ -12,6 +12,8 @@ namespace vaultdb {
         EqualNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
         ~EqualNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
     };
 
     template<typename B>
@@ -20,6 +22,8 @@ namespace vaultdb {
         NotEqualNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
         ~NotEqualNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
     };
 
 
@@ -29,6 +33,8 @@ namespace vaultdb {
         LessThanNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
         ~LessThanNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
     };
 
 
@@ -38,6 +44,8 @@ namespace vaultdb {
         GreaterThanNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
         ~GreaterThanNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
     };
 
 
@@ -47,6 +55,8 @@ namespace vaultdb {
         LessThanEqNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
         ~LessThanEqNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
     };
     template<typename B>
     class  GreaterThanEqNode : public ExpressionNode<B> {
@@ -54,6 +64,8 @@ namespace vaultdb {
         GreaterThanEqNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
         ~GreaterThanEqNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
     };
 
 

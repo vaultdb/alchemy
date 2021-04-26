@@ -3,35 +3,20 @@
 
 #include <operators/expression/expression.h>
 #include <operators/expression/expression_node.h>
-#include <util/field_utilities.h>
 
 namespace  vaultdb {
 
-    // wrappers for ExpressionNode
+    // wrapper for ExpressionNode
     template<typename B>
     class GenericExpression : public Expression<B> {
     public:
+        GenericExpression(std::shared_ptr<ExpressionNode<B> > root);
         GenericExpression(std::shared_ptr<ExpressionNode<B> > root, const std::string & alias, const FieldType & output_type);
         Field<B> call(const QueryTuple<B> & aTuple) const override;
+        ExpressionKind kind() const override { return root_->kind(); }
 
         ~GenericExpression() = default;
 
-    private:
-        std::shared_ptr<ExpressionNode<B> > root_;
-    };
-
-    template<typename B>
-    class BoolExpression : public Expression<B> {
-    public:
-        BoolExpression(std::shared_ptr<ExpressionNode<B> > root);
-
-        Field<B> call(const QueryTuple<B> & aTuple) const override;
-        B callBoolExpression(const QueryTuple<B> & tuple) const;
-
-
-        ~BoolExpression() = default;
-
-    private:
         std::shared_ptr<ExpressionNode<B> > root_;
     };
 

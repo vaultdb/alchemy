@@ -4,6 +4,7 @@
 
 #include <query_table/query_tuple.h>
 #include <query_table/query_schema.h>
+#include "expression_kind.h"
 
 namespace vaultdb {
 
@@ -26,6 +27,7 @@ namespace vaultdb {
 
 
         virtual Field<B> call(const QueryTuple<B> & aTuple) const = 0;
+        virtual ExpressionKind kind() const = 0;
 
 
         // what is the return type of the expression?
@@ -39,16 +41,7 @@ namespace vaultdb {
         void setAlias(const std::string & alias) {alias_ = alias; }
 
 
-    //    Expression& operator=(const Expression & src) {
-    //        if(&src == this)
-    //            return *this;
-    //
-    //        this->alias_ = src.alias_;
-    //        this->type_ = src.type_;
-    //
-    //        return *this;
-    //    }
-
+    //    Expression& operator=(const Expression & src);
 
     };
 }

@@ -37,6 +37,7 @@ namespace vaultdb {
         void addColumnMapping(const uint32_t &src_ordinal, const uint32_t &dst_ordinal);
 
         void addExpression(const shared_ptr<Expression<B> > &expression, const uint32_t &dstOrdinal);
+        void addInputReference(const uint32_t & src_ordinal, const uint32_t & dst_ordinal);
 
         std::shared_ptr<QueryTable<B> > runSelf() override;
 

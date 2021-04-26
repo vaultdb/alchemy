@@ -66,6 +66,8 @@ namespace vaultdb {
 
        static vector<string> readTextFile(const string & filename);
 
+        static bool isOrdinal(const string &s);
+
 
     };
 }

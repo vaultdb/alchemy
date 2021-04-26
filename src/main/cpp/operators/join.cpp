@@ -2,14 +2,14 @@
 #include "join.h"
 #include <query_table/field/field_factory.h>
 
+using namespace vaultdb;
+
 template<typename  B>
-Join<B>::Join(Operator<B> *lhs, Operator<B> *rhs, shared_ptr<BinaryPredicate<B> > predicateClass) : Operator<B>(lhs, rhs) {
-        predicate = predicateClass;
+Join<B>::Join(Operator<B> *lhs, Operator<B> *rhs,  const BoolExpression<B> & predicate) : Operator<B>(lhs, rhs), predicate_(predicate) {
 }
 
 template<typename  B>
-Join<B>::Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, shared_ptr<BinaryPredicate<B> > &predicateClass) :  Operator<B>(lhs, rhs) {
-    predicate = predicateClass;
+Join<B>::Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  const BoolExpression<B> & predicate) :  Operator<B>(lhs, rhs), predicate_(predicate) {
 }
 
 template<typename  B>

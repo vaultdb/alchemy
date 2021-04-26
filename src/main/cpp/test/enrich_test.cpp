@@ -2,10 +2,10 @@
 #include <data/PsqlDataProvider.h>
 #include <operators/sql_input.h>
 #include <gflags/gflags.h>
-#include <operators/support/join_equality_predicate.h>
 #include <operators/expression/comparator_expression_nodes.h>
 #include <operators/expression/function_expression.h>
 #include <operators/expression/generic_expression.h>
+#include <operators/expression/bool_expression.h>
 
 #include "enrich_test.h"
 
@@ -29,6 +29,13 @@ shared_ptr<PlainTable> EnrichTest::getAgeStrataProjection(shared_ptr<PlainTable>
 
 
    project.addColumnMappings(mappingSet);
+   project.addInputReference(0,0);
+   project.addInputReference(1, 1);
+    project.addInputReference(3, 3);
+    project.addInputReference(4, 4);
+    project.addInputReference(5, 5);
+    project.addInputReference(6, 6);
+
    project.addExpression(ageStrataExpression, 2);
 
 
@@ -91,10 +98,12 @@ shared_ptr<PlainTable> EnrichTest::loadAndJoinLocalData(const std::string & dbNa
     shared_ptr<PlainTable> patientInput = loadAndProjectPatientData(dbName);
     shared_ptr<PlainTable> patientExclusionInput =  loadPatientExclusionData(dbName);
 
-    ConjunctiveEqualityPredicate patientJoinPredicate;
-    patientJoinPredicate.push_back(EqualityPredicate (0, 0)); //  patid = patid
-    std::shared_ptr<BinaryPredicate<bool> > patientJoinCriteria(new JoinEqualityPredicate<bool>(patientJoinPredicate));
-    KeyedJoin<bool> join(patientInput, patientExclusionInput, patientJoinCriteria);
+    //patientJoinPredicate.push_back(EqualityPredicate (0, 0)); //  patid = patid
+    // mapping from (lhs_tuple[0], rhs_tuple[0])
+    // lhs has 7 fields,
+    uint32_t rhs_offset = patientInput->getSchema()->getFieldCount();
+    BoolExpression<bool> predicate = Utilities::getEqualityPredicate<bool>(0, rhs_offset);
+    KeyedJoin<bool> join(patientInput, patientExclusionInput, predicate);
     return join.run();
 }
 
@@ -188,6 +197,19 @@ shared_ptr<SecureTable> EnrichTest::getPatientCohort() {
     //Expression multisiteNumeratorExpression(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
 
     project.addColumnMappings(mappingSet);
+
+    project.addInputReference(1, 0);
+            // age_strata
+    project.addInputReference(2, 1);
+            // sex
+    project.addInputReference(3, 2);
+            // ethnicity
+    project.addInputReference(4, 3);
+            // race
+    project.addInputReference(5, 4);
+            // numerator
+    project.addInputReference(6, 5);
+
     project.addExpression(multisiteExpression, 6);
     project.addExpression(multisiteNumeratorExpression, 7);
 

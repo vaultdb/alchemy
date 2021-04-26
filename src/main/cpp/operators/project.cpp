@@ -4,6 +4,7 @@
 #include <operators/expression/expression_node.h>
 #include <operators/expression/generic_expression.h>
 
+
 using namespace vaultdb;
 
 // can't fully initialize schemas yet, don't have child schema
@@ -142,11 +143,17 @@ void Project<B>::addExpression(const shared_ptr<Expression<B>> &expression, cons
 
 template<typename B>
 void Project<B>::addColumnMapping(const uint32_t &src_ordinal, const uint32_t &dst_ordinal) {
-    shared_ptr<ExpressionNode<B> > read_expression_node(new InputReferenceNode<B>(src_ordinal));
-    shared_ptr<Expression<B> > read_expression(new GenericExpression<B>(read_expression_node, "unknown", FieldType::UNKNOWN));
-    expressions_[dst_ordinal] = read_expression;
     ProjectionMapping m(src_ordinal, dst_ordinal);
     column_mappings_.template emplace_back(m);
+}
+
+template<typename B>
+void Project<B>::addInputReference(const uint32_t & src_ordinal, const uint32_t & dst_ordinal) {
+
+    shared_ptr<ExpressionNode<B> > read_expression_node(new InputReferenceNode<B>(src_ordinal));
+    shared_ptr<GenericExpression<B> > read_expression(new GenericExpression<B>(read_expression_node, "unknown", FieldType::UNKNOWN));
+
+    expressions_[dst_ordinal] = read_expression;
 }
 
 

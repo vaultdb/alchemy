@@ -92,20 +92,22 @@ TEST_F(ProjectionTest, q3Lineitem) {
     std::string srcSql = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
     std::string expectedOutputSql = "SELECT l_orderkey, " + DataUtilities::queryDatetime("l_shipdate") + ",  l_extendedprice * (1 - l_discount) revenue FROM (" + srcSql + ") src ";
 
-    std::shared_ptr<PlainTable > expected =  DataUtilities::getQueryResults("tpch_alice", expectedOutputSql, false);
+    std::shared_ptr<PlainTable > expected =  DataUtilities::getQueryResults("tpch_unioned", expectedOutputSql, false);
 
 
-    SqlInput input("tpch_alice", srcSql, false);
-
-
-    //std::shared_ptr<Expression<bool> > revenueExpression(new FunctionExpression<bool>(&calculateRevenue, "revenue", FieldType::FLOAT));
+    SqlInput input("tpch_unioned", srcSql, false);
 
 
     Project project(&input);
     shared_ptr<Expression<bool> > revenue_expression(new GenericExpression<bool>(getRevenueExpression(), "revenue", FieldType::FLOAT));
 
+
     project.addColumnMapping(0, 0);
     project.addColumnMapping(10, 1);
+
+    project.addInputReference(0, 0);
+    project.addInputReference(10, 1);
+
     project.addExpression(revenue_expression, 2);
 
 

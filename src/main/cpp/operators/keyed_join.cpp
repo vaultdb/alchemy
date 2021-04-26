@@ -1,13 +1,15 @@
-#include "fkey_pkey_join.h"
+#include "keyed_join.h"
 #include "secure_tuple.h"
 
-template<typename B>
-KeyedJoin<B>::KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, shared_ptr<BinaryPredicate<B> > predicateClass)
-        : Join<B>(foreignKey, primaryKey, predicateClass) {}
+using namespace vaultdb;
 
 template<typename B>
-KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, shared_ptr<BinaryPredicate<B> > predicateClass)
-        : Join<B>(foreignKey, primaryKey, predicateClass) {}
+KeyedJoin<B>::KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, const BoolExpression<B> & predicate)
+        : Join<B>(foreignKey, primaryKey, predicate) {}
+
+template<typename B>
+KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const BoolExpression<B> & predicate)
+        : Join<B>(foreignKey, primaryKey, predicate) {}
 
 
 
@@ -37,7 +39,7 @@ std::shared_ptr<QueryTable<B> > KeyedJoin<B>::runSelf() {
         // for first tuple comparison, initialize output tuple -- just in case there are no matches
         rhs_tuple = (*primary_key_table)[0];
 
-        B predicateEval = Join<B>::predicate->predicateCall(lhs_tuple, rhs_tuple);
+        B predicateEval = Join<B>::predicate_.call(lhs_tuple, rhs_tuple, output_schema);
         B dst_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicateEval);
 
         // unconditional write to first one to initialize it
@@ -48,8 +50,9 @@ std::shared_ptr<QueryTable<B> > KeyedJoin<B>::runSelf() {
         for(uint32_t j = 1; j < primary_key_table->getTupleCount(); ++j) {
             rhs_tuple = (*primary_key_table)[j];
 
-            predicateEval = Join<B>::predicate->predicateCall(lhs_tuple, rhs_tuple);
-             B this_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicateEval);
+            predicateEval = Join<B>::predicate_.call(lhs_tuple, rhs_tuple, output_schema);
+
+            B this_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicateEval);
             Join<B>::write_right(!this_dummy_tag, dst_tuple, rhs_tuple);
         }
 

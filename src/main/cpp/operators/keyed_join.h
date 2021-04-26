@@ -11,8 +11,8 @@ namespace  vaultdb {
     class KeyedJoin : public Join<B> {
 
     public:
-        KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, shared_ptr<BinaryPredicate<B> > predicateClass);
-        KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, shared_ptr<BinaryPredicate<B> > predicateClass);
+        KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, const BoolExpression<B> & predicate);
+        KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const BoolExpression<B> & predicate);
         ~KeyedJoin() = default;
         std::shared_ptr<QueryTable<B> > runSelf() override;
 

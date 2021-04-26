@@ -3,14 +3,13 @@
 
 //#include <operators/support/predicate.h>
 #include "operator.h"
-#include <operators/expression/generic_expression.h>
+#include <operators/expression/bool_expression.h>
 
 namespace  vaultdb {
 
     template<typename B>
     class Filter : public Operator<B> {
 
-        //std::shared_ptr<Predicate<B> > predicate;
         BoolExpression<B> predicate_;
 
     public:

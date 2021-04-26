@@ -1,6 +1,6 @@
 #include "plan_parser.h"
-#include "utilities.h"
-#include "data_utilities.h"
+#include <util/utilities.h>
+#include <util/data_utilities.h>
 
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/tokenizer.hpp>
@@ -18,6 +18,7 @@
 #include <operators/basic_join.h>
 #include <operators/filter.h>
 #include <operators/project.h>
+#include "expression_parser.h"
 
 using namespace vaultdb;
 using boost::property_tree::ptree;
@@ -256,20 +257,10 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_i
 
 template<typename B>
 std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_tree) {
-    boost::property_tree::ptree join_condition = join_tree.get_child("condition");
-    int lhs_idx, rhs_idx;
-    // TODO: parse full expressions here, for now only cover conjunctive equality predicates
-    print(join_condition, "");
+    boost::property_tree::ptree join_condition_tree = join_tree.get_child("condition");
+    print(join_condition_tree, "");
 
-    assert(join_condition.get_child("op.kind").template get_value<std::string>() == std::string("EQUALS")); // simple equality predicate for now
-
-    ptree::const_iterator operand_pos = join_condition.get_child("operands").begin();
-    lhs_idx = operand_pos->second.get_child("input").template get_value<int>();
-    ++operand_pos;
-    rhs_idx = operand_pos->second.get_child("input").template get_value<int>();
-
-    ConjunctiveEqualityPredicate cp{EqualityPredicate(lhs_idx, rhs_idx)};
-    std::shared_ptr<BinaryPredicate<B> > predicate(new JoinEqualityPredicate<B>(cp));
+    BoolExpression<B> join_condition = ExpressionParser<B>::parseBoolExpression(join_condition_tree);
 
     ptree input_list = join_tree.get_child("inputs.");
     ptree::const_iterator it = input_list.begin();
@@ -279,7 +270,7 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, co
     int rhs_id = it->second.get_value<int>();
     shared_ptr<Operator<B> > rhs  = operators_.at(rhs_id);
 
-    return shared_ptr<Operator<B> > (new BasicJoin<B>(lhs.get(), rhs.get(), predicate));
+    return shared_ptr<Operator<B> > (new BasicJoin<B>(lhs.get(), rhs.get(), join_condition));
 
 }
 
@@ -299,16 +290,16 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_
     uint32_t src_ordinal, dst_ordinal = 0;
 
     for (ptree::const_iterator it = expressions.begin(); it != expressions.end(); ++it) {
-        std::string expr = it->second.get_child("input").get_value<std::string>();
-        if(isOrdinal(expr)) { // mapping a column from one position to another
-            src_ordinal = std::atoi(expr.c_str());
+        std::shared_ptr<Expression<B> > expr = ExpressionParser<B>::parseExpression(it->second);
+        if(expr->kind()  == ExpressionKind::INPUT_REF) {
+            GenericExpression<B> expression_impl = *((GenericExpression<B> *) expr.get());
+            InputReferenceNode<B> input_ref  = *((InputReferenceNode<B> *) expression_impl.root_.get());
+            src_ordinal = input_ref.read_idx_;
+            project->addColumnMapping(src_ordinal, dst_ordinal);
         }
         else {
-            throw std::invalid_argument("Expression " + expr + " is not yet supported.");
+            project->addExpression(expr, dst_ordinal);
         }
-
-
-        project->addColumnMapping(src_ordinal, dst_ordinal);
 
       ++dst_ordinal;
     }
@@ -389,12 +380,6 @@ pair<int, SortDefinition> PlanParser<B>::parseSqlHeader(const string &header) {
     return result;
 }
 
-template<typename B>
-bool PlanParser<B>::isOrdinal(const std::string& s)
-{
-    return !s.empty() && std::find_if(s.begin(),
-                                      s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
-}
 
 template class vaultdb::PlanParser<bool>;
 template class vaultdb::PlanParser<emp::Bit>;

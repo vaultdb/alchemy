@@ -16,6 +16,11 @@ Field<B> EqualNode<B>::call(const QueryTuple<B> &target) const {
 }
 
 template<typename B>
+ExpressionKind EqualNode<B>::kind() const {
+    return ExpressionKind::EQ;
+}
+
+template<typename B>
 NotEqualNode<B>::NotEqualNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs)
 :ExpressionNode<B>(lhs, rhs) { }
 
@@ -25,6 +30,11 @@ Field<B> NotEqualNode<B>::call(const QueryTuple<B> &target) const {
     Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
 
     return FieldUtilities::getBoolField(lhs != rhs);
+}
+
+template<typename B>
+ExpressionKind NotEqualNode<B>::kind() const {
+    return ExpressionKind::NEQ;
 }
 
 template<typename B>
@@ -41,6 +51,11 @@ Field<B> LessThanNode<B>::call(const QueryTuple<B> &target) const {
     return FieldUtilities::getBoolField(lhs < rhs);
 }
 
+template<typename B>
+ExpressionKind LessThanNode<B>::kind() const {
+    return ExpressionKind::LT;
+}
+
 
 template<typename B>
 GreaterThanNode<B>::GreaterThanNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs)
@@ -54,6 +69,11 @@ Field<B> GreaterThanNode<B>::call(const QueryTuple<B> &target) const {
     Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
 
     return FieldUtilities::getBoolField(lhs > rhs);
+}
+
+template<typename B>
+ExpressionKind GreaterThanNode<B>::kind() const {
+    return ExpressionKind::GT;
 }
 
 
@@ -72,6 +92,11 @@ Field<B> LessThanEqNode<B>::call(const QueryTuple<B> &target) const {
 }
 
 template<typename B>
+ExpressionKind LessThanEqNode<B>::kind() const {
+    return ExpressionKind::LEQ;
+}
+
+template<typename B>
 GreaterThanEqNode<B>::GreaterThanEqNode(std::shared_ptr<ExpressionNode<B>> lhs,
                                         std::shared_ptr<ExpressionNode<B>> rhs) : ExpressionNode<B>(lhs, rhs) {
 
@@ -83,6 +108,11 @@ Field<B> GreaterThanEqNode<B>::call(const QueryTuple<B> &target) const {
     Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
 
     return FieldUtilities::getBoolField(lhs >= rhs);
+}
+
+template<typename B>
+ExpressionKind GreaterThanEqNode<B>::kind() const {
+    return ExpressionKind::GEQ;
 }
 
 

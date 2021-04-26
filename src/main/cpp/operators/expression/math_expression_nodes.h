@@ -11,6 +11,8 @@ namespace vaultdb {
         PlusNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs);
         ~PlusNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
     };
 
     template<typename B>
@@ -19,6 +21,8 @@ namespace vaultdb {
         MinusNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs);
         ~MinusNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
     };
 
 
@@ -29,14 +33,18 @@ namespace vaultdb {
         TimesNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs);
         ~TimesNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
     };
 
     template<typename B>
-    class DivisionNode : public  ExpressionNode<B>  {
+    class DivideNode : public  ExpressionNode<B>  {
     public:
-        DivisionNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs);
-        ~DivisionNode() = default;
+        DivideNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs);
+        ~DivideNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
     };
 
 
@@ -46,6 +54,8 @@ namespace vaultdb {
         ModulusNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs);
         ~ModulusNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
     };
 
 

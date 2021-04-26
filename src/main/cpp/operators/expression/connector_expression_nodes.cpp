@@ -11,6 +11,11 @@ Field<B> NotNode<B>::call(const QueryTuple<B> &target) const {
     return !input;
 }
 
+template<typename B>
+ExpressionKind NotNode<B>::kind() const {
+    return ExpressionKind::NOT;
+}
+
 
 template<typename B>
 AndNode<B>::AndNode(std::shared_ptr<ExpressionNode<B>> &lhs, std::shared_ptr<ExpressionNode<B>> &rhs) : ExpressionNode<B>(lhs, rhs){ }
@@ -25,6 +30,11 @@ Field<B> AndNode<B>::call(const QueryTuple<B> &target) const {
 }
 
 template<typename B>
+ExpressionKind AndNode<B>::kind() const {
+    return ExpressionKind::AND;
+}
+
+template<typename B>
 OrNode<B>::OrNode(std::shared_ptr<ExpressionNode<B>> &lhs, std::shared_ptr<ExpressionNode<B>> &rhs) : ExpressionNode<B>(lhs, rhs) { }
 
 template<typename B>
@@ -35,6 +45,11 @@ Field<B> OrNode<B>::call(const QueryTuple<B> &target) const {
     B result = lhs || rhs;
     return FieldUtilities::getBoolField(result);
 
+}
+
+template<typename B>
+ExpressionKind OrNode<B>::kind() const {
+    return ExpressionKind::OR;
 }
 
 template class vaultdb::NotNode<bool>;

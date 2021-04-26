@@ -8,9 +8,9 @@
 #include <operators/operator.h>
 
 
+// parse this from 1) list of SQL statements, and 2) Apache Calcite JSON for secure plan
+// plan generator from SQL is in vaultdb-mock repo
 
-// TODO: figure out how to communicate sort order of inputs
-// this might be in the comments when we write out the SQL
 namespace vaultdb {
 
     template<typename B>
@@ -55,7 +55,6 @@ namespace vaultdb {
 
         void print(const boost::property_tree::ptree &pt, const std::string &prefix);
 
-        static bool isOrdinal(const string &s);
     };
 }
 

@@ -1,16 +1,14 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
-#include <operators/support/binary_predicate.h>
-#include <operators/support/join_equality_predicate.h>
-#include <operators/fkey_pkey_join.h>
-
+#include <operators/keyed_join.h>
+#include <operators/expression/comparator_expression_nodes.h>
 
 using namespace emp;
 using namespace vaultdb;
 
 
-class ForeignKeyPrimaryKeyJoinTest : public ::testing::Test {
+class KeyedJoinTest : public ::testing::Test {
 
 
 protected:
@@ -39,7 +37,7 @@ protected:
 
 
 
-TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
+TEST_F(KeyedJoinTest, test_tpch_q3_customer_orders) {
 
     std::string expectedResultSql = "WITH customer_cte AS (" + customerSql + "), "
                                           "orders_cte AS (" + ordersSql + ") "
@@ -53,12 +51,11 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
     SqlInput customerInput(dbName, customerSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
 
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<bool> predicate = Utilities::getEqualityPredicate<bool>(1, 4);
 
-    ConjunctiveEqualityPredicate customerOrdersOrdinals;
-    customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate<bool> > customerOrdersPredicate(new JoinEqualityPredicate<bool> (customerOrdersOrdinals));
-
-    KeyedJoin join(&ordersInput, &customerInput, customerOrdersPredicate);
+    KeyedJoin join(&ordersInput, &customerInput, predicate);
     std::shared_ptr<PlainTable > observed = join.run();
 
     ASSERT_EQ(*expected, *observed);
@@ -66,7 +63,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_customer_orders) {
 }
 
 
-TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
+TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders) {
 
     std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), "
                                                                          "lineitem_cte AS (" + lineitemSql + "), "
@@ -83,12 +80,11 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
     SqlInput lineitemInput(dbName, lineitemSql, true);
     SqlInput ordersInput(dbName, ordersSql, true);
 
+    // output schema: lineitem, orders
+    // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
+    BoolExpression<bool> predicate  = Utilities::getEqualityPredicate<bool>(0, 2);
 
-    ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
-    lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate<bool> > lineitemOrdersPredicate(new JoinEqualityPredicate<bool> (lineitemOrdersOrdinals));
-
-    KeyedJoin join(&lineitemInput, &ordersInput, lineitemOrdersPredicate);
+    KeyedJoin join(&lineitemInput, &ordersInput, predicate);
 
     std::shared_ptr<PlainTable > observed = join.run();
 
@@ -103,7 +99,7 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders) {
 
 // compose C-O-L join should produce one output tuple, order ID 210945
 // compose C-O-L join should produce one output tuple, order ID 210945
-TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
+TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
     std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
@@ -124,19 +120,19 @@ TEST_F(ForeignKeyPrimaryKeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     SqlInput ordersInput(dbName, ordersSql, true);
     SqlInput lineitemInput(dbName, lineitemSql, true);
 
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
 
-    ConjunctiveEqualityPredicate customerOrdersOrdinals;
-    customerOrdersOrdinals.push_back(EqualityPredicate (1, 0)); //  o_custkey, c_custkey
-    std::shared_ptr<BinaryPredicate<bool> > customerOrdersPredicate(new JoinEqualityPredicate<bool>(customerOrdersOrdinals));
+    BoolExpression<bool> customer_orders_predicate = Utilities::getEqualityPredicate<bool>(1, 4);
 
-    ConjunctiveEqualityPredicate lineitemOrdersOrdinals;
-    lineitemOrdersOrdinals.push_back(EqualityPredicate (0, 0)); //  l_orderkey, o_orderkey
-    std::shared_ptr<BinaryPredicate<bool> > lineitemOrdersPredicate(new JoinEqualityPredicate<bool> (lineitemOrdersOrdinals));
+    // join output schema:
+    //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    BoolExpression<bool> lineitem_orders_predicate = Utilities::getEqualityPredicate<bool>(0, 2);
 
 
-    KeyedJoin customerOrdersJoin(&ordersInput, &customerInput, customerOrdersPredicate);
+    KeyedJoin customerOrdersJoin(&ordersInput, &customerInput, customer_orders_predicate);
 
-    KeyedJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitemOrdersPredicate);
+    KeyedJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitem_orders_predicate);
 
 
     std::shared_ptr<PlainTable > observed = fullJoin.run();

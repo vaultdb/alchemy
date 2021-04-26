@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <group_by_aggregate.h>
-#include <fkey_pkey_join.h>
+#include <keyed_join.h>
 #include "support/tpch_queries.h"
 #include <operators/support/binary_predicate.h>
 #include <operators/support/join_equality_predicate.h>
@@ -167,11 +167,9 @@ TEST_F(TpcHTest, testQ3Truncated)  {
     SqlInput lineitem_input(db_name, q3_lineitem_sql, true);
 
 
-    ConjunctiveEqualityPredicate customer_orders_ordinals{EqualityPredicate (1, 0)}; //  o_custkey, c_custkey
-    shared_ptr<BinaryPredicate<bool> > customer_orders_predicate(new JoinEqualityPredicate<bool>(customer_orders_ordinals));
 
-    ConjunctiveEqualityPredicate lineitem_orders_ordinals{EqualityPredicate (0, 0)}; //  l_orderkey, o_orderkey
-    shared_ptr<BinaryPredicate<bool> > lineitem_orders_predicate(new JoinEqualityPredicate<bool> (lineitem_orders_ordinals));
+    BoolExpression<bool> customer_orders_predicate = Utilities::getEqualityPredicate<bool>(1, 4);
+    BoolExpression<bool> lineitem_orders_predicate = Utilities::getEqualityPredicate<bool>(0, 2);
 
 
     // preserves sort order of orders

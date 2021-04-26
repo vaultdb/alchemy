@@ -19,6 +19,10 @@
 #include <string>
 #include <emp-tool/circuits/bit.h>
 #include <support/aggregate_id.h>
+#include <operators/expression/bool_expression.h>
+#include <operators/expression/comparator_expression_nodes.h>
+#include <operators/expression/generic_expression.h>
+
 
 
 namespace vaultdb {
@@ -49,7 +53,15 @@ namespace vaultdb {
         // for use in plan reader
         static AggregateId getAggregateId(const std::string & src);
 
-
+        // for use in joins
+        // indexes are based on the concatenated tuple, not addressing each input to the join comparison individually
+        template<typename B>
+       static inline BoolExpression<B> getEqualityPredicate(const uint32_t & lhs_idx, const uint32_t & rhs_idx) {
+            std::shared_ptr<InputReferenceNode<B> > lhs_input(new InputReferenceNode<B>(lhs_idx));
+            std::shared_ptr<InputReferenceNode<B> > rhs_input(new InputReferenceNode<B>(rhs_idx));
+            std::shared_ptr<ExpressionNode<B> > equality_node(new EqualNode<B>(lhs_input, rhs_input));
+            return BoolExpression<B>(equality_node);
+        }
 
     };
 

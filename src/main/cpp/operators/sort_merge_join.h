@@ -9,8 +9,8 @@ namespace vaultdb {
     public:
         // simplified version of https://arxiv.org/pdf/2003.09481.pdf
         // only for foreign key / primary key join
-        SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key, const shared_ptr<BinaryPredicate<B> > & predicateClass);
-        SortMergeJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, shared_ptr<BinaryPredicate<B> > predicateClass);
+        SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key, const BoolExpression<B> & predicate);
+        SortMergeJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const BoolExpression<B> & predicate);
         ~SortMergeJoin() = default;
         std::shared_ptr<QueryTable<B> > runSelf() override;
 

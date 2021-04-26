@@ -86,10 +86,9 @@ set(sources
 		operators/project.cpp
 		operators/sort.cpp
 		operators/support/join_equality_predicate.cpp
-		#operators/support/property_tree_expression.cpp
 		operators/join.cpp
 		operators/basic_join.cpp
-        operators/fkey_pkey_join.cpp
+		operators/keyed_join.cpp
 		operators/support/scalar_aggregate_impl.cpp
 		operators/scalar_aggregate.cpp
 		operators/limit.cpp
@@ -101,12 +100,16 @@ set(sources
 
 		operators/expression/function_expression.cpp
 		operators/expression/generic_expression.cpp
+		operators/expression/bool_expression.cpp
 		operators/expression/expression_node.cpp
 		operators/expression/math_expression_nodes.cpp
 		operators/expression/comparator_expression_nodes.cpp
 		operators/expression/connector_expression_nodes.cpp
 
-		util/plan_parser.cpp)
+		parser/plan_parser.cpp
+		parser/expression_parser.cpp
+		operators/expression/expression_kind.h
+		operators/expression/expression_factory.cpp)
 
 
 
