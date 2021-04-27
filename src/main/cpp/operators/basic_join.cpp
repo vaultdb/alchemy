@@ -24,8 +24,15 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
 
     assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC
 
+    SortDefinition concat_sorts;
+    concat_sorts = lhs->getSortOrder();
+    SortDefinition  rhs_sort = rhs->getSortOrder();
+    std::cout << "Join received " << concat_sorts.size() << " col sorts from lhs " << std::endl;
+    concat_sorts.insert(concat_sorts.end(),  rhs_sort.begin(), rhs_sort.end());
+    std::cout << "Join received " << rhs_sort.size() << " col sorts from rhs." << std::endl;
+
     // output size, colCount, is_encrypted
-    Join<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(outputTupleCount, outputSchema));
+    Join<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(outputTupleCount, outputSchema, concat_sorts));
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
         QueryTuple<B> lhs_tuple = (*lhs)[i];
@@ -42,6 +49,8 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
             ++cursor;
         }
     }
+
+    std::cout << "Join has output sort order with " << Join<B>::output->getSortOrder().size()  << " cols." <<  std::endl;
     return Join<B>::output;
 }
 

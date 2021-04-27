@@ -22,7 +22,7 @@
 #include <operators/expression/bool_expression.h>
 #include <operators/expression/comparator_expression_nodes.h>
 #include <operators/expression/generic_expression.h>
-
+#include <defs.h>
 
 
 namespace vaultdb {

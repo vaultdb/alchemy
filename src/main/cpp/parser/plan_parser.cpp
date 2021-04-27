@@ -138,7 +138,7 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
 
     if(op.get() != nullptr) {
         operators_[operator_id] = op;
-        std::cout << "Adding operator with id " << operator_id << std::endl;
+        std::cout << "Adding operator " << op_name << " with id " << operator_id << std::endl;
         root_ = op;
     }
     else
@@ -297,9 +297,8 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_
             src_ordinal = input_ref.read_idx_;
             project->addColumnMapping(src_ordinal, dst_ordinal);
         }
-        else {
-            project->addExpression(expr, dst_ordinal);
-        }
+
+        project->addExpression(expr, dst_ordinal);
 
       ++dst_ordinal;
     }

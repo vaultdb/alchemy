@@ -474,10 +474,10 @@ TEST_F(EnrichTest, testPatientCohort) {
 
     observedTable = DataUtilities::removeDummies(observedTable);
     // empty sort definition, first column in prior sort is no longer in play
-    SortDefinition  emptySort;
+    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(5);
 
 
-    validateTable(unionedDbName, expectedResultSql, emptySort, observedTable);
+    validateTable(unionedDbName, expectedResultSql, sortDefinition, observedTable);
 
 }
 

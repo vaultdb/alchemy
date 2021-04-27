@@ -137,13 +137,18 @@ DataUtilities::getExpectedResults(const string &dbName, const string &sql, const
 
 std::string DataUtilities::printSortDefinition(const SortDefinition &sortDefinition) {
     std::stringstream  result;
-    result << "(";
+    result << "{";
+    bool init = false;
     for(ColumnSort c : sortDefinition) {
+        if(init)
+            result << ", ";
         string direction = (c.second == SortDirection::ASCENDING) ? "ASC" : "DESC";
         result << "<" << c.first << ", "
                   << direction << "> ";
 
+        init = true;
     }
+
     result << ")";
     return result.str();
 }

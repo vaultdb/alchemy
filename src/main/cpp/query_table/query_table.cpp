@@ -36,7 +36,7 @@ unsigned int QueryTable<B>::getTupleCount() const {
 
 template <typename B>
 QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition)
-        :  orderBy(std::move(sortDefinition)), schema_(std::make_shared<QuerySchema>(schema)) {
+        :  order_by_(std::move(sortDefinition)), schema_(std::make_shared<QuerySchema>(schema)) {
 
      tuple_size_ = schema_->size()/8; // bytes for plaintext
 
@@ -84,7 +84,7 @@ vector<int8_t> QueryTable<B>::serialize() const {
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const PlainTable &table) {
-        os << *(table.getSchema()) << " isEncrypted? " << table.isEncrypted() << endl;
+        os << *(table.getSchema()) << " isEncrypted? " << table.isEncrypted() <<  " order by: " << DataUtilities::printSortDefinition(table.getSortOrder()) << endl;
 
         for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
             PlainTuple tuple = table[i];
@@ -103,7 +103,7 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const PlainTable &table) {
 std::ostream &vaultdb::operator<<(std::ostream &os, const SecureTable &table) {
 
 
-    os << table.getSchema() << " isEncrypted? " << table.isEncrypted() << endl;
+    os << table.getSchema() << " isEncrypted? " << table.isEncrypted() <<  " order by: " << DataUtilities::printSortDefinition(table.getSortOrder()) << endl;
 
     for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
         SecureTuple tuple = table[i];
@@ -127,7 +127,7 @@ string QueryTable<B>::toString(const bool & showDummies) const {
     }
 
     // show dummies case
-    os << *getSchema() << " isEncrypted? " << isEncrypted() << std::endl;
+    os << *getSchema() << " isEncrypted? " << isEncrypted() <<  " order by: " << DataUtilities::printSortDefinition(getSortOrder()) << std::endl;
 
 
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
@@ -163,7 +163,7 @@ void QueryTable<B>::putTuple(const int &idx, const QueryTuple<B> & tuple) {
 
 
 template <typename B>
-QueryTable<B>::QueryTable(const QueryTable<B> &src) : orderBy(src.getSortOrder()), tuple_size_(src.tuple_size_) {
+QueryTable<B>::QueryTable(const QueryTable<B> &src) : order_by_(src.getSortOrder()), tuple_size_(src.tuple_size_) {
     schema_ = std::make_shared<QuerySchema>(*src.getSchema());
     tuple_data_ = src.tuple_data_;
 
@@ -325,13 +325,13 @@ SecretShares QueryTable<B>::generateSecretShares() const {
 
 template <typename B>
 void QueryTable<B>::setSortOrder(const SortDefinition &sortOrder) {
-    orderBy = sortOrder;
+    order_by_ = sortOrder;
 
 }
 
 template <typename B>
 SortDefinition QueryTable<B>::getSortOrder() const {
-    return orderBy;
+    return order_by_;
 }
 
 template <typename B>

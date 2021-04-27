@@ -36,6 +36,8 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
     SortDefinition src_sort_order = src_table->getSortOrder();
     QuerySchema src_schema = *src_table->getSchema();
 
+    assert(expressions_.size() > 0);
+
     uint32_t col_count = expressions_.size();
 
     QuerySchema dst_schema = QuerySchema(col_count); // re-initialize it
@@ -50,6 +52,7 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
         QueryFieldDesc dst_field_desc(src_field_desc, dst_ordinal);
         dst_schema.putField(dst_field_desc);
 
+        assert(expressions_.find(dst_ordinal) != expressions_.end());
         std::shared_ptr<Expression<B> > expression = expressions_[dst_ordinal];
         expression->setType(src_field_desc.getType());
         expression->setAlias(src_field_desc.getName());
@@ -78,25 +81,21 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
     }
 
 
-    // *** Check to see if order-by carries over
-    bool sort_carry_over = true;
+    // Only carry over the order by for ones that exist in the output schema
     SortDefinition  dst_sort;
     for(ColumnSort sort : src_sort_order) {
         uint32_t src_ordinal = sort.first;
-        bool found = false;
         for(ProjectionMapping mapping : column_mappings_) {
             if(mapping.first == src_ordinal) {
                 dst_sort.push_back(ColumnSort (mapping.second, sort.second));
-                found = true;
+                break;
             }
         } // end search for mapping
-        if(!found) { sort_carry_over = false; }
     }
 
     // *** Done defining schema and verifying setup
-
-    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt_, dst_schema));
-    if(sort_carry_over) { Operator<B>::output->setSortOrder(dst_sort);  }
+    std::cout << "Project sort contains " << dst_sort.size() << " cols. " << std::endl;
+    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt_, dst_schema, dst_sort));
 
 
     for(uint32_t i = 0; i < tuple_cnt_; ++i) {

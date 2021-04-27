@@ -31,7 +31,7 @@ namespace  vaultdb {
 
 
         // tuple order
-            SortDefinition orderBy;
+            SortDefinition order_by_;
             std::shared_ptr<QuerySchema> schema_;
 
 
