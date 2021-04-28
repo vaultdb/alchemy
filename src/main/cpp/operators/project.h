@@ -3,7 +3,7 @@
 
 #include "operator.h"
 #include "common/defs.h"
-#include "operators/expression/expression.h"
+#include <expression/expression.h>
 
 typedef std::pair<uint32_t, uint32_t> ProjectionMapping; // src ordinal, dst ordinal
 

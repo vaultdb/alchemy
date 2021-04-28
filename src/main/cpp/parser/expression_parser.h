@@ -1,10 +1,10 @@
 #ifndef _EXPRESSION_PARSER_H
 #define _EXPRESSION_PARSER_H
 
-#include <operators/expression/expression.h>
-#include <operators/expression/generic_expression.h>
-#include <operators/expression/bool_expression.h>
-#include <operators/expression/expression_node.h>
+#include <expression/expression.h>
+#include <expression/generic_expression.h>
+#include <expression/bool_expression.h>
+#include <expression/expression_node.h>
 #include <boost/property_tree/ptree.hpp>
 
 using boost::property_tree::ptree;

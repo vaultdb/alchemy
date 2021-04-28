@@ -14,6 +14,8 @@ namespace vaultdb {
         Field<B> call(const QueryTuple<B> & target) const override;
 
         ExpressionKind kind() const override;
+
+        void accept(ExpressionVisitor <B> *visitor) override;
     };
 
     template<typename B>
@@ -24,6 +26,8 @@ namespace vaultdb {
         Field<B> call(const QueryTuple<B> & target) const override;
 
         ExpressionKind kind() const override;
+
+        void accept(ExpressionVisitor <B> *visitor) override;
     };
 
 
@@ -35,6 +39,8 @@ namespace vaultdb {
         Field<B> call(const QueryTuple<B> & target) const override;
 
         ExpressionKind kind() const override;
+
+        void accept(ExpressionVisitor <B> *visitor) override;
     };
 
 
@@ -46,6 +52,8 @@ namespace vaultdb {
         Field<B> call(const QueryTuple<B> & target) const override;
 
         ExpressionKind kind() const override;
+
+        void accept(ExpressionVisitor <B> *visitor) override;
     };
 
 
@@ -57,6 +65,8 @@ namespace vaultdb {
         Field<B> call(const QueryTuple<B> & target) const override;
 
         ExpressionKind kind() const override;
+
+        void accept(ExpressionVisitor <B> *visitor) override;
     };
     template<typename B>
     class  GreaterThanEqNode : public ExpressionNode<B> {
@@ -66,6 +76,8 @@ namespace vaultdb {
         Field<B> call(const QueryTuple<B> & target) const override;
 
         ExpressionKind kind() const override;
+
+        void accept(ExpressionVisitor <B> *visitor) override;
     };
 
 

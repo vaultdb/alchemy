@@ -13,6 +13,7 @@ namespace vaultdb {
         NotNode( std::shared_ptr<ExpressionNode<B> > input);
         ~NotNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+        void accept(ExpressionVisitor<B> *visitor) override;
 
         ExpressionKind kind() const override;
     };
@@ -27,6 +28,7 @@ namespace vaultdb {
         AndNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs);
         ~AndNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+        void accept(ExpressionVisitor<B> *visitor) override;
 
         ExpressionKind kind() const override;
     };
@@ -39,6 +41,7 @@ namespace vaultdb {
         OrNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs);
         ~OrNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override;
+        void accept(ExpressionVisitor<B> *visitor) override;
 
         ExpressionKind kind() const override;
     };

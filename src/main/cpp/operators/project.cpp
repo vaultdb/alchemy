@@ -1,8 +1,9 @@
 #include "project.h"
 #include <query_table/field/field_factory.h>
 #include <query_table/secure_tuple.h>  // do not delete this - need for template specialization
-#include <operators/expression/expression_node.h>
-#include <operators/expression/generic_expression.h>
+#include <expression/expression_node.h>
+#include <expression/generic_expression.h>
+#include <util/data_utilities.h>
 
 
 using namespace vaultdb;
@@ -83,6 +84,13 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
     // Only carry over the order by for ones that exist in the output schema
     SortDefinition  dst_sort;
+    std::cout << "Project source sort order: " << DataUtilities::printSortDefinition(src_sort_order) << " source schema: " << src_schema << std::endl;
+    std::cout << "projection cols: ";
+    for(ProjectionMapping m : column_mappings_) {
+        std::cout << "<" << m.first << ", " << m.second << "> ";
+    }
+    std::cout << std::endl;
+
     for(ColumnSort sort : src_sort_order) {
         uint32_t src_ordinal = sort.first;
         for(ProjectionMapping mapping : column_mappings_) {

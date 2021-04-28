@@ -3,7 +3,7 @@
 
 //#include <operators/support/predicate.h>
 #include "operator.h"
-#include <operators/expression/bool_expression.h>
+#include <expression/bool_expression.h>
 
 namespace  vaultdb {
 

@@ -1,7 +1,7 @@
 #ifndef _JOIN_H
 #define _JOIN_H
 
-#include <operators/expression/bool_expression.h>
+#include <expression/bool_expression.h>
 #include "operator.h"
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>

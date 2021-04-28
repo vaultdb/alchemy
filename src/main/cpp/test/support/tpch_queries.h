@@ -35,7 +35,7 @@ namespace vaultdb {
                 "  l_linestatus"},
 
             {3, "select\n"
-                "  o.o_orderkey,\n"
+                "  l.l_orderkey,\n"
                 "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue,\n"
                 "  o.o_orderdate,\n"
                 "  o.o_shippriority\n"
@@ -48,7 +48,7 @@ namespace vaultdb {
                 "  and l.l_shipdate > date '1995-03-25'\n"
                 "\n"
                 " group by\n"
-                "  o.o_orderkey,\n"
+                "  l.l_orderkey,\n"
                 "  o.o_orderdate,\n"
                 "  o.o_shippriority\n"
                 " order by\n"

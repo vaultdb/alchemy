@@ -1,11 +1,11 @@
 #ifndef _EXPRESSION_FACTORY_H
 #define _EXPRESSION_FACTORY_H
 
-#include <operators/expression/expression_kind.h>
-#include <operators/expression/expression_node.h>
-#include <operators/expression/math_expression_nodes.h>
-#include <operators/expression/comparator_expression_nodes.h>
-#include <operators/expression/connector_expression_nodes.h>
+#include <expression/expression_kind.h>
+#include <expression/expression_node.h>
+#include <expression/math_expression_nodes.h>
+#include <expression/comparator_expression_nodes.h>
+#include <expression/connector_expression_nodes.h>
 
 namespace  vaultdb {
 

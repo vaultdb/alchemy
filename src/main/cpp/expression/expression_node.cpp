@@ -23,6 +23,11 @@ ExpressionKind InputReferenceNode<B>::kind() const {
     return ExpressionKind::INPUT_REF;
 }
 
+template<typename B>
+void InputReferenceNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
+}
+
 
 template<typename B>
 LiteralNode<B>::LiteralNode(const Field<B> &literal) : ExpressionNode<B>(nullptr), payload_(literal) {
@@ -37,6 +42,11 @@ Field<B> LiteralNode<B>::call(const QueryTuple<B> &target) const {
 template<typename B>
 ExpressionKind LiteralNode<B>::kind() const {
     return ExpressionKind::LITERAL;
+}
+
+template<typename B>
+void vaultdb::LiteralNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
 }
 
 

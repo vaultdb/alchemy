@@ -19,9 +19,9 @@
 #include <string>
 #include <emp-tool/circuits/bit.h>
 #include <support/aggregate_id.h>
-#include <operators/expression/bool_expression.h>
-#include <operators/expression/comparator_expression_nodes.h>
-#include <operators/expression/generic_expression.h>
+#include <expression/bool_expression.h>
+#include <expression/comparator_expression_nodes.h>
+#include <expression/generic_expression.h>
 #include <defs.h>
 
 

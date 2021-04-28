@@ -17,6 +17,11 @@ ExpressionKind PlusNode<B>::kind() const {
     return ExpressionKind::PLUS;
 }
 
+template<typename B>
+void PlusNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
+}
+
 
 template<typename B>
 MinusNode<B>::MinusNode(std::shared_ptr<ExpressionNode<B>> &lhs, std::shared_ptr<ExpressionNode<B>> &rhs) : ExpressionNode<B>(lhs, rhs) { }
@@ -31,6 +36,11 @@ Field<B> MinusNode<B>::call(const QueryTuple<B> &target) const {
 template<typename B>
 ExpressionKind MinusNode<B>::kind() const {
     return ExpressionKind::MINUS;
+}
+
+template<typename B>
+void MinusNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
 }
 
 
@@ -49,6 +59,11 @@ ExpressionKind TimesNode<B>::kind() const {
     return ExpressionKind::TIMES;
 }
 
+template<typename B>
+void TimesNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
+}
+
 
 template<typename B>
 DivideNode<B>::DivideNode(std::shared_ptr<ExpressionNode<B>> &lhs, std::shared_ptr<ExpressionNode<B>> &rhs) : ExpressionNode<B>(lhs, rhs) { }
@@ -65,6 +80,11 @@ ExpressionKind DivideNode<B>::kind() const {
     return ExpressionKind::DIVIDE;
 }
 
+template<typename B>
+void DivideNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
+}
+
 
 template<typename B>
 ModulusNode<B>::ModulusNode(std::shared_ptr<ExpressionNode<B>> &lhs, std::shared_ptr<ExpressionNode<B>> &rhs) : ExpressionNode<B>(lhs, rhs) { }
@@ -79,6 +99,11 @@ Field<B> ModulusNode<B>::call(const QueryTuple<B> &target) const {
 template<typename B>
 ExpressionKind ModulusNode<B>::kind() const {
     return ExpressionKind::MOD;
+}
+
+template<typename B>
+void ModulusNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
 }
 
 

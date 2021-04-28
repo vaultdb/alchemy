@@ -4,8 +4,8 @@
 #include <operators/sql_input.h>
 #include <operators/filter.h>
 #include <query_table/field/field_factory.h>
-#include <operators/expression/generic_expression.h>
-#include <operators/expression/comparator_expression_nodes.h>
+#include <expression/generic_expression.h>
+#include <expression/comparator_expression_nodes.h>
 
 
 using namespace emp;

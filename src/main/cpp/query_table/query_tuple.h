@@ -28,7 +28,7 @@ namespace vaultdb {
 
         bool operator==(const QueryTuple<B> & other) const {throw; } // implement in instances
         bool operator!=(const QueryTuple<B> & other) const {throw; } // implement in instances, not supported for SecureTuple/emp case
-        QueryTuple<B>& operator=(const QueryTuple<B> & other) { throw; } // need to do this in child classes for now
+        QueryTuple<B>& operator=(const QueryTuple<B> & other) { throw; } // need to do this in child classes
         Field<B> operator[](const int32_t & idx ) { throw; }
         const Field<B> operator[](const int32_t & idx ) const {throw; }
         void setField(const size_t & idx, const Field<B> & field) { throw; }

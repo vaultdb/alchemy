@@ -21,6 +21,11 @@ ExpressionKind EqualNode<B>::kind() const {
 }
 
 template<typename B>
+void EqualNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
+}
+
+template<typename B>
 NotEqualNode<B>::NotEqualNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs)
 :ExpressionNode<B>(lhs, rhs) { }
 
@@ -35,6 +40,11 @@ Field<B> NotEqualNode<B>::call(const QueryTuple<B> &target) const {
 template<typename B>
 ExpressionKind NotEqualNode<B>::kind() const {
     return ExpressionKind::NEQ;
+}
+
+template<typename B>
+void NotEqualNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
 }
 
 template<typename B>
@@ -56,6 +66,11 @@ ExpressionKind LessThanNode<B>::kind() const {
     return ExpressionKind::LT;
 }
 
+template<typename B>
+void LessThanNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
+}
+
 
 template<typename B>
 GreaterThanNode<B>::GreaterThanNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs)
@@ -74,6 +89,11 @@ Field<B> GreaterThanNode<B>::call(const QueryTuple<B> &target) const {
 template<typename B>
 ExpressionKind GreaterThanNode<B>::kind() const {
     return ExpressionKind::GT;
+}
+
+template<typename B>
+void GreaterThanNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
 }
 
 
@@ -97,6 +117,12 @@ ExpressionKind LessThanEqNode<B>::kind() const {
 }
 
 template<typename B>
+void LessThanEqNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
+
+}
+
+template<typename B>
 GreaterThanEqNode<B>::GreaterThanEqNode(std::shared_ptr<ExpressionNode<B>> lhs,
                                         std::shared_ptr<ExpressionNode<B>> rhs) : ExpressionNode<B>(lhs, rhs) {
 
@@ -113,6 +139,11 @@ Field<B> GreaterThanEqNode<B>::call(const QueryTuple<B> &target) const {
 template<typename B>
 ExpressionKind GreaterThanEqNode<B>::kind() const {
     return ExpressionKind::GEQ;
+}
+
+template<typename B>
+void GreaterThanEqNode<B>::accept(ExpressionVisitor<B> *visitor) {
+    visitor->visit(*this);
 }
 
 

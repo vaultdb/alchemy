@@ -96,20 +96,21 @@ set(sources
 		operators/group_by_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp
 		operators/csv_input.cpp
-		operators/sort_merge_join.cpp
+        operators/keyed_sort_merge_join.cpp
 
-		operators/expression/function_expression.cpp
-		operators/expression/generic_expression.cpp
-		operators/expression/bool_expression.cpp
-		operators/expression/expression_node.cpp
-		operators/expression/math_expression_nodes.cpp
-		operators/expression/comparator_expression_nodes.cpp
-		operators/expression/connector_expression_nodes.cpp
+		expression/function_expression.cpp
+		expression/generic_expression.cpp
+		expression/bool_expression.cpp
+		expression/expression_node.cpp
+		expression/math_expression_nodes.cpp
+		expression/comparator_expression_nodes.cpp
+		expression/connector_expression_nodes.cpp
 
 		parser/plan_parser.cpp
 		parser/expression_parser.cpp
-		operators/expression/expression_kind.h
-		operators/expression/expression_factory.cpp)
+		expression/expression_kind.h
+		expression/expression_factory.cpp
+		expression/expression_visitor.h operators/support/join_equality_condition_visitor.cpp operators/support/join_equality_condition_visitor.h)
 
 
 

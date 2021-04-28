@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/keyed_join.h>
-#include <operators/expression/comparator_expression_nodes.h>
+#include <expression/comparator_expression_nodes.h>
 
 using namespace emp;
 using namespace vaultdb;

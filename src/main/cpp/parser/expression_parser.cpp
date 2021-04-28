@@ -1,7 +1,7 @@
 #include "expression_parser.h"
 #include <boost/property_tree/json_parser.hpp>
 #include <util/data_utilities.h>
-#include <operators/expression/expression_factory.h>
+#include <expression/expression_factory.h>
 
 using namespace vaultdb;
 using namespace std;

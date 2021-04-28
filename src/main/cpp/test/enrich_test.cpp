@@ -2,10 +2,10 @@
 #include <data/PsqlDataProvider.h>
 #include <operators/sql_input.h>
 #include <gflags/gflags.h>
-#include <operators/expression/comparator_expression_nodes.h>
-#include <operators/expression/function_expression.h>
-#include <operators/expression/generic_expression.h>
-#include <operators/expression/bool_expression.h>
+#include <expression/comparator_expression_nodes.h>
+#include <expression/function_expression.h>
+#include <expression/generic_expression.h>
+#include <expression/bool_expression.h>
 
 #include "enrich_test.h"
 
@@ -473,7 +473,6 @@ TEST_F(EnrichTest, testPatientCohort) {
 
 
     observedTable = DataUtilities::removeDummies(observedTable);
-    // empty sort definition, first column in prior sort is no longer in play
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(5);
 
 

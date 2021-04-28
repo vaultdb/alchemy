@@ -5,7 +5,7 @@
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
 #include <test/mpc/emp_base_test.h>
-#include <operators/expression/comparator_expression_nodes.h>
+#include <expression/comparator_expression_nodes.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");

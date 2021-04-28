@@ -5,8 +5,8 @@
 #include <project.h>
 #include <query_table/secure_tuple.h>
 #include <query_table/plain_tuple.h>
-#include <operators/expression/function_expression.h>
-#include <operators/expression/comparator_expression_nodes.h>
+#include <expression/function_expression.h>
+#include <expression/comparator_expression_nodes.h>
 
 using namespace vaultdb;
 

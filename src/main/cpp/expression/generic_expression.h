@@ -1,8 +1,8 @@
 #ifndef _GENERIC_EXPRESSION_H
 #define _GENERIC_EXPRESSION_H
 
-#include <operators/expression/expression.h>
-#include <operators/expression/expression_node.h>
+#include <expression/expression.h>
+#include <expression/expression_node.h>
 
 namespace  vaultdb {
 
