@@ -10,7 +10,7 @@ using namespace std;
 
 template<typename B>
 shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
-    shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
+    shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
     vector<GroupByAggregateImpl<B> *> aggregators;
     B realBin;
 

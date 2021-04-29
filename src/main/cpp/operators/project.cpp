@@ -32,7 +32,7 @@ Project<B>::Project(shared_ptr<QueryTable<B> > child, std::map<uint32_t, shared_
 template<typename B>
 std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
-    std::shared_ptr<QueryTable<B> > src_table = Operator<B>::children[0]->getOutput();
+    std::shared_ptr<QueryTable<B> > src_table = Operator<B>::children_[0]->getOutput();
 
     SortDefinition src_sort_order = src_table->getSortOrder();
     QuerySchema src_schema = *src_table->getSchema();
@@ -91,14 +91,19 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
     }
     std::cout << std::endl;
 
+    // TODO: fix this to account for partial sort carry-over
+    // *** Check to see if order-by carries over
+    bool sort_carry_over = true;
     for(ColumnSort sort : src_sort_order) {
         uint32_t src_ordinal = sort.first;
+        bool found = false;
         for(ProjectionMapping mapping : column_mappings_) {
             if(mapping.first == src_ordinal) {
                 dst_sort.push_back(ColumnSort (mapping.second, sort.second));
-                break;
+                found = true;
             }
         } // end search for mapping
+        if(!found) { sort_carry_over = false; }
     }
 
     // *** Done defining schema and verifying setup

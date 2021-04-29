@@ -25,8 +25,8 @@ namespace  vaultdb {
     class Operator {
 
     protected:
-        Operator *parent;
-        vector<Operator *> children;
+        Operator *parent_;
+        vector<Operator *> children_;
         shared_ptr<QueryTable<B> > output;
         TableInput<B> *lhs = 0;
         TableInput<B> *rhs = 0;

@@ -77,6 +77,7 @@ namespace vaultdb {
         static SecureTuple
         deserialize(emp::Bit *dst_tuple_bits, std::shared_ptr<QuerySchema> &schema, const emp::Bit *src_tuple_bits);
 
+        static void writeSubset(const SecureTuple & src_tuple, const SecureTuple & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx);
 
 
 

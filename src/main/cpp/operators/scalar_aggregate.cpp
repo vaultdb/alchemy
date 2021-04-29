@@ -8,7 +8,7 @@ using namespace vaultdb;
 
 template<typename B>
 std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > input = ScalarAggregate<B>::children[0]->getOutput();
+    std::shared_ptr<QueryTable<B> > input = ScalarAggregate<B>::children_[0]->getOutput();
     std::vector<ScalarAggregateImpl<B> *> aggregators;
     QueryTuple<B> tuple(*input->getSchema());
 

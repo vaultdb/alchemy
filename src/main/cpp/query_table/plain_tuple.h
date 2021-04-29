@@ -85,6 +85,7 @@ namespace  vaultdb {
         // create an independent tuple with reveal
         PlainTuple reveal() const;
 
+        static void writeSubset(const PlainTuple & src_tuple, const PlainTuple & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx);
 
 
     };

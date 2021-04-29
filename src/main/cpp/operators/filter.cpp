@@ -15,7 +15,7 @@ Filter<B>::Filter(shared_ptr<QueryTable<B> > child, BoolExpression<B> & predicat
 
 template<typename B>
 std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
+    std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
 
     // deep copy new output, then just modify the dummy tag
     Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));

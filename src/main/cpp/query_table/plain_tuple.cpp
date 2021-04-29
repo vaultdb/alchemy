@@ -199,6 +199,25 @@ PlainTuple QueryTuple<bool>::reveal() const {
     return tuple;
 }
 
+void QueryTuple<bool>::writeSubset(const PlainTuple &src_tuple, const PlainTuple &dst_tuple, uint32_t src_start_idx,
+                                   uint32_t src_attr_cnt, uint32_t dst_start_idx) {
+    size_t src_field_offset = src_tuple.getSchema()->getFieldOffset(src_start_idx)/8;
+    size_t dst_field_offset = dst_tuple.getSchema()->getFieldOffset(dst_start_idx)/8;
+
+    size_t write_size = 0;
+    for(uint32_t i = src_start_idx; i < src_start_idx + src_attr_cnt; ++i) {
+        write_size += src_tuple.getSchema()->getField(i).size()/8;
+    }
+
+    assert(dst_field_offset + write_size <= dst_tuple.query_schema_->size()/8);
+
+    int8_t *read_pos = src_tuple.fields_ + src_field_offset;
+    int8_t *write_pos = dst_tuple.fields_ + dst_field_offset;
+
+    memcpy(write_pos, read_pos, write_size);
+
+}
+
 
 PlainField QueryTuple<bool>::operator[](const int32_t &idx) {
     return getField(idx);

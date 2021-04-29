@@ -10,6 +10,7 @@
 #include "util/utilities.h"
 #include "plain_tuple.h"
 #include <emp-tool/emp-tool.h>
+#include <boost/iterator/iterator_facade.hpp>
 
 // ignore bob when secret sharing for ZK
 //#define IGNORE_BOB 1
@@ -25,16 +26,25 @@ namespace  vaultdb {
     typedef  QueryTable<bool> PlainTable;
     typedef  QueryTable<emp::Bit> SecureTable;
 
+
+   /* template <typename B>
+    class QueryTableIterator : public boost::iterator_facade<
+            QueryTableIterator<B>
+            , QueryTuple<B>
+            , boost::bidirectional_traversal_tag
+    >  {
+    public:
+        QueryTableIterator()
+
+    };*/
+
     template <typename B>
     class QueryTable {
         private:
 
-
         // tuple order
             SortDefinition order_by_;
             std::shared_ptr<QuerySchema> schema_;
-
-
 
     public:
         std::vector<int8_t> tuple_data_;

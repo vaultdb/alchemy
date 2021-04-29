@@ -17,11 +17,15 @@ namespace vaultdb {
 
     private:
         void writeLeftTuples(std::shared_ptr<QueryTable<B> > lhs, std::shared_ptr<QueryTable<B> > dst_table);
-        void writeRightTuples(std::shared_ptr<QueryTable<B> > lhs, std::shared_ptr<QueryTable<B> > dst_table,
-                std::vector<std::pair<uint32_t, uint32_t> > equality_condition);
+        void writeRightTuples(std::shared_ptr<QueryTable<B> > lhs, std::shared_ptr<QueryTable<B> > dst_table);
 
-        shared_ptr<QueryTable<B> > augmentTable(shared_ptr<SecureTable> & src_table, const QuerySchema & dst_schema, const bool & foreign_key);
-        shared_ptr<QueryTable<B> > augmentTable(shared_ptr<PlainTable> & src_table, const QuerySchema & dst_schema, const bool & foreign_key);
+        void distributeValues(shared_ptr<QueryTable<bool> > d);
+        void distributeValues(shared_ptr<QueryTable<emp::Bit> > d);
+
+        // takes src tuple from rhs / primary key and adds table_idx column to it.
+        //QueryTuple<B> augmentRightTuple(QueryTuple<B> & src);
+        std::vector<pair<uint32_t, uint32_t> > equality_conditions_;
+        QuerySchema lhs_schema_, rhs_schema_;
 
     };
 

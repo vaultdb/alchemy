@@ -12,8 +12,8 @@ BasicJoin<B>::BasicJoin(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B>
 
 template<typename B>
 shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > lhs = Join<B>::children[0]->getOutput();
-    std::shared_ptr<QueryTable<B> > rhs = Join<B>::children[1]->getOutput();
+    std::shared_ptr<QueryTable<B> > lhs = Join<B>::children_[0]->getOutput();
+    std::shared_ptr<QueryTable<B> > rhs = Join<B>::children_[1]->getOutput();
     uint32_t cursor = 0;
     B predicate_eval;
 

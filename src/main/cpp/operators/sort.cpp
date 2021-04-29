@@ -44,7 +44,7 @@ Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefin
 
 template<typename B>
 std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
+    std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
 
     // deep copy new output
     Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));

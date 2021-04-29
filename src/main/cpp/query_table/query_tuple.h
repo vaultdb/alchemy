@@ -35,7 +35,7 @@ namespace vaultdb {
         Field<B> getField(const int & ordinal) const { throw; }
         void setDummyTag(const bool & b) { throw; }
         void setDummyTag(const emp::Bit & b) { throw; }
-
+        static void writeSubset(const QueryTuple<B> & src_tuple, const QueryTuple<B> & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx) { throw; }
         bool getDummyTag() const { throw; }
         string toString(const bool &showDummies = false) const { throw; }
         int8_t *getData() const { return nullptr; }

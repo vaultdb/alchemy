@@ -236,6 +236,26 @@ QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {
 
 }
 
+void QueryTuple<emp::Bit>::writeSubset(const SecureTuple &src_tuple, const SecureTuple &dst_tuple, uint32_t src_start_idx,
+                                       uint32_t src_attr_cnt, uint32_t dst_start_idx) {
+
+    size_t src_field_offset = src_tuple.getSchema()->getFieldOffset(src_start_idx);
+    size_t dst_field_offset = dst_tuple.getSchema()->getFieldOffset(dst_start_idx);
+
+    size_t write_size = 0;
+    for(uint32_t i = src_start_idx; i < src_start_idx + src_attr_cnt; ++i) {
+        write_size += src_tuple.getSchema()->getField(i).size();
+    }
+
+    assert(dst_field_offset + write_size <= dst_tuple.query_schema_->size());
+
+    emp::Bit *read_pos = src_tuple.fields_ + src_field_offset;
+    emp::Bit *write_pos = dst_tuple.fields_ + dst_field_offset;
+
+    memcpy(write_pos, read_pos, write_size);
+
+}
+
 
 
 

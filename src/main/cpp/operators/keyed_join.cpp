@@ -15,8 +15,8 @@ KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryT
 
 template<typename B>
 std::shared_ptr<QueryTable<B> > KeyedJoin<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > foreign_key_table = Join<B>::children[0]->getOutput();
-    std::shared_ptr<QueryTable<B> > primary_key_table = Join<B>::children[1]->getOutput();
+    std::shared_ptr<QueryTable<B> > foreign_key_table = Join<B>::children_[0]->getOutput();
+    std::shared_ptr<QueryTable<B> > primary_key_table = Join<B>::children_[1]->getOutput();
     QueryTuple<B> lhs_tuple(*foreign_key_table->getSchema()), rhs_tuple(*primary_key_table->getSchema());
 
     uint32_t output_tuple_cnt = foreign_key_table->getTupleCount(); // foreignKeyTable = foreign key

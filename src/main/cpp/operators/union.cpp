@@ -4,8 +4,8 @@ using namespace vaultdb;
 
 template<typename B>
 shared_ptr<QueryTable<B> > Union<B>::runSelf() {
-    shared_ptr<QueryTable<B> > lhs = Operator<B>::children[0]->run();
-    shared_ptr<QueryTable<B> > rhs = Operator<B>::children[1]->run();
+    shared_ptr<QueryTable<B> > lhs = Operator<B>::children_[0]->run();
+    shared_ptr<QueryTable<B> > rhs = Operator<B>::children_[1]->run();
 
     assert(*lhs->getSchema() == *rhs->getSchema()); // union compatible
     QuerySchema output_schema = *lhs->getSchema();

@@ -6,16 +6,16 @@ using namespace vaultdb;
 template<typename B>
 Operator<B>::Operator(shared_ptr<QueryTable<B> > lhsSrc) {
         lhs = new TableInput(lhsSrc);
-        children.push_back((Operator *) lhs);
+        children_.push_back((Operator *) lhs);
 }
 
 template<typename B>
 Operator<B>::Operator(shared_ptr<QueryTable<B> > lhsSrc, shared_ptr<QueryTable<B> > rhsSrc) {
     lhs = new TableInput(lhsSrc);
-    children.push_back((Operator *) lhs);
+    children_.push_back((Operator *) lhs);
 
     rhs = new TableInput(rhsSrc);
-    children.push_back((Operator *) rhs);
+    children_.push_back((Operator *) rhs);
 
 }
 
@@ -23,7 +23,7 @@ template<typename B>
 Operator<B>::Operator(Operator *child) {
 
      child->setParent(this);
-    children.push_back(child);
+    children_.push_back(child);
 
 }
 
@@ -32,8 +32,8 @@ Operator<B>::Operator(Operator *lhs, Operator *rhs) {
 
     lhs->setParent(this);
     rhs->setParent(this);
-    children.push_back(lhs);
-    children.push_back(rhs);
+    children_.push_back(lhs);
+    children_.push_back(rhs);
 
 }
 
@@ -43,7 +43,7 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
     if(operatorExecuted) // prevent duplicate executions of operator
         return output;
 
-    for(Operator *op : children) {
+    for(Operator *op : children_) {
         op->run();
     }
 
@@ -62,22 +62,22 @@ template<typename B>
 
 template<typename B>
 Operator<B> * Operator<B>::getParent() const {
-    return parent;
+    return parent_;
 }
 
 template<typename B>
  Operator<B> * Operator<B>::getChild(int idx) const {
-    return children[idx];
+    return children_[idx];
 }
 
 template<typename B>
 void Operator<B>::setParent(Operator *aParent) {
-  parent = aParent;
+    parent_ = aParent;
 }
 
 template<typename B>
 void Operator<B>::setChild(Operator *aChild, int idx) {
-   children[idx] = aChild;
+    children_[idx] = aChild;
 }
 
 template<typename B>

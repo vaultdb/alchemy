@@ -1,4 +1,7 @@
 #include "keyed_sort_merge_join.h"
+#include "sort.h"
+#include <query_table/plain_tuple.h>
+#include <query_table/secure_tuple.h>
 
 #include <operators/support/join_equality_condition_visitor.h>
 
@@ -7,6 +10,9 @@ using namespace vaultdb;
 template<typename B>
 KeyedSortMergeJoin<B>::KeyedSortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key,
                                           const BoolExpression<B> & predicate)  : Join<B>(foreign_key, primary_key, predicate) {
+
+    JoinEqualityConditionVisitor<B> join_visitor(Join<B>::predicate_.root_);
+    equality_conditions_ = join_visitor.getEqualities();
 
 }
 
@@ -18,27 +24,42 @@ KeyedSortMergeJoin<B>::KeyedSortMergeJoin(shared_ptr<QueryTable<B>> foreign_key,
 
 template<typename B>
 shared_ptr<QueryTable<B>> KeyedSortMergeJoin<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > lhs = Join<B>::children[0]->getOutput(); // fkey
-    std::shared_ptr<QueryTable<B> > rhs = Join<B>::children[1]->getOutput(); // pkey
-    JoinEqualityConditionVisitor<B> join_visitor(Join<B>::predicate_.root_);
-    std::vector<std::pair<uint32_t, uint32_t> > equality_conditions = join_visitor.getEqualities();
+    std::shared_ptr<QueryTable<B> > lhs = Join<B>::children_[0]->getOutput(); // fkey
+    std::shared_ptr<QueryTable<B> > rhs = Join<B>::children_[1]->getOutput(); // pkey
+    lhs_schema_ = lhs->getSchema();
+    rhs_schema_ = rhs->getSchema();
 
     QuerySchema dst_schema = Join<B>::concatenateSchemas(*lhs->getSchema(), *rhs->getSchema(), true);
 
     size_t tuple_cnt = lhs->getTupleCount() + rhs->getTupleCount();
 
-    shared_ptr<QueryTable<B> > dst_table(new QueryTable<B>(tuple_cnt, dst_schema));
-    writeLeftTuples(lhs, dst_table);
-    writeRightTuples(rhs, dst_table, std::vector<std::pair<uint32_t, uint32_t>>());
+    Operator<B>::output = shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt, dst_schema));
+    writeLeftTuples(lhs, Operator<B>::output);
+    writeRightTuples(rhs, Operator<B>::output);
 
-    // coalesce lhs_join_key and rhs_join_key into lhs_join_key slot(s)
-    // sort by (lhs_join_key), table_id
-    // TODO: extract equality predicates by walking the expression tree
-    // need equality visitor for this
-    // need to implement visit<T> method where T is the return type
-    //
+    SortDefinition s;
+    for(pair<uint32_t, uint32_t> p : equality_conditions_) {
+        s.template emplace_back(p.first, SortDirection::ASCENDING);
+    }
 
+    // sort returns values ordered by sort key
+    // first has pkey tuple, then fkey entries
+    Sort<B> augmented(Operator<B>::output, s);
+    Operator<B>::output = augmented.run();
+
+    distribute_values(Operator<B>::output);
+
+    // TODO: preserve original sort order where possible here.  Investigate fusing it with any sort op in parent
+    SortDefinition  dummies_to_end{ColumnSort(-1, SortDirection::ASCENDING)};
+    Sort<B> dummy_pushdown(Operator<B>::output, dummies_to_end);
+    Operator<B>::output = dummy_pushdown.run();
+
+    Operator<B>::output->resize(lhs->getTupleCount());
+    return Operator<B>::output;
 }
+
+
+
 
 // for each tuple in lhs/fkey side, just copy left, set table_id bit to 1
 template<typename B>
@@ -62,8 +83,7 @@ void KeyedSortMergeJoin<B>::writeLeftTuples(shared_ptr<QueryTable<B>> lhs, share
 
 // for each one in rhs/pkey side, pad it with a table_id bit, set it to 0, then copy_right
 template<typename B>
-void KeyedSortMergeJoin<B>::writeRightTuples(shared_ptr<QueryTable<B>> src_table, shared_ptr<QueryTable<B>> dst_table,
-                                             std::vector<std::pair<uint32_t, uint32_t> > equality_conditions) {
+void KeyedSortMergeJoin<B>::writeRightTuples(shared_ptr<QueryTable<B>> src_table, shared_ptr<QueryTable<B>> dst_table) {
 
     FieldType table_id_type = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
     Value table_id = (B) 0;
@@ -96,7 +116,7 @@ void KeyedSortMergeJoin<B>::writeRightTuples(shared_ptr<QueryTable<B>> src_table
          dst_tuple.setDummyTag(src_tuple.getDummyTag());
 
          // copy out the value into its equality position on the rhs.  Use this for sorting
-         for(std::pair<uint32_t, uint32_t> p : equality_conditions) {
+         for(std::pair<uint32_t, uint32_t> p : equality_conditions_) {
              Field f = src_tuple.getField(p.second);
              dst_tuple.setField(p.first, f);
          }
@@ -105,8 +125,43 @@ void KeyedSortMergeJoin<B>::writeRightTuples(shared_ptr<QueryTable<B>> src_table
 
 
     }
+// iterate over first sorted table and copy down values from primary key to foreign one
+template<typename B>
+void KeyedSortMergeJoin<B>::distributeValues(shared_ptr<QueryTable<bool> > dst_table) {
+    // start with pkey data empty
+    int table_id_idx = dst_table->getSchema()->getFieldCount() - 1;
+    PlainTuple last_primary_key;
+    bool pkey_init = false;
 
+    size_t lhs_field_cnt = lhs_schema_.getFieldCount();
+    size_t rhs_field_cnt = rhs_schema_.getFieldCount();
 
+    for(uint32_t i = 0; i < dst_table->getTupleCount(); ++i) {
+        PlainTuple d = dst_table->getTuple(i);
+        bool table_id = d.getField(table_id_idx).template getValue<bool>();
+        if(!table_id) { // primary key
+            last_primary_key = d;
+            d.setDummyTag(true); //
+            pkey_init = true;
+        }
+        else { // copy down the latest value and then evaluating predicate
+            if(pkey_init) {
+                QueryTuple<B>::writeSubset(d, last_primary_key, lhs_field_cnt,  rhs_field_cnt, lhs_field_cnt);
+                bool predicate_eval = Join<B>::predicate_.callBoolExpression(d);
+                bool dummy_tag = Join<B>::get_dummy_tag(d, last_primary_key, predicate_eval);
+                d.setDummyTag(dummy_tag);
+            }
+        }
+
+    }
+
+}
+
+template<typename B>
+void KeyedSortMergeJoin<B>::distributeValues(shared_ptr<QueryTable<emp::Bit> > dst_table) {
+    //TODO:
+    throw;
+}
 // pad both sides so each tuple is the same length
 // union together the two sides with one extra column indicating source table
 // sort on join key, pkey rows go first
