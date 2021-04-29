@@ -32,14 +32,14 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
     std::cout << "Join received " << rhs_sort.size() << " col sorts from rhs." << std::endl;
 
     // output size, colCount, is_encrypted
-    Join<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(outputTupleCount, outputSchema, concat_sorts));
+    Join<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(outputTupleCount, outputSchema, concat_sorts));
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
         QueryTuple<B> lhs_tuple = (*lhs)[i];
         for(uint32_t j = 0; j < rhs->getTupleCount(); ++j) {
             QueryTuple<B> rhs_tuple = (*rhs)[j];
 
-            QueryTuple<B> out = (*Join<B>::output)[cursor];
+            QueryTuple<B> out = (*Join<B>::output_)[cursor];
             Join<B>::write_left(true, out, lhs_tuple); // all writes happen because we do the full cross product
             Join<B>::write_right(true, out, rhs_tuple);
 
@@ -50,8 +50,8 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
         }
     }
 
-    std::cout << "Join has output sort order with " << Join<B>::output->getSortOrder().size()  << " cols." <<  std::endl;
-    return Join<B>::output;
+    std::cout << "Join has output sort order with " << Join<B>::output_->getSortOrder().size() << " cols." << std::endl;
+    return Join<B>::output_;
 }
 
 

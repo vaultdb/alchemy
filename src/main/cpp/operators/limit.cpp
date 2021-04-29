@@ -15,7 +15,7 @@ Limit<B>::Limit(shared_ptr<QueryTable<B>> child, const size_t &outputTuples) : O
 template<typename B>
 shared_ptr<QueryTable<B>> Limit<B>::runSelf() {
    std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
-    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
+    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
 
     // validate setup
     SortDefinition orderBy = input->getSortOrder();
@@ -24,12 +24,12 @@ shared_ptr<QueryTable<B>> Limit<B>::runSelf() {
 
     std::cout << "Limit received " << input->getTupleCount() << " tuples." << std::endl;
 
-   if(Operator<B>::output->getTupleCount() < limit) {
-       return Operator<B>::output;
+   if(Operator<B>::output_->getTupleCount() < limit) {
+       return Operator<B>::output_;
    }
 
-    Operator<B>::output->resize(limit);
-    return Operator<B>::output;
+    Operator<B>::output_->resize(limit);
+    return Operator<B>::output_;
 }
 
 template class vaultdb::Limit<bool>;

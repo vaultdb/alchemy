@@ -6,9 +6,9 @@ std::shared_ptr<SecureTable> SecureSqlInput::runSelf() {
     plaintext->setSortOrder(sorted_on_);
 
     // secret share it
-    output = PlainTable::secretShare(*plaintext, netio_, srcParty);
+    output_ = PlainTable::secretShare(*plaintext, netio_, srcParty);
 
     //std::cout << "Secret shared input: " << output->reveal()->toString(true) << std::endl;
-    return output;
+    return output_;
 }
 

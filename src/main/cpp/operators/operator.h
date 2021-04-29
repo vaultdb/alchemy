@@ -27,9 +27,9 @@ namespace  vaultdb {
     protected:
         Operator *parent_;
         vector<Operator *> children_;
-        shared_ptr<QueryTable<B> > output;
-        TableInput<B> *lhs = 0;
-        TableInput<B> *rhs = 0;
+        shared_ptr<QueryTable<B> > output_;
+        TableInput<B> *lhs_ = 0;
+        TableInput<B> *rhs_ = 0;
 
 
     public:
@@ -74,12 +74,12 @@ namespace  vaultdb {
 
     public:
         TableInput(const std::shared_ptr<QueryTable<B> > & inputTable) {
-            Operator<B>::output = std::move(inputTable);
+            Operator<B>::output_ = std::move(inputTable);
             Operator<B>::operatorExecuted = true;
         }
 
         std::shared_ptr<QueryTable<B> > runSelf() override {
-            return  Operator<B>::output;
+            return  Operator<B>::output_;
         }
 
     };

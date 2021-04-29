@@ -33,9 +33,9 @@ shared_ptr<QueryTable<B>> KeyedSortMergeJoin<B>::runSelf() {
 
     size_t tuple_cnt = lhs->getTupleCount() + rhs->getTupleCount();
 
-    Operator<B>::output = shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt, dst_schema));
-    writeLeftTuples(lhs, Operator<B>::output);
-    writeRightTuples(rhs, Operator<B>::output);
+    Operator<B>::output_ = shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt, dst_schema));
+    writeLeftTuples(lhs, Operator<B>::output_);
+    writeRightTuples(rhs, Operator<B>::output_);
 
     SortDefinition s;
     for(pair<uint32_t, uint32_t> p : equality_conditions_) {
@@ -44,18 +44,18 @@ shared_ptr<QueryTable<B>> KeyedSortMergeJoin<B>::runSelf() {
 
     // sort returns values ordered by sort key
     // first has pkey tuple, then fkey entries
-    Sort<B> augmented(Operator<B>::output, s);
-    Operator<B>::output = augmented.run();
+    Sort<B> augmented(Operator<B>::output_, s);
+    Operator<B>::output_ = augmented.run();
 
-    distribute_values(Operator<B>::output);
+    distribute_values(Operator<B>::output_);
 
     // TODO: preserve original sort order where possible here.  Investigate fusing it with any sort op in parent
     SortDefinition  dummies_to_end{ColumnSort(-1, SortDirection::ASCENDING)};
-    Sort<B> dummy_pushdown(Operator<B>::output, dummies_to_end);
-    Operator<B>::output = dummy_pushdown.run();
+    Sort<B> dummy_pushdown(Operator<B>::output_, dummies_to_end);
+    Operator<B>::output_ = dummy_pushdown.run();
 
-    Operator<B>::output->resize(lhs->getTupleCount());
-    return Operator<B>::output;
+    Operator<B>::output_->resize(lhs->getTupleCount());
+    return Operator<B>::output_;
 }
 
 

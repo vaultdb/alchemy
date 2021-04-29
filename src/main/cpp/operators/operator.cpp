@@ -5,17 +5,17 @@ using namespace vaultdb;
 
 template<typename B>
 Operator<B>::Operator(shared_ptr<QueryTable<B> > lhsSrc) {
-        lhs = new TableInput(lhsSrc);
-        children_.push_back((Operator *) lhs);
+    lhs_ = new TableInput(lhsSrc);
+        children_.push_back((Operator *) lhs_);
 }
 
 template<typename B>
 Operator<B>::Operator(shared_ptr<QueryTable<B> > lhsSrc, shared_ptr<QueryTable<B> > rhsSrc) {
-    lhs = new TableInput(lhsSrc);
-    children_.push_back((Operator *) lhs);
+    lhs_ = new TableInput(lhsSrc);
+    children_.push_back((Operator *) lhs_);
 
-    rhs = new TableInput(rhsSrc);
-    children_.push_back((Operator *) rhs);
+    rhs_ = new TableInput(rhsSrc);
+    children_.push_back((Operator *) rhs_);
 
 }
 
@@ -41,23 +41,23 @@ Operator<B>::Operator(Operator *lhs, Operator *rhs) {
 template<typename B>
 std::shared_ptr<QueryTable<B> > Operator<B>::run() {
     if(operatorExecuted) // prevent duplicate executions of operator
-        return output;
+        return output_;
 
     for(Operator *op : children_) {
         op->run();
     }
 
-    output = runSelf(); // delegated to children
+    output_ = runSelf(); // delegated to children
     operatorExecuted = true;
-    return output;
+    return output_;
 }
 
 template<typename B>
  std::shared_ptr<QueryTable<B> > Operator<B> ::getOutput()  {
-    if(output.get() == nullptr) { // if we haven't run it yet
-        output = run();
+    if(output_.get() == nullptr) { // if we haven't run it yet
+        output_ = run();
     }
-    return output;
+    return output_;
 }
 
 template<typename B>
@@ -82,8 +82,8 @@ void Operator<B>::setChild(Operator *aChild, int idx) {
 
 template<typename B>
  Operator<B>::~Operator() {
-    if(lhs) delete lhs;
-    if(rhs) delete rhs;
+    if(lhs_) delete lhs_;
+    if(rhs_) delete rhs_;
 
 }
 

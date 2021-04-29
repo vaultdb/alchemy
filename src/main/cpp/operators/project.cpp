@@ -108,16 +108,16 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
     // *** Done defining schema and verifying setup
     std::cout << "Project sort contains " << dst_sort.size() << " cols. " << std::endl;
-    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt_, dst_schema, dst_sort));
+    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt_, dst_schema, dst_sort));
 
 
     for(uint32_t i = 0; i < tuple_cnt_; ++i) {
         QueryTuple<B> src_tuple = src_table->getTuple(i);
-        QueryTuple<B> dst_tuple = Operator<B>::output->getTuple(i);
+        QueryTuple<B> dst_tuple = Operator<B>::output_->getTuple(i);
         project_tuple(dst_tuple, src_tuple);
     }
 
-    return Operator<B>::output;
+    return Operator<B>::output_;
 }
 
 

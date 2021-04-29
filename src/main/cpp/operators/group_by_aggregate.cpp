@@ -39,9 +39,9 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     SortDefinition outputSort = vector<ColumnSort>(inputSort.begin(), inputSort.begin() + groupByOrdinals.size());
 
 
-    Operator<B>::output = shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), outputSchema, outputSort));
+    Operator<B>::output_ = shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), outputSchema, outputSort));
 
-    QueryTuple<B> tuple = (*Operator<B>::output)[0];
+    QueryTuple<B> tuple = (*Operator<B>::output_)[0];
     B dummy_tag(false);
     tuple.setDummyTag(dummy_tag);
 
@@ -60,7 +60,7 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
         realBin = realBin | !predecessor.getDummyTag();
         B isGroupByMatch = groupByMatch(predecessor, current);
-        QueryTuple<B> output_tuple = GroupByAggregate<B>::output->getTuple(i-1); // to write to it in place
+        QueryTuple<B> output_tuple = GroupByAggregate<B>::output_->getTuple(i - 1); // to write to it in place
         generateOutputTuple(output_tuple, predecessor, !isGroupByMatch, realBin, aggregators);
 
         for(GroupByAggregateImpl<B> *aggregator : aggregators) {
@@ -79,18 +79,18 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
 
     // B(true) to make it write out the last entry
-    QueryTuple<B> output_tuple = GroupByAggregate<B>::output->getTuple(input->getTupleCount() - 1);
+    QueryTuple<B> output_tuple = GroupByAggregate<B>::output_->getTuple(input->getTupleCount() - 1);
     generateOutputTuple(output_tuple, predecessor, B(true), realBin, aggregators);
 
     // output sorted on group-by cols
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(groupByOrdinals.size());
-    Operator<B>::output->setSortOrder(sortDefinition);
+    Operator<B>::output_->setSortOrder(sortDefinition);
 
     for(size_t i = 0; i < aggregators.size(); ++i) {
         delete aggregators[i];
     }
 
-    return Operator<B>::output;
+    return Operator<B>::output_;
 
 }
 

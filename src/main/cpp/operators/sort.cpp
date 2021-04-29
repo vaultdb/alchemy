@@ -47,15 +47,15 @@ std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
 
     // deep copy new output
-    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
-    bitonicSort(0,  Operator<B>::output->getTupleCount(), true);
+    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
+    bitonicSort(0, Operator<B>::output_->getTupleCount(), true);
 
-    Operator<B>::output->setSortOrder(sortDefinition);
+    Operator<B>::output_->setSortOrder(sortDefinition);
 
     if(limit_ > 0) {
-        Operator<B>::output->resize(limit_);
+        Operator<B>::output_->resize(limit_);
     }
-    return Operator<B>::output;
+    return Operator<B>::output_;
 }
 
 
@@ -72,7 +72,7 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &invertDir) 
         int k = cnt / 2;
         bitonicSort(lo, k, !invertDir);
         bitonicSort(lo + k, cnt - k, invertDir);
-        bitonicMerge(Operator<B>::output, sortDefinition, lo, cnt, invertDir);
+        bitonicMerge(Operator<B>::output_, sortDefinition, lo, cnt, invertDir);
 
     }
 }
