@@ -16,29 +16,29 @@ int Sort<B>::powerOfLessThanTwo(const int & n) {
 }
 
 template<typename B>
-Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child), sortDefinition(aSortDefinition), limit_(limit) {
+Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child, aSortDefinition), limit_(limit) {
 
-    for(ColumnSort s : sortDefinition) {
+    for(ColumnSort s : Operator<B>::sort_definition_) {
         if(s.second == SortDirection::INVALID)
             throw; // invalid sort definition
     }
 
     if(limit_ > 0)
-        assert(sortDefinition[0].first == -1); // Need to sort on dummy tag to make resizing not delete real tuples
+        assert(Operator<B>::sort_definition_[0].first == -1); // Need to sort on dummy tag to make resizing not delete real tuples
 
 
 }
 
 template<typename B>
-Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child), sortDefinition(aSortDefinition), limit_(limit) {
+Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child, aSortDefinition), limit_(limit) {
 
-    for(ColumnSort s : sortDefinition) {
+    for(ColumnSort s : Operator<B>::sort_definition_) {
         if(s.second == SortDirection::INVALID)
             throw; // invalid sort definition
     }
 
     if(limit_ > 0)
-        assert(sortDefinition[0].first == -1); // Need to sort on dummy tag to make resizing not delete real tuples
+        assert(Operator<B>::sort_definition_[0].first == -1); // Need to sort on dummy tag to make resizing not delete real tuples
 
 }
 
@@ -50,7 +50,7 @@ std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
     Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
     bitonicSort(0, Operator<B>::output_->getTupleCount(), true);
 
-    Operator<B>::output_->setSortOrder(sortDefinition);
+    Operator<B>::output_->setSortOrder(Operator<B>::sort_definition_);
 
     if(limit_ > 0) {
         Operator<B>::output_->resize(limit_);
@@ -72,7 +72,7 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &invertDir) 
         int k = cnt / 2;
         bitonicSort(lo, k, !invertDir);
         bitonicSort(lo + k, cnt - k, invertDir);
-        bitonicMerge(Operator<B>::output_, sortDefinition, lo, cnt, invertDir);
+        bitonicMerge(Operator<B>::output_, Operator<B>::sort_definition_, lo, cnt, invertDir);
 
     }
 }

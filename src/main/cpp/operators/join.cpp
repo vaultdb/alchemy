@@ -5,11 +5,11 @@
 using namespace vaultdb;
 
 template<typename  B>
-Join<B>::Join(Operator<B> *lhs, Operator<B> *rhs,  const BoolExpression<B> & predicate) : Operator<B>(lhs, rhs), predicate_(predicate) {
+Join<B>::Join(Operator<B> *lhs, Operator<B> *rhs,  const BoolExpression<B> & predicate, const SortDefinition & sort) : Operator<B>(lhs, rhs, sort), predicate_(predicate) {
 }
 
 template<typename  B>
-Join<B>::Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  const BoolExpression<B> & predicate) :  Operator<B>(lhs, rhs), predicate_(predicate) {
+Join<B>::Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  const BoolExpression<B> & predicate, const SortDefinition & sort) :  Operator<B>(lhs, rhs, sort), predicate_(predicate) {
 }
 
 template<typename  B>

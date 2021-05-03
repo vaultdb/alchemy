@@ -11,22 +11,25 @@ using namespace vaultdb;
 // can't fully initialize schemas yet, don't have child schema
 
 template<typename B>
-Project<B>::Project(Operator<B> *child) : Operator<B>(child) {}
+Project<B>::Project(Operator<B> *child, const SortDefinition & sort) : Operator<B>(child, sort) {
+
+}
 
 template<typename B>
-Project<B>::Project(shared_ptr<QueryTable<B> > src) : Operator<B>(src) {}
+Project<B>::Project(shared_ptr<QueryTable<B> > src, const SortDefinition & sort_definition) : Operator<B>(src, sort_definition) {}
 
 template<typename B>
-Project<B>::Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map) : Operator<B>(child), expressions_(expression_map) {
+Project<B>::Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort_definition) : Operator<B>(child, sort_definition), expressions_(expression_map) {
 
 
 }
 
 template<typename B>
-Project<B>::Project(shared_ptr<QueryTable<B> > child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map) : Operator<B>(child), expressions_(expression_map) {
+Project<B>::Project(shared_ptr<QueryTable<B> > child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort) : Operator<B>(child, sort), expressions_(expression_map) {
 
 
 }
+
 
 
 template<typename B>
@@ -82,7 +85,6 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
     }
 
 
-    // Only carry over the order by for ones that exist in the output schema
     SortDefinition  dst_sort;
     std::cout << "Project source sort order: " << DataUtilities::printSortDefinition(src_sort_order) << " source schema: " << src_schema << std::endl;
     std::cout << "projection cols: ";
@@ -98,16 +100,17 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
         uint32_t src_ordinal = sort.first;
         bool found = false;
         for(ProjectionMapping mapping : column_mappings_) {
-            if(mapping.first == src_ordinal) {
+            if(mapping.first == src_ordinal && sort_carry_over) {
                 dst_sort.push_back(ColumnSort (mapping.second, sort.second));
                 found = true;
             }
         } // end search for mapping
-        if(!found) { sort_carry_over = false; }
+        if(!found) { sort_carry_over = false; } // broke the sequence of mappings
     }
 
     // *** Done defining schema and verifying setup
     std::cout << "Project sort contains " << dst_sort.size() << " cols. " << std::endl;
+
     Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt_, dst_schema, dst_sort));
 
 

@@ -15,12 +15,12 @@ namespace vaultdb {
 
     public:
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                         const vector<ScalarAggregateDefinition> &aggregates) : Operator<B>(child),
+                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition()) : Operator<B>(child, sort),
                          aggregateDefinitions(aggregates),
                          groupByOrdinals(groupBys) {};
 
         GroupByAggregate(shared_ptr<QueryTable<B> > child, const vector<int32_t> &groupBys,
-                         const vector<ScalarAggregateDefinition> &aggregates) : Operator<B>(child),
+                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition()) : Operator<B>(child, sort),
                                                                                      aggregateDefinitions(aggregates),
                                                                                      groupByOrdinals(groupBys) {};
         std::shared_ptr<QueryTable<B> > runSelf() override;

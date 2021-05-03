@@ -9,7 +9,6 @@
 namespace  vaultdb {
     template<typename B>
     class Sort : public Operator<B> {
-        SortDefinition sortDefinition;
 
 
     public:

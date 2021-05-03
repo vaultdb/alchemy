@@ -6,7 +6,7 @@ std::shared_ptr<PlainTable > SqlInput::runSelf() {
     PsqlDataProvider dataProvider;
     std::shared_ptr<PlainTable> localOutput = dataProvider.getQueryTable(dbName, inputQuery, hasDummyTag);
     Operator::output_ = std::move(localOutput);
-    if(!sortedOn.empty()) {  output_->setSortOrder(sortedOn); }
+    output_->setSortOrder(Operator<bool>::sort_definition_);
 
     return output_;
 

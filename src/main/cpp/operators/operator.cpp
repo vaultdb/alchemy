@@ -4,13 +4,13 @@
 using namespace vaultdb;
 
 template<typename B>
-Operator<B>::Operator(shared_ptr<QueryTable<B> > lhsSrc) {
+Operator<B>::Operator(shared_ptr<QueryTable<B> > lhsSrc, const SortDefinition & sorted_on) : sort_definition_(sorted_on) {
     lhs_ = new TableInput(lhsSrc);
         children_.push_back((Operator *) lhs_);
 }
 
 template<typename B>
-Operator<B>::Operator(shared_ptr<QueryTable<B> > lhsSrc, shared_ptr<QueryTable<B> > rhsSrc) {
+Operator<B>::Operator(shared_ptr<QueryTable<B> > lhsSrc, shared_ptr<QueryTable<B> > rhsSrc, const SortDefinition & sorted_on) : sort_definition_(sorted_on) {
     lhs_ = new TableInput(lhsSrc);
     children_.push_back((Operator *) lhs_);
 
@@ -20,7 +20,7 @@ Operator<B>::Operator(shared_ptr<QueryTable<B> > lhsSrc, shared_ptr<QueryTable<B
 }
 
 template<typename B>
-Operator<B>::Operator(Operator *child) {
+Operator<B>::Operator(Operator *child, const SortDefinition & sorted_on) : sort_definition_(sorted_on)  {
 
      child->setParent(this);
     children_.push_back(child);
@@ -28,7 +28,7 @@ Operator<B>::Operator(Operator *child) {
 }
 
 template<typename B>
-Operator<B>::Operator(Operator *lhs, Operator *rhs) {
+Operator<B>::Operator(Operator *lhs, Operator *rhs, const SortDefinition & sorted_on) : sort_definition_(sorted_on)  {
 
     lhs->setParent(this);
     rhs->setParent(this);
@@ -40,7 +40,7 @@ Operator<B>::Operator(Operator *lhs, Operator *rhs) {
 
 template<typename B>
 std::shared_ptr<QueryTable<B> > Operator<B>::run() {
-    if(operatorExecuted) // prevent duplicate executions of operator
+    if(operator_executed_) // prevent duplicate executions of operator
         return output_;
 
     for(Operator *op : children_) {
@@ -48,13 +48,14 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
     }
 
     output_ = runSelf(); // delegated to children
-    operatorExecuted = true;
+    operator_executed_ = true;
+    sort_definition_  = output_->getSortOrder(); // update this if needed
     return output_;
 }
 
 template<typename B>
  std::shared_ptr<QueryTable<B> > Operator<B> ::getOutput()  {
-    if(output_.get() == nullptr) { // if we haven't run it yet
+    if(!operator_executed_) { // if we haven't run it yet
         output_ = run();
     }
     return output_;
@@ -85,6 +86,12 @@ template<typename B>
     if(lhs_) delete lhs_;
     if(rhs_) delete rhs_;
 
+}
+
+template<typename B>
+SortDefinition Operator<B>::getSortOrder() const {
+    assert(output_.get() == nullptr || sort_definition_ == output_->getSortOrder()); // check that output table is aligned with operator's sort order
+    return sort_definition_;
 }
 
 template class vaultdb::Operator<bool>;

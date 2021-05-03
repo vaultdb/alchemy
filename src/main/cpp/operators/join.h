@@ -12,8 +12,8 @@ namespace  vaultdb {
 
 
     public:
-        Join(Operator<B> *lhs, Operator<B> *rhs, const BoolExpression<B> & predicate);
-        Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  const BoolExpression<B> & predicate);
+        Join(Operator<B> *lhs, Operator<B> *rhs, const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
+        Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
         ~Join()  = default;
 
 

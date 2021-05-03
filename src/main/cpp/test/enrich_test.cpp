@@ -473,10 +473,10 @@ TEST_F(EnrichTest, testPatientCohort) {
 
 
     observedTable = DataUtilities::removeDummies(observedTable);
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(5);
+    //SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(5);
+    SortDefinition empty;
 
-
-    validateTable(unionedDbName, expectedResultSql, sortDefinition, observedTable);
+    validateTable(unionedDbName, expectedResultSql, empty, observedTable);
 
 }
 

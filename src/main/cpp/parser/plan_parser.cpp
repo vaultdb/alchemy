@@ -206,7 +206,6 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_i
     // parse the aggregators
     std::vector<int> group_by_ordinals;
     vector<ScalarAggregateDefinition> aggregators;
-    //assert(aggregate_json.count("group") > 0);
 
     if(aggregate_json.count("group") > 0) {
         ptree group_by = aggregate_json.get_child("group.");
@@ -244,7 +243,10 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_i
 
 
     if(!group_by_ordinals.empty()) {
-     // instantiate group by aggregate
+        // if sort not aligned, insert a sort op
+        // TODO: if child not aligned, then insert a sort
+//        SortDefinition child_sort = child->getSortOrder();
+//        if()
         return shared_ptr<Operator<B> >(new GroupByAggregate<B>(child.get(), group_by_ordinals, aggregators));
     }
     else {

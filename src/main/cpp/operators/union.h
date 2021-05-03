@@ -12,9 +12,9 @@ namespace  vaultdb {
 
 
     public:
-        Union(Operator<B> *lhs, Operator<B> *rhs) : Operator<B>(lhs, rhs) { }
+        Union(Operator<B> *lhs, Operator<B> *rhs, const SortDefinition & sort = SortDefinition()) : Operator<B>(lhs, rhs, sort) { }
 
-        Union(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs) : Operator<B>(lhs, rhs) { }
+        Union(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, const SortDefinition & sort = SortDefinition()) : Operator<B>(lhs, rhs, sort) { }
 
         ~Union() = default;
 

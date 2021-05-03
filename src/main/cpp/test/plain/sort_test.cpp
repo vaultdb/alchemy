@@ -87,6 +87,8 @@ TEST_F(SortTest, tpchQ3Sort) {
     Project project(&sort);
     project.addColumnMapping(1, 0);
     project.addColumnMapping(3, 1);
+    project.addInputReference(1, 0);
+    project.addInputReference(3, 1);
 
     shared_ptr<PlainTable> observed = project.run();
 
@@ -128,6 +130,7 @@ TEST_F(SortTest, tpchQ5Sort) {
     // project it down to $1
     Project project(&sort);
     project.addColumnMapping(1, 0);
+    project.addInputReference(1, 0);
 
 
     // update sort def to account for projection -- also testing sort order carryover - the metadata in PlainTable  describing sorted order of its contents
@@ -159,6 +162,8 @@ TEST_F(SortTest, tpchQ8Sort) {
     // project it down to $0
     Project project(&sort);
     project.addColumnMapping(0, 0);
+    project.addInputReference(0, 0);
+
     shared_ptr<PlainTable > observed = project.run();
 
     ASSERT_EQ(*expected, *observed);
@@ -189,6 +194,8 @@ TEST_F(SortTest, tpchQ9Sort) {
     Project project(&sort);
     project.addColumnMapping(2, 0);
     project.addColumnMapping(0, 1);
+    project.addInputReference(2, 0);
+    project.addInputReference(0, 1);
 
     shared_ptr<PlainTable > observed = project.run();
 
@@ -227,6 +234,8 @@ TEST_F(SortTest, tpchQ18Sort) {
     Project project(&sort);
     project.addColumnMapping(2, 0);
     project.addColumnMapping(1, 1);
+    project.addInputReference(2, 0);
+    project.addInputReference(1, 1);
 
     shared_ptr<PlainTable > observed = project.run();
 

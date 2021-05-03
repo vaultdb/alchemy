@@ -7,11 +7,12 @@ using namespace vaultdb;
 
 template<typename B>
 Filter<B>::Filter(Operator<B> *child, BoolExpression<B> & predicate) :
-     Operator<B>(child), predicate_(predicate) { }
+     Operator<B>(child, child->getSortOrder()), predicate_(predicate) {
+     }
 
 template<typename B>
 Filter<B>::Filter(shared_ptr<QueryTable<B> > child, BoolExpression<B> & predicate) :
-     Operator<B>(child), predicate_(predicate) { }
+     Operator<B>(child, child->getSortOrder()), predicate_(predicate) { }
 
 template<typename B>
 std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {

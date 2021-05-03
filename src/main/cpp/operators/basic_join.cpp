@@ -3,12 +3,12 @@
 using namespace vaultdb;
 
 template<typename B>
-BasicJoin<B>::BasicJoin(Operator<B> *lhs, Operator<B> *rhs, const BoolExpression<B> & predicate)
-        : Join<B>(lhs, rhs, predicate) {}
+BasicJoin<B>::BasicJoin(Operator<B> *lhs, Operator<B> *rhs, const BoolExpression<B> & predicate, const SortDefinition & sort)
+        : Join<B>(lhs, rhs, predicate, sort) {}
 
 template<typename B>
-BasicJoin<B>::BasicJoin(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> >rhs, const BoolExpression<B> & predicate)
-        : Join<B>(lhs, rhs, predicate) {}
+BasicJoin<B>::BasicJoin(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> >rhs, const BoolExpression<B> & predicate, const SortDefinition & sort)
+        : Join<B>(lhs, rhs, predicate, sort) {}
 
 template<typename B>
 shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {

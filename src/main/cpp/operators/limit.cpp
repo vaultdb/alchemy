@@ -3,12 +3,12 @@
 using namespace vaultdb;
 
 template<typename B>
-Limit<B>::Limit(Operator<B> *child, const size_t &outputTuples)  : Operator<B>(child), limit(outputTuples) {
+Limit<B>::Limit(Operator<B> *child, const size_t &outputTuples, const SortDefinition & sort)  : Operator<B>(child, sort), limit(outputTuples) {
 
 }
 
 template<typename B>
-Limit<B>::Limit(shared_ptr<QueryTable<B>> child, const size_t &outputTuples) : Operator<B>(child), limit(outputTuples) {
+Limit<B>::Limit(shared_ptr<QueryTable<B>> child, const size_t &outputTuples, const SortDefinition & sort) : Operator<B>(child, sort), limit(outputTuples) {
 
 }
 

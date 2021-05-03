@@ -12,11 +12,11 @@ namespace vaultdb {
     class ScalarAggregate : public Operator<B> {
     public:
         // aggregates are sorted by their output order in aggregate's output schema
-        ScalarAggregate(Operator<B> *child, const std::vector<ScalarAggregateDefinition> &aggregates)
-                : Operator<B>(child), aggregateDefinitions(aggregates) {};
+        ScalarAggregate(Operator<B> *child, const std::vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition())
+                : Operator<B>(child, sort), aggregateDefinitions(aggregates) {};
 
-        ScalarAggregate(shared_ptr<QueryTable<B> > child, const std::vector<ScalarAggregateDefinition> &aggregates)
-                : Operator<B>(child), aggregateDefinitions(aggregates) {};
+        ScalarAggregate(shared_ptr<QueryTable<B> > child, const std::vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition())
+                : Operator<B>(child, sort), aggregateDefinitions(aggregates) {};
         ~ScalarAggregate() = default;
 
         std::shared_ptr<QueryTable<B> > runSelf() override;

@@ -4,12 +4,12 @@
 using namespace vaultdb;
 
 template<typename B>
-KeyedJoin<B>::KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, const BoolExpression<B> & predicate)
-        : Join<B>(foreignKey, primaryKey, predicate) {}
+KeyedJoin<B>::KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, const BoolExpression<B> & predicate, const SortDefinition & sort)
+        : Join<B>(foreignKey, primaryKey, predicate, sort) {}
 
 template<typename B>
-KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const BoolExpression<B> & predicate)
-        : Join<B>(foreignKey, primaryKey, predicate) {}
+KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const BoolExpression<B> & predicate, const SortDefinition & sort)
+        : Join<B>(foreignKey, primaryKey, predicate, sort) {}
 
 
 

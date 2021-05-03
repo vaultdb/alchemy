@@ -11,9 +11,9 @@ namespace  vaultdb {
 
         size_t limit;
     public:
-        Limit(Operator<B> *child, const size_t &outputTuples);
+        Limit(Operator<B> *child, const size_t &outputTuples, const SortDefinition & sort = SortDefinition());
 
-        Limit(shared_ptr<QueryTable<B> > child, const size_t & outputTuples);
+        Limit(shared_ptr<QueryTable<B> > child, const size_t & outputTuples, const SortDefinition & sort = SortDefinition());
 
         ~Limit() = default;
 

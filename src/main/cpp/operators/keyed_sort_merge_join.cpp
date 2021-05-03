@@ -9,7 +9,7 @@ using namespace vaultdb;
 
 template<typename B>
 KeyedSortMergeJoin<B>::KeyedSortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key,
-                                          const BoolExpression<B> & predicate)  : Join<B>(foreign_key, primary_key, predicate) {
+                                          const BoolExpression<B> & predicate, const SortDefinition & sort)  : Join<B>(foreign_key, primary_key, predicate, sort) {
 
     JoinEqualityConditionVisitor<B> join_visitor(Join<B>::predicate_.root_);
     equality_conditions_ = join_visitor.getEqualities();
@@ -18,7 +18,7 @@ KeyedSortMergeJoin<B>::KeyedSortMergeJoin(Operator<B> *foreign_key, Operator<B> 
 
 template<typename B>
 KeyedSortMergeJoin<B>::KeyedSortMergeJoin(shared_ptr<QueryTable<B>> foreign_key, shared_ptr<QueryTable<B>> primary_key,
-                                          const BoolExpression<B> & predicate) : Join<B>(foreign_key, primary_key, predicate) {
+                                          const BoolExpression<B> & predicate, const SortDefinition & sort) : Join<B>(foreign_key, primary_key, predicate, sort) {
 
 }
 

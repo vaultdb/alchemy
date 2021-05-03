@@ -27,10 +27,10 @@ namespace vaultdb {
         ProjectionMappingSet column_mappings_;
 
     public:
-        Project(Operator<B> *child);
-        Project(shared_ptr<QueryTable<B> > src);
-        Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map);
-        Project(shared_ptr<QueryTable<B> > src, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map);
+        Project(Operator<B> *child, const SortDefinition & sort_definition = SortDefinition());
+        Project(shared_ptr<QueryTable<B> > src, const SortDefinition & sort_definition = SortDefinition());
+        Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort_definition = SortDefinition());
+        Project(shared_ptr<QueryTable<B> > src, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort_definition = SortDefinition());
         ~Project() = default;
 
         void addColumnMappings(const ProjectionMappingSet & mapSet);

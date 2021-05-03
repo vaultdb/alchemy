@@ -13,14 +13,11 @@ protected:
     QuerySchema inputSchema;
 
 public:
-    CsvInput(string srcFile, const QuerySchema & srcSchema ) : inputFile(srcFile), inputSchema(srcSchema) {
+    CsvInput(string srcFile, const QuerySchema & srcSchema, const SortDefinition & sort = SortDefinition()) : Operator<bool>(sort), inputFile(srcFile), inputSchema(srcSchema) {
 
 
     }
 
-
-
-    void setSortDefinition(const SortDefinition & aSortDefinition) { sortedOn = aSortDefinition; };
 
     shared_ptr<PlainTable> runSelf() override;
 

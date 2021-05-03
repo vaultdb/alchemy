@@ -11,8 +11,8 @@ namespace  vaultdb {
     class KeyedJoin : public Join<B> {
 
     public:
-        KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, const BoolExpression<B> & predicate);
-        KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const BoolExpression<B> & predicate);
+        KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
+        KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
         ~KeyedJoin() = default;
         std::shared_ptr<QueryTable<B> > runSelf() override;
 
