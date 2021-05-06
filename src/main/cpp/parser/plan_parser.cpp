@@ -119,7 +119,7 @@ void PlanParser<B>::parseSecurePlan(const string & plan_file) {
                     boost::property_tree::ptree inputs = v.second.get_child("id");
                     int operator_id = v.second.get_child("id").template get_value<int>();
                     string op_name =  (std::string) v.second.get_child("relOp").data();
-                    //std::cout << "***Parsed op " << operator_id << ": " << op_name << std::endl;
+                    std::cout << "***Parsed op " << operator_id << ": " << op_name << std::endl;
                     parseOperator(operator_id, op_name, v.second);
                 }
 }
@@ -204,7 +204,7 @@ template<typename B>
 std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_id, const boost::property_tree::ptree &aggregate_json) {
 
     // parse the aggregators
-    std::vector<int> group_by_ordinals;
+    std::vector<int32_t> group_by_ordinals;
     vector<ScalarAggregateDefinition> aggregators;
 
     if(aggregate_json.count("group") > 0) {
@@ -239,14 +239,21 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_i
         aggregators.push_back(s);
     }
 
-    const shared_ptr<Operator<B> > child = getChildOperator(operator_id);
+    shared_ptr<Operator<B> > child = getChildOperator(operator_id);
 
 
     if(!group_by_ordinals.empty()) {
         // if sort not aligned, insert a sort op
-        // TODO: if child not aligned, then insert a sort
-//        SortDefinition child_sort = child->getSortOrder();
-//        if()
+        SortDefinition child_sort = child->getSortOrder();
+        if(!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
+            // insert sort
+            SortDefinition child_sort;
+            for(uint32_t idx : group_by_ordinals) {
+                child_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
+            }
+            child = std::shared_ptr<Operator<B>> (new Sort<B>(child.get(), child_sort));
+            support_ops_.template emplace_back(child);
+        }
         return shared_ptr<Operator<B> >(new GroupByAggregate<B>(child.get(), group_by_ordinals, aggregators));
     }
     else {
@@ -286,8 +293,8 @@ template<typename B>
 std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_id, const ptree &project_tree) {
 
     shared_ptr<Operator<B> > child_operator = getChildOperator(operator_id);
-    shared_ptr<Project<B> > project(new Project<B>(child_operator.get()));
 
+    ExpressionMapBuilder<B>  builder;
     ptree expressions = project_tree.get_child("exprs");
     uint32_t src_ordinal, dst_ordinal = 0;
 
@@ -297,13 +304,15 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_
             GenericExpression<B> expression_impl = *((GenericExpression<B> *) expr.get());
             InputReferenceNode<B> input_ref  = *((InputReferenceNode<B> *) expression_impl.root_.get());
             src_ordinal = input_ref.read_idx_;
-            project->addColumnMapping(src_ordinal, dst_ordinal);
+            builder.addMapping(src_ordinal, dst_ordinal);
         }
 
-        project->addExpression(expr, dst_ordinal);
+        builder.addExpression(expr, dst_ordinal);
 
       ++dst_ordinal;
     }
+
+    shared_ptr<Project<B> > project(new Project<B>(child_operator.get(), builder.getExprs()));
 
     return project;
 }

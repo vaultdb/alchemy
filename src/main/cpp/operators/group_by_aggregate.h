@@ -13,21 +13,20 @@ namespace vaultdb {
         std::vector<ScalarAggregateDefinition> aggregateDefinitions;
         std::vector<int32_t> groupByOrdinals;
 
+        vector<GroupByAggregateImpl<B> *> aggregators_;
+
     public:
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition()) : Operator<B>(child, sort),
-                         aggregateDefinitions(aggregates),
-                         groupByOrdinals(groupBys) {};
+                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());
 
         GroupByAggregate(shared_ptr<QueryTable<B> > child, const vector<int32_t> &groupBys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition()) : Operator<B>(child, sort),
-                                                                                     aggregateDefinitions(aggregates),
-                                                                                     groupByOrdinals(groupBys) {};
+                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());;
         std::shared_ptr<QueryTable<B> > runSelf() override;
         ~GroupByAggregate() = default;
+        static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs);
 
     private:
-        GroupByAggregateImpl<B> *aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
+        GroupByAggregateImpl<B> *aggregateFactory(const AggregateId &aggregateType, const int32_t &ordinal,
                                                const FieldType &aggregateValueType) const;
         // checks that input table is sorted by group-by cols
         bool verifySortOrder(const std::shared_ptr<QueryTable<B> > & table) const;
@@ -41,6 +40,9 @@ namespace vaultdb {
         void generateOutputTuple(QueryTuple <B> &dstTuple, const QueryTuple <B> &lastTuple,
                                            const B &lastEntryGroupByBin, const B &real_bin,
                                  const vector<GroupByAggregateImpl<B> *> &aggregators) const;
+
+    private:
+        void setup();
 
 
     };

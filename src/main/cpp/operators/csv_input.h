@@ -8,13 +8,11 @@ namespace vaultdb {
 class CsvInput : public Operator<bool> {
 
 protected:
-    std::string inputFile;
-    SortDefinition sortedOn;
-    QuerySchema inputSchema;
+    std::string input_file_;
 
 public:
-    CsvInput(string srcFile, const QuerySchema & srcSchema, const SortDefinition & sort = SortDefinition()) : Operator<bool>(sort), inputFile(srcFile), inputSchema(srcSchema) {
-
+    CsvInput(string srcFile, const QuerySchema & srcSchema, const SortDefinition & sort = SortDefinition()) : Operator<bool>(sort), input_file_(srcFile)  {
+        output_schema_ = srcSchema;
 
     }
 

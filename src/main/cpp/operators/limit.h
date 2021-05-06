@@ -4,6 +4,7 @@
 #include <operators/operator.h>
 #include <query_table/query_table.h>
 
+// TODO: deprecate this, it's already factored into Sort operator
 namespace  vaultdb {
 
     template<typename B>

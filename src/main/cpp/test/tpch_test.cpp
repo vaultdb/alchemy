@@ -199,11 +199,13 @@ TEST_F(TpcHTest, testQ3Truncated)  {
     //                "  o.o_shippriority\n"
     // from: l_orderkey, o_orderdate, o_shippriority, revenue
 
-    Project project(&aggregate);
-    project.addColumnMapping(0, 0); // l_orderkey
-    project.addColumnMapping(3, 1); // revenue
-    project.addColumnMapping(1, 2); // o_orderdate
-    project.addColumnMapping(2, 3); // o_shippriority
+    ExpressionMapBuilder<bool> builder;
+    builder.addMapping(0, 0); // l_orderkey
+    builder.addMapping(3, 1); // revenue
+    builder.addMapping(1, 2); // o_orderdate
+    builder.addMapping(2, 3); // o_shippriority
+
+    Project project(&aggregate, builder.getExprs());
 
 
 

@@ -98,19 +98,13 @@ TEST_F(ProjectionTest, q3Lineitem) {
     SqlInput input("tpch_unioned", srcSql, false);
 
 
-    Project project(&input);
+    ExpressionMapBuilder<bool> builder;
+    builder.addMapping(0, 0);
+    builder.addMapping(10, 1);
     shared_ptr<Expression<bool> > revenue_expression(new GenericExpression<bool>(getRevenueExpression(), "revenue", FieldType::FLOAT));
 
-
-    project.addColumnMapping(0, 0);
-    project.addColumnMapping(10, 1);
-
-    project.addInputReference(0, 0);
-    project.addInputReference(10, 1);
-
-    project.addExpression(revenue_expression, 2);
-
-
+    builder.addExpression(revenue_expression, 2);
+    Project project(&input, builder.getExprs());
 
     std::shared_ptr<PlainTable > observed = project.run();
 

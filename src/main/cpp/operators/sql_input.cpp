@@ -1,14 +1,39 @@
 #include <data/PsqlDataProvider.h>
 #include "sql_input.h"
 
+using namespace vaultdb;
+
+// run this eagerly to get the schema
+SqlInput::SqlInput(std::string db, std::string sql, bool dummyTag) :   inputQuery(sql), dbName(db), hasDummyTag(dummyTag) {
+    runQuery();
+    output_schema_ = *output_->getSchema();
+
+}
+
+SqlInput::SqlInput(std::string db, std::string sql, bool dummyTag, const SortDefinition &sortDefinition) :
+        Operator<bool>(sortDefinition), inputQuery(sql), dbName(db), hasDummyTag(dummyTag) {
+
+    runQuery();
+    output_schema_ = *output_->getSchema();
+}
+
+
+
 // read in the data from supplied SQL query
 std::shared_ptr<PlainTable > SqlInput::runSelf() {
-    PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable> localOutput = dataProvider.getQueryTable(dbName, inputQuery, hasDummyTag);
-    Operator::output_ = std::move(localOutput);
-    output_->setSortOrder(Operator<bool>::sort_definition_);
+
 
     return output_;
 
 
 }
+
+void SqlInput::runQuery() {
+    PsqlDataProvider dataProvider;
+    std::shared_ptr<PlainTable> localOutput = dataProvider.getQueryTable(dbName, inputQuery, hasDummyTag);
+    Operator::output_ = std::move(localOutput);
+    output_->setSortOrder(Operator<bool>::sort_definition_);
+
+}
+
+

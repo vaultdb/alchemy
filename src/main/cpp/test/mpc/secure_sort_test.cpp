@@ -123,12 +123,16 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
 
 
     // project it down to $1, $3
-    Project project(&sort);
-    project.addColumnMapping(1, 0);
+    ExpressionMapBuilder<emp::Bit> builder;
+    builder.addMapping(1, 0);
+    builder.addMapping(3, 1);
+
+    Project project(&sort, builder.getExprs());
+   /* project.addColumnMapping(1, 0);
     project.addColumnMapping(3, 1);
 
     project.addInputReference(1, 0);
-    project.addInputReference(3, 1);
+    project.addInputReference(3, 1);*/
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed = result->reveal();
@@ -155,11 +159,11 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
     Sort<emp::Bit> sort(&input, sortDefinition);
 
+    ExpressionMapBuilder<emp::Bit> builder;
+    builder.addMapping(1, 0);
 
     // project it down to $1
-    Project project(&sort);
-    project.addColumnMapping(1, 0);
-    project.addInputReference(1, 0);
+    Project project(&sort, builder.getExprs());
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
@@ -190,9 +194,10 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
     Sort<emp::Bit> sort(&input, sortDefinition);
 
-    Project project(&sort);
-    project.addColumnMapping(0, 0);
-    project.addInputReference(0, 0);
+    ExpressionMapBuilder<emp::Bit> builder;
+    builder.addMapping(0, 0);
+
+    Project project(&sort, builder.getExprs());
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
@@ -227,13 +232,12 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     Sort sort(&input, sortDefinition);
 
     // project it down to $2, $0
-    Project project(&sort);
+    ExpressionMapBuilder<emp::Bit> builder;
+    builder.addMapping(2, 0);
+    builder.addMapping(0, 1);
 
-    project.addColumnMapping(2, 0);
-    project.addColumnMapping(0, 1);
+    Project project(&sort, builder.getExprs());
 
-    project.addInputReference(2, 0);
-    project.addInputReference(0, 1);
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
@@ -264,13 +268,11 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
 
     // project it down to $2, $1
+    ExpressionMapBuilder<emp::Bit> builder;
+    builder.addMapping(2, 0);
+    builder.addMapping(1, 1);
 
-    Project project(&sort);
-    project.addColumnMapping(2, 0);
-    project.addColumnMapping(1, 1);
-
-    project.addInputReference(2, 0);
-    project.addInputReference(1, 1);
+    Project project(&sort, builder.getExprs());
 
 
     std::shared_ptr<SecureTable> result = project.run();

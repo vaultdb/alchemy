@@ -20,31 +20,42 @@ namespace vaultdb {
 
         //std::vector<ProjectionMapping> projection_map_;
         std::map<uint32_t, shared_ptr<Expression<B> > > expressions_; // key = dst_idx, value is expression to evaluate
-
-        //uint32_t col_count_;
-        //QuerySchema src_schema_;
-        //QuerySchema dst_schema_;
         ProjectionMappingSet column_mappings_;
 
     public:
-        Project(Operator<B> *child, const SortDefinition & sort_definition = SortDefinition());
-        Project(shared_ptr<QueryTable<B> > src, const SortDefinition & sort_definition = SortDefinition());
-        Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort_definition = SortDefinition());
-        Project(shared_ptr<QueryTable<B> > src, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort_definition = SortDefinition());
+        Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expressions, const SortDefinition & sort_definition = SortDefinition());
+        Project(shared_ptr<QueryTable<B> > src, std::map<uint32_t, shared_ptr<Expression<B> > > expressions, const SortDefinition & sort_definition = SortDefinition());
         ~Project() = default;
 
-        void addColumnMappings(const ProjectionMappingSet & mapSet);
-        void addColumnMapping(const uint32_t &src_ordinal, const uint32_t &dst_ordinal);
+        //void addColumnMappings(const ProjectionMappingSet & mapSet);
+        //void addColumnMapping(const uint32_t &src_ordinal, const uint32_t &dst_ordinal);
 
-        void addExpression(const shared_ptr<Expression<B> > &expression, const uint32_t &dstOrdinal);
-        void addInputReference(const uint32_t & src_ordinal, const uint32_t & dst_ordinal);
+        //void addExpression(const shared_ptr<Expression<B> > &expression, const uint32_t &dstOrdinal);
+        //void addInputReference(const uint32_t & src_ordinal, const uint32_t & dst_ordinal);
 
         std::shared_ptr<QueryTable<B> > runSelf() override;
 
 
     private:
         void project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const;
+        void setup();
     };
+
+    // to create projections with simple 1:1 mappings
+    template<typename B>
+    class ExpressionMapBuilder {
+    public:
+        void addMapping(const uint32_t & src_idx, const uint32_t & dst_idx);
+        void addExpression(const shared_ptr<Expression<B> > & expression, const uint32_t & dst_idx );
+
+        std::map<uint32_t, shared_ptr<Expression<B> > > getExprs() const { return expressions_; }
+    private:
+        std::map<uint32_t, shared_ptr<Expression<B> > > expressions_;
+
+
+
+    };
+
 
 }
 #endif //_PROJECT_H

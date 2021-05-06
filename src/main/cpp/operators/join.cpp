@@ -6,10 +6,18 @@ using namespace vaultdb;
 
 template<typename  B>
 Join<B>::Join(Operator<B> *lhs, Operator<B> *rhs,  const BoolExpression<B> & predicate, const SortDefinition & sort) : Operator<B>(lhs, rhs, sort), predicate_(predicate) {
+    QuerySchema lhs_schema = lhs->getOutputSchema();
+    QuerySchema rhs_schema = rhs->getOutputSchema();
+    Operator<B>::output_schema_ = concatenateSchemas(lhs_schema, rhs_schema);
+
 }
 
 template<typename  B>
 Join<B>::Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  const BoolExpression<B> & predicate, const SortDefinition & sort) :  Operator<B>(lhs, rhs, sort), predicate_(predicate) {
+    QuerySchema lhs_schema = *lhs->getSchema();
+    QuerySchema rhs_schema = *rhs->getSchema();
+    Operator<B>::output_schema_ = concatenateSchemas(lhs_schema, rhs_schema);
+
 }
 
 template<typename  B>

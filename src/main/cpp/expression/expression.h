@@ -36,6 +36,7 @@ namespace vaultdb {
         // does it have an alias?
         std::string getAlias() const { return alias_; }
 
+
         // for lazy schema evaluation, e.g., Project
         void setType(const FieldType & type) {type_ = type; }
         void setAlias(const std::string & alias) {alias_ = alias; }
@@ -45,6 +46,10 @@ namespace vaultdb {
 
     };
 }
+
+
+
+
 
 template class vaultdb::Expression<bool>;
 template class vaultdb::Expression<emp::Bit>;

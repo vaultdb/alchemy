@@ -86,34 +86,22 @@ shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(const shared_ptr<SecureT
     // output schema:
     // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
     Utilities::checkMemoryUtilization("before projection");
-    Project project(src);
 
-    ProjectionMappingSet mappingSet{
-            // zip_marker
-            ProjectionMapping(1, 0),
-            // age_strata --> 1
-            // sex
-            ProjectionMapping(3, 2),
-            // ethnicity
-            ProjectionMapping(4, 3),
-            // race
-            ProjectionMapping(5, 4),
-            // numerator
-            ProjectionMapping(6, 5),
+    ExpressionMapBuilder<emp::Bit> builder;
+    for(int i = 1; i < 7; ++i)
+        if(i != 2)
+            builder.addMapping(i, i-1);
 
-            // 7: multisite int
-            // 8: multisite ^ numerator
-
-    };
-
-    shared_ptr<Expression<emp::Bit> > ageStrataExpression(new FunctionExpression(&EnrichHtnQuery::projectAgeStrata<emp::Bit>, "age_strata", FieldType::SECURE_INT));
+        shared_ptr<Expression<emp::Bit> > ageStrataExpression(new FunctionExpression(&EnrichHtnQuery::projectAgeStrata<emp::Bit>, "age_strata", FieldType::SECURE_INT));
     shared_ptr<Expression<emp::Bit> >  multisiteExpression(new FunctionExpression(&EnrichHtnQuery::projectMultisite<emp::Bit>, "multisite", FieldType::SECURE_INT));
     shared_ptr<Expression<emp::Bit> >  multisiteNumeratorExpression(new FunctionExpression(&EnrichHtnQuery::projectNumeratorMultisite<emp::Bit>, "numerator_multisite", FieldType::SECURE_INT));
 
-    project.addColumnMappings(mappingSet);
-    project.addExpression(ageStrataExpression, 1);
-    project.addExpression(multisiteExpression, 6);
-    project.addExpression(multisiteNumeratorExpression, 7);
+
+    builder.addExpression(ageStrataExpression, 1);
+    builder.addExpression(multisiteExpression, 6);
+    builder.addExpression(multisiteNumeratorExpression, 7);
+
+    Project project(src, builder.getExprs());
 
     return project.run();
 

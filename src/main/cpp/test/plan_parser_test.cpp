@@ -26,7 +26,7 @@ protected:
     };
     const string db_name_ = "tpch_unioned"; // plaintext case first
     // limit input to first 100 tuples per SQL statement
-    int limit_ = 100;
+    int limit_ = 10;
     string limit_str_ = std::to_string(limit_);
 
 };

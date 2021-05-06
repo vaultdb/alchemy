@@ -1,7 +1,7 @@
 #ifndef _EXPRESSION_KIND_H
 #define _EXPRESSION_KIND_H
+
 enum class ExpressionKind {
-    UNDEFINED = 0,
     INPUT_REF,
     LITERAL,
     PLUS,
@@ -18,7 +18,9 @@ enum class ExpressionKind {
     AND,
     OR,
     NOT,
-    FUNCTION // for FunctionExpression
+    FUNCTION, // for FunctionExpression
+    UNDEFINED
+
 };
 
 #endif //_EXPRESSION_KIND_H

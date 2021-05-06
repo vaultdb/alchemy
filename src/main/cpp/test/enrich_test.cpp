@@ -13,31 +13,19 @@
 
 
 shared_ptr<PlainTable> EnrichTest::getAgeStrataProjection(shared_ptr<PlainTable> input, const bool & isEncrypted) const {
-    Project project(input);
     FieldType ageStrataType = isEncrypted ? FieldType::SECURE_INT : FieldType::INT;
 
+    ExpressionMapBuilder<bool> builder;
+
     shared_ptr<Expression<bool>> ageStrataExpression(new FunctionExpression<bool>(&EnrichTestSupport<bool>::projectAgeStrata, "age_strata", ageStrataType));
-    //FunctionExpression<bool> ageStrataExpression(&EnrichTestSupport<bool>::projectAgeStrata, "age_strata", ageStrataType);
-    ProjectionMappingSet mappingSet{
-            ProjectionMapping(0, 0),
-            ProjectionMapping(1, 1),
-            ProjectionMapping(3, 3),
-            ProjectionMapping(4, 4),
-            ProjectionMapping(5, 5),
-            ProjectionMapping(6, 6)
-    };
+    builder.addExpression(ageStrataExpression, 2);
+
+    for(uint32_t i = 0; i < 7; ++i)
+        if(i != 2)
+            builder.addMapping(i, i);
 
 
-   project.addColumnMappings(mappingSet);
-   project.addInputReference(0,0);
-   project.addInputReference(1, 1);
-    project.addInputReference(3, 3);
-    project.addInputReference(4, 4);
-    project.addInputReference(5, 5);
-    project.addInputReference(6, 6);
-
-   project.addExpression(ageStrataExpression, 2);
-
+    Project project(input, builder.getExprs());
 
     return project.run();
 }
@@ -169,9 +157,13 @@ shared_ptr<SecureTable> EnrichTest::getPatientCohort() {
     //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
     // output schema:
     // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
-    Project project(inclusionCohort);
+    ExpressionMapBuilder<emp::Bit> builder;
+    for(uint32_t i = 1; i < 7; ++i)
+        builder.addMapping(i, i-1);
 
-    ProjectionMappingSet mappingSet{
+
+
+/*    ProjectionMappingSet mappingSet{
             // zip_marker
             ProjectionMapping(1, 0),
             // age_strata
@@ -189,29 +181,20 @@ shared_ptr<SecureTable> EnrichTest::getPatientCohort() {
             // 7: multisite int
             // 8: multisite ^ numerator
 
-    };
+    };*/
 
     shared_ptr<Expression<emp::Bit> > multisiteExpression(new FunctionExpression<emp::Bit>(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT));
     shared_ptr<Expression<emp::Bit> > multisiteNumeratorExpression(new FunctionExpression<emp::Bit>(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT));
     //Expression multisiteExpression(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT);
     //Expression multisiteNumeratorExpression(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
 
-    project.addColumnMappings(mappingSet);
+    builder.addExpression(multisiteExpression, 6);
+    builder.addExpression(multisiteNumeratorExpression, 7);
 
-    project.addInputReference(1, 0);
-            // age_strata
-    project.addInputReference(2, 1);
-            // sex
-    project.addInputReference(3, 2);
-            // ethnicity
-    project.addInputReference(4, 3);
-            // race
-    project.addInputReference(5, 4);
-            // numerator
-    project.addInputReference(6, 5);
+    Project project(inclusionCohort, builder.getExprs());
 
-    project.addExpression(multisiteExpression, 6);
-    project.addExpression(multisiteNumeratorExpression, 7);
+
+
 
     return project.run();
 

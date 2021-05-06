@@ -32,6 +32,7 @@ namespace  vaultdb {
         TableInput<B> *lhs_ = 0;
         TableInput<B> *rhs_ = 0;
         SortDefinition sort_definition_; // start out with empty sort
+        QuerySchema output_schema_;
 
 
     public:
@@ -67,6 +68,8 @@ namespace  vaultdb {
         SortDefinition  getSortOrder() const;
         void setSortOrder(const SortDefinition & aSortDefinition) { sort_definition_ = aSortDefinition; }
 
+        QuerySchema getOutputSchema() const { return output_schema_; }
+
     protected:
         // to be implemented by the operator classes, e.g., sort, filter, et cetera
         virtual std::shared_ptr<QueryTable<B> > runSelf() = 0;
@@ -80,6 +83,8 @@ namespace  vaultdb {
     public:
         TableInput(const std::shared_ptr<QueryTable<B> > & inputTable) {
             Operator<B>::output_ = std::move(inputTable);
+            Operator<B>::output_schema_ = *(Operator<B>::output_->getSchema());
+            Operator<B>::sort_definition_ = inputTable->getSortOrder();
             Operator<B>::operator_executed_ = true;
         }
 

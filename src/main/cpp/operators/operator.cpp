@@ -6,7 +6,10 @@ using namespace vaultdb;
 template<typename B>
 Operator<B>::Operator(shared_ptr<QueryTable<B> > lhsSrc, const SortDefinition & sorted_on) : sort_definition_(sorted_on) {
     lhs_ = new TableInput(lhsSrc);
-        children_.push_back((Operator *) lhs_);
+    children_.push_back((Operator *) lhs_);
+    output_schema_ = *lhsSrc->getSchema();
+    if(sorted_on.empty())
+        sort_definition_ = lhsSrc->getSortOrder();
 }
 
 template<typename B>
@@ -24,6 +27,9 @@ Operator<B>::Operator(Operator *child, const SortDefinition & sorted_on) : sort_
 
      child->setParent(this);
     children_.push_back(child);
+    output_schema_ = child->output_schema_;
+    if(sorted_on.empty())
+        sort_definition_ = child->sort_definition_;
 
 }
 

@@ -30,6 +30,7 @@ namespace vaultdb {
         int input_limit_ = -1; // to add a limit clause to SQL statements for efficient testing
 
         std::map<int, shared_ptr<Operator<B> > > operators_; // op ID --> operator instantiation
+        std::vector<std::shared_ptr<Operator<B> > > support_ops_; // these ones don't get an operator ID from the JSON plan
 
         void parseSqlInputs(const std::string & input_file);
         void parseSecurePlan(const std::string & plan_file);

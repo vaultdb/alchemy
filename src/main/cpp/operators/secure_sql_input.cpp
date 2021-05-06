@@ -1,15 +1,38 @@
 #include "secure_sql_input.h"
 
-std::shared_ptr<SecureTable> SecureSqlInput::runSelf() {
-    PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable> plaintext = dataProvider.getQueryTable(dbName, inputQuery, hasDummyTag);
+SecureSqlInput::SecureSqlInput(string db, string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty) : netio_(netio), src_party_(aSrcParty),
+                                                                                                         input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag) {
 
-    plaintext->setSortOrder(getSortOrder());
+    runQuery();
+    output_schema_ = QuerySchema::toSecure(*plain_input_->getSchema());
+}
+
+SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &dummyTag,
+                               const SortDefinition &sortDefinition, NetIO *netio, const int &party) :
+        Operator(sortDefinition), netio_(netio), src_party_(party), input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag) {
+
+    runQuery();
+    output_schema_ = QuerySchema::toSecure(*plain_input_->getSchema());
+
+}
+
+
+shared_ptr<SecureTable> SecureSqlInput::runSelf() {
 
     // secret share it
-    output_ = PlainTable::secretShare(*plaintext, netio_, srcParty);
+    output_ = PlainTable::secretShare(*plain_input_, netio_, src_party_);
 
-    //std::cout << "Secret shared input: " << output->reveal()->toString(true) << std::endl;
+    //cout << "Secret shared input: " << output->reveal()->toString(true) << endl;
     return output_;
+}
+
+
+
+void SecureSqlInput::runQuery() {
+    PsqlDataProvider dataProvider;
+    plain_input_ = dataProvider.getQueryTable(db_name_, input_query_, has_dummy_tag_);
+    plain_input_->setSortOrder(getSortOrder());
+
+
 }
 

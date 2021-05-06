@@ -19,6 +19,7 @@ namespace  vaultdb {
     public:
         explicit QuerySchema(const size_t &num_fields);
 
+        QuerySchema() {} // empty setup
         QuerySchema(const QuerySchema &s);
 
         size_t getFieldCount() const;
