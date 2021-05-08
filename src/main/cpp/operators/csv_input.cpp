@@ -9,3 +9,11 @@ std::shared_ptr<PlainTable > CsvInput::runSelf() {
     return Operator::output_;
 }
 
+string CsvInput::getOperatorType() const {
+    return "CsvInput";
+}
+
+string CsvInput::getParameters() const {
+    return "filename=" + input_file_;
+}
+

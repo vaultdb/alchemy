@@ -1,4 +1,5 @@
 #include "expression_node.h"
+#include <expression/visitor/print_expression_visitor.h>
 
 
 using namespace vaultdb;
@@ -9,6 +10,33 @@ ExpressionNode<B>::ExpressionNode(std::shared_ptr<ExpressionNode<B>> lhs) : lhs_
 template<typename B>
 ExpressionNode<B>::ExpressionNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs) : lhs_(lhs), rhs_(rhs) {}
 
+template<typename B>
+std::string ExpressionNode<B>::toString()  {
+    PrintExpressionVisitor<B> visitor;
+    this->accept(&visitor);
+    return visitor.getString();
+
+}
+
+
+std::ostream &vaultdb::operator<<(std::ostream &os,  ExpressionNode<bool> &expression) {
+    PrintExpressionVisitor<bool> visitor;
+    expression.accept(&visitor);
+
+    os << visitor.getString();
+
+    return os;
+}
+
+std::ostream &vaultdb::operator<<(std::ostream &os,  ExpressionNode<emp::Bit> &expression) {
+    PrintExpressionVisitor<emp::Bit> visitor;
+    expression.accept(&visitor);
+
+    os << visitor.getString();
+
+    return os;
+
+}
 
 template<typename B>
 InputReferenceNode<B>::InputReferenceNode(const uint32_t &read_idx) : ExpressionNode<B>(nullptr), read_idx_(read_idx) {}
@@ -27,6 +55,7 @@ template<typename B>
 void InputReferenceNode<B>::accept(ExpressionVisitor<B> *visitor) {
     visitor->visit(*this);
 }
+
 
 
 template<typename B>
@@ -48,6 +77,7 @@ template<typename B>
 void vaultdb::LiteralNode<B>::accept(ExpressionVisitor<B> *visitor) {
     visitor->visit(*this);
 }
+
 
 
 template class vaultdb::ExpressionNode<bool>;

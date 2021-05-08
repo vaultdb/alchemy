@@ -30,6 +30,13 @@ namespace  vaultdb {
 
         static int powerOfLessThanTwo(const int &n);
 
+    protected:
+        string getOperatorType() const override;
+
+        string getParameters() const override;
+
+    private:
+
         int limit_; // -1 means no limit op, TODO: optimize this to minimize our sort later, i.e., top-k optimization
 
 

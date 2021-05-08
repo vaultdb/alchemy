@@ -3,12 +3,12 @@
 using namespace vaultdb;
 
 template<typename B>
-Limit<B>::Limit(Operator<B> *child, const size_t &outputTuples, const SortDefinition & sort)  : Operator<B>(child, sort), limit(outputTuples) {
+Limit<B>::Limit(Operator<B> *child, const size_t &outputTuples, const SortDefinition & sort)  : Operator<B>(child, sort), limit_(outputTuples) {
 
 }
 
 template<typename B>
-Limit<B>::Limit(shared_ptr<QueryTable<B>> child, const size_t &outputTuples, const SortDefinition & sort) : Operator<B>(child, sort), limit(outputTuples) {
+Limit<B>::Limit(shared_ptr<QueryTable<B>> child, const size_t &outputTuples, const SortDefinition & sort) : Operator<B>(child, sort), limit_(outputTuples) {
 
 }
 
@@ -24,12 +24,22 @@ shared_ptr<QueryTable<B>> Limit<B>::runSelf() {
 
     std::cout << "Limit received " << input->getTupleCount() << " tuples." << std::endl;
 
-   if(Operator<B>::output_->getTupleCount() < limit) {
+   if(Operator<B>::output_->getTupleCount() < limit_) {
        return Operator<B>::output_;
    }
 
-    Operator<B>::output_->resize(limit);
+    Operator<B>::output_->resize(limit_);
     return Operator<B>::output_;
+}
+
+template<typename B>
+string Limit<B>::getOperatorType() const {
+    return "Limit";
+}
+
+template<typename B>
+string Limit<B>::getParameters() const {
+    return std::to_string(limit_);
 }
 
 template class vaultdb::Limit<bool>;

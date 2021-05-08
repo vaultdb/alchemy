@@ -11,6 +11,7 @@ namespace  vaultdb {
     class Join : public Operator<B> {
 
 
+
     public:
         Join(Operator<B> *lhs, Operator<B> *rhs, const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
         Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
@@ -32,6 +33,8 @@ namespace  vaultdb {
 
 
         static B get_dummy_tag(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const B & predicateEval);
+
+        string getParameters() const override;
 
 
         // predicate function needs aware of encrypted or plaintext state of its inputs

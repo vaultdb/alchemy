@@ -124,12 +124,6 @@ void Project<B>::setup() {
 
 
     SortDefinition  dst_sort;
-    std::cout << "Project source sort order: " << DataUtilities::printSortDefinition(src_sort_order) << " source schema: " << src_schema << std::endl;
-    std::cout << "projection cols: ";
-    for(ProjectionMapping m : column_mappings_) {
-        std::cout << "<" << m.first << ", " << m.second << "> ";
-    }
-    std::cout << std::endl;
 
     // *** Check to see if order-by carries over
     bool sort_carry_over = true;
@@ -151,10 +145,31 @@ void Project<B>::setup() {
 
     Operator<B>::output_schema_ = dst_schema;
     Operator<B>::setSortOrder(dst_sort);
-    std::cout << "Project sort contains " << dst_sort.size() << " cols. " << std::endl;
 
 
 
+}
+
+template<typename B>
+string Project<B>::getOperatorType() const {
+    return "Project";
+}
+
+template<typename B>
+string Project<B>::getParameters() const {
+    stringstream ss;
+
+    auto expr_pos = expressions_.begin();
+    ss << "(" << "<" << expr_pos->first << ", " << expr_pos->second->toString() << ">";
+    ++expr_pos;
+    while(expr_pos != expressions_.end()) {
+        ss << ", "  << "<" << expr_pos->first << ", " << expr_pos->second->toString() << ">";
+        ++expr_pos;
+    }
+
+    ss << ")";
+
+    return ss.str();
 }
 
 template<typename B>

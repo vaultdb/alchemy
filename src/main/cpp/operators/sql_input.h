@@ -27,6 +27,11 @@ namespace  vaultdb {
     private:
         void runQuery();
 
+    protected:
+        string getOperatorType() const override;
+
+        string getParameters() const override;
+
     };
 
 }

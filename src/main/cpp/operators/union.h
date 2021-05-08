@@ -22,7 +22,11 @@ namespace  vaultdb {
 
         ~Union() = default;
 
+
+    protected:
         std::shared_ptr<QueryTable<B> > runSelf()  override;
+        string getOperatorType() const override;
+        string getParameters() const override;
 
 
     };

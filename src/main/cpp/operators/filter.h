@@ -21,6 +21,11 @@ namespace  vaultdb {
 
         std::shared_ptr<QueryTable<B> > runSelf()  override;
 
+    protected:
+        string getOperatorType() const override;
+
+        string getParameters() const override;
+
 
     };
 

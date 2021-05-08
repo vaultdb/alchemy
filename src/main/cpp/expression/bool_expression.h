@@ -23,8 +23,14 @@ namespace  vaultdb {
 
         ~BoolExpression() = default;
 
+        string toString() const override;
+
         std::shared_ptr<ExpressionNode<B> > root_;
     };
+
+    std::ostream &operator<<(std::ostream &os,  BoolExpression<bool> &expression);
+    std::ostream &operator<<(std::ostream &os,  BoolExpression<emp::Bit> &expression);
+
 
 }
 

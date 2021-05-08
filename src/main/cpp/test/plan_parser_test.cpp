@@ -88,6 +88,7 @@ TEST_F(PlanParserTest, tpch_q1) {
     string test_name = "q1";
     PlanParser<bool> parser(db_name_, test_name, limit_);
     shared_ptr<PlainOperator> root = parser.getRoot();
+    std::cout << "Parsed plan: " << *root << std::endl;
 
     string query = tpch_queries[1];
     string limit_query = "(SELECT * FROM lineitem ORDER BY l_returnflag, l_linestatus,  l_orderkey, l_linenumber LIMIT " + limit_str_ + ") lineitem";
@@ -133,6 +134,8 @@ TEST_F(PlanParserTest, tpch_q3) {
     // run test
     PlanParser<bool> parser(db_name_, test_name, limit_);
     shared_ptr<PlainOperator> root = parser.getRoot();
+    std::cout << "Parsed plan: " << *root << std::endl;
+
     shared_ptr<PlainTable> observed = root->run();
     observed = DataUtilities::removeDummies(observed);
 

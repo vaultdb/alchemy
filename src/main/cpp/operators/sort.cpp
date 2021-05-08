@@ -3,6 +3,7 @@
 #include "plain_tuple.h"
 #include "secure_tuple.h"
 #include <util/field_utilities.h>
+#include <util/data_utilities.h>
 
 
 using namespace vaultdb;
@@ -140,6 +141,15 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
     return swap;
 }
 
+template<typename B>
+string Sort<B>::getOperatorType() const {
+    return "Sort";
+}
+
+template<typename B>
+string Sort<B>::getParameters() const {
+    return DataUtilities::printSortDefinition(Operator<B>::sort_definition_);
+}
 
 
 template class vaultdb::Sort<bool>;

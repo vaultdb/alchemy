@@ -1,7 +1,7 @@
 #ifndef _JOIN_EQUALITY_CONDITION_VISITOR_H
 #define _JOIN_EQUALITY_CONDITION_VISITOR_H
 
-#include <expression/expression_visitor.h>
+#include <expression/visitor/expression_visitor.h>
 #include <expression/expression_node.h>
 #include <expression/comparator_expression_nodes.h>
 #include <expression/connector_expression_nodes.h>

@@ -10,8 +10,8 @@ namespace vaultdb {
     template<typename B>
     class GroupByAggregate : public Operator<B> {
 
-        std::vector<ScalarAggregateDefinition> aggregateDefinitions;
-        std::vector<int32_t> groupByOrdinals;
+        std::vector<ScalarAggregateDefinition> aggregate_definitions_;
+        std::vector<int32_t> group_by_;
 
         vector<GroupByAggregateImpl<B> *> aggregators_;
 
@@ -21,13 +21,18 @@ namespace vaultdb {
 
         GroupByAggregate(shared_ptr<QueryTable<B> > child, const vector<int32_t> &groupBys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());;
-        std::shared_ptr<QueryTable<B> > runSelf() override;
         ~GroupByAggregate() = default;
         static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs);
+
+    protected:
+        std::shared_ptr<QueryTable<B> > runSelf() override;
+        string getOperatorType() const override;
+        string getParameters() const override;
 
     private:
         GroupByAggregateImpl<B> *aggregateFactory(const AggregateId &aggregateType, const int32_t &ordinal,
                                                const FieldType &aggregateValueType) const;
+
         // checks that input table is sorted by group-by cols
         bool verifySortOrder(const std::shared_ptr<QueryTable<B> > & table) const;
 
@@ -41,7 +46,6 @@ namespace vaultdb {
                                            const B &lastEntryGroupByBin, const B &real_bin,
                                  const vector<GroupByAggregateImpl<B> *> &aggregators) const;
 
-    private:
         void setup();
 
 

@@ -17,6 +17,8 @@ namespace  vaultdb {
 
         ~GenericExpression() = default;
 
+        string toString() const override;
+
         std::shared_ptr<ExpressionNode<B> > root_;
     };
 

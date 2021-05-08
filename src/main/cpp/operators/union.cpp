@@ -31,6 +31,16 @@ shared_ptr<QueryTable<B> > Union<B>::runSelf() {
     return Operator<B>::output_;
 }
 
+template<typename B>
+string Union<B>::getOperatorType() const {
+    return "Union";
+}
+
+template<typename B>
+string Union<B>::getParameters() const {
+    return std::string();
+}
+
 
 template class vaultdb::Union<bool>;
 template class vaultdb::Union<emp::Bit>;

@@ -28,6 +28,7 @@ namespace vaultdb {
 
         virtual Field<B> call(const QueryTuple<B> & aTuple) const = 0;
         virtual ExpressionKind kind() const = 0;
+        virtual std::string toString() const = 0;
 
 
         // what is the return type of the expression?

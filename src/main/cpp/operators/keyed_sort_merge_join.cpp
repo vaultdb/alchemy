@@ -3,7 +3,7 @@
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 
-#include <operators/support/join_equality_condition_visitor.h>
+#include <expression/visitor/join_equality_condition_visitor.h>
 
 using namespace vaultdb;
 

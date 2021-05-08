@@ -27,9 +27,7 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
     SortDefinition concat_sorts;
     concat_sorts = lhs->getSortOrder();
     SortDefinition  rhs_sort = rhs->getSortOrder();
-    std::cout << "Join received " << concat_sorts.size() << " col sorts from lhs " << std::endl;
     concat_sorts.insert(concat_sorts.end(),  rhs_sort.begin(), rhs_sort.end());
-    std::cout << "Join received " << rhs_sort.size() << " col sorts from rhs." << std::endl;
 
     // output size, colCount, is_encrypted
     Join<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(outputTupleCount, outputSchema, concat_sorts));
@@ -50,8 +48,12 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
         }
     }
 
-    std::cout << "Join has output sort order with " << Join<B>::output_->getSortOrder().size() << " cols." << std::endl;
     return Join<B>::output_;
+}
+
+template<typename B>
+string BasicJoin<B>::getOperatorType() const {
+    return "BasicJoin";
 }
 
 

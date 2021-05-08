@@ -63,6 +63,11 @@ std::shared_ptr<QueryTable<B> > KeyedJoin<B>::runSelf() {
 
 }
 
+template<typename B>
+string KeyedJoin<B>::getOperatorType() const {
+    return "KeyedJoin";
+}
+
 
 template class vaultdb::KeyedJoin<bool>;
 template class vaultdb::KeyedJoin<emp::Bit>;

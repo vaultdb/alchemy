@@ -17,6 +17,8 @@ namespace vaultdb {
 
         ~FunctionExpression() = default;
 
+        string toString() const override;
+
     private:
         // function pointer to expression
         Field<B> (*expr_func_)(const QueryTuple<B> &) = nullptr;

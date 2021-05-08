@@ -110,7 +110,9 @@ set(sources
 		parser/expression_parser.cpp
 		expression/expression_kind.h
 		expression/expression_factory.cpp
-		expression/expression_visitor.h operators/support/join_equality_condition_visitor.cpp operators/support/join_equality_condition_visitor.h)
+		expression/visitor/expression_visitor.h
+		expression/visitor/join_equality_condition_visitor.cpp
+		expression/visitor/print_expression_visitor.cpp)
 
 
 

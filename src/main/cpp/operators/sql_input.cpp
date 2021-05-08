@@ -36,4 +36,12 @@ void SqlInput::runQuery() {
 
 }
 
+string SqlInput::getOperatorType() const {
+    return "SqlInput";
+}
+
+string SqlInput::getParameters() const {
+    return "\"" + inputQuery + "\", tuple_count=" + std::to_string(output_->getTupleCount());
+}
+
 

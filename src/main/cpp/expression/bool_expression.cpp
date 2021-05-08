@@ -4,6 +4,16 @@
 
 using namespace vaultdb;
 
+std::ostream &vaultdb::operator<<(std::ostream &os, BoolExpression<bool> &expression) {
+    os << *(expression.root_);
+    return os;
+}
+
+std::ostream &vaultdb::operator<<(std::ostream &os, BoolExpression<emp::Bit> &expression) {
+    os << *(expression.root_);
+    return os;
+}
+
 template<typename B>
 Field<B> BoolExpression<B>::call(const QueryTuple<B> &aTuple) const {
     return root_->call(aTuple);
@@ -28,6 +38,11 @@ B BoolExpression<B>::call(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, co
     Join<B>::write_left(true, tmp, lhs);
     Join<B>::write_right(true, tmp, rhs);
     return callBoolExpression(tmp);
+}
+
+template<typename B>
+string BoolExpression<B>::toString() const {
+    return root_->toString() + " " +  TypeUtilities::getTypeString(Expression<B>::type_);
 }
 
 

@@ -11,8 +11,8 @@ using namespace std;
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
                                       const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition &sort) : Operator<B>(child, sort),
-                                                                                                                         aggregateDefinitions(aggregates),
-                                                                                                                         groupByOrdinals(groupBys) {
+                                                                                                                         aggregate_definitions_(aggregates),
+                                                                                                                         group_by_(groupBys) {
 
   setup();
  }
@@ -20,8 +20,8 @@ GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> 
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(shared_ptr<QueryTable<B>> child, const vector<int32_t> &groupBys,
                                       const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition &sort) : Operator<B>(child, sort),
-                                                                                                                         aggregateDefinitions(aggregates),
-                                                                                                                         groupByOrdinals(groupBys) {
+                                                                                                                         aggregate_definitions_(aggregates),
+                                                                                                                         group_by_(groupBys) {
 
       setup();
  }
@@ -38,7 +38,7 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
     // output sort order equal to first group-by-col-count entries in input sort order
     SortDefinition inputSort = input->getSortOrder();
-    SortDefinition outputSort = vector<ColumnSort>(inputSort.begin(), inputSort.begin() + groupByOrdinals.size());
+    SortDefinition outputSort = vector<ColumnSort>(inputSort.begin(), inputSort.begin() + group_by_.size());
 
 
     Operator<B>::output_ = shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), Operator<B>::output_schema_, outputSort));
@@ -85,7 +85,7 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     generateOutputTuple(output_tuple, predecessor, B(true), realBin, aggregators_);
 
     // output sorted on group-by cols
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(groupByOrdinals.size());
+    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(group_by_.size());
     Operator<B>::output_->setSortOrder(sortDefinition);
 
     for(size_t i = 0; i < aggregators_.size(); ++i) {
@@ -120,18 +120,18 @@ template<typename B>
 bool GroupByAggregate<B>::verifySortOrder(const shared_ptr<QueryTable<B> > &table) const {
     SortDefinition sortedOn = table->getSortOrder();
 
-    return sortCompatible(sortedOn, groupByOrdinals);
+    return sortCompatible(sortedOn, group_by_);
 }
 
 template<typename B>
 B GroupByAggregate<B>::groupByMatch(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs) const {
 
-    B result = (lhs.getField(groupByOrdinals[0]) ==  rhs.getField(groupByOrdinals[0]));
+    B result = (lhs.getField(group_by_[0]) == rhs.getField(group_by_[0]));
     size_t cursor = 1;
 
-    while(cursor < groupByOrdinals.size()) {
+    while(cursor < group_by_.size()) {
         result = result &
-                 (lhs.getField(groupByOrdinals[cursor]) ==  rhs.getField(groupByOrdinals[cursor]));
+                 (lhs.getField(group_by_[cursor]) == rhs.getField(group_by_[cursor]));
         ++cursor;
     }
 
@@ -140,18 +140,18 @@ B GroupByAggregate<B>::groupByMatch(const QueryTuple<B> &lhs, const QueryTuple<B
 
 template<typename B>
 QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & srcSchema, const vector<GroupByAggregateImpl<B> *> & aggregators) const {
-    QuerySchema outputSchema(groupByOrdinals.size() + aggregateDefinitions.size());
+    QuerySchema outputSchema(group_by_.size() + aggregate_definitions_.size());
     size_t i;
 
-    for(i = 0; i < groupByOrdinals.size(); ++i) {
-        QueryFieldDesc srcField = srcSchema.getField(groupByOrdinals[i]);
+    for(i = 0; i < group_by_.size(); ++i) {
+        QueryFieldDesc srcField = srcSchema.getField(group_by_[i]);
         QueryFieldDesc dstField(i, srcField.getName(), srcField.getTableName(), srcField.getType());
         dstField.setStringLength(srcField.getStringLength());
         outputSchema.putField(dstField);
     }
 
-    for(i = 0; i < aggregateDefinitions.size(); ++i) {
-        QueryFieldDesc fieldDesc(i + groupByOrdinals.size(), aggregateDefinitions[i].alias, "", aggregators[i]->getType());
+    for(i = 0; i < aggregate_definitions_.size(); ++i) {
+        QueryFieldDesc fieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", aggregators[i]->getType());
         outputSchema.putField(fieldDesc);
     }
 
@@ -167,8 +167,8 @@ void GroupByAggregate<B>::generateOutputTuple(QueryTuple<B> &dstTuple, const Que
     size_t i;
 
     // write group-by ordinals
-    for(i = 0; i < groupByOrdinals.size(); ++i) {
-        const Field<B> srcField = lastTuple.getField(groupByOrdinals[i]);
+    for(i = 0; i < group_by_.size(); ++i) {
+        const Field<B> srcField = lastTuple.getField(group_by_[i]);
         dstTuple.setField(i, srcField);
     }
 
@@ -207,7 +207,7 @@ void GroupByAggregate<B>::setup() {
     QuerySchema input_schema = Operator<B>::getChild(0)->getOutputSchema();
     SortDefinition input_sort = Operator<B>::getChild(0)->getSortOrder();
 
-    for(ScalarAggregateDefinition agg : aggregateDefinitions) {
+    for(ScalarAggregateDefinition agg : aggregate_definitions_) {
         // for most aggs the output type is the same as the input type
         // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
         FieldType aggValueType = (agg.ordinal >= 0) ?
@@ -218,11 +218,33 @@ void GroupByAggregate<B>::setup() {
 
 
     // sorted on group-by cols
-    assert(sortCompatible(input_sort, groupByOrdinals));
+    assert(sortCompatible(input_sort, group_by_));
 
 
     Operator<B>::output_schema_ = generateOutputSchema(input_schema, aggregators_);
 
+}
+
+template<typename B>
+string GroupByAggregate<B>::getOperatorType() const {
+    return "GroupByAggregate";
+}
+
+template<typename B>
+string GroupByAggregate<B>::getParameters() const {
+    stringstream  ss;
+   ss << "group-by: (" << group_by_[0];
+   for(int i = 1; i < group_by_.size(); ++i)
+       ss << ", " << group_by_[i];
+
+   ss << ") aggs: (" << aggregate_definitions_[0].toString();
+
+   for(int i = 1; i < aggregate_definitions_.size(); ++i) {
+       ss << ", " << aggregate_definitions_[i].toString();
+   }
+
+   ss << ")";
+   return ss.str();
 }
 
 

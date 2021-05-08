@@ -22,6 +22,10 @@ namespace  vaultdb {
     protected:
         shared_ptr<SecureTable> runSelf() override;
 
+        string getOperatorType() const override;
+
+        string getParameters() const override;
+
 
     public:
         SecureSqlInput(string db, string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty);

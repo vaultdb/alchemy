@@ -3,7 +3,7 @@
 
 #include <query_table/query_tuple.h>
 #include <expression/expression_kind.h>
-#include "expression_visitor.h"
+#include "visitor/expression_visitor.h"
 
 // building blocks for composing arbitrary expressions
 // initially building around Calcite JSON expression format, but may extend this to join and filter expressions (etc.)
@@ -21,11 +21,15 @@ namespace vaultdb {
         virtual ExpressionKind kind() const = 0;
         virtual void accept(ExpressionVisitor<B> * visitor) = 0;
         virtual ~ExpressionNode() {}
+        std::string toString();
 
         std::shared_ptr<ExpressionNode<B> > lhs_;
         std::shared_ptr<ExpressionNode<B> > rhs_;
 
     };
+
+    std::ostream &operator<<(std::ostream &os,  ExpressionNode<bool> &expression);
+    std::ostream &operator<<(std::ostream &os,  ExpressionNode<emp::Bit> &expression);
 
 
     // read a field from a tuple
@@ -55,7 +59,7 @@ namespace vaultdb {
         ExpressionKind kind() const override;
         void accept(ExpressionVisitor<B> *visitor) override;
 
-    private:
+
         Field<B> payload_;
     };
 

@@ -14,7 +14,10 @@ namespace  vaultdb {
         KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
         KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
         ~KeyedJoin() = default;
+
+    protected:
         std::shared_ptr<QueryTable<B> > runSelf() override;
+        string getOperatorType() const override;
 
     };
 

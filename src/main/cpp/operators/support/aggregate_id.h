@@ -2,6 +2,7 @@
 #define _AGGREGATE_ID_H
 
 #include <string>
+#include <sstream>
 
 namespace vaultdb {
 
@@ -24,7 +25,44 @@ namespace vaultdb {
                 : ordinal(anOrdinal), type(aggregateId), alias(anAlias) {}
 
         ScalarAggregateDefinition() {}
-    };
+
+        std::string toString() const {
+            std::stringstream ss;
+
+            switch(type) {
+                case AggregateId::COUNT:
+                    ss << "COUNT("
+                       << ((ordinal == -1) ? "*" : "$" + std::to_string(ordinal))
+                       << ") " << alias;
+                    break;
+                case AggregateId::SUM:
+                    ss << "SUM("
+                       << "$" + std::to_string(ordinal)
+                       << ") " << alias;
+                    break;
+
+                case AggregateId::AVG:
+                    ss << "AVG("
+                       << "$" + std::to_string(ordinal)
+                       << ") " << alias;
+                    break;
+
+                case AggregateId::MIN:
+                    ss << "SUM("
+                       << "$" + std::to_string(ordinal)
+                       << ") " << alias;
+                    break;
+
+                case AggregateId::MAX:
+                    ss << "SUM("
+                       << "$" + std::to_string(ordinal)
+                       << ") " << alias;
+            };
+
+            return ss.str();
+
+            }
+        };
 
 
 

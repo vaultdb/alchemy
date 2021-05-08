@@ -19,6 +19,11 @@ Field<B> GenericExpression<B>::call(const QueryTuple<B> &aTuple) const {
     return root_->call(aTuple);
 }
 
+template<typename B>
+string GenericExpression<B>::toString() const {
+   return root_->toString() + " " +  TypeUtilities::getTypeString(Expression<B>::type_);
+}
+
 
 template class vaultdb::GenericExpression<bool>;
 template class vaultdb::GenericExpression<emp::Bit>;

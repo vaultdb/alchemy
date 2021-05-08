@@ -21,6 +21,11 @@ public:
 
     ~CsvInput() = default;
 
+protected:
+    string getOperatorType() const override;
+
+    string getParameters() const override;
+
 };
 
 }

@@ -10,7 +10,7 @@ namespace  vaultdb {
     template<typename B>
     class Limit : public Operator<B> {
 
-        size_t limit;
+        size_t limit_;
     public:
         Limit(Operator<B> *child, const size_t &outputTuples, const SortDefinition & sort = SortDefinition());
 
@@ -19,6 +19,11 @@ namespace  vaultdb {
         ~Limit() = default;
 
         std::shared_ptr<QueryTable<B> > runSelf()  override;
+
+    protected:
+        string getOperatorType() const override;
+
+        string getParameters() const override;
 
 
     };

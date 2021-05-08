@@ -39,6 +39,11 @@ namespace vaultdb {
     private:
         void project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const;
         void setup();
+
+    protected:
+        string getOperatorType() const override;
+
+        string getParameters() const override;
     };
 
     // to create projections with simple 1:1 mappings

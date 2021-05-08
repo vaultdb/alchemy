@@ -25,6 +25,8 @@ namespace vaultdb {
     template<typename B> class  LessThanNode;
     template<typename B> class  GreaterThanEqNode;
     template<typename B> class  LessThanEqNode;
+    template<typename B> class  ExpressionNode;
+
 
 
     // any visitor state is stored in implementing visitor

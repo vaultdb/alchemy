@@ -36,3 +36,11 @@ void SecureSqlInput::runQuery() {
 
 }
 
+string SecureSqlInput::getOperatorType() const {
+    return "SecureSqlInput";
+}
+
+string SecureSqlInput::getParameters() const {
+    return "\"" + input_query_ + "\", tuple_count=" + std::to_string(plain_input_->getTupleCount());
+}
+

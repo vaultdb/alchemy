@@ -39,5 +39,16 @@ std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
 
 }
 
+template<typename B>
+string Filter<B>::getOperatorType() const {
+    return "Filter";
+}
+
+template<typename B>
+string Filter<B>::getParameters() const {
+
+    return predicate_.root_->toString();
+}
+
 template class vaultdb::Filter<bool>;
 template class vaultdb::Filter<emp::Bit>;

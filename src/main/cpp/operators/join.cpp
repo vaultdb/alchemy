@@ -128,5 +128,12 @@ void Join<B>::write_right(const emp::Bit &write, SecureTuple &dst_tuple, const S
 }
 
 
+template<typename B>
+string Join<B>::getParameters() const {
+   return predicate_.root_->toString();
+
+}
+
+
 template class vaultdb::Join<bool>;
 template class vaultdb::Join<emp::Bit>;

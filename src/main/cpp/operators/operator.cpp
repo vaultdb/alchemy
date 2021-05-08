@@ -1,3 +1,4 @@
+#include <util/data_utilities.h>
 #include "operator.h"
 
 
@@ -59,6 +60,40 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
     return output_;
 }
 
+
+template<typename B>
+std::string Operator<B>::toString() const {
+    return printHelper("");
+
+}
+
+template<typename B>
+std::string Operator<B>::printHelper(const string &prefix) const {
+    stringstream  ss;
+    string bool_type = (std::is_same_v<B, bool>) ? "bool" : "Bit";
+    ss << prefix <<  getOperatorType() << "<" << bool_type << "> ";
+
+    string params = getParameters();
+    if(!params.empty())
+        ss << "(" << params << ") ";
+
+    ss << ": " <<  output_schema_ <<    " order by: " << DataUtilities::printSortDefinition(sort_definition_);
+
+    if(output_.get() != nullptr)
+       ss << " tuple count: " << output_->getTupleCount();
+    ss << endl;
+
+    string indent = prefix + "    ";
+    for(Operator<B> *op : children_) {
+        ss << op->printHelper(indent);
+    }
+
+    return ss.str();
+}
+
+
+
+
 template<typename B>
  std::shared_ptr<QueryTable<B> > Operator<B> ::getOutput()  {
     if(!operator_executed_) { // if we haven't run it yet
@@ -98,6 +133,16 @@ template<typename B>
 SortDefinition Operator<B>::getSortOrder() const {
     assert(output_.get() == nullptr || sort_definition_ == output_->getSortOrder()); // check that output table is aligned with operator's sort order
     return sort_definition_;
+}
+
+std::ostream &vaultdb::operator<<(std::ostream &os, const PlainOperator &op) {
+    os << op.toString();
+    return os;
+}
+
+std::ostream &vaultdb::operator<<(std::ostream &os, const SecureOperator &op) {
+    os << op.toString();
+    return os;
 }
 
 template class vaultdb::Operator<bool>;
