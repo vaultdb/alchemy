@@ -87,7 +87,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(const shared_ptr<SecureT
     // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
     Utilities::checkMemoryUtilization("before projection");
 
-    ExpressionMapBuilder<emp::Bit> builder;
+    ExpressionMapBuilder<emp::Bit> builder(*src->getSchema());
     for(int i = 1; i < 7; ++i)
         if(i != 2)
             builder.addMapping(i, i-1);

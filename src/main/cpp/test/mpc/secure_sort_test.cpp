@@ -123,7 +123,7 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
 
 
     // project it down to $1, $3
-    ExpressionMapBuilder<emp::Bit> builder;
+    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
     builder.addMapping(1, 0);
     builder.addMapping(3, 1);
 
@@ -159,7 +159,7 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
     Sort<emp::Bit> sort(&input, sortDefinition);
 
-    ExpressionMapBuilder<emp::Bit> builder;
+    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
     builder.addMapping(1, 0);
 
     // project it down to $1
@@ -194,7 +194,7 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
     SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
     Sort<emp::Bit> sort(&input, sortDefinition);
 
-    ExpressionMapBuilder<emp::Bit> builder;
+    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
     builder.addMapping(0, 0);
 
     Project project(&sort, builder.getExprs());
@@ -232,7 +232,7 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     Sort sort(&input, sortDefinition);
 
     // project it down to $2, $0
-    ExpressionMapBuilder<emp::Bit> builder;
+    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
     builder.addMapping(2, 0);
     builder.addMapping(0, 1);
 
@@ -268,7 +268,7 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
 
     // project it down to $2, $1
-    ExpressionMapBuilder<emp::Bit> builder;
+    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
     builder.addMapping(2, 0);
     builder.addMapping(1, 1);
 

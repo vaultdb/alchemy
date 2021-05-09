@@ -82,7 +82,7 @@ TEST_F(SortTest, tpchQ3Sort) {
 
     Sort sort = getSort(sql, sortDefinition);
 
-    ExpressionMapBuilder<bool> builder;
+    ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
     builder.addMapping(1, 0);
     builder.addMapping(3, 1);
 
@@ -127,7 +127,7 @@ TEST_F(SortTest, tpchQ5Sort) {
 
 
     // project it down to $1
-    ExpressionMapBuilder<bool> builder;
+    ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
     builder.addMapping(1, 0);
 
     Project project(&sort, builder.getExprs());
@@ -160,7 +160,7 @@ TEST_F(SortTest, tpchQ8Sort) {
 
 
     // project it down to $0
-    ExpressionMapBuilder<bool> builder;
+    ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
     builder.addMapping(0, 0);
 
     Project project(&sort, builder.getExprs());
@@ -191,7 +191,7 @@ TEST_F(SortTest, tpchQ9Sort) {
    Sort<bool> sort = getSort(sql, sortDefinition);
 
     // project it down to $0
-    ExpressionMapBuilder<bool> builder;
+    ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
     builder.addMapping(2, 0);
     builder.addMapping(0, 1);
 
@@ -231,7 +231,7 @@ TEST_F(SortTest, tpchQ18Sort) {
    Sort<bool> sort = getSort(sql, sortDefinition);
 
     // project it down to $2, $1
-    ExpressionMapBuilder<bool> builder;
+    ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
     builder.addMapping(2, 0);
     builder.addMapping(1, 1);
 

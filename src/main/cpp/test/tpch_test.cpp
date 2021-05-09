@@ -199,7 +199,9 @@ TEST_F(TpcHTest, testQ3Truncated)  {
     //                "  o.o_shippriority\n"
     // from: l_orderkey, o_orderdate, o_shippriority, revenue
 
-    ExpressionMapBuilder<bool> builder;
+    QuerySchema input_schema = *(aggregated->getSchema());
+    ExpressionMapBuilder<bool> builder(input_schema);
+
     builder.addMapping(0, 0); // l_orderkey
     builder.addMapping(3, 1); // revenue
     builder.addMapping(1, 2); // o_orderdate

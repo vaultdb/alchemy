@@ -15,7 +15,7 @@
 shared_ptr<PlainTable> EnrichTest::getAgeStrataProjection(shared_ptr<PlainTable> input, const bool & isEncrypted) const {
     FieldType ageStrataType = isEncrypted ? FieldType::SECURE_INT : FieldType::INT;
 
-    ExpressionMapBuilder<bool> builder;
+    ExpressionMapBuilder<bool> builder(*(input->getSchema()));
 
     shared_ptr<Expression<bool>> ageStrataExpression(new FunctionExpression<bool>(&EnrichTestSupport<bool>::projectAgeStrata, "age_strata", ageStrataType));
     builder.addExpression(ageStrataExpression, 2);
@@ -157,7 +157,7 @@ shared_ptr<SecureTable> EnrichTest::getPatientCohort() {
     //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
     // output schema:
     // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
-    ExpressionMapBuilder<emp::Bit> builder;
+    ExpressionMapBuilder<emp::Bit> builder( *(inclusionCohort->getSchema()));
     for(uint32_t i = 1; i < 7; ++i)
         builder.addMapping(i, i-1);
 

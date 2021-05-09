@@ -234,12 +234,12 @@ template<typename B>
 string GroupByAggregate<B>::getParameters() const {
     stringstream  ss;
    ss << "group-by: (" << group_by_[0];
-   for(int i = 1; i < group_by_.size(); ++i)
+   for(uint32_t i = 1; i < group_by_.size(); ++i)
        ss << ", " << group_by_[i];
 
    ss << ") aggs: (" << aggregate_definitions_[0].toString();
 
-   for(int i = 1; i < aggregate_definitions_.size(); ++i) {
+   for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
        ss << ", " << aggregate_definitions_[i].toString();
    }
 

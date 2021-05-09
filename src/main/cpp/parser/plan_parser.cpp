@@ -138,7 +138,7 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
 
     if(op.get() != nullptr) {
         operators_[operator_id] = op;
-        std::cout << "Adding operator " << op_name << " with id " << operator_id << std::endl;
+        std::cout << "Adding operator " << op_name << " with id " << operator_id << ", " << *op << std::endl;
         root_ = op;
     }
     else
@@ -293,13 +293,14 @@ template<typename B>
 std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_id, const ptree &project_tree) {
 
     shared_ptr<Operator<B> > child_operator = getChildOperator(operator_id);
+    QuerySchema child_schema = child_operator->getOutputSchema();
 
-    ExpressionMapBuilder<B>  builder;
+    ExpressionMapBuilder<B>  builder(child_schema);
     ptree expressions = project_tree.get_child("exprs");
     uint32_t src_ordinal, dst_ordinal = 0;
 
     for (ptree::const_iterator it = expressions.begin(); it != expressions.end(); ++it) {
-        std::shared_ptr<Expression<B> > expr = ExpressionParser<B>::parseExpression(it->second);
+        std::shared_ptr<Expression<B> > expr = ExpressionParser<B>::parseExpression(it->second, child_schema);
         if(expr->kind()  == ExpressionKind::INPUT_REF) {
             GenericExpression<B> expression_impl = *((GenericExpression<B> *) expr.get());
             InputReferenceNode<B> input_ref  = *((InputReferenceNode<B> *) expression_impl.root_.get());

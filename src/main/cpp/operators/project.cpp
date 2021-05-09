@@ -176,9 +176,13 @@ string Project<B>::getParameters() const {
 
 // **** ExpressionMapBuilder **** //
 template<typename B>
+ExpressionMapBuilder<B>::ExpressionMapBuilder(const QuerySchema &input_schema) : src_schema_(input_schema) {}
+
+
+template<typename B>
 void ExpressionMapBuilder<B>::addMapping(const uint32_t &src_idx, const uint32_t &dst_idx) {
     shared_ptr<ExpressionNode<B> > node(new InputReferenceNode<B>(src_idx));
-    shared_ptr<GenericExpression<B> > expr(new GenericExpression<B>(node));
+    shared_ptr<GenericExpression<B> > expr(new GenericExpression<B>(node, src_schema_));
 
     expressions_[dst_idx] = expr;
 }
@@ -187,6 +191,7 @@ template<typename B>
 void ExpressionMapBuilder<B>::addExpression(const shared_ptr<Expression<B>> &expression, const uint32_t &dst_idx) {
     expressions_[dst_idx] = expression;
 }
+
 
 
 template class vaultdb::Project<bool>;

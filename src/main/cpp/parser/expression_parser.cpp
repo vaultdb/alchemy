@@ -7,12 +7,12 @@ using namespace vaultdb;
 using namespace std;
 
 template<typename B>
-std::shared_ptr<Expression<B>> ExpressionParser<B>::parseJSONExpression(const string &json) {
+std::shared_ptr<Expression<B>> ExpressionParser<B>::parseJSONExpression(const string &json, const QuerySchema & input_schema) {
     stringstream ss;
     ss << json << endl;
     boost::property_tree::ptree pt;
     boost::property_tree::read_json(ss, pt);
-    return parseExpression(pt);
+    return parseExpression(pt, input_schema);
 }
 
 // starts with:
@@ -21,9 +21,9 @@ std::shared_ptr<Expression<B>> ExpressionParser<B>::parseJSONExpression(const st
 // ...
 // handle "input" / raw value copies separately in parse_projection
 template<typename B>
-shared_ptr<Expression<B>> ExpressionParser<B>::parseExpression(const ptree &tree) {
+shared_ptr<Expression<B>> ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & input_schema) {
    shared_ptr<ExpressionNode<B> > expression_root = parseHelper(tree);
-   return shared_ptr<Expression<B> >(new GenericExpression<B>(expression_root));
+   return shared_ptr<Expression<B> >(new GenericExpression<B>(expression_root, input_schema));
 }
 
 template<typename B>

@@ -14,8 +14,8 @@ namespace vaultdb {
     template<typename B>
     class ExpressionParser {
     public:
-        static std::shared_ptr<Expression<B> > parseJSONExpression(const std::string & json);
-        static std::shared_ptr<Expression<B> > parseExpression(const ptree & tree);
+        static std::shared_ptr<Expression<B> > parseJSONExpression(const std::string & json, const QuerySchema & input_schema);
+        static std::shared_ptr<Expression<B> > parseExpression(const ptree & tree, const QuerySchema & input_schema);
         static BoolExpression<B> parseBoolExpression(const ptree & tree);
 
     private:

@@ -98,7 +98,7 @@ TEST_F(ProjectionTest, q3Lineitem) {
     SqlInput input("tpch_unioned", srcSql, false);
 
 
-    ExpressionMapBuilder<bool> builder;
+    ExpressionMapBuilder<bool> builder(input.getOutputSchema());
     builder.addMapping(0, 0);
     builder.addMapping(10, 1);
     shared_ptr<Expression<bool> > revenue_expression(new GenericExpression<bool>(getRevenueExpression(), "revenue", FieldType::FLOAT));
