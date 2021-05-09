@@ -126,19 +126,21 @@ void Project<B>::setup() {
     SortDefinition  dst_sort;
 
     // *** Check to see if order-by carries over
-    bool sort_carry_over = true;
     for(ColumnSort sort : src_sort_order) {
-        uint32_t src_ordinal = sort.first;
+        int32_t src_ordinal = sort.first;
         bool found = false;
+        if(src_ordinal == -1) {
+            found = true; // dummy tag automatically carries over
+            dst_sort.push_back(sort);
+        }
         for(ProjectionMapping mapping : column_mappings_) {
-            if(mapping.first == src_ordinal && sort_carry_over) {
+            if(mapping.first == src_ordinal) {
                 dst_sort.push_back(ColumnSort (mapping.second, sort.second));
                 found = true;
                 break;
             }
         } // end search for mapping
         if(!found) {
-            sort_carry_over = false;
             break;
         } // broke the sequence of mappings
     }
@@ -172,6 +174,7 @@ string Project<B>::getParameters() const {
     return ss.str();
 }
 
+// **** ExpressionMapBuilder **** //
 template<typename B>
 void ExpressionMapBuilder<B>::addMapping(const uint32_t &src_idx, const uint32_t &dst_idx) {
     shared_ptr<ExpressionNode<B> > node(new InputReferenceNode<B>(src_idx));

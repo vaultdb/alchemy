@@ -127,8 +127,12 @@ TEST_F(PlanParserTest, tpch_q3) {
 
 
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
-    // 1 DESC, 2 ASC
-    SortDefinition expected_sort{ColumnSort(1, SortDirection::DESCENDING), ColumnSort(2, SortDirection::ASCENDING)};
+
+    // dummy_tag (-1), 1 DESC, 2 ASC
+    // aka revenue desc,  o.o_orderdate
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
+                                 ColumnSort(2, SortDirection::ASCENDING)};
     expected->setSortOrder(expected_sort);
 
     // run test

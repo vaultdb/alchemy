@@ -5,7 +5,7 @@
 #include "common/defs.h"
 #include <expression/expression.h>
 
-typedef std::pair<uint32_t, uint32_t> ProjectionMapping; // src ordinal, dst ordinal
+typedef std::pair<int32_t, int32_t> ProjectionMapping; // src ordinal, dst ordinal
 
 // single projection, it is either an expression over 2+ fields or it is a 1:1 mapping spec'd in projection mapping
 
