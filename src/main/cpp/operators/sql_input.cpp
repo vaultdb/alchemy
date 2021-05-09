@@ -41,7 +41,9 @@ string SqlInput::getOperatorType() const {
 }
 
 string SqlInput::getParameters() const {
-    return "\"" + inputQuery + "\", tuple_count=" + std::to_string(output_->getTupleCount());
+    string str = inputQuery;
+    str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
+    return "\"" + str + "\", tuple_count=" + std::to_string(output_->getTupleCount());
 }
 
 

@@ -5,7 +5,6 @@
 #include <data/CsvReader.h>
 #include <parser/plan_parser.h>
 #include "support/tpch_queries.h"
-#include <boost/algorithm/string/replace.hpp>
 #include <boost/tokenizer.hpp>
 
 
@@ -27,10 +26,10 @@ protected:
     void TearDown() override{
         finalize_plain_prot();
     };
-    const string db_name_ = "tpch_unioned"; // plaintext case first
+    // depends on truncate-tpch.sql
+    const string db_name_ = "tpch_unioned_10"; // plaintext case first
     // limit input to first 100 tuples per SQL statement
-    int limit_ = 10;
-    string limit_str_ = std::to_string(limit_);
+    int limit_ = -1;
 
 };
 
@@ -94,8 +93,6 @@ TEST_F(PlanParserTest, tpch_q1) {
     std::cout << "Parsed plan: " << *root << std::endl;
 
     string query = tpch_queries[1];
-    string limit_query = "(SELECT * FROM lineitem ORDER BY l_returnflag, l_linestatus,  l_orderkey, l_linenumber LIMIT " + limit_str_ + ") lineitem";
-    boost::replace_first(query, "lineitem", limit_query);
     // collect expected results
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 2);
 
@@ -112,22 +109,6 @@ TEST_F(PlanParserTest, tpch_q1) {
 TEST_F(PlanParserTest, tpch_q3) {
     string test_name = "q3";
     string query = tpch_queries[3];
-
-    // set up expected output
-    string customer_sql = "(SELECT * FROM customer ORDER BY c_custkey LIMIT " + limit_str_ + ")";
-
-    string orders_sql = "(SELECT * "
-                           "FROM orders "
-                           "ORDER BY o_orderkey, o_orderdate, o_shippriority " // was o_orderkey, o_custkey, o_orderdate, o_shippriority
-                           "LIMIT " + limit_str_ + ")";
-
-
-    string lineitem_sql = "(SELECT * FROM lineitem ORDER BY l_orderkey, l_shipdate LIMIT " + limit_str_ + ")";
-
-    boost::replace_first(query, "customer", customer_sql);
-    boost::replace_first(query, "orders", orders_sql);
-    boost::replace_first(query, "lineitem", lineitem_sql);
-
 
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
 
@@ -155,20 +136,20 @@ TEST_F(PlanParserTest, tpch_q3) {
 TEST_F(PlanParserTest, tpch_q5) {
     string test_name = "q5";
     string query = tpch_queries[5];
+    shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
+    // order by $1 DESC
+    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+    expected->setSortOrder(expected_sort);
 
-    // set up expected output
-    string customer_sql = "(SELECT * FROM customer ORDER BY c_custkey LIMIT " + limit_str_ + ")";
+    PlanParser<bool> parser(db_name_, test_name, limit_);
+    shared_ptr<PlainOperator> root = parser.getRoot();
+    std::cout << "Parsed plan: " << *root << std::endl;
 
-    string orders_sql = "(SELECT * "
-                        "FROM orders "
-                        "ORDER BY o_orderkey, o_orderdate, o_shippriority " // was o_orderkey, o_custkey, o_orderdate, o_shippriority
-                        "LIMIT " + limit_str_ + ")";
+    shared_ptr<PlainTable> observed = root->run();
+    observed = DataUtilities::removeDummies(observed);
 
+    ASSERT_EQ(*expected, *observed);
 
-    string lineitem_sql = "(SELECT * FROM lineitem ORDER BY l_orderkey, l_shipdate LIMIT " + limit_str_ + ")";
-
-
-    PlanParser<bool> plan_reader(db_name_, test_name, limit_);
 }
 
 TEST_F(PlanParserTest, tpch_q8) {
