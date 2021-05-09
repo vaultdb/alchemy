@@ -14,12 +14,15 @@ using namespace emp;
 using namespace vaultdb;
 
 
+// create a temp DB that's already truncated to the "correct" sizes for our test
+// then undo it during teardown
 class PlanParserTest : public ::testing::Test {
 
 
 protected:
     void SetUp() override{
         setup_plain_prot(false, "");
+
     };
     void TearDown() override{
         finalize_plain_prot();
@@ -151,6 +154,20 @@ TEST_F(PlanParserTest, tpch_q3) {
 
 TEST_F(PlanParserTest, tpch_q5) {
     string test_name = "q5";
+    string query = tpch_queries[5];
+
+    // set up expected output
+    string customer_sql = "(SELECT * FROM customer ORDER BY c_custkey LIMIT " + limit_str_ + ")";
+
+    string orders_sql = "(SELECT * "
+                        "FROM orders "
+                        "ORDER BY o_orderkey, o_orderdate, o_shippriority " // was o_orderkey, o_custkey, o_orderdate, o_shippriority
+                        "LIMIT " + limit_str_ + ")";
+
+
+    string lineitem_sql = "(SELECT * FROM lineitem ORDER BY l_orderkey, l_shipdate LIMIT " + limit_str_ + ")";
+
+
     PlanParser<bool> plan_reader(db_name_, test_name, limit_);
 }
 
