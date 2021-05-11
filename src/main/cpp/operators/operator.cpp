@@ -55,9 +55,10 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
     }
 
     output_ = runSelf(); // delegated to children
-    std::cout << "Operator " << toString() << " has output cardinality of " << output_->getTupleCount() << std::endl;
     operator_executed_ = true;
     sort_definition_  = output_->getSortOrder(); // update this if needed
+    //shared_ptr<PlainTable > clone = output_->reveal();
+    //DataUtilities::removeDummies(clone);
     return output_;
 }
 

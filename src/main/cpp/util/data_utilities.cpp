@@ -24,13 +24,18 @@ unsigned char DataUtilities::reverse(unsigned char b) {
 // in some cases, like with LIMIT, we can't just run over tpch_unioned
 std::shared_ptr<PlainTable>
 DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
-                                 const bool &hasDummyTag) {
+                                 const bool &hasDummyTag, const size_t & limit) {
 
     PsqlDataProvider dataProvider;
 
     std::shared_ptr<PlainTable> alice = dataProvider.getQueryTable(aliceDb, sql,
                                                                    hasDummyTag); // dummyTag true not yet implemented
     std::shared_ptr<PlainTable> bob = dataProvider.getQueryTable(bobDb, sql, hasDummyTag);
+
+    if(limit > 0) {
+        alice->resize(limit);
+        bob->resize(limit);
+    }
 
     Union<bool> result(alice, bob);
     return result.run();

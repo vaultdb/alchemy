@@ -28,16 +28,16 @@ namespace  vaultdb {
 
 
     public:
-        SecureSqlInput(string db, string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty);
+        SecureSqlInput(string db, string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty, const size_t & input_tuple_cnt = 0); // truncate tuples with last term
 
-        SecureSqlInput(const string &db, const string & sql, const bool &dummyTag, const SortDefinition &sortDefinition, NetIO *netio, const int &party);
+        SecureSqlInput(const string &db, const string & sql, const bool &dummyTag, const SortDefinition &sortDefinition, NetIO *netio, const int &party, const size_t & input_tuple_cnt = 0);
          ~SecureSqlInput() = default;
-        void truncateInput(const size_t & limit); // to test on smaller datasets, limit size in tuples
 
 
     private:
         void runQuery();
         shared_ptr<PlainTable> plain_input_;
+        size_t input_tuple_limit_;
     };
 
 }
