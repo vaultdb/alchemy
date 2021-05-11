@@ -32,6 +32,8 @@ namespace  vaultdb {
 
         SecureSqlInput(const string &db, const string & sql, const bool &dummyTag, const SortDefinition &sortDefinition, NetIO *netio, const int &party);
          ~SecureSqlInput() = default;
+        void truncateInput(const size_t & limit); // to test on smaller datasets, limit size in tuples
+
 
     private:
         void runQuery();

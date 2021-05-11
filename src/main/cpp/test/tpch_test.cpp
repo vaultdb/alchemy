@@ -16,7 +16,6 @@
 using namespace emp;
 using namespace vaultdb;
 
-// TODO: create a utility that invokes the SQL-to-MPC translator to create a JSON plan
 
 class TpcHTest : public ::testing::Test {
 

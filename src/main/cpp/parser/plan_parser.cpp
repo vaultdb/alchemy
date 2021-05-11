@@ -185,17 +185,19 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseSort(const int &operator_id, co
 template<typename B>
 shared_ptr<Operator<bool>>
 PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag) {
-    std::string query = truncateInput(sql);
-    return  std::shared_ptr<Operator<bool> >(new SqlInput(db_name_, query, has_dummy_tag, collation));
+    shared_ptr<SqlInput> sql_input(new SqlInput(db_name_, sql, has_dummy_tag, collation));
+    sql_input->truncateInput(input_limit_);
+    return sql_input;
 }
 
 template<typename B>
 shared_ptr<Operator<emp::Bit>>
 PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag) {
     bool dummy_tag = has_dummy_tag.template reveal(); // just a loop with above, so no security - just aligns template defs
-    std::string query = truncateInput(sql);
+    shared_ptr<SecureSqlInput> input(new SecureSqlInput(db_name_, sql, dummy_tag, collation, netio_, party_));
+    input->truncateInput(input_limit_);
+    return input;
 
-    return  std::shared_ptr<Operator<emp::Bit> >(new SecureSqlInput(db_name_, query, dummy_tag, collation, netio_, party_));
 }
 
 

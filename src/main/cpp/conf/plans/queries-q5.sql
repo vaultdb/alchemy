@@ -2,7 +2,7 @@
 SELECT t1.n_name, t2.c_custkey, t2.c_nationkey
 FROM (SELECT r_regionkey, r_name
 FROM region
-WHERE r_name = 'EUROPE                   ') AS t0
+WHERE r_name = 'EUROPE') AS t0
 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey
 FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey
 INNER JOIN (SELECT c_custkey, c_nationkey
@@ -20,7 +20,7 @@ ORDER BY l_orderkey, l_suppkey, l_extendedprice, l_discount;
 SELECT t2.s_suppkey, t2.s_nationkey
 FROM (SELECT r_regionkey, r_name
 FROM region
-WHERE r_name = 'EUROPE                   ') AS t0
+WHERE r_name = 'EUROPE') AS t0
 INNER JOIN (SELECT n_nationkey, n_regionkey
 FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey
 INNER JOIN (SELECT s_suppkey, s_nationkey

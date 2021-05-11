@@ -55,6 +55,7 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
     }
 
     output_ = runSelf(); // delegated to children
+    std::cout << "Operator " << toString() << " has output cardinality of " << output_->getTupleCount() << std::endl;
     operator_executed_ = true;
     sort_definition_  = output_->getSortOrder(); // update this if needed
     return output_;
@@ -62,7 +63,7 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
 
 
 template<typename B>
-std::string Operator<B>::toString() const {
+std::string Operator<B>::printTree() const {
     return printHelper("");
 
 }
@@ -70,19 +71,7 @@ std::string Operator<B>::toString() const {
 template<typename B>
 std::string Operator<B>::printHelper(const string &prefix) const {
     stringstream  ss;
-    string bool_type = (std::is_same_v<B, bool>) ? "bool" : "Bit";
-    ss << prefix <<  getOperatorType() << "<" << bool_type << "> ";
-
-    string params = getParameters();
-    if(!params.empty())
-        ss << "(" << params << ") ";
-
-    ss << ": " <<  output_schema_ <<    " order by: " << DataUtilities::printSortDefinition(sort_definition_);
-
-    if(output_.get() != nullptr)
-       ss << " tuple count: " << output_->getTupleCount();
-    ss << endl;
-
+    ss << prefix << toString() << endl;
     string indent = prefix + "    ";
     for(Operator<B> *op : children_) {
         ss << op->printHelper(indent);
@@ -91,6 +80,26 @@ std::string Operator<B>::printHelper(const string &prefix) const {
     return ss.str();
 }
 
+
+template<typename B>
+std::string Operator<B>::toString() const {
+    stringstream  ss;
+
+    string bool_type = (std::is_same_v<B, bool>) ? "bool" : "Bit";
+    ss <<   getOperatorType() << "<" << bool_type << "> ";
+
+    string params = getParameters();
+    if(!params.empty())
+        ss << "(" << params << ") ";
+
+    ss << ": " <<  output_schema_ <<    " order by: " << DataUtilities::printSortDefinition(sort_definition_);
+
+    if(output_.get() != nullptr)
+        ss << " tuple count: " << output_->getTupleCount();
+
+    return ss.str();
+
+}
 
 
 
@@ -135,13 +144,14 @@ SortDefinition Operator<B>::getSortOrder() const {
     return sort_definition_;
 }
 
+
 std::ostream &vaultdb::operator<<(std::ostream &os, const PlainOperator &op) {
-    os << op.toString();
+    os << op.printTree();
     return os;
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const SecureOperator &op) {
-    os << op.toString();
+    os << op.printTree();
     return os;
 }
 

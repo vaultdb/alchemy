@@ -67,14 +67,27 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
     if(tree.count("literal")  > 0) {
         ptree literal = tree.get_child("literal");
         std::string type_str = tree.get_child("type").get_child("type").template get_value<std::string>();
-        assert(type_str == "INTEGER");     // only support int32 literals for now
+        assert(type_str == "INTEGER" || type_str == "FLOAT");     // only support int32 and float literals for now
 
-        int32_t literal_int = literal.template get_value<int32_t>();
+        if(type_str == "INTEGER") {
+            int32_t literal_int = literal.template get_value<int32_t>();
 
-        Field<B> input_field = (std::is_same_v<B, bool>) ?
-                Field<B>(FieldType::INT, Value((int32_t) literal_int))
-                        :  Field<B>(FieldType::INT, emp::Integer(32, literal_int));
-        return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
+            Field<B> input_field = (std::is_same_v<B, bool>) ?
+                    Field<B>(FieldType::INT, Value((int32_t) literal_int))
+                            :  Field<B>(FieldType::SECURE_INT, emp::Integer(32, literal_int));
+            return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
+        }
+        else if(type_str == "FLOAT") {
+            float_t literal_float = literal.template get_value<float_t>();
+
+            Field<B> input_field = (std::is_same_v<B, bool>) ?
+                                   Field<B>(FieldType::FLOAT, Value(literal_float))
+                                                             :  Field<B>(FieldType::SECURE_FLOAT, emp::Float(literal_float));
+            return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
+
+
+        }
+
     }
     // else it is an input
     std::string expr = tree.get_child("input").get_value<std::string>();

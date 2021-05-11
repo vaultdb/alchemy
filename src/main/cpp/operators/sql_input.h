@@ -19,17 +19,17 @@ namespace  vaultdb {
     public:
         // bool denotes whether the last col of the SQL statement should be interpreted as a dummy tag
         SqlInput(std::string db, std::string sql, bool dummyTag = false);
-
         SqlInput(std::string db, std::string sql, bool dummyTag, const SortDefinition & sortDefinition);
 
         ~SqlInput() = default;
-        std::shared_ptr<PlainTable> runSelf() override;
+        void truncateInput(const size_t & limit); // to test on smaller datasets
+
     private:
         void runQuery();
 
     protected:
+        std::shared_ptr<PlainTable> runSelf() override;
         string getOperatorType() const override;
-
         string getParameters() const override;
 
     };

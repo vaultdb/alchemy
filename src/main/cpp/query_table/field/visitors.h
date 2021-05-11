@@ -487,7 +487,7 @@ namespace vaultdb {
     };
 
     struct AndVisitor : public boost::static_visitor<Value> {
-        Value operator()(bool b) const { return b & boost::get<bool>(rhs); }
+        Value operator()(bool b) const { return (bool) (b && boost::get<bool>(rhs)); }
 
         Value operator()(int32_t i) const { throw; }
 
@@ -508,7 +508,7 @@ namespace vaultdb {
     };
 
     struct OrVisitor : public boost::static_visitor<Value> {
-        Value operator()(bool b) const { return b | boost::get<bool>(rhs); }
+        Value operator()(bool b) const { return (bool) (b || boost::get<bool>(rhs)); }
 
         Value operator()(int32_t i) const { throw; }
 

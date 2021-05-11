@@ -45,12 +45,12 @@ namespace  vaultdb {
         Operator(shared_ptr<QueryTable<B> > lhs, const SortDefinition & sorted_on = SortDefinition());
         Operator(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, const SortDefinition & sorted_on = SortDefinition());
 
-
         Operator(Operator *child, const SortDefinition & sorted_on = SortDefinition());
         Operator(Operator *lhs, Operator *rhs, const SortDefinition & sorted_on = SortDefinition());
         
         // recurses first, then invokes runSelf method
         std::shared_ptr<QueryTable<B> > run();
+        std::string printTree() const;
         std::string toString() const;
 
         std::shared_ptr<QueryTable<B> > getOutput();

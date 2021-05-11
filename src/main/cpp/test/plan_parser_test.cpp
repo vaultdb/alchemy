@@ -27,9 +27,9 @@ protected:
         finalize_plain_prot();
     };
     // depends on truncate-tpch.sql
-    const string db_name_ = "tpch_unioned_10"; // plaintext case first
+    const string db_name_ = "tpch_unioned"; // plaintext case first
     // limit input to first 100 tuples per SQL statement
-    int limit_ = -1;
+    int limit_ = 10;
 
 };
 

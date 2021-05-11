@@ -44,6 +44,11 @@ string SqlInput::getParameters() const {
     string str = inputQuery;
     std::replace(str.begin(), str.end(), '\n', ' ');
     return "\"" + str + "\", tuple_count=" + std::to_string(output_->getTupleCount());
+    assert(output_->getTupleCount() > 0); // can't run a query without data!
+}
+
+void SqlInput::truncateInput(const size_t &limit) {
+    output_->resize(limit);
 }
 
 

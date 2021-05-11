@@ -234,7 +234,7 @@
                 {
                   "literal": 1,
                   "type": {
-                    "type": "INTEGER",
+                    "type": "FLOAT",
                     "nullable": false
                   }
                 },

@@ -32,6 +32,8 @@ void SecureSqlInput::runQuery() {
     PsqlDataProvider dataProvider;
     plain_input_ = dataProvider.getQueryTable(db_name_, input_query_, has_dummy_tag_);
     plain_input_->setSortOrder(getSortOrder());
+    assert(plain_input_->getTupleCount() > 0); // can't run a query without data!
+
 
 
 }
@@ -42,5 +44,11 @@ string SecureSqlInput::getOperatorType() const {
 
 string SecureSqlInput::getParameters() const {
     return "\"" + input_query_ + "\", tuple_count=" + std::to_string(plain_input_->getTupleCount());
+}
+
+void SecureSqlInput::truncateInput(const size_t &limit) {
+    plain_input_->resize(limit);
+    if(Operator<emp::Bit>::operator_executed_)
+        output_->resize(limit);
 }
 
