@@ -31,7 +31,7 @@ protected:
     // depends on truncate-tpch.sql
     const string db_name_ = "tpch_unioned"; // plaintext case first
     // limit input to first N tuples per SQL statement
-    int limit_ = 50; // TODO: better manage relationships between tables so that all tests have an expected output that's not empty
+    int limit_ = 10; // TODO: better manage relationships between tables so that all tests have an expected output that's not empty
 
     void runTest(const int & test_id, const SortDefinition & expected_sort);
 
@@ -41,6 +41,7 @@ void PlanParserTest::runTest(const int & test_id, const SortDefinition & expecte
     string test_name = "q" + std::to_string(test_id);
     string query = truncated_tpch_queries[test_id];
     boost::replace_all(query, "$LIMIT", std::to_string(limit_));
+    std::cout << "Query: " << query << std::endl;
 
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -110,76 +111,25 @@ TEST_F(PlanParserTest, read_collation_sql) {
 
 // sort not really needed in Q1 MPC pipeline, retaining it to demo the hand-off from one op to the next
 TEST_F(PlanParserTest, tpch_q1) {
-    string test_name = "q1";
-    PlanParser<bool> parser(db_name_, test_name, limit_);
-    shared_ptr<PlainOperator> root = parser.getRoot();
-    std::cout << "Parsed plan: " << *root << std::endl;
-
-    string query = truncated_tpch_queries[1];
-    boost::replace_all(query, "$LIMIT", std::to_string(limit_));
-
-    // collect expected results
-    shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 2);
-
-    // failing to run query tree because additional operators are being stored as shared_ptrs.
-    /// when we delete PlanParser, we delete the pointers
-    shared_ptr<PlainTable> observed = root->run();
-    observed = DataUtilities::removeDummies(observed);
-
-    ASSERT_EQ(*expected, *observed);
-
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+    runTest(1, expected_sort);
 }
 
 
 TEST_F(PlanParserTest, tpch_q3) {
-    string test_name = "q3";
-    string query = truncated_tpch_queries[3];
-    boost::replace_all(query, "$LIMIT", std::to_string(limit_));
-
-
-    shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
-
     // dummy_tag (-1), 1 DESC, 2 ASC
     // aka revenue desc,  o.o_orderdate
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
-    expected->setSortOrder(expected_sort);
 
-    // run test
-    PlanParser<bool> parser(db_name_, test_name, limit_);
-    shared_ptr<PlainOperator> root = parser.getRoot();
-    std::cout << "Parsed plan: " << *root << std::endl;
-
-    shared_ptr<PlainTable> observed = root->run();
-    observed = DataUtilities::removeDummies(observed);
-
-    ASSERT_EQ(*expected, *observed);
-
-
+    runTest(3, expected_sort);
 }
 
 
 TEST_F(PlanParserTest, tpch_q5) {
-    string test_name = "q5";
-    string query = truncated_tpch_queries[5];
-    boost::replace_all(query, "$LIMIT", std::to_string(limit_));
-
-    shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
-
-    // order by $1 DESC
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    expected->setSortOrder(expected_sort);
-
-    PlanParser<bool> parser(db_name_, test_name, limit_);
-    shared_ptr<PlainOperator> root = parser.getRoot();
-    std::cout << "Parsed plan: " << *root << std::endl;
-
-    shared_ptr<PlainTable> observed = root->run();
-    observed = DataUtilities::removeDummies(observed);
-
-    ASSERT_EQ(*expected, *observed);
-
+    runTest(5, expected_sort);
 }
 
 TEST_F(PlanParserTest, tpch_q8) {
@@ -189,14 +139,17 @@ TEST_F(PlanParserTest, tpch_q8) {
 
 // q9 expresssion:   l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity
 TEST_F(PlanParserTest, tpch_q9) {
-    string test_name = "q9";
-    PlanParser<bool> plan_reader(db_name_, test_name, limit_);
+    // $0 ASC, $1 DESC
+    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+    runTest(9, expected_sort);
+
 }
 
 
 
 TEST_F(PlanParserTest, tpch_q18) {
-    string test_name = "q18";
-    PlanParser<bool> plan_reader(db_name_, test_name, limit_);
+    // $4 DESC, $3 ASC
+    SortDefinition expected_sort{ColumnSort(4, SortDirection::DESCENDING), ColumnSort(3, SortDirection::ASCENDING)};
+    runTest(18, expected_sort);
 }
 
