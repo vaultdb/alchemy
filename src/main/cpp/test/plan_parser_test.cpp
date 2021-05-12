@@ -6,6 +6,8 @@
 #include <parser/plan_parser.h>
 #include "support/tpch_queries.h"
 #include <boost/tokenizer.hpp>
+#include <boost/algorithm/string/replace.hpp>
+
 
 
 
@@ -28,10 +30,31 @@ protected:
     };
     // depends on truncate-tpch.sql
     const string db_name_ = "tpch_unioned"; // plaintext case first
-    // limit input to first 100 tuples per SQL statement
-    int limit_ = 10;
+    // limit input to first N tuples per SQL statement
+    int limit_ = 50; // TODO: better manage relationships between tables so that all tests have an expected output that's not empty
+
+    void runTest(const int & test_id, const SortDefinition & expected_sort);
 
 };
+
+void PlanParserTest::runTest(const int & test_id, const SortDefinition & expected_sort) {
+    string test_name = "q" + std::to_string(test_id);
+    string query = truncated_tpch_queries[test_id];
+    boost::replace_all(query, "$LIMIT", std::to_string(limit_));
+
+    shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
+    expected->setSortOrder(expected_sort);
+
+    PlanParser<bool> plan_reader(db_name_, test_name, limit_);
+    shared_ptr<PlainOperator> root = plan_reader.getRoot();
+    std::cout << "Parsed plan: " << *root << std::endl;
+
+    shared_ptr<PlainTable> observed = root->run();
+    observed = DataUtilities::removeDummies(observed);
+
+    ASSERT_EQ(*expected, *observed);
+
+}
 
 // examples (from TPC-H Q1, Q3):
 // 0, collation: (0 ASC, 1 ASC)
@@ -92,7 +115,9 @@ TEST_F(PlanParserTest, tpch_q1) {
     shared_ptr<PlainOperator> root = parser.getRoot();
     std::cout << "Parsed plan: " << *root << std::endl;
 
-    string query = tpch_queries[1];
+    string query = truncated_tpch_queries[1];
+    boost::replace_all(query, "$LIMIT", std::to_string(limit_));
+
     // collect expected results
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 2);
 
@@ -108,7 +133,9 @@ TEST_F(PlanParserTest, tpch_q1) {
 
 TEST_F(PlanParserTest, tpch_q3) {
     string test_name = "q3";
-    string query = tpch_queries[3];
+    string query = truncated_tpch_queries[3];
+    boost::replace_all(query, "$LIMIT", std::to_string(limit_));
+
 
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
 
@@ -135,8 +162,11 @@ TEST_F(PlanParserTest, tpch_q3) {
 
 TEST_F(PlanParserTest, tpch_q5) {
     string test_name = "q5";
-    string query = tpch_queries[5];
+    string query = truncated_tpch_queries[5];
+    boost::replace_all(query, "$LIMIT", std::to_string(limit_));
+
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
+
     // order by $1 DESC
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
     expected->setSortOrder(expected_sort);
@@ -153,8 +183,8 @@ TEST_F(PlanParserTest, tpch_q5) {
 }
 
 TEST_F(PlanParserTest, tpch_q8) {
-    string test_name = "q8";
-    PlanParser<bool> plan_reader(db_name_, test_name, limit_);
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
+    runTest(8, expected_sort);
 }
 
 // q9 expresssion:   l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity

@@ -19,6 +19,7 @@
 #include <operators/filter.h>
 #include <operators/project.h>
 #include "expression_parser.h"
+#include <boost/algorithm/string/replace.hpp>
 
 using namespace vaultdb;
 using boost::property_tree::ptree;
@@ -73,6 +74,7 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
     pair<int, SortDefinition> input_parameters; // operator_id, sorting info (if applicable)
 
     for(vector<std::string>::iterator pos = lines.begin(); pos != lines.end(); ++pos) {
+
         if((*pos).substr(0, 2) == "--") { // starting a new query
             if(init) { // skip the first one
                 has_dummy = (query.find("dummy_tag") != std::string::npos);
@@ -88,7 +90,7 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
             init = true;
         }
         else {
-            query += *pos + "\n";
+            query += *pos + " ";
         }
     }
 
@@ -267,8 +269,6 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_i
 template<typename B>
 std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_tree) {
     boost::property_tree::ptree join_condition_tree = join_tree.get_child("condition");
-    print(join_condition_tree, "");
-
     BoolExpression<B> join_condition = ExpressionParser<B>::parseBoolExpression(join_condition_tree);
 
     ptree input_list = join_tree.get_child("inputs.");
@@ -285,8 +285,12 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, co
 
 template<typename B>
 std::shared_ptr<Operator<B>> PlanParser<B>::parseFilter(const int &operator_id, const ptree &pt) {
-    throw; // not yet implemented
 
+    boost::property_tree::ptree filter_condition_tree = pt.get_child("condition");
+    BoolExpression<B> filter_condition = ExpressionParser<B>::parseBoolExpression(filter_condition_tree);
+    std::shared_ptr<Operator<B> > child = getChildOperator(operator_id);
+
+    return shared_ptr<Operator<B> > (new Filter<B>(child.get(), filter_condition));
 }
 
 template<typename B>

@@ -1,5 +1,7 @@
 #include <data/PsqlDataProvider.h>
 #include "sql_input.h"
+#include <boost/algorithm/string/replace.hpp>
+
 
 using namespace vaultdb;
 
@@ -32,6 +34,8 @@ void SqlInput::runQuery() {
     PsqlDataProvider dataProvider;
 
     if(tuple_limit_ > 0) { // truncate inputs
+        boost::replace_all(input_query_, ";", "");
+
         input_query_ = "SELECT * FROM (" + input_query_ + ") input LIMIT " + std::to_string(tuple_limit_);
     }
 
