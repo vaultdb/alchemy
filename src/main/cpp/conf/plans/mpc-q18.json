@@ -97,7 +97,7 @@
           {
             "literal": 313,
             "type": {
-              "type": "INTEGER",
+              "type": "LONG",
               "nullable": false
             }
           }
@@ -120,6 +120,8 @@
     {
       "id": "5",
       "relOp": "LogicalJoin",
+      "joinCondition": "o_orderkey = l_orderkey",
+      "outputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), l_orderkey (#4)",
       "condition": {
         "op": {
           "name": "=",
@@ -146,6 +148,7 @@
     {
       "id": "6",
       "relOp": "LogicalProject",
+      "inputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), l_orderkey (#4)",
       "fields": [
         "o_orderkey",
         "o_custkey",
@@ -174,6 +177,7 @@
     {
       "id": "7",
       "relOp": "LogicalJoin",
+      "outputFields": "l_orderkey (#0), l_quantity (#1), o_orderkey (#2), o_custkey (#3), o_orderdate (#4), o_totalprice (#5)",
       "condition": {
         "op": {
           "name": "=",
@@ -219,6 +223,7 @@
     {
       "id": "9",
       "relOp": "LogicalJoin",
+      "outputFields": "l_orderkey (#0), l_quantity (#1), o_orderkey (#2), o_custkey (#3), o_orderdate (#4), o_totalprice (#5), c_custkey (#6), c_name (#7)",
       "condition": {
         "op": {
           "name": "=",
@@ -307,7 +312,7 @@
           "operands": [
             5
           ],
-          "name": "EXPR$5"
+          "name": "sum_qty"
         }
       ]
     },

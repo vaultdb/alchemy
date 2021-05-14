@@ -21,7 +21,7 @@ namespace vaultdb {
         shared_ptr<Operator<B> > getRoot() const { return root_; }
         static shared_ptr<Operator<B> > parse(const std::string & db_name, const std::string & plan_name, const int & limit = -1);
         static shared_ptr<Operator<B> > parse(const std::string & db_name, const std::string & plan_name, emp::NetIO * netio, const int & party, const int & limit = -1);
-
+        static pair<int, SortDefinition> parseSqlHeader(const string & header);
     protected:
         std::string db_name_;
         emp::NetIO *netio_ = nullptr;
@@ -52,7 +52,7 @@ namespace vaultdb {
         const std::shared_ptr<Operator<B> > getChildOperator(const int & my_operator_id) const;
         const std::string truncateInput(const std::string sql) const;
 
-        pair<int, SortDefinition> parseSqlHeader(const string & header);
+
 
         void print(const boost::property_tree::ptree &pt, const std::string &prefix);
 
