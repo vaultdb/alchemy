@@ -81,7 +81,6 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
                 query_id = input_parameters.first;
 
                 operators_[query_id] = createInputOperator(query, input_parameters.second, has_dummy);
-                std::cout << "Adding operator " << query_id << " with sql input " << query << std::endl;
 
             }
             // set up the next header
@@ -99,7 +98,6 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
     query_id = input_parameters.first;
 
     operators_[query_id] = createInputOperator(query, input_parameters.second, has_dummy);
-    std::cout << "Adding operator " << query_id << " with sql input: " <<  query << std::endl;
 
 }
 
@@ -121,7 +119,6 @@ void PlanParser<B>::parseSecurePlan(const string & plan_file) {
                     boost::property_tree::ptree inputs = v.second.get_child("id");
                     int operator_id = v.second.get_child("id").template get_value<int>();
                     string op_name =  (std::string) v.second.get_child("relOp").data();
-                    std::cout << "***Parsed op " << operator_id << ": " << op_name << std::endl;
                     parseOperator(operator_id, op_name, v.second);
                 }
 }
@@ -141,7 +138,6 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
 
     if(op.get() != nullptr) {
         operators_[operator_id] = op;
-        std::cout << "Adding operator " << op_name << " with id " << operator_id << ", " << *op << std::endl;
         root_ = op;
     }
     else

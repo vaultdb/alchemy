@@ -91,8 +91,6 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
                                    Field<B>(FieldType::FLOAT, Value(literal_float))
                                                              :  Field<B>(FieldType::SECURE_FLOAT, emp::Float(literal_float));
 
-            std::cout << "Reading in a literal float: " << literal_float << std::endl;
-
             return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
 
 

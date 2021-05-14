@@ -41,7 +41,6 @@ PlanParserTest::runTest(const int &test_id, const SortDefinition &expected_sort,
     string test_name = "q" + std::to_string(test_id);
     string query = truncated_tpch_queries[test_id];
     boost::replace_all(query, "$LIMIT", std::to_string(limit_));
-    std::cout << "Query: " << query << std::endl;
 
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -49,7 +48,6 @@ PlanParserTest::runTest(const int &test_id, const SortDefinition &expected_sort,
     PlanParser<bool> plan_reader(db_name_, test_name, limit_);
     shared_ptr<PlainOperator> root = plan_reader.getRoot();
     std::string observed_plan = root->printTree();
-    std::cout << "Parsed plan: " << *root << std::endl;
 
     ASSERT_EQ(expected_plan, observed_plan);
 

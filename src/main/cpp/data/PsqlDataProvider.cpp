@@ -17,7 +17,6 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
     dbName = dbname;
     pqxx::result pqxxResult;
-    std::cout << "Running query " << query_string << std::endl;
     pqxx::connection dbConn("dbname=" + dbname);
 
     try {

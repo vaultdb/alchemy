@@ -5,6 +5,7 @@
 #include <query_table/query_schema.h>
 #include <map>
 
+// TODO: make this insert CAST ops as needed for expression evaluation
 namespace vaultdb {
     template<typename B>
     class TypeInferenceVisitor : public ExpressionVisitor<B> {
