@@ -7,33 +7,12 @@
         {
           "type": "INTEGER",
           "nullable": false,
-          "name": "n_nationkey"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": true,
-          "name": "n_regionkey"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "r_regionkey"
-        },
-        {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 25,
-          "name": "r_name"
+          "name": "c_nationkey"
         },
         {
           "type": "INTEGER",
           "nullable": false,
           "name": "c_custkey"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": true,
-          "name": "c_nationkey"
         }
       ],
       "tuples": [],
@@ -64,6 +43,8 @@
     },
     {
       "id": "2",
+      "joinOn" : "c_custkey = o_custkey",
+      "outputFields": "c_nationkey (#0), c_custkey (#1), o_orderkey (#2), o_custkey (#3), o_year (#4)",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
@@ -73,12 +54,12 @@
         },
         "operands": [
           {
-            "input": 7,
-            "name": "$7"
+            "input": 3,
+            "name": "$3"
           },
           {
-            "input": 4,
-            "name": "$4"
+            "input": 1,
+            "name": "$1"
           }
         ]
       },
@@ -95,13 +76,7 @@
         {
           "type": "INTEGER",
           "nullable": false,
-          "name": "p_partkey"
-        },
-        {
-          "type": "VARCHAR",
-          "nullable": true,
-          "precision": 25,
-          "name": "p_type"
+          "name": "l_partkey"
         },
         {
           "type": "INTEGER",
@@ -111,26 +86,14 @@
         {
           "type": "INTEGER",
           "nullable": true,
-          "name": "l_partkey"
-        },
-        {
-          "type": "INTEGER",
-          "nullable": true,
           "name": "l_suppkey"
         },
         {
-          "type": "DECIMAL",
+          "type": "FLOAT",
           "nullable": true,
           "precision": 19,
           "scale": 0,
-          "name": "l_extendedprice"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "l_discount"
+          "name": "volume"
         }
       ],
       "tuples": [],
@@ -146,7 +109,7 @@
           "name": "s_suppkey"
         },
         {
-          "type": "INTEGER",
+          "type": "FLOAT",
           "nullable": false,
           "name": "nation_check"
         }
@@ -156,6 +119,8 @@
     },
     {
       "id": "5",
+      "joinOn" : "l_suppkey = s_suppkey",
+      "outputFields": "l_partkey (#0), l_orderkey (#1), l_suppkey (#2), volume (#3), s_suppkey (#4), nation_check(#5)",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
@@ -165,12 +130,12 @@
         },
         "operands": [
           {
-            "input": 7,
-            "name": "$7"
-          },
-          {
             "input": 4,
             "name": "$4"
+          },
+          {
+            "input": 2,
+            "name": "$2"
           }
         ]
       },
@@ -182,34 +147,8 @@
     },
     {
       "id": "6",
-      "relOp": "LogicalProject",
-      "fields": [
-        "l_extendedprice",
-        "l_discount",
-        "nation_check",
-        "l_orderkey"
-      ],
-      "exprs": [
-        {
-          "input": 5,
-          "name": "$5"
-        },
-        {
-          "input": 6,
-          "name": "$6"
-        },
-        {
-          "input": 8,
-          "name": "$8"
-        },
-        {
-          "input": 2,
-          "name": "$2"
-        }
-      ]
-    },
-    {
-      "id": "7",
+      "joinOn" : "l_orderkey = o_orderkey",
+      "outputFields": "c_nationkey (#0), c_custkey (#1), o_orderkey (#2), o_custkey (#3), o_year (#4), l_partkey (#5), l_orderkey (#6), l_suppkey (#7), volume (#8), s_suppkey (#9), nation_check(#10)",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
@@ -219,23 +158,25 @@
         },
         "operands": [
           {
-            "input": 12,
-            "name": "$12"
+            "input": 2,
+            "name": "$2"
           },
           {
-            "input": 6,
-            "name": "$6"
+            "input": 5,
+            "name": "$5"
           }
         ]
       },
       "joinType": "inner",
       "inputs": [
         "2",
-        "6"
+          "5"
       ]
     },
     {
-      "id": "8",
+      "id": "7",
+      "inputFields": "c_nationkey (#0), c_custkey (#1), o_orderkey (#2), o_custkey (#3), o_year (#4), l_partkey (#5), l_orderkey (#6), l_suppkey (#7), volume (#8), s_suppkey (#9), nation_check(#10)",
+      "outputFields" : "o_year, volume * nation_check::float, volume",
       "relOp": "LogicalProject",
       "fields": [
         "o_year",
@@ -244,92 +185,34 @@
       ],
       "exprs": [
         {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "op": {
+            "name": "*",
+            "kind": "TIMES",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+                  "input": 8,
+                  "name": "$8"
+                },
+                {
+                  "input": 10,
+                  "name": "$10"
+                }
+              ]
+            },
+        {
           "input": 8,
           "name": "$8"
-        },
-        {
-          "op": {
-            "name": "*",
-            "kind": "TIMES",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "op": {
-                "name": "*",
-                "kind": "TIMES",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 11,
-                  "name": "$11"
-                },
-                {
-                  "input": 9,
-                  "name": "$9"
-                }
-              ]
-            },
-            {
-              "op": {
-                "name": "-",
-                "kind": "MINUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "literal": 1,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                },
-                {
-                  "input": 10,
-                  "name": "$10"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "op": {
-            "name": "*",
-            "kind": "TIMES",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 9,
-              "name": "$9"
-            },
-            {
-              "op": {
-                "name": "-",
-                "kind": "MINUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "literal": 1,
-                  "type": {
-                    "type": "INTEGER",
-                    "nullable": false
-                  }
-                },
-                {
-                  "input": 10,
-                  "name": "$10"
-                }
-              ]
-            }
-          ]
         }
       ]
     },
     {
-      "id": "9",
+      "id": "8",
       "relOp": "LogicalAggregate",
       "group": [
         0
@@ -374,7 +257,7 @@
       ]
     },
     {
-      "id": "10",
+      "id": "9",
       "relOp": "LogicalSort",
       "collation": [
         {
@@ -385,7 +268,7 @@
       ]
     },
     {
-      "id": "11",
+      "id": "10",
       "relOp": "LogicalProject",
       "fields": [
         "o_year",

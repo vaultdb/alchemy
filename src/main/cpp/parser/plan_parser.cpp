@@ -131,6 +131,7 @@ void PlanParser<B>::parseSecurePlan(const string & plan_file) {
 template<typename B>
 void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name, const ptree & tree) {
     shared_ptr<Operator<B> > op;
+    // TODO: parse schema
     if(op_name == "LogicalValues") return; // handled in createInput
     if(op_name == "LogicalSort")   op = parseSort(operator_id, tree);
     if(op_name == "LogicalAggregate")  op = parseAggregate(operator_id, tree);
