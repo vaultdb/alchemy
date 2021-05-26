@@ -67,8 +67,7 @@ namespace  vaultdb {
             QueryTuple<B> getTuple(int idx);
             const QueryTuple<B> getImmutableTuple(int idx) const;
 
-
-        unsigned int getTupleCount() const;
+            unsigned int getTupleCount() const;
 
             std::string toString(const bool &showDummies = false) const;
 

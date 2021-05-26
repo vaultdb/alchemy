@@ -17,8 +17,6 @@ namespace  vaultdb {
         Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
         ~Join()  = default;
 
-
-
         // if B write is true, then write to the left side of an output tuple with src_tuple
         static void write_left(const bool & write, PlainTuple & dst_tuple, const PlainTuple & src_tuple);
         static void write_left(const emp::Bit & write, SecureTuple & dst_tuple, const SecureTuple & src_tuple);

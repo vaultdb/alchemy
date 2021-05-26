@@ -15,7 +15,7 @@ bash test/support/setup-csv.sh
 ./bin/group_by_aggregate_test
 ./bin/secret_share_generator_test 
 ./bin/serialization_test
-./bin/plan_reader_test
+./bin/plan_parser_test
 
 
 #pairs for Alice and Bob

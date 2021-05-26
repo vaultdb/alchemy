@@ -53,6 +53,7 @@ FieldType GroupByCountImpl<B>::getType() const {
 template<typename B>
 GroupBySumImpl<B>::GroupBySumImpl(const int32_t &ordinal, const FieldType &aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {
     runningSum = GroupByAggregateImpl<B>::zero;
+    assert(aggType != FieldType::STRING && aggType != FieldType::SECURE_STRING);
 }
 
 

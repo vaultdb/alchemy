@@ -14,7 +14,8 @@
 #include <operators/sort.h>
 #include <operators/group_by_aggregate.h>
 #include <operators/scalar_aggregate.h>
-#include <operators/support/join_equality_predicate.h>
+//#include <operators/support/join_equality_predicate.h>
+#include <operators/keyed_join.h>
 #include <operators/basic_join.h>
 #include <operators/filter.h>
 #include <operators/project.h>
@@ -275,6 +276,14 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, co
     ++it;
     int rhs_id = it->second.get_value<int>();
     shared_ptr<Operator<B> > rhs  = operators_.at(rhs_id);
+
+    // if fkey designation exists, use this to create keyed join
+    // key: foreignKey
+    if(join_tree.count("foreignKey") > 0) {
+        int foreign_key = join_tree.get_child("foreignKey").template get_value<int>();
+        return shared_ptr<Operator<B> > (new KeyedJoin<B>(lhs.get(), rhs.get(), foreign_key, join_condition));
+
+    }
 
     return shared_ptr<Operator<B> > (new BasicJoin<B>(lhs.get(), rhs.get(), join_condition));
 

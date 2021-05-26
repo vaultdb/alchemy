@@ -76,7 +76,10 @@ namespace vaultdb {
     struct EqualityVisitor : public boost::static_visitor<Value> {
         Value operator()(bool b) const { return b == boost::get<bool>(rhs); }
 
-        Value operator()(int32_t i) const { return i == boost::get<int32_t>(rhs); }
+        Value operator()(int32_t i) const {
+
+            return i == boost::get<int32_t>(rhs);
+        }
 
         Value operator()(int64_t i) const {
             return i == boost::get<int64_t>(rhs);

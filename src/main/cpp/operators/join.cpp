@@ -70,7 +70,7 @@ B Join<B>::get_dummy_tag(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, con
 template<typename B>
 void Join<B>::write_left(const bool &write, PlainTuple &dst_tuple, const PlainTuple &src_tuple) {
     if(write) {
-        size_t tuple_size = src_tuple.getSchema()->size()/8;
+        size_t tuple_size = src_tuple.getSchema()->size()/8 - 1; // -1 for dummy tag
         memcpy(dst_tuple.getData(), src_tuple.getData(), tuple_size);
     }
 }
@@ -78,7 +78,7 @@ void Join<B>::write_left(const bool &write, PlainTuple &dst_tuple, const PlainTu
 
 template<typename B>
 void Join<B>::write_left(const emp::Bit &write, SecureTuple &dst_tuple, const SecureTuple &src_tuple) {
-    size_t write_bit_cnt = src_tuple.getSchema()->size();
+    size_t write_bit_cnt = src_tuple.getSchema()->size() - 1; // -1 for dummy tag
     size_t write_size = write_bit_cnt * sizeof(emp::block);
 
     emp::Integer src(write_bit_cnt, 0), dst(write_bit_cnt, 0);

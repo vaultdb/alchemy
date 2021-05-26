@@ -1,8 +1,11 @@
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
+#include <util/field_utilities.h>
+
 #include "group_by_aggregate.h"
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
+
 
 
 using namespace vaultdb;
@@ -62,6 +65,7 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
         realBin = realBin | !predecessor.getDummyTag();
         B isGroupByMatch = groupByMatch(predecessor, current);
+
         QueryTuple<B> output_tuple = GroupByAggregate<B>::output_->getTuple(i - 1); // to write to it in place
         generateOutputTuple(output_tuple, predecessor, !isGroupByMatch, realBin, aggregators_);
 

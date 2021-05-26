@@ -15,21 +15,21 @@ protected:
     void SetUp() override { setup_plain_prot(false, ""); };
     void TearDown() override{  finalize_plain_prot(); };
 
-    const std::string dbName = "tpch_unioned";
+    const std::string dbName = "tpch_unioned_25";
 
     const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
                                     "FROM customer  "
-                                    "WHERE c_custkey <= 10 "
+                                   // "WHERE c_custkey <= 10 "
                                     "ORDER BY c_custkey";
 
     const std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
                                   "FROM orders "
-                                  "WHERE o_custkey <= 10 "
+                                  //"WHERE o_custkey <= 10 "
                                   "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     const std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
                                     "FROM lineitem "
-                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 10)  "
+                                  //  "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 10)  "
                                     "ORDER BY l_orderkey, revenue ";
 };
 

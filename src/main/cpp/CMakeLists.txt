@@ -112,7 +112,8 @@ set(sources
 		expression/expression_factory.cpp
 		expression/visitor/expression_visitor.h
 		expression/visitor/join_equality_condition_visitor.cpp
-		expression/visitor/print_expression_visitor.cpp expression/visitor/type_inference_visitor.cpp expression/visitor/type_inference_visitor.h)
+		expression/visitor/print_expression_visitor.cpp
+		expression/visitor/type_inference_visitor.cpp)
 
 
 

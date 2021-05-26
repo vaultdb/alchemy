@@ -68,6 +68,7 @@
         ]
       },
       "joinType": "inner",
+      "foreignKey": 1,
       "inputs": [
         "0",
         "1"
@@ -126,6 +127,7 @@
         ]
       },
       "joinType": "inner",
+      "foreignKey": 1,
       "inputs": [
         "2",
         "3"
@@ -196,6 +198,7 @@
         ]
       },
       "joinType": "inner",
+      "foreignKey": 0,
       "inputs": [
         "4",
         "5"
