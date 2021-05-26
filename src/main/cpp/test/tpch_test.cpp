@@ -63,29 +63,6 @@ TEST_F(TpcHTest, tpch_q1) {
 }
 
 
-// Lhs input has 244 tuples, 102 of which are real.
-//Rhs input has 25 tuples, 6 of which are real.
-//True tuple count post-join: 20 observed output card: 244
-//Lhs input has 982 tuples, 619 of which are real.
-//Rhs input has 244 tuples, 20 of which are real.
-
-//Lhs input has 982 tuples, 619 of which are real.
-//Rhs input has 244 tuples, 20 of which are real.
-//True tuple count post-join: 4
-
-// Test code is producing:
-// Lhs input has 25 tuples, 6 of which are real.
-//Rhs input has 244 tuples, 102 of which are real.
-//True tuple count post-join: 20
-//Lhs input has 244 tuples, 20 of which are real.
-//Rhs input has 982 tuples, 619 of which are real.
-//True tuple count post-join: 0 *** fail!
-
-//Match found on lhs idx=682, rhs idx=168: (4141668, 28237.091797) (dummy=0), (4141668, 10, 796003200, 0, 10) (dummy=0)
-//Match found on lhs idx=683, rhs idx=168: (4141668, 29215.691406) (dummy=0), (4141668, 10, 796003200, 0, 10) (dummy=0)
-//Match found on lhs idx=684, rhs idx=168: (4141668, 35286.613281) (dummy=0), (4141668, 10, 796003200, 0, 10) (dummy=0)
-//Match found on lhs idx=685, rhs idx=168: (4141668, 70303.289062) (dummy=0), (4141668, 10, 796003200, 0, 10) (dummy=0)
-
 TEST_F(TpcHTest, tpch_q3) {
 
     // dummy_tag (-1), 1 DESC, 2 ASC

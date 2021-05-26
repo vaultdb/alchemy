@@ -10,7 +10,7 @@ using namespace vaultdb;
 
 class KeyedJoinTest : public ::testing::Test {
 
-
+// depends on truncate-tpch-set.sql
 protected:
     void SetUp() override { setup_plain_prot(false, ""); };
     void TearDown() override{  finalize_plain_prot(); };

@@ -52,10 +52,6 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
     QuerySchema lhs_schema = *lhs_table->getSchema();
     QuerySchema rhs_schema = *rhs_table->getSchema();
     QuerySchema output_schema = Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false);
-
-    std::cout << "Lhs input has " << lhs_table->getTupleCount() << " tuples, " << lhs_table->getTrueTupleCount()  << " of which are real." << std::endl;
-    std::cout << "Rhs input has " << rhs_table->getTupleCount() << " tuples, " << rhs_table->getTrueTupleCount()  << " of which are real." << std::endl;
-
     Join<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(output_tuple_cnt, output_schema, lhs_table->getSortOrder()));
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
@@ -81,17 +77,11 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
             B this_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicateEval);
 
             Join<B>::write_right(!this_dummy_tag, dst_tuple, rhs_tuple);
-            if(!FieldUtilities::extract_bool(this_dummy_tag)) {
-                std::cout << "Match found on lhs idx=" << i << ", rhs idx=" << j << ": " << lhs_tuple.toString(true) << ", " << rhs_tuple.toString(true) <<  std::endl;
-            }
-
         }
 
 
 
     }
-    //***** temp debug *****/
-    std::cout << "True tuple count post-join: " << Join<B>::output_->getTrueTupleCount() << " observed output card: " <<  Join<B>::output_->getTupleCount() <<   std::endl;
 
     return Join<B>::output_;
 
@@ -108,13 +98,6 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
     QuerySchema rhs_schema = *rhs_table->getSchema();
     QuerySchema output_schema = Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false);
 
-    std::cout << "Lhs input has " << lhs_table->getTupleCount() << " tuples, " << lhs_table->getTrueTupleCount()  << " of which are real." << std::endl;
-    std::cout << "Rhs input has " << rhs_table->getTupleCount() << " tuples, " << rhs_table->getTrueTupleCount()  << " of which are real." << std::endl;
-
-    // do fkey --> primary key loops as usual
-    // *** does not preserve expected output order of (lhs_sort_key) ***
-    // *** offers rhs_sort_key instead
-    // output size, colCount, is_encrypted
     SortDefinition output_sort;
     for(ColumnSort s : rhs_table->getSortOrder()) {
         ColumnSort s_prime(s.first + lhs_table->getSchema()->getFieldCount(), s.second);
@@ -141,10 +124,6 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
         Join<B>::write_right(true, dst_tuple, rhs_tuple);
         dst_tuple.setDummyTag(dst_dummy_tag);
 
-        if(i == 168)
-            std::cout << "*** Found suspect at idx " << i << " with value " <<rhs_tuple.toString(true)
-            << " prelim dst tuple: " << dst_tuple.toString(true) <<  std::endl;
-
 
         for(uint32_t j = 1; j < lhs_table->getTupleCount(); ++j) {
             lhs_tuple = (*lhs_table)[j];
@@ -160,40 +139,9 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
             B write_dummy_tag = FieldUtilities::getBoolPrimitive(write_dummy_tag_field);
             dst_tuple.setDummyTag(write_dummy_tag);
 
-            bool tmp_plain_dummy_tag = FieldUtilities::extract_bool(this_dummy_tag);
-
-
-            if((j == 168 && !FieldUtilities::extract_bool(rhs_tuple.getDummyTag())) || !FieldUtilities::extract_bool(this_dummy_tag)){
-                //           if(!FieldUtilities::extract_bool(lhs_tuple.getDummyTag()) && !FieldUtilities::extract_bool(rhs_tuple.getDummyTag()) ) {
-                if(lhs_schema.getFieldCount() >= 3 && rhs_schema.getFieldCount() >= 1)
-                    std::cout << "Suspect: " << lhs_tuple.getField(2).toString() << " vs " << rhs_tuple.getField(0).toString()
-                              << " eq? " << (lhs_tuple.getField(2) == rhs_tuple.getField(0)) <<  std::endl;
-
-                std::cout << "Comparing on lhs idx=" << i << ", rhs idx=" << j << ": " << lhs_tuple.toString(true) << ", " << rhs_tuple.toString(true)
-                          << " predicate eval=" << FieldUtilities::extract_bool(predicate_eval) << ", " << " dt=" <<  FieldUtilities::extract_bool(this_dummy_tag) <<  std::endl;
-                std::cout << "   dst tuple[" << i << "] : " << dst_tuple.toString(true) << std::endl;
-            }
-
-            QueryTuple<B> tmp = Join<B>::output_->getTuple(168);
-            Field<B> tmp_field = tmp.getField(2);
-            Field<B> t(FieldType::INT, 4141668);
-            B cmp = (t != tmp_field);
-            if(lhs_schema.getFieldCount() < 3 && i > 168 && FieldUtilities::extract_bool(cmp))
-                std::cout << "Writing to suspect at rhs idx " << j << std::endl;
-
         }
 
-    // it's already wrong after the 168 round.  Why?
-        if(lhs_schema.getFieldCount() < 3 && i == 168)
-            std::cout << "***Output tuple: " << dst_tuple.toString(true) << std::endl;
-
-
-
     }
-
-    //***** temp debug *****/
-    std::cout << "True tuple count post-join: " << Join<B>::output_->getTrueTupleCount() << " observed output card: " <<  Join<B>::output_->getTupleCount() <<   std::endl;
-    std::cout << "Suspect value post-join: " <<  Join<B>::output_->getTuple(168).toString(true) << std::endl;
 
     return Join<B>::output_;
 
