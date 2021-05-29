@@ -145,5 +145,111 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
 
+TEST_F(KeyedJoinTest, test_tpch_q3_customer_orders_reversed) {
+
+    std::string expectedResultSql = "WITH customer_cte AS (" + customerSql + "), "
+                                                                             "orders_cte AS (" + ordersSql + ") "
+                                                                                                             "SELECT c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority,(cdummy OR odummy) dummy "
+                                                                                                             "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
+                                                                                                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
+
+
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+
+    SqlInput customerInput(dbName, customerSql, true);
+    SqlInput ordersInput(dbName, ordersSql, true);
+
+    // join output schema: (orders, customer)
+    // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority
+    BoolExpression<bool> predicate = Utilities::getEqualityPredicate<bool>(0, 2);
+
+    KeyedJoin join(&customerInput, &ordersInput, 1, predicate);
+    std::shared_ptr<PlainTable > observed = join.run();
+
+    ASSERT_EQ(*expected, *observed);
+
+}
+
+
+TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_reversed) {
+
+    std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), "
+                                                                         "lineitem_cte AS (" + lineitemSql + "), "
+                                                                                                             "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, (o_orderkey=l_orderkey) matched, (odummy OR ldummy) dummy \n"
+                                                                                                             "FROM lineitem_cte, orders_cte \n"
+                                                                                                             "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
+                                                                                                             "SELECT  o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue, dummy \n"
+                                                                                                             "FROM cross_product \n"
+                                                                                                             "WHERE matched";
+
+
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+
+    SqlInput lineitemInput(dbName, lineitemSql, true);
+    SqlInput ordersInput(dbName, ordersSql, true);
+
+    // output schema: lineitem, orders
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue
+    BoolExpression<bool> predicate  = Utilities::getEqualityPredicate<bool>(0, 4);
+
+    KeyedJoin join(&ordersInput, &lineitemInput, 1, predicate);
+
+    std::shared_ptr<PlainTable > observed = join.run();
+
+
+
+    ASSERT_EQ(observed->toString(false), expected->toString(false));
+    ASSERT_EQ(*expected, *observed);
+
+}
+
+
+
+TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
+
+
+    std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
+                                                                         "lineitem_cte AS (" + lineitemSql + "), \n"
+                                                                                                             "customer_cte AS (" + customerSql + "),\n "
+                                                                                                                                                 "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (odummy OR ldummy OR cdummy) dummy \n"
+                                                                                                                                                 "FROM lineitem_cte, orders_cte, customer_cte  \n"
+                                                                                                                                                 "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
+                                                                                                                                                 "SELECT c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority,  l_orderkey, revenue, dummy \n"
+                                                                                                                                                 "FROM cross_product \n"
+                                                                                                                                                 "WHERE matched";
+
+
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+
+
+    SqlInput customerInput(dbName, customerSql, true);
+    SqlInput ordersInput(dbName, ordersSql, true);
+    SqlInput lineitemInput(dbName, lineitemSql, true);
+
+    // join output schema: (orders, customer)
+    // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority
+
+    BoolExpression<bool> customer_orders_predicate = Utilities::getEqualityPredicate<bool>(0, 2);
+
+    // join output schema:
+    //   c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue
+    BoolExpression<bool> lineitem_orders_predicate = Utilities::getEqualityPredicate<bool>(1, 5);
+
+
+    KeyedJoin customerOrdersJoin(&customerInput, &ordersInput, 1, customer_orders_predicate);
+
+    KeyedJoin fullJoin(&customerOrdersJoin, &lineitemInput, 1, lineitem_orders_predicate);
+
+
+    std::shared_ptr<PlainTable > observed = fullJoin.run();
+
+
+    ASSERT_EQ(*expected, *observed);
+
+}
+
+
+
+
 
 

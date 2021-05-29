@@ -507,6 +507,30 @@ void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_
 
 }
 
+template<typename B>
+std::string QueryTable<B>::toString(const int &limit, const bool &show_dummies) const {
+    std::ostringstream os;
+    size_t tuples_printed = 0;
+    size_t cursor = 0;
+    size_t tuple_cnt = getTupleCount();
+
+    assert(!isEncrypted());
+
+    os << *getSchema() <<  " order by: " << DataUtilities::printSortDefinition(getSortOrder()) << std::endl;
+    while(cursor < tuple_cnt && tuples_printed < limit) {
+        PlainTuple tuple = getPlainTuple(cursor);
+        if(show_dummies  // print unconditionally
+            || !tuple.getDummyTag()) {
+            os << cursor << ": " << tuple.toString(show_dummies) << std::endl;
+            ++tuples_printed;
+        }
+        ++cursor;
+    }
+
+    return os.str();
+
+}
+
 
 template class vaultdb::QueryTable<bool>;
 template class vaultdb::QueryTable<emp::Bit>;

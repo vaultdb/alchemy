@@ -401,6 +401,11 @@ pair<int, SortDefinition> PlanParser<B>::parseSqlHeader(const string &header) {
     return result;
 }
 
+template<typename B>
+shared_ptr<Operator<B>> PlanParser<B>::getOperator(const int &op_id) {
+    return operators_.find(op_id)->second;
+}
+
 
 template class vaultdb::PlanParser<bool>;
 template class vaultdb::PlanParser<emp::Bit>;

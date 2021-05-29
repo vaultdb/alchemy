@@ -70,6 +70,7 @@ namespace  vaultdb {
             unsigned int getTupleCount() const;
 
             std::string toString(const bool &showDummies = false) const;
+            std::string toString(const int & limit, const bool &showDummies = false) const;
 
             void putTuple(const int &idx, const QueryTuple<B> &tuple);
 

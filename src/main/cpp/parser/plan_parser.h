@@ -19,6 +19,8 @@ namespace vaultdb {
         PlanParser(const std::string &db_name, std::string plan_name, const int & limit  = -1);
         PlanParser(const std::string &db_name, std::string plan_name, emp::NetIO * netio, const int & party, const int & limit = -1);
         shared_ptr<Operator<B> > getRoot() const { return root_; }
+        shared_ptr<Operator<B> > getOperator(const int & op_id);
+
         static shared_ptr<Operator<B> > parse(const std::string & db_name, const std::string & plan_name, const int & limit = -1);
         static shared_ptr<Operator<B> > parse(const std::string & db_name, const std::string & plan_name, emp::NetIO * netio, const int & party, const int & limit = -1);
         static pair<int, SortDefinition> parseSqlHeader(const string & header);

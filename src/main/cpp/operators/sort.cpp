@@ -56,6 +56,8 @@ std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
     if(limit_ > 0) {
         Operator<B>::output_->resize(limit_);
     }
+
+
     return Operator<B>::output_;
 }
 

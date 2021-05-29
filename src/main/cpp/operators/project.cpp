@@ -41,6 +41,7 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
         project_tuple(dst_tuple, src_tuple);
     }
 
+
     return Operator<B>::output_;
 }
 

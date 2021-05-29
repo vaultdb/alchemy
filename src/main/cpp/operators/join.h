@@ -26,9 +26,14 @@ namespace  vaultdb {
         static void write_right(const emp::Bit & write, SecureTuple & dst_tuple, const SecureTuple & src_tuple);
 
 
+
     protected:
         static QuerySchema concatenateSchemas(const QuerySchema &lhs_schema, const QuerySchema &rhs_schema, const bool &append_bool = false);
 
+        // current dummy_tag is the output of the current tuple comparison - derived from get_dummy_tag below
+        // just splitting this off to make the code modular
+        static void update_dummy_tag(QueryTuple<bool> & dst_tuple, const bool & predicate_matched, const bool & current_dummy_tag);
+        static void update_dummy_tag(QueryTuple<emp::Bit> & dst_tuple, const emp::Bit & predicate_matched, const emp::Bit & current_dummy_tag);
 
         static B get_dummy_tag(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const B & predicateEval);
 

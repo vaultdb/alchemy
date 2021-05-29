@@ -63,8 +63,8 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
         // for first tuple comparison, initialize output tuple -- just in case there are no matches
         rhs_tuple = (*rhs_table)[0];
 
-        B predicateEval = Join<B>::predicate_.call(lhs_tuple, rhs_tuple, output_schema);
-        B dst_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicateEval);
+        B predicate_eval = Join<B>::predicate_.call(lhs_tuple, rhs_tuple, output_schema);
+        B dst_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicate_eval);
 
         // unconditional write to first one to initialize it
         Join<B>::write_left(true, dst_tuple, lhs_tuple);
@@ -73,10 +73,11 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
         for(uint32_t j = 1; j < rhs_table->getTupleCount(); ++j) {
             rhs_tuple = (*rhs_table)[j];
-            predicateEval = Join<B>::predicate_.call(lhs_tuple, rhs_tuple, output_schema);
-            B this_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicateEval);
+            predicate_eval = Join<B>::predicate_.call(lhs_tuple, rhs_tuple, output_schema);
+            B this_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicate_eval);
 
             Join<B>::write_right(!this_dummy_tag, dst_tuple, rhs_tuple);
+            Join<B>::update_dummy_tag(dst_tuple, predicate_eval, this_dummy_tag);
         }
 
 
@@ -130,14 +131,10 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
 
             predicate_eval = Join<B>::predicate_.call(lhs_tuple, rhs_tuple, output_schema);
-            B this_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicate_eval);
+            dst_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicate_eval);
 
-
-
-            Join<B>::write_left(!this_dummy_tag, dst_tuple, lhs_tuple);
-            Field<B> write_dummy_tag_field = Field<B>::If(!this_dummy_tag, this_dummy_tag, dst_tuple.getDummyTag());
-            B write_dummy_tag = FieldUtilities::getBoolPrimitive(write_dummy_tag_field);
-            dst_tuple.setDummyTag(write_dummy_tag);
+            Join<B>::write_left(!dst_dummy_tag, dst_tuple, lhs_tuple);
+            Join<B>::update_dummy_tag(dst_tuple, predicate_eval, dst_dummy_tag);
 
         }
 
