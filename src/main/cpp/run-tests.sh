@@ -16,7 +16,7 @@ bash test/support/setup-csv.sh
 ./bin/secret_share_generator_test 
 ./bin/serialization_test
 ./bin/plan_parser_test
-
+./bin/tpch_test
 
 #pairs for Alice and Bob
 ./bin/emp_test --party=1 & 

@@ -54,7 +54,22 @@ std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
     Operator<B>::output_->setSortOrder(Operator<B>::sort_definition_);
 
     if(limit_ > 0) {
-        Operator<B>::output_->resize(limit_);
+        size_t cutoff = limit_;
+        // if in plaintext, truncate to true length or limit_, whichever one is lower
+        if(std::is_same_v<B, bool>) {
+            int first_dummy = -1;
+            uint32_t cursor = 0;
+            while(first_dummy < 0 && cursor < Operator<B>::output_->getTupleCount()) {
+                if(Operator<B>::output_->getPlainTuple(cursor).getDummyTag()) {
+                    first_dummy = cursor; // break
+                }
+                ++cursor;
+            }
+
+            if(first_dummy > 0)
+                cutoff = first_dummy;
+        }
+        Operator<B>::output_->resize(cutoff);
     }
 
 

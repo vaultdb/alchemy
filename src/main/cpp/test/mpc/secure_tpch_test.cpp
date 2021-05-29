@@ -4,7 +4,9 @@
 #include <operators/sql_input.h>
 #include <data/CsvReader.h>
 #include <parser/plan_parser.h>
-#include "support/tpch_queries.h"
+#include <test/mpc/emp_base_test.h>
+
+#include "../support/tpch_queries.h"
 
 
 
@@ -15,20 +17,17 @@ using namespace vaultdb;
 // DIAGNOSE = 1 --> all tests produce non-empty output
 #define DIAGNOSE 0
 
-class TpcHTest : public ::testing::Test {
+
+DEFINE_int32(party, 1, "party for EMP execution");
+DEFINE_int32(port, 54321, "port for EMP execution");
+DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
+
+class SecureTpcHTest  : public EmpBaseTest  {
 
 
 protected:
-    void SetUp() override{
-        setup_plain_prot(false, "");
 
-    };
-    void TearDown() override{
-        finalize_plain_prot();
-    };
     // depends on truncate-tpch-set.sql
-    //const string db_name_ = "tpch_unioned_250"; // plaintext case first
-    // different DBs for different tests to bump up the output size - don't want empty output!
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
 
 };
@@ -36,8 +35,11 @@ protected:
 // most of these runs are not meaningful for diffing the results because they produce no tuples - joins are too sparse.
 // This isn't relevant to the parser so work on this elsewhere.
 void
-TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
+SecureTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
     string query = tpch_queries[test_id];
+
+    string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
+    
 
 
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name, query, false, 0);
@@ -46,10 +48,10 @@ TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefini
         ASSERT_GT(expected->getTupleCount(),  0);
     }
 
-    PlanParser<bool> plan_reader(db_name, test_name, 0);
-    shared_ptr<PlainOperator> root = plan_reader.getRoot();
+    PlanParser<emp::Bit> plan_reader(db_name, test_name, 0);
+    shared_ptr<SecureOperator> root = plan_reader.getRoot();
 
-   shared_ptr<PlainTable> observed = root->run();
+    shared_ptr<PlainTable> observed = root->run()->reveal();
     observed = DataUtilities::removeDummies(observed);
 
 
@@ -58,13 +60,13 @@ TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefini
 }
 
 
-TEST_F(TpcHTest, tpch_q1) {
+TEST_F(SecureTpcHTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, "tpch_unioned_50");
 }
 
 
-TEST_F(TpcHTest, tpch_q3) {
+TEST_F(SecureTpcHTest, tpch_q3) {
 
     // dummy_tag (-1), 1 DESC, 2 ASC
     // aka revenue desc,  o.o_orderdate
@@ -75,19 +77,19 @@ TEST_F(TpcHTest, tpch_q3) {
 }
 
 
-TEST_F(TpcHTest, tpch_q5) {
+TEST_F(SecureTpcHTest, tpch_q5) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
     // to get non-empty results, run with tpch_unioned_1000 - runs for ~40 mins
     string db_name = (DIAGNOSE == 1) ? "tpch_unioned_1000" : "tpch_unioned_50";
     runTest(5, "q5", expected_sort, db_name);
 }
 
-TEST_F(TpcHTest, tpch_q8) {
+TEST_F(SecureTpcHTest, tpch_q8) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest(8, "q8", expected_sort, "tpch_unioned_1000");
 }
 /* testing Q8 joins
-TEST_F(TpcHTest, tpch_q8_op5) {
+TEST_F(SecureTpcHTest, tpch_q8_op5) {
     string expected_query = "WITH lhs AS (SELECT l_partkey, l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) volume\n"
                  "FROM part JOIN lineitem ON p_partkey = l_partkey\n"
                  "WHERE p_type = 'PROMO BRUSHED COPPER'\n"
@@ -117,7 +119,7 @@ TEST_F(TpcHTest, tpch_q8_op5) {
 
 }
 
-TEST_F(TpcHTest, tpch_q8_op2) {
+TEST_F(SecureTpcHTest, tpch_q8_op2) {
     string expected_query = "WITH lhs AS (SELECT c_nationkey, c_custkey\n"
                             "FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey\n"
                             "                JOIN region ON r_regionkey = n_regionkey\n"
@@ -152,7 +154,7 @@ TEST_F(TpcHTest, tpch_q8_op2) {
 
 // l_orderkey = o_orderkey
 // lhs: "op2": custkey, rhs: "op5": suppkey
-TEST_F(TpcHTest, tpch_q8_op6) {
+TEST_F(SecureTpcHTest, tpch_q8_op6) {
     string expected_query = "SELECT c_nationkey, c_custkey, o_orderkey, o_custkey, o_orderyear::INT o_year, l_partkey, l_orderkey, l_suppkey,  l_extendedprice * (1.0 - l_discount)::NUMERIC volume, s_suppkey, CASE WHEN n2.n_name = 'EGYPT' THEN 1.0 ELSE 0.0 END AS nation_check\n"
                             "from\n"
                             "part p,\n"
@@ -197,7 +199,7 @@ TEST_F(TpcHTest, tpch_q8_op6) {
 
 
 // q9 expresssion:   l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity
-TEST_F(TpcHTest, tpch_q9) {
+TEST_F(SecureTpcHTest, tpch_q9) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
     runTest(9, "q9", expected_sort, "tpch_unioned_250");
@@ -207,7 +209,7 @@ TEST_F(TpcHTest, tpch_q9) {
 
 
 
-TEST_F(TpcHTest, tpch_q18) {
+TEST_F(SecureTpcHTest, tpch_q18) {
     // -1 ASC, $4 DESC, $3 ASC
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(4, SortDirection::DESCENDING),
@@ -217,5 +219,16 @@ TEST_F(TpcHTest, tpch_q18) {
     string test_name = (DIAGNOSE == 1) ? "q18-truncated" : "q18";
 
     runTest(18, test_name, expected_sort, db_name);
+}
+
+
+
+
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
 }
 

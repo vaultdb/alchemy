@@ -4,6 +4,8 @@
 \set cutoff 250
 \i truncate-tpch.sql
 
+\set cutoff 50
+\i truncate-tpch.sql
 
 \set cutoff 25
 \i truncate-tpch.sql
