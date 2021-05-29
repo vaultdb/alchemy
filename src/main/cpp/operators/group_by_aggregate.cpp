@@ -40,7 +40,7 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
         if(!FieldUtilities::extract_bool(input->getTuple(i).getDummyTag()))
             std::cout << input->getTuple(i) << std::endl;
 */
-  
+
     B realBin;
 
     QueryTuple<B> current(input_schema), predecessor(input_schema);
