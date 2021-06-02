@@ -14,13 +14,11 @@
 #include <operators/sort.h>
 #include <operators/group_by_aggregate.h>
 #include <operators/scalar_aggregate.h>
-//#include <operators/support/join_equality_predicate.h>
 #include <operators/keyed_join.h>
 #include <operators/basic_join.h>
 #include <operators/filter.h>
 #include <operators/project.h>
 #include "expression_parser.h"
-#include <boost/algorithm/string/replace.hpp>
 
 using namespace vaultdb;
 using boost::property_tree::ptree;
@@ -41,8 +39,8 @@ PlanParser<B>::PlanParser(const std::string &db_name, std::string plan_name, con
 template<typename B>
 PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, NetIO * netio, const int & party, const int & limit):  db_name_(db_name), netio_(netio), party_(party), input_limit_(limit)
 {
-    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/config/plans/queries-" + plan_name + ".sql";
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/config/plans/mpc-" + plan_name + ".json";
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + plan_name + ".sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + plan_name + ".json";
 
     parseSqlInputs(sql_file);
     parseSecurePlan(plan_file);
@@ -129,7 +127,7 @@ void PlanParser<B>::parseSecurePlan(const string & plan_file) {
 template<typename B>
 void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name, const ptree & tree) {
     shared_ptr<Operator<B> > op;
-    // TODO: parse schema
+    // TODO: parse schema for add'l validation
     if(op_name == "LogicalValues") return; // handled in createInput
     if(op_name == "LogicalSort")   op = parseSort(operator_id, tree);
     if(op_name == "LogicalAggregate")  op = parseAggregate(operator_id, tree);

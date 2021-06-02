@@ -30,7 +30,7 @@ void PrintExpressionVisitor<B>::visit(OrNode<B> node) {
 
 template<typename B>
 void PrintExpressionVisitor<B>::visit(NotNode<B> node) {
-    visit(node.rhs_);
+    node.lhs_->accept(this);
     last_value_ = "NOT " + last_value_;
 }
 

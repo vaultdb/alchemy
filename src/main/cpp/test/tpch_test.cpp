@@ -27,14 +27,11 @@ protected:
         finalize_plain_prot();
     };
     // depends on truncate-tpch-set.sql
-    //const string db_name_ = "tpch_unioned_250"; // plaintext case first
     // different DBs for different tests to bump up the output size - don't want empty output!
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
 
 };
 
-// most of these runs are not meaningful for diffing the results because they produce no tuples - joins are too sparse.
-// This isn't relevant to the parser so work on this elsewhere.
 void
 TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
     string query = tpch_queries[test_id];

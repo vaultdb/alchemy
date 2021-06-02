@@ -52,13 +52,13 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
                                                                                                              "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, true);
 
 
     SortDefinition  cust_sort = DataUtilities::getDefaultSortDefinition(1);
     SortDefinition  orders_sort = DataUtilities::getDefaultSortDefinition(4);
-    SecureSqlInput customerInput(dbName, customerSql, true, cust_sort, netio, FLAGS_party);
-    SecureSqlInput ordersInput(dbName, ordersSql, true, orders_sort, netio, FLAGS_party);
+    SecureSqlInput customerInput(db_name_, customerSql, true, cust_sort, netio_, FLAGS_party);
+    SecureSqlInput ordersInput(db_name_, ordersSql, true, orders_sort, netio_, FLAGS_party);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -93,10 +93,10 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
                                                                                                              "FROM cross_product \n"
                                                                                                              "WHERE matched";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, true);
 
-    SecureSqlInput lineitemInput(dbName, lineitemSql, true, netio, FLAGS_party);
-    SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
+    SecureSqlInput lineitemInput(db_name_, lineitemSql, true, netio_, FLAGS_party);
+    SecureSqlInput ordersInput(db_name_, ordersSql, true, netio_, FLAGS_party);
 
 
     // join output schema:
@@ -138,11 +138,11 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                                                                                                                                  "FROM cross_product \n"
                                                                                                                                                  "WHERE matched";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, true);
 
-    SecureSqlInput customerInput(dbName, customerSql, true, netio, FLAGS_party);
-    SecureSqlInput lineitemInput(dbName, lineitemSql, true, netio, FLAGS_party);
-    SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
+    SecureSqlInput customerInput(db_name_, customerSql, true, netio_, FLAGS_party);
+    SecureSqlInput lineitemInput(db_name_, lineitemSql, true, netio_, FLAGS_party);
+    SecureSqlInput ordersInput(db_name_, ordersSql, true, netio_, FLAGS_party);
 
 
     // join output schema: (orders, customer)

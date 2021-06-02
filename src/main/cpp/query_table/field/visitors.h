@@ -207,31 +207,31 @@ namespace vaultdb {
     };
 
     struct SecretShareVisitor : public boost::static_visitor<Value> {
-        Value operator()(bool b) const { return emp::Bit(b, dstParty); }
+        Value operator()(bool b) const { return emp::Bit(b, dst_party_); }
 
-        Value operator()(int32_t i) const { return emp::Integer(32, i, dstParty); }
+        Value operator()(int32_t i) const { return emp::Integer(32, i, dst_party_); }
 
-        Value operator()(int64_t i) const { return emp::Integer(64, i, dstParty); }
+        Value operator()(int64_t i) const { return emp::Integer(64, i, dst_party_); }
 
-        Value operator()(float_t f) const { return emp::Float(f, dstParty); }
+        Value operator()(float_t f) const { return emp::Float(f, dst_party_); }
 
         Value operator()(std::string s) const {
             assert(string_length_ > 0);
 
             size_t string_bit_count = string_length_ * 8;
 
-            emp::Integer payload = emp::Integer(string_bit_count, 0L, dstParty);
-            if (send) {
+            emp::Integer payload = emp::Integer(string_bit_count, 0L, dst_party_);
+            if (send_) {
                 std::string input = s;
                 std::reverse(input.begin(), input.end());
                 bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), string_length_);
 
-                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dstParty, bools,
+                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dst_party_, bools,
                                                         string_bit_count);
                 delete[] bools;
 
             } else {
-                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dstParty, nullptr,
+                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dst_party_, nullptr,
                                                         string_bit_count);
             }
 
@@ -246,8 +246,8 @@ namespace vaultdb {
 
         Value operator()(emp::Float l) const { return l; }
 
-        int dstParty = emp::PUBLIC;
-        bool send = false;
+        int dst_party_ = emp::PUBLIC;
+        bool send_ = false;
         size_t string_length_ = 0;
 
 

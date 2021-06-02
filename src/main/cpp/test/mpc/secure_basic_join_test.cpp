@@ -52,10 +52,10 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
                                                                                                              "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, true);
 
-    SecureSqlInput customerInput(dbName, customerSql, true, netio, FLAGS_party);
-    SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
+    SecureSqlInput customerInput(db_name_, customerSql, true, netio_, FLAGS_party);
+    SecureSqlInput ordersInput(db_name_, ordersSql, true, netio_, FLAGS_party);
 
 
     // join output schema: (orders, customer)
@@ -91,10 +91,10 @@ std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
                                                                                                          "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, true);
 
-    SecureSqlInput lineitemInput(dbName, lineitemSql, true, netio, FLAGS_party);
-    SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
+    SecureSqlInput lineitemInput(db_name_, lineitemSql, true, netio_, FLAGS_party);
+    SecureSqlInput ordersInput(db_name_, ordersSql, true, netio_, FLAGS_party);
 
 
     // join output schema: (orders, customer)
@@ -130,11 +130,11 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                              "FROM lineitem_cte, orders_cte, customer_cte "
                                              "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, true);
 
-    SecureSqlInput customerInput(dbName, customerSql, true, netio, FLAGS_party);
-    SecureSqlInput ordersInput(dbName, ordersSql, true, netio, FLAGS_party);
-    SecureSqlInput lineitemInput(dbName, lineitemSql, true, netio, FLAGS_party);
+    SecureSqlInput customerInput(db_name_, customerSql, true, netio_, FLAGS_party);
+    SecureSqlInput ordersInput(db_name_, ordersSql, true, netio_, FLAGS_party);
+    SecureSqlInput lineitemInput(db_name_, lineitemSql, true, netio_, FLAGS_party);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey

@@ -31,7 +31,7 @@ void SecureScalarAggregateTest::runTest(const string &expectedOutputQuery,
   std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults("tpch_unioned", expectedOutputQuery, false);
 
   // provide the aggregator with inputs:
-  SecureSqlInput input(dbName, query, false, netio, FLAGS_party);
+  SecureSqlInput input(db_name_, query, false, netio_, FLAGS_party);
   ScalarAggregate aggregate(&input, aggregators);
   std::shared_ptr<PlainTable> observed = aggregate.run()->reveal();
 
@@ -51,7 +51,7 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
   //Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
   // provide the aggregator with inputs:
-  SecureSqlInput input(dbName, query, true, netio, FLAGS_party);
+  SecureSqlInput input(db_name_, query, true, netio_, FLAGS_party);
 
 
   ScalarAggregate aggregate(&input, aggregators);
@@ -199,7 +199,7 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
                                "SUM(charge) sum_charge "
                                "FROM (" + inputQuery + ") subquery WHERE NOT dummy ";
 
-  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedOutputQuery, false);
+  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, false);
 
   std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                       ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -207,7 +207,7 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
                                                       ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge")};
 
 
-  SecureSqlInput input(dbName, inputQuery, true, netio, FLAGS_party);
+  SecureSqlInput input(db_name_, inputQuery, true, netio_, FLAGS_party);
 
 
   ScalarAggregate aggregate(&input, aggregators);
@@ -238,7 +238,7 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
                                 "from (" + inputQuery + ") subq\n"
                                                         " where NOT dummy\n";
 
-  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedOutputQuery, false);
+  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, false);
 
   std::vector<ScalarAggregateDefinition> aggregators{
       ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
@@ -246,7 +246,7 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
       ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
       ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-  SecureSqlInput input(dbName, inputQuery, true, netio, FLAGS_party);
+  SecureSqlInput input(db_name_, inputQuery, true, netio_, FLAGS_party);
 
   // sort alice + bob inputs after union
   ScalarAggregate aggregate(&input, aggregators);
@@ -280,7 +280,7 @@ TEST_F(SecureScalarAggregateTest, tpch_q1) {
                                 "from (" + inputTuples + ") input "
                                                          " where  l_shipdate <= date '1998-08-03'";
 
-std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb, expectedOutputQuery, false);
+std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, false);
 
   std::vector<ScalarAggregateDefinition> aggregators{
       ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
@@ -292,7 +292,7 @@ std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unionedDb,
       ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
       ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-    SecureSqlInput input(dbName, inputQuery, true, netio, FLAGS_party);
+    SecureSqlInput input(db_name_, inputQuery, true, netio_, FLAGS_party);
 
 
   //std::shared_ptr<Operator> sort = sortOp->getPtr();

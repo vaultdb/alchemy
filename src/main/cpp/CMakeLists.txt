@@ -113,7 +113,7 @@ set(sources
 		expression/visitor/expression_visitor.h
 		expression/visitor/join_equality_condition_visitor.cpp
 		expression/visitor/print_expression_visitor.cpp
-		expression/visitor/type_inference_visitor.cpp test/mpc/secure_tpch_test.cpp)
+		expression/visitor/type_inference_visitor.cpp )
 
 
 

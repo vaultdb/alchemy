@@ -71,7 +71,7 @@ TEST_F(EmpTest, emp_test_varchar) {
         ProtocolExecution::prot_exec->feed((block *)aliceSecretShared.bits.data(), emp::ALICE, nullptr, stringBitCount);
     }
 
-    netio->flush();
+    netio_->flush();
     delete [] bools;
 
 
@@ -123,9 +123,9 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     }
 
 
-    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*inputTable, netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*inputTable, netio_, FLAGS_party);
 
-    netio->flush();
+    netio_->flush();
 
     std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 
@@ -176,9 +176,9 @@ TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
     }
 
 
-    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*inputTable, netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*inputTable, netio_, FLAGS_party);
 
-    netio->flush();
+    netio_->flush();
 
     std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
 

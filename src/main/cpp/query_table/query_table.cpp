@@ -508,7 +508,7 @@ void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_
 }
 
 template<typename B>
-std::string QueryTable<B>::toString(const int &limit, const bool &show_dummies) const {
+std::string QueryTable<B>::toString(const size_t &limit, const bool &show_dummies) const {
     std::ostringstream os;
     size_t tuples_printed = 0;
     size_t cursor = 0;

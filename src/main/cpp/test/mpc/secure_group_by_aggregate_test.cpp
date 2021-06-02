@@ -36,7 +36,7 @@ void SecureGroupByAggregateTest::runTest(const string &expectedOutputQuery,
 
     // run secure query
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1); // actually 2
-    SecureSqlInput input(dbName, query, false, sortDefinition, netio, FLAGS_party);
+    SecureSqlInput input(db_name_, query, false, sortDefinition, netio_, FLAGS_party);
 
 
 
@@ -67,7 +67,7 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expectedOutputQuer
 
     // configure and run test
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1);
-    SecureSqlInput input(dbName, query, true, sortDefinition, netio, FLAGS_party);
+    SecureSqlInput input(db_name_, query, true, sortDefinition, netio_, FLAGS_party);
 
 
     std::vector<int32_t> groupByCols;
@@ -188,7 +188,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
                                                          "GROUP BY l_returnflag, l_linestatus "
                                                          "ORDER BY l_returnflag, l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(unionedDb, expectedOutputQuery, false, 2);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(unioned_db_, expectedOutputQuery, false, 2);
 
     std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -198,7 +198,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
 
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    SecureSqlInput input(dbName, inputQuery, true, sortDefinition, netio, FLAGS_party);
+    SecureSqlInput input(db_name_, inputQuery, true, sortDefinition, netio_, FLAGS_party);
 
     // sort alice + bob inputs after union
     Sort sort(&input, sortDefinition);
@@ -239,7 +239,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
                                                           "order by \n"
                                                           "  l_returnflag, l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(unionedDb, expectedOutputQuery, false, 2);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(unioned_db_, expectedOutputQuery, false, 2);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -249,7 +249,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    SecureSqlInput input(dbName, inputQuery, true, sortDefinition, netio, FLAGS_party);
+    SecureSqlInput input(db_name_, inputQuery, true, sortDefinition, netio_, FLAGS_party);
 
     // sort alice + bob inputs after union
     Sort sort(&input, sortDefinition);
@@ -296,7 +296,7 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
                                                            "  l_returnflag, \n"
                                                            "  l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(unionedDb, expectedOutputQuery, false, 2);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(unioned_db_, expectedOutputQuery, false, 2);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -310,7 +310,7 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    SecureSqlInput input(dbName, inputQuery, true, sortDefinition, netio, FLAGS_party);
+    SecureSqlInput input(db_name_, inputQuery, true, sortDefinition, netio_, FLAGS_party);
 
     // sort alice + bob inputs after union
     Sort sort(&input, sortDefinition);

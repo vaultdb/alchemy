@@ -21,12 +21,12 @@ protected:
     void TearDown() override;
 
 
-    emp::NetIO *netio;
-    static const std::string unionedDb;
-    static const std::string aliceDb;
-    static const std::string bobDb;
+    emp::NetIO *netio_;
+    static const std::string unioned_db_;
+    static const std::string alice_db_;
+    static const std::string bob_db_;
 
-    std::string dbName = unionedDb; // default, set in setUp()
+    std::string db_name_ = unioned_db_; // default, set in setUp()
 
     static std::shared_ptr<PlainTable> getExpectedOutput(const std::string & sql, const int & sortColCount);
 

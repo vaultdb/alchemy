@@ -15,29 +15,7 @@ using namespace vaultdb;
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54321, "port for EMP execution");
-DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
-
-/*
-class SecureFilterPredicateClass : public Predicate<emp::Bit> {
-
-    SecureField encryptedLineNumber;
-public:
-    ~SecureFilterPredicateClass() {}
-    SecureFilterPredicateClass(int32_t valueToEncrypt) {
-        emp::Integer val(32, valueToEncrypt);
-        // encrypting here so we don't have to secret share it for every comparison
-        encryptedLineNumber = SecureField(FieldType::SECURE_INT, val);
-
-    }
-
-    // filtering for l_linenumber = 1
-    emp::Bit predicateCall(const SecureTuple & aTuple) const override {
-        const SecureField f =  aTuple.getField(1);
-        return (f == encryptedLineNumber);
-    }
-
-};
-*/
+DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 
 
 class SecureFilterTest : public EmpBaseTest {};
@@ -47,12 +25,12 @@ class SecureFilterTest : public EmpBaseTest {};
 
 TEST_F(SecureFilterTest, test_table_scan) {
 
-    std::string dbName =  FLAGS_party == emp::ALICE ? aliceDb : bobDb;
+    std::string dbName =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
-    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, sql, false);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, false);
 
-    SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
+    SecureSqlInput input(dbName, sql, false, netio_, FLAGS_party);
 
     std::shared_ptr<SecureTable> output = input.run(); // a smoke test for the operator infrastructure
 
@@ -72,15 +50,15 @@ TEST_F(SecureFilterTest, test_table_scan) {
 // Testing for selecting l_linenumber=1
 
 TEST_F(SecureFilterTest, test_filter) {
-    std::string dbName =  FLAGS_party == emp::ALICE ? aliceDb : bobDb;
+    std::string dbName =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(aliceDb, bobDb, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expectedResultSql, true);
 
 
-   SecureSqlInput input(dbName, sql, false, netio, FLAGS_party);
+   SecureSqlInput input(dbName, sql, false, netio_, FLAGS_party);
 
 
     // expression setup
@@ -110,3 +88,25 @@ int main(int argc, char **argv) {
 }
 
 
+
+/*
+class SecureFilterPredicateClass : public Predicate<emp::Bit> {
+
+    SecureField encryptedLineNumber;
+public:
+    ~SecureFilterPredicateClass() {}
+    SecureFilterPredicateClass(int32_t valueToEncrypt) {
+        emp::Integer val(32, valueToEncrypt);
+        // encrypting here so we don't have to secret share it for every comparison
+        encryptedLineNumber = SecureField(FieldType::SECURE_INT, val);
+
+    }
+
+    // filtering for l_linenumber = 1
+    emp::Bit predicateCall(const SecureTuple & aTuple) const override {
+        const SecureField f =  aTuple.getField(1);
+        return (f == encryptedLineNumber);
+    }
+
+};
+*/

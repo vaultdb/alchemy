@@ -23,15 +23,15 @@ TEST_F(EmpTableTest, encrypt_table_one_column) {
     PsqlDataProvider dataProvider;
 
     std::string input_query =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
-    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(dbName,
+    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
                                                                           input_query, false);
 
     SortDefinition  sort_definition = DataUtilities::getDefaultSortDefinition(1);
     input_table->setSortOrder(sort_definition);
 
-    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
 
-    netio->flush();
+    netio_->flush();
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", input_query, false);
     Sort sorter(expected, sort_definition);
@@ -60,12 +60,12 @@ TEST_F(EmpTableTest, encrypt_table_varchar) {
     std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", input_query, false);
 
 
-    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(dbName,
+    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
                                                                           input_query, false);
 
-    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
 
-    netio->flush();
+    netio_->flush();
 
     std::unique_ptr<PlainTable> decrypted_table = encrypted->reveal(emp::PUBLIC);
 
@@ -88,11 +88,11 @@ TEST_F(EmpTableTest, encrypt_table_two_cols) {
                              "ORDER BY l_orderkey, l_linenumber "
                              "LIMIT 10";
 
-    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(dbName,
-                                                                         input_query, false);
+    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
+                                                                          input_query, false);
 
-    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio, FLAGS_party);
-    netio->flush();
+    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
+    netio_->flush();
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", input_query, false);
     std::unique_ptr<PlainTable> decrypted = encrypted->reveal(emp::PUBLIC);
@@ -110,12 +110,12 @@ TEST_F(EmpTableTest, encrypt_table) {
 
     PsqlDataProvider dataProvider;
     std::string input_query = QueryTableTestQueries::getInputQuery();
-    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(dbName,
-                                                                         input_query, false);
+    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
+                                                                          input_query, false);
 
-    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
 
-    netio->flush();
+    netio_->flush();
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob",  input_query, false);
     std::unique_ptr<PlainTable> decrypted = encrypted->reveal(emp::PUBLIC);
@@ -133,12 +133,12 @@ TEST_F(EmpTableTest, encrypt_table_dummy_tag) {
     PsqlDataProvider dataProvider;
 
     std::string input_query = QueryTableTestQueries::getInputQueryDummyTag();
-    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(dbName,
-                                                                         input_query, true);
+    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
+                                                                          input_query, true);
 
-    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio, FLAGS_party);
+    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
 
-    netio->flush();
+    netio_->flush();
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", input_query,
                                                                                  true);
