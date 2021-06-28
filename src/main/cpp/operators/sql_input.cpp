@@ -1,4 +1,4 @@
-#include <data/PsqlDataProvider.h>
+#include <data/psql_data_provider.h>
 #include "sql_input.h"
 #include <boost/algorithm/string/replace.hpp>
 

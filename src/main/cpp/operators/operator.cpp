@@ -54,11 +54,13 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
         op->run();
     }
 
+    auto start_time = clock_start(); // from emp toolkit
+
     output_ = runSelf(); // delegated to children
+    run_time_ = time_from(start_time);
+    std::cout << "Operator ran for " << run_time_/10e-6 << " seconds." << std::endl;
     operator_executed_ = true;
     sort_definition_  = output_->getSortOrder(); // update this if needed
-    //shared_ptr<PlainTable > clone = output_->reveal();
-    //DataUtilities::removeDummies(clone);
     return output_;
 }
 

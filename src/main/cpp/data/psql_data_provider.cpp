@@ -1,4 +1,4 @@
-#include "PsqlDataProvider.h"
+#include "psql_data_provider.h"
 #include "pq_oid_defs.h"
 #include <time.h>
 #include <typeinfo>

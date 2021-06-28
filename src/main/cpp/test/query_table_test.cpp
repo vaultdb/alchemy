@@ -1,4 +1,4 @@
-#include <data/PsqlDataProvider.h>
+#include <data/psql_data_provider.h>
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <util/type_utilities.h>

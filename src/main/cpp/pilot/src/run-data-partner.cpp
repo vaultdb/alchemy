@@ -1,6 +1,6 @@
 #include <pilot/src/common/shared_schema.h>
 #include <emp-sh2pc/emp-sh2pc.h>
-#include <data/DataProvider.h>
+#include <data/data_provider.h>
 #include <util/data_utilities.h>
 #include <operators/sort.h>
 #include "common/union_hybrid_data.h"

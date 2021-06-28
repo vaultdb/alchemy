@@ -76,8 +76,8 @@ set(sources
 		query_table/query_schema.cpp
 		query_table/query_table.cpp
 
-		data/PsqlDataProvider.cpp
-		data/CsvReader.cpp
+        data/psql_data_provider.cpp
+		data/csv_reader.cpp
 
 		operators/operator.cpp
 		operators/sql_input.cpp

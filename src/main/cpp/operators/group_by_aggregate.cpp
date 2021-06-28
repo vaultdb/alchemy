@@ -35,11 +35,6 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
     QuerySchema input_schema = *input->getSchema();
 
-  /* std::cout << "GB agg, real input tuples: " << input->getTrueTupleCount() << ", input tuples: " << std::endl;
-    for(uint32_t i = 0; i < input->getTupleCount(); ++i)
-        if(!FieldUtilities::extract_bool(input->getTuple(i).getDummyTag()))
-            std::cout << input->getTuple(i) << std::endl;
-*/
 
     B realBin;
 
@@ -101,6 +96,8 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     for(size_t i = 0; i < aggregators_.size(); ++i) {
         delete aggregators_[i];
     }
+
+    std::cout << "Group-by agg result: " << *(Operator<B>::output_->reveal()) << std::endl;
 
     return Operator<B>::output_;
 

@@ -1,7 +1,7 @@
 #ifndef PSQL_DATA_PROVIDER_H
 #define PSQL_DATA_PROVIDER_H
 
-#include "DataProvider.h"
+#include "data_provider.h"
 #include "query_table/query_table.h"
 #include "query_table/query_tuple.h"
 

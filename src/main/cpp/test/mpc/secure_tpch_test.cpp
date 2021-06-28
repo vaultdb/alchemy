@@ -60,7 +60,7 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
     ASSERT_EQ(*expected, *observed);
 
 }
-
+/*
 // passes
 TEST_F(SecureTpcHTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
@@ -78,7 +78,7 @@ TEST_F(SecureTpcHTest, tpch_q3) {
     runTest(3, "q3", expected_sort, "tpch_unioned_50");
 }
 
-/*
+
 TEST_F(SecureTpcHTest, tpch_q5) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
     // to get non-empty results, run with tpch_unioned_1000 - runs for ~40 mins
@@ -86,11 +86,12 @@ TEST_F(SecureTpcHTest, tpch_q5) {
     runTest(5, "q5", expected_sort, db_name);
 }
 
+
 TEST_F(SecureTpcHTest, tpch_q8) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest(8, "q8", expected_sort, "tpch_unioned_1000");
 }
-
+*/
 
 TEST_F(SecureTpcHTest, tpch_q9) {
     // $0 ASC, $1 DESC
@@ -100,7 +101,7 @@ TEST_F(SecureTpcHTest, tpch_q9) {
 }
 
 
-
+/*
 
 TEST_F(SecureTpcHTest, tpch_q18) {
     // -1 ASC, $4 DESC, $3 ASC
@@ -114,9 +115,9 @@ TEST_F(SecureTpcHTest, tpch_q18) {
     runTest(18, test_name, expected_sort, db_name);
 }
 
+
+
 */
-
-
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

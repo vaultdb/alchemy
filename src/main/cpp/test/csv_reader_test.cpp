@@ -3,7 +3,7 @@
 #include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
-#include <data/CsvReader.h>
+#include <data/csv_reader.h>
 
 
 using namespace emp;

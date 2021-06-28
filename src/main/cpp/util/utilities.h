@@ -63,6 +63,7 @@ namespace vaultdb {
             return BoolExpression<B>(equality_node);
         }
 
+
     };
 
 }

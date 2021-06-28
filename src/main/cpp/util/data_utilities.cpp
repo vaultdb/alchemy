@@ -1,6 +1,6 @@
 #include <cstddef>
 #include <assert.h>
-#include <data/PsqlDataProvider.h>
+#include <data/psql_data_provider.h>
 #include <sys/stat.h>
 #include <union.h>
 #include "data_utilities.h"

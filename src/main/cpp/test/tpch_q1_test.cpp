@@ -4,7 +4,7 @@
 #include "util/emp_manager.h"
 
 
-#include <data/PsqlDataProvider.h>
+#include <data/psql_data_provider.h>
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <operators/secure_sql_input.h>

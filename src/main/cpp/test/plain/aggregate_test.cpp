@@ -6,7 +6,7 @@
 #include <operators/filter.h>
 #include <operators/secure_aggregate.h>
 #include <operators/support/aggregate_id.h>
-#include <data/PsqlDataProvider.h>
+#include <data/psql_data_provider.h>
 
 using namespace emp;
 using namespace vaultdb::types;

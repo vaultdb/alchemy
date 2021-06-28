@@ -1,5 +1,5 @@
 #include <test/support/enrich_test_support.h>
-#include <data/PsqlDataProvider.h>
+#include <data/psql_data_provider.h>
 #include <operators/sql_input.h>
 #include <gflags/gflags.h>
 #include <expression/comparator_expression_nodes.h>

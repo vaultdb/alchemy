@@ -3,7 +3,7 @@
 
 
 #include <util/data_utilities.h>
-#include <data/PsqlDataProvider.h>
+#include <data/psql_data_provider.h>
 #include "operator.h"
 
 // reads SQL input and stores in a plaintext array
