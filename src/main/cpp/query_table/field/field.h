@@ -8,8 +8,6 @@
 #include <boost/variant.hpp>
 
 
-// 2:17
-
 // carries payload for each attribute
 //  generic for storing heterogeneous types in the same container
 //  downcast to impl (e.g., IntField, FloatField, etc.) as needed for expressions
