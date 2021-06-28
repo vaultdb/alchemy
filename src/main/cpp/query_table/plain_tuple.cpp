@@ -193,7 +193,8 @@ PlainTuple &QueryTuple<bool>::operator=(const PlainTuple &other) {
 
 }
 
-PlainTuple QueryTuple<bool>::reveal() const {
+// party is ignored
+PlainTuple QueryTuple<bool>::reveal(const int & party) const {
     PlainTuple tuple(*this->getSchema());
     tuple = *this;
     return tuple;
@@ -201,6 +202,7 @@ PlainTuple QueryTuple<bool>::reveal() const {
 
 void QueryTuple<bool>::writeSubset(const PlainTuple &src_tuple, const PlainTuple &dst_tuple, uint32_t src_start_idx,
                                    uint32_t src_attr_cnt, uint32_t dst_start_idx) {
+
     size_t src_field_offset = src_tuple.getSchema()->getFieldOffset(src_start_idx)/8;
     size_t dst_field_offset = dst_tuple.getSchema()->getFieldOffset(dst_start_idx)/8;
 

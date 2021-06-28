@@ -106,9 +106,7 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const SecureTable &table) {
     os << table.getSchema() << " isEncrypted? " << table.isEncrypted() <<  " order by: " << DataUtilities::printSortDefinition(table.getSortOrder()) << endl;
 
     for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
-        SecureTuple tuple = table[i];
         os << table[i] << endl;
-
     }
 
     return os;

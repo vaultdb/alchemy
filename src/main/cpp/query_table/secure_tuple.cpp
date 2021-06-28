@@ -1,6 +1,5 @@
 #include "secure_tuple.h"
 #include "field/field_factory.h"
-//#include "plain_tuple.h"
 
 using namespace vaultdb;
 
@@ -222,6 +221,7 @@ emp::Bit QueryTuple<emp::Bit>::operator!=(const SecureTuple &other) const {
 QueryTuple<emp::Bit>::QueryTuple(const QuerySchema &schema) {
     size_t tuple_bit_cnt = schema.size();
     managed_data_ = std::unique_ptr<emp::Bit[]>(new emp::Bit[tuple_bit_cnt]);
+
     fields_ = managed_data_.get();
     query_schema_ = std::make_shared<QuerySchema>(schema);
 }
@@ -252,7 +252,7 @@ void QueryTuple<emp::Bit>::writeSubset(const SecureTuple &src_tuple, const Secur
     emp::Bit *read_pos = src_tuple.fields_ + src_field_offset;
     emp::Bit *write_pos = dst_tuple.fields_ + dst_field_offset;
 
-    memcpy(write_pos, read_pos, write_size);
+    memcpy(write_pos, read_pos, write_size * sizeof(emp::Bit));
 
 }
 

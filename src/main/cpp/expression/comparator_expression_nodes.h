@@ -1,6 +1,9 @@
 #ifndef _COMPARATOR_EXPRESSION_NODES_H
 #define _COMPARATOR_EXPRESSION_NODES_H
 
+#include <query_table/secure_tuple.h>
+#include <query_table/plain_tuple.h>
+
 #include "expression_node.h"
 namespace vaultdb {
 
@@ -16,6 +19,7 @@ namespace vaultdb {
         ExpressionKind kind() const override;
 
         void accept(ExpressionVisitor <B> *visitor) override;
+
     };
 
     template<typename B>

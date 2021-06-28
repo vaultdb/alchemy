@@ -12,6 +12,7 @@ Field<B> EqualNode<B>::call(const QueryTuple<B> &target) const {
     Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
     Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
 
+
     return FieldUtilities::getBoolField(lhs == rhs);
 }
 
@@ -24,6 +25,8 @@ template<typename B>
 void EqualNode<B>::accept(ExpressionVisitor<B> *visitor) {
     visitor->visit(*this);
 }
+
+
 
 template<typename B>
 NotEqualNode<B>::NotEqualNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs)

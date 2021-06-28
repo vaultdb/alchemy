@@ -46,8 +46,10 @@ TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefini
     PlanParser<bool> plan_reader(db_name, test_name, 0);
     shared_ptr<PlainOperator> root = plan_reader.getRoot();
 
-   shared_ptr<PlainTable> observed = root->run();
+    shared_ptr<PlainTable> observed = root->run();
     observed = DataUtilities::removeDummies(observed);
+
+   // cout << "Have plan: " << *root << endl;
 
 
     ASSERT_EQ(*expected, *observed);
@@ -60,7 +62,6 @@ TEST_F(TpcHTest, tpch_q1) {
     runTest(1, "q1", expected_sort, "tpch_unioned_50");
 }
 
-
 TEST_F(TpcHTest, tpch_q3) {
 
     // dummy_tag (-1), 1 DESC, 2 ASC
@@ -71,7 +72,6 @@ TEST_F(TpcHTest, tpch_q3) {
     runTest(3, "q3", expected_sort, "tpch_unioned_50");
 }
 
-
 TEST_F(TpcHTest, tpch_q5) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
     // to get non-empty results, run with tpch_unioned_1000 - runs for ~40 mins
@@ -79,10 +79,35 @@ TEST_F(TpcHTest, tpch_q5) {
     runTest(5, "q5", expected_sort, db_name);
 }
 
+// TODO: diagnose this
 TEST_F(TpcHTest, tpch_q8) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest(8, "q8", expected_sort, "tpch_unioned_1000");
 }
+
+// q9 expresssion:   l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity
+TEST_F(TpcHTest, tpch_q9) {
+    // $0 ASC, $1 DESC
+    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+    runTest(9, "q9", expected_sort, "tpch_unioned_250");
+
+}
+
+
+
+
+TEST_F(TpcHTest, tpch_q18) {
+    // -1 ASC, $4 DESC, $3 ASC
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(4, SortDirection::DESCENDING),
+                                 ColumnSort(3, SortDirection::ASCENDING)};
+
+    string db_name = (DIAGNOSE == 1) ? "tpch_unioned" : "tpch_unioned_50";
+    string test_name = (DIAGNOSE == 1) ? "q18-truncated" : "q18";
+
+    runTest(18, test_name, expected_sort, db_name);
+}
+
 /* testing Q8 joins
 TEST_F(TpcHTest, tpch_q8_op5) {
     string expected_query = "WITH lhs AS (SELECT l_partkey, l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) volume\n"
@@ -191,28 +216,4 @@ TEST_F(TpcHTest, tpch_q8_op6) {
 
 }
 */
-
-
-// q9 expresssion:   l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity
-TEST_F(TpcHTest, tpch_q9) {
-    // $0 ASC, $1 DESC
-    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, "tpch_unioned_250");
-
-}
-
-
-
-
-TEST_F(TpcHTest, tpch_q18) {
-    // -1 ASC, $4 DESC, $3 ASC
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(4, SortDirection::DESCENDING),
-                                 ColumnSort(3, SortDirection::ASCENDING)};
-
-    string db_name = (DIAGNOSE == 1) ? "tpch_unioned" : "tpch_unioned_50";
-    string test_name = (DIAGNOSE == 1) ? "q18-truncated" : "q18";
-
-    runTest(18, test_name, expected_sort, db_name);
-}
 

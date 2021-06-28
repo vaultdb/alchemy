@@ -95,9 +95,12 @@ std::string Operator<B>::toString() const {
 
     ss << ": " <<  output_schema_ <<    " order by: " << DataUtilities::printSortDefinition(sort_definition_);
 
-    if(output_.get() != nullptr)
-        ss << " tuple count: " << output_->getTupleCount();
-
+    if(output_.get() != nullptr) {
+            ss << " tuple count: " << output_->getTupleCount();
+            //if(std::is_same_v<bool, B>) {
+            //    ss << " true tuple count: " << output_->getTrueTupleCount();
+           // }
+    }
     return ss.str();
 
 }
