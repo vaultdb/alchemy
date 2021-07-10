@@ -21,8 +21,6 @@ shared_ptr<SecureTable> SecureSqlInput::runSelf() {
 
     // secret share it
     output_ = PlainTable::secretShare(*plain_input_, netio_, src_party_);
-
-    //cout << "Secret shared input: " << output->reveal()->toString(true) << endl;
     return output_;
 }
 

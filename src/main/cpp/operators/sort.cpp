@@ -47,13 +47,10 @@ template<typename B>
 std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
 
-    cout << "Sort has tuple size of " << input->getTuple(8).getSchema()->size() << " from "  << *input->getTuple(8).getSchema() << endl;
-    cout << "Sort input: " <<  *input->reveal() << endl;
 
 
     // deep copy new output
     Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
-    cout << "Sort output init: " <<  *Operator<B>::output_->reveal() << endl;
 
     bitonicSort(0, Operator<B>::output_->getTupleCount(), true);
 
@@ -61,7 +58,6 @@ std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
 
     // implement LIMIT
     if(limit_ > 0) {
-        cout << "Firing limit clause!" << *Operator<B>::output_->reveal() << endl;
         size_t cutoff = limit_;
 
         // can't have more tuples than are initialized
@@ -82,12 +78,10 @@ std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
             if(first_dummy > 0 && first_dummy < limit_)
                 cutoff = first_dummy;
         }
-        cout << "Resizing to " << cutoff << " tuples." << endl;
         Operator<B>::output_->resize(cutoff);
     }
 
 
-    cout << "Sort output: " <<  *Operator<B>::output_->reveal() << endl;
     return Operator<B>::output_;
 }
 

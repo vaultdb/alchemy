@@ -97,7 +97,6 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
         delete aggregators_[i];
     }
 
-    std::cout << "Group-by agg result: " << *(Operator<B>::output_->reveal()) << std::endl;
 
     return Operator<B>::output_;
 

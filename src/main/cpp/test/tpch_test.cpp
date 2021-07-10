@@ -75,7 +75,7 @@ TEST_F(TpcHTest, tpch_q5) {
     // to get non-empty results, run with tpch_unioned_1000 - runs for ~40 mins
     // JMR: commented out o_orderdate filter in q5, now able to get results with tpch_unioned_250 instead
     // this filter only affects dummy tags, so it won't alter the runtimes of our queries
-    string db_name = (DIAGNOSE == 1) ? "tpch_unioned_250" : "tpch_unioned_50";
+    string db_name = "tpch_unioned_250";
     runTest(5, "q5", expected_sort, db_name);
 }
 

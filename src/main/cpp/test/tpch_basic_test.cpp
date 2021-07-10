@@ -6,9 +6,7 @@
 #include <keyed_join.h>
 #include "support/tpch_queries.h"
 #include <operators/support/binary_predicate.h>
-#include <operators/support/join_equality_predicate.h>
 #include <sort.h>
-#include <limit.h>
 #include <project.h>
 #include <algorithm>
 #include <boost/algorithm/string/replace.hpp>
@@ -213,13 +211,12 @@ TEST_F(TpcHBasicTest, testQ3Truncated)  {
 
     // sort by dummy_tag, revenue desc, o.o_orderdate ASC
     SortDefinition sortDefinition{ ColumnSort(-1, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING), ColumnSort(2, SortDirection::ASCENDING)};
-    Sort sort(&project, sortDefinition);
-    Limit limit(&sort, 10);
+    Sort sort(&project, sortDefinition, 10);
 
 
 
 
-    shared_ptr<PlainTable> observed = limit.run();
+    shared_ptr<PlainTable> observed = sort.run();
     observed = DataUtilities::removeDummies(observed);
     cout << "Observed: " << observed->toString(true) << endl;
     shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name, expected_results_sql, false);

@@ -50,12 +50,9 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
 
     PlanParser<emp::Bit> parser(local_db_name, test_name, netio_, FLAGS_party, 0);
     shared_ptr<SecureOperator> root = parser.getRoot();
-    cout << "Have plan: " << *root << endl;
 
     shared_ptr<PlainTable> observed = root->run()->reveal();
     observed = DataUtilities::removeDummies(observed);
-
-    cout << "Observed output: " << observed->toString(true) << endl;
 
     ASSERT_EQ(*expected, *observed);
 
@@ -111,7 +108,7 @@ TEST_F(SecureTpcHTest, tpch_q9) {
 
 }
 
-
+// passed, runs < 1 minute
 TEST_F(SecureTpcHTest, tpch_q18) {
     // -1 ASC, $4 DESC, $3 ASC
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
