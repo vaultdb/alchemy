@@ -108,9 +108,10 @@ void Join<B>::write_right(const bool &write, PlainTuple &dst_tuple, const PlainT
 template<typename B>
 void Join<B>::write_right(const emp::Bit &write, SecureTuple &dst_tuple, const SecureTuple &src_tuple) {
     size_t write_bit_cnt = src_tuple.getSchema()->size() - 1; // don't overwrite dummy tag
-    size_t dst_bit_cnt = dst_tuple.getSchema()->size();
+    size_t dst_bit_cnt = dst_tuple.getSchema()->size() - 1;
     size_t write_offset = dst_bit_cnt - write_bit_cnt;
     size_t write_size = write_bit_cnt * sizeof(emp::block);
+
 
     emp::Integer src(write_bit_cnt, 0), dst(write_bit_cnt, 0);
 
@@ -121,9 +122,6 @@ void Join<B>::write_right(const emp::Bit &write, SecureTuple &dst_tuple, const S
     dst = dst.select(write, src);
 
     memcpy(dst_tuple.getData() + write_offset, dst.bits.data(), write_size);
-
-    //emp::Bit dummy_tag = emp::If(write, emp::Bit(false), dst_tuple.getDummyTag());
-    //dst_tuple.setDummyTag(dummy_tag);
 
 }
 

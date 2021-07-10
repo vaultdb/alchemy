@@ -35,7 +35,7 @@ std::shared_ptr<QueryTable<B> > KeyedJoin<B>::runSelf() {
 
     std::shared_ptr<QueryTable<B> > lhs_table = Join<B>::children_[0]->getOutput();
     std::shared_ptr<QueryTable<B> > rhs_table = Join<B>::children_[1]->getOutput();
-
+    cout << "Join has input cardinalities of: " << lhs_table->getTupleCount() << ", " << rhs_table->getTupleCount() << endl;
 
     if(forign_key_input_ == 0){
         return foreignKeyPrimaryKeyJoin();

@@ -216,12 +216,8 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 template<typename B>
 std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input, emp::NetIO *netio, const int & party)  {
 
-    //PlainTable empty(0, *input.getSchema());
-    // if ignoring bob's inputs for ZK, then point to empty
-    //const PlainTable & local_input = (IGNORE_BOB && party == emp::BOB) ? empty : input;
-   const PlainTable & local_input = input;
 
-    size_t alice_tuple_cnt = local_input.getTupleCount();
+    size_t alice_tuple_cnt =  input.getTupleCount();
     size_t bob_tuple_cnt = alice_tuple_cnt;
 
 
@@ -246,21 +242,21 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
     // preserve sort order - reverse input order for latter half to do bitonic merge
     if(!input.getSortOrder().empty()) {
         if (party == emp::ALICE) {
-            secret_share_send(emp::ALICE, local_input, *dst_table, 0, true);
+            secret_share_send(emp::ALICE, input, *dst_table, 0, true);
             secret_share_recv(bob_tuple_cnt, emp::BOB, *dst_table, alice_tuple_cnt, false);
         } else { // bob
             secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, true);
-            secret_share_send(emp::BOB, local_input, *dst_table, alice_tuple_cnt, false);
+            secret_share_send(emp::BOB, input, *dst_table, alice_tuple_cnt, false);
         }
         Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true);
     }
     else { // concatenate Alice and Bob
         if (party == emp::ALICE) {
-            secret_share_send(emp::ALICE, local_input, *dst_table, 0, false);
+            secret_share_send(emp::ALICE, input, *dst_table, 0, false);
             secret_share_recv(bob_tuple_cnt, emp::BOB, *dst_table, alice_tuple_cnt, false);
         } else { // bob
             secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, false);
-            secret_share_send(emp::BOB, local_input, *dst_table, alice_tuple_cnt, false);
+            secret_share_send(emp::BOB, input, *dst_table, alice_tuple_cnt, false);
         }
     }
     netio->flush();

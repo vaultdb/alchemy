@@ -39,9 +39,7 @@ void SecureGroupByAggregateTest::runTest(const string &expectedOutputQuery,
     SecureSqlInput input(db_name_, query, false, sortDefinition, netio_, FLAGS_party);
 
 
-
     std::vector<int32_t> groupByCols{0};
-
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
     std::shared_ptr<SecureTable> aggregated = aggregate.run();

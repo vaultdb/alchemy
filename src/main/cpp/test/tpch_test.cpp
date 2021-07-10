@@ -49,9 +49,6 @@ TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefini
     shared_ptr<PlainTable> observed = root->run();
     observed = DataUtilities::removeDummies(observed);
 
-   // cout << "Have plan: " << *root << endl;
-
-
     ASSERT_EQ(*expected, *observed);
 
 }
@@ -72,14 +69,16 @@ TEST_F(TpcHTest, tpch_q3) {
     runTest(3, "q3", expected_sort, "tpch_unioned_50");
 }
 
+//join(join(join(customer, orders), lineitem), supplier)
 TEST_F(TpcHTest, tpch_q5) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
     // to get non-empty results, run with tpch_unioned_1000 - runs for ~40 mins
-    string db_name = (DIAGNOSE == 1) ? "tpch_unioned_1000" : "tpch_unioned_50";
+    // JMR: commented out o_orderdate filter in q5, now able to get results with tpch_unioned_250 instead
+    // this filter only affects dummy tags, so it won't alter the runtimes of our queries
+    string db_name = (DIAGNOSE == 1) ? "tpch_unioned_250" : "tpch_unioned_50";
     runTest(5, "q5", expected_sort, db_name);
 }
 
-// TODO: diagnose this
 TEST_F(TpcHTest, tpch_q8) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest(8, "q8", expected_sort, "tpch_unioned_1000");

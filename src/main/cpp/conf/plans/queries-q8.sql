@@ -5,7 +5,7 @@ FROM customer c JOIN nation n1 ON c_nationkey = n_nationkey
 WHERE r_name = 'MIDDLE EAST'
 ORDER BY c_custkey;
 -- 1, collation: (1 ASC, 0 ASC)
-SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year, NOT (o_orderdate >= DATE '1995-01-01' AND o_orderdate <= DATE '1996-12-31') AS dummy_tag
+SELECT o_orderkey, o_custkey, o_orderyear::INT AS o_year
 FROM orders
 ORDER BY o_custkey, o_orderkey;
 -- 3, collation: (1 ASC)

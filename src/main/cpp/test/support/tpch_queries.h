@@ -55,11 +55,8 @@ namespace vaultdb {
                 "  revenue desc,\n"
                 "  o.o_orderdate\n"
                 " limit 10"},
-            {5, "select\n"
-                "  n.n_name,\n"
-                "  sum(l.l_extendedprice * (1 - l.l_discount)) as revenue\n"
-                " from\n"
-                "  customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"
+            {5, "select n.n_name, sum(l.l_extendedprice * (1 - l.l_discount)) as revenue\n"
+                " from customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"
                 "     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
                 "     JOIN supplier s ON l.l_suppkey = s.s_suppkey\n"
                 "     JOIN nation n ON s.s_nationkey = n.n_nationkey\n"
@@ -67,8 +64,11 @@ namespace vaultdb {
                 "where\n"
                 "   c.c_nationkey = s.s_nationkey\n"
                 "  and r.r_name = 'EUROPE'\n"
-                "  and o.o_orderdate >= date '1997-01-01'\n"
-                "  and o.o_orderdate < date '1998-01-01'\n"
+    // JMR: commented out for testing, does not impact runtime of queries owing to obliviousness
+    // If you add this later, remember to also adjust conf/plans/queries-q5.sql to have this as a dummy tag
+    // syntax: NOT (o_orderdate >= DATE '1997-01-01' AND o_orderdate < DATE '1998-01-01') AS dummy_tag
+   //             "  and o.o_orderdate >= date '1997-01-01'\n"
+    //            "  and o.o_orderdate < date '1998-01-01'\n"
                 " group by\n"
                 "  n.n_name\n"
                 " order by\n"
@@ -103,7 +103,10 @@ namespace vaultdb {
                       "      and n1.n_regionkey = r.r_regionkey\n"
                       "      and r.r_name = 'MIDDLE EAST'\n"
                       "      and s.s_nationkey = n2.n_nationkey\n"
-                      "      and o.o_orderdate between date '1995-01-01' and date '1996-12-31'\n"
+                    // JMR: commented out for testing, does not impact runtime of queries owing to obliviousness
+                    // If you add this later, remember to also adjust conf/plans/queries-q5.sql to have this as a dummy tag
+                    // syntax: NOT (o_orderdate >= DATE '1995-01-01' AND o_orderdate <= DATE '1996-12-31') AS dummy_tag
+                    // "      and o.o_orderdate between date '1995-01-01' and date '1996-12-31'\n"
                       "      and p.p_type = 'PROMO BRUSHED COPPER'\n"
                       "  ) as all_nations\n"
                       "group by\n"

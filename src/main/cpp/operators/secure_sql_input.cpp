@@ -36,12 +36,6 @@ void SecureSqlInput::runQuery() {
 
     plain_input_ = dataProvider.getQueryTable(db_name_, input_query_, has_dummy_tag_);
     plain_input_->setSortOrder(getSortOrder());
-    // one side is ok to have empty inputs - they will contribute later in a join
-    //if(plain_input_->getTupleCount() <= 0) {
-    //    throw std::invalid_argument("read empty input from \"" + input_query_ + "\"");
-  //  }
-
-
 
 }
 

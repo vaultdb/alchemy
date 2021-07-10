@@ -58,7 +58,7 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
 
     output_ = runSelf(); // delegated to children
     run_time_ = time_from(start_time);
-    std::cout << "Operator ran for " << run_time_/10e-6 << " seconds." << std::endl;
+    std::cout << "Operator " <<  getOperatorType() << " ran for " << run_time_/10e6 << " seconds." << std::endl;
     operator_executed_ = true;
     sort_definition_  = output_->getSortOrder(); // update this if needed
     return output_;
@@ -99,9 +99,6 @@ std::string Operator<B>::toString() const {
 
     if(output_.get() != nullptr) {
             ss << " tuple count: " << output_->getTupleCount();
-            //if(std::is_same_v<bool, B>) {
-            //    ss << " true tuple count: " << output_->getTrueTupleCount();
-           // }
     }
     return ss.str();
 

@@ -17,6 +17,11 @@ protected:
 
     const std::string dbName = "tpch_unioned";
 
+    // SELECT c_custkey,  (c_mktsegment != 'HOUSEHOLD') cdummy
+    // FROM customer
+    // ORDER BY c_custkey;
+    // input is equal to all tuples in table
+
     const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
                                     "FROM customer  "
                                     "WHERE c_custkey <= 5 "
