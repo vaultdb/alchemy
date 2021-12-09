@@ -3,14 +3,12 @@
 
 #include "operator.h"
 #include "common/defs.h"
-#include "operators/support/expression.h"
+#include <expression/expression.h>
 
-typedef std::pair<uint32_t, uint32_t> ProjectionMapping; // src ordinal, dst ordinal
+typedef std::pair<int32_t, int32_t> ProjectionMapping; // src ordinal, dst ordinal
 
 // single projection, it is either an expression over 2+ fields or it is a 1:1 mapping spec'd in projection mapping
 
-//JR: variant too messy with inheritance for expression, perhaps debug this later
-//typedef boost::variant<Expression, ProjectionMapping> ColumnProjection;
 
 //template<typename B>
 //typedef std::map<uint32_t, Expression<B> > ExpressionMap; // ordinal to expression
@@ -20,34 +18,52 @@ namespace vaultdb {
     template<typename B>
     class Project : public Operator<B> {
 
-        std::vector<ProjectionMapping> projectionMap;
-        std::map<uint32_t, Expression<B> > expressions;
-
-        uint32_t colCount;
-        QuerySchema srcSchema;
-        QuerySchema dstSchema;
+        //std::vector<ProjectionMapping> projection_map_;
+        std::map<uint32_t, shared_ptr<Expression<B> > > expressions_; // key = dst_idx, value is expression to evaluate
+        ProjectionMappingSet column_mappings_;
 
     public:
-        Project(Operator<B> *child);
-        Project(shared_ptr<QueryTable<B> > src);
+        Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expressions, const SortDefinition & sort_definition = SortDefinition());
+        Project(shared_ptr<QueryTable<B> > src, std::map<uint32_t, shared_ptr<Expression<B> > > expressions, const SortDefinition & sort_definition = SortDefinition());
         ~Project() = default;
 
-        void addColumnMappings(const ProjectionMappingSet & mapSet);
-        void addColumnMapping(const uint32_t &srcOrdinal, const uint32_t &dstOrdinal) {
-            ProjectionMapping mapping(srcOrdinal, dstOrdinal);
-            projectionMap.push_back(mapping);
-        }
+        //void addColumnMappings(const ProjectionMappingSet & mapSet);
+        //void addColumnMapping(const uint32_t &src_ordinal, const uint32_t &dst_ordinal);
 
-        void addExpression(const Expression<B> &expression, const uint32_t &dstOrdinal) {
-            expressions[dstOrdinal] = expression;
-        }
+        //void addExpression(const shared_ptr<Expression<B> > &expression, const uint32_t &dstOrdinal);
+        //void addInputReference(const uint32_t & src_ordinal, const uint32_t & dst_ordinal);
 
         std::shared_ptr<QueryTable<B> > runSelf() override;
 
 
     private:
         void project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const;
+        void setup();
+
+    protected:
+        string getOperatorType() const override;
+
+        string getParameters() const override;
     };
+
+    // to create projections with simple 1:1 mappings
+    template<typename B>
+    class ExpressionMapBuilder {
+    public:
+        ExpressionMapBuilder(const QuerySchema & input_schema);
+
+        void addMapping(const uint32_t & src_idx, const uint32_t & dst_idx);
+        void addExpression(const shared_ptr<Expression<B> > & expression, const uint32_t & dst_idx );
+
+        std::map<uint32_t, shared_ptr<Expression<B> > > getExprs() const { return expressions_; }
+
+    private:
+        std::map<uint32_t, shared_ptr<Expression<B> > > expressions_;
+        QuerySchema src_schema_;
+
+
+    };
+
 
 }
 #endif //_PROJECT_H

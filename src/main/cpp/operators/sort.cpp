@@ -3,6 +3,7 @@
 #include "plain_tuple.h"
 #include "secure_tuple.h"
 #include <util/field_utilities.h>
+#include <util/data_utilities.h>
 
 
 using namespace vaultdb;
@@ -16,36 +17,72 @@ int Sort<B>::powerOfLessThanTwo(const int & n) {
 }
 
 template<typename B>
-Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition) : Operator<B>(child), sortDefinition(aSortDefinition) {
+Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child, aSortDefinition), limit_(limit) {
 
-    for(ColumnSort s : sortDefinition) {
+    for(ColumnSort s : Operator<B>::sort_definition_) {
         if(s.second == SortDirection::INVALID)
             throw; // invalid sort definition
     }
+
+    if(limit_ > 0)
+        assert(Operator<B>::sort_definition_[0].first == -1); // Need to sort on dummy tag to make resizing not delete real tuples
+
 
 }
 
 template<typename B>
-Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition) : Operator<B>(child), sortDefinition(aSortDefinition){
+Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child, aSortDefinition), limit_(limit) {
 
-    for(ColumnSort s : sortDefinition) {
+    for(ColumnSort s : Operator<B>::sort_definition_) {
         if(s.second == SortDirection::INVALID)
             throw; // invalid sort definition
     }
+
+    if(limit_ > 0)
+        assert(Operator<B>::sort_definition_[0].first == -1); // Need to sort on dummy tag to make resizing not delete real tuples
 
 }
 
 template<typename B>
 std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > input = Operator<B>::children[0]->getOutput();
+    std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
+
+
 
     // deep copy new output
-    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
-    bitonicSort(0,  Operator<B>::output->getTupleCount(), true);
+    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
 
-    Operator<B>::output->setSortOrder(sortDefinition);
+    bitonicSort(0, Operator<B>::output_->getTupleCount(), true);
 
-    return Operator<B>::output;
+    Operator<B>::output_->setSortOrder(Operator<B>::sort_definition_);
+
+    // implement LIMIT
+    if(limit_ > 0) {
+        size_t cutoff = limit_;
+
+        // can't have more tuples than are initialized
+        if(cutoff > Operator<B>::output_->getTupleCount())
+            cutoff = Operator<B>::output_->getTupleCount();
+
+        // if in plaintext, truncate to true length or limit_, whichever one is lower
+        if(std::is_same_v<B, bool>) {
+            int first_dummy = -1;
+            uint32_t cursor = 0;
+            while(first_dummy < 0 && cursor < Operator<B>::output_->getTupleCount()) {
+                if(Operator<B>::output_->getPlainTuple(cursor).getDummyTag()) {
+                    first_dummy = cursor; // break
+                }
+                ++cursor;
+            }
+
+            if(first_dummy > 0 && first_dummy < limit_)
+                cutoff = first_dummy;
+        }
+        Operator<B>::output_->resize(cutoff);
+    }
+
+
+    return Operator<B>::output_;
 }
 
 
@@ -62,7 +99,7 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &invertDir) 
         int k = cnt / 2;
         bitonicSort(lo, k, !invertDir);
         bitonicSort(lo + k, cnt - k, invertDir);
-        bitonicMerge(Operator<B>::output, sortDefinition, lo, cnt, invertDir);
+        bitonicMerge(Operator<B>::output_, Operator<B>::sort_definition_, lo, cnt, invertDir);
 
     }
 }
@@ -83,7 +120,7 @@ void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortD
             QueryTuple<B> rhs =  table->getTuple(i+m);
 
             B to_swap = swapTuples(lhs, rhs, sort_def, invertDir);
-            QueryTuple<B>::compare_swap(to_swap,lhs, rhs);
+            QueryTuple<B>::compareSwap(to_swap, lhs, rhs);
 
         }
         bitonicMerge(table, sort_def, lo, m,  invertDir);
@@ -91,15 +128,6 @@ void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortD
     }
 }
 
-template<typename B>
-void Sort<B>::compareAndSwap(const int &lhsIdx, const int &rhsIdx, const bool &invertDir) {
-    QueryTuple<B> lhs = Operator<B>::output->getTuple(lhsIdx);
-    QueryTuple<B> rhs =  Operator<B>::output->getTuple(rhsIdx);
-    B toSwap = swapTuples(lhs, rhs, sortDefinition, invertDir);
-
-    QueryTuple<B>::compare_swap(toSwap,lhs, rhs);
-
-}
 
 template<typename B>
 Sort<B>::~Sort() {
@@ -108,7 +136,7 @@ Sort<B>::~Sort() {
 
 template<typename B>
 B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, const SortDefinition  & sort_definition, const bool & invertDir)  {
-    B swap(false);
+    B swap = false;
     B swapInit = swap;
 
 
@@ -126,14 +154,27 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
         if (invertDir)
             asc = !asc;
 
-        B colSwapFlag = (lhsField < rhsField) == B(asc);
+        B neq = lhsField != rhsField;
+        B lt = lhsField < rhsField;
+        B colSwapFlag = (lt == asc);
 
         // find first one where not eq, use this to init flag
-        swap =  Field<B>::If(swapInit, Field<B>(swap), Field<B>(colSwapFlag)).template getValue<B>(); // once we know there's a swap once, we keep it
-        swapInit = swapInit | (lhsField != rhsField);  // have we found the first  column where they are not equal?
+        swap = FieldUtilities::select(swapInit, swap, colSwapFlag);
+        swapInit = swapInit | neq;
+
     }
 
     return swap;
+}
+
+template<typename B>
+string Sort<B>::getOperatorType() const {
+    return "Sort";
+}
+
+template<typename B>
+string Sort<B>::getParameters() const {
+    return DataUtilities::printSortDefinition(Operator<B>::sort_definition_);
 }
 
 

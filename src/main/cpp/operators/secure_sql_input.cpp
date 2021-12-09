@@ -1,14 +1,48 @@
 #include "secure_sql_input.h"
 
-std::shared_ptr<SecureTable> SecureSqlInput::runSelf() {
-    PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable> plaintext = dataProvider.getQueryTable(dbName, inputQuery, hasDummyTag);
-    plaintext->setSortOrder(sorted_on_);
+SecureSqlInput::SecureSqlInput(string db, string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty, const size_t & input_tuple_limit) : netio_(netio), src_party_(aSrcParty),
+                                                                                                         input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag), input_tuple_limit_(input_tuple_limit) {
+
+    runQuery();
+    output_schema_ = QuerySchema::toSecure(*plain_input_->getSchema());
+}
+
+SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &dummyTag,
+                               const SortDefinition &sortDefinition, NetIO *netio, const int &party, const size_t & input_tuple_limit) :
+        Operator(sortDefinition), netio_(netio), src_party_(party), input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag), input_tuple_limit_(input_tuple_limit) {
+
+    runQuery();
+    output_schema_ = QuerySchema::toSecure(*plain_input_->getSchema());
+
+}
+
+
+shared_ptr<SecureTable> SecureSqlInput::runSelf() {
 
     // secret share it
-    output = plaintext->secret_share(netio_, srcParty);
-
-    //std::cout << "Secret shared input: " << output->reveal()->toString(true) << std::endl;
-    return output;
+    output_ = PlainTable::secretShare(*plain_input_, netio_, src_party_);
+    return output_;
 }
+
+
+
+void SecureSqlInput::runQuery() {
+    PsqlDataProvider dataProvider;
+    if(input_tuple_limit_ > 0) { // truncate inputs
+        input_query_ = "SELECT * FROM (" + input_query_ + ") input LIMIT " + std::to_string(input_tuple_limit_);
+    }
+
+    plain_input_ = dataProvider.getQueryTable(db_name_, input_query_, has_dummy_tag_);
+    plain_input_->setSortOrder(getSortOrder());
+
+}
+
+string SecureSqlInput::getOperatorType() const {
+    return "SecureSqlInput";
+}
+
+string SecureSqlInput::getParameters() const {
+    return "\"" + input_query_ + "\", tuple_count=" + std::to_string(plain_input_->getTupleCount());
+}
+
 

@@ -76,7 +76,10 @@ namespace vaultdb {
     struct EqualityVisitor : public boost::static_visitor<Value> {
         Value operator()(bool b) const { return b == boost::get<bool>(rhs); }
 
-        Value operator()(int32_t i) const { return i == boost::get<int32_t>(rhs); }
+        Value operator()(int32_t i) const {
+
+            return i == boost::get<int32_t>(rhs);
+        }
 
         Value operator()(int64_t i) const {
             return i == boost::get<int64_t>(rhs);
@@ -130,7 +133,7 @@ namespace vaultdb {
                 case FieldType::SECURE_INT:
                     return l.reveal<int32_t>(party);
                 case FieldType::SECURE_LONG:
-                    return l.reveal<int64_t>();
+                    return l.reveal<int64_t>(party);
                 case FieldType::SECURE_STRING:
                     return revealString(l, party);
                 default:
@@ -149,8 +152,6 @@ namespace vaultdb {
 
         std::string revealString(const emp::Integer &src, const int &party) const {
             long bitCount = src.size();
-            long byteCount = bitCount / 8;
-
 
             bool *bools = new bool[bitCount];
             std::string bitString = src.reveal<std::string>(party);
@@ -162,9 +163,8 @@ namespace vaultdb {
             }
 
             vector<int8_t> decodedBytesVector = Utilities::boolsToBytes(bools, bitCount);
-            decodedBytesVector.resize(byteCount + 1);
-            decodedBytesVector[byteCount] = '\0';
-            string dst((char *) decodedBytesVector.data());
+
+            string dst((char *) decodedBytesVector.data(), decodedBytesVector.size());
 
 
             std::reverse(dst.begin(), dst.end());
@@ -207,31 +207,31 @@ namespace vaultdb {
     };
 
     struct SecretShareVisitor : public boost::static_visitor<Value> {
-        Value operator()(bool b) const { return emp::Bit(b, dstParty); }
+        Value operator()(bool b) const { return emp::Bit(b, dst_party_); }
 
-        Value operator()(int32_t i) const { return emp::Integer(32, i, dstParty); }
+        Value operator()(int32_t i) const { return emp::Integer(32, i, dst_party_); }
 
-        Value operator()(int64_t i) const { return emp::Integer(64, i, dstParty); }
+        Value operator()(int64_t i) const { return emp::Integer(64, i, dst_party_); }
 
-        Value operator()(float_t f) const { return emp::Float(f, dstParty); }
+        Value operator()(float_t f) const { return emp::Float(f, dst_party_); }
 
         Value operator()(std::string s) const {
             assert(string_length_ > 0);
 
             size_t string_bit_count = string_length_ * 8;
 
-            emp::Integer payload = emp::Integer(string_bit_count, 0L, dstParty);
-            if (send) {
+            emp::Integer payload = emp::Integer(string_bit_count, 0L, dst_party_);
+            if (send_) {
                 std::string input = s;
                 std::reverse(input.begin(), input.end());
                 bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), string_length_);
 
-                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dstParty, bools,
+                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dst_party_, bools,
                                                         string_bit_count);
                 delete[] bools;
 
             } else {
-                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dstParty, nullptr,
+                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dst_party_, nullptr,
                                                         string_bit_count);
             }
 
@@ -246,8 +246,8 @@ namespace vaultdb {
 
         Value operator()(emp::Float l) const { return l; }
 
-        int dstParty = emp::PUBLIC;
-        bool send = false;
+        int dst_party_ = emp::PUBLIC;
+        bool send_ = false;
         size_t string_length_ = 0;
 
 
@@ -488,6 +488,50 @@ namespace vaultdb {
         Value rhs;
 
     };
+
+    struct AndVisitor : public boost::static_visitor<Value> {
+        Value operator()(bool b) const { return (bool) (b && boost::get<bool>(rhs)); }
+
+        Value operator()(int32_t i) const { throw; }
+
+        Value operator()(int64_t i) const { throw; }
+
+        Value operator()(float_t f) const { throw; }
+
+        Value operator()(std::string s) const { throw;  }
+
+        Value operator()(emp::Bit l) const { return l & boost::get<emp::Bit>(rhs); }
+
+        Value operator()(emp::Integer l) const { throw; }
+
+        Value operator()(emp::Float l) const { throw;  }
+
+        Value rhs;
+
+    };
+
+    struct OrVisitor : public boost::static_visitor<Value> {
+        Value operator()(bool b) const { return (bool) (b || boost::get<bool>(rhs)); }
+
+        Value operator()(int32_t i) const { throw; }
+
+        Value operator()(int64_t i) const { throw; }
+
+        Value operator()(float_t f) const { throw; }
+
+        Value operator()(std::string s) const { throw;  }
+
+        Value operator()(emp::Bit l) const { return l | boost::get<emp::Bit>(rhs); }
+
+        Value operator()(emp::Integer l) const { throw; }
+
+        Value operator()(emp::Float l) const { throw;  }
+
+        Value rhs;
+
+    };
+
+
 
 }
 #endif //_VISITORS_H

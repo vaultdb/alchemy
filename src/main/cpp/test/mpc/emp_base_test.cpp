@@ -1,0 +1,32 @@
+#include <util/data_utilities.h>
+#include "emp_base_test.h"
+
+
+const std::string EmpBaseTest::unioned_db_ = "tpch_unioned";
+const std::string EmpBaseTest::alice_db_ = "tpch_alice";
+const std::string EmpBaseTest::bob_db_ = "tpch_bob";
+
+void EmpBaseTest::SetUp()  {
+
+   //std::cout << "Connecting to " << FLAGS_alice_host << " on port " << FLAGS_port << " as " << FLAGS_party << std::endl;
+    netio_ =  new emp::NetIO(FLAGS_party == emp::ALICE ? nullptr : FLAGS_alice_host.c_str(), FLAGS_port);
+    emp::setup_semi_honest(netio_, FLAGS_party, 1024 * 16);
+
+    db_name_ = (FLAGS_party == emp::ALICE) ? alice_db_ : bob_db_;
+
+    // increment the port for each new test
+    ++FLAGS_port;
+
+}
+
+void EmpBaseTest::TearDown() {
+        netio_->flush();
+        emp::finalize_semi_honest();
+}
+
+std::shared_ptr<PlainTable> EmpBaseTest::getExpectedOutput(const string &sql, const int &sortColCount) {
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(EmpBaseTest::unioned_db_, sql, false);
+    SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
+    expected->setSortOrder(expectedSortOrder);
+    return expected;
+}

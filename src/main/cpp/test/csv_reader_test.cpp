@@ -3,7 +3,7 @@
 #include <util/type_utilities.h>
 #include <stdexcept>
 #include <operators/sql_input.h>
-#include <data/CsvReader.h>
+#include <data/csv_reader.h>
 
 
 using namespace emp;
@@ -120,7 +120,7 @@ TEST_F(CsvReaderTest, ordersTest) {
     csvSchema.putField(convertDateField(csvSchema.getField(4)));
 
     std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, csvSchema);
-    observed->setSchema( *expected->getSchema());
+    observed->setSchema(*expected->getSchema());
 
     // RHS || observed is incorrect here.
     ASSERT_EQ(*expected, *observed);

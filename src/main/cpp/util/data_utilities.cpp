@@ -1,6 +1,6 @@
 #include <cstddef>
 #include <assert.h>
-#include <data/PsqlDataProvider.h>
+#include <data/psql_data_provider.h>
 #include <sys/stat.h>
 #include <union.h>
 #include "data_utilities.h"
@@ -24,13 +24,18 @@ unsigned char DataUtilities::reverse(unsigned char b) {
 // in some cases, like with LIMIT, we can't just run over tpch_unioned
 std::shared_ptr<PlainTable>
 DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
-                                 const bool &hasDummyTag) {
+                                 const bool &hasDummyTag, const size_t & limit) {
 
     PsqlDataProvider dataProvider;
 
     std::shared_ptr<PlainTable> alice = dataProvider.getQueryTable(aliceDb, sql,
                                                                    hasDummyTag); // dummyTag true not yet implemented
     std::shared_ptr<PlainTable> bob = dataProvider.getQueryTable(bobDb, sql, hasDummyTag);
+
+    if(limit > 0) {
+        alice->resize(limit);
+        bob->resize(limit);
+    }
 
     Union<bool> result(alice, bob);
     return result.run();
@@ -47,16 +52,6 @@ std::string DataUtilities::queryDatetime(const string &colName) {
     return "CAST(EXTRACT(epoch FROM " + colName + ") AS BIGINT) " + colName; // last colName for aliasing
 }
 
-
-/*
-void DataUtilities::locallySecretShareTable(const std::unique_ptr<QueryTable> &table, const string &aliceFile,
-                                           const string &bobFile) {
-    SecretShares shares = table->generateSecretShares();
-    writeFile(aliceFile, shares.first);
-    writeFile(bobFile, shares.second);
-
-
-}*/
 
 
 
@@ -138,7 +133,7 @@ std::shared_ptr<PlainTable >
 DataUtilities::getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
                                   const int &sortColCount) {
 
-    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, sql, false);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, sql, hasDummyTag);
     SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
     expected->setSortOrder(expectedSortOrder);
     return expected;
@@ -147,13 +142,18 @@ DataUtilities::getExpectedResults(const string &dbName, const string &sql, const
 
 std::string DataUtilities::printSortDefinition(const SortDefinition &sortDefinition) {
     std::stringstream  result;
-    result << "(";
+    result << "{";
+    bool init = false;
     for(ColumnSort c : sortDefinition) {
+        if(init)
+            result << ", ";
         string direction = (c.second == SortDirection::ASCENDING) ? "ASC" : "DESC";
         result << "<" << c.first << ", "
                   << direction << "> ";
 
+        init = true;
     }
+
     result << ")";
     return result.str();
 }
@@ -185,12 +185,43 @@ std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int
 
 }
 
-// actually an array of emp::Bits.  Each bit is sizeof(emp::block) length
-/*emp::Integer toEmpInteger(const vector<int8_t> & src_bytes) {
+size_t DataUtilities::get_tuple_cnt(const string &db_name, const string &sql, bool has_dummy_tag) {
+    if(has_dummy_tag)  { // run it and count
+        shared_ptr<PlainTable> res = DataUtilities::getQueryResults(db_name, sql, true);
+        return res->getTrueTupleCount();
+    }
 
-    emp::Integer dst(src_bytes.size() / sizeof(emp::block), 0);
+    string query = "SELECT COUNT(*) FROM (" + sql + ") q";
+    shared_ptr<PlainTable> res = DataUtilities::getQueryResults(db_name, query, false);
+    return res->getTuple(0).getField(0).getValue<int64_t>();
 
-} */
+}
+
+vector<string> DataUtilities::readTextFile(const string &filename) {
+    std::vector<std::string> lines;
+    std::ifstream inFile(filename);
+    std::string line;
+
+
+    if(!inFile)
+    {
+        string cwd = Utilities::getCurrentWorkingDirectory();
+        throw std::invalid_argument("Unable to open file: " + filename + " from " + cwd);
+    }
+
+
+    while (std::getline(inFile, line))
+    {
+        lines.push_back(line);
+    }
+
+    return lines;
+}
+
+bool DataUtilities::isOrdinal(const string &s) {
+    return !s.empty() && std::find_if(s.begin(),
+                                      s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+}
 
 
 

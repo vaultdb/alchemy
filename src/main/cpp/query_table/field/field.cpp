@@ -172,31 +172,33 @@ SecureField Field<B>::secret_share_send(const PlainField & src, const int & dst_
     Value input = src.payload_;
 
     SecretShareVisitor visitor;
-    visitor.dstParty = dst_party;
-    visitor.send = true;
+    visitor.dst_party_ = dst_party;
+    visitor.send_ = true;
     visitor.string_length_ = src.string_length_;
 
     Value result = boost::apply_visitor(visitor, input);
 
     FieldType resType = TypeUtilities::toSecure(src.type_);
 
-     return SecureField(resType, result, src.string_length_);
+
+    return SecureField(resType, result, src.string_length_);
 }
 
 template<typename B>
 SecureField Field<B>::secret_share_recv(const FieldType & type, const size_t & str_length, const int & dst_party) {
-    Value input = FieldFactory<bool>::getZero(type).payload_;
+    assert(TypeUtilities::isEncrypted(type));
 
+    Value input = FieldFactory<bool>::getZero(TypeUtilities::toPlain(type)).payload_;
 
     SecretShareVisitor visitor;
-    visitor.dstParty = dst_party;
-    visitor.send = false;
+    visitor.dst_party_ = dst_party;
+    visitor.send_ = false;
     visitor.string_length_ = str_length;
 
     Value result = boost::apply_visitor(visitor, input);
 
-    FieldType resType = TypeUtilities::toSecure(type);
-    return SecureField(resType, result, str_length);
+
+    return SecureField(type, result, str_length);
 
 
 }
@@ -301,9 +303,31 @@ Field<B> Field<B>::operator%(const Field &rhs) const {
     visitor.rhs = rhs.payload_;
 
     Value result = boost::apply_visitor(visitor, payload_);
-    return Field(type_, boost::apply_visitor(visitor, payload_), string_length_);
+    return Field(type_, result, string_length_);
 }
 
+template<typename B>
+B Field<B>::operator&&(const Field &cmp) const {
+    assert(type_ == cmp.getType());
+
+    AndVisitor visitor;
+    visitor.rhs = cmp.payload_;
+
+    Value result = boost::apply_visitor(visitor, payload_);
+    return boost::get<B>(result);
+}
+
+template<typename B>
+B Field<B>::operator||(const Field &cmp) const {
+    assert(type_ == cmp.getType());
+
+    OrVisitor visitor;
+    visitor.rhs = cmp.payload_;
+
+    Value result = boost::apply_visitor(visitor, payload_);
+    return boost::get<B>(result);
+
+}
 
 
 template class vaultdb::Field<bool>;

@@ -3,7 +3,7 @@
 #setup test databases for unit tests
 #echo "Populating test databases..."
 #/bin/bash conf/workload/testDB/create_test_dbs.sh
-#/bin/bash conf/workload/tpch/generate-and-load-data.sh
+bin/bash conf/workload/tpch/generate-and-load-data.sh
 
 #if (($?==1)); then
 #    echo "Error populating test databases"

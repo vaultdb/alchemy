@@ -34,7 +34,8 @@ namespace vaultdb {
     };
 
 
-   template<typename B>
+
+    template<typename B>
    class GroupByCountImpl : public  GroupByAggregateImpl<B> {
     public:
         explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType);

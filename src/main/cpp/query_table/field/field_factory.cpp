@@ -3,6 +3,7 @@
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include <util/type_utilities.h>
 #include <util/field_utilities.h>
+#include <float.h>
 
 
 using namespace vaultdb;

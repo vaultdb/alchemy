@@ -10,8 +10,6 @@
 
 namespace vaultdb {
 
-    // forward declaration -- included in project.h
-    //class Expression;
 
     enum class SortDirection { ASCENDING = 0, DESCENDING = 1, INVALID = 2};
 

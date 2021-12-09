@@ -12,8 +12,8 @@
 #endif
 
 #include <cstdint>
-#include <vaultdb.h>
 #include "utilities.h"
+#include <query_table/query_table.h>
 
 namespace vaultdb {
     class DataUtilities {
@@ -27,7 +27,7 @@ namespace vaultdb {
 
         static std::shared_ptr<PlainTable>
         getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
-                          const bool &hasDummyTag);
+                          const bool &hasDummyTag, const size_t & limit = 0);
 
         static std::shared_ptr<PlainTable >
         getQueryResults(const string &dbName, const string &sql, const bool &hasDummyTag);
@@ -60,7 +60,13 @@ namespace vaultdb {
 
         static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
 
+        static size_t get_tuple_cnt(const std::string & db_name, const std::string &  sql, bool has_dummy_tag);
+
 //        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
+
+       static vector<string> readTextFile(const string & filename);
+
+        static bool isOrdinal(const string &s);
 
 
     };

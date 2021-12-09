@@ -1,98 +1,48 @@
 #include "project.h"
 #include <query_table/field/field_factory.h>
-#include <query_table/secure_tuple.h>
+#include <query_table/secure_tuple.h>  // do not delete this - need for template specialization
+#include <expression/expression_node.h>
+#include <expression/generic_expression.h>
+#include <util/data_utilities.h>
 
 
-// can't initialize schemas yet, don't have child schema
+using namespace vaultdb;
+
+
+
 template<typename B>
-Project<B>::Project(Operator<B> *child) : Operator<B>(child), colCount(0), srcSchema(0), dstSchema(0){
+Project<B>::Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort_definition) : Operator<B>(child, sort_definition), expressions_(expression_map) {
 
-
+    setup();
 }
 
 template<typename B>
-Project<B>::Project(shared_ptr<QueryTable<B> > child) : Operator<B>(child), colCount(0), srcSchema(0), dstSchema(0){
-
+Project<B>::Project(shared_ptr<QueryTable<B> > child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort) : Operator<B>(child, sort), expressions_(expression_map) {
+    setup();
 
 }
+
 
 
 template<typename B>
 std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
-    std::shared_ptr<QueryTable<B> > src_table = Operator<B>::children[0]->getOutput();
-
-    SortDefinition srcSortOrder = src_table->getSortOrder();
-    srcSchema = *src_table->getSchema();
-    colCount = expressions.size() + projectionMap.size();
-
-    dstSchema = QuerySchema(colCount); // re-initialize it
-    uint32_t tupleCount = src_table->getTupleCount();
-
-    // put all of the fields into one data structure -- doubles as a verification that destination schema is fully specified
-    std::vector<uint32_t> fieldOrdinals;
-    fieldOrdinals.reserve(colCount);
-
-    for(ProjectionMapping mapping : projectionMap) {
-        uint32_t dstOrdinal = mapping.second;
-        QueryFieldDesc srcField = srcSchema.getField(mapping.first);
-        QueryFieldDesc fieldDesc(srcField, dstOrdinal);
-        dstSchema.putField(fieldDesc);
-
-        fieldOrdinals.push_back(dstOrdinal);
-
-    }
-
-    auto exprPos = expressions.begin();
-    while(exprPos != expressions.end()) {
-        uint32_t dstOrdinal = exprPos->first;
-        Expression expression = exprPos->second;
-
-        FieldType type = expression.getType();
-        std::string alias = expression.getAlias();
-
-        QueryFieldDesc fieldDesc = QueryFieldDesc(dstOrdinal, alias, "", type); // NYI: string length for expressions
-        dstSchema.putField(fieldDesc);
-
-        fieldOrdinals.push_back(dstOrdinal);
-        ++exprPos;
-    }
+    std::shared_ptr<QueryTable<B> > src_table = Operator<B>::children_[0]->getOutput();
+    uint32_t tuple_cnt_ = src_table->getTupleCount();
 
 
-    // confirm that all ordinals are defined
-    for(uint32_t i = 0; i < colCount; ++i) {
-        assert(std::find(fieldOrdinals.begin(), fieldOrdinals.end(), i) != fieldOrdinals.end());
-    }
+
+    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt_, Operator<B>::output_schema_, Operator<B>::getSortOrder()));
 
 
-    // *** Check to see if order-by carries over
-    bool sortCarryOver = true;
-    SortDefinition  dstSortDefinition;
-    for(ColumnSort columnSort : srcSortOrder) {
-        uint32_t srcOrdinal = columnSort.first;
-        bool found = false;
-        for(ProjectionMapping mapping : projectionMap) {
-            if(mapping.first == srcOrdinal) {
-                dstSortDefinition.push_back(ColumnSort (mapping.second, columnSort.second));
-                found = true;
-            }
-        } // end search for mapping
-        if(!found) { sortCarryOver = false; }
-    }
-
-    // *** Done defining schema and verifying setup
-
-    Operator<B>::output = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tupleCount, dstSchema));
-    if(sortCarryOver) { Operator<B>::output->setSortOrder(dstSortDefinition);  }
-
-
-    for(uint32_t i = 0; i < tupleCount; ++i) {
+    for(uint32_t i = 0; i < tuple_cnt_; ++i) {
         QueryTuple<B> src_tuple = src_table->getTuple(i);
-        QueryTuple<B> dst_tuple = Operator<B>::output->getTuple(i);
+        QueryTuple<B> dst_tuple = Operator<B>::output_->getTuple(i);
         project_tuple(dst_tuple, src_tuple);
     }
 
-    return Operator<B>::output;
+
+    return Operator<B>::output_;
 }
 
 
@@ -100,39 +50,154 @@ template<typename B>
 void Project<B>::project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const {
     dst_tuple.setDummyTag(src_tuple.getDummyTag());
 
-   auto exprPos = expressions.begin();
+   auto exprPos = expressions_.begin();
 
-
-    // do all 1:1 mappings
-    for(ProjectionMapping mapping : projectionMap) {
-        uint32_t srcOrdinal = mapping.first;
-        uint32_t dstOrdinal = mapping.second;
-        const Field<B> dst_field = src_tuple.getField(srcOrdinal);
-        dst_tuple.setField(dstOrdinal, dst_field);
-
-    }
 
     // exec all expressions
-    while(exprPos != expressions.end()) {
+    while(exprPos != expressions_.end()) {
         uint32_t dst_ordinal = exprPos->first;
-        Expression expression = exprPos->second;
-        Field<B> field_value = expression.expressionCall(src_tuple);
+        Expression<B> *expression = exprPos->second.get();
+        Field<B> field_value = expression->call(src_tuple);
         dst_tuple.setField(dst_ordinal, field_value);
-
         ++exprPos;
     }
 
 
 }
+
+
 template<typename B>
-void Project<B>::addColumnMappings(const ProjectionMappingSet &mapSet) {
-    for(ProjectionMapping mapping: mapSet)
-    {
-        projectionMap.push_back(mapping);
+void Project<B>::setup() {
+
+    Operator<B> *child = Operator<B>::getChild();
+    SortDefinition src_sort_order = child->getSortOrder();
+    QuerySchema src_schema = child->getOutputSchema();
+
+    assert(expressions_.size() > 0);
+
+    uint32_t col_count = expressions_.size();
+
+    QuerySchema dst_schema = QuerySchema(col_count); // re-initialize it
+
+    for(auto expr_pos =  expressions_.begin(); expr_pos != expressions_.end(); ++expr_pos) {
+        if(expr_pos->second->kind() == ExpressionKind::INPUT_REF) {
+            GenericExpression<B> *expr = (GenericExpression<B> *) expr_pos->second.get();
+            InputReferenceNode<B> *node = (InputReferenceNode<B> *) expr->root_.get();
+            column_mappings_.template emplace_back(node->read_idx_, expr_pos->first);
+        }
     }
 
+        // propagate names and specs in column mappings
+    for(ProjectionMapping mapping_idx : column_mappings_) {
+        uint32_t src_ordinal = mapping_idx.first;
+        uint32_t dst_ordinal = mapping_idx.second;
+        QueryFieldDesc src_field_desc = src_schema.getField(src_ordinal);
+        QueryFieldDesc dst_field_desc(src_field_desc, dst_ordinal);
+        dst_schema.putField(dst_field_desc);
+
+        assert(expressions_.find(dst_ordinal) != expressions_.end());
+        std::shared_ptr<Expression<B> > expression = expressions_[dst_ordinal];
+        expression->setType(src_field_desc.getType());
+        expression->setAlias(src_field_desc.getName());
+
+    }
+
+
+    // set up dst schema for new expressions
+    for(auto expr_pos =  expressions_.begin(); expr_pos != expressions_.end(); ++expr_pos) {
+        uint32_t dst_ordinal = expr_pos->first;
+        QueryFieldDesc dst_field_desc = dst_schema.getField(dst_ordinal);
+
+        if(dst_field_desc.getType() == FieldType::INVALID) { //  not initialized yet
+            FieldType dst_type = expr_pos->second->getType();
+            std::string dst_name = expr_pos->second->getAlias();
+
+            dst_field_desc = QueryFieldDesc(dst_ordinal, dst_name, "", dst_type, 0); // 0 because string expressions are not yet implemented
+            dst_schema.putField(dst_field_desc);
+        }
+    }
+
+
+    // confirm that all ordinals are defined
+    for(uint32_t i = 0; i < col_count; ++i) {
+        assert(expressions_.find(i) != expressions_.end());
+    }
+
+
+    SortDefinition  dst_sort;
+
+    // *** Check to see if order-by carries over
+    for(ColumnSort sort : src_sort_order) {
+        int32_t src_ordinal = sort.first;
+        bool found = false;
+        if(src_ordinal == -1) {
+            found = true; // dummy tag automatically carries over
+            dst_sort.push_back(sort);
+        }
+        for(ProjectionMapping mapping : column_mappings_) {
+            if(mapping.first == src_ordinal) {
+                dst_sort.push_back(ColumnSort (mapping.second, sort.second));
+                found = true;
+                break;
+            }
+        } // end search for mapping
+        if(!found) {
+            break;
+        } // broke the sequence of mappings
+    }
+
+    Operator<B>::output_schema_ = dst_schema;
+    Operator<B>::setSortOrder(dst_sort);
+
+
+
 }
+
+template<typename B>
+string Project<B>::getOperatorType() const {
+    return "Project";
+}
+
+template<typename B>
+string Project<B>::getParameters() const {
+    stringstream ss;
+
+    auto expr_pos = expressions_.begin();
+    ss << "(" << "<" << expr_pos->first << ", " << expr_pos->second->toString() << ">";
+    ++expr_pos;
+    while(expr_pos != expressions_.end()) {
+        ss << ", "  << "<" << expr_pos->first << ", " << expr_pos->second->toString() << ">";
+        ++expr_pos;
+    }
+
+    ss << ")";
+
+    return ss.str();
+}
+
+// **** ExpressionMapBuilder **** //
+template<typename B>
+ExpressionMapBuilder<B>::ExpressionMapBuilder(const QuerySchema &input_schema) : src_schema_(input_schema) {}
+
+
+template<typename B>
+void ExpressionMapBuilder<B>::addMapping(const uint32_t &src_idx, const uint32_t &dst_idx) {
+    shared_ptr<ExpressionNode<B> > node(new InputReferenceNode<B>(src_idx));
+    shared_ptr<GenericExpression<B> > expr(new GenericExpression<B>(node, src_schema_));
+
+    expressions_[dst_idx] = expr;
+}
+
+template<typename B>
+void ExpressionMapBuilder<B>::addExpression(const shared_ptr<Expression<B>> &expression, const uint32_t &dst_idx) {
+    expressions_[dst_idx] = expression;
+}
+
 
 
 template class vaultdb::Project<bool>;
 template class vaultdb::Project<emp::Bit>;
+
+
+template class vaultdb::ExpressionMapBuilder<bool>;
+template class vaultdb::ExpressionMapBuilder<emp::Bit>;

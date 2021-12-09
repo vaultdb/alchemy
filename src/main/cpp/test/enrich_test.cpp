@@ -1,8 +1,11 @@
 #include <test/support/enrich_test_support.h>
-#include <data/PsqlDataProvider.h>
+#include <data/psql_data_provider.h>
 #include <operators/sql_input.h>
 #include <gflags/gflags.h>
-#include <operators/support/join_equality_predicate.h>
+#include <expression/comparator_expression_nodes.h>
+#include <expression/function_expression.h>
+#include <expression/generic_expression.h>
+#include <expression/bool_expression.h>
 
 #include "enrich_test.h"
 
@@ -10,23 +13,19 @@
 
 
 shared_ptr<PlainTable> EnrichTest::getAgeStrataProjection(shared_ptr<PlainTable> input, const bool & isEncrypted) const {
-    Project project(input);
     FieldType ageStrataType = isEncrypted ? FieldType::SECURE_INT : FieldType::INT;
 
-    Expression<bool> ageStrataExpression(&(EnrichTestSupport<bool>::projectAgeStrata), "age_strata", ageStrataType);
-    ProjectionMappingSet mappingSet{
-            ProjectionMapping(0, 0),
-            ProjectionMapping(1, 1),
-            ProjectionMapping(3, 3),
-            ProjectionMapping(4, 4),
-            ProjectionMapping(5, 5),
-            ProjectionMapping(6, 6)
-    };
+    ExpressionMapBuilder<bool> builder(*(input->getSchema()));
+
+    shared_ptr<Expression<bool>> ageStrataExpression(new FunctionExpression<bool>(&EnrichTestSupport<bool>::projectAgeStrata, "age_strata", ageStrataType));
+    builder.addExpression(ageStrataExpression, 2);
+
+    for(uint32_t i = 0; i < 7; ++i)
+        if(i != 2)
+            builder.addMapping(i, i);
 
 
-   project.addColumnMappings(mappingSet);
-   project.addExpression(ageStrataExpression, 2);
-
+    Project project(input, builder.getExprs());
 
     return project.run();
 }
@@ -87,17 +86,19 @@ shared_ptr<PlainTable> EnrichTest::loadAndJoinLocalData(const std::string & dbNa
     shared_ptr<PlainTable> patientInput = loadAndProjectPatientData(dbName);
     shared_ptr<PlainTable> patientExclusionInput =  loadPatientExclusionData(dbName);
 
-    ConjunctiveEqualityPredicate patientJoinPredicate;
-    patientJoinPredicate.push_back(EqualityPredicate (0, 0)); //  patid = patid
-    std::shared_ptr<BinaryPredicate<bool> > patientJoinCriteria(new JoinEqualityPredicate<bool>(patientJoinPredicate));
-    KeyedJoin<bool> join(patientInput, patientExclusionInput, patientJoinCriteria);
+    //patientJoinPredicate.push_back(EqualityPredicate (0, 0)); //  patid = patid
+    // mapping from (lhs_tuple[0], rhs_tuple[0])
+    // lhs has 7 fields,
+    uint32_t rhs_offset = patientInput->getSchema()->getFieldCount();
+    BoolExpression<bool> predicate = Utilities::getEqualityPredicate<bool>(0, rhs_offset);
+    KeyedJoin<bool> join(patientInput, patientExclusionInput, predicate);
     return join.run();
 }
 
 shared_ptr<SecureTable> EnrichTest::loadUnionAndDeduplicateData() const{
     string dbName = (FLAGS_party == ALICE) ? aliceDbName : bobDbName;
     shared_ptr<PlainTable>  localData = loadAndJoinLocalData(dbName);
-    std::shared_ptr<SecureTable> unionedAndEncryptedData = localData->secret_share(netio, FLAGS_party);
+    std::shared_ptr<SecureTable> unionedAndEncryptedData = PlainTable::secretShare(*localData, netio_, FLAGS_party);
 
 
     // TODO: do bitonic merge instead of full-fledged sort here.  Inputs are sorted locally and each side makes up half of a bitonic sequence
@@ -134,8 +135,14 @@ shared_ptr<SecureTable> EnrichTest::filterPatients() {
 
     // *** Filter
     // HAVING max(denom_excl) = 0
-    std::shared_ptr<Predicate<emp::Bit> > predicateClass(new FilterExcludedPatients<emp::Bit>(true));
-    Filter inclusionCohort(deduplicatedPatients, predicateClass);
+    shared_ptr<ExpressionNode<emp::Bit> > zero(new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_INT, emp::Integer(32, 0))));;
+    shared_ptr<ExpressionNode<emp::Bit> > input(new InputReferenceNode<emp::Bit>(8));
+    shared_ptr<ExpressionNode<emp::Bit> > equality(new EqualNode<emp::Bit>(input, zero));
+
+    BoolExpression<emp::Bit> equality_expr(equality);
+
+    //std::shared_ptr<Predicate<emp::Bit> > predicateClass(new FilterExcludedPatients<emp::Bit>(true));
+    Filter inclusionCohort(deduplicatedPatients, equality_expr);
 
     return  inclusionCohort.run();
 
@@ -150,9 +157,13 @@ shared_ptr<SecureTable> EnrichTest::getPatientCohort() {
     //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
     // output schema:
     // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
-    Project project(inclusionCohort);
+    ExpressionMapBuilder<emp::Bit> builder( *(inclusionCohort->getSchema()));
+    for(uint32_t i = 1; i < 7; ++i)
+        builder.addMapping(i, i-1);
 
-    ProjectionMappingSet mappingSet{
+
+
+/*    ProjectionMappingSet mappingSet{
             // zip_marker
             ProjectionMapping(1, 0),
             // age_strata
@@ -170,14 +181,20 @@ shared_ptr<SecureTable> EnrichTest::getPatientCohort() {
             // 7: multisite int
             // 8: multisite ^ numerator
 
-    };
+    };*/
 
-    Expression multisiteExpression(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT);
-    Expression multisiteNumeratorExpression(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
+    shared_ptr<Expression<emp::Bit> > multisiteExpression(new FunctionExpression<emp::Bit>(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT));
+    shared_ptr<Expression<emp::Bit> > multisiteNumeratorExpression(new FunctionExpression<emp::Bit>(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT));
+    //Expression multisiteExpression(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT);
+    //Expression multisiteNumeratorExpression(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
 
-    project.addColumnMappings(mappingSet);
-    project.addExpression(multisiteExpression, 6);
-    project.addExpression(multisiteNumeratorExpression, 7);
+    builder.addExpression(multisiteExpression, 6);
+    builder.addExpression(multisiteNumeratorExpression, 7);
+
+    Project project(inclusionCohort, builder.getExprs());
+
+
+
 
     return project.run();
 
@@ -278,7 +295,7 @@ void EnrichTest::validateTable(const std::string & dbName, const std::string & s
         FieldType instanceType = (*observedTable)[0][i].getType();
         FieldType expectedType = (*expectedTable)[0][i].getType();
         /*if(schemaType != instanceType) {
-            std::cout << "Instance type not aligned! " << observedTable->getSchema().getField(i) << " expected: " << TypeUtilities::getTypeString(expectedType) << " received " << TypeUtilities::getTypeString(instanceType) << std::endl;
+            std::cout << "Instance type not aligned! " << observedTable->get_schema().getField(i) << " expected: " << TypeUtilities::getTypeString(expectedType) << " received " << TypeUtilities::getTypeString(instanceType) << std::endl;
         }*/
 
         ASSERT_EQ(schemaType, instanceType);
@@ -439,11 +456,10 @@ TEST_F(EnrichTest, testPatientCohort) {
 
 
     observedTable = DataUtilities::removeDummies(observedTable);
-    // empty sort definition, first column in prior sort is no longer in play
-    SortDefinition  emptySort;
+    //SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(5);
+    SortDefinition empty;
 
-
-    validateTable(unionedDbName, expectedResultSql, emptySort, observedTable);
+    validateTable(unionedDbName, expectedResultSql, empty, observedTable);
 
 }
 

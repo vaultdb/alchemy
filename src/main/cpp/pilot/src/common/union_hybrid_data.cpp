@@ -1,5 +1,5 @@
 #include <pilot/src/common/shared_schema.h>
-#include <data/CsvReader.h>
+#include <data/csv_reader.h>
 #include "union_hybrid_data.h"
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -46,7 +46,7 @@ UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema 
     std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, src_schema);
     Utilities::checkMemoryUtilization(" read csv: ");
 
-    std::shared_ptr<SecureTable> encryptedTable = localInput->secret_share(netio, party);
+    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*localInput, netio, party);
     Utilities::checkMemoryUtilization(" local read: ");
     return encryptedTable;
 

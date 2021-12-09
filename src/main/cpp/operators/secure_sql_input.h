@@ -12,25 +12,32 @@ namespace  vaultdb {
 
 
         NetIO *netio_;
-        int srcParty;
+        int src_party_;
 
-        std::string inputQuery;
-        std::string dbName;
-        bool hasDummyTag;
-        SortDefinition sorted_on_;
+        string input_query_;
+        string db_name_;
+        bool has_dummy_tag_;
 
 
     protected:
-        std::shared_ptr<SecureTable> runSelf() override;
+        shared_ptr<SecureTable> runSelf() override;
+
+        string getOperatorType() const override;
+
+        string getParameters() const override;
 
 
     public:
-        SecureSqlInput(std::string db, std::string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty) :     netio_(netio), srcParty(aSrcParty),
-            inputQuery(sql), dbName(db), hasDummyTag(dummyTag) {}
+        SecureSqlInput(string db, string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty, const size_t & input_tuple_cnt = 0); // truncate tuples with last term
 
-        SecureSqlInput(const string &db, const string & sql, const bool &dummyTag, const SortDefinition &sortDefinition, NetIO *netio, const int &party) :
-                        netio_(netio), srcParty(party),  inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sorted_on_(sortDefinition) {}
+        SecureSqlInput(const string &db, const string & sql, const bool &dummyTag, const SortDefinition &sortDefinition, NetIO *netio, const int &party, const size_t & input_tuple_cnt = 0);
          ~SecureSqlInput() = default;
+
+
+    private:
+        void runQuery();
+        shared_ptr<PlainTable> plain_input_;
+        size_t input_tuple_limit_;
     };
 
 }

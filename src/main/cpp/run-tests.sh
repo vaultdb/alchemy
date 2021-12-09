@@ -5,7 +5,7 @@ make -j5
 
 bash test/support/setup-csv.sh 
 ./bin/csv_reader_test 
-./bin/value_expression_test
+./bin/field_expression_test
 ./bin/filter_test
 ./bin/project_test
 ./bin/basic_join_test
@@ -15,15 +15,16 @@ bash test/support/setup-csv.sh
 ./bin/group_by_aggregate_test
 ./bin/secret_share_generator_test 
 ./bin/serialization_test
-
+./bin/plan_parser_test
+./bin/tpch_test
 
 #pairs for Alice and Bob
 ./bin/emp_test --party=1 & 
 ./bin/emp_test  --party=2
 
 sleep 2
-./bin/secure_value_expression_test --party=1 &
-./bin/secure_value_expression_test --party=2
+./bin/secure_field_expression_test --party=1 &
+./bin/secure_field_expression_test --party=2
 
 sleep 2
 ./bin/emp_table_test --party=1 &
@@ -52,6 +53,11 @@ sleep 2
 sleep 2
 ./bin/secure_group_by_aggregate_test --party=1 &
 ./bin/secure_group_by_aggregate_test --party=2
+
+sleep 2
+./bin/secure_tpch_test --party=1 &
+./bin/secure_tpch_test --party=2
+
 
 sleep 2
 ./bin/emp_float_to_int --party=1 &

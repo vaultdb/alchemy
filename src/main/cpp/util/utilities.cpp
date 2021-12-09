@@ -4,6 +4,7 @@
 #include <boost/stacktrace.hpp>
 #include <sstream>
 #include <iostream>
+#include <filesystem>
 
 #ifndef PATH_MAX
 #define PATH_MAX (4096)
@@ -14,7 +15,7 @@ using namespace vaultdb;
 std::string Utilities::getCurrentWorkingDirectory() {
     char cwd[PATH_MAX];
     char * ret = getcwd(cwd, sizeof(cwd));
-    ++ret; // for compile-time errors
+    ++ret; // for compile-time warnings
 
     std::string  currentWorkingDirectory = std::string(cwd);
     std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);
@@ -131,3 +132,21 @@ string Utilities::revealAndPrintBytes(emp::Bit *bits, const int &byteCount) {
 
     return ss.str();
 }
+
+void Utilities::mkdir(const string &path) {
+    std::filesystem::create_directory(path);
+}
+
+AggregateId Utilities::getAggregateId(const string &src) {
+    if(src ==  "AVG")         return AggregateId::AVG;
+    if(src ==  "COUNT")       return AggregateId::COUNT;
+    if(src ==  "MIN")         return AggregateId::MIN;
+    if(src ==  "MAX")         return AggregateId::MAX;
+    if(src ==  "SUM")         return AggregateId::SUM;
+
+    // else
+    throw std::invalid_argument("Can't decode aggregate from " + src);
+
+}
+
+

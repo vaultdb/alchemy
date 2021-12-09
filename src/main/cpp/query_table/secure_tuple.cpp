@@ -1,6 +1,5 @@
 #include "secure_tuple.h"
 #include "field/field_factory.h"
-//#include "plain_tuple.h"
 
 using namespace vaultdb;
 
@@ -102,8 +101,8 @@ PlainTuple QueryTuple<emp::Bit>::reveal(const int &empParty) const {
 }
 
 
-void QueryTuple<emp::Bit>::compare_swap(const Bit &cmp, SecureTuple  & lhs, SecureTuple  & rhs) {
-    size_t tuple_size = lhs.getSchema()->size(); // size in bytes
+void QueryTuple<emp::Bit>::compareSwap(const Bit &cmp, SecureTuple  & lhs, SecureTuple  & rhs) {
+    size_t tuple_size = lhs.getSchema()->size(); // size in bits
 
     emp::Integer lhs_payload(tuple_size, 0, emp::PUBLIC);
     emp::Integer rhs_payload(tuple_size, 0, emp::PUBLIC);
@@ -115,6 +114,8 @@ void QueryTuple<emp::Bit>::compare_swap(const Bit &cmp, SecureTuple  & lhs, Secu
 
     memcpy(lhs.getData(), lhs_payload.bits.data(), tuple_size * sizeof(emp::block));
     memcpy(rhs.getData(), rhs_payload.bits.data(), tuple_size * sizeof(emp::block));
+
+
 
 }
 
@@ -222,6 +223,7 @@ emp::Bit QueryTuple<emp::Bit>::operator!=(const SecureTuple &other) const {
 QueryTuple<emp::Bit>::QueryTuple(const QuerySchema &schema) {
     size_t tuple_bit_cnt = schema.size();
     managed_data_ = std::unique_ptr<emp::Bit[]>(new emp::Bit[tuple_bit_cnt]);
+
     fields_ = managed_data_.get();
     query_schema_ = std::make_shared<QuerySchema>(schema);
 }
@@ -233,6 +235,26 @@ QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {
             managed_data_ = std::unique_ptr<emp::Bit[]>(new emp::Bit[tuple_bit_cnt]);
             fields_ = managed_data_.get();
         }
+
+}
+
+void QueryTuple<emp::Bit>::writeSubset(const SecureTuple &src_tuple, const SecureTuple &dst_tuple, uint32_t src_start_idx,
+                                       uint32_t src_attr_cnt, uint32_t dst_start_idx) {
+
+    size_t src_field_offset = src_tuple.getSchema()->getFieldOffset(src_start_idx);
+    size_t dst_field_offset = dst_tuple.getSchema()->getFieldOffset(dst_start_idx);
+
+    size_t write_size = 0;
+    for(uint32_t i = src_start_idx; i < src_start_idx + src_attr_cnt; ++i) {
+        write_size += src_tuple.getSchema()->getField(i).size();
+    }
+
+    assert(dst_field_offset + write_size <= dst_tuple.query_schema_->size());
+
+    emp::Bit *read_pos = src_tuple.fields_ + src_field_offset;
+    emp::Bit *write_pos = dst_tuple.fields_ + dst_field_offset;
+
+    memcpy(write_pos, read_pos, write_size * sizeof(emp::Bit));
 
 }
 

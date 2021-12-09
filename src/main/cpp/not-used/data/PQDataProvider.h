@@ -1,7 +1,7 @@
 #ifndef PQ_DATA_PROVIDER_H
 #define PQ_DATA_PROVIDER_H
 
-#include "DataProvider.h"
+#include "data_provider.h"
 #include "pqxx_compat.h"
 #include "proto_converter.h"
 

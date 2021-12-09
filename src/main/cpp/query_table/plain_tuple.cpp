@@ -74,7 +74,7 @@ std::shared_ptr<QuerySchema> QueryTuple<bool>::getSchema() const {
     return query_schema_;
 }
 
-void QueryTuple<bool>::compare_swap(const bool &cmp, PlainTuple &lhs, PlainTuple &rhs) {
+void QueryTuple<bool>::compareSwap(const bool &cmp, PlainTuple &lhs, PlainTuple &rhs) {
 
     if(cmp) {
         assert(*lhs.getSchema() == *rhs.getSchema());
@@ -125,37 +125,6 @@ bool QueryTuple<bool>::operator==(const PlainTuple &other) const {
     }
     return true;
 }
-
-/*QueryTuple<emp::Bit>
-QueryTuple<bool>::secret_share(const PlainTuple *srcTuple, std::shared_ptr<QuerySchema> &dst_schema, int8_t *dst_bits,
-                               const int &myParty, const int &dstParty) {
-
-    QueryTuple<emp::Bit> dst_tuple(dst_schema, dst_bits);
-
-    // serialize the whole tuple, then secret share it
-    size_t tuple_bits = dst_schema->size();
-    size_t tuple_bytes = tuple_bits/8;
-
-
-    emp::Integer dst_bytes(tuple_bits, 0L, dstParty);
-
-    if(srcTuple != nullptr) {
-
-        std::vector<int8_t> srcData(dst_schema->size() / 8);
-        bool *bools = Utilities::bytesToBool(srcData.data(), tuple_bytes);
-        ProtocolExecution::prot_exec->feed((block *)dst_bytes.bits.data(), dstParty, bools, tuple_bits);
-        delete [] bools;
-    }
-    else {
-        ProtocolExecution::prot_exec->feed((block *)dst_bytes.bits.data(), dstParty, nullptr, tuple_bits);
-    }
-
-
-
-    memcpy(dst_bits, (int8_t *) dst_bytes.bits.data(), tuple_bits * sizeof(emp::block));
-    return dst_tuple;
-}
-*/
 
 string QueryTuple<bool>::toString(const bool &showDummies) const {
     std::stringstream sstream;
@@ -224,10 +193,31 @@ PlainTuple &QueryTuple<bool>::operator=(const PlainTuple &other) {
 
 }
 
-PlainTuple QueryTuple<bool>::reveal() const {
+// party is ignored
+PlainTuple QueryTuple<bool>::reveal(const int & party) const {
     PlainTuple tuple(*this->getSchema());
     tuple = *this;
     return tuple;
+}
+
+void QueryTuple<bool>::writeSubset(const PlainTuple &src_tuple, const PlainTuple &dst_tuple, uint32_t src_start_idx,
+                                   uint32_t src_attr_cnt, uint32_t dst_start_idx) {
+
+    size_t src_field_offset = src_tuple.getSchema()->getFieldOffset(src_start_idx)/8;
+    size_t dst_field_offset = dst_tuple.getSchema()->getFieldOffset(dst_start_idx)/8;
+
+    size_t write_size = 0;
+    for(uint32_t i = src_start_idx; i < src_start_idx + src_attr_cnt; ++i) {
+        write_size += src_tuple.getSchema()->getField(i).size()/8;
+    }
+
+    assert(dst_field_offset + write_size <= dst_tuple.query_schema_->size()/8);
+
+    int8_t *read_pos = src_tuple.fields_ + src_field_offset;
+    int8_t *write_pos = dst_tuple.fields_ + dst_field_offset;
+
+    memcpy(write_pos, read_pos, write_size);
+
 }
 
 

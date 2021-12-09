@@ -23,7 +23,7 @@ void QuerySchema::putField(const QueryFieldDesc &fd) {
 
 }
 
-const QueryFieldDesc QuerySchema::getField(const int &i) const {
+QueryFieldDesc QuerySchema::getField(const int &i) const {
   return fields_.at(i);
 }
 
@@ -121,7 +121,7 @@ QuerySchema QuerySchema::toPlain(const QuerySchema &secureSchema) {
 }
 
 
-const QueryFieldDesc QuerySchema::getField(const string &fieldName) const {
+QueryFieldDesc QuerySchema::getField(const string &fieldName) const {
     for(QueryFieldDesc fieldDesc : fields_) {
         if(fieldDesc.getName() == fieldName)
             return fieldDesc;

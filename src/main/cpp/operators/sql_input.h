@@ -3,7 +3,7 @@
 
 
 #include <util/data_utilities.h>
-#include <data/PsqlDataProvider.h>
+#include <data/psql_data_provider.h>
 #include "operator.h"
 
 // reads SQL input and stores in a plaintext array
@@ -12,21 +12,26 @@ namespace  vaultdb {
     class SqlInput : public Operator<bool> {
 
     protected:
-        std::string inputQuery;
-        std::string dbName;
-        bool hasDummyTag;
-        SortDefinition sortedOn;
+        std::string input_query_;
+        std::string db_name_;
+        bool dummy_tagged_;
 
     public:
         // bool denotes whether the last col of the SQL statement should be interpreted as a dummy tag
-        SqlInput(std::string db, std::string sql, bool dummyTag = false) :  Operator(), inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sortedOn() {}
+        SqlInput(std::string db, std::string sql, bool dummyTag = false);
+        SqlInput(std::string db, std::string sql, bool dummyTag, const SortDefinition & sortDefinition, const size_t & tuple_limit = 0);
 
-        SqlInput(std::string db, std::string sql, bool dummyTag, const SortDefinition & sortDefinition) :  Operator(), inputQuery(sql), dbName(db), hasDummyTag(dummyTag), sortedOn(sortDefinition){}
-
-        void setSortDefinition(const SortDefinition & aSortDefinition) { sortedOn = aSortDefinition; };
         ~SqlInput() = default;
-        std::shared_ptr<PlainTable> runSelf() override;
+        void truncateInput(const size_t & limit); // to test on smaller datasets
 
+    private:
+        void runQuery();
+
+    protected:
+        std::shared_ptr<PlainTable> runSelf() override;
+        string getOperatorType() const override;
+        string getParameters() const override;
+        size_t tuple_limit_;
 
     };
 

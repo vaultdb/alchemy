@@ -8,23 +8,23 @@ namespace vaultdb {
 class CsvInput : public Operator<bool> {
 
 protected:
-    std::string inputFile;
-    SortDefinition sortedOn;
-    QuerySchema inputSchema;
+    std::string input_file_;
 
 public:
-    CsvInput(string srcFile, const QuerySchema & srcSchema ) : inputFile(srcFile), inputSchema(srcSchema) {
-
+    CsvInput(string srcFile, const QuerySchema & srcSchema, const SortDefinition & sort = SortDefinition()) : Operator<bool>(sort), input_file_(srcFile)  {
+        output_schema_ = srcSchema;
 
     }
 
 
-
-    void setSortDefinition(const SortDefinition & aSortDefinition) { sortedOn = aSortDefinition; };
-
     shared_ptr<PlainTable> runSelf() override;
 
     ~CsvInput() = default;
+
+protected:
+    string getOperatorType() const override;
+
+    string getParameters() const override;
 
 };
 

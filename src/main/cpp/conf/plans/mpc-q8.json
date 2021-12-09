@@ -1,0 +1,305 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "c_nationkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "c_custkey"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "o_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_custkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_year"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "2",
+      "joinOn" : "c_custkey = o_custkey",
+      "outputFields": "c_nationkey (#0), c_custkey (#1), o_orderkey (#2), o_custkey (#3), o_year (#4)",
+      "relOp": "LogicalJoin",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_partkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "l_suppkey"
+        },
+        {
+          "type": "FLOAT",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "volume"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "s_suppkey"
+        },
+        {
+          "type": "FLOAT",
+          "nullable": false,
+          "name": "nation_check"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "5",
+      "joinOn" : "l_suppkey = s_suppkey",
+      "outputFields": "l_partkey (#0), l_orderkey (#1), l_suppkey (#2), volume (#3), s_suppkey (#4), nation_check(#5)",
+      "relOp": "LogicalJoin",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 0,
+      "inputs": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "6",
+      "joinOn" : "l_orderkey = o_orderkey",
+      "outputFields": "c_nationkey (#0), c_custkey (#1), o_orderkey (#2), o_custkey (#3), o_year (#4), l_partkey (#5), l_orderkey (#6), l_suppkey (#7), volume (#8), s_suppkey (#9), nation_check(#10)",
+      "relOp": "LogicalJoin",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "2",
+          "5"
+      ]
+    },
+    {
+      "id": "7",
+      "inputFields": "c_nationkey (#0), c_custkey (#1), o_orderkey (#2), o_custkey (#3), o_year (#4), l_partkey (#5), l_orderkey (#6), l_suppkey (#7), volume (#8), s_suppkey (#9), nation_check(#10)",
+      "outputFields" : "o_year, volume * nation_check::float, volume",
+      "relOp": "LogicalProject",
+      "fields": [
+        "o_year",
+        "egypt_volume",
+        "volume"
+      ],
+      "exprs": [
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "op": {
+            "name": "*",
+            "kind": "TIMES",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+                  "input": 8,
+                  "name": "$8"
+                },
+                {
+                  "input": 10,
+                  "name": "$10"
+                }
+              ]
+            },
+        {
+          "input": 8,
+          "name": "$8"
+        }
+      ]
+    },
+    {
+      "id": "8",
+      "relOp": "LogicalAggregate",
+      "group": [
+        0
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            1
+          ],
+          "name": null
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            2
+          ],
+          "name": null
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "relOp": "LogicalProject",
+      "fields": [
+        "o_year",
+        "mkt_share"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "op": {
+            "name": "/",
+            "kind": "DIVIDE",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 2,
+              "name": "$2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

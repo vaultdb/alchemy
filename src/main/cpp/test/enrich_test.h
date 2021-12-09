@@ -3,13 +3,13 @@
 
 #include <util/data_utilities.h>
 #include <operators/support/join_equality_predicate.h>
-#include <operators/fkey_pkey_join.h>
+#include <operators/keyed_join.h>
 #include <operators/csv_input.h>
 #include <operators/project.h>
 #include <operators/sort.h>
 #include <operators/group_by_aggregate.h>
 #include <operators/filter.h>
-#include <test/support/EmpBaseTest.h>
+#include <test/mpc/emp_base_test.h>
 
 
 using namespace vaultdb;

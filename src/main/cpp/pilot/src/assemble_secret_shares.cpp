@@ -2,28 +2,43 @@
 #include <query_table/query_schema.h>
 #include <pilot/src/common/shared_schema.h>
 #include <util/data_utilities.h>
+#include <sstream>
 
 using namespace std;
 using namespace vaultdb;
 
 
-// output schema consists of rollup field and a count (int64_t)
+std::string src_path = Utilities::getCurrentWorkingDirectory() + "/";
+std::string dst_path = src_path;
+
+// output schema consists of rollup field and counts, e.g.:
+// result (#0 int32 .age_strata, #1 int64 .numerator, #2 int64 .denominator, #3 int64 .numerator_multisite, #4 int64 .denominator_multisite)
 QuerySchema getSchema(const std::string & rollupName) {
     QuerySchema schema = SharedSchema::getInputSchema();
-    QuerySchema outputSchema(2);
-    const QueryFieldDesc rollupField = schema.getField(rollupName);
-    QueryFieldDesc countField(1, "count", "", FieldType::LONG, 0);
+    QuerySchema outputSchema(5);
+    QueryFieldDesc rollupField = schema.getField(rollupName);
+    rollupField.setOrdinal(0);
+
+    QueryFieldDesc numerator(1, "numerator", "", FieldType::LONG, 0);
+    QueryFieldDesc denominator(2, "denominator", "", FieldType::LONG, 0);
+    QueryFieldDesc numerator_multisite(3, "numerator_multisite", "", FieldType::LONG, 0);
+    QueryFieldDesc denominator_multisite(4, "denominator_multisite", "", FieldType::LONG, 0);
+
+
 
     outputSchema.putField(rollupField);
-    outputSchema.putField(countField);
+    outputSchema.putField(numerator);
+    outputSchema.putField(denominator);
+    outputSchema.putField(numerator_multisite);
+    outputSchema.putField(denominator_multisite);
 
     return outputSchema;
 }
 
 void revealRollup(const std::string & rollupName) {
 
-    std::string aliceFile = rollupName + ".alice";
-    std::string bobFile = rollupName + ".bob";
+    std::string aliceFile = src_path + "/" + rollupName + ".alice";
+    std::string bobFile = src_path + "/" + rollupName + ".bob";
 
     vector<int8_t> aliceBits = DataUtilities::readFile(aliceFile);
     vector<int8_t> bobBits = DataUtilities::readFile(bobFile);
@@ -43,15 +58,24 @@ void revealRollup(const std::string & rollupName) {
         ++revealedPos;
     }
 
-    QuerySchema rollupSchema = getSchema(rollupName);
+
+    QuerySchema rollupSchema = rollupName != "age_strata" ? getSchema(rollupName) : getSchema("age_days");
     std::shared_ptr<PlainTable> result = PlainTable::deserialize(rollupSchema, revealed);
 
-    std::string csv;
-    for(size_t i = 0; i < result->getTupleCount(); ++i)
-        csv += (*result)[i].toString() + "\n";
+    std::stringstream schema_str;
+    schema_str << *result->getSchema() << std::endl;
+    std::string csv = schema_str.str();
 
-    std::string outputFileName = rollupName + ".csv";
-    DataUtilities::writeFile(outputFileName, csv);
+    for(size_t i = 0; i < result->getTupleCount(); ++i) {
+        PlainTuple tuple = result->getTuple(i);
+        if(!tuple.getDummyTag())
+            csv += (*result)[i].toString() + "\n";
+    }
+
+    std::cout << "Revealing " << csv << std::endl;
+    std::string out_file = dst_path + "/" + rollupName + ".csv";
+
+    DataUtilities::writeFile(out_file, csv);
 }
 
 
@@ -60,13 +84,17 @@ void revealRollup(const std::string & rollupName) {
 // for each rollup (e.g., ethnicity), take in Alice and Bob's inputs (e.g., ethnicity.alice, ethnicity.bob) and write out a csv with their results (e.g., ethnicity.csv)
 int main(int argc, char **argv) {
     // paths are relative to $VAULTDB_ROOT/src/main/cpp
-    // e.g., ./bin/secret_share_csv pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
-    // writes to pilot/test/output/chi-patient.alice pilot/secret_shares/output/chi-patient.bob
+    // e.g., ./bin/assemble_secret_shares pilot/secret_shares/xor  pilot/secret_shares/revealed
 
     if (argc < 3) {
-        cout << "usage: secret_share_csv <src file> <destination root>" << endl;
+        cout << "usage: assemble_secret_shares <src path> <dst path>" << endl;
         exit(-1);
     }
+
+    src_path +=  argv[1];
+    dst_path += argv[2];
+
+    Utilities::mkdir(dst_path);
 
     vector<string> rollups{"zip_marker", "age_strata", "sex", "ethnicity", "race"};
 

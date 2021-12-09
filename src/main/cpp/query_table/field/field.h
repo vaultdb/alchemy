@@ -8,8 +8,6 @@
 #include <boost/variant.hpp>
 
 
-// 2:17
-
 // carries payload for each attribute
 //  generic for storing heterogeneous types in the same container
 //  downcast to impl (e.g., IntField, FloatField, etc.) as needed for expressions
@@ -63,6 +61,9 @@ namespace vaultdb {
         B  operator == (const Field &cmp) const;
         B  operator != (const Field &cmp) const;
         B operator !() const;
+        B  operator && (const Field &cmp) const;
+        B  operator || (const Field &cmp) const;
+
         B operator>=(const Field & rhs) const;
         B operator<(const Field & rhs) const;
         B operator<=(const Field & rhs) const;
@@ -73,6 +74,8 @@ namespace vaultdb {
         Field  operator*(const Field &rhs) const;
         Field  operator/(const Field &rhs) const;
         Field  operator%(const Field &rhs) const;
+
+        //Field operator|(const Field &rhs) const; // for sort need bitwise OR
 
 
         static Field If(const B & choice,const Field & lhs, const Field & rhs);

@@ -77,14 +77,15 @@ namespace  vaultdb {
 
         const PlainField operator[](const int32_t & idx) const;
 
-        static void compare_swap(const bool &cmp, PlainTuple  & lhs, PlainTuple & rhs);
+        static void compareSwap(const bool &cmp, PlainTuple  & lhs, PlainTuple & rhs);
 
 
         static PlainTuple deserialize(int8_t *dst_bits, std::shared_ptr<QuerySchema> & schema, int8_t *src_bits);
 
-        // create an independent tuple with reveal
-        PlainTuple reveal() const;
+        // create an independent tuple with reveal, for PUBLIC
+        PlainTuple reveal(const int & party = emp::PUBLIC) const;
 
+        static void writeSubset(const PlainTuple & src_tuple, const PlainTuple & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx);
 
 
     };

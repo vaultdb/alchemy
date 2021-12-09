@@ -12,13 +12,21 @@ namespace  vaultdb {
 
 
     public:
-        Union(Operator<B> *lhs, Operator<B> *rhs) : Operator<B>(lhs, rhs) { }
+        Union(Operator<B> *lhs, Operator<B> *rhs, const SortDefinition & sort = SortDefinition()) : Operator<B>(lhs, rhs, sort) {
+            Operator<B>::output_schema_ = lhs->getOutputSchema();
+        }
 
-        Union(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs) : Operator<B>(lhs, rhs) { }
+        Union(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, const SortDefinition & sort = SortDefinition()) : Operator<B>(lhs, rhs, sort) {
+            Operator<B>::output_schema_ = *lhs->getSchema();
+        }
 
         ~Union() = default;
 
+
+    protected:
         std::shared_ptr<QueryTable<B> > runSelf()  override;
+        string getOperatorType() const override;
+        string getParameters() const override;
 
 
     };

@@ -19,6 +19,7 @@ namespace  vaultdb {
     public:
         explicit QuerySchema(const size_t &num_fields);
 
+        QuerySchema() {} // empty setup
         QuerySchema(const QuerySchema &s);
 
         size_t getFieldCount() const;
@@ -29,9 +30,9 @@ namespace  vaultdb {
         size_t size() const;
 
 
-        const QueryFieldDesc getField(const int &i) const;
+        QueryFieldDesc getField(const int &i) const;
 
-        const QueryFieldDesc getField(const std::string & fieldName) const;
+        QueryFieldDesc getField(const std::string & fieldName) const;
 
 
         QuerySchema &operator=(const QuerySchema &other);

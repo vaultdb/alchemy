@@ -95,18 +95,28 @@ void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple
 
 }
 
-void FieldUtilities::secret_share_recv(const QuerySchema & src_schema, SecureTuple &dst_tuple, const int &dst_party) {
-    size_t field_count = dst_tuple.getSchema()->getFieldCount();
+void FieldUtilities::secret_share_recv(SecureTuple &dst_tuple, const int &dst_party) {
+    QuerySchema schema = *dst_tuple.getSchema();
+    size_t field_count = schema.getFieldCount();
 
     for(size_t i = 0;  i < field_count; ++i) {
-        QueryFieldDesc field_desc = src_schema.getField(i);
+        QueryFieldDesc field_desc = schema.getField(i);
         SecureField  dst_field = SecureField::secret_share_recv(field_desc.getType(), field_desc.getStringLength(), dst_party);
         dst_tuple.setField(i, dst_field);
     }
 
-    SecureField d = SecureField::secret_share_recv(FieldType::BOOL, 0, dst_party);
+    SecureField d = SecureField::secret_share_recv(FieldType::SECURE_BOOL, 0, dst_party);
     dst_tuple.setDummyTag(d);
 
+}
+
+// to compute sort
+bool FieldUtilities::select(const bool &choice, const bool &lhs, const bool &rhs) {
+    return choice ? lhs : rhs;
+}
+
+emp::Bit FieldUtilities::select(const Bit &choice, const Bit &lhs, const Bit &rhs) {
+    return emp::If(choice, lhs, rhs);
 }
 
 
