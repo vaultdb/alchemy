@@ -44,11 +44,11 @@ TEST_F(SortTest, testSingleIntColumn) {
     ASSERT_EQ(*expected, *observed);
 
 
-}
+    } 
 
 
 TEST_F(SortTest, tpchQ1Sort) {
-    string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_linenumber, l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment, l_orderkey  LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
     shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
 
@@ -69,7 +69,7 @@ TEST_F(SortTest, tpchQ1Sort) {
 TEST_F(SortTest, tpchQ3Sort) {
     // casting revenue to float for these trials
     // TODO: set up discrete testbed to deal with floating point errors
-    string sql = "SELECT l_orderkey, (l.l_extendedprice * (1 - l.l_discount))::INT revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY  l_linenumber, l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_orderkey, (l.l_extendedprice * (1 - l.l_discount))::INT revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate")  + " FROM input ORDER BY revenue DESC, o_orderdate";
     shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
@@ -98,25 +98,14 @@ TEST_F(SortTest, tpchQ3Sort) {
     expected->setSortOrder(sortDefinition);
 
     ASSERT_EQ(*expected, *observed);
-    /* Expected:
-     *  (#0 float .revenue, #1 int64 .o_orderdate) is_encrypted? 0
-(64962.171875, 698457600)
-(63833.101562, 856569600)
-(52544.890625, 855619200)
-(50856.226562, 741657600)
-(48688.640625, 878688000)
-(36287.386719, 779846400)
-(22249.986328, 871689600)
-(21736.742188, 898560000)
-(15533.496094, 820108800)
-(15315.331055, 794102400) */
+
 
 }
 
 
 TEST_F(SortTest, tpchQ5Sort) {
 
-    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY  l_linenumber, l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
     shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
 
@@ -177,7 +166,7 @@ TEST_F(SortTest, tpchQ9Sort) {
     string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
                       "  JOIN nation on n_nationkey = s_nationkey"
-                      " ORDER BY  l_linenumber, l_comment LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+                      " ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT n_name, o_orderyear FROM input ORDER BY n_name, o_orderyear DESC";
 
     shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
