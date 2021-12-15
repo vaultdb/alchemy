@@ -88,11 +88,12 @@ shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(const shared_ptr<SecureT
     Utilities::checkMemoryUtilization("before projection");
 
     ExpressionMapBuilder<emp::Bit> builder(*src->getSchema());
-    for(int i = 1; i < 7; ++i)
-        if(i != 2)
+    for(int i = 1; i < 7; ++i) {
+      if(i != 2) {
             builder.addMapping(i, i-1);
-
-        shared_ptr<Expression<emp::Bit> > ageStrataExpression(new FunctionExpression(&EnrichHtnQuery::projectAgeStrata<emp::Bit>, "age_strata", FieldType::SECURE_INT));
+      }
+    }
+    shared_ptr<Expression<emp::Bit> > ageStrataExpression(new FunctionExpression(&EnrichHtnQuery::projectAgeStrata<emp::Bit>, "age_strata", FieldType::SECURE_INT));
     shared_ptr<Expression<emp::Bit> >  multisiteExpression(new FunctionExpression(&EnrichHtnQuery::projectMultisite<emp::Bit>, "multisite", FieldType::SECURE_INT));
     shared_ptr<Expression<emp::Bit> >  multisiteNumeratorExpression(new FunctionExpression(&EnrichHtnQuery::projectNumeratorMultisite<emp::Bit>, "numerator_multisite", FieldType::SECURE_INT));
 

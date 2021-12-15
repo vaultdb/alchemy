@@ -98,8 +98,9 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
     std::shared_ptr<SecureTable> result = sort.run();
 
     std::shared_ptr<PlainTable> observed = result->reveal();
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
+    }
 
 
 }
@@ -141,8 +142,9 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
     expected->setSortOrder(observed->getSortOrder());
 
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
+    }
 
 }
 
@@ -171,10 +173,10 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
     // copy out the projected sort order
     expected->setSortOrder(observed->getSortOrder());
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
 
-
+    }
 
 }
 
@@ -205,10 +207,10 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
     // copy out the projected sort order
     expected->setSortOrder(observed->getSortOrder());
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
 
-
+    }
 }
 
 
@@ -242,8 +244,9 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_TRUE(isSorted(observed, sortDefinition));
+    }
 
 
 }
@@ -283,8 +286,9 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
 
     // verify that first col is DESC, second is ASC
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
+    }
 
 
 }

@@ -37,9 +37,9 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::unique_ptr<PlainTable> revealed = output->reveal(emp::PUBLIC);
 
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *revealed);
-
+    }
 
 
 }
@@ -74,8 +74,9 @@ TEST_F(SecureFilterTest, test_filter) {
     std::shared_ptr<SecureTable> result = filter.run();
     std::unique_ptr<PlainTable> revealed = result->reveal(emp::PUBLIC);
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected,  *revealed);
+    }
 
 }
 

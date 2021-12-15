@@ -35,8 +35,9 @@ void SecureScalarAggregateTest::runTest(const string &expectedOutputQuery,
   ScalarAggregate aggregate(&input, aggregators);
   std::shared_ptr<PlainTable> observed = aggregate.run()->reveal();
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
       ASSERT_EQ(*expectedOutput, *observed);
+    }
 
 }
 
@@ -63,8 +64,9 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregatedReveal);
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
       ASSERT_EQ(*expectedOutput, *observed);
+    }
 
 }
 
@@ -216,8 +218,9 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
 
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
       ASSERT_EQ(*expected, *observed);
+    }
 
 }
 
@@ -256,8 +259,9 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
       ASSERT_EQ(*expected, *observed);
+    }
 
 }
 
@@ -304,9 +308,10 @@ std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db
 
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
       ASSERT_EQ(*expected, *observed);
-
+    }
+      
 }
 
 

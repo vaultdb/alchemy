@@ -49,8 +49,9 @@ void SecureGroupByAggregateTest::runTest(const string &expectedOutputQuery,
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregatedReveal);
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
+    }
 
 
 }
@@ -78,8 +79,9 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expectedOutputQuer
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
+    }
 }
 
 
@@ -208,8 +210,9 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
+    }
 
 }
 
@@ -259,8 +262,9 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
+    }
 
 }
 
@@ -320,8 +324,9 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
-    if(!IGNORE_BOB)
+    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
+    }
 
 }
 
