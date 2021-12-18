@@ -5,6 +5,9 @@
 #include <query_table/query_schema.h>
 
 
+// output the data for testing at NM with the following cmd in psql:
+// \copy (SELECT * FROM patient WHERE study_year=2020) TO 'charlie.csv' CSV HEADER;
+// alice = 2018, bob = 2019, charlie = 2020
 using namespace std;
 using namespace vaultdb;
 

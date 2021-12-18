@@ -10,4 +10,6 @@
 \i 'pilot/prod/assemble-patient-table-nm.sql'
 
 
-
+\copy (SELECT * FROM patient WHERE study_year=2018) TO 'pilot/input/alice-prod-patient.csv' CSV
+\copy (SELECT * FROM patient WHERE study_year=2019) TO 'pilot/input/bob-prod-patient.csv' CSV
+\copy (SELECT * FROM patient WHERE study_year=2020) TO 'pilot/input/chi-prod-patient.csv' CSV
