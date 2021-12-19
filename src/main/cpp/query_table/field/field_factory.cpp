@@ -11,7 +11,18 @@ using namespace vaultdb;
 PlainField FieldFactory<bool>::getFieldFromString(const FieldType &type, const size_t &strLength, const std::string &src) {
     switch (type) {
         case FieldType::BOOL: {
-            bool boolField = (src == "1") ? true : false;
+	  
+	  bool boolField;
+	  // handle different formats
+	  if(src == "1" || src == "0"){
+	    boolField = (src == "1") ? true : false;
+	  }
+	  else if(src == "t" || src == "f") {
+	    boolField = (src == "t") ? true : false;
+	  }
+	  else {
+	    throw std::invalid_argument("Unsupported type for decoding bool from string: " + TypeUtilities::getTypeString(type) + "\n");
+	  }
             return  PlainField(type, boolField);
         }
 
