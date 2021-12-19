@@ -44,10 +44,10 @@ shared_ptr<SecureTable>
 UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema &src_schema, NetIO *netio,
                                 const int &party) {
     std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, src_schema);
-    Utilities::checkMemoryUtilization(" read csv: ");
+    Utilities::checkMemoryUtilization("read csv: ");
 
     std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*localInput, netio, party);
-    Utilities::checkMemoryUtilization(" local read: ");
+    Utilities::checkMemoryUtilization("local read: ");
     return encryptedTable;
 
 }

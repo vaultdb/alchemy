@@ -62,9 +62,9 @@ int main(int argc, char **argv) {
     // validate it against the DB for testing
     if(TESTBED) {
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
-        string unionedDbName = "enrich_htn_unioned";
-        string query = "SELECT * FROM patient ORDER BY patid, site_id";
-        SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (8, SortDirection::ASCENDING)};
+        string unionedDbName = "enrich_htn_prod";
+        string query = "SELECT * FROM patient ORDER BY pat_id, site_id, study_year";
+        SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(10, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)};
 
 
         validateInputTable(unionedDbName, query, patientSortDef, revealed);
