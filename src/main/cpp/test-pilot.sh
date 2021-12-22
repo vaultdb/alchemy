@@ -1,5 +1,9 @@
 
 bash pilot/prod/clean-nulls.sh 
+mkdir pilot/input/2018
+mkdir pilot/input/2019
+mkdir pilot/input/2020
+
 
 dropdb enrich_htn_prod
 
