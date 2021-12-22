@@ -22,13 +22,23 @@ EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input) : inputTable(inp
 }
 
 
+// input schema: pat_id (0), study_year (1), zip_marker (2), age_days (3), sex (4), ethnicity (5), race (6), numerator (7), denom (8), denom_excl (9), site_id (10) 
 shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
     // sort it on group-by cols to prepare for aggregate
     // patid, zip_marker, age_days, sex, ethnicity, race
-    SortDefinition unionSortDefinition = DataUtilities::getDefaultSortDefinition(6);
+  SortDefinition unionSortDefinition{ColumnSort(0, SortDirection::ASCENDING), // pat_ID
+				     ColumnSort(2, SortDirection::ASCENDING), // zip_marker
+				     ColumnSort(3, SortDirection::ASCENDING), // age_days
+				     ColumnSort(4, SortDirection::ASCENDING), // sex
+				     ColumnSort(5, SortDirection::ASCENDING), // ethnicity
+				     ColumnSort(6, SortDirection::ASCENDING), // race
+				     ColumnSort(10, SortDirection::ASCENDING)}; // site_id, this last sort makes it verifiable 
+
+       
+
     // site_id
-    unionSortDefinition.push_back(ColumnSort(8, SortDirection::ASCENDING)); // last sort makes it verifiable
+    // unionSortDefinition.push_back(ColumnSort(10, SortDirection::ASCENDING)); // 
 
     // destructor handled within Operator
     Sort<emp::Bit> sortUnioned(inputTable, unionSortDefinition);
@@ -37,16 +47,16 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
 
 
-              // aggregate to deduplicate
+    // aggregate to deduplicate
     // finds if a patient meets exclusion criteria, if a patient is in the numerator in at least one site
     // aka:
     //    SELECT  p.patid, zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*), max(denom_excl)
     // GROUP BY   p.patid, zip_marker, age_strata, sex, ethnicity, race
-    std::vector<int32_t> groupByCols{0, 1, 2, 3, 4, 5};
+    std::vector<int32_t> groupByCols{0, 2, 3, 4, 5, 6};
     std::vector<ScalarAggregateDefinition> aggregators {
-            ScalarAggregateDefinition(6, AggregateId::MAX, "numerator"),
+            ScalarAggregateDefinition(7, AggregateId::MAX, "numerator"),
             ScalarAggregateDefinition(-1, AggregateId::COUNT, "site_count"),
-            ScalarAggregateDefinition(7, AggregateId::MAX, "denom_excl")
+            ScalarAggregateDefinition(9, AggregateId::MAX, "denom_excl")
     };
 
     GroupByAggregate unionedPatients(sorted, groupByCols, aggregators );
@@ -58,8 +68,8 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
     // filter ones with denom_excl = 1
     // *** Filter
-    // HAVING max(denom_excl) = 0
-    shared_ptr<ExpressionNode<emp::Bit> > zero(new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_INT, emp::Integer(32, 0))));;
+    // HAVING max(denom_excl) = false
+    shared_ptr<ExpressionNode<emp::Bit> > zero(new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_BOOL, emp::Bit(false))));;
     shared_ptr<ExpressionNode<emp::Bit> > input(new InputReferenceNode<emp::Bit>(8));
     shared_ptr<ExpressionNode<emp::Bit> > equality(new EqualNode<emp::Bit>(input, zero));
 

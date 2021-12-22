@@ -2,6 +2,7 @@
 
 QuerySchema SharedSchema::getInputSchema() {
 
+
 //CREATE TABLE patient (
 //    pat_id integer,
 //    study_year integer,
