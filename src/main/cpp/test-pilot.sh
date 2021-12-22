@@ -1,5 +1,14 @@
 
-bash pilot/prod/clean-nulls.sh 
+SITE=nm
+
+if [ "$#" -eq 1 ]; then
+    SITE=$1
+fi
+
+echo 'Site ID: '$SITE
+
+bash pilot/prod/clean-nulls.sh $SITE
+
 mkdir pilot/input/2018
 mkdir pilot/input/2019
 mkdir pilot/input/2020
