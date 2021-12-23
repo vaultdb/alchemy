@@ -136,6 +136,8 @@ int main(int argc, char **argv) {
     setup_semi_honest(netio, party,  port);
     cout << "Finished netio setup" << endl;
 
+    start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
+    startTime = start_time; // end-to-end one too
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
     shared_ptr<SecureTable> inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
