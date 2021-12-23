@@ -67,6 +67,7 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     size_t tuple_size = plain_schema.size();
     size_t src_bit_cnt = src_byte_cnt * 8;
     size_t tuple_cnt = src_bit_cnt / plain_schema.size();
+    cout << "Read file" << endl;
 
     assert(src_bit_cnt % tuple_size == 0);
 
@@ -81,13 +82,16 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     bool *dst_bools = new bool[dst_bit_alloc];
     assert(dst_bools != nullptr);
 
+    cout << "Byte-to-bit aligned" << endl;
+    
     plain_to_secure_bits(src_bools, dst_bools, plain_schema, secure_schema, tuple_cnt);
 
     delete [] src_bools;
 
     Integer alice(dst_bit_cnt, 0L, emp::PUBLIC);
     Integer bob(dst_bit_cnt, 0L, emp::PUBLIC);
-
+    cout << "Setting up as party " << party << " with " << dst_bit_cnt << " bits." <<  endl;
+    
     if(party == ALICE) {
         // feed through Alice's data, then wait for Bob's
         ProtocolExecution::prot_exec->feed((block *)alice.bits.data(), ALICE, dst_bools, dst_bit_cnt);
@@ -101,13 +105,14 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
 
     Integer shared_data = alice ^ bob;
 
-
+    cout << "Deserializing!" << endl;
 
      std::shared_ptr<SecureTable> shared_table = SecureTable::deserialize(secure_schema,
                                                                               shared_data.bits);
 
 
      delete [] dst_bools;
+     cout << "Done reading secret-shares!" << endl;
      return shared_table;
 
 }
@@ -139,6 +144,7 @@ shared_ptr<SecureTable> UnionHybridData::unionHybridData(const QuerySchema &sche
 
     std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, schema, party);
 
+    cout << "Unioning!" << endl;
     Union<emp::Bit> union_op(local, remote);
     return union_op.run();
 

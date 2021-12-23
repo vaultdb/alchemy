@@ -14,6 +14,8 @@ using namespace  emp;
 #define TESTBED 0
 
 
+auto start_time = emp::clock_start();
+auto cumulative_runtime = emp::time_from(start_time);
 
 void validateInputTable(const string & dbName, const string & sql, const SortDefinition  & expectedSortDefinition, const shared_ptr<PlainTable> & testTable)  {
 
@@ -104,6 +106,7 @@ runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const stri
 
 
     }
+    
 
     return stratified;
 }
@@ -138,7 +141,9 @@ int main(int argc, char **argv) {
     shared_ptr<SecureTable> inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
 
     Utilities::checkMemoryUtilization("read input");
-
+    cumulative_runtime = time_from(start_time);
+    
+      
     // validate it against the DB for testing
     if(TESTBED) {
         string unionedDbName = "enrich_htn_unioned";
@@ -148,11 +153,13 @@ int main(int argc, char **argv) {
         SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (8, SortDirection::ASCENDING)};
         validateInputTable(unionedDbName, query, patientSortDef, revealed);
 
-        double runtime = time_from(startTime);
-        cout << "Read and validated input on " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
 
     }
+    
 
+
+	    cout << "***Read input on " << party << " in " <<    (cumulative_runtime + 0.0) *1e6*1e-9 << " ms." << endl;
+	        start_time = emp::clock_start();
     cout << "********* start processing ***************" << endl;
 
     // create output dir:
@@ -161,26 +168,49 @@ int main(int argc, char **argv) {
     EnrichHtnQuery enrich(inputData);
     inputData.reset();
 
-    cout << "Completed cube aggregation at " << time_from(startTime)*1e6*1e-9 << " ms." << endl;
+    cumulative_runtime += time_from(start_time);
+    cout << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms." << endl;
     Utilities::checkMemoryUtilization();
 
 
+    start_time = emp::clock_start();
     shared_ptr<SecureTable> zipRollup = runRollup(0, "zip_marker", party, enrich, output_path);
-    cout << "Done first rollup at " << time_from(startTime)*1e6*1e-9 << " ms." << endl;
+    auto delta = time_from(start_time);
+    cumulative_runtime += delta;
+    
+    cout << "***Done zip_marker rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
     Utilities::checkMemoryUtilization();
 
+    start_time = emp::clock_start();
     shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich, output_path);
+    delta = time_from(start_time);
+    cumulative_runtime += delta;
+
     Utilities::checkMemoryUtilization("rollup 2");
+    cout << "***Done age rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
+    start_time = emp::clock_start();
     shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich, output_path);
+    delta = time_from(start_time);
+    cumulative_runtime += delta;
+    
     Utilities::checkMemoryUtilization("rollup 3");
+    cout << "***Done sex rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
+    start_time = emp::clock_start();
     shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich, output_path);
+    delta = time_from(start_time);
+    cumulative_runtime += delta;
     Utilities::checkMemoryUtilization("rollup 4");
+    cout << "***Done ethnicity rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
+    start_time = emp::clock_start();
     shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich, output_path);
+    delta = time_from(start_time);
+    cumulative_runtime += delta;
     Utilities::checkMemoryUtilization("rollup 5");
 
+    cout << "***Done race rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
      emp::finalize_semi_honest();
 
