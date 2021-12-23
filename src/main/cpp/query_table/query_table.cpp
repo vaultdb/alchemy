@@ -46,17 +46,16 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
     }
 
     tuple_data_.resize(num_tuples * tuple_size_);
-    cout << "Allocating " << schema_->size() * num_tuples << " emp bits! for " <<  num_tuples << " tuples at " << schema_->size() << " bits per tuple." << endl;
-     Utilities::checkMemoryUtilization("setup for secure table ");
+
       
     if(std::is_same_v<emp::Bit, B>) {
       cout << "Allocating " << schema_->size() * num_tuples << " emp bits! for " <<  num_tuples << " tuples at " << schema_->size() << " bits per tuple." <<  endl;
-      Utilities::checkMemoryUtilization("setup for secure table ");
+
       
       emp::Integer tmp(schema_->size() * num_tuples, 0, emp::PUBLIC);
         memcpy(tuple_data_.data(), tmp.bits.data(), schema_->size() * num_tuples);
 
-	 Utilities::checkMemoryUtilization("completed allocating for secure table ");
+	 Utilities::checkMemoryUtilization("done allocating for secure table ");
 
     }
     else {

@@ -1,6 +1,7 @@
 #include "utilities.h"
 
 #define BOOST_STACKTRACE_USE_ADDR2LINE
+#include <chrono>
 #include <boost/stacktrace.hpp>
 #include <sstream>
 #include <iostream>
@@ -10,6 +11,9 @@
 #define PATH_MAX (4096)
 #endif
 
+
+
+using namespace std::chrono;
 using namespace vaultdb;
 
 std::string Utilities::getCurrentWorkingDirectory() {
@@ -39,16 +43,21 @@ void Utilities::checkMemoryUtilization(const std::string & msg) {
 }
 
 void Utilities::checkMemoryUtilization() {
+
+  // get current time in epoch
+  uint64_t epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    
+
 #if defined(__linux__)
     struct rusage rusage;
 	if (!getrusage(RUSAGE_SELF, &rusage))
-		std::cout << "[Linux]Peak resident set size: " << (size_t)rusage.ru_maxrss <<  " bytes." << std::endl;
+	  std::cout << "[Linux]Peak resident set size: " << (size_t)rusage.ru_maxrss <<  " bytes, at epoch " <<  epoch << " ms" <<  std::endl;
 	else std::cout << "[Linux]Query RSS failed" << std::endl;
 #elif defined(__APPLE__)
     struct mach_task_basic_info info;
     mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
     if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) == KERN_SUCCESS)
-        std::cout << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max << " bytes, current memory size: " << (size_t)info.resident_size  <<  std::endl;
+      std::cout << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max << " bytes, current memory size: " << (size_t)info.resident_size  <<  " at epoch " << epoch << " ms" << std::endl;
     else std::cout << "[Mac]Query RSS failed" << std::endl;
 #endif
 

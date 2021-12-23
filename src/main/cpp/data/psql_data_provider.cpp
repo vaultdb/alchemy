@@ -187,8 +187,11 @@ PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag, PlainTable &dst_tabl
                 std::string dateStr = src.as<std::string>(); // YYYY-MM-DD
                 std::tm timeStruct = {};
                 strptime(dateStr.c_str(), "%Y-%m-%d", &timeStruct);
-
-                int64_t epoch = mktime(&timeStruct); // - 21600; // date time function is 6 hours off from how psql does it, TODO: track this down, probably a timezone problem
+		
+                int64_t epoch = mktime(&timeStruct);
+		#if defined(__APPLE__)
+		 epoch = epoch  - 21600; // date time function is 6 hours off in macos, likely a timezone problem
+		#endif
                 return  PlainField(FieldType::LONG, epoch);
 
             }
