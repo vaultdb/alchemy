@@ -81,6 +81,8 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     size_t dst_bit_alloc = dst_bit_cnt + remainder;
     bool *dst_bools = new bool[dst_bit_alloc];
     assert(dst_bools != nullptr);
+    cout << "Byte-to-bit aligned" << endl;
+
 
     cout << "Byte-to-bit aligned" << endl;
     
@@ -91,7 +93,11 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     Integer alice(dst_bit_cnt, 0L, emp::PUBLIC);
     Integer bob(dst_bit_cnt, 0L, emp::PUBLIC);
     cout << "Setting up as party " << party << " with " << dst_bit_cnt << " bits." <<  endl;
+<<<<<<< Updated upstream
     
+=======
+
+>>>>>>> Stashed changes
     if(party == ALICE) {
         // feed through Alice's data, then wait for Bob's
         ProtocolExecution::prot_exec->feed((block *)alice.bits.data(), ALICE, dst_bools, dst_bit_cnt);
@@ -104,15 +110,24 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     }
 
     Integer shared_data = alice ^ bob;
+<<<<<<< Updated upstream
 
     cout << "Deserializing!" << endl;
+=======
+    cout << "Deserializing!" << endl;
+
+>>>>>>> Stashed changes
 
      std::shared_ptr<SecureTable> shared_table = SecureTable::deserialize(secure_schema,
                                                                               shared_data.bits);
 
 
      delete [] dst_bools;
+<<<<<<< Updated upstream
      cout << "Done reading secret-shares!" << endl;
+=======
+cout << "Done reading secret-shares!" << endl;
+>>>>>>> Stashed changes
      return shared_table;
 
 }
