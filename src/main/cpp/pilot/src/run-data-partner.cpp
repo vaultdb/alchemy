@@ -7,9 +7,9 @@
 #include "enrich_htn_query.h"
 #include <util/utilities.h>
 
-using namespace  std;
+using namespace std;
 using namespace vaultdb;
-using namespace  emp;
+using namespace emp;
 
 #define TESTBED 0
 
@@ -117,8 +117,8 @@ int main(int argc, char **argv) {
     auto startTime = emp::clock_start();
     // local input file is an (unencrypted) csv of local site's data
     // secret share file is a binary, e.g., Chicago Alliance input
-    if(argc < 6) {
-        cout << "usage: ./run-data-partner <alice host> <port> <party> local_input_file secret_share_file" << endl;
+    if(argc < 5) {
+      cout << "usage: ./run-data-partner <alice host> <port> <party> local_input_file < optional secret_share_file>" << endl;
     }
 
 
@@ -126,7 +126,9 @@ int main(int argc, char **argv) {
     int port = atoi(argv[2]);
     int party = atoi(argv[3]);
     string localInputFile(argv[4]);
-    string secretShareFile(argv[5]);
+    string secretShareFile = "";
+    if(argc == 6)
+      secretShareFile = argv[5];
 
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
 

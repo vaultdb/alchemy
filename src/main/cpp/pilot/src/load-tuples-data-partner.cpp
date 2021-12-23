@@ -41,8 +41,8 @@ int main(int argc, char **argv) {
 
     // local input file is an (unencrypted) csv of local site's data
     // secret share file is a binary, e.g., Chicago Alliance input
-    if(argc < 6) {
-        std::cout << "usage: ./load-tuples-data-partner <alice host> <port> <party> local_input_file secret_share_file" << std::endl;
+    if(argc < 5) {
+        std::cout << "usage: ./load-tuples-data-partner <alice host> <port> <party> local_input_file < optional secret_share_file>" << std::endl;
     }
 
     auto startTime = emp::clock_start();
@@ -52,7 +52,9 @@ int main(int argc, char **argv) {
     int port = atoi(argv[2]);
     int party = atoi(argv[3]);
     string localInputFile(argv[4]);
-    string secretShareFile(argv[5]);
+    string secretShareFile = "";
+    if(argc == 6)
+      secretShareFile = argv[5];
 
     QuerySchema schema = SharedSchema::getInputSchema();
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);

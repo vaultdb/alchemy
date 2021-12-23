@@ -141,12 +141,15 @@ shared_ptr<SecureTable> UnionHybridData::unionHybridData(const QuerySchema &sche
 
     std::shared_ptr<SecureTable> local = UnionHybridData::readLocalInput(localInputFile, schema, aNetIO,
                                                                 party);
+    if(!secretSharesFile.empty()) {
+      std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, schema, party);
 
-    std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, schema, party);
+      cout << "Unioning!" << endl;
+      Union<emp::Bit> union_op(local, remote);
+      return union_op.run();
+    }
 
-    cout << "Unioning!" << endl;
-    Union<emp::Bit> union_op(local, remote);
-    return union_op.run();
+    return local;
 
 }
 
