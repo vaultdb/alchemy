@@ -13,16 +13,42 @@ using namespace std;
 
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition &sort) : Operator<B>(child, sort),
-                                                                                                                         aggregate_definitions_(aggregates),
-                                                                                                                         group_by_(groupBys) {
+                                      const vector<ScalarAggregateDefinition> &aggregates,
+				      const SortDefinition &sort,
+				      const size_t & output_card) : Operator<B>(child, sort),
+                                                                    aggregate_definitions_(aggregates),
+								    group_by_(groupBys), output_cardinality_(output_card)
+{
+
+  setup();
+ }
+
+
+template<typename B>
+GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+                                      const vector<ScalarAggregateDefinition> &aggregates, 
+				      const size_t & output_card) : Operator<B>(child, SortDefinition()),
+                                                                    aggregate_definitions_(aggregates),
+                                                                    group_by_(groupBys), output_cardinality_(output_card) {
 
   setup();
  }
 
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(shared_ptr<QueryTable<B>> child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition &sort) : Operator<B>(child, sort),
+                                      const vector<ScalarAggregateDefinition> &aggregates,
+				      const SortDefinition &sort,
+				      const size_t & output_card) : Operator<B>(child, sort),
+                                                                    aggregate_definitions_(aggregates),
+                                                                    group_by_(groupBys), output_cardinality_(output_card) {
+
+      setup();
+ }
+
+template<typename B>
+GroupByAggregate<B>::GroupByAggregate(shared_ptr<QueryTable<B>> child, const vector<int32_t> &groupBys,
+                                      const vector<ScalarAggregateDefinition> &aggregates,
+				      const size_t & output_card) : Operator<B>(child, SortDefinition()),
                                                                                                                          aggregate_definitions_(aggregates),
                                                                                                                          group_by_(groupBys) {
 
@@ -37,9 +63,13 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
 
     B realBin;
-
     QueryTuple<B> current(input_schema), predecessor(input_schema);
 
+    // TODO: truncating output NYI
+    if(output_cardinality_ == 0) { // naive case - go full oblivious
+      output_cardinality_ = input->getTupleCount();
+    }
+    
     // output sort order equal to first group-by-col-count entries in input sort order
     SortDefinition inputSort = input->getSortOrder();
     SortDefinition outputSort = vector<ColumnSort>(inputSort.begin(), inputSort.begin() + group_by_.size());

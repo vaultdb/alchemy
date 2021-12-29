@@ -14,13 +14,20 @@ namespace vaultdb {
         std::vector<int32_t> group_by_;
 
         vector<GroupByAggregateImpl<B> *> aggregators_;
+      // truncated output not yet implemented.  Placeholder member variable below
+         size_t output_cardinality_ = 0; 
 
     public:
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());
+                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const size_t & output_card = 0);
+              GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+			       const vector<ScalarAggregateDefinition> &aggregates, const size_t & output_card = 0);
 
         GroupByAggregate(shared_ptr<QueryTable<B> > child, const vector<int32_t> &groupBys,
-                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());;
+                         const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const size_t & output_card = 0);
+
+        GroupByAggregate(shared_ptr<QueryTable<B> > child, const vector<int32_t> &groupBys,
+                         const vector<ScalarAggregateDefinition> &aggregates, const size_t & output_card = 0);
         ~GroupByAggregate() = default;
         static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs);
 
