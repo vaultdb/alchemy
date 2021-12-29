@@ -48,38 +48,10 @@ ALTER TABLE patient DROP COLUMN site_id_str;
 
 -- look for dupes:
 -- SELECT pat_id, study_year, site_id FROM patient GROUP  BY pat_id, study_year, site_id HAVING COUNT(*) > 1 ORDER BY pat_id;
--- output: (174432, 175232, 208865, 243178, 333856, 588404)
+
 
 -- look at their values for inconsistencies:
 -- enrich_htn_prod=# SELECT * FROM patient WHERE pat_id IN (174432, 175232, 208865, 243178, 333856, 588404) ORDER BY pat_id, study_year;
---  pat_id | study_year | zip_marker | age_days | sex | ethnicity | race | numerator | denominator | denom_excl | site_id 
--- --------+------------+------------+----------+-----+-----------+------+-----------+-------------+------------+---------
--- *174432 |       2018 | 000        |    25442 | F   | N         | 05   | f         | t           | f          |       1
---  174432 |       2018 | 000        |    25442 | F   | N         | 03   | f         | t           | f          |       1
---  174432 |       2019 | 000        |    25807 | F   | N         | 03   | f         | t           | f          |       1
---  174432 |       2020 | 000        |    26173 | F   | N         | 03   | f         | t           | f          |       1
-
---  175232 |       2019 | 000        |    23015 | F   | N         | 02   | f         | t           | f          |       1
--- *175232 |       2019 | 000        |    23015 | F   | N         | OT   | f         | t           | f          |       1
-
---  208865 |       2018 | 000        |    19439 | F   | N         | 05   | f         | t           | f          |       1
---  208865 |       2019 | 000        |    19804 | F   | Y         | 05   | f         | t           | f          |       1
--- *208865 |       2019 | 000        |    19804 | F   | N         | 05   | f         | t           | f          |       1
---  208865 |       2020 | 000        |    20170 | F   | Y         | 05   | f         | t           | f          |       1
-
---  243178 |       2018 | 000        |    24317 | M   | R         | 03   | f         | t           | f          |       1
---  243178 |       2019 | 000        |    24682 | M   | R         | 03   | f         | t           | f          |       1
--- *243178 |       2019 | 000        |    24682 | M   | R         | OT   | f         | t           | f          |       1
---  243178 |       2020 | 000        |    25048 | M   | R         | 03   | f         | t           | f          |       1
--- *243178 |       2020 | 000        |    25048 | M   | R         | OT   | f         | t           | f          |       1
-
---  333856 |       2019 | 000        |    19713 | F   | N         | 03   | f         | t           | f          |       1
--- *333856 |       2019 | 000        |    19713 | F   | N         | OT   | f         | t           | f          |       1
-
---  588404 |       2018 | 000        |     9581 | M   | N         | OT   | t         | f           | f          |       1
--- *588404 |       2019 | 000        |     9946 | M   | N         | OT   | t         | f           | f          |       1
---  588404 |       2019 | 000        |     9946 | M   | N         | 05   | t         | f           | f          |       1
--- (20 rows)
 -- * the ones that are anomalies - delete them
 -- update all of 208865 to have ethnicity the same -- coin flip to Y
 -- update 588404 to have race = 05
