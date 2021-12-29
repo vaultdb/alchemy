@@ -3,7 +3,9 @@
 
 make -j5
 
-bash test/support/setup-csv.sh 
+bash test/support/setup-csv.sh
+bash pilot/test/generate-and-load-test-data.sh 100
+
 ./bin/csv_reader_test 
 ./bin/field_expression_test
 ./bin/filter_test
@@ -14,6 +16,7 @@ bash test/support/setup-csv.sh
 ./bin/scalar_aggregate_test
 ./bin/group_by_aggregate_test
 ./bin/secret_share_generator_test 
+#this test depends on pilot testbed
 ./bin/serialization_test
 ./bin/plan_parser_test
 ./bin/tpch_test

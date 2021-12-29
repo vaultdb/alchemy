@@ -10,7 +10,7 @@ mkdir -p pilot/test/output
 
 cmake .  && \ 
 make -j5 && \
-./bin/generate_enrich_data_three_parties pilot/test/input/ $TUPLE_COUNT
+./bin/generate_enrich_data_three_parties pilot/test/input/ $TUPLE_COUNT && \
 ./bin/secret_share_csv  pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
 
 dropdb  --if-exists enrich_htn_unioned

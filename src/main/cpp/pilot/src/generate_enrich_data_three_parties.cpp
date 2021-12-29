@@ -28,17 +28,18 @@ int GenerateEnrichDataThreeParties::generateRandomInt(int min, int max)  {
 
 
 
+
 PatientTuple GenerateEnrichDataThreeParties::generatePatientTuple(const int & aPatientId)  {
     PatientTuple result;
     result.patid = aPatientId;
 
-    std::stringstream ss;
-    ss << std::setw(3) << std::setfill('0') << generateRandomInt(0, 50);
-    result.zip_marker =  ss.str();
+
+    result.zip_marker =  generateRandomValue(domains::zip_marker_);
+    result.study_year = generateRandomInt(2018, 2021);
     result.age_days = generateRandomInt(18*365, 100*365);
-    result.gender =  generateRandomInt(0, 2) == 0 ? 'M' : 'F';
-    result.ethnicity = generateRandomInt(0, 2);
-    result.race = generateRandomInt(0, 6);
+    result.gender =  generateRandomValue(domains::gender_);  
+    result.ethnicity = generateRandomValue(domains::ethnicity_);
+    result.race = generateRandomValue(domains::race_);
     result.numerator =  (generateRandomInt(0, 4) < 3) ? 0 : 1; // 25% in numerator
     result.denom_excl = generateRandomInt(0,10) < 9 ? 0 : 1; // 1-in-20 are excluded
     return result;
@@ -198,4 +199,11 @@ int main(int argc, char **argv) {
     chiPatientFile.close();
     std::cout << "Finished generating " << tupleCount << " patients per host!" << std::endl;
 
+}
+
+
+std::string GenerateEnrichDataThreeParties::generateRandomValue(const std::vector<std::string>  & domain) {
+  int draw = generateRandomInt(0, domain.size());
+  return domain[draw];
+			       
 }

@@ -58,34 +58,41 @@ TEST_F(SerializationTest, typesTest) {
 }
 
 
-
+// from pilot/src/common/shared_schema
 QuerySchema SerializationTest::getInputSchema() {
-    // CREATE TABLE patient (
-//    patid int,
-//    zip_marker varchar(3),
+//CREATE TABLE patient (
+//    pat_id integer,
+//    study_year integer,
+//    zip_marker character varying(3),
 //    age_days integer,
-//    sex varchar(1),
-//    ethnicity bool,
-//    race int,
-//    numerator int default 0, -- denotes 0 = false, 1 = true
-//    denom_excl int default 0 -- denotes 0 = false, 1 = true
+//    sex character varying(2),
+//    ethnicity character varying(2),
+//    race character varying(2),
+//    numerator boolean DEFAULT false,
+//    denominator boolean DEFAULT true,
+//    denom_excl boolean DEFAULT false,
+//    site_id integer
 //);
-    QuerySchema targetSchema(9);
-    targetSchema.putField(QueryFieldDesc(0, "patid", "patient", FieldType::INT));
-    targetSchema.putField(QueryFieldDesc(1, "zip_marker", "patient", FieldType::STRING, 3));
-    targetSchema.putField(QueryFieldDesc(2, "age_days", "patient", FieldType::INT));
-    targetSchema.putField(QueryFieldDesc(3, "sex", "patient", FieldType::STRING, 1));
-    targetSchema.putField(QueryFieldDesc(4, "ethnicity", "patient", FieldType::BOOL));
-    targetSchema.putField(QueryFieldDesc(5, "race", "patient", FieldType::INT));
-    targetSchema.putField(QueryFieldDesc(6, "numerator", "patient", FieldType::INT));
-    targetSchema.putField(QueryFieldDesc(7, "denom_excl", "patient", FieldType::INT));
-    targetSchema.putField(QueryFieldDesc(8, "site_id", "patient", FieldType::INT));
+
+    QuerySchema targetSchema(11);
+    targetSchema.putField(QueryFieldDesc(0, "pat_id", "patient", FieldType::INT));
+    targetSchema.putField(QueryFieldDesc(1, "study_year", "patient", FieldType::INT));
+    targetSchema.putField(QueryFieldDesc(2, "zip_marker", "patient", FieldType::STRING, 3));    
+    targetSchema.putField(QueryFieldDesc(3, "age_days", "patient", FieldType::INT));
+    targetSchema.putField(QueryFieldDesc(4, "sex", "patient", FieldType::STRING, 2));
+    targetSchema.putField(QueryFieldDesc(5, "ethnicity", "patient", FieldType::STRING, 2));
+    targetSchema.putField(QueryFieldDesc(6, "race", "patient", FieldType::STRING, 2));
+    targetSchema.putField(QueryFieldDesc(7, "numerator", "patient", FieldType::BOOL));
+    targetSchema.putField(QueryFieldDesc(8, "denominator", "patient", FieldType::BOOL));
+    targetSchema.putField(QueryFieldDesc(9, "denom_excl", "patient", FieldType::BOOL));
+    targetSchema.putField(QueryFieldDesc(10, "site_id", "patient", FieldType::INT));
 
     return targetSchema;
+
 }
 
 
-TEST_F(SerializationTest, capricornTest) {
+TEST_F(SerializationTest, capricorn_test) {
 
     QuerySchema targetSchema = getInputSchema();
 
@@ -153,6 +160,7 @@ TEST_F(SerializationTest, xored_serialization_test) {
 TEST_F(SerializationTest, capricorn_deserialization) {
 
     QuerySchema targetSchema = getInputSchema();
+    // JMR return here
     string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.alice";
     string bobFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.bob";
@@ -172,7 +180,7 @@ TEST_F(SerializationTest, capricorn_deserialization) {
         ++readPos;
     }
 
-
+    
     std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
 
 
