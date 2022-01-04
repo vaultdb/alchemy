@@ -142,12 +142,13 @@ void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
     // zip_marker (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
     // TODO: make output size equal to that of the domain of our attrs
     // zip_marker: 000, 600, 601, 602, 606, 607, 608 - 7 values
+    // study_year in (2018, 2019, 2020)
     // age_strata: 7 values
     // sex:  3 values
     // ethnicity: 5 values
     // race: 10 values
     // all others are aggregates, so won't add to our domain
-    // 7 * 7 * 3 * 5 * 10  = 7350 values
+    // 3 * 7 * 7 * 3 * 5 * 10  = 18900 values
     // TODO: benchmark with and without this optimization.
     GroupByAggregate aggregator(sorted, groupByCols, aggregators);
     dataCube = aggregator.run();

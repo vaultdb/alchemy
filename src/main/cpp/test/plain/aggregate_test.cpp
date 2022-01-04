@@ -1,27 +1,20 @@
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
 #include <util/type_utilities.h>
-#include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/filter.h>
 #include <operators/secure_aggregate.h>
 #include <operators/support/aggregate_id.h>
 #include <data/psql_data_provider.h>
+#include "plain/plain_base_test.h"
+
 
 using namespace emp;
 using namespace vaultdb::types;
 
 
 
-class AggregateTest : public ::testing::Test {
+class AggregateTest : public PlainBaseTest {
 
 protected:
-  void SetUp() override{
-      setup_plain_prot(false, "");
-  };
-  void TearDown() override{
-      finalize_plain_prot();
-  };
 
   void runAggregateTest(const AggregateDef & aggregateDef, const std::string & sql, const std::string & expectedResult);
   std::unique_ptr<QueryTable> getExpectedResult(std::string sql, bool dummyTag);

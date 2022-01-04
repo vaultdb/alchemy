@@ -1,5 +1,5 @@
-#ifndef _UTILITIES_H
-#define _UTILITIES_H
+#ifndef VAULTDB_UTILITIES_H
+#define VAULTDB_UTILITIES_H
 
 // designed to be minimalist, standalone procedures
 // circumvents a dependency loop
@@ -23,6 +23,7 @@
 #include <expression/comparator_expression_nodes.h>
 #include <expression/generic_expression.h>
 #include <defs.h>
+#include <util/logger.h>
 
 
 namespace vaultdb {
@@ -30,10 +31,9 @@ namespace vaultdb {
     public:
 
         static std::string getCurrentWorkingDirectory();
+        static void checkMemoryUtilization(const std::string & msg, const logging::trivial::severity_level & severity = logging::trivial::severity_level::debug);
 
-        static void checkMemoryUtilization(const std::string & msg);
-
-        static void checkMemoryUtilization();
+        static void checkMemoryUtilization(const logging::trivial::severity_level & severity = logging::trivial::severity_level::debug);
 
         static std::string getStackTrace();
 

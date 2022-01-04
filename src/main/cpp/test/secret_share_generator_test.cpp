@@ -1,8 +1,8 @@
 #ifndef _SECRET_SHARE_GENERATOR_TEST_
 #define _SECRET_SHARE_GENERATOR_TEST_
 
+#include "plain/plain_base_test.h"
 #include <util/data_utilities.h>
-#include <gtest/gtest.h>
 #include <query_table/query_table.h>
 
 
@@ -13,19 +13,10 @@ using namespace emp;
 using namespace vaultdb;
 
 
-class SecretShareGeneratorTest : public ::testing::Test {
+class SecretShareGeneratorTest : public PlainBaseTest {
 
 
 protected:
-    void SetUp() override{
-        setup_plain_prot(false, "");
-    };
-
-    void TearDown() override{
-        finalize_plain_prot();
-    };
-
-    const std::string dbName = "tpch_unioned";
 
     std::shared_ptr<PlainTable> assembleSecretShares(const QuerySchema & schema, const SecretShares & shares);
 };

@@ -1,26 +1,9 @@
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
-#include <stdexcept>
-#include <emp-tool/emp-tool.h>
-
-
 #include <util/data_utilities.h>
-using namespace emp;
-using namespace vaultdb;
+#include "plain/plain_base_test.h"
 
 
-class FieldExpressionTest : public ::testing::Test {
 
-
-protected:
-    void SetUp() override{
-        emp::setup_plain_prot(false, "");
-    };
-
-    void TearDown() override{
-        emp::finalize_plain_prot();
-    };
-};
+class FieldExpressionTest : public  PlainBaseTest { };
 
 
 

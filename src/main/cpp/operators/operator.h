@@ -33,7 +33,7 @@ namespace  vaultdb {
         TableInput<B> *rhs_ = nullptr;
         SortDefinition sort_definition_; // start out with empty sort
         QuerySchema output_schema_;
-        //double run_time_;  // microseconds
+        double run_time_;  // microseconds
 
 
     public:

@@ -1,30 +1,10 @@
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
-#include <stdexcept>
+#include "plain_base_test.h"
 #include <operators/sql_input.h>
 #include <operators/support/aggregate_id.h>
 #include <operators/scalar_aggregate.h>
 
 
-using namespace emp;
-using namespace vaultdb;
-
-
-
-class ScalarAggregateTest : public ::testing::Test {
-
-
-protected:
-    void SetUp() override{
-        setup_plain_prot(false, "");
-    };
-
-    void TearDown() override{
-        finalize_plain_prot();
-    };
-
-    const std::string dbName = "tpch_unioned";
-};
+class ScalarAggregateTest : public PlainBaseTest { };
 
 
 // should just count to 50

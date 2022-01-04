@@ -32,16 +32,15 @@ int GenerateEnrichDataThreeParties::generateRandomInt(int min, int max)  {
 PatientTuple GenerateEnrichDataThreeParties::generatePatientTuple(const int & aPatientId)  {
     PatientTuple result;
     result.patid = aPatientId;
-
-
-    result.zip_marker =  generateRandomValue(domains::zip_marker_);
     result.study_year = generateRandomInt(2018, 2021);
+    result.zip_marker =  generateRandomValue(domains::zip_marker_);
     result.age_days = generateRandomInt(18*365, 100*365);
     result.gender =  generateRandomValue(domains::gender_);  
     result.ethnicity = generateRandomValue(domains::ethnicity_);
     result.race = generateRandomValue(domains::race_);
     result.numerator =  (generateRandomInt(0, 4) < 3) ? 0 : 1; // 25% in numerator
     result.denom_excl = generateRandomInt(0,10) < 9 ? 0 : 1; // 1-in-20 are excluded
+    result.site_id = generateRandomInt(0, 3);
     return result;
 
 

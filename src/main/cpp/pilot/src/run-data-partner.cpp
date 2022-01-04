@@ -6,6 +6,8 @@
 #include "common/union_hybrid_data.h"
 #include "enrich_htn_query.h"
 #include <util/utilities.h>
+#include <util/logger.h>
+
 
 using namespace std;
 using namespace vaultdb;
@@ -131,12 +133,14 @@ int main(int argc, char **argv) {
       secretShareFile = argv[5];
 
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
-
+    string party_name = (party == 1) ? "alice"  : "bob";
+    Logger::setup("pilot-" + party_name);
+    auto logger = vaultdb_logger::get();
 
     QuerySchema schema = SharedSchema::getInputSchema();
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
-    cout << "Finished netio setup" << endl;
+    BOOST_LOG(logger) << "Finished netio setup" << endl;
 
     start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
     startTime = start_time; // end-to-end one too
@@ -159,12 +163,12 @@ int main(int argc, char **argv) {
 
 
     }
-    
 
 
-	    cout << "***Read input on " << party << " in " <<    (cumulative_runtime + 0.0) *1e6*1e-9 << " ms." << endl;
+
+    BOOST_LOG(logger) << "***Read input on " << party << " in " <<    (cumulative_runtime + 0.0) *1e6*1e-9 << " ms." << endl;
 	        start_time = emp::clock_start();
-    cout << "********* start processing ***************" << endl;
+    BOOST_LOG(logger)  << "********* start processing ***************" << endl;
 
     // create output dir:
     Utilities::mkdir(output_path);
@@ -173,7 +177,7 @@ int main(int argc, char **argv) {
     inputData.reset();
 
     cumulative_runtime += time_from(start_time);
-    cout << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms." << endl;
+    BOOST_LOG(logger) << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms." << endl;
     Utilities::checkMemoryUtilization();
 
 
@@ -181,44 +185,44 @@ int main(int argc, char **argv) {
     shared_ptr<SecureTable> zipRollup = runRollup(0, "zip_marker", party, enrich, output_path);
     auto delta = time_from(start_time);
     cumulative_runtime += delta;
-    
-    cout << "***Done zip_marker rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
-    Utilities::checkMemoryUtilization();
+
+    BOOST_LOG(logger) <<  "***Done zip_marker rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
+    Utilities::checkMemoryUtilization("zip_marker");
 
     start_time = emp::clock_start();
     shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich, output_path);
     delta = time_from(start_time);
     cumulative_runtime += delta;
 
-    Utilities::checkMemoryUtilization("rollup 2");
-    cout << "***Done age rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
+    Utilities::checkMemoryUtilization("age_strata");
+    BOOST_LOG(logger) <<  "***Done age rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
     start_time = emp::clock_start();
     shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich, output_path);
     delta = time_from(start_time);
     cumulative_runtime += delta;
     
-    Utilities::checkMemoryUtilization("rollup 3");
-    cout << "***Done sex rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
+    Utilities::checkMemoryUtilization("gender");
+    BOOST_LOG(logger) <<  "***Done sex rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
     start_time = emp::clock_start();
     shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich, output_path);
     delta = time_from(start_time);
     cumulative_runtime += delta;
-    Utilities::checkMemoryUtilization("rollup 4");
-    cout << "***Done ethnicity rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
+    Utilities::checkMemoryUtilization("ethnicity");
+    BOOST_LOG(logger) <<  "***Done ethnicity rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
     start_time = emp::clock_start();
     shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich, output_path);
     delta = time_from(start_time);
     cumulative_runtime += delta;
-    Utilities::checkMemoryUtilization("rollup 5");
+    Utilities::checkMemoryUtilization("race");
 
-    cout << "***Done race rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
+    BOOST_LOG(logger) << "***Done race rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
      emp::finalize_semi_honest();
 
      delete netio;
     double runtime = time_from(startTime);
-     cout << "Test completed on party " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
+    BOOST_LOG(logger) <<  "Test completed on party " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
 }

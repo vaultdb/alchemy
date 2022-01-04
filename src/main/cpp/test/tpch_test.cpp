@@ -1,31 +1,20 @@
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
-#include <stdexcept>
+#include "plain/plain_base_test.h"
 #include <operators/sql_input.h>
 #include <data/csv_reader.h>
 #include <parser/plan_parser.h>
 #include "support/tpch_queries.h"
 
 
-
-
-using namespace emp;
-using namespace vaultdb;
-
 // DIAGNOSE = 1 --> all tests produce non-empty output
 #define DIAGNOSE 0
 
-class TpcHTest : public ::testing::Test {
+class TpcHTest : public PlainBaseTest {
 
 
 protected:
-    void SetUp() override{
-        setup_plain_prot(false, "");
 
-    };
-    void TearDown() override{
-        finalize_plain_prot();
-    };
+
+
     // depends on truncate-tpch-set.sql
     // different DBs for different tests to bump up the output size - don't want empty output!
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);

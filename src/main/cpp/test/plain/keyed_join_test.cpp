@@ -1,21 +1,15 @@
-#include <gtest/gtest.h>
-#include <stdexcept>
+#include "plain_base_test.h"
 #include <operators/sql_input.h>
 #include <operators/keyed_join.h>
 #include <expression/comparator_expression_nodes.h>
 
-using namespace emp;
-using namespace vaultdb;
-
-
-class KeyedJoinTest : public ::testing::Test {
+class KeyedJoinTest :  public PlainBaseTest  {
 
 // depends on truncate-tpch-set.sql
 protected:
-    void SetUp() override { setup_plain_prot(false, ""); };
-    void TearDown() override{  finalize_plain_prot(); };
 
-    const std::string dbName = "tpch_unioned_25";
+
+    const std::string localDbName = "tpch_unioned_25";
 
     const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
                                     "FROM customer  "
@@ -46,10 +40,10 @@ TEST_F(KeyedJoinTest, test_tpch_q3_customer_orders) {
                                     "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(localDbName, expectedResultSql, true);
 
-    SqlInput customerInput(dbName, customerSql, true);
-    SqlInput ordersInput(dbName, ordersSql, true);
+    SqlInput customerInput(localDbName, customerSql, true);
+    SqlInput ordersInput(localDbName, ordersSql, true);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -75,10 +69,10 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders) {
                                                                                                              "WHERE matched";
 
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(localDbName, expectedResultSql, true);
 
-    SqlInput lineitemInput(dbName, lineitemSql, true);
-    SqlInput ordersInput(dbName, ordersSql, true);
+    SqlInput lineitemInput(localDbName, lineitemSql, true);
+    SqlInput ordersInput(localDbName, ordersSql, true);
 
     // output schema: lineitem, orders
     // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -113,12 +107,12 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                           "WHERE matched";
 
 
-    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(localDbName, expectedResultSql, true);
 
 
-    SqlInput customerInput(dbName, customerSql, true);
-    SqlInput ordersInput(dbName, ordersSql, true);
-    SqlInput lineitemInput(dbName, lineitemSql, true);
+    SqlInput customerInput(localDbName, customerSql, true);
+    SqlInput ordersInput(localDbName, ordersSql, true);
+    SqlInput lineitemInput(localDbName, lineitemSql, true);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -154,10 +148,10 @@ TEST_F(KeyedJoinTest, test_tpch_q3_customer_orders_reversed) {
                                                                                                              "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(localDbName, expectedResultSql, true);
 
-    SqlInput customerInput(dbName, customerSql, true);
-    SqlInput ordersInput(dbName, ordersSql, true);
+    SqlInput customerInput(localDbName, customerSql, true);
+    SqlInput ordersInput(localDbName, ordersSql, true);
 
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -183,10 +177,10 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_reversed) {
                                                                                                              "WHERE matched";
 
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(localDbName, expectedResultSql, true);
 
-    SqlInput lineitemInput(dbName, lineitemSql, true);
-    SqlInput ordersInput(dbName, ordersSql, true);
+    SqlInput lineitemInput(localDbName, lineitemSql, true);
+    SqlInput ordersInput(localDbName, ordersSql, true);
 
     // output schema: lineitem, orders
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue
@@ -219,12 +213,12 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
                                                                                                                                                  "WHERE matched";
 
 
-    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(localDbName, expectedResultSql, true);
 
 
-    SqlInput customerInput(dbName, customerSql, true);
-    SqlInput ordersInput(dbName, ordersSql, true);
-    SqlInput lineitemInput(dbName, lineitemSql, true);
+    SqlInput customerInput(localDbName, customerSql, true);
+    SqlInput ordersInput(localDbName, ordersSql, true);
+    SqlInput lineitemInput(localDbName, lineitemSql, true);
 
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority

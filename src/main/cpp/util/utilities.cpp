@@ -37,12 +37,13 @@ std::string Utilities::getCurrentWorkingDirectory() {
 
 // From Chenkai Li's EMP memory instrumentation
 
-void Utilities::checkMemoryUtilization(const std::string & msg) {
-    std::cout << "Checking memory utilization after " << msg << std::endl;
+void Utilities::checkMemoryUtilization(const std::string & msg, const logging::trivial::severity_level & severity) {
+    Logger::write("Checking memory utilization after " + msg, severity);
     Utilities::checkMemoryUtilization();
 }
 
-void Utilities::checkMemoryUtilization() {
+void Utilities::checkMemoryUtilization(const logging::trivial::severity_level & severity) {
+    auto logger = vaultdb_logger::get();
 
   // get current time in epoch
   uint64_t epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -51,14 +52,15 @@ void Utilities::checkMemoryUtilization() {
 #if defined(__linux__)
     struct rusage rusage;
 	if (!getrusage(RUSAGE_SELF, &rusage))
-	  std::cout << "[Linux]Peak resident set size: " << (size_t)rusage.ru_maxrss <<  " bytes, at epoch " <<  epoch << " ms" <<  std::endl;
-	else std::cout << "[Linux]Query RSS failed" << std::endl;
+	  BOOST_LOG_SEV(logger, severity) << "[Linux]Peak resident set size: " << (size_t)rusage.ru_maxrss <<  " bytes, at epoch " <<  epoch << " ms" <<  std::endl;
+	else
+        Logger::write("[Linux]Query RSS failed", severity);
 #elif defined(__APPLE__)
     struct mach_task_basic_info info;
     mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
     if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) == KERN_SUCCESS)
-      std::cout << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max << " bytes, current memory size: " << (size_t)info.resident_size  <<  " at epoch " << epoch << " ms" << std::endl;
-    else std::cout << "[Mac]Query RSS failed" << std::endl;
+        BOOST_LOG_SEV(logger, severity) << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max << " bytes, current memory size: " << (size_t)info.resident_size  <<  " at epoch " << epoch << " ms" << std::endl;
+    else Logger::write("[Mac]Query RSS failed", severity);
 #endif
 
 }

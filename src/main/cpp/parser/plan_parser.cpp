@@ -19,6 +19,7 @@
 #include <operators/filter.h>
 #include <operators/project.h>
 #include "expression_parser.h"
+#include "util/logger.h"
 
 using namespace vaultdb;
 using boost::property_tree::ptree;
@@ -347,7 +348,8 @@ void PlanParser<B>::print(const boost::property_tree::ptree &pt, const std::stri
 
     ptree::const_iterator end = pt.end();
     for (ptree::const_iterator it = pt.begin(); it != end; ++it) {
-        std::cout << prefix <<  it->first << ": " << it->second.get_value<std::string>() << std::endl;
+        auto logger = vaultdb_logger::get();
+        BOOST_LOG_SEV(logger, logging::trivial::severity_level::info) << prefix <<  it->first << ": " << it->second.get_value<std::string>() << std::endl;
         print(it->second, prefix + "   ");
     }
 }

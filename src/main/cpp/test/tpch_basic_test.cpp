@@ -1,6 +1,4 @@
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
-#include <stdexcept>
+#include "plain/plain_base_test.h"
 #include <operators/sql_input.h>
 #include <group_by_aggregate.h>
 #include <keyed_join.h>
@@ -11,11 +9,8 @@
 #include <algorithm>
 #include <boost/algorithm/string/replace.hpp>
 
-using namespace emp;
-using namespace vaultdb;
 
-
-class TpcHBasicTest : public ::testing::Test {
+class TpcHBasicTest : public PlainBaseTest {
 
 
 protected:
@@ -30,9 +25,7 @@ protected:
 
     };
 
-    void TearDown() override{
-        finalize_plain_prot();
-    };
+
 
     string db_name = "tpch_unioned";
 

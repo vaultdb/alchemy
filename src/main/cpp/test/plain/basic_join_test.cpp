@@ -1,21 +1,14 @@
-#include <gtest/gtest.h>
-#include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/basic_join.h>
 #include <util/utilities.h>
-
-using namespace emp;
-using namespace vaultdb;
+#include "plain_base_test.h"
 
 
-class BasicJoinTest : public ::testing::Test {
+
+class BasicJoinTest : public PlainBaseTest {
 
 
 protected:
-    void SetUp() override { setup_plain_prot(false, ""); };
-    void TearDown() override{  finalize_plain_prot(); };
-
-    const std::string dbName = "tpch_unioned";
 
     // SELECT c_custkey,  (c_mktsegment != 'HOUSEHOLD') cdummy
     // FROM customer

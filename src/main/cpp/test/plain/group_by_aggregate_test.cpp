@@ -1,25 +1,14 @@
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
-#include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/filter.h>
 #include <operators/support/aggregate_id.h>
 #include <operators/group_by_aggregate.h>
+#include "plain_base_test.h"
 
 
-using namespace emp;
-using namespace vaultdb;
-
-
-class GroupByAggregateTest : public ::testing::Test {
+class GroupByAggregateTest :  public PlainBaseTest  {
 
 
 protected:
-    void SetUp() override { setup_plain_prot(false, ""); };
-    void TearDown() override{  finalize_plain_prot(); };
-
-    const std::string dbName = "tpch_unioned";
-
     void runTest(const std::string & expectedOutputQuery, const std::vector<ScalarAggregateDefinition> & aggregators) const;
     void runDummiesTest(const std::string & expectedOutputQuery, const std::vector<ScalarAggregateDefinition> & aggregators) const;
 };

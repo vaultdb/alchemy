@@ -1,31 +1,15 @@
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
+#include "plain/plain_base_test.h"
 #include <util/type_utilities.h>
-#include <stdexcept>
 #include <operators/sql_input.h>
 #include <data/csv_reader.h>
 
-using namespace emp;
-using namespace vaultdb;
 using namespace std;
 
 
-class SerializationTest : public ::testing::Test {
+class SerializationTest : public PlainBaseTest {
 
 
 protected:
-    void SetUp() override{
-        setup_plain_prot(false, "");
-    };
-
-    void TearDown() override{
-        finalize_plain_prot();
-    };
-
-
-
-    const std::string dbName = "tpch_unioned";
-
 
     QuerySchema getInputSchema();
 };

@@ -4,28 +4,11 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <data/csv_reader.h>
+#include "plain/plain_base_test.h"
 
 
-using namespace emp;
-using namespace vaultdb;
-
-
-class CsvReaderTest : public ::testing::Test {
-
-
+class CsvReaderTest : public PlainBaseTest  {
 protected:
-    void SetUp() override{
-        setup_plain_prot(false, "");
-        currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
-        //system("./test/support/setup-csv.sh ");
-    };
-    void TearDown() override{
-        finalize_plain_prot();
-    };
-
-
-    std::string currentWorkingDirectory;
-
     QueryFieldDesc convertDateField(const QueryFieldDesc & srcField) {
         return QueryFieldDesc(srcField, FieldType::DATE);
     }

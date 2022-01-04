@@ -1,25 +1,16 @@
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
-#include <stdexcept>
+#include "plain_base_test.h"
 #include <operators/sql_input.h>
 #include <operators/sort.h>
 #include <operators/project.h>
 
-using namespace emp;
-using namespace vaultdb;
 
-
-class SortTest : public ::testing::Test {
+class SortTest : public PlainBaseTest {
 
 
 protected:
-    void SetUp() override { setup_plain_prot(false, ""); };
-    void TearDown() override{  finalize_plain_prot(); };
 
     Sort<bool> getSort(const string & srcSql, const SortDefinition & sortDefinition);
-
-    const string dbName = "tpch_unioned";
-
+    shared_ptr<PlainTable> sorted_;
 };
 
 
@@ -59,12 +50,13 @@ TEST_F(SortTest, tpchQ1Sort) {
     expected->setSortOrder(sortDefinition);
 
     Sort<bool> sort = getSort(sql, sortDefinition);
-    shared_ptr<PlainTable > observed = sort.run();
+    shared_ptr<PlainTable> observed = sorted_;
 
     // no projection needed here
     ASSERT_EQ(*expected, *observed);
 
 }
+
 
 TEST_F(SortTest, tpchQ3Sort) {
     // casting revenue to float for these trials
@@ -87,7 +79,7 @@ TEST_F(SortTest, tpchQ3Sort) {
     builder.addMapping(3, 1);
 
     // project it down to $1, $3
-    Project project(&sort, builder.getExprs());
+    Project project(sorted_, builder.getExprs());
 
     shared_ptr<PlainTable> observed = project.run();
 
@@ -119,7 +111,7 @@ TEST_F(SortTest, tpchQ5Sort) {
     ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
     builder.addMapping(1, 0);
 
-    Project project(&sort, builder.getExprs());
+    Project project(sorted_, builder.getExprs());
 
 
     // update sort def to account for projection -- also testing sort order carryover - the metadata in PlainTable  describing sorted order of its contents
@@ -152,7 +144,7 @@ TEST_F(SortTest, tpchQ8Sort) {
     ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
     builder.addMapping(0, 0);
 
-    Project project(&sort, builder.getExprs());
+    Project project(sorted_, builder.getExprs());
     shared_ptr<PlainTable > observed = project.run();
 
     ASSERT_EQ(*expected, *observed);
@@ -184,7 +176,7 @@ TEST_F(SortTest, tpchQ9Sort) {
     builder.addMapping(2, 0);
     builder.addMapping(0, 1);
 
-    Project project(&sort, builder.getExprs());
+    Project project(sorted_, builder.getExprs());
 
     shared_ptr<PlainTable > observed = project.run();
 
@@ -224,7 +216,7 @@ TEST_F(SortTest, tpchQ18Sort) {
     builder.addMapping(2, 0);
     builder.addMapping(1, 1);
 
-    Project project(&sort, builder.getExprs());
+    Project project(sorted_, builder.getExprs());
 
     shared_ptr<PlainTable > observed = project.run();
 
@@ -287,7 +279,7 @@ Sort<bool> SortTest::getSort(const string &srcSql, const SortDefinition &sortDef
     Sort<bool> sort(&input, sortDefinition); // heap allocate it
 
     // cache sort result
-    sort.run();
+    sorted_ = sort.run();
     return sort;
 }
 

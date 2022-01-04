@@ -1,6 +1,4 @@
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
-#include <stdexcept>
+#include "plain/plain_base_test.h"
 #include <operators/sql_input.h>
 #include <data/csv_reader.h>
 #include <parser/plan_parser.h>
@@ -10,21 +8,11 @@
 
 
 
-using namespace emp;
-using namespace vaultdb;
-
-
-class PlanParserTest : public ::testing::Test {
+class PlanParserTest : public PlainBaseTest {
 
 
 protected:
-    void SetUp() override{
-        setup_plain_prot(false, "");
 
-    };
-    void TearDown() override{
-        finalize_plain_prot();
-    };
     // depends on truncate-tpch.sql
     const string db_name_ = "tpch_unioned"; // plaintext case first
     // limit input to first N tuples per SQL statement

@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <query_table/query_table.h>
+#include <util/logger.h>
 
 DECLARE_int32(party);
 DECLARE_int32(port);

@@ -73,14 +73,14 @@ struct PatientTuple {
 
     string toString() const {
         return std::to_string(patid) + ","
-      	       + std::to_string(study_year) + ","
-	       + zip_marker + ","
+               + std::to_string(study_year) + ","
+               + zip_marker + ","
                + std::to_string(age_days) + ","
                + gender + ","
                + ethnicity + ","
                + race + ","
                + std::to_string(numerator) + ","
-	       + std::to_string(!denom_excl) + ","
+               + std::to_string(!denom_excl) + "," // denominator
                + std::to_string(denom_excl) + ","
                + std::to_string(site_id);
     }

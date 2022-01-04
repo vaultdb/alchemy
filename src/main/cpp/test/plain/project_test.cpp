@@ -1,34 +1,15 @@
-#include <gflags/gflags.h>
-#include <gtest/gtest.h>
+#include "plain_base_test.h"
 #include <util/type_utilities.h>
-#include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/project.h>
 #include <expression/function_expression.h>
-
 #include <expression/generic_expression.h>
 #include <expression/expression_node.h>
 #include <expression/math_expression_nodes.h>
 
 
 
-using namespace emp;
-using namespace vaultdb;
-
-
-class ProjectionTest : public ::testing::Test {
-
-
-protected:
-    void SetUp() override{
-        setup_plain_prot(false, "");
-    };
-
-    void TearDown() override{
-        finalize_plain_prot();
-    };
-
-};
+class ProjectionTest : public PlainBaseTest { };
 
 
 

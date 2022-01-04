@@ -3,11 +3,13 @@
 #include <util/data_utilities.h>
 #include <util/type_utilities.h>
 #include <util/field_utilities.h>
+#include <util/logger.h>
 #include "query_table.h"
 #include "plain_tuple.h"
 #include "secure_tuple.h"
 
 #include <operators/sort.h>
+
 
 using namespace vaultdb;
 
@@ -49,14 +51,14 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
 
       
     if(std::is_same_v<emp::Bit, B>) {
-      //cout << "Allocating " << schema_->size() * num_tuples << " emp bits! for " <<  num_tuples << " tuples at " << schema_->size() << " bits per tuple." <<  endl;
+        auto logger = vaultdb_logger::get();
+        BOOST_LOG_SEV(logger, logging::trivial::severity_level::debug) << "Allocating " << schema_->size() * num_tuples << " emp bits! for " <<  num_tuples << " tuples at " << schema_->size() << " bits per tuple." <<  endl;
 
       
       emp::Integer tmp(schema_->size() * num_tuples, 0, emp::PUBLIC);
-        memcpy(tuple_data_.data(), tmp.bits.data(), schema_->size() * num_tuples);
+      memcpy(tuple_data_.data(), tmp.bits.data(), schema_->size() * num_tuples);
 
-	//Utilities::checkMemoryUtilization("done allocating for secure table ");
-
+	 Utilities::checkMemoryUtilization("allocating secure table ");
     }
     else {
         std::memset(tuple_data_.data(), 0, tuple_data_.size());
@@ -181,20 +183,22 @@ template <typename B>
 bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 
     assert(!isEncrypted()); // reveal this for tables in the clear
+    auto logger = vaultdb_logger::get();
 
     if(*getSchema() != *other.getSchema()) {
-        std::cout << "Failed to match on schema: \n" << *getSchema() << "\n  == \n" << *other.getSchema() << std::endl;
+
+        BOOST_LOG_SEV(logger,  logging::trivial::severity_level::error) << "Failed to match on schema: \n" << *getSchema() << "\n  == \n" << *other.getSchema() << std::endl;
         return false;
     }
 
     if(this->getSortOrder() != other.getSortOrder()) {
-        std::cout << "Failed to match on sort order expected="  << DataUtilities::printSortDefinition(this->getSortOrder())
+        BOOST_LOG_SEV(logger,  logging::trivial::severity_level::error)  << "Failed to match on sort order expected="  << DataUtilities::printSortDefinition(this->getSortOrder())
                   << "observed=" << DataUtilities::printSortDefinition(other.getSortOrder()) <<  std::endl;
         return false;
     }
 
     if(this->getTupleCount() != other.getTupleCount()) {
-        std::cout << "Failed to match on tuple count " << this->getTupleCount() << " vs " << other.getTupleCount() << std::endl;
+        BOOST_LOG_SEV(logger,  logging::trivial::severity_level::error)  << "Failed to match on tuple count " << this->getTupleCount() << " vs " << other.getTupleCount() << std::endl;
         return false;
     }
 
@@ -207,8 +211,8 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
         PlainTuple other_tuple(q, (int8_t *) (other.tuple_data_.data() + tuple_offset));
 
         if(this_tuple != other_tuple) {
-            std::cout << "Comparing on idx " << i << " with " << this_tuple.toString(true) << "\n          !=            " << other_tuple.toString(true) << endl;
-            std::cout << "    Failed to match!" << std::endl;
+            BOOST_LOG_SEV(logger,  logging::trivial::severity_level::error)  << "Comparing on idx " << i << " with " << this_tuple.toString(true) << "\n          !=            " << other_tuple.toString(true) << endl;
+            BOOST_LOG_SEV(logger,  logging::trivial::severity_level::error)  << "    Failed to match!" << std::endl;
            return false;
         }
 

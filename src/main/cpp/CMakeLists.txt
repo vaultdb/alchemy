@@ -42,7 +42,7 @@ find_library(DL dl)
 
 #depends on pqxx v6.2.5
 find_library(PQXX_LIBRARY pqxx)
-find_package(Boost REQUIRED COMPONENTS date_time system)
+find_package(Boost REQUIRED COMPONENTS date_time system log log_setup)
 
 find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
@@ -64,6 +64,7 @@ set(sources
 		util/type_utilities.cpp
 		util/data_utilities.cpp
 		util/field_utilities.cpp
+		util/logger.cpp
 
 		query_table/field/field_type.h
 		query_table/field/field.cpp
