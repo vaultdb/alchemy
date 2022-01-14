@@ -33,8 +33,7 @@ PatientTuple GenerateEnrichDataThreeParties::generatePatientTuple(const int & aP
     PatientTuple result;
     result.patid = aPatientId;
     result.study_year = generateRandomInt(2018, 2021);
-    result.zip_marker =  generateRandomValue(domains::zip_marker_);
-    result.age_days = generateRandomInt(18*365, 100*365);
+    result.age_strata = generateRandomInt(1, 8);
     result.gender =  generateRandomValue(domains::gender_);  
     result.ethnicity = generateRandomValue(domains::ethnicity_);
     result.race = generateRandomValue(domains::race_);

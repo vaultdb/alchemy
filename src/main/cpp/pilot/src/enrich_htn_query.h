@@ -37,15 +37,15 @@ namespace  vaultdb {
 
 
 // Project #1
-// CASE WHEN age_days <= 28*365 THEN 0
-//                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1
-//              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2
-//              WHEN age_days > 50*365 AND age_days <= 61*365 THEN 3
-//              WHEN age_days > 61*365 AND age_days <= 72*365 THEN 4
-//                WHEN age_days > 72*365  AND age_days <= 83*365 THEN 5
-//                ELSE 6 END age_strata
+// CASE WHEN age_days <= 28*365 THEN 1
+//                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 2
+//              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 3
+//              WHEN age_days > 50*365 AND age_days <= 61*365 THEN 4
+//              WHEN age_days > 61*365 AND age_days <= 72*365 THEN 5
+//                WHEN age_days > 72*365  AND age_days <= 83*365 THEN 6
+//                ELSE 7 END age_strata
 
-        template<typename B>
+/*        template<typename B>
         static inline Field<B> projectAgeStrata(const QueryTuple<B> & aTuple) {
 
             Field<B> ageDays = aTuple[2]; // age_days
@@ -61,7 +61,8 @@ namespace  vaultdb {
             return ageStrata;
         }
 
-
+*/
+      
     // Project #2
     //     CASE WHEN count(*) > 1 THEN 1 else 0 END AS multisite
         template<typename B>

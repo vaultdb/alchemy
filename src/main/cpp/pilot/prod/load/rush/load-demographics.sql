@@ -1,4 +1,4 @@
-\echo 'Loading¨¨uu demographics'
+\echo 'Loading demographics'
 \set echo all
 -- STUDY_ID,AGE_2018,SEX,ETHINICITY,RACE,ZIPPREFIX,NUMERATOR
 

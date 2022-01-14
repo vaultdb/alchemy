@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
 	cout << "Revealed loaded data!"  << endl;
         string unionedDbName = "enrich_htn_prod";
-        string query = "SELECT * FROM patient ORDER BY pat_id, site_id, study_year";
+        string query = "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, study_year";
         SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(10, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)};
 
 	

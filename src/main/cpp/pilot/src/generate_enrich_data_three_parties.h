@@ -16,13 +16,12 @@ using namespace std;
 
 // CREATE TABLE patient (
 //    patid int,
-//    zip_marker varchar(3),
-//    age_days integer,
+//    age_strata char(1), 
 //    sex varchar(1),
-//    ethnicity bool,
+//    ethnicity char(1),
 //    race int,
-//    numerator int default 0, -- denotes 0 = false, 1 = true
-//    denom_excl int default 0 -- denotes 0 = false, 1 = true
+//    numerator bool default 0, -- denotes 0 = false, 1 = true
+//    denom_excl bool default 0 -- denotes 0 = false, 1 = true
 //    site_id int // alice = 1, bob = 2, chi = 3
 //);
 //
@@ -53,36 +52,30 @@ using namespace std;
 
 
 namespace domains {
-  const std::vector<std::string> gender_  = {"M", "F", "UN"};
-  const std::vector<std::string> ethnicity_ = {"Y", "N", "OT", "NI", "R"};
-  const std::vector<std::string> race_ = {"01", "02", "03", "04", "05", "06", "07", "NI", "OT", "UN"};
-  const std::vector<std::string> zip_marker_ = {"000", "600", "601", "602", "606", "607", "608"};
+  const std::vector<std::string> gender_  = {"M", "F", "U"};
+  const std::vector<std::string> ethnicity_ = {"Y", "N", "U"};
+  const std::vector<std::string> race_ = {"1", "2", "3", "4", "5", "6", "7"};
 }
 
 struct PatientTuple {
     int patid;
     int study_year;
-    string zip_marker; // varchar(3)
-    int age_days;
-  string gender; // varchar(2)
-  string ethnicity; //varchar(2)
-  string  race; // varchar(2)
+    int age_strata;
+  string gender; // varchar(1)
+  string ethnicity; //varchar(1)
+  string  race; // varchar(1)
    bool numerator;  
    bool denom_excl; 
    int site_id;
 
     string toString() const {
         return std::to_string(patid) + ","
-               + std::to_string(study_year) + ","
-               + zip_marker + ","
-               + std::to_string(age_days) + ","
+               + std::to_string(age_strata) + ","
                + gender + ","
                + ethnicity + ","
                + race + ","
                + std::to_string(numerator) + ","
-               + std::to_string(!denom_excl) + "," // denominator
-               + std::to_string(denom_excl) + ","
-               + std::to_string(site_id);
+	  + std::to_string(denom_excl);
     }
 };
 

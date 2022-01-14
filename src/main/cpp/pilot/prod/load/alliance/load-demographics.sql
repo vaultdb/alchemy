@@ -144,7 +144,6 @@ DROP TABLE IF EXISTS demographics;
 ALTER TABLE tmp RENAME TO demographics;
 
 
-
 -- what are the remaining outliers?
 -- SELECT d.*
 -- FROM demographics d JOIN (SELECT pat_id FROM demographics GROUP BY pat_id HAVING COUNT(*) > 1) t
