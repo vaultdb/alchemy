@@ -15,7 +15,7 @@ QuerySchema SharedSchema::getInputSchema() {
 
     QuerySchema targetSchema(11);
     targetSchema.putField(QueryFieldDesc(0, "pat_id", "patient", FieldType::INT));
-    targetSchema.putField(QueryFieldDesc(3, "age_days", "patient", FieldType::INT));
+    targetSchema.putField(QueryFieldDesc(3, "age_strata", "patient", FieldType::STRING, 1));
     targetSchema.putField(QueryFieldDesc(4, "sex", "patient", FieldType::STRING, 1));
     targetSchema.putField(QueryFieldDesc(5, "ethnicity", "patient", FieldType::STRING, 1));
     targetSchema.putField(QueryFieldDesc(6, "race", "patient", FieldType::STRING, 1));
