@@ -21,7 +21,7 @@ CREATE TABLE population_labels (
       numerator bool,
       denom_excl bool);
 
-\copy population_labels FROM 'pilot/input/nm/VaultDB_POPULATION_LABELS_2018.csv' CSV HEADER
+\copy population_labels(study_id, site_id, numerator, denom_excl)  FROM 'pilot/input/nm/VaultDB_POPULATION_LABELS_2018.csv' CSV HEADER
 ALTER TABLE population_labels ADD COLUMN study_year INT;
 UPDATE population_labels SET study_year=2018;
 

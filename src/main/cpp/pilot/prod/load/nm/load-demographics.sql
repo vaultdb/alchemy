@@ -78,9 +78,22 @@ WITH conflicting_race AS (
 UPDATE demographics SET race='07'
   WHERE pat_id IN (SELECT * FROM conflicting_race);
 
+ALTER TABLE demographics ALTER COLUMN race TYPE char(1) USING substring(race, 2, 1);
+ALTER TABLE demographics ADD COLUMN age_strata char(1);
+
+UPDATE demographics SET age_strata = CASE WHEN age_days <= 28*365 THEN '1'
+                WHEN age_days > 28*365 AND age_days <= 39*365 THEN '2'
+              WHEN age_days > 39*365  AND age_days <= 50*365 THEN '3'
+              WHEN age_days > 50*365 AND age_days <= 61*365 THEN '4'
+              WHEN age_days > 61*365 AND age_days <= 72*365 THEN '5'
+                WHEN age_days > 72*365  AND age_days <= 83*365 THEN '6'
+                ELSE '7' END;
+
+ALTER TABLE demographics DROP COLUMN age_days;
 
 
-
+UPDATE demographics SET sex='U' WHERE sex='UN';
+ALTER TABLE demographics ALTER COLUMN sex TYPE char(1);
 
 -- expected # of rows: 
 -- From: SELECT COUNT(*) FROM (SELECT DISTINCT pat_id, study_year, site_id FROM demographics) t;
@@ -88,12 +101,12 @@ UPDATE demographics SET race='07'
 -- SELECT COUNT(*) FROM tmp;
 
 DROP TABLE IF EXISTS tmp;
-SELECT DISTINCT d1.pat_id, d1.study_year, d1.site_id, d1.age_days, d1.sex, d1.ethnicity, d1.race,  COALESCE(d1.numerator, d2.numerator) numerator
+SELECT DISTINCT d1.pat_id, d1.study_year, d1.site_id, d1.age_strata, d1.sex, d1.ethnicity, d1.race,  COALESCE(d1.numerator, d2.numerator) numerator
 INTO tmp
 FROM demographics d1 LEFT JOIN demographics d2 ON d1.pat_id = d2.pat_id
                                                       AND d1.study_year = d2.study_year
                                                       AND d1.site_id = d2.site_id
-                                                      AND d1.age_days = d2.age_days
+                                                      AND d1.age_strata = d2.age_strata
                                                       AND d1.sex = d2.sex
                                                       AND d1.ethnicity = d2.ethnicity
                                                       AND d1.race = d2.race

@@ -88,6 +88,9 @@ UPDATE demographics d1 SET race=d2.race FROM demographics d2  WHERE d1.pat_id = 
         AND (d2.race IN ('01', '02', '03', '04', '05', '06')); -- matching one is defined above
 
 
+ALTER TABLE demographics ALTER COLUMN race TYPE char(1) USING substring(race, 2, 1);
+
+
 
 
 
@@ -132,6 +135,8 @@ UPDATE demographics SET race='07'
 UPDATE demographics SET race='07' WHERE race = 'UN';
 -- has two readings off by 1 year for this one
 UPDATE demographics SET age_years_2015=52 WHERE pat_id=195825;
+
+ALTER TABLE patient ALTER COLUMN race TYPE char(1) USING substring(race, 1, 1);
 
 -- drop duplicate entries
 DROP TABLE IF EXISTS tmp;

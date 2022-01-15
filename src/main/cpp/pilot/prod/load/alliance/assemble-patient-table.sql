@@ -14,7 +14,8 @@ FROM demographics d JOIN population_labels p  ON d.pat_id = p.pat_id AND d.site_
 -- populate age_days
 UPDATE patient
 SET age_days = (age_years_2015 + (study_year - 2015)) * 365;
-ALTER TABLE patient ALTER COLUMN race TYPE char(1);
+
+
 
 -- just record age strata - range: 1..7 
 ALTER TABLE patient ALTER COLUMN age_strata TYPE char(1);
@@ -28,7 +29,7 @@ UPDATE patient SET age_strata = CASE WHEN age_days <= 28*365 THEN '1'
                 ELSE '7' END;
 
 
-ALTER TABLE patient DROP COLUN age_days;
+ALTER TABLE patient DROP COLUMN age_days;
 ALTER TABLE patient DROP COLUMN age_years_2015;
 
 -- look for dupes:
