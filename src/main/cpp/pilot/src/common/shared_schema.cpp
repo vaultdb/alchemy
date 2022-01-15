@@ -6,21 +6,21 @@ QuerySchema SharedSchema::getInputSchema() {
 //CREATE TABLE patient (
 //    pat_id integer,
 //    age_strata char(1),
-//    sex character varying(1),
-//    ethnicity character varying(1),
-//    race character varying(1),
+//    sex char(1),
+//    ethnicity char(1),
+//    race char(1),
 //    numerator boolean DEFAULT false,
 //    denom_excl boolean DEFAULT false
 //);
 
-    QuerySchema targetSchema(11);
+    QuerySchema targetSchema(7);
     targetSchema.putField(QueryFieldDesc(0, "pat_id", "patient", FieldType::INT));
-    targetSchema.putField(QueryFieldDesc(3, "age_strata", "patient", FieldType::STRING, 1));
-    targetSchema.putField(QueryFieldDesc(4, "sex", "patient", FieldType::STRING, 1));
-    targetSchema.putField(QueryFieldDesc(5, "ethnicity", "patient", FieldType::STRING, 1));
-    targetSchema.putField(QueryFieldDesc(6, "race", "patient", FieldType::STRING, 1));
-    targetSchema.putField(QueryFieldDesc(7, "numerator", "patient", FieldType::BOOL));
-    targetSchema.putField(QueryFieldDesc(9, "denom_excl", "patient", FieldType::BOOL));
+    targetSchema.putField(QueryFieldDesc(1, "age_stratum", "patient", FieldType::STRING, 1));
+    targetSchema.putField(QueryFieldDesc(2, "sex", "patient", FieldType::STRING, 1));
+    targetSchema.putField(QueryFieldDesc(3, "ethnicity", "patient", FieldType::STRING, 1));
+    targetSchema.putField(QueryFieldDesc(4, "race", "patient", FieldType::STRING, 1));
+    targetSchema.putField(QueryFieldDesc(5, "numerator", "patient", FieldType::BOOL));
+    targetSchema.putField(QueryFieldDesc(6, "denom_excl", "patient", FieldType::BOOL));
 
     return targetSchema;
 }
