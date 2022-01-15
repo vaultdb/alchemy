@@ -14,7 +14,7 @@ CREATE TABLE demographics (
    numerator bool default null);
    
 \copy demographics FROM 'pilot/input/nm/VaultDB_DEMOGRAPHIC_BASELINE_2018.csv' CSV HEADER
-ALTER TABLE demographics ADD COLUMN study_year INT;
+ALTER TABLE demographics ADD COLUMN study_year SMALLINT;
 UPDATE demographics SET study_year=2018;
 
 
@@ -134,3 +134,4 @@ DROP TABLE IF EXISTS demographics;
 ALTER TABLE tmp RENAME TO demographics;
 
 UPDATE demographics SET numerator=false where numerator IS NULL;
+ALTER TABLE demographics ALTER COLUMN  ethnicity TYPE char(1);
