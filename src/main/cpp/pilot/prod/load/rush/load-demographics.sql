@@ -1,10 +1,11 @@
 \echo 'Loading demographics'
-\set echo all
+\set ECHO all
 -- STUDY_ID,AGE_2018,SEX,ETHINICITY,RACE,ZIPPREFIX,NUMERATOR
 
 DROP TABLE IF EXISTS demographics;
 CREATE TABLE demographics (
-   study_id varchar,
+       pat_id INT,
+       study_id varchar,
    site_id varchar(2),
    age_days integer,
    sex varchar(2),
@@ -26,17 +27,12 @@ UPDATE demographics SET study_year=2020 WHERE study_year IS NULL;
 
 -- map pid to int by removing vaultdb prefix
 UPDATE demographics SET study_id=REPLACE(study_id, 'VAULTDB','');
-ALTER TABLE demographics ADD COLUMN pat_id INT;
 UPDATE demographics SET pat_id=study_id::INT;
 ALTER TABLE demographics DROP COLUMN study_id;
-
+ALTER TABLE demographics DROP COLUMN zip_marker;
 
 UPDATE demographics SET site_id='RU';
 
--- add site ID
--- get rid of NULLs since we haven't implemented them yet
-UPDATE demographics SET zip_marker='000' WHERE zip_marker IS NULL;
- 
 -- ethnicity:
 -- Yes/No/R (refused)/NI (no info)/UN (unknown)/OT (other)
 -- some have conflicting info on this (R --> N) (NI --> N), OT --> other
@@ -53,15 +49,15 @@ UPDATE demographics d1 SET ethnicity=d2.ethnicity FROM demographics d2  WHERE d1
 -- 05=White
 -- 06=Multiple race
 -- 07=Refuse to answer
--- NI=No information
+-- NI='No information
 -- UN=Unknown
 -- OT=Other
 
 -- similar issue with inconsistencies in race.
 -- want to replace 07, NI, UN with well-defined vals where possible
 UPDATE demographics d1 SET race=d2.race FROM demographics d2  WHERE d1.pat_id = d2.pat_id  AND d1.site_id = d2.site_id
-       		       	   			       		    	AND (d1.race IN ('07', 'NI', 'UN')) -- existing race value is undetermined
-       		       	   			       		    	AND (d2.race IN ('01', '02', '03', '04', '05', '06', 'OT')); -- matching one is defined above
+       		       	   			       		    	AND (d1.race IN ('07', 'NI', 'UN', 'OT')) -- existing race value is undetermined
+       		       	   			       		    	AND (d2.race IN ('01', '02', '03', '04', '05', '06')); -- matching one is defined above
 
 -- if we have both a NI and a "refuse" (07)  for a patient, pick refuse so we don't double count them.
 -- UPDATE demographics d1 SET race=d2.race FROM demographics d2  WHERE d1.pat_id = d2.pat_id  AND d1.site_id = d2.site_id
