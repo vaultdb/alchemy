@@ -30,8 +30,8 @@ ALTER TABLE demographics ADD COLUMN pat_id INT;
 UPDATE demographics SET pat_id=study_id::INT;
 ALTER TABLE demographics DROP COLUMN study_id;
 
--- get rid of NULLs since we haven't implemented them yet
-UPDATE demographics SET zip_marker='000' WHERE zip_marker IS NULL;
+-- all zips are empty in this data
+ALTER TABLE demographics DROP COLUMN zip_marker;
  
 -- ethnicity:
 -- Yes/No/R (refused)/NI (no info)/UN (unknown)/OT (other)
@@ -41,6 +41,9 @@ UPDATE demographics d1 SET ethnicity=d2.ethnicity FROM demographics d2  WHERE d1
        		       	   			       		    	AND (d1.ethnicity = 'R' OR d1.ethnicity = 'NI') -- existing ethnicity value is undetermined
        		       	   			       		    	AND (d2.ethnicity = 'Y' OR d2.ethnicity = 'N' OR d2.ethnicity = 'OT'); -- matching one is Y/N
 
+-- align it with the others
+UPDATE demographics SET ethnicity = 'U' WHERE ethnicity <> 'Y' AND ethnicity <> 'N';
+
 -- race: (from PCORI CDM)
 -- 01=American Indian or Alaska Native
 -- 02=Asian
@@ -48,7 +51,7 @@ UPDATE demographics d1 SET ethnicity=d2.ethnicity FROM demographics d2  WHERE d1
 -- 04=Native Hawaiian or Other Pacific Islander
 -- 05=White
 -- 06=Multiple race
--- 07=Refuse to answer
+-- 07=Refuse to answer (or unknown, added by JMR)
 -- NI=No information
 -- UN=Unknown
 -- OT=Other
@@ -64,18 +67,32 @@ UPDATE demographics d1 SET race=d2.race FROM demographics d2  WHERE d1.pat_id = 
        		       	   		     		            AND d1.race='NI' AND d2.race='07';
 
 
+
+-- putting together unknown/no info/other/refused
+UPDATE demographics SET race='07' WHERE race NOT IN ('01', '02', '03', '04', '05', '06', '07');
+
+-- 07 = refuse to answer, but we will extend it to unknown since these entries have more than one value for race
+WITH conflicting_race AS (
+     SELECT DISTINCT d1.pat_id
+     FROM demographics d1 JOIN demographics d2 ON d1.pat_id = d2.pat_id AND d1.race <> d2.race)
+UPDATE demographics SET race='07'
+  WHERE pat_id IN (SELECT * FROM conflicting_race);
+
+
+
+
+
 -- expected # of rows: 
 -- From: SELECT COUNT(*) FROM (SELECT DISTINCT pat_id, study_year, site_id FROM demographics) t;
 -- observed in this tmp table:
 -- SELECT COUNT(*) FROM tmp;
 
 DROP TABLE IF EXISTS tmp;
-SELECT DISTINCT d1.pat_id, d1.study_year, d1.site_id, d1.zip_marker, d1.age_days, d1.sex, d1.ethnicity, d1.race,  COALESCE(d1.numerator, d2.numerator) numerator
+SELECT DISTINCT d1.pat_id, d1.study_year, d1.site_id, d1.age_days, d1.sex, d1.ethnicity, d1.race,  COALESCE(d1.numerator, d2.numerator) numerator
 INTO tmp
 FROM demographics d1 LEFT JOIN demographics d2 ON d1.pat_id = d2.pat_id
                                                       AND d1.study_year = d2.study_year
                                                       AND d1.site_id = d2.site_id
-                                                      AND d1.zip_marker = d2.zip_marker
                                                       AND d1.age_days = d2.age_days
                                                       AND d1.sex = d2.sex
                                                       AND d1.ethnicity = d2.ethnicity

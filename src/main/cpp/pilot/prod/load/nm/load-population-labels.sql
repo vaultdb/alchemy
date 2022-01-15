@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS population_labels;
 -- population_labels.numerator = true if patient in both numerator and denom groups
 
 CREATE TABLE population_labels (
+       pat_id INT,
       study_id varchar,
       site_id varchar(2),
       numerator bool,
@@ -43,7 +44,6 @@ UPDATE population_labels SET study_year=2020 WHERE study_year IS NULL;
 
 -- map pid to int by removing vaultdb prefix
 UPDATE population_labels SET study_id=REPLACE(study_id, 'VAULTDB','');
-ALTER TABLE population_labels ADD COLUMN pat_id INT;
 UPDATE population_labels SET pat_id=study_id::INT;
 -- drop old version of patient id
 ALTER TABLE population_labels DROP COLUMN study_id;

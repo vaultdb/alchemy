@@ -19,32 +19,18 @@ DROP TABLE IF EXISTS patient;
 --     site_id int);                                                                                                                                                                                                                                        
  
 
+\echo 'Setting up patient table!'
+DROP TABLE IF EXISTS patient;
 
-
-SELECT d.pat_id, d.study_year, zip_marker, age_days, sex, ethnicity, race, d.numerator demographic_numerator, p.numerator population_numerator, denom_excl denom_excl_original, d.site_id site_id_str
+SELECT d.pat_id, study_year, age_days,  '0' as age_strata, -- placeholder 
+       sex, ethnicity, race,
+       numerator AND not denom_excl numerator,
+       denom_excl, 1 as site_id
 INTO patient
-FROM demographics d JOIN population_labels p  ON d.pat_id = p.pat_id AND d.study_year = p.study_year AND d.site_id = p.site_id;
+FROM demographics d JOIN population_labels p  ON d.pat_id = p.pat_id AND d.site_id = p.site_id AND d.study_year = p.study_year;
 
 
--- add new cols in the correct order - shuffling the order of denom_excl to make debugging easier
-ALTER TABLE patient ADD COLUMN numerator bool default false;
-ALTER TABLE patient ADD COLUMN denominator bool default true; -- everyone is in the denom unless otherwise noted
-ALTER TABLE patient ADD COLUMN denom_excl bool default false;
-ALTER TABLE patient ADD COLUMN site_id INT;
 
-UPDATE patient SET denom_excl=denom_excl_original;
-ALTER TABLE patient DROP COLUMN denom_excl_original;
-
-UPDATE patient SET numerator=true WHERE demographic_numerator AND NOT denom_excl;
-UPDATE patient SET denominator=false WHERE denom_excl OR  population_numerator;
-ALTER TABLE patient DROP COLUMN demographic_numerator;
-ALTER TABLE patient DROP COLUMN population_numerator;
-
--- site_id = (1, NM) (2, RU) (3, AC)
-UPDATE patient SET site_id=1 WHERE site_id_str='NW';
-UPDATE patient SET site_id=2 WHERE site_id_str='RU';
-UPDATE patient SET site_id=3 WHERE site_id_str='AC';
-ALTER TABLE patient DROP COLUMN site_id_str;
 
 -- look for dupes:
 -- SELECT pat_id, study_year, site_id FROM patient GROUP  BY pat_id, study_year, site_id HAVING COUNT(*) > 1 ORDER BY pat_id;
@@ -56,6 +42,7 @@ ALTER TABLE patient DROP COLUMN site_id_str;
 -- update all of 208865 to have ethnicity the same -- coin flip to Y
 -- update 588404 to have race = 05
 
+\echo 'TODO: JMR: address thees conflicts and deduplicate them'
 DELETE FROM patient WHERE pat_id=174432 AND race='05';
 DELETE FROM patient WHERE pat_id=175232 AND race='OT';
 DELETE FROM patient WHERE pat_id=208865 AND study_year=2019 AND ethnicity='N';
@@ -64,7 +51,6 @@ DELETE FROM patient WHERE pat_id=243178 AND race='OT';
 DELETE FROM patient WHERE pat_id=333856 AND race='OT';
 DELETE FROM patient WHERE pat_id=588404 AND study_year=2019 AND race='OT';
 UPDATE patient SET race='05' WHERE pat_id=588404;
-
 
 
 
