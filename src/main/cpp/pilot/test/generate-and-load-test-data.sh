@@ -32,3 +32,7 @@ psql enrich_htn_unioned -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex,
 
 
 ./bin/secret_share_csv  pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
+
+./bin/secret_share_partial_counts enrich_htn_unioned pilot/secret_shares/output/partial_counts_alice 1  
+./bin/secret_share_partial_counts enrich_htn_unioned pilot/secret_shares/output/partial_counts_bob 2
+./bin/secret_share_partial_counts enrich_htn_unioned pilot/secret_shares/output/partial_counts_chi 3  

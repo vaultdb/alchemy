@@ -20,3 +20,4 @@
 \copy (SELECT DISTINCT pat_id, study_year, 'AC' site_id FROM patient ORDER BY pat_id, study_year) TO 'pilot/output/alliance_pat_ids.csv' CSV;
 
 \i 'pilot/prod/load/verify-domain.sql'
+\i 'pilot/prod/load/generate-demographics-domain.sql'

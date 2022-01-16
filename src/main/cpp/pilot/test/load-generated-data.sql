@@ -29,3 +29,4 @@ WHERE EXISTS(
 
 
 
+\i  'pilot/prod/load/generate-demographics-domain.sql'

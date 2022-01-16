@@ -24,3 +24,4 @@
 
 
 \i 'pilot/prod/load/verify-domain.sql'
+\i 'pilot/prod/load/generate-demographics-domain.sql'
