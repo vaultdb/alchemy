@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <union.h>
 #include "data_utilities.h"
+#include <algorithm>
 
 
 using namespace vaultdb;
@@ -217,6 +218,45 @@ vector<string> DataUtilities::readTextFile(const string &filename) {
 
     return lines;
 }
+
+// batch_no is zero-indexed
+vector<string> DataUtilities::readTextFileBatch(const string &filename, const size_t & batch_tuple_cnt, const size_t & batch_no) {
+    std::vector<std::string> lines;
+    std::ifstream inFile(filename);
+    std::string line;
+
+
+    if(!inFile)
+    {
+        string cwd = Utilities::getCurrentWorkingDirectory();
+        throw std::invalid_argument("Unable to open file: " + filename + " from " + cwd);
+    }
+
+    // count lines in file
+    size_t line_cnt = std::count(std::istreambuf_iterator<char>(inFile),
+               std::istreambuf_iterator<char>(), '\n');
+
+    size_t max_batches = line_cnt / batch_tuple_cnt;
+    if(max_batches > batch_no) {
+        throw std::invalid_argument("batch no out of range, expected between [0, " + std::to_string(max_batches) + "], received " + std::to_string(batch_no));
+    }
+
+    inFile.seekg(std::ios::beg);
+    size_t cursor = batch_no * batch_tuple_cnt;
+
+    for(int i = 0; i < cursor; ++i) {
+        std::getline(inFile, line);
+    }
+
+    for(int i = 0; i < batch_tuple_cnt; ++i) {
+        if(!std::getline(inFile, line))
+            break;
+        lines.push_back(line);
+    }
+
+    return lines;
+}
+
 
 bool DataUtilities::isOrdinal(const string &s) {
     return !s.empty() && std::find_if(s.begin(),

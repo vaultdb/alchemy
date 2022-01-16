@@ -31,6 +31,7 @@ public:
     static void setup(const std::string & logfile_prefix = "");
     static void write(const std::string & msg, const logging::trivial::severity_level & severity = logging::trivial::severity_level::info);
 
+
 };
 
 

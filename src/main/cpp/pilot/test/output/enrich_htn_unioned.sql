@@ -25,17 +25,16 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.patient (
-    patid integer,
+    pat_id integer,
     study_year integer,
-    zip_marker character varying(3),
-    age_days integer,
-    sex character varying(2),
-    ethnicity character varying(2),
-    race character varying(2),
+    age_strata character(1),
+    sex character(1),
+    ethnicity character(1),
+    race character(1),
     numerator boolean,
-    denominator boolean,
     denom_excl boolean,
-    site_id integer
+    site_id integer,
+    multisite boolean DEFAULT false
 );
 
 
@@ -45,307 +44,3007 @@ ALTER TABLE public.patient OWNER TO jennie;
 -- Data for Name: patient; Type: TABLE DATA; Schema: public; Owner: jennie
 --
 
-COPY public.patient (patid, study_year, zip_marker, age_days, sex, ethnicity, race, numerator, denominator, denom_excl, site_id) FROM stdin;
-0	2018	602	17224	F	OT	04	f	t	f	1
-1	2019	000	20991	UN	Y	05	f	f	t	1
-2	2020	608	18536	M	NI	07	f	t	f	1
-3	2019	000	15154	UN	R	03	t	f	t	1
-4	2018	000	28769	UN	N	NI	f	f	t	1
-5	2018	602	15357	UN	NI	03	f	t	f	1
-6	2018	000	22066	M	N	UN	f	t	f	1
-7	2019	608	29636	F	N	NI	f	t	f	1
-8	2019	607	24792	F	Y	UN	f	t	f	1
-9	2020	602	14560	M	R	OT	f	t	f	1
-10	2019	607	7498	F	OT	01	f	t	f	1
-11	2018	608	14145	UN	R	NI	f	t	f	1
-12	2018	602	31567	UN	R	06	f	t	f	1
-13	2019	600	29941	M	OT	OT	t	t	f	1
-14	2020	608	14563	UN	NI	04	f	f	t	1
-15	2018	000	13149	UN	OT	07	f	t	f	1
-16	2019	600	7991	F	N	UN	f	f	t	1
-17	2020	606	17930	F	N	03	f	t	f	1
-18	2019	607	26863	F	N	05	f	t	f	1
-19	2019	607	25716	M	NI	01	t	t	f	1
-20	2019	601	34879	F	Y	05	f	t	f	1
-21	2019	600	33666	M	NI	06	f	t	f	1
-22	2018	608	21617	F	Y	05	t	t	f	1
-23	2020	000	16683	UN	NI	03	f	t	f	1
-24	2020	602	14225	F	R	NI	f	t	f	1
-25	2018	600	28186	M	NI	07	f	t	f	1
-26	2018	601	27194	M	Y	01	f	t	f	1
-27	2018	600	9210	M	Y	02	f	t	f	1
-28	2019	607	19961	M	Y	OT	t	t	f	1
-29	2019	000	28426	M	R	04	f	t	f	1
-30	2018	608	25139	M	R	07	f	t	f	1
-31	2020	000	30742	F	OT	UN	t	t	f	1
-32	2018	000	31641	M	N	07	f	t	f	1
-33	2018	608	22472	UN	R	OT	f	t	f	1
-34	2019	601	28650	UN	OT	04	f	t	f	1
-35	2019	606	17021	M	Y	05	f	f	t	1
-36	2019	000	35851	UN	OT	05	t	t	f	1
-37	2018	607	12162	F	OT	06	f	t	f	1
-38	2019	602	27824	F	R	05	f	t	f	1
-39	2018	602	21129	M	R	05	f	t	f	1
-40	2019	600	27025	F	Y	UN	f	t	f	1
-41	2020	607	27335	F	OT	02	f	t	f	1
-42	2020	602	9165	F	Y	UN	f	t	f	1
-43	2020	000	15919	M	N	05	f	t	f	1
-44	2018	602	21523	UN	R	UN	f	f	t	1
-45	2019	608	33679	F	NI	UN	f	f	t	1
-46	2018	602	9168	M	Y	06	t	t	f	1
-47	2018	601	15391	UN	NI	04	f	f	t	1
-48	2019	608	22141	F	N	01	f	t	f	1
-49	2018	602	17335	M	R	02	f	t	f	1
-50	2018	608	21409	M	NI	UN	f	t	f	1
-51	2020	601	26556	F	Y	NI	f	t	f	1
-52	2020	608	13223	UN	OT	03	f	t	f	1
-53	2020	607	23618	F	N	NI	f	t	f	1
-54	2019	606	10997	M	R	UN	f	t	f	1
-55	2020	608	24730	UN	OT	UN	f	t	f	1
-56	2018	607	8377	F	N	OT	f	t	f	1
-57	2018	000	25693	F	R	02	f	t	f	1
-58	2020	601	35337	UN	OT	01	t	t	f	1
-59	2020	000	26883	M	OT	01	f	t	f	1
-60	2019	000	30272	F	OT	03	t	f	t	1
-61	2018	000	7473	F	R	03	f	t	f	1
-62	2018	000	24763	F	NI	04	f	t	f	1
-63	2019	602	30979	F	NI	06	f	t	f	1
-64	2020	608	26899	UN	OT	04	t	t	f	1
-65	2019	601	18615	M	R	01	f	t	f	1
-66	2018	000	23479	UN	N	03	f	t	f	1
-67	2018	608	9299	UN	NI	UN	f	f	t	1
-68	2020	600	19554	F	R	04	f	f	t	1
-69	2020	606	24909	M	R	04	f	t	f	1
-70	2019	608	7087	F	R	NI	f	f	t	1
-71	2018	000	11446	M	NI	06	f	t	f	1
-72	2018	607	27863	UN	R	05	f	t	f	1
-73	2018	600	14785	UN	Y	02	t	t	f	1
-74	2019	602	16623	UN	NI	06	f	t	f	1
-75	2019	601	30320	M	NI	OT	f	t	f	1
-76	2019	000	30584	UN	N	UN	f	t	f	1
-77	2019	000	14433	M	N	07	t	t	f	1
-78	2020	601	33974	F	N	OT	f	t	f	1
-79	2020	606	24595	M	NI	01	f	t	f	1
-80	2019	607	22105	M	Y	05	t	t	f	1
-81	2020	000	25843	M	N	06	f	t	f	1
-82	2020	602	18900	M	NI	04	t	t	f	1
-83	2020	607	19435	UN	N	06	f	t	f	1
-84	2020	000	12412	M	OT	06	f	t	f	1
-85	2019	600	28469	M	NI	01	t	t	f	1
-86	2018	000	34085	F	Y	07	f	t	f	1
-87	2019	601	9803	UN	Y	03	f	t	f	1
-88	2020	600	20523	F	NI	06	t	t	f	1
-89	2019	000	29708	UN	NI	05	f	t	f	1
-90	2018	602	20484	F	Y	03	f	t	f	1
-91	2019	000	35551	UN	OT	01	t	t	f	1
-92	2018	606	12627	F	R	NI	f	t	f	1
-93	2018	606	23528	F	N	UN	f	t	f	1
-94	2020	600	23704	M	Y	OT	f	t	f	1
-95	2018	602	30350	UN	OT	06	f	t	f	1
-96	2020	602	22147	UN	OT	07	f	t	f	1
-97	2018	608	19035	F	NI	NI	f	t	f	1
-98	2020	602	30058	UN	OT	04	t	t	f	1
-99	2018	600	33412	M	R	OT	f	t	f	1
-0	2018	602	17224	F	OT	04	f	f	t	2
-7	2019	608	29636	F	N	NI	f	f	t	2
-8	2019	607	24792	F	Y	UN	f	f	t	2
-9	2020	602	14560	M	R	OT	f	f	t	2
-10	2019	607	7498	F	OT	01	f	f	t	2
-11	2018	608	14145	UN	R	NI	f	f	t	2
-16	2019	600	7991	F	N	UN	f	f	t	2
-18	2019	607	26863	F	N	05	f	t	f	2
-21	2019	600	33666	M	NI	06	f	f	t	2
-22	2018	608	21617	F	Y	05	t	f	t	2
-23	2020	000	16683	UN	NI	03	f	t	f	2
-24	2020	602	14225	F	R	NI	f	t	f	2
-27	2018	600	9210	M	Y	02	f	f	t	2
-29	2019	000	28426	M	R	04	f	t	f	2
-32	2018	000	31641	M	N	07	f	f	t	2
-36	2019	000	35851	UN	OT	05	t	f	t	2
-37	2018	607	12162	F	OT	06	f	t	f	2
-44	2018	602	21523	UN	R	UN	f	f	t	2
-47	2018	601	15391	UN	NI	04	f	f	t	2
-50	2018	608	21409	M	NI	UN	f	f	t	2
-51	2020	601	26556	F	Y	NI	f	t	f	2
-52	2020	608	13223	UN	OT	03	f	f	t	2
-54	2019	606	10997	M	R	UN	f	t	f	2
-58	2020	601	35337	UN	OT	01	t	f	t	2
-62	2018	000	24763	F	NI	04	f	f	t	2
-65	2019	601	18615	M	R	01	f	f	t	2
-67	2018	608	9299	UN	NI	UN	f	f	t	2
-68	2020	600	19554	F	R	04	f	f	t	2
-73	2018	600	14785	UN	Y	02	t	t	f	2
-76	2019	000	30584	UN	N	UN	f	t	f	2
-77	2019	000	14433	M	N	07	t	f	t	2
-78	2020	601	33974	F	N	OT	f	f	t	2
-79	2020	606	24595	M	NI	01	f	f	t	2
-80	2019	607	22105	M	Y	05	t	t	f	2
-81	2020	000	25843	M	N	06	f	f	t	2
-82	2020	602	18900	M	NI	04	t	f	t	2
-87	2019	601	9803	UN	Y	03	f	f	t	2
-88	2020	600	20523	F	NI	06	t	f	t	2
-89	2019	000	29708	UN	NI	05	f	t	f	2
-90	2018	602	20484	F	Y	03	f	f	t	2
-92	2018	606	12627	F	R	NI	f	f	t	2
-93	2018	606	23528	F	N	UN	f	f	t	2
-99	2018	600	33412	M	R	OT	f	f	t	2
-100	2018	607	26678	UN	Y	UN	f	t	f	1
-101	2019	607	14987	M	NI	03	t	t	f	1
-102	2018	606	23978	M	R	01	f	t	f	1
-103	2019	601	17584	M	R	05	f	t	f	1
-104	2018	601	15898	UN	R	06	f	t	f	1
-105	2018	600	31206	M	N	06	t	t	f	1
-106	2019	607	7177	M	Y	05	f	f	t	1
-107	2018	602	27451	F	R	01	f	t	f	1
-108	2020	602	21312	M	NI	OT	t	t	f	1
-109	2019	602	29809	F	N	07	f	t	f	1
-110	2018	602	17310	M	OT	06	t	t	f	1
-111	2020	601	18833	F	R	03	f	t	f	1
-112	2019	607	35804	UN	NI	03	f	f	t	1
-113	2020	608	34841	M	NI	06	f	t	f	1
-114	2018	606	28276	F	NI	06	f	t	f	1
-115	2018	608	14188	UN	NI	03	f	t	f	1
-116	2020	606	18157	M	Y	06	f	f	t	1
-117	2018	601	29165	F	NI	04	f	t	f	1
-118	2020	602	16681	UN	OT	06	f	f	t	1
-119	2018	608	29513	UN	OT	OT	f	t	f	1
-120	2020	600	20401	M	N	OT	f	t	f	1
-121	2020	600	35539	UN	N	01	f	t	f	1
-122	2020	608	6791	M	OT	05	f	t	f	1
-123	2018	607	23099	M	OT	01	f	t	f	1
-124	2020	600	27252	M	Y	01	f	t	f	1
-125	2020	601	17750	UN	Y	05	f	t	f	1
-126	2020	606	7794	M	OT	NI	t	t	f	1
-127	2019	606	20083	M	R	OT	f	t	f	1
-128	2018	602	13799	F	Y	04	t	t	f	1
-129	2019	606	32712	M	R	06	f	f	t	1
-130	2018	602	32776	F	Y	01	f	t	f	1
-131	2019	600	26909	M	OT	UN	f	t	f	1
-132	2019	000	16290	M	Y	03	f	t	f	1
-133	2020	602	12453	M	N	02	f	f	t	1
-134	2020	608	18079	UN	N	05	f	t	f	1
-135	2018	000	25206	M	R	UN	t	t	f	1
-136	2020	000	10874	UN	Y	03	f	t	f	1
-137	2019	607	11114	M	OT	UN	t	t	f	1
-138	2018	606	36378	M	Y	NI	f	t	f	1
-139	2018	600	7171	UN	R	07	t	f	t	1
-140	2018	607	11032	F	R	UN	f	t	f	1
-141	2018	602	27256	F	NI	UN	t	t	f	1
-142	2019	608	22028	M	N	01	f	t	f	1
-143	2020	606	36235	F	Y	04	f	t	f	1
-144	2020	601	16371	M	NI	06	f	t	f	1
-145	2019	608	24540	UN	Y	OT	f	t	f	1
-146	2020	600	35560	F	OT	NI	t	t	f	1
-147	2019	600	7548	UN	NI	06	f	t	f	1
-148	2020	000	13282	M	NI	UN	f	t	f	1
-149	2018	601	33639	UN	R	07	f	t	f	1
-150	2019	000	29250	F	R	05	f	t	f	1
-151	2018	602	12750	M	OT	UN	f	t	f	1
-152	2018	600	34030	M	R	05	t	t	f	1
-153	2018	602	19888	UN	NI	06	f	t	f	1
-154	2020	601	24785	M	R	03	t	t	f	1
-155	2018	602	30839	F	R	03	f	t	f	1
-156	2019	607	16944	UN	N	02	f	t	f	1
-7	2019	608	29636	F	N	NI	f	t	f	3
-8	2019	607	24792	F	Y	UN	f	t	f	3
-11	2018	608	14145	UN	R	NI	f	f	t	3
-17	2020	606	17930	F	N	03	f	t	f	3
-32	2018	000	31641	M	N	07	f	f	t	3
-37	2018	607	12162	F	OT	06	f	f	t	3
-38	2019	602	27824	F	R	05	f	t	f	3
-43	2020	000	15919	M	N	05	f	f	t	3
-44	2018	602	21523	UN	R	UN	f	t	f	3
-52	2020	608	13223	UN	OT	03	f	t	f	3
-55	2020	608	24730	UN	OT	UN	f	t	f	3
-57	2018	000	25693	F	R	02	f	t	f	3
-58	2020	601	35337	UN	OT	01	t	t	f	3
-60	2019	000	30272	F	OT	03	t	f	t	3
-61	2018	000	7473	F	R	03	f	f	t	3
-62	2018	000	24763	F	NI	04	f	t	f	3
-63	2019	602	30979	F	NI	06	f	f	t	3
-64	2020	608	26899	UN	OT	04	t	f	t	3
-66	2018	000	23479	UN	N	03	f	t	f	3
-67	2018	608	9299	UN	NI	UN	f	t	f	3
-72	2018	607	27863	UN	R	05	f	t	f	3
-73	2018	600	14785	UN	Y	02	t	t	f	3
-74	2019	602	16623	UN	NI	06	f	t	f	3
-77	2019	000	14433	M	N	07	t	f	t	3
-79	2020	606	24595	M	NI	01	f	t	f	3
-81	2020	000	25843	M	N	06	f	f	t	3
-84	2020	000	12412	M	OT	06	f	t	f	3
-98	2020	602	30058	UN	OT	04	t	f	t	3
-101	2019	607	14987	M	NI	03	t	f	t	3
-103	2019	601	17584	M	R	05	f	f	t	3
-106	2019	607	7177	M	Y	05	f	f	t	3
-107	2018	602	27451	F	R	01	f	t	f	3
-108	2020	602	21312	M	NI	OT	t	f	t	3
-115	2018	608	14188	UN	NI	03	f	f	t	3
-122	2020	608	6791	M	OT	05	f	f	t	3
-124	2020	600	27252	M	Y	01	f	t	f	3
-125	2020	601	17750	UN	Y	05	f	t	f	3
-126	2020	606	7794	M	OT	NI	t	t	f	3
-127	2019	606	20083	M	R	OT	f	f	t	3
-129	2019	606	32712	M	R	06	f	t	f	3
-132	2019	000	16290	M	Y	03	f	f	t	3
-134	2020	608	18079	UN	N	05	f	t	f	3
-138	2018	606	36378	M	Y	NI	f	t	f	3
-139	2018	600	7171	UN	R	07	t	t	f	3
-143	2020	606	36235	F	Y	04	f	f	t	3
-146	2020	600	35560	F	OT	NI	t	f	t	3
-148	2020	000	13282	M	NI	UN	f	f	t	3
-151	2018	602	12750	M	OT	UN	f	f	t	3
-157	2018	606	31652	M	N	02	f	t	f	3
-158	2019	608	32779	M	OT	04	t	t	f	3
-159	2018	601	36112	M	N	OT	f	t	f	3
-160	2020	606	22590	M	OT	NI	f	t	f	3
-161	2020	608	10132	M	Y	NI	f	t	f	3
-162	2018	608	27736	F	R	05	t	t	f	3
-163	2018	601	27613	F	NI	06	t	t	f	3
-164	2018	606	16321	UN	NI	05	f	t	f	3
-165	2020	606	27520	UN	R	NI	f	t	f	3
-166	2020	607	25531	F	N	03	f	t	f	3
-167	2019	600	35631	F	Y	01	f	t	f	3
-168	2018	607	23704	UN	OT	02	f	t	f	3
-169	2018	608	32087	M	R	06	f	t	f	3
-170	2018	606	8257	F	R	OT	f	t	f	3
-171	2019	602	34782	UN	R	05	f	t	f	3
-172	2020	606	35625	UN	N	NI	f	t	f	3
-173	2020	602	35845	M	R	03	f	t	f	3
-174	2018	000	29537	F	NI	01	t	t	f	3
-175	2019	602	10017	F	N	07	f	t	f	3
-176	2020	606	17646	F	R	03	f	t	f	3
-177	2018	606	17748	F	R	OT	t	t	f	3
-178	2020	602	10023	F	OT	06	t	t	f	3
-179	2020	606	28993	UN	Y	02	f	t	f	3
-180	2019	600	31147	F	NI	05	t	t	f	3
-181	2018	606	15372	UN	NI	03	f	t	f	3
-182	2020	608	15327	M	R	04	t	t	f	3
-183	2019	602	28202	UN	NI	06	f	t	f	3
-184	2020	608	30739	M	Y	06	f	t	f	3
-185	2019	602	17466	UN	Y	03	f	t	f	3
-186	2018	607	29052	M	R	OT	t	t	f	3
-187	2019	600	20338	F	N	01	f	t	f	3
-188	2020	602	7271	M	R	UN	f	t	f	3
-189	2018	000	20601	F	NI	NI	t	t	f	3
-190	2018	602	27639	UN	N	04	f	t	f	3
-191	2020	606	35774	F	N	02	f	t	f	3
-192	2019	607	17876	F	OT	05	t	t	f	3
-193	2019	601	29291	M	R	07	f	t	f	3
-194	2020	606	28656	F	N	07	f	t	f	3
-195	2018	000	11602	F	OT	05	f	f	t	3
-196	2018	602	15663	M	NI	NI	f	t	f	3
-197	2019	606	10153	M	NI	NI	f	t	f	3
-198	2019	000	12749	M	OT	02	f	t	f	3
-199	2018	000	14363	M	R	05	f	t	f	3
-200	2018	607	32204	UN	Y	01	t	t	f	3
-201	2020	602	33803	F	OT	OT	t	t	f	3
-202	2018	608	23587	F	R	03	f	t	f	3
-203	2020	607	21125	M	NI	01	f	t	f	3
-204	2020	601	26178	UN	N	05	f	f	t	3
-205	2019	600	33634	M	N	04	f	f	t	3
-206	2020	602	12633	F	N	03	f	t	f	3
-207	2018	606	16091	F	N	OT	t	t	f	3
-208	2019	000	26191	M	N	02	f	t	f	3
+COPY public.patient (pat_id, study_year, age_strata, sex, ethnicity, race, numerator, denom_excl, site_id, multisite) FROM stdin;
+1	2019	6	M	U	5	f	f	1	f
+3	2020	2	M	U	5	f	f	1	f
+4	2020	3	F	N	3	f	f	1	f
+8	2019	1	M	U	2	f	f	1	f
+9	2019	7	F	U	1	t	f	1	f
+11	2019	2	F	Y	4	f	f	1	f
+12	2018	7	F	N	2	f	f	1	f
+13	2020	6	F	U	3	t	f	1	f
+16	2020	7	F	Y	7	t	f	1	f
+20	2018	7	F	U	2	f	f	1	f
+22	2018	1	U	U	6	t	f	1	f
+27	2019	6	F	Y	1	t	f	1	f
+33	2018	6	M	Y	4	t	f	1	f
+36	2019	3	U	U	3	f	f	1	f
+40	2018	5	F	U	6	f	f	1	f
+44	2020	2	U	Y	3	t	f	1	f
+49	2020	6	F	Y	2	t	f	1	f
+50	2018	2	U	Y	2	f	f	1	f
+53	2020	6	U	U	6	f	t	1	f
+54	2018	7	M	N	2	t	f	1	f
+56	2018	5	M	N	2	f	f	1	f
+60	2018	6	U	U	7	f	f	1	f
+61	2020	4	U	N	1	t	f	1	f
+63	2018	4	M	N	7	f	f	1	f
+66	2019	2	M	U	5	f	f	1	f
+70	2019	3	U	N	5	f	f	1	f
+75	2019	2	U	Y	7	f	f	1	f
+76	2018	1	M	U	6	f	f	1	f
+77	2018	5	U	Y	7	f	f	1	f
+80	2020	6	M	U	4	f	f	1	f
+81	2019	5	U	Y	5	f	f	1	f
+90	2019	6	F	U	6	f	f	1	f
+91	2019	4	M	N	6	f	f	1	f
+95	2020	6	U	N	3	f	f	1	f
+101	2019	7	U	U	1	f	f	1	f
+102	2020	5	U	U	1	f	t	1	f
+112	2019	4	F	U	1	f	f	1	f
+113	2019	1	F	Y	2	f	f	1	f
+114	2019	6	U	U	5	f	f	1	f
+119	2018	2	M	Y	1	t	f	1	f
+125	2018	5	U	Y	4	f	f	1	f
+126	2020	6	F	U	2	f	f	1	f
+127	2018	4	M	U	2	f	t	1	f
+128	2018	5	M	N	7	f	f	1	f
+137	2018	3	U	N	3	f	f	1	f
+138	2019	3	U	U	2	f	f	1	f
+139	2019	3	M	Y	5	f	f	1	f
+144	2019	2	F	U	3	f	t	1	f
+148	2018	6	F	Y	5	f	f	1	f
+149	2019	1	F	U	1	f	f	1	f
+152	2018	4	F	N	5	f	f	1	f
+153	2020	7	M	Y	4	f	f	1	f
+156	2018	1	M	Y	5	f	f	1	f
+158	2019	6	F	Y	1	f	f	1	f
+159	2018	7	U	U	7	t	f	1	f
+160	2019	6	M	U	3	f	f	1	f
+162	2018	2	F	Y	4	f	f	1	f
+163	2019	5	M	U	5	f	f	1	f
+165	2018	1	F	Y	6	f	f	1	f
+171	2019	4	F	N	7	f	f	1	f
+175	2019	4	F	Y	3	f	f	1	f
+181	2018	3	U	Y	5	f	t	1	f
+183	2019	2	F	N	5	f	f	1	f
+186	2020	6	F	Y	5	f	f	1	f
+189	2019	7	F	N	5	f	f	1	f
+192	2020	3	F	U	4	f	f	1	f
+194	2018	7	F	N	7	f	f	1	f
+198	2020	7	M	N	5	f	f	1	f
+199	2019	6	M	Y	4	f	f	1	f
+200	2018	2	U	Y	6	f	t	1	f
+201	2018	4	F	N	4	f	f	1	f
+205	2019	4	U	U	6	t	f	1	f
+206	2018	7	M	Y	4	f	f	1	f
+209	2020	5	M	N	1	f	f	1	f
+213	2018	3	U	N	1	f	f	1	f
+215	2018	5	U	N	1	f	t	1	f
+216	2018	4	M	U	4	t	f	1	f
+218	2020	6	F	N	6	f	f	1	f
+220	2018	5	F	U	5	f	f	1	f
+222	2019	3	M	U	6	f	f	1	f
+224	2018	4	F	Y	1	t	f	1	f
+229	2020	3	U	U	1	f	f	1	f
+231	2018	6	M	Y	1	f	f	1	f
+233	2019	1	M	Y	4	t	f	1	f
+242	2020	5	F	N	5	t	f	1	f
+246	2020	5	F	U	7	f	t	1	f
+247	2020	6	U	N	7	t	f	1	f
+248	2019	6	M	N	4	f	f	1	f
+249	2019	2	F	N	6	t	f	1	f
+255	2018	4	F	U	3	t	t	1	f
+258	2018	7	U	N	5	f	f	1	f
+263	2019	6	U	N	3	f	f	1	f
+265	2020	5	F	U	2	f	f	1	f
+267	2020	7	M	N	6	f	t	1	f
+269	2019	5	M	U	2	f	f	1	f
+270	2019	1	M	Y	5	t	f	1	f
+277	2019	4	F	U	7	f	f	1	f
+278	2018	1	F	Y	6	f	f	1	f
+281	2019	7	M	U	7	f	f	1	f
+282	2019	7	F	U	1	t	f	1	f
+285	2018	2	U	Y	7	t	f	1	f
+287	2018	5	U	U	3	t	f	1	f
+289	2018	7	F	N	3	t	t	1	f
+296	2019	2	U	Y	6	f	f	1	f
+300	2020	5	F	N	6	f	f	1	f
+303	2019	1	U	Y	2	f	f	1	f
+305	2019	6	F	Y	4	f	f	1	f
+306	2018	3	U	U	3	t	t	1	f
+307	2020	5	U	Y	1	f	f	1	f
+311	2020	6	M	N	3	f	t	1	f
+312	2018	7	M	Y	2	f	f	1	f
+314	2019	6	U	Y	5	t	f	1	f
+316	2018	1	F	N	3	f	f	1	f
+317	2019	1	F	U	6	t	f	1	f
+321	2020	3	U	Y	3	f	f	1	f
+323	2020	5	M	Y	7	t	t	1	f
+325	2019	7	U	U	5	f	f	1	f
+328	2019	2	F	N	6	f	f	1	f
+329	2019	7	F	Y	1	f	f	1	f
+333	2019	4	M	N	1	t	f	1	f
+336	2019	2	U	N	3	f	f	1	f
+337	2018	3	U	N	5	f	f	1	f
+338	2019	7	U	U	4	f	f	1	f
+341	2020	7	M	Y	1	f	f	1	f
+342	2018	5	M	Y	3	f	f	1	f
+343	2018	4	U	U	6	f	f	1	f
+352	2019	1	U	U	1	t	f	1	f
+357	2020	7	M	N	6	f	t	1	f
+359	2019	3	M	U	3	f	f	1	f
+361	2018	1	F	N	4	f	f	1	f
+364	2018	7	U	N	3	f	f	1	f
+365	2019	5	F	Y	6	f	f	1	f
+369	2020	2	M	N	1	f	f	1	f
+372	2019	6	U	Y	5	f	f	1	f
+375	2019	5	U	N	3	f	f	1	f
+380	2020	1	F	U	1	f	f	1	f
+384	2019	3	U	N	4	f	f	1	f
+385	2020	2	M	N	7	f	f	1	f
+386	2019	1	M	U	2	t	f	1	f
+389	2019	1	U	N	1	f	f	1	f
+395	2020	2	U	N	3	f	t	1	f
+397	2020	2	U	U	7	f	f	1	f
+398	2019	5	F	U	1	f	f	1	f
+405	2019	7	M	N	5	f	f	1	f
+408	2018	2	M	N	6	f	f	1	f
+417	2020	5	F	N	1	f	f	1	f
+419	2020	2	M	U	1	f	f	1	f
+420	2018	6	U	U	7	t	f	1	f
+422	2019	6	M	Y	3	t	f	1	f
+423	2018	6	F	N	4	f	f	1	f
+427	2020	5	M	Y	4	f	f	1	f
+430	2019	3	U	U	3	f	f	1	f
+433	2020	6	M	U	4	f	f	1	f
+434	2018	1	F	U	7	f	f	1	f
+436	2018	7	M	N	6	f	f	1	f
+437	2020	7	U	N	7	f	f	1	f
+438	2019	4	U	N	7	t	f	1	f
+440	2020	5	U	Y	6	f	f	1	f
+443	2020	7	U	Y	6	t	f	1	f
+444	2020	2	M	U	3	f	f	1	f
+445	2018	5	F	N	6	f	f	1	f
+447	2018	7	M	Y	1	f	f	1	f
+448	2018	5	U	U	6	f	f	1	f
+452	2020	2	U	N	2	f	t	1	f
+460	2020	6	U	N	2	f	f	1	f
+466	2018	4	M	Y	2	f	f	1	f
+467	2019	1	F	N	7	t	f	1	f
+470	2019	3	F	Y	6	t	t	1	f
+471	2020	5	U	N	3	f	f	1	f
+475	2020	1	F	N	3	f	f	1	f
+477	2018	7	U	U	1	t	f	1	f
+479	2020	5	U	U	7	f	f	1	f
+480	2020	2	M	Y	6	f	f	1	f
+483	2020	7	F	N	1	f	f	1	f
+492	2020	2	U	Y	5	f	f	1	f
+498	2020	7	U	Y	1	t	f	1	f
+499	2019	6	F	N	5	t	f	1	f
+500	2018	1	M	Y	5	f	f	1	f
+502	2019	1	M	Y	4	t	f	1	f
+504	2020	3	M	U	2	t	f	1	f
+514	2020	6	U	Y	2	f	f	1	f
+521	2019	1	M	Y	7	f	f	1	f
+523	2020	6	F	Y	1	f	f	1	f
+525	2019	1	M	U	5	f	f	1	f
+529	2020	3	M	U	7	f	f	1	f
+531	2018	1	F	N	7	t	f	1	f
+536	2019	2	F	Y	6	f	f	1	f
+542	2019	6	M	N	4	f	f	1	f
+548	2018	7	F	N	6	t	t	1	f
+552	2019	3	F	U	3	t	f	1	f
+555	2019	3	U	U	5	f	f	1	f
+557	2019	5	M	N	2	f	f	1	f
+563	2020	3	M	N	1	f	f	1	f
+566	2019	4	U	Y	4	f	f	1	f
+578	2018	2	U	N	5	f	f	1	f
+579	2020	4	M	Y	2	f	f	1	f
+581	2019	4	M	Y	6	f	t	1	f
+583	2019	4	U	N	6	f	f	1	f
+589	2018	1	U	U	3	f	f	1	f
+591	2019	4	U	N	3	f	f	1	f
+592	2018	5	M	N	2	f	f	1	f
+595	2018	3	M	N	5	f	f	1	f
+598	2020	2	U	Y	6	f	f	1	f
+606	2020	3	U	N	2	t	f	1	f
+608	2019	5	F	U	3	f	f	1	f
+609	2020	5	M	U	6	f	f	1	f
+614	2020	5	U	Y	7	f	f	1	f
+616	2018	6	M	N	3	f	f	1	f
+618	2020	4	F	N	6	t	t	1	f
+621	2019	3	U	U	7	f	f	1	f
+625	2018	7	F	Y	4	f	f	1	f
+628	2020	1	U	N	5	f	f	1	f
+629	2018	2	F	Y	5	f	f	1	f
+631	2019	7	F	N	1	f	f	1	f
+633	2020	7	U	Y	1	f	f	1	f
+634	2020	7	U	N	2	f	f	1	f
+636	2020	5	F	N	2	f	f	1	f
+638	2020	1	U	U	3	f	f	1	f
+641	2019	3	F	N	6	f	f	1	f
+642	2020	3	M	U	1	f	f	1	f
+643	2018	1	M	N	5	f	f	1	f
+644	2018	5	M	U	7	f	f	1	f
+645	2020	1	U	Y	6	f	f	1	f
+651	2020	3	M	N	7	f	f	1	f
+655	2020	2	U	Y	3	f	f	1	f
+657	2018	7	U	U	6	f	f	1	f
+658	2018	1	U	N	4	f	f	1	f
+663	2018	1	F	U	4	f	f	1	f
+664	2019	4	F	U	7	f	f	1	f
+666	2018	5	M	U	4	t	f	1	f
+667	2018	3	M	Y	7	f	f	1	f
+673	2019	4	U	N	7	f	t	1	f
+674	2018	4	U	Y	2	f	f	1	f
+675	2020	2	U	N	5	f	f	1	f
+676	2018	5	F	U	2	f	f	1	f
+685	2018	3	U	Y	7	f	f	1	f
+687	2019	3	U	N	6	f	f	1	f
+693	2019	3	F	U	2	f	f	1	f
+694	2018	2	M	Y	4	f	f	1	f
+695	2018	2	U	N	1	f	f	1	f
+697	2019	5	M	N	7	f	f	1	f
+698	2018	3	M	Y	6	f	f	1	f
+702	2018	2	M	N	4	t	f	1	f
+704	2019	7	M	N	4	f	f	1	f
+705	2018	1	F	Y	4	f	f	1	f
+706	2018	2	F	Y	3	f	t	1	f
+709	2020	2	M	N	3	f	f	1	f
+711	2018	2	M	Y	7	f	f	1	f
+715	2019	5	F	U	3	f	f	1	f
+719	2018	7	M	U	5	f	f	1	f
+720	2018	1	M	Y	2	f	f	1	f
+722	2018	5	U	U	7	t	f	1	f
+727	2019	2	M	Y	3	f	f	1	f
+729	2019	2	F	N	3	t	f	1	f
+735	2018	1	U	N	3	t	f	1	f
+736	2019	1	F	Y	4	f	f	1	f
+738	2019	7	M	Y	1	f	f	1	f
+739	2019	2	U	U	4	t	f	1	f
+740	2019	4	U	Y	7	f	t	1	f
+743	2020	7	F	N	7	t	f	1	f
+747	2019	1	U	N	2	f	f	1	f
+751	2020	1	U	U	1	f	f	1	f
+753	2020	4	M	Y	6	f	f	1	f
+754	2018	2	M	N	2	f	f	1	f
+755	2019	5	U	Y	4	f	f	1	f
+756	2020	6	U	U	1	f	f	1	f
+757	2020	1	U	Y	3	f	f	1	f
+765	2019	1	M	Y	7	f	f	1	f
+766	2019	5	F	N	6	f	f	1	f
+767	2020	6	U	U	7	f	t	1	f
+776	2020	7	M	U	2	f	f	1	f
+778	2018	3	M	N	7	f	f	1	f
+781	2020	4	U	U	5	f	f	1	f
+782	2019	1	M	U	7	f	f	1	f
+796	2018	6	F	N	4	f	f	1	f
+804	2019	5	U	N	3	f	f	1	f
+808	2020	3	U	U	3	t	t	1	f
+813	2018	1	U	Y	1	f	t	1	f
+816	2018	6	F	Y	5	f	f	1	f
+817	2019	2	U	Y	6	f	f	1	f
+825	2018	5	M	Y	5	f	f	1	f
+830	2020	1	M	N	3	f	f	1	f
+831	2018	1	F	Y	5	f	f	1	f
+833	2020	6	M	Y	7	t	t	1	f
+841	2019	1	U	U	4	f	f	1	f
+844	2020	5	M	N	3	f	f	1	f
+845	2019	4	M	U	2	f	f	1	f
+846	2018	5	M	N	1	f	f	1	f
+847	2020	5	U	U	4	f	f	1	f
+848	2019	5	U	N	7	f	f	1	f
+850	2019	7	U	U	2	f	t	1	f
+851	2018	2	U	N	1	f	f	1	f
+856	2018	5	F	Y	3	f	f	1	f
+858	2019	3	M	N	7	t	f	1	f
+861	2018	5	F	Y	1	t	t	1	f
+864	2018	7	M	U	4	f	f	1	f
+867	2018	4	F	Y	5	t	t	1	f
+870	2020	1	M	Y	2	t	f	1	f
+871	2019	5	F	U	7	f	f	1	f
+873	2018	6	U	N	7	f	f	1	f
+875	2020	3	U	U	1	t	f	1	f
+878	2020	5	U	U	7	f	f	1	f
+879	2018	3	U	N	4	f	f	1	f
+882	2018	3	F	U	3	f	f	1	f
+888	2020	7	U	Y	6	f	f	1	f
+891	2020	6	F	Y	3	f	f	1	f
+901	2020	2	U	N	2	f	f	1	f
+904	2020	7	M	Y	2	f	f	1	f
+909	2018	7	M	U	6	f	f	1	f
+913	2020	1	U	Y	2	t	f	1	f
+916	2019	1	U	N	1	f	f	1	f
+923	2018	4	M	Y	2	f	f	1	f
+924	2019	3	F	N	6	t	f	1	f
+925	2018	6	M	Y	7	f	f	1	f
+928	2018	5	U	N	6	f	f	1	f
+934	2018	3	M	Y	7	f	t	1	f
+935	2019	1	U	U	4	f	f	1	f
+937	2018	3	M	U	7	f	f	1	f
+941	2018	5	M	U	7	t	t	1	f
+942	2019	6	M	U	1	f	f	1	f
+945	2020	4	F	N	4	t	f	1	f
+946	2020	2	M	N	3	t	f	1	f
+949	2019	5	M	N	4	t	f	1	f
+954	2018	2	U	U	1	t	f	1	f
+956	2018	2	M	U	3	t	f	1	f
+958	2019	1	M	Y	7	t	f	1	f
+963	2019	5	F	U	2	f	f	1	f
+964	2019	4	F	U	3	f	f	1	f
+971	2018	5	M	N	1	f	f	1	f
+972	2018	4	U	N	7	f	f	1	f
+973	2020	1	M	U	4	f	f	1	f
+978	2018	3	U	Y	3	t	f	1	f
+982	2020	5	F	U	2	t	f	1	f
+990	2020	3	M	U	5	f	t	1	f
+993	2019	4	M	U	4	t	f	1	f
+994	2018	3	F	Y	2	f	f	1	f
+999	2020	6	U	N	6	t	t	1	f
+1001	2018	2	U	Y	1	t	f	1	f
+1002	2018	7	M	Y	4	f	f	1	f
+1003	2018	4	F	Y	6	t	f	1	f
+1004	2020	5	M	U	6	t	f	1	f
+1006	2020	3	F	Y	2	f	f	1	f
+1009	2020	3	M	N	1	f	f	1	f
+1011	2018	4	M	N	6	f	t	1	f
+1013	2020	6	M	Y	5	f	t	1	f
+1014	2018	7	F	Y	2	f	f	1	f
+1015	2018	3	M	Y	7	f	f	1	f
+1017	2019	6	U	N	4	f	f	1	f
+1018	2018	4	M	Y	6	f	f	1	f
+1019	2018	5	M	Y	7	f	f	1	f
+1020	2019	3	U	U	4	f	f	1	f
+1021	2018	5	U	N	2	f	f	1	f
+1023	2019	2	F	Y	1	f	f	1	f
+1024	2020	7	F	Y	2	f	t	1	f
+1029	2018	3	M	N	6	f	f	1	f
+1030	2020	3	M	N	2	f	f	1	f
+1031	2019	3	U	N	6	t	f	1	f
+1033	2020	4	F	U	5	f	f	1	f
+1034	2018	5	M	N	5	f	t	1	f
+1035	2018	1	U	N	2	t	f	1	f
+1038	2019	4	F	Y	6	t	f	1	f
+1039	2018	4	U	Y	5	t	f	1	f
+1041	2019	2	U	Y	5	f	f	1	f
+1042	2020	1	F	Y	6	f	t	1	f
+1044	2020	2	U	Y	3	t	t	1	f
+1048	2018	6	M	N	1	t	f	1	f
+1049	2020	2	F	Y	5	f	f	1	f
+1050	2018	6	M	Y	5	t	f	1	f
+1051	2019	1	U	U	7	f	t	1	f
+1053	2018	4	M	N	2	f	f	1	f
+1055	2019	2	F	Y	2	f	f	1	f
+1056	2019	4	U	Y	1	f	t	1	f
+1057	2020	6	F	N	2	t	t	1	f
+1059	2018	1	M	N	2	f	f	1	f
+1060	2019	5	F	N	2	t	f	1	f
+1062	2018	2	M	Y	7	f	t	1	f
+1063	2019	5	U	U	3	f	f	1	f
+1064	2020	4	U	N	2	f	f	1	f
+1065	2018	3	M	U	3	t	f	1	f
+1068	2020	4	U	U	2	f	f	1	f
+1069	2020	1	U	U	5	f	t	1	f
+1073	2018	4	M	N	4	t	f	1	f
+1074	2020	3	U	Y	1	t	f	1	f
+1075	2020	3	F	N	3	f	f	1	f
+1076	2018	5	U	N	4	f	f	1	f
+1077	2020	2	M	U	2	f	f	1	f
+1078	2019	4	U	U	6	f	f	1	f
+1079	2019	4	F	U	5	t	f	1	f
+1081	2019	2	F	U	6	f	f	1	f
+1082	2018	6	M	Y	3	f	f	1	f
+1083	2018	6	F	Y	3	f	f	1	f
+1084	2020	7	F	N	4	f	f	1	f
+1087	2020	1	M	Y	5	f	f	1	f
+1090	2019	7	F	U	2	f	f	1	f
+1091	2018	3	F	U	1	t	f	1	f
+1093	2019	6	M	N	2	f	f	1	f
+1094	2020	5	M	Y	4	f	f	1	f
+1096	2019	4	F	U	4	f	f	1	f
+1097	2018	7	F	N	7	t	f	1	f
+1098	2018	7	F	N	4	f	t	1	f
+1099	2020	4	U	U	7	f	f	1	f
+1101	2019	1	U	U	4	f	t	1	f
+1102	2018	2	M	U	1	f	f	1	f
+1103	2019	7	U	Y	5	t	f	1	f
+1104	2020	4	M	N	1	f	f	1	f
+1105	2019	5	M	Y	1	f	f	1	f
+1106	2018	6	U	Y	1	f	f	1	f
+1107	2019	2	U	U	3	f	f	1	f
+1108	2019	3	M	U	6	t	f	1	f
+1109	2018	3	F	Y	5	f	t	1	f
+1110	2019	1	F	U	4	f	f	1	f
+1111	2020	4	F	N	2	f	f	1	f
+1114	2019	4	U	U	5	f	f	1	f
+1115	2020	1	M	U	4	f	f	1	f
+1116	2018	6	F	N	3	t	f	1	f
+1118	2019	3	U	N	4	f	f	1	f
+1120	2018	5	U	N	1	t	f	1	f
+1121	2018	5	M	U	3	t	f	1	f
+1122	2018	4	U	U	7	f	f	1	f
+1125	2020	1	F	N	7	f	f	1	f
+1127	2020	5	F	N	1	t	f	1	f
+1128	2019	2	M	N	4	f	f	1	f
+1129	2018	2	M	U	7	f	f	1	f
+1132	2020	3	F	N	4	f	f	1	f
+1133	2020	1	F	Y	4	f	f	1	f
+1136	2019	3	M	N	5	f	f	1	f
+1138	2020	1	F	N	5	f	f	1	f
+1144	2018	7	U	U	4	f	f	1	f
+1145	2019	7	F	Y	3	t	f	1	f
+1146	2019	2	M	U	7	f	f	1	f
+1147	2020	6	F	N	4	t	f	1	f
+1150	2018	2	F	N	6	t	f	1	f
+1151	2019	4	F	U	1	f	f	1	f
+1153	2020	5	F	U	4	f	f	1	f
+1155	2018	5	F	N	5	f	f	1	f
+1158	2019	7	F	U	3	f	f	1	f
+1159	2019	6	M	Y	6	t	f	1	f
+1160	2019	5	F	Y	5	f	f	1	f
+1161	2019	6	M	U	7	f	f	1	f
+1162	2020	2	U	N	6	f	f	1	f
+1163	2020	6	F	Y	6	t	f	1	f
+1166	2020	5	U	Y	6	f	f	1	f
+1167	2019	7	M	Y	7	f	f	1	f
+1169	2020	6	U	N	2	f	f	1	f
+1170	2018	7	M	Y	4	f	f	1	f
+1171	2020	4	U	U	7	f	f	1	f
+1174	2020	5	U	N	5	t	f	1	f
+1176	2020	6	F	N	6	f	f	1	f
+1179	2018	6	M	N	6	f	f	1	f
+1180	2020	3	U	Y	1	f	f	1	f
+1181	2019	7	M	N	7	f	f	1	f
+1183	2018	1	M	Y	6	t	f	1	f
+1185	2018	2	M	N	4	f	f	1	f
+1186	2019	1	M	Y	3	f	t	1	f
+1187	2020	2	U	N	2	f	f	1	f
+1188	2019	5	U	U	1	f	f	1	f
+1190	2019	5	F	N	4	f	f	1	f
+1191	2018	3	M	Y	5	t	f	1	f
+1196	2018	5	F	U	2	f	f	1	f
+1197	2020	5	U	Y	7	f	f	1	f
+1198	2020	1	U	Y	2	f	f	1	f
+1199	2020	5	F	Y	3	f	f	1	f
+1203	2018	2	U	N	7	f	f	1	f
+1204	2020	6	F	U	6	f	f	1	f
+1205	2020	6	F	Y	1	f	f	1	f
+1206	2019	3	F	N	2	t	f	1	f
+1207	2019	5	U	U	6	f	f	1	f
+1208	2020	4	M	N	3	f	f	1	f
+1211	2020	1	M	N	5	f	f	1	f
+1212	2018	1	F	N	5	f	f	1	f
+1213	2018	2	M	U	4	f	f	1	f
+1214	2019	6	U	Y	2	f	f	1	f
+1215	2019	1	F	U	5	f	f	1	f
+1216	2019	3	F	Y	1	t	f	1	f
+1217	2020	3	F	Y	1	f	f	1	f
+1219	2018	4	U	Y	1	f	f	1	f
+1221	2019	2	U	U	2	f	f	1	f
+1223	2020	7	F	Y	3	f	f	1	f
+1226	2018	4	M	N	5	f	t	1	f
+1228	2019	2	M	Y	7	f	f	1	f
+1231	2020	2	F	N	3	t	f	1	f
+1232	2018	7	M	Y	6	f	f	1	f
+1233	2018	6	U	N	2	f	f	1	f
+1234	2020	4	U	N	7	f	f	1	f
+1236	2019	1	M	U	5	t	f	1	f
+1238	2018	3	F	U	4	f	t	1	f
+1239	2019	1	M	N	6	f	t	1	f
+1240	2018	2	F	U	6	f	t	1	f
+1245	2020	6	U	Y	7	f	f	1	f
+1249	2019	5	U	U	6	f	f	1	f
+1251	2018	5	M	U	2	f	f	1	f
+1252	2020	4	F	N	5	t	f	1	f
+1254	2018	3	F	Y	6	f	t	1	f
+1255	2019	3	U	Y	5	f	f	1	f
+1256	2020	7	F	U	7	f	f	1	f
+1257	2018	3	U	Y	7	f	f	1	f
+1258	2019	7	M	U	5	f	f	1	f
+1260	2020	3	U	N	6	f	f	1	f
+1263	2019	4	U	U	4	f	f	1	f
+1264	2019	6	U	N	2	f	f	1	f
+1265	2019	2	M	Y	6	t	t	1	f
+1266	2018	3	M	Y	2	f	f	1	f
+1267	2018	3	F	N	3	t	f	1	f
+1268	2019	4	F	U	3	f	f	1	f
+1269	2020	3	F	Y	6	f	f	1	f
+1271	2019	5	U	U	2	f	f	1	f
+1272	2018	3	F	Y	3	f	f	1	f
+1273	2020	6	U	U	3	f	f	1	f
+1274	2020	4	F	U	1	t	f	1	f
+1277	2018	7	M	N	6	t	f	1	f
+1285	2018	7	U	N	4	f	f	1	f
+1287	2020	5	F	Y	2	f	f	1	f
+1290	2020	3	M	N	1	f	f	1	f
+1291	2019	1	M	Y	1	f	f	1	f
+1292	2019	1	M	Y	5	t	f	1	f
+1293	2019	5	F	U	1	t	f	1	f
+1294	2019	4	U	U	1	f	f	1	f
+1295	2020	4	U	N	1	f	f	1	f
+1296	2019	1	U	N	1	f	f	1	f
+1298	2018	2	F	N	4	f	f	1	f
+1299	2018	7	U	Y	2	t	f	1	f
+1301	2018	1	F	N	2	f	f	1	f
+1302	2018	7	U	U	7	f	f	1	f
+1303	2018	3	M	N	2	f	t	1	f
+1304	2020	2	U	U	6	f	f	1	f
+1307	2020	7	F	U	5	f	f	1	f
+1310	2020	3	M	N	1	f	f	1	f
+1311	2020	4	F	N	4	f	f	1	f
+1312	2020	5	M	U	5	f	f	1	f
+1313	2019	5	M	Y	5	f	f	1	f
+1314	2019	1	U	Y	3	f	f	1	f
+1316	2019	6	F	N	1	f	f	1	f
+1319	2020	4	U	U	6	f	f	1	f
+1320	2020	5	U	N	1	f	f	1	f
+1321	2020	6	U	N	2	f	f	1	f
+1325	2020	4	M	Y	3	f	f	1	f
+1327	2020	7	M	U	3	f	f	1	f
+1328	2019	3	M	U	1	f	f	1	f
+1329	2019	3	U	Y	5	f	f	1	f
+1330	2020	6	F	N	6	f	f	1	f
+1331	2019	2	M	Y	2	f	f	1	f
+1333	2019	3	F	N	5	t	f	1	f
+1334	2019	2	F	N	2	f	f	1	f
+1335	2020	6	M	N	2	f	f	1	f
+1336	2019	6	F	Y	1	t	f	1	f
+1338	2018	5	U	N	4	t	f	1	f
+1339	2020	6	U	U	4	t	f	1	f
+1340	2018	6	M	N	5	t	f	1	f
+1342	2018	2	U	U	3	f	f	1	f
+1343	2020	2	M	U	7	f	f	1	f
+1344	2020	6	F	N	7	f	f	1	f
+1345	2018	6	M	Y	2	f	f	1	f
+1346	2018	1	M	U	7	f	f	1	f
+1347	2019	3	F	N	6	f	t	1	f
+1348	2020	2	U	Y	2	f	f	1	f
+1349	2020	5	U	Y	7	f	f	1	f
+1350	2020	6	F	Y	4	f	f	1	f
+1351	2018	1	U	N	2	f	f	1	f
+1352	2018	6	U	N	3	t	t	1	f
+1354	2019	4	F	U	2	f	f	1	f
+1355	2020	7	F	U	1	f	f	1	f
+1356	2018	2	F	U	3	t	f	1	f
+1357	2020	6	U	U	6	f	f	1	f
+1359	2020	6	F	U	2	f	f	1	f
+1360	2019	1	M	N	6	f	f	1	f
+1361	2018	7	U	U	6	f	f	1	f
+1362	2020	5	M	N	5	f	f	1	f
+1363	2020	1	U	U	2	t	f	1	f
+1364	2018	5	U	N	2	f	f	1	f
+1365	2018	4	F	Y	5	f	f	1	f
+1366	2020	6	F	U	5	f	f	1	f
+1367	2019	3	M	U	5	f	f	1	f
+1368	2018	5	F	U	2	f	f	1	f
+1369	2019	6	M	N	3	t	f	1	f
+1371	2018	6	F	Y	7	t	f	1	f
+1372	2019	7	U	U	7	f	f	1	f
+1373	2020	4	F	N	5	f	f	1	f
+1374	2020	7	M	N	5	f	f	1	f
+1376	2020	3	M	Y	1	f	f	1	f
+1378	2019	5	F	U	7	f	f	1	f
+1379	2018	7	F	Y	1	f	f	1	f
+1381	2020	3	F	Y	4	f	f	1	f
+1382	2020	6	M	N	5	f	f	1	f
+1384	2020	2	F	Y	6	f	f	1	f
+1387	2018	7	U	U	4	t	f	1	f
+1388	2020	6	U	N	2	f	f	1	f
+1389	2020	5	U	U	4	f	t	1	f
+1390	2018	4	U	U	3	t	f	1	f
+1391	2020	7	F	Y	6	f	f	1	f
+1392	2018	4	M	U	5	f	f	1	f
+1393	2018	7	U	N	1	f	f	1	f
+1395	2020	2	U	Y	1	f	f	1	f
+1396	2020	7	M	Y	1	t	f	1	f
+1397	2018	4	F	Y	3	f	f	1	f
+1399	2019	4	F	N	7	t	f	1	f
+1404	2019	3	U	N	7	t	t	1	f
+1405	2019	5	U	U	5	f	t	1	f
+1406	2020	6	M	Y	2	f	f	1	f
+1411	2019	4	F	Y	5	f	f	1	f
+1412	2019	3	M	U	3	t	f	1	f
+1414	2018	1	F	N	1	f	f	1	f
+1415	2018	6	U	Y	1	t	f	1	f
+1416	2020	7	M	Y	5	f	f	1	f
+1417	2018	6	M	Y	6	t	f	1	f
+1418	2020	3	M	U	3	f	f	1	f
+1420	2020	6	U	N	7	f	f	1	f
+1422	2020	6	M	N	6	t	f	1	f
+1425	2020	3	M	U	2	f	f	1	f
+1426	2019	4	M	U	4	f	f	1	f
+1427	2018	1	F	U	7	t	f	1	f
+1428	2018	7	U	Y	3	t	f	1	f
+1429	2020	7	U	U	5	f	f	1	f
+1430	2019	7	U	N	4	t	f	1	f
+1432	2019	1	F	N	3	f	f	1	f
+1435	2018	5	U	U	7	f	f	1	f
+1436	2018	1	M	Y	4	f	f	1	f
+1437	2020	3	U	Y	4	f	f	1	f
+1439	2019	5	U	Y	5	t	f	1	f
+1440	2020	4	M	Y	3	t	f	1	f
+1441	2019	2	U	N	7	f	f	1	f
+1443	2018	7	M	N	5	t	t	1	f
+1444	2018	1	F	N	4	t	f	1	f
+1445	2019	7	F	U	2	f	t	1	f
+1447	2019	2	M	Y	5	t	f	1	f
+1448	2019	2	U	U	3	f	f	1	f
+1449	2020	3	U	U	4	f	f	1	f
+1450	2018	7	U	N	1	f	t	1	f
+1451	2020	7	M	N	4	f	f	1	f
+1452	2020	6	M	Y	6	f	f	1	f
+1454	2020	5	M	U	5	f	f	1	f
+1455	2019	5	F	U	6	f	f	1	f
+1457	2018	5	F	N	6	t	t	1	f
+1458	2018	1	M	N	7	f	f	1	f
+1459	2020	2	U	U	5	f	f	1	f
+1462	2020	4	U	U	1	f	f	1	f
+1463	2019	6	M	Y	5	f	f	1	f
+1467	2020	2	F	N	4	f	f	1	f
+1468	2020	6	U	Y	2	f	f	1	f
+1470	2019	5	U	N	1	f	f	1	f
+1472	2020	5	F	Y	6	t	t	1	f
+1474	2019	6	F	N	6	f	t	1	f
+1476	2018	7	F	N	6	f	t	1	f
+1477	2020	1	M	U	5	t	f	1	f
+1478	2020	7	F	N	1	f	f	1	f
+1479	2019	6	M	Y	5	f	f	1	f
+1481	2020	2	M	Y	4	f	f	1	f
+1482	2018	5	F	Y	1	t	f	1	f
+1484	2020	5	F	U	5	f	f	1	f
+1486	2018	6	M	U	6	f	f	1	f
+1487	2018	3	F	N	7	f	f	1	f
+1488	2019	4	U	Y	2	f	f	1	f
+1489	2019	7	U	Y	5	f	f	1	f
+1490	2018	7	M	U	2	t	f	1	f
+1491	2020	1	U	Y	6	t	f	1	f
+1493	2018	6	M	N	6	f	f	1	f
+1498	2019	2	U	Y	2	f	f	1	f
+1499	2019	2	M	U	7	f	f	1	f
+1500	2020	6	U	U	6	f	f	1	f
+1501	2020	3	U	N	2	f	f	1	f
+1502	2019	1	U	N	4	f	f	1	f
+1503	2020	2	M	Y	2	f	f	1	f
+1504	2020	7	U	Y	2	f	f	1	f
+1505	2019	4	U	N	6	f	f	1	f
+1506	2019	4	F	Y	7	f	f	1	f
+1507	2018	2	U	Y	6	f	f	1	f
+1508	2018	2	U	U	4	f	f	3	f
+1509	2018	1	F	Y	1	f	f	3	f
+1510	2020	5	M	N	7	f	f	3	f
+1511	2018	7	M	U	4	f	f	3	f
+1512	2018	1	U	Y	3	f	f	3	f
+1513	2020	1	F	N	2	f	t	3	f
+1514	2020	3	M	Y	5	f	f	3	f
+1515	2020	1	F	N	4	f	f	3	f
+1516	2020	5	U	U	6	f	f	3	f
+1517	2018	1	U	U	7	f	f	3	f
+1518	2019	1	U	U	5	f	f	3	f
+1519	2018	1	M	N	6	f	f	3	f
+1520	2019	3	U	U	2	f	f	3	f
+1521	2018	4	F	N	3	f	f	3	f
+1522	2020	4	F	N	2	f	f	3	f
+1523	2019	5	F	U	3	f	f	3	f
+1524	2019	4	F	Y	5	t	f	3	f
+1525	2020	4	U	N	1	f	f	3	f
+1526	2019	2	U	Y	5	f	f	3	f
+1527	2018	5	U	N	1	f	f	3	f
+1528	2019	6	F	Y	3	f	f	3	f
+1529	2018	6	U	N	2	f	f	3	f
+1530	2020	4	U	Y	3	f	f	3	f
+1531	2020	2	M	U	4	f	f	3	f
+1532	2018	2	F	N	7	f	f	3	f
+1533	2018	6	U	U	6	t	f	3	f
+1534	2020	5	U	Y	2	f	t	3	f
+1535	2018	2	F	U	6	f	f	3	f
+1536	2018	1	F	U	6	f	f	3	f
+1537	2020	6	F	Y	4	t	f	3	f
+1538	2019	5	M	Y	4	f	f	3	f
+1539	2018	1	F	N	2	t	f	3	f
+1540	2019	4	U	U	6	f	f	3	f
+1541	2020	1	U	Y	4	f	t	3	f
+1542	2018	1	F	Y	1	f	t	3	f
+1543	2020	3	U	Y	5	t	t	3	f
+1544	2019	2	F	U	1	f	f	3	f
+1545	2019	2	U	Y	3	f	f	3	f
+1546	2019	6	U	N	4	f	f	3	f
+1547	2019	6	F	Y	6	f	f	3	f
+1548	2019	3	F	U	7	f	f	3	f
+1549	2020	3	F	Y	4	t	f	3	f
+1550	2020	6	U	Y	7	f	f	3	f
+1551	2020	1	M	Y	5	f	f	3	f
+1552	2020	5	M	Y	6	f	f	3	f
+1553	2019	1	F	Y	4	f	f	3	f
+1554	2020	6	U	Y	6	f	f	3	f
+1555	2018	1	U	N	2	f	f	3	f
+1556	2019	3	M	Y	5	f	f	3	f
+1557	2020	6	M	N	7	t	f	3	f
+1558	2018	4	U	Y	3	t	f	3	f
+1559	2020	6	F	N	5	f	f	3	f
+1560	2019	2	F	U	5	f	f	3	f
+1561	2019	6	F	Y	5	f	f	3	f
+1562	2020	3	M	U	6	f	f	3	f
+1563	2020	2	F	Y	4	f	f	3	f
+1564	2019	1	M	U	6	f	f	3	f
+1565	2020	1	F	Y	6	f	t	3	f
+1566	2020	5	M	N	4	f	f	3	f
+1567	2019	6	M	U	1	t	f	3	f
+1568	2020	1	F	Y	5	f	f	3	f
+1569	2018	4	M	N	3	f	f	3	f
+1570	2020	2	F	Y	1	t	t	3	f
+1571	2019	5	F	N	6	t	f	3	f
+1572	2019	2	M	Y	4	t	f	3	f
+1573	2018	5	M	Y	7	f	f	3	f
+1574	2018	4	F	U	3	f	f	3	f
+1575	2020	5	F	U	1	f	f	3	f
+1576	2020	4	U	U	2	f	f	3	f
+1577	2020	1	U	Y	1	t	f	3	f
+1578	2018	1	M	N	3	t	f	3	f
+1579	2018	3	F	N	1	f	f	3	f
+1580	2020	7	F	Y	1	t	f	3	f
+1581	2018	7	U	N	3	t	f	3	f
+1582	2019	1	M	U	6	f	f	3	f
+1583	2019	2	M	Y	5	t	f	3	f
+1584	2019	3	M	U	6	f	f	3	f
+1585	2020	1	U	Y	7	f	f	3	f
+1586	2019	1	M	N	6	t	f	3	f
+1587	2018	5	M	Y	4	f	f	3	f
+1588	2020	7	M	U	2	f	f	3	f
+1589	2018	3	M	Y	2	f	f	3	f
+1590	2018	1	U	N	7	f	f	3	f
+1591	2019	1	M	U	4	f	f	3	f
+1592	2020	4	F	N	1	f	f	3	f
+1593	2019	5	F	N	3	f	f	3	f
+1594	2020	1	M	Y	7	f	f	3	f
+1595	2020	3	U	U	4	t	f	3	f
+1596	2019	4	U	N	3	t	f	3	f
+1597	2018	7	U	N	1	f	f	3	f
+1598	2019	2	M	U	6	f	f	3	f
+1599	2019	2	M	N	1	f	f	3	f
+1600	2020	4	M	Y	6	f	f	3	f
+1601	2019	4	F	N	4	f	f	3	f
+1602	2020	3	M	U	1	f	f	3	f
+1603	2019	7	F	N	1	t	f	3	f
+1604	2019	5	F	Y	6	f	f	3	f
+1605	2018	3	M	N	3	f	t	3	f
+1606	2018	1	M	Y	5	t	f	3	f
+1607	2018	1	U	Y	2	t	f	3	f
+1608	2019	7	F	U	2	f	f	3	f
+1609	2020	7	M	U	5	t	f	3	f
+1610	2019	6	U	N	3	f	f	3	f
+1611	2019	2	U	N	6	t	f	3	f
+1612	2018	5	U	Y	1	f	f	3	f
+1613	2020	6	U	U	7	f	f	3	f
+1614	2020	3	M	N	1	f	f	3	f
+1615	2018	4	U	N	2	t	f	3	f
+1616	2020	4	F	U	7	t	f	3	f
+1617	2020	6	M	Y	3	f	f	3	f
+1618	2019	6	M	Y	2	f	f	3	f
+1619	2019	4	F	Y	3	t	f	3	f
+1620	2020	4	M	Y	4	f	f	3	f
+1621	2019	6	M	N	6	t	f	3	f
+1622	2020	6	F	U	3	f	f	3	f
+1623	2020	4	U	N	7	f	t	3	f
+1624	2019	4	M	N	6	t	t	3	f
+1625	2019	2	M	Y	3	t	f	3	f
+1626	2019	5	M	U	3	f	f	3	f
+1627	2019	6	M	N	4	f	f	3	f
+1628	2019	3	M	N	2	f	f	3	f
+1629	2018	1	U	N	2	f	t	3	f
+1630	2020	6	U	U	2	f	f	3	f
+1631	2018	4	F	U	7	f	f	3	f
+1632	2018	3	M	U	4	f	t	3	f
+1633	2018	7	F	N	6	f	f	3	f
+1634	2020	7	F	N	6	f	f	3	f
+1635	2018	5	M	Y	6	t	f	3	f
+1636	2018	2	U	Y	3	t	f	3	f
+1637	2018	6	M	U	6	f	f	3	f
+1638	2018	2	M	U	6	f	f	3	f
+1639	2019	4	U	Y	7	f	f	3	f
+1640	2020	4	F	U	5	t	f	3	f
+1641	2018	5	F	N	4	f	f	3	f
+1642	2020	6	M	N	7	f	f	3	f
+1643	2020	2	U	Y	6	t	f	3	f
+1644	2020	2	F	Y	2	f	f	3	f
+1645	2018	1	U	U	2	f	f	3	f
+1646	2018	4	U	Y	4	t	f	3	f
+1647	2018	2	U	U	6	f	f	3	f
+1648	2019	3	M	U	4	f	f	3	f
+1649	2018	3	F	U	7	f	f	3	f
+1650	2018	7	U	N	3	f	f	3	f
+1651	2018	7	F	U	7	f	f	3	f
+1652	2019	1	U	U	4	f	f	3	f
+1653	2019	3	U	Y	3	f	f	3	f
+1654	2018	2	U	U	7	f	f	3	f
+1655	2020	7	M	Y	5	t	t	3	f
+1656	2020	4	M	U	2	t	f	3	f
+1657	2020	6	F	U	4	f	f	3	f
+1658	2020	2	M	U	4	t	f	3	f
+1659	2018	4	U	N	3	f	f	3	f
+1660	2019	5	U	N	5	f	f	3	f
+1661	2019	7	M	U	7	f	f	3	f
+1662	2020	3	F	Y	4	f	f	3	f
+1663	2018	4	M	Y	5	f	f	3	f
+1664	2020	6	F	N	5	f	f	3	f
+1665	2018	6	F	Y	2	f	f	3	f
+1666	2020	7	U	U	7	f	f	3	f
+1667	2019	1	M	N	2	f	f	3	f
+1668	2018	3	F	Y	1	f	f	3	f
+1669	2018	4	F	U	3	t	f	3	f
+1670	2020	1	M	N	6	f	f	3	f
+1671	2020	6	U	U	6	f	f	3	f
+1672	2019	6	F	U	4	f	f	3	f
+1673	2019	1	M	N	7	f	t	3	f
+1674	2020	7	U	Y	1	f	f	3	f
+1675	2020	1	M	Y	5	f	f	3	f
+1676	2020	1	M	N	4	f	f	3	f
+1677	2018	7	U	U	1	f	f	3	f
+1678	2019	5	U	Y	7	f	f	3	f
+1679	2019	5	F	U	4	f	f	3	f
+1680	2018	4	F	U	1	f	f	3	f
+1681	2020	4	U	U	5	f	f	3	f
+1682	2018	7	M	Y	6	f	f	3	f
+1683	2020	3	U	N	1	f	f	3	f
+1684	2020	1	M	N	7	f	f	3	f
+1685	2018	2	U	Y	4	t	f	3	f
+1686	2020	2	M	N	7	t	f	3	f
+1687	2019	5	U	Y	6	t	f	3	f
+1688	2019	7	U	N	5	f	f	3	f
+1689	2020	1	M	N	7	f	f	3	f
+1690	2018	6	U	Y	7	f	t	3	f
+1691	2020	6	M	Y	2	t	f	3	f
+1692	2020	7	F	Y	7	f	f	3	f
+1693	2020	5	M	U	6	t	f	3	f
+1694	2019	6	M	U	1	f	f	3	f
+1695	2018	6	U	Y	5	t	f	3	f
+1696	2020	2	U	U	6	f	f	3	f
+1697	2020	6	U	U	3	t	t	3	f
+1698	2018	3	U	Y	3	t	f	3	f
+1699	2019	4	U	Y	5	f	f	3	f
+1700	2019	5	U	N	3	f	f	3	f
+1701	2019	5	U	U	4	f	f	3	f
+1702	2020	6	F	Y	1	f	f	3	f
+1703	2020	5	M	Y	6	t	f	3	f
+1704	2020	4	U	N	6	t	f	3	f
+1705	2019	6	F	N	2	t	f	3	f
+1706	2018	4	U	N	6	t	f	3	f
+1707	2020	1	M	Y	7	f	f	3	f
+1708	2018	3	U	N	2	t	f	3	f
+1709	2020	7	U	N	2	f	t	3	f
+1710	2020	4	F	N	5	f	f	3	f
+1711	2020	3	M	N	1	f	f	3	f
+1712	2020	4	F	U	7	f	f	3	f
+1713	2018	2	U	N	6	f	f	3	f
+1714	2018	6	M	Y	3	t	f	3	f
+1715	2019	4	U	N	7	f	t	3	f
+1716	2018	3	M	U	2	f	f	3	f
+1717	2018	6	U	N	5	f	f	3	f
+1718	2020	4	M	N	2	f	f	3	f
+1719	2018	6	F	U	3	f	t	3	f
+1720	2020	7	U	U	1	t	f	3	f
+1721	2020	7	M	U	1	f	f	3	f
+1722	2019	2	U	U	3	f	f	3	f
+1723	2020	4	U	Y	5	f	f	3	f
+1724	2018	4	F	N	4	f	f	3	f
+1725	2019	2	U	N	6	t	f	3	f
+1726	2018	5	F	U	7	f	t	3	f
+1727	2020	6	U	U	4	f	f	3	f
+1728	2020	1	U	U	4	f	t	3	f
+1729	2018	3	F	N	6	f	f	3	f
+1730	2018	2	M	N	5	t	f	3	f
+1731	2020	4	U	U	5	f	f	3	f
+1732	2019	1	M	Y	3	f	f	3	f
+1733	2019	2	U	Y	1	f	f	3	f
+1734	2019	3	U	N	5	f	f	3	f
+1735	2020	4	U	Y	3	f	f	3	f
+1736	2020	6	F	U	6	f	t	3	f
+1737	2019	3	U	U	1	t	f	3	f
+1738	2020	5	F	Y	3	f	f	3	f
+1739	2020	3	F	U	5	f	f	3	f
+1740	2018	3	M	N	5	f	t	3	f
+1741	2019	3	U	Y	5	f	f	3	f
+1742	2020	7	F	U	6	f	t	3	f
+1743	2019	6	U	Y	1	f	f	3	f
+1744	2018	4	U	N	5	f	f	3	f
+1745	2018	3	F	Y	5	f	f	3	f
+1746	2018	5	U	Y	1	f	f	3	f
+1747	2020	7	F	U	4	f	f	3	f
+1748	2018	7	M	N	4	f	f	3	f
+1749	2018	4	M	U	4	t	f	3	f
+1750	2018	4	U	U	5	f	f	3	f
+1751	2020	2	M	N	7	f	f	3	f
+1752	2018	3	U	U	2	f	f	3	f
+1753	2019	3	M	U	1	f	f	3	f
+1754	2020	1	M	Y	1	f	f	3	f
+1755	2018	5	U	N	5	t	f	3	f
+1756	2019	5	F	N	7	f	f	3	f
+1757	2018	4	M	N	2	t	f	3	f
+1758	2018	6	M	N	6	f	f	3	f
+1759	2020	4	M	N	6	t	f	3	f
+1760	2018	5	F	U	4	f	f	3	f
+1761	2018	7	M	Y	6	f	f	3	f
+1762	2019	2	U	N	5	t	t	3	f
+1763	2019	1	F	N	1	f	f	3	f
+1764	2019	3	F	Y	1	f	f	3	f
+1765	2020	6	F	N	4	t	f	3	f
+1766	2019	1	M	Y	6	f	f	3	f
+1767	2019	5	M	U	6	f	f	3	f
+1768	2018	2	M	Y	7	f	t	3	f
+1769	2020	6	U	Y	3	f	f	3	f
+1770	2020	1	U	N	7	f	f	3	f
+1771	2020	2	U	Y	3	t	f	3	f
+1772	2020	3	M	N	2	t	f	3	f
+1773	2020	2	F	Y	3	f	f	3	f
+1774	2018	1	F	U	5	f	f	3	f
+1775	2020	4	F	U	1	f	t	3	f
+1776	2019	5	M	U	5	f	f	3	f
+1777	2018	5	U	N	6	f	t	3	f
+1778	2019	5	M	N	3	f	f	3	f
+1779	2018	2	M	Y	1	f	f	3	f
+1780	2018	1	M	N	1	f	f	3	f
+1781	2020	1	M	N	1	t	f	3	f
+1782	2020	4	M	N	3	f	f	3	f
+1783	2018	2	M	U	5	t	t	3	f
+1784	2020	6	M	U	5	f	t	3	f
+1785	2018	7	F	U	6	f	f	3	f
+1786	2019	2	F	Y	3	f	f	3	f
+1787	2019	4	U	Y	7	t	f	3	f
+1788	2018	6	F	N	5	f	f	3	f
+1789	2018	1	F	Y	3	f	f	3	f
+1790	2018	2	M	N	4	f	f	3	f
+1791	2020	3	M	U	5	f	f	3	f
+1792	2019	5	F	N	6	f	f	3	f
+1793	2018	1	U	N	2	f	f	3	f
+1794	2018	5	U	N	7	f	f	3	f
+1795	2020	7	U	U	6	f	f	3	f
+1796	2019	5	U	N	7	f	f	3	f
+1797	2020	6	U	Y	2	f	f	3	f
+1798	2019	5	M	U	5	t	f	3	f
+1799	2020	6	F	Y	6	f	f	3	f
+1800	2018	2	F	U	2	f	f	3	f
+1801	2018	1	F	N	1	t	t	3	f
+1802	2018	2	F	N	2	f	f	3	f
+1803	2019	5	F	N	1	f	f	3	f
+1804	2018	3	U	U	1	t	f	3	f
+1805	2020	3	U	Y	3	f	f	3	f
+1806	2018	4	U	Y	3	f	t	3	f
+1807	2020	7	F	U	2	f	f	3	f
+1808	2019	5	U	U	6	t	f	3	f
+1809	2018	3	U	N	3	f	f	3	f
+1810	2018	1	F	Y	7	t	f	3	f
+1811	2019	7	M	N	5	f	f	3	f
+1812	2019	4	F	U	2	f	f	3	f
+1813	2018	3	F	Y	3	t	f	3	f
+1814	2018	7	U	N	5	f	f	3	f
+1815	2018	7	U	U	3	f	f	3	f
+1816	2019	5	M	N	4	f	f	3	f
+1817	2020	6	U	Y	2	f	f	3	f
+1818	2020	4	U	Y	1	f	f	3	f
+1819	2018	1	M	N	2	t	f	3	f
+1820	2020	3	F	Y	6	f	f	3	f
+1821	2018	5	U	N	6	t	f	3	f
+1822	2019	6	M	U	7	t	f	3	f
+1823	2020	7	U	Y	1	f	t	3	f
+1824	2018	5	U	Y	1	f	f	3	f
+1825	2018	7	F	U	6	f	f	3	f
+1826	2018	5	U	N	6	f	f	3	f
+1827	2019	2	F	N	7	f	t	3	f
+1828	2020	7	U	U	6	f	f	3	f
+1829	2019	7	U	U	2	f	f	3	f
+1830	2018	1	F	N	4	f	f	3	f
+1831	2018	1	F	Y	3	f	f	3	f
+1832	2019	2	U	N	6	t	t	3	f
+1833	2019	2	U	U	3	f	f	3	f
+1834	2019	7	F	N	5	f	f	3	f
+1835	2020	6	U	U	6	f	f	3	f
+1836	2020	5	M	Y	5	f	f	3	f
+1837	2018	1	U	Y	7	t	f	3	f
+1838	2019	6	M	U	5	t	f	3	f
+1839	2018	7	M	N	1	f	f	3	f
+1840	2018	3	M	U	3	f	f	3	f
+1841	2020	7	U	U	3	t	f	3	f
+1842	2018	7	F	N	3	t	f	3	f
+1843	2018	4	F	N	6	f	f	3	f
+1844	2019	1	U	Y	5	f	f	3	f
+1845	2020	7	M	U	7	f	f	3	f
+1846	2019	4	F	U	4	t	f	3	f
+1847	2019	2	M	U	5	t	f	3	f
+1848	2020	3	F	N	2	f	f	3	f
+1849	2018	2	U	N	7	t	f	3	f
+1850	2019	1	M	Y	2	f	f	3	f
+1851	2019	3	F	U	3	f	f	3	f
+1852	2018	1	M	U	5	f	f	3	f
+1853	2020	3	M	U	1	f	f	3	f
+1854	2020	2	F	Y	4	f	f	3	f
+1855	2018	5	M	U	3	f	f	3	f
+1856	2020	1	U	U	1	f	f	3	f
+1857	2018	7	F	Y	6	f	f	3	f
+1858	2018	2	F	N	3	f	f	3	f
+1859	2018	1	U	Y	1	f	f	3	f
+1860	2019	3	U	Y	5	f	f	3	f
+1861	2020	4	U	Y	5	f	f	3	f
+1862	2018	4	U	U	1	f	f	3	f
+1863	2018	6	M	Y	2	t	f	3	f
+1864	2020	2	F	Y	5	t	f	3	f
+1865	2018	1	U	Y	1	t	f	3	f
+1866	2018	4	M	U	2	t	f	3	f
+1867	2019	7	M	Y	1	f	t	3	f
+1868	2020	7	F	U	6	f	f	3	f
+1869	2020	5	F	Y	1	f	f	3	f
+1870	2018	4	F	N	3	f	t	3	f
+1871	2020	2	U	Y	5	f	f	3	f
+1872	2019	1	F	N	6	t	f	3	f
+1873	2018	1	U	U	7	f	f	3	f
+1874	2018	2	F	Y	3	t	f	3	f
+1875	2019	7	F	N	4	t	f	3	f
+1876	2020	7	F	N	1	f	f	3	f
+1877	2019	4	F	N	5	f	f	3	f
+1878	2018	1	U	Y	4	f	t	3	f
+1879	2018	6	U	Y	4	f	t	3	f
+1880	2020	5	M	N	4	f	f	3	f
+1881	2018	7	U	U	6	f	f	3	f
+1882	2018	6	U	N	7	f	f	3	f
+1883	2018	7	F	N	7	f	t	3	f
+1884	2018	4	F	N	5	f	f	3	f
+1885	2018	6	M	U	5	t	f	3	f
+1886	2018	5	M	Y	6	f	f	3	f
+1887	2019	6	U	N	5	f	f	3	f
+1888	2020	1	F	U	2	f	f	3	f
+1889	2019	7	U	Y	5	t	f	3	f
+1890	2020	4	F	Y	6	f	f	3	f
+1891	2018	4	M	N	2	f	f	3	f
+1892	2020	2	F	U	4	t	f	3	f
+1893	2019	2	M	N	1	t	f	3	f
+1894	2018	7	F	U	6	f	f	3	f
+1895	2018	7	U	Y	5	f	f	3	f
+1896	2018	6	U	Y	6	f	f	3	f
+1897	2019	6	U	U	7	f	f	3	f
+1898	2019	1	M	N	3	f	f	3	f
+1899	2018	4	F	U	5	t	f	3	f
+1900	2020	4	U	U	4	f	f	3	f
+1901	2019	5	F	U	4	f	t	3	f
+1902	2018	5	M	Y	2	f	f	3	f
+1903	2018	7	M	Y	6	f	f	3	f
+1904	2018	2	U	N	5	f	f	3	f
+1905	2019	6	F	N	2	f	t	3	f
+1906	2020	3	F	U	4	t	f	3	f
+1907	2019	7	U	U	2	f	f	3	f
+1908	2019	7	F	U	6	t	f	3	f
+1909	2020	7	M	U	4	f	f	3	f
+1910	2020	7	F	Y	7	f	f	3	f
+1911	2020	2	U	N	5	f	t	3	f
+1912	2019	7	U	U	2	t	t	3	f
+1913	2019	5	F	N	6	f	f	3	f
+1914	2020	4	M	U	2	f	f	3	f
+1915	2019	3	M	N	5	f	f	3	f
+1916	2019	6	U	U	5	f	f	3	f
+1917	2018	5	M	U	6	f	f	3	f
+1918	2019	7	M	U	6	f	f	3	f
+1919	2020	2	M	Y	1	f	f	3	f
+1920	2020	1	M	U	1	t	f	3	f
+1921	2019	6	F	Y	5	f	f	3	f
+1922	2020	2	M	U	3	f	f	3	f
+1923	2019	5	F	U	1	f	f	3	f
+1924	2018	1	F	U	2	t	f	3	f
+1925	2020	1	F	Y	4	f	f	3	f
+1926	2019	2	F	Y	4	f	f	3	f
+1927	2020	7	U	U	2	f	f	3	f
+1928	2018	5	F	U	1	f	f	3	f
+1929	2018	2	M	N	4	f	f	3	f
+1930	2019	1	M	Y	1	f	f	3	f
+1931	2019	6	M	Y	1	t	t	3	f
+1932	2019	5	F	N	2	f	f	3	f
+1933	2020	2	M	Y	2	f	f	3	f
+1934	2020	7	U	U	7	t	f	3	f
+1935	2019	3	F	U	7	f	t	3	f
+1936	2019	1	M	Y	6	f	f	3	f
+1937	2020	1	M	Y	5	t	f	3	f
+1938	2018	2	U	U	6	f	f	3	f
+1939	2019	2	M	N	6	t	f	3	f
+1940	2019	5	M	U	4	f	f	3	f
+1941	2018	5	M	N	1	f	f	3	f
+1942	2018	3	F	N	4	f	f	3	f
+1943	2020	2	M	N	4	f	f	3	f
+1944	2020	3	F	U	6	f	f	3	f
+1945	2018	5	U	Y	6	f	f	3	f
+1946	2018	2	M	N	1	f	f	3	f
+1947	2018	3	U	U	1	f	f	3	f
+1948	2019	7	U	U	1	t	f	3	f
+1949	2020	2	M	Y	7	t	t	3	f
+1950	2018	1	U	N	3	f	f	3	f
+1951	2020	1	U	Y	6	f	f	3	f
+1952	2018	5	M	U	4	f	f	3	f
+1953	2020	3	M	Y	1	f	f	3	f
+1954	2019	4	F	N	1	f	f	3	f
+1955	2019	3	U	Y	4	f	t	3	f
+1956	2020	4	U	U	3	t	f	3	f
+1957	2020	3	U	Y	5	f	f	3	f
+1958	2020	1	U	U	2	f	f	3	f
+1959	2020	1	F	U	6	f	f	3	f
+1960	2018	2	F	Y	1	f	f	3	f
+1961	2018	3	M	Y	4	t	f	3	f
+1962	2020	1	M	N	2	f	f	3	f
+1963	2019	5	F	Y	1	f	t	3	f
+1964	2019	5	F	N	1	f	t	3	f
+1965	2020	4	F	U	7	f	f	3	f
+1966	2019	6	U	Y	5	f	f	3	f
+1967	2019	7	F	Y	6	t	f	3	f
+1968	2019	4	U	N	5	t	t	3	f
+1969	2020	4	M	Y	7	f	f	3	f
+1970	2019	3	F	N	7	t	f	3	f
+1971	2019	6	F	U	6	t	f	3	f
+1972	2018	4	U	U	7	t	f	3	f
+1973	2019	4	F	Y	6	f	f	3	f
+1974	2019	2	M	Y	7	f	f	3	f
+1975	2020	1	U	N	3	f	f	3	f
+1976	2018	4	M	Y	1	f	f	3	f
+1977	2018	6	F	Y	4	f	f	3	f
+1978	2020	2	M	Y	1	f	f	3	f
+1979	2020	7	M	Y	6	f	f	3	f
+1980	2018	4	F	U	6	f	f	3	f
+1981	2019	6	F	N	3	f	f	3	f
+1982	2018	3	M	U	2	t	t	3	f
+1983	2018	6	U	N	3	f	f	3	f
+1984	2020	3	U	N	6	t	f	3	f
+1985	2020	6	U	Y	1	t	f	3	f
+1986	2020	2	M	Y	1	f	f	3	f
+1987	2019	5	M	Y	6	f	f	3	f
+1988	2018	7	M	N	4	f	f	3	f
+1989	2019	6	F	U	7	f	f	3	f
+1990	2018	4	M	N	3	t	f	3	f
+1991	2018	4	M	Y	1	f	t	3	f
+1992	2018	2	F	Y	6	t	f	3	f
+1993	2019	7	U	U	7	f	f	3	f
+1994	2018	1	U	N	4	t	f	3	f
+1995	2019	3	M	N	6	f	f	3	f
+1996	2020	4	F	Y	3	f	f	3	f
+1997	2018	6	M	N	4	f	f	3	f
+1998	2018	1	M	U	1	f	f	3	f
+1999	2020	2	U	N	1	t	f	3	f
+2000	2020	6	U	Y	7	t	f	3	f
+2001	2018	2	U	Y	4	f	f	3	f
+2002	2020	4	F	Y	1	t	f	3	f
+2003	2020	1	U	U	2	t	t	3	f
+2004	2018	5	U	U	1	f	f	3	f
+2005	2020	7	F	Y	6	t	t	3	f
+2006	2020	1	U	U	7	f	f	3	f
+0	2020	4	M	U	6	f	f	1	t
+0	2020	4	M	U	6	f	t	2	t
+0	2020	4	M	U	6	f	f	3	t
+2	2019	2	M	Y	2	f	f	2	t
+2	2019	2	M	Y	2	f	f	1	t
+5	2018	2	U	U	1	f	f	1	t
+5	2018	2	U	U	1	f	f	3	t
+6	2018	5	U	Y	5	f	t	2	t
+6	2018	5	U	Y	5	f	f	1	t
+7	2019	1	U	Y	4	f	f	2	t
+7	2019	1	U	Y	4	f	f	1	t
+10	2020	3	F	U	4	f	t	1	t
+10	2020	3	F	U	4	f	t	2	t
+14	2019	2	U	U	6	f	t	1	t
+14	2019	2	U	U	6	f	f	3	t
+15	2020	4	U	U	7	f	t	2	t
+15	2020	4	U	U	7	f	f	1	t
+15	2020	4	U	U	7	f	f	3	t
+17	2018	4	U	Y	1	f	t	3	t
+17	2018	4	U	Y	1	f	f	1	t
+18	2020	6	U	N	7	f	f	1	t
+18	2020	6	U	N	7	f	f	3	t
+19	2019	3	U	U	1	f	f	1	t
+19	2019	3	U	U	1	f	t	2	t
+21	2018	1	M	Y	4	f	t	1	t
+21	2018	1	M	Y	4	f	f	2	t
+23	2019	1	U	N	3	f	f	2	t
+23	2019	1	U	N	3	f	f	1	t
+24	2020	5	F	U	7	t	t	3	t
+24	2020	5	F	U	7	t	t	2	t
+24	2020	5	F	U	7	t	t	1	t
+25	2020	2	F	Y	6	t	f	1	t
+25	2020	2	F	Y	6	t	t	3	t
+26	2018	1	U	U	6	f	f	2	t
+26	2018	1	U	U	6	f	f	1	t
+28	2020	4	U	Y	5	t	f	1	t
+28	2020	4	U	Y	5	t	f	3	t
+29	2020	7	U	N	1	f	t	2	t
+29	2020	7	U	N	1	f	f	1	t
+30	2018	5	F	U	3	f	f	1	t
+30	2018	5	F	U	3	f	f	2	t
+31	2020	2	F	U	5	t	f	3	t
+31	2020	2	F	U	5	t	f	1	t
+32	2019	3	U	U	7	f	f	2	t
+32	2019	3	U	U	7	f	f	1	t
+32	2019	3	U	U	7	f	f	3	t
+34	2019	6	U	N	2	f	f	1	t
+34	2019	6	U	N	2	f	t	2	t
+35	2019	3	M	U	5	f	f	2	t
+35	2019	3	M	U	5	f	f	3	t
+35	2019	3	M	U	5	f	f	1	t
+37	2020	2	M	Y	6	t	f	1	t
+37	2020	2	M	Y	6	t	f	3	t
+38	2018	2	U	N	5	t	t	2	t
+38	2018	2	U	N	5	t	f	1	t
+39	2020	4	M	Y	7	f	f	1	t
+39	2020	4	M	Y	7	f	f	3	t
+41	2018	7	F	U	3	f	f	3	t
+41	2018	7	F	U	3	f	f	1	t
+42	2020	5	M	Y	1	f	f	1	t
+42	2020	5	M	Y	1	f	f	2	t
+43	2018	4	M	U	6	f	t	1	t
+43	2018	4	M	U	6	f	f	2	t
+45	2020	1	U	N	1	f	t	1	t
+45	2020	1	U	N	1	f	t	3	t
+46	2018	5	M	N	3	t	f	1	t
+46	2018	5	M	N	3	t	t	2	t
+47	2020	5	M	Y	1	t	t	2	t
+47	2020	5	M	Y	1	t	f	1	t
+48	2019	1	M	Y	2	f	f	1	t
+48	2019	1	M	Y	2	f	f	2	t
+48	2019	1	M	Y	2	f	f	3	t
+51	2018	1	M	Y	4	f	f	1	t
+51	2018	1	M	Y	4	f	f	3	t
+52	2019	7	U	N	1	f	f	2	t
+52	2019	7	U	N	1	f	f	1	t
+55	2019	2	U	N	1	f	f	1	t
+55	2019	2	U	N	1	f	t	2	t
+55	2019	2	U	N	1	f	f	3	t
+57	2020	7	U	U	6	f	f	1	t
+57	2020	7	U	U	6	f	f	3	t
+58	2020	5	U	Y	7	t	f	3	t
+58	2020	5	U	Y	7	t	f	1	t
+59	2019	5	M	Y	4	t	f	2	t
+59	2019	5	M	Y	4	t	f	1	t
+62	2019	5	U	N	3	f	f	2	t
+62	2019	5	U	N	3	f	f	1	t
+64	2019	7	F	N	3	f	f	1	t
+64	2019	7	F	N	3	f	t	2	t
+65	2019	2	U	U	6	f	f	2	t
+65	2019	2	U	U	6	f	f	1	t
+67	2018	6	F	U	3	f	f	3	t
+67	2018	6	F	U	3	f	t	1	t
+68	2020	5	U	Y	5	f	t	3	t
+68	2020	5	U	Y	5	f	f	1	t
+68	2020	5	U	Y	5	f	t	2	t
+69	2018	1	M	U	5	f	f	1	t
+69	2018	1	M	U	5	f	t	2	t
+71	2019	7	U	N	4	f	t	2	t
+71	2019	7	U	N	4	f	f	1	t
+71	2019	7	U	N	4	f	f	3	t
+72	2018	7	U	N	1	f	t	2	t
+72	2018	7	U	N	1	f	f	1	t
+73	2018	5	F	N	6	f	t	2	t
+73	2018	5	F	N	6	f	f	1	t
+74	2020	6	F	Y	3	t	f	1	t
+74	2020	6	F	Y	3	t	t	2	t
+78	2018	4	U	Y	4	t	f	1	t
+78	2018	4	U	Y	4	t	f	2	t
+79	2019	6	U	Y	4	f	t	3	t
+79	2019	6	U	Y	4	f	t	2	t
+79	2019	6	U	Y	4	f	f	1	t
+82	2018	4	U	U	6	t	f	1	t
+82	2018	4	U	U	6	t	f	2	t
+83	2018	5	U	Y	5	f	f	2	t
+83	2018	5	U	Y	5	f	f	1	t
+84	2019	3	M	Y	3	f	f	1	t
+84	2019	3	M	Y	3	f	f	3	t
+85	2018	6	U	N	7	f	f	1	t
+85	2018	6	U	N	7	f	t	2	t
+86	2020	1	M	Y	5	t	f	1	t
+86	2020	1	M	Y	5	t	f	3	t
+86	2020	1	M	Y	5	t	f	2	t
+87	2018	7	F	Y	3	f	t	3	t
+87	2018	7	F	Y	3	f	f	1	t
+88	2019	3	F	N	1	t	t	3	t
+88	2019	3	F	N	1	t	f	1	t
+89	2019	7	M	U	7	f	t	3	t
+89	2019	7	M	U	7	f	f	1	t
+92	2018	7	U	U	7	f	f	3	t
+92	2018	7	U	U	7	f	f	1	t
+92	2018	7	U	U	7	f	f	2	t
+93	2020	6	M	N	3	f	f	2	t
+93	2020	6	M	N	3	f	f	1	t
+93	2020	6	M	N	3	f	f	3	t
+94	2020	7	F	N	2	t	f	2	t
+94	2020	7	F	N	2	t	f	1	t
+96	2020	3	M	U	2	f	f	1	t
+96	2020	3	M	U	2	f	t	2	t
+97	2019	3	U	U	3	f	f	1	t
+97	2019	3	U	U	3	f	t	2	t
+98	2020	1	M	Y	1	f	f	1	t
+98	2020	1	M	Y	1	f	f	3	t
+99	2020	6	M	U	5	f	f	1	t
+99	2020	6	M	U	5	f	t	2	t
+100	2018	2	M	N	1	f	f	1	t
+100	2018	2	M	N	1	f	t	2	t
+103	2019	7	F	Y	6	f	f	2	t
+103	2019	7	F	Y	6	f	f	1	t
+104	2018	2	M	U	4	t	f	2	t
+104	2018	2	M	U	4	t	f	1	t
+105	2020	7	U	N	4	f	f	1	t
+105	2020	7	U	N	4	f	f	3	t
+105	2020	7	U	N	4	f	t	2	t
+106	2019	3	U	N	7	f	t	1	t
+106	2019	3	U	N	7	f	t	2	t
+107	2019	1	U	Y	4	f	f	2	t
+107	2019	1	U	Y	4	f	t	3	t
+107	2019	1	U	Y	4	f	f	1	t
+108	2019	6	F	Y	4	f	t	3	t
+108	2019	6	F	Y	4	f	f	1	t
+109	2020	5	U	U	4	f	f	1	t
+109	2020	5	U	U	4	f	t	2	t
+110	2019	7	M	N	7	t	f	2	t
+110	2019	7	M	N	7	t	f	1	t
+111	2019	2	U	Y	5	f	f	2	t
+111	2019	2	U	Y	5	f	f	1	t
+115	2018	7	F	N	1	t	f	2	t
+115	2018	7	F	N	1	t	f	1	t
+116	2019	7	U	U	5	f	t	2	t
+116	2019	7	U	U	5	f	f	1	t
+117	2020	6	M	N	2	f	f	3	t
+117	2020	6	M	N	2	f	f	1	t
+118	2020	7	F	Y	4	f	f	1	t
+118	2020	7	F	Y	4	f	f	2	t
+120	2020	6	F	N	3	t	t	3	t
+120	2020	6	F	N	3	t	t	1	t
+121	2020	3	F	Y	1	t	f	1	t
+121	2020	3	F	Y	1	t	t	2	t
+122	2019	7	F	N	2	f	t	2	t
+122	2019	7	F	N	2	f	f	1	t
+122	2019	7	F	N	2	f	t	3	t
+123	2020	5	M	U	6	f	f	1	t
+123	2020	5	M	U	6	f	t	2	t
+124	2018	6	M	N	6	f	f	2	t
+124	2018	6	M	N	6	f	f	1	t
+129	2018	6	M	N	6	f	f	2	t
+129	2018	6	M	N	6	f	f	1	t
+130	2018	1	F	Y	6	f	f	2	t
+130	2018	1	F	Y	6	f	f	1	t
+131	2018	7	F	U	2	t	f	1	t
+131	2018	7	F	U	2	t	t	2	t
+132	2019	4	F	N	2	f	f	1	t
+132	2019	4	F	N	2	f	f	2	t
+133	2018	1	F	Y	6	t	f	1	t
+133	2018	1	F	Y	6	t	f	3	t
+134	2019	4	M	Y	5	f	f	2	t
+134	2019	4	M	Y	5	f	f	1	t
+135	2020	7	M	N	2	t	t	1	t
+135	2020	7	M	N	2	t	f	2	t
+136	2020	5	M	N	5	f	t	2	t
+136	2020	5	M	N	5	f	f	3	t
+136	2020	5	M	N	5	f	f	1	t
+140	2018	7	F	Y	5	f	f	2	t
+140	2018	7	F	Y	5	f	f	1	t
+141	2019	4	U	N	6	f	f	3	t
+141	2019	4	U	N	6	f	f	1	t
+141	2019	4	U	N	6	f	f	2	t
+142	2020	2	U	Y	3	f	f	2	t
+142	2020	2	U	Y	3	f	f	1	t
+142	2020	2	U	Y	3	f	t	3	t
+143	2019	3	F	U	4	f	f	1	t
+143	2019	3	F	U	4	f	f	2	t
+143	2019	3	F	U	4	f	t	3	t
+145	2020	3	M	Y	5	t	t	1	t
+145	2020	3	M	Y	5	t	t	3	t
+146	2020	5	U	N	4	f	f	3	t
+146	2020	5	U	N	4	f	f	1	t
+146	2020	5	U	N	4	f	f	2	t
+147	2020	5	F	N	5	t	t	3	t
+147	2020	5	F	N	5	t	t	1	t
+150	2018	5	F	N	5	t	t	3	t
+150	2018	5	F	N	5	t	f	1	t
+151	2020	6	F	Y	7	f	t	2	t
+151	2020	6	F	Y	7	f	f	1	t
+154	2019	7	U	U	2	t	t	1	t
+154	2019	7	U	U	2	t	t	3	t
+155	2020	6	F	Y	6	f	f	2	t
+155	2020	6	F	Y	6	f	f	1	t
+157	2019	3	U	Y	2	f	t	3	t
+157	2019	3	U	Y	2	f	t	1	t
+161	2019	4	U	Y	5	f	f	1	t
+161	2019	4	U	Y	5	f	t	2	t
+161	2019	4	U	Y	5	f	f	3	t
+164	2019	4	M	N	1	f	f	1	t
+164	2019	4	M	N	1	f	t	3	t
+164	2019	4	M	N	1	f	t	2	t
+166	2020	6	U	N	5	f	f	2	t
+166	2020	6	U	N	5	f	f	1	t
+166	2020	6	U	N	5	f	f	3	t
+167	2018	4	M	Y	3	f	t	2	t
+167	2018	4	M	Y	3	f	f	1	t
+167	2018	4	M	Y	3	f	t	3	t
+168	2019	5	F	U	7	t	t	2	t
+168	2019	5	F	U	7	t	f	1	t
+169	2018	5	F	N	1	t	f	1	t
+169	2018	5	F	N	1	t	f	2	t
+170	2018	7	F	Y	4	t	f	2	t
+170	2018	7	F	Y	4	t	f	3	t
+170	2018	7	F	Y	4	t	f	1	t
+172	2020	5	M	Y	7	t	t	3	t
+172	2020	5	M	Y	7	t	t	2	t
+172	2020	5	M	Y	7	t	f	1	t
+173	2020	3	U	N	3	f	t	1	t
+173	2020	3	U	N	3	f	f	2	t
+174	2018	5	U	Y	6	f	f	1	t
+174	2018	5	U	Y	6	f	f	2	t
+176	2020	4	F	U	1	t	t	3	t
+176	2020	4	F	U	1	t	f	2	t
+176	2020	4	F	U	1	t	f	1	t
+177	2018	3	F	N	1	f	f	1	t
+177	2018	3	F	N	1	f	f	2	t
+177	2018	3	F	N	1	f	t	3	t
+178	2018	3	F	U	1	f	f	1	t
+178	2018	3	F	U	1	f	f	2	t
+179	2018	5	M	Y	1	f	t	1	t
+179	2018	5	M	Y	1	f	t	2	t
+180	2019	3	F	N	5	f	t	3	t
+180	2019	3	F	N	5	f	f	1	t
+180	2019	3	F	N	5	f	f	2	t
+182	2020	5	U	U	6	t	t	3	t
+182	2020	5	U	U	6	t	f	1	t
+184	2020	2	F	Y	3	f	f	3	t
+184	2020	2	F	Y	3	f	f	1	t
+185	2018	6	M	U	1	f	t	1	t
+185	2018	6	M	U	1	f	f	3	t
+187	2020	7	F	N	2	t	t	2	t
+187	2020	7	F	N	2	t	f	1	t
+187	2020	7	F	N	2	t	f	3	t
+188	2020	6	U	Y	7	f	f	2	t
+188	2020	6	U	Y	7	f	f	1	t
+190	2019	3	F	N	2	t	t	2	t
+190	2019	3	F	N	2	t	f	1	t
+191	2018	1	U	N	2	f	f	1	t
+191	2018	1	U	N	2	f	t	2	t
+193	2020	7	F	U	5	t	f	1	t
+193	2020	7	F	U	5	t	t	2	t
+195	2020	6	F	U	7	f	f	1	t
+195	2020	6	F	U	7	f	t	2	t
+196	2019	6	M	N	2	t	t	2	t
+196	2019	6	M	N	2	t	f	1	t
+197	2019	7	U	Y	6	f	f	2	t
+197	2019	7	U	Y	6	f	f	1	t
+202	2019	4	U	U	5	f	t	1	t
+202	2019	4	U	U	5	f	t	3	t
+203	2020	6	U	N	5	f	f	1	t
+203	2020	6	U	N	5	f	f	2	t
+204	2018	3	F	U	1	f	t	2	t
+204	2018	3	F	U	1	f	f	3	t
+204	2018	3	F	U	1	f	f	1	t
+207	2018	4	U	U	5	t	f	2	t
+207	2018	4	U	U	5	t	f	1	t
+208	2019	3	M	N	7	f	f	2	t
+208	2019	3	M	N	7	f	f	1	t
+210	2018	4	M	N	3	t	f	2	t
+210	2018	4	M	N	3	t	f	1	t
+211	2018	6	F	N	6	f	f	1	t
+211	2018	6	F	N	6	f	t	2	t
+212	2020	4	U	Y	3	f	t	2	t
+212	2020	4	U	Y	3	f	f	1	t
+214	2019	7	U	U	4	t	t	3	t
+214	2019	7	U	U	4	t	f	1	t
+217	2018	2	M	N	2	f	f	3	t
+217	2018	2	M	N	2	f	f	1	t
+219	2019	6	M	Y	1	t	f	1	t
+219	2019	6	M	Y	1	t	t	2	t
+221	2019	4	U	U	2	f	f	2	t
+221	2019	4	U	U	2	f	f	1	t
+223	2018	4	F	N	7	f	f	3	t
+223	2018	4	F	N	7	f	f	1	t
+225	2019	6	U	U	2	f	t	1	t
+225	2019	6	U	U	2	f	t	3	t
+226	2019	7	M	U	7	f	f	2	t
+226	2019	7	M	U	7	f	f	1	t
+226	2019	7	M	U	7	f	f	3	t
+227	2019	5	U	Y	4	f	f	1	t
+227	2019	5	U	Y	4	f	t	2	t
+228	2020	6	U	N	4	f	f	1	t
+228	2020	6	U	N	4	f	t	2	t
+230	2018	4	M	N	5	t	t	2	t
+230	2018	4	M	N	5	t	f	1	t
+232	2019	2	M	Y	6	t	t	2	t
+232	2019	2	M	Y	6	t	f	1	t
+234	2018	7	M	U	6	f	f	3	t
+234	2018	7	M	U	6	f	f	1	t
+235	2018	3	M	U	7	t	f	2	t
+235	2018	3	M	U	7	t	f	1	t
+235	2018	3	M	U	7	t	t	3	t
+236	2020	4	U	Y	3	f	f	1	t
+236	2020	4	U	Y	3	f	f	2	t
+237	2018	5	M	N	2	f	f	1	t
+237	2018	5	M	N	2	f	f	2	t
+238	2018	5	M	U	5	f	f	1	t
+238	2018	5	M	U	5	f	t	2	t
+239	2019	5	M	Y	6	f	f	2	t
+239	2019	5	M	Y	6	f	f	1	t
+240	2019	4	F	Y	7	t	f	3	t
+240	2019	4	F	Y	7	t	f	1	t
+241	2020	3	M	Y	1	f	f	2	t
+241	2020	3	M	Y	1	f	f	3	t
+241	2020	3	M	Y	1	f	f	1	t
+243	2019	5	F	Y	4	f	f	2	t
+243	2019	5	F	Y	4	f	f	1	t
+244	2019	4	U	Y	2	f	t	2	t
+244	2019	4	U	Y	2	f	f	1	t
+245	2019	4	F	N	5	t	t	2	t
+245	2019	4	F	N	5	t	f	1	t
+250	2019	2	F	U	1	f	t	3	t
+250	2019	2	F	U	1	f	f	2	t
+250	2019	2	F	U	1	f	f	1	t
+251	2018	5	F	Y	4	f	f	1	t
+251	2018	5	F	Y	4	f	f	2	t
+251	2018	5	F	Y	4	f	f	3	t
+252	2020	5	U	N	7	f	t	2	t
+252	2020	5	U	N	7	f	f	1	t
+253	2020	6	U	N	7	f	t	3	t
+253	2020	6	U	N	7	f	t	1	t
+254	2019	5	M	Y	7	f	f	1	t
+254	2019	5	M	Y	7	f	f	2	t
+256	2018	7	U	Y	2	f	f	3	t
+256	2018	7	U	Y	2	f	f	1	t
+257	2018	7	U	N	6	f	f	3	t
+257	2018	7	U	N	6	f	f	1	t
+259	2020	7	U	U	1	f	t	2	t
+259	2020	7	U	U	1	f	f	1	t
+260	2019	5	F	U	2	f	f	1	t
+260	2019	5	F	U	2	f	f	3	t
+261	2019	7	M	U	5	f	f	1	t
+261	2019	7	M	U	5	f	f	2	t
+262	2018	3	F	Y	1	f	t	2	t
+262	2018	3	F	Y	1	f	t	1	t
+264	2019	7	M	N	3	f	t	2	t
+264	2019	7	M	N	3	f	f	1	t
+264	2019	7	M	N	3	f	f	3	t
+266	2020	3	F	Y	6	f	f	2	t
+266	2020	3	F	Y	6	f	f	1	t
+266	2020	3	F	Y	6	f	f	3	t
+268	2020	5	U	U	2	f	f	3	t
+268	2020	5	U	U	2	f	f	1	t
+268	2020	5	U	U	2	f	t	2	t
+271	2019	6	U	U	3	f	t	1	t
+271	2019	6	U	U	3	f	t	2	t
+272	2019	7	F	Y	3	f	f	1	t
+272	2019	7	F	Y	3	f	f	3	t
+273	2018	4	M	U	4	t	f	1	t
+273	2018	4	M	U	4	t	f	2	t
+274	2019	3	U	Y	7	t	f	1	t
+274	2019	3	U	Y	7	t	f	3	t
+274	2019	3	U	Y	7	t	f	2	t
+275	2019	5	U	Y	2	f	t	1	t
+275	2019	5	U	Y	2	f	t	2	t
+276	2019	7	F	U	7	f	f	1	t
+276	2019	7	F	U	7	f	t	2	t
+279	2019	5	M	U	3	f	f	2	t
+279	2019	5	M	U	3	f	f	1	t
+280	2020	4	F	U	6	f	f	2	t
+280	2020	4	F	U	6	f	f	1	t
+280	2020	4	F	U	6	f	f	3	t
+283	2019	1	F	N	5	f	t	3	t
+283	2019	1	F	N	5	f	f	1	t
+283	2019	1	F	N	5	f	t	2	t
+284	2019	7	F	N	2	f	f	1	t
+284	2019	7	F	N	2	f	t	3	t
+286	2018	2	M	Y	7	t	f	3	t
+286	2018	2	M	Y	7	t	f	1	t
+288	2019	1	F	U	1	t	f	3	t
+288	2019	1	F	U	1	t	f	2	t
+288	2019	1	F	U	1	t	f	1	t
+290	2018	4	U	U	4	f	f	1	t
+290	2018	4	U	U	4	f	f	3	t
+291	2019	5	U	U	3	t	f	2	t
+291	2019	5	U	U	3	t	f	3	t
+291	2019	5	U	U	3	t	f	1	t
+292	2018	4	U	N	7	t	f	3	t
+292	2018	4	U	N	7	t	t	1	t
+293	2018	7	M	N	4	f	f	1	t
+293	2018	7	M	N	4	f	f	3	t
+293	2018	7	M	N	4	f	t	2	t
+294	2020	3	M	U	1	t	t	2	t
+294	2020	3	M	U	1	t	f	1	t
+295	2020	3	F	N	6	t	f	1	t
+295	2020	3	F	N	6	t	f	2	t
+295	2020	3	F	N	6	t	t	3	t
+297	2019	5	F	Y	7	f	t	2	t
+297	2019	5	F	Y	7	f	f	1	t
+298	2020	5	M	N	5	f	f	3	t
+298	2020	5	M	N	5	f	f	2	t
+298	2020	5	M	N	5	f	f	1	t
+299	2019	4	U	N	4	t	f	2	t
+299	2019	4	U	N	4	t	f	1	t
+301	2019	2	F	U	6	t	f	1	t
+301	2019	2	F	U	6	t	t	2	t
+302	2020	5	M	Y	6	f	f	2	t
+302	2020	5	M	Y	6	f	f	1	t
+302	2020	5	M	Y	6	f	f	3	t
+304	2018	3	M	Y	4	t	t	3	t
+304	2018	3	M	Y	4	t	f	1	t
+308	2020	1	U	U	3	t	f	2	t
+308	2020	1	U	U	3	t	f	1	t
+309	2020	2	M	U	7	f	t	2	t
+309	2020	2	M	U	7	f	f	1	t
+309	2020	2	M	U	7	f	f	3	t
+310	2019	5	U	Y	4	t	t	2	t
+310	2019	5	U	Y	4	t	f	3	t
+310	2019	5	U	Y	4	t	f	1	t
+313	2019	7	M	N	1	f	f	1	t
+313	2019	7	M	N	1	f	t	2	t
+315	2020	2	F	Y	4	t	t	3	t
+315	2020	2	F	Y	4	t	t	2	t
+315	2020	2	F	Y	4	t	f	1	t
+318	2020	4	U	N	2	f	t	3	t
+318	2020	4	U	N	2	f	t	1	t
+319	2018	2	F	N	5	f	t	2	t
+319	2018	2	F	N	5	f	f	1	t
+320	2019	6	U	U	2	t	f	1	t
+320	2019	6	U	U	2	t	f	3	t
+322	2020	7	F	U	5	f	t	2	t
+322	2020	7	F	U	5	f	f	1	t
+324	2018	6	U	U	5	f	t	1	t
+324	2018	6	U	U	5	f	f	2	t
+326	2019	7	U	Y	2	f	f	3	t
+326	2019	7	U	Y	2	f	f	1	t
+327	2018	5	F	U	2	f	f	1	t
+327	2018	5	F	U	2	f	f	3	t
+330	2020	3	U	U	3	t	t	1	t
+330	2020	3	U	U	3	t	f	2	t
+331	2018	6	F	U	7	f	f	1	t
+331	2018	6	F	U	7	f	t	2	t
+332	2020	7	M	U	2	f	f	1	t
+332	2020	7	M	U	2	f	t	2	t
+334	2018	7	M	N	7	f	f	1	t
+334	2018	7	M	N	7	f	f	3	t
+334	2018	7	M	N	7	f	f	2	t
+335	2020	1	U	Y	6	f	f	2	t
+335	2020	1	U	Y	6	f	f	1	t
+339	2018	5	M	Y	7	f	f	2	t
+339	2018	5	M	Y	7	f	f	1	t
+340	2018	1	F	Y	5	t	f	1	t
+340	2018	1	F	Y	5	t	t	2	t
+344	2020	5	M	U	6	f	t	1	t
+344	2020	5	M	U	6	f	f	2	t
+345	2019	5	F	N	2	f	f	1	t
+345	2019	5	F	N	2	f	t	3	t
+345	2019	5	F	N	2	f	t	2	t
+346	2019	3	M	N	6	f	t	2	t
+346	2019	3	M	N	6	f	f	1	t
+347	2018	4	F	N	2	t	f	1	t
+347	2018	4	F	N	2	t	f	2	t
+348	2020	2	U	Y	3	f	f	1	t
+348	2020	2	U	Y	3	f	f	2	t
+349	2018	5	U	N	1	f	f	1	t
+349	2018	5	U	N	1	f	t	3	t
+350	2019	6	F	U	3	f	t	2	t
+350	2019	6	F	U	3	f	f	1	t
+351	2019	2	U	Y	2	f	f	1	t
+351	2019	2	U	Y	2	f	t	3	t
+353	2020	4	U	Y	1	f	f	1	t
+353	2020	4	U	Y	1	f	t	2	t
+354	2018	3	M	N	3	f	f	1	t
+354	2018	3	M	N	3	f	f	2	t
+355	2018	4	U	Y	2	f	f	3	t
+355	2018	4	U	Y	2	f	f	1	t
+356	2019	7	F	U	6	f	f	2	t
+356	2019	7	F	U	6	f	f	1	t
+358	2020	4	F	U	6	f	f	1	t
+358	2020	4	F	U	6	f	t	2	t
+360	2018	2	U	Y	2	f	f	1	t
+360	2018	2	U	Y	2	f	f	3	t
+360	2018	2	U	Y	2	f	f	2	t
+362	2020	7	M	N	4	f	f	1	t
+362	2020	7	M	N	4	f	t	2	t
+362	2020	7	M	N	4	f	t	3	t
+363	2019	7	F	N	5	t	f	1	t
+363	2019	7	F	N	5	t	t	3	t
+366	2020	1	F	N	7	f	t	2	t
+366	2020	1	F	N	7	f	f	1	t
+366	2020	1	F	N	7	f	f	3	t
+367	2019	6	M	U	4	f	t	1	t
+367	2019	6	M	U	4	f	t	3	t
+368	2020	1	F	Y	2	t	f	3	t
+368	2020	1	F	Y	2	t	f	1	t
+370	2018	3	U	Y	3	f	f	3	t
+370	2018	3	U	Y	3	f	f	1	t
+371	2018	4	M	Y	4	f	t	2	t
+371	2018	4	M	Y	4	f	f	1	t
+373	2019	7	U	N	3	f	t	2	t
+373	2019	7	U	N	3	f	f	3	t
+373	2019	7	U	N	3	f	t	1	t
+374	2018	5	U	U	2	t	t	2	t
+374	2018	5	U	U	2	t	f	1	t
+376	2020	3	U	Y	3	t	f	1	t
+376	2020	3	U	Y	3	t	t	2	t
+377	2020	4	U	N	7	t	t	3	t
+377	2020	4	U	N	7	t	f	1	t
+378	2020	5	U	N	7	f	f	2	t
+378	2020	5	U	N	7	f	f	1	t
+379	2020	4	U	Y	1	f	f	2	t
+379	2020	4	U	Y	1	f	t	1	t
+381	2018	5	M	U	6	f	t	2	t
+381	2018	5	M	U	6	f	f	1	t
+382	2020	6	M	Y	7	f	f	1	t
+382	2020	6	M	Y	7	f	t	2	t
+383	2020	7	M	Y	3	f	f	1	t
+383	2020	7	M	Y	3	f	f	3	t
+387	2019	3	M	U	4	f	f	1	t
+387	2019	3	M	U	4	f	f	2	t
+388	2018	6	U	Y	3	t	t	2	t
+388	2018	6	U	Y	3	t	f	1	t
+390	2019	5	M	N	5	t	t	2	t
+390	2019	5	M	N	5	t	f	1	t
+391	2018	1	M	Y	5	t	f	1	t
+391	2018	1	M	Y	5	t	t	3	t
+391	2018	1	M	Y	5	t	t	2	t
+392	2019	2	U	Y	2	f	t	2	t
+392	2019	2	U	Y	2	f	f	1	t
+393	2019	3	U	Y	5	f	f	1	t
+393	2019	3	U	Y	5	f	t	2	t
+394	2019	1	U	N	6	f	f	1	t
+394	2019	1	U	N	6	f	t	2	t
+394	2019	1	U	N	6	f	f	3	t
+396	2018	1	F	U	2	f	f	1	t
+396	2018	1	F	U	2	f	f	3	t
+399	2018	4	M	N	5	f	f	2	t
+399	2018	4	M	N	5	f	f	1	t
+399	2018	4	M	N	5	f	f	3	t
+400	2018	2	M	U	1	f	f	1	t
+400	2018	2	M	U	1	f	t	2	t
+401	2018	1	M	N	6	f	f	2	t
+401	2018	1	M	N	6	f	f	1	t
+402	2018	5	M	U	1	t	f	3	t
+402	2018	5	M	U	1	t	f	1	t
+403	2020	5	F	N	3	t	f	1	t
+403	2020	5	F	N	3	t	t	2	t
+404	2020	6	U	U	6	f	f	1	t
+404	2020	6	U	U	6	f	f	2	t
+406	2020	5	U	U	7	f	f	1	t
+406	2020	5	U	U	7	f	f	3	t
+407	2019	1	M	N	2	f	t	3	t
+407	2019	1	M	N	2	f	f	1	t
+409	2020	7	M	Y	1	f	f	2	t
+409	2020	7	M	Y	1	f	f	1	t
+409	2020	7	M	Y	1	f	f	3	t
+410	2018	7	M	N	5	f	f	2	t
+410	2018	7	M	N	5	f	f	1	t
+411	2020	4	M	U	7	t	f	1	t
+411	2020	4	M	U	7	t	t	2	t
+412	2018	7	U	N	5	t	f	1	t
+412	2018	7	U	N	5	t	f	2	t
+413	2020	6	M	U	3	f	f	1	t
+413	2020	6	M	U	3	f	f	3	t
+414	2020	1	U	U	4	f	f	1	t
+414	2020	1	U	U	4	f	t	3	t
+415	2019	4	M	N	1	f	f	2	t
+415	2019	4	M	N	1	f	f	1	t
+416	2019	1	F	N	2	t	f	2	t
+416	2019	1	F	N	2	t	t	1	t
+416	2019	1	F	N	2	t	f	3	t
+418	2019	5	M	N	4	f	f	1	t
+418	2019	5	M	N	4	f	t	2	t
+418	2019	5	M	N	4	f	t	3	t
+421	2018	5	F	U	2	f	f	2	t
+421	2018	5	F	U	2	f	f	1	t
+424	2018	7	M	N	1	f	f	1	t
+424	2018	7	M	N	1	f	t	2	t
+425	2020	2	F	N	1	f	f	3	t
+425	2020	2	F	N	1	f	f	1	t
+426	2019	4	U	U	5	t	f	2	t
+426	2019	4	U	U	5	t	f	3	t
+426	2019	4	U	U	5	t	f	1	t
+428	2018	7	U	Y	5	f	f	3	t
+428	2018	7	U	Y	5	f	f	1	t
+428	2018	7	U	Y	5	f	t	2	t
+429	2020	7	M	Y	6	f	f	1	t
+429	2020	7	M	Y	6	f	f	3	t
+431	2019	3	M	U	1	f	t	1	t
+431	2019	3	M	U	1	f	t	2	t
+432	2018	6	F	Y	6	t	f	2	t
+432	2018	6	F	Y	6	t	f	1	t
+435	2018	1	U	U	4	t	f	1	t
+435	2018	1	U	U	4	t	f	3	t
+435	2018	1	U	U	4	t	t	2	t
+439	2018	1	F	U	2	t	f	1	t
+439	2018	1	F	U	2	t	f	2	t
+441	2020	7	M	Y	4	t	f	3	t
+441	2020	7	M	Y	4	t	f	2	t
+441	2020	7	M	Y	4	t	f	1	t
+442	2020	3	M	Y	5	f	t	2	t
+442	2020	3	M	Y	5	f	f	1	t
+446	2020	6	M	Y	3	f	f	2	t
+446	2020	6	M	Y	3	f	f	1	t
+449	2020	6	U	N	4	f	f	1	t
+449	2020	6	U	N	4	f	f	3	t
+449	2020	6	U	N	4	f	f	2	t
+450	2018	2	M	U	7	f	t	2	t
+450	2018	2	M	U	7	f	f	1	t
+450	2018	2	M	U	7	f	t	3	t
+451	2020	3	U	N	1	t	f	1	t
+451	2020	3	U	N	1	t	f	3	t
+453	2020	5	M	U	6	f	f	3	t
+453	2020	5	M	U	6	f	f	1	t
+454	2018	3	U	N	4	f	f	3	t
+454	2018	3	U	N	4	f	f	2	t
+454	2018	3	U	N	4	f	f	1	t
+455	2019	5	U	U	6	f	f	3	t
+455	2019	5	U	U	6	f	f	1	t
+456	2018	2	M	Y	5	f	f	2	t
+456	2018	2	M	Y	5	f	f	1	t
+457	2018	6	M	Y	1	f	f	1	t
+457	2018	6	M	Y	1	f	t	3	t
+458	2018	3	M	Y	4	f	f	1	t
+458	2018	3	M	Y	4	f	f	2	t
+459	2020	3	F	U	2	t	f	1	t
+459	2020	3	F	U	2	t	t	2	t
+461	2020	3	U	U	7	f	f	2	t
+461	2020	3	U	U	7	f	f	1	t
+462	2018	4	M	U	3	t	f	1	t
+462	2018	4	M	U	3	t	t	2	t
+463	2018	6	M	U	2	f	t	2	t
+463	2018	6	M	U	2	f	f	1	t
+464	2020	5	U	Y	3	f	f	1	t
+464	2020	5	U	Y	3	f	f	2	t
+465	2019	7	M	Y	4	f	t	3	t
+465	2019	7	M	Y	4	f	f	1	t
+468	2019	4	M	U	3	f	f	1	t
+468	2019	4	M	U	3	f	t	2	t
+469	2018	6	F	U	7	t	t	2	t
+469	2018	6	F	U	7	t	f	1	t
+472	2020	6	M	Y	6	f	t	3	t
+472	2020	6	M	Y	6	f	t	2	t
+472	2020	6	M	Y	6	f	f	1	t
+473	2018	7	M	N	2	f	f	2	t
+473	2018	7	M	N	2	f	f	1	t
+474	2018	2	F	U	3	t	f	1	t
+474	2018	2	F	U	3	t	t	2	t
+476	2019	7	U	N	3	f	f	2	t
+476	2019	7	U	N	3	f	f	1	t
+478	2020	3	U	Y	5	f	f	1	t
+478	2020	3	U	Y	5	f	t	2	t
+478	2020	3	U	Y	5	f	f	3	t
+481	2018	4	U	Y	2	f	f	2	t
+481	2018	4	U	Y	2	f	f	3	t
+481	2018	4	U	Y	2	f	f	1	t
+482	2018	7	U	Y	6	f	f	2	t
+482	2018	7	U	Y	6	f	f	1	t
+482	2018	7	U	Y	6	f	f	3	t
+484	2019	3	M	Y	4	f	f	1	t
+484	2019	3	M	Y	4	f	t	2	t
+485	2018	5	M	Y	3	f	f	1	t
+485	2018	5	M	Y	3	f	t	2	t
+486	2018	1	F	N	6	f	f	3	t
+486	2018	1	F	N	6	f	f	1	t
+487	2018	5	M	Y	5	f	t	2	t
+487	2018	5	M	Y	5	f	f	1	t
+488	2018	6	F	Y	3	f	f	1	t
+488	2018	6	F	Y	3	f	t	2	t
+489	2019	4	F	Y	7	f	f	1	t
+489	2019	4	F	Y	7	f	f	3	t
+490	2020	7	M	Y	3	f	f	3	t
+490	2020	7	M	Y	3	f	f	1	t
+491	2018	7	M	U	4	f	f	1	t
+491	2018	7	M	U	4	f	t	3	t
+493	2019	7	F	U	4	f	t	2	t
+493	2019	7	F	U	4	f	f	1	t
+494	2019	7	F	U	5	t	f	3	t
+494	2019	7	F	U	5	t	f	1	t
+494	2019	7	F	U	5	t	f	2	t
+495	2019	1	M	N	3	f	t	3	t
+495	2019	1	M	N	3	f	t	1	t
+496	2019	6	U	N	3	f	f	3	t
+496	2019	6	U	N	3	f	f	1	t
+497	2019	4	M	Y	1	f	f	1	t
+497	2019	4	M	Y	1	f	t	3	t
+501	2019	1	M	N	3	t	f	1	t
+501	2019	1	M	N	3	t	f	2	t
+501	2019	1	M	N	3	t	f	3	t
+503	2018	2	U	Y	3	f	f	1	t
+503	2018	2	U	Y	3	f	f	2	t
+505	2018	1	U	Y	5	t	f	2	t
+505	2018	1	U	Y	5	t	f	1	t
+506	2020	4	M	Y	4	f	f	1	t
+506	2020	4	M	Y	4	f	f	2	t
+506	2020	4	M	Y	4	f	f	3	t
+507	2019	5	U	N	4	f	f	1	t
+507	2019	5	U	N	4	f	f	2	t
+508	2019	5	U	Y	6	f	f	2	t
+508	2019	5	U	Y	6	f	f	1	t
+508	2019	5	U	Y	6	f	t	3	t
+509	2019	7	F	U	1	f	f	1	t
+509	2019	7	F	U	1	f	f	2	t
+510	2020	5	U	Y	3	t	f	1	t
+510	2020	5	U	Y	3	t	f	3	t
+511	2020	5	M	U	4	f	f	1	t
+511	2020	5	M	U	4	f	t	2	t
+512	2020	3	F	N	4	f	f	1	t
+512	2020	3	F	N	4	f	f	2	t
+513	2019	3	F	N	3	f	t	2	t
+513	2019	3	F	N	3	f	t	1	t
+515	2018	2	M	N	7	f	f	2	t
+515	2018	2	M	N	7	f	f	1	t
+516	2020	3	M	U	4	f	f	1	t
+516	2020	3	M	U	4	f	f	3	t
+517	2019	3	F	U	5	t	t	2	t
+517	2019	3	F	U	5	t	f	1	t
+518	2018	4	M	U	6	f	f	1	t
+518	2018	4	M	U	6	f	f	2	t
+519	2018	6	F	N	2	f	f	2	t
+519	2018	6	F	N	2	f	f	1	t
+519	2018	6	F	N	2	f	t	3	t
+520	2019	7	M	U	3	f	f	1	t
+520	2019	7	M	U	3	f	t	2	t
+522	2019	3	U	U	1	f	t	2	t
+522	2019	3	U	U	1	f	f	1	t
+524	2019	4	U	U	3	f	t	1	t
+524	2019	4	U	U	3	f	f	3	t
+526	2019	7	F	Y	6	t	f	1	t
+526	2019	7	F	Y	6	t	t	2	t
+527	2020	4	M	Y	1	t	f	2	t
+527	2020	4	M	Y	1	t	f	1	t
+528	2020	6	M	N	4	t	f	1	t
+528	2020	6	M	N	4	t	t	2	t
+530	2020	1	F	U	6	f	f	2	t
+530	2020	1	F	U	6	f	f	1	t
+532	2020	7	U	N	1	f	f	3	t
+532	2020	7	U	N	1	f	t	1	t
+533	2019	2	U	Y	4	f	f	2	t
+533	2019	2	U	Y	4	f	f	1	t
+534	2019	7	U	Y	1	f	f	1	t
+534	2019	7	U	Y	1	f	f	2	t
+535	2020	4	U	U	7	f	f	1	t
+535	2020	4	U	U	7	f	f	3	t
+537	2019	1	F	Y	7	f	f	2	t
+537	2019	1	F	Y	7	f	f	1	t
+538	2018	1	F	U	5	f	f	1	t
+538	2018	1	F	U	5	f	f	3	t
+539	2020	6	M	N	1	f	f	2	t
+539	2020	6	M	N	1	f	f	1	t
+540	2020	6	F	U	6	f	f	3	t
+540	2020	6	F	U	6	f	f	2	t
+540	2020	6	F	U	6	f	f	1	t
+541	2020	5	M	Y	1	t	f	1	t
+541	2020	5	M	Y	1	t	f	2	t
+543	2019	1	F	Y	4	f	f	1	t
+543	2019	1	F	Y	4	f	t	2	t
+544	2020	1	U	Y	6	t	t	2	t
+544	2020	1	U	Y	6	t	f	1	t
+545	2018	4	U	Y	7	f	f	1	t
+545	2018	4	U	Y	7	f	t	2	t
+546	2020	4	F	N	3	f	f	2	t
+546	2020	4	F	N	3	f	f	1	t
+547	2019	7	U	N	4	f	f	1	t
+547	2019	7	U	N	4	f	f	2	t
+547	2019	7	U	N	4	f	f	3	t
+549	2019	6	F	U	6	f	t	2	t
+549	2019	6	F	U	6	f	f	1	t
+550	2018	7	U	N	4	t	f	1	t
+550	2018	7	U	N	4	t	t	2	t
+551	2019	6	M	N	4	f	f	2	t
+551	2019	6	M	N	4	f	f	3	t
+551	2019	6	M	N	4	f	f	1	t
+553	2020	4	U	Y	2	f	f	1	t
+553	2020	4	U	Y	2	f	t	2	t
+554	2019	5	F	U	4	t	f	3	t
+554	2019	5	F	U	4	t	f	1	t
+556	2019	7	U	U	5	f	f	1	t
+556	2019	7	U	U	5	f	t	2	t
+556	2019	7	U	U	5	f	t	3	t
+558	2020	2	U	Y	2	f	t	2	t
+558	2020	2	U	Y	2	f	f	1	t
+559	2020	2	M	Y	7	f	t	2	t
+559	2020	2	M	Y	7	f	t	1	t
+560	2019	3	U	N	2	f	f	2	t
+560	2019	3	U	N	2	f	t	1	t
+561	2019	7	U	U	4	f	f	2	t
+561	2019	7	U	U	4	f	f	1	t
+562	2020	5	F	Y	7	f	f	2	t
+562	2020	5	F	Y	7	f	f	1	t
+564	2020	3	U	Y	6	t	f	1	t
+564	2020	3	U	Y	6	t	f	3	t
+564	2020	3	U	Y	6	t	t	2	t
+565	2018	1	F	N	5	f	t	3	t
+565	2018	1	F	N	5	f	t	1	t
+567	2018	3	M	U	2	f	f	1	t
+567	2018	3	M	U	2	f	f	3	t
+568	2019	4	U	N	4	t	f	1	t
+568	2019	4	U	N	4	t	t	2	t
+569	2018	3	M	Y	1	f	f	1	t
+569	2018	3	M	Y	1	f	f	2	t
+570	2018	2	F	U	2	f	f	1	t
+570	2018	2	F	U	2	f	t	2	t
+571	2019	4	F	N	6	f	f	3	t
+571	2019	4	F	N	6	f	f	2	t
+571	2019	4	F	N	6	f	f	1	t
+572	2020	2	U	U	4	t	f	1	t
+572	2020	2	U	U	4	t	t	3	t
+572	2020	2	U	U	4	t	f	2	t
+573	2019	2	M	U	2	f	f	3	t
+573	2019	2	M	U	2	f	t	1	t
+574	2019	6	M	U	5	f	f	1	t
+574	2019	6	M	U	5	f	t	2	t
+575	2020	4	F	Y	3	t	f	3	t
+575	2020	4	F	Y	3	t	f	2	t
+575	2020	4	F	Y	3	t	f	1	t
+576	2019	6	U	N	7	t	t	2	t
+576	2019	6	U	N	7	t	t	1	t
+577	2019	7	U	U	3	f	f	1	t
+577	2019	7	U	U	3	f	f	3	t
+580	2020	5	F	N	5	f	f	1	t
+580	2020	5	F	N	5	f	f	2	t
+582	2020	5	M	U	7	f	f	1	t
+582	2020	5	M	U	7	f	f	2	t
+584	2020	1	U	N	2	f	f	1	t
+584	2020	1	U	N	2	f	f	2	t
+585	2020	2	F	N	2	f	f	1	t
+585	2020	2	F	N	2	f	f	3	t
+586	2019	3	F	N	2	t	t	2	t
+586	2019	3	F	N	2	t	f	1	t
+587	2019	1	U	Y	1	f	t	1	t
+587	2019	1	U	Y	1	f	f	2	t
+588	2020	4	F	Y	7	f	f	2	t
+588	2020	4	F	Y	7	f	f	1	t
+590	2018	3	F	Y	4	f	t	2	t
+590	2018	3	F	Y	4	f	f	1	t
+593	2018	4	M	Y	3	f	t	2	t
+593	2018	4	M	Y	3	f	f	1	t
+594	2019	2	M	N	5	f	f	3	t
+594	2019	2	M	N	5	f	f	1	t
+596	2019	1	F	N	4	f	t	2	t
+596	2019	1	F	N	4	f	f	1	t
+597	2019	1	M	N	1	t	t	2	t
+597	2019	1	M	N	1	t	f	1	t
+599	2018	1	U	U	6	t	f	1	t
+599	2018	1	U	U	6	t	t	2	t
+600	2020	3	U	N	1	f	f	1	t
+600	2020	3	U	N	1	f	f	3	t
+601	2018	7	F	Y	7	f	f	1	t
+601	2018	7	F	Y	7	f	f	2	t
+602	2019	7	F	U	1	t	f	1	t
+602	2019	7	F	U	1	t	t	2	t
+603	2020	5	U	Y	6	t	f	1	t
+603	2020	5	U	Y	6	t	f	3	t
+604	2019	6	M	Y	2	f	f	2	t
+604	2019	6	M	Y	2	f	f	1	t
+605	2019	1	M	U	5	t	t	1	t
+605	2019	1	M	U	5	t	t	3	t
+607	2020	3	M	N	2	t	f	3	t
+607	2020	3	M	N	2	t	f	1	t
+610	2019	1	U	Y	3	f	f	2	t
+610	2019	1	U	Y	3	f	f	1	t
+610	2019	1	U	Y	3	f	f	3	t
+611	2020	1	F	N	4	t	f	1	t
+611	2020	1	F	N	4	t	t	2	t
+612	2019	4	U	N	4	f	f	1	t
+612	2019	4	U	N	4	f	f	2	t
+613	2019	3	M	Y	1	t	f	1	t
+613	2019	3	M	Y	1	t	f	2	t
+615	2018	4	M	U	1	f	f	1	t
+615	2018	4	M	U	1	f	f	3	t
+617	2020	7	F	U	2	f	f	3	t
+617	2020	7	F	U	2	f	f	1	t
+619	2018	6	F	Y	6	f	t	2	t
+619	2018	6	F	Y	6	f	f	3	t
+619	2018	6	F	Y	6	f	f	1	t
+620	2019	5	F	U	5	f	f	1	t
+620	2019	5	F	U	5	f	t	2	t
+622	2020	7	M	U	3	t	f	3	t
+622	2020	7	M	U	3	t	f	1	t
+623	2018	3	M	Y	2	t	t	2	t
+623	2018	3	M	Y	2	t	t	1	t
+624	2019	4	F	Y	2	f	f	1	t
+624	2019	4	F	Y	2	f	f	3	t
+626	2018	5	F	U	2	t	t	2	t
+626	2018	5	F	U	2	t	f	1	t
+627	2019	1	U	N	7	f	f	2	t
+627	2019	1	U	N	7	f	t	3	t
+627	2019	1	U	N	7	f	t	1	t
+630	2019	4	F	Y	1	t	f	3	t
+630	2019	4	F	Y	1	t	f	1	t
+632	2018	4	M	Y	2	f	f	1	t
+632	2018	4	M	Y	2	f	f	3	t
+635	2018	5	F	Y	2	f	f	1	t
+635	2018	5	F	Y	2	f	f	3	t
+637	2018	3	U	Y	4	f	f	2	t
+637	2018	3	U	Y	4	f	f	1	t
+639	2019	5	F	N	6	f	t	2	t
+639	2019	5	F	N	6	f	f	1	t
+640	2019	6	U	U	4	f	t	2	t
+640	2019	6	U	U	4	f	f	1	t
+640	2019	6	U	U	4	f	t	3	t
+646	2018	7	M	U	5	f	t	1	t
+646	2018	7	M	U	5	f	f	2	t
+647	2018	4	M	Y	4	t	t	3	t
+647	2018	4	M	Y	4	t	f	1	t
+648	2019	4	U	U	7	f	t	2	t
+648	2019	4	U	U	7	f	f	1	t
+649	2019	3	M	Y	4	f	t	3	t
+649	2019	3	M	Y	4	f	f	2	t
+649	2019	3	M	Y	4	f	f	1	t
+650	2020	6	F	U	3	f	f	1	t
+650	2020	6	F	U	3	f	f	2	t
+652	2019	6	M	N	6	f	t	2	t
+652	2019	6	M	N	6	f	f	1	t
+653	2020	7	U	U	5	f	f	1	t
+653	2020	7	U	U	5	f	f	2	t
+654	2019	5	M	Y	3	f	f	2	t
+654	2019	5	M	Y	3	f	t	3	t
+654	2019	5	M	Y	3	f	f	1	t
+656	2018	4	U	N	1	f	t	3	t
+656	2018	4	U	N	1	f	f	1	t
+656	2018	4	U	N	1	f	t	2	t
+659	2018	4	F	U	3	t	t	2	t
+659	2018	4	F	U	3	t	f	1	t
+660	2020	3	U	N	1	f	f	1	t
+660	2020	3	U	N	1	f	t	2	t
+661	2019	3	U	Y	3	f	f	3	t
+661	2019	3	U	Y	3	f	f	1	t
+662	2020	2	M	N	4	f	f	1	t
+662	2020	2	M	N	4	f	f	2	t
+665	2020	5	U	Y	3	f	f	1	t
+665	2020	5	U	Y	3	f	t	3	t
+665	2020	5	U	Y	3	f	t	2	t
+668	2020	4	F	N	3	f	t	3	t
+668	2020	4	F	N	3	f	f	1	t
+669	2019	3	U	Y	4	f	t	3	t
+669	2019	3	U	Y	4	f	f	1	t
+670	2019	2	U	Y	1	f	t	1	t
+670	2019	2	U	Y	1	f	f	2	t
+670	2019	2	U	Y	1	f	f	3	t
+671	2018	5	M	U	6	t	f	1	t
+671	2018	5	M	U	6	t	f	2	t
+671	2018	5	M	U	6	t	f	3	t
+672	2018	3	M	N	2	f	t	2	t
+672	2018	3	M	N	2	f	t	1	t
+677	2018	7	M	N	4	f	t	3	t
+677	2018	7	M	N	4	f	f	1	t
+677	2018	7	M	N	4	f	t	2	t
+678	2020	3	U	U	3	f	f	1	t
+678	2020	3	U	U	3	f	f	3	t
+679	2019	1	M	N	3	f	f	1	t
+679	2019	1	M	N	3	f	f	3	t
+680	2018	6	M	U	7	f	t	2	t
+680	2018	6	M	U	7	f	f	1	t
+681	2020	5	M	U	1	f	f	1	t
+681	2020	5	M	U	1	f	t	3	t
+682	2018	1	M	Y	2	f	f	1	t
+682	2018	1	M	Y	2	f	f	2	t
+683	2020	6	U	N	2	f	t	3	t
+683	2020	6	U	N	2	f	f	1	t
+684	2018	5	M	N	7	f	f	1	t
+684	2018	5	M	N	7	f	t	2	t
+686	2018	2	F	U	1	f	f	2	t
+686	2018	2	F	U	1	f	f	1	t
+688	2018	5	F	N	7	t	f	1	t
+688	2018	5	F	N	7	t	t	2	t
+689	2019	2	M	U	5	f	f	1	t
+689	2019	2	M	U	5	f	t	2	t
+690	2018	1	F	Y	4	f	f	2	t
+690	2018	1	F	Y	4	f	f	1	t
+691	2020	6	F	N	3	f	t	2	t
+691	2020	6	F	N	3	f	f	3	t
+691	2020	6	F	N	3	f	f	1	t
+692	2019	3	F	Y	4	f	f	1	t
+692	2019	3	F	Y	4	f	t	2	t
+696	2018	4	U	U	7	f	t	2	t
+696	2018	4	U	U	7	f	f	1	t
+699	2018	4	F	U	7	f	f	1	t
+699	2018	4	F	U	7	f	t	3	t
+700	2020	1	F	Y	2	f	f	2	t
+700	2020	1	F	Y	2	f	f	1	t
+701	2019	7	F	Y	3	t	f	1	t
+701	2019	7	F	Y	3	t	t	2	t
+703	2020	1	F	Y	1	f	f	1	t
+703	2020	1	F	Y	1	f	f	2	t
+707	2018	7	F	Y	3	t	f	2	t
+707	2018	7	F	Y	3	t	f	1	t
+708	2019	3	M	N	5	t	f	3	t
+708	2019	3	M	N	5	t	f	1	t
+710	2018	5	U	N	4	f	f	1	t
+710	2018	5	U	N	4	f	f	3	t
+712	2019	3	F	U	4	f	f	2	t
+712	2019	3	F	U	4	f	f	1	t
+713	2019	7	M	N	3	f	t	2	t
+713	2019	7	M	N	3	f	f	1	t
+713	2019	7	M	N	3	f	t	3	t
+714	2019	3	F	Y	1	f	t	3	t
+714	2019	3	F	Y	1	f	f	1	t
+716	2018	7	M	U	4	f	t	2	t
+716	2018	7	M	U	4	f	f	1	t
+717	2019	6	U	Y	5	f	f	3	t
+717	2019	6	U	Y	5	f	f	1	t
+718	2019	1	U	N	1	f	f	3	t
+718	2019	1	U	N	1	f	f	1	t
+721	2020	2	F	Y	1	f	t	2	t
+721	2020	2	F	Y	1	f	t	1	t
+721	2020	2	F	Y	1	f	t	3	t
+723	2018	7	U	U	5	f	f	2	t
+723	2018	7	U	U	5	f	f	3	t
+723	2018	7	U	U	5	f	f	1	t
+724	2020	7	U	N	7	f	t	2	t
+724	2020	7	U	N	7	f	f	1	t
+725	2018	3	M	U	1	f	f	1	t
+725	2018	3	M	U	1	f	t	3	t
+726	2020	3	F	N	6	f	f	1	t
+726	2020	3	F	N	6	f	f	2	t
+728	2018	6	M	Y	1	f	f	1	t
+728	2018	6	M	Y	1	f	f	2	t
+730	2020	5	F	N	7	f	t	3	t
+730	2020	5	F	N	7	f	f	1	t
+731	2020	1	F	N	4	f	f	1	t
+731	2020	1	F	N	4	f	t	3	t
+732	2019	6	F	U	3	t	f	2	t
+732	2019	6	F	U	3	t	f	1	t
+733	2020	5	U	Y	7	f	t	2	t
+733	2020	5	U	Y	7	f	f	1	t
+733	2020	5	U	Y	7	f	f	3	t
+734	2018	3	U	U	7	t	f	1	t
+734	2018	3	U	U	7	t	t	2	t
+737	2020	5	F	Y	4	f	t	1	t
+737	2020	5	F	Y	4	f	f	3	t
+737	2020	5	F	Y	4	f	t	2	t
+741	2018	1	M	Y	3	f	f	1	t
+741	2018	1	M	Y	3	f	f	3	t
+741	2018	1	M	Y	3	f	f	2	t
+742	2019	5	U	U	7	t	t	3	t
+742	2019	5	U	U	7	t	f	1	t
+742	2019	5	U	U	7	t	t	2	t
+744	2019	5	U	Y	1	t	f	1	t
+744	2019	5	U	Y	1	t	f	2	t
+745	2020	6	F	U	1	t	f	1	t
+745	2020	6	F	U	1	t	t	3	t
+746	2020	7	M	N	4	f	f	1	t
+746	2020	7	M	N	4	f	t	2	t
+748	2020	1	M	N	3	f	f	1	t
+748	2020	1	M	N	3	f	f	2	t
+749	2019	3	M	N	7	f	f	3	t
+749	2019	3	M	N	7	f	f	1	t
+750	2019	2	M	U	3	f	f	3	t
+750	2019	2	M	U	3	f	f	2	t
+750	2019	2	M	U	3	f	f	1	t
+752	2020	7	M	N	1	f	f	2	t
+752	2020	7	M	N	1	f	f	1	t
+752	2020	7	M	N	1	f	f	3	t
+758	2020	7	F	U	2	t	f	2	t
+758	2020	7	F	U	2	t	f	1	t
+759	2020	3	F	N	2	f	f	1	t
+759	2020	3	F	N	2	f	t	2	t
+760	2018	5	F	Y	5	f	f	2	t
+760	2018	5	F	Y	5	f	f	1	t
+761	2019	1	M	Y	7	f	f	2	t
+761	2019	1	M	Y	7	f	f	1	t
+762	2019	5	F	Y	3	f	f	2	t
+762	2019	5	F	Y	3	f	f	1	t
+763	2020	3	M	N	4	t	f	1	t
+763	2020	3	M	N	4	t	f	2	t
+764	2019	3	M	N	1	t	t	1	t
+764	2019	3	M	N	1	t	t	3	t
+768	2020	2	M	N	3	f	f	1	t
+768	2020	2	M	N	3	f	f	2	t
+769	2020	5	F	N	2	t	f	1	t
+769	2020	5	F	N	2	t	f	3	t
+769	2020	5	F	N	2	t	t	2	t
+770	2020	4	F	U	4	f	f	3	t
+770	2020	4	F	U	4	f	t	2	t
+770	2020	4	F	U	4	f	f	1	t
+771	2018	6	U	N	5	f	f	1	t
+771	2018	6	U	N	5	f	f	2	t
+772	2020	7	U	U	7	f	f	1	t
+772	2020	7	U	U	7	f	f	2	t
+773	2018	3	F	N	6	f	f	2	t
+773	2018	3	F	N	6	f	f	3	t
+773	2018	3	F	N	6	f	f	1	t
+774	2018	2	U	N	5	f	t	3	t
+774	2018	2	U	N	5	f	t	1	t
+775	2019	5	F	N	1	f	f	3	t
+775	2019	5	F	N	1	f	f	1	t
+777	2020	5	M	Y	2	f	t	2	t
+777	2020	5	M	Y	2	f	f	1	t
+779	2019	2	M	Y	4	f	f	1	t
+779	2019	2	M	Y	4	f	f	2	t
+780	2020	1	M	Y	7	f	f	1	t
+780	2020	1	M	Y	7	f	f	2	t
+783	2018	5	M	N	7	f	f	2	t
+783	2018	5	M	N	7	f	f	1	t
+784	2020	5	U	U	6	t	f	1	t
+784	2020	5	U	U	6	t	t	2	t
+785	2019	7	F	Y	7	f	f	1	t
+785	2019	7	F	Y	7	f	f	2	t
+786	2019	6	F	N	6	f	f	1	t
+786	2019	6	F	N	6	f	f	3	t
+787	2020	6	U	U	5	f	t	3	t
+787	2020	6	U	U	5	f	t	1	t
+788	2020	7	M	N	3	f	f	2	t
+788	2020	7	M	N	3	f	t	1	t
+789	2018	6	M	U	4	f	f	1	t
+789	2018	6	M	U	4	f	f	2	t
+789	2018	6	M	U	4	f	f	3	t
+790	2020	2	M	N	7	f	f	1	t
+790	2020	2	M	N	7	f	f	3	t
+791	2018	5	U	U	5	f	t	3	t
+791	2018	5	U	U	5	f	f	1	t
+792	2019	1	F	N	7	f	f	2	t
+792	2019	1	F	N	7	f	f	1	t
+793	2020	5	M	U	5	f	t	2	t
+793	2020	5	M	U	5	f	f	3	t
+793	2020	5	M	U	5	f	f	1	t
+794	2020	4	U	N	3	f	f	1	t
+794	2020	4	U	N	3	f	f	2	t
+795	2019	3	F	Y	5	f	f	2	t
+795	2019	3	F	Y	5	f	f	1	t
+795	2019	3	F	Y	5	f	f	3	t
+797	2020	7	M	U	2	f	f	1	t
+797	2020	7	M	U	2	f	f	2	t
+798	2018	6	U	Y	4	f	f	2	t
+798	2018	6	U	Y	4	f	f	1	t
+798	2018	6	U	Y	4	f	f	3	t
+799	2018	1	M	U	2	f	f	1	t
+799	2018	1	M	U	2	f	t	3	t
+800	2019	5	U	Y	2	f	t	2	t
+800	2019	5	U	Y	2	f	f	1	t
+801	2019	6	F	U	1	f	f	1	t
+801	2019	6	F	U	1	f	t	2	t
+802	2019	4	M	U	1	f	t	2	t
+802	2019	4	M	U	1	f	f	1	t
+803	2019	7	M	Y	1	t	f	1	t
+803	2019	7	M	Y	1	t	f	3	t
+805	2018	5	M	Y	1	t	t	1	t
+805	2018	5	M	Y	1	t	t	2	t
+806	2020	1	U	Y	5	f	f	3	t
+806	2020	1	U	Y	5	f	f	1	t
+807	2018	6	F	N	2	f	f	2	t
+807	2018	6	F	N	2	f	f	1	t
+809	2018	5	U	N	2	t	f	3	t
+809	2018	5	U	N	2	t	f	1	t
+810	2020	7	U	U	7	f	f	2	t
+810	2020	7	U	U	7	f	f	1	t
+811	2018	3	F	N	5	f	f	1	t
+811	2018	3	F	N	5	f	t	3	t
+811	2018	3	F	N	5	f	f	2	t
+812	2020	2	U	N	5	f	t	2	t
+812	2020	2	U	N	5	f	f	1	t
+814	2020	7	F	U	3	t	t	2	t
+814	2020	7	F	U	3	t	t	3	t
+814	2020	7	F	U	3	t	f	1	t
+815	2019	7	M	N	3	f	f	3	t
+815	2019	7	M	N	3	f	f	1	t
+815	2019	7	M	N	3	f	t	2	t
+818	2019	1	M	N	5	f	f	2	t
+818	2019	1	M	N	5	f	f	1	t
+819	2019	2	U	Y	1	t	f	2	t
+819	2019	2	U	Y	1	t	f	1	t
+820	2018	7	F	U	6	f	f	1	t
+820	2018	7	F	U	6	f	f	3	t
+821	2018	4	F	Y	3	f	t	2	t
+821	2018	4	F	Y	3	f	t	1	t
+822	2018	7	M	N	2	f	f	3	t
+822	2018	7	M	N	2	f	f	1	t
+823	2020	2	F	U	2	f	f	1	t
+823	2020	2	F	U	2	f	t	2	t
+823	2020	2	F	U	2	f	f	3	t
+824	2020	1	F	N	5	f	f	3	t
+824	2020	1	F	N	5	f	t	1	t
+826	2019	2	F	N	6	f	f	1	t
+826	2019	2	F	N	6	f	f	2	t
+827	2019	7	U	Y	7	t	f	1	t
+827	2019	7	U	Y	7	t	t	2	t
+828	2018	3	M	U	6	f	f	3	t
+828	2018	3	M	U	6	f	f	1	t
+829	2020	6	M	Y	1	f	f	1	t
+829	2020	6	M	Y	1	f	f	3	t
+832	2020	1	M	U	3	f	f	1	t
+832	2020	1	M	U	3	f	t	2	t
+834	2018	6	F	Y	1	t	f	1	t
+834	2018	6	F	Y	1	t	t	2	t
+835	2019	3	M	U	7	f	t	2	t
+835	2019	3	M	U	7	f	f	1	t
+836	2020	3	M	N	7	f	f	2	t
+836	2020	3	M	N	7	f	f	1	t
+836	2020	3	M	N	7	f	t	3	t
+837	2019	2	U	Y	4	f	f	1	t
+837	2019	2	U	Y	4	f	t	2	t
+838	2018	5	U	N	5	f	t	2	t
+838	2018	5	U	N	5	f	t	1	t
+839	2018	3	M	U	6	f	t	3	t
+839	2018	3	M	U	6	f	f	1	t
+840	2019	1	M	Y	5	f	f	1	t
+840	2019	1	M	Y	5	f	f	2	t
+842	2019	5	U	N	2	f	f	2	t
+842	2019	5	U	N	2	f	t	1	t
+842	2019	5	U	N	2	f	t	3	t
+843	2018	2	F	Y	1	f	f	1	t
+843	2018	2	F	Y	1	f	t	2	t
+849	2020	7	M	U	6	f	f	1	t
+849	2020	7	M	U	6	f	t	3	t
+852	2018	1	M	N	6	f	t	1	t
+852	2018	1	M	N	6	f	f	2	t
+852	2018	1	M	N	6	f	t	3	t
+853	2019	1	U	Y	5	t	f	2	t
+853	2019	1	U	Y	5	t	f	1	t
+854	2018	3	M	U	5	f	t	2	t
+854	2018	3	M	U	5	f	f	1	t
+855	2018	5	M	N	2	f	f	1	t
+855	2018	5	M	N	2	f	t	2	t
+855	2018	5	M	N	2	f	f	3	t
+857	2020	4	M	Y	6	f	t	2	t
+857	2020	4	M	Y	6	f	f	1	t
+859	2020	5	M	Y	2	t	f	1	t
+859	2020	5	M	Y	2	t	t	2	t
+859	2020	5	M	Y	2	t	f	3	t
+860	2019	5	U	Y	7	f	f	1	t
+860	2019	5	U	Y	7	f	t	2	t
+860	2019	5	U	Y	7	f	t	3	t
+862	2019	1	M	N	3	t	f	1	t
+862	2019	1	M	N	3	t	t	3	t
+863	2019	7	U	Y	6	f	f	2	t
+863	2019	7	U	Y	6	f	f	1	t
+865	2018	7	F	Y	3	t	t	3	t
+865	2018	7	F	Y	3	t	t	2	t
+865	2018	7	F	Y	3	t	f	1	t
+866	2020	1	U	Y	4	f	f	2	t
+866	2020	1	U	Y	4	f	t	3	t
+866	2020	1	U	Y	4	f	f	1	t
+868	2018	2	M	U	6	f	t	2	t
+868	2018	2	M	U	6	f	f	1	t
+869	2020	6	M	U	3	t	f	1	t
+869	2020	6	M	U	3	t	t	2	t
+872	2020	1	F	Y	3	f	f	1	t
+872	2020	1	F	Y	3	f	f	2	t
+874	2018	4	M	U	7	f	f	1	t
+874	2018	4	M	U	7	f	f	3	t
+874	2018	4	M	U	7	f	f	2	t
+876	2018	3	U	Y	7	f	f	1	t
+876	2018	3	U	Y	7	f	t	3	t
+877	2019	4	U	U	7	f	t	2	t
+877	2019	4	U	U	7	f	f	1	t
+880	2018	5	U	Y	2	f	f	1	t
+880	2018	5	U	Y	2	f	f	2	t
+880	2018	5	U	Y	2	f	f	3	t
+881	2019	7	F	U	1	f	t	3	t
+881	2019	7	F	U	1	f	f	2	t
+881	2019	7	F	U	1	f	t	1	t
+883	2018	1	U	Y	3	f	t	1	t
+883	2018	1	U	Y	3	f	t	2	t
+884	2018	7	U	Y	6	f	t	3	t
+884	2018	7	U	Y	6	f	f	1	t
+885	2019	2	F	U	2	f	f	1	t
+885	2019	2	F	U	2	f	f	3	t
+886	2020	6	F	N	1	f	f	1	t
+886	2020	6	F	N	1	f	f	3	t
+887	2020	6	F	U	7	f	f	1	t
+887	2020	6	F	U	7	f	t	2	t
+887	2020	6	F	U	7	f	t	3	t
+889	2019	1	M	N	7	f	f	1	t
+889	2019	1	M	N	7	f	t	3	t
+890	2020	2	U	N	1	t	f	1	t
+890	2020	2	U	N	1	t	f	2	t
+892	2020	3	U	N	3	f	f	3	t
+892	2020	3	U	N	3	f	f	1	t
+893	2019	1	F	U	5	t	f	2	t
+893	2019	1	F	U	5	t	f	3	t
+893	2019	1	F	U	5	t	f	1	t
+894	2019	4	U	U	7	t	f	1	t
+894	2019	4	U	U	7	t	t	2	t
+895	2018	6	F	N	6	f	f	1	t
+895	2018	6	F	N	6	f	t	2	t
+896	2020	3	U	U	1	f	f	2	t
+896	2020	3	U	U	1	f	f	1	t
+897	2018	1	M	N	7	t	f	2	t
+897	2018	1	M	N	7	t	f	1	t
+898	2020	7	M	N	4	t	f	1	t
+898	2020	7	M	N	4	t	t	2	t
+899	2020	1	U	Y	5	f	f	3	t
+899	2020	1	U	Y	5	f	f	1	t
+900	2020	4	U	U	3	f	f	3	t
+900	2020	4	U	U	3	f	t	2	t
+900	2020	4	U	U	3	f	f	1	t
+902	2018	6	U	N	5	f	f	1	t
+902	2018	6	U	N	5	f	f	2	t
+903	2018	1	M	Y	1	f	t	2	t
+903	2018	1	M	Y	1	f	f	1	t
+905	2018	3	U	N	1	f	f	2	t
+905	2018	3	U	N	1	f	f	1	t
+906	2020	5	U	N	5	f	t	3	t
+906	2020	5	U	N	5	f	f	2	t
+906	2020	5	U	N	5	f	f	1	t
+907	2019	1	F	U	7	f	f	3	t
+907	2019	1	F	U	7	f	f	1	t
+908	2018	2	M	U	5	f	t	2	t
+908	2018	2	M	U	5	f	f	1	t
+910	2019	2	U	N	6	f	f	2	t
+910	2019	2	U	N	6	f	f	1	t
+911	2020	1	U	U	2	f	f	2	t
+911	2020	1	U	U	2	f	t	3	t
+911	2020	1	U	U	2	f	f	1	t
+912	2019	6	F	Y	5	t	t	2	t
+912	2019	6	F	Y	5	t	t	1	t
+912	2019	6	F	Y	5	t	t	3	t
+914	2019	7	M	N	2	f	f	1	t
+914	2019	7	M	N	2	f	f	2	t
+915	2018	1	U	U	2	t	t	1	t
+915	2018	1	U	U	2	t	t	3	t
+917	2018	6	U	Y	1	f	f	1	t
+917	2018	6	U	Y	1	f	f	3	t
+918	2020	4	M	Y	2	f	f	3	t
+918	2020	4	M	Y	2	f	f	1	t
+919	2020	6	U	Y	2	f	f	2	t
+919	2020	6	U	Y	2	f	f	1	t
+920	2020	6	U	U	4	f	t	1	t
+920	2020	6	U	U	4	f	t	2	t
+921	2018	2	F	N	4	f	t	1	t
+921	2018	2	F	N	4	f	f	2	t
+922	2018	2	U	U	3	f	f	1	t
+922	2018	2	U	U	3	f	f	3	t
+926	2020	1	M	U	1	f	f	2	t
+926	2020	1	M	U	1	f	f	1	t
+927	2020	5	M	U	7	f	f	1	t
+927	2020	5	M	U	7	f	t	2	t
+927	2020	5	M	U	7	f	f	3	t
+929	2018	2	U	Y	3	t	t	2	t
+929	2018	2	U	Y	3	t	f	3	t
+929	2018	2	U	Y	3	t	f	1	t
+930	2019	4	F	N	2	t	f	1	t
+930	2019	4	F	N	2	t	f	3	t
+931	2020	2	M	N	6	f	t	2	t
+931	2020	2	M	N	6	f	f	1	t
+932	2019	6	M	N	6	f	f	2	t
+932	2019	6	M	N	6	f	f	1	t
+932	2019	6	M	N	6	f	t	3	t
+933	2019	4	U	Y	2	t	f	1	t
+933	2019	4	U	Y	2	t	t	2	t
+936	2018	6	F	Y	5	f	f	3	t
+936	2018	6	F	Y	5	f	f	1	t
+938	2020	1	M	Y	4	f	f	1	t
+938	2020	1	M	Y	4	f	f	2	t
+939	2019	6	F	U	2	t	f	3	t
+939	2019	6	F	U	2	t	f	1	t
+939	2019	6	F	U	2	t	t	2	t
+940	2019	6	U	N	1	f	t	2	t
+940	2019	6	U	N	1	f	f	1	t
+943	2020	7	F	U	2	f	t	2	t
+943	2020	7	F	U	2	f	f	1	t
+944	2020	1	U	N	7	f	f	2	t
+944	2020	1	U	N	7	f	t	1	t
+947	2019	3	U	U	3	f	f	1	t
+947	2019	3	U	U	3	f	f	2	t
+948	2018	4	F	N	5	t	f	3	t
+948	2018	4	F	N	5	t	f	1	t
+950	2020	2	U	Y	7	f	f	1	t
+950	2020	2	U	Y	7	f	f	2	t
+951	2018	3	U	N	7	f	f	2	t
+951	2018	3	U	N	7	f	f	1	t
+952	2018	3	U	U	4	f	f	3	t
+952	2018	3	U	U	4	f	t	2	t
+952	2018	3	U	U	4	f	f	1	t
+953	2019	2	U	Y	5	f	f	3	t
+953	2019	2	U	Y	5	f	f	1	t
+955	2019	5	F	Y	7	f	t	3	t
+955	2019	5	F	Y	7	f	f	1	t
+957	2019	7	U	N	1	f	f	3	t
+957	2019	7	U	N	1	f	f	1	t
+959	2020	7	M	Y	3	f	t	3	t
+959	2020	7	M	Y	3	f	f	1	t
+960	2020	6	M	N	7	t	t	2	t
+960	2020	6	M	N	7	t	t	3	t
+960	2020	6	M	N	7	t	f	1	t
+961	2019	6	F	U	1	t	f	1	t
+961	2019	6	F	U	1	t	f	3	t
+962	2018	4	U	U	2	f	f	1	t
+962	2018	4	U	U	2	f	f	3	t
+962	2018	4	U	U	2	f	t	2	t
+965	2020	7	U	N	6	f	t	2	t
+965	2020	7	U	N	6	f	f	1	t
+966	2018	1	M	Y	7	f	f	2	t
+966	2018	1	M	Y	7	f	f	1	t
+967	2020	2	M	Y	7	f	f	3	t
+967	2020	2	M	Y	7	f	f	1	t
+968	2019	7	F	U	6	f	t	2	t
+968	2019	7	F	U	6	f	f	1	t
+968	2019	7	F	U	6	f	t	3	t
+969	2020	2	M	N	7	f	f	3	t
+969	2020	2	M	N	7	f	f	2	t
+969	2020	2	M	N	7	f	f	1	t
+970	2019	4	M	Y	3	t	t	3	t
+970	2019	4	M	Y	3	t	f	2	t
+970	2019	4	M	Y	3	t	f	1	t
+974	2018	6	U	Y	6	f	f	1	t
+974	2018	6	U	Y	6	f	f	3	t
+975	2019	7	U	U	6	f	f	1	t
+975	2019	7	U	U	6	f	t	2	t
+976	2019	5	U	Y	2	t	f	1	t
+976	2019	5	U	Y	2	t	t	2	t
+977	2019	1	M	N	6	f	f	1	t
+977	2019	1	M	N	6	f	f	3	t
+979	2019	3	F	Y	7	f	f	3	t
+979	2019	3	F	Y	7	f	f	1	t
+980	2020	1	M	U	3	f	t	3	t
+980	2020	1	M	U	3	f	t	1	t
+981	2020	7	F	U	5	f	t	1	t
+981	2020	7	F	U	5	f	t	3	t
+983	2020	3	U	N	7	f	f	1	t
+983	2020	3	U	N	7	f	t	2	t
+984	2019	4	U	U	5	f	t	2	t
+984	2019	4	U	U	5	f	f	1	t
+985	2018	3	F	U	4	f	f	1	t
+985	2018	3	F	U	4	f	t	2	t
+986	2018	5	F	U	7	f	f	1	t
+986	2018	5	F	U	7	f	t	2	t
+987	2019	7	U	Y	6	t	t	2	t
+987	2019	7	U	Y	6	t	f	1	t
+987	2019	7	U	Y	6	t	t	3	t
+988	2019	2	F	N	4	f	f	2	t
+988	2019	2	F	N	4	f	f	3	t
+988	2019	2	F	N	4	f	f	1	t
+989	2018	2	F	N	7	f	t	3	t
+989	2018	2	F	N	7	f	t	2	t
+989	2018	2	F	N	7	f	f	1	t
+991	2019	1	F	U	7	f	f	2	t
+991	2019	1	F	U	7	f	f	1	t
+992	2020	6	M	Y	4	f	f	1	t
+992	2020	6	M	Y	4	f	t	2	t
+995	2018	6	F	Y	7	t	f	2	t
+995	2018	6	F	Y	7	t	f	1	t
+996	2020	3	U	Y	2	f	f	2	t
+996	2020	3	U	Y	2	f	f	1	t
+997	2019	3	M	U	1	t	f	2	t
+997	2019	3	M	U	1	t	f	1	t
+998	2018	3	M	N	5	f	t	3	t
+998	2018	3	M	N	5	f	f	1	t
+1000	2020	7	F	N	4	f	f	1	t
+1000	2020	7	F	N	4	f	f	3	t
+1005	2020	6	U	U	5	f	f	1	t
+1005	2020	6	U	U	5	f	f	3	t
+1007	2020	4	F	Y	6	f	t	1	t
+1007	2020	4	F	Y	6	f	f	3	t
+1008	2018	2	M	U	7	f	f	1	t
+1008	2018	2	M	U	7	f	f	3	t
+1010	2020	5	M	Y	2	t	f	1	t
+1010	2020	5	M	Y	2	t	f	3	t
+1012	2018	3	U	N	3	f	f	1	t
+1012	2018	3	U	N	3	f	t	3	t
+1016	2020	4	M	Y	6	f	t	3	t
+1016	2020	4	M	Y	6	f	f	1	t
+1022	2019	1	M	U	1	f	f	1	t
+1022	2019	1	M	U	1	f	f	3	t
+1025	2020	5	F	U	3	t	f	3	t
+1025	2020	5	F	U	3	t	f	1	t
+1026	2020	1	U	U	2	f	f	3	t
+1026	2020	1	U	U	2	f	f	1	t
+1027	2018	3	M	N	5	f	t	3	t
+1027	2018	3	M	N	5	f	f	1	t
+1028	2018	6	M	Y	2	f	f	1	t
+1028	2018	6	M	Y	2	f	t	3	t
+1032	2020	3	U	Y	6	f	f	1	t
+1032	2020	3	U	Y	6	f	t	3	t
+1036	2018	2	F	U	7	t	f	3	t
+1036	2018	2	F	U	7	t	f	1	t
+1037	2019	1	F	Y	1	f	f	3	t
+1037	2019	1	F	Y	1	f	f	1	t
+1040	2019	5	F	Y	3	t	f	3	t
+1040	2019	5	F	Y	3	t	f	1	t
+1043	2018	2	U	U	2	f	f	1	t
+1043	2018	2	U	U	2	f	f	3	t
+1045	2020	3	F	Y	5	f	f	1	t
+1045	2020	3	F	Y	5	f	f	3	t
+1046	2020	7	M	N	7	f	f	3	t
+1046	2020	7	M	N	7	f	f	1	t
+1047	2018	4	F	U	5	t	f	1	t
+1047	2018	4	F	U	5	t	f	3	t
+1052	2020	4	M	N	7	f	f	1	t
+1052	2020	4	M	N	7	f	f	3	t
+1054	2018	2	F	Y	5	f	f	1	t
+1054	2018	2	F	Y	5	f	t	3	t
+1058	2020	1	U	U	1	t	t	3	t
+1058	2020	1	U	U	1	t	f	1	t
+1061	2020	5	F	U	5	f	t	1	t
+1061	2020	5	F	U	5	f	t	3	t
+1066	2019	6	F	Y	4	f	f	1	t
+1066	2019	6	F	Y	4	f	f	3	t
+1067	2019	2	M	N	6	f	f	3	t
+1067	2019	2	M	N	6	f	f	1	t
+1070	2018	7	M	N	3	f	f	3	t
+1070	2018	7	M	N	3	f	f	1	t
+1071	2019	2	M	U	1	f	f	1	t
+1071	2019	2	M	U	1	f	f	3	t
+1072	2019	4	U	Y	7	t	t	3	t
+1072	2019	4	U	Y	7	t	f	1	t
+1080	2019	2	U	N	1	f	f	1	t
+1080	2019	2	U	N	1	f	f	3	t
+1085	2018	7	F	N	7	f	f	1	t
+1085	2018	7	F	N	7	f	f	3	t
+1086	2019	4	M	N	3	f	f	1	t
+1086	2019	4	M	N	3	f	t	3	t
+1088	2019	7	F	Y	5	t	f	3	t
+1088	2019	7	F	Y	5	t	f	1	t
+1089	2019	1	M	Y	1	t	f	3	t
+1089	2019	1	M	Y	1	t	f	1	t
+1092	2020	3	F	Y	2	f	f	3	t
+1092	2020	3	F	Y	2	f	f	1	t
+1095	2019	1	M	Y	1	f	t	3	t
+1095	2019	1	M	Y	1	f	f	1	t
+1100	2019	4	M	U	6	f	t	3	t
+1100	2019	4	M	U	6	f	f	1	t
+1112	2019	1	F	U	3	f	f	3	t
+1112	2019	1	F	U	3	f	f	1	t
+1113	2019	3	U	N	6	f	f	1	t
+1113	2019	3	U	N	6	f	f	3	t
+1117	2019	1	F	Y	5	f	t	3	t
+1117	2019	1	F	Y	5	f	f	1	t
+1119	2020	2	U	U	6	t	t	3	t
+1119	2020	2	U	U	6	t	f	1	t
+1123	2018	3	M	Y	5	f	f	1	t
+1123	2018	3	M	Y	5	f	f	3	t
+1124	2019	3	M	U	3	f	f	3	t
+1124	2019	3	M	U	3	f	f	1	t
+1126	2018	2	U	N	1	f	f	3	t
+1126	2018	2	U	N	1	f	f	1	t
+1130	2018	2	U	Y	2	t	f	3	t
+1130	2018	2	U	Y	2	t	f	1	t
+1131	2019	7	U	Y	1	f	t	1	t
+1131	2019	7	U	Y	1	f	f	3	t
+1134	2019	1	F	N	5	f	f	1	t
+1134	2019	1	F	N	5	f	f	3	t
+1135	2018	6	M	N	6	f	f	3	t
+1135	2018	6	M	N	6	f	t	1	t
+1137	2019	3	U	N	2	f	f	3	t
+1137	2019	3	U	N	2	f	f	1	t
+1139	2018	3	F	Y	1	f	f	1	t
+1139	2018	3	F	Y	1	f	f	3	t
+1140	2019	4	U	N	2	f	f	1	t
+1140	2019	4	U	N	2	f	f	3	t
+1141	2018	1	M	U	4	f	f	1	t
+1141	2018	1	M	U	4	f	f	3	t
+1142	2018	3	F	N	2	t	f	1	t
+1142	2018	3	F	N	2	t	f	3	t
+1143	2019	1	F	U	4	f	t	3	t
+1143	2019	1	F	U	4	f	t	1	t
+1148	2019	7	F	U	1	f	f	1	t
+1148	2019	7	F	U	1	f	f	3	t
+1149	2018	6	F	U	1	f	f	3	t
+1149	2018	6	F	U	1	f	f	1	t
+1152	2019	6	M	U	2	f	f	1	t
+1152	2019	6	M	U	2	f	f	3	t
+1154	2020	3	F	N	6	f	f	1	t
+1154	2020	3	F	N	6	f	f	3	t
+1156	2019	6	M	U	2	f	f	1	t
+1156	2019	6	M	U	2	f	t	3	t
+1157	2020	4	U	Y	6	f	t	3	t
+1157	2020	4	U	Y	6	f	f	1	t
+1164	2019	3	F	N	1	f	f	1	t
+1164	2019	3	F	N	1	f	f	3	t
+1165	2018	4	M	Y	2	f	t	1	t
+1165	2018	4	M	Y	2	f	t	3	t
+1168	2018	7	U	Y	1	f	t	3	t
+1168	2018	7	U	Y	1	f	t	1	t
+1172	2020	5	F	U	4	f	f	3	t
+1172	2020	5	F	U	4	f	f	1	t
+1173	2020	6	M	N	5	f	f	3	t
+1173	2020	6	M	N	5	f	f	1	t
+1175	2019	6	F	Y	5	t	t	1	t
+1175	2019	6	F	Y	5	t	t	3	t
+1177	2020	5	U	N	6	f	f	3	t
+1177	2020	5	U	N	6	f	f	1	t
+1178	2020	1	U	Y	2	t	f	1	t
+1178	2020	1	U	Y	2	t	f	3	t
+1182	2020	7	U	Y	5	f	f	3	t
+1182	2020	7	U	Y	5	f	f	1	t
+1184	2020	7	F	N	1	f	f	1	t
+1184	2020	7	F	N	1	f	f	3	t
+1189	2018	1	F	Y	7	f	f	3	t
+1189	2018	1	F	Y	7	f	t	1	t
+1192	2020	5	F	N	2	t	t	3	t
+1192	2020	5	F	N	2	t	t	1	t
+1193	2018	4	U	N	1	f	f	1	t
+1193	2018	4	U	N	1	f	t	3	t
+1194	2019	7	U	U	5	t	f	1	t
+1194	2019	7	U	U	5	t	f	3	t
+1195	2020	2	M	Y	6	t	f	1	t
+1195	2020	2	M	Y	6	t	f	3	t
+1200	2019	7	U	U	1	f	f	1	t
+1200	2019	7	U	U	1	f	t	3	t
+1201	2019	1	F	Y	3	f	f	1	t
+1201	2019	1	F	Y	3	f	f	3	t
+1202	2018	2	U	U	6	f	f	1	t
+1202	2018	2	U	U	6	f	f	3	t
+1209	2018	3	U	N	3	f	f	1	t
+1209	2018	3	U	N	3	f	t	3	t
+1210	2020	7	F	U	2	t	f	3	t
+1210	2020	7	F	U	2	t	f	1	t
+1218	2020	3	M	U	7	f	f	1	t
+1218	2020	3	M	U	7	f	f	3	t
+1220	2020	4	M	U	1	f	f	3	t
+1220	2020	4	M	U	1	f	f	1	t
+1222	2018	7	F	Y	6	t	f	1	t
+1222	2018	7	F	Y	6	t	f	3	t
+1224	2018	7	M	Y	2	t	f	1	t
+1224	2018	7	M	Y	2	t	f	3	t
+1225	2018	1	U	Y	4	f	f	3	t
+1225	2018	1	U	Y	4	f	f	1	t
+1227	2019	2	M	U	4	f	t	3	t
+1227	2019	2	M	U	4	f	f	1	t
+1229	2019	1	U	Y	3	f	f	1	t
+1229	2019	1	U	Y	3	f	f	3	t
+1230	2018	4	M	N	6	f	f	3	t
+1230	2018	4	M	N	6	f	f	1	t
+1235	2020	6	M	Y	1	f	f	3	t
+1235	2020	6	M	Y	1	f	f	1	t
+1237	2020	4	M	N	7	f	f	3	t
+1237	2020	4	M	N	7	f	f	1	t
+1241	2018	2	U	Y	2	t	t	3	t
+1241	2018	2	U	Y	2	t	f	1	t
+1242	2019	3	F	U	4	f	f	3	t
+1242	2019	3	F	U	4	f	f	1	t
+1243	2020	4	F	U	3	f	f	1	t
+1243	2020	4	F	U	3	f	t	3	t
+1244	2018	1	F	N	7	f	t	3	t
+1244	2018	1	F	N	7	f	t	1	t
+1246	2018	6	U	Y	5	f	t	1	t
+1246	2018	6	U	Y	5	f	t	3	t
+1247	2019	1	F	Y	2	f	f	1	t
+1247	2019	1	F	Y	2	f	f	3	t
+1248	2018	6	M	N	6	f	f	3	t
+1248	2018	6	M	N	6	f	t	1	t
+1250	2019	2	M	Y	1	t	f	1	t
+1250	2019	2	M	Y	1	t	f	3	t
+1253	2019	5	F	N	3	f	f	3	t
+1253	2019	5	F	N	3	f	f	1	t
+1259	2018	3	M	Y	4	t	f	1	t
+1259	2018	3	M	Y	4	t	f	3	t
+1261	2020	4	U	N	4	f	f	3	t
+1261	2020	4	U	N	4	f	f	1	t
+1262	2018	3	F	Y	1	f	f	1	t
+1262	2018	3	F	Y	1	f	t	3	t
+1270	2020	7	F	Y	1	f	t	3	t
+1270	2020	7	F	Y	1	f	f	1	t
+1275	2020	7	U	U	3	f	f	3	t
+1275	2020	7	U	U	3	f	f	1	t
+1276	2018	2	M	N	6	f	f	3	t
+1276	2018	2	M	N	6	f	f	1	t
+1278	2018	4	M	N	2	t	f	1	t
+1278	2018	4	M	N	2	t	t	3	t
+1279	2019	7	F	Y	4	f	f	1	t
+1279	2019	7	F	Y	4	f	f	3	t
+1280	2019	4	U	U	5	f	f	3	t
+1280	2019	4	U	U	5	f	t	1	t
+1281	2020	5	M	N	5	f	f	3	t
+1281	2020	5	M	N	5	f	f	1	t
+1282	2018	2	M	N	2	f	f	1	t
+1282	2018	2	M	N	2	f	f	3	t
+1283	2019	6	F	N	5	t	f	3	t
+1283	2019	6	F	N	5	t	f	1	t
+1284	2019	3	M	U	7	f	t	3	t
+1284	2019	3	M	U	7	f	f	1	t
+1286	2018	4	U	U	6	f	f	1	t
+1286	2018	4	U	U	6	f	f	3	t
+1288	2020	2	U	U	1	f	t	3	t
+1288	2020	2	U	U	1	f	f	1	t
+1289	2020	3	U	Y	7	t	t	3	t
+1289	2020	3	U	Y	7	t	t	1	t
+1297	2020	6	F	N	7	t	f	1	t
+1297	2020	6	F	N	7	t	f	3	t
+1300	2019	7	U	Y	3	f	f	3	t
+1300	2019	7	U	Y	3	f	f	1	t
+1305	2020	6	F	U	7	t	f	3	t
+1305	2020	6	F	U	7	t	f	1	t
+1306	2020	4	M	Y	7	f	f	1	t
+1306	2020	4	M	Y	7	f	t	3	t
+1308	2018	4	U	U	1	t	t	3	t
+1308	2018	4	U	U	1	t	f	1	t
+1309	2018	5	F	Y	7	f	f	3	t
+1309	2018	5	F	Y	7	f	f	1	t
+1315	2018	3	F	Y	4	t	t	3	t
+1315	2018	3	F	Y	4	t	f	1	t
+1317	2018	2	F	U	4	t	f	3	t
+1317	2018	2	F	U	4	t	f	1	t
+1318	2020	6	M	U	2	f	t	3	t
+1318	2020	6	M	U	2	f	f	1	t
+1322	2018	6	F	U	5	f	f	3	t
+1322	2018	6	F	U	5	f	f	1	t
+1323	2019	3	F	N	1	f	t	3	t
+1323	2019	3	F	N	1	f	f	1	t
+1324	2019	6	F	U	1	f	t	3	t
+1324	2019	6	F	U	1	f	f	1	t
+1326	2018	5	U	Y	2	f	f	1	t
+1326	2018	5	U	Y	2	f	f	3	t
+1332	2019	5	F	Y	5	f	f	1	t
+1332	2019	5	F	Y	5	f	f	3	t
+1337	2019	5	F	U	2	f	t	3	t
+1337	2019	5	F	U	2	f	f	1	t
+1341	2019	4	U	Y	6	f	f	1	t
+1341	2019	4	U	Y	6	f	f	3	t
+1353	2018	3	M	Y	1	f	t	3	t
+1353	2018	3	M	Y	1	f	f	1	t
+1358	2019	4	U	U	6	f	f	1	t
+1358	2019	4	U	U	6	f	f	3	t
+1370	2019	5	M	U	4	t	f	1	t
+1370	2019	5	M	U	4	t	f	3	t
+1375	2020	6	F	U	2	t	f	1	t
+1375	2020	6	F	U	2	t	t	3	t
+1377	2018	5	M	U	6	f	f	1	t
+1377	2018	5	M	U	6	f	f	3	t
+1380	2020	6	F	Y	1	f	t	1	t
+1380	2020	6	F	Y	1	f	t	3	t
+1383	2019	1	F	N	3	f	f	1	t
+1383	2019	1	F	N	3	f	f	3	t
+1385	2018	7	F	U	6	f	f	3	t
+1385	2018	7	F	U	6	f	f	1	t
+1386	2019	7	M	N	1	t	t	3	t
+1386	2019	7	M	N	1	t	f	1	t
+1394	2020	5	M	Y	2	f	t	3	t
+1394	2020	5	M	Y	2	f	f	1	t
+1398	2018	4	M	N	1	f	t	3	t
+1398	2018	4	M	N	1	f	f	1	t
+1400	2020	7	F	N	1	f	t	3	t
+1400	2020	7	F	N	1	f	t	1	t
+1401	2018	4	M	Y	5	f	f	1	t
+1401	2018	4	M	Y	5	f	t	3	t
+1402	2018	1	U	U	3	f	f	3	t
+1402	2018	1	U	U	3	f	f	1	t
+1403	2018	7	M	U	5	f	f	3	t
+1403	2018	7	M	U	5	f	f	1	t
+1407	2020	5	U	U	6	t	f	1	t
+1407	2020	5	U	U	6	t	f	3	t
+1408	2020	7	F	N	5	t	t	3	t
+1408	2020	7	F	N	5	t	f	1	t
+1409	2018	5	M	N	7	f	f	1	t
+1409	2018	5	M	N	7	f	t	3	t
+1410	2020	4	M	U	6	f	t	3	t
+1410	2020	4	M	U	6	f	t	1	t
+1413	2018	6	U	U	1	f	f	1	t
+1413	2018	6	U	U	1	f	t	3	t
+1419	2018	6	U	U	2	f	f	1	t
+1419	2018	6	U	U	2	f	t	3	t
+1421	2019	5	M	Y	2	f	f	3	t
+1421	2019	5	M	Y	2	f	f	1	t
+1423	2020	4	U	U	5	f	f	3	t
+1423	2020	4	U	U	5	f	f	1	t
+1424	2018	5	F	Y	1	t	f	1	t
+1424	2018	5	F	Y	1	t	f	3	t
+1431	2019	6	U	U	3	f	f	3	t
+1431	2019	6	U	U	3	f	f	1	t
+1433	2020	1	U	U	2	f	t	3	t
+1433	2020	1	U	U	2	f	f	1	t
+1434	2019	7	M	Y	4	f	t	3	t
+1434	2019	7	M	Y	4	f	f	1	t
+1438	2018	7	U	N	3	f	f	3	t
+1438	2018	7	U	N	3	f	f	1	t
+1442	2020	7	U	N	6	f	t	1	t
+1442	2020	7	U	N	6	f	f	3	t
+1446	2020	5	M	Y	7	t	f	3	t
+1446	2020	5	M	Y	7	t	f	1	t
+1453	2018	1	M	Y	7	t	f	1	t
+1453	2018	1	M	Y	7	t	f	3	t
+1456	2020	3	U	Y	2	f	f	1	t
+1456	2020	3	U	Y	2	f	t	3	t
+1460	2018	2	M	N	5	f	f	1	t
+1460	2018	2	M	N	5	f	f	3	t
+1461	2019	7	M	N	1	f	f	1	t
+1461	2019	7	M	N	1	f	t	3	t
+1464	2020	1	F	Y	6	f	f	3	t
+1464	2020	1	F	Y	6	f	f	1	t
+1465	2020	2	F	N	7	f	f	3	t
+1465	2020	2	F	N	7	f	f	1	t
+1466	2018	6	U	U	3	f	f	3	t
+1466	2018	6	U	U	3	f	f	1	t
+1469	2020	2	M	Y	7	f	f	1	t
+1469	2020	2	M	Y	7	f	f	3	t
+1471	2018	1	M	U	3	f	f	3	t
+1471	2018	1	M	U	3	f	f	1	t
+1473	2020	7	U	Y	4	t	f	1	t
+1473	2020	7	U	Y	4	t	t	3	t
+1475	2018	5	M	N	6	f	f	3	t
+1475	2018	5	M	N	6	f	f	1	t
+1480	2020	6	U	Y	2	f	t	3	t
+1480	2020	6	U	Y	2	f	t	1	t
+1483	2019	4	F	U	7	f	t	3	t
+1483	2019	4	F	U	7	f	f	1	t
+1485	2020	7	F	Y	5	f	f	1	t
+1485	2020	7	F	Y	5	f	f	3	t
+1492	2018	1	F	U	7	f	f	3	t
+1492	2018	1	F	U	7	f	f	1	t
+1494	2018	6	U	N	3	f	f	3	t
+1494	2018	6	U	N	3	f	f	1	t
+1495	2018	3	M	N	2	f	f	3	t
+1495	2018	3	M	N	2	f	f	1	t
+1496	2018	3	M	Y	4	t	f	1	t
+1496	2018	3	M	Y	4	t	f	3	t
+1497	2020	3	U	N	5	t	f	1	t
+1497	2020	3	U	N	5	t	f	3	t
 \.
 
 

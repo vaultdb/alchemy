@@ -8,6 +8,7 @@ using namespace vaultdb;
 class SharedSchema {
 public:
     static QuerySchema getInputSchema();
+    static QuerySchema getPatientSchema();
 };
 
 

@@ -11,27 +11,8 @@ using namespace vaultdb;
 
 std::unique_ptr<PlainTable> CsvReader::readCsv(const string &filename, const QuerySchema &schema) {
 
-    std::vector<std::string> tupleEntries = DataUtilities::readTextFile(filename);
-
-    // replace dates with LONG
-    QuerySchema dst_schema(schema);
-    for(size_t i = 0; i < schema.getFieldCount(); ++i) {
-        if(schema.getField(i).getType() == FieldType::DATE) {
-            QueryFieldDesc dst_field_desc(schema.getField(i), FieldType::LONG);
-            dst_schema.putField(dst_field_desc);
-        }
-    }
-
-    std::unique_ptr<PlainTable> result(new PlainTable(tupleEntries.size(), dst_schema));
-    int cursor = 0;
-
-    for(std::string line : tupleEntries) {
-        parseTuple(line, schema, result, cursor);
-        ++cursor;
-
-    }
-
-    return result;
+    std::vector<std::string> tuple_entries = DataUtilities::readTextFile(filename);
+    return readCsvFromBatch(tuple_entries, schema);
 
 }
 
@@ -82,6 +63,35 @@ void CsvReader::parseTuple(const std::string &csvLine, const QuerySchema &src_sc
         newTuple.setField(i, field);
     }
 
+}
+
+std::unique_ptr<PlainTable> CsvReader::readCsvFromBatch(const vector<string> &input, const QuerySchema &schema) {
+    QuerySchema dst_schema = convertDatesToLong(schema);
+
+    std::unique_ptr<PlainTable> result(new PlainTable(input.size(), dst_schema));
+    int cursor = 0;
+
+    for(std::string line : input) {
+        parseTuple(line, schema, result, cursor);
+        ++cursor;
+    }
+
+    return result;
+
+}
+
+QuerySchema CsvReader::convertDatesToLong(const QuerySchema &input_schema) {
+    QuerySchema dst_schema(input_schema);
+
+    // replace dates with LONG
+    for(size_t i = 0; i < input_schema.getFieldCount(); ++i) {
+        if(input_schema.getField(i).getType() == FieldType::DATE) {
+            QueryFieldDesc dst_field_desc(input_schema.getField(i), FieldType::LONG);
+            dst_schema.putField(dst_field_desc);
+        }
+    }
+
+    return dst_schema;
 }
 
 

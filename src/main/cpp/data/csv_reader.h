@@ -7,7 +7,8 @@
 namespace  vaultdb {
     class CsvReader {
     public:
-        static std::unique_ptr<PlainTable > readCsv(const std::string &filename, const QuerySchema &schema);
+        static std::unique_ptr<PlainTable> readCsv(const std::string &filename, const QuerySchema &schema);
+        static std::unique_ptr<PlainTable> readCsvFromBatch(const vector<string> &payload, const QuerySchema &schema);
 
         static void
         parseTuple(const std::string &csvLine, const QuerySchema &src_schema, std::unique_ptr<PlainTable> &dst,
@@ -16,6 +17,8 @@ namespace  vaultdb {
     private:
 
         static vector<string> split(const string &tupleEntry);
+        static QuerySchema convertDatesToLong(const QuerySchema & input_schema);
+
     };
 }
 

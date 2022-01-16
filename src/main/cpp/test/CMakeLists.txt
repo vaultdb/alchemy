@@ -77,7 +77,7 @@ package_add_test(fkey_pkey_join_test plain/keyed_join_test.cpp plain/plain_base_
 package_add_test(scalar_aggregate_test plain/scalar_aggregate_test.cpp plain/plain_base_test.cpp)
 package_add_test(group_by_aggregate_test plain/group_by_aggregate_test.cpp plain/plain_base_test.cpp)
 
-package_add_test(serialization_test serialization_test.cpp plain/plain_base_test.cpp)
+package_add_test(serialization_test serialization_test.cpp plain/plain_base_test.cpp ../pilot/src/common/shared_schema.cpp)
 package_add_test(secret_share_generator_test secret_share_generator_test.cpp plain/plain_base_test.cpp)
 package_add_test(tpch_basic_test tpch_basic_test.cpp plain/plain_base_test.cpp)
 package_add_test(plan_parser_test plan_parser_test.cpp plain/plain_base_test.cpp)

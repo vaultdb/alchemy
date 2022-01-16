@@ -3,7 +3,6 @@
 #define BOOST_STACKTRACE_USE_ADDR2LINE
 #include <chrono>
 #include <boost/stacktrace.hpp>
-#include <sstream>
 #include <iostream>
 #include <filesystem>
 

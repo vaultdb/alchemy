@@ -1,9 +1,7 @@
 #include "enrich_htn_query.h"
 #include <util/data_utilities.h>
 #include <sort.h>
-#include <filter.h>
 #include <project.h>
-#include <query_table/secure_tuple.h>
 #include <query_table/plain_tuple.h>
 #include <expression/function_expression.h>
 #include <expression/comparator_expression_nodes.h>
@@ -27,7 +25,7 @@ EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input) : inputTable(inp
 shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
     // sort it on group-by cols to prepare for aggregate
-    // patid, zip_marker, age_days, sex, ethnicity, race
+    // patid, age_days, sex, ethnicity, race
   SortDefinition unionSortDefinition{ColumnSort(0, SortDirection::ASCENDING), // pat_ID
 				     ColumnSort(1, SortDirection::ASCENDING), // age_strata
 				     ColumnSort(2, SortDirection::ASCENDING), // sex
@@ -86,13 +84,13 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
   
   //  input schema: pat_id (0),  age_strata (1), sex (2), ethnicity (3), race (4), numerator (5), denom_excl (6)
+  //  output schema: age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1 denom_multisite, COUNT(*) > 1 ^ numerator numerator_multisite
+
   shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(const shared_ptr<SecureTable> &src) {
 
     // *** Project on aggregate outputs:
     //     CASE WHEN count(*) > 1 THEN 1 else 0 END AS multisite
     //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
-    // output schema:
-    // zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1, COUNT(*) > 1 ^ numerator
     Utilities::checkMemoryUtilization("before projection");
 
     ExpressionMapBuilder<emp::Bit> builder(*src->getSchema());

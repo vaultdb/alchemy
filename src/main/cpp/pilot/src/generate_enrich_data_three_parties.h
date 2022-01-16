@@ -17,9 +17,9 @@ using namespace std;
 // CREATE TABLE patient (
 //    patid int,
 //    age_strata char(1), 
-//    sex varchar(1),
+//    sex char(1),
 //    ethnicity char(1),
-//    race int,
+//    race char(1),
 //    numerator bool default 0, -- denotes 0 = false, 1 = true
 //    denom_excl bool default 0 -- denotes 0 = false, 1 = true
 //    site_id int // alice = 1, bob = 2, chi = 3
@@ -70,12 +70,14 @@ struct PatientTuple {
 
     string toString() const {
         return std::to_string(patid) + ","
+               + std::to_string(study_year) + ","
                + std::to_string(age_strata) + ","
                + gender + ","
                + ethnicity + ","
                + race + ","
                + std::to_string(numerator) + ","
-	  + std::to_string(denom_excl);
+	  + std::to_string(denom_excl) + "," 
+      + std::to_string(site_id);
     }
 };
 

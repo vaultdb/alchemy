@@ -81,7 +81,7 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     size_t dst_bit_alloc = dst_bit_cnt + remainder;
     bool *dst_bools = new bool[dst_bit_alloc];
     assert(dst_bools != nullptr);
-    cout << "Byte-to-bit aligned" << endl;
+    Logger::write("Byte-to-bit aligned");
 
     
     plain_to_secure_bits(src_bools, dst_bools, plain_schema, secure_schema, tuple_cnt);
@@ -90,7 +90,9 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
 
     Integer alice(dst_bit_cnt, 0L, emp::PUBLIC);
     Integer bob(dst_bit_cnt, 0L, emp::PUBLIC);
-    cout << "Setting up as party " << party << " with " << dst_bit_cnt << " bits." <<  endl;
+    auto logger = vaultdb_logger::get();
+
+    BOOST_LOG(logger)  << "Setting up as party " << party << " with " << dst_bit_cnt << " bits." <<  endl;
 
     if(party == ALICE) {
         // feed through Alice's data, then wait for Bob's
@@ -105,14 +107,14 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
 
     Integer shared_data = alice ^ bob;
 
-    cout << "Deserializing!" << endl;
+    BOOST_LOG(logger)  << "Deserializing!" << endl;
 
      std::shared_ptr<SecureTable> shared_table = SecureTable::deserialize(secure_schema,
                                                                               shared_data.bits);
 
 
      delete [] dst_bools;
-     cout << "Done reading secret-shares!" << endl;
+    BOOST_LOG(logger)  << "Done reading secret-shares!" << endl;
      return shared_table;
 
 }
@@ -144,7 +146,8 @@ shared_ptr<SecureTable> UnionHybridData::unionHybridData(const QuerySchema &sche
     if(!secretSharesFile.empty()) {
       std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, schema, party);
 
-      cout << "Unioning!" << endl;
+      auto logger = vaultdb_logger::get();
+      BOOST_LOG(logger) << "Unioning!" << endl;
       Union<emp::Bit> union_op(local, remote);
       return union_op.run();
     }

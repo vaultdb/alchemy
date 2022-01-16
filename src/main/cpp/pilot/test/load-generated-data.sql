@@ -2,20 +2,30 @@
 \c enrich_htn_unioned
 DROP TABLE IF EXISTS patient;
 CREATE TABLE patient (
-    patid int,
+    pat_id int,
     study_year int,
-    zip_marker varchar(3),
-    age_days integer,
-    sex varchar(2),
-    ethnicity varchar(2), -- 0 || 1
-    race varchar(2),
+    age_strata char(1),
+    sex  char(1),
+    ethnicity  char(1), 
+    race  char(1), 
     numerator bool default null,
-    denominator bool default null,
     denom_excl bool default null,
     site_id int);
 
-\copy patient FROM 'alice-patient.csv' CSV
-\copy patient FROM 'bob-patient.csv' CSV
-\copy patient FROM 'chi-patient.csv' CSV
+\copy patient FROM 'pilot/test/input/alice-patient.csv' CSV
+\copy patient FROM 'pilot/test/input/bob-patient.csv' CSV
+\copy patient FROM 'pilot/test/input/chi-patient.csv' CSV
+
+ALTER TABLE patient ADD COLUMN multisite bool DEFAULT FALSE; 
+       
+
+UPDATE patient p1
+SET multisite=true
+WHERE EXISTS(
+    SELECT *
+    FROM patient p2
+    WHERE p1.pat_id = p2.pat_id AND p1.study_year = p2.study_year AND p1.site_id <> p2.site_id);
+
+
 
 
