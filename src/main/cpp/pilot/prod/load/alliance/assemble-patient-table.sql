@@ -17,7 +17,7 @@ SET age_days = (age_years_2015 + (study_year - 2015)) * 365;
 
 
 
--- just record age strata - range: 1..7 
+
 ALTER TABLE patient ALTER COLUMN age_strata TYPE char(1);
 
 UPDATE patient SET age_strata = CASE WHEN age_days <= 28*365 THEN '1'
@@ -31,6 +31,25 @@ UPDATE patient SET age_strata = CASE WHEN age_days <= 28*365 THEN '1'
 
 ALTER TABLE patient DROP COLUMN age_days;
 ALTER TABLE patient DROP COLUMN age_years_2015;
+
+ALTER TABLE patient ADD COLUMN multisite bool DEFAULT false;
+
+CREATE TABLE multisite_pids(
+pat_id INT,
+study_year smallint);
+
+-- requires offline reconciliation of pat_ids with other sites
+\copy multisite_pids FROM 'pilot/output/alliance-multisite.csv' CSV HEADER
+
+UPDATE patient p
+SET multisite=true
+WHERE EXISTS (
+      SELECT *
+      FROM multisite_pids m
+      WHERE m.pat_id = p.pat_id AND m.study_year = p.study_year);
+
+DROP TABLE multisite_pids;
+
 
 -- look for dupes:
 -- SELECT pat_id, study_year, site_id FROM patient GROUP  BY pat_id, study_year, site_id HAVING COUNT(*) > 1 ORDER BY pat_id;

@@ -7,6 +7,8 @@
 \i 'pilot/prod/load/alliance/load-population-labels.sql'
 \i 'pilot/prod/load/alliance/assemble-patient-table.sql'
 
+
+
 \copy (SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE study_year=2018 ORDER BY pat_id) TO 'pilot/input/clean/2018.csv' CSV
 \copy (SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE study_year=2019 ORDER BY pat_id) TO 'pilot/input/clean/2019.csv' CSV
 \copy (SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE study_year=2020 ORDER BY pat_id) TO 'pilot/input/clean/2020.csv' CSV

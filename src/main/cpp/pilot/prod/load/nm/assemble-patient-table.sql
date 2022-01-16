@@ -24,6 +24,24 @@ SELECT DISTINCT * INTO tmp FROM patient;
 DROP TABLE patient;
 ALTER TABLE tmp RENAME TO patient;
 
+
+ALTER TABLE patient ADD COLUMN multisite bool DEFAULT false;
+
+CREATE TABLE multisite_pids(
+       pat_id INT,
+       study_year smallint);
+
+-- requires offline reconciliation of pat_ids with other sites
+\copy multisite_pids FROM 'pilot/output/nm-multisite.csv' CSV HEADER
+
+UPDATE patient p
+SET multisite=true
+WHERE EXISTS (
+      SELECT *
+      FROM multisite_pids m
+      WHERE m.pat_id = p.pat_id AND m.study_year = p.study_year);
+
+DROP TABLE multisite_pids;
+
 -- look for inconsistencies:
 --  SELECT pat_id, study_year, site_id FROM patient GROUP  BY pat_id, study_year, site_id HAVING COUNT(*) > 1 ORDER BY pat_id;
-

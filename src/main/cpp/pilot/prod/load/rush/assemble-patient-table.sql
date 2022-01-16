@@ -17,6 +17,24 @@ ALTER TABLE patient ALTER COLUMN ethnicity TYPE CHAR(1);
 ALTER TABLE patient ALTER COLUMN race TYPE CHAR(1) using substring(race, 2, 1);
 
 
+ALTER TABLE patient ADD COLUMN multisite bool DEFAULT false;
+
+CREATE TABLE multisite_pids(
+       pat_id INT,
+       study_year smallint);
+
+-- requires offline reconciliation of pat_ids with other sites
+\copy multisite_pids FROM 'pilot/output/rush-multisite.csv' CSV HEADER
+
+UPDATE patient p
+SET multisite=true
+WHERE EXISTS (
+      SELECT *
+      FROM multisite_pids m
+      WHERE m.pat_id = p.pat_id AND m.study_year = p.study_year);
+
+DROP TABLE multisite_pids;
+
 -- look for dupes:
 -- SELECT pat_id, study_year 
 -- FROM patient 
