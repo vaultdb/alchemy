@@ -20,6 +20,7 @@
 
 \copy (SELECT DISTINCT  pat_id, min(age_strata) age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient     GROUP BY pat_id, sex, ethnicity, race, numerator, denom_excl ORDER BY pat_id) TO 'pilot/input/clean/all.csv' CSV
 
+\copy (SELECT DISTINCT pat_id, study_year, 'NM' site_id FROM patient ORDER BY pat_id, study_year) TO 'pilot/output/nm_pat_ids.csv' CSV;
 
 
 \i 'pilot/prod/load/verify-domain.sql'
