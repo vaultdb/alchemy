@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS population_labels;
 -- population_labels.numerator = true if patient in both numerator and denom groups
 
 CREATE TABLE population_labels (
+      pat_id int, 
       study_id varchar,
       site_id varchar(2),
       numerator bool,
@@ -37,8 +38,6 @@ UPDATE population_labels SET study_year=2020 WHERE study_year IS NULL;
 \echo 'Cleaning...'
 
 UPDATE population_labels SET site_id='RU';
--- test for dupes with:
--- SELECT study_id, study_year, COUNT(*) FROM population_labels GROUP BY study_id, study_year HAVING COUNT(*) > 1;
 -- delete the duplicates
 -- DROP TABLE IF EXISTS population_labels_distinct;
 -- SELECT DISTINCT study_id, site_id, study_year, numerator, denom_excl
@@ -50,21 +49,9 @@ UPDATE population_labels SET site_id='RU';
 
 -- map pid to int by removing vaultdb prefix
 UPDATE population_labels SET study_id=REPLACE(study_id, 'VAULTDB','');
-ALTER TABLE population_labels ADD COLUMN pat_id INT;
 UPDATE population_labels SET pat_id=study_id::INT;
 -- drop old version of patient id
 ALTER TABLE population_labels DROP COLUMN study_id;
-
--- find duplicate ones:
--- SELECT *
--- FROM population_labels
--- WHERE (pat_id, study_year) IN (
---    SELECT pat_id, study_year
---        FROM population_labels
---	    GROUP BY pat_id, study_year
---	        HAVING COUNT(*) > 1)
---		ORDER BY pat_id;
-
 
 
 DROP TABLE IF EXISTS tmp;
@@ -80,3 +67,11 @@ ALTER TABLE tmp RENAME TO population_labels;
 
 UPDATE population_labels SET numerator=false WHERE numerator IS NULL;
 UPDATE population_labels SET denom_excl=false WHERE denom_excl IS NULL;
+
+-- test for dupes with:
+-- SELECT pat_id, study_year, COUNT(*) 
+-- FROM population_labels 
+-- GROUP BY pat_id, study_year 
+-- HAVING COUNT(*) > 1;
+
+-- produces empty set for correct data

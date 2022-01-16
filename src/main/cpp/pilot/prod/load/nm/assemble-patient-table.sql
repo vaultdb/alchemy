@@ -1,10 +1,5 @@
 -- to be run after load-demographics-nm.sql and load-population-labels-nm.sql  
 
-\echo 'Setting up patient table!'
-DROP TABLE IF EXISTS patient;
-
-
- 
 
 \echo 'Setting up patient table!'
 DROP TABLE IF EXISTS patient;

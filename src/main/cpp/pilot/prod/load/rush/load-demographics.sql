@@ -8,7 +8,7 @@ CREATE TABLE demographics (
        study_id varchar,
    site_id varchar(2),
    age_days integer,
-   sex varchar(2),
+sex varchar(2),
    ethnicity varchar(2), 
    race varchar(2), -- can cast if we make all non-int cases '00'
    zip_marker  varchar(3),
@@ -70,12 +70,11 @@ UPDATE demographics d1 SET race=d2.race FROM demographics d2  WHERE d1.pat_id = 
 -- SELECT COUNT(*) FROM tmp;
 
 DROP TABLE IF EXISTS tmp;
-SELECT DISTINCT d1.pat_id, d1.study_year, d1.site_id, d1.zip_marker, d1.age_days, d1.sex, d1.ethnicity, d1.race,  COALESCE(d1.numerator, d2.numerator) numerator
+SELECT DISTINCT d1.pat_id, d1.study_year, d1.site_id,  d1.age_days, d1.sex, d1.ethnicity, d1.race,  COALESCE(d1.numerator, d2.numerator) numerator
 INTO tmp
 FROM demographics d1 LEFT JOIN demographics d2 ON d1.pat_id = d2.pat_id
                                                       AND d1.study_year = d2.study_year
                                                       AND d1.site_id = d2.site_id
-                                                      AND d1.zip_marker = d2.zip_marker
                                                       AND d1.age_days = d2.age_days
                                                       AND d1.sex = d2.sex
                                                       AND d1.ethnicity = d2.ethnicity
@@ -83,24 +82,49 @@ FROM demographics d1 LEFT JOIN demographics d2 ON d1.pat_id = d2.pat_id
                                                       AND d2.numerator IS NOT NULL;
 
 
--- pretty good.  Let's see what's left re: outliers:
---  SELECT * FROM tmp WHERE (pat_id, study_year, site_id)  IN (SELECT DISTINCT pat_id, study_year, site_id FROM tmp GROUP BY pat_id, study_year, site_id HAVING COUNT(*) > 1) ORDER BY pat_id;
--- for demographics:
--- WITH distinct_demo AS (
---     SELECT DISTINCT *
---     FROM demographics)
--- SELECT *
--- FROM distinct_demo
--- WHERE (pat_id, study_year, site_id) IN (
---     SELECT pat_id, study_year, site_id
---     FROM distinct_demo
---     GROUP BY pat_id, study_year, site_id
---     HAVING COUNT(*) > 1)
--- ORDER BY pat_id;
 
--- mostly complexity with the race or ethnicity field.  Thee are sometimes direct contradictions like a patient being listed as black or white - perhaps their entry should read 06 ( multiple race)?  Don't have enough info for these, leave them alone.
---
 DROP TABLE IF EXISTS demographics;
 ALTER TABLE tmp RENAME TO demographics;
 
 UPDATE demographics SET numerator=false where numerator IS NULL;
+ALTER TABLE demographics ADD COLUMN age_stratum char(1);
+
+
+
+UPDATE demographics SET age_stratum = CASE WHEN age_days <= 28*365 THEN '1'
+                WHEN age_days > 28*365 AND age_days <= 39*365 THEN '2'
+              WHEN age_days > 39*365  AND age_days <= 50*365 THEN '3'
+              WHEN age_days > 50*365 AND age_days <= 61*365 THEN '4'
+              WHEN age_days > 61*365 AND age_days <= 72*365 THEN '5'
+                WHEN age_days > 72*365  AND age_days <= 83*365 THEN '6'
+                ELSE '7' END;
+
+
+
+
+ALTER TABLE demographics DROP COLUMN age_days;
+
+
+
+-- Let's see what's left re: outliers:
+SELECT * 
+FROM demographics 
+WHERE (pat_id, study_year, site_id)  IN (SELECT DISTINCT pat_id, study_year, site_id 
+                          FROM demographics 
+                          GROUP BY pat_id, study_year, site_id HAVING COUNT(*) > 1) 
+ORDER BY pat_id;
+  
+--  for demographics:
+--  WITH distinct_demo AS (
+--     SELECT DISTINCT *
+--     FROM demographics)
+--  SELECT *
+-- FROM distinct_demo
+--  WHERE (pat_id, study_year, site_id) IN (
+--     SELECT pat_id, study_year, site_id
+--     FROM distinct_demo
+--     GROUP BY pat_id, study_year, site_id
+--     HAVING COUNT(*) > 1)
+--  ORDER BY pat_id;
+
+--  both of these queries produce empty sets during setup

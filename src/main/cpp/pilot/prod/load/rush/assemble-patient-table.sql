@@ -4,66 +4,24 @@
 DROP TABLE IF EXISTS patient;
 
 
--- planned table:
---   CREATE TABLE patient (                                                                                                                                                                                                                                  
---      pat_id int,
---      study_year smallint, -- new addition, not in testing
---      zip_marker varchar(3),                                                                                                                                                                                                                               
---      age_days integer,                                                                                                                                                                                                                                    
---     sex varchar(2), -- was varchar(1) in testing
---     ethnicity varchar(2), -- was bool in testing
---     race int, -- TODO: convert race to int?  Maybe later, if there's an issue.  But doing so will be lossy if we don't rejigger the mapping of IDs to values
---     numerator bool default null, -- numerator group membership                                                                                                                                                                                            
---     denominator bool default null, -- denominator group membership                                                                                                                                                                                        
---     denom_excl int default null, -- excluded from study
---     site_id int);                                                                                                                                                                                                                                        
- 
-
-
-
-SELECT d.pat_id, d.study_year, zip_marker, age_days, sex, ethnicity, race, d.numerator demographic_numerator, p.numerator population_numerator, denom_excl denom_excl_original, d.site_id site_id_str
+SELECT d.pat_id, d.study_year,  age_stratum age_strata, sex, ethnicity, race, p.numerator AND NOT denom_excl numerator, denom_excl 
 INTO patient
 FROM demographics d JOIN population_labels p  ON d.pat_id = p.pat_id AND d.study_year = p.study_year AND d.site_id = p.site_id;
 
+UPDATE patient SET sex='U' WHERE sex IS NULL;
+UPDATE patient SET ethnicity='U' WHERE ethnicity <> 'Y' AND ethnicity <> 'N';
+UPDATE patient SET race='07' WHERE race NOT IN ('01', '02', '03', '04', '05', '06', '07');
 
--- add new cols in the correct order - shuffling the order of denom_excl to make debugging easier
-ALTER TABLE patient ADD COLUMN numerator bool default false;
-ALTER TABLE patient ADD COLUMN denominator bool default true; -- everyone is in the denom unless otherwise noted
-ALTER TABLE patient ADD COLUMN denom_excl bool default false;
-ALTER TABLE patient ADD COLUMN site_id INT;
+ALTER TABLE patient ALTER COLUMN sex TYPE CHAR(1);
+ALTER TABLE patient ALTER COLUMN ethnicity TYPE CHAR(1);
+ALTER TABLE patient ALTER COLUMN race TYPE CHAR(1) using substring(race, 2, 1);
 
-UPDATE patient SET denom_excl=denom_excl_original;
-ALTER TABLE patient DROP COLUMN denom_excl_original;
-
-UPDATE patient SET numerator=true WHERE demographic_numerator AND NOT denom_excl;
-UPDATE patient SET denominator=false WHERE denom_excl OR  population_numerator;
-ALTER TABLE patient DROP COLUMN demographic_numerator;
-ALTER TABLE patient DROP COLUMN population_numerator;
-
--- site_id = (1, NM) (2, RU) (3, AC)
-UPDATE patient SET site_id=2 WHERE site_id_str='RU';
-ALTER TABLE patient DROP COLUMN site_id_str;
 
 -- look for dupes:
--- SELECT pat_id, study_year, site_id FROM patient GROUP  BY pat_id, study_year, site_id HAVING COUNT(*) > 1 ORDER BY pat_id;
+-- SELECT pat_id, study_year 
+-- FROM patient 
+-- GROUP  BY pat_id, study_year 
+-- HAVING COUNT(*) > 1 
+-- ORDER BY pat_id;
 
-UPDATE patient SET sex='NS' WHERE sex IS NULL;
 
-
--- at the end we have:
--- > \d patient
---                        Table "public.patient"
---    Column    |         Type         | Collation | Nullable | Default 
--- -------------+----------------------+-----------+----------+---------
---  pat_id      | integer              |           |          | 
---  study_year  | integer              |           |          | 
---  zip_marker  | character varying(3) |           |          | 
---  age_days    | integer              |           |          | 
---  sex         | character varying(2) |           |          | 
---  ethnicity   | character varying(2) |           |          | 
---  race        | character varying(2) |           |          | 
---  numerator   | boolean              |           |          | false
---  denominator | boolean              |           |          | true
---  denom_excl  | boolean              |           |          | false
---  site_id     | integer              |           |          | 
--- 
