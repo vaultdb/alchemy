@@ -51,10 +51,6 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
 
       
     if(std::is_same_v<emp::Bit, B>) {
-        auto logger = vaultdb_logger::get();
-        BOOST_LOG_SEV(logger, logging::trivial::severity_level::debug) << "Allocating " << schema_->size() * num_tuples << " emp bits! for " <<  num_tuples << " tuples at " << schema_->size() << " bits per tuple." <<  endl;
-
-      
       emp::Integer tmp(schema_->size() * num_tuples, 0, emp::PUBLIC);
       memcpy(tuple_data_.data(), tmp.bits.data(), schema_->size() * num_tuples);
 

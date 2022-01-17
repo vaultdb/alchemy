@@ -244,11 +244,11 @@ vector<string> DataUtilities::readTextFileBatch(const string &filename, const si
     inFile.seekg(std::ios::beg);
     size_t cursor = batch_no * batch_tuple_cnt;
 
-    for(int i = 0; i < cursor; ++i) {
+    for(size_t i = 0; i < cursor; ++i) {
         std::getline(inFile, line);
     }
 
-    for(int i = 0; i < batch_tuple_cnt; ++i) {
+    for(size_t i = 0; i < batch_tuple_cnt; ++i) {
         if(!std::getline(inFile, line))
             break;
         lines.push_back(line);
