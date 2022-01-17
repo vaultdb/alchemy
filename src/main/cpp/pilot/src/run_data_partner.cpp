@@ -73,7 +73,7 @@ runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const stri
 
     // validate it against the DB for testing
     if(TESTBED) {
-        string unionedDbName = "enrich_htn_unioned";
+        string unionedDbName = "enrich_htn_unioned_3pc";
         SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(1);
 
         shared_ptr<PlainTable> revealed = stratified->reveal();
@@ -124,6 +124,8 @@ int main(int argc, char **argv) {
     if(argc == 6)
       secretShareFile = argv[5];
 
+    size_t cardinality_bound = 441; // 7 * 3 * 3 * 7
+
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
     string party_name = (party == 1) ? "alice"  : "bob";
     // TODO: paramaterize the default logging level
@@ -148,7 +150,7 @@ int main(int argc, char **argv) {
     // validate it against the DB for testing
     if(TESTBED) {
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
-        string unionedDbName = "enrich_htn_unioned";  // enrich_htn_prod for in-the-field runs
+        string unionedDbName = "enrich_htn_unioned_3pc";  // enrich_htn_prod for in-the-field runs
         string query = "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
         SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
 
@@ -169,8 +171,10 @@ int main(int argc, char **argv) {
     // create output dir:
     Utilities::mkdir(output_path);
 
-    EnrichHtnQuery enrich(inputData);
+    EnrichHtnQuery enrich(inputData, cardinality_bound);
     inputData.reset();
+
+    assert(enrich.dataCube->getTupleCount() == cardinality_bound);
 
     cumulative_runtime += time_from(start_time);
     BOOST_LOG(logger) << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms." << endl;

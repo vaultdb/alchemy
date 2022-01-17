@@ -5,11 +5,12 @@
 #include <query_table/plain_tuple.h>
 #include <expression/function_expression.h>
 #include <expression/comparator_expression_nodes.h>
+#include <operators/shrinkwrap.h>
 
 using namespace vaultdb;
 
 
-EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input) : inputTable(input) {
+EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & cardinality) : inputTable(input), cardinalityBound(cardinality) {
 
   // takes in shared_schema
     shared_ptr<SecureTable> filtered = filterPatients();
@@ -25,17 +26,14 @@ EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input) : inputTable(inp
 shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
     // sort it on group-by cols to prepare for aggregate
+    // TODO: integrate this with the unioning step.  See UnionHybridData for more on this
     // patid, age_days, sex, ethnicity, race
   SortDefinition unionSortDefinition{ColumnSort(0, SortDirection::ASCENDING), // pat_ID
 				     ColumnSort(1, SortDirection::ASCENDING), // age_strata
 				     ColumnSort(2, SortDirection::ASCENDING), // sex
 				     ColumnSort(3, SortDirection::ASCENDING), // ethnicity
 				     ColumnSort(4, SortDirection::ASCENDING)}; // race
-				     //		     ColumnSort(7, SortDirection::ASCENDING)}; // site_id, this last sort makes it verifiable 
 
-       
-
-    // site_id
     // destructor handled within Operator
     Sort<emp::Bit> sortUnioned(inputTable, unionSortDefinition);
     shared_ptr<SecureTable> sorted = sortUnioned.run();
@@ -142,20 +140,14 @@ void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
 
     // output schema:
     // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite (6), denominator_multisite (7)
-    // TODO: make output size equal to that of the domain of our attrs
-    // age_strata: 7 values
-    // sex:  3 values
-    // ethnicity: 3 values
-    // race: 7 values
-    // all others are aggregates, so won't add to our domain
-    // 7 * 3 * 3 * 7 = 441 values in domain 
-    // TODO: benchmark with and without this optimization.
     GroupByAggregate aggregator(sorted, groupByCols, aggregators);
     dataCube = aggregator.run();
     sorted.reset();
 
     Utilities::checkMemoryUtilization("deleting aggregate");
 
+    Shrinkwrap wrapper(dataCube, cardinalityBound);
+    dataCube = wrapper.run();
 
 }
 

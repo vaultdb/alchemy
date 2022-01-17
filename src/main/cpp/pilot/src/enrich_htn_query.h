@@ -12,13 +12,14 @@ namespace  vaultdb {
 
 
         shared_ptr<SecureTable> inputTable;
-        shared_ptr<SecureTable> dataCube;
         shared_ptr<GroupByAggregate<emp::Bit> > aggregator;
+        size_t cardinalityBound;
 
     public:
         // compute initial data cube to prepare for rollups
-        EnrichHtnQuery(shared_ptr<SecureTable> & input);
+        EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & cardinality = 0);
         shared_ptr<SecureTable> rollUpAggregate(const int &ordinal) const;
+        shared_ptr<SecureTable> dataCube;
 
     private:
 
@@ -34,6 +35,7 @@ namespace  vaultdb {
 
         // aggregate the data cube
         void aggregatePatients(const shared_ptr<SecureTable> &src);
+
 
 
 // Project #1
@@ -100,26 +102,6 @@ namespace  vaultdb {
 
     };
 
- /*   template<typename B>
-    class FilterExcludedPatients : public Predicate<B> {
-
-        Field<B> cmp;
-    public:
-        explicit FilterExcludedPatients(const bool &isEncrypted) {
-            cmp = isEncrypted ? FieldFactory<B>::getZero(FieldType::SECURE_INT) : FieldFactory<B>::getZero(
-                    FieldType::INT);
-        }
-
-        ~FilterExcludedPatients() = default;
-
-        [[nodiscard]] B predicateCall(const QueryTuple<B> &aTuple) const override {
-
-            const Field<B> field = aTuple.getField(8);
-            return  (field == cmp);
-        }
-
-
-    }; */
 
 }
 

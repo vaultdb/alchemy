@@ -7,7 +7,7 @@
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 #include <operators/union.h>
-
+#include <operators/sort.h>
 
 UnionHybridData::UnionHybridData(const QuerySchema & srcSchema, NetIO *aNetio, const int & aParty)  :  party(aParty), netio(aNetio){
     QuerySchema inputSchema = srcSchema;
@@ -83,7 +83,6 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     size_t dst_bit_alloc = dst_bit_cnt + remainder;
     bool *dst_bools = new bool[dst_bit_alloc];
     assert(dst_bools != nullptr);
-    Logger::write("Byte-to-bit aligned");
 
     
     plain_to_secure_bits(src_bools, dst_bools, plain_schema, secure_schema, tuple_cnt);
@@ -144,11 +143,11 @@ shared_ptr<SecureTable> UnionHybridData::unionHybridData(const QuerySchema &sche
 
     std::shared_ptr<SecureTable> local = UnionHybridData::readLocalInput(localInputFile, schema, aNetIO,
                                                                 party);
+
+
     if(!secretSharesFile.empty()) {
       std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, schema, party);
-
-      auto logger = vaultdb_logger::get();
-      BOOST_LOG(logger) << "Unioning!" << endl;
+      // TODO: reverse the tuple order for bitonic merge, save one more sort - see bottom of file for more
       Union<emp::Bit> union_op(local, remote);
       return union_op.run();
     }
@@ -186,5 +185,25 @@ void UnionHybridData::plain_to_secure_bits(bool *src, bool *dst, const QuerySche
 }
 
 
+/* attempt to do bitonic merge for 3rd input:
+ * Needs debugging
+ size_t write_cursor = remote->getTupleCount() - 1; // last_idx
+      size_t read_cursor = 0;
+      SecureTuple tmp(*(remote->getSchema())); // set up managed storage
 
+        while(write_cursor >= read_cursor) {
+          tmp = remote->getTuple(read_cursor);
+          remote->putTuple(read_cursor, remote->getTuple(write_cursor));
+          remote->putTuple(write_cursor, tmp);
+          --write_cursor;
+          ++read_cursor;
+      }
+
+      Union<emp::Bit> union_op(local, remote);
+        shared_ptr<SecureTable> unioned = union_op.run();
+        Sort<emp::Bit>::bitonicMerge(unioned, local->getSortOrder(), 0, unioned->getTupleCount(), true);
+        // data are inputted in sorted order
+        unioned->setSortOrder(DataUtilities::getDefaultSortDefinition(7));
+      return unioned;
+*/
 

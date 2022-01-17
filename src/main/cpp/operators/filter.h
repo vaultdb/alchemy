@@ -1,7 +1,6 @@
 #ifndef _FILTER_H
 #define _FILTER_H
 
-//#include <operators/support/predicate.h>
 #include "operator.h"
 #include <expression/bool_expression.h>
 
@@ -19,11 +18,11 @@ namespace  vaultdb {
 
         ~Filter() = default;
 
-        std::shared_ptr<QueryTable<B> > runSelf()  override;
 
     protected:
-        string getOperatorType() const override;
 
+        std::shared_ptr<QueryTable<B> > runSelf()  override;
+        string getOperatorType() const override;
         string getParameters() const override;
 
 

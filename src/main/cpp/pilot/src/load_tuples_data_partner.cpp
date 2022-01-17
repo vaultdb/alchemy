@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     // validate it against the DB for testing
     if(TESTBED) {
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
-        string unionedDbName = "enrich_htn_unioned";  // enrich_htn_prod for in-the-field runs
+        string unionedDbName = "enrich_htn_unioned_3pc";  // enrich_htn_prod for in-the-field runs
         string query = "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
         SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
 

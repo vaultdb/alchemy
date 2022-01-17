@@ -97,6 +97,7 @@ set(sources
 		operators/support/group_by_aggregate_impl.cpp
 		operators/csv_input.cpp
         operators/keyed_sort_merge_join.cpp
+		operators/shrinkwrap.cpp
 
 		expression/function_expression.cpp
 		expression/generic_expression.cpp
