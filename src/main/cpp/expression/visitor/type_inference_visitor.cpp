@@ -129,6 +129,11 @@ FieldType TypeInferenceVisitor<B>::resolveType(const FieldType &lhs, const Field
     return rhs;
 }
 
+template<typename B>
+void TypeInferenceVisitor<B>::visit(CastNode<B> node) {
+
+    last_expression_type_ = node.dst_type_;
+}
 
 
 template class vaultdb::TypeInferenceVisitor<bool>;

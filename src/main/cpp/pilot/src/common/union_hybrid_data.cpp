@@ -67,7 +67,9 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     size_t tuple_size = plain_schema.size();
     size_t src_bit_cnt = src_byte_cnt * 8;
     size_t tuple_cnt = src_bit_cnt / plain_schema.size();
-    cout << "Read file" << endl;
+
+    auto logger = vaultdb_logger::get();
+    BOOST_LOG(logger) <<"Read file" << endl;
 
     assert(src_bit_cnt % tuple_size == 0);
 
@@ -90,7 +92,6 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
 
     Integer alice(dst_bit_cnt, 0L, emp::PUBLIC);
     Integer bob(dst_bit_cnt, 0L, emp::PUBLIC);
-    auto logger = vaultdb_logger::get();
 
     BOOST_LOG(logger)  << "Setting up as party " << party << " with " << dst_bit_cnt << " bits." <<  endl;
 

@@ -12,6 +12,9 @@ namespace vaultdb {
 
         void visit(LiteralNode<B> node) override;
 
+        void visit(CastNode<B> node) override;
+
+
         void visit(AndNode<B> node) override;
 
         void visit(OrNode<B> node) override;

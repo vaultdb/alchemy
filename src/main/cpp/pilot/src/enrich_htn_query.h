@@ -68,7 +68,7 @@ namespace  vaultdb {
         template<typename B>
         static Field<B> projectMultisite(const QueryTuple<B> & aTuple) {
             // int32_t
-            Field<B> siteCount = aTuple[7];
+            Field<B> siteCount = aTuple[6];
             Field<B> zero =  FieldFactory<B>::getInt(0);
             Field<B> one =  FieldFactory<B>::getInt(1);
 
@@ -82,8 +82,8 @@ namespace  vaultdb {
         template<typename B>
         static inline Field<B> projectNumeratorMultisite(const QueryTuple<B> & aTuple) {
 
-            Field<B> inNumerator = aTuple[6];
-            Field<B> siteCount = aTuple[7];
+            Field<B> inNumerator = aTuple[5];
+            Field<B> siteCount = aTuple[6];
             Field<B> zero = FieldFactory<B>::getInt(0);
             Field<B> one = FieldFactory<B>::getInt(1);
 

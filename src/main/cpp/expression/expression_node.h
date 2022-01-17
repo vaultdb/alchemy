@@ -64,6 +64,24 @@ namespace vaultdb {
     };
 
 
+    template<typename B>
+    class CastNode : public ExpressionNode<B> {
+    public:
+        CastNode(const uint32_t & read_idx, const FieldType & dst_type);
+        ~CastNode() = default;
+
+        Field<B> call(const QueryTuple<B> & target) const override;
+
+        ExpressionKind kind() const override;
+
+        void accept(ExpressionVisitor<B> *visitor) override;
+
+        uint32_t read_idx_;
+        FieldType dst_type_;
+    };
+
+
+
 }
 
 

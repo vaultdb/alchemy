@@ -48,9 +48,9 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     // GROUP BY   p.patid, age_strata, sex, ethnicity, race
     std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
     std::vector<ScalarAggregateDefinition> aggregators {
-            ScalarAggregateDefinition(7, AggregateId::MAX, "numerator"),
+            ScalarAggregateDefinition(5, AggregateId::MAX, "numerator"),
             ScalarAggregateDefinition(-1, AggregateId::COUNT, "site_count"),
-            ScalarAggregateDefinition(9, AggregateId::MAX, "denom_excl")
+            ScalarAggregateDefinition(6, AggregateId::MAX, "denom_excl")
     };
 
     GroupByAggregate unionedPatients(sorted, groupByCols, aggregators );
@@ -64,7 +64,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     // *** Filter
     // HAVING max(denom_excl) = false
     shared_ptr<ExpressionNode<emp::Bit> > zero(new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_BOOL, emp::Bit(false))));;
-    shared_ptr<ExpressionNode<emp::Bit> > input(new InputReferenceNode<emp::Bit>(8));
+    shared_ptr<ExpressionNode<emp::Bit> > input(new InputReferenceNode<emp::Bit>(7));
     shared_ptr<ExpressionNode<emp::Bit> > equality(new EqualNode<emp::Bit>(input, zero));
 
     BoolExpression<emp::Bit> equality_expr(equality);
@@ -83,8 +83,9 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 }
 
   
-  //  input schema: pat_id (0),  age_strata (1), sex (2), ethnicity (3), race (4), numerator (5), denom_excl (6)
-  //  output schema: age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) > 1 denom_multisite, COUNT(*) > 1 ^ numerator numerator_multisite
+  //  input schema: pat_id (0),  age_strata (1), sex (2), ethnicity (3), race (4), max(numerator) (5), site_count (6), max(denom_excl) (7)
+  //  output schema: age_strata (0), sex (1), ethnicity (2), race (3),
+  //  max(p.numerator) numerator (4), COUNT(*) > 1 denom_multisite (5), COUNT(*) > 1 ^ numerator numerator_multisite (6)
 
   shared_ptr<SecureTable> EnrichHtnQuery::projectPatients(const shared_ptr<SecureTable> &src) {
 
@@ -94,18 +95,24 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     Utilities::checkMemoryUtilization("before projection");
 
     ExpressionMapBuilder<emp::Bit> builder(*src->getSchema());
-    for(int i = 1; i < 6; ++i) {
+    for(int i = 1; i < 5; ++i) {
+            // push back age_strata, sex, ethnicity, race
             builder.addMapping(i, i-1);
     }
-    
-    //  shared_ptr<Expression<emp::Bit> > ageStrataExpression(new FunctionExpression(&EnrichHtnQuery::projectAgeStrata<emp::Bit>, "age_strata", FieldType::SECURE_INT));
+
+      // cast numerator to INT for summing in next step
+      // references (5)
+      shared_ptr<ExpressionNode<emp::Bit> > castNumerator(new CastNode<emp::Bit>(5, FieldType::SECURE_INT));
+      shared_ptr<Expression<emp::Bit> >  numeratorToIntExpression(new GenericExpression<emp::Bit>(castNumerator, "numerator", FieldType::SECURE_INT));
+
+    // references (6)
     shared_ptr<Expression<emp::Bit> >  multisiteExpression(new FunctionExpression(&EnrichHtnQuery::projectMultisite<emp::Bit>, "multisite", FieldType::SECURE_INT));
+    // references (5) (6)
     shared_ptr<Expression<emp::Bit> >  multisiteNumeratorExpression(new FunctionExpression(&EnrichHtnQuery::projectNumeratorMultisite<emp::Bit>, "numerator_multisite", FieldType::SECURE_INT));
 
-
-    //builder.addExpression(ageStrataExpression, 1);
-    builder.addExpression(multisiteExpression, 6);
-    builder.addExpression(multisiteNumeratorExpression, 7);
+    builder.addExpression(numeratorToIntExpression, 4);
+    builder.addExpression(multisiteExpression, 5);
+    builder.addExpression(multisiteNumeratorExpression, 6);
 
     Project project(src, builder.getExprs());
 
@@ -113,23 +120,23 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
 }
 
-
+// input schema: age_strata (0), sex (1), ethnicity (2), race (3), numerator (4),  denom_multisite (5), numerator_multisite (6)
 void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
 
     Utilities::checkMemoryUtilization("before sort");
 
     // sort it on cols [0,5)
-    Sort sort(src, DataUtilities::getDefaultSortDefinition(5));
+    Sort sort(src, DataUtilities::getDefaultSortDefinition(4));
     shared_ptr<SecureTable> sorted = sort.run();
 
     Utilities::checkMemoryUtilization("deleting sort");
 
-    std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
+    std::vector<int32_t> groupByCols{0, 1, 2, 3};
     std::vector<ScalarAggregateDefinition> aggregators {
-            ScalarAggregateDefinition(5, AggregateId::SUM, "numerator_cnt"),
+            ScalarAggregateDefinition(4, AggregateId::SUM, "numerator_cnt"),
             ScalarAggregateDefinition(-1, AggregateId::COUNT, "denominator_cnt"),
-            ScalarAggregateDefinition(7, AggregateId::SUM, "numerator_multisite"),
-            ScalarAggregateDefinition(6, AggregateId::SUM, "denominator_multisite")
+            ScalarAggregateDefinition(6, AggregateId::SUM, "numerator_multisite"),
+            ScalarAggregateDefinition(5, AggregateId::SUM, "denominator_multisite")
     };
 
 
@@ -165,10 +172,10 @@ shared_ptr<SecureTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) cons
     std::vector<int32_t> groupByCols{ordinal};
     // ordinals 0...4 are group-by cols in input schema
     std::vector<ScalarAggregateDefinition> aggregators {
-            ScalarAggregateDefinition(5, AggregateId::SUM, "numerator_cnt"),
-            ScalarAggregateDefinition(6, AggregateId::SUM, "denominator_cnt"),
-            ScalarAggregateDefinition(7, AggregateId::SUM, "numerator_multisite"),
-            ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
+            ScalarAggregateDefinition(4, AggregateId::SUM, "numerator_cnt"),
+            ScalarAggregateDefinition(5, AggregateId::SUM, "denominator_cnt"),
+            ScalarAggregateDefinition(6, AggregateId::SUM, "numerator_multisite"),
+            ScalarAggregateDefinition(7, AggregateId::SUM, "denominator_multisite")
     };
 
     GroupByAggregate rollupStrata(sorted, groupByCols, aggregators );

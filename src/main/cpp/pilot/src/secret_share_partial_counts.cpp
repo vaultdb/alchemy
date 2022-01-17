@@ -1,31 +1,8 @@
 #include <data/csv_reader.h>
 #include <util/data_utilities.h>
-#include "secret_share_query_answer.h"
 
-
-void SecretShareQueryAnswer::writeFile(const std::string &  filename, const std::vector<int8_t> & contents) {
-    std::ofstream outFile(filename.c_str(), std::ios::out | std::ios::binary);
-    if(!outFile.is_open()) {
-        throw "Could not write output file " + filename;
-    }
-    outFile.write((char * ) contents.data(), contents.size());
-    outFile.close();
-}
-
-void SecretShareQueryAnswer::SecretShareTable(const string & src_query, const string & db_name, const string & dst_root) {
-
-
-    std::shared_ptr<PlainTable> table = DataUtilities::getQueryResults(db_name, src_query, false);
-
-    SecretShares shares = table->generateSecretShares();
-
-    writeFile(dst_root + ".alice", shares.first);
-    writeFile(dst_root + ".bob", shares.second);
-
-
-
-}
-
+using namespace vaultdb;
+using namespace std;
 
 // input generated with:
 // ./bin/generate_enrich_data_three_parties pilot/secret_shares/input/ 100
@@ -42,7 +19,7 @@ int main(int argc, char **argv) {
 
     setup_plain_prot(false, "");
     string db_name = argv[1];
-    string destination_root = argv[2];
+    string dst_root = argv[2];
 
     string partial_count_query = "WITH single_site AS (\n"
                                  "    SELECT *\n"
@@ -62,7 +39,13 @@ int main(int argc, char **argv) {
                                  "GROUP BY age_strata, sex, ethnicity, race\n"
                                  "ORDER BY age_strata, sex, ethnicity, race";
 
-    SecretShareQueryAnswer::SecretShareTable(partial_count_query, db_name, destination_root);
+    std::shared_ptr<PlainTable> table = DataUtilities::getQueryResults(db_name, partial_count_query, false);
+
+    SecretShares shares = table->generateSecretShares();
+
+    DataUtilities::writeFile(dst_root + ".alice", shares.first);
+    DataUtilities::writeFile(dst_root + ".bob", shares.second);
+
     finalize_plain_prot();
 
     std::cout << "Success." << std::endl;

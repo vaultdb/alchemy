@@ -112,5 +112,12 @@ void PrintExpressionVisitor<B>::visitBinaryExpression(ExpressionNode<B> &binary_
 
 }
 
+template<typename B>
+void PrintExpressionVisitor<B>::visit(CastNode<B> node) {
+    node.accept(this);
+
+    last_value_ = "CAST(" + last_value_ + ", " + TypeUtilities::getTypeString(node.dst_type_) + ")";
+}
+
 template class vaultdb::PrintExpressionVisitor<bool>;
 template class vaultdb::PrintExpressionVisitor<emp::Bit>;

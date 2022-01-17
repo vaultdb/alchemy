@@ -8,7 +8,8 @@ namespace vaultdb {
 
     template<typename B> class InputReferenceNode;
     template<typename B> class  LiteralNode;
-    
+    template<typename B> class CastNode;
+
     template<typename B> class  AndNode;
     template<typename B> class  OrNode;
     template<typename B> class  NotNode;
@@ -36,6 +37,7 @@ namespace vaultdb {
         // InputReferenceNode.accept will call this
        virtual void visit(InputReferenceNode<B> node)  = 0;
        virtual void visit(LiteralNode<B> node)  = 0;
+        virtual void visit(CastNode<B> node)  = 0;
 
         virtual void visit(AndNode<B> node) = 0;
         virtual void visit(OrNode<B> node) = 0;

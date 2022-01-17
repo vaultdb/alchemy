@@ -197,6 +197,29 @@ PlainField FieldFactory<bool>::deserialize(const FieldType &type, const size_t &
     }
 }
 
+PlainField FieldFactory<bool>::toInt(const PlainField &src) {
+    switch(src.getType()) {
+        case FieldType::BOOL: {
+            int32_t value = src.getValue<bool>();
+            return PlainField(FieldType::INT, value);
+        }
+        case FieldType::INT: {
+            return PlainField(src);
+        }
+        case FieldType::LONG: {
+            int32_t value = src.getValue<int64_t>();
+            return PlainField(FieldType::INT, value);
+        }
+        case FieldType::FLOAT: {
+            int32_t value = src.getValue<float_t>();
+            return PlainField(FieldType::INT, value);
+        }
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(src.getType()) + " not supported by FieldFactory<bool>::toInt()");
+    }
+
+}
+
 
 
 // ************  Start SecureBoolField *************/
@@ -344,4 +367,23 @@ SecureField FieldFactory<emp::Bit>::getMax(const FieldType & type) {
 
 
 
+SecureField FieldFactory<emp::Bit>::toInt(const SecureField &src) {
+    switch(src.getType()) {
+        case FieldType::SECURE_BOOL: {
+            emp::Integer dst(32, 0);
+            dst[0] = src.getValue<emp::Bit>();
+            return SecureField(FieldType::SECURE_INT, dst);
+        }
+        case FieldType::SECURE_INT: {
+            return SecureField(FieldType::SECURE_INT, src.getValue<emp::Integer>());
+        }
+        case FieldType::SECURE_LONG: {
+            emp::Integer value = src.getValue<emp::Integer>();
+            value.resize(32);
+            return SecureField(FieldType::SECURE_INT, value);
+        }
+        default:
+            throw std::invalid_argument("Type " + TypeUtilities::getTypeString(src.getType()) + " not supported by FieldFactory<bool>::toInt()");
+    }
 
+}

@@ -24,6 +24,7 @@ namespace vaultdb {
         static PlainField getOne(const FieldType & type);
 
         static PlainField toFloat(const PlainField &src);
+        static PlainField toInt(const PlainField &src);
         static PlainField toLong(const PlainField &src);
 
         static PlainField getMin(const FieldType & type);
@@ -42,6 +43,7 @@ namespace vaultdb {
         static SecureField getOne(const FieldType & type);
 
         static SecureField toFloat(const SecureField &src);
+        static SecureField toInt(const SecureField &src);
         static SecureField toLong(const SecureField &field);
 
         static SecureField getMin(const FieldType & type);

@@ -13,7 +13,7 @@ using namespace std;
 using namespace vaultdb;
 using namespace emp;
 
-#define TESTBED 0
+#define TESTBED 1
 
 
 auto start_time = emp::clock_start();
@@ -35,28 +35,20 @@ void validateInputTable(const string & dbName, const string & sql, const SortDef
 }
 
 string getRollupExpectedResultsSql(const string &groupByColName) {
-    string expectedResultSql = "    WITH labeled as (\n"
-                                    "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
-                                    "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
-                                    "              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2\n"
-                                    "              WHEN age_days > 50*365 AND age_days <= 61*365 THEN 3\n"
-                                    "              WHEN age_days > 61*365 AND age_days <= 72*365 THEN 4\n"
-                                    "                WHEN age_days > 72*365  AND age_days <= 83*365 THEN 5\n"
-                                    "                ELSE 6 END age_strata,\n"
-                                    "            sex, ethnicity, race, numerator, site_id, denom_excl \n"
-                                    "        FROM patient\n"
-                                    "        ORDER BY patid), \n"
-                                    "  deduplicated AS ("
-                                    "    SELECT p.patid, zip_marker, age_strata, sex, ethnicity, race, MAX(p.numerator) numerator, COUNT(*) cnt\n"
-                                    "    FROM labeled p \n"
-                                    "    GROUP BY p.patid, zip_marker, age_strata, sex, ethnicity, race \n"
-                                    "    HAVING MAX(denom_excl) = 0 \n"
-                                    "    ORDER BY p.patid, zip_marker, age_strata, sex, ethnicity, race ),  \n"
-                                    "  data_cube AS (SELECT  zip_marker, age_strata, sex, ethnicity, race, SUM(numerator) numerator, COUNT(*) denominator, SUM((numerator = 1 AND cnt> 1)::INT) numerator_multisite, SUM(CASE WHEN cnt > 1 THEN 1 else 0 END)  denominator_multisite \n"
-                                    "  FROM deduplicated \n"
-                                    "  GROUP BY zip_marker, age_strata, sex, ethnicity, race \n"
-                                    "  ORDER BY zip_marker, age_strata, sex, ethnicity, race ) \n";
-
+    string expectedResultSql = "   WITH labeled as (\n"
+                               "        SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl\n"
+                               "        FROM patient\n"
+                               "        ORDER BY pat_id),\n"
+                               "  deduplicated AS (    SELECT p.pat_id,  age_strata, sex, ethnicity, race, MAX(p.numerator::INT) numerator, COUNT(*) cnt\n"
+                               "    FROM labeled p\n"
+                               "    GROUP BY p.pat_id, age_strata, sex, ethnicity, race\n"
+                               "    HAVING MAX(denom_excl::INT) = 0\n"
+                               "    ORDER BY p.pat_id, age_strata, sex, ethnicity, race ),\n"
+                               "  data_cube AS (SELECT  age_strata, sex, ethnicity, race, SUM(numerator::INT) numerator, COUNT(*) denominator,\n"
+                               "                       SUM(CASE WHEN (numerator > 0 AND cnt> 1) THEN 1 ELSE 0 END) numerator_multisite, SUM(CASE WHEN (cnt > 1) THEN 1 else 0 END)  denominator_multisite\n"
+                               "  FROM deduplicated\n"
+                               "  GROUP BY  age_strata, sex, ethnicity, race\n"
+                               "  ORDER BY  age_strata, sex, ethnicity, race )\n";
     // JMR: not clear why we need to cast to BIGINT here, comes out as float by default despite inputs being BIGINT
     expectedResultSql += "SELECT " + groupByColName + ", SUM(numerator)::BIGINT numerator, SUM(denominator)::BIGINT denominator, SUM(numerator_multisite)::BIGINT numerator_multisite, SUM(denominator_multisite)::BIGINT denominator_multisite \n";
     expectedResultSql += " FROM data_cube \n"
@@ -134,6 +126,7 @@ int main(int argc, char **argv) {
 
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
     string party_name = (party == 1) ? "alice"  : "bob";
+    // TODO: paramaterize the default logging level
     Logger::setup("pilot-" + party_name);
     auto logger = vaultdb_logger::get();
 
@@ -154,12 +147,15 @@ int main(int argc, char **argv) {
       
     // validate it against the DB for testing
     if(TESTBED) {
-        string unionedDbName = "enrich_htn_unioned";
+        std::shared_ptr<PlainTable> revealed = inputData->reveal();
+        string unionedDbName = "enrich_htn_unioned";  // enrich_htn_prod for in-the-field runs
+        string query = "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
+        SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
 
-        shared_ptr<PlainTable> revealed = inputData->reveal();
-        string query = "SELECT * FROM patient ORDER BY patid, site_id";
-        SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (8, SortDirection::ASCENDING)};
+
         validateInputTable(unionedDbName, query, patientSortDef, revealed);
+
+        Logger::write("Input passed test!");
 
 
     }
@@ -182,23 +178,15 @@ int main(int argc, char **argv) {
 
 
     start_time = emp::clock_start();
-    shared_ptr<SecureTable> zipRollup = runRollup(0, "zip_marker", party, enrich, output_path);
+    shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, enrich, output_path);
     auto delta = time_from(start_time);
-    cumulative_runtime += delta;
-
-    BOOST_LOG(logger) <<  "***Done zip_marker rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
-    Utilities::checkMemoryUtilization("zip_marker");
-
-    start_time = emp::clock_start();
-    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich, output_path);
-    delta = time_from(start_time);
     cumulative_runtime += delta;
 
     Utilities::checkMemoryUtilization("age_strata");
     BOOST_LOG(logger) <<  "***Done age rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
     start_time = emp::clock_start();
-    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich, output_path);
+    shared_ptr<SecureTable> genderRollup = runRollup(1, "sex", party, enrich, output_path);
     delta = time_from(start_time);
     cumulative_runtime += delta;
     
@@ -206,14 +194,14 @@ int main(int argc, char **argv) {
     BOOST_LOG(logger) <<  "***Done sex rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
     start_time = emp::clock_start();
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich, output_path);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich, output_path);
     delta = time_from(start_time);
     cumulative_runtime += delta;
     Utilities::checkMemoryUtilization("ethnicity");
     BOOST_LOG(logger) <<  "***Done ethnicity rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
     start_time = emp::clock_start();
-    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich, output_path);
+    shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich, output_path);
     delta = time_from(start_time);
     cumulative_runtime += delta;
     Utilities::checkMemoryUtilization("race");

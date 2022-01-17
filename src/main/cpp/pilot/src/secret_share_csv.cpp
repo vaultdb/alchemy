@@ -1,30 +1,10 @@
 #include <data/csv_reader.h>
 #include <pilot/src/common/shared_schema.h>
-#include "secret_share_csv.h"
+#include <util/data_utilities.h>
 
 
-void SecretShareCsv::writeFile(const std::string &  fileName, const std::vector<int8_t> & contents) {
-    std::ofstream outFile(fileName.c_str(), std::ios::out | std::ios::binary);
-    if(!outFile.is_open()) {
-        throw "Could not write output file " + fileName;
-    }
-    outFile.write((char * ) contents.data(), contents.size());
-    outFile.close();
-}
-
-void SecretShareCsv::SecretShareTable(const string &srcCsvFile, const QuerySchema &srcSchema, const string &dstRoot) {
-
-
-    std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(srcCsvFile, srcSchema);
-    SecretShares shares = inputTable->generateSecretShares();
-
-    writeFile(dstRoot + ".alice", shares.first);
-    writeFile(dstRoot + ".bob", shares.second);
-
-
-
-}
-
+using namespace std;
+using namespace vaultdb;
 
 // input generated with:
 // ./bin/generate_enrich_data_three_parties pilot/secret_shares/input/ 100
@@ -40,9 +20,17 @@ int main(int argc, char **argv) {
     }
 
     setup_plain_prot(false, "");
-    QuerySchema targetSchema = SharedSchema::getInputSchema();
+    QuerySchema target_schema = SharedSchema::getInputSchema();
+    string src_csv = argv[1];
+    string dst_root = argv[2];
 
-    SecretShareCsv::SecretShareTable(string(argv[1]), targetSchema, string(argv[2]));
+    std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(src_csv, target_schema);
+    SecretShares shares = inputTable->generateSecretShares();
+
+    DataUtilities::writeFile(dst_root + ".alice", shares.first);
+    DataUtilities::writeFile(dst_root + ".bob", shares.second);
+
+
     finalize_plain_prot();
 
     std::cout << "Success." << std::endl;

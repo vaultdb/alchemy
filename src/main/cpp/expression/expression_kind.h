@@ -19,6 +19,7 @@ enum class ExpressionKind {
     OR,
     NOT,
     FUNCTION, // for FunctionExpression
+    CAST,
     UNDEFINED
 
 };
