@@ -34,7 +34,8 @@ int main(int argc, char **argv) {
     }
         partial_count_query += "),\n"
                                  "     full_domain AS (\n"
-                                 "        SELECT d.*, p.pat_id\n"
+                                 "                SELECT d.*, CASE WHEN p.numerator AND NOT denom_excl THEN 1 ELSE 0 END numerator,\n"
+                                 "                            CASE WHEN NOT p.denom_excl THEN 1 ELSE 0 END  denominator\n"
                                  "        FROM demographics_domain d LEFT JOIN single_site p on d.age_strata = p.age_strata  AND d.sex = p.sex  AND d.ethnicity = p.ethnicity AND d.race = p.race)\n"
                                  "SELECT age_strata, sex, ethnicity, race, SUM(numerator) numerator_cnt, sum(denominator) denominator_cnt, 0 AS numerator_multisite_cnt, 0 AS denominator_multisite_cnt\n"
                                  "FROM full_domain\n"
@@ -52,7 +53,7 @@ int main(int argc, char **argv) {
 
     std::cout << "Successfully generated partial counts ";
     if(argc == 4)
-        std::cout << " for site " << argv[3];
+        std::cout << "for site " << argv[3];
     std::cout << std::endl;
 
 }
