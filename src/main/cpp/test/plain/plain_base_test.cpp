@@ -2,8 +2,9 @@
 #include <emp-tool/emp-tool.h>
 
 void PlainBaseTest::SetUp()  {
-  setup_plain_prot(false, "");
-    Logger::setup();
+    setup_plain_prot(false, "");
+    //Logger::setup(); // write to console
+    Logger::setup("vaultdb");
     currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
 
 };

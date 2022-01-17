@@ -23,8 +23,7 @@ shared_ptr<QueryTable<B>> Shrinkwrap<B>::runSelf() {
     // preserve the initial sort order otherwise
     SortDefinition  dst_sort;
     dst_sort.push_back(ColumnSort(-1, SortDirection::ASCENDING));  // not-a-dummies go first
-    for(int i = 0; i < src_sort.size(); ++i) {
-        ColumnSort c = src_sort[i];
+    for(ColumnSort c : src_sort) {
         dst_sort.push_back(c);
     }
 

@@ -62,6 +62,8 @@ string getRollupExpectedResultsSql(const string &groupByColName) {
 
 shared_ptr<SecureTable>
 runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const string &output_path) {
+    auto start_time = emp::clock_start();
+    auto logger = vaultdb_logger::get();
 
 
     shared_ptr<SecureTable> stratified = enrich.rollUpAggregate(idx);
@@ -100,10 +102,18 @@ runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const stri
 
 
     }
-    
+
+
+    auto delta = time_from(start_time);
+    cumulative_runtime += delta;
+
+    Utilities::checkMemoryUtilization(colName);
+    BOOST_LOG(logger) <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
+
 
     return stratified;
 }
+
 
 
 int main(int argc, char **argv) {
@@ -129,7 +139,9 @@ int main(int argc, char **argv) {
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
     string party_name = (party == 1) ? "alice"  : "bob";
     // TODO: paramaterize the default logging level
-    Logger::setup("pilot-" + party_name);
+    Logger::setup();
+
+    //Logger::setup("pilot-" + party_name);
     auto logger = vaultdb_logger::get();
 
     QuerySchema schema = SharedSchema::getInputSchema();

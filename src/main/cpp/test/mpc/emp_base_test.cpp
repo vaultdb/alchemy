@@ -9,7 +9,10 @@ const std::string EmpBaseTest::bob_db_ = "tpch_bob";
 
 void EmpBaseTest::SetUp()  {
 
-    Logger::setup(); // write to console
+    //Logger::setup(); // write to console
+    string party_name = (FLAGS_party == 1) ? "alice"  : "bob";
+    Logger::setup("vaultdb-" + party_name);
+
     auto logger = vaultdb_logger::get();
     BOOST_LOG_SEV(logger, logging::trivial::severity_level::debug) << "Connecting to " << FLAGS_alice_host << " on port " << FLAGS_port << " as " << FLAGS_party << std::endl;
     netio_ =  new emp::NetIO(FLAGS_party == emp::ALICE ? nullptr : FLAGS_alice_host.c_str(), FLAGS_port);

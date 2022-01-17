@@ -1,7 +1,7 @@
 
 
-dropdb  --if-exists enrich_htn_unioned
-createdb enrich_htn_unioned
+dropdb  --if-exists enrich_htn_unioned_3pc
+createdb enrich_htn_unioned_3pc
 
 
 cd pilot/test

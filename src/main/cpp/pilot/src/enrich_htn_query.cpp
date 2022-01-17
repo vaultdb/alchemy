@@ -6,6 +6,7 @@
 #include <expression/function_expression.h>
 #include <expression/comparator_expression_nodes.h>
 #include <operators/shrinkwrap.h>
+#include <operators/union.h>
 
 using namespace vaultdb;
 
@@ -121,13 +122,9 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 // input schema: age_strata (0), sex (1), ethnicity (2), race (3), numerator (4),  denom_multisite (5), numerator_multisite (6)
 void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
 
-    Utilities::checkMemoryUtilization("before sort");
-
     // sort it on cols [0,5)
     Sort sort(src, DataUtilities::getDefaultSortDefinition(4));
     shared_ptr<SecureTable> sorted = sort.run();
-
-    Utilities::checkMemoryUtilization("deleting sort");
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3};
     std::vector<ScalarAggregateDefinition> aggregators {
@@ -144,10 +141,9 @@ void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
     dataCube = aggregator.run();
     sorted.reset();
 
-    Utilities::checkMemoryUtilization("deleting aggregate");
-
     Shrinkwrap wrapper(dataCube, cardinalityBound);
     dataCube = wrapper.run();
+
 
 }
 
@@ -174,6 +170,68 @@ shared_ptr<SecureTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) cons
     shared_ptr<SecureTable> result = rollupStrata.run();
 
     return result;
+
+
+}
+
+// partials schema:
+// age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite_cnt (6), denominator_multisite_cnt (7)
+void EnrichHtnQuery::addPartialAggregates(vector<shared_ptr<SecureTable>> partials) {
+    shared_ptr<SecureTable> summedPartials(new SecureTable(*partials[0]));
+    size_t tuple_cnt = summedPartials->getTupleCount();
+
+    for(size_t i = 1; i < partials.size(); ++i) {
+        shared_ptr<SecureTable> partial = partials[i];
+        assert(tuple_cnt == partial->getTupleCount()); // check that they line up
+    }
+
+    // for each tuple
+    for(size_t i = 0; i < tuple_cnt; ++i) {
+            SecureTuple dst = (*summedPartials)[i];
+
+            // for each partial count
+            for(size_t j = 1; j < partials.size(); ++j) {
+                SecureTuple src = (*(partials[j]))[i];
+                // if one of them is not a dummy, then it's not a dummy
+                dst.setDummyTag(src.getDummyTag() | dst.getDummyTag());
+
+                // add up the counts - only need this for single-site figures
+                for(size_t k = 4; k < 6; ++k) {
+                    dst[k] = dst[k] + src[k];
+                }
+                // dst is a shallow copy, so writing back directly to summed_partials
+            }
+    }
+
+    Union<emp::Bit> union_op(dataCube, summedPartials);
+    dataCube = union_op.run();
+
+
+    // basically a rerun of aggregatePatients
+    // TODO: clean this up!
+
+    // sort it on cols [0,5)
+    Sort sort(dataCube, DataUtilities::getDefaultSortDefinition(4));
+    shared_ptr<SecureTable> sorted = sort.run();
+
+    std::vector<int32_t> groupByCols{0, 1, 2, 3};
+    std::vector<ScalarAggregateDefinition> aggregators {
+            ScalarAggregateDefinition(4, AggregateId::SUM, "numerator_cnt"),
+            ScalarAggregateDefinition(5, AggregateId::SUM, "denominator_cnt"),
+            ScalarAggregateDefinition(6, AggregateId::SUM, "numerator_multisite"),
+            ScalarAggregateDefinition(7, AggregateId::SUM, "denominator_multisite")
+    };
+
+
+    // output schema:
+    // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite (6), denominator_multisite (7)
+    GroupByAggregate aggregator(sorted, groupByCols, aggregators);
+    dataCube = aggregator.run();
+    sorted.reset();
+
+    Shrinkwrap wrapper(dataCube, cardinalityBound);
+    dataCube = wrapper.run();
+
 
 
 }

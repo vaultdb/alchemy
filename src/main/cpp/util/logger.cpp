@@ -41,11 +41,11 @@ void Logger::setup(const std::string & logfile_prefix) {
 
     logging::add_common_attributes();
     // set logging level to one of trace, debug, info, warning, error, fatal
-    logging::core::get()->set_filter
+    /*logging::core::get()->set_filter
             (
                     logging::trivial::severity >= logging::trivial::severity_level::trace
             );
-
+*/
 
 }
 

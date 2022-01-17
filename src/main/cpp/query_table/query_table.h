@@ -53,6 +53,7 @@ namespace  vaultdb {
 
         // empty sort definition for default case
             QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition = SortDefinition());
+            // deep copy
             QueryTable(const QueryTable &src);
 
             ~QueryTable() {}

@@ -18,6 +18,8 @@ namespace  vaultdb {
     public:
         // compute initial data cube to prepare for rollups
         EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & cardinality = 0);
+        // after constructor, can add partial counts from other sites for semi-join optimization
+        void addPartialAggregates(vector<shared_ptr<SecureTable>> partials);
         shared_ptr<SecureTable> rollUpAggregate(const int &ordinal) const;
         shared_ptr<SecureTable> dataCube;
 

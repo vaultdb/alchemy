@@ -1,5 +1,5 @@
 -- stitch it all together into a single DB for validation
-\c enrich_htn_unioned
+
 DROP TABLE IF EXISTS patient;
 CREATE TABLE patient (
     pat_id int,

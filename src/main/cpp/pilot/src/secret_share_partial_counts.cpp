@@ -21,6 +21,8 @@ int main(int argc, char **argv) {
     string db_name = argv[1];
     string dst_root = argv[2];
 
+    // output schema:
+    // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite_cnt (6), denominator_multisite_cnt (7)
     string partial_count_query = "WITH single_site AS (\n"
                                  "    SELECT *\n"
                                  "    FROM patient\n"
@@ -34,7 +36,7 @@ int main(int argc, char **argv) {
                                  "     full_domain AS (\n"
                                  "        SELECT d.*, p.pat_id\n"
                                  "        FROM demographics_domain d LEFT JOIN single_site p on d.age_strata = p.age_strata  AND d.sex = p.sex  AND d.ethnicity = p.ethnicity AND d.race = p.race)\n"
-                                 "SELECT age_strata, sex, ethnicity, race, COUNT(pat_id)\n"
+                                 "SELECT age_strata, sex, ethnicity, race, SUM(numerator) numerator_cnt, sum(denominator) denominator_cnt, 0 AS numerator_multisite_cnt, 0 AS denominator_multisite_cnt\n"
                                  "FROM full_domain\n"
                                  "GROUP BY age_strata, sex, ethnicity, race\n"
                                  "ORDER BY age_strata, sex, ethnicity, race";
@@ -48,7 +50,10 @@ int main(int argc, char **argv) {
 
     finalize_plain_prot();
 
-    std::cout << "Success." << std::endl;
+    std::cout << "Successfully generated partial counts ";
+    if(argc == 4)
+        std::cout << " for site " << argv[3];
+    std::cout << std::endl;
 
 }
 
