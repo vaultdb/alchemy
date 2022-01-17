@@ -1,5 +1,6 @@
 #include <data/csv_reader.h>
 #include <util/data_utilities.h>
+#include <pilot/src/common/shared_schema.h>
 
 using namespace vaultdb;
 using namespace std;
@@ -37,14 +38,18 @@ int main(int argc, char **argv) {
                                  "                SELECT d.*, CASE WHEN p.numerator AND NOT denom_excl THEN 1 ELSE 0 END numerator,\n"
                                  "                            CASE WHEN NOT p.denom_excl THEN 1 ELSE 0 END  denominator\n"
                                  "        FROM demographics_domain d LEFT JOIN single_site p on d.age_strata = p.age_strata  AND d.sex = p.sex  AND d.ethnicity = p.ethnicity AND d.race = p.race)\n"
-                                 "SELECT age_strata, sex, ethnicity, race, SUM(numerator) numerator_cnt, sum(denominator) denominator_cnt, 0 AS numerator_multisite_cnt, 0 AS denominator_multisite_cnt\n"
+                                 "SELECT age_strata, sex, ethnicity, race, SUM(numerator)::INT numerator_cnt, sum(denominator)::INT denominator_cnt, 0 AS numerator_multisite_cnt, 0 AS denominator_multisite_cnt\n"
                                  "FROM full_domain\n"
                                  "GROUP BY age_strata, sex, ethnicity, race\n"
                                  "ORDER BY age_strata, sex, ethnicity, race";
 
     std::shared_ptr<PlainTable> table = DataUtilities::getQueryResults(db_name, partial_count_query, false);
+    QuerySchema schema = *(table->getSchema());
+    QuerySchema target = SharedSchema::getPartialCountSchema();
+    assert(schema == target); // check that we line up for ingest
 
     SecretShares shares = table->generateSecretShares();
+
 
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
     DataUtilities::writeFile(dst_root + ".bob", shares.second);

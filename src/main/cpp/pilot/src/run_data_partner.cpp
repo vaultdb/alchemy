@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
     // local input file is an (unencrypted) csv of local site's data
     // secret share file is a binary, e.g., Chicago Alliance input
     if(argc < 5) {
-      cout << "usage: ./run-data-partner <alice host> <port> <party> local_input_file < optional secret_share_file>" << endl;
+      cout << "usage: ./run-data-partner <alice host> <port> <party> local_input_file <optional secret_share_file>" << endl;
     }
 
 

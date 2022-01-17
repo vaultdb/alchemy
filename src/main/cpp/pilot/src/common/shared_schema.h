@@ -9,6 +9,7 @@ class SharedSchema {
 public:
     static QuerySchema getInputSchema();
     static QuerySchema getPatientSchema();
+    static QuerySchema getPartialCountSchema();
 };
 
 
