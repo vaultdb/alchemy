@@ -47,7 +47,7 @@ TEST_F(SerializationTest, capricorn_test) {
     QuerySchema targetSchema = SharedSchema::getInputSchema();
 
     string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
-    string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
+    string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-multisite-patient.csv";
 
     std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
 
@@ -67,7 +67,7 @@ TEST_F(SerializationTest, xored_serialization_test) {
     QuerySchema targetSchema = SharedSchema::getInputSchema();
 
     string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
-    string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
+    string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-multisite-patient.csv";
 
     std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
     vector<int8_t> serialized = inputTable->serialize();
@@ -110,7 +110,6 @@ TEST_F(SerializationTest, xored_serialization_test) {
 TEST_F(SerializationTest, capricorn_deserialization) {
 
     QuerySchema targetSchema = SharedSchema::getInputSchema();
-    // JMR return here
     string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.alice";
     string bobFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.bob";
@@ -118,7 +117,6 @@ TEST_F(SerializationTest, capricorn_deserialization) {
     vector<int8_t> aliceBits = DataUtilities::readFile(aliceFile);
     vector<int8_t> bobBits = DataUtilities::readFile(bobFile);
 
-    //  bob has "xored bits"
     vector<int8_t> serialized = aliceBits;
 
     vector<int8_t>::iterator writePos = serialized.begin();
@@ -130,11 +128,10 @@ TEST_F(SerializationTest, capricorn_deserialization) {
         ++readPos;
     }
 
-    
     std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
 
 
-    string expectedCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
+          string expectedCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
     std::unique_ptr<PlainTable> expected = CsvReader::readCsv(expectedCsvFile, targetSchema);
 
     ASSERT_EQ(*expected, *deserialized);

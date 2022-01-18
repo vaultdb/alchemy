@@ -54,7 +54,6 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
       emp::Integer tmp(schema_->size() * num_tuples, 0, emp::PUBLIC);
       memcpy(tuple_data_.data(), tmp.bits.data(), schema_->size() * num_tuples);
 
-	 Utilities::checkMemoryUtilization("allocating secure table ");
     }
     else {
         std::memset(tuple_data_.data(), 0, tuple_data_.size());
@@ -220,7 +219,7 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 }
 
 
-
+// two-way secret share - both Alice and Bob providing private inputs
 template<typename B>
 std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input, emp::NetIO *netio, const int & party)  {
 
@@ -278,8 +277,12 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
 
 template<typename B>
 shared_ptr<SecureTable>
-QueryTable<B>::secret_share_send_table(const std::shared_ptr<PlainTable> &input, const int &sharing_party) {
+QueryTable<B>::secret_share_send_table(const std::shared_ptr<PlainTable> &input, emp::NetIO *io, const int &sharing_party) {
     QuerySchema dst_schema = QuerySchema::toSecure(*input->getSchema());
+    int32_t tuple_cnt = input->getTupleCount();
+    io->send_data(&tuple_cnt, 4);
+    io->flush();
+
     std::shared_ptr<SecureTable> shared = std::make_shared<SecureTable>(input->getTupleCount(), dst_schema, input->getSortOrder());
     secret_share_send(sharing_party, *input, *shared, 0, false);
     return shared;
@@ -287,9 +290,13 @@ QueryTable<B>::secret_share_send_table(const std::shared_ptr<PlainTable> &input,
 
 template<typename B>
 shared_ptr<SecureTable>
-QueryTable<B>::secret_share_recv_table(const size_t &tuple_cnt, const QuerySchema &src_schema,
-                                       const SortDefinition &sort_definition, const int &sharing_party)
+QueryTable<B>::secret_share_recv_table(const QuerySchema &src_schema, // plaintext schema
+                                       const SortDefinition &sort_definition, emp::NetIO *io, const int &sharing_party)
 {
+    int32_t tuple_cnt;
+    io->recv_data(&tuple_cnt, 4);
+    io->flush();
+
     QuerySchema dst_schema = QuerySchema::toSecure(src_schema);
     std::shared_ptr<SecureTable> shared = std::make_shared<SecureTable>(tuple_cnt, dst_schema, sort_definition);
     secret_share_recv(tuple_cnt, sharing_party, *shared, 0, false);

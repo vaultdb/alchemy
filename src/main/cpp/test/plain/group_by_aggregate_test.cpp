@@ -62,7 +62,7 @@ void GroupByAggregateTest::runDummiesTest(const string &expectedOutputQuery,
 
 
 TEST_F(GroupByAggregateTest, test_count) {
-    std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*) FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*)::INT FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
 
     runTest(expectedOutputQuery, aggregators);
@@ -199,7 +199,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
                                   "  avg(l_quantity) as avg_qty, \n"
                                   "  avg(l_extendedprice) as avg_price, \n"
                                   "  avg(l_discount) as avg_disc, \n"
-                                  "  count(*) as count_order \n"
+                                  "  count(*)::INT as count_order \n"
                                   "from (" + inputQuery + ") subq\n"
                                   " where NOT dummy\n"
                                   "group by \n"
@@ -250,7 +250,7 @@ TEST_F(GroupByAggregateTest, tpch_q1) {
                                   "  avg(l_quantity) as avg_qty, \n"
                                   "  avg(l_extendedprice) as avg_price, \n"
                                   "  avg(l_discount) as avg_disc, \n"
-                                  "  count(*) as count_order \n"
+                                  "  count(*)::INT as count_order \n"
                                   "from (" + inputTuples + ") input "
                                   " where  l_shipdate <= date '1998-08-03'  "
                                   "group by \n"

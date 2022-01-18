@@ -25,7 +25,9 @@ int main(int argc, char **argv) {
     string dst_root = argv[2];
 
     std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(src_csv, target_schema);
+    cout << "Read in " << inputTable->getTupleCount() << " tuples at " << (inputTable->getSchema())->size() << " bits. " <<  endl;
     SecretShares shares = inputTable->generateSecretShares();
+    cout << "Writing " << shares.first.size() << " bytes out." << endl;
 
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
     DataUtilities::writeFile(dst_root + ".bob", shares.second);

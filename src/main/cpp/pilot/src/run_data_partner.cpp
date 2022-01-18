@@ -7,23 +7,60 @@
 #include "enrich_htn_query.h"
 #include <util/utilities.h>
 #include <util/logger.h>
+#include <data/csv_reader.h>
+#include <boost/program_options.hpp>
 
 
 using namespace std;
 using namespace vaultdb;
 using namespace emp;
+namespace po = boost::program_options;
 
 #define TESTBED 1
 
 
 auto start_time = emp::clock_start();
 auto cumulative_runtime = emp::time_from(start_time);
+string partial_counts_query =  "WITH single_site AS (\n"
+                               "    SELECT *\n"
+                               "    FROM patient\n"
+                               "    WHERE NOT multisite),\n"
+                               "     full_domain AS (\n"
+                               "                SELECT d.*, CASE WHEN p.numerator AND NOT denom_excl THEN 1 ELSE 0 END numerator,\n"
+                               "                            CASE WHEN NOT p.denom_excl THEN 1 ELSE 0 END  denominator\n"
+                               "        FROM demographics_domain d LEFT JOIN single_site p on d.age_strata = p.age_strata  AND d.sex = p.sex  AND d.ethnicity = p.ethnicity AND d.race = p.race)\n"
+                               "SELECT age_strata, sex, ethnicity, race, SUM(numerator)::INT numerator_cnt, sum(denominator)::INT denominator_cnt, 0 AS numerator_multisite_cnt, 0 AS denominator_multisite_cnt\n"
+                               "FROM full_domain\n"
+                               "GROUP BY age_strata, sex, ethnicity, race\n"
+                               "ORDER BY age_strata, sex, ethnicity, race";
+
+string expected_data_cube_sql =  "WITH labeled as (\n"
+                                 "        SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl\n"
+                                 "        FROM patient\n"
+                                 "        ORDER BY pat_id),\n"
+                                 "  deduplicated AS (    SELECT p.pat_id,  age_strata, sex, ethnicity, race, MAX(p.numerator::INT) numerator, COUNT(*) cnt\n"
+                                 "    FROM labeled p\n"
+                                 "    GROUP BY p.pat_id, age_strata, sex, ethnicity, race\n"
+                                 "    HAVING MAX(denom_excl::INT) = 0\n"
+                                 "    ORDER BY p.pat_id, age_strata, sex, ethnicity, race ), \n"
+                                 "  data_cube AS (SELECT  age_strata, sex, ethnicity, race, SUM(numerator)::INT numerator_cnt, COUNT(*)::INT denominator_cnt,\n"
+                                 "                       SUM(CASE WHEN (numerator > 0 AND cnt> 1) THEN 1 ELSE 0 END)::INT numerator_multisite_cnt, SUM(CASE WHEN (cnt > 1) THEN 1 else 0 END)::INT  denominator_multisite_cnt\n"
+                                 "  FROM deduplicated\n"
+                                 "  GROUP BY  age_strata, sex, ethnicity, race\n"
+                                 "  ORDER BY  age_strata, sex, ethnicity, race)\n"
+                                 "SELECT d.*, COALESCE(numerator_cnt, 0) numerator_cnt, COALESCE(denominator_cnt, 0) denominator_cnt, COALESCE(numerator_multisite_cnt, 0) numerator_multisite_cnt, COALESCE(denominator_multisite_cnt, 0) denominator_multisite_cnt "
+                                 "FROM demographics_domain d LEFT JOIN data_cube p on d.age_strata = p.age_strata  AND d.sex = p.sex  AND d.ethnicity = p.ethnicity AND d.race = p.race "
+                                 "ORDER BY d.age_strata, d.sex, d.ethnicity, d.race";
+
+string unioned_db_name = "enrich_htn_unioned_3pc";
 
 void validateInputTable(const string & dbName, const string & sql, const SortDefinition  & expectedSortDefinition, const shared_ptr<PlainTable> & testTable)  {
 
     shared_ptr<PlainTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
     expectedTable->setSortOrder(expectedSortDefinition);
+    cout << "Expected results schema: " << *expectedTable->getSchema() <<  " from: \n" << sql << endl;
 
+    cout << "Expected results has a cardinality of " << expectedTable->getTupleCount() << endl;
     // sort the inputs
     // ops deleted later using Operator framework
     Sort sort(testTable, expectedSortDefinition);
@@ -44,13 +81,13 @@ string getRollupExpectedResultsSql(const string &groupByColName) {
                                "    GROUP BY p.pat_id, age_strata, sex, ethnicity, race\n"
                                "    HAVING MAX(denom_excl::INT) = 0\n"
                                "    ORDER BY p.pat_id, age_strata, sex, ethnicity, race ),\n"
-                               "  data_cube AS (SELECT  age_strata, sex, ethnicity, race, SUM(numerator::INT) numerator, COUNT(*) denominator,\n"
+                               "  data_cube AS (SELECT  age_strata, sex, ethnicity, race, SUM(numerator) numerator, COUNT(*) denominator,\n"
                                "                       SUM(CASE WHEN (numerator > 0 AND cnt> 1) THEN 1 ELSE 0 END) numerator_multisite, SUM(CASE WHEN (cnt > 1) THEN 1 else 0 END)  denominator_multisite\n"
                                "  FROM deduplicated\n"
                                "  GROUP BY  age_strata, sex, ethnicity, race\n"
                                "  ORDER BY  age_strata, sex, ethnicity, race )\n";
-    // JMR: not clear why we need to cast to BIGINT here, comes out as float by default despite inputs being BIGINT
-    expectedResultSql += "SELECT " + groupByColName + ", SUM(numerator)::BIGINT numerator, SUM(denominator)::BIGINT denominator, SUM(numerator_multisite)::BIGINT numerator_multisite, SUM(denominator_multisite)::BIGINT denominator_multisite \n";
+
+    expectedResultSql += "SELECT " + groupByColName + ", SUM(numerator)::INT numerator, SUM(denominator)::INT denominator, SUM(numerator_multisite)::INT numerator_multisite, SUM(denominator_multisite)::INT denominator_multisite \n";
     expectedResultSql += " FROM data_cube \n"
                          " GROUP BY " + groupByColName + " \n"
                                                          " ORDER BY " + groupByColName;
@@ -75,21 +112,20 @@ runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const stri
 
     // validate it against the DB for testing
     if(TESTBED) {
-        string unionedDbName = "enrich_htn_unioned_3pc";
         SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(1);
 
         shared_ptr<PlainTable> revealed = stratified->reveal();
         revealed = DataUtilities::removeDummies(revealed);
 
         string query = getRollupExpectedResultsSql(colName);
-        validateInputTable(unionedDbName, query, orderBy, revealed);
+        validateInputTable(unioned_db_name, query, orderBy, revealed);
 
         // write it out
         string csv, schema;
         string out_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/validate";
         string out_file = out_path + "/" + colName + ".csv";
         Utilities::mkdir(out_path);
-        shared_ptr<PlainTable> result = DataUtilities::getExpectedResults(unionedDbName, query, false, 1);
+        shared_ptr<PlainTable> result = DataUtilities::getExpectedResults(unioned_db_name, query, false, 1);
 
         std::stringstream schema_str;
         schema_str << *result->getSchema() << std::endl;
@@ -118,27 +154,124 @@ runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const stri
 
 int main(int argc, char **argv) {
 
-    auto startTime = emp::clock_start();
     // local input file is an (unencrypted) csv of local site's data
     // secret share file is a binary, e.g., Chicago Alliance input
+    // parse args
+    string host, localInputTuples, localPartialCountFile, secretShareTuples, secretSharePartialCounts, dbName;
+    int port=0, party=0;
+    bool semijoinOptimization = false;
+    size_t cardinality_bound = 441; // 7 * 3 * 3 * 7
+    bool dbInput = false; // goes to csv
+
+
+    try {
+        // example invocations:
+        // 1 pilot/test/input/alice-patient.csv  pilot/test/output/chi-patient.alice
+        // ./run_data_partner -h 127.0.0.1 -P 54321 --party=1 -c  pilot/test/input/alice-patient.csv -rc pilot/test/output/chi-patient.alice  -rp
+        po::options_description desc("Options");
+       desc.add_options()
+                ("help", "print help message")
+                ("host,h", po::value<string>(), "alice hostname")
+                ("port,P", po::value<int>(), "connection port")
+                ("party", po::value<int>(), "computing party for mpc (1 = alice, 2 = bob)")
+                ("c", po::value<string>(), "local, plaintext csv input file for mpc tuples")
+                ("database,d", po::value<string>(), "local database name")
+                ("p", po::value<string>(), "local csv file for partial counts")
+                ("rc", po::value<string>(), "secret sh6are file of mpc tuples (remote version of -c)")
+                ("rp", po::value<string>(), "secret share file of partial counts(remote version of -p)")
+        ("cardinality_bound,b", po::value<size_t>()->default_value(441), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)");
+
+
+
+        po::variables_map vm;
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+
+        if (vm.count("help")) {
+            cout << desc << "\n";
+            return 0;
+        }
+
+        if(vm.count("host")) {
+            host =  vm["host"].as<string>();
+        }
+        else {
+            throw std::invalid_argument("Missing hostname for mpc.");
+        }
+
+
+        if (vm.count("port")) {
+            port = vm["port"].as<int>();
+        } else {
+            throw std::invalid_argument("Need port for mpc");
+        }
+
+        if (vm.count("party")) {
+            party = vm["party"].as<int>();
+            if(party != 1 && party != 2) {
+                throw std::invalid_argument("Party of " + std::to_string(party) + "incorrect.  Must be 1 or 2");
+            }
+        } else {
+            throw std::invalid_argument("Need party id for mpc");
+        }
+
+
+        if (vm.count("c")) {
+            localInputTuples = vm["c"].as<string>();
+        }
+
+        if (vm.count("database")) {
+            dbName = vm["database"].as<string>();
+            dbInput = true;
+        }
+
+        if(vm.count("p")) {
+            localPartialCountFile = vm["p"].as<string>();
+            if(vm.count("database")) {
+                throw std::invalid_argument(
+                        "Error: two sources of input for partial count (--d and --p), please select one.");
+            }
+        }
+
+        if(vm.count("rc")) {
+            secretShareTuples = vm["rc"].as<string>();
+            cout << "***Parsed secret share tuples file as " << secretShareTuples << endl;
+        }
+
+        if(vm.count("rp")) {
+            secretSharePartialCounts = vm["rp"].as<string>();
+            semijoinOptimization = true;
+        }
+
+        if(vm.count("cardinality_bound")) {
+            cardinality_bound = vm["cardinality_bound"].as<size_t>();
+        }
+        // sanity check
+        if(!vm.count("c") and !vm.count("database")) {
+            throw std::invalid_argument("Need input source for local data.  Use either -c or -d");
+        }
+
+    }
+    catch(exception& e) {
+        cerr << "error: " << e.what() << "\n";
+        return 1;
+    }
+    catch(...) {
+        cerr << "Exception of unknown type!\n";
+    }
+
+
+
     if(argc < 5) {
       cout << "usage: ./run-data-partner <alice host> <port> <party> local_input_file <optional secret_share_file>" << endl;
     }
 
+    auto startTime = emp::clock_start();
 
-    string host(argv[1]);
-    int port = atoi(argv[2]);
-    int party = atoi(argv[3]);
-    string localInputFile(argv[4]);
-    string secretShareFile = "";
-    if(argc == 6)
-      secretShareFile = argv[5];
-
-    size_t cardinality_bound = 441; // 7 * 3 * 3 * 7
 
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
     string party_name = (party == 1) ? "alice"  : "bob";
-    // TODO: paramaterize the default logging level
+    // TODO: parameterize the default logging level
     Logger::setup();
 
     //Logger::setup("pilot-" + party_name);
@@ -153,21 +286,22 @@ int main(int argc, char **argv) {
     startTime = start_time; // end-to-end one too
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
-    shared_ptr<SecureTable> inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
 
-    Utilities::checkMemoryUtilization("read input");
+    shared_ptr<SecureTable> inputData = (dbInput) ?  UnionHybridData::unionHybridData(dbName, secretShareTuples, netio, party)
+           :  UnionHybridData::unionHybridData(schema, localInputTuples, secretShareTuples, netio, party);
+
     cumulative_runtime = time_from(start_time);
     
       
     // validate it against the DB for testing
     if(TESTBED) {
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
-        string unionedDbName = "enrich_htn_unioned_3pc";  // enrich_htn_prod for in-the-field runs
-        string query = "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
+        string query = (semijoinOptimization) ? "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient WHERE multisite ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl"
+                 : "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
         SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
 
 
-        validateInputTable(unionedDbName, query, patientSortDef, revealed);
+        validateInputTable(unioned_db_name, query, patientSortDef, revealed);
 
         Logger::write("Input passed test!");
 
@@ -192,41 +326,59 @@ int main(int argc, char **argv) {
     BOOST_LOG(logger) << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms." << endl;
     Utilities::checkMemoryUtilization();
 
+    if(semijoinOptimization) {
+        // add in the 1-site PIDs
+        shared_ptr<SecureTable> alice, bob, chi;
 
-    start_time = emp::clock_start();
+        BOOST_LOG(logger) << "Running query " << partial_counts_query <<  " on db " << dbName << endl;
+        shared_ptr<PlainTable> local_partial_counts = (dbInput) ?  DataUtilities::getQueryResults(dbName, partial_counts_query, false)
+                    : CsvReader::readCsv(localPartialCountFile, SharedSchema::getPartialCountSchema());
+
+        assert(local_partial_counts->getTupleCount() == cardinality_bound);
+        // ship local, partial counts - alice, then bob
+            if (party == 1) { // alice
+                alice = SecureTable::secret_share_send_table(local_partial_counts, netio, 1);
+                bob = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(), netio,
+                                                           2);
+            } else { // bob
+                alice = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(),
+                                                             netio, 1);
+                bob = SecureTable::secret_share_send_table(local_partial_counts, netio, 2);
+            }
+
+            assert(QuerySchema::toPlain(*alice->getSchema()) == SharedSchema::getPartialCountSchema());
+            assert(QuerySchema::toPlain(*bob->getSchema()) == SharedSchema::getPartialCountSchema());
+
+            chi = UnionHybridData::readSecretSharedInput(secretSharePartialCounts, SharedSchema::getPartialCountSchema(), party);
+            assert(QuerySchema::toPlain(*chi->getSchema()) == SharedSchema::getPartialCountSchema());
+            assert(QuerySchema::toPlain(*(enrich.dataCube->getSchema())) == SharedSchema::getPartialCountSchema());
+
+            std::vector<shared_ptr<SecureTable>> partial_aggs { alice, bob, chi};
+            enrich.addPartialAggregates(partial_aggs);
+
+        if(TESTBED) {
+            std::shared_ptr<PlainTable> revealed = enrich.dataCube->reveal();
+            SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
+
+
+            validateInputTable(unioned_db_name, expected_data_cube_sql, cube_sort_def, revealed);
+
+            Logger::write("Input passed test!");
+
+
+        }
+
+
+    }
+
     shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, enrich, output_path);
-    auto delta = time_from(start_time);
-    cumulative_runtime += delta;
-
-    Utilities::checkMemoryUtilization("age_strata");
-    BOOST_LOG(logger) <<  "***Done age rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
-
-    start_time = emp::clock_start();
     shared_ptr<SecureTable> genderRollup = runRollup(1, "sex", party, enrich, output_path);
-    delta = time_from(start_time);
-    cumulative_runtime += delta;
-    
-    Utilities::checkMemoryUtilization("gender");
-    BOOST_LOG(logger) <<  "***Done sex rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
-
-    start_time = emp::clock_start();
     shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich, output_path);
-    delta = time_from(start_time);
-    cumulative_runtime += delta;
-    Utilities::checkMemoryUtilization("ethnicity");
-    BOOST_LOG(logger) <<  "***Done ethnicity rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
-
-    start_time = emp::clock_start();
     shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich, output_path);
-    delta = time_from(start_time);
-    cumulative_runtime += delta;
-    Utilities::checkMemoryUtilization("race");
-
-    BOOST_LOG(logger) << "***Done race rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
 
      emp::finalize_semi_honest();
 
      delete netio;
     double runtime = time_from(startTime);
-    BOOST_LOG(logger) <<  "Test completed on party " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
+    BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
 }

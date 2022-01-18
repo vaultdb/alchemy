@@ -87,10 +87,10 @@ namespace  vaultdb {
 
             static std::shared_ptr<SecureTable> secretShare(const PlainTable & input, emp::NetIO *io, const int &party);
             static std::shared_ptr<SecureTable>
-            secret_share_send_table(const std::shared_ptr<PlainTable> &input, const int &sharing_party);
+            secret_share_send_table(const std::shared_ptr<PlainTable> &input, emp::NetIO *io, const int &sharing_party);
             static std::shared_ptr<SecureTable>
-            secret_share_recv_table(const size_t &tuple_cnt, const QuerySchema &src_schema,
-                                    const SortDefinition &sortDefinition, const int &sharing_party);
+            secret_share_recv_table(const QuerySchema &src_schema,
+                                    const SortDefinition &sortDefinition, emp::NetIO *io, const int &sharing_party);
 
 
             SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node

@@ -74,7 +74,7 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
 
 TEST_F(SecureScalarAggregateTest, test_count) {
     // set up expected output
-    std::string expectedOutputQuery = "SELECT COUNT(*) cnt FROM lineitem WHERE l_orderkey <= 10";
+    std::string expectedOutputQuery = "SELECT COUNT(*)::INT cnt FROM lineitem WHERE l_orderkey <= 10";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt"));
@@ -87,7 +87,7 @@ TEST_F(SecureScalarAggregateTest, test_count) {
 TEST_F(SecureScalarAggregateTest, test_count_dummies) {
     // set up expected output
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
-    std::string expectedOutputQuery = "SELECT COUNT(*) cnt_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
+    std::string expectedOutputQuery = "SELECT COUNT(*)::INT cnt_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
 
 
     std::vector<ScalarAggregateDefinition> aggregators;
@@ -237,7 +237,7 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
                                 "  avg(l_quantity) as avg_qty, \n"
                                 "  avg(l_extendedprice) as avg_price, \n"
                                 "  avg(l_discount) as avg_disc, \n"
-                                "  count(*) as count_order \n"
+                                "  count(*)::INT as count_order \n"
                                 "from (" + inputQuery + ") subq\n"
                                                         " where NOT dummy\n";
 
@@ -280,7 +280,7 @@ TEST_F(SecureScalarAggregateTest, tpch_q1) {
                                 "  avg(l_quantity) as avg_qty, \n"
                                 "  avg(l_extendedprice) as avg_price, \n"
                                 "  avg(l_discount) as avg_disc, \n"
-                                "  count(*) as count_order \n"
+                                "  count(*)::INT as count_order \n"
                                 "from (" + inputTuples + ") input "
                                                          " where  l_shipdate <= date '1998-08-03'";
 

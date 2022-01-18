@@ -44,10 +44,7 @@ shared_ptr<SecureTable>
 UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema &src_schema, NetIO *netio,
                                 const int &party) {
     std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, src_schema);
-    Utilities::checkMemoryUtilization("read csv: ");
-
     std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*localInput, netio, party);
-    Utilities::checkMemoryUtilization("local read: ");
     return encryptedTable;
 
 }
@@ -64,19 +61,18 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     // read in binary and then xor it with other side to secret share it.
     std::vector<int8_t> src_data = DataUtilities::readFile(secretSharesFile);
     size_t src_byte_cnt = src_data.size();
-    size_t tuple_size = plain_schema.size();
     size_t src_bit_cnt = src_byte_cnt * 8;
-    size_t tuple_cnt = src_bit_cnt / plain_schema.size();
+    size_t tuple_cnt = src_bit_cnt / plain_schema.size(); // need byte-size for tuples owing to bit/byte disconnect
+
 
     auto logger = vaultdb_logger::get();
-    BOOST_LOG(logger) <<"Read file" << endl;
-
-    assert(src_bit_cnt % tuple_size == 0);
+    assert(src_bit_cnt % plain_schema.size() == 0);
 
     bool *src_bools = new bool[src_bit_cnt];
     emp::to_bool<int8_t>(src_bools, src_data.data(), src_bit_cnt, false);
 
     // convert serialized representation from byte-aligned to bit-by-bit
+    // expect 486 tuples
     QuerySchema secure_schema = QuerySchema::toSecure(plain_schema);
     size_t dst_bit_cnt = tuple_cnt * secure_schema.size();
     size_t remainder = dst_bit_cnt % 128; // pad it to 128-bit increments
@@ -92,8 +88,6 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     Integer alice(dst_bit_cnt, 0L, emp::PUBLIC);
     Integer bob(dst_bit_cnt, 0L, emp::PUBLIC);
 
-    BOOST_LOG(logger)  << "Setting up as party " << party << " with " << dst_bit_cnt << " bits." <<  endl;
-
     if(party == ALICE) {
         // feed through Alice's data, then wait for Bob's
         ProtocolExecution::prot_exec->feed((block *)alice.bits.data(), ALICE, dst_bools, dst_bit_cnt);
@@ -106,15 +100,11 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     }
 
     Integer shared_data = alice ^ bob;
-
-    BOOST_LOG(logger)  << "Deserializing!" << endl;
-
-     std::shared_ptr<SecureTable> shared_table = SecureTable::deserialize(secure_schema,
+    std::shared_ptr<SecureTable> shared_table = SecureTable::deserialize(secure_schema,
                                                                               shared_data.bits);
 
 
      delete [] dst_bools;
-    BOOST_LOG(logger)  << "Done reading secret-shares!" << endl;
      return shared_table;
 
 }
@@ -180,6 +170,29 @@ void UnionHybridData::plain_to_secure_bits(bool *src, bool *dst, const QuerySche
         dst_pos += 1; // emp::Bit, semantically a bool
     }
 
+
+
+}
+
+shared_ptr<SecureTable>
+UnionHybridData::unionHybridData(const string &dbName, const string &secretSharesFile, NetIO *aNetIO,
+                                 const int &party) {
+
+    std::string query = "SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE multisite ORDER BY pat_id, study_year";
+
+    std::shared_ptr<PlainTable> local_plain = DataUtilities::getQueryResults(dbName, query, false);
+    std::shared_ptr<SecureTable> local = SecureTable::secretShare(*local_plain, aNetIO, party);
+
+
+    if(!secretSharesFile.empty()) {
+        std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, *local_plain->getSchema(), party);
+
+        // TODO: reverse the tuple order for bitonic merge, save one more sort - see bottom of file for more
+        Union<emp::Bit> union_op(local, remote);
+        return union_op.run();
+    }
+
+    return local;
 
 
 }

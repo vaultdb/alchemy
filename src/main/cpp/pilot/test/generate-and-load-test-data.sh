@@ -1,3 +1,4 @@
+#!/bin/bash -x
 
 if [ "$#" -ne 1 ]; then
     echo "usage: ./pilot/test/load-generated-data.sh <tuple count per host>"
@@ -31,6 +32,8 @@ psql $DB_NAME -t --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity,
 psql $DB_NAME -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=2 ORDER BY pat_id" >  pilot/test/input/bob-patient.csv
 psql $DB_NAME -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=3 ORDER BY pat_id" >  pilot/test/input/chi-patient.csv
 
+echo "Writing multisite tables!"
+
 #multisite tables
 psql $DB_NAME -t --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=1 AND multisite ORDER BY pat_id" >  pilot/test/input/alice-multisite-patient.csv
 psql $DB_NAME -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=2 AND multisite ORDER BY pat_id" >  pilot/test/input/bob-multisite-patient.csv
@@ -38,10 +41,13 @@ psql $DB_NAME -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity
 
 
 #original table
-./bin/secret_share_csv  pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
+#./bin/secret_share_csv  pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
 # multi-site only
-./bin/secret_share_csv  pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
+#./bin/secret_share_csv  pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
+./bin/secret_share_csv pilot/test/input/chi-multisite-patient.csv  pilot/test/output/chi-patient
 
-./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_alice 1
-./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_bob 2
-./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_chi 3
+./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_site_1 1
+./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_site_2 2
+./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_site_3 3
+#all
+./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts 

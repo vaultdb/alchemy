@@ -155,10 +155,12 @@ int main(int argc, char **argv) {
         TupleSet tupleSet = GenerateEnrichDataThreeParties::generateTuples(i);
         alicePatientFile << tupleSet.alicePatient.toString() << std::endl;
         if(tupleSet.bobPatient.patid != -1) { // overlapping pid
+            assert(tupleSet.bobPatient.site_id == 2);
             bobPatientFile << tupleSet.bobPatient.toString() << std::endl;
             ++bobTupleCount;
         }
         if(tupleSet.chiPatient.patid != -1) { // overlapping pid
+            assert(tupleSet.chiPatient.site_id  == 3);
             chiPatientFile << tupleSet.chiPatient.toString() << std::endl;
             ++chiTupleCount;
         }
@@ -171,9 +173,11 @@ int main(int argc, char **argv) {
         TupleSet tupleSet = GenerateEnrichDataThreeParties::generateTuples(bobPatientId);
 
         PatientTuple bobPatient = tupleSet.alicePatient; // reusing earlier logic to guarantee we get a tuple, Alice is correct here.
+        bobPatient.site_id = 2;
         bobPatientFile << bobPatient.toString() << std::endl;
 
         if(tupleSet.chiPatient.patid != -1) { // overlapping pid
+            assert(tupleSet.chiPatient.site_id  == 3);
             chiPatientFile << tupleSet.chiPatient.toString() << std::endl;
             ++chiTupleCount;
         }

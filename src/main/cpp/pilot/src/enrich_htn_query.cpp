@@ -56,8 +56,6 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     shared_ptr<SecureTable> aggregated = unionedPatients.run();
 
     sorted.reset();
-    Utilities::checkMemoryUtilization("Deleted sort");
-
 
     // filter ones with denom_excl = 1
     // *** Filter
@@ -72,8 +70,6 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
     shared_ptr<SecureTable> output =   inclusionCohort.run();
     aggregated.reset();
-
-    Utilities::checkMemoryUtilization("Deleted aggregate");
     return output;
 
 
@@ -91,7 +87,6 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     // *** Project on aggregate outputs:
     //     CASE WHEN count(*) > 1 THEN 1 else 0 END AS multisite
     //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
-    Utilities::checkMemoryUtilization("before projection");
 
     ExpressionMapBuilder<emp::Bit> builder(*src->getSchema());
     for(int i = 1; i < 5; ++i) {
@@ -114,14 +109,12 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     builder.addExpression(multisiteNumeratorExpression, 6);
 
     Project project(src, builder.getExprs());
-
     return project.run();
 
 }
 
 // input schema: age_strata (0), sex (1), ethnicity (2), race (3), numerator (4),  denom_multisite (5), numerator_multisite (6)
 void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
-
     // sort it on cols [0,5)
     Sort sort(src, DataUtilities::getDefaultSortDefinition(4));
     shared_ptr<SecureTable> sorted = sort.run();
@@ -179,10 +172,16 @@ shared_ptr<SecureTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) cons
 void EnrichHtnQuery::addPartialAggregates(vector<shared_ptr<SecureTable>> partials) {
     shared_ptr<SecureTable> summedPartials(new SecureTable(*partials[0]));
     size_t tuple_cnt = summedPartials->getTupleCount();
+    assert(*(summedPartials->getSchema()) == *(dataCube->getSchema()));
+    cout << "First tuple, site 1: " << (*partials[0])[0].reveal() << endl;
+    cout << "First tuple, site 2: " << (*partials[1])[0].reveal() << endl;
+    cout << "First tuple, site 3: " << (*partials[2])[0].reveal() << endl;
+
 
     for(size_t i = 1; i < partials.size(); ++i) {
         shared_ptr<SecureTable> partial = partials[i];
         assert(tuple_cnt == partial->getTupleCount()); // check that they line up
+        assert(*(partial->getSchema()) == *(dataCube->getSchema()));
     }
 
     // for each tuple
@@ -196,13 +195,24 @@ void EnrichHtnQuery::addPartialAggregates(vector<shared_ptr<SecureTable>> partia
                 dst.setDummyTag(src.getDummyTag() | dst.getDummyTag());
 
                 // add up the counts - only need this for single-site figures
-                for(size_t k = 4; k < 6; ++k) {
-                    dst[k] = dst[k] + src[k];
+                if(i == 0) {
+                    cout << "writing to numerator_cnt " << dst[4].reveal() << " + " << src[4].reveal() << endl;
+                    cout << "writing to denominator_cnt " << dst[5].reveal() << " + " << src[5].reveal() << endl;
+
+                }
+
+                dst.setField(4, dst[4] + src[4]);
+                dst.setField(5, dst[5] + src[5]);
+
+                if(i == 0) {
+                    cout << "Post-write have numerator_cnt " << dst[4].reveal() << endl;
+                    cout << "Post-write have denominator_cnt " << dst[5].reveal() << endl;
                 }
                 // dst is a shallow copy, so writing back directly to summed_partials
             }
     }
 
+    cout << "Summed output, tuple 1: " << (*summedPartials)[1].reveal() << endl;
     Union<emp::Bit> union_op(dataCube, summedPartials);
     dataCube = union_op.run();
 

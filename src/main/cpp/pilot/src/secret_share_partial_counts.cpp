@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     if(argc == 4) {
         int site_id = atoi(argv[3]); // verify it is an int
         assert(1 <= site_id && site_id <= 3);
-        partial_count_query += ("AND site_id = " + std::string(argv[3]));
+        partial_count_query += "AND site_id = " + std::string(argv[3]);
     }
         partial_count_query += "),\n"
                                  "     full_domain AS (\n"
@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
     std::cout << "Successfully generated partial counts ";
     if(argc == 4)
         std::cout << "for site " << argv[3];
-    std::cout << std::endl;
+    std::cout << " to " << dst_root << "(.alice|.bob)" << std::endl;
 
 }
 
