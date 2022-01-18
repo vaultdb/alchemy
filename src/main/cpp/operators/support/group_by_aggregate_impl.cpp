@@ -10,7 +10,7 @@ template<typename B>
 GroupByCountImpl<B>::GroupByCountImpl(const int32_t &ordinal, const FieldType &aggType) : GroupByAggregateImpl<B>(ordinal, aggType)
 {
     GroupByAggregateImpl<B>::aggregateType =
-            (TypeUtilities::isEncrypted(aggType)) ? FieldType::SECURE_LONG : FieldType::LONG;
+            (TypeUtilities::isEncrypted(aggType)) ? FieldType::SECURE_INT : FieldType::INT;
 
     GroupByAggregateImpl<B>::zero = FieldFactory<B>::getZero(GroupByAggregateImpl<B>::aggregateType);
     GroupByAggregateImpl<B>::one = FieldFactory<B>::getOne(GroupByAggregateImpl<B>::aggregateType);
@@ -45,8 +45,8 @@ Field<B> GroupByCountImpl<B>::getResult() {
 template<typename B>
 FieldType GroupByCountImpl<B>::getType() const {
     if(TypeUtilities::isEncrypted(GroupByAggregateImpl<B>::aggregateType))
-        return FieldType::SECURE_LONG;
-    return FieldType::LONG;  // count always returns a long
+        return FieldType::SECURE_INT;
+    return FieldType::INT;  // count always returns a long
 }
 
 
@@ -77,16 +77,16 @@ void GroupBySumImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupB
 template<typename B>
 Field<B> GroupBySumImpl<B>::getResult() {
     // extend this to a LONG to keep with PostgreSQL convention
-   if(runningSum.getType() == FieldType::INT || runningSum.getType() == FieldType::SECURE_INT)
-        return FieldFactory<B>::toLong(runningSum);
+   //if(runningSum.getType() == FieldType::INT || runningSum.getType() == FieldType::SECURE_INT)
+    //    return FieldFactory<B>::toLong(runningSum);
 
     return runningSum;
 }
 
 template<typename B>
 FieldType GroupBySumImpl<B>::getType() const {
-    if(runningSum.getType() == FieldType::INT) return FieldType::LONG;
-    if(runningSum.getType() == FieldType::SECURE_INT) return FieldType::SECURE_LONG;
+   // if(runningSum.getType() == FieldType::INT) return FieldType::LONG;
+   // if(runningSum.getType() == FieldType::SECURE_INT) return FieldType::SECURE_LONG;
 
     return GroupByAggregateImpl<B>::aggregateType;
 }

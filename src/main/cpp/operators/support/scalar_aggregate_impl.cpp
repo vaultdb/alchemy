@@ -9,7 +9,7 @@ ScalarCountImpl<B>::ScalarCountImpl(const uint32_t &ordinal, const FieldType &ag
     // initialize as long for count regardless of input ordinal
 
     ScalarAggregateImpl<B>::aggregateType =
-            (TypeUtilities::isEncrypted(aggType)) ? FieldType::SECURE_LONG : FieldType::LONG;
+            (TypeUtilities::isEncrypted(aggType)) ? FieldType::SECURE_INT : FieldType::INT;
 
     ScalarAggregateImpl<B>::zero = FieldFactory<B>::getZero(ScalarAggregateImpl<B>::aggregateType);
     ScalarAggregateImpl<B>::one = FieldFactory<B>::getOne(ScalarAggregateImpl<B>::aggregateType);
@@ -38,16 +38,16 @@ void ScalarSumImpl<B>::accumulate(const QueryTuple<B> &tuple) {
 template<typename B>
  Field<B> ScalarSumImpl<B>::getResult() const {
     // extend this to a LONG to keep with PostgreSQL convention
-    if(runningSum.getType() == FieldType::INT || runningSum.getType() == FieldType::SECURE_INT)
-        return FieldFactory<B>::toLong(runningSum);
+   // if(runningSum.getType() == FieldType::INT || runningSum.getType() == FieldType::SECURE_INT)
+    //    return FieldFactory<B>::toLong(runningSum);
 
     return runningSum;
 }
 
 template<typename B>
 FieldType ScalarSumImpl<B>::getType() const {
-    if(runningSum.getType() == FieldType::INT) return FieldType::LONG;
-    if(runningSum.getType() == FieldType::SECURE_INT) return FieldType::SECURE_LONG;
+   // if(runningSum.getType() == FieldType::INT) return FieldType::LONG;
+    //if(runningSum.getType() == FieldType::SECURE_INT) return FieldType::SECURE_LONG;
 
     return ScalarAggregateImpl<B>::aggregateType;
 
