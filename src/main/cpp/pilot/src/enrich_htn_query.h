@@ -35,7 +35,7 @@ namespace  vaultdb {
         shared_ptr<SecureTable> projectPatients(const shared_ptr<SecureTable> &src);
 
         // aggregate the data cube
-        void aggregatePatients(const shared_ptr<SecureTable> &src);
+        void aggregatePatients(shared_ptr<SecureTable> &src);
 
 
 

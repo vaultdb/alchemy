@@ -114,10 +114,14 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 }
 
 // input schema: age_strata (0), sex (1), ethnicity (2), race (3), numerator (4),  denom_multisite (5), numerator_multisite (6)
-void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
+void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
     // sort it on cols [0,5)
     Sort sort(src, DataUtilities::getDefaultSortDefinition(4));
     shared_ptr<SecureTable> sorted = sort.run();
+    src.reset();
+
+    Logger::write("Finished sort for data cube.");
+    Utilities::checkMemoryUtilization();
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3};
     std::vector<ScalarAggregateDefinition> aggregators {
@@ -133,10 +137,14 @@ void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
     GroupByAggregate aggregator(sorted, groupByCols, aggregators);
     dataCube = aggregator.run();
     sorted.reset();
+    Logger::write("Aggregated.");
+    Utilities::checkMemoryUtilization();
+
 
     Shrinkwrap wrapper(dataCube, cardinalityBound);
     dataCube = wrapper.run();
-
+    Logger::write("shrinkwrapped.");
+    Utilities::checkMemoryUtilization();
 
 }
 
