@@ -1,4 +1,5 @@
 #include "generate_enrich_data_three_parties.h"
+#include <cassert>
 
 #ifndef PATH_MAX
 #define PATH_MAX (4096)
