@@ -25,11 +25,14 @@ EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & c
 
 // input schema: pat_id (0),  age_strata (1), sex (2), ethnicity (3), race (4), numerator (5), denom_excl (6)
 shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
+    auto logger = vaultdb_logger::get();
 
     // sort it on group-by cols to prepare for aggregate
     // TODO: integrate this with the unioning step.  See UnionHybridData for more on this
     // patid, age_days, sex, ethnicity, race
-  SortDefinition unionSortDefinition{ColumnSort(0, SortDirection::ASCENDING), // pat_ID
+    auto start_time = emp::clock_start();
+
+    SortDefinition unionSortDefinition{ColumnSort(0, SortDirection::ASCENDING), // pat_ID
 				     ColumnSort(1, SortDirection::ASCENDING), // age_strata
 				     ColumnSort(2, SortDirection::ASCENDING), // sex
 				     ColumnSort(3, SortDirection::ASCENDING), // ethnicity
@@ -55,13 +58,14 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     GroupByAggregate unionedPatients(sorted, groupByCols, aggregators );
     shared_ptr<SecureTable> aggregated = unionedPatients.run();
 
+    double runtime = emp::time_from(start_time);
+    BOOST_LOG(logger) << "Runtime for aggregate #1 (patid): " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
     sorted.reset();
 
     // filter ones with denom_excl = 1
     // *** Filter
     // HAVING max(denom_excl) = false
 
-    auto logger = vaultdb_logger::get();
     BOOST_LOG(logger) << "Filtering on schema: " << *(aggregated->getSchema()) << endl;
 
 
@@ -72,9 +76,16 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     BoolExpression<emp::Bit> equality_expr(equality);
 
     BOOST_LOG(logger) << "Filtering with " << equality_expr.root_->toString() << endl;
+    Utilities::checkMemoryUtilization("pre-filter");
+
+    start_time = emp::clock_start();
+
     Filter inclusionCohort(aggregated, equality_expr);
 
     shared_ptr<SecureTable> output =   inclusionCohort.run();
+    runtime = emp::time_from(start_time);
+    BOOST_LOG(logger) << "Runtime for filter: " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
+
     aggregated.reset();
     return output;
 
@@ -114,13 +125,23 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     builder.addExpression(multisiteExpression, 5);
     builder.addExpression(multisiteNumeratorExpression, 6);
 
-    Project project(src, builder.getExprs());
-    return project.run();
+      auto start_time = emp::clock_start();
+      auto logger = vaultdb_logger::get();
 
-}
+      Project project(src, builder.getExprs());
+
+    shared_ptr<SecureTable> projected =  project.run();
+
+      double runtime = emp::time_from(start_time);
+      BOOST_LOG(logger) << "Runtime for projection: " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
+
+  }
 
 // input schema: age_strata (0), sex (1), ethnicity (2), race (3), numerator (4),  denom_multisite (5), numerator_multisite (6)
 void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
+    auto start_time = emp::clock_start();
+    auto logger = vaultdb_logger::get();
+
     // sort it on cols [0,5)
     Sort sort(src, DataUtilities::getDefaultSortDefinition(4));
     shared_ptr<SecureTable> sorted = sort.run();
@@ -151,6 +172,9 @@ void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
     dataCube = wrapper.run();
     Logger::write("shrinkwrapped.");
     Utilities::checkMemoryUtilization();
+    double runtime = emp::time_from(start_time);
+    BOOST_LOG(logger) << "Runtime for aggregate #2 (data cube): " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
+
 
 }
 

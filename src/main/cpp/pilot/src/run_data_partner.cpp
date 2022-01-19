@@ -309,5 +309,5 @@ int main(int argc, char **argv) {
 
      delete netio;
     double runtime = time_from(startTime);
-    BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms, or " << (runtime+0.0)*1e6*1e-6   << " secs." <<  endl;
+    BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
 }
