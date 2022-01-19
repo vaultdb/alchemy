@@ -2,13 +2,13 @@
 #include <pilot/src/common/pilot_utilities.h>
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <util/data_utilities.h>
-#include <operators/sort.h>
 #include "common/union_hybrid_data.h"
 #include "enrich_htn_query.h"
 #include <util/utilities.h>
 #include <util/logger.h>
 #include <data/csv_reader.h>
 #include <boost/program_options.hpp>
+#include <operators/sort.h>
 
 
 
@@ -36,30 +36,17 @@ string partial_counts_query =  "WITH single_site AS (\n"
                                "ORDER BY age_strata, sex, ethnicity, race";
 
 
-string unioned_db_name = "enrich_htn_unioned_3pc";
-
-void validateInputTable(const string & dbName, const string & sql, const SortDefinition  & expectedSortDefinition, const shared_ptr<PlainTable> & testTable)  {
-
-    shared_ptr<PlainTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
-    expectedTable->setSortOrder(expectedSortDefinition);
-    // sort the inputs
-    // ops deleted later using Operator framework
-    Sort sort(testTable, expectedSortDefinition);
-    shared_ptr<PlainTable> observedTable = sort.run();
-
-    assert(*expectedTable ==  *observedTable);
 
 
-}
-
-
+// roll up one group-by col at a time
+// input schema:
+// age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5)
 shared_ptr<SecureTable>
-runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const string &output_path) {
+runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube, const string &output_path) {
     auto start_time = emp::clock_start();
     auto logger = vaultdb_logger::get();
+    shared_ptr<SecureTable> stratified = PilotUtilities::rollUpAggregate(data_cube, idx);
 
-
-    shared_ptr<SecureTable> stratified = enrich.rollUpAggregate(idx);
    std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
 
     std::string suffix = (party == emp::ALICE) ? "alice" : "bob";
@@ -74,14 +61,14 @@ runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const stri
         revealed = DataUtilities::removeDummies(revealed);
 
         string query = PilotUtilities::getRollupExpectedResultsSql(colName);
-        validateInputTable(unioned_db_name, query, orderBy, revealed);
+        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
 
         // write it out
         string csv, schema;
         string out_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/validate";
         string out_file = out_path + "/" + colName + ".csv";
         Utilities::mkdir(out_path);
-        shared_ptr<PlainTable> result = DataUtilities::getExpectedResults(unioned_db_name, query, false, 1);
+        shared_ptr<PlainTable> result = DataUtilities::getExpectedResults(PilotUtilities::unioned_db_name_, query, false, 1);
 
         std::stringstream schema_str;
         schema_str << *result->getSchema() << std::endl;
@@ -118,7 +105,6 @@ int main(int argc, char **argv) {
     bool semijoinOptimization = false;
     size_t cardinality_bound = 441; // 7 * 3 * 3 * 7
     bool dbInput = false; // goes to csv
-
 
     try {
         // example invocations:
@@ -251,7 +237,7 @@ int main(int argc, char **argv) {
         SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
 
 
-        validateInputTable(unioned_db_name, query, patientSortDef, revealed);
+        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patientSortDef, revealed);
 
 
     }
@@ -303,7 +289,7 @@ int main(int argc, char **argv) {
             SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
 
 
-            validateInputTable(unioned_db_name, PilotUtilities::data_cube_sql_, cube_sort_def, revealed);
+            PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, PilotUtilities::data_cube_sql_, cube_sort_def, revealed);
 
 
         }
@@ -311,10 +297,10 @@ int main(int argc, char **argv) {
 
     }
 
-    shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, enrich, output_path);
-    shared_ptr<SecureTable> genderRollup = runRollup(1, "sex", party, enrich, output_path);
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich, output_path);
-    shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich, output_path);
+    shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, enrich.dataCube, output_path);
+    shared_ptr<SecureTable> genderRollup = runRollup(1, "sex", party, enrich.dataCube, output_path);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich.dataCube, output_path);
+    shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich.dataCube, output_path);
 
      emp::finalize_semi_honest();
 

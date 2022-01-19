@@ -140,33 +140,6 @@ void EnrichHtnQuery::aggregatePatients(const shared_ptr<SecureTable> &src) {
 
 }
 
-// roll up one group-by col at a time
-// input schema:
-// age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite (6), denominator_multisite (7)
-
-shared_ptr<SecureTable> EnrichHtnQuery::rollUpAggregate(const int &ordinal) const {
-
-    SortDefinition sortDefinition{ColumnSort(ordinal, SortDirection::ASCENDING)};
-    Sort sort(dataCube, sortDefinition);
-    shared_ptr<SecureTable> sorted = sort.run();
-
-    std::vector<int32_t> groupByCols{ordinal};
-    // ordinals 0...4 are group-by cols in input schema
-    std::vector<ScalarAggregateDefinition> aggregators {
-            ScalarAggregateDefinition(4, AggregateId::SUM, "numerator_cnt"),
-            ScalarAggregateDefinition(5, AggregateId::SUM, "denominator_cnt"),
-            ScalarAggregateDefinition(6, AggregateId::SUM, "numerator_multisite"),
-            ScalarAggregateDefinition(7, AggregateId::SUM, "denominator_multisite")
-    };
-
-    GroupByAggregate rollupStrata(sorted, groupByCols, aggregators );
-    shared_ptr<SecureTable> result = rollupStrata.run();
-
-    return result;
-
-
-}
-
 // partials schema:
 // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite_cnt (6), denominator_multisite_cnt (7)
 void EnrichHtnQuery::addPartialAggregates(vector<shared_ptr<SecureTable>> partials) {

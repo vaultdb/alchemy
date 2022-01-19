@@ -1,6 +1,6 @@
 #include <data/csv_reader.h>
 #include <pilot/src/common/shared_schema.h>
-#include <util/data_utilities.h>
+#include <pilot/src/common/pilot_utilities.h>
 
 
 using namespace std;
@@ -23,15 +23,7 @@ int main(int argc, char **argv) {
     QuerySchema target_schema = SharedSchema::getInputSchema();
     string src_csv = argv[1];
     string dst_root = argv[2];
-
-    std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(src_csv, target_schema);
-    cout << "Read in " << inputTable->getTupleCount() << " tuples at " << (inputTable->getSchema())->size() << " bits. " <<  endl;
-    SecretShares shares = inputTable->generateSecretShares();
-    cout << "Writing " << shares.first.size() << " bytes out." << endl;
-
-    DataUtilities::writeFile(dst_root + ".alice", shares.first);
-    DataUtilities::writeFile(dst_root + ".bob", shares.second);
-
+    PilotUtilities::secretShareFromCsv(src_csv, target_schema, dst_root);
 
     finalize_plain_prot();
 

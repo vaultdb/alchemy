@@ -1,4 +1,5 @@
 #include <pilot/src/common/shared_schema.h>
+#include <pilot/src/common/pilot_utilities.h>
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <util/data_utilities.h>
 #include <operators/sort.h>
@@ -15,7 +16,10 @@ using namespace emp;
 
 #define TESTBED 1
 
-string partial_aggregate_query =  "WITH labeled as (\n"
+auto start_time = emp::clock_start();
+auto cumulative_runtime = emp::time_from(start_time);
+
+/*string partial_aggregate_query =  "WITH labeled as (\n"
                                  "        SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl\n"
                                  "        FROM patient\n"
                                  "        ORDER BY pat_id),\n"
@@ -31,17 +35,53 @@ string partial_aggregate_query =  "WITH labeled as (\n"
                                  "  ORDER BY  age_strata, sex, ethnicity, race)\n"
                                  "SELECT d.*, COALESCE(numerator_cnt, 0) numerator_cnt, COALESCE(denominator_cnt, 0) denominator_cnt, COALESCE(numerator_multisite_cnt, 0) numerator_multisite_cnt, COALESCE(denominator_multisite_cnt, 0) denominator_multisite_cnt "
                                  "FROM demographics_domain d LEFT JOIN data_cube p on d.age_strata = p.age_strata  AND d.sex = p.sex  AND d.ethnicity = p.ethnicity AND d.race = p.race "
-                                 "ORDER BY d.age_strata, d.sex, d.ethnicity, d.race";
+                                 "ORDER BY d.age_strata, d.sex, d.ethnicity, d.race";*/
+string partial_aggregate_query = "WITH aggs AS (SELECT age_strata, sex, ethnicity, race, SUM(CASE WHEN numerator AND NOT denom_excl THEN 1 ELSE 0 END)::INT numerator_cnt, "
+                                                              "SUM(CASE WHEN NOT denom_excl THEN 1 ELSE 0 END)::INT denominator_cnt \n"
+                                 " FROM patient \n"
+                                 " GROUP BY age_strata, sex, ethnicity, race) \n"
+                                 "SELECT d.*, COALESCE(numerator_cnt, 0) numerator_cnt, COALESCE(denominator_cnt, 0) denominator_cnt \n"
+                                 "FROM demographics_domain d LEFT JOIN aggs a on d.age_strata = a.age_strata  AND d.sex = a.sex  AND d.ethnicity = a.ethnicity AND d.race = a.race "
+                                 "ORDER BY age_strata, sex, ethnicity, race ";
 
+
+
+
+std::string getRollupExpectedResultsSql(const std::string &groupByColName) {
+    std::string expectedResultSql = "SELECT " + groupByColName + ", SUM(CASE WHEN numerator AND NOT denom_excl THEN 1 ELSE 0 END)::INT numerator_cnt, "
+                                                                 "SUM(CASE WHEN NOT denom_excl THEN 1 ELSE 0 END)::INT denominator_cnt \n";
+    expectedResultSql += " FROM patient \n"
+                         " GROUP BY " + groupByColName + " \n"
+                                                         " ORDER BY " + groupByColName;
+
+    return expectedResultSql;
+
+}
 
 
 shared_ptr<SecureTable>
-runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const string &output_path) {
+runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & data_cube, const string &output_path) {
     auto start_time = emp::clock_start();
     auto logger = vaultdb_logger::get();
 
+    SortDefinition sortDefinition{ColumnSort(idx, SortDirection::ASCENDING)};
+    Sort sort(data_cube, sortDefinition);
+    shared_ptr<SecureTable> sorted = sort.run();
 
-    shared_ptr<SecureTable> stratified = enrich.rollUpAggregate(idx);
+    std::vector<int32_t> groupByCols{idx};
+    // ordinals 0...4 are group-by cols in input schema
+    std::vector<ScalarAggregateDefinition> aggregators {
+            ScalarAggregateDefinition(4, AggregateId::SUM, "numerator_cnt"),
+            ScalarAggregateDefinition(5, AggregateId::SUM, "denominator_cnt")
+    };
+
+    GroupByAggregate rollupStrata(sorted, groupByCols, aggregators );
+
+
+
+    shared_ptr<SecureTable> stratified =  rollupStrata.run();
+
+
     std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
 
     std::string suffix = (party == emp::ALICE) ? "alice" : "bob";
@@ -56,14 +96,14 @@ runRollup(int idx, string colName, int party, EnrichHtnQuery &enrich, const stri
         revealed = DataUtilities::removeDummies(revealed);
 
         string query = getRollupExpectedResultsSql(colName);
-        validateInputTable(unioned_db_name, query, orderBy, revealed);
+        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
 
         // write it out
         string csv, schema;
         string out_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/validate";
         string out_file = out_path + "/" + colName + ".csv";
         Utilities::mkdir(out_path);
-        shared_ptr<PlainTable> result = DataUtilities::getExpectedResults(unioned_db_name, query, false, 1);
+        shared_ptr<PlainTable> result = DataUtilities::getExpectedResults(PilotUtilities::unioned_db_name_, query, false, 1);
 
         std::stringstream schema_str;
         schema_str << *result->getSchema() << std::endl;
@@ -102,6 +142,13 @@ int main(int argc, char **argv) {
     assert(party == 1 || party == 2);
     string db_name = argv[4];
     string secret_share_file = argv[5];
+    size_t cardinality_bound = 441;
+
+    Logger::setup();
+
+    //Logger::setup("pilot-" + party_name);
+    auto logger = vaultdb_logger::get();
+
 
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
@@ -123,16 +170,18 @@ int main(int argc, char **argv) {
     }
 
 
-    chi = UnionHybridData::readSecretSharedInput(secret_share_file, SharedSchema::getPartialCountSchema(), party);
-    assert(alice->getTupleCount() == bob->getTupleCount() == chi->getTupleCount());
-    assert(*(alice->getSchema()) == *(bob->getSchema()) == *(chi->getSchema()));
+    chi = UnionHybridData::readSecretSharedInput(secret_share_file, QuerySchema::toPlain(*(alice->getSchema())), party);
+    assert(alice->getTupleCount() == bob->getTupleCount());
+    assert(alice->getTupleCount() == chi->getTupleCount());
+    assert(*(alice->getSchema()) == *(bob->getSchema()));
+    assert(*(alice->getSchema()) == *(chi->getSchema()));
 
-    shared_ptr<SecureTable> output(new SecureTable(*alice));
-    size_t tuple_cnt = output->getTupleCount();
+    shared_ptr<SecureTable> data_cube(new SecureTable(*alice));
+    size_t tuple_cnt = data_cube->getTupleCount();
 
     // for each tuple
     for(size_t i = 0; i < tuple_cnt; ++i) {
-        SecureTuple dst = (*output)[i];
+        SecureTuple dst = (*data_cube)[i];
         SecureTuple b = (*bob)[i];
         SecureTuple c = (*chi)[i];
 
@@ -140,13 +189,28 @@ int main(int argc, char **argv) {
         dst.setDummyTag(dst.getDummyTag() | b.getDummyTag() | c.getDummyTag());
         dst.setField(4, dst[4] + b[4] + c[4]);
         dst.setField(5, dst[5] + b[5] + c[5]);
-        dst.setField(6, dst[6] + b[6] + c[6]);
-        dst.setField(7, dst[7] + b[7] + c[7]);
+    }
+
+
+    // verify data cube
+    if(TESTBED) {
+        std::shared_ptr<PlainTable> revealed = data_cube->reveal();
+        SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(4);
+        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, partial_aggregate_query, patientSortDef, revealed);
 
     }
 
 
+    shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, data_cube, output_path);
+    shared_ptr<SecureTable> genderRollup = runRollup(1, "sex", party, data_cube, output_path);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, data_cube, output_path);
+    shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, data_cube, output_path);
 
+    emp::finalize_semi_honest();
+
+    delete netio;
+    double runtime = time_from(start_time);
+    BOOST_LOG(logger) <<  "Test completed on " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
 
 
 

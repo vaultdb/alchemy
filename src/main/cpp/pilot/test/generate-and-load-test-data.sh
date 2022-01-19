@@ -39,6 +39,8 @@ psql $DB_NAME -t --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity,
 psql $DB_NAME -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=2 AND multisite ORDER BY pat_id" >  pilot/test/input/bob-multisite-patient.csv
 psql $DB_NAME -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=3 AND multisite ORDER BY pat_id" >  pilot/test/input/chi-multisite-patient.csv
 
+# for aggregate-only test
+psql $DB_NAME -t --cvs < pilot/test/data-cube-query.sql  > pilot/test/input/chi-patient-aggregate.csv
 
 #original table
 #./bin/secret_share_csv  pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
@@ -50,4 +52,6 @@ psql $DB_NAME -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity
 ./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_site_2 2
 ./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_site_3 3
 #all
-./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts 
+./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts
+#setup for semijoin optimization
+./bin/secret_share_partial_counts_no_dedupe enrich_htn_unioned_chi  pilot/secret_shares/tables/chi_counts

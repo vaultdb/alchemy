@@ -1,6 +1,12 @@
 #include "pilot_utilities.h"
+#include <operators/sort.h>
+#include <operators/group_by_aggregate.h>
+#include <util/data_utilities.h>
+#include <data/csv_reader.h>
 
 using namespace vaultdb;
+
+const std::string PilotUtilities::unioned_db_name_ = "enrich_htn_unioned_3pc";
 
 const std::string PilotUtilities::data_cube_sql_ =  "WITH labeled as (\n"
                                          "        SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl\n"
@@ -44,5 +50,65 @@ std::string PilotUtilities::getRollupExpectedResultsSql(const std::string &group
                                                          " ORDER BY " + groupByColName;
 
     return expectedResultSql;
+
+}
+
+// roll up one group-by col at a time
+// input schema:
+// age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite (6), denominator_multisite (7)
+std::shared_ptr<SecureTable> PilotUtilities::rollUpAggregate(const std::shared_ptr<SecureTable> & input, const int &ordinal)  {
+
+    SortDefinition sortDefinition{ColumnSort(ordinal, SortDirection::ASCENDING)};
+    Sort sort(input, sortDefinition);
+    shared_ptr<SecureTable> sorted = sort.run();
+
+    std::vector<int32_t> groupByCols{ordinal};
+    // ordinals 0...4 are group-by cols in input schema
+    std::vector<ScalarAggregateDefinition> aggregators {
+            ScalarAggregateDefinition(4, AggregateId::SUM, "numerator_cnt"),
+            ScalarAggregateDefinition(5, AggregateId::SUM, "denominator_cnt"),
+            ScalarAggregateDefinition(6, AggregateId::SUM, "numerator_multisite"),
+            ScalarAggregateDefinition(7, AggregateId::SUM, "denominator_multisite")
+    };
+
+    GroupByAggregate rollupStrata(sorted, groupByCols, aggregators );
+    return rollupStrata.run();
+
+
+}
+
+
+void PilotUtilities::validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> & testTable)  {
+
+    shared_ptr<PlainTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
+    expectedTable->setSortOrder(expectedSortDefinition);
+    // sort the inputs
+    // ops deleted later using Operator framework
+    Sort sort(testTable, expectedSortDefinition);
+    shared_ptr<PlainTable> observedTable = sort.run();
+
+    assert(*expectedTable ==  *observedTable);
+
+
+}
+
+void
+PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema &plain_schema, const string &dst_root) {
+    std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(src_csv, plain_schema);
+    SecretShares shares = inputTable->generateSecretShares();
+
+    DataUtilities::writeFile(dst_root + ".alice", shares.first);
+    DataUtilities::writeFile(dst_root + ".bob", shares.second);
+
+}
+
+void PilotUtilities::secretShareFromQuery(const string &db_name, const string &query, const string &dst_root) {
+
+    std::shared_ptr<PlainTable> table = DataUtilities::getQueryResults(db_name, query, false);
+    SecretShares shares = table->generateSecretShares();
+
+
+    DataUtilities::writeFile(dst_root + ".alice", shares.first);
+    DataUtilities::writeFile(dst_root + ".bob", shares.second);
 
 }

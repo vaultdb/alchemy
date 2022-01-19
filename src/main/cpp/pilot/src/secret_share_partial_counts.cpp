@@ -1,6 +1,5 @@
-#include <data/csv_reader.h>
-#include <util/data_utilities.h>
 #include <pilot/src/common/shared_schema.h>
+#include <pilot/src/common/pilot_utilities.h>
 
 using namespace vaultdb;
 using namespace std;
@@ -43,16 +42,8 @@ int main(int argc, char **argv) {
                                  "GROUP BY age_strata, sex, ethnicity, race\n"
                                  "ORDER BY age_strata, sex, ethnicity, race";
 
-    std::shared_ptr<PlainTable> table = DataUtilities::getQueryResults(db_name, partial_count_query, false);
-    QuerySchema schema = *(table->getSchema());
-    QuerySchema target = SharedSchema::getPartialCountSchema();
-    assert(schema == target); // check that we line up for ingest
 
-    SecretShares shares = table->generateSecretShares();
-
-
-    DataUtilities::writeFile(dst_root + ".alice", shares.first);
-    DataUtilities::writeFile(dst_root + ".bob", shares.second);
+    PilotUtilities::secretShareFromQuery(db_name, partial_count_query, dst_root);
 
     finalize_plain_prot();
 

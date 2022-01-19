@@ -24,6 +24,19 @@
 
 \copy (SELECT DISTINCT pat_id, study_year, 'RU' site_id FROM patient ORDER BY pat_id, study_year) TO 'pilot/output/rush_pat_ids.csv' CSV;
 
+
+
 \set ECHO none
+-- set up multisite flags
+DROP TABLE IF EXISTS multisite;
+CREATE TEMP TABLE multisite (pat_id INT, study_year int);
+\copy multisite FROM 'pilot/input/rush-multisite.csv' CSV HEADER
+ALTER TABLE patient ADD COLUMN multisite bool DEFAULT false;
+
+UPDATE patient p SET multisite=true
+FROM multisite m
+WHERE m.pat_id = p.pat_id AND m.study_year = p.study_year;
+
 \i 'pilot/prod/load/verify-domain.sql'
 \i 'pilot/prod/load/generate-demographics-domain.sql'
+
