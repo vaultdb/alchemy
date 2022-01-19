@@ -134,7 +134,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
       double runtime = emp::time_from(start_time);
       BOOST_LOG(logger) << "Runtime for projection: " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
-
+      return projected;
   }
 
 // input schema: age_strata (0), sex (1), ethnicity (2), race (3), numerator (4),  denom_multisite (5), numerator_multisite (6)
