@@ -19,8 +19,15 @@
 \copy (SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE study_year=2020 ORDER BY pat_id) TO 'pilot/input/clean/2020.csv' CSV
 
 
+\copy (SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE study_year=2018 AND multisite ORDER BY pat_id) TO 'pilot/input/clean/2018-multisite.csv' CSV
+\copy (SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE study_year=2019 AND multisite ORDER BY pat_id) TO 'pilot/input/clean/2019-multisite.csv' CSV
+\copy (SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE study_year=2020 AND multisite ORDER BY pat_id) TO 'pilot/input/clean/2020-multisite.csv' CSV
+
+
 
 \copy (SELECT DISTINCT  pat_id, min(age_strata) age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient     GROUP BY pat_id, sex, ethnicity, race, numerator, denom_excl ORDER BY pat_id) TO 'pilot/input/clean/all.csv' CSV
+
+\copy (SELECT DISTINCT  pat_id, min(age_strata) age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE multisite    GROUP BY pat_id, sex, ethnicity, race, numerator, denom_excl ORDER BY pat_id) TO 'pilot/input/clean/all-multisite.csv' CSV
 
 \copy (SELECT DISTINCT pat_id, study_year, 'RU' site_id FROM patient ORDER BY pat_id, study_year) TO 'pilot/output/rush_pat_ids.csv' CSV;
 
