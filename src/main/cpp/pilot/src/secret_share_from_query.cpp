@@ -16,12 +16,12 @@ int main(int argc, char **argv) {
 
     setup_plain_prot(false, "");
     string db_name = argv[1];
-    string dst_root = argv[2];
-    vector<string> query_lines = DataUtilities::readTextFile(argv[3]);
+    vector<string> query_lines = DataUtilities::readTextFile(argv[2]);
     string query = "";
     for(string line : query_lines) {
         query += line;
     }
+    string dst_root = argv[3];
 
 
 
