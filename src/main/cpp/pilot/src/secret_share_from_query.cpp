@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
     vector<string> query_lines = DataUtilities::readTextFile(argv[2]);
     string query = "";
     for(string line : query_lines) {
-        query += line;
+        query += line + " ";
     }
     string dst_root = argv[3];
 
