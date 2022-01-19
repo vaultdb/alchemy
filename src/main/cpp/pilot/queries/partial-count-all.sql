@@ -1,8 +1,7 @@
 WITH single_site AS (
-    SELECT pat_id, min(age_strata) age_strata, sex, ethnicity, race, numerator, denom_excl
+    SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl
     FROM patient
-    WHERE NOT multisite
-    GROUP BY pat_id, sex, ethnicity, race, numerator, denom_excl),
+    WHERE NOT multisite),
      full_domain AS (
          SELECT d.*, CASE WHEN p.numerator AND NOT denom_excl THEN 1 ELSE 0 END numerator,
                 CASE WHEN NOT p.denom_excl THEN 1 ELSE 0 END  denominator

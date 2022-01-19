@@ -28,30 +28,36 @@ psql $DB_NAME <  pilot/test/load-generated-data.sql
 pg_dump $DB_NAME > pilot/test/output/$DB_NAME.sql
 
 #whole tables
-psql $DB_NAME -t --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=1 ORDER BY pat_id" >  pilot/test/input/alice-patient.csv
-psql $DB_NAME -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=2 ORDER BY pat_id" >  pilot/test/input/bob-patient.csv
-psql $DB_NAME -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=3 ORDER BY pat_id" >  pilot/test/input/chi-patient.csv
+psql $DB_NAME -t --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=1 ORDER BY pat_id" >  pilot/test/input/alice-patient.csv
+psql $DB_NAME -t  --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=2 ORDER BY pat_id" >  pilot/test/input/bob-patient.csv
+psql $DB_NAME -t  --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=3 ORDER BY pat_id" >  pilot/test/input/chi-patient.csv
 
 echo "Writing multisite tables!"
 
 #multisite tables
-psql $DB_NAME -t --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=1 AND multisite ORDER BY pat_id" >  pilot/test/input/alice-multisite-patient.csv
-psql $DB_NAME -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=2 AND multisite ORDER BY pat_id" >  pilot/test/input/bob-multisite-patient.csv
-psql $DB_NAME -t  --csv -c   "SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=3 AND multisite ORDER BY pat_id" >  pilot/test/input/chi-multisite-patient.csv
+psql $DB_NAME -t --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=1 AND multisite ORDER BY pat_id" >  pilot/test/input/alice-multisite-patient.csv
+psql $DB_NAME -t  --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=2 AND multisite ORDER BY pat_id" >  pilot/test/input/bob-multisite-patient.csv
+psql $DB_NAME -t  --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=3 AND multisite ORDER BY pat_id" >  pilot/test/input/chi-multisite-patient.csv
 
 # for aggregate-only test
-psql $DB_NAME -t --cvs < pilot/test/data-cube-query.sql  > pilot/test/input/chi-patient-aggregate.csv
+psql $DB_NAME -t --csv < pilot/queries/data-cube-query.sql  > pilot/test/input/chi-patient-aggregate.csv
 
 #original table
 #./bin/secret_share_csv  pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
 # multi-site only
 #./bin/secret_share_csv  pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
-./bin/secret_share_csv pilot/test/input/chi-multisite-patient.csv  pilot/test/output/chi-patient
+./bin/secret_share_from_query enrich_htn_unioned_chi pilot/queries/patient-multisite-all.sql  pilot/test/output/chi-patient
 
-./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_site_1 1
-./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_site_2 2
-./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_site_3 3
+#./bin/secret_share_from_query enrich_htn_unioned_alice pilot/queries/partial-count-all.sql pilot/secret_shares/tables/chi_counts
+
+#./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_site_1 1
+#./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_site_2 2
+#./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts_site_3 3
 #all
-./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts
+#./bin/secret_share_partial_counts $DB_NAME pilot/secret_shares/tables/partial_counts
+
 #setup for semijoin optimization
-./bin/secret_share_partial_counts_no_dedupe enrich_htn_unioned_chi  pilot/secret_shares/tables/chi_counts
+# TODO: deprecate this file
+#./bin/secret_share_partial_counts_no_dedupe enrich_htn_unioned_chi  pilot/secret_shares/tables/chi_counts
+./bin/secret_share_from_query enrich_htn_unioned_chi pilot/queries/partial-count-all.sql pilot/secret_shares/tables/chi_partial_counts
+./bin/secret_share_from_query enrich_htn_unioned_chi pilot/queries/partial-count-no-dedupe-all.sql pilot/secret_shares/tables/chi_counts

@@ -22,21 +22,6 @@ namespace po = boost::program_options;
 
 auto start_time = emp::clock_start();
 auto cumulative_runtime = emp::time_from(start_time);
-string partial_counts_query =  "WITH single_site AS (\n"
-                               "    SELECT *\n"
-                               "    FROM patient\n"
-                               "    WHERE NOT multisite),\n"
-                               "     full_domain AS (\n"
-                               "                SELECT d.*, CASE WHEN p.numerator AND NOT denom_excl THEN 1 ELSE 0 END numerator,\n"
-                               "                            CASE WHEN NOT p.denom_excl THEN 1 ELSE 0 END  denominator\n"
-                               "        FROM demographics_domain d LEFT JOIN single_site p on d.age_strata = p.age_strata  AND d.sex = p.sex  AND d.ethnicity = p.ethnicity AND d.race = p.race)\n"
-                               "SELECT age_strata, sex, ethnicity, race, SUM(numerator)::INT numerator_cnt, sum(denominator)::INT denominator_cnt, 0 AS numerator_multisite_cnt, 0 AS denominator_multisite_cnt\n"
-                               "FROM full_domain\n"
-                               "GROUP BY age_strata, sex, ethnicity, race\n"
-                               "ORDER BY age_strata, sex, ethnicity, race";
-
-
-
 
 // roll up one group-by col at a time
 // input schema:
@@ -105,6 +90,10 @@ int main(int argc, char **argv) {
     bool semijoinOptimization = false;
     size_t cardinality_bound = 441; // 7 * 3 * 3 * 7
     bool dbInput = false; // goes to csv
+    string study_year, party_name;
+    string logfile_prefix = "";
+    string patient_input_query;
+    string partial_counts_query;
 
     try {
         // example invocations:
@@ -121,7 +110,9 @@ int main(int argc, char **argv) {
                 ("p", po::value<string>(), "local csv file for partial counts")
                 ("rc", po::value<string>(), "secret sh6are file of mpc tuples (remote version of -c)")
                 ("rp", po::value<string>(), "secret share file of partial counts(remote version of -p)")
-        ("cardinality_bound,b", po::value<size_t>()->default_value(441), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)");
+               ("log-prefix,l", po::value<string>(), "prefix of filename for log")
+               ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all")
+               ("cardinality-bound,b", po::value<size_t>()->default_value(441), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)");
 
 
 
@@ -153,6 +144,8 @@ int main(int argc, char **argv) {
             if(party != 1 && party != 2) {
                 throw std::invalid_argument("Party of " + std::to_string(party) + "incorrect.  Must be 1 or 2");
             }
+            party_name = (party == 1) ? "alice"  : "bob";
+
         } else {
             throw std::invalid_argument("Need party id for mpc");
         }
@@ -179,17 +172,33 @@ int main(int argc, char **argv) {
             secretShareTuples = vm["rc"].as<string>();
         }
 
+        if (vm.count("year")) {
+            study_year = vm["year"].as<string>();
+            string input_query_file = "pilot/queries/patient-multisite-" + study_year + ".sql";
+            patient_input_query = DataUtilities::readTextFileToString(input_query_file);
+
+        } else {
+            throw std::invalid_argument("Need study year to know the data to input");
+        }
+
         if(vm.count("rp")) {
             secretSharePartialCounts = vm["rp"].as<string>();
             semijoinOptimization = true;
+            partial_counts_query = DataUtilities::readTextFileToString("pilot/queries/partial-count-" + study_year + ".sql");
         }
 
-        if(vm.count("cardinality_bound")) {
-            cardinality_bound = vm["cardinality_bound"].as<size_t>();
+        if(vm.count("cardinality-bound")) {
+            cardinality_bound = vm["cardinality-bound"].as<size_t>();
         }
+
+
         // sanity check
         if(!vm.count("c") and !vm.count("database")) {
             throw std::invalid_argument("Need input source for local data.  Use either -c or -d");
+        }
+
+        if (vm.count("log-prefix")) {
+            logfile_prefix = vm["log-prefix"].as<string>();
         }
 
     }
@@ -207,11 +216,8 @@ int main(int argc, char **argv) {
 
 
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
-    string party_name = (party == 1) ? "alice"  : "bob";
     // TODO: parameterize the default logging level
-    Logger::setup();
-
-    //Logger::setup("pilot-" + party_name);
+    Logger::setup(logfile_prefix);
     auto logger = vaultdb_logger::get();
 
     QuerySchema schema = SharedSchema::getInputSchema();
@@ -223,7 +229,8 @@ int main(int argc, char **argv) {
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
 
-    shared_ptr<SecureTable> inputData = (dbInput) ?  UnionHybridData::unionHybridData(dbName, secretShareTuples, netio, party)
+    shared_ptr<SecureTable> inputData = (dbInput) ? UnionHybridData::unionHybridData(dbName, patient_input_query,
+                                                                                     secretShareTuples, netio, party)
            :  UnionHybridData::unionHybridData(schema, localInputTuples, secretShareTuples, netio, party);
 
     cumulative_runtime = time_from(start_time);
@@ -231,12 +238,11 @@ int main(int argc, char **argv) {
       
     // validate it against the DB for testing
     if(TESTBED) {
+        assert(study_year == "all"); // only coded for no year selection
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
         string query = (semijoinOptimization) ? "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient WHERE multisite ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl"
                  : "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
         SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
-
-
         PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patientSortDef, revealed);
 
 
@@ -279,19 +285,16 @@ int main(int argc, char **argv) {
             }
 
 
-            chi = UnionHybridData::readSecretSharedInput(secretSharePartialCounts, SharedSchema::getPartialCountSchema(), party);
+            chi = UnionHybridData::readSecretSharedInput(secretSharePartialCounts, QuerySchema::toPlain(*(alice->getSchema())), party);
 
             std::vector<shared_ptr<SecureTable>> partial_aggs { alice, bob, chi};
             enrich.addPartialAggregates(partial_aggs);
 
         if(TESTBED) {
+            assert(study_year == "all"); // only coded for no year selection, repeat
             std::shared_ptr<PlainTable> revealed = enrich.dataCube->reveal();
             SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
-
-
             PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, PilotUtilities::data_cube_sql_, cube_sort_def, revealed);
-
-
         }
 
 

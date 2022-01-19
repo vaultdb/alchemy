@@ -219,6 +219,18 @@ vector<string> DataUtilities::readTextFile(const string &filename) {
     return lines;
 }
 
+string DataUtilities::readTextFileToString(const string & filename) {
+    ifstream input_file(filename);
+
+    if(!input_file.is_open())
+    {
+        string cwd = Utilities::getCurrentWorkingDirectory();
+        throw std::invalid_argument("Unable to open file: " + filename + " from " + cwd);
+    }
+
+    return string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
+}
+
 // batch_no is zero-indexed
 vector<string> DataUtilities::readTextFileBatch(const string &filename, const size_t & batch_tuple_cnt, const size_t & batch_no) {
     std::vector<std::string> lines;

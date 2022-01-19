@@ -55,7 +55,6 @@ namespace vaultdb {
         static std::string printSortDefinition(const SortDefinition  & sortDefinition);
 
         static vector<int8_t> readFile(const string &fileName);
-
         // if the file were divided into batches of length *batch_tuple_cnt*, read in the *batch_no* partition
         // zero-indexed
         static vector<string> readTextFileBatch(const string &filename, const size_t & batch_tuple_cnt, const size_t & batch_no);
@@ -69,6 +68,8 @@ namespace vaultdb {
 //        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
 
        static vector<string> readTextFile(const string & filename);
+       static string readTextFileToString(const string & filename);
+
 
         static bool isOrdinal(const string &s);
 

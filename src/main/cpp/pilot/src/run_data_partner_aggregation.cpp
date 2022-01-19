@@ -14,24 +14,10 @@ using namespace std;
 using namespace vaultdb;
 using namespace emp;
 
-#define TESTBED 0
+#define TESTBED 1
 
 auto start_time = emp::clock_start();
 auto cumulative_runtime = emp::time_from(start_time);
-
-string partial_aggregate_query = "WITH cohort AS (SELECT  pat_id, min(age_strata) age_strata, sex, ethnicity, race, numerator, denom_excl\n"
-                                 "                FROM patient\n"
-                                 "                GROUP BY pat_id, sex, ethnicity, race, numerator, denom_excl\n"
-                                 "                ORDER BY pat_id),\n"
-                                 "     aggs AS (SELECT age_strata, sex, ethnicity, race, SUM(CASE WHEN numerator AND NOT denom_excl THEN 1 ELSE 0 END)::INT numerator_cnt,\n"
-                                 "                                                       SUM(CASE WHEN NOT denom_excl THEN 1 ELSE 0 END)::INT denominator_cnt\n"
-                                 "                                  FROM cohort\n"
-                                 "                                  GROUP BY age_strata, sex, ethnicity, race)\n"
-                                 "SELECT d.*, COALESCE(numerator_cnt, 0) numerator_cnt, COALESCE(denominator_cnt, 0) denominator_cnt\n"
-                                 "FROM demographics_domain d LEFT JOIN aggs a on d.age_strata = a.age_strata  AND d.sex = a.sex  AND d.ethnicity = a.ethnicity AND d.race = a.race\n"
-                                 "ORDER BY age_strata, sex, ethnicity, race";
-
-
 
 
 std::string getRollupExpectedResultsSql(const std::string &groupByColName) {
@@ -115,10 +101,11 @@ runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & dat
     return stratified;
 }
 
-// usage: ./run_data_partner_aggregation <alice ip address> <port> <party \in (1,2)> <local db name> <secret share of partial aggs from third site>
+// usage: ./run_data_partner_aggregation <alice ip address> <port> <party \in (1,2)> <local db name> <year \in (2018, 2019, 2020, all)> <secret share of partial aggs from third site>
+// example: ./bin/run_data_partner_aggregation 127.0.0.1 54321 2 enrich_htn_unioned_bob all pilot/secret_shares/tables/chi_counts.bob
 int main(int argc, char **argv) {
-    if(argc < 6) {
-        cout << "usage: ./run_data_partner_aggregation <alice host> <port> <party> <local db name> <secret share of partial aggs>" << endl;
+    if(argc < 7) {
+        cout << "usage: ./run_data_partner_aggregation <alice host> <port> <party> <local db name> <year> <secret share of partial aggs> <optional logger file prefix>" << endl;
         exit(-1);
     }
 
@@ -127,13 +114,17 @@ int main(int argc, char **argv) {
     int port = atoi(argv[2]);
     int party = atoi(argv[3]);
     assert(party == 1 || party == 2);
+    string party_name = (party == 1) ? "alice" : "bob";
+
     string db_name = argv[4];
-    string secret_share_file = argv[5];
+    string input_query_file = "pilot/queries/partial-count-no-dedupe-" + string(argv[5]) + ".sql";
+    string partial_aggregate_query = DataUtilities::readTextFileToString(input_query_file);
+    string secret_share_file = argv[6];
+    // otherwise output to stdout
+    string logger_prefix = (argc == 8) ? string(argv[7]) + "-" + party_name : "";
     size_t cardinality_bound = 441;
 
-    Logger::setup();
-
-    //Logger::setup("pilot-" + party_name);
+    Logger::setup(logger_prefix);
     auto logger = vaultdb_logger::get();
 
 

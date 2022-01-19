@@ -1,7 +1,6 @@
-WITH cohort AS (SELECT DISTINCT  pat_id, min(age_strata) age_strata, sex, ethnicity, race, numerator, denom_excl
+WITH cohort AS (SELECT pat_id, study_year, age_strata, sex, ethnicity, race, numerator, denom_excl
                 FROM patient
-                GROUP BY pat_id, sex, ethnicity, race, numerator, denom_excl
-                ORDER BY pat_id),
+                ORDER BY pat_id, study_year),
      aggs AS (SELECT age_strata, sex, ethnicity, race, SUM(CASE WHEN numerator AND NOT denom_excl THEN 1 ELSE 0 END)::INT numerator_cnt,
                                                        SUM(CASE WHEN NOT denom_excl THEN 1 ELSE 0 END)::INT denominator_cnt
                                   FROM cohort

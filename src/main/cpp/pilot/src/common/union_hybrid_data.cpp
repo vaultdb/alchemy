@@ -175,12 +175,11 @@ void UnionHybridData::plain_to_secure_bits(bool *src, bool *dst, const QuerySche
 }
 
 shared_ptr<SecureTable>
-UnionHybridData::unionHybridData(const string &dbName, const string &secretSharesFile, NetIO *aNetIO,
-                                 const int &party) {
+UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery, const string &secretSharesFile,
+                                 NetIO *aNetIO, const int &party) {
 
-    std::string query = "SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE multisite ORDER BY pat_id, study_year";
 
-    std::shared_ptr<PlainTable> local_plain = DataUtilities::getQueryResults(dbName, query, false);
+    std::shared_ptr<PlainTable> local_plain = DataUtilities::getQueryResults(dbName, inputQuery, false);
     std::shared_ptr<SecureTable> local = SecureTable::secretShare(*local_plain, aNetIO, party);
 
 
