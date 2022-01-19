@@ -97,7 +97,7 @@
           {
             "literal": 313,
             "type": {
-              "type": "LONG",
+              "type": "INTEGER",
               "nullable": false
             }
           }

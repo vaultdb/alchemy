@@ -131,7 +131,7 @@ TEST_F(SerializationTest, capricorn_deserialization) {
     std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
 
 
-          string expectedCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-patient.csv";
+          string expectedCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-multisite-patient.csv";
     std::unique_ptr<PlainTable> expected = CsvReader::readCsv(expectedCsvFile, targetSchema);
 
     ASSERT_EQ(*expected, *deserialized);

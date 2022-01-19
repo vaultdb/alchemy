@@ -5,7 +5,7 @@
 #include "support/tpch_queries.h"
 
 
-// DIAGNOSE = 1 --> all tests produce non-empty output
+// DIAGNOSE = 1 --> all tests produce non-empty query result
 #define DIAGNOSE 0
 
 class TpcHTest : public PlainBaseTest {

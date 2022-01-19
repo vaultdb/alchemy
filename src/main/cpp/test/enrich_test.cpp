@@ -248,8 +248,7 @@ std::string EnrichTest::getRollupExpectedResultsSql(const std::string &groupByCo
                                     "  GROUP BY zip_marker, age_strata, sex, ethnicity, race \n"
                                     "  ORDER BY zip_marker, age_strata, sex, ethnicity, race ) \n";
 
-    // JMR: not clear why we need to cast to BIGINT here, comes out as float by default despite inputs being BIGINT
-    expectedResultSql += "SELECT " + groupByColName + ", SUM(numerator)::BIGINT numerator, SUM(denominator)::BIGINT denominator, SUM(numerator_multisite)::BIGINT numerator_multisite, SUM(denominator_multisite)::BIGINT denominator_multisite \n";
+    expectedResultSql += "SELECT " + groupByColName + ", SUM(numerator)::INT numerator_cnt, SUM(denominator)::INT denominator_cnt, SUM(numerator_multisite)::INT numerator_multisite, SUM(denominator_multisite)::INT denominator_multisite \n";
     expectedResultSql += " FROM data_cube \n"
                          " GROUP BY " + groupByColName + " \n"
                                                          " ORDER BY " + groupByColName;
@@ -386,7 +385,7 @@ TEST_F(EnrichTest, loadUnionAndDeduplicateData) {
                                     "            sex, ethnicity, race, numerator, site_id\n"
                                     "        FROM patient\n"
                                     "        ORDER BY patid)\n"
-                                    "    SELECT p.patid, zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*) cnt, max(denom_excl) denom_excl\n"
+                                    "    SELECT p.patid, zip_marker, age_strata, sex, ethnicity, race, max(p.numerator) numerator, COUNT(*)::INT cnt, max(denom_excl) denom_excl\n"
                                     "    FROM labeled p JOIN patient_exclusion pe ON p.patid = pe.patid AND p.site_id = pe.site_id\n"
                                     "    GROUP BY p.patid, zip_marker, age_strata, sex, ethnicity, race "
                                     "    ORDER BY p.patid, zip_marker, age_strata, sex, ethnicity, race ";
@@ -412,7 +411,7 @@ TEST_F(EnrichTest, testExclusionCriteria) {
                                     "            sex, ethnicity, race, numerator, site_id \n"
                                     "        FROM patient\n"
                                     "        ORDER BY patid)\n"
-                                    "    SELECT p.patid, zip_marker, age_strata, sex, ethnicity, race, MAX(p.numerator) numerator, COUNT(*) cnt, MAX(denom_excl) denom_excl\n"
+                                    "    SELECT p.patid, zip_marker, age_strata, sex, ethnicity, race, MAX(p.numerator) numerator, COUNT(*)::INT cnt, MAX(denom_excl) denom_excl\n"
                                     "    FROM labeled p JOIN patient_exclusion pe ON p.patid = pe.patid AND p.site_id = pe.site_id\n"
                                     "    GROUP BY p.patid, zip_marker, age_strata, sex, ethnicity, race \n"
                                     "    HAVING MAX(denom_excl) = 0 \n"
@@ -481,7 +480,7 @@ TEST_F(EnrichTest, testPatientAgggregation) {
                                     "    GROUP BY p.patid, zip_marker, age_strata, sex, ethnicity, race \n"
                                     "    HAVING MAX(denom_excl) = 0 \n"
                                     "    ORDER BY p.patid, zip_marker, age_strata, sex, ethnicity, race ) \n"
-                                    "  SELECT  zip_marker, age_strata, sex, ethnicity, race, SUM(numerator), COUNT(*) denominator, SUM((numerator = 1 AND cnt> 1)::INT) numerator_multisite, SUM(CASE WHEN cnt > 1 THEN 1 else 0 END)  multisite \n"
+                                    "  SELECT  zip_marker, age_strata, sex, ethnicity, race, SUM(numerator)::INT, COUNT(*)::INT denominator, SUM((numerator = 1 AND cnt> 1)::INT)::INT numerator_multisite, SUM(CASE WHEN cnt > 1 THEN 1 else 0 END)::INT  multisite \n"
                                     "  FROM deduplicated \n"
                                     "  GROUP BY zip_marker, age_strata, sex, ethnicity, race \n"
                                     "  ORDER BY zip_marker, age_strata, sex, ethnicity, race ";
