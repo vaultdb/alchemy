@@ -8,6 +8,14 @@
 \i 'pilot/prod/load/nm/load-population-labels.sql'
 \i 'pilot/prod/load/nm/assemble-patient-table.sql'
 
+DROP TABLE IF EXISTS multisite;
+CREATE TEMP TABLE multisite (pat_id INT, study_year int);
+\copy multisite FROM 'pilot/input/nm-multisite.csv' CSV HEADER
+ALTER TABLE patient ADD COLUMN multisite bool DEFAULT false;
+
+UPDATE patient p SET multisite=true
+FROM multisite m
+WHERE m.pat_id = p.pat_id AND m.study_year = p.study_year;
 
 
 \copy (SELECT pat_id, age_strata, sex,  ethnicity, race, numerator, denom_excl FROM patient WHERE study_year=2018 ORDER BY pat_id, site_id) TO 'pilot/input/alice-prod-patient.csv' CSV
@@ -24,14 +32,6 @@
 
 
 \set ECHO none
-DROP TABLE IF EXISTS multisite;
-CREATE TEMP TABLE multisite (pat_id INT, study_year int);
-\copy multisite FROM 'pilot/input/nm-multisite.csv' CSV HEADER
-ALTER TABLE patient ADD COLUMN multisite bool DEFAULT false;
-
-UPDATE patient p SET multisite=true
-FROM multisite m
-WHERE m.pat_id = p.pat_id AND m.study_year = p.study_year;
 
 \i 'pilot/prod/load/verify-domain.sql'
 \i 'pilot/prod/load/generate-demographics-domain.sql'
