@@ -1,5 +1,5 @@
 WITH single_site AS (
-    SELECT pat_id, min(age_strata), sex, ethnicity, race, numerator, denom_excl
+    SELECT pat_id, min(age_strata) age_strata, sex, ethnicity, race, numerator, denom_excl
     FROM patient
     WHERE NOT multisite
     GROUP BY pat_id, sex, ethnicity, race, numerator, denom_excl),
