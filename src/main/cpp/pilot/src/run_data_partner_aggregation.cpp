@@ -19,7 +19,7 @@ using namespace emp;
 auto start_time = emp::clock_start();
 auto cumulative_runtime = emp::time_from(start_time);
 
-string partial_aggregate_query = "WITH cohort AS (SELECT DISTINCT  pat_id, min(age_strata) age_strata, sex, ethnicity, race, numerator, denom_excl\n"
+string partial_aggregate_query = "WITH cohort AS (SELECT  pat_id, min(age_strata) age_strata, sex, ethnicity, race, numerator, denom_excl\n"
                                  "                FROM patient\n"
                                  "                GROUP BY pat_id, sex, ethnicity, race, numerator, denom_excl\n"
                                  "                ORDER BY pat_id),\n"
