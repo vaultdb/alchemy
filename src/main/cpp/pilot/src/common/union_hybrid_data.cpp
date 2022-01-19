@@ -180,11 +180,14 @@ UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery,
 
 
     std::shared_ptr<PlainTable> local_plain = DataUtilities::getQueryResults(dbName, inputQuery, false);
+    auto logger = vaultdb_logger::get();
+    BOOST_LOG(logger) << "Reading in " << local_plain->getTupleCount() << " tuples from local db." << endl;
     std::shared_ptr<SecureTable> local = SecureTable::secretShare(*local_plain, aNetIO, party);
 
 
     if(!secretSharesFile.empty()) {
         std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, *local_plain->getSchema(), party);
+        BOOST_LOG(logger) << "Reading in " << local_plain->getTupleCount() << " secret-shared records." << endl;
 
         // TODO: reverse the tuple order for bitonic merge, save one more sort - see bottom of file for more
         Union<emp::Bit> union_op(local, remote);
