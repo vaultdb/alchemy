@@ -60,12 +60,18 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     // filter ones with denom_excl = 1
     // *** Filter
     // HAVING max(denom_excl) = false
+
+    auto logger = vaultdb_logger::get();
+    BOOST_LOG(logger) << "Filtering on schema: " << *(aggregated->getSchema()) << endl;
+
+
     shared_ptr<ExpressionNode<emp::Bit> > zero(new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_BOOL, emp::Bit(false))));;
     shared_ptr<ExpressionNode<emp::Bit> > input(new InputReferenceNode<emp::Bit>(7));
     shared_ptr<ExpressionNode<emp::Bit> > equality(new EqualNode<emp::Bit>(input, zero));
 
     BoolExpression<emp::Bit> equality_expr(equality);
 
+    BOOST_LOG(logger) << "Filtering with " << equality_expr.root_->toString() << endl;
     Filter inclusionCohort(aggregated, equality_expr);
 
     shared_ptr<SecureTable> output =   inclusionCohort.run();
