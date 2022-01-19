@@ -111,4 +111,9 @@ void PilotUtilities::secretShareFromQuery(const string &db_name, const string &q
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
     DataUtilities::writeFile(dst_root + ".bob", shares.second);
 
+    string schema_filename = dst_root + ".schema";
+    std::stringstream schema_str;
+    schema_str << *(table->getSchema()) << std::endl;
+    string schema_desc = schema_str.str();
+    DataUtilities::writeFile(schema_filename, schema_desc);
 }
