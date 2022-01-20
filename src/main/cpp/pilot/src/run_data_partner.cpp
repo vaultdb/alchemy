@@ -95,6 +95,8 @@ int main(int argc, char **argv) {
     string patient_input_query;
     string partial_counts_query;
 
+
+
     try {
         // example invocations:
         // 1 pilot/test/input/alice-patient.csv  pilot/test/output/chi-patient.alice
@@ -219,6 +221,8 @@ int main(int argc, char **argv) {
     // TODO: parameterize the default logging level
     Logger::setup(logfile_prefix);
     auto logger = vaultdb_logger::get();
+    uint64_t epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    BOOST_LOG(logger) << "Starting epoch " << epoch << endl;
 
     QuerySchema schema = SharedSchema::getInputSchema();
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
@@ -309,5 +313,7 @@ int main(int argc, char **argv) {
 
      delete netio;
     double runtime = time_from(startTime);
+    epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    BOOST_LOG(logger) << "Ending epoch " << epoch << endl;
     BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
 }
