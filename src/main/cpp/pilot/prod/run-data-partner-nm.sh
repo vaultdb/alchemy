@@ -1,4 +1,5 @@
 #!/bin/bash
+
 if [ "$#" -ne 1 ]; then
     echo "usage: ./pilot/prod/run-data-partner-nm.sh <test \in (2018-2020, all)>"
     exit
