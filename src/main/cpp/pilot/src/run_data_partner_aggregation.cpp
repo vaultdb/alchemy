@@ -127,6 +127,10 @@ int main(int argc, char **argv) {
     Logger::setup(logger_prefix);
     auto logger = vaultdb_logger::get();
 
+    uint64_t epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    BOOST_LOG(logger) << "Starting epoch " << epoch << endl;
+
+
 
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
@@ -190,6 +194,8 @@ int main(int argc, char **argv) {
     double runtime = time_from(start_time);
     BOOST_LOG(logger) <<  "Test completed on " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
 
+    epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    BOOST_LOG(logger) << "Ending epoch " << epoch << endl;
 
 
 
