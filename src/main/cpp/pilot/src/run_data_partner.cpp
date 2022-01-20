@@ -72,7 +72,7 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
     cumulative_runtime += delta;
 
     Utilities::checkMemoryUtilization(colName);
-    BOOST_LOG(logger) <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime <<  endl;
+    BOOST_LOG(logger) <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime << " epoch " << Utilities::getEpoch() <<  endl;
 
 
     return stratified;
@@ -225,8 +225,7 @@ int main(int argc, char **argv) {
     QuerySchema schema = SharedSchema::getInputSchema();
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
-    uint64_t epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    BOOST_LOG(logger) << "Starting epoch " << epoch << endl;
+    BOOST_LOG(logger) << "Starting epoch " << Utilities::getEpoch() << endl;
 
     start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
     startTime = start_time; // end-to-end one too
@@ -254,7 +253,7 @@ int main(int argc, char **argv) {
 
 
 
-    BOOST_LOG(logger) << "***Read input on " << party << " in " <<    (cumulative_runtime + 0.0) *1e6*1e-9 << " ms." << endl;
+    BOOST_LOG(logger) << "***Read input on " << party << " in " <<    (cumulative_runtime + 0.0) *1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
     start_time = emp::clock_start();
 
     // create output dir:
@@ -266,7 +265,7 @@ int main(int argc, char **argv) {
     assert(enrich.dataCube->getTupleCount() == cardinality_bound);
 
     cumulative_runtime += time_from(start_time);
-    BOOST_LOG(logger) << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms." << endl;
+    BOOST_LOG(logger) << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
     Utilities::checkMemoryUtilization();
 
     if(semijoinOptimization) {
@@ -313,7 +312,6 @@ int main(int argc, char **argv) {
 
      delete netio;
     double runtime = time_from(startTime);
-    epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    BOOST_LOG(logger) << "Ending epoch " << epoch << endl;
+    BOOST_LOG(logger) << "Ending epoch " << Utilities::getEpoch() << endl;
     BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
 }

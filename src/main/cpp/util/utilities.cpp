@@ -159,4 +159,8 @@ AggregateId Utilities::getAggregateId(const string &src) {
 
 }
 
+uint64_t Utilities::getEpoch() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
 

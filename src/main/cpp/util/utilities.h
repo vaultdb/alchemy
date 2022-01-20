@@ -52,6 +52,7 @@ namespace vaultdb {
 
         // for use in plan reader
         static AggregateId getAggregateId(const std::string & src);
+        static uint64_t getEpoch();
 
         // for use in joins
         // indexes are based on the concatenated tuple, not addressing each input to the join comparison individually
