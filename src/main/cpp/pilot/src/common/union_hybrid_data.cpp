@@ -188,7 +188,7 @@ UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery,
 
     if(!secretSharesFile.empty()) {
         std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, *local_plain->getSchema(), party);
-        BOOST_LOG(logger) << "Reading in " << local_plain->getTupleCount() << " secret-shared records." << endl;
+        BOOST_LOG(logger) << "Reading in " << remote->getTupleCount() << " secret-shared records." << endl;
 
         // TODO: reverse the tuple order for bitonic merge, save one more sort - see bottom of file for more
         Union<emp::Bit> union_op(local, remote);
