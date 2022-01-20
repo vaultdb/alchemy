@@ -221,12 +221,12 @@ int main(int argc, char **argv) {
     // TODO: parameterize the default logging level
     Logger::setup(logfile_prefix);
     auto logger = vaultdb_logger::get();
-    uint64_t epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    BOOST_LOG(logger) << "Starting epoch " << epoch << endl;
 
     QuerySchema schema = SharedSchema::getInputSchema();
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
+    uint64_t epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    BOOST_LOG(logger) << "Starting epoch " << epoch << endl;
 
     start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
     startTime = start_time; // end-to-end one too
