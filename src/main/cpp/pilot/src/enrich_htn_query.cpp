@@ -16,6 +16,8 @@ EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & c
   // takes in shared_schema
     shared_ptr<SecureTable> filtered = filterPatients();
     shared_ptr<SecureTable> projected = projectPatients(filtered);
+    auto logger = vaultdb_logger::get();
+    BOOST_LOG(logger) << "Completed deduplication and exclusion at epoch " << Utilities::getEpoch() << endl;
     aggregatePatients(projected);
     filtered.reset();
     projected.reset();
