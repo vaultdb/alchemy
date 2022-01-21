@@ -29,11 +29,6 @@ int main(int argc, char **argv) {
 
     finalize_plain_prot();
 
-    std::cout << "Successfully generated partial counts ";
-    if(argc == 4)
-        std::cout << "for site " << argv[3];
-    std::cout << " to " << dst_root << "(.alice|.bob)" << std::endl;
-
 }
 
 

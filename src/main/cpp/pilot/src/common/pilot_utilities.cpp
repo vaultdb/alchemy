@@ -116,4 +116,6 @@ void PilotUtilities::secretShareFromQuery(const string &db_name, const string &q
     schema_str << *(table->getSchema()) << std::endl;
     string schema_desc = schema_str.str();
     DataUtilities::writeFile(schema_filename, schema_desc);
+    cout << "Generated shares for " << table->getTupleCount() << " tuples, output size: " << shares.first.size() << " bytes per host." << endl;
+
 }
