@@ -1,4 +1,5 @@
-#!/bin/bash
+
+0;136;0c#!/bin/bash
 
 ./pilot/prod/load/alliance/clean.sh
 
@@ -12,8 +13,8 @@ createdb enrich_htn_prod
 
 psql enrich_htn_prod <  pilot/prod/load/load-data-alliance.sql
 
-./bin/secret_share_csv pilot/input/clean/2018.csv pilot/secret_shares/2018
-./bin/secret_share_csv pilot/input/clean/2019.csv pilot/secret_shares/2019
-./bin/secret_share_csv pilot/input/clean/2020.csv pilot/secret_shares/2020
-./bin/secret_share_csv pilot/input/clean/all.csv pilot/secret_shares/all
+./bin/secret_share_csv pilot/input/clean/multisite-2018.csv pilot/secret_shares/2018
+./bin/secret_share_csv pilot/input/clean/multisite-2019.csv pilot/secret_shares/2019
+./bin/secret_share_csv pilot/input/clean/multisite-2020.csv pilot/secret_shares/2020
+./bin/secret_share_csv pilot/input/clean/multisite-all.csv pilot/secret_shares/all
 
