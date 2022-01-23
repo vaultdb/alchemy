@@ -35,6 +35,7 @@ WHERE EXISTS (
 
 DROP TABLE multisite_pids;
 
+\i 'pilot/prod/load/add-hashes-to-patids.sql'
 -- look for dupes:
 -- SELECT pat_id, study_year 
 -- FROM patient 

@@ -43,5 +43,7 @@ WHERE EXISTS (
 
 DROP TABLE multisite_pids;
 
+\i 'pilot/prod/load/add-hashes-to-patids.sql'
+
 -- look for inconsistencies:
 --  SELECT pat_id, study_year, site_id FROM patient GROUP  BY pat_id, study_year, site_id HAVING COUNT(*) > 1 ORDER BY pat_id;

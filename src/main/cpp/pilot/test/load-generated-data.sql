@@ -16,7 +16,7 @@ WHERE EXISTS(
     WHERE p1.pat_id = p2.pat_id AND p1.study_year = p2.study_year AND p1.site_id <> p2.site_id);
 
 \i  'pilot/prod/load/generate-demographics-domain.sql'
-
+\i  'pilot/prod/load/add-hashes-to-patids.sql'
 
 \copy (SELECT * FROM patient WHERE site_id = 1 ORDER BY pat_id, study_year) TO 'pilot/test/input/alice-db.csv' CSV
 \copy (SELECT * FROM patient WHERE site_id = 2 ORDER BY pat_id, study_year) TO 'pilot/test/input/bob-db.csv' CSV
@@ -41,6 +41,7 @@ SELECT setup_patient_table();
 \i  'pilot/prod/load/generate-demographics-domain.sql'
 
 
+
 DROP DATABASE IF EXISTS enrich_htn_unioned_chi;
 CREATE DATABASE enrich_htn_unioned_chi;
 \c enrich_htn_unioned_chi
@@ -48,3 +49,4 @@ CREATE DATABASE enrich_htn_unioned_chi;
 SELECT setup_patient_table();
 \copy patient FROM 'pilot/test/input/chi-db.csv' CSV
 \i  'pilot/prod/load/generate-demographics-domain.sql'
+
