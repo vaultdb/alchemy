@@ -113,9 +113,24 @@ void PilotUtilities::secretShareFromQuery(const string &db_name, const string &q
 
     string schema_filename = dst_root + ".schema";
     std::stringstream schema_str;
-    schema_str << *(table->getSchema()) << std::endl;
+    schema_str << *(table->getSchema()) << endl;
     string schema_desc = schema_str.str();
     DataUtilities::writeFile(schema_filename, schema_desc);
-    cout << "Generated shares for " << table->getTupleCount() << " tuples, output size: " << shares.first.size() << " bytes per host." << endl;
+}
+
+
+string PilotUtilities::appendToConjunctivePredicate(const string & base, const string & to_append) {
+    return base.empty() ? " " + to_append + " "
+        : " AND " + to_append + " ";
+
+}
+
+
+std::string PilotUtilities::replaceSubstring(const std::string & base, const std::string & to_find, const std::string replacement){
+    size_t to_replace = base.find(to_find);
+    assert(to_replace != string::npos);
+    string dupe = base;
+    return  dupe.replace(to_replace, to_find.length(), replacement);
+
 
 }

@@ -8,7 +8,6 @@
 #include <util/logger.h>
 #include <data/csv_reader.h>
 #include <boost/program_options.hpp>
-#include <operators/sort.h>
 
 
 
@@ -32,7 +31,7 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
     auto logger = vaultdb_logger::get();
     shared_ptr<SecureTable> stratified = PilotUtilities::rollUpAggregate(data_cube, idx);
 
-   std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
+    std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
 
     std::string suffix = (party == emp::ALICE) ? "alice" : "bob";
     std::string output_file = output_path + "/" + colName + "." + suffix;
@@ -60,7 +59,7 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
         csv = schema_str.str();
 
         for(size_t i = 0; i < result->getTupleCount(); ++i) {
-                csv += (*result)[i].toString() + "\n";
+            csv += (*result)[i].toString() + "\n";
         }
         DataUtilities::writeFile(out_file, csv);
 
@@ -102,7 +101,7 @@ int main(int argc, char **argv) {
         // 1 pilot/test/input/alice-patient.csv  pilot/test/output/chi-patient.alice
         // ./run_data_partner -h 127.0.0.1 -P 54321 --party=1 -c  pilot/test/input/alice-patient.csv -rc pilot/test/output/chi-patient.alice  -rp
         po::options_description desc("Options");
-       desc.add_options()
+        desc.add_options()
                 ("help", "print help message")
                 ("host,h", po::value<string>(), "alice hostname")
                 ("port,P", po::value<int>(), "connection port")
@@ -112,9 +111,9 @@ int main(int argc, char **argv) {
                 ("p", po::value<string>(), "local csv file for partial counts")
                 ("rc", po::value<string>(), "secret sh6are file of mpc tuples (remote version of -c)")
                 ("rp", po::value<string>(), "secret share file of partial counts(remote version of -p)")
-               ("log-prefix,l", po::value<string>(), "prefix of filename for log")
-               ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all")
-               ("cardinality-bound,b", po::value<size_t>()->default_value(441), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)");
+                ("log-prefix,l", po::value<string>(), "prefix of filename for log")
+                ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all")
+                ("cardinality-bound,b", po::value<size_t>()->default_value(441), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)");
 
 
 
@@ -234,17 +233,17 @@ int main(int argc, char **argv) {
 
     shared_ptr<SecureTable> inputData = (dbInput) ? UnionHybridData::unionHybridData(dbName, patient_input_query,
                                                                                      secretShareTuples, netio, party)
-           :  UnionHybridData::unionHybridData(schema, localInputTuples, secretShareTuples, netio, party);
+                                                  :  UnionHybridData::unionHybridData(schema, localInputTuples, secretShareTuples, netio, party);
 
     cumulative_runtime = time_from(start_time);
-    
-      
+
+
     // validate it against the DB for testing
     if(TESTBED) {
         assert(study_year == "all"); // only coded for no year selection
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
         string query = (semijoinOptimization) ? "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient WHERE multisite ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl"
-                 : "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
+                                              : "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
         SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
         PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patientSortDef, revealed);
 
@@ -273,25 +272,25 @@ int main(int argc, char **argv) {
         shared_ptr<SecureTable> alice, bob, chi;
 
         shared_ptr<PlainTable> local_partial_counts = (dbInput) ?  DataUtilities::getQueryResults(dbName, partial_counts_query, false)
-                    : CsvReader::readCsv(localPartialCountFile, SharedSchema::getPartialCountSchema());
+                                                                : CsvReader::readCsv(localPartialCountFile, SharedSchema::getPartialCountSchema());
 
         assert(local_partial_counts->getTupleCount() == cardinality_bound);
         // ship local, partial counts - alice, then bob
-            if (party == 1) { // alice
-                alice = SecureTable::secret_share_send_table(local_partial_counts, netio, 1);
-                bob = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(), netio,
-                                                           2);
-            } else { // bob
-                alice = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(),
-                                                             netio, 1);
-                bob = SecureTable::secret_share_send_table(local_partial_counts, netio, 2);
-            }
+        if (party == 1) { // alice
+            alice = SecureTable::secret_share_send_table(local_partial_counts, netio, 1);
+            bob = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(), netio,
+                                                       2);
+        } else { // bob
+            alice = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(),
+                                                         netio, 1);
+            bob = SecureTable::secret_share_send_table(local_partial_counts, netio, 2);
+        }
 
 
-            chi = UnionHybridData::readSecretSharedInput(secretSharePartialCounts, QuerySchema::toPlain(*(alice->getSchema())), party);
+        chi = UnionHybridData::readSecretSharedInput(secretSharePartialCounts, QuerySchema::toPlain(*(alice->getSchema())), party);
 
-            std::vector<shared_ptr<SecureTable>> partial_aggs { alice, bob, chi};
-            enrich.addPartialAggregates(partial_aggs);
+        std::vector<shared_ptr<SecureTable>> partial_aggs { alice, bob, chi};
+        enrich.addPartialAggregates(partial_aggs);
 
         if(TESTBED) {
             assert(study_year == "all"); // only coded for no year selection, repeat
@@ -309,9 +308,9 @@ int main(int argc, char **argv) {
     shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich.dataCube, output_path);
     shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich.dataCube, output_path);
 
-     emp::finalize_semi_honest();
+    emp::finalize_semi_honest();
 
-     delete netio;
+    delete netio;
     double runtime = time_from(startTime);
     BOOST_LOG(logger) << "Ending epoch " << Utilities::getEpoch() << endl;
     BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;

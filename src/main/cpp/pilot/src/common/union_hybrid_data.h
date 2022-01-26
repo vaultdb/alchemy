@@ -30,6 +30,9 @@ namespace vaultdb {
         unionHybridData(const string &dbName, const string &inputQuery, const string &secretSharesFile,
                         NetIO *aNetIO, const int &party);
 
+/*        static shared_ptr<SecureTable>
+        unionHybridDataBatch(const string &dbName, const string &inputQuery, const string &secretSharesFile,
+                        NetIO *aNetIO, const int &party, const int & batch_cnt, const int & batch_id); */
     private:
         int party;
         NetIO *netio;

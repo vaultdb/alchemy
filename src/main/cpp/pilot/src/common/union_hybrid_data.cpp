@@ -137,7 +137,6 @@ shared_ptr<SecureTable> UnionHybridData::unionHybridData(const QuerySchema &sche
 
     if(!secretSharesFile.empty()) {
       std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, schema, party);
-      // TODO: reverse the tuple order for bitonic merge, save one more sort - see bottom of file for more
       Union<emp::Bit> union_op(local, remote);
       return union_op.run();
     }
@@ -200,26 +199,8 @@ UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery,
 
 }
 
-
-/* attempt to do bitonic merge for 3rd input:
- * Needs debugging
- size_t write_cursor = remote->getTupleCount() - 1; // last_idx
-      size_t read_cursor = 0;
-      SecureTuple tmp(*(remote->getSchema())); // set up managed storage
-
-        while(write_cursor >= read_cursor) {
-          tmp = remote->getTuple(read_cursor);
-          remote->putTuple(read_cursor, remote->getTuple(write_cursor));
-          remote->putTuple(write_cursor, tmp);
-          --write_cursor;
-          ++read_cursor;
-      }
-
-      Union<emp::Bit> union_op(local, remote);
-        shared_ptr<SecureTable> unioned = union_op.run();
-        Sort<emp::Bit>::bitonicMerge(unioned, local->getSortOrder(), 0, unioned->getTupleCount(), true);
-        // data are inputted in sorted order
-        unioned->setSortOrder(DataUtilities::getDefaultSortDefinition(7));
-      return unioned;
-*/
-
+shared_ptr<SecureTable>
+UnionHybridData::unionHybridDataBatch(const string &dbName, const string &inputQuery, const string &secretSharesFile,
+                                      NetIO *aNetIO, const int &party, const int &batch_cnt, const int &batch_id) {
+    return shared_ptr<SecureTable>();
+}
