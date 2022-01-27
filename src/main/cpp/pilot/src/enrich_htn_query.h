@@ -11,16 +11,24 @@ namespace  vaultdb {
     class EnrichHtnQuery {
 
 
-        shared_ptr<SecureTable> inputTable;
-        shared_ptr<GroupByAggregate<emp::Bit> > aggregator;
-        size_t cardinalityBound;
+        shared_ptr<SecureTable> input_table_;
+        size_t cardinality_bound_;
 
     public:
+        shared_ptr<SecureTable> data_cube_;
+
+        EnrichHtnQuery() {}; // placeholder
+
         // compute initial data cube to prepare for rollups
         EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & cardinality = 0);
         // after constructor, can add partial counts from other sites for semi-join optimization
-        void addPartialAggregates(vector<shared_ptr<SecureTable>> partials);
-        shared_ptr<SecureTable> dataCube;
+        void unionWithPartialAggregates(vector<shared_ptr<SecureTable>> partials);
+        static  shared_ptr<SecureTable> addPartialAggregates(vector<shared_ptr<SecureTable>> partials);
+
+
+        // initialize a new enrich object with list of partial counts from batches and/or semijoin optimization
+        EnrichHtnQuery(vector<shared_ptr<SecureTable>> & input);
+
 
     private:
 

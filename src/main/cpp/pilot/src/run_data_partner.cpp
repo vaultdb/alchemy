@@ -215,7 +215,6 @@ int main(int argc, char **argv) {
 
 
 
-    auto startTime = emp::clock_start();
 
 
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
@@ -227,9 +226,9 @@ int main(int argc, char **argv) {
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
     BOOST_LOG(logger) << "Starting epoch " << Utilities::getEpoch() << endl;
+    auto e2e_start_time = emp::clock_start();
 
     start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
-    startTime = start_time; // end-to-end one too
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
 
@@ -263,7 +262,7 @@ int main(int argc, char **argv) {
     EnrichHtnQuery enrich(inputData, cardinality_bound);
     inputData.reset();
 
-    assert(enrich.dataCube->getTupleCount() == cardinality_bound);
+    assert(enrich.data_cube_->getTupleCount() == cardinality_bound);
 
     cumulative_runtime += time_from(start_time);
     BOOST_LOG(logger) << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
@@ -291,11 +290,11 @@ int main(int argc, char **argv) {
         chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain(*(alice->getSchema())), party);
 
         std::vector<shared_ptr<SecureTable>> partial_aggs { alice, bob, chi};
-        enrich.addPartialAggregates(partial_aggs);
+        enrich.unionWithPartialAggregates(partial_aggs);
 
         if(TESTBED) {
             assert(study_year == "all"); // only coded for no year selection, repeat
-            std::shared_ptr<PlainTable> revealed = enrich.dataCube->reveal();
+            std::shared_ptr<PlainTable> revealed = enrich.data_cube_->reveal();
             SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
             PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, PilotUtilities::data_cube_sql_, cube_sort_def, revealed);
         }
@@ -304,15 +303,15 @@ int main(int argc, char **argv) {
     }
     BOOST_LOG(logger) << "Completed unioning for semijoin at epoch " << Utilities::getEpoch() << endl;
 
-    shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, enrich.dataCube, output_path);
-    shared_ptr<SecureTable> genderRollup = runRollup(1, "sex", party, enrich.dataCube, output_path);
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich.dataCube, output_path);
-    shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich.dataCube, output_path);
+    shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, enrich.data_cube_, output_path);
+    shared_ptr<SecureTable> genderRollup = runRollup(1, "sex", party, enrich.data_cube_, output_path);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich.data_cube_, output_path);
+    shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich.data_cube_, output_path);
 
     emp::finalize_semi_honest();
 
     delete netio;
-    double runtime = time_from(startTime);
+    double runtime = time_from(e2e_start_time);
     BOOST_LOG(logger) << "Ending epoch " << Utilities::getEpoch() << endl;
     BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
 }

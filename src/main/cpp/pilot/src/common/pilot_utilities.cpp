@@ -103,7 +103,6 @@ PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema &pla
 }
 
 void PilotUtilities::secretShareFromQuery(const string &db_name, const string &query, const string &dst_root) {
-
     std::shared_ptr<PlainTable> table = DataUtilities::getQueryResults(db_name, query, false);
     SecretShares shares = table->generateSecretShares();
 

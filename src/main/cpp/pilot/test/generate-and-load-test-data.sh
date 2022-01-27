@@ -49,7 +49,6 @@ psql $DB_NAME -t --csv < pilot/queries/data-cube-query.sql  > pilot/test/input/c
 
 
 #setup for semijoin optimization
-# TODO: deprecate this file
-#./bin/secret_share_partial_counts_no_dedupe enrich_htn_unioned_chi  pilot/secret_shares/tables/chi_counts
 ./bin/secret_share_from_query enrich_htn_unioned_chi pilot/queries/partial-count-all.sql pilot/secret_shares/tables/chi_partial_counts
 ./bin/secret_share_from_query enrich_htn_unioned_chi pilot/queries/partial-count-no-dedupe-all.sql pilot/secret_shares/tables/chi_counts
+./bin/secret_share_batch_from_query -D enrich_htn_unioned_chi -q pilot/queries/patient.sql -y all -b 10 -d pilot/test/batch/patient-chi

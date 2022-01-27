@@ -7,11 +7,12 @@
 #include <expression/comparator_expression_nodes.h>
 #include <operators/shrinkwrap.h>
 #include <operators/union.h>
+#include <pilot/src/common/shared_schema.h>
 
 using namespace vaultdb;
 
 
-EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & cardinality) : inputTable(input), cardinalityBound(cardinality) {
+EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & cardinality) : input_table_(input), cardinality_bound_(cardinality) {
 
   // takes in shared_schema
     shared_ptr<SecureTable> filtered = filterPatients();
@@ -41,7 +42,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 				     ColumnSort(4, SortDirection::ASCENDING)}; // race
 
     // destructor handled within Operator
-    Sort<emp::Bit> sortUnioned(inputTable, unionSortDefinition);
+    Sort<emp::Bit> sortUnioned(input_table_, unionSortDefinition);
     shared_ptr<SecureTable> sorted = sortUnioned.run();
 
     
@@ -159,12 +160,12 @@ void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
     // output schema:
     // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite (6), denominator_multisite (7)
     GroupByAggregate aggregator(sorted, groupByCols, aggregators);
-    dataCube = aggregator.run();
+    data_cube_ = aggregator.run();
     sorted.reset();
 
 
-    Shrinkwrap wrapper(dataCube, cardinalityBound);
-    dataCube = wrapper.run();
+    Shrinkwrap wrapper(data_cube_, cardinality_bound_);
+    data_cube_ = wrapper.run();
     double runtime = emp::time_from(start_time);
     BOOST_LOG(logger) << "Runtime for aggregate #2 (data cube): " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
 
@@ -173,43 +174,18 @@ void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
 
 // partials schema:
 // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite_cnt (6), denominator_multisite_cnt (7)
-void EnrichHtnQuery::addPartialAggregates(vector<shared_ptr<SecureTable>> partials) {
-    shared_ptr<SecureTable> summedPartials(new SecureTable(*partials[0]));
-    size_t tuple_cnt = summedPartials->getTupleCount();
-    assert(*(summedPartials->getSchema()) == *(dataCube->getSchema()));
+void EnrichHtnQuery::unionWithPartialAggregates(vector<shared_ptr<SecureTable>> partials) {
+    shared_ptr<SecureTable> summed_partials = addPartialAggregates(partials);
 
-    for(size_t i = 1; i < partials.size(); ++i) {
-        shared_ptr<SecureTable> partial = partials[i];
-        assert(tuple_cnt == partial->getTupleCount()); // check that they line up
-        assert(*(partial->getSchema()) == *(dataCube->getSchema()));
-    }
-
-    // for each tuple
-    for(size_t i = 0; i < tuple_cnt; ++i) {
-            SecureTuple dst = (*summedPartials)[i];
-
-            // for each partial count
-            for(size_t j = 1; j < partials.size(); ++j) {
-                SecureTuple src = (*(partials[j]))[i];
-                // if one of them is not a dummy, then it's not a dummy
-                dst.setDummyTag(src.getDummyTag() | dst.getDummyTag());
-
-                // add up the counts - only need this for single-site figures
-                dst.setField(4, dst[4] + src[4]);
-                dst.setField(5, dst[5] + src[5]);
-
-            }
-    }
-
-    Union<emp::Bit> union_op(dataCube, summedPartials);
-    dataCube = union_op.run();
+    Union<emp::Bit> union_op(data_cube_, summed_partials);
+    data_cube_ = union_op.run();
 
 
     // basically a rerun of aggregatePatients
     // TODO: clean this up!
 
     // sort it on cols [0,5)
-    Sort sort(dataCube, DataUtilities::getDefaultSortDefinition(4));
+    Sort sort(data_cube_, DataUtilities::getDefaultSortDefinition(4));
     shared_ptr<SecureTable> sorted = sort.run();
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3};
@@ -224,14 +200,48 @@ void EnrichHtnQuery::addPartialAggregates(vector<shared_ptr<SecureTable>> partia
     // output schema:
     // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite (6), denominator_multisite (7)
     GroupByAggregate aggregator(sorted, groupByCols, aggregators);
-    dataCube = aggregator.run();
+    data_cube_ = aggregator.run();
     sorted.reset();
 
-    Shrinkwrap wrapper(dataCube, cardinalityBound);
-    dataCube = wrapper.run();
+    Shrinkwrap wrapper(data_cube_, cardinality_bound_);
+    data_cube_ = wrapper.run();
 
 
 
+}
+
+shared_ptr<SecureTable> EnrichHtnQuery::addPartialAggregates(vector<shared_ptr<SecureTable>> partials) {
+    shared_ptr<SecureTable> summed_partials(new SecureTable(*partials[0]));
+    size_t tuple_cnt = summed_partials->getTupleCount();
+
+    for(size_t i = 1; i < partials.size(); ++i) {
+        shared_ptr<SecureTable> partial = partials[i];
+        assert(tuple_cnt == partial->getTupleCount()); // check that they line up
+        assert(*(partial->getSchema()) == SharedSchema::getPartialCountSchema());
+    }
+
+    // for each tuple
+    for(size_t i = 0; i < tuple_cnt; ++i) {
+        SecureTuple dst = (*summed_partials)[i];
+
+        // for each partial count
+        for(size_t j = 1; j < partials.size(); ++j) {
+            SecureTuple src = (*(partials[j]))[i];
+            // if one of them is not a dummy, then it's not a dummy
+            dst.setDummyTag(src.getDummyTag() | dst.getDummyTag());
+
+            dst.setField(4, dst[4] + src[4]);
+            dst.setField(5, dst[5] + src[5]);
+            dst.setField(6, dst[6] + src[6]);
+            dst.setField(7, dst[7] + src[7]);
+
+        }
+    }
+    return summed_partials;
+}
+
+EnrichHtnQuery::EnrichHtnQuery(vector<shared_ptr<SecureTable>> &input) {
+    data_cube_ = addPartialAggregates(input);
 }
 
 

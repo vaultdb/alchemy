@@ -6,9 +6,7 @@
 #include "enrich_htn_query.h"
 #include <util/utilities.h>
 #include <util/logger.h>
-#include <data/csv_reader.h>
 #include <boost/program_options.hpp>
-#include <operators/sort.h>
 
 
 
@@ -28,7 +26,7 @@ auto cumulative_runtime = emp::time_from(start_time);
 // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5)
 shared_ptr<SecureTable>
 runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube, const string &output_path) {
-    auto start_time = emp::clock_start();
+    auto local_start_time = emp::clock_start();
     auto logger = vaultdb_logger::get();
     shared_ptr<SecureTable> stratified = PilotUtilities::rollUpAggregate(data_cube, idx);
 
@@ -53,22 +51,22 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
         string out_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/validate";
         string out_file = out_path + "/" + colName + ".csv";
         Utilities::mkdir(out_path);
-        shared_ptr<PlainTable> result = DataUtilities::getExpectedResults(PilotUtilities::unioned_db_name_, query, false, 1);
 
         std::stringstream schema_str;
-        schema_str << *result->getSchema() << std::endl;
+        schema_str << *revealed->getSchema() << std::endl;
         csv = schema_str.str();
 
-        for(size_t i = 0; i < result->getTupleCount(); ++i) {
-            csv += (*result)[i].toString() + "\n";
+        for(unsigned int i = 0; i < revealed->getTupleCount(); ++i) {
+            csv += revealed->getTuple(i).toString();
         }
-        DataUtilities::writeFile(out_file, csv);
+
+        DataUtilities::writeFile(out_file, revealed->toString());
 
 
     }
 
 
-    auto delta = time_from(start_time);
+    auto delta = time_from(local_start_time);
     cumulative_runtime += delta;
 
     Utilities::checkMemoryUtilization(colName);
@@ -85,17 +83,22 @@ int main(int argc, char **argv) {
     // local input file is an (unencrypted) csv of local site's data
     // secret share file is a binary, e.g., Chicago Alliance input
     // parse args
-    string host, localInputTuples, localPartialCountFile, secretShareTuples, secretSharePartialCounts, dbName;
+    // local input file is an (unencrypted) csv of local site's data
+    // secret share file is a binary, e.g., Chicago Alliance input
+    // parse args
+    string host, remote_patient_file, remote_patient_partial_count_file, db_name;
     int port=0, party=0;
-    bool semijoinOptimization = false;
+    bool semijoin_optimization = false;
     size_t cardinality_bound = 441; // 7 * 3 * 3 * 7
-    bool dbInput = false; // goes to csv
     string study_year, party_name;
-    string logfile_prefix = "";
-    string patient_input_query;
-    string partial_counts_query;
-    uint32_t batch_count = 0;
-    string selection_clause = "";
+    string logfile_prefix;
+    string patient_input_query = DataUtilities::readTextFileToString("pilot/queries/patient.sql");
+    string partial_count_query = DataUtilities::readTextFileToString("pilot/queries/partial-count.sql");
+    string selection_clause;
+    string partial_count_selection_clause;
+    size_t batch_count;
+    string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
+
 
 
     try {
@@ -108,16 +111,14 @@ int main(int argc, char **argv) {
                 ("host,h", po::value<string>(), "alice hostname")
                 ("port,P", po::value<int>(), "connection port")
                 ("party", po::value<int>(), "computing party for mpc (1 = alice, 2 = bob)")
-                ("c", po::value<string>(), "local, plaintext csv input file for mpc tuples")
                 ("database,d", po::value<string>(), "local database name")
-                ("p", po::value<string>(), "local csv file for partial counts")
-                ("rc", po::value<string>(), "secret share file of mpc tuples (remote version of -c)") // secret share files are of the form file_root.X.alice or file_root.X.bob where we have 1 X for each batch/partition.  So we might have test.1.alice and test.2.alice if we cut the workload into 2 batches
-                ("rp", po::value<string>(), "secret share file of partial counts(remote version of -p)")
+                ("semijoin-optimization,s", "enables semijoin optimization, only evaluates multisite patients in MPC") // boolean flag
+                ("remote-tuples-file,r", po::value<string>(), "secret share file root of mpc tuples") // will have $FILE_ROOT.1.alice, $FILE_ROOT.2.alice (or bob) and so on.
+                ("remote-partial-counts-file,p", po::value<string>(), "secret share file of partial counts")
                 ("log-prefix,l", po::value<string>(), "prefix of filename for log")
                 ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all")
                 ("cardinality-bound,b", po::value<size_t>()->default_value(441), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)")
-                ("batch-count", po::value<uint32_t>(), "Number of batches to partition query work");
-
+                ("batch-count", po::value<size_t>(), "number of partitions with which to evaluate query");
 
 
         po::variables_map vm;
@@ -155,44 +156,46 @@ int main(int argc, char **argv) {
         }
 
 
-        if (vm.count("c")) {
-            localInputTuples = vm["c"].as<string>();
+        if(vm.count("semijoin-optimization")) {
+            semijoin_optimization = true;
+            selection_clause = "multisite";
         }
+
+
 
         if (vm.count("database")) {
-            dbName = vm["database"].as<string>();
-            dbInput = true;
+            db_name = vm["database"].as<string>();
         }
         else {
-            throw std::invalid_argument("Error: need db input for batched processing, files NYI.");
+            throw std::invalid_argument("Need database name for local inputs.");
         }
 
-        // partial counts
-        if(vm.count("p")) {
-            localPartialCountFile = vm["p"].as<string>();
-            if(vm.count("database")) {
-                throw std::invalid_argument(
-                        "Error: two sources of input for partial count (--d and --p), please select one.");
-            }
+
+        if (vm.count("batch-count")) {
+            batch_count = vm["batch-count"].as<size_t>();
+        }
+        else {
+            throw std::invalid_argument("Need batch count to partition inputs.");
         }
 
-        if(vm.count("rc")) {
-            secretShareTuples = vm["rc"].as<string>();
+        if(vm.count("remote-tuples-file")) {
+            remote_patient_file = vm["remote-tuples-file"].as<string>();
         }
 
         if (vm.count("year")) {
             study_year = vm["year"].as<string>();
             if(study_year != "all") {
-                selection_clause = "study_year = " + study_year + " ";
+                string year_selection = "study_year = " + study_year;
+                selection_clause = PilotUtilities::appendToConjunctivePredicate(selection_clause, year_selection);
+                partial_count_selection_clause = PilotUtilities::appendToConjunctivePredicate(partial_count_selection_clause, year_selection);
             }
+
+        } else {
+            throw std::invalid_argument("Need study year to know the data to input");
         }
 
-        if(vm.count("rp")) {
-            // not yet implemented for batched setting
-            secretSharePartialCounts = vm["rp"].as<string>();
-            semijoinOptimization = true;
-            selection_clause = PilotUtilities::appendToConjunctivePredicate(selection_clause, "multisite");
-            partial_counts_query = DataUtilities::readTextFileToString("pilot/queries/partial-count-" + study_year + ".sql");
+        if(vm.count("remote-partial-counts-file")) {
+            remote_patient_partial_count_file = vm["remote-partial-counts-file"].as<string>();
         }
 
         if(vm.count("cardinality-bound")) {
@@ -200,20 +203,17 @@ int main(int argc, char **argv) {
         }
 
 
-        // sanity check
-        if(!vm.count("c") and !vm.count("database")) {
-            throw std::invalid_argument("Need input source for local data.  Use either -c or -d");
-        }
+
+
+        // if semijoin optimization enabled and no partial input from chi OR vice versa
+        if((semijoin_optimization && !remote_patient_file.empty()) && remote_patient_partial_count_file.empty())
+            throw std::invalid_argument("Can't have secret shares from third party and no partial counts for them in semijoin optimization");
+        if(!semijoin_optimization && !remote_patient_partial_count_file.empty())
+            throw std::invalid_argument("Need secret shares for multisite tuples to go along with encrypted partial counts.");
+
 
         if (vm.count("log-prefix")) {
             logfile_prefix = vm["log-prefix"].as<string>();
-        }
-
-        if(vm.count("batch-count")) {
-            batch_count = vm["batch-count"].as<uint32_t>();
-        }
-        else {
-            throw std::invalid_argument("Need a batch count > 0 to run.  Otherwise use ./bin/run_data_partner for a single batch");
         }
 
     }
@@ -223,28 +223,24 @@ int main(int argc, char **argv) {
     }
     catch(...) {
         cerr << "Exception of unknown type!\n";
-    } // end parsing
+    }
 
 
-    auto startTime = emp::clock_start();
 
-    string input_query_file = "pilot/queries/patient.sql";
-    patient_input_query = DataUtilities::readTextFileToString(input_query_file);
 
-    string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
-    // TODO: parameterize the default logging level
+
     Logger::setup(logfile_prefix);
     auto logger = vaultdb_logger::get();
-    string selection_var = ":selection";
+    EnrichHtnQuery enrich; // empty for now
 
-    QuerySchema schema = SharedSchema::getInputSchema();
-    NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
+    auto *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
     BOOST_LOG(logger) << "Starting epoch " << Utilities::getEpoch() << endl;
+    auto e2e_start_time = emp::clock_start();
+    vector<shared_ptr<SecureTable>> partial_counts;
 
     start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
-    startTime = start_time; // end-to-end one too
-    vector<shared_ptr<SecureTable> > batch_partial_counts;
+
 
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
@@ -252,14 +248,10 @@ int main(int argc, char **argv) {
     for(uint32_t batch_id = 0; batch_id < batch_count; ++batch_id) {
         string batch_predicate = selection_clause;
         batch_predicate = PilotUtilities::appendToConjunctivePredicate(selection_clause, "MOD(hash, " + std::to_string(batch_count) + ") = " + std::to_string(batch_id));
-        string batch_input_query = PilotUtilities::replaceSubstring(patient_input_query, selection_var, batch_predicate);
-        shared_ptr<SecureTable> inputData = (dbInput) ? UnionHybridData::unionHybridData(dbName, batch_input_query,
-                                                                                         secretShareTuples, netio,
-                                                                                         party)
-                                                      : UnionHybridData::unionHybridData(schema, localInputTuples,
-                                                                                         secretShareTuples, netio,
-                                                                                         party); // this branch not used for now
-
+        string batch_input_query = PilotUtilities::replaceSelection(patient_input_query,  batch_predicate);
+        shared_ptr<SecureTable> inputData =  UnionHybridData::unionHybridData(db_name, batch_input_query,
+                                                                                         remote_patient_file, netio,
+                                                                                         party);
         cumulative_runtime = time_from(start_time);
 
 
@@ -268,14 +260,9 @@ int main(int argc, char **argv) {
             assert(study_year == "all"); // only coded for no year selection
             std::shared_ptr<PlainTable> revealed = inputData->reveal();
             string query =  "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient WHERE :selection ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
-            size_t to_replace = query.find(selection_var);
-            query = query.replace(to_replace, selection_var.length(), batch_predicate);
-            cout << "Running test query " << query << endl;
-
+            query = PilotUtilities::replaceSelection(query, selection_clause);
             SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
             PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patientSortDef, revealed);
-
-
         }
 
 
@@ -286,11 +273,11 @@ int main(int argc, char **argv) {
         // create output dir:
         Utilities::mkdir(output_path);
 
-        EnrichHtnQuery enrich(inputData, cardinality_bound);
+        EnrichHtnQuery batch_enrich(inputData, cardinality_bound);
         inputData.reset();
 
-        assert(enrich.dataCube->getTupleCount() == cardinality_bound);
-        batch_partial_counts.push_back(enrich.dataCube);
+        assert(batch_enrich.data_cube_->getTupleCount() == cardinality_bound);
+        partial_counts.push_back(batch_enrich.data_cube_);
 
         cumulative_runtime += time_from(start_time);
         BOOST_LOG(logger) << "***Completed cube aggregation " << batch_id << " of " << batch_count << " at " << time_from(start_time) * 1e6 * 1e-9
@@ -300,13 +287,11 @@ int main(int argc, char **argv) {
 
     } // end for-each batch
 
-    if(semijoinOptimization) {
+    if(semijoin_optimization) {
         // add in the 1-site PIDs
         shared_ptr<SecureTable> alice, bob, chi;
-
-        shared_ptr<PlainTable> local_partial_counts = (dbInput) ?  DataUtilities::getQueryResults(dbName, partial_counts_query, false)
-                                                                : CsvReader::readCsv(localPartialCountFile, SharedSchema::getPartialCountSchema());
-
+        partial_count_query = PilotUtilities::replaceSelection(partial_count_query, partial_count_selection_clause);
+        shared_ptr<PlainTable> local_partial_counts =  DataUtilities::getQueryResults(db_name, partial_count_query, false);
         assert(local_partial_counts->getTupleCount() == cardinality_bound);
         // ship local, partial counts - alice, then bob
         if (party == 1) { // alice
@@ -320,31 +305,36 @@ int main(int argc, char **argv) {
         }
 
 
-        chi = UnionHybridData::readSecretSharedInput(secretSharePartialCounts, QuerySchema::toPlain(*(alice->getSchema())), party);
+        chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain(*(alice->getSchema())), party);
 
-        std::vector<shared_ptr<SecureTable>> partial_aggs { alice, bob, chi};
-        enrich.addPartialAggregates(partial_aggs);
-
-        if(TESTBED) {
-            assert(study_year == "all"); // only coded for no year selection, repeat
-            std::shared_ptr<PlainTable> revealed = enrich.dataCube->reveal();
-            SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
-            PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, PilotUtilities::data_cube_sql_, cube_sort_def, revealed);
-        }
-
+        partial_counts.push_back(alice);
+        partial_counts.push_back(bob);
+        partial_counts.push_back(chi);
 
     }
+
+    enrich = EnrichHtnQuery(partial_counts);
+
+    if(TESTBED) {
+        assert(study_year == "all"); // only coded for no year selection, repeat
+        std::shared_ptr<PlainTable> revealed = enrich.data_cube_->reveal();
+        SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
+        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, PilotUtilities::data_cube_sql_, cube_sort_def, revealed);
+    }
+
+
+
     BOOST_LOG(logger) << "Completed unioning for semijoin at epoch " << Utilities::getEpoch() << endl;
 
-    shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, enrich.dataCube, output_path);
-    shared_ptr<SecureTable> genderRollup = runRollup(1, "sex", party, enrich.dataCube, output_path);
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich.dataCube, output_path);
-    shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich.dataCube, output_path);
+    shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, enrich.data_cube_, output_path);
+    shared_ptr<SecureTable> genderRollup = runRollup(1, "sex", party, enrich.data_cube_, output_path);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich.data_cube_, output_path);
+    shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich.data_cube_, output_path);
 
     emp::finalize_semi_honest();
 
     delete netio;
-    double runtime = time_from(startTime);
+    double runtime = time_from(e2e_start_time);
     BOOST_LOG(logger) << "Ending epoch " << Utilities::getEpoch() << endl;
     BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
 }

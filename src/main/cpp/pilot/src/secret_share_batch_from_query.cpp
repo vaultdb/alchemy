@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
         po::options_description desc("Options");
         desc.add_options()
                 ("help", "print help message")
-                ("database,d", po::value<string>(), "local database name")
+                ("database,D", po::value<string>(), "local database name")
                 ("query-file,q", po::value<string>(), "file with query to run")
                 ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all")
                 ("batch-count,b", po::value<uint32_t>(), "Number of batches to partition query work")
@@ -99,15 +99,12 @@ int main(int argc, char **argv) {
 
     setup_plain_prot(false, "");
 
-    string selection_var = ":selection";
 
 
     for(int batch_id  = 0; batch_id < batch_count; ++batch_id) {
         string batch_predicate = "MOD(hash, " + std::to_string(batch_count) + ") = " + std::to_string(batch_id);
         batch_predicate = PilotUtilities::appendToConjunctivePredicate(selection_clause, batch_predicate);
-        size_t to_replace = query.find(selection_var);
-        assert(to_replace != string::npos);
-        string batch_query = query.replace(to_replace, selection_var.length(), batch_predicate);
+        string batch_query = PilotUtilities::replaceSelection(query, batch_predicate);
         string batch_dst_root = dst_root + "." + std::to_string(batch_id + 1); // [1...N]
         PilotUtilities::secretShareFromQuery(db_name, batch_query, batch_dst_root);
     }
