@@ -178,7 +178,6 @@ UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery,
                                  NetIO *aNetIO, const int &party) {
 
 
-    cout << "Running query " << inputQuery << endl;
     std::shared_ptr<PlainTable> local_plain = DataUtilities::getQueryResults(dbName, inputQuery, false);
     auto logger = vaultdb_logger::get();
     BOOST_LOG(logger) << "Reading in " << local_plain->getTupleCount() << " tuples from local db." << endl;

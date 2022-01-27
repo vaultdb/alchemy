@@ -245,7 +245,7 @@ int main(int argc, char **argv) {
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
         string query = (semijoin_optimization) ? "SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl  FROM patient WHERE multisite ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl"
                                                : "SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
-        cout << "Running query " << query << " on " << PilotUtilities::unioned_db_name_ << endl;
+
         SortDefinition patient_sort_def = DataUtilities::getDefaultSortDefinition(7);
         PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patient_sort_def, revealed);
 
