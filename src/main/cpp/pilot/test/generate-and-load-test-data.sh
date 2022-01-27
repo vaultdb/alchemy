@@ -12,7 +12,7 @@ mkdir -p pilot/test/input
 mkdir -p pilot/test/output
 
 
-cmake .  
+#cmake .  
 make -j5 
 
 ./bin/generate_enrich_data_three_parties pilot/test/input/ $TUPLE_COUNT 
@@ -45,7 +45,7 @@ psql $DB_NAME -t --csv < pilot/queries/data-cube-query.sql  > pilot/test/input/c
 
 
 # multi-site only
-./bin/secret_share_from_query enrich_htn_unioned_chi pilot/queries/patient-multisite-all.sql  pilot/test/output/chi-patient
+./bin/secret_share_from_query enrich_htn_unioned_chi pilot/queries/patient-multisite-all.sql  pilot/test/output/chi-patient-multisite
 
 
 #setup for semijoin optimization

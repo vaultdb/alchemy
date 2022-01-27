@@ -15,6 +15,7 @@ namespace  vaultdb {
         static void secretShareFromQuery(const std::string & db_name, const std::string & query, const std::string & dst_root);
         static std::string appendToConjunctivePredicate(const std::string & base, const std::string & to_append);
         static std::string replaceSubstring(const std::string & base, const std::string & to_find, const std::string replacement);
+        static std::string replaceSelection(const std::string & base, const std::string replacement);
 
         static const std::string data_cube_sql_, unioned_db_name_;
     };

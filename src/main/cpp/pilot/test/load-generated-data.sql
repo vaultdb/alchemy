@@ -26,7 +26,6 @@ DROP DATABASE IF EXISTS enrich_htn_unioned_alice;
 CREATE DATABASE enrich_htn_unioned_alice;
 \c enrich_htn_unioned_alice
 \i 'pilot/test/create-patient-table.sql'
-SELECT setup_patient_table();
 \copy patient FROM 'pilot/test/input/alice-db.csv' CSV
 \i  'pilot/prod/load/generate-demographics-domain.sql'
 
@@ -35,8 +34,6 @@ DROP DATABASE IF EXISTS enrich_htn_unioned_bob;
 CREATE DATABASE enrich_htn_unioned_bob;
 \c enrich_htn_unioned_bob
 \i 'pilot/test/create-patient-table.sql'
-
-SELECT setup_patient_table();
 \copy patient FROM 'pilot/test/input/bob-db.csv' CSV
 \i  'pilot/prod/load/generate-demographics-domain.sql'
 
@@ -46,7 +43,6 @@ DROP DATABASE IF EXISTS enrich_htn_unioned_chi;
 CREATE DATABASE enrich_htn_unioned_chi;
 \c enrich_htn_unioned_chi
 \i 'pilot/test/create-patient-table.sql'
-SELECT setup_patient_table();
 \copy patient FROM 'pilot/test/input/chi-db.csv' CSV
 \i  'pilot/prod/load/generate-demographics-domain.sql'
 

@@ -107,6 +107,7 @@ void PilotUtilities::secretShareFromQuery(const string &db_name, const string &q
     std::shared_ptr<PlainTable> table = DataUtilities::getQueryResults(db_name, query, false);
     SecretShares shares = table->generateSecretShares();
 
+    BOOST_LOG(vaultdb_logger::get())  << "Secret sharing " << table->getTupleCount() << " tuples." << endl;
 
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
     DataUtilities::writeFile(dst_root + ".bob", shares.second);
@@ -133,4 +134,9 @@ std::string PilotUtilities::replaceSubstring(const std::string & base, const std
     return  dupe.replace(to_replace, to_find.length(), replacement);
 
 
+}
+
+std::string PilotUtilities::replaceSelection(const string &base, const std::string replacement) {
+    string to_insert = (replacement.empty()) ? "1=1" : replacement;
+    return replaceSubstring(base, ":selection", to_insert);
 }

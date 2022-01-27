@@ -16,7 +16,7 @@ using namespace vaultdb;
 using namespace emp;
 namespace po = boost::program_options;
 
-#define TESTBED 0
+#define TESTBED 1
 
 
 auto start_time = emp::clock_start();
@@ -84,16 +84,16 @@ int main(int argc, char **argv) {
     // local input file is an (unencrypted) csv of local site's data
     // secret share file is a binary, e.g., Chicago Alliance input
     // parse args
-    string host, localInputTuples, localPartialCountFile, secretShareTuples, secretSharePartialCounts, dbName;
+    string host, remote_patient_file, remote_patient_partial_count_file, db_name;
     int port=0, party=0;
-    bool semijoinOptimization = false;
+    bool semijoin_optimization = false;
     size_t cardinality_bound = 441; // 7 * 3 * 3 * 7
-    bool dbInput = false; // goes to csv
     string study_year, party_name;
     string logfile_prefix = "";
-    string patient_input_query;
-    string partial_counts_query;
-
+    string patient_input_query = DataUtilities::readTextFileToString("pilot/queries/patient.sql");
+    string partial_count_query = DataUtilities::readTextFileToString("pilot/queries/partial-count.sql");
+    string selection_clause;
+    string partial_count_selection_clause;
 
 
     try {
@@ -106,11 +106,10 @@ int main(int argc, char **argv) {
                 ("host,h", po::value<string>(), "alice hostname")
                 ("port,P", po::value<int>(), "connection port")
                 ("party", po::value<int>(), "computing party for mpc (1 = alice, 2 = bob)")
-                ("c", po::value<string>(), "local, plaintext csv input file for mpc tuples")
                 ("database,d", po::value<string>(), "local database name")
-                ("p", po::value<string>(), "local csv file for partial counts")
-                ("rc", po::value<string>(), "secret sh6are file of mpc tuples (remote version of -c)")
-                ("rp", po::value<string>(), "secret share file of partial counts(remote version of -p)")
+                ("semijoin-optimization,s", "enables semijoin optimization, only evaluates multisite patients in MPC") // boolean flag
+                ("remote-tuples-file,r", po::value<string>(), "secret share file root of mpc tuples") // will have $FILE_ROOT.1.alice, $FILE_ROOT.2.alice (or bob) and so on.
+                ("remote-partial-counts-file,p", po::value<string>(), "secret share file of partial counts")
                 ("log-prefix,l", po::value<string>(), "prefix of filename for log")
                 ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all")
                 ("cardinality-bound,b", po::value<size_t>()->default_value(441), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)");
@@ -152,40 +151,39 @@ int main(int argc, char **argv) {
         }
 
 
-        if (vm.count("c")) {
-            localInputTuples = vm["c"].as<string>();
+        if(vm.count("semijoin-optimization")) {
+            semijoin_optimization = true;
+            selection_clause = "multisite";
         }
+
+
 
         if (vm.count("database")) {
-            dbName = vm["database"].as<string>();
-            dbInput = true;
+            db_name = vm["database"].as<string>();
+        }
+        else {
+            throw std::invalid_argument("Need database name for local inputs.");
         }
 
-        if(vm.count("p")) {
-            localPartialCountFile = vm["p"].as<string>();
-            if(vm.count("database")) {
-                throw std::invalid_argument(
-                        "Error: two sources of input for partial count (--d and --p), please select one.");
-            }
-        }
 
-        if(vm.count("rc")) {
-            secretShareTuples = vm["rc"].as<string>();
+        if(vm.count("remote-tuples-file")) {
+            remote_patient_file = vm["remote-tuples-file"].as<string>();
         }
 
         if (vm.count("year")) {
             study_year = vm["year"].as<string>();
-            string input_query_file = "pilot/queries/patient-multisite-" + study_year + ".sql";
-            patient_input_query = DataUtilities::readTextFileToString(input_query_file);
+            if(study_year != "all") {
+                string year_selection = "study_year = " + study_year;
+                selection_clause = PilotUtilities::appendToConjunctivePredicate(selection_clause, year_selection);
+                partial_count_selection_clause = PilotUtilities::appendToConjunctivePredicate(partial_count_selection_clause, year_selection);
+            }
 
         } else {
             throw std::invalid_argument("Need study year to know the data to input");
         }
 
-        if(vm.count("rp")) {
-            secretSharePartialCounts = vm["rp"].as<string>();
-            semijoinOptimization = true;
-            partial_counts_query = DataUtilities::readTextFileToString("pilot/queries/partial-count-" + study_year + ".sql");
+        if(vm.count("remote-partial-counts-file")) {
+            remote_patient_partial_count_file = vm["remote-partial-counts-file"].as<string>();
         }
 
         if(vm.count("cardinality-bound")) {
@@ -193,10 +191,14 @@ int main(int argc, char **argv) {
         }
 
 
-        // sanity check
-        if(!vm.count("c") and !vm.count("database")) {
-            throw std::invalid_argument("Need input source for local data.  Use either -c or -d");
-        }
+
+
+        // if semijoin optimization enabled and no partial input from chi OR vice versa
+        if((semijoin_optimization && !remote_patient_file.empty()) && remote_patient_partial_count_file.empty())
+            throw std::invalid_argument("Can't have secret shares from third party and no partial counts for them in semijoin optimization");
+        if(!semijoin_optimization && !remote_patient_partial_count_file.empty())
+            throw std::invalid_argument("Need secret shares for multisite tuples to go along with encrypted partial counts.");
+
 
         if (vm.count("log-prefix")) {
             logfile_prefix = vm["log-prefix"].as<string>();
@@ -231,9 +233,8 @@ int main(int argc, char **argv) {
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
 
-    shared_ptr<SecureTable> inputData = (dbInput) ? UnionHybridData::unionHybridData(dbName, patient_input_query,
-                                                                                     secretShareTuples, netio, party)
-                                                  :  UnionHybridData::unionHybridData(schema, localInputTuples, secretShareTuples, netio, party);
+    patient_input_query = PilotUtilities::replaceSelection(patient_input_query, selection_clause);
+    shared_ptr<SecureTable> inputData = UnionHybridData::unionHybridData(db_name, patient_input_query, remote_patient_file, netio, party);
 
     cumulative_runtime = time_from(start_time);
 
@@ -242,10 +243,11 @@ int main(int argc, char **argv) {
     if(TESTBED) {
         assert(study_year == "all"); // only coded for no year selection
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
-        string query = (semijoinOptimization) ? "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient WHERE multisite ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl"
-                                              : "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
-        SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
-        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patientSortDef, revealed);
+        string query = (semijoin_optimization) ? "SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl  FROM patient WHERE multisite ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl"
+                                               : "SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
+        cout << "Running query " << query << " on " << PilotUtilities::unioned_db_name_ << endl;
+        SortDefinition patient_sort_def = DataUtilities::getDefaultSortDefinition(7);
+        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patient_sort_def, revealed);
 
 
     }
@@ -267,27 +269,26 @@ int main(int argc, char **argv) {
     BOOST_LOG(logger) << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
     Utilities::checkMemoryUtilization();
 
-    if(semijoinOptimization) {
+    if(semijoin_optimization) {
         // add in the 1-site PIDs
         shared_ptr<SecureTable> alice, bob, chi;
-
-        shared_ptr<PlainTable> local_partial_counts = (dbInput) ?  DataUtilities::getQueryResults(dbName, partial_counts_query, false)
-                                                                : CsvReader::readCsv(localPartialCountFile, SharedSchema::getPartialCountSchema());
+        partial_count_query = PilotUtilities::replaceSelection(partial_count_query, partial_count_selection_clause);
+        shared_ptr<PlainTable> local_partial_counts = DataUtilities::getQueryResults(db_name, partial_count_query, false);
 
         assert(local_partial_counts->getTupleCount() == cardinality_bound);
         // ship local, partial counts - alice, then bob
         if (party == 1) { // alice
-            alice = SecureTable::secret_share_send_table(local_partial_counts, netio, 1);
+            alice = SecureTable::secret_share_send_table(local_partial_counts, netio, ALICE);
             bob = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(), netio,
-                                                       2);
+                                                       BOB);
         } else { // bob
             alice = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(),
-                                                         netio, 1);
-            bob = SecureTable::secret_share_send_table(local_partial_counts, netio, 2);
+                                                         netio, ALICE);
+            bob = SecureTable::secret_share_send_table(local_partial_counts, netio, BOB);
         }
 
 
-        chi = UnionHybridData::readSecretSharedInput(secretSharePartialCounts, QuerySchema::toPlain(*(alice->getSchema())), party);
+        chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain(*(alice->getSchema())), party);
 
         std::vector<shared_ptr<SecureTable>> partial_aggs { alice, bob, chi};
         enrich.addPartialAggregates(partial_aggs);

@@ -68,17 +68,12 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     // *** Filter
     // HAVING max(denom_excl) = false
 
-    BOOST_LOG(logger) << "Filtering on schema: " << *(aggregated->getSchema()) << endl;
-
-
     shared_ptr<ExpressionNode<emp::Bit> > zero(new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_BOOL, emp::Bit(false))));;
     shared_ptr<ExpressionNode<emp::Bit> > input(new InputReferenceNode<emp::Bit>(7));
     shared_ptr<ExpressionNode<emp::Bit> > equality(new EqualNode<emp::Bit>(input, zero));
 
     BoolExpression<emp::Bit> equality_expr(equality);
 
-    BOOST_LOG(logger) << "Filtering with " << equality_expr.root_->toString() << endl;
-    Utilities::checkMemoryUtilization("pre-filter");
 
     start_time = emp::clock_start();
 
@@ -166,14 +161,10 @@ void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
     GroupByAggregate aggregator(sorted, groupByCols, aggregators);
     dataCube = aggregator.run();
     sorted.reset();
-    Logger::write("Aggregated.");
-    Utilities::checkMemoryUtilization();
 
 
     Shrinkwrap wrapper(dataCube, cardinalityBound);
     dataCube = wrapper.run();
-    Logger::write("shrinkwrapped.");
-    Utilities::checkMemoryUtilization();
     double runtime = emp::time_from(start_time);
     BOOST_LOG(logger) << "Runtime for aggregate #2 (data cube): " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
 
