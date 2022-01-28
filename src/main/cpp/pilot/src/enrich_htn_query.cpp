@@ -217,7 +217,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::addPartialAggregates(vector<shared_ptr<S
     for(size_t i = 1; i < partials.size(); ++i) {
         shared_ptr<SecureTable> partial = partials[i];
         assert(tuple_cnt == partial->getTupleCount()); // check that they line up
-        assert(*(partial->getSchema()) == SharedSchema::getPartialCountSchema());
+        assert(QuerySchema::toPlain(*(partial->getSchema())) == SharedSchema::getPartialCountSchema());
     }
 
     // for each tuple

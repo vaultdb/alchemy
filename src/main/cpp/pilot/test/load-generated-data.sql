@@ -22,26 +22,26 @@ WHERE EXISTS(
 \copy (SELECT * FROM patient WHERE site_id = 2 ORDER BY pat_id, study_year) TO 'pilot/test/input/bob-db.csv' CSV
 \copy (SELECT * FROM patient WHERE site_id = 3 ORDER BY pat_id, study_year) TO 'pilot/test/input/chi-db.csv' CSV
 
-DROP DATABASE IF EXISTS enrich_htn_unioned_alice;
-CREATE DATABASE enrich_htn_unioned_alice;
-\c enrich_htn_unioned_alice
+DROP DATABASE IF EXISTS enrich_htn_alice;
+CREATE DATABASE enrich_htn_alice;
+\c enrich_htn_alice
 \i 'pilot/test/create-patient-table.sql'
 \copy patient FROM 'pilot/test/input/alice-db.csv' CSV
 \i  'pilot/prod/load/generate-demographics-domain.sql'
 
 
-DROP DATABASE IF EXISTS enrich_htn_unioned_bob;
-CREATE DATABASE enrich_htn_unioned_bob;
-\c enrich_htn_unioned_bob
+DROP DATABASE IF EXISTS enrich_htn_bob;
+CREATE DATABASE enrich_htn_bob;
+\c enrich_htn_bob
 \i 'pilot/test/create-patient-table.sql'
 \copy patient FROM 'pilot/test/input/bob-db.csv' CSV
 \i  'pilot/prod/load/generate-demographics-domain.sql'
 
 
 
-DROP DATABASE IF EXISTS enrich_htn_unioned_chi;
-CREATE DATABASE enrich_htn_unioned_chi;
-\c enrich_htn_unioned_chi
+DROP DATABASE IF EXISTS enrich_htn_chi;
+CREATE DATABASE enrich_htn_chi;
+\c enrich_htn_chi
 \i 'pilot/test/create-patient-table.sql'
 \copy patient FROM 'pilot/test/input/chi-db.csv' CSV
 \i  'pilot/prod/load/generate-demographics-domain.sql'

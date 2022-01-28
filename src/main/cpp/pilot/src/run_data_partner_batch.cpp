@@ -249,8 +249,9 @@ int main(int argc, char **argv) {
         string batch_predicate = selection_clause;
         batch_predicate = PilotUtilities::appendToConjunctivePredicate(selection_clause, "MOD(hash, " + std::to_string(batch_count) + ") = " + std::to_string(batch_id));
         string batch_input_query = PilotUtilities::replaceSelection(patient_input_query,  batch_predicate);
+        string batch_input_file = remote_patient_file + "." + std::to_string(batch_id + 1) + "." + party_name;
         shared_ptr<SecureTable> inputData =  UnionHybridData::unionHybridData(db_name, batch_input_query,
-                                                                                         remote_patient_file, netio,
+                                                                                         batch_input_file, netio,
                                                                                          party);
         cumulative_runtime = time_from(start_time);
 
@@ -260,7 +261,7 @@ int main(int argc, char **argv) {
             assert(study_year == "all"); // only coded for no year selection
             std::shared_ptr<PlainTable> revealed = inputData->reveal();
             string query =  "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient WHERE :selection ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
-            query = PilotUtilities::replaceSelection(query, selection_clause);
+            query = PilotUtilities::replaceSelection(query, batch_predicate);
             SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
             PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patientSortDef, revealed);
         }

@@ -106,7 +106,7 @@ void PilotUtilities::secretShareFromQuery(const string &db_name, const string &q
     std::shared_ptr<PlainTable> table = DataUtilities::getQueryResults(db_name, query, false);
     SecretShares shares = table->generateSecretShares();
 
-    BOOST_LOG(vaultdb_logger::get())  << "Secret sharing " << table->getTupleCount() << " tuples." << endl;
+    BOOST_LOG(vaultdb_logger::get())  << "Secret sharing " << table->getTupleCount() << " rows."; //" tuples from query " << query << " on " << db_name << endl;
 
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
     DataUtilities::writeFile(dst_root + ".bob", shares.second);
