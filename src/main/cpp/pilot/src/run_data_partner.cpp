@@ -8,7 +8,7 @@
 #include <util/logger.h>
 #include <data/csv_reader.h>
 #include <boost/program_options.hpp>
-
+#include <unordered_map>
 
 
 using namespace std;
@@ -16,11 +16,12 @@ using namespace vaultdb;
 using namespace emp;
 namespace po = boost::program_options;
 
-#define TESTBED 1
+#define TESTBED 0
 
 
 auto start_time = emp::clock_start();
 auto cumulative_runtime = emp::time_from(start_time);
+//unordered_map<string, long> runtime_per_step;
 
 // roll up one group-by col at a time
 // input schema:
