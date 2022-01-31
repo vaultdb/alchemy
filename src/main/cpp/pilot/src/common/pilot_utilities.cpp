@@ -101,13 +101,11 @@ void PilotUtilities::validateInputTable(const std::string & dbName, const std::s
     shared_ptr<PlainTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
     expectedTable->setSortOrder(expectedSortDefinition);
 
-    cout << "First expected rows: " << (*expectedTable)[0].toString(true) << " " << (*expectedTable)[1].toString(true) << endl;
     // sort the inputs
     // ops deleted later using Operator framework
     Sort sort(testTable, expectedSortDefinition);
     shared_ptr<PlainTable> observedTable = sort.run();
     observedTable = DataUtilities::removeDummies(observedTable);
-    cout << "First observed rows: " << (*observedTable)[0].toString(true) << " " << (*observedTable)[1].toString(true) << endl;
 
     bool res = (*expectedTable == *observedTable);
     if(!res) {

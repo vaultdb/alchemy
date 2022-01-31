@@ -12,11 +12,6 @@ namespace po = boost::program_options;
 // e.g., ./bin/secret_share_from_query enrich_htn_prod  my_query.sql pilot/secret_shares/output/example
 // writes to  pilot/secret_shares/output/example.alice and  pilot/secret_shares/output/example.bob
 int main(int argc, char **argv) {
-    //
-//    if (argc < 5) {
-//        cout << "usage: secret_share_from_query <target_db> <file with sql query>  <partition count> <destination root>" << endl;
-//        exit(-1);
-//    }
 
     string selection_clause, db_name, dst_root, query;
     bool semijoin_optimization = false;

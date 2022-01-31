@@ -351,7 +351,6 @@ std::shared_ptr<PlainTable> QueryTable<B>::deserialize(const QuerySchema &schema
     uint32_t tableSize = tableBits.size(); // in bytes
     uint32_t tupleSize = schema.size() / 8; // in bytes
     uint32_t tupleCount = tableSize / tupleSize;
-    SortDefinition emptySortDefinition;
 
     std::shared_ptr<PlainTable > result(new PlainTable(tupleCount, schema));
     result->tuple_data_ = tableBits;

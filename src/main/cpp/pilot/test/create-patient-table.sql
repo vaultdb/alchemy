@@ -1,4 +1,4 @@
-
+DROP TABLE IF EXISTS patient;
 CREATE TABLE patient (
        pat_id int,
        study_year int,

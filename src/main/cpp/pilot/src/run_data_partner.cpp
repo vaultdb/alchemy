@@ -239,10 +239,9 @@ int main(int argc, char **argv) {
 
     // validate it against the DB for testing
     if(TESTBED) {
-        assert(study_year == "all"); // only coded for no year selection
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
-        string query = (semijoin_optimization) ? "SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl  FROM patient WHERE multisite ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl"
-                                               : "SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
+        string query ="SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl  FROM patient WHERE :selection ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
+        query = PilotUtilities::replaceSelection(query, selection_clause);
 
         SortDefinition patient_sort_def = DataUtilities::getDefaultSortDefinition(7);
         PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patient_sort_def, revealed);
@@ -291,10 +290,11 @@ int main(int argc, char **argv) {
         enrich.unionWithPartialAggregates(partial_aggs);
 
         if(TESTBED) {
-            assert(study_year == "all"); // only coded for no year selection, repeat
             std::shared_ptr<PlainTable> revealed = enrich.data_cube_->reveal();
             SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
-            PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, PilotUtilities::data_cube_sql_, cube_sort_def, revealed);
+
+            string query = PilotUtilities::replaceSelection(PilotUtilities::data_cube_sql_, partial_count_selection_clause);
+            PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, cube_sort_def, revealed);
         }
 
 

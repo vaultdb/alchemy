@@ -201,7 +201,6 @@ shared_ptr<SecureTable> EnrichHtnQuery::aggregatePartialPatientCounts( shared_pt
     sorted.reset();
 
 
-    cout << "Shrinkwrapping to " << cardinality_bound << " rows." << endl;
     Shrinkwrap wrapper(dst, cardinality_bound);
     dst = wrapper.run();
     double runtime = emp::time_from(start_time);

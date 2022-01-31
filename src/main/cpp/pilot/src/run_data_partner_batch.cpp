@@ -329,9 +329,7 @@ int main(int argc, char **argv) {
 
     if(TESTBED) {
         std::shared_ptr<PlainTable> revealed = enrich.data_cube_->reveal();
-        cout << "First two tuples:     " << (*revealed)[0].toString(true) << " " << (*revealed)[1].toString(true) << endl;
-
-             SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
+        SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
         string query = PilotUtilities::replaceSelection(PilotUtilities::data_cube_sql_no_dummies_, selection_clause);
         PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, cube_sort_def, revealed);
     }

@@ -111,8 +111,8 @@ TEST_F(SerializationTest, capricorn_deserialization) {
 
     QuerySchema targetSchema = SharedSchema::getInputSchema();
     string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
-    string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.alice";
-    string bobFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.bob";
+    string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient-multisite.alice";
+    string bobFile = currentWorkingDirectory + "/pilot/test/output/chi-patient-multisite.bob";
 
     vector<int8_t> aliceBits = DataUtilities::readFile(aliceFile);
     vector<int8_t> bobBits = DataUtilities::readFile(bobFile);
