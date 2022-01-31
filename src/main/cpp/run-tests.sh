@@ -5,6 +5,8 @@ make -j5
 
 bash test/support/setup-csv.sh
 bash pilot/test/generate-and-load-test-data.sh 1000
+# optional:
+#  bash run-pilot-test.sh
 
 ./bin/csv_reader_test 
 ./bin/field_expression_test
