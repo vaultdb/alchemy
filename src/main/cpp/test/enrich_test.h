@@ -32,8 +32,8 @@ protected:
 
 
     const string unionedDbName = "enrich_htn_unioned";
-    const string aliceDbName = "enrich_htn_alice";
-    const string bobDbName = "enrich_htn_bob";
+    const string aliceDbName = "enrich_htn_test_alice";
+    const string bobDbName = "enrich_htn_test_bob";
 
     shared_ptr<PlainTable> getAgeStrataProjection(shared_ptr<PlainTable> input, const bool & isEncrypted) const;
 

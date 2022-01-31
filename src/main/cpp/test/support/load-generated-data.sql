@@ -2,7 +2,7 @@
 -- starting from enrich_htn_alice
 
 
-\c enrich_htn_alice
+\c enrich_htn_test_alice
 
 DROP TABLE IF EXISTS patient;
 CREATE TABLE patient (
@@ -27,7 +27,7 @@ CREATE TABLE patient_exclusion (
 \copy patient_exclusion FROM 'alice-patient-exclusion.csv' CSV
 
 
-\c enrich_htn_bob
+\c enrich_htn_test_bob
 
 DROP TABLE IF EXISTS patient;
 CREATE TABLE patient (

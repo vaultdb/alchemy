@@ -6,6 +6,8 @@ fi
 
 TUPLE_COUNT=$1
 
+mkdir -p test/support/csv/enrich/
+
 ./bin/generate_enrich_data test/support/csv/enrich $TUPLE_COUNT
 cd test/support/csv/enrich
 
@@ -14,11 +16,11 @@ cat alice-patient-exclusion.csv bob-patient-exclusion.csv >  unioned-patient-exc
 
 
 dropdb enrich_htn_unioned
-dropdb enrich_htn_alice
-dropdb enrich_htn_bob
+dropdb enrich_htn_test_alice
+dropdb enrich_htn_test_bob
 
 createdb enrich_htn_unioned
-createdb enrich_htn_alice
-createdb enrich_htn_bob
+createdb enrich_htn_test_alice
+createdb enrich_htn_test_bob
 
 psql enrich_htn_unioned < ../../load-generated-data.sql
