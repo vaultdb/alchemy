@@ -146,7 +146,6 @@ void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
     src.reset();
 
     Logger::write("Finished sort for data cube.");
-    Utilities::checkMemoryUtilization();
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3};
     std::vector<ScalarAggregateDefinition> aggregators {
@@ -163,12 +162,54 @@ void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
     data_cube_ = aggregator.run();
     sorted.reset();
 
+    if(cardinality_bound_ < data_cube_->getTupleCount()) {
 
-    Shrinkwrap wrapper(data_cube_, cardinality_bound_);
-    data_cube_ = wrapper.run();
+        Shrinkwrap wrapper(data_cube_, cardinality_bound_);
+        data_cube_ = wrapper.run();
+        double runtime = emp::time_from(start_time);
+        BOOST_LOG(logger) << "Runtime for aggregate #2 (data cube): " << (runtime + 0.0) * 1e6 * 1e-9 << " secs."
+                          << endl;
+    }
+
+}
+
+
+// input schema: age_strata (0), sex (1), ethnicity (2), race (3), numerator (4),  denom_multisite (5), numerator_multisite (6) - last 4 cols are ints
+shared_ptr<SecureTable> EnrichHtnQuery::aggregatePartialPatientCounts( shared_ptr<SecureTable> &src, const size_t & cardinality_bound) {
+    auto start_time = emp::clock_start();
+    auto logger = vaultdb_logger::get();
+
+
+    // sort it on cols [0,5)
+    Sort sort(src, DataUtilities::getDefaultSortDefinition(4));
+    shared_ptr<SecureTable> sorted = sort.run();
+
+
+    std::vector<int32_t> groupByCols{0, 1, 2, 3};
+    std::vector<ScalarAggregateDefinition> aggregators {
+            ScalarAggregateDefinition(4, AggregateId::SUM, "numerator_cnt"),
+            ScalarAggregateDefinition(5, AggregateId::SUM, "denominator_cnt"),
+            ScalarAggregateDefinition(6, AggregateId::SUM, "numerator_multisite"),
+            ScalarAggregateDefinition(7, AggregateId::SUM, "denominator_multisite")
+    };
+
+
+    // output schema:
+    // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite (6), denominator_multisite (7)
+    GroupByAggregate aggregator(sorted, groupByCols, aggregators);
+    shared_ptr<SecureTable> dst = aggregator.run();
+    sorted.reset();
+
+
+    cout << "Shrinkwrapping to " << cardinality_bound << " rows." << endl;
+    Shrinkwrap wrapper(dst, cardinality_bound);
+    dst = wrapper.run();
     double runtime = emp::time_from(start_time);
-    BOOST_LOG(logger) << "Runtime for aggregate #2 (data cube): " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
 
+
+    BOOST_LOG(logger) << "Runtime for partial counts rollup: " <<  (runtime+0.0)*1e6*1e-9 << " secs at epoch " <<  Utilities::getEpoch() << endl;
+
+    return dst;
 
 }
 
@@ -203,8 +244,10 @@ void EnrichHtnQuery::unionWithPartialAggregates(vector<shared_ptr<SecureTable>> 
     data_cube_ = aggregator.run();
     sorted.reset();
 
-    Shrinkwrap wrapper(data_cube_, cardinality_bound_);
-    data_cube_ = wrapper.run();
+    if(cardinality_bound_ < data_cube_->getTupleCount()) {
+        Shrinkwrap wrapper(data_cube_, cardinality_bound_);
+        data_cube_ = wrapper.run();
+    }
 
 
 
@@ -227,13 +270,16 @@ shared_ptr<SecureTable> EnrichHtnQuery::addPartialAggregates(vector<shared_ptr<S
         // for each partial count
         for(size_t j = 1; j < partials.size(); ++j) {
             SecureTuple src = (*(partials[j]))[i];
+
             // if one of them is not a dummy, then it's not a dummy
             dst.setDummyTag(src.getDummyTag() | dst.getDummyTag());
+
 
             dst.setField(4, dst[4] + src[4]);
             dst.setField(5, dst[5] + src[5]);
             dst.setField(6, dst[6] + src[6]);
             dst.setField(7, dst[7] + src[7]);
+
 
         }
     }

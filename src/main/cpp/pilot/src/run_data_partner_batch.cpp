@@ -7,6 +7,8 @@
 #include <util/utilities.h>
 #include <util/logger.h>
 #include <boost/program_options.hpp>
+#include <operators/union.h>
+#include <operators/sort.h>
 
 
 
@@ -69,7 +71,6 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
     auto delta = time_from(local_start_time);
     cumulative_runtime += delta;
 
-    Utilities::checkMemoryUtilization(colName);
     BOOST_LOG(logger) <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime << " epoch " << Utilities::getEpoch() <<  endl;
 
 
@@ -237,8 +238,7 @@ int main(int argc, char **argv) {
     setup_semi_honest(netio, party,  port);
     BOOST_LOG(logger) << "Starting epoch " << Utilities::getEpoch() << endl;
     auto e2e_start_time = emp::clock_start();
-    vector<shared_ptr<SecureTable>> partial_counts;
-
+    shared_ptr<SecureTable> partial_counts;
     start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
 
 
@@ -258,7 +258,6 @@ int main(int argc, char **argv) {
 
         // validate it against the DB for testing
         if (TESTBED) {
-            assert(study_year == "all"); // only coded for no year selection
             std::shared_ptr<PlainTable> revealed = inputData->reveal();
             string query =  "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient WHERE :selection ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
             query = PilotUtilities::replaceSelection(query, batch_predicate);
@@ -277,16 +276,27 @@ int main(int argc, char **argv) {
         EnrichHtnQuery batch_enrich(inputData, cardinality_bound);
         inputData.reset();
 
-        assert(batch_enrich.data_cube_->getTupleCount() == cardinality_bound);
-        partial_counts.push_back(batch_enrich.data_cube_);
+        if(partial_counts.get() == nullptr) {
+            partial_counts = batch_enrich.data_cube_;
+        }
+        else {
+            // suspect this might be a problem of bits vs bytes in the copy for Union
+            Union u(partial_counts, batch_enrich.data_cube_);
+            partial_counts = u.run();
+
+        }
 
         cumulative_runtime += time_from(start_time);
-        BOOST_LOG(logger) << "***Completed cube aggregation " << batch_id << " of " << batch_count << " at " << time_from(start_time) * 1e6 * 1e-9
+        BOOST_LOG(logger) << "***Completed cube aggregation " << batch_id + 1 << " of " << batch_count << " at " << time_from(start_time) * 1e6 * 1e-9
                           << " ms, cumulative runtime=" << cumulative_runtime * 1e6 * 1e-9 << " ms, epoch "
                           << Utilities::getEpoch() << endl;
-        Utilities::checkMemoryUtilization();
 
     } // end for-each batch
+
+    // can't just add up partial counts because the domains might be different in each set
+    // instead concatenate them all into a single array and aggregate them
+    enrich.data_cube_  = EnrichHtnQuery::aggregatePartialPatientCounts(partial_counts, cardinality_bound);
+
 
     if(semijoin_optimization) {
         // add in the 1-site PIDs
@@ -308,19 +318,22 @@ int main(int argc, char **argv) {
 
         chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain(*(alice->getSchema())), party);
 
-        partial_counts.push_back(alice);
-        partial_counts.push_back(bob);
-        partial_counts.push_back(chi);
+
+        std::vector<shared_ptr<SecureTable>> partial_aggs { alice, bob, chi};
+        enrich.unionWithPartialAggregates(partial_aggs);
+
 
     }
 
-    enrich = EnrichHtnQuery(partial_counts);
+
 
     if(TESTBED) {
-        assert(study_year == "all"); // only coded for no year selection, repeat
         std::shared_ptr<PlainTable> revealed = enrich.data_cube_->reveal();
-        SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
-        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, PilotUtilities::data_cube_sql_, cube_sort_def, revealed);
+        cout << "First two tuples:     " << (*revealed)[0].toString(true) << " " << (*revealed)[1].toString(true) << endl;
+
+             SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
+        string query = PilotUtilities::replaceSelection(PilotUtilities::data_cube_sql_no_dummies_, selection_clause);
+        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, cube_sort_def, revealed);
     }
 
 

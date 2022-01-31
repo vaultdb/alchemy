@@ -112,6 +112,7 @@ namespace  vaultdb {
             static std::shared_ptr<SecureTable> deserialize(const QuerySchema &schema, vector<Bit> &table_bits);
 
             size_t getTrueTupleCount() const;
+            bool empty() const { return tuple_data_.empty(); }
 
         PlainTuple getPlainTuple(size_t idx) const;
 

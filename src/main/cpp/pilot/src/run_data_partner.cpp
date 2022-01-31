@@ -70,7 +70,6 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
     auto delta = time_from(start_time);
     cumulative_runtime += delta;
 
-    Utilities::checkMemoryUtilization(colName);
     BOOST_LOG(logger) <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime << " epoch " << Utilities::getEpoch() <<  endl;
 
 
@@ -266,7 +265,6 @@ int main(int argc, char **argv) {
 
     cumulative_runtime += time_from(start_time);
     BOOST_LOG(logger) << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
-    Utilities::checkMemoryUtilization();
 
     if(semijoin_optimization) {
         // add in the 1-site PIDs

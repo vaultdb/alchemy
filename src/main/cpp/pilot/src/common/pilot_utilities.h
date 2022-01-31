@@ -17,7 +17,7 @@ namespace  vaultdb {
         static std::string replaceSubstring(const std::string & base, const std::string & to_find, const std::string replacement);
         static std::string replaceSelection(const std::string & base, const std::string replacement);
 
-        static const std::string data_cube_sql_, unioned_db_name_;
+        static const std::string data_cube_sql_,  data_cube_sql_no_dummies_, unioned_db_name_;
     };
 
 }

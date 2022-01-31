@@ -28,7 +28,7 @@ namespace  vaultdb {
 
         // initialize a new enrich object with list of partial counts from batches and/or semijoin optimization
         EnrichHtnQuery(vector<shared_ptr<SecureTable>> & input);
-
+        static shared_ptr<SecureTable> aggregatePartialPatientCounts( shared_ptr<SecureTable> &src, const size_t & cardinality_bound);
 
     private:
 

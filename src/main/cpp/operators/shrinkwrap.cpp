@@ -16,9 +16,14 @@ Shrinkwrap<B>::Shrinkwrap(shared_ptr<QueryTable<B>> &input, const size_t &output
 
 template<typename B>
 shared_ptr<QueryTable<B>> Shrinkwrap<B>::runSelf() {
+
     std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
     SortDefinition src_sort = input->getSortOrder();
 
+    if(input->getTupleCount() < cardinality_bound_) {
+        Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
+        return Operator<B>::output_;
+    }
 
     // preserve the initial sort order otherwise
     SortDefinition  dst_sort;

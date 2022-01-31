@@ -94,7 +94,6 @@ runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & dat
     auto delta = time_from(start_time);
     cumulative_runtime += delta;
 
-    Utilities::checkMemoryUtilization(colName);
     BOOST_LOG(logger) <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime << "epoch " << Utilities::getEpoch() << endl;
 
 

@@ -7,10 +7,27 @@
 using namespace vaultdb;
 
 const std::string PilotUtilities::unioned_db_name_ = "enrich_htn_unioned_3pc";
+const std::string PilotUtilities::data_cube_sql_no_dummies_ =  "WITH labeled as (\n"
+                                                               "        SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl\n"
+                                                               "        FROM patient\n"
+                                                               "        WHERE :selection \n"
+                                                               "        ORDER BY pat_id),\n"
+                                                               "  deduplicated AS (    SELECT p.pat_id,  age_strata, sex, ethnicity, race, MAX(p.numerator::INT) numerator, COUNT(*) cnt\n"
+                                                               "    FROM labeled p\n"
+                                                               "    GROUP BY p.pat_id, age_strata, sex, ethnicity, race\n"
+                                                               "    HAVING MAX(denom_excl::INT) = 0\n"
+                                                               "    ORDER BY p.pat_id, age_strata, sex, ethnicity, race ) \n"
+                                                               "  SELECT  age_strata, sex, ethnicity, race, SUM(numerator)::INT numerator_cnt, COUNT(*)::INT denominator_cnt,\n"
+                                                               "                       SUM(CASE WHEN (numerator > 0 AND cnt> 1) THEN 1 ELSE 0 END)::INT numerator_multisite_cnt, SUM(CASE WHEN (cnt > 1) THEN 1 else 0 END)::INT  denominator_multisite_cnt\n"
+                                                               "  FROM deduplicated\n"
+                                                               "  GROUP BY  age_strata, sex, ethnicity, race\n"
+                                                               "  ORDER BY  age_strata, sex, ethnicity, race";
+
 
 const std::string PilotUtilities::data_cube_sql_ =  "WITH labeled as (\n"
                                          "        SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl\n"
                                          "        FROM patient\n"
+                                         "        WHERE :selection \n"
                                          "        ORDER BY pat_id),\n"
                                          "  deduplicated AS (    SELECT p.pat_id,  age_strata, sex, ethnicity, race, MAX(p.numerator::INT) numerator, COUNT(*) cnt\n"
                                          "    FROM labeled p\n"
@@ -80,14 +97,23 @@ std::shared_ptr<SecureTable> PilotUtilities::rollUpAggregate(const std::shared_p
 
 void PilotUtilities::validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> & testTable)  {
 
+
     shared_ptr<PlainTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
     expectedTable->setSortOrder(expectedSortDefinition);
+
+    cout << "First expected rows: " << (*expectedTable)[0].toString(true) << " " << (*expectedTable)[1].toString(true) << endl;
     // sort the inputs
     // ops deleted later using Operator framework
     Sort sort(testTable, expectedSortDefinition);
     shared_ptr<PlainTable> observedTable = sort.run();
+    observedTable = DataUtilities::removeDummies(observedTable);
+    cout << "First observed rows: " << (*observedTable)[0].toString(true) << " " << (*observedTable)[1].toString(true) << endl;
 
-    assert(*expectedTable ==  *observedTable);
+    bool res = (*expectedTable == *observedTable);
+    if(!res) {
+        BOOST_LOG(vaultdb_logger::get()) << "Failed to match at " << Utilities::getStackTrace() << endl;
+    }
+    assert(res);
 
 
 }

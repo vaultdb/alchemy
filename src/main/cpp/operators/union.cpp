@@ -2,6 +2,28 @@
 
 using namespace vaultdb;
 
+
+template<typename B>
+Union<B>::Union(Operator<B> *lhs, Operator<B> *rhs, const SortDefinition &sort) : Operator<B>(lhs, rhs, sort) {
+    if(lhs == nullptr || rhs == nullptr) {
+        throw std::invalid_argument("Union can't take in null child operators!");
+    }
+
+    Operator<B>::output_schema_ = lhs->getOutputSchema();
+}
+
+template<typename B>
+Union<B>::Union(shared_ptr<QueryTable<B>> lhs, shared_ptr<QueryTable<B>> rhs, const SortDefinition &sort) : Operator<B>(lhs, rhs, sort) {
+    if(lhs.get() == nullptr || rhs.get() == nullptr) {
+        throw std::invalid_argument("Union can't take in null tables!");
+    }
+    Operator<B>::output_schema_  = *(lhs->getSchema());
+
+}
+
+
+
+
 template<typename B>
 shared_ptr<QueryTable<B> > Union<B>::runSelf() {
     shared_ptr<QueryTable<B> > lhs = Operator<B>::children_[0]->run();

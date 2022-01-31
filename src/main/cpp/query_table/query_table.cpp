@@ -47,6 +47,9 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
         tuple_size_ = tuple_bits * sizeof(emp::block); // bits, one block per bit
     }
 
+    if(num_tuples == 0)
+        return;
+
     tuple_data_.resize(num_tuples * tuple_size_);
 
       
@@ -199,11 +202,10 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 
 
     size_t tuple_offset = 0;
-    std::shared_ptr<QuerySchema> q = schema_;
 
     for(uint32_t i = 0; i < getTupleCount(); ++i) {
-        PlainTuple this_tuple(q, (int8_t *) (tuple_data_.data() + tuple_offset));
-        PlainTuple other_tuple(q, (int8_t *) (other.tuple_data_.data() + tuple_offset));
+        PlainTuple this_tuple(schema_, (int8_t *) (tuple_data_.data() + tuple_offset));
+        PlainTuple other_tuple(schema_, (int8_t *) (other.tuple_data_.data() + tuple_offset));
 
         if(this_tuple != other_tuple) {
             BOOST_LOG_SEV(logger,  logging::trivial::severity_level::error)  << "Comparing on idx " << i << " with " << this_tuple.toString(true) << "\n          !=            " << other_tuple.toString(true) << endl;
