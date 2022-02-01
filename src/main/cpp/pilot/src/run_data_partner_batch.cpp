@@ -17,7 +17,7 @@ using namespace vaultdb;
 using namespace emp;
 namespace po = boost::program_options;
 
-#define TESTBED 1
+#define TESTBED 0
 
 
 auto start_time = emp::clock_start();
@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
                 ("log-prefix,l", po::value<string>(), "prefix of filename for log")
                 ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all")
                 ("cardinality-bound,b", po::value<size_t>()->default_value(441), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)")
-                ("batch-count", po::value<size_t>(), "number of partitions with which to evaluate query");
+                ("batch-count", po::value<uint32_t>(), "number of partitions with which to evaluate query");
 
 
         po::variables_map vm;

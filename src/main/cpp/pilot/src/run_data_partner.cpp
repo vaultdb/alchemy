@@ -16,7 +16,7 @@ using namespace vaultdb;
 using namespace emp;
 namespace po = boost::program_options;
 
-#define TESTBED 1
+#define TESTBED 0
 
 
 auto start_time = emp::clock_start();

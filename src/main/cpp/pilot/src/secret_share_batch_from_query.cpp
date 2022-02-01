@@ -14,7 +14,6 @@ namespace po = boost::program_options;
 int main(int argc, char **argv) {
 
     string selection_clause, db_name, dst_root, query;
-    bool semijoin_optimization = false;
     uint32_t batch_count;
 
     try {
