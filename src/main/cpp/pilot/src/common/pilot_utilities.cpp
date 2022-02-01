@@ -9,7 +9,7 @@ using namespace vaultdb;
 const std::string PilotUtilities::unioned_db_name_ = "enrich_htn_unioned_3pc";
 const std::string PilotUtilities::data_cube_sql_no_dummies_ =  "WITH labeled as (\n"
                                                                "        SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl\n"
-                                                               "        FROM patient\n"
+                                                               "        FROM (SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl, site_id FROM patient) p  \n"
                                                                "        WHERE :selection \n"
                                                                "        ORDER BY pat_id),\n"
                                                                "  deduplicated AS (    SELECT p.pat_id,  age_strata, sex, ethnicity, race, MAX(p.numerator::INT) numerator, COUNT(*) cnt\n"
@@ -25,8 +25,8 @@ const std::string PilotUtilities::data_cube_sql_no_dummies_ =  "WITH labeled as 
 
 
 const std::string PilotUtilities::data_cube_sql_ =  "WITH labeled as (\n"
-                                         "        SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl\n"
-                                         "        FROM patient\n"
+                                         "        SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl\n"
+                                         "        FROM  (SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl, site_id FROM patient) p \n"
                                          "        WHERE :selection \n"
                                          "        ORDER BY pat_id),\n"
                                          "  deduplicated AS (    SELECT p.pat_id,  age_strata, sex, ethnicity, race, MAX(p.numerator::INT) numerator, COUNT(*) cnt\n"
@@ -49,7 +49,7 @@ const std::string PilotUtilities::data_cube_sql_ =  "WITH labeled as (\n"
 std::string PilotUtilities::getRollupExpectedResultsSql(const std::string &groupByColName) {
     std::string expectedResultSql = "   WITH labeled as (\n"
                                "        SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl\n"
-                               "        FROM patient\n"
+                               "        FROM (SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl, site_id FROM patient) p \n"
                                "        ORDER BY pat_id),\n"
                                "  deduplicated AS (    SELECT p.pat_id,  age_strata, sex, ethnicity, race, MAX(p.numerator::INT) numerator, COUNT(*) cnt\n"
                                "    FROM labeled p\n"
