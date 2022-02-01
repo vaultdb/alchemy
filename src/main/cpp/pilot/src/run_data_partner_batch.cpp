@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
 
 
         if (vm.count("batch-count")) {
-            batch_count = vm["batch-count"].as<size_t>();
+            batch_count = vm["batch-count"].as<uint32_t>();
         }
         else {
             throw std::invalid_argument("Need batch count to partition inputs.");

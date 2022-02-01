@@ -61,7 +61,6 @@ int main(int argc, char **argv) {
         }
 
         if(vm.count("semijoin-optimization")) {
-            semijoin_optimization = true;
             selection_clause = PilotUtilities::appendToConjunctivePredicate(selection_clause, "multisite");
         }
 
@@ -95,7 +94,7 @@ int main(int argc, char **argv) {
 
 
 
-    for(int batch_id  = 0; batch_id < batch_count; ++batch_id) {
+    for(uint32_t batch_id  = 0; batch_id < batch_count; ++batch_id) {
         string batch_predicate = "MOD(hash, " + std::to_string(batch_count) + ") = " + std::to_string(batch_id);
         batch_predicate = PilotUtilities::appendToConjunctivePredicate(selection_clause, batch_predicate);
         string batch_query = PilotUtilities::replaceSelection(query, batch_predicate);
