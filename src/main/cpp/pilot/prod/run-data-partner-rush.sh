@@ -12,4 +12,4 @@ YEAR=$1
 ./bin/run_data_partner -h 127.0.0.1 -P 4444 --party=2 -d enrich_htn_prod -y $YEAR \
 		       -p pilot/secret_shares/alliance/alliance-partial-counts-$YEAR.bob \
 		       -r pilot/secret_shares/alliance/multisite-$YEAR.bob \
-		       -l pilot/logs/vaultdb-data-partner-$YEAR
+		       -l pilot/logs/vaultdb-data-partner-$YEAR -s 
