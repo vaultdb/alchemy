@@ -11,6 +11,6 @@ YEAR=$1
 BATCHES=$2
 
 ./bin/run_data_partner_batch -h 127.0.0.1 -P 4444 --party=1 -d enrich_htn_prod -y $YEAR \
-		       -r pilot/secret_shares/batch/$BATCHES/alliance-all \
-		       -l pilot/logs/vaultdb-data-partner-$YEAR-$BATCHES  \
+		       -r pilot/secret_shares/batch/$BATCHES/alliance-$YEAR \
+		       -l pilot/logs/vaultdb-data-partner-batch-$BATCHES-$YEAR  \
 		       --batch-count=$BATCHES

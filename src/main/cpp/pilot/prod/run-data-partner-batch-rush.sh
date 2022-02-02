@@ -13,6 +13,6 @@ BATCHES=$2
 # ssh -p 3333 -f -N -i ~/.ssh/vaultdb-nm-key -L 4444:127.0.0.1:4444 vaultdb@165.124.123.122
 
 ./bin/run_data_partner_batch -h 127.0.0.1 -P 4444 --party=2 -d enrich_htn_prod -y $YEAR \
-		       -r pilot/secret_shares/batch/$BATCHES/alliance-all \
-		       -l pilot/logs/vaultdb-data-partner-$YEAR-$BATCHES \
+		       -r pilot/secret_shares/batch/$BATCHES/alliance-$YEAR \
+		       -l pilot/logs/vaultdb-data-partner-batch-$BATCHES-$YEAR \
 		       --batch-count=$BATCHES
