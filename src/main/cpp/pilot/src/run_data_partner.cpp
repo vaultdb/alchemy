@@ -230,7 +230,8 @@ int main(int argc, char **argv) {
 
 
     start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
-    string measurements = "start_epoch,dedupe_and_setup,semijoin_optimization,rollup_end_epoch\n" + std::to_string(Utilities::getEpoch());
+    string measurements = "year,start_epoch,dedupe_and_setup,semijoin_optimization,rollup_end_epoch\n";
+    measurements += study_year + "," = std::to_string(Utilities::getEpoch());
 
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
