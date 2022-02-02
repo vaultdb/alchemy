@@ -242,6 +242,7 @@ int main(int argc, char **argv) {
     start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
 
 
+    string measurements = "start_epoch,dedupe_and_setup,semijoin_optimization,rollup_end_epoch\n" + std::to_string(Utilities::getEpoch());
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
     // replace :selection variable
@@ -297,6 +298,7 @@ int main(int argc, char **argv) {
     // instead concatenate them all into a single array and aggregate them
     enrich.data_cube_  = EnrichHtnQuery::aggregatePartialPatientCounts(partial_counts, cardinality_bound);
 
+    measurements += "," + std::to_string(Utilities::getEpoch());
 
     if(semijoin_optimization) {
         // add in the 1-site PIDs
@@ -335,6 +337,7 @@ int main(int argc, char **argv) {
     }
 
 
+    measurements += "," + std::to_string(Utilities::getEpoch());
 
     BOOST_LOG(logger) << "Completed unioning for semijoin at epoch " << Utilities::getEpoch() << endl;
 
@@ -347,7 +350,12 @@ int main(int argc, char **argv) {
 
     delete netio;
     double runtime = time_from(e2e_start_time);
+    measurements += "," + std::to_string(Utilities::getEpoch());
+
+
+
     BOOST_LOG(logger) << "Ending epoch " << Utilities::getEpoch() << endl;
     BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
+    cout << measurements << endl;
 }
 

@@ -228,7 +228,10 @@ int main(int argc, char **argv) {
     BOOST_LOG(logger) << "Starting epoch " << Utilities::getEpoch() << endl;
     auto e2e_start_time = emp::clock_start();
 
+
     start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
+    string measurements = "start_epoch,dedupe_and_setup,semijoin_optimization,rollup_end_epoch\n" + std::to_string(Utilities::getEpoch());
+
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
 
@@ -264,6 +267,8 @@ int main(int argc, char **argv) {
     assert(enrich.data_cube_->getTupleCount() == cardinality_bound);
 
     cumulative_runtime += time_from(start_time);
+    measurements += "," + std::to_string(Utilities::getEpoch());
+
     BOOST_LOG(logger) << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
 
     if(semijoin_optimization) {
@@ -300,6 +305,8 @@ int main(int argc, char **argv) {
 
 
     }
+    measurements += "," + std::to_string(Utilities::getEpoch());
+
     BOOST_LOG(logger) << "Completed unioning for semijoin at epoch " << Utilities::getEpoch() << endl;
 
     shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, enrich.data_cube_, output_path);
@@ -311,6 +318,11 @@ int main(int argc, char **argv) {
 
     delete netio;
     double runtime = time_from(e2e_start_time);
+
+    measurements += "," + std::to_string(Utilities::getEpoch());
+
     BOOST_LOG(logger) << "Ending epoch " << Utilities::getEpoch() << endl;
     BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
+    cout << measurements << endl;
+
 }
