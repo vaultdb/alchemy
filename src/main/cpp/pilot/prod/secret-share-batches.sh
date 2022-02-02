@@ -11,3 +11,9 @@ do
     done
 done
 
+
+
+cd pilot/secret_shares
+tar -cvzf alliance-batch-shares-alice.tar.gz batch/*/*.alice
+tar -cvzf alliance-batch-shares-bob.tar.gz batch/*/*.bob
+mv alliance-batch-shares-alice.tar.gz alliance-batch-secret-shares-bob.tar.gz ~/
