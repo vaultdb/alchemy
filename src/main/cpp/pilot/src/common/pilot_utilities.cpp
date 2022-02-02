@@ -145,7 +145,7 @@ void PilotUtilities::secretShareFromQuery(const string &db_name, const string &q
 
 string PilotUtilities::appendToConjunctivePredicate(const string & base, const string & to_append) {
     return base.empty() ? " " + to_append + " "
-        : " AND " + to_append + " ";
+        : base + " AND " + to_append + " ";
 
 }
 

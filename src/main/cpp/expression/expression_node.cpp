@@ -1,7 +1,7 @@
 #include "expression_node.h"
 #include <expression/visitor/print_expression_visitor.h>
 #include <query_table/field/field_factory.h>
-#include <query_table/plain_tuple.h>
+#include <query_table/plain_tuple.h>  // leave tuple includes in or else it will not resolve field lookups in release mode
 #include <query_table/secure_tuple.h>
 
 
