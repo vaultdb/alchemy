@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
                 ("help", "print help message")
                 ("database,D", po::value<string>(), "local database name")
                 ("query-file,q", po::value<string>(), "file with query to run")
-                ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all")
+                ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all (or range, e.g., 2018-2019, inclusive)")
                 ("batch-count,b", po::value<uint32_t>(), "Number of batches to partition query work")
                 ("semijoin-optimization,s", "enable this to read in multisite tuples only")
                 ("dest-root,d",  po::value<string>(), "destination root");
@@ -55,8 +55,11 @@ int main(int argc, char **argv) {
 
         if (vm.count("year")) {
             string study_year = vm["year"].as<string>();
-            if(study_year != "all") {
+            if(study_year != "all" && (study_year.find('-') == string::npos)) {
                 selection_clause = "study_year = " + study_year;
+            }
+            else if(study_year.find('-') != string::npos) {
+                selection_clause = PilotUtilities::getRangePredicate(study_year);
             }
         }
 

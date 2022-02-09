@@ -16,7 +16,8 @@ namespace  vaultdb {
         static std::string appendToConjunctivePredicate(const std::string & base, const std::string & to_append);
         static std::string replaceSubstring(const std::string & base, const std::string & to_find, const std::string replacement);
         static std::string replaceSelection(const std::string & base, const std::string replacement);
-
+        static std::pair<std::string, std::string>  parseRange(const std::string & range);
+        static std::string getRangePredicate(const std::string & range);
         static const std::string data_cube_sql_,  data_cube_sql_no_dummies_, unioned_db_name_;
     };
 

@@ -172,11 +172,17 @@ int main(int argc, char **argv) {
 
         if (vm.count("year")) {
             study_year = vm["year"].as<string>();
-            if(study_year != "all") {
+            if(study_year != "all" && (study_year.find('-') == string::npos)) {
                 string year_selection = "study_year = " + study_year;
                 selection_clause = PilotUtilities::appendToConjunctivePredicate(selection_clause, year_selection);
                 partial_count_selection_clause = PilotUtilities::appendToConjunctivePredicate(partial_count_selection_clause, year_selection);
             }
+            else if(study_year.find('-') != string::npos) {
+                string year_selection =  PilotUtilities::getRangePredicate(study_year);
+                selection_clause = PilotUtilities::appendToConjunctivePredicate(selection_clause, year_selection);
+                partial_count_selection_clause = PilotUtilities::appendToConjunctivePredicate(partial_count_selection_clause, year_selection);
+            }
+
 
         } else {
             throw std::invalid_argument("Need study year to know the data to input");

@@ -163,3 +163,19 @@ std::string PilotUtilities::replaceSelection(const string &base, const std::stri
     string to_insert = (replacement.empty()) ? "1=1" : replacement;
     return replaceSubstring(base, ":selection", to_insert);
 }
+
+
+ std::pair<std::string, std::string>  PilotUtilities::parseRange(const std::string & range) {
+     size_t dash_pos = range.find('-');
+     assert(dash_pos != string::npos);
+
+     string l = range.substr(0, dash_pos);
+     string u = range.substr(dash_pos+1, range.length() - (dash_pos +1 ) );
+
+     return pair<string, string>(l, u);
+}
+
+std::string PilotUtilities::getRangePredicate(const string &range) {
+    pair<string, string> bounds = parseRange(range);
+    return "study_year >= " + bounds.first + " AND study_year <= " + bounds.second;
+}
