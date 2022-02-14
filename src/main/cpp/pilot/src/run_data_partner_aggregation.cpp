@@ -14,7 +14,7 @@ using namespace std;
 using namespace vaultdb;
 using namespace emp;
 
-#define TESTBED 0
+#define TESTBED 1
 
 auto start_time = emp::clock_start();
 auto cumulative_runtime = emp::time_from(start_time);
@@ -22,7 +22,7 @@ auto cumulative_runtime = emp::time_from(start_time);
 
 std::string getRollupExpectedResultsSql(const std::string &groupByColName) {
     std::string expectedResultSql = "SELECT " + groupByColName + ", SUM(CASE WHEN numerator AND NOT denom_excl THEN 1 ELSE 0 END)::INT numerator_cnt, "
-                                                                 "SUM(CASE WHEN NOT denom_excl THEN 1 ELSE 0 END)::INT denominator_cnt \n";
+                                                                 "SUM(CASE WHEN ((NOT denom_excl) AND denominator) THEN 1 ELSE 0 END)::INT denominator_cnt \n";
     expectedResultSql += " FROM patient \n"
                          " GROUP BY " + groupByColName + " \n"
                                                          " ORDER BY " + groupByColName;
@@ -196,7 +196,11 @@ int main(int argc, char **argv) {
     epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     BOOST_LOG(logger) << "Ending epoch " << epoch << endl;
 
+    cout << "Age rollup: " << endl;
+    cout << ageRollup->reveal()->toString() << endl;
 
+    cout << "Sex rollup: " << endl;
+    cout << genderRollup->reveal()->toString() << endl;
 
 
 }
