@@ -56,7 +56,7 @@ WHERE EXISTS (SELECT *
 
 -- eliminate duplicate population labels
 DROP TABLE IF EXISTS tmp;
-SELECT DISTINCT pat_id, study_year, site_id, numerator, denom_excl
+SELECT DISTINCT pat_id, study_year, site_id, numerator, denom, denom_excl
 INTO tmp
 FROM population_labels;
 

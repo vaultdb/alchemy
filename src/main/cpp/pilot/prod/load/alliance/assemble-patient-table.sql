@@ -4,19 +4,13 @@
 DROP TABLE IF EXISTS patient;
 
 
-SELECT d.pat_id, d.study_year, age_stratum age_strata,
-       sex, ethnicity, race,
-       d.numerator AND not denom_excl numerator,
-       NOT (d.numerator AND NOT p.numerator)  AND NOT denom_excl denominator,
-       denom_excl, 1 as site_id
-INTO patient
-FROM demographics d JOIN population_labels p  ON d.pat_id = p.pat_id AND d.site_id = p.site_id AND d.study_year = p.study_year;
+
 
 
 SELECT d.pat_id, study_year, 0 as  age_days,  '0' as age_strata, -- placeholder 
        age_years_2015, sex, ethnicity, race,
-       d.numerator AND not denom_excl numerator,
-       NOT (d.numerator AND NOT p.numerator)  AND NOT denom_excl denominator,
+       numerator AND not denom_excl numerator,
+       denom AND NOT denom_excl denominator,
        denom_excl, 3 as site_id
 INTO patient
 FROM demographics d JOIN population_labels p  ON d.pat_id = p.pat_id AND d.site_id = p.site_id;
