@@ -1,4 +1,5 @@
-SELECT :col, SUM(CASE WHEN numerator THEN 1 else 0 END) numerator_cnt, SUM(CASE WHEN denominator THEN 1 ELSE 0 END) denom_cnt
-FROM patient
+WITH dist_patients AS (SELECT DISTINCT pat_id, max(denominator::INT) denominator, max(numerator::INT) numerator, age_strata, sex, ethnicity, race  FROM patient GROUP BY pat_id, age_strata, sex, ethnicity, race)
+SELECT :col, SUM(numerator) numerator_cnt, SUM(denominator) denom_cnt
+FROM dist_patients
 GROUP BY :col
 ORDER BY :col;
