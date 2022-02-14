@@ -1,5 +1,5 @@
 WITH aggs AS (SELECT age_strata, sex, ethnicity, race, SUM(CASE WHEN numerator AND NOT denom_excl THEN 1 ELSE 0 END)::INT numerator_cnt,
-                                                       SUM(CASE WHEN NOT denom_excl THEN 1 ELSE 0 END)::INT denominator_cnt
+                                                       SUM(CASE WHEN ((NOT denom_excl) AND denominator) THEN 1 ELSE 0 END)::INT denominator_cnt
                                   FROM patient
                                   WHERE study_year = 2020
                                   GROUP BY age_strata, sex, ethnicity, race)
