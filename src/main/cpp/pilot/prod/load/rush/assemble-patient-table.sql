@@ -4,9 +4,16 @@
 DROP TABLE IF EXISTS patient;
 
 
-SELECT d.pat_id, d.study_year,  age_stratum age_strata, sex, ethnicity, race, p.numerator AND NOT denom_excl numerator, denom_excl 
+SELECT d.pat_id, d.study_year, age_stratum age_strata,
+       sex, ethnicity, race,
+       d.numerator AND not denom_excl numerator,
+       NOT (d.numerator AND NOT p.numerator)  AND NOT denom_excl denominator,
+       denom_excl, 2 as site_id
 INTO patient
-FROM demographics d JOIN population_labels p  ON d.pat_id = p.pat_id AND d.study_year = p.study_year AND d.site_id = p.site_id;
+FROM demographics d JOIN population_labels p  ON d.pat_id = p.pat_id AND d.site_id = p.site_id AND d.study_year = p.study_year;
+
+
+
 
 UPDATE patient SET sex='U' WHERE sex IS NULL;
 UPDATE patient SET ethnicity='U' WHERE ethnicity <> 'Y' AND ethnicity <> 'N';

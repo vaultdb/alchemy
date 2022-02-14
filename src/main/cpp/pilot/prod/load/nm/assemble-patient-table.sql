@@ -4,9 +4,17 @@
 \echo 'Setting up patient table!'
 DROP TABLE IF EXISTS patient;
 
+-- 4 possible settings for cohort:
+-- '0' - exclusion
+-- '1' - denominator-only
+-- '2' numerator-only
+-- '3' both
+-- if d.numerator - numerator only
+-- if p.numerator - belongs to both  num and denom
 SELECT d.pat_id, d.study_year, age_strata,
        sex, ethnicity, race,
-       p.numerator AND not denom_excl numerator,
+       d.numerator AND not denom_excl numerator,
+       NOT (d.numerator AND NOT p.numerator)  AND NOT denom_excl denominator,
        denom_excl, 1 as site_id
 INTO patient
 FROM demographics d JOIN population_labels p  ON d.pat_id = p.pat_id AND d.site_id = p.site_id AND d.study_year = p.study_year;
