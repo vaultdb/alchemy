@@ -1,4 +1,4 @@
-WITH cohort AS (SELECT pat_id, age_strata, sex, ethnicity, race, max(numerator::INT), max(denominator::INT), denom_excl
+WITH cohort AS (SELECT pat_id, age_strata, sex, ethnicity, race, max(numerator::INT) numerator, max(denominator::INT) denominator, denom_excl
                 FROM patient
                 GROUP BY pat_id, age_strata, sex, ethnicity, race, denom_excl
                 ORDER BY pat_id),
