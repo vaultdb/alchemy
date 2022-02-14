@@ -2,8 +2,8 @@ WITH cohort AS (SELECT pat_id, age_strata, sex, ethnicity, race, max(numerator::
                 FROM patient
                 GROUP BY pat_id, age_strata, sex, ethnicity, race, denom_excl
                 ORDER BY pat_id),
-     aggs AS (SELECT age_strata, sex, ethnicity, race, SUM(CASE WHEN numerator AND NOT denom_excl THEN 1 ELSE 0 END)::INT numerator_cnt,
-                                                       SUM(CASE WHEN ((NOT denom_excl) AND denominator) THEN 1 ELSE 0 END)::INT denominator_cnt
+     aggs AS (SELECT age_strata, sex, ethnicity, race, SUM(CASE WHEN numerator > 0 AND NOT denom_excl THEN 1 ELSE 0 END)::INT numerator_cnt,
+                                                       SUM(CASE WHEN ((NOT denom_excl) AND denominator > 0) THEN 1 ELSE 0 END)::INT denominator_cnt
                                   FROM cohort
                                   GROUP BY age_strata, sex, ethnicity, race)
 SELECT d.*, COALESCE(numerator_cnt, 0) numerator_cnt, COALESCE(denominator_cnt, 0) denominator_cnt
