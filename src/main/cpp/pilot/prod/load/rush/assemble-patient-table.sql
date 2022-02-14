@@ -6,8 +6,9 @@ DROP TABLE IF EXISTS patient;
 
 SELECT d.pat_id, d.study_year, age_stratum age_strata,
        sex, ethnicity, race,
-       d.numerator AND not denom_excl numerator,
-       NOT (d.numerator AND NOT p.numerator)  AND NOT denom_excl denominator,
+       d.numerator numerator,
+    -- denominator only false where d.numerator and not p.numerator
+       CASE WHEN d.numerator AND NOT p.numerator THEN false ELSE true END denominator,
        denom_excl, 2 as site_id
 INTO patient
 FROM demographics d JOIN population_labels p  ON d.pat_id = p.pat_id AND d.site_id = p.site_id AND d.study_year = p.study_year;

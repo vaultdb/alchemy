@@ -21,7 +21,7 @@ void JoinEqualityConditionVisitor<B>::visit(EqualNode<B> node) {
     uint32_t rhs_ordinal = last_ordinal_;
 
     // store them in sorted order
-    if(lhs_ordinal < rhs_ordinal) {
+    if(lhs_ordinal > rhs_ordinal) {
         uint32_t t = lhs_ordinal;
         lhs_ordinal = rhs_ordinal;
         rhs_ordinal = t;
