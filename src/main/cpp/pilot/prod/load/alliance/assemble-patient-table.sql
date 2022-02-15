@@ -22,7 +22,7 @@ INSERT INTO patient(pat_id, study_year, numerator, denominator, denom_excl) SELE
 UPDATE patient p
 SET age_years_2015 = d.age_years_2015, sex = d.sex, ethnicity = d.ethnicity, race = d.race
 FROM demographics d
-WHERE d.study_year = p.study_year AND d.pat_id = p.pat_id;
+WHERE  d.pat_id = p.pat_id;
 
 
 
