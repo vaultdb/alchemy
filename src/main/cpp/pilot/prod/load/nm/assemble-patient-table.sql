@@ -4,10 +4,6 @@
 \echo 'Setting up patient table!'
 DROP TABLE IF EXISTS patient;
 
--- **** GAME PLAN: 
--- everyone in demographics has a label in pop labels
--- just rejigger it so we insert population_labels to patient first
--- then add demo if available.
 
 CREATE TABLE patient (
  pat_id INT,

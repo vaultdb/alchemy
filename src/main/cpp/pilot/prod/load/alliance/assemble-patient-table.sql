@@ -2,18 +2,28 @@
 
 \echo 'Setting up patient table!'
 DROP TABLE IF EXISTS patient;
+CREATE TABLE patient (
+                         pat_id INT,
+                         study_year smallint,
+                         age_years_2015 int,
+                         age_days int,
+                         age_strata char(1) DEFAULT '0', -- unknown
+                         sex char(1) DEFAULT 'U',
+                         ethnicity char(1) DEFAULT 'U',
+                         race char(1) DEFAULT '7', -- unknown
+                         numerator boolean default false,
+                         denominator boolean default true,
+                         denom_excl boolean default false,
+                         site_id INT DEFAULT 3);
+
+INSERT INTO patient(pat_id, study_year, numerator, denominator, denom_excl) SELECT pat_id, study_year, numerator, denom, denom_excl FROM population_labels;
 
 
+UPDATE patient p
+SET age_years_2015 = d.age_years_2015, sex = d.sex, ethnicity = d.ethnicity, race = d.race
+FROM demographics d
+WHERE  d.pat_id = p.pat_id;
 
-
-
-SELECT d.pat_id, study_year, 0 as  age_days,  '0' as age_strata, -- placeholder 
-       age_years_2015, sex, ethnicity, race,
-       numerator numerator,
-       denom   denominator,
-       denom_excl, 3 as site_id
-INTO patient
-FROM demographics d JOIN population_labels p  ON d.pat_id = p.pat_id AND d.site_id = p.site_id;
 
 
 -- populate age_days
@@ -23,7 +33,6 @@ SET age_days = (age_years_2015 + (study_year - 2015)) * 365;
 
 
 
-ALTER TABLE patient ALTER COLUMN age_strata TYPE char(1);
 
 UPDATE patient SET age_strata = CASE WHEN age_days <= 28*365 THEN '1'
                 WHEN age_days > 28*365 AND age_days <= 39*365 THEN '2'
