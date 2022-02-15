@@ -29,7 +29,7 @@ CREATE TABLE patient (
 INSERT INTO patient(pat_id, study_year, population_numerator, denom_excl) SELECT pat_id, study_year, numerator, denom_excl FROM population_labels;
 
 UPDATE patient p
-SET age_strata = d.age_strata, sex = d.sex, ethnicity = d.ethnicity, race = d.race, numerator = d.numerator
+SET age_strata = d.age_stratum, sex = d.sex, ethnicity = d.ethnicity, race = d.race, numerator = d.numerator
 FROM demographics d
 WHERE d.study_year = p.study_year AND d.pat_id = p.pat_id;
 
