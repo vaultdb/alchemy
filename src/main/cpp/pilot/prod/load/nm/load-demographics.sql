@@ -1,5 +1,5 @@
 \echo 'Loading demographics'
-\set echo all
+\set ECHO all
 -- STUDY_ID,SITE_ID,AGE_2018,SEX,ETHINICITY,RACE,ZIPPREFIX,NUMERATOR
 
 DROP TABLE IF EXISTS demographics;
@@ -95,6 +95,11 @@ ALTER TABLE demographics DROP COLUMN age_days;
 UPDATE demographics SET sex='U' WHERE sex='UN';
 ALTER TABLE demographics ALTER COLUMN sex TYPE char(1);
 
+
+
+
+
+
 -- expected # of rows: 
 -- From: SELECT COUNT(*) FROM (SELECT DISTINCT pat_id, study_year, site_id FROM demographics) t;
 -- observed in this tmp table:
@@ -102,9 +107,8 @@ ALTER TABLE demographics ALTER COLUMN sex TYPE char(1);
 
 DROP TABLE IF EXISTS tmp;
 SELECT DISTINCT d1.pat_id, d1.study_year, d1.site_id, d1.age_strata, d1.sex, d1.ethnicity, d1.race,  COALESCE(d1.numerator, d2.numerator) numerator
-INTO tmp
-FROM demographics d1 LEFT JOIN demographics d2 ON d1.pat_id = d2.pat_id
-                                                      AND d1.study_year = d2.study_year
+  INTO tmp
+FROM demographics d1 LEFT JOIN demographics d2 ON d1.pat_id = d2.pat_id  AND d1.study_year = d2.study_year
                                                       AND d1.site_id = d2.site_id
                                                       AND d1.age_strata = d2.age_strata
                                                       AND d1.sex = d2.sex
@@ -130,8 +134,29 @@ FROM demographics d1 LEFT JOIN demographics d2 ON d1.pat_id = d2.pat_id
 
 -- mostly complexity with the race or ethnicity field.  Thee are sometimes direct contradictions like a patient being listed as black or white - perhaps their entry should read 06 ( multiple race)?  Don't have enough info for these, leave them alone.
 --
+-- ********************
 DROP TABLE IF EXISTS demographics;
 ALTER TABLE tmp RENAME TO demographics;
 
+-- ********************
 UPDATE demographics SET numerator=false where numerator IS NULL;
 ALTER TABLE demographics ALTER COLUMN  ethnicity TYPE char(1);
+
+-- DISTINCT pat_id, age_strata, sex, race, ethnicity, numerator, study_year from demo
+-- 746949
+-- distinct pat_id, study_year:
+-- 746941
+-- 8 different
+
+-- population labels: distinct pat_id, study_year
+-- 769106 -- have a few spares?
+-- have about 22k denom_excls to share
+-- may need further multi-site joins for those - TODO later
+-- some of these are likely being held in for denom exclusion only.
+-- need a left join to keep them w/o demo data.
+-- 3 cases:
+-- 1. denom_excl - no demo data, excluded from study - retain in patient table for denom_excl - free to make up dummy data for rest
+-- 2. appears in both - no dupes
+-- 3. appears in both with dupe - data ambiguous, keep in both numerator and denominator
+
+

@@ -59,16 +59,15 @@ ALTER TABLE population_labels DROP COLUMN study_id;
 --		ORDER BY pat_id;
 
 
-
 DROP TABLE IF EXISTS tmp;
 
 SELECT DISTINCT p1.pat_id, p1.study_year, p1.site_id, COALESCE(p1.numerator, p2.numerator) numerator, COALESCE(p1.denom_excl, p2.denom_excl) denom_excl
 INTO tmp
 FROM population_labels p1 LEFT JOIN population_labels p2 ON p1.pat_id = p2.pat_id AND p1.study_year = p2.study_year AND p1.site_id = p2.site_id
-     AND  (p2.numerator IS NOT NULL OR p2.denom_excl IS NOT NULL);
+    AND  (p2.numerator IS NOT NULL OR p2.denom_excl IS NOT NULL);
 
-DROP TABLE IF EXISTS population_labels;
-ALTER TABLE tmp RENAME TO population_labels;
+ DROP TABLE IF EXISTS population_labels;
+ ALTER TABLE tmp RENAME TO population_labels;
 
 
 UPDATE population_labels SET numerator=false WHERE numerator IS NULL;
