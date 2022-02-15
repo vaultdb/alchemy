@@ -10,8 +10,8 @@ CREATE TABLE patient (
                          study_year smallint,
                          age_strata char(1) DEFAULT '0', -- unknown
                          sex char(1) DEFAULT 'U',
-                         ethnicity char(1) DEFAULT 'U',
-                         race char(1) DEFAULT '7', -- unknown
+                         ethnicity char(2) DEFAULT 'U',
+                         race char(2) DEFAULT '7', -- unknown
                          numerator boolean default false,
                          population_numerator bool, -- temp
                          denominator boolean default true,
