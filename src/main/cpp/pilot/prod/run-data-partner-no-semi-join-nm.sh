@@ -11,7 +11,7 @@ YEAR=$1
 date
 
 ./bin/run_data_partner -h 127.0.0.1 -P 4444 --party=1 -d enrich_htn_prod -y $YEAR \
-		       -p pilot/secret_shares/alliance/alliance-partial-counts-$YEAR.alice \
+		       -r pilot/secret_shares/alliance/alliance-$YEAR.alice \
 		       -l pilot/logs/vaultdb-data-partner-no-semi-join-$YEAR
 
 
