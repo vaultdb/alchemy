@@ -21,7 +21,8 @@ QuerySchema SharedSchema::getInputSchema() {
     targetSchema.putField(QueryFieldDesc(3, "ethnicity", "patient", FieldType::STRING, 1));
     targetSchema.putField(QueryFieldDesc(4, "race", "patient", FieldType::STRING, 1));
     targetSchema.putField(QueryFieldDesc(5, "numerator", "patient", FieldType::BOOL));
-    targetSchema.putField(QueryFieldDesc(6, "denom_excl", "patient", FieldType::BOOL));
+    targetSchema.putField(QueryFieldDesc(6, "denominator", "patient", FieldType::BOOL));
+    targetSchema.putField(QueryFieldDesc(7, "denom_excl", "patient", FieldType::BOOL));
 
     return targetSchema;
 }

@@ -1,16 +1,15 @@
 -- for chi site only
 WITH labeled as (
-        SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl
+        SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl, site_id
         FROM patient
-	WHERE site_id = 3
         ORDER BY pat_id),
-  deduplicated AS (    SELECT p.pat_id,  age_strata, sex, ethnicity, race, MAX(p.numerator::INT) numerator, COUNT(*) cnt
+  deduplicated AS (    SELECT p.pat_id,  age_strata, sex, ethnicity, race, MAX(p.numerator::INT) numerator, MAX(p.denominator::INT) denominator, COUNT(*) cnt
     FROM labeled p
     GROUP BY p.pat_id, age_strata, sex, ethnicity, race
     HAVING MAX(denom_excl::INT) = 0
     ORDER BY p.pat_id, age_strata, sex, ethnicity, race ), 
-  data_cube AS (SELECT  age_strata, sex, ethnicity, race, SUM(numerator)::INT numerator_cnt, COUNT(*)::INT denominator_cnt,
-                       SUM(CASE WHEN (numerator > 0 AND cnt> 1) THEN 1 ELSE 0 END)::INT numerator_multisite_cnt, SUM(CASE WHEN (cnt > 1) THEN 1 else 0 END)::INT  denominator_multisite_cnt
+  data_cube AS (SELECT  age_strata, sex, ethnicity, race, SUM(numerator) numerator_cnt, SUM(denominator) denominator_cnt,
+                       SUM(CASE WHEN (numerator > 0 AND cnt> 1) THEN 1 ELSE 0 END)::INT numerator_multisite_cnt, SUM(CASE WHEN (denominator > 0 AND cnt > 1) THEN 1 else 0 END)::INT  denominator_multisite_cnt
   FROM deduplicated
   GROUP BY  age_strata, sex, ethnicity, race
   ORDER BY  age_strata, sex, ethnicity, race)

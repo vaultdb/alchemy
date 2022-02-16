@@ -9,6 +9,7 @@
 #include <data/csv_reader.h>
 #include <boost/program_options.hpp>
 #include <unordered_map>
+#include <operators/sort.h>
 
 
 using namespace std;
@@ -238,7 +239,7 @@ int main(int argc, char **argv) {
 
     start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
     string measurements = "year,start_epoch,dedupe_and_setup,semijoin_optimization,rollup_end_epoch\n";
-    measurements += study_year + "," = std::to_string(Utilities::getEpoch());
+    measurements += study_year + "," + std::to_string(Utilities::getEpoch());
 
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
@@ -252,10 +253,16 @@ int main(int argc, char **argv) {
     // validate it against the DB for testing
     if(TESTBED) {
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
-        string query ="SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl  FROM patient WHERE :selection ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
+        SortDefinition patient_sort_def = DataUtilities::getDefaultSortDefinition(8);
+
+        Sort sorter(revealed, patient_sort_def);
+        revealed = sorter.run();
+
+        string query ="SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl  FROM patient WHERE :selection ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl";
         query = PilotUtilities::replaceSelection(query, selection_clause);
 
-        SortDefinition patient_sort_def = DataUtilities::getDefaultSortDefinition(7);
+
+
         PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patient_sort_def, revealed);
 
 
@@ -301,6 +308,7 @@ int main(int argc, char **argv) {
         chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain(*(alice->getSchema())), party);
 
         std::vector<shared_ptr<SecureTable>> partial_aggs { alice, bob, chi};
+
         enrich.unionWithPartialAggregates(partial_aggs);
 
         if(TESTBED) {
@@ -322,9 +330,6 @@ int main(int argc, char **argv) {
     shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich.data_cube_, output_path);
     shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich.data_cube_, output_path);
 
-    emp::finalize_semi_honest();
-
-    delete netio;
     double runtime = time_from(e2e_start_time);
 
     measurements += "," + std::to_string(Utilities::getEpoch());
@@ -332,5 +337,17 @@ int main(int argc, char **argv) {
     BOOST_LOG(logger) << "Ending epoch " << Utilities::getEpoch() << endl;
     BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
     cout << measurements << endl;
+
+    cout << "Age rollup: " << endl;
+    cout << ageRollup->reveal()->toString() << endl;
+
+    cout << "Sex rollup: " << endl;
+    cout << genderRollup->reveal()->toString() << endl;
+
+
+    emp::finalize_semi_honest();
+
+    delete netio;
+
 
 }

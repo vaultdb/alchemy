@@ -268,9 +268,10 @@ int main(int argc, char **argv) {
         // validate it against the DB for testing
         if (TESTBED) {
             std::shared_ptr<PlainTable> revealed = inputData->reveal();
-            string query =  "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient WHERE :selection ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
+            string query ="SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl  FROM patient WHERE :selection ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl";
+
             query = PilotUtilities::replaceSelection(query, batch_predicate);
-            SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
+            SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(8);
             PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patientSortDef, revealed);
         }
 
@@ -354,9 +355,6 @@ int main(int argc, char **argv) {
     shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich.data_cube_, output_path);
     shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich.data_cube_, output_path);
 
-    emp::finalize_semi_honest();
-
-    delete netio;
     double runtime = time_from(e2e_start_time);
     measurements += "," + std::to_string(Utilities::getEpoch());
 
@@ -365,5 +363,18 @@ int main(int argc, char **argv) {
     BOOST_LOG(logger) << "Ending epoch " << Utilities::getEpoch() << endl;
     BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
     cout << measurements << endl;
+
+    cout << "Age rollup: " << endl;
+    cout << ageRollup->reveal()->toString() << endl;
+
+    cout << "Sex rollup: " << endl;
+    cout << genderRollup->reveal()->toString() << endl;
+
+    emp::finalize_semi_honest();
+
+    delete netio;
+
+
 }
+
 
