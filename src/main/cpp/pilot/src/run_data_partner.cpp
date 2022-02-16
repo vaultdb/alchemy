@@ -345,6 +345,11 @@ int main(int argc, char **argv) {
     cout << "Sex rollup: " << endl;
     cout << genderRollup->reveal()->toString() << endl;
 
+    cout << "Ethnicity rollup: " << endl;
+    cout << ethnicityRollup->reveal()->toString() << endl;
+
+    cout << "Race rollup: " << endl;
+    cout << raceRollup->reveal()->toString() << endl;
 
     emp::finalize_semi_honest();
 
