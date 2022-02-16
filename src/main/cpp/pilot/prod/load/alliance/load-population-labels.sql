@@ -53,6 +53,14 @@ WHERE EXISTS (SELECT *
               WHERE p1.pat_id = p2.pat_id AND p1.study_year = p2.study_year AND p2.numerator = true);
 
 
+UPDATE population_labels p1
+SET denom=true
+WHERE EXISTS (SELECT *
+              FROM population_labels p2
+              WHERE p1.pat_id = p2.pat_id AND p1.study_year = p2.study_year AND p2.denom = true);
+	      
+
+
 
 -- eliminate duplicate population labels
 DROP TABLE IF EXISTS tmp;
