@@ -14,7 +14,7 @@ QuerySchema SharedSchema::getInputSchema() {
 //    denom_excl boolean DEFAULT false
 //);
 
-    QuerySchema targetSchema(7);
+    QuerySchema targetSchema(8);
     targetSchema.putField(QueryFieldDesc(0, "pat_id", "patient", FieldType::INT));
     targetSchema.putField(QueryFieldDesc(1, "age_strata", "patient", FieldType::STRING, 1));
     targetSchema.putField(QueryFieldDesc(2, "sex", "patient", FieldType::STRING, 1));
