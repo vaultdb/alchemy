@@ -39,7 +39,9 @@ PatientTuple GenerateEnrichDataThreeParties::generatePatientTuple(const int & aP
     result.ethnicity = generateRandomValue(domains::ethnicity_);
     result.race = generateRandomValue(domains::race_);
     result.numerator =  (generateRandomInt(0, 4) < 3) ? 0 : 1; // 25% in numerator
-    result.denom_excl = generateRandomInt(0,10) < 9 ? 0 : 1; // 1-in-20 are excluded
+    result.denominator =  (generateRandomInt(0, 10) < 9) ? 1 : 0; // 90% in denominator
+
+    result.denom_excl = generateRandomInt(0,10) < 9 ? 0 : 1; // 1-in-10 are excluded
     result.site_id = generateRandomInt(0, 3);
     return result;
 

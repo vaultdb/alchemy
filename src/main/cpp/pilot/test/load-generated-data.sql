@@ -1,9 +1,9 @@
 \i 'pilot/test/create-patient-table.sql'
 
 -- stitch it all together into a single DB for validation
-\copy patient(pat_id, study_year, age_strata, sex, ethnicity, race, numerator, denom_excl, site_id) FROM 'pilot/test/input/alice-patient.csv' CSV
-\copy patient(pat_id, study_year, age_strata, sex, ethnicity, race, numerator, denom_excl, site_id) FROM 'pilot/test/input/bob-patient.csv' CSV
-\copy patient(pat_id, study_year, age_strata, sex, ethnicity, race, numerator, denom_excl, site_id) FROM 'pilot/test/input/chi-patient.csv' CSV
+\copy patient(pat_id, study_year, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl, site_id) FROM 'pilot/test/input/alice-patient.csv' CSV
+\copy patient(pat_id, study_year, age_strata, sex, ethnicity, race, numerator,  denominator, denom_excl, site_id) FROM 'pilot/test/input/bob-patient.csv' CSV
+\copy patient(pat_id, study_year, age_strata, sex, ethnicity, race, numerator,  denominator, denom_excl, site_id) FROM 'pilot/test/input/chi-patient.csv' CSV
 
 
 

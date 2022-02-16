@@ -2,7 +2,7 @@
 WITH cohort AS (SELECT pat_id, age_strata, sex, ethnicity, race, max(numerator::INT) numerator, max(denominator::INT) denominator, denom_excl
                 FROM patient
                 WHERE study_year = 2018 OR study_year = 2019
-                GROUP BY pat_id, age_strata, sex, ethnicity, race, denom_excl
+                GROUP BY pat_id, age_strata, sex, ethnicity, race, denom_excl, site_id
                 ORDER BY pat_id),
      aggs AS (SELECT age_strata, sex, ethnicity, race, SUM(CASE WHEN (numerator > 0 AND (NOT denom_excl)) THEN 1 ELSE 0 END)::INT numerator_cnt,
                                                        SUM(CASE WHEN ((NOT denom_excl) AND denominator > 0) THEN 1 ELSE 0 END)::INT denominator_cnt

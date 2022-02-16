@@ -64,7 +64,8 @@ struct PatientTuple {
   string gender; // varchar(1)
   string ethnicity; //varchar(1)
   string  race; // varchar(1)
-   bool numerator;  
+   bool numerator;
+   bool denominator;
    bool denom_excl; 
    int site_id;
 
@@ -76,7 +77,8 @@ struct PatientTuple {
                + ethnicity + ","
                + race + ","
                + std::to_string(numerator) + ","
-	  + std::to_string(denom_excl) + "," 
+               + std::to_string(denominator) + ","
+	  + std::to_string(denom_excl) + ","
       + std::to_string(site_id);
     }
 };

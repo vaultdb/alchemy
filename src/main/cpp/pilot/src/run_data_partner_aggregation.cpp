@@ -14,7 +14,7 @@ using namespace std;
 using namespace vaultdb;
 using namespace emp;
 
-#define TESTBED 1
+#define TESTBED 0
 
 auto start_time = emp::clock_start();
 auto cumulative_runtime = emp::time_from(start_time);
@@ -137,6 +137,7 @@ int main(int argc, char **argv) {
     shared_ptr<SecureTable> alice, bob, chi;
 
     shared_ptr<PlainTable> local_partial_counts =  DataUtilities::getQueryResults(db_name, partial_aggregate_query, false);
+
     assert(local_partial_counts->getTupleCount() == cardinality_bound);
 
     // ship local, partial counts - alice, then bob
@@ -144,14 +145,19 @@ int main(int argc, char **argv) {
         alice = SecureTable::secret_share_send_table(local_partial_counts, netio, 1);
         bob = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(), netio,
                                                    2);
+
     } else { // bob
         alice = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(),
                                                      netio, 1);
+
+
         bob = SecureTable::secret_share_send_table(local_partial_counts, netio, 2);
     }
 
 
+
     chi = UnionHybridData::readSecretSharedInput(secret_share_file, QuerySchema::toPlain(*(alice->getSchema())), party);
+
     assert(alice->getTupleCount() == bob->getTupleCount());
     assert(alice->getTupleCount() == chi->getTupleCount());
     assert(*(alice->getSchema()) == *(bob->getSchema()));
@@ -170,7 +176,10 @@ int main(int argc, char **argv) {
         dst.setDummyTag(dst.getDummyTag() | b.getDummyTag() | c.getDummyTag());
         dst.setField(4, dst[4] + b[4] + c[4]);
         dst.setField(5, dst[5] + b[5] + c[5]);
+
     }
+
+
 
 
     // verify data cube
@@ -187,9 +196,6 @@ int main(int argc, char **argv) {
     shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, data_cube, output_path);
     shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, data_cube, output_path);
 
-    emp::finalize_semi_honest();
-
-    delete netio;
     double runtime = time_from(start_time);
     BOOST_LOG(logger) <<  "Test completed on " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
 
@@ -202,5 +208,7 @@ int main(int argc, char **argv) {
     cout << "Sex rollup: " << endl;
     cout << genderRollup->reveal()->toString() << endl;
 
+    emp::finalize_semi_honest();
+    delete netio;
 
 }
