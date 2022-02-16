@@ -23,3 +23,7 @@ do
   done
 
 done
+
+tar -cvzf alliance-alice-shares.tar.gz  pilot/secret_shares/alliance/*.alice pilot/secret_shares/batch/*/*.alice
+tar -cvzf alliance-bob-shares.tar.gz  pilot/secret_shares/alliance/*.bob pilot/secret_shares/batch/*/*.bob
+
