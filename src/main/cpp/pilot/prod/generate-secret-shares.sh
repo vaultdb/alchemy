@@ -19,7 +19,7 @@ do
 
   for BATCH in 25 50 75 100
   do
-     ./bin/secret_share_batch_from_query -D enrich_htn_prod -q pilot/queries/patient.sql -y $YEAR -b $BATCH -d pilot/secret_shares/batch/$BATCHES/alliance-$YEAR
+     ./bin/secret_share_batch_from_query -D enrich_htn_prod -q pilot/queries/patient.sql -y $YEAR -b $BATCH -d pilot/secret_shares/batch/$BATCH/alliance-$YEAR
   done
 
 done
