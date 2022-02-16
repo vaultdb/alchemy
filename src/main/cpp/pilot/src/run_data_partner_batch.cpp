@@ -195,7 +195,8 @@ int main(int argc, char **argv) {
                 selection_clause = PilotUtilities::appendToConjunctivePredicate(selection_clause, year_selection);
                 partial_count_selection_clause = PilotUtilities::appendToConjunctivePredicate(partial_count_selection_clause, year_selection);
             }
-            assert(study_year == "all");
+            else
+                assert(study_year == "all");
 
         } else {
             throw std::invalid_argument("Need study year to know the data to input");
