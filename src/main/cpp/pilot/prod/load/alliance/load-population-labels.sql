@@ -3,18 +3,18 @@
 DROP TABLE IF EXISTS population_labels;
 
 CREATE TABLE population_labels(
-       pat_id INT,
-       measure_handle varchar,
-        study_id varchar,
- 	site_id varchar(2) default 'AC',
-	 study_year smallint,
-	  denom bool,
- 	  denom_excl bool,
-	  denom_except bool, -- not sure about provenance of this columns
- 	  numerator bool);
+                                  pat_id INT,
+                                  measure_handle varchar,
+                                  study_id varchar,
+                                  site_id varchar(2) default 'AC',
+                                  study_year smallint,
+                                  denom bool,
+                                  denom_excl bool,
+                                  denom_except bool, -- not sure about provenance of this columns
+                                  numerator bool);
 
 -- 113393 rows
- \copy population_labels(measure_handle, study_year, study_id, denom, denom_excl, numerator) FROM 'pilot/input/alliance/population-labels-1.csv' CSV HEADER;
+\copy population_labels(measure_handle, study_year, study_id, denom, denom_excl, numerator) FROM 'pilot/input/alliance/population-labels-1.csv' CSV HEADER;
 
 -- 110810 rows
 \copy population_labels(measure_handle, study_year, study_id, denom, denom_excl, denom_except, numerator) FROM 'pilot/input/alliance/population-labels-2.csv' CSV HEADER;
@@ -42,21 +42,21 @@ ALTER TABLE population_labels DROP COLUMN study_id;
 UPDATE population_labels p1
 SET denom_excl=true
 WHERE EXISTS (SELECT *
-      FROM population_labels p2
-      WHERE p1.pat_id = p2.pat_id AND p1.study_year = p2.study_year AND p2.denom_excl = true);
-      
+              FROM population_labels p2
+              WHERE p1.pat_id = p2.pat_id AND p1.study_year = p2.study_year AND p2.denom_excl = true);
+
 -- similarly if one has grounds for being in numerator (elevated BP), then propogate that to the other measurement source
 UPDATE population_labels p1
 SET numerator=true
 WHERE EXISTS (SELECT *
-      FROM population_labels p2
-      WHERE p1.pat_id = p2.pat_id AND p1.study_year = p2.study_year AND p2.numerator = true);
+              FROM population_labels p2
+              WHERE p1.pat_id = p2.pat_id AND p1.study_year = p2.study_year AND p2.numerator = true);
 
 
 
 -- eliminate duplicate population labels
 DROP TABLE IF EXISTS tmp;
-SELECT DISTINCT pat_id, study_year, site_id, numerator, denom, denom_excl
+SELECT DISTINCT pat_id, study_year, site_id, numerator, denom_excl
 INTO tmp
 FROM population_labels;
 
@@ -123,7 +123,7 @@ ALTER TABLE tmp RENAME TO population_labels;
 -- FROM conflicting_denom_excl;
 
 
-   
+
 
 
 
