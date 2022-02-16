@@ -17,6 +17,9 @@ do
   #aggregate-only
   ./bin/secret_share_from_query -D enrich_htn_prod -q pilot/queries/partial-count-no-dedupe.sql -y $YEAR -d   pilot/secret_shares/alliance/alliance-partial-counts-no-dedupe-$YEAR
 
+  # all tuples - baseline
+    ./bin/secret_share_from_query -D enrich_htn_prod -q pilot/queries/patient.sql -y $YEAR -d  pilot/secret_shares/alliance/alliance-$YEAR
+
   for BATCH in 25 50 75 100
   do
      ./bin/secret_share_batch_from_query -D enrich_htn_prod -q pilot/queries/patient.sql -y $YEAR -b $BATCH -d pilot/secret_shares/batch/$BATCH/alliance-$YEAR
