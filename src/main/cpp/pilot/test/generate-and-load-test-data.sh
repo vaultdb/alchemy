@@ -45,10 +45,10 @@ psql $DB_NAME -t --csv < pilot/queries/data-cube-query.sql  > pilot/test/input/c
 
 
 # multi-site only
-./bin/secret_share_from_query enrich_htn_chi pilot/queries/patient-multisite-all.sql  pilot/test/output/chi-patient-multisite
+./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/patient.sql -y all -d  pilot/test/output/chi-patient-multisite -s
 
 
-#setup for semijoin optimization
-./bin/secret_share_from_query enrich_htn_chi pilot/queries/partial-count-all.sql pilot/secret_shares/tables/chi_partial_counts
-./bin/secret_share_from_query enrich_htn_chi pilot/queries/partial-count-no-dedupe-all.sql pilot/secret_shares/tables/chi_counts
+#set up for semijoin optimization
+./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count.sql -y all -d  pilot/secret_shares/tables/chi_partial_counts
+./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count-no-dedupe.sql -y all -d  pilot/secret_shares/tables/chi_counts
 ./bin/secret_share_batch_from_query -D enrich_htn_chi -q pilot/queries/patient.sql -y all -b 10 -d pilot/test/batch/chi-patient
