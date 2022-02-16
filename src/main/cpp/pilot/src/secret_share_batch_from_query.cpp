@@ -61,7 +61,8 @@ int main(int argc, char **argv) {
             else if(study_year.find('-') != string::npos) {
                 selection_clause = PilotUtilities::getRangePredicate(study_year);
             }
-            assert(study_year == "all");
+            else
+                assert(study_year == "all");
         }
 
         if(vm.count("semijoin-optimization")) {
