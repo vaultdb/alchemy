@@ -1,9 +1,12 @@
-WITH dist_patients AS (
-SELECT DISTINCT pat_id,  max(denominator::INT) denominator, max(numerator::INT) numerator, age_strata, sex, ethnicity, race
-     FROM patient
-     WHERE NOT denom_excl
-     GROUP BY pat_id, age_strata, sex, ethnicity, race)
-SELECT :col, SUM(numerator) numerator_cnt, SUM(denominator) denom_cnt
-FROM dist_patients
+-- example execution:
+-- psql enrich_htn_prod --csv -v col=age_strata -v selection='study_year=2018' < pilot/prod/load/local-enrich.sql
+
+SELECT :col, sum(numerator::INT) numerator_cnt, SUM(denominator::INT) denominator_cnt,
+       SUM(CASE WHEN numerator AND multisite THEN 1 ELSE 0 END) numerator_multisite_cnt,
+       SUM(CASE WHEN denominator AND multisite THEN 1 ELSE 0 END) denominator_multisite_cnt
+FROM patient
+WHERE :selection AND NOT denom_excl
 GROUP BY :col
 ORDER BY :col;
+
+
