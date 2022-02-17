@@ -8,7 +8,7 @@ for BATCH in 25 50 75 100
     mkdir -p pilot/secret_shares/batch/$BATCH
 done
 
-for YEAR in '2018' '2018-2019' 'all'
+for YEAR in '2018' '2018-2019' 'all' '2019' '2020'
 do
   #multisite patients
   ./bin/secret_share_from_query -D enrich_htn_prod -q pilot/queries/patient.sql -y $YEAR -d  pilot/secret_shares/alliance/multisite-$YEAR -s
