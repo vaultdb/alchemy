@@ -6,8 +6,12 @@ fi
 
 YEAR=$1
 
-#may need to run ssh setup first with:
-# ssh -p 3333 -f -N -i ~/.ssh/vaultdb-nm-key -L 4444:127.0.0.1:4444 vaultdb@165.124.123.122
+#may need to set up ssh agent with:
+#  eval `ssh-agent -s`
+# ssh-add ~/.ssh/vaultdb-nm-key
+
+
+ssh -p 3333 -f -N -i ~/.ssh/vaultdb-nm-key -L 4444:127.0.0.1:4444 vaultdb@165.124.123.122
 
 ./bin/run_data_partner -h 127.0.0.1 -P 4444 --party=2 -d enrich_htn_prod -y $YEAR \
 		       -p pilot/secret_shares/alliance/alliance-partial-counts-$YEAR.bob \
