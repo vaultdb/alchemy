@@ -250,7 +250,7 @@ int main(int argc, char **argv) {
 
 
     string measurements = "year,batches,start_epoch,dedupe_and_setup,semijoin_optimization,rollup_end_epoch\n";
-    measurements += study_year + "," + std::to_string(batch_count) + "," = std::to_string(Utilities::getEpoch());
+    measurements += study_year + "," + std::to_string(batch_count) + "," + std::to_string(Utilities::getEpoch());
 
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
