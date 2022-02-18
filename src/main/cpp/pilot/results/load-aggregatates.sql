@@ -14,6 +14,9 @@ CREATE TABLE local_aggregates (
 \copy local_aggregates FROM 'pilot/results/nm-local-aggregates.csv' CSV
 \copy local_aggregates FROM 'pilot/results/rush-local-aggregates.csv' CSV
 \copy local_aggregates FROM 'pilot/results/alliance-local-aggregates.csv' CSV
+\copy local_aggregates FROM 'pilot/results/nm-local-aggregates-all-years.csv' CSV
+\copy local_aggregates FROM 'pilot/results/rush-local-aggregates-all-years.csv' CSV
+\copy local_aggregates FROM 'pilot/results/alliance-local-aggregates-all-years.csv' CSV
 
 
 UPDATE local_aggregates SET study_var='Age (18-28)' WHERE stratification='age_strata' AND study_var='1';

@@ -1,5 +1,5 @@
 WITH single_site AS (
-    SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denominator
+    SELECT DISTINCT pat_id, age_strata, sex, ethnicity, race, numerator, denominator
     FROM patient
     WHERE NOT multisite AND NOT denom_excl AND :selection),
      full_domain AS (
