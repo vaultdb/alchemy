@@ -90,3 +90,11 @@ UPDATE debug_population_labels SET pat_id=study_id::INT;
 -- drop old version of patient id
 ALTER TABLE debug_population_labels DROP COLUMN study_id;
 
+-- designed to fail if this is erroneously added to prod DB
+ALTER TABLE debug_demographics RENAME TO demographics;
+ALTER TABLE debug_population_labels RENAME TO population_labels;
+
+CREATE VIEW joined_labels AS (
+    SELECT d.study_year, d.pat_id, d.site_id, d.age_strata, d.sex, d.ethnicity, d.race, d.numerator demographics_numerator, p.numerator population_numerator, p.denom_excl
+    FROM demographics d JOIN population_labels p ON d.pat_id = p.pat_id AND d.study_year = p.study_year AND d.site_id = p.site_id);
+
