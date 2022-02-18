@@ -80,13 +80,13 @@ UPDATE debug_population_labels SET study_year=2020 WHERE study_year IS NULL;
 
 \echo 'Cleaning...'
 
-UPDATE population_labels SET site_id='RU';
+UPDATE debug_population_labels SET site_id='RU';
 
 -- map pid to int by removing vaultdb prefix
-UPDATE population_labels SET study_id=REPLACE(study_id, 'VAULTDB','');
-UPDATE population_labels SET pat_id=study_id::INT;
+UPDATE debug_population_labels SET study_id=REPLACE(study_id, 'VAULTDB','');
+UPDATE debug_population_labels SET pat_id=study_id::INT;
 -- drop old version of patient id
-ALTER TABLE population_labels DROP COLUMN study_id;
+ALTER TABLE debug_population_labels DROP COLUMN study_id;
 
 -- designed to fail if this is erroneously added to prod DB
 ALTER TABLE debug_demographics RENAME TO demographics;
