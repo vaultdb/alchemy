@@ -68,5 +68,5 @@ ALTER TABLE debug_demographics RENAME TO demographics;
 ALTER TABLE debug_population_labels RENAME TO population_labels;
 
 CREATE VIEW joined_labels AS (
-SELECT d.pat_id, p.study_year, d.site_id, d.age_years_2015, d.sex, d.ethnicity, d.race,  p.study_year, p.denom, p.numerator, p.denom_excl, p.denom_except
+SELECT d.pat_id, p.study_year, d.site_id, d.age_years_2015, d.sex, d.ethnicity, d.race,  p.denom, p.numerator, p.denom_excl, p.denom_except
 FROM demographics d JOIN population_labels p ON d.pat_id = p.pat_id  AND d.site_id = p.site_id);
