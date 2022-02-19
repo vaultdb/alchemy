@@ -1,7 +1,7 @@
-WITH cohort AS (SELECT study_year, pat_id, age_strata, sex, ethnicity, race, site_id, max(numerator::INT) numerator, max(denominator::INT) denominator, denom_excl
+WITH cohort AS (SELECT study_year, site_id, pat_id, age_strata, sex, ethnicity, race,  max(numerator::INT) numerator, max(denominator::INT) denominator
                 FROM patient
 		WHERE NOT denom_excl AND :selection
-                GROUP BY study_year, pat_id, age_strata, sex, ethnicity, race, denom_excl, site_id
+                GROUP BY study_year, site_id, pat_id, age_strata, sex, ethnicity, race
                 ORDER BY study_year, pat_id),
      aggs AS (SELECT study_year, age_strata, sex, ethnicity, race, SUM(CASE WHEN numerator > 0  THEN 1 ELSE 0 END)::INT numerator_cnt,
                                                        SUM(CASE WHEN denominator > 0 THEN 1 ELSE 0 END)::INT denominator_cnt
