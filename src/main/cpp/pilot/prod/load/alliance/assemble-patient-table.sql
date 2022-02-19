@@ -69,7 +69,7 @@ DROP TABLE multisite_pids;
 -- SELECT pat_id, study_year, site_id FROM patient GROUP  BY pat_id, study_year, site_id HAVING COUNT(*) > 1 ORDER BY pat_id;
 
 
-
+DELETE FROM patient WHERE NOT numerator AND NOT denominator AND NOT denom_excl;
 
 -- at the end we have:
 -- > \d patient
