@@ -33,6 +33,6 @@ GROUP BY :col
 ORDER BY :col;
 
 \echo 'Expect: '
-\echo 'pat_id(int), study_year(smallint), age_strata(char(1)), sex(char(1)), ethnicity(char(1)), race(char(1)), numerator(bool), denominator_excl(bool), site_id(int)'
+\echo 'study_year (smallint), pat_id(int), study_year(smallint), age_strata(char(1)), sex(char(1)), ethnicity(char(1)), race(char(1)), numerator(bool), denominator_excl(bool), site_id(int)'
 
 \d patient

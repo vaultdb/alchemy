@@ -18,6 +18,7 @@ namespace  vaultdb {
         static std::string replaceSelection(const std::string & base, const std::string replacement);
         static std::pair<std::string, std::string>  parseRange(const std::string & range);
         static std::string getRangePredicate(const std::string & range);
+        static std::string parseYearSelection(const std::string & input_year);
         static const std::string data_cube_sql_,  data_cube_sql_no_dummies_, unioned_db_name_;
     };
 

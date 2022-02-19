@@ -168,6 +168,7 @@ static FieldType getFieldTypeFromOid(pqxx::oid oid) {
         case OID_BPCHAR:
         case OID_VARCHAR:
             return FieldType::STRING;
+        case OID_INT2: // short to int
         case OID_INT4:
             return FieldType::INT;
         case OID_INT8:

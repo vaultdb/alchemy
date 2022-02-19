@@ -29,25 +29,26 @@ psql $DB_NAME <  pilot/test/load-generated-data.sql
 pg_dump $DB_NAME > pilot/test/output/$DB_NAME.sql
 
 #whole tables
-psql $DB_NAME -t --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=1 ORDER BY pat_id" >  pilot/test/input/alice-patient.csv
-psql $DB_NAME -t  --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=2 ORDER BY pat_id" >  pilot/test/input/bob-patient.csv
-psql $DB_NAME -t  --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=3 ORDER BY pat_id" >  pilot/test/input/chi-patient.csv
+psql $DB_NAME -t --csv -c   "SELECT  study_year,pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=1 ORDER BY study_year, pat_id" >  pilot/test/input/alice-patient.csv
+psql $DB_NAME -t  --csv -c   "SELECT  study_year, pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=2 ORDER BY study_year, pat_id" >  pilot/test/input/bob-patient.csv
+psql $DB_NAME -t  --csv -c   "SELECT  study_year, pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=3 ORDER BY study_year, pat_id" >  pilot/test/input/chi-patient.csv
 
 echo "Writing multisite tables!"
 
 #multisite tables
-psql $DB_NAME -t --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=1 AND multisite ORDER BY pat_id" >  pilot/test/input/alice-multisite-patient.csv
-psql $DB_NAME -t  --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=2 AND multisite ORDER BY pat_id" >  pilot/test/input/bob-multisite-patient.csv
-psql $DB_NAME -t  --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=3 AND multisite ORDER BY pat_id" >  pilot/test/input/chi-multisite-patient.csv
+psql $DB_NAME -t --csv -c   "SELECT  study_year, pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=1 AND multisite ORDER BY study_year, pat_id" >  pilot/test/input/alice-multisite-patient.csv
+psql $DB_NAME -t  --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=2 AND multisite ORDER BY study_year, pat_id" >  pilot/test/input/bob-multisite-patient.csv
+psql $DB_NAME -t  --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl FROM patient WHERE site_id=3 AND multisite ORDER BY study_year, pat_id" >  pilot/test/input/chi-multisite-patient.csv
 
+echo "preparing for aggregate-only test"
 # for aggregate-only test
-psql $DB_NAME -t --csv < pilot/queries/data-cube-query.sql  > pilot/test/input/chi-patient-aggregate.csv
+psql $DB_NAME -t -v selection='1=1'  --csv < pilot/queries/data-cube.sql  > pilot/test/input/chi-patient-aggregate.csv
 
 
 # multi-site only
 ./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/patient.sql -y all -d  pilot/test/output/chi-patient-multisite -s
 
-
+echo "Setting up semi-join optimization"
 #set up for semijoin optimization
 ./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count.sql -y all -d  pilot/secret_shares/tables/chi_partial_counts
 ./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count-no-dedupe.sql -y all -d  pilot/secret_shares/tables/chi_counts

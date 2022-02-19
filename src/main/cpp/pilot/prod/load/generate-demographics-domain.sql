@@ -1,3 +1,9 @@
+DROP TABLE IF EXISTS study_year_domain;
+CREATE TEMP TABLE study_year_domain(
+    study_year smallint);
+INSERT INTO study_year_domain
+    VALUES (2018), (2019), (2020);
+
 DROP TABLE IF EXISTS age_strata_domain;
 CREATE TEMP TABLE age_strata_domain(
     age_strata char(1));
@@ -22,9 +28,14 @@ CREATE TEMP TABLE race_domain(
 INSERT INTO race_domain
     VALUES ('1'), ('2'), ('3'), ('4'), ('5'), ('6'), ('7');
 
+
+
+
+
 DROP TABLE IF EXISTS demographics_domain;
 
+
 -- all pairs for oblivious padding
-SELECT age_strata, sex, ethnicity, race
+SELECT study_year, age_strata, sex, ethnicity, race
 INTO demographics_domain
-FROM age_strata_domain, sex_domain, ethnicity_domain, race_domain;
+FROM study_year_domain, age_strata_domain, sex_domain, ethnicity_domain, race_domain;

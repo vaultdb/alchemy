@@ -17,16 +17,16 @@ using namespace vaultdb;
 using namespace emp;
 namespace po = boost::program_options;
 
-#define TESTBED 0
+#define TESTBED 1
 
 
 auto start_time = emp::clock_start();
 auto cumulative_runtime = emp::time_from(start_time);
 //unordered_map<string, long> runtime_per_step;
 
-// roll up one group-by col at a time
+// roll up one group-by strata at a time
 // input schema:
-// age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5)
+// study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6)
 shared_ptr<SecureTable>
 runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube, const string &output_path) {
     auto start_time = emp::clock_start();
@@ -41,7 +41,7 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
 
     // validate it against the DB for testing
     if(TESTBED) {
-        SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(1);
+        SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(2);
 
         shared_ptr<PlainTable> revealed = stratified->reveal();
         revealed = DataUtilities::removeDummies(revealed);
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     string host, remote_patient_file, remote_patient_partial_count_file, db_name;
     int port=0, party=0;
     bool semijoin_optimization = false;
-    size_t cardinality_bound = 441; // 7 * 3 * 3 * 7
+    size_t cardinality_bound = 441*3; // 7 * 3 * 3 * 7 * 3 study_years
     string study_year, party_name;
     string logfile_prefix = "";
     string patient_input_query = DataUtilities::readTextFileToString("pilot/queries/patient.sql");
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
                 ("remote-partial-counts-file,p", po::value<string>(), "secret share file of partial counts")
                 ("log-prefix,l", po::value<string>(), "prefix of filename for log")
                 ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all")
-                ("cardinality-bound,b", po::value<size_t>()->default_value(441), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)");
+                ("cardinality-bound,b", po::value<size_t>()->default_value(441*3), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)");
 
 
 
@@ -173,19 +173,11 @@ int main(int argc, char **argv) {
 
         if (vm.count("year")) {
             study_year = vm["year"].as<string>();
-            if(study_year != "all" && (study_year.find('-') == string::npos)) {
-                string year_selection = "study_year = " + study_year;
+            string year_selection = PilotUtilities::parseYearSelection(study_year);
+            if(!year_selection.empty()) {
                 selection_clause = PilotUtilities::appendToConjunctivePredicate(selection_clause, year_selection);
                 partial_count_selection_clause = PilotUtilities::appendToConjunctivePredicate(partial_count_selection_clause, year_selection);
             }
-            else if(study_year.find('-') != string::npos) {
-                string year_selection =  PilotUtilities::getRangePredicate(study_year);
-                selection_clause = PilotUtilities::appendToConjunctivePredicate(selection_clause, year_selection);
-                partial_count_selection_clause = PilotUtilities::appendToConjunctivePredicate(partial_count_selection_clause, year_selection);
-            }
-           else
-               assert(study_year == "all");
-
 
         } else {
             throw std::invalid_argument("Need study year to know the data to input");
@@ -254,12 +246,12 @@ int main(int argc, char **argv) {
     // validate it against the DB for testing
     if(TESTBED) {
         std::shared_ptr<PlainTable> revealed = inputData->reveal();
-        SortDefinition patient_sort_def = DataUtilities::getDefaultSortDefinition(8);
+        SortDefinition patient_sort_def = DataUtilities::getDefaultSortDefinition(9);
 
         Sort sorter(revealed, patient_sort_def);
         revealed = sorter.run();
 
-        string query ="SELECT pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl  FROM patient WHERE :selection ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl";
+        string query =  DataUtilities::readTextFileToString("pilot/queries/patient.sql");
         query = PilotUtilities::replaceSelection(query, selection_clause);
 
 
@@ -314,7 +306,7 @@ int main(int argc, char **argv) {
 
         if(TESTBED) {
             std::shared_ptr<PlainTable> revealed = enrich.data_cube_->reveal();
-            SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(4);
+            SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(5);
 
             string query = PilotUtilities::replaceSelection(PilotUtilities::data_cube_sql_, partial_count_selection_clause);
             PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, cube_sort_def, revealed);
@@ -326,10 +318,10 @@ int main(int argc, char **argv) {
 
     BOOST_LOG(logger) << "Completed unioning for semijoin at epoch " << Utilities::getEpoch() << endl;
 
-    shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, enrich.data_cube_, output_path);
-    shared_ptr<SecureTable> genderRollup = runRollup(1, "sex", party, enrich.data_cube_, output_path);
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, enrich.data_cube_, output_path);
-    shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, enrich.data_cube_, output_path);
+    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich.data_cube_, output_path);
+    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich.data_cube_, output_path);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich.data_cube_, output_path);
+    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich.data_cube_, output_path);
 
     double runtime = time_from(e2e_start_time);
 

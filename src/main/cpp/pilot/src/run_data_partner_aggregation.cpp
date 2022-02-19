@@ -14,18 +14,18 @@ using namespace std;
 using namespace vaultdb;
 using namespace emp;
 
-#define TESTBED 0
+#define TESTBED 1
 
 auto start_time = emp::clock_start();
 auto cumulative_runtime = emp::time_from(start_time);
 
 
 std::string getRollupExpectedResultsSql(const std::string &groupByColName) {
-    std::string expectedResultSql = "SELECT " + groupByColName + ", SUM(CASE WHEN numerator AND NOT denom_excl THEN 1 ELSE 0 END)::INT numerator_cnt, "
+    std::string expectedResultSql = "SELECT study_year, " + groupByColName + ", SUM(CASE WHEN numerator AND NOT denom_excl THEN 1 ELSE 0 END)::INT numerator_cnt, "
                                                                  "SUM(CASE WHEN ((NOT denom_excl) AND denominator) THEN 1 ELSE 0 END)::INT denominator_cnt \n";
     expectedResultSql += " FROM patient \n"
-                         " GROUP BY " + groupByColName + " \n"
-                                                         " ORDER BY " + groupByColName;
+                         " GROUP BY study_year, " + groupByColName + " \n"
+                                                         " ORDER BY study_year, " + groupByColName;
 
     return expectedResultSql;
 
@@ -37,15 +37,15 @@ runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & dat
     auto start_time = emp::clock_start();
     auto logger = vaultdb_logger::get();
 
-    SortDefinition sortDefinition{ColumnSort(idx, SortDirection::ASCENDING)};
+    SortDefinition sortDefinition{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(idx, SortDirection::ASCENDING)};
     Sort sort(data_cube, sortDefinition);
     shared_ptr<SecureTable> sorted = sort.run();
 
-    std::vector<int32_t> groupByCols{idx};
+    std::vector<int32_t> groupByCols{0, idx};
     // ordinals 0...4 are group-by cols in input schema
     std::vector<ScalarAggregateDefinition> aggregators {
-            ScalarAggregateDefinition(4, AggregateId::SUM, "numerator_cnt"),
-            ScalarAggregateDefinition(5, AggregateId::SUM, "denominator_cnt")
+            ScalarAggregateDefinition(5, AggregateId::SUM, "numerator_cnt"),
+            ScalarAggregateDefinition(6, AggregateId::SUM, "denominator_cnt")
     };
 
     GroupByAggregate rollupStrata(sorted, groupByCols, aggregators );
@@ -63,7 +63,7 @@ runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & dat
 
     // validate it against the DB for testing
     if(TESTBED) {
-        SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(1);
+        SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(2);
 
         shared_ptr<PlainTable> revealed = stratified->reveal();
         revealed = DataUtilities::removeDummies(revealed);
@@ -112,16 +112,19 @@ int main(int argc, char **argv) {
     string host = string(argv[1]);
     int port = atoi(argv[2]);
     int party = atoi(argv[3]);
+    string db_name = argv[4];
+    string year = argv[5];
+    string year_selection = PilotUtilities::parseYearSelection(year);
+
     assert(party == 1 || party == 2);
     string party_name = (party == 1) ? "alice" : "bob";
 
-    string db_name = argv[4];
-    string input_query_file = "pilot/queries/partial-count-no-dedupe-" + string(argv[5]) + ".sql";
-    string partial_aggregate_query = DataUtilities::readTextFileToString(input_query_file);
+    string partial_aggregate_query = DataUtilities::readTextFileToString( "pilot/queries/partial-count-no-dedupe.sql");
+    partial_aggregate_query = PilotUtilities::replaceSelection(partial_aggregate_query, year_selection);
     string secret_share_file = argv[6];
     // otherwise output to stdout
     string logger_prefix = (argc == 8) ? string(argv[7]) + "-" + party_name : "";
-    size_t cardinality_bound = 441;
+    size_t cardinality_bound = 441*3;
 
     Logger::setup(logger_prefix);
     auto logger = vaultdb_logger::get();
@@ -174,8 +177,8 @@ int main(int argc, char **argv) {
 
 
         dst.setDummyTag(dst.getDummyTag() | b.getDummyTag() | c.getDummyTag());
-        dst.setField(4, dst[4] + b[4] + c[4]);
         dst.setField(5, dst[5] + b[5] + c[5]);
+        dst.setField(6, dst[6] + b[6] + c[6]);
 
     }
 
@@ -185,16 +188,16 @@ int main(int argc, char **argv) {
     // verify data cube
     if(TESTBED) {
         std::shared_ptr<PlainTable> revealed = data_cube->reveal();
-        SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(4);
+        SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(5);
         PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, partial_aggregate_query, patientSortDef, revealed);
 
     }
 
 
-    shared_ptr<SecureTable> ageRollup = runRollup(0, "age_strata", party, data_cube, output_path);
-    shared_ptr<SecureTable> genderRollup = runRollup(1, "sex", party, data_cube, output_path);
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(2, "ethnicity", party, data_cube, output_path);
-    shared_ptr<SecureTable> raceRollup = runRollup(3, "race", party, data_cube, output_path);
+    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, data_cube, output_path);
+    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, data_cube, output_path);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, data_cube, output_path);
+    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, data_cube, output_path);
 
     double runtime = time_from(start_time);
     BOOST_LOG(logger) <<  "Test completed on " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;

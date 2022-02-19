@@ -26,7 +26,7 @@ EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & c
 }
 
 
-// input schema: pat_id (0),  age_strata (1), sex (2), ethnicity (3), race (4), numerator (5), denominator (6), denom_excl (7)
+// input schema: study_year (0), pat_id (1),  age_strata (2), sex (3), ethnicity (4), race (5), numerator (6), denominator (7), denom_excl (8)
 shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     auto logger = vaultdb_logger::get();
 
@@ -35,11 +35,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     // patid, age_days, sex, ethnicity, race
     auto start_time = emp::clock_start();
 
-    SortDefinition unionSortDefinition{ColumnSort(0, SortDirection::ASCENDING), // pat_ID
-				     ColumnSort(1, SortDirection::ASCENDING), // age_strata
-				     ColumnSort(2, SortDirection::ASCENDING), // sex
-				     ColumnSort(3, SortDirection::ASCENDING), // ethnicity
-				     ColumnSort(4, SortDirection::ASCENDING)}; // race
+    SortDefinition unionSortDefinition = DataUtilities::getDefaultSortDefinition(6);
 
     // destructor handled within Operator
     Sort<emp::Bit> sortUnioned(input_table_, unionSortDefinition);
@@ -49,15 +45,15 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     // aggregate to deduplicate
     // finds if a patient meets exclusion criteria, if a patient is in the numerator in at least one site
     // aka:
-    //    SELECT  p.patid,  age_strata, sex, ethnicity, race, max(p.numerator) numerator, MAX(denominator::INT), max(denom_excl)
-    // GROUP BY   p.patid, age_strata, sex, ethnicity, race
-    std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
+    //    SELECT p.study_year, p.patid,  age_strata, sex, ethnicity, race, max(p.numerator) numerator, MAX(denominator::INT), max(denom_excl)
+    // GROUP BY   p.study_year, p.patid, age_strata, sex, ethnicity, race
+    std::vector<int32_t> groupByCols{0, 1, 2, 3, 4, 5};
     std::vector<ScalarAggregateDefinition> aggregators {
-            ScalarAggregateDefinition(5, AggregateId::MAX, "numerator"), // #5
-            ScalarAggregateDefinition(6, AggregateId::MAX, "denominator"),  // #6
+            ScalarAggregateDefinition(6, AggregateId::MAX, "numerator"), // #6
+            ScalarAggregateDefinition(7, AggregateId::MAX, "denominator"),  // #7
 
-            ScalarAggregateDefinition(-1, AggregateId::COUNT, "site_count"), // #7
-            ScalarAggregateDefinition(7, AggregateId::MAX, "denom_excl")  // #8
+            ScalarAggregateDefinition(-1, AggregateId::COUNT, "site_count"), // #8
+            ScalarAggregateDefinition(8, AggregateId::MAX, "denom_excl")  // #9
     };
 
     GroupByAggregate unionedPatients(sorted, groupByCols, aggregators );
@@ -72,7 +68,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     // HAVING max(denom_excl) = false
 
     shared_ptr<ExpressionNode<emp::Bit> > zero(new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_BOOL, emp::Bit(false))));;
-    shared_ptr<ExpressionNode<emp::Bit> > input(new InputReferenceNode<emp::Bit>(8));
+    shared_ptr<ExpressionNode<emp::Bit> > input(new InputReferenceNode<emp::Bit>(9));
     shared_ptr<ExpressionNode<emp::Bit> > equality(new EqualNode<emp::Bit>(input, zero));
 
     BoolExpression<emp::Bit> equality_expr(equality);
@@ -95,7 +91,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 }
 
   
-  //  input schema: pat_id (0),  age_strata (1), sex (2), ethnicity (3), race (4), max(numerator) (5), site_count (6), max(denom_excl) (7)
+  //  input schema: study_year (0), pat_id (1),  age_strata (2), sex (3), ethnicity (4), race (5), max(numerator) (6), max(denominator) (7),  site_count (8), max(denom_excl) (9)
   //  output schema: age_strata (0), sex (1), ethnicity (2), race (3),
   //  max(p.numerator) numerator (4),   max(p.numerator) denominator (5),
   //  COUNT(*) > 1 ^ numerator numerator_multisite (6)
@@ -108,30 +104,31 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
 
     ExpressionMapBuilder<emp::Bit> builder(*src->getSchema());
-    for(int i = 1; i < 5; ++i) {
+    builder.addMapping(0, 0);
+    for(int i = 2; i < 6; ++i) {
             // push back age_strata, sex, ethnicity, race
             builder.addMapping(i, i-1);
     }
 
       // cast numerator to INT for summing in next step
       // references (5)
-      shared_ptr<ExpressionNode<emp::Bit> > castNumerator(new CastNode<emp::Bit>(5, FieldType::SECURE_INT));
+      shared_ptr<ExpressionNode<emp::Bit> > castNumerator(new CastNode<emp::Bit>(6, FieldType::SECURE_INT));
       shared_ptr<Expression<emp::Bit> >  numeratorToIntExpression(new GenericExpression<emp::Bit>(castNumerator, "numerator", FieldType::SECURE_INT));
 
-      shared_ptr<ExpressionNode<emp::Bit> > castDenominator(new CastNode<emp::Bit>(6, FieldType::SECURE_INT));
+      shared_ptr<ExpressionNode<emp::Bit> > castDenominator(new CastNode<emp::Bit>(7, FieldType::SECURE_INT));
       shared_ptr<Expression<emp::Bit> >  denominatorToIntExpression(new GenericExpression<emp::Bit>(castDenominator, "denominator", FieldType::SECURE_INT));
 
 
-      // references (6) (7)
-    shared_ptr<Expression<emp::Bit> >  multisiteDenominatorExpression(new FunctionExpression(&EnrichHtnQuery::projectDenominatorMultisite<emp::Bit>, "denominator_multisite", FieldType::SECURE_INT));
-    // references (5) (7)
+    // references (6) (9)
     shared_ptr<Expression<emp::Bit> >  multisiteNumeratorExpression(new FunctionExpression(&EnrichHtnQuery::projectNumeratorMultisite<emp::Bit>, "numerator_multisite", FieldType::SECURE_INT));
+      // references (7) (9)
+      shared_ptr<Expression<emp::Bit> >  multisiteDenominatorExpression(new FunctionExpression(&EnrichHtnQuery::projectDenominatorMultisite<emp::Bit>, "denominator_multisite", FieldType::SECURE_INT));
 
-    builder.addExpression(numeratorToIntExpression, 4);
-    builder.addExpression(denominatorToIntExpression, 5);
+    builder.addExpression(numeratorToIntExpression, 5);
+    builder.addExpression(denominatorToIntExpression, 6);
 
-    builder.addExpression(multisiteNumeratorExpression, 6);
-      builder.addExpression(multisiteDenominatorExpression, 7);
+    builder.addExpression(multisiteNumeratorExpression, 7);
+      builder.addExpression(multisiteDenominatorExpression, 8);
 
       auto start_time = emp::clock_start();
       auto logger = vaultdb_logger::get();
@@ -147,30 +144,30 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
       return projected;
   }
 
-// input schema: age_strata (0), sex (1), ethnicity (2), race (3), numerator (4), denominator (5), denom_multisite (6), numerator_multisite (7)
+// input schema: study_years (0), age_strata (1), sex (2), ethnicity (3), race (4), numerator (5), denominator (6), denom_multisite (7), numerator_multisite (8)
 void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
     auto start_time = emp::clock_start();
     auto logger = vaultdb_logger::get();
 
-    // sort it on cols [0,5)
-    Sort sort(src, DataUtilities::getDefaultSortDefinition(4));
+    // sort it on cols [0,6)
+    Sort sort(src, DataUtilities::getDefaultSortDefinition(5));
     shared_ptr<SecureTable> sorted = sort.run();
     src.reset();
 
     Logger::write("Finished sort for data cube.");
 
 
-    std::vector<int32_t> groupByCols{0, 1, 2, 3};
+    std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
     std::vector<ScalarAggregateDefinition> aggregators {
-            ScalarAggregateDefinition(4, AggregateId::SUM, "numerator_cnt"),
-            ScalarAggregateDefinition(5, AggregateId::SUM, "denominator_cnt"),
-            ScalarAggregateDefinition(6, AggregateId::SUM, "numerator_multisite"),
-            ScalarAggregateDefinition(7, AggregateId::SUM, "denominator_multisite")
+            ScalarAggregateDefinition(5, AggregateId::SUM, "numerator_cnt"),
+            ScalarAggregateDefinition(6, AggregateId::SUM, "denominator_cnt"),
+            ScalarAggregateDefinition(7, AggregateId::SUM, "numerator_multisite"),
+            ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
 
     // output schema:
-    // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite (6), denominator_multisite (7)
+    // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
     GroupByAggregate aggregator(sorted, groupByCols, aggregators);
     data_cube_ = aggregator.run();
     sorted.reset();
@@ -187,28 +184,28 @@ void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
 }
 
 
-// input schema: age_strata (0), sex (1), ethnicity (2), race (3), numerator (4),  denominator (5), denom_multisite (6), numerator_multisite (7) - last 4 cols are ints
+// input schema: study_year (0), age_strata (1), sex (2), ethnicity (3), race (4), numerator (5),  denominator (6), denom_multisite (7), numerator_multisite (8) - last 4 cols are ints
 shared_ptr<SecureTable> EnrichHtnQuery::aggregatePartialPatientCounts( shared_ptr<SecureTable> &src, const size_t & cardinality_bound) {
     auto start_time = emp::clock_start();
     auto logger = vaultdb_logger::get();
 
 
-    // sort it on cols [0,5)
-    Sort sort(src, DataUtilities::getDefaultSortDefinition(4));
+    // sort it on cols [0,6)
+    Sort sort(src, DataUtilities::getDefaultSortDefinition(5));
     shared_ptr<SecureTable> sorted = sort.run();
 
 
-    std::vector<int32_t> groupByCols{0, 1, 2, 3};
+    std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
     std::vector<ScalarAggregateDefinition> aggregators {
-            ScalarAggregateDefinition(4, AggregateId::SUM, "numerator_cnt"),
-            ScalarAggregateDefinition(5, AggregateId::SUM, "denominator_cnt"),
-            ScalarAggregateDefinition(6, AggregateId::SUM, "numerator_multisite"),
-            ScalarAggregateDefinition(7, AggregateId::SUM, "denominator_multisite")
+            ScalarAggregateDefinition(5, AggregateId::SUM, "numerator_cnt"),
+            ScalarAggregateDefinition(6, AggregateId::SUM, "denominator_cnt"),
+            ScalarAggregateDefinition(7, AggregateId::SUM, "numerator_multisite"),
+            ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
 
     // output schema:
-    // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite (6), denominator_multisite (7)
+    // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
     GroupByAggregate aggregator(sorted, groupByCols, aggregators);
     shared_ptr<SecureTable> dst = aggregator.run();
     sorted.reset();
@@ -226,7 +223,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::aggregatePartialPatientCounts( shared_pt
 }
 
 // partials schema:
-// age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite_cnt (6), denominator_multisite_cnt (7)
+// study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
 void EnrichHtnQuery::unionWithPartialAggregates(vector<shared_ptr<SecureTable>> partials) {
     shared_ptr<SecureTable> summed_partials = addPartialAggregates(partials);
 
@@ -238,20 +235,20 @@ void EnrichHtnQuery::unionWithPartialAggregates(vector<shared_ptr<SecureTable>> 
     // TODO: clean this up!
 
     // sort it on cols [0,5)
-    Sort sort(data_cube_, DataUtilities::getDefaultSortDefinition(4));
+    Sort sort(data_cube_, DataUtilities::getDefaultSortDefinition(5));
     shared_ptr<SecureTable> sorted = sort.run();
 
-    std::vector<int32_t> groupByCols{0, 1, 2, 3};
+    std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
     std::vector<ScalarAggregateDefinition> aggregators {
-            ScalarAggregateDefinition(4, AggregateId::SUM, "numerator_cnt"),
-            ScalarAggregateDefinition(5, AggregateId::SUM, "denominator_cnt"),
-            ScalarAggregateDefinition(6, AggregateId::SUM, "numerator_multisite"),
-            ScalarAggregateDefinition(7, AggregateId::SUM, "denominator_multisite")
+            ScalarAggregateDefinition(5, AggregateId::SUM, "numerator_cnt"),
+            ScalarAggregateDefinition(6, AggregateId::SUM, "denominator_cnt"),
+            ScalarAggregateDefinition(7, AggregateId::SUM, "numerator_multisite"),
+            ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
 
     // output schema:
-    // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5), numerator_multisite (6), denominator_multisite (7)
+    // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
     GroupByAggregate aggregator(sorted, groupByCols, aggregators);
     data_cube_ = aggregator.run();
     sorted.reset();
@@ -287,10 +284,10 @@ shared_ptr<SecureTable> EnrichHtnQuery::addPartialAggregates(vector<shared_ptr<S
             dst.setDummyTag(src.getDummyTag() | dst.getDummyTag());
 
 
-            dst.setField(4, dst[4] + src[4]);
             dst.setField(5, dst[5] + src[5]);
             dst.setField(6, dst[6] + src[6]);
             dst.setField(7, dst[7] + src[7]);
+            dst.setField(8, dst[8] + src[8]);
 
 
         }
