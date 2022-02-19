@@ -6,7 +6,12 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # may need to set up ssh tunnel first with:
-#  ssh  -p 3333 -N -i /home/vaultdb/.ssh/vaultdb-nm-key -L 4444:127.0.0.1:4444 vaultdb@vtfsmsmsql01.fsm.northwestern.edu
+#may need to set up ssh agent with:
+#  eval `ssh-agent -s`
+# ssh-add ~/.ssh/vaultdb-nm-key
+
+
+ssh  -p 3333 -N -i /home/vaultdb/.ssh/vaultdb-nm-key -L 4444:127.0.0.1:4444 vaultdb@vtfsmsmsql01.fsm.northwestern.edu
 YEAR=$1
 date
 
