@@ -376,20 +376,7 @@ int main(int argc, char **argv) {
     BOOST_LOG(logger)  << "Race rollup: " << endl;
     BOOST_LOG(logger)  << raceRollup->reveal()->toString() << endl;
 
-    cout  << "Age rollup: " << endl;
-    cout << ageRollup->reveal()->toString() << endl;
-
-    cout  << "Sex rollup: " << endl;
-    cout << genderRollup->reveal()->toString() << endl;
-
-
-    cout << "Ethnicity rollup: " << endl;
-    cout << ethnicityRollup->reveal()->toString() << endl;
-
-    cout << "Race rollup: " << endl;
-    cout << raceRollup->reveal()->toString() << endl;
-
-
+    
 
     emp::finalize_semi_honest();
 
