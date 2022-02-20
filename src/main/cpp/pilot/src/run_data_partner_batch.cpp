@@ -361,11 +361,25 @@ int main(int argc, char **argv) {
     BOOST_LOG(logger) << "Ending epoch " << Utilities::getEpoch() << endl;
     BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
     cout << measurements << endl;
+    BOOST_LOG(logger) <<  measurements <<  endl;
 
-    cout << "Age rollup: " << endl;
+    BOOST_LOG(logger)  << "Age rollup: " << endl;
+    BOOST_LOG(logger)  << ageRollup->reveal()->toString() << endl;
+
+    BOOST_LOG(logger)  << "Sex rollup: " << endl;
+    BOOST_LOG(logger)  << genderRollup->reveal()->toString() << endl;
+
+
+    BOOST_LOG(logger)  << "Ethnicity rollup: " << endl;
+    BOOST_LOG(logger)  << ethnicityRollup->reveal()->toString() << endl;
+
+    BOOST_LOG(logger)  << "Race rollup: " << endl;
+    BOOST_LOG(logger)  << raceRollup->reveal()->toString() << endl;
+
+    cout  << "Age rollup: " << endl;
     cout << ageRollup->reveal()->toString() << endl;
 
-    cout << "Sex rollup: " << endl;
+    cout  << "Sex rollup: " << endl;
     cout << genderRollup->reveal()->toString() << endl;
 
 
