@@ -42,14 +42,21 @@ psql $DB_NAME -t  --csv -c   "SELECT  pat_id, age_strata, sex, ethnicity, race, 
 
 echo "preparing for aggregate-only test"
 # for aggregate-only test
-psql $DB_NAME -t -v selection='1=1'  --csv < pilot/queries/data-cube.sql  > pilot/test/input/chi-patient-aggregate.csv
+#psql $DB_NAME -t -v selection='1=1'  --csv < pilot/queries/data-cube.sql  > pilot/test/input/chi-patient-aggregate.csv
 
 
 # multi-site only
 ./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/patient.sql -y all -d  pilot/test/output/chi-patient-multisite -s
+./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/patient.sql -y 2018 -d  pilot/test/output/chi-patient-multisite-2018 -s
 
 echo "Setting up semi-join optimization"
 #set up for semijoin optimization
 ./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count.sql -y all -d  pilot/secret_shares/tables/chi_partial_counts
-./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count-no-dedupe.sql -y all -d  pilot/secret_shares/tables/chi_counts
 ./bin/secret_share_batch_from_query -D enrich_htn_chi -q pilot/queries/patient.sql -y all -b 10 -d pilot/test/batch/chi-patient
+
+./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count.sql -y 2018 -d  pilot/secret_shares/tables/chi_partial_counts-2018
+./bin/secret_share_batch_from_query -D enrich_htn_chi -q pilot/queries/patient.sql -y 2018 -b 10 -d pilot/test/batch/chi-patient-2018
+
+#aggregate-only
+./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count-no-dedupe.sql -y 2018 -d  pilot/secret_shares/tables/chi_counts-2018
+./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count-no-dedupe.sql -y all -d  pilot/secret_shares/tables/chi_counts

@@ -8,7 +8,7 @@
 namespace  vaultdb {
     class PilotUtilities {
     public:
-        static std::string getRollupExpectedResultsSql(const std::string &groupByColName);
+        static std::string getRollupExpectedResultsSql(const std::string &groupByColName, const std::string & selection);
         static std::shared_ptr<SecureTable> rollUpAggregate(const std::shared_ptr<SecureTable> & input, const int &ordinal);
         static void validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> & testTable);
         static void secretShareFromCsv(const string &src_file, const QuerySchema &plain_schema, const string &dst_root);

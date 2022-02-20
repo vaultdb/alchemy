@@ -24,6 +24,7 @@ std::string getRollupExpectedResultsSql(const std::string &groupByColName) {
     std::string expectedResultSql = "SELECT study_year, " + groupByColName + ", SUM(CASE WHEN numerator AND NOT denom_excl THEN 1 ELSE 0 END)::INT numerator_cnt, "
                                                                  "SUM(CASE WHEN ((NOT denom_excl) AND denominator) THEN 1 ELSE 0 END)::INT denominator_cnt \n";
     expectedResultSql += " FROM patient \n"
+                         " WHERE :selection"
                          " GROUP BY study_year, " + groupByColName + " \n"
                                                          " ORDER BY study_year, " + groupByColName;
 
@@ -33,7 +34,7 @@ std::string getRollupExpectedResultsSql(const std::string &groupByColName) {
 
 
 shared_ptr<SecureTable>
-runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & data_cube, const string &output_path) {
+runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & data_cube, const string & selection_clause,  const string &output_path) {
     auto start_time = emp::clock_start();
     auto logger = vaultdb_logger::get();
 
@@ -69,6 +70,7 @@ runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & dat
         revealed = DataUtilities::removeDummies(revealed);
 
         string query = getRollupExpectedResultsSql(colName);
+        query = PilotUtilities::replaceSelection(query, selection_clause);
         PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
 
         // write it out
@@ -195,10 +197,10 @@ int main(int argc, char **argv) {
     }
 
 
-    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, data_cube, output_path);
-    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, data_cube, output_path);
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, data_cube, output_path);
-    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, data_cube, output_path);
+    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, data_cube, year_selection, output_path);
+    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, data_cube, year_selection, output_path);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, data_cube, year_selection, output_path);
+    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, data_cube, year_selection, output_path);
 
     double runtime = time_from(start_time);
     BOOST_LOG(logger) <<  "Test completed on " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;

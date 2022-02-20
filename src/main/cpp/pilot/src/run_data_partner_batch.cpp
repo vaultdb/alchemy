@@ -27,7 +27,7 @@ auto cumulative_runtime = emp::time_from(start_time);
 // input schema:
 // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5)
 shared_ptr<SecureTable>
-runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube, const string &output_path) {
+runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube, const std::string  & selection_clause, const string &output_path) {
     auto local_start_time = emp::clock_start();
     auto logger = vaultdb_logger::get();
     shared_ptr<SecureTable> stratified = PilotUtilities::rollUpAggregate(data_cube, idx);
@@ -45,7 +45,7 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
         shared_ptr<PlainTable> revealed = stratified->reveal();
         revealed = DataUtilities::removeDummies(revealed);
 
-        string query = PilotUtilities::getRollupExpectedResultsSql(colName);
+        string query = PilotUtilities::getRollupExpectedResultsSql(colName, selection_clause);
         PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
 
         // write it out
@@ -348,10 +348,10 @@ int main(int argc, char **argv) {
 
     BOOST_LOG(logger) << "Completed unioning for semijoin at epoch " << Utilities::getEpoch() << endl;
 
-    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich.data_cube_, output_path);
-    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich.data_cube_, output_path);
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich.data_cube_, output_path);
-    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich.data_cube_, output_path);
+    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich.data_cube_, selection_clause,  output_path);
+    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich.data_cube_, selection_clause,  output_path);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich.data_cube_, selection_clause, output_path);
+    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich.data_cube_, selection_clause, output_path);
 
     double runtime = time_from(e2e_start_time);
     measurements += "," + std::to_string(Utilities::getEpoch());
