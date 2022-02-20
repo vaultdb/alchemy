@@ -11,7 +11,7 @@ fi
 # ssh-add ~/.ssh/vaultdb-nm-key
 
 
-ssh  -p 3333 -N -i /home/vaultdb/.ssh/vaultdb-nm-key -L 4444:127.0.0.1:4444 vaultdb@vtfsmsmsql01.fsm.northwestern.edu
+ssh  -p 3333 -N -o StrictHostKeyChecking=no  -i /home/vaultdb/.ssh/vaultdb-nm-key -L 4444:127.0.0.1:4444 vaultdb@vtfsmsmsql01.fsm.northwestern.edu
 YEAR=$1
 date
 
