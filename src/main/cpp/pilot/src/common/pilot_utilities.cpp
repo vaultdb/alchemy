@@ -121,13 +121,19 @@ string PilotUtilities::appendToConjunctivePredicate(const string & base, const s
 }
 
 
-// replaces first instance of to_find
+// replaces all instance of to_find
 std::string PilotUtilities::replaceSubstring(const std::string & base, const std::string & to_find, const std::string replacement){
     size_t to_replace = base.find(to_find);
     assert(to_replace != string::npos);
     string dupe = base;
-    return  dupe.replace(to_replace, to_find.length(), replacement);
 
+
+    while(to_replace != string::npos) {
+        dupe = dupe.replace(to_replace, to_find.length(), replacement);
+        to_replace = dupe.find(to_find);
+    }
+
+    return dupe;
 
 }
 

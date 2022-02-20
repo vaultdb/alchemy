@@ -22,7 +22,7 @@ data_cube AS(
 SELECT d.*, COALESCE(numerator_cnt, 0) numerator_cnt, COALESCE(denominator_cnt, 0) denominator_cnt,
        COALESCE(numerator_multisite_cnt, 0) numerator_multisite_cnt,
        COALESCE(denominator_multisite_cnt, 0) denominator_multisite_cnt 
-FROM demographics_domain d LEFT JOIN data_cube p ON
+FROM (SELECT * FROM demographics_domain WHERE :selection) d LEFT JOIN data_cube p ON
      d.study_year = p.study_year AND d.age_strata = p.age_strata  AND d.sex = p.sex
      AND d.ethnicity = p.ethnicity AND d.race = p.race 
 ORDER BY d.study_year, d.age_strata, d.sex, d.ethnicity, d.race;

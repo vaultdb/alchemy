@@ -8,5 +8,5 @@ WITH cohort AS (SELECT study_year, site_id, pat_id, age_strata, sex, ethnicity, 
                                   FROM cohort
                                   GROUP BY study_year, age_strata, sex, ethnicity, race)
 SELECT d.*, COALESCE(numerator_cnt, 0) numerator_cnt, COALESCE(denominator_cnt, 0) denominator_cnt
-FROM demographics_domain d LEFT JOIN aggs a on d.age_strata = a.age_strata  AND d.sex = a.sex  AND d.ethnicity = a.ethnicity AND d.race = a.race AND a.study_year = d.study_year
+FROM  (SELECT * FROM demographics_domain WHERE :selection)  d LEFT JOIN aggs a on d.age_strata = a.age_strata  AND d.sex = a.sex  AND d.ethnicity = a.ethnicity AND d.race = a.race AND a.study_year = d.study_year
 ORDER BY study_year, age_strata, sex, ethnicity, race;
