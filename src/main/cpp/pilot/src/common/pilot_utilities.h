@@ -19,6 +19,9 @@ namespace  vaultdb {
         static std::pair<std::string, std::string>  parseRange(const std::string & range);
         static std::string getRangePredicate(const std::string & range);
         static std::string parseYearSelection(const std::string & input_year);
+        // study length in years
+        static int getStudyLength(const std::string study_year);
+
         static const std::string data_cube_sql_,  data_cube_sql_no_dummies_, unioned_db_name_;
     };
 

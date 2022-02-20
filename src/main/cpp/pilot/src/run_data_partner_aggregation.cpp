@@ -14,7 +14,7 @@ using namespace std;
 using namespace vaultdb;
 using namespace emp;
 
-#define TESTBED 0
+#define TESTBED 1
 
 auto start_time = emp::clock_start();
 auto cumulative_runtime = emp::time_from(start_time);
@@ -124,7 +124,8 @@ int main(int argc, char **argv) {
     string secret_share_file = argv[6];
     // otherwise output to stdout
     string logger_prefix = (argc == 8) ? string(argv[7]) + "-" + party_name : "";
-    size_t cardinality_bound = 441*3;
+    int study_length = PilotUtilities::getStudyLength(year);
+    size_t cardinality_bound = 441*study_length;
 
     Logger::setup(logger_prefix);
     auto logger = vaultdb_logger::get();

@@ -172,3 +172,21 @@ std::string PilotUtilities::parseYearSelection(const std::string & study_year) {
     return ""; // empty selection
 
 }
+
+
+// study length in years
+ int PilotUtilities::getStudyLength(const std::string study_year) {
+    if(study_year == "all") return 3;
+
+    if(study_year.find('-') != string::npos) {
+        pair<string, string> bounds = PilotUtilities::parseRange(study_year);
+        int lhs = std::atoi(bounds.first.c_str());
+        int rhs = std::atoi(bounds.second.c_str());
+        return rhs - lhs;
+    }
+       bool is_digit =  !study_year.empty() && std::find_if(study_year.begin(),
+                                                            study_year.end(), [](unsigned char c) { return !std::isdigit(c); }) == study_year.end();
+       assert(is_digit);
+       return 1; // 1 years
+
+}

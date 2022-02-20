@@ -17,7 +17,7 @@ using namespace vaultdb;
 using namespace emp;
 namespace po = boost::program_options;
 
-#define TESTBED 0
+#define TESTBED 1
 
 
 auto start_time = emp::clock_start();
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
                 ("remote-partial-counts-file,p", po::value<string>(), "secret share file of partial counts")
                 ("log-prefix,l", po::value<string>(), "prefix of filename for log")
                 ("year,y", po::value<string>(), "study year of experiment, in 2018, 2019, 2020, or all")
-                ("cardinality-bound,b", po::value<size_t>()->default_value(441*3), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)");
+                ("cardinality-bound,b", po::value<size_t>(), "cardinality bound for output of aggregation.  Equal to the cross-product of all group-bys (e.g., age/sex/ethnicity/race)");
 
 
 
@@ -189,6 +189,10 @@ int main(int argc, char **argv) {
 
         if(vm.count("cardinality-bound")) {
             cardinality_bound = vm["cardinality-bound"].as<size_t>();
+        }
+        else {
+            int study_length = PilotUtilities::getStudyLength(study_year);
+            cardinality_bound = 441*study_length;
         }
 
 
