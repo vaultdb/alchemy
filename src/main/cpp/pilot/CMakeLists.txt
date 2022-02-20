@@ -33,8 +33,8 @@ macro(package_add_binary BINNAME)
 endmacro()
 
 package_add_binary(secret_share_csv src/secret_share_csv.cpp src/common/shared_schema.cpp src/common/pilot_utilities.cpp)
-package_add_binary(secret_share_partial_counts src/secret_share_partial_counts.cpp  src/common/shared_schema.cpp src/common/pilot_utilities.cpp)
-package_add_binary(secret_share_partial_counts_no_dedupe src/secret_share_partial_counts_no_dedupe.cpp  src/common/pilot_utilities.cpp)
+#package_add_binary(secret_share_partial_counts src/secret_share_partial_counts.cpp  src/common/shared_schema.cpp src/common/pilot_utilities.cpp)
+#package_add_binary(secret_share_partial_counts_no_dedupe src/secret_share_partial_counts_no_dedupe.cpp  src/common/pilot_utilities.cpp)
 package_add_binary(secret_share_from_query src/secret_share_from_query.cpp  src/common/pilot_utilities.cpp)
 package_add_binary(secret_share_batch_from_query src/secret_share_batch_from_query.cpp  src/common/pilot_utilities.cpp)
 
