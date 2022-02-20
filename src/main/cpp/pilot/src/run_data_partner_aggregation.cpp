@@ -14,7 +14,7 @@ using namespace std;
 using namespace vaultdb;
 using namespace emp;
 
-#define TESTBED 1
+#define TESTBED 0
 
 auto start_time = emp::clock_start();
 auto cumulative_runtime = emp::time_from(start_time);
