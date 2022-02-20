@@ -18,7 +18,7 @@ const std::string PilotUtilities::data_cube_sql_ =  DataUtilities::readTextFileT
 std::string PilotUtilities::getRollupExpectedResultsSql(const std::string &groupByColName, const std::string & selection) {
     std::string expectedResultSql = "   WITH labeled as (\n"
                                "        SELECT study_year, pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl\n"
-                               "        FROM (SELECT DISTINCT study_year, pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl, site_id FROM patient) p \n"
+                               "        FROM (SELECT DISTINCT study_year, pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl, site_id, multisite FROM patient) p \n"
                                "        WHERE :selection\n"
                                "        ORDER BY pat_id),\n"
                                "  deduplicated AS (    SELECT study_year, p.pat_id,  age_strata, sex, ethnicity, race, MAX(p.numerator::INT) numerator, MAX(p.denominator::INT) denominator, COUNT(*) cnt\n"

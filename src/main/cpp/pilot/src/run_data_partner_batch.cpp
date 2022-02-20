@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
     string partial_count_selection_clause;
     size_t batch_count;
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
-
+    string year_selection;
 
 
     try {
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
 
         if (vm.count("year")) {
             study_year = vm["year"].as<string>();
-            string year_selection = PilotUtilities::parseYearSelection(study_year);
+            year_selection = PilotUtilities::parseYearSelection(study_year);
             if(!year_selection.empty()) {
                 selection_clause = PilotUtilities::appendToConjunctivePredicate(selection_clause, year_selection);
                 partial_count_selection_clause = PilotUtilities::appendToConjunctivePredicate(partial_count_selection_clause, year_selection);
@@ -348,10 +348,10 @@ int main(int argc, char **argv) {
 
     BOOST_LOG(logger) << "Completed unioning for semijoin at epoch " << Utilities::getEpoch() << endl;
 
-    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich.data_cube_, selection_clause,  output_path);
-    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich.data_cube_, selection_clause,  output_path);
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich.data_cube_, selection_clause, output_path);
-    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich.data_cube_, selection_clause, output_path);
+    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich.data_cube_, year_selection,  output_path);
+    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich.data_cube_, year_selection,  output_path);
+    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich.data_cube_, year_selection, output_path);
+    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich.data_cube_, year_selection, output_path);
 
     double runtime = time_from(e2e_start_time);
     measurements += "," + std::to_string(Utilities::getEpoch());
