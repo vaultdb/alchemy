@@ -376,7 +376,7 @@ int main(int argc, char **argv) {
     BOOST_LOG(logger)  << "Race rollup: " << endl;
     BOOST_LOG(logger)  << raceRollup->reveal()->toString() << endl;
 
-    
+
 
     emp::finalize_semi_honest();
 

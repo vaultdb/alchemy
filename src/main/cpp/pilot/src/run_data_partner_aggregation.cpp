@@ -208,18 +208,18 @@ int main(int argc, char **argv) {
     epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     BOOST_LOG(logger) << "Ending epoch " << epoch << endl;
 
-    cout << "Age rollup: " << endl;
-    cout << ageRollup->reveal()->toString() << endl;
+    BOOST_LOG(logger) << "Age rollup: " << endl;
+    BOOST_LOG(logger) << ageRollup->reveal()->toString() << endl;
 
-    cout << "Sex rollup: " << endl;
-    cout << genderRollup->reveal()->toString() << endl;
+    BOOST_LOG(logger) << "Sex rollup: " << endl;
+    BOOST_LOG(logger) << genderRollup->reveal()->toString() << endl;
 
 
-    cout << "Ethnicity rollup: " << endl;
-    cout << ethnicityRollup->reveal()->toString() << endl;
+    BOOST_LOG(logger) << "Ethnicity rollup: " << endl;
+    BOOST_LOG(logger) << ethnicityRollup->reveal()->toString() << endl;
 
-    cout << "Race rollup: " << endl;
-    cout << raceRollup->reveal()->toString() << endl;
+    BOOST_LOG(logger) << "Race rollup: " << endl;
+    BOOST_LOG(logger) << raceRollup->reveal()->toString() << endl;
 
 
 
