@@ -362,7 +362,7 @@ int main(int argc, char **argv) {
     BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
     cout << measurements << endl;
     BOOST_LOG(logger) <<  measurements <<  endl;
-
+/*
     BOOST_LOG(logger)  << "Age rollup: " << endl;
     BOOST_LOG(logger)  << ageRollup->reveal()->toString() << endl;
 
@@ -376,7 +376,7 @@ int main(int argc, char **argv) {
     BOOST_LOG(logger)  << "Race rollup: " << endl;
     BOOST_LOG(logger)  << raceRollup->reveal()->toString() << endl;
 
-
+*/
 
     emp::finalize_semi_honest();
 
