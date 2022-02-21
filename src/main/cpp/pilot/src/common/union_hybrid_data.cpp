@@ -180,21 +180,26 @@ UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery,
 
     std::shared_ptr<PlainTable> local_plain = DataUtilities::getQueryResults(dbName, inputQuery, false);
     auto logger = vaultdb_logger::get();
+    size_t total_tuples = local_plain->getTupleCount();
+
     BOOST_LOG(logger) << "Reading in " << local_plain->getTupleCount() << " tuples from local db." << endl;
 
     std::shared_ptr<SecureTable> local = SecureTable::secretShare(*local_plain, aNetIO, party);
     string other_party = (party == ALICE) ? "Bob" : "Alice";
     BOOST_LOG(logger) <<  other_party << " read in " << local->getTupleCount() - local_plain->getTupleCount() << " tuples." << endl;
 
+    total_tuples += local->getTupleCount() - local_plain->getTupleCount();
 
     if(!secretSharesFile.empty()) {
         std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, *local_plain->getSchema(), party);
         BOOST_LOG(logger) << "Reading in " << remote->getTupleCount() << " secret-shared records from " <<  secretSharesFile << endl;
-
+        total_tuples += remote->getTupleCount();
         Union<emp::Bit> union_op(local, remote);
+        BOOST_LOG(logger) << "Total tuples read: " << total_tuples << endl;
         return union_op.run();
     }
-
+    
+    BOOST_LOG(logger) << "Total tuples read: " << total_tuples << endl;
     return local;
 
 
