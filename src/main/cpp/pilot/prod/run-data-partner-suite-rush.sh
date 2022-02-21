@@ -6,10 +6,10 @@ do
     sleep 3
     bash pilot/prod/run-data-partner-rush.sh $TEST
     sleep 3
-    bash pilot/prod/run-data-partner-no-semi-join-rush.sh  $TEST
-    sleep 3
+#    bash pilot/prod/run-data-partner-no-semi-join-rush.sh  $TEST
+#    sleep 3
 done
-
+exit;
 for BATCH in 25 50 75 100
 do
     
