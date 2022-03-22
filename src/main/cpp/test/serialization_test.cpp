@@ -8,7 +8,8 @@ using namespace std;
 
 
 class SerializationTest : public PlainBaseTest {
-
+protected:
+  QuerySchema getCapricornSchema();
 
 };
 
@@ -40,12 +41,29 @@ TEST_F(SerializationTest, typesTest) {
 }
 
 
+QuerySchema SerializationTest::getCapricornSchema() {
+    QuerySchema targetSchema(7);
+    // 12,5,U,U,4,f,f
+    targetSchema.putField(QueryFieldDesc(0, "pat_id", "patient", FieldType::INT));
+    targetSchema.putField(QueryFieldDesc(1, "age_strata", "patient", FieldType::STRING, 1));
+    targetSchema.putField(QueryFieldDesc(2, "sex", "patient", FieldType::STRING, 1));
+    targetSchema.putField(QueryFieldDesc(3, "ethnicity", "patient", FieldType::STRING, 1));
+    targetSchema.putField(QueryFieldDesc(4, "race", "patient", FieldType::STRING, 1));
+    targetSchema.putField(QueryFieldDesc(5, "numerator", "patient", FieldType::BOOL));
+    targetSchema.putField(QueryFieldDesc(6, "denom_excl", "patient", FieldType::BOOL));
+
+    return targetSchema;
+}
+
 
 
 TEST_F(SerializationTest, capricorn_test) {
 
-    QuerySchema targetSchema = SharedSchema::getInputSchema();
 
+  QuerySchema targetSchema = getCapricornSchema();
+    
+
+    
     string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-multisite-patient.csv";
 
@@ -64,7 +82,8 @@ TEST_F(SerializationTest, capricorn_test) {
 
 TEST_F(SerializationTest, xored_serialization_test) {
 
-    QuerySchema targetSchema = SharedSchema::getInputSchema();
+    QuerySchema targetSchema = getCapricornSchema();
+
 
     string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-multisite-patient.csv";
@@ -73,7 +92,7 @@ TEST_F(SerializationTest, xored_serialization_test) {
     vector<int8_t> serialized = inputTable->serialize();
 
     // alice contains random values... ssh!
-    string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient.alice";
+    string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient-multisite.alice";
     vector<int8_t> randInts =  DataUtilities::readFile(aliceFile);
 
     vector<int8_t>::iterator writePos = serialized.begin();
@@ -109,7 +128,8 @@ TEST_F(SerializationTest, xored_serialization_test) {
 
 TEST_F(SerializationTest, capricorn_deserialization) {
 
-    QuerySchema targetSchema = SharedSchema::getInputSchema();
+  
+  QuerySchema targetSchema = SharedSchema::getInputSchema();
     string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
     string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient-multisite.alice";
     string bobFile = currentWorkingDirectory + "/pilot/test/output/chi-patient-multisite.bob";
@@ -130,9 +150,10 @@ TEST_F(SerializationTest, capricorn_deserialization) {
 
     std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
 
+    std::string expected_query = "SELECT  study_year, pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl FROM patient WHERE site_id=3 AND multisite ORDER BY study_year, pat_id";
+    std::string db_name = "enrich_htn_unioned_3pc";
 
-          string expectedCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-multisite-patient.csv";
-    std::unique_ptr<PlainTable> expected = CsvReader::readCsv(expectedCsvFile, targetSchema);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name, expected_query, false);
 
     ASSERT_EQ(*expected, *deserialized);
 
