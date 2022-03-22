@@ -185,18 +185,18 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 
     if(*getSchema() != *other.getSchema()) {
 
-        BOOST_LOG_SEV(logger,  logging::trivial::severity_level::error) << "Failed to match on schema: \n" << *getSchema() << "\n  == \n" << *other.getSchema() << std::endl;
+        std::cout << "Failed to match on schema: \n" << *getSchema() << "\n  == \n" << *other.getSchema() << std::endl;
         return false;
     }
 
     if(this->getSortOrder() != other.getSortOrder()) {
-        BOOST_LOG_SEV(logger,  logging::trivial::severity_level::error)  << "Failed to match on sort order expected="  << DataUtilities::printSortDefinition(this->getSortOrder())
+        std::cout << "Failed to match on sort order expected="  << DataUtilities::printSortDefinition(this->getSortOrder())
                   << "observed=" << DataUtilities::printSortDefinition(other.getSortOrder()) <<  std::endl;
         return false;
     }
 
     if(this->getTupleCount() != other.getTupleCount()) {
-        BOOST_LOG_SEV(logger,  logging::trivial::severity_level::error)  << "Failed to match on tuple count " << this->getTupleCount() << " vs " << other.getTupleCount() << std::endl;
+        std::cout  << "Failed to match on tuple count " << this->getTupleCount() << " vs " << other.getTupleCount() << std::endl;
         return false;
     }
 
@@ -208,8 +208,8 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
         PlainTuple other_tuple(schema_, (int8_t *) (other.tuple_data_.data() + tuple_offset));
 
         if(this_tuple != other_tuple) {
-            BOOST_LOG_SEV(logger,  logging::trivial::severity_level::error)  << "Comparing on idx " << i << " with " << this_tuple.toString(true) << "\n          !=            " << other_tuple.toString(true) << endl;
-            BOOST_LOG_SEV(logger,  logging::trivial::severity_level::error)  << "    Failed to match!" << std::endl;
+            std::cout  << "Comparing on idx " << i << " with " << this_tuple.toString(true) << "\n          !=            " << other_tuple.toString(true) << endl;
+            std::cout  << "    Failed to match!" << std::endl;
            return false;
         }
 
