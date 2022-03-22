@@ -185,16 +185,12 @@ PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag, PlainTable &dst_tabl
 
            case FieldType::DATE:
             {
+	      
 	      std::string date_str = src.as<std::string>(); // YYYY-MM-DD
 	      boost::gregorian::date date(boost::gregorian::from_string(date_str));
 	      boost::gregorian::date epochStart(1970, 1, 1);
               int64_t epoch = (date - epochStart).days() * 24 * 3600;
 	    
-	      // std::string dateStr = src.as<std::string>(); // YYYY-MM-DD
-              //  std::tm timeStruct = {};
-              //  strptime(dateStr.c_str(), "%Y-%m-%d", &timeStruct);
-		
-              //  int64_t epoch = mktime(&timeStruct);
 		#if defined(__APPLE__)
 		 epoch = epoch  - 21600; // date time function is 6 hours off in macos, likely a timezone problem
 		#endif
