@@ -191,9 +191,6 @@ PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag, PlainTable &dst_tabl
 	      boost::gregorian::date epochStart(1970, 1, 1);
               int64_t epoch = (date - epochStart).days() * 24 * 3600;
 	    
-		#if defined(__APPLE__)
-		 epoch = epoch  - 21600; // date time function is 6 hours off in macos, likely a timezone problem
-		#endif
                 return  PlainField(FieldType::LONG, epoch);
 
             }

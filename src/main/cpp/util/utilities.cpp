@@ -137,7 +137,7 @@ string Utilities::revealAndPrintBytes(emp::Bit *bits, const int &byteCount) {
 
     for(int i = 0; i < byteCount * 8; ++i) {
         ss << bits[i].reveal();
-        if((i+1) % 8 == 0) std::cout << " ";
+        if((i+1) % 8 == 0) ss << " ";
     }
 
     return ss.str();

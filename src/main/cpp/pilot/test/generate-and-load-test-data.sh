@@ -60,3 +60,4 @@ echo "Setting up semi-join optimization"
 #aggregate-only
 ./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count-no-dedupe.sql -y 2018 -d  pilot/secret_shares/tables/chi_counts-2018
 ./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count-no-dedupe.sql -y all -d  pilot/secret_shares/tables/chi_counts
+./bin/secret_share_from_query -D enrich_htn_chi -q pilot/queries/partial-count-no-dedupe.sql -y 2018-2019 -d  pilot/secret_shares/tables/chi_counts-2018-2019
