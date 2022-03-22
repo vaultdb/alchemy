@@ -14,22 +14,25 @@ protected:
     }
 };
 
+
+
+
 TEST_F(CsvReaderTest, lineitemTest) {
 
     // TODO: syscall the line below to generate the csv
  // generated input file by running:
- // psql  -t --csv  -c "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/lineitem.csv
-
+  // psql  -t --csv  -c "SELECT l_orderkey,  l_partkey,  l_suppkey,  l_linenumber,  l_quantity,  l_extendedprice,  l_discount,  l_tax,  l_returnflag,  l_linestatus,  CAST(EXTRACT(EPOCH FROM l_shipdate) AS BIGINT), CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT), CAST(EXTRACT(EPOCH FROM l_receiptdate) AS BIGINT),  l_shipinstruct,  l_shipmode,  l_comment FROM lineitem ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/lineitem.csv
     std::string inputFile =  currentWorkingDirectory + "/test/support/csv/lineitem.csv";
-    std::string query = "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50";
+    std::string query = "SELECT l_orderkey,  l_partkey,  l_suppkey,  l_linenumber,  l_quantity,  l_extendedprice,  l_discount,  l_tax,  l_returnflag,  l_linestatus,  CAST(EXTRACT(EPOCH FROM l_shipdate) AS BIGINT), CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT), CAST(EXTRACT(EPOCH FROM l_receiptdate) AS BIGINT),  l_shipinstruct,  l_shipmode,  l_comment "
+      "FROM lineitem ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
     std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
     QuerySchema csvSchema = *expected->getSchema();
     // substitute longs with dates in the appropriate cols, fields 10, 11, 12
-    csvSchema.putField(convertDateField(csvSchema.getField(10)));
-    csvSchema.putField(convertDateField(csvSchema.getField(11)));
-    csvSchema.putField(convertDateField(csvSchema.getField(12)));
+    //csvSchema.putField(convertDateField(csvSchema.getField(10)));
+    //csvSchema.putField(convertDateField(csvSchema.getField(11)));
+    //csvSchema.putField(convertDateField(csvSchema.getField(12)));
 
 
     std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, csvSchema);
@@ -90,17 +93,18 @@ TEST_F(CsvReaderTest, customerTest) {
 TEST_F(CsvReaderTest, ordersTest) {
 
     // generated input file by running:
-    // psql --csv -t  -c "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/orders.csv
+  
+    // psql  -t --csv  -c "SELECT o_orderkey, o_custkey, o_orderstatus, o_totalprice, CAST(EXTRACT(EPOCH FROM o_orderdate) AS BIGINT), o_orderpriority, o_clerk, o_shippriority, o_comment, o_orderyear  FROM orders ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/orders.csv
 
     std::string inputFile = currentWorkingDirectory +  "/test/support/csv/orders.csv";
-    std::string query = "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50";
+    std::string query = "SELECT o_orderkey, o_custkey, o_orderstatus, o_totalprice, CAST(EXTRACT(EPOCH FROM o_orderdate) AS BIGINT), o_orderpriority, o_clerk, o_shippriority, o_comment, o_orderyear FROM orders ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
     std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
 
     QuerySchema csvSchema = *expected->getSchema();
     // o_orderdate(4) set schema to date
-    csvSchema.putField(convertDateField(csvSchema.getField(4)));
+    //csvSchema.putField(convertDateField(csvSchema.getField(4)));
 
     std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, csvSchema);
     observed->setSchema(*expected->getSchema());
