@@ -2,13 +2,6 @@
 
 
 --------------------------------------------------------------------------------
-Author
---------------------------------------------------------------------------------
-
-VaultDB is being developed by Johes Bater, Madhav Suresh, Jennie Rogers, Keith Pallo, May Li, George Malty, and Nisha Pant.  It translates SQL statements into emp-toolkit programs for secure query evaluation.
-
-
---------------------------------------------------------------------------------
 Disclaimer
 --------------------------------------------------------------------------------
 
