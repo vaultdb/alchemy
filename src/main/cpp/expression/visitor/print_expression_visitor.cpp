@@ -113,11 +113,30 @@ void PrintExpressionVisitor<B>::visitBinaryExpression(ExpressionNode<B> &binary_
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(CastNode<B> node) {
-    node.accept(this);
+void PrintExpressionVisitor<B>::visit(CastNode<B> cast_node) {
+    cast_node.lhs_->accept(this);
+    std::string input_str = last_value_;
+    std::string dst_type_str = TypeUtilities::getTypeString(cast_node.dst_type_);
+    last_value_ = "CAST(" + input_str + ", " + dst_type_str + ")";
 
-    last_value_ = "CAST(" + last_value_ + ", " + TypeUtilities::getTypeString(node.dst_type_) + ")";
 }
+
+
+template<typename B>
+void PrintExpressionVisitor<B>::visit(CaseNode<B> case_node) {
+    case_node.lhs_->accept(this);
+    std::string lhs_str = last_value_;
+
+    case_node.rhs_->accept(this);
+    std::string rhs_str = last_value_;
+
+    case_node.conditional_.root_->accept(this);
+    std::string cond_str = last_value_;
+
+    last_value_ = "CASE(" + cond_str + ", " + lhs_str + ", " + rhs_str + ")";
+
+}
+
 
 template class vaultdb::PrintExpressionVisitor<bool>;
 template class vaultdb::PrintExpressionVisitor<emp::Bit>;

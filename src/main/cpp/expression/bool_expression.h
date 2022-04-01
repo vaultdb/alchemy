@@ -5,7 +5,6 @@
 
 namespace  vaultdb {
     template<typename B>
-
     // wrapper for ExpressionNode
     class BoolExpression : public Expression<B> {
     public:

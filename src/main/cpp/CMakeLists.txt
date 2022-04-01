@@ -106,6 +106,7 @@ set(sources
 		expression/math_expression_nodes.cpp
 		expression/comparator_expression_nodes.cpp
 		expression/connector_expression_nodes.cpp
+		expression/case_node.cpp
 
 		parser/plan_parser.cpp
 		parser/expression_parser.cpp
@@ -114,7 +115,8 @@ set(sources
 		expression/visitor/expression_visitor.h
 		expression/visitor/join_equality_condition_visitor.cpp
 		expression/visitor/print_expression_visitor.cpp
-		expression/visitor/type_inference_visitor.cpp )
+		expression/visitor/type_inference_visitor.cpp
+		expression/visitor/plain_to_secure_visitor.cpp)
 
 
 

@@ -4,6 +4,7 @@
 #include <query_table/query_tuple.h>
 #include <expression/expression_kind.h>
 #include "visitor/expression_visitor.h"
+#include <expression/bool_expression.h>
 
 // building blocks for composing arbitrary expressions
 // initially building around Calcite JSON expression format, but may extend this to join and filter expressions (etc.)
@@ -58,6 +59,7 @@ namespace vaultdb {
 
         ExpressionKind kind() const override;
         void accept(ExpressionVisitor<B> *visitor) override;
+        std::shared_ptr<LiteralNode<emp::Bit> > toSecure() const;
 
 
         Field<B> payload_;
@@ -67,7 +69,7 @@ namespace vaultdb {
     template<typename B>
     class CastNode : public ExpressionNode<B> {
     public:
-        CastNode(const uint32_t & read_idx, const FieldType & dst_type);
+        CastNode( std::shared_ptr<ExpressionNode<B> > & input, const FieldType & dst_type);
         ~CastNode() = default;
 
         Field<B> call(const QueryTuple<B> & target) const override;
@@ -76,9 +78,10 @@ namespace vaultdb {
 
         void accept(ExpressionVisitor<B> *visitor) override;
 
-        uint32_t read_idx_;
         FieldType dst_type_;
     };
+
+
 
 
 

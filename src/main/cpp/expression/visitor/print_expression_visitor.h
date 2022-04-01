@@ -3,6 +3,7 @@
 
 #include "expression_visitor.h"
 #include <string>
+#include <expression/case_node.h>
 
 namespace vaultdb {
     template<typename B>
@@ -11,9 +12,6 @@ namespace vaultdb {
         void visit(InputReferenceNode<B> node) override;
 
         void visit(LiteralNode<B> node) override;
-
-        void visit(CastNode<B> node) override;
-
 
         void visit(AndNode<B> node) override;
 
@@ -42,6 +40,10 @@ namespace vaultdb {
         void visit(GreaterThanEqNode<B> node) override;
 
         void visit(LessThanEqNode<B> node) override;
+
+        void visit(CastNode<B> node) override;
+
+        void visit(CaseNode<B> node) override;
 
         std::string getString() const;
 

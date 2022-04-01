@@ -4,6 +4,8 @@
 #include "expression_visitor.h"
 #include <query_table/query_schema.h>
 #include <map>
+#include <expression/case_node.h>
+
 
 // TODO: make this insert CAST ops as needed for expression evaluation
 namespace vaultdb {
@@ -16,8 +18,6 @@ namespace vaultdb {
         void visit(InputReferenceNode<B> node) override;
 
         void visit(LiteralNode<B> node) override;
-
-        void visit(CastNode<B> node) override;
 
         void visit(AndNode<B> node) override;
 
@@ -46,6 +46,10 @@ namespace vaultdb {
         void visit(GreaterThanEqNode<B> node) override;
 
         void visit(LessThanEqNode<B> node) override;
+
+        void visit(CastNode<B> node) override;
+
+        void visit(CaseNode<B> node) override;
 
         FieldType getExpressionType() const;
     private:

@@ -135,6 +135,7 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "LogicalJoin")  op = parseJoin(operator_id, tree);
     if(op_name == "LogicalProject")  op = parseProjection(operator_id, tree);
     if(op_name == "LogicalFilter")  op = parseFilter(operator_id, tree);
+    if(op_name == "JdbcTableScan")  op = parseSeqScan(operator_id, tree);
 
     if(op.get() != nullptr) {
         operators_[operator_id] = op;
@@ -326,6 +327,16 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_
 
     return project;
 }
+
+template<typename B>
+std::shared_ptr<Operator<B>> PlanParser<B>::parseSeqScan(const int & operator_id, const boost::property_tree::ptree &seq_scan_tree) {
+
+    ptree::const_iterator table_name_start = seq_scan_tree.get_child("table.").begin();
+    string table_name = table_name_start->second.get_value<std::string>();
+    string sql = "SELECT * FROM " + table_name;
+    return createInputOperator(sql, SortDefinition(), B(false));
+}
+
 
 
 // *** Utilities ***

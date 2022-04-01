@@ -20,6 +20,7 @@ enum class ExpressionKind {
     NOT,
     FUNCTION, // for FunctionExpression
     CAST,
+    CASE,
     UNDEFINED
 
 };

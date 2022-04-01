@@ -146,6 +146,21 @@ PlainField  Field<B>::reveal(const int &party) const {
     return PlainField(resType, revealed, strLength);
 }
 
+// secret sharing as public
+template<typename B>
+SecureField Field<B>::secret_share() const {
+    SecretShareVisitor visitor;
+    visitor.send_ = true;
+    visitor.string_length_ = string_length_;
+
+    Value result = boost::apply_visitor(visitor, payload_);
+
+    FieldType resType = TypeUtilities::toSecure(type_);
+
+
+    return SecureField(resType, result, string_length_);
+
+}
 
 template<typename B>
 std::string Field<B>::toString() const {

@@ -112,10 +112,13 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
       // cast numerator to INT for summing in next step
       // references (5)
-      shared_ptr<ExpressionNode<emp::Bit> > castNumerator(new CastNode<emp::Bit>(6, FieldType::SECURE_INT));
+
+      shared_ptr<ExpressionNode<emp::Bit> > numerator(new InputReferenceNode<emp::Bit>(6));
+      shared_ptr<ExpressionNode<emp::Bit> > castNumerator(new CastNode<emp::Bit>(numerator, FieldType::SECURE_INT));
       shared_ptr<Expression<emp::Bit> >  numeratorToIntExpression(new GenericExpression<emp::Bit>(castNumerator, "numerator", FieldType::SECURE_INT));
 
-      shared_ptr<ExpressionNode<emp::Bit> > castDenominator(new CastNode<emp::Bit>(7, FieldType::SECURE_INT));
+      shared_ptr<ExpressionNode<emp::Bit> > denominator(new InputReferenceNode<emp::Bit>(7));
+      shared_ptr<ExpressionNode<emp::Bit> > castDenominator(new CastNode<emp::Bit>(denominator, FieldType::SECURE_INT));
       shared_ptr<Expression<emp::Bit> >  denominatorToIntExpression(new GenericExpression<emp::Bit>(castDenominator, "denominator", FieldType::SECURE_INT));
 
 

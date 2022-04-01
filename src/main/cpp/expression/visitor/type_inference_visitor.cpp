@@ -131,9 +131,14 @@ FieldType TypeInferenceVisitor<B>::resolveType(const FieldType &lhs, const Field
 
 template<typename B>
 void TypeInferenceVisitor<B>::visit(CastNode<B> node) {
-
-    last_expression_type_ = node.dst_type_;
+    last_expression_type_ =  node.dst_type_;
 }
+
+template<typename B>
+void TypeInferenceVisitor<B>::visit(CaseNode<B> node) {
+    return resolveBinaryNode(node);
+}
+
 
 
 template class vaultdb::TypeInferenceVisitor<bool>;

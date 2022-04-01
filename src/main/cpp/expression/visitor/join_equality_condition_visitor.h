@@ -6,6 +6,7 @@
 #include <expression/comparator_expression_nodes.h>
 #include <expression/connector_expression_nodes.h>
 #include <expression/math_expression_nodes.h>
+#include <expression/case_node.h>
 
 #include <stdlib.h>
 #include <vector>
@@ -29,9 +30,6 @@ namespace vaultdb {
         void visit(InputReferenceNode<B> node) override;
 
         void visit(LiteralNode<B> node) override { throw; }
-
-        void visit(CastNode<B> node) override {throw;  }
-
 
         void visit(AndNode<B> node) override;
 
@@ -61,6 +59,9 @@ namespace vaultdb {
 
         void visit(LessThanEqNode<B> node) override { throw; }
 
+        void visit(CastNode<B> node) override { throw; }
+
+        void visit(CaseNode<B> node) override { throw; }
 
     };
 

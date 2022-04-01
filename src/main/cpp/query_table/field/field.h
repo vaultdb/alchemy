@@ -57,6 +57,8 @@ namespace vaultdb {
         }
 
 
+
+
         // delegate to visitor
         B  operator == (const Field &cmp) const;
         B  operator != (const Field &cmp) const;
@@ -84,6 +86,7 @@ namespace vaultdb {
 
         // if field is encrypted, decrypt
         PlainField reveal(const int & party = emp::PUBLIC) const;
+        SecureField secret_share() const; // secret share as public
 
         static SecureField secret_share_send(const PlainField & src, const int & dst_party);
         static SecureField secret_share_recv(const FieldType & type, const size_t & str_length, const int & dst_party);

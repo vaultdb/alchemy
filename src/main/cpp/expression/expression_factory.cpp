@@ -12,6 +12,21 @@ std::shared_ptr<ExpressionNode<B>> rhs) {
 
 template<typename B>
 std::shared_ptr<ExpressionNode<B>>
+ExpressionFactory<B>::getExpressionNode(const string &expression_kind, vector<std::shared_ptr<ExpressionNode<B> > >  & operands) {
+    ExpressionKind kind = getKind(expression_kind);
+
+    if(kind == ExpressionKind::CASE) {
+        assert(operands.size() == 3);
+        BoolExpression<B> conditional(operands[0]);
+        return std::shared_ptr<ExpressionNode<B> >(new CaseNode<B>(conditional, operands[1], operands[2]));
+    }
+    else
+        return getExpressionNode(kind, operands[0], operands[1]);
+}
+
+
+template<typename B>
+std::shared_ptr<ExpressionNode<B>>
 ExpressionFactory<B>::getExpressionNode(const ExpressionKind &kind, std::shared_ptr<ExpressionNode<B>> lhs,
 std::shared_ptr<ExpressionNode<B>> rhs) {
     switch(kind) {

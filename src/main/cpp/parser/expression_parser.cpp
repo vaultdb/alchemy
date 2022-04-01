@@ -51,15 +51,12 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseSubExpression(const ptre
     string op_name = op.get_child("kind").template get_value<string>();
 
     std::vector<shared_ptr<ExpressionNode<B> > > children;
-    int i = 0;
-    children.resize(2);
 
     // iterate over operands, invoke helper on each one
     for (ptree::const_iterator it = operands.begin(); it != operands.end(); ++it) {
-        children[i] = parseHelper(it->second);
-        ++i;
+        children.push_back(parseHelper(it->second));
     }
-    return ExpressionFactory<B>::getExpressionNode(op_name, children[0], children[1]);
+    return ExpressionFactory<B>::getExpressionNode(op_name, children);
 }
 
 template<typename B>
@@ -67,14 +64,14 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
     if(tree.count("literal")  > 0) {
         ptree literal = tree.get_child("literal");
         std::string type_str = tree.get_child("type").get_child("type").template get_value<std::string>();
-        assert(type_str == "INTEGER" || type_str == "FLOAT" || type_str == "LONG");     // only support int32 and float literals for now
+        //   assert(type_str == "INTEGER" || type_str == "FLOAT" || type_str == "LONG");     // only support int32 and float literals for now
 
-        if(type_str == "INTEGER") {
+        if(type_str == "INTEGER" || type_str == "DATE") { // dates input as epochs
             int32_t literal_int = literal.template get_value<int32_t>();
 
             Field<B> input_field = (std::is_same_v<B, bool>) ?
-                    Field<B>(FieldType::INT, Value((int32_t) literal_int))
-                            :  Field<B>(FieldType::SECURE_INT, emp::Integer(32, literal_int));
+                                   Field<B>(FieldType::INT, Value((int32_t) literal_int))
+                                                             :  Field<B>(FieldType::SECURE_INT, emp::Integer(32, literal_int));
             return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
         }
         else if(type_str == "LONG") {
@@ -85,7 +82,7 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
                                                              :  Field<B>(FieldType::SECURE_INT, emp::Integer(64, literal_int));
             return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
         }
-        else if(type_str == "FLOAT") {
+        else if(type_str == "FLOAT" || type_str == "DECIMAL") {
             float_t literal_float = literal.template get_value<float_t>();
             Field<B> input_field = (std::is_same_v<B, bool>) ?
                                    Field<B>(FieldType::FLOAT, Value(literal_float))
@@ -95,6 +92,17 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
 
 
         }
+        else if(type_str == "CHAR" || type_str == "VARCHAR") {
+            boost::property_tree::ptree type_tree = tree.get_child("type");
+            int length =    type_tree.get_child("precision").get_value<int>();
+            std::string literal_string =   literal.template get_value<std::string>();
+            if(std::is_same_v<B, emp::Bit>) throw std::invalid_argument("Encrypted string inputs not yet implemented!");
+
+            Field<B> input_field =  Field<B>(FieldType::STRING, Value(literal_string), length);
+            return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
+
+        }
+        throw std::invalid_argument("Parsing input of type " + type_str + " not yet implemented!");
 
     }
     // else it is an input
@@ -111,8 +119,6 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
 
 
 }
-
-
 
 template class vaultdb::ExpressionParser<bool>;
 template class vaultdb::ExpressionParser<emp::Bit>;

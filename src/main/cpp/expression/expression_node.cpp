@@ -81,14 +81,20 @@ void vaultdb::LiteralNode<B>::accept(ExpressionVisitor<B> *visitor) {
     visitor->visit(*this);
 }
 
+template<typename B>
+std::shared_ptr <LiteralNode<emp::Bit> > LiteralNode<B>::toSecure() const {
+    return std::shared_ptr<LiteralNode<emp::Bit> >(new LiteralNode<emp::Bit>(payload_.secret_share()));
+}
+
 
 template<typename B>
-CastNode<B>::CastNode(const uint32_t &read_idx, const FieldType &dst_type) : ExpressionNode<B>(nullptr), read_idx_(read_idx), dst_type_(dst_type) { }
+CastNode<B>::CastNode( std::shared_ptr<ExpressionNode<B> > & input, const FieldType &dst_type) : ExpressionNode<B>(input),  dst_type_(dst_type) { }
 
 template<typename B>
 Field<B> CastNode<B>::call(const QueryTuple<B> &target) const {
     // attempt to cast
-    Field<B> src =  target.getField(read_idx_);
+    Field<B> src =  ExpressionNode<B>::lhs_->call(target);
+
     switch(dst_type_) {
         case FieldType::INT:
         case FieldType::SECURE_INT:
@@ -116,8 +122,6 @@ void CastNode<B>::accept(ExpressionVisitor<B> *visitor) {
     visitor->visit(*this);
 }
 
-
-
 template class vaultdb::ExpressionNode<bool>;
 template class vaultdb::ExpressionNode<emp::Bit>;
 
@@ -129,3 +133,4 @@ template class vaultdb::LiteralNode<emp::Bit>;
 
 template class vaultdb::CastNode<bool>;
 template class vaultdb::CastNode<emp::Bit>;
+
