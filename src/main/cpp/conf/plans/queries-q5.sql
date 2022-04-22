@@ -7,8 +7,6 @@ INNER JOIN (SELECT n_nationkey, n_name, n_regionkey
 FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey
 INNER JOIN (SELECT c_custkey, c_nationkey
 FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey
-WHERE c_custkey = 136 OR c_custkey = 31
-   OR c_custkey = 137 OR c_custkey = 32
 ORDER BY t2.c_custkey ASC;
 -- 1, collation: (0 ASC, 1 ASC, 2 ASC)
 SELECT o_orderkey, o_custkey, o_orderdate
