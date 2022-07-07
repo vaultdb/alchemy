@@ -1,10 +1,11 @@
 #include <util/utilities.h>
 #include "csv_reader.h"
 #include <boost/algorithm/string.hpp>
-#include <field/field.h>
-#include <field/field_factory.h>
-#include <query_table.h>
-#include <plain_tuple.h>
+#include <query_table/field/field.h>
+#include <query_table/field/field_factory.h>
+#include <query_table/query_table.h>
+#include <query_table/plain_tuple.h>
+
 #include <util/data_utilities.h>
 
 using namespace vaultdb;

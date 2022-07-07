@@ -1,6 +1,9 @@
 #include "keyed_join.h"
-#include "secure_tuple.h" // needed for specialization
-#include "plain_tuple.h"
+
+#include <query_table/plain_tuple.h>
+// keep this file to ensure overloaded methods are visible
+#include <query_table/secure_tuple.h>
+
 
 #include <util/data_utilities.h>
 #include <util/field_utilities.h>

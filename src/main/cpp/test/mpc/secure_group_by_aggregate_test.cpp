@@ -87,7 +87,7 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expectedOutputQuer
 
 TEST_F(SecureGroupByAggregateTest, test_count) {
     // set up expected output
-    std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*)::INTEGER cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
     runTest(expectedOutputQuery, aggregators);
@@ -98,7 +98,7 @@ TEST_F(SecureGroupByAggregateTest, test_count) {
 
 TEST_F(SecureGroupByAggregateTest, test_sum) {
     // set up expected outputs
-    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber) sum_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber)::INTEGER sum_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
@@ -110,7 +110,7 @@ TEST_F(SecureGroupByAggregateTest, test_sum_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber) sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber)::INTEGER sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
@@ -230,7 +230,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
                                   "  avg(l_quantity) as avg_qty, \n"
                                   "  avg(l_extendedprice) as avg_price, \n"
                                   "  avg(l_discount) as avg_disc, \n"
-                                  "  count(*) as count_order \n"
+                                  "  count(*)::INTEGER as count_order \n"
                                   "from (" + inputQuery + ") subq\n"
                                                           " where NOT dummy\n"
                                                           "group by \n"
@@ -287,7 +287,7 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
                                   "  avg(l_quantity) as avg_qty, \n"
                                   "  avg(l_extendedprice) as avg_price, \n"
                                   "  avg(l_discount) as avg_disc, \n"
-                                  "  count(*) as count_order \n"
+                                  "  count(*)::INTEGER as count_order \n"
                                   "from (" + inputTuples + ") input "
                                                            " where  l_shipdate <= date '1998-08-03'  "
                                                            "group by \n"

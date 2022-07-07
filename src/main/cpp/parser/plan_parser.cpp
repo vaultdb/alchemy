@@ -7,7 +7,7 @@
 #include <boost/foreach.hpp>
 #include <iostream>
 #include <sstream>
-#include <support/aggregate_id.h>
+#include <operators/support/aggregate_id.h>
 
 #include <operators/sql_input.h>
 #include <operators/secure_sql_input.h>
@@ -18,8 +18,8 @@
 #include <operators/basic_join.h>
 #include <operators/filter.h>
 #include <operators/project.h>
-#include "expression_parser.h"
-#include "util/logger.h"
+#include <parser/expression_parser.h>
+#include <util/logger.h>
 
 using namespace vaultdb;
 using boost::property_tree::ptree;
