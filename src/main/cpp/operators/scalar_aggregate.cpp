@@ -83,6 +83,7 @@ void  ScalarAggregate<B>::setup() {
         FieldType aggValueType = (agg.ordinal == -1) ?
                                  std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG :
                                  input_schema.getField(agg.ordinal).getType();
+
         aggregators_.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
     }
 

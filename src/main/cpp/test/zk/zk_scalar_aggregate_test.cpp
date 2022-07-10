@@ -69,7 +69,7 @@ void ZkScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery,
 
 TEST_F(ZkScalarAggregateTest, test_count) {
     // set up expected output
-    std::string expectedOutputQuery = "SELECT COUNT(*)::INTEGER cnt FROM lineitem WHERE l_orderkey <= 10";
+    std::string expectedOutputQuery = "SELECT COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt"));
@@ -82,7 +82,7 @@ TEST_F(ZkScalarAggregateTest, test_count) {
 TEST_F(ZkScalarAggregateTest, test_count_dummies) {
     // set up expected output
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
-    std::string expectedOutputQuery = "SELECT COUNT(*)::INTEGER cnt_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
+    std::string expectedOutputQuery = "SELECT COUNT(*)::BIGINT cnt_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
 
 
     std::vector<ScalarAggregateDefinition> aggregators;
@@ -94,8 +94,9 @@ TEST_F(ZkScalarAggregateTest, test_count_dummies) {
 
 
 
+
 TEST_F(ZkScalarAggregateTest, test_avg) {
-  std::string expectedOutputQuery = "SELECT AVG(l_linenumber) avg_lineno FROM lineitem WHERE l_orderkey <= 10";
+  std::string expectedOutputQuery = "SELECT FLOOR(AVG(l_linenumber))::INT avg_lineno FROM lineitem WHERE l_orderkey <= 10";
 
   std::vector<ScalarAggregateDefinition> aggregators;
   aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno"));
@@ -107,7 +108,7 @@ TEST_F(ZkScalarAggregateTest, test_avg_dummies) {
 
 
   std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
-  std::string expectedOutputQuery = "SELECT AVG(l_linenumber) avg_lineno FROM (" + query + ") subquery WHERE  NOT dummy";
+  std::string expectedOutputQuery = "SELECT FLOOR(AVG(l_linenumber))::INT avg_lineno FROM (" + query + ") subquery WHERE  NOT dummy";
 
   std::vector<ScalarAggregateDefinition> aggregators;
   aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno"));
@@ -226,9 +227,9 @@ TEST_F(ZkScalarAggregateTest, test_tpch_q1_avg_cnt) {
                       " FROM (SELECT * FROM lineitem WHERE l_orderkey <= 194) selection";
 
   string expected_output_query =  "select \n"
-                                "  avg(l_quantity) as avg_qty, \n"
-                                "  avg(l_extendedprice) as avg_price, \n"
-                                "  avg(l_discount) as avg_disc, \n"
+                                "  FLOOR(avg(l_quantity))::BIGINT as avg_qty, \n"
+                                "  FLOOR(avg(l_extendedprice))::BIGINT  as avg_price, \n"
+                                "  FLOOR(avg(l_discount))::BIGINT  as avg_disc, \n"
                                 "  count(*)::BIGINT as count_order \n"
                                 "from (" + input_query + ") subq\n"
                                                         " where NOT dummy\n";
@@ -264,14 +265,14 @@ TEST_F(ZkScalarAggregateTest, tpch_q1) {
                       " FROM (" + input_tuples + ") selection \n";
 
   string expected_output_query = "select \n"
-                                "  sum(l_quantity) as sum_qty, \n"
-                                "  sum(l_extendedprice) as sum_base_price, \n"
-                                "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, \n"
-                                "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, \n"
-                                "  avg(l_quantity) as avg_qty, \n"
-                                "  avg(l_extendedprice) as avg_price, \n"
-                                "  avg(l_discount) as avg_disc, \n"
-                                "  count(*)::INTEGER as count_order \n"
+                                "  sum(l_quantity)::BIGINT as sum_qty, \n"
+                                "  sum(l_extendedprice)::BIGINT as sum_base_price, \n"
+                                "  sum(l_extendedprice * (1 - l_discount))::BIGINT as sum_disc_price, \n"
+                                "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax))::BIGINT as sum_charge, \n"
+                                "  FLOOR(avg(l_quantity))::BIGINT as avg_qty, \n"
+                                "  FLOOR(avg(l_extendedprice))::BIGINT as avg_price, \n"
+                                "  FLOOR(avg(l_discount))::BIGINT as avg_disc, \n"
+                                "  count(*)::BIGINT as count_order \n"
                                 "from (" + input_tuples + ") input "
                                                          " where  l_shipdate <= date '1998-08-03'";
 

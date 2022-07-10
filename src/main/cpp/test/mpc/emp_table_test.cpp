@@ -22,7 +22,6 @@ TEST_F(EmpTableTest, encrypt_table_one_column) {
 
     PsqlDataProvider dataProvider;
 
-    std::cout << "Have db name " << db_name_ << std::endl;
     std::string input_query =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
     std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
                                                                           input_query, false);

@@ -94,7 +94,6 @@ namespace vaultdb {
         ~ScalarAvgImpl()  = default;
         void accumulate(const QueryTuple<B> & tuple) override;
          Field<B> getResult() const override;
-        FieldType getType() const override;
 
     private:
         Field<B> runningSum;

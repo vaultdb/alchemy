@@ -10,7 +10,7 @@ class ScalarAggregateTest : public PlainBaseTest { };
 // should just count to 50
 TEST_F(ScalarAggregateTest, test_count) {
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem ORDER BY (1)  LIMIT 50";
-    std::string expectedSql = "SELECT COUNT(*)::INT FROM (" + query + ") q";
+    std::string expectedSql = "SELECT COUNT(*)::BIGINT FROM (" + query + ") q";
 
     SqlInput input(dbName, query, false);
 
@@ -31,7 +31,7 @@ TEST_F(ScalarAggregateTest, test_count_dummies) {
     std::string query = "SELECT l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem ORDER BY l_orderkey, l_linenumber  LIMIT 54";
 
     // set up the expected results:
-    std::string expectedOutputQuery = "SELECT COUNT(*)::INT cnt FROM (" + query + ") selection WHERE NOT dummy";
+    std::string expectedOutputQuery = "SELECT COUNT(*)::BIGINT cnt FROM (" + query + ") selection WHERE NOT dummy";
     std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
 
     
@@ -148,7 +148,7 @@ TEST_F(ScalarAggregateTest, test_avg) {
     std::string query =  "SELECT l_linenumber FROM lineitem WHERE l_orderkey <= 50  ORDER BY (1)";
 
   // set up the expected results:
-    std::string expectedOutputQuery = "SELECT AVG(l_linenumber) avg_lno  FROM (" + query + ") q";
+    std::string expectedOutputQuery = "SELECT FLOOR(AVG(l_linenumber))::INT avg_lno  FROM (" + query + ") q";
 
   std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
 
@@ -171,7 +171,7 @@ TEST_F(ScalarAggregateTest, test_avg_dummies) {
 
 
   // set up the expected results:
-  std::string expectedOutputQuery = "SELECT AVG(l_linenumber) avg_disc FROM (" + query + ") selection WHERE NOT dummy";
+  std::string expectedOutputQuery = "SELECT FLOOR(AVG(l_linenumber))::INTEGER avg_disc FROM (" + query + ") selection WHERE NOT dummy";
   std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
 
   SqlInput input(dbName, query, false);
@@ -264,9 +264,9 @@ TEST_F(ScalarAggregateTest, test_tpch_q1_avg_cnt) {
 
     string expectedOutputQuery =  "select \n"
                                   "  avg(l_quantity) as avg_qty, \n"
-                                  "  avg(l_extendedprice) as avg_price, \n"
+                                  "  avg(l_extendedprice)  as avg_price, \n"
                                   "  avg(l_discount) as avg_disc, \n"
-                                  "  count(*)::INT as count_order \n"
+                                  "  count(*)::BIGINT as count_order \n"
                                   "from (" + inputQuery + ") subq\n"
                                                           " where NOT dummy";
 
@@ -313,7 +313,7 @@ TEST_F(ScalarAggregateTest, test_all_aggs_tpch_q1) {
                                     "AVG(l_quantity) avg_qty, "
                                     "AVG(l_extendedprice) avg_price, "
                                     "AVG(l_discount) avg_disc, "
-                                    "COUNT(*)::INT count_order "
+                                    "COUNT(*)::BIGINT count_order "
                                     "FROM (" + query + ") selection WHERE NOT dummy";
   std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
 

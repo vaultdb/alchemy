@@ -9,7 +9,7 @@ ScalarCountImpl<B>::ScalarCountImpl(const uint32_t &ordinal, const FieldType &ag
     // initialize as long for count regardless of input ordinal
 
     ScalarAggregateImpl<B>::aggregateType =
-            (TypeUtilities::isEncrypted(aggType)) ? FieldType::SECURE_INT : FieldType::INT;
+            (TypeUtilities::isEncrypted(aggType)) ? FieldType::SECURE_LONG : FieldType::LONG;
 
     ScalarAggregateImpl<B>::zero = FieldFactory<B>::getZero(ScalarAggregateImpl<B>::aggregateType);
     ScalarAggregateImpl<B>::one = FieldFactory<B>::getOne(ScalarAggregateImpl<B>::aggregateType);
@@ -110,20 +110,10 @@ void ScalarAvgImpl<B>::accumulate(const QueryTuple<B> &tuple) {
 
 template<typename B>
  Field<B> ScalarAvgImpl<B>::getResult() const {
-    Field<B> sumFloat = FieldFactory<B>::toFloat(runningSum);
-    Field<B> cntFloat = FieldFactory<B>::toFloat(runningCount);
-    return sumFloat / cntFloat;
+    return runningSum / runningCount;
 
 }
 
-template<typename B>
-FieldType ScalarAvgImpl<B>::getType() const {
-    if(TypeUtilities::isEncrypted(runningSum.getType())) {
-        return FieldType::SECURE_FLOAT;
-    }
-    return FieldType::FLOAT;
-
-}
 
 
 template class vaultdb::ScalarCountImpl<bool>;
