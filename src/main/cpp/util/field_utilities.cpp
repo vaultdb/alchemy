@@ -1,4 +1,4 @@
-#include <query_schema.h>
+#include <query_table/query_schema.h>
 #include "field_utilities.h"
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>

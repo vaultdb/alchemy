@@ -12,7 +12,7 @@ using namespace emp;
 using namespace vaultdb;
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 43439, "port for EMP execution");
+DEFINE_int32(port, 43445, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 
 
@@ -83,7 +83,7 @@ void ZkGroupByAggregateTest::runDummiesTest(const string &expectedOutputQuery,
 
 TEST_F(ZkGroupByAggregateTest, test_count) {
     // set up expected output
-    std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
     runTest(expectedOutputQuery, aggregators);
@@ -94,7 +94,7 @@ TEST_F(ZkGroupByAggregateTest, test_count) {
 
 TEST_F(ZkGroupByAggregateTest, test_sum) {
     // set up expected outputs
-    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber) sum_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber)::INTEGER sum_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
@@ -106,7 +106,7 @@ TEST_F(ZkGroupByAggregateTest, test_sum_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber) sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber)::INTEGER sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
@@ -116,7 +116,7 @@ TEST_F(ZkGroupByAggregateTest, test_sum_dummies) {
 
 
 TEST_F(ZkGroupByAggregateTest, test_avg) {
-    std::string expectedOutputQuery = "SELECT l_orderkey, AVG(l_linenumber) avg_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno"));
@@ -127,7 +127,7 @@ TEST_F(ZkGroupByAggregateTest, test_avg_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, AVG(l_linenumber) avg_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno"));
@@ -176,8 +176,8 @@ TEST_F(ZkGroupByAggregateTest, test_tpch_q1_sums) {
 
 
     string expectedOutputQuery = "SELECT  l_returnflag, l_linestatus, "
-                                 "SUM(l_quantity) sum_qty, "
-                                 "SUM(l_extendedprice) sum_base_price, "
+                                 "SUM(l_quantity)::BIGINT sum_qty, "
+                                 "SUM(l_extendedprice)::BIGINT sum_base_price, "
                                  "SUM(disc_price) sum_disc_price, "
                                  "SUM(charge) sum_charge "
                                  "FROM (" + inputQuery + ") subquery WHERE NOT dummy "
@@ -222,10 +222,10 @@ TEST_F(ZkGroupByAggregateTest, test_tpch_q1_avg_cnt) {
     string expectedOutputQuery =  "select \n"
                                   "  l_returnflag, \n"
                                   "  l_linestatus, \n"
-                                  "  avg(l_quantity) as avg_qty, \n"
-                                  "  avg(l_extendedprice) as avg_price, \n"
-                                  "  avg(l_discount) as avg_disc, \n"
-                                  "  count(*) as count_order \n"
+                                  "  FLOOR(avg(l_quantity))::BIGINT as avg_qty, \n"
+                                  "  FLOOR(avg(l_extendedprice))::BIGINT as avg_price, \n"
+                                  "  FLOOR(avg(l_discount))::BIGINT as avg_disc, \n"
+                                  "  count(*)::BIGINT as count_order \n"
                                   "from (" + inputQuery + ") subq\n"
                                                           " where NOT dummy\n"
                                                           "group by \n"
@@ -274,14 +274,14 @@ TEST_F(ZkGroupByAggregateTest, tpch_q1) {
     string expectedOutputQuery =  "select \n"
                                   "  l_returnflag, \n"
                                   "  l_linestatus, \n"
-                                  "  sum(l_quantity) as sum_qty, \n"
-                                  "  sum(l_extendedprice) as sum_base_price, \n"
-                                  "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, \n"
-                                  "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, \n"
-                                  "  avg(l_quantity) as avg_qty, \n"
-                                  "  avg(l_extendedprice) as avg_price, \n"
-                                  "  avg(l_discount) as avg_disc, \n"
-                                  "  count(*) as count_order \n"
+                                  "  sum(l_quantity)::BIGINT as sum_qty, \n"
+                                  "  sum(l_extendedprice)::BIGINT as sum_base_price, \n"
+                                  "  sum(l_extendedprice * (1 - l_discount))::BIGINT as sum_disc_price, \n"
+                                  "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax))::BIGINT as sum_charge, \n"
+                                  "  FLOOR(avg(l_quantity))::BIGINT as avg_qty, \n"
+                                  "  FLOOR(avg(l_extendedprice))::BIGINT as avg_price, \n"
+                                  "  FLOOR(avg(l_discount))::BIGINT as avg_disc, \n"
+                                  "  count(*)::BIGINT as count_order \n"
                                   "from (" + inputTuples + ") input "
                                                            " where  l_shipdate <= date '1998-08-03'  "
                                                            "group by \n"

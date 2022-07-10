@@ -10,7 +10,7 @@
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 43439, "port for EMP execution");
+DEFINE_int32(port, 43441, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_bool(input, false, "input value");
 
@@ -98,9 +98,8 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
     std::shared_ptr<SecureTable> result = sort.run();
 
     std::shared_ptr<PlainTable> observed = result->reveal();
-    if(!IGNORE_BOB) {
-        ASSERT_EQ(*expected, *observed);
-    }
+    ASSERT_EQ(*expected, *observed);
+
 
 
 }
@@ -129,11 +128,7 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
     builder.addMapping(3, 1);
 
     Project project(&sort, builder.getExprs());
-   /* project.addColumnMapping(1, 0);
-    project.addColumnMapping(3, 1);
 
-    project.addInputReference(1, 0);
-    project.addInputReference(3, 1);*/
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed = result->reveal();
@@ -142,9 +137,8 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
     expected->setSortOrder(observed->getSortOrder());
 
 
-    if(!IGNORE_BOB) {
-        ASSERT_EQ(*expected, *observed);
-    }
+    ASSERT_EQ(*expected, *observed);
+
 
 }
 
@@ -173,10 +167,10 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
     // copy out the projected sort order
     expected->setSortOrder(observed->getSortOrder());
 
-    if(!IGNORE_BOB) {
+
         ASSERT_EQ(*expected, *observed);
 
-    }
+
 
 }
 
@@ -207,10 +201,8 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
     // copy out the projected sort order
     expected->setSortOrder(observed->getSortOrder());
 
-    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
 
-    }
 }
 
 
@@ -244,9 +236,9 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
 
-    if(!IGNORE_BOB) {
+
         ASSERT_TRUE(isSorted(observed, sortDefinition));
-    }
+
 
 
 }
@@ -286,9 +278,9 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
 
     // verify that first col is DESC, second is ASC
-    if(!IGNORE_BOB) {
+
         ASSERT_EQ(*expected, *observed);
-    }
+
 
 
 }

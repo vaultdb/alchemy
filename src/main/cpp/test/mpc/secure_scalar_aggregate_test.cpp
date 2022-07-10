@@ -7,7 +7,7 @@
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54324, "port for EMP execution");
+DEFINE_int32(port, 54329, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 
@@ -35,9 +35,9 @@ void SecureScalarAggregateTest::runTest(const string &expectedOutputQuery,
   ScalarAggregate aggregate(&input, aggregators);
   std::shared_ptr<PlainTable> observed = aggregate.run()->reveal();
 
-    if(!IGNORE_BOB) {
-      ASSERT_EQ(*expectedOutput, *observed);
-    }
+
+  ASSERT_EQ(*expectedOutput, *observed);
+
 
 }
 
@@ -64,9 +64,9 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregatedReveal);
 
-    if(!IGNORE_BOB) {
+
       ASSERT_EQ(*expectedOutput, *observed);
-    }
+
 
 }
 
@@ -122,7 +122,7 @@ TEST_F(SecureScalarAggregateTest, test_avg_dummies) {
 
 TEST_F(SecureScalarAggregateTest, test_sum) {
   // set up expected outputs
-  std::string expectedOutputQuery = "SELECT SUM(l_linenumber) sum_lineno FROM lineitem WHERE l_orderkey <= 10";
+  std::string expectedOutputQuery = "SELECT SUM(l_linenumber)::INTEGER sum_lineno FROM lineitem WHERE l_orderkey <= 10";
 
   std::vector<ScalarAggregateDefinition> aggregators;
   aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
@@ -135,7 +135,7 @@ TEST_F(SecureScalarAggregateTest, test_sum_dummies) {
 
 
   std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
-  std::string expectedOutputQuery = "SELECT SUM(l_linenumber) sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy";
+  std::string expectedOutputQuery = "SELECT SUM(l_linenumber)::INTEGER sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy";
 
   std::vector<ScalarAggregateDefinition> aggregators;
   aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
@@ -161,7 +161,7 @@ TEST_F(SecureScalarAggregateTest, test_sum_lineno_baseprice) {
 
 
   std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
-  std::string expectedOutputQuery = "SELECT SUM(l_linenumber) sum_lineno, SUM(l_extendedprice) sum_base_price FROM (" + query + ") subquery WHERE  NOT dummy";
+  std::string expectedOutputQuery = "SELECT SUM(l_linenumber)::INTEGER sum_lineno, SUM(l_extendedprice) sum_base_price FROM (" + query + ") subquery WHERE  NOT dummy";
 
   std::vector<ScalarAggregateDefinition> aggregators;
   aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_linemno"));
@@ -218,9 +218,9 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
 
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
-    if(!IGNORE_BOB) {
-      ASSERT_EQ(*expected, *observed);
-    }
+
+  ASSERT_EQ(*expected, *observed);
+
 
 }
 
@@ -259,9 +259,8 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
-    if(!IGNORE_BOB) {
-      ASSERT_EQ(*expected, *observed);
-    }
+  ASSERT_EQ(*expected, *observed);
+
 
 }
 
@@ -308,9 +307,8 @@ std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db
 
   // need to delete dummies from observed output to compare it to expected
   std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
-    if(!IGNORE_BOB) {
-      ASSERT_EQ(*expected, *observed);
-    }
+  ASSERT_EQ(*expected, *observed);
+
       
 }
 

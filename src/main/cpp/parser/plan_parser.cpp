@@ -11,6 +11,7 @@
 
 #include <operators/sql_input.h>
 #include <operators/secure_sql_input.h>
+#include <operators/zk_sql_input.h>
 #include <operators/sort.h>
 #include <operators/group_by_aggregate.h>
 #include <operators/scalar_aggregate.h>
@@ -48,6 +49,15 @@ PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, NetIO * 
 
 }
 
+// ZK constructor
+template<typename B>
+PlanParser<B>::PlanParser(const std::string & db_name, const std::string plan_name, BoolIO<NetIO> *ios[], const size_t & zk_threads, const int & party, const int & limit) : db_name_(db_name), zk_threads_(zk_threads), ios_(ios), party_(party), input_limit_(limit), zk_plan_(true) {
+        std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/zk-" + plan_name + ".json";
+        parseSecurePlan(plan_file);
+
+}
+
+
 template<typename B>
 shared_ptr<Operator<B>> PlanParser<B>::parse(const string &db_name, const string &plan_name, const int & limit) {
     PlanParser p(db_name, plan_name, limit);
@@ -60,6 +70,14 @@ shared_ptr<Operator<B>> PlanParser<B>::parse(const string &db_name, const string
     return p.root_;
 }
 
+template<typename B>
+shared_ptr<Operator<B>>
+PlanParser<B>::parse(const string &db_name, const string &plan_name, BoolIO<NetIO> **ios, const size_t &zk_threads,
+                     const int &party, const int &limit) {
+
+    PlanParser p(db_name, plan_name, ios, zk_threads, party, limit);
+    return p.root_;
+}
 
 
 template<typename B>
@@ -78,9 +96,10 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
         if((*pos).substr(0, 2) == "--") { // starting a new query
             if(init) { // skip the first one
                 has_dummy = (query.find("dummy_tag") != std::string::npos);
+                bool tmp =  (query.find("dummy_tag") != std::string::npos);
                 query_id = input_parameters.first;
 
-                operators_[query_id] = createInputOperator(query, input_parameters.second, has_dummy);
+                operators_[query_id] = createInputOperator(query, input_parameters.second, has_dummy, tmp);
 
             }
             // set up the next header
@@ -95,9 +114,11 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
 
     // output the last one
     has_dummy = (query.find("dummy") != std::string::npos);
+    bool tmp =  (query.find("dummy_tag") != std::string::npos);
+
     query_id = input_parameters.first;
 
-    operators_[query_id] = createInputOperator(query, input_parameters.second, has_dummy);
+    operators_[query_id] = createInputOperator(query, input_parameters.second,  has_dummy, tmp);
 
 }
 
@@ -184,16 +205,24 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseSort(const int &operator_id, co
 
 template<typename B>
 shared_ptr<Operator<bool>>
-PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag) {
-    shared_ptr<SqlInput> sql_input(new SqlInput(db_name_, sql, has_dummy_tag, collation, input_limit_));
+PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag, const bool & plain_has_dummy_tag) {
+    size_t limit = (input_limit_ < 0) ? 0 : input_limit_;
+
+    shared_ptr<SqlInput> sql_input(new SqlInput(db_name_, sql, plain_has_dummy_tag, collation, limit));
     return sql_input;
 }
 
 template<typename B>
 shared_ptr<Operator<emp::Bit>>
-PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag) {
-    bool dummy_tag = has_dummy_tag.template reveal(); // just a loop with above, so no security - just aligns template defs
-    shared_ptr<SecureSqlInput> input(new SecureSqlInput(db_name_, sql, dummy_tag, collation, netio_, party_, input_limit_));
+PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag, const bool & plain_has_dummy_tag) {
+    size_t limit = (input_limit_ < 0) ? 0 : input_limit_;
+
+    if(zk_plan_) {
+        shared_ptr<ZkSqlInput> input(new ZkSqlInput(db_name_, sql, plain_has_dummy_tag, collation, ios_, zk_threads_, party_, limit));
+        return input;
+    }
+
+    shared_ptr<SecureSqlInput> input(new SecureSqlInput(db_name_, sql, plain_has_dummy_tag, collation, netio_, party_, limit));
     return input;
 
 }
@@ -333,8 +362,9 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseSeqScan(const int & operator_id
 
     ptree::const_iterator table_name_start = seq_scan_tree.get_child("table.").begin();
     string table_name = table_name_start->second.get_value<std::string>();
-    string sql = "SELECT * FROM " + table_name;
-    return createInputOperator(sql, SortDefinition(), B(false));
+    // order by to make truncated sets reproducible
+    string sql = "SELECT * FROM " + table_name + " ORDER BY (1), (2), (3) ";
+    return createInputOperator(sql, SortDefinition(), B(false), false);
 }
 
 
@@ -416,6 +446,7 @@ template<typename B>
 shared_ptr<Operator<B>> PlanParser<B>::getOperator(const int &op_id) {
     return operators_.find(op_id)->second;
 }
+
 
 
 template class vaultdb::PlanParser<bool>;

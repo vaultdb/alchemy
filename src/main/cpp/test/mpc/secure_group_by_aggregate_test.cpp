@@ -13,7 +13,7 @@ using namespace emp;
 using namespace vaultdb;
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 43439, "port for EMP execution");
+DEFINE_int32(port, 43440, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 
 
@@ -49,9 +49,7 @@ void SecureGroupByAggregateTest::runTest(const string &expectedOutputQuery,
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregatedReveal);
 
-    if(!IGNORE_BOB) {
-        ASSERT_EQ(*expected, *observed);
-    }
+    ASSERT_EQ(*expected, *observed);
 
 
 }
@@ -79,15 +77,14 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expectedOutputQuer
 
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
-    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
-    }
+
 }
 
 
 TEST_F(SecureGroupByAggregateTest, test_count) {
     // set up expected output
-    std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*)::INTEGER cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
     runTest(expectedOutputQuery, aggregators);
@@ -120,7 +117,7 @@ TEST_F(SecureGroupByAggregateTest, test_sum_dummies) {
 
 
 TEST_F(SecureGroupByAggregateTest, test_avg) {
-    std::string expectedOutputQuery = "SELECT l_orderkey, AVG(l_linenumber) avg_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno"));
@@ -131,7 +128,7 @@ TEST_F(SecureGroupByAggregateTest, test_avg_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, AVG(l_linenumber) avg_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expectedOutputQuery = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno"));
@@ -210,9 +207,8 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
-    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
-    }
+
 
 }
 
@@ -230,7 +226,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
                                   "  avg(l_quantity) as avg_qty, \n"
                                   "  avg(l_extendedprice) as avg_price, \n"
                                   "  avg(l_discount) as avg_disc, \n"
-                                  "  count(*)::INTEGER as count_order \n"
+                                  "  count(*)::BIGINT as count_order \n"
                                   "from (" + inputQuery + ") subq\n"
                                                           " where NOT dummy\n"
                                                           "group by \n"
@@ -262,9 +258,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
-    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
-    }
 
 }
 
@@ -287,7 +281,7 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
                                   "  avg(l_quantity) as avg_qty, \n"
                                   "  avg(l_extendedprice) as avg_price, \n"
                                   "  avg(l_discount) as avg_disc, \n"
-                                  "  count(*)::INTEGER as count_order \n"
+                                  "  count(*)::BIGINT as count_order \n"
                                   "from (" + inputTuples + ") input "
                                                            " where  l_shipdate <= date '1998-08-03'  "
                                                            "group by \n"
@@ -324,9 +318,7 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
     // need to delete dummies from observed output to compare it to expected
     std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
-    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
-    }
 
 }
 

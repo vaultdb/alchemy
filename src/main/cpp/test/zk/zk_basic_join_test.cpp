@@ -8,7 +8,7 @@
 #include <util/utilities.h>
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 43439, "port for EMP execution");
+DEFINE_int32(port, 43446, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 
 using namespace vaultdb;
@@ -62,7 +62,7 @@ TEST_F(ZkBasicJoinTest, test_tpch_q3_customer_orders) {
 
     BasicJoin join(orders_input, customer_input, predicate);
 
-    std::shared_ptr<PlainTable> joinResult = join.run()->reveal();
+    std::shared_ptr<PlainTable> joinResult = join.run()->reveal(PUBLIC);
 
 
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema()->getFieldCount());

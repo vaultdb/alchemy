@@ -449,9 +449,9 @@ namespace vaultdb {
     struct DivisionVisitor : public boost::static_visitor<Value> {
         Value operator()(bool b) const { throw;  }
 
-        Value operator()(int32_t i) const { return i / boost::get<int32_t>(rhs); }
+        Value operator()(int32_t i) const { return (i == 0) ? 0 : i / boost::get<int32_t>(rhs); }
 
-        Value operator()(int64_t i) const { return i / boost::get<int64_t>(rhs); }
+        Value operator()(int64_t i) const { return (i == 0L) ? 0L : i / boost::get<int64_t>(rhs); }
 
         Value operator()(float_t f) const { return  f / boost::get<float_t>(rhs); }
 

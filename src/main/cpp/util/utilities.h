@@ -18,11 +18,11 @@
 #include <vector>
 #include <string>
 #include <emp-tool/circuits/bit.h>
-#include <support/aggregate_id.h>
+#include <operators/support/aggregate_id.h>
 #include <expression/bool_expression.h>
 #include <expression/comparator_expression_nodes.h>
 #include <expression/generic_expression.h>
-#include <defs.h>
+#include <common/defs.h>
 #include <util/logger.h>
 
 

@@ -79,7 +79,7 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
 
             Field<B> input_field = (std::is_same_v<B, bool>) ?
                                    Field<B>(FieldType::LONG, Value((int64_t) literal_int))
-                                                             :  Field<B>(FieldType::SECURE_INT, emp::Integer(64, literal_int));
+                                                             :  Field<B>(FieldType::SECURE_LONG, emp::Integer(64, literal_int));
             return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
         }
         else if(type_str == "FLOAT" || type_str == "DECIMAL") {
@@ -96,9 +96,14 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
             boost::property_tree::ptree type_tree = tree.get_child("type");
             int length =    type_tree.get_child("precision").get_value<int>();
             std::string literal_string =   literal.template get_value<std::string>();
-            if(std::is_same_v<B, emp::Bit>) throw std::invalid_argument("Encrypted string inputs not yet implemented!");
-
             Field<B> input_field =  Field<B>(FieldType::STRING, Value(literal_string), length);
+
+            if(std::is_same_v<B, emp::Bit>) {
+                SecureField encrypted_field = input_field.secret_share();
+                Integer encrypted_string = encrypted_field.template getValue<emp::Integer>();
+                shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(Field<B>(FieldType::SECURE_STRING, encrypted_string, length)));
+            }
+
             return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
 
         }

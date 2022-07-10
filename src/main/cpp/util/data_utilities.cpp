@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <data/psql_data_provider.h>
 #include <sys/stat.h>
-#include <union.h>
+#include <operators/union.h>
 #include "data_utilities.h"
 #include <algorithm>
 

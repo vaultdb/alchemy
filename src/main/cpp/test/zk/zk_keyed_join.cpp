@@ -5,11 +5,11 @@
 #include <operators/sort.h>
 #include <test/zk/zk_base_test.h>
 #include <operators/keyed_join.h>
-#include <operators/expression/comparator_expression_nodes.h>
+#include <expression/comparator_expression_nodes.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 43439, "port for EMP execution");
+DEFINE_int32(port, 43448, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 
 using namespace vaultdb;
@@ -45,11 +45,13 @@ protected:
 TEST_F(ZkKeyedJoinTest, test_tpch_q3_customer_orders) {
 
 
+
     std::string expectedResultSql = "WITH customer_cte AS (" + customer_sql + "), "
-                                                                              "orders_cte AS (" + orders_sql + ") "
-                                                                                                               "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, (cdummy OR odummy OR o_custkey <> c_custkey) dummy "
-                                                                                                               "FROM customer_cte, orders_cte "
-                                                                                                               "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
+                                                                             "orders_cte AS (" + orders_sql + ") "
+                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,(cdummy OR odummy) dummy "
+                                                                                                             "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
+                                                                                                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
+
 
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(alice_db, expectedResultSql, true);
@@ -72,7 +74,10 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_customer_orders) {
     Sort<emp::Bit> sort(&join, sortDefinition);
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
 
+
     expected->setSortOrder(sortDefinition);
+
+
     ASSERT_EQ(*expected, *observed);
 
 }
@@ -83,10 +88,14 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 
 // get inputs from local oblivious ops
 // first 3 customers, propagate this constraint up the join tree for the test
-    std::string expectedResultSql = "WITH orders_cte AS (" + orders_sql + "), \n"
-                                                                          "lineitem_cte AS (" + lineitem_sql + ") ""SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority,(odummy OR ldummy OR o_orderkey <> l_orderkey) dummy "
-                                                                                                               "FROM lineitem_cte, orders_cte "
-                                                                                                               "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
+    std::string expectedResultSql = "WITH orders_cte AS (" + orders_sql + "), "
+                                                                         "lineitem_cte AS (" + lineitem_sql + "), "
+                                                                                                             "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, (o_orderkey=l_orderkey) matched, (odummy OR ldummy) dummy \n"
+                                                                                                             "FROM lineitem_cte, orders_cte \n"
+                                                                                                             "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
+                                                                                                             "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, dummy \n"
+                                                                                                             "FROM cross_product \n"
+                                                                                                             "WHERE matched";
     BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
@@ -109,7 +118,7 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders) {
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
 
     expected->setSortOrder(sortDefinition);
-    ASSERT_EQ(observed->toString(true), expected->toString(true));
+   // ASSERT_EQ(observed->toString(true), expected->toString(true));
     ASSERT_EQ(*expected, *observed);
 
 }
@@ -119,12 +128,15 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 // compose C-O-L join should produce one output tuple, order ID 210945
 TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
-    std::string expected_result_sql = "WITH orders_cte AS (" + orders_sql + "), "
-                                                                            "lineitem_cte AS (" + lineitem_sql + "), "
-                                                                                                                 "customer_cte AS (" + customer_sql + ") "
-                                                                                                                                                      "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, (cdummy OR odummy OR ldummy OR o_orderkey <> l_orderkey OR c_custkey <> o_custkey) dummy "
-                                                                                                                                                      "FROM lineitem_cte, orders_cte, customer_cte "
-                                                                                                                                                      "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
+    std::string expected_result_sql = "WITH orders_cte AS (" + orders_sql + "), \n"
+                                                                         "lineitem_cte AS (" + lineitem_sql + "), \n"
+                                                                                                             "customer_cte AS (" + customer_sql + "),\n "
+                                                                                                                                                 "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (odummy OR ldummy OR cdummy) dummy \n"
+                                                                                                                                                 "FROM lineitem_cte, orders_cte, customer_cte  \n"
+                                                                                                                                                 "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
+                                                                                                                                                 "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, dummy \n"
+                                                                                                                                                 "FROM cross_product \n"
+                                                                                                                                                 "WHERE matched";
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(alice_db, expected_result_sql, true);
 

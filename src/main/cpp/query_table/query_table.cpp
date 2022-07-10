@@ -221,14 +221,13 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 }
 
 
-// two-way secret share - both Alice and Bob providing private inputs
+// up to two-way secret share - both Alice and Bob providing private inputs
 template<typename B>
 std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input, emp::NetIO *netio, const int & party)  {
 
 
     size_t alice_tuple_cnt =  input.getTupleCount();
     size_t bob_tuple_cnt = alice_tuple_cnt;
-
 
     if (party == ALICE) {
         netio->send_data(&alice_tuple_cnt, 4);
@@ -242,8 +241,6 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
         netio->flush();
     }
 
-
-
     QuerySchema dst_schema = QuerySchema::toSecure(*input.getSchema());
 
     std::shared_ptr<SecureTable> dst_table(new SecureTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, input.getSortOrder()));
@@ -251,21 +248,22 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
     // preserve sort order - reverse input order for latter half to do bitonic merge
     if(!input.getSortOrder().empty()) {
         if (party == emp::ALICE) {
-            secret_share_send(emp::ALICE, input, *dst_table, 0, true);
-            secret_share_recv(bob_tuple_cnt, emp::BOB, *dst_table, alice_tuple_cnt, false);
+            if(alice_tuple_cnt > 0) secret_share_send(emp::ALICE, input, *dst_table, 0, true);
+            if(bob_tuple_cnt > 0) secret_share_recv(bob_tuple_cnt, emp::BOB, *dst_table, alice_tuple_cnt, false);
+
         } else { // bob
-            secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, true);
-            secret_share_send(emp::BOB, input, *dst_table, alice_tuple_cnt, false);
+            if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, true);
+            if(bob_tuple_cnt > 0)  secret_share_send(emp::BOB, input, *dst_table, alice_tuple_cnt, false);
         }
         Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true);
     }
     else { // concatenate Alice and Bob
         if (party == emp::ALICE) {
-            secret_share_send(emp::ALICE, input, *dst_table, 0, false);
-            secret_share_recv(bob_tuple_cnt, emp::BOB, *dst_table, alice_tuple_cnt, false);
+            if(alice_tuple_cnt > 0) secret_share_send(emp::ALICE, input, *dst_table, 0, false);
+            if(bob_tuple_cnt > 0)  secret_share_recv(bob_tuple_cnt, emp::BOB, *dst_table, alice_tuple_cnt, false);
         } else { // bob
-            secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, false);
-            secret_share_send(emp::BOB, input, *dst_table, alice_tuple_cnt, false);
+            if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, false);
+            if(bob_tuple_cnt > 0)  secret_share_send(emp::BOB, input, *dst_table, alice_tuple_cnt, false);
         }
     }
     netio->flush();
@@ -275,6 +273,53 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
 
 }
 
+
+
+
+// ZK secret share - only alice provides inputs
+template<typename B>
+std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input,  emp::BoolIO<NetIO> *ios[], const size_t & thread_count, const int & party)  {
+
+
+    size_t alice_tuple_cnt =  input.getTupleCount();
+
+    string tmp_party = (party == emp::ALICE) ? "alice" : "bob";
+
+    // reset before we send the counts
+    for(int i = 0; i < thread_count; ++i) {
+        ios[i]->flush();
+    }
+
+    NetIO *netio = ios[0]->io;
+
+    if (party == ALICE) {
+        netio->send_data(&alice_tuple_cnt, 4);
+        netio->flush();
+    } else if (party == BOB) {
+        netio->recv_data(&alice_tuple_cnt, 4);
+        netio->flush();
+    }
+
+    assert(alice_tuple_cnt > 0);
+
+    QuerySchema dst_schema = QuerySchema::toSecure(*input.getSchema());
+
+    std::shared_ptr<SecureTable> dst_table(new SecureTable(alice_tuple_cnt, dst_schema, input.getSortOrder()));
+
+
+    if (party == emp::ALICE) {
+        secret_share_send(emp::ALICE, input, *dst_table, 0, false);
+    } else { // bob
+        secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, false);
+    }
+
+    for(int i = 0; i < thread_count; ++i) {
+        ios[i]->flush();
+    }
+
+    return dst_table;
+
+}
 
 
 template<typename B>

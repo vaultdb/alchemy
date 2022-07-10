@@ -73,7 +73,6 @@ namespace vaultdb {
         void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         Field<B> getResult() override;
-        FieldType getType() const override;
         ~GroupByAvgImpl() = default;
 
     private:

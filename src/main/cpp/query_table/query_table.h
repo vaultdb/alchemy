@@ -10,6 +10,7 @@
 #include "util/utilities.h"
 #include "plain_tuple.h"
 #include <emp-tool/emp-tool.h>
+#include <emp-zk/emp-zk.h>
 #include <boost/iterator/iterator_facade.hpp>
 
 // ignore bob when secret sharing for ZK
@@ -86,6 +87,8 @@ namespace  vaultdb {
 
 
             static std::shared_ptr<SecureTable> secretShare(const PlainTable & input, emp::NetIO *io, const int &party);
+            static std::shared_ptr<SecureTable> secretShare(const PlainTable & input, emp::BoolIO<NetIO> *ios[], const size_t & thread_count, const int &party);
+
             static std::shared_ptr<SecureTable>
             secret_share_send_table(const std::shared_ptr<PlainTable> &input, emp::NetIO *io, const int &sharing_party);
             static std::shared_ptr<SecureTable>

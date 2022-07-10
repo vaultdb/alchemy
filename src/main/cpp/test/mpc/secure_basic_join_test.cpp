@@ -9,7 +9,7 @@
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 43439, "port for EMP execution");
+DEFINE_int32(port, 43443, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 
 using namespace vaultdb;
@@ -73,9 +73,8 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
 
     expected->setSortOrder(sortDefinition);
 
-    if(!IGNORE_BOB) {
-        ASSERT_EQ(*expected, *observed);
-    }
+    ASSERT_EQ(*expected, *observed);
+
 
 }
 
@@ -114,9 +113,9 @@ std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
 
     expected->setSortOrder(sortDefinition);
-    if(!IGNORE_BOB) {
-        ASSERT_EQ(*expected, *observed);
-    }
+
+    ASSERT_EQ(*expected, *observed);
+
 
 }
 
@@ -160,9 +159,8 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
-    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
-    }
+
 }
 
 

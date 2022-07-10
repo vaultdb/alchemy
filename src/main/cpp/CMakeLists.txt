@@ -83,6 +83,7 @@ set(sources
 		operators/operator.cpp
 		operators/sql_input.cpp
         operators/secure_sql_input.cpp
+		operators/zk_sql_input.cpp
 		operators/filter.cpp
 		operators/project.cpp
 		operators/sort.cpp

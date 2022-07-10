@@ -7,7 +7,7 @@
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54324, "port for EMP execution");
+DEFINE_int32(port, 65431, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 
@@ -69,7 +69,7 @@ void ZkScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery,
 
 TEST_F(ZkScalarAggregateTest, test_count) {
     // set up expected output
-    std::string expectedOutputQuery = "SELECT COUNT(*) cnt FROM lineitem WHERE l_orderkey <= 10";
+    std::string expectedOutputQuery = "SELECT COUNT(*)::INTEGER cnt FROM lineitem WHERE l_orderkey <= 10";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt"));
@@ -82,7 +82,7 @@ TEST_F(ZkScalarAggregateTest, test_count) {
 TEST_F(ZkScalarAggregateTest, test_count_dummies) {
     // set up expected output
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
-    std::string expectedOutputQuery = "SELECT COUNT(*) cnt_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
+    std::string expectedOutputQuery = "SELECT COUNT(*)::INTEGER cnt_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
 
 
     std::vector<ScalarAggregateDefinition> aggregators;
@@ -117,7 +117,7 @@ TEST_F(ZkScalarAggregateTest, test_avg_dummies) {
 
 TEST_F(ZkScalarAggregateTest, test_sum) {
   // set up expected outputs
-  std::string expectedOutputQuery = "SELECT SUM(l_linenumber) sum_lineno FROM lineitem WHERE l_orderkey <= 10";
+  std::string expectedOutputQuery = "SELECT SUM(l_linenumber)::INTEGER sum_lineno FROM lineitem WHERE l_orderkey <= 10";
 
   std::vector<ScalarAggregateDefinition> aggregators;
   aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
@@ -130,7 +130,7 @@ TEST_F(ZkScalarAggregateTest, test_sum_dummies) {
 
 
   std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
-  std::string expectedOutputQuery = "SELECT SUM(l_linenumber) sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy";
+  std::string expectedOutputQuery = "SELECT SUM(l_linenumber)::INTEGER sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy";
 
   std::vector<ScalarAggregateDefinition> aggregators;
   aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
@@ -143,7 +143,7 @@ TEST_F(ZkScalarAggregateTest, test_sum_baseprice_dummies) {
 
 
   std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
-  std::string expectedOutputQuery = "SELECT SUM(l_extendedprice) sum_base_price FROM (" + query + ") subquery WHERE  NOT dummy";
+  std::string expectedOutputQuery = "SELECT SUM(l_extendedprice)::BIGINT sum_base_price FROM (" + query + ") subquery WHERE  NOT dummy";
 
   std::vector<ScalarAggregateDefinition> aggregators;
   aggregators.push_back(ScalarAggregateDefinition(2, AggregateId::SUM, "sum_base_price"));
@@ -156,7 +156,7 @@ TEST_F(ZkScalarAggregateTest, test_sum_lineno_baseprice) {
 
 
   std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
-  std::string expectedOutputQuery = "SELECT SUM(l_linenumber) sum_lineno, SUM(l_extendedprice) sum_base_price FROM (" + query + ") subquery WHERE  NOT dummy";
+  std::string expectedOutputQuery = "SELECT SUM(l_linenumber)::INTEGER sum_lineno, SUM(l_extendedprice)::BIGINT sum_base_price FROM (" + query + ") subquery WHERE  NOT dummy";
 
   std::vector<ScalarAggregateDefinition> aggregators;
   aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_linemno"));
@@ -190,8 +190,8 @@ TEST_F(ZkScalarAggregateTest, test_tpch_q1_sums) {
                       " FROM (" + input_tuples + ") selection";
 
 
-  string expected_output_query = "SELECT SUM(l_quantity) sum_qty, "
-                               "SUM(l_extendedprice) sum_base_price, "
+  string expected_output_query = "SELECT SUM(l_quantity)::BIGINT sum_qty, "
+                               "SUM(l_extendedprice)::BIGINT sum_base_price, "
                                "SUM(disc_price) sum_disc_price, "
                                "SUM(charge) sum_charge "
                                "FROM (" + input_query + ") subquery WHERE NOT dummy ";
@@ -229,7 +229,7 @@ TEST_F(ZkScalarAggregateTest, test_tpch_q1_avg_cnt) {
                                 "  avg(l_quantity) as avg_qty, \n"
                                 "  avg(l_extendedprice) as avg_price, \n"
                                 "  avg(l_discount) as avg_disc, \n"
-                                "  count(*) as count_order \n"
+                                "  count(*)::BIGINT as count_order \n"
                                 "from (" + input_query + ") subq\n"
                                                         " where NOT dummy\n";
 
@@ -271,7 +271,7 @@ TEST_F(ZkScalarAggregateTest, tpch_q1) {
                                 "  avg(l_quantity) as avg_qty, \n"
                                 "  avg(l_extendedprice) as avg_price, \n"
                                 "  avg(l_discount) as avg_disc, \n"
-                                "  count(*) as count_order \n"
+                                "  count(*)::INTEGER as count_order \n"
                                 "from (" + input_tuples + ") input "
                                                          " where  l_shipdate <= date '1998-08-03'";
 

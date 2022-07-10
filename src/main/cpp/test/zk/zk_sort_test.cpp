@@ -11,7 +11,7 @@
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 43439, "port for EMP execution");
+DEFINE_int32(port, 43447, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_bool(input, false, "input value");
 
@@ -113,9 +113,12 @@ TEST_F(ZkSortTest, tpchQ3Sort) {
 
 
     // project it down to $1, $3
-    Project project(&sort);
-    project.addColumnMapping(1, 0);
-    project.addColumnMapping(3, 1);
+    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
+    builder.addMapping(1, 0);
+    builder.addMapping(3, 1);
+
+    // project it down to $1, $3
+    Project project(&sort, builder.getExprs());
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed = result->reveal();
@@ -142,8 +145,11 @@ TEST_F(ZkSortTest, tpchQ5Sort) {
 
 
     // project it down to $1
-    Project project(&sort);
-    project.addColumnMapping(1, 0);
+    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
+    builder.addMapping(1, 0);
+
+    // project it down to $1
+    Project project(&sort, builder.getExprs());
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
@@ -172,8 +178,10 @@ TEST_F(ZkSortTest, tpchQ8Sort) {
     shared_ptr<SecureTable> input = ZkTest::secret_share_input(sql, false);
     Sort<emp::Bit> sort(input, sortDefinition);
 
-    Project project(&sort);
-    project.addColumnMapping(0, 0);
+    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
+    builder.addMapping(0, 0);
+
+    Project project(&sort, builder.getExprs());
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
@@ -206,11 +214,12 @@ TEST_F(ZkSortTest, tpchQ9Sort) {
     shared_ptr<SecureTable> input = ZkTest::secret_share_input(sql, false);
     Sort sort(input, sortDefinition);
 
-    // project it down to $2, $0
-    Project project(&sort);
+// project it down to $2, $0
+    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
+    builder.addMapping(2, 0);
+    builder.addMapping(0, 1);
 
-    project.addColumnMapping(2, 0);
-    project.addColumnMapping(0, 1);
+    Project project(&sort, builder.getExprs());
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();
@@ -305,10 +314,12 @@ TEST_F(ZkSortTest, tpchQ18Sort) {
 
 
     // project it down to $2, $1
+    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
+    builder.addMapping(2, 0);
+    builder.addMapping(1, 1);
 
-    Project project(&sort);
-    project.addColumnMapping(2, 0);
-    project.addColumnMapping(1, 1);
+    Project project(&sort, builder.getExprs());
+
 
     std::shared_ptr<SecureTable> result = project.run();
     std::shared_ptr<PlainTable> observed  = result->reveal();

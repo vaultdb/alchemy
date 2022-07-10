@@ -87,6 +87,7 @@ ExpressionKind ExpressionFactory<B>::getKind(const string &expression_kind) {
     if(expression_kind == "GREATER_THAN_OR_EQUAL") return ExpressionKind::GEQ;
     if(expression_kind == "LESS_THAN") return ExpressionKind::LT;
     if(expression_kind == "LESS_THAN_OR_EQUAL") return ExpressionKind::LEQ;
+    if(expression_kind == "CASE") return ExpressionKind::CASE;
 
     throw new std::invalid_argument("Can't create ExpressionKind for  " + expression_kind);
 

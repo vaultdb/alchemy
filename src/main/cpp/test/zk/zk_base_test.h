@@ -1,5 +1,5 @@
-#ifndef VAULTDB_EMP_ZK_BASE_TEST_H
-#define VAULTDB_EMP_ZK_BASE_TEST_H
+#ifndef _ZK_BASE_TEST_H
+#define _ZK_BASE_TEST_H
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <stdexcept>
@@ -24,8 +24,8 @@ namespace vaultdb {
         static const std::string bob_db;
 
         std::string db_name = unioned_db; // default, set in setUp()
-        static const int threads = 1;
-        BoolIO<NetIO> *ios[threads];
+        static const int threads_ = 1;
+        BoolIO<NetIO> *ios_[threads_];
 
     };
 

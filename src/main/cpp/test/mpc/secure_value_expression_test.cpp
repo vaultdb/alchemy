@@ -13,7 +13,7 @@ using namespace vaultdb;
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54321, "port for EMP execution");
+DEFINE_int32(port, 54323, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 class SecureValueExpressionTest : public EmpBaseTest {

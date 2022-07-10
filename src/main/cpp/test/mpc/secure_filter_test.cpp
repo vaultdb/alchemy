@@ -14,7 +14,7 @@ using namespace vaultdb;
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54321, "port for EMP execution");
+DEFINE_int32(port, 54325, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 
 
@@ -37,9 +37,8 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::unique_ptr<PlainTable> revealed = output->reveal(emp::PUBLIC);
 
 
-    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *revealed);
-    }
+
 
 
 }
@@ -74,9 +73,9 @@ TEST_F(SecureFilterTest, test_filter) {
     std::shared_ptr<SecureTable> result = filter.run();
     std::unique_ptr<PlainTable> revealed = result->reveal(emp::PUBLIC);
 
-    if(!IGNORE_BOB) {
+
         ASSERT_EQ(*expected,  *revealed);
-    }
+
 
 }
 

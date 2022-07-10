@@ -8,7 +8,7 @@
 #include <expression/comparator_expression_nodes.h>
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 43439, "port for EMP execution");
+DEFINE_int32(port, 43442, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 
 using namespace vaultdb;
@@ -73,9 +73,8 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
     shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
-    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
-    }
+
 
 }
 
@@ -119,9 +118,8 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
 
 
 
-    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
-    }
+
 
 }
 
@@ -169,9 +167,8 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(sortDefinition);
 
-    if(!IGNORE_BOB) {
         ASSERT_EQ(*expected, *observed);
-    }
+
 
 }
 

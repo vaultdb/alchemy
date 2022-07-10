@@ -44,31 +44,12 @@ PlanParserTest::runTest(const int &test_id, const SortDefinition &expected_sort,
 }
 
 
-TEST_F(PlanParserTest, read_collation_sql) {
-    // header in comment on top of SQL statement
-    string q1 = "-- 0, collation: (0 ASC, 1 ASC)";
-    string q3_orders = "-- 1, collation: (0 ASC, 2 DESC, 3 ASC)"; // actually all ASC in tpc-h, for testing
-
-    pair<int, SortDefinition> q1_header = PlanParser<bool>::parseSqlHeader(q1);
-    ASSERT_EQ(q1_header.first, 0);
-    ASSERT_EQ(q1_header.second, DataUtilities::getDefaultSortDefinition(2));
-
-    pair<int, SortDefinition> q3_header = PlanParser<bool>::parseSqlHeader(q3_orders);
-    SortDefinition q3_sort{ColumnSort(0, SortDirection::ASCENDING),
-                           ColumnSort(2, SortDirection::DESCENDING),
-                           ColumnSort(3, SortDirection::ASCENDING)};
-
-    ASSERT_EQ(q3_header.first, 1);
-    ASSERT_EQ(q3_header.second, q3_sort);
-
-
-}
 
 // sort not really needed in Q1 MPC pipeline, retaining it to demo the hand-off from one op to the next
 TEST_F(PlanParserTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    std::string expected_plan = "Sort<bool> ({<0, ASC> , <1, ASC> )) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float .sum_qty, #3 float .sum_base_price, #4 float .sum_disc_price, #5 float .sum_charge, #6 float .avg_qty, #7 float .avg_price, #8 float .avg_disc, #9 int32 .count_order) order by: {<0, ASC> , <1, ASC> )\n"
-                                "    GroupByAggregate<bool> (group-by: (0, 1) aggs: (SUM($2) sum_qty, SUM($3) sum_base_price, SUM($4) sum_disc_price, SUM($5) sum_charge, AVG($2) avg_qty, AVG($3) avg_price, AVG($6) avg_disc, COUNT(*) count_order)) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float .sum_qty, #3 float .sum_base_price, #4 float .sum_disc_price, #5 float .sum_charge, #6 float .avg_qty, #7 float .avg_price, #8 float .avg_disc, #9 int32 .count_order) order by: {<0, ASC> , <1, ASC> )\n"
+    std::string expected_plan = "Sort<bool> ({<0, ASC> , <1, ASC> )) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float .sum_qty, #3 float .sum_base_price, #4 float .sum_disc_price, #5 float .sum_charge, #6 float .avg_qty, #7 float .avg_price, #8 float .avg_disc, #9 int64 .count_order) order by: {<0, ASC> , <1, ASC> )\n"
+                                "    GroupByAggregate<bool> (group-by: (0, 1) aggs: (SUM($2) sum_qty, SUM($3) sum_base_price, SUM($4) sum_disc_price, SUM($5) sum_charge, AVG($2) avg_qty, AVG($3) avg_price, AVG($6) avg_disc, COUNT(*) count_order)) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float .sum_qty, #3 float .sum_base_price, #4 float .sum_disc_price, #5 float .sum_charge, #6 float .avg_qty, #7 float .avg_price, #8 float .avg_disc, #9 int64 .count_order) order by: {<0, ASC> , <1, ASC> )\n"
                                 "        SqlInput<bool> (\"SELECT * FROM (SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice, l_extendedprice * (1 - l_discount) AS discount, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, l_discount, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem ORDER BY l_returnflag, l_linestatus ) input LIMIT 10\", tuple_count=10) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float lineitem.l_quantity, #3 float lineitem.l_extendedprice, #4 float .discount, #5 float .charge, #6 float lineitem.l_discount) order by: {<0, ASC> , <1, ASC> ) tuple count: 10\n";
 
     runTest(1, expected_sort, expected_plan);

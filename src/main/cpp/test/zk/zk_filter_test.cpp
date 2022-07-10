@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <operators/sql_input.h>
 #include <operators/filter.h>
-#include <operators/expression/comparator_expression_nodes.h>
+#include <expression/comparator_expression_nodes.h>
 #include <query_table/secure_tuple.h>
 #include <test/zk/zk_base_test.h>
 #include <emp-zk/emp-zk.h>
@@ -16,7 +16,7 @@ using namespace vaultdb;
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54321, "port for EMP execution");
+DEFINE_int32(port, 65432, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 
@@ -27,7 +27,7 @@ protected:
     static const int tuple_cnt = 10;
     std::string sql;
 
-    BoolIO<NetIO>* ios[threads];
+   // BoolIO<NetIO>* ios[threads_];
 
     shared_ptr<SecureTable> secret_share_input() const;
 
@@ -48,14 +48,14 @@ shared_ptr<SecureTable> ZkFilterTest::secret_share_input() const {
     if(FLAGS_party == emp::ALICE) {
         SqlInput read_db(db_name, sql, false, order_by);
         shared_ptr<PlainTable> input = read_db.run();
-        return PlainTable::secret_share_send_table(input, FLAGS_party);
+        return PlainTable::secret_share_send_table(input, ios_[0]->io, FLAGS_party);
     }
     else if(FLAGS_party == emp::BOB){ // BOB
         // not input, just grabbing schema
         SqlInput read_db(db_name, sql, false);
         shared_ptr<PlainTable> input = read_db.run();
         QuerySchema schema = *input->getSchema();
-        return PlainTable ::secret_share_recv_table(tuple_cnt, schema, order_by, emp::ALICE);
+        return PlainTable ::secret_share_recv_table( schema, order_by, ios_[0]->io, emp::ALICE);
     }
 
     throw std::invalid_argument("Not a valid party for secret sharing!");
@@ -72,7 +72,7 @@ TEST_F(ZkFilterTest, test_table_scan) {
     std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, sql, false, 2);
 
     ASSERT_EQ(*expected, *revealed);
-    // cheat check handledd in ZkBaseTest
+    // cheat check handled in ZkBaseTest
 
 
 }

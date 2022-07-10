@@ -45,8 +45,8 @@ Field<B> GroupByCountImpl<B>::getResult() {
 template<typename B>
 FieldType GroupByCountImpl<B>::getType() const {
     if(TypeUtilities::isEncrypted(GroupByAggregateImpl<B>::aggregateType))
-        return FieldType::SECURE_INT;
-    return FieldType::INT;  // count always returns a long
+        return FieldType::SECURE_LONG;
+    return FieldType::LONG;  // count always returns a long
 }
 
 
@@ -122,19 +122,7 @@ void GroupByAvgImpl<B>::accumulate(const QueryTuple<B> &tuple, const B &isGroupB
 
 template<typename B>
 Field<B> GroupByAvgImpl<B>::getResult() {
-    // this always becomes a float for computing AVG, using the precedent in psql
-    Field<B> sumFloat = FieldFactory<B>::toFloat(runningSum);
-    Field<B> cntFloat = FieldFactory<B>::toFloat(runningCount);
-    return sumFloat / cntFloat;
-}
-
-// always returns a float
-template<typename B>
-FieldType GroupByAvgImpl<B>::getType() const {
-    if(TypeUtilities::isEncrypted(runningSum.getType())) {
-        return FieldType::SECURE_FLOAT;
-    }
-    return FieldType::FLOAT;
+    return runningSum / runningCount;
 }
 
 
