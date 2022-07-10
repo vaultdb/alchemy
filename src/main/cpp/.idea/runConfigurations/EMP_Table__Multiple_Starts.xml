@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="EMP Table  Multiple Starts" type="CompoundRunConfigurationType">
+    <toRun name="emp_test_multiple_starts A" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="emp_test_multiple_starts B" type="CMakeGoogleTestRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>

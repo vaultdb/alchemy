@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="load-tuples-data-partner Bob" type="CMakeRunConfiguration" factoryName="Application" singleton="false" PROGRAM_PARAMS="127.0.0.1 54321 2 pilot/test/input/bob-patient.csv  pilot/test/output/chi-patient.bob" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="vaultdb-emp" TARGET_NAME="load_tuples_data_partner" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="vaultdb-emp" RUN_TARGET_NAME="load_tuples_data_partner">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

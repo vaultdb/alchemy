@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="All ZK Tests" type="CompoundRunConfigurationType">
+    <toRun name="ZK Basic Join Test" type="CompoundRunConfigurationType" />
+    <toRun name="ZK Filter Test" type="CompoundRunConfigurationType" />
+    <toRun name="ZK Groupby Aggregate Test" type="CompoundRunConfigurationType" />
+    <toRun name="ZK Keyed Join Test" type="CompoundRunConfigurationType" />
+    <toRun name="ZK Scalar Aggregate Test" type="CompoundRunConfigurationType" />
+    <toRun name="ZK Sort Test" type="CompoundRunConfigurationType" />
+    <toRun name="ZK TPC-H Test" type="CompoundRunConfigurationType" />
+    <toRun name="ZKTest" type="CompoundRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>

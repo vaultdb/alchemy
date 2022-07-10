@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ZK Basic Join Test" type="CompoundRunConfigurationType">
+    <toRun name="zk_basic_join_test A " targetId="CMakeBuildProfile:Debug" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="zk_basic_join_test B" targetId="CMakeBuildProfile:Debug" type="CMakeGoogleTestRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>
