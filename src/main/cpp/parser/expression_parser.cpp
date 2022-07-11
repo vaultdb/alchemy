@@ -101,7 +101,8 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
             if(std::is_same_v<B, emp::Bit>) {
                 SecureField encrypted_field = input_field.secret_share();
                 Integer encrypted_string = encrypted_field.template getValue<emp::Integer>();
-                shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(Field<B>(FieldType::SECURE_STRING, encrypted_string, length)));
+                return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(Field<B>(FieldType::SECURE_STRING, encrypted_string, length)));
+
             }
 
             return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));

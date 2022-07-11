@@ -16,7 +16,11 @@ using namespace emp;
 using namespace vaultdb;
 
 // DIAGNOSE = 1 --> all tests produce non-empty result
+// JMR: This is db dependendant
+// TODO: either add DBs to repo to make this reproducible or find a better way to test
+
 #define DIAGNOSE 1
+#define TRUNCATE 0
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -30,6 +34,7 @@ protected:
 
     // depends on truncate-tpch-set.sql
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
+    int input_tuple_limit_ = 1000;
 
 };
 
@@ -42,6 +47,11 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
     string local_db_name = db_name;
     boost::replace_first(local_db_name, "unioned", party_name.c_str());
 
+    if(TRUNCATE) {
+        query = truncated_tpch_queries[test_id];
+        boost::replace_all(query, "$LIMIT", std::to_string(input_tuple_limit_));
+    }
+
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name, query, false, 0);
     expected->setSortOrder(expected_sort);
 
@@ -51,7 +61,9 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
 //        ASSERT_GT(expected->getTupleCount(),  0);
 //    }
 
-    PlanParser<emp::Bit> parser(local_db_name, test_name, netio_, FLAGS_party, 0);
+
+    int limit = (TRUNCATE) ? input_tuple_limit_ : -1;
+    PlanParser<emp::Bit> parser(local_db_name, test_name, netio_, FLAGS_party, limit);
     shared_ptr<SecureOperator> root = parser.getRoot();
 
     shared_ptr<PlainTable> observed = root->run()->reveal();

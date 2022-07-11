@@ -73,44 +73,6 @@ namespace vaultdb {
 
     };
 
-    struct EqualityVisitor : public boost::static_visitor<Value> {
-        Value operator()(bool b) const { return b == boost::get<bool>(rhs); }
-
-        Value operator()(int32_t i) const {
-
-            return i == boost::get<int32_t>(rhs);
-        }
-
-        Value operator()(int64_t i) const {
-            return i == boost::get<int64_t>(rhs);
-        }
-
-        Value operator()(float_t f) const {  // approx float equality
-            double epsilon = std::fabs(f * 0.01);
-            float_t r = boost::get<float_t>(rhs);
-            return std::fabs(r - f) <=  epsilon;
-        }
-
-        Value operator()(std::string s) const { return s == boost::get<std::string>(rhs); }
-
-        Value operator()(emp::Bit l) const {
-            emp::Bit r = boost::get<emp::Bit>(rhs);
-            return l == r;
-        }
-
-        Value operator()(emp::Integer l) const {
-            emp::Integer r = boost::get<emp::Integer>(rhs);
-            return l == r;
-        }
-
-        Value operator()(emp::Float l) const {
-            emp::Float r = boost::get<emp::Float>(rhs);
-            return r.equal(l);
-        }
-
-        Value rhs;
-
-    };
 
 
     struct RevealVisitor : public boost::static_visitor<Value> {
@@ -150,7 +112,7 @@ namespace vaultdb {
         int party = emp::PUBLIC;
         FieldType type = FieldType::INVALID;
 
-        std::string revealString(const emp::Integer &src, const int &party) const {
+        static std::string revealString(const emp::Integer &src, const int &party)  {
             long bitCount = src.size();
 
             bool *bools = new bool[bitCount];
@@ -173,6 +135,45 @@ namespace vaultdb {
             delete[] bools;
             return dst;
         }
+    };
+
+    struct EqualityVisitor : public boost::static_visitor<Value> {
+        Value operator()(bool b) const { return b == boost::get<bool>(rhs); }
+
+        Value operator()(int32_t i) const {
+
+            return i == boost::get<int32_t>(rhs);
+        }
+
+        Value operator()(int64_t i) const {
+            return i == boost::get<int64_t>(rhs);
+        }
+
+        Value operator()(float_t f) const {  // approx float equality
+            double epsilon = std::fabs(f * 0.01);
+            float_t r = boost::get<float_t>(rhs);
+            return std::fabs(r - f) <=  epsilon;
+        }
+
+        Value operator()(std::string s) const { return s == boost::get<std::string>(rhs); }
+
+        Value operator()(emp::Bit l) const {
+            emp::Bit r = boost::get<emp::Bit>(rhs);
+            return l == r;
+        }
+
+        Value operator()(emp::Integer l) const {
+            emp::Integer r = boost::get<emp::Integer>(rhs);
+            return l == r;
+        }
+
+        Value operator()(emp::Float l) const {
+            emp::Float r = boost::get<emp::Float>(rhs);
+            return r.equal(l);
+        }
+
+        Value rhs;
+
     };
 
 

@@ -29,11 +29,14 @@ shared_ptr<SecureTable> SecureSqlInput::runSelf() {
 void SecureSqlInput::runQuery() {
     PsqlDataProvider dataProvider;
     if(input_tuple_limit_ > 0) { // truncate inputs
+        // check if it ends in ; - delete it if so
+        boost::replace_all(input_query_, ";", "");
         input_query_ = "SELECT * FROM (" + input_query_ + ") input LIMIT " + std::to_string(input_tuple_limit_);
     }
 
     plain_input_ = dataProvider.getQueryTable(db_name_, input_query_, has_dummy_tag_);
     plain_input_->setSortOrder(getSortOrder());
+
 
 }
 
