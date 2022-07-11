@@ -105,7 +105,7 @@
             "name": "$1"
           },
           {
-            "literal": 313,
+            "literal": 300,
             "type": {
               "type": "INTEGER",
               "nullable": false
@@ -345,7 +345,7 @@
         }
       ],
       "fetch": {
-        "literal": 100,
+        "literal": 1000,
         "type": {
           "type": "INTEGER",
           "nullable": false
