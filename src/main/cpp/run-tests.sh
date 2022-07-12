@@ -79,44 +79,30 @@ sleep 2
 ./bin/enrich_test --party=2
 
 
-
+sleep 2
 
 ## ZK Tests -- these can be optional
 
-./bin/zk_basic_join_test --party=1 &
-./bin/zk_basic_join_test --party=2
-
-sleep 2
-
-./bin/zk_filter_test --party=1 &
-./bin/zk_filter_test --party=2
-
-sleep 2
-
-./bin/zk_group_by_aggregate_test --party=1 &
-./bin/zk_group_by_aggregate_test --party=2
-
-sleep 2
-
-./bin/zk_keyed_join_test --party=1 &
-./bin/zk_keyed_join_test --party=2
-
-sleep 2
-
-./bin/zk_scalar_aggregate_test --party=1 &
-./bin/zk_scalar_aggregate_test --party=2
-
-sleep 2
-
-./bin/zk_sort_test --party=1 &
-./bin/zk_sort_test --party=2
-
-sleep 2
-
 ./bin/zk_test --party=1 &
 ./bin/zk_test --party=2
-
 sleep 2
-
+./bin/zk_filter_test --party=1 &
+./bin/zk_filter_test --party=2
+sleep 2
+./bin/zk_basic_join_test --party=1 &
+./bin/zk_basic_join_test --party=2
+sleep 2
+./bin/zk_keyed_join_test --party=1 &
+./bin/zk_keyed_join_test --party=2
+sleep 2
+./bin/zk_scalar_aggregate_test --party=1 &
+./bin/zk_scalar_aggregate_test --party=2
+sleep 2
+./bin/zk_group_by_aggregate_test --party=1 &
+./bin/zk_group_by_aggregate_test --party=2
+sleep 2
+./bin/zk_sort_test --party=1 &
+./bin/zk_sort_test --party=2
+sleep 2
 ./bin/zk_tpch_test --party=1 &
 ./bin/zk_tpch_test --party=2

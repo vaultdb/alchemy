@@ -15,7 +15,7 @@ const std::string ZkTest::bob_db = "tpch_zk_bob"; // this should be an empty DBM
 //  set up tpch_zk_bob with:
 //  \set target_db tpch_zk_bob
 //DROP DATABASE IF EXISTS :target_db;
-//CREATE DATABASE :target_db  WITH TEMPLATE tpch_unioned_int;
+//CREATE DATABASE :target_db  WITH TEMPLATE tpch_unioned_int; -- or insert your source DB here
 //\c :target_db
 //        DELETE FROM lineitem CASCADE;
 //DELETE FROM orders CASCADE;
