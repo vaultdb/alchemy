@@ -29,7 +29,7 @@ class ZkTpcHTest : public ZkTest {
 protected:
 
     // depends on truncate-tpch-set.sql
-    int tuple_limit_ = 10000; // when TRUNCATE_DATA == 1, tune this to change the size of our test input data
+    int tuple_limit_ = 1000; // when TRUNCATE_INPUTS == 1, tune this to change the size of our test input data
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
 
 };
