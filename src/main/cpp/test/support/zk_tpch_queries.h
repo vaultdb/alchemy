@@ -285,9 +285,6 @@ namespace vaultdb {
                 "  o_orderyear\n"
                 " order by\n"
                 "  o_orderyear\n"},
-                // TODO: this won't work for validation because
-                //  we need to truncate later - after join between partsupp/part/nation/supplier
-                // using n_name instead of nation alias in tpc-h because aliasing for schema lookups is NYI
             {9, "WITH  profit AS (\n"
                 "         select\n"
                 "    	   n_name,\n"
