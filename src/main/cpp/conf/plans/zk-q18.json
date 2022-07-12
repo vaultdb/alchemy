@@ -107,7 +107,7 @@
           {
             "literal": 300,
             "type": {
-              "type": "INTEGER",
+              "type": "LONG",
               "nullable": false
             }
           }

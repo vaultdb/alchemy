@@ -92,7 +92,7 @@ std::string Operator<B>::toString() const {
     stringstream  ss;
 
     string bool_type = (std::is_same_v<B, bool>) ? "bool" : "Bit";
-    ss <<   getOperatorType() << "<" << bool_type << "> ";
+    ss << "#" <<   operator_id_ << ": " << getOperatorType() << "<" << bool_type << "> ";
 
     string params = getParameters();
     if(!params.empty())
@@ -148,6 +148,16 @@ template<typename B>
 SortDefinition Operator<B>::getSortOrder() const {
     assert(output_.get() == nullptr || sort_definition_ == output_->getSortOrder()); // check that output table is aligned with operator's sort order
     return sort_definition_;
+}
+
+template<typename B>
+int Operator<B>::getOperatorId() const {
+    return operator_id_;
+}
+
+template<typename B>
+void Operator<B>::setOperatorId(int op_id)  {
+    operator_id_ = op_id;
 }
 
 

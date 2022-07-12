@@ -2,6 +2,8 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <util/data_utilities.h>
 #include <expression/expression_factory.h>
+#include <expression/visitor/type_validation_visitor.h>
+#include <parser/plan_parser.h>
 
 using namespace vaultdb;
 using namespace std;
@@ -23,12 +25,18 @@ std::shared_ptr<Expression<B>> ExpressionParser<B>::parseJSONExpression(const st
 template<typename B>
 shared_ptr<Expression<B>> ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & input_schema) {
    shared_ptr<ExpressionNode<B> > expression_root = parseHelper(tree);
-   return shared_ptr<Expression<B> >(new GenericExpression<B>(expression_root, input_schema));
+   TypeValidationVisitor<B> visitor(expression_root, input_schema);
+    expression_root->accept(&visitor);
+
+    return shared_ptr<Expression<B> >(new GenericExpression<B>(expression_root, input_schema));
 }
 
 template<typename B>
-BoolExpression<B> ExpressionParser<B>::parseBoolExpression(const ptree &tree) {
+BoolExpression<B> ExpressionParser<B>::parseBoolExpression(const ptree &tree, const QuerySchema &input_schema) {
     shared_ptr<ExpressionNode<B> > expression_root = parseHelper(tree);
+    TypeValidationVisitor<B> visitor(expression_root, input_schema);
+    expression_root->accept(&visitor);
+
     return BoolExpression<B>(expression_root);
 }
 
@@ -64,7 +72,6 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
     if(tree.count("literal")  > 0) {
         ptree literal = tree.get_child("literal");
         std::string type_str = tree.get_child("type").get_child("type").template get_value<std::string>();
-        //   assert(type_str == "INTEGER" || type_str == "FLOAT" || type_str == "LONG");     // only support int32 and float literals for now
 
         if(type_str == "INTEGER" || type_str == "DATE") { // dates input as epochs
             int32_t literal_int = literal.template get_value<int32_t>();

@@ -88,8 +88,8 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
             Join<B>::write_right(!this_dummy_tag, dst_tuple, rhs_tuple);
             Join<B>::update_dummy_tag(dst_tuple, predicate_eval, this_dummy_tag);
-        }
 
+        }
 
 
     }

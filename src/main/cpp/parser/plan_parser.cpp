@@ -19,6 +19,7 @@
 #include <operators/basic_join.h>
 #include <operators/filter.h>
 #include <operators/project.h>
+#include <operators/join.h>
 #include <parser/expression_parser.h>
 #include <util/logger.h>
 
@@ -100,6 +101,7 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
                 query_id = input_parameters.first;
 
                 operators_[query_id] = createInputOperator(query, input_parameters.second, has_dummy, tmp);
+                operators_.at(query_id)->setOperatorId(query_id);
 
             }
             // set up the next header
@@ -119,6 +121,7 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
     query_id = input_parameters.first;
 
     operators_[query_id] = createInputOperator(query, input_parameters.second,  has_dummy, tmp);
+    operators_.at(query_id)->setOperatorId(query_id);
 
 }
 
@@ -160,6 +163,8 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
 
     if(op.get() != nullptr) {
         operators_[operator_id] = op;
+        operators_.at(operator_id)->setOperatorId(operator_id);
+
         root_ = op;
     }
     else
@@ -196,7 +201,7 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseSort(const int &operator_id, co
 
     }
 
-    const shared_ptr<Operator<B> > child = getChildOperator(operator_id);
+    const shared_ptr<Operator<B> > child = getChildOperator(operator_id, sort_tree);
 
     return shared_ptr<Operator<B> > (new Sort<B>(child.get(), sort_definition, limit));
 
@@ -268,7 +273,7 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_i
         aggregators.push_back(s);
     }
 
-    shared_ptr<Operator<B> > child = getChildOperator(operator_id);
+    shared_ptr<Operator<B> > child = getChildOperator(operator_id, aggregate_json);
 
 
     if(!group_by_ordinals.empty()) {
@@ -296,7 +301,8 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_i
 template<typename B>
 std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_tree) {
     boost::property_tree::ptree join_condition_tree = join_tree.get_child("condition");
-    BoolExpression<B> join_condition = ExpressionParser<B>::parseBoolExpression(join_condition_tree);
+
+
 
     ptree input_list = join_tree.get_child("inputs.");
     ptree::const_iterator it = input_list.begin();
@@ -306,6 +312,10 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, co
     int rhs_id = it->second.get_value<int>();
     shared_ptr<Operator<B> > rhs  = operators_.at(rhs_id);
 
+    QuerySchema schema = Join<B>::concatenateSchemas(lhs->getOutputSchema(), rhs->getOutputSchema());
+    BoolExpression<B> join_condition = ExpressionParser<B>::parseBoolExpression(join_condition_tree, schema);
+
+
     // if fkey designation exists, use this to create keyed join
     // key: foreignKey
     if(join_tree.count("foreignKey") > 0) {
@@ -313,6 +323,7 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, co
         return shared_ptr<Operator<B> > (new KeyedJoin<B>(lhs.get(), rhs.get(), foreign_key, join_condition));
 
     }
+
 
     return shared_ptr<Operator<B> > (new BasicJoin<B>(lhs.get(), rhs.get(), join_condition));
 
@@ -322,8 +333,9 @@ template<typename B>
 std::shared_ptr<Operator<B>> PlanParser<B>::parseFilter(const int &operator_id, const ptree &pt) {
 
     boost::property_tree::ptree filter_condition_tree = pt.get_child("condition");
-    BoolExpression<B> filter_condition = ExpressionParser<B>::parseBoolExpression(filter_condition_tree);
-    std::shared_ptr<Operator<B> > child = getChildOperator(operator_id);
+    std::shared_ptr<Operator<B> > child = getChildOperator(operator_id, pt);
+    BoolExpression<B> filter_condition = ExpressionParser<B>::parseBoolExpression(filter_condition_tree,
+                                                                                  child->getOutputSchema());
 
     return shared_ptr<Operator<B> > (new Filter<B>(child.get(), filter_condition));
 }
@@ -331,7 +343,7 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseFilter(const int &operator_id, 
 template<typename B>
 std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_id, const ptree &project_tree) {
 
-    shared_ptr<Operator<B> > child_operator = getChildOperator(operator_id);
+    shared_ptr<Operator<B> > child_operator = getChildOperator(operator_id, project_tree);
     QuerySchema child_schema = child_operator->getOutputSchema();
 
     ExpressionMapBuilder<B>  builder(child_schema);
@@ -340,6 +352,7 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_
 
     for (ptree::const_iterator it = expressions.begin(); it != expressions.end(); ++it) {
         std::shared_ptr<Expression<B> > expr = ExpressionParser<B>::parseExpression(it->second, child_schema);
+
         if(expr->kind()  == ExpressionKind::INPUT_REF) {
             GenericExpression<B> expression_impl = *((GenericExpression<B> *) expr.get());
             InputReferenceNode<B> input_ref  = *((InputReferenceNode<B> *) expression_impl.root_.get());
@@ -373,27 +386,29 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseSeqScan(const int & operator_id
 
 // child is always the "N-1" operator if unspecified, i.e., if my_op_id is 5, then it is 4.
 template<typename B>
-const std::shared_ptr<Operator<B> > PlanParser<B>::getChildOperator(const int &my_operator_id) const {
+const std::shared_ptr<Operator<B> >
+PlanParser<B>::getChildOperator(const int &my_operator_id, const boost::property_tree::ptree &pt) const {
+
+    if(pt.count("inputs") > 0) {
+        ptree input_list = pt.get_child("inputs");
+        ptree::const_iterator it = input_list.begin();
+        int parent_id = it->second.get_value<int>();
+        shared_ptr<Operator<B>> parent_operator  = operators_.at(parent_id);
+        return parent_operator;
+    }
+
     int child_id = my_operator_id - 1;
     if(operators_.find(child_id) != operators_.end())
         return operators_.find(child_id)->second;
 
-   throw new std::invalid_argument("Missing operator id " + std::to_string(child_id) + Utilities::getStackTrace());
+    throw new std::invalid_argument("Missing operator id " + std::to_string(child_id) + Utilities::getStackTrace());
 }
 
 
 
 
-template<typename B>
-void PlanParser<B>::print(const boost::property_tree::ptree &pt, const std::string &prefix) {
 
-    ptree::const_iterator end = pt.end();
-    for (ptree::const_iterator it = pt.begin(); it != end; ++it) {
-        auto logger = vaultdb_logger::get();
-        BOOST_LOG_SEV(logger, logging::trivial::severity_level::info) << prefix <<  it->first << ": " << it->second.get_value<std::string>() << std::endl;
-        print(it->second, prefix + "   ");
-    }
-}
+
 
 template<typename B>
 const std::string PlanParser<B>::truncateInput(const std::string sql) const {

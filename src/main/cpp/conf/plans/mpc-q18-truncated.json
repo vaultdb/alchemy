@@ -97,7 +97,7 @@
           {
             "literal": 300,
             "type": {
-              "type": "INTEGER",
+              "type": "FLOAT",
               "nullable": false
             }
           }
@@ -177,6 +177,26 @@
     },
     {
       "id": "7",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_orderkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_quantity"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "8",
       "relOp": "LogicalJoin",
       "outputFields": "l_orderkey (#0), l_quantity (#1), o_orderkey (#2), o_custkey (#3), o_orderdate (#4), o_totalprice (#5)",
       "condition": {
@@ -199,12 +219,12 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "0",
+        "7",
         "6"
       ]
     },
     {
-      "id": "8",
+      "id": "9",
       "relOp": "LogicalValues",
       "type": [
         {
@@ -223,7 +243,7 @@
       "inputs": []
     },
     {
-      "id": "9",
+      "id": "10",
       "relOp": "LogicalJoin",
       "outputFields": "l_orderkey (#0), l_quantity (#1), o_orderkey (#2), o_custkey (#3), o_orderdate (#4), o_totalprice (#5), c_custkey (#6), c_name (#7)",
       "condition": {
@@ -246,12 +266,12 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "7",
-        "8"
+        "8",
+        "9"
       ]
     },
     {
-      "id": "10",
+      "id": "11",
       "relOp": "LogicalProject",
       "fields": [
         "c_name",
@@ -289,7 +309,7 @@
       ]
     },
     {
-      "id": "11",
+      "id": "12",
       "relOp": "LogicalAggregate",
       "group": [
         0,
@@ -320,7 +340,7 @@
       ]
     },
     {
-      "id": "12",
+      "id": "13",
       "relOp": "LogicalSort",
       "collation": [
         {

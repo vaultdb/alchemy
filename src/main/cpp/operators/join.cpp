@@ -100,7 +100,7 @@ void Join<B>::write_right(const bool &write, PlainTuple &dst_tuple, const PlainT
         size_t write_offset = dst_byte_cnt - write_size - 1;
 
         memcpy(dst_tuple.getData() + write_offset, src_tuple.getData(), write_size);
-      //  dst_tuple.setDummyTag(false);
+        //dst_tuple.setDummyTag(false);
     }
 }
 
@@ -134,14 +134,14 @@ string Join<B>::getParameters() const {
 
 template<typename B>
 void Join<B>::update_dummy_tag(QueryTuple<bool> &dst_tuple, const bool &predicate_matched, const bool & current_dummy_tag) {
-    if(predicate_matched)
+    if(predicate_matched && !current_dummy_tag)
         dst_tuple.setDummyTag(current_dummy_tag);
 }
 
 
 template<typename B>
 void Join<B>::update_dummy_tag(QueryTuple<emp::Bit> &dst_tuple, const emp::Bit &predicate_matched, const emp::Bit & current_dummy_tag) {
-    emp::Bit dummy_tag = emp::If(predicate_matched, current_dummy_tag, dst_tuple.getDummyTag());
+    emp::Bit dummy_tag = emp::If(predicate_matched & !current_dummy_tag, current_dummy_tag, dst_tuple.getDummyTag());
     dst_tuple.setDummyTag(dummy_tag);
 
 }

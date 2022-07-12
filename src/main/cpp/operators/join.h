@@ -27,8 +27,9 @@ namespace  vaultdb {
 
 
 
-    protected:
         static QuerySchema concatenateSchemas(const QuerySchema &lhs_schema, const QuerySchema &rhs_schema, const bool &append_bool = false);
+
+    protected:
 
         // current dummy_tag is the output of the current tuple comparison - derived from get_dummy_tag below
         // just splitting this off to make the code modular

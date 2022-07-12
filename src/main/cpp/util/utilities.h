@@ -24,6 +24,8 @@
 #include <expression/generic_expression.h>
 #include <common/defs.h>
 #include <util/logger.h>
+#include <boost/property_tree/ptree.hpp>
+
 
 
 namespace vaultdb {
@@ -64,6 +66,8 @@ namespace vaultdb {
             return BoolExpression<B>(equality_node);
         }
 
+        // for parser debugging
+        static void printTree(const boost::property_tree::ptree &pt, const std::string &prefix = "");
 
     };
 

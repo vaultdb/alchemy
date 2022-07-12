@@ -29,7 +29,7 @@ class ZkTpcHTest : public ZkTest {
 protected:
 
     // depends on truncate-tpch-set.sql
-    int tuple_limit_ = 1000; // when TRUNCATE_DATA == 1, tune this to change the size of our test input data
+    int tuple_limit_ = 10000; // when TRUNCATE_DATA == 1, tune this to change the size of our test input data
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
 
 };
@@ -44,7 +44,6 @@ ZkTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefi
         query = truncated_zk_tpch_queries[test_id];
         boost::replace_all(query, "$LIMIT", std::to_string(tuple_limit_));
     }
-
 
     // use alice DB since she's the prover
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, query, false, 0);
@@ -69,6 +68,7 @@ TEST_F(ZkTpcHTest, tpch_q1) {
     runTest(1, "q1", expected_sort, db_name);
 }
 
+
 TEST_F(ZkTpcHTest, tpch_q3) {
 
     // dummy_tag (-1), 1 DESC, 2 ASC
@@ -76,6 +76,9 @@ TEST_F(ZkTpcHTest, tpch_q3) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
+
+
+
     runTest(3, "q3", expected_sort, db_name);
 }
 
@@ -99,6 +102,7 @@ TEST_F(ZkTpcHTest, tpch_q9) {
     runTest(9, "q9", expected_sort, db_name);
 
 }
+
 
 
 TEST_F(ZkTpcHTest, tpch_q18) {

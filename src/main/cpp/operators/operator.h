@@ -53,7 +53,8 @@ namespace  vaultdb {
         std::shared_ptr<QueryTable<B> > run();
         std::string printTree() const;
         std::string toString() const;
-
+        int getOperatorId() const;
+        void setOperatorId(int op_id);
         std::shared_ptr<QueryTable<B> > getOutput();
 
 
@@ -82,6 +83,8 @@ namespace  vaultdb {
 
     private:
         std::string printHelper(const std::string & prefix) const;
+        int operator_id_ = -1;
+
     };
 
     // essentially CommonTableExpression, written here to avoid forward declarations

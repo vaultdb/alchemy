@@ -62,12 +62,11 @@ namespace vaultdb {
         shared_ptr<Operator<emp::Bit>> createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag, const bool & plain_has_dummy_tag);
 
         // utils
-        const std::shared_ptr<Operator<B> > getChildOperator(const int & my_operator_id) const;
+        const std::shared_ptr<Operator<B> > getChildOperator(const int & my_operator_id, const boost::property_tree::ptree &pt) const;
         const std::string truncateInput(const std::string sql) const;
 
 
 
-        void print(const boost::property_tree::ptree &pt, const std::string &prefix);
 
     };
 }
