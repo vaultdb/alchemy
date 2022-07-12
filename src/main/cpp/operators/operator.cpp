@@ -1,6 +1,7 @@
 #include <util/data_utilities.h>
 #include "operator.h"
 #include "util/logger.h"
+#include <ctime>
 
 
 using namespace vaultdb;
@@ -57,13 +58,17 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
 
     //auto start_time = clock_start(); // from emp toolkit
 
+    clock_t startTime = clock();;
     output_ = runSelf(); // delegated to children
+    double duration = ((double) (clock() - startTime)) / ((double) CLOCKS_PER_SEC);
 
     //run_time_ = time_from(start_time);
     //auto logger = vaultdb_logger::get();
     //BOOST_LOG_SEV(logger, logging::trivial::severity_level::info) << "Operator " <<  getOperatorType() << " ran for " << run_time_/10e6 << " seconds." << std::endl;
     operator_executed_ = true;
     sort_definition_  = output_->getSortOrder(); // update this if needed
+
+    cout << "Time: " << duration << "s,Validating " << toString() << "\n";
     return output_;
 }
 

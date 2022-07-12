@@ -24,7 +24,7 @@ namespace vaultdb {
         static const std::string bob_db;
 
         std::string db_name = unioned_db; // default, set in setUp()
-        static const int threads_ = 1;
+        static const int threads_ = 8;
         BoolIO<NetIO> *ios_[threads_];
 
     };
