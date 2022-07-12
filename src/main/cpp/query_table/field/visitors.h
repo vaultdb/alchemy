@@ -454,7 +454,7 @@ namespace vaultdb {
 
         Value operator()(int64_t i) const { return (i == 0L) ? 0L : i / boost::get<int64_t>(rhs); }
 
-        Value operator()(float_t f) const { return  f / boost::get<float_t>(rhs); }
+        Value operator()(float_t f) const { return  (f == 0.0)  ? 0.0 :  f / boost::get<float_t>(rhs); }
 
         Value operator()(std::string s) const { throw; }
 
