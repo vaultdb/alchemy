@@ -11,11 +11,12 @@
 #include <operators/group_by_aggregate.h>
 #include <parser/plan_parser.h>
 #include <test/zk/zk_base_test.h>
+#include <ctime>
 
 using namespace emp;
 using namespace vaultdb;
 
-#define TRUNCATE_INPUTS 1
+#define TRUNCATE_INPUTS 0
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54327, "port for EMP execution");
@@ -55,10 +56,16 @@ ZkTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefi
 
     shared_ptr<SecureOperator> root = parser.getRoot();
 
-    shared_ptr<PlainTable> observed = root->run()->reveal();
-    observed = DataUtilities::removeDummies(observed);
+    clock_t secureStartTime = clock();
+    shared_ptr<SecureTable> observed = root->run();
+    double secureDuration = ((double) (clock() - secureStartTime)) / ((double) CLOCKS_PER_SEC);
 
-    ASSERT_EQ(*expected, *observed);
+    cout << "ZK runtime: " << secureDuration << "s\n";
+
+    shared_ptr<PlainTable> observed_reveal = observed->reveal();
+    observed_reveal = DataUtilities::removeDummies(observed_reveal);
+
+    ASSERT_EQ(*expected, *observed_reveal);
 
 }
 
