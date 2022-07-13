@@ -8,8 +8,8 @@ DECLARE_int32(party);
 DECLARE_int32(port);
 DECLARE_string(alice_host);
 
-const std::string ZkTest::unioned_db = "tpch_unioned_sf01_250";
-const std::string ZkTest::alice_db = "tpch_unioned_sf01_250";
+const std::string ZkTest::unioned_db = "tpch_unioned_sf0.1";
+const std::string ZkTest::alice_db = "tpch_unioned_sf0.1";
 const std::string ZkTest::bob_db = "tpch_zk_bob"; // this should be an empty DBMS for testing but contain the same schema as tpc-h
 
 //  set up tpch_zk_bob with:
