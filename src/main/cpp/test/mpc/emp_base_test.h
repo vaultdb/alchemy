@@ -28,7 +28,7 @@ protected:
     std::string db_name_ = unioned_db_; // default, set in setUp()
 
     static std::shared_ptr<PlainTable> getExpectedOutput(const std::string & sql, const int & sortColCount);
-
+  time_point<high_resolution_clock> start_time_;
 
 };
 

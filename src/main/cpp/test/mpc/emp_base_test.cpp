@@ -9,12 +9,13 @@ const std::string EmpBaseTest::bob_db_ = "tpch_bob";
 
 void EmpBaseTest::SetUp()  {
 
-    //Logger::setup(); // write to console
+    Logger::setup(); // write to console
     string party_name = (FLAGS_party == 1) ? "alice"  : "bob";
     Logger::setup("vaultdb-" + party_name);
 
     auto logger = vaultdb_logger::get();
     BOOST_LOG_SEV(logger, logging::trivial::severity_level::debug) << "Connecting to " << FLAGS_alice_host << " on port " << FLAGS_port << " as " << FLAGS_party << std::endl;
+
     netio_ =  new emp::NetIO(FLAGS_party == emp::ALICE ? nullptr : FLAGS_alice_host.c_str(), FLAGS_port);
     emp::setup_semi_honest(netio_, FLAGS_party, 1024 * 16);
 
@@ -22,10 +23,14 @@ void EmpBaseTest::SetUp()  {
 
     // increment the port for each new test
     ++FLAGS_port;
+    start_time_ = clock_start();
 
 }
 
 void EmpBaseTest::TearDown() {
+  double duration = time_from(start_time_) / 1e6;
+
+	std::cout << "Runtime for test was " << duration << " secs." << std::endl;
         netio_->flush();
         emp::finalize_semi_honest();
 }
