@@ -286,7 +286,7 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
     string tmp_party = (party == emp::ALICE) ? "alice" : "bob";
 
     // reset before we send the counts
-    for(int i = 0; i < thread_count; ++i) {
+    for(size_t i = 0; i < thread_count; ++i) {
         ios[i]->flush();
     }
 
@@ -313,7 +313,7 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
         secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, false);
     }
 
-    for(int i = 0; i < thread_count; ++i) {
+    for(size_t i = 0; i < thread_count; ++i) {
         ios[i]->flush();
     }
 

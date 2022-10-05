@@ -1,0 +1,1 @@
+(#0 int32 patient.pat_id, #1 varchar(1) patient.age_strata, #2 varchar(1) patient.sex, #3 varchar(1) patient.ethnicity, #4 varchar(1) patient.race, #5 bool patient.numerator, #6 bool patient.denom_excl)
