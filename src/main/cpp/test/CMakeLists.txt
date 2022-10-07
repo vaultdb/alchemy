@@ -47,6 +47,8 @@ set_target_properties(gtest PROPERTIES FOLDER build)
 set_target_properties(gtest_main PROPERTIES FOLDER build)
 set_target_properties(gmock PROPERTIES FOLDER build)
 set_target_properties(gmock_main PROPERTIES FOLDER build)
+# back out of test directory for current working directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 macro(package_add_test TESTNAME)
     # create an exectuable in which the tests will be stored
