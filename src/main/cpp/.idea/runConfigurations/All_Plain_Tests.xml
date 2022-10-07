@@ -2,18 +2,18 @@
   <configuration default="false" name="All Plain Tests" type="CompoundRunConfigurationType">
     <toRun name=" project_test" type="CMakeGoogleTestRunConfigurationType" />
     <toRun name="All in plan_parser_test" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="GroupByAggregateTest" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="KeyedJoinTest" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="PlanParserTest" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="ScalarAggregateTest" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="SecretShareGeneratorTest" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="SerializationTest" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="TpcHTest" type="CMakeGoogleTestRunConfigurationType" />
     <toRun name="basic_join_test" type="CMakeGoogleTestRunConfigurationType" />
     <toRun name="csv_reader_test" type="CMakeGoogleTestRunConfigurationType" />
     <toRun name="field_expression_test" type="CMakeGoogleTestRunConfigurationType" />
     <toRun name="filter_test" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="fkey_pkey_join_test" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="group_by_aggregate_test" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="project_test" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="scalar_aggregate_test" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="secret_share_generator_test" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="serialization_test" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="sort_test" type="CMakeGoogleTestRunConfigurationType" />
-    <toRun name="tpch_test" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="sortTest" type="CMakeGoogleTestRunConfigurationType" />
     <method v="2" />
   </configuration>
 </component>

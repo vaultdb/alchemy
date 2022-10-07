@@ -10,8 +10,6 @@
     <toRun name="Secure Keyed Joined" type="CompoundRunConfigurationType" />
     <toRun name="Secure Scalar Aggregate" type="CompoundRunConfigurationType" />
     <toRun name="Secure Sort Test A+B" type="CompoundRunConfigurationType" />
-    <toRun name="Secure TPC-H" type="CompoundRunConfigurationType" />
-    <toRun name="SecureFieldExpressionTest" type="CompoundRunConfigurationType" />
     <toRun name="SecureGroupByAggregateTest " type="CompoundRunConfigurationType" />
     <toRun name="SecureProjectTest" type="CompoundRunConfigurationType" />
     <method v="2" />
