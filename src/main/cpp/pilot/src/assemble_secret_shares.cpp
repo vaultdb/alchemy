@@ -59,7 +59,7 @@ void revealRollup(const std::string & rollupName) {
     }
 
 
-    QuerySchema rollupSchema = rollupName != "age_strata" ? getSchema(rollupName) : getSchema("age_days");
+    QuerySchema rollupSchema = getSchema(rollupName); // rollupName != "age_strata" ? getSchema(rollupName) : getSchema("age_days");
     std::shared_ptr<PlainTable> result = PlainTable::deserialize(rollupSchema, revealed);
 
     std::stringstream schema_str;
@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
 
     Utilities::mkdir(dst_path);
 
-    vector<string> rollups{"zip_marker", "age_strata", "sex", "ethnicity", "race"};
+    vector<string> rollups{"age_strata", "sex", "ethnicity", "race"};
 
     for(std::string rollup : rollups) {
         revealRollup(rollup);
