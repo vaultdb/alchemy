@@ -236,6 +236,7 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
     SortDefinition sort_definition = DataUtilities::getDefaultSortDefinition(1);
     QuerySchema schema(1);
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
+    schema.initializeFieldOffsets();
 
 
     std::shared_ptr<PlainTable> input_table(new PlainTable(input_tuples.size(), schema, sort_definition));

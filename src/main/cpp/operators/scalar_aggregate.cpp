@@ -25,7 +25,7 @@ ScalarAggregate<B>::ScalarAggregate(shared_ptr<QueryTable<B>> child,
 template<typename B>
 std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = ScalarAggregate<B>::children_[0]->getOutput();
-    QueryTuple<B> tuple(*input->getSchema());
+    QueryTuple<B> tuple(input->getSchema());
     Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(
             new QueryTable<B>(1, Operator<B>::output_schema_, SortDefinition()));
 
@@ -95,6 +95,7 @@ void  ScalarAggregate<B>::setup() {
             Operator<B>::output_schema_.putField(fieldDesc);
         }
 
+    Operator<B>::output_schema_.initializeFieldOffsets();
 
 
     }

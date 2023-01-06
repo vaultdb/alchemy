@@ -81,12 +81,11 @@ QueryTuple<emp::Bit>::reveal(const int &empParty, std::shared_ptr<QuerySchema> &
 }
 
 // self-managed tuple
-PlainTuple QueryTuple<emp::Bit>::reveal(const int &empParty) const {
-    QuerySchema plain_schema = QuerySchema::toPlain(*query_schema_);
-    PlainTuple dst_tuple(plain_schema);
+PlainTuple QueryTuple<emp::Bit>::reveal(const std::shared_ptr<QuerySchema> & dst_schema, const int &empParty) const {
+    PlainTuple dst_tuple(dst_schema);
 
 
-    for(size_t i = 0; i < plain_schema.getFieldCount(); ++i) {
+    for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
         PlainField revealed = src.reveal(empParty);
         dst_tuple.setField(i, revealed);
@@ -220,12 +219,19 @@ emp::Bit QueryTuple<emp::Bit>::operator!=(const SecureTuple &other) const {
     return !(*this == other);
 }
 
-QueryTuple<emp::Bit>::QueryTuple(const QuerySchema &schema) {
-    size_t tuple_bit_cnt = schema.size();
+
+QueryTuple<emp::Bit>::QueryTuple(const std::shared_ptr<QuerySchema> &schema) {
+    size_t tuple_bit_cnt = schema->size();
     managed_data_ = std::unique_ptr<emp::Bit[]>(new emp::Bit[tuple_bit_cnt]);
 
     fields_ = managed_data_.get();
-    query_schema_ = std::make_shared<QuerySchema>(schema);
+
+    // Warning: this will cause issues if used for mutable tuples
+    // only doing shallow copy of schema!
+    // formerly:
+    // query_schema_ = std::make_shared<QuerySchema>(schema);
+    // thus const'ing it above
+    query_schema_ = schema;
 }
 
 QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {

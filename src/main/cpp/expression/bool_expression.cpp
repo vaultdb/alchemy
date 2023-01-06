@@ -34,7 +34,7 @@ BoolExpression<B>::BoolExpression(std::shared_ptr<ExpressionNode<B>> root) : Exp
 }
 
 template<typename B>
-B BoolExpression<B>::call(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const QuerySchema & output_schema) const {
+B BoolExpression<B>::call(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const std::shared_ptr<QuerySchema> & output_schema) const {
 
         QueryTuple<B> tmp(output_schema); // create a tuple with self-managed storage
 

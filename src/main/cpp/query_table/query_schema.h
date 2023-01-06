@@ -15,12 +15,13 @@ namespace  vaultdb {
     protected:
 
         std::vector<QueryFieldDesc> fields_;
-
+        std::map<int32_t, size_t> offsets_;
+        size_t tuple_size_;
     public:
         explicit QuerySchema(const size_t &num_fields);
 
         QuerySchema() {} // empty setup
-        QuerySchema(const QuerySchema &s);
+        QuerySchema(std::shared_ptr<QuerySchema>  & s);
 
         size_t getFieldCount() const;
 
@@ -47,6 +48,9 @@ namespace  vaultdb {
         static QuerySchema toSecure(const QuerySchema &plainSchema);
 
         static QuerySchema toPlain(const QuerySchema &secureSchema);
+
+
+        void initializeFieldOffsets();
 
 
     };

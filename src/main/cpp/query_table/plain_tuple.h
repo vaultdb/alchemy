@@ -25,7 +25,7 @@ namespace  vaultdb {
 
         QueryTuple(std::shared_ptr<QuerySchema> & query_schema,  int8_t *tuple_payload);
         QueryTuple(const std::shared_ptr<QuerySchema> & query_schema, const int8_t *src);
-        explicit QueryTuple(const  QuerySchema & schema);
+        explicit QueryTuple(const std::shared_ptr<QuerySchema> & schema);
         QueryTuple(const QueryTuple & src);
 
         int8_t *getData() const { return fields_; }

@@ -148,8 +148,6 @@ TEST_F(QueryTableTest, read_table) {
 
     std::unique_ptr<QueryTable>  inputTable = dataProvider.getQueryTable(db_name,
                                                                          inputQuery, false);
-
-
     string observedTable = inputTable->toString();
     string expectedTable = QueryTableTestEnvironment::getExpectedOutput();
 

@@ -155,11 +155,17 @@ string QueryTuple<bool>::toString(const bool &showDummies) const {
 
 
 
-QueryTuple<bool>::QueryTuple(const QuerySchema &schema) {
-    size_t tuple_byte_cnt = schema.size()/8;
+QueryTuple<bool>::QueryTuple(const std::shared_ptr<QuerySchema> &schema) {
+    size_t tuple_byte_cnt = schema->size()/8;
     managed_data_ = std::unique_ptr<int8_t[]>(new int8_t[tuple_byte_cnt]);
     fields_ = managed_data_.get();
-    query_schema_ = std::make_shared<QuerySchema>(schema);
+
+
+    // Warning: this will cause issues if used for mutable tuples
+    // only doing shallow copy of schema!
+    // formerly:
+    // query_schema_ = std::make_shared<QuerySchema>(schema);
+    query_schema_ = schema;
 }
 
 QueryTuple<bool>::QueryTuple(const QueryTuple<bool> &src) {
@@ -195,7 +201,7 @@ PlainTuple &QueryTuple<bool>::operator=(const PlainTuple &other) {
 
 // party is ignored
 PlainTuple QueryTuple<bool>::reveal(const int & party) const {
-    PlainTuple tuple(*this->getSchema());
+    PlainTuple tuple(this->getSchema());
     tuple = *this;
     return tuple;
 }

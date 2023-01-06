@@ -483,14 +483,14 @@ std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable &table,
     uint32_t tuple_cnt = table.getTupleCount();
 
 
-    QuerySchema dst_schema = QuerySchema::toPlain(*table.getSchema());
+    shared_ptr<QuerySchema> dst_schema = std::make_shared<QuerySchema>(QuerySchema::toPlain(*table.getSchema()));
 
     std::unique_ptr<PlainTable > dst_table(new PlainTable(tuple_cnt, dst_schema, table.getSortOrder()));
 
 
     for(uint32_t i = 0; i < tuple_cnt; ++i)  {
         const SecureTuple tuple = table.getImmutableTuple(i);
-        PlainTuple dst_tuple = tuple.reveal(party);
+        PlainTuple dst_tuple = tuple.reveal(dst_schema, party);
         dst_table->putTuple(i, dst_tuple);
     }
 

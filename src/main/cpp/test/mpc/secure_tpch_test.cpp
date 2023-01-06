@@ -54,8 +54,12 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
 
     // supercedes truncate flag
     if(test_id == 18 && test_name == "q18-truncated") {
-        query = truncated_tpch_queries[19]; // 18++
+        query = truncated_tpch_queries[18]; // 18++
+        boost::replace_all(query, "$LIMIT", std::to_string(input_tuple_limit_));
+
     }
+
+
 
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name, query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -78,8 +82,8 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
 
 }
 
-
-// Passes, 1.5 mins @ DIAGNOSE
+//
+//// Passes, 1.5 mins @ DIAGNOSE
 TEST_F(SecureTpcHTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, "tpch_unioned_50");

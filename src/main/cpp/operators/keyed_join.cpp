@@ -56,12 +56,12 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
     std::shared_ptr<QueryTable<B> > lhs_table = Join<B>::children_[0]->getOutput(); // foreign key
     std::shared_ptr<QueryTable<B> > rhs_table = Join<B>::children_[1]->getOutput(); // primary key
-    QueryTuple<B> lhs_tuple(*lhs_table->getSchema()), rhs_tuple(*rhs_table->getSchema());
+    QueryTuple<B> lhs_tuple(lhs_table->getSchema()), rhs_tuple(rhs_table->getSchema());
 
     uint32_t output_tuple_cnt = lhs_table->getTupleCount(); // foreignKeyTable = foreign key
     QuerySchema lhs_schema = *lhs_table->getSchema();
     QuerySchema rhs_schema = *rhs_table->getSchema();
-    QuerySchema output_schema = Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false);
+    shared_ptr<QuerySchema> output_schema = std::make_shared<QuerySchema>(Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false));
     Join<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(output_tuple_cnt, output_schema, lhs_table->getSortOrder()));
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
@@ -102,7 +102,7 @@ template<typename B>
 shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
     std::shared_ptr<QueryTable<B> > lhs_table = Join<B>::children_[0]->getOutput(); // primary key
     std::shared_ptr<QueryTable<B> > rhs_table = Join<B>::children_[1]->getOutput(); // foreign key
-    QueryTuple<B> lhs_tuple(*lhs_table->getSchema()), rhs_tuple(*rhs_table->getSchema());
+    QueryTuple<B> lhs_tuple(lhs_table->getSchema()), rhs_tuple(rhs_table->getSchema());
 
     uint32_t output_tuple_cnt = rhs_table->getTupleCount(); // foreignKeyTable = foreign key
     QuerySchema lhs_schema = *lhs_table->getSchema();
@@ -111,7 +111,7 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
     size_t rhs_attribute_cnt = rhs_schema.getFieldCount();
 
 
-    QuerySchema output_schema = Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false);
+    shared_ptr<QuerySchema> output_schema = std::make_shared<QuerySchema>(Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false));
     QueryTuple<B> joined(output_schema); // create a tuple with self-managed storage
 
     SortDefinition output_sort;

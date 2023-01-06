@@ -59,7 +59,7 @@ GroupByAggregate<B>::GroupByAggregate(shared_ptr<QueryTable<B>> child, const vec
 template<typename B>
 shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
-    QuerySchema input_schema = *input->getSchema();
+    shared_ptr<QuerySchema> input_schema = input->getSchema();
 
 
     B realBin;
@@ -191,6 +191,7 @@ QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & srcSch
         outputSchema.putField(fieldDesc);
     }
 
+    outputSchema.initializeFieldOffsets();
     return outputSchema;
 
 }

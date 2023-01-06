@@ -59,7 +59,7 @@ TEST_F(FieldExpressionTest, cmp_swap) {
     std::shared_ptr<PlainTable > data = DataUtilities::getQueryResults("tpch_unioned", sql, false);
 
     // deep copy
-    PlainTuple a(*data->getSchema()), b(*data->getSchema());
+    PlainTuple a(data->getSchema()), b(data->getSchema());
     a = (*data)[0];
     b = (*data)[1];
     bool swap(true);

@@ -78,15 +78,8 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
 
         srcTable = getTableName(tableId); // once per col in case of joins
 
-        QueryFieldDesc fieldDesc(i, colName, srcTable, type, 0);
-
-       if(type == FieldType::STRING) {
-
-           size_t stringLength = getVarCharLength(srcTable, colName);
-            fieldDesc.setStringLength(stringLength);
-
-       }
-
+        size_t stringLength = (type == FieldType::STRING) ? getVarCharLength(srcTable, colName) : 0;
+        QueryFieldDesc fieldDesc(i, colName, srcTable, type, stringLength);
 
         result->putField(fieldDesc);
     }
@@ -97,6 +90,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
         assert(dummyType == FieldType::BOOL); // check that dummy tag is a boolean
     }
 
+    result->initializeFieldOffsets();
     return result;
 }
 
@@ -145,7 +139,6 @@ PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag, PlainTable &dst_tabl
         if(hasDummyTag) {
             --colCount;
         }
-
 
 
         PlainTuple dst_tuple = dst_table.getTuple(idx); // writes in place

@@ -26,7 +26,7 @@ namespace vaultdb {
         QueryTuple(std::shared_ptr<QuerySchema> & query_schema, emp::Bit *src);
         // constructor for immutable tuple
         QueryTuple(const std::shared_ptr<QuerySchema> &query_schema, const int8_t *src);
-        explicit QueryTuple(const QuerySchema & schema); // self-managed memory
+        explicit QueryTuple(const std::shared_ptr<QuerySchema> & schema); // self-managed memory
 
         emp::Bit *getData() const  { return fields_; }
 
@@ -54,7 +54,7 @@ namespace vaultdb {
 
         QueryTuple<bool> reveal(const int &empParty,  std::shared_ptr<QuerySchema> & dst_schema, int8_t *dst) const;
         // self-managed storage
-        QueryTuple<bool> reveal(const int &empParty = emp::PUBLIC) const;
+        QueryTuple<bool> reveal(const std::shared_ptr<QuerySchema> & dst_schema, const int &empParty = emp::PUBLIC) const;
 
         string toString(const bool &showDummies = false) const;
 

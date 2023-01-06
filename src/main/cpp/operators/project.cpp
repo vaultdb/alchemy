@@ -117,6 +117,7 @@ void Project<B>::setup() {
         }
     }
 
+    dst_schema.initializeFieldOffsets();
 
     // confirm that all ordinals are defined
     for(uint32_t i = 0; i < col_count; ++i) {

@@ -53,7 +53,7 @@ Join<B>::concatenateSchemas(const QuerySchema &lhs_schema, const QuerySchema &rh
         QueryFieldDesc bool_field(output_cols-1, "table_id", "", field_type, 0);
         result.putField(bool_field);
     }
-
+    result.initializeFieldOffsets();
     return result;
 }
 
