@@ -24,6 +24,8 @@ QuerySchema SharedSchema::getInputSchema() {
     targetSchema.putField(QueryFieldDesc(6, "numerator", "patient", FieldType::BOOL));
     targetSchema.putField(QueryFieldDesc(7, "denominator", "patient", FieldType::BOOL));
     targetSchema.putField(QueryFieldDesc(8, "denom_excl", "patient", FieldType::BOOL));
+    
+    targetSchema.initializeFieldOffsets();
 
     return targetSchema;
 }
@@ -60,6 +62,7 @@ QuerySchema SharedSchema::getPatientSchema() {
     targetSchema.putField(QueryFieldDesc(8, "site_id", "patient", FieldType::INT));
     targetSchema.putField(QueryFieldDesc(9, "multisite", "patient", FieldType::BOOL));
 
+    targetSchema.initializeFieldOffsets();
     return targetSchema;
 }
 
@@ -76,5 +79,6 @@ QuerySchema SharedSchema::getPartialCountSchema() {
     targetSchema.putField(QueryFieldDesc(7, "numerator_multisite_cnt", "patient", FieldType::INT));
     targetSchema.putField(QueryFieldDesc(8, "denominator_multisite_cnt", "patient", FieldType::INT));
 
+    targetSchema.initializeFieldOffsets();
     return targetSchema;
 }
