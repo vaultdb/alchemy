@@ -120,4 +120,14 @@ emp::Bit FieldUtilities::select(const Bit &choice, const Bit &lhs, const Bit &rh
 }
 
 
+PlainTuple FieldUtilities::revealTuple(const SecureTuple & s) {
+    // stack allocate it
+    std::shared_ptr<QuerySchema> secure_schema = s.getSchema();
+    std::shared_ptr<QuerySchema> plain_schema =  std::make_shared<QuerySchema>(QuerySchema::toPlain(*secure_schema));
+
+    SecureTuple s_tmp(secure_schema, (emp::Bit *) s.getData());
+    return s_tmp.reveal(plain_schema, emp::PUBLIC);
+}
+
+
 
