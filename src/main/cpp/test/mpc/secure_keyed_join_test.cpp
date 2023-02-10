@@ -89,7 +89,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
                                                                                                              "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, (o_orderkey=l_orderkey) matched, (odummy OR ldummy) dummy \n"
                                                                                                              "FROM lineitem_cte, orders_cte \n"
                                                                                                              "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
-                                                                                                             "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, dummy \n"
+                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue, dummy \n"
                                                                                                              "FROM cross_product \n"
                                                                                                              "WHERE matched";
 
@@ -104,7 +104,8 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
     BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
-    KeyedJoin join(&lineitemInput, &ordersInput, predicate);
+    // test pkey-fkey join
+    KeyedJoin join(&ordersInput, &lineitemInput, 1,  predicate);
 
 
     std::shared_ptr<SecureTable> joinResult = join.run();
