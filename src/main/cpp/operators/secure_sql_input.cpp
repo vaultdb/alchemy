@@ -36,7 +36,6 @@ void SecureSqlInput::runQuery() {
 
     plain_input_ = dataProvider.getQueryTable(db_name_, input_query_, has_dummy_tag_);
     plain_input_->setSortOrder(getSortOrder());
-   // std::cout << "Query " << input_query_ << " produced: \n" << plain_input_->toString(true) << '\n';
 
 
 }

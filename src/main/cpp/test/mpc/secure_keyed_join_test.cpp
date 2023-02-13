@@ -110,20 +110,9 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
 
     std::shared_ptr<SecureTable> joinResult = join.run();
     std::unique_ptr<PlainTable> observed = joinResult->reveal();
-   // std::cout << "Join result: " << observed->toString(true) << '\n';
-
-    //std::cout << "Expected result: " << expected->toString(true) << '\n';
 
     size_t sort_column_cnt = joinResult->getSchema()->getFieldCount();
     SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(sort_column_cnt);
-
-//    Sort<emp::Bit>  sort(&join, sortDefinition);
-//    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
-
-//    observed = DataUtilities::removeDummies(observed);
-//    expected = DataUtilities::removeDummies(expected);
-
-   // expected->setSortOrder(sortDefinition);
 
 
         ASSERT_EQ(*expected, *observed);

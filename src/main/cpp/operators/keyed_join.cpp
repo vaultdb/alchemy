@@ -150,34 +150,12 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
         dst_tuple.setDummyTag(dst_dummy_tag);
 
-//        if(i == 4) {
-//            SecureTuple tmp_dst(output_schema, (emp::Bit * ) dst_tuple.getData());
-//            std::shared_ptr<QuerySchema> plain_schema  = std::make_shared<QuerySchema>(QuerySchema::toPlain(*output_schema));
-//            PlainTuple plain_dst = tmp_dst.reveal(plain_schema, emp::PUBLIC);
-//
-//
-//            PlainTuple dst_plain = FieldUtilities::revealTuple(dst_tuple);
-//            std::cout << "Starting with tuple: " << dst_plain.toString(true) << '\n';
-//            std::cout << "LHS: " << FieldUtilities::revealTuple(lhs_tuple).toString(true) << " RHS: " << FieldUtilities::revealTuple(rhs_tuple).toString(true) << '\n';
-//
-//            std::cout << "dst dummy tag: " <<  FieldUtilities::extract_bool(dst_dummy_tag)
-//            << " lhs dummy tag " << FieldUtilities::extract_bool(lhs_dummy_tag)
-//                    << " rhs dummy tag " << FieldUtilities::extract_bool(rhs_dummy_tag)
-//                    << " predicate eval " << FieldUtilities::extract_bool(predicate_eval) << '\n';
-//
-//
-//        }
-
 
         for(uint32_t j = 1; j < lhs_table->getTupleCount(); ++j) {
             lhs_tuple = (*lhs_table)[j];
             lhs_dummy_tag = lhs_tuple.getDummyTag();
             Join<B>::write_left(true, joined, lhs_tuple);
 
-//
-//            QueryTuple<B>::writeSubset(lhs_tuple, joined, 0, lhs_attribute_cnt, 0);
-//            QueryTuple<B>::writeSubset(rhs_tuple, joined, 0, rhs_attribute_cnt, lhs_attribute_cnt);
-//
             predicate_eval = Join<B>::predicate_.callBoolExpression(joined);
             dst_dummy_tag =  (!predicate_eval) | lhs_dummy_tag | rhs_dummy_tag;
 
@@ -185,28 +163,9 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
             Join<B>::update_dummy_tag(dst_tuple, predicate_eval, dst_dummy_tag);
 
 
-
-//            if(i == 4) {
-//                std::cout << "***After iteration " << j << "  have tuple: "      << FieldUtilities::revealTuple(dst_tuple).toString(true) << '\n';
-//                std::cout << "LHS: " << FieldUtilities::revealTuple(lhs_tuple).toString(true) << " RHS: " << FieldUtilities::revealTuple(rhs_tuple).toString(true) << '\n';
-//
-//                std::cout << "dst dummy tag: " <<  FieldUtilities::extract_bool(dst_dummy_tag)
-//                          << " lhs dummy tag " << FieldUtilities::extract_bool(lhs_dummy_tag)
-//                          << " rhs dummy tag " << FieldUtilities::extract_bool(rhs_dummy_tag)
-//                          << " predicate eval " << FieldUtilities::extract_bool(predicate_eval) << '\n';
-//
-//            }
-
-
         }
 
-//        PlainTuple t = FieldUtilities::revealTuple(Join<B>::output_->getTuple(4));
-//        std::cout << "Suspect at " << i << ": " << t.toString(true) << '\n';
-
     }
-
-//    PlainTuple t = FieldUtilities::revealTuple(Join<B>::output_->getTuple(4));
-//    std::cout << "Suspect at end: " << t.toString(true) << '\n';
 
     return Join<B>::output_;
 
