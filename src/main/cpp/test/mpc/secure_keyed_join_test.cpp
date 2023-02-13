@@ -87,11 +87,11 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
     std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), "
                                                                          "lineitem_cte AS (" + lineitemSql + "), "
                                                                                                              "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, (o_orderkey=l_orderkey) matched, (odummy OR ldummy) dummy \n"
-                                                                                                             "FROM lineitem_cte, orders_cte \n"
-                                                                                                             "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
+                                                                                                             "FROM lineitem_cte, orders_cte )\n"
                                                                                                              "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue, dummy \n"
                                                                                                              "FROM cross_product \n"
-                                                                                                             "WHERE matched";
+                                                                                                             "WHERE matched "
+                                                                                                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, true);
 
@@ -100,8 +100,8 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
 
 
     // join output schema:
-    //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
+    //  o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue,
+    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 4);
 
 
     // test pkey-fkey join
@@ -109,20 +109,28 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
 
 
     std::shared_ptr<SecureTable> joinResult = join.run();
-    std::unique_ptr<PlainTable> joinResultDecrypted = joinResult->reveal();
+    std::unique_ptr<PlainTable> observed = joinResult->reveal();
+   // std::cout << "Join result: " << observed->toString(true) << '\n';
 
+    //std::cout << "Expected result: " << expected->toString(true) << '\n';
 
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema()->getFieldCount());
-    Sort<emp::Bit>  sort(&join, sortDefinition);
-    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
-    expected->setSortOrder(sortDefinition);
+    size_t sort_column_cnt = joinResult->getSchema()->getFieldCount();
+    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(sort_column_cnt);
 
+//    Sort<emp::Bit>  sort(&join, sortDefinition);
+//    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
+
+//    observed = DataUtilities::removeDummies(observed);
+//    expected = DataUtilities::removeDummies(expected);
+
+   // expected->setSortOrder(sortDefinition);
 
 
         ASSERT_EQ(*expected, *observed);
 
 
 }
+
 
 
 
