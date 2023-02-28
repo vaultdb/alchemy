@@ -10,6 +10,9 @@ DB_NAME=enrich_htn_unioned_3pc
 
 mkdir -p pilot/test/input
 mkdir -p pilot/test/output
+mkdir -p  pilot/test/batch
+mkdir -p  pilot/secret_shares/tables
+
 
 
 #cmake .  

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Secure Keyed Joined" type="CompoundRunConfigurationType">
-    <toRun name="secure_pkey_fkey_join_test A" type="CMakeGoogleTestRunConfigurationType" />
+  <configuration default="false" name="Secure Keyed Join Test" type="CompoundRunConfigurationType">
+    <toRun name="secure_pkey_fkey_join_test A" targetId="CMakeBuildProfile:Debug" type="CMakeGoogleTestRunConfigurationType" />
     <toRun name="secure_pkey_fkey_join_test B" targetId="CMakeBuildProfile:Debug" type="CMakeGoogleTestRunConfigurationType" />
     <method v="2" />
   </configuration>

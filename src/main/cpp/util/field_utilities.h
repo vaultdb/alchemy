@@ -54,6 +54,10 @@ namespace vaultdb {
         static bool extract_bool(const emp::Bit & b) { return b.reveal();  }
         static bool extract_bool(const bool & b) { return b; }
 
+        static PlainTuple revealTuple(const PlainTuple & p) {return p; }
+        static PlainTuple revealTuple(const SecureTuple  & s);
+
+
         static Field<bool> getBoolField(const bool & input) { return Field<bool>(FieldType::BOOL, input, 0); }
         static Field<emp::Bit> getBoolField(const emp::Bit & input) { return Field<emp::Bit>(FieldType::SECURE_BOOL, input, 0); }
 

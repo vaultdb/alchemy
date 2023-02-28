@@ -102,9 +102,11 @@ TEST_F(EmpTest, emp_test_varchar) {
 // test encrypting a query table with a single int in EMP
 // Testing absent psql dependency
 TEST_F(EmpTest, encrypt_table_one_column) {
+
     const uint32_t tupleCount = 10;
     vector<int32_t> aliceInputData{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
     vector<int32_t> bobInputData{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
+
 
     int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData.data() : bobInputData.data();
     
@@ -122,7 +124,6 @@ TEST_F(EmpTest, encrypt_table_one_column) {
         tuple.setField(0, val);
     }
 
-
     std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*inputTable, netio_, FLAGS_party);
 
     netio_->flush();
@@ -133,6 +134,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     std::unique_ptr<PlainTable > expectedTable(new PlainTable(2 * tupleCount, schema));
     std::vector<int32_t> input_tuples = aliceInputData;
     input_tuples.insert(input_tuples.end(), bobInputData.begin(), bobInputData.end());
+
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
         Field<bool> val(FieldType::INT, input_tuples[i]);

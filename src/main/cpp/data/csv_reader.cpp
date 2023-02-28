@@ -91,7 +91,8 @@ QuerySchema CsvReader::convertDatesToLong(const QuerySchema &input_schema) {
             dst_schema.putField(dst_field_desc);
         }
     }
-
+    
+    dst_schema.initializeFieldOffsets();
     return dst_schema;
 }
 
