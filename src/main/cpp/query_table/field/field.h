@@ -88,11 +88,8 @@ namespace vaultdb {
         PlainField reveal(const int & party = emp::PUBLIC) const;
         SecureField secret_share() const; // secret share as public
 
-        static SecureField secret_share_send(const PlainField & src, const int & dst_party);
-        static SecureField secret_share_recv(const FieldType & type, const size_t & str_length, const int & dst_party);
-
-        //static SecureField secretShare(const PlainField *field, const FieldType &type, const size_t &strLength, const int &myParty,
-        //                const int &dstParty);
+        static SecureField secret_share_send(const PlainField & src, const int & src_party);
+        static SecureField secret_share_recv(const FieldType & type, const size_t & str_length, const int & src_party);
 
         std::string toString() const;
 

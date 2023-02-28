@@ -61,6 +61,18 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
     shared_ptr<QuerySchema> input_schema = input->getSchema();
 
+    for(ScalarAggregateDefinition agg : aggregate_definitions_) {
+        // for most aggs the output type is the same as the input type
+        // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
+        FieldType aggValueType = (agg.ordinal >= 0) ?
+                                 input_schema->getField(agg.ordinal).getType() :
+                                 (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
+        aggregators_.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
+    }
+
+
+
+
 
     B realBin;
     QueryTuple<B> current(input_schema), predecessor(input_schema);
@@ -175,19 +187,25 @@ B GroupByAggregate<B>::groupByMatch(const QueryTuple<B> &lhs, const QueryTuple<B
 }
 
 template<typename B>
-QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & srcSchema, const vector<GroupByAggregateImpl<B> *> & aggregators) const {
+QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & input_schema) const {
     QuerySchema outputSchema(group_by_.size() + aggregate_definitions_.size());
     size_t i;
 
     for(i = 0; i < group_by_.size(); ++i) {
-        QueryFieldDesc srcField = srcSchema.getField(group_by_[i]);
+        QueryFieldDesc srcField = input_schema.getField(group_by_[i]);
         QueryFieldDesc dstField(i, srcField.getName(), srcField.getTableName(), srcField.getType());
         dstField.setStringLength(srcField.getStringLength());
         outputSchema.putField(dstField);
     }
 
+
     for(i = 0; i < aggregate_definitions_.size(); ++i) {
-        QueryFieldDesc fieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", aggregators[i]->getType());
+        ScalarAggregateDefinition agg = aggregate_definitions_[i];
+        FieldType agg_type = (agg.ordinal >= 0) ?
+                                 input_schema.getField(agg.ordinal).getType() :
+                                 (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
+
+        QueryFieldDesc fieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
         outputSchema.putField(fieldDesc);
     }
 
@@ -244,21 +262,12 @@ void GroupByAggregate<B>::setup() {
     QuerySchema input_schema = Operator<B>::getChild(0)->getOutputSchema();
     SortDefinition input_sort = Operator<B>::getChild(0)->getSortOrder();
 
-    for(ScalarAggregateDefinition agg : aggregate_definitions_) {
-        // for most aggs the output type is the same as the input type
-        // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
-        FieldType aggValueType = (agg.ordinal >= 0) ?
-                                 input_schema.getField(agg.ordinal).getType() :
-                                 (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
-        aggregators_.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
-    }
+    Operator<B>::output_schema_ = generateOutputSchema(input_schema);
 
 
     // sorted on group-by cols
     assert(sortCompatible(input_sort, group_by_));
 
-
-    Operator<B>::output_schema_ = generateOutputSchema(input_schema, aggregators_);
 
 }
 

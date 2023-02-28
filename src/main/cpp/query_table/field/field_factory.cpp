@@ -319,22 +319,22 @@ SecureField FieldFactory<emp::Bit>::deserialize(const FieldType &type, const siz
     {
         switch (type) {
             case FieldType::SECURE_BOOL: {
-                emp::Bit myBit(*(emp::block *) src);
+                emp::Bit myBit = *src;
                 return SecureField(type, myBit);
             }
             case FieldType::SECURE_INT: {
                 emp::Integer payload(32, 0);
-                memcpy(payload.bits.data(), src, 32*sizeof(emp::Bit));
+                memcpy(payload.bits.data(), src, 32*TypeUtilities::getEmpBitSize());
                 return SecureField(type, payload);
             }
             case FieldType::SECURE_LONG: {
                 emp::Integer payload(64, 0);
-                memcpy(payload.bits.data(), src, 64*sizeof(emp::Bit));
+                memcpy(payload.bits.data(), src, 64*TypeUtilities::getEmpBitSize());
                 return SecureField(type, payload);
             }
             case FieldType::SECURE_FLOAT: {
                 emp::Float v(0, emp::PUBLIC);
-                memcpy(v.value.data(), src, 32*sizeof(emp::Bit) );
+                memcpy(v.value.data(), src, 32*TypeUtilities::getEmpBitSize() );
                 return SecureField(type, v);
             }
 
@@ -342,7 +342,7 @@ SecureField FieldFactory<emp::Bit>::deserialize(const FieldType &type, const siz
                 size_t bitCount = strLength * 8;
 
                 emp::Integer v(bitCount, 0, emp::PUBLIC);
-                memcpy(v.bits.data(), src, sizeof(emp::Bit)*bitCount);
+                memcpy(v.bits.data(), src, TypeUtilities::getEmpBitSize()*bitCount);
                 return SecureField(type, v, bitCount / 8);
 
             }

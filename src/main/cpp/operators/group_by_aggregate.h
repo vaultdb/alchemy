@@ -46,8 +46,7 @@ namespace vaultdb {
         // returns boolean for whether two tuples are in the same group-by bin
         B groupByMatch(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs) const;
 
-        QuerySchema generateOutputSchema(const QuerySchema & srcSchema,
-                                         const std::vector<GroupByAggregateImpl<B> *> & aggregators) const;
+        QuerySchema generateOutputSchema(const QuerySchema & srcSchema) const;
 
         void generateOutputTuple(QueryTuple <B> &dstTuple, const QueryTuple <B> &lastTuple,
                                            const B &lastEntryGroupByBin, const B &real_bin,

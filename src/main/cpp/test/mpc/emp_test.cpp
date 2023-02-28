@@ -110,7 +110,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
     
     QuerySchema schema(1);
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
-
+    schema.initializeFieldOffsets();
 
     std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, schema));
 
@@ -163,6 +163,7 @@ TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
 
     QuerySchema schema(1);
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
+    schema.initializeFieldOffsets();
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1);
     std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, schema, sortDefinition));

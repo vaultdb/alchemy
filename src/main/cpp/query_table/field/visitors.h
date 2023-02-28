@@ -192,15 +192,15 @@ namespace vaultdb {
         }
 
         void operator()(emp::Bit l) const {
-            memcpy(dst_, (int8_t *) &(l.bit), sizeof(emp::block));
+            memcpy(dst_, (int8_t *) &(l.bit), TypeUtilities::getEmpBitSize());
         }
 
         void operator()(emp::Integer l) const {
-            memcpy(dst_, (int8_t *) l.bits.data(), l.size() * sizeof(emp::block));
+            memcpy(dst_, (int8_t *) l.bits.data(), l.size() * TypeUtilities::getEmpBitSize());
         }
 
         void operator()(emp::Float l) const {
-            memcpy(dst_, (int8_t *) l.value.data(), l.size() * sizeof(emp::block));
+            memcpy(dst_, (int8_t *) l.value.data(), l.size() * TypeUtilities::getEmpBitSize());
         }
 
         std::int8_t *dst_;
@@ -208,31 +208,31 @@ namespace vaultdb {
     };
 
     struct SecretShareVisitor : public boost::static_visitor<Value> {
-        Value operator()(bool b) const { return emp::Bit(b, dst_party_); }
+        Value operator()(bool b) const { return emp::Bit(b, party_); }
 
-        Value operator()(int32_t i) const { return emp::Integer(32, i, dst_party_); }
+        Value operator()(int32_t i) const { return emp::Integer(32, i, party_); }
 
-        Value operator()(int64_t i) const { return emp::Integer(64, i, dst_party_); }
+        Value operator()(int64_t i) const { return emp::Integer(64, i, party_); }
 
-        Value operator()(float_t f) const { return emp::Float(f, dst_party_); }
+        Value operator()(float_t f) const { return emp::Float(f, party_); }
 
         Value operator()(std::string s) const {
             assert(string_length_ > 0);
 
             size_t string_bit_count = string_length_ * 8;
 
-            emp::Integer payload = emp::Integer(string_bit_count, 0L, dst_party_);
+            emp::Integer payload = emp::Integer(string_bit_count, 0L, party_);
             if (send_) {
                 std::string input = s;
                 std::reverse(input.begin(), input.end());
                 bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), string_length_);
 
-                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dst_party_, bools,
+                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), party_, bools,
                                                         string_bit_count);
                 delete[] bools;
 
             } else {
-                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), dst_party_, nullptr,
+                emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), party_, nullptr,
                                                         string_bit_count);
             }
 
@@ -247,7 +247,7 @@ namespace vaultdb {
 
         Value operator()(emp::Float l) const { return l; }
 
-        int dst_party_ = emp::PUBLIC;
+        int party_ = emp::PUBLIC;
         bool send_ = false;
         size_t string_length_ = 0;
 

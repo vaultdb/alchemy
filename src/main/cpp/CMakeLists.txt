@@ -8,8 +8,6 @@ set(NAME "vaultdb-emp")
 
 include(cmake/common.cmake)
 
-
-
 include(FetchContent)
 FetchContent_Declare(
   googletest

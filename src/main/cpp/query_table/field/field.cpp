@@ -183,11 +183,11 @@ void Field<B>::serialize(int8_t *dst) const {
 
 
 template<typename B>
-SecureField Field<B>::secret_share_send(const PlainField & src, const int & dst_party) {
+SecureField Field<B>::secret_share_send(const PlainField & src, const int & src_party) {
     Value input = src.payload_;
 
     SecretShareVisitor visitor;
-    visitor.dst_party_ = dst_party;
+    visitor.party_ = src_party;
     visitor.send_ = true;
     visitor.string_length_ = src.string_length_;
 
@@ -200,13 +200,13 @@ SecureField Field<B>::secret_share_send(const PlainField & src, const int & dst_
 }
 
 template<typename B>
-SecureField Field<B>::secret_share_recv(const FieldType & type, const size_t & str_length, const int & dst_party) {
+SecureField Field<B>::secret_share_recv(const FieldType & type, const size_t & str_length, const int & src_party) {
     assert(TypeUtilities::isEncrypted(type));
 
     Value input = FieldFactory<bool>::getZero(TypeUtilities::toPlain(type)).payload_;
 
     SecretShareVisitor visitor;
-    visitor.dst_party_ = dst_party;
+    visitor.party_ = src_party;
     visitor.send_ = false;
     visitor.string_length_ = str_length;
 
@@ -218,29 +218,7 @@ SecureField Field<B>::secret_share_recv(const FieldType & type, const size_t & s
 
 }
 
-/*template<typename B>
-SecureField Field<B>::secretShare(const PlainField  *field, const FieldType &type, const size_t &strLength, const int &myParty,
-                           const int &dstParty) {
 
-
-    SecretShareVisitor visitor;
-    visitor.dstParty = dstParty;
-    visitor.myParty = myParty;
-    Value input = (myParty == dstParty) ? field->payload_ : FieldFactory<bool>::getZero(type).payload_; // won't be used if receiving encrypted value from other party
-
-    if(type == FieldType::STRING) {
-        std::string p = boost::get<std::string>(input);
-        while(p.length() < strLength) {
-            p += " ";
-        }
-        input = p;
-    }
-
-    Value result = boost::apply_visitor(visitor, input);
-    FieldType resType = TypeUtilities::toSecure(type);
-    return SecureField(resType, result, strLength);
-
-} */
 
 template<typename B>
 void Field<B>::compareAndSwap(const B & choice, Field & lhs, Field & rhs) {

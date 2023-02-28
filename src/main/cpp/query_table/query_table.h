@@ -13,9 +13,6 @@
 #include <emp-zk/emp-zk.h>
 #include <boost/iterator/iterator_facade.hpp>
 
-// ignore bob when secret sharing for ZK
-//#define IGNORE_BOB 1
-
 
 
 namespace  vaultdb {
@@ -98,7 +95,7 @@ namespace  vaultdb {
 
             SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
 
-            [[nodiscard]] std::unique_ptr<QueryTable<bool> > reveal(int empParty = emp::PUBLIC) const;
+            std::unique_ptr<QueryTable<bool> > reveal(int empParty = emp::PUBLIC) const;
 
             QueryTable<B> &operator=(const QueryTable<B> &src);
 

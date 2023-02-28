@@ -58,7 +58,7 @@ void QueryTuple<emp::Bit>::setField(const int &idx, const SecureField &f) {
 
 void QueryTuple<emp::Bit>::setDummyTag(const Bit &d) {
     const emp::Bit *dst = fields_ + query_schema_->getFieldOffset(-1);
-    std::memcpy((int8_t *) dst, (int8_t *) &(d.bit), sizeof(emp::block));
+    std::memcpy((int8_t *) dst, (int8_t *) &(d.bit), TypeUtilities::getEmpBitSize());
 }
 
 
@@ -106,13 +106,13 @@ void QueryTuple<emp::Bit>::compareSwap(const Bit &cmp, SecureTuple  & lhs, Secur
     emp::Integer lhs_payload(tuple_size, 0, emp::PUBLIC);
     emp::Integer rhs_payload(tuple_size, 0, emp::PUBLIC);
 
-    memcpy(lhs_payload.bits.data(), lhs.getData(), tuple_size * sizeof(emp::block));
-    memcpy(rhs_payload.bits.data(), rhs.getData(), tuple_size * sizeof(emp::block));
+    memcpy(lhs_payload.bits.data(), lhs.getData(), tuple_size * TypeUtilities::getEmpBitSize());
+    memcpy(rhs_payload.bits.data(), rhs.getData(), tuple_size * TypeUtilities::getEmpBitSize());
 
     emp::swap(cmp, lhs_payload, rhs_payload);
 
-    memcpy(lhs.getData(), lhs_payload.bits.data(), tuple_size * sizeof(emp::block));
-    memcpy(rhs.getData(), rhs_payload.bits.data(), tuple_size * sizeof(emp::block));
+    memcpy(lhs.getData(), lhs_payload.bits.data(), tuple_size * TypeUtilities::getEmpBitSize());
+    memcpy(rhs.getData(), rhs_payload.bits.data(), tuple_size * TypeUtilities::getEmpBitSize());
 
 
 
@@ -121,7 +121,7 @@ void QueryTuple<emp::Bit>::compareSwap(const Bit &cmp, SecureTuple  & lhs, Secur
 SecureTuple QueryTuple<emp::Bit>::deserialize(emp::Bit *dst_tuple_bits, std::shared_ptr<QuerySchema> &schema,
                                               const emp::Bit *src_tuple_bits) {
     SecureTuple result(schema, dst_tuple_bits);
-    size_t tuple_size = schema->size() * sizeof(emp::block);
+    size_t tuple_size = schema->size() * TypeUtilities::getEmpBitSize();
     memcpy(dst_tuple_bits, src_tuple_bits, tuple_size);
     return result;
 
@@ -157,7 +157,7 @@ QueryTuple<emp::Bit> &QueryTuple<emp::Bit>::operator=(const SecureTuple &other) 
     emp::Bit *dst = this->fields_;
     emp::Bit *src = other.fields_;
 
-    memcpy(dst, src, query_schema_->size() * sizeof(emp::block));
+    memcpy(dst, src, query_schema_->size() * TypeUtilities::getEmpBitSize());
 
     return *this;
 

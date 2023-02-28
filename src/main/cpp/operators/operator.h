@@ -66,12 +66,15 @@ namespace  vaultdb {
 
         void setChild(Operator *aChild, int idx = 0);
 
+        bool isLeaf() const { return children_.empty(); }
+
         // Operator& operator=(const Operator& other); // TODO: copy assign operator overload
 
         SortDefinition  getSortOrder() const;
         void setSortOrder(const SortDefinition & aSortDefinition) { sort_definition_ = aSortDefinition; }
 
         QuerySchema getOutputSchema() const { return output_schema_; }
+
 
     protected:
         // to be implemented by the operator classes, e.g., sort, filter, et cetera

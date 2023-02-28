@@ -23,7 +23,7 @@ void QueryTable<B>::setSchema(const QuerySchema & s) {
 
     if(std::is_same_v<emp::Bit, B>) {
         size_t tuple_bits = schema_->size();
-        tuple_size_ = tuple_bits * sizeof(emp::block); // bits, one block per bit
+        tuple_size_ = tuple_bits * TypeUtilities::getEmpBitSize(); // bits, one block per bit
     }
 }
 
@@ -44,7 +44,7 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
 
     if(std::is_same_v<emp::Bit, B>) {
         size_t tuple_bits = schema_->size();
-        tuple_size_ = tuple_bits * sizeof(emp::block); // bits, one block per bit
+        tuple_size_ = tuple_bits * TypeUtilities::getEmpBitSize(); // bits, one block per bit
     }
 
     if(num_tuples == 0)
@@ -415,9 +415,9 @@ QueryTable<B>::deserialize(const QuerySchema &schema, vector<Bit> &table_bits) {
     uint32_t tuple_cnt = table_size / tuple_size;
 
     std::shared_ptr<SecureTable> result(new SecureTable(tuple_cnt, encrypted_schema));
-    assert(result->tuple_data_.size() / sizeof(emp::block) == table_bits.size());
+    assert(result->tuple_data_.size() / TypeUtilities::getEmpBitSize() == table_bits.size());
 
-    memcpy(result->tuple_data_.data(), table_bits.data(), table_size * sizeof(emp::block));
+    memcpy(result->tuple_data_.data(), table_bits.data(), table_size * TypeUtilities::getEmpBitSize());
 
     return result;
 

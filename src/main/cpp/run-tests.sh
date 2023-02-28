@@ -11,98 +11,40 @@ bash  test/support/load-generated-data.sh 100
 # optional:
 #  bash run-pilot-test.sh
 
-./bin/csv_reader_test 
-./bin/field_expression_test
-./bin/filter_test
-./bin/project_test
-./bin/basic_join_test
-./bin/fkey_pkey_join_test
-./bin/sort_test
-./bin/scalar_aggregate_test
-./bin/group_by_aggregate_test
-./bin/secret_share_generator_test 
+./csv_reader_test 
+./field_expression_test
+./filter_test
+./project_test
+./basic_join_test
+./fkey_pkey_join_test
+./sort_test
+./scalar_aggregate_test
+./group_by_aggregate_test
+./secret_share_generator_test 
 #this test depends on pilot testbed
-./bin/serialization_test
-./bin/plan_parser_test
-./bin/tpch_test
+./serialization_test
+./plan_parser_test
+./tpch_test
 
-#pairs for Alice and Bob
-./bin/emp_test --party=1 & 
-./bin/emp_test  --party=2
+bash run.sh emp_test
+bash run.sh secure_field_expression_test
+bash run.sh emp_table_test
+bash run.sh secure_filter_test
+bash run.sh secure_sort_test
+bash run.sh secure_basic_join_test
+bash run.sh secure_pkey_fkey_join_test
+bash run.sh secure_scalar_aggregate_test
+bash run.sh secure_group_by_aggregate_test
+bash run.sh secure_tpch_test
+bash run.sh enrich_test
 
-sleep 2
-./bin/secure_field_expression_test --party=1 &
-./bin/secure_field_expression_test --party=2
+# ZK Tests -- these can be optional
+bash run.sh zk_test
+bash run.sh zk_filter_test
+bash run.sh  zk_basic_join_test
+bash run.sh zk_keyed_join_test
+bash run.sh  zk_scalar_aggregate_test
+bash run.sh zk_group_by_aggregate_test
+bash run.sh zk_sort_test
+bash run.sh zk_tpch_test
 
-sleep 2
-./bin/emp_table_test --party=1 &
-./bin/emp_table_test  --party=2
-
-sleep 2
-./bin/secure_filter_test --party=1 &
-./bin/secure_filter_test --party=2
-
-sleep 2
-./bin/secure_sort_test --party=1 &
-./bin/secure_sort_test --party=2
-
-sleep 2
-./bin/secure_basic_join_test --party=1 &
-./bin/secure_basic_join_test --party=2
-
-sleep 2
-./bin/secure_pkey_fkey_join_test --party=1 &
-./bin/secure_pkey_fkey_join_test --party=2
-
-sleep 2
-./bin/secure_scalar_aggregate_test --party=1 &
-./bin/secure_scalar_aggregate_test --party=2
-
-sleep 2
-./bin/secure_group_by_aggregate_test --party=1 &
-./bin/secure_group_by_aggregate_test --party=2
-
-sleep 2
-./bin/secure_tpch_test --party=1 &
-./bin/secure_tpch_test --party=2
-
-
-sleep 2
-./bin/emp_float_to_int --party=1 &
-./bin/emp_float_to_int --party=2 
-
-
-
-sleep 2
-
-./bin/enrich_test --party=1 &
-./bin/enrich_test --party=2
-
-
-sleep 2
-
-## ZK Tests -- these can be optional
-
-./bin/zk_test --party=1 &
-./bin/zk_test --party=2
-sleep 2
-./bin/zk_filter_test --party=1 &
-./bin/zk_filter_test --party=2
-sleep 2
-./bin/zk_basic_join_test --party=1 &
-./bin/zk_basic_join_test --party=2
-sleep 2
-./bin/zk_keyed_join_test --party=1 &
-./bin/zk_keyed_join_test --party=2
-sleep 2
-./bin/zk_scalar_aggregate_test --party=1 &
-./bin/zk_scalar_aggregate_test --party=2
-sleep 2
-./bin/zk_group_by_aggregate_test --party=1 &
-./bin/zk_group_by_aggregate_test --party=2
-sleep 2
-./bin/zk_sort_test --party=1 &
-./bin/zk_sort_test --party=2
-sleep 2
-./bin/zk_tpch_test --party=1 &
-./bin/zk_tpch_test --party=2

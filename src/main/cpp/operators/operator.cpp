@@ -56,7 +56,7 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
         op->run();
     }
 
-    //auto start_time = clock_start(); // from emp toolkit
+//    auto start_time = clock_start(); // from emp toolkit
 
   
     output_ = runSelf(); // delegated to children
@@ -104,9 +104,6 @@ std::string Operator<B>::toString() const {
 
     ss << ": " <<  output_schema_ <<    " order by: " << DataUtilities::printSortDefinition(sort_definition_);
 
-    if(output_.get() != nullptr) {
-            ss << " tuple count: " << output_->getTupleCount();
-    }
     return ss.str();
 
 }

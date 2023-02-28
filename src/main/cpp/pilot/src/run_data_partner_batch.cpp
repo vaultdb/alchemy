@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
     string partial_count_query = DataUtilities::readTextFileToString("pilot/queries/partial-count.sql");
     string selection_clause;
     string partial_count_selection_clause;
-    size_t batch_count;
+    size_t batch_count = 0L;
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
     string year_selection;
 

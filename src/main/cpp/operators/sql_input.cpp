@@ -43,10 +43,6 @@ void SqlInput::runQuery() {
     Operator::output_ = std::move(localOutput);
     output_->setSortOrder(Operator<bool>::sort_definition_);
 
-    if(output_->getTupleCount() <= 0) {
-        throw std::invalid_argument("read empty input from \"" + input_query_ + "\"");
-    }
-
 
 }
 

@@ -79,16 +79,25 @@ void Join<B>::write_left(const bool &write, PlainTuple &dst_tuple, const PlainTu
 template<typename B>
 void Join<B>::write_left(const emp::Bit &write, SecureTuple &dst_tuple, const SecureTuple &src_tuple) {
     size_t write_bit_cnt = src_tuple.getSchema()->size() - 1; // -1 for dummy tag
-    size_t write_size = write_bit_cnt * sizeof(emp::block);
+//    size_t write_size = write_bit_cnt * TypeUtilities::getEmpBitSize();
+//
+//    emp::Integer src(write_bit_cnt, 0), dst(write_bit_cnt, 0);
+//
+//    memcpy(src.bits.data(), src_tuple.getData(), write_size);
+//    memcpy(dst.bits.data(), dst_tuple.getData(), write_size);
+//
+//    dst = dst.select(write, src);
+//
+//    memcpy(dst_tuple.getData(), dst.bits.data(), write_size);
+//
 
-    emp::Integer src(write_bit_cnt, 0), dst(write_bit_cnt, 0);
-
-    memcpy(src.bits.data(), src_tuple.getData(), write_size);
-    memcpy(dst.bits.data(), dst_tuple.getData(), write_size);
-
-    dst = dst.select(write, src);
-
-    memcpy(dst_tuple.getData(), dst.bits.data(), write_size);
+    emp::Bit *write_ptr = dst_tuple.getData();
+    emp::Bit *read_ptr = src_tuple.getData();
+    for(size_t i = 0; i < write_bit_cnt; ++i) {
+        *write_ptr = emp::If(write, *read_ptr, *write_ptr);
+        ++read_ptr;
+        ++write_ptr;
+    }
 
 }
 
@@ -110,18 +119,27 @@ void Join<B>::write_right(const emp::Bit &write, SecureTuple &dst_tuple, const S
     size_t write_bit_cnt = src_tuple.getSchema()->size() - 1; // don't overwrite dummy tag
     size_t dst_bit_cnt = dst_tuple.getSchema()->size() - 1;
     size_t write_offset = dst_bit_cnt - write_bit_cnt;
-    size_t write_size = write_bit_cnt * sizeof(emp::block);
 
-
-    emp::Integer src(write_bit_cnt, 0), dst(write_bit_cnt, 0);
-
-    memcpy(src.bits.data(), src_tuple.getData(), write_size);
-    memcpy(dst.bits.data(), dst_tuple.getData() + write_offset, write_size);
-
-
-    dst = dst.select(write, src);
-
-    memcpy(dst_tuple.getData() + write_offset, dst.bits.data(), write_size);
+//
+//    size_t write_size = write_bit_cnt * TypeUtilities::getEmpBitSize();
+//
+//
+//    emp::Integer src(write_bit_cnt, 0), dst(write_bit_cnt, 0);
+//
+//    memcpy(src.bits.data(), src_tuple.getData(), write_size);
+//    memcpy(dst.bits.data(), dst_tuple.getData() + write_offset, write_size);
+//
+//
+//    dst = dst.select(write, src);
+//
+//    memcpy(dst_tuple.getData() + write_offset, dst.bits.data(), write_size);
+    emp::Bit *write_ptr = dst_tuple.getData() + write_offset;
+    emp::Bit *read_ptr = src_tuple.getData();
+    for(size_t i = 0; i < write_bit_cnt; ++i) {
+        *write_ptr = emp::If(write, *read_ptr, *write_ptr);
+        ++read_ptr;
+        ++write_ptr;
+    }
 
 }
 
