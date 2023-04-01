@@ -31,7 +31,6 @@ SELECT truncate_tables(:cutoff);
 DROP DATABASE IF EXISTS :target_db;
 CREATE DATABASE :target_db  WITH TEMPLATE tpch_alice;
 \c :target_db
-\i 'truncate-tpch-tables.sql'
 SELECT truncate_tables(:cutoff);
 
 
@@ -40,5 +39,4 @@ SELECT truncate_tables(:cutoff);
 DROP DATABASE IF EXISTS :target_db;
 CREATE DATABASE :target_db  WITH TEMPLATE tpch_bob;
 \c :target_db
-\i 'truncate-tpch-tables.sql'
 SELECT truncate_tables(:cutoff);
