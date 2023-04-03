@@ -85,10 +85,25 @@ BEGIN;
 		PS_COMMENT		VARCHAR(199)
 	);
 
-	ALTER TABLE PARTSUPP ADD PRIMARY KEY (PS_PARTKEY, PS_SUPPKEY);
-	
-	
-	COPY partsupp FROM '/tmp/dss/data/partsupp.csv' WITH (FORMAT csv, DELIMITER '|');
+COPY partsupp FROM '/tmp/dss/data/partsupp.csv' WITH (FORMAT csv, DELIMITER '|');
+-- sometimes when we scale down partsupp generates dupes                                                                                                                                                                                             -- delete the duplicate (partkey, suppkey) rows                                                                                                                                                                                                      
+CREATE TABLE deduped AS (
+SELECT
+  *
+FROM (
+  SELECT
+    ROW_NUMBER() OVER (PARTITION BY ps_partkey, ps_suppkey ORDER BY ps_availqty) AS r,
+    partsupp.*
+  FROM partsupp) ps
+WHERE
+  ps.r < 2);
+
+DROP TABLE partsupp;
+ALTER TABLE deduped RENAME TO partsupp;
+
+-- only works after dedupe
+ALTER TABLE PARTSUPP ADD PRIMARY KEY (PS_PARTKEY, PS_SUPPKEY);
+
 
 COMMIT;
 
