@@ -18,7 +18,7 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
     dbName = dbname;
     pqxx::result pqxxResult;
-    pqxx::connection dbConn("dbname=" + dbname);
+    pqxx::connection dbConn("user=vaultdb dbname=" + dbname);
 
     try {
         pqxx::work txn(dbConn);

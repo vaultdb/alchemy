@@ -28,7 +28,7 @@ void SecureScalarAggregateTest::runTest(const string &expectedOutputQuery,
   std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10"; //ORDER BY (1), (2)";
 
 
-  std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults("tpch_unioned", expectedOutputQuery, false);
+  std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, false);
 
   // provide the aggregator with inputs:
   SecureSqlInput input(db_name_, query, false, netio_, FLAGS_party);
@@ -48,7 +48,7 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
   // produces 25 rows
   std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
 
-  std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults("tpch_unioned", expectedOutputQuery, false);
+  std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, false);
   //Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
   // provide the aggregator with inputs:
