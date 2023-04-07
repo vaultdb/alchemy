@@ -52,8 +52,6 @@ QuerySchema SerializationTest::getCapricornSchema() {
     targetSchema.putField(QueryFieldDesc(5, "numerator", "patient", FieldType::BOOL));
     targetSchema.putField(QueryFieldDesc(6, "denom_excl", "patient", FieldType::BOOL));
 
-    targetSchema.initializeFieldOffsets();
-
     return targetSchema;
 }
 
