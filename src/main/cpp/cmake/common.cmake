@@ -3,10 +3,18 @@
 
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	if(NOT DEFINED OPENSSL_ROOT_DIR)
-		set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
-		message(STATUS "OPENSSL_ROOT_DIR set to default: ${OPENSSL_ROOT_DIR}")
-	endif()
+    if(NOT DEFINED OPENSSL_ROOT_DIR)
+        IF(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)")
+            # M1 Apple
+            set(OPENSSL_ROOT_DIR "/opt/homebrew/opt/openssl")
+            message(STATUS "OPENSSL_ROOT_DIR set to default: ${OPENSSL_ROOT_DIR}")
+        ELSE(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)")
+            # Intel Apple
+            set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
+            message(STATUS "OPENSSL_ROOT_DIR set to default: ${OPENSSL_ROOT_DIR}")
+        ENDIF(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)" )
+
+    endif()
 endif()
 
 if(NOT WIN32)
@@ -34,7 +42,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -43,8 +50,19 @@ include_directories(${CMAKE_SOURCE_DIR})
 find_package(Boost REQUIRED COMPONENTS date_time system)
 
 #Compilation flags
-set(CMAKE_C_FLAGS "-pthread -Wall  -march=native -maes -mrdseed ")  # -Wc++17-extensions -Weverything -Wno-padded -Wno-c++98-compat-pedantic -Wno-reserved-id-macro -Wsign-compare -Wno-int-to-pointer-cast 
+set(CMAKE_C_FLAGS "-pthread   -Wfatal-errors  -Wno-unused-command-line-argument")  # -Wall -Wc++17-extensions -Weverything -Wno-padded -Wno-c++98-compat-pedantic -Wno-reserved-id-macro -Wsign-compare -Wno-int-to-pointer-cast
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}  -fPIC")
+
+#message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
+message("${Blue}-- Platform: ${CMAKE_SYSTEM_PROCESSOR}${ColourReset}")
+IF(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv8-a+simd+crypto+crc")
+ELSE(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native -maes -mrdseed")
+ENDIF(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(aarch64)|(arm64)" )
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
+
+
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g   -O0 -fno-omit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
 

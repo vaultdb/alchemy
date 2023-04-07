@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-rm -rf emp-*
+rm -rf emp-* install.py
 wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/install.py
 python3 install.py --deps --tool --ot --sh2pc --zk
 #git clone https://github.com/emp-toolkit/emp-readme.git

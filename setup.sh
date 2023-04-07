@@ -20,7 +20,9 @@ ln -s /usr/local/opt/openssl/lib/libssl.dylib /usr/local/lib/
 cd deps/emp
 /bin/bash install.sh 
 
-#to install correct pqxx version
+#install correct pqxx version
+#for upgrading pqxx, need to add flags to configure call:
+#   ./configure ... CXXFLAGS="-std=c++20 -O3"
 cd ..
 git clone --branch 6.2.5 https://github.com/jtv/libpqxx.git
 cd libpqxx

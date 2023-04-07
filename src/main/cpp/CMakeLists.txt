@@ -46,8 +46,7 @@ find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
 
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/rpc
-		${CMAKE_CURRENT_BINARY_DIR}/data
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/data
         ${CMAKE_CURRENT_BINARY_DIR}/operators
         ${CMAKE_CURRENT_BINARY_DIR}/query_table
         ${CMAKE_CURRENT_BINARY_DIR}/common)
@@ -120,8 +119,8 @@ set(sources
 
 
 
-message("verify ${OPENSSL_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY}: ${EMP_ZK_LIBRARY}  ")
-message("Boost Libs: ${Boost_LIBRARIES} " )	      
+#message("verify ${OPENSSL_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY}: ${EMP_ZK_LIBRARY}  ")
+#message("Boost Libs: ${Boost_LIBRARIES} " )
 
 
 add_library(${NAME} SHARED ${sources})
