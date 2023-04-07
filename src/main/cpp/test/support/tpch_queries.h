@@ -183,7 +183,7 @@ namespace vaultdb {
     };
 
 
-
+    // depends on conf/workload/tpch/setup-db-connections.sql
     std::map<int, std::string> truncated_tpch_queries = {
             {1, "select \n"
                 "  l_returnflag, \n"
@@ -197,7 +197,9 @@ namespace vaultdb {
                 "  avg(l_discount) as avg_disc, \n"
                 "  count(*) as count_order \n"
                 "from \n"
-                " (SELECT * FROM  lineitem ORDER BY l_orderkey, l_linenumber LIMIT $LIMIT) t1 \n"
+                " ((SELECT * FROM  $ALICE_DB.lineitem ORDER BY l_orderkey, l_linenumber LIMIT $LIMIT) "
+                "  UNION ALL"
+                "(SELECT * FROM  $BOB_DB.lineitem ORDER BY l_orderkey, l_linenumber LIMIT $LIMIT)) t1 \n"
                 " where \n"
                 "  l_shipdate <= date '1998-08-03' \n"
                 "group by \n"

@@ -1,4 +1,6 @@
--- TODO: run this as vaultdb
+-- run this as vaultdb role in postgresql
+-- e.g.
+-- psql -U vaultdb postgres < conf/workload/tpch/setup-db-connections.sql
 CREATE EXTENSION  IF NOT EXISTS postgres_fdw;
 -- generate this with:
 -- OUTPUT=t.sql

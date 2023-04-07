@@ -8,7 +8,8 @@ TPCH_DATAGEN_PATH=$PWD/deps/tpch/dss
 mkdir -p /tmp/dss/data/
 rm -rf /tmp/dss/data/*
 
-
+# to generate FDW connections for expected query results in TPC-H
+# run conf/workload/setup-db-connections.sql
 
 
 #construct unioned database first
@@ -90,6 +91,7 @@ psql -U vaultdb $ALICE_DB < $CONF_PATH/set-constraints.sql
 psql -U vaultdb $BOB_DB < $CONF_PATH/set-constraints.sql
 
 
+
 # optional -- use this to populate main dbs
 
 #if [ "$#" -ne 0 ]; then
@@ -107,5 +109,6 @@ psql -U vaultdb $BOB_DB < $CONF_PATH/set-constraints.sql
 #    CMD='ALTER DATABASE \"' $DB_NAME '\" RENAME TO tpch_unioned'
 #    psql -U vaultdb -c "$CMD"
 #fi
+
 
 

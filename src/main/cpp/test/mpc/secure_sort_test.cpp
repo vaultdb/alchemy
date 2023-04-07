@@ -69,13 +69,13 @@ bool SecureSortTest::isSorted(const std::shared_ptr<PlainTable> & table, const S
 
 
 TEST_F(SecureSortTest, tpchQ1Sort) {
-    std::string dbName =  FLAGS_party == 1 ? alice_db_ : bob_db_;
+    std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS ("
             + sql
             + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults("tpch_unioned", expectedResultSql, false);
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
 
 
 //    std::string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
@@ -83,7 +83,7 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
     PsqlDataProvider dataProvider;
 
-    std::shared_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(dbName,
+    std::shared_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(db_name_,
                                                                          sql, false);
 
     SortDefinition sortDefinition;
@@ -93,7 +93,7 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
 
 
-    SecureSqlInput input(dbName, sql, false, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
     Sort<emp::Bit> sort(&input, sortDefinition);
     std::shared_ptr<SecureTable> result = sort.run();
 
@@ -106,19 +106,19 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
 
 
 TEST_F(SecureSortTest, tpchQ3Sort) {
-    std::string dbName =  FLAGS_party == 1 ? alice_db_ : bob_db_;
+    std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate")  + " FROM input ORDER BY revenue DESC, o_orderdate";
-    shared_ptr<PlainTable> expected = DataUtilities::getQueryResults("tpch_unioned", expectedResultSql, false);
+    shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
     sortDefinition.emplace_back(3, SortDirection::ASCENDING);
 
 
-    SecureSqlInput input(dbName, sql, false, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
     Sort<emp::Bit> sort(&input, sortDefinition);
 
 
@@ -147,7 +147,7 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
 
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l WHERE l_orderkey <= 10  ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults("tpch_unioned", expectedResultSql, false);
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
@@ -177,17 +177,17 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
 
 
 TEST_F(SecureSortTest, tpchQ8Sort) {
-    std::string dbName =  FLAGS_party == 1 ? alice_db_ : bob_db_;
+    std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  WHERE o_orderkey <= 10 ORDER BY o_comment, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_orderyear FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults("tpch_unioned", expectedResultSql, false);
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
 
 
-    SecureSqlInput input(dbName, sql, false, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
     Sort<emp::Bit> sort(&input, sortDefinition);
 
     ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
@@ -208,7 +208,7 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
 
 
 TEST_F(SecureSortTest, tpchQ9Sort) {
-    std::string dbName =  FLAGS_party == 1 ? alice_db_ : bob_db_;
+    std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     std::string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
@@ -222,7 +222,7 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     sortDefinition.emplace_back(0, SortDirection::DESCENDING);
 
 
-    SecureSqlInput input(dbName, sql, false, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
     Sort sort(&input, sortDefinition);
 
     // project it down to $2, $0
@@ -245,20 +245,20 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
 
 // 18
 TEST_F(SecureSortTest, tpchQ18Sort) {
-    std::string dbName =  FLAGS_party == 1 ? alice_db_ : bob_db_;
+    std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders WHERE o_orderkey <= 10 "
                  " ORDER BY o_comment, o_custkey"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_totalprice, " + DataUtilities::queryDatetime("o_orderdate") + "  FROM input ORDER BY o_totalprice DESC, o_orderdate";
 
 
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults("tpch_unioned", expectedResultSql, false);
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(2, SortDirection::DESCENDING);
     sortDefinition.emplace_back(1, SortDirection::ASCENDING);
 
-    SecureSqlInput input(dbName, sql, false, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
     Sort<emp::Bit> sort(&input, sortDefinition);
 
 
@@ -320,7 +320,7 @@ int main(int argc, char **argv) {
                  // need to do secure join between lineitem and supplier
 
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT n_name, o_orderyear FROM input ORDER BY n_name, o_orderyear DESC";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults("tpch_unioned", expectedResultSql, false);
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
 
 
     std::string lineitemSql = "SELECT o_orderyear, l_orderkey, l_suppkey "
@@ -337,8 +337,8 @@ int main(int argc, char **argv) {
 
 
 
-    SecureSqlInput lineitemInput(dbName, lineitemSql, false, netio, FLAGS_party);
-    SecureSqlInput supplierInput(dbName, supplierSql, false, netio, FLAGS_party);
+    SecureSqlInput lineitemInput(db_name_, lineitemSql, false, netio, FLAGS_party);
+    SecureSqlInput supplierInput(db_name_, supplierSql, false, netio, FLAGS_party);
 
 
     ConjunctiveEqualityPredicate lineitemSupplierOrdinals = {EqualityPredicate(2, 0)}; //  l_suppkey, s_suppkey

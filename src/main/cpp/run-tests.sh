@@ -1,6 +1,7 @@
 #!/bin/bash -x
 
 
+cmake .
 make -j5
 
 bash test/support/setup-csv.sh
@@ -10,6 +11,8 @@ bash  test/support/load-generated-data.sh 100
 
 # optional:
 #  bash run-pilot-test.sh
+
+mkdir log
 
 ./csv_reader_test 
 ./field_expression_test
