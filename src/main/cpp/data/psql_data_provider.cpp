@@ -39,11 +39,11 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
         --colCount;
 
 
-    size_t rowCount = 0;
+    size_t rowCount = pqxxResult.size();
     // just count the rows first
-    for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
-        ++rowCount;
-    }
+//    for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
+//        ++rowCount;
+//    }
 
 
 
@@ -98,14 +98,33 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
 size_t PsqlDataProvider::getVarCharLength(std::string tableName, std::string columnName) const {
     // query the schema to get the column width
     //  SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name='<table>' AND column_name='<col name>';
-    std::string queryCharWidth( "SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name=\'");
-    queryCharWidth += tableName;
-    queryCharWidth += "\' AND column_name=\'";
+    if(!tableName.empty()) {
+        std::string queryCharWidth(
+                "SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema=\'public\'  AND table_name=\'");
+        queryCharWidth += tableName;
+        queryCharWidth += "\' AND column_name=\'";
+        queryCharWidth += columnName;
+        queryCharWidth += "\'";
+
+        pqxx::result pqxxResult = query("user=vaultdb dbname=" + dbName, queryCharWidth);
+        // read single row, single val
+        // ambiguity with attribute resolution not yet implemented
+        assert(pqxxResult.size() == 1);
+        row aRow = pqxxResult[0];
+        field aField = aRow.at(0);
+
+        return aField.as<size_t>();
+    }
+
+    // otherwise try selecting from public schema
+    // if only one column exists with this name, use its stats
+    std::string queryCharWidth(
+            "SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema=\'public\'  AND column_name=\'");
     queryCharWidth += columnName;
     queryCharWidth += "\'";
 
-    pqxx::result pqxxResult = query("dbname=" + dbName, queryCharWidth);
-    // read single row, single val
+    pqxx::result pqxxResult = query("user=vaultdb dbname=" + dbName, queryCharWidth);
+    assert(pqxxResult.size() == 1);
 
     row aRow = pqxxResult[0];
     field aField = aRow.at(0);
@@ -118,7 +137,7 @@ size_t PsqlDataProvider::getVarCharLength(std::string tableName, std::string col
 
 string PsqlDataProvider::getTableName(int oid) {
     std::string queryTableName = "SELECT relname FROM pg_class WHERE oid=" + std::to_string(oid);
-    pqxx::result pqxxResult = query("dbname=" + dbName, queryTableName);
+    pqxx::result pqxxResult = query("user=vaultdb dbname=" + dbName, queryTableName);
     // read single row, single val
 
     if(pqxxResult.empty())
