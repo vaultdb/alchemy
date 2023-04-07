@@ -73,10 +73,10 @@ TEST_F(ProjectionTest, q3Lineitem) {
     std::string srcSql = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
     std::string expectedOutputSql = "SELECT l_orderkey, " + DataUtilities::queryDatetime("l_shipdate") + ",  l_extendedprice * (1 - l_discount) revenue FROM (" + srcSql + ") src ";
 
-    std::shared_ptr<PlainTable > expected =  DataUtilities::getQueryResults("tpch_unioned", expectedOutputSql, false);
+    std::shared_ptr<PlainTable > expected =  DataUtilities::getQueryResults(db_name_, expectedOutputSql, false);
 
 
-    SqlInput input("tpch_unioned", srcSql, false);
+    SqlInput input(db_name_, srcSql, false);
 
 
     ExpressionMapBuilder<bool> builder(input.getOutputSchema());

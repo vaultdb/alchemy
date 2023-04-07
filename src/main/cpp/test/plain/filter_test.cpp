@@ -17,10 +17,10 @@ TEST_F(FilterTest, test_table_scan) {
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
 
-    SqlInput input(dbName, sql, false);
+    SqlInput input(db_name_, sql, false);
 
     std::shared_ptr<PlainTable > output = input.run(); // a smoke test for the operator infrastructure
-    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, sql, false);
+    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, sql, false);
 
     ASSERT_EQ(*expected, *output);
 
@@ -36,7 +36,7 @@ TEST_F(FilterTest, test_filter) {
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
 
-   std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, true);
+   std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, true);
 
    // expression setup
     // l_linenumber == 1
@@ -45,7 +45,7 @@ TEST_F(FilterTest, test_filter) {
    shared_ptr<ExpressionNode<bool> > equality_check(new EqualNode<bool>(read_field, constant_input));
    BoolExpression<bool> expression(equality_check);
 
-    SqlInput input(dbName, sql, false);
+    SqlInput input(db_name_, sql, false);
     Filter<bool> filter(&input, expression);
 
 

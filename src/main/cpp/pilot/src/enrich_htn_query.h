@@ -3,7 +3,7 @@
 
 #include <query_table/query_table.h>
 #include <operators/group_by_aggregate.h>
-#include <filter.h>
+#include <operators/filter.h>
 
 using namespace std;
 
@@ -11,7 +11,7 @@ namespace  vaultdb {
     class EnrichHtnQuery {
 
 
-        shared_ptr<SecureTable> input_table_;
+        std::shared_ptr<SecureTable> input_table_;
         size_t cardinality_bound_;
 
     public:

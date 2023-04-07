@@ -22,7 +22,8 @@ TEST_F(SortTest, testSingleIntColumn) {
     string sql = "SELECT c_custkey FROM customer ORDER BY c_address, c_custkey LIMIT 10";  // c_address "randomizes" the order
     string expectedSql = "SELECT c_custkey FROM (" + sql + ") subquery ORDER BY c_custkey";
 
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedSql, false);
+
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedSql, false);
 
     SortDefinition sortDefinition;
     ColumnSort aColumnSort(0, SortDirection::ASCENDING);
@@ -34,14 +35,13 @@ TEST_F(SortTest, testSingleIntColumn) {
     expected->setSortOrder(observed->getSortOrder());
     ASSERT_EQ(*expected, *observed);
 
-
     } 
 
 
 TEST_F(SortTest, tpchQ1Sort) {
     string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment, l_orderkey  LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
 
 
     SortDefinition sortDefinition;
@@ -64,7 +64,7 @@ TEST_F(SortTest, tpchQ3Sort) {
     string sql = "SELECT l_orderkey, (l.l_extendedprice * (1 - l.l_discount))::INT revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate")  + " FROM input ORDER BY revenue DESC, o_orderdate";
-    shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
+    shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
 
 
     SortDefinition sortDefinition;
@@ -99,7 +99,7 @@ TEST_F(SortTest, tpchQ5Sort) {
 
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(1, SortDirection::DESCENDING);
@@ -130,7 +130,7 @@ TEST_F(SortTest, tpchQ8Sort) {
 
     string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  ORDER BY o_comment, o_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_orderyear FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
@@ -161,7 +161,7 @@ TEST_F(SortTest, tpchQ9Sort) {
                       " ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT n_name, o_orderyear FROM input ORDER BY n_name, o_orderyear DESC";
 
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
 
 
 
@@ -196,16 +196,18 @@ TEST_F(SortTest, tpchQ9Sort) {
 TEST_F(SortTest, tpchQ18Sort) {
 
     string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders"
-                      " ORDER BY o_comment, o_custkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_totalprice, " + DataUtilities::queryDatetime("o_orderdate") + "  FROM input ORDER BY o_totalprice DESC, o_orderdate";
+                      " ORDER BY o_comment, o_custkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the to-sort cols
+    string expectedResultSql = "WITH input AS (" + sql + ") "
+                    "SELECT o_totalprice, " + DataUtilities::queryDatetime("o_orderdate") + "  FROM input "
+                    "ORDER BY o_totalprice DESC, o_orderdate";
 
 
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, expectedResultSql, false);
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
 
 
     SortDefinition sortDefinition;
-    sortDefinition.emplace_back(2, SortDirection::DESCENDING);
-    sortDefinition.emplace_back(1, SortDirection::ASCENDING);
+    sortDefinition.emplace_back(2, SortDirection::DESCENDING); // o_totalprince
+    sortDefinition.emplace_back(1, SortDirection::ASCENDING); // o_orderdate
     expected->setSortOrder(sortDefinition);
 
 
@@ -216,8 +218,9 @@ TEST_F(SortTest, tpchQ18Sort) {
     builder.addMapping(2, 0);
     builder.addMapping(1, 1);
 
-    Project project(sorted_, builder.getExprs());
 
+    Project project(sorted_, builder.getExprs());
+    
     shared_ptr<PlainTable > observed = project.run();
 
 
@@ -276,7 +279,7 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
 
 
 Sort<bool> SortTest::getSort(const string &srcSql, const SortDefinition &sortDefinition) {
-    SqlInput input(dbName, srcSql, false);
+    SqlInput input(db_name_, srcSql, false);
     Sort<bool> sort(&input, sortDefinition); // heap allocate it
 
     // cache sort result

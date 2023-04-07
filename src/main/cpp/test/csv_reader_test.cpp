@@ -22,12 +22,12 @@ TEST_F(CsvReaderTest, lineitemTest) {
     // TODO: syscall the line below to generate the csv
  // generated input file by running:
   // psql  -t --csv  -c "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/lineitem.csv
-    std::string inputFile =  currentWorkingDirectory + "/test/support/csv/lineitem.csv";
+    std::string inputFile =  current_working_directory_ + "/test/support/csv/lineitem.csv";
 
 
     std::string query = "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50";
     PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable(db_name_, query);
     
     
     QuerySchema csvSchema = *expected->getSchema();
@@ -53,7 +53,7 @@ TEST_F(CsvReaderTest, quotedStringTest) {
     // grab customer table for schema:
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
     PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable(db_name_, query);
 
     std::unique_ptr<PlainTable> parse_test = std::unique_ptr<PlainTable>(new PlainTable(*expected));
 
@@ -77,11 +77,11 @@ TEST_F(CsvReaderTest, customerTest) {
     // generated input file by running:
     // psql --csv  -t -c "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/customer.csv
 
-    std::string inputFile =  currentWorkingDirectory +  "/test/support/csv/customer.csv";
+    std::string inputFile =  current_working_directory_ +  "/test/support/csv/customer.csv";
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable(db_name_, query);
 
     std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, *expected->getSchema());
 
@@ -97,11 +97,11 @@ TEST_F(CsvReaderTest, ordersTest) {
   
     // psql  -t --csv  -c "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/orders.csv
 
-    std::string inputFile = currentWorkingDirectory +  "/test/support/csv/orders.csv";
+    std::string inputFile = current_working_directory_ +  "/test/support/csv/orders.csv";
     std::string query = "SELECT *   FROM orders ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable("tpch_unioned", query);
+    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable(db_name_, query);
 
     QuerySchema csvSchema = *expected->getSchema();
     // o_orderdate(4) set schema to date

@@ -3,9 +3,9 @@
 #include <util/logger.h>
 
 
-const std::string EmpBaseTest::unioned_db_ = "tpch_unioned";
-const std::string EmpBaseTest::alice_db_ = "tpch_alice";
-const std::string EmpBaseTest::bob_db_ = "tpch_bob";
+const std::string EmpBaseTest::unioned_db_ = "tpch_unioned_150";
+const std::string EmpBaseTest::alice_db_ = "tpch_alice_150";
+const std::string EmpBaseTest::bob_db_ = "tpch_bob_150";
 
 void EmpBaseTest::SetUp()  {
 

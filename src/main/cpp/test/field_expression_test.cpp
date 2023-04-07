@@ -56,7 +56,7 @@ TEST_F(FieldExpressionTest, test_int32_expr) {
 
 TEST_F(FieldExpressionTest, cmp_swap) {
     string sql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 3"; // order by to ensure order is reproducible and not sorted on the sort cols
-    std::shared_ptr<PlainTable > data = DataUtilities::getQueryResults("tpch_unioned", sql, false);
+    std::shared_ptr<PlainTable > data = DataUtilities::getQueryResults(db_name_, sql, false);
 
     // deep copy
     PlainTuple a(data->getSchema()), b(data->getSchema());

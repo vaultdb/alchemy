@@ -18,13 +18,13 @@ void GroupByAggregateTest::runTest(const string &expectedOutputQuery,
 
 
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 1);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, expectedOutputQuery, false, 1);
 
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
     std::vector<int32_t> groupByCols{0};
 
-    SqlInput input(dbName, query, false, sortDefinition);
+    SqlInput input(db_name_, query, false, sortDefinition);
 
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
@@ -41,13 +41,13 @@ void GroupByAggregateTest::runTest(const string &expectedOutputQuery,
 void GroupByAggregateTest::runDummiesTest(const string &expectedOutputQuery,
                                           const vector<ScalarAggregateDefinition> &aggregators) const {
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 1);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, expectedOutputQuery, false, 1);
 
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
     std::vector<int32_t> groupByCols{0};
 
-    SqlInput input(dbName, query, true, sortDefinition);
+    SqlInput input(db_name_, query, true, sortDefinition);
 
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
@@ -161,7 +161,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
                                  "FROM (" + inputQuery + ") subquery WHERE NOT dummy "
                                                          "GROUP BY l_returnflag, l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, expectedOutputQuery, false, 2);
 
     std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -171,7 +171,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_sums) {
 
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    SqlInput input(dbName, inputQuery, true, sortDefinition);
+    SqlInput input(db_name_, inputQuery, true, sortDefinition);
 
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
@@ -209,7 +209,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
                                   "order by \n"
                                   "  l_returnflag, l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, expectedOutputQuery, false, 2);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -219,7 +219,7 @@ TEST_F(GroupByAggregateTest, test_tpch_q1_avg_cnt) {
         ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    SqlInput input(dbName, inputQuery, true, sortDefinition);
+    SqlInput input(db_name_, inputQuery, true, sortDefinition);
 
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 
@@ -261,7 +261,7 @@ TEST_F(GroupByAggregateTest, tpch_q1) {
                                   "  l_returnflag, \n"
                                   "  l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(dbName, expectedOutputQuery, false, 2);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, expectedOutputQuery, false, 2);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -275,7 +275,7 @@ TEST_F(GroupByAggregateTest, tpch_q1) {
         ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    SqlInput input(dbName, inputQuery, true, sortDefinition);
+    SqlInput input(db_name_, inputQuery, true, sortDefinition);
 
     GroupByAggregate aggregate(&input, groupByCols, aggregators);
 

@@ -31,9 +31,9 @@ class EnrichTest : public EmpBaseTest  {
 protected:
 
 
-    const string unionedDbName = "enrich_htn_unioned";
-    const string aliceDbName = "enrich_htn_test_alice";
-    const string bobDbName = "enrich_htn_test_bob";
+    const string unioned_enrich_db_ = "enrich_htn_unioned";
+    const string alice_enrich_db_ = "enrich_htn_test_alice";
+    const string bob_enrich_db_ = "enrich_htn_test_bob";
 
     shared_ptr<PlainTable> getAgeStrataProjection(shared_ptr<PlainTable> input, const bool & isEncrypted) const;
 

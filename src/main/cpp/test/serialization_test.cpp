@@ -28,7 +28,7 @@ TEST_F(SerializationTest, typesTest) {
                             "ORDER BY l_shipdate "
                             "LIMIT 10";
 
-    std::shared_ptr<PlainTable> inputTable = DataUtilities::getQueryResults(dbName, inputQuery, false);
+    std::shared_ptr<PlainTable> inputTable = DataUtilities::getQueryResults(db_name_, inputQuery, false);
 
     vector<int8_t> tableData = inputTable->serialize();
     uint32_t expectedSize = inputTable->getSchema()->size() / 8 * 10;
@@ -51,6 +51,8 @@ QuerySchema SerializationTest::getCapricornSchema() {
     targetSchema.putField(QueryFieldDesc(4, "race", "patient", FieldType::STRING, 1));
     targetSchema.putField(QueryFieldDesc(5, "numerator", "patient", FieldType::BOOL));
     targetSchema.putField(QueryFieldDesc(6, "denom_excl", "patient", FieldType::BOOL));
+
+    targetSchema.initializeFieldOffsets();
 
     return targetSchema;
 }

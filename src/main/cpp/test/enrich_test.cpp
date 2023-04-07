@@ -96,7 +96,7 @@ shared_ptr<PlainTable> EnrichTest::loadAndJoinLocalData(const std::string & dbNa
 }
 
 shared_ptr<SecureTable> EnrichTest::loadUnionAndDeduplicateData() const{
-    string dbName = (FLAGS_party == ALICE) ? aliceDbName : bobDbName;
+    string dbName = (FLAGS_party == ALICE) ? alice_enrich_db_ : bob_enrich_db_;
     shared_ptr<PlainTable>  localData = loadAndJoinLocalData(dbName);
     std::shared_ptr<SecureTable> unionedAndEncryptedData = PlainTable::secretShare(*localData, netio_, FLAGS_party);
 
@@ -275,7 +275,7 @@ void EnrichTest::validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition 
 
     std::shared_ptr<PlainTable> observedTable = sortOp.run()->reveal();
 
-    validateTable(unionedDbName, expectedResultSql, expectedSortOrder, observedTable);
+    validateTable(unioned_enrich_db_, expectedResultSql, expectedSortOrder, observedTable);
 
 }
 
@@ -327,20 +327,20 @@ TEST_F(EnrichTest, loadAndPrepData) {
     SortDefinition patientExclusionSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(2, SortDirection::ASCENDING)};
 
     // *** alice test
-    std::shared_ptr<PlainTable> alicePatient = loadAndProjectPatientData(aliceDbName);
+    std::shared_ptr<PlainTable> alicePatient = loadAndProjectPatientData(alice_enrich_db_);
     // this is more of a smoke test to make sure the setup is aligned correctly, not testing query reading facility
-    std::shared_ptr<PlainTable> alicePatientExclusion = loadPatientExclusionData(aliceDbName);
+    std::shared_ptr<PlainTable> alicePatientExclusion = loadPatientExclusionData(alice_enrich_db_);
 
-    validateTable(aliceDbName, expectedResultPatientSql, patientSortDef, alicePatient);
-    validateTable(aliceDbName, expectedResultPatientExclusionSql, patientExclusionSortDef, alicePatientExclusion);
+    validateTable(alice_enrich_db_, expectedResultPatientSql, patientSortDef, alicePatient);
+    validateTable(alice_enrich_db_, expectedResultPatientExclusionSql, patientExclusionSortDef, alicePatientExclusion);
 
 
     // *** bob test
-    std::shared_ptr<PlainTable> bobPatient = loadAndProjectPatientData(bobDbName);
-    std::shared_ptr<PlainTable> bobPatientExclusion = loadPatientExclusionData(bobDbName);
+    std::shared_ptr<PlainTable> bobPatient = loadAndProjectPatientData(bob_enrich_db_);
+    std::shared_ptr<PlainTable> bobPatientExclusion = loadPatientExclusionData(bob_enrich_db_);
 
-    validateTable(bobDbName, expectedResultPatientSql, patientSortDef, bobPatient);
-    validateTable(bobDbName, expectedResultPatientExclusionSql, patientExclusionSortDef, bobPatientExclusion);
+    validateTable(bob_enrich_db_, expectedResultPatientSql, patientSortDef, bobPatient);
+    validateTable(bob_enrich_db_, expectedResultPatientExclusionSql, patientExclusionSortDef, bobPatientExclusion);
 
 }
 
@@ -362,11 +362,11 @@ TEST_F(EnrichTest, loadAndJoinData) {
 
 
     SortDefinition  expectedSort{ColumnSort(0, SortDirection::ASCENDING)};
-    std::shared_ptr<PlainTable> aliceJoined = loadAndJoinLocalData(aliceDbName);
-    validateTable(aliceDbName, expectedResultSql, expectedSort, aliceJoined);
+    std::shared_ptr<PlainTable> aliceJoined = loadAndJoinLocalData(alice_enrich_db_);
+    validateTable(alice_enrich_db_, expectedResultSql, expectedSort, aliceJoined);
 
-    std::shared_ptr<PlainTable> bobJoined = loadAndJoinLocalData(bobDbName);
-    validateTable(bobDbName, expectedResultSql, expectedSort, bobJoined);
+    std::shared_ptr<PlainTable> bobJoined = loadAndJoinLocalData(bob_enrich_db_);
+    validateTable(bob_enrich_db_, expectedResultSql, expectedSort, bobJoined);
 
 }
 
@@ -394,7 +394,7 @@ TEST_F(EnrichTest, loadUnionAndDeduplicateData) {
     std::shared_ptr<PlainTable> observedTable = deduplicated->reveal();
     observedTable = DataUtilities::removeDummies(observedTable);
 
-    validateTable(unionedDbName, expectedResultSql, DataUtilities::getDefaultSortDefinition(6), observedTable);
+    validateTable(unioned_enrich_db_, expectedResultSql, DataUtilities::getDefaultSortDefinition(6), observedTable);
 
 
 }
@@ -422,7 +422,7 @@ TEST_F(EnrichTest, testExclusionCriteria) {
     std::shared_ptr<PlainTable> observedTable = filter->reveal();
     observedTable = DataUtilities::removeDummies(observedTable);
 
-    validateTable(unionedDbName, expectedResultSql, DataUtilities::getDefaultSortDefinition(6), observedTable);
+    validateTable(unioned_enrich_db_, expectedResultSql, DataUtilities::getDefaultSortDefinition(6), observedTable);
 
 }
 
@@ -458,7 +458,7 @@ TEST_F(EnrichTest, testPatientCohort) {
     //SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(5);
     SortDefinition empty;
 
-    validateTable(unionedDbName, expectedResultSql, empty, observedTable);
+    validateTable(unioned_enrich_db_, expectedResultSql, empty, observedTable);
 
 }
 
@@ -490,7 +490,7 @@ TEST_F(EnrichTest, testPatientAgggregation) {
     observedTable = DataUtilities::removeDummies(observedTable);
 
 
-    validateTable(unionedDbName, expectedResultSql, DataUtilities::getDefaultSortDefinition(5), observedTable);
+    validateTable(unioned_enrich_db_, expectedResultSql, DataUtilities::getDefaultSortDefinition(5), observedTable);
 
 }
 
@@ -507,14 +507,14 @@ TEST_F(EnrichTest, testRollups) {
     std::shared_ptr<PlainTable> ageStratified = rollUpAggregate(1, aggregator)->reveal();
     ageStratified = DataUtilities::removeDummies(ageStratified);
     std::string expectedOutputSql = getRollupExpectedResultsSql("age_strata");
-    validateTable(unionedDbName, expectedOutputSql, orderBy, ageStratified);
+    validateTable(unioned_enrich_db_, expectedOutputSql, orderBy, ageStratified);
     //std::cout << "Validated age strata" <<  *ageStratified << std::endl;
 
     // gender (2)
     std::shared_ptr<PlainTable> genderStratified = rollUpAggregate(2, aggregator)->reveal();
     genderStratified = DataUtilities::removeDummies(genderStratified);
     expectedOutputSql = getRollupExpectedResultsSql("sex");
-    validateTable(unionedDbName, expectedOutputSql, orderBy, genderStratified);
+    validateTable(unioned_enrich_db_, expectedOutputSql, orderBy, genderStratified);
 
     //std::cout << "Validated gender strata " << *genderStratified << std::endl;
 
@@ -522,14 +522,14 @@ TEST_F(EnrichTest, testRollups) {
     std::shared_ptr<PlainTable> ethnicityStratified = rollUpAggregate(3, aggregator)->reveal();
     ethnicityStratified = DataUtilities::removeDummies(ethnicityStratified);
     expectedOutputSql = getRollupExpectedResultsSql("ethnicity");
-    validateTable(unionedDbName, expectedOutputSql, orderBy, ethnicityStratified);
+    validateTable(unioned_enrich_db_, expectedOutputSql, orderBy, ethnicityStratified);
     //std::cout << "Validated ethnicity strata " << *ethnicityStratified << std::endl;
 
     // race (4)
     std::shared_ptr<PlainTable> raceStratified = rollUpAggregate(4, aggregator)->reveal();
     raceStratified = DataUtilities::removeDummies(raceStratified);
     expectedOutputSql = getRollupExpectedResultsSql("race");
-    validateTable(unionedDbName, expectedOutputSql, orderBy, raceStratified);
+    validateTable(unioned_enrich_db_, expectedOutputSql, orderBy, raceStratified);
     //std::cout << "Validated race strata " << *raceStratified << std::endl;
 
 
@@ -537,7 +537,7 @@ TEST_F(EnrichTest, testRollups) {
     std::shared_ptr<PlainTable> zipMarkerStratified = rollUpAggregate(0, aggregator)->reveal();
     zipMarkerStratified = DataUtilities::removeDummies(zipMarkerStratified);
     expectedOutputSql = getRollupExpectedResultsSql("zip_marker");
-    validateTable(unionedDbName, expectedOutputSql, orderBy, zipMarkerStratified);
+    validateTable(unioned_enrich_db_, expectedOutputSql, orderBy, zipMarkerStratified);
     //std::cout << "Validated zip marker stratified " << *zipMarkerStratified << std::endl;
 }
 

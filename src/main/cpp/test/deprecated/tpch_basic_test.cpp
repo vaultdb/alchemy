@@ -27,7 +27,7 @@ protected:
 
 
 
-    string db_name = "tpch_unioned";
+    string db_name = dbName;
 
 
     void validate_q3_join(const shared_ptr<PlainTable> & observed);

@@ -2,7 +2,7 @@
 #include <test/mpc/emp_base_test.h>
 #include <util/data_utilities.h>
 #include <test/support/QueryTableTestQueries.h>
-#include <sort.h>
+#include <operators/sort.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -11,7 +11,10 @@ DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 
 using namespace vaultdb;
 
-class EmpTableTest : public EmpBaseTest {};
+class EmpTableTest : public EmpBaseTest {
+protected:
+    void secretShareAndValidate(const std::string & input_query, const SortDefinition & sort = SortDefinition());
+};
 
 
 
@@ -20,60 +23,23 @@ class EmpTableTest : public EmpBaseTest {};
 // test encrypting a query table with a single int in EMP
 TEST_F(EmpTableTest, encrypt_table_one_column) {
 
-    PsqlDataProvider dataProvider;
 
     std::string input_query =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
-    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
-                                                                          input_query, false);
 
     SortDefinition  sort_definition = DataUtilities::getDefaultSortDefinition(1);
-    input_table->setSortOrder(sort_definition);
 
-    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
+    secretShareAndValidate(input_query, sort_definition);
 
-    netio_->flush();
-
-    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", input_query, false);
-    Sort sorter(expected, sort_definition);
-    expected = sorter.run();
-
-    std::unique_ptr<PlainTable> decrypted = encrypted->reveal(emp::PUBLIC);
-    expected->setSortOrder(sort_definition);
-
-
-
-    ASSERT_EQ(*expected, *decrypted) << "Query table was not processed correctly.";
 
 
 }
 
 
-
-
 // test encrypting a query table with a single int in EMP
 TEST_F(EmpTableTest, encrypt_table_varchar) {
 
-    PsqlDataProvider dataProvider;
-
     std::string input_query =  "SELECT l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
-
-    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", input_query, false);
-
-
-    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
-                                                                          input_query, false);
-
-    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
-
-    netio_->flush();
-
-    std::unique_ptr<PlainTable> decrypted_table = encrypted->reveal(emp::PUBLIC);
-
-
-
-
-
-    ASSERT_EQ(*expected, *decrypted_table) << "Query table was not processed correctly.";
+    secretShareAndValidate(input_query);
 
 }
 
@@ -81,24 +47,11 @@ TEST_F(EmpTableTest, encrypt_table_varchar) {
 
 TEST_F(EmpTableTest, encrypt_table_two_cols) {
 
-    PsqlDataProvider dataProvider;
-
     std::string input_query = "SELECT l_orderkey, l_comment "
                              "FROM lineitem "
                              "ORDER BY l_orderkey, l_linenumber "
                              "LIMIT 10";
-
-    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
-                                                                          input_query, false);
-
-    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
-    netio_->flush();
-
-    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", input_query, false);
-    std::unique_ptr<PlainTable> decrypted = encrypted->reveal(emp::PUBLIC);
-
-    ASSERT_EQ(*expected, *decrypted) << "Query table was not processed correctly.";
-
+    secretShareAndValidate(input_query);
 
 
 }
@@ -108,21 +61,8 @@ TEST_F(EmpTableTest, encrypt_table_two_cols) {
 // test more column types
 TEST_F(EmpTableTest, encrypt_table) {
 
-    PsqlDataProvider dataProvider;
     std::string input_query = QueryTableTestQueries::getInputQuery();
-    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
-                                                                          input_query, false);
-
-    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
-
-    netio_->flush();
-
-    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob",  input_query, false);
-    std::unique_ptr<PlainTable> decrypted = encrypted->reveal(emp::PUBLIC);
-
-
-    ASSERT_EQ(*expected, *decrypted) << "Query table was not processed correctly.";
-
+    secretShareAndValidate(input_query);
 
 
 }
@@ -130,24 +70,44 @@ TEST_F(EmpTableTest, encrypt_table) {
 
 TEST_F(EmpTableTest, encrypt_table_dummy_tag) {
 
-    PsqlDataProvider dataProvider;
 
     std::string input_query = QueryTableTestQueries::getInputQueryDummyTag();
-    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
-                                                                          input_query, true);
+    secretShareAndValidate(input_query);
 
-    std::shared_ptr<SecureTable> encrypted = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
 
+}
+
+
+void EmpTableTest::secretShareAndValidate(const std::string & input_query, const SortDefinition & sort) {
+
+    PsqlDataProvider dataProvider;
+    string local_db = (FLAGS_party == emp::ALICE) ? alice_db_ : bob_db_;
+
+    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(local_db,
+                                                                          input_query, false);
+
+    input_table->setSortOrder(sort);
+    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
     netio_->flush();
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults("tpch_alice", "tpch_bob", input_query,
-                                                                                 true);
-
-    std::unique_ptr<PlainTable> decrypted = encrypted->reveal(emp::PUBLIC);
-
-    ASSERT_EQ(*expected, *decrypted) << "Query table was not processed correctly.";
+    std::unique_ptr<PlainTable> revealed = secret_shared->reveal(emp::PUBLIC);
 
 
+
+
+    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, input_query, false);
+
+    if(!sort.empty())  {
+        Sort sorter(expected, sort);
+        expected = sorter.run();
+    }
+
+
+
+
+
+
+    ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
 
 }
 

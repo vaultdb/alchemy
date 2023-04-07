@@ -25,12 +25,12 @@ class SecureFilterTest : public EmpBaseTest {};
 
 TEST_F(SecureFilterTest, test_table_scan) {
 
-    std::string dbName =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
+    std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
     std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, false);
 
-    SecureSqlInput input(dbName, sql, false, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
 
     std::shared_ptr<SecureTable> output = input.run(); // a smoke test for the operator infrastructure
 
@@ -49,7 +49,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
 // Testing for selecting l_linenumber=1
 
 TEST_F(SecureFilterTest, test_filter) {
-    std::string dbName =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
+    std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
@@ -57,7 +57,7 @@ TEST_F(SecureFilterTest, test_filter) {
     std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expectedResultSql, true);
 
 
-   SecureSqlInput input(dbName, sql, false, netio_, FLAGS_party);
+   SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
 
 
     // expression setup

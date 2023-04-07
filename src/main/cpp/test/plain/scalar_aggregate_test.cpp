@@ -12,7 +12,7 @@ TEST_F(ScalarAggregateTest, test_count) {
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem ORDER BY (1)  LIMIT 50";
     std::string expectedSql = "SELECT COUNT(*)::BIGINT FROM (" + query + ") q";
 
-    SqlInput input(dbName, query, false);
+    SqlInput input(db_name_, query, false);
 
     std::vector<ScalarAggregateDefinition> aggregators  = {ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
 
@@ -20,7 +20,7 @@ TEST_F(ScalarAggregateTest, test_count) {
 
 
     std::shared_ptr<PlainTable> output = aggregate.run();
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedSql, false);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedSql, false);
     
     ASSERT_EQ(*output, *expected);
     
@@ -32,11 +32,11 @@ TEST_F(ScalarAggregateTest, test_count_dummies) {
 
     // set up the expected results:
     std::string expectedOutputQuery = "SELECT COUNT(*)::BIGINT cnt FROM (" + query + ") selection WHERE NOT dummy";
-    std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+    std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults(db_name_, expectedOutputQuery, false);
 
     
     // provide the aggregator with inputs:
-    SqlInput input(dbName, query, true);
+    SqlInput input(db_name_, query, true);
 
     // define the aggregate:
     std::vector<ScalarAggregateDefinition> aggregators = {ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
@@ -57,10 +57,10 @@ TEST_F(ScalarAggregateTest, test_min) {
 
     // set up the expected results:
     std::string expectedOutputQuery = "WITH input AS (" + query + ") SELECT MIN(l_quantity) min_quantity FROM input";
-    std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+    std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults(db_name_, expectedOutputQuery, false);
 
     // provide the aggregator with inputs:
-    SqlInput input(dbName, query, false);
+    SqlInput input(db_name_, query, false);
 
     // define the aggregate:
     std::vector<ScalarAggregateDefinition> aggregators;
@@ -80,10 +80,10 @@ TEST_F(ScalarAggregateTest, test_max) {
 
     // set up the expected results:
     std::string expectedOutputQuery = "WITH input AS (" + query + ") SELECT MAX(l_tax) max_tax FROM input";
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedOutputQuery, false);
 
     // provide the aggregator with inputs:
-    SqlInput input(dbName, query, false);
+    SqlInput input(db_name_, query, false);
 
     // define the aggregate:
     std::vector<ScalarAggregateDefinition> aggregators;
@@ -103,10 +103,10 @@ TEST_F(ScalarAggregateTest, test_sum) {
 
   // set up the expected results:
   std::string expectedOutputQuery = "WITH input AS (" + query + ") SELECT SUM(l_quantity) sum_qty FROM input";
-  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedOutputQuery, false);
 
   // provide the aggregator with inputs:
-  SqlInput input(dbName, query, false);
+  SqlInput input(db_name_, query, false);
 
   // define the aggregate:
   std::vector<ScalarAggregateDefinition> aggregators;
@@ -126,10 +126,10 @@ TEST_F(ScalarAggregateTest, test_sum_dummies) {
 
   // set up the expected results:
   std::string expectedOutputQuery = "SELECT SUM(l_extendedprice) sum_base_price FROM (" + query + ") selection WHERE NOT dummy";
-  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedOutputQuery, false);
 
   // provide the aggregator with inputs:
-    SqlInput input(dbName, query, true);
+    SqlInput input(db_name_, query, true);
 
 
   std::vector<ScalarAggregateDefinition> aggregators;
@@ -150,10 +150,10 @@ TEST_F(ScalarAggregateTest, test_avg) {
   // set up the expected results:
     std::string expectedOutputQuery = "SELECT FLOOR(AVG(l_linenumber))::INT avg_lno  FROM (" + query + ") q";
 
-  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedOutputQuery, false);
 
   // provide the aggregator with inputs:
-  SqlInput input(dbName, query, false);
+  SqlInput input(db_name_, query, false);
 
   // define the aggregate:
   std::vector<ScalarAggregateDefinition> aggregators;
@@ -172,9 +172,9 @@ TEST_F(ScalarAggregateTest, test_avg_dummies) {
 
   // set up the expected results:
   std::string expectedOutputQuery = "SELECT FLOOR(AVG(l_linenumber))::INTEGER avg_disc FROM (" + query + ") selection WHERE NOT dummy";
-  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedOutputQuery, false);
 
-  SqlInput input(dbName, query, false);
+  SqlInput input(db_name_, query, false);
   std::vector<ScalarAggregateDefinition> aggregators;
   aggregators.push_back(ScalarAggregateDefinition(0, AggregateId::AVG, "avg_disc"));
 
@@ -205,10 +205,10 @@ TEST_F(ScalarAggregateTest, test_all_sum_dummies) {
                                     "SUM(l_discprice) sum_disc_price, "
                                     "SUM(l_charge) sum_charge "
                                     "FROM (" + query + ") selection WHERE NOT dummy";
-  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedOutputQuery, false);
 
   // provide the aggregator with inputs:
-  SqlInput input(dbName, query, true);
+  SqlInput input(db_name_, query, true);
 
   // define the aggregate:
   std::vector<ScalarAggregateDefinition> aggregators = {
@@ -240,14 +240,14 @@ TEST_F(ScalarAggregateTest, test_all_avg_dummies) {
                                     "AVG(l_extendedprice) avg_price, "
                                     "AVG(l_discount) avg_disc "
                                     "FROM (" + query + ") selection WHERE NOT dummy";
-  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedOutputQuery, false);
 
     std::vector<ScalarAggregateDefinition> aggregators  = {
           ScalarAggregateDefinition(0, AggregateId::AVG, "avg_qty"),
           ScalarAggregateDefinition(1, AggregateId::AVG, "avg_price"),
           ScalarAggregateDefinition(2, AggregateId::AVG, "avg_disc")};
 
-    SqlInput input(dbName, query, true);
+    SqlInput input(db_name_, query, true);
     ScalarAggregate aggregate(&input, aggregators);
     std::shared_ptr<PlainTable> output = aggregate.run();
 
@@ -270,7 +270,7 @@ TEST_F(ScalarAggregateTest, test_tpch_q1_avg_cnt) {
                                   "from (" + inputQuery + ") subq\n"
                                                           " where NOT dummy";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedOutputQuery, false);
 
     std::vector<ScalarAggregateDefinition> aggregators{
             ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
@@ -279,7 +279,7 @@ TEST_F(ScalarAggregateTest, test_tpch_q1_avg_cnt) {
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     // provide the aggregator with inputs:
-    SqlInput input(dbName, inputQuery, true);
+    SqlInput input(db_name_, inputQuery, true);
     ScalarAggregate aggregate(&input, aggregators);
     std::shared_ptr<PlainTable> aggregated = aggregate.run();
 
@@ -315,7 +315,7 @@ TEST_F(ScalarAggregateTest, test_all_aggs_tpch_q1) {
                                     "AVG(l_discount) avg_disc, "
                                     "COUNT(*)::BIGINT count_order "
                                     "FROM (" + query + ") selection WHERE NOT dummy";
-  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(dbName, expectedOutputQuery, false);
+  std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedOutputQuery, false);
 
 
   std::vector<ScalarAggregateDefinition> aggregators = {
@@ -329,7 +329,7 @@ TEST_F(ScalarAggregateTest, test_all_aggs_tpch_q1) {
   ScalarAggregateDefinition(-1, AggregateId::COUNT, "count_order")};
 
 
-  SqlInput input(dbName, query, true);
+  SqlInput input(db_name_, query, true);
   ScalarAggregate aggregate(&input, aggregators);
   std::shared_ptr<PlainTable> output = aggregate.run();
 

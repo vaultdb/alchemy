@@ -1,7 +1,7 @@
 #include "enrich_htn_query.h"
 #include <util/data_utilities.h>
-#include <sort.h>
-#include <project.h>
+#include <operators/sort.h>
+#include <operators/project.h>
 #include <query_table/plain_tuple.h>
 #include <expression/function_expression.h>
 #include <expression/comparator_expression_nodes.h>

@@ -195,7 +195,7 @@ namespace vaultdb {
                 "  avg(l_quantity) as avg_qty, \n"
                 "  avg(l_extendedprice) as avg_price, \n"
                 "  avg(l_discount) as avg_disc, \n"
-                "  count(*)::INT as count_order \n"
+                "  count(*) as count_order \n"
                 "from \n"
                 " (SELECT * FROM  lineitem ORDER BY l_orderkey, l_linenumber LIMIT $LIMIT) t1 \n"
                 " where \n"
