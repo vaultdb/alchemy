@@ -41,8 +41,9 @@ using namespace std;
 
 std::string getCurrentWorkingDirectory() {
     char cwd[PATH_MAX];
-    char * ret = getcwd(cwd, sizeof(cwd));
-    ++ret;
+    //char * ret =
+            getcwd(cwd, sizeof(cwd));
+    //++ret;
     std::string  currentWorkingDirectory = std::string(cwd);
     std::string suffix = currentWorkingDirectory.substr(currentWorkingDirectory.length() - 4, 4);
     if(suffix == std::string("/bin")) {

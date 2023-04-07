@@ -45,7 +45,7 @@ TEST_F(SecretShareGeneratorTest, lineitem_sample) {
                              "ORDER BY l_shipdate "
                              "LIMIT 10";
 
-    std::shared_ptr<PlainTable> initialTable = DataUtilities::getQueryResults(dbName, query, false);
+    std::shared_ptr<PlainTable> initialTable = DataUtilities::getQueryResults(db_name_, query, false);
     SecretShares secretShares = initialTable->generateSecretShares();
 
     std::shared_ptr<PlainTable> finalTable = assembleSecretShares(*initialTable->getSchema(), secretShares);
@@ -62,7 +62,7 @@ TEST_F(SecretShareGeneratorTest, lineitem_dummy_tag_sample) {
                         "ORDER BY l_shipdate "
                         "LIMIT 10";
 
-    std::shared_ptr<PlainTable> initialTable = DataUtilities::getQueryResults(dbName, query, true);
+    std::shared_ptr<PlainTable> initialTable = DataUtilities::getQueryResults(db_name_, query, true);
     SecretShares secretShares = initialTable->generateSecretShares();
 
     std::shared_ptr<PlainTable> finalTable = assembleSecretShares(*initialTable->getSchema(), secretShares);
