@@ -17,8 +17,8 @@ protected:
     void SetUp() override;
     void TearDown() override;
 
-    std::string currentWorkingDirectory;
-    const string dbName = "tpch_unioned";
+    std::string current_working_directory_;
+    const string db_name_ = "tpch_unioned_150";
 
 
 };
