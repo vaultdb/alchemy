@@ -26,11 +26,6 @@ protected:
 void
 PlanParserTest::runTest(const int &test_id, const SortDefinition &expected_sort, const std::string &expected_plan) {
     string test_name = "q" + std::to_string(test_id);
-    string query = truncated_tpch_queries[test_id];
-    boost::replace_all(query, "$LIMIT", std::to_string(limit_));
-
-    shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name_, query, false, 0);
-    expected->setSortOrder(expected_sort);
 
     PlanParser<bool> plan_reader(db_name_, test_name, limit_);
     shared_ptr<PlainOperator> root = plan_reader.getRoot();
@@ -50,7 +45,7 @@ TEST_F(PlanParserTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     std::string expected_plan = "#2: Sort<bool> ({<0, ASC> , <1, ASC> )) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float .sum_qty, #3 float .sum_base_price, #4 float .sum_disc_price, #5 float .sum_charge, #6 float .avg_qty, #7 float .avg_price, #8 float .avg_disc, #9 int64 .count_order) order by: {<0, ASC> , <1, ASC> )\n"
                                 "    #1: GroupByAggregate<bool> (group-by: (0, 1) aggs: (SUM($2) sum_qty, SUM($3) sum_base_price, SUM($4) sum_disc_price, SUM($5) sum_charge, AVG($2) avg_qty, AVG($3) avg_price, AVG($6) avg_disc, COUNT(*) count_order)) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float .sum_qty, #3 float .sum_base_price, #4 float .sum_disc_price, #5 float .sum_charge, #6 float .avg_qty, #7 float .avg_price, #8 float .avg_disc, #9 int64 .count_order) order by: {<0, ASC> , <1, ASC> )\n"
-                                "        #0: SqlInput<bool> (\"SELECT * FROM (SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice, l_extendedprice * (1 - l_discount) AS discount, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, l_discount, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem ORDER BY l_returnflag, l_linestatus ) input LIMIT 10\", tuple_count=10) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float lineitem.l_quantity, #3 float lineitem.l_extendedprice, #4 float .discount, #5 float .charge, #6 float lineitem.l_discount) order by: {<0, ASC> , <1, ASC> )\n";
+                                "        #0: SqlInput<bool> (\"SELECT * FROM (SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice, l_extendedprice * (1 - l_discount) AS discount, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, l_discount, NOT l_shipdate <= DATE '1998-08-03' AS dummy_tag FROM lineitem ORDER BY  l_returnflag, l_linestatus, l_orderkey, l_linenumber ) input LIMIT 10\", tuple_count=10) : (#0 varchar(1) lineitem.l_returnflag, #1 varchar(1) lineitem.l_linestatus, #2 float lineitem.l_quantity, #3 float lineitem.l_extendedprice, #4 float .discount, #5 float .charge, #6 float lineitem.l_discount) order by: {<0, ASC> , <1, ASC> )\n";
 
     runTest(1, expected_sort, expected_plan);
 }
@@ -90,7 +85,7 @@ TEST_F(PlanParserTest, tpch_q5) {
                                 "                            #0: SqlInput<bool> (\"SELECT * FROM (SELECT t1.n_name, t2.c_custkey, t2.c_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_name, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT c_custkey, c_nationkey FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey ORDER BY t2.c_custkey ASC ) input LIMIT 10\", tuple_count=10) : (#0 varchar(25) nation.n_name, #1 int32 customer.c_custkey, #2 int32 customer.c_nationkey) order by: {<1, ASC> )\n"
                                 "                            #1: SqlInput<bool> (\"SELECT * FROM (SELECT o_orderkey, o_custkey, o_orderdate FROM orders ORDER BY o_orderkey, o_custkey, o_orderdate ) input LIMIT 10\", tuple_count=10) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 .o_orderdate) order by: {<0, ASC> , <1, ASC> , <2, ASC> )\n"
                                 "                        #3: SqlInput<bool> (\"SELECT * FROM (SELECT l_orderkey, l_suppkey, l_extendedprice, l_discount FROM lineitem ORDER BY l_orderkey, l_suppkey, l_extendedprice, l_discount ) input LIMIT 10\", tuple_count=10) : (#0 int32 lineitem.l_orderkey, #1 int32 lineitem.l_suppkey, #2 float lineitem.l_extendedprice, #3 float lineitem.l_discount) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> )\n"
-                                "                    #5: SqlInput<bool> (\"SELECT * FROM (SELECT t2.s_suppkey, t2.s_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT s_suppkey, s_nationkey FROM supplier) AS t2 ON t1.n_nationkey = t2.s_nationkey ORDER BY s_suppkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 supplier.s_suppkey, #1 int32 supplier.s_nationkey) order by: {<0, ASC> )\n";
+                                "                    #5: SqlInput<bool> (\"SELECT * FROM (SELECT t2.s_suppkey, t2.s_nationkey FROM (SELECT r_regionkey, r_name FROM region WHERE r_name = 'EUROPE') AS t0 INNER JOIN (SELECT n_nationkey, n_regionkey FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey INNER JOIN (SELECT s_suppkey, s_nationkey FROM supplier) AS t2 ON t1.n_nationkey = t2.s_nationkey ORDER BY s_suppkey ) input LIMIT 10\", tuple_count=1) : (#0 int32 supplier.s_suppkey, #1 int32 supplier.s_nationkey) order by: {<0, ASC> )\n";
     runTest(5, expected_sort, expected_plan);
 }
 
