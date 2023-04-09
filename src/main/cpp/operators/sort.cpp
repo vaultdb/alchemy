@@ -106,7 +106,6 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir) {
         bitonicMerge(Operator<B>::output_, Operator<B>::sort_definition_, lo, cnt, dir);
     }
 
-
 }
 
 
@@ -125,24 +124,6 @@ void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortD
             QueryTuple<B> rhs = table->getTuple(i + m);
 
             B to_swap = swapTuples(lhs, rhs, sort_def, dir);
-            // **BEGIN DEBUG
-            if (lhs.getSchema()->getFieldCount() == 3 &&
-                lhs.getSchema()->getField(2).getName() == "o_totalprice") {
-            Field<B> lhs_field = lhs.getField(2);
-            Field<B> rhs_field = rhs.getField(2);
-            // DESC means that to_swap = (lhs_field < rhs_field)
-            // if dir to_swap = !to_swap
-            B lt = lhs_field < rhs_field;
-            B expected = (lt == dir);
-
-
-            cout << "***Invoking compareSwap on (" << i << ", " << i + m << ") dir=" << dir
-                 << " swap=" << to_swap
-                 << " lhs=" << lhs_field << ", rhs=" << rhs_field << " lt=" << lt << " expected=" << expected << endl;
-            bool res = FieldUtilities::extract_bool(expected == to_swap);
-            assert(res);
-            // END DEBUG
-        }
             QueryTuple<B>::compareSwap(to_swap, lhs, rhs);
 
         }
@@ -151,6 +132,7 @@ void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortD
         bitonicMerge(table, sort_def, lo + m, n - m, dir);
     }
 }
+
 
 template<typename B>
 Sort<B>::~Sort() {
@@ -172,54 +154,30 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
                                                                   : rhs.getField(sort_definition[i].first);
 
         // true for ascending, false for descending
-//        bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
-//        bool asc = (schema_asc == dir) ? true : false;
+        bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
 
-        //B lt = lhs_field < rhs_field;
-//        B to_swap =  (lhs_field < rhs_field) == asc;
-//        if(dir)  // flip the bit
-//            to_swap = !to_swap;
-//
+        B to_swap =  (lhs_field < rhs_field) == asc;
+        if(dir)  // flip the bit
+            to_swap = !to_swap;
 
-//        std::cout << "ASC after: " << asc << '\n';
+
 
         // if  ascending (1) & dir == 1 --> asc (1) (lhs < rhs (1) means swap!)
         // if DESC (0) & dir == 0 --> ASC (1) (lhs < rhs (1) means swap!)
         // if ASC (1) & dir = 0 --> DESC  (0) (lhs < rhs (1)  means no swap)
         // if DESC (0) & dir == 1  --> DESC (0) (lhs < rhs (1)  means no swap)
 
-        B local_swap =  (B(dir) == (lhs_field > rhs_field));
-
-        B schema_invert_dir(sort_definition[i].second == SortDirection::DESCENDING);
-        local_swap = FieldUtilities::select(schema_invert_dir, !local_swap, local_swap);
-
-
-
-
-        // ASC means  swap when lt is true
-        // truth table:
-        // ASC=1, lt = 1 : swap=1
-        // ASC=1, lt = 0 : swap = 0
-        // DESC (0), lt = 1 : swap= 1
-        // DESC(0) , lt = 0, swap = 0
-
 
         // find first one where not eq, use this to init flag
-        swap = FieldUtilities::select(swap_init, swap, local_swap);
+        swap = FieldUtilities::select(swap_init, swap, to_swap);
         swap_init = swap_init | (lhs_field != rhs_field);
-
-        if(std::is_same_v<bool, B>) { // if plaintext, can terminate early
-            if(FieldUtilities::extract_bool(swap_init)) {
-                break;
-            }
+        if(std::is_same_v<bool, B>) {
+            bool bool_init = FieldUtilities::extract_bool(swap_init);
+            if(bool_init) break;
         }
     }
 
-    std::cout << "Comparing tuples:\n lhs=" << lhs.toString(true)
-              << "\n rhs=" << rhs.toString(true)
-              << "\n sorting on: " << DataUtilities::printSortDefinition(sort_definition)
-              << "  direction: " << dir
-              << " to swap? " << swap << endl;
+
     return swap;
 }
 
