@@ -1,4 +1,4 @@
- #include "plain/plain_base_test.h"
+#include "plain/plain_base_test.h"
 #include <util/type_utilities.h>
 #include <operators/sql_input.h>
 #include <data/csv_reader.h>
@@ -52,6 +52,7 @@ QuerySchema SerializationTest::getCapricornSchema() {
     targetSchema.putField(QueryFieldDesc(5, "numerator", "patient", FieldType::BOOL));
     targetSchema.putField(QueryFieldDesc(6, "denom_excl", "patient", FieldType::BOOL));
 
+    targetSchema.initializeFieldOffsets();
     return targetSchema;
 }
 
