@@ -194,17 +194,21 @@ TEST_F(SortTest, tpchQ9Sort) {
 
 // 18
 TEST_F(SortTest, tpchQ18Sort) {
-
+    // Q3 has the same program logic, but it succeeds.  Why?
+    // both have 10 values.
+    // ordering by o_clerk instead of previous o_comment
+    // found that psql in arm and intel have different sort handling for blanks
+    // and this produced different results for each architecture
     string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders"
-                      " ORDER BY o_comment, o_custkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the to-sort cols
+                      " ORDER BY o_clerk, o_custkey, o_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the to-sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") "
                     "SELECT o_totalprice, " + DataUtilities::queryDatetime("o_orderdate") + "  FROM input "
-                    "ORDER BY o_totalprice DESC, o_orderdate";
+                    "ORDER BY o_totalprice DESC, o_orderdate ASC";
 
 
     shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
 
-
+    // schema: o_orderkey, o_orderdate, o_totalprice
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(2, SortDirection::DESCENDING); // o_totalprince
     sortDefinition.emplace_back(1, SortDirection::ASCENDING); // o_orderdate
@@ -212,6 +216,7 @@ TEST_F(SortTest, tpchQ18Sort) {
 
 
    Sort<bool> sort = getSort(sql, sortDefinition);
+
 
     // project it down to $2, $1
     ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
@@ -228,6 +233,10 @@ TEST_F(SortTest, tpchQ18Sort) {
     sortDefinition[1].first = 1;
     expected->setSortOrder(sortDefinition);
 
+    cout << "expected query answer: \n" << *expected << '\n';
+    cout << "observed query answer: \n" << *observed << '\n';
+
+    ASSERT_EQ(expected->toString(true), observed->toString(true));
     ASSERT_EQ(*expected, *observed);
 
 
@@ -280,10 +289,13 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
 
 Sort<bool> SortTest::getSort(const string &srcSql, const SortDefinition &sortDefinition) {
     SqlInput input(db_name_, srcSql, false);
-    Sort<bool> sort(&input, sortDefinition); // heap allocate it
 
-    // cache sort result
+    Sort<bool> sort(&input, sortDefinition); // heap allocate it
+    std::cout << "Input rows: \n" << *(input.getOutput()) << '\n';
+
+              // cache sort result
     sorted_ = sort.run();
+    std::cout << "Sorted: " << *sorted_ << '\n';
     return sort;
 }
 

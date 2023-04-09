@@ -6,6 +6,7 @@
 
 
 // based on EMP Sort
+// also: https://www.inf.hs-flensburg.de/lang/algorithmen/sortieren/bitonic/oddn.htm
 namespace  vaultdb {
     template<typename B>
     class Sort : public Operator<B> {
@@ -24,11 +25,11 @@ namespace  vaultdb {
         static void bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortDefinition & sort_def, const int &lo, const int &cnt, const bool &invertDir);
 
     private:
-        void bitonicSort(const int &lo, const int &cnt, const bool &invertDir);
+        void bitonicSort(const int &lo, const int &cnt, const bool &dir);
 
-        static B swapTuples(const QueryTuple<B> & lhsTuple, const QueryTuple<B> & rhsTuple, const SortDefinition  & sort_definition, const bool & invertDir);
+        static B swapTuples(const QueryTuple<B> & lhsTuple, const QueryTuple<B> & rhsTuple, const SortDefinition  & sort_definition, const bool & dir);
 
-        static int powerOfLessThanTwo(const int &n);
+        static int powerOfTwoLessThan(const int &n);
 
     protected:
         string getOperatorType() const override;

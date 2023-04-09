@@ -10,9 +10,9 @@
 using namespace vaultdb;
 
 template<typename B>
-int Sort<B>::powerOfLessThanTwo(const int & n) {
+int Sort<B>::powerOfTwoLessThan(const int & n) {
     int k = 1;
-    while (k < n)
+    while (k > 0 && k < n)
         k = k << 1;
     return k >> 1;
 }
@@ -25,9 +25,10 @@ Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition, const i
             throw; // invalid sort definition
     }
 
+    // Need to sort on dummy tag to make resizing not delete real tuples
+    // otherwise may produce incorrect results
     if(limit_ > 0)
-        assert(Operator<B>::sort_definition_[0].first == -1); // Need to sort on dummy tag to make resizing not delete real tuples
-
+        assert(Operator<B>::sort_definition_[0].first == -1);
 
 }
 
@@ -92,17 +93,20 @@ std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
 /** Procedure bitonicSort first produces a bitonic sequence by
  * recursively sorting its two halves in opposite directions, and then
  * calls bitonicMerge.
+ * ASC => (dir == TRUE)
+ * DESC => (dir == FALSE)
  **/
 
 template<typename B>
-void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &invertDir) {
+void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir) {
     if (cnt > 1) {
-        int k = cnt / 2;
-        bitonicSort(lo, k, !invertDir);
-        bitonicSort(lo + k, cnt - k, invertDir);
-        bitonicMerge(Operator<B>::output_, Operator<B>::sort_definition_, lo, cnt, invertDir);
-
+        int m = cnt / 2;
+        bitonicSort(lo, m, !dir);
+        bitonicSort(lo + m, cnt - m, dir);
+        bitonicMerge(Operator<B>::output_, Operator<B>::sort_definition_, lo, cnt, dir);
     }
+
+
 }
 
 
@@ -112,23 +116,41 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &invertDir) 
  * the number of elements is cnt.
  **/
 template<typename B>
-void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &invertDir) {
+void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &dir) {
 
     if (n > 1) {
-        int m = powerOfLessThanTwo(n);
-        for (int i = lo; i < lo + n - m; i++) {
+        int m = powerOfTwoLessThan(n);
+        for (int i = lo; i < lo + n - m; ++i) {
             QueryTuple<B> lhs = table->getTuple(i);
-            QueryTuple<B> rhs =  table->getTuple(i+m);
+            QueryTuple<B> rhs = table->getTuple(i + m);
 
-            B to_swap = swapTuples(lhs, rhs, sort_def, invertDir);
+            B to_swap = swapTuples(lhs, rhs, sort_def, dir);
+            // **BEGIN DEBUG
+            if (lhs.getSchema()->getFieldCount() == 3 &&
+                lhs.getSchema()->getField(2).getName() == "o_totalprice") {
+            Field<B> lhs_field = lhs.getField(2);
+            Field<B> rhs_field = rhs.getField(2);
+            // DESC means that to_swap = (lhs_field < rhs_field)
+            // if dir to_swap = !to_swap
+            B lt = lhs_field < rhs_field;
+            B expected = (lt == dir);
+
+
+            cout << "***Invoking compareSwap on (" << i << ", " << i + m << ") dir=" << dir
+                 << " swap=" << to_swap
+                 << " lhs=" << lhs_field << ", rhs=" << rhs_field << " lt=" << lt << " expected=" << expected << endl;
+            bool res = FieldUtilities::extract_bool(expected == to_swap);
+            assert(res);
+            // END DEBUG
+        }
             QueryTuple<B>::compareSwap(to_swap, lhs, rhs);
 
         }
-        bitonicMerge(table, sort_def, lo, m,  invertDir);
-        bitonicMerge(table, sort_def, lo + m, n - m, invertDir);
+
+        bitonicMerge(table, sort_def, lo, m,  dir);
+        bitonicMerge(table, sort_def, lo + m, n - m, dir);
     }
 }
-
 
 template<typename B>
 Sort<B>::~Sort() {
@@ -136,35 +158,68 @@ Sort<B>::~Sort() {
 }
 
 template<typename B>
-B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, const SortDefinition  & sort_definition, const bool & invertDir)  {
+B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, const SortDefinition  & sort_definition, const bool & dir)  {
     B swap = false;
-    B swapInit = swap;
+    B swap_init = swap;
 
 
-    Field<B> lhsDummyTag = Field<B>(lhs.getDummyTag());
-    Field<B> rhsDummyTag = Field<B>(rhs.getDummyTag());
 
     for (size_t i = 0; i < sort_definition.size(); ++i) {
 
-        const Field<B> lhsField = sort_definition[i].first == -1 ? lhsDummyTag
-                                                                 : lhs.getField(sort_definition[i].first);
-        const Field<B> rhsField = sort_definition[i].first == -1 ? rhsDummyTag
-                                                                 : rhs.getField(sort_definition[i].first);
+        const Field<B> lhs_field = sort_definition[i].first == -1 ? Field<B>(lhs.getDummyTag())
+                                                                  : lhs.getField(sort_definition[i].first);
+        const Field<B> rhs_field = sort_definition[i].first == -1 ? Field<B>(rhs.getDummyTag())
+                                                                  : rhs.getField(sort_definition[i].first);
 
-        bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
-        if (invertDir)
-            asc = !asc;
+        // true for ascending, false for descending
+//        bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
+//        bool asc = (schema_asc == dir) ? true : false;
 
-        B neq = lhsField != rhsField;
-        B lt = lhsField < rhsField;
-        B colSwapFlag = (lt == asc);
+        //B lt = lhs_field < rhs_field;
+//        B to_swap =  (lhs_field < rhs_field) == asc;
+//        if(dir)  // flip the bit
+//            to_swap = !to_swap;
+//
+
+//        std::cout << "ASC after: " << asc << '\n';
+
+        // if  ascending (1) & dir == 1 --> asc (1) (lhs < rhs (1) means swap!)
+        // if DESC (0) & dir == 0 --> ASC (1) (lhs < rhs (1) means swap!)
+        // if ASC (1) & dir = 0 --> DESC  (0) (lhs < rhs (1)  means no swap)
+        // if DESC (0) & dir == 1  --> DESC (0) (lhs < rhs (1)  means no swap)
+
+        B local_swap =  (B(dir) == (lhs_field > rhs_field));
+
+        B schema_invert_dir(sort_definition[i].second == SortDirection::DESCENDING);
+        local_swap = FieldUtilities::select(schema_invert_dir, !local_swap, local_swap);
+
+
+
+
+        // ASC means  swap when lt is true
+        // truth table:
+        // ASC=1, lt = 1 : swap=1
+        // ASC=1, lt = 0 : swap = 0
+        // DESC (0), lt = 1 : swap= 1
+        // DESC(0) , lt = 0, swap = 0
+
 
         // find first one where not eq, use this to init flag
-        swap = FieldUtilities::select(swapInit, swap, colSwapFlag);
-        swapInit = swapInit | neq;
+        swap = FieldUtilities::select(swap_init, swap, local_swap);
+        swap_init = swap_init | (lhs_field != rhs_field);
 
+        if(std::is_same_v<bool, B>) { // if plaintext, can terminate early
+            if(FieldUtilities::extract_bool(swap_init)) {
+                break;
+            }
+        }
     }
 
+    std::cout << "Comparing tuples:\n lhs=" << lhs.toString(true)
+              << "\n rhs=" << rhs.toString(true)
+              << "\n sorting on: " << DataUtilities::printSortDefinition(sort_definition)
+              << "  direction: " << dir
+              << " to swap? " << swap << endl;
     return swap;
 }
 

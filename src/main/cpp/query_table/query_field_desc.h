@@ -27,13 +27,13 @@ namespace  vaultdb {
         [[nodiscard]] int getOrdinal() const;
 
 
-        [[nodiscard]] const std::string &getName() const;
+        const std::string &getName() const;
 
-        [[nodiscard]] FieldType getType() const;
+        FieldType getType() const;
 
-        [[nodiscard]] const std::string &getTableName() const;
+       const std::string &getTableName() const;
 
-        [[nodiscard]] size_t size() const;
+         size_t size() const;
 
         QueryFieldDesc(const QueryFieldDesc &f) = default;
 

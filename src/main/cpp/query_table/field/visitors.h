@@ -150,7 +150,7 @@ namespace vaultdb {
         }
 
         Value operator()(float_t f) const {  // approx float equality
-            double epsilon = std::fabs(f * 0.01);
+            double epsilon = std::fabs(f * 0.001);
             float_t r = boost::get<float_t>(rhs);
             return std::fabs(r - f) <=  epsilon;
         }
