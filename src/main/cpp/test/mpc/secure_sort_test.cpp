@@ -248,7 +248,7 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders WHERE o_orderkey <= 10 "
-                 " ORDER BY o_comment, o_custkey"; // order by to ensure order is reproducible and not sorted on the sort cols
+                 " ORDER BY o_comment, o_custkey, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_totalprice, " + DataUtilities::queryDatetime("o_orderdate") + "  FROM input ORDER BY o_totalprice DESC, o_orderdate";
 
 
