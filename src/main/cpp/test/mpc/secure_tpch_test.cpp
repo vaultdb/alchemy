@@ -39,7 +39,6 @@ protected:
 void
 SecureTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, db_name);
-    std::cout << "Expected output query: \n" << expected_query << std::endl;
 
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
     string local_db = db_name;
@@ -50,13 +49,10 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
     expected->setSortOrder(expected_sort);
 
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
-    std::cout << "***Expected query answer: \n" << *expected << '\n';
-
 
     PlanParser<emp::Bit> parser(local_db, test_name, netio_, FLAGS_party, input_tuple_limit_);
     shared_ptr<SecureOperator> root = parser.getRoot();
 
-    std::cout << "Query tree: \n" << root->printTree() << std::endl;
 
     shared_ptr<PlainTable> observed = root->run()->reveal();
     observed = DataUtilities::removeDummies(observed);
