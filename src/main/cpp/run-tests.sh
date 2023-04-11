@@ -38,8 +38,8 @@ bash run.sh secure_basic_join_test
 bash run.sh secure_pkey_fkey_join_test
 bash run.sh secure_scalar_aggregate_test
 bash run.sh secure_group_by_aggregate_test
-bash run.sh secure_tpch_test
 bash run.sh enrich_test
+bash run.sh secure_tpch_test
 
 # ZK Tests -- these can be optional
 bash run.sh zk_test

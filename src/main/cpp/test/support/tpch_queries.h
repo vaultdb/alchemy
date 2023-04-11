@@ -341,9 +341,9 @@ namespace vaultdb {
                 "  o_orderyear desc\n"},
             {18, "WITH high_quantity AS (\n"
                  " SELECT l_orderkey\n"
-                 " FROM ((SELECT * FROM  $ALICE_DB.lineitem ORDER BY l_orderkey, l_linenumber LIMIT $LIMIT) UNION ALL (SELECT * FROM  $BOB_DB.lineitem ORDER BY l_orderkey, l_linenumber LIMIT $LIMIT)) l\n"
+                 " FROM ((SELECT * FROM  $ALICE_DB.lineitem ORDER BY l_quantity, l_orderkey LIMIT $LIMIT) UNION ALL (SELECT * FROM  $BOB_DB.lineitem ORDER BY l_quantity, l_orderkey LIMIT $LIMIT)) l\n"
                  " GROUP BY l_orderkey\n"
-                 " HAVING SUM(l_quantity) > 300) \n"
+                 " HAVING SUM(l_quantity) > 7) \n" // was 300 (validation) or 312...315 (test) but these always produce empty set with smaller workload
                  " select c.c_name,\n"
                  "    c.c_custkey,\n"
                  "   o.o_orderkey,\n"
@@ -353,7 +353,7 @@ namespace vaultdb {
                  " from\n"
                  "    ((SELECT * FROM  $ALICE_DB.customer ORDER BY c_custkey LIMIT $LIMIT) UNION ALL (SELECT * FROM  $BOB_DB.customer ORDER BY c_custkey LIMIT $LIMIT))  c,\n"
                  "    ((SELECT * FROM  $ALICE_DB.orders ORDER BY o_orderkey LIMIT $LIMIT) UNION ALL (SELECT * FROM  $BOB_DB.orders ORDER BY o_orderkey LIMIT $LIMIT)) o,\n"
-                 "    ((SELECT * FROM  $ALICE_DB.lineitem ORDER BY l_orderkey, l_linenumber LIMIT $LIMIT) UNION ALL (SELECT * FROM  $BOB_DB.lineitem ORDER BY l_orderkey, l_linenumber LIMIT $LIMIT)) l\n"
+                 "    ((SELECT * FROM  $ALICE_DB.lineitem ORDER BY l_quantity, l_orderkey LIMIT $LIMIT) UNION ALL (SELECT * FROM  $BOB_DB.lineitem ORDER BY l_quantity, l_orderkey LIMIT $LIMIT)) l\n"
                  " where\n"
                  "   o.o_orderkey in (\n"
                  "     select * FROM high_quantity)\n"

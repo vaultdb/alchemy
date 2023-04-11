@@ -84,38 +84,36 @@ SecureTpcHTest::generateExpectedOutputQuery(const int &test_id, const SortDefini
     return query;
 }
 
-// completes in ~17 secs on codd2
-//TEST_F(SecureTpcHTest, tpch_q1) {
-//    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-//    runTest(1, "q1", expected_sort, unioned_db_);
-//}
+ // passes in ~17 secs on codd2
+TEST_F(SecureTpcHTest, tpch_q1) {
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
+    runTest(1, "q1", expected_sort, unioned_db_);
+}
 
 
-// passes in ~10 mins on codd2
-//TEST_F(SecureTpcHTest, tpch_q3) {
-//
-//    input_tuple_limit_ = 500;
-//    // dummy_tag (-1), 1 DESC, 2 ASC
-//    // aka revenue desc,  o.o_orderdate
-//    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-//                                 ColumnSort(1, SortDirection::DESCENDING),
-//                                 ColumnSort(2, SortDirection::ASCENDING)};
-//    runTest(3, "q3", expected_sort, unioned_db_);
-//}
-//
+ // passes in ~10 mins on codd2
+TEST_F(SecureTpcHTest, tpch_q3) {
 
-// completes on codd2 in about 2.5 mins
-//TEST_F(SecureTpcHTest, tpch_q5) {
-//    input_tuple_limit_ = 200;
-//
-//    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-//    runTest(5, "q5", expected_sort, unioned_db_);
-//
-//}
+    input_tuple_limit_ = 500;
+    // dummy_tag (-1), 1 DESC, 2 ASC
+    // aka revenue desc,  o.o_orderdate
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
+                                 ColumnSort(2, SortDirection::ASCENDING)};
+    runTest(3, "q3", expected_sort, unioned_db_);
+}
 
-// TODO: break this down and verify that all inputs are structured the same
-// looks like CNR and SNR aren't individually broken out in truncated test
-// SQL statements in .sql file should match what we do in expected query results
+
+ // passes on codd2 in about 2.5 mins
+TEST_F(SecureTpcHTest, tpch_q5) {
+    input_tuple_limit_ = 200;
+
+    SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
+    runTest(5, "q5", expected_sort, unioned_db_);
+
+}
+
+ // passes in 12 secs on codd2
 TEST_F(SecureTpcHTest, tpch_q8) {
     input_tuple_limit_ = 200;
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
@@ -123,16 +121,16 @@ TEST_F(SecureTpcHTest, tpch_q8) {
 }
 
 
-// *passes in around ~42 secs on codd2
-//TEST_F(SecureTpcHTest, tpch_q9) {
-//    // $0 ASC, $1 DESC
-//    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-//    runTest(9, "q9", expected_sort, unioned_db_);
-//
-//}
+ // *passes in around ~42 secs on codd2
+TEST_F(SecureTpcHTest, tpch_q9) {
+    // $0 ASC, $1 DESC
+    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+    runTest(9, "q9", expected_sort, unioned_db_);
+
+}
 
 TEST_F(SecureTpcHTest, tpch_q18) {
-    input_tuple_limit_ = 600;
+    input_tuple_limit_ = 200;
 
     // -1 ASC, $4 DESC, $3 ASC
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),

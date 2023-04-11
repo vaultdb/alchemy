@@ -95,7 +95,7 @@
             "name": "$1"
           },
           {
-            "literal": 300,
+            "literal": 7,
             "type": {
               "type": "FLOAT",
               "nullable": false
