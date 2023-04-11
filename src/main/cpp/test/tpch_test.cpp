@@ -18,7 +18,7 @@ protected:
     // different DBs for different tests to bump up the output size - don't want empty output!
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
 
-    int input_tuple_limit_ = 1000;
+    int input_tuple_limit_ = 0;
 
 
 };
@@ -31,11 +31,8 @@ TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefini
 
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name, query, false, 0);
     expected->setSortOrder(expected_sort);
-//    if(DIAGNOSE == 1) {
-//        ASSERT_GT(expected->getTupleCount(),  0);
-//    }
 
-    PlanParser<bool> plan_reader(db_name, test_name, 0);
+    PlanParser<bool> plan_reader(db_name, test_name, input_tuple_limit_);
     shared_ptr<PlainOperator> root = plan_reader.getRoot();
 
     shared_ptr<PlainTable> observed = root->run();

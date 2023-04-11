@@ -44,8 +44,8 @@ namespace vaultdb {
                 "     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
                 " where\n"
                 "  c.c_mktsegment = 'HOUSEHOLD'\n"
-                "  and o.o_orderdate < date '1993-03-25'\n"
-                "  and l.l_shipdate > date '1994-03-25'\n"
+                "  and o.o_orderdate < date '1995-03-25'\n"
+                "  and l.l_shipdate > date '1995-03-25'\n"
                 "\n"
                 " group by\n"
                 "  l.l_orderkey,\n"
@@ -64,9 +64,6 @@ namespace vaultdb {
                 "where\n"
                 "   c.c_nationkey = s.s_nationkey\n"
                 "  and r.r_name = 'EUROPE'\n"
-    // JMR: commented out for testing, does not impact runtime of queries owing to obliviousness
-    // If you add this later, remember to also adjust conf/plans/queries-q5.sql to have this as a dummy tag
-    // syntax: NOT (o_orderdate >= DATE '1997-01-01' AND o_orderdate < DATE '1998-01-01') AS dummy_tag
                 "  and o.o_orderdate >= date '1993-01-01'\n"
                 "  and o.o_orderdate < date '1994-01-01'\n"
                 " group by\n"
@@ -151,7 +148,7 @@ namespace vaultdb {
                  " SELECT l_orderkey\n"
                  " FROM lineitem\n"
                  " GROUP BY l_orderkey\n"
-                 " HAVING SUM(l_quantity) > 300) \n"
+                 " HAVING SUM(l_quantity) > 7) \n"
                  " select c.c_name,\n"
                  "    c.c_custkey,\n"
                  "   o.o_orderkey,\n"
