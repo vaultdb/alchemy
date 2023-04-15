@@ -51,7 +51,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/data
         ${CMAKE_CURRENT_BINARY_DIR}/query_table
         ${CMAKE_CURRENT_BINARY_DIR}/common)
 
-include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR} ${GRPC_INCLUDE_DIR})
+include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
 
 
 
@@ -65,7 +65,6 @@ set(sources
 
 		query_table/field/field_type.h
 		query_table/field/field.cpp
-		query_table/field/visitors.cpp
 		query_table/field/field_factory.cpp
 		query_table/query_tuple.cpp
 		query_table/plain_tuple.cpp

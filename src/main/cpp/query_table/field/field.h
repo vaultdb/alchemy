@@ -101,8 +101,62 @@ namespace vaultdb {
 
         private:
             static std::string revealString(const emp::Integer & src, const int & party);
+            static emp::Integer secretShareString(const std::string & s, const bool & to_send, const size_t &
+            str_length,
+                                                  const int & party);
+
+        template<typename T>
+        static inline void swap(Value * lhs, Value * rhs) {
+            T l = boost::get<T>(*lhs);
+            T r = boost::get<T>(*rhs);
+
+            l = l ^ r;
+            r = r ^ l;
+            l = l ^ r;
+
+            *lhs = Value(l);
+            *rhs = Value(r);
+        }
+
+        template<typename T>
+        inline T plusHelper(const Field<B> & r) const {
+            T lhs = getValue<T>();
+            T rhs = r.getValue<T>();
+            return lhs + rhs;
+        }
+
+        template<typename T>
+        inline T minusHelper(const Field<B> & r) const {
+            T lhs = getValue<T>();
+            T rhs = r.getValue<T>();
+            return lhs - rhs;
+        }
+
+        template<typename T>
+        inline T timesHelper(const Field<B> & r) const {
+            T lhs = getValue<T>();
+            T rhs = r.getValue<T>();
+            return lhs * rhs;
+        }
+
+        template<typename T>
+        inline T divHelper(const Field<B> & r) const {
+            T lhs = getValue<T>();
+            T rhs = r.getValue<T>();
+            return lhs  / rhs;
+        }
+
+        template<typename T>
+        inline T modHelper(const Field<B> & r) const {
+            T lhs = getValue<T>();
+            T rhs = r.getValue<T>();
+            return lhs  % rhs;
+        }
+        static Value secretShareHelper(const PlainField & field, const int & party, const bool & send);
 
     };
+
+
 
     std::ostream &operator<<(std::ostream &os, const Field<bool> &aValue);
     std::ostream &operator<<(std::ostream &os, const Field<emp::Bit> &aValue);

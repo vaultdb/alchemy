@@ -26,8 +26,6 @@
 #include <util/logger.h>
 #include <boost/property_tree/ptree.hpp>
 
-
-
 namespace vaultdb {
     class Utilities {
     public:
@@ -39,7 +37,7 @@ namespace vaultdb {
 
         static std::string getStackTrace();
 
-        static bool *bytesToBool(int8_t *bytes, int byteCount);
+        static bool *bytesToBool(int8_t *bytes, const int &  byteCount);
 
         static std::vector<int8_t> boolsToBytes(const bool *const src, const uint32_t &bitCount);
 

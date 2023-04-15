@@ -50,7 +50,7 @@ namespace vaultdb {
         static void secret_share_send(const QueryTuple<bool> &src_tuple, QueryTuple<Bit> &dst_tuple, const int &dst_party);
         static void secret_share_recv(SecureTuple &dst_tuple, const int &dst_party);
 
-        // for template<typename T> debug
+        // for template<typename T> case
         static bool extract_bool(const emp::Bit & b) { return b.reveal();  }
         static bool extract_bool(const bool & b) { return b; }
 

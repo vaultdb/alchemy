@@ -104,7 +104,7 @@ std::vector<int8_t> Utilities::boolsToBytes(const bool *const src, const uint32_
 
 }
 
-bool *Utilities::bytesToBool(int8_t *bytes, int byteCount) {
+bool *Utilities::bytesToBool(int8_t *bytes, const int & byteCount) {
     bool *ret = new bool[byteCount * 8];
 
 

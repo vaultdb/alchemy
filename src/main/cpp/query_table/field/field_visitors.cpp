@@ -1,12 +1,45 @@
-#ifndef _ARITHMETIC_VISITORS_H
-#define _ARITHMETIC_VISITORS_H
+#ifndef _FIELD_VISITORS_H
+#define _FIELD_VISITORS_H
 
 #include <boost/variant.hpp>
 #include <query_table/field/field_type.h>
 #include <util/utilities.h>
 
-namespace vaultdb {
+// continue implementing method for Field<B>
+using namespace vaultdb;
 
+template<typename B>
+std::string Field<B>::toString() const {
+
+                switch(type_) {
+                    case FieldType::INVALID:
+                        return "INVALID";
+                    case FieldType::BOOL:
+                        bool b = boost::get<bool>(payload_);
+                        return b ? "true" : "false";
+                    case FieldType::INT:
+                      int32_t i = boost::get<int32_t>(payload_);
+                      return std::to_string(i);
+                    case FieldType::LONG:
+                        int32_t l = boost::get<int64_t>(payload_);
+                        return std::to_string(l);
+                    case FieldType::FLOAT:
+                      float f = boost::get<float_t>(payload_);
+                      return std::to_string(f);
+                    case FieldType::STRING:
+                        return boost::get<std::string>(payload_);
+                    case FieldType::SECURE_BOOL:
+                        return "SECRET BIT";
+                    case FieldType::SECURE_INT:
+                        return "SECRET INT";
+                    case FieldType::SECURE_LONG:
+                        return "SECRET LONG";
+                    case FieldType::SECURE_FLOAT:
+                        return "SECRET FLOAT";
+                    case FieldType::SECURE_STRING:
+                        return "SECRET STRING";
+                }
+            }
 
     struct ToStringVisitor : public boost::static_visitor<std::string> {
         std::string operator()(bool b) const { return b ? "true" : "false"; }
@@ -150,7 +183,7 @@ namespace vaultdb {
         }
 
         Value operator()(float_t f) const {  // approx float equality
-            double epsilon = std::fabs(f * 0.001);
+            double epsilon = std::fabs(f * 0.0001);
             float_t r = boost::get<float_t>(rhs);
             return std::fabs(r - f) <=  epsilon;
         }
