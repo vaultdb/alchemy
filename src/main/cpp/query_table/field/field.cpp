@@ -650,13 +650,16 @@ Field<B> Field<B>::operator/(const Field &rhs) const {   assert(type_ == rhs.get
 
     switch(type_) {
         case FieldType::INT:
-            v = divHelper<int32_t>(rhs);
+             v = (rhs.getValue<int32_t>() == 0)
+                     ?  (int32_t) 0 :  divHelper<int32_t>(rhs);
             break;
         case FieldType::LONG:
-            v = divHelper<int64_t>(rhs);
+            v = (rhs.getValue<int64_t>() == 0L)
+                ?  (int64_t) 0L :  divHelper<int64_t>(rhs);
             break;
         case FieldType::FLOAT:
-            v = divHelper<float_t>(rhs);
+            v = (rhs.getValue<float_t>() == 0.0)
+                ?  (float_t) 0.0 :  divHelper<float_t>(rhs);
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
