@@ -190,7 +190,8 @@ B Field<B>::operator>=(const Field &r) const {
         case FieldType::LONG:
             return getValue<int64_t>() >= r.getValue<int64_t>();
         case FieldType::FLOAT:
-            return getValue<float_t>() >= r.getValue<float_t>();
+            return (getValue<float_t>()>= r.getValue<float_t>());
+            // TODO: consider adding manual equality check, like "epsilon" in operator===
         case FieldType::STRING:
             return getValue<string>() >= r.getValue<string>();
         case FieldType::SECURE_BOOL:
@@ -298,7 +299,6 @@ B Field<B>::operator==(const Field<B> &r) const {
     if(getSize() != r.getSize()) return B(false);
 
     float_t lhs, rhs, epsilon;
-    emp::Float fl, fr;
     Value v;
 
     switch(type_) {
@@ -311,7 +311,7 @@ B Field<B>::operator==(const Field<B> &r) const {
         case FieldType::FLOAT:
             // approx float equality
             lhs = getValue<float_t>();
-            epsilon = std::fabs(lhs * 0.0001);
+            epsilon = std::fabs(lhs * 0.00001);
             rhs = r.getValue<float_t>();
             return std::fabs(rhs - lhs) <=  epsilon;
         case FieldType::STRING:
@@ -325,9 +325,7 @@ B Field<B>::operator==(const Field<B> &r) const {
             v = (getValue<emp::Integer>() == r.getValue<emp::Integer>());
             return boost::get<B>(v);
         case FieldType::SECURE_FLOAT:
-            fl = getValue<emp::Float>();
-            fr = r.getValue<emp::Float>();
-            v = fl.equal(fr);
+            v = (getValue<emp::Float>()).equal(r.getValue<emp::Float>());
             return boost::get<B>(v);
         default:
             throw;
