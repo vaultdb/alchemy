@@ -701,17 +701,12 @@ template<typename B>
 B Field<B>::operator&&(const Field &cmp) const {
     assert(type_ == cmp.getType());
 
-    if(type_ == FieldType::BOOL) {
-        bool lhs = getValue<bool>();
-        bool rhs = cmp.getValue<bool>();
-        Value v =  lhs & rhs;
-        return boost::get<B>(v);
-    }
-    if(type_ == FieldType::SECURE_BOOL) {
-        emp::Bit lhs = getValue<emp::Bit>();
-        emp::Bit rhs = cmp.getValue<emp::Bit>();
-        Value v =  lhs & rhs;
-        return boost::get<B>(v);
+    if(type_ == FieldType::BOOL || type_ == FieldType::SECURE_BOOL) {
+        B lhs = getValue<B>();
+        B rhs = cmp.getValue<B>();
+        B res = lhs & rhs;
+
+        return res;
     }
 
     // Not applicable for all other types
@@ -722,19 +717,11 @@ B Field<B>::operator&&(const Field &cmp) const {
 template<typename B>
 B Field<B>::operator||(const Field &cmp) const {
     assert(type_ == cmp.getType());
-    assert(type_ == cmp.getType());
 
-    if(type_ == FieldType::BOOL) {
-        bool lhs = getValue<bool>();
-        bool rhs = cmp.getValue<bool>();
-        Value v =  lhs | rhs;
-        return boost::get<B>(v);
-    }
-    if(type_ == FieldType::SECURE_BOOL) {
-        emp::Bit lhs = getValue<emp::Bit>();
-        emp::Bit rhs = cmp.getValue<emp::Bit>();
-        Value v =  lhs | rhs;
-        return boost::get<B>(v);
+    if(type_ == FieldType::BOOL || type_ == FieldType::SECURE_BOOL) {
+        B lhs = getValue<B>();
+        B rhs = cmp.getValue<B>();
+        return lhs | rhs;
     }
 
     // Not applicable for all other types
