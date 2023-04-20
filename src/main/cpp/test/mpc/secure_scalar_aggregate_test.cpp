@@ -47,9 +47,7 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
 
   // produces 25 rows
   std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
-
   std::shared_ptr<PlainTable> expectedOutput = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, false);
-  //Field expectedField = expectedOutput->getTuplePtr(0)->getFieldPtr(0)->getValue();
 
   // provide the aggregator with inputs:
   SecureSqlInput input(db_name_, query, true, netio_, FLAGS_party);
@@ -86,7 +84,8 @@ TEST_F(SecureScalarAggregateTest, test_count) {
 
 TEST_F(SecureScalarAggregateTest, test_count_dummies) {
     // set up expected output
-    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+    // count should be 8
+    std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
     std::string expectedOutputQuery = "SELECT COUNT(*)::BIGINT cnt_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
 
 
@@ -309,7 +308,7 @@ std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db
   std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
   ASSERT_EQ(*expected, *observed);
 
-      
+
 }
 
 

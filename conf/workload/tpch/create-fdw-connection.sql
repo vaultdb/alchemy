@@ -15,3 +15,5 @@ DROP SCHEMA IF EXISTS :target_db;
 CREATE SCHEMA :target_db;
 
 IMPORT FOREIGN SCHEMA public  FROM SERVER :target_db INTO :target_db;
+
+

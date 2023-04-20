@@ -125,7 +125,6 @@ SecureField Field<B>::secret_share() const {
 
 template<typename B>
 SecureField Field<B>::secret_share_send(const PlainField & src, const int & src_party) {
-    Value input = src.payload_;
     Value result = secretShareHelper(src, src_party, true);
     FieldType resType = TypeUtilities::toSecure(src.type_);
 
@@ -363,17 +362,17 @@ void Field<B>::serialize(int8_t *dst) const {
             break;
 
         case FieldType::SECURE_BOOL:
-            sb = getValue<emp::Bit>();
+            sb = boost::get<emp::Bit>(payload_);
             memcpy(dst, (int8_t *) &(sb.bit), TypeUtilities::getEmpBitSize());
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
-            si = getValue<emp::Integer>();
+            si = boost::get<emp::Integer>(payload_);
             memcpy(dst, (int8_t *) si.bits.data(), si.size() * TypeUtilities::getEmpBitSize());
             break;
         case FieldType::SECURE_FLOAT:
-            sf = getValue<emp::Float>();
+            sf = boost::get<emp::Float>(payload_);
             memcpy(dst, (int8_t *) sf.value.data(), sf.size() * TypeUtilities::getEmpBitSize());
             break;
         default:
@@ -448,8 +447,6 @@ Field<B> Field<B>::If(const B &choice, const Field &l, const Field &r) {
     Value choiceBit(choice);
     Value v;
 
-    Value lhs = l.payload_;
-    Value rhs = r.payload_;
 
     switch (l.type_) {
         case FieldType::BOOL:
@@ -457,18 +454,20 @@ Field<B> Field<B>::If(const B &choice, const Field &l, const Field &r) {
         case FieldType::LONG:
         case FieldType::STRING:
         case FieldType::FLOAT:
-            v =  (boost::get<bool>(choiceBit)) ? lhs : rhs;
+            v =  (boost::get<bool>(choiceBit)) ? l.payload_ : r.payload_;
             break;
         case FieldType::SECURE_BOOL:
-            v  = emp::If(boost::get<emp::Bit>(choiceBit), boost::get<emp::Bit>(rhs), boost::get<emp::Bit>(rhs));
+            v  = emp::If(boost::get<emp::Bit>(choiceBit), boost::get<emp::Bit>(l.payload_), boost::get<emp::Bit>(r.payload_));
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
-            v  = emp::If(boost::get<emp::Bit>(choiceBit), boost::get<emp::Integer>(rhs), boost::get<emp::Integer>(rhs));
+            v  = emp::If(boost::get<emp::Bit>(choiceBit), boost::get<emp::Integer>(l.payload_), boost::get<emp::Integer>
+                    (r.payload_));
             break;
         case FieldType::SECURE_FLOAT:
-            v  = emp::If(boost::get<emp::Bit>(choiceBit), boost::get<emp::Float>(rhs), boost::get<emp::Float>(rhs));
+            v  = emp::If(boost::get<emp::Bit>(choiceBit), boost::get<emp::Float>(l.payload_), boost::get<emp::Float>
+                    (r.payload_));
             break;
         default:
             throw;

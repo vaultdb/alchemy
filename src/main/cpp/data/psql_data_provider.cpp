@@ -40,12 +40,6 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
 
 
     size_t rowCount = pqxxResult.size();
-    // just count the rows first
-//    for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
-//        ++rowCount;
-//    }
-
-
 
     tableSchema = getSchema(pqxxResult, hasDummyTag);
     std::shared_ptr<PlainTable > dst_table = std::make_shared<PlainTable>(rowCount, *tableSchema);
@@ -172,6 +166,9 @@ PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag, PlainTable &dst_tabl
 
                 PlainField parsedField = getField(row[colCount]); // get the last col
                 dst_tuple.setDummyTag(parsedField);
+        }
+        else {
+            dst_tuple.setDummyTag(false); // default
         }
 
     }

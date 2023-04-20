@@ -235,12 +235,19 @@ QueryTuple<emp::Bit>::QueryTuple(const std::shared_ptr<QuerySchema> &schema) {
 }
 
 QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {
-        query_schema_ = std::shared_ptr<QuerySchema>(new QuerySchema(*(src.getSchema())));
+        query_schema_ = src.getSchema();
         if(src.hasManagedStorage()) { // allocate storage for this copy
             size_t tuple_bit_cnt = query_schema_->size();
             managed_data_ = std::unique_ptr<emp::Bit[]>(new emp::Bit[tuple_bit_cnt]);
             fields_ = managed_data_.get();
+
+            emp::Bit *d = this->fields_;
+            emp::Bit *s = src.fields_;
+            // initialize vals
+            memcpy(d, s, query_schema_->size() * TypeUtilities::getEmpBitSize());
         }
+        else
+            fields_ = src.fields_; // point to the original fields
 
 }
 

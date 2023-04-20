@@ -38,8 +38,8 @@ protected:
 // This isn't relevant to the parser so work on this elsewhere.
 void
 SecureTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
-    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, db_name);
 
+    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, db_name);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
     string local_db = db_name;
     boost::replace_first(local_db, "unioned", party_name.c_str());
