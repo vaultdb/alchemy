@@ -493,11 +493,10 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
     Value rhs = r.payload_;
     Value v;
 
-    string tmp;
-    float_t fl, fr;
+    Value tmp;
     emp::Bit bl, br;
     emp::Integer il, ir;
-    emp::Float sl, sr;
+    emp::Float fl, fr;
 
 
     switch (l.type_) {
@@ -511,18 +510,11 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
             swap<int64_t>(&lhs, &rhs);;
             break;
         case FieldType::STRING:
-            if (boost::get<bool>(choiceBit)) {
-                tmp = boost::get<std::string>(lhs);
-                lhs = boost::get<std::string>(rhs);
-                rhs = tmp;
-            }
-            break;
         case FieldType::FLOAT:
-            if(boost::get<bool>(choiceBit)) {
-                fl = boost::get<float_t>(lhs);
-                fr = boost::get<float_t>(rhs);
-                lhs = boost::get<float_t>(rhs);
-                rhs = boost::get<float_t>(lhs);
+            if (boost::get<bool>(choiceBit)) {
+                tmp = lhs;
+                lhs = rhs;
+                rhs = tmp;
             }
             break;
         case FieldType::SECURE_BOOL:
@@ -542,11 +534,11 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
             rhs = ir;
             break;
         case FieldType::SECURE_FLOAT:
-            sl = boost::get<emp::Float>(lhs);
-            sr = boost::get<emp::Float>(rhs);
-            emp::swap(boost::get<emp::Bit>(choiceBit), sl, sr);
-            lhs = sl;
-            rhs = sr;
+            fl = boost::get<emp::Float>(lhs);
+            fr = boost::get<emp::Float>(rhs);
+            emp::swap(boost::get<emp::Bit>(choiceBit), fl, fr);
+            lhs = fl;
+            rhs = fr;
             break;
         default:
             throw;
