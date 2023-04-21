@@ -124,7 +124,7 @@ TEST_F(SecureTpcHTest, tpch_q9) {
     runTest(9, "q9", expected_sort, unioned_db_);
 
 }
-
+// passes in ~2.5 mins
 TEST_F(SecureTpcHTest, tpch_q18) {
     input_tuple_limit_ = 200;
 

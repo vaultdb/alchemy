@@ -79,18 +79,18 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
 }
 
 
-void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple & dst_tuple, const int & dst_party) {
+void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple & dst_tuple, const int & party) {
     size_t field_count = dst_tuple.getSchema()->getFieldCount();
 
     for (size_t i = 0; i < field_count; ++i) {
         PlainField src_field = src_tuple.getField(i);
-        SecureField dst_field = SecureField::secret_share_send(src_field, dst_party);
+        SecureField dst_field = SecureField::secret_share_send(src_field, party);
         dst_tuple.setField(i, dst_field);
     }
 
     PlainField plain_dummy_tag =  PlainField(src_tuple.getDummyTag());
-    SecureField dummy_tag = SecureField::secret_share_send(plain_dummy_tag, dst_party);
-    dst_tuple.setDummyTag(dummy_tag);
+    emp::Bit b(src_tuple.getDummyTag(), party);
+    dst_tuple.setDummyTag(b);
 
 
 }
