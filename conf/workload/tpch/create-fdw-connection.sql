@@ -1,7 +1,7 @@
 -- based on: https://towardsdatascience.com/how-to-set-up-a-foreign-data-wrapper-in-postgresql-ebec152827f3
 -- depends on:
 -- \set target_db <db name>
--- also: CREATE EXTENSION  IF NOT EXISTS postgres_fdw;
+CREATE EXTENSION  IF NOT EXISTS postgres_fdw;
 \set target_db_str  '''':target_db''''
 
 

@@ -9,37 +9,64 @@ CREATE EXTENSION  IF NOT EXISTS postgres_fdw;
 
 \set target_db  tpch_alice
 \i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_alice_150
-\i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_alice_1500
-\i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_alice_15000
-\i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_alice_30000
-\i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_alice_60000
-\i 'conf/workload/tpch/create-fdw-connection.sql'
+
 \set target_db  tpch_bob
 \i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_bob_150
-\i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_bob_1500
-\i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_bob_15000
-\i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_bob_30000
-\i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_bob_60000
-\i 'conf/workload/tpch/create-fdw-connection.sql'
+
 \set target_db  tpch_unioned
 \i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_unioned_150
+
+
+-- TODO:  manually do 'conf/workload/tpch/setup-alice-store-flag.sql' for tpch_unioned
+
+\set target_db  tpch_alice_150
 \i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_unioned_1500
+
+\set target_db  tpch_bob_150
 \i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_unioned_15000
+
+\set sf 150 -- DONE
+\i 'conf/workload/tpch/setup-alice-store-flag.sql'
+
+
+\set target_db  tpch_alice_1500
 \i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_unioned_30000
+
+
+\set target_db  tpch_bob_1500
 \i 'conf/workload/tpch/create-fdw-connection.sql'
-\set target_db  tpch_unioned_60000
+
+\set sf 1500 -- DONE
+\i 'conf/workload/tpch/setup-alice-store-flag.sql'
+
+
+\set target_db  tpch_alice_15000
 \i 'conf/workload/tpch/create-fdw-connection.sql'
+
+\set target_db  tpch_bob_15000
+\i 'conf/workload/tpch/create-fdw-connection.sql'
+
+\set sf 15000
+\i 'conf/workload/tpch/setup-alice-store-flag.sql'
+
+
+\set target_db  tpch_alice_30000
+\i 'conf/workload/tpch/create-fdw-connection.sql'
+
+\set target_db  tpch_bob_30000
+\i 'conf/workload/tpch/create-fdw-connection.sql'
+
+\set sf 30000
+\i 'conf/workload/tpch/setup-alice-store-flag.sql'
+
+
+\set target_db  tpch_alice_60000
+\i 'conf/workload/tpch/create-fdw-connection.sql'
+
+
+\set target_db  tpch_bob_60000
+\i 'conf/workload/tpch/create-fdw-connection.sql'
+
+
+\set sf 60000
+\i 'conf/workload/tpch/setup-alice-store-flag.sql'
