@@ -81,6 +81,7 @@ namespace  vaultdb {
         virtual std::shared_ptr<QueryTable<B> > runSelf() = 0;
         virtual std::string getOperatorType() const  = 0;
         virtual std::string getParameters() const = 0;
+        void reset();
 
         bool operator_executed_ = false; // set when runSelf() executed once
 

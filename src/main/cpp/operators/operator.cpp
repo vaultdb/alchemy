@@ -49,16 +49,16 @@ Operator<B>::Operator(Operator *lhs, Operator *rhs, const SortDefinition & sorte
 
 template<typename B>
 std::shared_ptr<QueryTable<B> > Operator<B>::run() {
-    if(operator_executed_) // prevent duplicate executions of operator
+    if (operator_executed_) // prevent duplicate executions of operator
         return output_;
 
-    for(Operator *op : children_) {
+    for (Operator *op: children_) {
         op->run();
     }
 
 //    auto start_time = clock_start(); // from emp toolkit
 
-  
+
     output_ = runSelf(); // delegated to children
 
 
@@ -66,7 +66,11 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
     //auto logger = vaultdb_logger::get();
     //BOOST_LOG_SEV(logger, logging::trivial::severity_level::info) << "Operator " <<  getOperatorType() << " ran for " << run_time_/10e6 << " seconds." << std::endl;
     operator_executed_ = true;
-    sort_definition_  = output_->getSortOrder(); // update this if needed
+    sort_definition_ = output_->getSortOrder(); // update this if needed
+
+    for (Operator *op: children_) {
+        op->reset();
+    }
 
     return output_;
 }
@@ -170,6 +174,16 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const PlainOperator &op) {
 std::ostream &vaultdb::operator<<(std::ostream &os, const SecureOperator &op) {
     os << op.printTree();
     return os;
+}
+
+
+template<typename B>
+void Operator<B>::reset() {
+
+    output_.reset();
+    assert(output_.get() == nullptr);
+    operator_executed_ = false;
+
 }
 
 template class vaultdb::Operator<bool>;
