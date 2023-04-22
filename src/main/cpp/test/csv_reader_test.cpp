@@ -47,7 +47,7 @@ TEST_F(CsvReaderTest, lineitemTest) {
 
 TEST_F(CsvReaderTest, quotedStringTest) {
     // trick is handling ',' character correctly
-    std::string testStr = "16,Customer#000000016,\"cYiaeMLZSMAOQ2 d0W,\",10,20-781-609-3107,4681.03,FURNITURE ,kly silent courts. thinly regular theodolites sleep fluffily after ";
+    std::string testStr = "16,Customer#000000016,\"cYiaeMLZSMAOQ2 d0W,\",10,20-781-609-3107,4681.03,FURNITURE ,kly silent courts. thinly regular theodolites sleep fluffily after ,0";
 
 
     // grab customer table for schema:
