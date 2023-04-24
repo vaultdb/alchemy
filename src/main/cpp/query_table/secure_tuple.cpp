@@ -69,7 +69,7 @@ QueryTuple<emp::Bit>::reveal(const int &empParty, std::shared_ptr<QuerySchema> &
 
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
-        PlainField revealed = src.reveal(empParty);
+        PlainField revealed = src.reveal(query_schema_->getField(i), empParty);
         dst_tuple.setField(i, revealed);
     }
 
@@ -88,7 +88,7 @@ PlainTuple QueryTuple<emp::Bit>::reveal(const std::shared_ptr<QuerySchema> & dst
 
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
-        PlainField revealed = src.reveal(empParty);
+        PlainField revealed = src.reveal(query_schema_->getField(i), empParty);
         dst_tuple.setField(i, revealed);
     }
 

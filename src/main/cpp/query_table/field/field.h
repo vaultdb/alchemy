@@ -85,7 +85,7 @@ namespace vaultdb {
 
 
         // if field is encrypted, decrypt
-        PlainField reveal(const int & party = emp::PUBLIC) const;
+        PlainField reveal(const QueryFieldDesc &schema, const int &party) const;
         SecureField secret_share() const; // secret share as public
 
         static SecureField

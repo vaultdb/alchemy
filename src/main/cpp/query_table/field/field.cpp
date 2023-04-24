@@ -225,7 +225,7 @@ B Field<B>::operator>=(const Field &r) const {
 
 
 template<typename B>
-PlainField  Field<B>::reveal(const int &party) const {
+PlainField Field<B>::reveal(const QueryFieldDesc &schema, const int &party) const {
 
     FieldType resType = TypeUtilities::toPlain(type_);
     size_t strLength = 0;
@@ -252,10 +252,12 @@ PlainField  Field<B>::reveal(const int &party) const {
             i = getValue<emp::Integer>();
             // 16 bytes / bit
             v = i.reveal<int32_t>(party);
+            v = boost::get<int32_t>(v) + schema.getFieldOffset();
             break;
         case FieldType::SECURE_LONG:
             i = getValue<emp::Integer>();
             v = i.reveal<int64_t>(party);
+            v = boost::get<int32_t>(v) + schema.getFieldOffset();
             break;
         case FieldType::SECURE_STRING:
             i = getValue<emp::Integer>();

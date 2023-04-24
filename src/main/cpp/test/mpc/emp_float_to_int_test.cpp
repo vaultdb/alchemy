@@ -32,7 +32,7 @@ void EmpFloatToIntTest::testIntToFloat(const int32_t & inputInt) const {
 
     SecureField f(FieldType::SECURE_INT, encryptedInt);
     SecureField encryptedFloat =  FieldFactory<emp::Bit>::toFloat(f);
-    PlainField revealed =  encryptedFloat.reveal(PUBLIC);
+    PlainField revealed = encryptedFloat.reveal(QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_FLOAT, 0), PUBLIC);
 
     // support range: [-2^24, 2^24]
     float expectedOutput = (float) inputInt;

@@ -78,7 +78,7 @@ TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 
     SecureField result = (aliceEncryptedValue + bobEncryptedValue) * multiplierValue;
 
-    PlainField revealed = result.reveal(emp::PUBLIC);
+    PlainField revealed = result.reveal(QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_INT, 0), emp::PUBLIC);
 
     ASSERT_EQ(revealed.getValue<int32_t>(), 19*2);
 
@@ -146,7 +146,7 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
 
     // sanity check
     bool publicEq = (lhs == rhs);
-    bool privateEq = (lhsSecretShared == rhsSecretShared).reveal();
+    bool privateEq = (lhsSecretShared == rhsSecretShared).reveal(<#initializer#>, <#initializer#>);
     bool publicGeq = lhs >= rhs;
     bool privateGeq = (lhsSecretShared >= rhsSecretShared).reveal();
     bool publicGt = lhsStr > rhsStr;
