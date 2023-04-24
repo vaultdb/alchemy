@@ -51,7 +51,7 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
         ++counter;
     }
 
-    dbConn.disconnect();
+    dbConn.close();
 
     return dst_table;
 }
