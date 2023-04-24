@@ -250,6 +250,7 @@ PlainField  Field<B>::reveal(const int &party) const {
             break;
         case FieldType::SECURE_INT:
             i = getValue<emp::Integer>();
+            // 16 bytes / bit
             v = i.reveal<int32_t>(party);
             break;
         case FieldType::SECURE_LONG:

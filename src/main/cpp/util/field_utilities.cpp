@@ -153,7 +153,6 @@ BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_
         table.erase(table.find_last_not_of(" \t\n\r\f\v") + 1); // delete trailing spaces
         column.erase(column.find_last_not_of(" \t\n\r\f\v") + 1);
 
-        std::cout << "Adding |" << table << "|, |" << column << "|" <<  std::endl;
         ColumnReference c(table, column);
 
         bp.min_ = t.getField(2).getValue<int>();

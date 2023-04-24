@@ -78,12 +78,43 @@ TEST_F(EmpTableTest, encrypt_table_dummy_tag) {
 }
 
 
+TEST_F(EmpTableTest, bit_packing_test) {
+
+
+    std::string input_query = "SELECT c_custkey, c_nationkey FROM customer ORDER BY (1) LIMIT 20";
+
+    PsqlDataProvider dataProvider;
+    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
+                                                                          input_query, false);
+
+    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
+    netio_->flush();
+
+    // c_custkey has 150 distinct vals, should have 8 bits
+    ASSERT_EQ(8, secret_shared->getSchema()->getField(0).size());
+    // c_nationkey has 25 distinct vals, should have 5 bits
+    ASSERT_EQ(5, secret_shared->getSchema()->getField(1).size());
+
+    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, input_query, false);
+
+
+    // tuple_cnt * (5+8+1 (for dummy tag) )*sizeof(emp::Bit)
+    ASSERT_EQ(expected->getTupleCount() * (14 * TypeUtilities::getEmpBitSize()), secret_shared->tuple_data_.size());
+
+    std::unique_ptr<PlainTable> revealed = secret_shared->reveal(emp::PUBLIC);
+
+
+
+    ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
+
+
+}
+
 void EmpTableTest::secretShareAndValidate(const std::string & input_query, const SortDefinition & sort) {
 
     PsqlDataProvider dataProvider;
-    string local_db = (FLAGS_party == emp::ALICE) ? alice_db_ : bob_db_;
 
-    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(local_db,
+    std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
                                                                           input_query, false);
 
     input_table->setSortOrder(sort);
@@ -102,14 +133,11 @@ void EmpTableTest::secretShareAndValidate(const std::string & input_query, const
         expected = sorter.run();
     }
 
-
-
-
-
-
     ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
 
 }
+
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

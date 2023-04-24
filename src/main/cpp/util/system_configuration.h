@@ -23,8 +23,6 @@ namespace vaultdb{
         void initialize(const string & db_name, const std::map<ColumnReference, BitPackingDefinition> & bp) {
             unioned_db_name_ = db_name;
             bit_packing_ = bp;
-            std::cout << "Bit packing metadata has " << bit_packing_.size() << " entries." << std::endl;
-            std::cout << "System config at " << (int64_t) this << std::endl;
         }
 
         string getUnionedDbName() const { return unioned_db_name_; }

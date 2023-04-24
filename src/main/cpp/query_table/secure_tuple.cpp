@@ -34,8 +34,8 @@ SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  {
     size_t field_offset = query_schema_->getFieldOffset(ordinal);
     const emp::Bit *read_ptr = fields_ + field_offset;
 
-    QueryFieldDesc fieldDesc = query_schema_->getField(ordinal);
-    return FieldFactory<emp::Bit>::deserialize(fieldDesc.getType(), fieldDesc.getStringLength(),  read_ptr);
+    return FieldFactory<emp::Bit>::deserialize( query_schema_->getField(ordinal),
+                                               read_ptr);
 }
 
 const SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  const {
@@ -43,7 +43,8 @@ const SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  const {
     const emp::Bit *read_ptr = fields_ + field_offset;
 
     QueryFieldDesc fieldDesc = query_schema_->getField(ordinal);
-    return  FieldFactory<emp::Bit>::deserialize(fieldDesc.getType(), fieldDesc.getStringLength(),  read_ptr);
+    return FieldFactory<emp::Bit>::deserialize(query_schema_->getField(ordinal),
+                                               read_ptr);
 }
 
 

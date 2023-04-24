@@ -50,7 +50,7 @@ namespace vaultdb {
         static SecureField getMax(const FieldType & type);
 
         static SecureField getInt(const int32_t & src) { return  SecureField(FieldType::SECURE_INT, emp::Integer(32, src));   }
-        static SecureField deserialize(const FieldType &type, const size_t &strLength, const emp::Bit *src);
+        static SecureField deserialize(const QueryFieldDesc &desc, const emp::Bit *src);
 
 
 

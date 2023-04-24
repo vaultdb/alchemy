@@ -430,16 +430,14 @@ void QueryTable<B>::resize(const size_t &tupleCount) {
 
 template<typename B>
 QueryTuple<B> QueryTable<B>::getTuple(int idx)   {
-    size_t offset_bytes = tuple_size_ * idx;
-    int8_t *dst = tuple_data_.data();
-    dst += offset_bytes;
-    return QueryTuple<B>(schema_,  dst);
+    int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
+    return QueryTuple<B>(schema_,  read_ptr);
 }
 
 template<typename B>
 const QueryTuple<B> QueryTable<B>::getImmutableTuple(int idx)  const  {
-    int8_t *write_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
-    return QueryTuple<B>(schema_,  write_ptr);
+    int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
+    return QueryTuple<B>(schema_,  read_ptr);
 }
 
 template<typename B>
