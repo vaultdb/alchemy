@@ -3,17 +3,19 @@
 
 
 #include<type_traits>
+#include <map>
 #include <query_table/field/field.h>
 #include <query_table/query_tuple.h>
 #include <query_table/secure_tuple.h>
 #include "query_table/field/field_type.h"
+#include "common/defs.h"
 
 namespace vaultdb {
 
     class FieldUtilities {
     public:
         // size is in bytes
-        static size_t getPhysicalSize(const FieldType &id, const size_t & strLength = 0);
+        static size_t getPhysicalSize(const FieldType &id, const size_t & str_length = 0);
         static emp::Float toFloat(const emp::Integer &input);
         //static void secretShare(const QueryTuple<bool> *src_tuple,  const std::shared_ptr<QuerySchema> &src_schema, QueryTuple<emp::Bit> & dst_tuple, const int &myParty, const int &dstParty);
 
@@ -66,6 +68,8 @@ namespace vaultdb {
 
         static bool select(const bool & choice, const bool & lhs, const bool & rhs);
         static emp::Bit select(const emp::Bit & choice, const emp::Bit & lhs, const emp::Bit & rhs);
+
+        static BitPackingMetadata getBitPackingMetadata(const std::string & db_name);
     };
 
 

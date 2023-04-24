@@ -9,6 +9,7 @@
 #include <vector>
 #include <ostream>
 #include <query_table/field/field_type.h>
+#include <common/defs.h>
 
 namespace  vaultdb {
     class QueryFieldDesc {
@@ -20,11 +21,13 @@ namespace  vaultdb {
         FieldType type_;
         int ordinal_;
         int field_size_ = 0; // size in bits
+        size_t field_offset_ = 0;
+        size_t bit_packed_size_ = 0;
         
     public:
         QueryFieldDesc();
 
-        [[nodiscard]] int getOrdinal() const;
+        int getOrdinal() const;
 
 
         const std::string &getName() const;
@@ -44,6 +47,7 @@ namespace  vaultdb {
         QueryFieldDesc(uint32_t anOrdinal, const std::string &n, const std::string &tab, const FieldType &aType, const size_t & stringLength = 0);
 
         void setStringLength(size_t i);
+        size_t getFieldOffset() const { return field_offset_; }
 
         size_t getStringLength() const { return string_length_; }
 

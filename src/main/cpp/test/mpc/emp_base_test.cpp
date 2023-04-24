@@ -1,7 +1,8 @@
 #include <util/data_utilities.h>
 #include "emp_base_test.h"
 #include <util/logger.h>
-
+#include <util/system_configuration.h>
+#include "util/field_utilities.h"
 
 const std::string EmpBaseTest::unioned_db_ = "tpch_unioned_150";
 const std::string EmpBaseTest::alice_db_ = "tpch_alice_150";
@@ -25,6 +26,10 @@ void EmpBaseTest::SetUp()  {
     ++FLAGS_port;
     start_time_ = clock_start();
 
+    SystemConfiguration & s = SystemConfiguration::getInstance();
+    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db_);
+
+    s.initialize(db_name_, md);
 }
 
 void EmpBaseTest::TearDown() {

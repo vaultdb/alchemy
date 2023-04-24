@@ -1,12 +1,14 @@
 #include <query_table/query_schema.h>
 #include "field_utilities.h"
+#include "data_utilities.h"
+#include <query_table/query_table.h>
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 
 using namespace vaultdb;
 using namespace  emp;
 
-size_t FieldUtilities::getPhysicalSize(const FieldType &id, const size_t &strLength) {
+size_t FieldUtilities::getPhysicalSize(const FieldType &id, const size_t &str_length) {
     switch (id) {
         case FieldType::BOOL:
             return sizeof(bool); // stored size when we serialize it
@@ -17,7 +19,7 @@ size_t FieldUtilities::getPhysicalSize(const FieldType &id, const size_t &strLen
         case FieldType::FLOAT:
             return sizeof(float_t);
         case FieldType::STRING:
-            return strLength;
+            return str_length;
         case FieldType::SECURE_BOOL:
             return sizeof(emp::block);
         case FieldType::SECURE_INT:
@@ -27,7 +29,7 @@ size_t FieldUtilities::getPhysicalSize(const FieldType &id, const size_t &strLen
             return sizeof(emp::block) * 64;
 
         case FieldType::SECURE_STRING:
-            return sizeof(emp::block) * strLength * 8;
+            return sizeof(emp::block) * str_length * 8;
         case FieldType::INVALID:
         default: // unsupported type
             throw;
@@ -84,7 +86,7 @@ void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple
 
     for (size_t i = 0; i < field_count; ++i) {
         PlainField src_field = src_tuple.getField(i);
-        SecureField dst_field = SecureField::secret_share_send(src_field, party);
+        SecureField dst_field = SecureField::secret_share_send(src_field, dst_tuple.getSchema()->getField(i), party);
         dst_tuple.setField(i, dst_field);
     }
 
@@ -101,12 +103,12 @@ void FieldUtilities::secret_share_recv(SecureTuple &dst_tuple, const int &dst_pa
 
     for(size_t i = 0;  i < field_count; ++i) {
         QueryFieldDesc field_desc = schema.getField(i);
-        SecureField  dst_field = SecureField::secret_share_recv(field_desc.getType(), field_desc.getStringLength(), dst_party);
+        SecureField  dst_field = SecureField::secret_share_recv(field_desc.getType(), dst_tuple.getSchema()->getField(i), dst_party);
         dst_tuple.setField(i, dst_field);
     }
 
-    SecureField d = SecureField::secret_share_recv(FieldType::SECURE_BOOL, 0, dst_party);
-    dst_tuple.setDummyTag(d);
+    emp::Bit b(0, dst_party);
+    dst_tuple.setDummyTag(b);
 
 }
 
@@ -129,5 +131,39 @@ PlainTuple FieldUtilities::revealTuple(const SecureTuple & s) {
     return s_tmp.reveal(plain_schema, emp::PUBLIC);
 }
 
+// unioned db name
+BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_name) {
+    std::shared_ptr<PlainTable> p;
+    BitPackingMetadata bit_packing;
+
+    try {
+        string query = "SELECT table_name, col_name, min, max, domain_size FROM bit_packing";
+        p =  DataUtilities::getQueryResults(db_name, query, false);
+    } catch (std::exception e) {
+        return bit_packing; //  skip this step if the table isn't configured
+    }
+
+    for(int i = 0; i < p->getTupleCount(); ++i) {
+        PlainTuple t = p->getTuple(i);
+
+        BitPackingDefinition bp;
+        string table = t.getField(0).toString();
+        string column = t.getField(1).toString();
+
+        table.erase(table.find_last_not_of(" \t\n\r\f\v") + 1); // delete trailing spaces
+        column.erase(column.find_last_not_of(" \t\n\r\f\v") + 1);
+
+        std::cout << "Adding |" << table << "|, |" << column << "|" <<  std::endl;
+        ColumnReference c(table, column);
+
+        bp.min_ = t.getField(2).getValue<int>();
+        bp.max_ = t.getField(3).getValue<int>();
+        bp.domain_size_ =  t.getField(4).getValue<int>();
+
+        bit_packing[c] = bp;
+    }
+
+    return bit_packing;
+}
 
 

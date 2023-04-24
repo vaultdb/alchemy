@@ -62,6 +62,7 @@ set(sources
 		util/data_utilities.cpp
 		util/field_utilities.cpp
 		util/logger.cpp
+		util/system_configuration.cpp
 
 		query_table/field/field_type.h
 		query_table/field/field.cpp
@@ -114,7 +115,8 @@ set(sources
 		expression/visitor/print_expression_visitor.cpp
 		expression/visitor/type_inference_visitor.cpp
 		expression/visitor/plain_to_secure_visitor.cpp
-		expression/visitor/type_validation_visitor.cpp)
+		expression/visitor/type_validation_visitor.cpp
+		)
 
 
 

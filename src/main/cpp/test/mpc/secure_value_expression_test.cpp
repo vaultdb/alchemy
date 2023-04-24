@@ -42,12 +42,12 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
 
     SecureField  lhsEncrypted, rhsEncrypted;
     if(FLAGS_party == emp::ALICE) {
-        lhsEncrypted = PlainField ::secret_share_send(lhsValue, emp::ALICE);
-        rhsEncrypted = PlainField ::secret_share_send(rhsValue, emp::ALICE);
+        lhsEncrypted = PlainField::secret_share_send(lhsValue, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhsStr.size()), emp::ALICE);
+        rhsEncrypted = PlainField::secret_share_send(rhsValue, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhsStr.size()), emp::ALICE);
     }
     else {
-        lhsEncrypted = PlainField ::secret_share_recv(FieldType::SECURE_STRING, lhsStr.size(), emp::ALICE);
-        rhsEncrypted = PlainField ::secret_share_recv(FieldType::SECURE_STRING, rhsStr.size(), emp::ALICE);
+        lhsEncrypted = PlainField::secret_share_recv(FieldType::SECURE_STRING, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhsStr.size()), emp::ALICE);
+        rhsEncrypted = PlainField::secret_share_recv(FieldType::SECURE_STRING, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhsStr.size()), emp::ALICE);
     }
 
     emp::Bit gtEncrypted = (lhsEncrypted > rhsEncrypted);
@@ -135,17 +135,13 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
 
     SecureField  lhsPrivateField, rhsPrivateField;
     if(FLAGS_party == emp::ALICE) {
-        lhsPrivateField = PlainField ::secret_share_send(lhsField, emp::ALICE);
-        rhsPrivateField = PlainField ::secret_share_send(rhsField, emp::ALICE);
+        lhsPrivateField = PlainField::secret_share_send(lhsField, QueryFieldDesc(0, "test_col", "test_table", FieldType::STRING, 1), emp::ALICE);
+        rhsPrivateField = PlainField::secret_share_send(rhsField, QueryFieldDesc(0, "test_col", "test_table", FieldType::STRING, 1), emp::ALICE);
     }
     else {
-        lhsPrivateField = PlainField ::secret_share_recv(FieldType::SECURE_STRING, 1, emp::ALICE);
-        rhsPrivateField = PlainField ::secret_share_recv(FieldType::SECURE_STRING, 1, emp::ALICE);
+        lhsPrivateField = PlainField::secret_share_recv(FieldType::SECURE_STRING, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, 1), emp::ALICE);
+        rhsPrivateField = PlainField::secret_share_recv(FieldType::SECURE_STRING, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, 1), emp::ALICE);
     }
-
-
-
-
 
 
     // sanity check

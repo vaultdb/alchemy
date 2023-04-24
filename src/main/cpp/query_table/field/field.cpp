@@ -71,7 +71,13 @@ template<typename B>
 size_t Field<B>::getSize() const {
 
     // serialization size
+    if(type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG) {
+        emp::Integer i = boost::get<emp::Integer>(payload_);
+        return i.size();
+    }
+
     return FieldUtilities::getPhysicalSize(type_, string_length_);
+
 }
 
 
@@ -114,8 +120,8 @@ B Field<B>::operator>(const Field &rhs) const {
 // secret sharing as public
 template<typename B>
 SecureField Field<B>::secret_share() const {
-
-    Value result = secretShareHelper((PlainField & ) *this, 0, true);
+    QueryFieldDesc anon(0, "anon", "", type_, 0);
+    Value result = secretShareHelper((PlainField &) *this, anon, 0, true);
     FieldType resType = TypeUtilities::toSecure(type_);
     return SecureField(resType, result, string_length_);
 }
@@ -124,22 +130,23 @@ SecureField Field<B>::secret_share() const {
 
 
 template<typename B>
-SecureField Field<B>::secret_share_send(const PlainField & src, const int & src_party) {
-    Value result = secretShareHelper(src, src_party, true);
+SecureField Field<B>::secret_share_send(const PlainField &src, const QueryFieldDesc &field_desc, const int &src_party) {
+    Value result = secretShareHelper(src, field_desc, src_party, true);
     FieldType resType = TypeUtilities::toSecure(src.type_);
 
     return SecureField(resType, result, src.string_length_);
 }
 
 template<typename B>
-SecureField Field<B>::secret_share_recv(const FieldType & type, const size_t & str_length, const int & src_party) {
+SecureField
+Field<B>::secret_share_recv(const FieldType &type, const QueryFieldDesc &&field_desc, const int &src_party) {
     assert(TypeUtilities::isEncrypted(type));
 
     FieldType plain_type = TypeUtilities::toPlain(type);
     Value input = FieldFactory<bool>::getZero(plain_type).payload_;
-    PlainField p(plain_type, input, str_length);
-    Value result = secretShareHelper(p, src_party, false);
-    return SecureField(type, result, str_length);
+    PlainField p(plain_type, input, field_desc.getStringLength());
+    Value result = secretShareHelper(p, field_desc, src_party, false);
+    return SecureField(type, result, field_desc.getStringLength());
 
 
 }
@@ -381,20 +388,22 @@ void Field<B>::serialize(int8_t *dst) const {
 }
 
 template<typename B>
-Value Field<B>::secretShareHelper(const PlainField & f, const int &party, const bool &send) {
+Value
+Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &field_desc, const int &party, const bool &send) {
 
-    string s;
 
     switch (f.type_) {
         case FieldType::BOOL:
             return emp::Bit(f.getValue<bool>(), party);
         case FieldType::INT:
-            return emp::Integer(32, f.getValue<int32_t>(), party);
+            return emp::Integer(field_desc.size(),  (send) ?  boost::get<int32_t>(f.payload_) - field_desc.getFieldOffset()
+                                                           : boost::get<int32_t>(f.payload_), party);
+
         case FieldType::LONG:
-            return emp::Integer(64, f.getValue<int64_t>(), party);
+            return emp::Integer(field_desc.size(),  (send) ?  boost::get<int64_t>(f.payload_) - field_desc.getFieldOffset()
+                                                           : boost::get<int64_t>(f.payload_), party);
         case FieldType::STRING:
-            s = f.getValue<string>();
-            return secretShareString(s, send, f.string_length_, party);
+            return secretShareString(boost::get<string>(f.payload_), send, f.string_length_, party);
         case FieldType::FLOAT:
             return emp::Float(f.getValue<float_t>(), party);
         case FieldType::SECURE_BOOL:
