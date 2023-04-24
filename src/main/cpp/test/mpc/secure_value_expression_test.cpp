@@ -146,7 +146,8 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
 
     // sanity check
     bool publicEq = (lhs == rhs);
-    bool privateEq = (lhsSecretShared == rhsSecretShared).reveal(<#initializer#>, <#initializer#>);
+    emp::Bit privateEqBit = (lhsSecretShared == rhsSecretShared);
+    bool privateEq = privateEqBit.reveal();
     bool publicGeq = lhs >= rhs;
     bool privateGeq = (lhsSecretShared >= rhsSecretShared).reveal();
     bool publicGt = lhsStr > rhsStr;
