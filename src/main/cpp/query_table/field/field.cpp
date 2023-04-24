@@ -252,12 +252,12 @@ PlainField Field<B>::reveal(const QueryFieldDesc &schema, const int &party) cons
             i = getValue<emp::Integer>();
             // 16 bytes / bit
             v = i.reveal<int32_t>(party);
-            v = boost::get<int32_t>(v) + schema.getFieldOffset();
+            v = (int32_t) (boost::get<int32_t>(v) + schema.getFieldOffset());
             break;
         case FieldType::SECURE_LONG:
             i = getValue<emp::Integer>();
             v = i.reveal<int64_t>(party);
-            v = boost::get<int32_t>(v) + schema.getFieldOffset();
+            v = (int64_t) (boost::get<int64_t>(v) + schema.getFieldOffset());
             break;
         case FieldType::SECURE_STRING:
             i = getValue<emp::Integer>();
