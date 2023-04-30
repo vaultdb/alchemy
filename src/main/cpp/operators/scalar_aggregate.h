@@ -23,7 +23,7 @@ namespace vaultdb {
         std::vector<ScalarAggregateImpl<B> *> aggregators_;
 
         ScalarAggregateImpl <B> * aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                                   const FieldType &aggregateValueType) const;
+                                                   const QueryFieldDesc &def) const;
 
         void setup();
 

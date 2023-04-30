@@ -47,7 +47,7 @@ std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
 
     Operator<B>::output_->putTuple(0, outputTuple);
 
-    // dummy tag is always false in our setting, e.g., if we count a set of nulls/dummies, then our count is zero - not dummy
+    // dummy tag is always false in our setting, e.g., if we count a set of nulls/dummies, then our count is zero_ - not dummy
     tuple.setDummyTag(false);
     return Operator<B>::output_;
 }
@@ -55,18 +55,18 @@ std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
 
 template<typename B>
 ScalarAggregateImpl<B> * ScalarAggregate<B>::aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                                            const FieldType &aggregateValueType) const {
+                                                            const QueryFieldDesc &def) const {
         switch (aggregateType) {
             case AggregateId::COUNT:
-                return  new ScalarCountImpl<B>(ordinal, aggregateValueType);
+                return  new ScalarCountImpl<B>(ordinal, def);
             case AggregateId::SUM:
-                return new ScalarSumImpl<B>(ordinal, aggregateValueType);
+                return new ScalarSumImpl<B>(ordinal, def);
             case AggregateId::AVG:
-                return new ScalarAvgImpl<B>(ordinal, aggregateValueType);
+                return new ScalarAvgImpl<B>(ordinal, def);
             case AggregateId::MIN:
-                return new ScalarMinImpl<B>(ordinal, aggregateValueType);
+                return new ScalarMinImpl<B>(ordinal, def);
             case AggregateId::MAX:
-                return new ScalarMaxImpl<B>(ordinal, aggregateValueType);
+                return new ScalarMaxImpl<B>(ordinal, def);
             default:
                 throw std::invalid_argument("Not yet implemented!");
         };
@@ -77,6 +77,8 @@ void  ScalarAggregate<B>::setup() {
 
     QuerySchema input_schema = Operator<B>::getChild()->getOutputSchema();
 
+    // max and min have the same type as their source column
+    // avg, count, sum need to be "stock" types like int32 at least for now
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {
 
         // -1 ordinal for COUNT(*)
@@ -84,7 +86,7 @@ void  ScalarAggregate<B>::setup() {
                                  std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG :
                                  input_schema.getField(agg.ordinal).getType();
 
-        aggregators_.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
+        aggregators_.push_back(aggregateFactory(agg.type, agg.ordinal, input_schema.getField(agg.ordinal)));
     }
 
         // generate output schema

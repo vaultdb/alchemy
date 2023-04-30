@@ -231,7 +231,7 @@ string DataUtilities::readTextFileToString(const string & filename) {
     return string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
 }
 
-// batch_no is zero-indexed
+// batch_no is zero_-indexed
 vector<string> DataUtilities::readTextFileBatch(const string &filename, const size_t & batch_tuple_cnt, const size_t & batch_no) {
     std::vector<std::string> lines;
     std::ifstream inFile(filename);

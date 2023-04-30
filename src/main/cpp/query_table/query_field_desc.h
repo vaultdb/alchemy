@@ -53,7 +53,6 @@ namespace  vaultdb {
 
         void setOrdinal(const size_t &  ordinal) { ordinal_ = ordinal; }
 
-
         QueryFieldDesc &operator=(const QueryFieldDesc &other);
 
         bool operator==(const QueryFieldDesc &other);

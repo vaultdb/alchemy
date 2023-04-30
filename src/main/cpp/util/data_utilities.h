@@ -56,7 +56,7 @@ namespace vaultdb {
 
         static vector<int8_t> readFile(const string &fileName);
         // if the file were divided into batches of length *batch_tuple_cnt*, read in the *batch_no* partition
-        // zero-indexed
+        // zero_-indexed
         static vector<string> readTextFileBatch(const string &filename, const size_t & batch_tuple_cnt, const size_t & batch_no);
 
         static string printFirstBytes(vector<int8_t> &bytes, const int &byteCount);

@@ -69,7 +69,6 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
 }
 
 
-
 TEST_F(SecureScalarAggregateTest, test_count) {
     // set up expected output
     std::string expectedOutputQuery = "SELECT COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10";
@@ -95,6 +94,40 @@ TEST_F(SecureScalarAggregateTest, test_count_dummies) {
 
 }
 
+
+TEST_F(SecureScalarAggregateTest, test_min) {
+    std::string expectedOutputQuery = "SELECT MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10";
+    std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
+    runTest(expectedOutputQuery, aggregators);
+}
+
+TEST_F(SecureScalarAggregateTest, test_min_dummies) {
+    std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+    std::string expectedOutputQuery = "SELECT MIN(l_linenumber) min_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
+
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::MIN, "min"));
+    runDummiesTest(expectedOutputQuery, aggregators);
+}
+
+
+TEST_F(SecureScalarAggregateTest, test_max) {
+    std::string expectedOutputQuery = "SELECT MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10";
+    std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
+    runTest(expectedOutputQuery, aggregators);
+}
+
+
+TEST_F(SecureScalarAggregateTest, test_min_dummies) {
+    std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
+    std::string expectedOutputQuery = "SELECT MAX(l_linenumber) min_dummy FROM (" + query + ") subquery WHERE  NOT dummy";
+
+
+    std::vector<ScalarAggregateDefinition> aggregators;
+    aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::MAX, "maxus "));
+    runDummiesTest(expectedOutputQuery, aggregators);
+}
 
 
 
@@ -169,18 +202,6 @@ TEST_F(SecureScalarAggregateTest, test_sum_lineno_baseprice) {
   runDummiesTest(expectedOutputQuery, aggregators);
 }
 
-TEST_F(SecureScalarAggregateTest, test_min) {
-  std::string expectedOutputQuery = "SELECT MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10";
-  std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
-   runTest(expectedOutputQuery, aggregators);
-}
-
-
-TEST_F(SecureScalarAggregateTest, test_max) {
-  std::string expectedOutputQuery = "SELECT MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10";
-  std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
-  runTest(expectedOutputQuery, aggregators);
-}
 
 
 TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {

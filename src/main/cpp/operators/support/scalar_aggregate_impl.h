@@ -11,33 +11,33 @@ namespace vaultdb {
     template<typename B>
     class ScalarAggregateImpl {
     public:
-        ScalarAggregateImpl(const uint32_t & ordinal, const FieldType & aggType) : aggregateOrdinal(ordinal), aggregateType(aggType),
-                                                                                       zero(FieldFactory<B>::getZero(aggregateType)),
-                                                                                       one(FieldFactory<B>::getOne(aggregateType)){};
+        ScalarAggregateImpl(const uint32_t & ordinal, const QueryFieldDesc &def) : ordinal_(ordinal),
+            column_def_(def), type_(def.getType()),  zero_(FieldFactory<B>::getZero(type_)),   one_(FieldFactory<B>::getOne(type_)) { }
         virtual ~ScalarAggregateImpl() = default;
         virtual void accumulate(const QueryTuple<B> & tuple) = 0;
         virtual  Field<B> getResult() const = 0;
-        virtual FieldType getType() const { return aggregateType; }
+        virtual FieldType getType() const { return type_; }
 
     protected:
 
-        uint32_t aggregateOrdinal;
-        FieldType aggregateType;
-        Field<B> zero;
-        Field<B> one;
+        uint32_t ordinal_;
+        QueryFieldDesc column_def_;
+        FieldType type_;
+        Field<B> zero_;
+        Field<B> one_;
 
     };
 
     template<typename B>
     class ScalarCountImpl : public ScalarAggregateImpl<B> {
     public:
-        ScalarCountImpl(const uint32_t & ordinal, const FieldType & aggType);
+        ScalarCountImpl(const uint32_t & ordinal, const QueryFieldDesc & def);
         ~ScalarCountImpl() = default;
         void accumulate(const QueryTuple<B> & tuple) override;
          Field<B> getResult() const override;
 
     private:
-        Field<B> runningCount;
+        Field<B> running_count_;
 
     };
 
@@ -45,14 +45,14 @@ namespace vaultdb {
     template<typename B>
     class ScalarSumImpl : public ScalarAggregateImpl<B> {
     public:
-        ScalarSumImpl(const uint32_t & ordinal, const FieldType & aggType) :  ScalarAggregateImpl<B>(ordinal, aggType), runningSum(ScalarAggregateImpl<B>::zero) {}
+        ScalarSumImpl(const uint32_t & ordinal, const QueryFieldDesc & def) : ScalarAggregateImpl<B>(ordinal, def), running_sum_(ScalarAggregateImpl<B>::zero_) {}
         ~ScalarSumImpl() = default;
         void accumulate(const QueryTuple<B> & tuple) override;
          Field<B> getResult() const override;
         FieldType getType() const override;
 
     private:
-        Field<B> runningSum;
+        Field<B> running_sum_;
 
     };
 
@@ -61,13 +61,13 @@ namespace vaultdb {
     template<typename B>
     class ScalarMinImpl : public ScalarAggregateImpl<B> {
     public:
-      ScalarMinImpl(const uint32_t & ordinal, const FieldType & aggType);
+      ScalarMinImpl(const uint32_t & ordinal, const QueryFieldDesc & def);
       ~ScalarMinImpl()  = default;
       void accumulate(const QueryTuple<B> & tuple) override;
        Field<B> getResult() const override;
 
     private:
-      Field<B> runningMin;
+      Field<B> running_min_;
 
     };
 
@@ -76,13 +76,13 @@ namespace vaultdb {
     template<typename B>
     class ScalarMaxImpl : public ScalarAggregateImpl<B> {
       public:
-        ScalarMaxImpl(const uint32_t & ordinal, const FieldType & aggType);
+        ScalarMaxImpl(const uint32_t & ordinal, const QueryFieldDesc & def);
         ~ScalarMaxImpl() = default;
         void accumulate(const QueryTuple<B> & tuple) override;
          Field<B> getResult() const override;
 
       private:
-        Field<B> runningMax;
+        Field<B> running_max_;
     };
 
 
@@ -90,14 +90,14 @@ namespace vaultdb {
     class ScalarAvgImpl : public ScalarAggregateImpl<B> {
     public:
         // following psql convention, only outputs floats
-        ScalarAvgImpl(const uint32_t & ordinal, const FieldType & aggType);
+        ScalarAvgImpl(const uint32_t & ordinal, const QueryFieldDesc & def);
         ~ScalarAvgImpl()  = default;
         void accumulate(const QueryTuple<B> & tuple) override;
          Field<B> getResult() const override;
 
     private:
-        Field<B> runningSum;
-        Field<B> runningCount;
+        Field<B> running_sum_;
+        Field<B> running_count_;
 
     };
 

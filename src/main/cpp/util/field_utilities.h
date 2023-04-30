@@ -76,6 +76,15 @@ namespace vaultdb {
             memcpy(dst.bits.data(), src.bits.data(), src.size() * TypeUtilities::getEmpBitSize());
             return dst;
         }
+
+        static inline emp::Integer padInteger(const emp::Integer & src, const int & len) {
+            if(src.size() == len) return src;
+
+            emp::Integer dst(len, 0, PUBLIC);
+            memcpy(dst.bits.data(), src.bits.data(), src.size() * TypeUtilities::getEmpBitSize());
+            return dst;
+        }
+
     };
 
 

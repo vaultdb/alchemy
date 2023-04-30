@@ -568,6 +568,9 @@ Field<B> Field<B>::operator+(const Field &rhs) const {
 
     Value v;
 
+    emp::Integer li, ri;
+    int max_bit_sz;
+
     switch(type_) {
         case FieldType::INT:
             v = plusHelper<int32_t>(rhs);
@@ -580,7 +583,17 @@ Field<B> Field<B>::operator+(const Field &rhs) const {
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
-            v = plusHelper<emp::Integer>(rhs);
+            li = boost::get<emp::Integer>(payload_);
+            ri = boost::get<emp::Integer>(rhs.payload_);
+            if(li.size() == ri.size()) {
+                v = li + ri;
+                break;
+            }
+            // else pad to the longer size
+            max_bit_sz = (li.size() > ri.size()) ? li.size() : ri.size();
+            li = FieldUtilities::padInteger(li, max_bit_sz);
+            ri = FieldUtilities::padInteger(ri, max_bit_sz);
+            v = li + ri;
             break;
         case FieldType::SECURE_FLOAT:
             v = plusHelper<emp::Float>(rhs);
@@ -597,6 +610,8 @@ Field<B> Field<B>::operator-(const Field &rhs) const {
     assert(type_ == rhs.getType());
 
     Value v;
+    emp::Integer li, ri;
+    int max_bit_sz;
 
     switch(type_) {
         case FieldType::INT:
@@ -610,7 +625,17 @@ Field<B> Field<B>::operator-(const Field &rhs) const {
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
-            v = minusHelper<emp::Integer>(rhs);
+            li = boost::get<emp::Integer>(payload_);
+            ri = boost::get<emp::Integer>(rhs.payload_);
+            if(li.size() == ri.size()) {
+                v = li - ri;
+                break;
+            }
+            // else pad to the longer size
+            max_bit_sz = (li.size() > ri.size()) ? li.size() : ri.size();
+            li = FieldUtilities::padInteger(li, max_bit_sz);
+            ri = FieldUtilities::padInteger(ri, max_bit_sz);
+            v = li - ri;
             break;
         case FieldType::SECURE_FLOAT:
             v = minusHelper<emp::Float>(rhs);
@@ -627,6 +652,8 @@ Field<B> Field<B>::operator*(const Field &rhs) const {
     assert(type_ == rhs.getType());
 
     Value v;
+    emp::Integer li, ri;
+    int max_bit_sz;
 
     switch(type_) {
         case FieldType::INT:
@@ -640,7 +667,17 @@ Field<B> Field<B>::operator*(const Field &rhs) const {
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
-            v = timesHelper<emp::Integer>(rhs);
+            li = boost::get<emp::Integer>(payload_);
+            ri = boost::get<emp::Integer>(rhs.payload_);
+            if(li.size() == ri.size()) {
+                v = li * ri;
+                break;
+            }
+            // else pad to the longer size
+            max_bit_sz = (li.size() > ri.size()) ? li.size() : ri.size();
+            li = FieldUtilities::padInteger(li, max_bit_sz);
+            ri = FieldUtilities::padInteger(ri, max_bit_sz);
+            v = li * ri;
             break;
         case FieldType::SECURE_FLOAT:
             v = timesHelper<emp::Float>(rhs);
@@ -655,6 +692,9 @@ template<typename B>
 Field<B> Field<B>::operator/(const Field &rhs) const {   assert(type_ == rhs.getType());
 
     Value v;
+    emp::Integer li, ri;
+    int max_bit_sz;
+
 
     switch(type_) {
         case FieldType::INT:
@@ -671,7 +711,17 @@ Field<B> Field<B>::operator/(const Field &rhs) const {   assert(type_ == rhs.get
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
-            v = divHelper<emp::Integer>(rhs);
+            li = boost::get<emp::Integer>(payload_);
+            ri = boost::get<emp::Integer>(rhs.payload_);
+            if(li.size() == ri.size()) {
+                v = li / ri;
+                break;
+            }
+            // else pad to the longer size
+            max_bit_sz = (li.size() > ri.size()) ? li.size() : ri.size();
+            li = FieldUtilities::padInteger(li, max_bit_sz);
+            ri = FieldUtilities::padInteger(ri, max_bit_sz);
+            v = li / ri;
             break;
         case FieldType::SECURE_FLOAT:
             v = divHelper<emp::Float>(rhs);
