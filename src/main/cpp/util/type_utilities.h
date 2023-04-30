@@ -18,7 +18,7 @@ namespace vaultdb {
         // See FieldType::getPhysicalSize() for physical, allocated size
         static size_t getTypeSize(const FieldType & id);
 
-        static size_t getEmpBitSize() { return   sizeof(emp::block); }
+        static inline size_t getEmpBitSize() { return   sizeof(emp::block); }
 
         // when reading data from ascii sources like csv
         // Moved this to FieldFactory

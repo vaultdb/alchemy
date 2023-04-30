@@ -10,19 +10,20 @@ QueryFieldDesc::QueryFieldDesc() : type_(FieldType::INVALID) {
 }
 
 QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const FieldType &type)
-        : name_(f.name_), table_name_(f.table_name_),
-          string_length_(f.getStringLength()), type_(type), ordinal_(f.ordinal_), bit_packed_size_(f.bit_packed_size_) { // carry over bit packed size
+        : field_name_(f.field_name_), table_name_(f.table_name_),
+          string_length_(f.getStringLength()),
+          type_(type), ordinal_(f.ordinal_), bit_packed_size_(f.bit_packed_size_), field_min_(f.field_min_) { // carry over bit packed size
     initializeFieldSize();
 }
 
 
 QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, int col_num)
-        : name_(f.name_), table_name_(f.table_name_), string_length_(f.string_length_), type_(f.type_), ordinal_(col_num), field_size_(f.field_size_), bit_packed_size_(f.field_size_) {
+        : field_name_(f.field_name_), table_name_(f.table_name_), string_length_(f.string_length_), type_(f.type_), ordinal_(col_num), field_size_(f.field_size_), bit_packed_size_(f.field_size_), field_min_(f.field_min_) {
 }
 
 QueryFieldDesc::QueryFieldDesc(uint32_t anOrdinal, const string &n, const string &tab, const FieldType &aType,
                                const size_t &stringLength)
-        : name_(n),
+        : field_name_(n),
           table_name_(tab), string_length_(stringLength), type_(aType), ordinal_(anOrdinal) {
     // since we convert DATEs to int32_t in both operator land and in our verification pipeline,
     // i.e., we compare the output of our queries to SELECT EXTRACT(EPOCH FROM date_)
@@ -43,7 +44,7 @@ int QueryFieldDesc::getOrdinal() const {
 
 
 const std::string &QueryFieldDesc::getName() const {
-  return QueryFieldDesc::name_;
+  return QueryFieldDesc::field_name_;
 }
 
 FieldType QueryFieldDesc::getType() const {
@@ -57,7 +58,7 @@ const std::string &QueryFieldDesc::getTableName() const {
 
 size_t QueryFieldDesc::size() const {
     // if size == 0 then it is an invalid field
-    assert(field_size_ != 0);
+    assert(field_size_ > 0);
 
     return field_size_;
 }
@@ -83,12 +84,13 @@ QueryFieldDesc& QueryFieldDesc::operator=(const QueryFieldDesc& src)  {
 
 
     this->type_ = src.type_;
-    this->name_ = src.name_;
+    this->field_name_ = src.field_name_;
     this->ordinal_ = src.ordinal_;
     this->table_name_ = src.table_name_;
     this->string_length_ = src.string_length_;
     this->field_size_ = src.field_size_;
     this->bit_packed_size_ = src.bit_packed_size_;
+    this->field_min_ = src.field_min_;
 
     return *this;
 }
@@ -122,25 +124,30 @@ bool QueryFieldDesc::operator==(const QueryFieldDesc& other) {
 
 }
 
+// TODO: integrate secret domain for
 void QueryFieldDesc::initializeFieldSize() {
     field_size_ = TypeUtilities::getTypeSize(type_);
 
+    if(table_name_ != "bit_packing") {
 
-    // only serves ints and longs for now
-    if((type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG
-        || type_ == FieldType::INT || type_ == FieldType::LONG) && table_name_ != "bit_packing") { // it will be trickier to do this with unencrypted INTs, plus not as crucial for our experiments.
-        SystemConfiguration &sys_config = SystemConfiguration::getInstance();
-        BitPackingDefinition bit_packing_def = sys_config.getBitPackingSpec(table_name_, name_);
+        // only serves ints and longs for now
+        if (type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG
+             || type_ == FieldType::INT || type_ == FieldType::LONG) { // it will be trickier to do this with unencrypted INTs, plus not as crucial for our experiments.
+            SystemConfiguration &sys_config = SystemConfiguration::getInstance();
+            BitPackingDefinition bit_packing_def = sys_config.getBitPackingSpec(table_name_, field_name_);
 
-        if (bit_packing_def.domain_size_ == (bit_packing_def.max_ - bit_packing_def.min_ + 1)) {
+            if ((bit_packing_def.domain_size_ == (bit_packing_def.max_ - bit_packing_def.min_ + 1) ) && (bit_packing_def.min_ != -1)) {
+                field_min_ = bit_packing_def.min_;
+                bit_packed_size_ = ceil(log2((float) bit_packing_def.domain_size_));
 
-            field_offset_ = bit_packing_def.min_;
-            bit_packed_size_ = ceil(log2((float) bit_packing_def.domain_size_)); // how many bits do we need?
-            if (type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG) {
-                field_size_ = bit_packed_size_;
+                if(bit_packed_size_ < 1) bit_packed_size_ = 1;
+
+                if (type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG) {
+                    field_size_ = bit_packed_size_;
+                }
             }
         }
-    }
+    } // not bit packing
 
     if(QueryFieldDesc::type_ == FieldType::STRING || QueryFieldDesc::type_ == FieldType::SECURE_STRING )  {
         field_size_ *= string_length_;

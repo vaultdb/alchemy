@@ -70,6 +70,12 @@ namespace vaultdb {
         static emp::Bit select(const emp::Bit & choice, const emp::Bit & lhs, const emp::Bit & rhs);
 
         static BitPackingMetadata getBitPackingMetadata(const std::string & db_name);
+
+        static inline emp::Integer addSignBit(const emp::Integer & src) {
+            emp::Integer dst(src.size() + 1, 0, PUBLIC);
+            memcpy(dst.bits.data(), src.bits.data(), src.size() * TypeUtilities::getEmpBitSize());
+            return dst;
+        }
     };
 
 

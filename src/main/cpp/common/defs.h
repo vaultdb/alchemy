@@ -1,5 +1,5 @@
-#ifndef _DEFS_H
-#define _DEFS_H
+#ifndef _COMMON_DEFS_H
+#define _COMMON_DEFS_H
 
 #include <emp-tool/utils/constants.h>
 #include <vector>
@@ -7,7 +7,7 @@
 #include <map>
 #include <cstdint>
 #include <boost/variant.hpp>
-
+#include <sstream>
 
 
 namespace vaultdb {
@@ -31,9 +31,22 @@ namespace vaultdb {
         int domain_size_;
 
         BitPackingDefinition() { min_ = max_ = domain_size_ = 0; }
+        std::string toString() const {
+            std::stringstream s;
+            s << "[" << min_ << ", " << "] domain size: " << domain_size_;
+            return s.str();
+        }
     };
+
+//    std::ostream &operator<<(std::ostream &os, const BitPackingDefinition &def) {
+//        os << def.toString();
+//
+//        return os;
+//
+//    }
 
     typedef std::map<ColumnReference , BitPackingDefinition> BitPackingMetadata;
 
+
 }
-#endif // _DEFS_H
+#endif // _COMMON_DEFS_H

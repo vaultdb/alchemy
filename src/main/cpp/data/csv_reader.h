@@ -1,8 +1,7 @@
-#include <vaultdb.h>
-
 #ifndef CSV_READER_H
 #define CSV_READER_H
 
+#include "query_table/query_table.h"
 
 namespace  vaultdb {
     class CsvReader {

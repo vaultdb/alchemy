@@ -21,14 +21,11 @@ cd deps/emp
 /bin/bash install.sh 
 
 #install correct pqxx version
-#for upgrading pqxx, need to add flags to configure call:
-#   ./configure ... CXXFLAGS="-std=c++20 -O3"
+
 cd ..
-#git clone --branch 6.2.5 https://github.com/jtv/libpqxx.git
 git clone --branch 7.7.4 https://github.com/jtv/libpqxx.git
 cd libpqxx
  ./configure  --disable-documentation --enable-shared CXXFLAGS="-std=c++17 -O2"
-#./configure  --disable-documentation --enable-shared
 make 
 sudo make install
 

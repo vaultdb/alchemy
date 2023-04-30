@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="504fd902-386b-4d73-89ee-696ad8892310" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../../../../setup.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../../../setup.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../common/defs.h" beforeDir="false" afterPath="$PROJECT_DIR$/../common/defs.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../data/csv_reader.h" beforeDir="false" afterPath="$PROJECT_DIR$/../data/csv_reader.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../operators/sort.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../operators/sort.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pilot/test/input/chi-multisite-patient.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../pilot/test/input/chi-multisite-patient.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pilot/test/output/chi-patient-multisite-2018.alice" beforeDir="false" afterPath="$PROJECT_DIR$/../pilot/test/output/chi-patient-multisite-2018.alice" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pilot/test/output/chi-patient-multisite-2018.bob" beforeDir="false" afterPath="$PROJECT_DIR$/../pilot/test/output/chi-patient-multisite-2018.bob" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pilot/test/output/chi-patient-multisite.alice" beforeDir="false" afterPath="$PROJECT_DIR$/../pilot/test/output/chi-patient-multisite.alice" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pilot/test/output/chi-patient-multisite.bob" beforeDir="false" afterPath="$PROJECT_DIR$/../pilot/test/output/chi-patient-multisite.bob" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../query_table/field/field.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../query_table/field/field.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../query_table/field/field.h" beforeDir="false" afterPath="$PROJECT_DIR$/../query_table/field/field.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../query_table/query_field_desc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../query_table/query_field_desc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../query_table/query_field_desc.h" beforeDir="false" afterPath="$PROJECT_DIR$/../query_table/query_field_desc.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../query_table/query_table.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../query_table/query_table.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../query_table/query_table.h" beforeDir="false" afterPath="$PROJECT_DIR$/../query_table/query_table.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../query_table/secure_tuple.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../query_table/secure_tuple.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mpc/secure_filter_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/mpc/secure_filter_test.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mpc/secure_sort_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/mpc/secure_sort_test.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zk/zk_base_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/zk/zk_base_test.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zk/zk_sort_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/zk/zk_sort_test.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../vaultdb.h" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../../.." />
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2023" />
+    <option name="minorVersion" value="1.1" />
+  </component>
+  <component name="ProjectId" id="2P7QaHlk2JWtrvUSP1vMgOfozcy" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "WebServerToolWindowFactoryState": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="504fd902-386b-4d73-89ee-696ad8892310" name="Changes" comment="" />
+      <created>1682805701566</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1682805701566</updated>
+      <workItem from="1682805702629" duration="6000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

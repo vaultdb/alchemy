@@ -53,14 +53,9 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
     tuple_data_.resize(num_tuples * tuple_size_);
 
       
-    if(std::is_same_v<emp::Bit, B>) {
-      emp::Integer tmp(schema_->size() * num_tuples, 0, emp::PUBLIC);
-      memcpy(tuple_data_.data(), tmp.bits.data(), schema_->size() * num_tuples);
 
-    }
-    else {
         std::memset(tuple_data_.data(), 0, tuple_data_.size());
-    }
+
 
 }
 

@@ -67,15 +67,19 @@ QueryTuple<bool>
 QueryTuple<emp::Bit>::reveal(const int &empParty, std::shared_ptr<QuerySchema> & dst_schema, int8_t *dst) const {
     QueryTuple<bool> dst_tuple(dst_schema, dst);
 
+    emp::Bit dummy_tag = getDummyTag();
+    bool plain_dummy_tag = dummy_tag.reveal(empParty);
+    dst_tuple.setDummyTag(plain_dummy_tag);
+    if(plain_dummy_tag) // reveal nothing else
+        return dst_tuple;
+	
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
         PlainField revealed = src.reveal(query_schema_->getField(i), empParty);
         dst_tuple.setField(i, revealed);
     }
 
-    emp::Bit dummy_tag = getDummyTag();
-    bool plain_dummy_tag = dummy_tag.reveal(empParty);
-    dst_tuple.setDummyTag(plain_dummy_tag);
+    
 
     return dst_tuple;
 
@@ -169,7 +173,7 @@ size_t QueryTuple<emp::Bit>::getFieldCount() const {
 }
 
 void QueryTuple<emp::Bit>::serialize(int8_t *dst) {
-    memcpy(dst, (int8_t *) fields_, query_schema_->size());
+  memcpy((emp::Bit *) dst, fields_, query_schema_->size());
 }
 
 string QueryTuple<emp::Bit>::toString(const bool &showDummies) const {

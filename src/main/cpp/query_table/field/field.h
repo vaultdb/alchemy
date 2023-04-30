@@ -42,7 +42,6 @@ namespace vaultdb {
 
             FieldType getType() const;
 
-            // TODO: automate this further
             size_t getSize() const;
 
 
@@ -85,7 +84,7 @@ namespace vaultdb {
 
 
         // if field is encrypted, decrypt
-        PlainField reveal(const QueryFieldDesc &schema, const int &party) const;
+        PlainField reveal(const QueryFieldDesc &schema, const int &party = 0) const;
         SecureField secret_share() const; // secret share as public
 
         static SecureField

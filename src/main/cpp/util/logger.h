@@ -2,7 +2,6 @@
 #define VAULTDB_LOGGER_H
 //  based on: https://www.boost.org/doc/libs/1_58_0/libs/log/example/doc/tutorial_logging.cpp
 
-
 #include <boost/move/utility.hpp>
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>

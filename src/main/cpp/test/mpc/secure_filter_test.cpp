@@ -63,7 +63,7 @@ TEST_F(SecureFilterTest, test_filter) {
     // expression setup
     // filtering for l_linenumber = 1
     shared_ptr<InputReferenceNode<emp::Bit> > read_field(new InputReferenceNode<emp::Bit>(1));
-    Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
+    Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(3, 1));
     shared_ptr<LiteralNode<emp::Bit> > constant_input(new LiteralNode<emp::Bit>(one));
     shared_ptr<ExpressionNode<emp::Bit> > equality_check(new EqualNode<emp::Bit>(read_field, constant_input));
     BoolExpression<emp::Bit> expression(equality_check);

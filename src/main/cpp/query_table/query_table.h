@@ -5,13 +5,11 @@
 #include "query_schema.h"
 #include "query_tuple.h"
 #include <memory>
-#include <vaultdb.h>
 #include <ostream>
 #include "util/utilities.h"
 #include "plain_tuple.h"
 #include <emp-tool/emp-tool.h>
 #include <emp-zk/emp-zk.h>
-#include <boost/iterator/iterator_facade.hpp>
 
 
 

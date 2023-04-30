@@ -188,6 +188,8 @@ B Field<B>::operator>=(const Field &r) const {
     Value v;
     emp::Float fl, fr;
 
+    emp::Integer li, ri;
+
     switch(type_) {
         case FieldType::BOOL:
              return getValue<bool>() >= r.getValue<bool>();
@@ -201,15 +203,21 @@ B Field<B>::operator>=(const Field &r) const {
         case FieldType::STRING:
             return getValue<string>() >= r.getValue<string>();
         case FieldType::SECURE_BOOL:
-            lhs = getValue<B>(); // always emp::Bit
+            lhs = getValue<B>();
             rhs = r.getValue<B>();
-            gt = lhs & (!rhs); // previously: (lhs == emp::Bit(true)) & (rhs == emp::Bit(false));
+            gt = lhs & (!rhs);
             eq = (lhs == rhs);
             return eq | gt;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
-            v = (getValue<emp::Integer>() >= r.getValue<emp::Integer>());
+            li = boost::get<emp::Integer>(payload_);
+            ri = boost::get<emp::Integer>(r.payload_);
+
+            li = FieldUtilities::addSignBit(li);
+            ri = FieldUtilities::addSignBit(ri);
+
+            v = (li >= ri);
             return boost::get<B>(v);
         case FieldType::SECURE_FLOAT:
             fl = getValue<emp::Float>();
@@ -250,14 +258,11 @@ PlainField Field<B>::reveal(const QueryFieldDesc &schema, const int &party) cons
             break;
         case FieldType::SECURE_INT:
             i = getValue<emp::Integer>();
-            // 16 bytes / bit
-            v = i.reveal<int32_t>(party);
-            v = (int32_t) (boost::get<int32_t>(v) + schema.getFieldOffset());
+            v =  (int32_t) (i.reveal<int32_t>(party) + schema.getFieldMin());
             break;
         case FieldType::SECURE_LONG:
             i = getValue<emp::Integer>();
-            v = i.reveal<int64_t>(party);
-            v = (int64_t) (boost::get<int64_t>(v) + schema.getFieldOffset());
+            v = i.reveal<int64_t>(party) + schema.getFieldMin();
             break;
         case FieldType::SECURE_STRING:
             i = getValue<emp::Integer>();
@@ -399,11 +404,11 @@ Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &field_des
         case FieldType::BOOL:
             return emp::Bit(f.getValue<bool>(), party);
         case FieldType::INT:
-            return emp::Integer(field_desc.size(),  (send) ?  boost::get<int32_t>(f.payload_) - field_desc.getFieldOffset()
+            return emp::Integer(field_desc.size(),  (send) ?  boost::get<int32_t>(f.payload_) - field_desc.getFieldMin()
                                                            : boost::get<int32_t>(f.payload_), party);
 
         case FieldType::LONG:
-            return emp::Integer(field_desc.size(),  (send) ?  boost::get<int64_t>(f.payload_) - field_desc.getFieldOffset()
+            return emp::Integer(field_desc.size(),  (send) ?  boost::get<int64_t>(f.payload_) - field_desc.getFieldMin()
                                                            : boost::get<int64_t>(f.payload_), party);
         case FieldType::STRING:
             return secretShareString(boost::get<string>(f.payload_), send, f.string_length_, party);

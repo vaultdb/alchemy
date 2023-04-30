@@ -15,13 +15,13 @@ namespace  vaultdb {
     class QueryFieldDesc {
 
     protected:
-        std::string name_;
+        std::string field_name_;
         std::string table_name_;
         size_t string_length_; // for varchars
         FieldType type_;
         int ordinal_;
         int field_size_ = 0; // size in bits
-        size_t field_offset_ = 0; // if bits are packed and min > 0
+        int64_t field_min_ = 0; // if bits are packed and min > 0
         size_t bit_packed_size_ = 0;
         
     public:
@@ -47,7 +47,7 @@ namespace  vaultdb {
         QueryFieldDesc(uint32_t anOrdinal, const std::string &n, const std::string &tab, const FieldType &aType, const size_t & stringLength = 0);
 
         void setStringLength(size_t i);
-        size_t getFieldOffset() const { return field_offset_; }
+        int64_t getFieldMin() const { return field_min_; }
 
         size_t getStringLength() const { return string_length_; }
 
