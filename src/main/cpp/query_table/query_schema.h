@@ -8,6 +8,8 @@
 #include <variant>
 #include <vector>
 #include <ostream>
+#include <util/type_utilities.h>
+
 
 namespace  vaultdb {
     class QuerySchema {
@@ -30,6 +32,8 @@ namespace  vaultdb {
         // returns size in bits
         size_t size() const;
 
+        bool inline  isSecure() const {
+            return (fields_[0].getType() == TypeUtilities::toSecure(fields_[0].getType())); }
 
         QueryFieldDesc getField(const int &i) const;
 

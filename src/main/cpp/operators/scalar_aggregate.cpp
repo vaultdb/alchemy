@@ -42,7 +42,10 @@ std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
 
     for(size_t i = 0; i < aggregators_.size(); ++i) {
         Field f = aggregators_[i]->getResult();
+        std::cout << "Setting result field to " << f.reveal(Operator<B>::output_schema_.getField(i)) << '\n';
+        std::cout << "Output schema: " << Operator<B>::output_schema_.getField(i) << " size " << Operator<B>::output_schema_.getField(i).size() << '\n';
         outputTuple.setField(i, f);
+        std::cout << "Output tuple: " <<  outputTuple.getField(i).reveal(Operator<B>::output_schema_.getField(i)) << '\n';
     }
 
     Operator<B>::output_->putTuple(0, outputTuple);
@@ -81,11 +84,6 @@ void  ScalarAggregate<B>::setup() {
     // avg, count, sum need to be "stock" types like int32 at least for now
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {
 
-        // -1 ordinal for COUNT(*)
-        FieldType aggValueType = (agg.ordinal == -1) ?
-                                 std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG :
-                                 input_schema.getField(agg.ordinal).getType();
-
         aggregators_.push_back(aggregateFactory(agg.type, agg.ordinal, input_schema.getField(agg.ordinal)));
     }
 
@@ -94,7 +92,15 @@ void  ScalarAggregate<B>::setup() {
 
         for(size_t i = 0; i < aggregators_.size(); ++i) {
             QueryFieldDesc fieldDesc(i, aggregate_definitions_[i].alias, "", aggregators_[i]->getType());
+
+            if(aggregate_definitions_[i].type == AggregateId::MIN
+               || aggregate_definitions_[i].type == AggregateId::MAX) { // carry over definition from source type
+               fieldDesc = QueryFieldDesc(input_schema.getField(aggregate_definitions_[i].ordinal), i);
+               fieldDesc.setName("", aggregate_definitions_[i].alias);
+
+            }
             Operator<B>::output_schema_.putField(fieldDesc);
+
         }
 
     Operator<B>::output_schema_.initializeFieldOffsets();

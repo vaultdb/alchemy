@@ -17,11 +17,11 @@ QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const FieldType &type)
 }
 
 
-QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, int col_num)
+QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const int &  col_num)
         : field_name_(f.field_name_), table_name_(f.table_name_), string_length_(f.string_length_), type_(f.type_), ordinal_(col_num), field_size_(f.field_size_), bit_packed_size_(f.field_size_), field_min_(f.field_min_) {
 }
 
-QueryFieldDesc::QueryFieldDesc(uint32_t anOrdinal, const string &n, const string &tab, const FieldType &aType,
+QueryFieldDesc::QueryFieldDesc(const int & anOrdinal, const string &n, const string &tab, const FieldType &aType,
                                const size_t &stringLength)
         : field_name_(n),
           table_name_(tab), string_length_(stringLength), type_(aType), ordinal_(anOrdinal) {
@@ -32,7 +32,6 @@ QueryFieldDesc::QueryFieldDesc(uint32_t anOrdinal, const string &n, const string
         table_name_ = "";
         type_ = FieldType::LONG; // we actually store it as an INT32, this is the result of EXTRACT(EPOCH..)
     }
-    //string_length_ = stringLength;
     initializeFieldSize();
 }
 
@@ -69,6 +68,7 @@ void QueryFieldDesc::setStringLength(size_t len) {
     initializeFieldSize();
 
 }
+
 
 std::ostream &vaultdb::operator<<(std::ostream &os,  const QueryFieldDesc &desc)  {
     os << "#" << desc.getOrdinal() << " " << TypeUtilities::getTypeString(desc.getType());

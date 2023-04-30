@@ -218,8 +218,7 @@ PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag, PlainTable &dst_tabl
             {
                 string stringVal = src.as<string>();
                 size_t strLength = tableSchema->getField(ordinal).getStringLength();
-
-                while(stringVal.size() != strLength) {
+                while(stringVal.size() < strLength) {
                     stringVal += " ";
                 }
 

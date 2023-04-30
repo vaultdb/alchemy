@@ -60,6 +60,7 @@ ScalarMinImpl<B>::ScalarMinImpl(const uint32_t &ordinal, const QueryFieldDesc & 
             emp::Bit tr(1, PUBLIC);
             for(int i = 0; i < def.size(); ++i) {
                    *b = tr; // set to max
+                   ++b;
             }
         running_min_ = Field<B>(def.getType(), t, 0);
     }
@@ -72,6 +73,7 @@ template<typename B>
 void ScalarMinImpl<B>::accumulate(const QueryTuple<B> &tuple) {
     Field<B> agg_input = tuple.getField(ScalarAggregateImpl<B>::ordinal_);
     running_min_ = Field<B>::If((agg_input >= running_min_) | tuple.getDummyTag(), running_min_, agg_input);
+
 }
 
 template<typename B>

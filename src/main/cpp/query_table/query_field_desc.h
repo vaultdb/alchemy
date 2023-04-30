@@ -42,16 +42,20 @@ namespace  vaultdb {
 
         QueryFieldDesc(const QueryFieldDesc &f, const FieldType & type);
 
-        QueryFieldDesc(const QueryFieldDesc &f, int col_num);
+        QueryFieldDesc(const QueryFieldDesc &f, const int & col_num);
 
-        QueryFieldDesc(uint32_t anOrdinal, const std::string &n, const std::string &tab, const FieldType &aType, const size_t & stringLength = 0);
+        QueryFieldDesc(const int & anOrdinal, const std::string &n, const std::string &tab, const FieldType &aType, const size_t & stringLength = 0);
 
         void setStringLength(size_t i);
         int64_t getFieldMin() const { return field_min_; }
 
         size_t getStringLength() const { return string_length_; }
 
-        void setOrdinal(const size_t &  ordinal) { ordinal_ = ordinal; }
+        void inline setOrdinal(const int &  ordinal) { ordinal_ = ordinal; }
+        void inline setName(const string & table_name, const string & field_name) {
+            table_name_ = table_name;
+            field_name_ = field_name;
+        }
 
         QueryFieldDesc &operator=(const QueryFieldDesc &other);
 

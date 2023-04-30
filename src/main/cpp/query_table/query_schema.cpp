@@ -1,6 +1,5 @@
 #include <iostream>
 #include "query_schema.h"
-#include <util/type_utilities.h>
 
 using namespace vaultdb;
 
@@ -20,7 +19,13 @@ void QuerySchema::putField(const QueryFieldDesc &fd) {
 }
 
 QueryFieldDesc QuerySchema::getField(const int &i) const {
-  return fields_.at(i);
+    return (i >= 0) ?
+      fields_.at(i) :
+     // dummy tag
+     QueryFieldDesc(-1, fields_[0].getTableName(), "dummy_tag",
+                    isSecure() ?
+                        FieldType::SECURE_BOOL :
+                        FieldType::BOOL, 0);
 }
 
 size_t QuerySchema::getFieldCount() const {
@@ -40,16 +45,6 @@ QuerySchema::QuerySchema(std::shared_ptr<QuerySchema>  &s) {
 // relies on initializeFieldOffsets()
 size_t QuerySchema::size() const {
     return tuple_size_;
-//    size_t bitSize = 0L;
-//    for (size_t i = 0; i < getFieldCount(); i++) {
-//        bitSize += fields_[i].size();
-//
-//    }
-//
-//    int dummySize = TypeUtilities::isEncrypted(fields_[0].getType()) ?   TypeUtilities::getTypeSize(FieldType::SECURE_BOOL) :  TypeUtilities::getTypeSize(FieldType::BOOL);
-//
-//    bitSize += dummySize; // for dummy tag
-//    return bitSize;
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const QuerySchema &schema) {
