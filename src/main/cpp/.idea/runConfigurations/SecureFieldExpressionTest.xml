@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="SecureFieldExpressionTest" type="CompoundRunConfigurationType">
+    <toRun name="secure_field_expression_test A" type="CMakeGoogleTestRunConfigurationType" />
+    <toRun name="secure_field_expression_test B" type="CMakeGoogleTestRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>

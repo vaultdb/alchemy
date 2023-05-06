@@ -77,7 +77,6 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     B realBin;
     QueryTuple<B> current(input_schema), predecessor(input_schema);
 
-    // TODO: truncating output NYI
     if(output_cardinality_ == 0) { // naive case - go full oblivious
       output_cardinality_ = input->getTupleCount();
     }
@@ -215,28 +214,27 @@ QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & input_
 }
 
 template<typename B>
-void GroupByAggregate<B>::generateOutputTuple(QueryTuple<B> &dstTuple, const QueryTuple<B> &lastTuple,
-                                                       const B &lastEntryGroupByBin, const B &realBin,
-                                                       const vector<GroupByAggregateImpl<B> *> &aggregators) const {
+void GroupByAggregate<B>::generateOutputTuple(QueryTuple<B> &dst_tuple, const QueryTuple<B> &last_tuple,
+                                              const B &last_entry_group_by_bin, const B &real_bin,
+                                              const vector<GroupByAggregateImpl<B> *> &aggregators) const {
 
     size_t i;
-
     // write group-by ordinals
     for(i = 0; i < group_by_.size(); ++i) {
-        const Field<B> srcField = lastTuple.getField(group_by_[i]);
-        dstTuple.setField(i, srcField);
+        const Field<B> src_field = last_tuple.getField(group_by_[i]);
+        dst_tuple.setField(i, src_field);
     }
 
     // write partial aggs
     for(GroupByAggregateImpl<B> *aggregator : aggregators) {
-        Field<B> currentResult = aggregator->getResult();
-        dstTuple.setField(i, currentResult);
+        Field<B> current_result = aggregator->getResult();
+        dst_tuple.setField(i, current_result);
         ++i;
     }
 
 
-    B dummyTag = Field<B>::If(lastEntryGroupByBin, Field<B>(!realBin), B(true)).template getValue<B>();
-    dstTuple.setDummyTag(dummyTag);
+    B dummy_tag = Field<B>::If(last_entry_group_by_bin, Field<B>(!real_bin), B(true)).template getValue<B>();
+    dst_tuple.setDummyTag(dummy_tag);
 
 
 }

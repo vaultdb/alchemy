@@ -384,7 +384,7 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
         case FieldType::SECURE_STRING:
             si = boost::get<emp::Integer>(payload_);
             si = si - emp::Integer(si.size(), schema.getFieldMin());
-//            std::cout << "Serializing " << si.reveal<int32_t>() << " to " << schema.size() << " bits." << std::endl;
+//            std::cout << "Serializing " << si.reveal<int32_t>() << " to " << schema.size() << " bits as " << si.reveal<std::string>() <<  std::endl;
             memcpy(dst, (int8_t *) si.bits.data(), schema.size() * TypeUtilities::getEmpBitSize());
             break;
         case FieldType::SECURE_FLOAT:

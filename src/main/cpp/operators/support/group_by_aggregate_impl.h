@@ -14,22 +14,22 @@ namespace vaultdb {
     class GroupByAggregateImpl {
     public:
         explicit GroupByAggregateImpl(const int32_t & ordinal, const FieldType & aggType) :
-                aggregateOrdinal(ordinal), aggregateType(aggType),
-                zero(FieldFactory<B>::getZero(aggregateType)), one(FieldFactory<B>::getOne(aggregateType)){};
+                aggregate_ordinal_(ordinal), aggregate_type_(aggType),
+                zero_(FieldFactory<B>::getZero(aggregate_type_)), one_(FieldFactory<B>::getOne(aggregate_type_)){};
 
         virtual ~GroupByAggregateImpl() = default;
         virtual void initialize(const QueryTuple<B> & tuple, const B &isGroupByMatch) = 0; // run this when we start a new group-by bin
         virtual void accumulate(const QueryTuple<B> & tuple, const B &isGroupByMatch) = 0;
         virtual Field<B> getResult() = 0;
-        virtual FieldType getType() const { return aggregateType; }
+        virtual FieldType getType() const { return aggregate_type_; }
 
     protected:
 
         // signed int because -1 denotes *, as in COUNT(*)
-        int32_t aggregateOrdinal;
-        FieldType aggregateType;
-        Field<B> zero;
-        Field<B> one;
+        int32_t aggregate_ordinal_;
+        FieldType aggregate_type_;
+        Field<B> zero_;
+        Field<B> one_;
 
     };
 
@@ -39,14 +39,14 @@ namespace vaultdb {
    class GroupByCountImpl : public  GroupByAggregateImpl<B> {
     public:
         explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType);
-        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
+        void initialize(const QueryTuple<B> & tuple, const B & group_by_match) override;
         void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
         Field<B> getResult() override;
         FieldType getType() const override;
        ~GroupByCountImpl() = default;
 
     private:
-        Field<B> runningCount;
+        Field<B> running_count_;
 
     };
 
@@ -62,7 +62,7 @@ namespace vaultdb {
         ~GroupBySumImpl() = default;
 
     private:
-        Field<B> runningSum;
+        Field<B> running_sum_;
 
     };
 

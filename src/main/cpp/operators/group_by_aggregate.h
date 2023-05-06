@@ -48,8 +48,8 @@ namespace vaultdb {
 
         QuerySchema generateOutputSchema(const QuerySchema & srcSchema) const;
 
-        void generateOutputTuple(QueryTuple <B> &dstTuple, const QueryTuple <B> &lastTuple,
-                                           const B &lastEntryGroupByBin, const B &real_bin,
+        void generateOutputTuple(QueryTuple <B> &dst_tuple, const QueryTuple <B> &last_tuple,
+                                 const B &last_entry_group_by_bin, const B &real_bin,
                                  const vector<GroupByAggregateImpl<B> *> &aggregators) const;
 
         void setup();
