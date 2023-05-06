@@ -20,44 +20,44 @@ using namespace vaultdb;
 class SecureSortTest : public EmpBaseTest {
 protected:
 
-    static bool correctOrder(const PlainTuple & lhs, const PlainTuple & rhs, const SortDefinition & sortDefinition);
-    static bool isSorted(const std::shared_ptr<PlainTable> & table, const SortDefinition & sortDefinition);
+    static bool correctOrder(const PlainTuple & lhs, const PlainTuple & rhs, const SortDefinition & sort_definition);
+    static bool isSorted(const std::shared_ptr<PlainTable> & table, const SortDefinition & sort_definition);
 
 
 };
 
 // is lhs  <= rhs
 // fails if either tuple is encrypted
-bool SecureSortTest::correctOrder(const PlainTuple &lhs, const PlainTuple &rhs, const SortDefinition & sortDefinition) {
+bool SecureSortTest::correctOrder(const PlainTuple &lhs, const PlainTuple &rhs, const SortDefinition & sort_definition) {
 
     assert(lhs.getFieldCount() == rhs.getFieldCount());
 
-    for(uint32_t i = 0; i < lhs.getFieldCount(); ++i) {
-        const PlainField lhsVal = lhs.getField(i);
-        const PlainField rhsVal = rhs.getField(i);
+    for(int i = 0; i < sort_definition.size(); ++i) {
+        PlainField lhs_field = lhs.getField(sort_definition[i].first);
+        PlainField rhs_field = rhs.getField(sort_definition[i].first);
 
-        if (lhsVal == rhsVal)
+        if (lhs_field == rhs_field)
             continue;
 
-        if(sortDefinition[i].second == SortDirection::ASCENDING) {
-            return lhsVal <= rhsVal; //!FieldUtilities::gt(lhsVal, rhsVal);
+        if(sort_definition[i].second == SortDirection::ASCENDING) {
+            return lhs_field < rhs_field;
         }
-        else if(sortDefinition[i].second == SortDirection::DESCENDING) {
-             return lhsVal >  rhsVal;
+        else if(sort_definition[i].second == SortDirection::DESCENDING) {
+            return lhs_field >  rhs_field;
         }
     }
-    return true;
+    return true; // it's a toss-up, they are equal wrt sort fields
 }
 
-bool SecureSortTest::isSorted(const std::shared_ptr<PlainTable> & table, const SortDefinition & sortDefinition) {
+bool SecureSortTest::isSorted(const std::shared_ptr<PlainTable> & table, const SortDefinition & sort_definition) {
 
     for(uint32_t i = 1; i < table->getTupleCount(); ++i) {
 
-        PlainTuple previousTuple = table->getTuple(i-1);
-        PlainTuple thisTuple = table->getTuple(i);
+        PlainTuple previous = table->getTuple(i - 1);
+        PlainTuple current = table->getTuple(i);
 
-        if(!correctOrder(previousTuple, thisTuple, sortDefinition))  {
-            std::cout << "Incorrect order: " << previousTuple << " --> " << thisTuple << std::endl;
+        if(!correctOrder(previous, current, sort_definition))  {
+            std::cout << "Incorrect order: " << previous << " --> " << current << std::endl;
             return false;
         }// each tuple correctly ordered wrt its predecessor
 
@@ -72,19 +72,17 @@ TEST_F(SecureSortTest, tpchQ1Sort) {
     std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expectedResultSql = "WITH input AS ("
-            + sql
-            + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
+    string expected_results_sql = "WITH input AS ("
+                                  + sql
+                                  + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
 
 
-//    std::string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
-//    std::string expectedSql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= 10 ORDER BY l_returnflag, l_linestatus";
 
-    PsqlDataProvider dataProvider;
+    PsqlDataProvider provider;
 
-    std::shared_ptr<PlainTable>  inputTable = dataProvider.getQueryTable(db_name_,
-                                                                         sql, false);
+    std::shared_ptr<PlainTable>  input_table = provider.getQueryTable(db_name_,
+                                                                      sql, false);
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
@@ -110,12 +108,10 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
 
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
 
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate")  + " FROM input ORDER BY revenue DESC, o_orderdate";
-    shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
+    string expected_result_sql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
+    shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expected_result_sql, false);
 
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(1, SortDirection::DESCENDING);
-    sortDefinition.emplace_back(3, SortDirection::ASCENDING);
+    SortDefinition sortDefinition{ColumnSort (1, SortDirection::DESCENDING), ColumnSort (3, SortDirection::ASCENDING)};
 
 
     SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
@@ -146,14 +142,14 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
 TEST_F(SecureSortTest, tpchQ5Sort) {
 
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l WHERE l_orderkey <= 10  ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
+    string expected_results_sql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
 
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(1, SortDirection::DESCENDING);
+    SortDefinition sort_definition;
+    sort_definition.emplace_back(1, SortDirection::DESCENDING);
 
     SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-    Sort<emp::Bit> sort(&input, sortDefinition);
+    Sort<emp::Bit> sort(&input, sort_definition);
 
     ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
     builder.addMapping(1, 0);
@@ -180,7 +176,7 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
     std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  WHERE o_orderkey <= 10 ORDER BY o_comment, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_orderyear FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
+    string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
     shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
 
     SortDefinition sortDefinition;
@@ -193,10 +189,7 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
     ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
     builder.addMapping(0, 0);
 
-    Project project(&sort, builder.getExprs());
-
-    std::shared_ptr<SecureTable> result = project.run();
-    std::shared_ptr<PlainTable> observed  = result->reveal();
+    std::shared_ptr<PlainTable> observed  = sort.run()->reveal();
 
     // copy out the projected sort order
     expected->setSortOrder(observed->getSortOrder());
@@ -217,27 +210,19 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
 
 
 
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(2, SortDirection::ASCENDING);
-    sortDefinition.emplace_back(0, SortDirection::DESCENDING);
+    SortDefinition sort_definition;
+    sort_definition.emplace_back(2, SortDirection::ASCENDING);
+    sort_definition.emplace_back(0, SortDirection::DESCENDING);
 
 
     SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-    Sort sort(&input, sortDefinition);
-
-    // project it down to $2, $0
-    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
-    builder.addMapping(2, 0);
-    builder.addMapping(0, 1);
-
-    Project project(&sort, builder.getExprs());
+    Sort sort(&input, sort_definition);
 
 
-    std::shared_ptr<SecureTable> result = project.run();
-    std::shared_ptr<PlainTable> observed  = result->reveal();
+    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
 
 
-        ASSERT_TRUE(isSorted(observed, sortDefinition));
+    ASSERT_TRUE(isSorted(observed, sort_definition));
 
 
 
@@ -249,37 +234,20 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
     string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders WHERE o_orderkey <= 10 "
                  " ORDER BY o_comment, o_custkey, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_totalprice, " + DataUtilities::queryDatetime("o_orderdate") + "  FROM input ORDER BY o_totalprice DESC, o_orderdate";
 
 
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
-
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(2, SortDirection::DESCENDING);
-    sortDefinition.emplace_back(1, SortDirection::ASCENDING);
+    SortDefinition sort_definition;
+    sort_definition.emplace_back(2, SortDirection::DESCENDING);
+    sort_definition.emplace_back(1, SortDirection::ASCENDING);
 
     SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-    Sort<emp::Bit> sort(&input, sortDefinition);
+    Sort<emp::Bit> sort(&input, sort_definition);
+
+    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
 
 
-    // project it down to $2, $1
-    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
-    builder.addMapping(2, 0);
-    builder.addMapping(1, 1);
+    ASSERT_TRUE(isSorted(observed, sort_definition));
 
-    Project project(&sort, builder.getExprs());
-
-
-    std::shared_ptr<SecureTable> result = project.run();
-    std::shared_ptr<PlainTable> observed  = result->reveal();
-
-    // copy out the projected sort order
-    expected->setSortOrder(observed->getSortOrder());
-
-
-    // verify that first col is DESC, second is ASC
-
-        ASSERT_EQ(*expected, *observed);
 
 
 

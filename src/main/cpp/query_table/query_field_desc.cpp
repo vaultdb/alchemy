@@ -112,15 +112,14 @@ void QueryFieldDesc::initializeFieldSize() {
             BitPackingDefinition bit_packing_def = sys_config.getBitPackingSpec(table_name_, field_name_);
             if(bit_packing_def.min_ != -1) { // -1 signals it is a string or has some other non-integer domain
 
-                if (bit_packing_def.domain_size_ == (bit_packing_def.max_ - bit_packing_def.min_ + 1) ) {
+                if ((bit_packing_def.domain_size_ == (bit_packing_def.max_ - bit_packing_def.min_ + 1) )
+                  || (bit_packing_def.min_ >= 0 && bit_packing_def.max_ > bit_packing_def.min_)){ // sparser key space, happens with some of the < SF1 instance of TPC-H
                     field_min_ = bit_packing_def.min_;
-                    bit_packed_size_ = ceil(log2((float) bit_packing_def.domain_size_));
-                }
-                else if(bit_packing_def.min_ == 1 && bit_packing_def.max_ > bit_packing_def.min_) { // sparser key space, happens with some of the < SF1 instance of TPC-H
-                    field_min_ = 1;
                     bit_packed_size_ = ceil(log2((float) (bit_packing_def.max_ - bit_packing_def.min_ + 1)));
+                    if(bit_packed_size_ == 0) bit_packed_size_ = 1;
 
                 }
+
             }
 
 

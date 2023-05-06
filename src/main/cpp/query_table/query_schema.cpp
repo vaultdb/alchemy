@@ -122,7 +122,7 @@ void QuerySchema::initializeFieldOffsets()  {
     if(fields_.find(-1) != fields_.end()) --col_count;
     for(int i = 0; i < col_count; ++i) {
         QueryFieldDesc fd = fields_.at(i);
-        offsets_[fd.getOrdinal()] = running_offset;
+        offsets_[i] = running_offset;
         running_offset += fd.size();
 
     }
