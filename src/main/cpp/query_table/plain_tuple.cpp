@@ -1,6 +1,5 @@
 #include "plain_tuple.h"
 #include "field/field.h"
-#include "field/field_factory.h"
 
 
 using namespace vaultdb;
@@ -28,24 +27,23 @@ QueryTuple<bool>::QueryTuple(const std::shared_ptr<QuerySchema>  & query_schema,
 
 PlainField QueryTuple<bool>::getField(const int &ordinal)  {
     size_t field_offset = query_schema_->getFieldOffset(ordinal)/8;
-    QueryFieldDesc fieldDesc = query_schema_->getField(ordinal);
+    QueryFieldDesc field_desc = query_schema_->getField(ordinal);
 
-    return FieldFactory<bool>::deserialize(fieldDesc.getType(), fieldDesc.getStringLength(), fields_ + field_offset);
+    return Field<bool>::deserialize(field_desc, fields_ + field_offset);
 }
 
 
 const PlainField QueryTuple<bool>::getField(const int &ordinal) const {
     size_t field_offset = query_schema_->getFieldOffset(ordinal)/8;
-    QueryFieldDesc fieldDesc = query_schema_->getField(ordinal);
-    return FieldFactory<bool>::deserialize(fieldDesc.getType(), fieldDesc.getStringLength(), fields_ + field_offset);
+    QueryFieldDesc field_desc = query_schema_->getField(ordinal);
+    return Field<bool>::deserialize(field_desc, fields_ + field_offset);
 }
 
 
 void QueryTuple<bool>::setField(const int &idx, const PlainField &f) {
     size_t field_offset = query_schema_->getFieldOffset(idx)/8;
     int8_t *writePos = fields_ + field_offset;
-    f.serialize(writePos);
-
+    f.serialize(writePos, query_schema_->getField(idx));
 }
 
 void QueryTuple<bool>::setDummyTag(const bool &b) {

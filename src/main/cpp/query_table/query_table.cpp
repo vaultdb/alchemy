@@ -176,7 +176,6 @@ template <typename B>
 bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 
     assert(!isEncrypted()); // reveal this for tables in the clear
-    auto logger = vaultdb_logger::get();
 
     if(*getSchema() != *other.getSchema()) {
 
@@ -263,6 +262,8 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
     }
     netio->flush();
 
+    Bit *tmp = (Bit *) dst_table->tuple_data_.data();
+    std::cout << "After secret share, have first bits: " << tmp[0].reveal() << tmp[1].reveal() << std::endl;
 
     return dst_table;
 

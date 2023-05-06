@@ -216,9 +216,6 @@ B Field<B>::operator>=(const Field &r) const {
             li = boost::get<emp::Integer>(payload_);
             ri = boost::get<emp::Integer>(r.payload_);
 
-            li = FieldUtilities::addSignBit(li);
-            ri = FieldUtilities::addSignBit(ri);
-
             v = (li >= ri);
             return boost::get<B>(v);
         case FieldType::SECURE_FLOAT:
@@ -350,7 +347,7 @@ B Field<B>::operator==(const Field<B> &r) const {
 
 
 template<typename B>
-void Field<B>::serialize(int8_t *dst) const {
+void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
     assert(dst != nullptr);
 
     string s;
@@ -386,20 +383,24 @@ void Field<B>::serialize(int8_t *dst) const {
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
             si = boost::get<emp::Integer>(payload_);
-            memcpy(dst, (int8_t *) si.bits.data(), (si.size() - (si.size() != FieldUtilities::getExpectedSize(type_, string_length_))) * TypeUtilities::getEmpBitSize());
+            si = si - emp::Integer(si.size(), schema.getFieldMin());
+//            std::cout << "Serializing " << si.reveal<int32_t>() << " to " << schema.size() << " bits." << std::endl;
+            memcpy(dst, (int8_t *) si.bits.data(), schema.size() * TypeUtilities::getEmpBitSize());
             break;
         case FieldType::SECURE_FLOAT:
             sf = boost::get<emp::Float>(payload_);
-            memcpy(dst, (int8_t *) sf.value.data(), sf.size() * TypeUtilities::getEmpBitSize());
+            memcpy(dst, (int8_t *) sf.value.data(), 32* TypeUtilities::getEmpBitSize());
             break;
         default:
             throw;
     }
 }
 
+// does not need QueryFieldDesc - sending deserialized (unpacked) version of payload
 template<typename B>
 Value
 Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &field_desc, const int &party, const bool &send) {
+
 
 
     switch (f.type_) {
@@ -407,12 +408,14 @@ Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &field_des
             return emp::Bit(f.getValue<bool>(), party);
         case FieldType::INT:
             // + bitpacked to add one bit if we are padding it for two's complement
-            return emp::Integer(field_desc.size() + field_desc.bitPacked(),  (send) ?  boost::get<int32_t>(f.payload_) - field_desc.getFieldMin()
-                                                           : boost::get<int32_t>(f.payload_), party);
+            // full length because this is unpacked representation, don't need more than this because we'll do this in serialize()
+            return emp::Integer(32,  (send) ?  boost::get<int32_t>(f.payload_)
+                                            : 0, party);
+//            std::cout << "Secret sharing " << tmp << " from payload " << boost::get<int32_t>(f.payload_) << " " << tmp2.reveal<std::string>() <<  std::endl;
 
         case FieldType::LONG:
-            return emp::Integer(field_desc.size() + field_desc.bitPacked(),  (send) ?  boost::get<int64_t>(f.payload_) - field_desc.getFieldMin()
-                                                           : boost::get<int64_t>(f.payload_), party);
+            return emp::Integer(64,  (send) ?  boost::get<int64_t>(f.payload_)
+                                                           : 0L, party);
         case FieldType::STRING:
             return secretShareString(boost::get<string>(f.payload_), send, f.string_length_, party);
         case FieldType::FLOAT:
@@ -792,6 +795,80 @@ B Field<B>::operator||(const Field &cmp) const {
 }
 
 
+
+template<typename B>
+Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
+    FieldType type = desc.getType();
+
+    switch (type) {
+        case FieldType::BOOL: {
+            bool val = *((bool *) src);
+            return Field<B>(type, val);
+        }
+        case FieldType::INT: {
+            int32_t val = *((int32_t *) src);
+            return Field<B>(type, val);
+        }
+        case FieldType::DATE:
+        case FieldType::LONG: {
+            int64_t val = *((int64_t *) src);
+            return Field<B>(type, val);
+        }
+        case FieldType::FLOAT: {
+            float_t val = *((float_t *) src);
+            return Field<B>(type, val);
+        }
+
+        case FieldType::STRING: {
+            char *val = (char *) src;
+            std::string str(val, desc.getStringLength());
+            std::reverse(str.begin(), str.end());
+            return Field<B>(type, str, desc.getStringLength());
+
+        }
+        case FieldType::SECURE_BOOL: {
+            emp::Bit my_bit = *((Bit *)src);
+            return Field<B>(type, my_bit);
+        }
+        case FieldType::SECURE_INT: {
+            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
+            memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
+            std::cout << "Extracted payload " << payload.reveal<int32_t>() << " from " << desc.size() << " bits, into " << payload.size() << " bits " <<  payload.reveal<std::string>() << std::endl;
+
+            payload.resize(32);
+            emp::Integer unpacked(32, desc.getFieldMin(), PUBLIC); // secure_int = 32 bits
+            unpacked = unpacked + payload;
+            std::cout << "Deserialized into " << unpacked.reveal<int32_t>() << " payload " << unpacked.reveal<std::string>() << std::endl;
+            return Field<B>(type, unpacked);
+        }
+        case FieldType::SECURE_LONG: {
+            emp::Integer payload(desc.size(), 0);
+            memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
+            payload.resize(64);
+            emp::Integer unpacked(64, desc.getFieldMin(), PUBLIC); // secure_long = 64 bits
+            unpacked = unpacked + payload;
+            return Field<B>(type, unpacked);
+        }
+        case FieldType::SECURE_FLOAT: {
+            emp::Float v(0, emp::PUBLIC);
+            memcpy(v.value.data(), src, 32*TypeUtilities::getEmpBitSize() );
+            return Field<B>(type, v);
+        }
+
+        case FieldType::SECURE_STRING: {
+            size_t bitCount = desc.getStringLength() * 8;
+
+            emp::Integer v(bitCount, 0, emp::PUBLIC);
+            memcpy(v.bits.data(), src, TypeUtilities::getEmpBitSize()*bitCount);
+            return Field<B>(type, v, bitCount / 8);
+
+        }
+        default:
+            throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by deserialize()!");
+
+    }
+
+}
 
 
 

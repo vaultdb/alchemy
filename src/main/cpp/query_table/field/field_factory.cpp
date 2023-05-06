@@ -189,36 +189,6 @@ PlainField FieldFactory<bool>::getMax(const FieldType & type) {
 
 }
 
-PlainField FieldFactory<bool>::deserialize(const FieldType &type, const size_t &strLength, const int8_t *src) {
-    switch (type) {
-        case FieldType::BOOL: {
-            bool val = *((bool *) src);
-            return PlainField(type, val);
-        }
-        case FieldType::INT: {
-            int32_t val = *((int32_t *) src);
-            return PlainField(type, val);
-        }
-        case FieldType::DATE:
-        case FieldType::LONG: {
-            int64_t val = *((int64_t *) src);
-            return PlainField(type, val);
-        }
-        case FieldType::FLOAT: {
-            float_t val = *((float_t *) src);
-            return PlainField(type, val);
-        }
-
-        case FieldType::STRING: {
-            char *val = (char *) src;
-            std::string str(val, strLength);
-            std::reverse(str.begin(), str.end());
-            return PlainField(type, str, strLength);
-        }
-        default:
-            throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<bool>::deserialize()!");
-    }
-}
 
 
 
@@ -314,52 +284,6 @@ SecureField FieldFactory<emp::Bit>::toInt(const SecureField &src) {
 
 }
 
-
-SecureField
-FieldFactory<emp::Bit>::deserialize(const QueryFieldDesc &desc, const emp::Bit *src) {
-    {
-        FieldType type = desc.getType();
-        switch (type) {
-            case FieldType::SECURE_BOOL: {
-                emp::Bit myBit = *src;
-                return SecureField(type, myBit);
-            }
-            case FieldType::SECURE_INT: {
-                emp::Integer payload(desc.size() + desc.bitPacked(), 0);
-                memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
-                payload.resize(32);
-                emp::Integer unpacked(32, desc.getFieldMin(), PUBLIC); // secure_int = 32 bits
-                unpacked = unpacked + payload;
-                return SecureField(type, unpacked);
-            }
-            case FieldType::SECURE_LONG: {
-                emp::Integer payload(desc.size(), 0);
-                memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
-                payload.resize(64);
-                emp::Integer unpacked(64, desc.getFieldMin(), PUBLIC); // secure_long = 64 bits
-                unpacked = unpacked + payload;
-                return SecureField(type, unpacked);
-            }
-            case FieldType::SECURE_FLOAT: {
-                emp::Float v(0, emp::PUBLIC);
-                memcpy(v.value.data(), src, 32*TypeUtilities::getEmpBitSize() );
-                return SecureField(type, v);
-            }
-
-            case FieldType::SECURE_STRING: {
-                size_t bitCount = desc.getStringLength() * 8;
-
-                emp::Integer v(bitCount, 0, emp::PUBLIC);
-                memcpy(v.bits.data(), src, TypeUtilities::getEmpBitSize()*bitCount);
-                return SecureField(type, v, bitCount / 8);
-
-            }
-            default:
-                throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by FieldFactory<emp::Bit>::deserialize()!");
-        }
-
-    }
-}
 
 
 SecureField FieldFactory<emp::Bit>::getMin(const FieldType & type) {

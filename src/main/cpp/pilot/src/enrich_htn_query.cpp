@@ -17,8 +17,7 @@ EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & c
   // takes in shared_schema
     shared_ptr<SecureTable> filtered = filterPatients();
     shared_ptr<SecureTable> projected = projectPatients(filtered);
-    auto logger = vaultdb_logger::get();
-    BOOST_LOG(logger) << "Completed deduplication and exclusion at epoch " << Utilities::getEpoch() << endl;
+    cout << "Completed deduplication and exclusion at epoch " << Utilities::getEpoch() << endl;
     aggregatePatients(projected);
     filtered.reset();
     projected.reset();
@@ -28,7 +27,6 @@ EnrichHtnQuery::EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & c
 
 // input schema: study_year (0), pat_id (1),  age_strata (2), sex (3), ethnicity (4), race (5), numerator (6), denominator (7), denom_excl (8)
 shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
-    auto logger = vaultdb_logger::get();
 
     // sort it on group-by cols to prepare for aggregate
     // TODO: integrate this with the unioning step.  See UnionHybridData for more on this
@@ -60,7 +58,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     shared_ptr<SecureTable> aggregated = unionedPatients.run();
 
     double runtime = emp::time_from(start_time);
-    BOOST_LOG(logger) << "Runtime for aggregate #1 (patid): " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
+    cout << "Runtime for aggregate #1 (patid): " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
     sorted.reset();
 
     // filter ones with denom_excl = 1
@@ -80,7 +78,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
     shared_ptr<SecureTable> output =   inclusionCohort.run();
     runtime = emp::time_from(start_time);
-    BOOST_LOG(logger) << "Runtime for filter: " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
+    cout << "Runtime for filter: " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
 
     aggregated.reset();
     return output;
@@ -134,14 +132,13 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
       builder.addExpression(multisiteDenominatorExpression, 8);
 
       auto start_time = emp::clock_start();
-      auto logger = vaultdb_logger::get();
 
       Project project(src, builder.getExprs());
 
     shared_ptr<SecureTable> projected =  project.run();
 
       double runtime = emp::time_from(start_time);
-      BOOST_LOG(logger) << "Runtime for projection: " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
+      cout << "Runtime for projection: " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
 
 
       return projected;
@@ -150,14 +147,13 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 // input schema: study_years (0), age_strata (1), sex (2), ethnicity (3), race (4), numerator (5), denominator (6), denom_multisite (7), numerator_multisite (8)
 void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
     auto start_time = emp::clock_start();
-    auto logger = vaultdb_logger::get();
 
     // sort it on cols [0,6)
     Sort sort(src, DataUtilities::getDefaultSortDefinition(5));
     shared_ptr<SecureTable> sorted = sort.run();
     src.reset();
 
-    Logger::write("Finished sort for data cube.");
+    cout << "Finished sort for data cube.\n";
 
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
@@ -180,7 +176,7 @@ void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
         Shrinkwrap wrapper(data_cube_, cardinality_bound_);
         data_cube_ = wrapper.run();
         double runtime = emp::time_from(start_time);
-        BOOST_LOG(logger) << "Runtime for aggregate #2 (data cube): " << (runtime + 0.0) * 1e6 * 1e-9 << " secs."
+        cout << "Runtime for aggregate #2 (data cube): " << (runtime + 0.0) * 1e6 * 1e-9 << " secs."
                           << endl;
     }
 
@@ -190,7 +186,6 @@ void EnrichHtnQuery::aggregatePatients( shared_ptr<SecureTable> &src) {
 // input schema: study_year (0), age_strata (1), sex (2), ethnicity (3), race (4), numerator (5),  denominator (6), denom_multisite (7), numerator_multisite (8) - last 4 cols are ints
 shared_ptr<SecureTable> EnrichHtnQuery::aggregatePartialPatientCounts( shared_ptr<SecureTable> &src, const size_t & cardinality_bound) {
     auto start_time = emp::clock_start();
-    auto logger = vaultdb_logger::get();
 
 
     // sort it on cols [0,6)
@@ -219,7 +214,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::aggregatePartialPatientCounts( shared_pt
     double runtime = emp::time_from(start_time);
 
 
-    BOOST_LOG(logger) << "Runtime for partial counts rollup: " <<  (runtime+0.0)*1e6*1e-9 << " secs at epoch " <<  Utilities::getEpoch() << endl;
+    cout << "Runtime for partial counts rollup: " <<  (runtime+0.0)*1e6*1e-9 << " secs at epoch " <<  Utilities::getEpoch() << endl;
 
     return dst;
 

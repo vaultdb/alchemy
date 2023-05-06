@@ -108,8 +108,10 @@ void QueryFieldDesc::initializeFieldSize() {
         // only serves ints and longs for now
         if (type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG
              || type_ == FieldType::INT || type_ == FieldType::LONG) { // it will be trickier to do this with unencrypted INTs, plus not as crucial for our experiments.
+
             SystemConfiguration &sys_config = SystemConfiguration::getInstance();
             BitPackingDefinition bit_packing_def = sys_config.getBitPackingSpec(table_name_, field_name_);
+
             if(bit_packing_def.min_ != -1) { // -1 signals it is a string or has some other non-integer domain
 
                 if ((bit_packing_def.domain_size_ == (bit_packing_def.max_ - bit_packing_def.min_ + 1) )

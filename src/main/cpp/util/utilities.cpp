@@ -5,6 +5,7 @@
 #include <boost/stacktrace.hpp>
 #include <iostream>
 #include <filesystem>
+#include <sstream>
 
 #ifndef PATH_MAX
 #define PATH_MAX (4096)
@@ -36,29 +37,34 @@ std::string Utilities::getCurrentWorkingDirectory() {
 
 // From Chenkai Li's EMP memory instrumentation
 
-void Utilities::checkMemoryUtilization(const std::string & msg, const logging::trivial::severity_level & severity) {
-    Logger::write("Checking memory utilization after " + msg, severity);
+void Utilities::checkMemoryUtilization(const std::string & msg) {
+    Logger::write("Checking memory utilization after " + msg);
     Utilities::checkMemoryUtilization();
 }
 
-void Utilities::checkMemoryUtilization(const logging::trivial::severity_level & severity) {
-    auto logger = vaultdb_logger::get();
+void Utilities::checkMemoryUtilization() {
 
   // get current time in epoch
   uint64_t epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    
+  std::stringstream s;
 
 #if defined(__linux__)
     struct rusage rusage;
-	if (!getrusage(RUSAGE_SELF, &rusage))
-	  BOOST_LOG_SEV(logger, severity) << "[Linux]Peak resident set size: " << (size_t)rusage.ru_maxrss <<  " bytes, at epoch " <<  epoch << " ms" <<  std::endl;
+	if (!getrusage(RUSAGE_SELF, &rusage)) {
+        s << "[Linux]Peak resident set size: " << (size_t) rusage.ru_maxrss << " bytes, at epoch " << epoch << " ms"
+          << std::endl;
+        Logger::write(s.str());
+
+    }
 	else
-        Logger::write("[Linux]Query RSS failed", severity);
+        Logger::write("[Linux]Query RSS failed");
 #elif defined(__APPLE__)
     struct mach_task_basic_info info;
     mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
-    if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) == KERN_SUCCESS)
-        BOOST_LOG_SEV(logger, severity) << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max << " bytes, current memory size: " << (size_t)info.resident_size  <<  " at epoch " << epoch << " ms" << std::endl;
+    if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) == KERN_SUCCESS) {
+        s << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max << " bytes, current memory size: " << (size_t)info.resident_size  <<  " at epoch " << epoch << " ms";
+         Logger::write(s.str());
+    }
     else Logger::write("[Mac]Query RSS failed", severity);
 #endif
 
@@ -167,8 +173,7 @@ void Utilities::printTree(const boost::property_tree::ptree &pt, const std::stri
 
     boost::property_tree::ptree::const_iterator end = pt.end();
     for (boost::property_tree::ptree::const_iterator it = pt.begin(); it != end; ++it) {
-        auto logger = vaultdb_logger::get();
-        BOOST_LOG_SEV(logger, logging::trivial::severity_level::info) << prefix <<  it->first << ": " << it->second.get_value<std::string>() << std::endl;
+        std::cout << prefix <<  it->first << ": " << it->second.get_value<std::string>() << std::endl;
         printTree(it->second, prefix + "   ");
     }
 }

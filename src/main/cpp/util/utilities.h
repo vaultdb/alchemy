@@ -31,9 +31,9 @@ namespace vaultdb {
     public:
 
         static std::string getCurrentWorkingDirectory();
-        static void checkMemoryUtilization(const std::string & msg, const logging::trivial::severity_level & severity = logging::trivial::severity_level::debug);
+        static void checkMemoryUtilization(const std::string & msg);
 
-        static void checkMemoryUtilization(const logging::trivial::severity_level & severity = logging::trivial::severity_level::debug);
+        static void checkMemoryUtilization();
 
         static std::string getStackTrace();
 

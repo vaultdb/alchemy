@@ -14,8 +14,7 @@ void EmpBaseTest::SetUp()  {
     string party_name = (FLAGS_party == 1) ? "alice"  : "bob";
     Logger::setup("vaultdb-" + party_name);
 
-    auto logger = vaultdb_logger::get();
-    BOOST_LOG_SEV(logger, logging::trivial::severity_level::debug) << "Connecting to " << FLAGS_alice_host << " on port " << FLAGS_port << " as " << FLAGS_party << std::endl;
+    std::cout << "Connecting to " << FLAGS_alice_host << " on port " << FLAGS_port << " as " << FLAGS_party << std::endl;
 
     netio_ =  new emp::NetIO(FLAGS_party == emp::ALICE ? nullptr : FLAGS_alice_host.c_str(), FLAGS_port);
     emp::setup_semi_honest(netio_, FLAGS_party, 1024 * 16);

@@ -30,7 +30,6 @@ auto cumulative_runtime = emp::time_from(start_time);
 shared_ptr<SecureTable>
 runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube, const std::string & selection_clause, const string &output_path) {
     auto start_time = emp::clock_start();
-    auto logger = vaultdb_logger::get();
     shared_ptr<SecureTable> stratified = PilotUtilities::rollUpAggregate(data_cube, idx);
 
     std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
@@ -72,7 +71,7 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
     auto delta = time_from(start_time);
     cumulative_runtime += delta;
 
-    BOOST_LOG(logger) <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime << " epoch " << Utilities::getEpoch() <<  endl;
+    cout <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime << " epoch " << Utilities::getEpoch() <<  endl;
 
 
     return stratified;
@@ -224,13 +223,13 @@ int main(int argc, char **argv) {
 
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
     // TODO: parameterize the default logging level
-    Logger::setup(logfile_prefix);
-    auto logger = vaultdb_logger::get();
+//    Logger::setup(logfile_prefix);
+//    auto logger = vaultdb_logger::get();
 
     QuerySchema schema = SharedSchema::getInputSchema();
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
-    BOOST_LOG(logger) << "Starting epoch " << Utilities::getEpoch() << endl;
+    cout << "Starting epoch " << Utilities::getEpoch() << endl;
     auto e2e_start_time = emp::clock_start();
 
 
@@ -267,7 +266,7 @@ int main(int argc, char **argv) {
 
 
 
-    BOOST_LOG(logger) << "***Read input on " << party << " in " <<    (cumulative_runtime + 0.0) *1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
+    cout << "***Read input on " << party << " in " <<    (cumulative_runtime + 0.0) *1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
     start_time = emp::clock_start();
 
     // create output dir:
@@ -281,7 +280,7 @@ int main(int argc, char **argv) {
     cumulative_runtime += time_from(start_time);
     measurements += "," + std::to_string(Utilities::getEpoch());
 
-    BOOST_LOG(logger) << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
+    cout << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
 
     if(semijoin_optimization) {
         // add in the 1-site PIDs
@@ -320,7 +319,7 @@ int main(int argc, char **argv) {
     }
     measurements += "," + std::to_string(Utilities::getEpoch());
 
-    BOOST_LOG(logger) << "Completed unioning for semijoin at epoch " << Utilities::getEpoch() << endl;
+    cout << "Completed unioning for semijoin at epoch " << Utilities::getEpoch() << endl;
 
     shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich.data_cube_, year_selection, output_path);
     shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich.data_cube_, year_selection, output_path);
@@ -331,23 +330,23 @@ int main(int argc, char **argv) {
 
     measurements += "," + std::to_string(Utilities::getEpoch());
 
-    BOOST_LOG(logger) << "Ending epoch " << Utilities::getEpoch() << endl;
-    BOOST_LOG(logger) <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
+    cout << "Ending epoch " << Utilities::getEpoch() << endl;
+    cout <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
     cout << measurements << endl;
-    BOOST_LOG(logger) <<  measurements <<  endl;
+    cout <<  measurements <<  endl;
 /*
-    BOOST_LOG(logger)  << "Age rollup: " << endl;
-    BOOST_LOG(logger)  << ageRollup->reveal()->toString() << endl;
+    cout  << "Age rollup: " << endl;
+    cout  << ageRollup->reveal()->toString() << endl;
 
-    BOOST_LOG(logger)  << "Sex rollup: " << endl;
-    BOOST_LOG(logger)  << genderRollup->reveal()->toString() << endl;
+    cout  << "Sex rollup: " << endl;
+    cout  << genderRollup->reveal()->toString() << endl;
 
 
-    BOOST_LOG(logger)  << "Ethnicity rollup: " << endl;
-    BOOST_LOG(logger)  << ethnicityRollup->reveal()->toString() << endl;
+    cout  << "Ethnicity rollup: " << endl;
+    cout  << ethnicityRollup->reveal()->toString() << endl;
 
-    BOOST_LOG(logger)  << "Race rollup: " << endl;
-    BOOST_LOG(logger)  << raceRollup->reveal()->toString() << endl;
+    cout  << "Race rollup: " << endl;
+    cout  << raceRollup->reveal()->toString() << endl;
 */
     emp::finalize_semi_honest();
 

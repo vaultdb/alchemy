@@ -36,7 +36,6 @@ std::string getRollupExpectedResultsSql(const std::string &groupByColName) {
 shared_ptr<SecureTable>
 runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & data_cube, const string & selection_clause,  const string &output_path) {
     auto start_time = emp::clock_start();
-    auto logger = vaultdb_logger::get();
 
     SortDefinition sortDefinition{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(idx, SortDirection::ASCENDING)};
     Sort sort(data_cube, sortDefinition);
@@ -96,7 +95,7 @@ runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & dat
     auto delta = time_from(start_time);
     cumulative_runtime += delta;
 
-    BOOST_LOG(logger) <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime << "epoch " << Utilities::getEpoch() << endl;
+    cout <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime << "epoch " << Utilities::getEpoch() << endl;
 
 
     return stratified;
@@ -129,8 +128,8 @@ int main(int argc, char **argv) {
     int study_length = PilotUtilities::getStudyLength(year);
     size_t cardinality_bound = 441*study_length;
 
-    Logger::setup(logger_prefix);
-    auto logger = vaultdb_logger::get();
+    //Logger::setup(logger_prefix);
+    //auto logger = vaultdb_logger::get();
 
 
 
@@ -138,7 +137,7 @@ int main(int argc, char **argv) {
     NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
     setup_semi_honest(netio, party,  port);
     uint64_t epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    BOOST_LOG(logger) << "Starting epoch " << epoch << endl;
+    cout<< "Starting epoch " << epoch << endl;
 
     shared_ptr<SecureTable> alice, bob, chi;
 
@@ -203,10 +202,10 @@ int main(int argc, char **argv) {
     shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, data_cube, year_selection, output_path);
 
     double runtime = time_from(start_time);
-    BOOST_LOG(logger) <<  "Test completed on " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
+    cout <<  "Test completed on " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
 
     epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    BOOST_LOG(logger) << "Ending epoch " << epoch << endl;
+    cout  << "Ending epoch " << epoch << endl;
 /*
     BOOST_LOG(logger) << "Age rollup: " << endl;
     BOOST_LOG(logger) << ageRollup->reveal()->toString() << endl;

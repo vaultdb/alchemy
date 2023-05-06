@@ -12,10 +12,7 @@ namespace vaultdb {
     class ScalarAggregateImpl {
     public:
         ScalarAggregateImpl(const uint32_t & ordinal, const QueryFieldDesc &def) : ordinal_(ordinal),
-            column_def_(def), type_(def.getType()),  zero_(FieldFactory<B>::getZero(type_)),   one_(FieldFactory<B>::getOne(type_)) {
-            std::cout << "Zero impl " << ScalarAggregateImpl<B>::zero_.reveal() << '\n';
-
-        }
+            column_def_(def), type_(def.getType()),  zero_(FieldFactory<B>::getZero(type_)),   one_(FieldFactory<B>::getOne(type_)) {}
         virtual ~ScalarAggregateImpl() = default;
         virtual void accumulate(const QueryTuple<B> & tuple) = 0;
         virtual  Field<B> getResult() const = 0;

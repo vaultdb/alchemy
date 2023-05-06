@@ -40,7 +40,7 @@ find_library(DL dl)
 
 #depends on pqxx v6.2.5
 find_library(PQXX_LIBRARY pqxx)
-find_package(Boost REQUIRED COMPONENTS date_time system log log_setup program_options)
+find_package(Boost REQUIRED COMPONENTS date_time system program_options)
 
 find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 

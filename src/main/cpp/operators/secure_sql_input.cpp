@@ -1,3 +1,4 @@
+#include <boost/algorithm/string/replace.hpp>
 #include "secure_sql_input.h"
 #include "util/field_utilities.h"
 
@@ -22,6 +23,11 @@ shared_ptr<SecureTable> SecureSqlInput::runSelf() {
 
     // secret share it
     output_ = PlainTable::secretShare(*plain_input_, netio_, src_party_);
+    // first 2 rows = 32 bits
+    emp::Integer tmp(32, 0);
+    memcpy(tmp.bits.data(), output_->tuple_data_.data(), 32*TypeUtilities::getEmpBitSize());
+    std::cout << "Payload for first two tuples: " << tmp.reveal<string>() << std::endl;
+
     return output_;
 }
 
@@ -38,6 +44,7 @@ void SecureSqlInput::runQuery() {
     plain_input_ = dataProvider.getQueryTable(db_name_, input_query_, has_dummy_tag_);
     plain_input_->setSortOrder(getSortOrder());
 
+    std::cout << "Input table for party: " << *plain_input_ << std::endl;
 
 }
 

@@ -79,8 +79,8 @@ namespace vaultdb {
         static BitPackingMetadata getBitPackingMetadata(const std::string & db_name);
 
         static inline emp::Integer addSignBit(const emp::Integer & src) {
-            emp::Integer dst(src.size() + 1, 0, PUBLIC);
-            memcpy(dst.bits.data(), src.bits.data(), src.size() * TypeUtilities::getEmpBitSize());
+            emp::Integer dst(src);
+            dst.resize(src.bits.size() + 1);
             return dst;
         }
 

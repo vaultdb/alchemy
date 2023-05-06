@@ -93,9 +93,9 @@ namespace vaultdb {
 
         std::string toString() const;
 
-        void serialize(int8_t *dst) const;
+        void serialize(int8_t *dst, const QueryFieldDesc &schema) const;
 
-
+        static Field<B> deserialize(const QueryFieldDesc &desc, const int8_t *src);
 
 
 

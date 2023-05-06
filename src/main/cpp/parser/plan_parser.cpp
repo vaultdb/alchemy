@@ -21,7 +21,6 @@
 #include <operators/project.h>
 #include <operators/join.h>
 #include <parser/expression_parser.h>
-#include <util/logger.h>
 
 using namespace vaultdb;
 using boost::property_tree::ptree;

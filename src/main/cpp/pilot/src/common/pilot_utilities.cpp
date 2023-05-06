@@ -82,7 +82,7 @@ void PilotUtilities::validateInputTable(const std::string & dbName, const std::s
 
     bool res = (*expectedTable == *observedTable);
     if(!res) {
-        BOOST_LOG(vaultdb_logger::get()) << "Failed to match at " << Utilities::getStackTrace() << endl;
+        cout << "Failed to match at " << Utilities::getStackTrace() << endl;
     }
     assert(res);
 
@@ -103,7 +103,7 @@ void PilotUtilities::secretShareFromQuery(const string &db_name, const string &q
     std::shared_ptr<PlainTable> table = DataUtilities::getQueryResults(db_name, query, false);
     SecretShares shares = table->generateSecretShares();
 
-    BOOST_LOG(vaultdb_logger::get())  << "Secret sharing " << table->getTupleCount() << " rows."; //" tuples from query " << query << " on " << db_name << endl;
+    cout << "Secret sharing " << table->getTupleCount() << " rows."; //" tuples from query " << query << " on " << db_name << endl;
 
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
     DataUtilities::writeFile(dst_root + ".bob", shares.second);

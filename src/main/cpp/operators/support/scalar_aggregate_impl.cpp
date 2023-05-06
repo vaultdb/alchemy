@@ -57,17 +57,17 @@ FieldType ScalarSumImpl<B>::getType() const {
 
 template<typename B>
 ScalarMinImpl<B>::ScalarMinImpl(const uint32_t &ordinal, const QueryFieldDesc & def):ScalarAggregateImpl<B>(ordinal, def) {
-    if(def.size() != TypeUtilities::getTypeSize(def.getType())) { // if we are dealing with bit packing, has to be int or long
-            emp::Integer t(def.size(), 0, PUBLIC);
-            emp::Bit *b = t.bits.data();
-            emp::Bit tr(1, PUBLIC);
-            for(int i = 0; i < def.size(); ++i) {
-                   *b = tr; // set to max
-                   ++b;
-            }
-        running_min_ = Field<B>(def.getType(), t, 0);
-    }
-    else
+//    if(def.size() != TypeUtilities::getTypeSize(def.getType())) { // if we are dealing with bit packing, has to be int or long
+//            emp::Integer t(def.size(), 0, PUBLIC);
+//            emp::Bit *b = t.bits.data();
+//            emp::Bit tr(1, PUBLIC);
+//            for(int i = 0; i < def.size(); ++i) {
+//                   *b = tr; // set to max
+//                   ++b;
+//            }
+//        running_min_ = Field<B>(def.getType(), t, 0);
+//    }
+//    else
         running_min_ = FieldFactory<B>::getMax(def.getType());
 
 }
@@ -88,18 +88,19 @@ template<typename B>
 template<typename B>
 ScalarMaxImpl<B>::ScalarMaxImpl(const uint32_t &ordinal, const QueryFieldDesc & def):ScalarAggregateImpl<B>(ordinal, def) {
 
-    if(def.size() != TypeUtilities::getTypeSize(def.getType())) { // if we are dealing with bit packing, has to be int or long
-        emp::Integer t(def.size(), 0, PUBLIC);
-        running_max_ = Field<B>(def.getType(), t, 0);
-    }
-    else
+//    if(def.size() != TypeUtilities::getTypeSize(def.getType())) { // if we are dealing with bit packing, has to be int or long
+//        emp::Integer t(def.size(), 0, PUBLIC);
+//        running_max_ = Field<B>(def.getType(), t, 0);
+//    }
+//    else
         running_max_ = FieldFactory<B>::getMin(def.getType());
-    std::cout << "Starting with max: " << running_max_ << std::endl;
+    std::cout << "Starting with max: " << running_max_.reveal() << std::endl;
 }
 
 template<typename B>
 void ScalarMaxImpl<B>::accumulate(const QueryTuple<B> &tuple) {
     Field<B> agg_input = tuple.getField(ScalarAggregateImpl<B>::ordinal_);
+    std::cout << "Accumulating over " << agg_input.reveal() << std::endl;
     running_max_ = Field<B>::If((agg_input <= running_max_) | tuple.getDummyTag(), running_max_, agg_input);
 
 }
