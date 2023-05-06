@@ -34,13 +34,11 @@ template<typename B>
 void ScalarSumImpl<B>::accumulate(const QueryTuple<B> &tuple) {
     Field<B> agg_input = tuple.getField(ScalarAggregateImpl<B>::ordinal_);
     running_sum_ = Field<B>::If(tuple.getDummyTag(), running_sum_, running_sum_ + agg_input);
-    std::cout << "Accumulating sum: " << running_sum_.reveal() << " added " << agg_input.reveal() << '\n';
 
 }
 
 template<typename B>
  Field<B> ScalarSumImpl<B>::getResult() const {
-    std::cout << "Returning sum: " << running_sum_.reveal() << '\n';
     // extend this to a LONG to keep with PostgreSQL convention
    // if(running_sum_.getType() == FieldType::INT || running_sum_.getType() == FieldType::SECURE_INT)
     //    return FieldFactory<B>::toLong(running_sum_);
@@ -94,13 +92,11 @@ ScalarMaxImpl<B>::ScalarMaxImpl(const uint32_t &ordinal, const QueryFieldDesc & 
 //    }
 //    else
         running_max_ = FieldFactory<B>::getMin(def.getType());
-    std::cout << "Starting with max: " << running_max_.reveal() << std::endl;
 }
 
 template<typename B>
 void ScalarMaxImpl<B>::accumulate(const QueryTuple<B> &tuple) {
     Field<B> agg_input = tuple.getField(ScalarAggregateImpl<B>::ordinal_);
-    std::cout << "Accumulating over " << agg_input.reveal() << std::endl;
     running_max_ = Field<B>::If((agg_input <= running_max_) | tuple.getDummyTag(), running_max_, agg_input);
 
 }

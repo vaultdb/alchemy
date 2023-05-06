@@ -833,12 +833,12 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
         case FieldType::SECURE_INT: {
             emp::Integer payload(desc.size() + desc.bitPacked(), 0);
             memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
-            std::cout << "Extracted payload " << payload.reveal<int32_t>() << " from " << desc.size() << " bits, into " << payload.size() << " bits " <<  payload.reveal<std::string>() << std::endl;
+//            std::cout << "Extracted payload " << payload.reveal<int32_t>() << " from " << desc.size() << " bits, into " << payload.size() << " bits " <<  payload.reveal<std::string>() << std::endl;
 
             payload.resize(32);
             emp::Integer unpacked(32, desc.getFieldMin(), PUBLIC); // secure_int = 32 bits
             unpacked = unpacked + payload;
-            std::cout << "Deserialized into " << unpacked.reveal<int32_t>() << " payload " << unpacked.reveal<std::string>() << std::endl;
+//            std::cout << "Deserialized into " << unpacked.reveal<int32_t>() << " payload " << unpacked.reveal<std::string>() << std::endl;
             return Field<B>(type, unpacked);
         }
         case FieldType::SECURE_LONG: {

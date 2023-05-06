@@ -25,7 +25,6 @@ ScalarAggregate<B>::ScalarAggregate(shared_ptr<QueryTable<B>> child,
 template<typename B>
 std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = ScalarAggregate<B>::children_[0]->getOutput();
-    std::cout << "Input array: " << *input->reveal() << std::endl;
 
     QueryTuple<B> tuple(input->getSchema());
     Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(
@@ -44,10 +43,7 @@ std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
 
     for(size_t i = 0; i < aggregators_.size(); ++i) {
         Field f = aggregators_[i]->getResult();
-        std::cout << "Aggregator produced output:" << f.reveal() << '\n';
-        std::cout << "Output schema: " << Operator<B>::output_schema_.getField(i) << ", size " << Operator<B>::output_schema_.getField(i).size() << std::endl;
         outputTuple.setField(i, f);
-        std::cout << "Output tuple: " << outputTuple.getField(i).reveal() << '\n';
     }
 
     Operator<B>::output_->putTuple(0, outputTuple);
@@ -107,7 +103,6 @@ void  ScalarAggregate<B>::setup() {
         }
 
     Operator<B>::output_schema_.initializeFieldOffsets();
-    std::cout << "Output schema: " << Operator<B>::output_schema_ << std::endl;
 
     }
 

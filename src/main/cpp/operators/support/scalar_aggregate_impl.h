@@ -47,8 +47,6 @@ namespace vaultdb {
     public:
         ScalarSumImpl(const uint32_t & ordinal, const QueryFieldDesc & def) : ScalarAggregateImpl<B>(ordinal, def), running_sum_(ScalarAggregateImpl<B>::zero_) {
             ScalarAggregateImpl<B>::column_def_.setSize(TypeUtilities::getTypeSize(ScalarAggregateImpl<B>::type_));
-            std::cout << "Starting sum: " << running_sum_.reveal() << '\n';
-            std::cout << "Zero: " << ScalarAggregateImpl<B>::zero_.reveal() << '\n';
         }
         ~ScalarSumImpl() = default;
         void accumulate(const QueryTuple<B> & tuple) override;

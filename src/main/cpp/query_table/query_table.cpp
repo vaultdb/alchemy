@@ -262,9 +262,6 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
     }
     netio->flush();
 
-    Bit *tmp = (Bit *) dst_table->tuple_data_.data();
-    std::cout << "After secret share, have first bits: " << tmp[0].reveal() << tmp[1].reveal() << std::endl;
-
     return dst_table;
 
 }

@@ -41,7 +41,7 @@ SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  {
 const SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  const {
     size_t field_offset = query_schema_->getFieldOffset(ordinal);
     const emp::Bit *read_ptr = fields_ + field_offset;
-    std::cout << "Getting field " << ordinal << " from offset " << field_offset << std::endl;
+//    std::cout << "Getting field " << ordinal << " from offset " << field_offset << std::endl;
     QueryFieldDesc fieldDesc = query_schema_->getField(ordinal);
     return Field<emp::Bit>::deserialize(query_schema_->getField(ordinal),
                                         (int8_t *)  read_ptr);
