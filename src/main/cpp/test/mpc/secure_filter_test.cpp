@@ -23,26 +23,26 @@ class SecureFilterTest : public EmpBaseTest {};
 
 
 
-//TEST_F(SecureFilterTest, test_table_scan) {
-//
-//    std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
-//
-//    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
-//    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, false);
-//
-//    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-//
-//    std::shared_ptr<SecureTable> output = input.run(); // a smoke test for the operator infrastructure
-//
-//    std::unique_ptr<PlainTable> revealed = output->reveal(emp::PUBLIC);
-//
-//
-//        ASSERT_EQ(*expected, *revealed);
-//
-//
-//
-//}
-//
+TEST_F(SecureFilterTest, test_table_scan) {
+
+    std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
+
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
+    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, false);
+
+    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
+
+    std::shared_ptr<SecureTable> output = input.run(); // a smoke test for the operator infrastructure
+
+    std::unique_ptr<PlainTable> revealed = output->reveal(emp::PUBLIC);
+
+
+        ASSERT_EQ(*expected, *revealed);
+
+
+
+}
+
 
 
 
@@ -58,9 +58,6 @@ TEST_F(SecureFilterTest, test_filter) {
 
 
    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-
-   // bit packing schema:
-   // (#0 encrypted-int32(13) lineitem.l_orderkey, #1 encrypted-int32(3) lineitem.l_linenumber, #2 encrypted-varchar(1) lineitem.l_linestatus)
 
     // expression setup
     // filtering for l_linenumber = 1

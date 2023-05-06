@@ -140,8 +140,6 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
     for(uint32_t i = 0; i < rhs_table->getTupleCount(); ++i) {
         rhs_tuple = (*rhs_table)[i];
         rhs_dummy_tag = rhs_tuple.getDummyTag();
-      //  std::cout << "Processing output tuple " << i << '\n';
-
 
         // for first tuple comparison, initialize output tuple -- just in case there are no matches
         lhs_tuple = lhs_table->getTuple(0);
@@ -154,7 +152,6 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
         joined = dst_tuple;
 
         predicate_eval = Join<B>::predicate_.callBoolExpression(joined);
-//        predicate_eval = Join<B>::predicate_.call(lhs_tuple, rhs_tuple, output_schema);
         dst_dummy_tag = (!predicate_eval) | lhs_dummy_tag | rhs_dummy_tag;
 
 
@@ -166,7 +163,6 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
             lhs_dummy_tag = lhs_tuple.getDummyTag();
             Join<B>::write_left(true, joined, lhs_tuple);
 
-//            predicate_eval = Join<B>::predicate_.call(lhs_tuple, rhs_tuple, output_schema);
             predicate_eval = Join<B>::predicate_.callBoolExpression(joined);
 
             dst_dummy_tag =  (!predicate_eval) | lhs_dummy_tag | rhs_dummy_tag;

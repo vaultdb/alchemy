@@ -85,14 +85,11 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
 
 void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple & dst_tuple, const int & party) {
     size_t field_count = dst_tuple.getSchema()->getFieldCount();
-    std::cout << "Secret sharing tuple " << src_tuple << ": ";
     for (size_t i = 0; i < field_count; ++i) {
         PlainField src_field = src_tuple.getField(i);
-        std::cout << " sending "  << src_field << " ";
         SecureField dst_field = SecureField::secret_share_send(src_field, dst_tuple.getSchema()->getField(i), party);
         dst_tuple.setField(i, dst_field);
     }
-    std::cout << std::endl;
     PlainField plain_dummy_tag =  PlainField(src_tuple.getDummyTag());
     emp::Bit b(src_tuple.getDummyTag(), party);
     dst_tuple.setDummyTag(b);
@@ -104,7 +101,6 @@ void FieldUtilities::secret_share_recv(SecureTuple &dst_tuple, const int &dst_pa
     QuerySchema schema = *dst_tuple.getSchema();
     size_t field_count = schema.getFieldCount();
 
-    std::cout << "Secret sharing row! " << std::endl;
     for(size_t i = 0;  i < field_count; ++i) {
         QueryFieldDesc field_desc = schema.getField(i);
         SecureField  dst_field = SecureField::secret_share_recv(dst_tuple.getSchema()->getField(i), dst_party);
@@ -127,12 +123,8 @@ emp::Bit FieldUtilities::select(const Bit &choice, const Bit &lhs, const Bit &rh
 
 
 PlainTuple FieldUtilities::revealTuple(const SecureTuple & s) {
-    // stack allocate it
-    std::cout << "Revealing row starting at " << (size_t) s.getData() << std::endl;
     std::shared_ptr<QuerySchema> secure_schema = s.getSchema();
     std::shared_ptr<QuerySchema> plain_schema =  std::make_shared<QuerySchema>(QuerySchema::toPlain(*secure_schema));
-
-//    SecureTuple s_tmp(secure_schema, (emp::Bit *) s.getData());
     return s.reveal(plain_schema, emp::PUBLIC);
 }
 
