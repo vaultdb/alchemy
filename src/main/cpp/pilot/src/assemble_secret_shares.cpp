@@ -15,7 +15,7 @@ std::string dst_path = src_path;
 // result (#0 int32 .age_strata, #1 int64 .numerator, #2 int64 .denominator, #3 int64 .numerator_multisite, #4 int64 .denominator_multisite)
 QuerySchema getSchema(const std::string & rollupName) {
     QuerySchema schema = SharedSchema::getInputSchema();
-    QuerySchema outputSchema(5);
+    QuerySchema outputSchema;
     QueryFieldDesc rollupField = schema.getField(rollupName);
     rollupField.setOrdinal(0);
 

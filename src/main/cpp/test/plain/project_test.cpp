@@ -12,48 +12,6 @@
 class ProjectionTest : public PlainBaseTest { };
 
 
-
-
-// unencrypted case
-/* Deprecated
- *
- * class RevenueExpression : public Expression {
-    Field oneValue;
-public:
-    RevenueExpression() : Expression("revenue", FieldType::FLOAT) {
-        oneField = Value((int32_t) 1);
-    }
-
-    ~RevenueExpression() {}
-
-    Field expressionCall(const QueryTuple & aTuple) const  {
-        Field extendedPrice = aTuple.getField(5).getValue();
-        Field discount = aTuple.getField(6).getValue();
-
-        // l.l_extendedprice * (1 - l.l_discount)
-        return extendedPrice * (oneField - discount);
-    }
-
-    // needed for boost::variant
-    RevenueExpression& operator=(const RevenueExpression & src) {
-        this->alias = src.getAlias();
-        this->expressionType = FieldType::FLOAT;
-
-    }
-
-};
-*/
-
-/* version 2
-PlainField calculateRevenue(const PlainTuple & aTuple) {
-    const PlainField extendedPrice = aTuple.getField(5);
-    const PlainField discount = aTuple.getField(6);
-    const PlainField one(FieldType::FLOAT, (float_t) 1.0);
-
-    // l.l_extendedprice * (1 - l.l_discount)
-    return extendedPrice * (one - discount);
-} */
-
 // l.l_extendedprice * (1 - l.l_discount)
 shared_ptr<ExpressionNode<bool> > getRevenueExpression() {
     shared_ptr<ExpressionNode<bool> > extended_price(new InputReferenceNode<bool>(5));

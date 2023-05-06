@@ -11,6 +11,7 @@
 #include <query_table/field/field_type.h>
 #include <common/defs.h>
 
+
 namespace  vaultdb {
     class QueryFieldDesc {
 
@@ -22,21 +23,23 @@ namespace  vaultdb {
         int ordinal_;
         int field_size_ = 0; // size in bits
         int64_t field_min_ = 0; // if bits are packed and min > 0
-        size_t bit_packed_size_ = 0;
+        int bit_packed_size_ = 0;
         
     public:
-        QueryFieldDesc();
 
-        int getOrdinal() const;
+        inline QueryFieldDesc() : type_(FieldType::INVALID) { }
+        inline int getOrdinal() const {   return ordinal_; }
 
 
-        const std::string &getName() const;
+        inline const std::string &getName() const { return field_name_; }
 
-        FieldType getType() const;
+        inline FieldType getType() const { return type_; }
 
-       const std::string &getTableName() const;
+       inline const std::string &getTableName() const { return table_name_; }
 
-         size_t size() const;
+        inline  size_t size() const {
+            assert(field_size_ > 0);  // if size == 0 then it is an invalid field
+            return field_size_; }
 
         QueryFieldDesc(const QueryFieldDesc &f) = default;
 
@@ -46,7 +49,9 @@ namespace  vaultdb {
 
         QueryFieldDesc(const int & anOrdinal, const std::string &n, const std::string &tab, const FieldType &aType, const size_t & stringLength = 0);
 
-        void setStringLength(size_t i);
+        inline void setStringLength(size_t len) {   string_length_ = len;
+            initializeFieldSize();
+        }
         int64_t getFieldMin() const { return field_min_; }
 
         size_t getStringLength() const { return string_length_; }
@@ -57,12 +62,14 @@ namespace  vaultdb {
             field_name_ = field_name;
         }
 
+        void inline setSize(const int & size) { field_size_ = size; }
         QueryFieldDesc &operator=(const QueryFieldDesc &other);
 
         bool operator==(const QueryFieldDesc &other);
 
         inline bool operator!=(const QueryFieldDesc &other) { return !(*this == other); }
 
+        bool bitPacked() const;
     private:
         void initializeFieldSize();
 

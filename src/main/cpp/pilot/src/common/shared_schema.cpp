@@ -14,7 +14,7 @@ QuerySchema SharedSchema::getInputSchema() {
 //    denom_excl boolean DEFAULT false
 //);
 
-    QuerySchema targetSchema(9);
+    QuerySchema targetSchema;
     targetSchema.putField(QueryFieldDesc(0, "study_year", "patient", FieldType::INT));
     targetSchema.putField(QueryFieldDesc(1, "pat_id", "patient", FieldType::INT));
     targetSchema.putField(QueryFieldDesc(2, "age_strata", "patient", FieldType::STRING, 1));
@@ -50,7 +50,7 @@ QuerySchema SharedSchema::getPatientSchema() {
 //    multisite bool
 //);
 
-    QuerySchema targetSchema(10);
+    QuerySchema targetSchema;
     targetSchema.putField(QueryFieldDesc(0, "pat_id", "patient", FieldType::INT));
     targetSchema.putField(QueryFieldDesc(1, "study_year", "patient", FieldType::INT));
     targetSchema.putField(QueryFieldDesc(2, "age_strata", "patient", FieldType::STRING, 1));
@@ -68,7 +68,7 @@ QuerySchema SharedSchema::getPatientSchema() {
 
 // study_year(0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite_cnt (7), denominator_multisite_cnt (8)
 QuerySchema SharedSchema::getPartialCountSchema() {
-    QuerySchema targetSchema(9);
+    QuerySchema targetSchema;
     targetSchema.putField(QueryFieldDesc(0, "study_year", "patient", FieldType::INT, 0));
     targetSchema.putField(QueryFieldDesc(1, "age_strata", "patient", FieldType::STRING, 1));
     targetSchema.putField(QueryFieldDesc(2, "sex", "patient", FieldType::STRING, 1));

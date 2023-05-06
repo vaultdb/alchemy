@@ -244,7 +244,7 @@ TEST_F(ZkSortTest, tpchQ9Sort) {
                  // need to do secure join between lineitem and supplier
 
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT n_name, o_orderyear FROM input ORDER BY n_name, o_orderyear DESC";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults("tpch_unioned", expectedResultSql, false);
+    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
 
 
     std::string lineitemSql = "SELECT o_orderyear, l_orderkey, l_suppkey "
@@ -261,8 +261,8 @@ TEST_F(ZkSortTest, tpchQ9Sort) {
 
 
 
-    SecureSqlInput lineitemInput(dbName, lineitemSql, false, netio, FLAGS_party);
-    SecureSqlInput supplierInput(dbName, supplierSql, false, netio, FLAGS_party);
+    SecureSqlInput lineitemInput(db_name_, lineitemSql, false, netio, FLAGS_party);
+    SecureSqlInput supplierInput(db_name_, supplierSql, false, netio, FLAGS_party);
 
 
     ConjunctiveEqualityPredicate lineitemSupplierOrdinals = {EqualityPredicate(2, 0)}; //  l_suppkey, s_suppkey

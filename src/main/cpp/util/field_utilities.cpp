@@ -4,6 +4,8 @@
 #include <query_table/query_table.h>
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
+#include <sstream>
+
 
 using namespace vaultdb;
 using namespace  emp;
@@ -83,13 +85,14 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
 
 void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple & dst_tuple, const int & party) {
     size_t field_count = dst_tuple.getSchema()->getFieldCount();
-
+    std::cout << "Secret sharing tuple " << src_tuple << ": ";
     for (size_t i = 0; i < field_count; ++i) {
         PlainField src_field = src_tuple.getField(i);
+        std::cout << " sending "  << src_field << " ";
         SecureField dst_field = SecureField::secret_share_send(src_field, dst_tuple.getSchema()->getField(i), party);
         dst_tuple.setField(i, dst_field);
     }
-
+    std::cout << std::endl;
     PlainField plain_dummy_tag =  PlainField(src_tuple.getDummyTag());
     emp::Bit b(src_tuple.getDummyTag(), party);
     dst_tuple.setDummyTag(b);
@@ -101,9 +104,10 @@ void FieldUtilities::secret_share_recv(SecureTuple &dst_tuple, const int &dst_pa
     QuerySchema schema = *dst_tuple.getSchema();
     size_t field_count = schema.getFieldCount();
 
+    std::cout << "Secret sharing row! " << std::endl;
     for(size_t i = 0;  i < field_count; ++i) {
         QueryFieldDesc field_desc = schema.getField(i);
-        SecureField  dst_field = SecureField::secret_share_recv(field_desc.getType(), dst_tuple.getSchema()->getField(i), dst_party);
+        SecureField  dst_field = SecureField::secret_share_recv(dst_tuple.getSchema()->getField(i), dst_party);
         dst_tuple.setField(i, dst_field);
     }
 
@@ -124,11 +128,32 @@ emp::Bit FieldUtilities::select(const Bit &choice, const Bit &lhs, const Bit &rh
 
 PlainTuple FieldUtilities::revealTuple(const SecureTuple & s) {
     // stack allocate it
+    std::cout << "Revealing row starting at " << (size_t) s.getData() << std::endl;
     std::shared_ptr<QuerySchema> secure_schema = s.getSchema();
     std::shared_ptr<QuerySchema> plain_schema =  std::make_shared<QuerySchema>(QuerySchema::toPlain(*secure_schema));
 
-    SecureTuple s_tmp(secure_schema, (emp::Bit *) s.getData());
-    return s_tmp.reveal(plain_schema, emp::PUBLIC);
+//    SecureTuple s_tmp(secure_schema, (emp::Bit *) s.getData());
+    return s.reveal(plain_schema, emp::PUBLIC);
+}
+
+
+std::string FieldUtilities::printTupleBits(const PlainTuple & p) {
+    int bit_size = p.getSchema()->size();
+    bool *bits = Utilities::bytesToBool(p.getData(), bit_size/8);
+    std::stringstream s;
+    for(int i = 0; i < bit_size; ++i) {
+        s << bits[i];
+    }
+
+    delete [] bits;
+    return s.str();
+}
+
+std::string FieldUtilities::printTupleBits(const SecureTuple & s) {
+    int bit_size = s.getSchema()->size();
+    Integer i(bit_size, 0);
+    memcpy(i.bits.data(), s.getData(), bit_size);
+    return  i.reveal<std::string>();
 }
 
 // unioned db name
@@ -164,6 +189,7 @@ BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_
 
     return bit_packing;
 }
+
 
 
 

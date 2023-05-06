@@ -70,7 +70,7 @@ FieldType Field<B>::getType() const {
 template<typename B>
 size_t Field<B>::getSize() const {
 
-    // serialization size
+    // serialization size, does not take into account two's complement (sign bit)
     if(type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG) {
         emp::Integer i = boost::get<emp::Integer>(payload_);
         return i.size();
@@ -139,14 +139,16 @@ SecureField Field<B>::secret_share_send(const PlainField &src, const QueryFieldD
 
 template<typename B>
 SecureField
-Field<B>::secret_share_recv(const FieldType &type, const QueryFieldDesc &&field_desc, const int &src_party) {
-    assert(TypeUtilities::isEncrypted(type));
+Field<B>::secret_share_recv(const QueryFieldDesc &&field_desc, const int &src_party) {
+    assert(TypeUtilities::isEncrypted(field_desc.getType()));
 
-    FieldType plain_type = TypeUtilities::toPlain(type);
+    FieldType plain_type = TypeUtilities::toPlain(field_desc.getType());
     Value input = FieldFactory<bool>::getZero(plain_type).payload_;
+
+
     PlainField p(plain_type, input, field_desc.getStringLength());
     Value result = secretShareHelper(p, field_desc, src_party, false);
-    return SecureField(type, result, field_desc.getStringLength());
+    return SecureField(field_desc.getType(), result, field_desc.getStringLength());
 
 
 }
@@ -233,10 +235,10 @@ B Field<B>::operator>=(const Field &r) const {
 
 
 template<typename B>
-PlainField Field<B>::reveal(const QueryFieldDesc &schema, const int &party) const {
+PlainField Field<B>::reveal(const int &party) const {
 
     FieldType resType = TypeUtilities::toPlain(type_);
-    size_t strLength = 0;
+    size_t str_len = 0;
     Value v;
 
     emp::Bit b;
@@ -250,7 +252,7 @@ PlainField Field<B>::reveal(const QueryFieldDesc &schema, const int &party) cons
         case FieldType::FLOAT:
         case FieldType::STRING:
             v = payload_;
-            strLength = string_length_;
+            str_len = string_length_;
             break;
         case FieldType::SECURE_BOOL:
             b = getValue<emp::Bit>();
@@ -258,17 +260,17 @@ PlainField Field<B>::reveal(const QueryFieldDesc &schema, const int &party) cons
             break;
         case FieldType::SECURE_INT:
             i = getValue<emp::Integer>();
-            v =  (int32_t) (i.reveal<int32_t>(party) + schema.getFieldMin());
+            v =  i.reveal<int32_t>(party);
             break;
         case FieldType::SECURE_LONG:
             i = getValue<emp::Integer>();
-            v = i.reveal<int64_t>(party) + schema.getFieldMin();
+            v = i.reveal<int64_t>(party);
             break;
         case FieldType::SECURE_STRING:
             i = getValue<emp::Integer>();
             v = revealString(i, party);
-            strLength = i.size() / 8;
-            assert(strLength > 0);
+            str_len = i.size() / 8;
+            assert(str_len > 0);
             break;
         case FieldType::SECURE_FLOAT:
             f = getValue<emp::Float>();
@@ -278,7 +280,7 @@ PlainField Field<B>::reveal(const QueryFieldDesc &schema, const int &party) cons
             throw;
     }
 
-    return PlainField(resType, v, strLength);
+    return PlainField(resType, v, str_len);
 }
 
 template<typename B>
@@ -384,7 +386,9 @@ void Field<B>::serialize(int8_t *dst) const {
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
             si = boost::get<emp::Integer>(payload_);
-            memcpy(dst, (int8_t *) si.bits.data(), si.size() * TypeUtilities::getEmpBitSize());
+            std::cout << "Serializing an integer of length " << si.size()  << " bits: " << si.reveal<std::string>() << " encoded: " << si.reveal<int32_t>()
+            <<  " writing " << (si.size() - (si.size() != FieldUtilities::getExpectedSize(type_, string_length_))) << " bits." << std::endl;
+            memcpy(dst, (int8_t *) si.bits.data(), (si.size() - (si.size() != FieldUtilities::getExpectedSize(type_, string_length_))) * TypeUtilities::getEmpBitSize());
             break;
         case FieldType::SECURE_FLOAT:
             sf = boost::get<emp::Float>(payload_);
@@ -404,11 +408,12 @@ Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &field_des
         case FieldType::BOOL:
             return emp::Bit(f.getValue<bool>(), party);
         case FieldType::INT:
-            return emp::Integer(field_desc.size(),  (send) ?  boost::get<int32_t>(f.payload_) - field_desc.getFieldMin()
+            // + bitpacked to add one bit if we are padding it for two's complement
+            return emp::Integer(field_desc.size() + field_desc.bitPacked(),  (send) ?  boost::get<int32_t>(f.payload_) - field_desc.getFieldMin()
                                                            : boost::get<int32_t>(f.payload_), party);
 
         case FieldType::LONG:
-            return emp::Integer(field_desc.size(),  (send) ?  boost::get<int64_t>(f.payload_) - field_desc.getFieldMin()
+            return emp::Integer(field_desc.size() + field_desc.bitPacked(),  (send) ?  boost::get<int64_t>(f.payload_) - field_desc.getFieldMin()
                                                            : boost::get<int64_t>(f.payload_), party);
         case FieldType::STRING:
             return secretShareString(boost::get<string>(f.payload_), send, f.string_length_, party);

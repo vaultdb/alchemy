@@ -16,33 +16,33 @@ namespace  vaultdb {
 
     protected:
 
-        std::vector<QueryFieldDesc> fields_;
+        std::map<int32_t, QueryFieldDesc> fields_;
         std::map<int32_t, size_t> offsets_;
         size_t tuple_size_;
     public:
-        explicit QuerySchema(const size_t &num_fields);
 
         QuerySchema() {} // empty setup
         QuerySchema(std::shared_ptr<QuerySchema>  & s);
 
-        size_t getFieldCount() const;
+        inline int getFieldCount() const {  return fields_.size() - 1;  } // does not include dummy tag
 
-        void putField(const QueryFieldDesc &fd);
+
+        inline void  putField(const QueryFieldDesc &fd) {     fields_[fd.getOrdinal()]  = fd; }
 
         // returns size in bits
         size_t size() const;
 
-        bool inline  isSecure() const {
-            return (fields_[0].getType() == TypeUtilities::toSecure(fields_[0].getType())); }
+        inline bool   isSecure() const {
+            return (fields_.at(0).getType() == TypeUtilities::toSecure(fields_.at(0).getType())); }
 
-        QueryFieldDesc getField(const int &i) const;
+        QueryFieldDesc getField(const int &i) const {     return fields_.at(i);  }
 
         QueryFieldDesc getField(const std::string & fieldName) const;
 
 
         QuerySchema &operator=(const QuerySchema &other);
 
-        size_t getFieldOffset(const int32_t idx) const;
+        inline size_t getFieldOffset(const int32_t idx) const { return offsets_.at(idx); }
 
 
         bool operator==(const QuerySchema &other) const;
@@ -54,6 +54,7 @@ namespace  vaultdb {
         static QuerySchema toPlain(const QuerySchema &secureSchema);
 
 
+        inline bool fieldInitialized(const int & ordinal) { return fields_.find(ordinal) != fields_.end();}
         void initializeFieldOffsets();
 
 

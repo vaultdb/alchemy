@@ -59,9 +59,16 @@ namespace vaultdb {
         static PlainTuple revealTuple(const PlainTuple & p) {return p; }
         static PlainTuple revealTuple(const SecureTuple  & s);
 
+        // expected size in bits
+        inline static int getExpectedSize(const FieldType & t, int str_length) {
+            return TypeUtilities::getTypeSize(t) * ((t == FieldType::SECURE_STRING) ? str_length : 1);
+        }
 
         static Field<bool> getBoolField(const bool & input) { return Field<bool>(FieldType::BOOL, input, 0); }
         static Field<emp::Bit> getBoolField(const emp::Bit & input) { return Field<emp::Bit>(FieldType::SECURE_BOOL, input, 0); }
+
+        static std::string printTupleBits(const PlainTuple & p);
+        static std::string printTupleBits(const SecureTuple & s);
 
         static bool getBoolPrimitive(const Field<bool> & input) { return input.getValue<bool>(); }
         static emp::Bit getBoolPrimitive(const Field<emp::Bit> & input) { return input.getValue<emp::Bit>(); }
@@ -84,6 +91,7 @@ namespace vaultdb {
             memcpy(dst.bits.data(), src.bits.data(), src.size() * TypeUtilities::getEmpBitSize());
             return dst;
         }
+
 
     };
 

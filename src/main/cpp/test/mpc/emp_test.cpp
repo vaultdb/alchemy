@@ -110,7 +110,7 @@ TEST_F(EmpTest, encrypt_table_one_column) {
 
     int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData.data() : bobInputData.data();
     
-    QuerySchema schema(1);
+    QuerySchema schema;
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
     schema.initializeFieldOffsets();
 
@@ -163,7 +163,7 @@ TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
     vector<int32_t> bobInputData{2, 5, 6, 8}; */
     int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData.data() : bobInputData.data();
 
-    QuerySchema schema(1);
+    QuerySchema schema;
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
     schema.initializeFieldOffsets();
 

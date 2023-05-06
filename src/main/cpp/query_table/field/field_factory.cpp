@@ -325,14 +325,20 @@ FieldFactory<emp::Bit>::deserialize(const QueryFieldDesc &desc, const emp::Bit *
                 return SecureField(type, myBit);
             }
             case FieldType::SECURE_INT: {
-                emp::Integer payload(desc.size(), 0);
+                emp::Integer payload(desc.size() + desc.bitPacked(), 0);
                 memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
-                return SecureField(type, payload);
+                payload.resize(32);
+                emp::Integer unpacked(32, desc.getFieldMin(), PUBLIC); // secure_int = 32 bits
+                unpacked = unpacked + payload;
+                return SecureField(type, unpacked);
             }
             case FieldType::SECURE_LONG: {
                 emp::Integer payload(desc.size(), 0);
                 memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
-                return SecureField(type, payload);
+                payload.resize(64);
+                emp::Integer unpacked(64, desc.getFieldMin(), PUBLIC); // secure_long = 64 bits
+                unpacked = unpacked + payload;
+                return SecureField(type, unpacked);
             }
             case FieldType::SECURE_FLOAT: {
                 emp::Float v(0, emp::PUBLIC);

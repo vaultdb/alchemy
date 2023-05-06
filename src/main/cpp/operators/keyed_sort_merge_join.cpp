@@ -92,7 +92,7 @@ void KeyedSortMergeJoin<B>::writeRightTuples(shared_ptr<QueryTable<B>> src_table
     // augment the src schema with an extra bool for table_id
     QuerySchema src_schema = *src_table->getSchema();
     size_t table_id_idx = src_schema.getFieldCount();
-    QuerySchema src_schema_augmented(table_id_idx + 1);
+    QuerySchema src_schema_augmented;
 
     for(size_t i = 0; i < src_schema.getFieldCount(); ++i) {
         QueryFieldDesc f = src_schema.getField(i);

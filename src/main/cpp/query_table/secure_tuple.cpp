@@ -45,14 +45,16 @@ const SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  const {
     QueryFieldDesc fieldDesc = query_schema_->getField(ordinal);
     return FieldFactory<emp::Bit>::deserialize(query_schema_->getField(ordinal),
                                                read_ptr);
+
 }
 
 
 
 void QueryTuple<emp::Bit>::setField(const int &idx, const SecureField &f) {
     size_t field_offset = query_schema_->getFieldOffset(idx);
-    int8_t *writePos = (int8_t *) (fields_ + field_offset);
-    f.serialize(writePos);
+    int8_t *write_pos = (int8_t *) (fields_ + field_offset);
+
+    f.serialize(write_pos);
 
 }
 
@@ -75,7 +77,7 @@ QueryTuple<emp::Bit>::reveal(const int &empParty, std::shared_ptr<QuerySchema> &
 	
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
-        PlainField revealed = src.reveal(query_schema_->getField(i), empParty);
+        PlainField revealed = src.reveal(empParty);
         dst_tuple.setField(i, revealed);
     }
 
@@ -92,7 +94,7 @@ PlainTuple QueryTuple<emp::Bit>::reveal(const std::shared_ptr<QuerySchema> & dst
 
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
-        PlainField revealed = src.reveal(query_schema_->getField(i), empParty);
+        PlainField revealed = src.reveal(empParty);
         dst_tuple.setField(i, revealed);
     }
 
@@ -226,10 +228,9 @@ emp::Bit QueryTuple<emp::Bit>::operator!=(const SecureTuple &other) const {
 
 
 QueryTuple<emp::Bit>::QueryTuple(const std::shared_ptr<QuerySchema> &schema) {
-    size_t tuple_bit_cnt = schema->size();
-    managed_data_ = std::unique_ptr<emp::Bit[]>(new emp::Bit[tuple_bit_cnt]);
+    managed_data_ = new emp::Bit[schema->size()];
 
-    fields_ = managed_data_.get();
+    fields_ = managed_data_;
 
     // Warning: this will cause issues if used for mutable tuples
     // only doing shallow copy of schema!
@@ -242,9 +243,8 @@ QueryTuple<emp::Bit>::QueryTuple(const std::shared_ptr<QuerySchema> &schema) {
 QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {
         query_schema_ = src.getSchema();
         if(src.hasManagedStorage()) { // allocate storage for this copy
-            size_t tuple_bit_cnt = query_schema_->size();
-            managed_data_ = std::unique_ptr<emp::Bit[]>(new emp::Bit[tuple_bit_cnt]);
-            fields_ = managed_data_.get();
+            managed_data_ = new emp::Bit[query_schema_->size()];
+            fields_ = managed_data_;
 
             emp::Bit *d = this->fields_;
             emp::Bit *s = src.fields_;

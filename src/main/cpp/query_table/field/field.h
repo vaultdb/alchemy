@@ -83,14 +83,13 @@ namespace vaultdb {
         static void compareAndSwap(const B & choice, Field & lhs, Field & rhs);
 
 
-        // if field is encrypted, decrypt
-        PlainField reveal(const QueryFieldDesc &schema, const int &party = 0) const;
+        PlainField reveal(const int &party = emp::PUBLIC) const;
         SecureField secret_share() const; // secret share as public
 
         static SecureField
         secret_share_send(const PlainField &src, const QueryFieldDesc &field_desc, const int &src_party);
         static SecureField
-        secret_share_recv(const FieldType &type, const QueryFieldDesc &&field_desc, const int &src_party);
+        secret_share_recv(const QueryFieldDesc &&field_desc, const int &src_party);
 
         std::string toString() const;
 

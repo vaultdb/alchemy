@@ -29,6 +29,13 @@ cd libpqxx
 make 
 sudo make install
 
+cd ..
+git clone --branch v1.13.0 https://github.com/google/googletest.git
+cd googletest
+cmake .
+make all
+sudo make install
+
 
 #end
 echo "Setup completed successfully."

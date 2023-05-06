@@ -33,7 +33,7 @@ namespace vaultdb {
         BitPackingDefinition() { min_ = max_ = domain_size_ = 0; }
         std::string toString() const {
             std::stringstream s;
-            s << "[" << min_ << ", " << "] domain size: " << domain_size_;
+            s << "[" << min_ << ", " << max_ << "] domain size: " << domain_size_;
             return s.str();
         }
     };

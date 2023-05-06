@@ -70,7 +70,7 @@ Field<B> EnrichTestSupport<B>::projectNumeratorMultisite(const QueryTuple<B> & a
 // patients(patid int, zip_marker varchar(3), age_days integer, sex varchar(1), ethnicity bool, race int, numerator int default null)
 template<typename B>
 QuerySchema EnrichTestSupport<B>::getPatientSchema() {
-    QuerySchema patientSchema(7);
+    QuerySchema patientSchema;
     patientSchema.putField(QueryFieldDesc(0, "patid", "patient", FieldType::INT));
     patientSchema.putField(QueryFieldDesc(1, "zip_marker", "patient", FieldType::STRING, 3));
     patientSchema.putField(QueryFieldDesc(2, "age_days", "patient", FieldType::INT));
@@ -86,7 +86,7 @@ QuerySchema EnrichTestSupport<B>::getPatientSchema() {
 // patient_inclusion(patid int, numerator int, denom_incl int)
 template<typename B>
 QuerySchema EnrichTestSupport<B>::getPatientInclusionSchema() {
-    QuerySchema patientInclusionSchema(3);
+    QuerySchema patientInclusionSchema;
     patientInclusionSchema.putField(QueryFieldDesc(0, "patid", "patient_inclusion", FieldType::INT));
     // numerator: null = false, 1 = true
     patientInclusionSchema.putField(QueryFieldDesc(1, "numerator", "patient_inclusion", FieldType::INT));

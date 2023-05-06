@@ -15,11 +15,11 @@ namespace vaultdb {
 
         emp::Bit *fields_; // has dummy tag at end, serialized representation, points to an offset in parent QueryTable
         std::shared_ptr<QuerySchema> query_schema_; // pointer to enclosing table
-        std::unique_ptr<emp::Bit []> managed_data_;
+        emp::Bit *managed_data_ = nullptr;
 
     public:
         QueryTuple() {};
-        ~QueryTuple() { managed_data_.reset();  }
+        ~QueryTuple()  { if(managed_data_ != nullptr) delete [] managed_data_; }
         QueryTuple(const QueryTuple & src);
 
         QueryTuple(std::shared_ptr<QuerySchema> & query_schema, int8_t *src);
@@ -32,7 +32,7 @@ namespace vaultdb {
 
         inline bool  isEncrypted() const { return true; }
 
-        bool hasManagedStorage() const { return managed_data_.get() != nullptr; }
+        inline bool hasManagedStorage() const { return managed_data_ != nullptr; }
 
         SecureField getField(const int &ordinal);
         const SecureField getField(const int & ordinal) const;
@@ -78,11 +78,6 @@ namespace vaultdb {
         deserialize(emp::Bit *dst_tuple_bits, std::shared_ptr<QuerySchema> &schema, const emp::Bit *src_tuple_bits);
 
         static void writeSubset(const SecureTuple & src_tuple, const SecureTuple & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx);
-
-
-
-
-
 
 
     };

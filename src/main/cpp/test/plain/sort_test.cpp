@@ -239,7 +239,7 @@ TEST_F(SortTest, tpchQ18Sort) {
 TEST_F(SortTest, sort_and_encrypt_table_one_column) {
     vector<int32_t> input_tuples{1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 35, 35, 35, 35, 35, 33, 33, 33, 33, 4};
     SortDefinition sort_definition = DataUtilities::getDefaultSortDefinition(1);
-    QuerySchema schema(1);
+    QuerySchema schema;
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
     schema.initializeFieldOffsets();
 

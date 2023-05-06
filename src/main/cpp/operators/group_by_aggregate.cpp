@@ -188,7 +188,7 @@ B GroupByAggregate<B>::groupByMatch(const QueryTuple<B> &lhs, const QueryTuple<B
 
 template<typename B>
 QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & input_schema) const {
-    QuerySchema outputSchema(group_by_.size() + aggregate_definitions_.size());
+    QuerySchema outputSchema;
     size_t i;
 
     for(i = 0; i < group_by_.size(); ++i) {

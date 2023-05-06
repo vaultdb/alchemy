@@ -1,4 +1,5 @@
 #include "secure_sql_input.h"
+#include "util/field_utilities.h"
 
 SecureSqlInput::SecureSqlInput(string db, string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty, const size_t & input_tuple_limit) : netio_(netio), src_party_(aSrcParty),
                                                                                                          input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag), input_tuple_limit_(input_tuple_limit) {

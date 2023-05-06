@@ -24,7 +24,7 @@ template<typename  B>
 QuerySchema
 Join<B>::concatenateSchemas(const QuerySchema &lhs_schema, const QuerySchema &rhs_schema, const bool &append_bool) {
     uint32_t output_cols = lhs_schema.getFieldCount() + rhs_schema.getFieldCount() + append_bool;
-    QuerySchema result(output_cols);
+    QuerySchema result;
     uint32_t cursor = lhs_schema.getFieldCount();
 
     for(uint32_t i = 0; i < lhs_schema.getFieldCount(); ++i) {

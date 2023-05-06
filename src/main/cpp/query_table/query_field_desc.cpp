@@ -1,13 +1,12 @@
 #include "query_field_desc.h"
+#include "util/utilities.h"
 #include "util/type_utilities.h"
+
 #include "util/system_configuration.h"
 
 using namespace vaultdb;
 
-// default constructor setting up unique_ptr
-QueryFieldDesc::QueryFieldDesc() : type_(FieldType::INVALID) {
 
-}
 
 QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const FieldType &type)
         : field_name_(f.field_name_), table_name_(f.table_name_),
@@ -37,43 +36,18 @@ QueryFieldDesc::QueryFieldDesc(const int & anOrdinal, const string &n, const str
 
 
 
-int QueryFieldDesc::getOrdinal() const {
-  return QueryFieldDesc::ordinal_;
-}
 
-
-const std::string &QueryFieldDesc::getName() const {
-  return QueryFieldDesc::field_name_;
-}
-
-FieldType QueryFieldDesc::getType() const {
-    return type_;
-}
-
-
-const std::string &QueryFieldDesc::getTableName() const {
-  return QueryFieldDesc::table_name_;
-}
-
-size_t QueryFieldDesc::size() const {
-    // if size == 0 then it is an invalid field
-    assert(field_size_ > 0);
-
-    return field_size_;
-}
-
-void QueryFieldDesc::setStringLength(size_t len) {
-
-    string_length_ = len;
-    initializeFieldSize();
-
-}
 
 
 std::ostream &vaultdb::operator<<(std::ostream &os,  const QueryFieldDesc &desc)  {
     os << "#" << desc.getOrdinal() << " " << TypeUtilities::getTypeString(desc.getType());
     if(desc.getType() == FieldType::STRING || desc.getType() == FieldType::SECURE_STRING) {
         os << "(" << desc.getStringLength() << ")";
+    }
+    if(desc.getType() == FieldType::SECURE_INT || desc.getType() == FieldType::SECURE_LONG) {
+        if(desc.size() < TypeUtilities::getTypeSize(desc.getType())) { // for bit packing
+            os << "(" << desc.size() << ")";
+        }
     }
 
     os << " " << desc.getTableName() << "." << desc.getName();
@@ -124,9 +98,10 @@ bool QueryFieldDesc::operator==(const QueryFieldDesc& other) {
 
 }
 
-// TODO: integrate secret domain for
+
 void QueryFieldDesc::initializeFieldSize() {
     field_size_ = TypeUtilities::getTypeSize(type_);
+    bit_packed_size_ = field_size_;
 
     if(table_name_ != "bit_packing") {
 
@@ -135,23 +110,34 @@ void QueryFieldDesc::initializeFieldSize() {
              || type_ == FieldType::INT || type_ == FieldType::LONG) { // it will be trickier to do this with unencrypted INTs, plus not as crucial for our experiments.
             SystemConfiguration &sys_config = SystemConfiguration::getInstance();
             BitPackingDefinition bit_packing_def = sys_config.getBitPackingSpec(table_name_, field_name_);
+            if(bit_packing_def.min_ != -1) { // -1 signals it is a string or has some other non-integer domain
 
-            if ((bit_packing_def.domain_size_ == (bit_packing_def.max_ - bit_packing_def.min_ + 1) ) && (bit_packing_def.min_ != -1)) {
-                field_min_ = bit_packing_def.min_;
-                bit_packed_size_ = ceil(log2((float) bit_packing_def.domain_size_));
+                if (bit_packing_def.domain_size_ == (bit_packing_def.max_ - bit_packing_def.min_ + 1) ) {
+                    field_min_ = bit_packing_def.min_;
+                    bit_packed_size_ = ceil(log2((float) bit_packing_def.domain_size_));
+                }
+                else if(bit_packing_def.min_ == 1 && bit_packing_def.max_ > bit_packing_def.min_) { // sparser key space, happens with some of the < SF1 instance of TPC-H
+                    field_min_ = 1;
+                    bit_packed_size_ = ceil(log2((float) (bit_packing_def.max_ - bit_packing_def.min_ + 1)));
 
-                if(bit_packed_size_ < 1) bit_packed_size_ = 1;
-
-                if (type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG) {
-                    field_size_ = bit_packed_size_;
                 }
             }
+
+
+            if (type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG) {
+                field_size_ = bit_packed_size_;
+            }
         }
-    } // not bit packing
+    }
 
     if(QueryFieldDesc::type_ == FieldType::STRING || QueryFieldDesc::type_ == FieldType::SECURE_STRING )  {
         field_size_ *= string_length_;
     }
+}
+
+// keep this in the cpp to avoid dependency loop in compilation
+bool QueryFieldDesc::bitPacked() const {
+     return field_size_ != TypeUtilities::getTypeSize(type_);
 }
 
 

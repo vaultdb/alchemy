@@ -42,7 +42,7 @@ TEST_F(SerializationTest, typesTest) {
 
 
 QuerySchema SerializationTest::getCapricornSchema() {
-    QuerySchema targetSchema(7);
+    QuerySchema targetSchema;
     // 12,5,U,U,4,f,f
     targetSchema.putField(QueryFieldDesc(0, "pat_id", "patient", FieldType::INT));
     targetSchema.putField(QueryFieldDesc(1, "age_strata", "patient", FieldType::STRING, 1));

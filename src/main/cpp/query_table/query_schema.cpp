@@ -3,38 +3,13 @@
 
 using namespace vaultdb;
 
-QuerySchema::QuerySchema(const size_t &num_fields)  {
-    fields_.reserve(num_fields);
-
-    // initialize all fields to blanks
-    for(size_t i = 0; i < num_fields; ++i) {
-        fields_.push_back(QueryFieldDesc());
-    }
-}
 
 
-void QuerySchema::putField(const QueryFieldDesc &fd) {
-    uint32_t ordinal = fd.getOrdinal();
-    fields_[ordinal]  = fd; // copy field desc out into newly-allocated member variable
-}
 
-QueryFieldDesc QuerySchema::getField(const int &i) const {
-    return (i >= 0) ?
-      fields_.at(i) :
-     // dummy tag
-     QueryFieldDesc(-1, fields_[0].getTableName(), "dummy_tag",
-                    isSecure() ?
-                        FieldType::SECURE_BOOL :
-                        FieldType::BOOL, 0);
-}
 
-size_t QuerySchema::getFieldCount() const {
-    return fields_.size();
-}
 
 
 QuerySchema::QuerySchema(std::shared_ptr<QuerySchema>  &s) {
-    fields_.resize(s->getFieldCount());
 
   for (size_t i = 0; i < s->getFieldCount(); i++) {
       fields_[i] = s->getField(i);
@@ -48,12 +23,11 @@ size_t QuerySchema::size() const {
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const QuerySchema &schema) {
-    size_t fieldCount = schema.getFieldCount();
 
     os << "(" << schema.getField(0);
 
 
-    for(size_t i = 1; i < fieldCount; ++i) {
+    for(size_t i = 1; i < schema.getFieldCount(); ++i) {
         os << ", " << schema.getField(i);
     }
 
@@ -63,15 +37,14 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const QuerySchema &schema) {
 
 QuerySchema &QuerySchema::operator=(const QuerySchema &other) {
 
-    size_t fieldCount = other.getFieldCount();
     fields_.clear();
-    fields_.reserve(fieldCount);
+    offsets_.clear();
+
     bool valid_fields = true;
 
-    for (size_t i = 0; i < other.getFieldCount(); i++) {
-        QueryFieldDesc aFieldDesc = other.fields_[i];
-        fields_.push_back(aFieldDesc);
-        if(aFieldDesc.getType() == FieldType::INVALID)
+    for (int i = 0; i < other.getFieldCount(); i++) {
+        fields_[i] = other.fields_.at(i);
+        if(fields_[i].getType() == FieldType::INVALID)
             valid_fields = false;
     }
     if(valid_fields)
@@ -100,33 +73,39 @@ bool QuerySchema::operator==(const QuerySchema &other) const {
     return true;
 }
 
-QuerySchema QuerySchema::toSecure(const QuerySchema &plainSchema) {
-    QuerySchema dstSchema(plainSchema.getFieldCount());
-    for(QueryFieldDesc srcFieldDesc : plainSchema.fields_) {
-        QueryFieldDesc dstFieldDesc(srcFieldDesc, TypeUtilities::toSecure(srcFieldDesc.getType()));
-        dstSchema.putField(dstFieldDesc);
+QuerySchema QuerySchema::toSecure(const QuerySchema &plain_schema) {
+    QuerySchema dst_schema;
+
+    for(int i  = 0; i < plain_schema.getFieldCount(); ++i) {
+        QueryFieldDesc src = plain_schema.fields_.at(i);
+        QueryFieldDesc dst(src, TypeUtilities::toSecure(src.getType()));
+        dst_schema.fields_[i] = dst;
     }
-    dstSchema.initializeFieldOffsets();
-    return dstSchema;
+
+    dst_schema.initializeFieldOffsets();
+    return dst_schema;
 }
 
-QuerySchema QuerySchema::toPlain(const QuerySchema &secureSchema) {
-    QuerySchema dstSchema(secureSchema.getFieldCount());
-    for(QueryFieldDesc srcFieldDesc : secureSchema.fields_) {
-        QueryFieldDesc dstFieldDesc(srcFieldDesc, TypeUtilities::toPlain(srcFieldDesc.getType()));
-        dstSchema.putField(dstFieldDesc);
-    }
-    dstSchema.initializeFieldOffsets();
-    return dstSchema;
+QuerySchema QuerySchema::toPlain(const QuerySchema &secure_schema) {
+    QuerySchema dst_schema;
 
+    for(int i  = 0; i < secure_schema.getFieldCount(); ++i) {
+        QueryFieldDesc src = secure_schema.fields_.at(i);
+        QueryFieldDesc dst(src, TypeUtilities::toPlain(src.getType()));
+        dst_schema.fields_[i] = dst;
+    }
+
+    dst_schema.initializeFieldOffsets();
+    return dst_schema;
 }
 
 
-QueryFieldDesc QuerySchema::getField(const string &fieldName) const {
-    for(QueryFieldDesc fieldDesc : fields_) {
-        if(fieldDesc.getName() == fieldName)
-            return fieldDesc;
+QueryFieldDesc QuerySchema::getField(const string &field_name) const {
+    for(int i = 0; i < getFieldCount(); ++i) {
+        if(fields_.at(i).getName() == field_name)
+            return fields_.at(i);
     }
+    if(field_name == "dummy_tag") return fields_.at(-1);
 
     throw; // not found
 }
@@ -135,27 +114,34 @@ QueryFieldDesc QuerySchema::getField(const string &fieldName) const {
 void QuerySchema::initializeFieldOffsets()  {
     // populate ordinal --> offset mapping
 
-    size_t runningOffset = 0L;
+    size_t running_offset = 0L;
     // empty query table
     if(fields_.empty()) return;
 
+    size_t col_count = fields_.size();
+    if(fields_.find(-1) != fields_.end()) --col_count;
+    for(int i = 0; i < col_count; ++i) {
+        QueryFieldDesc fd = fields_.at(i);
+        offsets_[fd.getOrdinal()] = running_offset;
+        running_offset += fd.size();
 
-    for(QueryFieldDesc fieldDesc : fields_) {
-        offsets_[fieldDesc.getOrdinal()] =  runningOffset;
-        runningOffset += fieldDesc.size();
     }
+
     // dummy tag at end
-    offsets_[-1] = runningOffset;
+    offsets_[-1] = running_offset;
 
-    int dummySize = TypeUtilities::isEncrypted(fields_[0].getType()) ?   TypeUtilities::getTypeSize(FieldType::SECURE_BOOL) :  TypeUtilities::getTypeSize(FieldType::BOOL);
+    QueryFieldDesc dummy_tag(-1, fields_[0].getTableName(), "dummy_tag",
+                   isSecure() ?
+                   FieldType::SECURE_BOOL :
+                   FieldType::BOOL, 0);
+    fields_[-1] = dummy_tag;
 
-    tuple_size_ = runningOffset +  dummySize;
+    int dummy_size = isSecure() ?   TypeUtilities::getTypeSize(FieldType::SECURE_BOOL) :  TypeUtilities::getTypeSize(FieldType::BOOL);
+
+    tuple_size_ = running_offset +  dummy_size;
 
 }
 
-size_t QuerySchema::getFieldOffset(const int32_t idx) const {
-    return offsets_.at(idx);
-}
 
 
 

@@ -160,8 +160,6 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
         if(dir)  // flip the bit
             to_swap = !to_swap;
 
-
-
         // if  ascending (1) & dir == 1 --> asc (1) (lhs < rhs (1) means swap!)
         // if DESC (0) & dir == 0 --> ASC (1) (lhs < rhs (1) means swap!)
         // if ASC (1) & dir = 0 --> DESC  (0) (lhs < rhs (1)  means no swap)

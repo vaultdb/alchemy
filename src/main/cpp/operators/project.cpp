@@ -77,7 +77,7 @@ void Project<B>::setup() {
 
     uint32_t col_count = expressions_.size();
 
-    QuerySchema dst_schema = QuerySchema(col_count); // re-initialize it
+    QuerySchema dst_schema;
 
     for(auto expr_pos =  expressions_.begin(); expr_pos != expressions_.end(); ++expr_pos) {
         if(expr_pos->second->kind() == ExpressionKind::INPUT_REF) {
@@ -106,13 +106,10 @@ void Project<B>::setup() {
     // set up dst schema for new expressions
     for(auto expr_pos =  expressions_.begin(); expr_pos != expressions_.end(); ++expr_pos) {
         uint32_t dst_ordinal = expr_pos->first;
-        QueryFieldDesc dst_field_desc = dst_schema.getField(dst_ordinal);
-
-        if(dst_field_desc.getType() == FieldType::INVALID) { //  not initialized yet
+        if(!dst_schema.fieldInitialized(dst_ordinal)) {
             FieldType dst_type = expr_pos->second->getType();
             std::string dst_name = expr_pos->second->getAlias();
-
-            dst_field_desc = QueryFieldDesc(dst_ordinal, dst_name, "", dst_type, 0); // 0 because string expressions are not yet implemented
+            QueryFieldDesc dst_field_desc = QueryFieldDesc(dst_ordinal, dst_name, "", dst_type, 0); // 0 because string expressions are not yet implemented
             dst_schema.putField(dst_field_desc);
         }
     }

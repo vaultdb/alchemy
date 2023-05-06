@@ -46,8 +46,10 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
         rhsEncrypted = PlainField::secret_share_send(rhsValue, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhsStr.size()), emp::ALICE);
     }
     else {
-        lhsEncrypted = PlainField::secret_share_recv(FieldType::SECURE_STRING, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhsStr.size()), emp::ALICE);
-        rhsEncrypted = PlainField::secret_share_recv(FieldType::SECURE_STRING, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhsStr.size()), emp::ALICE);
+        lhsEncrypted = PlainField::secret_share_recv(
+                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, lhsStr.size()), emp::ALICE);
+        rhsEncrypted = PlainField::secret_share_recv(
+                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, rhsStr.size()), emp::ALICE);
     }
 
     emp::Bit gtEncrypted = (lhsEncrypted > rhsEncrypted);
@@ -78,7 +80,7 @@ TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 
     SecureField result = (aliceEncryptedValue + bobEncryptedValue) * multiplierValue;
 
-    PlainField revealed = result.reveal(QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_INT, 0), emp::PUBLIC);
+    PlainField revealed = result.reveal(emp::PUBLIC);
 
     ASSERT_EQ(revealed.getValue<int32_t>(), 19*2);
 
@@ -139,8 +141,10 @@ TEST_F(SecureValueExpressionTest, test_char_comparison) {
         rhsPrivateField = PlainField::secret_share_send(rhsField, QueryFieldDesc(0, "test_col", "test_table", FieldType::STRING, 1), emp::ALICE);
     }
     else {
-        lhsPrivateField = PlainField::secret_share_recv(FieldType::SECURE_STRING, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, 1), emp::ALICE);
-        rhsPrivateField = PlainField::secret_share_recv(FieldType::SECURE_STRING, QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, 1), emp::ALICE);
+        lhsPrivateField = PlainField::secret_share_recv(
+                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, 1), emp::ALICE);
+        rhsPrivateField = PlainField::secret_share_recv(
+                QueryFieldDesc(0, "anon", "test_table", FieldType::SECURE_STRING, 1), emp::ALICE);
     }
 
 

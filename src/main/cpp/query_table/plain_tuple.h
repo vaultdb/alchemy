@@ -16,12 +16,12 @@ namespace  vaultdb {
     protected:
         int8_t *fields_; // has dummy tag at end, serialized representation, points to an offset in parent QueryTable
         std::shared_ptr<QuerySchema> query_schema_; // pointer to enclosing table
-        std::unique_ptr<int8_t []> managed_data_;
+       int8_t  *managed_data_ = nullptr;
 
 
     public:
         QueryTuple() : fields_(nullptr) {};
-        ~QueryTuple() = default; // don't free fields_, this is done at the table level
+        ~QueryTuple()  { if(managed_data_ != nullptr) delete [] managed_data_; } // don't free fields_, this is done at the table level
 
         QueryTuple(std::shared_ptr<QuerySchema> & query_schema,  int8_t *tuple_payload);
         QueryTuple(const std::shared_ptr<QuerySchema> & query_schema, const int8_t *src);
@@ -30,13 +30,8 @@ namespace  vaultdb {
 
         int8_t *getData() const { return fields_; }
 
-        // need a target table
-        // QueryTuple(const QueryTuple &src) {
 
-        //  }
-
-
-        bool hasManagedStorage() const; // returns true if unique_ptr is initialized
+        inline bool hasManagedStorage() const { return managed_data_ != nullptr; } // returns true if unique_ptr is initialized
         inline bool  isEncrypted() const {
             return false;
         }

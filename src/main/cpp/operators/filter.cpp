@@ -2,6 +2,7 @@
 #include <query_table/plain_tuple.h>
 // keep this file to ensure overloaded methods are visible
 #include <query_table/secure_tuple.h>
+#include "util/field_utilities.h"
 
 using namespace vaultdb;
 
@@ -19,19 +20,26 @@ Filter<B>::Filter(shared_ptr<QueryTable<B> > child, BoolExpression<B> & predicat
 template<typename B>
 std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
-
+    std::cout << "Input schema: " << *input->getSchema() <<  " size=" << input->getSchema()->size() << std::endl;
     // deep copy new output, then just modify the dummy tag
     Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
 
     for(size_t i = 0; i < Operator<B>::output_->getTupleCount(); ++i) {
         QueryTuple tuple = Operator<B>::output_->getTuple(i);
-        B dummyTag = tuple.getDummyTag();
-        B predicateOut = predicate_.callBoolExpression(tuple);
+        B dummy_tag = tuple.getDummyTag();
 
-        dummyTag =  ((!predicateOut) | dummyTag); // (!) because dummyTag is false if our selection criteria is satisfied
 
+        shared_ptr<QuerySchema> plain_schema_dbg(new QuerySchema(QuerySchema::toPlain(Operator<B>::output_schema_)));
+        std::cout << "***Evaluating tuple: " << ((SecureTuple *) &tuple)->reveal(plain_schema_dbg, PUBLIC).toString(true) << " dummy tag=" << FieldUtilities::extract_bool(dummy_tag) << std::endl;
+        std::cout << "***Tuple bits: " <<  FieldUtilities::printTupleBits(tuple) << std::endl;
+
+        B predicate_out = predicate_.callBoolExpression(tuple);
+
+        dummy_tag =  ((!predicate_out) | dummy_tag); // (!) because dummyTag is false if our selection criteria is satisfied
+        std::cout << "***Predicate: " << FieldUtilities::extract_bool(predicate_out) << std::endl;
         QueryTuple<B> to_write = Operator<B>::output_->getTuple(i); // container pointer to source data
-        to_write.setDummyTag(dummyTag);
+        to_write.setDummyTag(dummy_tag);
+
 
     }
 

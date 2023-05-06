@@ -12,7 +12,10 @@ namespace vaultdb {
     class ScalarAggregateImpl {
     public:
         ScalarAggregateImpl(const uint32_t & ordinal, const QueryFieldDesc &def) : ordinal_(ordinal),
-            column_def_(def), type_(def.getType()),  zero_(FieldFactory<B>::getZero(type_)),   one_(FieldFactory<B>::getOne(type_)) { }
+            column_def_(def), type_(def.getType()),  zero_(FieldFactory<B>::getZero(type_)),   one_(FieldFactory<B>::getOne(type_)) {
+            std::cout << "Zero impl " << ScalarAggregateImpl<B>::zero_.reveal() << '\n';
+
+        }
         virtual ~ScalarAggregateImpl() = default;
         virtual void accumulate(const QueryTuple<B> & tuple) = 0;
         virtual  Field<B> getResult() const = 0;
@@ -45,7 +48,11 @@ namespace vaultdb {
     template<typename B>
     class ScalarSumImpl : public ScalarAggregateImpl<B> {
     public:
-        ScalarSumImpl(const uint32_t & ordinal, const QueryFieldDesc & def) : ScalarAggregateImpl<B>(ordinal, def), running_sum_(ScalarAggregateImpl<B>::zero_) {}
+        ScalarSumImpl(const uint32_t & ordinal, const QueryFieldDesc & def) : ScalarAggregateImpl<B>(ordinal, def), running_sum_(ScalarAggregateImpl<B>::zero_) {
+            ScalarAggregateImpl<B>::column_def_.setSize(TypeUtilities::getTypeSize(ScalarAggregateImpl<B>::type_));
+            std::cout << "Starting sum: " << running_sum_.reveal() << '\n';
+            std::cout << "Zero: " << ScalarAggregateImpl<B>::zero_.reveal() << '\n';
+        }
         ~ScalarSumImpl() = default;
         void accumulate(const QueryTuple<B> & tuple) override;
          Field<B> getResult() const override;

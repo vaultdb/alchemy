@@ -1,10 +1,10 @@
 #based on emp-tool pipeline
 # https://github.com/emp-toolkit/emp-tool
-cmake_minimum_required (VERSION 3.11)
+cmake_minimum_required (VERSION 3.14)
 set(CMAKE_CXX_STANDARD 17)
 project (vaultdb-emp)
 set(NAME "vaultdb-emp")
-
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include(cmake/common.cmake)
 
@@ -12,7 +12,7 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        release-1.11.0
+  GIT_TAG        v1.13.0
 )
 
 FetchContent_GetProperties(googletest)
@@ -45,11 +45,6 @@ find_package(Boost REQUIRED COMPONENTS date_time system log log_setup program_op
 find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
 
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/data
-        ${CMAKE_CURRENT_BINARY_DIR}/operators
-        ${CMAKE_CURRENT_BINARY_DIR}/query_table
-        ${CMAKE_CURRENT_BINARY_DIR}/common)
 
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
 
@@ -121,8 +116,6 @@ set(sources
 
 
 #message("verify ${OPENSSL_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY}: ${EMP_ZK_LIBRARY}  ")
-#message("Boost Libs: ${Boost_LIBRARIES} " )
-
 
 add_library(${NAME} SHARED ${sources})
 

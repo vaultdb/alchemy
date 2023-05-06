@@ -63,7 +63,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
         --colCount; // don't include dummy tag as a separate column
 
 
-    std::unique_ptr<QuerySchema> result(new QuerySchema(colCount));
+    std::unique_ptr<QuerySchema> result(new QuerySchema());
 
     for(uint32_t i = 0; i < colCount; ++i) {
        string colName =  input.column_name(i);
@@ -145,30 +145,29 @@ string PsqlDataProvider::getTableName(int oid) {
 }
 
 void
-PsqlDataProvider::getTuple(pqxx::row row, bool hasDummyTag, PlainTable &dst_table, const size_t &idx) {
-        int colCount = row.size();
+PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_table, const size_t &idx) {
+        int col_count = row.size();
 
-
-        if(hasDummyTag) {
-            --colCount;
+        if(has_dummy_tag) {
+            --col_count;
         }
 
 
-        PlainTuple dst_tuple = dst_table.getTuple(idx); // writes in place
-        for (int i=0; i < colCount; i++) {
-            const pqxx::field srcField = row[i];
+        PlainTuple dst = dst_table.getTuple(idx); // writes in place
+        for (int i=0; i < col_count; i++) {
+            const pqxx::field src = row[i];
 
-           PlainField  parsedField = getField(srcField);
-            dst_tuple.setField(i, parsedField);
+           PlainField  parsed = getField(src);
+            dst.setField(i, parsed);
         }
 
-        if(hasDummyTag) {
+        if(has_dummy_tag) {
 
-                PlainField parsedField = getField(row[colCount]); // get the last col
-                dst_tuple.setDummyTag(parsedField);
+                PlainField parsed = getField(row[col_count]); // get the last col
+                dst.setDummyTag(parsed);
         }
         else {
-            dst_tuple.setDummyTag(false); // default
+            dst.setDummyTag(false); // default, not a dummy
         }
 
     }

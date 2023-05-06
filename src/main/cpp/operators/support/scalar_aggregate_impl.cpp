@@ -34,10 +34,13 @@ template<typename B>
 void ScalarSumImpl<B>::accumulate(const QueryTuple<B> &tuple) {
     Field<B> agg_input = tuple.getField(ScalarAggregateImpl<B>::ordinal_);
     running_sum_ = Field<B>::If(tuple.getDummyTag(), running_sum_, running_sum_ + agg_input);
+    std::cout << "Accumulating sum: " << running_sum_.reveal() << " added " << agg_input.reveal() << '\n';
+
 }
 
 template<typename B>
  Field<B> ScalarSumImpl<B>::getResult() const {
+    std::cout << "Returning sum: " << running_sum_.reveal() << '\n';
     // extend this to a LONG to keep with PostgreSQL convention
    // if(running_sum_.getType() == FieldType::INT || running_sum_.getType() == FieldType::SECURE_INT)
     //    return FieldFactory<B>::toLong(running_sum_);
@@ -90,7 +93,8 @@ ScalarMaxImpl<B>::ScalarMaxImpl(const uint32_t &ordinal, const QueryFieldDesc & 
         running_max_ = Field<B>(def.getType(), t, 0);
     }
     else
-        running_max_ = FieldFactory<B>::getMax(def.getType());
+        running_max_ = FieldFactory<B>::getMin(def.getType());
+    std::cout << "Starting with max: " << running_max_ << std::endl;
 }
 
 template<typename B>
@@ -108,6 +112,7 @@ template<typename B>
 
 template<typename B>
 ScalarAvgImpl<B>::ScalarAvgImpl(const uint32_t &ordinal, const QueryFieldDesc & def) :  ScalarAggregateImpl<B>(ordinal, def) {
+    ScalarAggregateImpl<B>::column_def_.setSize(TypeUtilities::getTypeSize(ScalarAggregateImpl<B>::type_)); // reset bit packing for this
     running_sum_ = ScalarAggregateImpl<B>::zero_;
     running_count_ = ScalarAggregateImpl<B>::zero_;
 

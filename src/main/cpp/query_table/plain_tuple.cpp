@@ -157,8 +157,8 @@ string QueryTuple<bool>::toString(const bool &showDummies) const {
 
 QueryTuple<bool>::QueryTuple(const std::shared_ptr<QuerySchema> &schema) {
     size_t tuple_byte_cnt = schema->size()/8;
-    managed_data_ = std::unique_ptr<int8_t[]>(new int8_t[tuple_byte_cnt]);
-    fields_ = managed_data_.get();
+    managed_data_ = new int8_t[tuple_byte_cnt];
+    fields_ = managed_data_;
 
 
     // Warning: this will cause issues if used for mutable tuples
@@ -166,22 +166,22 @@ QueryTuple<bool>::QueryTuple(const std::shared_ptr<QuerySchema> &schema) {
     // formerly:
     // query_schema_ = std::make_shared<QuerySchema>(schema);
     query_schema_ = schema;
+
+
 }
 
 QueryTuple<bool>::QueryTuple(const QueryTuple<bool> &src) {
-    query_schema_ = std::shared_ptr<QuerySchema>(new QuerySchema(*(src.getSchema())));
+    query_schema_ = src.getSchema();
     if(src.hasManagedStorage()) { // allocate storage for this copy
         size_t tuple_byte_cnt = query_schema_->size()/8;
-        managed_data_ = std::unique_ptr<int8_t[]>(new int8_t[tuple_byte_cnt]);
-        fields_ = managed_data_.get();
+        managed_data_ = new int8_t[tuple_byte_cnt];
+        fields_ = managed_data_;
     }
+    memcpy(fields_, src.fields_, query_schema_->size()/8);
 
 }
 
 
-bool QueryTuple<bool>::hasManagedStorage() const {
-    return managed_data_.get() != nullptr;
-}
 
 PlainTuple &QueryTuple<bool>::operator=(const PlainTuple &other) {
     assert(*this->getSchema() == *(other.getSchema()));
