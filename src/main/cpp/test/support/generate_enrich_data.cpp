@@ -43,7 +43,7 @@ std::string getCurrentWorkingDirectory() {
     char cwd[PATH_MAX];
     char *ret = getcwd(cwd, sizeof(cwd));
     if(ret == nullptr) {
-        std::cout << "could not detect current working directory! Exiting...\n";
+        std::cout << "Could not detect current working directory! Exiting...\n";
         exit(-1);
     }
     std::string  currentWorkingDirectory = std::string(cwd);
