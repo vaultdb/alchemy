@@ -165,7 +165,7 @@ TEST_F(SecureGroupByAggregateTest, test_max_dummies) {
     runDummiesTest(expectedOutputQuery, aggregators);
 }
 
-// // brings in about 200 tuples
+ // brings in about 200 tuples
 TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
 
     // TODO: if <= 194, then we start to get floating point drift.
