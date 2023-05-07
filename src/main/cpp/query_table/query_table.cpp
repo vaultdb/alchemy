@@ -481,8 +481,13 @@ std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable &table,
 
     for(uint32_t i = 0; i < tuple_cnt; ++i)  {
         const SecureTuple tuple = table.getImmutableTuple(i);
-        PlainTuple dst_tuple = tuple.reveal(dst_schema, party);
-        dst_table->putTuple(i, dst_tuple);
+        if(!tuple.getDummyTag().reveal()) { // if real tuple (not a dummy), reveal it
+            PlainTuple dst_tuple = tuple.reveal(dst_schema, party);
+            dst_table->putTuple(i, dst_tuple);
+        }
+        else {
+            (*dst_table)[i].setDummyTag(true);
+        }
     }
 
     return dst_table;
