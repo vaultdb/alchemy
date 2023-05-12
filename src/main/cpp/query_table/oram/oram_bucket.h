@@ -29,7 +29,7 @@ namespace vaultdb {
         void conditionalAdd(const OramBlock<B> & block, const Field<B> & id, const B & cond);
         OramBlock<B> pop();
         OramBlock<B> conditionalPop(const B & cond);
-        static OramBlock<B> mux(const OramBlock<B> & a, const OramBlock<B> & b, B cond);
+        static OramBlock<B> If(const OramBlock<B> & a, const OramBlock<B> & b, B cond);
         static OramBucket<B> Xor(const OramBucket<B> & a, const OramBucket<B> & b);
 
     };
