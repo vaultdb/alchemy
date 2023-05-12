@@ -66,7 +66,18 @@ OramBlock<B> OramBucket<B>::conditionalReadAndRemove(const Field<B> &id, const B
 
 
 template<typename B>
-void OramBucket<B>::add(const OramBlock<B> &block, const Field<B> &id) {
+void OramBucket<B>::add(const OramBlock<B> &new_block, const Field<B> &id) {
+    B added(false);
+    for(int i = 0; i < blocks_.size(); ++i) {
+        B match = ((!blocks_[i].isDummy()) & (id == blocks_[i].id_));
+        added |= match;
+    }
+
+    for(int i = 0; i < blocks_.size(); ++i) {
+        B should_add = ((!blocks_[i].isDummy()) & !added);
+        blocks_[i] = OramBlock<B>::mux(should_add, new_block, blocks_[i]);
+
+    }
 
 }
 
