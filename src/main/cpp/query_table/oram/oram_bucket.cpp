@@ -4,7 +4,7 @@
 using namespace vaultdb;
 
 template<typename B>
-OramBucket<B>::OramBucket(const shared_ptr <QuerySchema> &schema, int z, int my_depth) :  bucket_depth_(my_depth), dummy_block_(schema) {
+OramBucket<B>::OramBucket(const shared_ptr <QuerySchema> &schema, int z) :  dummy_block_(schema) {
     blocks_ = vector<OramBlock<B>>(z);
     for(int i = 0; i < z; ++i)
         blocks_[i] = OramBucket<B>(schema);
@@ -128,14 +128,18 @@ OramBlock<B> OramBucket<B>::conditionalPop(const B &cond) {
     return result;
 }
 
-template<typename B>
-OramBlock<B> OramBucket<B>::If(const OramBlock<B> &a, const OramBlock<B> &b, B cond) {
-    return OramBlock<B>(std::shared_ptr());
-}
 
 
 
 template<typename B>
 OramBlock<B> OramBucket<B>::Xor(const OramBucket<B> & a, const OramBucket<B> & b) {
+    assert(a.blocks_.size() == b.blocks_.size());
+    assert(*(a.blocks_[0].tuple_.getSchema()) == *(b.blocks_[0].tuple_.getSchema()) );
+    OramBucket res(a.blocks_[0].tuple_.getSchema(), a.blocks_.size());
 
+    for(int i = 0; i < res.blocks_.size(); ++i) {
+        res.blocks_[i] = OramBlock<B>::Xor(a.blocks_[i], b.blocks_[i];
+    }
+
+    return res;
 }
