@@ -115,7 +115,17 @@ OramBlock<B> OramBucket<B>::pop() {
 
 template<typename B>
 OramBlock<B> OramBucket<B>::conditionalPop(const B &cond) {
-    return OramBlock<B>(std::shared_ptr());
+    OramBlock<B> result = dummy_block_;
+    B popped(cond);
+    for(int i = 0; i < blocks_.size(); ++i) {
+        B should_pop = ((!popped) & (!blocks_[i].isDummy()));
+        popped |= should_pop;
+        result = OramBlock<B>::If(should_pop, blocks_[i], result);
+        B new_dummy = emp::If(should_pop, true, blocks_[i].isDummy());
+        blocks_[i].setDummyTag(new_dummy);
+    }
+
+    return result;
 }
 
 template<typename B>
