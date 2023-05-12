@@ -75,21 +75,30 @@ void OramBucket<B>::add(const OramBlock<B> &new_block, const Field<B> &id) {
 
     for(int i = 0; i < blocks_.size(); ++i) {
         B should_add = ((!blocks_[i].isDummy()) & !added);
-        blocks_[i] = OramBlock<B>::mux(should_add, new_block, blocks_[i]);
-
+        blocks_[i] = OramBlock<B>::If(should_add, new_block, blocks_[i]);
     }
 
 }
 
 
 template<typename B>
-void OramBucket<B>::conditionalAdd(const OramBlock<B> &block, const Field<B> &id, const B &cond) {
+void OramBucket<B>::conditionalAdd(const OramBlock<B> &new_block, const Field<B> &id, const B &cond) {
+    B added(cond);
+    for(int i = 0; i < blocks_.size(); ++i) {
+        B match = ((!blocks_[i].isDummy()) & (id == blocks_[i].id_));
+        added |= match;
+    }
+
+    for(int i = 0; i < blocks_.size(); ++i) {
+        B should_add = ((!blocks_[i].isDummy()) & !added);
+        blocks_[i] = OramBlock<B>::If(should_add, new_block, blocks_[i]);
+    }
 
 }
 
 template<typename B>
 OramBlock<B> OramBucket<B>::pop() {
-    return OramBlock<B>(std::shared_ptr());
+
 }
 
 
