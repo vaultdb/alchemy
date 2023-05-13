@@ -50,6 +50,9 @@ namespace vaultdb {
 
         static void mkdir(const std::string & path);
 
+        static inline bool If(const bool & cond, const bool & lhs, const bool & rhs) { return (cond) ? lhs : rhs; }
+        static inline emp::Bit If(const emp::Bit & cond, const emp::Bit & lhs, const emp::Bit & rhs) { return emp::If(cond, lhs, rhs); }
+
         // for use in plan reader
         static AggregateId getAggregateId(const std::string & src);
         static uint64_t getEpoch();

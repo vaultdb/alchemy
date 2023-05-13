@@ -11,10 +11,7 @@ OramParty<B>::OramParty(int tree_depth, int tuples_per_bucket, const shared_ptr<
 
 template<typename B>
 OramBucket<B> *OramParty<B>::readBucket(const int & path, const int & depth) {
-    vector<bool> bits = intToBits(path);
-
-    return root_->readBucket(bits, depth);
-
+    return nullptr;
 }
 
 

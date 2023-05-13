@@ -44,7 +44,4 @@ namespace vaultdb {
 }
 
 
-template class vaultdb::OramBucket<bool>;
-template class vaultdb::OramBucket<emp::Bit>;
-
 #endif

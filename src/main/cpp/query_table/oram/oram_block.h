@@ -56,9 +56,9 @@ namespace vaultdb {
             int schema_bytes = (is_secure) ? schema->size() * TypeUtilities::getEmpBitSize() : schema->size() / 8;
 
 
-            int8_t *dst = res.tuple_.getData();
-            int8_t *lhs_bytes = lhs.tuple_.getData();
-            int8_t *rhs_bytes = rhs.tuple_.getData();
+            int8_t *dst = (int8_t *) res.tuple_.getData();
+            int8_t *lhs_bytes = (int8_t *)  lhs.tuple_.getData();
+            int8_t *rhs_bytes = (int8_t *)  rhs.tuple_.getData();
 
 
             for(int i = 0; i < schema_bytes; ++i) {
@@ -71,6 +71,7 @@ namespace vaultdb {
             res.id_ = lhs.id_ ^ rhs.id_;
             res.pos_ = lhs.pos_ ^ rhs.pos_;
 
+            return res;
         }
 
 

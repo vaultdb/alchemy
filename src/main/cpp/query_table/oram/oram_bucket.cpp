@@ -4,10 +4,8 @@
 using namespace vaultdb;
 
 template<typename B>
-OramBucket<B>::OramBucket(const shared_ptr <QuerySchema> &schema, int z) :  dummy_block_(schema) {
-    blocks_ = vector<OramBlock<B>>(z);
-    for(int i = 0; i < z; ++i)
-        blocks_[i] = OramBucket<B>(schema);
+OramBucket<B>::OramBucket(const shared_ptr<QuerySchema> &schema, int z) :  dummy_block_(schema) {
+    blocks_ = std::vector<OramBlock<B>>(z, dummy_block_);
 
 }
 
@@ -43,7 +41,7 @@ OramBlock<B> OramBucket<B>::readAndRemove(const Field<B> &id) {
     for(int i = 0; i < blocks_.size(); ++i) {
         B eq = ((id == blocks_[i].id_) & !blocks_[i].tuple_.getDummyTag()) ;
         result = OramBlock<B>::If(eq, blocks_[i], result);
-        B new_dummy = emp::If(eq, true, blocks_[i].isDummy());
+        B new_dummy = Utilities::If(eq, true, blocks_[i].isDummy());
         blocks_[i].setDummyTag(new_dummy);
     }
 
@@ -57,7 +55,7 @@ OramBlock<B> OramBucket<B>::conditionalReadAndRemove(const Field<B> &id, const B
     for(int i = 0; i < blocks_.size(); ++i) {
         B eq = ((id == blocks_[i].id_) & (!blocks_[i].tuple_.getDummyTag())  & cond);
         result = OramBlock<B>::If(eq, blocks_[i], result);
-        B new_dummy = emp::If(eq, true, blocks_[i].isDummy());
+        B new_dummy = Utilities::If(eq, true, blocks_[i].isDummy());
         blocks_[i].setDummyTag(new_dummy);
     }
 
@@ -70,7 +68,7 @@ void OramBucket<B>::add(const OramBlock<B> &new_block, const Field<B> &id) {
     B added(false);
     for(int i = 0; i < blocks_.size(); ++i) {
         B match = ((!blocks_[i].isDummy()) & (id == blocks_[i].id_));
-        added |= match;
+        added = added | match;
     }
 
     for(int i = 0; i < blocks_.size(); ++i) {
@@ -86,7 +84,7 @@ void OramBucket<B>::conditionalAdd(const OramBlock<B> &new_block, const Field<B>
     B added(cond);
     for(int i = 0; i < blocks_.size(); ++i) {
         B match = ((!blocks_[i].isDummy()) & (id == blocks_[i].id_));
-        added |= match;
+        added = added | match;
     }
 
     for(int i = 0; i < blocks_.size(); ++i) {
@@ -102,9 +100,9 @@ OramBlock<B> OramBucket<B>::pop() {
     B popped(false);
     for(int i = 0; i < blocks_.size(); ++i) {
         B should_pop = ((!popped) & (!blocks_[i].isDummy()));
-        popped |= should_pop;
+        popped = should_pop | popped;
         result = OramBlock<B>::If(should_pop, blocks_[i], result);
-        B new_dummy = emp::If(should_pop, true, blocks_[i].isDummy());
+        B new_dummy = Utilities::If(should_pop, true, blocks_[i].isDummy());
         blocks_[i].setDummyTag(new_dummy);
     }
 
@@ -119,9 +117,9 @@ OramBlock<B> OramBucket<B>::conditionalPop(const B &cond) {
     B popped(cond);
     for(int i = 0; i < blocks_.size(); ++i) {
         B should_pop = ((!popped) & (!blocks_[i].isDummy()));
-        popped |= should_pop;
+        popped = should_pop | popped;
         result = OramBlock<B>::If(should_pop, blocks_[i], result);
-        B new_dummy = emp::If(should_pop, true, blocks_[i].isDummy());
+        B new_dummy = Utilities::If(should_pop, true, blocks_[i].isDummy());
         blocks_[i].setDummyTag(new_dummy);
     }
 
@@ -143,3 +141,7 @@ OramBucket<B> OramBucket<B>::Xor(const OramBucket<B> & a, const OramBucket<B> & 
 
     return res;
 }
+
+template class vaultdb::OramBucket<bool>;
+template class vaultdb::OramBucket<emp::Bit>;
+

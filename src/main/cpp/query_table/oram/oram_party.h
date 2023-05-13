@@ -10,7 +10,7 @@ namespace  vaultdb {
     template<typename B>
     class OramParty {
     public:
-        OramParty(int tree_depth, int tuples_per_bucket, const shared_ptr<QuerySchema> & schema);
+        OramParty(int N, int tuples_per_bucket, const shared_ptr<QuerySchema> & schema);
 
         OramBucket<B> *readBucket(const int & path, const int & depth);
 
