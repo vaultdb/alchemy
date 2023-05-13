@@ -2,7 +2,7 @@
 #define _QUERY_TABLE_TEST_QUERIES_H
 
 #include <gtest/gtest.h>
-#include <vaultdb.h>
+#include <query_table/query_table.h>
 
 using namespace vaultdb;
 
