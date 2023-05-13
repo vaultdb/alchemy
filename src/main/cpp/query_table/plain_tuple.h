@@ -82,6 +82,11 @@ namespace  vaultdb {
 
         static void writeSubset(const PlainTuple & src_tuple, const PlainTuple & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx);
 
+        static PlainTuple  If(const bool & cond,  const PlainTuple & lhs, const PlainTuple & rhs) {
+                if(cond)
+                    return lhs;
+                return rhs;
+        }
 
     };
     std::ostream &operator<<(std::ostream &os, const QueryTuple<bool> &tuple);

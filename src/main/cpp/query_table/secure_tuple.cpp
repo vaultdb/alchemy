@@ -276,6 +276,19 @@ void QueryTuple<emp::Bit>::writeSubset(const SecureTuple &src_tuple, const Secur
 
 }
 
+SecureTuple QueryTuple<emp::Bit>::If(const Bit &cond, const SecureTuple &lhs, const SecureTuple &rhs) {
+    assert(*lhs.query_schema_ == *rhs.query_schema_);
+    SecureTuple output(lhs.getSchema());
+
+    for(int i = 0; i < output.query_schema_->getFieldCount(); ++i) {
+        output[i] = SecureField::If(cond, lhs[i], rhs[i]);
+    }
+
+    emp::Bit dummy_tag = emp::If(cond, lhs.getDummyTag(), rhs.getDummyTag());
+    output.setDummyTag(dummy_tag);
+    return output;
+}
+
 
 
 

@@ -763,6 +763,45 @@ Field<B> Field<B>::operator%(const Field &rhs) const {
 
 
 template<typename B>
+Field<B> Field<B>::operator^(const Field &rhs) const {
+    assert(type_ == rhs.getType());
+
+    Value v;
+
+    switch(type_) {
+        case FieldType::BOOL:
+            v = xorHelper<bool>(rhs);
+            break;
+        case FieldType::INT:
+            v = xorHelper<int32_t>(rhs);
+            break;
+        case FieldType::LONG:
+            v = xorHelper<int64_t>(rhs);
+            break;
+        case FieldType::FLOAT:
+            v = bitwiseXor<float>(rhs);
+            break;
+        case FieldType::STRING:
+            v = xorStrings(getValue<std::string>(), rhs.getValue<string>());
+             break;
+        case FieldType::SECURE_BOOL:
+            v = xorHelper<emp::Bit>(rhs);
+            break;
+        case FieldType::SECURE_INT:
+        case FieldType::SECURE_LONG:
+        case FieldType::SECURE_STRING:
+            v = xorHelper<emp::Integer>(rhs);
+            break;
+        case FieldType::SECURE_FLOAT:
+            v = xorHelper<emp::Float>(rhs);
+            break;
+        default: // remaining types (BOOL, STRING, FLOAT) go here
+            throw;
+    }
+    return Field(type_, v, string_length_);
+}
+
+template<typename B>
 B Field<B>::operator&&(const Field &cmp) const {
     assert(type_ == cmp.getType());
 

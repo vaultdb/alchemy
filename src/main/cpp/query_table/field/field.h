@@ -70,6 +70,7 @@ namespace vaultdb {
         B operator<=(const Field & rhs) const;
         B operator>(const Field & rhs) const;
 
+        Field  operator^(const Field &rhs) const; // bitwise xor
         Field  operator+(const Field &rhs) const;
         Field  operator-(const Field &rhs) const;
         Field  operator*(const Field &rhs) const;
@@ -119,6 +120,13 @@ namespace vaultdb {
         }
 
         template<typename T>
+        inline T xorHelper(const Field<B> & r) const {
+            T lhs = getValue<T>();
+            T rhs = r.getValue<T>();
+            return lhs  ^ rhs;
+        }
+
+        template<typename T>
         inline T plusHelper(const Field<B> & r) const {
             T lhs = getValue<T>();
             T rhs = r.getValue<T>();
@@ -152,10 +160,41 @@ namespace vaultdb {
             T rhs = r.getValue<T>();
             return lhs  % rhs;
         }
+
+        template<typename T>
+        inline T bitwiseXor(const Field<B> & r) const {
+            T lhs = getValue<T>();
+            T rhs = r.getValue<T>();
+            T res;
+
+            int8_t *l_cursor = (int8_t *) &lhs;
+            int8_t *r_cursor = (int8_t *)  &rhs;
+            int8_t *dst = (int8_t *)  &res;
+            for(int i = 0; i < sizeof(T); ++i) {
+                *dst = *l_cursor ^ *r_cursor;
+                ++dst;
+                ++l_cursor;
+                ++r_cursor;
+            }
+            return res;
+        }
+
+        static inline std::string xorStrings(const std::string & lhs, const std::string & rhs) {
+            assert(lhs.size() == rhs.size());
+            std::string res = lhs;
+
+            for(int i = 0; i < lhs.size(); ++i) {
+                res[i] = lhs[i] ^ rhs[i];
+            }
+
+            return res;
+        }
+
         static Value secretShareHelper(const PlainField &field, const QueryFieldDesc &field_desc, const int &party,
                                        const bool &send);
 
     };
+
 
 
 

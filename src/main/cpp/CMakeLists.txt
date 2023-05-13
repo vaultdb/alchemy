@@ -111,6 +111,9 @@ set(sources
 		expression/visitor/type_inference_visitor.cpp
 		expression/visitor/plain_to_secure_visitor.cpp
 		expression/visitor/type_validation_visitor.cpp
+
+		query_table/oram/oram_bucket.cpp
+		query_table/oram/oram_party.cpp
 		)
 
 

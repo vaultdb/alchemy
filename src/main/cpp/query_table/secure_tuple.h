@@ -79,6 +79,7 @@ namespace vaultdb {
 
         static void writeSubset(const SecureTuple & src_tuple, const SecureTuple & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx);
 
+        static SecureTuple If(const emp::Bit & cond, const SecureTuple & lhs, const SecureTuple & rhs);
 
     };
 

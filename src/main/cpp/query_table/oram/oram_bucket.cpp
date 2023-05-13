@@ -132,13 +132,13 @@ OramBlock<B> OramBucket<B>::conditionalPop(const B &cond) {
 
 
 template<typename B>
-OramBlock<B> OramBucket<B>::Xor(const OramBucket<B> & a, const OramBucket<B> & b) {
+OramBucket<B> OramBucket<B>::Xor(const OramBucket<B> & a, const OramBucket<B> & b) {
     assert(a.blocks_.size() == b.blocks_.size());
     assert(*(a.blocks_[0].tuple_.getSchema()) == *(b.blocks_[0].tuple_.getSchema()) );
     OramBucket res(a.blocks_[0].tuple_.getSchema(), a.blocks_.size());
 
     for(int i = 0; i < res.blocks_.size(); ++i) {
-        res.blocks_[i] = OramBlock<B>::Xor(a.blocks_[i], b.blocks_[i];
+        res.blocks_[i] = OramBlock<B>::Xor(a.blocks_[i], b.blocks_[i]);
     }
 
     return res;
