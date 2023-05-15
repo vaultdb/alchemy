@@ -26,7 +26,7 @@ namespace vaultdb {
             id_ = pos_ = FieldFactory<B>::getZero(f);
         }
 
-        inline B isDummy() {
+        inline B isDummy() const {
             return tuple_.getDummyTag();
         }
 

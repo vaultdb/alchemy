@@ -129,3 +129,48 @@ bool TypeUtilities::types_equivalent(const FieldType & lhs, const FieldType & rh
 
      return false;
  }
+
+template<typename T>
+FieldType TypeUtilities::getFieldType(int length) {
+    if(std::is_same_v<bool, T>) {
+        return FieldType::BOOL;
+    }
+
+    if(std::is_same_v<int32_t, T>) {
+        return FieldType::INT;
+    }
+
+    if(std::is_same_v<int64_t, T>) {
+        return FieldType::BOOL;
+    }
+
+    if(std::is_same_v<float_t , T>) {
+        return FieldType::FLOAT;
+    }
+
+    if(std::is_same_v<string , T>) {
+        return FieldType::STRING;
+    }
+
+    if(std::is_same_v<emp::Bit, T>) {
+        return FieldType::SECURE_BOOL;
+    }
+
+    // assume 32-bit ints are secure int, same with 64,
+    // all others are presumed secure string
+    // be wary of this assumption
+    if(std::is_same_v<emp::Integer, T>) {
+        if(length == 32 || length == 0) // 0 --> uninitialized
+            return FieldType::SECURE_INT;
+        if(length == 64)
+            return FieldType::SECURE_LONG;
+
+        return FieldType::SECURE_STRING;
+    }
+
+    if(std::is_same_v<emp::Float , T>) {
+        return FieldType::SECURE_FLOAT;
+    }
+
+    return FieldType::INVALID;
+}

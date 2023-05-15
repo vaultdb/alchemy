@@ -1,7 +1,7 @@
 #based on emp-tool pipeline
 # https://github.com/emp-toolkit/emp-tool
 cmake_minimum_required (VERSION 3.14)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 project (vaultdb-emp)
 set(NAME "vaultdb-emp")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -112,8 +112,6 @@ set(sources
 		expression/visitor/plain_to_secure_visitor.cpp
 		expression/visitor/type_validation_visitor.cpp
 
-		query_table/oram/oram_bucket.cpp
-		query_table/oram/oram_party.cpp
 		)
 
 

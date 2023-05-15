@@ -28,6 +28,8 @@ namespace vaultdb {
         static FieldType toPlain(const FieldType & secureType);
         static bool  isEncrypted(const FieldType & type);
 
+        template<typename T>
+        static FieldType getFieldType(int length = 0);
 
         static bool types_equivalent(const FieldType &lhs, const FieldType &rhs);
     };
