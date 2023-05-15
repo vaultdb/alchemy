@@ -504,16 +504,12 @@ Field<B> Field<B>::If(const B &choice, const Field &l, const Field &r) {
 
 
 
-
-
 template<typename B>
 void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
     assert(l.getType() == r.getType());
     assert(l.string_length_ == r.string_length_);
 
     Value choiceBit = choice;
-    Value lhs  = l.payload_;
-    Value rhs = r.payload_;
     Value v;
 
     Value tmp;
@@ -524,28 +520,31 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
 
     switch (l.type_) {
         case FieldType::BOOL:
-            swap<bool>(&lhs, &rhs);
+            if (boost::get<bool>(choiceBit))
+                swap<bool>(&l.payload_, &r.payload_);
             break;
         case FieldType::INT:
-            swap<int32_t>(&lhs, &rhs);;
+            if (boost::get<bool>(choiceBit))
+                swap<int32_t>(&l.payload_, &r.payload_);
             break;
         case FieldType::LONG:
-            swap<int64_t>(&lhs, &rhs);;
+            if (boost::get<bool>(choiceBit))
+                    swap<int64_t>(&lhs, &rhs);
             break;
         case FieldType::STRING:
         case FieldType::FLOAT:
             if (boost::get<bool>(choiceBit)) {
-                tmp = lhs;
-                lhs = rhs;
-                rhs = tmp;
+                tmp = l.payload_;
+                l.payload_ = r.payload_;
+                r.payload_ = tmp;
             }
             break;
         case FieldType::SECURE_BOOL:
             bl = boost::get<emp::Bit>(lhs);
             br = boost::get<emp::Bit>(rhs);
             emp::swap(boost::get<emp::Bit>(choiceBit), bl, br);
-            lhs = bl;
-            rhs = br;
+            l.payload_ = bl;
+            r.payload_ = br;
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
@@ -553,15 +552,15 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
             il = boost::get<emp::Integer>(lhs);
             ir = boost::get<emp::Integer>(rhs);
             emp::swap(boost::get<emp::Bit>(choiceBit), il, ir);
-            lhs = il;
-            rhs = ir;
+            l.payload_ = il;
+            r.payload_ = ir;
             break;
         case FieldType::SECURE_FLOAT:
             fl = boost::get<emp::Float>(lhs);
             fr = boost::get<emp::Float>(rhs);
             emp::swap(boost::get<emp::Bit>(choiceBit), fl, fr);
-            lhs = fl;
-            rhs = fr;
+            l.payload_ = fl;
+            r.payload_ = fr;
             break;
         default:
             throw;
