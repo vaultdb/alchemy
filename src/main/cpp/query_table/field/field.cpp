@@ -540,8 +540,8 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
             }
             break;
         case FieldType::SECURE_BOOL:
-            bl = boost::get<emp::Bit>(lhs);
-            br = boost::get<emp::Bit>(rhs);
+            bl = boost::get<emp::Bit>(l.payload_);
+            br = boost::get<emp::Bit>(r.payload_);
             emp::swap(boost::get<emp::Bit>(choiceBit), bl, br);
             l.payload_ = bl;
             r.payload_ = br;
@@ -549,15 +549,15 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
-            il = boost::get<emp::Integer>(lhs);
-            ir = boost::get<emp::Integer>(rhs);
+            il = boost::get<emp::Integer>(l.payload_);
+            ir = boost::get<emp::Integer>(r.payload_);
             emp::swap(boost::get<emp::Bit>(choiceBit), il, ir);
             l.payload_ = il;
             r.payload_ = ir;
             break;
         case FieldType::SECURE_FLOAT:
-            fl = boost::get<emp::Float>(lhs);
-            fr = boost::get<emp::Float>(rhs);
+            fl = boost::get<emp::Float>(l.payload_);
+            fr = boost::get<emp::Float>(r.payload_);
             emp::swap(boost::get<emp::Bit>(choiceBit), fl, fr);
             l.payload_ = fl;
             r.payload_ = fr;
