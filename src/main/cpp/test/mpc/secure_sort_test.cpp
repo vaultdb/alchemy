@@ -181,6 +181,7 @@ TEST_F(SecureSortTest, tpchQ8Sort) {
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
+    sortDefinition.emplace_back(1, SortDirection::DESCENDING);
 
 
     SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);

@@ -134,6 +134,8 @@ TEST_F(SortTest, tpchQ8Sort) {
 
     SortDefinition sortDefinition;
     sortDefinition.emplace_back(0, SortDirection::ASCENDING);
+    sortDefinition.emplace_back(1, SortDirection::DESCENDING);
+
     expected->setSortOrder(sortDefinition);
 
 
