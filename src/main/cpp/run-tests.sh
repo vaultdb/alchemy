@@ -41,7 +41,7 @@ bash run.sh secure_group_by_aggregate_test
 bash run.sh enrich_test
 bash run.sh secure_tpch_test
 
-# ZK Tests -- these can be optional
+# ZK Tests -- these are optional
 #bash run.sh zk_test
 #bash run.sh zk_filter_test
 #bash run.sh  zk_basic_join_test
