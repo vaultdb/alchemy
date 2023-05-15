@@ -155,7 +155,7 @@ std::string DataUtilities::printSortDefinition(const SortDefinition &sortDefinit
         init = true;
     }
 
-    result << ")";
+    result << "}";
     return result.str();
 }
 
