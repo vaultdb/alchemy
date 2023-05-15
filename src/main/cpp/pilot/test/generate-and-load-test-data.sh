@@ -16,7 +16,8 @@ mkdir -p  pilot/secret_shares/tables
 
 
 #cmake .  
-make -j5 
+make -j4 generate_enrich_data_three_parties
+
 
 ./bin/generate_enrich_data_three_parties pilot/test/input/ $TUPLE_COUNT 
 

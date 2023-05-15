@@ -57,6 +57,11 @@ namespace  vaultdb {
         inline bool fieldInitialized(const int & ordinal) { return fields_.find(ordinal) != fields_.end();}
         void initializeFieldOffsets();
 
+        inline void reset() {
+            fields_.clear();
+            offsets_.clear();
+            tuple_size_ = 0;
+        }
 
     };
 

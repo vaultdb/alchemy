@@ -23,6 +23,7 @@ size_t QuerySchema::size() const {
 }
 
 std::ostream &vaultdb::operator<<(std::ostream &os, const QuerySchema &schema) {
+    if(schema.getFieldCount() < 1) {  os << "()"; return os;  }
 
     os << "(" << schema.getField(0);
 
