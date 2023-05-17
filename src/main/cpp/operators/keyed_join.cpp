@@ -54,7 +54,7 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
     shared_ptr<QueryTable<B> > lhs_table = Operator<B>::children_[0]->getOutput(); // foreign key
     shared_ptr<QueryTable<B> > rhs_table = Operator<B>::children_[1]->getOutput(); // primary key
-    QueryTuple<B> lhs_tuple(lhs_table->getSchema()), rhs_tuple(rhs_table->getSchema());
+    QueryTuple<B> lhs_tuple, rhs_tuple;
 
     uint32_t output_tuple_cnt = lhs_table->getTupleCount(); // foreignKeyTable = foreign key
     QuerySchema lhs_schema = *lhs_table->getSchema();
@@ -82,7 +82,6 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
         predicate_eval = Join<B>::predicate_.callBoolExpression(joined);
 
-        //predicate_eval = Join<B>::predicate_.call(lhs_tuple, rhs_tuple, output_schema);
         dst_dummy_tag = (!predicate_eval) | lhs_dummy_tag | rhs_dummy_tag;
 
         // unconditional write to first one to initialize it
@@ -114,7 +113,7 @@ template<typename B>
 shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
     std::shared_ptr<QueryTable<B> > lhs_table = Operator<B>::children_[0]->getOutput(); // primary key
     std::shared_ptr<QueryTable<B> > rhs_table = Operator<B>::children_[1]->getOutput(); // foreign key
-    QueryTuple<B> lhs_tuple(lhs_table->getSchema()), rhs_tuple(rhs_table->getSchema());
+    QueryTuple<B> lhs_tuple, rhs_tuple;
 
     uint32_t output_tuple_cnt = rhs_table->getTupleCount(); // foreignKeyTable = foreign key
     QuerySchema lhs_schema = *lhs_table->getSchema();
