@@ -12,7 +12,7 @@ bash  test/support/load-generated-data.sh 100
 # optional:
 #  bash run-pilot-test.sh
 
-mkdir log
+#mkdir log
 
 ./csv_reader_test 
 ./field_expression_test

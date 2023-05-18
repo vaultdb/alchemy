@@ -1,0 +1,1289 @@
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time system 
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- GMP libs: /usr/lib/x86_64-linux-gnu/libgmp.so /usr/lib/x86_64-linux-gnu/libgmpxx.so
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system 
+-- GMP libs: /usr/lib/x86_64-linux-gnu/libgmp.so /usr/lib/x86_64-linux-gnu/libgmpxx.so
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time system program_options 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vaultdb/tmp/tmp.T19aqeIrcO
+[  1%] Built target generate_enrich_data
+[  2%] Built target gtest
+[  3%] Built target gtest_main
+[  4%] Built target gmock
+[ 30%] Built target vaultdb-emp
+[ 34%] Built target sort_test
+[ 36%] Built target filter_test
+[ 36%] Built target field_expression_test
+[ 36%] Built target project_test
+[ 38%] Built target csv_reader_test
+[ 42%] Built target basic_join_test
+[ 42%] Built target group_by_aggregate_test
+[ 43%] Built target keyed_join_test
+[ 44%] Built target scalar_aggregate_test
+[ 46%] Built target serialization_test
+[ 49%] Built target secret_share_generator_test
+[ 51%] Built target emp_test
+[ 51%] Built target tpch_test
+[ 52%] Built target plan_parser_test
+[ 53%] Built target secure_field_expression_test
+[ 54%] Built target emp_test_multiple_starts
+[ 57%] Built target secure_sort_test
+[ 57%] Built target secure_filter_test
+[ 59%] Built target emp_table_test
+[ 61%] Built target secure_basic_join_test
+[ 62%] Built target secure_keyed_join_test
+[ 65%] Built target secure_group_by_aggregate_test
+[ 65%] Built target secure_scalar_aggregate_test
+[ 66%] Built target emp_float_to_int
+[ 68%] Built target enrich_test
+[ 70%] Built target secure_tpch_test
+[ 72%] Built target zk_test
+[ 73%] Built target zk_filter_test
+[ 75%] Built target zk_sort_test
+[ 76%] Built target zk_basic_join_test
+[ 78%] Built target zk_keyed_join_test
+[ 80%] Built target zk_scalar_aggregate_test
+[ 80%] Built target zk_group_by_aggregate_test
+[ 82%] Built target zk_tpch_test
+[ 84%] Built target secret_share_csv
+[ 85%] Built target generate_enrich_data_three_parties
+[ 87%] Built target secret_share_from_query
+[ 88%] Built target secret_share_batch_from_query
+[ 90%] Built target load_tuples_data_partner
+[ 92%] Built target run_data_partner_aggregation
+[ 95%] Built target run_data_partner
+[ 96%] Built target assemble_secret_shares
+[100%] Built target run_data_partner_batch
+[  3%] Built target gtest
+[  6%] Built target gtest_main
+[ 10%] Built target gmock
+[ 96%] Built target vaultdb-emp
+[100%] Built target generate_enrich_data_three_parties
+Finished generating 1000 patients per host!
+DROP TABLE
+CREATE TABLE
+COPY 1000
+COPY 1000
+COPY 1000
+UPDATE 1847
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+CREATE EXTENSION
+ALTER TABLE
+UPDATE 3000
+COPY 1000
+COPY 1000
+COPY 1000
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_chi" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+Writing multisite tables!
+preparing for aggregate-only test
+Secret sharing 504 rows.
+Secret sharing 176 rows.
+Setting up semi-join optimization
+Secret sharing 1323 rows.
+Secret sharing 102 rows.
+Secret sharing 93 rows.
+Secret sharing 87 rows.
+Secret sharing 105 rows.
+Secret sharing 92 rows.
+Secret sharing 112 rows.
+Secret sharing 96 rows.
+Secret sharing 114 rows.
+Secret sharing 93 rows.
+Secret sharing 106 rows.
+Secret sharing 441 rows.
+Secret sharing 40 rows.
+Secret sharing 36 rows.
+Secret sharing 35 rows.
+Secret sharing 34 rows.
+Secret sharing 25 rows.
+Secret sharing 32 rows.
+Secret sharing 35 rows.
+Secret sharing 39 rows.
+Secret sharing 36 rows.
+Secret sharing 33 rows.
+Secret sharing 441 rows.
+Secret sharing 1323 rows.
+Secret sharing 882 rows.
+finished generating 100 patients per host!
+You are now connected to database "enrich_htn_test_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_test_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_unioned" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from CsvReaderTest
+[ RUN      ] CsvReaderTest.lineitemTest
+[       OK ] CsvReaderTest.lineitemTest (201 ms)
+[ RUN      ] CsvReaderTest.quotedStringTest
+[       OK ] CsvReaderTest.quotedStringTest (154 ms)
+[ RUN      ] CsvReaderTest.customerTest
+[       OK ] CsvReaderTest.customerTest (205 ms)
+[ RUN      ] CsvReaderTest.ordersTest
+[       OK ] CsvReaderTest.ordersTest (207 ms)
+[----------] 4 tests from CsvReaderTest (769 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (770 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from FieldExpressionTest
+[ RUN      ] FieldExpressionTest.test_int32
+[       OK ] FieldExpressionTest.test_int32 (68 ms)
+[ RUN      ] FieldExpressionTest.test_int32_comparator
+[       OK ] FieldExpressionTest.test_int32_comparator (52 ms)
+[ RUN      ] FieldExpressionTest.test_int32_expr
+[       OK ] FieldExpressionTest.test_int32_expr (57 ms)
+[ RUN      ] FieldExpressionTest.cmp_swap
+[       OK ] FieldExpressionTest.cmp_swap (234 ms)
+[----------] 4 tests from FieldExpressionTest (412 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (412 ms total)
+[  PASSED  ] 4 tests.
+Running main() from /home/vaultdb/tmp/tmp.T19aqeIrcO/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from FilterTest
+[ RUN      ] FilterTest.test_table_scan
+[       OK ] FilterTest.test_table_scan (114 ms)
+[ RUN      ] FilterTest.test_filter
+[       OK ] FilterTest.test_filter (116 ms)
+[----------] 2 tests from FilterTest (231 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (231 ms total)
+[  PASSED  ] 2 tests.
+Running main() from /home/vaultdb/tmp/tmp.T19aqeIrcO/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ProjectionTest
+[ RUN      ] ProjectionTest.q3Lineitem
+[       OK ] ProjectionTest.q3Lineitem (248 ms)
+[----------] 1 test from ProjectionTest (248 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (248 ms total)
+[  PASSED  ] 1 test.
+Running main() from /home/vaultdb/tmp/tmp.T19aqeIrcO/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BasicJoinTest
+[ RUN      ] BasicJoinTest.test_tpch_q3_customer_orders
+[       OK ] BasicJoinTest.test_tpch_q3_customer_orders (130 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders (236 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer (639 ms)
+[----------] 3 tests from BasicJoinTest (1005 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (1006 ms total)
+[  PASSED  ] 3 tests.
+Running main() from /home/vaultdb/tmp/tmp.T19aqeIrcO/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedJoinTest
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders (213 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders (2357 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer (2375 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed (178 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed (2241 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (2644 ms)
+[----------] 6 tests from KeyedJoinTest (10012 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (10012 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SortTest
+[ RUN      ] SortTest.testSingleIntColumn
+[       OK ] SortTest.testSingleIntColumn (74 ms)
+[ RUN      ] SortTest.tpchQ1Sort
+[       OK ] SortTest.tpchQ1Sort (135 ms)
+[ RUN      ] SortTest.tpchQ3Sort
+[       OK ] SortTest.tpchQ3Sort (111 ms)
+[ RUN      ] SortTest.tpchQ5Sort
+[       OK ] SortTest.tpchQ5Sort (90 ms)
+[ RUN      ] SortTest.tpchQ8Sort
+[       OK ] SortTest.tpchQ8Sort (77 ms)
+[ RUN      ] SortTest.tpchQ9Sort
+[       OK ] SortTest.tpchQ9Sort (131 ms)
+[ RUN      ] SortTest.tpchQ18Sort
+[       OK ] SortTest.tpchQ18Sort (89 ms)
+[ RUN      ] SortTest.sort_and_encrypt_table_one_column
+[       OK ] SortTest.sort_and_encrypt_table_one_column (62 ms)
+[----------] 8 tests from SortTest (774 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (774 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from ScalarAggregateTest
+[ RUN      ] ScalarAggregateTest.test_count
+[       OK ] ScalarAggregateTest.test_count (107 ms)
+[ RUN      ] ScalarAggregateTest.test_count_dummies
+[       OK ] ScalarAggregateTest.test_count_dummies (79 ms)
+[ RUN      ] ScalarAggregateTest.test_min
+[       OK ] ScalarAggregateTest.test_min (73 ms)
+[ RUN      ] ScalarAggregateTest.test_max
+[       OK ] ScalarAggregateTest.test_max (73 ms)
+[ RUN      ] ScalarAggregateTest.test_sum
+[       OK ] ScalarAggregateTest.test_sum (76 ms)
+[ RUN      ] ScalarAggregateTest.test_sum_dummies
+[       OK ] ScalarAggregateTest.test_sum_dummies (88 ms)
+[ RUN      ] ScalarAggregateTest.test_avg
+[       OK ] ScalarAggregateTest.test_avg (69 ms)
+[ RUN      ] ScalarAggregateTest.test_avg_dummies
+[       OK ] ScalarAggregateTest.test_avg_dummies (78 ms)
+[ RUN      ] ScalarAggregateTest.test_all_sum_dummies
+[       OK ] ScalarAggregateTest.test_all_sum_dummies (109 ms)
+[ RUN      ] ScalarAggregateTest.test_all_avg_dummies
+[       OK ] ScalarAggregateTest.test_all_avg_dummies (98 ms)
+[ RUN      ] ScalarAggregateTest.test_tpch_q1_avg_cnt
+[       OK ] ScalarAggregateTest.test_tpch_q1_avg_cnt (162 ms)
+[ RUN      ] ScalarAggregateTest.test_all_aggs_tpch_q1
+[       OK ] ScalarAggregateTest.test_all_aggs_tpch_q1 (131 ms)
+[----------] 12 tests from ScalarAggregateTest (1151 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (1151 ms total)
+[  PASSED  ] 12 tests.
+Running main() from /home/vaultdb/tmp/tmp.T19aqeIrcO/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from GroupByAggregateTest
+[ RUN      ] GroupByAggregateTest.test_count
+[       OK ] GroupByAggregateTest.test_count (88 ms)
+[ RUN      ] GroupByAggregateTest.test_sum
+[       OK ] GroupByAggregateTest.test_sum (87 ms)
+[ RUN      ] GroupByAggregateTest.test_sum_dummies
+[       OK ] GroupByAggregateTest.test_sum_dummies (87 ms)
+[ RUN      ] GroupByAggregateTest.test_avg
+[       OK ] GroupByAggregateTest.test_avg (95 ms)
+[ RUN      ] GroupByAggregateTest.test_avg_dummies
+[       OK ] GroupByAggregateTest.test_avg_dummies (87 ms)
+[ RUN      ] GroupByAggregateTest.test_min
+[       OK ] GroupByAggregateTest.test_min (76 ms)
+[ RUN      ] GroupByAggregateTest.test_min_dummies
+[       OK ] GroupByAggregateTest.test_min_dummies (82 ms)
+[ RUN      ] GroupByAggregateTest.test_max
+[       OK ] GroupByAggregateTest.test_max (73 ms)
+[ RUN      ] GroupByAggregateTest.test_max_dummies
+[       OK ] GroupByAggregateTest.test_max_dummies (79 ms)
+[ RUN      ] GroupByAggregateTest.test_tpch_q1_sums
+[       OK ] GroupByAggregateTest.test_tpch_q1_sums (219 ms)
+[ RUN      ] GroupByAggregateTest.test_tpch_q1_avg_cnt
+[       OK ] GroupByAggregateTest.test_tpch_q1_avg_cnt (176 ms)
+[ RUN      ] GroupByAggregateTest.tpch_q1
+[       OK ] GroupByAggregateTest.tpch_q1 (202 ms)
+[----------] 12 tests from GroupByAggregateTest (1356 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (1356 ms total)
+[  PASSED  ] 12 tests.
+Running main() from /home/vaultdb/tmp/tmp.T19aqeIrcO/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecretShareGeneratorTest
+[ RUN      ] SecretShareGeneratorTest.lineitem_sample
+[       OK ] SecretShareGeneratorTest.lineitem_sample (131 ms)
+[ RUN      ] SecretShareGeneratorTest.lineitem_dummy_tag_sample
+[       OK ] SecretShareGeneratorTest.lineitem_dummy_tag_sample (116 ms)
+[----------] 2 tests from SecretShareGeneratorTest (248 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (249 ms total)
+[  PASSED  ] 2 tests.
+Running main() from /home/vaultdb/tmp/tmp.T19aqeIrcO/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SerializationTest
+[ RUN      ] SerializationTest.typesTest
+[       OK ] SerializationTest.typesTest (120 ms)
+[ RUN      ] SerializationTest.capricorn_test
+[       OK ] SerializationTest.capricorn_test (62 ms)
+[ RUN      ] SerializationTest.xored_serialization_test
+[       OK ] SerializationTest.xored_serialization_test (51 ms)
+[ RUN      ] SerializationTest.capricorn_deserialization
+[       OK ] SerializationTest.capricorn_deserialization (143 ms)
+[----------] 4 tests from SerializationTest (377 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (377 ms total)
+[  PASSED  ] 4 tests.
+Running main() from /home/vaultdb/tmp/tmp.T19aqeIrcO/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from PlanParserTest
+[ RUN      ] PlanParserTest.tpch_q1
+[       OK ] PlanParserTest.tpch_q1 (126 ms)
+[ RUN      ] PlanParserTest.tpch_q3
+[       OK ] PlanParserTest.tpch_q3 (131 ms)
+[ RUN      ] PlanParserTest.tpch_q5
+[       OK ] PlanParserTest.tpch_q5 (185 ms)
+[ RUN      ] PlanParserTest.tpch_q8
+[       OK ] PlanParserTest.tpch_q8 (138 ms)
+[ RUN      ] PlanParserTest.tpch_q9
+[       OK ] PlanParserTest.tpch_q9 (141 ms)
+[ RUN      ] PlanParserTest.tpch_q18
+[       OK ] PlanParserTest.tpch_q18 (181 ms)
+[----------] 6 tests from PlanParserTest (904 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (904 ms total)
+[  PASSED  ] 6 tests.
+Running main() from /home/vaultdb/tmp/tmp.T19aqeIrcO/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from TpcHTest
+[ RUN      ] TpcHTest.tpch_q1
+[       OK ] TpcHTest.tpch_q1 (1064 ms)
+[ RUN      ] TpcHTest.tpch_q3
+[       OK ] TpcHTest.tpch_q3 (3709 ms)
+[ RUN      ] TpcHTest.tpch_q5
+[       OK ] TpcHTest.tpch_q5 (3069 ms)
+[ RUN      ] TpcHTest.tpch_q8
+[       OK ] TpcHTest.tpch_q8 (172 ms)
+[ RUN      ] TpcHTest.tpch_q9
+[       OK ] TpcHTest.tpch_q9 (4074 ms)
+[ RUN      ] TpcHTest.tpch_q18
+[       OK ] TpcHTest.tpch_q18 (12933 ms)
+[----------] 6 tests from TpcHTest (25024 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (25024 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 4 tests from 1 test suite.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] Global test environment set-up.
+[----------] 4 tests from EmpTest
+[----------] 4 tests from EmpTest
+[ RUN      ] EmpTest.emp_test_int
+[ RUN      ] EmpTest.emp_test_int
+Connecting to 127.0.0.1 on port 54321 as 1
+Connecting to 127.0.0.1 on port 54321 as 2
+connected
+Runtime for test was 0.098475 secs.
+connected
+Runtime for test was 0.04875 secs.
+[       OK ] EmpTest.emp_test_int (132 ms)
+[ RUN      ] EmpTest.emp_test_varchar
+Connecting to 127.0.0.1 on port 54322 as 2
+[       OK ] EmpTest.emp_test_int (132 ms)
+[ RUN      ] EmpTest.emp_test_varchar
+Connecting to 127.0.0.1 on port 54322 as 1
+connected
+Runtime for test was 0.09673 secs.
+[       OK ] EmpTest.emp_test_varchar (126 ms)
+connected
+Runtime for test was 0.048271 secs.
+[ RUN      ] EmpTest.encrypt_table_one_column
+Connecting to 127.0.0.1 on port 54323 as 2
+[       OK ] EmpTest.emp_test_varchar (126 ms)
+[ RUN      ] EmpTest.encrypt_table_one_column
+Connecting to 127.0.0.1 on port 54323 as 1
+connected
+Runtime for test was 0.100643 secs.
+[       OK ] EmpTest.encrypt_table_one_column (130 ms)
+[ RUN      ] EmpTest.sort_and_encrypt_table_one_column
+Connecting to 127.0.0.1 on port 54324 as 2
+connected
+Runtime for test was 0.052772 secs.
+[       OK ] EmpTest.encrypt_table_one_column (130 ms)
+[ RUN      ] EmpTest.sort_and_encrypt_table_one_column
+Connecting to 127.0.0.1 on port 54324 as 1
+connected
+Runtime for test was 0.10321 secs.
+[       OK ] EmpTest.sort_and_encrypt_table_one_column (132 ms)
+[----------] 4 tests from EmpTest (523 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (523 ms total)
+[  PASSED  ] 4 tests.
+connected
+Runtime for test was 0.055304 secs.
+[       OK ] EmpTest.sort_and_encrypt_table_one_column (132 ms)
+[----------] 4 tests from EmpTest (523 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (523 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from SecureValueExpressionTest
+[ RUN      ] SecureValueExpressionTest.test_value_assignment
+Connecting to 127.0.0.1 on port 54323 as 2
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from SecureValueExpressionTest
+[ RUN      ] SecureValueExpressionTest.test_value_assignment
+Connecting to 127.0.0.1 on port 54323 as 1
+connected
+Runtime for test was 0.096325 secs.
+connected
+Runtime for test was 0.047538 secs.
+[       OK ] SecureValueExpressionTest.test_value_assignment (131 ms)
+[ RUN      ] SecureValueExpressionTest.test_string_compare
+[       OK ] SecureValueExpressionTest.test_value_assignment (130 ms)
+Connecting to 127.0.0.1 on port 54324 as 2
+[ RUN      ] SecureValueExpressionTest.test_string_compare
+Connecting to 127.0.0.1 on port 54324 as 1
+connected
+Runtime for test was 0.098199 secs.
+[       OK ] SecureValueExpressionTest.test_string_compare (127 ms)
+[ RUN      ] SecureValueExpressionTest.test_emp_int_math
+connected
+Runtime for test was 0.050438 secs.
+Connecting to 127.0.0.1 on port 54325 as 2
+[       OK ] SecureValueExpressionTest.test_string_compare (127 ms)
+[ RUN      ] SecureValueExpressionTest.test_emp_int_math
+Connecting to 127.0.0.1 on port 54325 as 1
+connected
+Runtime for test was 0.096773 secs.
+[       OK ] SecureValueExpressionTest.test_emp_int_math (127 ms)
+[ RUN      ] SecureValueExpressionTest.test_millionaires
+connected
+Runtime for test was 0.048106 secs.
+Connecting to 127.0.0.1 on port 54326 as 2
+[       OK ] SecureValueExpressionTest.test_emp_int_math (127 ms)
+[ RUN      ] SecureValueExpressionTest.test_millionaires
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.099302 secs.
+connected
+Runtime for test was 0.047213 secs.
+[       OK ] SecureValueExpressionTest.test_millionaires (129 ms)
+[ RUN      ] SecureValueExpressionTest.test_char_comparison
+Connecting to 127.0.0.1 on port 54327 as 2
+[       OK ] SecureValueExpressionTest.test_millionaires (129 ms)
+[ RUN      ] SecureValueExpressionTest.test_char_comparison
+Connecting to 127.0.0.1 on port 54327 as 1
+connected
+Runtime for test was 0.095614 secs.
+connected
+Runtime for test was 0.047539 secs.
+[       OK ] SecureValueExpressionTest.test_char_comparison (125 ms)
+[----------] 5 tests from SecureValueExpressionTest (642 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (642 ms total)
+[  PASSED  ] 5 tests.
+[       OK ] SecureValueExpressionTest.test_char_comparison (125 ms)
+[----------] 5 tests from SecureValueExpressionTest (641 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (641 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 6 tests from 1 test suite.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] Global test environment set-up.
+[----------] 6 tests from EmpTableTest
+[----------] 6 tests from EmpTableTest
+[ RUN      ] EmpTableTest.encrypt_table_one_column
+[ RUN      ] EmpTableTest.encrypt_table_one_column
+Connecting to 127.0.0.1 on port 54324 as 1
+Connecting to 127.0.0.1 on port 54324 as 2
+connected
+Runtime for test was 0.137832 secs.
+[       OK ] EmpTableTest.encrypt_table_one_column (172 ms)
+[ RUN      ] EmpTableTest.encrypt_table_varchar
+Connecting to 127.0.0.1 on port 54325 as 2
+connected
+Runtime for test was 0.097707 secs.
+[       OK ] EmpTableTest.encrypt_table_one_column (189 ms)
+[ RUN      ] EmpTableTest.encrypt_table_varchar
+Connecting to 127.0.0.1 on port 54325 as 1
+connected
+Runtime for test was 0.181771 secs.
+[       OK ] EmpTableTest.encrypt_table_varchar (229 ms)
+[ RUN      ] EmpTableTest.encrypt_table_two_cols
+Connecting to 127.0.0.1 on port 54326 as 2
+connected
+Runtime for test was 0.154578 secs.
+[       OK ] EmpTableTest.encrypt_table_varchar (253 ms)
+[ RUN      ] EmpTableTest.encrypt_table_two_cols
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.199644 secs.
+[       OK ] EmpTableTest.encrypt_table_two_cols (269 ms)
+[ RUN      ] EmpTableTest.encrypt_table
+Connecting to 127.0.0.1 on port 54327 as 2
+connected
+Runtime for test was 0.176369 secs.
+[       OK ] EmpTableTest.encrypt_table_two_cols (277 ms)
+[ RUN      ] EmpTableTest.encrypt_table
+Connecting to 127.0.0.1 on port 54327 as 1
+connected
+Runtime for test was 0.30989 secs.
+[       OK ] EmpTableTest.encrypt_table (388 ms)
+[ RUN      ] EmpTableTest.encrypt_table_dummy_tag
+Connecting to 127.0.0.1 on port 54328 as 2
+connected
+Runtime for test was 0.310796 secs.
+[       OK ] EmpTableTest.encrypt_table (437 ms)
+[ RUN      ] EmpTableTest.encrypt_table_dummy_tag
+Connecting to 127.0.0.1 on port 54328 as 1
+connected
+Runtime for test was 0.34783 secs.
+[       OK ] EmpTableTest.encrypt_table_dummy_tag (487 ms)
+[ RUN      ] EmpTableTest.bit_packing_test
+Connecting to 127.0.0.1 on port 54329 as 2
+connected
+Runtime for test was 0.36247 secs.
+[       OK ] EmpTableTest.encrypt_table_dummy_tag (494 ms)
+[ RUN      ] EmpTableTest.bit_packing_test
+Connecting to 127.0.0.1 on port 54329 as 1
+connected
+Runtime for test was 0.159663 secs.
+[       OK ] EmpTableTest.bit_packing_test (293 ms)
+[----------] 6 tests from EmpTableTest (1842 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (1842 ms total)
+[  PASSED  ] 6 tests.
+connected
+Runtime for test was 0.099301 secs.
+[       OK ] EmpTableTest.bit_packing_test (189 ms)
+[----------] 6 tests from EmpTableTest (1842 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (1842 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 2 tests from 1 test suite.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecureFilterTest
+[----------] 2 tests from SecureFilterTest
+[ RUN      ] SecureFilterTest.test_table_scan
+[ RUN      ] SecureFilterTest.test_table_scan
+Connecting to 127.0.0.1 on port 54325 as 1
+Connecting to 127.0.0.1 on port 54325 as 2
+connected
+Runtime for test was 0.277827 secs.
+[       OK ] SecureFilterTest.test_table_scan (312 ms)
+[ RUN      ] SecureFilterTest.test_filter
+Connecting to 127.0.0.1 on port 54326 as 2
+connected
+Runtime for test was 0.140449 secs.
+[       OK ] SecureFilterTest.test_table_scan (312 ms)
+[ RUN      ] SecureFilterTest.test_filter
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.272647 secs.
+[       OK ] SecureFilterTest.test_filter (304 ms)
+[----------] 2 tests from SecureFilterTest (617 ms total)
+
+connected
+Runtime for test was 0.137229 secs.
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (617 ms total)
+[  PASSED  ] 2 tests.
+[       OK ] SecureFilterTest.test_filter (304 ms)
+[----------] 2 tests from SecureFilterTest (617 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (617 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortTest
+[ RUN      ] SecureSortTest.tpchQ1Sort
+Connecting to 127.0.0.1 on port 43441 as 2
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortTest
+[ RUN      ] SecureSortTest.tpchQ1Sort
+Connecting to 127.0.0.1 on port 43441 as 1
+connected
+Runtime for test was 0.329217 secs.
+connected
+Runtime for test was 0.170048 secs.
+[       OK ] SecureSortTest.tpchQ1Sort (364 ms)
+[ RUN      ] SecureSortTest.tpchQ3Sort
+Connecting to 127.0.0.1 on port 43442 as 2
+[       OK ] SecureSortTest.tpchQ1Sort (364 ms)
+[ RUN      ] SecureSortTest.tpchQ3Sort
+Connecting to 127.0.0.1 on port 43442 as 1
+connected
+Runtime for test was 0.243403 secs.
+[       OK ] SecureSortTest.tpchQ3Sort (273 ms)
+[ RUN      ] SecureSortTest.tpchQ5Sort
+Connecting to 127.0.0.1 on port 43443 as 2
+connected
+Runtime for test was 0.15318 secs.
+[       OK ] SecureSortTest.tpchQ3Sort (273 ms)
+[ RUN      ] SecureSortTest.tpchQ5Sort
+Connecting to 127.0.0.1 on port 43443 as 1
+connected
+Runtime for test was 0.192855 secs.
+[       OK ] SecureSortTest.tpchQ5Sort (227 ms)
+[ RUN      ] SecureSortTest.tpchQ8Sort
+Connecting to 127.0.0.1 on port 43444 as 2
+connected
+Runtime for test was 0.120674 secs.
+[       OK ] SecureSortTest.tpchQ5Sort (227 ms)
+[ RUN      ] SecureSortTest.tpchQ8Sort
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 0.154218 secs.
+[       OK ] SecureSortTest.tpchQ8Sort (184 ms)
+[ RUN      ] SecureSortTest.tpchQ9Sort
+connected
+Runtime for test was 0.078469 secs.
+Connecting to 127.0.0.1 on port 43445 as 2
+[       OK ] SecureSortTest.tpchQ8Sort (184 ms)
+[ RUN      ] SecureSortTest.tpchQ9Sort
+Connecting to 127.0.0.1 on port 43445 as 1
+connected
+Runtime for test was 8.31726 secs.
+[       OK ] SecureSortTest.tpchQ9Sort (8347 ms)
+[ RUN      ] SecureSortTest.tpchQ18Sort
+Connecting to 127.0.0.1 on port 43446 as 2
+connected
+Runtime for test was 8.23269 secs.
+[       OK ] SecureSortTest.tpchQ9Sort (8349 ms)
+[ RUN      ] SecureSortTest.tpchQ18Sort
+Connecting to 127.0.0.1 on port 43446 as 1
+connected
+Runtime for test was 0.149708 secs.
+[       OK ] SecureSortTest.tpchQ18Sort (181 ms)
+[----------] 6 tests from SecureSortTest (9580 ms total)
+
+[----------] Global test environment tear-down
+connected
+Runtime for test was 0.084009 secs.
+[==========] 6 tests from 1 test suite ran. (9580 ms total)
+[  PASSED  ] 6 tests.
+[       OK ] SecureSortTest.tpchQ18Sort (179 ms)
+[----------] 6 tests from SecureSortTest (9579 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (9579 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureBasicJoinTest
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_customer_orders
+Connecting to 127.0.0.1 on port 43443 as 1
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureBasicJoinTest
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_customer_orders
+Connecting to 127.0.0.1 on port 43443 as 2
+connected
+Runtime for test was 0.242115 secs.
+connected
+Runtime for test was 0.137784 secs.
+[       OK ] SecureBasicJoinTest.test_tpch_q3_customer_orders (277 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on port 43444 as 2
+[       OK ] SecureBasicJoinTest.test_tpch_q3_customer_orders (278 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 3.66844 secs.
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders (3699 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on port 43445 as 2
+connected
+Runtime for test was 3.55184 secs.
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders (3699 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on port 43445 as 1
+connected
+Runtime for test was 9.55285 secs.
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer (9582 ms)
+[----------] 3 tests from SecureBasicJoinTest (13559 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (13559 ms total)
+[  PASSED  ] 3 tests.
+connected
+Runtime for test was 9.41623 secs.
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer (9582 ms)
+[----------] 3 tests from SecureBasicJoinTest (13561 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (13561 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecurePkeyFkeyJoinTest
+[----------] 3 tests from SecurePkeyFkeyJoinTest
+[ RUN      ] SecurePkeyFkeyJoinTest.test_tpch_q3_customer_orders
+[ RUN      ] SecurePkeyFkeyJoinTest.test_tpch_q3_customer_orders
+Connecting to 127.0.0.1 on port 43442 as 1
+Connecting to 127.0.0.1 on port 43442 as 2
+connected
+Runtime for test was 0.227472 secs.
+connected
+Runtime for test was 0.12397 secs.
+[       OK ] SecurePkeyFkeyJoinTest.test_tpch_q3_customer_orders (261 ms)
+[ RUN      ] SecurePkeyFkeyJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on port 43443 as 2
+[       OK ] SecurePkeyFkeyJoinTest.test_tpch_q3_customer_orders (261 ms)
+[ RUN      ] SecurePkeyFkeyJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on port 43443 as 1
+connected
+Runtime for test was 0.259546 secs.
+[       OK ] SecurePkeyFkeyJoinTest.test_tpch_q3_lineitem_orders (288 ms)
+[ RUN      ] SecurePkeyFkeyJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on port 43444 as 2
+connected
+Runtime for test was 0.143901 secs.
+[       OK ] SecurePkeyFkeyJoinTest.test_tpch_q3_lineitem_orders (288 ms)
+[ RUN      ] SecurePkeyFkeyJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 0.396381 secs.
+[       OK ] SecurePkeyFkeyJoinTest.test_tpch_q3_lineitem_orders_customer (425 ms)
+[----------] 3 tests from SecurePkeyFkeyJoinTest (975 ms total)
+
+[----------] Global test environment tear-down
+connected
+Runtime for test was 0.270344 secs.
+[==========] 3 tests from 1 test suite ran. (975 ms total)
+[  PASSED  ] 3 tests.
+[       OK ] SecurePkeyFkeyJoinTest.test_tpch_q3_lineitem_orders_customer (425 ms)
+[----------] 3 tests from SecurePkeyFkeyJoinTest (975 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (975 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 15 tests from 1 test suite.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureScalarAggregateTest
+[----------] 15 tests from SecureScalarAggregateTest
+[ RUN      ] SecureScalarAggregateTest.test_count
+[ RUN      ] SecureScalarAggregateTest.test_count
+Connecting to 127.0.0.1 on port 54312 as 2
+Connecting to 127.0.0.1 on port 54312 as 1
+connected
+Runtime for test was 0.139518 secs.
+connected
+Runtime for test was 0.070329 secs.
+[       OK ] SecureScalarAggregateTest.test_count (173 ms)
+[ RUN      ] SecureScalarAggregateTest.test_count_dummies
+Connecting to 127.0.0.1 on port 54313 as 2
+[       OK ] SecureScalarAggregateTest.test_count (173 ms)
+[ RUN      ] SecureScalarAggregateTest.test_count_dummies
+Connecting to 127.0.0.1 on port 54313 as 1
+connected
+Runtime for test was 0.146335 secs.
+[       OK ] SecureScalarAggregateTest.test_count_dummies (176 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min
+connected
+Runtime for test was 0.073894 secs.
+Connecting to 127.0.0.1 on port 54314 as 2
+[       OK ] SecureScalarAggregateTest.test_count_dummies (176 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min
+Connecting to 127.0.0.1 on port 54314 as 1
+connected
+Runtime for test was 0.138538 secs.
+[       OK ] SecureScalarAggregateTest.test_min (168 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min_dummies
+connected
+Runtime for test was 0.070231 secs.
+Connecting to 127.0.0.1 on port 54315 as 2
+[       OK ] SecureScalarAggregateTest.test_min (168 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min_dummies
+Connecting to 127.0.0.1 on port 54315 as 1
+connected
+Runtime for test was 0.148615 secs.
+[       OK ] SecureScalarAggregateTest.test_min_dummies (178 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max
+connected
+Runtime for test was 0.075298 secs.
+Connecting to 127.0.0.1 on port 54316 as 2
+[       OK ] SecureScalarAggregateTest.test_min_dummies (178 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max
+Connecting to 127.0.0.1 on port 54316 as 1
+connected
+Runtime for test was 0.138955 secs.
+[       OK ] SecureScalarAggregateTest.test_max (168 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max_dummies
+connected
+Runtime for test was 0.070547 secs.
+Connecting to 127.0.0.1 on port 54317 as 2
+[       OK ] SecureScalarAggregateTest.test_max (168 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max_dummies
+Connecting to 127.0.0.1 on port 54317 as 1
+connected
+Runtime for test was 0.148841 secs.
+[       OK ] SecureScalarAggregateTest.test_max_dummies (178 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum
+Connecting to 127.0.0.1 on port 54318 as 2
+connected
+Runtime for test was 0.075503 secs.
+[       OK ] SecureScalarAggregateTest.test_max_dummies (178 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum
+Connecting to 127.0.0.1 on port 54318 as 1
+connected
+Runtime for test was 0.138913 secs.
+[       OK ] SecureScalarAggregateTest.test_sum (168 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on port 54319 as 2
+connected
+Runtime for test was 0.070567 secs.
+[       OK ] SecureScalarAggregateTest.test_sum (168 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on port 54319 as 1
+connected
+Runtime for test was 0.146286 secs.
+[       OK ] SecureScalarAggregateTest.test_sum_dummies (175 ms)
+connected
+Runtime for test was 0.073727 secs.
+[ RUN      ] SecureScalarAggregateTest.test_avg
+Connecting to 127.0.0.1 on port 54320 as 2
+[       OK ] SecureScalarAggregateTest.test_sum_dummies (175 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg
+Connecting to 127.0.0.1 on port 54320 as 1
+connected
+Runtime for test was 0.139015 secs.
+[       OK ] SecureScalarAggregateTest.test_avg (168 ms)
+connected
+Runtime for test was 0.071013 secs.
+[ RUN      ] SecureScalarAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on port 54321 as 2
+[       OK ] SecureScalarAggregateTest.test_avg (168 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on port 54321 as 1
+connected
+Runtime for test was 0.147471 secs.
+[       OK ] SecureScalarAggregateTest.test_avg_dummies (177 ms)
+connected
+Runtime for test was 0.074919 secs.
+[ RUN      ] SecureScalarAggregateTest.test_sum_baseprice_dummies
+Connecting to 127.0.0.1 on port 54322 as 2
+[       OK ] SecureScalarAggregateTest.test_avg_dummies (177 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_baseprice_dummies
+Connecting to 127.0.0.1 on port 54322 as 1
+connected
+Runtime for test was 0.153248 secs.
+[       OK ] SecureScalarAggregateTest.test_sum_baseprice_dummies (183 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_lineno_baseprice
+connected
+Runtime for test was 0.080448 secs.
+Connecting to 127.0.0.1 on port 54323 as 2
+[       OK ] SecureScalarAggregateTest.test_sum_baseprice_dummies (183 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_lineno_baseprice
+Connecting to 127.0.0.1 on port 54323 as 1
+connected
+Runtime for test was 0.164298 secs.
+[       OK ] SecureScalarAggregateTest.test_sum_lineno_baseprice (194 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_sums
+connected
+Runtime for test was 0.086345 secs.
+Connecting to 127.0.0.1 on port 54324 as 2
+[       OK ] SecureScalarAggregateTest.test_sum_lineno_baseprice (194 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_sums
+Connecting to 127.0.0.1 on port 54324 as 1
+connected
+Runtime for test was 0.318989 secs.
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_sums (348 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on port 54325 as 2
+connected
+Runtime for test was 0.195181 secs.
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_sums (348 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on port 54325 as 1
+connected
+Runtime for test was 0.485006 secs.
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt (795 ms)
+[ RUN      ] SecureScalarAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on port 54326 as 2
+connected
+Runtime for test was 0.607852 secs.
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt (795 ms)
+[ RUN      ] SecureScalarAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.441375 secs.
+[       OK ] SecureScalarAggregateTest.tpch_q1 (471 ms)
+[----------] 15 tests from SecureScalarAggregateTest (3727 ms total)
+
+[----------] Global test environment tear-down
+connected
+Runtime for test was 0.3003 secs.
+[==========] 15 tests from 1 test suite ran. (3727 ms total)
+[  PASSED  ] 15 tests.
+[       OK ] SecureScalarAggregateTest.tpch_q1 (471 ms)
+[----------] 15 tests from SecureScalarAggregateTest (3727 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (3727 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 12 tests from 1 test suite.
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] Global test environment set-up.
+[----------] 12 tests from SecureGroupByAggregateTest
+[----------] 12 tests from SecureGroupByAggregateTest
+[ RUN      ] SecureGroupByAggregateTest.test_count
+[ RUN      ] SecureGroupByAggregateTest.test_count
+Connecting to 127.0.0.1 on port 43440 as 1
+Connecting to 127.0.0.1 on port 43440 as 2
+connected
+Runtime for test was 0.157179 secs.
+connected
+Runtime for test was 0.081459 secs.
+[       OK ] SecureGroupByAggregateTest.test_count (191 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum
+Connecting to 127.0.0.1 on port 43441 as 2
+[       OK ] SecureGroupByAggregateTest.test_count (191 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum
+Connecting to 127.0.0.1 on port 43441 as 1
+connected
+Runtime for test was 0.153811 secs.
+[       OK ] SecureGroupByAggregateTest.test_sum (184 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on port 43442 as 2
+connected
+Runtime for test was 0.080276 secs.
+[       OK ] SecureGroupByAggregateTest.test_sum (184 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on port 43442 as 1
+connected
+Runtime for test was 0.15311 secs.
+[       OK ] SecureGroupByAggregateTest.test_sum_dummies (183 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg
+connected
+Runtime for test was 0.079897 secs.
+Connecting to 127.0.0.1 on port 43443 as 2
+[       OK ] SecureGroupByAggregateTest.test_sum_dummies (183 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg
+Connecting to 127.0.0.1 on port 43443 as 1
+connected
+Runtime for test was 0.159508 secs.
+[       OK ] SecureGroupByAggregateTest.test_avg (189 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on port 43444 as 2
+connected
+Runtime for test was 0.086491 secs.
+[       OK ] SecureGroupByAggregateTest.test_avg (189 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 0.208636 secs.
+[       OK ] SecureGroupByAggregateTest.test_avg_dummies (257 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min
+Connecting to 127.0.0.1 on port 43445 as 2
+connected
+Runtime for test was 0.108864 secs.
+[       OK ] SecureGroupByAggregateTest.test_avg_dummies (257 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min
+Connecting to 127.0.0.1 on port 43445 as 1
+connected
+Runtime for test was 0.164202 secs.
+[       OK ] SecureGroupByAggregateTest.test_min (198 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min_dummies
+Connecting to 127.0.0.1 on port 43446 as 2
+connected
+Runtime for test was 0.08575 secs.
+[       OK ] SecureGroupByAggregateTest.test_min (198 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min_dummies
+Connecting to 127.0.0.1 on port 43446 as 1
+connected
+Runtime for test was 0.157827 secs.
+[       OK ] SecureGroupByAggregateTest.test_min_dummies (195 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max
+Connecting to 127.0.0.1 on port 43447 as 2
+connected
+Runtime for test was 0.079937 secs.
+[       OK ] SecureGroupByAggregateTest.test_min_dummies (195 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max
+Connecting to 127.0.0.1 on port 43447 as 1
+connected
+Runtime for test was 0.153453 secs.
+[       OK ] SecureGroupByAggregateTest.test_max (183 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max_dummies
+Connecting to 127.0.0.1 on port 43448 as 2
+connected
+Runtime for test was 0.080244 secs.
+[       OK ] SecureGroupByAggregateTest.test_max (183 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max_dummies
+Connecting to 127.0.0.1 on port 43448 as 1
+connected
+Runtime for test was 0.152019 secs.
+[       OK ] SecureGroupByAggregateTest.test_max_dummies (181 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_sums
+Connecting to 127.0.0.1 on port 43449 as 2
+connected
+Runtime for test was 0.07964 secs.
+[       OK ] SecureGroupByAggregateTest.test_max_dummies (181 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_sums
+Connecting to 127.0.0.1 on port 43449 as 1
+connected
+Runtime for test was 0.461908 secs.
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_sums (492 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on port 43450 as 2
+connected
+Runtime for test was 0.305686 secs.
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_sums (492 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on port 43450 as 1
+connected
+Runtime for test was 0.945214 secs.
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt (975 ms)
+[ RUN      ] SecureGroupByAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on port 43451 as 2
+connected
+Runtime for test was 0.788102 secs.
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt (975 ms)
+[ RUN      ] SecureGroupByAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on port 43451 as 1
+connected
+Runtime for test was 0.757227 secs.
+[       OK ] SecureGroupByAggregateTest.tpch_q1 (787 ms)
+[----------] 12 tests from SecureGroupByAggregateTest (4019 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (4020 ms total)
+[  PASSED  ] 12 tests.
+connected
+Runtime for test was 0.584404 secs.
+[       OK ] SecureGroupByAggregateTest.tpch_q1 (787 ms)
+[----------] 12 tests from SecureGroupByAggregateTest (4020 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (4020 ms total)
+[  PASSED  ] 12 tests.
+[==========] Running 7 tests from 1 test suite.
+[==========] Running 7 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] Global test environment set-up.
+[----------] 7 tests from EnrichTest
+[----------] 7 tests from EnrichTest
+[ RUN      ] EnrichTest.loadAndPrepData
+[ RUN      ] EnrichTest.loadAndPrepData
+Connecting to 127.0.0.1 on port 7654 as 2
+Connecting to 127.0.0.1 on port 7654 as 1
+connected
+Runtime for test was 0.342451 secs.
+[       OK ] EnrichTest.loadAndPrepData (376 ms)
+[ RUN      ] EnrichTest.loadAndJoinData
+Connecting to 127.0.0.1 on port 7655 as 2
+connected
+Runtime for test was 0.355633 secs.
+[       OK ] EnrichTest.loadAndPrepData (733 ms)
+[ RUN      ] EnrichTest.loadAndJoinData
+Connecting to 127.0.0.1 on port 7655 as 1
+connected
+Runtime for test was 0.349039 secs.
+[       OK ] EnrichTest.loadAndJoinData (766 ms)
+[ RUN      ] EnrichTest.loadUnionAndDeduplicateData
+Connecting to 127.0.0.1 on port 7656 as 2
+connected
+Runtime for test was 0.360839 secs.
+[       OK ] EnrichTest.loadAndJoinData (772 ms)
+[ RUN      ] EnrichTest.loadUnionAndDeduplicateData
+Connecting to 127.0.0.1 on port 7656 as 1
+connected
+Runtime for test was 1.50439 secs.
+[       OK ] EnrichTest.loadUnionAndDeduplicateData (1907 ms)
+[ RUN      ] EnrichTest.testExclusionCriteria
+Connecting to 127.0.0.1 on port 7657 as 2
+connected
+Runtime for test was 1.44897 secs.
+[       OK ] EnrichTest.loadUnionAndDeduplicateData (1615 ms)
+[ RUN      ] EnrichTest.testExclusionCriteria
+Connecting to 127.0.0.1 on port 7657 as 1
+connected
+Runtime for test was 1.48613 secs.
+[       OK ] EnrichTest.testExclusionCriteria (1585 ms)
+[ RUN      ] EnrichTest.testPatientCohort
+Connecting to 127.0.0.1 on port 7658 as 2
+connected
+Runtime for test was 1.42688 secs.
+[       OK ] EnrichTest.testExclusionCriteria (1584 ms)
+[ RUN      ] EnrichTest.testPatientCohort
+Connecting to 127.0.0.1 on port 7658 as 1
+connected
+Runtime for test was 1.49031 secs.
+[       OK ] EnrichTest.testPatientCohort (1587 ms)
+[ RUN      ] EnrichTest.testPatientAgggregation
+Connecting to 127.0.0.1 on port 7659 as 2
+connected
+Runtime for test was 1.42911 secs.
+[       OK ] EnrichTest.testPatientCohort (1582 ms)
+[ RUN      ] EnrichTest.testPatientAgggregation
+Connecting to 127.0.0.1 on port 7659 as 1
+connected
+Runtime for test was 1.87621 secs.
+[       OK ] EnrichTest.testPatientAgggregation (1969 ms)
+[ RUN      ] EnrichTest.testRollups
+Connecting to 127.0.0.1 on port 7660 as 2
+connected
+Runtime for test was 1.82838 secs.
+[       OK ] EnrichTest.testPatientAgggregation (1981 ms)
+[ RUN      ] EnrichTest.testRollups
+Connecting to 127.0.0.1 on port 7660 as 1
+connected
+Runtime for test was 3.09369 secs.
+[       OK ] EnrichTest.testRollups (3199 ms)
+[----------] 7 tests from EnrichTest (11393 ms total)
+
+[----------] Global test environment tear-down
+[==========] 7 tests from 1 test suite ran. (11393 ms total)
+[  PASSED  ] 7 tests.
+connected
+Runtime for test was 3.00806 secs.
+[       OK ] EnrichTest.testRollups (3163 ms)
+[----------] 7 tests from EnrichTest (11433 ms total)
+
+[----------] Global test environment tear-down
+[==========] 7 tests from 1 test suite ran. (11433 ms total)
+[  PASSED  ] 7 tests.
+[==========] Running 6 tests from 1 test suite.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureTpcHTest
+[----------] 6 tests from SecureTpcHTest
+[ RUN      ] SecureTpcHTest.tpch_q1
+[ RUN      ] SecureTpcHTest.tpch_q1
+Connecting to 127.0.0.1 on port 7654 as 1
+Connecting to 127.0.0.1 on port 7654 as 2
+connected
+Runtime for test was 1.57361 secs.
+[       OK ] SecureTpcHTest.tpch_q1 (1607 ms)
+[ RUN      ] SecureTpcHTest.tpch_q3
+Connecting to 127.0.0.1 on port 7655 as 2
+connected
+Runtime for test was 1.38605 secs.
+[       OK ] SecureTpcHTest.tpch_q1 (1607 ms)
+[ RUN      ] SecureTpcHTest.tpch_q3
+Connecting to 127.0.0.1 on port 7655 as 1
