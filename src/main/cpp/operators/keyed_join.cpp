@@ -73,8 +73,8 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
         // for first tuple comparison, initialize output tuple -- just in case there are no matches
         rhs_dummy_tag = ((*rhs_table)[0]).getDummyTag();
 
-        Join<B>::write_left(true, dst_tuple,  (*lhs_table)[i]);
-        Join<B>::write_right(true, dst_tuple, (*rhs_table)[0]);
+        Join<B>::write_left(dst_tuple,  (*lhs_table)[i]);
+        Join<B>::write_right(dst_tuple, (*rhs_table)[0]);
         joined = dst_tuple;
 
         predicate_eval = Join<B>::predicate_.callBoolExpression(joined);
@@ -88,7 +88,7 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
         for(uint32_t j = 1; j < rhs_table->getTupleCount(); ++j) {
             rhs_dummy_tag =  ((*rhs_table)[j]).getDummyTag();
 
-            Join<B>::write_right(true, joined, (*rhs_table)[j]);
+            Join<B>::write_right(joined, (*rhs_table)[j]);
             predicate_eval = Join<B>::predicate_.callBoolExpression(joined);
             dst_dummy_tag = (!predicate_eval) | lhs_dummy_tag | rhs_dummy_tag;
 
@@ -126,7 +126,6 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
     // output size, colCount, is_encrypted
     Join<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(output_tuple_cnt, output_schema, output_sort));
     B predicate_eval, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
-    //B true_one(true);
 
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
@@ -138,8 +137,8 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
         QueryTuple<B> dst_tuple = Join<B>::output_->getTuple(i);
         // unconditional write to first one to initialize it
-        Join<B>::write_left(true, dst_tuple, lhs_table->getTuple(0));
-        Join<B>::write_right(true, dst_tuple, (*rhs_table)[i]);
+        Join<B>::write_left(dst_tuple, lhs_table->getTuple(0));
+        Join<B>::write_right(dst_tuple, (*rhs_table)[i]);
         joined = dst_tuple;
 
         predicate_eval = Join<B>::predicate_.callBoolExpression(joined);
@@ -151,7 +150,7 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
         for(uint32_t j = 1; j < lhs_table->getTupleCount(); ++j) {
             lhs_dummy_tag = lhs_table->getTuple(j).getDummyTag();
-            Join<B>::write_left(true, joined,lhs_table->getTuple(j));
+            Join<B>::write_left(joined,lhs_table->getTuple(j));
 
             predicate_eval = Join<B>::predicate_.callBoolExpression(joined);
 

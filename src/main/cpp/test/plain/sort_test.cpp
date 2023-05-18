@@ -132,14 +132,14 @@ TEST_F(SortTest, tpchQ8Sort) {
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_orderyear FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
     shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
 
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(0, SortDirection::ASCENDING);
-    sortDefinition.emplace_back(1, SortDirection::DESCENDING);
+    SortDefinition sort_def;
+    sort_def.emplace_back(0, SortDirection::ASCENDING);
+    sort_def.emplace_back(1, SortDirection::DESCENDING);
 
-    expected->setSortOrder(sortDefinition);
+    expected->setSortOrder(SortDefinition{ColumnSort (0, SortDirection::ASCENDING)});
 
 
-   Sort<bool> sort = getSort(sql, sortDefinition);
+   Sort<bool> sort = getSort(sql, sort_def);
 
 
     // project it down to $0
