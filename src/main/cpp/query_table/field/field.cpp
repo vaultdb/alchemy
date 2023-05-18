@@ -520,17 +520,8 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
 
     switch (l.type_) {
         case FieldType::BOOL:
-            if (boost::get<bool>(choiceBit))
-                swap<bool>(&l.payload_, &r.payload_);
-            break;
         case FieldType::INT:
-            if (boost::get<bool>(choiceBit))
-                swap<int32_t>(&l.payload_, &r.payload_);
-            break;
         case FieldType::LONG:
-            if (boost::get<bool>(choiceBit))
-                    swap<int64_t>(&lhs, &rhs);
-            break;
         case FieldType::STRING:
         case FieldType::FLOAT:
             if (boost::get<bool>(choiceBit)) {
