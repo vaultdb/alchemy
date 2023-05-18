@@ -38,8 +38,8 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
             QueryTuple<B> rhs_tuple = (*rhs)[j];
 
             QueryTuple<B> out = (*Join<B>::output_)[cursor];
-            Join<B>::write_left(true, out, lhs_tuple); // all writes happen because we do the full cross product
-            Join<B>::write_right(true, out, rhs_tuple);
+            Join<B>::write_left(out, lhs_tuple); // all writes happen because we do the full cross product
+            Join<B>::write_right(out, rhs_tuple);
 
             predicate_eval = Join<B>::predicate_.callBoolExpression(out);
             B dst_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicate_eval);
