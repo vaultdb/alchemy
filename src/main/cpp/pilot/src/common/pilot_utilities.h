@@ -23,6 +23,7 @@ namespace  vaultdb {
         static int getStudyLength(const std::string study_year);
 
         static const std::string data_cube_sql_,  data_cube_sql_no_dummies_, unioned_db_name_;
+        static void redactCellCounts(shared_ptr<SecureTable> & input, const int & min_cell_cnt);
     };
 
 }

@@ -20,8 +20,10 @@ namespace po = boost::program_options;
 #define TESTBED 0
 
 
-auto start_time = emp::clock_start();
-auto cumulative_runtime = emp::time_from(start_time);
+auto start_time_ = emp::clock_start();
+auto cumulative_runtime_ = emp::time_from(start_time_);
+int min_cell_count_ = 11;
+
 //unordered_map<string, long> runtime_per_step;
 
 // roll up one group-by strata at a time
@@ -31,6 +33,8 @@ shared_ptr<SecureTable>
 runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube, const std::string & selection_clause, const string &output_path) {
     auto start_time = emp::clock_start();
     shared_ptr<SecureTable> stratified = PilotUtilities::rollUpAggregate(data_cube, idx);
+
+    PilotUtilities::redactCellCounts(stratified, min_cell_count_);
 
     std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
 
@@ -69,9 +73,9 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
 
 
     auto delta = time_from(start_time);
-    cumulative_runtime += delta;
+    cumulative_runtime_ += delta;
 
-    cout <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime << " epoch " << Utilities::getEpoch() <<  endl;
+    cout << "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime_ << " epoch " << Utilities::getEpoch() << endl;
 
 
     return stratified;
@@ -233,7 +237,7 @@ int main(int argc, char **argv) {
     auto e2e_start_time = emp::clock_start();
 
 
-    start_time = emp::clock_start(); // reset timer to account for async start of alice and bob
+    start_time_ = emp::clock_start(); // reset timer to account for async start of alice and bob
     string measurements = "year,start_epoch,dedupe_and_setup,semijoin_optimization,rollup_end_epoch\n";
     measurements += study_year + "," + std::to_string(Utilities::getEpoch());
 
@@ -243,7 +247,7 @@ int main(int argc, char **argv) {
     patient_input_query = PilotUtilities::replaceSelection(patient_input_query, selection_clause);
     shared_ptr<SecureTable> inputData = UnionHybridData::unionHybridData(db_name, patient_input_query, remote_patient_file, netio, party);
 
-    cumulative_runtime = time_from(start_time);
+    cumulative_runtime_ = time_from(start_time_);
 
 
     // validate it against the DB for testing
@@ -266,8 +270,8 @@ int main(int argc, char **argv) {
 
 
 
-    cout << "***Read input on " << party << " in " <<    (cumulative_runtime + 0.0) *1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
-    start_time = emp::clock_start();
+    cout << "***Read input on " << party << " in " << (cumulative_runtime_ + 0.0) * 1e6 * 1e-9 << " ms, epoch " << Utilities::getEpoch() << endl;
+    start_time_ = emp::clock_start();
 
     // create output dir:
     Utilities::mkdir(output_path);
@@ -277,10 +281,10 @@ int main(int argc, char **argv) {
 
     assert(enrich.data_cube_->getTupleCount() == cardinality_bound);
 
-    cumulative_runtime += time_from(start_time);
+    cumulative_runtime_ += time_from(start_time_);
     measurements += "," + std::to_string(Utilities::getEpoch());
 
-    cout << "***Completed cube aggregation at " << time_from(start_time)*1e6*1e-9 << " ms, cumulative runtime=" << cumulative_runtime*1e6*1e-9 << " ms, epoch " << Utilities::getEpoch() <<  endl;
+    cout << "***Completed cube aggregation at " << time_from(start_time_) * 1e6 * 1e-9 << " ms, cumulative runtime=" << cumulative_runtime_ * 1e6 * 1e-9 << " ms, epoch " << Utilities::getEpoch() << endl;
 
     if(semijoin_optimization) {
         // add in the 1-site PIDs

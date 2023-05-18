@@ -16,8 +16,9 @@ using namespace emp;
 
 #define TESTBED 0
 
-auto start_time = emp::clock_start();
-auto cumulative_runtime = emp::time_from(start_time);
+auto start_time_ = emp::clock_start();
+auto cumulative_runtime_ = emp::time_from(start_time_);
+int min_cell_count_ = 11;
 
 
 std::string getRollupExpectedResultsSql(const std::string &groupByColName) {
@@ -54,6 +55,9 @@ runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & dat
 
     shared_ptr<SecureTable> stratified =  rollupStrata.run();
 
+
+    // null out the ones with cell count below threshold
+    PilotUtilities::redactCellCounts(stratified, min_cell_count_);
 
     std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
 
@@ -93,9 +97,9 @@ runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & dat
 
 
     auto delta = time_from(start_time);
-    cumulative_runtime += delta;
+    cumulative_runtime_ += delta;
 
-    cout <<  "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime << "epoch " << Utilities::getEpoch() << endl;
+    cout << "***Done " << colName << " rollup at " << delta*1e6*1e-9 << " ms, cumulative time: " << cumulative_runtime_ << "epoch " << Utilities::getEpoch() << endl;
 
 
     return stratified;
@@ -201,7 +205,7 @@ int main(int argc, char **argv) {
     shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, data_cube, year_selection, output_path);
     shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, data_cube, year_selection, output_path);
 
-    double runtime = time_from(start_time);
+    double runtime = time_from(start_time_);
     cout <<  "Test completed on " << party << " in " <<    (runtime+0.0)*1e6*1e-9 << " ms." << endl;
 
     epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();

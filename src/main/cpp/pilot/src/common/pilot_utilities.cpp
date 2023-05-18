@@ -192,3 +192,17 @@ std::string PilotUtilities::parseYearSelection(const std::string & study_year) {
        return 1; // 1 years
 
 }
+
+void PilotUtilities::redactCellCounts(shared_ptr<SecureTable> &input, const int &min_cell_cnt) {
+    emp::Integer cutoff(32, min_cell_cnt);
+    SecureField cutoff_field(FieldType::SECURE_INT, cutoff);
+
+    // null out the ones with cell count below threshold
+    for(int i = 0; i < input->getTupleCount(); ++i) {
+        // numerator_cnt and denom_cnt
+        Bit b = (((*input)[i].getField(2) < cutoff_field) | ((*input)[i].getField(3) < cutoff_field));
+        Bit dummy_tag = (*input)[i].getDummyTag() | b;
+        (*input)[i].setDummyTag(dummy_tag);
+    }
+
+}
