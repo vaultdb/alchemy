@@ -23,16 +23,21 @@ std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
 
     // deep copy new output, then just modify the dummy tag
     Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
+    QueryTableIterator<B> pos = Operator<B>::output_->begin();
+    QueryTableIterator<B> stop = Operator<B>::output_->end();
 
-    for(size_t i = 0; i < Operator<B>::output_->getTupleCount(); ++i) {
-        QueryTuple tuple = Operator<B>::output_->getTuple(i);
+
+    while(pos != stop){
+        QueryTuple<B> &tuple = *pos;
+
         B dummy_tag = tuple.getDummyTag();
         B predicate_out = predicate_.callBoolExpression(tuple);
 
         dummy_tag =  ((!predicate_out) | dummy_tag); // (!) because dummyTag is false if our selection criteria is satisfied
-        QueryTuple<B> to_write = Operator<B>::output_->getTuple(i); // container pointer to source data
-        to_write.setDummyTag(dummy_tag);
+        tuple.setDummyTag(dummy_tag);
+        ++pos;
     }
+
 
     Operator<B>::output_->setSortOrder(input->getSortOrder());
     return Operator<B>::output_;

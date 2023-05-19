@@ -5,10 +5,8 @@
 #include <util/data_utilities.h>
 #include <test/mpc/emp_base_test.h>
 #include <query_table/secure_tuple.h>
-#include <data/psql_data_provider.h>
 #include <test/support/tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
-#include <operators/group_by_aggregate.h>
 #include <parser/plan_parser.h>
 
 

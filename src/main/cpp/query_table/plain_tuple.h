@@ -13,13 +13,12 @@ namespace  vaultdb {
     class QueryTuple<bool> {
 
 
-    protected:
+    public:
         int8_t *fields_; // has dummy tag at end, serialized representation, points to an offset in parent QueryTable
         std::shared_ptr<QuerySchema> query_schema_; // pointer to enclosing table
        int8_t  *managed_data_ = nullptr;
 
 
-    public:
         QueryTuple() : fields_(nullptr) {};
         ~QueryTuple()  { if(managed_data_ != nullptr) delete [] managed_data_; } // don't free fields_, this is done at the table level
 

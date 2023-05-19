@@ -12,116 +12,135 @@
 #include <emp-zk/emp-zk.h>
 
 
-
 namespace  vaultdb {
+    template<typename B>
+    class QueryTableIterator;
 
     typedef std::pair<std::vector<int8_t>, std::vector<int8_t> > SecretShares;
 
     template<typename B> class QueryTable;
 
-    typedef  QueryTable<bool> PlainTable;
-    typedef  QueryTable<emp::Bit> SecureTable;
+    typedef QueryTable<bool> PlainTable;
+    typedef QueryTable<emp::Bit> SecureTable;
 
 
-   /* template <typename B>
-    class QueryTableIterator : public boost::iterator_facade<
-            QueryTableIterator<B>
-            , QueryTuple<B>
-            , boost::bidirectional_traversal_tag
-    >  {
-    public:
-        QueryTableIterator()
-
-    };*/
-
-    template <typename B>
+    template<typename B>
     class QueryTable {
-        private:
 
-        // tuple order
-            SortDefinition order_by_;
-            std::shared_ptr<QuerySchema> schema_;
+        friend class QueryTableIterator<B>;
+
+    private:
+        SortDefinition order_by_;
+        std::shared_ptr<QuerySchema> schema_;
 
     public:
         std::vector<int8_t> tuple_data_;
         // size of each tuple in bytes
         size_t tuple_size_;
+        size_t tuple_cnt_;
 
         // empty sort definition for default case
-            QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition = SortDefinition());
-            // deep copy
-            QueryTable(const QueryTable &src);
+        QueryTable(const size_t &num_tuples, const QuerySchema &schema,
+                   const SortDefinition &sortDefinition = SortDefinition());
 
-            ~QueryTable() {}
+        // deep copy
+        QueryTable(const QueryTable &src);
 
-            void resize(const size_t & tupleCount);
-            bool isEncrypted() const;
+        ~QueryTable() {}
 
-            void setSchema(const QuerySchema &schema);
+        void resize(const size_t &tupleCount);
 
-            const std::shared_ptr<QuerySchema> getSchema() const;
+        bool isEncrypted() const;
 
-            QueryTuple<B> getTuple(int idx);
-            const QueryTuple<B> getImmutableTuple(int idx) const;
+        inline void setSchema(const QuerySchema &schema) {
+            schema_ = std::make_shared<QuerySchema>(schema);
+            tuple_size_ = schema_->size()/8; // bytes for plaintext
 
-            unsigned int getTupleCount() const;
+            if(std::is_same_v<emp::Bit, B>) {
+                size_t tuple_bits = schema_->size();
+                tuple_size_ = tuple_bits * TypeUtilities::getEmpBitSize(); // bits, one block per bit
+            }
 
-            std::string toString(const bool &showDummies = false) const;
-            std::string toString(const size_t & limit, const bool &showDummies = false) const;
+        }
 
-            void putTuple(const int &idx, const QueryTuple<B> &tuple);
+        inline const std::shared_ptr<QuerySchema> getSchema() const { return schema_; }
 
+        QueryTuple<B> getTuple(int idx);
 
-            void setSortOrder(const SortDefinition &sortOrder);
+        const QueryTuple<B> getImmutableTuple(int idx) const;
 
-            SortDefinition getSortOrder() const;
+        inline size_t getTupleCount() const { return tuple_cnt_; }
 
+        std::string toString(const bool &showDummies = false) const;
 
+        std::string toString(const size_t &limit, const bool &showDummies = false) const;
 
-            std::vector<int8_t> serialize() const;
-
-
-            static std::shared_ptr<SecureTable> secretShare(const PlainTable & input, emp::NetIO *io, const int &party);
-            static std::shared_ptr<SecureTable> secretShare(const PlainTable & input, emp::BoolIO<NetIO> *ios[], const size_t & thread_count, const int &party);
-
-            static std::shared_ptr<SecureTable>
-            secret_share_send_table(const std::shared_ptr<PlainTable> &input, emp::NetIO *io, const int &sharing_party);
-            static std::shared_ptr<SecureTable>
-            secret_share_recv_table(const QuerySchema &src_schema,
-                                    const SortDefinition &sortDefinition, emp::NetIO *io, const int &sharing_party);
+        void putTuple(const int &idx, const QueryTuple<B> &tuple);
 
 
-            SecretShares generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
+        void setSortOrder(const SortDefinition &sortOrder);
 
-            std::unique_ptr<QueryTable<bool> > reveal(int empParty = emp::PUBLIC) const;
+        SortDefinition getSortOrder() const;
 
-            QueryTable<B> &operator=(const QueryTable<B> &src);
 
-            bool operator==(const QueryTable<B> &other) const;
+        std::vector<int8_t> serialize() const;
 
-            bool operator!=(const QueryTable &other) const { return !(*this == other); }
-            QueryTuple<B> operator[](const int & idx);
 
-            const QueryTuple<B> operator[](const int & idx) const;
+        static std::shared_ptr<SecureTable> secretShare(const PlainTable &input, emp::NetIO *io, const int &party);
 
-            static std::shared_ptr<PlainTable> deserialize(const QuerySchema & schema, const vector<int8_t> &tableBits);
+        static std::shared_ptr<SecureTable>
+        secretShare(const PlainTable &input, emp::BoolIO<NetIO> *ios[], const size_t &thread_count, const int &party);
 
-            // encrypted version of deserialization using emp::Bit
-            static std::shared_ptr<SecureTable> deserialize(const QuerySchema &schema, vector<Bit> &table_bits);
+        static std::shared_ptr<SecureTable>
+        secret_share_send_table(const std::shared_ptr<PlainTable> &input, emp::NetIO *io, const int &sharing_party);
 
-            size_t getTrueTupleCount() const;
-            bool empty() const { return tuple_data_.empty(); }
+        static std::shared_ptr<SecureTable>
+        secret_share_recv_table(const QuerySchema &src_schema,
+                                const SortDefinition &sortDefinition, emp::NetIO *io, const int &sharing_party);
+
+
+        SecretShares
+        generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
+
+        std::unique_ptr<QueryTable<bool> > reveal(int empParty = emp::PUBLIC) const;
+
+        QueryTable<B> &operator=(const QueryTable<B> &src);
+
+        bool operator==(const QueryTable<B> &other) const;
+
+        bool operator!=(const QueryTable &other) const { return !(*this == other); }
+
+        QueryTuple<B> operator[](const int &idx);
+
+        const QueryTuple<B> operator[](const int &idx) const;
+
+        static std::shared_ptr<PlainTable> deserialize(const QuerySchema &schema, const vector<int8_t> &tableBits);
+
+        // encrypted version of deserialization using emp::Bit
+        static std::shared_ptr<SecureTable> deserialize(const QuerySchema &schema, vector<Bit> &table_bits);
+
+        size_t getTrueTupleCount() const;
+
+        bool empty() const { return tuple_data_.empty(); }
 
         PlainTuple getPlainTuple(size_t idx) const;
+        inline QueryTableIterator<B> begin() {   return QueryTableIterator<B>(*this); }
+        inline QueryTableIterator<B> end() { return QueryTableIterator( *this, getTupleCount()); }
+
+
 
     private:
-        static std::unique_ptr<PlainTable> revealTable(const SecureTable & table, const int & party);
-        static std::unique_ptr<PlainTable> revealTable(const PlainTable & table, const int & party);
-        static void secret_share_send(const int &party, const PlainTable & src_table, SecureTable &dst_table, const int &write_offset,
-                               const bool &reverse_read_order);
+        static std::unique_ptr<PlainTable> revealTable(const SecureTable &table, const int &party);
+
+        static std::unique_ptr<PlainTable> revealTable(const PlainTable &table, const int &party);
+
+        static void secret_share_send(const int &party, const PlainTable &src_table, SecureTable &dst_table,
+                                      const int &write_offset,
+                                      const bool &reverse_read_order);
+
         static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
-                               SecureTable &dst_table, const size_t &write_offset,
-                               const bool &reverse_read_order);
+                                      SecureTable &dst_table, const size_t &write_offset,
+                                      const bool &reverse_read_order);
 
     };
 
@@ -130,6 +149,76 @@ namespace  vaultdb {
     std::ostream &operator<<(std::ostream &os, const SecureTable &table);
 
 
+    template<typename B>
+    class QueryTableIterator {
+        using iterator_category = std::forward_iterator_tag;
+        using difference_type   = std::ptrdiff_t;
+        using value_type        = QueryTuple<B>;
+        using pointer           = QueryTuple<B>*;
+        using reference         = QueryTuple<B>&;
+
+    public:
+        QueryTableIterator(QueryTable<B> &t) : table_(t), wrapper_(table_.getSchema(), table_.tuple_data_.data()),
+            tuple_size_((std::is_same_v<B, bool>) ? table_.schema_->size()/8 : table_.schema_->size()) { }
+
+        QueryTableIterator(QueryTable<B> &t, const int & offset)
+           : table_(t),
+             tuple_size_((std::is_same_v<B, bool>) ? table_.schema_->size()/8 : table_.schema_->size()),
+             wrapper_(table_.getSchema(), table_.tuple_data_.data() + table_.tuple_size_ * offset) {
+            assert(offset <= t.getTupleCount());
+
+        }
+
+
+
+        friend inline bool operator== (const QueryTableIterator<B> & a, const QueryTableIterator<B> & b)
+            { return a.wrapper_.fields_ == b.wrapper_.fields_; };
+
+        friend inline bool operator!= (const QueryTableIterator<B> & a, const QueryTableIterator<B> & b) {
+            return a.wrapper_.fields_ != b.wrapper_.fields_;
+            };
+
+        QueryTuple<B> & operator*() { return wrapper_; }
+        QueryTuple<B>* operator->() { return &wrapper_; }
+
+        QueryTableIterator & operator++() {
+            wrapper_.fields_ = wrapper_.fields_ + tuple_size_;
+            return *this;
+        }
+
+        QueryTableIterator operator++ ( int )
+        {
+            QueryTableIterator<B> clone( *this );
+            ++(*this);
+            return clone;
+        }
+
+
+    private:
+        QueryTable<B> &table_;
+        QueryTuple<B> wrapper_;
+        int tuple_size_;
+
+    };
 
 }
+/*
+ *         template<typename B>
+        struct Iterator
+        {
+            Iterator(pointer ptr) :   {}
+
+            reference operator*() const { return wrapper_; }
+            pointer operator->() { return &wrapper_; }
+            Iterator& operator++() { DataUtilities::advanceTuplePtr(wrapper_); return *this; }
+            Iterator operator++(int) { Iterator tmp = *this; ++(*this); return tmp; }
+            friend bool operator== (const Iterator& a, const Iterator& b) { return a.m_ptr == b.m_ptr; };
+            friend bool operator!= (const Iterator& a, const Iterator& b) { return a.m_ptr != b.m_ptr; };
+
+        private:
+            QueryTuple<B> wrapper_;
+        };
+
+
+ */
 #endif // _QUERY_TABLE_H

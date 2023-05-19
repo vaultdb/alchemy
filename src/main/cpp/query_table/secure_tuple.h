@@ -11,20 +11,20 @@ namespace vaultdb {
     // secure specialization
     template<>
     class QueryTuple<emp::Bit> {
-    protected:
+
+    public:
 
         emp::Bit *fields_; // has dummy tag at end, serialized representation, points to an offset in parent QueryTable
         std::shared_ptr<QuerySchema> query_schema_; // pointer to enclosing table
         emp::Bit *managed_data_ = nullptr;
 
-    public:
         QueryTuple() {};
         ~QueryTuple()  { if(managed_data_ != nullptr) delete [] managed_data_; }
         QueryTuple(const QueryTuple & src);
 
         QueryTuple(std::shared_ptr<QuerySchema> & query_schema, int8_t *src);
         QueryTuple(std::shared_ptr<QuerySchema> & query_schema, emp::Bit *src);
-        // constructor for immutable tuple
+        // constructor for fake immutable tuple
         QueryTuple(const std::shared_ptr<QuerySchema> &query_schema, const int8_t *src);
         explicit QueryTuple(const std::shared_ptr<QuerySchema> & schema); // self-managed memory
 

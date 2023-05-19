@@ -127,11 +127,10 @@ void QuerySchema::initializeFieldOffsets()  {
         running_offset += fd.size();
 
     }
-
     // dummy tag at end
     offsets_[-1] = running_offset;
 
-    QueryFieldDesc dummy_tag(-1, fields_[0].getTableName(), "dummy_tag",
+     QueryFieldDesc dummy_tag(-1, fields_[0].getTableName(), "dummy_tag",
                    isSecure() ?
                    FieldType::SECURE_BOOL :
                    FieldType::BOOL, 0);
