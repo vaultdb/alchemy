@@ -1,8 +1,8 @@
 #!/bin/bash -x
 
 
-cmake .
-make -j5
+cmake -DCMAKE_BUILD_TYPE=Release .
+make -j
 
 bash test/support/setup-csv.sh
 bash pilot/test/generate-and-load-test-data.sh 1000
@@ -12,14 +12,13 @@ bash  test/support/load-generated-data.sh 100
 # optional:
 #  bash run-pilot-test.sh
 
-#mkdir log
 
 ./csv_reader_test 
 ./field_expression_test
 ./filter_test
 ./project_test
 ./basic_join_test
-./fkey_pkey_join_test
+./keyed_join_test
 ./sort_test
 ./scalar_aggregate_test
 ./group_by_aggregate_test
@@ -35,7 +34,7 @@ bash run.sh emp_table_test
 bash run.sh secure_filter_test
 bash run.sh secure_sort_test
 bash run.sh secure_basic_join_test
-bash run.sh secure_pkey_fkey_join_test
+bash run.sh secure_keyed_join_test
 bash run.sh secure_scalar_aggregate_test
 bash run.sh secure_group_by_aggregate_test
 bash run.sh enrich_test

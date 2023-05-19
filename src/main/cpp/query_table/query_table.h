@@ -29,11 +29,14 @@ namespace  vaultdb {
 
         friend class QueryTableIterator<B>;
 
+
     private:
         SortDefinition order_by_;
         std::shared_ptr<QuerySchema> schema_;
 
     public:
+        using iterator = QueryTableIterator<B>;
+
         std::vector<int8_t> tuple_data_;
         // size of each tuple in bytes
         size_t tuple_size_;
@@ -124,8 +127,9 @@ namespace  vaultdb {
         bool empty() const { return tuple_data_.empty(); }
 
         PlainTuple getPlainTuple(size_t idx) const;
+
         inline QueryTableIterator<B> begin() {   return QueryTableIterator<B>(*this); }
-        inline QueryTableIterator<B> end() { return QueryTableIterator( *this, getTupleCount()); }
+        inline QueryTableIterator<B> end() { return QueryTableIterator<B>( *this, tuple_cnt_); }
 
 
 

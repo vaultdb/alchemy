@@ -37,8 +37,7 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
 
       
 
-        std::memset(tuple_data_.data(), 0, tuple_data_.size());
-
+    std::memset(tuple_data_.data(), 0, tuple_data_.size());
 
 }
 
@@ -72,11 +71,11 @@ vector<int8_t> QueryTable<B>::serialize() const {
 std::ostream &vaultdb::operator<<(std::ostream &os, const PlainTable &table) {
         os << *(table.getSchema()) << " isEncrypted? " << table.isEncrypted() <<  " order by: " << DataUtilities::printSortDefinition(table.getSortOrder()) << endl;
 
-        for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
-            PlainTuple tuple = table[i];
+        PlainTable *ref = const_cast<PlainTable *>(&table);
 
-            os << tuple;
-            const bool is_dummy = tuple.getDummyTag();
+        for(auto pos = ref->begin(); pos != ref->end(); ++pos) {
+            os << *pos;
+            const bool is_dummy = pos->getDummyTag();
             if(!is_dummy)
                 os << endl;
 
@@ -400,8 +399,9 @@ QueryTable<B>::deserialize(const QuerySchema &schema, vector<Bit> &table_bits) {
 }
 
 template<typename B>
-void QueryTable<B>::resize(const size_t &tupleCount) {
-    tuple_data_.resize(tupleCount * tuple_size_);
+void QueryTable<B>::resize(const size_t &cnt) {
+    tuple_data_.resize(cnt * tuple_size_);
+    tuple_cnt_ = cnt;
 }
 
 template<typename B>
@@ -546,12 +546,11 @@ std::string QueryTable<B>::toString(const size_t &limit, const bool &show_dummie
     std::ostringstream os;
     size_t tuples_printed = 0;
     size_t cursor = 0;
-    size_t tuple_cnt = getTupleCount();
 
     assert(!isEncrypted());
 
     os << *getSchema() <<  " order by: " << DataUtilities::printSortDefinition(getSortOrder()) << std::endl;
-    while(cursor < tuple_cnt && tuples_printed < limit) {
+    while((cursor < tuple_cnt_) && (tuples_printed < limit)) {
         PlainTuple tuple = getPlainTuple(cursor);
         if(show_dummies  // print unconditionally
             || !tuple.getDummyTag()) {

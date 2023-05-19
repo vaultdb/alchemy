@@ -61,7 +61,6 @@ std::shared_ptr<QueryTable<B> > Operator<B>::run() {
 
     output_ = runSelf(); // delegated to children
 
-
     //run_time_ = time_from(start_time);
     //auto logger = vaultdb_logger::get();
     //BOOST_LOG_SEV(logger, logging::trivial::severity_level::info) << "Operator " <<  getOperatorType() << " ran for " << run_time_/10e6 << " seconds." << std::endl;

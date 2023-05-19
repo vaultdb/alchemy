@@ -14,13 +14,11 @@ template<typename B>
 shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > lhs = Join<B>::children_[0]->getOutput();
     std::shared_ptr<QueryTable<B> > rhs = Join<B>::children_[1]->getOutput();
-    uint32_t cursor = 0;
     B predicate_eval;
 
-    uint32_t outputTupleCount = lhs->getTupleCount() * rhs->getTupleCount();
-    QuerySchema lhsSchema = *lhs->getSchema();
-    QuerySchema rhsSchema = *rhs->getSchema();
-    QuerySchema outputSchema = Join<B>::concatenateSchemas(lhsSchema, rhsSchema, false);
+    QuerySchema lhs_schema = *lhs->getSchema();
+    QuerySchema rhs_schema = *rhs->getSchema();
+    QuerySchema output_schema = Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false);
 
     assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC
 
@@ -30,21 +28,19 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
     concat_sorts.insert(concat_sorts.end(),  rhs_sort.begin(), rhs_sort.end());
 
     // output size, colCount, is_encrypted
-    Join<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(outputTupleCount, outputSchema, concat_sorts));
+    Join<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(lhs->getTupleCount() * rhs->getTupleCount(), output_schema, concat_sorts));
+    auto dst_pos = Join<B>::output_->begin();
 
-    for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
-        QueryTuple<B> lhs_tuple = (*lhs)[i];
-        for(uint32_t j = 0; j < rhs->getTupleCount(); ++j) {
-            QueryTuple<B> rhs_tuple = (*rhs)[j];
+    for(auto lhs_pos = lhs->begin(); lhs_pos != lhs->end(); ++lhs_pos) {
+        for(auto rhs_pos = rhs->begin(); rhs_pos != rhs->end(); ++rhs_pos) {
 
-            QueryTuple<B> out = (*Join<B>::output_)[cursor];
-            Join<B>::write_left(out, lhs_tuple); // all writes happen because we do the full cross product
-            Join<B>::write_right(out, rhs_tuple);
+            Join<B>::write_left(*dst_pos, *lhs_pos); // all writes happen because we do the full cross product
+            Join<B>::write_right(*dst_pos, *rhs_pos);
 
-            predicate_eval = Join<B>::predicate_.callBoolExpression(out);
-            B dst_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicate_eval);
-            out.setDummyTag(dst_dummy_tag);
-            ++cursor;
+            predicate_eval = Join<B>::predicate_.callBoolExpression(*dst_pos);
+            B dst_dummy_tag = Join<B>::get_dummy_tag(*lhs_pos, *rhs_pos, predicate_eval);
+            dst_pos->setDummyTag(dst_dummy_tag);
+            ++dst_pos;
         }
     }
 

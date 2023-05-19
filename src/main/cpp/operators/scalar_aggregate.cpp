@@ -26,17 +26,15 @@ template<typename B>
 std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
     std::shared_ptr<QueryTable<B> > input = ScalarAggregate<B>::children_[0]->getOutput();
 
-    QueryTuple<B> tuple(input->getSchema());
     Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(
             new QueryTable<B>(1, Operator<B>::output_schema_, SortDefinition()));
 
     QueryTuple<B> outputTuple = Operator<B>::output_->getTuple(0);
 
 
-    for(size_t i = 0; i < input->getTupleCount(); ++i) {
-        tuple = input->getTuple(i);
+    for(auto src_pos = input->begin(); src_pos != input->end(); ++src_pos) {
         for(ScalarAggregateImpl<B> *aggregator : aggregators_) {
-            aggregator->accumulate(tuple);
+            aggregator->accumulate(*src_pos);
         }
 
     }
@@ -46,10 +44,11 @@ std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
         outputTuple.setField(i, f);
     }
 
+    outputTuple.setDummyTag(false);
+
     Operator<B>::output_->putTuple(0, outputTuple);
 
     // dummy tag is always false in our setting, e.g., if we count a set of nulls/dummies, then our count is zero_ - not dummy
-    tuple.setDummyTag(false);
     return Operator<B>::output_;
 }
 

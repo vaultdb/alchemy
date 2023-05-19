@@ -27,8 +27,6 @@ void
 TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
     string query = tpch_queries[test_id];
 
-
-
     shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name, query, false, 0);
     expected->setSortOrder(expected_sort);
 

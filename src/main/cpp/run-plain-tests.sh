@@ -7,7 +7,7 @@ set +x
 ./filter_test
 ./project_test
 ./basic_join_test
-./fkey_pkey_join_test
+./keyed_join_test
 ./sort_test
 ./scalar_aggregate_test
 ./group_by_aggregate_test

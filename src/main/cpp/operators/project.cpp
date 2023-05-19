@@ -28,17 +28,18 @@ template<typename B>
 std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
     std::shared_ptr<QueryTable<B> > src_table = Operator<B>::children_[0]->getOutput();
-    uint32_t tuple_cnt_ = src_table->getTupleCount();
 
 
 
-    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt_, Operator<B>::output_schema_, Operator<B>::getSortOrder()));
+    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(src_table->getTupleCount(), Operator<B>::output_schema_, Operator<B>::getSortOrder()));
 
+    auto src_pos = src_table->begin();
+    auto dst_pos =  Operator<B>::output_->begin();
 
-    for(uint32_t i = 0; i < tuple_cnt_; ++i) {
-        QueryTuple<B> src_tuple = src_table->getTuple(i);
-        QueryTuple<B> dst_tuple = Operator<B>::output_->getTuple(i);
-        project_tuple(dst_tuple, src_tuple);
+    while(src_pos != src_table->end()) {
+        project_tuple(*dst_pos, *src_pos);
+        ++src_pos;
+        ++dst_pos;
     }
 
 
