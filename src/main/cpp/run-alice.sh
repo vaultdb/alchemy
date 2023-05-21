@@ -10,4 +10,4 @@ then
    exit 0 
 fi
 
-./bin/$1 --party=1
+./$1 --party=1
