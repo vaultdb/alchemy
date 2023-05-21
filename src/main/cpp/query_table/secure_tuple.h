@@ -39,16 +39,25 @@ namespace vaultdb {
 
 
         void setField(const int &idx, const SecureField &f);
-        void setDummyTag(const emp::Bit & d);
+        inline void setDummyTag(const emp::Bit & d) {
+            const emp::Bit *dst = fields_ + query_schema_->getFieldOffset(-1);
+            std::memcpy((int8_t *) dst, (int8_t *) &(d.bit), TypeUtilities::getEmpBitSize());
 
-        void setDummyTag(const bool & b);
+        }
 
-        void setDummyTag(const Field<emp::Bit> & d);
+        inline void setDummyTag(const bool & b) {  setDummyTag(Bit(b)); }
 
-        void setSchema(std::shared_ptr<QuerySchema> q);
+        inline void setDummyTag(const Field<emp::Bit> & d) {
+            setDummyTag(d.getValue<emp::Bit>());
+        }
+
+        inline void setSchema(std::shared_ptr<QuerySchema> q) { query_schema_ = q; }
 
 
-        emp::Bit getDummyTag() const;
+        inline emp::Bit getDummyTag() const {
+            const emp::Bit *src = fields_ + query_schema_->getFieldOffset(-1);
+            return emp::Bit(*((emp::Bit *) src));
+         }
 
         std::shared_ptr<QuerySchema> getSchema() const;
 
@@ -60,13 +69,15 @@ namespace vaultdb {
 
         void serialize(int8_t *dst);
 
-        size_t getFieldCount() const;
+        inline size_t getFieldCount() const {
+            return query_schema_->getFieldCount();
+        }
 
 
         QueryTuple& operator=(const SecureTuple& other);
 
         emp::Bit operator==(const SecureTuple & other) const;
-        emp::Bit operator!=(const SecureTuple & other) const;
+        emp::Bit operator!=(const SecureTuple & other) const { return  !(*this == other); }
 
         SecureField operator[](const int32_t & idx);
         const SecureField operator[](const int32_t & idx) const;

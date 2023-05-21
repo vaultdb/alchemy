@@ -88,12 +88,15 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
     Operator<B>::output_ = shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), Operator<B>::output_schema_, outputSort));
 
-    QueryTuple<B> tuple = (*Operator<B>::output_)[0];
+    auto dst_pos = Operator<B>::output_->begin();
+    auto src_pos = input->begin();
+//    QueryTuple<B> tuple = (*Operator<B>::output_)[0];
     B dummy_tag(false);
-    tuple.setDummyTag(dummy_tag);
+    dst_pos->setDummyTag(false);
 
 
-    predecessor = (*input)[0];
+
+    predecessor = *src_pos;
 
     for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
         aggregator->initialize(predecessor, B(false));
@@ -101,16 +104,16 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
     realBin = !predecessor.getDummyTag(); // does this group-by bin contain at least one real (non-dummy) tuple?
 
+    ++src_pos;
 
-    for(uint32_t i = 1; i < input->getTupleCount(); ++i) {
-        current = (*input)[i];
+    while(src_pos != input->end()) {
+        current = *src_pos;
 
         realBin = realBin | !predecessor.getDummyTag();
         B isGroupByMatch = groupByMatch(predecessor, current);
 
-        QueryTuple<B> output_tuple = GroupByAggregate<B>::output_->getTuple(i - 1); // to write to it in place
-        generateOutputTuple(output_tuple, predecessor, !isGroupByMatch, realBin, aggregators_);
-
+        generateOutputTuple(*dst_pos, predecessor, !isGroupByMatch, realBin, aggregators_);
+        ++dst_pos;
         for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
             aggregator->initialize(current, isGroupByMatch);
             aggregator->accumulate(current, !isGroupByMatch);
@@ -120,6 +123,7 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
         // reset the flag at the end of each group-by bin
         // flag denotes if we have one non-dummy tuple in the bin
         realBin = Field<B>::If(!isGroupByMatch,B(false), Field<B>(realBin)).template getValue<B>();
+        ++src_pos;
 
     }
 

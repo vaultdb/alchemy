@@ -46,31 +46,8 @@ void QueryTuple<bool>::setField(const int &idx, const PlainField &f) {
     f.serialize(writePos, query_schema_->getField(idx));
 }
 
-void QueryTuple<bool>::setDummyTag(const bool &b) {
-    size_t dummy_tag_size = sizeof(bool);
-    int8_t *dst = fields_ + query_schema_->size()/8 - dummy_tag_size;
-    memcpy(dst, &b, dummy_tag_size);
-}
 
-void QueryTuple<bool>::setDummyTag(const Field<bool> &d) {
-    assert(d.getType() == FieldType::BOOL);
-    bool dummy_tag = d.getValue<bool>();
-    setDummyTag(dummy_tag);
-}
 
-void QueryTuple<bool>::setSchema(std::shared_ptr<QuerySchema> q) {
-    query_schema_ = q;
-}
-
-bool QueryTuple<bool>::getDummyTag() const {
-    size_t dummy_tag_size = sizeof(bool);
-    int8_t *src = fields_ + query_schema_->size()/8 - dummy_tag_size;
-    return *((bool *) src);
-}
-
-std::shared_ptr<QuerySchema> QueryTuple<bool>::getSchema() const {
-    return query_schema_;
-}
 
 void QueryTuple<bool>::compareSwap(const bool &cmp, PlainTuple &lhs, PlainTuple &rhs) {
 

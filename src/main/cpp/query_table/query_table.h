@@ -206,23 +206,4 @@ namespace  vaultdb {
     };
 
 }
-/*
- *         template<typename B>
-        struct Iterator
-        {
-            Iterator(pointer ptr) :   {}
-
-            reference operator*() const { return wrapper_; }
-            pointer operator->() { return &wrapper_; }
-            Iterator& operator++() { DataUtilities::advanceTuplePtr(wrapper_); return *this; }
-            Iterator operator++(int) { Iterator tmp = *this; ++(*this); return tmp; }
-            friend bool operator== (const Iterator& a, const Iterator& b) { return a.m_ptr == b.m_ptr; };
-            friend bool operator!= (const Iterator& a, const Iterator& b) { return a.m_ptr != b.m_ptr; };
-
-        private:
-            QueryTuple<B> wrapper_;
-        };
-
-
- */
 #endif // _QUERY_TABLE_H

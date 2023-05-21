@@ -40,16 +40,33 @@ namespace  vaultdb {
 
         void setField(const int &idx, const PlainField &f);
 
-        void setDummyTag(const bool & b);
+        inline void setDummyTag(const bool & b) {
+            size_t dummy_tag_size = sizeof(bool);
+            int8_t *dst = fields_ + query_schema_->size()/8 - dummy_tag_size;
+            memcpy(dst, &b, dummy_tag_size);
 
-        void setDummyTag(const Field<bool> & d);
+        }
 
-        void setSchema(std::shared_ptr<QuerySchema> q);
+        inline void setDummyTag(const Field<bool> & d) {
+            assert(d.getType() == FieldType::BOOL);
+            bool dummy_tag = d.getValue<bool>();
+            setDummyTag(dummy_tag);
+
+        }
+
+        inline void setSchema(std::shared_ptr<QuerySchema> q) {
+            query_schema_ = q;
+        }
 
 
-        bool getDummyTag() const;
+        bool getDummyTag() const {
+            size_t dummy_tag_size = sizeof(bool);
+            int8_t *src = fields_ + query_schema_->size()/8 - dummy_tag_size;
+            return *((bool *) src);
 
-        std::shared_ptr<QuerySchema> getSchema() const;
+        }
+
+        inline std::shared_ptr<QuerySchema> getSchema() const {     return query_schema_; }
 
 
         string toString(const bool &showDummies = false) const;
@@ -59,7 +76,7 @@ namespace  vaultdb {
         }
 
         size_t getFieldCount() const {
-            return 0;
+            return query_schema_->getFieldCount(); // was 0????
         }
 
         PlainTuple& operator=(const PlainTuple& other);
