@@ -13,7 +13,7 @@ DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 
 using namespace vaultdb;
 
-class SecurePkeyFkeyJoinTest : public EmpBaseTest {
+class SecureKeyedJoinTest : public EmpBaseTest {
 protected:
 
 
@@ -42,7 +42,7 @@ protected:
 
 
 
-TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
+TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
 
 
     std::string expectedResultSql = "WITH customer_cte AS (" + customerSql + "), "
@@ -79,7 +79,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_customer_orders) {
 }
 
 
-TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
+TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 
 
 // get inputs from local oblivious ops
@@ -124,7 +124,7 @@ TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders) {
 
 
 // compose C-O-L join should produce one output tuple, order ID 210945
-TEST_F(SecurePkeyFkeyJoinTest, test_tpch_q3_lineitem_orders_customer) {
+TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
                                                                          "lineitem_cte AS (" + lineitemSql + "), \n"

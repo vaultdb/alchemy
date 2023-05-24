@@ -16,3 +16,5 @@ grep '^\[' $file
 # to record test in git
 # git add $(ls log/all-tests-*.log | tail -n 1)
 # grep SecureTpcHTest $file  | grep 'ms)' | uniq | sed 's/^.*(//g' | sed 's/\ .*$//g'
+
+# grep OK  $file  | sed 's/^.*OK...//g'  | sed 's/^.*(//g' | sed 's/\ .*$//g'

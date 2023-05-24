@@ -63,6 +63,8 @@ void CsvReader::parseTuple(const std::string &csvLine, const QuerySchema &src_sc
         PlainField field = FieldFactory<bool>::getFieldFromString(src_schema.getField(i).getType(), schema->getField(i).getStringLength(), tupleFields[i]);
         newTuple.setField(i, field);
     }
+    // implicitly not dummy
+    newTuple.setDummyTag(false);
 
 }
 

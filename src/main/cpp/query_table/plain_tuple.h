@@ -75,7 +75,7 @@ namespace  vaultdb {
 
         }
 
-        size_t getFieldCount() const {
+        inline size_t getFieldCount() const {
             return query_schema_->getFieldCount(); // was 0????
         }
 
