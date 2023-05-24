@@ -38,6 +38,10 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
       
 
     std::memset(tuple_data_.data(), 0, tuple_data_.size());
+    for(int i = 0; i < num_tuples; ++i) {
+        getTuple(i).setDummyTag(true);
+    }
+
 
 }
 
