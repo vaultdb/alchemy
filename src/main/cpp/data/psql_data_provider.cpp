@@ -174,6 +174,8 @@ PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_ta
 
 
     PlainField PsqlDataProvider::getField(pqxx::field src) {
+        if(src.is_null())
+            throw std::invalid_argument("Null field, aborting!"); // Null handling NYI
 
         int ordinal = src.num();
         pqxx::oid oid = src.type();

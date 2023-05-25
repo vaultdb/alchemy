@@ -21,7 +21,7 @@ TEST_F(CsvReaderTest, lineitemTest) {
 
     // TODO: syscall the line below to generate the csv
  // generated input file by running:
-  // psql  -t --csv  -c "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/lineitem.csv
+  // psql  -t --csv  -c "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50" tpch_unioned_150  > test/support/csv/lineitem.csv
     std::string inputFile =  current_working_directory_ + "/test/support/csv/lineitem.csv";
 
 
@@ -95,7 +95,7 @@ TEST_F(CsvReaderTest, ordersTest) {
 
     // generated input file by running:
   
-    // psql  -t --csv  -c "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/orders.csv
+    // psql  -t --csv  -c "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50" tpch_unioned_150  > test/support/csv/orders.csv
 
     std::string inputFile = current_working_directory_ +  "/test/support/csv/orders.csv";
     std::string query = "SELECT *   FROM orders ORDER BY (1), (2)  LIMIT 50";

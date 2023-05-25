@@ -12,6 +12,7 @@ bash run-tests.sh 2>&1 > $file
 
 #print results
 grep '^\[' $file
+grep FAIL $file
 
 # to record test in git
 # git add $(ls log/all-tests-*.log | tail -n 1)
