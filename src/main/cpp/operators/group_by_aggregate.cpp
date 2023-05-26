@@ -14,46 +14,46 @@ using namespace std;
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
                                       const vector<ScalarAggregateDefinition> &aggregates,
-				      const SortDefinition &sort,
-				      const size_t & output_card) : Operator<B>(child, sort),
+                                      const SortDefinition &sort,
+                                      const size_t & output_card) : Operator<B>(child, sort),
                                                                     aggregate_definitions_(aggregates),
-								    group_by_(groupBys), output_cardinality_(output_card)
+                                                                    group_by_(groupBys), output_cardinality_(output_card)
 {
 
-  setup();
- }
+    setup();
+}
 
 
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates, 
-				      const size_t & output_card) : Operator<B>(child, SortDefinition()),
+                                      const vector<ScalarAggregateDefinition> &aggregates,
+                                      const size_t & output_card) : Operator<B>(child, SortDefinition()),
                                                                     aggregate_definitions_(aggregates),
                                                                     group_by_(groupBys), output_cardinality_(output_card) {
 
-  setup();
- }
+    setup();
+}
 
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(shared_ptr<QueryTable<B>> child, const vector<int32_t> &groupBys,
                                       const vector<ScalarAggregateDefinition> &aggregates,
-				      const SortDefinition &sort,
-				      const size_t & output_card) : Operator<B>(child, sort),
+                                      const SortDefinition &sort,
+                                      const size_t & output_card) : Operator<B>(child, sort),
                                                                     aggregate_definitions_(aggregates),
                                                                     group_by_(groupBys), output_cardinality_(output_card) {
 
-      setup();
- }
+    setup();
+}
 
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(shared_ptr<QueryTable<B>> child, const vector<int32_t> &groupBys,
                                       const vector<ScalarAggregateDefinition> &aggregates,
-				      const size_t & output_card) : Operator<B>(child, SortDefinition()),
-                                                                                                                         aggregate_definitions_(aggregates),
-                                                                                                                         group_by_(groupBys) {
+                                      const size_t & output_card) : Operator<B>(child, SortDefinition()),
+                                                                    aggregate_definitions_(aggregates),
+                                                                    group_by_(groupBys) {
 
-      setup();
- }
+    setup();
+}
 
 
 template<typename B>
@@ -78,9 +78,9 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     QueryTuple<B> current(input_schema), predecessor(input_schema);
 
     if(output_cardinality_ == 0) { // naive case - go full oblivious
-      output_cardinality_ = input->getTupleCount();
+        output_cardinality_ = input->getTupleCount();
     }
-    
+
     // output sort order equal to first group-by-col-count entries in input sort order
     SortDefinition inputSort = input->getSortOrder();
     SortDefinition outputSort = vector<ColumnSort>(inputSort.begin(), inputSort.begin() + group_by_.size());
@@ -88,15 +88,12 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
     Operator<B>::output_ = shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), Operator<B>::output_schema_, outputSort));
 
-    auto dst_pos = Operator<B>::output_->begin();
-    auto src_pos = input->begin();
-//    QueryTuple<B> tuple = (*Operator<B>::output_)[0];
+    QueryTuple<B> tuple = (*Operator<B>::output_)[0];
     B dummy_tag(false);
-    dst_pos->setDummyTag(false);
+    tuple.setDummyTag(dummy_tag);
 
 
-
-    predecessor = *src_pos;
+    predecessor = (*input)[0];
 
     for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
         aggregator->initialize(predecessor, B(false));
@@ -104,16 +101,16 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
     realBin = !predecessor.getDummyTag(); // does this group-by bin contain at least one real (non-dummy) tuple?
 
-    ++src_pos;
 
-    while(src_pos != input->end()) {
-        current = *src_pos;
+    for(uint32_t i = 1; i < input->getTupleCount(); ++i) {
+        current = (*input)[i];
 
         realBin = realBin | !predecessor.getDummyTag();
         B isGroupByMatch = groupByMatch(predecessor, current);
 
-        generateOutputTuple(*dst_pos, predecessor, !isGroupByMatch, realBin, aggregators_);
-        ++dst_pos;
+        QueryTuple<B> output_tuple = GroupByAggregate<B>::output_->getTuple(i - 1); // to write to it in place
+        generateOutputTuple(output_tuple, predecessor, !isGroupByMatch, realBin, aggregators_);
+
         for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
             aggregator->initialize(current, isGroupByMatch);
             aggregator->accumulate(current, !isGroupByMatch);
@@ -123,7 +120,6 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
         // reset the flag at the end of each group-by bin
         // flag denotes if we have one non-dummy tuple in the bin
         realBin = Field<B>::If(!isGroupByMatch,B(false), Field<B>(realBin)).template getValue<B>();
-        ++src_pos;
 
     }
 
@@ -149,23 +145,23 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
 template<typename B>
 GroupByAggregateImpl<B> *GroupByAggregate<B>::aggregateFactory(const AggregateId &aggregateType, const int32_t &ordinal,
-                                                         const FieldType &aggregateValueType) const {
+                                                               const FieldType &aggregateValueType) const {
 
     switch (aggregateType) {
-            case AggregateId::COUNT:
-                return new GroupByCountImpl<B>(ordinal, aggregateValueType);
-            case AggregateId::SUM:
-                return new GroupBySumImpl<B>(ordinal, aggregateValueType);
-            case AggregateId::AVG:
-                return new GroupByAvgImpl<B>(ordinal, aggregateValueType);
-            case AggregateId::MIN:
-                return new GroupByMinImpl<B>(ordinal, aggregateValueType);
-            case AggregateId::MAX:
-                return new GroupByMaxImpl<B>(ordinal, aggregateValueType);
+        case AggregateId::COUNT:
+            return new GroupByCountImpl<B>(ordinal, aggregateValueType);
+        case AggregateId::SUM:
+            return new GroupBySumImpl<B>(ordinal, aggregateValueType);
+        case AggregateId::AVG:
+            return new GroupByAvgImpl<B>(ordinal, aggregateValueType);
+        case AggregateId::MIN:
+            return new GroupByMinImpl<B>(ordinal, aggregateValueType);
+        case AggregateId::MAX:
+            return new GroupByMaxImpl<B>(ordinal, aggregateValueType);
         default:
             throw;
-        };
-    }
+    };
+}
 
 template<typename B>
 bool GroupByAggregate<B>::verifySortOrder(const shared_ptr<QueryTable<B> > &table) const {
@@ -205,8 +201,8 @@ QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & input_
     for(i = 0; i < aggregate_definitions_.size(); ++i) {
         ScalarAggregateDefinition agg = aggregate_definitions_[i];
         FieldType agg_type = (agg.ordinal >= 0) ?
-                                 input_schema.getField(agg.ordinal).getType() :
-                                 (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
+                             input_schema.getField(agg.ordinal).getType() :
+                             (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
 
         QueryFieldDesc fieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
         outputSchema.putField(fieldDesc);
@@ -281,18 +277,18 @@ string GroupByAggregate<B>::getOperatorType() const {
 template<typename B>
 string GroupByAggregate<B>::getParameters() const {
     stringstream  ss;
-   ss << "group-by: (" << group_by_[0];
-   for(uint32_t i = 1; i < group_by_.size(); ++i)
-       ss << ", " << group_by_[i];
+    ss << "group-by: (" << group_by_[0];
+    for(uint32_t i = 1; i < group_by_.size(); ++i)
+        ss << ", " << group_by_[i];
 
-   ss << ") aggs: (" << aggregate_definitions_[0].toString();
+    ss << ") aggs: (" << aggregate_definitions_[0].toString();
 
-   for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
-       ss << ", " << aggregate_definitions_[i].toString();
-   }
+    for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
+        ss << ", " << aggregate_definitions_[i].toString();
+    }
 
-   ss << ")";
-   return ss.str();
+    ss << ")";
+    return ss.str();
 }
 
 

@@ -30,33 +30,9 @@ QueryTuple<emp::Bit>::QueryTuple(const std::shared_ptr<QuerySchema> &query_schem
 }
 
 
-SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  {
-    size_t field_offset = query_schema_->getFieldOffset(ordinal);
-    const emp::Bit *read_ptr = fields_ + field_offset;
-
-    return Field<emp::Bit>::deserialize( query_schema_->getField(ordinal),
-                                         (int8_t *) read_ptr);
-}
-
-const SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  const {
-    size_t field_offset = query_schema_->getFieldOffset(ordinal);
-    const emp::Bit *read_ptr = fields_ + field_offset;
-//    std::cout << "Getting field " << ordinal << " from offset " << field_offset << std::endl;
-    QueryFieldDesc fieldDesc = query_schema_->getField(ordinal);
-    return Field<emp::Bit>::deserialize(query_schema_->getField(ordinal),
-                                        (int8_t *)  read_ptr);
-
-}
 
 
 
-void QueryTuple<emp::Bit>::setField(const int &idx, const SecureField &f) {
-    size_t field_offset = query_schema_->getFieldOffset(idx);
-    int8_t *write_pos = (int8_t *) (fields_ + field_offset);
-
-    f.serialize(write_pos, query_schema_->getField(idx));
-
-}
 
 
 
@@ -153,9 +129,6 @@ QueryTuple<emp::Bit> &QueryTuple<emp::Bit>::operator=(const SecureTuple &other) 
 }
 
 
-void QueryTuple<emp::Bit>::serialize(int8_t *dst) {
-  memcpy((emp::Bit *) dst, fields_, query_schema_->size());
-}
 
 string QueryTuple<emp::Bit>::toString(const bool &showDummies) const {
     std::stringstream sstream;

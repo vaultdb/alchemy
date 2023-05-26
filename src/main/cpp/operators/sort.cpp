@@ -68,11 +68,17 @@ std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
 
         // if in plaintext, truncate to true length or limit_, whichever one is lower
         if(std::is_same_v<B, bool>) {
-            int cursor = 0;
-            while(!Operator<B>::output_->getPlainTuple(cursor).getDummyTag() && cursor < cutoff)
+            int first_dummy = -1;
+            uint32_t cursor = 0;
+            while(first_dummy < 0 && cursor < Operator<B>::output_->getTupleCount()) {
+                if(Operator<B>::output_->getPlainTuple(cursor).getDummyTag()) {
+                    first_dummy = cursor; // break
+                }
                 ++cursor;
+            }
 
-              cutoff = cursor;
+            if(first_dummy > 0 && first_dummy < limit_)
+                cutoff = first_dummy;
         }
         Operator<B>::output_->resize(cutoff);
     }
@@ -186,4 +192,3 @@ string Sort<B>::getParameters() const {
 
 template class vaultdb::Sort<bool>;
 template class vaultdb::Sort<emp::Bit>;
-

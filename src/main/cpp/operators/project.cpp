@@ -28,18 +28,17 @@ template<typename B>
 std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
     std::shared_ptr<QueryTable<B> > src_table = Operator<B>::children_[0]->getOutput();
+    uint32_t tuple_cnt_ = src_table->getTupleCount();
 
 
 
-    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(src_table->getTupleCount(), Operator<B>::output_schema_, Operator<B>::getSortOrder()));
+    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt_, Operator<B>::output_schema_, Operator<B>::getSortOrder()));
 
-    auto src_pos = src_table->begin();
-    auto dst_pos =  Operator<B>::output_->begin();
 
-    while(src_pos != src_table->end()) {
-        project_tuple(*dst_pos, *src_pos);
-        ++src_pos;
-        ++dst_pos;
+    for(uint32_t i = 0; i < tuple_cnt_; ++i) {
+        QueryTuple<B> src_tuple = src_table->getTuple(i);
+        QueryTuple<B> dst_tuple = Operator<B>::output_->getTuple(i);
+        project_tuple(dst_tuple, src_tuple);
     }
 
 
@@ -51,7 +50,7 @@ template<typename B>
 void Project<B>::project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const {
     dst_tuple.setDummyTag(src_tuple.getDummyTag());
 
-   auto exprPos = expressions_.begin();
+    auto exprPos = expressions_.begin();
 
 
     // exec all expressions
@@ -88,7 +87,7 @@ void Project<B>::setup() {
         }
     }
 
-        // propagate names and specs in column mappings
+    // propagate names and specs in column mappings
     for(ProjectionMapping mapping_idx : column_mappings_) {
         uint32_t src_ordinal = mapping_idx.first;
         uint32_t dst_ordinal = mapping_idx.second;

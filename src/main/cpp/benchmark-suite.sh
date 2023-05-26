@@ -15,7 +15,8 @@ grep '^\[' $file
 grep FAIL $file
 
 # to record test in git
-# git add $(ls log/all-tests-*.log | tail -n 1)
+#file=$( ls -t log/all-tests-2*.log | head -n 1)
+# git add $(ls -t log/all-tests-2*.log | head -n 1)
 # grep SecureTpcHTest $file  | grep 'ms)' | uniq | sed 's/^.*(//g' | sed 's/\ .*$//g'
 
 # grep OK  $file  | sed 's/^.*OK...//g'  | sed 's/^.*(//g' | sed 's/\ .*$//g'

@@ -59,7 +59,7 @@ namespace  vaultdb {
         }
 
 
-        bool getDummyTag() const {
+        inline bool getDummyTag() const {
             size_t dummy_tag_size = sizeof(bool);
             int8_t *src = fields_ + query_schema_->size()/8 - dummy_tag_size;
             return *((bool *) src);
@@ -71,12 +71,12 @@ namespace  vaultdb {
 
         string toString(const bool &showDummies = false) const;
 
-        void serialize(int8_t *dst) {
-
+        inline void serialize(int8_t *dst) {
+            memcpy( dst, fields_, query_schema_->size()/8);
         }
 
         inline size_t getFieldCount() const {
-            return query_schema_->getFieldCount(); // was 0????
+            return query_schema_->getFieldCount();
         }
 
         PlainTuple& operator=(const PlainTuple& other);
@@ -98,7 +98,7 @@ namespace  vaultdb {
 
         static void writeSubset(const PlainTuple & src_tuple, const PlainTuple & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx);
 
-        static PlainTuple  If(const bool & cond,  const PlainTuple & lhs, const PlainTuple & rhs) {
+        static inline PlainTuple  If(const bool & cond,  const PlainTuple & lhs, const PlainTuple & rhs) {
                 if(cond)
                     return lhs;
                 return rhs;

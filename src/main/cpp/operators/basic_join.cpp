@@ -29,28 +29,27 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
 
     // output size, colCount, is_encrypted
     Join<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(lhs->getTupleCount() * rhs->getTupleCount(), output_schema, concat_sorts));
-    auto dst_pos = Join<B>::output_->begin();
+    int cursor = 0;
 
-    for(auto lhs_pos = lhs->begin(); lhs_pos != lhs->end(); ++lhs_pos) {
-        for(auto rhs_pos = rhs->begin(); rhs_pos != rhs->end(); ++rhs_pos) {
+    for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
+        QueryTuple<B> lhs_tuple = (*lhs)[i];
+        for(uint32_t j = 0; j < rhs->getTupleCount(); ++j) {
+            QueryTuple<B> rhs_tuple = (*rhs)[j];
 
-            Join<B>::write_left(*dst_pos, *lhs_pos); // all writes happen because we do the full cross product
-            Join<B>::write_right(*dst_pos, *rhs_pos);
+            QueryTuple<B> out = (*Join<B>::output_)[cursor];
+            Join<B>::write_left(out, lhs_tuple); // all writes happen because we do the full cross product
+            Join<B>::write_right(out, rhs_tuple);
 
-            predicate_eval = Join<B>::predicate_.callBoolExpression(*dst_pos);
-            B dst_dummy_tag = Join<B>::get_dummy_tag(*lhs_pos, *rhs_pos, predicate_eval);
-            dst_pos->setDummyTag(dst_dummy_tag);
-            ++dst_pos;
+            predicate_eval = Join<B>::predicate_.callBoolExpression(out);
+            B dst_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicate_eval);
+            out.setDummyTag(dst_dummy_tag);
+            ++cursor;
         }
     }
 
     return Join<B>::output_;
 }
 
-template<typename B>
-string BasicJoin<B>::getOperatorType() const {
-    return "BasicJoin";
-}
 
 
 template class vaultdb::BasicJoin<bool>;

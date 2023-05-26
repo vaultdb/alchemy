@@ -19,7 +19,7 @@ namespace vaultdb {
 
     protected:
         std::shared_ptr<QueryTable<B> > runSelf() override;
-        string getOperatorType() const override;
+        inline string getOperatorType() const override {     return "BasicJoin"; }
 
     };
 }

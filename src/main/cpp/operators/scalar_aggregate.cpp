@@ -10,16 +10,16 @@ template<typename B>
 ScalarAggregate<B>::ScalarAggregate(Operator<B> *child, const vector<ScalarAggregateDefinition> &aggregates,
                                     const SortDefinition &sort)
         : Operator<B>(child, sort), aggregate_definitions_(aggregates) {
-            setup();
+    setup();
 
-        }
+}
 
 template<typename B>
 ScalarAggregate<B>::ScalarAggregate(shared_ptr<QueryTable<B>> child,
                                     const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition &sort)
         : Operator<B>(child, sort), aggregate_definitions_(aggregates) {
-            setup();
-        }
+    setup();
+}
 
 
 template<typename B>
@@ -29,50 +29,50 @@ std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
     Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(
             new QueryTable<B>(1, Operator<B>::output_schema_, SortDefinition()));
 
-    QueryTuple<B> outputTuple = Operator<B>::output_->getTuple(0);
+    QueryTuple<B> output_tuple = Operator<B>::output_->getTuple(0);
 
-
-    for(auto src_pos = input->begin(); src_pos != input->end(); ++src_pos) {
+    for(size_t i = 0; i < input->getTupleCount(); ++i) {
+        QueryTuple<B> tuple = input->getTuple(i);
         for(ScalarAggregateImpl<B> *aggregator : aggregators_) {
-            aggregator->accumulate(*src_pos);
+            aggregator->accumulate(tuple);
         }
 
     }
 
     for(size_t i = 0; i < aggregators_.size(); ++i) {
         Field f = aggregators_[i]->getResult();
-        outputTuple.setField(i, f);
+        output_tuple.setField(i, f);
     }
 
-    outputTuple.setDummyTag(false);
-
-    Operator<B>::output_->putTuple(0, outputTuple);
+    Operator<B>::output_->putTuple(0, output_tuple);
 
     // dummy tag is always false in our setting, e.g., if we count a set of nulls/dummies, then our count is zero_ - not dummy
+    output_tuple.setDummyTag(false);
+
     return Operator<B>::output_;
 }
 
 
 template<typename B>
 ScalarAggregateImpl<B> * ScalarAggregate<B>::aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                                            const QueryFieldDesc &def) const {
-        switch (aggregateType) {
-            case AggregateId::COUNT:
-                return  new ScalarCountImpl<B>(ordinal, def);
-            case AggregateId::SUM:
-                return new ScalarSumImpl<B>(ordinal, def);
-            case AggregateId::AVG:
-                return new ScalarAvgImpl<B>(ordinal, def);
-            case AggregateId::MIN:
-                return new ScalarMinImpl<B>(ordinal, def);
-            case AggregateId::MAX:
-                return new ScalarMaxImpl<B>(ordinal, def);
-            default:
-                throw std::invalid_argument("Not yet implemented!");
-        };
-    }
+                                                              const QueryFieldDesc &def) const {
+    switch (aggregateType) {
+        case AggregateId::COUNT:
+            return  new ScalarCountImpl<B>(ordinal, def);
+        case AggregateId::SUM:
+            return new ScalarSumImpl<B>(ordinal, def);
+        case AggregateId::AVG:
+            return new ScalarAvgImpl<B>(ordinal, def);
+        case AggregateId::MIN:
+            return new ScalarMinImpl<B>(ordinal, def);
+        case AggregateId::MAX:
+            return new ScalarMaxImpl<B>(ordinal, def);
+        default:
+            throw std::invalid_argument("Not yet implemented!");
+    };
+}
 
-    template<typename B>
+template<typename B>
 void  ScalarAggregate<B>::setup() {
 
     QuerySchema input_schema = Operator<B>::getChild()->getOutputSchema();
@@ -85,25 +85,25 @@ void  ScalarAggregate<B>::setup() {
     }
 
 
-        Operator<B>::output_schema_ = QuerySchema(); // reset it
+    Operator<B>::output_schema_ = QuerySchema(); // reset it
 
-        // generate output schema
-        for(size_t i = 0; i < aggregators_.size(); ++i) {
-            QueryFieldDesc field_desc(i, aggregate_definitions_[i].alias, "", aggregators_[i]->getType());
+    // generate output schema
+    for(size_t i = 0; i < aggregators_.size(); ++i) {
+        QueryFieldDesc field_desc(i, aggregate_definitions_[i].alias, "", aggregators_[i]->getType());
 
-            if(aggregate_definitions_[i].type == AggregateId::MIN
-               || aggregate_definitions_[i].type == AggregateId::MAX) { // carry over definition from source type
-                field_desc = QueryFieldDesc(input_schema.getField(aggregate_definitions_[i].ordinal), i);
-                field_desc.setName("", aggregate_definitions_[i].alias);
-
-            }
-            Operator<B>::output_schema_.putField(field_desc);
+        if(aggregate_definitions_[i].type == AggregateId::MIN
+           || aggregate_definitions_[i].type == AggregateId::MAX) { // carry over definition from source type
+            field_desc = QueryFieldDesc(input_schema.getField(aggregate_definitions_[i].ordinal), i);
+            field_desc.setName("", aggregate_definitions_[i].alias);
 
         }
+        Operator<B>::output_schema_.putField(field_desc);
+
+    }
 
     Operator<B>::output_schema_.initializeFieldOffsets();
 
-    }
+}
 
 template<typename B>
 string ScalarAggregate<B>::getOperatorType() const {
@@ -126,5 +126,4 @@ string ScalarAggregate<B>::getParameters() const {
 
 template class vaultdb::ScalarAggregate<bool>;
 template class vaultdb::ScalarAggregate<emp::Bit>;
-
 

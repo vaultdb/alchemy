@@ -10,7 +10,7 @@ class ScalarAggregateTest : public PlainBaseTest { };
 // should just count to 50
 TEST_F(ScalarAggregateTest, test_count) {
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem ORDER BY (1)  LIMIT 50";
-    std::string expectedSql = "SELECT COUNT(*)::BIGINT FROM (" + query + ") q";
+    std::string expected_sql = "SELECT COUNT(*)::BIGINT FROM (" + query + ") q";
 
     SqlInput input(db_name_, query, false);
 
@@ -20,9 +20,9 @@ TEST_F(ScalarAggregateTest, test_count) {
 
 
     std::shared_ptr<PlainTable> output = aggregate.run();
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedSql, false);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
     
-    ASSERT_EQ(*output, *expected);
+    ASSERT_EQ(*expected, *output);
     
 }
 

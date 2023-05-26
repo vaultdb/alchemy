@@ -34,14 +34,24 @@ namespace vaultdb {
 
         inline bool hasManagedStorage() const { return managed_data_ != nullptr; }
 
-        SecureField getField(const int &ordinal);
-        const SecureField getField(const int & ordinal) const;
+        inline SecureField getField(const int &ordinal) {
+            return Field<emp::Bit>::deserialize( query_schema_->getField(ordinal),
+                                                 (int8_t *) (fields_ + query_schema_->getFieldOffset(ordinal)));
+
+        }
+        const inline SecureField getField(const int & ordinal) const {
+            return Field<emp::Bit>::deserialize( query_schema_->getField(ordinal),
+                                                 (int8_t *) (fields_ + query_schema_->getFieldOffset(ordinal)));
+        }
 
 
-        void setField(const int &idx, const SecureField &f);
+        inline void setField(const int &idx, const SecureField &f) {
+            f.serialize((int8_t *) (fields_ + query_schema_->getFieldOffset(idx)), query_schema_->getField(idx));
+
+        }
+
         inline void setDummyTag(const emp::Bit & d) {
-            const emp::Bit *dst = fields_ + query_schema_->getFieldOffset(-1);
-            std::memcpy((int8_t *) dst, (int8_t *) &(d.bit), TypeUtilities::getEmpBitSize());
+            std::memcpy((int8_t *) fields_ + query_schema_->getFieldOffset(-1), (int8_t *) &(d.bit), TypeUtilities::getEmpBitSize());
 
         }
 
@@ -51,12 +61,10 @@ namespace vaultdb {
             setDummyTag(d.getValue<emp::Bit>());
         }
 
-        inline void setSchema(std::shared_ptr<QuerySchema> q) { query_schema_ = q; }
 
 
         inline emp::Bit getDummyTag() const {
-            const emp::Bit *src = fields_ + query_schema_->getFieldOffset(-1);
-            return emp::Bit(*((emp::Bit *) src));
+            return *(fields_ + query_schema_->getFieldOffset(-1));
          }
 
         std::shared_ptr<QuerySchema> getSchema() const;
@@ -67,7 +75,9 @@ namespace vaultdb {
 
         string toString(const bool &showDummies = false) const;
 
-        void serialize(int8_t *dst);
+        inline void serialize(int8_t *dst) {
+            memcpy((emp::Bit *) dst, fields_, query_schema_->size());
+        }
 
         inline size_t getFieldCount() const {
             return query_schema_->getFieldCount();
