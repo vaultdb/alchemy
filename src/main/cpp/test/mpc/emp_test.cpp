@@ -101,50 +101,50 @@ TEST_F(EmpTest, emp_test_varchar) {
 
 // test encrypting a query table with a single int in EMP
 // Testing absent psql dependency
-TEST_F(EmpTest, encrypt_table_one_column) {
+TEST_F(EmpTest, secret_share_table_one_column) {
 
-    const uint32_t tupleCount = 10;
-    vector<int32_t> aliceInputData{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
-    vector<int32_t> bobInputData{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
+    const uint32_t tuple_cnt = 10;
+    vector<int32_t> alice_input{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
+    vector<int32_t> bob_input{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
 
 
-    int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData.data() : bobInputData.data();
+    int32_t *input = (FLAGS_party == emp::ALICE) ? alice_input.data() : bob_input.data();
     
     QuerySchema schema;
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
     schema.initializeFieldOffsets();
 
-    std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, schema));
-
-    for(uint32_t i = 0; i < tupleCount; ++i) {
-        Field<bool> val(FieldType::INT,inputData[i]);
-        PlainTuple tuple = (*inputTable)[i];
-
-        tuple.setDummyTag(false);
-        tuple.setField(0, val);
-    }
-
-    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*inputTable, netio_, FLAGS_party);
-
-    netio_->flush();
-
-    std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
-
     // set up expected result by concatenating input tables
-    std::unique_ptr<PlainTable > expectedTable(new PlainTable(2 * tupleCount, schema));
-    std::vector<int32_t> input_tuples = aliceInputData;
-    input_tuples.insert(input_tuples.end(), bobInputData.begin(), bobInputData.end());
+    std::unique_ptr<PlainTable > expected(new PlainTable(2 * tuple_cnt, schema));
+    std::vector<int32_t> concat = alice_input;
+    concat.insert(concat.end(), bob_input.begin(), bob_input.end());
 
 
-    for(uint32_t i = 0; i < input_tuples.size(); ++i) {
-        Field<bool> val(FieldType::INT, input_tuples[i]);
-        PlainTuple tuple = (*expectedTable)[i];
+    for(uint32_t i = 0; i < concat.size(); ++i) {
+        Field<bool> val(FieldType::INT, concat[i]);
+        PlainTuple tuple = (*expected)[i];
+        tuple.setField(0, val);
+        tuple.setDummyTag(false);
+    }
+
+
+    std::unique_ptr<PlainTable> plain(new PlainTable(tuple_cnt, schema));
+
+    for(uint32_t i = 0; i < tuple_cnt; ++i) {
+        Field<bool> val(FieldType::INT, input[i]);
+        PlainTuple tuple = (*plain)[i];
+
         tuple.setDummyTag(false);
         tuple.setField(0, val);
     }
+
+    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(*plain, netio_, FLAGS_party);
+
+    std::shared_ptr<PlainTable> revealed = secret_shared->reveal(emp::PUBLIC);
+
 
     //verify output
-    ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
+    ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
 
 
 
@@ -153,46 +153,44 @@ TEST_F(EmpTest, encrypt_table_one_column) {
 
 
 
-TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
-    const uint32_t tupleCount = 10;
-    vector<int32_t> aliceInputData{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
-    vector<int32_t> bobInputData{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
+TEST_F(EmpTest, sort_and_share_table_one_column) {
+    const uint32_t tuple_cnt = 10;
+    vector<int32_t> alice_input{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
+    vector<int32_t> bob_input{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
 
-    /*const size_t tupleCount = 4;
-    vector<int32_t> aliceInputData{1, 3, 4, 7};
-    vector<int32_t> bobInputData{2, 5, 6, 8}; */
-    int32_t *inputData = (FLAGS_party == emp::ALICE) ?  aliceInputData.data() : bobInputData.data();
+    /*const size_t tuple_cnt = 4;
+    vector<int32_t> alice_input{1, 3, 4, 7};
+    vector<int32_t> bob_input{2, 5, 6, 8}; */
+    int32_t *input = (FLAGS_party == emp::ALICE) ? alice_input.data() : bob_input.data();
 
     QuerySchema schema;
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
     schema.initializeFieldOffsets();
 
-    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1);
-    std::unique_ptr<PlainTable> inputTable(new PlainTable(tupleCount, schema, sortDefinition));
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
+    std::unique_ptr<PlainTable> input_table(new PlainTable(tuple_cnt, schema, sort_def));
 
-    for(uint32_t i = 0; i < tupleCount; ++i) {
-        Field<bool> val(FieldType::INT,inputData[i]);
-        PlainTuple tuple = (*inputTable)[i];
+    for(uint32_t i = 0; i < tuple_cnt; ++i) {
+        Field<bool> val(FieldType::INT, input[i]);
+        PlainTuple tuple = (*input_table)[i];
 
         tuple.setDummyTag(false);
         tuple.setField(0, val);
     }
 
 
-    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*inputTable, netio_, FLAGS_party);
+    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
 
-    netio_->flush();
 
-    std::unique_ptr<PlainTable> decryptedTable = encryptedTable->reveal(emp::PUBLIC);
+    std::unique_ptr<PlainTable> revealed = secret_shared->reveal(emp::PUBLIC);
 
     // set up expected result
-
-    std::vector<int32_t> input_tuples = aliceInputData;
-    input_tuples.insert(input_tuples.end(), bobInputData.begin(), bobInputData.end());
+    std::vector<int32_t> input_tuples = alice_input;
+    input_tuples.insert(input_tuples.end(), bob_input.begin(), bob_input.end());
     std::sort(input_tuples.begin(), input_tuples.end());
 
 
-    std::unique_ptr<PlainTable > expectedTable(new PlainTable(input_tuples.size(), schema, sortDefinition));
+    std::unique_ptr<PlainTable > expectedTable(new PlainTable(input_tuples.size(), schema, sort_def));
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
         Field<bool> val(FieldType::INT, input_tuples[i]);
@@ -202,7 +200,7 @@ TEST_F(EmpTest, sort_and_encrypt_table_one_column) {
     }
 
     //verify output
-    ASSERT_EQ(*expectedTable, *decryptedTable) << "Query table was not processed correctly.";
+    ASSERT_EQ(*expectedTable, *revealed) << "Query table was not processed correctly.";
 
 
 

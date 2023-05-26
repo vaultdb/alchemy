@@ -292,7 +292,7 @@ int main(int argc, char **argv) {
     shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
 
 
-    std::string lineitemSql = "SELECT o_orderyear, l_orderkey, l_suppkey "
+    std::string lineitem_sql_ = "SELECT o_orderyear, l_orderkey, l_suppkey "
                                                                 "  FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                                                                 "  WHERE l_orderkey <= 10 "
                                                                 " ORDER BY l_comment ";
@@ -306,7 +306,7 @@ int main(int argc, char **argv) {
 
 
 
-    SecureSqlInput lineitemInput(db_name_, lineitemSql, false, netio, FLAGS_party);
+    SecureSqlInput lineitemInput(db_name_, lineitem_sql_, false, netio, FLAGS_party);
     SecureSqlInput supplierInput(db_name_, supplierSql, false, netio, FLAGS_party);
 
 
