@@ -15,21 +15,21 @@ using namespace vaultdb;
 class  PsqlDataProvider  { // :  DataProvider
 public:
 
-    std::shared_ptr<PlainTable> getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag=false);
+    std::shared_ptr<PlainTable> getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag=false);
 
 private:
-    void getTuple(pqxx::row row, bool hasDummyTag, PlainTable &dst_table, const size_t &idx);
+    void getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_table, const size_t &idx);
      PlainField getField(pqxx::field src);
-    std::unique_ptr<QuerySchema> getSchema(pqxx::result input, bool hasDummyTag);
+    std::unique_ptr<QuerySchema> getSchema(pqxx::result input, bool has_dummy_tag);
 
-     std::string srcTable;
-     std::string dbName;
-    std::unique_ptr<QuerySchema> tableSchema;
+     std::string src_table_;
+     std::string db_name_;
+    std::unique_ptr<QuerySchema> schema_;
 
-    size_t getVarCharLength(string table, string column) const;
+    size_t getVarCharLength(string table_name, string col_name) const;
 
     string getTableName(int oid);
-    pqxx::result query(const std::string &  dbname, const std::string  & query_string) const;
+    pqxx::result query(const std::string &  db_name, const std::string  & sql) const;
 };
 
 
