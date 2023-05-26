@@ -10,17 +10,6 @@ using namespace vaultdb;
 
 
 
-template<typename B>
-Project<B>::Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort_definition) : Operator<B>(child, sort_definition), expressions_(expression_map) {
-
-    setup();
-}
-
-template<typename B>
-Project<B>::Project(shared_ptr<QueryTable<B> > child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort) : Operator<B>(child, sort), expressions_(expression_map) {
-    setup();
-
-}
 
 
 
@@ -28,14 +17,14 @@ template<typename B>
 std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
     std::shared_ptr<QueryTable<B> > src_table = Operator<B>::children_[0]->getOutput();
-    uint32_t tuple_cnt_ = src_table->getTupleCount();
+    uint32_t tuple_cnt = src_table->getTupleCount();
 
 
 
-    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt_, Operator<B>::output_schema_, Operator<B>::getSortOrder()));
+    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt, Operator<B>::output_schema_, Operator<B>::getSortOrder()));
 
 
-    for(uint32_t i = 0; i < tuple_cnt_; ++i) {
+    for(uint32_t i = 0; i < tuple_cnt; ++i) {
         QueryTuple<B> src_tuple = src_table->getTuple(i);
         QueryTuple<B> dst_tuple = Operator<B>::output_->getTuple(i);
         project_tuple(dst_tuple, src_tuple);
@@ -50,16 +39,16 @@ template<typename B>
 void Project<B>::project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const {
     dst_tuple.setDummyTag(src_tuple.getDummyTag());
 
-    auto exprPos = expressions_.begin();
+    auto expr_pos = expressions_.begin();
 
 
     // exec all expressions
-    while(exprPos != expressions_.end()) {
-        uint32_t dst_ordinal = exprPos->first;
-        Expression<B> *expression = exprPos->second.get();
+    while(expr_pos != expressions_.end()) {
+        uint32_t dst_ordinal = expr_pos->first;
+        Expression<B> *expression = expr_pos->second.get();
         Field<B> field_value = expression->call(src_tuple);
         dst_tuple.setField(dst_ordinal, field_value);
-        ++exprPos;
+        ++expr_pos;
     }
 
 
@@ -151,27 +140,7 @@ void Project<B>::setup() {
 
 }
 
-template<typename B>
-string Project<B>::getOperatorType() const {
-    return "Project";
-}
 
-template<typename B>
-string Project<B>::getParameters() const {
-    stringstream ss;
-
-    auto expr_pos = expressions_.begin();
-    ss << "(" << "<" << expr_pos->first << ", " << expr_pos->second->toString() << ">";
-    ++expr_pos;
-    while(expr_pos != expressions_.end()) {
-        ss << ", "  << "<" << expr_pos->first << ", " << expr_pos->second->toString() << ">";
-        ++expr_pos;
-    }
-
-    ss << ")";
-
-    return ss.str();
-}
 
 // **** ExpressionMapBuilder **** //
 template<typename B>
