@@ -14,8 +14,6 @@ namespace  vaultdb {
 
         B callBoolExpression(const QueryTuple<B> &tuple) const;
 
-        // for joins
-        B call(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, const std::shared_ptr<QuerySchema> & output_schema) const;
 
         ExpressionKind kind() const override { return root_->kind(); }
 

@@ -33,20 +33,6 @@ BoolExpression<B>::BoolExpression(std::shared_ptr<ExpressionNode<B>> root) : Exp
 
 }
 
-template<typename B>
-B BoolExpression<B>::call(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const std::shared_ptr<QuerySchema> & output_schema) const {
-
-        QueryTuple<B> tmp(output_schema); // create a tuple with self-managed storage
-
-        size_t lhs_attribute_cnt = lhs.getSchema()->getFieldCount();
-        size_t rhs_attribute_cnt = rhs.getSchema()->getFieldCount();
-
-        QueryTuple<B>::writeSubset(lhs, tmp, 0, lhs_attribute_cnt, 0);
-        QueryTuple<B>::writeSubset(rhs, tmp, 0, rhs_attribute_cnt, lhs_attribute_cnt);
-
-        
-    return callBoolExpression(tmp);
-}
 
 template<typename B>
 string BoolExpression<B>::toString() const {

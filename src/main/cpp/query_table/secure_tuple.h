@@ -22,8 +22,15 @@ namespace vaultdb {
         ~QueryTuple()  { if(managed_data_ != nullptr) delete [] managed_data_; }
         QueryTuple(const QueryTuple & src);
 
-        QueryTuple(std::shared_ptr<QuerySchema> & query_schema, int8_t *src);
-        QueryTuple(std::shared_ptr<QuerySchema> & query_schema, emp::Bit *src);
+        inline QueryTuple(std::shared_ptr<QuerySchema> &query_schema, int8_t *src) : fields_((emp::Bit *) src), query_schema_(query_schema) {
+            assert(fields_ != nullptr);
+
+        }
+
+        inline QueryTuple(std::shared_ptr<QuerySchema> &query_schema, emp::Bit *src) : fields_(src), query_schema_(query_schema) {
+            assert(fields_ != nullptr);
+
+        }
         // constructor for fake immutable tuple
         QueryTuple(const std::shared_ptr<QuerySchema> &query_schema, const int8_t *src);
         explicit QueryTuple(const std::shared_ptr<QuerySchema> & schema); // self-managed memory
@@ -34,11 +41,32 @@ namespace vaultdb {
 
         inline bool hasManagedStorage() const { return managed_data_ != nullptr; }
 
-        SecureField getField(const int &ordinal);
-        const SecureField getField(const int & ordinal) const;
+        inline SecureField getField(const int &ordinal) {
+            size_t field_offset = query_schema_->getFieldOffset(ordinal);
+            const emp::Bit *read_ptr = fields_ + field_offset;
+
+            return Field<emp::Bit>::deserialize( query_schema_->getField(ordinal),
+                                                 (int8_t *) read_ptr);
+
+        }
+        const inline SecureField getField(const int & ordinal) const {
+            size_t field_offset = query_schema_->getFieldOffset(ordinal);
+            const emp::Bit *read_ptr = fields_ + field_offset;
+
+            return Field<emp::Bit>::deserialize( query_schema_->getField(ordinal),
+                                                 (int8_t *) read_ptr);
+
+        }
 
 
-        void setField(const int &idx, const SecureField &f);
+        inline void setField(const int &idx, const SecureField &f) {
+            size_t field_offset = query_schema_->getFieldOffset(idx);
+            int8_t *write_pos = (int8_t *) (fields_ + field_offset);
+
+            f.serialize(write_pos, query_schema_->getField(idx));
+
+        }
+
         inline void setDummyTag(const emp::Bit & d) {
             const emp::Bit *dst = fields_ + query_schema_->getFieldOffset(-1);
             std::memcpy((int8_t *) dst, (int8_t *) &(d.bit), TypeUtilities::getEmpBitSize());
@@ -59,7 +87,7 @@ namespace vaultdb {
             return emp::Bit(*((emp::Bit *) src));
         }
 
-        std::shared_ptr<QuerySchema> getSchema() const;
+        std::shared_ptr<QuerySchema> getSchema() const { return query_schema_; }
 
         QueryTuple<bool> reveal(const int &empParty,  std::shared_ptr<QuerySchema> & dst_schema, int8_t *dst) const;
         // self-managed storage
@@ -67,7 +95,7 @@ namespace vaultdb {
 
         string toString(const bool &showDummies = false) const;
 
-        void serialize(int8_t *dst);
+        void serialize(int8_t *dst) {     memcpy((emp::Bit *) dst, fields_, query_schema_->size()); }
 
         inline size_t getFieldCount() const {
             return query_schema_->getFieldCount();
@@ -79,8 +107,8 @@ namespace vaultdb {
         emp::Bit operator==(const SecureTuple & other) const;
         emp::Bit operator!=(const SecureTuple & other) const { return  !(*this == other); }
 
-        SecureField operator[](const int32_t & idx);
-        const SecureField operator[](const int32_t & idx) const;
+        inline SecureField operator[](const int32_t & idx) { return getField(idx); }
+        const inline  SecureField operator[](const int32_t & idx) const { return getField(idx); }
 
         static void compareSwap(const emp::Bit & cmp, QueryTuple<emp::Bit> & lhs, QueryTuple<emp::Bit> & rhs);
 

@@ -12,49 +12,14 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const SecureTuple &aTuple
 
 }
 
-QueryTuple<emp::Bit>::QueryTuple(std::shared_ptr<QuerySchema> &query_schema, emp::Bit *src) : fields_(src), query_schema_(query_schema) {
-    assert(fields_ != nullptr);
 
-}
 
-QueryTuple<emp::Bit>::QueryTuple(std::shared_ptr<QuerySchema> &query_schema, int8_t *src) : fields_((emp::Bit *) src), query_schema_(query_schema) {
-    assert(fields_ != nullptr);
 
-}
 
 QueryTuple<emp::Bit>::QueryTuple(const std::shared_ptr<QuerySchema> &query_schema, const int8_t *src) :  query_schema_(query_schema) {
     int8_t *tmp = const_cast<int8_t *>(src);
     fields_ = (emp::Bit *) tmp;
     assert(fields_ != nullptr);
-
-}
-
-
-SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  {
-    size_t field_offset = query_schema_->getFieldOffset(ordinal);
-    const emp::Bit *read_ptr = fields_ + field_offset;
-
-    return Field<emp::Bit>::deserialize( query_schema_->getField(ordinal),
-                                         (int8_t *) read_ptr);
-}
-
-const SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  const {
-    size_t field_offset = query_schema_->getFieldOffset(ordinal);
-    const emp::Bit *read_ptr = fields_ + field_offset;
-//    std::cout << "Getting field " << ordinal << " from offset " << field_offset << std::endl;
-    QueryFieldDesc fieldDesc = query_schema_->getField(ordinal);
-    return Field<emp::Bit>::deserialize(query_schema_->getField(ordinal),
-                                        (int8_t *)  read_ptr);
-
-}
-
-
-
-void QueryTuple<emp::Bit>::setField(const int &idx, const SecureField &f) {
-    size_t field_offset = query_schema_->getFieldOffset(idx);
-    int8_t *write_pos = (int8_t *) (fields_ + field_offset);
-
-    f.serialize(write_pos, query_schema_->getField(idx));
 
 }
 
@@ -87,16 +52,19 @@ QueryTuple<emp::Bit>::reveal(const int &empParty, std::shared_ptr<QuerySchema> &
 PlainTuple QueryTuple<emp::Bit>::reveal(const std::shared_ptr<QuerySchema> & dst_schema, const int &empParty) const {
     PlainTuple dst_tuple(dst_schema);
 
+    emp::Bit dummy_tag = getDummyTag();
+    bool plain_dummy_tag = dummy_tag.reveal(empParty);
+    dst_tuple.setDummyTag(plain_dummy_tag);
+
+    if(plain_dummy_tag) // reveal nothing else
+        return dst_tuple;
+
 
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
         PlainField revealed = src.reveal(empParty);
         dst_tuple.setField(i, revealed);
     }
-
-    emp::Bit dummy_tag = getDummyTag();
-    bool plain_dummy_tag = dummy_tag.reveal(empParty);
-    dst_tuple.setDummyTag(plain_dummy_tag);
 
     return dst_tuple;
 
@@ -130,9 +98,6 @@ SecureTuple QueryTuple<emp::Bit>::deserialize(emp::Bit *dst_tuple_bits, std::sha
 
 }
 
-std::shared_ptr<QuerySchema> QueryTuple<emp::Bit>::getSchema() const {
-    return query_schema_;
-}
 
 
 
@@ -153,9 +118,6 @@ QueryTuple<emp::Bit> &QueryTuple<emp::Bit>::operator=(const SecureTuple &other) 
 }
 
 
-void QueryTuple<emp::Bit>::serialize(int8_t *dst) {
-    memcpy((emp::Bit *) dst, fields_, query_schema_->size());
-}
 
 string QueryTuple<emp::Bit>::toString(const bool &showDummies) const {
     std::stringstream sstream;
@@ -175,18 +137,11 @@ string QueryTuple<emp::Bit>::toString(const bool &showDummies) const {
     return sstream.str();
 }
 
-SecureField QueryTuple<emp::Bit>::operator[](const int32_t &idx)  {
-    return getField(idx);
-}
-
-const SecureField QueryTuple<emp::Bit>::operator[](const int32_t &idx)  const {
-    return getField(idx);
-}
-
 
 emp::Bit QueryTuple<emp::Bit>::operator==(const SecureTuple &other) const {
     emp::Bit matched(true);
     assert(*this->getSchema() == *other.getSchema() );
+
     size_t bit_count = query_schema_->size();
     emp::Bit *lhs = this->fields_;
     emp::Bit *rhs = other.fields_;
@@ -247,7 +202,7 @@ void QueryTuple<emp::Bit>::writeSubset(const SecureTuple &src_tuple, const Secur
     emp::Bit *read_pos = src_tuple.fields_ + src_field_offset;
     emp::Bit *write_pos = dst_tuple.fields_ + dst_field_offset;
 
-    memcpy(write_pos, read_pos, write_size * sizeof(emp::Bit));
+    memcpy(write_pos, read_pos, write_size * TypeUtilities::getEmpBitSize());
 
 }
 
