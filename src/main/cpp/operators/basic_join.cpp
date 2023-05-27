@@ -27,6 +27,7 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
     SortDefinition  rhs_sort = rhs->getSortOrder();
     concat_sorts.insert(concat_sorts.end(),  rhs_sort.begin(), rhs_sort.end());
 
+    B selected, dst_dummy_tag;
     // output size, colCount, is_encrypted
     Join<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(lhs->getTupleCount() * rhs->getTupleCount(), output_schema, concat_sorts));
     int cursor = 0;
@@ -40,8 +41,8 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
             Join<B>::write_left(out, lhs_tuple); // all writes happen because we do the full cross product
             Join<B>::write_right(out, rhs_tuple);
 
-            predicate_eval = Join<B>::predicate_.callBoolExpression(out);
-            B dst_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicate_eval);
+            selected = Join<B>::predicate_.callBoolExpression(out);
+            dst_dummy_tag = (!selected) | lhs_tuple.getDummyTag() | rhs_tuple.getDummyTag();
             out.setDummyTag(dst_dummy_tag);
             ++cursor;
         }
