@@ -23,6 +23,7 @@ protected:
                                     "WHERE c_custkey < " + std::to_string(cutoff_) +
                                     " ORDER BY c_custkey";
 
+
     const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' o_dummy \n"
                                   "FROM orders \n"
                                   "WHERE o_custkey <  " + std::to_string(cutoff_) +
@@ -69,12 +70,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
     KeyedJoin join(&orders_input, &customer_input, predicate);
     std::shared_ptr<PlainTable> observed = join.run()->reveal();
     observed = DataUtilities::removeDummies(observed);
-
-//    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(observed->getSchema()->getFieldCount());
-//
-//    Sort<emp::Bit> sort(&join, sort_def);
-//    observed = sort.run();
-//
 
 
     expected->setSortOrder(observed->getSortOrder());
@@ -160,10 +155,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     std::shared_ptr<PlainTable> observed = col_join.run()->reveal();
     observed = DataUtilities::removeDummies(observed);
-//
-//    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(observed->getSchema()->getFieldCount());
-//    Sort<emp::Bit> sort(&col_join, sortDefinition);
-//    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
     expected->setSortOrder(observed->getSortOrder());
 
         ASSERT_EQ(*expected, *observed);
@@ -178,6 +169,5 @@ int main(int argc, char **argv) {
 
     return RUN_ALL_TESTS();
 }
-
 
 
