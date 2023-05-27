@@ -19,20 +19,20 @@ protected:
     int cutoff_ = 10;
 
     const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' c_dummy \n"
-                                    "FROM customer  \n"
-                                    "WHERE c_custkey < " + std::to_string(cutoff_) +
-                                    " ORDER BY c_custkey";
+                                      "FROM customer  \n"
+                                      "WHERE c_custkey < " + std::to_string(cutoff_) +
+                                      " ORDER BY c_custkey";
 
 
     const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' o_dummy \n"
-                                  "FROM orders \n"
-                                  "WHERE o_custkey <  " + std::to_string(cutoff_) +
-                                  " ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
+                                    "FROM orders \n"
+                                    "WHERE o_custkey <  " + std::to_string(cutoff_) +
+                                    " ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' l_dummy \n"
-                                    "FROM lineitem \n"
-                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < " + std::to_string(cutoff_) + ")  \n"
-                                    " ORDER BY l_orderkey, revenue ";
+                                      "FROM lineitem \n"
+                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < " + std::to_string(cutoff_) + ")  \n"
+                                                                                                                                          " ORDER BY l_orderkey, revenue ";
 
 
 
@@ -47,11 +47,11 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
 
 
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
-                                                                             "orders_cte AS (" + orders_sql_ + ") "
-                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
-                                                                                                             "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
-                                                                                                             "WHERE NOT o_dummy AND NOT c_dummy "
-                                                                                                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
+                                                                          "orders_cte AS (" + orders_sql_ + ") "
+                                                                                                            "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
+                                                                                                            "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
+                                                                                                            "WHERE NOT o_dummy AND NOT c_dummy "
+                                                                                                            "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
@@ -74,7 +74,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
 
     expected->setSortOrder(observed->getSortOrder());
 
-        ASSERT_EQ(*expected, *observed);
+    ASSERT_EQ(*expected, *observed);
 
 
 }
@@ -86,11 +86,11 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 // get inputs from local oblivious ops
 // first 3 customers, propagate this constraint up the join tree for the test
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
-                                                                         "lineitem_cte AS (" + lineitem_sql_ + ") "
-                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue \n"
-                                                                                                             "FROM orders_cte o JOIN lineitem_cte l ON l_orderkey = o_orderkey \n"
-                                                                                                             "WHERE NOT o_dummy AND NOT l_dummy "
-                                                                                                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
+                                                                      "lineitem_cte AS (" + lineitem_sql_ + ") "
+                                                                                                            "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue \n"
+                                                                                                            "FROM orders_cte o JOIN lineitem_cte l ON l_orderkey = o_orderkey \n"
+                                                                                                            "WHERE NOT o_dummy AND NOT l_dummy "
+                                                                                                            "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
 
@@ -124,13 +124,13 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
-                                     "lineitem_cte AS (" + lineitem_sql_ + "), \n"
-                                     "customer_cte AS (" + customer_sql_ + ")\n "
-                                      "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey \n"
-                                       "FROM customer_cte JOIN orders_cte ON o_custkey = c_custkey "
-                                       " JOIN lineitem_cte ON o_orderkey = l_orderkey "
-                                       " WHERE NOT c_dummy AND NOT o_dummy AND NOT l_dummy "
-                                       " ORDER BY  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey  \n";
+                                                                      "lineitem_cte AS (" + lineitem_sql_ + "), \n"
+                                                                                                            "customer_cte AS (" + customer_sql_ + ")\n "
+                                                                                                                                                  "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey \n"
+                                                                                                                                                  "FROM customer_cte JOIN orders_cte ON o_custkey = c_custkey "
+                                                                                                                                                  " JOIN lineitem_cte ON o_orderkey = l_orderkey "
+                                                                                                                                                  " WHERE NOT c_dummy AND NOT o_dummy AND NOT l_dummy "
+                                                                                                                                                  " ORDER BY  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey  \n";
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
 
@@ -157,7 +157,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
     observed = DataUtilities::removeDummies(observed);
     expected->setSortOrder(observed->getSortOrder());
 
-        ASSERT_EQ(*expected, *observed);
+    ASSERT_EQ(*expected, *observed);
 
 
 }
