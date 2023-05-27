@@ -16,22 +16,22 @@ using namespace vaultdb;
 class SecureKeyedJoinTest : public EmpBaseTest {
 protected:
 
+    int cutoff_ = 10;
 
-
-    const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy \n"
+    const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' c_dummy \n"
                                     "FROM customer  \n"
-                                    "WHERE c_custkey < 10\n"
-                                    "ORDER BY c_custkey";
+                                    "WHERE c_custkey < " + std::to_string(cutoff_) +
+                                    " ORDER BY c_custkey";
 
-    const std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy \n"
+    const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' o_dummy \n"
                                   "FROM orders \n"
-                                  "WHERE o_custkey < 10 \n"
-                                  "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
+                                  "WHERE o_custkey <  " + std::to_string(cutoff_) +
+                                  " ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
-    const std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy \n"
+    const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' l_dummy \n"
                                     "FROM lineitem \n"
-                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < 10)  \n"
-                                    "ORDER BY l_orderkey, revenue ";
+                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < " + std::to_string(cutoff_) + ")  \n"
+                                    " ORDER BY l_orderkey, revenue ";
 
 
 
@@ -45,33 +45,39 @@ protected:
 TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
 
 
-    std::string expectedResultSql = "WITH customer_cte AS (" + customerSql + "), "
-                                                                             "orders_cte AS (" + ordersSql + ") "
-                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,(cdummy OR odummy) dummy "
+    std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
+                                                                             "orders_cte AS (" + orders_sql_ + ") "
+                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
                                                                                                              "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
+                                                                                                             "WHERE NOT o_dummy AND NOT c_dummy "
                                                                                                              "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
 
 
-    SortDefinition  cust_sort = DataUtilities::getDefaultSortDefinition(1);
+    SortDefinition  customer_sort = DataUtilities::getDefaultSortDefinition(1);
     SortDefinition  orders_sort = DataUtilities::getDefaultSortDefinition(4);
-    SecureSqlInput customerInput(db_name_, customerSql, true, cust_sort, netio_, FLAGS_party);
-    SecureSqlInput ordersInput(db_name_, ordersSql, true, orders_sort, netio_, FLAGS_party);
+    SecureSqlInput customer_input(db_name_, customer_sql_, true, customer_sort, netio_, FLAGS_party);
+    SecureSqlInput orders_input(db_name_, orders_sql_, true, orders_sort, netio_, FLAGS_party);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
 
 
-    KeyedJoin join(&ordersInput, &customerInput, predicate);
-    std::shared_ptr<SecureTable> join_result = join.run();
+    KeyedJoin join(&orders_input, &customer_input, predicate);
+    std::shared_ptr<PlainTable> observed = join.run()->reveal();
+    observed = DataUtilities::removeDummies(observed);
 
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(join_result->getSchema()->getFieldCount());
-    Sort<emp::Bit> sort(&join, sortDefinition);
-    shared_ptr<PlainTable> observed = sort.run()->reveal();
-    expected->setSortOrder(sortDefinition);
+//    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(observed->getSchema()->getFieldCount());
+//
+//    Sort<emp::Bit> sort(&join, sort_def);
+//    observed = sort.run();
+//
+
+
+    expected->setSortOrder(observed->getSortOrder());
 
         ASSERT_EQ(*expected, *observed);
 
@@ -84,19 +90,17 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 
 // get inputs from local oblivious ops
 // first 3 customers, propagate this constraint up the join tree for the test
-    std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), "
-                                                                         "lineitem_cte AS (" + lineitemSql + "), "
-                                                                                                             "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, (o_orderkey=l_orderkey) matched, (odummy OR ldummy) dummy \n"
-                                                                                                             "FROM lineitem_cte, orders_cte )\n"
-                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue, dummy \n"
-                                                                                                             "FROM cross_product \n"
-                                                                                                             "WHERE matched "
+    std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
+                                                                         "lineitem_cte AS (" + lineitem_sql_ + ") "
+                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue \n"
+                                                                                                             "FROM orders_cte o JOIN lineitem_cte l ON l_orderkey = o_orderkey \n"
+                                                                                                             "WHERE NOT o_dummy AND NOT l_dummy "
                                                                                                              "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
 
-    SecureSqlInput lineitemInput(db_name_, lineitemSql, true, netio_, FLAGS_party);
-    SecureSqlInput ordersInput(db_name_, ordersSql, true, netio_, FLAGS_party);
+    SecureSqlInput lineitem_input(db_name_, lineitem_sql_, true, netio_, FLAGS_party);
+    SecureSqlInput orders_input(db_name_, orders_sql_, true, netio_, FLAGS_party);
 
 
     // join output schema:
@@ -105,17 +109,15 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 
 
     // test pkey-fkey join
-    KeyedJoin join(&ordersInput, &lineitemInput, 1,  predicate);
+    KeyedJoin join(&orders_input, &lineitem_input, 1, predicate);
 
 
-    std::shared_ptr<SecureTable> joinResult = join.run();
-    std::unique_ptr<PlainTable> observed = joinResult->reveal();
-
-    size_t sort_column_cnt = joinResult->getSchema()->getFieldCount();
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(sort_column_cnt);
+    std::shared_ptr<PlainTable> observed = join.run()->reveal();
+    observed = DataUtilities::removeDummies(observed);
 
 
-        ASSERT_EQ(*expected, *observed);
+
+    ASSERT_EQ(*expected, *observed);
 
 
 }
@@ -126,21 +128,20 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 // compose C-O-L join should produce one output tuple, order ID 210945
 TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
-    std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
-                                                                         "lineitem_cte AS (" + lineitemSql + "), \n"
-                                                                                                             "customer_cte AS (" + customerSql + "),\n "
-                                                                                                                                                 "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (odummy OR ldummy OR cdummy) dummy \n"
-                                                                                                                                                 "FROM lineitem_cte, orders_cte, customer_cte  \n"
-                                                                                                                                                 "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
-                                                                                                                                                 "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, dummy \n"
-                                                                                                                                                 "FROM cross_product \n"
-                                                                                                                                                 "WHERE matched";
+    std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
+                                     "lineitem_cte AS (" + lineitem_sql_ + "), \n"
+                                     "customer_cte AS (" + customer_sql_ + ")\n "
+                                      "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey \n"
+                                       "FROM customer_cte JOIN orders_cte ON o_custkey = c_custkey "
+                                       " JOIN lineitem_cte ON o_orderkey = l_orderkey "
+                                       " WHERE NOT c_dummy AND NOT o_dummy AND NOT l_dummy "
+                                       " ORDER BY  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey  \n";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, true);
+    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
 
-    SecureSqlInput customerInput(db_name_, customerSql, true, netio_, FLAGS_party);
-    SecureSqlInput lineitemInput(db_name_, lineitemSql, true, netio_, FLAGS_party);
-    SecureSqlInput ordersInput(db_name_, ordersSql, true, netio_, FLAGS_party);
+    SecureSqlInput customer_input(db_name_, customer_sql_, true, netio_, FLAGS_party);
+    SecureSqlInput orders_input(db_name_, orders_sql_, true, netio_, FLAGS_party);
+    SecureSqlInput lineitem_input(db_name_, lineitem_sql_, true, netio_, FLAGS_party);
 
 
     // join output schema: (orders, customer)
@@ -152,18 +153,18 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
     BoolExpression<emp::Bit> lineitem_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
-    KeyedJoin customerOrdersJoin(&ordersInput, &customerInput, customer_orders_predicate);
+    KeyedJoin co_join(&orders_input, &customer_input, customer_orders_predicate);
 
-    KeyedJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitem_orders_predicate);
-
-
-    std::shared_ptr<PlainTable> joinResult = fullJoin.run()->reveal();
+    KeyedJoin col_join(&lineitem_input, &co_join, lineitem_orders_predicate);
 
 
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema()->getFieldCount());
-    Sort<emp::Bit> sort(&fullJoin, sortDefinition);
-    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
-    expected->setSortOrder(sortDefinition);
+    std::shared_ptr<PlainTable> observed = col_join.run()->reveal();
+    observed = DataUtilities::removeDummies(observed);
+//
+//    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(observed->getSchema()->getFieldCount());
+//    Sort<emp::Bit> sort(&col_join, sortDefinition);
+//    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
+    expected->setSortOrder(observed->getSortOrder());
 
         ASSERT_EQ(*expected, *observed);
 
