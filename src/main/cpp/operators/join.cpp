@@ -57,14 +57,6 @@ Join<B>::concatenateSchemas(const QuerySchema &lhs_schema, const QuerySchema &rh
     return result;
 }
 
-// compare two tuples and return the dummy tag for this entry
-template<typename B>
-B Join<B>::get_dummy_tag(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const B &predicateEval) {
-    B lhsDummyTag = lhs.getDummyTag();
-    B rhsDummyTag = rhs.getDummyTag();
-
-    return (!predicateEval) | lhsDummyTag | rhsDummyTag;
-}
 
 // copy src_tuple to lhs of dst for its half of the join
 template<typename B>
@@ -108,12 +100,11 @@ void Join<B>::write_left(SecureTuple &dst_tuple, const SecureTuple &src_tuple) {
 template<typename B>
 void Join<B>::write_right(const bool &write, PlainTuple &dst_tuple, const PlainTuple &src_tuple) {
     if(write) {
-        size_t write_size = src_tuple.getSchema()->size()/8 - sizeof(bool); // don't overwrite dummy tag
+        size_t write_size = src_tuple.getSchema()->size()/8 - 1; // don't overwrite dummy tag
         size_t dst_byte_cnt = dst_tuple.getSchema()->size()/8;
         size_t write_offset = dst_byte_cnt - write_size - 1;
 
         memcpy(dst_tuple.getData() + write_offset, src_tuple.getData(), write_size);
-        //dst_tuple.setDummyTag(false);
     }
 }
 
@@ -139,7 +130,7 @@ template<typename B>
 void Join<B>::write_right(SecureTuple &dst_tuple, const SecureTuple &src_tuple) {
     Bit *dst = dst_tuple.getData() +  (dst_tuple.getSchema()->size()  - src_tuple.getSchema()->size() );
     Bit *src = src_tuple.getData();
-    memcpy(dst, src, src_tuple.getSchema()->size() * TypeUtilities::getEmpBitSize());
+    memcpy(dst, src, (src_tuple.getSchema()->size() - 1) * TypeUtilities::getEmpBitSize());
 
 
 }
@@ -161,19 +152,6 @@ string Join<B>::getParameters() const {
 
 }
 
-template<typename B>
-void Join<B>::update_dummy_tag(QueryTuple<bool> &dst_tuple, const bool &predicate_matched, const bool & current_dummy_tag) {
-    if(predicate_matched && !current_dummy_tag)
-        dst_tuple.setDummyTag(current_dummy_tag);
-}
-
-
-template<typename B>
-void Join<B>::update_dummy_tag(QueryTuple<emp::Bit> &dst_tuple, const emp::Bit &predicate_matched, const emp::Bit & current_dummy_tag) {
-    emp::Bit dummy_tag = emp::If(predicate_matched & !current_dummy_tag, current_dummy_tag, dst_tuple.getDummyTag());
-    dst_tuple.setDummyTag(dummy_tag);
-
-}
 
 
 template class vaultdb::Join<bool>;

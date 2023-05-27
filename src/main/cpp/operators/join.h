@@ -35,12 +35,6 @@ namespace  vaultdb {
 
     protected:
 
-        // current dummy_tag is the output of the current tuple comparison - derived from get_dummy_tag below
-        // just splitting this off to make the code modular
-        static void update_dummy_tag(QueryTuple<bool> & dst_tuple, const bool & predicate_matched, const bool & current_dummy_tag);
-        static void update_dummy_tag(QueryTuple<emp::Bit> & dst_tuple, const emp::Bit & predicate_matched, const emp::Bit & current_dummy_tag);
-
-        static B get_dummy_tag(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const B & predicateEval);
 
         string getParameters() const override;
 
