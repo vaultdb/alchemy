@@ -14,6 +14,11 @@ namespace  vaultdb {
 
         GenericExpression(std::shared_ptr<ExpressionNode<B> > root, const std::string & alias, const FieldType & output_type);
         Field<B> call(const QueryTuple<B> & aTuple) const override;
+
+        inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+            return root_->call(src, row);
+        }
+
         ExpressionKind kind() const override { return root_->kind(); }
 
         ~GenericExpression() = default;

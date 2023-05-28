@@ -17,7 +17,7 @@ shared_ptr<PlainTable> EnrichTest::getAgeStrataProjection(shared_ptr<PlainTable>
 
     ExpressionMapBuilder<bool> builder(*(input->getSchema()));
 
-    shared_ptr<Expression<bool>> ageStrataExpression(new FunctionExpression<bool>(&EnrichTestSupport<bool>::projectAgeStrata, "age_strata", ageStrataType));
+    shared_ptr<Expression<bool>> ageStrataExpression(new FunctionExpression<bool>(&EnrichTestSupport<bool>::projectAgeStrata, &EnrichTestSupport<bool>::projectAgeStrataTable, "age_strata", ageStrataType));
     builder.addExpression(ageStrataExpression, 2);
 
     for(uint32_t i = 0; i < 7; ++i)
@@ -183,8 +183,8 @@ shared_ptr<SecureTable> EnrichTest::getPatientCohort() {
 
     };*/
 
-    shared_ptr<Expression<emp::Bit> > multisiteExpression(new FunctionExpression<emp::Bit>(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT));
-    shared_ptr<Expression<emp::Bit> > multisiteNumeratorExpression(new FunctionExpression<emp::Bit>(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT));
+    shared_ptr<Expression<emp::Bit> > multisiteExpression(new FunctionExpression<emp::Bit>(&(EnrichTestSupport<emp::Bit>::projectMultisite), &(EnrichTestSupport<emp::Bit>::projectMultisiteTable), "multisite", FieldType::SECURE_INT));
+    shared_ptr<Expression<emp::Bit> > multisiteNumeratorExpression(new FunctionExpression<emp::Bit>(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite),  &(EnrichTestSupport<emp::Bit>::projectNumeratorMultisiteTable), "numerator_multisite", FieldType::SECURE_INT));
     //Expression multisiteExpression(&(EnrichTestSupport<emp::Bit>::projectMultisite), "multisite", FieldType::SECURE_INT);
     //Expression multisiteNumeratorExpression(&(EnrichTestSupport<emp::Bit>::projectNumeratorMultisite), "numerator_multisite", FieldType::SECURE_INT);
 

@@ -88,6 +88,8 @@ namespace  vaultdb {
 
         std::vector<int8_t> serialize() const;
 
+        Field<B> getField(const int  & row, const int & col) const;
+
 
         static std::shared_ptr<SecureTable> secretShare(const PlainTable &input, emp::NetIO *io, const int &party);
 
@@ -126,7 +128,7 @@ namespace  vaultdb {
 
         bool empty() const { return tuple_data_.empty(); }
 
-        PlainTuple getPlainTuple(size_t idx) const;
+        QueryTuple<bool> getPlainTuple(size_t idx) const;
 
         inline QueryTableIterator<B> begin() {   return QueryTableIterator<B>(*this); }
         inline QueryTableIterator<B> end() { return QueryTableIterator<B>( *this, tuple_cnt_); }
@@ -147,6 +149,7 @@ namespace  vaultdb {
                                       const bool &reverse_read_order);
 
     };
+
 
     std::ostream &operator<<(std::ostream &os, const PlainTable &table);
 

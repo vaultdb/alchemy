@@ -8,6 +8,7 @@
 
 namespace vaultdb {
 
+    template<typename B> class QueryTable;
 
     template<typename B>
     class Expression {
@@ -27,6 +28,7 @@ namespace vaultdb {
 
 
         virtual Field<B> call(const QueryTuple<B> & aTuple) const = 0;
+        virtual Field<B> call(const QueryTable<B>  *src, const int & row) const = 0;
         virtual ExpressionKind kind() const = 0;
         virtual std::string toString() const = 0;
 

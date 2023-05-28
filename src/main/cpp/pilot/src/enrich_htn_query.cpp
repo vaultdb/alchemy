@@ -121,9 +121,12 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
 
 
     // references (6) (9)
-    shared_ptr<Expression<emp::Bit> >  multisiteNumeratorExpression(new FunctionExpression(&EnrichHtnQuery::projectNumeratorMultisite<emp::Bit>, "numerator_multisite", FieldType::SECURE_INT));
+    shared_ptr<Expression<emp::Bit> >  multisiteNumeratorExpression(new
+        FunctionExpression(&EnrichHtnQuery::projectNumeratorMultisite<emp::Bit>, &EnrichHtnQuery::projectNumeratorMultisiteTable<emp::Bit>,
+            "numerator_multisite", FieldType::SECURE_INT));
       // references (7) (9)
-      shared_ptr<Expression<emp::Bit> >  multisiteDenominatorExpression(new FunctionExpression(&EnrichHtnQuery::projectDenominatorMultisite<emp::Bit>, "denominator_multisite", FieldType::SECURE_INT));
+      shared_ptr<Expression<emp::Bit> >  multisiteDenominatorExpression(new
+         FunctionExpression(&EnrichHtnQuery::projectDenominatorMultisite<emp::Bit>, &EnrichHtnQuery::projectDenominatorMultisiteTable<emp::Bit>, "denominator_multisite", FieldType::SECURE_INT));
 
     builder.addExpression(numeratorToIntExpression, 5);
     builder.addExpression(denominatorToIntExpression, 6);

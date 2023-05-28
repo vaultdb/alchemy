@@ -109,6 +109,24 @@ namespace  vaultdb {
         }
 
 
+        template<typename B>
+        static inline Field<B> projectNumeratorMultisiteTable(const QueryTable<B> * src, const int & row) {
+
+            Field<B> inNumerator = src->getField(row, 6);
+            Field<B> siteCount = src->getField(row, 8);
+            Field<B> zero = FieldFactory<B>::getInt(0);
+            Field<B> one = FieldFactory<B>::getInt(1);
+
+
+            B multisite = (siteCount > FieldFactory<B>::getOne(siteCount.getType()));
+            // only 0 || 1
+            B numeratorTrue = inNumerator > FieldFactory<B>::getZero(inNumerator.getType());
+            B condition = multisite & numeratorTrue;
+
+            return Field<B>::If(condition, one, zero);
+
+        }
+
         //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
         template<typename B>
         static inline Field<B> projectDenominatorMultisite(const QueryTuple<B> & aTuple) {
@@ -128,6 +146,23 @@ namespace  vaultdb {
 
         }
 
+        template<typename B>
+        static inline Field<B> projectDenominatorMultisiteTable(const QueryTable<B> *src, const int & row) {
+
+            Field<B> inDenominator = src->getField(row, 7);
+            Field<B> siteCount = src->getField(row, 8);
+            Field<B> zero = FieldFactory<B>::getInt(0);
+            Field<B> one = FieldFactory<B>::getInt(1);
+
+
+            B multisite = (siteCount > FieldFactory<B>::getOne(siteCount.getType()));
+            // only 0 || 1
+            B denominatorTrue = inDenominator > FieldFactory<B>::getZero(inDenominator.getType());
+            B condition = multisite & denominatorTrue;
+
+            return Field<B>::If(condition, one, zero);
+
+        }
     };
 
 

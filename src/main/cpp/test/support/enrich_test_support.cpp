@@ -31,8 +31,37 @@ Field<B> EnrichTestSupport<B>::projectAgeStrata(const QueryTuple<B> & aTuple) {
 }
 
 
+template<typename B>
+Field<B> EnrichTestSupport<B>::projectAgeStrataTable(const QueryTable<B> *src, const int & row) {
+
+    Field<B> ageDays = src->getField(row, 2); // age_days
+    // either an IntField or SecureIntField
+
+    Field<B> ageStrata = Field<B>::If(ageDays <= FieldFactory<B>::getInt(28*365), FieldFactory<B>::getInt(0),
+                                      Field<B>::If(ageDays <= FieldFactory<B>::getInt(39*365), FieldFactory<B>::getInt(1),
+                                                   Field<B>::If(ageDays <= FieldFactory<B>::getInt(50*365), FieldFactory<B>::getInt(2),
+                                                                Field<B>::If(ageDays <= FieldFactory<B>::getInt(61*365), FieldFactory<B>::getInt(3),
+                                                                             Field<B>::If(ageDays <= FieldFactory<B>::getInt(72*365), FieldFactory<B>::getInt(4),
+                                                                                          Field<B>::If(ageDays <= FieldFactory<B>::getInt(83*365), FieldFactory<B>::getInt(5), FieldFactory<B>::getInt(6)))))));
+
+    return ageStrata;
+}
+
 // Project #2
 //     CASE WHEN count(*) > 1 THEN 1 else 0 END AS multisite
+template<typename B>
+Field<B> EnrichTestSupport<B>::projectMultisiteTable(const QueryTable<B> *src, const int &row) {
+    // int32_t
+    Field<B> siteCount = src->getField(row, 7);
+    Field<B> zero =  FieldFactory<B>::getInt(0);
+    Field<B> one =  FieldFactory<B>::getInt(1);
+
+    B cmp = siteCount > FieldFactory<B>::getOne(siteCount.getType());
+
+    return Field<B>::If(cmp, one, zero);
+
+}
+
 template<typename B>
 Field<B> EnrichTestSupport<B>::projectMultisite(const QueryTuple<B> & aTuple) {
     // int32_t
@@ -45,7 +74,6 @@ Field<B> EnrichTestSupport<B>::projectMultisite(const QueryTuple<B> & aTuple) {
     return Field<B>::If(cmp, one, zero);
 
 }
-
 
 //    CASE WHEN MAX(numerator)=1 ^ COUNT(*) > 1 THEN 1 ELSE 0 END AS numerator_multisite
 template<typename B>
@@ -63,6 +91,24 @@ Field<B> EnrichTestSupport<B>::projectNumeratorMultisite(const QueryTuple<B> & a
     B condition = multisite & numeratorTrue;
 
     return Field<B>::If(condition, one, zero);
+
+}
+
+template<typename B>
+Field<B> EnrichTestSupport<B>::projectNumeratorMultisiteTable(const QueryTable<B> *src, const int &row) {
+    Field<B> inNumerator = src->getField(row, 6);
+    Field<B> siteCount = src->getField(row, 7);
+    Field<B> zero = FieldFactory<B>::getInt(0);
+    Field<B> one = FieldFactory<B>::getInt(1);
+
+
+    B multisite = (siteCount > FieldFactory<B>::getOne(siteCount.getType()));
+    // only 0 || 1
+    B numeratorTrue = inNumerator > FieldFactory<B>::getZero(inNumerator.getType());
+    B condition = multisite & numeratorTrue;
+
+    return Field<B>::If(condition, one, zero);
+
 
 }
 

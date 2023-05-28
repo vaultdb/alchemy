@@ -5,16 +5,10 @@ using namespace vaultdb;
 
 template<typename B>
 EqualNode<B>::EqualNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs)
-:ExpressionNode<B>(lhs, rhs) { }
-
-template<typename B>
-Field<B> EqualNode<B>::call(const QueryTuple<B> &target) const {
-    Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
-    Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
-
-
-    return FieldUtilities::getBoolField(lhs == rhs);
+:ExpressionNode<B>(lhs, rhs) {
+    type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
 }
+
 
 template<typename B>
 ExpressionKind EqualNode<B>::kind() const {
@@ -30,7 +24,9 @@ void EqualNode<B>::accept(ExpressionVisitor<B> *visitor) {
 
 template<typename B>
 NotEqualNode<B>::NotEqualNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs)
-:ExpressionNode<B>(lhs, rhs) { }
+:ExpressionNode<B>(lhs, rhs) {
+    type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+}
 
 template<typename B>
 Field<B> NotEqualNode<B>::call(const QueryTuple<B> &target) const {
@@ -53,6 +49,8 @@ void NotEqualNode<B>::accept(ExpressionVisitor<B> *visitor) {
 template<typename B>
 LessThanNode<B>::LessThanNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs)
         :ExpressionNode<B>(lhs, rhs) {
+    type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+
 
 }
 
@@ -78,6 +76,8 @@ void LessThanNode<B>::accept(ExpressionVisitor<B> *visitor) {
 template<typename B>
 GreaterThanNode<B>::GreaterThanNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs)
         :ExpressionNode<B>(lhs, rhs) {
+    type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+
 
 }
 
@@ -104,6 +104,8 @@ template<typename B>
 LessThanEqNode<B>::LessThanEqNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs)
         :ExpressionNode<B>(lhs, rhs) {
 
+    type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+
 }
 
 template<typename B>
@@ -128,8 +130,10 @@ void LessThanEqNode<B>::accept(ExpressionVisitor<B> *visitor) {
 template<typename B>
 GreaterThanEqNode<B>::GreaterThanEqNode(std::shared_ptr<ExpressionNode<B>> lhs,
                                         std::shared_ptr<ExpressionNode<B>> rhs) : ExpressionNode<B>(lhs, rhs) {
+    type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
 
-}
+
+                                        }
 
 template<typename B>
 Field<B> GreaterThanEqNode<B>::call(const QueryTuple<B> &target) const {

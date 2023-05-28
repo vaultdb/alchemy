@@ -569,5 +569,14 @@ std::string QueryTable<B>::toString(const size_t &limit, const bool &show_dummie
 }
 
 
+template<typename B>
+Field<B> QueryTable<B>::getField(const int &row, const int &col) const {
+    const QueryTuple<B> tuple = getImmutableTuple(row);
+    return tuple.getField(col);
+
+}
+
+
+
 template class vaultdb::QueryTable<bool>;
 template class vaultdb::QueryTable<emp::Bit>;

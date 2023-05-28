@@ -64,8 +64,8 @@ namespace vaultdb {
             return TypeUtilities::getTypeSize(t) * ((t == FieldType::SECURE_STRING) ? str_length : 1);
         }
 
-        static Field<bool> getBoolField(const bool & input) { return Field<bool>(FieldType::BOOL, input, 0); }
-        static Field<emp::Bit> getBoolField(const emp::Bit & input) { return Field<emp::Bit>(FieldType::SECURE_BOOL, input, 0); }
+        static inline Field<bool> getBoolField(const bool & input) { return Field<bool>(FieldType::BOOL, input, 0); }
+        static inline Field<emp::Bit> getBoolField(const emp::Bit & input) { return Field<emp::Bit>(FieldType::SECURE_BOOL, input, 0); }
 
         static std::string printTupleBits(const PlainTuple & p);
         static std::string printTupleBits(const SecureTuple & s);

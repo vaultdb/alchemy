@@ -5,13 +5,27 @@
 
 namespace vaultdb {
 
+    template <typename B> class QueryTable;
+
     template<typename B>
     class FunctionExpression : public Expression<B> {
 
     public:
-        FunctionExpression(Field<B> (*funcPtr)(const QueryTuple<B> &), const std::string & anAlias, const FieldType & aType);
+        FunctionExpression(Field<B> (*tuple_ptr)(const QueryTuple<B> &),
+                           Field<B> (*table_ptr)(const QueryTable<B> *, const int &),
+                           const std::string & anAlias, const FieldType & aType) : Expression<B>(anAlias, aType) {
+            tuple_func_ = tuple_ptr;
+            table_func_ = table_ptr;
+        }
+
 
         Field<B> call(const QueryTuple<B> & aTuple) const override;
+
+        inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+              return   table_func_(src, row);
+        }
+
+
         ExpressionKind kind() const override { return ExpressionKind::FUNCTION; }
 
 
@@ -21,7 +35,8 @@ namespace vaultdb {
 
     private:
         // function pointer to expression
-        Field<B> (*expr_func_)(const QueryTuple<B> &) = nullptr;
+        Field<B> (*tuple_func_)(const QueryTuple<B> &) = nullptr;
+        Field<B> (*table_func_)(const QueryTable<B> *, const int &) = nullptr;
 
 
     };

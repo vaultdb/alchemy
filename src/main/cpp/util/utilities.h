@@ -27,6 +27,9 @@
 #include <boost/property_tree/ptree.hpp>
 
 namespace vaultdb {
+
+    template<typename B> class BoolExpression;
+
     class Utilities {
     public:
 

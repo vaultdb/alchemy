@@ -19,11 +19,14 @@ namespace vaultdb {
 
 
         static Field<B> projectAgeStrata(const QueryTuple<B> &aTuple);
+        static Field<B> projectAgeStrataTable(const QueryTable<B> *src, const int & row);
 
 
         static Field<B> projectMultisite(const QueryTuple<B> &aTuple);
+        static Field<B> projectMultisiteTable(const QueryTable<B> *src, const int & row);
 
         static Field<B> projectNumeratorMultisite(const QueryTuple<B> &aTuple);
+        static Field<B> projectNumeratorMultisiteTable(const QueryTable<B> *src, const int & row);
 
         static QuerySchema getPatientSchema();
 

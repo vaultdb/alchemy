@@ -1,6 +1,5 @@
 #include "expression_node.h"
 #include <expression/visitor/print_expression_visitor.h>
-#include <query_table/field/field_factory.h>
 #include <query_table/plain_tuple.h>  // leave tuple includes in or else it will not resolve field lookups in release mode
 #include <query_table/secure_tuple.h>
 
@@ -90,26 +89,6 @@ std::shared_ptr <LiteralNode<emp::Bit> > LiteralNode<B>::toSecure() const {
 template<typename B>
 CastNode<B>::CastNode( std::shared_ptr<ExpressionNode<B> > & input, const FieldType &dst_type) : ExpressionNode<B>(input),  dst_type_(dst_type) { }
 
-template<typename B>
-Field<B> CastNode<B>::call(const QueryTuple<B> &target) const {
-    // attempt to cast
-    Field<B> src =  ExpressionNode<B>::lhs_->call(target);
-
-    switch(dst_type_) {
-        case FieldType::INT:
-        case FieldType::SECURE_INT:
-            return FieldFactory<B>::toInt(src);
-        case FieldType::LONG:
-        case FieldType::SECURE_LONG:
-            return FieldFactory<B>::toLong(src);
-        case FieldType::FLOAT:
-        case FieldType::SECURE_FLOAT:
-            return FieldFactory<B>::toFloat(src);
-        default:
-            throw;
-    }
-
-}
 
 template<typename B>
 ExpressionKind CastNode<B>::kind() const {
