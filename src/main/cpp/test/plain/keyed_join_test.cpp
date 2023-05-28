@@ -167,6 +167,8 @@ TEST_F(KeyedJoinTest, test_tpch_q3_customer_orders_reversed) {
 
     ASSERT_EQ(*expected, *observed);
 
+    predicate.reset();
+
 }
 
 
@@ -199,6 +201,8 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_reversed) {
 
     ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);
+
+    predicate.reset();
 
 }
 
@@ -244,6 +248,9 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
 
     ASSERT_EQ(*expected, *observed);
+
+    customer_orders_predicate.reset();
+    lineitem_orders_predicate.reset();
 
 }
 
