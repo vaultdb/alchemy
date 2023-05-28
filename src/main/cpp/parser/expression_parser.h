@@ -14,14 +14,14 @@ namespace vaultdb {
     template<typename B>
     class ExpressionParser {
     public:
-        static std::shared_ptr<Expression<B> > parseJSONExpression(const std::string & json, const QuerySchema & input_schema);
-        static std::shared_ptr<Expression<B> > parseExpression(const ptree & tree, const QuerySchema & input_schema);
+        static Expression <B> * parseJSONExpression(const std::string &json, const QuerySchema & input_schema);
+        static Expression <B> * parseExpression(const ptree & tree, const QuerySchema & input_schema);
         static BoolExpression <B> parseBoolExpression(const ptree &tree, const QuerySchema &input_schema);
 
     private:
-        static std::shared_ptr<ExpressionNode<B> > parseHelper(const ptree & tree);
-        static std::shared_ptr<ExpressionNode<B> > parseSubExpression(const ptree & tree);
-        static std::shared_ptr<ExpressionNode<B> > parseInput(const ptree & tree);
+        static ExpressionNode <B> * parseHelper(const ptree & tree);
+        static ExpressionNode <B> * parseSubExpression(const ptree & tree);
+        static ExpressionNode <B> * parseInput(const ptree & tree);
 
     };
 

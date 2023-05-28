@@ -350,11 +350,11 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_
     uint32_t src_ordinal, dst_ordinal = 0;
 
     for (ptree::const_iterator it = expressions.begin(); it != expressions.end(); ++it) {
-        std::shared_ptr<Expression<B> > expr = ExpressionParser<B>::parseExpression(it->second, child_schema);
+        Expression<B> *expr = ExpressionParser<B>::parseExpression(it->second, child_schema);
 
         if(expr->kind()  == ExpressionKind::INPUT_REF) {
-            GenericExpression<B> expression_impl = *((GenericExpression<B> *) expr.get());
-            InputReferenceNode<B> input_ref  = *((InputReferenceNode<B> *) expression_impl.root_.get());
+            GenericExpression<B> expression_impl = *((GenericExpression<B> *) expr);
+            InputReferenceNode<B> input_ref  = *((InputReferenceNode<B> *) expression_impl.root_);
             src_ordinal = input_ref.read_idx_;
             builder.addMapping(src_ordinal, dst_ordinal);
         }

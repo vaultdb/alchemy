@@ -15,7 +15,7 @@ namespace vaultdb {
     template<typename B>
     class  EqualNode : public ExpressionNode<B> {
     public:
-        EqualNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs ) : ExpressionNode<B>(lhs, rhs) {
+        EqualNode( ExpressionNode<B> * lhs, ExpressionNode<B> * rhs ) : ExpressionNode<B>(lhs, rhs) {
             type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
         }
 
@@ -46,7 +46,7 @@ namespace vaultdb {
     template<typename B>
     class  NotEqualNode : public ExpressionNode<B> {
     public:
-        NotEqualNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs ) : ExpressionNode<B>(lhs, rhs) {
+        NotEqualNode( ExpressionNode<B> * lhs, ExpressionNode<B> * rhs ) : ExpressionNode<B>(lhs, rhs) {
             type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
         }
 
@@ -79,7 +79,7 @@ namespace vaultdb {
     template<typename B>
     class  LessThanNode : public ExpressionNode<B> {
     public:
-        LessThanNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs )   : ExpressionNode<B>(lhs, rhs) {
+        LessThanNode( ExpressionNode<B> * lhs, ExpressionNode<B> * rhs )   : ExpressionNode<B>(lhs, rhs) {
             type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
 
 
@@ -118,7 +118,7 @@ namespace vaultdb {
     template<typename B>
     class  GreaterThanNode : public ExpressionNode<B> {
     public:
-        GreaterThanNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs )   : ExpressionNode<B>(lhs, rhs) {
+        GreaterThanNode( ExpressionNode<B> * lhs, ExpressionNode<B> * rhs )   : ExpressionNode<B>(lhs, rhs) {
             type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
 
 
@@ -156,7 +156,7 @@ namespace vaultdb {
     template<typename B>
     class  LessThanEqNode : public ExpressionNode<B> {
     public:
-        LessThanEqNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs )   : ExpressionNode<B>(lhs, rhs) {
+        LessThanEqNode( ExpressionNode<B> *lhs, ExpressionNode<B> *rhs )   : ExpressionNode<B>(lhs, rhs) {
             type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
 
 
@@ -189,7 +189,7 @@ namespace vaultdb {
     template<typename B>
     class  GreaterThanEqNode : public ExpressionNode<B> {
     public:
-        GreaterThanEqNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs )   : ExpressionNode<B>(lhs, rhs) {
+        GreaterThanEqNode( ExpressionNode<B> * lhs, ExpressionNode<B> * rhs )   : ExpressionNode<B>(lhs, rhs) {
             type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
 
 

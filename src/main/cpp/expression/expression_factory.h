@@ -13,11 +13,11 @@ namespace  vaultdb {
 template<typename B>
 class ExpressionFactory {
 public:
-    static std::shared_ptr<ExpressionNode<B> > getExpressionNode(const std::string & expression_kind, std::shared_ptr<ExpressionNode<B> > lhs,   std::shared_ptr<ExpressionNode<B> > rhs);
+    static ExpressionNode<B> *getExpressionNode(const std::string & expression_kind, ExpressionNode<B> *lhs,  ExpressionNode<B> *rhs);
 
-    static std::shared_ptr<ExpressionNode<B> > getExpressionNode(const std::string & expression_kind, vector<std::shared_ptr<ExpressionNode<B> > >  & operands);
+    static ExpressionNode<B> *getExpressionNode(const std::string & expression_kind, vector<ExpressionNode<B> * >  & operands);
 
-    static std::shared_ptr<ExpressionNode<B> > getExpressionNode(const ExpressionKind & kind, std::shared_ptr<ExpressionNode<B> > lhs,   std::shared_ptr<ExpressionNode<B> > rhs);
+    static ExpressionNode<B> *getExpressionNode(const ExpressionKind & kind, ExpressionNode<B> *lhs,   ExpressionNode<B> *rhs);
 
     // convert from Calcite JSON's SqlKind format to enum
     static ExpressionKind getKind(const std::string & expression_kind);

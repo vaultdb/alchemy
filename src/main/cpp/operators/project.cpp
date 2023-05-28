@@ -45,7 +45,7 @@ void Project<B>::project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tupl
     // exec all expressions
     while(expr_pos != expressions_.end()) {
         uint32_t dst_ordinal = expr_pos->first;
-        Expression<B> *expression = expr_pos->second.get();
+        Expression<B> *expression = expr_pos->second;
         Field<B> field_value = expression->call(src_tuple);
         dst_tuple.setField(dst_ordinal, field_value);
         ++expr_pos;
@@ -70,8 +70,8 @@ void Project<B>::setup() {
 
     for(auto expr_pos =  expressions_.begin(); expr_pos != expressions_.end(); ++expr_pos) {
         if(expr_pos->second->kind() == ExpressionKind::INPUT_REF) {
-            GenericExpression<B> *expr = (GenericExpression<B> *) expr_pos->second.get();
-            InputReferenceNode<B> *node = (InputReferenceNode<B> *) expr->root_.get();
+            GenericExpression<B> *expr = (GenericExpression<B> *) expr_pos->second;
+            InputReferenceNode<B> *node = (InputReferenceNode<B> *) expr->root_;
             column_mappings_.template emplace_back(node->read_idx_, expr_pos->first);
         }
     }
@@ -85,7 +85,7 @@ void Project<B>::setup() {
         dst_schema.putField(dst_field_desc);
 
         assert(expressions_.find(dst_ordinal) != expressions_.end());
-        std::shared_ptr<Expression<B> > expression = expressions_[dst_ordinal];
+        Expression<B> * expression = expressions_[dst_ordinal];
         expression->setType(src_field_desc.getType());
         expression->setAlias(src_field_desc.getName());
 
@@ -149,14 +149,14 @@ ExpressionMapBuilder<B>::ExpressionMapBuilder(const QuerySchema &input_schema) :
 
 template<typename B>
 void ExpressionMapBuilder<B>::addMapping(const uint32_t &src_idx, const uint32_t &dst_idx) {
-    shared_ptr<ExpressionNode<B> > node(new InputReferenceNode<B>(src_idx));
-    shared_ptr<GenericExpression<B> > expr(new GenericExpression<B>(node, src_schema_));
+    ExpressionNode<B> *node = new InputReferenceNode<B>(src_idx);
+    GenericExpression<B> *expr = new GenericExpression<B>(node, src_schema_);
 
     expressions_[dst_idx] = expr;
 }
 
 template<typename B>
-void ExpressionMapBuilder<B>::addExpression(const shared_ptr<Expression<B>> &expression, const uint32_t &dst_idx) {
+void ExpressionMapBuilder<B>::addExpression( Expression<B> *expression, const uint32_t &dst_idx) {
     expressions_[dst_idx] = expression;
 }
 

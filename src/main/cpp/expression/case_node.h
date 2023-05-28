@@ -9,7 +9,7 @@ namespace  vaultdb {
     template<typename B>
     class CaseNode :  public ExpressionNode<B>  {
     public:
-        CaseNode(BoolExpression<B> & conditional, std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs) :
+        CaseNode(BoolExpression<B> & conditional, ExpressionNode<B> *  lhs, ExpressionNode<B> *  rhs) :
                 ExpressionNode<B>(lhs, rhs), conditional_(conditional){ }
         ~CaseNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override {

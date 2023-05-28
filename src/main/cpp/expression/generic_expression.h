@@ -10,11 +10,11 @@ namespace  vaultdb {
     template<typename B>
     class GenericExpression : public Expression<B> {
     public:
-        GenericExpression(std::shared_ptr<ExpressionNode < B> > root, const QuerySchema &input_schema)         : Expression<B>("anonymous", GenericExpression<B>::inferFieldType(root, input_schema)), root_(root) {}
+        GenericExpression(ExpressionNode < B> *root, const QuerySchema &input_schema)         : Expression<B>("anonymous", GenericExpression<B>::inferFieldType(root, input_schema)), root_(root) {}
 
 
 
-        GenericExpression(std::shared_ptr<ExpressionNode<B> > root, const std::string & alias, const FieldType & output_type)  : Expression<B>(alias, output_type), root_(root) {
+        GenericExpression(ExpressionNode<B>  *root, const std::string & alias, const FieldType & output_type)  : Expression<B>(alias, output_type), root_(root) {
 
         }
         Field<B> call(const QueryTuple<B> & target) const override {
@@ -27,15 +27,17 @@ namespace  vaultdb {
 
         ExpressionKind kind() const override { return root_->kind(); }
 
-        ~GenericExpression() = default;
+        ~GenericExpression()  {
+            if(root_ != nullptr) delete root_;
+        }
 
         inline string toString() const override {
             return root_->toString() + " " +  TypeUtilities::getTypeString(Expression<B>::type_);
         }
 
-        static FieldType inferFieldType(std::shared_ptr<ExpressionNode < B> > root,  const QuerySchema &input_schema);
+        static FieldType inferFieldType(ExpressionNode < B> *root,  const QuerySchema &input_schema);
 
-        std::shared_ptr<ExpressionNode<B> > root_;
+        ExpressionNode<B> *root_;
     };
 
 

@@ -23,7 +23,7 @@ namespace  vaultdb {
     protected:
         std::shared_ptr<QueryTable<B> > runSelf() override;
         string getOperatorType() const override;
-        int32_t forign_key_input_ = 0; // default: lhs = fkey
+        int32_t foreign_key_input_ = 0; // default: lhs = fkey
 
     private:
         std::shared_ptr<QueryTable<B> > foreignKeyPrimaryKeyJoin();

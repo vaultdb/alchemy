@@ -13,7 +13,7 @@ namespace vaultdb {
     class TypeValidationVisitor : public ExpressionVisitor<B> {
 
     public:
-        TypeValidationVisitor(std::shared_ptr<ExpressionNode<B> > root, const QuerySchema & input_schema);
+        TypeValidationVisitor(ExpressionNode<B> *root, const QuerySchema & input_schema);
 
         void visit(InputReferenceNode<B> node) override;
 

@@ -66,9 +66,9 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     // *** Filter
     // HAVING max(denom_excl) = false
 
-    shared_ptr<ExpressionNode<emp::Bit> > zero(new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_BOOL, emp::Bit(false))));;
-    shared_ptr<ExpressionNode<emp::Bit> > input(new InputReferenceNode<emp::Bit>(9));
-    shared_ptr<ExpressionNode<emp::Bit> > equality(new EqualNode<emp::Bit>(input, zero));
+    ExpressionNode<emp::Bit>  *zero = new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_BOOL, emp::Bit(false)));;
+    ExpressionNode<emp::Bit> *input = new InputReferenceNode<emp::Bit>(9);
+    ExpressionNode<emp::Bit> *equality = new EqualNode<emp::Bit>(input, zero);
 
     BoolExpression<emp::Bit> equality_expr(equality);
 
@@ -112,22 +112,22 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
       // cast numerator to INT for summing in next step
       // references (5)
 
-      shared_ptr<ExpressionNode<emp::Bit> > numerator(new InputReferenceNode<emp::Bit>(6));
-      shared_ptr<ExpressionNode<emp::Bit> > castNumerator(new CastNode<emp::Bit>(numerator, FieldType::SECURE_INT));
-      shared_ptr<Expression<emp::Bit> >  numeratorToIntExpression(new GenericExpression<emp::Bit>(castNumerator, "numerator", FieldType::SECURE_INT));
+      ExpressionNode<emp::Bit> *numerator = new InputReferenceNode<emp::Bit>(6);
+      ExpressionNode<emp::Bit> *castNumerator = new CastNode<emp::Bit>(numerator, FieldType::SECURE_INT);
+      Expression<emp::Bit> *numeratorToIntExpression = new GenericExpression<emp::Bit>(castNumerator, "numerator", FieldType::SECURE_INT);
 
-      shared_ptr<ExpressionNode<emp::Bit> > denominator(new InputReferenceNode<emp::Bit>(7));
-      shared_ptr<ExpressionNode<emp::Bit> > castDenominator(new CastNode<emp::Bit>(denominator, FieldType::SECURE_INT));
-      shared_ptr<Expression<emp::Bit> >  denominatorToIntExpression(new GenericExpression<emp::Bit>(castDenominator, "denominator", FieldType::SECURE_INT));
+      ExpressionNode<emp::Bit> *denominator = new InputReferenceNode<emp::Bit>(7);
+      ExpressionNode<emp::Bit> *castDenominator = new CastNode<emp::Bit>(denominator, FieldType::SECURE_INT);
+      Expression<emp::Bit> * denominatorToIntExpression = new GenericExpression<emp::Bit>(castDenominator, "denominator", FieldType::SECURE_INT);
 
 
     // references (6) (9)
-    shared_ptr<Expression<emp::Bit> >  multisiteNumeratorExpression(new
+    Expression<emp::Bit>  *multisiteNumeratorExpression = new
         FunctionExpression(&EnrichHtnQuery::projectNumeratorMultisite<emp::Bit>, &EnrichHtnQuery::projectNumeratorMultisiteTable<emp::Bit>,
-            "numerator_multisite", FieldType::SECURE_INT));
+            "numerator_multisite", FieldType::SECURE_INT);
       // references (7) (9)
-      shared_ptr<Expression<emp::Bit> >  multisiteDenominatorExpression(new
-         FunctionExpression(&EnrichHtnQuery::projectDenominatorMultisite<emp::Bit>, &EnrichHtnQuery::projectDenominatorMultisiteTable<emp::Bit>, "denominator_multisite", FieldType::SECURE_INT));
+      Expression<emp::Bit> *  multisiteDenominatorExpression = new
+         FunctionExpression(&EnrichHtnQuery::projectDenominatorMultisite<emp::Bit>, &EnrichHtnQuery::projectDenominatorMultisiteTable<emp::Bit>, "denominator_multisite", FieldType::SECURE_INT);
 
     builder.addExpression(numeratorToIntExpression, 5);
     builder.addExpression(denominatorToIntExpression, 6);

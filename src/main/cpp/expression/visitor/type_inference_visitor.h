@@ -13,7 +13,7 @@ namespace vaultdb {
     class TypeInferenceVisitor : public ExpressionVisitor<B> {
 
     public:
-        TypeInferenceVisitor(std::shared_ptr<ExpressionNode<B> > root, const QuerySchema & input_schema);
+        TypeInferenceVisitor(ExpressionNode<B> *root, const QuerySchema & input_schema);
 
         void visit(InputReferenceNode<B> node) override;
 

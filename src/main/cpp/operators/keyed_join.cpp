@@ -18,7 +18,7 @@ KeyedJoin<B>::KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, const 
 // fkey = 0 --> lhs, fkey = 1 --> rhs
 template<typename B>
 KeyedJoin<B>::KeyedJoin(Operator<B> * lhs, Operator<B> * rhs, const int & fkey, const BoolExpression<B> & predicate, const SortDefinition & sort)
-        : Join<B>(lhs, rhs, predicate, sort), forign_key_input_(fkey) {
+        : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
     assert(fkey == 0 || fkey == 1);
 }
 
@@ -28,7 +28,7 @@ KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryT
 
 template<typename B>
 KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, const int & fkey, const BoolExpression<B> & predicate, const SortDefinition & sort)
-        : Join<B>(lhs, rhs, predicate, sort), forign_key_input_(fkey) {
+        : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
     assert(fkey == 0 || fkey == 1);
 }
 
@@ -37,7 +37,7 @@ template<typename B>
 std::shared_ptr<QueryTable<B> > KeyedJoin<B>::runSelf() {
 
 
-    if(forign_key_input_ == 0){
+    if(foreign_key_input_ == 0){
         return foreignKeyPrimaryKeyJoin();
     }
 

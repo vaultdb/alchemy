@@ -13,13 +13,13 @@ namespace  vaultdb {
     class PlainToSecureVisitor : public ExpressionVisitor<bool> {
 
     private:
-        std::shared_ptr<ExpressionNode<emp::Bit> > root_;
+        ExpressionNode<emp::Bit> *root_;
 
 
     public:
-        PlainToSecureVisitor(std::shared_ptr<ExpressionNode<bool> > root);
+        PlainToSecureVisitor(ExpressionNode<bool>  *root);
 
-        std::shared_ptr<ExpressionNode<emp::Bit> > getSecureExpression() {
+       ExpressionNode<emp::Bit> * getSecureExpression() {
             return root_;
         }
 

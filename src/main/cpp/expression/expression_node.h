@@ -20,41 +20,51 @@ namespace vaultdb {
     template<typename B>
     class ExpressionNode {
     public:
-        ExpressionNode(std::shared_ptr<ExpressionNode<B> > lhs);
-        ExpressionNode(std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs);
+        ExpressionNode(ExpressionNode<B> *lhs) : lhs_(lhs) {}
+        ExpressionNode(ExpressionNode<B> *lhs, ExpressionNode<B> *rhs) : lhs_(lhs), rhs_(rhs) {}
+
 
         virtual Field<B> call(const QueryTuple<B> & target) const = 0;
         virtual Field<B> call(const QueryTable<B>  *src, const int & row) const = 0;
 
         virtual ExpressionKind kind() const = 0;
         virtual void accept(ExpressionVisitor<B> * visitor) = 0;
-        virtual ~ExpressionNode() {}
+        virtual ~ExpressionNode() {
+            if(lhs_ != nullptr) delete lhs_;
+            if(rhs_ != nullptr) delete rhs_;
+        }
         std::string toString();
 
-        std::shared_ptr<ExpressionNode<B> > lhs_;
-        std::shared_ptr<ExpressionNode<B> > rhs_;
+        ExpressionNode<B> *lhs_ = nullptr;
+        ExpressionNode<B> *rhs_ = nullptr;
 
     };
 
-    std::ostream &operator<<(std::ostream &os,  ExpressionNode<bool> &expression);
-    std::ostream &operator<<(std::ostream &os,  ExpressionNode<emp::Bit> &expression);
+    template<typename B>
+    std::ostream &operator<<(std::ostream &os,  ExpressionNode<B> &expression);
 
 
     // read a field from a tuple
     template<typename B>
     class InputReferenceNode : public ExpressionNode<B> {
     public:
-        InputReferenceNode(const uint32_t & read_idx);
+        InputReferenceNode(const uint32_t & read_idx)  : ExpressionNode<B>(nullptr), read_idx_(read_idx) {}
         ~InputReferenceNode() = default;
 
-        Field<B> call(const QueryTuple<B> & target) const override;
+        inline Field<B> call(const QueryTuple<B> & target) const override {
+            return target.getField(read_idx_);
+        }
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
             return src->getField(row, read_idx_);
         }
 
-        ExpressionKind kind() const override;
+        ExpressionKind kind() const override {     return ExpressionKind::INPUT_REF;
+        }
 
-        void accept(ExpressionVisitor<B> *visitor) override;
+        void accept(ExpressionVisitor<B> *visitor) override {
+            visitor->visit(*this);
+
+        }
 
         uint32_t read_idx_;
     };
@@ -62,18 +72,25 @@ namespace vaultdb {
     template<typename B>
     class LiteralNode : public ExpressionNode<B> {
     public:
-        LiteralNode(const Field<B> & literal);
+        LiteralNode(const Field<B> & literal) : ExpressionNode<B>(nullptr), payload_(literal) {
+
+        }
         ~LiteralNode() = default;
 
-        Field<B> call(const QueryTuple<B> & target) const override;
+        Field<B> call(const QueryTuple<B> & target) const override { return  payload_; }
 
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
             return payload_;
         }
 
-        ExpressionKind kind() const override;
-        void accept(ExpressionVisitor<B> *visitor) override;
-        std::shared_ptr<LiteralNode<emp::Bit> > toSecure() const;
+        ExpressionKind kind() const override {    return ExpressionKind::LITERAL; }
+
+        void accept(ExpressionVisitor<B> *visitor) override {  visitor->visit(*this); }
+
+        LiteralNode<emp::Bit>  *toSecure() const {
+            return new LiteralNode<emp::Bit>(payload_.secret_share());
+
+        }
 
 
         Field<B> payload_;
@@ -86,7 +103,7 @@ namespace vaultdb {
     template<typename B>
     class CastNode : public ExpressionNode<B> {
     public:
-        CastNode(std::shared_ptr<ExpressionNode<B> > &input, const FieldType &dst_type);
+        CastNode(ExpressionNode<B> *input, const FieldType &dst_type) : ExpressionNode<B>(input),  dst_type_(dst_type) { }
 
         ~CastNode() = default;
 
@@ -101,9 +118,12 @@ namespace vaultdb {
         }
 
 
-        ExpressionKind kind() const override;
+        ExpressionKind kind() const override {     return ExpressionKind::CAST;
+         }
 
-        void accept(ExpressionVisitor<B> *visitor) override;
+        void accept(ExpressionVisitor<B> *visitor) override {
+            visitor->visit(*this);
+        }
 
         FieldType dst_type_;
     private:

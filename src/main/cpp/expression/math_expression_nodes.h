@@ -8,7 +8,7 @@ namespace vaultdb {
     template<typename B>
     class PlusNode : public ExpressionNode<B>  {
     public:
-        PlusNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs)  : ExpressionNode<B>(lhs, rhs) { }
+        PlusNode(ExpressionNode<B> *lhs, ExpressionNode<B>  *rhs)  : ExpressionNode<B>(lhs, rhs) { }
 
         ~PlusNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override {
@@ -35,7 +35,7 @@ namespace vaultdb {
     template<typename B>
     class MinusNode : public  ExpressionNode<B>  {
     public:
-        MinusNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs)  : ExpressionNode<B>(lhs, rhs) { }
+        MinusNode(ExpressionNode<B> * lhs, ExpressionNode<B>  *rhs)  : ExpressionNode<B>(lhs, rhs) { }
 
         ~MinusNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override {
@@ -63,7 +63,7 @@ namespace vaultdb {
     template<typename B>
     class TimesNode : public ExpressionNode<B>  {
     public:
-        TimesNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs)  : ExpressionNode<B>(lhs, rhs) { }
+        TimesNode(ExpressionNode<B> *lhs, ExpressionNode<B> *rhs)  : ExpressionNode<B>(lhs, rhs) { }
         ~TimesNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
@@ -87,7 +87,7 @@ namespace vaultdb {
     template<typename B>
     class DivideNode : public  ExpressionNode<B>  {
     public:
-        DivideNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs)  : ExpressionNode<B>(lhs, rhs) { }
+        DivideNode(ExpressionNode<B> *lhs, ExpressionNode<B> *rhs)  : ExpressionNode<B>(lhs, rhs) { }
         ~DivideNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
@@ -116,7 +116,7 @@ namespace vaultdb {
     template<typename B>
     class ModulusNode : public  ExpressionNode<B>  {
     public:
-        ModulusNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs)  : ExpressionNode<B>(lhs, rhs) { }
+        ModulusNode(ExpressionNode<B> * lhs,  ExpressionNode<B>  *rhs)  : ExpressionNode<B>(lhs, rhs) { }
         ~ModulusNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);

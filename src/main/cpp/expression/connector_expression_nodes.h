@@ -10,7 +10,7 @@ namespace vaultdb {
     template<typename B>
     class  NotNode : public ExpressionNode<B> {
     public:
-        NotNode( std::shared_ptr<ExpressionNode<B> > input) : ExpressionNode<B>(input) {
+        NotNode(ExpressionNode<B> *input) : ExpressionNode<B>(input) {
             type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
 
         }
@@ -40,7 +40,7 @@ namespace vaultdb {
     class AndNode : public ExpressionNode<B>  {
     public:
 
-        AndNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs) : ExpressionNode<B>(lhs, rhs) {
+        AndNode(ExpressionNode<B> *lhs, ExpressionNode<B> * rhs) : ExpressionNode<B>(lhs, rhs) {
             type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
 
         }
@@ -74,7 +74,7 @@ namespace vaultdb {
     template<typename B>
     class OrNode : public  ExpressionNode<B>  {
     public:
-        OrNode(std::shared_ptr<ExpressionNode<B> > & lhs, std::shared_ptr<ExpressionNode<B> > & rhs) : ExpressionNode<B>(lhs, rhs) {
+        OrNode(ExpressionNode<B> * lhs, ExpressionNode<B> *rhs) : ExpressionNode<B>(lhs, rhs) {
             type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
 
         }

@@ -98,9 +98,9 @@ namespace vaultdb {
         // indexes are based on the concatenated tuple, not addressing each input to the join comparison individually
         template<typename B>
         static inline BoolExpression<B> getEqualityPredicate(const uint32_t & lhs_idx, const uint32_t & rhs_idx) {
-            std::shared_ptr<InputReferenceNode<B> > lhs_input(new InputReferenceNode<B>(lhs_idx));
-            std::shared_ptr<InputReferenceNode<B> > rhs_input(new InputReferenceNode<B>(rhs_idx));
-            std::shared_ptr<ExpressionNode<B> > equality_node(new EqualNode<B>(lhs_input, rhs_input));
+            InputReferenceNode<B> *lhs_input = new InputReferenceNode<B>(lhs_idx);
+            InputReferenceNode<B> *rhs_input = new InputReferenceNode<B>(rhs_idx);
+            ExpressionNode<B> *equality_node = new EqualNode<B>(lhs_input, rhs_input);
             return BoolExpression<B>(equality_node);
         }
 

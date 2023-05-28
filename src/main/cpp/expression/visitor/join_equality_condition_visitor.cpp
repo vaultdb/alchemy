@@ -3,7 +3,7 @@
 using namespace vaultdb;
 
 template<typename B>
-JoinEqualityConditionVisitor<B>::JoinEqualityConditionVisitor(std::shared_ptr<ExpressionNode<B>> root) {
+JoinEqualityConditionVisitor<B>::JoinEqualityConditionVisitor(ExpressionNode<B> *root) {
     root->accept(this);
 }
 

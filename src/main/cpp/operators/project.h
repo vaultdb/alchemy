@@ -18,20 +18,24 @@ namespace vaultdb {
     template<typename B>
     class Project : public Operator<B> {
 
-        std::map<uint32_t, shared_ptr<Expression<B> > > expressions_; // key = dst_idx, value is expression to evaluate
+        std::map<uint32_t, Expression<B> * > expressions_; // key = dst_idx, value is expression to evaluate
         ProjectionMappingSet column_mappings_;
 
     public:
-        Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort_definition = SortDefinition()) : Operator<B>(child, sort_definition), expressions_(expression_map) {
+        Project(Operator<B> *child, std::map<uint32_t, Expression<B> * > expression_map, const SortDefinition & sort_definition = SortDefinition()) : Operator<B>(child, sort_definition), expressions_(expression_map) {
 
             setup();
         }
 
-        Project(shared_ptr<QueryTable<B> > child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort= SortDefinition()) : Operator<B>(child, sort), expressions_(expression_map) {
+        Project(shared_ptr<QueryTable<B> > child, std::map<uint32_t, Expression<B> * > expression_map, const SortDefinition & sort= SortDefinition()) : Operator<B>(child, sort), expressions_(expression_map) {
             setup();
 
         }
-        ~Project() = default;
+        ~Project() {
+            for(auto pos : expressions_) {
+                if(pos.second != nullptr) delete pos.second;
+            }
+        }
 
         std::shared_ptr<QueryTable<B> > runSelf() override;
 
@@ -68,12 +72,12 @@ namespace vaultdb {
         ExpressionMapBuilder(const QuerySchema & input_schema);
 
         void addMapping(const uint32_t & src_idx, const uint32_t & dst_idx);
-        void addExpression(const shared_ptr<Expression<B> > & expression, const uint32_t & dst_idx );
+        void addExpression( Expression<B> * expression, const uint32_t & dst_idx );
 
-        std::map<uint32_t, shared_ptr<Expression<B> > > getExprs() const { return expressions_; }
+        std::map<uint32_t, Expression<B> * > getExprs() const { return expressions_; }
 
     private:
-        std::map<uint32_t, shared_ptr<Expression<B> > > expressions_;
+        std::map<uint32_t, Expression<B> *> expressions_;
         QuerySchema src_schema_;
 
 

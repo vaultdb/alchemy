@@ -9,7 +9,7 @@ using namespace vaultdb;
 
 
 template<typename B>
-TypeInferenceVisitor<B>::TypeInferenceVisitor(std::shared_ptr<ExpressionNode<B>> root, const QuerySchema &input_schema)
+TypeInferenceVisitor<B>::TypeInferenceVisitor(ExpressionNode<B> *root, const QuerySchema &input_schema)
         : input_schema_(input_schema), bool_type_(std::is_same_v<bool, B> ? FieldType::BOOL : FieldType::SECURE_BOOL) {
     type_rank_[FieldType::BOOL] = type_rank_[FieldType::SECURE_BOOL] = 0;
     type_rank_[FieldType::INT] = type_rank_[FieldType::SECURE_INT] = 1;

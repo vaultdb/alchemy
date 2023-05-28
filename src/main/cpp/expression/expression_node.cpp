@@ -6,11 +6,6 @@
 
 using namespace vaultdb;
 
-template<typename B>
-ExpressionNode<B>::ExpressionNode(std::shared_ptr<ExpressionNode<B>> lhs) : lhs_(lhs) {}
-
-template<typename B>
-ExpressionNode<B>::ExpressionNode(std::shared_ptr<ExpressionNode<B>> lhs, std::shared_ptr<ExpressionNode<B>> rhs) : lhs_(lhs), rhs_(rhs) {}
 
 template<typename B>
 std::string ExpressionNode<B>::toString()  {
@@ -20,9 +15,9 @@ std::string ExpressionNode<B>::toString()  {
 
 }
 
-
-std::ostream &vaultdb::operator<<(std::ostream &os,  ExpressionNode<bool> &expression) {
-    PrintExpressionVisitor<bool> visitor;
+template<typename B>
+std::ostream &vaultdb::operator<<(std::ostream &os,  ExpressionNode<B> &expression) {
+    PrintExpressionVisitor<B> visitor;
     expression.accept(&visitor);
 
     os << visitor.getString();
@@ -30,76 +25,7 @@ std::ostream &vaultdb::operator<<(std::ostream &os,  ExpressionNode<bool> &expre
     return os;
 }
 
-std::ostream &vaultdb::operator<<(std::ostream &os,  ExpressionNode<emp::Bit> &expression) {
-    PrintExpressionVisitor<emp::Bit> visitor;
-    expression.accept(&visitor);
 
-    os << visitor.getString();
-
-    return os;
-
-}
-
-template<typename B>
-InputReferenceNode<B>::InputReferenceNode(const uint32_t &read_idx) : ExpressionNode<B>(nullptr), read_idx_(read_idx) {}
-
-template<typename B>
-Field<B> InputReferenceNode<B>::call(const QueryTuple<B> &target) const {
-    return target.getField(read_idx_);
-}
-
-template<typename B>
-ExpressionKind InputReferenceNode<B>::kind() const {
-    return ExpressionKind::INPUT_REF;
-}
-
-template<typename B>
-void InputReferenceNode<B>::accept(ExpressionVisitor<B> *visitor) {
-    visitor->visit(*this);
-}
-
-
-
-template<typename B>
-LiteralNode<B>::LiteralNode(const Field<B> &literal) : ExpressionNode<B>(nullptr), payload_(literal) {
-
-}
-
-template<typename B>
-Field<B> LiteralNode<B>::call(const QueryTuple<B> &target) const {
-    return payload_;
-}
-
-template<typename B>
-ExpressionKind LiteralNode<B>::kind() const {
-    return ExpressionKind::LITERAL;
-}
-
-template<typename B>
-void vaultdb::LiteralNode<B>::accept(ExpressionVisitor<B> *visitor) {
-    visitor->visit(*this);
-}
-
-template<typename B>
-std::shared_ptr <LiteralNode<emp::Bit> > LiteralNode<B>::toSecure() const {
-    return std::shared_ptr<LiteralNode<emp::Bit> >(new LiteralNode<emp::Bit>(payload_.secret_share()));
-}
-
-
-template<typename B>
-CastNode<B>::CastNode( std::shared_ptr<ExpressionNode<B> > & input, const FieldType &dst_type) : ExpressionNode<B>(input),  dst_type_(dst_type) { }
-
-
-template<typename B>
-ExpressionKind CastNode<B>::kind() const {
-    return ExpressionKind::CAST;
-
-}
-
-template<typename B>
-void CastNode<B>::accept(ExpressionVisitor<B> *visitor) {
-    visitor->visit(*this);
-}
 
 template class vaultdb::ExpressionNode<bool>;
 template class vaultdb::ExpressionNode<emp::Bit>;

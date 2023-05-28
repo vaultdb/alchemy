@@ -40,9 +40,9 @@ TEST_F(FilterTest, test_filter) {
 
    // expression setup
     // l_linenumber == 1
-    shared_ptr<InputReferenceNode<bool> > read_field(new InputReferenceNode<bool>(1));
-   shared_ptr<LiteralNode<bool> > constant_input(new LiteralNode<bool>(Field<bool>(FieldType::INT, 1)));
-   shared_ptr<ExpressionNode<bool> > equality_check(new EqualNode<bool>(read_field, constant_input));
+   InputReferenceNode<bool> *read_field = new InputReferenceNode<bool>(1);
+   LiteralNode<bool> *constant_input = new LiteralNode<bool>(Field<bool>(FieldType::INT, 1));
+   ExpressionNode<bool> *equality_check = new EqualNode<bool>((ExpressionNode<bool> *) read_field, (ExpressionNode<bool> *) constant_input);
    BoolExpression<bool> expression(equality_check);
 
     SqlInput input(db_name_, sql, false);

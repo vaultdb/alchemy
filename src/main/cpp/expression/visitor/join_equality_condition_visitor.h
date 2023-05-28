@@ -23,7 +23,7 @@ namespace vaultdb {
         std::vector<std::pair<uint32_t, uint32_t> > equalities_;
 
     public:
-        JoinEqualityConditionVisitor(std::shared_ptr<ExpressionNode<B> > root);
+        JoinEqualityConditionVisitor(ExpressionNode<B> *root);
 
         std::vector<std::pair<uint32_t, uint32_t> > getEqualities();
 

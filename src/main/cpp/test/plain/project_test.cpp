@@ -13,14 +13,14 @@ class ProjectionTest : public PlainBaseTest { };
 
 
 // l.l_extendedprice * (1 - l.l_discount)
-shared_ptr<ExpressionNode<bool> > getRevenueExpression() {
-    shared_ptr<ExpressionNode<bool> > extended_price(new InputReferenceNode<bool>(5));
-    shared_ptr<ExpressionNode<bool> > discount(new InputReferenceNode<bool>(6));
-    shared_ptr<ExpressionNode<bool> > one(new LiteralNode<bool>(Field<bool>(FieldType::FLOAT, (float_t) 1.0)));
+ExpressionNode<bool> * getRevenueExpression() {
+    ExpressionNode<bool> * extended_price = new InputReferenceNode<bool>(5);
+    ExpressionNode<bool> *discount = new InputReferenceNode<bool>(6);
+    ExpressionNode<bool> *one = new LiteralNode<bool>(Field<bool>(FieldType::FLOAT, (float_t) 1.0));
 
-    shared_ptr<ExpressionNode<bool> > minus(new MinusNode<bool>(one, discount));
+    ExpressionNode<bool>* minus = new MinusNode<bool>(one, discount);
 
-    return shared_ptr<ExpressionNode<bool>> (new TimesNode<bool>(extended_price, minus));
+    return new TimesNode<bool>(extended_price, minus);
 
 
 }
@@ -40,7 +40,7 @@ TEST_F(ProjectionTest, q3Lineitem) {
     ExpressionMapBuilder<bool> builder(input.getOutputSchema());
     builder.addMapping(0, 0);
     builder.addMapping(10, 1);
-    shared_ptr<Expression<bool> > revenue_expression(new GenericExpression<bool>(getRevenueExpression(), "revenue", FieldType::FLOAT));
+    Expression<bool> *revenue_expression = new GenericExpression<bool>(getRevenueExpression(), "revenue", FieldType::FLOAT);
 
     builder.addExpression(revenue_expression, 2);
     Project project(&input, builder.getExprs());
