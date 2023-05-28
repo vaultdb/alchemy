@@ -1,4 +1,5 @@
 #include "enrich_htn_query.h"
+#include "expression/generic_expression.h"
 #include <util/data_utilities.h>
 #include <operators/sort.h>
 #include <operators/project.h>

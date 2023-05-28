@@ -1,4 +1,5 @@
 #include "plain_base_test.h"
+#include "util/field_utilities.h"
 #include <operators/sql_input.h>
 #include <operators/keyed_join.h>
 #include <expression/comparator_expression_nodes.h>
@@ -44,7 +45,7 @@ TEST_F(KeyedJoinTest, test_tpch_q3_customer_orders) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<bool> predicate = Utilities::getEqualityPredicate<bool>(1, 4);
+    BoolExpression<bool> predicate = FieldUtilities::getEqualityPredicate<bool>(1, 4);
 
     KeyedJoin join(&orders_input, &customer_input, predicate);
     std::shared_ptr<PlainTable > observed = join.run();
@@ -73,7 +74,7 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders) {
 
     // output schema: lineitem, orders
     // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
-    BoolExpression<bool> predicate  = Utilities::getEqualityPredicate<bool>(0, 2);
+    BoolExpression<bool> predicate  = FieldUtilities::getEqualityPredicate<bool>(0, 2);
 
     KeyedJoin join(&lineitem_input, &orders_input, predicate);
 
@@ -114,11 +115,11 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
 
-    BoolExpression<bool> customer_orders_predicate = Utilities::getEqualityPredicate<bool>(1, 4);
+    BoolExpression<bool> customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(1, 4);
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<bool> lineitem_orders_predicate = Utilities::getEqualityPredicate<bool>(0, 2);
+    BoolExpression<bool> lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(0, 2);
 
 
     KeyedJoin customerOrdersJoin(&orders_input, &customer_input, customer_orders_predicate);
@@ -152,7 +153,7 @@ TEST_F(KeyedJoinTest, test_tpch_q3_customer_orders_reversed) {
 
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority
-    BoolExpression<bool> predicate = Utilities::getEqualityPredicate<bool>(0, 2);
+    BoolExpression<bool> predicate = FieldUtilities::getEqualityPredicate<bool>(0, 2);
 
     KeyedJoin join(&customer_input, &orders_input, 1, predicate);
     std::shared_ptr<PlainTable > observed = join.run();
@@ -181,7 +182,7 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_reversed) {
 
     // output schema: lineitem, orders
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue
-    BoolExpression<bool> predicate  = Utilities::getEqualityPredicate<bool>(0, 4);
+    BoolExpression<bool> predicate  = FieldUtilities::getEqualityPredicate<bool>(0, 4);
 
     KeyedJoin join(&orders_input, &lineitem_input, 1, predicate);
 
@@ -220,11 +221,11 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority
 
-    BoolExpression<bool> customer_orders_predicate = Utilities::getEqualityPredicate<bool>(0, 2);
+    BoolExpression<bool> customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(0, 2);
 
     // join output schema:
     //   c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue
-    BoolExpression<bool> lineitem_orders_predicate = Utilities::getEqualityPredicate<bool>(1, 5);
+    BoolExpression<bool> lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(1, 5);
 
 
     KeyedJoin customerOrdersJoin(&customer_input, &orders_input, 1, customer_orders_predicate);

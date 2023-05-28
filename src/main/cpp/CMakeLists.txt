@@ -96,12 +96,12 @@ set(sources
 		expression/generic_expression.cpp
 		expression/bool_expression.cpp
 		expression/expression_node.cpp
-		expression/math_expression_nodes.cpp
+		expression/case_node.h
 		expression/comparator_expression_nodes.cpp
-		expression/connector_expression_nodes.cpp
-		expression/case_node.cpp
+		expression/connector_expression_nodes.h
+		expression/math_expression_nodes.h
 
-		parser/plan_parser.cpp
+        parser/plan_parser.cpp
 		parser/expression_parser.cpp
 		expression/expression_kind.h
 		expression/expression_factory.cpp

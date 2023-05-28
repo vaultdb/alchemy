@@ -2,7 +2,7 @@
 #include <operators/basic_join.h>
 #include <util/utilities.h>
 #include "plain_base_test.h"
-
+#include "util/field_utilities.h"
 
 
 class BasicJoinTest : public PlainBaseTest {
@@ -54,7 +54,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<bool> customer_orders_predicate = Utilities::getEqualityPredicate<bool>(1, 4);
+    BoolExpression<bool> customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(1, 4);
 
     BasicJoin<bool> join(&ordersInput, &customerInput, customer_orders_predicate);
 
@@ -83,7 +83,7 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
 
     // output schema: lineitem, orders
     // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
-    BoolExpression<bool> predicate = Utilities::getEqualityPredicate<bool>(0, 2);
+    BoolExpression<bool> predicate = FieldUtilities::getEqualityPredicate<bool>(0, 2);
 
 
     BasicJoin<bool> joinOp(&lineitemInput, &ordersInput, predicate);
@@ -119,11 +119,11 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<bool> customer_orders_predicate = Utilities::getEqualityPredicate<bool>(1, 4);
+    BoolExpression<bool> customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(1, 4);
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<bool> lineitem_orders_predicate = Utilities::getEqualityPredicate<bool>(0, 2);
+    BoolExpression<bool> lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(0, 2);
 
 
 

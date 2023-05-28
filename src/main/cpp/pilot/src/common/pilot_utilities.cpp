@@ -201,7 +201,7 @@ void PilotUtilities::redactCellCounts(shared_ptr<SecureTable> &input, const int 
     for(int i = 0; i < input->getTupleCount(); ++i) {
         // numerator_cnt and denom_cnt
         Bit b = (((*input)[i].getField(2) < cutoff_field) | ((*input)[i].getField(3) < cutoff_field));
-        Bit dummy_tag = (*input)[i].getDummyTag() | b;
+        Bit dummy_tag = ((Bit) (*input)[i].getDummyTag()) | b;
         (*input)[i].setDummyTag(dummy_tag);
     }
 

@@ -8,8 +8,7 @@
 #include <expression/bool_expression.h>
 
 #include "enrich_test.h"
-
-
+#include "util/field_utilities.h"
 
 
 shared_ptr<PlainTable> EnrichTest::getAgeStrataProjection(shared_ptr<PlainTable> input, const bool & isEncrypted) const {
@@ -90,7 +89,7 @@ shared_ptr<PlainTable> EnrichTest::loadAndJoinLocalData(const std::string & dbNa
     // mapping from (lhs_tuple[0], rhs_tuple[0])
     // lhs has 7 fields,
     uint32_t rhs_offset = patientInput->getSchema()->getFieldCount();
-    BoolExpression<bool> predicate = Utilities::getEqualityPredicate<bool>(0, rhs_offset);
+    BoolExpression<bool> predicate = FieldUtilities::getEqualityPredicate<bool>(0, rhs_offset);
     KeyedJoin<bool> join(patientInput, patientExclusionInput, predicate);
     return join.run();
 }

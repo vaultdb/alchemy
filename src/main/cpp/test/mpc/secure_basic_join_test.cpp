@@ -6,6 +6,7 @@
 #include <operators/sort.h>
 #include <test/mpc/emp_base_test.h>
 #include <expression/comparator_expression_nodes.h>
+#include "util/field_utilities.h"
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -60,7 +61,7 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
+    BoolExpression<emp::Bit> predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(1, 4);
 
     BasicJoin join(&ordersInput, &customerInput, predicate);
 
@@ -99,7 +100,7 @@ std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), \n"
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
+    BoolExpression<emp::Bit> predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(0, 2);
 
     BasicJoin join(&lineitemInput, &ordersInput, predicate);
 
@@ -139,11 +140,11 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<emp::Bit> customer_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
+    BoolExpression<emp::Bit> customer_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(1, 4);
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<emp::Bit> lineitem_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
+    BoolExpression<emp::Bit> lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
     BasicJoin customerOrdersJoin(&ordersInput, &customerInput, customer_orders_predicate);

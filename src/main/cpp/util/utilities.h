@@ -19,9 +19,6 @@
 #include <string>
 #include <emp-tool/circuits/bit.h>
 #include <operators/support/aggregate_id.h>
-#include <expression/bool_expression.h>
-#include <expression/comparator_expression_nodes.h>
-#include <expression/generic_expression.h>
 #include <common/defs.h>
 #include <util/logger.h>
 #include <boost/property_tree/ptree.hpp>
@@ -60,15 +57,7 @@ namespace vaultdb {
         static AggregateId getAggregateId(const std::string & src);
         static uint64_t getEpoch();
 
-        // for use in joins
-        // indexes are based on the concatenated tuple, not addressing each input to the join comparison individually
-        template<typename B>
-       static inline BoolExpression<B> getEqualityPredicate(const uint32_t & lhs_idx, const uint32_t & rhs_idx) {
-            std::shared_ptr<InputReferenceNode<B> > lhs_input(new InputReferenceNode<B>(lhs_idx));
-            std::shared_ptr<InputReferenceNode<B> > rhs_input(new InputReferenceNode<B>(rhs_idx));
-            std::shared_ptr<ExpressionNode<B> > equality_node(new EqualNode<B>(lhs_input, rhs_input));
-            return BoolExpression<B>(equality_node);
-        }
+
 
         // for parser debugging
         static void printTree(const boost::property_tree::ptree &pt, const std::string &prefix = "");

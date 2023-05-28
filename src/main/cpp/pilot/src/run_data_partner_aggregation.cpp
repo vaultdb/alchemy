@@ -8,6 +8,8 @@
 #include <util/utilities.h>
 #include <util/logger.h>
 #include <data/csv_reader.h>
+#include <query_table/plain_tuple.h>
+#include <query_table/secure_tuple.h>
 
 
 using namespace std;
