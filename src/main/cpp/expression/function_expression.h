@@ -19,7 +19,9 @@ namespace vaultdb {
         }
 
 
-        Field<B> call(const QueryTuple<B> & aTuple) const override;
+        Field<B> call(const QueryTuple<B> & aTuple) const override  {
+            return tuple_func_(aTuple);
+        }
 
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
               return   table_func_(src, row);
@@ -31,7 +33,10 @@ namespace vaultdb {
 
         ~FunctionExpression() = default;
 
-        string toString() const override;
+        string toString() const override {
+            return "FunctionExpression(" + Expression<B>::alias_ + " " + TypeUtilities::getTypeString(Expression<B>::type_) + ")";
+
+        }
 
     private:
         // function pointer to expression

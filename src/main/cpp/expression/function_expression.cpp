@@ -1,16 +1,6 @@
 #include "function_expression.h"
 
-using namespace vaultdb;
 
-template<typename B>
-Field<B> FunctionExpression<B>::call(const QueryTuple<B> &aTuple) const {
-    return tuple_func_(aTuple);
-}
-
-template<typename B>
-string FunctionExpression<B>::toString() const {
-    return "FunctionExpression(" + Expression<B>::alias_ + " " + TypeUtilities::getTypeString(Expression<B>::type_) + ")";
-}
 //
 //template<typename B>
 //FunctionExpression<B> &FunctionExpression<B>::operator=(const FunctionExpression &src) {
