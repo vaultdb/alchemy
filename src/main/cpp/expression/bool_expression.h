@@ -7,6 +7,7 @@
 #include <query_table/plain_tuple.h>
 
 
+// TODO: merge this with GenericExpression
 namespace  vaultdb {
 
     template<typename B> class ExpressionNode;
@@ -15,11 +16,8 @@ namespace  vaultdb {
     // wrapper for ExpressionNode
     class BoolExpression : public Expression<B> {
     public:
-        BoolExpression(ExpressionNode<B> * root) : Expression<B>(), root_(root){
-            Expression<B>::alias_ = "predicate";
-            Expression<B>::type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
-
-        }
+        BoolExpression(ExpressionNode<B> * root);
+        BoolExpression(const BoolExpression<B> & src);
 
 
         Field<B> call(const QueryTuple<B> &aTuple) const override {
@@ -51,13 +49,12 @@ namespace  vaultdb {
             return root_->toString() + " " +  TypeUtilities::getTypeString(Expression<B>::type_);
         }
 
-        inline void reset() {
-            root_ = nullptr;
-        }
 
         ExpressionNode<B>  *root_ = nullptr;
         FieldType type_;
     };
+
+
 
     template<typename B>
     std::ostream &operator<<(std::ostream &os,  BoolExpression<B> &expression) {

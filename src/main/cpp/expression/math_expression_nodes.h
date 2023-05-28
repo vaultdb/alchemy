@@ -30,6 +30,13 @@ namespace vaultdb {
 
         ExpressionKind kind() const override {     return ExpressionKind::PLUS;
         }
+
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new PlusNode<B>(lhs, rhs);
+        }
     };
 
     template<typename B>
@@ -56,6 +63,13 @@ namespace vaultdb {
         }
 
         ExpressionKind kind() const override {   return ExpressionKind::MINUS; }
+
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new MinusNode<B>(lhs, rhs);
+        }
     };
 
 
@@ -82,6 +96,13 @@ namespace vaultdb {
         }
 
         ExpressionKind kind() const override {   return ExpressionKind::TIMES; }
+
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new TimesNode<B>(lhs, rhs);
+        }
     };
 
     template<typename B>
@@ -110,6 +131,13 @@ namespace vaultdb {
         ExpressionKind kind() const override {
             return ExpressionKind::DIVIDE;
         }
+
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new DivideNode<B>(lhs, rhs);
+        }
     };
 
 
@@ -136,6 +164,13 @@ namespace vaultdb {
 
         ExpressionKind kind() const override {
             return ExpressionKind::MOD;
+        }
+
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new ModulusNode<B>(lhs, rhs);
         }
     };
 

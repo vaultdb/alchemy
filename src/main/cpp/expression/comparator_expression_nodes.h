@@ -38,6 +38,13 @@ namespace vaultdb {
 
         inline void accept(ExpressionVisitor<B> *visitor) override {   visitor->visit(*this); }
 
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new EqualNode<B>(lhs, rhs);
+        }
+
         FieldType type_;
 
 
@@ -69,6 +76,13 @@ namespace vaultdb {
 
         void accept(ExpressionVisitor <B> *visitor) override {
             visitor->visit(*this);
+        }
+
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new NotEqualNode<B>(lhs, rhs);
         }
 
         FieldType type_;
@@ -110,6 +124,13 @@ namespace vaultdb {
             visitor->visit(*this);
         }
 
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new LessThanNode<B>(lhs, rhs);
+        }
+
         FieldType type_;
 
     };
@@ -148,6 +169,13 @@ namespace vaultdb {
             visitor->visit(*this);
         }
 
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new GreaterThanNode<B>(lhs, rhs);
+        }
+
         FieldType type_;
 
     };
@@ -183,6 +211,13 @@ namespace vaultdb {
             visitor->visit(*this);
         }
 
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new LessThanEqNode<B>(lhs, rhs);
+        }
+
         FieldType type_;
 
     };
@@ -214,6 +249,13 @@ namespace vaultdb {
 
         void accept(ExpressionVisitor <B> *visitor) override {
             visitor->visit(*this);
+        }
+
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new GreaterThanEqNode<B>(lhs, rhs);
         }
 
         FieldType type_;

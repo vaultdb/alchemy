@@ -20,6 +20,7 @@ namespace vaultdb {
 
         std::map<uint32_t, Expression<B> * > expressions_; // key = dst_idx, value is expression to evaluate
         ProjectionMappingSet column_mappings_;
+        vector<uint32_t> exprs_to_exec_;
 
     public:
         Project(Operator<B> *child, std::map<uint32_t, Expression<B> * > expression_map, const SortDefinition & sort_definition = SortDefinition()) : Operator<B>(child, sort_definition), expressions_(expression_map) {

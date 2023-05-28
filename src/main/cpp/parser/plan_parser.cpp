@@ -319,12 +319,15 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, co
     // key: foreignKey
     if(join_tree.count("foreignKey") > 0) {
         int foreign_key = join_tree.get_child("foreignKey").template get_value<int>();
-        return shared_ptr<Operator<B> > (new KeyedJoin<B>(lhs.get(), rhs.get(), foreign_key, join_condition));
+        shared_ptr<Operator<B> > op(new KeyedJoin<B>(lhs.get(), rhs.get(), foreign_key, join_condition));
+        return op;
 
     }
 
 
-    return shared_ptr<Operator<B> > (new BasicJoin<B>(lhs.get(), rhs.get(), join_condition));
+    shared_ptr<Operator<B> > op(new BasicJoin<B>(lhs.get(), rhs.get(), join_condition));
+    return op;
+
 
 }
 
@@ -335,8 +338,8 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseFilter(const int &operator_id, 
     std::shared_ptr<Operator<B> > child = getChildOperator(operator_id, pt);
     BoolExpression<B> filter_condition = ExpressionParser<B>::parseBoolExpression(filter_condition_tree,
                                                                                   child->getOutputSchema());
-
-    return shared_ptr<Operator<B> > (new Filter<B>(child.get(), filter_condition));
+     shared_ptr<Operator<B> > op(new Filter<B>(child.get(), filter_condition));
+     return op;
 }
 
 template<typename B>
@@ -351,13 +354,17 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_
 
     for (ptree::const_iterator it = expressions.begin(); it != expressions.end(); ++it) {
         Expression<B> *expr = ExpressionParser<B>::parseExpression(it->second, child_schema);
-
-        if(expr->kind()  == ExpressionKind::INPUT_REF) {
-            GenericExpression<B> expression_impl = *((GenericExpression<B> *) expr);
-            InputReferenceNode<B> input_ref  = *((InputReferenceNode<B> *) expression_impl.root_);
-            src_ordinal = input_ref.read_idx_;
-            builder.addMapping(src_ordinal, dst_ordinal);
-        }
+//        std::cout << "Parsed expr: " << expr->toString() << std::endl;
+//        std::cout << "Root addr: " << (size_t) ((GenericExpression<B> *) expr)->root_ << std::endl;
+//
+//        if(expr->kind()  == ExpressionKind::INPUT_REF) {
+//            GenericExpression<B> expression_impl = *((GenericExpression<B> *) expr);
+//            InputReferenceNode<B> input_ref  = *((InputReferenceNode<B> *) expression_impl.root_);
+//            src_ordinal = input_ref.read_idx_;
+//            builder.addMapping(src_ordinal, dst_ordinal);
+//        }
+//
+//        std::cout << "Root addr: " << (size_t) ((GenericExpression<B> *) expr)->root_ << std::endl;
 
         builder.addExpression(expr, dst_ordinal);
 

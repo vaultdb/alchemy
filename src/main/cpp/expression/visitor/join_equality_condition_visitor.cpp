@@ -13,7 +13,7 @@ std::vector<std::pair<uint32_t, uint32_t> > JoinEqualityConditionVisitor<B>::get
 }
 
 template<typename B>
-void JoinEqualityConditionVisitor<B>::visit(EqualNode<B> node) {
+void JoinEqualityConditionVisitor<B>::visit(EqualNode<B> & node) {
     node.lhs_->accept(this);
     uint32_t lhs_ordinal = last_ordinal_;
 
@@ -32,13 +32,13 @@ void JoinEqualityConditionVisitor<B>::visit(EqualNode<B> node) {
 }
 
 template<typename B>
-void JoinEqualityConditionVisitor<B>::visit(AndNode<B> node) {
+void JoinEqualityConditionVisitor<B>::visit(AndNode<B> & node) {
     node.lhs_->accept(this);
     node.rhs_->accept(this);
 }
 
 template<typename B>
-void JoinEqualityConditionVisitor<B>::visit(InputReferenceNode<B> node) {
+void JoinEqualityConditionVisitor<B>::visit(InputReferenceNode<B> & node) {
     last_ordinal_ = node.read_idx_;
 }
 

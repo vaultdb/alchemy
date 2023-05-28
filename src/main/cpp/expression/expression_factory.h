@@ -19,6 +19,7 @@ public:
 
     static ExpressionNode<B> *getExpressionNode(const ExpressionKind & kind, ExpressionNode<B> *lhs,   ExpressionNode<B> *rhs);
 
+
     // convert from Calcite JSON's SqlKind format to enum
     static ExpressionKind getKind(const std::string & expression_kind);
 

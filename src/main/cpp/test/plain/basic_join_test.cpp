@@ -62,7 +62,6 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
     std::shared_ptr<PlainTable > observed = join.run();
 
 
-    customer_orders_predicate.reset();
 
     ASSERT_EQ(*expected, *observed);
 
@@ -94,7 +93,6 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
     std::shared_ptr<PlainTable > observed = joinOp.run();
 
 
-    predicate.reset();
     ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);
 
@@ -136,8 +134,6 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::shared_ptr<PlainTable > observed = fullJoin.run();
 
 
-    customer_orders_predicate.reset();
-    lineitem_orders_predicate.reset();
 
     ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);

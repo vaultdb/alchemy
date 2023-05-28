@@ -39,17 +39,27 @@ template<typename B>
 void Project<B>::project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const {
     dst_tuple.setDummyTag(src_tuple.getDummyTag());
 
-    auto expr_pos = expressions_.begin();
 
+    // simply exec column mappings first - memcpy
+    for(auto pos : column_mappings_) {
+        dst_tuple.setField(pos.second, src_tuple.getField(pos.first));
+    }
+
+    for(uint32_t i : exprs_to_exec_) {
+        Expression<B> *expression = expressions_.at(i);
+        Field<B> v = expression->call(src_tuple);
+        dst_tuple.setField(i, v);
+    }
 
     // exec all expressions
-    while(expr_pos != expressions_.end()) {
-        uint32_t dst_ordinal = expr_pos->first;
-        Expression<B> *expression = expr_pos->second;
-        Field<B> field_value = expression->call(src_tuple);
-        dst_tuple.setField(dst_ordinal, field_value);
-        ++expr_pos;
-    }
+    //    auto expr_pos = expressions_.begin();
+//    while(expr_pos != expressions_.end()) {
+//        uint32_t dst_ordinal = expr_pos->first;
+//        Expression<B> *expression = expr_pos->second;
+//        Field<B> field_value = expression->call(src_tuple);
+//        dst_tuple.setField(dst_ordinal, field_value);
+//        ++expr_pos;
+//    }
 
 
 }
@@ -73,6 +83,9 @@ void Project<B>::setup() {
             GenericExpression<B> *expr = (GenericExpression<B> *) expr_pos->second;
             InputReferenceNode<B> *node = (InputReferenceNode<B> *) expr->root_;
             column_mappings_.template emplace_back(node->read_idx_, expr_pos->first);
+        }
+        else {
+            exprs_to_exec_.emplace_back(expr_pos->first); // dst_ordinal
         }
     }
 

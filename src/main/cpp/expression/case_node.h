@@ -35,6 +35,14 @@ namespace  vaultdb {
 
         ExpressionKind kind() const override { return ExpressionKind::CASE; }
 
+        ExpressionNode<B> *clone() const override {
+            BoolExpression cond_copy(conditional_);
+            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
+            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
+
+            return new CaseNode<B>(cond_copy, lhs, rhs);
+        }
+
         BoolExpression<B> conditional_;
     };
 

@@ -7,6 +7,7 @@ namespace vaultdb {
 
     template <typename B> class QueryTable;
 
+    // TODO: make this inherit from ExpressionNode so we can include it in add'l expressions
     template<typename B>
     class FunctionExpression : public Expression<B> {
 

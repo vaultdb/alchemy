@@ -27,41 +27,41 @@ namespace vaultdb {
 
         std::vector<std::pair<uint32_t, uint32_t> > getEqualities();
 
-        void visit(InputReferenceNode<B> node) override;
+        void visit(InputReferenceNode<B> & node) override;
 
-        void visit(LiteralNode<B> node) override { throw; }
+        void visit(LiteralNode<B> & node) override { throw; }
 
-        void visit(AndNode<B> node) override;
+        void visit(AndNode<B> & node) override;
 
-        void visit(OrNode<B> node) override { throw; }
+        void visit(OrNode<B> & node) override { throw; }
 
-        void visit(NotNode<B> node) override { throw; }
+        void visit(NotNode<B> & node) override { throw; }
 
-        void visit(PlusNode<B> node) override { throw; }
+        void visit(PlusNode<B> & node) override { throw; }
 
-        void visit(MinusNode<B> node) override { throw; }
+        void visit(MinusNode<B> & node) override { throw; }
 
-        void visit(TimesNode<B> node) override { throw; }
+        void visit(TimesNode<B> & node) override { throw; }
 
-        void visit(DivideNode<B> node) override { throw; }
+        void visit(DivideNode<B> & node) override { throw; }
 
-        void visit(ModulusNode<B> node) override { throw; }
+        void visit(ModulusNode<B> & node) override { throw; }
 
-        void visit(EqualNode<B> node) override;
+        void visit(EqualNode<B> & node) override;
 
-        void visit(NotEqualNode<B> node) override { throw; }
+        void visit(NotEqualNode<B> & node) override { throw; }
 
-        void visit(GreaterThanNode<B> node) override { throw; }
+        void visit(GreaterThanNode<B> & node) override { throw; }
 
-        void visit(LessThanNode<B> node) override { throw; }
+        void visit(LessThanNode<B> & node) override { throw; }
 
-        void visit(GreaterThanEqNode<B> node) override { throw; }
+        void visit(GreaterThanEqNode<B> & node) override { throw; }
 
-        void visit(LessThanEqNode<B> node) override { throw; }
+        void visit(LessThanEqNode<B> & node) override { throw; }
 
-        void visit(CastNode<B> node) override { throw; }
+        void visit(CastNode<B> & node) override { throw; }
 
-        void visit(CaseNode<B> node) override { throw; }
+        void visit(CaseNode<B> & node) override { throw; }
 
     };
 

@@ -1,7 +1,22 @@
 #include "generic_expression.h"
 #include <expression/visitor/type_inference_visitor.h>
+#include "expression_factory.h"
 
 using namespace vaultdb;
+
+
+template<typename B>
+GenericExpression<B>::GenericExpression(ExpressionNode<B> *root, const QuerySchema &input_schema)
+: Expression<B>("anonymous", GenericExpression<B>::inferFieldType(root, input_schema)) {
+    root_ = root->clone();
+}
+
+template<typename B>
+GenericExpression<B>::GenericExpression(ExpressionNode<B> *root, const string &alias, const FieldType &output_type)
+        : Expression<B>(alias, output_type) {
+    root_ = root->clone();
+
+}
 
 
 

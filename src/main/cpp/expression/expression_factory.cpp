@@ -1,4 +1,5 @@
 #include "expression_factory.h"
+#include "function_expression.h"
 
 using namespace vaultdb;
 
@@ -90,6 +91,9 @@ ExpressionKind ExpressionFactory<B>::getKind(const string &expression_kind) {
 
 
 }
+
+
+
 
 template class vaultdb::ExpressionFactory<bool>;
 template class vaultdb::ExpressionFactory<emp::Bit>;

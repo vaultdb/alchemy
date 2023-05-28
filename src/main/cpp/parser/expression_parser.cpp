@@ -25,8 +25,10 @@ Expression<B> * ExpressionParser<B>::parseJSONExpression(const std::string &json
 template<typename B>
 Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & input_schema) {
    ExpressionNode<B> *expression_root = parseHelper(tree);
+
    TypeValidationVisitor<B> visitor(expression_root, input_schema);
     expression_root->accept(&visitor);
+
 
     return new GenericExpression<B>(expression_root, input_schema);
 }
@@ -34,6 +36,7 @@ Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const Qu
 template<typename B>
 BoolExpression<B> ExpressionParser<B>::parseBoolExpression(const ptree &tree, const QuerySchema &input_schema) {
     ExpressionNode<B> *expression_root = parseHelper(tree);
+
     TypeValidationVisitor<B> visitor(expression_root, input_schema);
     expression_root->accept(&visitor);
 
@@ -66,6 +69,8 @@ ExpressionNode<B> * ExpressionParser<B>::parseSubExpression(const ptree &tree) {
         children.push_back(t);
     }
     return ExpressionFactory<B>::getExpressionNode(op_name, children);
+
+
 }
 
 template<typename B>

@@ -114,16 +114,16 @@ SortDefinition DataUtilities::getDefaultSortDefinition(const uint32_t &colCount)
 std::shared_ptr<PlainTable > DataUtilities::removeDummies(const std::shared_ptr<PlainTable> &input) {
     // only works for plaintext tables
     assert(!input->isEncrypted());
-    int outputTupleCount = input->getTrueTupleCount();
+    int out_tuple_cnt = input->getTrueTupleCount();
 
-    int writeCursor = 0;
-    std::shared_ptr<PlainTable > output(new PlainTable(outputTupleCount, *input->getSchema(), input->getSortOrder()));
-    auto output_pos = output->begin();
-    for(auto input_pos = input->begin(); input_pos != input->end(); ++input_pos) {
-        if(!input_pos->getDummyTag()) {
-            *output_pos = *input_pos;
-            ++output_pos;
+    int write_cursor = 0;
+    std::shared_ptr<PlainTable > output(new PlainTable(out_tuple_cnt, *input->getSchema(), input->getSortOrder()));
+    for(int i = 0; i < input->getTupleCount(); ++i) {
+        if(!input->getTuple(i).getDummyTag()) {
+            output->putTuple(write_cursor, input->getTuple(i));
+            ++write_cursor;
         }
+        if(write_cursor == out_tuple_cnt) break;
     }
 
     return output;

@@ -6,15 +6,15 @@ PlainToSecureVisitor::PlainToSecureVisitor(ExpressionNode<bool> *root) {
 
 }
 
-void PlainToSecureVisitor::visit(InputReferenceNode<bool> node) {
+void PlainToSecureVisitor::visit(InputReferenceNode<bool> & node) {
     root_ = new InputReferenceNode<emp::Bit>(node.read_idx_);
 }
 
-void PlainToSecureVisitor::visit(LiteralNode<bool> node) {
+void PlainToSecureVisitor::visit(LiteralNode<bool> & node) {
     root_ =  node.toSecure();
 }
 
-void PlainToSecureVisitor::visit(AndNode<bool> node) {
+void PlainToSecureVisitor::visit(AndNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit> * lhs = root_;
 
@@ -26,7 +26,7 @@ void PlainToSecureVisitor::visit(AndNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(OrNode<bool> node) {
+void PlainToSecureVisitor::visit(OrNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -37,7 +37,7 @@ void PlainToSecureVisitor::visit(OrNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(NotNode<bool> node) {
+void PlainToSecureVisitor::visit(NotNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * in = root_;
 
@@ -46,7 +46,7 @@ void PlainToSecureVisitor::visit(NotNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(PlusNode<bool> node) {
+void PlainToSecureVisitor::visit(PlusNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -57,7 +57,7 @@ void PlainToSecureVisitor::visit(PlusNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(MinusNode<bool> node) {
+void PlainToSecureVisitor::visit(MinusNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -69,7 +69,7 @@ void PlainToSecureVisitor::visit(MinusNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(TimesNode<bool> node) {
+void PlainToSecureVisitor::visit(TimesNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -80,7 +80,7 @@ void PlainToSecureVisitor::visit(TimesNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(DivideNode<bool> node) {
+void PlainToSecureVisitor::visit(DivideNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -92,7 +92,7 @@ void PlainToSecureVisitor::visit(DivideNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(ModulusNode<bool> node) {
+void PlainToSecureVisitor::visit(ModulusNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -104,7 +104,7 @@ void PlainToSecureVisitor::visit(ModulusNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(EqualNode<bool> node) {
+void PlainToSecureVisitor::visit(EqualNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -116,7 +116,7 @@ void PlainToSecureVisitor::visit(EqualNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(NotEqualNode<bool> node) {
+void PlainToSecureVisitor::visit(NotEqualNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -128,7 +128,7 @@ void PlainToSecureVisitor::visit(NotEqualNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(GreaterThanNode<bool> node) {
+void PlainToSecureVisitor::visit(GreaterThanNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -140,7 +140,7 @@ void PlainToSecureVisitor::visit(GreaterThanNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(LessThanNode<bool> node) {
+void PlainToSecureVisitor::visit(LessThanNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -152,7 +152,7 @@ void PlainToSecureVisitor::visit(LessThanNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(GreaterThanEqNode<bool> node) {
+void PlainToSecureVisitor::visit(GreaterThanEqNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -164,7 +164,7 @@ void PlainToSecureVisitor::visit(GreaterThanEqNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(LessThanEqNode<bool> node) {
+void PlainToSecureVisitor::visit(LessThanEqNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;
 
@@ -175,7 +175,7 @@ void PlainToSecureVisitor::visit(LessThanEqNode<bool> node) {
 
 }
 
-void PlainToSecureVisitor::visit(CastNode<bool> node) {
+void PlainToSecureVisitor::visit(CastNode<bool> & node) {
     node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * input = root_;
     FieldType dst_type = TypeUtilities::toSecure(node.dst_type_);
@@ -183,7 +183,7 @@ void PlainToSecureVisitor::visit(CastNode<bool> node) {
     root_ =  new CastNode<emp::Bit>(input, dst_type);
 }
 
-void PlainToSecureVisitor::visit(CaseNode<bool> case_node) {
+void PlainToSecureVisitor::visit(CaseNode<bool> & case_node) {
     case_node.conditional_.root_->accept(this);
     ExpressionNode<emp::Bit>  * conditional_node = root_;
     BoolExpression<emp::Bit> conditional(conditional_node);

@@ -20,12 +20,14 @@ namespace vaultdb {
     template<typename B>
     class ExpressionNode {
     public:
-        ExpressionNode(ExpressionNode<B> *lhs) : lhs_(lhs) {}
-        ExpressionNode(ExpressionNode<B> *lhs, ExpressionNode<B> *rhs) : lhs_(lhs), rhs_(rhs) {}
+        ExpressionNode(ExpressionNode<B> *lhs);
+
+        ExpressionNode(ExpressionNode<B> *lhs, ExpressionNode<B> *rhs);
 
 
         virtual Field<B> call(const QueryTuple<B> & target) const = 0;
         virtual Field<B> call(const QueryTable<B>  *src, const int & row) const = 0;
+        virtual ExpressionNode<B> *clone() const = 0;
 
         virtual ExpressionKind kind() const = 0;
         virtual void accept(ExpressionVisitor<B> * visitor) = 0;
@@ -40,8 +42,8 @@ namespace vaultdb {
 
     };
 
-    template<typename B>
-    std::ostream &operator<<(std::ostream &os,  ExpressionNode<B> &expression);
+    std::ostream &operator<<(std::ostream &os,  ExpressionNode<bool> &expression);
+    std::ostream &operator<<(std::ostream &os,  ExpressionNode<Bit> &expression);
 
 
     // read a field from a tuple
@@ -64,6 +66,10 @@ namespace vaultdb {
         void accept(ExpressionVisitor<B> *visitor) override {
             visitor->visit(*this);
 
+        }
+
+        ExpressionNode<B> *clone() const override {
+            return new InputReferenceNode<B>(read_idx_);
         }
 
         uint32_t read_idx_;
@@ -90,6 +96,10 @@ namespace vaultdb {
         LiteralNode<emp::Bit>  *toSecure() const {
             return new LiteralNode<emp::Bit>(payload_.secret_share());
 
+        }
+
+        ExpressionNode<B> *clone() const override {
+            return  new LiteralNode<B>(payload_);
         }
 
 
@@ -123,6 +133,11 @@ namespace vaultdb {
 
         void accept(ExpressionVisitor<B> *visitor) override {
             visitor->visit(*this);
+        }
+
+        ExpressionNode<B> *clone() const override {
+            ExpressionNode<B> *child = ExpressionNode<B>::lhs_->clone();
+            return new CastNode<B>(child, dst_type_);
         }
 
         FieldType dst_type_;
