@@ -42,7 +42,7 @@ namespace  vaultdb {
 
 
         ~BoolExpression() {
-           if(root_ != nullptr) delete root_; // recurses to children
+            if(root_ != nullptr) delete root_; // recurses to children
         }
 
         string toString() const override {

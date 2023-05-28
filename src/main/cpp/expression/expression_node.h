@@ -31,9 +31,9 @@ namespace vaultdb {
 
         virtual ExpressionKind kind() const = 0;
         virtual void accept(ExpressionVisitor<B> * visitor) = 0;
-        ~ExpressionNode() {
-            if(lhs_ != nullptr) delete lhs_;
-            if(rhs_ != nullptr) delete rhs_;
+        virtual ~ExpressionNode() {
+            if(lhs_ != nullptr)  {  delete lhs_; }
+            if(rhs_ != nullptr)  { delete rhs_; }
         }
         std::string toString();
 
@@ -136,8 +136,7 @@ namespace vaultdb {
         }
 
         ExpressionNode<B> *clone() const override {
-            ExpressionNode<B> *child = ExpressionNode<B>::lhs_->clone();
-            return new CastNode<B>(child, dst_type_);
+            return new CastNode<B>(ExpressionNode<B>::lhs_, dst_type_);
         }
 
         FieldType dst_type_;

@@ -20,6 +20,7 @@ BoolExpression<B>::BoolExpression(const BoolExpression<B> &src)  : Expression<B>
     Expression<B>::type_ = src.type_;
 
     root_ = src.root_->clone();
+
 }
 
 

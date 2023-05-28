@@ -30,9 +30,7 @@ namespace vaultdb {
         ExpressionKind kind() const override { return ExpressionKind::NOT; }
 
         ExpressionNode<B> *clone() const override {
-            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
-
-            return new NotNode<B>(lhs);
+            return new NotNode<B>(ExpressionNode<B>::lhs_);
         }
 
         FieldType type_;
@@ -73,10 +71,8 @@ namespace vaultdb {
         ExpressionKind kind() const override { return ExpressionKind::AND; }
 
         ExpressionNode<B> *clone() const override {
-            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
-            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
 
-            return new AndNode<B>(lhs, rhs);
+            return new AndNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
         }
 
         FieldType type_;
@@ -113,10 +109,7 @@ namespace vaultdb {
         ExpressionKind kind() const override { return ExpressionKind::OR; }
 
         ExpressionNode<B> *clone() const override {
-            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
-            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
-
-            return new OrNode<B>(lhs, rhs);
+            return new OrNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
         }
 
         FieldType type_;

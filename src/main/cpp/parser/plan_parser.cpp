@@ -314,7 +314,6 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, co
     QuerySchema schema = Join<B>::concatenateSchemas(lhs->getOutputSchema(), rhs->getOutputSchema());
     BoolExpression<B> join_condition = ExpressionParser<B>::parseBoolExpression(join_condition_tree, schema);
 
-
     // if fkey designation exists, use this to create keyed join
     // key: foreignKey
     if(join_tree.count("foreignKey") > 0) {

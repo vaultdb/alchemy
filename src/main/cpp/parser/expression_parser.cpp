@@ -45,6 +45,8 @@ BoolExpression<B> ExpressionParser<B>::parseBoolExpression(const ptree &tree, co
     expression_root->accept(&visitor);
 
      BoolExpression<B> res(expression_root); // clones expression root
+     // creates leak on invocation of clone - only for input references
+
      delete expression_root;
      return res;
 }

@@ -5,7 +5,8 @@
 #include "support/tpch_queries.h"
 #include <boost/algorithm/string/replace.hpp>
 
-
+// e.g., ./plan_parser_test --filter="PlanParserTest.tpch_q1"
+//DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
 class PlanParserTest : public PlainBaseTest {
@@ -145,3 +146,10 @@ TEST_F(PlanParserTest, tpch_q18) {
     runTest(18, expected_sort, expected_plan);
 }
 
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
+
+   // ::testing::GTEST_FLAG(filter)=FLAGS_filter;
+    return RUN_ALL_TESTS();
+}

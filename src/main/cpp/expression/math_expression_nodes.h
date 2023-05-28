@@ -32,10 +32,7 @@ namespace vaultdb {
         }
 
         ExpressionNode<B> *clone() const override {
-            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
-            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
-
-            return new PlusNode<B>(lhs, rhs);
+            return new PlusNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
         }
     };
 
@@ -65,10 +62,8 @@ namespace vaultdb {
         ExpressionKind kind() const override {   return ExpressionKind::MINUS; }
 
         ExpressionNode<B> *clone() const override {
-            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
-            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
 
-            return new MinusNode<B>(lhs, rhs);
+            return new MinusNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
         }
     };
 
@@ -98,10 +93,8 @@ namespace vaultdb {
         ExpressionKind kind() const override {   return ExpressionKind::TIMES; }
 
         ExpressionNode<B> *clone() const override {
-            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
-            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
 
-            return new TimesNode<B>(lhs, rhs);
+            return new TimesNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
         }
     };
 
@@ -133,10 +126,7 @@ namespace vaultdb {
         }
 
         ExpressionNode<B> *clone() const override {
-            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
-            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
-
-            return new DivideNode<B>(lhs, rhs);
+            return new DivideNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
         }
     };
 
@@ -167,10 +157,7 @@ namespace vaultdb {
         }
 
         ExpressionNode<B> *clone() const override {
-            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
-            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
-
-            return new ModulusNode<B>(lhs, rhs);
+            return new ModulusNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
         }
     };
 

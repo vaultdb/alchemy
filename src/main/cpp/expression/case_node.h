@@ -9,8 +9,11 @@ namespace  vaultdb {
     template<typename B>
     class CaseNode :  public ExpressionNode<B>  {
     public:
-        CaseNode(BoolExpression<B> & conditional, ExpressionNode<B> *  lhs, ExpressionNode<B> *  rhs) :
-                ExpressionNode<B>(lhs, rhs), conditional_(conditional){ }
+        CaseNode(const BoolExpression<B> & conditional, ExpressionNode<B> *  lhs, ExpressionNode<B> *  rhs) :
+                ExpressionNode<B>(lhs, rhs), conditional_(conditional){
+
+        }
+
         ~CaseNode() = default;
         Field<B> call(const QueryTuple<B> & target) const override {
             B result = conditional_.callBoolExpression(target);
@@ -36,11 +39,8 @@ namespace  vaultdb {
         ExpressionKind kind() const override { return ExpressionKind::CASE; }
 
         ExpressionNode<B> *clone() const override {
-            BoolExpression cond_copy(conditional_);
-            ExpressionNode<B> *lhs = ExpressionNode<B>::lhs_->clone();
-            ExpressionNode<B> *rhs = ExpressionNode<B>::rhs_->clone();
 
-            return new CaseNode<B>(cond_copy, lhs, rhs);
+            return new CaseNode<B>(conditional_, ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
         }
 
         BoolExpression<B> conditional_;
