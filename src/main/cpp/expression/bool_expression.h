@@ -51,7 +51,11 @@ namespace  vaultdb {
             return root_->toString() + " " +  TypeUtilities::getTypeString(Expression<B>::type_);
         }
 
-        ExpressionNode<B>  *root_;
+        inline void reset() {
+            root_ = nullptr;
+        }
+
+        ExpressionNode<B>  *root_ = nullptr;
         FieldType type_;
     };
 
@@ -60,6 +64,8 @@ namespace  vaultdb {
         os << *(expression.root_);
         return os;
     }
+
+
 
 
 }
