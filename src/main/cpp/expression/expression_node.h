@@ -31,7 +31,7 @@ namespace vaultdb {
 
         virtual ExpressionKind kind() const = 0;
         virtual void accept(ExpressionVisitor<B> * visitor) = 0;
-        virtual ~ExpressionNode() {
+        ~ExpressionNode() {
             if(lhs_ != nullptr) delete lhs_;
             if(rhs_ != nullptr) delete rhs_;
         }

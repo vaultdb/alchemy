@@ -30,7 +30,11 @@ Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const Qu
     expression_root->accept(&visitor);
 
 
-    return new GenericExpression<B>(expression_root, input_schema);
+    GenericExpression<B> *g =  new GenericExpression<B>(expression_root, input_schema);
+
+    delete expression_root;
+    return g;
+
 }
 
 template<typename B>
@@ -40,7 +44,9 @@ BoolExpression<B> ExpressionParser<B>::parseBoolExpression(const ptree &tree, co
     TypeValidationVisitor<B> visitor(expression_root, input_schema);
     expression_root->accept(&visitor);
 
-    return BoolExpression<B>(expression_root);
+     BoolExpression<B> res(expression_root); // clones expression root
+     delete expression_root;
+     return res;
 }
 
 
@@ -68,8 +74,14 @@ ExpressionNode<B> * ExpressionParser<B>::parseSubExpression(const ptree &tree) {
         ExpressionNode<B> *t = parseHelper(it->second);
         children.push_back(t);
     }
-    return ExpressionFactory<B>::getExpressionNode(op_name, children);
 
+    ExpressionNode<B> *res = ExpressionFactory<B>::getExpressionNode(op_name, children);
+
+    for(ExpressionNode<B> *child : children) {
+        delete child;
+    }
+
+    return res;
 
 }
 

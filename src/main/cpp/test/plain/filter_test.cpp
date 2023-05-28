@@ -51,7 +51,6 @@ TEST_F(FilterTest, test_filter) {
 
     std::shared_ptr<PlainTable > result = filter.run();
 
-    expression.reset();
 
     ASSERT_EQ(*expected,  *result);
 
