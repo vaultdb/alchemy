@@ -2,21 +2,24 @@
 #define _CASE_NODE_H
 
 #include <expression/expression_node.h>
-
+#include "generic_expression.h"
 
 namespace  vaultdb {
 
     template<typename B>
     class CaseNode :  public ExpressionNode<B>  {
     public:
-        CaseNode(const BoolExpression<B> & conditional, ExpressionNode<B> *  lhs, ExpressionNode<B> *  rhs) :
+        // only GenericExpression supported for now
+        CaseNode(const GenericExpression<B> & conditional, ExpressionNode<B> *  lhs, ExpressionNode<B> *  rhs) :
                 ExpressionNode<B>(lhs, rhs), conditional_(conditional){
+
 
         }
 
         ~CaseNode() = default;
+
         Field<B> call(const QueryTuple<B> & target) const override {
-            B result = conditional_.callBoolExpression(target);
+            B result = conditional_.call(target).template getValue<B>();
             Field<B> lhs_eval = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs_eval = ExpressionNode<B>::rhs_->call(target);
 
@@ -24,7 +27,7 @@ namespace  vaultdb {
         }
 
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
-            B result = conditional_.callBoolExpression(src, row);
+            B result = conditional_.call(src, row).template getValue<B>();
 
             Field<B> lhs = ExpressionNode<B>::lhs_->call(src, row);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
@@ -43,7 +46,7 @@ namespace  vaultdb {
             return new CaseNode<B>(conditional_, ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
         }
 
-        BoolExpression<B> conditional_;
+        GenericExpression<B> conditional_;
     };
 
 

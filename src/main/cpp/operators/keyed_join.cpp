@@ -11,23 +11,23 @@
 using namespace vaultdb;
 
 template<typename B>
-KeyedJoin<B>::KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, const BoolExpression<B> & predicate, const SortDefinition & sort)
+KeyedJoin<B>::KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(foreignKey, primaryKey, predicate, sort) {}
 
 
 // fkey = 0 --> lhs, fkey = 1 --> rhs
 template<typename B>
-KeyedJoin<B>::KeyedJoin(Operator<B> * lhs, Operator<B> * rhs, const int & fkey, const BoolExpression<B> & predicate, const SortDefinition & sort)
+KeyedJoin<B>::KeyedJoin(Operator<B> * lhs, Operator<B> * rhs, const int & fkey, Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
     assert(fkey == 0 || fkey == 1);
 }
 
 template<typename B>
-KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const BoolExpression<B> & predicate, const SortDefinition & sort)
+KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(foreignKey, primaryKey, predicate, sort) {}
 
 template<typename B>
-KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, const int & fkey, const BoolExpression<B> & predicate, const SortDefinition & sort)
+KeyedJoin<B>::KeyedJoin(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, const int & fkey, Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
     assert(fkey == 0 || fkey == 1);
 }
@@ -80,7 +80,7 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
             rhs_dummy_tag = ((*rhs_table)[j]).getDummyTag();
 
             Join<B>::write_right(joined, (*rhs_table)[j]);
-            selected = Join<B>::predicate_.callBoolExpression(joined);
+            selected = Join<B>::predicate_->call(joined).template getValue<B>();
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
 
@@ -133,7 +133,7 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
             lhs_dummy_tag = lhs_table->getTuple(j).getDummyTag();
             Join<B>::write_left(joined, (*lhs_table)[j]);
 
-            selected = Join<B>::predicate_.callBoolExpression(joined);
+            selected = Join<B>::predicate_->call(joined).template getValue<B>();
 
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);

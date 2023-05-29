@@ -62,7 +62,7 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_customer_orders) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
+    Expression<emp::Bit> * predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
 
 
     KeyedJoin join(orders_input, customer_input, predicate);
@@ -96,7 +96,7 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders) {
                                                                                                              "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, dummy \n"
                                                                                                              "FROM cross_product \n"
                                                                                                              "WHERE matched";
-    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
+    Expression<emp::Bit> * predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
     std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(alice_db, expectedResultSql, true);
@@ -150,11 +150,11 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
     shared_ptr<InputReferenceNode<emp::Bit> > lhs_input(new InputReferenceNode<emp::Bit>(1));
     shared_ptr<InputReferenceNode<emp::Bit> > rhs_input(new InputReferenceNode<emp::Bit>(4));
     shared_ptr<ExpressionNode<emp::Bit> > equality_node(new EqualNode<emp::Bit>(lhs_input, rhs_input));
-    BoolExpression<emp::Bit> customer_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
+    Expression<emp::Bit> * customer_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<emp::Bit> lineitem_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
+    Expression<emp::Bit> * lineitem_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
 

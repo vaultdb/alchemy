@@ -3,11 +3,11 @@
 using namespace vaultdb;
 
 template<typename B>
-BasicJoin<B>::BasicJoin(Operator<B> *lhs, Operator<B> *rhs, const BoolExpression<B> & predicate, const SortDefinition & sort)
+BasicJoin<B>::BasicJoin(Operator<B> *lhs, Operator<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(lhs, rhs, predicate, sort) {}
 
 template<typename B>
-BasicJoin<B>::BasicJoin(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> >rhs, const BoolExpression<B> & predicate, const SortDefinition & sort)
+BasicJoin<B>::BasicJoin(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> >rhs,  Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(lhs, rhs, predicate, sort) {}
 
 template<typename B>
@@ -41,7 +41,7 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
             Join<B>::write_left(out, lhs_tuple); // all writes happen because we do the full cross product
             Join<B>::write_right(out, rhs_tuple);
 
-            selected = Join<B>::predicate_.callBoolExpression(out);
+            selected = Join<B>::predicate_->call(out).template getValue<B>();
             dst_dummy_tag = (!selected) | lhs_tuple.getDummyTag() | rhs_tuple.getDummyTag();
             out.setDummyTag(dst_dummy_tag);
             ++cursor;

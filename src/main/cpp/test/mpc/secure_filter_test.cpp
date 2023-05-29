@@ -8,6 +8,7 @@
 #include <test/mpc/emp_base_test.h>
 #include <query_table/secure_tuple.h>
 #include <expression/comparator_expression_nodes.h>
+#include "expression/generic_expression.h"
 
 using namespace emp;
 using namespace vaultdb;
@@ -66,10 +67,10 @@ TEST_F(SecureFilterTest, test_filter) {
     Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
     LiteralNode<emp::Bit> *constant_input = new LiteralNode<emp::Bit>(one);
     ExpressionNode<emp::Bit> *equality_check = new EqualNode<emp::Bit>((ExpressionNode<emp::Bit> *) read_field, (ExpressionNode<emp::Bit> *) constant_input);
-    BoolExpression<emp::Bit> expression(equality_check);
+    Expression<emp::Bit> *expression = new GenericExpression<emp::Bit>(equality_check, "predicate", FieldType::SECURE_BOOL);
 
 
-    Filter<emp::Bit> filter(&input, expression);  // deletion handled by shared_ptr
+    Filter<emp::Bit> filter(&input, expression);
 
     std::shared_ptr<SecureTable> result = filter.run();
     std::unique_ptr<PlainTable> revealed = result->reveal(emp::PUBLIC);

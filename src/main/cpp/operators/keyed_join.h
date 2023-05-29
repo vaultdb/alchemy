@@ -11,12 +11,12 @@ namespace  vaultdb {
     class KeyedJoin : public Join<B> {
 
     public:
-        KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
+        KeyedJoin(Operator<B> *foreignKey, Operator<B> *primaryKey, Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
         // fkey = 0 --> lhs, fkey = 1 --> rhs
-        KeyedJoin(Operator<B> *lhs, Operator<B> *rhs,  const int & fkey, const BoolExpression<B> & predicate,const SortDefinition & sort = SortDefinition());
+        KeyedJoin(Operator<B> *lhs, Operator<B> *rhs,  const int & fkey, Expression<B> *predicate,const SortDefinition & sort = SortDefinition());
 
-        KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
-        KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const int & fkey, const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
+        KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
+        KeyedJoin(shared_ptr<QueryTable<B> > foreignKey, shared_ptr<QueryTable<B> > primaryKey, const int & fkey, Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
 
         ~KeyedJoin() = default;
 

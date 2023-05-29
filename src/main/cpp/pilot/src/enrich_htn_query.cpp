@@ -69,8 +69,7 @@ shared_ptr<SecureTable> EnrichHtnQuery::filterPatients() {
     ExpressionNode<emp::Bit>  *zero = new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_BOOL, emp::Bit(false)));;
     ExpressionNode<emp::Bit> *input = new InputReferenceNode<emp::Bit>(9);
     ExpressionNode<emp::Bit> *equality = new EqualNode<emp::Bit>(input, zero);
-
-    BoolExpression<emp::Bit> equality_expr(equality);
+    Expression<emp::Bit> *equality_expr = new GenericExpression<emp::Bit>(equality, "predicate", FieldType::SECURE_BOOL);
 
 
     start_time = emp::clock_start();

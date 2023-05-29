@@ -16,7 +16,7 @@ ExpressionNode<B> *ExpressionFactory<B>::getExpressionNode(const string &express
 
     if(kind == ExpressionKind::CASE) {
         assert(operands.size() == 3);
-        BoolExpression<B> conditional(operands[0]);
+        GenericExpression<B> conditional(operands[0], "case_select", (std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL));
         return new CaseNode<B>(conditional, operands[1], operands[2]);
     }
     else

@@ -312,7 +312,7 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, co
     shared_ptr<Operator<B> > rhs  = operators_.at(rhs_id);
 
     QuerySchema schema = Join<B>::concatenateSchemas(lhs->getOutputSchema(), rhs->getOutputSchema());
-    BoolExpression<B> join_condition = ExpressionParser<B>::parseBoolExpression(join_condition_tree, schema);
+    Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, schema);
 
     // if fkey designation exists, use this to create keyed join
     // key: foreignKey
@@ -335,7 +335,7 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseFilter(const int &operator_id, 
 
     boost::property_tree::ptree filter_condition_tree = pt.get_child("condition");
     std::shared_ptr<Operator<B> > child = getChildOperator(operator_id, pt);
-    BoolExpression<B> filter_condition = ExpressionParser<B>::parseBoolExpression(filter_condition_tree,
+    Expression<B> *filter_condition = ExpressionParser<B>::parseExpression(filter_condition_tree,
                                                                                   child->getOutputSchema());
      shared_ptr<Operator<B> > op(new Filter<B>(child.get(), filter_condition));
      return op;

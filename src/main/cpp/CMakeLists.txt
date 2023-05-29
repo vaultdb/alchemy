@@ -89,13 +89,11 @@ set(sources
 		operators/group_by_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp
 		operators/csv_input.cpp
-        operators/keyed_sort_merge_join.cpp
-		operators/shrinkwrap.cpp
+        operators/shrinkwrap.cpp
 
 		expression/function_expression.cpp
 		expression/generic_expression.cpp
-		expression/bool_expression.cpp
-		expression/expression_node.cpp
+        expression/expression_node.cpp
 		expression/case_node.h
 		expression/comparator_expression_nodes.cpp
 		expression/connector_expression_nodes.h

@@ -37,19 +37,19 @@ Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const Qu
 
 }
 
-template<typename B>
-BoolExpression<B> ExpressionParser<B>::parseBoolExpression(const ptree &tree, const QuerySchema &input_schema) {
-    ExpressionNode<B> *expression_root = parseHelper(tree);
-
-    TypeValidationVisitor<B> visitor(expression_root, input_schema);
-    expression_root->accept(&visitor);
-
-     BoolExpression<B> res(expression_root); // clones expression root
-     // creates leak on invocation of clone - only for input references
-
-     delete expression_root;
-     return res;
-}
+//template<typename B>
+//BoolExpression<B> ExpressionParser<B>::parseBoolExpression(const ptree &tree, const QuerySchema &input_schema) {
+//    ExpressionNode<B> *expression_root = parseHelper(tree);
+//
+//    TypeValidationVisitor<B> visitor(expression_root, input_schema);
+//    expression_root->accept(&visitor);
+//
+//     BoolExpression<B> res(expression_root); // clones expression root
+//     // creates leak on invocation of clone - only for input references
+//
+//     delete expression_root;
+//     return res;
+//}
 
 
 template<typename B>

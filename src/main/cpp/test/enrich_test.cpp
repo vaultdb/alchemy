@@ -5,7 +5,6 @@
 #include <expression/comparator_expression_nodes.h>
 #include <expression/function_expression.h>
 #include <expression/generic_expression.h>
-#include <expression/bool_expression.h>
 
 #include "enrich_test.h"
 #include "util/field_utilities.h"
@@ -89,7 +88,7 @@ shared_ptr<PlainTable> EnrichTest::loadAndJoinLocalData(const std::string & dbNa
     // mapping from (lhs_tuple[0], rhs_tuple[0])
     // lhs has 7 fields,
     uint32_t rhs_offset = patientInput->getSchema()->getFieldCount();
-    BoolExpression<bool> predicate = FieldUtilities::getEqualityPredicate<bool>(0, rhs_offset);
+    Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(0, rhs_offset);
     KeyedJoin<bool> join(patientInput, patientExclusionInput, predicate);
     return join.run();
 }
@@ -137,8 +136,8 @@ shared_ptr<SecureTable> EnrichTest::filterPatients() {
    ExpressionNode<emp::Bit> * zero  = new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_INT, emp::Integer(32, 0)));;
    ExpressionNode<emp::Bit> * input = new InputReferenceNode<emp::Bit>(8);
    ExpressionNode<emp::Bit> *equality = new EqualNode<emp::Bit>(input, zero);
+    Expression<emp::Bit> *equality_expr = new GenericExpression<emp::Bit>(equality, "predicate", FieldType::SECURE_BOOL);
 
-    BoolExpression<emp::Bit> equality_expr(equality);
 
     //std::shared_ptr<Predicate<emp::Bit> > predicateClass(new FilterExcludedPatients<emp::Bit>(true));
     Filter inclusionCohort(deduplicatedPatients, equality_expr);

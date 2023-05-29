@@ -185,8 +185,10 @@ void PlainToSecureVisitor::visit(CastNode<bool> & node) {
 
 void PlainToSecureVisitor::visit(CaseNode<bool> & case_node) {
     case_node.conditional_.root_->accept(this);
+
     ExpressionNode<emp::Bit>  * conditional_node = root_;
-    BoolExpression<emp::Bit> conditional(conditional_node);
+
+    GenericExpression<emp::Bit> conditional(conditional_node, case_node.conditional_.getAlias(), FieldType::SECURE_BOOL);
 
     case_node.lhs_->accept(this);
     ExpressionNode<emp::Bit>  * lhs = root_;

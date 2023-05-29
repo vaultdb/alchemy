@@ -19,11 +19,18 @@ namespace  vaultdb {
             return root_->call(target);
         }
 
+        GenericExpression(const GenericExpression<B> & src) {
+            root_ = src.root_->clone();
+        }
+
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
             return root_->call(src, row);
         }
 
+
         ExpressionKind kind() const override { return root_->kind(); }
+        ExpressionClass exprClass() const override { return ExpressionClass::GENERIC; }
+
 
         ~GenericExpression()  {
             if(root_ != nullptr) delete root_;
@@ -32,6 +39,7 @@ namespace  vaultdb {
         inline string toString() const override {
             return root_->toString() + " " +  TypeUtilities::getTypeString(Expression<B>::type_);
         }
+
 
         static FieldType inferFieldType(ExpressionNode < B> *root,  const QuerySchema &input_schema);
 

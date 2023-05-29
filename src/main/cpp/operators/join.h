@@ -1,7 +1,7 @@
 #ifndef _JOIN_H
 #define _JOIN_H
 
-#include <expression/bool_expression.h>
+#include <expression/generic_expression.h>
 #include "operator.h"
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
@@ -13,9 +13,9 @@ namespace  vaultdb {
 
 
     public:
-        Join(Operator<B> *lhs, Operator<B> *rhs, const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
-        Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
-        ~Join()  = default;
+        Join(Operator<B> *lhs, Operator<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
+        Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  Expression<B> * predicate, const SortDefinition & sort = SortDefinition());
+        ~Join() { if(predicate_ != nullptr) delete predicate_; }
 
         // if B write is true, then write to the left side of an output tuple with src_tuple
         static void write_left(const bool & write, PlainTuple & dst_tuple, const PlainTuple & src_tuple);
@@ -41,7 +41,7 @@ namespace  vaultdb {
 
         // predicate function needs aware of encrypted or plaintext state of its inputs
         // B = BoolField || SecureBoolField
-        BoolExpression<B>  predicate_;
+        Expression<B>  *predicate_;
 
 
     };

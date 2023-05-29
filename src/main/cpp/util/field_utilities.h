@@ -11,6 +11,7 @@
 #include "common/defs.h"
 #include "expression/expression_node.h"
 #include "expression/comparator_expression_nodes.h"
+#include "expression/generic_expression.h"
 
 namespace vaultdb {
 
@@ -97,11 +98,13 @@ namespace vaultdb {
         // for use in joins
         // indexes are based on the concatenated tuple, not addressing each input to the join comparison individually
         template<typename B>
-        static inline BoolExpression<B> getEqualityPredicate(const uint32_t & lhs_idx, const uint32_t & rhs_idx) {
+        static inline Expression<B> *getEqualityPredicate(const uint32_t & lhs_idx, const uint32_t & rhs_idx) {
             InputReferenceNode<B> *lhs_input = new InputReferenceNode<B>(lhs_idx);
             InputReferenceNode<B> *rhs_input = new InputReferenceNode<B>(rhs_idx);
             ExpressionNode<B> *equality_node = new EqualNode<B>(lhs_input, rhs_input);
-            return BoolExpression<B>(equality_node);
+
+            return new GenericExpression<B>(equality_node, "predicate",
+                                            std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
         }
 
     };

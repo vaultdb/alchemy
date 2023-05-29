@@ -43,7 +43,8 @@ TEST_F(FilterTest, test_filter) {
    InputReferenceNode<bool> *read_field = new InputReferenceNode<bool>(1);
    LiteralNode<bool> *constant_input = new LiteralNode<bool>(Field<bool>(FieldType::INT, 1));
    ExpressionNode<bool> *equality_check = new EqualNode<bool>((ExpressionNode<bool> *) read_field, (ExpressionNode<bool> *) constant_input);
-   BoolExpression<bool> expression(equality_check);
+
+   GenericExpression<bool> *expression = new GenericExpression<bool>(equality_check, "predicate", FieldType::BOOL);
 
     SqlInput input(db_name_, sql, false);
     Filter<bool> filter(&input, expression);

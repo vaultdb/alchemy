@@ -6,7 +6,6 @@
 
 #include <expression/expression_kind.h>
 #include "visitor/expression_visitor.h"
-#include <expression/bool_expression.h>
 #include <query_table/field/field_factory.h>
 
 // building blocks for composing expressions

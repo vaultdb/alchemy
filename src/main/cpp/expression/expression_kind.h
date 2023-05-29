@@ -25,4 +25,10 @@ enum class ExpressionKind {
 
 };
 
+enum class ExpressionClass {
+    GENERIC,
+    BOOL,
+    FUNC
+};
+
 #endif //_EXPRESSION_KIND_H

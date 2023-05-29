@@ -58,7 +58,7 @@ TEST_F(ZkBasicJoinTest, test_tpch_q3_customer_orders) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
+    Expression<emp::Bit> *predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
 
     BasicJoin join(orders_input, customer_input, predicate);
 
@@ -92,7 +92,7 @@ std::string expectedResultSql = "WITH orders_cte AS (" + orders_sql + "), \n"
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<emp::Bit> predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
+    Expression<emp::Bit> * predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
     BasicJoin join(lineitem_input, orders_input, predicate);
@@ -132,11 +132,11 @@ TEST_F(ZkBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<emp::Bit> customer_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
+    Expression<emp::Bit> * customer_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<emp::Bit> lineitem_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
+    Expression<emp::Bit> *lineitem_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
     BasicJoin customerOrdersJoin(orders_input, customer_input, customer_orders_predicate);

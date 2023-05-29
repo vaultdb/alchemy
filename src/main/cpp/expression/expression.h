@@ -6,6 +6,7 @@
 #include <query_table/query_schema.h>
 #include "expression_kind.h"
 
+
 namespace vaultdb {
 
     template<typename B> class QueryTable;
@@ -31,6 +32,7 @@ namespace vaultdb {
         virtual Field<B> call(const QueryTable<B>  *src, const int & row) const = 0;
         virtual ExpressionKind kind() const = 0;
         virtual std::string toString() const = 0;
+        virtual ExpressionClass exprClass() const = 0;
 
 
         // what is the return type of the expression?
