@@ -1,12 +1,25 @@
 #!/bin/bash
 
+# default host: codd10
+
+
+#if [ $# -lt 1 ];
+#then
+#   printf "usage:  ./benchmark-suite-bob.sh  <alice_host>\n"
+#   printf "Not enough arguments - %d\n" $# 
+#   exit 0 
+#fi
+
 if [ $# -lt 1 ];
 then
-   printf "usage:  ./benchmark-suite-bob.sh  <alice_host>\n"
-   printf "Not enough arguments - %d\n" $# 
-   exit 0 
+    
+   ALICE_HOST="129.105.61.184"
+else
+    ALICE_HOST=$1
 fi
 
+
+       
 now=`date +"%Y%m%d%H%M"`
 file='log/all-tests-bob-'$now'.log'
 
@@ -15,7 +28,7 @@ make clean
 
 echo 'Writing to '$file
 
-bash run-tests-bob.sh $1 2>&1 > $file
+bash run-tests-bob.sh $ALICE_HOST 2>&1 > $file
 
 #print results
 grep '^\[' $file
