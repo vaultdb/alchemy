@@ -527,8 +527,6 @@ void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_
     // else
     for(size_t i = 0; i < tuple_count; ++i) {
         FieldUtilities::secret_share_recv(dst_table, cursor, dst_party);
-        std::cout << "Receiving: " <<  cursor << ": " << FieldUtilities::revealTuple(dst_table->getTuple(cursor)) << std::endl;
-
         ++cursor;
     }
 
