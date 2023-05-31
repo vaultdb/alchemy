@@ -22,12 +22,23 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
 
     Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt, Operator<B>::output_schema_, Operator<B>::getSortOrder()));
-
+    QueryTable<B> *dst =  Operator<B>::output_.get();
 
     for(uint32_t i = 0; i < tuple_cnt; ++i) {
-        QueryTuple<B> src_tuple = src_table->getTuple(i);
-        QueryTuple<B> dst_tuple = Operator<B>::output_->getTuple(i);
-        project_tuple(dst_tuple, src_tuple);
+
+        Operator<B>::output_->setDummyTag(i, src_table->getDummyTag(i));
+
+        // simply exec column mappings first with memcpy
+        for(auto pos : column_mappings_) {
+            dst->setField(i, pos.second, src_table->getField(i, pos.first));
+        }
+
+        for(uint32_t j : exprs_to_exec_) {
+            Expression<B> *expression = expressions_.at(j);
+            Field<B> v = expression->call(src_table.get(), i);
+            dst->setField(i, j, v);
+        }
+
     }
 
 
@@ -35,34 +46,34 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 }
 
 
-template<typename B>
-void Project<B>::project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const {
-    dst_tuple.setDummyTag(src_tuple.getDummyTag());
-
-
-    // simply exec column mappings first - memcpy
-    for(auto pos : column_mappings_) {
-        dst_tuple.setField(pos.second, src_tuple.getField(pos.first));
-    }
-
-    for(uint32_t i : exprs_to_exec_) {
-        Expression<B> *expression = expressions_.at(i);
-        Field<B> v = expression->call(src_tuple);
-        dst_tuple.setField(i, v);
-    }
-
-    // exec all expressions
-    //    auto expr_pos = expressions_.begin();
-//    while(expr_pos != expressions_.end()) {
-//        uint32_t dst_ordinal = expr_pos->first;
-//        Expression<B> *expression = expr_pos->second;
-//        Field<B> field_value = expression->call(src_tuple);
-//        dst_tuple.setField(dst_ordinal, field_value);
-//        ++expr_pos;
+//template<typename B>
+//void Project<B>::project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const {
+//    dst_tuple.setDummyTag(src_tuple.getDummyTag());
+//
+//
+//    // simply exec column mappings first - memcpy
+//    for(auto pos : column_mappings_) {
+//        dst_tuple.setField(pos.second, src_tuple.getField(pos.first));
 //    }
-
-
-}
+//
+//    for(uint32_t i : exprs_to_exec_) {
+//        Expression<B> *expression = expressions_.at(i);
+//        Field<B> v = expression->call(src_tuple);
+//        dst_tuple.setField(i, v);
+//    }
+//
+//    // exec all expressions
+//    //    auto expr_pos = expressions_.begin();
+////    while(expr_pos != expressions_.end()) {
+////        uint32_t dst_ordinal = expr_pos->first;
+////        Expression<B> *expression = expr_pos->second;
+////        Field<B> field_value = expression->call(src_tuple);
+////        dst_tuple.setField(dst_ordinal, field_value);
+////        ++expr_pos;
+////    }
+//
+//
+//}
 
 
 template<typename B>

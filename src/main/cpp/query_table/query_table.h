@@ -88,16 +88,34 @@ namespace  vaultdb {
 
         std::vector<int8_t> serialize() const;
 
-        Field<B> getField(const int  & row, const int & col) const;
+        inline Field<B> getField(const int  & row, const int & col)  const {
+             QueryTuple<B> tuple = getImmutableTuple(row);
+            return tuple.getField(col);
 
+        }
 
-        static std::shared_ptr<SecureTable> secretShare(const PlainTable &input, emp::NetIO *io, const int &party);
+        inline void setField(const int  & row, const int & col, const Field<B> & f)  {
+            QueryTuple<B> tuple = getTuple(row);
+            tuple.setField(col, f);
+
+        }
+
+        inline B getDummyTag(const int & row)  const {
+            QueryTuple<B> tuple = getImmutableTuple(row);
+            return tuple.getDummyTag();
+        }
+
+        inline void setDummyTag(const int & row, const B & val)  {
+            getTuple(row).setDummyTag(val);
+        }
+
+        static std::shared_ptr<SecureTable> secretShare(const PlainTable *input, emp::NetIO *io, const int &party);
 
         static std::shared_ptr<SecureTable>
-        secretShare(const PlainTable &input, emp::BoolIO<NetIO> *ios[], const size_t &thread_count, const int &party);
+        secretShare(const PlainTable *input, BoolIO<NetIO> *ios[], const size_t &thread_count, const int &party);
 
         static std::shared_ptr<SecureTable>
-        secret_share_send_table(const std::shared_ptr<PlainTable> &input, emp::NetIO *io, const int &sharing_party);
+        secret_share_send_table(const PlainTable *input, emp::NetIO *io, const int &sharing_party);
 
         static std::shared_ptr<SecureTable>
         secret_share_recv_table(const QuerySchema &src_schema,
@@ -136,16 +154,19 @@ namespace  vaultdb {
 
 
     private:
-        static std::unique_ptr<PlainTable> revealTable(const SecureTable &table, const int &party);
+        static std::unique_ptr<PlainTable> revealTable(const SecureTable *table, const int &party);
 
-        static std::unique_ptr<PlainTable> revealTable(const PlainTable &table, const int &party);
+        static inline std::unique_ptr<PlainTable> revealTable(const PlainTable *table, const int &party) {
+            return std::make_unique<PlainTable>(*table);
 
-        static void secret_share_send(const int &party, const PlainTable &src_table, SecureTable &dst_table,
+        }
+
+        static void secret_share_send(const int &party, const PlainTable *src_table, SecureTable *dst_table,
                                       const int &write_offset,
                                       const bool &reverse_read_order);
 
         static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
-                                      SecureTable &dst_table, const size_t &write_offset,
+                                      SecureTable *dst_table, const size_t &write_offset,
                                       const bool &reverse_read_order);
 
     };

@@ -153,21 +153,20 @@ PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_ta
         }
 
 
-        PlainTuple dst = dst_table.getTuple(idx); // writes in place
         for (int i=0; i < col_count; i++) {
             const pqxx::field src = row[i];
 
            PlainField  parsed = getField(src);
-            dst.setField(i, parsed);
+           dst_table.setField(idx, i, parsed);
         }
 
         if(has_dummy_tag) {
 
                 PlainField parsed = getField(row[col_count]); // get the last col
-                dst.setDummyTag(parsed);
+                dst_table.setDummyTag(idx, parsed.getValue<bool>());
         }
         else {
-            dst.setDummyTag(false); // default, not a dummy
+            dst_table.setDummyTag(idx, false); // default, not a dummy
         }
 
     }

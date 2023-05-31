@@ -57,7 +57,7 @@ TEST_F(CsvReaderTest, quotedStringTest) {
 
     std::unique_ptr<PlainTable> parse_test = std::unique_ptr<PlainTable>(new PlainTable(*expected));
 
-    CsvReader::parseTuple(testStr, *expected->getSchema(), parse_test, 15);
+    CsvReader::parseTuple(testStr, *expected->getSchema(), parse_test.get(), 15);
 
     QueryTuple expectedTuple = expected->getTuple(15);
     QueryTuple parsedTuple = parse_test->getTuple(15);

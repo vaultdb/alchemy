@@ -51,9 +51,14 @@ namespace vaultdb {
 
         }
 
+        static void secret_share_send(const PlainTable *src, const int &src_idx, SecureTable *dst, const int &dst_idx,
+                                      const int &party);
 
-        static void secret_share_send(const QueryTuple<bool> &src_tuple, QueryTuple<Bit> &dst_tuple, const int &dst_party);
-        static void secret_share_recv(SecureTuple &dst_tuple, const int &dst_party);
+//        static void secret_share_send(const QueryTuple<bool> &src_tuple, QueryTuple<Bit> &dst_tuple, const int &party);
+//        static void secret_share_recv(SecureTuple &dst_tuple, const int &party);
+
+        static void secret_share_recv(SecureTable *dst, const int & idx, const int &party);
+
 
         // for template<typename T> case
         static bool extract_bool(const emp::Bit & b) { return b.reveal();  }

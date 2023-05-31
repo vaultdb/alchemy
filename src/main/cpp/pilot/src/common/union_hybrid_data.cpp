@@ -44,7 +44,7 @@ shared_ptr<SecureTable>
 UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema &src_schema, NetIO *netio,
                                 const int &party) {
     std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, src_schema);
-    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*localInput, netio, party);
+    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(localInput.get(), netio, party);
     return encryptedTable;
 
 }
@@ -182,7 +182,7 @@ UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery,
 
     cout << "Reading in " << local_plain->getTupleCount() << " tuples from local db." << endl;
 
-    std::shared_ptr<SecureTable> local = SecureTable::secretShare(*local_plain, aNetIO, party);
+    std::shared_ptr<SecureTable> local = SecureTable::secretShare(local_plain.get(), aNetIO, party);
     string other_party = (party == ALICE) ? "Bob" : "Alice";
     cout <<  other_party << " read in " << local->getTupleCount() - local_plain->getTupleCount() << " tuples." << endl;
 

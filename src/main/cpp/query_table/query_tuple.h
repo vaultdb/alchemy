@@ -36,7 +36,7 @@ namespace vaultdb {
         void setDummyTag(const bool & b) { throw; }
         void setDummyTag(const emp::Bit & b) { throw; }
         static void writeSubset(const QueryTuple<B> & src_tuple, const QueryTuple<B> & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx) { throw; }
-        bool getDummyTag() const { throw; }
+        B getDummyTag() const { throw; }
         string toString(const bool &showDummies = false) const { throw; }
         int8_t *getData() const { return nullptr; }
         static void compareSwap(const B &cmp, QueryTuple<B>  & lhs, QueryTuple<B>  & rhs){ throw; } // implemented in template specializations

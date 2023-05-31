@@ -57,7 +57,7 @@ bool QueryTable<B>::isEncrypted() const {
 
 template <typename B>
 std::unique_ptr<PlainTable> QueryTable<B>::reveal(int empParty) const  {
-   return revealTable(*this, empParty);
+   return revealTable(this, empParty);
 
 }
 
@@ -203,10 +203,10 @@ bool QueryTable<B>::operator==(const QueryTable<B> &other) const {
 
 // up to two-way secret share - both Alice and Bob providing private inputs
 template<typename B>
-std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input, emp::NetIO *netio, const int & party)  {
+std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable *input, emp::NetIO *netio, const int & party)  {
 
 
-    size_t alice_tuple_cnt =  input.getTupleCount();
+    size_t alice_tuple_cnt =  input->getTupleCount();
     size_t bob_tuple_cnt = alice_tuple_cnt;
 
     if (party == ALICE) {
@@ -221,29 +221,29 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
         netio->flush();
     }
 
-    QuerySchema dst_schema = QuerySchema::toSecure(*input.getSchema());
+    QuerySchema dst_schema = QuerySchema::toSecure(*(input->getSchema()));
 
-    std::shared_ptr<SecureTable> dst_table(new SecureTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, input.getSortOrder()));
+    std::shared_ptr<SecureTable> dst_table(new SecureTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, input->getSortOrder()));
 
     // preserve sort order - reverse input order for latter half to do bitonic merge
-    if(!input.getSortOrder().empty()) {
+    if(!input->getSortOrder().empty()) {
         if (party == emp::ALICE) {
-            if(alice_tuple_cnt > 0) secret_share_send(emp::ALICE, input, *dst_table, 0, true);
-            if(bob_tuple_cnt > 0) secret_share_recv(bob_tuple_cnt, emp::BOB, *dst_table, alice_tuple_cnt, false);
+            if(alice_tuple_cnt > 0) secret_share_send(emp::ALICE, input, dst_table.get(), 0, true);
+            if(bob_tuple_cnt > 0) secret_share_recv(bob_tuple_cnt, emp::BOB, dst_table.get(), alice_tuple_cnt, false);
 
         } else { // bob
-            if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, true);
-            if(bob_tuple_cnt > 0)  secret_share_send(emp::BOB, input, *dst_table, alice_tuple_cnt, false);
+            if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table.get(), 0, true);
+            if(bob_tuple_cnt > 0)  secret_share_send(emp::BOB, input, dst_table.get(), alice_tuple_cnt, false);
         }
         Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true);
     }
     else { // concatenate Alice and Bob
         if (party == emp::ALICE) {
-            if(alice_tuple_cnt > 0) secret_share_send(emp::ALICE, input, *dst_table, 0, false);
-            if(bob_tuple_cnt > 0)  secret_share_recv(bob_tuple_cnt, emp::BOB, *dst_table, alice_tuple_cnt, false);
+            if(alice_tuple_cnt > 0) secret_share_send(emp::ALICE, input, dst_table.get(), 0, false);
+            if(bob_tuple_cnt > 0)  secret_share_recv(bob_tuple_cnt, emp::BOB, dst_table.get(), alice_tuple_cnt, false);
         } else { // bob
-            if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, false);
-            if(bob_tuple_cnt > 0)  secret_share_send(emp::BOB, input, *dst_table, alice_tuple_cnt, false);
+            if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table.get(), 0, false);
+            if(bob_tuple_cnt > 0)  secret_share_send(emp::BOB, input, dst_table.get(), alice_tuple_cnt, false);
         }
     }
     netio->flush();
@@ -257,12 +257,11 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
 
 // ZK secret share - only alice provides inputs
 template<typename B>
-std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input,  emp::BoolIO<NetIO> *ios[], const size_t & thread_count, const int & party)  {
+std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable *input, BoolIO<NetIO> *ios[], const size_t & thread_count, const int & party)  {
 
 
-    size_t alice_tuple_cnt =  input.getTupleCount();
+    size_t alice_tuple_cnt =  input->getTupleCount();
 
-    string tmp_party = (party == emp::ALICE) ? "alice" : "bob";
 
     // reset before we send the counts
     for(size_t i = 0; i < thread_count; ++i) {
@@ -281,15 +280,15 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
 
     assert(alice_tuple_cnt > 0);
 
-    QuerySchema dst_schema = QuerySchema::toSecure(*input.getSchema());
+    QuerySchema dst_schema = QuerySchema::toSecure(*input->getSchema());
 
-    std::shared_ptr<SecureTable> dst_table(new SecureTable(alice_tuple_cnt, dst_schema, input.getSortOrder()));
+    std::shared_ptr<SecureTable> dst_table(new SecureTable(alice_tuple_cnt, dst_schema, input->getSortOrder()));
 
 
     if (party == emp::ALICE) {
-        secret_share_send(emp::ALICE, input, *dst_table, 0, false);
+        secret_share_send(emp::ALICE, input, dst_table.get(), 0, false);
     } else { // bob
-        secret_share_recv(alice_tuple_cnt, emp::ALICE, *dst_table, 0, false);
+        secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table.get(), 0, false);
     }
 
     for(size_t i = 0; i < thread_count; ++i) {
@@ -303,14 +302,14 @@ std::shared_ptr<SecureTable> QueryTable<B>::secretShare(const PlainTable & input
 
 template<typename B>
 shared_ptr<SecureTable>
-QueryTable<B>::secret_share_send_table(const std::shared_ptr<PlainTable> &input, emp::NetIO *io, const int &sharing_party) {
+QueryTable<B>::secret_share_send_table(const PlainTable *input, emp::NetIO *io, const int &sharing_party) {
     QuerySchema dst_schema = QuerySchema::toSecure(*input->getSchema());
     int32_t tuple_cnt = input->getTupleCount();
     io->send_data(&tuple_cnt, 4);
     io->flush();
 
     std::shared_ptr<SecureTable> shared = std::make_shared<SecureTable>(input->getTupleCount(), dst_schema, input->getSortOrder());
-    secret_share_send(sharing_party, *input, *shared, 0, false);
+    secret_share_send(sharing_party, input, shared.get(), 0, false);
     return shared;
 }
 
@@ -325,7 +324,7 @@ QueryTable<B>::secret_share_recv_table(const QuerySchema &src_schema, // plainte
 
     QuerySchema dst_schema = QuerySchema::toSecure(src_schema);
     std::shared_ptr<SecureTable> shared = std::make_shared<SecureTable>(tuple_cnt, dst_schema, sort_definition);
-    secret_share_recv(tuple_cnt, sharing_party, *shared, 0, false);
+    secret_share_recv(tuple_cnt, sharing_party, shared.get(), 0, false);
     return shared;
 }
 
@@ -457,17 +456,17 @@ const QueryTuple<B> QueryTable<B>::operator[](const int &idx) const {
 }
 
 template<typename B>
-std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable &table, const int & party) {
-    uint32_t tuple_cnt = table.getTupleCount();
+std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable *table, const int & party) {
+    uint32_t tuple_cnt = table->getTupleCount();
 
 
-    shared_ptr<QuerySchema> dst_schema = std::make_shared<QuerySchema>(QuerySchema::toPlain(*table.getSchema()));
+    shared_ptr<QuerySchema> dst_schema = std::make_shared<QuerySchema>(QuerySchema::toPlain(*(table->getSchema())));
 
-    std::unique_ptr<PlainTable > dst_table(new PlainTable(tuple_cnt, dst_schema, table.getSortOrder()));
+    std::unique_ptr<PlainTable > dst_table(new PlainTable(tuple_cnt, dst_schema, table->getSortOrder()));
 
 
     for(uint32_t i = 0; i < tuple_cnt; ++i)  {
-        const SecureTuple tuple = table.getImmutableTuple(i);
+        const SecureTuple tuple = table->getImmutableTuple(i);
         if(!tuple.getDummyTag().reveal()) { // if real tuple (not a dummy), reveal it
             PlainTuple dst_tuple = tuple.reveal(dst_schema, party);
             dst_table->putTuple(i, dst_tuple);
@@ -480,23 +479,17 @@ std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable &table,
     return dst_table;
 }
 
-template<typename B>
-std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const PlainTable & table, const int & party) {
-    return std::make_unique<PlainTable>(table);
-}
 
 template<typename B>
 void
-QueryTable<B>::secret_share_send(const int &party, const PlainTable & src_table, SecureTable & dst_table, const int &write_offset,
+QueryTable<B>::secret_share_send(const int &party,const PlainTable *src_table, SecureTable *dst_table, const int &write_offset,
                                  const bool &reverse_read_order)  {
 
-    int32_t cursor = (int32_t) write_offset;
+    int cursor = (int) write_offset;
 
     if(reverse_read_order) {
-        for(int32_t i = src_table.getTupleCount() - 1; i >= 0; --i) {
-            SecureTuple dst_tuple = dst_table.getTuple(cursor);
-            PlainTuple src_tuple = src_table.getPlainTuple(i);
-            FieldUtilities::secret_share_send(src_tuple, dst_tuple, party);
+        for(int i = src_table->getTupleCount() - 1; i >= 0; --i) {
+            FieldUtilities::secret_share_send(src_table, i, dst_table,  cursor, party);
             ++cursor;
         }
 
@@ -505,10 +498,8 @@ QueryTable<B>::secret_share_send(const int &party, const PlainTable & src_table,
     }
 
     // else
-    for(size_t i = 0; i < src_table.getTupleCount(); ++i) {
-        SecureTuple dst_tuple = dst_table.getTuple(cursor);
-        PlainTuple src_tuple = src_table.getPlainTuple(i);
-        FieldUtilities::secret_share_send(src_tuple, dst_tuple, party);
+    for(size_t i = 0; i < src_table->getTupleCount(); ++i) {
+        FieldUtilities::secret_share_send(src_table, i, dst_table,  cursor, party);
         ++cursor;
     }
 
@@ -516,7 +507,7 @@ QueryTable<B>::secret_share_send(const int &party, const PlainTable & src_table,
 
 template<typename B>
 void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_party,
-                                      SecureTable &dst_table, const size_t &write_offset,
+                                      SecureTable *dst_table, const size_t &write_offset,
                                       const bool &reverse_read_order)  {
 
     int32_t cursor = (int32_t) write_offset;
@@ -524,8 +515,7 @@ void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_
     if(reverse_read_order) {
 
         for(int32_t i = tuple_count - 1; i >= 0; --i) {
-            SecureTuple dst_tuple = dst_table.getTuple(cursor);
-            FieldUtilities::secret_share_recv(dst_tuple, dst_party);
+            FieldUtilities::secret_share_recv(dst_table, cursor, dst_party);
             ++cursor;
         }
 
@@ -536,8 +526,9 @@ void QueryTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_
 
     // else
     for(size_t i = 0; i < tuple_count; ++i) {
-        SecureTuple dst_tuple = dst_table.getTuple(cursor);
-        FieldUtilities::secret_share_recv(dst_tuple, dst_party);
+        FieldUtilities::secret_share_recv(dst_table, cursor, dst_party);
+        std::cout << "Receiving: " <<  cursor << ": " << FieldUtilities::revealTuple(dst_table->getTuple(cursor)) << std::endl;
+
         ++cursor;
     }
 
@@ -569,12 +560,6 @@ std::string QueryTable<B>::toString(const size_t &limit, const bool &show_dummie
 }
 
 
-template<typename B>
-Field<B> QueryTable<B>::getField(const int &row, const int &col) const {
-    const QueryTuple<B> tuple = getImmutableTuple(row);
-    return tuple.getField(col);
-
-}
 
 
 

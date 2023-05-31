@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
 
     // ship local, partial counts - alice, then bob
     if (party == 1) { // alice
-        alice = SecureTable::secret_share_send_table(local_partial_counts, netio, 1);
+        alice = SecureTable::secret_share_send_table(local_partial_counts.get(), netio, 1);
         bob = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(), netio,
                                                    2);
 
@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
                                                      netio, 1);
 
 
-        bob = SecureTable::secret_share_send_table(local_partial_counts, netio, 2);
+        bob = SecureTable::secret_share_send_table(local_partial_counts.get(), netio, 2);
     }
 
 

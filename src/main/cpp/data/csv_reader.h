@@ -10,8 +10,8 @@ namespace  vaultdb {
         static std::unique_ptr<PlainTable> readCsvFromBatch(const vector<string> &payload, const QuerySchema &schema);
 
         static void
-        parseTuple(const std::string &csvLine, const QuerySchema &src_schema, std::unique_ptr<PlainTable> &dst,
-                   const size_t &tupleIdx);
+        parseTuple(const std::string &csv_line, const QuerySchema &src_schema, PlainTable *dst,
+                   const int &idx);
 
     private:
 

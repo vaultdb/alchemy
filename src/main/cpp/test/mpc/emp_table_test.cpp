@@ -87,7 +87,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
     std::shared_ptr<PlainTable>  input_table = dataProvider.getQueryTable(db_name_,
                                                                           input_query, false);
 
-    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
+    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(input_table.get(), netio_, FLAGS_party);
     netio_->flush();
 
     // c_custkey has 150 distinct vals, should have 8 bits
@@ -118,7 +118,7 @@ void EmpTableTest::secretShareAndValidate(const std::string & input_query, const
                                                                           input_query, false);
 
     input_table->setSortOrder(sort);
-    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
+    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(input_table.get(), netio_, FLAGS_party);
     netio_->flush();
 
     std::unique_ptr<PlainTable> revealed = secret_shared->reveal(emp::PUBLIC);

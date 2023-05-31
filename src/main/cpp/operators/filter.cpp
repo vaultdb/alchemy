@@ -26,10 +26,9 @@ std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
     int tuple_cnt = input->getTupleCount();
 
     for(int i = 0; i < tuple_cnt; ++i) {
-        QueryTuple<B> tuple = Operator<B>::output_->getTuple(i);
-        Field<B> selected = predicate_->call(tuple);
-        B dummy_tag =  ((!(selected.template getValue<B>())) | tuple.getDummyTag()); // (!) because dummyTag is false if our selection criteria is satisfied
-        tuple.setDummyTag(dummy_tag);
+        Field<B> selected = predicate_->call(Operator<B>::output_.get(), i);
+        B dummy_tag =  ((!(selected.template getValue<B>())) | Operator<B>::output_->getDummyTag(i)); // (!) because dummyTag is false if our selection criteria is satisfied
+        Operator<B>::output_->setDummyTag(i, dummy_tag);
     }
 
 

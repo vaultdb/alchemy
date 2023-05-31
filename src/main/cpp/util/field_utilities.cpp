@@ -83,34 +83,63 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
 }
 
 
-void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple & dst_tuple, const int & party) {
-    size_t field_count = dst_tuple.getSchema()->getFieldCount();
-    for (size_t i = 0; i < field_count; ++i) {
-        PlainField src_field = src_tuple.getField(i);
-        SecureField dst_field = SecureField::secret_share_send(src_field, dst_tuple.getSchema()->getField(i), party);
-        dst_tuple.setField(i, dst_field);
-    }
-    PlainField plain_dummy_tag =  PlainField(src_tuple.getDummyTag());
-    emp::Bit b(src_tuple.getDummyTag(), party);
-    dst_tuple.setDummyTag(b);
+//void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple & dst_tuple, const int & party) {
+//    size_t field_count = dst_tuple.getSchema()->getFieldCount();
+//    for (size_t i = 0; i < field_count; ++i) {
+//        PlainField src_field = src_tuple.getField(i);
+//        SecureField dst_field = SecureField::secret_share_send(src_field, dst_tuple.getSchema()->getField(i), party);
+//        dst_tuple.setField(i, dst_field);
+//    }
+//
+//    emp::Bit b(src_tuple.getDummyTag(), party);
+//    dst_tuple.setDummyTag(b);
+//
+//
+//}
+//
+//void FieldUtilities::secret_share_recv(SecureTuple &dst_tuple, const int &dst_party) {
+//    size_t field_count = dst_tuple.getSchema()->getFieldCount();
+//
+//    for(size_t i = 0;  i < field_count; ++i) {
+//        SecureField  dst_field = SecureField::secret_share_recv(dst_tuple.getSchema()->getField(i), dst_party);
+//        dst_tuple.setField(i, dst_field);
+//    }
+//
+//    emp::Bit b(0, dst_party);
+//    dst_tuple.setDummyTag(b);
+//
+//}
 
+void FieldUtilities::secret_share_send(const PlainTable *src, const int &src_idx, SecureTable *dst, const int &dst_idx,
+                                       const int &party) {
+    size_t field_count = dst->getSchema()->getFieldCount();
+
+    for (size_t i = 0; i < field_count; ++i) {
+        PlainField src_field = src->getField(src_idx, i);
+        SecureField dst_field = SecureField::secret_share_send(src_field, dst->getSchema()->getField(i), party);
+        dst->setField(dst_idx, i, dst_field);
+    }
+
+    emp::Bit b(src->getDummyTag(src_idx), party);
+    dst->setDummyTag(dst_idx, b);
 
 }
 
-void FieldUtilities::secret_share_recv(SecureTuple &dst_tuple, const int &dst_party) {
-    QuerySchema schema = *dst_tuple.getSchema();
-    size_t field_count = schema.getFieldCount();
+void FieldUtilities::secret_share_recv(SecureTable *dst, const int & idx, const int &party) {
+
+    size_t field_count = dst->getSchema()->getFieldCount();
 
     for(size_t i = 0;  i < field_count; ++i) {
-        QueryFieldDesc field_desc = schema.getField(i);
-        SecureField  dst_field = SecureField::secret_share_recv(dst_tuple.getSchema()->getField(i), dst_party);
-        dst_tuple.setField(i, dst_field);
+        SecureField  dst_field = SecureField::secret_share_recv(dst->getSchema()->getField(i), party);
+        dst->setField(idx, i, dst_field);
     }
 
-    emp::Bit b(0, dst_party);
-    dst_tuple.setDummyTag(b);
+    emp::Bit b(0, party);
+    dst->setDummyTag(idx, b);
+
 
 }
+
 
 // to compute sort
 bool FieldUtilities::select(const bool &choice, const bool &lhs, const bool &rhs) {

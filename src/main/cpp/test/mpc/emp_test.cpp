@@ -138,7 +138,7 @@ TEST_F(EmpTest, secret_share_table_one_column) {
         tuple.setField(0, val);
     }
 
-    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(*plain, netio_, FLAGS_party);
+    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(plain.get(), netio_, FLAGS_party);
 
     std::shared_ptr<PlainTable> revealed = secret_shared->reveal(emp::PUBLIC);
 
@@ -179,7 +179,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     }
 
 
-    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(*input_table, netio_, FLAGS_party);
+    std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(input_table.get(), netio_, FLAGS_party);
 
 
     std::unique_ptr<PlainTable> revealed = secret_shared->reveal(emp::PUBLIC);
