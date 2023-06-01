@@ -650,7 +650,7 @@ void QueryTable<B>::cloneRow(const int &dst_row, const int &dst_col, const Query
 
     int8_t *src_ptr = (int8_t *) (src->tuple_data_.data() + src->tuple_size_ * src_row);
     int8_t *dst_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * dst_row + field_offsets_bytes_.at(dst_col));
-    memcpy(dst_ptr, src_ptr, src->tuple_size_);
+    memcpy(dst_ptr, src_ptr, src->tuple_size_ - field_sizes_bytes_.at(-1));
 }
 
 template<typename B>
@@ -669,7 +669,7 @@ void QueryTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &ds
     Bit *write_ptr = (Bit *) (tuple_data_.data() + tuple_size_ * dst_row + field_offsets_bytes_.at(dst_col));
 
 
-    for(size_t i = 0; i < src->schema_->size(); ++i) {
+    for(size_t i = 0; i < src->schema_->size() - field_sizes_bytes_.at(-1); ++i) {
         *write_ptr = emp::If(write, *read_ptr, *write_ptr);
         ++read_ptr;
         ++write_ptr;

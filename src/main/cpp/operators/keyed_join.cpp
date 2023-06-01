@@ -66,26 +66,26 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
     for(uint32_t i = 0; i < lhs_table->getTupleCount(); ++i) {
-        lhs_dummy_tag = (*lhs_table)[i].getDummyTag();
+        lhs_dummy_tag = lhs_table->getDummyTag(i);
 
 
-        QueryTuple<B> dst_tuple = (*Join<B>::output_)[i];
+        //QueryTuple<B> dst_tuple = (*Join<B>::output_)[i];
 
-        Join<B>::write_left(dst_tuple, (*lhs_table)[i]);
-        Join<B>::write_left(joined,  (*lhs_table)[i]);
+          Join<B>::write_left(Join<B>::output_.get(), i, lhs_table.get(), i);
+          Join<B>::write_left(joined,  (*lhs_table)[i]);
 
-        dst_dummy_tag = true; // dummy by default, no tuple comparisons yet
+
+          dst_dummy_tag = true; // dummy by default, no tuple comparisons yet
 
         for(uint32_t j = 0; j < rhs_table->getTupleCount(); ++j) {
-            rhs_dummy_tag = ((*rhs_table)[j]).getDummyTag();
-
+            rhs_dummy_tag = rhs_table->getDummyTag(j);
             Join<B>::write_right(joined, (*rhs_table)[j]);
             selected = Join<B>::predicate_->call(joined).template getValue<B>();
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
 
-            Join<B>::write_right(to_update, dst_tuple, (*rhs_table)[j]);
-            dst_tuple.setDummyTag(dst_dummy_tag);
+            Join<B>::write_right(to_update, Operator<B>::output_.get(), i, rhs_table.get(), j);
+            Operator<B>::output_->setDummyTag(i, dst_dummy_tag);
         }
     }
 
@@ -95,6 +95,7 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
 template<typename B>
 shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
+
     std::shared_ptr<QueryTable<B> > lhs_table = Operator<B>::children_[0]->getOutput(); // primary key
     std::shared_ptr<QueryTable<B> > rhs_table = Operator<B>::children_[1]->getOutput(); // foreign key
 
@@ -117,12 +118,9 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
     for(uint32_t i = 0; i < rhs_table->getTupleCount(); ++i) {
-        rhs_dummy_tag = ((*rhs_table)[i]).getDummyTag();
+        rhs_dummy_tag = rhs_table->getDummyTag(i);
 
-
-        QueryTuple<B> dst_tuple = (*Operator<B>::output_)[i];
-
-        Join<B>::write_right(dst_tuple, (*rhs_table)[i]);
+        Join<B>::write_right(Operator<B>::output_.get(), i, rhs_table.get(), i);
         Join<B>::write_right(joined, (*rhs_table)[i]);
 
         dst_dummy_tag = true; // no comparisons yet, so it is a dummy by default
@@ -130,7 +128,7 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
         for(uint32_t j = 0; j < lhs_table->getTupleCount(); ++j) {
 
-            lhs_dummy_tag = lhs_table->getTuple(j).getDummyTag();
+            lhs_dummy_tag = lhs_table->getDummyTag(j);
             Join<B>::write_left(joined, (*lhs_table)[j]);
 
             selected = Join<B>::predicate_->call(joined).template getValue<B>();
@@ -139,9 +137,8 @@ shared_ptr<QueryTable<B>> KeyedJoin<B>::primaryKeyForeignKeyJoin() {
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
 
 
-            Join<B>::write_left(to_update, dst_tuple, lhs_table->getTuple(j));
-
-            dst_tuple.setDummyTag(dst_dummy_tag);
+            Join<B>::write_left(to_update, Operator<B>::output_.get(), i, lhs_table.get(), j);
+            Operator<B>::output_->setDummyTag(i, dst_dummy_tag);
 
         }
     }

@@ -193,8 +193,6 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_reversed) {
     std::shared_ptr<PlainTable > observed = join.run();
 
 
-
-    ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);
 
 
