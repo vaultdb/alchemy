@@ -678,6 +678,44 @@ void QueryTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &ds
 }
 
 
+template<typename B>
+void QueryTable<B>::compareSwap(const bool &swap, const int &lhs_row, const int &rhs_row) {
+    if(swap) {
+        int8_t *l = tuple_data_.data() + tuple_size_ * lhs_row;
+        int8_t *r = tuple_data_.data() + tuple_size_ * rhs_row;
+
+        // swap in place
+        for(int i = 0; i < tuple_size_; ++i) {
+            *l = *l ^ *r;
+            *r = *r ^ *l;
+            *l = *l ^ *r;
+
+            ++l;
+            ++r;
+        }
+    }
+}
+
+template<typename B>
+void QueryTable<B>::compareSwap(const Bit &swap, const int &lhs_row, const int &rhs_row) {
+
+    Bit *l = (Bit *) (tuple_data_.data() + tuple_size_ * lhs_row );
+    Bit *r = (Bit *) (tuple_data_.data() + tuple_size_ * rhs_row);
+
+    size_t write_size = schema_->size();
+    for(size_t i = 0; i < write_size; ++i) {
+        Bit o = emp::If(swap, *l, *r);
+        o ^= *r;
+        *l ^= o;
+        *r ^= o;
+
+
+        ++l;
+        ++r;
+    }
+
+}
+
 
 template class vaultdb::QueryTable<bool>;
 template class vaultdb::QueryTable<emp::Bit>;

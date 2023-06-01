@@ -168,6 +168,8 @@ namespace  vaultdb {
         void cloneRow(const bool & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
         void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
 
+        void compareSwap(const bool & swap, const int  & lhs_row, const int & rhs_row);
+        void compareSwap(const Bit & swap, const int  & lhs_row, const int & rhs_row);
 
     private:
         static std::unique_ptr<PlainTable> revealTable(const SecureTable *table, const int &party);
@@ -186,6 +188,7 @@ namespace  vaultdb {
                                       const bool &reverse_read_order);
 
     };
+
 
 
     std::ostream &operator<<(std::ostream &os, const PlainTable &table);

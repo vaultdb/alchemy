@@ -120,11 +120,11 @@ void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortD
     if (n > 1) {
         int m = powerOfTwoLessThan(n);
         for (int i = lo; i < lo + n - m; ++i) {
-            QueryTuple<B> lhs = table->getTuple(i);
-            QueryTuple<B> rhs = table->getTuple(i + m);
+//            QueryTuple<B> lhs = table->getTuple(i);
+//            QueryTuple<B> rhs = table->getTuple(i + m);
 
-            B to_swap = swapTuples(lhs, rhs, sort_def, dir);
-            QueryTuple<B>::compareSwap(to_swap, lhs, rhs);
+            B to_swap = swapTuples(table.get(), i, i+m, sort_def, dir);
+            table->compareSwap(to_swap, i, i+m);
 
         }
 
@@ -173,6 +173,43 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
 
     return swap;
 }
+
+template<typename B>
+B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int &rhs_idx,
+                      const SortDefinition &sort_definition, const bool &dir) {
+    B swap = false;
+    B swap_init = swap;
+
+
+
+    for (size_t i = 0; i < sort_definition.size(); ++i) {
+
+        const Field<B> lhs_field = sort_definition[i].first == -1 ? Field<B>(table->getDummyTag(lhs_idx))
+                                                                  : table->getField(lhs_idx, sort_definition[i].first);
+        const Field<B> rhs_field = sort_definition[i].first == -1 ? Field<B>(table->getDummyTag(rhs_idx))
+                                                                  : table->getField(rhs_idx,sort_definition[i].first);
+
+        // true for ascending, false for descending
+        bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
+
+        B to_swap =  (lhs_field < rhs_field) == asc;
+        if(dir)  // flip the bit
+            to_swap = !to_swap;
+
+
+        // find first one where not eq, use this to init flag
+        swap = FieldUtilities::select(swap_init, swap, to_swap);
+        swap_init = swap_init | (lhs_field != rhs_field);
+        if(std::is_same_v<bool, B>) {
+            bool bool_init = FieldUtilities::extract_bool(swap_init);
+            if(bool_init) break;
+        }
+    }
+
+    return swap;
+
+}
+
 
 template<typename B>
 string Sort<B>::getOperatorType() const {

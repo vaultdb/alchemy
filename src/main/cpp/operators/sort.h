@@ -29,6 +29,8 @@ namespace  vaultdb {
 
         static B swapTuples(const QueryTuple<B> & lhsTuple, const QueryTuple<B> & rhsTuple, const SortDefinition  & sort_definition, const bool & dir);
 
+        static B swapTuples(const QueryTable<B> *table, const int & lhs_idx, const int & rhs_idx, const SortDefinition  & sort_definition, const bool & dir);
+
         static int powerOfTwoLessThan(const int &n);
 
     protected:
@@ -42,6 +44,7 @@ namespace  vaultdb {
 
 
     };
+
 
 
 }
