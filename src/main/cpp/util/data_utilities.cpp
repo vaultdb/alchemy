@@ -119,7 +119,7 @@ std::shared_ptr<PlainTable > DataUtilities::removeDummies(const std::shared_ptr<
     int write_cursor = 0;
     std::shared_ptr<PlainTable > output(new PlainTable(out_tuple_cnt, *input->getSchema(), input->getSortOrder()));
     for(int i = 0; i < input->getTupleCount(); ++i) {
-        if(!input->getTuple(i).getDummyTag()) {
+        if(!input->getDummyTag(i)) {
             output->putTuple(write_cursor, input->getTuple(i));
             ++write_cursor;
         }

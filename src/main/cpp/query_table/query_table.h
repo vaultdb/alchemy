@@ -58,7 +58,7 @@ namespace  vaultdb {
 
         bool isEncrypted() const;
 
-        inline void setSchema(const QuerySchema &schema);
+        void setSchema(const QuerySchema &schema);
 
         inline const std::shared_ptr<QuerySchema> getSchema() const { return schema_; }
 

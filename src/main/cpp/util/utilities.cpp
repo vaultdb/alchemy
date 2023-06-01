@@ -65,7 +65,7 @@ void Utilities::checkMemoryUtilization() {
         s << "[Mac]Peak resident set size: " << (size_t)info.resident_size_max << " bytes, current memory size: " << (size_t)info.resident_size  <<  " at epoch " << epoch << " ms";
          Logger::write(s.str());
     }
-    else Logger::write("[Mac]Query RSS failed", severity);
+    else Logger::write("[Mac]Query RSS failed");
 #endif
 
 }

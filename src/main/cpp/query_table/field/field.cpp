@@ -899,31 +899,31 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
 }
 
 
-template<typename B>
-Field<B> Field<B>::leadingZeros() {
-
-
-    Value v;
-
-    switch(type_) {
-        case FieldType::INT:
-            // ignoring sign bit for now.  This might need to be fixed later
-            v = (int32_t) std::countl_zero((uint32_t) boost::get<int32_t>(payload_));
-            break;
-        case FieldType::LONG:
-            v = (int64_t) std::countl_zero((uint64_t)  boost::get<int64_t>(payload_));
-            break;
-        case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-            v = boost::get<emp::Integer>(payload_).leading_zeros();
-        default:
-            v = (int32_t) 0;
-
-    }
-
-    return Field<B>(type_, v, 0);
-}
-
+//template<typename B>
+//Field<B> Field<B>::leadingZeros() {
+//
+//
+//    Value v;
+//
+//    switch(type_) {
+//        case FieldType::INT:
+//            // ignoring sign bit for now.  This might need to be fixed later
+//            v = (int32_t) std::countl_zero((uint32_t) boost::get<int32_t>(payload_));
+//            break;
+//        case FieldType::LONG:
+//            v = (int64_t) std::countl_zero((uint64_t)  boost::get<int64_t>(payload_));
+//            break;
+//        case FieldType::SECURE_INT:
+//        case FieldType::SECURE_LONG:
+//            v = boost::get<emp::Integer>(payload_).leading_zeros();
+//        default:
+//            v = (int32_t) 0;
+//
+//    }
+//
+//    return Field<B>(type_, v, 0);
+//}
+//
 
 
 template class vaultdb::Field<bool>;
