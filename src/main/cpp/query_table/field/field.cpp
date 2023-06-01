@@ -369,7 +369,6 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
         case FieldType::FLOAT:
             *((float_t *) dst) = getValue<float_t>();
             break;
-
         case FieldType::STRING:
             s = getValue<string>();
             std::reverse(s.begin(), s.end()); // reverse it so we can more easily conver to EMP format

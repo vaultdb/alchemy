@@ -30,7 +30,7 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
         // simply exec column mappings first with memcpy
         for(auto pos : column_mappings_) {
-            dst->setField(i, pos.second, src_table->getField(i, pos.first));
+            dst->assignField(i, pos.second, src_table.get(), i, pos.first); // to invoke memcpy
         }
 
         for(uint32_t j : exprs_to_exec_) {

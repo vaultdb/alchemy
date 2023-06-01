@@ -27,23 +27,20 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
     SortDefinition  rhs_sort = rhs->getSortOrder();
     concat_sorts.insert(concat_sorts.end(),  rhs_sort.begin(), rhs_sort.end());
 
-    B selected, dst_dummy_tag;
+    B selected, dst_dummy_tag, lhs_dummy_tag;
     // output size, colCount, is_encrypted
     Join<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(lhs->getTupleCount() * rhs->getTupleCount(), output_schema, concat_sorts));
     int cursor = 0;
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
-        QueryTuple<B> lhs_tuple = (*lhs)[i];
+         lhs_dummy_tag  = lhs->getDummyTag(i);
         for(uint32_t j = 0; j < rhs->getTupleCount(); ++j) {
-            QueryTuple<B> rhs_tuple = (*rhs)[j];
+            Join<B>::write_left(Operator<B>::output_.get(), cursor,  lhs.get(), i);
+            Join<B>::write_right(Operator<B>::output_.get(), cursor,  rhs.get(), j);
 
-            QueryTuple<B> out = (*Join<B>::output_)[cursor];
-            Join<B>::write_left(out, lhs_tuple); // all writes happen because we do the full cross product
-            Join<B>::write_right(out, rhs_tuple);
-
-            selected = Join<B>::predicate_->call(out).template getValue<B>();
-            dst_dummy_tag = (!selected) | lhs_tuple.getDummyTag() | rhs_tuple.getDummyTag();
-            out.setDummyTag(dst_dummy_tag);
+            selected = Join<B>::predicate_->call(Operator<B>::output_.get(), cursor).template getValue<B>();
+            dst_dummy_tag = (!selected) | lhs_dummy_tag | rhs->getDummyTag(j);
+            Operator<B>::output_->setDummyTag(cursor, dst_dummy_tag);
             ++cursor;
         }
     }

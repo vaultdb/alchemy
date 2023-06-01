@@ -42,8 +42,8 @@ const PlainField QueryTuple<bool>::getField(const int &ordinal) const {
 
 void QueryTuple<bool>::setField(const int &idx, const PlainField &f) {
     size_t field_offset = query_schema_->getFieldOffset(idx)/8;
-    int8_t *writePos = fields_ + field_offset;
-    f.serialize(writePos, query_schema_->getField(idx));
+    int8_t *write_pos = fields_ + field_offset;
+    f.serialize(write_pos, query_schema_->getField(idx));
 }
 
 

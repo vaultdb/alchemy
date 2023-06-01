@@ -33,6 +33,9 @@ namespace  vaultdb {
     private:
         SortDefinition order_by_;
         std::shared_ptr<QuerySchema> schema_;
+        map<int, int> field_offsets_bytes_;
+        map<int, int> field_sizes_bytes_;
+
 
     public:
         using iterator = QueryTableIterator<B>;
@@ -55,22 +58,21 @@ namespace  vaultdb {
 
         bool isEncrypted() const;
 
-        inline void setSchema(const QuerySchema &schema) {
-            schema_ = std::make_shared<QuerySchema>(schema);
-            tuple_size_ = schema_->size()/8; // bytes for plaintext
-
-            if(std::is_same_v<emp::Bit, B>) {
-                size_t tuple_bits = schema_->size();
-                tuple_size_ = tuple_bits * TypeUtilities::getEmpBitSize(); // bits, one block per bit
-            }
-
-        }
+        inline void setSchema(const QuerySchema &schema);
 
         inline const std::shared_ptr<QuerySchema> getSchema() const { return schema_; }
 
-        QueryTuple<B> getTuple(int idx);
+        inline QueryTuple<B> getTuple(int idx) {
+            int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
+            return QueryTuple<B>(schema_,  read_ptr);
 
-        const QueryTuple<B> getImmutableTuple(int idx) const;
+        }
+
+        inline const QueryTuple<B> getImmutableTuple(int idx) const {
+            int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
+            return QueryTuple<B>(schema_,  read_ptr);
+
+        }
 
         inline size_t getTupleCount() const { return tuple_cnt_; }
 
@@ -89,24 +91,23 @@ namespace  vaultdb {
         std::vector<int8_t> serialize() const;
 
         inline Field<B> getField(const int  & row, const int & col)  const {
-             QueryTuple<B> tuple = getImmutableTuple(row);
-            return tuple.getField(col);
-
+            int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * row);
+            return Field<B> ::deserialize(schema_->getField(col), read_ptr + field_offsets_bytes_.at(col));
         }
 
         inline void setField(const int  & row, const int & col, const Field<B> & f)  {
-            QueryTuple<B> tuple = getTuple(row);
-            tuple.setField(col, f);
-
+            int8_t *write_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * row);
+            f.serialize(write_ptr + field_offsets_bytes_.at(col), schema_->getField(col));
         }
 
         inline B getDummyTag(const int & row)  const {
-            QueryTuple<B> tuple = getImmutableTuple(row);
-            return tuple.getDummyTag();
+            B *tag = (B *) (tuple_data_.data() + tuple_size_ * row + field_offsets_bytes_.at(-1));
+            return *tag;
         }
 
         inline void setDummyTag(const int & row, const B & val)  {
-            getTuple(row).setDummyTag(val);
+            B *tag = (B *) (tuple_data_.data() + tuple_size_ * row + field_offsets_bytes_.at(-1));
+            *tag = val;
         }
 
         static std::shared_ptr<SecureTable> secretShare(const PlainTable *input, emp::NetIO *io, const int &party);
@@ -151,6 +152,21 @@ namespace  vaultdb {
         inline QueryTableIterator<B> begin() {   return QueryTableIterator<B>(*this); }
         inline QueryTableIterator<B> end() { return QueryTableIterator<B>( *this, tuple_cnt_); }
 
+        // memcpy a field from one table to another
+        void assignField(const int & dst_row, const int & dst_col,const  QueryTable<B> *src, const int & src_row, const int & src_col);
+        void cloneFields(const int &dst_row, const int &dst_start_col, const QueryTable<B> *src, const int &src_row, const int & src_start_col,
+                         const int &col_cnt);
+
+        void cloneFields(bool write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row, const int & src_col,
+                         const int &col_cnt);
+
+        void cloneFields(Bit write, const int &dst_row, const int &dst_col,const QueryTable<B> *src, const int &src_row, const int & src_col,
+                         const int &col_cnt);
+
+
+        void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
+        void cloneRow(const bool & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
+        void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
 
 
     private:

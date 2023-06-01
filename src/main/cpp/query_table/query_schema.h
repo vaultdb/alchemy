@@ -17,9 +17,9 @@ namespace  vaultdb {
     protected:
 
         std::map<int32_t, QueryFieldDesc> fields_;
-        std::map<int32_t, size_t> offsets_;
         size_t tuple_size_;
     public:
+        std::map<int32_t, size_t> offsets_;
 
         QuerySchema() {} // empty setup
         QuerySchema(std::shared_ptr<QuerySchema>  & s);

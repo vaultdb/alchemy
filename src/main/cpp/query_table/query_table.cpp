@@ -23,12 +23,8 @@ template <typename B>
 QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, const SortDefinition & sortDefinition)
         :  order_by_(std::move(sortDefinition)), schema_(std::make_shared<QuerySchema>(schema)), tuple_cnt_(num_tuples) {
 
-     tuple_size_ = schema_->size()/8; // bytes for plaintext
+    setSchema(schema);
 
-    if(std::is_same_v<emp::Bit, B>) {
-        size_t tuple_bits = schema_->size();
-        tuple_size_ =  schema_->size() * TypeUtilities::getEmpBitSize(); // bits, one block per bit
-    }
 
     if(num_tuples == 0)
         return;
@@ -45,6 +41,12 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
 
 }
 
+template <typename B>
+QueryTable<B>::QueryTable(const QueryTable<B> &src) : order_by_(src.getSortOrder()), tuple_size_(src.tuple_size_), tuple_cnt_(src.tuple_cnt_) {
+    tuple_data_ = src.tuple_data_;
+    setSchema(*src.schema_);
+
+}
 
 
 
@@ -149,12 +151,6 @@ void QueryTable<B>::putTuple(const int &idx, const QueryTuple<B> & tuple) {
 }
 
 
-template <typename B>
-QueryTable<B>::QueryTable(const QueryTable<B> &src) : order_by_(src.getSortOrder()), tuple_size_(src.tuple_size_), tuple_cnt_(src.tuple_cnt_) {
-    schema_ = std::make_shared<QuerySchema>(*src.getSchema());
-    tuple_data_ = src.tuple_data_;
-
-}
 
 
 
@@ -407,17 +403,7 @@ void QueryTable<B>::resize(const size_t &cnt) {
     tuple_cnt_ = cnt;
 }
 
-template<typename B>
-QueryTuple<B> QueryTable<B>::getTuple(int idx)   {
-    int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
-    return QueryTuple<B>(schema_,  read_ptr);
-}
 
-template<typename B>
-const QueryTuple<B> QueryTable<B>::getImmutableTuple(int idx)  const  {
-    int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
-    return QueryTuple<B>(schema_,  read_ptr);
-}
 
 template<typename B>
 size_t QueryTable<B>::getTrueTupleCount() const {
@@ -558,6 +544,138 @@ std::string QueryTable<B>::toString(const size_t &limit, const bool &show_dummie
 }
 
 
+template<typename B>
+void QueryTable<B>::setSchema(const QuerySchema &schema) {
+    schema_ = std::make_shared<QuerySchema>(schema);
+
+    if(std::is_same_v<emp::Bit, B>) {
+        tuple_size_ = schema_->size() * TypeUtilities::getEmpBitSize(); // bits, one block per bit
+
+        for(auto pos : schema_->offsets_) {
+            field_offsets_bytes_[pos.first] = pos.second * TypeUtilities::getEmpBitSize();
+            field_sizes_bytes_[pos.first] = schema_->getField(pos.first).size() * TypeUtilities::getEmpBitSize();
+        }
+
+
+        return;
+
+    }
+
+    // plaintext case
+    tuple_size_ = schema_->size()/8; // bytes for plaintext
+
+    for(auto pos : schema_->offsets_) {
+        field_offsets_bytes_[pos.first] = pos.second / 8;
+        field_sizes_bytes_[pos.first] = schema_->getField(pos.first).size() /8;
+    }
+
+
+}
+
+
+
+#include "query_table.h"
+
+using namespace vaultdb;
+
+template<typename B>
+void QueryTable<B>::assignField(const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row,
+                                const int &src_col) {
+
+    int8_t *src_field = (int8_t *) (src->tuple_data_.data() + src->tuple_size_ * src_row + src->field_offsets_bytes_.at(src_col));
+    int8_t *dst_field = (int8_t *) (tuple_data_.data() + tuple_size_ * dst_row + field_offsets_bytes_.at(dst_col));
+    memcpy(dst_field, src_field, field_sizes_bytes_.at(dst_col));
+
+
+}
+
+
+template<typename B>
+void
+QueryTable<B>::cloneFields(const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row, const int & src_col,
+                           const int &col_cnt) {
+
+    int8_t *src_ptr = (int8_t *) (src->tuple_data_.data() + src->tuple_size_ * src_row + src->field_offsets_bytes_.at(src_col));
+    int8_t *dst_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * dst_row + field_offsets_bytes_.at(dst_col));
+
+    int write_size = 0;
+    int cursor = dst_col;
+    for(int i = 0; i < col_cnt;  ++i) {
+        write_size += field_sizes_bytes_[cursor];
+        ++cursor;
+    }
+
+    memcpy(dst_ptr, src_ptr, write_size);
+}
+
+
+template<typename B>
+void QueryTable<B>::cloneFields(bool write, const int &dst_row, const int &dst_col, const QueryTable<B> *src,
+                                const int &src_row, const int &src_col, const int &col_cnt) {
+
+    if(write)
+        cloneFields(dst_row, dst_col, src, src_row, src_col, col_cnt);
+
+
+}
+
+
+template<typename B>
+void QueryTable<B>::cloneFields(Bit write, const int &dst_row, const int &dst_col, const QueryTable<B> *src,
+                                const int &src_row, const int &src_col, const int &col_cnt) {
+
+    Bit *read_ptr = (Bit *) (src->tuple_data_.data() + src->tuple_size_ * src_row + src->field_offsets_bytes_.at(src_col));
+    Bit *write_ptr = (Bit *) (tuple_data_.data() + tuple_size_ * dst_row + field_offsets_bytes_.at(dst_col));
+
+    int write_bit_cnt = 0;
+    int cursor = dst_col;
+    for(int i = 0; i < col_cnt;  ++i) {
+        write_bit_cnt += field_sizes_bytes_[cursor];
+        ++cursor;
+    }
+
+    for(size_t i = 0; i < write_bit_cnt; ++i) {
+        *write_ptr = emp::If(write, *read_ptr, *write_ptr);
+        ++read_ptr;
+        ++write_ptr;
+    }
+
+
+
+}
+
+
+template<typename B>
+void QueryTable<B>::cloneRow(const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row) {
+
+    int8_t *src_ptr = (int8_t *) (src->tuple_data_.data() + src->tuple_size_ * src_row);
+    int8_t *dst_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * dst_row + field_offsets_bytes_.at(dst_col));
+    memcpy(dst_ptr, src_ptr, src->tuple_size_);
+}
+
+template<typename B>
+void QueryTable<B>::cloneRow(const bool &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src,
+                             const int &src_row) {
+    if(write)
+        cloneRow(dst_row, dst_col, src, src_row);
+
+}
+
+template<typename B>
+void QueryTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &dst_col, const QueryTable<B> *src,
+                             const int &src_row) {
+
+    Bit *read_ptr = (Bit *) (src->tuple_data_.data() + src->tuple_size_ * src_row );
+    Bit *write_ptr = (Bit *) (tuple_data_.data() + tuple_size_ * dst_row + field_offsets_bytes_.at(dst_col));
+
+
+    for(size_t i = 0; i < src->schema_->size(); ++i) {
+        *write_ptr = emp::If(write, *read_ptr, *write_ptr);
+        ++read_ptr;
+        ++write_ptr;
+    }
+
+}
 
 
 

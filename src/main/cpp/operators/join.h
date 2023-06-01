@@ -29,6 +29,13 @@ namespace  vaultdb {
         static void write_right(PlainTuple & dst_tuple, const PlainTuple & src_tuple);
         static void write_right(SecureTuple & dst_tuple, const SecureTuple & src_tuple);
 
+        // if B write is true, then write to the right side of an output tuple with src_tuple
+        static void write_left(const B & write, QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
+        static void write_left(QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
+
+        static void write_right(const B & write, QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
+        static void write_right(QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
+
 
 
         static QuerySchema concatenateSchemas(const QuerySchema &lhs_schema, const QuerySchema &rhs_schema, const bool &append_bool = false);
@@ -45,6 +52,8 @@ namespace  vaultdb {
 
 
     };
+
+
 
 
 }
