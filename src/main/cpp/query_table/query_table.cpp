@@ -550,7 +550,7 @@ void QueryTable<B>::setSchema(const QuerySchema &schema) {
 
     if(std::is_same_v<emp::Bit, B>) {
         tuple_size_ = schema_->size() * TypeUtilities::getEmpBitSize(); // bits, one block per bit
-
+        // covers dummy tag as -1
         for(auto pos : schema_->offsets_) {
             field_offsets_bytes_[pos.first] = pos.second * TypeUtilities::getEmpBitSize();
             field_sizes_bytes_[pos.first] = schema_->getField(pos.first).size() * TypeUtilities::getEmpBitSize();
@@ -668,8 +668,8 @@ void QueryTable<B>::cloneRow(const Bit &write, const int &dst_row, const int &ds
     Bit *read_ptr = (Bit *) (src->tuple_data_.data() + src->tuple_size_ * src_row );
     Bit *write_ptr = (Bit *) (tuple_data_.data() + tuple_size_ * dst_row + field_offsets_bytes_.at(dst_col));
 
-
-    for(size_t i = 0; i < src->schema_->size() - field_sizes_bytes_.at(-1); ++i) {
+    size_t write_size = src->schema_->size() - 1;
+    for(size_t i = 0; i < write_size; ++i) {
         *write_ptr = emp::If(write, *read_ptr, *write_ptr);
         ++read_ptr;
         ++write_ptr;
