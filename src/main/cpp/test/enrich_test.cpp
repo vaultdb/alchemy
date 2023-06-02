@@ -224,7 +224,7 @@ shared_ptr<SecureTable> EnrichTest::aggregatePatientData() {
 /**** verification methods ****/
 
 std::string EnrichTest::getRollupExpectedResultsSql(const std::string &groupByColName) {
-    std::string expectedResultSql = "    WITH labeled as (\n"
+    std::string expected_sql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
                                     "              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2\n"
@@ -246,17 +246,17 @@ std::string EnrichTest::getRollupExpectedResultsSql(const std::string &groupByCo
                                     "  GROUP BY zip_marker, age_strata, sex, ethnicity, race \n"
                                     "  ORDER BY zip_marker, age_strata, sex, ethnicity, race ) \n";
 
-    expectedResultSql += "SELECT " + groupByColName + ", SUM(numerator)::INT numerator_cnt, SUM(denominator)::BIGINT denominator_cnt, SUM(numerator_multisite)::INT numerator_multisite, SUM(denominator_multisite)::INT denominator_multisite \n";
-    expectedResultSql += " FROM data_cube \n"
+    expected_sql += "SELECT " + groupByColName + ", SUM(numerator)::INT numerator_cnt, SUM(denominator)::BIGINT denominator_cnt, SUM(numerator_multisite)::INT numerator_multisite, SUM(denominator_multisite)::INT denominator_multisite \n";
+    expected_sql += " FROM data_cube \n"
                          " GROUP BY " + groupByColName + " \n"
                                                          " ORDER BY " + groupByColName;
 
-    return expectedResultSql;
+    return expected_sql;
 
 }
 
 void EnrichTest::validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition &expectedSortOrder) const {
-    std::string expectedResultSql = "    WITH labeled as (\n"
+    std::string expected_sql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
                                     "              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2\n"
@@ -271,28 +271,28 @@ void EnrichTest::validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition 
                                     "    FROM labeled p JOIN patient_exclusion pe ON p.patid = pe.patid AND p.site_id = pe.site_id"
                                     "    ORDER BY p.patid, zip_marker, age_strata, sex, ethnicity, race, denom_excl";
 
-    std::shared_ptr<PlainTable> observedTable = sortOp.run()->reveal();
+    std::shared_ptr<PlainTable> observed = sortOp.run()->reveal();
 
-    validateTable(unioned_enrich_db_, expectedResultSql, expectedSortOrder, observedTable);
+    validateTable(unioned_enrich_db_, expected_sql, expectedSortOrder, observed);
 
 }
 
 
-void EnrichTest::validateTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> & observedTable) const {
+void EnrichTest::validateTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> & observed) const {
 
     PsqlDataProvider dataProvider;
     std::shared_ptr<PlainTable> expectedTable = dataProvider.getQueryTable(dbName, sql);
     expectedTable->setSortOrder(expectedSortDefinition);
 
-    ASSERT_EQ(*expectedTable->getSchema(), *observedTable->getSchema());
+    ASSERT_EQ(*expectedTable->getSchema(), *observed->getSchema());
 
     // check that the types are faithfully aligned
-    for(size_t i = 0; i < observedTable->getSchema()->getFieldCount(); ++i) {
-        FieldType schemaType = observedTable->getSchema()->getField(i).getType();
-        FieldType instanceType = (*observedTable)[0][i].getType();
+    for(size_t i = 0; i < observed->getSchema()->getFieldCount(); ++i) {
+        FieldType schemaType = observed->getSchema()->getField(i).getType();
+        FieldType instanceType = (*observed)[0][i].getType();
         FieldType expectedType = (*expectedTable)[0][i].getType();
         /*if(schemaType != instanceType) {
-            std::cout << "Instance type not aligned! " << observedTable->get_schema().getField(i) << " expected: " << TypeUtilities::getTypeString(expectedType) << " received " << TypeUtilities::getTypeString(instanceType) << std::endl;
+            std::cout << "Instance type not aligned! " << observed->get_schema().getField(i) << " expected: " << TypeUtilities::getTypeString(expectedType) << " received " << TypeUtilities::getTypeString(instanceType) << std::endl;
         }*/
 
         ASSERT_EQ(schemaType, instanceType);
@@ -300,7 +300,7 @@ void EnrichTest::validateTable(const std::string & dbName, const std::string & s
 
     }
 
-    ASSERT_EQ(*expectedTable, *observedTable);
+    ASSERT_EQ(*expectedTable, *observed);
 
 }
 
@@ -347,7 +347,7 @@ TEST_F(EnrichTest, loadAndPrepData) {
 // need to refactor this to do the join before unioning Alice and Bob's inputs
 TEST_F(EnrichTest, loadAndJoinData) {
 
-    string expectedResultSql = "       SELECT p.patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
+    string expected_sql = "       SELECT p.patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                       "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
                                       "              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2\n"
                                       "              WHEN age_days > 50*365 AND age_days <= 61*365 THEN 3\n"
@@ -361,10 +361,10 @@ TEST_F(EnrichTest, loadAndJoinData) {
 
     SortDefinition  expectedSort{ColumnSort(0, SortDirection::ASCENDING)};
     std::shared_ptr<PlainTable> aliceJoined = loadAndJoinLocalData(alice_enrich_db_);
-    validateTable(alice_enrich_db_, expectedResultSql, expectedSort, aliceJoined);
+    validateTable(alice_enrich_db_, expected_sql, expectedSort, aliceJoined);
 
     std::shared_ptr<PlainTable> bobJoined = loadAndJoinLocalData(bob_enrich_db_);
-    validateTable(bob_enrich_db_, expectedResultSql, expectedSort, bobJoined);
+    validateTable(bob_enrich_db_, expected_sql, expectedSort, bobJoined);
 
 }
 
@@ -372,7 +372,7 @@ TEST_F(EnrichTest, loadAndJoinData) {
 
 TEST_F(EnrichTest, loadUnionAndDeduplicateData) {
 
-    std::string expectedResultSql = "    WITH labeled as (\n"
+    std::string expected_sql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
                                     "              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2\n"
@@ -389,16 +389,16 @@ TEST_F(EnrichTest, loadUnionAndDeduplicateData) {
                                     "    ORDER BY p.patid, zip_marker, age_strata, sex, ethnicity, race ";
 
     std::shared_ptr<SecureTable> deduplicated = loadUnionAndDeduplicateData();
-    std::shared_ptr<PlainTable> observedTable = deduplicated->reveal();
-    observedTable = DataUtilities::removeDummies(observedTable);
+    std::shared_ptr<PlainTable> observed = deduplicated->reveal();
+    observed = DataUtilities::removeDummies(observed);
 
-    validateTable(unioned_enrich_db_, expectedResultSql, DataUtilities::getDefaultSortDefinition(6), observedTable);
+    validateTable(unioned_enrich_db_, expected_sql, DataUtilities::getDefaultSortDefinition(6), observed);
 
 
 }
 
 TEST_F(EnrichTest, testExclusionCriteria) {
-    std::string expectedResultSql = "    WITH labeled as (\n"
+    std::string expected_sql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
                                     "              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2\n"
@@ -417,17 +417,17 @@ TEST_F(EnrichTest, testExclusionCriteria) {
 
 
     std::shared_ptr<SecureTable> filter = filterPatients();
-    std::shared_ptr<PlainTable> observedTable = filter->reveal();
-    observedTable = DataUtilities::removeDummies(observedTable);
+    std::shared_ptr<PlainTable> observed = filter->reveal();
+    observed = DataUtilities::removeDummies(observed);
 
-    validateTable(unioned_enrich_db_, expectedResultSql, DataUtilities::getDefaultSortDefinition(6), observedTable);
+    validateTable(unioned_enrich_db_, expected_sql, DataUtilities::getDefaultSortDefinition(6), observed);
 
 }
 
 
 TEST_F(EnrichTest, testPatientCohort) {
 
-    std::string expectedResultSql = "    WITH labeled as (\n"
+    std::string expected_sql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
                                     "              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2\n"
@@ -447,21 +447,17 @@ TEST_F(EnrichTest, testPatientCohort) {
                                     "  SELECT  zip_marker, age_strata, sex, ethnicity, race, numerator, CASE WHEN cnt > 1 THEN 1 else 0 END AS multisite, (numerator = 1 AND cnt> 1)::INT numerator_multisite \n"
                                     "  FROM deduplicated";
 
+    std::shared_ptr<SecureTable> pat_cohort = getPatientCohort();
+    std::shared_ptr<PlainTable> observed = pat_cohort->reveal();
 
-    std::shared_ptr<SecureTable> patientCohort = getPatientCohort();
-    std::shared_ptr<PlainTable> observedTable = patientCohort->reveal();
 
-
-    observedTable = DataUtilities::removeDummies(observedTable);
-    //SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(5);
-    SortDefinition empty;
-
-    validateTable(unioned_enrich_db_, expectedResultSql, empty, observedTable);
+    observed = DataUtilities::removeDummies(observed);
+    validateTable(unioned_enrich_db_, expected_sql, SortDefinition(), observed);
 
 }
 
 TEST_F(EnrichTest, testPatientAgggregation) {
-    std::string expectedResultSql = "    WITH labeled as (\n"
+    std::string expected_sql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
                                     "              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2\n"
@@ -484,11 +480,11 @@ TEST_F(EnrichTest, testPatientAgggregation) {
                                     "  ORDER BY zip_marker, age_strata, sex, ethnicity, race ";
 
   std::shared_ptr<SecureTable> aggregator = aggregatePatientData();
-    std::shared_ptr<PlainTable> observedTable = aggregator->reveal();
-    observedTable = DataUtilities::removeDummies(observedTable);
+    std::shared_ptr<PlainTable> observed = aggregator->reveal();
+    observed = DataUtilities::removeDummies(observed);
 
 
-    validateTable(unioned_enrich_db_, expectedResultSql, DataUtilities::getDefaultSortDefinition(5), observedTable);
+    validateTable(unioned_enrich_db_, expected_sql, DataUtilities::getDefaultSortDefinition(5), observed);
 
 }
 
@@ -496,46 +492,46 @@ TEST_F(EnrichTest, testPatientAgggregation) {
 
 TEST_F(EnrichTest, testRollups) {
     std::shared_ptr<SecureTable> aggregator = aggregatePatientData();
-    SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(1);
+    SortDefinition order_by = DataUtilities::getDefaultSortDefinition(1);
 
 
     // TODO: make this more efficient by doing a single scan for multiple rollups
     // roll-ups:
     // age_strata (1)
-    std::shared_ptr<PlainTable> ageStratified = rollUpAggregate(1, aggregator)->reveal();
-    ageStratified = DataUtilities::removeDummies(ageStratified);
-    std::string expectedOutputSql = getRollupExpectedResultsSql("age_strata");
-    validateTable(unioned_enrich_db_, expectedOutputSql, orderBy, ageStratified);
+    std::shared_ptr<PlainTable> age = rollUpAggregate(1, aggregator)->reveal();
+    age = DataUtilities::removeDummies(age);
+    std::string expected_sql = getRollupExpectedResultsSql("age_strata");
+    validateTable(unioned_enrich_db_, expected_sql, order_by, age);
     //std::cout << "Validated age strata" <<  *ageStratified << std::endl;
 
     // gender (2)
-    std::shared_ptr<PlainTable> genderStratified = rollUpAggregate(2, aggregator)->reveal();
-    genderStratified = DataUtilities::removeDummies(genderStratified);
-    expectedOutputSql = getRollupExpectedResultsSql("sex");
-    validateTable(unioned_enrich_db_, expectedOutputSql, orderBy, genderStratified);
+    std::shared_ptr<PlainTable> gender = rollUpAggregate(2, aggregator)->reveal();
+    gender = DataUtilities::removeDummies(gender);
+    expected_sql = getRollupExpectedResultsSql("sex");
+    validateTable(unioned_enrich_db_, expected_sql, order_by, gender);
 
     //std::cout << "Validated gender strata " << *genderStratified << std::endl;
 
     // ethnicity (3)
-    std::shared_ptr<PlainTable> ethnicityStratified = rollUpAggregate(3, aggregator)->reveal();
-    ethnicityStratified = DataUtilities::removeDummies(ethnicityStratified);
-    expectedOutputSql = getRollupExpectedResultsSql("ethnicity");
-    validateTable(unioned_enrich_db_, expectedOutputSql, orderBy, ethnicityStratified);
+    std::shared_ptr<PlainTable> ethnicity = rollUpAggregate(3, aggregator)->reveal();
+    ethnicity = DataUtilities::removeDummies(ethnicity);
+    expected_sql = getRollupExpectedResultsSql("ethnicity");
+    validateTable(unioned_enrich_db_, expected_sql, order_by, ethnicity);
     //std::cout << "Validated ethnicity strata " << *ethnicityStratified << std::endl;
 
     // race (4)
-    std::shared_ptr<PlainTable> raceStratified = rollUpAggregate(4, aggregator)->reveal();
-    raceStratified = DataUtilities::removeDummies(raceStratified);
-    expectedOutputSql = getRollupExpectedResultsSql("race");
-    validateTable(unioned_enrich_db_, expectedOutputSql, orderBy, raceStratified);
+    std::shared_ptr<PlainTable> race = rollUpAggregate(4, aggregator)->reveal();
+    race = DataUtilities::removeDummies(race);
+    expected_sql = getRollupExpectedResultsSql("race");
+    validateTable(unioned_enrich_db_, expected_sql, order_by, race);
     //std::cout << "Validated race strata " << *raceStratified << std::endl;
 
 
     // zip marker (0)
-    std::shared_ptr<PlainTable> zipMarkerStratified = rollUpAggregate(0, aggregator)->reveal();
-    zipMarkerStratified = DataUtilities::removeDummies(zipMarkerStratified);
-    expectedOutputSql = getRollupExpectedResultsSql("zip_marker");
-    validateTable(unioned_enrich_db_, expectedOutputSql, orderBy, zipMarkerStratified);
+    std::shared_ptr<PlainTable> zip_marker = rollUpAggregate(0, aggregator)->reveal();
+    zip_marker = DataUtilities::removeDummies(zip_marker);
+    expected_sql = getRollupExpectedResultsSql("zip_marker");
+    validateTable(unioned_enrich_db_, expected_sql, order_by, zip_marker);
     //std::cout << "Validated zip marker stratified " << *zipMarkerStratified << std::endl;
 }
 

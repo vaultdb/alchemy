@@ -89,32 +89,26 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     Operator<B>::output_ = shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), Operator<B>::output_schema_, outputSort));
     QueryTable<B> *output = Operator<B>::output_.get(); // shorthand
     // SMA: if all dummies at the end, this would be simpler.  But we can't really do that if there are MPC joins, filters, etc before this op because they will sprinkle dummies throughout the table
-
-
-    // for first pass only
-    for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
-        aggregator->initialize(input.get()); // don't need group_by_match, only for first pass
-    }
-
-    // for COUNT will have count of 1 if non-dummy, else dummy
     for(int j = 0; j < group_by_.size(); ++j) {
         output->assignField(0, j, input.get(), 0, group_by_[j]); //memcpy the input values
     }
 
     int cursor = group_by_.size();
-    for(int j = 0; j < aggregators_.size(); ++j) {
-        output->setField(0, cursor, aggregators_[j]->getResult());
+
+    // for first pass only
+    for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
+        aggregator->initialize(input.get()); // don't need group_by_match, only for first pass
+        output->setField(0, cursor, aggregator->getResult());
+        ++cursor;
     }
 
 
     output->setDummyTag(0, input->getDummyTag(0));
-    int col_cursor = 0;
     B true_lit = true;
     B matched, input_dummy_tag;
 
     for(int i = 1; i < input->getTupleCount(); ++i) {
         matched = true;
-
         input_dummy_tag = input->getDummyTag(i);
         for(int j = 0; j < group_by_.size(); ++j) {
             matched = matched & (input->getField(i, group_by_[j]) == output->getField(i-1, j));
@@ -127,12 +121,12 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
         //  if input a dummy also leave group-by bin boundaries as-is
         matched = matched |  output->getDummyTag(i-1) | input_dummy_tag;
 
-        col_cursor = group_by_.size();
+        cursor = group_by_.size();
 
         for(auto agg : aggregators_) {
             agg->accumulate(input.get(), i, matched);
-            output->setField(i, col_cursor, agg->getResult());
-            ++col_cursor;
+            output->setField(i, cursor, agg->getResult());
+            ++cursor;
         }
         B out_dummy_tag = output->getDummyTag(i-1) & input_dummy_tag; // both need to be dummies for current cell to remain dummy
         output->setDummyTag(i, out_dummy_tag);
