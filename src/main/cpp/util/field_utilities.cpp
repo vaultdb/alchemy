@@ -190,20 +190,20 @@ BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_
     }
 
     for(int i = 0; i < p->getTupleCount(); ++i) {
-        PlainTuple t = p->getTuple(i);
+        //PlainTuple t = p->getTuple(i);
 
         BitPackingDefinition bp;
-        string table = t.getField(0).toString();
-        string column = t.getField(1).toString();
+        string table = p->getField(i, 0).toString();
+        string column = p->getField(i, 1).toString();
 
         table.erase(table.find_last_not_of(" \t\n\r\f\v") + 1); // delete trailing spaces
         column.erase(column.find_last_not_of(" \t\n\r\f\v") + 1);
 
         ColumnReference c(table, column);
 
-        bp.min_ = t.getField(2).getValue<int>();
-        bp.max_ = t.getField(3).getValue<int>();
-        bp.domain_size_ =  t.getField(4).getValue<int>();
+        bp.min_ = p->getField(i, 2).getValue<int>();
+        bp.max_ = p->getField(i, 3).getValue<int>();
+        bp.domain_size_ =  p->getField(i, 4).getValue<int>();
 
         bit_packing[c] = bp;
     }

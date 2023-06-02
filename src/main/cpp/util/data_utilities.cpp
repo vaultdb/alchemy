@@ -118,9 +118,11 @@ std::shared_ptr<PlainTable > DataUtilities::removeDummies(const std::shared_ptr<
 
     int write_cursor = 0;
     std::shared_ptr<PlainTable > output(new PlainTable(out_tuple_cnt, *input->getSchema(), input->getSortOrder()));
+
     for(int i = 0; i < input->getTupleCount(); ++i) {
         if(!input->getDummyTag(i)) {
-            output->putTuple(write_cursor, input->getTuple(i));
+            output->cloneRow(write_cursor, 0, input.get(), i );
+            output->setDummyTag(write_cursor, false);
             ++write_cursor;
         }
         if(write_cursor == out_tuple_cnt) break;
@@ -134,8 +136,8 @@ DataUtilities::getExpectedResults(const string &dbName, const string &sql, const
                                   const int &sortColCount) {
 
     std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, sql, hasDummyTag);
-    SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
-    expected->setSortOrder(expectedSortOrder);
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(sortColCount);
+    expected->setSortOrder(expected_sort);
     return expected;
 }
 
@@ -193,24 +195,24 @@ size_t DataUtilities::get_tuple_cnt(const string &db_name, const string &sql, bo
 
     string query = "SELECT COUNT(*) FROM (" + sql + ") q";
     shared_ptr<PlainTable> res = DataUtilities::getQueryResults(db_name, query, false);
-    return res->getTuple(0).getField(0).getValue<int64_t>();
+    return res->getField(0,0).getValue<int64_t>();
 
 }
 
 vector<string> DataUtilities::readTextFile(const string &filename) {
     std::vector<std::string> lines;
-    std::ifstream inFile(filename);
+    std::ifstream input(filename);
     std::string line;
 
 
-    if(!inFile)
+    if(!input)
     {
         string cwd = Utilities::getCurrentWorkingDirectory();
         throw std::invalid_argument("Unable to open file: " + filename + " from " + cwd);
     }
 
 
-    while (std::getline(inFile, line))
+    while (std::getline(input, line))
     {
         lines.push_back(line);
     }

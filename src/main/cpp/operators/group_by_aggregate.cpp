@@ -74,8 +74,8 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
 
 
-    B realBin;
-    QueryTuple<B> current(input_schema), predecessor(input_schema);
+    //B realBin;
+    //QueryTuple<B> current(input_schema), predecessor(input_schema);
 
     if(output_cardinality_ == 0) { // naive case - go full oblivious
         output_cardinality_ = input->getTupleCount();
@@ -87,52 +87,94 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
 
 
     Operator<B>::output_ = shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), Operator<B>::output_schema_, outputSort));
-
-    QueryTuple<B> tuple = (*Operator<B>::output_)[0];
-    B dummy_tag(false);
-    tuple.setDummyTag(dummy_tag);
+    QueryTable<B> *output = Operator<B>::output_.get(); // shorthand
+    // SMA: if all dummies at the end, this would be simpler.  But we can't really do that if there are MPC joins, filters, etc before this op because they will sprinkle dummies throughout the table
 
 
-    predecessor = (*input)[0];
-
+    // for first pass only
     for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
-        aggregator->initialize(predecessor, B(false));
+        aggregator->initialize(input.get()); // don't need group_by_match, only for first pass
     }
 
-    realBin = !predecessor.getDummyTag(); // does this group-by bin contain at least one real (non-dummy) tuple?
+    // for COUNT will have count of 1 if non-dummy, else dummy
+    for(int j = 0; j < group_by_.size(); ++j) {
+        output->assignField(0, j, input.get(), 0, group_by_[j]); //memcpy the input values
+    }
+
+    int cursor = group_by_.size();
+    for(int j = 0; j < aggregators_.size(); ++j) {
+        output->setField(0, cursor, aggregators_[j]->getResult());
+    }
 
 
-    for(uint32_t i = 1; i < input->getTupleCount(); ++i) {
-        current = (*input)[i];
+    output->setDummyTag(0, input->getDummyTag(0));
+    int col_cursor = 0;
+    B true_lit = true;
+    B matched, input_dummy_tag;
 
-        realBin = realBin | !predecessor.getDummyTag();
-        B isGroupByMatch = groupByMatch(predecessor, current);
+    for(int i = 1; i < input->getTupleCount(); ++i) {
+        matched = true;
 
-        QueryTuple<B> output_tuple = GroupByAggregate<B>::output_->getTuple(i - 1); // to write to it in place
-        generateOutputTuple(output_tuple, predecessor, !isGroupByMatch, realBin, aggregators_);
-
-        for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
-            aggregator->initialize(current, isGroupByMatch);
-            aggregator->accumulate(current, !isGroupByMatch);
+        input_dummy_tag = input->getDummyTag(i);
+        for(int j = 0; j < group_by_.size(); ++j) {
+            matched = matched & (input->getField(i, group_by_[j]) == output->getField(i-1, j));
+            // initialize output - if input is dummy, copy from predecessor, otherwise copy from input
+            Field<B> dst_group_by = Field<B>::If(input_dummy_tag, output->getField(i-1, j), input->getField(i, group_by_[j]));
+            output->setField(i, j, dst_group_by);
         }
 
-        predecessor = current;
-        // reset the flag at the end of each group-by bin
-        // flag denotes if we have one non-dummy tuple in the bin
-        realBin = Field<B>::If(!isGroupByMatch,B(false), Field<B>(realBin)).template getValue<B>();
+        //  if uninitialized (seen no non-dummies yet), don't create a new group-by bin
+        //  if input a dummy also leave group-by bin boundaries as-is
+        matched = matched |  output->getDummyTag(i-1) | input_dummy_tag;
 
+        col_cursor = group_by_.size();
+
+        for(auto agg : aggregators_) {
+            agg->accumulate(input.get(), i, matched);
+            output->setField(i, col_cursor, agg->getResult());
+            ++col_cursor;
+        }
+        B out_dummy_tag = output->getDummyTag(i-1) & input_dummy_tag; // both need to be dummies for current cell to remain dummy
+        output->setDummyTag(i, out_dummy_tag);
+        // for output[i-1]
+        // if matched, replace previous with current, set old dummy tag to true
+        out_dummy_tag = FieldUtilities::select(matched, true_lit, output->getDummyTag(i-1));
+        output->setDummyTag(i-1, out_dummy_tag);
     }
 
-    realBin = realBin | !predecessor.getDummyTag();
+    //realBin = !predecessor.getDummyTag(); // does this group-by bin contain at least one real (non-dummy) tuple?
 
 
-    // B(true) to make it write out the last entry
-    QueryTuple<B> output_tuple = GroupByAggregate<B>::output_->getTuple(input->getTupleCount() - 1);
-    generateOutputTuple(output_tuple, predecessor, B(true), realBin, aggregators_);
+//    for(uint32_t i = 1; i < input->getTupleCount(); ++i) {
+//        current = (*input)[i];
+//
+//        realBin = realBin | !predecessor.getDummyTag();
+//        B isGroupByMatch = groupByMatch(predecessor, current);
+//
+//        QueryTuple<B> output_tuple = GroupByAggregate<B>::output_->getTuple(i - 1); // to write to it in place
+//        generateOutputTuple(output_tuple, predecessor, !isGroupByMatch, realBin, aggregators_);
+//
+//        for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
+//            aggregator->initialize(current, isGroupByMatch);// TODO: combine these methods since they are always called together
+//            aggregator->accumulate(current, !isGroupByMatch);
+//        }
+//
+//        predecessor = current;
+//        // reset the flag at the end of each group-by bin
+//        // flag denotes if we have one non-dummy tuple in the bin
+//        realBin = Field<B>::If(!isGroupByMatch,B(false), Field<B>(realBin)).template getValue<B>();
+//
+//    }
+//
+//    realBin = realBin | !predecessor.getDummyTag();
+//
+//
+//    // B(true) to make it write out the last entry
+//    QueryTuple<B> output_tuple = GroupByAggregate<B>::output_->getTuple(input->getTupleCount() - 1);
+//    generateOutputTuple(output_tuple, predecessor, B(true), realBin, aggregators_);
 
     // output sorted on group-by cols
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(group_by_.size());
-    Operator<B>::output_->setSortOrder(sortDefinition);
+    Operator<B>::output_->setSortOrder(DataUtilities::getDefaultSortDefinition(group_by_.size()));
 
     for(size_t i = 0; i < aggregators_.size(); ++i) {
         delete aggregators_[i];

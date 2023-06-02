@@ -2,7 +2,7 @@ include(../cmake/common.cmake)
 include(GoogleTest)
 cmake_minimum_required (VERSION 3.11)
 
-
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include_directories(
     ${gtest_SOURCE_DIR}
@@ -48,7 +48,7 @@ set_target_properties(gtest_main PROPERTIES FOLDER build)
 set_target_properties(gmock PROPERTIES FOLDER build)
 set_target_properties(gmock_main PROPERTIES FOLDER build)
 # back out of test directory for current working directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
 
 macro(package_add_test TESTNAME)
     # create an exectuable in which the tests will be stored
@@ -62,7 +62,7 @@ macro(package_add_test TESTNAME)
             # set a working directory so your project root so that you can find test data via paths relative to the project root
             WORKING_DIRECTORY ${PROJECT_DIR}
             PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_DIR}"
-            )
+            DISCOVERY_MODE PRE_TEST)
     set_target_properties(${TESTNAME} PROPERTIES FOLDER test)
 endmacro()
 

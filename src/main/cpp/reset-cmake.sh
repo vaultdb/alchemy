@@ -6,5 +6,6 @@ rm lib/*
 rm bin/*
 rm test/bin/*
 rm -rf  libvault*
+rm -rf build/*
 #cmake .
 #make clean all -j4

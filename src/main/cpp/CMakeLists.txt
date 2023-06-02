@@ -1,7 +1,7 @@
 #based on emp-tool pipeline
 # https://github.com/emp-toolkit/emp-tool
 cmake_minimum_required (VERSION 3.14)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 project (vaultdb-emp)
 set(NAME "vaultdb-emp")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -114,7 +114,7 @@ set(sources
 
 
 
-#message("verify ${OPENSSL_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY}: ${EMP_ZK_LIBRARY}  ")
+#message("verify ${OPENSSL_LIBRARIES}:${PQXX_LIBRARY}:${GFLAGS_LIBRARY}: ${EMP_ZK_LIBRARY}  ${EMP_LIBRARIES} ${EMP-TOOL_INCLUDE_DIR}")
 
 add_library(${NAME} SHARED ${sources})
 

@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <query_table/query_tuple.h>
 #include <query_table/field/field_factory.h>
-#include <limits.h>
+#include <query_table/query_table.h>
 #include <cfloat>
 
 
@@ -18,8 +18,10 @@ namespace vaultdb {
                 zero_(FieldFactory<B>::getZero(aggregate_type_)), one_(FieldFactory<B>::getOne(aggregate_type_)){};
 
         virtual ~GroupByAggregateImpl() = default;
-        virtual void initialize(const QueryTuple<B> & tuple, const B &isGroupByMatch) = 0; // run this when we start a new group-by bin
-        virtual void accumulate(const QueryTuple<B> & tuple, const B &isGroupByMatch) = 0;
+
+        virtual void initialize(const QueryTable<B> *input) = 0; // for use on the first row only of an aggregate
+        virtual void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) = 0;
+
         virtual Field<B> getResult() = 0;
         virtual FieldType getType() const { return aggregate_type_; }
 
@@ -38,27 +40,72 @@ namespace vaultdb {
     template<typename B>
    class GroupByCountImpl : public  GroupByAggregateImpl<B> {
     public:
-        explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType);
-        void initialize(const QueryTuple<B> & tuple, const B & group_by_match) override;
-        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
-        Field<B> getResult() override;
-        FieldType getType() const override;
+        explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType)  : GroupByAggregateImpl<B>(ordinal, aggType)
+        {
+            GroupByAggregateImpl<B>::aggregate_type_ =
+                    (TypeUtilities::isEncrypted(aggType)) ? FieldType::SECURE_LONG : FieldType::LONG;
+
+            GroupByAggregateImpl<B>::zero_ = FieldFactory<B>::getZero(GroupByAggregateImpl<B>::aggregate_type_);
+            GroupByAggregateImpl<B>::one_ = FieldFactory<B>::getOne(GroupByAggregateImpl<B>::aggregate_type_);
+            running_count_ = GroupByAggregateImpl<B>::zero_;
+
+        }
+
+        // run on first row alone for a GroupByAggregate
+         inline void initialize(const QueryTable<B> *table) override {
+            running_count_ = Field<B>::If(table->getDummyTag(0),  GroupByAggregateImpl<B>::zero_,  GroupByAggregateImpl<B>::one_);
+        }
+
+        inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
+            Field<B> incr = Field<B>::If(table->getDummyTag(row), GroupByAggregateImpl<B>::zero_, GroupByAggregateImpl<B>::one_);
+            running_count_ = Field<B>::If(group_by_match, running_count_, GroupByAggregateImpl<B>::zero_);
+            running_count_ = running_count_ + incr;
+        }
+
+        inline Field<B> getResult() override {
+            return running_count_;
+        }
+
+        inline FieldType getType() const override {
+            if(TypeUtilities::isEncrypted(GroupByAggregateImpl<B>::aggregate_type_))
+                return FieldType::SECURE_LONG;
+            return FieldType::LONG;  // count always returns a long
+        }
        ~GroupByCountImpl() = default;
 
-    private:
+
+   private:
         Field<B> running_count_;
 
     };
 
 
+
     template<typename B>
     class GroupBySumImpl : public  GroupByAggregateImpl<B> {
     public:
-        explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & aggType);
-        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
-        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
-        Field<B> getResult() override;
-        FieldType getType() const override;
+        explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {
+            running_sum_ = GroupByAggregateImpl<B>::zero_;
+            assert(aggType != FieldType::STRING && aggType != FieldType::SECURE_STRING);
+        }
+
+         inline void initialize(const QueryTable<B> *table) override{
+            running_sum_ = Field<B>::If(table->getDummyTag(0), running_sum_, table->getField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
+        }
+
+        //virtual void accumulate(const QueryTuple<B> & tuple, const B &group_by_match) override;
+         inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
+
+            Field<B> incr = Field<B>::If(table->getDummyTag(row), GroupByAggregateImpl<B>::zero_, table->getField(row, GroupByAggregateImpl<B>::aggregate_ordinal_));
+
+            running_sum_ = Field<B>::If(group_by_match, running_sum_, GroupByAggregateImpl<B>::zero_);
+
+            running_sum_ = running_sum_ + incr;
+        }
+        inline Field<B> getResult() override {
+            return running_sum_;
+        }
+        inline FieldType getType() const override { return GroupByAggregateImpl<B>::aggregate_type_; }
         ~GroupBySumImpl() = default;
 
     private:
@@ -69,30 +116,72 @@ namespace vaultdb {
     template<typename B>
     class GroupByAvgImpl : public  GroupByAggregateImpl<B> {
     public:
-        GroupByAvgImpl(const int32_t & ordinal, const FieldType & aggType);
-        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
-        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
-        Field<B> getResult() override;
+        GroupByAvgImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl<B>(ordinal, aggType)  {
+            running_sum_ = GroupByAggregateImpl<B>::zero_;
+            running_count_ = GroupByAggregateImpl<B>::zero_;
+        }
+
+         inline void initialize(const QueryTable<B> *table) override {
+           running_count_ = Field<B>::If(table->getDummyTag(0),  GroupByAggregateImpl<B>::zero_,  GroupByAggregateImpl<B>::one_);
+           running_sum_ = Field<B>::If(table->getDummyTag(0), running_sum_, table->getField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
+        }
+
+         inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
+            // count
+            Field<B> cnt_incr = Field<B>::If(table->getDummyTag(row), GroupByAggregateImpl<B>::zero_, GroupByAggregateImpl<B>::one_);
+            running_count_ = Field<B>::If(group_by_match, running_count_, GroupByAggregateImpl<B>::zero_);
+            running_count_ = running_count_ + cnt_incr;
+
+
+            // sum
+            Field<B> sum_incr = Field<B>::If(table->getDummyTag(row), GroupByAggregateImpl<B>::zero_, table->getField(row, GroupByAggregateImpl<B>::aggregate_ordinal_));
+
+            running_sum_ = Field<B>::If(group_by_match, running_sum_, GroupByAggregateImpl<B>::zero_);
+
+            running_sum_ = running_sum_ + sum_incr;
+
+        }
+        inline Field<B> getResult() override {
+            return running_sum_ / running_count_;
+        }
         ~GroupByAvgImpl() = default;
 
     private:
-        Field<B> runningSum;
-        Field<B> runningCount;
+        Field<B> running_sum_;
+        Field<B> running_count_;
 
     };
 
     template<typename B>
     class GroupByMinImpl : public  GroupByAggregateImpl<B> {
     public:
-        explicit GroupByMinImpl(const int32_t & ordinal, const FieldType & aggType);
-        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
-        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
-        Field<B> getResult() override;
+        explicit GroupByMinImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {
+            running_min_ = FieldFactory<B>::getMax(aggType);
+        }
+
+        inline void initialize(const QueryTable<B> *table) override {
+            running_min_ = Field<B>::If(table->getDummyTag(0), running_min_, table->getField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
+
+        }
+
+        inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
+            // if a match and not a dummy
+            Field<B> agg_input = table->getField(row, GroupByAggregateImpl<B>::aggregate_ordinal_);
+            Field<B> new_min = Field<B>::If(agg_input < running_min_, agg_input, running_min_);
+            B input_dummy_tag = table->getDummyTag(row);
+
+            running_min_ = Field<B>::If(group_by_match & !input_dummy_tag, new_min, running_min_);
+            // new bin
+            running_min_ = Field<B>::If(!group_by_match & !input_dummy_tag, agg_input, running_min_);
+        }
+        inline Field<B> getResult() override {
+            return running_min_;
+        }
+
         ~GroupByMinImpl() = default;
 
     private:
-        Field<B> runningMin;
-        Field<B> resetMin;
+        Field<B> running_min_;
 
 
     };
@@ -100,15 +189,33 @@ namespace vaultdb {
     template<typename B>
     class GroupByMaxImpl : public  GroupByAggregateImpl<B> {
     public:
-        GroupByMaxImpl(const int32_t & ordinal, const FieldType & aggType);;
-        void initialize(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
-        void accumulate(const QueryTuple<B> & tuple, const B & isGroupByMatch) override;
-        Field<B> getResult() override;
+        GroupByMaxImpl(const int32_t & ordinal, const FieldType & aggType)  : GroupByAggregateImpl<B>(ordinal, aggType) {
+            running_max_ = FieldFactory<B>::getMin(aggType);
+        }
+
+        inline void initialize(const QueryTable<B> *table) override {
+            running_max_ = Field<B>::If(table->getDummyTag(0), running_max_, table->getField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
+        }
+
+
+        inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
+            // if a match and not a dummy
+            Field<B> agg_input = table->getField(row, GroupByAggregateImpl<B>::aggregate_ordinal_);
+            Field<B> new_min = Field<B>::If(agg_input > running_max_, agg_input, running_max_);
+            B input_dummy_tag = table->getDummyTag(row);
+
+            running_max_ = Field<B>::If(group_by_match & !input_dummy_tag, new_min, running_max_);
+            // new bin
+            running_max_ = Field<B>::If(!group_by_match & !input_dummy_tag, agg_input, running_max_);
+
+
+        }
+
+        inline Field<B> getResult() override { return running_max_; }
         ~GroupByMaxImpl() = default;
 
     private:
-        Field<B> runningMax;
-        Field<B> resetMax;
+        Field<B> running_max_;
 
 
     };

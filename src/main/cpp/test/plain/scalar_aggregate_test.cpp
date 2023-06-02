@@ -283,10 +283,8 @@ TEST_F(ScalarAggregateTest, test_tpch_q1_avg_cnt) {
     ScalarAggregate aggregate(&input, aggregators);
     std::shared_ptr<PlainTable> aggregated = aggregate.run();
 
-    // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
-    ASSERT_EQ(*expected, *observed);
+    ASSERT_EQ(*expected, *aggregated);
 
 }
 

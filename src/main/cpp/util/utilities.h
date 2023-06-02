@@ -14,10 +14,10 @@
 #include <mach/mach.h>
 #endif
 
+#include <emp-tool/circuits/bit.h>
 #include <cstdint>
 #include <vector>
 #include <string>
-#include <emp-tool/circuits/bit.h>
 #include <operators/support/aggregate_id.h>
 #include <common/defs.h>
 #include <util/logger.h>
