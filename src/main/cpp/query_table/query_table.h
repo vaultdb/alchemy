@@ -68,6 +68,7 @@ namespace  vaultdb {
 
         }
 
+
         inline const QueryTuple<B> getImmutableTuple(int idx) const {
             int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
             return QueryTuple<B>(schema_,  read_ptr);
@@ -89,6 +90,7 @@ namespace  vaultdb {
 
 
         std::vector<int8_t> serialize() const;
+
 
         inline Field<B> getField(const int  & row, const int & col)  const {
             int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * row);

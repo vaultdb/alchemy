@@ -58,90 +58,38 @@ Join<B>::concatenateSchemas(const QuerySchema &lhs_schema, const QuerySchema &rh
 }
 
 
-// copy src_tuple to lhs of dst for its half of the join
-template<typename B>
-void Join<B>::write_left(const bool &write, PlainTuple &dst_tuple, const PlainTuple &src_tuple) {
-    if(write) {
-        size_t tuple_size = src_tuple.getSchema()->size()/8 - 1; // -1 for dummy tag
-        memcpy(dst_tuple.getData(), src_tuple.getData(), tuple_size);
-    }
-}
-
 
 template<typename B>
-void Join<B>::write_left(const emp::Bit &write, SecureTuple &dst_tuple, const SecureTuple &src_tuple) {
-    size_t write_bit_cnt = src_tuple.getSchema()->size() - 1; // -1 for dummy tag
-
-    emp::Bit *write_ptr = dst_tuple.getData();
-    emp::Bit *read_ptr = src_tuple.getData();
-    for(size_t i = 0; i < write_bit_cnt; ++i) {
-        *write_ptr = emp::If(write, *read_ptr, *write_ptr);
-        ++read_ptr;
-        ++write_ptr;
-    }
+void Join<B>::write_left(PlainTuple & dst, const PlainTable *src, const int & idx) {
+    size_t tuple_size = src->tuple_size_ - 1; // -1 for dummy tag
+    const int8_t *read_ptr = src->tuple_data_.data() + src->tuple_size_ * idx;
+    memcpy(dst.getData(), read_ptr, tuple_size);
 
 }
 
 template<typename B>
-void Join<B>::write_left(PlainTuple &dst_tuple, const PlainTuple &src_tuple) {
-    size_t tuple_size = src_tuple.getSchema()->size()/8 - 1; // -1 for dummy tag
-    memcpy(dst_tuple.getData(), src_tuple.getData(), tuple_size);
-}
-
-
-template<typename B>
-void Join<B>::write_left(SecureTuple &dst_tuple, const SecureTuple &src_tuple) {
-
-    memcpy(dst_tuple.getData(), src_tuple.getData(), (src_tuple.getSchema()->size() - 1) * TypeUtilities::getEmpBitSize());
+void Join<B>::write_left(SecureTuple & dst, const SecureTable *src, const int & idx) {
+    memcpy(dst.getData(), src->tuple_data_.data() + src->tuple_size_ * idx, (src->getSchema()->size() - 1) * TypeUtilities::getEmpBitSize() );
 }
 
 
 
-template<typename B>
-void Join<B>::write_right(const bool &write, PlainTuple &dst_tuple, const PlainTuple &src_tuple) {
-    if(write) {
-        size_t write_size = src_tuple.getSchema()->size()/8 - 1; // don't overwrite dummy tag
-        size_t dst_byte_cnt = dst_tuple.getSchema()->size()/8;
-        size_t write_offset = dst_byte_cnt - write_size - 1;
-
-        memcpy(dst_tuple.getData() + write_offset, src_tuple.getData(), write_size);
-    }
-}
-
 
 template<typename B>
-void Join<B>::write_right(const emp::Bit &write, SecureTuple &dst_tuple, const SecureTuple &src_tuple) {
-    size_t write_bit_cnt = src_tuple.getSchema()->size() - 1; // don't overwrite dummy tag
-    size_t dst_bit_cnt = dst_tuple.getSchema()->size() - 1;
-    size_t write_offset = dst_bit_cnt - write_bit_cnt;
+void Join<B>::write_right(SecureTuple &dst_tuple, const SecureTable *src, const int & idx) {
+    Bit *dst = ((Bit *) dst_tuple.getData()) +  (dst_tuple.getSchema()->size()  - src->getSchema()->size());
 
-    emp::Bit *write_ptr = dst_tuple.getData() + write_offset;
-    emp::Bit *read_ptr = src_tuple.getData();
-    for(size_t i = 0; i < write_bit_cnt; ++i) {
-        *write_ptr = emp::If(write, *read_ptr, *write_ptr);
-        ++read_ptr;
-        ++write_ptr;
-    }
-
-}
-
-
-template<typename B>
-void Join<B>::write_right(SecureTuple &dst_tuple, const SecureTuple &src_tuple) {
-    Bit *dst = dst_tuple.getData() +  (dst_tuple.getSchema()->size()  - src_tuple.getSchema()->size() );
-    Bit *src = src_tuple.getData();
-    memcpy(dst, src, (src_tuple.getSchema()->size() - 1) * TypeUtilities::getEmpBitSize());
-
-
+    const int8_t *s = src->tuple_data_.data() + idx * src->tuple_size_;
+    memcpy(dst, s, (src->getSchema()->size() - 1) * TypeUtilities::getEmpBitSize());
 }
 
 template<typename B>
-void Join<B>::write_right(PlainTuple &dst_tuple, const PlainTuple &src_tuple) {
-    size_t write_size = src_tuple.getSchema()->size()/8 - sizeof(bool); // don't overwrite dummy tag
-    size_t dst_byte_cnt = dst_tuple.getSchema()->size()/8;
-    size_t write_offset = dst_byte_cnt - write_size - 1;
+void Join<B>::write_right(PlainTuple &dst_tuple, const PlainTable *src, const int & idx) {
 
-    memcpy(dst_tuple.getData() + write_offset, src_tuple.getData(), write_size);
+    size_t write_size = src->tuple_size_ - 1; // don't overwrite dummy tag
+    int8_t *write_ptr = dst_tuple.getData() + (dst_tuple.getSchema()->size()/8 - src->tuple_size_);
+
+    memcpy(write_ptr, src->tuple_data_.data() + idx * src->tuple_size_, write_size);
 
 }
 

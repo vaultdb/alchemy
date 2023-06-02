@@ -35,7 +35,7 @@ QueryTable<B>::QueryTable(const size_t &num_tuples, const QuerySchema &schema, c
 
     std::memset(tuple_data_.data(), 0, tuple_data_.size());
     for(int i = 0; i < num_tuples; ++i) {
-        getTuple(i).setDummyTag(true);
+        setDummyTag(i, true);
     }
 
 
@@ -97,7 +97,8 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const SecureTable &table) {
     os << table.getSchema() << " isEncrypted? " << table.isEncrypted() <<  " order by: " << DataUtilities::printSortDefinition(table.getSortOrder()) << endl;
 
     for(uint32_t i = 0; i < table.getTupleCount(); ++i) {
-        os << table[i] << endl;
+        SecureTuple t(table.getSchema(), table.tuple_data_.data() + i * table.tuple_size_);
+        os << t << endl;
     }
 
     return os;
@@ -433,6 +434,7 @@ QueryTuple<B> QueryTable<B>::operator[](const int &idx) {
     return this->getTuple(idx);
 }
 
+
 template<typename B>
 const QueryTuple<B> QueryTable<B>::operator[](const int &idx) const {
     int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
@@ -458,7 +460,7 @@ std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable *table,
             dst_table->putTuple(i, dst_tuple);
         }
         else {
-            (*dst_table)[i].setDummyTag(true);
+            dst_table->setDummyTag(i, true);
         }
     }
 
