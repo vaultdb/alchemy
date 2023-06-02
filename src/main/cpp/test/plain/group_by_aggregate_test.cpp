@@ -68,6 +68,17 @@ TEST_F(GroupByAggregateTest, test_count) {
     runTest(expectedOutputQuery, aggregators);
 }
 
+TEST_F(GroupByAggregateTest, test_count_dummies) {
+
+    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+    std::string expected_sql = "SELECT l_orderkey,COUNT(*)::BIGINT cnt  FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+
+    std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
+    runDummiesTest(expected_sql, aggregators);
+}
+
+
+
 TEST_F(GroupByAggregateTest, test_sum) {
     std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber)::INT sum_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno")};

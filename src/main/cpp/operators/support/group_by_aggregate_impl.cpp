@@ -168,9 +168,6 @@ using namespace vaultdb;
 template class vaultdb::GroupByAggregateImpl<bool>;
 template class vaultdb::GroupByAggregateImpl<emp::Bit>;
 
-template class vaultdb::GroupByCountImpl<bool>;
-template class vaultdb::GroupByCountImpl<emp::Bit>;
-
 template class vaultdb::GroupBySumImpl<bool>;
 template class vaultdb::GroupBySumImpl<emp::Bit>;
 

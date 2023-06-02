@@ -35,50 +35,86 @@ namespace vaultdb {
 
     };
 
+    template<typename B> class GroupByCountImpl;
 
-
-    template<typename B>
-   class GroupByCountImpl : public  GroupByAggregateImpl<B> {
+    template<>
+    class GroupByCountImpl<emp::Bit> : public  GroupByAggregateImpl<emp::Bit> {
     public:
-        explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType)  : GroupByAggregateImpl<B>(ordinal, aggType)
+         GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType)  : GroupByAggregateImpl<Bit>(ordinal, aggType)
         {
-            GroupByAggregateImpl<B>::aggregate_type_ =
-                    (TypeUtilities::isEncrypted(aggType)) ? FieldType::SECURE_LONG : FieldType::LONG;
-
-            GroupByAggregateImpl<B>::zero_ = FieldFactory<B>::getZero(GroupByAggregateImpl<B>::aggregate_type_);
-            GroupByAggregateImpl<B>::one_ = FieldFactory<B>::getOne(GroupByAggregateImpl<B>::aggregate_type_);
-            running_count_ = GroupByAggregateImpl<B>::zero_;
-
+            GroupByAggregateImpl<Bit>::aggregate_type_ = FieldType::SECURE_LONG;
+            running_count_ = emp::Integer(64, 0, PUBLIC); // publicly initialize to zero
         }
 
         // run on first row alone for a GroupByAggregate
-         inline void initialize(const QueryTable<B> *table) override {
-            running_count_ = Field<B>::If(table->getDummyTag(0),  GroupByAggregateImpl<B>::zero_,  GroupByAggregateImpl<B>::one_);
+         inline void initialize(const SecureTable *table) override {
+            Bit dummy_tag = table->getDummyTag(0);
+            running_count_.bits[0] = !dummy_tag;
         }
 
-        inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
-            Field<B> incr = Field<B>::If(table->getDummyTag(row), GroupByAggregateImpl<B>::zero_, GroupByAggregateImpl<B>::one_);
-            running_count_ = Field<B>::If(group_by_match, running_count_, GroupByAggregateImpl<B>::zero_);
+        inline void accumulate(const SecureTable *table, const int & row,  const Bit &group_by_match) override {
+            Bit dummy_tag = table->getDummyTag(row);
+            emp::Integer incr = zero_i_;
+            incr.bits[0] = !dummy_tag;
+
+            running_count_ = emp::If(group_by_match, running_count_, zero_i_);
             running_count_ = running_count_ + incr;
         }
 
-        inline Field<B> getResult() override {
-            return running_count_;
+        inline Field<Bit> getResult() override {
+            return SecureField(FieldType::SECURE_LONG, running_count_, 0);
         }
 
         inline FieldType getType() const override {
-            if(TypeUtilities::isEncrypted(GroupByAggregateImpl<B>::aggregate_type_))
                 return FieldType::SECURE_LONG;
-            return FieldType::LONG;  // count always returns a long
         }
        ~GroupByCountImpl() = default;
 
 
    private:
-        Field<B> running_count_;
+        emp::Integer running_count_;
+        const emp::Integer zero_i_ = Integer(64, 0, PUBLIC);
+        const emp::Integer one_i_ = Integer(64, 1, PUBLIC);
 
     };
 
+    template<>
+    class GroupByCountImpl<bool> : public  GroupByAggregateImpl<bool> {
+    public:
+        explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType)  : GroupByAggregateImpl<bool>(ordinal, aggType)
+        {
+            GroupByAggregateImpl<bool>::aggregate_type_ = FieldType::LONG;
+            running_count_ = 0L;
+
+        }
+
+        // run on first row alone for a GroupByAggregate
+        inline void initialize(const PlainTable *table) override {
+            running_count_ = table->getDummyTag(0) ? 0L : 1L;
+        }
+
+        inline void accumulate(const PlainTable *table, const int & row,  const bool &group_by_match) override {
+            long incr = table->getDummyTag(row) ? 0L : 1L;
+            if(!group_by_match)
+                running_count_ = 0L;
+
+            running_count_ = running_count_ + incr;
+        }
+
+        inline PlainField getResult() override {
+            return PlainField(FieldType::LONG, running_count_, 0);
+        }
+
+        inline FieldType getType() const override {
+            return FieldType::LONG;  // count always returns a long
+        }
+        ~GroupByCountImpl() = default;
+
+
+    private:
+        int64_t running_count_;
+
+    };
 
 
     template<typename B>
