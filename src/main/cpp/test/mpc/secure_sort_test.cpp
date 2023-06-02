@@ -20,21 +20,23 @@ using namespace vaultdb;
 class SecureSortTest : public EmpBaseTest {
 protected:
 
-    static bool correctOrder(const PlainTuple & lhs, const PlainTuple & rhs, const SortDefinition & sort_definition);
-    static bool isSorted(const std::shared_ptr<PlainTable> & table, const SortDefinition & sort_definition);
+    static bool correctOrder(const PlainTable *lhs, const int & l_row,
+                             const PlainTable *rhs, const int & r_row, const SortDefinition & sort_definition);
+    static bool isSorted(const PlainTable *table, const SortDefinition & sort_definition);
 
 
 };
 
 // is lhs  <= rhs
 // fails if either tuple is encrypted
-bool SecureSortTest::correctOrder(const PlainTuple &lhs, const PlainTuple &rhs, const SortDefinition & sort_definition) {
+bool SecureSortTest::correctOrder(const PlainTable *lhs, const int & l_row,
+                                  const PlainTable *rhs, const int & r_row, const SortDefinition & sort_definition) {
 
-    assert(lhs.getFieldCount() == rhs.getFieldCount());
+    assert(*lhs->getSchema() == *rhs->getSchema());
 
     for(int i = 0; i < sort_definition.size(); ++i) {
-        PlainField lhs_field = lhs.getField(sort_definition[i].first);
-        PlainField rhs_field = rhs.getField(sort_definition[i].first);
+        PlainField lhs_field = lhs->getField(l_row, sort_definition[i].first);
+        PlainField rhs_field = rhs->getField(r_row, sort_definition[i].first);
 
         if (lhs_field == rhs_field)
             continue;
@@ -49,15 +51,13 @@ bool SecureSortTest::correctOrder(const PlainTuple &lhs, const PlainTuple &rhs, 
     return true; // it's a toss-up, they are equal wrt sort fields
 }
 
-bool SecureSortTest::isSorted(const std::shared_ptr<PlainTable> & table, const SortDefinition & sort_definition) {
+bool SecureSortTest::isSorted(const PlainTable *table, const SortDefinition & sort_definition) {
 
     for(uint32_t i = 1; i < table->getTupleCount(); ++i) {
 
-        PlainTuple previous = table->getTuple(i - 1);
-        PlainTuple current = table->getTuple(i);
 
-        if(!correctOrder(previous, current, sort_definition))  {
-            std::cout << "Incorrect order: " << previous << " --> " << current << std::endl;
+        if(!correctOrder(table, i-1, table, i, sort_definition))  {
+            std::cout << "Incorrect order: " << table->getPlainTuple(i-1) << " --> " << table->getPlainTuple(i)  << std::endl;
             return false;
         }// each tuple correctly ordered wrt its predecessor
 
@@ -223,7 +223,7 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
 
 
-    ASSERT_TRUE(isSorted(observed, sort_definition));
+    ASSERT_TRUE(isSorted(observed.get(), sort_definition));
 
 
 
@@ -246,10 +246,7 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
     std::shared_ptr<PlainTable> observed = sort.run()->reveal();
 
-
-    ASSERT_TRUE(isSorted(observed, sort_definition));
-
-
+    ASSERT_TRUE(isSorted(observed.get(), sort_definition));
 
 
 }

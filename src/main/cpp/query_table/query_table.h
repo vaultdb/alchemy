@@ -62,18 +62,18 @@ namespace  vaultdb {
 
         inline const std::shared_ptr<QuerySchema> getSchema() const { return schema_; }
 
-        inline QueryTuple<B> getTuple(int idx) {
-            int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
-            return QueryTuple<B>(schema_,  read_ptr);
-
-        }
-
-
-        inline const QueryTuple<B> getImmutableTuple(int idx) const {
-            int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
-            return QueryTuple<B>(schema_,  read_ptr);
-
-        }
+//        inline QueryTuple<B> getTuple(int idx) {
+//            int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
+//            return QueryTuple<B>(schema_,  read_ptr);
+//
+//        }
+//
+//
+//        inline const QueryTuple<B> getImmutableTuple(int idx) const {
+//            int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
+//            return QueryTuple<B>(schema_,  read_ptr);
+//
+//        }
 
         inline size_t getTupleCount() const { return tuple_cnt_; }
 
@@ -136,9 +136,9 @@ namespace  vaultdb {
 
         bool operator!=(const QueryTable &other) const { return !(*this == other); }
 
-        QueryTuple<B> operator[](const int &idx);
+//        QueryTuple<B> operator[](const int &idx);
 
-        const QueryTuple<B> operator[](const int &idx) const;
+//        const QueryTuple<B> operator[](const int &idx) const;
 
         static std::shared_ptr<PlainTable> deserialize(const QuerySchema &schema, const vector<int8_t> &tableBits);
 
@@ -149,6 +149,7 @@ namespace  vaultdb {
 
         bool empty() const { return tuple_data_.empty(); }
 
+        // this method is for validation / testing only
         QueryTuple<bool> getPlainTuple(size_t idx) const;
 
         inline QueryTableIterator<B> begin() {   return QueryTableIterator<B>(*this); }

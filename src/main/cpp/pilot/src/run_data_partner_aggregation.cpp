@@ -90,7 +90,7 @@ runRollup(int idx, string colName, int party, std::shared_ptr<SecureTable> & dat
         csv = schema_str.str();
 
         for(size_t i = 0; i < result->getTupleCount(); ++i) {
-            csv += (*result)[i].toString() + "\n";
+            csv += result->getPlainTuple(i).toString() + "\n";
         }
         DataUtilities::writeFile(out_file, csv);
 
@@ -179,14 +179,23 @@ int main(int argc, char **argv) {
 
     // for each tuple
     for(size_t i = 0; i < tuple_cnt; ++i) {
-        SecureTuple dst = (*data_cube)[i];
-        SecureTuple b = (*bob)[i];
-        SecureTuple c = (*chi)[i];
+        Bit dummy_tag = data_cube->getDummyTag(i) | bob->getDummyTag(i) | chi->getDummyTag(i);
+        data_cube->setDummyTag(i, dummy_tag);
 
+        data_cube->setField(i, 5,
+                            data_cube->getField(i, 5) + bob->getField(i, 5) + chi->getField(i, 5));
 
-        dst.setDummyTag(dst.getDummyTag() | b.getDummyTag() | c.getDummyTag());
-        dst.setField(5, dst[5] + b[5] + c[5]);
-        dst.setField(6, dst[6] + b[6] + c[6]);
+        data_cube->setField(i, 6,
+                            data_cube->getField(i, 6) + bob->getField(i, 6) + chi->getField(i, 6));
+
+        //        SecureTuple dst = (*data_cube)[i];
+//        SecureTuple b = (*bob)[i];
+//        SecureTuple c = (*chi)[i];
+//
+//
+//        dst.setDummyTag(dst.getDummyTag() | b.getDummyTag() | c.getDummyTag());
+//        dst.setField(5, dst[5] + b[5] + c[5]);
+//        dst.setField(6, dst[6] + b[6] + c[6]);
 
     }
 

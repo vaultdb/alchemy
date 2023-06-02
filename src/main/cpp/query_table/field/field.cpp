@@ -684,7 +684,8 @@ Field<B> Field<B>::operator*(const Field &rhs) const {
 }
 
 template<typename B>
-Field<B> Field<B>::operator/(const Field &rhs) const {   assert(type_ == rhs.getType());
+Field<B> Field<B>::operator/(const Field &rhs) const {
+    assert(type_ == rhs.getType());
 
     Value v;
     emp::Integer li, ri;

@@ -60,22 +60,22 @@ TEST_F(FieldExpressionTest, cmp_swap) {
 
     // deep copy
     PlainTuple a(data->getSchema()), b(data->getSchema());
-    a = (*data)[0];
-    b = (*data)[1];
+    a = data->getPlainTuple(0);
+    b = data->getPlainTuple(1);
     bool swap(true);
 
     PlainTuple::compareSwap(swap, a, b);
 
     // swapped
-    ASSERT_EQ(a, (*data)[1]);
-    ASSERT_EQ(b, (*data)[0]);
+    ASSERT_EQ(a, data->getPlainTuple(1));
+    ASSERT_EQ(b, data->getPlainTuple(0));
 
 
     // no swap
     swap = false;
     PlainTuple::compareSwap(swap, a, b);
-    ASSERT_EQ(a, (*data)[1]);
-    ASSERT_EQ(b, (*data)[0]);
+    ASSERT_EQ(a, data->getPlainTuple(1));
+    ASSERT_EQ(b, data->getPlainTuple(0));
 
 }
 

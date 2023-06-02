@@ -429,19 +429,19 @@ PlainTuple QueryTable<B>::getPlainTuple(size_t idx) const {
     return vaultdb::PlainTuple(q,tuple_pos);
 }
 
-template<typename B>
-QueryTuple<B> QueryTable<B>::operator[](const int &idx) {
-    return this->getTuple(idx);
-}
+//template<typename B>
+//QueryTuple<B> QueryTable<B>::operator[](const int &idx) {
+//    return this->getTuple(idx);
+//}
 
 
-template<typename B>
-const QueryTuple<B> QueryTable<B>::operator[](const int &idx) const {
-    int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
-
-    const QueryTuple<B> tuple(schema_, read_ptr);
-    return tuple;
-}
+//template<typename B>
+//const QueryTuple<B> QueryTable<B>::operator[](const int &idx) const {
+//    int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
+//
+//    const QueryTuple<B> tuple(schema_, read_ptr);
+//    return tuple;
+//}
 
 template<typename B>
 std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable *table, const int & party) {
@@ -454,7 +454,7 @@ std::unique_ptr<PlainTable> QueryTable<B>::revealTable(const SecureTable *table,
 
 
     for(uint32_t i = 0; i < tuple_cnt; ++i)  {
-        const SecureTuple tuple = table->getImmutableTuple(i);
+        const SecureTuple tuple(table->getSchema(), table->tuple_data_.data() + i * table->tuple_size_);
         if(!tuple.getDummyTag().reveal()) { // if real tuple (not a dummy), reveal it
             PlainTuple dst_tuple = tuple.reveal(dst_schema, party);
             dst_table->putTuple(i, dst_tuple);

@@ -63,7 +63,7 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
         csv = schema_str.str();
 
         for(unsigned int i = 0; i < revealed->getTupleCount(); ++i) {
-            csv += revealed->getTuple(i).toString();
+            csv += revealed->getPlainTuple(i).toString();
         }
 
         DataUtilities::writeFile(out_file, revealed->toString());

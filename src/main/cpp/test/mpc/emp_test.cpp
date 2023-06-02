@@ -122,7 +122,7 @@ TEST_F(EmpTest, secret_share_table_one_column) {
 
     for(uint32_t i = 0; i < concat.size(); ++i) {
         Field<bool> val(FieldType::INT, concat[i]);
-        PlainTuple tuple = (*expected)[i];
+        PlainTuple tuple = expected->getPlainTuple(i);
         tuple.setField(0, val);
         tuple.setDummyTag(false);
     }
@@ -132,10 +132,8 @@ TEST_F(EmpTest, secret_share_table_one_column) {
 
     for(uint32_t i = 0; i < tuple_cnt; ++i) {
         Field<bool> val(FieldType::INT, input[i]);
-        PlainTuple tuple = (*plain)[i];
-
-        tuple.setDummyTag(false);
-        tuple.setField(0, val);
+        plain->setField(i, 0, val);
+        plain->setDummyTag(i, false);
     }
 
     std::shared_ptr<SecureTable> secret_shared = PlainTable::secretShare(plain.get(), netio_, FLAGS_party);
@@ -172,10 +170,8 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
 
     for(uint32_t i = 0; i < tuple_cnt; ++i) {
         Field<bool> val(FieldType::INT, input[i]);
-        PlainTuple tuple = (*input_table)[i];
-
-        tuple.setDummyTag(false);
-        tuple.setField(0, val);
+        input_table->setField(i, 0, val);
+        input_table->setDummyTag(i, false);
     }
 
 
@@ -190,17 +186,17 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     std::sort(input_tuples.begin(), input_tuples.end());
 
 
-    std::unique_ptr<PlainTable > expectedTable(new PlainTable(input_tuples.size(), schema, sort_def));
+    std::unique_ptr<PlainTable > expected_table(new PlainTable(input_tuples.size(), schema, sort_def));
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
         Field<bool> val(FieldType::INT, input_tuples[i]);
-        PlainTuple tuple = (*expectedTable)[i];
-        tuple.setDummyTag(false);
-        tuple.setField(0, val);
+        expected_table->setField(i, 0, val);
+        expected_table->setDummyTag(i, false);
+
     }
 
     //verify output
-    ASSERT_EQ(*expectedTable, *revealed) << "Query table was not processed correctly.";
+    ASSERT_EQ(*expected_table, *revealed) << "Query table was not processed correctly.";
 
 
 

@@ -59,8 +59,8 @@ TEST_F(CsvReaderTest, quotedStringTest) {
 
     CsvReader::parseTuple(testStr, *expected->getSchema(), parse_test.get(), 15);
 
-    QueryTuple expectedTuple = expected->getTuple(15);
-    QueryTuple parsedTuple = parse_test->getTuple(15);
+    QueryTuple expectedTuple = expected->getPlainTuple(15);
+    QueryTuple parsedTuple = parse_test->getPlainTuple(15);
 
     std::string customer_id = parsedTuple.getField(1).toString();
     ASSERT_EQ(customer_id, "Customer#000000016       ");

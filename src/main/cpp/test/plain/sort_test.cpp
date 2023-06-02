@@ -251,9 +251,8 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
         Field<bool> val(FieldType::INT, input_tuples[i]);
-        PlainTuple tuple = (*input_table)[i];
-        tuple.setDummyTag(false);
-        tuple.setField(0, val);
+        input_table->setField(i, 0, val);
+        input_table->setDummyTag(i, false);
     }
 
 
@@ -267,9 +266,8 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
         Field<bool> val(FieldType::INT, input_tuples[i]);
-        PlainTuple tuple = (*expected_table)[i];
-        tuple.setDummyTag(false);
-        tuple.setField(0, val);
+        expected_table->setField(i, 0, val);
+        expected_table->setDummyTag(i, false);
     }
 
     ASSERT_EQ(*expected_table, *sorted_table);
@@ -282,8 +280,8 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
 
 
 
-Sort<bool> SortTest::getSort(const string &srcSql, const SortDefinition &sortDefinition) {
-    SqlInput input(db_name_, srcSql, false);
+Sort<bool> SortTest::getSort(const string &sql, const SortDefinition &sortDefinition) {
+    SqlInput input(db_name_, sql, false);
 
     Sort<bool> sort(&input, sortDefinition); // heap allocate it
 

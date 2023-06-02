@@ -67,9 +67,9 @@ void revealRollup(const std::string & rollupName) {
     std::string csv = schema_str.str();
 
     for(size_t i = 0; i < result->getTupleCount(); ++i) {
-        PlainTuple tuple = result->getTuple(i);
+        PlainTuple tuple = result->getPlainTuple(i);
         if(!tuple.getDummyTag())
-            csv += (*result)[i].toString() + "\n";
+            csv += result->getPlainTuple(i).toString() + "\n";
     }
 
     std::cout << "Revealing " << csv << std::endl;

@@ -35,7 +35,7 @@ namespace vaultdb {
         NetIO *netio;
         bool inputTableInit = false;
 
-        std::shared_ptr<SecureTable> inputTable;
+        std::shared_ptr<SecureTable> input_table_;
 
         Integer readEncrypted(int8_t *secretSharedBits, const size_t & sizeBytes, // size in bytes
                               const int & dstParty);
@@ -45,8 +45,8 @@ namespace vaultdb {
         plain_to_secure_bits(bool *src, bool *dst, const QuerySchema &plain_schema,
                              const QuerySchema &secure_schema, const size_t &tuple_cnt);
 
-        // add on to inputTable
-        void resizeAndAppend(std::shared_ptr<SecureTable> toAdd);
+        // add on to input_table_
+        void resizeAndAppend(std::shared_ptr<SecureTable> to_add);
 
         string printFirstBytes(vector<int8_t> &bytes, const int &byteCount);
     };

@@ -13,7 +13,7 @@ UnionHybridData::UnionHybridData(const QuerySchema & srcSchema, NetIO *aNetio, c
     QuerySchema inputSchema = srcSchema;
     SortDefinition emptySortDefinition;
     // placeholder, retains schema
-    inputTable = std::shared_ptr<SecureTable>(new SecureTable(1, inputSchema, emptySortDefinition));
+    input_table_ = std::shared_ptr<SecureTable>(new SecureTable(1, inputSchema, emptySortDefinition));
 
 }
 
@@ -109,19 +109,19 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
 }
 
 std::shared_ptr<SecureTable> UnionHybridData::getInputTable() {
-    return inputTable;
+    return input_table_;
 }
 
-void UnionHybridData::resizeAndAppend(std::shared_ptr<SecureTable> toAdd) {
-    size_t oldTupleCount = inputTable->getTupleCount();
-    size_t newTupleCount = oldTupleCount + toAdd->getTupleCount();
-    inputTable->resize(newTupleCount);
+void UnionHybridData::resizeAndAppend(std::shared_ptr<SecureTable> to_add) {
+    size_t old_tuple_cnt = input_table_->getTupleCount();
+    size_t new_tuple_cnt = old_tuple_cnt + to_add->getTupleCount();
+    input_table_->resize(new_tuple_cnt);
 
-    int writeIdx = oldTupleCount;
+    int write_idx = old_tuple_cnt;
 
-    for(size_t i = 0; i < toAdd->getTupleCount(); ++i) {
-        inputTable->putTuple(writeIdx, toAdd->getTuple(i));
-        ++writeIdx;
+    for(size_t i = 0; i < to_add->getTupleCount(); ++i) {
+        input_table_->cloneRow(write_idx, 0, to_add.get(), i);
+        ++write_idx;
     }
 
 }

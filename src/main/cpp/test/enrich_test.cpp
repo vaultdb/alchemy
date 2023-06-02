@@ -255,7 +255,7 @@ std::string EnrichTest::getRollupExpectedResultsSql(const std::string &groupByCo
 
 }
 
-void EnrichTest::validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition &expectedSortOrder) const {
+void EnrichTest::validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition &expected_sortOrder) const {
     std::string expected_sql = "    WITH labeled as (\n"
                                     "        SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                     "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
@@ -273,34 +273,34 @@ void EnrichTest::validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition 
 
     std::shared_ptr<PlainTable> observed = sortOp.run()->reveal();
 
-    validateTable(unioned_enrich_db_, expected_sql, expectedSortOrder, observed);
+    validateTable(unioned_enrich_db_, expected_sql, expected_sortOrder, observed);
 
 }
 
 
-void EnrichTest::validateTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> & observed) const {
+void EnrichTest::validateTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expected_sortDefinition, const std::shared_ptr<PlainTable> & observed) const {
 
-    PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable> expectedTable = dataProvider.getQueryTable(dbName, sql);
-    expectedTable->setSortOrder(expectedSortDefinition);
+    PsqlDataProvider data_provider;
+    std::shared_ptr<PlainTable> expected_table = data_provider.getQueryTable(dbName, sql);
+    expected_table->setSortOrder(expected_sortDefinition);
 
-    ASSERT_EQ(*expectedTable->getSchema(), *observed->getSchema());
+    ASSERT_EQ(*expected_table->getSchema(), *observed->getSchema());
 
     // check that the types are faithfully aligned
     for(size_t i = 0; i < observed->getSchema()->getFieldCount(); ++i) {
-        FieldType schemaType = observed->getSchema()->getField(i).getType();
-        FieldType instanceType = (*observed)[0][i].getType();
-        FieldType expectedType = (*expectedTable)[0][i].getType();
+        FieldType schema_type = observed->getSchema()->getField(i).getType();
+        FieldType instance_type = observed->getField(0, i).getType();
+        FieldType expected_type = expected_table->getField(0, i).getType();
         /*if(schemaType != instanceType) {
             std::cout << "Instance type not aligned! " << observed->get_schema().getField(i) << " expected: " << TypeUtilities::getTypeString(expectedType) << " received " << TypeUtilities::getTypeString(instanceType) << std::endl;
         }*/
 
-        ASSERT_EQ(schemaType, instanceType);
-        ASSERT_EQ(schemaType, expectedType);
+        ASSERT_EQ(schema_type, instance_type);
+        ASSERT_EQ(schema_type, expected_type);
 
     }
 
-    ASSERT_EQ(*expectedTable, *observed);
+    ASSERT_EQ(*expected_table, *observed);
 
 }
 
@@ -309,7 +309,7 @@ void EnrichTest::validateTable(const std::string & dbName, const std::string & s
 
 
 TEST_F(EnrichTest, loadAndPrepData) {
-    string expectedResultPatientSql = "       SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
+    string expected_pat_sql = "       SELECT patid, zip_marker, CASE WHEN age_days <= 28*365 THEN 0\n"
                                       "                WHEN age_days > 28*365 AND age_days <= 39*365 THEN 1\n"
                                       "              WHEN age_days > 39*365  AND age_days <= 50*365 THEN 2\n"
                                       "              WHEN age_days > 50*365 AND age_days <= 61*365 THEN 3\n"
@@ -320,25 +320,25 @@ TEST_F(EnrichTest, loadAndPrepData) {
                                       "FROM patient \n"
                                       "ORDER BY patid";
 
-    string expectedResultPatientExclusionSql = "SELECT * FROM patient_exclusion ORDER BY patid, denom_excl";
-    SortDefinition patientSortDef{ColumnSort(0, SortDirection::ASCENDING)};
-    SortDefinition patientExclusionSortDef{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(2, SortDirection::ASCENDING)};
+    string expected_pat_excl_sql = "SELECT * FROM patient_exclusion ORDER BY patid, denom_excl";
+    SortDefinition pat_sort_def{ColumnSort(0, SortDirection::ASCENDING)};
+    SortDefinition pat_excl_sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(2, SortDirection::ASCENDING)};
 
     // *** alice test
-    std::shared_ptr<PlainTable> alicePatient = loadAndProjectPatientData(alice_enrich_db_);
+    std::shared_ptr<PlainTable> alice_pat = loadAndProjectPatientData(alice_enrich_db_);
     // this is more of a smoke test to make sure the setup is aligned correctly, not testing query reading facility
-    std::shared_ptr<PlainTable> alicePatientExclusion = loadPatientExclusionData(alice_enrich_db_);
+    std::shared_ptr<PlainTable> alice_pat_excl = loadPatientExclusionData(alice_enrich_db_);
 
-    validateTable(alice_enrich_db_, expectedResultPatientSql, patientSortDef, alicePatient);
-    validateTable(alice_enrich_db_, expectedResultPatientExclusionSql, patientExclusionSortDef, alicePatientExclusion);
+    validateTable(alice_enrich_db_, expected_pat_sql, pat_sort_def, alice_pat);
+    validateTable(alice_enrich_db_, expected_pat_excl_sql, pat_excl_sort_def, alice_pat_excl);
 
 
     // *** bob test
-    std::shared_ptr<PlainTable> bobPatient = loadAndProjectPatientData(bob_enrich_db_);
-    std::shared_ptr<PlainTable> bobPatientExclusion = loadPatientExclusionData(bob_enrich_db_);
+    std::shared_ptr<PlainTable> bob_pat = loadAndProjectPatientData(bob_enrich_db_);
+    std::shared_ptr<PlainTable> bob_pat_excl = loadPatientExclusionData(bob_enrich_db_);
 
-    validateTable(bob_enrich_db_, expectedResultPatientSql, patientSortDef, bobPatient);
-    validateTable(bob_enrich_db_, expectedResultPatientExclusionSql, patientExclusionSortDef, bobPatientExclusion);
+    validateTable(bob_enrich_db_, expected_pat_sql, pat_sort_def, bob_pat);
+    validateTable(bob_enrich_db_, expected_pat_excl_sql, pat_excl_sort_def, bob_pat_excl);
 
 }
 
@@ -359,12 +359,12 @@ TEST_F(EnrichTest, loadAndJoinData) {
                                       "ORDER BY p.patid, denom_excl";
 
 
-    SortDefinition  expectedSort{ColumnSort(0, SortDirection::ASCENDING)};
-    std::shared_ptr<PlainTable> aliceJoined = loadAndJoinLocalData(alice_enrich_db_);
-    validateTable(alice_enrich_db_, expected_sql, expectedSort, aliceJoined);
+    SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING)};
+    std::shared_ptr<PlainTable> alice_joined = loadAndJoinLocalData(alice_enrich_db_);
+    validateTable(alice_enrich_db_, expected_sql, expected_sort, alice_joined);
 
-    std::shared_ptr<PlainTable> bobJoined = loadAndJoinLocalData(bob_enrich_db_);
-    validateTable(bob_enrich_db_, expected_sql, expectedSort, bobJoined);
+    std::shared_ptr<PlainTable> bob_joined = loadAndJoinLocalData(bob_enrich_db_);
+    validateTable(bob_enrich_db_, expected_sql, expected_sort, bob_joined);
 
 }
 

@@ -275,20 +275,23 @@ shared_ptr<SecureTable> EnrichHtnQuery::addPartialAggregates(vector<shared_ptr<S
 
     // for each tuple
     for(size_t i = 0; i < tuple_cnt; ++i) {
-        SecureTuple dst = (*summed_partials)[i];
+        //SecureTuple dst = (*summed_partials)[i];
 
         // for each partial count
         for(size_t j = 1; j < partials.size(); ++j) {
-            SecureTuple src = (*(partials[j]))[i];
+           // SecureTuple src = (*(partials[j]))[i];
 
             // if one of them is not a dummy, then it's not a dummy
-            dst.setDummyTag(src.getDummyTag() | dst.getDummyTag());
+            summed_partials->setDummyTag(i, partials[j]->getDummyTag(i) | summed_partials->getDummyTag(i));
 
+            for(int k = 5; k < 9; ++k) {
+                summed_partials->setField(i, k, summed_partials->getField(i, k) + partials[j]->getField(i, k));
+            }
 
-            dst.setField(5, dst[5] + src[5]);
-            dst.setField(6, dst[6] + src[6]);
-            dst.setField(7, dst[7] + src[7]);
-            dst.setField(8, dst[8] + src[8]);
+//            dst.setField(5, dst[5] + src[5]);
+//            dst.setField(6, dst[6] + src[6]);
+//            dst.setField(7, dst[7] + src[7]);
+//            dst.setField(8, dst[8] + src[8]);
 
 
         }
