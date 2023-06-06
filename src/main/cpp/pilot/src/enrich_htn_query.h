@@ -11,24 +11,28 @@ namespace  vaultdb {
     class EnrichHtnQuery {
 
 
-        std::shared_ptr<SecureTable> input_table_;
+        SecureTable *input_table_;
         size_t cardinality_bound_;
 
     public:
-        shared_ptr<SecureTable> data_cube_;
+        SecureTable *data_cube_;
 
         EnrichHtnQuery() {}; // placeholder
+        ~EnrichHtnQuery() {
+            if(data_cube_)
+                delete data_cube_;
+        }
 
         // compute initial data cube to prepare for rollups
-        EnrichHtnQuery(shared_ptr<SecureTable> & input, const size_t & cardinality = 0);
+        EnrichHtnQuery(SecureTable *input, const size_t & cardinality = 0);
         // after constructor, can add partial counts from other sites for semi-join optimization
-        void unionWithPartialAggregates(vector<shared_ptr<SecureTable>> partials);
-        static  shared_ptr<SecureTable> addPartialAggregates(vector<shared_ptr<SecureTable>> partials);
+        void unionWithPartialAggregates(vector<SecureTable *> partials);
+        static  SecureTable *addPartialAggregates(vector<SecureTable *> partials);
 
 
         // initialize a new enrich object with list of partial counts from batches and/or semijoin optimization
-        EnrichHtnQuery(vector<shared_ptr<SecureTable>> & input);
-        static shared_ptr<SecureTable> aggregatePartialPatientCounts( shared_ptr<SecureTable> &src, const size_t & cardinality_bound);
+        EnrichHtnQuery(vector<SecureTable *> input);
+        static SecureTable *aggregatePartialPatientCounts( SecureTable *src, const size_t & cardinality_bound);
 
     private:
 
@@ -36,14 +40,14 @@ namespace  vaultdb {
 
         // filter out patients that match exclusion criteria in at least one site
         // then deduplicate the patients
-        shared_ptr<SecureTable> filterPatients();
+        SecureTable *filterPatients();
 
 
         // project it into the right format
-        shared_ptr<SecureTable> projectPatients(const shared_ptr<SecureTable> &src);
+        SecureTable *projectPatients(SecureTable *src);
 
         // aggregate the data cube
-        void aggregatePatients(shared_ptr<SecureTable> &src);
+        void aggregatePatients(SecureTable *src);
 
 
 

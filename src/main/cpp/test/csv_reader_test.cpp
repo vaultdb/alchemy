@@ -27,19 +27,23 @@ TEST_F(CsvReaderTest, lineitemTest) {
 
     std::string query = "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50";
     PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable(db_name_, query);
+    PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
     
     
-    QuerySchema csvSchema = *expected->getSchema();
+    QuerySchema csvSchema = expected->getSchema();
     // substitute longs with dates in the appropriate cols, fields 10, 11, 12
     csvSchema.putField(convertDateField(csvSchema.getField(10)));
     csvSchema.putField(convertDateField(csvSchema.getField(11)));
     csvSchema.putField(convertDateField(csvSchema.getField(12)));
 
-    std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, csvSchema);
-    observed->setSchema(*expected->getSchema()); // switch back from date schema
+    PlainTable *observed = CsvReader::readCsv(inputFile, csvSchema);
+    observed->setSchema(expected->getSchema()); // switch back from date schema
     
     ASSERT_EQ(*expected, *observed);
+
+    delete expected;
+    delete observed;
+
 
 
 }
@@ -53,11 +57,11 @@ TEST_F(CsvReaderTest, quotedStringTest) {
     // grab customer table for schema:
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
     PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable(db_name_, query);
+    PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
 
-    std::unique_ptr<PlainTable> parse_test = std::unique_ptr<PlainTable>(new PlainTable(*expected));
+    PlainTable *parse_test = new PlainTable(*expected);
 
-    CsvReader::parseTuple(testStr, *expected->getSchema(), parse_test.get(), 15);
+    CsvReader::parseTuple(testStr, expected->getSchema(), parse_test, 15);
 
     QueryTuple expectedTuple = expected->getPlainTuple(15);
     QueryTuple parsedTuple = parse_test->getPlainTuple(15);
@@ -70,6 +74,8 @@ TEST_F(CsvReaderTest, quotedStringTest) {
     // both appear to be truncating last string
 
     ASSERT_EQ(parsedTuple, expectedTuple);
+    delete expected;
+    delete parse_test;
 }
 
 TEST_F(CsvReaderTest, customerTest) {
@@ -81,11 +87,14 @@ TEST_F(CsvReaderTest, customerTest) {
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable(db_name_, query);
+    PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
 
-    std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, *expected->getSchema());
+    PlainTable *observed = CsvReader::readCsv(inputFile, expected->getSchema());
 
     ASSERT_EQ(*expected, *observed);
+
+    delete expected;
+    delete observed;
 
 
 }
@@ -101,17 +110,20 @@ TEST_F(CsvReaderTest, ordersTest) {
     std::string query = "SELECT *   FROM orders ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    std::shared_ptr<PlainTable > expected = dataProvider.getQueryTable(db_name_, query);
+    PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
 
-    QuerySchema csvSchema = *expected->getSchema();
+    QuerySchema csvSchema = expected->getSchema();
     // o_orderdate(4) set schema to date
     csvSchema.putField(convertDateField(csvSchema.getField(4)));
 
-    std::unique_ptr<PlainTable > observed = CsvReader::readCsv(inputFile, csvSchema);
-    observed->setSchema(*expected->getSchema());
+    PlainTable *observed = CsvReader::readCsv(inputFile, csvSchema);
+    observed->setSchema(expected->getSchema());
 
     // RHS || observed is incorrect here.
     ASSERT_EQ(*expected, *observed);
+
+    delete expected;
+    delete observed;
 
 
 }

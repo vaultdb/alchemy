@@ -14,16 +14,16 @@ namespace  vaultdb {
     public:
         Filter(Operator<B> *child, Expression<B> *predicate);
 
-        Filter(shared_ptr<QueryTable<B> > child, Expression<B> *predicate);
+        Filter(QueryTable<B> *child, Expression<B> *predicate);
 
-        ~Filter() {
+        virtual ~Filter() {
             if(predicate_ != nullptr) delete predicate_;
         }
 
 
     protected:
 
-        std::shared_ptr<QueryTable<B> > runSelf()  override;
+        QueryTable<B> *runSelf()  override;
         string getOperatorType() const override;
         string getParameters() const override;
 

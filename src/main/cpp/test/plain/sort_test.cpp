@@ -9,8 +9,7 @@ class SortTest : public PlainBaseTest {
 
 protected:
 
-    Sort<bool> getSort(const string & srcSql, const SortDefinition & sortDefinition);
-    shared_ptr<PlainTable> sorted_;
+
 };
 
 
@@ -20,40 +19,41 @@ protected:
 TEST_F(SortTest, testSingleIntColumn) {
 
     string sql = "SELECT c_custkey FROM customer ORDER BY c_address, c_custkey LIMIT 10";  // c_address "randomizes" the order
-    string expectedSql = "SELECT c_custkey FROM (" + sql + ") subquery ORDER BY c_custkey";
+    string expected_sql = "SELECT c_custkey FROM (" + sql + ") subquery ORDER BY c_custkey";
 
 
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedSql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
-    SortDefinition sortDefinition;
-    ColumnSort aColumnSort(0, SortDirection::ASCENDING);
-    sortDefinition.push_back(aColumnSort);
+    SortDefinition sort_def{ ColumnSort(0, SortDirection::ASCENDING)};
+    expected->setSortOrder(sort_def);
 
-    Sort<bool> sort = getSort(sql, sortDefinition);
-    shared_ptr<PlainTable > observed = sort.run();
-
-    expected->setSortOrder(observed->getSortOrder());
-    ASSERT_EQ(*expected, *observed);
+    auto input = new SqlInput(db_name_, sql, false);
+    Sort<bool> sort(input, sort_def);
+    PlainTable *sorted = sort.run();
+    ASSERT_EQ(*expected, *sorted);
+    delete expected;
 
     } 
 
 
 TEST_F(SortTest, tpchQ1Sort) {
     string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment, l_orderkey  LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
+    string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
 
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(0, SortDirection::ASCENDING);
-    sortDefinition.emplace_back(1, SortDirection::ASCENDING);
-    expected->setSortOrder(sortDefinition);
+    SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)};
+    expected->setSortOrder(sort_def);
 
-    Sort<bool> sort = getSort(sql, sortDefinition);
-    shared_ptr<PlainTable> observed = sorted_;
+    auto input = new SqlInput(db_name_, sql, false);
+    Sort<bool> sort(input, sort_def);
+    PlainTable *sorted = sort.run();
+
 
     // no projection needed here
-    ASSERT_EQ(*expected, *observed);
+    ASSERT_EQ(*expected, *sorted);
+
+    delete expected;
 
 }
 
@@ -63,64 +63,65 @@ TEST_F(SortTest, tpchQ3Sort) {
     // TODO: set up discrete testbed to deal with floating point errors
     string sql = "SELECT l_orderkey, (l.l_extendedprice * (1 - l.l_discount))::INT revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate")  + " FROM input ORDER BY revenue DESC, o_orderdate";
-    shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
+    string expected_sql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate")  + " FROM input ORDER BY revenue DESC, o_orderdate";
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
 
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(1, SortDirection::DESCENDING);
-    sortDefinition.emplace_back(3, SortDirection::ASCENDING);
+    SortDefinition sort_def{ColumnSort(1, SortDirection::DESCENDING), ColumnSort(3, SortDirection::ASCENDING)};
 
 
-    Sort sort = getSort(sql, sortDefinition);
+    auto input = new SqlInput(db_name_, sql, false);
+    auto sort = new Sort<bool>(input, sort_def);
 
-    ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
+
+    ExpressionMapBuilder<bool> builder(sort->getOutputSchema());
     builder.addMapping(1, 0);
     builder.addMapping(3, 1);
 
     // project it down to $1, $3
-    Project project(sorted_, builder.getExprs());
+    Project project(sort, builder.getExprs());
 
-    shared_ptr<PlainTable> observed = project.run();
+    PlainTable *observed = project.run();
 
     // update sort def to account for projection -- also testing sort order carryover - the metadata in querytable describing sorted order of its contents
-    sortDefinition[0].first = 0;
-    sortDefinition[1].first = 1;
+    sort_def[0].first = 0;
+    sort_def[1].first = 1;
 
-    expected->setSortOrder(sortDefinition);
+    expected->setSortOrder(sort_def);
 
     ASSERT_EQ(*expected, *observed);
 
-
+    delete expected;
 }
 
 
 TEST_F(SortTest, tpchQ5Sort) {
 
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
+    string expected_sql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(1, SortDirection::DESCENDING);
+    SortDefinition sort_def{ ColumnSort(1, SortDirection::DESCENDING)};
 
-   Sort<bool> sort = getSort(sql, sortDefinition);
-
+    auto input = new SqlInput(db_name_, sql, false);
+    auto sorter = new Sort<bool>(input, sort_def);
 
     // project it down to $1
-    ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
+    ExpressionMapBuilder<bool> builder(sorter->getOutputSchema());
     builder.addMapping(1, 0);
 
-    Project project(sorted_, builder.getExprs());
+    Project project(sorter, builder.getExprs());
 
 
     // update sort def to account for projection -- also testing sort order carryover - the metadata in PlainTable  describing sorted order of its contents
-    sortDefinition[0].first = 0;
-    expected->setSortOrder(sortDefinition);
+    sort_def[0].first = 0;
+    expected->setSortOrder(sort_def);
 
-    shared_ptr<PlainTable > observed = project.run();
+    PlainTable *observed = project.run();
 
     ASSERT_EQ(*expected, *observed);
+
+    delete expected;
 
 }
 
@@ -129,27 +130,26 @@ TEST_F(SortTest, tpchQ5Sort) {
 TEST_F(SortTest, tpchQ8Sort) {
 
     string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  ORDER BY o_comment, o_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT o_orderyear FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
+    string expected_sql = "WITH input AS (" + sql + ") SELECT o_orderyear FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
-    SortDefinition sort_def;
-    sort_def.emplace_back(0, SortDirection::ASCENDING);
-    sort_def.emplace_back(1, SortDirection::DESCENDING);
+    SortDefinition sort_def{ ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
 
     expected->setSortOrder(SortDefinition{ColumnSort (0, SortDirection::ASCENDING)});
 
 
-   Sort<bool> sort = getSort(sql, sort_def);
-
+    auto input = new SqlInput(db_name_, sql, false);
+    auto sort = new Sort<bool>(input, sort_def);
 
     // project it down to $0
-    ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
+    ExpressionMapBuilder<bool> builder(sort->getOutputSchema());
     builder.addMapping(0, 0);
 
-    Project project(sorted_, builder.getExprs());
-    shared_ptr<PlainTable > observed = project.run();
+    Project project(sort, builder.getExprs());
+    PlainTable *observed = project.run();
 
     ASSERT_EQ(*expected, *observed);
+    delete expected;
 }
 
 
@@ -161,33 +161,33 @@ TEST_F(SortTest, tpchQ9Sort) {
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
                       "  JOIN nation on n_nationkey = s_nationkey"
                       " ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT n_name, o_orderyear FROM input ORDER BY n_name, o_orderyear DESC";
+    string expected_sql = "WITH input AS (" + sql + ") SELECT n_name, o_orderyear FROM input ORDER BY n_name, o_orderyear DESC";
 
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
 
 
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(2, SortDirection::ASCENDING);
-    sortDefinition.emplace_back(0, SortDirection::DESCENDING);
+    SortDefinition sort_def{ColumnSort(2, SortDirection::ASCENDING), ColumnSort(0, SortDirection::DESCENDING)};
 
-   Sort<bool> sort = getSort(sql, sortDefinition);
+    auto input = new SqlInput(db_name_, sql, false);
+    auto sort = new Sort<bool>(input, sort_def);
 
     // project it down to $0
-    ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
+    ExpressionMapBuilder<bool> builder(sort->getOutputSchema());
     builder.addMapping(2, 0);
     builder.addMapping(0, 1);
 
-    Project project(sorted_, builder.getExprs());
+    Project project(sort, builder.getExprs());
 
-    shared_ptr<PlainTable > observed = project.run();
+    PlainTable *observed = project.run();
 
 
-    sortDefinition[0].first = 0;
-    sortDefinition[1].first = 1;
-    expected->setSortOrder(sortDefinition);
+    sort_def[0].first = 0;
+    sort_def[1].first = 1;
+    expected->setSortOrder(sort_def);
 
     ASSERT_EQ(*expected, *observed);
+    delete expected;
 
 
 }
@@ -200,40 +200,41 @@ TEST_F(SortTest, tpchQ18Sort) {
     // both have 10 values.
     string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders"
                       " ORDER BY o_clerk, o_custkey, o_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the to-sort cols
-    string expectedResultSql = "WITH input AS (" + sql + ") "
+    string expected_sql = "WITH input AS (" + sql + ") "
                     "SELECT o_totalprice, " + DataUtilities::queryDatetime("o_orderdate") + "  FROM input "
                     "ORDER BY o_totalprice DESC, o_orderdate ASC";
 
 
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
     // schema: o_orderkey, o_orderdate, o_totalprice
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(2, SortDirection::DESCENDING); // o_totalprince
-    sortDefinition.emplace_back(1, SortDirection::ASCENDING); // o_orderdate
-    expected->setSortOrder(sortDefinition);
+    SortDefinition sort_def{ColumnSort(2, SortDirection::DESCENDING),  // o_totalprince
+        ColumnSort(1, SortDirection::ASCENDING)}; // o_orderdate
+    expected->setSortOrder(sort_def);
 
 
-   Sort<bool> sort = getSort(sql, sortDefinition);
+    auto input = new SqlInput(db_name_, sql, false);
+    auto sort = new Sort<bool>(input, sort_def);
 
 
     // project it down to $2, $1
-    ExpressionMapBuilder<bool> builder(sort.getOutputSchema());
+    ExpressionMapBuilder<bool> builder(sort->getOutputSchema());
     builder.addMapping(2, 0);
     builder.addMapping(1, 1);
 
 
-    Project project(sorted_, builder.getExprs());
+    Project project(sort, builder.getExprs());
     
-    shared_ptr<PlainTable > observed = project.run();
+    PlainTable *observed = project.run();
 
 
-    sortDefinition[0].first = 0;
-    sortDefinition[1].first = 1;
-    expected->setSortOrder(sortDefinition);
+    sort_def[0].first = 0;
+    sort_def[1].first = 1;
+    expected->setSortOrder(sort_def);
 
     ASSERT_EQ(*expected, *observed);
 
+    delete expected;
 
 }
 
@@ -246,7 +247,7 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
     schema.initializeFieldOffsets();
 
 
-    std::shared_ptr<PlainTable> input_table(new PlainTable(input_tuples.size(), schema, sort_definition));
+    PlainTable *input_table = new PlainTable(input_tuples.size(), schema, sort_definition);
 
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
@@ -257,12 +258,12 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
 
 
     Sort<bool> sorter(input_table, sort_definition);
-    std::shared_ptr<PlainTable> sorted_table = sorter.run();
+    PlainTable *sorted_table = sorter.run();
 
 
     //set up expected results
     std::sort(input_tuples.begin(), input_tuples.end());
-    std::unique_ptr<PlainTable > expected_table(new PlainTable(input_tuples.size(), schema, sort_definition));
+    auto expected_table = new PlainTable(input_tuples.size(), schema, sort_definition);
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
         Field<bool> val(FieldType::INT, input_tuples[i]);
@@ -273,22 +274,13 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
     ASSERT_EQ(*expected_table, *sorted_table);
 
 
+    delete expected_table;
 
 }
 
 
 
 
-
-Sort<bool> SortTest::getSort(const string &sql, const SortDefinition &sortDefinition) {
-    SqlInput input(db_name_, sql, false);
-
-    Sort<bool> sort(&input, sortDefinition); // heap allocate it
-
-              // cache sort result
-    sorted_ = sort.run();
-    return sort;
-}
 
 
 int main(int argc, char **argv) {

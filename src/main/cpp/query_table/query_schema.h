@@ -17,12 +17,19 @@ namespace  vaultdb {
     protected:
 
         std::map<int32_t, QueryFieldDesc> fields_;
-        size_t tuple_size_;
+        size_t tuple_size_; // in bits
     public:
         std::map<int32_t, size_t> offsets_;
 
         QuerySchema() {} // empty setup
-        QuerySchema(std::shared_ptr<QuerySchema>  & s);
+        QuerySchema(const QuerySchema & s) {
+
+            for (size_t i = 0; i < s.getFieldCount(); i++) {
+                fields_[i] = s.getField(i);
+            }
+            initializeFieldOffsets();
+
+        }
 
         inline int getFieldCount() const {  return fields_.size() - 1;  } // does not include dummy tag
 

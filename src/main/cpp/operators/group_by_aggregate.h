@@ -20,19 +20,23 @@ namespace vaultdb {
     public:
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const size_t & output_card = 0);
-              GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+        GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
 			       const vector<ScalarAggregateDefinition> &aggregates, const size_t & output_card = 0);
 
-        GroupByAggregate(shared_ptr<QueryTable<B> > child, const vector<int32_t> &groupBys,
+        GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const size_t & output_card = 0);
 
-        GroupByAggregate(shared_ptr<QueryTable<B> > child, const vector<int32_t> &groupBys,
+        GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
                          const vector<ScalarAggregateDefinition> &aggregates, const size_t & output_card = 0);
-        ~GroupByAggregate() = default;
+        virtual ~GroupByAggregate()  {
+            for(size_t i = 0; i < aggregators_.size(); ++i) {
+                delete aggregators_[i];
+            }
+        }
         static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs);
 
     protected:
-        std::shared_ptr<QueryTable<B> > runSelf() override;
+        QueryTable<B> *runSelf() override;
         string getOperatorType() const override;
         string getParameters() const override;
 
@@ -40,17 +44,9 @@ namespace vaultdb {
         GroupByAggregateImpl<B> *aggregateFactory(const AggregateId &aggregateType, const int32_t &ordinal,
                                                const FieldType &aggregateValueType) const;
 
-        // checks that input table is sorted by group-by cols
-        bool verifySortOrder(const std::shared_ptr<QueryTable<B> > & table) const;
-
-        // returns boolean for whether two tuples are in the same group-by bin
-        B groupByMatch(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs) const;
 
         QuerySchema generateOutputSchema(const QuerySchema & srcSchema) const;
 
-        void generateOutputTuple(QueryTuple <B> &dst_tuple, const QueryTuple <B> &last_tuple,
-                                 const B &last_entry_group_by_bin, const B &real_bin,
-                                 const vector<GroupByAggregateImpl<B> *> &aggregators) const;
 
         void setup();
 

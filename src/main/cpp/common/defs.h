@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <boost/variant.hpp>
 #include <sstream>
+#include <emp-tool/emp-tool.h>
 
 
 namespace vaultdb {

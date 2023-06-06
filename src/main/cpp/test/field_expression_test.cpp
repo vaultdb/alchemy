@@ -56,10 +56,10 @@ TEST_F(FieldExpressionTest, test_int32_expr) {
 
 TEST_F(FieldExpressionTest, cmp_swap) {
     string sql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 3"; // order by to ensure order is reproducible and not sorted on the sort cols
-    std::shared_ptr<PlainTable > data = DataUtilities::getQueryResults(db_name_, sql, false);
-
+    PlainTable *data = DataUtilities::getQueryResults(db_name_, sql, false);
+    QuerySchema q = data->getSchema();
     // deep copy
-    PlainTuple a(data->getSchema()), b(data->getSchema());
+    PlainTuple a(&q), b(&q);
     a = data->getPlainTuple(0);
     b = data->getPlainTuple(1);
     bool swap(true);
@@ -76,6 +76,8 @@ TEST_F(FieldExpressionTest, cmp_swap) {
     PlainTuple::compareSwap(swap, a, b);
     ASSERT_EQ(a, data->getPlainTuple(1));
     ASSERT_EQ(b, data->getPlainTuple(0));
+
+    delete data;
 
 }
 

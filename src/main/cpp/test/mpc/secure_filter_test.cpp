@@ -29,18 +29,18 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
-    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, false);
+    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, false);
 
     SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
 
-    std::shared_ptr<SecureTable> output = input.run(); // a smoke test for the operator infrastructure
 
-    std::unique_ptr<PlainTable> revealed = output->reveal(emp::PUBLIC);
-
-
-        ASSERT_EQ(*expected, *revealed);
+    PlainTable *revealed = input.run()->reveal(emp::PUBLIC);
 
 
+    ASSERT_EQ(*expected, *revealed);
+
+    delete expected;
+    delete revealed;
 
 }
 
@@ -55,28 +55,29 @@ TEST_F(SecureFilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
     std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expectedResultSql, true);
+    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expectedResultSql, true);
 
 
-   SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
+   SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
 
     // expression setup
     // filtering for l_linenumber = 1
 
-    InputReferenceNode<emp::Bit> *read_field = new InputReferenceNode<emp::Bit>(1);
+    InputReferenceNode<emp::Bit> read_field(1);
     Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
-    LiteralNode<emp::Bit> *constant_input = new LiteralNode<emp::Bit>(one);
-    ExpressionNode<emp::Bit> *equality_check = new EqualNode<emp::Bit>((ExpressionNode<emp::Bit> *) read_field, (ExpressionNode<emp::Bit> *) constant_input);
-    Expression<emp::Bit> *expression = new GenericExpression<emp::Bit>(equality_check, "predicate", FieldType::SECURE_BOOL);
+    LiteralNode<emp::Bit> constant_input(one);
+    EqualNode<emp::Bit> equality_check((ExpressionNode<emp::Bit> *) &read_field, (ExpressionNode<emp::Bit> *) &constant_input);
+    Expression<emp::Bit> *expression = new GenericExpression<emp::Bit>(&equality_check, "predicate", FieldType::SECURE_BOOL);
 
 
-    Filter<emp::Bit> filter(&input, expression);
+    Filter<emp::Bit> filter(input, expression);
 
-    std::shared_ptr<SecureTable> result = filter.run();
-    std::unique_ptr<PlainTable> revealed = result->reveal(emp::PUBLIC);
+    PlainTable *revealed = filter.run()->reveal(emp::PUBLIC);
 
 
         ASSERT_EQ(*expected,  *revealed);
+        delete expected;
+        delete revealed;
 
 
 }

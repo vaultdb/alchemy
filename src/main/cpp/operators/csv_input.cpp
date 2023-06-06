@@ -4,7 +4,7 @@
 using namespace  vaultdb;
 
 
-std::shared_ptr<PlainTable > CsvInput::runSelf() {
+PlainTable *CsvInput::runSelf() {
     Operator::output_ = CsvReader::readCsv(input_file_, output_schema_);
     return Operator::output_;
 }

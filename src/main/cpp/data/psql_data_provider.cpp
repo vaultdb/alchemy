@@ -1,9 +1,7 @@
 #include "psql_data_provider.h"
 #include "pq_oid_defs.h"
-#include <time.h>
 #include <typeinfo>
 
-#include <chrono>
 #include <query_table/plain_tuple.h>
 #include "query_table/field/field.h"
 #include "boost/date_time/gregorian/gregorian.hpp"
@@ -13,7 +11,7 @@
 
 // if has_dummy_tag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
-std::shared_ptr<PlainTable>
+PlainTable *
 PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag) {
 
     db_name_ = db_name;
@@ -42,7 +40,7 @@ PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, bool has_d
     size_t row_cnt = res.size();
 
     schema_ = getSchema(res, has_dummy_tag);
-    std::shared_ptr<PlainTable > dst_table = std::make_shared<PlainTable>(row_cnt, *schema_);
+    PlainTable *dst_table = new PlainTable(row_cnt, schema_);
 
 
     int counter = 0;
@@ -56,14 +54,14 @@ PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, bool has_d
     return dst_table;
 }
 
-std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, bool has_dummy_tag) {
+QuerySchema PsqlDataProvider::getSchema(pqxx::result input, bool has_dummy_tag) {
     pqxx::row first_row = *(input.begin());
     size_t col_cnt = first_row.size();
     if(has_dummy_tag)
         --col_cnt; // don't include dummy tag as a separate column
 
 
-    std::unique_ptr<QuerySchema> result(new QuerySchema());
+    QuerySchema result;
 
     for(uint32_t i = 0; i < col_cnt; ++i) {
        string col_name =  input.column_name(i);
@@ -75,7 +73,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
         size_t len = (type == FieldType::STRING) ? getVarCharLength(src_table_, col_name) : 0;
         QueryFieldDesc fieldDesc(i, col_name, src_table_, type, len);
 
-        result->putField(fieldDesc);
+        result.putField(fieldDesc);
     }
 
    if(has_dummy_tag) {
@@ -84,7 +82,7 @@ std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, boo
         assert(dummy_type == FieldType::BOOL); // check that dummy tag is a boolean
     }
 
-    result->initializeFieldOffsets();
+    result.initializeFieldOffsets();
     return result;
 }
 
@@ -213,7 +211,7 @@ PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_ta
             case FieldType::STRING:
             {
                 string str = src.as<string>();
-                size_t len = schema_->getField(ordinal).getStringLength();
+                size_t len = schema_.getField(ordinal).getStringLength();
                 while(str.size() < len) {
                     str += " ";
                 }

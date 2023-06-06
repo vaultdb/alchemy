@@ -13,9 +13,9 @@ Join<B>::Join(Operator<B> *lhs, Operator<B> *rhs,   Expression<B> *predicate, co
 }
 
 template<typename  B>
-Join<B>::Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,   Expression<B> *predicate, const SortDefinition & sort) :  Operator<B>(lhs, rhs, sort), predicate_(predicate) {
-    QuerySchema lhs_schema = *lhs->getSchema();
-    QuerySchema rhs_schema = *rhs->getSchema();
+Join<B>::Join(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition & sort) :  Operator<B>(lhs, rhs, sort), predicate_(predicate) {
+    QuerySchema lhs_schema = lhs->getSchema();
+    QuerySchema rhs_schema = rhs->getSchema();
     Operator<B>::output_schema_ = concatenateSchemas(lhs_schema, rhs_schema);
 
 }
@@ -69,7 +69,9 @@ void Join<B>::write_left(PlainTuple & dst, const PlainTable *src, const int & id
 
 template<typename B>
 void Join<B>::write_left(SecureTuple & dst, const SecureTable *src, const int & idx) {
-    memcpy(dst.getData(), src->tuple_data_.data() + src->tuple_size_ * idx, (src->getSchema()->size() - 1) * TypeUtilities::getEmpBitSize() );
+    size_t write_size = src->tuple_size_ - TypeUtilities::getEmpBitSize(); // - for dummy tag
+    const int8_t *read_ptr = src->tuple_data_.data() + src->tuple_size_ * idx;
+    memcpy(dst.getData(), read_ptr, write_size );
 }
 
 
@@ -77,10 +79,12 @@ void Join<B>::write_left(SecureTuple & dst, const SecureTable *src, const int & 
 
 template<typename B>
 void Join<B>::write_right(SecureTuple &dst_tuple, const SecureTable *src, const int & idx) {
-    Bit *dst = ((Bit *) dst_tuple.getData()) +  (dst_tuple.getSchema()->size()  - src->getSchema()->size());
+    int write_size = (src->getSchema().size() - 1) * TypeUtilities::getEmpBitSize(); // sans the dummy tag
+    int write_offset = dst_tuple.schema_->size() - src->getSchema().size(); // bits
+    Bit *dst =  dst_tuple.getData() + write_offset;
 
     const int8_t *s = src->tuple_data_.data() + idx * src->tuple_size_;
-    memcpy(dst, s, (src->getSchema()->size() - 1) * TypeUtilities::getEmpBitSize());
+    memcpy(dst, s, write_size);
 }
 
 template<typename B>
@@ -88,6 +92,7 @@ void Join<B>::write_right(PlainTuple &dst_tuple, const PlainTable *src, const in
 
     size_t write_size = src->tuple_size_ - 1; // don't overwrite dummy tag
     int8_t *write_ptr = dst_tuple.getData() + (dst_tuple.getSchema()->size()/8 - src->tuple_size_);
+
 
     memcpy(write_ptr, src->tuple_data_.data() + idx * src->tuple_size_, write_size);
 
@@ -121,7 +126,7 @@ void Join<B>::write_left(const B &write, QueryTable<B> *dst, const int &dst_idx,
 
 template<typename B>
 void Join<B>::write_right(QueryTable<B> *dst, const int &dst_idx, const QueryTable<B> *src, const int &src_idx) {
-    dst->cloneRow(dst_idx, dst->getSchema()->getFieldCount() - src->getSchema()->getFieldCount(),
+    dst->cloneRow(dst_idx, dst->getSchema().getFieldCount() - src->getSchema().getFieldCount(),
                   src, src_idx);
 }
 
@@ -130,7 +135,7 @@ template<typename B>
 void Join<B>::write_right(const B &write, QueryTable<B> *dst, const int &dst_idx, const QueryTable<B> *src,
                          const int &src_idx) {
 
-    dst->cloneRow(write, dst_idx, dst->getSchema()->getFieldCount() - src->getSchema()->getFieldCount(),
+    dst->cloneRow(write, dst_idx, dst->getSchema().getFieldCount() - src->getSchema().getFieldCount(),
                   src, src_idx);
 }
 

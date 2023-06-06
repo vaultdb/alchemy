@@ -20,7 +20,6 @@ namespace vaultdb {
         // size is in bytes
         static size_t getPhysicalSize(const FieldType &id, const size_t & str_length = 0);
         static emp::Float toFloat(const emp::Integer &input);
-        //static void secretShare(const QueryTuple<bool> *src_tuple,  const std::shared_ptr<QuerySchema> &src_schema, QueryTuple<emp::Bit> & dst_tuple, const int &myParty, const int &dstParty);
 
         template<typename B>
         static inline bool validateTypeAlignment(const Field<B> &field) {
@@ -64,8 +63,8 @@ namespace vaultdb {
         static bool extract_bool(const emp::Bit & b) { return b.reveal();  }
         static bool extract_bool(const bool & b) { return b; }
 
-        static PlainTuple revealTuple(const PlainTuple & p) {return p; }
-        static PlainTuple revealTuple(const SecureTuple  & s);
+//        static PlainTuple revealTuple(const PlainTuple & p) {return p; }
+//        static PlainTuple revealTuple(const SecureTuple  & s);
 
         // expected size in bits
         inline static int getExpectedSize(const FieldType & t, int str_length) {
@@ -108,8 +107,13 @@ namespace vaultdb {
             InputReferenceNode<B> *rhs_input = new InputReferenceNode<B>(rhs_idx);
             ExpressionNode<B> *equality_node = new EqualNode<B>(lhs_input, rhs_input);
 
-            return new GenericExpression<B>(equality_node, "predicate",
+            GenericExpression<B> *g =  new GenericExpression<B>(equality_node, "predicate",
                                             std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
+
+            delete equality_node;
+            delete lhs_input;
+            delete rhs_input;
+            return g;
         }
 
     };

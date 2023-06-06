@@ -33,7 +33,9 @@ namespace  vaultdb {
 
 
         ~GenericExpression()  {
-            if(root_ != nullptr) delete root_;
+            if(root_ != nullptr) {
+                delete root_;
+            }
         }
 
         inline string toString() const override {
@@ -43,7 +45,7 @@ namespace  vaultdb {
 
         static FieldType inferFieldType(ExpressionNode < B> *root,  const QuerySchema &input_schema);
 
-        ExpressionNode<B> *root_;
+        ExpressionNode<B> *root_ = nullptr;
     };
 
 

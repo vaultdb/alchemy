@@ -14,7 +14,6 @@
 #include <mach/mach.h>
 #endif
 
-#include <emp-tool/circuits/bit.h>
 #include <cstdint>
 #include <vector>
 #include <string>

@@ -32,7 +32,7 @@ namespace  vaultdb {
 
     private:
         SortDefinition order_by_;
-        std::shared_ptr<QuerySchema> schema_;
+        QuerySchema schema_;
         map<int, int> field_offsets_bytes_;
         map<int, int> field_sizes_bytes_;
 
@@ -60,7 +60,7 @@ namespace  vaultdb {
 
         void setSchema(const QuerySchema &schema);
 
-        inline const std::shared_ptr<QuerySchema> getSchema() const { return schema_; }
+        inline const QuerySchema getSchema() const { return schema_; }
 
 //        inline QueryTuple<B> getTuple(int idx) {
 //            int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * idx);
@@ -84,9 +84,9 @@ namespace  vaultdb {
         void putTuple(const int &idx, const QueryTuple<B> &tuple);
 
 
-        void setSortOrder(const SortDefinition &sortOrder);
+        inline void setSortOrder(const SortDefinition &order_by) { order_by_ = order_by; }
 
-        SortDefinition getSortOrder() const;
+        inline SortDefinition getSortOrder() const { return order_by_; }
 
 
         std::vector<int8_t> serialize() const;
@@ -94,12 +94,12 @@ namespace  vaultdb {
 
         inline Field<B> getField(const int  & row, const int & col)  const {
             int8_t *read_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * row);
-            return Field<B> ::deserialize(schema_->getField(col), read_ptr + field_offsets_bytes_.at(col));
+            return Field<B> ::deserialize(schema_.getField(col), read_ptr + field_offsets_bytes_.at(col));
         }
 
         inline void setField(const int  & row, const int & col, const Field<B> & f)  {
             int8_t *write_ptr = (int8_t *) (tuple_data_.data() + tuple_size_ * row);
-            f.serialize(write_ptr + field_offsets_bytes_.at(col), schema_->getField(col));
+            f.serialize(write_ptr + field_offsets_bytes_.at(col), schema_.getField(col));
         }
 
         inline B getDummyTag(const int & row)  const {
@@ -112,15 +112,15 @@ namespace  vaultdb {
             *tag = val;
         }
 
-        static std::shared_ptr<SecureTable> secretShare(const PlainTable *input, emp::NetIO *io, const int &party);
+        static SecureTable *secretShare(const PlainTable *input, emp::NetIO *io, const int &party);
 
-        static std::shared_ptr<SecureTable>
+        static SecureTable *
         secretShare(const PlainTable *input, BoolIO<NetIO> *ios[], const size_t &thread_count, const int &party);
 
-        static std::shared_ptr<SecureTable>
+        static SecureTable *
         secret_share_send_table(const PlainTable *input, emp::NetIO *io, const int &sharing_party);
 
-        static std::shared_ptr<SecureTable>
+        static SecureTable *
         secret_share_recv_table(const QuerySchema &src_schema,
                                 const SortDefinition &sortDefinition, emp::NetIO *io, const int &sharing_party);
 
@@ -128,7 +128,7 @@ namespace  vaultdb {
         SecretShares
         generateSecretShares() const; // generate shares for alice and bob - for data sharing (non-computing) node
 
-        std::unique_ptr<QueryTable<bool> > reveal(int empParty = emp::PUBLIC) const;
+        PlainTable *reveal(const int & party = emp::PUBLIC);
 
         QueryTable<B> &operator=(const QueryTable<B> &src);
 
@@ -140,10 +140,10 @@ namespace  vaultdb {
 
 //        const QueryTuple<B> operator[](const int &idx) const;
 
-        static std::shared_ptr<PlainTable> deserialize(const QuerySchema &schema, const vector<int8_t> &tableBits);
+        static PlainTable *deserialize(const QuerySchema &schema, const vector<int8_t> &tableBits);
 
         // encrypted version of deserialization using emp::Bit
-        static std::shared_ptr<SecureTable> deserialize(const QuerySchema &schema, vector<Bit> &table_bits);
+        static SecureTable *deserialize(const QuerySchema &schema, vector<Bit> &table_bits);
 
         size_t getTrueTupleCount() const;
 
@@ -171,16 +171,16 @@ namespace  vaultdb {
         void cloneRow(const bool & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
         void cloneRow(const Bit & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row);
 
+        QueryTable *clone() {
+            return new QueryTable<B>(*this);
+        }
         void compareSwap(const bool & swap, const int  & lhs_row, const int & rhs_row);
         void compareSwap(const Bit & swap, const int  & lhs_row, const int & rhs_row);
 
     private:
-        static std::unique_ptr<PlainTable> revealTable(const SecureTable *table, const int &party);
+        static PlainTable *revealTable( SecureTable *table, const int &party);
+        static PlainTable *revealTable( PlainTable *table, const int &party) { return table; }
 
-        static inline std::unique_ptr<PlainTable> revealTable(const PlainTable *table, const int &party) {
-            return std::make_unique<PlainTable>(*table);
-
-        }
 
         static void secret_share_send(const int &party, const PlainTable *src_table, SecureTable *dst_table,
                                       const int &write_offset,
@@ -208,13 +208,13 @@ namespace  vaultdb {
         using reference         = QueryTuple<B>&;
 
     public:
-        QueryTableIterator(QueryTable<B> &t) : table_(t), wrapper_(table_.getSchema(), table_.tuple_data_.data()),
-            tuple_size_((std::is_same_v<B, bool>) ? table_.schema_->size()/8 : table_.schema_->size()) { }
+        QueryTableIterator(QueryTable<B> &t) : table_(t), wrapper_(&table_.schema_, table_.tuple_data_.data()),
+            tuple_size_((std::is_same_v<B, bool>) ? table_.schema_.size()/8 : table_.schema_.size()) { }
 
         QueryTableIterator(QueryTable<B> &t, const int & offset)
            : table_(t),
-             tuple_size_((std::is_same_v<B, bool>) ? table_.schema_->size()/8 : table_.schema_->size()),
-             wrapper_(table_.getSchema(), table_.tuple_data_.data() + table_.tuple_size_ * offset) {
+             tuple_size_((std::is_same_v<B, bool>) ? table_.schema_.size()/8 : table_.schema_.size()),
+             wrapper_(&table_.schema_, table_.tuple_data_.data() + table_.tuple_size_ * offset) {
             assert(offset <= t.getTupleCount());
 
         }

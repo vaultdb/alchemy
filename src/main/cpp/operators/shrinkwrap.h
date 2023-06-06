@@ -10,10 +10,10 @@ namespace vaultdb {
     class Shrinkwrap : public Operator<B> {
     public:
         Shrinkwrap(Operator<B> *child, const size_t & output_cardinality);
-        Shrinkwrap(shared_ptr<QueryTable<B>> & input, const size_t & output_cardinality);
+        Shrinkwrap(QueryTable<B>*input, const size_t & output_cardinality);
         ~Shrinkwrap() = default;
     protected:
-        std::shared_ptr<QueryTable<B> > runSelf()  override;
+        QueryTable<B>*runSelf()  override;
         string getOperatorType() const override;
         string getParameters() const override;
 

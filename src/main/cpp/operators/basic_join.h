@@ -14,11 +14,11 @@ namespace vaultdb {
 
     public:
         BasicJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
-        BasicJoin(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
+        BasicJoin(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
         ~BasicJoin() = default;
 
     protected:
-        std::shared_ptr<QueryTable<B> > runSelf() override;
+        QueryTable<B> *runSelf() override;
         inline string getOperatorType() const override {     return "BasicJoin"; }
 
     };

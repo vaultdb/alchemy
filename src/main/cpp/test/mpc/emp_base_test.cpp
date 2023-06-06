@@ -36,11 +36,12 @@ void EmpBaseTest::TearDown() {
 
 	std::cout << "Runtime for test was " << duration << " secs." << std::endl;
         netio_->flush();
+        delete netio_;
         emp::finalize_semi_honest();
 }
 
-std::shared_ptr<PlainTable> EmpBaseTest::getExpectedOutput(const string &sql, const int &sortColCount) {
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(EmpBaseTest::unioned_db_, sql, false);
+PlainTable *EmpBaseTest::getExpectedOutput(const string &sql, const int &sortColCount) {
+    PlainTable *expected = DataUtilities::getQueryResults(EmpBaseTest::unioned_db_, sql, false);
     SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
     expected->setSortOrder(expectedSortOrder);
     return expected;

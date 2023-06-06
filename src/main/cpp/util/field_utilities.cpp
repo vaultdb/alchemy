@@ -112,11 +112,11 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
 
 void FieldUtilities::secret_share_send(const PlainTable *src, const int &src_idx, SecureTable *dst, const int &dst_idx,
                                        const int &party) {
-    size_t field_count = dst->getSchema()->getFieldCount();
+    size_t field_count = dst->getSchema().getFieldCount();
 
     for (size_t i = 0; i < field_count; ++i) {
         PlainField src_field = src->getField(src_idx, i);
-        SecureField dst_field = SecureField::secret_share_send(src_field, dst->getSchema()->getField(i), party);
+        SecureField dst_field = SecureField::secret_share_send(src_field, dst->getSchema().getField(i), party);
         dst->setField(dst_idx, i, dst_field);
     }
 
@@ -127,10 +127,10 @@ void FieldUtilities::secret_share_send(const PlainTable *src, const int &src_idx
 
 void FieldUtilities::secret_share_recv(SecureTable *dst, const int & idx, const int &party) {
 
-    size_t field_count = dst->getSchema()->getFieldCount();
+    size_t field_count = dst->getSchema().getFieldCount();
 
     for(size_t i = 0;  i < field_count; ++i) {
-        SecureField  dst_field = SecureField::secret_share_recv(dst->getSchema()->getField(i), party);
+        SecureField  dst_field = SecureField::secret_share_recv(dst->getSchema().getField(i), party);
         dst->setField(idx, i, dst_field);
     }
 
@@ -151,11 +151,11 @@ emp::Bit FieldUtilities::select(const Bit &choice, const Bit &lhs, const Bit &rh
 }
 
 
-PlainTuple FieldUtilities::revealTuple(const SecureTuple & s) {
-    std::shared_ptr<QuerySchema> secure_schema = s.getSchema();
-    std::shared_ptr<QuerySchema> plain_schema =  std::make_shared<QuerySchema>(QuerySchema::toPlain(*secure_schema));
-    return s.reveal(plain_schema, emp::PUBLIC);
-}
+//PlainTuple FieldUtilities::revealTuple(const SecureTuple & s) {
+//    QuerySchema secure_schema = *s.getSchema();
+//    QuerySchema plain_schema =  QuerySchema::toPlain(secure_schema);
+//    return s.reveal(&plain_schema, emp::PUBLIC);
+//}
 
 
 std::string FieldUtilities::printTupleBits(const PlainTuple & p) {
@@ -179,7 +179,7 @@ std::string FieldUtilities::printTupleBits(const SecureTuple & s) {
 
 // unioned db name
 BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_name) {
-    std::shared_ptr<PlainTable> p;
+    PlainTable *p;
     BitPackingMetadata bit_packing;
 
     try {
@@ -208,6 +208,7 @@ BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_
         bit_packing[c] = bp;
     }
 
+    delete p;
     return bit_packing;
 }
 

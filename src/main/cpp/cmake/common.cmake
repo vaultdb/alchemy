@@ -89,7 +89,7 @@ set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 #Testing macro
 macro (add_test_with_lib _name libs)
 	add_executable(${_name} "test/${_name}.cpp")
-	target_link_libraries(${_name} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES}     ${PQXX_LIBRARIES}  ${libs})
+	target_link_libraries(${_name} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${GMP_LIBRARIES}  ${EMP_LIBRARIES}  ${PQXX_LIBRARIES}  ${libs})
 endmacro()
 
 

@@ -4,7 +4,7 @@
 #include "operator.h"
 
 
-// concatenates two input arrays.  Equiavalent to UNION ALL in SQL
+// concatenates two input arrays.  Equivalent to UNION ALL in SQL
 namespace  vaultdb {
 
     template<typename B>
@@ -12,15 +12,16 @@ namespace  vaultdb {
 
 
     public:
-        Union(Operator<B> *lhs, Operator<B> *rhs, const SortDefinition & sort = SortDefinition());
+        // not order preserving, so no sort definition
+        Union(Operator<B> *lhs, Operator<B> *rhs);
 
-        Union(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs, const SortDefinition & sort = SortDefinition());
+        Union(QueryTable<B> *lhs, QueryTable<B> *rhs);
 
-        ~Union() = default;
+        virtual ~Union() = default;
 
 
     protected:
-        std::shared_ptr<QueryTable<B> > runSelf()  override;
+        QueryTable<B> *runSelf()  override;
         string getOperatorType() const override;
         string getParameters() const override;
         void setupScheme() {

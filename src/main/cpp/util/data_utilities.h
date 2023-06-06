@@ -25,14 +25,14 @@ namespace vaultdb {
 
     public:
 
-        static std::shared_ptr<PlainTable>
-        getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
-                          const bool &hasDummyTag, const size_t & limit = 0);
+        static PlainTable *
+        getUnionedResults(const std::string &alice_db, const std::string &bob_db, const std::string &sql,
+                          const bool &has_dummy_tag, const size_t & limit = 0);
 
-        static std::shared_ptr<PlainTable >
+        static PlainTable *
         getQueryResults(const string &dbName, const string &sql, const bool &hasDummyTag);
 
-        static std::shared_ptr<PlainTable > getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag, const int & sortColCount);
+        static PlainTable *getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag, const int & sortColCount);
 
 
         static std::string
@@ -50,7 +50,7 @@ namespace vaultdb {
         static SortDefinition getDefaultSortDefinition(const uint32_t &colCount);
 
         // create a copy of the table without its dummy tuples
-        static std::shared_ptr<PlainTable> removeDummies(const std::shared_ptr<PlainTable > & input);
+        static void removeDummies( PlainTable *input);
 
         static std::string printSortDefinition(const SortDefinition  & sortDefinition);
 

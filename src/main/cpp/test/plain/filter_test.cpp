@@ -19,12 +19,12 @@ TEST_F(FilterTest, test_table_scan) {
 
     SqlInput input(db_name_, sql, false);
 
-    std::shared_ptr<PlainTable > output = input.run(); // a smoke test for the operator infrastructure
-    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, sql, false);
+    PlainTable *output = input.run(); // a smoke test for the operator infrastructure
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, sql, false);
 
     ASSERT_EQ(*expected, *output);
 
-
+    delete expected;
 
 }
 
@@ -33,10 +33,10 @@ TEST_F(FilterTest, test_table_scan) {
 
 TEST_F(FilterTest, test_filter) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
-    std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
+    std::string expected_sql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
 
-   std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, true);
+   PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
    // expression setup
     // l_linenumber == 1
@@ -44,16 +44,21 @@ TEST_F(FilterTest, test_filter) {
    LiteralNode<bool> *constant_input = new LiteralNode<bool>(Field<bool>(FieldType::INT, 1));
    ExpressionNode<bool> *equality_check = new EqualNode<bool>((ExpressionNode<bool> *) read_field, (ExpressionNode<bool> *) constant_input);
 
-   GenericExpression<bool> *expression = new GenericExpression<bool>(equality_check, "predicate", FieldType::BOOL);
+   GenericExpression<bool> *expression = new GenericExpression<bool>    (equality_check, "predicate", FieldType::BOOL);
 
-    SqlInput input(db_name_, sql, false);
-    Filter<bool> filter(&input, expression);
+    SqlInput *input = new SqlInput(db_name_, sql, false);
+    Filter<bool> filter(input, expression);
 
 
-    std::shared_ptr<PlainTable > result = filter.run();
+    PlainTable *result = filter.run();
 
 
     ASSERT_EQ(*expected,  *result);
 
+    delete expected;
+
+    delete equality_check;
+    delete constant_input;
+    delete read_field;
 }
 

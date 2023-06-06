@@ -27,16 +27,18 @@ void
 TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
     string query = tpch_queries[test_id];
 
-    shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name, query, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name, query, false, 0);
     expected->setSortOrder(expected_sort);
 
     PlanParser<bool> plan_reader(db_name, test_name, input_tuple_limit_);
-    shared_ptr<PlainOperator> root = plan_reader.getRoot();
+    PlainOperator *root = plan_reader.getRoot();
 
-    shared_ptr<PlainTable> observed = root->run();
-    observed = DataUtilities::removeDummies(observed);
+    PlainTable *observed = root->run();
+    DataUtilities::removeDummies(observed);
 
     ASSERT_EQ(*expected, *observed);
+    delete expected;
+    delete root;
 
 }
 

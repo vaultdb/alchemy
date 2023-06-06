@@ -15,16 +15,16 @@ namespace  vaultdb {
 
     public:
         int8_t *fields_; // has dummy tag at end, serialized representation, points to an offset in parent QueryTable
-        std::shared_ptr<QuerySchema> query_schema_; // pointer to enclosing table
+        QuerySchema *schema_; // pointer to enclosing table
        int8_t  *managed_data_ = nullptr;
 
 
         QueryTuple() : fields_(nullptr) {};
         ~QueryTuple()  { if(managed_data_ != nullptr) delete [] managed_data_; } // don't free fields_, this is done at the table level
 
-        QueryTuple(std::shared_ptr<QuerySchema> & query_schema,  int8_t *tuple_payload);
-        QueryTuple(const std::shared_ptr<QuerySchema> & query_schema, const int8_t *src);
-        explicit QueryTuple(const std::shared_ptr<QuerySchema> & schema);
+        QueryTuple(QuerySchema *query_schema,  int8_t *tuple_payload);
+        QueryTuple(QuerySchema *query_schema, const int8_t *src);
+        explicit QueryTuple(QuerySchema *schema);
         QueryTuple(const QueryTuple & src);
 
         int8_t *getData() const { return fields_; }
@@ -42,7 +42,7 @@ namespace  vaultdb {
 
         inline void setDummyTag(const bool & b) {
             size_t dummy_tag_size = sizeof(bool);
-            int8_t *dst = fields_ + query_schema_->size()/8 - dummy_tag_size;
+            int8_t *dst = fields_ + schema_->size() / 8 - dummy_tag_size;
             memcpy(dst, &b, dummy_tag_size);
 
         }
@@ -54,29 +54,29 @@ namespace  vaultdb {
 
         }
 
-        inline void setSchema(std::shared_ptr<QuerySchema> q) {
-            query_schema_ = q;
+        inline void setSchema(QuerySchema *q) {
+            schema_ = q;
         }
 
 
         inline bool getDummyTag() const {
             size_t dummy_tag_size = sizeof(bool);
-            int8_t *src = fields_ + query_schema_->size()/8 - dummy_tag_size;
+            int8_t *src = fields_ + schema_->size() / 8 - dummy_tag_size;
             return *((bool *) src);
 
         }
 
-        inline std::shared_ptr<QuerySchema> getSchema() const {     return query_schema_; }
+        inline QuerySchema *getSchema() const {     return schema_; }
 
 
         string toString(const bool &showDummies = false) const;
 
         inline void serialize(int8_t *dst) {
-            memcpy( dst, fields_, query_schema_->size()/8);
+            memcpy(dst, fields_, schema_->size() / 8);
         }
 
         inline size_t getFieldCount() const {
-            return query_schema_->getFieldCount();
+            return schema_->getFieldCount();
         }
 
         PlainTuple& operator=(const PlainTuple& other);
@@ -91,7 +91,7 @@ namespace  vaultdb {
         static void compareSwap(const bool &cmp, PlainTuple  & lhs, PlainTuple & rhs);
 
 
-        static PlainTuple deserialize(int8_t *dst_bits, std::shared_ptr<QuerySchema> & schema, int8_t *src_bits);
+        static PlainTuple deserialize(int8_t *dst_bits, QuerySchema *schema, int8_t *src_bits);
 
         // create an independent tuple with reveal, for PUBLIC
         PlainTuple reveal(const int & party = emp::PUBLIC) const;

@@ -4,19 +4,6 @@
 using namespace vaultdb;
 
 
-
-
-
-
-
-QuerySchema::QuerySchema(std::shared_ptr<QuerySchema>  &s) {
-
-  for (size_t i = 0; i < s->getFieldCount(); i++) {
-      fields_[i] = s->getField(i);
-  }
-  initializeFieldOffsets();
-}
-
 // relies on initializeFieldOffsets()
 size_t QuerySchema::size() const {
     return tuple_size_;
@@ -141,7 +128,6 @@ void QuerySchema::initializeFieldOffsets()  {
     tuple_size_ = running_offset +  dummy_size;
 
 }
-
 
 
 

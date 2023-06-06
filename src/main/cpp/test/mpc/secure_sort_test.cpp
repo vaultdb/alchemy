@@ -32,7 +32,7 @@ protected:
 bool SecureSortTest::correctOrder(const PlainTable *lhs, const int & l_row,
                                   const PlainTable *rhs, const int & r_row, const SortDefinition & sort_definition) {
 
-    assert(*lhs->getSchema() == *rhs->getSchema());
+    assert(lhs->getSchema() == rhs->getSchema());
 
     for(int i = 0; i < sort_definition.size(); ++i) {
         PlainField lhs_field = lhs->getField(l_row, sort_definition[i].first);
@@ -68,66 +68,59 @@ bool SecureSortTest::isSorted(const PlainTable *table, const SortDefinition & so
 
 
 
-TEST_F(SecureSortTest, tpchQ1Sort) {
+TEST_F(SecureSortTest, tpchQ01Sort) {
     std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_results_sql = "WITH input AS ("
                                   + sql
                                   + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
 
 
+    SortDefinition sort_def{
+            ColumnSort(0, SortDirection::ASCENDING),
+            ColumnSort(1, SortDirection::ASCENDING)
+    };
+    expected->setSortOrder(sort_def);
 
-    PsqlDataProvider provider;
+    auto input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    Sort<emp::Bit> sort(input, sort_def);
 
-    std::shared_ptr<PlainTable>  input_table = provider.getQueryTable(db_name_,
-                                                                      sql, false);
-
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(0, SortDirection::ASCENDING);
-    sortDefinition.emplace_back(1, SortDirection::ASCENDING);
-    expected->setSortOrder(sortDefinition);
-
-
-
-    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-    Sort<emp::Bit> sort(&input, sortDefinition);
-    std::shared_ptr<SecureTable> result = sort.run();
-
-    std::shared_ptr<PlainTable> observed = result->reveal();
+    PlainTable *observed = sort.run()->reveal();
     ASSERT_EQ(*expected, *observed);
 
 
+    delete expected;
+    delete observed;
 
 }
 
 
-TEST_F(SecureSortTest, tpchQ3Sort) {
+TEST_F(SecureSortTest, tpchQ03Sort) {
     std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     string expected_result_sql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
-    shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(unioned_db_, expected_result_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_result_sql, false);
 
     SortDefinition sortDefinition{ColumnSort (1, SortDirection::DESCENDING), ColumnSort (3, SortDirection::ASCENDING)};
 
 
-    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-    Sort<emp::Bit> sort(&input, sortDefinition);
+    auto input= new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    auto sort = new Sort<emp::Bit>(input, sortDefinition);
 
 
     // project it down to $1, $3
-    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
+    ExpressionMapBuilder<emp::Bit> builder(sort->getOutputSchema());
     builder.addMapping(1, 0);
     builder.addMapping(3, 1);
 
-    Project project(&sort, builder.getExprs());
+    Project project(sort, builder.getExprs());
 
 
-    std::shared_ptr<SecureTable> result = project.run();
-    std::shared_ptr<PlainTable> observed = result->reveal();
+    PlainTable *observed = project.run()->reveal();
 
     // copy out the projected sort order
     expected->setSortOrder(observed->getSortOrder());
@@ -135,36 +128,40 @@ TEST_F(SecureSortTest, tpchQ3Sort) {
 
     ASSERT_EQ(*expected, *observed);
 
+    delete expected;
+    delete observed;
 
 }
 
 
-TEST_F(SecureSortTest, tpchQ5Sort) {
+TEST_F(SecureSortTest, tpchQ05Sort) {
 
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l WHERE l_orderkey <= 10  ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_results_sql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
 
     SortDefinition sort_definition;
     sort_definition.emplace_back(1, SortDirection::DESCENDING);
 
-    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-    Sort<emp::Bit> sort(&input, sort_definition);
+    auto input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    auto *sort = new Sort<emp::Bit>(input, sort_definition);
 
-    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
+    ExpressionMapBuilder<emp::Bit> builder(sort->getOutputSchema());
     builder.addMapping(1, 0);
 
     // project it down to $1
-    Project project(&sort, builder.getExprs());
+    Project project(sort, builder.getExprs());
 
-    std::shared_ptr<SecureTable> result = project.run();
-    std::shared_ptr<PlainTable> observed  = result->reveal();
+    PlainTable *observed  = project.run()->reveal();
 
     // copy out the projected sort order
     expected->setSortOrder(observed->getSortOrder());
 
 
-        ASSERT_EQ(*expected, *observed);
+    ASSERT_EQ(*expected, *observed);
+
+    delete expected;
+    delete observed;
 
 
 
@@ -172,36 +169,33 @@ TEST_F(SecureSortTest, tpchQ5Sort) {
 
 
 
-TEST_F(SecureSortTest, tpchQ8Sort) {
+TEST_F(SecureSortTest, tpchQ08Sort) {
     std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  WHERE o_orderkey <= 10 ORDER BY o_comment, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
+    PlainTable * expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
 
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(0, SortDirection::ASCENDING);
-    sortDefinition.emplace_back(1, SortDirection::DESCENDING);
+    SortDefinition sortDefinition {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
 
 
-    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-    Sort<emp::Bit> sort(&input, sortDefinition);
+    auto input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    auto sort = new Sort<emp::Bit>(input, sortDefinition);
 
-    ExpressionMapBuilder<emp::Bit> builder(sort.getOutputSchema());
-    builder.addMapping(0, 0);
-
-    std::shared_ptr<PlainTable> observed  = sort.run()->reveal();
+    PlainTable *observed  = sort->run()->reveal();
 
     // copy out the projected sort order
     expected->setSortOrder(observed->getSortOrder());
 
         ASSERT_EQ(*expected, *observed);
-
+        delete sort;
+        delete observed;
+        delete expected;
 }
 
 
 
-TEST_F(SecureSortTest, tpchQ9Sort) {
+TEST_F(SecureSortTest, tpchQ09Sort) {
     std::string db_name_ =  FLAGS_party == 1 ? alice_db_ : bob_db_;
 
     std::string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
@@ -216,14 +210,16 @@ TEST_F(SecureSortTest, tpchQ9Sort) {
     sort_definition.emplace_back(0, SortDirection::DESCENDING);
 
 
-    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-    Sort sort(&input, sort_definition);
+    auto input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    Sort sort(input, sort_definition);
 
 
-    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
+    PlainTable *observed = sort.run()->reveal();
 
 
-    ASSERT_TRUE(isSorted(observed.get(), sort_definition));
+    ASSERT_TRUE(isSorted(observed, sort_definition));
+
+    delete observed;
 
 
 
@@ -241,13 +237,15 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     sort_definition.emplace_back(2, SortDirection::DESCENDING);
     sort_definition.emplace_back(1, SortDirection::ASCENDING);
 
-    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-    Sort<emp::Bit> sort(&input, sort_definition);
+    auto input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    Sort<emp::Bit> sort(input, sort_definition);
 
-    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
+    PlainTable *observed = sort.run()->reveal();
 
-    ASSERT_TRUE(isSorted(observed.get(), sort_definition));
+    ASSERT_TRUE(isSorted(observed, sort_definition));
 
+
+    delete observed;
 
 }
 
@@ -266,70 +264,3 @@ int main(int argc, char **argv) {
 
 
 
-
-// Alt Q9:
-    // JMR: can't easily do this one securely owing to lineitem-supplier join -- tried with pkey/fkey join, but takes 1000s of tuples.
-    // validating this one manually instead
-
-    /*  With join (too expensive @ TPC-H SF1)
-     * string sql = "SELECT o_orderyear, o_orderkey, n_name "
-                 "  FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
-                 "  JOIN supplier s ON s_suppkey = l_suppkey"
-                 "  JOIN nation on n_nationkey = s_nationkey"
-                 "  WHERE l_orderkey <= 10 AND s_suppkey <= 5000"
-                 " ORDER BY l_comment "; // order by to ensure order is reproducible and not sorted on the ORDER BY cols
-
-                 std::cout << "Input SQL: " << sql << std::endl;
-
-
-                 // lineitem and orders are partitioned-alike
-                 // need to do secure join between lineitem and supplier
-
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT n_name, o_orderyear FROM input ORDER BY n_name, o_orderyear DESC";
-    shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
-
-
-    std::string lineitem_sql_ = "SELECT o_orderyear, l_orderkey, l_suppkey "
-                                                                "  FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
-                                                                "  WHERE l_orderkey <= 10 "
-                                                                " ORDER BY l_comment ";
-
-    std::string supplierSql = "SELECT s_suppkey, n_name "
-                         "  FROM  supplier JOIN nation on n_nationkey = s_nationkey"
-                         " WHERE s_suppkey <= 5000 "
-                         " ORDER BY s_suppkey";
-
-    std::cout << " supplierSql: " << supplierSql << std::endl;
-
-
-
-    SecureSqlInput lineitemInput(db_name_, lineitem_sql_, false, netio, FLAGS_party);
-    SecureSqlInput supplierInput(db_name_, supplierSql, false, netio, FLAGS_party);
-
-
-    ConjunctiveEqualityPredicate lineitemSupplierOrdinals = {EqualityPredicate(2, 0)}; //  l_suppkey, s_suppkey
-
-    std::shared_ptr<BinaryPredicate<emp::Bit> > lineitemSupplierPredicate(new JoinEqualityPredicate<emp::Bit>(lineitemSupplierOrdinals));
-
-    BasicJoin<emp::Bit> join(&lineitemInput, &supplierInput, lineitemSupplierPredicate);
-
-
-    SortDefinition sortDefinition;
-    sortDefinition.emplace_back(4, SortDirection::ASCENDING);
-    sortDefinition.emplace_back(0, SortDirection::DESCENDING);
-
-    Sort<emp::Bit> sort(&join, sortDefinition);
-
-    // project it down to $5, $0
-    Project project(&sort);
-
-    project.addColumnMapping(4, 0); // n_name
-    project.addColumnMapping(0, 1); // o_orderyear
-
-    std::shared_ptr<SecureTable> result = project.run();
-    std::shared_ptr<PlainTable> observed  = result->reveal();
-
-    // copy out the projected sort order
-    expected->setSortOrder(observed->getSortOrder());
-
-    ASSERT_EQ(*expected, *observed); */

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <filesystem>
 #include <sstream>
+#include <common/defs.h>
 
 #ifndef PATH_MAX
 #define PATH_MAX (4096)

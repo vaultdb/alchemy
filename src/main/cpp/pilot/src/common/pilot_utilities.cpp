@@ -44,11 +44,11 @@ std::string PilotUtilities::getRollupExpectedResultsSql(const std::string &group
 // roll up one group-by col at a time
 // input schema:
 // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-std::shared_ptr<SecureTable> PilotUtilities::rollUpAggregate(const std::shared_ptr<SecureTable> & input, const int &ordinal)  {
+SecureTable *PilotUtilities::rollUpAggregate(SecureTable *input, const int &ordinal)  {
 
     SortDefinition sortDefinition{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(ordinal, SortDirection::ASCENDING)};
-    Sort sort(input, sortDefinition);
-    shared_ptr<SecureTable> sorted = sort.run();
+    Sort<Bit> sort(input, sortDefinition);
+    SecureTable *sorted = sort.run();
 
     std::vector<int32_t> groupByCols{0, ordinal}; // 0 for study_year
     // ordinals 0...4 are group-by cols in input schema
@@ -67,17 +67,17 @@ std::shared_ptr<SecureTable> PilotUtilities::rollUpAggregate(const std::shared_p
 }
 
 
-void PilotUtilities::validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> & testTable)  {
+void PilotUtilities::validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition,  PlainTable *testTable)  {
 
 
-    shared_ptr<PlainTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
+    PlainTable *expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
     expectedTable->setSortOrder(expectedSortDefinition);
 
     // sort the inputs
     // ops deleted later using Operator framework
     Sort sort(testTable, expectedSortDefinition);
-    shared_ptr<PlainTable> observedTable = sort.run();
-    observedTable = DataUtilities::removeDummies(observedTable);
+    PlainTable *observedTable = sort.run();
+    DataUtilities::removeDummies(observedTable);
 
 
     bool res = (*expectedTable == *observedTable);
@@ -86,21 +86,24 @@ void PilotUtilities::validateInputTable(const std::string & dbName, const std::s
     }
     assert(res);
 
+    delete expectedTable;
 
 }
 
 void
 PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema &plain_schema, const string &dst_root) {
-    std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(src_csv, plain_schema);
+    PlainTable *inputTable = CsvReader::readCsv(src_csv, plain_schema);
     SecretShares shares = inputTable->generateSecretShares();
 
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
     DataUtilities::writeFile(dst_root + ".bob", shares.second);
 
+    delete inputTable;
+
 }
 
 void PilotUtilities::secretShareFromQuery(const string &db_name, const string &query, const string &dst_root) {
-    std::shared_ptr<PlainTable> table = DataUtilities::getQueryResults(db_name, query, false);
+    PlainTable *table = DataUtilities::getQueryResults(db_name, query, false);
     SecretShares shares = table->generateSecretShares();
 
     cout << "Secret sharing " << table->getTupleCount() << " rows.\n"; //" tuples from query " << query << " on " << db_name << endl;
@@ -110,9 +113,11 @@ void PilotUtilities::secretShareFromQuery(const string &db_name, const string &q
 
     string schema_filename = dst_root + ".schema";
     std::stringstream schema_str;
-    schema_str << *(table->getSchema()) << endl;
+    schema_str << table->getSchema() << endl;
     string schema_desc = schema_str.str();
     DataUtilities::writeFile(schema_filename, schema_desc);
+
+    delete table;
 }
 
 
@@ -193,7 +198,7 @@ std::string PilotUtilities::parseYearSelection(const std::string & study_year) {
 
 }
 
-void PilotUtilities::redactCellCounts(shared_ptr<SecureTable> &input, const int &min_cell_cnt) {
+void PilotUtilities::redactCellCounts(SecureTable *input, const int &min_cell_cnt) {
     emp::Integer cutoff(32, min_cell_cnt);
     SecureField cutoff_field(FieldType::SECURE_INT, cutoff);
 

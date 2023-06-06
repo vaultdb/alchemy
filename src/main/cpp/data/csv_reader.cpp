@@ -1,4 +1,3 @@
-#include <util/utilities.h>
 #include "csv_reader.h"
 #include <boost/algorithm/string.hpp>
 #include <query_table/field/field.h>
@@ -10,7 +9,7 @@
 
 using namespace vaultdb;
 
-std::unique_ptr<PlainTable> CsvReader::readCsv(const string &filename, const QuerySchema &schema) {
+PlainTable *CsvReader::readCsv(const string &filename, const QuerySchema &schema) {
 
     std::vector<std::string> tuple_entries = DataUtilities::readTextFile(filename);
     return readCsvFromBatch(tuple_entries, schema);
@@ -51,15 +50,15 @@ void CsvReader::parseTuple(const std::string &csv_line, const QuerySchema &src_s
                            const int &idx) {
 
     std::vector<std::string> tuple_fields;
-    std::shared_ptr<QuerySchema> schema = dst->getSchema();
-    size_t field_cnt = schema->getFieldCount();
+    QuerySchema schema = dst->getSchema();
+    size_t field_cnt = schema.getFieldCount();
 
 
     tuple_fields = split(csv_line);
     assert(field_cnt == tuple_fields.size()); // verify the field count
 
     for(size_t i = 0; i < field_cnt; ++i) {
-        PlainField field = FieldFactory<bool>::getFieldFromString(src_schema.getField(i).getType(), schema->getField(i).getStringLength(), tuple_fields[i]);
+        PlainField field = FieldFactory<bool>::getFieldFromString(src_schema.getField(i).getType(), schema.getField(i).getStringLength(), tuple_fields[i]);
         dst->setField(idx, i, field);
     }
     // implicitly not dummy
@@ -67,14 +66,14 @@ void CsvReader::parseTuple(const std::string &csv_line, const QuerySchema &src_s
 
 }
 
-std::unique_ptr<PlainTable> CsvReader::readCsvFromBatch(const vector<string> &input, const QuerySchema &schema) {
+PlainTable *CsvReader::readCsvFromBatch(const vector<string> &input, const QuerySchema &schema) {
     QuerySchema dst_schema = convertDatesToLong(schema);
    
-    std::unique_ptr<PlainTable> result(new PlainTable(input.size(), dst_schema));
+    PlainTable *result = new PlainTable(input.size(), dst_schema);
     int cursor = 0;
 
     for(std::string line : input) {
-        parseTuple(line, schema, result.get(), cursor);
+        parseTuple(line, schema, result, cursor);
         ++cursor;
     }
 

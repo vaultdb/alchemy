@@ -9,19 +9,19 @@ Shrinkwrap<B>::Shrinkwrap(Operator<B> *child, const size_t &output_cardinality) 
 }
 
 template<typename B>
-Shrinkwrap<B>::Shrinkwrap(shared_ptr<QueryTable<B>> &input, const size_t &output_cardinality)  : Operator<B>(input), cardinality_bound_(output_cardinality) {
+Shrinkwrap<B>::Shrinkwrap( QueryTable<B>*input, const size_t &output_cardinality)  : Operator<B>(input), cardinality_bound_(output_cardinality) {
     assert(cardinality_bound_ > 0); // check initialization
 }
 
 
 template<typename B>
-shared_ptr<QueryTable<B>> Shrinkwrap<B>::runSelf() {
+QueryTable<B>*Shrinkwrap<B>::runSelf() {
 
-    std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
+    QueryTable<B> *input = Operator<B>::getChild(0)->getOutput();
     SortDefinition src_sort = input->getSortOrder();
 
     if(input->getTupleCount() < cardinality_bound_) {
-        Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
+        Operator<B>::output_ =  new QueryTable<B>(*input);
         return Operator<B>::output_;
     }
 
@@ -33,7 +33,7 @@ shared_ptr<QueryTable<B>> Shrinkwrap<B>::runSelf() {
     }
 
     Sort<B> sort(input, dst_sort);
-    shared_ptr<QueryTable<B>> output_ = sort.run();
+    QueryTable<B> *output_ = sort.run();
 
     output_->resize(cardinality_bound_);
     return output_;

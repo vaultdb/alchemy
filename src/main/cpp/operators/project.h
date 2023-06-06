@@ -28,7 +28,7 @@ namespace vaultdb {
             setup();
         }
 
-        Project(shared_ptr<QueryTable<B> > child, std::map<uint32_t, Expression<B> * > expression_map, const SortDefinition & sort= SortDefinition()) : Operator<B>(child, sort), expressions_(expression_map) {
+        Project(QueryTable<B> *child, std::map<uint32_t, Expression<B> * > expression_map, const SortDefinition & sort= SortDefinition()) : Operator<B>(child, sort), expressions_(expression_map) {
             setup();
 
         }
@@ -38,7 +38,7 @@ namespace vaultdb {
             }
         }
 
-        std::shared_ptr<QueryTable<B> > runSelf() override;
+        QueryTable<B> *runSelf() override;
 
 
     private:

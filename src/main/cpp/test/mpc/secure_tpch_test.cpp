@@ -43,19 +43,21 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
 
-    shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
     PlanParser<emp::Bit> parser(local_db, test_name, netio_, FLAGS_party, input_tuple_limit_);
-    shared_ptr<SecureOperator> root = parser.getRoot();
+    SecureOperator *root = parser.getRoot();
 
 
-    shared_ptr<PlainTable> observed = root->run()->reveal();
-    observed = DataUtilities::removeDummies(observed);
+    PlainTable *observed = root->run()->reveal();
+    DataUtilities::removeDummies(observed);
 
     ASSERT_EQ(*expected, *observed);
+    delete observed;
+    delete expected;
 
 }
 

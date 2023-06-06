@@ -18,7 +18,8 @@ int Sort<B>::powerOfTwoLessThan(const int & n) {
 }
 
 template<typename B>
-Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child, aSortDefinition), limit_(limit) {
+Sort<B>::Sort(Operator<B> *child, const SortDefinition &sort_def, const int & limit)
+   : Operator<B>(child, sort_def), limit_(limit) {
 
     for(ColumnSort s : Operator<B>::sort_definition_) {
         if(s.second == SortDirection::INVALID)
@@ -33,7 +34,8 @@ Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition, const i
 }
 
 template<typename B>
-Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child, aSortDefinition), limit_(limit) {
+Sort<B>::Sort(QueryTable<B> *child, const SortDefinition &sort_def, const int & limit)
+  : Operator<B>(child, sort_def), limit_(limit) {
 
     for(ColumnSort s : Operator<B>::sort_definition_) {
         if(s.second == SortDirection::INVALID)
@@ -46,13 +48,13 @@ Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefin
 }
 
 template<typename B>
-std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
+QueryTable<B> *Sort<B>::runSelf() {
+    QueryTable<B> *input = Operator<B>::getChild()->getOutput();;
 
 
 
     // deep copy new output
-    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
+    Operator<B>::output_ = new QueryTable<B>(*input);
 
     bitonicSort(0, Operator<B>::output_->getTupleCount(), true);
 
@@ -115,7 +117,7 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir) {
  * the number of elements is cnt.
  **/
 template<typename B>
-void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &dir) {
+void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &dir) {
 
     if (n > 1) {
         int m = powerOfTwoLessThan(n);
@@ -123,7 +125,7 @@ void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortD
 //            QueryTuple<B> lhs = table->getTuple(i);
 //            QueryTuple<B> rhs = table->getTuple(i + m);
 
-            B to_swap = swapTuples(table.get(), i, i+m, sort_def, dir);
+            B to_swap = swapTuples(table, i, i+m, sort_def, dir);
             table->compareSwap(to_swap, i, i+m);
 
         }
@@ -134,10 +136,7 @@ void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortD
 }
 
 
-template<typename B>
-Sort<B>::~Sort() {
 
-}
 
 template<typename B>
 B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, const SortDefinition  & sort_definition, const bool & dir)  {

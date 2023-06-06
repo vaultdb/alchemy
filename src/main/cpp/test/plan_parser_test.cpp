@@ -29,13 +29,12 @@ PlanParserTest::runTest(const int &test_id, const SortDefinition &expected_sort,
     string test_name = "q" + std::to_string(test_id);
 
     PlanParser<bool> plan_reader(db_name_, test_name, limit_);
-    shared_ptr<PlainOperator> root = plan_reader.getRoot();
+    PlainOperator *root = plan_reader.getRoot();
     std::string observed_plan = root->printTree();
-
 
     ASSERT_EQ(expected_plan, observed_plan);
 
-
+    delete root;
 
 }
 
@@ -130,19 +129,21 @@ TEST_F(PlanParserTest, tpch_q18) {
         ColumnSort(3, SortDirection::ASCENDING)};
 
     std::string expected_plan = "#13: Sort<bool> ({<-1, ASC> , <4, DESC> , <3, ASC> }) : (#0 varchar(25) customer.c_name, #1 int32 customer.c_custkey, #2 int32 orders.o_orderkey, #3 int64 .o_orderdate, #4 float orders.o_totalprice, #5 float .sum_qty) order by: {<-1, ASC> , <4, DESC> , <3, ASC> }\n"
-     "    #12: GroupByAggregate<bool> (group-by: (0, 1, 2, 3, 4) aggs: (SUM($5) sum_qty)) : (#0 varchar(25) customer.c_name, #1 int32 customer.c_custkey, #2 int32 orders.o_orderkey, #3 int64 .o_orderdate, #4 float orders.o_totalprice, #5 float .sum_qty) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }\n"
-     "        #-1: Sort<bool> ({<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }) : (#0 varchar(25) customer.c_name, #1 int32 customer.c_custkey, #2 int32 orders.o_orderkey, #3 int64 .o_orderdate, #4 float orders.o_totalprice, #5 float lineitem.l_quantity) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }\n"
-     "            #11: Project<bool> ((<0, $7 varchar>, <1, $6 int32>, <2, $2 int32>, <3, $4 int64>, <4, $5 float>, <5, $1 float>)) : (#0 varchar(25) customer.c_name, #1 int32 customer.c_custkey, #2 int32 orders.o_orderkey, #3 int64 .o_orderdate, #4 float orders.o_totalprice, #5 float lineitem.l_quantity) order by: {}\n"
-     "                #10: KeyedJoin<bool> ($6 == $3) : (#0 int32 lineitem.l_orderkey, #1 float lineitem.l_quantity, #2 int32 orders.o_orderkey, #3 int32 orders.o_custkey, #4 int64 .o_orderdate, #5 float orders.o_totalprice, #6 int32 customer.c_custkey, #7 varchar(25) customer.c_name) order by: {}\n"
-     "                    #8: KeyedJoin<bool> ($0 == $2) : (#0 int32 lineitem.l_orderkey, #1 float lineitem.l_quantity, #2 int32 orders.o_orderkey, #3 int32 orders.o_custkey, #4 int64 .o_orderdate, #5 float orders.o_totalprice) order by: {}\n"
-     "                        #7: SqlInput<bool> (\"SELECT * FROM (SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_quantity, l_orderkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 lineitem.l_orderkey, #1 float lineitem.l_quantity) order by: {<1, ASC> , <0, ASC> }\n"
-     "                        #6: Project<bool> ((<0, $0 int32>, <1, $1 int32>, <2, $3 int64>, <3, $2 float>)) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 .o_orderdate, #3 float orders.o_totalprice) order by: {}\n"
-     "                            #5: KeyedJoin<bool> ($0 == $4) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 float orders.o_totalprice, #3 int64 .o_orderdate, #4 int32 lineitem.l_orderkey) order by: {}\n"
-     "                                #1: SqlInput<bool> (\"SELECT * FROM (SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders ORDER BY o_orderkey, o_custkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 float orders.o_totalprice, #3 int64 .o_orderdate) order by: {<0, ASC> , <1, ASC> }\n                                #4: Project<bool> ((<0, $0 int32>)) : (#0 int32 lineitem.l_orderkey) order by: {<0, ASC> }\n                                    #3: Filter<bool> ($1 > 7.000000) : (#0 int32 lineitem.l_orderkey, #1 float .null) order by: {<0, ASC> }\n"
-    "                                        #2: GroupByAggregate<bool> (group-by: (0) aggs: (SUM($1) null)) : (#0 int32 lineitem.l_orderkey, #1 float .null) order by: {<0, ASC> }\n                                            #-1: Sort<bool> ({<0, ASC> }) : (#0 int32 lineitem.l_orderkey, #1 float lineitem.l_quantity) order by: {<0, ASC> }\n"
-    "                                                #0: SqlInput<bool> (\"SELECT * FROM (SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_quantity, l_orderkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 lineitem.l_orderkey, #1 float lineitem.l_quantity) order by: {<1, ASC> , <0, ASC> }\n"
-    "                    #9: SqlInput<bool> (\"SELECT * FROM (SELECT c_custkey, c_name FROM customer ORDER BY c_custkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 customer.c_custkey, #1 varchar(25) customer.c_name) order by: {<0, ASC> }\n";
-
+                                "    #12: GroupByAggregate<bool> (group-by: (0, 1, 2, 3, 4) aggs: (SUM($5) sum_qty)) : (#0 varchar(25) customer.c_name, #1 int32 customer.c_custkey, #2 int32 orders.o_orderkey, #3 int64 .o_orderdate, #4 float orders.o_totalprice, #5 float .sum_qty) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }\n"
+                                "        #-1: Sort<bool> ({<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }) : (#0 varchar(25) customer.c_name, #1 int32 customer.c_custkey, #2 int32 orders.o_orderkey, #3 int64 .o_orderdate, #4 float orders.o_totalprice, #5 float lineitem.l_quantity) order by: {<0, ASC> , <1, ASC> , <2, ASC> , <3, ASC> , <4, ASC> }\n"
+                                "            #11: Project<bool> ((<0, $7 varchar>, <1, $6 int32>, <2, $2 int32>, <3, $4 int64>, <4, $5 float>, <5, $1 float>)) : (#0 varchar(25) customer.c_name, #1 int32 customer.c_custkey, #2 int32 orders.o_orderkey, #3 int64 .o_orderdate, #4 float orders.o_totalprice, #5 float lineitem.l_quantity) order by: {}\n"
+                                "                #10: KeyedJoin<bool> ($6 == $3) : (#0 int32 lineitem.l_orderkey, #1 float lineitem.l_quantity, #2 int32 orders.o_orderkey, #3 int32 orders.o_custkey, #4 int64 .o_orderdate, #5 float orders.o_totalprice, #6 int32 customer.c_custkey, #7 varchar(25) customer.c_name) order by: {}\n"
+                                "                    #8: KeyedJoin<bool> ($0 == $2) : (#0 int32 lineitem.l_orderkey, #1 float lineitem.l_quantity, #2 int32 orders.o_orderkey, #3 int32 orders.o_custkey, #4 int64 .o_orderdate, #5 float orders.o_totalprice) order by: {}\n"
+                                "                        #7: SqlInput<bool> (\"SELECT * FROM (SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_quantity, l_orderkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 lineitem.l_orderkey, #1 float lineitem.l_quantity) order by: {<1, ASC> , <0, ASC> }\n"
+                                "                        #6: Project<bool> ((<0, $0 int32>, <1, $1 int32>, <2, $3 int64>, <3, $2 float>)) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 .o_orderdate, #3 float orders.o_totalprice) order by: {}\n"
+                                "                            #5: KeyedJoin<bool> ($0 == $4) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 float orders.o_totalprice, #3 int64 .o_orderdate, #4 int32 lineitem.l_orderkey) order by: {}\n"
+                                "                                #1: SqlInput<bool> (\"SELECT * FROM (SELECT o_orderkey, o_custkey, o_totalprice, o_orderdate FROM orders ORDER BY o_orderkey, o_custkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 float orders.o_totalprice, #3 int64 .o_orderdate) order by: {<0, ASC> , <1, ASC> }\n"
+                                "                                #4: Project<bool> ((<0, $0 int32>)) : (#0 int32 lineitem.l_orderkey) order by: {<0, ASC> }\n"
+                                "                                    #3: Filter<bool> ($1 > 7.000000) : (#0 int32 lineitem.l_orderkey, #1 float .null) order by: {<0, ASC> }\n"
+                                "                                        #2: GroupByAggregate<bool> (group-by: (0) aggs: (SUM($1) null)) : (#0 int32 lineitem.l_orderkey, #1 float .null) order by: {<0, ASC> }\n"
+                                "                                            #-1: Sort<bool> ({<0, ASC> }) : (#0 int32 lineitem.l_orderkey, #1 float lineitem.l_quantity) order by: {<0, ASC> }\n"
+                                "                                                #0: SqlInput<bool> (\"SELECT * FROM (SELECT l_orderkey, l_quantity FROM lineitem ORDER BY l_quantity, l_orderkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 lineitem.l_orderkey, #1 float lineitem.l_quantity) order by: {<1, ASC> , <0, ASC> }\n"
+                                "                    #9: SqlInput<bool> (\"SELECT * FROM (SELECT c_custkey, c_name FROM customer ORDER BY c_custkey ) input LIMIT 10\", tuple_count=10) : (#0 int32 customer.c_custkey, #1 varchar(25) customer.c_name) order by: {<0, ASC> }\n";
     runTest(18, expected_sort, expected_plan);
 }
 

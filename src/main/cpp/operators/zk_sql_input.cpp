@@ -4,7 +4,7 @@ ZkSqlInput::ZkSqlInput(string db, string sql, bool dummyTag,  emp::BoolIO<NetIO>
                                                                                                          input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag), input_tuple_limit_(input_tuple_limit),  thread_count_(thread_count) {
 
     runQuery();
-    output_schema_ = QuerySchema::toSecure(*plain_input_->getSchema());
+    output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
 }
 
 ZkSqlInput::ZkSqlInput(const string &db, const string &sql, const bool &dummyTag,
@@ -12,14 +12,14 @@ ZkSqlInput::ZkSqlInput(const string &db, const string &sql, const bool &dummyTag
         Operator(sortDefinition), ios_(ios), src_party_(party), input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag), input_tuple_limit_(input_tuple_limit), thread_count_(thread_count) {
 
     runQuery();
-    output_schema_ = QuerySchema::toSecure(*plain_input_->getSchema());
+    output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
 
 }
 
 
-shared_ptr<SecureTable> ZkSqlInput::runSelf() {
+SecureTable *ZkSqlInput::runSelf() {
     // secret share it
-    output_ = PlainTable::secretShare(plain_input_.get(), ios_, thread_count_, src_party_);
+    output_ = PlainTable::secretShare(plain_input_, ios_, thread_count_, src_party_);
     return output_;
 }
 

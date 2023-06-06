@@ -60,10 +60,10 @@ void revealRollup(const std::string & rollupName) {
 
 
     QuerySchema rollupSchema = getSchema(rollupName); // rollupName != "age_strata" ? getSchema(rollupName) : getSchema("age_days");
-    std::shared_ptr<PlainTable> result = PlainTable::deserialize(rollupSchema, revealed);
+    PlainTable *result = PlainTable::deserialize(rollupSchema, revealed);
 
     std::stringstream schema_str;
-    schema_str << *result->getSchema() << std::endl;
+    schema_str << result->getSchema() << std::endl;
     std::string csv = schema_str.str();
 
     for(size_t i = 0; i < result->getTupleCount(); ++i) {
@@ -76,6 +76,7 @@ void revealRollup(const std::string & rollupName) {
     std::string out_file = dst_path + "/" + rollupName + ".csv";
 
     DataUtilities::writeFile(out_file, csv);
+    delete result;
 }
 
 

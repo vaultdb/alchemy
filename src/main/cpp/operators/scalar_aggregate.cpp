@@ -15,7 +15,7 @@ ScalarAggregate<B>::ScalarAggregate(Operator<B> *child, const vector<ScalarAggre
 }
 
 template<typename B>
-ScalarAggregate<B>::ScalarAggregate(shared_ptr<QueryTable<B>> child,
+ScalarAggregate<B>::ScalarAggregate(QueryTable<B> *child,
                                     const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition &sort)
         : Operator<B>(child, sort), aggregate_definitions_(aggregates) {
     setup();
@@ -23,16 +23,16 @@ ScalarAggregate<B>::ScalarAggregate(shared_ptr<QueryTable<B>> child,
 
 
 template<typename B>
-std::shared_ptr<QueryTable<B> > ScalarAggregate<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > input = ScalarAggregate<B>::children_[0]->getOutput();
+QueryTable<B> *ScalarAggregate<B>::runSelf() {
+    QueryTable<B> *input = Operator<B>::getChild()->getOutput();
 
-    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(
-            new QueryTable<B>(1, Operator<B>::output_schema_, SortDefinition()));
+    Operator<B>::output_ =
+            new QueryTable<B>(1, Operator<B>::output_schema_, SortDefinition());
 
 
     for(size_t i = 0; i < input->getTupleCount(); ++i) {
         for(ScalarAggregateImpl<B> *aggregator : aggregators_) {
-            aggregator->accumulate(input.get(), i);
+            aggregator->accumulate(input, i);
         }
 
     }

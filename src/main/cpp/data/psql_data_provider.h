@@ -15,16 +15,16 @@ using namespace vaultdb;
 class  PsqlDataProvider  { // :  DataProvider
 public:
 
-    std::shared_ptr<PlainTable> getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag=false);
+    PlainTable *getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag=false);
 
 private:
     void getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_table, const size_t &idx);
      PlainField getField(pqxx::field src);
-    std::unique_ptr<QuerySchema> getSchema(pqxx::result input, bool has_dummy_tag);
+    QuerySchema getSchema(pqxx::result input, bool has_dummy_tag);
 
      std::string src_table_;
      std::string db_name_;
-    std::unique_ptr<QuerySchema> schema_;
+     QuerySchema schema_;
 
     size_t getVarCharLength(string table_name, string col_name) const;
 

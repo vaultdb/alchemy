@@ -6,7 +6,7 @@ SecureSqlInput::SecureSqlInput(string db, string sql, bool dummyTag, emp::NetIO 
                                                                                                          input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag), input_tuple_limit_(input_tuple_limit) {
 
     runQuery();
-    output_schema_ = QuerySchema::toSecure(*plain_input_->getSchema());
+    output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
 }
 
 SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &dummyTag,
@@ -14,15 +14,15 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
         Operator(sortDefinition), netio_(netio), src_party_(party), input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag), input_tuple_limit_(input_tuple_limit) {
 
     runQuery();
-    output_schema_ = QuerySchema::toSecure(*plain_input_->getSchema());
+    output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
 
 }
 
 
-shared_ptr<SecureTable> SecureSqlInput::runSelf() {
+SecureTable *SecureSqlInput::runSelf() {
 
     // secret share it
-    output_ = PlainTable::secretShare(plain_input_.get(), netio_, src_party_);
+    output_ = PlainTable::secretShare(plain_input_, netio_, src_party_);
 
     return output_;
 }

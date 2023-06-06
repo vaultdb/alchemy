@@ -14,7 +14,7 @@ namespace  vaultdb {
 
     public:
         Join(Operator<B> *lhs, Operator<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
-        Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  Expression<B> * predicate, const SortDefinition & sort = SortDefinition());
+        Join(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> * predicate, const SortDefinition & sort = SortDefinition());
         ~Join() { if(predicate_ != nullptr) delete predicate_; }
 
         static void write_left(PlainTuple & dst, const PlainTable *src, const int & idx);

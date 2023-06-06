@@ -23,8 +23,8 @@ namespace vaultdb {
         QueryTuple() {};
         ~QueryTuple() = default;
 
-        QueryTuple(std::shared_ptr<QuerySchema> & query_schema, int8_t *src) { assert(src != nullptr); }
-        QueryTuple(const std::shared_ptr<QuerySchema> & query_schema, const int8_t *src) { assert(src != nullptr); } // immutable case
+        QueryTuple(QuerySchema *query_schema, int8_t *src) { assert(src != nullptr); }
+        QueryTuple(QuerySchema *query_schema, const int8_t *src) { assert(src != nullptr); } // immutable case
 
         bool operator==(const QueryTuple<B> & other) const {throw; } // implement in instances
         bool operator!=(const QueryTuple<B> & other) const {throw; } // implement in instances, not supported for SecureTuple/emp case
@@ -42,8 +42,6 @@ namespace vaultdb {
         static void compareSwap(const B &cmp, QueryTuple<B>  & lhs, QueryTuple<B>  & rhs){ throw; } // implemented in template specializations
 
         static QueryTuple<B> If(const B & cond, const QueryTuple<B> & lhs, const QueryTuple<B> & rhs);
-        //QueryTuple<bool> reveal(const int &empParty,  std::shared_ptr<QuerySchema> & dst_schema, int8_t *dst) const { throw; }  // only for SecureTuple
-       // static QueryTuple<B> secretShare(const QueryTuple<bool> *srcTuple,  std::shared_ptr<QuerySchema> &schema, int8_t *dst_bits, const int &myParty, const int &dstParty) { throw; } // only for PlainTuple, no reason in principle to not put this here
     };
 
 

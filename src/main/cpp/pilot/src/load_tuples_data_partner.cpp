@@ -12,20 +12,20 @@ using namespace  emp;
 #define TESTBED 1
 
 
-void validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> & testTable)  {
+void validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, PlainTable *testTable)  {
 
 
 
-      std::shared_ptr<PlainTable> expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
+      PlainTable *expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
       expectedTable->setSortOrder(expectedSortDefinition);
 
 
     // sort the inputs
     Sort sortOp(testTable, expectedSortDefinition);
-    std::shared_ptr<PlainTable> observedTable = sortOp.run();
+    PlainTable *observedTable = sortOp.run();
 
-    cout << "Diffing!" << endl;
     assert(*expectedTable ==  *observedTable);
+    delete expectedTable;
 
 }
 
@@ -62,12 +62,12 @@ int main(int argc, char **argv) {
 
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
-    std::shared_ptr<SecureTable> inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
+    SecureTable *inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
 
     Logger::write("Done unioning!");
     // validate it against the DB for testing
     if(TESTBED) {
-        std::shared_ptr<PlainTable> revealed = inputData->reveal();
+        PlainTable *revealed = inputData->reveal();
         string unionedDbName = "enrich_htn_unioned_3pc";  // enrich_htn_prod for in-the-field runs
         string query = "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
         SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
@@ -76,10 +76,11 @@ int main(int argc, char **argv) {
         validateInputTable(unionedDbName, query, patientSortDef, revealed);
 
         Logger::write("Input passed test!");
+        delete revealed;
     }
 
 
-    inputData.reset(); // frees inputData
+    delete inputData; // frees inputData
 
      emp::finalize_semi_honest();
     double runtime = time_from(startTime);

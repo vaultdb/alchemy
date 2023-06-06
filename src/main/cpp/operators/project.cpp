@@ -14,15 +14,15 @@ using namespace vaultdb;
 
 
 template<typename B>
-std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
+QueryTable<B> *Project<B>::runSelf() {
 
-    std::shared_ptr<QueryTable<B> > src_table = Operator<B>::children_[0]->getOutput();
+    QueryTable<B> *src_table = Operator<B>::getChild()->getOutput();
     uint32_t tuple_cnt = src_table->getTupleCount();
 
 
 
-    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt, Operator<B>::output_schema_, Operator<B>::getSortOrder()));
-    QueryTable<B> *dst =  Operator<B>::output_.get();
+    Operator<B>::output_ = new QueryTable<B>(tuple_cnt, Operator<B>::output_schema_, Operator<B>::getSortOrder());
+    QueryTable<B> *dst =  Operator<B>::output_;
 
     for(uint32_t i = 0; i < tuple_cnt; ++i) {
 
@@ -30,12 +30,12 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 
         // simply exec column mappings first with memcpy
         for(auto pos : column_mappings_) {
-            dst->assignField(i, pos.second, src_table.get(), i, pos.first); // to invoke memcpy
+            dst->assignField(i, pos.second, src_table, i, pos.first); // to invoke memcpy
         }
 
         for(uint32_t j : exprs_to_exec_) {
             Expression<B> *expression = expressions_.at(j);
-            Field<B> v = expression->call(src_table.get(), i);
+            Field<B> v = expression->call(src_table, i);
             dst->setField(i, j, v);
         }
 
@@ -175,8 +175,10 @@ template<typename B>
 void ExpressionMapBuilder<B>::addMapping(const uint32_t &src_idx, const uint32_t &dst_idx) {
     ExpressionNode<B> *node = new InputReferenceNode<B>(src_idx);
     GenericExpression<B> *expr = new GenericExpression<B>(node, src_schema_);
+    delete node;
 
     expressions_[dst_idx] = expr;
+
 }
 
 template<typename B>

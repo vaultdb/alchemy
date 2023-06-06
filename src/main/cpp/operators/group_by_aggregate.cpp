@@ -35,7 +35,7 @@ GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> 
 }
 
 template<typename B>
-GroupByAggregate<B>::GroupByAggregate(shared_ptr<QueryTable<B>> child, const vector<int32_t> &groupBys,
+GroupByAggregate<B>::GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
                                       const vector<ScalarAggregateDefinition> &aggregates,
                                       const SortDefinition &sort,
                                       const size_t & output_card) : Operator<B>(child, sort),
@@ -46,7 +46,7 @@ GroupByAggregate<B>::GroupByAggregate(shared_ptr<QueryTable<B>> child, const vec
 }
 
 template<typename B>
-GroupByAggregate<B>::GroupByAggregate(shared_ptr<QueryTable<B>> child, const vector<int32_t> &groupBys,
+GroupByAggregate<B>::GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
                                       const vector<ScalarAggregateDefinition> &aggregates,
                                       const size_t & output_card) : Operator<B>(child, SortDefinition()),
                                                                     aggregate_definitions_(aggregates),
@@ -57,15 +57,15 @@ GroupByAggregate<B>::GroupByAggregate(shared_ptr<QueryTable<B>> child, const vec
 
 
 template<typename B>
-shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
-    shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
-    shared_ptr<QuerySchema> input_schema = input->getSchema();
+QueryTable<B> *GroupByAggregate<B>::runSelf() {
+    QueryTable<B> *input = Operator<B>::getChild()->getOutput();
+    QuerySchema input_schema = input->getSchema();
 
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {
         // for most aggs the output type is the same as the input type
         // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
         FieldType aggValueType = (agg.ordinal >= 0) ?
-                                 input_schema->getField(agg.ordinal).getType() :
+                                 input_schema.getField(agg.ordinal).getType() :
                                  (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
         aggregators_.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
     }
@@ -86,18 +86,18 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
     SortDefinition outputSort = vector<ColumnSort>(inputSort.begin(), inputSort.begin() + group_by_.size());
 
 
-    Operator<B>::output_ = shared_ptr<QueryTable<B>>(new QueryTable<B>(input->getTupleCount(), Operator<B>::output_schema_, outputSort));
-    QueryTable<B> *output = Operator<B>::output_.get(); // shorthand
+    Operator<B>::output_ = new QueryTable<B>(input->getTupleCount(), Operator<B>::output_schema_, outputSort);
+    QueryTable<B> *output = Operator<B>::output_; // shorthand
     // SMA: if all dummies at the end, this would be simpler.  But we can't really do that if there are MPC joins, filters, etc before this op because they will sprinkle dummies throughout the table
     for(int j = 0; j < group_by_.size(); ++j) {
-        output->assignField(0, j, input.get(), 0, group_by_[j]); //memcpy the input values
+        output->assignField(0, j, input, 0, group_by_[j]); //memcpy the input values
     }
 
     int cursor = group_by_.size();
 
     // for first pass only
     for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
-        aggregator->initialize(input.get()); // don't need group_by_match, only for first pass
+        aggregator->initialize(input); // don't need group_by_match, only for first pass
         output->setField(0, cursor, aggregator->getResult());
         ++cursor;
     }
@@ -124,7 +124,7 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
         cursor = group_by_.size();
 
         for(auto agg : aggregators_) {
-            agg->accumulate(input.get(), i, matched);
+            agg->accumulate(input, i, matched);
             output->setField(i, cursor, agg->getResult());
             ++cursor;
         }
@@ -136,43 +136,10 @@ shared_ptr<QueryTable<B> > GroupByAggregate<B>::runSelf() {
         output->setDummyTag(i-1, out_dummy_tag);
     }
 
-    //realBin = !predecessor.getDummyTag(); // does this group-by bin contain at least one real (non-dummy) tuple?
-
-
-//    for(uint32_t i = 1; i < input->getTupleCount(); ++i) {
-//        current = (*input)[i];
-//
-//        realBin = realBin | !predecessor.getDummyTag();
-//        B isGroupByMatch = groupByMatch(predecessor, current);
-//
-//        QueryTuple<B> output_tuple = GroupByAggregate<B>::output_->getTuple(i - 1); // to write to it in place
-//        generateOutputTuple(output_tuple, predecessor, !isGroupByMatch, realBin, aggregators_);
-//
-//        for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
-//            aggregator->initialize(current, isGroupByMatch);// TODO: combine these methods since they are always called together
-//            aggregator->accumulate(current, !isGroupByMatch);
-//        }
-//
-//        predecessor = current;
-//        // reset the flag at the end of each group-by bin
-//        // flag denotes if we have one non-dummy tuple in the bin
-//        realBin = Field<B>::If(!isGroupByMatch,B(false), Field<B>(realBin)).template getValue<B>();
-//
-//    }
-//
-//    realBin = realBin | !predecessor.getDummyTag();
-//
-//
-//    // B(true) to make it write out the last entry
-//    QueryTuple<B> output_tuple = GroupByAggregate<B>::output_->getTuple(input->getTupleCount() - 1);
-//    generateOutputTuple(output_tuple, predecessor, B(true), realBin, aggregators_);
 
     // output sorted on group-by cols
     Operator<B>::output_->setSortOrder(DataUtilities::getDefaultSortDefinition(group_by_.size()));
 
-    for(size_t i = 0; i < aggregators_.size(); ++i) {
-        delete aggregators_[i];
-    }
 
 
     return Operator<B>::output_;
@@ -199,27 +166,6 @@ GroupByAggregateImpl<B> *GroupByAggregate<B>::aggregateFactory(const AggregateId
     };
 }
 
-template<typename B>
-bool GroupByAggregate<B>::verifySortOrder(const shared_ptr<QueryTable<B> > &table) const {
-    SortDefinition sortedOn = table->getSortOrder();
-
-    return sortCompatible(sortedOn, group_by_);
-}
-
-template<typename B>
-B GroupByAggregate<B>::groupByMatch(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs) const {
-
-    B result = (lhs.getField(group_by_[0]) == rhs.getField(group_by_[0]));
-    size_t cursor = 1;
-
-    while(cursor < group_by_.size()) {
-        result = result &
-                 (lhs.getField(group_by_[cursor]) == rhs.getField(group_by_[cursor]));
-        ++cursor;
-    }
-
-    return result;
-}
 
 template<typename B>
 QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & input_schema) const {
@@ -249,31 +195,6 @@ QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & input_
 
 }
 
-template<typename B>
-void GroupByAggregate<B>::generateOutputTuple(QueryTuple<B> &dst_tuple, const QueryTuple<B> &last_tuple,
-                                              const B &last_entry_group_by_bin, const B &real_bin,
-                                              const vector<GroupByAggregateImpl<B> *> &aggregators) const {
-
-    size_t i;
-    // write group-by ordinals
-    for(i = 0; i < group_by_.size(); ++i) {
-        const Field<B> src_field = last_tuple.getField(group_by_[i]);
-        dst_tuple.setField(i, src_field);
-    }
-
-    // write partial aggs
-    for(GroupByAggregateImpl<B> *aggregator : aggregators) {
-        Field<B> current_result = aggregator->getResult();
-        dst_tuple.setField(i, current_result);
-        ++i;
-    }
-
-
-    B dummy_tag = Field<B>::If(last_entry_group_by_bin, Field<B>(!real_bin), B(true)).template getValue<B>();
-    dst_tuple.setDummyTag(dummy_tag);
-
-
-}
 
 template<typename B>
 bool GroupByAggregate<B>::sortCompatible(const SortDefinition & sorted_on, const vector<int32_t> &group_by_idxs) {

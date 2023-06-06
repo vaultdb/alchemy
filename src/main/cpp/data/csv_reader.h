@@ -6,8 +6,8 @@
 namespace  vaultdb {
     class CsvReader {
     public:
-        static std::unique_ptr<PlainTable> readCsv(const std::string &filename, const QuerySchema &schema);
-        static std::unique_ptr<PlainTable> readCsvFromBatch(const vector<string> &payload, const QuerySchema &schema);
+        static PlainTable *readCsv(const std::string &filename, const QuerySchema &schema);
+        static PlainTable *readCsvFromBatch(const vector<string> &payload, const QuerySchema &schema);
 
         static void
         parseTuple(const std::string &csv_line, const QuerySchema &src_schema, PlainTable *dst,
