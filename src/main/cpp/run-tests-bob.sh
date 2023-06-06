@@ -2,7 +2,7 @@
 
 if [ $# -lt 1 ];
 then
-   printf "usage:  ./bin/run-tests-bob.sh  <alice_host>\n"
+   printf "usage:  bash /run-tests-bob.sh  <alice_host>\n"
    printf "Not enough arguments - %d\n" $# 
    exit 0 
 fi
@@ -45,5 +45,5 @@ ALICE_HOST=$1
 ./bin/secure_keyed_join_test  --party=2 --alice_host=$ALICE_HOST
 ./bin/secure_scalar_aggregate_test   --party=2 --alice_host=$ALICE_HOST
 ./bin/secure_group_by_aggregate_test  --party=2 --alice_host=$ALICE_HOST
-./bin/enrich_test  --party=2 --alice_host=$ALICE_HOST
+#./bin/enrich_test  --party=2 --alice_host=$ALICE_HOST # excluded because data is not synced between A + B
 ./bin/secure_tpch_test  --party=2 --alice_host=$ALICE_HOST
