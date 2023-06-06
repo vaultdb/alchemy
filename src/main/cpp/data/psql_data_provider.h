@@ -1,7 +1,6 @@
 #ifndef PSQL_DATA_PROVIDER_H
 #define PSQL_DATA_PROVIDER_H
 
-#include "data_provider.h"
 #include "query_table/query_table.h"
 #include "query_table/query_tuple.h"
 
@@ -12,7 +11,7 @@ using namespace vaultdb;
 
 
 
-class  PsqlDataProvider  { // :  DataProvider
+class  PsqlDataProvider  {
 public:
 
     PlainTable *getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag=false);
