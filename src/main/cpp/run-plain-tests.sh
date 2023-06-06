@@ -3,7 +3,7 @@ set +x
 
 
 ./bin/csv_reader_test
-./binfield_expression_test
+./bin/field_expression_test
 ./bin/filter_test
 ./bin/project_test
 ./bin/basic_join_test
