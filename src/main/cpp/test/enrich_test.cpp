@@ -132,15 +132,16 @@ SecureTable *EnrichTest::filterPatients() {
 
     // *** Filter
     // HAVING max(denom_excl) = 0
-   ExpressionNode<emp::Bit> * zero  = new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_INT, emp::Integer(32, 0)));;
-   ExpressionNode<emp::Bit> * input = new InputReferenceNode<emp::Bit>(8);
-   ExpressionNode<emp::Bit> *equality = new EqualNode<emp::Bit>(input, zero);
-    Expression<emp::Bit> *equality_expr = new GenericExpression<emp::Bit>(equality, "predicate", FieldType::SECURE_BOOL);
+    emp::Integer zero_i = emp::Integer(32, 0);
+   LiteralNode<emp::Bit> zero(Field<emp::Bit>(FieldType::SECURE_INT, zero_i));;
+   InputReferenceNode<emp::Bit> input(8);
+    EqualNode<emp::Bit> equality(&input, &zero);
+    auto equality_expr = new GenericExpression<emp::Bit>(&equality, "predicate", FieldType::SECURE_BOOL);
 
+    Filter inclusion_cohort(deduplicatedPatients, equality_expr);
 
-    Filter inclusionCohort(deduplicatedPatients, equality_expr);
+    return  inclusion_cohort.run()->clone();
 
-    return  inclusionCohort.run()->clone();
 
 }
 

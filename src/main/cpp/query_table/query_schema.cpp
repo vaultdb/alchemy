@@ -25,8 +25,7 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const QuerySchema &schema) {
 
 QuerySchema &QuerySchema::operator=(const QuerySchema &other) {
 
-    fields_.clear();
-    offsets_.clear();
+   reset();
 
     bool valid_fields = true;
 
