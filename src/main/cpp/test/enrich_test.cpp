@@ -546,11 +546,13 @@ TEST_F(EnrichTest, testRollups) {
     expected_sql = getRollupExpectedResultsSql("zip_marker");
     validateTable(unioned_enrich_db_, expected_sql, order_by, zip_marker);
     //std::cout << "Validated zip marker stratified " << *zipMarkerStratified << std::endl;
+
     delete aggregator;
     delete gender;
     delete race;
     delete ethnicity;
     delete age;
+    delete zip_marker;
 }
 
 // set up with 100 tuples:
