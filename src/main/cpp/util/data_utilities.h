@@ -13,9 +13,12 @@
 
 #include <cstdint>
 #include "utilities.h"
-#include <query_table/query_table.h>
 
 namespace vaultdb {
+
+    template<typename B> class QueryTable;
+    typedef QueryTable<bool> PlainTable;
+
     class DataUtilities {
 
 
@@ -63,7 +66,7 @@ namespace vaultdb {
 
         static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
 
-        static size_t get_tuple_cnt(const std::string & db_name, const std::string &  sql, bool has_dummy_tag);
+        static size_t getTupleCount(const string &db_name, const string &sql, bool has_dummy_tag);
 
 //        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
 

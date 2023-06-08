@@ -22,7 +22,7 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
 SecureTable *SecureSqlInput::runSelf() {
 
     // secret share it
-    output_ = PlainTable::secretShare(plain_input_, netio_, src_party_);
+    output_ = plain_input_->secretShare(netio_, src_party_);
 
     return output_;
 }

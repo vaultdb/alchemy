@@ -61,25 +61,25 @@ int main(int argc, char **argv) {
 
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
-    SecureTable *inputData = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
+    SecureTable *input_data = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
 
     Logger::write("Done unioning!");
     // validate it against the DB for testing
     if(TESTBED) {
-        PlainTable *revealed = inputData->reveal();
-        string unionedDbName = "enrich_htn_unioned_3pc";  // enrich_htn_prod for in-the-field runs
+        PlainTable *revealed = input_data->reveal();
+        string unioned_db_name = "enrich_htn_unioned_3pc";  // enrich_htn_prod for in-the-field runs
         string query = "SELECT pat_id, age_strata, sex,ethnicity, race, numerator, denom_excl  FROM patient ORDER BY pat_id, age_strata, sex, ethnicity, race, numerator, denom_excl";
         SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(7);
 
 	
-        validateInputTable(unionedDbName, query, patientSortDef, revealed);
+        validateInputTable(unioned_db_name, query, patientSortDef, revealed);
 
         Logger::write("Input passed test!");
         delete revealed;
     }
 
 
-    delete inputData; // frees inputData
+    delete input_data; // frees inputData
 
      emp::finalize_semi_honest();
     double runtime = time_from(startTime);

@@ -5,9 +5,9 @@
 #include <query_table/secure_tuple.h>
 #include <query_table/plain_tuple.h>
 
-
 #include <util/data_utilities.h>
 #include <util/field_utilities.h>
+#include "query_table/table_factory.h"
 
 using namespace vaultdb;
 
@@ -59,8 +59,11 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
     uint32_t output_tuple_cnt = lhs_table->getTupleCount(); // foreignKeyTable = foreign key
     QuerySchema lhs_schema = lhs_table->getSchema();
     QuerySchema rhs_schema = rhs_table->getSchema();
+
+
     QuerySchema output_schema = Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false);
-    Join<B>::output_ = new QueryTable<B>(output_tuple_cnt, output_schema, lhs_table->getSortOrder());
+    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, output_schema, lhs_table->storageModel(), lhs_table->getSortOrder());
+
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
 
     QueryTuple<B> joined(&output_schema);
@@ -89,7 +92,7 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
         }
     }
 
-    return Join<B>::output_;
+    return this->output_;
 
 }
 
@@ -113,7 +116,7 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
         output_sort.template emplace_back(s_prime);
     }
 
-    Join<B>::output_ = new QueryTable<B>(output_tuple_cnt, output_schema, output_sort);
+    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, output_schema, lhs_table->storageModel(), output_sort);
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
@@ -146,7 +149,7 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
 
 
-    return Join<B>::output_;
+    return this->output_;
 
 }
 

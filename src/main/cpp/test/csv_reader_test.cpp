@@ -59,21 +59,21 @@ TEST_F(CsvReaderTest, quotedStringTest) {
     PsqlDataProvider dataProvider;
     PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
 
-    PlainTable *parse_test = new PlainTable(*expected);
+    PlainTable *parse_test = expected->clone();
 
     CsvReader::parseTuple(testStr, expected->getSchema(), parse_test, 15);
 
-    QueryTuple expectedTuple = expected->getPlainTuple(15);
-    QueryTuple parsedTuple = parse_test->getPlainTuple(15);
+    QueryTuple expected_tuple = expected->getPlainTuple(15);
+    QueryTuple parsed_tuple = parse_test->getPlainTuple(15);
 
-    std::string customer_id = parsedTuple.getField(1).toString();
+    std::string customer_id = parsed_tuple.getField(1).toString();
     ASSERT_EQ(customer_id, "Customer#000000016       ");
 
     // expected:
     // 16 | Customer#000000016 | cYiaeMLZSMAOQ2 d0W,                    |          10 | 20-781-609-3107 |   4681.03 | FURNITURE    | kly silent courts. thinly regular theodolites sleep fluffily after
     // both appear to be truncating last string
 
-    ASSERT_EQ(parsedTuple, expectedTuple);
+    ASSERT_EQ(parsed_tuple, expected_tuple);
     delete expected;
     delete parse_test;
 }

@@ -95,7 +95,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
     PlainTable *input_table = data_provider.getQueryTable(db_name_,
                                                           input_query, false);
 
-    SecureTable *secret_shared = PlainTable::secretShare(input_table, netio_, FLAGS_party);
+    SecureTable *secret_shared = input_table->secretShare(netio_, FLAGS_party);
     netio_->flush();
 
     // c_custkey has 150 distinct vals, should have 8 bits
@@ -107,7 +107,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
 
 
     // tuple_cnt * (5+8+1 (for dummy tag) )*sizeof(emp::Bit)
-    ASSERT_EQ(expected->getTupleCount() * (14 * TypeUtilities::getEmpBitSize()), secret_shared->tuple_data_.size());
+    ASSERT_EQ(expected->getTupleCount()*14 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_);
 
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
@@ -130,7 +130,7 @@ void EmpTableTest::secretShareAndValidate(const std::string & input_query, const
                                                                           input_query, false);
 
     input_table->setSortOrder(sort);
-    SecureTable *secret_shared = PlainTable::secretShare(input_table, netio_, FLAGS_party);
+    SecureTable *secret_shared = input_table->secretShare(netio_, FLAGS_party);
     netio_->flush();
 
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
@@ -142,8 +142,6 @@ void EmpTableTest::secretShareAndValidate(const std::string & input_query, const
         expected = sorter.run()->clone();
 
     }
-
-    std::cout << "Test: " << (*expected == *revealed) << std::endl;
 
     ASSERT_EQ(*expected, *revealed);
 

@@ -2,7 +2,7 @@
 #include "scalar_aggregate.h"
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
-
+#include "query_table/table_factory.h"
 
 using namespace vaultdb;
 
@@ -26,8 +26,7 @@ template<typename B>
 QueryTable<B> *ScalarAggregate<B>::runSelf() {
     QueryTable<B> *input = Operator<B>::getChild()->getOutput();
 
-    Operator<B>::output_ =
-            new QueryTable<B>(1, Operator<B>::output_schema_, SortDefinition());
+    Operator<B>::output_ = TableFactory<B>::getTable(1, Operator<B>::output_schema_, input->storageModel());
 
 
     for(size_t i = 0; i < input->getTupleCount(); ++i) {
@@ -46,7 +45,7 @@ QueryTable<B> *ScalarAggregate<B>::runSelf() {
     Operator<B>::output_->setDummyTag(0, false);
 
 
-    return Operator<B>::output_;
+    return this->output_;
 }
 
 

@@ -54,7 +54,7 @@ QueryTable<B> *Sort<B>::runSelf() {
 
 
     // deep copy new output
-    Operator<B>::output_ = new QueryTable<B>(*input);
+    Operator<B>::output_ = input->clone();
 
     bitonicSort(0, Operator<B>::output_->getTupleCount(), true);
 

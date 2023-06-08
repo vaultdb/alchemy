@@ -4,6 +4,7 @@
 #include "plain/plain_base_test.h"
 #include <util/data_utilities.h>
 #include <query_table/query_table.h>
+#include "query_table/table_factory.h"
 
 
 // generates secret shares for a table - one for alice and one for bob
@@ -34,7 +35,7 @@ PlainTable *SecretShareGeneratorTest::assembleSecretShares(const QuerySchema &sc
         result[i] = aliceShares[i] ^ bobShares[i];
     }
 
-    return PlainTable::deserialize(schema, result_shares);
+    return TableFactory<bool>::deserialize(schema, result_shares, storage_model_);
 
 }
 

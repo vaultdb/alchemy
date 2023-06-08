@@ -96,7 +96,7 @@ PlainTable *EnrichTest::loadAndJoinLocalData(const std::string & db_name) const 
 SecureTable *EnrichTest::loadUnionAndDeduplicateData() const{
     string db_name = (FLAGS_party == ALICE) ? alice_enrich_db_ : bob_enrich_db_;
     PlainTable *local_data = loadAndJoinLocalData(db_name);
-    SecureTable *union_and_secret_share = PlainTable::secretShare(local_data, netio_, FLAGS_party);
+    SecureTable *union_and_secret_share = local_data->secretShare(netio_, FLAGS_party);
 
 
     // TODO: do bitonic merge instead of full-fledged sort here.  Inputs are sorted locally and each side makes up half of a bitonic sequence

@@ -4,7 +4,7 @@
 #include <expression/expression_node.h>
 #include <expression/generic_expression.h>
 #include <util/data_utilities.h>
-
+#include "query_table/table_factory.h"
 
 using namespace vaultdb;
 
@@ -21,22 +21,21 @@ QueryTable<B> *Project<B>::runSelf() {
 
 
 
-    Operator<B>::output_ = new QueryTable<B>(tuple_cnt, Operator<B>::output_schema_, Operator<B>::getSortOrder());
-    QueryTable<B> *dst =  Operator<B>::output_;
+    this->output_ = TableFactory<B>::getTable(tuple_cnt, this->output_schema_,  src_table->storageModel(), this->sort_definition_);
 
     for(uint32_t i = 0; i < tuple_cnt; ++i) {
 
-        Operator<B>::output_->setDummyTag(i, src_table->getDummyTag(i));
+        this->output_->setDummyTag(i, src_table->getDummyTag(i));
 
         // simply exec column mappings first with memcpy
         for(auto pos : column_mappings_) {
-            dst->assignField(i, pos.second, src_table, i, pos.first); // to invoke memcpy
+            this->output_->assignField(i, pos.second, src_table, i, pos.first); // to invoke memcpy
         }
 
         for(uint32_t j : exprs_to_exec_) {
             Expression<B> *expression = expressions_.at(j);
             Field<B> v = expression->call(src_table, i);
-            dst->setField(i, j, v);
+            this->output_->setField(i, j, v);
         }
 
     }
@@ -46,34 +45,6 @@ QueryTable<B> *Project<B>::runSelf() {
 }
 
 
-//template<typename B>
-//void Project<B>::project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const {
-//    dst_tuple.setDummyTag(src_tuple.getDummyTag());
-//
-//
-//    // simply exec column mappings first - memcpy
-//    for(auto pos : column_mappings_) {
-//        dst_tuple.setField(pos.second, src_tuple.getField(pos.first));
-//    }
-//
-//    for(uint32_t i : exprs_to_exec_) {
-//        Expression<B> *expression = expressions_.at(i);
-//        Field<B> v = expression->call(src_tuple);
-//        dst_tuple.setField(i, v);
-//    }
-//
-//    // exec all expressions
-//    //    auto expr_pos = expressions_.begin();
-////    while(expr_pos != expressions_.end()) {
-////        uint32_t dst_ordinal = expr_pos->first;
-////        Expression<B> *expression = expr_pos->second;
-////        Field<B> field_value = expression->call(src_tuple);
-////        dst_tuple.setField(dst_ordinal, field_value);
-////        ++expr_pos;
-////    }
-//
-//
-//}
 
 
 template<typename B>

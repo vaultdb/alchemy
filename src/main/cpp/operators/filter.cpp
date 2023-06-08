@@ -22,7 +22,7 @@ QueryTable<B> *Filter<B>::runSelf() {
     QueryTable<B> *input = Operator<B>::getChild()->getOutput();
 
     // deep copy new output, then just modify the dummy tag
-    Operator<B>::output_ = new QueryTable<B>(*input);
+    this-> output_ = input->clone();
     int tuple_cnt = input->getTupleCount();
 
     for(int i = 0; i < tuple_cnt; ++i) {

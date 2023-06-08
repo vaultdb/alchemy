@@ -48,12 +48,13 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
 
         std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                                                              "orders_cte AS (" + orders_sql_ + ") "
-                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, (cdummy OR odummy OR o_custkey <> c_custkey) dummy "
+                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
                                                                                                              "FROM customer_cte, orders_cte "
+                                                                                                             "WHERE NOT cdummy AND NOT odummy AND c_custkey = o_custkey "
                                                                                                              "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
 
     auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true, netio_, FLAGS_party);
     auto orders_input= new SecureSqlInput(db_name_, orders_sql_, true, netio_, FLAGS_party);
@@ -88,12 +89,13 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders) {
 // first 3 customers, propagate this constraint up the join tree for the test
 std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
                                                                      "lineitem_cte AS (" + lineitem_sql_ + ") "
-                                                                                                         "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority,(odummy OR ldummy OR o_orderkey <> l_orderkey) dummy "
+                                                                                                         "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority "
                                                                                                          "FROM lineitem_cte, orders_cte "
+                                                                                                         "WHERE NOT odummy AND NOT ldummy AND l_orderkey = o_orderkey "
                                                                                                          "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
 
     auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, netio_, FLAGS_party);
     auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, netio_, FLAGS_party);
@@ -130,11 +132,12 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
                                       "lineitem_cte AS (" + lineitem_sql_ + "), "
                                         "customer_cte AS (" + customer_sql_ + ") "
-                                         "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, (cdummy OR odummy OR ldummy OR o_orderkey <> l_orderkey OR c_custkey <> o_custkey) dummy "
+                                         "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
                                              "FROM lineitem_cte, orders_cte, customer_cte "
+                                             "WHERE NOT odummy AND NOT ldummy AND NOT cdummy AND l_orderkey = o_orderkey AND c_custkey = o_custkey "
                                              "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
 
     auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true, netio_, FLAGS_party);
     auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, netio_, FLAGS_party);

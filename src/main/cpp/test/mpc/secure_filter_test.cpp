@@ -53,9 +53,9 @@ TEST_F(SecureFilterTest, test_filter) {
     std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
-    std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
+    std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input WHERE l_linenumber = 1";
 
-    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expectedResultSql, true);
+    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expectedResultSql, false);
 
 
    SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
@@ -90,26 +90,3 @@ int main(int argc, char **argv) {
     return RUN_ALL_TESTS();
 }
 
-
-
-/*
-class SecureFilterPredicateClass : public Predicate<emp::Bit> {
-
-    SecureField encryptedLineNumber;
-public:
-    ~SecureFilterPredicateClass() {}
-    SecureFilterPredicateClass(int32_t valueToEncrypt) {
-        emp::Integer val(32, valueToEncrypt);
-        // encrypting here so we don't have to secret share it for every comparison
-        encryptedLineNumber = SecureField(FieldType::SECURE_INT, val);
-
-    }
-
-    // filtering for l_linenumber = 1
-    emp::Bit predicateCall(const SecureTuple & aTuple) const override {
-        const SecureField f =  aTuple.getField(1);
-        return (f == encryptedLineNumber);
-    }
-
-};
-*/

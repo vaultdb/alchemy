@@ -2,22 +2,6 @@ include(../cmake/common.cmake)
 include(GoogleTest)
 cmake_minimum_required (VERSION 3.11)
 
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-include_directories(
-    ${gtest_SOURCE_DIR}
-    ${gtest_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_BINARY_DIR}/../data
-        ${CMAKE_CURRENT_BINARY_DIR}/../operators
-        ${CMAKE_CURRENT_BINARY_DIR}/../querytable
-        ${CMAKE_CURRENT_BINARY_DIR}/../common
-		${CMAKE_CURRENT_BINARY_DIR}/support
-)
-
-
-include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
-
-
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   	if(NOT DEFINED GTEST_LIBRARY)

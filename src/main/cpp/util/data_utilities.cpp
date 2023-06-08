@@ -4,6 +4,8 @@
 #include <operators/union.h>
 #include "data_utilities.h"
 #include <algorithm>
+#include <query_table/query_table.h>
+
 
 
 using namespace vaultdb;
@@ -117,6 +119,7 @@ SortDefinition DataUtilities::getDefaultSortDefinition(const uint32_t &colCount)
 void DataUtilities::removeDummies(PlainTable *table) {
     // only works for plaintext tables
     int out_tuple_cnt = table->getTrueTupleCount();
+    if(out_tuple_cnt == table->getTupleCount()) return;
 
     int write_cursor = 0;
 
@@ -189,7 +192,7 @@ std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int
 
 }
 
-size_t DataUtilities::get_tuple_cnt(const string &db_name, const string &sql, bool has_dummy_tag) {
+size_t DataUtilities::getTupleCount(const string &db_name, const string &sql, bool has_dummy_tag) {
     if(has_dummy_tag)  { // run it and count
         PlainTable *res = DataUtilities::getQueryResults(db_name, sql, true);
         int cnt =  res->getTrueTupleCount();

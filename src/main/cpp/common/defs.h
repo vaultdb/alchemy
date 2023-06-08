@@ -9,10 +9,13 @@
 #include <boost/variant.hpp>
 #include <sstream>
 #include <emp-tool/emp-tool.h>
+#include <emp-zk/emp-zk.h>
+
 
 
 namespace vaultdb {
 
+    typedef std::pair<std::vector<int8_t>, std::vector<int8_t> > SecretShares;
 
     enum class SortDirection { ASCENDING = 0, DESCENDING = 1, INVALID = 2};
 
@@ -47,6 +50,11 @@ namespace vaultdb {
 //    }
 
     typedef std::map<ColumnReference , BitPackingDefinition> BitPackingMetadata;
+
+    enum class  StorageModel {
+        ROW_STORE,
+        COLUMN_STORE
+    };
 
 
 }

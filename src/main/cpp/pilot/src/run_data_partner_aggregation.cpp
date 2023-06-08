@@ -10,6 +10,8 @@
 #include <data/csv_reader.h>
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
+#include <query_table/row_table.h>
+
 
 
 using namespace std;
@@ -55,7 +57,7 @@ runRollup(int idx, string colName, int party, SecureTable  *data_cube, const str
 
 
 
-    SecureTable *stratified(new SecureTable(*rollupStrata.run()));
+    SecureTable *stratified = rollupStrata.run()->clone();
 
 
     // null out the ones with cell count below threshold
@@ -153,16 +155,16 @@ int main(int argc, char **argv) {
 
     // ship local, partial counts - alice, then bob
     if (party == 1) { // alice
-        alice = SecureTable::secret_share_send_table(local_partial_counts, netio, 1);
-        bob = SecureTable::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(), netio,
+        alice = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 1);
+        bob = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(), netio,
                                                    2);
 
     } else { // bob
-        alice = SecureTable::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(),
+        alice = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(),
                                                      netio, 1);
 
 
-        bob = SecureTable::secret_share_send_table(local_partial_counts, netio, 2);
+        bob = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 2);
     }
 
 
@@ -174,7 +176,7 @@ int main(int argc, char **argv) {
     assert(alice->getSchema() == bob->getSchema());
     assert(alice->getSchema() == chi->getSchema());
 
-    SecureTable *data_cube(new SecureTable(*alice));
+    SecureTable *data_cube = alice->clone();
     size_t tuple_cnt = data_cube->getTupleCount();
 
     // for each tuple

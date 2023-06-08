@@ -5,6 +5,7 @@
 #include "group_by_aggregate.h"
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
+#include "query_table/table_factory.h"
 
 
 
@@ -82,11 +83,11 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
     }
 
     // output sort order equal to first group-by-col-count entries in input sort order
-    SortDefinition inputSort = input->getSortOrder();
-    SortDefinition outputSort = vector<ColumnSort>(inputSort.begin(), inputSort.begin() + group_by_.size());
+    SortDefinition input_sort = input->getSortOrder();
+    SortDefinition output_sort = vector<ColumnSort>(input_sort.begin(), input_sort.begin() + group_by_.size());
 
 
-    Operator<B>::output_ = new QueryTable<B>(input->getTupleCount(), Operator<B>::output_schema_, outputSort);
+    Operator<B>::output_ = TableFactory<B>::getTable(input->getTupleCount(), Operator<B>::output_schema_, input->storageModel(), output_sort);
     QueryTable<B> *output = Operator<B>::output_; // shorthand
     // SMA: if all dummies at the end, this would be simpler.  But we can't really do that if there are MPC joins, filters, etc before this op because they will sprinkle dummies throughout the table
     for(int j = 0; j < group_by_.size(); ++j) {

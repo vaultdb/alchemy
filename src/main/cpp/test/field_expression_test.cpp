@@ -1,6 +1,6 @@
 #include <util/data_utilities.h>
 #include "plain/plain_base_test.h"
-
+#include "query_table/query_table.h"
 
 
 class FieldExpressionTest : public  PlainBaseTest { };

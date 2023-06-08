@@ -21,7 +21,7 @@ QueryTable<B>*Shrinkwrap<B>::runSelf() {
     SortDefinition src_sort = input->getSortOrder();
 
     if(input->getTupleCount() < cardinality_bound_) {
-        Operator<B>::output_ =  new QueryTable<B>(*input);
+        Operator<B>::output_ =  input->clone();
         return Operator<B>::output_;
     }
 

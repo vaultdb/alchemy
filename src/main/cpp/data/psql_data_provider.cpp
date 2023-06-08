@@ -5,6 +5,7 @@
 #include <query_table/plain_tuple.h>
 #include "query_table/field/field.h"
 #include "boost/date_time/gregorian/gregorian.hpp"
+#include <query_table/row_table.h>
 
 //typedef std::chrono::steady_clock::time_point time_point;
 
@@ -40,7 +41,7 @@ PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, bool has_d
     size_t row_cnt = res.size();
 
     schema_ = getSchema(res, has_dummy_tag);
-    PlainTable *dst_table = new PlainTable(row_cnt, schema_);
+    PlainTable *dst_table = new RowTable<bool>(row_cnt, schema_);
 
 
     int counter = 0;

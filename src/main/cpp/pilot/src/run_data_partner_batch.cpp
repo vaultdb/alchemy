@@ -9,6 +9,8 @@
 #include <boost/program_options.hpp>
 #include <operators/union.h>
 #include <operators/sort.h>
+#include <query_table/row_table.h>
+
 
 
 
@@ -319,13 +321,13 @@ int main(int argc, char **argv) {
         assert(local_partial_counts->getTupleCount() == cardinality_bound);
         // ship local, partial counts - alice, then bob
         if (party == 1) { // alice
-            alice = SecureTable::secret_share_send_table(local_partial_counts, netio, 1);
-            bob = SecureTable::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(), netio,
+            alice = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 1);
+            bob = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(), netio,
                                                        2);
         } else { // bob
-            alice = SecureTable::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(),
+            alice = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(),
                                                          netio, 1);
-            bob = SecureTable::secret_share_send_table(local_partial_counts, netio, 2);
+            bob = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 2);
         }
 
 

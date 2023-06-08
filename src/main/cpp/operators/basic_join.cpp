@@ -1,4 +1,5 @@
 #include "basic_join.h"
+#include "query_table/table_factory.h"
 
 using namespace vaultdb;
 
@@ -29,7 +30,7 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
 
     B selected, dst_dummy_tag, lhs_dummy_tag;
     // output size, colCount, is_encrypted
-    Join<B>::output_ = new QueryTable<B>(lhs->getTupleCount() * rhs->getTupleCount(), output_schema, concat_sorts);
+    this->output_ = TableFactory<B>::getTable(lhs->getTupleCount() * rhs->getTupleCount(), output_schema, lhs->storageModel(), concat_sorts);
     int cursor = 0;
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
@@ -45,7 +46,7 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
         }
     }
 
-    return Join<B>::output_;
+    return this->output_;
 }
 
 

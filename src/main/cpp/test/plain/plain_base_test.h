@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <util/logger.h>
 #include <util/utilities.h>
+#include "common/defs.h"
 
 
 using namespace vaultdb;
@@ -19,6 +20,7 @@ protected:
 
     std::string current_working_directory_;
     const string db_name_ = "tpch_unioned_150";
+    StorageModel storage_model_ = StorageModel::ROW_STORE;
 
 
 };

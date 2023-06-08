@@ -1,4 +1,5 @@
 #include "union.h"
+#include "query_table/table_factory.h"
 
 using namespace vaultdb;
 
@@ -31,27 +32,18 @@ QueryTable<B> * Union<B>::runSelf() {
     QueryTable<B> *rhs = Operator<B>::getChild(1)->getOutput();
 
     assert(lhs->getSchema() == rhs->getSchema()); // union compatible
+    assert(lhs->storageModel() == rhs->storageModel());
+
     QuerySchema output_schema = lhs->getSchema();
+    size_t tuple_cnt = lhs->getTupleCount() + rhs->getTupleCount();
 
-    // copy array
-    size_t tuple_count = lhs->getTupleCount() + rhs->getTupleCount();
-    size_t tuple_size_bytes = lhs->tuple_size_;
+    // intentionally empty sort definition
+    this->output_ = TableFactory<B>::getTable(tuple_cnt, output_schema, lhs->storageModel());
 
-    Operator<B>::output_ = new QueryTable<B>(tuple_count, output_schema); // intentionally empty sort definition
+    this->output_->cloneTable(0, lhs);
+    this->output_->cloneTable(lhs->getTupleCount(), rhs);
 
-    int8_t *write_ptr = Operator<B>::output_->tuple_data_.data();
-    int8_t *read_ptr = lhs->tuple_data_.data();
-    size_t write_size = tuple_size_bytes * lhs->getTupleCount();
-
-    memcpy(write_ptr, read_ptr, write_size);
-
-    write_ptr += write_size;
-    read_ptr = rhs->tuple_data_.data();
-    write_size = tuple_size_bytes * rhs->getTupleCount();
-
-    memcpy(write_ptr, read_ptr, write_size);
-
-    return Operator<B>::output_;
+    return this->output_;
 }
 
 template<typename B>

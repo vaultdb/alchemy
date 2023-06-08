@@ -9,7 +9,6 @@ Join<B>::Join(Operator<B> *lhs, Operator<B> *rhs,   Expression<B> *predicate, co
     QuerySchema lhs_schema = lhs->getOutputSchema();
     QuerySchema rhs_schema = rhs->getOutputSchema();
     Operator<B>::output_schema_ = concatenateSchemas(lhs_schema, rhs_schema);
-
 }
 
 template<typename  B>
@@ -58,20 +57,21 @@ Join<B>::concatenateSchemas(const QuerySchema &lhs_schema, const QuerySchema &rh
 }
 
 
-
+// TODO: refactor this to not require discrete tuple
 template<typename B>
 void Join<B>::write_left(PlainTuple & dst, const PlainTable *src, const int & idx) {
+
     size_t tuple_size = src->tuple_size_ - 1; // -1 for dummy tag
-    const int8_t *read_ptr = src->tuple_data_.data() + src->tuple_size_ * idx;
-    memcpy(dst.getData(), read_ptr, tuple_size);
+    PlainTuple  p = src->getPlainTuple(idx);
+    memcpy(dst.getData(), p.getData(), tuple_size);
 
 }
 
 template<typename B>
 void Join<B>::write_left(SecureTuple & dst, const SecureTable *src, const int & idx) {
     size_t write_size = src->tuple_size_ - TypeUtilities::getEmpBitSize(); // - for dummy tag
-    const int8_t *read_ptr = src->tuple_data_.data() + src->tuple_size_ * idx;
-    memcpy(dst.getData(), read_ptr, write_size );
+    SecureTuple s = src->getSecureTuple(idx);
+    memcpy(dst.getData(), s.getData(), write_size );
 }
 
 
@@ -83,8 +83,8 @@ void Join<B>::write_right(SecureTuple &dst_tuple, const SecureTable *src, const 
     int write_offset = dst_tuple.schema_->size() - src->getSchema().size(); // bits
     Bit *dst =  dst_tuple.getData() + write_offset;
 
-    const int8_t *s = src->tuple_data_.data() + idx * src->tuple_size_;
-    memcpy(dst, s, write_size);
+    SecureTuple s = src->getSecureTuple(idx);
+    memcpy(dst, s.getData(), write_size);
 }
 
 template<typename B>
@@ -92,9 +92,9 @@ void Join<B>::write_right(PlainTuple &dst_tuple, const PlainTable *src, const in
 
     size_t write_size = src->tuple_size_ - 1; // don't overwrite dummy tag
     int8_t *write_ptr = dst_tuple.getData() + (dst_tuple.getSchema()->size()/8 - src->tuple_size_);
+    PlainTuple  p = src->getPlainTuple(idx);
 
-
-    memcpy(write_ptr, src->tuple_data_.data() + idx * src->tuple_size_, write_size);
+    memcpy(write_ptr, p.getData(), write_size);
 
 }
 

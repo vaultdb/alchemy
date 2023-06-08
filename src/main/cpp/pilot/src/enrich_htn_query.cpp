@@ -77,7 +77,7 @@ SecureTable *EnrichHtnQuery::filterPatients() {
 
     Filter inclusionCohort(aggregated, equality_expr);
 
-    SecureTable *output = new SecureTable(*inclusionCohort.run());
+    SecureTable *output = inclusionCohort.run()->clone();
     runtime = emp::time_from(start_time);
     cout << "Runtime for filter: " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
 
@@ -140,7 +140,7 @@ SecureTable *EnrichHtnQuery::filterPatients() {
 
       Project project(src, builder.getExprs());
 
-    SecureTable *projected(new SecureTable(*project.run()));
+    SecureTable *projected = project.run()->clone();
 
       double runtime = emp::time_from(start_time);
       cout << "Runtime for projection: " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
@@ -266,7 +266,7 @@ void EnrichHtnQuery::unionWithPartialAggregates(vector<SecureTable *> partials) 
 }
 
 SecureTable *EnrichHtnQuery::addPartialAggregates(vector<SecureTable *> partials) {
-    SecureTable *summed_partials(new SecureTable(*partials[0]));
+    SecureTable *summed_partials = partials[0]->clone();
     size_t tuple_cnt = summed_partials->getTupleCount();
 
     for(size_t i = 1; i < partials.size(); ++i) {

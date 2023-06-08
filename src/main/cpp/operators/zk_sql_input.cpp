@@ -19,7 +19,7 @@ ZkSqlInput::ZkSqlInput(const string &db, const string &sql, const bool &dummyTag
 
 SecureTable *ZkSqlInput::runSelf() {
     // secret share it
-    output_ = PlainTable::secretShare(plain_input_, ios_, thread_count_, src_party_);
+    output_ = plain_input_->secretShare(ios_, thread_count_, src_party_);
     return output_;
 }
 

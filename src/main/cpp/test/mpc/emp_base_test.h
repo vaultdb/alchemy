@@ -26,6 +26,7 @@ protected:
     static const std::string bob_db_;
 
     std::string db_name_ = unioned_db_; // default, set in setUp()
+    StorageModel storage_model_ = StorageModel::ROW_STORE;
 
     static PlainTable *getExpectedOutput(const std::string & sql, const int & sortColCount);
   time_point<high_resolution_clock> start_time_;

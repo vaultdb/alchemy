@@ -24,8 +24,6 @@ endif()
 
 enable_testing()
 
-add_subdirectory(test)
-add_subdirectory(pilot)
 
 
 find_package(OpenSSL REQUIRED)
@@ -48,6 +46,8 @@ find_path(EMP-TOOL_INCLUDE_DIR NAMES emp-tool/emp-tool.h)
 
 include_directories(${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIRS} ${GMP_INCLUDE_DIR} ${EMP_INCLUDE_DIR})
 
+add_subdirectory(test)
+add_subdirectory(pilot)
 
 
 
@@ -59,6 +59,7 @@ set(sources
 		util/logger.cpp
 		util/system_configuration.cpp
 
+
 		query_table/field/field_type.h
 		query_table/field/field.cpp
 		query_table/field/field_factory.cpp
@@ -68,6 +69,9 @@ set(sources
 		query_table/query_field_desc.cpp
 		query_table/query_schema.cpp
 		query_table/query_table.cpp
+		query_table/row_table.cpp
+#		query_table/column_table.cpp
+		query_table/table_factory.h
 
         data/psql_data_provider.cpp
 		data/csv_reader.cpp

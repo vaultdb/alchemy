@@ -4,6 +4,7 @@
 #include <query_table/field/field_factory.h>
 #include <query_table/query_table.h>
 #include <query_table/plain_tuple.h>
+#include <query_table/row_table.h>
 
 #include <util/data_utilities.h>
 
@@ -69,7 +70,7 @@ void CsvReader::parseTuple(const std::string &csv_line, const QuerySchema &src_s
 PlainTable *CsvReader::readCsvFromBatch(const vector<string> &input, const QuerySchema &schema) {
     QuerySchema dst_schema = convertDatesToLong(schema);
    
-    PlainTable *result = new PlainTable(input.size(), dst_schema);
+    PlainTable *result = new RowTable<bool>(input.size(), dst_schema);
     int cursor = 0;
 
     for(std::string line : input) {

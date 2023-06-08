@@ -3,6 +3,7 @@
 #include <operators/sql_input.h>
 #include <data/csv_reader.h>
 #include "pilot/src/common/shared_schema.h"
+#include "query_table/table_factory.h"
 
 using namespace std;
 
@@ -34,7 +35,7 @@ TEST_F(SerializationTest, typesTest) {
     uint32_t expected_size = input->getSchema().size() / 8 * 10;
     ASSERT_EQ(table_data.size(), expected_size);
 
-    PlainTable *deserialized = PlainTable::deserialize(input->getSchema(), table_data);
+    PlainTable *deserialized = TableFactory<bool>::deserialize(input->getSchema(), table_data, storage_model_);
     ASSERT_EQ(*input, *deserialized);
 
     delete deserialized;
@@ -74,7 +75,7 @@ TEST_F(SerializationTest, capricorn_test) {
 
      vector<int8_t> serialized = input->serialize();
 
-     PlainTable *deserialized = PlainTable::deserialize(schema, serialized);
+     PlainTable *deserialized = TableFactory<bool>::deserialize(schema, serialized, storage_model_);
 
     ASSERT_EQ(*input, *deserialized);
 
@@ -123,7 +124,7 @@ TEST_F(SerializationTest, xored_serialization_test) {
     }
 
 
-    PlainTable *deserialized = PlainTable::deserialize(targetSchema, serialized);
+    PlainTable *deserialized = TableFactory<bool>::deserialize(targetSchema, serialized, storage_model_);
 
     ASSERT_EQ(*input, *deserialized);
 
@@ -157,7 +158,7 @@ TEST_F(SerializationTest, capricorn_deserialization) {
         ++read_pos;
     }
 
-    PlainTable *deserialized = PlainTable::deserialize(target_schema, serialized);
+    PlainTable *deserialized = TableFactory<bool>::deserialize(target_schema, serialized, storage_model_);
 
     std::string expected_query = "SELECT  study_year, pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl FROM patient WHERE site_id=3 AND multisite ORDER BY study_year, pat_id";
     std::string db_name = "enrich_htn_unioned_3pc";

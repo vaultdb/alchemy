@@ -22,6 +22,7 @@
 #include <util/logger.h>
 #include <boost/property_tree/ptree.hpp>
 
+
 namespace vaultdb {
 
 
@@ -59,6 +60,7 @@ namespace vaultdb {
 
         // for parser debugging
         static void printTree(const boost::property_tree::ptree &pt, const std::string &prefix = "");
+
 
     };
 

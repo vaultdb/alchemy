@@ -6,6 +6,7 @@
 #include <emp-zk/emp-zk.h>
 #include <iostream>
 #include "emp-tool/emp-tool.h"
+#include "query_table/table_factory.h"
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -109,13 +110,13 @@ TEST_F(EmpTest, secret_share_table_one_column) {
 
 
     int32_t *input = (FLAGS_party == emp::ALICE) ? alice_input.data() : bob_input.data();
-    
+
     QuerySchema schema;
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
     schema.initializeFieldOffsets();
 
     // set up expected result by concatenating input tables
-    PlainTable *expected = new PlainTable(2 * tuple_cnt, schema);
+    PlainTable *expected = TableFactory<bool>::getTable(2 * tuple_cnt, schema, storage_model_);
     std::vector<int32_t> concat = alice_input;
     concat.insert(concat.end(), bob_input.begin(), bob_input.end());
 
@@ -128,7 +129,7 @@ TEST_F(EmpTest, secret_share_table_one_column) {
     }
 
 
-    PlainTable *plain = new PlainTable(tuple_cnt, schema);
+    PlainTable *plain = TableFactory<bool>::getTable(tuple_cnt, schema, storage_model_);
 
     for(uint32_t i = 0; i < tuple_cnt; ++i) {
         Field<bool> val(FieldType::INT, input[i]);
@@ -136,7 +137,7 @@ TEST_F(EmpTest, secret_share_table_one_column) {
         plain->setDummyTag(i, false);
     }
 
-    SecureTable *secret_shared = PlainTable::secretShare(plain, netio_, FLAGS_party);
+    SecureTable *secret_shared = plain->secretShare(netio_, FLAGS_party);
 
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
@@ -168,7 +169,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     schema.initializeFieldOffsets();
 
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
-    PlainTable *input_table = new PlainTable(tuple_cnt, schema, sort_def);
+    PlainTable *input_table = TableFactory<bool>::getTable(tuple_cnt, schema, storage_model_, sort_def);
 
     for(uint32_t i = 0; i < tuple_cnt; ++i) {
         Field<bool> val(FieldType::INT, input[i]);
@@ -177,7 +178,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     }
 
 
-    SecureTable *secret_shared = PlainTable::secretShare(input_table, netio_, FLAGS_party);
+    SecureTable *secret_shared = input_table->secretShare(netio_, FLAGS_party);
 
 
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
@@ -188,7 +189,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     std::sort(input_tuples.begin(), input_tuples.end());
 
 
-    PlainTable *expected_table(new PlainTable(input_tuples.size(), schema, sort_def));
+    PlainTable *expected_table = TableFactory<bool>::getTable(input_tuples.size(), schema, storage_model_, sort_def);
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {
         Field<bool> val(FieldType::INT, input_tuples[i]);
