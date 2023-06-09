@@ -9,6 +9,7 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54312, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 
 using namespace vaultdb;
@@ -28,10 +29,10 @@ void SecureScalarAggregateTest::runTest(const string &expectedOutputQuery,
   std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
 
-  PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, false);
+  PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, storage_model_, false);
 
   // provide the aggregator with inputs:
-  auto input = new SecureSqlInput(db_name_, query, false, netio_, FLAGS_party);
+  auto input = new SecureSqlInput(db_name_, query, false, storage_model_, netio_, FLAGS_party);
   ScalarAggregate aggregate(input, aggregators);
   PlainTable *observed = aggregate.run()->reveal();
 
@@ -49,10 +50,10 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
 
   // produces 25 rows
   std::string query = "SELECT l_orderkey, l_linenumber, l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10";
-  PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, false);
+  PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, storage_model_, false);
 
   // provide the aggregator with inputs:
-  auto input = new SecureSqlInput(db_name_, query, true, netio_, FLAGS_party);
+  auto input = new SecureSqlInput(db_name_, query, true, storage_model_, netio_, FLAGS_party);
 
 
   ScalarAggregate aggregate(input, aggregators);
@@ -217,7 +218,7 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
                                "SUM(charge) sum_charge "
                                "FROM (" + inputQuery + ") subquery WHERE NOT dummy ";
 
-  PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, false);
+  PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, storage_model_, false);
 
   std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                       ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -225,7 +226,7 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
                                                       ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge")};
 
 
-  auto input = new SecureSqlInput(db_name_, inputQuery, true, netio_, FLAGS_party);
+  auto input = new SecureSqlInput(db_name_, inputQuery, true, storage_model_, netio_, FLAGS_party);
 
 
   ScalarAggregate aggregate(input, aggregators);
@@ -248,19 +249,19 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
 
 TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
 
-  string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+  string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                       " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
                       " FROM (SELECT * FROM lineitem WHERE l_orderkey <= 194) selection";
 
-  string expectedOutputQuery =  "select \n"
+  string expected_sql =  "select \n"
                                 "  avg(l_quantity) as avg_qty, \n"
                                 "  avg(l_extendedprice) as avg_price, \n"
                                 "  avg(l_discount) as avg_disc, \n"
                                 "  count(*)::BIGINT as count_order \n"
-                                "from (" + inputQuery + ") subq\n"
+                                "from (" + sql + ") subq\n"
                                                         " where NOT dummy\n";
 
-  PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, false);
+  PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, storage_model_, false);
 
   std::vector<ScalarAggregateDefinition> aggregators{
       ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
@@ -268,7 +269,7 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
       ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
       ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-  auto input = new SecureSqlInput(db_name_, inputQuery, true, netio_, FLAGS_party);
+  auto input = new SecureSqlInput(db_name_, sql, true, storage_model_, netio_, FLAGS_party);
 
   // sort alice + bob inputs after union
   ScalarAggregate aggregate(input, aggregators);
@@ -304,7 +305,7 @@ TEST_F(SecureScalarAggregateTest, tpch_q1) {
                                 "from (" + inputTuples + ") input "
                                                          " where  l_shipdate <= date '1998-08-03'";
 
-PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, false);
+PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expectedOutputQuery, storage_model_, false);
 
   std::vector<ScalarAggregateDefinition> aggregators{
       ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
@@ -316,7 +317,7 @@ PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expectedOutpu
       ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
       ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-    auto input = new SecureSqlInput(db_name_, inputQuery, true, netio_, FLAGS_party);
+    auto input = new SecureSqlInput(db_name_, inputQuery, true, storage_model_, netio_, FLAGS_party);
 
 
 

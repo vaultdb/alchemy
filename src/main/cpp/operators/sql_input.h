@@ -15,11 +15,12 @@ namespace  vaultdb {
         std::string input_query_;
         std::string db_name_;
         bool dummy_tagged_;
+        StorageModel storage_model_ = StorageModel::ROW_STORE;
 
     public:
         // bool denotes whether the last col of the SQL statement should be interpreted as a dummy tag
-        SqlInput(std::string db, std::string sql, bool dummyTag = false);
-        SqlInput(std::string db, std::string sql, bool dummyTag, const SortDefinition & sortDefinition, const size_t & tuple_limit = 0);
+        SqlInput(std::string db, std::string sql, const StorageModel & model, bool dummy_tag = false);
+        SqlInput(std::string db, std::string sql, bool dummy_tag, const StorageModel & model, const SortDefinition & sort_def, const size_t & tuple_limit = 0);
         virtual ~SqlInput() {
 //            if(output_ != nullptr) {
 //                delete output_;

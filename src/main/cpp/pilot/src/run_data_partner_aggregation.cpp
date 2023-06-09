@@ -85,7 +85,8 @@ runRollup(int idx, string colName, int party, SecureTable  *data_cube, const str
         string out_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/validate";
         string out_file = out_path + "/" + colName + ".csv";
         Utilities::mkdir(out_path);
-        PlainTable *result = DataUtilities::getExpectedResults(PilotUtilities::unioned_db_name_, query, false, 1);
+        PlainTable *result = DataUtilities::getExpectedResults(PilotUtilities::unioned_db_name_, query, false, 1,
+                                                               StorageModel::ROW_STORE);
 
         std::stringstream schema_str;
         schema_str << result->getSchema() << std::endl;
@@ -149,7 +150,8 @@ int main(int argc, char **argv) {
 
     SecureTable *alice, *bob, *chi;
 
-    PlainTable *local_partial_counts =  DataUtilities::getQueryResults(db_name, partial_aggregate_query, false);
+    PlainTable *local_partial_counts = DataUtilities::getQueryResults(db_name, partial_aggregate_query,
+                                                                      StorageModel::ROW_STORE, false);
 
     assert(local_partial_counts->getTupleCount() == cardinality_bound);
 

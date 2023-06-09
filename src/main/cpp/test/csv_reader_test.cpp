@@ -6,6 +6,8 @@
 #include <data/csv_reader.h>
 #include "plain/plain_base_test.h"
 
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
+
 
 class CsvReaderTest : public PlainBaseTest  {
 protected:
@@ -27,7 +29,7 @@ TEST_F(CsvReaderTest, lineitemTest) {
 
     std::string query = "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50";
     PsqlDataProvider dataProvider;
-    PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
+    PlainTable *expected = dataProvider.getQueryTable(db_name_, query, storage_model_);
     
     
     QuerySchema csvSchema = expected->getSchema();
@@ -57,7 +59,7 @@ TEST_F(CsvReaderTest, quotedStringTest) {
     // grab customer table for schema:
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
     PsqlDataProvider dataProvider;
-    PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
+    PlainTable *expected = dataProvider.getQueryTable(db_name_, query, storage_model_);
 
     PlainTable *parse_test = expected->clone();
 
@@ -87,7 +89,7 @@ TEST_F(CsvReaderTest, customerTest) {
     std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
+    PlainTable *expected = dataProvider.getQueryTable(db_name_, query, storage_model_);
 
     PlainTable *observed = CsvReader::readCsv(inputFile, expected->getSchema());
 
@@ -110,7 +112,7 @@ TEST_F(CsvReaderTest, ordersTest) {
     std::string query = "SELECT *   FROM orders ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
-    PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
+    PlainTable *expected = dataProvider.getQueryTable(db_name_, query, storage_model_);
 
     QuerySchema csvSchema = expected->getSchema();
     // o_orderdate(4) set schema to date

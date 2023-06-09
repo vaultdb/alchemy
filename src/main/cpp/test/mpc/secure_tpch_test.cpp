@@ -18,6 +18,7 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 class SecureTpcHTest : public EmpBaseTest {
 
@@ -43,12 +44,12 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
 
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0, storage_model_);
     expected->setSortOrder(expected_sort);
 
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-    PlanParser<emp::Bit> parser(local_db, test_name, netio_, FLAGS_party, input_tuple_limit_);
+    PlanParser<emp::Bit> parser(local_db, test_name, storage_model_, netio_, FLAGS_party, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
 

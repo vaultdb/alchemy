@@ -70,7 +70,7 @@ SecureTable *PilotUtilities::rollUpAggregate(SecureTable *input, const int &ordi
 void PilotUtilities::validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition,  PlainTable *testTable)  {
 
 
-    PlainTable *expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
+    PlainTable *expectedTable = DataUtilities::getQueryResults(dbName, sql, StorageModel::ROW_STORE, false);
     expectedTable->setSortOrder(expectedSortDefinition);
 
     // sort the inputs
@@ -103,7 +103,7 @@ PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema &pla
 }
 
 void PilotUtilities::secretShareFromQuery(const string &db_name, const string &query, const string &dst_root) {
-    PlainTable *table = DataUtilities::getQueryResults(db_name, query, false);
+    PlainTable *table = DataUtilities::getQueryResults(db_name, query, StorageModel::ROW_STORE, false);
     SecretShares shares = table->generateSecretShares();
 
     cout << "Secret sharing " << table->getTupleCount() << " rows.\n"; //" tuples from query " << query << " on " << db_name << endl;

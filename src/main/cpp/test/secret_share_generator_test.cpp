@@ -6,6 +6,7 @@
 #include <query_table/query_table.h>
 #include "query_table/table_factory.h"
 
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 // generates secret shares for a table - one for alice and one for bob
 // then zips them together and verifies that it produces the same table
@@ -46,7 +47,7 @@ TEST_F(SecretShareGeneratorTest, lineitem_sample) {
                              "ORDER BY l_shipdate "
                              "LIMIT 10";
 
-    PlainTable *initial_table = DataUtilities::getQueryResults(db_name_, query, false);
+    PlainTable *initial_table = DataUtilities::getQueryResults(db_name_, query, storage_model_, false);
     SecretShares secret_shares = initial_table->generateSecretShares();
 
     PlainTable *final_table = assembleSecretShares(initial_table->getSchema(), secret_shares);
@@ -66,7 +67,7 @@ TEST_F(SecretShareGeneratorTest, lineitem_dummy_tag_sample) {
                         "ORDER BY l_shipdate "
                         "LIMIT 10";
 
-    PlainTable *initial_table = DataUtilities::getQueryResults(db_name_, query, true);
+    PlainTable *initial_table = DataUtilities::getQueryResults(db_name_, query, storage_model_, true);
     SecretShares secret_shares = initial_table->generateSecretShares();
 
     PlainTable *final_table = assembleSecretShares(initial_table->getSchema(), secret_shares);

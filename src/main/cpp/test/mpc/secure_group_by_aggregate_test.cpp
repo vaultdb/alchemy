@@ -15,6 +15,7 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43440, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 
 class SecureGroupByAggregateTest : public EmpBaseTest {
@@ -32,15 +33,15 @@ void SecureGroupByAggregateTest::runTest(const string &expected_sql,
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
     // set up expected output
-    PlainTable *expected = EmpBaseTest::getExpectedOutput(expected_sql, 1);
+    const PlainTable *expected = getExpectedOutput(expected_sql, 1);
 
     // run secure query
-    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1); // actually 2
-    auto input = new SecureSqlInput(db_name_, query, false, sortDefinition, netio_, FLAGS_party);
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1); // actually 2
+    auto input = new SecureSqlInput(db_name_, query, false, storage_model_, sort_def, netio_, FLAGS_party);
 
 
-    std::vector<int32_t> groupByCols{0};
-    GroupByAggregate aggregate(input, groupByCols, aggregators);
+    std::vector<int32_t> group_bys{0};
+    GroupByAggregate aggregate(input, group_bys, aggregators);
 
     PlainTable *aggregated = aggregate.run()->reveal();
 
@@ -65,8 +66,8 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expected_sql,
     PlainTable *expected = EmpBaseTest::getExpectedOutput(expected_sql, 1);
 
     // configure and run test
-    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1);
-    auto  input = new SecureSqlInput(db_name_, query, true, sortDefinition, netio_, FLAGS_party);
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
+    auto  input = new SecureSqlInput(db_name_, query, true, storage_model_, sort_def, netio_, FLAGS_party);
 
 
     std::vector<int32_t> groupByCols{0};
@@ -199,7 +200,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
                                                          "GROUP BY l_returnflag, l_linestatus "
                                                          "ORDER BY l_returnflag, l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2, storage_model_);
 
     std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -209,7 +210,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
 
 
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
-    auto input = new SecureSqlInput(db_name_, inputQuery, true, sort_def, netio_, FLAGS_party);
+    auto input = new SecureSqlInput(db_name_, inputQuery, true, storage_model_, sort_def, netio_, FLAGS_party);
 
     // sort alice + bob inputs after union
    // Sort sort(input, sort_def);
@@ -252,7 +253,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
                                                           "order by \n"
                                                           "  l_returnflag, l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2, storage_model_);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -262,7 +263,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
-    auto input = new SecureSqlInput(db_name_, inputQuery, true, sort_def, netio_, FLAGS_party);
+    auto input = new SecureSqlInput(db_name_, inputQuery, true, storage_model_, sort_def, netio_, FLAGS_party);
 
     // sort alice + bob inputs after union
     //Sort sort(&input, sort_def);
@@ -311,7 +312,7 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
                                                            "  l_returnflag, \n"
                                                            "  l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2, storage_model_);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -325,7 +326,7 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
-    auto input = new SecureSqlInput(db_name_, sql, true, sort_def, netio_, FLAGS_party);
+    auto input = new SecureSqlInput(db_name_, sql, true, storage_model_, sort_def, netio_, FLAGS_party);
 
     // sort alice + bob inputs after union
     // Sort sort(&input, sort_def);

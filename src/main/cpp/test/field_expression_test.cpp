@@ -3,6 +3,8 @@
 #include "query_table/query_table.h"
 
 
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
+
 class FieldExpressionTest : public  PlainBaseTest { };
 
 
@@ -56,7 +58,7 @@ TEST_F(FieldExpressionTest, test_int32_expr) {
 
 TEST_F(FieldExpressionTest, cmp_swap) {
     string sql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 3"; // order by to ensure order is reproducible and not sorted on the sort cols
-    PlainTable *data = DataUtilities::getQueryResults(db_name_, sql, false);
+    PlainTable *data = DataUtilities::getQueryResults(db_name_, sql, storage_model_, false);
     QuerySchema q = data->getSchema();
     // deep copy
     PlainTuple a(&q), b(&q);

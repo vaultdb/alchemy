@@ -184,7 +184,7 @@ BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_
 
     try {
         string query = "SELECT table_name, col_name, min, max, domain_size FROM bit_packing";
-        p =  DataUtilities::getQueryResults(db_name, query, false);
+        p = DataUtilities::getQueryResults(db_name, query, StorageModel::ROW_STORE, false);
     } catch (std::exception e) {
         return bit_packing; //  skip this step if the table isn't configured
     }

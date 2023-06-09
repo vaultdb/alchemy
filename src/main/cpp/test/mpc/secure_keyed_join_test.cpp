@@ -11,6 +11,7 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43442, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 using namespace vaultdb;
 
@@ -55,13 +56,13 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
                                                                                                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, storage_model_, false);
 
 
     SortDefinition  customer_sort = DataUtilities::getDefaultSortDefinition(1);
     SortDefinition  orders_sort = DataUtilities::getDefaultSortDefinition(4);
-    auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true, customer_sort, netio_, FLAGS_party);
-    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, orders_sort, netio_, FLAGS_party);
+    auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true, storage_model_, customer_sort, netio_, FLAGS_party);
+    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, storage_model_, orders_sort, netio_, FLAGS_party);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -96,10 +97,10 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
                                                                                                             "WHERE NOT o_dummy AND NOT l_dummy "
                                                                                                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, storage_model_, false);
 
-    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, netio_, FLAGS_party);
-    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, netio_, FLAGS_party);
+    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, storage_model_, netio_, FLAGS_party);
+    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, storage_model_, netio_, FLAGS_party);
 
 
     // join output schema:
@@ -138,11 +139,11 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                                                                                                                                   " WHERE NOT c_dummy AND NOT o_dummy AND NOT l_dummy "
                                                                                                                                                   " ORDER BY  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey  \n";
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, storage_model_, false);
 
-    auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true, netio_, FLAGS_party);
-    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, netio_, FLAGS_party);
-    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, netio_, FLAGS_party);
+    auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true, storage_model_, netio_, FLAGS_party);
+    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, storage_model_, netio_, FLAGS_party);
+    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, storage_model_, netio_, FLAGS_party);
 
 
     // join output schema: (orders, customer)

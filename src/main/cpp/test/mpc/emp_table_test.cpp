@@ -7,6 +7,7 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54324, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 using namespace vaultdb;
 
@@ -93,7 +94,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
 
     PsqlDataProvider data_provider;
     PlainTable *input_table = data_provider.getQueryTable(db_name_,
-                                                          input_query, false);
+                                                          input_query, storage_model_, false);
 
     SecureTable *secret_shared = input_table->secretShare(netio_, FLAGS_party);
     netio_->flush();
@@ -103,7 +104,7 @@ TEST_F(EmpTableTest, bit_packing_test) {
     // c_nationkey has 25 distinct vals, should have 5 bits
     ASSERT_EQ(5, secret_shared->getSchema().getField(1).size());
 
-    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, input_query, false);
+    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, input_query, storage_model_, false);
 
 
     // tuple_cnt * (5+8+1 (for dummy tag) )*sizeof(emp::Bit)
@@ -127,7 +128,7 @@ void EmpTableTest::secretShareAndValidate(const std::string & input_query, const
     PsqlDataProvider dataProvider;
 
     PlainTable *input_table = dataProvider.getQueryTable(db_name_,
-                                                                          input_query, false);
+                                                         input_query, storage_model_, false);
 
     input_table->setSortOrder(sort);
     SecureTable *secret_shared = input_table->secretShare(netio_, FLAGS_party);
@@ -135,7 +136,7 @@ void EmpTableTest::secretShareAndValidate(const std::string & input_query, const
 
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
-    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, input_query, false);
+    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, input_query, storage_model_, false);
 
     if(!sort.empty())  {
         Sort sorter(expected, sort);

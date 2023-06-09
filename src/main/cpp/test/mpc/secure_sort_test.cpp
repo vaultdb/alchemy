@@ -12,7 +12,8 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43441, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
-DEFINE_bool(input, false, "input value");
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
+//DEFINE_bool(input, false, "input value");
 
 
 using namespace vaultdb;
@@ -75,7 +76,7 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
     string expected_results_sql = "WITH input AS ("
                                   + sql
                                   + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, storage_model_, false);
 
 
     SortDefinition sort_def{
@@ -84,7 +85,7 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
     };
     expected->setSortOrder(sort_def);
 
-    auto input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    auto input = new SecureSqlInput(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
     Sort<emp::Bit> sort(input, sort_def);
 
     PlainTable *observed = sort.run()->reveal();
@@ -103,12 +104,12 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     string expected_result_sql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_result_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_result_sql, storage_model_, false);
 
     SortDefinition sortDefinition{ColumnSort (1, SortDirection::DESCENDING), ColumnSort (3, SortDirection::ASCENDING)};
 
 
-    auto input= new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    auto input= new SecureSqlInput(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
     auto sort = new Sort<emp::Bit>(input, sortDefinition);
 
 
@@ -138,12 +139,12 @@ TEST_F(SecureSortTest, tpchQ05Sort) {
 
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l WHERE l_orderkey <= 10  ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_results_sql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, storage_model_, false);
 
     SortDefinition sort_definition;
     sort_definition.emplace_back(1, SortDirection::DESCENDING);
 
-    auto input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    auto input = new SecureSqlInput(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
     auto *sort = new Sort<emp::Bit>(input, sort_definition);
 
     ExpressionMapBuilder<emp::Bit> builder(sort->getOutputSchema());
@@ -174,12 +175,12 @@ TEST_F(SecureSortTest, tpchQ08Sort) {
 
     string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  WHERE o_orderkey <= 10 ORDER BY o_comment, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
-    PlainTable * expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
+    PlainTable * expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, storage_model_, false);
 
     SortDefinition sortDefinition {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
 
 
-    auto input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    auto input = new SecureSqlInput(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
     auto sort = new Sort<emp::Bit>(input, sortDefinition);
 
     PlainTable *observed  = sort->run()->reveal();
@@ -210,7 +211,7 @@ TEST_F(SecureSortTest, tpchQ09Sort) {
     sort_definition.emplace_back(0, SortDirection::DESCENDING);
 
 
-    auto input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    auto input = new SecureSqlInput(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
     Sort sort(input, sort_definition);
 
 
@@ -237,7 +238,7 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     sort_definition.emplace_back(2, SortDirection::DESCENDING);
     sort_definition.emplace_back(1, SortDirection::ASCENDING);
 
-    auto input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+    auto input = new SecureSqlInput(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
     Sort<emp::Bit> sort(input, sort_definition);
 
     PlainTable *observed = sort.run()->reveal();

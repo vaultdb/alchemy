@@ -27,7 +27,7 @@ using boost::property_tree::ptree;
 
 
 template<typename B>
-PlanParser<B>::PlanParser(const std::string &db_name, std::string plan_name, const int & limit) : db_name_(db_name), input_limit_(limit) {
+PlanParser<B>::PlanParser(const std::string &db_name, std::string plan_name, const StorageModel & model, const int & limit) : db_name_(db_name), storage_model_(model), input_limit_(limit) {
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + plan_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + plan_name + ".json";
 
@@ -39,7 +39,7 @@ PlanParser<B>::PlanParser(const std::string &db_name, std::string plan_name, con
 }
 
 template<typename B>
-PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, NetIO * netio, const int & party, const int & limit):  db_name_(db_name), netio_(netio), party_(party), input_limit_(limit)
+PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, const StorageModel & model, NetIO * netio, const int & party, const int & limit):  db_name_(db_name), netio_(netio), party_(party), storage_model_(model), input_limit_(limit)
 {
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + plan_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + plan_name + ".json";
@@ -51,7 +51,7 @@ PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, NetIO * 
 
 // ZK constructor
 template<typename B>
-PlanParser<B>::PlanParser(const std::string & db_name, const std::string plan_name, BoolIO<NetIO> *ios[], const size_t & zk_threads, const int & party, const int & limit) : db_name_(db_name), zk_threads_(zk_threads), ios_(ios), party_(party), input_limit_(limit), zk_plan_(true) {
+PlanParser<B>::PlanParser(const std::string & db_name, const std::string plan_name, const StorageModel & model, BoolIO<NetIO> *ios[], const size_t & zk_threads, const int & party, const int & limit) : db_name_(db_name), zk_threads_(zk_threads), ios_(ios), party_(party), input_limit_(limit), zk_plan_(true) {
         std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/zk-" + plan_name + ".json";
         parseSecurePlan(plan_file);
 
@@ -59,22 +59,22 @@ PlanParser<B>::PlanParser(const std::string & db_name, const std::string plan_na
 
 
 template<typename B>
-Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, const int & limit) {
-    PlanParser p(db_name, plan_name, limit);
+Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, const StorageModel & model, const int & limit) {
+    PlanParser p(db_name, plan_name, model, limit);
     return p.getRoot();
 }
 
 template<typename B>
-Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, NetIO * netio, const int & party, const int & limit ) {
-    PlanParser p(db_name, plan_name, netio, party, limit);
+Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, const StorageModel & model, NetIO * netio, const int & party, const int & limit ) {
+    PlanParser p(db_name, plan_name, model, netio, party, limit);
     return p.root_;
 }
 
 template<typename B>
-Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, BoolIO<NetIO> **ios, const size_t &zk_threads,
+Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, const StorageModel & model, BoolIO<NetIO> **ios, const size_t &zk_threads,
                      const int &party, const int &limit) {
 
-    PlanParser p(db_name, plan_name, ios, zk_threads, party, limit);
+    PlanParser p(db_name, plan_name, model, ios, zk_threads, party, limit);
     return p.root_;
 }
 
@@ -210,7 +210,7 @@ template<typename B>
 Operator<bool> *PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag, const bool & plain_has_dummy_tag) {
     size_t limit = (input_limit_ < 0) ? 0 : input_limit_;
 
-    return new SqlInput(db_name_, sql, plain_has_dummy_tag, collation, limit);
+    return new SqlInput(db_name_, sql, plain_has_dummy_tag, storage_model_, collation, limit);
 }
 
 template<typename B>
@@ -218,10 +218,10 @@ Operator<emp::Bit> *PlanParser<B>::createInputOperator(const string &sql, const 
     size_t limit = (input_limit_ < 0) ? 0 : input_limit_;
 
     if(zk_plan_) {
-        return new ZkSqlInput(db_name_, sql, plain_has_dummy_tag, collation, ios_, zk_threads_, party_, limit);
+        return new ZkSqlInput(db_name_, sql, plain_has_dummy_tag, collation, ios_, zk_threads_, party_, storage_model_, limit);
     }
 
-    return new SecureSqlInput(db_name_, sql, plain_has_dummy_tag, collation, netio_, party_, limit);
+    return new SecureSqlInput(db_name_, sql, plain_has_dummy_tag, storage_model_, collation, netio_, party_, limit);
 
 }
 

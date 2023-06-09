@@ -17,16 +17,16 @@ namespace vaultdb {
     class PlanParser {
     public:
 
-        PlanParser(const std::string &db_name, std::string plan_name, const int & limit  = -1);
-        PlanParser(const std::string &db_name, std::string plan_name, emp::NetIO * netio, const int & party, const int & limit = -1);
-        PlanParser(const std::string & db_name, const std::string plan_name, BoolIO<NetIO> *ios[], const size_t & zk_threads, const int & party, const int & limit = -1);
+        PlanParser(const std::string &db_name, std::string plan_name, const StorageModel & model, const int & limit  = -1);
+        PlanParser(const std::string &db_name, std::string plan_name, const StorageModel & model, emp::NetIO * netio, const int & party, const int & limit = -1);
+        PlanParser(const std::string & db_name, const std::string plan_name, const StorageModel & model, BoolIO<NetIO> *ios[], const size_t & zk_threads, const int & party, const int & limit = -1);
 
         Operator<B> *getRoot() const { return root_; }
         Operator<B> *getOperator(const int & op_id);
 
-        static Operator<B> *parse(const std::string & db_name, const std::string & plan_name, const int & limit = -1);
-        static Operator<B> *parse(const std::string & db_name, const std::string & plan_name, emp::NetIO * netio, const int & party, const int & limit = -1);
-        static Operator<B> *parse(const std::string & db_name, const std::string & plan_name,BoolIO<NetIO> *ios[], const size_t & zk_threads, const int & party, const int & limit = -1);
+        static Operator<B> *parse(const std::string & db_name, const std::string & plan_name, const StorageModel & model, const int & limit = -1);
+        static Operator<B> *parse(const std::string & db_name, const std::string & plan_name, const StorageModel & model, emp::NetIO * netio, const int & party, const int & limit = -1);
+        static Operator<B> *parse(const std::string & db_name, const std::string & plan_name, const StorageModel & model, BoolIO<NetIO> *ios[], const size_t & zk_threads, const int & party, const int & limit = -1);
 
         static pair<int, SortDefinition> parseSqlHeader(const string & header);
     protected:
@@ -34,6 +34,7 @@ namespace vaultdb {
         emp::NetIO *netio_ = nullptr;
         size_t zk_threads_;
         emp::BoolIO<NetIO> **ios_ = nullptr;
+        StorageModel storage_model_ = StorageModel::ROW_STORE;
 
 
         int party_ = emp::PUBLIC;

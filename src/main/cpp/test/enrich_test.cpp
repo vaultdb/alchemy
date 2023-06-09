@@ -10,6 +10,7 @@
 #include "util/field_utilities.h"
 
 
+
 PlainTable *EnrichTest::getAgeStrataProjection(PlainTable *input, const bool & is_secret_shared) const {
     FieldType ageStrataType = is_secret_shared ? FieldType::SECURE_INT : FieldType::INT;
 
@@ -60,7 +61,7 @@ PlainTable *EnrichTest::loadAndProjectPatientData(const std::string &db_name) co
 
 
     // *** Input on union of Alice and Bob's tables
-    SqlInput pat_input(db_name, pat_sql, false, pat_sort_def);
+    SqlInput pat_input(db_name, pat_sql, false, storage_model_, pat_sort_def);
     PlainTable *p = pat_input.run()->clone(); // freed by projection
 
     // *** project on patient table
@@ -75,7 +76,7 @@ PlainTable *EnrichTest::loadPatientExclusionData(const std::string &db_name) con
 
     SortDefinition pat_excl_sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (2, SortDirection::ASCENDING)};
     string pat_excl_sql = "SELECT * FROM patient_exclusion ORDER BY patid, denom_excl";
-    SqlInput input(db_name, pat_excl_sql, false, pat_excl_sort_def);
+    SqlInput input(db_name, pat_excl_sql, false, storage_model_, pat_excl_sort_def);
     PlainTable  *p = input.run(); // p is deleted when input goes out of scope
     return p->clone();
 }
@@ -281,7 +282,7 @@ void EnrichTest::validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition 
 void EnrichTest::validateTable(const std::string & db_name, const std::string & sql, const SortDefinition  & expected_sortDefinition, PlainTable *observed) const {
 
     PsqlDataProvider data_provider;
-    PlainTable *expected = data_provider.getQueryTable(db_name, sql);
+    PlainTable *expected = data_provider.getQueryTable(db_name, sql, storage_model_);
     expected->setSortOrder(expected_sortDefinition);
 
     ASSERT_EQ(expected->getSchema(), observed->getSchema());

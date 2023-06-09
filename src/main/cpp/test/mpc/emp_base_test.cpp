@@ -9,6 +9,8 @@ const std::string EmpBaseTest::alice_db_ = "tpch_alice_150";
 const std::string EmpBaseTest::bob_db_ = "tpch_bob_150";
 
 void EmpBaseTest::SetUp()  {
+    assert(FLAGS_storage == "row" || FLAGS_storage == "column");
+    storage_model_ = (FLAGS_storage == "row") ? StorageModel::ROW_STORE : StorageModel::COLUMN_STORE;
 
     Logger::setup(); // write to console
     string party_name = (FLAGS_party == 1) ? "alice"  : "bob";
@@ -40,9 +42,11 @@ void EmpBaseTest::TearDown() {
         emp::finalize_semi_honest();
 }
 
-PlainTable *EmpBaseTest::getExpectedOutput(const string &sql, const int &sortColCount) {
-    PlainTable *expected = DataUtilities::getQueryResults(EmpBaseTest::unioned_db_, sql, false);
-    SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
+PlainTable *EmpBaseTest::getExpectedOutput(const string &sql, const int &sort_col_cnt) const {
+
+    StorageModel m = (FLAGS_storage == "row") ? StorageModel::ROW_STORE : StorageModel::COLUMN_STORE;
+    PlainTable *expected = DataUtilities::getQueryResults(EmpBaseTest::unioned_db_, sql, m, false);
+    SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sort_col_cnt);
     expected->setSortOrder(expectedSortOrder);
     return expected;
 }

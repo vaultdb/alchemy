@@ -17,6 +17,7 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54325, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 
 class SecureFilterTest : public EmpBaseTest {};
@@ -29,9 +30,9 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
-    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, false);
+    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, storage_model_, false);
 
-    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
 
 
     PlainTable *revealed = input.run()->reveal(emp::PUBLIC);
@@ -53,12 +54,12 @@ TEST_F(SecureFilterTest, test_filter) {
     std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
-    std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input WHERE l_linenumber = 1";
+    std::string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input WHERE l_linenumber = 1";
 
-    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expectedResultSql, false);
+    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expected_sql, storage_model_, false);
 
 
-   SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false, netio_, FLAGS_party);
+   SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
 
     // expression setup
     // filtering for l_linenumber = 1

@@ -1,15 +1,18 @@
 #include "zk_sql_input.h"
 
-ZkSqlInput::ZkSqlInput(string db, string sql, bool dummyTag,  emp::BoolIO<NetIO> *ios[], const size_t & thread_count,  int aSrcParty, const size_t & input_tuple_limit) : ios_(ios), src_party_(aSrcParty),
-                                                                                                         input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag), input_tuple_limit_(input_tuple_limit),  thread_count_(thread_count) {
+ZkSqlInput::ZkSqlInput(string db, string sql, bool dummyTag, BoolIO<NetIO> *ios[], const size_t &thread_count,
+                       int party,
+                       const StorageModel &model, const size_t &input_tuple_limit) : ios_(ios), src_party_(party), storage_model_(model),
+                                                                                     input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag), input_tuple_limit_(input_tuple_limit), thread_count_(thread_count) {
 
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
 }
 
 ZkSqlInput::ZkSqlInput(const string &db, const string &sql, const bool &dummyTag,
-                               const SortDefinition &sortDefinition,  emp::BoolIO<NetIO> *ios[], const size_t & thread_count, const int &party, const size_t & input_tuple_limit) :
-        Operator(sortDefinition), ios_(ios), src_party_(party), input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag), input_tuple_limit_(input_tuple_limit), thread_count_(thread_count) {
+                               const SortDefinition &sortDefinition,  emp::BoolIO<NetIO> *ios[],
+                               const size_t & thread_count, const int &party, const StorageModel &model, const size_t & input_tuple_limit) :
+        Operator(sortDefinition), ios_(ios), src_party_(party), storage_model_(model), input_query_(sql), db_name_(db), has_dummy_tag_(dummyTag), input_tuple_limit_(input_tuple_limit), thread_count_(thread_count) {
 
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
@@ -31,7 +34,7 @@ void ZkSqlInput::runQuery() {
         input_query_ = "SELECT * FROM (" + input_query_ + ") input LIMIT " + std::to_string(input_tuple_limit_);
     }
 
-    plain_input_ = dataProvider.getQueryTable(db_name_, input_query_, has_dummy_tag_);
+    plain_input_ = dataProvider.getQueryTable(db_name_, input_query_, storage_model_, has_dummy_tag_);
     plain_input_->setSortOrder(getSortOrder());
 }
 

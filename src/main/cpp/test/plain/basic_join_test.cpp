@@ -3,7 +3,9 @@
 #include <util/utilities.h>
 #include "plain_base_test.h"
 #include "util/field_utilities.h"
+#include <gflags/gflags.h>
 
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 class BasicJoinTest : public PlainBaseTest {
 
@@ -47,10 +49,10 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
                                         "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-   PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
+   PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
-    SqlInput *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    SqlInput *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    SqlInput *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
+    SqlInput *orders_input = new SqlInput(db_name_, orders_sql_,  storage_model_, true);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -76,10 +78,10 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
                                  "FROM lineitem_cte, orders_cte "
                                  "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
-    SqlInput *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
-    SqlInput *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    SqlInput *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
+    SqlInput *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
 
 
     // output schema: lineitem, orders
@@ -109,11 +111,11 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                                  "FROM lineitem_cte, orders_cte, customer_cte "
                                                  "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
-    SqlInput *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    SqlInput *orders_input = new SqlInput(db_name_, orders_sql_, true);
-    SqlInput *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
+    SqlInput *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
+    SqlInput *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
+    SqlInput *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey

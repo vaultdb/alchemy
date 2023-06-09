@@ -4,6 +4,8 @@
 #include <operators/keyed_join.h>
 #include <expression/comparator_expression_nodes.h>
 
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
+
 class KeyedJoinTest :  public PlainBaseTest  {
 
 protected:
@@ -38,10 +40,10 @@ TEST_F(KeyedJoinTest, test_tpch_q3_customer_orders) {
                                     "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -70,10 +72,10 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders) {
                                                                                                              "WHERE matched";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
 
     // output schema: lineitem, orders
     // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -108,12 +110,12 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                           "WHERE matched";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -153,10 +155,10 @@ TEST_F(KeyedJoinTest, test_tpch_q3_customer_orders_reversed) {
                                                                                                              "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
 
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -186,10 +188,10 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_reversed) {
                                                                                                              "WHERE matched";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
 
     // output schema: lineitem, orders
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue
@@ -224,12 +226,12 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
                                                                                                                                                  "WHERE matched";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
 
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority

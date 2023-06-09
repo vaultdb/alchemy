@@ -8,6 +8,8 @@
 #include <util/utilities.h>
 #include "common/defs.h"
 
+DECLARE_string(storage); // row || column
+
 
 using namespace vaultdb;
 using namespace emp;

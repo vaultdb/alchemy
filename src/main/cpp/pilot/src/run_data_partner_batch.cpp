@@ -317,7 +317,8 @@ int main(int argc, char **argv) {
         // add in the 1-site PIDs
         SecureTable *alice, *bob, *chi;
         partial_count_query = PilotUtilities::replaceSelection(partial_count_query, partial_count_selection_clause);
-        PlainTable *local_partial_counts =  DataUtilities::getQueryResults(db_name, partial_count_query, false);
+        PlainTable *local_partial_counts = DataUtilities::getQueryResults(db_name, partial_count_query,
+                                                                          StorageModel::ROW_STORE, false);
         assert(local_partial_counts->getTupleCount() == cardinality_bound);
         // ship local, partial counts - alice, then bob
         if (party == 1) { // alice

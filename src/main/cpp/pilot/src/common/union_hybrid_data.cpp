@@ -185,7 +185,7 @@ UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery,
                                  NetIO *aNetIO, const int &party) {
 
 
-    PlainTable *local_plain = DataUtilities::getQueryResults(dbName, inputQuery, false);
+    PlainTable *local_plain = DataUtilities::getQueryResults(dbName, inputQuery, StorageModel::ROW_STORE, false);
     size_t total_tuples = local_plain->getTupleCount();
 
     cout << "Reading in " << local_plain->getTupleCount() << " tuples from local db." << endl;

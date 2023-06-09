@@ -25,14 +25,14 @@ unsigned char DataUtilities::reverse(unsigned char b) {
 
 // in some cases, like with LIMIT, we can't just run over tpch_unioned
 PlainTable *
-DataUtilities::getUnionedResults(const std::string &alice_db, const std::string &bob_db, const std::string &sql,
+DataUtilities::getUnionedResults(const std::string &alice_db, const std::string &bob_db, const std::string &sql,  const StorageModel & model,
                                  const bool &has_dummy_tag, const size_t & limit) {
 
     PsqlDataProvider dataProvider;
 
-    PlainTable *alice = dataProvider.getQueryTable(alice_db, sql,
+    PlainTable *alice = dataProvider.getQueryTable(alice_db, sql, model,
                                                    has_dummy_tag); // dummyTag true not yet implemented
-    PlainTable *bob = dataProvider.getQueryTable(bob_db, sql, has_dummy_tag);
+    PlainTable *bob = dataProvider.getQueryTable(bob_db, sql, model, has_dummy_tag);
 
     if(limit > 0) {
         alice->resize(limit);
@@ -49,9 +49,10 @@ DataUtilities::getUnionedResults(const std::string &alice_db, const std::string 
 
 
 
-PlainTable *DataUtilities::getQueryResults(const std::string & dbName, const std::string & sql, const bool & hasDummyTag) {
+PlainTable *DataUtilities::getQueryResults(const std::string &dbName, const std::string &sql, const StorageModel &model,
+                                           const bool &hasDummyTag) {
     PsqlDataProvider dataProvider;
-    return dataProvider.getQueryTable(dbName, sql, hasDummyTag);
+    return dataProvider.getQueryTable(dbName, sql, model, hasDummyTag);
 }
 
 std::string DataUtilities::queryDatetime(const string &colName) {
@@ -138,9 +139,9 @@ void DataUtilities::removeDummies(PlainTable *table) {
 
 PlainTable *
 DataUtilities::getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
-                                  const int &sortColCount) {
+                                  const int &sortColCount, const StorageModel &model) {
 
-    PlainTable *expected = DataUtilities::getQueryResults(dbName, sql, hasDummyTag);
+    PlainTable *expected = DataUtilities::getQueryResults(dbName, sql, model, hasDummyTag);
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(sortColCount);
     expected->setSortOrder(expected_sort);
     return expected;
@@ -194,14 +195,14 @@ std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int
 
 size_t DataUtilities::getTupleCount(const string &db_name, const string &sql, bool has_dummy_tag) {
     if(has_dummy_tag)  { // run it and count
-        PlainTable *res = DataUtilities::getQueryResults(db_name, sql, true);
+        PlainTable *res = DataUtilities::getQueryResults(db_name, sql, StorageModel::ROW_STORE, true);
         int cnt =  res->getTrueTupleCount();
         delete res;
         return cnt;
     }
 
     string query = "SELECT COUNT(*) FROM (" + sql + ") q";
-    PlainTable *res = DataUtilities::getQueryResults(db_name, query, false);
+    PlainTable *res = DataUtilities::getQueryResults(db_name, query, StorageModel::ROW_STORE, false);
     int cnt = res->getField(0,0).getValue<int64_t>();
     delete res;
     return cnt;

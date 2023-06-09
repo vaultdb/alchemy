@@ -12,6 +12,7 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54321, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 using namespace vaultdb;
 
