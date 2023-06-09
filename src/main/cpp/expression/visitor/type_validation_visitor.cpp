@@ -22,7 +22,7 @@ TypeValidationVisitor<B>::TypeValidationVisitor(ExpressionNode<B> *root, const Q
 
 template<typename B>
 void TypeValidationVisitor<B>::visit(InputReference<B>  & node) {
-    last_expression_type_ = input_schema_.getField(node.read_idx_).getType();
+    last_expression_type_ = node.output_schema_.getType(); // input_schema_.getField(node.read_idx_).getType();
 }
 
 template<typename B>
