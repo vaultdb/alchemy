@@ -102,8 +102,13 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     }
 
     Integer shared_data = alice ^ bob;
+    vector<int8_t>  bits_int(1 + shared_data.size() * TypeUtilities::getEmpBitSize());
+    *(bits_int.data()) = (int8_t) StorageModel::ROW_STORE;
+    int8_t *write_ptr = bits_int.data() + 1;
+    memcpy(write_ptr, (int8_t *) shared_data.bits.data(),  shared_data.size() * TypeUtilities::getEmpBitSize());
+
     SecureTable *shared_table = RowTable<Bit>::deserialize(secure_schema,
-                                                                              shared_data.bits);
+                                                                              bits_int);
 
 
      delete [] dst_bools;

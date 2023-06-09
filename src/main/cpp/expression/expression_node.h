@@ -26,6 +26,7 @@ namespace vaultdb {
 
         virtual Field<B> call(const QueryTuple<B> & target) const = 0;
         virtual Field<B> call(const QueryTable<B>  *src, const int & row) const = 0;
+        virtual Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const = 0;
         virtual ExpressionNode<B> *clone() const = 0;
 
         virtual ExpressionKind kind() const = 0;
@@ -49,15 +50,33 @@ namespace vaultdb {
     template<typename B>
     class InputReferenceNode : public ExpressionNode<B> {
     public:
-        InputReferenceNode(const uint32_t & read_idx)  : ExpressionNode<B>(nullptr), read_idx_(read_idx) {}
+        InputReferenceNode(const uint32_t & read_idx)
+            : ExpressionNode<B>(nullptr), read_idx_(read_idx) {}
+         // needed for binary (lhs, rhs) invocation
+        InputReferenceNode(const uint32_t & read_idx, const QuerySchema & lhs_schema, const QuerySchema & rhs_schema)
+                : ExpressionNode<B>(nullptr), read_idx_(read_idx), binary_mode_(true) {
+
+            if(read_idx >= lhs_schema.getFieldCount()) {
+                read_lhs_ = false;
+                read_idx_ = read_idx - lhs_schema.size();
+            }
+        }
+
         ~InputReferenceNode() = default;
 
         inline Field<B> call(const QueryTuple<B> & target) const override {
             return target.getField(read_idx_);
         }
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+            assert(!binary_mode_);
             return src->getField(row, read_idx_);
         }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            assert(binary_mode_);
+            return (read_lhs_) ? lhs->getField(lhs_row, read_idx_) : rhs->getField(rhs_row, read_idx_);
+        }
+
 
         ExpressionKind kind() const override {     return ExpressionKind::INPUT_REF;
         }
@@ -72,6 +91,8 @@ namespace vaultdb {
         }
 
         uint32_t read_idx_;
+        bool binary_mode_ = false;
+        uint32_t read_lhs_ = true;
     };
 
     template<typename B>
@@ -88,6 +109,11 @@ namespace vaultdb {
             return payload_;
         }
 
+        Field<B>
+        call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            return payload_;
+        }
+
         ExpressionKind kind() const override {    return ExpressionKind::LITERAL; }
 
         void accept(ExpressionVisitor<B> *visitor) override {  visitor->visit(*this); }
@@ -100,6 +126,7 @@ namespace vaultdb {
         ExpressionNode<B> *clone() const override {
             return  new LiteralNode<B>(payload_);
         }
+
 
 
         Field<B> payload_;
@@ -126,6 +153,10 @@ namespace vaultdb {
             return castField(field);
         }
 
+        Field<B>  call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> field = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return castField(field);
+        }
 
         ExpressionKind kind() const override {     return ExpressionKind::CAST;
          }

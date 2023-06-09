@@ -60,6 +60,7 @@ namespace  vaultdb {
 
         static QuerySchema toPlain(const QuerySchema &secureSchema);
 
+        static QuerySchema concatenate(const QuerySchema & lhs, const QuerySchema & rhs, const bool &append_bool = false);
 
         inline bool fieldInitialized(const int & ordinal) { return fields_.find(ordinal) != fields_.end();}
         void initializeFieldOffsets();

@@ -57,16 +57,11 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
     QueryTable<B> *rhs_table = Operator<B>::getChild(1)->getOutput(); // primary key
 
     uint32_t output_tuple_cnt = lhs_table->getTupleCount(); // foreignKeyTable = foreign key
-    QuerySchema lhs_schema = lhs_table->getSchema();
-    QuerySchema rhs_schema = rhs_table->getSchema();
-
-
-    QuerySchema output_schema = Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false);
-    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, output_schema, lhs_table->storageModel(), lhs_table->getSortOrder());
+    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, lhs_table->storageModel(), lhs_table->getSortOrder());
 
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
 
-    QueryTuple<B> joined(&output_schema);
+   // QueryTuple<B> joined(&this->output_schema_);
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
     for(uint32_t i = 0; i < lhs_table->getTupleCount(); ++i) {
@@ -74,16 +69,16 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
 
           Join<B>::write_left(Join<B>::output_, i, lhs_table, i);
-          Join<B>::write_left(joined, lhs_table, i);
+          //Join<B>::write_left(joined, lhs_table, i);
 
 
           dst_dummy_tag = true; // dummy by default, no tuple comparisons yet
 
         for(uint32_t j = 0; j < rhs_table->getTupleCount(); ++j) {
             rhs_dummy_tag = rhs_table->getDummyTag(j);
-            Join<B>::write_right(joined, rhs_table, j);
+           //Join<B>::write_right(joined, rhs_table, j);
 
-            selected = Join<B>::predicate_->call(joined).template getValue<B>();
+            selected = Join<B>::predicate_->call(lhs_table, i, rhs_table, j).template getValue<B>();
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
 
@@ -103,12 +98,9 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
     QueryTable<B> *rhs_table = Operator<B>::getChild(1)->getOutput(); // foreign key
 
     uint32_t output_tuple_cnt = rhs_table->getTupleCount(); // foreignKeyTable = foreign key
-    QuerySchema lhs_schema = lhs_table->getSchema();
-    QuerySchema rhs_schema = rhs_table->getSchema();
 
 
-    QuerySchema output_schema = Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false);
-    QueryTuple<B> joined(&output_schema);
+    //QueryTuple<B> joined(&this->output_schema_);
 
     SortDefinition output_sort;
     for(ColumnSort s : rhs_table->getSortOrder()) {
@@ -116,7 +108,7 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
         output_sort.template emplace_back(s_prime);
     }
 
-    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, output_schema, lhs_table->storageModel(), output_sort);
+    this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, lhs_table->storageModel(), output_sort);
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
@@ -124,7 +116,7 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
         rhs_dummy_tag = rhs_table->getDummyTag(i);
 
         Join<B>::write_right(Operator<B>::output_, i, rhs_table, i);
-        Join<B>::write_right(joined, rhs_table, i);
+        //Join<B>::write_right(joined, rhs_table, i);
 
 
         dst_dummy_tag = B(true); // no comparisons yet, so it is a dummy by default
@@ -133,9 +125,9 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
         for(uint32_t j = 0; j < lhs_table->getTupleCount(); ++j) {
 
             lhs_dummy_tag = lhs_table->getDummyTag(j);
-            Join<B>::write_left(joined, lhs_table, j);
+            //Join<B>::write_left(joined, lhs_table, j);
 
-            selected = Join<B>::predicate_->call(joined).template getValue<B>();
+            selected = Join<B>::predicate_->call(lhs_table, j, rhs_table, i).template getValue<B>();
 
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);

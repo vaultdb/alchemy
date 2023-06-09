@@ -33,6 +33,11 @@ namespace vaultdb {
             return Field<B>(type_, lhs == rhs, 0);
         }
 
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l == r, 0);
+        }
 
         ExpressionKind kind() const override { return ExpressionKind::EQ; }
 
@@ -66,6 +71,12 @@ namespace vaultdb {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(src, row);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
             return Field<B>(type_, lhs != rhs, 0);
+        }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l != r, 0);
         }
 
 
@@ -110,6 +121,11 @@ namespace vaultdb {
 
         }
 
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l < r, 0);
+        }
 
         ExpressionKind kind() const override {
             return ExpressionKind::LT;
@@ -152,6 +168,11 @@ namespace vaultdb {
 
         }
 
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l > r, 0);
+        }
 
         ExpressionKind kind() const override {
             return ExpressionKind::GT;
@@ -194,6 +215,11 @@ namespace vaultdb {
 
         }
 
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l <= r, 0);
+        }
 
         ExpressionKind kind() const override { return ExpressionKind::LEQ; }
 
@@ -229,6 +255,12 @@ namespace vaultdb {
             Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
             return Field<B>(type_, lhs >= rhs, 0);
 
+        }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l >= r, 0);
         }
 
 

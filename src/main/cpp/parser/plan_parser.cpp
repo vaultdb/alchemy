@@ -305,8 +305,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     int rhs_id = it->second.get_value<int>();
     Operator<B> *rhs  = operators_.at(rhs_id);
 
-    QuerySchema schema = Join<B>::concatenateSchemas(lhs->getOutputSchema(), rhs->getOutputSchema());
-    Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, schema);
+    Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
 
     // if fkey designation exists, use this to create keyed join
     // key: foreignKey

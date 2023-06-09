@@ -24,7 +24,7 @@ Expression<B> * ExpressionParser<B>::parseJSONExpression(const std::string &json
 // handle "input" / raw value copies separately in parse_projection
 template<typename B>
 Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & input_schema) {
-   ExpressionNode<B> *expression_root = parseHelper(tree);
+   ExpressionNode<B> *expression_root = parseHelper(tree, input_schema);
 
    TypeValidationVisitor<B> visitor(expression_root, input_schema);
     expression_root->accept(&visitor);
@@ -37,33 +37,34 @@ Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const Qu
 
 }
 
-//template<typename B>
-//BoolExpression<B> ExpressionParser<B>::parseBoolExpression(const ptree &tree, const QuerySchema &input_schema) {
-//    ExpressionNode<B> *expression_root = parseHelper(tree);
-//
-//    TypeValidationVisitor<B> visitor(expression_root, input_schema);
-//    expression_root->accept(&visitor);
-//
-//     BoolExpression<B> res(expression_root); // clones expression root
-//     // creates leak on invocation of clone - only for input references
-//
-//     delete expression_root;
-//     return res;
-//}
-
-
 template<typename B>
-ExpressionNode<B> * ExpressionParser<B>::parseHelper(const ptree &tree) {
+Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
+    ExpressionNode<B> *expression_root = parseHelper(tree, lhs, rhs);
 
-    if((tree.count("op") > 0 && tree.count("operands") > 0))
-       return parseSubExpression(tree);
+    QuerySchema input_schema = QuerySchema::concatenate(lhs, rhs);
+    TypeValidationVisitor<B> visitor(expression_root, input_schema);
+    expression_root->accept(&visitor);
 
-    return parseInput(tree);
+
+    GenericExpression<B> *g =  new GenericExpression<B>(expression_root, input_schema);
+
+    delete expression_root;
+    return g;
 
 }
 
 template<typename B>
-ExpressionNode<B> * ExpressionParser<B>::parseSubExpression(const ptree &tree) {
+ExpressionNode<B> * ExpressionParser<B>::parseHelper(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
+
+    if((tree.count("op") > 0 && tree.count("operands") > 0))
+       return parseSubExpression(tree, lhs, rhs);
+
+    return parseInput(tree, lhs, rhs);
+
+}
+
+template<typename B>
+ExpressionNode<B> * ExpressionParser<B>::parseSubExpression(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
     ptree op = tree.get_child("op");
     ptree operands = tree.get_child("operands");
 
@@ -73,7 +74,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseSubExpression(const ptree &tree) {
 
     // iterate over operands, invoke helper on each one
     for (ptree::const_iterator it = operands.begin(); it != operands.end(); ++it) {
-        ExpressionNode<B> *t = parseHelper(it->second);
+        ExpressionNode<B> *t = parseHelper(it->second, lhs, rhs);
         children.push_back(t);
     }
 
@@ -88,7 +89,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseSubExpression(const ptree &tree) {
 }
 
 template<typename B>
-ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree) {
+ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
     if(tree.count("literal")  > 0) {
         ptree literal = tree.get_child("literal");
         std::string type_str = tree.get_child("type").get_child("type").template get_value<std::string>();
@@ -148,7 +149,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree) {
         throw std::invalid_argument("Expression " + expr + " is not a properly formed input");
     }
 
-    return new InputReferenceNode<B>(src_ordinal);
+    return new InputReferenceNode<B>(src_ordinal, lhs, rhs);
 
 
 }

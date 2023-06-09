@@ -30,6 +30,7 @@ namespace vaultdb {
 
         virtual Field<B> call(const QueryTuple<B> & aTuple) const = 0;
         virtual Field<B> call(const QueryTable<B>  *src, const int & row) const = 0;
+        virtual Field<B> call(const QueryTable<B>  *lhs, const int & lhs_row, const QueryTable<B> *rhs, const int & rhs_row) const = 0;
         virtual ExpressionKind kind() const = 0;
         virtual std::string toString() const = 0;
         virtual ExpressionClass exprClass() const = 0;

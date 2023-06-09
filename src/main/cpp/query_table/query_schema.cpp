@@ -130,5 +130,41 @@ void QuerySchema::initializeFieldOffsets()  {
 }
 
 
+QuerySchema QuerySchema::concatenate(const QuerySchema & lhs, const QuerySchema & rhs, const bool &append_bool) {
+    uint32_t output_cols = lhs.getFieldCount() + rhs.getFieldCount() + append_bool;
+    QuerySchema result;
+    uint32_t cursor = lhs.getFieldCount();
+
+    for(uint32_t i = 0; i < lhs.getFieldCount(); ++i) {
+        QueryFieldDesc src_field = lhs.getField(i);
+        QueryFieldDesc dst_field(src_field, i);
+
+        size_t srcStringLength = src_field.getStringLength();
+        dst_field.setStringLength(srcStringLength);
+        result.putField(dst_field);
+    }
+
+
+    for(uint32_t i = 0; i < rhs.getFieldCount(); ++i) {
+        QueryFieldDesc src_field = rhs.getField(i);
+        QueryFieldDesc dst_field(src_field, cursor);
+
+        size_t srcStringLength = src_field.getStringLength();
+        dst_field.setStringLength(srcStringLength);
+        result.putField(dst_field);
+        ++cursor;
+    }
+
+    // bool denotes whether table comes from primary key side (0) or foreign key side (1)
+    if(append_bool) {
+        FieldType field_type = (!result.isSecure()) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+        QueryFieldDesc bool_field(output_cols-1, "table_id", "", field_type, 0);
+        result.putField(bool_field);
+    }
+    result.initializeFieldOffsets();
+    return result;
+
+}
+
 
 

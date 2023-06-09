@@ -1,5 +1,5 @@
-#ifndef _ROW_TABLE_H_
-#define _ROW_TABLE_H_
+#ifndef _COLUMN_TABLE_H_
+#define _COLUMN_TABLE_H_
 
 
 #include "query_schema.h"
@@ -23,22 +23,21 @@ namespace  vaultdb {
 
 
     template<typename B>
-    class RowTable : public QueryTable<B> {
+    class ColumnTable : public QueryTable<B> {
 
 
 
     public:
-
-        std::vector<int8_t> tuple_data_;
+        std::map<int, std::vector<int8_t> > column_data_;
 
         // empty sort definition for default case
-        RowTable(const size_t &tuple_cnt, const QuerySchema &schema,
-                   const SortDefinition &sort_def = SortDefinition());
+        ColumnTable(const size_t &tuple_cnt, const QuerySchema &schema,
+                 const SortDefinition &sort_def = SortDefinition());
 
         // deep copy
-        explicit RowTable(const QueryTable<B> &src);
+        explicit ColumnTable(const QueryTable<B> &src);
 
-        virtual ~RowTable() {}
+        virtual ~ColumnTable() {}
 
         void resize(const size_t &tuple_cnt) override;
 
@@ -47,8 +46,19 @@ namespace  vaultdb {
         void putTuple(const int &idx, const QueryTuple<B> &tuple) override {
             assert(*tuple.getSchema() == this->schema_);
 
-            size_t tuple_offset = idx * this->tuple_size_;
-            memcpy(tuple_data_.data() + tuple_offset, tuple.getData(), this->tuple_size_);
+            int8_t *write_ptr;
+            int write_size;
+            int8_t *read_ptr = (int8_t *) tuple.getData();
+
+            for(int i = 0; i < this->schema_.getFieldCount(); ++i) {
+                write_ptr = column_data_[i].data() + idx * this->field_sizes_bytes_[i];
+                write_size = this->field_sizes_bytes_[i];
+                memcpy(write_ptr, read_ptr, write_size);
+                read_ptr += write_size;
+            }
+            write_size =  this->field_sizes_bytes_[-1];
+            write_ptr = column_data_[-1].data() +  write_size * idx;
+            memcpy(write_ptr, read_ptr, write_size);
 
         }
 
@@ -57,22 +67,22 @@ namespace  vaultdb {
 
 
         inline Field<B> getField(const int  & row, const int & col)  const override {
-            int8_t *read_ptr = (int8_t *) (tuple_data_.data() + this->tuple_size_ * row);
-            return Field<B> ::deserialize(this->schema_.getField(col), read_ptr + this->field_offsets_bytes_.at(col));
+            int8_t *read_ptr = getFieldPtr(row, col);
+            return Field<B> ::deserialize(this->schema_.getField(col), read_ptr);
         }
 
         inline void setField(const int  & row, const int & col, const Field<B> & f)  override {
-            int8_t *write_ptr = (int8_t *) (tuple_data_.data() + this->tuple_size_ * row);
-            f.serialize(write_ptr + this->field_offsets_bytes_.at(col), this->schema_.getField(col));
+            int8_t *write_ptr = getFieldPtr(row, col);
+            f.serialize(write_ptr, this->schema_.getField(col));
         }
 
         inline B getDummyTag(const int & row)  const  override{
-            B *tag = (B *) (tuple_data_.data() + this->tuple_size_ * row + this->field_offsets_bytes_.at(-1));
+            B *tag = (B *) getFieldPtr(row, -1);
             return *tag;
         }
 
         inline void setDummyTag(const int & row, const B & val)  override {
-            B *tag = (B *) (tuple_data_.data() + this->tuple_size_ * row + this->field_offsets_bytes_.at(-1));
+            B *tag = (B *) getFieldPtr(row, -1);
             *tag = val;
         }
 
@@ -97,22 +107,20 @@ namespace  vaultdb {
         QueryTable<B> &operator=(const QueryTable<B> &src) override;
 
 
-        static RowTable<B> *deserialize(const QuerySchema &schema, const vector<int8_t> &table_bytes);
+        static ColumnTable<B> *deserialize(const QuerySchema &schema, const vector<int8_t> &table_bytes);
 
 
         QueryTuple<bool> getPlainTuple(size_t idx) const override;
-//        QueryTuple<Bit> getSecureTuple(size_t idx) const override;
+        //QueryTuple<Bit> getSecureTuple(size_t idx) const override;
 
         // memcpy a field from one table to another
         void assignField(const int & dst_row, const int & dst_col,const  QueryTable<B> *src, const int & src_row, const int & src_col) override;
+        // conditional write
+        void assignField(const emp::Bit & write, const int & dst_row, const int & dst_col,const  QueryTable<B> *src, const int & src_row, const int & src_col);
+
         void cloneFields(const int &dst_row, const int &dst_start_col, const QueryTable<B> *src, const int &src_row, const int & src_start_col,
                          const int &col_cnt)  override;
 
-//        void cloneFields(bool write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row, const int & src_col,
-//                         const int &col_cnt)  override;
-//
-//        void cloneFields(Bit write, const int &dst_row, const int &dst_col,const QueryTable<B> *src, const int &src_row, const int & src_col,
-//                         const int &col_cnt)  override;
 
 
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row)  override;
@@ -121,13 +129,13 @@ namespace  vaultdb {
         void cloneTable(const int & dst_row, QueryTable<B> *src) override;
 
         QueryTable<B> *clone() override {
-            return new RowTable<B>(*this);
+            return new ColumnTable<B>(*this);
         }
 
         void compareSwap(const bool & swap, const int  & lhs_row, const int & rhs_row)  override;
         void compareSwap(const Bit & swap, const int  & lhs_row, const int & rhs_row)  override;
 
-        inline virtual StorageModel storageModel() const override { return StorageModel::ROW_STORE; }
+        inline virtual StorageModel storageModel() const override { return StorageModel::COLUMN_STORE; }
 
         bool operator==(const QueryTable<B> &other) const override;
 
@@ -144,6 +152,10 @@ namespace  vaultdb {
 
         string getOstringStream() const override;
 
+        inline int8_t *getFieldPtr(const int & row, const int & col) const {
+            return const_cast<int8_t *>(column_data_.at(col).data() + row * this->field_sizes_bytes_.at(row));
+        }
+
     };
 
 
@@ -151,4 +163,5 @@ namespace  vaultdb {
 
 
 }
-#endif // _ROW_TABLE_H_
+
+#endif // _COLUMN_TABLE_H_

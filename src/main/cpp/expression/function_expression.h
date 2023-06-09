@@ -28,6 +28,10 @@ namespace vaultdb {
               return   table_func_(src, row);
         }
 
+        // binary prototype not yet implemented
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            return  table_func_(lhs, lhs_row);
+        }
 
         ExpressionKind kind() const override { return ExpressionKind::FUNCTION; }
         ExpressionClass exprClass() const override { return ExpressionClass::FUNC; }

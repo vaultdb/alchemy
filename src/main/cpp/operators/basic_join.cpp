@@ -17,9 +17,6 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
     QueryTable<B> *rhs = Operator<B>::getChild(1)->getOutput();
     B predicate_eval;
 
-    QuerySchema lhs_schema = lhs->getSchema();
-    QuerySchema rhs_schema = rhs->getSchema();
-    QuerySchema output_schema = Join<B>::concatenateSchemas(lhs_schema, rhs_schema, false);
 
     assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC
 
@@ -30,7 +27,7 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
 
     B selected, dst_dummy_tag, lhs_dummy_tag;
     // output size, colCount, is_encrypted
-    this->output_ = TableFactory<B>::getTable(lhs->getTupleCount() * rhs->getTupleCount(), output_schema, lhs->storageModel(), concat_sorts);
+    this->output_ = TableFactory<B>::getTable(lhs->getTupleCount() * rhs->getTupleCount(), this->output_schema_, lhs->storageModel(), concat_sorts);
     int cursor = 0;
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {

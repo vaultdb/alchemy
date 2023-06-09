@@ -3,6 +3,7 @@
 
 #include "query_table/query_table.h"
 #include "query_table/row_table.h"
+#include "query_table/column_table.h"
 
 namespace vaultdb {
 template<typename B>
@@ -13,7 +14,9 @@ template<typename B>
             if(model == StorageModel::ROW_STORE) {
                 return RowTable<B>::deserialize(schema, table_bytes);
             }
-
+            else if(model == StorageModel::COLUMN_STORE) {
+                return ColumnTable<B>::deserialize(schema, table_bytes);
+            }
             throw;
 
         }
@@ -25,7 +28,9 @@ template<typename B>
             if (storage_model == StorageModel::ROW_STORE) {
                 return new RowTable<B>(tuple_cnt, schema, sort_def);
             }
-            // TODO: col store goes here
+            else if (storage_model == StorageModel::COLUMN_STORE) {
+                return new ColumnTable<B>(tuple_cnt, schema, sort_def);
+            }
             throw;
 
         }

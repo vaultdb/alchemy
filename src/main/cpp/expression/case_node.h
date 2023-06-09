@@ -36,6 +36,14 @@ namespace  vaultdb {
 
         }
 
+        inline Field<B> call(const QueryTable <B> *lhs, const int &lhs_row, const QueryTable <B> *rhs, const int &rhs_row) const override{
+            B result = conditional_.root_->call(lhs, lhs_row, rhs, rhs_row).template getValue<B>();
+
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>::If(result, l, r);
+
+        }
 
        inline void accept(ExpressionVisitor<B> *visitor) override {   visitor->visit(*this); }
 

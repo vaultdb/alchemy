@@ -57,7 +57,7 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
     QuerySchema dst_schema = QuerySchema::toPlain(this->schema_);
 
     auto dst_table = new RowTable<bool>(this->tuple_cnt_, dst_schema, this->getSortOrder());
-
+    int write_cursor = 0;
 
 
     for(uint32_t i = 0; i < this->tuple_cnt_; ++i)  {
@@ -65,15 +65,11 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
         if(!dummy_tag) { // if real tuple (not a dummy), reveal it
             const SecureTuple tuple(&this->schema_, ((RowTable<emp::Bit> *) this)->tuple_data_.data() + i * table->tuple_size_);
             PlainTuple dst_tuple = tuple.reveal(&dst_schema, party);
-            dst_table->putTuple(i, dst_tuple);
-        }
-        else {
-            dst_table->setDummyTag(i, true);
+            dst_table->putTuple(write_cursor, dst_tuple);
+            ++write_cursor;
         }
     }
 
-    // remove the dummies to not leak their offsets
-    DataUtilities::removeDummies(dst_table);
     return dst_table;
 
 }
@@ -84,9 +80,14 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
 // only tested in PUBLIC or XOR mode
 template <typename B>
 vector<int8_t> RowTable<B>::serialize() const {
-    // copy out our payload
-    return vector<int8_t>(tuple_data_);
+    // copy out the payload with 1 byte in front to signify it is a row store
+    vector<int8_t> dst(tuple_data_.size() + 1);
+    int8_t *write_ptr = dst.data();
+    *write_ptr = (int8_t) StorageModel::ROW_STORE;
+    ++write_ptr;
+    memcpy(write_ptr, tuple_data_.data(), tuple_data_.size());
 
+    return dst;
 }
 
 
@@ -271,32 +272,19 @@ SecretShares RowTable<B>::generateSecretShares() const {
 
 
 template <typename B>
-RowTable<bool> *RowTable<B>::deserialize(const QuerySchema &schema, const vector<int8_t> & table_bytes) {
+RowTable<B> *RowTable<B>::deserialize(const QuerySchema &schema, const vector<int8_t> & table_bytes) {
+    const int8_t *read_ptr = table_bytes.data();
+    assert(*read_ptr == (int8_t) StorageModel::ROW_STORE); // confirm this was encoded for row store
+    ++read_ptr;
 
-    uint32_t table_size = table_bytes.size(); // in bytes
-    uint32_t row_size = schema.size() / 8; // in bytes
+
+    uint32_t table_size = table_bytes.size() - 1; // in bytes
+    uint32_t row_size = (std::is_same_v<B, bool>) ? schema.size() / 8 : schema.size() * TypeUtilities::getEmpBitSize(); // in bytes
     uint32_t tuple_cnt = table_size / row_size;
+    assert(table_size % row_size == 0);
 
-    auto result = new RowTable<bool>(tuple_cnt, schema);
-    result->tuple_data_ = table_bytes;
-
-    return result;
-
-}
-
-template<typename B>
-RowTable<Bit> *
-RowTable<B>::deserialize(const QuerySchema &schema, vector<Bit> &table_bits) {
-    QuerySchema encrypted_schema = QuerySchema::toSecure(schema);
-    uint32_t table_size = table_bits.size(); // in bits
-    uint32_t tuple_size = encrypted_schema.size(); // in bits
-    assert(table_size % tuple_size == 0);
-    uint32_t tuple_cnt = table_size / tuple_size;
-
-    auto result = new RowTable<Bit>(tuple_cnt, encrypted_schema);
-    assert(result->tuple_data_.size() / TypeUtilities::getEmpBitSize() == table_bits.size());
-
-    memcpy(result->tuple_data_.data(), table_bits.data(), table_size * TypeUtilities::getEmpBitSize());
+    auto result = new RowTable<B>(tuple_cnt, schema);
+    memcpy(result->tuple_data_.data(), read_ptr, table_size);
 
     return result;
 
@@ -319,12 +307,12 @@ PlainTuple RowTable<B>::getPlainTuple(size_t idx) const {
 }
 
 
-template<typename B>
-QueryTuple<Bit> RowTable<B>::getSecureTuple(size_t idx) const  {
-    assert(this->isEncrypted());
-    int8_t *tuple_pos =  ((int8_t *) this->tuple_data_.data()) + this->tuple_size_ * idx;
-    return SecureTuple(const_cast<QuerySchema *>(&this->schema_), tuple_pos);
-}
+//template<typename B>
+//QueryTuple<Bit> RowTable<B>::getSecureTuple(size_t idx) const  {
+//    assert(this->isEncrypted());
+//    int8_t *tuple_pos =  ((int8_t *) this->tuple_data_.data()) + this->tuple_size_ * idx;
+//    return SecureTuple(const_cast<QuerySchema *>(&this->schema_), tuple_pos);
+//}
 
 
 

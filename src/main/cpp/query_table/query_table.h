@@ -32,13 +32,14 @@ namespace  vaultdb {
         SortDefinition order_by_;
         QuerySchema schema_;
         std::map<int, int> field_offsets_bytes_;
-        std::map<int, int> field_sizes_bytes_;
 
 
     public:
         // size of each tuple in bytes
         size_t tuple_size_;
         size_t tuple_cnt_;
+        std::map<int, int> field_sizes_bytes_;
+
 
         // empty sort definition for default case
         // called by children
@@ -82,7 +83,7 @@ namespace  vaultdb {
 
             for(auto pos : schema_.offsets_) {
                 field_offsets_bytes_[pos.first] = pos.second / 8;
-                field_sizes_bytes_[pos.first] = schema_.getField(pos.first).size() /8;
+                field_sizes_bytes_[pos.first] = schema_.getField(pos.first).size() / 8;
             }
 
 
@@ -161,7 +162,7 @@ namespace  vaultdb {
         // need to set up expressions to support a "virtual" tuple in join
         // that concats from two sources
         // requires rejiggering InputReference
-        virtual QueryTuple<Bit> getSecureTuple(size_t idx) const = 0;
+//        virtual QueryTuple<Bit> getSecureTuple(size_t idx) const = 0;
 
         // memcpy a field from one table to another
         virtual void assignField(const int & dst_row, const int & dst_col,const  QueryTable<B> *src, const int & src_row, const int & src_col) = 0;

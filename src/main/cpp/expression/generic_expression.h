@@ -27,6 +27,9 @@ namespace  vaultdb {
             return root_->call(src, row);
         }
 
+        Field<B> call(const QueryTable<B>  *lhs, const int & lhs_row, const QueryTable<B> *rhs, const int & rhs_row) const override {
+            return  root_->call(lhs, lhs_row, rhs, rhs_row);
+        }
 
         ExpressionKind kind() const override { return root_->kind(); }
         ExpressionClass exprClass() const override { return ExpressionClass::GENERIC; }

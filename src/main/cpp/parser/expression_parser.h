@@ -15,12 +15,12 @@ namespace vaultdb {
     public:
         static Expression <B> * parseJSONExpression(const std::string &json, const QuerySchema & input_schema);
         static Expression <B> * parseExpression(const ptree & tree, const QuerySchema & input_schema);
-       // static BoolExpression <B> parseBoolExpression(const ptree &tree, const QuerySchema &input_schema);
+        static Expression <B> * parseExpression(const ptree & tree, const QuerySchema & lhs, const QuerySchema & rhs);
 
     private:
-        static ExpressionNode <B> * parseHelper(const ptree & tree);
-        static ExpressionNode <B> * parseSubExpression(const ptree & tree);
-        static ExpressionNode <B> * parseInput(const ptree & tree);
+        static ExpressionNode <B> * parseHelper(const ptree & tree, const QuerySchema & lhs, const QuerySchema & rhs = QuerySchema());
+        static ExpressionNode <B> * parseSubExpression(const ptree & tree, const QuerySchema & lhs, const QuerySchema & rhs = QuerySchema());
+        static ExpressionNode <B> * parseInput(const ptree & tree, const QuerySchema & lhs, const QuerySchema & rhs = QuerySchema());
 
     };
 

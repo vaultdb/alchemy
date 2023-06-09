@@ -24,6 +24,11 @@ namespace vaultdb {
             return lhs + rhs;
         }
 
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return l + r;
+        }
 
         void accept(ExpressionVisitor<B> *visitor) override {    visitor->visit(*this);
         }
@@ -53,6 +58,12 @@ namespace vaultdb {
             Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
 
             return lhs - rhs;
+        }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return l - r;
         }
 
         void accept(ExpressionVisitor<B> *visitor) override {
@@ -86,6 +97,12 @@ namespace vaultdb {
             return lhs * rhs;
         }
 
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return l * r;
+        }
+
         void accept(ExpressionVisitor<B> *visitor) override {
             visitor->visit(*this);
         }
@@ -116,6 +133,11 @@ namespace vaultdb {
             return lhs / rhs;
         }
 
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return l / r;
+        }
 
         void accept(ExpressionVisitor<B> *visitor) override {
             visitor->visit(*this);
@@ -146,6 +168,12 @@ namespace vaultdb {
             Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
 
             return lhs % rhs;
+        }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return l % r;
         }
 
         void accept(ExpressionVisitor<B> *visitor) override {
