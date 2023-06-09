@@ -352,14 +352,6 @@ PlainTuple ColumnTable<B>::getPlainTuple(size_t idx) const {
 }
 
 
-//template<typename B>
-//QueryTuple<Bit> ColumnTable<B>::getSecureTuple(size_t idx) const  {
-//    assert(this->isEncrypted());
-//    int8_t *tuple_pos =  ((int8_t *) this->tuple_data_.data()) + this->tuple_size_ * idx;
-//    return SecureTuple(const_cast<QuerySchema *>(&this->schema_), tuple_pos);
-//}
-
-
 
 
 template<typename B>

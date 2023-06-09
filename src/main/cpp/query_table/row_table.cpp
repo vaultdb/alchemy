@@ -70,6 +70,7 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
         }
     }
 
+    dst_table->resize(write_cursor);
     return dst_table;
 
 }

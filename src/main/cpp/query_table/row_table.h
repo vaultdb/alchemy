@@ -57,22 +57,22 @@ namespace  vaultdb {
 
 
         inline Field<B> getField(const int  & row, const int & col)  const override {
-            int8_t *read_ptr = (int8_t *) (tuple_data_.data() + this->tuple_size_ * row);
-            return Field<B> ::deserialize(this->schema_.getField(col), read_ptr + this->field_offsets_bytes_.at(col));
+            int8_t *read_ptr = getFieldPtr(row, col);
+            return Field<B> ::deserialize(this->schema_.getField(col), read_ptr );
         }
 
         inline void setField(const int  & row, const int & col, const Field<B> & f)  override {
-            int8_t *write_ptr = (int8_t *) (tuple_data_.data() + this->tuple_size_ * row);
-            f.serialize(write_ptr + this->field_offsets_bytes_.at(col), this->schema_.getField(col));
+            int8_t *write_ptr = getFieldPtr(row, col);
+            f.serialize(write_ptr, this->schema_.getField(col));
         }
 
         inline B getDummyTag(const int & row)  const  override{
-            B *tag = (B *) (tuple_data_.data() + this->tuple_size_ * row + this->field_offsets_bytes_.at(-1));
+            B *tag = (B *) getFieldPtr(row, -1);
             return *tag;
         }
 
         inline void setDummyTag(const int & row, const B & val)  override {
-            B *tag = (B *) (tuple_data_.data() + this->tuple_size_ * row + this->field_offsets_bytes_.at(-1));
+            B *tag = (B *) getFieldPtr(row, -1);
             *tag = val;
         }
 
@@ -108,12 +108,6 @@ namespace  vaultdb {
         void cloneFields(const int &dst_row, const int &dst_start_col, const QueryTable<B> *src, const int &src_row, const int & src_start_col,
                          const int &col_cnt)  override;
 
-//        void cloneFields(bool write, const int &dst_row, const int &dst_col, const QueryTable<B> *src, const int &src_row, const int & src_col,
-//                         const int &col_cnt)  override;
-//
-//        void cloneFields(Bit write, const int &dst_row, const int &dst_col,const QueryTable<B> *src, const int &src_row, const int & src_col,
-//                         const int &col_cnt)  override;
-
 
         void cloneRow(const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row)  override;
         void cloneRow(const bool & write, const int & dst_row, const int & dst_col, const QueryTable<B> * src, const int & src_row)  override;
@@ -143,6 +137,10 @@ namespace  vaultdb {
                                       const bool &reverse_read_order);
 
         string getOstringStream() const override;
+
+        inline int8_t *getFieldPtr(const int & row, const int & col) const {
+            return (int8_t *) (tuple_data_.data() + this->tuple_size_ * row +  this->field_offsets_bytes_.at(col));
+        }
 
     };
 
