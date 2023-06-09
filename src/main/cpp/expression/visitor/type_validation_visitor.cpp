@@ -21,7 +21,7 @@ TypeValidationVisitor<B>::TypeValidationVisitor(ExpressionNode<B> *root, const Q
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(InputReferenceNode<B>  & node) {
+void TypeValidationVisitor<B>::visit(InputReference<B>  & node) {
     last_expression_type_ = input_schema_.getField(node.read_idx_).getType();
 }
 

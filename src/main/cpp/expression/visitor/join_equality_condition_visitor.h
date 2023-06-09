@@ -27,7 +27,7 @@ namespace vaultdb {
 
         std::vector<std::pair<uint32_t, uint32_t> > getEqualities();
 
-        void visit(InputReferenceNode<B> & node) override;
+        void visit(InputReference<B> & node) override;
 
         void visit(LiteralNode<B> & node) override { throw; }
 

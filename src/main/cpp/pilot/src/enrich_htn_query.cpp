@@ -68,7 +68,7 @@ SecureTable *EnrichHtnQuery::filterPatients() {
     // HAVING max(denom_excl) = false
 
     ExpressionNode<emp::Bit>  *zero = new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_BOOL, emp::Bit(false)));;
-    ExpressionNode<emp::Bit> *input = new InputReferenceNode<emp::Bit>(9);
+    ExpressionNode<emp::Bit> *input = new InputReference<emp::Bit>(9, aggregated->getSchema());
     ExpressionNode<emp::Bit> *equality = new EqualNode<emp::Bit>(input, zero);
     Expression<emp::Bit> *equality_expr = new GenericExpression<emp::Bit>(equality, "predicate", FieldType::SECURE_BOOL);
 
@@ -113,11 +113,11 @@ SecureTable *EnrichHtnQuery::filterPatients() {
       // cast numerator to INT for summing in next step
       // references (5)
 
-      ExpressionNode<emp::Bit> *numerator = new InputReferenceNode<emp::Bit>(6);
+      ExpressionNode<emp::Bit> *numerator = new InputReference<emp::Bit>(6, src->getSchema());
       ExpressionNode<emp::Bit> *castNumerator = new CastNode<emp::Bit>(numerator, FieldType::SECURE_INT);
       Expression<emp::Bit> *numeratorToIntExpression = new GenericExpression<emp::Bit>(castNumerator, "numerator", FieldType::SECURE_INT);
 
-      ExpressionNode<emp::Bit> *denominator = new InputReferenceNode<emp::Bit>(7);
+      ExpressionNode<emp::Bit> *denominator = new InputReference<emp::Bit>(7, src->getSchema());
       ExpressionNode<emp::Bit> *castDenominator = new CastNode<emp::Bit>(denominator, FieldType::SECURE_INT);
       Expression<emp::Bit> * denominatorToIntExpression = new GenericExpression<emp::Bit>(castDenominator, "denominator", FieldType::SECURE_INT);
 

@@ -20,7 +20,7 @@ TypeInferenceVisitor<B>::TypeInferenceVisitor(ExpressionNode<B> *root, const Que
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(InputReferenceNode<B> & node) {
+void TypeInferenceVisitor<B>::visit(InputReference<B> & node) {
     last_expression_type_ = input_schema_.getField(node.read_idx_).getType();
 }
 

@@ -9,7 +9,7 @@ namespace vaultdb {
     template<typename B>
     class PrintExpressionVisitor : public ExpressionVisitor<B> {
     public:
-        void visit(InputReferenceNode<B> & node) override;
+        void visit(InputReference<B> & node) override;
 
         void visit(LiteralNode<B> & node) override;
 

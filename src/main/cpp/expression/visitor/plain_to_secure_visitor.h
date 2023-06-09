@@ -23,7 +23,7 @@ namespace  vaultdb {
             return root_;
         }
 
-        void visit(InputReferenceNode<bool> & node) override;
+        void visit(InputReference<bool> & node) override;
 
         void visit(LiteralNode<bool> & node) override;
 

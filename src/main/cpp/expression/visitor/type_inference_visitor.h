@@ -15,7 +15,7 @@ namespace vaultdb {
     public:
         TypeInferenceVisitor(ExpressionNode<B> *root, const QuerySchema & input_schema);
 
-        void visit(InputReferenceNode<B>  & node) override;
+        void visit(InputReference<B>  & node) override;
 
         void visit(LiteralNode<B>  & node) override;
 

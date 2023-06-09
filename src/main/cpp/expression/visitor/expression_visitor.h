@@ -6,7 +6,7 @@
 
 namespace vaultdb {
 
-    template<typename B> class InputReferenceNode;
+    template<typename B> class InputReference;
     template<typename B> class  LiteralNode;
     
     template<typename B> class  AndNode;
@@ -38,8 +38,8 @@ namespace vaultdb {
     template<typename B>
     class ExpressionVisitor {
     public:
-        // InputReferenceNode.accept will call this
-       virtual void visit(InputReferenceNode<B>  & node)  = 0;
+        // InputReference.accept will call this
+       virtual void visit(InputReference<B>  & node)  = 0;
        virtual void visit(LiteralNode<B>  & node)  = 0;
 
         virtual void visit(AndNode<B>  & node) = 0;

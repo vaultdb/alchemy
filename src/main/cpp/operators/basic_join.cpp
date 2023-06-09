@@ -1,5 +1,6 @@
 #include "basic_join.h"
 #include "query_table/table_factory.h"
+#include "util/field_utilities.h"
 
 using namespace vaultdb;
 
@@ -33,11 +34,11 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
          lhs_dummy_tag  = lhs->getDummyTag(i);
         for(uint32_t j = 0; j < rhs->getTupleCount(); ++j) {
-            Join<B>::write_left(Operator<B>::output_, cursor,  lhs, i);
-            Join<B>::write_right(Operator<B>::output_, cursor,  rhs, j);
-
-            selected = Join<B>::predicate_->call(Operator<B>::output_, cursor).template getValue<B>();
+            Join<B>::write_left(this->output_, cursor,  lhs, i);
+            Join<B>::write_right(this->output_, cursor,  rhs, j);
+            selected = Join<B>::predicate_->call(lhs, i, rhs, j).template getValue<B>();
             dst_dummy_tag = (!selected) | lhs_dummy_tag | rhs->getDummyTag(j);
+
             Operator<B>::output_->setDummyTag(cursor, dst_dummy_tag);
             ++cursor;
         }

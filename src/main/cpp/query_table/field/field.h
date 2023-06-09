@@ -99,6 +99,8 @@ namespace vaultdb {
 
         static Field<B> deserialize(const QueryFieldDesc &desc, const int8_t *src);
 
+        // keep the field as its in-table representation.  If packed, don't unpack to its logical size
+        static Field<B> deserializePacked(const QueryFieldDesc &desc, const int8_t *src);
 
 
         private:

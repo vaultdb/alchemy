@@ -38,7 +38,7 @@ void JoinEqualityConditionVisitor<B>::visit(AndNode<B> & node) {
 }
 
 template<typename B>
-void JoinEqualityConditionVisitor<B>::visit(InputReferenceNode<B> & node) {
+void JoinEqualityConditionVisitor<B>::visit(InputReference<B> & node) {
     last_ordinal_ = node.read_idx_;
 }
 

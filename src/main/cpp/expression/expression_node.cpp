@@ -56,8 +56,8 @@ std::ostream &vaultdb::operator<<(std::ostream &os,  ExpressionNode<Bit> &expres
 template class vaultdb::ExpressionNode<bool>;
 template class vaultdb::ExpressionNode<emp::Bit>;
 
-template class vaultdb::InputReferenceNode<bool>;
-template class vaultdb::InputReferenceNode<emp::Bit>;
+template class vaultdb::InputReference<bool>;
+template class vaultdb::InputReference<emp::Bit>;
 
 template class vaultdb::LiteralNode<bool>;
 template class vaultdb::LiteralNode<emp::Bit>;

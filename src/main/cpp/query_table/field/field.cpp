@@ -860,14 +860,13 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
             return Field<B>(type, my_bit);
         }
         case FieldType::SECURE_INT: {
+            // add one more bit for two's complement
             emp::Integer payload(desc.size() + desc.bitPacked(), 0);
             memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
-//            std::cout << "Extracted payload " << payload.reveal<int32_t>() << " from " << desc.size() << " bits, into " << payload.size() << " bits " <<  payload.reveal<std::string>() << std::endl;
 
             payload.resize(32);
             emp::Integer unpacked(32, desc.getFieldMin(), PUBLIC); // secure_int = 32 bits
             unpacked = unpacked + payload;
-//            std::cout << "Deserialized into " << unpacked.reveal<int32_t>() << " payload " << unpacked.reveal<std::string>() << std::endl;
             return Field<B>(type, unpacked);
         }
         case FieldType::SECURE_LONG: {
@@ -899,6 +898,71 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
 
 }
 
+template<typename B>
+Field<B> Field<B>::deserializePacked(const QueryFieldDesc &desc, const int8_t *src) {
+    FieldType type = desc.getType();
+
+    switch (type) {
+        case FieldType::BOOL: {
+            bool val = *((bool *) src);
+            return Field<B>(type, val);
+        }
+        case FieldType::INT: {
+            int32_t val = *((int32_t *) src);
+            return Field<B>(type, val);
+        }
+        case FieldType::DATE:
+        case FieldType::LONG: {
+            int64_t val = *((int64_t *) src);
+            return Field<B>(type, val);
+        }
+        case FieldType::FLOAT: {
+            float_t val = *((float_t *) src);
+            return Field<B>(type, val);
+        }
+
+        case FieldType::STRING: {
+            char *val = (char *) src;
+            std::string str(val, desc.getStringLength());
+            std::reverse(str.begin(), str.end());
+            return Field<B>(type, str, desc.getStringLength());
+
+        }
+        case FieldType::SECURE_BOOL: {
+            emp::Bit my_bit = *((Bit *)src);
+            return Field<B>(type, my_bit);
+        }
+        case FieldType::SECURE_INT: {
+            // add one more bit for two's complement
+            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
+            memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
+            return Field<B>(type, payload);
+        }
+        case FieldType::SECURE_LONG: {
+            emp::Integer payload(desc.size(), 0);
+            memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
+            return Field<B>(type, payload);
+        }
+        case FieldType::SECURE_FLOAT: {
+            emp::Float v(0, emp::PUBLIC);
+            memcpy(v.value.data(), src, 32*TypeUtilities::getEmpBitSize() );
+            return Field<B>(type, v);
+        }
+
+        case FieldType::SECURE_STRING: {
+            size_t bitCount = desc.getStringLength() * 8;
+
+            emp::Integer v(bitCount, 0, emp::PUBLIC);
+            memcpy(v.bits.data(), src, TypeUtilities::getEmpBitSize()*bitCount);
+            return Field<B>(type, v, bitCount / 8);
+
+        }
+        default:
+            throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by deserialize()!");
+
+    }
+
+}
 
 //template<typename B>
 //Field<B> Field<B>::leadingZeros() {

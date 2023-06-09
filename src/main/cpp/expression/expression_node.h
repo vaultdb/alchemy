@@ -27,6 +27,8 @@ namespace vaultdb {
         virtual Field<B> call(const QueryTuple<B> & target) const = 0;
         virtual Field<B> call(const QueryTable<B>  *src, const int & row) const = 0;
         virtual Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const = 0;
+        // does this expression support packed fields?  E.g., R.a == S.b does not require unpacking if fields are compatible.
+        //virtual bool packedFields() const = 0;
         virtual ExpressionNode<B> *clone() const = 0;
 
         virtual ExpressionKind kind() const = 0;
@@ -39,6 +41,8 @@ namespace vaultdb {
 
         ExpressionNode<B> *lhs_ = nullptr;
         ExpressionNode<B> *rhs_ = nullptr;
+        bool packed_ = false; // are we able to complete this expression with a packed representation of the bits?
+        QueryFieldDesc output_schema_;
 
     };
 
@@ -48,21 +52,38 @@ namespace vaultdb {
 
     // read a field from a tuple
     template<typename B>
-    class InputReferenceNode : public ExpressionNode<B> {
+    class InputReference : public ExpressionNode<B> {
     public:
-        InputReferenceNode(const uint32_t & read_idx)
-            : ExpressionNode<B>(nullptr), read_idx_(read_idx) {}
+        InputReference(const InputReference<B> & src)
+                : ExpressionNode<B>(nullptr), read_idx_(src.read_idx_),
+                   binary_mode_(src.binary_mode_), output_idx_(src.output_idx_), read_lhs_(src.read_lhs_) {
+            this->output_schema_ = src.output_schema_;
+        }
+
+        InputReference(const uint32_t & read_idx, const QueryFieldDesc &schema)
+                : ExpressionNode<B>(nullptr), read_idx_(read_idx), output_idx_(read_idx_) {
+            this->output_schema_ = schema;
+        }
+        InputReference(const uint32_t & read_idx, const QuerySchema &schema)
+            : ExpressionNode<B>(nullptr), read_idx_(read_idx), output_idx_(read_idx) {
+            this->output_schema_ = schema.getField(read_idx);
+        }
          // needed for binary (lhs, rhs) invocation
-        InputReferenceNode(const uint32_t & read_idx, const QuerySchema & lhs_schema, const QuerySchema & rhs_schema)
-                : ExpressionNode<B>(nullptr), read_idx_(read_idx), binary_mode_(true) {
+        InputReference(const uint32_t & read_idx, const QuerySchema & lhs_schema, const QuerySchema & rhs_schema)
+                : ExpressionNode<B>(nullptr), binary_mode_(true), output_idx_(read_idx) {
 
             if(read_idx >= lhs_schema.getFieldCount()) {
                 read_lhs_ = false;
-                read_idx_ = read_idx - lhs_schema.size();
+                read_idx_ = read_idx - lhs_schema.getFieldCount();
+                this->output_schema_ = rhs_schema.getField(read_idx_);
+            }
+            else {
+                read_idx_ = read_idx;
+                this->output_schema_ = lhs_schema.getField(read_idx_);
             }
         }
 
-        ~InputReferenceNode() = default;
+        ~InputReference() = default;
 
         inline Field<B> call(const QueryTuple<B> & target) const override {
             return target.getField(read_idx_);
@@ -74,7 +95,9 @@ namespace vaultdb {
 
         Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
             assert(binary_mode_);
-            return (read_lhs_) ? lhs->getField(lhs_row, read_idx_) : rhs->getField(rhs_row, read_idx_);
+            return (read_lhs_) ?
+                lhs->getField(lhs_row, read_idx_) :
+                rhs->getField(rhs_row, read_idx_);
         }
 
 
@@ -87,14 +110,17 @@ namespace vaultdb {
         }
 
         ExpressionNode<B> *clone() const override {
-            return new InputReferenceNode<B>(read_idx_);
+            return new InputReference<B>(*this);
         }
 
         uint32_t read_idx_;
+        uint32_t output_idx_;
         bool binary_mode_ = false;
         uint32_t read_lhs_ = true;
     };
 
+    // TODO: initialize QueryFieldDesc based on call from parent
+    // leave output_schema_ blank initially and adjust automatically based on any bit packing of parent
     template<typename B>
     class LiteralNode : public ExpressionNode<B> {
     public:

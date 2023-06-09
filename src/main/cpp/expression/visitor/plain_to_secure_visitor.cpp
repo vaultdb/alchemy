@@ -6,8 +6,8 @@ PlainToSecureVisitor::PlainToSecureVisitor(ExpressionNode<bool> *root) {
 
 }
 
-void PlainToSecureVisitor::visit(InputReferenceNode<bool> & node) {
-    root_ = new InputReferenceNode<emp::Bit>(node.read_idx_);
+void PlainToSecureVisitor::visit(InputReference<bool> & node) {
+    root_ = new InputReference<emp::Bit>(node.read_idx_, node.output_schema_);
 }
 
 void PlainToSecureVisitor::visit(LiteralNode<bool> & node) {

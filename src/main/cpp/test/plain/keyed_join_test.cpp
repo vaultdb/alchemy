@@ -45,7 +45,7 @@ TEST_F(KeyedJoinTest, test_tpch_q3_customer_orders) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(1, 4);
+    Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(orders_input, 1, customer_input, 4);
 
     KeyedJoin join(orders_input, customer_input, predicate);
     PlainTable * observed = join.run();
@@ -77,7 +77,8 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders) {
 
     // output schema: lineitem, orders
     // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
-    Expression<bool> *predicate  = FieldUtilities::getEqualityPredicate<bool>(0, 2);
+    Expression<bool> *predicate  = FieldUtilities::getEqualityPredicate<bool>(lineitem_input, 0, orders_input,
+                                                                              2);
 
     KeyedJoin join(lineitem_input, orders_input, predicate);
 
@@ -117,14 +118,16 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
 
-    Expression<bool> *customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(1, 4);
+    Expression<bool> *customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(orders_input, 1,
+                                                                                             customer_input, 4);
+    auto *customer_orders_join = new KeyedJoin (orders_input, customer_input, customer_orders_predicate);
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<bool> *lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(0, 2);
+    Expression<bool> *lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(lineitem_input, 0,
+                                                                                             customer_orders_join, 2);
 
 
-    auto *customer_orders_join = new KeyedJoin (orders_input, customer_input, customer_orders_predicate);
 
     KeyedJoin full_join(lineitem_input, customer_orders_join, lineitem_orders_predicate);
 
@@ -157,7 +160,8 @@ TEST_F(KeyedJoinTest, test_tpch_q3_customer_orders_reversed) {
 
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority
-    Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(0, 2);
+    Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(customer_input, 0, orders_input,
+                                                                             2);
 
     KeyedJoin join(customer_input, orders_input, 1, predicate);
     PlainTable *observed = join.run();
@@ -189,7 +193,8 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_reversed) {
 
     // output schema: lineitem, orders
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue
-    Expression<bool> *predicate  = FieldUtilities::getEqualityPredicate<bool>(0, 4);
+    Expression<bool> *predicate  = FieldUtilities::getEqualityPredicate<bool>(orders_input, 0, lineitem_input,
+                                                                              4);
 
     KeyedJoin join(orders_input, lineitem_input, 1, predicate);
 
@@ -229,14 +234,17 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority
 
-    Expression<bool> *customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(0, 2);
+    Expression<bool> *customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(customer_input, 0,
+                                                                                             orders_input, 2);
+
+    auto *customer_orders_join = new KeyedJoin(customer_input, orders_input, 1, customer_orders_predicate);
 
     // join output schema:
     //   c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue
-    Expression<bool> *lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(1, 5);
+    Expression<bool> *lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(customer_orders_join, 1,
+                                                                                             lineitem_input, 5);
 
 
-    auto *customer_orders_join = new KeyedJoin(customer_input, orders_input, 1, customer_orders_predicate);
 
     KeyedJoin full_join(customer_orders_join, lineitem_input, 1, lineitem_orders_predicate);
 

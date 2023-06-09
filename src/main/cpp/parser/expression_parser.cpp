@@ -149,7 +149,7 @@ ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const Que
         throw std::invalid_argument("Expression " + expr + " is not a properly formed input");
     }
 
-    return new InputReferenceNode<B>(src_ordinal, lhs, rhs);
+    return new InputReference<B>(src_ordinal, lhs, rhs);
 
 
 }

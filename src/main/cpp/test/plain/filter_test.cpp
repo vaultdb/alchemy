@@ -37,16 +37,16 @@ TEST_F(FilterTest, test_filter) {
 
 
    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
+    SqlInput *input = new SqlInput(db_name_, sql, false);
 
    // expression setup
     // l_linenumber == 1
-   InputReferenceNode<bool> *read_field = new InputReferenceNode<bool>(1);
+   InputReference<bool> *read_field = new InputReference<bool>(1, input->getOutputSchema());
    LiteralNode<bool> *constant_input = new LiteralNode<bool>(Field<bool>(FieldType::INT, 1));
    ExpressionNode<bool> *equality_check = new EqualNode<bool>((ExpressionNode<bool> *) read_field, (ExpressionNode<bool> *) constant_input);
 
    GenericExpression<bool> *expression = new GenericExpression<bool>    (equality_check, "predicate", FieldType::BOOL);
 
-    SqlInput *input = new SqlInput(db_name_, sql, false);
     Filter<bool> filter(input, expression);
 
 

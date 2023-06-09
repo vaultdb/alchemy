@@ -70,7 +70,8 @@ QueryFieldDesc& QueryFieldDesc::operator=(const QueryFieldDesc& src)  {
 }
 
 // only checking for relation compatibility, so don't care about table name or field name
-bool QueryFieldDesc::operator==(const QueryFieldDesc& other) {
+// logical equality
+bool QueryFieldDesc::operator==(const QueryFieldDesc& other) const {
 
     // if types are the same, or int32_t --> date
     if (!(this->getType() == other.getType() ||

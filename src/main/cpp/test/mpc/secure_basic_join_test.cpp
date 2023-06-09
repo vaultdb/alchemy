@@ -62,7 +62,8 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(1, 4);
+    Expression<emp::Bit> *predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
+                                                                                     customer_input, 4);
 
     auto join = new BasicJoin(orders_input, customer_input, predicate);
 
@@ -103,7 +104,8 @@ std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(0, 2);
+    Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(lineitem_input, 0,
+                                                                                      orders_input, 2);
 
     auto join = new BasicJoin(lineitem_input, orders_input, predicate);
 
@@ -145,14 +147,20 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * customer_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(1, 4);
+    Expression<emp::Bit> * customer_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(
+            orders_input, 1,
+            customer_input,
+            4);
+    auto customer_orders_join = new BasicJoin (orders_input, customer_input, customer_orders_predicate);
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(0, 2);
+    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(
+            lineitem_input, 0,
+            customer_orders_join,
+            2);
 
 
-    auto customer_orders_join = new BasicJoin (orders_input, customer_input, customer_orders_predicate);
 
     auto full_join = new BasicJoin (lineitem_input, customer_orders_join, lineitem_orders_predicate);
 

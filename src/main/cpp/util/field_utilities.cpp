@@ -5,7 +5,7 @@
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 #include <sstream>
-
+#include <operators/operator.h>
 
 using namespace vaultdb;
 using namespace  emp;
@@ -211,6 +211,7 @@ BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_
     delete p;
     return bit_packing;
 }
+
 
 
 

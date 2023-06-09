@@ -63,7 +63,7 @@ void Project<B>::setup() {
     for(auto expr_pos =  expressions_.begin(); expr_pos != expressions_.end(); ++expr_pos) {
         if(expr_pos->second->kind() == ExpressionKind::INPUT_REF) {
             GenericExpression<B> *expr = (GenericExpression<B> *) expr_pos->second;
-            InputReferenceNode<B> *node = (InputReferenceNode<B> *) expr->root_;
+            InputReference<B> *node = (InputReference<B> *) expr->root_;
             column_mappings_.template emplace_back(node->read_idx_, expr_pos->first);
         }
         else {
@@ -144,7 +144,7 @@ ExpressionMapBuilder<B>::ExpressionMapBuilder(const QuerySchema &input_schema) :
 
 template<typename B>
 void ExpressionMapBuilder<B>::addMapping(const uint32_t &src_idx, const uint32_t &dst_idx) {
-    ExpressionNode<B> *node = new InputReferenceNode<B>(src_idx);
+    ExpressionNode<B> *node = new InputReference<B>(src_idx, src_schema_);
     GenericExpression<B> *expr = new GenericExpression<B>(node, src_schema_);
     delete node;
 

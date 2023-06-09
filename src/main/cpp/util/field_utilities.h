@@ -15,6 +15,8 @@
 
 namespace vaultdb {
 
+    template <typename B> class Operator;
+
     class FieldUtilities {
     public:
         // size is in bytes
@@ -99,22 +101,38 @@ namespace vaultdb {
             return dst;
         }
 
-        // for use in joins
-        // indexes are based on the concatenated tuple, not addressing each input to the join comparison individually
+
+
         template<typename B>
-        static inline Expression<B> *getEqualityPredicate(const uint32_t & lhs_idx, const uint32_t & rhs_idx) {
-            InputReferenceNode<B> *lhs_input = new InputReferenceNode<B>(lhs_idx);
-            InputReferenceNode<B> *rhs_input = new InputReferenceNode<B>(rhs_idx);
+        static  Expression<B> *
+        getEqualityPredicate(const uint32_t &lhs_idx, const QuerySchema &lhs, const uint32_t &rhs_idx,
+                             const QuerySchema & rhs) {
+
+            InputReference<B> *lhs_input = new InputReference<B>(lhs_idx, lhs,  rhs);
+            InputReference<B> *rhs_input = new InputReference<B>(rhs_idx, lhs,  rhs);
             ExpressionNode<B> *equality_node = new EqualNode<B>(lhs_input, rhs_input);
 
             GenericExpression<B> *g =  new GenericExpression<B>(equality_node, "predicate",
-                                            std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
+                                                                std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
 
             delete equality_node;
             delete lhs_input;
             delete rhs_input;
             return g;
+
         }
+
+        // for use in joins
+        // indexes are based on the concatenated tuple, not addressing each input to the join comparison individually
+        template<typename B>
+        static Expression<B> *
+        getEqualityPredicate(const Operator<B> *lhs, const uint32_t &lhs_idx, const Operator<B> *rhs,
+                             const uint32_t &rhs_idx) {
+
+            return FieldUtilities::getEqualityPredicate<B>(lhs_idx, lhs->getOutputSchema(), rhs_idx, rhs->getOutputSchema());
+
+        }
+
 
     };
 

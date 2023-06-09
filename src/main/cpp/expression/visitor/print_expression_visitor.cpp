@@ -8,8 +8,8 @@
 using namespace vaultdb;
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(InputReferenceNode<B> & node) {
-    last_value_ = "$" + std::to_string(node.read_idx_);
+void PrintExpressionVisitor<B>::visit(InputReference<B> & node) {
+    last_value_ = "$" + std::to_string(node.output_idx_);
 }
 
 template<typename B>
