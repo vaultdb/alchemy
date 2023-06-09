@@ -16,5 +16,5 @@ grep 'FAIL' $file
 
 # to record test in git
 # git add $(ls log/all-tests-alice*.log | tail -n 1)
-# file=$(ls -t log/*alice* | head -n 1)
-# grep '^\[' $file | grep 'ms)' |  sed 's/^.*(//g' | sed 's/\ .*$//g' | pbcopy
+# FILE=$(ls -t log/*alice* | head -n 1)
+# grep '^\[' $FILE | grep 'ms)' |  sed 's/^.*(//g' | sed 's/\ .*$//g' | pbcopy

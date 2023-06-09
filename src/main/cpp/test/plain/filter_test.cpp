@@ -17,7 +17,7 @@ class FilterTest :  public PlainBaseTest  { };
 
 TEST_F(FilterTest, test_table_scan) {
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 100";
 
     SqlInput input(db_name_, sql, storage_model_, false);
 
@@ -34,7 +34,7 @@ TEST_F(FilterTest, test_table_scan) {
 
 
 TEST_F(FilterTest, test_filter) {
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 10";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 100";
     std::string expected_sql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
 

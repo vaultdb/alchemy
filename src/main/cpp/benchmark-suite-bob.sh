@@ -37,5 +37,5 @@ grep 'FAIL' $file
 
 # to record test in git
 # git add $(ls log/all-tests-bob*.log | tail -n 1)
-# file=$(ls -t log/*bob* | head -n 1)
-# grep 'ms)'  $file | egrep 'Secure|Emp' |  sed 's/^.*(//g' | sed 's/\ .*$//g' | pbcopy
+# FILE=$(ls -t log/*bob* | head -n 1)
+# grep 'ms)'  $FILE | egrep 'Secure|Emp' |  sed 's/^.*(//g' | sed 's/\ .*$//g' | pbcopy
