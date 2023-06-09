@@ -1,13 +1,13 @@
 #!/bin/bash -x
 
 
-cmake -DCMAKE_BUILD_TYPE=Release .
-make -j
+#cmake -DCMAKE_BUILD_TYPE=Release .
+#make -j
 
-bash test/support/setup-csv.sh
-bash pilot/test/generate-and-load-test-data.sh 1000
+#bash test/support/setup-csv.sh
+#bash pilot/test/generate-and-load-test-data.sh 1000
 # regenerate test data
-bash  test/support/load-generated-data.sh 100
+#bash  test/support/load-generated-data.sh 100
 
 # optional:
 #  bash run-pilot-test.sh
