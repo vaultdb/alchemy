@@ -29,9 +29,6 @@ RowTable<B>::RowTable(const size_t &tuple_cnt, const QuerySchema &schema, const 
         setDummyTag(i, true);
     }
 
-    std::cout << "Constructed row store!\n";
-
-
 }
 
 template <typename B>
@@ -39,7 +36,6 @@ RowTable<B>::RowTable(const QueryTable<B> &src) : QueryTable<B>(src) {
     // only support copy constructor on tables with same storage
     assert(src.storageModel() == StorageModel::ROW_STORE);
     tuple_data_ = ((RowTable<B> *) &src)->tuple_data_;
-    std::cout << "Constructed row store!\n";
 
 }
 
