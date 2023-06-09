@@ -261,8 +261,10 @@ TEST_F(KeyedJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
 }
 
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
 
-
-
-
+    return RUN_ALL_TESTS();
+}
 

@@ -13,20 +13,20 @@ bash  test/support/load-generated-data.sh 100
 #  bash run-pilot-test.sh
 
 
-./bin/csv_reader_test 
-./bin/field_expression_test 
-./bin/filter_test  
-./bin/project_test  
-./bin/basic_join_test 
-./bin/keyed_join_test 
-./bin/sort_test 
-./bin/scalar_aggregate_test 
-./bin/group_by_aggregate_test 
-./bin/secret_share_generator_test 
+./bin/csv_reader_test --storage=column
+./bin/field_expression_test --storage=column
+./bin/filter_test  --storage=column
+./bin/project_test  --storage=column
+./bin/basic_join_test --storage=column
+./bin/keyed_join_test --storage=column
+./bin/sort_test --storage=column
+./bin/scalar_aggregate_test --storage=column
+./bin/group_by_aggregate_test --storage=column
+./bin/secret_share_generator_test --storage=column
 #this test depends on pilot testbed
-./bin/serialization_test 
-./bin/plan_parser_test 
-./bin/tpch_test 
+./bin/serialization_test --storage=column
+./bin/plan_parser_test --storage=column
+./bin/tpch_test --storage=column
 
 bash run.sh emp_test 
 bash run.sh secure_field_expression_test  

@@ -64,3 +64,10 @@ TEST_F(FilterTest, test_filter) {
     delete read_field;
 }
 
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}
+

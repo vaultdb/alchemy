@@ -90,3 +90,11 @@ TEST_F(TpcHTest, tpch_q18) {
     runTest(18, "q18", expected_sort, db_name_);
 }
 
+
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}

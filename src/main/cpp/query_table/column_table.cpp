@@ -31,7 +31,7 @@ ColumnTable<B>::ColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, 
 
     // initialize dummy tags to true
     memset(column_data_[-1].data(), 1, tuple_cnt * this->field_sizes_bytes_[-1]);
-
+    std::cout << "Constructed column store!\n";
 
 }
 
@@ -44,6 +44,9 @@ ColumnTable<B>::ColumnTable(const QueryTable<B> &s) : QueryTable<B>(s) {
     for(auto col_entry : src->column_data_) {
         this->column_data_[col_entry.first] = col_entry.second;
     }
+
+    std::cout << "Constructed column store!\n";
+
 
 }
 
@@ -77,6 +80,7 @@ PlainTable *ColumnTable<B>::reveal(const int & party)   {
         }
     }
 
+    dst_table->resize(write_cursor);
     return dst_table;
 
 }

@@ -50,9 +50,9 @@ DataUtilities::getUnionedResults(const std::string &alice_db, const std::string 
 
 
 PlainTable *DataUtilities::getQueryResults(const std::string &dbName, const std::string &sql, const StorageModel &model,
-                                           const bool &hasDummyTag) {
+                                           const bool &has_dummy_tag) {
     PsqlDataProvider dataProvider;
-    return dataProvider.getQueryTable(dbName, sql, model, hasDummyTag);
+    return dataProvider.getQueryTable(dbName, sql, model, has_dummy_tag);
 }
 
 std::string DataUtilities::queryDatetime(const string &colName) {

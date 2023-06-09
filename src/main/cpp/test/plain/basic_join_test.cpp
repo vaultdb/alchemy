@@ -143,5 +143,11 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 }
 
 
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}
 
 

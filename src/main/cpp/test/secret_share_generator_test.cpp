@@ -78,4 +78,11 @@ TEST_F(SecretShareGeneratorTest, lineitem_dummy_tag_sample) {
 
 }
 
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}
+
 #endif //  _SECRET_SHARE_GENERATOR_TEST_
