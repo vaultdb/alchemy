@@ -153,7 +153,7 @@ namespace  vaultdb {
         string getOstringStream() const override;
 
         inline int8_t *getFieldPtr(const int & row, const int & col) const {
-            return const_cast<int8_t *>(column_data_.at(col).data() + row * this->field_sizes_bytes_.at(row));
+            return const_cast<int8_t *>(column_data_.at(col).data() + row * this->field_sizes_bytes_.at(col));
         }
 
     };
