@@ -1,0 +1,1158 @@
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- GMP libs: /usr/lib/x86_64-linux-gnu/libgmp.so /usr/lib/x86_64-linux-gnu/libgmpxx.so
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system 
+-- GMP libs: /usr/lib/x86_64-linux-gnu/libgmp.so /usr/lib/x86_64-linux-gnu/libgmpxx.so
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time system program_options 
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time system 
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp
+[  0%] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
+[  1%] Building CXX object CMakeFiles/generate_enrich_data.dir/test/support/generate_enrich_data.cpp.o
+[  1%] Linking CXX executable bin/generate_enrich_data
+[  1%] Built target generate_enrich_data
+[  2%] Linking CXX static library ../../../lib/libgtest.a
+[  2%] Built target gtest
+[  3%] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+[  3%] Building CXX object _deps/googletest-build/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o
+[  3%] Linking CXX static library ../../../lib/libgtest_main.a
+[  3%] Built target gtest_main
+[  4%] Linking CXX static library ../../../lib/libgmock.a
+[  4%] Built target gmock
+[  5%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/utilities.cpp.o
+[  5%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/data_utilities.cpp.o
+[  5%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/logger.cpp.o
+[  5%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/field_utilities.cpp.o
+[  6%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/type_utilities.cpp.o
+[  7%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/system_configuration.cpp.o
+[  8%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/field/field.cpp.o
+[  8%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/field/field_factory.cpp.o
+[  9%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/plain_tuple.cpp.o
+[  9%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_tuple.cpp.o
+[ 10%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/secure_tuple.cpp.o
+[ 11%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_field_desc.cpp.o
+[ 11%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_schema.cpp.o
+[ 12%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_table.cpp.o
+[ 12%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/row_table.cpp.o
+[ 13%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/column_table.cpp.o
+[ 14%] Building CXX object CMakeFiles/vaultdb-emp.dir/data/psql_data_provider.cpp.o
+[ 14%] Building CXX object CMakeFiles/vaultdb-emp.dir/data/csv_reader.cpp.o
+[ 15%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/operator.cpp.o
+[ 16%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/zk_sql_input.cpp.o
+[ 16%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/sql_input.cpp.o
+[ 17%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/secure_sql_input.cpp.o
+[ 17%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/filter.cpp.o
+[ 18%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/project.cpp.o
+[ 18%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/join.cpp.o
+[ 18%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/sort.cpp.o
+[ 19%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/support/join_equality_predicate.cpp.o
+[ 20%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/basic_join.cpp.o
+[ 21%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/keyed_join.cpp.o
+[ 21%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/support/scalar_aggregate_impl.cpp.o
+[ 22%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/scalar_aggregate.cpp.o
+[ 22%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/union.cpp.o
+[ 23%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/group_by_aggregate.cpp.o
+[ 24%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/support/group_by_aggregate_impl.cpp.o
+[ 24%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/csv_input.cpp.o
+[ 25%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/shrinkwrap.cpp.o
+[ 25%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/function_expression.cpp.o
+[ 26%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/generic_expression.cpp.o
+[ 27%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/expression_node.cpp.o
+[ 27%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/comparator_expression_nodes.cpp.o
+[ 28%] Building CXX object CMakeFiles/vaultdb-emp.dir/parser/plan_parser.cpp.o
+[ 28%] Building CXX object CMakeFiles/vaultdb-emp.dir/parser/expression_parser.cpp.o
+[ 29%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/expression_factory.cpp.o
+[ 30%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/join_equality_condition_visitor.cpp.o
+[ 30%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/print_expression_visitor.cpp.o
+[ 30%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/plain_to_secure_visitor.cpp.o
+[ 31%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/type_inference_visitor.cpp.o
+[ 32%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/type_validation_visitor.cpp.o
+[ 33%] Linking CXX shared library libvaultdb-emp.so
+[ 33%] Built target vaultdb-emp
+[ 33%] Building CXX object test/CMakeFiles/field_expression_test.dir/field_expression_test.cpp.o
+[ 34%] Building CXX object test/CMakeFiles/csv_reader_test.dir/csv_reader_test.cpp.o
+[ 35%] Building CXX object test/CMakeFiles/field_expression_test.dir/plain/plain_base_test.cpp.o
+[ 35%] Building CXX object test/CMakeFiles/filter_test.dir/plain/filter_test.cpp.o
+[ 36%] Building CXX object test/CMakeFiles/project_test.dir/plain/project_test.cpp.o
+[ 38%] Building CXX object test/CMakeFiles/sort_test.dir/plain/sort_test.cpp.o
+[ 38%] Building CXX object test/CMakeFiles/basic_join_test.dir/plain/basic_join_test.cpp.o
+[ 39%] Building CXX object test/CMakeFiles/keyed_join_test.dir/plain/keyed_join_test.cpp.o
+[ 39%] Building CXX object test/CMakeFiles/project_test.dir/plain/plain_base_test.cpp.o
+[ 40%] Building CXX object test/CMakeFiles/basic_join_test.dir/plain/plain_base_test.cpp.o
+[ 40%] Building CXX object test/CMakeFiles/group_by_aggregate_test.dir/plain/plain_base_test.cpp.o
+[ 39%] Building CXX object test/CMakeFiles/sort_test.dir/plain/plain_base_test.cpp.o
+[ 40%] Building CXX object test/CMakeFiles/keyed_join_test.dir/plain/plain_base_test.cpp.o
+[ 40%] Building CXX object test/CMakeFiles/csv_reader_test.dir/plain/plain_base_test.cpp.o
+[ 42%] Building CXX object test/CMakeFiles/scalar_aggregate_test.dir/plain/scalar_aggregate_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/filter_test.dir/plain/plain_base_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/plan_parser_test.dir/plain/plain_base_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/tpch_test.dir/tpch_test.cpp.o
+[ 44%] Building CXX object test/CMakeFiles/secret_share_generator_test.dir/plain/plain_base_test.cpp.o
+[ 44%] Building CXX object test/CMakeFiles/secret_share_generator_test.dir/secret_share_generator_test.cpp.o
+[ 44%] Building CXX object test/CMakeFiles/plan_parser_test.dir/plan_parser_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/group_by_aggregate_test.dir/plain/group_by_aggregate_test.cpp.o
+[ 45%] Building CXX object test/CMakeFiles/secure_field_expression_test.dir/mpc/secure_value_expression_test.cpp.o
+[ 42%] Building CXX object test/CMakeFiles/scalar_aggregate_test.dir/plain/plain_base_test.cpp.o
+[ 45%] Building CXX object test/CMakeFiles/secure_field_expression_test.dir/mpc/emp_base_test.cpp.o
+[ 46%] Building CXX object test/CMakeFiles/emp_table_test.dir/mpc/emp_base_test.cpp.o
+[ 46%] Building CXX object test/CMakeFiles/emp_test.dir/mpc/emp_test.cpp.o
+[ 47%] Building CXX object test/CMakeFiles/tpch_test.dir/plain/plain_base_test.cpp.o
+[ 46%] Building CXX object test/CMakeFiles/emp_table_test.dir/mpc/emp_table_test.cpp.o
+[ 48%] Building CXX object test/CMakeFiles/secure_filter_test.dir/mpc/secure_filter_test.cpp.o
+[ 49%] Building CXX object test/CMakeFiles/emp_test.dir/mpc/emp_base_test.cpp.o
+[ 50%] Building CXX object test/CMakeFiles/serialization_test.dir/plain/plain_base_test.cpp.o
+[ 50%] Building CXX object test/CMakeFiles/serialization_test.dir/serialization_test.cpp.o
+[ 50%] Building CXX object test/CMakeFiles/serialization_test.dir/__/pilot/src/common/shared_schema.cpp.o
+[ 50%] Building CXX object test/CMakeFiles/secure_filter_test.dir/mpc/emp_base_test.cpp.o
+[ 51%] Building CXX object test/CMakeFiles/secure_sort_test.dir/mpc/secure_sort_test.cpp.o
+[ 51%] Building CXX object test/CMakeFiles/secure_sort_test.dir/mpc/emp_base_test.cpp.o
+[ 53%] Building CXX object test/CMakeFiles/secure_basic_join_test.dir/mpc/secure_basic_join_test.cpp.o
+[ 54%] Building CXX object test/CMakeFiles/secure_keyed_join_test.dir/mpc/emp_base_test.cpp.o
+[ 54%] Building CXX object test/CMakeFiles/secure_keyed_join_test.dir/mpc/secure_keyed_join_test.cpp.o
+[ 54%] Building CXX object test/CMakeFiles/secure_group_by_aggregate_test.dir/mpc/secure_group_by_aggregate_test.cpp.o
+[ 55%] Building CXX object test/CMakeFiles/secure_scalar_aggregate_test.dir/mpc/secure_scalar_aggregate_test.cpp.o
+[ 56%] Building CXX object test/CMakeFiles/secure_basic_join_test.dir/mpc/emp_base_test.cpp.o
+[ 56%] Building CXX object test/CMakeFiles/secure_scalar_aggregate_test.dir/mpc/emp_base_test.cpp.o
+[ 57%] Building CXX object test/CMakeFiles/enrich_test.dir/enrich_test.cpp.o
+[ 57%] Building CXX object test/CMakeFiles/enrich_test.dir/mpc/emp_base_test.cpp.o
+[ 58%] Building CXX object test/CMakeFiles/enrich_test.dir/support/enrich_test_support.cpp.o
+[ 59%] Building CXX object test/CMakeFiles/secure_group_by_aggregate_test.dir/mpc/emp_base_test.cpp.o
+[ 59%] Building CXX object test/CMakeFiles/secure_tpch_test.dir/mpc/secure_tpch_test.cpp.o
+[ 60%] Building CXX object pilot/CMakeFiles/secret_share_csv.dir/src/common/shared_schema.cpp.o
+[ 61%] Building CXX object pilot/CMakeFiles/secret_share_csv.dir/src/secret_share_csv.cpp.o
+[ 61%] Building CXX object pilot/CMakeFiles/secret_share_from_query.dir/src/secret_share_from_query.cpp.o
+[ 62%] Building CXX object pilot/CMakeFiles/secret_share_from_query.dir/src/common/pilot_utilities.cpp.o
+[ 63%] Building CXX object test/CMakeFiles/secure_tpch_test.dir/mpc/emp_base_test.cpp.o
+[ 63%] Building CXX object pilot/CMakeFiles/secret_share_csv.dir/src/common/pilot_utilities.cpp.o
+[ 64%] Building CXX object pilot/CMakeFiles/load_tuples_data_partner.dir/src/load_tuples_data_partner.cpp.o
+[ 64%] Building CXX object pilot/CMakeFiles/secret_share_batch_from_query.dir/src/secret_share_batch_from_query.cpp.o
+[ 65%] Building CXX object pilot/CMakeFiles/generate_enrich_data_three_parties.dir/src/generate_enrich_data_three_parties.cpp.o
+[ 65%] Building CXX object pilot/CMakeFiles/load_tuples_data_partner.dir/src/common/union_hybrid_data.cpp.o
+[ 65%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/run_data_partner.cpp.o
+[ 66%] Building CXX object pilot/CMakeFiles/secret_share_batch_from_query.dir/src/common/pilot_utilities.cpp.o
+[ 67%] Building CXX object pilot/CMakeFiles/load_tuples_data_partner.dir/src/common/shared_schema.cpp.o
+[ 67%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/common/shared_schema.cpp.o
+[ 68%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/common/shared_schema.cpp.o
+[ 69%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/run_data_partner_batch.cpp.o
+[ 70%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/common/union_hybrid_data.cpp.o
+[ 71%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/common/union_hybrid_data.cpp.o
+[ 71%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/common/pilot_utilities.cpp.o
+[ 72%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/run_data_partner_aggregation.cpp.o
+[ 73%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/common/shared_schema.cpp.o
+[ 73%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/enrich_htn_query.cpp.o
+[ 73%] Building CXX object pilot/CMakeFiles/assemble_secret_shares.dir/src/assemble_secret_shares.cpp.o
+[ 74%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/common/pilot_utilities.cpp.o
+[ 75%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/enrich_htn_query.cpp.o
+[ 76%] Building CXX object pilot/CMakeFiles/assemble_secret_shares.dir/src/common/shared_schema.cpp.o
+[ 76%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/common/pilot_utilities.cpp.o
+[ 77%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/common/union_hybrid_data.cpp.o
+[ 78%] Linking CXX executable ../bin/generate_enrich_data_three_parties
+[ 78%] Built target generate_enrich_data_three_parties
+[ 78%] Linking CXX executable ../bin/assemble_secret_shares
+[ 78%] Built target assemble_secret_shares
+[ 78%] Linking CXX executable ../bin/secret_share_generator_test
+[ 78%] Built target secret_share_generator_test
+[ 79%] Linking CXX executable ../bin/field_expression_test
+[ 80%] Linking CXX executable ../bin/secret_share_csv
+[ 80%] Built target field_expression_test
+[ 80%] Built target secret_share_csv
+[ 81%] Linking CXX executable ../bin/tpch_test
+[ 82%] Linking CXX executable ../bin/csv_reader_test
+[ 83%] Linking CXX executable ../bin/serialization_test
+[ 83%] Linking CXX executable ../bin/filter_test
+[ 83%] Built target tpch_test
+[ 84%] Linking CXX executable ../bin/secret_share_from_query
+[ 84%] Built target serialization_test
+[ 84%] Built target csv_reader_test
+[ 85%] Linking CXX executable ../bin/plan_parser_test
+[ 85%] Built target filter_test
+[ 85%] Built target secret_share_from_query
+[ 85%] Built target plan_parser_test
+[ 86%] Linking CXX executable ../bin/basic_join_test
+[ 86%] Built target basic_join_test
+[ 87%] Linking CXX executable ../bin/keyed_join_test
+[ 88%] Linking CXX executable ../bin/project_test
+[ 88%] Linking CXX executable ../bin/load_tuples_data_partner
+[ 89%] Linking CXX executable ../bin/sort_test
+[ 89%] Built target keyed_join_test
+[ 89%] Built target project_test
+[ 89%] Built target load_tuples_data_partner
+[ 90%] Linking CXX executable ../bin/group_by_aggregate_test
+[ 90%] Built target sort_test
+[ 90%] Linking CXX executable ../bin/secret_share_batch_from_query
+[ 90%] Built target group_by_aggregate_test
+[ 90%] Built target secret_share_batch_from_query
+[ 91%] Linking CXX executable ../bin/secure_filter_test
+[ 91%] Linking CXX executable ../bin/secure_basic_join_test
+[ 92%] Linking CXX executable ../bin/secure_tpch_test
+[ 93%] Linking CXX executable ../bin/secure_scalar_aggregate_test
+[ 93%] Linking CXX executable ../bin/secure_group_by_aggregate_test
+[ 93%] Linking CXX executable ../bin/emp_test
+[ 93%] Linking CXX executable ../bin/run_data_partner_aggregation
+[ 94%] Linking CXX executable ../bin/secure_sort_test
+[ 94%] Linking CXX executable ../bin/secure_keyed_join_test
+[ 95%] Linking CXX executable ../bin/emp_table_test
+[ 96%] Linking CXX executable ../bin/secure_field_expression_test
+[ 96%] Built target secure_basic_join_test
+[ 96%] Built target secure_filter_test
+[ 96%] Built target secure_tpch_test
+[ 96%] Built target secure_scalar_aggregate_test
+[ 97%] Linking CXX executable ../bin/scalar_aggregate_test
+[ 97%] Built target run_data_partner_aggregation
+[ 97%] Built target secure_keyed_join_test
+[ 97%] Built target secure_group_by_aggregate_test
+[ 97%] Built target emp_test
+[ 97%] Built target secure_sort_test
+[ 97%] Built target secure_field_expression_test
+[ 97%] Built target emp_table_test
+[ 98%] Linking CXX executable ../bin/enrich_test
+[ 98%] Built target scalar_aggregate_test
+[ 98%] Built target enrich_test
+[ 98%] Linking CXX executable ../bin/run_data_partner
+[100%] Linking CXX executable ../bin/run_data_partner_batch
+[100%] Built target run_data_partner
+[100%] Built target run_data_partner_batch
+[  2%] Built target gtest
+[  5%] Built target gtest_main
+[  8%] Built target gmock
+[ 94%] Built target vaultdb-emp
+[100%] Built target generate_enrich_data_three_parties
+Finished generating 1000 patients per host!
+DROP TABLE
+CREATE TABLE
+COPY 1000
+COPY 1000
+COPY 1000
+UPDATE 1814
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+CREATE EXTENSION
+ALTER TABLE
+UPDATE 3000
+COPY 1000
+COPY 1000
+COPY 1000
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_chi" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+Writing multisite tables!
+preparing for aggregate-only test
+Secret sharing 505 rows.
+Secret sharing 170 rows.
+Setting up semi-join optimization
+Secret sharing 1323 rows.
+Secret sharing 102 rows.
+Secret sharing 99 rows.
+Secret sharing 88 rows.
+Secret sharing 97 rows.
+Secret sharing 101 rows.
+Secret sharing 110 rows.
+Secret sharing 103 rows.
+Secret sharing 96 rows.
+Secret sharing 100 rows.
+Secret sharing 104 rows.
+Secret sharing 441 rows.
+Secret sharing 38 rows.
+Secret sharing 26 rows.
+Secret sharing 25 rows.
+Secret sharing 28 rows.
+Secret sharing 23 rows.
+Secret sharing 46 rows.
+Secret sharing 31 rows.
+Secret sharing 29 rows.
+Secret sharing 33 rows.
+Secret sharing 33 rows.
+Secret sharing 441 rows.
+Secret sharing 1323 rows.
+Secret sharing 882 rows.
+finished generating 100 patients per host!
+You are now connected to database "enrich_htn_test_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_test_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_unioned" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from CsvReaderTest
+[ RUN      ] CsvReaderTest.lineitemTest
+Received storage flag of row
+[       OK ] CsvReaderTest.lineitemTest (231 ms)
+[ RUN      ] CsvReaderTest.quotedStringTest
+Received storage flag of row
+[       OK ] CsvReaderTest.quotedStringTest (183 ms)
+[ RUN      ] CsvReaderTest.customerTest
+Received storage flag of row
+[       OK ] CsvReaderTest.customerTest (245 ms)
+[ RUN      ] CsvReaderTest.ordersTest
+Received storage flag of row
+[       OK ] CsvReaderTest.ordersTest (185 ms)
+[----------] 4 tests from CsvReaderTest (846 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (846 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from FieldExpressionTest
+[ RUN      ] FieldExpressionTest.test_int32
+Received storage flag of row
+[       OK ] FieldExpressionTest.test_int32 (62 ms)
+[ RUN      ] FieldExpressionTest.test_int32_comparator
+Received storage flag of row
+[       OK ] FieldExpressionTest.test_int32_comparator (66 ms)
+[ RUN      ] FieldExpressionTest.test_int32_expr
+Received storage flag of row
+[       OK ] FieldExpressionTest.test_int32_expr (84 ms)
+[ RUN      ] FieldExpressionTest.cmp_swap
+Received storage flag of row
+[       OK ] FieldExpressionTest.cmp_swap (238 ms)
+[----------] 4 tests from FieldExpressionTest (451 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (451 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from FilterTest
+[ RUN      ] FilterTest.test_table_scan
+Received storage flag of row
+[       OK ] FilterTest.test_table_scan (152 ms)
+[ RUN      ] FilterTest.test_filter
+Received storage flag of row
+[       OK ] FilterTest.test_filter (164 ms)
+[----------] 2 tests from FilterTest (316 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (316 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ProjectionTest
+[ RUN      ] ProjectionTest.q3Lineitem
+Received storage flag of row
+[       OK ] ProjectionTest.q3Lineitem (243 ms)
+[----------] 1 test from ProjectionTest (243 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (243 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BasicJoinTest
+[ RUN      ] BasicJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+[       OK ] BasicJoinTest.test_tpch_q3_customer_orders (172 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders (286 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer (688 ms)
+[----------] 3 tests from BasicJoinTest (1147 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (1147 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedJoinTest
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders (124 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders (300 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer (319 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed
+Received storage flag of row
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed (130 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed
+Received storage flag of row
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed (204 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+Received storage flag of row
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (193 ms)
+[----------] 6 tests from KeyedJoinTest (1273 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (1273 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SortTest
+[ RUN      ] SortTest.testSingleIntColumn
+Received storage flag of row
+[       OK ] SortTest.testSingleIntColumn (82 ms)
+[ RUN      ] SortTest.tpchQ1Sort
+Received storage flag of row
+[       OK ] SortTest.tpchQ1Sort (171 ms)
+[ RUN      ] SortTest.tpchQ3Sort
+Received storage flag of row
+[       OK ] SortTest.tpchQ3Sort (121 ms)
+[ RUN      ] SortTest.tpchQ5Sort
+Received storage flag of row
+[       OK ] SortTest.tpchQ5Sort (88 ms)
+[ RUN      ] SortTest.tpchQ8Sort
+Received storage flag of row
+[       OK ] SortTest.tpchQ8Sort (78 ms)
+[ RUN      ] SortTest.tpchQ9Sort
+Received storage flag of row
+[       OK ] SortTest.tpchQ9Sort (156 ms)
+[ RUN      ] SortTest.tpchQ18Sort
+Received storage flag of row
+[       OK ] SortTest.tpchQ18Sort (96 ms)
+[ RUN      ] SortTest.sort_and_encrypt_table_one_column
+Received storage flag of row
+[       OK ] SortTest.sort_and_encrypt_table_one_column (55 ms)
+[----------] 8 tests from SortTest (849 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (849 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from ScalarAggregateTest
+[ RUN      ] ScalarAggregateTest.test_count
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_count (89 ms)
+[ RUN      ] ScalarAggregateTest.test_count_dummies
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_count_dummies (78 ms)
+[ RUN      ] ScalarAggregateTest.test_min
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_min (87 ms)
+[ RUN      ] ScalarAggregateTest.test_max
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_max (105 ms)
+[ RUN      ] ScalarAggregateTest.test_sum
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_sum (94 ms)
+[ RUN      ] ScalarAggregateTest.test_sum_dummies
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_sum_dummies (86 ms)
+[ RUN      ] ScalarAggregateTest.test_avg
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_avg (82 ms)
+[ RUN      ] ScalarAggregateTest.test_avg_dummies
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_avg_dummies (86 ms)
+[ RUN      ] ScalarAggregateTest.test_all_sum_dummies
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_all_sum_dummies (117 ms)
+[ RUN      ] ScalarAggregateTest.test_all_avg_dummies
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_all_avg_dummies (106 ms)
+[ RUN      ] ScalarAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_tpch_q1_avg_cnt (157 ms)
+[ RUN      ] ScalarAggregateTest.test_all_aggs_tpch_q1
+Received storage flag of row
+[       OK ] ScalarAggregateTest.test_all_aggs_tpch_q1 (140 ms)
+[----------] 12 tests from ScalarAggregateTest (1233 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (1233 ms total)
+[  PASSED  ] 12 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from GroupByAggregateTest
+[ RUN      ] GroupByAggregateTest.test_count
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_count (97 ms)
+[ RUN      ] GroupByAggregateTest.test_count_dummies
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_count_dummies (95 ms)
+[ RUN      ] GroupByAggregateTest.test_sum
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_sum (89 ms)
+[ RUN      ] GroupByAggregateTest.test_sum_dummies
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_sum_dummies (88 ms)
+[ RUN      ] GroupByAggregateTest.test_avg
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_avg (88 ms)
+[ RUN      ] GroupByAggregateTest.test_avg_dummies
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_avg_dummies (96 ms)
+[ RUN      ] GroupByAggregateTest.test_min
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_min (107 ms)
+[ RUN      ] GroupByAggregateTest.test_min_dummies
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_min_dummies (112 ms)
+[ RUN      ] GroupByAggregateTest.test_max
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_max (97 ms)
+[ RUN      ] GroupByAggregateTest.test_max_dummies
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_max_dummies (97 ms)
+[ RUN      ] GroupByAggregateTest.test_tpch_q1_sums
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_tpch_q1_sums (202 ms)
+[ RUN      ] GroupByAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row
+[       OK ] GroupByAggregateTest.test_tpch_q1_avg_cnt (197 ms)
+[ RUN      ] GroupByAggregateTest.tpch_q1
+Received storage flag of row
+[       OK ] GroupByAggregateTest.tpch_q1 (266 ms)
+[----------] 13 tests from GroupByAggregateTest (1636 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (1637 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecretShareGeneratorTest
+[ RUN      ] SecretShareGeneratorTest.lineitem_sample
+Received storage flag of row
+[       OK ] SecretShareGeneratorTest.lineitem_sample (123 ms)
+[ RUN      ] SecretShareGeneratorTest.lineitem_dummy_tag_sample
+Received storage flag of row
+[       OK ] SecretShareGeneratorTest.lineitem_dummy_tag_sample (117 ms)
+[----------] 2 tests from SecretShareGeneratorTest (240 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (240 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SerializationTest
+[ RUN      ] SerializationTest.typesTest
+Received storage flag of row
+[       OK ] SerializationTest.typesTest (131 ms)
+[ RUN      ] SerializationTest.capricorn_test
+Received storage flag of row
+[       OK ] SerializationTest.capricorn_test (66 ms)
+[ RUN      ] SerializationTest.xored_serialization_test
+Received storage flag of row
+[       OK ] SerializationTest.xored_serialization_test (68 ms)
+[ RUN      ] SerializationTest.capricorn_deserialization
+Received storage flag of row
+[       OK ] SerializationTest.capricorn_deserialization (175 ms)
+[----------] 4 tests from SerializationTest (442 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (442 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from PlanParserTest
+[ RUN      ] PlanParserTest.tpch_q1
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q1 (155 ms)
+[ RUN      ] PlanParserTest.tpch_q3
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q3 (181 ms)
+[ RUN      ] PlanParserTest.tpch_q5
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q5 (172 ms)
+[ RUN      ] PlanParserTest.tpch_q8
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q8 (175 ms)
+[ RUN      ] PlanParserTest.tpch_q9
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q9 (205 ms)
+[ RUN      ] PlanParserTest.tpch_q18
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q18 (160 ms)
+[----------] 6 tests from PlanParserTest (1064 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (1064 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from TpcHTest
+[ RUN      ] TpcHTest.tpch_q1
+Received storage flag of row
+[       OK ] TpcHTest.tpch_q1 (1165 ms)
+[ RUN      ] TpcHTest.tpch_q3
+Received storage flag of row
+[       OK ] TpcHTest.tpch_q3 (3296 ms)
+[ RUN      ] TpcHTest.tpch_q5
+Received storage flag of row
+[       OK ] TpcHTest.tpch_q5 (2625 ms)
+[ RUN      ] TpcHTest.tpch_q8
+Received storage flag of row
+[       OK ] TpcHTest.tpch_q8 (182 ms)
+[ RUN      ] TpcHTest.tpch_q9
+Received storage flag of row
+[       OK ] TpcHTest.tpch_q9 (33400 ms)
+[ RUN      ] TpcHTest.tpch_q18
+Received storage flag of row
+[       OK ] TpcHTest.tpch_q18 (236030 ms)
+[----------] 6 tests from TpcHTest (276702 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (276702 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from EmpTest
+[ RUN      ] EmpTest.emp_test_int
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54321 as 1
+connected
+Runtime for test was 0.058045 secs.
+[       OK ] EmpTest.emp_test_int (183 ms)
+[ RUN      ] EmpTest.emp_test_varchar
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54322 as 1
+connected
+Runtime for test was 0.067818 secs.
+[       OK ] EmpTest.emp_test_varchar (191 ms)
+[ RUN      ] EmpTest.secret_share_table_one_column
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54323 as 1
+connected
+Runtime for test was 0.073335 secs.
+[       OK ] EmpTest.secret_share_table_one_column (198 ms)
+[ RUN      ] EmpTest.sort_and_share_table_one_column
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54324 as 1
+connected
+Runtime for test was 0.076737 secs.
+[       OK ] EmpTest.sort_and_share_table_one_column (201 ms)
+[----------] 4 tests from EmpTest (774 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (775 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from SecureValueExpressionTest
+[ RUN      ] SecureValueExpressionTest.test_value_assignment
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54323 as 1
+connected
+Runtime for test was 0.06398 secs.
+[       OK ] SecureValueExpressionTest.test_value_assignment (174 ms)
+[ RUN      ] SecureValueExpressionTest.test_string_compare
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54324 as 1
+connected
+Runtime for test was 0.063537 secs.
+[       OK ] SecureValueExpressionTest.test_string_compare (183 ms)
+[ RUN      ] SecureValueExpressionTest.test_emp_int_math
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54325 as 1
+connected
+Runtime for test was 0.063589 secs.
+[       OK ] SecureValueExpressionTest.test_emp_int_math (187 ms)
+[ RUN      ] SecureValueExpressionTest.test_millionaires
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.062198 secs.
+[       OK ] SecureValueExpressionTest.test_millionaires (184 ms)
+[ RUN      ] SecureValueExpressionTest.test_char_comparison
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54327 as 1
+connected
+Runtime for test was 0.064428 secs.
+[       OK ] SecureValueExpressionTest.test_char_comparison (189 ms)
+[----------] 5 tests from SecureValueExpressionTest (919 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (919 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from EmpTableTest
+[ RUN      ] EmpTableTest.encrypt_table_one_column
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54324 as 1
+connected
+Runtime for test was 0.135669 secs.
+[       OK ] EmpTableTest.encrypt_table_one_column (256 ms)
+[ RUN      ] EmpTableTest.encrypt_table_varchar
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54325 as 1
+connected
+Runtime for test was 0.203352 secs.
+[       OK ] EmpTableTest.encrypt_table_varchar (347 ms)
+[ RUN      ] EmpTableTest.encrypt_table_two_cols
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.249142 secs.
+[       OK ] EmpTableTest.encrypt_table_two_cols (402 ms)
+[ RUN      ] EmpTableTest.encrypt_table
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54327 as 1
+connected
+Runtime for test was 0.429823 secs.
+[       OK ] EmpTableTest.encrypt_table (609 ms)
+[ RUN      ] EmpTableTest.encrypt_table_dummy_tag
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54328 as 1
+connected
+Runtime for test was 0.513608 secs.
+[       OK ] EmpTableTest.encrypt_table_dummy_tag (711 ms)
+[ RUN      ] EmpTableTest.bit_packing_test
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54329 as 1
+connected
+Runtime for test was 0.14351 secs.
+[       OK ] EmpTableTest.bit_packing_test (282 ms)
+[----------] 6 tests from EmpTableTest (2610 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (2610 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecureFilterTest
+[ RUN      ] SecureFilterTest.test_table_scan
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54325 as 1
+connected
+Runtime for test was 0.390921 secs.
+[       OK ] SecureFilterTest.test_table_scan (632 ms)
+[ RUN      ] SecureFilterTest.test_filter
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.307161 secs.
+[       OK ] SecureFilterTest.test_filter (531 ms)
+[----------] 2 tests from SecureFilterTest (1164 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (1164 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortTest
+[ RUN      ] SecureSortTest.tpchQ01Sort
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43441 as 1
+connected
+Runtime for test was 0.195301 secs.
+[       OK ] SecureSortTest.tpchQ01Sort (395 ms)
+[ RUN      ] SecureSortTest.tpchQ03Sort
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43442 as 1
+connected
+Runtime for test was 0.271246 secs.
+[       OK ] SecureSortTest.tpchQ03Sort (470 ms)
+[ RUN      ] SecureSortTest.tpchQ05Sort
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43443 as 1
+connected
+Runtime for test was 0.232071 secs.
+[       OK ] SecureSortTest.tpchQ05Sort (402 ms)
+[ RUN      ] SecureSortTest.tpchQ08Sort
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 0.104757 secs.
+[       OK ] SecureSortTest.tpchQ08Sort (265 ms)
+[ RUN      ] SecureSortTest.tpchQ09Sort
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43445 as 1
+connected
+Runtime for test was 17.0587 secs.
+[       OK ] SecureSortTest.tpchQ09Sort (17232 ms)
+[ RUN      ] SecureSortTest.tpchQ18Sort
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43446 as 1
+connected
+Runtime for test was 0.128642 secs.
+[       OK ] SecureSortTest.tpchQ18Sort (274 ms)
+[----------] 6 tests from SecureSortTest (19041 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (19041 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureBasicJoinTest
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43443 as 1
+connected
+Runtime for test was 0.216512 secs.
+[       OK ] SecureBasicJoinTest.test_tpch_q3_customer_orders (395 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 6.9523 secs.
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders (7160 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43445 as 1
+connected
+Runtime for test was 17.9882 secs.
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer (18199 ms)
+[----------] 3 tests from SecureBasicJoinTest (25755 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (25756 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedJoinTest
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43442 as 1
+connected
+Runtime for test was 0.284183 secs.
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders (450 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43443 as 1
+connected
+Runtime for test was 1.62321 secs.
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders (1835 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 1.7148 secs.
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer (1936 ms)
+[----------] 3 tests from SecureKeyedJoinTest (4222 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (4222 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureScalarAggregateTest
+[ RUN      ] SecureScalarAggregateTest.test_count
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54312 as 1
+connected
+Runtime for test was 0.096242 secs.
+[       OK ] SecureScalarAggregateTest.test_count (225 ms)
+[ RUN      ] SecureScalarAggregateTest.test_count_dummies
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54313 as 1
+connected
+Runtime for test was 0.10336 secs.
+[       OK ] SecureScalarAggregateTest.test_count_dummies (249 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54314 as 1
+connected
+Runtime for test was 0.098998 secs.
+[       OK ] SecureScalarAggregateTest.test_min (250 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min_dummies
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54315 as 1
+connected
+Runtime for test was 0.102128 secs.
+[       OK ] SecureScalarAggregateTest.test_min_dummies (259 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54316 as 1
+connected
+Runtime for test was 0.095261 secs.
+[       OK ] SecureScalarAggregateTest.test_max (248 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max_dummies
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54317 as 1
+connected
+Runtime for test was 0.102688 secs.
+[       OK ] SecureScalarAggregateTest.test_max_dummies (261 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54318 as 1
+connected
+Runtime for test was 0.096942 secs.
+[       OK ] SecureScalarAggregateTest.test_sum (248 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_dummies
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54319 as 1
+connected
+Runtime for test was 0.101889 secs.
+[       OK ] SecureScalarAggregateTest.test_sum_dummies (258 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54320 as 1
+connected
+Runtime for test was 0.097559 secs.
+[       OK ] SecureScalarAggregateTest.test_avg (248 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg_dummies
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54321 as 1
+connected
+Runtime for test was 0.105367 secs.
+[       OK ] SecureScalarAggregateTest.test_avg_dummies (263 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_baseprice_dummies
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54322 as 1
+connected
+Runtime for test was 0.117259 secs.
+[       OK ] SecureScalarAggregateTest.test_sum_baseprice_dummies (272 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_lineno_baseprice
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54323 as 1
+connected
+Runtime for test was 0.125682 secs.
+[       OK ] SecureScalarAggregateTest.test_sum_lineno_baseprice (296 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_sums
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54324 as 1
+connected
+Runtime for test was 0.329856 secs.
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_sums (549 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54325 as 1
+connected
+Runtime for test was 0.593128 secs.
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt (807 ms)
+[ RUN      ] SecureScalarAggregateTest.tpch_q1
+Received storage flag of row
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.561745 secs.
+[       OK ] SecureScalarAggregateTest.tpch_q1 (775 ms)
+[----------] 15 tests from SecureScalarAggregateTest (5216 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (5216 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SecureGroupByAggregateTest
+[ RUN      ] SecureGroupByAggregateTest.test_count
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43440 as 1
+connected
+Runtime for test was 0.115962 secs.
+[       OK ] SecureGroupByAggregateTest.test_count (259 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_count_dummies
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43441 as 1
+connected
+Runtime for test was 0.111832 secs.
+[       OK ] SecureGroupByAggregateTest.test_count_dummies (269 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43442 as 1
+connected
+Runtime for test was 0.114663 secs.
+[       OK ] SecureGroupByAggregateTest.test_sum (269 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum_dummies
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43443 as 1
+connected
+Runtime for test was 0.121217 secs.
+[       OK ] SecureGroupByAggregateTest.test_sum_dummies (276 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 0.126047 secs.
+[       OK ] SecureGroupByAggregateTest.test_avg (296 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg_dummies
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43445 as 1
+connected
+Runtime for test was 0.126987 secs.
+[       OK ] SecureGroupByAggregateTest.test_avg_dummies (279 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43446 as 1
+connected
+Runtime for test was 0.114726 secs.
+[       OK ] SecureGroupByAggregateTest.test_min (270 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min_dummies
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43447 as 1
+connected
+Runtime for test was 0.112637 secs.
+[       OK ] SecureGroupByAggregateTest.test_min_dummies (269 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43448 as 1
+connected
+Runtime for test was 0.113338 secs.
+[       OK ] SecureGroupByAggregateTest.test_max (266 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max_dummies
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43449 as 1
+connected
+Runtime for test was 0.114944 secs.
+[       OK ] SecureGroupByAggregateTest.test_max_dummies (271 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_sums
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43450 as 1
+connected
+Runtime for test was 0.442473 secs.
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_sums (706 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43451 as 1
+connected
+Runtime for test was 1.34922 secs.
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt (1604 ms)
+[ RUN      ] SecureGroupByAggregateTest.tpch_q1
+Received storage flag of row
+Connecting to 127.0.0.1 on port 43452 as 1
+connected
+Runtime for test was 1.034 secs.
+[       OK ] SecureGroupByAggregateTest.tpch_q1 (1359 ms)
+[----------] 13 tests from SecureGroupByAggregateTest (6399 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (6399 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureTpcHTest
+[ RUN      ] SecureTpcHTest.tpch_q1
+Received storage flag of row
+Connecting to 127.0.0.1 on port 7654 as 1
+connected
+Runtime for test was 2.77347 secs.
+[       OK ] SecureTpcHTest.tpch_q1 (3051 ms)
+[ RUN      ] SecureTpcHTest.tpch_q3
+Received storage flag of row
+Connecting to 127.0.0.1 on port 7655 as 1
+connected
+Runtime for test was 94.8239 secs.
+[       OK ] SecureTpcHTest.tpch_q3 (95061 ms)
+[ RUN      ] SecureTpcHTest.tpch_q5
+Received storage flag of row
+Connecting to 127.0.0.1 on port 7656 as 1
+connected
+Runtime for test was 22.9972 secs.
+[       OK ] SecureTpcHTest.tpch_q5 (23268 ms)
+[ RUN      ] SecureTpcHTest.tpch_q8
+Received storage flag of row
+Connecting to 127.0.0.1 on port 7657 as 1
+connected
+Runtime for test was 2.21019 secs.
+[       OK ] SecureTpcHTest.tpch_q8 (2444 ms)
+[ RUN      ] SecureTpcHTest.tpch_q9
+Received storage flag of row
+Connecting to 127.0.0.1 on port 7658 as 1
+connected
+Runtime for test was 9.67879 secs.
+[       OK ] SecureTpcHTest.tpch_q9 (9904 ms)
+[ RUN      ] SecureTpcHTest.tpch_q18
+Received storage flag of row
+Connecting to 127.0.0.1 on port 7659 as 1
+connected
+Runtime for test was 31.7216 secs.
+[       OK ] SecureTpcHTest.tpch_q18 (32000 ms)
+[----------] 6 tests from SecureTpcHTest (165732 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (165732 ms total)
+[  PASSED  ] 6 tests.
