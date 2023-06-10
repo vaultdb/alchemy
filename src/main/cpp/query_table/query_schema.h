@@ -71,7 +71,14 @@ namespace  vaultdb {
             tuple_size_ = 0;
         }
 
+
+        ~QuerySchema() {
+            reset();
+
+        }
+
     };
+
 
     std::ostream &operator<<(std::ostream &os, const QuerySchema &schema);
 

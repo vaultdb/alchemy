@@ -134,15 +134,16 @@ SecureTable *EnrichTest::filterPatients() {
 
     // *** Filter
     // HAVING max(denom_excl) = 0
-   ExpressionNode<emp::Bit> * zero  = new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_INT, emp::Integer(32, 0)));;
+   auto zero  = new LiteralNode<emp::Bit>(Field<emp::Bit>(FieldType::SECURE_INT, emp::Integer(32, 0)));;
    ExpressionNode<emp::Bit> * input = new InputReference<emp::Bit>(8, deduped->getSchema());
    ExpressionNode<emp::Bit> *equality = new EqualNode<emp::Bit>(input, zero);
     Expression<emp::Bit> *equality_expr = new GenericExpression<emp::Bit>(equality, "predicate", FieldType::SECURE_BOOL);
 
+    Filter inclusion_cohort(deduped, equality_expr);
 
-    Filter inclusionCohort(deduped, equality_expr);
+    return  inclusion_cohort.run()->clone();
 
-    return  inclusionCohort.run()->clone();
+
 
 }
 
@@ -547,11 +548,13 @@ TEST_F(EnrichTest, testRollups) {
     expected_sql = getRollupExpectedResultsSql("zip_marker");
     validateTable(unioned_enrich_db_, expected_sql, order_by, zip_marker);
     //std::cout << "Validated zip marker stratified " << *zipMarkerStratified << std::endl;
+
     delete aggregator;
     delete gender;
     delete race;
     delete ethnicity;
     delete age;
+    delete zip_marker;
 }
 
 // set up with 100 tuples:

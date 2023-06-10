@@ -2,7 +2,6 @@
 #include <util/type_utilities.h>
 #include <operators/sql_input.h>
 #include <operators/project.h>
-#include <expression/function_expression.h>
 #include <expression/generic_expression.h>
 #include <expression/expression_node.h>
 #include <expression/math_expression_nodes.h>
