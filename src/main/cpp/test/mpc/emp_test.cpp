@@ -127,6 +127,7 @@ TEST_F(EmpTest, secret_share_table_one_column) {
         PlainTuple tuple = expected->getPlainTuple(i);
         tuple.setField(0, val);
         tuple.setDummyTag(false);
+        expected->putTuple(i, tuple);
     }
 
 
