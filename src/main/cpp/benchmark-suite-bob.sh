@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# default host: codd10
+# default alice host: codd10
 
 
 #if [ $# -lt 1 ];
@@ -21,18 +21,18 @@ fi
 
        
 now=`date +"%Y%m%d%H%M"`
-file='log/all-tests-bob-'$now'.log'
+FILE='log/all-tests-bob-column-store-'$now'.log'
 
 cmake -DCMAKE_BUILD_TYPE=Release .
 make clean
 
-echo 'Writing to '$file
+echo 'Writing to '$FILE
 
-bash run-tests-bob.sh $ALICE_HOST 2>&1 > $file
+bash run-tests-bob.sh $ALICE_HOST 2>&1 > $FILE
 
 #print results
-grep '^\[' $file
-grep 'FAIL' $file
+grep '^\[' $FILE
+grep 'FAIL' $FILE
 
 
 # to record test in git
