@@ -21,7 +21,7 @@ fi
 
        
 now=`date +"%Y%m%d%H%M"`
-FILE='log/all-tests-bob-column-store-'$now'.log'
+FILE='log/all-tests-bob-'$now'.log'
 
 cmake -DCMAKE_BUILD_TYPE=Release .
 make clean

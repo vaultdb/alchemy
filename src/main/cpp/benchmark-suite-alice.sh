@@ -1,7 +1,7 @@
 #!/bin/bash
 
 now=`date +"%Y%m%d%H%M"`
-file='log/all-tests-alice-column-store-'$now'.log'
+file='log/all-tests-alice-'$now'.log'
 
 cmake -DCMAKE_BUILD_TYPE=Release .
 make clean
