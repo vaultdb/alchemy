@@ -31,6 +31,9 @@ QueryTable<B> * Union<B>::runSelf() {
     QueryTable<B> *lhs = Operator<B>::getChild(0)->getOutput();
     QueryTable<B> *rhs = Operator<B>::getChild(1)->getOutput();
 
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+
     assert(lhs->getSchema() == rhs->getSchema()); // union compatible
     assert(lhs->storageModel() == rhs->storageModel());
 

@@ -48,15 +48,15 @@ QueryTable<B> *Operator<B>::run() {
     if (operator_executed_) // prevent duplicate executions of operator
         return output_;
 
-//    if(lhs_child_) lhs_child_->run();
-//    if(rhs_child_) rhs_child_->run();
-
-//    auto start_time = clock_start(); // from emp toolkit
 
 
     output_ = runSelf(); // delegated to children
 
-    //run_time_ = time_from(start_time);
+    size_t after_gate_count = emp::CircuitExecution::circ_exec->num_and();
+    runtime_ = time_from(start_time_);
+
+    std::cout << "Operator " << this->toString() << " ran for " << runtime_/1e6 << " seconds, "
+        << " gate count: " << after_gate_count - start_gate_cnt_ << '\n';
     //auto logger = vaultdb_logger::get();
     //BOOST_LOG_SEV(logger, logging::trivial::severity_level::info) << "Operator " <<  getOperatorType() << " ran for " << run_time_/10e6 << " seconds." << std::endl;
     operator_executed_ = true;

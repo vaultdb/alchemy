@@ -32,6 +32,10 @@ protected:
 
     PlainTable *getExpectedOutput(const std::string & sql, const int & sort_col_cnt) const;
 
+    void disableBitPacking();
+
+    void initializeBitPacking(const string & unioned_db);
+
 };
 
 

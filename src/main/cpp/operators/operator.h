@@ -32,7 +32,9 @@ namespace  vaultdb {
         QueryTable<B> *output_ = nullptr;
         SortDefinition sort_definition_; // start out with empty sort
         QuerySchema output_schema_;
-
+        time_point<high_resolution_clock> start_time_;
+        size_t start_gate_cnt_ = 0L;
+        double runtime_ = 0.0;
 
     public:
 

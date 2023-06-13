@@ -55,7 +55,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
                                                                                                             "WHERE NOT o_dummy AND NOT c_dummy "
                                                                                                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
-
+    this->initializeBitPacking(unioned_db_);
     PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, storage_model_, false);
 
 
@@ -83,6 +83,49 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
 
 
 }
+
+
+TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders_no_bit_packing) {
+
+    this->disableBitPacking();
+
+    std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
+                                                                          "orders_cte AS (" + orders_sql_ + ") "
+                                                                                                            "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey "
+                                                                                                            "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
+                                                                                                            "WHERE NOT o_dummy AND NOT c_dummy "
+                                                                                                            "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
+
+
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, storage_model_, false);
+
+
+
+    SortDefinition  customer_sort = DataUtilities::getDefaultSortDefinition(1);
+    SortDefinition  orders_sort = DataUtilities::getDefaultSortDefinition(4);
+    auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true, storage_model_, customer_sort, netio_, FLAGS_party);
+    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, storage_model_, orders_sort, netio_, FLAGS_party);
+
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    GenericExpression<emp::Bit> *predicate = (GenericExpression<Bit> *) FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
+                                                                                                                       customer_input, 4);
+
+
+    KeyedJoin join(orders_input, customer_input, predicate);
+    PlainTable *observed = join.run()->reveal();
+    DataUtilities::removeDummies(observed);
+
+
+    expected->setSortOrder(observed->getSortOrder());
+
+    ASSERT_EQ(*expected, *observed);
+    delete expected;
+    delete observed;
+
+
+}
+
 
 
 TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
@@ -123,9 +166,47 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 }
 
 
+TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_no_bit_packing) {
+
+    this->disableBitPacking();
+
+// get inputs from local oblivious ops
+// first 3 customers, propagate this constraint up the join tree for the test
+    std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
+                                                                      "lineitem_cte AS (" + lineitem_sql_ + ") "
+                                                                                                            "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue \n"
+                                                                                                            "FROM orders_cte o JOIN lineitem_cte l ON l_orderkey = o_orderkey \n"
+                                                                                                            "WHERE NOT o_dummy AND NOT l_dummy "
+                                                                                                            "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
+
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, storage_model_, false);
+
+    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, storage_model_, netio_, FLAGS_party);
+    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, storage_model_, netio_, FLAGS_party);
 
 
-// compose C-O-L join should produce one output tuple, order ID 210945
+    // join output schema:
+    //  o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue,
+    Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 0,
+                                                                                      lineitem_input, 4);
+    // test pkey-fkey join
+    KeyedJoin join(orders_input, lineitem_input, 1, predicate);
+
+
+    PlainTable *observed = join.run()->reveal();
+    DataUtilities::removeDummies(observed);
+
+
+
+    ASSERT_EQ(*expected, *observed);
+    delete expected;
+    delete observed;
+
+}
+
+
+
+// compose C-O-L join
 TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
@@ -175,6 +256,58 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
 }
+
+TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer_no_bit_packing) {
+
+    this->disableBitPacking();
+    std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
+                                                                      "lineitem_cte AS (" + lineitem_sql_ + "), \n"
+                                                                                                            "customer_cte AS (" + customer_sql_ + ")\n "
+                                                                                                                                                  "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey \n"
+                                                                                                                                                  "FROM customer_cte JOIN orders_cte ON o_custkey = c_custkey "
+                                                                                                                                                  " JOIN lineitem_cte ON o_orderkey = l_orderkey "
+                                                                                                                                                  " WHERE NOT c_dummy AND NOT o_dummy AND NOT l_dummy "
+                                                                                                                                                  " ORDER BY  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey  \n";
+
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, storage_model_, false);
+
+    auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true, storage_model_, netio_, FLAGS_party);
+    auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true, storage_model_, netio_, FLAGS_party);
+    auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true, storage_model_, netio_, FLAGS_party);
+
+
+    // join output schema: (orders, customer)
+    // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    Expression<emp::Bit> *customer_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(
+            orders_input, 1,
+            customer_input,
+            4);
+
+    auto co_join = new KeyedJoin (orders_input, customer_input, customer_orders_predicate);
+
+    // join output schema:
+    //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(
+            lineitem_input, 0,
+            co_join,
+            2);
+
+
+    auto col_join = new KeyedJoin(lineitem_input, co_join, lineitem_orders_predicate);
+
+
+    PlainTable *observed = col_join->run()->reveal();
+    DataUtilities::removeDummies(observed);
+    expected->setSortOrder(observed->getSortOrder());
+
+    ASSERT_EQ(*expected, *observed);
+    delete col_join;
+    delete expected;
+    delete observed;
+
+
+}
+
 
 
 int main(int argc, char **argv) {

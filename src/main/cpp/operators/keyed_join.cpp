@@ -56,6 +56,9 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
     QueryTable<B> *lhs_table = Operator<B>::getChild(0)->getOutput(); // foreign key
     QueryTable<B> *rhs_table = Operator<B>::getChild(1)->getOutput(); // primary key
 
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+
     uint32_t output_tuple_cnt = lhs_table->getTupleCount(); // foreignKeyTable = foreign key
     this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, lhs_table->storageModel(), lhs_table->getSortOrder());
 
@@ -96,6 +99,9 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
     QueryTable<B> *lhs_table = Operator<B>::getChild(0)->getOutput(); // primary key
     QueryTable<B> *rhs_table = Operator<B>::getChild(1)->getOutput(); // foreign key
+
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
 
     uint32_t output_tuple_cnt = rhs_table->getTupleCount(); // foreignKeyTable = foreign key
 

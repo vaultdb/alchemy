@@ -25,6 +25,9 @@ SecureSqlInput::SecureSqlInput(const string &db, const string &sql, const bool &
 SecureTable *SecureSqlInput::runSelf() {
 
     // secret share it
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+
     output_ = plain_input_->secretShare(netio_, src_party_);
 
     return output_;

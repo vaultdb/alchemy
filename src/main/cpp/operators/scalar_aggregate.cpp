@@ -26,6 +26,9 @@ template<typename B>
 QueryTable<B> *ScalarAggregate<B>::runSelf() {
     QueryTable<B> *input = Operator<B>::getChild()->getOutput();
 
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+
     Operator<B>::output_ = TableFactory<B>::getTable(1, Operator<B>::output_schema_, input->storageModel());
 
 

@@ -20,6 +20,9 @@ QueryTable<B>*Shrinkwrap<B>::runSelf() {
     QueryTable<B> *input = Operator<B>::getChild(0)->getOutput();
     SortDefinition src_sort = input->getSortOrder();
 
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+
     if(input->getTupleCount() < cardinality_bound_) {
         Operator<B>::output_ =  input->clone();
         return Operator<B>::output_;

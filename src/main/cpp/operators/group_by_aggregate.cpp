@@ -63,6 +63,9 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
     QueryTable<B> *input = Operator<B>::getChild()->getOutput();
     QuerySchema input_schema = input->getSchema();
 
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+
     int output_cursor = group_by_.size();
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {
         GroupByAggregateImpl<B> *agg_impl = aggregateFactory(agg.type, agg.ordinal, input_schema.getField(agg.ordinal));

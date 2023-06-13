@@ -21,6 +21,9 @@ template<typename B>
 QueryTable<B> *Filter<B>::runSelf() {
     QueryTable<B> *input = Operator<B>::getChild()->getOutput();
 
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+
     // deep copy new output, then just modify the dummy tag
     this-> output_ = input->clone();
     int tuple_cnt = input->getTupleCount();

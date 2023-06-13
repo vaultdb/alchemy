@@ -5,6 +5,9 @@ using namespace  vaultdb;
 
 
 PlainTable *CsvInput::runSelf() {
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+
     Operator::output_ = CsvReader::readCsv(input_file_, output_schema_);
     return Operator::output_;
 }

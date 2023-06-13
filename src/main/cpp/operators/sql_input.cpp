@@ -16,6 +16,9 @@ SqlInput::SqlInput(std::string db, std::string sql, const StorageModel & model, 
 SqlInput::SqlInput(std::string db, std::string sql, bool dummy_tag, const StorageModel & model, const SortDefinition &sort_def, const size_t & tuple_limit) :
         Operator<bool>(sort_def), input_query_(sql), db_name_(db), dummy_tagged_(dummy_tag), storage_model_(model), tuple_limit_(tuple_limit) {
 
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+
     runQuery();
     output_schema_ = output_->getSchema();
 }

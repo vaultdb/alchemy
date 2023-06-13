@@ -29,7 +29,6 @@ void EmpBaseTest::SetUp()  {
 
     SystemConfiguration & s = SystemConfiguration::getInstance();
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db_);
-
     s.initialize(db_name_, md);
 }
 
@@ -50,3 +49,18 @@ PlainTable *EmpBaseTest::getExpectedOutput(const string &sql, const int &sort_co
     expected->setSortOrder(expectedSortOrder);
     return expected;
 }
+
+void EmpBaseTest::disableBitPacking() {
+    SystemConfiguration & s = SystemConfiguration::getInstance();
+    s.clearBitPacking();
+}
+
+// e.g.,unioned db = tpch_unioned_250
+// local db = tpch_alice_250
+void EmpBaseTest::initializeBitPacking(const string &unioned_db) {
+    SystemConfiguration & s = SystemConfiguration::getInstance();
+    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db);
+    s.initialize(unioned_db, md);
+}
+
+
