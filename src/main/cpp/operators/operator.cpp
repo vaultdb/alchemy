@@ -55,7 +55,7 @@ QueryTable<B> *Operator<B>::run() {
     size_t after_gate_count = emp::CircuitExecution::circ_exec->num_and();
     runtime_ = time_from(start_time_);
 
-    std::cout << "Operator " << this->toString() << " ran for " << runtime_/1e6 << " seconds, "
+    std::cout << "Operator #" << this->getOperatorId() << " " << getOperatorType()  << " ran for " << runtime_/1e6 << " seconds, "
         << " gate count: " << after_gate_count - start_gate_cnt_ << '\n';
     //auto logger = vaultdb_logger::get();
     //BOOST_LOG_SEV(logger, logging::trivial::severity_level::info) << "Operator " <<  getOperatorType() << " ran for " << run_time_/10e6 << " seconds." << std::endl;
