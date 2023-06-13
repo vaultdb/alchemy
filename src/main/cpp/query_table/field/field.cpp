@@ -432,7 +432,6 @@ void Field<B>::serializePacked(int8_t *dst, const QueryFieldDesc &schema) const 
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
             si = boost::get<emp::Integer>(payload_);
-            std::cout << "field int: " << si.reveal<int64_t>() << " bits: " << si.reveal<string>() << endl;
             memcpy(dst, (int8_t *) si.bits.data(), schema.size() * TypeUtilities::getEmpBitSize());
             break;
         case FieldType::SECURE_FLOAT:
@@ -460,8 +459,6 @@ Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &field_des
             // full length because this is unpacked representation, don't need more than this because we'll do this in serialize()
             return emp::Integer(32,  (send) ?  boost::get<int32_t>(f.payload_)
                                             : 0, party);
-//            std::cout << "Secret sharing " << tmp << " from payload " << boost::get<int32_t>(f.payload_) << " " << tmp2.reveal<std::string>() <<  std::endl;
-
         case FieldType::LONG:
             return emp::Integer(64,  (send) ?  boost::get<int64_t>(f.payload_)
                                                            : 0L, party);

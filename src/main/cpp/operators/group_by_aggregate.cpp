@@ -125,22 +125,7 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
 
         for(auto agg : aggregators_) {
             agg->accumulate(input, i, matched);
-            PlainField expected =  agg->getResult().reveal();
-            std::cout << "Have agg result: " << expected << endl;
             output->setField(i, cursor, agg->getResult(), agg->packedFields());
-
-            Field<B> o = (agg->packedFields()) ?
-                    output->getPackedField(i, cursor) :
-                    output->getField(i, cursor);
-            if(agg->packedFields()) {
-                Integer raw = o.template getValue<Integer>();
-                std::cout << " payload bits: " << raw.size() << std::endl; // should be 4
-                std::cout << "Payload: " << raw.reveal<int64_t>() << " bits: " << raw.reveal<string>() << endl;
-            }
-            PlainField observed = o.reveal();
-            std::cout << " observed: " << observed << endl;
-            assert(expected == observed);
-
             ++cursor;
         }
         B out_dummy_tag = output->getDummyTag(i-1) & input_dummy_tag; // both need to be dummies for current cell to remain dummy
@@ -149,9 +134,6 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
         // if matched, replace previous with current, set old dummy tag to true
         out_dummy_tag = FieldUtilities::select(matched, true_lit, output->getDummyTag(i-1));
         output->setDummyTag(i-1, out_dummy_tag);
-        if(!FieldUtilities::extract_bool(out_dummy_tag)) {
-            std::cout << "***Emitting min at row " << i-1 << ": " << output->getField(i-1, 1).reveal() <<  " packed: " << output->getPackedField(i-1, 1).reveal() << endl;
-        }
     }
 
 

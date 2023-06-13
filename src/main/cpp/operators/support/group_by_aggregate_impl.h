@@ -213,8 +213,6 @@ namespace vaultdb {
                   *write_cursor = one;
                   ++write_cursor;
                 }
-                std::cout << "for initial min, have: " << max.reveal<int64_t>(PUBLIC) << " for " << input_schema.size() << " bits." << endl;
-                std::cout << " bits: " << max.reveal<string>() << std::endl;
                 running_min_ = Field<B>(this->aggregate_type_, max, 0);
                 packed_fields_ = true;
             }
@@ -224,31 +222,19 @@ namespace vaultdb {
 
         inline void initialize(const QueryTable<B> *table) override {
             running_min_ = Field<B>::If(table->getDummyTag(0), running_min_, table->getPackedField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
-            Integer r = boost::get<Integer>(running_min_.payload_);
-            std::cout << " init running min: " << r.reveal<int64_t>() << " bits: " << r.reveal<string>() << endl;
         }
 
         inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
             // if a match and not a dummy
             Field<B> agg_input = table->getPackedField(row, GroupByAggregateImpl<B>::aggregate_ordinal_);
-            Integer r = boost::get<Integer>(agg_input.payload_);
 
 
             Field<B> new_min = Field<B>::If(agg_input < running_min_, agg_input, running_min_);
             B input_dummy_tag = table->getDummyTag(row);
 
-            if(!FieldUtilities::extract_bool(input_dummy_tag)) {
-                std::cout << " agg input: " << r.reveal<int64_t>() << " bits: " << r.reveal<string>() << endl;
-                std::cout << " group by match: " << FieldUtilities::extract_bool(group_by_match) << endl;
-            }
             running_min_ = Field<B>::If(group_by_match & !input_dummy_tag, new_min, running_min_);
             // new bin
             running_min_ = Field<B>::If(!group_by_match & !input_dummy_tag, agg_input, running_min_);
-
-            if(!FieldUtilities::extract_bool(input_dummy_tag)) {
-                r = boost::get<Integer>(running_min_.payload_);
-                std::cout << " new running min: " << r.reveal<int64_t>() << " bits: " << r.reveal<string>() << endl;
-            }
 
         }
         inline Field<B> getResult() override {
