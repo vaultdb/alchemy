@@ -14,7 +14,7 @@ void PrintExpressionVisitor<B>::visit(InputReference<B> & node) {
 
 template<typename B>
 void PrintExpressionVisitor<B>::visit(PackedInputReference<B> & node) {
-    last_value_ = "P$" + std::to_string(node.output_idx_);
+    last_value_ = "P$" + std::to_string(node.output_idx_) + "(" + std::to_string(node.output_schema_.size()) + ")";
 }
 
 
