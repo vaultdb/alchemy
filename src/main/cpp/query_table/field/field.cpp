@@ -396,6 +396,55 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
     }
 }
 
+template<typename B>
+void Field<B>::serializePacked(int8_t *dst, const QueryFieldDesc &schema) const {
+    assert(dst != nullptr);
+
+    string s;
+    emp::Integer si;
+    emp::Float sf;
+    emp::Bit sb;
+
+    switch (type_) {
+        case FieldType::BOOL:
+            *((bool *) dst) = getValue<bool>();
+            break;
+        case FieldType::INT:
+            *((int32_t *) dst) = getValue<int32_t>();
+            break;
+        case FieldType::LONG:
+            *((int64_t *) dst) = getValue<int64_t>();
+            break;
+        case FieldType::FLOAT:
+            *((float_t *) dst) = getValue<float_t>();
+            break;
+        case FieldType::STRING:
+            s = getValue<string>();
+            std::reverse(s.begin(), s.end()); // reverse it so we can more easily conver to EMP format
+            memcpy(dst, (int8_t *) s.c_str(), s.size()); // null termination chopped
+            break;
+
+        case FieldType::SECURE_BOOL:
+            sb = boost::get<emp::Bit>(payload_);
+            memcpy(dst, (int8_t *) &(sb.bit), TypeUtilities::getEmpBitSize());
+            break;
+        case FieldType::SECURE_INT:
+        case FieldType::SECURE_LONG:
+        case FieldType::SECURE_STRING:
+            si = boost::get<emp::Integer>(payload_);
+            std::cout << "field int: " << si.reveal<int64_t>() << " bits: " << si.reveal<string>() << endl;
+            memcpy(dst, (int8_t *) si.bits.data(), schema.size() * TypeUtilities::getEmpBitSize());
+            break;
+        case FieldType::SECURE_FLOAT:
+            sf = boost::get<emp::Float>(payload_);
+            memcpy(dst, (int8_t *) sf.value.data(), 32* TypeUtilities::getEmpBitSize());
+            break;
+        default:
+            throw;
+    }
+}
+
+
 // does not need QueryFieldDesc - sending deserialized (unpacked) version of payload
 template<typename B>
 Value
@@ -964,33 +1013,6 @@ Field<B> Field<B>::deserializePacked(const QueryFieldDesc &desc, const int8_t *s
     }
 
 }
-
-//template<typename B>
-//Field<B> Field<B>::leadingZeros() {
-//
-//
-//    Value v;
-//
-//    switch(type_) {
-//        case FieldType::INT:
-//            // ignoring sign bit for now.  This might need to be fixed later
-//            v = (int32_t) std::countl_zero((uint32_t) boost::get<int32_t>(payload_));
-//            break;
-//        case FieldType::LONG:
-//            v = (int64_t) std::countl_zero((uint64_t)  boost::get<int64_t>(payload_));
-//            break;
-//        case FieldType::SECURE_INT:
-//        case FieldType::SECURE_LONG:
-//            v = boost::get<emp::Integer>(payload_).leading_zeros();
-//        default:
-//            v = (int32_t) 0;
-//
-//    }
-//
-//    return Field<B>(type_, v, 0);
-//}
-//
-
 
 template class vaultdb::Field<bool>;
 template class vaultdb::Field<emp::Bit>;

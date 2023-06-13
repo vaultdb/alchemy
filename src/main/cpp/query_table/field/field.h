@@ -93,9 +93,9 @@ namespace vaultdb {
         secret_share_recv(const QueryFieldDesc &&field_desc, const int &src_party);
 
         std::string toString() const;
-      //Field<B> leadingZeros();
 
         void serialize(int8_t *dst, const QueryFieldDesc &schema) const;
+        void serializePacked(int8_t *dst, const QueryFieldDesc &schema) const;
 
         static Field<B> deserialize(const QueryFieldDesc &desc, const int8_t *src);
 

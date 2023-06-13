@@ -76,9 +76,12 @@ namespace  vaultdb {
             return Field<B> ::deserializePacked(this->schema_.getField(col), read_ptr );
         }
 
-        inline void setField(const int  & row, const int & col, const Field<B> & f)  override {
+        inline void setField(const int  & row, const int & col, const Field<B> & f, const bool & packed = false)  override {
             int8_t *write_ptr = getFieldPtr(row, col);
-            f.serialize(write_ptr, this->schema_.getField(col));
+            if(packed)
+                f.serializePacked(write_ptr, this->schema_.getField(col));
+            else
+                f.serialize(write_ptr, this->schema_.getField(col));
         }
 
         inline B getDummyTag(const int & row)  const  override{

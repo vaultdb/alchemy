@@ -8,13 +8,14 @@
 #include <query_table/query_table.h>
 #include <cfloat>
 
+#include <util/field_utilities.h>
 
 namespace vaultdb {
     template<typename B>
     class GroupByAggregateImpl {
     public:
-        explicit GroupByAggregateImpl(const int32_t & ordinal, const FieldType & aggType) :
-                aggregate_ordinal_(ordinal), aggregate_type_(aggType),
+        explicit GroupByAggregateImpl(const int32_t & ordinal, const FieldType & agg_type) :
+                aggregate_ordinal_(ordinal), aggregate_type_(agg_type),
                 zero_(FieldFactory<B>::getZero(aggregate_type_)), one_(FieldFactory<B>::getOne(aggregate_type_)){};
 
         virtual ~GroupByAggregateImpl() = default;
@@ -24,6 +25,7 @@ namespace vaultdb {
 
         virtual Field<B> getResult() = 0;
         virtual FieldType getType() const { return aggregate_type_; }
+        virtual bool packedFields() const = 0; // is the aggregator emitting a packed field?
 
     protected:
 
@@ -40,7 +42,7 @@ namespace vaultdb {
     template<>
     class GroupByCountImpl<emp::Bit> : public  GroupByAggregateImpl<emp::Bit> {
     public:
-         GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType)  : GroupByAggregateImpl<Bit>(ordinal, aggType)
+         GroupByCountImpl(const int32_t & ordinal, const FieldType & agg_type)  : GroupByAggregateImpl<Bit>(ordinal, agg_type)
         {
             GroupByAggregateImpl<Bit>::aggregate_type_ = FieldType::SECURE_LONG;
             running_count_ = emp::Integer(64, 0, PUBLIC); // publicly initialize to zero
@@ -68,6 +70,8 @@ namespace vaultdb {
         inline FieldType getType() const override {
                 return FieldType::SECURE_LONG;
         }
+
+        bool packedFields() const override { return false; }
        ~GroupByCountImpl() = default;
 
 
@@ -81,7 +85,7 @@ namespace vaultdb {
     template<>
     class GroupByCountImpl<bool> : public  GroupByAggregateImpl<bool> {
     public:
-        explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & aggType)  : GroupByAggregateImpl<bool>(ordinal, aggType)
+        explicit GroupByCountImpl(const int32_t & ordinal, const FieldType & agg_type)  : GroupByAggregateImpl<bool>(ordinal, agg_type)
         {
             GroupByAggregateImpl<bool>::aggregate_type_ = FieldType::LONG;
             running_count_ = 0L;
@@ -108,6 +112,9 @@ namespace vaultdb {
         inline FieldType getType() const override {
             return FieldType::LONG;  // count always returns a long
         }
+
+        bool packedFields() const override { return false; }
+
         ~GroupByCountImpl() = default;
 
 
@@ -120,9 +127,9 @@ namespace vaultdb {
     template<typename B>
     class GroupBySumImpl : public  GroupByAggregateImpl<B> {
     public:
-        explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {
+        explicit GroupBySumImpl(const int32_t & ordinal, const FieldType & agg_type) : GroupByAggregateImpl<B>(ordinal, agg_type) {
             running_sum_ = GroupByAggregateImpl<B>::zero_;
-            assert(aggType != FieldType::STRING && aggType != FieldType::SECURE_STRING);
+            assert(agg_type != FieldType::STRING && agg_type != FieldType::SECURE_STRING);
         }
 
          inline void initialize(const QueryTable<B> *table) override{
@@ -142,6 +149,8 @@ namespace vaultdb {
             return running_sum_;
         }
         inline FieldType getType() const override { return GroupByAggregateImpl<B>::aggregate_type_; }
+        bool packedFields() const override { return false; }
+
         ~GroupBySumImpl() = default;
 
     private:
@@ -152,7 +161,7 @@ namespace vaultdb {
     template<typename B>
     class GroupByAvgImpl : public  GroupByAggregateImpl<B> {
     public:
-        GroupByAvgImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl<B>(ordinal, aggType)  {
+        GroupByAvgImpl(const int32_t & ordinal, const FieldType & agg_type) : GroupByAggregateImpl<B>(ordinal, agg_type)  {
             running_sum_ = GroupByAggregateImpl<B>::zero_;
             running_count_ = GroupByAggregateImpl<B>::zero_;
         }
@@ -180,6 +189,8 @@ namespace vaultdb {
         inline Field<B> getResult() override {
             return running_sum_ / running_count_;
         }
+
+        bool packedFields() const override { return false; }
         ~GroupByAvgImpl() = default;
 
     private:
@@ -191,52 +202,92 @@ namespace vaultdb {
     template<typename B>
     class GroupByMinImpl : public  GroupByAggregateImpl<B> {
     public:
-        explicit GroupByMinImpl(const int32_t & ordinal, const FieldType & aggType) : GroupByAggregateImpl<B>(ordinal, aggType) {
-            running_min_ = FieldFactory<B>::getMax(aggType);
+        explicit GroupByMinImpl(const int32_t & ordinal, const QueryFieldDesc & input_schema) : GroupByAggregateImpl<B>(ordinal, input_schema.getType()) {
+            if(input_schema.bitPacked()) {
+                // generate max
+                assert(this->aggregate_type_ == FieldType::SECURE_LONG || this->aggregate_type_ == FieldType::SECURE_INT);
+                Integer max = emp::Integer(input_schema.size() + 1, 0);
+                Bit one(true);
+                Bit *write_cursor = max.bits.data();
+                for(int i = 0; i < input_schema.size(); ++i) {
+                  *write_cursor = one;
+                  ++write_cursor;
+                }
+                std::cout << "for initial min, have: " << max.reveal<int64_t>(PUBLIC) << " for " << input_schema.size() << " bits." << endl;
+                std::cout << " bits: " << max.reveal<string>() << std::endl;
+                running_min_ = Field<B>(this->aggregate_type_, max, 0);
+                packed_fields_ = true;
+            }
+            else
+                running_min_ = FieldFactory<B>::getMax(input_schema.getType());
         }
 
         inline void initialize(const QueryTable<B> *table) override {
-            running_min_ = Field<B>::If(table->getDummyTag(0), running_min_, table->getField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
-
+            running_min_ = Field<B>::If(table->getDummyTag(0), running_min_, table->getPackedField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
+            Integer r = boost::get<Integer>(running_min_.payload_);
+            std::cout << " init running min: " << r.reveal<int64_t>() << " bits: " << r.reveal<string>() << endl;
         }
 
         inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
             // if a match and not a dummy
-            Field<B> agg_input = table->getField(row, GroupByAggregateImpl<B>::aggregate_ordinal_);
+            Field<B> agg_input = table->getPackedField(row, GroupByAggregateImpl<B>::aggregate_ordinal_);
+            Integer r = boost::get<Integer>(agg_input.payload_);
+
+
             Field<B> new_min = Field<B>::If(agg_input < running_min_, agg_input, running_min_);
             B input_dummy_tag = table->getDummyTag(row);
 
+            if(!FieldUtilities::extract_bool(input_dummy_tag)) {
+                std::cout << " agg input: " << r.reveal<int64_t>() << " bits: " << r.reveal<string>() << endl;
+                std::cout << " group by match: " << FieldUtilities::extract_bool(group_by_match) << endl;
+            }
             running_min_ = Field<B>::If(group_by_match & !input_dummy_tag, new_min, running_min_);
             // new bin
             running_min_ = Field<B>::If(!group_by_match & !input_dummy_tag, agg_input, running_min_);
+
+            if(!FieldUtilities::extract_bool(input_dummy_tag)) {
+                r = boost::get<Integer>(running_min_.payload_);
+                std::cout << " new running min: " << r.reveal<int64_t>() << " bits: " << r.reveal<string>() << endl;
+            }
+
         }
         inline Field<B> getResult() override {
             return running_min_;
         }
 
+        bool packedFields() const override { return packed_fields_; }
         ~GroupByMinImpl() = default;
 
     private:
         Field<B> running_min_;
-
+        bool packed_fields_ = false;
 
     };
 
     template<typename B>
     class GroupByMaxImpl : public  GroupByAggregateImpl<B> {
     public:
-        GroupByMaxImpl(const int32_t & ordinal, const FieldType & aggType)  : GroupByAggregateImpl<B>(ordinal, aggType) {
-            running_max_ = FieldFactory<B>::getMin(aggType);
+        GroupByMaxImpl(const int32_t & ordinal, const QueryFieldDesc & input_schema)  : GroupByAggregateImpl<B>(ordinal, input_schema.getType()) {
+
+            if(input_schema.bitPacked()) {
+                // generate max
+                assert(this->aggregate_type_ == FieldType::SECURE_LONG || this->aggregate_type_ == FieldType::SECURE_INT);
+                Integer min = emp::Integer(input_schema.size() + 1, input_schema.getFieldMin()); // +1 for 2's complement
+                running_max_ = Field<B>(this->aggregate_type_, min, 0);
+                packed_fields_ = true;
+            }
+            else
+                running_max_ = FieldFactory<B>::getMin(input_schema.getType());
         }
 
         inline void initialize(const QueryTable<B> *table) override {
-            running_max_ = Field<B>::If(table->getDummyTag(0), running_max_, table->getField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
+            running_max_ = Field<B>::If(table->getDummyTag(0), running_max_, table->getPackedField(0, GroupByAggregateImpl<B>::aggregate_ordinal_));
         }
 
 
         inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
             // if a match and not a dummy
-            Field<B> agg_input = table->getField(row, GroupByAggregateImpl<B>::aggregate_ordinal_);
+            Field<B> agg_input = table->getPackedField(row, GroupByAggregateImpl<B>::aggregate_ordinal_);
             Field<B> new_min = Field<B>::If(agg_input > running_max_, agg_input, running_max_);
             B input_dummy_tag = table->getDummyTag(row);
 
@@ -248,10 +299,12 @@ namespace vaultdb {
         }
 
         inline Field<B> getResult() override { return running_max_; }
+        bool packedFields() const override { return packed_fields_; }
         ~GroupByMaxImpl() = default;
 
     private:
         Field<B> running_max_;
+        bool packed_fields_ = false;
 
 
     };

@@ -18,15 +18,15 @@ namespace vaultdb {
          size_t output_cardinality_ = 0; 
 
     public:
-        GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const size_t & output_card = 0);
-        GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+        GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
 			       const vector<ScalarAggregateDefinition> &aggregates, const size_t & output_card = 0);
 
-        GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
+        GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const size_t & output_card = 0);
 
-        GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
+        GroupByAggregate(QueryTable<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const size_t & output_card = 0);
         virtual ~GroupByAggregate()  {
             for(size_t i = 0; i < aggregators_.size(); ++i) {
@@ -41,8 +41,8 @@ namespace vaultdb {
         string getParameters() const override;
 
     private:
-        GroupByAggregateImpl<B> *aggregateFactory(const AggregateId &aggregateType, const int32_t &ordinal,
-                                               const FieldType &aggregateValueType) const;
+        GroupByAggregateImpl<B> *aggregateFactory(const AggregateId &aggregator_type, const int32_t &ordinal,
+                                                  const QueryFieldDesc &input_schema) const;
 
 
         QuerySchema generateOutputSchema(const QuerySchema & srcSchema) const;

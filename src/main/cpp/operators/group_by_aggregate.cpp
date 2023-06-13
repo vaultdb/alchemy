@@ -8,17 +8,18 @@
 #include "query_table/table_factory.h"
 
 
-
 using namespace vaultdb;
 using namespace std;
 
+// TODO: implement MIN/MAX with packed fields where possible!
+
 template<typename B>
-GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
+GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                                       const vector<ScalarAggregateDefinition> &aggregates,
                                       const SortDefinition &sort,
                                       const size_t & output_card) : Operator<B>(child, sort),
                                                                     aggregate_definitions_(aggregates),
-                                                                    group_by_(groupBys), output_cardinality_(output_card)
+                                                                    group_by_(group_bys), output_cardinality_(output_card)
 {
 
     setup();
@@ -62,21 +63,19 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
     QueryTable<B> *input = Operator<B>::getChild()->getOutput();
     QuerySchema input_schema = input->getSchema();
 
+    int output_cursor = group_by_.size();
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {
-        // for most aggs the output type is the same as the input type
-        // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
-        FieldType aggValueType = (agg.ordinal >= 0) ?
-                                 input_schema.getField(agg.ordinal).getType() :
-                                 (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
-        aggregators_.push_back(aggregateFactory(agg.type, agg.ordinal, aggValueType));
+        GroupByAggregateImpl<B> *agg_impl = aggregateFactory(agg.type, agg.ordinal, input_schema.getField(agg.ordinal));
+        aggregators_.push_back(agg_impl);
+        // if an aggregator operates on packed bits (e.g. min/max), then copy its output definition from source
+        if(agg_impl->packedFields()) {
+            QueryFieldDesc packed_field(input_schema.getField(agg.ordinal), output_cursor);
+            packed_field.setName("", agg.alias);
+            this->output_schema_.putField(packed_field);
+        }
+        ++output_cursor;
     }
 
-
-
-
-
-    //B realBin;
-    //QueryTuple<B> current(input_schema), predecessor(input_schema);
 
     if(output_cardinality_ == 0) { // naive case - go full oblivious
         output_cardinality_ = input->getTupleCount();
@@ -96,10 +95,10 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
 
     int cursor = group_by_.size();
 
-    // for first pass only
+    // for first row only
     for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
         aggregator->initialize(input); // don't need group_by_match, only for first pass
-        output->setField(0, cursor, aggregator->getResult());
+        output->setField(0, cursor, aggregator->getResult(), aggregator->packedFields());
         ++cursor;
     }
 
@@ -126,7 +125,22 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
 
         for(auto agg : aggregators_) {
             agg->accumulate(input, i, matched);
-            output->setField(i, cursor, agg->getResult());
+            PlainField expected =  agg->getResult().reveal();
+            std::cout << "Have agg result: " << expected << endl;
+            output->setField(i, cursor, agg->getResult(), agg->packedFields());
+
+            Field<B> o = (agg->packedFields()) ?
+                    output->getPackedField(i, cursor) :
+                    output->getField(i, cursor);
+            if(agg->packedFields()) {
+                Integer raw = o.template getValue<Integer>();
+                std::cout << " payload bits: " << raw.size() << std::endl; // should be 4
+                std::cout << "Payload: " << raw.reveal<int64_t>() << " bits: " << raw.reveal<string>() << endl;
+            }
+            PlainField observed = o.reveal();
+            std::cout << " observed: " << observed << endl;
+            assert(expected == observed);
+
             ++cursor;
         }
         B out_dummy_tag = output->getDummyTag(i-1) & input_dummy_tag; // both need to be dummies for current cell to remain dummy
@@ -135,6 +149,9 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
         // if matched, replace previous with current, set old dummy tag to true
         out_dummy_tag = FieldUtilities::select(matched, true_lit, output->getDummyTag(i-1));
         output->setDummyTag(i-1, out_dummy_tag);
+        if(!FieldUtilities::extract_bool(out_dummy_tag)) {
+            std::cout << "***Emitting min at row " << i-1 << ": " << output->getField(i-1, 1).reveal() <<  " packed: " << output->getPackedField(i-1, 1).reveal() << endl;
+        }
     }
 
 
@@ -148,20 +165,26 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
 }
 
 template<typename B>
-GroupByAggregateImpl<B> *GroupByAggregate<B>::aggregateFactory(const AggregateId &aggregateType, const int32_t &ordinal,
-                                                               const FieldType &aggregateValueType) const {
+GroupByAggregateImpl<B> *GroupByAggregate<B>::aggregateFactory(const AggregateId &aggregator_type, const int32_t &ordinal,
+                                                               const QueryFieldDesc &input_schema) const {
 
-    switch (aggregateType) {
+    // for most aggs the output type is the same as the input type
+    // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
+    FieldType input_type = (ordinal >= 0) ?
+                             input_schema.getType() :
+                             (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
+
+    switch (aggregator_type) {
         case AggregateId::COUNT:
-            return new GroupByCountImpl<B>(ordinal, aggregateValueType);
+            return new GroupByCountImpl<B>(ordinal, input_type);
         case AggregateId::SUM:
-            return new GroupBySumImpl<B>(ordinal, aggregateValueType);
+            return new GroupBySumImpl<B>(ordinal, input_type);
         case AggregateId::AVG:
-            return new GroupByAvgImpl<B>(ordinal, aggregateValueType);
+            return new GroupByAvgImpl<B>(ordinal, input_type);
         case AggregateId::MIN:
-            return new GroupByMinImpl<B>(ordinal, aggregateValueType);
+            return new GroupByMinImpl<B>(ordinal, input_schema);
         case AggregateId::MAX:
-            return new GroupByMaxImpl<B>(ordinal, aggregateValueType);
+            return new GroupByMaxImpl<B>(ordinal, input_schema);
         default:
             throw;
     };
@@ -170,14 +193,14 @@ GroupByAggregateImpl<B> *GroupByAggregate<B>::aggregateFactory(const AggregateId
 
 template<typename B>
 QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & input_schema) const {
-    QuerySchema outputSchema;
+    QuerySchema output_schema;
     size_t i;
 
     for(i = 0; i < group_by_.size(); ++i) {
         QueryFieldDesc srcField = input_schema.getField(group_by_[i]);
         QueryFieldDesc dstField(i, srcField.getName(), srcField.getTableName(), srcField.getType());
         dstField.setStringLength(srcField.getStringLength());
-        outputSchema.putField(dstField);
+        output_schema.putField(dstField);
     }
 
 
@@ -187,12 +210,12 @@ QuerySchema GroupByAggregate<B>::generateOutputSchema(const QuerySchema & input_
                              input_schema.getField(agg.ordinal).getType() :
                              (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
 
-        QueryFieldDesc fieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
-        outputSchema.putField(fieldDesc);
+        QueryFieldDesc field_desc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
+        output_schema.putField(field_desc);
     }
 
-    outputSchema.initializeFieldOffsets();
-    return outputSchema;
+    output_schema.initializeFieldOffsets();
+    return output_schema;
 
 }
 
