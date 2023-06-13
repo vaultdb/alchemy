@@ -11,6 +11,8 @@ namespace vaultdb {
     public:
         void visit(InputReference<B> & node) override;
 
+        void visit(PackedInputReference<B> & node) override;
+
         void visit(LiteralNode<B> & node) override;
 
         void visit(AndNode<B> & node) override;

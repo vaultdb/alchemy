@@ -110,6 +110,7 @@ namespace  vaultdb {
 
 
         virtual  Field<B> getField(const int  & row, const int & col)  const  = 0;
+        virtual  Field<B> getPackedField(const int  & row, const int & col)  const  = 0;
 
         virtual  void setField(const int  & row, const int & col, const Field<B> & f) = 0;
 

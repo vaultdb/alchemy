@@ -1,7 +1,6 @@
 #ifndef _CONNECTOR_EXPRESSION_NODES_H
 #define _CONNECTOR_EXPRESSION_NODES_H
 
-#include <util/field_utilities.h>
 #include "expression_node.h"
 
 
@@ -103,15 +102,14 @@ namespace vaultdb {
         Field<B> call(const QueryTuple<B> & target) const override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
+            return Field<B>(type_, lhs || rhs, 0);
 
-            return FieldUtilities::getBoolField(lhs || rhs);
         }
 
         inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
             Field<B> lhs = ExpressionNode<B>::lhs_->call(src, row);
             Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
-
-            return FieldUtilities::getBoolField(lhs || rhs);
+            return Field<B>(type_, lhs || rhs, 0);
         }
 
         Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {

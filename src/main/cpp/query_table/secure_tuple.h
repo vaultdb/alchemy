@@ -50,10 +50,17 @@ namespace vaultdb {
 
         }
         const inline SecureField getField(const int & ordinal) const {
-            size_t field_offset = schema_->getFieldOffset(ordinal);
-            const emp::Bit *read_ptr = fields_ + field_offset;
+            const emp::Bit *read_ptr = fields_ +  schema_->getFieldOffset(ordinal);
 
             return Field<emp::Bit>::deserialize(schema_->getField(ordinal),
+                                                (int8_t *) read_ptr);
+
+        }
+
+        const inline SecureField getPackedField(const int & ordinal) const {
+            const emp::Bit *read_ptr = fields_ +  schema_->getFieldOffset(ordinal);
+
+            return Field<emp::Bit>::deserializePacked(schema_->getField(ordinal),
                                                 (int8_t *) read_ptr);
 
         }

@@ -383,7 +383,8 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
             si = boost::get<emp::Integer>(payload_);
-            si = si - emp::Integer(si.size(), schema.getFieldMin());
+            if(schema.getFieldMin() != 0)
+                si = si - schema.getSecureFieldMin();
             memcpy(dst, (int8_t *) si.bits.data(), schema.size() * TypeUtilities::getEmpBitSize());
             break;
         case FieldType::SECURE_FLOAT:
@@ -939,7 +940,7 @@ Field<B> Field<B>::deserializePacked(const QueryFieldDesc &desc, const int8_t *s
             return Field<B>(type, payload);
         }
         case FieldType::SECURE_LONG: {
-            emp::Integer payload(desc.size(), 0);
+            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
             memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
             return Field<B>(type, payload);
         }

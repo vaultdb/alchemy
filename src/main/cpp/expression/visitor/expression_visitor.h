@@ -7,6 +7,8 @@
 namespace vaultdb {
 
     template<typename B> class InputReference;
+    template<typename B> class PackedInputReference;
+
     template<typename B> class  LiteralNode;
     
     template<typename B> class  AndNode;
@@ -40,6 +42,8 @@ namespace vaultdb {
     public:
         // InputReference.accept will call this
        virtual void visit(InputReference<B>  & node)  = 0;
+       virtual void visit(PackedInputReference<B>  & node)  = 0;
+
        virtual void visit(LiteralNode<B>  & node)  = 0;
 
         virtual void visit(AndNode<B>  & node) = 0;

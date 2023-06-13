@@ -17,6 +17,8 @@ namespace vaultdb {
 
         void visit(InputReference<B>  & node) override;
 
+        void visit(PackedInputReference<B>  & node) override;
+
         void visit(LiteralNode<B>  & node) override;
 
         void visit(AndNode<B>  & node) override;
@@ -70,4 +72,4 @@ namespace vaultdb {
 }
 
 
-#endif //VAULTDB_EMP_TYPE_INFERENCE_VISITOR_H
+#endif //_TYPE_INFERENCE_VISITOR_H

@@ -4,6 +4,7 @@
 #include <expression/expression_factory.h>
 #include <expression/visitor/type_validation_visitor.h>
 #include <parser/plan_parser.h>
+#include <expression/visitor/to_packed_expression_visitor.h>
 
 using namespace vaultdb;
 using namespace std;
@@ -22,21 +23,21 @@ Expression<B> * ExpressionParser<B>::parseJSONExpression(const std::string &json
 //   "op": {
 // ...
 // handle "input" / raw value copies separately in parse_projection
-template<typename B>
-Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & input_schema) {
-   ExpressionNode<B> *expression_root = parseHelper(tree, input_schema);
-
-   TypeValidationVisitor<B> visitor(expression_root, input_schema);
-    expression_root->accept(&visitor);
-
-
-    GenericExpression<B> *g =  new GenericExpression<B>(expression_root, input_schema);
-
-    delete expression_root;
-    return g;
-
-}
-
+//template<typename B>
+//Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & input_schema) {
+//   ExpressionNode<B> *expression_root = parseHelper(tree, input_schema);
+//
+//   TypeValidationVisitor<B> visitor(expression_root, input_schema);
+//    expression_root->accept(&visitor);
+//
+//
+//    GenericExpression<B> *g =  new GenericExpression<B>(expression_root, input_schema);
+//
+//    delete expression_root;
+//    return g;
+//
+//}
+//
 template<typename B>
 Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
     ExpressionNode<B> *expression_root = parseHelper(tree, lhs, rhs);
@@ -46,9 +47,15 @@ Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const Qu
     expression_root->accept(&visitor);
 
 
-    GenericExpression<B> *g =  new GenericExpression<B>(expression_root, input_schema);
+    ToPackedExpressionVisitor<B> pack_it(expression_root);
+    expression_root->accept(&pack_it);
+
+
+    GenericExpression<B> *g =  new GenericExpression<B>(pack_it.getRoot(), input_schema);
 
     delete expression_root;
+
+
     return g;
 
 }

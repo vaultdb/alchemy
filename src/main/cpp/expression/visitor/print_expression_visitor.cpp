@@ -13,6 +13,12 @@ void PrintExpressionVisitor<B>::visit(InputReference<B> & node) {
 }
 
 template<typename B>
+void PrintExpressionVisitor<B>::visit(PackedInputReference<B> & node) {
+    last_value_ = "P$" + std::to_string(node.output_idx_);
+}
+
+
+template<typename B>
 void PrintExpressionVisitor<B>::visit(LiteralNode<B>&  node) {
     last_value_ = node.payload_.toString();
 }

@@ -26,6 +26,11 @@ void TypeValidationVisitor<B>::visit(InputReference<B>  & node) {
 }
 
 template<typename B>
+void TypeValidationVisitor<B>::visit(PackedInputReference<B>  & node) {
+    last_expression_type_ = node.output_schema_.getType();
+}
+
+template<typename B>
 void TypeValidationVisitor<B>::visit(LiteralNode<B>  & node) {
     last_expression_type_ = node.payload_.getType();
 }

@@ -71,6 +71,11 @@ namespace  vaultdb {
             return Field<B> ::deserialize(this->schema_.getField(col), read_ptr);
         }
 
+        inline Field<B> getPackedField(const int & row, const int & col) const override {
+            int8_t *read_ptr = getFieldPtr(row, col);
+            return Field<B> ::deserializePacked(this->schema_.getField(col), read_ptr );
+        }
+
         inline void setField(const int  & row, const int & col, const Field<B> & f)  override {
             int8_t *write_ptr = getFieldPtr(row, col);
             f.serialize(write_ptr, this->schema_.getField(col));

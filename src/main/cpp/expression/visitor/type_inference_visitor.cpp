@@ -25,6 +25,11 @@ void TypeInferenceVisitor<B>::visit(InputReference<B> & node) {
 }
 
 template<typename B>
+void TypeInferenceVisitor<B>::visit(PackedInputReference<B> & node) {
+    last_expression_type_ = input_schema_.getField(node.read_idx_).getType();
+}
+
+template<typename B>
 void TypeInferenceVisitor<B>::visit(LiteralNode<B> & node) {
     last_expression_type_ = node.payload_.getType();
 }

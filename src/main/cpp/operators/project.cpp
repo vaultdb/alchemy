@@ -19,8 +19,6 @@ QueryTable<B> *Project<B>::runSelf() {
     QueryTable<B> *src_table = Operator<B>::getChild()->getOutput();
     uint32_t tuple_cnt = src_table->getTupleCount();
 
-
-
     this->output_ = TableFactory<B>::getTable(tuple_cnt, this->output_schema_,  src_table->storageModel(), this->sort_definition_);
 
     for(uint32_t i = 0; i < tuple_cnt; ++i) {

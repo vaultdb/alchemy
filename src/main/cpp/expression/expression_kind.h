@@ -3,6 +3,7 @@
 
 enum class ExpressionKind {
     INPUT_REF,
+    PACKED_INPUT_REF,
     LITERAL,
     PLUS,
     MINUS,

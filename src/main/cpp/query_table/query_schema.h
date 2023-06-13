@@ -21,7 +21,7 @@ namespace  vaultdb {
     public:
         std::map<int32_t, size_t> offsets_;
 
-        QuerySchema() {} // empty setup
+        QuerySchema()  : tuple_size_(0) {         } // empty setup
         QuerySchema(const QuerySchema & s) {
 
             for (size_t i = 0; i < s.getFieldCount(); i++) {

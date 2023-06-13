@@ -1,5 +1,5 @@
-#ifndef _SECURE_TO_PLAIN_VISITOR_H
-#define _SECURE_TO_PLAIN_VISITOR_H
+#ifndef _PLAIN_TO_SECURE_VISITOR_H
+#define _PLAIN_TO_SECURE_VISITOR_H
 
 #include "expression_visitor.h"
 #include <expression/connector_expression_nodes.h>
@@ -24,6 +24,8 @@ namespace  vaultdb {
         }
 
         void visit(InputReference<bool> & node) override;
+
+        void visit(PackedInputReference<bool> & node) override;
 
         void visit(LiteralNode<bool> & node) override;
 
@@ -66,4 +68,4 @@ namespace  vaultdb {
 
 
 
-#endif //_SECURE_TO_PLAIN_VISITOR_H
+#endif //_PLAIN_TO_SECURE_VISITOR_

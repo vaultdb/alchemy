@@ -66,7 +66,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
+    GenericExpression<emp::Bit> *predicate = (GenericExpression<Bit> *) FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
                                                                                       customer_input, 4);
 
 
@@ -107,9 +107,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
     //  o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue,
     Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 0,
                                                                                       lineitem_input, 4);
-
-
-    // test pkey-fkey join
+   // test pkey-fkey join
     KeyedJoin join(orders_input, lineitem_input, 1, predicate);
 
 
@@ -148,10 +146,11 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * customer_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(
+    Expression<emp::Bit> *customer_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(
             orders_input, 1,
             customer_input,
             4);
+
     auto co_join = new KeyedJoin (orders_input, customer_input, customer_orders_predicate);
 
     // join output schema:
@@ -160,7 +159,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
             lineitem_input, 0,
             co_join,
             2);
-
 
 
     auto col_join = new KeyedJoin(lineitem_input, co_join, lineitem_orders_predicate);

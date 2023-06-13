@@ -12,6 +12,8 @@
 #include "expression/expression_node.h"
 #include "expression/comparator_expression_nodes.h"
 #include "expression/generic_expression.h"
+#include <expression/visitor/to_packed_expression_visitor.h>
+
 
 namespace vaultdb {
 
@@ -112,7 +114,10 @@ namespace vaultdb {
             InputReference<B> *rhs_input = new InputReference<B>(rhs_idx, lhs,  rhs);
             ExpressionNode<B> *equality_node = new EqualNode<B>(lhs_input, rhs_input);
 
-            GenericExpression<B> *g =  new GenericExpression<B>(equality_node, "predicate",
+            ToPackedExpressionVisitor pack_it(equality_node);
+            ExpressionNode<Bit> *packed_predicate = pack_it.getRoot();
+
+            GenericExpression<B> *g =  new GenericExpression<B>(packed_predicate, "predicate",
                                                                 std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
 
             delete equality_node;

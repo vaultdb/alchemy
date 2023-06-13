@@ -41,7 +41,6 @@ namespace vaultdb {
 
         ExpressionNode<B> *lhs_ = nullptr;
         ExpressionNode<B> *rhs_ = nullptr;
-        bool packed_ = false; // are we able to complete this expression with a packed representation of the bits?
         QueryFieldDesc output_schema_;
 
     };
@@ -124,7 +123,87 @@ namespace vaultdb {
         uint32_t read_lhs_ = true;
     };
 
-    // TODO: initialize QueryFieldDesc based on call from parent
+
+    template<typename B>
+    class PackedInputReference : public ExpressionNode<B> {
+    public:
+        PackedInputReference(const PackedInputReference<B> & src)
+                : ExpressionNode<B>(nullptr), read_idx_(src.read_idx_),
+                  binary_mode_(src.binary_mode_), output_idx_(src.output_idx_), read_lhs_(src.read_lhs_) {
+            this->output_schema_ = src.output_schema_;
+        }
+
+        PackedInputReference(const InputReference<B> & src)
+                : ExpressionNode<B>(nullptr), read_idx_(src.read_idx_),
+                  binary_mode_(src.binary_mode_), output_idx_(src.output_idx_), read_lhs_(src.read_lhs_) {
+            this->output_schema_ = src.output_schema_;
+        }
+
+
+        PackedInputReference(const uint32_t & read_idx, const QueryFieldDesc &schema)
+                : ExpressionNode<B>(nullptr), read_idx_(read_idx), output_idx_(read_idx_) {
+            this->output_schema_ = schema;
+        }
+        PackedInputReference(const uint32_t & read_idx, const QuerySchema &schema)
+                : ExpressionNode<B>(nullptr), read_idx_(read_idx), output_idx_(read_idx) {
+            this->output_schema_ = schema.getField(read_idx);
+        }
+        // needed for binary (lhs, rhs) invocation
+        PackedInputReference(const uint32_t & read_idx, const QuerySchema & lhs_schema, const QuerySchema & rhs_schema)
+                : ExpressionNode<B>(nullptr), binary_mode_(true), output_idx_(read_idx), read_idx_(read_idx) {
+
+            if(rhs_schema.getFieldCount() == -1) { // empty placeholder on rhs, treat it like single QuerySchema input
+                binary_mode_ = false;
+                this->output_schema_ = lhs_schema.getField(read_idx_);
+                return;
+            }
+
+            if(read_idx >= lhs_schema.getFieldCount()) {
+                read_lhs_ = false;
+                read_idx_ = read_idx - lhs_schema.getFieldCount();
+                this->output_schema_ = rhs_schema.getField(read_idx_);
+            }
+            else {
+                this->output_schema_ = lhs_schema.getField(read_idx_);
+            }
+        }
+
+        ~PackedInputReference() = default;
+
+        inline Field<B> call(const QueryTuple<B> & target) const override {
+            return target.getPackedField(read_idx_);
+        }
+
+        inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+            assert(!binary_mode_);
+            return src->getPackedField(row, read_idx_);
+        }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            assert(binary_mode_);
+            return (read_lhs_) ?
+                   lhs->getPackedField(lhs_row, read_idx_) :
+                   rhs->getPackedField(rhs_row, read_idx_);
+        }
+
+
+        ExpressionKind kind() const override {     return ExpressionKind::PACKED_INPUT_REF;  }
+
+        void accept(ExpressionVisitor<B> *visitor) override {
+            visitor->visit(*this);
+
+        }
+
+        ExpressionNode<B> *clone() const override {
+            return new PackedInputReference<B>(*this);
+        }
+
+        uint32_t read_idx_;
+        uint32_t output_idx_;
+        bool binary_mode_ = false;
+        uint32_t read_lhs_ = true;
+    };
+
     // leave output_schema_ blank initially and adjust automatically based on any bit packing of parent
     template<typename B>
     class LiteralNode : public ExpressionNode<B> {

@@ -134,22 +134,22 @@ QuerySchema QuerySchema::concatenate(const QuerySchema & lhs, const QuerySchema 
     QuerySchema result;
     uint32_t cursor = lhs.getFieldCount();
 
-    for(uint32_t i = 0; i < lhs.getFieldCount(); ++i) {
+    for(int i = 0; i < lhs.getFieldCount(); ++i) {
         QueryFieldDesc src_field = lhs.getField(i);
         QueryFieldDesc dst_field(src_field, i);
 
-        size_t srcStringLength = src_field.getStringLength();
-        dst_field.setStringLength(srcStringLength);
+        size_t src_string_len = src_field.getStringLength();
+        dst_field.setStringLength(src_string_len);
         result.putField(dst_field);
     }
 
 
-    for(uint32_t i = 0; i < rhs.getFieldCount(); ++i) {
+    for(int i = 0; i < rhs.getFieldCount(); ++i) {
         QueryFieldDesc src_field = rhs.getField(i);
         QueryFieldDesc dst_field(src_field, cursor);
 
-        size_t srcStringLength = src_field.getStringLength();
-        dst_field.setStringLength(srcStringLength);
+        size_t src_string_len = src_field.getStringLength();
+        dst_field.setStringLength(src_string_len);
         result.putField(dst_field);
         ++cursor;
     }

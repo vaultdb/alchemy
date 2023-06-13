@@ -23,11 +23,15 @@ namespace vaultdb {
         std::vector<std::pair<uint32_t, uint32_t> > equalities_;
 
     public:
-        JoinEqualityConditionVisitor(ExpressionNode<B> *root);
+        JoinEqualityConditionVisitor(ExpressionNode<B> *root) {
+            root->accept(this);
+        }
 
         std::vector<std::pair<uint32_t, uint32_t> > getEqualities();
 
         void visit(InputReference<B> & node) override;
+
+        void visit(PackedInputReference<B> & node) override;
 
         void visit(LiteralNode<B> & node) override { throw; }
 

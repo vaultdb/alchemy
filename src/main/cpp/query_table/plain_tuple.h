@@ -35,8 +35,22 @@ namespace  vaultdb {
             return false;
         }
 
-        PlainField getField(const int &ordinal);
-        const PlainField getField(const int &ordinal) const;
+        inline PlainField getField(const int &ordinal) {
+            QueryFieldDesc field_desc = schema_->getField(ordinal);
+            return Field<bool>::deserialize(field_desc, fields_ + (schema_->getFieldOffset(ordinal) / 8));
+
+        }
+
+        inline const PlainField getPackedField(const int &ordinal) const {
+            QueryFieldDesc field_desc = schema_->getField(ordinal);
+            return Field<bool>::deserializePacked(field_desc, fields_ + (schema_->getFieldOffset(ordinal) / 8));
+        }
+
+        inline const PlainField getField(const int &ordinal) const {
+            QueryFieldDesc field_desc = schema_->getField(ordinal);
+            return Field<bool>::deserialize(field_desc, fields_ + (schema_->getFieldOffset(ordinal) / 8));
+
+        }
 
         void setField(const int &idx, const PlainField &f);
 

@@ -105,7 +105,7 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir) {
         int m = cnt / 2;
         bitonicSort(lo, m, !dir);
         bitonicSort(lo + m, cnt - m, dir);
-        bitonicMerge(Operator<B>::output_, Operator<B>::sort_definition_, lo, cnt, dir);
+        bitonicMerge(this->output_, this->sort_definition_, lo, cnt, dir);
     }
 
 }
@@ -148,9 +148,9 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
     for (size_t i = 0; i < sort_definition.size(); ++i) {
 
         const Field<B> lhs_field = sort_definition[i].first == -1 ? Field<B>(lhs.getDummyTag())
-                                                                  : lhs.getField(sort_definition[i].first);
+                                                                  : lhs.getPackedField(sort_definition[i].first);
         const Field<B> rhs_field = sort_definition[i].first == -1 ? Field<B>(rhs.getDummyTag())
-                                                                  : rhs.getField(sort_definition[i].first);
+                                                                  : rhs.getPackedField(sort_definition[i].first);
 
         // true for ascending, false for descending
         bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
@@ -184,9 +184,9 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
     for (size_t i = 0; i < sort_definition.size(); ++i) {
 
         const Field<B> lhs_field = sort_definition[i].first == -1 ? Field<B>(table->getDummyTag(lhs_idx))
-                                                                  : table->getField(lhs_idx, sort_definition[i].first);
+                                                                  : table->getPackedField(lhs_idx, sort_definition[i].first);
         const Field<B> rhs_field = sort_definition[i].first == -1 ? Field<B>(table->getDummyTag(rhs_idx))
-                                                                  : table->getField(rhs_idx,sort_definition[i].first);
+                                                                  : table->getPackedField(rhs_idx,sort_definition[i].first);
 
         // true for ascending, false for descending
         bool asc = (sort_definition[i].second == SortDirection::ASCENDING);

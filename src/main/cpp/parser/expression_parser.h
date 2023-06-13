@@ -14,8 +14,8 @@ namespace vaultdb {
     class ExpressionParser {
     public:
         static Expression <B> * parseJSONExpression(const std::string &json, const QuerySchema & input_schema);
-        static Expression <B> * parseExpression(const ptree & tree, const QuerySchema & input_schema);
-        static Expression <B> * parseExpression(const ptree & tree, const QuerySchema & lhs, const QuerySchema & rhs);
+//        static Expression <B> * parseExpression(const ptree & tree, const QuerySchema & input_schema);
+        static Expression <B> * parseExpression(const ptree & tree, const QuerySchema & lhs, const QuerySchema & rhs = QuerySchema());
 
     private:
         static ExpressionNode <B> * parseHelper(const ptree & tree, const QuerySchema & lhs, const QuerySchema & rhs = QuerySchema());

@@ -2,10 +2,6 @@
 
 using namespace vaultdb;
 
-template<typename B>
-JoinEqualityConditionVisitor<B>::JoinEqualityConditionVisitor(ExpressionNode<B> *root) {
-    root->accept(this);
-}
 
 template<typename B>
 std::vector<std::pair<uint32_t, uint32_t> > JoinEqualityConditionVisitor<B>::getEqualities() {
@@ -42,6 +38,10 @@ void JoinEqualityConditionVisitor<B>::visit(InputReference<B> & node) {
     last_ordinal_ = node.read_idx_;
 }
 
+template<typename B>
+void JoinEqualityConditionVisitor<B>::visit(PackedInputReference<B> & node) {
+    last_ordinal_ = node.read_idx_;
+}
 template class vaultdb::JoinEqualityConditionVisitor<bool>;
 template class vaultdb::JoinEqualityConditionVisitor<emp::Bit>;
 

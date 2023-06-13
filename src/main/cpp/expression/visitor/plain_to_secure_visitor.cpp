@@ -10,6 +10,10 @@ void PlainToSecureVisitor::visit(InputReference<bool> & node) {
     root_ = new InputReference<emp::Bit>(node.read_idx_, node.output_schema_);
 }
 
+void PlainToSecureVisitor::visit(PackedInputReference<bool> & node) {
+    root_ = new PackedInputReference<emp::Bit>(node.read_idx_, node.output_schema_);
+}
+
 void PlainToSecureVisitor::visit(LiteralNode<bool> & node) {
     root_ =  node.toSecure();
 }

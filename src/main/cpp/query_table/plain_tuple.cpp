@@ -25,19 +25,8 @@ QueryTuple<bool>::QueryTuple(QuerySchema *query_schema, const int8_t *table_data
 }
 
 
-PlainField QueryTuple<bool>::getField(const int &ordinal)  {
-    size_t field_offset = schema_->getFieldOffset(ordinal) / 8;
-    QueryFieldDesc field_desc = schema_->getField(ordinal);
-
-    return Field<bool>::deserialize(field_desc, fields_ + field_offset);
-}
 
 
-const PlainField QueryTuple<bool>::getField(const int &ordinal) const {
-    size_t field_offset = schema_->getFieldOffset(ordinal) / 8;
-    QueryFieldDesc field_desc = schema_->getField(ordinal);
-    return Field<bool>::deserialize(field_desc, fields_ + field_offset);
-}
 
 
 void QueryTuple<bool>::setField(const int &idx, const PlainField &f) {
