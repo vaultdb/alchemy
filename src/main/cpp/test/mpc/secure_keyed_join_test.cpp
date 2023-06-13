@@ -66,16 +66,19 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    // should use 9/32 bits
     GenericExpression<emp::Bit> *predicate = (GenericExpression<Bit> *) FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
                                                                                       customer_input, 4);
 
 
     KeyedJoin join(orders_input, customer_input, predicate);
     PlainTable *observed = join.run()->reveal();
-    DataUtilities::removeDummies(observed);
+
 
 
     expected->setSortOrder(observed->getSortOrder());
+    std::cout << "Operator tree: \n" << join.printTree() << '\n';
+
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
@@ -108,16 +111,18 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders_no_bit_packing) {
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
+    // uses 11/32 bits
     GenericExpression<emp::Bit> *predicate = (GenericExpression<Bit> *) FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
                                                                                                                        customer_input, 4);
 
 
     KeyedJoin join(orders_input, customer_input, predicate);
     PlainTable *observed = join.run()->reveal();
-    DataUtilities::removeDummies(observed);
 
 
     expected->setSortOrder(observed->getSortOrder());
+
+    std::cout << "Operator tree: \n" << join.printTree() << '\n';
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
@@ -160,7 +165,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
     observed = observed_sort.run();
 
     expected->setSortOrder(sort_def);
-
+    std::cout << "Operator tree: \n" << join.printTree() << '\n';
     ASSERT_EQ(*expected, *observed);
     delete expected;
    // delete observed; - covered by sort
@@ -203,6 +208,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_no_bit_packing) {
 
     expected->setSortOrder(sort_def);
 
+    std::cout << "Operator tree: \n" << join.printTree() << '\n';
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
@@ -254,6 +260,8 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
     DataUtilities::removeDummies(observed);
     expected->setSortOrder(observed->getSortOrder());
 
+    std::cout << "Operator tree: \n" << col_join->printTree() << '\n';
+
     ASSERT_EQ(*expected, *observed);
     delete col_join;
     delete expected;
@@ -304,6 +312,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer_no_bit_packing
     PlainTable *observed = col_join->run()->reveal();
     DataUtilities::removeDummies(observed);
     expected->setSortOrder(observed->getSortOrder());
+    std::cout << "Operator tree: \n" << col_join->printTree() << '\n';
 
     ASSERT_EQ(*expected, *observed);
     delete col_join;
