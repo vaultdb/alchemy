@@ -257,7 +257,11 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
     PlainTable *observed = col_join->run()->reveal();
-    DataUtilities::removeDummies(observed);
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);
+    Sort<bool> observed_sort(observed, sort_def);
+    observed = observed_sort.run();
+
+
     expected->setSortOrder(observed->getSortOrder());
 
     std::cout << "Operator tree: \n" << col_join->printTree() << '\n';
@@ -310,7 +314,12 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer_no_bit_packing
 
 
     PlainTable *observed = col_join->run()->reveal();
-    DataUtilities::removeDummies(observed);
+
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);
+    Sort<bool> observed_sort(observed, sort_def);
+    observed = observed_sort.run();
+
+
     expected->setSortOrder(observed->getSortOrder());
     std::cout << "Operator tree: \n" << col_join->printTree() << '\n';
 
