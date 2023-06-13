@@ -155,13 +155,14 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 
 
     PlainTable *observed = join.run()->reveal();
-    DataUtilities::removeDummies(observed);
+    Sort<bool> plain_sort(observed, SortDefinition{ColumnSort(0, SortDirection::ASCENDING) });
+    observed = plain_sort.run();
 
 
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
-    delete observed;
+   // delete observed;
 
 }
 
