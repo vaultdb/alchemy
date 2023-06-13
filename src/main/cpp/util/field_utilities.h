@@ -115,7 +115,7 @@ namespace vaultdb {
             ExpressionNode<B> *equality_node = new EqualNode<B>(lhs_input, rhs_input);
 
             ToPackedExpressionVisitor pack_it(equality_node);
-            ExpressionNode<Bit> *packed_predicate = pack_it.getRoot();
+            ExpressionNode<B> *packed_predicate = pack_it.getRoot();
 
             GenericExpression<B> *g =  new GenericExpression<B>(packed_predicate, "predicate",
                                                                 std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
