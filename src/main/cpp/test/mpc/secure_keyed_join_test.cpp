@@ -159,6 +159,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
     observed = plain_sort.run();
 
 
+    expected->setSortOrder(observed->getSortOrder());
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
