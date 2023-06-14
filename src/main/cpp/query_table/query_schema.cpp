@@ -4,19 +4,6 @@
 using namespace vaultdb;
 
 
-
-
-
-
-
-QuerySchema::QuerySchema(std::shared_ptr<QuerySchema>  &s) {
-
-  for (size_t i = 0; i < s->getFieldCount(); i++) {
-      fields_[i] = s->getField(i);
-  }
-  initializeFieldOffsets();
-}
-
 // relies on initializeFieldOffsets()
 size_t QuerySchema::size() const {
     return tuple_size_;
@@ -38,8 +25,7 @@ std::ostream &vaultdb::operator<<(std::ostream &os, const QuerySchema &schema) {
 
 QuerySchema &QuerySchema::operator=(const QuerySchema &other) {
 
-    fields_.clear();
-    offsets_.clear();
+   reset();
 
     bool valid_fields = true;
 
@@ -127,11 +113,10 @@ void QuerySchema::initializeFieldOffsets()  {
         running_offset += fd.size();
 
     }
-
     // dummy tag at end
     offsets_[-1] = running_offset;
 
-    QueryFieldDesc dummy_tag(-1, fields_[0].getTableName(), "dummy_tag",
+     QueryFieldDesc dummy_tag(-1, fields_[0].getTableName(), "dummy_tag",
                    isSecure() ?
                    FieldType::SECURE_BOOL :
                    FieldType::BOOL, 0);
@@ -144,6 +129,41 @@ void QuerySchema::initializeFieldOffsets()  {
 }
 
 
+QuerySchema QuerySchema::concatenate(const QuerySchema & lhs, const QuerySchema & rhs, const bool &append_bool) {
+    uint32_t output_cols = lhs.getFieldCount() + rhs.getFieldCount() + append_bool;
+    QuerySchema result;
+    uint32_t cursor = lhs.getFieldCount();
+
+    for(int i = 0; i < lhs.getFieldCount(); ++i) {
+        QueryFieldDesc src_field = lhs.getField(i);
+        QueryFieldDesc dst_field(src_field, i);
+
+        size_t src_string_len = src_field.getStringLength();
+        dst_field.setStringLength(src_string_len);
+        result.putField(dst_field);
+    }
+
+
+    for(int i = 0; i < rhs.getFieldCount(); ++i) {
+        QueryFieldDesc src_field = rhs.getField(i);
+        QueryFieldDesc dst_field(src_field, cursor);
+
+        size_t src_string_len = src_field.getStringLength();
+        dst_field.setStringLength(src_string_len);
+        result.putField(dst_field);
+        ++cursor;
+    }
+
+    // bool denotes whether table comes from primary key side (0) or foreign key side (1)
+    if(append_bool) {
+        FieldType field_type = (!result.isSecure()) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+        QueryFieldDesc bool_field(output_cols-1, "table_id", "", field_type, 0);
+        result.putField(bool_field);
+    }
+    result.initializeFieldOffsets();
+    return result;
+
+}
 
 
 

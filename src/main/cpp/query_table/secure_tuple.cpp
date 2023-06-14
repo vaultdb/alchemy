@@ -12,17 +12,11 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const SecureTuple &aTuple
 
 }
 
-QueryTuple<emp::Bit>::QueryTuple(std::shared_ptr<QuerySchema> &query_schema, emp::Bit *src) : fields_(src), query_schema_(query_schema) {
-    assert(fields_ != nullptr);
 
-}
 
-QueryTuple<emp::Bit>::QueryTuple(std::shared_ptr<QuerySchema> &query_schema, int8_t *src) : fields_((emp::Bit *) src), query_schema_(query_schema) {
-    assert(fields_ != nullptr);
 
-}
 
-QueryTuple<emp::Bit>::QueryTuple(const std::shared_ptr<QuerySchema> &query_schema, const int8_t *src) :  query_schema_(query_schema) {
+QueryTuple<emp::Bit>::QueryTuple(QuerySchema *query_schema, const int8_t *src) : schema_(query_schema) {
     int8_t *tmp = const_cast<int8_t *>(src);
     fields_ = (emp::Bit *) tmp;
     assert(fields_ != nullptr);
@@ -30,77 +24,47 @@ QueryTuple<emp::Bit>::QueryTuple(const std::shared_ptr<QuerySchema> &query_schem
 }
 
 
-SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  {
-    size_t field_offset = query_schema_->getFieldOffset(ordinal);
-    const emp::Bit *read_ptr = fields_ + field_offset;
-
-    return Field<emp::Bit>::deserialize( query_schema_->getField(ordinal),
-                                         (int8_t *) read_ptr);
-}
-
-const SecureField QueryTuple<emp::Bit>::getField(const int &ordinal)  const {
-    size_t field_offset = query_schema_->getFieldOffset(ordinal);
-    const emp::Bit *read_ptr = fields_ + field_offset;
-//    std::cout << "Getting field " << ordinal << " from offset " << field_offset << std::endl;
-    QueryFieldDesc fieldDesc = query_schema_->getField(ordinal);
-    return Field<emp::Bit>::deserialize(query_schema_->getField(ordinal),
-                                        (int8_t *)  read_ptr);
-
-}
-
-
-
-void QueryTuple<emp::Bit>::setField(const int &idx, const SecureField &f) {
-    size_t field_offset = query_schema_->getFieldOffset(idx);
-    int8_t *write_pos = (int8_t *) (fields_ + field_offset);
-
-    f.serialize(write_pos, query_schema_->getField(idx));
-
-}
-
-
-void QueryTuple<emp::Bit>::setDummyTag(const Bit &d) {
-    const emp::Bit *dst = fields_ + query_schema_->getFieldOffset(-1);
-    std::memcpy((int8_t *) dst, (int8_t *) &(d.bit), TypeUtilities::getEmpBitSize());
-}
 
 
 QueryTuple<bool>
-QueryTuple<emp::Bit>::reveal(const int &empParty, std::shared_ptr<QuerySchema> & dst_schema, int8_t *dst) const {
+QueryTuple<emp::Bit>::reveal(const int &party, QuerySchema *dst_schema, int8_t *dst) const {
     QueryTuple<bool> dst_tuple(dst_schema, dst);
 
     emp::Bit dummy_tag = getDummyTag();
-    bool plain_dummy_tag = dummy_tag.reveal(empParty);
+    bool plain_dummy_tag = dummy_tag.reveal(party);
     dst_tuple.setDummyTag(plain_dummy_tag);
     if(plain_dummy_tag) // reveal nothing else
         return dst_tuple;
-	
+
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
-        PlainField revealed = src.reveal(empParty);
+        PlainField revealed = src.reveal(party);
         dst_tuple.setField(i, revealed);
     }
 
-    
+
 
     return dst_tuple;
 
 }
 
 // self-managed tuple
-PlainTuple QueryTuple<emp::Bit>::reveal(const std::shared_ptr<QuerySchema> & dst_schema, const int &empParty) const {
+PlainTuple QueryTuple<emp::Bit>::reveal(QuerySchema *dst_schema, const int &party) const {
     PlainTuple dst_tuple(dst_schema);
+
+    emp::Bit dummy_tag = getDummyTag();
+    bool plain_dummy_tag = dummy_tag.reveal(party);
+    dst_tuple.setDummyTag(plain_dummy_tag);
+
+    if(plain_dummy_tag) // reveal nothing else
+        return dst_tuple;
 
 
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);
-        PlainField revealed = src.reveal(empParty);
+        PlainField revealed = src.reveal(party);
         dst_tuple.setField(i, revealed);
     }
-
-    emp::Bit dummy_tag = getDummyTag();
-    bool plain_dummy_tag = dummy_tag.reveal(empParty);
-    dst_tuple.setDummyTag(plain_dummy_tag);
 
     return dst_tuple;
 
@@ -125,8 +89,7 @@ void QueryTuple<emp::Bit>::compareSwap(const Bit &cmp, SecureTuple  & lhs, Secur
 
 }
 
-SecureTuple QueryTuple<emp::Bit>::deserialize(emp::Bit *dst_tuple_bits, std::shared_ptr<QuerySchema> &schema,
-                                              const emp::Bit *src_tuple_bits) {
+SecureTuple QueryTuple<emp::Bit>::deserialize(emp::Bit *dst_tuple_bits, QuerySchema *schema, const emp::Bit *src_tuple_bits) {
     SecureTuple result(schema, dst_tuple_bits);
     size_t tuple_size = schema->size() * TypeUtilities::getEmpBitSize();
     memcpy(dst_tuple_bits, src_tuple_bits, tuple_size);
@@ -134,27 +97,10 @@ SecureTuple QueryTuple<emp::Bit>::deserialize(emp::Bit *dst_tuple_bits, std::sha
 
 }
 
-std::shared_ptr<QuerySchema> QueryTuple<emp::Bit>::getSchema() const {
-    return query_schema_;
-}
 
-emp::Bit QueryTuple<emp::Bit>::getDummyTag() const {
-    const emp::Bit *src = fields_ + query_schema_->getFieldOffset(-1);
-    return emp::Bit(*((emp::Bit *) src));
-}
 
-void QueryTuple<emp::Bit>::setSchema(std::shared_ptr<QuerySchema> q) {
-    query_schema_ = q;
-}
 
-void QueryTuple<emp::Bit>::setDummyTag(const Field<emp::Bit> &d) {
-    setDummyTag(d.getValue<emp::Bit>());
-}
 
-void QueryTuple<emp::Bit>::setDummyTag(const bool &b) {
-    emp::Bit bit(b);
-    setDummyTag(bit);
-}
 
 QueryTuple<emp::Bit> &QueryTuple<emp::Bit>::operator=(const SecureTuple &other) {
     assert(*this->getSchema() == *(other.getSchema()));
@@ -164,19 +110,13 @@ QueryTuple<emp::Bit> &QueryTuple<emp::Bit>::operator=(const SecureTuple &other) 
     emp::Bit *dst = this->fields_;
     emp::Bit *src = other.fields_;
 
-    memcpy(dst, src, query_schema_->size() * TypeUtilities::getEmpBitSize());
+    memcpy(dst, src, schema_->size() * TypeUtilities::getEmpBitSize());
 
     return *this;
 
 }
 
-size_t QueryTuple<emp::Bit>::getFieldCount() const {
-    return query_schema_->getFieldCount();
-}
 
-void QueryTuple<emp::Bit>::serialize(int8_t *dst) {
-  memcpy((emp::Bit *) dst, fields_, query_schema_->size());
-}
 
 string QueryTuple<emp::Bit>::toString(const bool &showDummies) const {
     std::stringstream sstream;
@@ -196,19 +136,12 @@ string QueryTuple<emp::Bit>::toString(const bool &showDummies) const {
     return sstream.str();
 }
 
-SecureField QueryTuple<emp::Bit>::operator[](const int32_t &idx)  {
-    return getField(idx);
-}
-
-const SecureField QueryTuple<emp::Bit>::operator[](const int32_t &idx)  const {
-    return getField(idx);
-}
-
 
 emp::Bit QueryTuple<emp::Bit>::operator==(const SecureTuple &other) const {
     emp::Bit matched(true);
     assert(*this->getSchema() == *other.getSchema() );
-    size_t bit_count = query_schema_->size();
+
+    size_t bit_count = schema_->size();
     emp::Bit *lhs = this->fields_;
     emp::Bit *rhs = other.fields_;
 
@@ -222,12 +155,8 @@ emp::Bit QueryTuple<emp::Bit>::operator==(const SecureTuple &other) const {
 }
 
 
-emp::Bit QueryTuple<emp::Bit>::operator!=(const SecureTuple &other) const {
-    return !(*this == other);
-}
 
-
-QueryTuple<emp::Bit>::QueryTuple(const std::shared_ptr<QuerySchema> &schema) {
+QueryTuple<emp::Bit>::QueryTuple(QuerySchema *schema) {
     managed_data_ = new emp::Bit[schema->size()];
 
     fields_ = managed_data_;
@@ -235,24 +164,24 @@ QueryTuple<emp::Bit>::QueryTuple(const std::shared_ptr<QuerySchema> &schema) {
     // Warning: this will cause issues if used for mutable tuples
     // only doing shallow copy of schema!
     // formerly:
-    // query_schema_ = std::make_shared<QuerySchema>(schema);
+    // schema_ = std::make_shared<QuerySchema>(schema);
     // thus const'ing it above
-    query_schema_ = schema;
+    schema_ = schema;
 }
 
 QueryTuple<emp::Bit>::QueryTuple(const QueryTuple & src) {
-        query_schema_ = src.getSchema();
-        if(src.hasManagedStorage()) { // allocate storage for this copy
-            managed_data_ = new emp::Bit[query_schema_->size()];
-            fields_ = managed_data_;
+    schema_ = src.getSchema();
+    if(src.hasManagedStorage()) { // allocate storage for this copy
+        managed_data_ = new emp::Bit[schema_->size()];
+        fields_ = managed_data_;
 
-            emp::Bit *d = this->fields_;
-            emp::Bit *s = src.fields_;
-            // initialize vals
-            memcpy(d, s, query_schema_->size() * TypeUtilities::getEmpBitSize());
-        }
-        else
-            fields_ = src.fields_; // point to the original fields
+        emp::Bit *d = this->fields_;
+        emp::Bit *s = src.fields_;
+        // initialize vals
+        memcpy(d, s, schema_->size() * TypeUtilities::getEmpBitSize());
+    }
+    else
+        fields_ = src.fields_; // point to the original fields
 
 }
 
@@ -267,20 +196,20 @@ void QueryTuple<emp::Bit>::writeSubset(const SecureTuple &src_tuple, const Secur
         write_size += src_tuple.getSchema()->getField(i).size();
     }
 
-    assert(dst_field_offset + write_size <= dst_tuple.query_schema_->size());
+    assert(dst_field_offset + write_size <= dst_tuple.schema_->size());
 
     emp::Bit *read_pos = src_tuple.fields_ + src_field_offset;
     emp::Bit *write_pos = dst_tuple.fields_ + dst_field_offset;
 
-    memcpy(write_pos, read_pos, write_size * sizeof(emp::Bit));
+    memcpy(write_pos, read_pos, write_size * TypeUtilities::getEmpBitSize());
 
 }
 
 SecureTuple QueryTuple<emp::Bit>::If(const Bit &cond, const SecureTuple &lhs, const SecureTuple &rhs) {
-    assert(*lhs.query_schema_ == *rhs.query_schema_);
+    assert(*lhs.schema_ == *rhs.schema_);
     SecureTuple output(lhs.getSchema());
 
-    for(int i = 0; i < output.query_schema_->getFieldCount(); ++i) {
+    for(int i = 0; i < output.schema_->getFieldCount(); ++i) {
         output[i] = SecureField::If(cond, lhs[i], rhs[i]);
     }
 
@@ -288,7 +217,6 @@ SecureTuple QueryTuple<emp::Bit>::If(const Bit &cond, const SecureTuple &lhs, co
     output.setDummyTag(dummy_tag);
     return output;
 }
-
 
 
 

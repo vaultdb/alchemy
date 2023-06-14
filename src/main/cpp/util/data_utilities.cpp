@@ -1,10 +1,11 @@
-#include <cstddef>
 #include <assert.h>
 #include <data/psql_data_provider.h>
 #include <sys/stat.h>
 #include <operators/union.h>
 #include "data_utilities.h"
 #include <algorithm>
+#include <query_table/query_table.h>
+
 
 
 using namespace vaultdb;
@@ -23,15 +24,15 @@ unsigned char DataUtilities::reverse(unsigned char b) {
 
 
 // in some cases, like with LIMIT, we can't just run over tpch_unioned
-std::shared_ptr<PlainTable>
-DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
-                                 const bool &hasDummyTag, const size_t & limit) {
+PlainTable *
+DataUtilities::getUnionedResults(const std::string &alice_db, const std::string &bob_db, const std::string &sql,  const StorageModel & model,
+                                 const bool &has_dummy_tag, const size_t & limit) {
 
     PsqlDataProvider dataProvider;
 
-    std::shared_ptr<PlainTable> alice = dataProvider.getQueryTable(aliceDb, sql,
-                                                                   hasDummyTag); // dummyTag true not yet implemented
-    std::shared_ptr<PlainTable> bob = dataProvider.getQueryTable(bobDb, sql, hasDummyTag);
+    PlainTable *alice = dataProvider.getQueryTable(alice_db, sql, model,
+                                                   has_dummy_tag); // dummyTag true not yet implemented
+    PlainTable *bob = dataProvider.getQueryTable(bob_db, sql, model, has_dummy_tag);
 
     if(limit > 0) {
         alice->resize(limit);
@@ -39,14 +40,19 @@ DataUtilities::getUnionedResults(const std::string &aliceDb, const std::string &
     }
 
     Union<bool> result(alice, bob);
-    return result.run();
+
+    // result will delete its output in destructor.  Need to clone!
+    PlainTable  *p = result.run();
+    return p->clone();
+
 }
 
 
 
- std::shared_ptr<PlainTable > DataUtilities::getQueryResults(const std::string & dbName, const std::string & sql, const bool & hasDummyTag) {
+PlainTable *DataUtilities::getQueryResults(const std::string &dbName, const std::string &sql, const StorageModel &model,
+                                           const bool &has_dummy_tag) {
     PsqlDataProvider dataProvider;
-    return dataProvider.getQueryTable(dbName, sql, hasDummyTag);
+    return dataProvider.getQueryTable(dbName, sql, model, has_dummy_tag);
 }
 
 std::string DataUtilities::queryDatetime(const string &colName) {
@@ -111,32 +117,33 @@ SortDefinition DataUtilities::getDefaultSortDefinition(const uint32_t &colCount)
 
     }
 
-std::shared_ptr<PlainTable > DataUtilities::removeDummies(const std::shared_ptr<PlainTable> &input) {
+void DataUtilities::removeDummies(PlainTable *table) {
     // only works for plaintext tables
-    assert(!input->isEncrypted());
-    int outputTupleCount = input->getTrueTupleCount();
+    int out_tuple_cnt = table->getTrueTupleCount();
+    if(out_tuple_cnt == table->getTupleCount()) return;
 
-    int writeCursor = 0;
-    std::shared_ptr<PlainTable > output(new PlainTable(outputTupleCount, *input->getSchema(), input->getSortOrder()));
+    int write_cursor = 0;
 
-    for(size_t i = 0; i < input->getTupleCount(); ++i) {
-        PlainTuple tuple = input->getTuple(i);
-        if(!tuple.getDummyTag()) {
-            output->putTuple(writeCursor, tuple);
-            ++writeCursor;
+    for(int i = 0; i < table->getTupleCount(); ++i) {
+        if(!table->getDummyTag(i)) {
+            table->cloneRow(write_cursor, 0, table, i );
+            table->setDummyTag(write_cursor, false);
+            ++write_cursor;
         }
+        if(write_cursor == out_tuple_cnt) break;
     }
 
-    return output;
+    table->resize(out_tuple_cnt);
+
 }
 
-std::shared_ptr<PlainTable >
+PlainTable *
 DataUtilities::getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
-                                  const int &sortColCount) {
+                                  const int &sortColCount, const StorageModel &model) {
 
-    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(dbName, sql, hasDummyTag);
-    SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
-    expected->setSortOrder(expectedSortOrder);
+    PlainTable *expected = DataUtilities::getQueryResults(dbName, sql, model, hasDummyTag);
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(sortColCount);
+    expected->setSortOrder(expected_sort);
     return expected;
 }
 
@@ -186,32 +193,36 @@ std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int
 
 }
 
-size_t DataUtilities::get_tuple_cnt(const string &db_name, const string &sql, bool has_dummy_tag) {
+size_t DataUtilities::getTupleCount(const string &db_name, const string &sql, bool has_dummy_tag) {
     if(has_dummy_tag)  { // run it and count
-        shared_ptr<PlainTable> res = DataUtilities::getQueryResults(db_name, sql, true);
-        return res->getTrueTupleCount();
+        PlainTable *res = DataUtilities::getQueryResults(db_name, sql, StorageModel::ROW_STORE, true);
+        int cnt =  res->getTrueTupleCount();
+        delete res;
+        return cnt;
     }
 
     string query = "SELECT COUNT(*) FROM (" + sql + ") q";
-    shared_ptr<PlainTable> res = DataUtilities::getQueryResults(db_name, query, false);
-    return res->getTuple(0).getField(0).getValue<int64_t>();
+    PlainTable *res = DataUtilities::getQueryResults(db_name, query, StorageModel::ROW_STORE, false);
+    int cnt = res->getField(0,0).getValue<int64_t>();
+    delete res;
+    return cnt;
 
 }
 
 vector<string> DataUtilities::readTextFile(const string &filename) {
     std::vector<std::string> lines;
-    std::ifstream inFile(filename);
+    std::ifstream input(filename);
     std::string line;
 
 
-    if(!inFile)
+    if(!input)
     {
         string cwd = Utilities::getCurrentWorkingDirectory();
         throw std::invalid_argument("Unable to open file: " + filename + " from " + cwd);
     }
 
 
-    while (std::getline(inFile, line))
+    while (std::getline(input, line))
     {
         lines.push_back(line);
     }

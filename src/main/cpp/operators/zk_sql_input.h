@@ -19,10 +19,10 @@ namespace  vaultdb {
         string input_query_;
         string db_name_;
         bool has_dummy_tag_;
-
+        const StorageModel & storage_model_ = StorageModel::ROW_STORE;
 
     protected:
-        shared_ptr<SecureTable> runSelf() override;
+        SecureTable *runSelf() override;
 
         string getOperatorType() const override;
 
@@ -30,15 +30,21 @@ namespace  vaultdb {
 
 
     public:
-        ZkSqlInput(string db, string sql, bool dummyTag, emp::BoolIO<NetIO> *netio[], const size_t & thread_count, int aSrcParty, const size_t & input_tuple_cnt = 0); // truncate tuples with last term
+        ZkSqlInput(string db, string sql, bool dummy_tag, BoolIO<NetIO> *netio[], const size_t &thread_count,
+                   int party, const StorageModel &model, const size_t &input_tuple_cnt = 0); // truncate tuples with last term
 
-        ZkSqlInput(const string &db, const string & sql, const bool &dummyTag, const SortDefinition &sortDefinition, emp::BoolIO<NetIO> *netio[], const size_t & thread_count, const int &party, const size_t & input_tuple_cnt = 0);
-         ~ZkSqlInput() = default;
+        ZkSqlInput(const string &db, const string & sql, const bool &dummy_tag, const SortDefinition &sortDefinition, emp::BoolIO<NetIO> *netio[], const size_t & thread_count, const int &party, const StorageModel &model, const size_t & input_tuple_cnt = 0);
+         ~ZkSqlInput() {
+             if(plain_input_) {
+                 delete plain_input_;
+                 plain_input_ = nullptr;
+             }
+         };
 
 
     private:
         void runQuery();
-        shared_ptr<PlainTable> plain_input_;
+        PlainTable *plain_input_;
         size_t input_tuple_limit_;
         size_t thread_count_;
     };

@@ -1,28 +1,27 @@
 #include "psql_data_provider.h"
 #include "pq_oid_defs.h"
-#include <time.h>
 #include <typeinfo>
 
-#include <chrono>
 #include <query_table/plain_tuple.h>
 #include "query_table/field/field.h"
 #include "boost/date_time/gregorian/gregorian.hpp"
+#include "query_table/table_factory.h"
 
 //typedef std::chrono::steady_clock::time_point time_point;
 
 
-// if hasDummyTag == true, then last column needs to be a boolean that denotes whether the tuple was selected
+// if has_dummy_tag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
-std::shared_ptr<PlainTable>
-PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bool hasDummyTag) {
+PlainTable *
+PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, const StorageModel &model, bool has_dummy_tag) {
 
-    dbName = dbname;
-    pqxx::result pqxxResult;
-    pqxx::connection dbConn("user=vaultdb dbname=" + dbname);
+    db_name_ = db_name;
+    pqxx::result res;
+    pqxx::connection conn("user=vaultdb dbname=" + db_name_);
 
     try {
-        pqxx::work txn(dbConn);
-        pqxxResult = txn.exec(query_string);
+        pqxx::work txn(conn);
+        res = txn.exec(sql);
         txn.commit();
 
 
@@ -33,97 +32,97 @@ PsqlDataProvider::getQueryTable(std::string dbname, std::string query_string, bo
     }
 
 
-    pqxx::row firstRow = *(pqxxResult.begin());
-    int colCount = firstRow.size();
-    if(hasDummyTag)
-        --colCount;
+    pqxx::row first_row = *(res.begin());
+    int col_cnt = first_row.size();
+    if(has_dummy_tag)
+        --col_cnt;
 
 
-    size_t rowCount = pqxxResult.size();
+    size_t row_cnt = res.size();
 
-    tableSchema = getSchema(pqxxResult, hasDummyTag);
-    std::shared_ptr<PlainTable > dst_table = std::make_shared<PlainTable>(rowCount, *tableSchema);
+    schema_ = getSchema(res, has_dummy_tag);
+    PlainTable *dst_table = TableFactory<bool>::getTable(row_cnt, schema_, model);
 
 
     int counter = 0;
-    for(result::const_iterator resultPos = pqxxResult.begin(); resultPos != pqxxResult.end(); ++resultPos) {
-        getTuple(*resultPos, hasDummyTag, *dst_table, counter);
+    for(result::const_iterator pos = res.begin(); pos != res.end(); ++pos) {
+        getTuple(*pos, has_dummy_tag, *dst_table, counter);
         ++counter;
     }
 
-    dbConn.close();
+    conn.close();
 
     return dst_table;
 }
 
-std::unique_ptr<QuerySchema> PsqlDataProvider::getSchema(pqxx::result input, bool hasDummyTag) {
-    pqxx::row firstRow = *(input.begin());
-    size_t colCount = firstRow.size();
-    if(hasDummyTag)
-        --colCount; // don't include dummy tag as a separate column
+QuerySchema PsqlDataProvider::getSchema(pqxx::result input, bool has_dummy_tag) {
+    pqxx::row first_row = *(input.begin());
+    size_t col_cnt = first_row.size();
+    if(has_dummy_tag)
+        --col_cnt; // don't include dummy tag as a separate column
 
 
-    std::unique_ptr<QuerySchema> result(new QuerySchema());
+    QuerySchema result;
 
-    for(uint32_t i = 0; i < colCount; ++i) {
-       string colName =  input.column_name(i);
+    for(uint32_t i = 0; i < col_cnt; ++i) {
+       string col_name =  input.column_name(i);
        FieldType type = getFieldTypeFromOid(input.column_type(i));
-        int tableId = input.column_table(i);
+        int table_id = input.column_table(i);
 
-        srcTable = getTableName(tableId); // once per col in case of joins
+        src_table_ = getTableName(table_id); // once per col in case of joins
 
-        size_t stringLength = (type == FieldType::STRING) ? getVarCharLength(srcTable, colName) : 0;
-        QueryFieldDesc fieldDesc(i, colName, srcTable, type, stringLength);
+        size_t len = (type == FieldType::STRING) ? getVarCharLength(src_table_, col_name) : 0;
+        QueryFieldDesc fieldDesc(i, col_name, src_table_, type, len);
 
-        result->putField(fieldDesc);
+        result.putField(fieldDesc);
     }
 
-   if(hasDummyTag) {
-        pqxx::oid dummyTagOid = input.column_type((int) colCount);
-        FieldType dummyType = getFieldTypeFromOid(dummyTagOid);
-        assert(dummyType == FieldType::BOOL); // check that dummy tag is a boolean
+   if(has_dummy_tag) {
+        pqxx::oid oid = input.column_type((int) col_cnt);
+        FieldType dummy_type = getFieldTypeFromOid(oid);
+        assert(dummy_type == FieldType::BOOL); // check that dummy tag is a boolean
     }
 
-    result->initializeFieldOffsets();
+    result.initializeFieldOffsets();
     return result;
 }
 
 // queries the psql data definition to find the max length of each string in our column definitions
-size_t PsqlDataProvider::getVarCharLength(std::string tableName, std::string columnName) const {
+size_t PsqlDataProvider::getVarCharLength(std::string table_name, std::string col_name) const {
     // query the schema to get the column width
     //  SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name='<table>' AND column_name='<col name>';
-    if(!tableName.empty()) {
-        std::string queryCharWidth(
+    if(!table_name.empty()) {
+        std::string sql_str_width(
                 "SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema=\'public\'  AND table_name=\'");
-        queryCharWidth += tableName;
-        queryCharWidth += "\' AND column_name=\'";
-        queryCharWidth += columnName;
-        queryCharWidth += "\'";
+        sql_str_width += table_name;
+        sql_str_width += "\' AND column_name=\'";
+        sql_str_width += col_name;
+        sql_str_width += "\'";
 
-        pqxx::result pqxxResult = query("user=vaultdb dbname=" + dbName, queryCharWidth);
+        pqxx::result res = query("user=vaultdb dbname=" + db_name_, sql_str_width);
         // read single row, single val
         // ambiguity with attribute resolution not yet implemented
-        assert(pqxxResult.size() == 1);
-        row aRow = pqxxResult[0];
-        field aField = aRow.at(0);
+        assert(res.size() == 1);
+        row a_row = res[0];
+        field a_field = a_row.at(0);
 
-        return aField.as<size_t>();
+        return a_field.as<size_t>();
     }
 
     // otherwise try selecting from public schema
     // if only one column exists with this name, use its stats
-    std::string queryCharWidth(
+    std::string sql_str_width(
             "SELECT character_maximum_length FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema=\'public\'  AND column_name=\'");
-    queryCharWidth += columnName;
-    queryCharWidth += "\'";
+    sql_str_width += col_name;
+    sql_str_width += "\'";
 
-    pqxx::result pqxxResult = query("user=vaultdb dbname=" + dbName, queryCharWidth);
-    assert(pqxxResult.size() == 1);
+    pqxx::result res = query("user=vaultdb dbname=" + db_name_, sql_str_width);
+    assert(res.size() == 1);
 
-    row aRow = pqxxResult[0];
-    field aField = aRow.at(0);
+    row a_row = res[0];
+    field a_field = a_row.at(0);
 
-    return aField.as<size_t>();
+    return a_field.as<size_t>();
 
 }
 
@@ -131,16 +130,16 @@ size_t PsqlDataProvider::getVarCharLength(std::string tableName, std::string col
 
 string PsqlDataProvider::getTableName(int oid) {
     std::string queryTableName = "SELECT relname FROM pg_class WHERE oid=" + std::to_string(oid);
-    pqxx::result pqxxResult = query("user=vaultdb dbname=" + dbName, queryTableName);
+    pqxx::result res = query("user=vaultdb dbname=" + db_name_, queryTableName);
     // read single row, single val
 
-    if(pqxxResult.empty())
+    if(res.empty())
         return "";
 
-    row aRow = pqxxResult[0];
-    field aField = aRow.at(0);
+    row a_row = res[0];
+    field a_field = a_row.at(0);
 
-    return aField.as<string>();
+    return a_field.as<string>();
 
 }
 
@@ -153,42 +152,41 @@ PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_ta
         }
 
 
-        PlainTuple dst = dst_table.getTuple(idx); // writes in place
         for (int i=0; i < col_count; i++) {
             const pqxx::field src = row[i];
 
            PlainField  parsed = getField(src);
-            dst.setField(i, parsed);
+           dst_table.setField(idx, i, parsed);
         }
 
         if(has_dummy_tag) {
 
                 PlainField parsed = getField(row[col_count]); // get the last col
-                dst.setDummyTag(parsed);
+                dst_table.setDummyTag(idx, parsed.getValue<bool>());
         }
         else {
-            dst.setDummyTag(false); // default, not a dummy
+            dst_table.setDummyTag(idx, false); // default, not a dummy
         }
 
     }
 
 
     PlainField PsqlDataProvider::getField(pqxx::field src) {
+        if(src.is_null())
+            throw std::invalid_argument("Null field, aborting!"); // Null handling NYI
 
         int ordinal = src.num();
         pqxx::oid oid = src.type();
-        FieldType colType = getFieldTypeFromOid(oid);
+        FieldType col_type = getFieldTypeFromOid(oid);
 
-        switch (colType) {
+        switch (col_type) {
             case FieldType::INT:
             {
-                int32_t intVal = src.as<int32_t>();
-                return  PlainField(colType, intVal);
+                return  PlainField(col_type, src.as<int32_t>());
             }
             case FieldType::LONG:
             {
-                int64_t intVal = src.as<int64_t>();
-                return  PlainField(colType, intVal);
+                return  PlainField(col_type, src.as<int64_t>());
             }
 
            case FieldType::DATE:
@@ -196,33 +194,31 @@ PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_ta
 	      
 	      std::string date_str = src.as<std::string>(); // YYYY-MM-DD
 	      boost::gregorian::date date(boost::gregorian::from_string(date_str));
-	      boost::gregorian::date epochStart(1970, 1, 1);
-              int64_t epoch = (date - epochStart).days() * 24 * 3600;
+	      boost::gregorian::date epoch_start(1970, 1, 1);
+              int64_t epoch = (date - epoch_start).days() * 24 * 3600;
 	    
                 return  PlainField(FieldType::LONG, epoch);
 
             }
             case FieldType::BOOL:
             {
-                bool boolVal = src.as<bool>();
-                return  PlainField(colType, boolVal);
+                return  PlainField(col_type, src.as<bool>());
             }
             case FieldType::FLOAT:
             {
-                float floatVal = src.as<float>();
-                return  PlainField(colType, floatVal);
+                return  PlainField(col_type, src.as<float>());
             }
 
             case FieldType::STRING:
             {
-                string stringVal = src.as<string>();
-                size_t strLength = tableSchema->getField(ordinal).getStringLength();
-                while(stringVal.size() < strLength) {
-                    stringVal += " ";
+                string str = src.as<string>();
+                size_t len = schema_.getField(ordinal).getStringLength();
+                while(str.size() < len) {
+                    str += " ";
                 }
 
 
-                return  PlainField(colType, stringVal, strLength);
+                return  PlainField(col_type, str, len);
             }
             default:
                 throw std::invalid_argument("Unsupported column type " + std::to_string(oid));
@@ -231,13 +227,13 @@ PsqlDataProvider::getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_ta
 
     }
 
-pqxx::result PsqlDataProvider::query(const string &dbname, const string &query_string) const {
+pqxx::result PsqlDataProvider::query(const string &db_name, const string &sql) const {
     pqxx::result res;
     try {
-        pqxx::connection c(dbname);
+        pqxx::connection c(db_name);
         pqxx::work txn(c);
 
-        res = txn.exec(query_string);
+        res = txn.exec(sql);
         txn.commit();
 
 

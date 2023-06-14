@@ -17,10 +17,11 @@ namespace  vaultdb {
         string input_query_;
         string db_name_;
         bool has_dummy_tag_;
+        StorageModel storage_model_;
 
 
     protected:
-        shared_ptr<SecureTable> runSelf() override;
+        SecureTable *runSelf() override;
 
         string getOperatorType() const override;
 
@@ -28,15 +29,19 @@ namespace  vaultdb {
 
 
     public:
-        SecureSqlInput(string db, string sql, bool dummyTag, emp::NetIO *netio, int aSrcParty, const size_t & input_tuple_cnt = 0); // truncate tuples with last term
+        SecureSqlInput(string db, string sql, bool dummy_tag, const StorageModel & model, emp::NetIO *netio, int party, const size_t & input_tuple_cnt = 0); // truncate tuples with last term
 
-        SecureSqlInput(const string &db, const string & sql, const bool &dummyTag, const SortDefinition &sortDefinition, NetIO *netio, const int &party, const size_t & input_tuple_cnt = 0);
-         ~SecureSqlInput() = default;
+        SecureSqlInput(const string &db, const string & sql, const bool &dummy_tag, const StorageModel & model, const SortDefinition &sort_def, NetIO *netio, const int &party, const size_t & input_tuple_cnt = 0);
+         ~SecureSqlInput() {
+             if(plain_input_ != nullptr) {
+                 delete plain_input_;
+             }
+         }
 
 
     private:
         void runQuery();
-        shared_ptr<PlainTable> plain_input_;
+        PlainTable *plain_input_ = nullptr;
         size_t input_tuple_limit_;
     };
 

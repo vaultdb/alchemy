@@ -4,12 +4,13 @@
 #include <expression/expression_factory.h>
 #include <expression/visitor/type_validation_visitor.h>
 #include <parser/plan_parser.h>
+#include <expression/visitor/to_packed_expression_visitor.h>
 
 using namespace vaultdb;
 using namespace std;
 
 template<typename B>
-std::shared_ptr<Expression<B>> ExpressionParser<B>::parseJSONExpression(const string &json, const QuerySchema & input_schema) {
+Expression<B> * ExpressionParser<B>::parseJSONExpression(const std::string &json, const QuerySchema & input_schema) {
     stringstream ss;
     ss << json << endl;
     boost::property_tree::ptree pt;
@@ -22,53 +23,80 @@ std::shared_ptr<Expression<B>> ExpressionParser<B>::parseJSONExpression(const st
 //   "op": {
 // ...
 // handle "input" / raw value copies separately in parse_projection
+//template<typename B>
+//Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & input_schema) {
+//   ExpressionNode<B> *expression_root = parseHelper(tree, input_schema);
+//
+//   TypeValidationVisitor<B> visitor(expression_root, input_schema);
+//    expression_root->accept(&visitor);
+//
+//
+//    GenericExpression<B> *g =  new GenericExpression<B>(expression_root, input_schema);
+//
+//    delete expression_root;
+//    return g;
+//
+//}
+//
 template<typename B>
-shared_ptr<Expression<B>> ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & input_schema) {
-   shared_ptr<ExpressionNode<B> > expression_root = parseHelper(tree);
-   TypeValidationVisitor<B> visitor(expression_root, input_schema);
-    expression_root->accept(&visitor);
+Expression<B> * ExpressionParser<B>::parseExpression(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
+    ExpressionNode<B> *expression_root = parseHelper(tree, lhs, rhs);
 
-    return shared_ptr<Expression<B> >(new GenericExpression<B>(expression_root, input_schema));
-}
-
-template<typename B>
-BoolExpression<B> ExpressionParser<B>::parseBoolExpression(const ptree &tree, const QuerySchema &input_schema) {
-    shared_ptr<ExpressionNode<B> > expression_root = parseHelper(tree);
+    QuerySchema input_schema = QuerySchema::concatenate(lhs, rhs);
     TypeValidationVisitor<B> visitor(expression_root, input_schema);
     expression_root->accept(&visitor);
 
-    return BoolExpression<B>(expression_root);
+
+    ToPackedExpressionVisitor<B> pack_it(expression_root);
+    expression_root->accept(&pack_it);
+
+
+    GenericExpression<B> *g =  new GenericExpression<B>(pack_it.getRoot(), input_schema);
+
+    delete expression_root;
+
+
+    return g;
+
 }
 
-
 template<typename B>
-shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseHelper(const ptree &tree) {
+ExpressionNode<B> * ExpressionParser<B>::parseHelper(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
 
     if((tree.count("op") > 0 && tree.count("operands") > 0))
-       return parseSubExpression(tree);
+       return parseSubExpression(tree, lhs, rhs);
 
-    return parseInput(tree);
+    return parseInput(tree, lhs, rhs);
 
 }
 
 template<typename B>
-shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseSubExpression(const ptree &tree) {
+ExpressionNode<B> * ExpressionParser<B>::parseSubExpression(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
     ptree op = tree.get_child("op");
     ptree operands = tree.get_child("operands");
 
     string op_name = op.get_child("kind").template get_value<string>();
 
-    std::vector<shared_ptr<ExpressionNode<B> > > children;
+    std::vector<ExpressionNode<B> *> children;
 
     // iterate over operands, invoke helper on each one
     for (ptree::const_iterator it = operands.begin(); it != operands.end(); ++it) {
-        children.push_back(parseHelper(it->second));
+        ExpressionNode<B> *t = parseHelper(it->second, lhs, rhs);
+        children.push_back(t);
     }
-    return ExpressionFactory<B>::getExpressionNode(op_name, children);
+
+    ExpressionNode<B> *res = ExpressionFactory<B>::getExpressionNode(op_name, children);
+
+    for(ExpressionNode<B> *child : children) {
+        delete child;
+    }
+
+    return res;
+
 }
 
 template<typename B>
-shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree) {
+ExpressionNode<B> * ExpressionParser<B>::parseInput(const ptree &tree, const QuerySchema & lhs, const QuerySchema & rhs) {
     if(tree.count("literal")  > 0) {
         ptree literal = tree.get_child("literal");
         std::string type_str = tree.get_child("type").get_child("type").template get_value<std::string>();
@@ -79,7 +107,7 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
             Field<B> input_field = (std::is_same_v<B, bool>) ?
                                    Field<B>(FieldType::INT, Value((int32_t) literal_int))
                                                              :  Field<B>(FieldType::SECURE_INT, emp::Integer(32, literal_int));
-            return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
+            return new LiteralNode<B>(input_field);
         }
         else if(type_str == "LONG") {
             int64_t literal_int = literal.template get_value<int64_t>();
@@ -87,7 +115,7 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
             Field<B> input_field = (std::is_same_v<B, bool>) ?
                                    Field<B>(FieldType::LONG, Value((int64_t) literal_int))
                                                              :  Field<B>(FieldType::SECURE_LONG, emp::Integer(64, literal_int));
-            return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
+            return new LiteralNode<B>(input_field);
         }
         else if(type_str == "FLOAT" || type_str == "DECIMAL") {
             float_t literal_float = literal.template get_value<float_t>();
@@ -95,7 +123,7 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
                                    Field<B>(FieldType::FLOAT, Value(literal_float))
                                                              :  Field<B>(FieldType::SECURE_FLOAT, emp::Float(literal_float));
 
-            return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
+            return new LiteralNode<B>(input_field);
 
 
         }
@@ -108,11 +136,11 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
             if(std::is_same_v<B, emp::Bit>) {
                 SecureField encrypted_field = input_field.secret_share();
                 Integer encrypted_string = encrypted_field.template getValue<emp::Integer>();
-                return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(Field<B>(FieldType::SECURE_STRING, encrypted_string, length)));
+                return new LiteralNode<B>(Field<B>(FieldType::SECURE_STRING, encrypted_string, length));
 
             }
 
-            return shared_ptr<ExpressionNode<B> > (new LiteralNode<B>(input_field));
+            return new LiteralNode<B>(input_field);
 
         }
         throw std::invalid_argument("Parsing input of type " + type_str + " not yet implemented!");
@@ -128,7 +156,7 @@ shared_ptr<ExpressionNode<B>> ExpressionParser<B>::parseInput(const ptree &tree)
         throw std::invalid_argument("Expression " + expr + " is not a properly formed input");
     }
 
-    return shared_ptr<ExpressionNode<B> > (new InputReferenceNode<B>(src_ordinal));
+    return new InputReference<B>(src_ordinal, lhs, rhs);
 
 
 }

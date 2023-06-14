@@ -13,9 +13,12 @@
 
 #include <cstdint>
 #include "utilities.h"
-#include <query_table/query_table.h>
 
 namespace vaultdb {
+
+    template<typename B> class QueryTable;
+    typedef QueryTable<bool> PlainTable;
+
     class DataUtilities {
 
 
@@ -25,14 +28,16 @@ namespace vaultdb {
 
     public:
 
-        static std::shared_ptr<PlainTable>
-        getUnionedResults(const std::string &aliceDb, const std::string &bobDb, const std::string &sql,
-                          const bool &hasDummyTag, const size_t & limit = 0);
+        static PlainTable *
+        getUnionedResults(const std::string &alice_db, const std::string &bob_db, const std::string &sql, const StorageModel & model,
+                          const bool &has_dummy_tag, const size_t & limit = 0);
 
-        static std::shared_ptr<PlainTable >
-        getQueryResults(const string &dbName, const string &sql, const bool &hasDummyTag);
+        static PlainTable *
+        getQueryResults(const std::string &dbName, const std::string &sql, const StorageModel &model,
+                        const bool &hasDummyTag);
 
-        static std::shared_ptr<PlainTable > getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag, const int & sortColCount);
+        static PlainTable *getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
+                                              const int &sortColCount, const StorageModel &model);
 
 
         static std::string
@@ -50,7 +55,7 @@ namespace vaultdb {
         static SortDefinition getDefaultSortDefinition(const uint32_t &colCount);
 
         // create a copy of the table without its dummy tuples
-        static std::shared_ptr<PlainTable> removeDummies(const std::shared_ptr<PlainTable > & input);
+        static void removeDummies( PlainTable *input);
 
         static std::string printSortDefinition(const SortDefinition  & sortDefinition);
 
@@ -63,7 +68,7 @@ namespace vaultdb {
 
         static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
 
-        static size_t get_tuple_cnt(const std::string & db_name, const std::string &  sql, bool has_dummy_tag);
+        static size_t getTupleCount(const string &db_name, const string &sql, bool has_dummy_tag);
 
 //        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
 

@@ -9,6 +9,8 @@
 #include <boost/program_options.hpp>
 #include <operators/union.h>
 #include <operators/sort.h>
+#include <query_table/row_table.h>
+
 
 
 
@@ -27,11 +29,11 @@ int min_cell_count_ = 11;
 // roll up one group-by col at a time
 // input schema:
 // age_strata (0), sex (1), ethnicity (2) , race (3), numerator_cnt (4), denominator_cnt (5)
-shared_ptr<SecureTable>
-runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube, const std::string  & selection_clause, const string &output_path) {
+SecureTable *
+runRollup(int idx, string colName, int party, SecureTable *data_cube, const std::string  & selection_clause, const string &output_path) {
     auto local_start_time = emp::clock_start();
 
-    shared_ptr<SecureTable> stratified = PilotUtilities::rollUpAggregate(data_cube, idx);
+    SecureTable *stratified = PilotUtilities::rollUpAggregate(data_cube, idx);
 
     PilotUtilities::redactCellCounts(stratified, min_cell_count_);
 
@@ -46,8 +48,8 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
     if(TESTBED) {
         SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(2);
 
-        shared_ptr<PlainTable> revealed = stratified->reveal();
-        revealed = DataUtilities::removeDummies(revealed);
+        PlainTable *revealed = stratified->reveal();
+        DataUtilities::removeDummies(revealed);
 
         string query = PilotUtilities::getRollupExpectedResultsSql(colName, selection_clause);
         PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
@@ -59,15 +61,15 @@ runRollup(int idx, string colName, int party, shared_ptr<SecureTable> &data_cube
         Utilities::mkdir(out_path);
 
         std::stringstream schema_str;
-        schema_str << *revealed->getSchema() << std::endl;
+        schema_str << revealed->getSchema() << std::endl;
         csv = schema_str.str();
 
         for(unsigned int i = 0; i < revealed->getTupleCount(); ++i) {
-            csv += revealed->getTuple(i).toString();
+            csv += revealed->getPlainTuple(i).toString();
         }
 
         DataUtilities::writeFile(out_file, revealed->toString());
-
+        delete revealed;
 
     }
 
@@ -243,7 +245,7 @@ int main(int argc, char **argv) {
     setup_semi_honest(netio, party,  port);
     cout << "Starting epoch " << Utilities::getEpoch() << endl;
     auto e2e_start_time = emp::clock_start();
-    shared_ptr<SecureTable> partial_counts;
+    SecureTable *partial_counts;
     start_time_ = emp::clock_start(); // reset timer to account for async start of alice and bob
 
 
@@ -258,7 +260,7 @@ int main(int argc, char **argv) {
         batch_predicate = PilotUtilities::appendToConjunctivePredicate(selection_clause, "MOD(hash, " + std::to_string(batch_count) + ") = " + std::to_string(batch_id));
         string batch_input_query = PilotUtilities::replaceSelection(patient_input_query,  batch_predicate);
         string batch_input_file = remote_patient_file + "." + std::to_string(batch_id + 1) + "." + party_name;
-        shared_ptr<SecureTable> inputData =  UnionHybridData::unionHybridData(db_name, batch_input_query,
+        SecureTable *inputData =  UnionHybridData::unionHybridData(db_name, batch_input_query,
                                                                                          batch_input_file, netio,
                                                                                          party);
         cumulative_runtime_ = time_from(start_time_);
@@ -267,12 +269,13 @@ int main(int argc, char **argv) {
         // validate it against the DB for testing
         if (TESTBED) {
             SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(9);
-            std::shared_ptr<PlainTable> revealed = inputData->reveal();
+            PlainTable *revealed = inputData->reveal();
 
             string query =  DataUtilities::readTextFileToString("pilot/queries/patient.sql");
             query = PilotUtilities::replaceSelection(query, batch_predicate);
 
             PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patientSortDef, revealed);
+            delete revealed;
         }
 
 
@@ -284,9 +287,10 @@ int main(int argc, char **argv) {
         Utilities::mkdir(output_path);
 
         EnrichHtnQuery batch_enrich(inputData, cardinality_bound);
-        inputData.reset();
+        // delete this in EnrichHtnQuery
+        // inputData.reset();
 
-        if(partial_counts.get() == nullptr) {
+        if(partial_counts == nullptr) {
             partial_counts = batch_enrich.data_cube_;
         }
         else {
@@ -311,26 +315,27 @@ int main(int argc, char **argv) {
 
     if(semijoin_optimization) {
         // add in the 1-site PIDs
-        shared_ptr<SecureTable> alice, bob, chi;
+        SecureTable *alice, *bob, *chi;
         partial_count_query = PilotUtilities::replaceSelection(partial_count_query, partial_count_selection_clause);
-        shared_ptr<PlainTable> local_partial_counts =  DataUtilities::getQueryResults(db_name, partial_count_query, false);
+        PlainTable *local_partial_counts = DataUtilities::getQueryResults(db_name, partial_count_query,
+                                                                          StorageModel::ROW_STORE, false);
         assert(local_partial_counts->getTupleCount() == cardinality_bound);
         // ship local, partial counts - alice, then bob
         if (party == 1) { // alice
-            alice = SecureTable::secret_share_send_table(local_partial_counts, netio, 1);
-            bob = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(), netio,
+            alice = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 1);
+            bob = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(), netio,
                                                        2);
         } else { // bob
-            alice = SecureTable::secret_share_recv_table(*local_partial_counts->getSchema(), SortDefinition(),
+            alice = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(),
                                                          netio, 1);
-            bob = SecureTable::secret_share_send_table(local_partial_counts, netio, 2);
+            bob = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 2);
         }
 
 
-        chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain(*(alice->getSchema())), party);
+        chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain((alice->getSchema())), party);
 
 
-        std::vector<shared_ptr<SecureTable>> partial_aggs { alice, bob, chi};
+        std::vector<SecureTable *> partial_aggs { alice, bob, chi};
         enrich.unionWithPartialAggregates(partial_aggs);
 
 
@@ -339,10 +344,11 @@ int main(int argc, char **argv) {
 
 
     if(TESTBED) {
-        std::shared_ptr<PlainTable> revealed = enrich.data_cube_->reveal();
+        PlainTable *revealed = enrich.data_cube_->reveal();
         SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(5);
         string query = PilotUtilities::replaceSelection(PilotUtilities::data_cube_sql_no_dummies_, selection_clause);
         PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, cube_sort_def, revealed);
+        delete revealed;
     }
 
 
@@ -350,10 +356,10 @@ int main(int argc, char **argv) {
 
     cout << "Completed unioning for semijoin at epoch " << Utilities::getEpoch() << endl;
 
-    shared_ptr<SecureTable> ageRollup = runRollup(1, "age_strata", party, enrich.data_cube_, year_selection,  output_path);
-    shared_ptr<SecureTable> genderRollup = runRollup(2, "sex", party, enrich.data_cube_, year_selection,  output_path);
-    shared_ptr<SecureTable> ethnicityRollup = runRollup(3, "ethnicity", party, enrich.data_cube_, year_selection, output_path);
-    shared_ptr<SecureTable> raceRollup = runRollup(4, "race", party, enrich.data_cube_, year_selection, output_path);
+    SecureTable *age = runRollup(1, "age_strata", party, enrich.data_cube_, year_selection,  output_path);
+    SecureTable *gender = runRollup(2, "sex", party, enrich.data_cube_, year_selection,  output_path);
+    SecureTable *ethnicity = runRollup(3, "ethnicity", party, enrich.data_cube_, year_selection, output_path);
+    SecureTable *race = runRollup(4, "race", party, enrich.data_cube_, year_selection, output_path);
 
     double runtime = time_from(e2e_start_time);
     measurements += "," + std::to_string(Utilities::getEpoch());
@@ -383,6 +389,11 @@ int main(int argc, char **argv) {
     emp::finalize_semi_honest();
 
     delete netio;
+
+    delete age;
+    delete gender;
+    delete ethnicity;
+    delete race;
 
 
 }

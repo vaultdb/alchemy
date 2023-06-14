@@ -9,11 +9,13 @@ const std::string EmpBaseTest::alice_db_ = "tpch_alice_150";
 const std::string EmpBaseTest::bob_db_ = "tpch_bob_150";
 
 void EmpBaseTest::SetUp()  {
+    assert(FLAGS_storage == "row" || FLAGS_storage == "column");
+    storage_model_ = (FLAGS_storage == "row") ? StorageModel::ROW_STORE : StorageModel::COLUMN_STORE;
 
     Logger::setup(); // write to console
     string party_name = (FLAGS_party == 1) ? "alice"  : "bob";
     Logger::setup("vaultdb-" + party_name);
-
+    std::cout << "Received storage flag of " << FLAGS_storage << '\n';
     std::cout << "Connecting to " << FLAGS_alice_host << " on port " << FLAGS_port << " as " << FLAGS_party << std::endl;
 
     netio_ =  new emp::NetIO(FLAGS_party == emp::ALICE ? nullptr : FLAGS_alice_host.c_str(), FLAGS_port);
@@ -27,7 +29,6 @@ void EmpBaseTest::SetUp()  {
 
     SystemConfiguration & s = SystemConfiguration::getInstance();
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db_);
-
     s.initialize(db_name_, md);
 }
 
@@ -36,12 +37,30 @@ void EmpBaseTest::TearDown() {
 
 	std::cout << "Runtime for test was " << duration << " secs." << std::endl;
         netio_->flush();
+        delete netio_;
         emp::finalize_semi_honest();
 }
 
-std::shared_ptr<PlainTable> EmpBaseTest::getExpectedOutput(const string &sql, const int &sortColCount) {
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(EmpBaseTest::unioned_db_, sql, false);
-    SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sortColCount);
+PlainTable *EmpBaseTest::getExpectedOutput(const string &sql, const int &sort_col_cnt) const {
+
+    StorageModel m = (FLAGS_storage == "row") ? StorageModel::ROW_STORE : StorageModel::COLUMN_STORE;
+    PlainTable *expected = DataUtilities::getQueryResults(EmpBaseTest::unioned_db_, sql, m, false);
+    SortDefinition expectedSortOrder = DataUtilities::getDefaultSortDefinition(sort_col_cnt);
     expected->setSortOrder(expectedSortOrder);
     return expected;
 }
+
+void EmpBaseTest::disableBitPacking() {
+    SystemConfiguration & s = SystemConfiguration::getInstance();
+    s.clearBitPacking();
+}
+
+// e.g.,unioned db = tpch_unioned_250
+// local db = tpch_alice_250
+void EmpBaseTest::initializeBitPacking(const string &unioned_db) {
+    SystemConfiguration & s = SystemConfiguration::getInstance();
+    BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db);
+    s.initialize(unioned_db, md);
+}
+
+

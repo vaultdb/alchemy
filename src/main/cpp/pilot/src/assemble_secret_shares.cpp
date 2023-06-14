@@ -3,6 +3,8 @@
 #include <pilot/src/common/shared_schema.h>
 #include <util/data_utilities.h>
 #include <sstream>
+#include <query_table/row_table.h>
+
 
 using namespace std;
 using namespace vaultdb;
@@ -35,10 +37,10 @@ QuerySchema getSchema(const std::string & rollupName) {
     return outputSchema;
 }
 
-void revealRollup(const std::string & rollupName) {
+void revealRollup(const std::string & rollup_name) {
 
-    std::string aliceFile = src_path + "/" + rollupName + ".alice";
-    std::string bobFile = src_path + "/" + rollupName + ".bob";
+    std::string aliceFile = src_path + "/" + rollup_name + ".alice";
+    std::string bobFile = src_path + "/" + rollup_name + ".bob";
 
     vector<int8_t> aliceBits = DataUtilities::readFile(aliceFile);
     vector<int8_t> bobBits = DataUtilities::readFile(bobFile);
@@ -59,23 +61,24 @@ void revealRollup(const std::string & rollupName) {
     }
 
 
-    QuerySchema rollupSchema = getSchema(rollupName); // rollupName != "age_strata" ? getSchema(rollupName) : getSchema("age_days");
-    std::shared_ptr<PlainTable> result = PlainTable::deserialize(rollupSchema, revealed);
+    QuerySchema rollup_schema = getSchema(rollup_name); // rollup_name != "age_strata" ? getSchema(rollup_name) : getSchema("age_days");
+    PlainTable *result = RowTable<bool>::deserialize(rollup_schema, revealed);
 
     std::stringstream schema_str;
-    schema_str << *result->getSchema() << std::endl;
+    schema_str << result->getSchema() << std::endl;
     std::string csv = schema_str.str();
 
     for(size_t i = 0; i < result->getTupleCount(); ++i) {
-        PlainTuple tuple = result->getTuple(i);
+        PlainTuple tuple = result->getPlainTuple(i);
         if(!tuple.getDummyTag())
-            csv += (*result)[i].toString() + "\n";
+            csv += result->getPlainTuple(i).toString() + "\n";
     }
 
     std::cout << "Revealing " << csv << std::endl;
-    std::string out_file = dst_path + "/" + rollupName + ".csv";
+    std::string out_file = dst_path + "/" + rollup_name + ".csv";
 
     DataUtilities::writeFile(out_file, csv);
+    delete result;
 }
 
 

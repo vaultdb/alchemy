@@ -11,6 +11,7 @@
 #include <operators/filter.h>
 #include <test/mpc/emp_base_test.h>
 
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 using namespace vaultdb;
 using namespace emp;
@@ -35,31 +36,31 @@ protected:
     const string alice_enrich_db_ = "enrich_htn_test_alice";
     const string bob_enrich_db_ = "enrich_htn_test_bob";
 
-    shared_ptr<PlainTable> getAgeStrataProjection(shared_ptr<PlainTable> input, const bool & isEncrypted) const;
+    PlainTable *getAgeStrataProjection(PlainTable *input, const bool & isEncrypted) const;
 
-    shared_ptr<PlainTable> loadAndProjectPatientData(const string &dbName) const;
+    PlainTable *loadAndProjectPatientData(const string &dbName) const;
 
-    shared_ptr<PlainTable> loadPatientExclusionData(const string &dbName) const;
+    PlainTable *loadPatientExclusionData(const string &dbName) const;
 
-    shared_ptr<PlainTable> loadAndJoinLocalData(const string &dbName) const;
+    PlainTable *loadAndJoinLocalData(const string &dbName) const;
 
-    shared_ptr<SecureTable> getPatientCohort();
+    SecureTable *getPatientCohort();
 
-    void validateTable(const string &dbName, const string &sql, const SortDefinition  & expectedSortDefinition, const std::shared_ptr<PlainTable> &observedTable) const;
-
-
-    static std::shared_ptr<SecureTable> rollUpAggregate(const int & ordinal, shared_ptr<SecureTable> src);
-
-    shared_ptr<SecureTable> loadUnionAndDeduplicateData() const;
-
-    void validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition &expectedSortOrder) const;
-
-    shared_ptr<SecureTable> aggregatePatientData();
+    void validateTable(const string &db_name, const string &sql, const SortDefinition  & expectedSortDefinition, PlainTable *observedTable) const;
 
 
-    shared_ptr<SecureTable> filterPatients();
+    static SecureTable *rollUpAggregate(const int & ordinal, SecureTable *src);
 
-    std::string getRollupExpectedResultsSql(const std::string &groupByColName);
+    SecureTable *loadUnionAndDeduplicateData() const;
+
+    void validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition &expected_sort) const;
+
+    SecureTable *aggregatePatientData();
+
+
+    SecureTable *filterPatients();
+
+    std::string getRollupExpectedResultsSql(const std::string &group_by_col);
 };
 
 

@@ -1,7 +1,7 @@
 #ifndef _JOIN_H
 #define _JOIN_H
 
-#include <expression/bool_expression.h>
+#include <expression/generic_expression.h>
 #include "operator.h"
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
@@ -13,44 +13,41 @@ namespace  vaultdb {
 
 
     public:
-        Join(Operator<B> *lhs, Operator<B> *rhs, const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
-        Join(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> > rhs,  const BoolExpression<B> & predicate, const SortDefinition & sort = SortDefinition());
-        ~Join()  = default;
+        Join(Operator<B> *lhs, Operator<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
+        Join(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> * predicate, const SortDefinition & sort = SortDefinition());
+        ~Join() { if(predicate_ != nullptr) delete predicate_; }
 
+//        static void write_left(PlainTuple & dst, const PlainTable *src, const int & idx);
+//        static void write_left(SecureTuple & dst, const SecureTable *src, const int & idx);
         // if B write is true, then write to the left side of an output tuple with src_tuple
-        static void write_left(const bool & write, PlainTuple & dst_tuple, const PlainTuple & src_tuple);
-        static void write_left(const emp::Bit & write, SecureTuple & dst_tuple, const SecureTuple & src_tuple);
-        static void write_left(PlainTuple & dst_tuple, const PlainTuple & src_tuple);
-        static void write_left(SecureTuple & dst_tuple, const SecureTuple & src_tuple);
-
-        // if B write is true, then write to the right side of an output tuple with src_tuple
-        static void write_right(const bool & write, PlainTuple & dst_tuple, const PlainTuple & src_tuple);
-        static void write_right(const emp::Bit & write, SecureTuple & dst_tuple, const SecureTuple & src_tuple);
-        static void write_right(PlainTuple & dst_tuple, const PlainTuple & src_tuple);
-        static void write_right(SecureTuple & dst_tuple, const SecureTuple & src_tuple);
+        static void write_left(const B & write, QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
+        static void write_left(QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
 
 
+//        static void write_right(PlainTuple & dst, const PlainTable *src, const int & idx);
+//        static void write_right(SecureTuple & dst, const SecureTable *src, const int & idx);
 
-        static QuerySchema concatenateSchemas(const QuerySchema &lhs_schema, const QuerySchema &rhs_schema, const bool &append_bool = false);
+
+        static void write_right(const B & write, QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
+        static void write_right(QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
+
+
+
 
     protected:
 
-        // current dummy_tag is the output of the current tuple comparison - derived from get_dummy_tag below
-        // just splitting this off to make the code modular
-        static void update_dummy_tag(QueryTuple<bool> & dst_tuple, const bool & predicate_matched, const bool & current_dummy_tag);
-        static void update_dummy_tag(QueryTuple<emp::Bit> & dst_tuple, const emp::Bit & predicate_matched, const emp::Bit & current_dummy_tag);
-
-        static B get_dummy_tag(const QueryTuple<B> &lhs, const QueryTuple<B> &rhs, const B & predicateEval);
 
         string getParameters() const override;
 
 
         // predicate function needs aware of encrypted or plaintext state of its inputs
         // B = BoolField || SecureBoolField
-        BoolExpression<B>  predicate_;
+        Expression<B>  *predicate_;
 
 
     };
+
+
 
 
 }

@@ -3,6 +3,7 @@
 
 enum class ExpressionKind {
     INPUT_REF,
+    PACKED_INPUT_REF,
     LITERAL,
     PLUS,
     MINUS,
@@ -23,6 +24,12 @@ enum class ExpressionKind {
     CASE,
     UNDEFINED
 
+};
+
+enum class ExpressionClass {
+    GENERIC,
+    BOOL,
+    FUNC
 };
 
 #endif //_EXPRESSION_KIND_H

@@ -4,7 +4,9 @@
 #include "plain/plain_base_test.h"
 #include <util/data_utilities.h>
 #include <query_table/query_table.h>
+#include "query_table/table_factory.h"
 
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 // generates secret shares for a table - one for alice and one for bob
 // then zips them together and verifies that it produces the same table
@@ -18,23 +20,23 @@ class SecretShareGeneratorTest : public PlainBaseTest {
 
 protected:
 
-    std::shared_ptr<PlainTable> assembleSecretShares(const QuerySchema & schema, const SecretShares & shares);
+    PlainTable *assembleSecretShares(const QuerySchema & schema, const SecretShares & shares);
 };
 
-std::shared_ptr<PlainTable> SecretShareGeneratorTest::assembleSecretShares(const QuerySchema &schema, const SecretShares & shares) {
-    size_t shareCount = shares.first.size();
-    std::vector<int8_t> resultShares;
-    resultShares.resize(shareCount);
+PlainTable *SecretShareGeneratorTest::assembleSecretShares(const QuerySchema &schema, const SecretShares & shares) {
+    size_t share_cnt = shares.first.size();
+    std::vector<int8_t> result_shares;
+    result_shares.resize(share_cnt);
 
-    int8_t *result = resultShares.data();
+    int8_t *result = result_shares.data();
     const int8_t *aliceShares = shares.first.data();
     const int8_t *bobShares = shares.second.data();
 
-    for(size_t i = 0; i < shareCount; ++i) {
+    for(size_t i = 0; i < share_cnt; ++i) {
         result[i] = aliceShares[i] ^ bobShares[i];
     }
 
-    return PlainTable::deserialize(schema, resultShares);
+    return TableFactory<bool>::deserialize(schema, result_shares, storage_model_);
 
 }
 
@@ -45,12 +47,15 @@ TEST_F(SecretShareGeneratorTest, lineitem_sample) {
                              "ORDER BY l_shipdate "
                              "LIMIT 10";
 
-    std::shared_ptr<PlainTable> initialTable = DataUtilities::getQueryResults(db_name_, query, false);
-    SecretShares secretShares = initialTable->generateSecretShares();
+    PlainTable *initial_table = DataUtilities::getQueryResults(db_name_, query, storage_model_, false);
+    SecretShares secret_shares = initial_table->generateSecretShares();
 
-    std::shared_ptr<PlainTable> finalTable = assembleSecretShares(*initialTable->getSchema(), secretShares);
+    PlainTable *final_table = assembleSecretShares(initial_table->getSchema(), secret_shares);
 
-    ASSERT_EQ(*initialTable, *finalTable);
+    ASSERT_EQ(*initial_table, *final_table);
+    delete initial_table;
+    delete final_table;
+
 
 }
 
@@ -62,13 +67,22 @@ TEST_F(SecretShareGeneratorTest, lineitem_dummy_tag_sample) {
                         "ORDER BY l_shipdate "
                         "LIMIT 10";
 
-    std::shared_ptr<PlainTable> initialTable = DataUtilities::getQueryResults(db_name_, query, true);
-    SecretShares secretShares = initialTable->generateSecretShares();
+    PlainTable *initial_table = DataUtilities::getQueryResults(db_name_, query, storage_model_, true);
+    SecretShares secret_shares = initial_table->generateSecretShares();
 
-    std::shared_ptr<PlainTable> finalTable = assembleSecretShares(*initialTable->getSchema(), secretShares);
+    PlainTable *final_table = assembleSecretShares(initial_table->getSchema(), secret_shares);
 
-    ASSERT_EQ(*initialTable, *finalTable);
+    ASSERT_EQ(*initial_table, *final_table);
+    delete initial_table;
+    delete final_table;
 
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
 }
 
 #endif //  _SECRET_SHARE_GENERATOR_TEST_

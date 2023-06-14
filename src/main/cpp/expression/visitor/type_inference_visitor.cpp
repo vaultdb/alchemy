@@ -9,7 +9,7 @@ using namespace vaultdb;
 
 
 template<typename B>
-TypeInferenceVisitor<B>::TypeInferenceVisitor(std::shared_ptr<ExpressionNode<B>> root, const QuerySchema &input_schema)
+TypeInferenceVisitor<B>::TypeInferenceVisitor(ExpressionNode<B> *root, const QuerySchema &input_schema)
         : input_schema_(input_schema), bool_type_(std::is_same_v<bool, B> ? FieldType::BOOL : FieldType::SECURE_BOOL) {
     type_rank_[FieldType::BOOL] = type_rank_[FieldType::SECURE_BOOL] = 0;
     type_rank_[FieldType::INT] = type_rank_[FieldType::SECURE_INT] = 1;
@@ -20,86 +20,91 @@ TypeInferenceVisitor<B>::TypeInferenceVisitor(std::shared_ptr<ExpressionNode<B>>
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(InputReferenceNode<B> node) {
+void TypeInferenceVisitor<B>::visit(InputReference<B> & node) {
     last_expression_type_ = input_schema_.getField(node.read_idx_).getType();
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(LiteralNode<B> node) {
+void TypeInferenceVisitor<B>::visit(PackedInputReference<B> & node) {
+    last_expression_type_ = input_schema_.getField(node.read_idx_).getType();
+}
+
+template<typename B>
+void TypeInferenceVisitor<B>::visit(LiteralNode<B> & node) {
     last_expression_type_ = node.payload_.getType();
 }
 
 
 // B has to match up with Field<B> if/when we plug in values to the equation later
 template<typename B>
-void TypeInferenceVisitor<B>::visit(AndNode<B> node) {
+void TypeInferenceVisitor<B>::visit(AndNode<B> & node) {
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(OrNode<B> node) {
+void TypeInferenceVisitor<B>::visit(OrNode<B> & node) {
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(NotNode<B> node) {
+void TypeInferenceVisitor<B>::visit(NotNode<B> & node) {
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(PlusNode<B> node) {
+void TypeInferenceVisitor<B>::visit(PlusNode<B> & node) {
     resolveBinaryNode(node);
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(MinusNode<B> node) {
+void TypeInferenceVisitor<B>::visit(MinusNode<B> & node) {
 
     resolveBinaryNode(node);
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(TimesNode<B> node) {
+void TypeInferenceVisitor<B>::visit(TimesNode<B> & node) {
     resolveBinaryNode(node);
 
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(DivideNode<B> node) {
+void TypeInferenceVisitor<B>::visit(DivideNode<B> & node) {
     resolveBinaryNode(node);
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(ModulusNode<B> node) {
+void TypeInferenceVisitor<B>::visit(ModulusNode<B> & node) {
     resolveBinaryNode(node);
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(EqualNode<B> node) {
+void TypeInferenceVisitor<B>::visit(EqualNode<B> & node) {
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(NotEqualNode<B> node) {
+void TypeInferenceVisitor<B>::visit(NotEqualNode<B> & node) {
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(GreaterThanNode<B> node) {
+void TypeInferenceVisitor<B>::visit(GreaterThanNode<B> & node) {
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(LessThanNode<B> node) {
+void TypeInferenceVisitor<B>::visit(LessThanNode<B> & node) {
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(GreaterThanEqNode<B> node) {
+void TypeInferenceVisitor<B>::visit(GreaterThanEqNode<B> & node) {
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(LessThanEqNode<B> node) {
+void TypeInferenceVisitor<B>::visit(LessThanEqNode<B> & node) {
     last_expression_type_ = bool_type_;
 }
 
@@ -131,12 +136,12 @@ FieldType TypeInferenceVisitor<B>::resolveType(const FieldType &lhs, const Field
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(CastNode<B> node) {
+void TypeInferenceVisitor<B>::visit(CastNode<B> & node) {
     last_expression_type_ =  node.dst_type_;
 }
 
 template<typename B>
-void TypeInferenceVisitor<B>::visit(CaseNode<B> node) {
+void TypeInferenceVisitor<B>::visit(CaseNode<B> & node) {
     return resolveBinaryNode(node);
 }
 

@@ -6,23 +6,27 @@
 using namespace vaultdb;
 
 // run this eagerly to get the schema
-SqlInput::SqlInput(std::string db, std::string sql, bool dummyTag) :   input_query_(sql), db_name_(db), dummy_tagged_(dummyTag), tuple_limit_(0) {
+SqlInput::SqlInput(std::string db, std::string sql, const StorageModel & model, bool dummy_tag)
+  :  Operator<bool>(), input_query_(sql), db_name_(db), dummy_tagged_(dummy_tag), storage_model_(model), tuple_limit_(0) {
     runQuery();
-    output_schema_ = *output_->getSchema();
+    output_schema_ = output_->getSchema();
 
 }
 
-SqlInput::SqlInput(std::string db, std::string sql, bool dummyTag, const SortDefinition &sortDefinition, const size_t & tuple_limit) :
-        Operator<bool>(sortDefinition), input_query_(sql), db_name_(db), dummy_tagged_(dummyTag), tuple_limit_(tuple_limit) {
+SqlInput::SqlInput(std::string db, std::string sql, bool dummy_tag, const StorageModel & model, const SortDefinition &sort_def, const size_t & tuple_limit) :
+        Operator<bool>(sort_def), input_query_(sql), db_name_(db), dummy_tagged_(dummy_tag), storage_model_(model), tuple_limit_(tuple_limit) {
+
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
 
     runQuery();
-    output_schema_ = *output_->getSchema();
+    output_schema_ = output_->getSchema();
 }
 
 
 
 // read in the data from supplied SQL query
-std::shared_ptr<PlainTable > SqlInput::runSelf() {
+PlainTable  *SqlInput::runSelf() {
 
 
     return output_;
@@ -39,8 +43,7 @@ void SqlInput::runQuery() {
         input_query_ = "SELECT * FROM (" + input_query_ + ") input LIMIT " + std::to_string(tuple_limit_);
     }
 
-    std::shared_ptr<PlainTable> localOutput = dataProvider.getQueryTable(db_name_, input_query_, dummy_tagged_);
-    Operator::output_ = std::move(localOutput);
+    Operator::output_ = dataProvider.getQueryTable(db_name_, input_query_, storage_model_, dummy_tagged_);
     output_->setSortOrder(Operator<bool>::sort_definition_);
 
 

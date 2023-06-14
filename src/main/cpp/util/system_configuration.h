@@ -30,6 +30,9 @@ namespace vaultdb{
         SystemConfiguration(const SystemConfiguration&) = delete;
         SystemConfiguration& operator=(const SystemConfiguration &) = delete;
 
+        inline void clearBitPacking() {
+            bit_packing_.clear();
+        }
 
     private:
         SystemConfiguration() {}

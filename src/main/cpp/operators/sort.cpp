@@ -18,7 +18,8 @@ int Sort<B>::powerOfTwoLessThan(const int & n) {
 }
 
 template<typename B>
-Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child, aSortDefinition), limit_(limit) {
+Sort<B>::Sort(Operator<B> *child, const SortDefinition &sort_def, const int & limit)
+   : Operator<B>(child, sort_def), limit_(limit) {
 
     for(ColumnSort s : Operator<B>::sort_definition_) {
         if(s.second == SortDirection::INVALID)
@@ -33,7 +34,8 @@ Sort<B>::Sort(Operator<B> *child, const SortDefinition &aSortDefinition, const i
 }
 
 template<typename B>
-Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefinition, const int & limit) : Operator<B>(child, aSortDefinition), limit_(limit) {
+Sort<B>::Sort(QueryTable<B> *child, const SortDefinition &sort_def, const int & limit)
+  : Operator<B>(child, sort_def), limit_(limit) {
 
     for(ColumnSort s : Operator<B>::sort_definition_) {
         if(s.second == SortDirection::INVALID)
@@ -46,13 +48,15 @@ Sort<B>::Sort(shared_ptr<QueryTable<B> > child, const SortDefinition &aSortDefin
 }
 
 template<typename B>
-std::shared_ptr<QueryTable<B> > Sort<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
+QueryTable<B> *Sort<B>::runSelf() {
+    QueryTable<B> *input = Operator<B>::getChild()->getOutput();;
 
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
 
 
     // deep copy new output
-    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
+    Operator<B>::output_ = input->clone();
 
     bitonicSort(0, Operator<B>::output_->getTupleCount(), true);
 
@@ -103,7 +107,7 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir) {
         int m = cnt / 2;
         bitonicSort(lo, m, !dir);
         bitonicSort(lo + m, cnt - m, dir);
-        bitonicMerge(Operator<B>::output_, Operator<B>::sort_definition_, lo, cnt, dir);
+        bitonicMerge(this->output_, this->sort_definition_, lo, cnt, dir);
     }
 
 }
@@ -115,16 +119,16 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir) {
  * the number of elements is cnt.
  **/
 template<typename B>
-void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &dir) {
+void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &dir) {
 
     if (n > 1) {
         int m = powerOfTwoLessThan(n);
         for (int i = lo; i < lo + n - m; ++i) {
-            QueryTuple<B> lhs = table->getTuple(i);
-            QueryTuple<B> rhs = table->getTuple(i + m);
+//            QueryTuple<B> lhs = table->getTuple(i);
+//            QueryTuple<B> rhs = table->getTuple(i + m);
 
-            B to_swap = swapTuples(lhs, rhs, sort_def, dir);
-            QueryTuple<B>::compareSwap(to_swap, lhs, rhs);
+            B to_swap = swapTuples(table, i, i+m, sort_def, dir);
+            table->compareSwap(to_swap, i, i+m);
 
         }
 
@@ -134,10 +138,7 @@ void Sort<B>::bitonicMerge( std::shared_ptr<QueryTable<B> > & table, const SortD
 }
 
 
-template<typename B>
-Sort<B>::~Sort() {
 
-}
 
 template<typename B>
 B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, const SortDefinition  & sort_definition, const bool & dir)  {
@@ -149,9 +150,9 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
     for (size_t i = 0; i < sort_definition.size(); ++i) {
 
         const Field<B> lhs_field = sort_definition[i].first == -1 ? Field<B>(lhs.getDummyTag())
-                                                                  : lhs.getField(sort_definition[i].first);
+                                                                  : lhs.getPackedField(sort_definition[i].first);
         const Field<B> rhs_field = sort_definition[i].first == -1 ? Field<B>(rhs.getDummyTag())
-                                                                  : rhs.getField(sort_definition[i].first);
+                                                                  : rhs.getPackedField(sort_definition[i].first);
 
         // true for ascending, false for descending
         bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
@@ -159,11 +160,6 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
         B to_swap =  (lhs_field < rhs_field) == asc;
         if(dir)  // flip the bit
             to_swap = !to_swap;
-
-        // if  ascending (1) & dir == 1 --> asc (1) (lhs < rhs (1) means swap!)
-        // if DESC (0) & dir == 0 --> ASC (1) (lhs < rhs (1) means swap!)
-        // if ASC (1) & dir = 0 --> DESC  (0) (lhs < rhs (1)  means no swap)
-        // if DESC (0) & dir == 1  --> DESC (0) (lhs < rhs (1)  means no swap)
 
 
         // find first one where not eq, use this to init flag
@@ -180,6 +176,43 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
 }
 
 template<typename B>
+B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int &rhs_idx,
+                      const SortDefinition &sort_definition, const bool &dir) {
+    B swap = false;
+    B swap_init = swap;
+
+
+
+    for (size_t i = 0; i < sort_definition.size(); ++i) {
+
+        const Field<B> lhs_field = sort_definition[i].first == -1 ? Field<B>(table->getDummyTag(lhs_idx))
+                                                                  : table->getPackedField(lhs_idx, sort_definition[i].first);
+        const Field<B> rhs_field = sort_definition[i].first == -1 ? Field<B>(table->getDummyTag(rhs_idx))
+                                                                  : table->getPackedField(rhs_idx,sort_definition[i].first);
+
+        // true for ascending, false for descending
+        bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
+
+        B to_swap =  (lhs_field < rhs_field) == asc;
+        if(dir)  // flip the bit
+            to_swap = !to_swap;
+
+
+        // find first one where not eq, use this to init flag
+        swap = FieldUtilities::select(swap_init, swap, to_swap);
+        swap_init = swap_init | (lhs_field != rhs_field);
+        if(std::is_same_v<bool, B>) {
+            bool bool_init = FieldUtilities::extract_bool(swap_init);
+            if(bool_init) break;
+        }
+    }
+
+    return swap;
+
+}
+
+
+template<typename B>
 string Sort<B>::getOperatorType() const {
     return "Sort";
 }
@@ -192,4 +225,3 @@ string Sort<B>::getParameters() const {
 
 template class vaultdb::Sort<bool>;
 template class vaultdb::Sort<emp::Bit>;
-

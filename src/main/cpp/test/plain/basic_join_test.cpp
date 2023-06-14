@@ -2,8 +2,10 @@
 #include <operators/basic_join.h>
 #include <util/utilities.h>
 #include "plain_base_test.h"
+#include "util/field_utilities.h"
+#include <gflags/gflags.h>
 
-
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 class BasicJoinTest : public PlainBaseTest {
 
@@ -15,17 +17,17 @@ protected:
     // ORDER BY c_custkey;
     // input is equal to all tuples in table
 
-    const std::string customerSql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
+    const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
                                     "FROM customer  "
                                     "WHERE c_custkey <= 5 "
                                     "ORDER BY c_custkey ";
 
-    const std::string ordersSql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
+    const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
                                   "FROM orders "
                                   "WHERE o_custkey <= 5 "
                                   "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority ";
 
-    const std::string lineitemSql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
+    const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
                                     "FROM lineitem "
                                     "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 5)  "
                                     "ORDER BY l_orderkey, revenue ";
@@ -40,62 +42,60 @@ TEST_F(BasicJoinTest, test_tpch_q3_customer_orders) {
     // get inputs from local oblivious ops
     // first 5 customers, propagate this constraint up the join tree for the test
 
-   std::string expectedResultSql = "WITH customer_cte AS (" + customerSql + "), "
-                                        "orders_cte AS (" + ordersSql + ") "
+   std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
+                                        "orders_cte AS (" + orders_sql_ + ") "
                                         "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, (cdummy OR odummy OR o_custkey <> c_custkey) dummy "
                                         "FROM customer_cte, orders_cte "
                                         "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-   std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, true);
+   PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
-    SqlInput customerInput(db_name_, customerSql, true);
-    SqlInput ordersInput(db_name_, ordersSql, true);
+    SqlInput *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
+    SqlInput *orders_input = new SqlInput(db_name_, orders_sql_,  storage_model_, true);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<bool> customer_orders_predicate = Utilities::getEqualityPredicate<bool>(1, 4);
+    Expression<bool> * customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(orders_input, 1,  customer_input, 4);
 
-    BasicJoin<bool> join(&ordersInput, &customerInput, customer_orders_predicate);
+    BasicJoin<bool> join(orders_input, customer_input, customer_orders_predicate);
+    PlainTable  *observed = join.run();
 
-
-    std::shared_ptr<PlainTable > observed = join.run();
 
 
     ASSERT_EQ(*expected, *observed);
+
+    delete expected;
 
 }
 
 
 TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
 
-    std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), "
-                                        "lineitem_cte AS (" + lineitemSql + ") "
-                                        "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority,(odummy OR ldummy OR o_orderkey <> l_orderkey) dummy "
-                                         "FROM lineitem_cte, orders_cte "
-                                          "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
+    std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
+                                                    "lineitem_cte AS (" + lineitem_sql_ + ") "
+                                 "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority,(odummy OR ldummy OR o_orderkey <> l_orderkey) dummy "
+                                 "FROM lineitem_cte, orders_cte "
+                                 "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
-    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
-    SqlInput lineitemInput(db_name_, lineitemSql, true);
-    SqlInput ordersInput(db_name_, ordersSql, true);
+    SqlInput *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
+    SqlInput *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
 
 
     // output schema: lineitem, orders
     // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
-    BoolExpression<bool> predicate = Utilities::getEqualityPredicate<bool>(0, 2);
+    Expression<bool> * predicate = FieldUtilities::getEqualityPredicate<bool>(lineitem_input, 0, orders_input, 2);
+
+    BasicJoin<bool> join(lineitem_input, orders_input, predicate);
 
 
-    BasicJoin<bool> joinOp(&lineitemInput, &ordersInput, predicate);
+    PlainTable *observed = join.run();
 
-
-    std::shared_ptr<PlainTable > observed = joinOp.run();
-
-
-
-    ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);
 
+    delete expected;
 }
 
 
@@ -104,42 +104,50 @@ TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders) {
 TEST_F(BasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
-    std::string expectedResultSql = "WITH orders_cte AS (" + ordersSql + "), "
-                                          "lineitem_cte AS (" + lineitemSql + "), "
-                                           "customer_cte AS (" + customerSql + ") "
+    std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
+                                          "lineitem_cte AS (" + lineitem_sql_ + "), "
+                                           "customer_cte AS (" + customer_sql_ + ") "
                                                  "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, (cdummy OR odummy OR ldummy OR o_orderkey <> l_orderkey OR c_custkey <> o_custkey) dummy "
                                                  "FROM lineitem_cte, orders_cte, customer_cte "
                                                  "ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
-    std::shared_ptr<PlainTable > expected = DataUtilities::getQueryResults(db_name_, expectedResultSql, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
 
-    SqlInput customerInput(db_name_, customerSql, true);
-    SqlInput ordersInput(db_name_, ordersSql, true);
-    SqlInput lineitemInput(db_name_, lineitemSql, true);
+    SqlInput *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
+    SqlInput *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
+    SqlInput *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<bool> customer_orders_predicate = Utilities::getEqualityPredicate<bool>(1, 4);
+    Expression<bool> * customer_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(orders_input, 1,
+                                                                                              customer_input, 4);
+    BasicJoin<bool> *customer_orders_join = new BasicJoin(orders_input, customer_input, customer_orders_predicate);
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    BoolExpression<bool> lineitem_orders_predicate = Utilities::getEqualityPredicate<bool>(0, 2);
+    Expression<bool> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<bool>(lineitem_input, 0,
+                                                                                              customer_orders_join, 2);
 
 
 
-    BasicJoin customerOrdersJoin(&ordersInput, &customerInput, customer_orders_predicate);
-    BasicJoin fullJoin(&lineitemInput, &customerOrdersJoin, lineitem_orders_predicate);
+    BasicJoin full_join(lineitem_input, customer_orders_join, lineitem_orders_predicate);
 
 
-    std::shared_ptr<PlainTable > observed = fullJoin.run();
+    PlainTable *observed = full_join.run();
 
 
 
-    ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);
+    delete expected;
 
 }
 
 
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}
 
 

@@ -22,7 +22,8 @@ namespace  vaultdb {
         FieldType type_;
         int ordinal_;
         int field_size_ = 0; // size in bits
-        int64_t field_min_ = 0; // if bits are packed and min > 0
+        int64_t field_min_ = 0; // if bits are packed and min != 0
+        emp::Integer secure_field_min_;
         int bit_packed_size_ = 0;
         
     public:
@@ -52,7 +53,8 @@ namespace  vaultdb {
         inline void setStringLength(size_t len) {   string_length_ = len;
             initializeFieldSize();
         }
-        int64_t getFieldMin() const { return field_min_; }
+        inline int64_t getFieldMin() const { return field_min_; }
+        inline emp::Integer  getSecureFieldMin() const { return secure_field_min_; }
 
         size_t getStringLength() const { return string_length_; }
 
@@ -65,11 +67,21 @@ namespace  vaultdb {
         void inline setSize(const int & size) { field_size_ = size; }
         QueryFieldDesc &operator=(const QueryFieldDesc &other);
 
-        bool operator==(const QueryFieldDesc &other);
-
-        inline bool operator!=(const QueryFieldDesc &other) { return !(*this == other); }
+        bool operator==(const QueryFieldDesc &other) const;
+        inline bool operator!=(const QueryFieldDesc &other) const { return !(*this == other); }
 
         bool bitPacked() const;
+        // fields not only the same type, but have same packed size, min value and other metadata
+        // If two fields passed into a packed expression evaluation, such as "lhs == rhs" will they produce correct results?
+        inline static bool storageCompatible(const QueryFieldDesc & lhs, const QueryFieldDesc & rhs) {
+            if((lhs != rhs) || (lhs.bitPacked() != rhs.bitPacked())) return false;
+            if(lhs.bitPacked()) {
+                if(lhs.bit_packed_size_ != rhs.bit_packed_size_) return false;
+                if(lhs.field_min_ != rhs.field_min_) return false;
+            }
+            return true;
+        }
+
     private:
         void initializeFieldSize();
 

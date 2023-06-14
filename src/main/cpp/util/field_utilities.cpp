@@ -5,7 +5,7 @@
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 #include <sstream>
-
+#include <operators/operator.h>
 
 using namespace vaultdb;
 using namespace  emp;
@@ -83,34 +83,63 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
 }
 
 
-void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple & dst_tuple, const int & party) {
-    size_t field_count = dst_tuple.getSchema()->getFieldCount();
-    for (size_t i = 0; i < field_count; ++i) {
-        PlainField src_field = src_tuple.getField(i);
-        SecureField dst_field = SecureField::secret_share_send(src_field, dst_tuple.getSchema()->getField(i), party);
-        dst_tuple.setField(i, dst_field);
-    }
-    PlainField plain_dummy_tag =  PlainField(src_tuple.getDummyTag());
-    emp::Bit b(src_tuple.getDummyTag(), party);
-    dst_tuple.setDummyTag(b);
+//void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple & dst_tuple, const int & party) {
+//    size_t field_count = dst_tuple.getSchema()->getFieldCount();
+//    for (size_t i = 0; i < field_count; ++i) {
+//        PlainField src_field = src_tuple.getField(i);
+//        SecureField dst_field = SecureField::secret_share_send(src_field, dst_tuple.getSchema()->getField(i), party);
+//        dst_tuple.setField(i, dst_field);
+//    }
+//
+//    emp::Bit b(src_tuple.getDummyTag(), party);
+//    dst_tuple.setDummyTag(b);
+//
+//
+//}
+//
+//void FieldUtilities::secret_share_recv(SecureTuple &dst_tuple, const int &dst_party) {
+//    size_t field_count = dst_tuple.getSchema()->getFieldCount();
+//
+//    for(size_t i = 0;  i < field_count; ++i) {
+//        SecureField  dst_field = SecureField::secret_share_recv(dst_tuple.getSchema()->getField(i), dst_party);
+//        dst_tuple.setField(i, dst_field);
+//    }
+//
+//    emp::Bit b(0, dst_party);
+//    dst_tuple.setDummyTag(b);
+//
+//}
 
+void FieldUtilities::secret_share_send(const PlainTable *src, const int &src_idx, SecureTable *dst, const int &dst_idx,
+                                       const int &party) {
+    size_t field_count = dst->getSchema().getFieldCount();
+
+    for (size_t i = 0; i < field_count; ++i) {
+        PlainField src_field = src->getField(src_idx, i);
+        SecureField dst_field = SecureField::secret_share_send(src_field, dst->getSchema().getField(i), party);
+        dst->setField(dst_idx, i, dst_field);
+    }
+
+    emp::Bit b(src->getDummyTag(src_idx), party);
+    dst->setDummyTag(dst_idx, b);
 
 }
 
-void FieldUtilities::secret_share_recv(SecureTuple &dst_tuple, const int &dst_party) {
-    QuerySchema schema = *dst_tuple.getSchema();
-    size_t field_count = schema.getFieldCount();
+void FieldUtilities::secret_share_recv(SecureTable *dst, const int & idx, const int &party) {
+
+    size_t field_count = dst->getSchema().getFieldCount();
 
     for(size_t i = 0;  i < field_count; ++i) {
-        QueryFieldDesc field_desc = schema.getField(i);
-        SecureField  dst_field = SecureField::secret_share_recv(dst_tuple.getSchema()->getField(i), dst_party);
-        dst_tuple.setField(i, dst_field);
+        SecureField  dst_field = SecureField::secret_share_recv(dst->getSchema().getField(i), party);
+        dst->setField(idx, i, dst_field);
     }
 
-    emp::Bit b(0, dst_party);
-    dst_tuple.setDummyTag(b);
+    emp::Bit b(0, party);
+    dst->setDummyTag(idx, b);
+
 
 }
+
 
 // to compute sort
 bool FieldUtilities::select(const bool &choice, const bool &lhs, const bool &rhs) {
@@ -122,11 +151,11 @@ emp::Bit FieldUtilities::select(const Bit &choice, const Bit &lhs, const Bit &rh
 }
 
 
-PlainTuple FieldUtilities::revealTuple(const SecureTuple & s) {
-    std::shared_ptr<QuerySchema> secure_schema = s.getSchema();
-    std::shared_ptr<QuerySchema> plain_schema =  std::make_shared<QuerySchema>(QuerySchema::toPlain(*secure_schema));
-    return s.reveal(plain_schema, emp::PUBLIC);
-}
+//PlainTuple FieldUtilities::revealTuple(const SecureTuple & s) {
+//    QuerySchema secure_schema = *s.getSchema();
+//    QuerySchema plain_schema =  QuerySchema::toPlain(secure_schema);
+//    return s.reveal(&plain_schema, emp::PUBLIC);
+//}
 
 
 std::string FieldUtilities::printTupleBits(const PlainTuple & p) {
@@ -150,37 +179,39 @@ std::string FieldUtilities::printTupleBits(const SecureTuple & s) {
 
 // unioned db name
 BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_name) {
-    std::shared_ptr<PlainTable> p;
+    PlainTable *p;
     BitPackingMetadata bit_packing;
 
     try {
         string query = "SELECT table_name, col_name, min, max, domain_size FROM bit_packing";
-        p =  DataUtilities::getQueryResults(db_name, query, false);
+        p = DataUtilities::getQueryResults(db_name, query, StorageModel::ROW_STORE, false);
     } catch (std::exception e) {
         return bit_packing; //  skip this step if the table isn't configured
     }
 
     for(int i = 0; i < p->getTupleCount(); ++i) {
-        PlainTuple t = p->getTuple(i);
+        //PlainTuple t = p->getTuple(i);
 
         BitPackingDefinition bp;
-        string table = t.getField(0).toString();
-        string column = t.getField(1).toString();
+        string table = p->getField(i, 0).toString();
+        string column = p->getField(i, 1).toString();
 
         table.erase(table.find_last_not_of(" \t\n\r\f\v") + 1); // delete trailing spaces
         column.erase(column.find_last_not_of(" \t\n\r\f\v") + 1);
 
         ColumnReference c(table, column);
 
-        bp.min_ = t.getField(2).getValue<int>();
-        bp.max_ = t.getField(3).getValue<int>();
-        bp.domain_size_ =  t.getField(4).getValue<int>();
+        bp.min_ = p->getField(i, 2).getValue<int>();
+        bp.max_ = p->getField(i, 3).getValue<int>();
+        bp.domain_size_ =  p->getField(i, 4).getValue<int>();
 
         bit_packing[c] = bp;
     }
 
+    delete p;
     return bit_packing;
 }
+
 
 
 

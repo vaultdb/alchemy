@@ -9,15 +9,21 @@
 #include <query_table/secure_tuple.h>
 #include "query_table/field/field_type.h"
 #include "common/defs.h"
+#include "expression/expression_node.h"
+#include "expression/comparator_expression_nodes.h"
+#include "expression/generic_expression.h"
+#include <expression/visitor/to_packed_expression_visitor.h>
+
 
 namespace vaultdb {
+
+    template <typename B> class Operator;
 
     class FieldUtilities {
     public:
         // size is in bytes
         static size_t getPhysicalSize(const FieldType &id, const size_t & str_length = 0);
         static emp::Float toFloat(const emp::Integer &input);
-        //static void secretShare(const QueryTuple<bool> *src_tuple,  const std::shared_ptr<QuerySchema> &src_schema, QueryTuple<emp::Bit> & dst_tuple, const int &myParty, const int &dstParty);
 
         template<typename B>
         static inline bool validateTypeAlignment(const Field<B> &field) {
@@ -48,24 +54,29 @@ namespace vaultdb {
 
         }
 
+        static void secret_share_send(const PlainTable *src, const int &src_idx, SecureTable *dst, const int &dst_idx,
+                                      const int &party);
 
-        static void secret_share_send(const QueryTuple<bool> &src_tuple, QueryTuple<Bit> &dst_tuple, const int &dst_party);
-        static void secret_share_recv(SecureTuple &dst_tuple, const int &dst_party);
+//        static void secret_share_send(const QueryTuple<bool> &src_tuple, QueryTuple<Bit> &dst_tuple, const int &party);
+//        static void secret_share_recv(SecureTuple &dst_tuple, const int &party);
+
+        static void secret_share_recv(SecureTable *dst, const int & idx, const int &party);
+
 
         // for template<typename T> case
         static bool extract_bool(const emp::Bit & b) { return b.reveal();  }
         static bool extract_bool(const bool & b) { return b; }
 
-        static PlainTuple revealTuple(const PlainTuple & p) {return p; }
-        static PlainTuple revealTuple(const SecureTuple  & s);
+//        static PlainTuple revealTuple(const PlainTuple & p) {return p; }
+//        static PlainTuple revealTuple(const SecureTuple  & s);
 
         // expected size in bits
         inline static int getExpectedSize(const FieldType & t, int str_length) {
             return TypeUtilities::getTypeSize(t) * ((t == FieldType::SECURE_STRING) ? str_length : 1);
         }
 
-        static Field<bool> getBoolField(const bool & input) { return Field<bool>(FieldType::BOOL, input, 0); }
-        static Field<emp::Bit> getBoolField(const emp::Bit & input) { return Field<emp::Bit>(FieldType::SECURE_BOOL, input, 0); }
+        static inline Field<bool> getBoolField(const bool & input) { return Field<bool>(FieldType::BOOL, input, 0); }
+        static inline Field<emp::Bit> getBoolField(const emp::Bit & input) { return Field<emp::Bit>(FieldType::SECURE_BOOL, input, 0); }
 
         static std::string printTupleBits(const PlainTuple & p);
         static std::string printTupleBits(const SecureTuple & s);
@@ -90,6 +101,41 @@ namespace vaultdb {
             emp::Integer dst(len, 0, PUBLIC);
             memcpy(dst.bits.data(), src.bits.data(), src.size() * TypeUtilities::getEmpBitSize());
             return dst;
+        }
+
+
+
+        template<typename B>
+        static  Expression<B> *
+        getEqualityPredicate(const uint32_t &lhs_idx, const QuerySchema &lhs, const uint32_t &rhs_idx,
+                             const QuerySchema & rhs) {
+
+            InputReference<B> *lhs_input = new InputReference<B>(lhs_idx, lhs,  rhs);
+            InputReference<B> *rhs_input = new InputReference<B>(rhs_idx, lhs,  rhs);
+            ExpressionNode<B> *equality_node = new EqualNode<B>(lhs_input, rhs_input);
+
+            ToPackedExpressionVisitor pack_it(equality_node);
+            ExpressionNode<B> *packed_predicate = pack_it.getRoot();
+
+            GenericExpression<B> *g =  new GenericExpression<B>(packed_predicate, "predicate",
+                                                                std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
+
+            delete equality_node;
+            delete lhs_input;
+            delete rhs_input;
+            return g;
+
+        }
+
+        // for use in joins
+        // indexes are based on the concatenated tuple, not addressing each input to the join comparison individually
+        template<typename B>
+        static Expression<B> *
+        getEqualityPredicate(const Operator<B> *lhs, const uint32_t &lhs_idx, const Operator<B> *rhs,
+                             const uint32_t &rhs_idx) {
+
+            return FieldUtilities::getEqualityPredicate<B>(lhs_idx, lhs->getOutputSchema(), rhs_idx, rhs->getOutputSchema());
+
         }
 
 

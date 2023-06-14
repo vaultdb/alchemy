@@ -1,0 +1,1028 @@
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time system 
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- GMP libs: /usr/lib/x86_64-linux-gnu/libgmp.so /usr/lib/x86_64-linux-gnu/libgmpxx.so
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system 
+-- GMP libs: /usr/lib/x86_64-linux-gnu/libgmp.so /usr/lib/x86_64-linux-gnu/libgmpxx.so
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time system program_options 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp
+[  0%] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
+[  1%] Building CXX object CMakeFiles/generate_enrich_data.dir/test/support/generate_enrich_data.cpp.o
+[  2%] Linking CXX executable bin/generate_enrich_data
+[  2%] Built target generate_enrich_data
+[  3%] Linking CXX static library ../../../lib/libgtest.a
+[  3%] Built target gtest
+[  4%] Building CXX object _deps/googletest-build/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o
+[  4%] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+[  4%] Linking CXX static library ../../../lib/libgtest_main.a
+[  4%] Built target gtest_main
+[  5%] Linking CXX static library ../../../lib/libgmock.a
+[  5%] Built target gmock
+[  5%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/field_utilities.cpp.o
+[  5%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/type_utilities.cpp.o
+[  6%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/system_configuration.cpp.o
+[  6%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/field/field.cpp.o
+[  7%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_tuple.cpp.o
+[  7%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/field/field_factory.cpp.o
+[  9%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/plain_tuple.cpp.o
+[  9%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/logger.cpp.o
+[ 10%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/utilities.cpp.o
+[ 10%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/secure_tuple.cpp.o
+[ 10%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_table.cpp.o
+[ 11%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/data_utilities.cpp.o
+[ 13%] Building CXX object CMakeFiles/vaultdb-emp.dir/data/psql_data_provider.cpp.o
+[ 13%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_schema.cpp.o
+[ 14%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_field_desc.cpp.o
+[ 14%] Building CXX object CMakeFiles/vaultdb-emp.dir/data/csv_reader.cpp.o
+[ 15%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/operator.cpp.o
+[ 16%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/sql_input.cpp.o
+[ 16%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/secure_sql_input.cpp.o
+[ 17%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/zk_sql_input.cpp.o
+[ 17%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/filter.cpp.o
+[ 18%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/project.cpp.o
+[ 18%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/sort.cpp.o
+[ 19%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/support/join_equality_predicate.cpp.o
+[ 20%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/join.cpp.o
+[ 20%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/basic_join.cpp.o
+[ 21%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/keyed_join.cpp.o
+[ 21%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/support/scalar_aggregate_impl.cpp.o
+[ 22%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/scalar_aggregate.cpp.o
+[ 23%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/union.cpp.o
+[ 23%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/group_by_aggregate.cpp.o
+[ 24%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/support/group_by_aggregate_impl.cpp.o
+[ 24%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/csv_input.cpp.o
+[ 25%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/shrinkwrap.cpp.o
+[ 25%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/function_expression.cpp.o
+[ 26%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/generic_expression.cpp.o
+[ 27%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/expression_node.cpp.o
+[ 27%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/comparator_expression_nodes.cpp.o
+[ 28%] Building CXX object CMakeFiles/vaultdb-emp.dir/parser/plan_parser.cpp.o
+[ 28%] Building CXX object CMakeFiles/vaultdb-emp.dir/parser/expression_parser.cpp.o
+[ 29%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/expression_factory.cpp.o
+[ 30%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/join_equality_condition_visitor.cpp.o
+[ 30%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/print_expression_visitor.cpp.o
+[ 31%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/type_inference_visitor.cpp.o
+[ 31%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/plain_to_secure_visitor.cpp.o
+[ 32%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/type_validation_visitor.cpp.o
+[ 33%] Linking CXX shared library libvaultdb-emp.so
+[ 33%] Built target vaultdb-emp
+[ 34%] Building CXX object test/CMakeFiles/field_expression_test.dir/field_expression_test.cpp.o
+[ 34%] Building CXX object test/CMakeFiles/filter_test.dir/plain/filter_test.cpp.o
+[ 34%] Building CXX object test/CMakeFiles/field_expression_test.dir/plain/plain_base_test.cpp.o
+[ 35%] Building CXX object test/CMakeFiles/project_test.dir/plain/plain_base_test.cpp.o
+[ 35%] Building CXX object test/CMakeFiles/basic_join_test.dir/plain/plain_base_test.cpp.o
+[ 35%] Building CXX object test/CMakeFiles/sort_test.dir/plain/sort_test.cpp.o
+[ 35%] Building CXX object test/CMakeFiles/filter_test.dir/plain/plain_base_test.cpp.o
+[ 37%] Building CXX object test/CMakeFiles/basic_join_test.dir/plain/basic_join_test.cpp.o
+[ 37%] Building CXX object test/CMakeFiles/project_test.dir/plain/project_test.cpp.o
+[ 38%] Building CXX object test/CMakeFiles/sort_test.dir/plain/plain_base_test.cpp.o
+[ 38%] Building CXX object test/CMakeFiles/scalar_aggregate_test.dir/plain/scalar_aggregate_test.cpp.o
+[ 39%] Building CXX object test/CMakeFiles/scalar_aggregate_test.dir/plain/plain_base_test.cpp.o
+[ 40%] Building CXX object test/CMakeFiles/csv_reader_test.dir/csv_reader_test.cpp.o
+[ 40%] Building CXX object test/CMakeFiles/keyed_join_test.dir/plain/plain_base_test.cpp.o
+[ 41%] Building CXX object test/CMakeFiles/keyed_join_test.dir/plain/keyed_join_test.cpp.o
+[ 42%] Building CXX object test/CMakeFiles/group_by_aggregate_test.dir/plain/group_by_aggregate_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/serialization_test.dir/serialization_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/serialization_test.dir/plain/plain_base_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/plan_parser_test.dir/plain/plain_base_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/csv_reader_test.dir/plain/plain_base_test.cpp.o
+[ 44%] Building CXX object test/CMakeFiles/plan_parser_test.dir/plan_parser_test.cpp.o
+[ 45%] Building CXX object test/CMakeFiles/group_by_aggregate_test.dir/plain/plain_base_test.cpp.o
+[ 46%] Building CXX object test/CMakeFiles/secret_share_generator_test.dir/plain/plain_base_test.cpp.o
+[ 47%] Building CXX object test/CMakeFiles/secret_share_generator_test.dir/secret_share_generator_test.cpp.o
+[ 47%] Building CXX object test/CMakeFiles/emp_test.dir/mpc/emp_test.cpp.o
+[ 48%] Building CXX object test/CMakeFiles/tpch_test.dir/tpch_test.cpp.o
+[ 45%] Building CXX object test/CMakeFiles/serialization_test.dir/__/pilot/src/common/shared_schema.cpp.o
+[ 49%] Building CXX object test/CMakeFiles/emp_test.dir/mpc/emp_base_test.cpp.o
+[ 49%] Building CXX object test/CMakeFiles/secure_field_expression_test.dir/mpc/secure_value_expression_test.cpp.o
+[ 49%] Building CXX object test/CMakeFiles/tpch_test.dir/plain/plain_base_test.cpp.o
+[ 50%] Building CXX object test/CMakeFiles/secure_field_expression_test.dir/mpc/emp_base_test.cpp.o
+[ 50%] Building CXX object test/CMakeFiles/secure_filter_test.dir/mpc/secure_filter_test.cpp.o
+[ 51%] Building CXX object test/CMakeFiles/secure_basic_join_test.dir/mpc/secure_basic_join_test.cpp.o
+[ 52%] Building CXX object test/CMakeFiles/emp_table_test.dir/mpc/emp_base_test.cpp.o
+[ 53%] Building CXX object test/CMakeFiles/secure_filter_test.dir/mpc/emp_base_test.cpp.o
+[ 53%] Building CXX object test/CMakeFiles/emp_table_test.dir/support/QueryTableTestQueries.cpp.o
+[ 53%] Building CXX object test/CMakeFiles/emp_table_test.dir/mpc/emp_table_test.cpp.o
+[ 53%] Building CXX object test/CMakeFiles/secure_sort_test.dir/mpc/secure_sort_test.cpp.o
+[ 53%] Building CXX object test/CMakeFiles/enrich_test.dir/enrich_test.cpp.o
+[ 54%] Building CXX object test/CMakeFiles/secure_sort_test.dir/mpc/emp_base_test.cpp.o
+[ 54%] Building CXX object test/CMakeFiles/secure_basic_join_test.dir/mpc/emp_base_test.cpp.o
+[ 54%] Building CXX object test/CMakeFiles/secure_keyed_join_test.dir/mpc/emp_base_test.cpp.o
+[ 55%] Building CXX object test/CMakeFiles/secure_keyed_join_test.dir/mpc/secure_keyed_join_test.cpp.o
+[ 55%] Building CXX object test/CMakeFiles/secure_scalar_aggregate_test.dir/mpc/secure_scalar_aggregate_test.cpp.o
+[ 56%] Building CXX object test/CMakeFiles/secure_group_by_aggregate_test.dir/mpc/secure_group_by_aggregate_test.cpp.o
+[ 56%] Building CXX object test/CMakeFiles/emp_float_to_int.dir/mpc/emp_float_to_int_test.cpp.o
+[ 57%] Building CXX object test/CMakeFiles/secure_scalar_aggregate_test.dir/mpc/emp_base_test.cpp.o
+[ 58%] Building CXX object test/CMakeFiles/secure_group_by_aggregate_test.dir/mpc/emp_base_test.cpp.o
+[ 59%] Building CXX object test/CMakeFiles/emp_float_to_int.dir/mpc/emp_base_test.cpp.o
+[ 60%] Building CXX object test/CMakeFiles/enrich_test.dir/support/enrich_test_support.cpp.o
+[ 60%] Building CXX object test/CMakeFiles/enrich_test.dir/mpc/emp_base_test.cpp.o
+[ 61%] Building CXX object test/CMakeFiles/secure_tpch_test.dir/mpc/secure_tpch_test.cpp.o
+[ 62%] Building CXX object test/CMakeFiles/secure_tpch_test.dir/mpc/emp_base_test.cpp.o
+[ 63%] Building CXX object pilot/CMakeFiles/secret_share_from_query.dir/src/common/pilot_utilities.cpp.o
+[ 63%] Building CXX object pilot/CMakeFiles/secret_share_from_query.dir/src/secret_share_from_query.cpp.o
+[ 64%] Building CXX object pilot/CMakeFiles/secret_share_csv.dir/src/secret_share_csv.cpp.o
+[ 64%] Building CXX object pilot/CMakeFiles/generate_enrich_data_three_parties.dir/src/generate_enrich_data_three_parties.cpp.o
+[ 64%] Building CXX object pilot/CMakeFiles/secret_share_csv.dir/src/common/shared_schema.cpp.o
+[ 65%] Building CXX object pilot/CMakeFiles/secret_share_csv.dir/src/common/pilot_utilities.cpp.o
+[ 65%] Building CXX object pilot/CMakeFiles/secret_share_batch_from_query.dir/src/secret_share_batch_from_query.cpp.o
+[ 66%] Building CXX object pilot/CMakeFiles/secret_share_batch_from_query.dir/src/common/pilot_utilities.cpp.o
+[ 67%] Building CXX object pilot/CMakeFiles/load_tuples_data_partner.dir/src/load_tuples_data_partner.cpp.o
+[ 68%] Building CXX object pilot/CMakeFiles/load_tuples_data_partner.dir/src/common/shared_schema.cpp.o
+[ 68%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/run_data_partner.cpp.o
+[ 69%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/run_data_partner_aggregation.cpp.o
+[ 69%] Building CXX object pilot/CMakeFiles/load_tuples_data_partner.dir/src/common/union_hybrid_data.cpp.o
+[ 70%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/common/shared_schema.cpp.o
+[ 71%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/run_data_partner_batch.cpp.o
+[ 71%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/common/pilot_utilities.cpp.o
+[ 72%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/common/union_hybrid_data.cpp.o
+[ 73%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/common/union_hybrid_data.cpp.o
+[ 73%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/enrich_htn_query.cpp.o
+[ 74%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/common/shared_schema.cpp.o
+[ 74%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/common/union_hybrid_data.cpp.o
+[ 74%] Building CXX object pilot/CMakeFiles/assemble_secret_shares.dir/src/assemble_secret_shares.cpp.o
+[ 75%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/common/shared_schema.cpp.o
+[ 76%] Building CXX object pilot/CMakeFiles/assemble_secret_shares.dir/src/common/shared_schema.cpp.o
+[ 77%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/common/pilot_utilities.cpp.o
+[ 78%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/enrich_htn_query.cpp.o
+[ 78%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/common/pilot_utilities.cpp.o
+[ 79%] Linking CXX executable ../bin/generate_enrich_data_three_parties
+[ 79%] Built target generate_enrich_data_three_parties
+[ 79%] Linking CXX executable ../bin/assemble_secret_shares
+[ 79%] Built target assemble_secret_shares
+[ 80%] Linking CXX executable ../bin/secret_share_csv
+[ 80%] Built target secret_share_csv
+[ 80%] Linking CXX executable ../secret_share_generator_test
+[ 81%] Linking CXX executable ../field_expression_test
+[ 81%] Linking CXX executable ../bin/secret_share_from_query
+[ 81%] Built target secret_share_generator_test
+[ 81%] Built target secret_share_from_query
+[ 81%] Built target field_expression_test
+[ 82%] Linking CXX executable ../tpch_test
+[ 82%] Linking CXX executable ../filter_test
+[ 82%] Built target tpch_test
+[ 83%] Linking CXX executable ../serialization_test
+[ 83%] Linking CXX executable ../bin/load_tuples_data_partner
+[ 83%] Built target filter_test
+[ 83%] Linking CXX executable ../bin/secret_share_batch_from_query
+[ 83%] Built target serialization_test
+[ 84%] Linking CXX executable ../plan_parser_test
+[ 85%] Linking CXX executable ../csv_reader_test
+[ 85%] Built target load_tuples_data_partner
+[ 85%] Built target secret_share_batch_from_query
+[ 86%] Linking CXX executable ../basic_join_test
+[ 86%] Built target plan_parser_test
+[ 86%] Built target csv_reader_test
+[ 87%] Linking CXX executable ../project_test
+[ 87%] Built target basic_join_test
+[ 88%] Linking CXX executable ../keyed_join_test
+[ 88%] Linking CXX executable ../bin/run_data_partner_aggregation
+[ 88%] Built target keyed_join_test
+[ 88%] Built target project_test
+[ 88%] Built target run_data_partner_aggregation
+[ 88%] Linking CXX executable ../secure_tpch_test
+[ 89%] Linking CXX executable ../emp_table_test
+[ 90%] Linking CXX executable ../emp_test
+[ 91%] Linking CXX executable ../secure_basic_join_test
+[ 92%] Linking CXX executable ../group_by_aggregate_test
+[ 93%] Linking CXX executable ../emp_float_to_int
+[ 94%] Linking CXX executable ../secure_field_expression_test
+[ 94%] Built target emp_table_test
+[ 94%] Linking CXX executable ../secure_filter_test
+[ 95%] Linking CXX executable ../secure_keyed_join_test
+[ 95%] Built target secure_tpch_test
+[ 95%] Linking CXX executable ../secure_sort_test
+[ 95%] Linking CXX executable ../sort_test
+[ 95%] Linking CXX executable ../secure_group_by_aggregate_test
+[ 95%] Built target emp_test
+[ 95%] Built target secure_basic_join_test
+[ 95%] Built target group_by_aggregate_test
+[ 95%] Built target emp_float_to_int
+[ 95%] Built target secure_field_expression_test
+[ 95%] Built target secure_filter_test
+[ 95%] Built target secure_keyed_join_test
+[ 95%] Built target secure_sort_test
+[ 95%] Built target sort_test
+[ 96%] Linking CXX executable ../scalar_aggregate_test
+[ 96%] Built target secure_group_by_aggregate_test
+[ 96%] Built target scalar_aggregate_test
+[ 97%] Linking CXX executable ../secure_scalar_aggregate_test
+[ 97%] Built target secure_scalar_aggregate_test
+[ 97%] Linking CXX executable ../bin/run_data_partner
+[ 98%] Linking CXX executable ../enrich_test
+[ 98%] Built target run_data_partner
+[ 98%] Built target enrich_test
+[100%] Linking CXX executable ../bin/run_data_partner_batch
+[100%] Built target run_data_partner_batch
+[  3%] Built target gtest
+[  6%] Built target gtest_main
+[  9%] Built target gmock
+[ 96%] Built target vaultdb-emp
+[100%] Built target generate_enrich_data_three_parties
+Finished generating 1000 patients per host!
+DROP TABLE
+CREATE TABLE
+COPY 1000
+COPY 1000
+COPY 1000
+UPDATE 1832
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+CREATE EXTENSION
+ALTER TABLE
+UPDATE 3000
+COPY 1000
+COPY 1000
+COPY 1000
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_chi" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+Writing multisite tables!
+preparing for aggregate-only test
+Secret sharing 532 rows.
+Secret sharing 170 rows.
+Setting up semi-join optimization
+Secret sharing 1323 rows.
+Secret sharing 107 rows.
+Secret sharing 96 rows.
+Secret sharing 79 rows.
+Secret sharing 108 rows.
+Secret sharing 97 rows.
+Secret sharing 100 rows.
+Secret sharing 95 rows.
+Secret sharing 111 rows.
+Secret sharing 106 rows.
+Secret sharing 101 rows.
+Secret sharing 441 rows.
+Secret sharing 44 rows.
+Secret sharing 32 rows.
+Secret sharing 24 rows.
+Secret sharing 37 rows.
+Secret sharing 24 rows.
+Secret sharing 27 rows.
+Secret sharing 28 rows.
+Secret sharing 42 rows.
+Secret sharing 29 rows.
+Secret sharing 29 rows.
+Secret sharing 441 rows.
+Secret sharing 1323 rows.
+Secret sharing 882 rows.
+finished generating 100 patients per host!
+You are now connected to database "enrich_htn_test_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_test_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_unioned" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from CsvReaderTest
+[ RUN      ] CsvReaderTest.lineitemTest
+[       OK ] CsvReaderTest.lineitemTest (230 ms)
+[ RUN      ] CsvReaderTest.quotedStringTest
+[       OK ] CsvReaderTest.quotedStringTest (177 ms)
+[ RUN      ] CsvReaderTest.customerTest
+[       OK ] CsvReaderTest.customerTest (199 ms)
+[ RUN      ] CsvReaderTest.ordersTest
+[       OK ] CsvReaderTest.ordersTest (199 ms)
+[----------] 4 tests from CsvReaderTest (806 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (806 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from FieldExpressionTest
+[ RUN      ] FieldExpressionTest.test_int32
+[       OK ] FieldExpressionTest.test_int32 (54 ms)
+[ RUN      ] FieldExpressionTest.test_int32_comparator
+[       OK ] FieldExpressionTest.test_int32_comparator (59 ms)
+[ RUN      ] FieldExpressionTest.test_int32_expr
+[       OK ] FieldExpressionTest.test_int32_expr (51 ms)
+[ RUN      ] FieldExpressionTest.cmp_swap
+[       OK ] FieldExpressionTest.cmp_swap (268 ms)
+[----------] 4 tests from FieldExpressionTest (434 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (434 ms total)
+[  PASSED  ] 4 tests.
+Running main() from /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from FilterTest
+[ RUN      ] FilterTest.test_table_scan
+[       OK ] FilterTest.test_table_scan (134 ms)
+[ RUN      ] FilterTest.test_filter
+[       OK ] FilterTest.test_filter (139 ms)
+[----------] 2 tests from FilterTest (274 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (274 ms total)
+[  PASSED  ] 2 tests.
+Running main() from /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ProjectionTest
+[ RUN      ] ProjectionTest.q3Lineitem
+[       OK ] ProjectionTest.q3Lineitem (252 ms)
+[----------] 1 test from ProjectionTest (252 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (252 ms total)
+[  PASSED  ] 1 test.
+Running main() from /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BasicJoinTest
+[ RUN      ] BasicJoinTest.test_tpch_q3_customer_orders
+[       OK ] BasicJoinTest.test_tpch_q3_customer_orders (113 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders (258 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer (801 ms)
+[----------] 3 tests from BasicJoinTest (1173 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (1173 ms total)
+[  PASSED  ] 3 tests.
+Running main() from /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedJoinTest
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders (215 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders (2458 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer (2751 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed (178 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed (2574 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (2625 ms)
+[----------] 6 tests from KeyedJoinTest (10804 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (10804 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SortTest
+[ RUN      ] SortTest.testSingleIntColumn
+[       OK ] SortTest.testSingleIntColumn (74 ms)
+[ RUN      ] SortTest.tpchQ1Sort
+[       OK ] SortTest.tpchQ1Sort (162 ms)
+[ RUN      ] SortTest.tpchQ3Sort
+[       OK ] SortTest.tpchQ3Sort (141 ms)
+[ RUN      ] SortTest.tpchQ5Sort
+[       OK ] SortTest.tpchQ5Sort (98 ms)
+[ RUN      ] SortTest.tpchQ8Sort
+[       OK ] SortTest.tpchQ8Sort (85 ms)
+[ RUN      ] SortTest.tpchQ9Sort
+[       OK ] SortTest.tpchQ9Sort (162 ms)
+[ RUN      ] SortTest.tpchQ18Sort
+[       OK ] SortTest.tpchQ18Sort (107 ms)
+[ RUN      ] SortTest.sort_and_encrypt_table_one_column
+[       OK ] SortTest.sort_and_encrypt_table_one_column (64 ms)
+[----------] 8 tests from SortTest (897 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (898 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from ScalarAggregateTest
+[ RUN      ] ScalarAggregateTest.test_count
+[       OK ] ScalarAggregateTest.test_count (88 ms)
+[ RUN      ] ScalarAggregateTest.test_count_dummies
+[       OK ] ScalarAggregateTest.test_count_dummies (72 ms)
+[ RUN      ] ScalarAggregateTest.test_min
+[       OK ] ScalarAggregateTest.test_min (76 ms)
+[ RUN      ] ScalarAggregateTest.test_max
+[       OK ] ScalarAggregateTest.test_max (91 ms)
+[ RUN      ] ScalarAggregateTest.test_sum
+[       OK ] ScalarAggregateTest.test_sum (89 ms)
+[ RUN      ] ScalarAggregateTest.test_sum_dummies
+[       OK ] ScalarAggregateTest.test_sum_dummies (86 ms)
+[ RUN      ] ScalarAggregateTest.test_avg
+[       OK ] ScalarAggregateTest.test_avg (86 ms)
+[ RUN      ] ScalarAggregateTest.test_avg_dummies
+[       OK ] ScalarAggregateTest.test_avg_dummies (84 ms)
+[ RUN      ] ScalarAggregateTest.test_all_sum_dummies
+[       OK ] ScalarAggregateTest.test_all_sum_dummies (118 ms)
+[ RUN      ] ScalarAggregateTest.test_all_avg_dummies
+[       OK ] ScalarAggregateTest.test_all_avg_dummies (110 ms)
+[ RUN      ] ScalarAggregateTest.test_tpch_q1_avg_cnt
+[       OK ] ScalarAggregateTest.test_tpch_q1_avg_cnt (159 ms)
+[ RUN      ] ScalarAggregateTest.test_all_aggs_tpch_q1
+[       OK ] ScalarAggregateTest.test_all_aggs_tpch_q1 (130 ms)
+[----------] 12 tests from ScalarAggregateTest (1193 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (1193 ms total)
+[  PASSED  ] 12 tests.
+Running main() from /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from GroupByAggregateTest
+[ RUN      ] GroupByAggregateTest.test_count
+[       OK ] GroupByAggregateTest.test_count (101 ms)
+[ RUN      ] GroupByAggregateTest.test_sum
+[       OK ] GroupByAggregateTest.test_sum (127 ms)
+[ RUN      ] GroupByAggregateTest.test_sum_dummies
+[       OK ] GroupByAggregateTest.test_sum_dummies (104 ms)
+[ RUN      ] GroupByAggregateTest.test_avg
+[       OK ] GroupByAggregateTest.test_avg (96 ms)
+[ RUN      ] GroupByAggregateTest.test_avg_dummies
+[       OK ] GroupByAggregateTest.test_avg_dummies (104 ms)
+[ RUN      ] GroupByAggregateTest.test_min
+[       OK ] GroupByAggregateTest.test_min (115 ms)
+[ RUN      ] GroupByAggregateTest.test_min_dummies
+[       OK ] GroupByAggregateTest.test_min_dummies (126 ms)
+[ RUN      ] GroupByAggregateTest.test_max
+[       OK ] GroupByAggregateTest.test_max (98 ms)
+[ RUN      ] GroupByAggregateTest.test_max_dummies
+[       OK ] GroupByAggregateTest.test_max_dummies (91 ms)
+[ RUN      ] GroupByAggregateTest.test_tpch_q1_sums
+[       OK ] GroupByAggregateTest.test_tpch_q1_sums (235 ms)
+[ RUN      ] GroupByAggregateTest.test_tpch_q1_avg_cnt
+[       OK ] GroupByAggregateTest.test_tpch_q1_avg_cnt (212 ms)
+[ RUN      ] GroupByAggregateTest.tpch_q1
+[       OK ] GroupByAggregateTest.tpch_q1 (255 ms)
+[----------] 12 tests from GroupByAggregateTest (1671 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (1671 ms total)
+[  PASSED  ] 12 tests.
+Running main() from /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecretShareGeneratorTest
+[ RUN      ] SecretShareGeneratorTest.lineitem_sample
+[       OK ] SecretShareGeneratorTest.lineitem_sample (120 ms)
+[ RUN      ] SecretShareGeneratorTest.lineitem_dummy_tag_sample
+[       OK ] SecretShareGeneratorTest.lineitem_dummy_tag_sample (113 ms)
+[----------] 2 tests from SecretShareGeneratorTest (233 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (233 ms total)
+[  PASSED  ] 2 tests.
+Running main() from /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SerializationTest
+[ RUN      ] SerializationTest.typesTest
+[       OK ] SerializationTest.typesTest (127 ms)
+[ RUN      ] SerializationTest.capricorn_test
+[       OK ] SerializationTest.capricorn_test (66 ms)
+[ RUN      ] SerializationTest.xored_serialization_test
+[       OK ] SerializationTest.xored_serialization_test (63 ms)
+[ RUN      ] SerializationTest.capricorn_deserialization
+[       OK ] SerializationTest.capricorn_deserialization (177 ms)
+[----------] 4 tests from SerializationTest (434 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (435 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from PlanParserTest
+[ RUN      ] PlanParserTest.tpch_q1
+[       OK ] PlanParserTest.tpch_q1 (153 ms)
+[ RUN      ] PlanParserTest.tpch_q3
+[       OK ] PlanParserTest.tpch_q3 (153 ms)
+[ RUN      ] PlanParserTest.tpch_q5
+[       OK ] PlanParserTest.tpch_q5 (155 ms)
+[ RUN      ] PlanParserTest.tpch_q8
+[       OK ] PlanParserTest.tpch_q8 (126 ms)
+[ RUN      ] PlanParserTest.tpch_q9
+[       OK ] PlanParserTest.tpch_q9 (160 ms)
+[ RUN      ] PlanParserTest.tpch_q18
+[       OK ] PlanParserTest.tpch_q18 (156 ms)
+[----------] 6 tests from PlanParserTest (906 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (906 ms total)
+[  PASSED  ] 6 tests.
+Running main() from /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from TpcHTest
+[ RUN      ] TpcHTest.tpch_q1
+[       OK ] TpcHTest.tpch_q1 (1048 ms)
+[ RUN      ] TpcHTest.tpch_q3
+[       OK ] TpcHTest.tpch_q3 (4001 ms)
+[ RUN      ] TpcHTest.tpch_q5
+[       OK ] TpcHTest.tpch_q5 (3146 ms)
+[ RUN      ] TpcHTest.tpch_q8
+[       OK ] TpcHTest.tpch_q8 (183 ms)
+[ RUN      ] TpcHTest.tpch_q9
+[       OK ] TpcHTest.tpch_q9 (4350 ms)
+[ RUN      ] TpcHTest.tpch_q18
+[       OK ] TpcHTest.tpch_q18 (13558 ms)
+[----------] 6 tests from TpcHTest (26289 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (26289 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from EmpTest
+[ RUN      ] EmpTest.emp_test_int
+Connecting to 127.0.0.1 on port 54321 as 1
+connected
+Runtime for test was 0.063444 secs.
+[       OK ] EmpTest.emp_test_int (5941 ms)
+[ RUN      ] EmpTest.emp_test_varchar
+Connecting to 127.0.0.1 on port 54322 as 1
+connected
+Runtime for test was 0.063342 secs.
+[       OK ] EmpTest.emp_test_varchar (171 ms)
+[ RUN      ] EmpTest.secret_share_table_one_column
+Connecting to 127.0.0.1 on port 54323 as 1
+connected
+Runtime for test was 0.073223 secs.
+[       OK ] EmpTest.secret_share_table_one_column (190 ms)
+[ RUN      ] EmpTest.sort_and_share_table_one_column
+Connecting to 127.0.0.1 on port 54324 as 1
+connected
+Runtime for test was 0.086185 secs.
+[       OK ] EmpTest.sort_and_share_table_one_column (213 ms)
+[----------] 4 tests from EmpTest (6516 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (6516 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from SecureValueExpressionTest
+[ RUN      ] SecureValueExpressionTest.test_value_assignment
+Connecting to 127.0.0.1 on port 54323 as 1
+connected
+Runtime for test was 0.061739 secs.
+[       OK ] SecureValueExpressionTest.test_value_assignment (172 ms)
+[ RUN      ] SecureValueExpressionTest.test_string_compare
+Connecting to 127.0.0.1 on port 54324 as 1
+connected
+Runtime for test was 0.062175 secs.
+[       OK ] SecureValueExpressionTest.test_string_compare (186 ms)
+[ RUN      ] SecureValueExpressionTest.test_emp_int_math
+Connecting to 127.0.0.1 on port 54325 as 1
+connected
+Runtime for test was 0.064228 secs.
+[       OK ] SecureValueExpressionTest.test_emp_int_math (189 ms)
+[ RUN      ] SecureValueExpressionTest.test_millionaires
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.063496 secs.
+[       OK ] SecureValueExpressionTest.test_millionaires (187 ms)
+[ RUN      ] SecureValueExpressionTest.test_char_comparison
+Connecting to 127.0.0.1 on port 54327 as 1
+connected
+Runtime for test was 0.064869 secs.
+[       OK ] SecureValueExpressionTest.test_char_comparison (191 ms)
+[----------] 5 tests from SecureValueExpressionTest (927 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (927 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from EmpTableTest
+[ RUN      ] EmpTableTest.encrypt_table_one_column
+Connecting to 127.0.0.1 on port 54324 as 1
+connected
+Runtime for test was 0.137233 secs.
+[       OK ] EmpTableTest.encrypt_table_one_column (262 ms)
+[ RUN      ] EmpTableTest.encrypt_table_varchar
+Connecting to 127.0.0.1 on port 54325 as 1
+connected
+Runtime for test was 0.215582 secs.
+[       OK ] EmpTableTest.encrypt_table_varchar (366 ms)
+[ RUN      ] EmpTableTest.encrypt_table_two_cols
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.23735 secs.
+[       OK ] EmpTableTest.encrypt_table_two_cols (393 ms)
+[ RUN      ] EmpTableTest.encrypt_table
+Connecting to 127.0.0.1 on port 54327 as 1
+connected
+Runtime for test was 0.43291 secs.
+[       OK ] EmpTableTest.encrypt_table (613 ms)
+[ RUN      ] EmpTableTest.encrypt_table_dummy_tag
+Connecting to 127.0.0.1 on port 54328 as 1
+connected
+Runtime for test was 0.528217 secs.
+[       OK ] EmpTableTest.encrypt_table_dummy_tag (740 ms)
+[ RUN      ] EmpTableTest.bit_packing_test
+Connecting to 127.0.0.1 on port 54329 as 1
+connected
+Runtime for test was 0.144531 secs.
+[       OK ] EmpTableTest.bit_packing_test (284 ms)
+[----------] 6 tests from EmpTableTest (2661 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (2661 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecureFilterTest
+[ RUN      ] SecureFilterTest.test_table_scan
+Connecting to 127.0.0.1 on port 54325 as 1
+connected
+Runtime for test was 0.194792 secs.
+[       OK ] SecureFilterTest.test_table_scan (421 ms)
+[ RUN      ] SecureFilterTest.test_filter
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.176592 secs.
+[       OK ] SecureFilterTest.test_filter (426 ms)
+[----------] 2 tests from SecureFilterTest (848 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (848 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortTest
+[ RUN      ] SecureSortTest.tpchQ1Sort
+Connecting to 127.0.0.1 on port 43441 as 1
+connected
+Runtime for test was 0.210277 secs.
+[       OK ] SecureSortTest.tpchQ1Sort (444 ms)
+[ RUN      ] SecureSortTest.tpchQ3Sort
+Connecting to 127.0.0.1 on port 43442 as 1
+connected
+Runtime for test was 0.270412 secs.
+[       OK ] SecureSortTest.tpchQ3Sort (441 ms)
+[ RUN      ] SecureSortTest.tpchQ5Sort
+Connecting to 127.0.0.1 on port 43443 as 1
+connected
+Runtime for test was 0.228086 secs.
+[       OK ] SecureSortTest.tpchQ5Sort (383 ms)
+[ RUN      ] SecureSortTest.tpchQ8Sort
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 0.11744 secs.
+[       OK ] SecureSortTest.tpchQ8Sort (276 ms)
+[ RUN      ] SecureSortTest.tpchQ9Sort
+Connecting to 127.0.0.1 on port 43445 as 1
+connected
+Runtime for test was 16.6759 secs.
+[       OK ] SecureSortTest.tpchQ9Sort (16849 ms)
+[ RUN      ] SecureSortTest.tpchQ18Sort
+Connecting to 127.0.0.1 on port 43446 as 1
+connected
+Runtime for test was 0.131074 secs.
+[       OK ] SecureSortTest.tpchQ18Sort (279 ms)
+[----------] 6 tests from SecureSortTest (18673 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (18673 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureBasicJoinTest
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_customer_orders
+Connecting to 127.0.0.1 on port 43443 as 1
+connected
+Runtime for test was 0.223972 secs.
+[       OK ] SecureBasicJoinTest.test_tpch_q3_customer_orders (416 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 6.97638 secs.
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders (7220 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on port 43445 as 1
+connected
+Runtime for test was 18.3779 secs.
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer (18593 ms)
+[----------] 3 tests from SecureBasicJoinTest (26230 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (26230 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureKeyedJoinTest
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders
+Connecting to 127.0.0.1 on port 43442 as 1
+connected
+Runtime for test was 0.267207 secs.
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders (435 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders
+Connecting to 127.0.0.1 on port 43443 as 1
+connected
+Runtime for test was 1.62345 secs.
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders (1834 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 1.75663 secs.
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer (1983 ms)
+[----------] 3 tests from SecureKeyedJoinTest (4252 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (4252 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureScalarAggregateTest
+[ RUN      ] SecureScalarAggregateTest.test_count
+Connecting to 127.0.0.1 on port 54312 as 1
+connected
+Runtime for test was 0.096276 secs.
+[       OK ] SecureScalarAggregateTest.test_count (230 ms)
+[ RUN      ] SecureScalarAggregateTest.test_count_dummies
+Connecting to 127.0.0.1 on port 54313 as 1
+connected
+Runtime for test was 0.101754 secs.
+[       OK ] SecureScalarAggregateTest.test_count_dummies (259 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min
+Connecting to 127.0.0.1 on port 54314 as 1
+connected
+Runtime for test was 0.097099 secs.
+[       OK ] SecureScalarAggregateTest.test_min (250 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min_dummies
+Connecting to 127.0.0.1 on port 54315 as 1
+connected
+Runtime for test was 0.099918 secs.
+[       OK ] SecureScalarAggregateTest.test_min_dummies (258 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max
+Connecting to 127.0.0.1 on port 54316 as 1
+connected
+Runtime for test was 0.086884 secs.
+[       OK ] SecureScalarAggregateTest.test_max (237 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max_dummies
+Connecting to 127.0.0.1 on port 54317 as 1
+connected
+Runtime for test was 0.099916 secs.
+[       OK ] SecureScalarAggregateTest.test_max_dummies (253 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum
+Connecting to 127.0.0.1 on port 54318 as 1
+connected
+Runtime for test was 0.093952 secs.
+[       OK ] SecureScalarAggregateTest.test_sum (247 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on port 54319 as 1
+connected
+Runtime for test was 0.099466 secs.
+[       OK ] SecureScalarAggregateTest.test_sum_dummies (256 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg
+Connecting to 127.0.0.1 on port 54320 as 1
+connected
+Runtime for test was 0.097087 secs.
+[       OK ] SecureScalarAggregateTest.test_avg (251 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on port 54321 as 1
+connected
+Runtime for test was 0.102016 secs.
+[       OK ] SecureScalarAggregateTest.test_avg_dummies (260 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_baseprice_dummies
+Connecting to 127.0.0.1 on port 54322 as 1
+connected
+Runtime for test was 0.113476 secs.
+[       OK ] SecureScalarAggregateTest.test_sum_baseprice_dummies (273 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_lineno_baseprice
+Connecting to 127.0.0.1 on port 54323 as 1
+connected
+Runtime for test was 0.125242 secs.
+[       OK ] SecureScalarAggregateTest.test_sum_lineno_baseprice (288 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_sums
+Connecting to 127.0.0.1 on port 54324 as 1
+connected
+Runtime for test was 0.320757 secs.
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_sums (547 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on port 54325 as 1
+connected
+Runtime for test was 0.564398 secs.
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt (780 ms)
+[ RUN      ] SecureScalarAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on port 54326 as 1
+connected
+Runtime for test was 0.576278 secs.
+[       OK ] SecureScalarAggregateTest.tpch_q1 (823 ms)
+[----------] 15 tests from SecureScalarAggregateTest (5220 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (5220 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from SecureGroupByAggregateTest
+[ RUN      ] SecureGroupByAggregateTest.test_count
+Connecting to 127.0.0.1 on port 43440 as 1
+connected
+Runtime for test was 0.118726 secs.
+[       OK ] SecureGroupByAggregateTest.test_count (260 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum
+Connecting to 127.0.0.1 on port 43441 as 1
+connected
+Runtime for test was 0.117112 secs.
+[       OK ] SecureGroupByAggregateTest.test_sum (275 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum_dummies
+Connecting to 127.0.0.1 on port 43442 as 1
+connected
+Runtime for test was 0.113106 secs.
+[       OK ] SecureGroupByAggregateTest.test_sum_dummies (272 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg
+Connecting to 127.0.0.1 on port 43443 as 1
+connected
+Runtime for test was 0.130957 secs.
+[       OK ] SecureGroupByAggregateTest.test_avg (289 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg_dummies
+Connecting to 127.0.0.1 on port 43444 as 1
+connected
+Runtime for test was 0.128041 secs.
+[       OK ] SecureGroupByAggregateTest.test_avg_dummies (287 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min
+Connecting to 127.0.0.1 on port 43445 as 1
+connected
+Runtime for test was 0.111663 secs.
+[       OK ] SecureGroupByAggregateTest.test_min (268 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min_dummies
+Connecting to 127.0.0.1 on port 43446 as 1
+connected
+Runtime for test was 0.114074 secs.
+[       OK ] SecureGroupByAggregateTest.test_min_dummies (275 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max
+Connecting to 127.0.0.1 on port 43447 as 1
+connected
+Runtime for test was 0.116411 secs.
+[       OK ] SecureGroupByAggregateTest.test_max (274 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max_dummies
+Connecting to 127.0.0.1 on port 43448 as 1
+connected
+Runtime for test was 0.113551 secs.
+[       OK ] SecureGroupByAggregateTest.test_max_dummies (292 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_sums
+Connecting to 127.0.0.1 on port 43449 as 1
+connected
+Runtime for test was 0.520409 secs.
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_sums (781 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt
+Connecting to 127.0.0.1 on port 43450 as 1
+connected
+Runtime for test was 1.55137 secs.
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt (1815 ms)
+[ RUN      ] SecureGroupByAggregateTest.tpch_q1
+Connecting to 127.0.0.1 on port 43451 as 1
+connected
+Runtime for test was 1.14655 secs.
+[       OK ] SecureGroupByAggregateTest.tpch_q1 (1445 ms)
+[----------] 12 tests from SecureGroupByAggregateTest (6538 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (6538 ms total)
+[  PASSED  ] 12 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureTpcHTest
+[ RUN      ] SecureTpcHTest.tpch_q1
+Connecting to 127.0.0.1 on port 7654 as 1
+connected
+Runtime for test was 2.78855 secs.
+[       OK ] SecureTpcHTest.tpch_q1 (3068 ms)
+[ RUN      ] SecureTpcHTest.tpch_q3
+Connecting to 127.0.0.1 on port 7655 as 1
+connected
+Runtime for test was 94.5412 secs.
+[       OK ] SecureTpcHTest.tpch_q3 (94782 ms)
+[ RUN      ] SecureTpcHTest.tpch_q5
+Connecting to 127.0.0.1 on port 7656 as 1
+connected
+Runtime for test was 22.9194 secs.
+[       OK ] SecureTpcHTest.tpch_q5 (23165 ms)
+[ RUN      ] SecureTpcHTest.tpch_q8
+Connecting to 127.0.0.1 on port 7657 as 1
+connected
+Runtime for test was 2.17679 secs.
+[       OK ] SecureTpcHTest.tpch_q8 (2396 ms)
+[ RUN      ] SecureTpcHTest.tpch_q9
+Connecting to 127.0.0.1 on port 7658 as 1
+connected
+Runtime for test was 9.52103 secs.
+[       OK ] SecureTpcHTest.tpch_q9 (9774 ms)
+[ RUN      ] SecureTpcHTest.tpch_q18
+Connecting to 127.0.0.1 on port 7659 as 1
+connected
+Runtime for test was 31.5987 secs.
+[       OK ] SecureTpcHTest.tpch_q18 (31885 ms)
+[----------] 6 tests from SecureTpcHTest (165071 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (165071 ms total)
+[  PASSED  ] 6 tests.

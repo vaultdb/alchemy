@@ -11,13 +11,13 @@ using namespace vaultdb;
 QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const FieldType &type)
         : field_name_(f.field_name_), table_name_(f.table_name_),
           string_length_(f.getStringLength()),
-          type_(type), ordinal_(f.ordinal_), bit_packed_size_(f.bit_packed_size_), field_min_(f.field_min_) { // carry over bit packed size
+          type_(type), ordinal_(f.ordinal_), bit_packed_size_(f.bit_packed_size_), field_min_(f.field_min_), secure_field_min_(f.secure_field_min_) { // carry over bit packed size
     initializeFieldSize();
 }
 
 
 QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const int &  col_num)
-        : field_name_(f.field_name_), table_name_(f.table_name_), string_length_(f.string_length_), type_(f.type_), ordinal_(col_num), field_size_(f.field_size_), bit_packed_size_(f.field_size_), field_min_(f.field_min_) {
+        : field_name_(f.field_name_), table_name_(f.table_name_), string_length_(f.string_length_), type_(f.type_), ordinal_(col_num), field_size_(f.field_size_), bit_packed_size_(f.field_size_), field_min_(f.field_min_), secure_field_min_(f.secure_field_min_) {
 }
 
 QueryFieldDesc::QueryFieldDesc(const int & anOrdinal, const string &n, const string &tab, const FieldType &aType,
@@ -65,12 +65,14 @@ QueryFieldDesc& QueryFieldDesc::operator=(const QueryFieldDesc& src)  {
     this->field_size_ = src.field_size_;
     this->bit_packed_size_ = src.bit_packed_size_;
     this->field_min_ = src.field_min_;
+    this->secure_field_min_ = src.secure_field_min_;
 
     return *this;
 }
 
 // only checking for relation compatibility, so don't care about table name or field name
-bool QueryFieldDesc::operator==(const QueryFieldDesc& other) {
+// logical equality
+bool QueryFieldDesc::operator==(const QueryFieldDesc& other) const {
 
     // if types are the same, or int32_t --> date
     if (!(this->getType() == other.getType() ||
@@ -117,6 +119,7 @@ void QueryFieldDesc::initializeFieldSize() {
                 if ((bit_packing_def.domain_size_ == (bit_packing_def.max_ - bit_packing_def.min_ + 1) )
                   || (bit_packing_def.min_ >= 0 && bit_packing_def.max_ > bit_packing_def.min_)){ // sparser key space, happens with some of the < SF1 instance of TPC-H
                     field_min_ = bit_packing_def.min_;
+                    secure_field_min_ = emp::Integer(field_size_, field_min_, PUBLIC);
                     bit_packed_size_ = ceil(log2((float) (bit_packing_def.max_ - bit_packing_def.min_ + 1)));
                     if(bit_packed_size_ == 0) bit_packed_size_ = 1;
 

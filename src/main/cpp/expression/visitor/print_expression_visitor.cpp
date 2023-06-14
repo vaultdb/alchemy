@@ -8,88 +8,94 @@
 using namespace vaultdb;
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(InputReferenceNode<B> node) {
-    last_value_ = "$" + std::to_string(node.read_idx_);
+void PrintExpressionVisitor<B>::visit(InputReference<B> & node) {
+    last_value_ = "$" + std::to_string(node.output_idx_);
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(LiteralNode<B> node) {
+void PrintExpressionVisitor<B>::visit(PackedInputReference<B> & node) {
+    last_value_ = "P$" + std::to_string(node.output_idx_) + "(" + std::to_string(node.output_schema_.size()) + ")";
+}
+
+
+template<typename B>
+void PrintExpressionVisitor<B>::visit(LiteralNode<B>&  node) {
     last_value_ = node.payload_.toString();
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(AndNode<B> node) {
+void PrintExpressionVisitor<B>::visit(AndNode<B> & node) {
     visitBinaryExpression(node, "AND");
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(OrNode<B> node) {
+void PrintExpressionVisitor<B>::visit(OrNode<B> & node) {
     visitBinaryExpression(node, "OR");
 
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(NotNode<B> node) {
+void PrintExpressionVisitor<B>::visit(NotNode<B> & node) {
     node.lhs_->accept(this);
     last_value_ = "NOT " + last_value_;
 }
 
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(PlusNode<B> node) {
+void PrintExpressionVisitor<B>::visit(PlusNode<B> & node) {
     visitBinaryExpression(node, "+");
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(MinusNode<B> node) {
+void PrintExpressionVisitor<B>::visit(MinusNode<B> & node) {
     visitBinaryExpression(node, "-");
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(TimesNode<B> node) {
+void PrintExpressionVisitor<B>::visit(TimesNode<B> & node) {
     visitBinaryExpression(node, "*");
 
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(DivideNode<B> node) {
+void PrintExpressionVisitor<B>::visit(DivideNode<B> & node) {
     visitBinaryExpression(node, "/");
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(ModulusNode<B> node) {
+void PrintExpressionVisitor<B>::visit(ModulusNode<B>&  node) {
     visitBinaryExpression(node, "%");
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(EqualNode<B> node) {
+void PrintExpressionVisitor<B>::visit(EqualNode<B> & node) {
     visitBinaryExpression(node, "==");
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(NotEqualNode<B> node) {
+void PrintExpressionVisitor<B>::visit(NotEqualNode<B> & node) {
     visitBinaryExpression(node, "!=");
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(GreaterThanNode<B> node) {
+void PrintExpressionVisitor<B>::visit(GreaterThanNode<B> & node) {
     visitBinaryExpression(node, ">");
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(LessThanNode<B> node) {
+void PrintExpressionVisitor<B>::visit(LessThanNode<B> & node) {
     visitBinaryExpression(node, "<");
 
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(GreaterThanEqNode<B> node) {
+void PrintExpressionVisitor<B>::visit(GreaterThanEqNode<B> & node) {
     visitBinaryExpression(node, ">=");
 
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(LessThanEqNode<B> node) {
+void PrintExpressionVisitor<B>::visit(LessThanEqNode<B> & node) {
     visitBinaryExpression(node, "<=");
 
 }
@@ -113,7 +119,7 @@ void PrintExpressionVisitor<B>::visitBinaryExpression(ExpressionNode<B> &binary_
 }
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(CastNode<B> cast_node) {
+void PrintExpressionVisitor<B>::visit(CastNode<B> & cast_node) {
     cast_node.lhs_->accept(this);
     std::string input_str = last_value_;
     std::string dst_type_str = TypeUtilities::getTypeString(cast_node.dst_type_);
@@ -123,7 +129,7 @@ void PrintExpressionVisitor<B>::visit(CastNode<B> cast_node) {
 
 
 template<typename B>
-void PrintExpressionVisitor<B>::visit(CaseNode<B> case_node) {
+void PrintExpressionVisitor<B>::visit(CaseNode<B> &  case_node) {
     case_node.lhs_->accept(this);
     std::string lhs_str = last_value_;
 

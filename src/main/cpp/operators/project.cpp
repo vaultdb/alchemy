@@ -4,41 +4,41 @@
 #include <expression/expression_node.h>
 #include <expression/generic_expression.h>
 #include <util/data_utilities.h>
-
+#include "query_table/table_factory.h"
 
 using namespace vaultdb;
 
 
 
-template<typename B>
-Project<B>::Project(Operator<B> *child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort_definition) : Operator<B>(child, sort_definition), expressions_(expression_map) {
-
-    setup();
-}
-
-template<typename B>
-Project<B>::Project(shared_ptr<QueryTable<B> > child, std::map<uint32_t, shared_ptr<Expression<B> > > expression_map, const SortDefinition & sort) : Operator<B>(child, sort), expressions_(expression_map) {
-    setup();
-
-}
 
 
 
 template<typename B>
-std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
+QueryTable<B> *Project<B>::runSelf() {
 
-    std::shared_ptr<QueryTable<B> > src_table = Operator<B>::children_[0]->getOutput();
-    uint32_t tuple_cnt_ = src_table->getTupleCount();
+    QueryTable<B> *src_table = Operator<B>::getChild()->getOutput();
+    uint32_t tuple_cnt = src_table->getTupleCount();
 
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
 
+    this->output_ = TableFactory<B>::getTable(tuple_cnt, this->output_schema_,  src_table->storageModel(), this->sort_definition_);
 
-    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(tuple_cnt_, Operator<B>::output_schema_, Operator<B>::getSortOrder()));
+    for(uint32_t i = 0; i < tuple_cnt; ++i) {
 
+        this->output_->setDummyTag(i, src_table->getDummyTag(i));
 
-    for(uint32_t i = 0; i < tuple_cnt_; ++i) {
-        QueryTuple<B> src_tuple = src_table->getTuple(i);
-        QueryTuple<B> dst_tuple = Operator<B>::output_->getTuple(i);
-        project_tuple(dst_tuple, src_tuple);
+        // simply exec column mappings first with memcpy
+        for(auto pos : column_mappings_) {
+            this->output_->assignField(i, pos.second, src_table, i, pos.first); // to invoke memcpy
+        }
+
+        for(uint32_t j : exprs_to_exec_) {
+            Expression<B> *expression = expressions_.at(j);
+            Field<B> v = expression->call(src_table, i);
+            this->output_->setField(i, j, v);
+        }
+
     }
 
 
@@ -46,24 +46,6 @@ std::shared_ptr<QueryTable<B> > Project<B>::runSelf() {
 }
 
 
-template<typename B>
-void Project<B>::project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const {
-    dst_tuple.setDummyTag(src_tuple.getDummyTag());
-
-   auto exprPos = expressions_.begin();
-
-
-    // exec all expressions
-    while(exprPos != expressions_.end()) {
-        uint32_t dst_ordinal = exprPos->first;
-        Expression<B> *expression = exprPos->second.get();
-        Field<B> field_value = expression->call(src_tuple);
-        dst_tuple.setField(dst_ordinal, field_value);
-        ++exprPos;
-    }
-
-
-}
 
 
 template<typename B>
@@ -81,13 +63,16 @@ void Project<B>::setup() {
 
     for(auto expr_pos =  expressions_.begin(); expr_pos != expressions_.end(); ++expr_pos) {
         if(expr_pos->second->kind() == ExpressionKind::INPUT_REF) {
-            GenericExpression<B> *expr = (GenericExpression<B> *) expr_pos->second.get();
-            InputReferenceNode<B> *node = (InputReferenceNode<B> *) expr->root_.get();
+            GenericExpression<B> *expr = (GenericExpression<B> *) expr_pos->second;
+            InputReference<B> *node = (InputReference<B> *) expr->root_;
             column_mappings_.template emplace_back(node->read_idx_, expr_pos->first);
+        }
+        else {
+            exprs_to_exec_.emplace_back(expr_pos->first); // dst_ordinal
         }
     }
 
-        // propagate names and specs in column mappings
+    // propagate names and specs in column mappings
     for(ProjectionMapping mapping_idx : column_mappings_) {
         uint32_t src_ordinal = mapping_idx.first;
         uint32_t dst_ordinal = mapping_idx.second;
@@ -96,7 +81,7 @@ void Project<B>::setup() {
         dst_schema.putField(dst_field_desc);
 
         assert(expressions_.find(dst_ordinal) != expressions_.end());
-        std::shared_ptr<Expression<B> > expression = expressions_[dst_ordinal];
+        Expression<B> * expression = expressions_[dst_ordinal];
         expression->setType(src_field_desc.getType());
         expression->setAlias(src_field_desc.getName());
 
@@ -151,27 +136,7 @@ void Project<B>::setup() {
 
 }
 
-template<typename B>
-string Project<B>::getOperatorType() const {
-    return "Project";
-}
 
-template<typename B>
-string Project<B>::getParameters() const {
-    stringstream ss;
-
-    auto expr_pos = expressions_.begin();
-    ss << "(" << "<" << expr_pos->first << ", " << expr_pos->second->toString() << ">";
-    ++expr_pos;
-    while(expr_pos != expressions_.end()) {
-        ss << ", "  << "<" << expr_pos->first << ", " << expr_pos->second->toString() << ">";
-        ++expr_pos;
-    }
-
-    ss << ")";
-
-    return ss.str();
-}
 
 // **** ExpressionMapBuilder **** //
 template<typename B>
@@ -180,14 +145,16 @@ ExpressionMapBuilder<B>::ExpressionMapBuilder(const QuerySchema &input_schema) :
 
 template<typename B>
 void ExpressionMapBuilder<B>::addMapping(const uint32_t &src_idx, const uint32_t &dst_idx) {
-    shared_ptr<ExpressionNode<B> > node(new InputReferenceNode<B>(src_idx));
-    shared_ptr<GenericExpression<B> > expr(new GenericExpression<B>(node, src_schema_));
+    ExpressionNode<B> *node = new InputReference<B>(src_idx, src_schema_);
+    GenericExpression<B> *expr = new GenericExpression<B>(node, src_schema_);
+    delete node;
 
     expressions_[dst_idx] = expr;
+
 }
 
 template<typename B>
-void ExpressionMapBuilder<B>::addExpression(const shared_ptr<Expression<B>> &expression, const uint32_t &dst_idx) {
+void ExpressionMapBuilder<B>::addExpression( Expression<B> *expression, const uint32_t &dst_idx) {
     expressions_[dst_idx] = expression;
 }
 

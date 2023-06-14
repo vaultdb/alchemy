@@ -369,7 +369,6 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
         case FieldType::FLOAT:
             *((float_t *) dst) = getValue<float_t>();
             break;
-
         case FieldType::STRING:
             s = getValue<string>();
             std::reverse(s.begin(), s.end()); // reverse it so we can more easily conver to EMP format
@@ -384,8 +383,8 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
             si = boost::get<emp::Integer>(payload_);
-            si = si - emp::Integer(si.size(), schema.getFieldMin());
-//            std::cout << "Serializing " << si.reveal<int32_t>() << " to " << schema.size() << " bits as " << si.reveal<std::string>() <<  std::endl;
+            if(schema.getFieldMin() != 0)
+                si = si - schema.getSecureFieldMin();
             memcpy(dst, (int8_t *) si.bits.data(), schema.size() * TypeUtilities::getEmpBitSize());
             break;
         case FieldType::SECURE_FLOAT:
@@ -396,6 +395,54 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
             throw;
     }
 }
+
+template<typename B>
+void Field<B>::serializePacked(int8_t *dst, const QueryFieldDesc &schema) const {
+    assert(dst != nullptr);
+
+    string s;
+    emp::Integer si;
+    emp::Float sf;
+    emp::Bit sb;
+
+    switch (type_) {
+        case FieldType::BOOL:
+            *((bool *) dst) = getValue<bool>();
+            break;
+        case FieldType::INT:
+            *((int32_t *) dst) = getValue<int32_t>();
+            break;
+        case FieldType::LONG:
+            *((int64_t *) dst) = getValue<int64_t>();
+            break;
+        case FieldType::FLOAT:
+            *((float_t *) dst) = getValue<float_t>();
+            break;
+        case FieldType::STRING:
+            s = getValue<string>();
+            std::reverse(s.begin(), s.end()); // reverse it so we can more easily conver to EMP format
+            memcpy(dst, (int8_t *) s.c_str(), s.size()); // null termination chopped
+            break;
+
+        case FieldType::SECURE_BOOL:
+            sb = boost::get<emp::Bit>(payload_);
+            memcpy(dst, (int8_t *) &(sb.bit), TypeUtilities::getEmpBitSize());
+            break;
+        case FieldType::SECURE_INT:
+        case FieldType::SECURE_LONG:
+        case FieldType::SECURE_STRING:
+            si = boost::get<emp::Integer>(payload_);
+            memcpy(dst, (int8_t *) si.bits.data(), schema.size() * TypeUtilities::getEmpBitSize());
+            break;
+        case FieldType::SECURE_FLOAT:
+            sf = boost::get<emp::Float>(payload_);
+            memcpy(dst, (int8_t *) sf.value.data(), 32* TypeUtilities::getEmpBitSize());
+            break;
+        default:
+            throw;
+    }
+}
+
 
 // does not need QueryFieldDesc - sending deserialized (unpacked) version of payload
 template<typename B>
@@ -412,8 +459,6 @@ Field<B>::secretShareHelper(const PlainField &f, const QueryFieldDesc &field_des
             // full length because this is unpacked representation, don't need more than this because we'll do this in serialize()
             return emp::Integer(32,  (send) ?  boost::get<int32_t>(f.payload_)
                                             : 0, party);
-//            std::cout << "Secret sharing " << tmp << " from payload " << boost::get<int32_t>(f.payload_) << " " << tmp2.reveal<std::string>() <<  std::endl;
-
         case FieldType::LONG:
             return emp::Integer(64,  (send) ?  boost::get<int64_t>(f.payload_)
                                                            : 0L, party);
@@ -520,17 +565,8 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
 
     switch (l.type_) {
         case FieldType::BOOL:
-            if (boost::get<bool>(choiceBit))
-                swap<bool>(&l.payload_, &r.payload_);
-            break;
         case FieldType::INT:
-            if (boost::get<bool>(choiceBit))
-                swap<int32_t>(&l.payload_, &r.payload_);
-            break;
         case FieldType::LONG:
-            if (boost::get<bool>(choiceBit))
-                    swap<int64_t>(&lhs, &rhs);
-            break;
         case FieldType::STRING:
         case FieldType::FLOAT:
             if (boost::get<bool>(choiceBit)) {
@@ -695,7 +731,8 @@ Field<B> Field<B>::operator*(const Field &rhs) const {
 }
 
 template<typename B>
-Field<B> Field<B>::operator/(const Field &rhs) const {   assert(type_ == rhs.getType());
+Field<B> Field<B>::operator/(const Field &rhs) const {
+    assert(type_ == rhs.getType());
 
     Value v;
     emp::Integer li, ri;
@@ -870,14 +907,13 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
             return Field<B>(type, my_bit);
         }
         case FieldType::SECURE_INT: {
+            // add one more bit for two's complement
             emp::Integer payload(desc.size() + desc.bitPacked(), 0);
             memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
-//            std::cout << "Extracted payload " << payload.reveal<int32_t>() << " from " << desc.size() << " bits, into " << payload.size() << " bits " <<  payload.reveal<std::string>() << std::endl;
 
             payload.resize(32);
             emp::Integer unpacked(32, desc.getFieldMin(), PUBLIC); // secure_int = 32 bits
             unpacked = unpacked + payload;
-//            std::cout << "Deserialized into " << unpacked.reveal<int32_t>() << " payload " << unpacked.reveal<std::string>() << std::endl;
             return Field<B>(type, unpacked);
         }
         case FieldType::SECURE_LONG: {
@@ -909,33 +945,71 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
 
 }
 
-
 template<typename B>
-Field<B> Field<B>::leadingZeros() {
+Field<B> Field<B>::deserializePacked(const QueryFieldDesc &desc, const int8_t *src) {
+    FieldType type = desc.getType();
 
+    switch (type) {
+        case FieldType::BOOL: {
+            bool val = *((bool *) src);
+            return Field<B>(type, val);
+        }
+        case FieldType::INT: {
+            int32_t val = *((int32_t *) src);
+            return Field<B>(type, val);
+        }
+        case FieldType::DATE:
+        case FieldType::LONG: {
+            int64_t val = *((int64_t *) src);
+            return Field<B>(type, val);
+        }
+        case FieldType::FLOAT: {
+            float_t val = *((float_t *) src);
+            return Field<B>(type, val);
+        }
 
-    Value v;
+        case FieldType::STRING: {
+            char *val = (char *) src;
+            std::string str(val, desc.getStringLength());
+            std::reverse(str.begin(), str.end());
+            return Field<B>(type, str, desc.getStringLength());
 
-    switch(type_) {
-        case FieldType::INT:
-            // ignoring sign bit for now.  This might need to be fixed later
-            v = (int32_t) std::countl_zero((uint32_t) boost::get<int32_t>(payload_));
-            break;
-        case FieldType::LONG:
-            v = (int64_t) std::countl_zero((uint64_t)  boost::get<int64_t>(payload_));
-            break;
-        case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-            v = boost::get<emp::Integer>(payload_).leading_zeros();
+        }
+        case FieldType::SECURE_BOOL: {
+            emp::Bit my_bit = *((Bit *)src);
+            return Field<B>(type, my_bit);
+        }
+        case FieldType::SECURE_INT: {
+            // add one more bit for two's complement
+            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
+            memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
+            return Field<B>(type, payload);
+        }
+        case FieldType::SECURE_LONG: {
+            emp::Integer payload(desc.size() + desc.bitPacked(), 0);
+            memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
+            return Field<B>(type, payload);
+        }
+        case FieldType::SECURE_FLOAT: {
+            emp::Float v(0, emp::PUBLIC);
+            memcpy(v.value.data(), src, 32*TypeUtilities::getEmpBitSize() );
+            return Field<B>(type, v);
+        }
+
+        case FieldType::SECURE_STRING: {
+            size_t bitCount = desc.getStringLength() * 8;
+
+            emp::Integer v(bitCount, 0, emp::PUBLIC);
+            memcpy(v.bits.data(), src, TypeUtilities::getEmpBitSize()*bitCount);
+            return Field<B>(type, v, bitCount / 8);
+
+        }
         default:
-            v = (int32_t) 0;
+            throw std::invalid_argument("Field type " + TypeUtilities::getTypeString(type) + " not supported by deserialize()!");
 
     }
 
-    return Field<B>(type_, v, 0);
 }
-
-
 
 template class vaultdb::Field<bool>;
 template class vaultdb::Field<emp::Bit>;

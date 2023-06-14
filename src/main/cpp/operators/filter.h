@@ -2,26 +2,28 @@
 #define _FILTER_H
 
 #include "operator.h"
-#include <expression/bool_expression.h>
+#include "expression/expression.h"
 
 namespace  vaultdb {
 
     template<typename B>
     class Filter : public Operator<B> {
 
-        BoolExpression<B> predicate_;
+        Expression<B> *predicate_ = nullptr;
 
     public:
-        Filter(Operator<B> *child, BoolExpression<B> &predicate);
+        Filter(Operator<B> *child, Expression<B> *predicate);
 
-        Filter(shared_ptr<QueryTable<B> > child, BoolExpression<B> &predicate);
+        Filter(QueryTable<B> *child, Expression<B> *predicate);
 
-        ~Filter() = default;
+        virtual ~Filter() {
+            if(predicate_ != nullptr) delete predicate_;
+        }
 
 
     protected:
 
-        std::shared_ptr<QueryTable<B> > runSelf()  override;
+        QueryTable<B> *runSelf()  override;
         string getOperatorType() const override;
         string getParameters() const override;
 

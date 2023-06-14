@@ -3,11 +3,11 @@
 #usage: ./run-bob.sh <testname>
 #e.g., ./run-bob.sh secure_sort_test
 
-if [ $# -lt 1 ]; 
+if [ $# -lt 2 ];
 then
-   printf "usage:  ./run-bob.sh <testname>\n"
+   printf "usage:  ./run-bob.sh <testname> <alice_host>\n"
    printf "Not enough arguments - %d\n" $# 
    exit 0 
 fi
 
-./bin/$1 --party=2
+./$1 --party=2 --alice_host=$2

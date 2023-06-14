@@ -1,7 +1,9 @@
 #include <util/data_utilities.h>
 #include "plain/plain_base_test.h"
+#include "query_table/query_table.h"
 
 
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 class FieldExpressionTest : public  PlainBaseTest { };
 
@@ -56,26 +58,28 @@ TEST_F(FieldExpressionTest, test_int32_expr) {
 
 TEST_F(FieldExpressionTest, cmp_swap) {
     string sql = "SELECT * FROM lineitem ORDER BY l_comment LIMIT 3"; // order by to ensure order is reproducible and not sorted on the sort cols
-    std::shared_ptr<PlainTable > data = DataUtilities::getQueryResults(db_name_, sql, false);
-
+    PlainTable *data = DataUtilities::getQueryResults(db_name_, sql, storage_model_, false);
+    QuerySchema q = data->getSchema();
     // deep copy
-    PlainTuple a(data->getSchema()), b(data->getSchema());
-    a = (*data)[0];
-    b = (*data)[1];
+    PlainTuple a(&q), b(&q);
+    a = data->getPlainTuple(0);
+    b = data->getPlainTuple(1);
     bool swap(true);
 
     PlainTuple::compareSwap(swap, a, b);
 
     // swapped
-    ASSERT_EQ(a, (*data)[1]);
-    ASSERT_EQ(b, (*data)[0]);
+    ASSERT_EQ(a, data->getPlainTuple(1));
+    ASSERT_EQ(b, data->getPlainTuple(0));
 
 
     // no swap
     swap = false;
     PlainTuple::compareSwap(swap, a, b);
-    ASSERT_EQ(a, (*data)[1]);
-    ASSERT_EQ(b, (*data)[0]);
+    ASSERT_EQ(a, data->getPlainTuple(1));
+    ASSERT_EQ(b, data->getPlainTuple(0));
+
+    delete data;
 
 }
 

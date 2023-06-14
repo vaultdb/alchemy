@@ -13,64 +13,30 @@ std::ostream &vaultdb::operator<<(std::ostream &strm,  const QueryTuple<bool> &a
 
 }
 
-QueryTuple<bool>::QueryTuple(std::shared_ptr<QuerySchema>  & query_schema, int8_t *table_data)
-        : fields_(table_data), query_schema_(query_schema) {
+QueryTuple<bool>::QueryTuple(QuerySchema *query_schema, int8_t *table_data)
+        : fields_(table_data), schema_(query_schema) {
     assert(fields_ != nullptr);
 }
 
-QueryTuple<bool>::QueryTuple(const std::shared_ptr<QuerySchema>  & query_schema, const int8_t *table_data)
-        : query_schema_(query_schema) {
+QueryTuple<bool>::QueryTuple(QuerySchema *query_schema, const int8_t *table_data)
+        : schema_(query_schema) {
     fields_ = const_cast<int8_t *>(table_data);
     assert(fields_ != nullptr);
 }
 
 
-PlainField QueryTuple<bool>::getField(const int &ordinal)  {
-    size_t field_offset = query_schema_->getFieldOffset(ordinal)/8;
-    QueryFieldDesc field_desc = query_schema_->getField(ordinal);
-
-    return Field<bool>::deserialize(field_desc, fields_ + field_offset);
-}
 
 
-const PlainField QueryTuple<bool>::getField(const int &ordinal) const {
-    size_t field_offset = query_schema_->getFieldOffset(ordinal)/8;
-    QueryFieldDesc field_desc = query_schema_->getField(ordinal);
-    return Field<bool>::deserialize(field_desc, fields_ + field_offset);
-}
 
 
 void QueryTuple<bool>::setField(const int &idx, const PlainField &f) {
-    size_t field_offset = query_schema_->getFieldOffset(idx)/8;
-    int8_t *writePos = fields_ + field_offset;
-    f.serialize(writePos, query_schema_->getField(idx));
+    size_t field_offset = schema_->getFieldOffset(idx) / 8;
+    int8_t *write_pos = fields_ + field_offset;
+    f.serialize(write_pos, schema_->getField(idx));
 }
 
-void QueryTuple<bool>::setDummyTag(const bool &b) {
-    size_t dummy_tag_size = sizeof(bool);
-    int8_t *dst = fields_ + query_schema_->size()/8 - dummy_tag_size;
-    memcpy(dst, &b, dummy_tag_size);
-}
 
-void QueryTuple<bool>::setDummyTag(const Field<bool> &d) {
-    assert(d.getType() == FieldType::BOOL);
-    bool dummy_tag = d.getValue<bool>();
-    setDummyTag(dummy_tag);
-}
 
-void QueryTuple<bool>::setSchema(std::shared_ptr<QuerySchema> q) {
-    query_schema_ = q;
-}
-
-bool QueryTuple<bool>::getDummyTag() const {
-    size_t dummy_tag_size = sizeof(bool);
-    int8_t *src = fields_ + query_schema_->size()/8 - dummy_tag_size;
-    return *((bool *) src);
-}
-
-std::shared_ptr<QuerySchema> QueryTuple<bool>::getSchema() const {
-    return query_schema_;
-}
 
 void QueryTuple<bool>::compareSwap(const bool &cmp, PlainTuple &lhs, PlainTuple &rhs) {
 
@@ -90,7 +56,7 @@ void QueryTuple<bool>::compareSwap(const bool &cmp, PlainTuple &lhs, PlainTuple 
     }
 }
 
-PlainTuple QueryTuple<bool>::deserialize(int8_t *dst_bits, std::shared_ptr<QuerySchema> &schema, int8_t *src_bits) {
+PlainTuple QueryTuple<bool>::deserialize(int8_t *dst_bits, QuerySchema *schema, int8_t *src_bits) {
     PlainTuple result(schema, dst_bits);
 
     size_t tuple_size = schema->size();
@@ -102,13 +68,13 @@ PlainTuple QueryTuple<bool>::deserialize(int8_t *dst_bits, std::shared_ptr<Query
 bool QueryTuple<bool>::operator==(const PlainTuple &other) const {
 
 
-    if(*query_schema_ != *other.getSchema())
+    if(*schema_ != *other.getSchema())
         return false;
 
     // if both dummies, then ok
     if(this->getDummyTag() && other.getDummyTag()) return true;
 
-    for(size_t i = 0; i < query_schema_->getFieldCount(); ++i) {
+    for(size_t i = 0; i < schema_->getFieldCount(); ++i) {
         PlainField lhs_field = getField(i);
         PlainField  rhs_field = other.getField(i);
         if(lhs_field != rhs_field) {
@@ -134,7 +100,7 @@ string QueryTuple<bool>::toString(const bool &showDummies) const {
         f = getField(0);
         sstream <<   "(" <<  f;
 
-        for (size_t i = 1; i < query_schema_->getFieldCount(); ++i) {
+        for (size_t i = 1; i < schema_->getFieldCount(); ++i) {
             f = getField(i);
             sstream << ", " << f;
 
@@ -153,29 +119,23 @@ string QueryTuple<bool>::toString(const bool &showDummies) const {
 
 
 
-QueryTuple<bool>::QueryTuple(const std::shared_ptr<QuerySchema> &schema) {
+QueryTuple<bool>::QueryTuple(QuerySchema *schema) {
     size_t tuple_byte_cnt = schema->size()/8;
     managed_data_ = new int8_t[tuple_byte_cnt];
     fields_ = managed_data_;
-
-
-    // Warning: this will cause issues if used for mutable tuples
-    // only doing shallow copy of schema!
-    // formerly:
-    // query_schema_ = std::make_shared<QuerySchema>(schema);
-    query_schema_ = schema;
+    schema_ = schema;
 
 
 }
 
 QueryTuple<bool>::QueryTuple(const QueryTuple<bool> &src) {
-    query_schema_ = src.getSchema();
+    schema_ = src.getSchema();
     if(src.hasManagedStorage()) { // allocate storage for this copy
-        size_t tuple_byte_cnt = query_schema_->size()/8;
+        size_t tuple_byte_cnt = schema_->size() / 8;
         managed_data_ = new int8_t[tuple_byte_cnt];
         fields_ = managed_data_;
     }
-    memcpy(fields_, src.fields_, query_schema_->size()/8);
+    memcpy(fields_, src.fields_, schema_->size() / 8);
 
 }
 
@@ -190,7 +150,7 @@ PlainTuple &QueryTuple<bool>::operator=(const PlainTuple &other) {
     int8_t *dst = getData();
     int8_t *src = other.getData();
 
-    memcpy(dst, src, query_schema_->size()/8);
+    memcpy(dst, src, schema_->size() / 8);
 
     return *this;
 
@@ -215,7 +175,7 @@ void QueryTuple<bool>::writeSubset(const PlainTuple &src_tuple, const PlainTuple
         write_size += src_tuple.getSchema()->getField(i).size()/8;
     }
 
-    assert(dst_field_offset + write_size <= dst_tuple.query_schema_->size()/8);
+    assert(dst_field_offset + write_size <= dst_tuple.schema_->size() / 8);
 
     int8_t *read_pos = src_tuple.fields_ + src_field_offset;
     int8_t *write_pos = dst_tuple.fields_ + dst_field_offset;

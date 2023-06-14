@@ -3,13 +3,16 @@
 #include <operators/sql_input.h>
 #include <data/csv_reader.h>
 #include "pilot/src/common/shared_schema.h"
+#include "query_table/table_factory.h"
+
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 using namespace std;
 
 
 class SerializationTest : public PlainBaseTest {
 protected:
-  QuerySchema getCapricornSchema();
+  static QuerySchema getCapricornSchema();
 
 };
 
@@ -28,15 +31,17 @@ TEST_F(SerializationTest, typesTest) {
                             "ORDER BY l_shipdate "
                             "LIMIT 10";
 
-    std::shared_ptr<PlainTable> inputTable = DataUtilities::getQueryResults(db_name_, inputQuery, false);
+    PlainTable *input = DataUtilities::getQueryResults(db_name_, inputQuery, storage_model_, false);
 
-    vector<int8_t> tableData = inputTable->serialize();
-    uint32_t expectedSize = inputTable->getSchema()->size() / 8 * 10;
-    ASSERT_EQ(tableData.size(), expectedSize);
+    vector<int8_t> table_data = input->serialize();
+    uint32_t expected_size = input->getSchema().size() / 8 * 10 + 1;
+    ASSERT_EQ(table_data.size(), expected_size);
 
-    std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(*inputTable->getSchema(), tableData);
-    ASSERT_EQ(*inputTable, *deserialized);
+    PlainTable *deserialized = TableFactory<bool>::deserialize(input->getSchema(), table_data, storage_model_);
+    ASSERT_EQ(*input, *deserialized);
 
+    delete deserialized;
+    delete input;
 
 }
 
@@ -61,20 +66,24 @@ QuerySchema SerializationTest::getCapricornSchema() {
 TEST_F(SerializationTest, capricorn_test) {
 
 
-  QuerySchema targetSchema = getCapricornSchema();
+  QuerySchema schema = getCapricornSchema();
     
 
     
-    string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
-    string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-multisite-patient.csv";
+    string cwd = Utilities::getCurrentWorkingDirectory();
+    string src_csv = cwd + "/pilot/test/input/chi-multisite-patient.csv";
 
-    std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
+    PlainTable *input = CsvReader::readCsv(src_csv, schema);
 
-     vector<int8_t> serialized = inputTable->serialize();
+     vector<int8_t> serialized = input->serialize();
 
-     std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
+     // this depends on a file that was encoded independently.  Needs to use row store
+     PlainTable *deserialized = TableFactory<bool>::deserialize(schema, serialized, StorageModel::ROW_STORE);
 
-    ASSERT_EQ(*inputTable, *deserialized);
+    ASSERT_EQ(*input, *deserialized);
+
+    delete input;
+    delete deserialized;
 
 
 
@@ -86,41 +95,44 @@ TEST_F(SerializationTest, xored_serialization_test) {
     QuerySchema targetSchema = getCapricornSchema();
 
 
-    string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
-    string srcCsvFile = currentWorkingDirectory + "/pilot/test/input/chi-multisite-patient.csv";
+    string cwd = Utilities::getCurrentWorkingDirectory();
+    string src_csv = cwd + "/pilot/test/input/chi-multisite-patient.csv";
 
-    std::unique_ptr<PlainTable> inputTable = CsvReader::readCsv(srcCsvFile, targetSchema);
-    vector<int8_t> serialized = inputTable->serialize();
+    PlainTable *input = CsvReader::readCsv(src_csv, targetSchema);
+    vector<int8_t> serialized = input->serialize();
 
     // alice contains random values... ssh!
-    string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient-multisite.alice";
-    vector<int8_t> randInts =  DataUtilities::readFile(aliceFile);
+    string aliceFile = cwd + "/pilot/test/output/chi-patient-multisite.alice";
+    vector<int8_t> rand_ints =  DataUtilities::readFile(aliceFile);
 
-    vector<int8_t>::iterator writePos = serialized.begin();
-    vector<int8_t>::iterator readPos = randInts.begin();
+    auto write_pos = serialized.begin();
+    auto read_pos = rand_ints.begin();
 
-    while(writePos != serialized.end()) {
-        *writePos ^= *readPos;
-        ++writePos;
-        ++readPos;
+    while(write_pos != serialized.end()) {
+        *write_pos ^= *read_pos;
+        ++write_pos;
+        ++read_pos;
     }
 
 
     // repeat the process again to decrypt it
 
-    writePos = serialized.begin();
-    readPos = randInts.begin();
+    write_pos = serialized.begin();
+    read_pos = rand_ints.begin();
 
-    while(writePos != serialized.end()) {
-        *writePos ^= *readPos;
-        ++writePos;
-        ++readPos;
+    while(write_pos != serialized.end()) {
+        *write_pos ^= *read_pos;
+        ++write_pos;
+        ++read_pos;
     }
 
+    // this depends on a file that was encoded independently.  Needs to use row store
+    PlainTable *deserialized = TableFactory<bool>::deserialize(targetSchema, serialized, StorageModel::ROW_STORE);
 
-    std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
+    ASSERT_EQ(*input, *deserialized);
 
-    ASSERT_EQ(*inputTable, *deserialized);
+    delete deserialized;
+    delete input;
 
 
 }
@@ -129,36 +141,56 @@ TEST_F(SerializationTest, xored_serialization_test) {
 
 TEST_F(SerializationTest, capricorn_deserialization) {
 
-  
-  QuerySchema targetSchema = SharedSchema::getInputSchema();
-    string currentWorkingDirectory = Utilities::getCurrentWorkingDirectory();
-    string aliceFile = currentWorkingDirectory + "/pilot/test/output/chi-patient-multisite.alice";
-    string bobFile = currentWorkingDirectory + "/pilot/test/output/chi-patient-multisite.bob";
 
-    vector<int8_t> aliceBits = DataUtilities::readFile(aliceFile);
-    vector<int8_t> bobBits = DataUtilities::readFile(bobFile);
+  QuerySchema target_schema = SharedSchema::getInputSchema();
+    string cwd = Utilities::getCurrentWorkingDirectory();
+    string alice_file = cwd + "/pilot/test/output/chi-patient-multisite.alice";
+    string bob_file = cwd + "/pilot/test/output/chi-patient-multisite.bob";
 
-    vector<int8_t> serialized = aliceBits;
+    vector<int8_t> alice_bits = DataUtilities::readFile(alice_file);
+    vector<int8_t> bob_bits = DataUtilities::readFile(bob_file);
 
-    vector<int8_t>::iterator writePos = serialized.begin();
-    vector<int8_t>::iterator readPos = bobBits.begin();
+    vector<int8_t> serialized = alice_bits;
 
-    while(writePos != serialized.end()) {
-        *writePos ^= *readPos;
-        ++writePos;
-        ++readPos;
+    auto write_pos = serialized.begin();
+    auto read_pos = bob_bits.begin();
+
+    while(write_pos != serialized.end()) {
+        *write_pos ^= *read_pos;
+        ++write_pos;
+        ++read_pos;
     }
 
-    std::shared_ptr<PlainTable> deserialized = PlainTable::deserialize(targetSchema, serialized);
+    PlainTable *deserialized = TableFactory<bool>::deserialize(target_schema, serialized, StorageModel::ROW_STORE);
 
     std::string expected_query = "SELECT  study_year, pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl FROM patient WHERE site_id=3 AND multisite ORDER BY study_year, pat_id";
     std::string db_name = "enrich_htn_unioned_3pc";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(db_name, expected_query, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name, expected_query, storage_model_, false);
 
     ASSERT_EQ(*expected, *deserialized);
 
+    delete expected;
+    delete deserialized;
+
+
 
 }
+
+
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}
+
+
+
+
+
+
+
 
 

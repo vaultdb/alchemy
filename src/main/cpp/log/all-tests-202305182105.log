@@ -1287,3 +1287,59 @@ Runtime for test was 1.38605 secs.
 [       OK ] SecureTpcHTest.tpch_q1 (1607 ms)
 [ RUN      ] SecureTpcHTest.tpch_q3
 Connecting to 127.0.0.1 on port 7655 as 1
+connected
+Runtime for test was 44.5493 secs.
+[       OK ] SecureTpcHTest.tpch_q3 (44579 ms)
+[ RUN      ] SecureTpcHTest.tpch_q5
+Connecting to 127.0.0.1 on port 7656 as 2
+connected
+Runtime for test was 44.4083 secs.
+[       OK ] SecureTpcHTest.tpch_q3 (44579 ms)
+[ RUN      ] SecureTpcHTest.tpch_q5
+Connecting to 127.0.0.1 on port 7656 as 1
+connected
+Runtime for test was 10.3723 secs.
+[       OK ] SecureTpcHTest.tpch_q5 (10400 ms)
+[ RUN      ] SecureTpcHTest.tpch_q8
+Connecting to 127.0.0.1 on port 7657 as 2
+connected
+Runtime for test was 10.1982 secs.
+[       OK ] SecureTpcHTest.tpch_q5 (10400 ms)
+[ RUN      ] SecureTpcHTest.tpch_q8
+Connecting to 127.0.0.1 on port 7657 as 1
+connected
+Runtime for test was 1.33186 secs.
+[       OK ] SecureTpcHTest.tpch_q8 (1360 ms)
+[ RUN      ] SecureTpcHTest.tpch_q9
+Connecting to 127.0.0.1 on port 7658 as 2
+connected
+Runtime for test was 1.18288 secs.
+[       OK ] SecureTpcHTest.tpch_q8 (1360 ms)
+[ RUN      ] SecureTpcHTest.tpch_q9
+Connecting to 127.0.0.1 on port 7658 as 1
+connected
+Runtime for test was 4.88103 secs.
+[       OK ] SecureTpcHTest.tpch_q9 (4909 ms)
+[ RUN      ] SecureTpcHTest.tpch_q18
+Connecting to 127.0.0.1 on port 7659 as 2
+connected
+Runtime for test was 4.6982 secs.
+[       OK ] SecureTpcHTest.tpch_q9 (4909 ms)
+[ RUN      ] SecureTpcHTest.tpch_q18
+Connecting to 127.0.0.1 on port 7659 as 1
+connected
+Runtime for test was 14.91 secs.
+[       OK ] SecureTpcHTest.tpch_q18 (14938 ms)
+[----------] 6 tests from SecureTpcHTest (77796 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (77796 ms total)
+[  PASSED  ] 6 tests.
+connected
+Runtime for test was 14.7115 secs.
+[       OK ] SecureTpcHTest.tpch_q18 (14938 ms)
+[----------] 6 tests from SecureTpcHTest (77796 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (77796 ms total)
+[  PASSED  ] 6 tests.

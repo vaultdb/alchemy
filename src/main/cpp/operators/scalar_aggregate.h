@@ -14,8 +14,12 @@ namespace vaultdb {
         // aggregates are sorted by their output order in aggregate's output schema
         ScalarAggregate(Operator<B> *child, const std::vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());;
 
-        ScalarAggregate(shared_ptr<QueryTable<B> > child, const std::vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());;
-        ~ScalarAggregate() = default;
+        ScalarAggregate(QueryTable<B> *child, const std::vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());;
+        virtual ~ScalarAggregate() {
+            for(auto agg : aggregators_) {
+                delete agg;
+            }
+        }
 
 
     private:
@@ -28,7 +32,7 @@ namespace vaultdb {
         void setup();
 
     protected:
-        std::shared_ptr<QueryTable<B> > runSelf() override;
+        QueryTable<B> *runSelf() override;
         string getOperatorType() const override;
         string getParameters() const override;
 

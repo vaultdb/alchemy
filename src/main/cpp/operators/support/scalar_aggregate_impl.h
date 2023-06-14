@@ -1,7 +1,7 @@
 #ifndef _SCALAR_AGGREGATE_IMPL_H
 #define _SCALAR_AGGREGATE_IMPL_H
 
-
+#include <query_table/query_table.h>
 #include <query_table/query_tuple.h>
 #include <query_table/field/field_factory.h>
 #include <climits>
@@ -15,6 +15,8 @@ namespace vaultdb {
             column_def_(def), type_(def.getType()),  zero_(FieldFactory<B>::getZero(type_)),   one_(FieldFactory<B>::getOne(type_)) {}
         virtual ~ScalarAggregateImpl() = default;
         virtual void accumulate(const QueryTuple<B> & tuple) = 0;
+        virtual void accumulate(const QueryTable<B> *table, const int & row) = 0;
+
         virtual  Field<B> getResult() const = 0;
         virtual FieldType getType() const { return type_; }
 
@@ -34,12 +36,14 @@ namespace vaultdb {
         ScalarCountImpl(const uint32_t & ordinal, const QueryFieldDesc & def);
         ~ScalarCountImpl() = default;
         void accumulate(const QueryTuple<B> & tuple) override;
+        void accumulate(const QueryTable<B> *table, const int & row) override;
          Field<B> getResult() const override;
 
     private:
         Field<B> running_count_;
 
     };
+
 
 
     template<typename B>
@@ -50,7 +54,8 @@ namespace vaultdb {
         }
         ~ScalarSumImpl() = default;
         void accumulate(const QueryTuple<B> & tuple) override;
-         Field<B> getResult() const override;
+        void accumulate(const QueryTable<B> *table, const int & row) override;
+        Field<B> getResult() const override;
         FieldType getType() const override;
 
     private:
@@ -66,6 +71,7 @@ namespace vaultdb {
       ScalarMinImpl(const uint32_t & ordinal, const QueryFieldDesc & def);
       ~ScalarMinImpl()  = default;
       void accumulate(const QueryTuple<B> & tuple) override;
+      void accumulate(const QueryTable<B> *table, const int & row) override;
        Field<B> getResult() const override;
 
     private:
@@ -81,7 +87,8 @@ namespace vaultdb {
         ScalarMaxImpl(const uint32_t & ordinal, const QueryFieldDesc & def);
         ~ScalarMaxImpl() = default;
         void accumulate(const QueryTuple<B> & tuple) override;
-         Field<B> getResult() const override;
+        void accumulate(const QueryTable<B> *table, const int & row) override;
+        Field<B> getResult() const override;
 
       private:
         Field<B> running_max_;
@@ -95,7 +102,9 @@ namespace vaultdb {
         ScalarAvgImpl(const uint32_t & ordinal, const QueryFieldDesc & def);
         ~ScalarAvgImpl()  = default;
         void accumulate(const QueryTuple<B> & tuple) override;
-         Field<B> getResult() const override;
+        void accumulate(const QueryTable<B> *table, const int & row) override;
+
+        Field<B> getResult() const override;
 
     private:
         Field<B> running_sum_;

@@ -1,16 +1,16 @@
-#include <util/utilities.h>
 #include "csv_reader.h"
 #include <boost/algorithm/string.hpp>
 #include <query_table/field/field.h>
 #include <query_table/field/field_factory.h>
 #include <query_table/query_table.h>
 #include <query_table/plain_tuple.h>
+#include <query_table/row_table.h>
 
 #include <util/data_utilities.h>
 
 using namespace vaultdb;
 
-std::unique_ptr<PlainTable> CsvReader::readCsv(const string &filename, const QuerySchema &schema) {
+PlainTable *CsvReader::readCsv(const string &filename, const QuerySchema &schema) {
 
     std::vector<std::string> tuple_entries = DataUtilities::readTextFile(filename);
     return readCsvFromBatch(tuple_entries, schema);
@@ -47,29 +47,30 @@ vector<string> CsvReader::split(const string &tupleEntry) {
     return result;
 }
 
-void CsvReader::parseTuple(const std::string &csvLine, const QuerySchema &src_schema, std::unique_ptr<PlainTable> &dst,
-                           const size_t &tupleIdx) {
+void CsvReader::parseTuple(const std::string &csv_line, const QuerySchema &src_schema, PlainTable *dst,
+                           const int &idx) {
 
-    std::vector<std::string> tupleFields;
-    std::shared_ptr<QuerySchema> schema = dst->getSchema();
-    size_t fieldCount = schema->getFieldCount();
+    std::vector<std::string> tuple_fields;
+    QuerySchema schema = dst->getSchema();
+    size_t field_cnt = schema.getFieldCount();
 
 
-    tupleFields = split(csvLine);
-    assert(fieldCount == tupleFields.size()); // verify the field count
-    PlainTuple newTuple = dst->getTuple(tupleIdx);
+    tuple_fields = split(csv_line);
+    assert(field_cnt == tuple_fields.size()); // verify the field count
 
-    for(size_t i = 0; i < fieldCount; ++i) {
-        PlainField field = FieldFactory<bool>::getFieldFromString(src_schema.getField(i).getType(), schema->getField(i).getStringLength(), tupleFields[i]);
-        newTuple.setField(i, field);
+    for(size_t i = 0; i < field_cnt; ++i) {
+        PlainField field = FieldFactory<bool>::getFieldFromString(src_schema.getField(i).getType(), schema.getField(i).getStringLength(), tuple_fields[i]);
+        dst->setField(idx, i, field);
     }
+    // implicitly not dummy
+    dst->setDummyTag(idx, false);
 
 }
 
-std::unique_ptr<PlainTable> CsvReader::readCsvFromBatch(const vector<string> &input, const QuerySchema &schema) {
+PlainTable *CsvReader::readCsvFromBatch(const vector<string> &input, const QuerySchema &schema) {
     QuerySchema dst_schema = convertDatesToLong(schema);
    
-    std::unique_ptr<PlainTable> result(new PlainTable(input.size(), dst_schema));
+    PlainTable *result = new RowTable<bool>(input.size(), dst_schema);
     int cursor = 0;
 
     for(std::string line : input) {

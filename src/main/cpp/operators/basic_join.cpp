@@ -1,26 +1,25 @@
 #include "basic_join.h"
+#include "query_table/table_factory.h"
+#include "util/field_utilities.h"
 
 using namespace vaultdb;
 
 template<typename B>
-BasicJoin<B>::BasicJoin(Operator<B> *lhs, Operator<B> *rhs, const BoolExpression<B> & predicate, const SortDefinition & sort)
+BasicJoin<B>::BasicJoin(Operator<B> *lhs, Operator<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(lhs, rhs, predicate, sort) {}
 
 template<typename B>
-BasicJoin<B>::BasicJoin(shared_ptr<QueryTable<B> > lhs, shared_ptr<QueryTable<B> >rhs, const BoolExpression<B> & predicate, const SortDefinition & sort)
+BasicJoin<B>::BasicJoin(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort)
         : Join<B>(lhs, rhs, predicate, sort) {}
 
 template<typename B>
-shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > lhs = Join<B>::children_[0]->getOutput();
-    std::shared_ptr<QueryTable<B> > rhs = Join<B>::children_[1]->getOutput();
-    uint32_t cursor = 0;
+QueryTable<B> *BasicJoin<B>::runSelf() {
+    QueryTable<B> *lhs = Operator<B>::getChild(0)->getOutput();
+    QueryTable<B> *rhs = Operator<B>::getChild(1)->getOutput();
     B predicate_eval;
 
-    uint32_t outputTupleCount = lhs->getTupleCount() * rhs->getTupleCount();
-    QuerySchema lhsSchema = *lhs->getSchema();
-    QuerySchema rhsSchema = *rhs->getSchema();
-    QuerySchema outputSchema = Join<B>::concatenateSchemas(lhsSchema, rhsSchema, false);
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
 
     assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC
 
@@ -29,32 +28,27 @@ shared_ptr<QueryTable<B> > BasicJoin<B>::runSelf() {
     SortDefinition  rhs_sort = rhs->getSortOrder();
     concat_sorts.insert(concat_sorts.end(),  rhs_sort.begin(), rhs_sort.end());
 
+    B selected, dst_dummy_tag, lhs_dummy_tag;
     // output size, colCount, is_encrypted
-    Join<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(outputTupleCount, outputSchema, concat_sorts));
+    this->output_ = TableFactory<B>::getTable(lhs->getTupleCount() * rhs->getTupleCount(), this->output_schema_, lhs->storageModel(), concat_sorts);
+    int cursor = 0;
 
     for(uint32_t i = 0; i < lhs->getTupleCount(); ++i) {
-        QueryTuple<B> lhs_tuple = (*lhs)[i];
+         lhs_dummy_tag  = lhs->getDummyTag(i);
         for(uint32_t j = 0; j < rhs->getTupleCount(); ++j) {
-            QueryTuple<B> rhs_tuple = (*rhs)[j];
+            Join<B>::write_left(this->output_, cursor,  lhs, i);
+            Join<B>::write_right(this->output_, cursor,  rhs, j);
+            selected = Join<B>::predicate_->call(lhs, i, rhs, j).template getValue<B>();
+            dst_dummy_tag = (!selected) | lhs_dummy_tag | rhs->getDummyTag(j);
 
-            QueryTuple<B> out = (*Join<B>::output_)[cursor];
-            Join<B>::write_left(out, lhs_tuple); // all writes happen because we do the full cross product
-            Join<B>::write_right(out, rhs_tuple);
-
-            predicate_eval = Join<B>::predicate_.callBoolExpression(out);
-            B dst_dummy_tag = Join<B>::get_dummy_tag(lhs_tuple, rhs_tuple, predicate_eval);
-            out.setDummyTag(dst_dummy_tag);
+            Operator<B>::output_->setDummyTag(cursor, dst_dummy_tag);
             ++cursor;
         }
     }
 
-    return Join<B>::output_;
+    return this->output_;
 }
 
-template<typename B>
-string BasicJoin<B>::getOperatorType() const {
-    return "BasicJoin";
-}
 
 
 template class vaultdb::BasicJoin<bool>;

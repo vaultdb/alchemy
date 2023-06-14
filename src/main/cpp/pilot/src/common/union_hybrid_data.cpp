@@ -8,12 +8,13 @@
 #include <query_table/secure_tuple.h>
 #include <operators/union.h>
 #include <operators/sort.h>
+#include "query_table/row_table.h"
 
 UnionHybridData::UnionHybridData(const QuerySchema & srcSchema, NetIO *aNetio, const int & aParty)  :  party(aParty), netio(aNetio){
     QuerySchema inputSchema = srcSchema;
     SortDefinition emptySortDefinition;
     // placeholder, retains schema
-    inputTable = std::shared_ptr<SecureTable>(new SecureTable(1, inputSchema, emptySortDefinition));
+    input_table_ = new RowTable<Bit>(1, inputSchema, emptySortDefinition);
 
 }
 
@@ -40,12 +41,14 @@ Integer UnionHybridData::readEncrypted(int8_t *secretSharedBits, const size_t &s
 
     }
 
-shared_ptr<SecureTable>
+SecureTable *
 UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema &src_schema, NetIO *netio,
                                 const int &party) {
-    std::unique_ptr<PlainTable> localInput = CsvReader::readCsv(localInputFile, src_schema);
-    std::shared_ptr<SecureTable> encryptedTable = PlainTable::secretShare(*localInput, netio, party);
-    return encryptedTable;
+    PlainTable *local = CsvReader::readCsv(localInputFile, src_schema);
+    SecureTable *secret_shared = local->secretShare(netio, party);
+    delete local;
+
+    return secret_shared;
 
 }
 
@@ -54,7 +57,7 @@ UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema 
 
 
 // plaintext input schema, setup for XOR-shared data
-shared_ptr<SecureTable>
+SecureTable *
 UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const QuerySchema &plain_schema,
                                        const int &party) {
 
@@ -99,8 +102,13 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
     }
 
     Integer shared_data = alice ^ bob;
-    std::shared_ptr<SecureTable> shared_table = SecureTable::deserialize(secure_schema,
-                                                                              shared_data.bits);
+    vector<int8_t>  bits_int(1 + shared_data.size() * TypeUtilities::getEmpBitSize());
+    *(bits_int.data()) = (int8_t) StorageModel::ROW_STORE;
+    int8_t *write_ptr = bits_int.data() + 1;
+    memcpy(write_ptr, (int8_t *) shared_data.bits.data(),  shared_data.size() * TypeUtilities::getEmpBitSize());
+
+    SecureTable *shared_table = RowTable<Bit>::deserialize(secure_schema,
+                                                                              bits_int);
 
 
      delete [] dst_bools;
@@ -108,34 +116,34 @@ UnionHybridData::readSecretSharedInput(const string &secretSharesFile, const Que
 
 }
 
-std::shared_ptr<SecureTable> UnionHybridData::getInputTable() {
-    return inputTable;
+SecureTable *UnionHybridData::getInputTable() {
+    return input_table_;
 }
 
-void UnionHybridData::resizeAndAppend(std::shared_ptr<SecureTable> toAdd) {
-    size_t oldTupleCount = inputTable->getTupleCount();
-    size_t newTupleCount = oldTupleCount + toAdd->getTupleCount();
-    inputTable->resize(newTupleCount);
+void UnionHybridData::resizeAndAppend(SecureTable *to_add) {
+    size_t old_tuple_cnt = input_table_->getTupleCount();
+    size_t new_tuple_cnt = old_tuple_cnt + to_add->getTupleCount();
+    input_table_->resize(new_tuple_cnt);
 
-    int writeIdx = oldTupleCount;
+    int write_idx = old_tuple_cnt;
 
-    for(size_t i = 0; i < toAdd->getTupleCount(); ++i) {
-        inputTable->putTuple(writeIdx, toAdd->getTuple(i));
-        ++writeIdx;
+    for(size_t i = 0; i < to_add->getTupleCount(); ++i) {
+        input_table_->cloneRow(write_idx, 0, to_add, i);
+        ++write_idx;
     }
 
 }
 
-shared_ptr<SecureTable> UnionHybridData::unionHybridData(const QuerySchema &schema, const string &localInputFile,
+SecureTable *UnionHybridData::unionHybridData(const QuerySchema &schema, const string &localInputFile,
                                                         const string &secretSharesFile, NetIO *aNetIO,
                                                         const int &party) {
 
-    std::shared_ptr<SecureTable> local = UnionHybridData::readLocalInput(localInputFile, schema, aNetIO,
+    SecureTable *local = UnionHybridData::readLocalInput(localInputFile, schema, aNetIO,
                                                                 party);
 
 
     if(!secretSharesFile.empty()) {
-      std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, schema, party);
+     SecureTable *remote = UnionHybridData::readSecretSharedInput(secretSharesFile, schema, party);
       Union<emp::Bit> union_op(local, remote);
       return union_op.run();
     }
@@ -172,29 +180,34 @@ void UnionHybridData::plain_to_secure_bits(bool *src, bool *dst, const QuerySche
 
 }
 
-shared_ptr<SecureTable>
+SecureTable *
 UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery, const string &secretSharesFile,
                                  NetIO *aNetIO, const int &party) {
 
 
-    std::shared_ptr<PlainTable> local_plain = DataUtilities::getQueryResults(dbName, inputQuery, false);
+    PlainTable *local_plain = DataUtilities::getQueryResults(dbName, inputQuery, StorageModel::ROW_STORE, false);
     size_t total_tuples = local_plain->getTupleCount();
 
     cout << "Reading in " << local_plain->getTupleCount() << " tuples from local db." << endl;
 
-    std::shared_ptr<SecureTable> local = SecureTable::secretShare(*local_plain, aNetIO, party);
+    SecureTable *local = local_plain->secretShare(aNetIO, party);
     string other_party = (party == ALICE) ? "Bob" : "Alice";
     cout <<  other_party << " read in " << local->getTupleCount() - local_plain->getTupleCount() << " tuples." << endl;
 
     total_tuples += local->getTupleCount() - local_plain->getTupleCount();
 
+    QuerySchema local_plain_schema = local_plain->getSchema();
+    delete local_plain;
+
     if(!secretSharesFile.empty()) {
-        std::shared_ptr<SecureTable> remote = UnionHybridData::readSecretSharedInput(secretSharesFile, *local_plain->getSchema(), party);
+        SecureTable *remote = UnionHybridData::readSecretSharedInput(secretSharesFile, local_plain_schema, party);
         cout << "Reading in " << remote->getTupleCount() << " secret-shared records from " <<  secretSharesFile << endl;
         total_tuples += remote->getTupleCount();
         Union<emp::Bit> union_op(local, remote);
         cout << "Total tuples read: " << total_tuples << endl;
-        return union_op.run();
+        // deep copy so it isn't deleted with union_op
+        SecureTable *res = union_op.run()->clone();
+        return res;
     }
     
     cout << "Total tuples read: " << total_tuples << endl;

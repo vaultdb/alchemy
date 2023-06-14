@@ -17,7 +17,7 @@ public:
     }
 
 
-    shared_ptr<PlainTable> runSelf() override;
+    PlainTable *runSelf() override;
 
     ~CsvInput() = default;
 

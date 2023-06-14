@@ -27,7 +27,7 @@ using boost::property_tree::ptree;
 
 
 template<typename B>
-PlanParser<B>::PlanParser(const std::string &db_name, std::string plan_name, const int & limit) : db_name_(db_name), input_limit_(limit) {
+PlanParser<B>::PlanParser(const std::string &db_name, std::string plan_name, const StorageModel & model, const int & limit) : db_name_(db_name), storage_model_(model), input_limit_(limit) {
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + plan_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + plan_name + ".json";
 
@@ -39,7 +39,7 @@ PlanParser<B>::PlanParser(const std::string &db_name, std::string plan_name, con
 }
 
 template<typename B>
-PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, NetIO * netio, const int & party, const int & limit):  db_name_(db_name), netio_(netio), party_(party), input_limit_(limit)
+PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, const StorageModel & model, NetIO * netio, const int & party, const int & limit):  db_name_(db_name), netio_(netio), party_(party), storage_model_(model), input_limit_(limit)
 {
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + plan_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + plan_name + ".json";
@@ -51,7 +51,7 @@ PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, NetIO * 
 
 // ZK constructor
 template<typename B>
-PlanParser<B>::PlanParser(const std::string & db_name, const std::string plan_name, BoolIO<NetIO> *ios[], const size_t & zk_threads, const int & party, const int & limit) : db_name_(db_name), zk_threads_(zk_threads), ios_(ios), party_(party), input_limit_(limit), zk_plan_(true) {
+PlanParser<B>::PlanParser(const std::string & db_name, const std::string plan_name, const StorageModel & model, BoolIO<NetIO> *ios[], const size_t & zk_threads, const int & party, const int & limit) : db_name_(db_name), zk_threads_(zk_threads), ios_(ios), party_(party), input_limit_(limit), zk_plan_(true) {
         std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/zk-" + plan_name + ".json";
         parseSecurePlan(plan_file);
 
@@ -59,23 +59,22 @@ PlanParser<B>::PlanParser(const std::string & db_name, const std::string plan_na
 
 
 template<typename B>
-shared_ptr<Operator<B>> PlanParser<B>::parse(const string &db_name, const string &plan_name, const int & limit) {
-    PlanParser p(db_name, plan_name, limit);
+Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, const StorageModel & model, const int & limit) {
+    PlanParser p(db_name, plan_name, model, limit);
     return p.getRoot();
 }
 
 template<typename B>
-shared_ptr<Operator<B>> PlanParser<B>::parse(const string &db_name, const string &plan_name, NetIO * netio, const int & party, const int & limit ) {
-    PlanParser p(db_name, plan_name, netio, party, limit);
+Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, const StorageModel & model, NetIO * netio, const int & party, const int & limit ) {
+    PlanParser p(db_name, plan_name, model, netio, party, limit);
     return p.root_;
 }
 
 template<typename B>
-shared_ptr<Operator<B>>
-PlanParser<B>::parse(const string &db_name, const string &plan_name, BoolIO<NetIO> **ios, const size_t &zk_threads,
+Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, const StorageModel & model, BoolIO<NetIO> **ios, const size_t &zk_threads,
                      const int &party, const int &limit) {
 
-    PlanParser p(db_name, plan_name, ios, zk_threads, party, limit);
+    PlanParser p(db_name, plan_name, model, ios, zk_threads, party, limit);
     return p.root_;
 }
 
@@ -150,7 +149,7 @@ void PlanParser<B>::parseSecurePlan(const string & plan_file) {
 
 template<typename B>
 void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name, const ptree & tree) {
-    shared_ptr<Operator<B> > op;
+    Operator<B> *op = nullptr;
     // TODO: parse schema for add'l validation
     if(op_name == "LogicalValues") return; // handled in createInput
     if(op_name == "LogicalSort")   op = parseSort(operator_id, tree);
@@ -160,7 +159,7 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "LogicalFilter")  op = parseFilter(operator_id, tree);
     if(op_name == "JdbcTableScan")  op = parseSeqScan(operator_id, tree);
 
-    if(op.get() != nullptr) {
+    if(op != nullptr) {
         operators_[operator_id] = op;
         operators_.at(operator_id)->setOperatorId(operator_id);
 
@@ -175,7 +174,7 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
 
 
 template<typename B>
-std::shared_ptr<Operator<B>> PlanParser<B>::parseSort(const int &operator_id, const boost::property_tree::ptree &sort_tree) {
+Operator<B> *PlanParser<B>::parseSort(const int &operator_id, const boost::property_tree::ptree &sort_tree) {
 
     boost::property_tree::ptree sort_payload = sort_tree.get_child("collation");
     SortDefinition sort_definition;
@@ -200,41 +199,36 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseSort(const int &operator_id, co
 
     }
 
-    const shared_ptr<Operator<B> > child = getChildOperator(operator_id, sort_tree);
+    Operator<B> *child = getChildOperator(operator_id, sort_tree);
 
-    return shared_ptr<Operator<B> > (new Sort<B>(child.get(), sort_definition, limit));
+    return new Sort<B>(child, sort_definition, limit);
 
 
 }
 
 template<typename B>
-shared_ptr<Operator<bool>>
-PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag, const bool & plain_has_dummy_tag) {
+Operator<bool> *PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag, const bool & plain_has_dummy_tag) {
     size_t limit = (input_limit_ < 0) ? 0 : input_limit_;
 
-    shared_ptr<SqlInput> sql_input(new SqlInput(db_name_, sql, plain_has_dummy_tag, collation, limit));
-    return sql_input;
+    return new SqlInput(db_name_, sql, plain_has_dummy_tag, storage_model_, collation, limit);
 }
 
 template<typename B>
-shared_ptr<Operator<emp::Bit>>
-PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag, const bool & plain_has_dummy_tag) {
+Operator<emp::Bit> *PlanParser<B>::createInputOperator(const string &sql, const SortDefinition &collation, const emp::Bit &has_dummy_tag, const bool & plain_has_dummy_tag) {
     size_t limit = (input_limit_ < 0) ? 0 : input_limit_;
 
     if(zk_plan_) {
-        shared_ptr<ZkSqlInput> input(new ZkSqlInput(db_name_, sql, plain_has_dummy_tag, collation, ios_, zk_threads_, party_, limit));
-        return input;
+        return new ZkSqlInput(db_name_, sql, plain_has_dummy_tag, collation, ios_, zk_threads_, party_, storage_model_, limit);
     }
 
-    shared_ptr<SecureSqlInput> input(new SecureSqlInput(db_name_, sql, plain_has_dummy_tag, collation, netio_, party_, limit));
-    return input;
+    return new SecureSqlInput(db_name_, sql, plain_has_dummy_tag, storage_model_, collation, netio_, party_, limit);
 
 }
 
 
 
 template<typename B>
-std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_id, const boost::property_tree::ptree &aggregate_json) {
+Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::property_tree::ptree &aggregate_json) {
 
     // parse the aggregators
     std::vector<int32_t> group_by_ordinals;
@@ -272,7 +266,7 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_i
         aggregators.push_back(s);
     }
 
-    shared_ptr<Operator<B> > child = getChildOperator(operator_id, aggregate_json);
+    Operator<B> *child = getChildOperator(operator_id, aggregate_json);
 
 
     if(!group_by_ordinals.empty()) {
@@ -284,21 +278,21 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseAggregate(const int &operator_i
             for(uint32_t idx : group_by_ordinals) {
                 child_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
             }
-            child = std::shared_ptr<Operator<B>> (new Sort<B>(child.get(), child_sort));
+            child = new Sort<B>(child, child_sort);
             support_ops_.template emplace_back(child);
         }
-        return shared_ptr<Operator<B> >(new GroupByAggregate<B>(child.get(), group_by_ordinals, aggregators));
+        return new GroupByAggregate<B>(child, group_by_ordinals, aggregators);
     }
     else {
 
-        return shared_ptr<Operator<B> >(new ScalarAggregate<B>(child.get(), aggregators));
+        return new ScalarAggregate<B>(child, aggregators);
     }
 
 
 }
 
 template<typename B>
-std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_tree) {
+Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_tree) {
     boost::property_tree::ptree join_condition_tree = join_tree.get_child("condition");
 
 
@@ -306,71 +300,59 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseJoin(const int &operator_id, co
     ptree input_list = join_tree.get_child("inputs.");
     ptree::const_iterator it = input_list.begin();
     int lhs_id = it->second.get_value<int>();
-    shared_ptr<Operator<B> > lhs  = operators_.at(lhs_id);
+    Operator<B> *lhs  = operators_.at(lhs_id);
     ++it;
     int rhs_id = it->second.get_value<int>();
-    shared_ptr<Operator<B> > rhs  = operators_.at(rhs_id);
+    Operator<B> *rhs  = operators_.at(rhs_id);
 
-    QuerySchema schema = Join<B>::concatenateSchemas(lhs->getOutputSchema(), rhs->getOutputSchema());
-    BoolExpression<B> join_condition = ExpressionParser<B>::parseBoolExpression(join_condition_tree, schema);
-
+    Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
 
     // if fkey designation exists, use this to create keyed join
     // key: foreignKey
     if(join_tree.count("foreignKey") > 0) {
         int foreign_key = join_tree.get_child("foreignKey").template get_value<int>();
-        return shared_ptr<Operator<B> > (new KeyedJoin<B>(lhs.get(), rhs.get(), foreign_key, join_condition));
+        return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
 
     }
 
 
-    return shared_ptr<Operator<B> > (new BasicJoin<B>(lhs.get(), rhs.get(), join_condition));
+    return new BasicJoin<B>(lhs, rhs, join_condition);
 
 }
 
 template<typename B>
-std::shared_ptr<Operator<B>> PlanParser<B>::parseFilter(const int &operator_id, const ptree &pt) {
+Operator<B> *PlanParser<B>::parseFilter(const int &operator_id, const ptree &pt) {
 
     boost::property_tree::ptree filter_condition_tree = pt.get_child("condition");
-    std::shared_ptr<Operator<B> > child = getChildOperator(operator_id, pt);
-    BoolExpression<B> filter_condition = ExpressionParser<B>::parseBoolExpression(filter_condition_tree,
+    Operator<B> *child = getChildOperator(operator_id, pt);
+    Expression<B> *filter_condition = ExpressionParser<B>::parseExpression(filter_condition_tree,
                                                                                   child->getOutputSchema());
-
-    return shared_ptr<Operator<B> > (new Filter<B>(child.get(), filter_condition));
+     return new Filter<B>(child, filter_condition);
 }
 
 template<typename B>
-std::shared_ptr<Operator<B>> PlanParser<B>::parseProjection(const int &operator_id, const ptree &project_tree) {
+Operator<B> *PlanParser<B>::parseProjection(const int &operator_id, const ptree &project_tree) {
 
-    shared_ptr<Operator<B> > child_operator = getChildOperator(operator_id, project_tree);
-    QuerySchema child_schema = child_operator->getOutputSchema();
+    Operator<B> *child = getChildOperator(operator_id, project_tree);
+    QuerySchema child_schema = child->getOutputSchema();
 
     ExpressionMapBuilder<B>  builder(child_schema);
     ptree expressions = project_tree.get_child("exprs");
     uint32_t src_ordinal, dst_ordinal = 0;
 
     for (ptree::const_iterator it = expressions.begin(); it != expressions.end(); ++it) {
-        std::shared_ptr<Expression<B> > expr = ExpressionParser<B>::parseExpression(it->second, child_schema);
-
-        if(expr->kind()  == ExpressionKind::INPUT_REF) {
-            GenericExpression<B> expression_impl = *((GenericExpression<B> *) expr.get());
-            InputReferenceNode<B> input_ref  = *((InputReferenceNode<B> *) expression_impl.root_.get());
-            src_ordinal = input_ref.read_idx_;
-            builder.addMapping(src_ordinal, dst_ordinal);
-        }
-
+        Expression<B> *expr = ExpressionParser<B>::parseExpression(it->second, child_schema);
         builder.addExpression(expr, dst_ordinal);
 
       ++dst_ordinal;
     }
 
-    shared_ptr<Project<B> > project(new Project<B>(child_operator.get(), builder.getExprs()));
+    return new Project<B>(child, builder.getExprs());
 
-    return project;
 }
 
 template<typename B>
-std::shared_ptr<Operator<B>> PlanParser<B>::parseSeqScan(const int & operator_id, const boost::property_tree::ptree &seq_scan_tree) {
+Operator<B> *PlanParser<B>::parseSeqScan(const int & operator_id, const boost::property_tree::ptree &seq_scan_tree) {
 
     ptree::const_iterator table_name_start = seq_scan_tree.get_child("table.").begin();
     string table_name = table_name_start->second.get_value<std::string>();
@@ -385,14 +367,13 @@ std::shared_ptr<Operator<B>> PlanParser<B>::parseSeqScan(const int & operator_id
 
 // child is always the "N-1" operator if unspecified, i.e., if my_op_id is 5, then it is 4.
 template<typename B>
-const std::shared_ptr<Operator<B> >
-PlanParser<B>::getChildOperator(const int &my_operator_id, const boost::property_tree::ptree &pt) const {
+Operator<B> *PlanParser<B>::getChildOperator(const int &my_operator_id, const boost::property_tree::ptree &pt) const {
 
     if(pt.count("inputs") > 0) {
         ptree input_list = pt.get_child("inputs");
         ptree::const_iterator it = input_list.begin();
         int parent_id = it->second.get_value<int>();
-        shared_ptr<Operator<B>> parent_operator  = operators_.at(parent_id);
+        Operator<B> *parent_operator  = operators_.at(parent_id);
         return parent_operator;
     }
 
@@ -457,7 +438,7 @@ pair<int, SortDefinition> PlanParser<B>::parseSqlHeader(const string &header) {
 }
 
 template<typename B>
-shared_ptr<Operator<B>> PlanParser<B>::getOperator(const int &op_id) {
+Operator<B> *PlanParser<B>::getOperator(const int &op_id) {
     return operators_.find(op_id)->second;
 }
 

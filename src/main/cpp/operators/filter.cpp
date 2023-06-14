@@ -8,31 +8,32 @@ using namespace vaultdb;
 
 
 template<typename B>
-Filter<B>::Filter(Operator<B> *child, BoolExpression<B> & predicate) :
+Filter<B>::Filter(Operator<B> *child, Expression<B> *predicate) :
      Operator<B>(child, child->getSortOrder()), predicate_(predicate) {
      }
 
 template<typename B>
-Filter<B>::Filter(shared_ptr<QueryTable<B> > child, BoolExpression<B> & predicate) :
+Filter<B>::Filter(QueryTable<B> *child, Expression<B> *predicate) :
      Operator<B>(child, child->getSortOrder()), predicate_(predicate) {
      }
 
 template<typename B>
-std::shared_ptr<QueryTable<B> > Filter<B>::runSelf() {
-    std::shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
+QueryTable<B> *Filter<B>::runSelf() {
+    QueryTable<B> *input = Operator<B>::getChild()->getOutput();
+
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
 
     // deep copy new output, then just modify the dummy tag
-    Operator<B>::output_ = std::shared_ptr<QueryTable<B> >(new QueryTable<B>(*input));
+    this-> output_ = input->clone();
+    int tuple_cnt = input->getTupleCount();
 
-    for(size_t i = 0; i < Operator<B>::output_->getTupleCount(); ++i) {
-        QueryTuple tuple = Operator<B>::output_->getTuple(i);
-        B dummy_tag = tuple.getDummyTag();
-        B predicate_out = predicate_.callBoolExpression(tuple);
-
-        dummy_tag =  ((!predicate_out) | dummy_tag); // (!) because dummyTag is false if our selection criteria is satisfied
-        QueryTuple<B> to_write = Operator<B>::output_->getTuple(i); // container pointer to source data
-        to_write.setDummyTag(dummy_tag);
+    for(int i = 0; i < tuple_cnt; ++i) {
+        Field<B> selected = predicate_->call(Operator<B>::output_, i);
+        B dummy_tag =  ((!(selected.template getValue<B>())) | Operator<B>::output_->getDummyTag(i)); // (!) because dummyTag is false if our selection criteria is satisfied
+        Operator<B>::output_->setDummyTag(i, dummy_tag);
     }
+
 
     Operator<B>::output_->setSortOrder(input->getSortOrder());
     return Operator<B>::output_;
@@ -46,8 +47,10 @@ string Filter<B>::getOperatorType() const {
 
 template<typename B>
 string Filter<B>::getParameters() const {
-
-    return predicate_.root_->toString();
+    if(predicate_->exprClass() == ExpressionClass::GENERIC) {
+        return ((GenericExpression<B> *) predicate_)->root_->toString();
+    }
+    return predicate_->toString();
 }
 
 template class vaultdb::Filter<bool>;

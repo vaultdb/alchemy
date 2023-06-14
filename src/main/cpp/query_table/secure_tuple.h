@@ -11,22 +11,29 @@ namespace vaultdb {
     // secure specialization
     template<>
     class QueryTuple<emp::Bit> {
-    protected:
-
-        emp::Bit *fields_; // has dummy tag at end, serialized representation, points to an offset in parent QueryTable
-        std::shared_ptr<QuerySchema> query_schema_; // pointer to enclosing table
-        emp::Bit *managed_data_ = nullptr;
 
     public:
+
+        emp::Bit *fields_; // has dummy tag at end, serialized representation, points to an offset in parent QueryTable
+        QuerySchema *schema_; // pointer to enclosing table
+        emp::Bit *managed_data_ = nullptr;
+
         QueryTuple() {};
         ~QueryTuple()  { if(managed_data_ != nullptr) delete [] managed_data_; }
         QueryTuple(const QueryTuple & src);
 
-        QueryTuple(std::shared_ptr<QuerySchema> & query_schema, int8_t *src);
-        QueryTuple(std::shared_ptr<QuerySchema> & query_schema, emp::Bit *src);
-        // constructor for immutable tuple
-        QueryTuple(const std::shared_ptr<QuerySchema> &query_schema, const int8_t *src);
-        explicit QueryTuple(const std::shared_ptr<QuerySchema> & schema); // self-managed memory
+        inline QueryTuple(QuerySchema *query_schema, int8_t *src) : fields_((emp::Bit *) src), schema_(query_schema) {
+            assert(fields_ != nullptr);
+
+        }
+
+        inline QueryTuple(QuerySchema *query_schema, emp::Bit *src) : fields_(src), schema_(query_schema) {
+            assert(fields_ != nullptr);
+
+        }
+        // constructor for fake immutable tuple
+        QueryTuple(QuerySchema *query_schema, const int8_t *src);
+        explicit QueryTuple(QuerySchema *schema); // self-managed memory
 
         emp::Bit *getData() const  { return fields_; }
 
@@ -34,48 +41,87 @@ namespace vaultdb {
 
         inline bool hasManagedStorage() const { return managed_data_ != nullptr; }
 
-        SecureField getField(const int &ordinal);
-        const SecureField getField(const int & ordinal) const;
+        inline SecureField getField(const int &ordinal) {
+            size_t field_offset = schema_->getFieldOffset(ordinal);
+            const emp::Bit *read_ptr = fields_ + field_offset;
+
+            return Field<emp::Bit>::deserialize(schema_->getField(ordinal),
+                                                (int8_t *) read_ptr);
+
+        }
+        const inline SecureField getField(const int & ordinal) const {
+            const emp::Bit *read_ptr = fields_ +  schema_->getFieldOffset(ordinal);
+
+            return Field<emp::Bit>::deserialize(schema_->getField(ordinal),
+                                                (int8_t *) read_ptr);
+
+        }
+
+        const inline SecureField getPackedField(const int & ordinal) const {
+            const emp::Bit *read_ptr = fields_ +  schema_->getFieldOffset(ordinal);
+
+            return Field<emp::Bit>::deserializePacked(schema_->getField(ordinal),
+                                                (int8_t *) read_ptr);
+
+        }
 
 
-        void setField(const int &idx, const SecureField &f);
-        void setDummyTag(const emp::Bit & d);
+        inline void setField(const int &idx, const SecureField &f) {
+            size_t field_offset = schema_->getFieldOffset(idx);
+            int8_t *write_pos = (int8_t *) (fields_ + field_offset);
 
-        void setDummyTag(const bool & b);
+            f.serialize(write_pos, schema_->getField(idx));
 
-        void setDummyTag(const Field<emp::Bit> & d);
+        }
 
-        void setSchema(std::shared_ptr<QuerySchema> q);
+        inline void setDummyTag(const emp::Bit & d) {
+            const emp::Bit *dst = fields_ + schema_->getFieldOffset(-1);
+            std::memcpy((int8_t *) dst, (int8_t *) &(d.bit), TypeUtilities::getEmpBitSize());
+
+        }
+
+        inline void setDummyTag(const bool & b) {  setDummyTag(Bit(b)); }
+
+        inline void setDummyTag(const Field<emp::Bit> & d) {
+            setDummyTag(d.getValue<emp::Bit>());
+        }
+
+        inline void setSchema(QuerySchema *q) { schema_ = q; }
 
 
-        emp::Bit getDummyTag() const;
+        inline emp::Bit getDummyTag() const {
+            const emp::Bit *src = fields_ + schema_->getFieldOffset(-1);
+            return emp::Bit(*((emp::Bit *) src));
+        }
 
-        std::shared_ptr<QuerySchema> getSchema() const;
+        QuerySchema *getSchema() const { return schema_; }
 
-        QueryTuple<bool> reveal(const int &empParty,  std::shared_ptr<QuerySchema> & dst_schema, int8_t *dst) const;
+        QueryTuple<bool> reveal(const int &party, QuerySchema *dst_schema, int8_t *dst) const;
         // self-managed storage
-        QueryTuple<bool> reveal(const std::shared_ptr<QuerySchema> & dst_schema, const int &empParty = emp::PUBLIC) const;
+        QueryTuple<bool> reveal(QuerySchema *dst_schema, const int &party = emp::PUBLIC) const;
 
         string toString(const bool &showDummies = false) const;
 
-        void serialize(int8_t *dst);
+        void serialize(int8_t *dst) {     memcpy((emp::Bit *) dst, fields_, schema_->size()); }
 
-        size_t getFieldCount() const;
+        inline size_t getFieldCount() const {
+            return schema_->getFieldCount();
+        }
 
 
         QueryTuple& operator=(const SecureTuple& other);
 
         emp::Bit operator==(const SecureTuple & other) const;
-        emp::Bit operator!=(const SecureTuple & other) const;
+        emp::Bit operator!=(const SecureTuple & other) const { return  !(*this == other); }
 
-        SecureField operator[](const int32_t & idx);
-        const SecureField operator[](const int32_t & idx) const;
+        inline SecureField operator[](const int32_t & idx) { return getField(idx); }
+        const inline  SecureField operator[](const int32_t & idx) const { return getField(idx); }
 
         static void compareSwap(const emp::Bit & cmp, QueryTuple<emp::Bit> & lhs, QueryTuple<emp::Bit> & rhs);
 
 
         static SecureTuple
-        deserialize(emp::Bit *dst_tuple_bits, std::shared_ptr<QuerySchema> &schema, const emp::Bit *src_tuple_bits);
+        deserialize(emp::Bit *dst_tuple_bits, QuerySchema *schema, const emp::Bit *src_tuple_bits);
 
         static void writeSubset(const SecureTuple & src_tuple, const SecureTuple & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx);
 

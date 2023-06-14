@@ -10,19 +10,47 @@ namespace  vaultdb {
     template<typename B>
     class GenericExpression : public Expression<B> {
     public:
-        GenericExpression(std::shared_ptr<ExpressionNode < B> > root, const QuerySchema &input_schema);
+        GenericExpression(ExpressionNode < B> *root, const QuerySchema &input_schema);
 
-        GenericExpression(std::shared_ptr<ExpressionNode<B> > root, const std::string & alias, const FieldType & output_type);
-        Field<B> call(const QueryTuple<B> & aTuple) const override;
+
+
+        GenericExpression(ExpressionNode<B>  *root, const std::string & alias, const FieldType & output_type);
+        Field<B> call(const QueryTuple<B> & target) const override {
+            return root_->call(target);
+        }
+
+        GenericExpression(const GenericExpression<B> & src) {
+            root_ = src.root_->clone();
+        }
+
+        inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+            return root_->call(src, row);
+        }
+
+        Field<B> call(const QueryTable<B>  *lhs, const int & lhs_row, const QueryTable<B> *rhs, const int & rhs_row) const override {
+            return  root_->call(lhs, lhs_row, rhs, rhs_row);
+        }
+
         ExpressionKind kind() const override { return root_->kind(); }
+        ExpressionClass exprClass() const override { return ExpressionClass::GENERIC; }
 
-        ~GenericExpression() = default;
 
-        string toString() const override;
+        ~GenericExpression()  {
+            if(root_ != nullptr) {
+                delete root_;
+            }
+        }
 
-        static FieldType inferFieldType(std::shared_ptr<ExpressionNode < B> > root,  const QuerySchema &input_schema);
-        std::shared_ptr<ExpressionNode<B> > root_;
+        inline string toString() const override {
+            return root_->toString() + " " +  TypeUtilities::getTypeString(Expression<B>::type_);
+        }
+
+
+        static FieldType inferFieldType(ExpressionNode < B> *root,  const QuerySchema &input_schema);
+
+        ExpressionNode<B> *root_ = nullptr;
     };
+
 
 
 }

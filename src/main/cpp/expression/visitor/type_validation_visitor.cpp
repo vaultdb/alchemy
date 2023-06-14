@@ -9,7 +9,7 @@ using namespace vaultdb;
 
 
 template<typename B>
-TypeValidationVisitor<B>::TypeValidationVisitor(std::shared_ptr<ExpressionNode<B>> root, const QuerySchema &input_schema)
+TypeValidationVisitor<B>::TypeValidationVisitor(ExpressionNode<B> *root, const QuerySchema &input_schema)
         : input_schema_(input_schema), bool_type_(std::is_same_v<bool, B> ? FieldType::BOOL : FieldType::SECURE_BOOL) {
     type_rank_[FieldType::BOOL] = type_rank_[FieldType::SECURE_BOOL] = 0;
     type_rank_[FieldType::INT] = type_rank_[FieldType::SECURE_INT] = 1;
@@ -21,95 +21,100 @@ TypeValidationVisitor<B>::TypeValidationVisitor(std::shared_ptr<ExpressionNode<B
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(InputReferenceNode<B> node) {
-    last_expression_type_ = input_schema_.getField(node.read_idx_).getType();
+void TypeValidationVisitor<B>::visit(InputReference<B>  & node) {
+    last_expression_type_ = node.output_schema_.getType(); // input_schema_.getField(node.read_idx_).getType();
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(LiteralNode<B> node) {
+void TypeValidationVisitor<B>::visit(PackedInputReference<B>  & node) {
+    last_expression_type_ = node.output_schema_.getType();
+}
+
+template<typename B>
+void TypeValidationVisitor<B>::visit(LiteralNode<B>  & node) {
     last_expression_type_ = node.payload_.getType();
 }
 
 
 // B has to match up with Field<B> if/when we plug in values to the equation later
 template<typename B>
-void TypeValidationVisitor<B>::visit(AndNode<B> node) {
+void TypeValidationVisitor<B>::visit(AndNode<B>  & node) {
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(OrNode<B> node) {
+void TypeValidationVisitor<B>::visit(OrNode<B>  & node) {
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(NotNode<B> node) {
+void TypeValidationVisitor<B>::visit(NotNode<B>  & node) {
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(PlusNode<B> node) {
+void TypeValidationVisitor<B>::visit(PlusNode<B>  & node) {
     verifyBinaryNode(node);
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(MinusNode<B> node) {
+void TypeValidationVisitor<B>::visit(MinusNode<B>  & node) {
 
     verifyBinaryNode(node);
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(TimesNode<B> node) {
+void TypeValidationVisitor<B>::visit(TimesNode<B> & node) {
     verifyBinaryNode(node);
 
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(DivideNode<B> node) {
+void TypeValidationVisitor<B>::visit(DivideNode<B> & node) {
     verifyBinaryNode(node);
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(ModulusNode<B> node) {
+void TypeValidationVisitor<B>::visit(ModulusNode<B> & node) {
     verifyBinaryNode(node);
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(EqualNode<B> node) {
+void TypeValidationVisitor<B>::visit(EqualNode<B> & node) {
     verifyBinaryNode(node);
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(NotEqualNode<B> node) {
-    verifyBinaryNode(node);
-
-    last_expression_type_ = bool_type_;
-}
-
-template<typename B>
-void TypeValidationVisitor<B>::visit(GreaterThanNode<B> node) {
+void TypeValidationVisitor<B>::visit(NotEqualNode<B> & node) {
     verifyBinaryNode(node);
 
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(LessThanNode<B> node) {
+void TypeValidationVisitor<B>::visit(GreaterThanNode<B> & node) {
     verifyBinaryNode(node);
 
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(GreaterThanEqNode<B> node) {
+void TypeValidationVisitor<B>::visit(LessThanNode<B> & node) {
     verifyBinaryNode(node);
 
     last_expression_type_ = bool_type_;
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(LessThanEqNode<B> node) {
+void TypeValidationVisitor<B>::visit(GreaterThanEqNode<B> & node) {
+    verifyBinaryNode(node);
+
+    last_expression_type_ = bool_type_;
+}
+
+template<typename B>
+void TypeValidationVisitor<B>::visit(LessThanEqNode<B> & node) {
     verifyBinaryNode(node);
 
     last_expression_type_ = bool_type_;
@@ -144,12 +149,12 @@ FieldType TypeValidationVisitor<B>::resolveType(const FieldType &lhs, const Fiel
 }*/
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(CastNode<B> node) {
+void TypeValidationVisitor<B>::visit(CastNode<B> & node) {
     last_expression_type_ =  node.dst_type_;
 }
 
 template<typename B>
-void TypeValidationVisitor<B>::visit(CaseNode<B> node) {
+void TypeValidationVisitor<B>::visit(CaseNode<B>& node) {
     return verifyBinaryNode(node);
 }
 

@@ -24,6 +24,12 @@ void ScalarCountImpl<B>::accumulate(const QueryTuple<B> &tuple) {
 }
 
 template<typename B>
+void ScalarCountImpl<B>::accumulate(const QueryTable<B> *table, const int &row) {
+    running_count_ = Field<B>::If(table->getDummyTag(row), running_count_, running_count_ + ScalarAggregateImpl<B>::one_);
+
+}
+
+template<typename B>
  Field<B> ScalarCountImpl<B>::getResult() const {
     return running_count_;
 }
@@ -34,6 +40,13 @@ template<typename B>
 void ScalarSumImpl<B>::accumulate(const QueryTuple<B> &tuple) {
     Field<B> agg_input = tuple.getField(ScalarAggregateImpl<B>::ordinal_);
     running_sum_ = Field<B>::If(tuple.getDummyTag(), running_sum_, running_sum_ + agg_input);
+
+}
+
+template<typename B>
+void ScalarSumImpl<B>::accumulate(const QueryTable<B> *table, const int &row) {
+    Field<B> agg_input = table->getField(row,ScalarAggregateImpl<B>::ordinal_);
+    running_sum_ = Field<B>::If(table->getDummyTag(row), running_sum_, running_sum_ + agg_input);
 
 }
 
@@ -78,6 +91,12 @@ void ScalarMinImpl<B>::accumulate(const QueryTuple<B> &tuple) {
 }
 
 template<typename B>
+void ScalarMinImpl<B>::accumulate(const QueryTable<B> *table, const int &row) {
+    Field<B> agg_input = table->getField(row, ScalarAggregateImpl<B>::ordinal_);
+    running_min_ = Field<B>::If((agg_input >= running_min_) | table->getDummyTag(row), running_min_, agg_input);
+}
+
+template<typename B>
  Field<B> ScalarMinImpl<B>::getResult() const {
     return running_min_;
 }
@@ -102,6 +121,13 @@ void ScalarMaxImpl<B>::accumulate(const QueryTuple<B> &tuple) {
 }
 
 template<typename B>
+void ScalarMaxImpl<B>::accumulate(const QueryTable<B> *table, const int &row) {
+    Field<B> agg_input = table->getField(row, ScalarAggregateImpl<B>::ordinal_);
+    running_max_ = Field<B>::If((agg_input <= running_max_) | table->getDummyTag(row), running_max_, agg_input);
+}
+
+
+template<typename B>
  Field<B> ScalarMaxImpl<B>::getResult() const {
     return running_max_;
 }
@@ -120,6 +146,16 @@ void ScalarAvgImpl<B>::accumulate(const QueryTuple<B> &tuple) {
     Field<B> agg_input = tuple.getField(ScalarAggregateImpl<B>::ordinal_);
     running_sum_ = Field<B>::If(tuple.getDummyTag(), running_sum_, running_sum_ + agg_input);
     running_count_ = Field<B>::If(tuple.getDummyTag(), running_count_, running_count_ + ScalarAggregateImpl<B>::one_);
+
+}
+
+template<typename B>
+void ScalarAvgImpl<B>::accumulate(const QueryTable<B> *table, const int &row) {
+
+    Field<B> agg_input = table->getField(row,ScalarAggregateImpl<B>::ordinal_);
+    B dummy_tag = table->getDummyTag(row);
+    running_sum_ = Field<B>::If(dummy_tag, running_sum_, running_sum_ + agg_input);
+    running_count_ = Field<B>::If(dummy_tag, running_count_, running_count_ + ScalarAggregateImpl<B>::one_);
 
 }
 

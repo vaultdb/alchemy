@@ -8,6 +8,7 @@
 #include <test/mpc/emp_base_test.h>
 #include <query_table/secure_tuple.h>
 #include <expression/comparator_expression_nodes.h>
+#include "expression/generic_expression.h"
 
 using namespace emp;
 using namespace vaultdb;
@@ -16,6 +17,7 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54325, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 
 class SecureFilterTest : public EmpBaseTest {};
@@ -27,19 +29,19 @@ TEST_F(SecureFilterTest, test_table_scan) {
 
     std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
-    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, false);
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 100";
+    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, storage_model_, false);
 
-    SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
-
-    std::shared_ptr<SecureTable> output = input.run(); // a smoke test for the operator infrastructure
-
-    std::unique_ptr<PlainTable> revealed = output->reveal(emp::PUBLIC);
+    SecureSqlInput input(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
 
 
-        ASSERT_EQ(*expected, *revealed);
+    PlainTable *revealed = input.run()->reveal(emp::PUBLIC);
 
 
+    ASSERT_EQ(*expected, *revealed);
+
+    delete expected;
+    delete revealed;
 
 }
 
@@ -51,29 +53,32 @@ TEST_F(SecureFilterTest, test_table_scan) {
 TEST_F(SecureFilterTest, test_filter) {
     std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 5";
-    std::string expectedResultSql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 100";
+    std::string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input WHERE l_linenumber = 1";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expectedResultSql, true);
+    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expected_sql, storage_model_, false);
 
 
-   SecureSqlInput input(db_name_, sql, false, netio_, FLAGS_party);
+   SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
 
     // expression setup
     // filtering for l_linenumber = 1
-    shared_ptr<InputReferenceNode<emp::Bit> > read_field(new InputReferenceNode<emp::Bit>(1));
+
+    InputReference<emp::Bit> read_field(1, input->getOutputSchema());
     Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
-    shared_ptr<LiteralNode<emp::Bit> > constant_input(new LiteralNode<emp::Bit>(one));
-    shared_ptr<ExpressionNode<emp::Bit> > equality_check(new EqualNode<emp::Bit>(read_field, constant_input));
-    BoolExpression<emp::Bit> expression(equality_check);
+    LiteralNode<emp::Bit> constant_input(one);
+    EqualNode<emp::Bit> equality_check((ExpressionNode<emp::Bit> *) &read_field, (ExpressionNode<emp::Bit> *) &constant_input);
+    Expression<emp::Bit> *expression = new GenericExpression<emp::Bit>(&equality_check, "predicate", FieldType::SECURE_BOOL);
 
-    Filter<emp::Bit> filter(&input, expression);  // deletion handled by shared_ptr
 
-    std::shared_ptr<SecureTable> result = filter.run();
-    std::unique_ptr<PlainTable> revealed = result->reveal(emp::PUBLIC);
+    Filter<emp::Bit> filter(input, expression);
+
+    PlainTable *revealed = filter.run()->reveal(emp::PUBLIC);
 
 
         ASSERT_EQ(*expected,  *revealed);
+        delete expected;
+        delete revealed;
 
 
 }
@@ -86,26 +91,3 @@ int main(int argc, char **argv) {
     return RUN_ALL_TESTS();
 }
 
-
-
-/*
-class SecureFilterPredicateClass : public Predicate<emp::Bit> {
-
-    SecureField encryptedLineNumber;
-public:
-    ~SecureFilterPredicateClass() {}
-    SecureFilterPredicateClass(int32_t valueToEncrypt) {
-        emp::Integer val(32, valueToEncrypt);
-        // encrypting here so we don't have to secret share it for every comparison
-        encryptedLineNumber = SecureField(FieldType::SECURE_INT, val);
-
-    }
-
-    // filtering for l_linenumber = 1
-    emp::Bit predicateCall(const SecureTuple & aTuple) const override {
-        const SecureField f =  aTuple.getField(1);
-        return (f == encryptedLineNumber);
-    }
-
-};
-*/

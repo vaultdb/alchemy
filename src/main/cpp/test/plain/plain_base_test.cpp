@@ -4,6 +4,11 @@
 #include "util/field_utilities.h"
 
 void PlainBaseTest::SetUp()  {
+    assert(FLAGS_storage == "row" || FLAGS_storage == "column");
+    storage_model_ = (FLAGS_storage == "row") ? StorageModel::ROW_STORE : StorageModel::COLUMN_STORE;
+
+    std::cout << "Received storage flag of " << FLAGS_storage << '\n';
+
     setup_plain_prot(false, "");
     //Logger::setup(); // write to console
     //Logger::setup("vaultdb");

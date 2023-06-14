@@ -5,88 +5,284 @@
 #include <query_table/plain_tuple.h>
 
 #include "expression_node.h"
+
 namespace vaultdb {
 
+    template<typename B> class ExpressionNode;
+    template<typename B> class ExpressionVisitor;
 
 
     template<typename B>
     class  EqualNode : public ExpressionNode<B> {
     public:
-        EqualNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
+        EqualNode( ExpressionNode<B> * lhs, ExpressionNode<B> * rhs ) : ExpressionNode<B>(lhs, rhs) {
+            type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+        }
+
         ~EqualNode() = default;
-        Field<B> call(const QueryTuple<B> & target) const override;
+        Field<B> call(const QueryTuple<B> & target) const override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
+            return Field<B>(type_, lhs == rhs, 0);
 
-        ExpressionKind kind() const override;
+        }
 
-        void accept(ExpressionVisitor <B> *visitor) override;
+        inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(src, row);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
+            return Field<B>(type_, lhs == rhs, 0);
+        }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l == r, 0);
+        }
+
+        ExpressionKind kind() const override { return ExpressionKind::EQ; }
+
+        inline void accept(ExpressionVisitor<B> *visitor) override {   visitor->visit(*this); }
+
+        ExpressionNode<B> *clone() const override {
+            return new EqualNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
+        }
+
+        FieldType type_;
+
 
     };
 
     template<typename B>
     class  NotEqualNode : public ExpressionNode<B> {
     public:
-        NotEqualNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
+        NotEqualNode( ExpressionNode<B> * lhs, ExpressionNode<B> * rhs ) : ExpressionNode<B>(lhs, rhs) {
+            type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+        }
+
         ~NotEqualNode() = default;
-        Field<B> call(const QueryTuple<B> & target) const override;
+        Field<B> call(const QueryTuple<B> & target) const override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
 
-        ExpressionKind kind() const override;
+            return Field<B>(type_, lhs != rhs, 0);
 
-        void accept(ExpressionVisitor <B> *visitor) override;
+        }
+        inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(src, row);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
+            return Field<B>(type_, lhs != rhs, 0);
+        }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l != r, 0);
+        }
+
+
+        ExpressionKind kind() const override { return ExpressionKind::NEQ; }
+
+        void accept(ExpressionVisitor <B> *visitor) override {
+            visitor->visit(*this);
+        }
+
+        ExpressionNode<B> *clone() const override {
+            return new NotEqualNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
+
+        }
+
+        FieldType type_;
+
     };
 
 
     template<typename B>
     class  LessThanNode : public ExpressionNode<B> {
     public:
-        LessThanNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
+        LessThanNode( ExpressionNode<B> * lhs, ExpressionNode<B> * rhs )   : ExpressionNode<B>(lhs, rhs) {
+            type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+
+
+        }
         ~LessThanNode() = default;
-        Field<B> call(const QueryTuple<B> & target) const override;
+        Field<B> call(const QueryTuple<B> & target) const override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
 
-        ExpressionKind kind() const override;
+            return Field<B>(type_, lhs < rhs, 0);
 
-        void accept(ExpressionVisitor <B> *visitor) override;
+        }
+
+        inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(src, row);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
+
+            return Field<B>(type_, lhs < rhs, 0);
+
+        }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l < r, 0);
+        }
+
+        ExpressionKind kind() const override {
+            return ExpressionKind::LT;
+        }
+
+        void accept(ExpressionVisitor <B> *visitor) override {
+            visitor->visit(*this);
+        }
+
+        ExpressionNode<B> *clone() const override {
+            return new LessThanNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
+        }
+
+        FieldType type_;
+
     };
 
 
     template<typename B>
     class  GreaterThanNode : public ExpressionNode<B> {
     public:
-        GreaterThanNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
+        GreaterThanNode( ExpressionNode<B> * lhs, ExpressionNode<B> * rhs )   : ExpressionNode<B>(lhs, rhs) {
+            type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+
+
+        }
         ~GreaterThanNode() = default;
-        Field<B> call(const QueryTuple<B> & target) const override;
+        Field<B> call(const QueryTuple<B> & target) const override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
+            return Field<B>(type_, lhs > rhs, 0);
 
-        ExpressionKind kind() const override;
+        }
 
-        void accept(ExpressionVisitor <B> *visitor) override;
+
+        inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(src, row);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
+            return Field<B>(type_, lhs > rhs, 0);
+
+        }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l > r, 0);
+        }
+
+        ExpressionKind kind() const override {
+            return ExpressionKind::GT;
+        }
+
+        void accept(ExpressionVisitor <B> *visitor) override {
+            visitor->visit(*this);
+        }
+
+        ExpressionNode<B> *clone() const override {
+            return new GreaterThanNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
+
+        }
+
+        FieldType type_;
+
     };
 
 
     template<typename B>
     class  LessThanEqNode : public ExpressionNode<B> {
     public:
-        LessThanEqNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
+        LessThanEqNode( ExpressionNode<B> *lhs, ExpressionNode<B> *rhs )   : ExpressionNode<B>(lhs, rhs) {
+            type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+
+
+        }
         ~LessThanEqNode() = default;
-        Field<B> call(const QueryTuple<B> & target) const override;
+        Field<B> call(const QueryTuple<B> & target) const override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
+            return Field<B>(type_, lhs <= rhs, 0);
 
-        ExpressionKind kind() const override;
+        }
 
-        void accept(ExpressionVisitor <B> *visitor) override;
+        inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(src, row);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
+            return Field<B>(type_, lhs <= rhs, 0);
+
+        }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l <= r, 0);
+        }
+
+        ExpressionKind kind() const override { return ExpressionKind::LEQ; }
+
+        void accept(ExpressionVisitor <B> *visitor) override {
+            visitor->visit(*this);
+        }
+
+        ExpressionNode<B> *clone() const override {
+            return new LessThanEqNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
+        }
+
+        FieldType type_;
+
     };
     template<typename B>
     class  GreaterThanEqNode : public ExpressionNode<B> {
     public:
-        GreaterThanEqNode( std::shared_ptr<ExpressionNode<B> > lhs, std::shared_ptr<ExpressionNode<B> > rhs );
+        GreaterThanEqNode( ExpressionNode<B> * lhs, ExpressionNode<B> * rhs )   : ExpressionNode<B>(lhs, rhs) {
+            type_ = (std::is_same_v<B, bool>) ? FieldType::BOOL : FieldType::SECURE_BOOL;
+
+
+        }
         ~GreaterThanEqNode() = default;
-        Field<B> call(const QueryTuple<B> & target) const override;
+        Field<B> call(const QueryTuple<B> & target) const override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(target);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(target);
+            return Field<B>(type_, lhs >= rhs, 0);
 
-        ExpressionKind kind() const override;
+        }
 
-        void accept(ExpressionVisitor <B> *visitor) override;
+        inline Field<B> call(const QueryTable<B>  *src, const int & row) const  override {
+            Field<B> lhs = ExpressionNode<B>::lhs_->call(src, row);
+            Field<B> rhs = ExpressionNode<B>::rhs_->call(src, row);
+            return Field<B>(type_, lhs >= rhs, 0);
+
+        }
+
+        Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const override {
+            Field<B> l = ExpressionNode<B>::lhs_->call(lhs, lhs_row, rhs, rhs_row);
+            Field<B> r = ExpressionNode<B>::rhs_->call(lhs, lhs_row, rhs, rhs_row);
+            return Field<B>(type_, l >= r, 0);
+        }
+
+
+        ExpressionKind kind() const override { return ExpressionKind::GEQ; }
+
+        void accept(ExpressionVisitor <B> *visitor) override {
+            visitor->visit(*this);
+        }
+
+        ExpressionNode<B> *clone() const override {
+            return new GreaterThanEqNode<B>(ExpressionNode<B>::lhs_, ExpressionNode<B>::rhs_);
+
+        }
+
+        FieldType type_;
+
     };
 
 
 
 }
+
 
 
 #endif

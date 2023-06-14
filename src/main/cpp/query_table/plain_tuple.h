@@ -13,19 +13,18 @@ namespace  vaultdb {
     class QueryTuple<bool> {
 
 
-    protected:
+    public:
         int8_t *fields_; // has dummy tag at end, serialized representation, points to an offset in parent QueryTable
-        std::shared_ptr<QuerySchema> query_schema_; // pointer to enclosing table
+        QuerySchema *schema_; // pointer to enclosing table
        int8_t  *managed_data_ = nullptr;
 
 
-    public:
         QueryTuple() : fields_(nullptr) {};
         ~QueryTuple()  { if(managed_data_ != nullptr) delete [] managed_data_; } // don't free fields_, this is done at the table level
 
-        QueryTuple(std::shared_ptr<QuerySchema> & query_schema,  int8_t *tuple_payload);
-        QueryTuple(const std::shared_ptr<QuerySchema> & query_schema, const int8_t *src);
-        explicit QueryTuple(const std::shared_ptr<QuerySchema> & schema);
+        QueryTuple(QuerySchema *query_schema,  int8_t *tuple_payload);
+        QueryTuple(QuerySchema *query_schema, const int8_t *src);
+        explicit QueryTuple(QuerySchema *schema);
         QueryTuple(const QueryTuple & src);
 
         int8_t *getData() const { return fields_; }
@@ -36,31 +35,62 @@ namespace  vaultdb {
             return false;
         }
 
-        PlainField getField(const int &ordinal);
-        const PlainField getField(const int &ordinal) const;
+        inline PlainField getField(const int &ordinal) {
+            QueryFieldDesc field_desc = schema_->getField(ordinal);
+            return Field<bool>::deserialize(field_desc, fields_ + (schema_->getFieldOffset(ordinal) / 8));
+
+        }
+
+        inline const PlainField getPackedField(const int &ordinal) const {
+            QueryFieldDesc field_desc = schema_->getField(ordinal);
+            return Field<bool>::deserializePacked(field_desc, fields_ + (schema_->getFieldOffset(ordinal) / 8));
+        }
+
+        inline const PlainField getField(const int &ordinal) const {
+            QueryFieldDesc field_desc = schema_->getField(ordinal);
+            return Field<bool>::deserialize(field_desc, fields_ + (schema_->getFieldOffset(ordinal) / 8));
+
+        }
 
         void setField(const int &idx, const PlainField &f);
 
-        void setDummyTag(const bool & b);
+        inline void setDummyTag(const bool & b) {
+            size_t dummy_tag_size = sizeof(bool);
+            int8_t *dst = fields_ + schema_->size() / 8 - dummy_tag_size;
+            memcpy(dst, &b, dummy_tag_size);
 
-        void setDummyTag(const Field<bool> & d);
+        }
 
-        void setSchema(std::shared_ptr<QuerySchema> q);
+        inline void setDummyTag(const Field<bool> & d) {
+            assert(d.getType() == FieldType::BOOL);
+            bool dummy_tag = d.getValue<bool>();
+            setDummyTag(dummy_tag);
+
+        }
+
+        inline void setSchema(QuerySchema *q) {
+            schema_ = q;
+        }
 
 
-        bool getDummyTag() const;
+        inline bool getDummyTag() const {
+            size_t dummy_tag_size = sizeof(bool);
+            int8_t *src = fields_ + schema_->size() / 8 - dummy_tag_size;
+            return *((bool *) src);
 
-        std::shared_ptr<QuerySchema> getSchema() const;
+        }
+
+        inline QuerySchema *getSchema() const {     return schema_; }
 
 
         string toString(const bool &showDummies = false) const;
 
-        void serialize(int8_t *dst) {
-
+        inline void serialize(int8_t *dst) {
+            memcpy(dst, fields_, schema_->size() / 8);
         }
 
-        size_t getFieldCount() const {
-            return 0;
+        inline size_t getFieldCount() const {
+            return schema_->getFieldCount();
         }
 
         PlainTuple& operator=(const PlainTuple& other);
@@ -75,14 +105,14 @@ namespace  vaultdb {
         static void compareSwap(const bool &cmp, PlainTuple  & lhs, PlainTuple & rhs);
 
 
-        static PlainTuple deserialize(int8_t *dst_bits, std::shared_ptr<QuerySchema> & schema, int8_t *src_bits);
+        static PlainTuple deserialize(int8_t *dst_bits, QuerySchema *schema, int8_t *src_bits);
 
         // create an independent tuple with reveal, for PUBLIC
         PlainTuple reveal(const int & party = emp::PUBLIC) const;
 
         static void writeSubset(const PlainTuple & src_tuple, const PlainTuple & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx);
 
-        static PlainTuple  If(const bool & cond,  const PlainTuple & lhs, const PlainTuple & rhs) {
+        static inline PlainTuple  If(const bool & cond,  const PlainTuple & lhs, const PlainTuple & rhs) {
                 if(cond)
                     return lhs;
                 return rhs;

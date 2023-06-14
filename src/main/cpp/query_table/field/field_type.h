@@ -1,10 +1,7 @@
 #ifndef _FIELDTYPE_H
 #define _FIELDTYPE_H
 #include <boost/variant.hpp>
-#include <emp-tool/circuits/bit.h>
-#include <emp-tool/circuits/integer.h>
-#include <emp-tool/circuits/float32.h>
-
+#include <common/defs.h>
 
 namespace vaultdb {
     enum class FieldType {
@@ -25,6 +22,7 @@ namespace vaultdb {
 
 
     typedef boost::variant<bool, int32_t, int64_t, float_t, std::string, emp::Bit, emp::Integer, emp::Float> Value;
+
 }
 
 #endif //_FIELDTYPE_H

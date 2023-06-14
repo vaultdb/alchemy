@@ -1,24 +1,23 @@
 #include "expression_factory.h"
+#include "function_expression.h"
 
 using namespace vaultdb;
 
 template<typename B>
-std::shared_ptr<ExpressionNode<B>>
-ExpressionFactory<B>::getExpressionNode(const string &expression_kind, std::shared_ptr<ExpressionNode<B>> lhs,
-std::shared_ptr<ExpressionNode<B>> rhs) {
+ExpressionNode<B> *ExpressionFactory<B>::getExpressionNode(const string &expression_kind, ExpressionNode<B> *lhs,
+ExpressionNode<B> *rhs) {
     ExpressionKind kind = getKind(expression_kind);
     return getExpressionNode(kind, lhs, rhs);
 }
 
 template<typename B>
-std::shared_ptr<ExpressionNode<B>>
-ExpressionFactory<B>::getExpressionNode(const string &expression_kind, vector<std::shared_ptr<ExpressionNode<B> > >  & operands) {
+ExpressionNode<B> *ExpressionFactory<B>::getExpressionNode(const string &expression_kind, vector<ExpressionNode<B> * >  & operands) {
     ExpressionKind kind = getKind(expression_kind);
 
     if(kind == ExpressionKind::CASE) {
         assert(operands.size() == 3);
-        BoolExpression<B> conditional(operands[0]);
-        return std::shared_ptr<ExpressionNode<B> >(new CaseNode<B>(conditional, operands[1], operands[2]));
+        GenericExpression<B> conditional(operands[0], "case_select", (std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL));
+        return new CaseNode<B>(conditional, operands[1], operands[2]);
     }
     else
         return getExpressionNode(kind, operands[0], operands[1]);
@@ -26,40 +25,39 @@ ExpressionFactory<B>::getExpressionNode(const string &expression_kind, vector<st
 
 
 template<typename B>
-std::shared_ptr<ExpressionNode<B>>
-ExpressionFactory<B>::getExpressionNode(const ExpressionKind &kind, std::shared_ptr<ExpressionNode<B>> lhs,
-std::shared_ptr<ExpressionNode<B>> rhs) {
+ExpressionNode<B> *ExpressionFactory<B>::getExpressionNode(const ExpressionKind &kind, ExpressionNode<B> *lhs,
+ExpressionNode<B> *rhs) {
     switch(kind) {
         case ExpressionKind::PLUS:
-            return std::shared_ptr<ExpressionNode<B> >(new PlusNode<B>(lhs, rhs));
+            return new PlusNode<B>(lhs, rhs);
         case ExpressionKind::MINUS:
-            return std::shared_ptr<ExpressionNode<B> >(new MinusNode<B>(lhs, rhs));
+            return new MinusNode<B>(lhs, rhs);
         case ExpressionKind::TIMES:
-            return std::shared_ptr<ExpressionNode<B> >(new TimesNode<B>(lhs, rhs));
+            return new TimesNode<B>(lhs, rhs);
         case ExpressionKind::DIVIDE:
-            return std::shared_ptr<ExpressionNode<B> >(new DivideNode<B>(lhs, rhs));
+            return new DivideNode<B>(lhs, rhs);
         case ExpressionKind::MOD:
-            return std::shared_ptr<ExpressionNode<B> >(new ModulusNode<B>(lhs, rhs));
+            return new ModulusNode<B>(lhs, rhs);
 
         case ExpressionKind::AND:
-            return std::shared_ptr<ExpressionNode<B> >(new AndNode<B>(lhs, rhs));
+            return new AndNode<B>(lhs, rhs);
         case ExpressionKind::OR:
-            return std::shared_ptr<ExpressionNode<B> >(new OrNode<B>(lhs, rhs));
+            return new OrNode<B>(lhs, rhs);
         case ExpressionKind::NOT:
-            return std::shared_ptr<ExpressionNode<B> >(new NotNode<B>(lhs));
+            return new NotNode<B>(lhs);
 
         case ExpressionKind::EQ:
-            return std::shared_ptr<ExpressionNode<B> >(new EqualNode<B>(lhs, rhs));
+            return new EqualNode<B>(lhs, rhs);
         case ExpressionKind::NEQ:
-            return std::shared_ptr<ExpressionNode<B> >(new NotEqualNode<B>(lhs, rhs));
+            return new NotEqualNode<B>(lhs, rhs);
         case ExpressionKind::LT:
-            return std::shared_ptr<ExpressionNode<B> >(new LessThanNode<B>(lhs, rhs));
+            return new LessThanNode<B>(lhs, rhs);
         case ExpressionKind::LEQ:
-            return std::shared_ptr<ExpressionNode<B> >(new LessThanEqNode<B>(lhs, rhs));
+            return new LessThanEqNode<B>(lhs, rhs);
         case ExpressionKind::GT:
-            return std::shared_ptr<ExpressionNode<B> >(new GreaterThanNode<B>(lhs, rhs));
+            return new GreaterThanNode<B>(lhs, rhs);
         case ExpressionKind::GEQ:
-            return std::shared_ptr<ExpressionNode<B> >(new GreaterThanEqNode<B>(lhs, rhs));
+            return new GreaterThanEqNode<B>(lhs, rhs);
         default:
             throw new std::invalid_argument("Can't create ExpressionNode for kind " + std::to_string((int) kind));
     }
@@ -93,6 +91,9 @@ ExpressionKind ExpressionFactory<B>::getKind(const string &expression_kind) {
 
 
 }
+
+
+
 
 template class vaultdb::ExpressionFactory<bool>;
 template class vaultdb::ExpressionFactory<emp::Bit>;
