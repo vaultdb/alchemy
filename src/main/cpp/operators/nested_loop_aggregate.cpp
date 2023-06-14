@@ -123,6 +123,13 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         } // end for each  output tuple
     }// end for each input tuple
 
+    // TODO: clean up aggregators, only need to delete avg
+//    for(auto aggs : per_tuple_aggregators) {
+//        for(auto agg : aggs) {
+//            if(agg != nullptr)
+//                delete agg;
+//        }
+//    }
 
     return Operator<B>::output_;
 
