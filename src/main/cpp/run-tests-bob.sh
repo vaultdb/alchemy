@@ -16,9 +16,6 @@ bash pilot/test/generate-and-load-test-data.sh 1000
 # regenerate test data
 bash  test/support/load-generated-data.sh 100
 
-# optional:
-#  bash run-pilot-test.sh
-
 
 ./bin/csv_reader_test
 ./bin/field_expression_test
