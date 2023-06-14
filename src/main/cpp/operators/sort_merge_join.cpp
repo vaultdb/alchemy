@@ -45,64 +45,17 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
-    QuerySchema lhs_schema = lhs->getSchema();
-    QuerySchema rhs_schema = rhs->getSchema();
     assert(lhs->storageModel() == rhs->storageModel());
 
-    QuerySchema augmented_schema = (lhs->tuple_size_ > rhs->tuple_size_) ? lhs_schema : rhs_schema;
-
-    Field<B> table_id_field;
-    int out_schema_size = max(lhs->tuple_size_, rhs->tuple_size_);
-    if(std::is_same_v<B, bool>) {
-        out_schema_size += 1 + 8; // 2 alphas @ 32 bits, 1 bool
-        QueryFieldDesc alpha_1(augmented_schema.getFieldCount(), "alpha1", "", FieldType::INT, 0);
-        augmented_schema.putField(alpha_1);
-        QueryFieldDesc alpha_2(augmented_schema.getFieldCount(), "alpha1", "", FieldType::INT, 0);
-        augmented_schema.putField(alpha_2);
-        QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::BOOL, 0);
-        augmented_schema.putField(table_id);
-        table_id_field = Field<B>(FieldType::BOOL, true, 0);
-
-    }
-    else {
-        out_schema_size += 65 * TypeUtilities::getEmpBitSize();
-        QueryFieldDesc alpha_1(augmented_schema.getFieldCount(), "alpha1", "", FieldType::SECURE_INT, 0);
-        augmented_schema.putField(alpha_1);
-        QueryFieldDesc alpha_2(augmented_schema.getFieldCount(), "alpha1", "", FieldType::SECURE_INT, 0);
-        augmented_schema.putField(alpha_2);
-        QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::SECURE_BOOL, 0);
-        augmented_schema.putField(table_id);
-        table_id_field = Field<B>( FieldType::SECURE_INT, Bit(true), 0);
-    }
-
-    augmented_schema.initializeFieldOffsets();
-    std::cout << "Augmented schema: " << augmented_schema << endl;
     vector<int> lhs_keys, rhs_keys;
 
-    // Does not check that both keys belong to different tables
     for(auto key_pair : join_idxs_) {
-        int k1 = key_pair.first;
-        bool lhs_key = false, rhs_key = false;
-        if(k1 < lhs_schema.getFieldCount()) {
-            lhs_keys.emplace_back(k1);
-            lhs_key = true;
-        }
-        else {
-            rhs_keys.emplace_back(k1 - lhs_schema.getFieldCount());
-            rhs_key = true;
-        }
+        // visitor always outputs lhs, rhs
+        assert(key_pair.first < lhs->getSchema().getFieldCount());
+        assert(key_pair.second >= lhs->getSchema().getFieldCount());
 
-        int k2 = key_pair.first;
-        if(k2 < lhs_schema.getFieldCount()) {
-            lhs_keys.emplace_back(k2);
-            lhs_key = true;
-
-        }
-        else {
-            rhs_keys.emplace_back(k2 - lhs_schema.getFieldCount());
-            rhs_key = true;
-        }
-
+        lhs_keys.emplace_back(key_pair.first);
+        rhs_keys.emplace_back(key_pair.second - lhs->getSchema().getFieldCount());
     }
 
 
@@ -113,6 +66,32 @@ QueryTable<B> *SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B>
 
     QueryTable<B> *lhs_prime = projectSortKeyToFirstAttr(lhs, lhs_keys);
     QueryTable<B> *rhs_prime = projectSortKeyToFirstAttr(rhs, rhs_keys);
+
+    // set up extended schema
+    QuerySchema augmented_schema = (lhs_prime->tuple_size_ > rhs_prime->tuple_size_) ? lhs_prime->getSchema() : rhs_prime->getSchema();
+
+    Field<B> table_id_field;
+    if(std::is_same_v<B, bool>) {
+        QueryFieldDesc alpha_1(augmented_schema.getFieldCount(), "alpha1", "", FieldType::INT, 0);
+        augmented_schema.putField(alpha_1);
+        QueryFieldDesc alpha_2(augmented_schema.getFieldCount(), "alpha1", "", FieldType::INT, 0);
+        augmented_schema.putField(alpha_2);
+        QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::BOOL, 0);
+        augmented_schema.putField(table_id);
+        table_id_field = Field<B>(FieldType::BOOL, true, 0);
+
+    }
+    else {
+        QueryFieldDesc alpha_1(augmented_schema.getFieldCount(), "alpha1", "", FieldType::SECURE_INT, 0);
+        augmented_schema.putField(alpha_1);
+        QueryFieldDesc alpha_2(augmented_schema.getFieldCount(), "alpha1", "", FieldType::SECURE_INT, 0);
+        augmented_schema.putField(alpha_2);
+        QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::SECURE_BOOL, 0);
+        augmented_schema.putField(table_id);
+        table_id_field = Field<B>( FieldType::SECURE_INT, Bit(true), 0);
+    }
+
+    augmented_schema.initializeFieldOffsets();
 
     int output_cursor = 0;
     QueryTable<B> *output = TableFactory<B>::getTable(lhs->getTupleCount() + rhs->getTupleCount(), augmented_schema, lhs->storageModel());
@@ -129,9 +108,11 @@ QueryTable<B> *SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B>
         ++output_cursor;
     }
 
+    std::cout << "Concatenated output: " << output->getOstringStream() << endl;
 
     // implicitly deleting output table
-    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size() + 1);
+    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
+    sort_def.emplace_back(augmented_schema.getFieldCount()-1, SortDirection::ASCENDING); // table_id ordinal
     Sort<B> sorter(output, sort_def);
 
 
@@ -170,45 +151,60 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
 template<typename B>
 void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
-    int table_id_ordinal = dst->getSchema().getField("table_id").getOrdinal();
-    int alpha_1_ordinal = dst->getSchema().getFieldCount() - 2; // second to last field
-    int alpha_2_ordinal = dst->getSchema().getFieldCount() - 1; // last field
+    int table_id_idx = dst->getSchema().getFieldCount() - 1;
+    int alpha_1_idx = dst->getSchema().getFieldCount() - 3; // 3rd to last field
+    int alpha_2_idx = dst->getSchema().getFieldCount() - 2; // 2nd to last field
 
     Field<B> one = (dst->isEncrypted()) ? Field<B>(FieldType::SECURE_INT, 1, 0) : Field<B>(FieldType::INT, 1, 0);
     Field<B> zero = (dst->isEncrypted()) ? Field<B>(FieldType::SECURE_INT, 0, 0) : Field<B>(FieldType::INT, 0, 0);
 
     Field<B> count = zero;
 
-    B prev_table_id = dst->getField(0, table_id_ordinal).template getValue<B>();
-    for (int i = 1; i < dst->getTupleCount(); i++) {
-        B is_foreign_key = dst->getField(i, table_id_ordinal).template getValue<B>();
+    B prev_table_id =  dst->getField(0, table_id_idx).template getValue<B>();
+    B table_id;
+    // right now have table_id == true for rhs
+    B fkey = (this->foreign_key_input_ == 0) ? B(false) : B(true);
 
-        // do they have the same join key?
-        B same_group = joinMatch(dst, i - 1, i, join_idxs_.size());
-        B result = ((dst->getField(i, table_id_ordinal) == dst->getField(i - 1, table_id_ordinal)) & same_group);
+    // set correct alpha to 1 for first row
+    // if table ID is false, update alpha 1
+    Field<B> a1 = Field<B>::If(!prev_table_id, one, zero);
+    Field<B> a2 = Field<B>::If(prev_table_id, one, zero);
+    dst->setField(0, alpha_1_idx, a1);
+    dst->setField(0, alpha_2_idx, a2);
+
+    for (int i = 1; i < dst->getTupleCount(); i++) {
+
+        table_id = dst->getField(i, table_id_idx).template getValue<B>();
+        B is_foreign_key = (table_id == fkey);
+
+        B same_group = joinMatch(dst, i-1, i, join_idxs_.size());
+        B result = ((table_id == prev_table_id) & same_group);
 
         count = count + one;
         count = Field<B>::If(result, count, one);
 
-        Field<B> prev_count = Field<B>::If(same_group, dst->getField(i - 1, alpha_1_ordinal), zero);
-        dst->setField(i, alpha_1_ordinal, Field<B>::If(is_foreign_key, count, prev_count));
-        dst->setField(i, alpha_2_ordinal, Field<B>::If(is_foreign_key, zero, count));
+        Field<B> prev_count = Field<B>::If(same_group, dst->getField(i-1, alpha_1_idx),zero);
+        dst->setField(i, alpha_1_idx, Field<B>::If(is_foreign_key, count, prev_count));
+        dst->setField(i, alpha_2_idx, Field<B>::If(is_foreign_key, zero, count));
 
 
+        prev_table_id = table_id;
     }
 
-    for (int i = dst->getTupleCount() - 2; i >= 0; i--) {
-        count = dst->getField(i, alpha_1_ordinal);
-        B same_group = joinMatch(dst, i, i + 1, join_idxs_.size());
+    for (int i = dst->getTupleCount() - 1; i >= 0; i--) {
+        count = dst->getField(i, alpha_1_idx);
 
-        Field<B> prev_count = dst->getField(i + 1, alpha_1_ordinal);
-        dst->setField(i, alpha_1_ordinal, Field<B>::If(same_group, prev_count, count));
+        B same_group = joinMatch(dst, i, i+1, join_idxs_.size());
 
-        count = dst->getField(i, alpha_2_ordinal);
-        prev_count = dst->getField(i + 1, alpha_2_ordinal);
-        dst->setField(i, alpha_2_ordinal, Field<B>::If(same_group, prev_count, count));
+        Field<B> prev_count = dst->getField(i+1, alpha_1_idx);
+        dst->setField(i, alpha_1_idx, Field<B>::If(same_group, prev_count, count));
 
+        count = dst->getField(i, alpha_2_idx);
+        prev_count = dst->getField(i+1,alpha_2_idx);
+        dst->setField(i, alpha_2_idx, Field<B>::If(same_group, prev_count, count));
     }
+
+
 }
 
 
