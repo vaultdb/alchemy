@@ -76,6 +76,7 @@ QueryTable<B> *SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B>
     }
 
     augmented_schema.initializeFieldOffsets();
+    std::cout << "Augmented schema: " << augmented_schema << endl;
     vector<int> lhs_keys, rhs_keys;
 
     // Does not check that both keys belong to different tables
@@ -145,8 +146,6 @@ QueryTable<B> *SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B>
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols) {
 
-    vector<int> cols_covered = join_cols;
-
     ExpressionMapBuilder<B> builder(src->getSchema());
     int write_cursor = 0;
     for(auto key : join_cols) {
@@ -154,15 +153,10 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
         ++write_cursor;
     }
 
-    int table_col_id = src->getSchema().getField("table_id").getOrdinal();
-    // move up table_id to be after keys
-    builder.addMapping(table_col_id, write_cursor);
-    ++write_cursor;
-    cols_covered.emplace_back(table_col_id);
 
 
     for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
-        if(std::find(cols_covered.begin(), cols_covered.end(),i) == cols_covered.end()) {
+        if(std::find(join_cols.begin(), join_cols.end(),i) == join_cols.end()) {
             builder.addMapping(i, write_cursor);
             ++write_cursor;
         }
@@ -183,10 +177,11 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     Field<B> one = (dst->isEncrypted()) ? Field<B>(FieldType::SECURE_INT, 1, 0) : Field<B>(FieldType::INT, 1, 0);
     Field<B> zero = (dst->isEncrypted()) ? Field<B>(FieldType::SECURE_INT, 0, 0) : Field<B>(FieldType::INT, 0, 0);
 
+    Field<B> count = zero;
+
     B prev_table_id = dst->getField(0, table_id_ordinal).template getValue<B>();
     for (int i = 1; i < dst->getTupleCount(); i++) {
-        Field<B> table_id = dst->getField(i, table_id_ordinal);
-        B is_foreign_key = table_id.template getValue<B>();
+        B is_foreign_key = dst->getField(i, table_id_ordinal).template getValue<B>();
 
         // do they have the same join key?
         B same_group = joinMatch(dst, i - 1, i, join_idxs_.size());
@@ -199,7 +194,7 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
         dst->setField(i, alpha_1_ordinal, Field<B>::If(is_foreign_key, count, prev_count));
         dst->setField(i, alpha_2_ordinal, Field<B>::If(is_foreign_key, zero, count));
 
-        prev_table_id = table_id;
+
     }
 
     for (int i = dst->getTupleCount() - 2; i >= 0; i--) {
