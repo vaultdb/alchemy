@@ -87,7 +87,9 @@ set(sources
 		operators/scalar_aggregate.cpp
 		operators/union.cpp
 		operators/group_by_aggregate.cpp
+		operators/nested_loop_aggregate.cpp
 		operators/support/group_by_aggregate_impl.cpp
+		operators/support/unsorted_aggregate_impl.cpp
 		operators/csv_input.cpp
         operators/keyed_sort_merge_join.cpp
 		operators/shrinkwrap.cpp
