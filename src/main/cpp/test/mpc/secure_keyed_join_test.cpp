@@ -77,8 +77,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders) {
 
 
     expected->setSortOrder(observed->getSortOrder());
-    std::cout << "Operator tree: \n" << join.printTree() << '\n';
-
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
@@ -122,8 +120,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_customer_orders_no_bit_packing) {
 
     expected->setSortOrder(observed->getSortOrder());
 
-    std::cout << "Operator tree: \n" << join.printTree() << '\n';
-
     ASSERT_EQ(*expected, *observed);
     delete expected;
     delete observed;
@@ -165,7 +161,7 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders) {
     observed = observed_sort.run();
 
     expected->setSortOrder(sort_def);
-    std::cout << "Operator tree: \n" << join.printTree() << '\n';
+
     ASSERT_EQ(*expected, *observed);
     delete expected;
    // delete observed; - covered by sort
@@ -207,8 +203,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_no_bit_packing) {
     observed = observed_sort.run();
 
     expected->setSortOrder(sort_def);
-
-    std::cout << "Operator tree: \n" << join.printTree() << '\n';
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
@@ -263,8 +257,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
     expected->setSortOrder(observed->getSortOrder());
-
-    std::cout << "Operator tree: \n" << col_join->printTree() << '\n';
 
     ASSERT_EQ(*expected, *observed);
     delete col_join;
@@ -321,7 +313,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer_no_bit_packing
 
 
     expected->setSortOrder(observed->getSortOrder());
-    std::cout << "Operator tree: \n" << col_join->printTree() << '\n';
 
     ASSERT_EQ(*expected, *observed);
     delete col_join;
