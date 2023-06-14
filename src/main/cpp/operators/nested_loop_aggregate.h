@@ -14,7 +14,7 @@ namespace vaultdb {
         std::vector<ScalarAggregateDefinition> aggregate_definitions_;
         std::vector<int32_t> group_by_;
 
-        vector<shared_ptr<UnsortedAggregateImpl<B> >> aggregators_;
+        vector<UnsortedAggregateImpl<B> *> aggregators_;
          int output_cardinality_ = 0;
 
         NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
@@ -22,16 +22,16 @@ namespace vaultdb {
         NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
 			       const vector<ScalarAggregateDefinition> &aggregates, const int output_card);
 
-        NestedLoopAggregate(shared_ptr<QueryTable<B> > child, const vector<int32_t> &groupBys,
+        NestedLoopAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const int & output_card = 0);
 
-        NestedLoopAggregate(shared_ptr<QueryTable<B> > child, const vector<int32_t> &groupBys,
+        NestedLoopAggregate(QueryTable<B>  *child, const vector<int32_t> &groupBys,
                          const vector<ScalarAggregateDefinition> &aggregates, const int & output_card = 0);
         ~NestedLoopAggregate() = default;
 
     protected:
         string OperatorType;
-        std::shared_ptr<QueryTable<B> > runSelf() override;
+        QueryTable<B> *runSelf() override;
         string getOperatorType() const override;
         string getParameters() const override;
 

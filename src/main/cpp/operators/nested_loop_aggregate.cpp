@@ -5,6 +5,7 @@
 #include "nested_loop_aggregate.h"
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
+#include "query_table/table_factory.h"
 
 
 
@@ -30,12 +31,11 @@ NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int
                                                                     aggregate_definitions_(aggregates),
                                                                     group_by_(groupBys), output_cardinality_(output_card) {
     output_cardinality_ = output_card;
-    this->setOperatorCardinality(output_cardinality_);
     setup();
  }
 
 template<typename B>
-NestedLoopAggregate<B>::NestedLoopAggregate(shared_ptr<QueryTable<B>> child, const vector<int32_t> &groupBys,
+NestedLoopAggregate<B>::NestedLoopAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
                                       const vector<ScalarAggregateDefinition> &aggregates,
 				      const SortDefinition &sort,
 				      const int & output_card) : Operator<B>(child, sort),
@@ -46,7 +46,7 @@ NestedLoopAggregate<B>::NestedLoopAggregate(shared_ptr<QueryTable<B>> child, con
  }
 
 template<typename B>
-NestedLoopAggregate<B>::NestedLoopAggregate(shared_ptr<QueryTable<B>> child, const vector<int32_t> &groupBys,
+NestedLoopAggregate<B>::NestedLoopAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
                                       const vector<ScalarAggregateDefinition> &aggregates,
 				      const int & output_card) : Operator<B>(child, SortDefinition()),
                       aggregate_definitions_(aggregates),
@@ -57,71 +57,74 @@ NestedLoopAggregate<B>::NestedLoopAggregate(shared_ptr<QueryTable<B>> child, con
 
 
 template<typename B>
-shared_ptr<QueryTable<B> > NestedLoopAggregate<B>::runSelf() {
-    shared_ptr<QueryTable<B> > input = Operator<B>::children_[0]->getOutput();
-    shared_ptr<QuerySchema> input_schema = input->getSchema();
-    shared_ptr<QuerySchema> output_schema(new QuerySchema(Operator<B>::output_schema_));
+QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
+    QueryTable<B> *input = this->getChild(0)->getOutput();
+    QuerySchema input_schema = input->getSchema();
+    QuerySchema output_schema = this->output_schema_;
 
 
 
     if(output_cardinality_ == 0) { // naive case - go full oblivious
       output_cardinality_ = input->getTupleCount();
     }
-    
-    // output sort order equal to first group-by-col-count entries in input sort order
-    // TODO: make this only work when we are sorted on the group by cols.
-    //  May produce incorrect results otherwise
-//    SortDefinition inputSort = input->getSortOrder();
-//    SortDefinition outputSort = vector<ColumnSort>(inputSort.begin(), inputSort.begin() + group_by_.size());
 
-    Operator<B>::output_ = shared_ptr<QueryTable<B>>(new QueryTable<B>(output_cardinality_, Operator<B>::output_schema_, SortDefinition()));
+    this->output_ = TableFactory<B>::getTable(input->getTupleCount(), Operator<B>::output_schema_, input->storageModel());
+    QueryTable<B> *output = this->output_;
 
-    vector<vector<shared_ptr<UnsortedAggregateImpl<B>>> > per_tuple_aggregators;
+    // one per aggregator, one per output bin
+    vector<vector<UnsortedAggregateImpl<B> *> > per_tuple_aggregators;
     //confirm all output dummyTag as true
     for (int i = 0; i < output_cardinality_; ++i) {
-        NestedLoopAggregate<B>::output_->getTuple(i).setDummyTag(true);
-        per_tuple_aggregators.emplace_back(vector<shared_ptr<UnsortedAggregateImpl<B>>>());
-        vector<shared_ptr<UnsortedAggregateImpl<B>> > row_aggregators(aggregators_.size());
+        this->output_->setDummyTag(i, true);
+        per_tuple_aggregators.emplace_back(vector<UnsortedAggregateImpl<B> *>());
+        vector<UnsortedAggregateImpl<B> *> row_aggregators(aggregators_.size());
         for(int j = 0; j < aggregators_.size(); ++j) {
-            shared_ptr<UnsortedAggregateImpl<B> > a = (aggregators_[j]->agg_type_ == AggregateId::AVG)
-                                                      ?   shared_ptr<UnsortedAggregateImpl<B> >(new UnsortedAvgImpl<B>(AggregateId::AVG, aggregators_[j]->field_type_, aggregators_[j]->input_ordinal_, aggregators_[j]->output_ordinal_))
+            UnsortedAggregateImpl<B> *a = (aggregators_[j]->agg_type_ == AggregateId::AVG)
+                                                    ?    new UnsortedAvgImpl<B>(AggregateId::AVG, aggregators_[j]->field_type_, aggregators_[j]->input_ordinal_, aggregators_[j]->output_ordinal_)
                                                      :     aggregators_[j];
             per_tuple_aggregators[i].emplace_back(a);
         }
     }
 
 
+
     // create output tuples with managed memory for ease of use
     for(int i = 0; i < input->getTupleCount(); ++i) {
 
-        QueryTuple<B> input_row = (*input)[i];
-        B input_dummy = input_row.getDummyTag();
+        //QueryTuple<B> input_row = (*input)[i];
+        B input_dummy = input->getDummyTag(i);
         B matched = FieldUtilities::select(input_dummy, B(true), B(false)); // already "matched" if dummy
 
         for (int j = 0; j < output_cardinality_; ++j) {
-            QueryTuple<B> output_row = (*Operator<B>::output_)[j];
-            B group_by_match = groupByMatch(input_row, output_row);
-            B output_dummy = output_row.getDummyTag();
+//            QueryTuple<B> output_row = (*Operator<B>::output_)[j];
+            B group_by_match = true;
+            for(int k = 0; k < group_by_.size(); ++k) {
+                B eq = (input->getField(i, group_by_[k]) == output->getField(j, k));
+                matched = matched & eq;
+                group_by_match = group_by_match & eq;
+            }
+
+            B output_dummy = output->getDummyTag(j);
 
             // if output is dummy and no match so far, then initialize group-by cols
             B initialize_group_by = output_dummy & !matched;
 
             for (int k = 0; k < group_by_.size(); ++k) {
-                Field<B> src = input_row.getField(group_by_[k]);
-                Field<B> dst = Field<B>::If(initialize_group_by, src, output_row.getField(k));
-                output_row.setField(k, dst);
+                Field<B> src = input->getField(i, group_by_[k]);
+                Field<B> dst = Field<B>::If(initialize_group_by, src, output->getField(j, k));
+                output->setField(j, k, dst);
             }
 
             for (int k = 0; k < aggregators_.size(); ++k) {
-                shared_ptr<UnsortedAggregateImpl<B> > a = per_tuple_aggregators[j][k];
-                a->update(input_row, output_row, matched, group_by_match);
+                UnsortedAggregateImpl<B>  *a = per_tuple_aggregators[j][k];
+                a->update(input, i, output, j,matched, group_by_match);
             } // end aggregators
 
 
             // if group-by match or output_dummy, then matched = true
             matched = FieldUtilities::select(group_by_match | initialize_group_by, B(true), matched);
             output_dummy =  FieldUtilities::select(initialize_group_by, B(false), output_dummy);
-            output_row.setDummyTag(output_dummy);
+            output->setDummyTag(j, output_dummy);
 
         } // end for each  output tuple
     }// end for each input tuple
@@ -191,9 +194,9 @@ void NestedLoopAggregate<B>::setup() {
                                  input_schema.getField(agg.ordinal).getType() :
                                  (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
 
-        shared_ptr<UnsortedAggregateImpl<B>> a = (agg.type == AggregateId::AVG) ?
-                  shared_ptr<UnsortedAggregateImpl<B>>(new UnsortedAvgImpl<B>(AggregateId::AVG, aggValueType, agg.ordinal, output_ordinal))
-                : shared_ptr<UnsortedAggregateImpl<B>>(new UnsortedStatelessAggregateImpl<B>(agg.type, aggValueType, agg.ordinal, output_ordinal));
+        UnsortedAggregateImpl<B> *a = (agg.type == AggregateId::AVG)
+                ? (UnsortedAggregateImpl<B> *) new UnsortedAvgImpl<B>(AggregateId::AVG, aggValueType, agg.ordinal, output_ordinal)
+                :  (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, aggValueType, agg.ordinal, output_ordinal);
 
         aggregators_.push_back(a);
         ++output_ordinal;

@@ -21,17 +21,17 @@ UnsortedStatelessAggregateImpl<B>::UnsortedStatelessAggregateImpl(const Aggregat
 
 
 template<typename B>
-void UnsortedStatelessAggregateImpl<B>::update(const QueryTuple<B> &input, QueryTuple<B> &output, const B & match_found, const B & group_by_match) {
+void UnsortedStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst, const int & dst_row, const B & match_found, const B & group_by_match) {
 
     // input is NOT a dummy AND (output IS a dummy AND !matched)
-    B input_dummy = input.getDummyTag();
+    B input_dummy = src->getDummyTag(src_row);
     Field<B> input_field;
     if(UnsortedAggregateImpl<B>::input_ordinal_ >= 0)
-        input_field = input.getField(UnsortedAggregateImpl<B>::input_ordinal_);
-    Field<B> output_field = output.getField(UnsortedAggregateImpl<B>::output_ordinal_);
+        input_field = src->getField(src_row, UnsortedAggregateImpl<B>::input_ordinal_);
+    Field<B> output_field = dst->getField(dst_row, UnsortedAggregateImpl<B>::output_ordinal_);
 
     B to_accumulate = (!input_dummy) & group_by_match;
-    B to_initialize = (!input_dummy) & output.getDummyTag()  & !match_found;
+    B to_initialize = (!input_dummy) & dst->getDummyTag(dst_row)  & !match_found;
 
     if(std::is_same_v<B, bool>) {
         bool check = FieldUtilities::extract_bool(!(to_initialize & to_accumulate));
@@ -44,7 +44,6 @@ void UnsortedStatelessAggregateImpl<B>::update(const QueryTuple<B> &input, Query
     switch(UnsortedAggregateImpl<B>::agg_type_) {
         case AggregateId::AVG:
             throw; // should use specialized UnsortedAvgImpl for this
-
         case AggregateId::COUNT:
             accumulated = Field<B>::If(to_initialize, one, output_field);
             accumulated = Field<B>::If(to_accumulate, accumulated + one, accumulated);
@@ -63,7 +62,7 @@ void UnsortedStatelessAggregateImpl<B>::update(const QueryTuple<B> &input, Query
 
     }
 
-    output.setField(UnsortedAggregateImpl<B>::output_ordinal_, accumulated);
+    dst->setField(dst_row, UnsortedAggregateImpl<B>::output_ordinal_, accumulated);
 
 }
 
@@ -76,12 +75,12 @@ UnsortedAvgImpl<B>::UnsortedAvgImpl(const AggregateId & id, const FieldType & ty
 }
 
 template<typename B>
-void UnsortedAvgImpl<B>::update(const QueryTuple<B> &input, QueryTuple<B> &output, const B & match_found, const B & group_by_match) {
-    B input_dummy = input.getDummyTag();
-    Field<B> input_field = input.getField(UnsortedAggregateImpl<B>::input_ordinal_);
+void UnsortedAvgImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst, const int & dst_row, const B & match_found, const B & group_by_match){
+    B input_dummy = src->getDummyTag(src_row);
+    Field<B> input_field = src->getField(src_row,UnsortedAggregateImpl<B>::input_ordinal_);
 
     B to_accumulate = (!input_dummy) & group_by_match;
-    B to_initialize = (!input_dummy) & output.getDummyTag()  & !match_found;
+    B to_initialize = (!input_dummy) & dst->getDummyTag(dst_row)  & !match_found;
     B to_write = to_accumulate | to_initialize;
     Field<B> one = FieldFactory<B>::getOne(UnsortedAggregateImpl<B>::field_type_);
 
@@ -92,7 +91,7 @@ void UnsortedAvgImpl<B>::update(const QueryTuple<B> &input, QueryTuple<B> &outpu
 
     Field<B> output_field = running_sum_ / tuple_count_;
 
-    output.setField(UnsortedAggregateImpl<B>::output_ordinal_, output_field);
+    dst->setField(dst_row, UnsortedAggregateImpl<B>::output_ordinal_, output_field);
 
 
 }

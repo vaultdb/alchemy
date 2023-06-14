@@ -32,24 +32,23 @@ void SecureNestedLoopyAggregateTest::runTest(const string &expectedOutputQuery,
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
     // set up expected output
-    std::shared_ptr<PlainTable> expected = EmpBaseTest::getExpectedOutput(expectedOutputQuery, 0);
+    PlainTable *expected = EmpBaseTest::getExpectedOutput(expectedOutputQuery, 0);
 
     // run secure query
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1); // actually 2
-    SecureSqlInput input(db_name_, query, false, sortDefinition, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, query, false, storage_model_, sortDefinition, netio_, FLAGS_party);
 
 
     std::vector<int32_t> groupByCols{0};
     NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 10);
 
-    std::shared_ptr<SecureTable> aggregated = aggregate.run();
-    std::shared_ptr<PlainTable> aggregatedReveal = aggregated->reveal();
+    PlainTable *observed = aggregate.run()->reveal();
 
 
-    // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregatedReveal);
 
     ASSERT_EQ(*expected, *observed);
+    delete observed;
+    delete expected;
 
 
 }
@@ -60,11 +59,11 @@ void SecureNestedLoopyAggregateTest::runDummiesTest(const string &expectedOutput
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
-    std::shared_ptr<PlainTable> expected = EmpBaseTest::getExpectedOutput(expectedOutputQuery, 0);
+    PlainTable *expected = EmpBaseTest::getExpectedOutput(expectedOutputQuery, 0);
 
     // configure and run test
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(1);
-    SecureSqlInput input(db_name_, query, true, sortDefinition, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, query, true, storage_model_, sortDefinition, netio_, FLAGS_party);
 
 
     std::vector<int32_t> groupByCols;
@@ -72,13 +71,13 @@ void SecureNestedLoopyAggregateTest::runDummiesTest(const string &expectedOutput
 
     NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 10);
 
-    std::shared_ptr<PlainTable> aggregated = aggregate.run()->reveal();
+    PlainTable *observed = aggregate.run()->reveal();
 
 
-    // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
         ASSERT_EQ(*expected, *observed);
 
+        delete expected;
+        delete observed;
 }
 
 
@@ -185,7 +184,7 @@ TEST_F(SecureNestedLoopyAggregateTest, test_tpch_q1_sums) {
                                                          "GROUP BY l_returnflag, l_linestatus "
                                                          "ORDER BY l_returnflag, l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(unioned_db_, expectedOutputQuery, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expectedOutputQuery, false, 0, storage_model_);
 
     std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -195,16 +194,17 @@ TEST_F(SecureNestedLoopyAggregateTest, test_tpch_q1_sums) {
 
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    SecureSqlInput input(db_name_, inputQuery, true, sortDefinition, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, inputQuery, true, storage_model_, sortDefinition, netio_, FLAGS_party);
 
     NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 6);
 
-    std::shared_ptr<PlainTable> aggregated = aggregate.run()->reveal(PUBLIC);
+    PlainTable *observed = aggregate.run()->reveal(PUBLIC);
 
-    // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
-        ASSERT_EQ(*expected, *observed);
+    ASSERT_EQ(*expected, *observed);
+
+    delete observed;
+    delete expected;
 
 
 }
@@ -233,7 +233,7 @@ TEST_F(SecureNestedLoopyAggregateTest, test_tpch_q1_avg_cnt) {
                                                           "order by \n"
                                                           "  l_returnflag, l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(unioned_db_, expectedOutputQuery, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expectedOutputQuery, false, 0, storage_model_);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -243,16 +243,16 @@ TEST_F(SecureNestedLoopyAggregateTest, test_tpch_q1_avg_cnt) {
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    SecureSqlInput input(db_name_, inputQuery, true, sortDefinition, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, inputQuery, true, storage_model_, sortDefinition, netio_, FLAGS_party);
 
     NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 6);
 
-    std::shared_ptr<PlainTable> aggregated = aggregate.run()->reveal(PUBLIC);
+    PlainTable *observed = aggregate.run()->reveal(PUBLIC);
 
-    // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
         ASSERT_EQ(*expected, *observed);
+        delete expected;
+        delete observed;
 
 }
 
@@ -286,7 +286,7 @@ TEST_F(SecureNestedLoopyAggregateTest, tpch_q1) {
                                                            "  l_returnflag, \n"
                                                            "  l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(unioned_db_, expectedOutputQuery, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expectedOutputQuery, false, 0, storage_model_);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -300,17 +300,19 @@ TEST_F(SecureNestedLoopyAggregateTest, tpch_q1) {
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    SecureSqlInput input(db_name_, inputQuery, true, sortDefinition, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, inputQuery, true, storage_model_, sortDefinition, netio_, FLAGS_party);
 
 
     NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 6);
 
-    std::shared_ptr<PlainTable> aggregated = aggregate.run()->reveal(PUBLIC);
+    PlainTable *observed = aggregate.run()->reveal(PUBLIC);
 
-    // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
         ASSERT_EQ(*expected, *observed);
+    delete expected;
+    delete observed;
+
+
 
 }
 

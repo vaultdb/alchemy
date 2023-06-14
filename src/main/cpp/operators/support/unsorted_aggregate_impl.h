@@ -6,6 +6,7 @@
 #include <query_table/secure_tuple.h>
 #include <query_table/plain_tuple.h>
 #include <query_table/field/field_factory.h>
+#include <query_table/query_table.h>
 
 namespace vaultdb {
     // generic parent class
@@ -13,7 +14,7 @@ namespace vaultdb {
     class UnsortedAggregateImpl {
     public:
         UnsortedAggregateImpl(const AggregateId & id, const FieldType & type, const int32_t & input_ordinal, const int32_t & output_ordinal);
-        virtual void update(const QueryTuple<B> & input,  QueryTuple<B> & output, const B & match_found, const B & group_by_match) = 0;
+        virtual void update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst, const int & dst_row, const B & match_found, const B & group_by_match) = 0;
 
 
 
@@ -29,7 +30,7 @@ namespace vaultdb {
     class UnsortedStatelessAggregateImpl : public UnsortedAggregateImpl<B> {
     public:
         UnsortedStatelessAggregateImpl(const AggregateId & id, const FieldType & type, const int32_t & input_ordinal, const int32_t & output_ordinal);
-         void update(const QueryTuple<B> & input,  QueryTuple<B> & output, const B & match_found, const B & group_by_match) override;
+         void update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst, const int & dst_row, const B & match_found, const B & group_by_match) override;
 
 
     };
@@ -41,7 +42,7 @@ namespace vaultdb {
     class UnsortedAvgImpl : public  UnsortedAggregateImpl<B> {
     public:
         UnsortedAvgImpl(const AggregateId & id, const FieldType & type, const int32_t & input_ordinal, const int32_t & output_ordinal);
-        void update(const QueryTuple<B> & input,  QueryTuple<B> & output, const B & match_found, const B & group_by_match) override;
+        void update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst, const int & dst_row, const B & match_found, const B & group_by_match) override;
 
     private:
         Field<B>  running_sum_;
