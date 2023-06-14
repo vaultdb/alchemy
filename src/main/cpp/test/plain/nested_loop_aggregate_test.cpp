@@ -5,108 +5,106 @@
 #include "plain_base_test.h"
 #include "operators/sort.h"
 
-DEFINE_string(storage, "row", "storage model for tables (row or column)");col
+DEFINE_string(storage, "row", "storage model for tables (row or column)");
+
+
 class NestedLoopAggregateTest :  public PlainBaseTest  {
 
 
 protected:
-    void runTest(const std::string & expectedOutputQuery, const std::vector<ScalarAggregateDefinition> & aggregators) const;
-    void runDummiesTest(const std::string & expectedOutputQuery, const std::vector<ScalarAggregateDefinition> & aggregators) const;
+    void runTest(const std::string & expected_sql, const std::vector<ScalarAggregateDefinition> & aggregators) const;
+    void runDummiesTest(const std::string & expected_sql, const std::vector<ScalarAggregateDefinition> & aggregators) const;
 };
 
-void NestedLoopAggregateTest::runTest(const string &expectedOutputQuery,
+void NestedLoopAggregateTest::runTest(const string &expected_sql,
                                    const vector<ScalarAggregateDefinition> &aggregators) const {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY random()";
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expectedOutputQuery, false, 1, storage_model_);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 1, storage_model_);
 
 
     std::vector<int32_t> groupByCols{0};
 
-    SqlInput input(db_name_, query, false, storage_model_, SortDefinition());
+    auto input = new SqlInput(db_name_, query, false, storage_model_, SortDefinition());
 
-    NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 7);
+    auto aggregate = new NestedLoopAggregate(input, groupByCols, aggregators, 7);
 
-    //Sort<bool> sort(&aggregate, DataUtilities::getDefaultSortDefinition(1));
+    auto sort = new Sort(aggregate, DataUtilities::getDefaultSortDefinition(1));
 
-    //PlainTable* aggregated = sort.run();
-
-    PlainTable *observed = aggregate.run()->reveal();
+    PlainTable* observed = sort->run();
+    DataUtilities::removeDummies(observed);
 
 
     ASSERT_EQ(*expected, *observed);
-    delete observed;
     delete expected;
+    delete sort;
 
 }
 
-void NestedLoopAggregateTest::runDummiesTest(const string &expectedOutputQuery,
+void NestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
                                           const vector<ScalarAggregateDefinition> &aggregators) const {
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE "
                         "l_orderkey <=10 ORDER BY random()";
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expectedOutputQuery, false, 1, storage_model_);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 1, storage_model_);
 
 
     std::vector<int32_t> groupByCols{0};
 
-    SqlInput input(db_name_, query, true, storage_model_, SortDefinition());
+    auto input = new SqlInput(db_name_, query, true, storage_model_, SortDefinition());
 
-    NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 7);
-    //Sort<bool> sort(&aggregate, DataUtilities::getDefaultSortDefinition(1));
+    auto  aggregate = new NestedLoopAggregate(input, groupByCols, aggregators, 7);
+    auto sort = new Sort(aggregate, DataUtilities::getDefaultSortDefinition(1));
 
-    //std::shared_ptr<PlainTable> aggregated = sort.run();
-
-    // need to delete dummies from observed output to compare it to expected
-    PlainTable *observed = aggregate.run()->reveal();
-
+    PlainTable* observed = sort->run();
+    DataUtilities::removeDummies(observed);
 
     ASSERT_EQ(*expected, *observed);
 
     delete expected;
-    delete observed;
+    delete sort;
 
 }
 
 
 TEST_F(NestedLoopAggregateTest, test_count) {
-    std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*)::BIGINT FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, COUNT(*)::BIGINT FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
 
-    runTest(expectedOutputQuery, aggregators);
+    runTest(expected_sql, aggregators);
 }
 
 TEST_F(NestedLoopAggregateTest, test_count_dummies) {
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*) cnt FROM (" + query + ") "
+    std::string expected_sql = "SELECT l_orderkey, COUNT(*) cnt FROM (" + query + ") "
                                      "subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
 
-    runDummiesTest(expectedOutputQuery, aggregators);
+    runDummiesTest(expected_sql, aggregators);
 }
 
 
 TEST_F(NestedLoopAggregateTest, test_sum) {
-    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber)::INT sum_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, SUM(l_linenumber)::INT sum_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno")};
 
-    runTest(expectedOutputQuery, aggregators);
+    runTest(expected_sql, aggregators);
 }
 
 TEST_F(NestedLoopAggregateTest, test_sum_dummies) {
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber)::INT sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, SUM(l_linenumber)::INT sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno")};
 
-    runDummiesTest(expectedOutputQuery, aggregators);
+    runDummiesTest(expected_sql, aggregators);
 }
 
 
 TEST_F(NestedLoopAggregateTest, test_avg) {
-    std::string expectedOutputQuery = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno")};
 
-    runTest(expectedOutputQuery, aggregators);
+    runTest(expected_sql, aggregators);
 
 }
 
@@ -114,19 +112,19 @@ TEST_F(NestedLoopAggregateTest, test_avg_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno")};
 
-    runDummiesTest(expectedOutputQuery, aggregators);
+    runDummiesTest(expected_sql, aggregators);
 
 }
 
 
 TEST_F(NestedLoopAggregateTest, test_min) {
-    std::string expectedOutputQuery = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
 
-    runTest(expectedOutputQuery, aggregators);
+    runTest(expected_sql, aggregators);
 
 }
 
@@ -134,19 +132,19 @@ TEST_F(NestedLoopAggregateTest, test_min_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
 
-    runDummiesTest(expectedOutputQuery, aggregators);
+    runDummiesTest(expected_sql, aggregators);
 
 }
 
 
 TEST_F(NestedLoopAggregateTest, test_max) {
-    std::string expectedOutputQuery = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
 
-    runTest(expectedOutputQuery, aggregators);
+    runTest(expected_sql, aggregators);
 
 }
 
@@ -154,10 +152,10 @@ TEST_F(NestedLoopAggregateTest, test_max_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
 
-    runDummiesTest(expectedOutputQuery, aggregators);
+    runDummiesTest(expected_sql, aggregators);
 
 
 }
@@ -172,7 +170,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_sums) {
                         "selection \n"
                         " ORDER BY  random()";
 
-    string expectedOutputQuery = "SELECT  l_returnflag, l_linestatus, "
+    string expected_sql = "SELECT  l_returnflag, l_linestatus, "
                                  "SUM(l_quantity) sum_qty, "
                                  "SUM(l_extendedprice) sum_base_price, "
                                  "SUM(disc_price) sum_disc_price, "
@@ -180,7 +178,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_sums) {
                                  "FROM (" + inputQuery + ") subquery WHERE NOT dummy "
                                                          "GROUP BY l_returnflag, l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expectedOutputQuery, false, 2, storage_model_);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2, storage_model_);
 
     std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -213,7 +211,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
                         " FROM (SELECT * FROM lineitem WHERE l_orderkey <= 194  ORDER BY l_orderkey, l_linenumber) selection\n"
                         " ORDER BY random() ";
 
-    string expectedOutputQuery =  "select \n"
+    string expected_sql =  "select \n"
                                   "  l_returnflag, \n"
                                   "  l_linestatus, \n"
                                   "  avg(l_quantity) as avg_qty, \n"
@@ -229,7 +227,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
                                   "order by \n"
                                   "  l_returnflag, l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expectedOutputQuery, false, 2, storage_model_);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2, storage_model_);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -263,7 +261,7 @@ TEST_F(NestedLoopAggregateTest, tpch_q1) {
                         " FROM (" + inputTuples + ") selection \n"
                         " ORDER BY random()";
 
-    string expectedOutputQuery =  "select \n"
+    string expected_sql =  "select \n"
                                   "  l_returnflag, \n"
                                   "  l_linestatus, \n"
                                   "  sum(l_quantity) as sum_qty, \n"
@@ -284,7 +282,7 @@ TEST_F(NestedLoopAggregateTest, tpch_q1) {
                                   "  l_returnflag, \n"
                                   "  l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expectedOutputQuery, false, 2, storage_model_);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2, storage_model_);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -311,3 +309,11 @@ delete expected;
 delete observed;
 
 }
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    gflags::ParseCommandLineFlags(&argc, &argv, false);
+
+    return RUN_ALL_TESTS();
+}
+
