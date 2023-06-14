@@ -20,6 +20,9 @@ namespace  vaultdb {
 
     protected:
         QueryTable<B> *runSelf() override;
+        inline std::string getOperatorType() const {
+            return "SortMergeJoin";
+        }
 
     private:
         int alpha_1_idx_=-1, alpha_2_idx = -1, table_id_idx = -1;
