@@ -8,8 +8,8 @@
 using namespace vaultdb;
 
 template<typename B>
-SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate,
-                                const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort) {
+SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
+                                const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
 
 
 
@@ -22,8 +22,8 @@ SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B
 
 
 template<typename B>
-SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate,
-              const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort) {
+SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
+              const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
 
     JoinEqualityConditionVisitor<B> join_visitor(this->predicate.root_);
     join_idxs_  = join_visitor.getEqualities();
