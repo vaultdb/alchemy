@@ -19,6 +19,7 @@ namespace  vaultdb {
                       const SortDefinition &sort = SortDefinition());
 
     protected:
+//        virtual QueryTable<B> *runSelf() = 0;
         QueryTable<B> *runSelf() override;
         inline std::string getOperatorType() const override {
             return "SortMergeJoin";
@@ -26,7 +27,7 @@ namespace  vaultdb {
 
     private:
         int alpha_1_idx_=-1, alpha_2_idx = -1, table_id_idx = -1;
-        vector<pair<int, int> > join_idxs_; // lhs, rhs
+        vector<pair<uint32_t, uint32_t> > join_idxs_; // lhs, rhs
         int32_t foreign_key_input_ = 0; // default: lhs = fkey
 
         QueryTable<B> *augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);

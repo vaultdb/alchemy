@@ -11,9 +11,8 @@ template<typename B>
 SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
                                 const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
 
-
-
-    JoinEqualityConditionVisitor<B> join_visitor(this->predicate.root_);
+    GenericExpression<B> *p = (GenericExpression<B> *) this->predicate_;
+    JoinEqualityConditionVisitor<B> join_visitor(p->root_);
     join_idxs_  = join_visitor.getEqualities();
 
 
@@ -25,7 +24,8 @@ template<typename B>
 SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
               const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey) {
 
-    JoinEqualityConditionVisitor<B> join_visitor(this->predicate.root_);
+    GenericExpression<B> *p = (GenericExpression<B> *) this->predicate_;
+    JoinEqualityConditionVisitor<B> join_visitor(p->root_);
     join_idxs_  = join_visitor.getEqualities();
 
 
@@ -33,8 +33,8 @@ SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const in
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::runSelf() {
-    QueryTable<B> *lhs = this->getChild(0)->output_;
-    QueryTable<B> *rhs = this->getChild(1)->output_;
+    QueryTable<B> *lhs = this->getChild(0)->getOutput();
+    QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
     this->output_ =  augmentTables(lhs, rhs);
 
@@ -61,7 +61,7 @@ QueryTable<B> *SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B>
         augmented_schema.putField(alpha_2);
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::BOOL, 0);
         augmented_schema.putField(table_id);
-        table_id_field = Field<B>(true, FieldType::BOOL, 0);
+        table_id_field = Field<B>(FieldType::BOOL, true, 0);
 
     }
     else {
@@ -72,7 +72,7 @@ QueryTable<B> *SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B>
         augmented_schema.putField(alpha_2);
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::SECURE_BOOL, 0);
         augmented_schema.putField(table_id);
-        table_id_field = Field<B>(Bit(true), FieldType::SECURE_INT, 0);
+        table_id_field = Field<B>( FieldType::SECURE_INT, Bit(true), 0);
     }
 
     augmented_schema.initializeFieldOffsets();
@@ -147,7 +147,7 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
 
     vector<int> cols_covered = join_cols;
 
-    ExpressionMapBuilder builder(src->getSchema());
+    ExpressionMapBuilder<B> builder(src->getSchema());
     int write_cursor = 0;
     for(auto key : join_cols) {
         builder.addMapping(key, write_cursor);
@@ -176,21 +176,21 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
 template<typename B>
 void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
-    int table_id_ordinal = dst->getSchema().getField("table_id");
+    int table_id_ordinal = dst->getSchema().getField("table_id").getOrdinal();
     int alpha_1_ordinal = dst->getSchema().getFieldCount() - 2; // second to last field
     int alpha_2_ordinal = dst->getSchema().getFieldCount() - 1; // last field
 
     Field<B> one = (dst->isEncrypted()) ? Field<B>(FieldType::SECURE_INT, 1, 0) : Field<B>(FieldType::INT, 1, 0);
     Field<B> zero = (dst->isEncrypted()) ? Field<B>(FieldType::SECURE_INT, 0, 0) : Field<B>(FieldType::INT, 0, 0);
 
-    B prev_table_id = dst->getField(0, table_id_ordinal);
+    B prev_table_id = dst->getField(0, table_id_ordinal).template getValue<B>();
     for (int i = 1; i < dst->getTupleCount(); i++) {
         Field<B> table_id = dst->getField(i, table_id_ordinal);
         B is_foreign_key = table_id.template getValue<B>();
 
         // do they have the same join key?
         B same_group = joinMatch(dst, i - 1, i, join_idxs_.size());
-        B result = ((dst->getField(i, table_id) == dst->getField(i - 1, table_id)) & same_group);
+        B result = ((dst->getField(i, table_id_ordinal) == dst->getField(i - 1, table_id_ordinal)) & same_group);
 
         count = count + one;
         count = Field<B>::If(result, count, one);
@@ -215,3 +215,8 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
     }
 }
+
+
+template class vaultdb::SortMergeJoin<bool>;
+template class vaultdb::SortMergeJoin<emp::Bit>;
+
