@@ -1,8 +1,8 @@
 #based on emp-tool pipeline
 # https://github.com/emp-toolkit/emp-tool
-project (vaultdb-emp)
 cmake_minimum_required (VERSION 3.14)
 set(CMAKE_CXX_STANDARD 17)
+project (vaultdb-emp)
 set(NAME "vaultdb-emp")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
