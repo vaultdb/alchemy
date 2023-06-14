@@ -32,6 +32,16 @@ SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expressi
 }
 
 template<typename B>
+QueryTable<B> *SortMergeJoin<B>::runSelf() {
+    QueryTable<B> *lhs = this->getChild(0)->output_;
+    QueryTable<B> *rhs = this->getChild(1)->output_;
+
+    QueryTable<B> *output = augmentTables(lhs, rhs);
+
+
+}
+
+template<typename B>
 QueryTable<B> *SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
     QuerySchema lhs_schema = lhs->getSchema();
     QuerySchema rhs_schema = rhs->getSchema();
@@ -125,6 +135,8 @@ QueryTable<B> *SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B>
     QueryTable<B> *sorted = sorter.run()->clone();
 
     initializeAlphas(sorted);
+
+    return sorted;
 
 }
 

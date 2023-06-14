@@ -18,6 +18,9 @@ namespace  vaultdb {
         SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
+    protected:
+        QueryTable<B> *runSelf() override;
+
     private:
         int alpha_1_idx_=-1, alpha_2_idx = -1, table_id_idx = -1;
         vector<pair<int, int> > join_idxs_; // lhs, rhs
