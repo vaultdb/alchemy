@@ -63,6 +63,7 @@ package_add_test(keyed_join_test plain/keyed_join_test.cpp plain/plain_base_test
 package_add_test(scalar_aggregate_test plain/scalar_aggregate_test.cpp plain/plain_base_test.cpp)
 package_add_test(group_by_aggregate_test plain/group_by_aggregate_test.cpp plain/plain_base_test.cpp)
 package_add_test(sort_merge_join_test plain/sort_merge_join_test.cpp plain/plain_base_test.cpp)
+package_add_test(nested_loop_aggregate_test plain/nested_loop_aggregate_test.cpp plain/plain_base_test.cpp)
 
 package_add_test(serialization_test serialization_test.cpp plain/plain_base_test.cpp ../pilot/src/common/shared_schema.cpp)
 package_add_test(secret_share_generator_test secret_share_generator_test.cpp plain/plain_base_test.cpp)

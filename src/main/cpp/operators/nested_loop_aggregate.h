@@ -39,7 +39,7 @@ namespace vaultdb {
 
 
         // returns boolean for whether two tuples are in the same group-by bin
-        B groupByMatch(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs) const;
+        B groupByMatch(const QueryTable<B> *src, const int & src_row, const QueryTable<B> *dst, const int & dst_row)  const;
 
         QuerySchema generateOutputSchema(const QuerySchema & srcSchema) const;
 

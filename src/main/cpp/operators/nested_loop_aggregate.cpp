@@ -97,13 +97,7 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
 
         for (int j = 0; j < output_cardinality_; ++j) {
 //            QueryTuple<B> output_row = (*Operator<B>::output_)[j];
-            B group_by_match = true;
-            for(int k = 0; k < group_by_.size(); ++k) {
-                B eq = (input->getField(i, group_by_[k]) == output->getField(j, k));
-                matched = matched & eq;
-                group_by_match = group_by_match & eq;
-            }
-
+            B group_by_match = groupByMatch(input, i, output, j);
             B output_dummy = output->getDummyTag(j);
 
             // if output is dummy and no match so far, then initialize group-by cols
@@ -129,6 +123,13 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         } // end for each  output tuple
     }// end for each input tuple
 
+    // TODO: clean up aggregators, only need to delete avg
+//    for(auto aggs : per_tuple_aggregators) {
+//        for(auto agg : aggs) {
+//            if(agg != nullptr)
+//                delete agg;
+//        }
+//    }
 
     return Operator<B>::output_;
 
@@ -137,19 +138,19 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
 
 
 template<typename B>
-B NestedLoopAggregate<B>::groupByMatch(const QueryTuple<B> &input, const QueryTuple<B> &output) const {
+B NestedLoopAggregate<B>::groupByMatch(const QueryTable<B> *src, const int & src_row, const QueryTable<B> *dst, const int & dst_row) const {
 
-    B result = (input.getField(group_by_[0]) == output.getField(0));
+    B result = (src->getField(src_row,group_by_[0]) == dst->getField(dst_row,0));
     size_t cursor = 1;
 
     while(cursor < group_by_.size()) {
         result = result &
-                 (input.getField(group_by_[cursor]) == output.getField(cursor));
+                 (src->getField(src_row, group_by_[cursor]) == dst->getField(dst_row, cursor));
         ++cursor;
     }
 
     // if one or both inputs are dummies, then set to NOT matched
-    result = FieldUtilities::select(input.getDummyTag() | output.getDummyTag(), B(false), result);
+    result = FieldUtilities::select(src->getDummyTag(src_row) | dst->getDummyTag(dst_row), B(false), result);
     return result;
 }
 
