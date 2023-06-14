@@ -79,6 +79,7 @@ package_add_test(secure_basic_join_test mpc/secure_basic_join_test.cpp mpc/emp_b
 package_add_test(secure_keyed_join_test mpc/secure_keyed_join_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_scalar_aggregate_test mpc/secure_scalar_aggregate_test.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_group_by_aggregate_test mpc/secure_group_by_aggregate_test.cpp mpc/emp_base_test.cpp)
+package_add_test(secure_nested_loop_aggregate_test mpc/secure_nested_loop_aggregate_test.cpp mpc/emp_base_test.cpp)
 #package_add_test(emp_float_to_int mpc/emp_float_to_int_test.cpp mpc/emp_base_test.cpp)
 package_add_test(enrich_test enrich_test.cpp  support/enrich_test_support.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_tpch_test mpc/secure_tpch_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
