@@ -64,30 +64,28 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
 
-   // QueryTuple<B> joined(&this->output_schema_);
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
     for(uint32_t i = 0; i < lhs_table->getTupleCount(); ++i) {
         lhs_dummy_tag = lhs_table->getDummyTag(i);
-
-
-          Join<B>::write_left(Join<B>::output_, i, lhs_table, i);
-          //Join<B>::write_left(joined, lhs_table, i);
-
-
-          dst_dummy_tag = true; // dummy by default, no tuple comparisons yet
+        Join<B>::write_left(Join<B>::output_, i, lhs_table, i);
+        dst_dummy_tag = true; // dummy by default, no tuple comparisons yet
 
         for(uint32_t j = 0; j < rhs_table->getTupleCount(); ++j) {
             rhs_dummy_tag = rhs_table->getDummyTag(j);
-           //Join<B>::write_right(joined, rhs_table, j);
 
             selected = Join<B>::predicate_->call(lhs_table, i, rhs_table, j).template getValue<B>();
+
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
+
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
 
             Join<B>::write_right(to_update, Operator<B>::output_, i, rhs_table, j);
             Operator<B>::output_->setDummyTag(i, dst_dummy_tag);
+
+
         }
+
     }
 
     return this->output_;
@@ -105,9 +103,6 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
     uint32_t output_tuple_cnt = rhs_table->getTupleCount(); // foreignKeyTable = foreign key
 
-
-    //QueryTuple<B> joined(&this->output_schema_);
-
     SortDefinition output_sort;
     for(ColumnSort s : rhs_table->getSortOrder()) {
         ColumnSort s_prime(s.first + lhs_table->getSchema().getFieldCount(), s.second);
@@ -120,22 +115,18 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
     for(uint32_t i = 0; i < rhs_table->getTupleCount(); ++i) {
         rhs_dummy_tag = rhs_table->getDummyTag(i);
-
         Join<B>::write_right(Operator<B>::output_, i, rhs_table, i);
-        //Join<B>::write_right(joined, rhs_table, i);
-
-
         dst_dummy_tag = B(true); // no comparisons yet, so it is a dummy by default
 
 
         for(uint32_t j = 0; j < lhs_table->getTupleCount(); ++j) {
-
             lhs_dummy_tag = lhs_table->getDummyTag(j);
-            //Join<B>::write_left(joined, lhs_table, j);
+
 
             selected = Join<B>::predicate_->call(lhs_table, j, rhs_table, i).template getValue<B>();
 
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
+
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
 
 
@@ -143,6 +134,7 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
             Operator<B>::output_->setDummyTag(i, dst_dummy_tag);
 
         }
+
     }
 
 
