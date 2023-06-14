@@ -36,7 +36,9 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->output_;
     QueryTable<B> *rhs = this->getChild(1)->output_;
 
-    QueryTable<B> *output = augmentTables(lhs, rhs);
+    this->output_ =  augmentTables(lhs, rhs);
+
+    return this->output_;
 
 
 }
