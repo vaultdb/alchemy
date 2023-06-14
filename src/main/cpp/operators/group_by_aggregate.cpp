@@ -11,8 +11,7 @@
 using namespace vaultdb;
 using namespace std;
 
-// TODO: implement MIN/MAX with packed fields where possible!
-
+// TODO: implement count with packed bits
 template<typename B>
 GroupByAggregate<B>::GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                                       const vector<ScalarAggregateDefinition> &aggregates,
