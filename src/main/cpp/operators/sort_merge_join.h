@@ -9,7 +9,9 @@
 
 namespace  vaultdb {
     template<typename B>
-    class SortMergeJoin : public Join<B> {
+    class SortMergeJoin : 
+		public Join<B> {
+	public:
         SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
