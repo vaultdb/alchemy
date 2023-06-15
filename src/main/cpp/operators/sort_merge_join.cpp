@@ -45,13 +45,13 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
-    foreign_key_cardinality_ = (foreign_key_input_ == 1) ? lhs->getTupleCount() : rhs->getTupleCount();
+    foreign_key_cardinality_ = (foreign_key_input_ == 0) ? lhs->getTupleCount() : rhs->getTupleCount();
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
 
     QueryTable<B> *s1, *s2;
     // lhs is FK
-    if(foreign_key_input_) {
+    if(foreign_key_input_ == 0) {
         s1 = augmented.first;
         s2 = obliviousExpand(augmented.second, false);
         s2 = alignTable(s2);
@@ -251,7 +251,7 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     B prev_table_id =  dst->getField(0, table_id_idx_).template getValue<B>();
     B table_id;
     
-    B fkey = (this->foreign_key_input_ == 1) ? B(false) : B(true);
+    B fkey = (this->foreign_key_input_ == 0) ? B(false) : B(true);
 
     // set correct alpha to 1 for first row
     // if table ID is false, update alpha 1
@@ -414,7 +414,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
         }
         dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
     }
-	std::cout << dst_table->toString(true);
+	
 
     return dst_table;
 }
@@ -451,11 +451,12 @@ QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
 
         dst_table->cloneRow(i, 0, input, i);
     }
+	std::cout << dst_table->toString(true);
 
     SortDefinition s =  DataUtilities::getDefaultSortDefinition(join_idxs_.size());
     s.emplace_back(weight_idx_, SortDirection::ASCENDING);
-
-    Sort<B> sorter(dst_table, s);
+ 
+	Sort<B> sorter(dst_table, s);
     return sorter.run()->clone();
 }
 

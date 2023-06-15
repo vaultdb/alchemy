@@ -90,7 +90,7 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders) {
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(orders_input, 1, customer_input, 4);
 
-    SortMergeJoin join(orders_input, customer_input, 1, predicate);
+    SortMergeJoin join(orders_input, customer_input, 0, predicate);
     PlainTable * observed = join.run();
 
     ASSERT_EQ(*expected, *observed);
