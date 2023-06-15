@@ -12,22 +12,23 @@ namespace  vaultdb {
     class SortMergeJoin : 
 		public Join<B> {
 	public:
-        SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate,
+        SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
-        SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate,
+        SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
     protected:
+//        virtual QueryTable<B> *runSelf() = 0;
         QueryTable<B> *runSelf() override;
-        inline std::string getOperatorType() const {
+        inline std::string getOperatorType() const override {
             return "SortMergeJoin";
         }
 
     private:
         int alpha_1_idx_=-1, alpha_2_idx = -1, table_id_idx = -1;
-        vector<pair<int, int> > join_idxs_; // lhs, rhs
-
+        vector<pair<uint32_t, uint32_t> > join_idxs_; // lhs, rhs
+        int32_t foreign_key_input_ = 0; // default: lhs = fkey
 
         QueryTable<B> *augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
 
