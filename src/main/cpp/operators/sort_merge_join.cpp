@@ -103,9 +103,9 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
 
-    QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_projected_, lhs_schema, lhs_field_mapping_);
+    QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_);
 
-    QueryTable<B> *rhs_reverted = revertProjection(s2, rhs_projected_, rhs_schema, rhs_field_mapping_);
+    QueryTable<B> *rhs_reverted = revertProjection(s2,  rhs_field_mapping_);
 
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
@@ -260,12 +260,6 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
     }
 
     Project<B> projection(src->clone(), builder.getExprs());
-    if(is_lhs) {
-        lhs_projected_ = projection.getOutputSchema();
-    }
-    else {
-        rhs_projected_ = projection.getOutputSchema();
-    }
 
     return projection.run()->clone();
 }
@@ -494,13 +488,13 @@ QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
 }
 
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const QuerySchema & src_schema, const QuerySchema & dst_schema, const map<int, int> &  expr_map) const {
+QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<int, int> &  expr_map) const {
 
 
     RowTable<B> *src = (RowTable<B> *) s;
 
 
-    ExpressionMapBuilder<B> builder(src_schema);
+    ExpressionMapBuilder<B> builder(s->getSchema());
     for(auto pos : expr_map) {
         builder.addMapping(pos.first, pos.second);
     }

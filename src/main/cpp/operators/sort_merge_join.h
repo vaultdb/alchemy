@@ -40,7 +40,6 @@ namespace  vaultdb {
         bool is_secure_;
         map<int, int> rhs_field_mapping_; // temp --> original
         map<int, int> lhs_field_mapping_; // temp --> original
-        QuerySchema lhs_projected_, rhs_projected_;
 
 
 
@@ -48,7 +47,7 @@ namespace  vaultdb {
         QueryTable<B> *obliviousDistribute(QueryTable<B> *input, size_t target_size);
         QueryTable<B> *obliviousExpand(QueryTable<B> *input, bool is_lhs);
         QueryTable<B> *alignTable(QueryTable<B> *input);
-        QueryTable<B> *revertProjection(QueryTable<B> *s, const QuerySchema & src_schema, const QuerySchema & dst_schema, const map<int, int> &  expr_map) const;
+        QueryTable<B> *revertProjection(QueryTable<B> *s, const map<int, int> &  expr_map) const;
 
         QueryTable<B> *projectSortKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs);
         int powerOfLessThanTwo(const int & n) const;
