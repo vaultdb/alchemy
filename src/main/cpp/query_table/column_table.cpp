@@ -646,56 +646,5 @@ string ColumnTable<B>::getOstringStream() const {
     return ss.str();
 }
 
-
-
-template <typename B>
-string ColumnTable<B>::toString(const bool & show_dummies) const {
-
-    std::ostringstream os;
-
-    if(!show_dummies) {
-      return getOstringStream();
-    }
-
-    // show dummies case
-    os << this->schema_ << " isEncrypted? " << this->isEncrypted() <<  " order by: " << DataUtilities::printSortDefinition(this->getSortOrder()) << std::endl;
-
-
-    for(uint32_t i = 0; i < this->getTupleCount(); ++i) {
-        PlainTuple tuple = getPlainTuple(i);
-        os << tuple.toString(show_dummies) << std::endl;
-    }
-
-    return os.str();
-
-}
-
-
-template<typename B>
-std::string ColumnTable<B>::toString(const size_t &limit, const bool &show_dummies) const {
-    std::ostringstream os;
-    size_t tuples_printed = 0;
-    size_t cursor = 0;
-
-    assert(!this->isEncrypted());
-
-    os << this->schema_ <<  " order by: " << DataUtilities::printSortDefinition(this->getSortOrder()) << std::endl;
-    while((cursor < this->tuple_cnt_) && (tuples_printed < limit)) {
-        PlainTuple tuple = getPlainTuple(cursor);
-        if(show_dummies  // print unconditionally
-           || !tuple.getDummyTag()) {
-            os << cursor << ": " << tuple.toString(show_dummies) << std::endl;
-            ++tuples_printed;
-        }
-        ++cursor;
-    }
-
-    return os.str();
-
-}
-
-
-
-
 template class vaultdb::ColumnTable<bool>;
 template class vaultdb::ColumnTable<emp::Bit>;

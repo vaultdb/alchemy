@@ -151,9 +151,6 @@ namespace  vaultdb {
 
         string getOstringStream() const override;
 
-        std::string toString(const bool &show_dummies = false) const override;
-        std::string toString(const size_t &limit, const bool &show_dummies = false) const override;
-
         inline int8_t *getFieldPtr(const int & row, const int & col) const {
             return (int8_t *) (tuple_data_.data() + this->tuple_size_ * row +  this->field_offsets_bytes_.at(col));
         }
