@@ -2,7 +2,7 @@
 #include "util/field_utilities.h"
 #include <operators/sql_input.h>
 #include <operators/sort_merge_join.h>
-#include <expression/comparator_expression_nodes.h>
+#include <operators/sort.h>
 
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
@@ -84,16 +84,21 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders) {
     auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
     auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
 
+
     // output schema: lineitem, orders
     // l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority
     Expression<bool> *predicate  = FieldUtilities::getEqualityPredicate<bool>(lineitem_input, 0, orders_input,
                                                                               2);
 
-    SortMergeJoin join(lineitem_input, orders_input, 0, predicate);
+    auto join = new SortMergeJoin(lineitem_input, orders_input, 0, predicate);
+    Sort<bool> sorter(join, DataUtilities::getDefaultSortDefinition(2));
+    PlainTable *observed = sorter.run();
 
-    PlainTable *observed = join.run();
+    DataUtilities::removeDummies(observed);
+    DataUtilities::removeDummies(expected);
+    expected->setSortOrder(observed->getSortOrder());
 
-   ASSERT_EQ(*expected, *observed);
+    ASSERT_EQ(*expected, *observed);
 
     delete expected;
 
