@@ -41,19 +41,11 @@ SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const in
 }
 
 template<typename B>
-void SortMergeJoin<B>::printTable(QueryTable<B>* table) {
-	std::cout << "Schema: \n" << table->getSchema() << "\n";
-	for(int i = 0; i < table->getTupleCount(); i++) {
-		std::cout << table->getPlainTuple(i).toString(true) << "\n";
-	}
-}
-
-template<typename B>
 QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
-    foreign_key_cardinality_ = (foreign_key_input_ == 0) ? lhs->getTupleCount() : rhs->getTupleCount();
+    foreign_key_cardinality_ = (foreign_key_input_ == 1) ? lhs->getTupleCount() : rhs->getTupleCount();
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
 
@@ -258,8 +250,8 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
     B prev_table_id =  dst->getField(0, table_id_idx_).template getValue<B>();
     B table_id;
-    // right now have table_id == true for rhs
-    B fkey = (this->foreign_key_input_ == 0) ? B(false) : B(true);
+    
+    B fkey = (this->foreign_key_input_ == 1) ? B(false) : B(true);
 
     // set correct alpha to 1 for first row
     // if table ID is false, update alpha 1
@@ -284,8 +276,9 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
         dst->setField(i, alpha_2_idx_, Field<B>::If(is_foreign_key, zero_, count));
 
 
-        prev_table_id = table_id;
-    }	
+		prev_table_id = table_id;
+    }
+
 
 	prev_alpha_1 = dst->getField(dst->getTupleCount()-1, alpha_1_idx_);
 	prev_alpha_2 = dst->getField(dst->getTupleCount()-1, alpha_2_idx_);
@@ -301,7 +294,7 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
         dst->setField(i, alpha_2_idx_, Field<B>::If(same_group, prev_alpha_2, count));
 		prev_alpha_2 = dst->getField(i, alpha_2_idx_);
     }
-	printTable(dst);
+	
 }
 
 
@@ -327,7 +320,6 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
     sort_def.emplace_back(weight_idx_, SortDirection::ASCENDING);
     Sort<B> sorted(input, sort_def);
     input = sorted.run();
-
 
     for(int i = 0; i < input->getTupleCount(); i++) {
         dst_table->cloneRow(i, 0, input, i);
@@ -397,11 +389,10 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
         intermediate_table->setField(i, is_new_idx_,
                                      Field<B>::If(result, one_, zero_));
         intermediate_table->setDummyTag(i, input->getDummyTag(i));
-
-    }
-
-
-    QueryTable<B> *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
+		s = s + cnt;
+    }	
+	
+    QueryTable<B> *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);		
 
     schema = dst_table->getSchema();
 
@@ -423,6 +414,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
         }
         dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
     }
+	std::cout << dst_table->toString(true);
 
     return dst_table;
 }
