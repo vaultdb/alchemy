@@ -49,6 +49,7 @@ namespace  vaultdb {
         int powerOfLessThanTwo(const int & n) const;
 
         void initializeAlphas(QueryTable<B> *dst); // updates in place
+		void printTable(QueryTable<B> *table);
 
         B joinMatch(QueryTable<B> *t, int lhs_row, int rhs_row) {
             // previous alignment step will make join keys in first n columns

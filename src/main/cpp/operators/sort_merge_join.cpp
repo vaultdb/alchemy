@@ -41,14 +41,21 @@ SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const in
 }
 
 template<typename B>
+void SortMergeJoin<B>::printTable(QueryTable<B>* table) {
+	std::cout << "Schema: \n" << table->getSchema() << "\n";
+	for(int i = 0; i < table->getTupleCount(); i++) {
+		std::cout << table->getPlainTuple(i).toString(true) << "\n";
+	}
+}
+
+template<typename B>
 QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
     foreign_key_cardinality_ = (foreign_key_input_ == 0) ? lhs->getTupleCount() : rhs->getTupleCount();
 
-
-    pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
+	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
 
     QueryTable<B> *s1, *s2;
     // lhs is FK
@@ -61,7 +68,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
         s1 = obliviousExpand(augmented.first, true);
         s1 = alignTable(s1);
         s2 = augmented.second;
-    }
+    }	
 
     // size_t numTuples = s2->getTupleCount(); numTuples = fkey card
     // TODO: project the attrs back to their original positions as we extract them back into output
@@ -246,6 +253,8 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
 
     Field<B> count = zero_;
+	Field<B> prev_alpha_1 = zero_;
+	Field<B> prev_alpha_2 = zero_;
 
     B prev_table_id =  dst->getField(0, table_id_idx_).template getValue<B>();
     B table_id;
@@ -259,7 +268,7 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     dst->setField(0, alpha_1_idx_, a1);
     dst->setField(0, alpha_2_idx_, a2);
 
-    for (int i = 1; i < dst->getTupleCount(); i++) {
+    for (int i = 0; i < dst->getTupleCount(); i++) {
 
         table_id = dst->getField(i, table_id_idx_).template getValue<B>();
         B is_foreign_key = (table_id == fkey);
@@ -276,22 +285,23 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
 
         prev_table_id = table_id;
-    }
+    }	
+
+	prev_alpha_1 = dst->getField(dst->getTupleCount()-1, alpha_1_idx_);
+	prev_alpha_2 = dst->getField(dst->getTupleCount()-1, alpha_2_idx_);
 
     for (int i = dst->getTupleCount() - 1; i >= 0; i--) {
         count = dst->getField(i, alpha_1_idx_);
 
         B same_group = joinMatch(dst, i, i+1);
-
-        Field<B> prev_count = dst->getField(i+1, alpha_1_idx_);
-        dst->setField(i, alpha_1_idx_, Field<B>::If(same_group, prev_count, count));
+        dst->setField(i, alpha_1_idx_, Field<B>::If(same_group, prev_alpha_1, count));
+		prev_alpha_1 = dst->getField(i, alpha_1_idx_);
 
         count = dst->getField(i, alpha_2_idx_);
-        prev_count = dst->getField(i+1,alpha_2_idx_);
-        dst->setField(i, alpha_2_idx_, Field<B>::If(same_group, prev_count, count));
+        dst->setField(i, alpha_2_idx_, Field<B>::If(same_group, prev_alpha_2, count));
+		prev_alpha_2 = dst->getField(i, alpha_2_idx_);
     }
-
-
+	printTable(dst);
 }
 
 
