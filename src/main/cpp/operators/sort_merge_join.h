@@ -26,19 +26,34 @@ namespace  vaultdb {
         }
 
     private:
-        int alpha_1_idx_=-1, alpha_2_idx = -1, table_id_idx = -1;
+        int alpha_1_idx_=-1, alpha_2_idx_ = -1, table_id_idx_ = -1, weight_idx_ = -1, is_new_idx_ = -1;
+        StorageModel storage_model_ = StorageModel::ROW_STORE;
         vector<pair<uint32_t, uint32_t> > join_idxs_; // lhs, rhs
         int32_t foreign_key_input_ = 0; // default: lhs = fkey
+        int foreign_key_cardinality_ = 0; // public bound on output size
+        Field<B> zero_, one_;
+        bool is_secure_;
+        map<int, int> rhs_field_mapping_; // temp --> original
+        map<int, int> lhs_field_mapping_; // temp --> original
+        QuerySchema lhs_projected_, rhs_projected_;
 
-        QueryTable<B> *augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
 
-        QueryTable<B> *projectSortKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols);
+
+        pair<QueryTable<B> *, QueryTable<B> *> augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
+        QueryTable<B> *obliviousDistribute(QueryTable<B> *input, size_t target_size);
+        QueryTable<B> *obliviousExpand(QueryTable<B> *input, bool is_lhs);
+        QueryTable<B> *alignTable(QueryTable<B> *input);
+        QueryTable<B> *projectBackTuples(QueryTable<B> *s, const QuerySchema & src_schema, const QuerySchema & dst_schema, const map<int, int> &  expr_map) const;
+
+        QueryTable<B> *projectSortKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs);
+        int powerOfLessThanTwo(const int & n) const;
 
         void initializeAlphas(QueryTable<B> *dst); // updates in place
-        B joinMatch(QueryTable<B> *t, int lhs_row, int rhs_row, int join_key_cnt) {
+
+        B joinMatch(QueryTable<B> *t, int lhs_row, int rhs_row) {
             // previous alignment step will make join keys in first n columns
             B match = true;
-            for(int i = 0; i < join_key_cnt; ++i) {
+            for(int i = 0; i < join_idxs_.size(); ++i) {
                 match = match & (t->getField(lhs_row, i) == t->getField(rhs_row, i));
             }
             return match;
