@@ -31,7 +31,6 @@ namespace  vaultdb {
     protected:
         SortDefinition order_by_;
         QuerySchema schema_;
-        std::map<int, int> field_offsets_bytes_;
 
 
     public:
@@ -39,6 +38,7 @@ namespace  vaultdb {
         size_t tuple_size_;
         size_t tuple_cnt_;
         std::map<int, int> field_sizes_bytes_;
+        std::map<int, int> field_offsets_bytes_;
 
 
         // empty sort definition for default case
