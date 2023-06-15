@@ -624,8 +624,7 @@ string RowTable<B>::toString(const bool & showDummies) const {
     std::ostringstream os;
 
     if(!showDummies) {
-        os << *this;
-        return os.str();
+       return this->getOstringStream();
     }
 
     // show dummies case
