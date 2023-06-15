@@ -20,9 +20,6 @@ SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs,  Expression<
     one_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 1, 0) : Field<B>(FieldType::INT, 1, 0);
     zero_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 0, 0) : Field<B>(FieldType::INT, 0, 0);
 
-
-
-
 }
 
 
@@ -182,8 +179,9 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     QueryTable<B> *unioned = TableFactory<B>::getTable(lhs->getTupleCount() + rhs->getTupleCount(), augmented_schema, storage_model_);
     for(int i = 0; i < lhs_prime->getTupleCount(); ++i) {
         unioned->cloneRow(output_cursor, 0, lhs_prime, i);
-        ++output_cursor;
         unioned->setDummyTag(output_cursor, lhs_prime->getDummyTag(i));
+        ++output_cursor;
+
     }
 
     for(int i = 0; i < rhs_prime->getTupleCount(); ++i) {
@@ -205,6 +203,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
     initializeAlphas(sorted);
 
+
     sort_def.clear();
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
     for(int i = 0; i < join_idxs_.size(); ++i) {
@@ -222,11 +221,13 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
     for (int i = 0; i < lhs->getTupleCount(); i++) {
         s1->cloneRow(i, 0, sorted, read_cursor);
+        s1->setDummyTag(i, sorted->getDummyTag(read_cursor));
         ++read_cursor;
     }
 
     for (int i = 0; i < rhs->getTupleCount(); i++) {
         s2->cloneRow(i, 0, sorted, read_cursor);
+        s2->setDummyTag(i, sorted->getDummyTag(read_cursor));
         ++read_cursor;
     }
     output.first = s1;
