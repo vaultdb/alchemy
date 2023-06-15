@@ -61,7 +61,10 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     QueryTable<B> *input = this->getChild(0)->getOutput();
     QuerySchema input_schema = input->getSchema();
     QuerySchema output_schema = this->output_schema_;
-
+    //int avg_i = -1;
+    //int avg_j = -1;
+    vector<int> avg_i;
+    vector<int> avg_j;
 
 
     if(output_cardinality_ == 0) { // naive case - go full oblivious
@@ -79,9 +82,17 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         per_tuple_aggregators.emplace_back(vector<UnsortedAggregateImpl<B> *>());
         vector<UnsortedAggregateImpl<B> *> row_aggregators(aggregators_.size());
         for(int j = 0; j < aggregators_.size(); ++j) {
-            UnsortedAggregateImpl<B> *a = (aggregators_[j]->agg_type_ == AggregateId::AVG)
-                                                    ?    new UnsortedAvgImpl<B>(AggregateId::AVG, aggregators_[j]->field_type_, aggregators_[j]->input_ordinal_, aggregators_[j]->output_ordinal_)
-                                                     :     aggregators_[j];
+            UnsortedAggregateImpl<B> *a;
+            if(aggregators_[j]->agg_type_ == AggregateId::AVG){
+                a = new UnsortedAvgImpl<B>(AggregateId::AVG, aggregators_[j]->field_type_, aggregators_[j]->input_ordinal_, aggregators_[j]->output_ordinal_);
+                avg_i.emplace_back(i);
+                avg_j.emplace_back(j);
+            }
+            else
+                a = aggregators_[j];
+//            UnsortedAggregateImpl<B> *a = (aggregators_[j]->agg_type_ == AggregateId::AVG)
+//                                                    ?    new UnsortedAvgImpl<B>(AggregateId::AVG, aggregators_[j]->field_type_, aggregators_[j]->input_ordinal_, aggregators_[j]->output_ordinal_)
+//                                                     :     aggregators_[j];
             per_tuple_aggregators[i].emplace_back(a);
         }
     }
@@ -124,6 +135,18 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     }// end for each input tuple
 
     // TODO: clean up aggregators, only need to delete avg
+    if(avg_i.size() != 0){
+        for(int i = 0; i< avg_i.size(); i++)
+            delete per_tuple_aggregators[avg_i[i]][avg_j[i]];
+    }
+    avg_i.clear();
+    avg_j.clear();
+
+    for (auto it = aggregators_.begin(); it != aggregators_.end(); ++it)
+        delete *it;
+    aggregators_.clear();
+
+
 //    for(auto aggs : per_tuple_aggregators) {
 //        for(auto agg : aggs) {
 //            if(agg != nullptr)
@@ -132,7 +155,6 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
 //    }
 
     return Operator<B>::output_;
-
 }
 
 

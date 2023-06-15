@@ -187,13 +187,12 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_sums) {
     std::vector<int32_t> groupByCols{0, 1};
 
 
-    SqlInput input(db_name_, inputQuery, true, storage_model_, SortDefinition());
-
-    NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 194);
+    auto input = new SqlInput(db_name_, inputQuery, false, storage_model_, SortDefinition());
+    auto aggregate = new NestedLoopAggregate(input, groupByCols, aggregators, 194);
 
     //Sort<bool> sort(&aggregate, DataUtilities::getDefaultSortDefinition(2));
     //std::shared_ptr<PlainTable> observed = sort.run();
-    PlainTable *observed = aggregate.run()->reveal(PUBLIC);
+    PlainTable *observed = aggregate->run()->reveal(PUBLIC);
 
 
 ASSERT_EQ(*expected, *observed);
@@ -236,15 +235,15 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
         ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
         ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-    SqlInput input(db_name_, inputQuery, true, storage_model_, SortDefinition());
 
-    NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 194);
+    auto input = new SqlInput(db_name_, inputQuery, false, storage_model_, SortDefinition());
+    auto aggregate = new NestedLoopAggregate(input, groupByCols, aggregators, 194);
 
     //std::shared_ptr<PlainTable> aggregated = aggregate.run();
 
 //    Sort<bool> sort(&aggregate, DataUtilities::getDefaultSortDefinition(2));
 //    std::shared_ptr<PlainTable> observed = sort.run();
-PlainTable *observed = aggregate.run()->reveal(PUBLIC);
+PlainTable *observed = aggregate->run()->reveal(PUBLIC);
 
 
 ASSERT_EQ(*expected, *observed);
@@ -295,13 +294,15 @@ TEST_F(NestedLoopAggregateTest, tpch_q1) {
         ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
         ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-    SqlInput input(db_name_, inputQuery, true, storage_model_, SortDefinition());
+//    SqlInput input(db_name_, inputQuery, true, storage_model_, SortDefinition());
+    auto input = new SqlInput(db_name_, inputQuery, false, storage_model_, SortDefinition());
+    auto aggregate = new NestedLoopAggregate(input, groupByCols, aggregators, 194);
 
-    NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 194);
+//    NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 194);
 
 //    Sort<bool> sort(&aggregate, DataUtilities::getDefaultSortDefinition(2));
 //    std::shared_ptr<PlainTable> observed = sort.run();
-PlainTable *observed = aggregate.run()->reveal(PUBLIC);
+    PlainTable *observed = aggregate->run()->reveal(PUBLIC);
 
 
 ASSERT_EQ(*expected, *observed);
