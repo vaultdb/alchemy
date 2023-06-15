@@ -24,11 +24,11 @@ void NestedLoopAggregateTest::runTest(const string &expected_sql,
     PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 1, storage_model_);
 
 
-    std::vector<int32_t> groupByCols{0};
+    std::vector<int32_t> group_bys{0};
 
     auto input = new SqlInput(db_name_, query, false, storage_model_, SortDefinition());
 
-    auto aggregate = new NestedLoopAggregate(input, groupByCols, aggregators, 7);
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 7);
 
     auto sort = new Sort(aggregate, DataUtilities::getDefaultSortDefinition(1));
 
@@ -49,11 +49,11 @@ void NestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
     PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 1, storage_model_);
 
 
-    std::vector<int32_t> groupByCols{0};
+    std::vector<int32_t> group_bys{0};
 
     auto input = new SqlInput(db_name_, query, true, storage_model_, SortDefinition());
 
-    auto  aggregate = new NestedLoopAggregate(input, groupByCols, aggregators, 7);
+    auto  aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 7);
     auto sort = new Sort(aggregate, DataUtilities::getDefaultSortDefinition(1));
 
     PlainTable* observed = sort->run();
@@ -164,9 +164,9 @@ TEST_F(NestedLoopAggregateTest, test_max_dummies) {
 TEST_F(NestedLoopAggregateTest, test_tpch_q1_sums) {
 
 
-    string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1.0 - l_discount) AS disc_price, l_extendedprice * (1.0 - l_discount) * (1.0 + l_tax) AS charge, \n"
+    string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1.0 - l_discount) AS disc_price, l_extendedprice * (1.0 - l_discount) * (1.0 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
-                        " FROM (SELECT * FROM lineitem WHERE l_orderkey <= 194  ORDER BY l_orderkey, l_linenumber) "
+                        " FROM (SELECT * FROM lineitem WHERE l_orderkey <= 194) "
                         "selection \n"
                         " ORDER BY  random()";
 
@@ -175,8 +175,9 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_sums) {
                                  "SUM(l_extendedprice) sum_base_price, "
                                  "SUM(disc_price) sum_disc_price, "
                                  "SUM(charge) sum_charge "
-                                 "FROM (" + inputQuery + ") subquery WHERE NOT dummy "
+                                 "FROM (" + sql + ") subquery WHERE NOT dummy "
                                                          "GROUP BY l_returnflag, l_linestatus";
+
 
     PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2, storage_model_);
 
@@ -184,28 +185,26 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_sums) {
                                                         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
                                                         ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
                                                         ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge")};
-    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<int32_t> group_bys{0, 1};
 
 
-    auto input = new SqlInput(db_name_, inputQuery, false, storage_model_, SortDefinition());
-    auto aggregate = new NestedLoopAggregate(input, groupByCols, aggregators, 194);
+    auto input = new SqlInput(db_name_, sql, true, storage_model_, SortDefinition());
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
 
-    //Sort<bool> sort(&aggregate, DataUtilities::getDefaultSortDefinition(2));
-    //std::shared_ptr<PlainTable> observed = sort.run();
-    PlainTable *observed = aggregate->run()->reveal(PUBLIC);
-
+    Sort<bool> sort(aggregate, DataUtilities::getDefaultSortDefinition(2));
+    PlainTable *observed = sort.run();
+    DataUtilities::removeDummies(observed);
 
 ASSERT_EQ(*expected, *observed);
 
-delete observed;
-delete expected;;
+delete expected;
 
 }
 
 
 TEST_F(NestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
 
-    string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+    string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
                         " FROM (SELECT * FROM lineitem WHERE l_orderkey <= 194  ORDER BY l_orderkey, l_linenumber) selection\n"
                         " ORDER BY random() ";
@@ -217,7 +216,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
                                   "  avg(l_extendedprice) as avg_price, \n"
                                   "  avg(l_discount) as avg_disc, \n"
                                   "  count(*)::BIGINT as count_order \n"
-                                  "from (" + inputQuery + ") subq\n"
+                                  "from (" + sql + ") subq\n"
                                   " where NOT dummy\n"
                                   "group by \n"
                                   "  l_returnflag, \n"
@@ -228,7 +227,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
 
     PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2, storage_model_);
 
-    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<int32_t> group_bys{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
         ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
         ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
@@ -236,26 +235,23 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
         ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
 
-    auto input = new SqlInput(db_name_, inputQuery, false, storage_model_, SortDefinition());
-    auto aggregate = new NestedLoopAggregate(input, groupByCols, aggregators, 194);
+    auto input = new SqlInput(db_name_, sql, true, storage_model_, SortDefinition());
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
 
-    //std::shared_ptr<PlainTable> aggregated = aggregate.run();
-
-//    Sort<bool> sort(&aggregate, DataUtilities::getDefaultSortDefinition(2));
-//    std::shared_ptr<PlainTable> observed = sort.run();
-PlainTable *observed = aggregate->run()->reveal(PUBLIC);
+    Sort<bool> sort(aggregate, DataUtilities::getDefaultSortDefinition(2));
+    PlainTable *observed  = sort.run();
+    DataUtilities::removeDummies(observed);
 
 
-ASSERT_EQ(*expected, *observed);
-delete expected;
-delete observed;
+    ASSERT_EQ(*expected, *observed);
+    delete expected;
 
 }
 
 TEST_F(NestedLoopAggregateTest, tpch_q1) {
 
     string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= 194 ORDER BY l_orderkey, l_linenumber";
-    string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+    string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
                         " FROM (" + inputTuples + ") selection \n"
                         " ORDER BY random()";
@@ -283,7 +279,7 @@ TEST_F(NestedLoopAggregateTest, tpch_q1) {
 
     PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2, storage_model_);
 
-    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<int32_t> group_bys{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
         ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -294,20 +290,16 @@ TEST_F(NestedLoopAggregateTest, tpch_q1) {
         ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
         ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-//    SqlInput input(db_name_, inputQuery, true, storage_model_, SortDefinition());
-    auto input = new SqlInput(db_name_, inputQuery, false, storage_model_, SortDefinition());
-    auto aggregate = new NestedLoopAggregate(input, groupByCols, aggregators, 194);
+    auto input = new SqlInput(db_name_, sql, true, storage_model_, SortDefinition());
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
 
-//    NestedLoopAggregate aggregate(&input, groupByCols, aggregators, 194);
 
-//    Sort<bool> sort(&aggregate, DataUtilities::getDefaultSortDefinition(2));
-//    std::shared_ptr<PlainTable> observed = sort.run();
-    PlainTable *observed = aggregate->run()->reveal(PUBLIC);
-
+    Sort<bool> sort(aggregate, DataUtilities::getDefaultSortDefinition(2));
+    PlainTable *observed  = sort.run();
+    DataUtilities::removeDummies(observed);
 
 ASSERT_EQ(*expected, *observed);
 delete expected;
-delete observed;
 
 }
 

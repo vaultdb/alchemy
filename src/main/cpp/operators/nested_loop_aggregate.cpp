@@ -30,7 +30,7 @@ NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int
 				      const int output_card) : Operator<B>(child, SortDefinition()),
                                                                     aggregate_definitions_(aggregates),
                                                                     group_by_(groupBys), output_cardinality_(output_card) {
-    output_cardinality_ = output_card;
+
     setup();
  }
 
@@ -71,7 +71,7 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
       output_cardinality_ = input->getTupleCount();
     }
 
-    this->output_ = TableFactory<B>::getTable(input->getTupleCount(), Operator<B>::output_schema_, input->storageModel());
+    this->output_ = TableFactory<B>::getTable(output_cardinality_, Operator<B>::output_schema_, input->storageModel());
     QueryTable<B> *output = this->output_;
 
     // one per aggregator, one per output bin
@@ -90,9 +90,6 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
             }
             else
                 a = aggregators_[j];
-//            UnsortedAggregateImpl<B> *a = (aggregators_[j]->agg_type_ == AggregateId::AVG)
-//                                                    ?    new UnsortedAvgImpl<B>(AggregateId::AVG, aggregators_[j]->field_type_, aggregators_[j]->input_ordinal_, aggregators_[j]->output_ordinal_)
-//                                                     :     aggregators_[j];
             per_tuple_aggregators[i].emplace_back(a);
         }
     }
@@ -102,12 +99,10 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     // create output tuples with managed memory for ease of use
     for(int i = 0; i < input->getTupleCount(); ++i) {
 
-        //QueryTuple<B> input_row = (*input)[i];
         B input_dummy = input->getDummyTag(i);
         B matched = FieldUtilities::select(input_dummy, B(true), B(false)); // already "matched" if dummy
 
         for (int j = 0; j < output_cardinality_; ++j) {
-//            QueryTuple<B> output_row = (*Operator<B>::output_)[j];
             B group_by_match = groupByMatch(input, i, output, j);
             B output_dummy = output->getDummyTag(j);
 
@@ -134,7 +129,6 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         } // end for each  output tuple
     }// end for each input tuple
 
-    // TODO: clean up aggregators, only need to delete avg
     if(avg_i.size() != 0){
         for(int i = 0; i< avg_i.size(); i++)
             delete per_tuple_aggregators[avg_i[i]][avg_j[i]];
@@ -146,13 +140,6 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         delete *it;
     aggregators_.clear();
 
-
-//    for(auto aggs : per_tuple_aggregators) {
-//        for(auto agg : aggs) {
-//            if(agg != nullptr)
-//                delete agg;
-//        }
-//    }
 
     return Operator<B>::output_;
 }
