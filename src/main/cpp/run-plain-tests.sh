@@ -11,6 +11,7 @@ set +x
 ./bin/sort_test
 ./bin/scalar_aggregate_test
 ./bin/group_by_aggregate_test
+./bin/nested_loop_aggregate_test
 ./bin/secret_share_generator_test 
 #this test depends on pilot testbed
 ./bin/serialization_test

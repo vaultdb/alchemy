@@ -9,9 +9,6 @@ bash pilot/test/generate-and-load-test-data.sh 1000
 # regenerate test data
 bash  test/support/load-generated-data.sh 100
 
-# optional:
-#  bash run-pilot-test.sh
-
 
 ./bin/csv_reader_test --storage=column
 ./bin/field_expression_test --storage=column
@@ -22,6 +19,7 @@ bash  test/support/load-generated-data.sh 100
 ./bin/sort_test --storage=column
 ./bin/scalar_aggregate_test --storage=column
 ./bin/group_by_aggregate_test --storage=column
+./bin/nested_loop_aggregate_test --storage=column
 ./bin/secret_share_generator_test --storage=column
 #this test depends on pilot testbed
 ./bin/serialization_test --storage=column
@@ -37,6 +35,7 @@ bash run-column-store.sh secure_basic_join_test
 bash run-column-store.sh secure_keyed_join_test 
 bash run-column-store.sh secure_scalar_aggregate_test 
 bash run-column-store.sh secure_group_by_aggregate_test 
+bash run-column-store.sh secure_nested_loop_aggregate_test
 bash run-column-store.sh enrich_test
 bash run-column-store.sh secure_tpch_test
 
