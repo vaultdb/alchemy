@@ -164,9 +164,6 @@ namespace  vaultdb {
                                       const bool &reverse_read_order);
 
         string getOstringStream() const override;
-        std::string toString(const bool &show_dummies = false) const override;
-        std::string toString(const size_t &limit, const bool &show_dummies = false) const override;
-
 
         inline int8_t *getFieldPtr(const int & row, const int & col) const {
             return const_cast<int8_t *>(column_data_.at(col).data() + row * this->field_sizes_bytes_.at(col));
