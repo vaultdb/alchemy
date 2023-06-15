@@ -42,7 +42,6 @@ namespace vaultdb {
 
 
     private:
-      //  void project_tuple(QueryTuple<B> &dst_tuple, QueryTuple<B> &src_tuple) const;
         void setup();
 
     protected:
