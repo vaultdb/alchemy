@@ -21,7 +21,8 @@ bash  test/support/load-generated-data.sh 100
 ./bin/keyed_join_test 
 ./bin/sort_test 
 ./bin/scalar_aggregate_test 
-./bin/group_by_aggregate_test 
+./bin/group_by_aggregate_test
+./bin/nested_loop_aggregate_test
 ./bin/secret_share_generator_test 
 #this test depends on pilot testbed
 ./bin/serialization_test 
@@ -37,6 +38,7 @@ bash run.sh secure_basic_join_test
 bash run.sh secure_keyed_join_test 
 bash run.sh secure_scalar_aggregate_test 
 bash run.sh secure_group_by_aggregate_test 
+bash run.sh secure_nested_loop_aggregate_test
 bash run.sh enrich_test
 bash run.sh secure_tpch_test
 

@@ -26,6 +26,7 @@ bash  test/support/load-generated-data.sh 100
 ./bin/sort_test
 ./bin/scalar_aggregate_test
 ./bin/group_by_aggregate_test
+./bin/nested_loop_aggregate_test
 ./bin/secret_share_generator_test
 #this test depends on pilot testbed
 ./bin/serialization_test
@@ -42,5 +43,6 @@ ALICE_HOST=$1
 ./bin/secure_keyed_join_test  --party=2 --alice_host=$ALICE_HOST
 ./bin/secure_scalar_aggregate_test   --party=2 --alice_host=$ALICE_HOST
 ./bin/secure_group_by_aggregate_test  --party=2 --alice_host=$ALICE_HOST
+./bin/secure_nested_loop_aggregate_test --party=2 --alice_host=$ALICE_HOST
 #./bin/enrich_test  --party=2 --alice_host=$ALICE_HOST # excluded because data is not synced between A + B
 ./bin/secure_tpch_test  --party=2 --alice_host=$ALICE_HOST

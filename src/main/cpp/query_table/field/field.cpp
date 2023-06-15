@@ -22,7 +22,7 @@ Field<B>::Field() :  payload_(false), type_(FieldType::INVALID), string_length_(
 }
 
 template<typename B>
-Field<B>::Field(const FieldType &fieldType, const Value &val, const int &strLength) : payload_(val), type_(fieldType), string_length_(strLength) {
+Field<B>::Field(const FieldType &field_type, const Value &val, const int &str_len) : payload_(val), type_(field_type), string_length_(str_len) {
     assert(FieldUtilities::validateTypeAlignment(*this));
     if(type_ == FieldType::STRING || type_ == FieldType::SECURE_STRING)
         assert(string_length_ > 0);

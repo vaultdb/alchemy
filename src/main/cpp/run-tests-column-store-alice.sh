@@ -21,6 +21,7 @@ bash  test/support/load-generated-data.sh 100
 ./bin/sort_test --storage=column
 ./bin/scalar_aggregate_test --storage=column
 ./bin/group_by_aggregate_test --storage=column
+./bin/nested_loop_aggregate_test --storage=column
 ./bin/secret_share_generator_test --storage=column
 #this test depends on pilot testbed                                                                                                                                                                                                                  
 ./bin/serialization_test --storage=column
@@ -39,6 +40,7 @@ bash  test/support/load-generated-data.sh 100
 ./bin/secure_keyed_join_test  --party=1 --storage=column
 ./bin/secure_scalar_aggregate_test 	 --party=1 --storage=column
 ./bin/secure_group_by_aggregate_test  --party=1 --storage=column
+./bin/secure_nested_loop_aggregate_test --party=1 --storage=column
 #./bin/enrich_test  --party=1 --storage=column  #excluded because data is not synced between A + B
 ./bin/secure_tpch_test  --party=1 --storage=column
 
