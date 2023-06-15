@@ -353,7 +353,6 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
 
     for(int i = 0; i < input->getTupleCount(); i++) {
         dst_table->cloneRow(i, 0, input, i);
-//        dst_table->setField(i, is_new_idx_, input->getField(i, is_new_idx_)); // is this necessary? cloneField memcpy's the whole input row except dummy tag
         dst_table->setDummyTag(i, input->getDummyTag(i));
 
     }
@@ -362,6 +361,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
     for(int i = input->getTupleCount(); i < target_size; i++) {
         dst_table->setField(i, is_new_idx_, one_);
         dst_table->setField(i, table_id_idx_, table_idx);
+//        dst_table->setField(i, alpha_2_idx_, one_);
     }
 
     int j = SortMergeJoin<B>::powerOfLessThanTwo(target_size);
@@ -378,6 +378,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
     }
 
     return dst_table;
+
 }
 
 template<typename B>
@@ -477,6 +478,9 @@ QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
 
         Field<B> alpha_1 = input->getField(i, alpha_1_idx_); input->getField(i, alpha_1_idx_);
         Field<B> alpha_2 = input->getField(i, alpha_2_idx_);
+
+        alpha_2 = Field<B>::If(alpha_2 == zero_, one_, alpha_2);
+
         dst_table->setField(i, ii_idx, count/alpha_2 + (count % alpha_2) * alpha_1);
         dst_table->setDummyTag(i, input->getDummyTag(i));
 
