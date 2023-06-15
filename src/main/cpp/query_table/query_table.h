@@ -94,9 +94,9 @@ namespace  vaultdb {
 
         inline size_t getTupleCount() const { return tuple_cnt_; }
 
-         std::string toString(const bool &show_dummies = false) const;
+        virtual string toString(const bool &show_dummies = false) const = 0;
 
-       std::string toString(const size_t &limit, const bool &show_dummies = false) const;
+        virtual string toString(const size_t &limit, const bool &show_dummies = false) const = 0;
 
         virtual void putTuple(const int &idx, const QueryTuple<B> &tuple) = 0;
 

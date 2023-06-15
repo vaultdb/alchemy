@@ -85,7 +85,6 @@ package_add_test(secure_nested_loop_aggregate_test mpc/secure_nested_loop_aggreg
 #package_add_test(emp_float_to_int mpc/emp_float_to_int_test.cpp mpc/emp_base_test.cpp)
 package_add_test(enrich_test enrich_test.cpp  support/enrich_test_support.cpp mpc/emp_base_test.cpp)
 package_add_test(secure_tpch_test mpc/secure_tpch_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
-
 #ZK experiments - optional
 #package_add_test(zk_test zk/zk_test.cpp zk/zk_base_test.cpp)
 #package_add_test(zk_filter_test zk/zk_filter_test.cpp zk/zk_base_test.cpp)

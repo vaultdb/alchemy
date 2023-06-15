@@ -137,6 +137,9 @@ namespace  vaultdb {
         inline virtual StorageModel storageModel() const override { return StorageModel::ROW_STORE; }
 
         bool operator==(const QueryTable<B> &other) const override;
+        string toString(const bool &show_dummies = false) const override;
+        string toString(const size_t &limit, const bool &show_dummies = false) const override;
+
 
     protected:
 
