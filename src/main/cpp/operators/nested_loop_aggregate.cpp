@@ -196,6 +196,7 @@ template<typename B>
 void NestedLoopAggregate<B>::setup() {
     QuerySchema input_schema = Operator<B>::getChild(0)->getOutputSchema();
     int output_ordinal = group_by_.size();
+    bool min_max_flag = false;
 
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {
         // for most aggs the output type is the same as the input type
@@ -203,18 +204,36 @@ void NestedLoopAggregate<B>::setup() {
         FieldType aggValueType = (agg.ordinal >= 0) ?
                                  input_schema.getField(agg.ordinal).getType() :
                                  (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
-
-        UnsortedAggregateImpl<B> *a = (agg.type == AggregateId::AVG)
-                ? (UnsortedAggregateImpl<B> *) new UnsortedAvgImpl<B>(AggregateId::AVG, aggValueType, agg.ordinal, output_ordinal)
-                :  (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, aggValueType, agg.ordinal, output_ordinal);
+        UnsortedAggregateImpl<B> *a;
+        if(agg.type == AggregateId::AVG)
+            a = (UnsortedAggregateImpl<B> *) new UnsortedAvgImpl<B>(AggregateId::AVG, aggValueType, agg.ordinal, output_ordinal);
+        else if(agg.type == AggregateId::MIN){
+            a = (UnsortedAggregateImpl<B> *) new UnsortedMinImpl<B>(AggregateId::MIN, aggValueType, agg.ordinal, output_ordinal);
+            a->initialize(input_schema.getField(agg.ordinal));
+        }
+        else if(agg.type == AggregateId::MAX) {
+            a = (UnsortedAggregateImpl<B> *) new UnsortedMaxImpl<B>(AggregateId::MIN, aggValueType, agg.ordinal, output_ordinal);
+            a->initialize(input_schema.getField(agg.ordinal));
+        }
+        else
+            a = (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, aggValueType, agg.ordinal, output_ordinal);
+//        UnsortedAggregateImpl<B> *a = (agg.type == AggregateId::AVG)
+//                ? (UnsortedAggregateImpl<B> *) new UnsortedAvgImpl<B>(AggregateId::AVG, aggValueType, agg.ordinal, output_ordinal)
+//                :  (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, aggValueType, agg.ordinal, output_ordinal);
 
         aggregators_.push_back(a);
+        // if an aggregator operates on packed bits (e.g. min/max), then copy its output definition from source
+        if(a->packedFields()) {
+            QueryFieldDesc packed_field(input_schema.getField(agg.ordinal), output_ordinal);
+            packed_field.setName("", agg.alias);
+            this->output_schema_.putField(packed_field);
+            min_max_flag = true;
+        }
         ++output_ordinal;
     }
 
-
-
-    Operator<B>::output_schema_ = generateOutputSchema(input_schema);
+    if(!min_max_flag)
+        Operator<B>::output_schema_ = generateOutputSchema(input_schema);
 
 }
 
