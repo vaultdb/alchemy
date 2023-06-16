@@ -137,6 +137,8 @@ template<typename B>
 void ToPackedExpressionVisitor<B>::visit(EqualNode<B> & node) {
     pair<ExpressionNode<B> *, ExpressionNode<B> *> children = visitBinaryExpression(&node);
     root_ = new EqualNode<B>(children.first, children.second);
+    delete children.first;
+    delete children.second;
 
 }
 
@@ -144,30 +146,45 @@ template<typename B>
 void ToPackedExpressionVisitor<B>::visit(NotEqualNode<B> & node) {
     pair<ExpressionNode<B> *, ExpressionNode<B> *> children = visitBinaryExpression(&node);
     root_ = new NotEqualNode<B>(children.first, children.second);
+    delete children.first;
+    delete children.second;
+
 }
 
 template<typename B>
 void ToPackedExpressionVisitor<B>::visit(GreaterThanNode<B> & node) {
     pair<ExpressionNode<B> *, ExpressionNode<B> *> children = visitBinaryExpression(&node);
     root_ = new GreaterThanNode<B>(children.first, children.second);
+    delete children.first;
+    delete children.second;
+
 }
 
 template<typename B>
 void ToPackedExpressionVisitor<B>::visit(LessThanNode<B> & node) {
     pair<ExpressionNode<B> *, ExpressionNode<B> *> children = visitBinaryExpression(&node);
     root_ = new LessThanNode<B>(children.first, children.second);
+    delete children.first;
+    delete children.second;
+
 }
 
 template<typename B>
 void ToPackedExpressionVisitor<B>::visit(GreaterThanEqNode<B> & node) {
     pair<ExpressionNode<B> *, ExpressionNode<B> *> children = visitBinaryExpression(&node);
     root_ = new GreaterThanEqNode<B>(children.first, children.second);
+    delete children.first;
+    delete children.second;
+
 }
 
 template<typename B>
 void ToPackedExpressionVisitor<B>::visit(LessThanEqNode<B> & node) {
     pair<ExpressionNode<B> *, ExpressionNode<B> *> children = visitBinaryExpression(&node);
     root_ = new LessThanEqNode<B>(children.first, children.second);
+    delete children.first;
+    delete children.second;
+
 }
 
 template<typename B>
