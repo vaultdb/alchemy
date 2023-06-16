@@ -110,16 +110,16 @@ namespace vaultdb {
         getEqualityPredicate(const uint32_t &lhs_idx, const QuerySchema &lhs, const uint32_t &rhs_idx,
                              const QuerySchema & rhs) {
 
-            InputReference<B> *lhs_input = new InputReference<B>(lhs_idx, lhs,  rhs);
-            InputReference<B> *rhs_input = new InputReference<B>(rhs_idx, lhs,  rhs);
-            ExpressionNode<B> *equality_node = new EqualNode<B>(lhs_input, rhs_input);
+            auto lhs_input = new InputReference<B>(lhs_idx, lhs,  rhs);
+            auto rhs_input = new InputReference<B>(rhs_idx, lhs,  rhs);
+            auto equality_node = new EqualNode<B>(lhs_input, rhs_input);
 
             ToPackedExpressionVisitor pack_it(equality_node);
             ExpressionNode<B> *packed_predicate = pack_it.getRoot();
 
             GenericExpression<B> *g =  new GenericExpression<B>(packed_predicate, "predicate",
                                                                 std::is_same_v<B, bool> ? FieldType::BOOL : FieldType::SECURE_BOOL);
-
+            delete packed_predicate;
             delete equality_node;
             delete lhs_input;
             delete rhs_input;

@@ -93,11 +93,18 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     if(!foreign_key_input_) {
         s1 = augmented.first;
         s2 = obliviousExpand(augmented.second, false);
-        s2 = alignTable(s2);
+        delete augmented.second;
+        QueryTable<B> *tmp = alignTable(s2);
+        delete s2;
+        s2 = tmp;
+
     }
     else {
         s1 = obliviousExpand(augmented.first, true);
-        s1 = alignTable(s1);
+        delete augmented.first;
+        QueryTable<B> *tmp = alignTable(s1);
+        delete s1;
+        s1 = tmp;
         s2 = augmented.second;
     }
 
@@ -108,7 +115,8 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_, true);
     QueryTable<B> *rhs_reverted = revertProjection(s2, rhs_field_mapping_, false);
 
-
+    delete s1;
+    delete s2;
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
 
@@ -117,6 +125,8 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
         this->output_->setDummyTag(i, lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i));
     }
 
+    delete lhs_reverted;
+    delete rhs_reverted;
     return Join<B>::output_;
 
 
@@ -197,6 +207,9 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
         ++output_cursor;
     }
 
+    delete lhs_prime;
+    delete rhs_prime;
+
 
     // implicitly deleting unioned table
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
@@ -217,7 +230,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     }
 
     Sort<B> sort_by_table_id(sorted, sort_def);
-    sorted = sort_by_table_id.run();
+    QueryTable<B> *sort_table = sort_by_table_id.run();
 
     pair<QueryTable<B> *, QueryTable<B> *> output;
     //split union table into S1 and S2
@@ -226,18 +239,19 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     int read_cursor = 0;
 
     for (int i = 0; i < lhs->getTupleCount(); i++) {
-        s1->cloneRow(i, 0, sorted, read_cursor);
-        s1->setDummyTag(i, sorted->getDummyTag(read_cursor));
+        s1->cloneRow(i, 0, sort_table, read_cursor);
+        s1->setDummyTag(i, sort_table->getDummyTag(read_cursor));
         ++read_cursor;
     }
 
     for (int i = 0; i < rhs->getTupleCount(); i++) {
-        s2->cloneRow(i, 0, sorted, read_cursor);
-        s2->setDummyTag(i, sorted->getDummyTag(read_cursor));
+        s2->cloneRow(i, 0, sort_table, read_cursor);
+        s2->setDummyTag(i, sort_table->getDummyTag(read_cursor));
         ++read_cursor;
     }
     output.first = s1;
     output.second = s2;
+
     return output;
 }
 

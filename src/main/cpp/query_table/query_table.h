@@ -192,6 +192,10 @@ namespace  vaultdb {
         return os;
     }
 
+    static std::ostream &operator<<(std::ostream &os, const QueryTable<Bit> &table)   {
+        os << table.getOstringStream();
+        return os;
+    }
 
 
 
