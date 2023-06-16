@@ -40,12 +40,14 @@ SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs,Expressio
 
 template<typename B>
 SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
-                                const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey), is_secure_(std::is_same_v<B, Bit>) {
+                                const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort),  is_secure_(std::is_same_v<B, Bit>) {
 
+     assert(fkey == 0 || fkey == 1);
+     foreign_key_input_  = (fkey == 0) ? false :  true;
     GenericExpression<B> *p = (GenericExpression<B> *) this->predicate_;
     JoinEqualityConditionVisitor<B> join_visitor(p->root_);
     join_idxs_  = join_visitor.getEqualities();
-
+    lhs_smaller_ = (this->getChild(0)->getOutputSchema().size() < this->getChild(1)->getOutputSchema().size()) ? true : false;
 
     one_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 1, 0) : Field<B>(FieldType::INT, 1, 0);
     zero_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 0, 0) : Field<B>(FieldType::INT, 0, 0);
@@ -58,7 +60,10 @@ SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & 
 
 template<typename B>
 SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
-              const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey), is_secure_(std::is_same_v<B, Bit>) {
+              const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort), is_secure_(std::is_same_v<B, Bit>) {
+
+    assert(fkey == 0 || fkey == 1);
+    foreign_key_input_  = (fkey == 0) ? false :  true;
 
     GenericExpression<B> *p = (GenericExpression<B> *) this->predicate_;
     JoinEqualityConditionVisitor<B> join_visitor(p->root_);
@@ -75,34 +80,43 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
-    foreign_key_cardinality_ = (foreign_key_input_ == 0) ? lhs->getTupleCount() : rhs->getTupleCount();
+    QuerySchema lhs_schema = lhs->getSchema();
+    QuerySchema rhs_schema = rhs->getSchema();
+    QuerySchema schema = QuerySchema::concatenate(lhs->getSchema(), rhs->getSchema());
+
+    foreign_key_cardinality_ = foreign_key_input_ ? rhs->getTupleCount() : lhs->getTupleCount();
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
 
     QueryTable<B> *s1, *s2;
     // lhs is FK
-    if(foreign_key_input_ == 0) {
+    if(!foreign_key_input_) {
         s1 = augmented.first;
         s2 = obliviousExpand(augmented.second, false);
         s2 = alignTable(s2);
     }
     else {
+        cout << "Expanding lhs, it starts with: " << augmented.first->toString(5, false) << endl;
         s1 = obliviousExpand(augmented.first, true);
+        cout << "Expanded: " << s1->toString(5, false) << endl;
         s1 = alignTable(s1);
+        cout << "Aligned: " << s1->toString(5, false) << endl;
         s2 = augmented.second;
-    }	
+        cout << "rhs start: " << s2->toString(5, false) << endl;
+    }
 
-    QuerySchema schema = QuerySchema::concatenate(lhs->getSchema(), rhs->getSchema());
-
-    QuerySchema lhs_schema = lhs->getSchema();
-    QuerySchema rhs_schema = rhs->getSchema();
     this->output_ = TableFactory<B>::getTable(foreign_key_cardinality_, schema, storage_model_);
 
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
 
-    QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_);
+    std::cout << "LHS before revert: " << s1->toString() << '\n';
+    QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_, true);
+    std::cout << "LHS after revert: " << lhs_reverted->toString() << '\n';
 
-    QueryTable<B> *rhs_reverted = revertProjection(s2,  rhs_field_mapping_);
+    std::cout << "RHS before revert: " << s2->toString() << '\n';
+    QueryTable<B> *rhs_reverted = revertProjection(s2, rhs_field_mapping_, false);
+    std::cout << "RHS after revert: " << rhs_reverted->toString() << '\n';
+
 
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
@@ -146,7 +160,8 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     QueryTable<B> *rhs_prime = projectSortKeyToFirstAttr(rhs, rhs_keys, false);
 
     // set up extended schema
-    QuerySchema augmented_schema = (lhs_prime->tuple_size_ > rhs_prime->tuple_size_) ? lhs_prime->getSchema() : rhs_prime->getSchema();
+    QuerySchema augmented_schema = (lhs_smaller_) ?  rhs_prime->getSchema() : lhs_prime->getSchema();
+
     Field<B> table_id_field;
     if(std::is_same_v<B, bool>) {
         QueryFieldDesc alpha_1(augmented_schema.getFieldCount(), "alpha1", "", FieldType::INT, 0);
@@ -232,7 +247,6 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     }
     output.first = s1;
     output.second = s2;
-
     return output;
 }
 
@@ -262,6 +276,9 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
 
     Project<B> projection(src->clone(), builder.getExprs());
 
+    if(is_lhs)  lhs_projected_schema_ = projection.getOutputSchema();
+    else rhs_projected_schema_ = projection.getOutputSchema();
+
     return projection.run()->clone();
 }
 
@@ -276,7 +293,7 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
     B prev_table_id =  dst->getField(0, table_id_idx_).template getValue<B>();
     B table_id;
     
-    B fkey = (this->foreign_key_input_ == 0) ? B(false) : B(true);
+    B fkey = (!foreign_key_input_) ? B(false) : B(true);
 
     // set correct alpha to 1 for first row
     // if table ID is false, update alpha 1
@@ -393,17 +410,13 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
     is_new_idx_ = schema.getFieldCount() - 1;
     weight_idx_ = schema.getFieldCount() - 2;
 
-    // right now have table_id == true for rhs
-    B fkey = (this->foreign_key_input_ == 0) ? B(false) : B(true);
 
-
-
-    Field<B> table_id = input->getField(0, table_id_idx_);
-    B is_foreign_key = (table_id == fkey);
+    bool table_id = (is_lhs) ? false : true;
+    // should always be false
+    bool is_foreign_key = (table_id == foreign_key_input_);
 
     //alpha1 for primary key table, alpha2 for foreign key table
-    int32_t read_offset = is_lhs ? alpha_2_idx_ : alpha_1_idx_;
-
+    int read_offset = is_foreign_key ? alpha_2_idx_ : alpha_1_idx_;
 
 
     Field<B> s = one_;
@@ -488,13 +501,40 @@ QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
     return sorter.run()->clone();
 }
 
+// lhs_smaller_ = false
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<int, int> &  expr_map) const {
+QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<int, int> &expr_map,
+                                                  const bool &is_lhs) const {
 
 
     RowTable<B> *src = (RowTable<B> *) s;
+    // // create a synthetic schema.  pad it to make it the "right" row length for projection
+    if(lhs_smaller_ == is_lhs) {
+        QuerySchema synthetic_schema = (is_lhs) ? lhs_projected_schema_ : rhs_projected_schema_;
+        cout << "Mapping from " << synthetic_schema << "\n   simulated as " << s->getSchema() << endl;
+        int delta = s->getSchema().size() - synthetic_schema.size();
+        cout << "Delta: " << delta << '\n';
+        if(delta > 0) {
+            QueryFieldDesc synthetic_attr(synthetic_schema.getFieldCount(), "anon", "",
+                                          is_secure_ ? FieldType::SECURE_STRING : FieldType::STRING,
+                                          delta / 8);
+            synthetic_schema.putField(synthetic_attr);
+            delta -= synthetic_attr.getStringLength() * 8;
+            cout << "Added str of size: " << synthetic_attr.getStringLength() << endl;
+        }
+        while(delta > 0) { // only not byte-aligned in secure mode
+            QueryFieldDesc f(synthetic_schema.getFieldCount(), "anon", "",  FieldType::SECURE_BOOL,0);
+            synthetic_schema.putField(f);
+            cout << "Adding bit!" << endl;
+            --delta;
+        }
 
+        synthetic_schema.initializeFieldOffsets();
+        s->setSchema(synthetic_schema);
 
+    }
+
+    cout << "Projecting from schema " << s->getSchema() << endl;
     ExpressionMapBuilder<B> builder(s->getSchema());
     for(auto pos : expr_map) {
         builder.addMapping(pos.first, pos.second);
