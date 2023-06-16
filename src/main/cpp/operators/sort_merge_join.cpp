@@ -9,13 +9,48 @@
 using namespace vaultdb;
 
 template<typename B>
-SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
-                                const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey), is_secure_(std::is_same_v<B, Bit>) {
+SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs,  Expression<B> *predicate,
+                                const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort), is_secure_(std::is_same_v<B, Bit>) {
 
     GenericExpression<B> *p = (GenericExpression<B> *) this->predicate_;
     JoinEqualityConditionVisitor<B> join_visitor(p->root_);
     join_idxs_  = join_visitor.getEqualities();
+    lhs_smaller_ = (this->getChild(0)->getOutputSchema().size() < this->getChild(1)->getOutputSchema().size()) ? true : false;
 
+
+    one_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 1, 0) : Field<B>(FieldType::INT, 1, 0);
+    zero_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 0, 0) : Field<B>(FieldType::INT, 0, 0);
+
+}
+
+
+template<typename B>
+SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs,Expression<B> *predicate,
+                                const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort), is_secure_(std::is_same_v<B, Bit>) {
+
+    GenericExpression<B> *p = (GenericExpression<B> *) this->predicate_;
+    JoinEqualityConditionVisitor<B> join_visitor(p->root_);
+    join_idxs_  = join_visitor.getEqualities();
+    lhs_smaller_ = (this->getChild(0)->getOutputSchema().size() < this->getChild(1)->getOutputSchema().size()) ? true : false;
+
+    one_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 1, 0) : Field<B>(FieldType::INT, 1, 0);
+    zero_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 0, 0) : Field<B>(FieldType::INT, 0, 0);
+
+
+
+}
+
+
+template<typename B>
+SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,
+                                const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort),  is_secure_(std::is_same_v<B, Bit>) {
+
+     assert(fkey == 0 || fkey == 1);
+     foreign_key_input_  = (fkey == 0) ? false :  true;
+    GenericExpression<B> *p = (GenericExpression<B> *) this->predicate_;
+    JoinEqualityConditionVisitor<B> join_visitor(p->root_);
+    join_idxs_  = join_visitor.getEqualities();
+    lhs_smaller_ = (this->getChild(0)->getOutputSchema().size() < this->getChild(1)->getOutputSchema().size()) ? true : false;
 
     one_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 1, 0) : Field<B>(FieldType::INT, 1, 0);
     zero_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 0, 0) : Field<B>(FieldType::INT, 0, 0);
@@ -28,11 +63,16 @@ SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & 
 
 template<typename B>
 SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
-              const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey), is_secure_(std::is_same_v<B, Bit>) {
+              const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort), is_secure_(std::is_same_v<B, Bit>) {
+
+    assert(fkey == 0 || fkey == 1);
+    foreign_key_input_  = (fkey == 0) ? false :  true;
 
     GenericExpression<B> *p = (GenericExpression<B> *) this->predicate_;
     JoinEqualityConditionVisitor<B> join_visitor(p->root_);
     join_idxs_  = join_visitor.getEqualities();
+    lhs_smaller_ = (this->getChild(0)->getOutputSchema().size() < this->getChild(1)->getOutputSchema().size()) ? true : false;
+
     one_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 1, 0) : Field<B>(FieldType::INT, 1, 0);
     zero_ = (is_secure_) ? Field<B>(FieldType::SECURE_INT, 0, 0) : Field<B>(FieldType::INT, 0, 0);
 
@@ -41,57 +81,56 @@ SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const in
 }
 
 template<typename B>
-void SortMergeJoin<B>::printTable(QueryTable<B>* table) {
-	std::cout << "Schema: \n" << table->getSchema() << "\n";
-	for(int i = 0; i < table->getTupleCount(); i++) {
-		std::cout << table->getPlainTuple(i).toString(true) << "\n";
-	}
-}
-
-template<typename B>
 QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
-    foreign_key_cardinality_ = (foreign_key_input_ == 0) ? lhs->getTupleCount() : rhs->getTupleCount();
+    QuerySchema lhs_schema = lhs->getSchema();
+    QuerySchema rhs_schema = rhs->getSchema();
+    QuerySchema schema = QuerySchema::concatenate(lhs->getSchema(), rhs->getSchema());
+
+    foreign_key_cardinality_ = foreign_key_input_ ? rhs->getTupleCount() : lhs->getTupleCount();
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
 
     QueryTable<B> *s1, *s2;
     // lhs is FK
-    if(foreign_key_input_) {
+    if(!foreign_key_input_) {
         s1 = augmented.first;
         s2 = obliviousExpand(augmented.second, false);
-        s2 = alignTable(s2);
+        delete augmented.second;
+        QueryTable<B> *tmp = alignTable(s2);
+        delete s2;
+        s2 = tmp;
+
     }
     else {
         s1 = obliviousExpand(augmented.first, true);
-        s1 = alignTable(s1);
+        delete augmented.first;
+        QueryTable<B> *tmp = alignTable(s1);
+        delete s1;
+        s1 = tmp;
         s2 = augmented.second;
-    }	
+    }
 
-    // size_t numTuples = s2->getTupleCount(); numTuples = fkey card
-    // TODO: project the attrs back to their original positions as we extract them back into output
-    // or at least memcpy them into the right place with cloneRow()...
-    QuerySchema schema = QuerySchema::concatenate(lhs->getSchema(), rhs->getSchema());
-
-    QuerySchema lhs_schema = lhs->getSchema();
-    QuerySchema rhs_schema = rhs->getSchema();
     this->output_ = TableFactory<B>::getTable(foreign_key_cardinality_, schema, storage_model_);
 
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
+    QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_, true);
+    QueryTable<B> *rhs_reverted = revertProjection(s2, rhs_field_mapping_, false);
 
-    QueryTable<B> *lhs_revert_col_order = projectBackTuples(s1, lhs_projected_, lhs_schema, lhs_field_mapping_);
-    QueryTable<B> *rhs_revert_col_order = projectBackTuples(s2, rhs_projected_, rhs_schema, rhs_field_mapping_);
-
+    delete s1;
+    delete s2;
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
 
-        this->output_->cloneRow(i, 0, lhs_revert_col_order, i);
-        this->output_->cloneRow(i, lhs_field_cnt, rhs_revert_col_order, i);
-        this->output_->setDummyTag(i, lhs_revert_col_order->getDummyTag(i) | rhs_revert_col_order->getDummyTag(i));
+        this->output_->cloneRow(i, 0, lhs_reverted, i);
+        this->output_->cloneRow(i, lhs_field_cnt, rhs_reverted, i);
+        this->output_->setDummyTag(i, lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i));
     }
 
+    delete lhs_reverted;
+    delete rhs_reverted;
     return Join<B>::output_;
 
 
@@ -126,7 +165,8 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     QueryTable<B> *rhs_prime = projectSortKeyToFirstAttr(rhs, rhs_keys, false);
 
     // set up extended schema
-    QuerySchema augmented_schema = (lhs_prime->tuple_size_ > rhs_prime->tuple_size_) ? lhs_prime->getSchema() : rhs_prime->getSchema();
+    QuerySchema augmented_schema = (lhs_smaller_) ?  rhs_prime->getSchema() : lhs_prime->getSchema();
+
     Field<B> table_id_field;
     if(std::is_same_v<B, bool>) {
         QueryFieldDesc alpha_1(augmented_schema.getFieldCount(), "alpha1", "", FieldType::INT, 0);
@@ -159,8 +199,9 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     QueryTable<B> *unioned = TableFactory<B>::getTable(lhs->getTupleCount() + rhs->getTupleCount(), augmented_schema, storage_model_);
     for(int i = 0; i < lhs_prime->getTupleCount(); ++i) {
         unioned->cloneRow(output_cursor, 0, lhs_prime, i);
-        ++output_cursor;
         unioned->setDummyTag(output_cursor, lhs_prime->getDummyTag(i));
+        ++output_cursor;
+
     }
 
     for(int i = 0; i < rhs_prime->getTupleCount(); ++i) {
@@ -169,6 +210,9 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
         unioned->setField(output_cursor, augmented_schema.getFieldCount() - 1, table_id_field);
         ++output_cursor;
     }
+
+    delete lhs_prime;
+    delete rhs_prime;
 
 
     // implicitly deleting unioned table
@@ -182,6 +226,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
     initializeAlphas(sorted);
 
+
     sort_def.clear();
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
     for(int i = 0; i < join_idxs_.size(); ++i) {
@@ -189,7 +234,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     }
 
     Sort<B> sort_by_table_id(sorted, sort_def);
-    sorted = sort_by_table_id.run();
+    QueryTable<B> *sort_table = sort_by_table_id.run();
 
     pair<QueryTable<B> *, QueryTable<B> *> output;
     //split union table into S1 and S2
@@ -198,12 +243,14 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     int read_cursor = 0;
 
     for (int i = 0; i < lhs->getTupleCount(); i++) {
-        s1->cloneRow(i, 0, sorted, read_cursor);
+        s1->cloneRow(i, 0, sort_table, read_cursor);
+        s1->setDummyTag(i, sort_table->getDummyTag(read_cursor));
         ++read_cursor;
     }
 
     for (int i = 0; i < rhs->getTupleCount(); i++) {
-        s2->cloneRow(i, 0, sorted, read_cursor);
+        s2->cloneRow(i, 0, sort_table, read_cursor);
+        s2->setDummyTag(i, sort_table->getDummyTag(read_cursor));
         ++read_cursor;
     }
     output.first = s1;
@@ -237,16 +284,12 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
     }
 
     Project<B> projection(src->clone(), builder.getExprs());
-    if(is_lhs) {
-        lhs_projected_ = projection.getOutputSchema();
-    }
-    else {
-        rhs_projected_ = projection.getOutputSchema();
-    }
+
+    if(is_lhs)  lhs_projected_schema_ = projection.getOutputSchema();
+    else rhs_projected_schema_ = projection.getOutputSchema();
 
     return projection.run()->clone();
 }
-
 
 template<typename B>
 void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
@@ -258,8 +301,8 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
     B prev_table_id =  dst->getField(0, table_id_idx_).template getValue<B>();
     B table_id;
-    // right now have table_id == true for rhs
-    B fkey = (this->foreign_key_input_ == 0) ? B(false) : B(true);
+    
+    B fkey = (!foreign_key_input_) ? B(false) : B(true);
 
     // set correct alpha to 1 for first row
     // if table ID is false, update alpha 1
@@ -285,7 +328,9 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
 
         prev_table_id = table_id;
-    }	
+    }
+
+
 
 	prev_alpha_1 = dst->getField(dst->getTupleCount()-1, alpha_1_idx_);
 	prev_alpha_2 = dst->getField(dst->getTupleCount()-1, alpha_2_idx_);
@@ -301,7 +346,6 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
         dst->setField(i, alpha_2_idx_, Field<B>::If(same_group, prev_alpha_2, count));
 		prev_alpha_2 = dst->getField(i, alpha_2_idx_);
     }
-	printTable(dst);
 }
 
 
@@ -328,16 +372,17 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
     Sort<B> sorted(input, sort_def);
     input = sorted.run();
 
-
     for(int i = 0; i < input->getTupleCount(); i++) {
         dst_table->cloneRow(i, 0, input, i);
-        dst_table->setField(i, is_new_idx_, input->getField(i, is_new_idx_)); // is this necessary?
         dst_table->setDummyTag(i, input->getDummyTag(i));
 
     }
+    Field<B> table_idx = input->getField(0, table_id_idx_);
 
     for(int i = input->getTupleCount(); i < target_size; i++) {
         dst_table->setField(i, is_new_idx_, one_);
+        dst_table->setField(i, table_id_idx_, table_idx);
+//        dst_table->setField(i, alpha_2_idx_, one_);
     }
 
     int j = SortMergeJoin<B>::powerOfLessThanTwo(target_size);
@@ -354,6 +399,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
     }
 
     return dst_table;
+
 }
 
 template<typename B>
@@ -373,17 +419,13 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
     is_new_idx_ = schema.getFieldCount() - 1;
     weight_idx_ = schema.getFieldCount() - 2;
 
-    // right now have table_id == true for rhs
-    B fkey = (this->foreign_key_input_ == 0) ? B(false) : B(true);
 
-
-
-    Field<B> table_id = input->getField(0, table_id_idx_);
-    B is_foreign_key = (table_id == fkey);
+    bool table_id = (is_lhs) ? false : true;
+    // should always be false
+    bool is_foreign_key = (table_id == foreign_key_input_);
 
     //alpha1 for primary key table, alpha2 for foreign key table
-    int32_t read_offset = is_lhs ? alpha_2_idx_ : alpha_1_idx_;
-
+    int read_offset = is_foreign_key ? alpha_2_idx_ : alpha_1_idx_;
 
 
     Field<B> s = one_;
@@ -397,11 +439,10 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
         intermediate_table->setField(i, is_new_idx_,
                                      Field<B>::If(result, one_, zero_));
         intermediate_table->setDummyTag(i, input->getDummyTag(i));
-
-    }
-
-
-    QueryTable<B> *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
+		s = s + cnt;
+    }	
+	
+    QueryTable<B> *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);		
 
     schema = dst_table->getSchema();
 
@@ -423,6 +464,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
         }
         dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
     }
+	
 
     return dst_table;
 }
@@ -431,14 +473,13 @@ template<typename B>
 QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
     QuerySchema schema = input->getSchema();
 
-    const size_t numFields = 1;
     QueryFieldDesc weight(schema.getFieldCount(), "ii", "", is_secure_ ? FieldType::SECURE_INT : FieldType::INT);
 
 
     schema.putField(weight);
     schema.initializeFieldOffsets();
 
-    weight_idx_ = schema.getFieldCount() - 1;
+    size_t ii_idx = schema.getFieldCount() - 1;
 
     Field<B> count = zero_ - one_;
 
@@ -446,7 +487,7 @@ QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
     QueryTable<B> *dst_table = TableFactory<B>::getTable(input->getTupleCount(), schema, storage_model_);
 
 
-    for(int i = 1; i < input->getTupleCount(); i++) {
+    for(int i = 0; i < input->getTupleCount(); i++) {
 
         B same_group = joinMatch(input, i-1, i);
 
@@ -454,30 +495,53 @@ QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
 
         Field<B> alpha_1 = input->getField(i, alpha_1_idx_); input->getField(i, alpha_1_idx_);
         Field<B> alpha_2 = input->getField(i, alpha_2_idx_);
-        dst_table->setField(i, weight_idx_, count/alpha_2 + (count % alpha_2) * alpha_1);
+
+        alpha_2 = Field<B>::If(alpha_2 == zero_, one_, alpha_2);
+
+        dst_table->setField(i, ii_idx, count/alpha_2 + (count % alpha_2) * alpha_1);
         dst_table->setDummyTag(i, input->getDummyTag(i));
 
         dst_table->cloneRow(i, 0, input, i);
     }
 
     SortDefinition s =  DataUtilities::getDefaultSortDefinition(join_idxs_.size());
-    s.emplace_back(weight_idx_, SortDirection::ASCENDING);
-
+    s.emplace_back(ii_idx, SortDirection::ASCENDING);
     Sort<B> sorter(dst_table, s);
     return sorter.run()->clone();
 }
 
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::projectBackTuples(QueryTable<B> *s, const QuerySchema & src_schema, const QuerySchema & dst_schema, const map<int, int> &  expr_map) const {
+QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<int, int> &expr_map,
+                                                  const bool &is_lhs) const {
 
 
     RowTable<B> *src = (RowTable<B> *) s;
-    src->setSchema(src_schema);
+    // // create a synthetic schema.  pad it to make it the "right" row length for projection
+    // for use with smaller width row
+    if(lhs_smaller_ == is_lhs) {
+        QuerySchema synthetic_schema = (is_lhs) ? lhs_projected_schema_ : rhs_projected_schema_;
+        int delta = s->getSchema().size() - synthetic_schema.size();
+        if(delta > 0) {
+            QueryFieldDesc synthetic_attr(synthetic_schema.getFieldCount(), "anon", "",
+                                          is_secure_ ? FieldType::SECURE_STRING : FieldType::STRING,
+                                          delta / 8);
+            synthetic_schema.putField(synthetic_attr);
+            delta -= synthetic_attr.getStringLength() * 8;
+        }
+        while(delta > 0) { // only not byte-aligned in secure mode
+            QueryFieldDesc f(synthetic_schema.getFieldCount(), "anon", "",  FieldType::SECURE_BOOL,0);
+            synthetic_schema.putField(f);
+            --delta;
+        }
 
+        synthetic_schema.initializeFieldOffsets();
+        s->setSchema(synthetic_schema);
 
-    ExpressionMapBuilder<B> builder(src_schema);
+    }
+
+    ExpressionMapBuilder<B> builder(s->getSchema());
     for(auto pos : expr_map) {
-        builder.addMapping(pos.second, pos.first);
+        builder.addMapping(pos.first, pos.second);
     }
 
     Project<B> projection(src->clone(), builder.getExprs());

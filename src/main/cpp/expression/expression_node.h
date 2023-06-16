@@ -27,8 +27,7 @@ namespace vaultdb {
         virtual Field<B> call(const QueryTuple<B> & target) const = 0;
         virtual Field<B> call(const QueryTable<B>  *src, const int & row) const = 0;
         virtual Field<B> call(const QueryTable<B> *lhs, const int &lhs_row, const QueryTable<B> *rhs, const int &rhs_row) const = 0;
-        // does this expression support packed fields?  E.g., R.a == S.b does not require unpacking if fields are compatible.
-        //virtual bool packedFields() const = 0;
+
         virtual ExpressionNode<B> *clone() const = 0;
 
         virtual ExpressionKind kind() const = 0;
