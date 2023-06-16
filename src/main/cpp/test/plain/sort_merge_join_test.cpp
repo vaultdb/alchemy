@@ -205,16 +205,11 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
     auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
     auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
 
-    std::cout << "LHS: " << *orders_input->getOutput() << endl;
-    std::cout << "RHS: " << *lineitem_input->getOutput() << endl;
 
     // output schema: lineitem, orders
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue
     Expression<bool> *predicate  = FieldUtilities::getEqualityPredicate<bool>(orders_input, 0, lineitem_input,
                                                                               4);
-
-    // orders: lhs, li: rhs
-    // expand lhs
     auto join = new SortMergeJoin(orders_input, lineitem_input, 1, predicate);
 
     PlainTable *observed = join->run();

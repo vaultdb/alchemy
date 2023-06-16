@@ -96,26 +96,17 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
         s2 = alignTable(s2);
     }
     else {
-        cout << "Expanding lhs, it starts with: " << augmented.first->toString(5, false) << endl;
         s1 = obliviousExpand(augmented.first, true);
-        cout << "Expanded: " << s1->toString(5, false) << endl;
         s1 = alignTable(s1);
-        cout << "Aligned: " << s1->toString(5, false) << endl;
         s2 = augmented.second;
-        cout << "rhs start: " << s2->toString(5, false) << endl;
     }
 
     this->output_ = TableFactory<B>::getTable(foreign_key_cardinality_, schema, storage_model_);
 
     size_t lhs_field_cnt = lhs_schema.getFieldCount();
 
-    std::cout << "LHS before revert: " << s1->toString() << '\n';
     QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_, true);
-    std::cout << "LHS after revert: " << lhs_reverted->toString() << '\n';
-
-    std::cout << "RHS before revert: " << s2->toString() << '\n';
     QueryTable<B> *rhs_reverted = revertProjection(s2, rhs_field_mapping_, false);
-    std::cout << "RHS after revert: " << rhs_reverted->toString() << '\n';
 
 
 
@@ -501,7 +492,6 @@ QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
     return sorter.run()->clone();
 }
 
-// lhs_smaller_ = false
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<int, int> &expr_map,
                                                   const bool &is_lhs) const {
@@ -509,23 +499,20 @@ QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<in
 
     RowTable<B> *src = (RowTable<B> *) s;
     // // create a synthetic schema.  pad it to make it the "right" row length for projection
+    // for use with smaller width row
     if(lhs_smaller_ == is_lhs) {
         QuerySchema synthetic_schema = (is_lhs) ? lhs_projected_schema_ : rhs_projected_schema_;
-        cout << "Mapping from " << synthetic_schema << "\n   simulated as " << s->getSchema() << endl;
         int delta = s->getSchema().size() - synthetic_schema.size();
-        cout << "Delta: " << delta << '\n';
         if(delta > 0) {
             QueryFieldDesc synthetic_attr(synthetic_schema.getFieldCount(), "anon", "",
                                           is_secure_ ? FieldType::SECURE_STRING : FieldType::STRING,
                                           delta / 8);
             synthetic_schema.putField(synthetic_attr);
             delta -= synthetic_attr.getStringLength() * 8;
-            cout << "Added str of size: " << synthetic_attr.getStringLength() << endl;
         }
         while(delta > 0) { // only not byte-aligned in secure mode
             QueryFieldDesc f(synthetic_schema.getFieldCount(), "anon", "",  FieldType::SECURE_BOOL,0);
             synthetic_schema.putField(f);
-            cout << "Adding bit!" << endl;
             --delta;
         }
 
@@ -534,7 +521,6 @@ QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<in
 
     }
 
-    cout << "Projecting from schema " << s->getSchema() << endl;
     ExpressionMapBuilder<B> builder(s->getSchema());
     for(auto pos : expr_map) {
         builder.addMapping(pos.first, pos.second);
