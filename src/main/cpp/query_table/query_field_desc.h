@@ -81,7 +81,7 @@ namespace  vaultdb {
             }
             return true;
         }
-
+        void initializeFieldSizeWithCardinality(int cardinality);
     private:
         void initializeFieldSize();
 

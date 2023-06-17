@@ -31,6 +31,7 @@ namespace vaultdb {
 
     protected:
         string OperatorType;
+        QuerySchema input_schema_;
         QueryTable<B> *runSelf() override;
         string getOperatorType() const override;
         string getParameters() const override;
