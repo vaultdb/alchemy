@@ -23,6 +23,7 @@ namespace vaultdb{
         void initialize(const string & db_name, const std::map<ColumnReference, BitPackingDefinition> & bp) {
             unioned_db_name_ = db_name;
             bit_packing_ = bp;
+            bit_packing_enabled_ = true;
         }
 
         string getUnionedDbName() const { return unioned_db_name_; }
@@ -32,12 +33,18 @@ namespace vaultdb{
 
         inline void clearBitPacking() {
             bit_packing_.clear();
+            bit_packing_enabled_ = false;
         }
 
+        inline bool bitPackingEnabled() const {
+            return bit_packing_enabled_;
+        }
+        
     private:
         SystemConfiguration() {}
         string unioned_db_name_;
         std::map<ColumnReference, BitPackingDefinition> bit_packing_;
+        bool bit_packing_enabled_ = false;
     };
 
 }

@@ -6,7 +6,7 @@
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 #include "query_table/table_factory.h"
-
+#include "util/system_configuration.h"
 
 
 using namespace vaultdb;
@@ -14,66 +14,76 @@ using namespace std;
 
 template<typename B>
 NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates,
-				      const SortDefinition &sort,
-				      const int & output_card) : Operator<B>(child, sort),
-                                                                    aggregate_definitions_(aggregates),
-								    group_by_(groupBys), output_cardinality_(output_card)
+                                            const vector<ScalarAggregateDefinition> &aggregates,
+                                            const SortDefinition &sort,
+                                            const int & output_card) : Operator<B>(child, sort),
+                                                                       aggregate_definitions_(aggregates),
+                                                                       group_by_(groupBys), output_cardinality_(output_card)
 {
-  setup();
+    setup();
 }
 
 
 template<typename B>
 NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates, 
-				      const int output_card) : Operator<B>(child, SortDefinition()),
-                                                                    aggregate_definitions_(aggregates),
-                                                                    group_by_(groupBys), output_cardinality_(output_card) {
+                                            const vector<ScalarAggregateDefinition> &aggregates,
+                                            const int output_card) : Operator<B>(child, SortDefinition()),
+                                                                     aggregate_definitions_(aggregates),
+                                                                     group_by_(groupBys), output_cardinality_(output_card) {
+    output_cardinality_ = output_card;
+    setup();
+}
+
+template<typename B>
+NestedLoopAggregate<B>::NestedLoopAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
+                                            const vector<ScalarAggregateDefinition> &aggregates,
+                                            const SortDefinition &sort,
+                                            const int & output_card) : Operator<B>(child, sort),
+                                                                       aggregate_definitions_(aggregates),
+                                                                       group_by_(groupBys), output_cardinality_(output_card) {
 
     setup();
- }
+}
 
 template<typename B>
 NestedLoopAggregate<B>::NestedLoopAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates,
-				      const SortDefinition &sort,
-				      const int & output_card) : Operator<B>(child, sort),
-                                                                    aggregate_definitions_(aggregates),
-                                                                    group_by_(groupBys), output_cardinality_(output_card) {
+                                            const vector<ScalarAggregateDefinition> &aggregates,
+                                            const int & output_card) : Operator<B>(child, SortDefinition()),
+                                                                       aggregate_definitions_(aggregates),
+                                                                       group_by_(groupBys) {
 
-      setup();
- }
-
-template<typename B>
-NestedLoopAggregate<B>::NestedLoopAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
-                                      const vector<ScalarAggregateDefinition> &aggregates,
-				      const int & output_card) : Operator<B>(child, SortDefinition()),
-                      aggregate_definitions_(aggregates),
-                      group_by_(groupBys) {
-
-      setup();
- }
+    setup();
+}
 
 
 template<typename B>
 QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     QueryTable<B> *input = this->getChild(0)->getOutput();
     QuerySchema input_schema = input->getSchema();
-    input->setSchema(this->input_schema_);
-    //QuerySchema input_schema = this->input_schema_;
     QuerySchema output_schema = this->output_schema_;
-    //int avg_i = -1;
-    //int avg_j = -1;
-    vector<int> avg_i;
-    vector<int> avg_j;
 
 
-    if(output_cardinality_ == 0) { // naive case - go full oblivious
-      output_cardinality_ = input->getTupleCount();
+    // use input card to determine how many bits we need for count
+    // only needed in secure mode
+    if(std::is_same_v<B, Bit> && SystemConfiguration::getInstance().bitPackingEnabled()) {
+        for (int i = 0; i < aggregate_definitions_.size(); ++i) {
+            auto agg = aggregate_definitions_[i];
+
+            if (agg.type == AggregateId::COUNT) {
+                QueryFieldDesc f = this->output_schema_.getField(group_by_.size() + i);
+                f.initializeFieldSizeWithCardinality(input->getTupleCount());
+                this->output_schema_.putField(f);
+                ((UnsortedStatelessAggregateImpl<B> *) aggregators_[i])->bit_packed_size_ = f.size() + 1; // +1 for sign bit
+            }
+        }
+        this->output_schema_.initializeFieldOffsets();
     }
 
-    this->output_ = TableFactory<B>::getTable(output_cardinality_, Operator<B>::output_schema_, input->storageModel());
+    if(output_cardinality_ == 0) { // naive case - go full oblivious
+        output_cardinality_ = input->getTupleCount();
+    }
+
+    this->output_ = TableFactory<B>::getTable(input->getTupleCount(), Operator<B>::output_schema_, input->storageModel());
     QueryTable<B> *output = this->output_;
 
     // one per aggregator, one per output bin
@@ -84,14 +94,9 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         per_tuple_aggregators.emplace_back(vector<UnsortedAggregateImpl<B> *>());
         vector<UnsortedAggregateImpl<B> *> row_aggregators(aggregators_.size());
         for(int j = 0; j < aggregators_.size(); ++j) {
-            UnsortedAggregateImpl<B> *a;
-            if(aggregators_[j]->agg_type_ == AggregateId::AVG){
-                a = new UnsortedAvgImpl<B>(AggregateId::AVG, aggregators_[j]->field_type_, aggregators_[j]->input_ordinal_, aggregators_[j]->output_ordinal_);
-                avg_i.emplace_back(i);
-                avg_j.emplace_back(j);
-            }
-            else
-                a = aggregators_[j];
+            UnsortedAggregateImpl<B> *a = (aggregators_[j]->agg_type_ == AggregateId::AVG)
+                                          ?    new UnsortedAvgImpl<B>(AggregateId::AVG, aggregators_[j]->field_type_, aggregators_[j]->input_ordinal_, aggregators_[j]->output_ordinal_)
+                                          :     aggregators_[j];
             per_tuple_aggregators[i].emplace_back(a);
         }
     }
@@ -131,19 +136,19 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         } // end for each  output tuple
     }// end for each input tuple
 
-    if(avg_i.size() != 0){
-        for(int i = 0; i< avg_i.size(); i++)
-            delete per_tuple_aggregators[avg_i[i]][avg_j[i]];
+    for(int i = 0; i < aggregate_definitions_.size(); ++i) {
+        if(aggregate_definitions_[i].type != AggregateId::AVG) {
+            delete aggregators_[i];
+        }
+        else {
+            for(int j = 0; j < per_tuple_aggregators.size(); ++j) {
+                delete per_tuple_aggregators[j][i];
+            }
+        }
     }
-    avg_i.clear();
-    avg_j.clear();
-
-    for (auto it = aggregators_.begin(); it != aggregators_.end(); ++it)
-        delete *it;
-    aggregators_.clear();
-
 
     return Operator<B>::output_;
+
 }
 
 
@@ -168,14 +173,14 @@ B NestedLoopAggregate<B>::groupByMatch(const QueryTable<B> *src, const int & src
 
 template<typename B>
 QuerySchema NestedLoopAggregate<B>::generateOutputSchema(const QuerySchema & input_schema) const {
-    QuerySchema outputSchema;
+    QuerySchema output_schema;
     size_t i;
 
     for(i = 0; i < group_by_.size(); ++i) {
         QueryFieldDesc srcField = input_schema.getField(group_by_[i]);
         QueryFieldDesc dstField(i, srcField.getName(), srcField.getTableName(), srcField.getType());
         dstField.setStringLength(srcField.getStringLength());
-        outputSchema.putField(dstField);
+        output_schema.putField(dstField);
     }
 
 
@@ -184,68 +189,44 @@ QuerySchema NestedLoopAggregate<B>::generateOutputSchema(const QuerySchema & inp
         FieldType agg_type = (agg.ordinal >= 0) ?
                              input_schema.getField(agg.ordinal).getType() :
                              (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
-
-        QueryFieldDesc fieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
-        outputSchema.putField(fieldDesc);
+        QueryFieldDesc f;
+        if(agg.type == AggregateId::MIN || agg.type == AggregateId::MAX && std::is_same_v<B, Bit>) {
+            f = QueryFieldDesc(input_schema.getField(agg.ordinal), i + group_by_.size()); // copy out bit packing info
+        }
+        else {
+            f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
+        }
+        output_schema.putField(f);
     }
 
-    outputSchema.initializeFieldOffsets();
-    return outputSchema;
+    output_schema.initializeFieldOffsets();
+    return output_schema;
 
 }
 
 template<typename B>
 void NestedLoopAggregate<B>::setup() {
     QuerySchema input_schema = Operator<B>::getChild(0)->getOutputSchema();
-
     int output_ordinal = group_by_.size();
-    bool packed_flag = false;
 
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {
         // for most aggs the output type is the same as the input type
         // for COUNT(*) and others with an ordinal of < 0, then we set it to an INTEGER instead
-        FieldType aggValueType = (agg.ordinal >= 0) ?
+        FieldType agg_val_type = (agg.ordinal >= 0) ?
                                  input_schema.getField(agg.ordinal).getType() :
                                  (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
-        UnsortedAggregateImpl<B> *a;
-        if(agg.type == AggregateId::AVG)
-            a = (UnsortedAggregateImpl<B> *) new UnsortedAvgImpl<B>(AggregateId::AVG, aggValueType, agg.ordinal, output_ordinal);
-        else if(agg.type == AggregateId::MIN){
-            a = (UnsortedAggregateImpl<B> *) new UnsortedMinImpl<B>(AggregateId::MIN, aggValueType, agg.ordinal, output_ordinal);
-            a->initialize(input_schema.getField(agg.ordinal));
-        }
-        else if(agg.type == AggregateId::MAX) {
-            a = (UnsortedAggregateImpl<B> *) new UnsortedMaxImpl<B>(AggregateId::MIN, aggValueType, agg.ordinal, output_ordinal);
-            a->initialize(input_schema.getField(agg.ordinal));
-        }
-        else if(agg.type == AggregateId::COUNT) {
-            a = (UnsortedAggregateImpl<B> *) new UnsortedCountImpl<B>(AggregateId::COUNT, aggValueType, agg.ordinal, output_ordinal);
-            QueryFieldDesc packedInput = input_schema.getField(agg.ordinal);
-            packedInput.initializeFieldSizeWithCardinality(output_cardinality_);
-            input_schema.putField(packedInput);
-            a->initialize(input_schema.getField(agg.ordinal));
-            this->input_schema_ = input_schema;
-        }
-        else
-            a = (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, aggValueType, agg.ordinal, output_ordinal);
-//        UnsortedAggregateImpl<B> *a = (agg.type == AggregateId::AVG)
-//                ? (UnsortedAggregateImpl<B> *) new UnsortedAvgImpl<B>(AggregateId::AVG, aggValueType, agg.ordinal, output_ordinal)
-//                :  (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, aggValueType, agg.ordinal, output_ordinal);
+
+        UnsortedAggregateImpl<B> *a = (agg.type == AggregateId::AVG)
+                                      ? (UnsortedAggregateImpl<B> *) new UnsortedAvgImpl<B>(AggregateId::AVG, agg_val_type, agg.ordinal, output_ordinal)
+                                      :  (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, agg_val_type, agg.ordinal, output_ordinal);
 
         aggregators_.push_back(a);
-        // if an aggregator operates on packed bits (e.g. min/max/count), then copy its output definition from source
-        if(a->packedFields()) {
-            QueryFieldDesc packed_field(input_schema.getField(agg.ordinal), output_ordinal);
-            packed_field.setName("", agg.alias);
-            this->output_schema_.putField(packed_field);
-            packed_flag = true;
-        }
-        std::cout << "input schema tuple desc : " << input_schema.getField(agg.ordinal).size() << " ouput schema tuple desc : " << this->output_schema_.getField(output_ordinal).size()<< endl;
         ++output_ordinal;
     }
 
-    if(!packed_flag)
-        Operator<B>::output_schema_ = generateOutputSchema(input_schema);
+
+
+    Operator<B>::output_schema_ = generateOutputSchema(input_schema);
 
 }
 
@@ -257,18 +238,18 @@ string NestedLoopAggregate<B>::getOperatorType() const {
 template<typename B>
 string NestedLoopAggregate<B>::getParameters() const {
     stringstream  ss;
-   ss << "group-by: (" << group_by_[0];
-   for(uint32_t i = 1; i < group_by_.size(); ++i)
-       ss << ", " << group_by_[i];
+    ss << "group-by: (" << group_by_[0];
+    for(uint32_t i = 1; i < group_by_.size(); ++i)
+        ss << ", " << group_by_[i];
 
-   ss << ") aggs: (" << aggregate_definitions_[0].toString();
+    ss << ") aggs: (" << aggregate_definitions_[0].toString();
 
-   for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
-       ss << ", " << aggregate_definitions_[i].toString();
-   }
+    for(uint32_t i = 1; i < aggregate_definitions_.size(); ++i) {
+        ss << ", " << aggregate_definitions_[i].toString();
+    }
 
-   ss << ")";
-   return ss.str();
+    ss << ")";
+    return ss.str();
 }
 
 

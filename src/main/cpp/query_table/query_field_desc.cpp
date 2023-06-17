@@ -140,11 +140,16 @@ void QueryFieldDesc::initializeFieldSize() {
 }
 
 void QueryFieldDesc::initializeFieldSizeWithCardinality(int cardinality) {
+    assert(type_ == FieldType::SECURE_INT || type_ == FieldType::SECURE_LONG);
+
     this->field_size_ = TypeUtilities::getTypeSize(type_);
     this->bit_packed_size_ = this->field_size_;
+    this->field_min_ = 0;
+    this->secure_field_min_ = emp::Integer(field_size_, field_min_, PUBLIC);
 
     if(this->table_name_ != "bit_packing"){
-        this->bit_packed_size_ = ceil(log2((float) (cardinality)));
+        this->bit_packed_size_ = ceil(log2((float) (cardinality )));
+        if(bit_packed_size_ == 0) bit_packed_size_ = 1;
         this->field_size_ = this->bit_packed_size_;
     }
 
