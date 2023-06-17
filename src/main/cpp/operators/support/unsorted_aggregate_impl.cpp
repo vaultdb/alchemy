@@ -45,19 +45,18 @@ void UnsortedStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & 
         case AggregateId::AVG:
             throw; // should use specialized UnsortedAvgImpl for this
         case AggregateId::COUNT:
-            accumulated = Field<B>::If(to_initialize, one, output_field);
-            accumulated = Field<B>::If(to_accumulate, accumulated + one, accumulated);
+            throw;
+//            accumulated = Field<B>::If(to_initialize, one, output_field);
+//            accumulated = Field<B>::If(to_accumulate, accumulated + one, accumulated);
             break;
         case AggregateId::MIN:
-             throw;
+            throw;
         case AggregateId::MAX:
-             throw;
+            throw;
         case AggregateId::SUM:
-             accumulated = Field<B>::If(to_initialize, input_field, output_field);
-             accumulated = Field<B>::If(to_accumulate, accumulated + input_field, accumulated);
-
+            accumulated = Field<B>::If(to_initialize, input_field, output_field);
+            accumulated = Field<B>::If(to_accumulate, accumulated + input_field, accumulated);
     }
-
     dst->setField(dst_row, UnsortedAggregateImpl<B>::output_ordinal_, accumulated);
 
 }
@@ -93,13 +92,60 @@ void UnsortedAvgImpl<B>::update(QueryTable<B> *src,  const int & src_row,  Query
 }
 
 template<typename B>
+UnsortedCountImpl<B>::UnsortedCountImpl(const AggregateId & id, const FieldType & type, const int32_t & input_ordinal, const int32_t & output_ordinal)
+        : UnsortedAggregateImpl<B>(id, type, input_ordinal, output_ordinal){
+
+}
+
+template<typename B>
+void UnsortedCountImpl<B>::initialize(const QueryFieldDesc &input_schema){
+    if(input_schema.bitPacked()) {
+        // generate max
+        assert(this->field_type_ == FieldType::SECURE_LONG || this->field_type_ == FieldType::SECURE_INT);
+        Integer count = emp::Integer(input_schema.size() + 1, 0);
+        Bit one(true);
+        Bit *write_cursor = count.bits.data();
+        for(int i = 0; i < input_schema.size(); ++i) {
+            *write_cursor = one;
+            ++write_cursor;
+        }
+        running_count_ = Field<B>(this->field_type_, count, 0);
+        packed_fields_ = true;
+    }
+}
+
+template<typename B>
+void UnsortedCountImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst, const int & dst_row, const B & match_found, const B & group_by_match){
+    B input_dummy = src->getDummyTag(src_row);
+    Field<B> input_field = src->getPackedField(src_row, UnsortedAggregateImpl<B>::input_ordinal_);
+    Field<B> output_field = dst->getPackedField(dst_row, UnsortedAggregateImpl<B>::output_ordinal_);
+
+    B to_accumulate = (!input_dummy) & group_by_match;
+    B to_initialize = (!input_dummy) & dst->getDummyTag(dst_row)  & !match_found;
+
+    if(std::is_same_v<B, bool>) {
+        bool check = FieldUtilities::extract_bool(!(to_initialize & to_accumulate));
+        assert(check); // can't both be true at the same time
+    }
+
+    Field<B> one = FieldFactory<B>::getOne(UnsortedAggregateImpl<B>::field_type_);
+
+    std::cout << "input size : " << input_field.getSize() << " output size : " << output_field.getSize() << " running count size : " << running_count_.getSize() << endl;
+
+    running_count_ = Field<B>::If(to_initialize, one, output_field);
+    running_count_ = Field<B>::If(to_accumulate, running_count_ + one, running_count_);
+    dst->setField(dst_row, UnsortedAggregateImpl<B>::output_ordinal_, running_count_, packed_fields_);
+}
+
+
+template<typename B>
 UnsortedMinImpl<B>::UnsortedMinImpl(const AggregateId & id, const FieldType & type, const int32_t & input_ordinal, const int32_t & output_ordinal)
         : UnsortedAggregateImpl<B>(id, type, input_ordinal, output_ordinal){
 
 }
 
 template<typename B>
-void UnsortedMinImpl<B>::initialize(const QueryFieldDesc & input_schema){
+void UnsortedMinImpl<B>::initialize(const QueryFieldDesc &input_schema) {
     if(input_schema.bitPacked()) {
         // generate max
         assert(this->field_type_ == FieldType::SECURE_LONG || this->field_type_ == FieldType::SECURE_INT);
@@ -143,7 +189,7 @@ UnsortedMaxImpl<B>::UnsortedMaxImpl(const AggregateId & id, const FieldType & ty
 }
 
 template<typename B>
-void UnsortedMaxImpl<B>::initialize(const QueryFieldDesc & input_schema){
+void UnsortedMaxImpl<B>::initialize(const QueryFieldDesc &input_schema) {
     if(input_schema.bitPacked()) {
         // generate max
         assert(this->field_type_ == FieldType::SECURE_LONG || this->field_type_ == FieldType::SECURE_INT);
@@ -184,6 +230,8 @@ template class vaultdb::UnsortedStatelessAggregateImpl<bool>;
 template class vaultdb::UnsortedStatelessAggregateImpl<emp::Bit>;
 template class vaultdb::UnsortedAvgImpl<bool>;
 template class vaultdb::UnsortedAvgImpl<emp::Bit>;
+template class vaultdb::UnsortedCountImpl<bool>;
+template class vaultdb::UnsortedCountImpl<emp::Bit>;
 template class vaultdb::UnsortedMinImpl<bool>;
 template class vaultdb::UnsortedMinImpl<emp::Bit>;
 template class vaultdb::UnsortedMaxImpl<bool>;

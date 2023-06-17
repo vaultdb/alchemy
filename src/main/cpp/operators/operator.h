@@ -100,6 +100,7 @@ namespace  vaultdb {
         void setSortOrder(const SortDefinition & aSortDefinition) { sort_definition_ = aSortDefinition; }
 
         QuerySchema getOutputSchema() const { return output_schema_; }
+        void setSchema(QuerySchema newSchema) { output_schema_.setSchema(newSchema); }
 
 
     protected:

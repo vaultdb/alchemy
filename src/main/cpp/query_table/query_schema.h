@@ -36,6 +36,13 @@ namespace  vaultdb {
 
         inline void  putField(const QueryFieldDesc &fd) {     fields_[fd.getOrdinal()]  = fd; }
 
+        inline void setSchema(const QuerySchema & s) {
+            for (size_t i = 0; i < s.getFieldCount(); i++) {
+                fields_[i] = s.getField(i);
+            }
+            initializeFieldOffsets();
+        }
+
         // returns size in bits
         size_t size() const;
 
@@ -45,7 +52,6 @@ namespace  vaultdb {
         QueryFieldDesc getField(const int &i) const {     return fields_.at(i);  }
 
         QueryFieldDesc getField(const std::string & fieldName) const;
-
 
         QuerySchema &operator=(const QuerySchema &other);
 

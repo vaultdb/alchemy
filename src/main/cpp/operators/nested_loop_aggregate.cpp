@@ -60,6 +60,8 @@ template<typename B>
 QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     QueryTable<B> *input = this->getChild(0)->getOutput();
     QuerySchema input_schema = input->getSchema();
+    input->setSchema(this->input_schema_);
+    //QuerySchema input_schema = this->input_schema_;
     QuerySchema output_schema = this->output_schema_;
     //int avg_i = -1;
     //int avg_j = -1;
@@ -195,8 +197,9 @@ QuerySchema NestedLoopAggregate<B>::generateOutputSchema(const QuerySchema & inp
 template<typename B>
 void NestedLoopAggregate<B>::setup() {
     QuerySchema input_schema = Operator<B>::getChild(0)->getOutputSchema();
+
     int output_ordinal = group_by_.size();
-    bool min_max_flag = false;
+    bool packed_flag = false;
 
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {
         // for most aggs the output type is the same as the input type
@@ -215,6 +218,14 @@ void NestedLoopAggregate<B>::setup() {
             a = (UnsortedAggregateImpl<B> *) new UnsortedMaxImpl<B>(AggregateId::MIN, aggValueType, agg.ordinal, output_ordinal);
             a->initialize(input_schema.getField(agg.ordinal));
         }
+        else if(agg.type == AggregateId::COUNT) {
+            a = (UnsortedAggregateImpl<B> *) new UnsortedCountImpl<B>(AggregateId::COUNT, aggValueType, agg.ordinal, output_ordinal);
+            QueryFieldDesc packedInput = input_schema.getField(agg.ordinal);
+            packedInput.initializeFieldSizeWithCardinality(output_cardinality_);
+            input_schema.putField(packedInput);
+            a->initialize(input_schema.getField(agg.ordinal));
+            this->input_schema_ = input_schema;
+        }
         else
             a = (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, aggValueType, agg.ordinal, output_ordinal);
 //        UnsortedAggregateImpl<B> *a = (agg.type == AggregateId::AVG)
@@ -222,17 +233,18 @@ void NestedLoopAggregate<B>::setup() {
 //                :  (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, aggValueType, agg.ordinal, output_ordinal);
 
         aggregators_.push_back(a);
-        // if an aggregator operates on packed bits (e.g. min/max), then copy its output definition from source
+        // if an aggregator operates on packed bits (e.g. min/max/count), then copy its output definition from source
         if(a->packedFields()) {
             QueryFieldDesc packed_field(input_schema.getField(agg.ordinal), output_ordinal);
             packed_field.setName("", agg.alias);
             this->output_schema_.putField(packed_field);
-            min_max_flag = true;
+            packed_flag = true;
         }
+        std::cout << "input schema tuple desc : " << input_schema.getField(agg.ordinal).size() << " ouput schema tuple desc : " << this->output_schema_.getField(output_ordinal).size()<< endl;
         ++output_ordinal;
     }
 
-    if(!min_max_flag)
+    if(!packed_flag)
         Operator<B>::output_schema_ = generateOutputSchema(input_schema);
 
 }

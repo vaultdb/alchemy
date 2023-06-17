@@ -139,6 +139,17 @@ void QueryFieldDesc::initializeFieldSize() {
     }
 }
 
+void QueryFieldDesc::initializeFieldSizeWithCardinality(int cardinality) {
+    this->field_size_ = TypeUtilities::getTypeSize(type_);
+    this->bit_packed_size_ = this->field_size_;
+
+    if(this->table_name_ != "bit_packing"){
+        this->bit_packed_size_ = ceil(log2((float) (cardinality)));
+        this->field_size_ = this->bit_packed_size_;
+    }
+
+}
+
 // keep this in the cpp to avoid dependency loop in compilation
 bool QueryFieldDesc::bitPacked() const {
      return field_size_ != TypeUtilities::getTypeSize(type_);
