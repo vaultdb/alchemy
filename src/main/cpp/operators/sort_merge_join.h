@@ -7,6 +7,10 @@
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 
+// TODOs:
+// delete alpha2
+// reduce counts to log(fkey_length) bits
+
 namespace  vaultdb {
     template<typename B>
     class SortMergeJoin : 
@@ -62,7 +66,10 @@ namespace  vaultdb {
             }
             return match;
         }
+
+        void setup();
     };
+
 
 
 }
