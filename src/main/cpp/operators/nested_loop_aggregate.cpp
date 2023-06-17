@@ -137,10 +137,8 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     }// end for each input tuple
 
     for(int i = 0; i < aggregate_definitions_.size(); ++i) {
-        if(aggregate_definitions_[i].type != AggregateId::AVG) {
             delete aggregators_[i];
-        }
-        else {
+        if(aggregate_definitions_[i].type == AggregateId::AVG) {
             for(int j = 0; j < per_tuple_aggregators.size(); ++j) {
                 delete per_tuple_aggregators[j][i];
             }
@@ -217,7 +215,7 @@ void NestedLoopAggregate<B>::setup() {
                                  (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
 
         UnsortedAggregateImpl<B> *a = (agg.type == AggregateId::AVG)
-                                      ? (UnsortedAggregateImpl<B> *) new UnsortedAvgImpl<B>(AggregateId::AVG, agg_val_type, agg.ordinal, output_ordinal)
+                                      ?  (UnsortedAggregateImpl<B> *) new UnsortedAvgImpl<B>(AggregateId::AVG, agg_val_type, agg.ordinal, output_ordinal)
                                       :  (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, agg_val_type, agg.ordinal, output_ordinal);
 
         aggregators_.push_back(a);
