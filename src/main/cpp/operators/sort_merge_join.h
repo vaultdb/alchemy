@@ -35,7 +35,7 @@ namespace  vaultdb {
         }
 
     private:
-        int alpha_1_idx_=-1, alpha_2_idx_ = -1, table_id_idx_ = -1, weight_idx_ = -1, is_new_idx_ = -1;
+        int alpha_idx_=-1, table_id_idx_ = -1, weight_idx_ = -1, is_new_idx_ = -1; // alpha_2_idx_ = -1,
         StorageModel storage_model_ = StorageModel::ROW_STORE;
         vector<pair<uint32_t, uint32_t> > join_idxs_; // lhs, rhs
         bool foreign_key_input_ = false; // default: lhs = fkey (input 0, F), if rhs = fk, foreign_key_input_ = true
@@ -50,7 +50,7 @@ namespace  vaultdb {
         pair<QueryTable<B> *, QueryTable<B> *> augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
         QueryTable<B> *obliviousDistribute(QueryTable<B> *input, size_t target_size);
         QueryTable<B> *obliviousExpand(QueryTable<B> *input, bool is_lhs);
-        QueryTable<B> *alignTable(QueryTable<B> *input);
+        //QueryTable<B> *alignTable(QueryTable<B> *input);
         QueryTable<B> *revertProjection(QueryTable<B> *s, const map<int, int> &expr_map, const bool &is_lhs) const;
 
         QueryTable<B> *projectSortKeyToFirstAttr(QueryTable<B> *src, vector<int> join_cols, const int & is_lhs);
@@ -58,11 +58,20 @@ namespace  vaultdb {
 
         void initializeAlphas(QueryTable<B> *dst); // update in place
 
-        inline B joinMatch(QueryTable<B> *t, int lhs_row, int rhs_row) {
+        inline bool joinMatch(QueryTable<bool> *t, int lhs_row, int rhs_row) {
             // previous alignment step will make join keys in first n columns
-            B match = true;
+            bool match = true;
             for(int i = 0; i < join_idxs_.size(); ++i) {
                 match = match & (t->getField(lhs_row, i) == t->getField(rhs_row, i));
+            }
+            return match;
+        }
+
+        inline Bit joinMatch(QueryTable<Bit> *t, int lhs_row, int rhs_row) {
+            // previous alignment step will make join keys in first n columns
+            Bit match = true;
+            for(int i = 0; i < join_idxs_.size(); ++i) {
+                match = match & (t->getPackedField(lhs_row, i) == t->getPackedField(rhs_row, i));
             }
             return match;
         }
