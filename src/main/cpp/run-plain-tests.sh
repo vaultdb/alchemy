@@ -8,6 +8,7 @@ set +x
 ./bin/project_test
 ./bin/basic_join_test
 ./bin/keyed_join_test
+./bin/sort_merge_join_test
 ./bin/sort_test
 ./bin/scalar_aggregate_test
 ./bin/group_by_aggregate_test

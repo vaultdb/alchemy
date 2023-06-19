@@ -13,21 +13,7 @@ bash  test/support/load-generated-data.sh 100
 #  bash run-pilot-test.sh
 
 
-./bin/csv_reader_test 
-./bin/field_expression_test
-./bin/filter_test
-./bin/project_test
-./bin/basic_join_test
-./bin/keyed_join_test
-./bin/sort_test
-./bin/scalar_aggregate_test
-./bin/group_by_aggregate_test
-./bin/nested_loop_aggregate_test
-./bin/secret_share_generator_test 
-#this test depends on pilot testbed
-./bin/serialization_test
-./bin/plan_parser_test
-./bin/tpch_test
+bash run-plain-tests.sh
 
 
 ./bin/emp_test --party=1
@@ -37,6 +23,7 @@ bash  test/support/load-generated-data.sh 100
 ./bin/secure_sort_test  --party=1
 ./bin/secure_basic_join_test  --party=1
 ./bin/secure_keyed_join_test  --party=1
+./bin/secure_sort_merge_join_test --party=1
 ./bin/secure_scalar_aggregate_test 	 --party=1
 ./bin/secure_group_by_aggregate_test  --party=1
 ./bin/secure_nested_loop_aggregate_test --party=1
