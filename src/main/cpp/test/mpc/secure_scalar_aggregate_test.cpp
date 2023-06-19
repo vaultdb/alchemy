@@ -36,7 +36,7 @@ void SecureScalarAggregateTest::runTest(const string &expectedOutputQuery,
   ScalarAggregate aggregate(input, aggregators);
   PlainTable *observed = aggregate.run()->reveal();
 
-
+  std::cout << "Final output : " << observed->getPackedField(0, 0).reveal() << endl;
   ASSERT_EQ(*expected, *observed);
 
   delete observed;
@@ -59,7 +59,6 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expectedOutputQuery
   ScalarAggregate aggregate(input, aggregators);
 
   PlainTable *aggregated = aggregate.run()->reveal();
-
 
   // need to delete dummies from observed output to compare it to expected
    DataUtilities::removeDummies(aggregated);
@@ -98,6 +97,7 @@ TEST_F(SecureScalarAggregateTest, test_count_dummies) {
 }
 
 
+
 TEST_F(SecureScalarAggregateTest, test_min) {
     std::string expectedOutputQuery = "SELECT MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
@@ -129,6 +129,7 @@ TEST_F(SecureScalarAggregateTest, test_max_dummies) {
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "maxus ")};
     runDummiesTest(expectedOutputQuery, aggregators);
 }
+
 
 
 TEST_F(SecureScalarAggregateTest, test_sum) {
@@ -170,8 +171,6 @@ TEST_F(SecureScalarAggregateTest, test_avg_dummies) {
   std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno")};
   runDummiesTest(expectedOutputQuery, aggregators);
 }
-
-
 
 
 TEST_F(SecureScalarAggregateTest, test_sum_baseprice_dummies) {
