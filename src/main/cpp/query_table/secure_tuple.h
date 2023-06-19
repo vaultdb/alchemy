@@ -99,6 +99,7 @@ namespace vaultdb {
         QueryTuple<bool> reveal(const int &party, QuerySchema *dst_schema, int8_t *dst) const;
         // self-managed storage
         QueryTuple<bool> reveal(QuerySchema *dst_schema, const int &party = emp::PUBLIC) const;
+        QueryTuple<bool> revealInsecure(QuerySchema *dst_schema, const int &party = emp::PUBLIC) const;
 
         string toString(const bool &showDummies = false) const;
 

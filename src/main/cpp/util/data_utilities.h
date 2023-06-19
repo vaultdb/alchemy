@@ -69,7 +69,7 @@ namespace vaultdb {
         static string revealAndPrintFirstBytes(vector<Bit> &bits, const int &byteCount);
 
         static size_t getTupleCount(const string &db_name, const string &sql, bool has_dummy_tag);
-
+        static string printByteArray(const int8_t *bytes, const size_t & byte_cnt);
 //        static emp::Integer toEmpInteger(const vector<int8_t> & src_bytes);
 
        static vector<string> readTextFile(const string & filename);

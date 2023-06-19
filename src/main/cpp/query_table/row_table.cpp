@@ -63,7 +63,7 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
     for(uint32_t i = 0; i < this->tuple_cnt_; ++i)  {
         bool dummy_tag = table->getDummyTag(i).reveal();
         if(!dummy_tag) { // if real tuple (not a dummy), reveal it
-            const SecureTuple tuple(&this->schema_, ((RowTable<emp::Bit> *) this)->tuple_data_.data() + i * table->tuple_size_);
+            const SecureTuple tuple(&this->schema_, this->getFieldPtr(i, 0));
             PlainTuple dst_tuple = tuple.reveal(&dst_schema, party);
             dst_table->putTuple(write_cursor, dst_tuple);
             ++write_cursor;
@@ -71,6 +71,30 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
     }
 
     dst_table->resize(write_cursor);
+    return dst_table;
+
+}
+
+template<typename B>
+PlainTable *RowTable<B>::revealInsecure(const int &party) {
+    assert(this->storageModel() == StorageModel::ROW_STORE);
+
+    if(!this->isEncrypted()) {
+        return (RowTable<bool> *) this;
+    }
+
+
+    auto table = (RowTable<Bit> *) this;
+    QuerySchema dst_schema = QuerySchema::toPlain(this->schema_);
+
+    auto dst_table = new RowTable<bool>(this->tuple_cnt_, dst_schema, this->getSortOrder());
+
+    for(uint32_t i = 0; i < this->tuple_cnt_; ++i)  {
+            const SecureTuple tuple(&this->schema_, this->getFieldPtr(i, 0));
+            PlainTuple dst_tuple = tuple.revealInsecure(&dst_schema, party);
+            dst_table->putTuple(i, dst_tuple);
+
+    }
     return dst_table;
 
 }

@@ -57,8 +57,6 @@ QueryTable<B> *Operator<B>::run() {
 
     std::cout << "Operator #" << this->getOperatorId() << " " << getOperatorType()  << " ran for " << runtime_/1e6 << " seconds, "
         << " gate count: " << after_gate_count - start_gate_cnt_ << '\n';
-    //auto logger = vaultdb_logger::get();
-    //BOOST_LOG_SEV(logger, logging::trivial::severity_level::info) << "Operator " <<  getOperatorType() << " ran for " << run_time_/10e6 << " seconds." << std::endl;
     operator_executed_ = true;
     sort_definition_ = output_->getSortOrder(); // update this if needed
 

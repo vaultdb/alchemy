@@ -82,6 +82,31 @@ PlainTable *ColumnTable<B>::reveal(const int & party)   {
 }
 
 
+template<typename B>
+PlainTable *ColumnTable<B>::revealInsecure(const int &party) {
+    assert(this->storageModel() == StorageModel::COLUMN_STORE);
+
+    if(!this->isEncrypted()) { return (ColumnTable<bool> *) this;  }
+
+
+    auto table = (ColumnTable<Bit> *) this;
+    QuerySchema dst_schema = QuerySchema::toPlain(this->schema_);
+
+    auto dst_table = new ColumnTable<bool>(this->tuple_cnt_, dst_schema, this->getSortOrder());
+
+
+    for(uint32_t i = 0; i < this->tuple_cnt_; ++i)  {
+        for(auto col_pos : column_data_) {
+            SecureField s = table->getField(i, col_pos.first);
+             PlainField  p = s.reveal(party);
+             dst_table->setField(i, col_pos.first, p);
+        }
+
+    }
+
+    return dst_table;
+}
+
 
 // iterate over all tuples and produce one long bit array for encrypting/decrypting in emp
 // only tested in PUBLIC or XOR mode

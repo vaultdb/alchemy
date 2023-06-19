@@ -317,7 +317,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer_no_bit_packing
     ASSERT_EQ(*expected, *observed);
     delete col_join;
     delete expected;
-//    delete observed;
 
 
 }
