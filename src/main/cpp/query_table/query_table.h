@@ -131,6 +131,8 @@ namespace  vaultdb {
         generateSecretShares() const = 0; // generate shares for alice and bob - for data sharing (non-computing) node
 
         virtual PlainTable *reveal(const int & party = emp::PUBLIC) = 0;
+        // holds onto dummy rows
+        virtual PlainTable *revealInsecure(const int & party = emp::PUBLIC) = 0;
 
         virtual QueryTable<B> &operator=(const QueryTable<B> &src) = 0;
 

@@ -18,6 +18,7 @@ bash  test/support/load-generated-data.sh 100
 ./bin/project_test  --storage=column
 ./bin/basic_join_test --storage=column
 ./bin/keyed_join_test --storage=column
+./bin/sort_merge_join_test --storage=column
 ./bin/sort_test --storage=column
 ./bin/scalar_aggregate_test --storage=column
 ./bin/group_by_aggregate_test --storage=column
@@ -38,6 +39,7 @@ bash  test/support/load-generated-data.sh 100
 ./bin/secure_sort_test  --party=1 --storage=column
 ./bin/secure_basic_join_test  --party=1 --storage=column
 ./bin/secure_keyed_join_test  --party=1 --storage=column
+./bin/secure_sort_merge_join_test --party=1 --storage=column
 ./bin/secure_scalar_aggregate_test 	 --party=1 --storage=column
 ./bin/secure_group_by_aggregate_test  --party=1 --storage=column
 ./bin/secure_nested_loop_aggregate_test --party=1 --storage=column

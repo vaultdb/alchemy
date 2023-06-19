@@ -70,26 +70,17 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     foreign_key_cardinality_ = foreign_key_input_ ? rhs->getTupleCount() : lhs->getTupleCount();
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
-   // cout << "After aug have: " << augmented.first->reveal()->toString(5, false) << ", " << augmented.second->reveal()->toString() << endl;
     QueryTable<B> *s1, *s2;
     // lhs is FK
     if(!foreign_key_input_) {
         s1 = augmented.first;
         s2 = obliviousExpand(augmented.second, false);
-        // cout << "Expanded: " << s2->reveal()->toString(5, false) << endl;
         delete augmented.second;
-        QueryTable<B> *tmp = alignTable(s2);
-        delete s2;
-        s2 = tmp;
-//        cout << "Aligned: " << s2->reveal()->toString(5, false) << endl;
 
     }
     else {
         s1 = obliviousExpand(augmented.first, true);
         delete augmented.first;
-        QueryTable<B> *tmp = alignTable(s1);
-        delete s1;
-        s1 = tmp;
         s2 = augmented.second;
     }
 
@@ -146,19 +137,15 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
     Field<B> table_id_field;
     if(!is_secure_) {
-        QueryFieldDesc alpha_1(augmented_schema.getFieldCount(), "alpha1", "", FieldType::INT, 0);
-        augmented_schema.putField(alpha_1);
-        QueryFieldDesc alpha_2(augmented_schema.getFieldCount(), "alpha2", "", FieldType::INT, 0);
-        augmented_schema.putField(alpha_2);
+        QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", FieldType::INT, 0);
+        augmented_schema.putField(alpha);
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::BOOL, 0);
         augmented_schema.putField(table_id);
         table_id_field = Field<B>(FieldType::BOOL, true);
     }
     else {
-        QueryFieldDesc alpha_1(augmented_schema.getFieldCount(), "alpha1", "", FieldType::SECURE_INT, 0);
-        augmented_schema.putField(alpha_1);
-        QueryFieldDesc alpha_2(augmented_schema.getFieldCount(), "alpha2", "", FieldType::SECURE_INT, 0);
-        augmented_schema.putField(alpha_2);
+        QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", FieldType::SECURE_INT, 0);
+        augmented_schema.putField(alpha);
         QueryFieldDesc table_id(augmented_schema.getFieldCount(), "table_id", "", FieldType::SECURE_BOOL, 0);
         augmented_schema.putField(table_id);
         table_id_field = Field<B>( FieldType::SECURE_BOOL, Bit(true));
@@ -167,9 +154,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     augmented_schema.initializeFieldOffsets();
 
     table_id_idx_ = augmented_schema.getFieldCount() - 1;
-    alpha_1_idx_ = augmented_schema.getFieldCount() - 3; // 3rd to last field
-    alpha_2_idx_ = augmented_schema.getFieldCount() - 2; // 2nd to last field
-
+    alpha_idx_ = augmented_schema.getFieldCount() - 2; // 2nd to last field
 
     int output_cursor = 0;
     QueryTable<B> *unioned = TableFactory<B>::getTable(lhs->getTupleCount() + rhs->getTupleCount(), augmented_schema, storage_model_);
@@ -190,10 +175,10 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     delete lhs_prime;
     delete rhs_prime;
 
-
-    // implicitly deleting unioned table
     SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size()); // join keys
-    sort_def.emplace_back(augmented_schema.getFieldCount()-1, SortDirection::ASCENDING); // table_id ordinal
+    // sort s.t. fkey entries are first, pkey entries are second
+    SortDirection dir = (foreign_key_input_) ? SortDirection::DESCENDING : SortDirection::ASCENDING;
+    sort_def.emplace_back(table_id_idx_, dir);
     Sort<B> sorter(unioned, sort_def);
 
 
@@ -270,65 +255,52 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
 template<typename B>
 void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
 
-    Field<B> count = zero_;
-	Field<B> prev_alpha_1 = zero_;
-	Field<B> prev_alpha_2 = zero_;
+	Field<B> prev_alpha = zero_;
 
     B prev_table_id =  dst->getField(0, table_id_idx_).template getValue<B>();
-    B table_id;
-    
-    B fkey = (!foreign_key_input_) ? B(false) : B(true);
+    B table_id = prev_table_id;
+
+
+    B fkey = B(foreign_key_input_);
 
     // set correct alpha to 1 for first row
     // if table ID is false, update alpha 1
-    Field<B> a1 = Field<B>::If(!prev_table_id, one_, zero_);
-    Field<B> a2 = Field<B>::If(prev_table_id, one_, zero_);
-    dst->setField(0, alpha_1_idx_, a1);
-    dst->setField(0, alpha_2_idx_, a2);
+    Field<B> prev_count;
+    Field<B> count = Field<B>::If(fkey == table_id, one_, zero_);
+    // cache last fkey row count for this join key
+    prev_count = count;
+    dst->setField(0, alpha_idx_, count);
 
-    // cout << "A1: " << a1.reveal() << " written: " << dst->getField(0, alpha_1_idx_).reveal() << '\n';
-    // cout << "A2: " << a2.reveal() << " written: " << dst->getField(0, alpha_2_idx_).reveal() << '\n';
-    // cout << "First row: " << dst->reveal()->getPlainTuple(0).toString(true) << endl;
-
-    // TODO: manually compute first row of this logic
-    // otherwise need to read i-1 (where i=0) row and this results in invalid reads
-    // corrupts output in MPC land
-    for (int i = 0; i < dst->getTupleCount(); i++) {
-
+    for (int i = 1; i < dst->getTupleCount(); i++) {
         table_id = dst->getField(i, table_id_idx_).template getValue<B>();
         B is_foreign_key = (table_id == fkey);
-
         B same_group = joinMatch(dst, i-1, i);
-        B result = ((table_id == prev_table_id) & same_group);
+        B same_group_table = ((table_id == prev_table_id) & same_group);
 
-        count = count + one_;
-        count = Field<B>::If(result, count, one_);
+        count = Field<B>::If(same_group_table, count + one_, one_);
+        // if pkey entry and not matched, reset prev_count to zero
+        B no_match = !same_group & !is_foreign_key;
+        prev_count = Field<B>::If(no_match, zero_, prev_count);
+        Field<B> to_write = Field<B>::If(is_foreign_key, count, prev_count);
 
-        Field<B> prev_count = Field<B>::If(same_group, dst->getField(i-1, alpha_1_idx_),zero_);
-        dst->setField(i, alpha_1_idx_, Field<B>::If(is_foreign_key, count, prev_count));
-        dst->setField(i, alpha_2_idx_, Field<B>::If(is_foreign_key, zero_, count));
-
-        // cout << "Alphas for " << i << " " << dst->getField(i, alpha_1_idx_).reveal() << ", " << dst->getField(i, alpha_2_idx_).reveal() << endl;
+        dst->setField(i, alpha_idx_, to_write);
         prev_table_id = table_id;
+        prev_count = Field<B>::If(is_foreign_key, count, prev_count); // carry over previous count
+
+
     }
 
+	 prev_alpha = dst->getField(dst->getTupleCount()-1, alpha_idx_);
 
-    // cout << "After first pass, have: " << dst->reveal()->toString(5, false);
-
-	prev_alpha_1 = dst->getField(dst->getTupleCount()-1, alpha_1_idx_);
-	prev_alpha_2 = dst->getField(dst->getTupleCount()-1, alpha_2_idx_);
-
-    for (int i = dst->getTupleCount() - 1; i >= 0; i--) {
-        count = dst->getField(i, alpha_1_idx_);
-
+    for (int i = dst->getTupleCount() - 2; i >= 0; i--) {
+        count = dst->getField(i, alpha_idx_);
         B same_group = joinMatch(dst, i, i+1);
-        dst->setField(i, alpha_1_idx_, Field<B>::If(same_group, prev_alpha_1, count));
-		prev_alpha_1 = dst->getField(i, alpha_1_idx_);
+        dst->setField(i, alpha_idx_, Field<B>::If(same_group, prev_alpha, count));
+     	prev_alpha = dst->getField(i, alpha_idx_);
 
-        count = dst->getField(i, alpha_2_idx_);
-        dst->setField(i, alpha_2_idx_, Field<B>::If(same_group, prev_alpha_2, count));
-		prev_alpha_2 = dst->getField(i, alpha_2_idx_);
     }
+
+
 }
 
 
@@ -345,8 +317,6 @@ template<typename B>
 QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_t target_size) {
     QuerySchema schema = input->getSchema();
 
-    // cout << "Input: " << input->reveal()->toString(5, false);
-
 
     SortDefinition sort_def;
 
@@ -354,7 +324,6 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
     sort_def.emplace_back(weight_idx_, SortDirection::ASCENDING);
     Sort<B> sorted(input, sort_def);
     input = sorted.run();
-    // cout << "Post-sort: " << input->reveal()->toString(5, false);
 
     QueryTable<B> *dst_table = TableFactory<B>::getTable(target_size, schema, storage_model_);
 
@@ -364,14 +333,12 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
 
     }
 
-    // cout << "Cloned: " << dst_table->reveal()->toString(5, false);
 
     Field<B> table_idx = input->getField(0, table_id_idx_);
 
     for(int i = input->getTupleCount(); i < target_size; i++) {
         dst_table->setField(i, is_new_idx_, one_);
         dst_table->setField(i, table_id_idx_, table_idx);
-//        dst_table->setField(i, alpha_2_idx_, one_);
     }
 
     int j = SortMergeJoin<B>::powerOfLessThanTwo(target_size);
@@ -390,6 +357,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
     return dst_table;
 
 }
+
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_lhs) {
@@ -414,14 +382,14 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
     bool is_foreign_key = (table_id == foreign_key_input_);
 
     //alpha1 for primary key table, alpha2 for foreign key table
-    int read_offset = is_foreign_key ? alpha_2_idx_ : alpha_1_idx_;
+//    int read_offset = is_foreign_key ? alpha_2_idx_ : alpha_1_idx_;
 
 
     Field<B> s = one_;
 
     for(int i = 0; i < input->getTupleCount(); i++) {
         intermediate_table->cloneRow(i, 0, input, i);
-        Field<B> cnt = input->getField(i, read_offset);
+        Field<B> cnt = input->getField(i, alpha_idx_);
         B result = (cnt == zero_);
         intermediate_table->setField(i, weight_idx_,
                                      Field<B>::If(result, zero_, s));
@@ -431,9 +399,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
 		s = s + cnt;
     }	
 
-    // cout << "Intermediate: " << intermediate_table->reveal()->toString(5, false);
     QueryTable<B> *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
-    // cout << "Distributed: " << dst_table->reveal()->toString(5, false);
 
     schema = dst_table->getSchema();
 
@@ -460,7 +426,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
     return dst_table;
 }
 
-template<typename B>
+/*template<typename B>
 QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
     QuerySchema schema = input->getSchema();
 
@@ -500,6 +466,7 @@ QueryTable<B> *SortMergeJoin<B>::alignTable(QueryTable<B> *input) {
     Sort<B> sorter(dst_table, s);
     return sorter.run()->clone();
 }
+*/
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<int, int> &expr_map,

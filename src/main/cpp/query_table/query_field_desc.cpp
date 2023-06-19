@@ -28,8 +28,8 @@ QueryFieldDesc::QueryFieldDesc(const int & anOrdinal, const string &n, const str
     // i.e., we compare the output of our queries to SELECT EXTRACT(EPOCH FROM date_)
     // fields of type date have no source table
     if (type_ == FieldType::DATE) {
-        table_name_ = "";
-        type_ = FieldType::LONG; // we actually store it as an INT32, this is the result of EXTRACT(EPOCH..)
+       // table_name_ = "";
+        type_ = FieldType::LONG; // we actually store it as an INT64, this is the result of EXTRACT(EPOCH..)
     }
     initializeFieldSize();
 }

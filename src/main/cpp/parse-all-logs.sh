@@ -7,7 +7,6 @@ for FILE in $(ls log/all-tests-alice-*.log)
      python parse-log.py -input $FILE -output $OUT_FILE
 done
 
-rm log/*.csv
 for FILE in $(ls log/all-tests-bob-*.log)
    do
      OUT_FILE=$(echo $FILE | sed 's/.log/.csv/')
@@ -17,3 +16,5 @@ done
 
 cat log/*.csv > temp.csv
 mv temp.csv log/all-entries.csv
+createdb vaultdb_benchmarking 
+psql vaultdb_benchmarking < unit-test-benchmarking.sql 

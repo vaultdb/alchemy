@@ -52,7 +52,6 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders) {
     auto *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
     auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
 
-
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
     Expression<bool> *predicate = FieldUtilities::getEqualityPredicate<bool>(orders_input, 1, customer_input, 4);

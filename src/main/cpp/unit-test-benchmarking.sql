@@ -24,14 +24,18 @@ UPDATE unit_test SET test_suite='SecureKeyedJoinTest' WHERE test_suite='SecurePk
 
 SELECT DISTINCT test_suite FROM unit_test ORDER BY test_suite;
 
-WITH selection AS (SELECT test_suite, test_name,
-                          CASE WHEN (test_time='2023-05-21 21:04'::timestamp) THEN 'before' ELSE 'after' END trial,
-                          runtime_ms
-                   FROM unit_test
-                   WHERE -- test_suite='SecureTpcHTest' AND
-                       mpc AND test_time IN ('2023-05-21 21:04'::timestamp, '2023-06-13 18:02:05'::timestamp)
-                   ORDER BY test_name, test_time)
-SELECT s1.test_suite, s1.test_name, s1.runtime_ms before_runtime_ms, s2.runtime_ms after_runtime_ms, s1.runtime_ms::FLOAT / s2.runtime_ms ratio, s1.runtime_ms - s2.runtime_ms delta_ms
+
+\set baseline_timestamp '''2023-06-01 15:01:07'''::timestamp
+
+
+ WITH latest_measurement AS (SELECT 'after' trial, max(test_time) test_time FROM unit_test),
+      before_after AS ((SELECT * FROM latest_measurement) UNION ALL (SELECT 'before', :baseline_timestamp)),
+     selection AS (SELECT test_suite, test_name, trial, runtime_ms
+                   FROM unit_test u JOIN before_after ba ON u.test_time = ba.test_time
+                   WHERE party='bob' AND -- test_suite='SecureTpcHTest' AND
+                       mpc 
+                   ORDER BY test_name, u.test_time)
+SELECT s1.test_suite, s1.test_name, s1.runtime_ms before_runtime_ms, s2.runtime_ms after_runtime_ms, s1.runtime_ms::FLOAT / s2.runtime_ms perf_ratio, s1.runtime_ms - s2.runtime_ms delta_ms
 FROM selection s1 JOIN selection s2 ON s1.test_name = s2.test_name AND s1.test_suite=s2.test_suite
 WHERE s1.trial='before' AND s2.trial='after'
-ORDER BY s1.test_suite, s1.test_name;
+ORDER BY perf_ratio DESC;

@@ -56,9 +56,27 @@ PlainTuple QueryTuple<emp::Bit>::reveal(QuerySchema *dst_schema, const int &part
     bool plain_dummy_tag = dummy_tag.reveal(party);
     dst_tuple.setDummyTag(plain_dummy_tag);
 
-    if(plain_dummy_tag) // reveal nothing else
+    if(plain_dummy_tag) { // reveal nothing else
         return dst_tuple;
+    }
 
+
+    for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
+        SecureField src = getField(i);
+        PlainField revealed = src.reveal(party);
+        dst_tuple.setField(i, revealed);
+    }
+
+    return dst_tuple;
+
+}
+
+PlainTuple QueryTuple<emp::Bit>::revealInsecure(QuerySchema *dst_schema, const int &party) const {
+    PlainTuple dst_tuple(dst_schema);
+
+    emp::Bit dummy_tag = getDummyTag();
+    bool plain_dummy_tag = dummy_tag.reveal(party);
+    dst_tuple.setDummyTag(plain_dummy_tag);
 
     for(size_t i = 0; i < dst_schema->getFieldCount(); ++i) {
         SecureField src = getField(i);

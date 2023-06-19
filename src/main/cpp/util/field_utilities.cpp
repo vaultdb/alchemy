@@ -81,34 +81,6 @@ emp::Float FieldUtilities::toFloat(const emp::Integer &input) {
     return output;
 }
 
-
-//void FieldUtilities::secret_share_send(const PlainTuple & src_tuple, SecureTuple & dst_tuple, const int & party) {
-//    size_t field_count = dst_tuple.getSchema()->getFieldCount();
-//    for (size_t i = 0; i < field_count; ++i) {
-//        PlainField src_field = src_tuple.getField(i);
-//        SecureField dst_field = SecureField::secret_share_send(src_field, dst_tuple.getSchema()->getField(i), party);
-//        dst_tuple.setField(i, dst_field);
-//    }
-//
-//    emp::Bit b(src_tuple.getDummyTag(), party);
-//    dst_tuple.setDummyTag(b);
-//
-//
-//}
-//
-//void FieldUtilities::secret_share_recv(SecureTuple &dst_tuple, const int &dst_party) {
-//    size_t field_count = dst_tuple.getSchema()->getFieldCount();
-//
-//    for(size_t i = 0;  i < field_count; ++i) {
-//        SecureField  dst_field = SecureField::secret_share_recv(dst_tuple.getSchema()->getField(i), dst_party);
-//        dst_tuple.setField(i, dst_field);
-//    }
-//
-//    emp::Bit b(0, dst_party);
-//    dst_tuple.setDummyTag(b);
-//
-//}
-
 void FieldUtilities::secret_share_send(const PlainTable *src, const int &src_idx, SecureTable *dst, const int &dst_idx,
                                        const int &party) {
     size_t field_count = dst->getSchema().getFieldCount();
@@ -149,12 +121,6 @@ emp::Bit FieldUtilities::select(const Bit &choice, const Bit &lhs, const Bit &rh
     return emp::If(choice, lhs, rhs);
 }
 
-
-//PlainTuple FieldUtilities::revealTuple(const SecureTuple & s) {
-//    QuerySchema secure_schema = *s.getSchema();
-//    QuerySchema plain_schema =  QuerySchema::toPlain(secure_schema);
-//    return s.reveal(&plain_schema, emp::PUBLIC);
-//}
 
 
 std::string FieldUtilities::printTupleBits(const PlainTuple & p) {
@@ -204,6 +170,15 @@ BitPackingMetadata FieldUtilities::getBitPackingMetadata(const std::string & db_
         bp.max_ = p->getField(i, 3).getValue<int>();
         bp.domain_size_ =  p->getField(i, 4).getValue<int>();
 
+        // TODO: correct this in date handling
+        // presently extracting dates to epochs
+        // can go much faster if we extract them to dates!
+        if(table == "orders" && column == "o_orderdate") {
+            bp.min_ *= 86400; // 60 * 60 * 24
+            bp.max_ *=  86400;
+            bp.domain_size_ *= 86400;;
+
+        }
         bit_packing[c] = bp;
     }
 

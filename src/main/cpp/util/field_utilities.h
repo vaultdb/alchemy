@@ -138,7 +138,18 @@ namespace vaultdb {
 
         }
 
-
+        template<typename B>
+        static string revealAndPrintTuple(QueryTable<B> *table, const int & idx) {
+            stringstream ss;
+            ss << "(";
+            for (int i = 0; i < table->getSchema().getFieldCount(); ++i) {
+                Field<bool> f = table->getField(idx, i).reveal();
+                ss << f.toString();
+                if (i < table->getSchema().getFieldCount() - 1) ss << ", ";
+            }
+            ss << ") (dummy=" << FieldUtilities::extract_bool(table->getDummyTag(idx)) << ")";
+            return ss.str();
+        }
     };
 
 

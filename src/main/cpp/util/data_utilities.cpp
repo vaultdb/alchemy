@@ -286,6 +286,17 @@ bool DataUtilities::isOrdinal(const string &s) {
                                       s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
 }
 
+string DataUtilities::printByteArray(const int8_t *bytes, const size_t &byte_cnt) {
+    stringstream  ss;
+    ss << "(";
+    for(int i = 0; i < byte_cnt; ++i) {
+        ss << (int) bytes[i];
+        if(i < byte_cnt - 1) ss << ", ";
+    }
+    ss << ")";
+    return ss.str();
+}
+
 
 
 

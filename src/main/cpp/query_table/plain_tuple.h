@@ -109,6 +109,7 @@ namespace  vaultdb {
 
         // create an independent tuple with reveal, for PUBLIC
         PlainTuple reveal(const int & party = emp::PUBLIC) const;
+        PlainTuple revealInsecure(const int & party = emp::PUBLIC) const { return reveal(party); }
 
         static void writeSubset(const PlainTuple & src_tuple, const PlainTuple & dst_tuple, uint32_t src_start_idx, uint32_t src_attr_cnt, uint32_t dst_start_idx);
 

@@ -7,7 +7,7 @@ namespace vaultdb {
     enum class FieldType {
         INVALID = 0,
         BOOL,
-        DATE, // DATE is just a stand-in for long
+        DATE, // DATE is a stand-in for long
         INT,
         LONG,
         FLOAT,
