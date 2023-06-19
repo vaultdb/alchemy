@@ -113,7 +113,6 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
     observed = observed_sort.run();
 
     expected->setSortOrder(sort_def);
-    cout << "Expected: "<< *expected << endl;
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
@@ -156,14 +155,8 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
             co_join,
             2);
 
-    cout << "CO output 1: " << *co_join->getOutput()->reveal() << endl;
-
     SortMergeJoin col_join(lineitem_input, co_join, lineitem_orders_predicate);
-
-
-
     PlainTable *observed = col_join.run()->reveal();
-    cout << "CO output 2: " << *co_join->getOutput()->reveal() << endl;
 
 
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);

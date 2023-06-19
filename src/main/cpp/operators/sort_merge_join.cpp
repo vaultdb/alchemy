@@ -70,26 +70,17 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     foreign_key_cardinality_ = foreign_key_input_ ? rhs->getTupleCount() : lhs->getTupleCount();
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
-    cout << "After aug have lhs=" << augmented.first->revealInsecure()->toString(false) <<
-        ",\n rhs=" << augmented.second->revealInsecure()->toString(true) << endl;
     QueryTable<B> *s1, *s2;
     // lhs is FK
     if(!foreign_key_input_) {
         s1 = augmented.first;
         s2 = obliviousExpand(augmented.second, false);
-//        delete augmented.second;
-//        QueryTable<B> *tmp = alignTable(s2);
-//        delete s2;
-//        s2 = tmp;
-//        cout << "Aligned: " << s2->revealInsecure()->toString(5, false) << endl;
+        delete augmented.second;
 
     }
     else {
         s1 = obliviousExpand(augmented.first, true);
         delete augmented.first;
-       // QueryTable<B> *tmp = alignTable(s1);
-//        delete s1;
-//        s1 = tmp;
         s2 = augmented.second;
     }
 
@@ -164,7 +155,6 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
 
     table_id_idx_ = augmented_schema.getFieldCount() - 1;
     alpha_idx_ = augmented_schema.getFieldCount() - 2; // 2nd to last field
-    cout << "Augmented schema: " << augmented_schema << endl;
 
     int output_cursor = 0;
     QueryTable<B> *unioned = TableFactory<B>::getTable(lhs->getTupleCount() + rhs->getTupleCount(), augmented_schema, storage_model_);
@@ -287,7 +277,6 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
         B same_group = joinMatch(dst, i-1, i);
         B same_group_table = ((table_id == prev_table_id) & same_group);
 
-       // cout << "Table id: " << FieldUtilities::extract_bool(table_id) << " is foreign key? " << FieldUtilities::extract_bool(is_foreign_key) << " same group? " << FieldUtilities::extract_bool(same_group) << endl;
         count = Field<B>::If(same_group_table, count + one_, one_);
         // if pkey entry and not matched, reset prev_count to zero
         B no_match = !same_group & !is_foreign_key;
