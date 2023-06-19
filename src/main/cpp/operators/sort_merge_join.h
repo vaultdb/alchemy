@@ -69,11 +69,8 @@ namespace  vaultdb {
 
         inline Bit joinMatch(QueryTable<Bit> *t, int lhs_row, int rhs_row) {
             // previous alignment step will make join keys in first n columns
-            Bit match = true;
-            for(int i = 0; i < join_idxs_.size(); ++i) {
-                match = match & (t->getPackedField(lhs_row, i) == t->getPackedField(rhs_row, i));
-            }
-            return match;
+            // this will only invoke bit packed predicate when packing is enabled
+            return this->predicate_->call(t, lhs_row, t, rhs_row).template getValue<B>();
         }
 
         void setup();
