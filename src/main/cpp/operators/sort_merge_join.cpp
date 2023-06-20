@@ -6,6 +6,7 @@
 #include "util/data_utilities.h"
 #include "util/field_utilities.h"
 #include "query_table/field/field_factory.h"
+#include "util/system_configuration.h"
 
 using namespace vaultdb;
 
@@ -55,6 +56,7 @@ void SortMergeJoin<B>::setup() {
 
     one_ = FieldFactory<B>::getOne(int_field);
     zero_ = FieldFactory<B>::getZero(int_field);
+    bit_packed_ = SystemConfiguration::getInstance().bitPackingEnabled();
 
 }
 

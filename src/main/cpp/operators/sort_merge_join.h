@@ -46,6 +46,7 @@ namespace  vaultdb {
         map<int, int> rhs_field_mapping_; // temp --> original
         map<int, int> lhs_field_mapping_; // temp --> original
         QuerySchema lhs_projected_schema_, rhs_projected_schema_; // cache the schema of the smaller input relation
+        bool bit_packed_ = false;
 
         pair<QueryTable<B> *, QueryTable<B> *> augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
         QueryTable<B> *obliviousDistribute(QueryTable<B> *input, size_t target_size);
@@ -70,7 +71,15 @@ namespace  vaultdb {
         inline Bit joinMatch(QueryTable<Bit> *t, int lhs_row, int rhs_row) {
             // previous alignment step will make join keys in first n columns
             // this will only invoke bit packed predicate when packing is enabled
-            return this->predicate_->call(t, lhs_row, t, rhs_row).template getValue<B>();
+            Bit match = true;
+            for(int i = 0; i < join_idxs_.size(); ++i) {
+                if(bit_packed_)
+                    match = match & (t->getPackedField(lhs_row, i) == t->getPackedField(rhs_row, i));
+                else
+                    match = match & (t->getField(lhs_row, i) == t->getField(rhs_row, i));
+
+            }
+            return match;
         }
 
         void setup();

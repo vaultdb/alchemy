@@ -56,7 +56,7 @@ QueryTable<B> *Operator<B>::run() {
     runtime_ = time_from(start_time_);
 
     std::cout << "Operator #" << this->getOperatorId() << " " << getOperatorType()  << " ran for " << runtime_/1e6 << " seconds, "
-        << " gate count: " << after_gate_count - start_gate_cnt_ << '\n';
+        << " gate count: " << after_gate_count - start_gate_cnt_ << " output cardinality: " << output_->getTupleCount() << '\n';
     operator_executed_ = true;
     sort_definition_ = output_->getSortOrder(); // update this if needed
 
