@@ -27,6 +27,8 @@ namespace vaultdb {
         virtual FieldType getType() const { return aggregate_type_; }
         virtual bool packedFields() const = 0; // is the aggregator emitting a packed field?
 
+        int32_t bit_packed_size_ = 64; // in bits, for count
+
     protected:
 
         // signed int because -1 denotes *, as in COUNT(*)
