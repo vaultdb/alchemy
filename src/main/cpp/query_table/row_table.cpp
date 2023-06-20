@@ -52,6 +52,7 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
         return (RowTable<bool> *) this;
     }
 
+    std::cout << " Input : " << this->getPackedField(0,0).reveal() << endl;
 
     auto table = (RowTable<Bit> *) this;
     QuerySchema dst_schema = QuerySchema::toPlain(this->schema_);
@@ -71,6 +72,7 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
     }
 
     dst_table->resize(write_cursor);
+    std::cout << " dst : " << this->getPackedField(0,0).reveal() << endl;
     return dst_table;
 
 }

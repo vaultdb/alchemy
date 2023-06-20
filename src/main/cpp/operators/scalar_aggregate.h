@@ -11,31 +11,29 @@ namespace vaultdb {
     template<typename B>
     class ScalarAggregate : public Operator<B> {
     public:
-        // aggregates are sorted by their output order in aggregate's output schema
-        ScalarAggregate(Operator<B> *child, const std::vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());;
+        std::vector<ScalarAggregateDefinition> aggregate_definitions_;
+        std::vector<ScalarAggregateImpl<B> *> aggregators_;
 
-        ScalarAggregate(QueryTable<B> *child, const std::vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());;
+
+        // aggregates are sorted by their output order in aggregate's output schema
+        ScalarAggregate(Operator<B> *child, const std::vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());
+
+        ScalarAggregate(QueryTable<B> *child, const std::vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort = SortDefinition());
         virtual ~ScalarAggregate() {
             for(auto agg : aggregators_) {
                 delete agg;
             }
         }
 
-
-    private:
-        std::vector<ScalarAggregateDefinition> aggregate_definitions_;
-        std::vector<ScalarAggregateImpl<B> *> aggregators_;
-
-        ScalarAggregateImpl <B> * aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-                                                   const QueryFieldDesc &def) const;
-
-        void setup();
-
     protected:
         QueryTable<B> *runSelf() override;
         string getOperatorType() const override;
         string getParameters() const override;
 
+    private:
+//        ScalarAggregateImpl <B> * aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
+//                                                   const QueryFieldDesc &def) const;
+        void setup();
     };
 
 }
