@@ -17,10 +17,8 @@ Requirements
 * JavaCC 5.0+
 * Python 2.7+
 * cmake 3.11+
-* Protobuf (protobuf-c-compiler protobuf-compiler in brew)
 * libpqxx 6.2.5 - may be installed with setup.sh
 * libgflags-dev
-* libgrpc++-dev, libgrpc-dev
 
 --------------------------------------------------------------------------------
 Setup
