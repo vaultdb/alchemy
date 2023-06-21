@@ -18,6 +18,9 @@ namespace vaultdb{
 
         EmpManager *emp_manager_ = nullptr;
 
+        // value to be maintained by EMPManager
+        int emp_int_size_bytes_ = sizeof(emp::Bit);
+
         static SystemConfiguration& getInstance() {
             static SystemConfiguration  instance;
             return instance;
