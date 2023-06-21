@@ -47,10 +47,10 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders) {
                                     "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -82,10 +82,10 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders) {
                                                                                                              "WHERE matched";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
 
 
     // output schema: lineitem, orders
@@ -125,12 +125,12 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                           "WHERE matched";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
@@ -171,10 +171,10 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_customer_orders_reversed) {
                                                                                                              "ORDER BY c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority ";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
 
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority
@@ -206,10 +206,10 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_reversed) {
                                                      " ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
 
 
     // output schema:  orders, lineitem
@@ -247,12 +247,12 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
                                                                                                                                                  "WHERE matched";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
 
 
-    auto *customer_input = new SqlInput(db_name_, customer_sql_, storage_model_, true);
-    auto *orders_input = new SqlInput(db_name_, orders_sql_, storage_model_, true);
-    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, storage_model_, true);
+    auto *customer_input = new SqlInput(db_name_, customer_sql_, true);
+    auto *orders_input = new SqlInput(db_name_, orders_sql_, true);
+    auto *lineitem_input = new SqlInput(db_name_, lineitem_sql_, true);
 
     // join output schema: (orders, customer)
     // c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority

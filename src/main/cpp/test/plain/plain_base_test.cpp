@@ -15,7 +15,7 @@ void PlainBaseTest::SetUp()  {
     current_working_directory_ = Utilities::getCurrentWorkingDirectory();
     SystemConfiguration &s = SystemConfiguration::getInstance();
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(db_name_);
-    s.initialize(db_name_, md);
+    s.initialize(db_name_, md, storage_model_);
 };
 
 void PlainBaseTest::TearDown() {

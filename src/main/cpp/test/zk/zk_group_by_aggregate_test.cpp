@@ -7,6 +7,7 @@
 #include <operators/group_by_aggregate.h>
 #include <test/zk/zk_base_test.h>
 #include <operators/sort.h>
+#include <operators/zk_sql_input.h>
 
 using namespace emp;
 using namespace vaultdb;
@@ -20,73 +21,74 @@ class ZkGroupByAggregateTest : public ZkTest {
 
 protected:
     void runTest(const string & expectedResultsQuery, const vector<ScalarAggregateDefinition> & aggregators) const;
-    void runDummiesTest(const string & expectedOutputQuery, const vector<ScalarAggregateDefinition> & aggregators) const;
+    void runDummiesTest(const string & expected_sql, const vector<ScalarAggregateDefinition> & aggregators) const;
 
 };
 
-void ZkGroupByAggregateTest::runTest(const string &expectedOutputQuery,
+void ZkGroupByAggregateTest::runTest(const string &expected_sql,
                                          const vector<ScalarAggregateDefinition> & aggregators) const {
 
     // produces 25 rows
-    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+    std::string sql = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
     // set up expected output
     SortDefinition expected_order_by = DataUtilities::getDefaultSortDefinition(1);
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(alice_db, expectedOutputQuery, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
     expected->setSortOrder(expected_order_by);
 
     // run secure query
     SortDefinition order_by = DataUtilities::getDefaultSortDefinition(1); // actually 2
-    shared_ptr<SecureTable> input = ZkTest::secret_share_input(query, false);
+    auto input = new ZkSqlInput(db_name_, sql, false);
     input->setSortOrder(order_by);
 
     std::vector<int32_t> groupByCols{0};
     GroupByAggregate aggregate(input, groupByCols, aggregators);
 
-    std::shared_ptr<SecureTable> aggregated = aggregate.run();
-    std::shared_ptr<PlainTable> aggregatedReveal = aggregated->reveal();
+    SecureTable * aggregated = aggregate.run();
+    PlainTable *observed = aggregated->reveal();
 
-
-    // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregatedReveal);
 
     ASSERT_EQ(*expected, *observed);
+    
+    delete observed;
+    delete expected;
 
 
 }
 
-void ZkGroupByAggregateTest::runDummiesTest(const string &expectedOutputQuery,
+void ZkGroupByAggregateTest::runDummiesTest(const string &expected_sql,
                                                 const vector<ScalarAggregateDefinition> &aggregators) const {
 
 
-    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+    std::string sql = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
-    std::shared_ptr<PlainTable> expected =  DataUtilities::getQueryResults(alice_db, expectedOutputQuery, false);
+    PlainTable *expected =  DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
     expected->setSortOrder(DataUtilities::getDefaultSortDefinition(1));
 
     // configure and run test
     SortDefinition order_by = DataUtilities::getDefaultSortDefinition(1);
-    shared_ptr<SecureTable> input = ZkTest::secret_share_input(query, true);
+    auto input = new ZkSqlInput(db_name_, sql, true);
     input->setSortOrder(order_by);
 
     std::vector<int32_t> groupByCols{0};
     GroupByAggregate aggregate(input, groupByCols, aggregators);
 
-    std::shared_ptr<PlainTable> aggregated = aggregate.run()->reveal();
+    PlainTable *observed = aggregate.run()->reveal();
 
 
-    // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
     ASSERT_EQ(*expected, *observed);
+    
+    delete observed;
+    delete expected;
 }
 
 
 TEST_F(ZkGroupByAggregateTest, test_count) {
     // set up expected output
-    std::string expectedOutputQuery = "SELECT l_orderkey, COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
-    runTest(expectedOutputQuery, aggregators);
+    runTest(expected_sql, aggregators);
 
 }
 
@@ -94,11 +96,11 @@ TEST_F(ZkGroupByAggregateTest, test_count) {
 
 TEST_F(ZkGroupByAggregateTest, test_sum) {
     // set up expected outputs
-    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber)::INTEGER sum_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, SUM(l_linenumber)::INTEGER sum_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
-    runTest(expectedOutputQuery, aggregators);
+    runTest(expected_sql, aggregators);
 
 }
 
@@ -106,85 +108,85 @@ TEST_F(ZkGroupByAggregateTest, test_sum_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, SUM(l_linenumber)::INTEGER sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, SUM(l_linenumber)::INTEGER sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
 
-    runDummiesTest(expectedOutputQuery, aggregators);
+    runDummiesTest(expected_sql, aggregators);
 }
 
 
 TEST_F(ZkGroupByAggregateTest, test_avg) {
-    std::string expectedOutputQuery = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno"));
-    runTest(expectedOutputQuery, aggregators);
+    runTest(expected_sql, aggregators);
 }
 
 TEST_F(ZkGroupByAggregateTest, test_avg_dummies) {
 
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, FLOOR(AVG(l_linenumber))::INTEGER avg_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators;
     aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::AVG, "avg_lineno"));
-    runDummiesTest(expectedOutputQuery, aggregators);
+    runDummiesTest(expected_sql, aggregators);
 }
 
 
 TEST_F(ZkGroupByAggregateTest, test_min) {
-    std::string expectedOutputQuery = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
-    runTest(expectedOutputQuery, aggregators);
+    runTest(expected_sql, aggregators);
 }
 
 
 TEST_F(ZkGroupByAggregateTest, test_min_dummies) {
 
 
-    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string sql = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+    std::string expected_sql = "SELECT l_orderkey, MIN(l_linenumber) min_lineno FROM (" + sql + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MIN, "min_lineno")};
-    runDummiesTest(expectedOutputQuery, aggregators);
+    runDummiesTest(expected_sql, aggregators);
 }
 
 TEST_F(ZkGroupByAggregateTest, test_max) {
-    std::string expectedOutputQuery = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
-    runTest(expectedOutputQuery, aggregators);
+    runTest(expected_sql, aggregators);
 }
 
 TEST_F(ZkGroupByAggregateTest, test_max_dummies) {
-    std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expectedOutputQuery = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string sql = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
+    std::string expected_sql = "SELECT l_orderkey, MAX(l_linenumber) max_lineno FROM (" + sql + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
-    runDummiesTest(expectedOutputQuery, aggregators);
+    runDummiesTest(expected_sql, aggregators);
 }
 
 // // brings in about 200 tuples
 TEST_F(ZkGroupByAggregateTest, test_tpch_q1_sums) {
 
     // TODO: if <= 194, then we start to get floating point drift.
-    string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= 100 ORDER BY l_orderkey, l_linenumber";
-    string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1.0 - l_discount) AS disc_price, l_extendedprice * (1.0 - l_discount) * (1.0 + l_tax) AS charge, \n"
+    string input_tuples = "SELECT * FROM lineitem WHERE l_orderkey <= 100 ORDER BY l_orderkey, l_linenumber";
+    string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1.0 - l_discount) AS disc_price, l_extendedprice * (1.0 - l_discount) * (1.0 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
-                        " FROM (" + inputTuples + ") selection \n"
+                        " FROM (" + input_tuples + ") selection \n"
                         " ORDER BY  l_returnflag, l_linestatus";
 
 
-    string expectedOutputQuery = "SELECT  l_returnflag, l_linestatus, "
+    string expected_sql = "SELECT  l_returnflag, l_linestatus, "
                                  "SUM(l_quantity)::BIGINT sum_qty, "
                                  "SUM(l_extendedprice)::BIGINT sum_base_price, "
                                  "SUM(disc_price) sum_disc_price, "
                                  "SUM(charge) sum_charge "
-                                 "FROM (" + inputQuery + ") subquery WHERE NOT dummy "
+                                 "FROM (" + sql + ") subquery WHERE NOT dummy "
                                                          "GROUP BY l_returnflag, l_linestatus "
                                                          "ORDER BY l_returnflag, l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, expectedOutputQuery, false, 2);
+    PlainTable * expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
 
     std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -194,39 +196,40 @@ TEST_F(ZkGroupByAggregateTest, test_tpch_q1_sums) {
 
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    shared_ptr<SecureTable> input = ZkTest::secret_share_input(inputQuery, true);
+    auto input = new ZkSqlInput(db_name_, sql, true);
+
 
     // sort alice + bob inputs after union
     Sort sort(input, sortDefinition);
 
     GroupByAggregate aggregate(&sort, groupByCols, aggregators);
 
-    std::shared_ptr<PlainTable> aggregated = aggregate.run()->reveal(PUBLIC);
+    PlainTable * observed = aggregate.run()->reveal(PUBLIC);
 
-    // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
 
     ASSERT_EQ(*expected, *observed);
 
+    delete expected;
+    delete observed;
 }
 
 
 TEST_F(ZkGroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
-    string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+    string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
                         " FROM (SELECT * FROM lineitem WHERE l_orderkey <= 194 ORDER BY l_orderkey, l_linenumber) selection\n"
                         " ORDER BY l_returnflag, l_linestatus ";
 
-    string expectedOutputQuery =  "select \n"
+    string expected_sql =  "select \n"
                                   "  l_returnflag, \n"
                                   "  l_linestatus, \n"
                                   "  FLOOR(avg(l_quantity))::BIGINT as avg_qty, \n"
                                   "  FLOOR(avg(l_extendedprice))::BIGINT as avg_price, \n"
                                   "  FLOOR(avg(l_discount))::BIGINT as avg_disc, \n"
                                   "  count(*)::BIGINT as count_order \n"
-                                  "from (" + inputQuery + ") subq\n"
+                                  "from (" + sql + ") subq\n"
                                                           " where NOT dummy\n"
                                                           "group by \n"
                                                           "  l_returnflag, \n"
@@ -235,7 +238,7 @@ TEST_F(ZkGroupByAggregateTest, test_tpch_q1_avg_cnt) {
                                                           "order by \n"
                                                           "  l_returnflag, l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, expectedOutputQuery, false, 2);
+    PlainTable * expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -245,7 +248,8 @@ TEST_F(ZkGroupByAggregateTest, test_tpch_q1_avg_cnt) {
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
     SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    shared_ptr<SecureTable> input = ZkTest::secret_share_input(inputQuery, true);
+    auto input = new ZkSqlInput(db_name_, sql, true);
+
 
 
     // sort alice + bob inputs after union -- TODO: this is deprecated
@@ -253,25 +257,24 @@ TEST_F(ZkGroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
     GroupByAggregate aggregate(&sort, groupByCols, aggregators);
 
-    std::shared_ptr<PlainTable> aggregated = aggregate.run()->reveal(PUBLIC);
-
-    // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
+    PlainTable * observed = aggregate.run()->reveal(PUBLIC);
 
     ASSERT_EQ(*expected, *observed);
 
+    delete expected;
+    delete observed;
 }
 
 TEST_F(ZkGroupByAggregateTest, tpch_q1) {
 
     // TODO: was <= 194, reduced owing to floating point drift
-    string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= 100  ORDER BY l_orderkey, l_linenumber";
-    string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+    string input_tuples = "SELECT * FROM lineitem WHERE l_orderkey <= 100  ORDER BY l_orderkey, l_linenumber";
+    string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
-                        " FROM (" + inputTuples + ") selection \n"
+                        " FROM (" + input_tuples + ") selection \n"
                                                   " ORDER BY l_returnflag, l_linestatus";
 
-    string expectedOutputQuery =  "select \n"
+    string expected_sql =  "select \n"
                                   "  l_returnflag, \n"
                                   "  l_linestatus, \n"
                                   "  sum(l_quantity)::BIGINT as sum_qty, \n"
@@ -282,7 +285,7 @@ TEST_F(ZkGroupByAggregateTest, tpch_q1) {
                                   "  FLOOR(avg(l_extendedprice))::BIGINT as avg_price, \n"
                                   "  FLOOR(avg(l_discount))::BIGINT as avg_disc, \n"
                                   "  count(*)::BIGINT as count_order \n"
-                                  "from (" + inputTuples + ") input "
+                                  "from (" + input_tuples + ") input "
                                                            " where  l_shipdate <= date '1998-08-03'  "
                                                            "group by \n"
                                                            "  l_returnflag, \n"
@@ -292,7 +295,7 @@ TEST_F(ZkGroupByAggregateTest, tpch_q1) {
                                                            "  l_returnflag, \n"
                                                            "  l_linestatus";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, expectedOutputQuery, false, 2);
+    PlainTable * expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -305,20 +308,23 @@ TEST_F(ZkGroupByAggregateTest, tpch_q1) {
             ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-    SortDefinition sortDefinition = DataUtilities::getDefaultSortDefinition(2);
-    shared_ptr<SecureTable> input = ZkTest::secret_share_input(inputQuery, true);
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
+
+    auto input = new ZkSqlInput(db_name_, sql, true, sort_def);
+//
+//    SecureTable * input = ZkTest::secret_share_input(inputQuery, true);
 
     // sort alice + bob inputs after union -- TODO: this is deprecated
-    Sort sort(input, sortDefinition);
+    Sort sort(input, sort_def);
 
     GroupByAggregate aggregate(&sort, groupByCols, aggregators);
 
-    std::shared_ptr<PlainTable> aggregated = aggregate.run()->reveal(PUBLIC);
+    PlainTable *observed = aggregate.run()->reveal(PUBLIC);
 
-    // need to delete dummies from observed output to compare it to expected
-    std::shared_ptr<PlainTable> observed = DataUtilities::removeDummies(aggregated);
 
     ASSERT_EQ(*expected, *observed);
+    delete expected;
+    delete observed;
 
 }
 

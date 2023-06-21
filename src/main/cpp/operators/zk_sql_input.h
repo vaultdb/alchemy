@@ -12,14 +12,11 @@ namespace  vaultdb {
     class ZkSqlInput : public Operator<emp::Bit> {
 
 
-        emp::BoolIO<NetIO> **ios_;
-
         int src_party_;
 
         string input_query_;
         string db_name_;
         bool has_dummy_tag_;
-        const StorageModel & storage_model_ = StorageModel::ROW_STORE;
 
     protected:
         SecureTable *runSelf() override;
@@ -30,10 +27,8 @@ namespace  vaultdb {
 
 
     public:
-        ZkSqlInput(string db, string sql, bool dummy_tag, BoolIO<NetIO> *netio[], const size_t &thread_count,
-                   int party, const StorageModel &model, const size_t &input_tuple_cnt = 0); // truncate tuples with last term
-
-        ZkSqlInput(const string &db, const string & sql, const bool &dummy_tag, const SortDefinition &sortDefinition, emp::BoolIO<NetIO> *netio[], const size_t & thread_count, const int &party, const StorageModel &model, const size_t & input_tuple_cnt = 0);
+        ZkSqlInput(string db, string sql, bool dummy_tag, const size_t &input_tuple_cnt = 0); // truncate tuples with last term
+        ZkSqlInput(const string &db, const string & sql, const bool &dummy_tag, const SortDefinition &sortDefinition, const size_t & input_tuple_cnt = 0);
          ~ZkSqlInput() {
              if(plain_input_) {
                  delete plain_input_;
@@ -46,7 +41,6 @@ namespace  vaultdb {
         void runQuery();
         PlainTable *plain_input_;
         size_t input_tuple_limit_;
-        size_t thread_count_;
     };
 
 }

@@ -6,6 +6,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <emp-tool/emp-tool.h>
 #include <operators/operator.h>
+#include "util/system_configuration.h"
 
 
 // parse this from 1) list of SQL statements, and 2) Apache Calcite JSON for secure plan
@@ -17,27 +18,23 @@ namespace vaultdb {
     class PlanParser {
     public:
 
-        PlanParser(const std::string &db_name, std::string plan_name, const StorageModel & model, const int & limit  = -1);
-        PlanParser(const std::string &db_name, std::string plan_name, const StorageModel & model, emp::NetIO * netio, const int & party, const int & limit = -1);
-        PlanParser(const std::string & db_name, const std::string plan_name, const StorageModel & model, BoolIO<NetIO> *ios[], const size_t & zk_threads, const int & party, const int & limit = -1);
+        PlanParser(const string &db_name, std::string plan_name, const int &limit);
+        PlanParser(const std::string &db_name, const std::string plan_name, bool zk_plan, const int &limit);
 
         Operator<B> *getRoot() const { return root_; }
         Operator<B> *getOperator(const int & op_id);
 
-        static Operator<B> *parse(const std::string & db_name, const std::string & plan_name, const StorageModel & model, const int & limit = -1);
+        static Operator <B> *parse(const string &db_name, const string &plan_name, const int &limit);
         static Operator<B> *parse(const std::string & db_name, const std::string & plan_name, const StorageModel & model, emp::NetIO * netio, const int & party, const int & limit = -1);
-        static Operator<B> *parse(const std::string & db_name, const std::string & plan_name, const StorageModel & model, BoolIO<NetIO> *ios[], const size_t & zk_threads, const int & party, const int & limit = -1);
+        static Operator <B> *
+        parse(const string &db_name, const string &plan_name, const bool &zk_plan, const int &limit);
 
         static pair<int, SortDefinition> parseSqlHeader(const string & header);
     protected:
         std::string db_name_;
-        emp::NetIO *netio_ = nullptr;
-        size_t zk_threads_;
-        emp::BoolIO<NetIO> **ios_ = nullptr;
-        StorageModel storage_model_ = StorageModel::ROW_STORE;
+        StorageModel storage_model_ = SystemConfiguration::getInstance().storageModel();
 
 
-        int party_ = emp::PUBLIC;
         Operator<B>  *root_;
         int input_limit_ = -1; // to add a limit clause to SQL statements for efficient testing
         bool zk_plan_ = false;

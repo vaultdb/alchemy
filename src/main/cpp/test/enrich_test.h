@@ -2,7 +2,6 @@
 #define _ENRICH_TEST_H
 
 #include <util/data_utilities.h>
-#include <operators/support/join_equality_predicate.h>
 #include <operators/keyed_join.h>
 #include <operators/csv_input.h>
 #include <operators/project.h>

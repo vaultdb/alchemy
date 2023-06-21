@@ -8,6 +8,8 @@
 #include "plain_tuple.h"
 #include "secure_tuple.h"
 #include <operators/sort.h>
+#include <util/system_configuration.h>
+
 
 
 using namespace vaultdb;
@@ -165,129 +167,15 @@ QueryTable<B> & ColumnTable<B>::operator=(const QueryTable<B> & s) {
 
 // up to two-way secret share - both Alice and Bob providing private inputs
 template<typename B>
-SecureTable *ColumnTable<B>::secretShare(emp::NetIO *netio, const int & party)  {
+SecureTable *ColumnTable<B>::secretShare()  {
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+    return conf.emp_manager_->secretShare((PlainTable *) this);
 
-
-    size_t alice_tuple_cnt =  this->getTupleCount();
-    size_t bob_tuple_cnt = alice_tuple_cnt;
-
-    if (party == ALICE) {
-        netio->send_data(&alice_tuple_cnt, 4);
-        netio->flush();
-        netio->recv_data(&bob_tuple_cnt, 4);
-        netio->flush();
-    } else if (party == BOB) {
-        netio->recv_data(&alice_tuple_cnt, 4);
-        netio->flush();
-        netio->send_data(&bob_tuple_cnt, 4);
-        netio->flush();
-    }
-
-    QuerySchema dst_schema = QuerySchema::toSecure(this->schema_);
-
-    auto dst_table = new ColumnTable<Bit>(alice_tuple_cnt + bob_tuple_cnt, dst_schema, this->getSortOrder());
-
-    // preserve sort order - reverse input order for latter half to do bitonic merge
-    if(!this->getSortOrder().empty()) {
-        if (party == emp::ALICE) {
-            if(alice_tuple_cnt > 0) secret_share_send(emp::ALICE, (PlainTable *)  this, dst_table, 0, true);
-            if(bob_tuple_cnt > 0) secret_share_recv(bob_tuple_cnt, emp::BOB, dst_table, alice_tuple_cnt, false);
-
-        } else { // bob
-            if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table, 0, true);
-            if(bob_tuple_cnt > 0)  secret_share_send(emp::BOB, (PlainTable *)  this, dst_table, alice_tuple_cnt, false);
-        }
-        Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true);
-    }
-    else { // concatenate Alice and Bob
-        if (party == emp::ALICE) {
-            if(alice_tuple_cnt > 0) secret_share_send(emp::ALICE, (PlainTable *)  this, dst_table, 0, false);
-            if(bob_tuple_cnt > 0)  secret_share_recv(bob_tuple_cnt, emp::BOB, dst_table, alice_tuple_cnt, false);
-        } else { // bob
-            if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table, 0, false);
-            if(bob_tuple_cnt > 0)  secret_share_send(emp::BOB, (PlainTable *)  this, dst_table, alice_tuple_cnt, false);
-        }
-    }
-    netio->flush();
-
-    return dst_table;
 
 }
 
 
 
-
-// ZK secret share - only alice provides inputs
-template<typename B>
-SecureTable *ColumnTable<B>::secretShare(BoolIO<NetIO> *ios[], const size_t & thread_count, const int & party)  {
-
-
-    size_t alice_tuple_cnt =  this->getTupleCount();
-
-
-    // reset before we send the counts
-    for(size_t i = 0; i < thread_count; ++i) {
-        ios[i]->flush();
-    }
-
-    NetIO *netio = ios[0]->io;
-
-    if (party == ALICE) {
-        netio->send_data(&alice_tuple_cnt, 4);
-        netio->flush();
-    } else if (party == BOB) {
-        netio->recv_data(&alice_tuple_cnt, 4);
-        netio->flush();
-    }
-
-    assert(alice_tuple_cnt > 0);
-
-    QuerySchema dst_schema = QuerySchema::toSecure(this->getSchema());
-
-    SecureTable *dst_table = new ColumnTable<Bit>(alice_tuple_cnt, dst_schema, this->getSortOrder());
-
-
-    if (party == emp::ALICE) {
-        secret_share_send(emp::ALICE,  (PlainTable *) this, dst_table, 0, false);
-    } else { // bob
-        secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table, 0, false);
-    }
-
-    for(size_t i = 0; i < thread_count; ++i) {
-        ios[i]->flush();
-    }
-
-    return dst_table;
-
-}
-
-
-template<typename B>
-SecureTable *ColumnTable<B>::secret_share_send_table(const PlainTable *input, emp::NetIO *io, const int &sharing_party) {
-    QuerySchema dst_schema = QuerySchema::toSecure(input->getSchema());
-    int32_t tuple_cnt = input->getTupleCount();
-    io->send_data(&tuple_cnt, 4);
-    io->flush();
-
-    SecureTable  *shared =  new ColumnTable<Bit>(input->getTupleCount(), dst_schema, input->getSortOrder());
-    secret_share_send(sharing_party, input, shared, 0, false);
-    return shared;
-}
-
-template<typename B>
-SecureTable *
-ColumnTable<B>::secret_share_recv_table(const QuerySchema &src_schema, // plaintext schema
-                                     const SortDefinition &sort_definition, emp::NetIO *io, const int &sharing_party)
-{
-    int32_t tuple_cnt;
-    io->recv_data(&tuple_cnt, 4);
-    io->flush();
-
-    QuerySchema dst_schema = QuerySchema::toSecure(src_schema);
-    SecureTable *shared =  new ColumnTable<Bit>(tuple_cnt, dst_schema, sort_definition);
-    secret_share_recv(tuple_cnt, sharing_party, shared, 0, false);
-    return shared;
-}
 
 
 // use this for acting as a data sharing party in the PDF
@@ -379,59 +267,6 @@ PlainTuple ColumnTable<B>::getPlainTuple(size_t idx) const {
 
 
 
-template<typename B>
-void
-ColumnTable<B>::secret_share_send(const int &party,const PlainTable *src_table, SecureTable *dst_table, const int &write_offset,
-                               const bool &reverse_read_order)  {
-
-    int cursor = (int) write_offset;
-
-    if(reverse_read_order) {
-        for(int i = src_table->getTupleCount() - 1; i >= 0; --i) {
-            FieldUtilities::secret_share_send(src_table, i, dst_table,  cursor, party);
-            ++cursor;
-        }
-
-        return;
-
-    }
-
-    // else
-    for(size_t i = 0; i < src_table->getTupleCount(); ++i) {
-        FieldUtilities::secret_share_send(src_table, i, dst_table,  cursor, party);
-        ++cursor;
-    }
-
-}
-
-template<typename B>
-void ColumnTable<B>::secret_share_recv(const size_t &tuple_count, const int &dst_party,
-                                    SecureTable *dst_table, const size_t &write_offset,
-                                    const bool &reverse_read_order)  {
-
-    int32_t cursor = (int32_t) write_offset;
-
-    if(reverse_read_order) {
-
-        for(int32_t i = tuple_count - 1; i >= 0; --i) {
-            FieldUtilities::secret_share_recv(dst_table, cursor, dst_party);
-            ++cursor;
-        }
-
-
-
-        return;
-    }
-
-    // else
-    for(size_t i = 0; i < tuple_count; ++i) {
-        FieldUtilities::secret_share_recv(dst_table, cursor, dst_party);
-        ++cursor;
-    }
-
-
-
-}
 
 template<typename B>
 void ColumnTable<B>::assignField(const int &dst_row, const int &dst_col, const QueryTable<B> *s, const int &src_row,

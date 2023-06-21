@@ -61,11 +61,11 @@ PlainTable *EnrichTest::loadAndProjectPatientData(const std::string &db_name) co
 
 
     // *** Input on union of Alice and Bob's tables
-    SqlInput pat_input(db_name, pat_sql, false, storage_model_, pat_sort_def);
-    PlainTable *p = pat_input.run()->clone(); // freed by projection
+    SqlInput pat_input(db_name, pat_sql, false, pat_sort_def);
+    PlainTable *plain = pat_input.run()->clone(); // freed by projection
 
     // *** project on patient table
-    return getAgeStrataProjection(p, false);
+    return getAgeStrataProjection(plain, false);
 
 }
 
@@ -76,9 +76,9 @@ PlainTable *EnrichTest::loadPatientExclusionData(const std::string &db_name) con
 
     SortDefinition pat_excl_sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort (2, SortDirection::ASCENDING)};
     string pat_excl_sql = "SELECT * FROM patient_exclusion ORDER BY patid, denom_excl";
-    SqlInput input(db_name, pat_excl_sql, false, storage_model_, pat_excl_sort_def);
-    PlainTable  *p = input.run(); // p is deleted when input goes out of scope
-    return p->clone();
+    SqlInput input(db_name, pat_excl_sql, false, pat_excl_sort_def);
+    PlainTable  *plain = input.run(); // p is deleted when input goes out of scope
+    return plain->clone();
 }
 
 PlainTable *EnrichTest::loadAndJoinLocalData(const std::string & db_name) const {
@@ -98,7 +98,7 @@ PlainTable *EnrichTest::loadAndJoinLocalData(const std::string & db_name) const 
 SecureTable *EnrichTest::loadUnionAndDeduplicateData() const{
     string db_name = (FLAGS_party == ALICE) ? alice_enrich_db_ : bob_enrich_db_;
     PlainTable *local_data = loadAndJoinLocalData(db_name);
-    SecureTable *union_and_secret_share = local_data->secretShare(netio_, FLAGS_party);
+    SecureTable *union_and_secret_share = local_data->secretShare();
 
 
     // TODO: do bitonic merge instead of full-fledged sort here.  Inputs are sorted locally and each side makes up half of a bitonic sequence
@@ -283,7 +283,7 @@ void EnrichTest::validateUnion(Operator<emp::Bit> &sortOp, const SortDefinition 
 void EnrichTest::validateTable(const std::string & db_name, const std::string & sql, const SortDefinition  & expected_sortDefinition, PlainTable *observed) const {
 
     PsqlDataProvider data_provider;
-    PlainTable *expected = data_provider.getQueryTable(db_name, sql, storage_model_);
+    PlainTable *expected = data_provider.getQueryTable(db_name, sql);
     expected->setSortOrder(expected_sortDefinition);
 
     ASSERT_EQ(expected->getSchema(), observed->getSchema());

@@ -15,7 +15,7 @@ class  PsqlDataProvider  {
 public:
 
     PlainTable *
-    getQueryTable(std::string db_name, std::string sql, const StorageModel &model, bool has_dummy_tag = false);
+    getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag = false);
 
 private:
     void getTuple(pqxx::row row, bool has_dummy_tag, PlainTable &dst_table, const size_t &idx);
@@ -25,6 +25,7 @@ private:
      std::string src_table_;
      std::string db_name_;
      QuerySchema schema_;
+     StorageModel storage_model_;
 
     size_t getVarCharLength(string table_name, string col_name) const;
 

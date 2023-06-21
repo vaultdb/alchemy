@@ -29,9 +29,9 @@ namespace  vaultdb {
 
 
     public:
-        SecureSqlInput(string db, string sql, bool dummy_tag, const StorageModel & model, emp::NetIO *netio, int party, const size_t & input_tuple_cnt = 0); // truncate tuples with last term
+        SecureSqlInput(const string & db, const string & sql, const bool & dummy_tag, const SortDefinition & def, const size_t & input_tuple_cnt = 0); // truncate tuples with last term
 
-        SecureSqlInput(const string &db, const string & sql, const bool &dummy_tag, const StorageModel & model, const SortDefinition &sort_def, NetIO *netio, const int &party, const size_t & input_tuple_cnt = 0);
+        SecureSqlInput(const string &db, const string & sql, const bool &dummy_tag, const size_t & input_tuple_cnt = 0);
          ~SecureSqlInput() {
              if(plain_input_ != nullptr) {
                  delete plain_input_;

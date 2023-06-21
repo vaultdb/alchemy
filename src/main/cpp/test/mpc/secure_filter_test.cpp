@@ -32,7 +32,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 100";
     PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, storage_model_, false);
 
-    SecureSqlInput input(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
+    SecureSqlInput input(db_name_, sql, false);
 
 
     PlainTable *revealed = input.run()->reveal(emp::PUBLIC);
@@ -59,7 +59,7 @@ TEST_F(SecureFilterTest, test_filter) {
     PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expected_sql, storage_model_, false);
 
 
-   SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false, storage_model_, netio_, FLAGS_party);
+   SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false);
 
     // expression setup
     // filtering for l_linenumber = 1

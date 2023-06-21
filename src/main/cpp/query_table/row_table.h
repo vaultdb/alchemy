@@ -90,17 +90,8 @@ namespace  vaultdb {
             *tag = val;
         }
 
-        SecureTable *secretShare(emp::NetIO *io, const int &party) override;
+        SecureTable *secretShare() override;
 
-        SecureTable *
-        secretShare(BoolIO<NetIO> *ios[], const size_t &thread_count, const int &party) override;
-
-        static SecureTable *
-        secret_share_send_table(const PlainTable *input, emp::NetIO *io, const int &sharing_party);
-
-        static SecureTable *
-        secret_share_recv_table(const QuerySchema &src_schema,
-                                const SortDefinition &sortDefinition, emp::NetIO *io, const int &sharing_party);
 
 
         SecretShares
@@ -146,13 +137,7 @@ namespace  vaultdb {
     protected:
 
 
-        static void secret_share_send(const int &party, const PlainTable *src_table, SecureTable *dst_table,
-                                      const int &write_offset,
-                                      const bool &reverse_read_order);
 
-        static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
-                                      SecureTable *dst_table, const size_t &write_offset,
-                                      const bool &reverse_read_order);
 
         string getOstringStream() const override;
 

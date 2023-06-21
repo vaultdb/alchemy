@@ -317,20 +317,21 @@ int main(int argc, char **argv) {
         // add in the 1-site PIDs
         SecureTable *alice, *bob, *chi;
         partial_count_query = PilotUtilities::replaceSelection(partial_count_query, partial_count_selection_clause);
-        PlainTable *local_partial_counts = DataUtilities::getQueryResults(db_name, partial_count_query,
-                                                                          StorageModel::ROW_STORE, false);
+        PlainTable *local_partial_counts = DataUtilities::getQueryResults(db_name, partial_count_query, false);
         assert(local_partial_counts->getTupleCount() == cardinality_bound);
+
+
+        PlainTable *empty = local_partial_counts->clone();
+        empty->resize(0);
+
         // ship local, partial counts - alice, then bob
         if (party == 1) { // alice
-            alice = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 1);
-            bob = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(), netio,
-                                                       2);
+            alice = local_partial_counts->secretShare();
+            bob = empty->secretShare();
         } else { // bob
-            alice = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(),
-                                                         netio, 1);
-            bob = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 2);
+            alice = empty->secretShare();
+            bob = local_partial_counts->secretShare();
         }
-
 
         chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain((alice->getSchema())), party);
 

@@ -47,7 +47,7 @@ TEST_F(SecretShareGeneratorTest, lineitem_sample) {
                              "ORDER BY l_shipdate "
                              "LIMIT 10";
 
-    PlainTable *initial_table = DataUtilities::getQueryResults(db_name_, query, storage_model_, false);
+    PlainTable *initial_table = DataUtilities::getQueryResults(db_name_, query, false);
     SecretShares secret_shares = initial_table->generateSecretShares();
 
     PlainTable *final_table = assembleSecretShares(initial_table->getSchema(), secret_shares);
@@ -67,7 +67,7 @@ TEST_F(SecretShareGeneratorTest, lineitem_dummy_tag_sample) {
                         "ORDER BY l_shipdate "
                         "LIMIT 10";
 
-    PlainTable *initial_table = DataUtilities::getQueryResults(db_name_, query, storage_model_, true);
+    PlainTable *initial_table = DataUtilities::getQueryResults(db_name_, query, true);
     SecretShares secret_shares = initial_table->generateSecretShares();
 
     PlainTable *final_table = assembleSecretShares(initial_table->getSchema(), secret_shares);

@@ -58,7 +58,9 @@ set(sources
 		util/field_utilities.cpp
 		util/logger.cpp
 		util/system_configuration.cpp
-
+	    util/emp_manager/emp_manager.h
+		util/emp_manager/sh2pc_manager.cpp
+		util/emp_manager/zk_manager.cpp
 
 		query_table/field/field_type.h
 		query_table/field/field.cpp
@@ -83,7 +85,6 @@ set(sources
 		operators/filter.cpp
 		operators/project.cpp
 		operators/sort.cpp
-		operators/support/join_equality_predicate.cpp
 		operators/join.cpp
 		operators/basic_join.cpp
 		operators/keyed_join.cpp

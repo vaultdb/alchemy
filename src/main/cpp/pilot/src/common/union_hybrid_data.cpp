@@ -45,7 +45,7 @@ SecureTable *
 UnionHybridData::readLocalInput(const string &localInputFile, const QuerySchema &src_schema, NetIO *netio,
                                 const int &party) {
     PlainTable *local = CsvReader::readCsv(localInputFile, src_schema);
-    SecureTable *secret_shared = local->secretShare(netio, party);
+    SecureTable *secret_shared = local->secretShare();
     delete local;
 
     return secret_shared;
@@ -185,12 +185,12 @@ UnionHybridData::unionHybridData(const string &dbName, const string &inputQuery,
                                  NetIO *aNetIO, const int &party) {
 
 
-    PlainTable *local_plain = DataUtilities::getQueryResults(dbName, inputQuery, StorageModel::ROW_STORE, false);
+    PlainTable *local_plain = DataUtilities::getQueryResults(dbName, inputQuery, false);
     size_t total_tuples = local_plain->getTupleCount();
 
     cout << "Reading in " << local_plain->getTupleCount() << " tuples from local db." << endl;
 
-    SecureTable *local = local_plain->secretShare(aNetIO, party);
+    SecureTable *local = local_plain->secretShare();
     string other_party = (party == ALICE) ? "Bob" : "Alice";
     cout <<  other_party << " read in " << local->getTupleCount() - local_plain->getTupleCount() << " tuples." << endl;
 

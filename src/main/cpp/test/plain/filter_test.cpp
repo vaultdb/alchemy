@@ -19,10 +19,10 @@ TEST_F(FilterTest, test_table_scan) {
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 100";
 
-    SqlInput input(db_name_, sql, storage_model_, false);
+    SqlInput input(db_name_, sql, false);
 
     PlainTable *output = input.run(); // a smoke test for the operator infrastructure
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, sql, storage_model_, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, sql, false);
 
     ASSERT_EQ(*expected, *output);
 
@@ -38,8 +38,8 @@ TEST_F(FilterTest, test_filter) {
     std::string expected_sql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
 
-   PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, true);
-   auto input = new SqlInput(db_name_, sql, storage_model_, false);
+   PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql,  true);
+   auto input = new SqlInput(db_name_, sql, false);
 
    // expression setup
     // l_linenumber == 1

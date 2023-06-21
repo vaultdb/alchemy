@@ -21,12 +21,12 @@ void NestedLoopAggregateTest::runTest(const string &expected_sql,
 
 
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY random()";
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 1, storage_model_);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 1);
 
 
     std::vector<int32_t> group_bys{0};
 
-    auto input = new SqlInput(db_name_, query, false, storage_model_, SortDefinition());
+    auto input = new SqlInput(db_name_, query, false, SortDefinition());
 
     auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 7);
 
@@ -46,12 +46,12 @@ void NestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
                                           const vector<ScalarAggregateDefinition> &aggregators) const {
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE "
                         "l_orderkey <=10 ORDER BY random()";
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 1, storage_model_);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 1);
 
 
     std::vector<int32_t> group_bys{0};
 
-    auto input = new SqlInput(db_name_, query, true, storage_model_, SortDefinition());
+    auto input = new SqlInput(db_name_, query, true, SortDefinition());
 
     auto  aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 7);
     auto sort = new Sort(aggregate, DataUtilities::getDefaultSortDefinition(1));
@@ -179,7 +179,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_sums) {
                                                          "GROUP BY l_returnflag, l_linestatus";
 
 
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2, storage_model_);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2);
 
     std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -188,7 +188,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_sums) {
     std::vector<int32_t> group_bys{0, 1};
 
 
-    auto input = new SqlInput(db_name_, sql, true, storage_model_, SortDefinition());
+    auto input = new SqlInput(db_name_, sql, true, SortDefinition());
     auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
 
     Sort<bool> sort(aggregate, DataUtilities::getDefaultSortDefinition(2));
@@ -225,7 +225,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
                                   "order by \n"
                                   "  l_returnflag, l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2, storage_model_);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2);
 
     std::vector<int32_t> group_bys{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -235,7 +235,7 @@ TEST_F(NestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
         ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
 
-    auto input = new SqlInput(db_name_, sql, true, storage_model_, SortDefinition());
+    auto input = new SqlInput(db_name_, sql, true, SortDefinition());
     auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
 
     Sort<bool> sort(aggregate, DataUtilities::getDefaultSortDefinition(2));
@@ -277,7 +277,7 @@ TEST_F(NestedLoopAggregateTest, tpch_q1) {
                                   "  l_returnflag, \n"
                                   "  l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2, storage_model_);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name_, expected_sql, false, 2);
 
     std::vector<int32_t> group_bys{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -290,7 +290,7 @@ TEST_F(NestedLoopAggregateTest, tpch_q1) {
         ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
         ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-    auto input = new SqlInput(db_name_, sql, true, storage_model_, SortDefinition());
+    auto input = new SqlInput(db_name_, sql, true, SortDefinition());
     auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
 
 

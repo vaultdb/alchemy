@@ -2,6 +2,7 @@
 #include "util/utilities.h"
 #include "field_factory.h"
 #include <util/field_utilities.h>
+#include <util/system_configuration.h>
 #include <bit>
 
 using namespace vaultdb;
@@ -490,17 +491,20 @@ emp::Integer Field<B>::secretShareString(const string &s, const bool &to_send, c
     size_t string_bit_count = str_length * 8;
 
     emp::Integer payload = emp::Integer(string_bit_count, 0L, party);
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+
+
     if (to_send) {
         std::string input = s;
         std::reverse(input.begin(), input.end());
         bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), str_length);
 
-        emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), party, bools,
+        conf.emp_manager_->feed((int8_t *) payload.bits.data(), party, bools,
                                                 string_bit_count);
         delete[] bools;
 
     } else {
-        emp::ProtocolExecution::prot_exec->feed((emp::block *) payload.bits.data(), party, nullptr,
+        conf.emp_manager_->feed((int8_t *) payload.bits.data(), party, nullptr,
                                                 string_bit_count);
     }
 

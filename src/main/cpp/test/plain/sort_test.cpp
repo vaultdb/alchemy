@@ -15,12 +15,12 @@ TEST_F(SortTest, testSingleIntColumn) {
     string expected_sql = "SELECT c_custkey FROM (" + sql + ") subquery ORDER BY c_custkey";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
     SortDefinition sort_def{ ColumnSort(0, SortDirection::ASCENDING)};
     expected->setSortOrder(sort_def);
 
-    auto input = new SqlInput(db_name_, sql, storage_model_, false);
+    auto input = new SqlInput(db_name_, sql, false);
     Sort<bool> sort(input, sort_def);
     PlainTable *sorted = sort.run();
     ASSERT_EQ(*expected, *sorted);
@@ -32,13 +32,13 @@ TEST_F(SortTest, testSingleIntColumn) {
 TEST_F(SortTest, tpchQ1Sort) {
     string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment, l_orderkey  LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
 
     SortDefinition sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::ASCENDING)};
     expected->setSortOrder(sort_def);
 
-    auto input = new SqlInput(db_name_, sql, storage_model_, false);
+    auto input = new SqlInput(db_name_, sql, false);
     Sort<bool> sort(input, sort_def);
     PlainTable *sorted = sort.run();
 
@@ -51,19 +51,21 @@ TEST_F(SortTest, tpchQ1Sort) {
 }
 
 
+
+
 TEST_F(SortTest, tpchQ3Sort) {
     // casting revenue to float for these trials
     // TODO: set up discrete testbed to deal with floating point errors
     string sql = "SELECT l_orderkey, (l.l_extendedprice * (1 - l.l_discount))::INT revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     string expected_sql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate")  + " FROM input ORDER BY revenue DESC, o_orderdate";
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
 
     SortDefinition sort_def{ColumnSort(1, SortDirection::DESCENDING), ColumnSort(3, SortDirection::ASCENDING)};
 
 
-    auto input = new SqlInput(db_name_, sql, storage_model_, false);
+    auto input = new SqlInput(db_name_, sql, false);
     auto sort = new Sort<bool>(input, sort_def);
 
 
@@ -92,11 +94,11 @@ TEST_F(SortTest, tpchQ5Sort) {
 
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_sql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
     SortDefinition sort_def{ ColumnSort(1, SortDirection::DESCENDING)};
 
-    auto input = new SqlInput(db_name_, sql, storage_model_, false);
+    auto input = new SqlInput(db_name_, sql, false);
     auto sorter = new Sort<bool>(input, sort_def);
 
     // project it down to $1
@@ -124,14 +126,14 @@ TEST_F(SortTest, tpchQ8Sort) {
 
     string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  ORDER BY o_comment, o_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_sql = "WITH input AS (" + sql + ") SELECT o_orderyear FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
     SortDefinition sort_def{ ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
 
     expected->setSortOrder(SortDefinition{ColumnSort (0, SortDirection::ASCENDING)});
 
 
-    auto input = new SqlInput(db_name_, sql, storage_model_, false);
+    auto input = new SqlInput(db_name_, sql, false);
     auto sort = new Sort<bool>(input, sort_def);
 
     // project it down to $0
@@ -156,13 +158,13 @@ TEST_F(SortTest, tpchQ9Sort) {
                       " ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_sql = "WITH input AS (" + sql + ") SELECT n_name, o_orderyear FROM input ORDER BY n_name, o_orderyear DESC";
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
 
 
     SortDefinition sort_def{ColumnSort(2, SortDirection::ASCENDING), ColumnSort(0, SortDirection::DESCENDING)};
 
-    auto input = new SqlInput(db_name_, sql, storage_model_, false);
+    auto input = new SqlInput(db_name_, sql, false);
     auto sort = new Sort<bool>(input, sort_def);
 
     // project it down to $0
@@ -198,7 +200,7 @@ TEST_F(SortTest, tpchQ18Sort) {
                     "ORDER BY o_totalprice DESC, o_orderdate ASC";
 
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, storage_model_, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
     // schema: o_orderkey, o_orderdate, o_totalprice
     SortDefinition sort_def{ColumnSort(2, SortDirection::DESCENDING),  // o_totalprince
@@ -206,7 +208,7 @@ TEST_F(SortTest, tpchQ18Sort) {
     expected->setSortOrder(sort_def);
 
 
-    auto input = new SqlInput(db_name_, sql, storage_model_, false);
+    auto input = new SqlInput(db_name_, sql, false);
     auto sort = new Sort<bool>(input, sort_def);
 
 
@@ -240,7 +242,7 @@ TEST_F(SortTest, sort_and_encrypt_table_one_column) {
     schema.initializeFieldOffsets();
 
 
-    PlainTable *input_table = TableFactory<bool>::getTable(input_tuples.size(), schema, storage_model_, sort_definition);
+    PlainTable *input_table = TableFactory<bool>::getTable(input_tuples.size(), schema,  storage_model_, sort_definition);
 
 
     for(uint32_t i = 0; i < input_tuples.size(); ++i) {

@@ -85,8 +85,7 @@ runRollup(int idx, string colName, int party, SecureTable  *data_cube, const str
         string out_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/validate";
         string out_file = out_path + "/" + colName + ".csv";
         Utilities::mkdir(out_path);
-        PlainTable *result = DataUtilities::getExpectedResults(PilotUtilities::unioned_db_name_, query, false, 1,
-                                                               StorageModel::ROW_STORE);
+        PlainTable *result = DataUtilities::getExpectedResults(PilotUtilities::unioned_db_name_, query, false, 1);
 
         std::stringstream schema_str;
         schema_str << result->getSchema() << std::endl;
@@ -150,23 +149,26 @@ int main(int argc, char **argv) {
 
     SecureTable *alice, *bob, *chi;
 
-    PlainTable *local_partial_counts = DataUtilities::getQueryResults(db_name, partial_aggregate_query,
-                                                                      StorageModel::ROW_STORE, false);
+    PlainTable *local_partial_counts = DataUtilities::getQueryResults(db_name, partial_aggregate_query, false);
 
     assert(local_partial_counts->getTupleCount() == cardinality_bound);
+    PlainTable *empty = local_partial_counts->clone();
+    empty->resize(0);
 
     // ship local, partial counts - alice, then bob
     if (party == 1) { // alice
-        alice = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 1);
-        bob = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(), netio,
-                                                   2);
+        alice = local_partial_counts->secretShare();
+//               alice =  RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 1);
+      bob = empty->secretShare(); // secret share where we contribute no rows
+      //  bob = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(), netio,   2);
 
     } else { // bob
-        alice = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(),
-                                                     netio, 1);
+        alice = empty->secretShare();
+//        alice = RowTable<Bit>::secret_share_recv_table(local_partial_counts->getSchema(), SortDefinition(),
+//                                                     netio, 1);
 
-
-        bob = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 2);
+            bob = local_partial_counts->secretShare();
+//        bob = RowTable<Bit>::secret_share_send_table(local_partial_counts, netio, 2);
     }
 
 

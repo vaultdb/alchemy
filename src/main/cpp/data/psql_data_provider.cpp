@@ -6,16 +6,18 @@
 #include "query_table/field/field.h"
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "query_table/table_factory.h"
-
+#include "util/system_configuration.h"
 //typedef std::chrono::steady_clock::time_point time_point;
 
 
 // if has_dummy_tag == true, then last column needs to be a boolean that denotes whether the tuple was selected
 // tableName == nullptr if query result from more than one table
 PlainTable *
-PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, const StorageModel &model, bool has_dummy_tag) {
+PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, bool has_dummy_tag) {
 
     db_name_ = db_name;
+    storage_model_ = SystemConfiguration::getInstance().storageModel();
+
     pqxx::result res;
     pqxx::connection conn("user=vaultdb dbname=" + db_name_);
 
@@ -41,7 +43,7 @@ PsqlDataProvider::getQueryTable(std::string db_name, std::string sql, const Stor
     size_t row_cnt = res.size();
 
     schema_ = getSchema(res, has_dummy_tag);
-    PlainTable *dst_table = TableFactory<bool>::getTable(row_cnt, schema_, model);
+    PlainTable *dst_table = TableFactory<bool>::getTable(row_cnt, schema_, storage_model_);
 
 
     int counter = 0;

@@ -73,7 +73,7 @@ TEST_F(EmpTest, emp_test_varchar) {
         ProtocolExecution::prot_exec->feed((block *)aliceSecretShared.bits.data(), emp::ALICE, nullptr, string_bits);
     }
 
-    netio_->flush();
+    manager_->flush();
     delete [] bools;
 
 
@@ -139,7 +139,7 @@ TEST_F(EmpTest, secret_share_table_one_column) {
         plain->setDummyTag(i, false);
     }
 
-    SecureTable *secret_shared = plain->secretShare(netio_, FLAGS_party);
+    SecureTable *secret_shared = plain->secretShare();
 
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
@@ -180,7 +180,7 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
     }
 
 
-    SecureTable *secret_shared = input_table->secretShare(netio_, FLAGS_party);
+    SecureTable *secret_shared = input_table->secretShare();
 
 
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);

@@ -38,18 +38,20 @@ protected:
 void
 SecureTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
+    this->disableBitPacking();
+
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, db_name);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
     string local_db = db_name;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
 
-    PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0, storage_model_);
+    PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-    PlanParser<emp::Bit> parser(local_db, test_name, storage_model_, netio_, FLAGS_party, input_tuple_limit_);
+    PlanParser<emp::Bit> parser(local_db, test_name, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
 

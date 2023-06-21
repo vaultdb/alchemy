@@ -31,7 +31,7 @@ TEST_F(SerializationTest, typesTest) {
                             "ORDER BY l_shipdate "
                             "LIMIT 10";
 
-    PlainTable *input = DataUtilities::getQueryResults(db_name_, inputQuery, storage_model_, false);
+    PlainTable *input = DataUtilities::getQueryResults(db_name_, inputQuery, false);
 
     vector<int8_t> table_data = input->serialize();
     uint32_t expected_size = input->getSchema().size() / 8 * 10 + 1;
@@ -166,7 +166,7 @@ TEST_F(SerializationTest, capricorn_deserialization) {
     std::string expected_query = "SELECT  study_year, pat_id, age_strata, sex, ethnicity, race, numerator, denominator, denom_excl FROM patient WHERE site_id=3 AND multisite ORDER BY study_year, pat_id";
     std::string db_name = "enrich_htn_unioned_3pc";
 
-    PlainTable *expected = DataUtilities::getQueryResults(db_name, expected_query, storage_model_, false);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name, expected_query, false);
 
     ASSERT_EQ(*expected, *deserialized);
 

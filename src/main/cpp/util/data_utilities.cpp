@@ -30,9 +30,9 @@ DataUtilities::getUnionedResults(const std::string &alice_db, const std::string 
 
     PsqlDataProvider dataProvider;
 
-    PlainTable *alice = dataProvider.getQueryTable(alice_db, sql, model,
+    PlainTable *alice = dataProvider.getQueryTable(alice_db, sql,
                                                    has_dummy_tag); // dummyTag true not yet implemented
-    PlainTable *bob = dataProvider.getQueryTable(bob_db, sql, model, has_dummy_tag);
+    PlainTable *bob = dataProvider.getQueryTable(bob_db, sql, has_dummy_tag);
 
     if(limit > 0) {
         alice->resize(limit);
@@ -49,10 +49,10 @@ DataUtilities::getUnionedResults(const std::string &alice_db, const std::string 
 
 
 
-PlainTable *DataUtilities::getQueryResults(const std::string &dbName, const std::string &sql, const StorageModel &model,
+PlainTable *DataUtilities::getQueryResults(const std::string &dbName, const std::string &sql,
                                            const bool &has_dummy_tag) {
     PsqlDataProvider dataProvider;
-    return dataProvider.getQueryTable(dbName, sql, model, has_dummy_tag);
+    return dataProvider.getQueryTable(dbName, sql, has_dummy_tag);
 }
 
 std::string DataUtilities::queryDatetime(const string &colName) {
@@ -139,9 +139,9 @@ void DataUtilities::removeDummies(PlainTable *table) {
 
 PlainTable *
 DataUtilities::getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
-                                  const int &sortColCount, const StorageModel &model) {
+                                  const int &sortColCount) {
 
-    PlainTable *expected = DataUtilities::getQueryResults(dbName, sql, model, hasDummyTag);
+    PlainTable *expected = DataUtilities::getQueryResults(dbName, sql, hasDummyTag);
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(sortColCount);
     expected->setSortOrder(expected_sort);
     return expected;
@@ -195,14 +195,14 @@ std::string DataUtilities::revealAndPrintFirstBytes(vector<Bit> &bits, const int
 
 size_t DataUtilities::getTupleCount(const string &db_name, const string &sql, bool has_dummy_tag) {
     if(has_dummy_tag)  { // run it and count
-        PlainTable *res = DataUtilities::getQueryResults(db_name, sql, StorageModel::ROW_STORE, true);
+        PlainTable *res = DataUtilities::getQueryResults(db_name, sql, true);
         int cnt =  res->getTrueTupleCount();
         delete res;
         return cnt;
     }
 
     string query = "SELECT COUNT(*) FROM (" + sql + ") q";
-    PlainTable *res = DataUtilities::getQueryResults(db_name, query, StorageModel::ROW_STORE, false);
+    PlainTable *res = DataUtilities::getQueryResults(db_name, query, false);
     int cnt = res->getField(0,0).getValue<int64_t>();
     delete res;
     return cnt;

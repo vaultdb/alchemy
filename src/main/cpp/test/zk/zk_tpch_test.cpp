@@ -1,11 +1,8 @@
 #include <gflags/gflags.h>
 #include <gtest/gtest.h>
-#include <stdexcept>
 #include <util/type_utilities.h>
 #include <util/data_utilities.h>
-#include <test/mpc/emp_base_test.h>
 #include <query_table/secure_tuple.h>
-#include <data/psql_data_provider.h>
 #include <test/support/zk_tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
 #include <operators/group_by_aggregate.h>
@@ -47,32 +44,34 @@ ZkTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefi
     }
 
     // use alice DB since she's the prover
-    shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, query, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, query, false, 0);
     expected->setSortOrder(expected_sort);
 
     int limit = (TRUNCATE_INPUTS) ? tuple_limit_ : -1; // set to -1 for full test
 
-    PlanParser<emp::Bit> parser(db_name, test_name, ios_, threads_, FLAGS_party, limit);
+    PlanParser<emp::Bit> parser(db_name, test_name, false);
 
-    shared_ptr<SecureOperator> root = parser.getRoot();
+    SecureOperator *root = parser.getRoot();
 
     clock_t secureStartTime = clock();
-    shared_ptr<SecureTable> observed = root->run();
+    SecureTable *observed = root->run();
     double secureDuration = ((double) (clock() - secureStartTime)) / ((double) CLOCKS_PER_SEC);
 
     cout << "ZK runtime: " << secureDuration << "s\n";
 
-    shared_ptr<PlainTable> observed_reveal = observed->reveal();
-    observed_reveal = DataUtilities::removeDummies(observed_reveal);
+    PlainTable *revealed = observed->reveal();
 
-    ASSERT_EQ(*expected, *observed_reveal);
+    ASSERT_EQ(*expected, *revealed);
+
+    delete expected;
+    delete revealed;
 
 }
 
 
 TEST_F(ZkTpcHTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
-    runTest(1, "q1", expected_sort, db_name);
+    runTest(1, "q1", expected_sort, db_name_);
 }
 
 
@@ -86,7 +85,7 @@ TEST_F(ZkTpcHTest, tpch_q3) {
 
 
 
-    runTest(3, "q3", expected_sort, db_name);
+    runTest(3, "q3", expected_sort, db_name_);
 }
 
 
@@ -94,19 +93,19 @@ TEST_F(ZkTpcHTest, tpch_q3) {
 
 TEST_F(ZkTpcHTest, tpch_q5) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(5, "q5", expected_sort, db_name);
+    runTest(5, "q5", expected_sort, db_name_);
 
 }
 
 TEST_F(ZkTpcHTest, tpch_q8) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
-    runTest(8, "q8", expected_sort, db_name);
+    runTest(8, "q8", expected_sort, db_name_);
 }
 
 TEST_F(ZkTpcHTest, tpch_q9) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
-    runTest(9, "q9", expected_sort, db_name);
+    runTest(9, "q9", expected_sort, db_name_);
 
 }
 
@@ -119,7 +118,7 @@ TEST_F(ZkTpcHTest, tpch_q18) {
                                  ColumnSort(3, SortDirection::ASCENDING)};
 
     string test_name = "q18";
-    runTest(18, test_name, expected_sort, db_name);
+    runTest(18, test_name, expected_sort, db_name_);
 }
 
 

@@ -6,10 +6,11 @@
 #include <operators/sql_input.h>
 #include <operators/filter.h>
 #include <expression/comparator_expression_nodes.h>
+#include <expression/generic_expression.h>
 #include <query_table/secure_tuple.h>
 #include <test/zk/zk_base_test.h>
 #include <emp-zk/emp-zk.h>
-
+#include <operators/zk_sql_input.h>
 
 using namespace emp;
 using namespace vaultdb;
@@ -27,9 +28,8 @@ protected:
     static const int tuple_cnt = 10;
     std::string sql;
 
-   // BoolIO<NetIO>* ios[threads_];
 
-    shared_ptr<SecureTable> secret_share_input() const;
+    SecureTable *secret_share_input() const;
 
 };
 
@@ -41,24 +41,12 @@ void ZkFilterTest::SetUp() {
 
 
 
-shared_ptr<SecureTable> ZkFilterTest::secret_share_input() const {
+SecureTable *ZkFilterTest::secret_share_input() const {
     SortDefinition  order_by = DataUtilities::getDefaultSortDefinition(2);
 
-    // only alice can secret share in ZK land
-    if(FLAGS_party == emp::ALICE) {
-        SqlInput read_db(db_name, sql, false, order_by);
-        shared_ptr<PlainTable> input = read_db.run();
-        return PlainTable::secret_share_send_table(input, ios_[0]->io, FLAGS_party);
-    }
-    else if(FLAGS_party == emp::BOB){ // BOB
-        // not input, just grabbing schema
-        SqlInput read_db(db_name, sql, false);
-        shared_ptr<PlainTable> input = read_db.run();
-        QuerySchema schema = *input->getSchema();
-        return PlainTable ::secret_share_recv_table( schema, order_by, ios_[0]->io, emp::ALICE);
-    }
-
-    throw std::invalid_argument("Not a valid party for secret sharing!");
+        SqlInput read_db(db_name_, sql, false, order_by);
+        PlainTable *input = read_db.run();
+        return input->secretShare();
 
 }
 
@@ -66,10 +54,11 @@ TEST_F(ZkFilterTest, test_table_scan) {
 
     // smoke test for basic infrastructure
     SortDefinition  order_by = DataUtilities::getDefaultSortDefinition(2);
-    std::shared_ptr<SecureTable> shared = ZkTest::secret_share_input(sql, false, order_by);
+    auto shared = new ZkSqlInput(db_name_, sql, false, order_by);
 
-    std::unique_ptr<PlainTable> revealed = shared->reveal(emp::PUBLIC);
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, sql, false, 2);
+
+    PlainTable *revealed = shared->run()->reveal(emp::PUBLIC);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, sql, false, 2);
 
     ASSERT_EQ(*expected, *revealed);
     // cheat check handled in ZkBaseTest
@@ -86,25 +75,29 @@ TEST_F(ZkFilterTest, test_filter) {
     std::string expected_result_sql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
     SortDefinition  order_by = DataUtilities::getDefaultSortDefinition(2);
-    std::shared_ptr<SecureTable> shared = ZkTest::secret_share_input(sql, false, order_by);
+    auto shared = new ZkSqlInput(db_name_, sql, false, order_by);
+
 
     // expression setup
     // filtering for l_linenumber = 1
-    shared_ptr<InputReferenceNode<emp::Bit> > read_field(new InputReferenceNode<emp::Bit>(1));
+    auto read_field = new InputReference<emp::Bit>(1, shared->run()->getSchema().getField(1));
     Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
-    shared_ptr<LiteralNode<emp::Bit> > constant_input(new LiteralNode<emp::Bit>(one));
-    shared_ptr<ExpressionNode<emp::Bit> > equality_check(new EqualNode<emp::Bit>(read_field, constant_input));
-    Expression<emp::Bit> * expression(equality_check, "selection_criteria", FieldType::SECURE_BOOL);
+    auto constant_input = new LiteralNode<emp::Bit>(one);
+    auto equality_check = new EqualNode<emp::Bit>(read_field, constant_input);
+    auto expression = new GenericExpression<Bit>(equality_check, "selection_criteria", FieldType::SECURE_BOOL);
 
     Filter<emp::Bit> filter(shared, expression);  // deletion handled by shared_ptr
 
-    std::shared_ptr<SecureTable> result = filter.run();
-    std::unique_ptr<PlainTable> revealed = result->reveal(emp::PUBLIC);
+    SecureTable *result = filter.run();
+    PlainTable *revealed = result->reveal(emp::PUBLIC);
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getExpectedResults(alice_db, expected_result_sql, true, 2);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_result_sql, true, 2);
 
     ASSERT_EQ(*expected,  *revealed);
+    delete expected;
+    delete revealed;
 }
+
 
 
 int main(int argc, char **argv) {

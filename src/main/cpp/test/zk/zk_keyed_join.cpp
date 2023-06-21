@@ -1,12 +1,11 @@
 #include <gtest/gtest.h>
-#include <stdexcept>
 #include <gflags/gflags.h>
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
 #include <test/zk/zk_base_test.h>
 #include <operators/keyed_join.h>
-#include <expression/comparator_expression_nodes.h>
-
+#include "util/field_utilities.h"
+#include "operators/zk_sql_input.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43448, "port for EMP execution");
@@ -19,17 +18,17 @@ protected:
 
 
 
-    const std::string customer_sql = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy \n"
+    const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy \n"
                                      "FROM customer  \n"
                                      "WHERE c_custkey < 3 \n"
                                      "ORDER BY c_custkey";
 
-    const std::string orders_sql = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy \n"
+    const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy \n"
                                    "FROM orders \n"
                                    "WHERE o_custkey < 3 \n"
                                    "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
-    const std::string lineitem_sql = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy \n"
+    const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy \n"
                                      "FROM lineitem \n"
                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < 3)  \n"
                                      "ORDER BY l_orderkey, revenue ";
@@ -46,33 +45,33 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_customer_orders) {
 
 
 
-    std::string expectedResultSql = "WITH customer_cte AS (" + customer_sql + "), "
-                                                                             "orders_cte AS (" + orders_sql + ") "
-                                                                                                             "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,(cdummy OR odummy) dummy "
-                                                                                                             "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
-                                                                                                             "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
+    std::string expectedResultSql = "WITH customer_cte AS (" + customer_sql_ + "), "
+                                           "orders_cte AS (" + orders_sql_ + ") "
+                                     "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,(cdummy OR odummy) dummy "
+                                     "FROM  orders_cte JOIN customer_cte ON c_custkey = o_custkey "
+                                     "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(alice_db, expectedResultSql, true);
-
-    shared_ptr<SecureTable> customer_input = ZkTest::secret_share_input(customer_sql, true);
-    shared_ptr<SecureTable> orders_input  = ZkTest::secret_share_input(orders_sql, true);
+    PlainTable * expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, true);
+    auto customer_input = new ZkSqlInput(db_name_, customer_sql_, true);
+    auto orders_input = new ZkSqlInput(db_name_, orders_sql_, true);
 
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
+    auto predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
+                                                                    customer_input, 4);
 
 
     KeyedJoin join(orders_input, customer_input, predicate);
 
-    std::shared_ptr<PlainTable> joinResult = join.run()->reveal();
+    PlainTable * joinResult = join.run()->reveal();
 
 
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema()->getFieldCount());
+    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema().getFieldCount());
     Sort<emp::Bit> sort(&join, sortDefinition);
-    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
+    PlainTable * observed = sort.run()->reveal();
 
 
     expected->setSortOrder(sortDefinition);
@@ -88,37 +87,36 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 
 // get inputs from local oblivious ops
 // first 3 customers, propagate this constraint up the join tree for the test
-    std::string expectedResultSql = "WITH orders_cte AS (" + orders_sql + "), "
-                                                                         "lineitem_cte AS (" + lineitem_sql + "), "
+    std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
+                                                                         "lineitem_cte AS (" + lineitem_sql_ + "), "
                                                                                                              "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, (o_orderkey=l_orderkey) matched, (odummy OR ldummy) dummy \n"
                                                                                                              "FROM lineitem_cte, orders_cte \n"
                                                                                                              "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
                                                                                                              "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, dummy \n"
                                                                                                              "FROM cross_product \n"
                                                                                                              "WHERE matched";
-    Expression<emp::Bit> * predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
 
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(alice_db, expectedResultSql, true);
+    PlainTable * expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, true);
 
-    shared_ptr<SecureTable> lineitem_input = ZkTest::secret_share_input(lineitem_sql, true);
-    shared_ptr<SecureTable> orders_input  = ZkTest::secret_share_input(orders_sql, true);
+    auto lineitem_input = new ZkSqlInput(db_name_, lineitem_sql_, true);
+    auto orders_input = new ZkSqlInput(db_name_, orders_sql_, true);
 
 
+
+    Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<Bit>(lineitem_input, 0, orders_input, 2);
 
     KeyedJoin join(lineitem_input, orders_input, predicate);
 
 
-    std::shared_ptr<SecureTable> joinResult = join.run();
-    std::unique_ptr<PlainTable> joinResultDecrypted = joinResult->reveal();
+    PlainTable *revealed = join.run()->reveal();
 
 
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema()->getFieldCount());
-    Sort<emp::Bit> sort(&join, sortDefinition);
-    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
+    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition( revealed->getSchema().getFieldCount());
+    Sort sort(revealed, sort_def);
+    PlainTable *observed = sort.run();
 
-    expected->setSortOrder(sortDefinition);
-   // ASSERT_EQ(observed->toString(true), expected->toString(true));
+    expected->setSortOrder(sort_def);
     ASSERT_EQ(*expected, *observed);
 
 }
@@ -128,9 +126,9 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders) {
 // compose C-O-L join should produce one output tuple, order ID 210945
 TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
-    std::string expected_result_sql = "WITH orders_cte AS (" + orders_sql + "), \n"
-                                                                         "lineitem_cte AS (" + lineitem_sql + "), \n"
-                                                                                                             "customer_cte AS (" + customer_sql + "),\n "
+    std::string expected_result_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
+                                                                         "lineitem_cte AS (" + lineitem_sql_ + "), \n"
+                                                                                                             "customer_cte AS (" + customer_sql_ + "),\n "
                                                                                                                                                  "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (odummy OR ldummy OR cdummy) dummy \n"
                                                                                                                                                  "FROM lineitem_cte, orders_cte, customer_cte  \n"
                                                                                                                                                  "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
@@ -138,39 +136,38 @@ TEST_F(ZkKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
                                                                                                                                                  "FROM cross_product \n"
                                                                                                                                                  "WHERE matched";
 
-    std::shared_ptr<PlainTable> expected = DataUtilities::getQueryResults(alice_db, expected_result_sql, true);
+    PlainTable * expected = DataUtilities::getQueryResults(unioned_db_, expected_result_sql, true);
 
-    shared_ptr<SecureTable> customer_input = ZkTest::secret_share_input(customer_sql, true);
-    shared_ptr<SecureTable> lineitem_input = ZkTest::secret_share_input(lineitem_sql, true);
-    shared_ptr<SecureTable> orders_input  = ZkTest::secret_share_input(orders_sql, true);
+    auto customer_input = new ZkSqlInput(db_name_, customer_sql_, true);
+    auto orders_input = new ZkSqlInput(db_name_, orders_sql_, true);
+    auto lineitem_input = new ZkSqlInput(db_name_, lineitem_sql_, true);
 
 
     // join output schema: (orders, customer)
     // o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    shared_ptr<InputReferenceNode<emp::Bit> > lhs_input(new InputReferenceNode<emp::Bit>(1));
-    shared_ptr<InputReferenceNode<emp::Bit> > rhs_input(new InputReferenceNode<emp::Bit>(4));
-    shared_ptr<ExpressionNode<emp::Bit> > equality_node(new EqualNode<emp::Bit>(lhs_input, rhs_input));
-    Expression<emp::Bit> * customer_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(1, 4);
+    auto customer_orders_predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 1,
+                                                                                   customer_input, 4);
+
+
+
+
+    auto  co_join = new KeyedJoin<emp::Bit>(orders_input, customer_input, customer_orders_predicate);
 
     // join output schema:
     //  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey
-    Expression<emp::Bit> * lineitem_orders_predicate = Utilities::getEqualityPredicate<emp::Bit>(0, 2);
+    Expression<emp::Bit> * lineitem_orders_predicate = FieldUtilities::getEqualityPredicate<Bit>(lineitem_input, 0, co_join, 2);
 
 
-
-    KeyedJoin<emp::Bit> customerOrdersJoin(orders_input, customer_input, customer_orders_predicate);
-
-    TableInput<emp::Bit> cte(lineitem_input);
-    KeyedJoin full_join(&cte, &customerOrdersJoin, lineitem_orders_predicate);
+    KeyedJoin full_join(lineitem_input, co_join, lineitem_orders_predicate);
 
 
-    std::shared_ptr<PlainTable> joinResult = full_join.run()->reveal();
+    PlainTable * revealed = full_join.run()->reveal();
 
 
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(joinResult->getSchema()->getFieldCount());
-    Sort<emp::Bit> sort(&full_join, sortDefinition);
-    std::shared_ptr<PlainTable> observed = sort.run()->reveal();
-    expected->setSortOrder(sortDefinition);
+    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(revealed->getSchema().getFieldCount());
+    Sort sort(revealed, sort_def);
+    PlainTable * observed = sort.run()->reveal();
+    expected->setSortOrder(sort_def);
 
     ASSERT_EQ(observed->toString(false), expected->toString(false));
     ASSERT_EQ(*expected, *observed);

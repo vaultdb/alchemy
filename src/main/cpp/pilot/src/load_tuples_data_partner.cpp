@@ -15,7 +15,7 @@ void validateInputTable(const std::string & dbName, const std::string & sql, con
 
 
 
-      PlainTable *expectedTable = DataUtilities::getQueryResults(dbName, sql, StorageModel::ROW_STORE, false);
+      PlainTable *expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
       expectedTable->setSortOrder(expectedSortDefinition);
 
 

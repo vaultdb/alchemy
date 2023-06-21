@@ -26,7 +26,7 @@ TEST_F(EmpTableTest, encrypt_table_one_column) {
 
     std::string input_query =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
 
-    SortDefinition  sort_definition = DataUtilities::getDefaultSortDefinition(1);
+    SortDefinition  sort_definition = DataUtilities::getDefaultSortDefinition(0);
 
     secretShareAndValidate(input_query, sort_definition);
 
@@ -44,6 +44,15 @@ TEST_F(EmpTableTest, encrypt_table_varchar) {
 }
 
 
+//TEST_F(EmpTableTest, tpch_q1_mockup) {
+//    this->disableBitPacking();
+//    string sql = "SELECT  l_returnflag,  l_linestatus,  SUM(l_quantity) as sum_qty, SUM(l_extendedprice) as sum_base_price, SUM(l_extendedprice * (1 - l_discount)) as sum_disc_price,  SUM(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, AVG(l_quantity) as avg_qty,  AVG(l_extendedprice) as avg_price,  AVG(l_discount) as avg_disc,   COUNT(*)::BIGINT as count_order \n"
+//                 "FROM  lineitem \n"
+//                 "WHERE  l_shipdate <= date '1998-08-03' \n"
+//                 "GROUP BY  l_returnflag, l_linestatus \n"
+//                 "ORDER BY  l_returnflag,  l_linestatus";
+//    secretShareAndValidate(sql);
+//}
 
 TEST_F(EmpTableTest, encrypt_table_two_cols) {
 
@@ -94,10 +103,10 @@ TEST_F(EmpTableTest, bit_packing_test) {
 
     PsqlDataProvider data_provider;
     PlainTable *input_table = data_provider.getQueryTable(db_name_,
-                                                          input_query, storage_model_, false);
+                                                          input_query, false);
 
-    SecureTable *secret_shared = input_table->secretShare(netio_, FLAGS_party);
-    netio_->flush();
+    SecureTable *secret_shared = input_table->secretShare();
+    manager_->flush();
 
     // c_custkey has 150 distinct vals, should have 8 bits
     ASSERT_EQ(8, secret_shared->getSchema().getField(0).size());
@@ -126,14 +135,13 @@ TEST_F(EmpTableTest, bit_packing_test) {
 void EmpTableTest::secretShareAndValidate(const std::string & input_query, const SortDefinition & sort) {
 
     PsqlDataProvider dataProvider;
-
     PlainTable *input_table = dataProvider.getQueryTable(db_name_,
-                                                         input_query, storage_model_, false);
+                                                         input_query, false);
 
     input_table->setSortOrder(sort);
-    SecureTable *secret_shared = input_table->secretShare(netio_, FLAGS_party);
-    netio_->flush();
-
+    SecureTable *secret_shared = input_table->secretShare();
+    manager_->flush();
+    cout << "Secret shared schema: " << secret_shared->getSchema() << ", size=" << secret_shared->tuple_size_ << endl;
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
     PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, input_query, storage_model_, false);

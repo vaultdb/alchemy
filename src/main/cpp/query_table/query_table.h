@@ -120,10 +120,7 @@ namespace  vaultdb {
 
         virtual void setDummyTag(const int & row, const B & val)   = 0;
 
-        virtual SecureTable *secretShare(emp::NetIO *io, const int &party) = 0;
-
-        virtual SecureTable *
-        secretShare(BoolIO<NetIO> *ios[], const size_t &thread_count, const int &party) = 0;
+        virtual SecureTable *secretShare() = 0;
 
 
 

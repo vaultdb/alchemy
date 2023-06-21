@@ -30,7 +30,7 @@ void
 PlanParserTest::runTest(const int &test_id, const SortDefinition &expected_sort, const std::string &expected_plan) {
     string test_name = "q" + std::to_string(test_id);
 
-    PlanParser<bool> plan_reader(db_name_, test_name, storage_model_, limit_);
+    PlanParser<bool> plan_reader(db_name_, test_name, limit_);
     PlainOperator *root = plan_reader.getRoot();
     std::string observed_plan = root->printTree();
 
