@@ -6,6 +6,7 @@
 #include <query_table/plain_tuple.h>
 #include <query_table/secure_tuple.h>
 #include "query_table/table_factory.h"
+#include "util/system_configuration.h"
 
 
 using namespace vaultdb;
@@ -68,25 +69,31 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
     int output_cursor = group_by_.size();
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {
         GroupByAggregateImpl<B> *agg_impl = aggregateFactory(agg.type, agg.ordinal, input_schema.getField(agg.ordinal));
-        aggregators_.push_back(agg_impl);
-        // if an aggregator operates on packed bits (e.g. min/max), then copy its output definition from source
+
+        // if an aggregator operates on packed bits (e.g. min/max/count), then copy its output definition from source
         if(agg_impl->packedFields()) {
             QueryFieldDesc packed_field(input_schema.getField(agg.ordinal), output_cursor);
             packed_field.setName("", agg.alias);
+
+            if (agg.type == AggregateId::COUNT) {
+                packed_field.initializeFieldSizeWithCardinality(input->getTupleCount());
+                agg_impl->bit_packed_size_ = packed_field.size() + 1; // +1 for sign bit
+            }
+
             this->output_schema_.putField(packed_field);
         }
+        aggregators_.push_back(agg_impl);
         ++output_cursor;
     }
-
 
     if(output_cardinality_ == 0) { // naive case - go full oblivious
         output_cardinality_ = input->getTupleCount();
     }
 
+
     // output sort order equal to first group-by-col-count entries in input sort order
     SortDefinition input_sort = input->getSortOrder();
     SortDefinition output_sort = vector<ColumnSort>(input_sort.begin(), input_sort.begin() + group_by_.size());
-
 
     Operator<B>::output_ = TableFactory<B>::getTable(input->getTupleCount(), Operator<B>::output_schema_, input->storageModel(), output_sort);
     QueryTable<B> *output = Operator<B>::output_; // shorthand
@@ -97,13 +104,13 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
 
     int cursor = group_by_.size();
 
+
     // for first row only
     for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
         aggregator->initialize(input); // don't need group_by_match, only for first pass
         output->setField(0, cursor, aggregator->getResult(), aggregator->packedFields());
         ++cursor;
     }
-
 
     output->setDummyTag(0, input->getDummyTag(0));
     B true_lit = true;

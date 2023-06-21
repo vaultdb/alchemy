@@ -36,7 +36,6 @@ void SecureScalarAggregateTest::runTest(const string &expectedOutputQuery,
   ScalarAggregate aggregate(input, aggregators);
   PlainTable *observed = aggregate.run()->reveal();
 
-  std::cout << "Final output : " << observed->getPackedField(0, 0).reveal() << endl;
   ASSERT_EQ(*expected, *observed);
 
   delete observed;

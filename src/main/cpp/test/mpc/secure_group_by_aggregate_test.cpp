@@ -230,6 +230,7 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
 }
 
 
+
 TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
     string inputQuery = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"

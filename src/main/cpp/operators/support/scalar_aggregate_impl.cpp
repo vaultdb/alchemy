@@ -67,9 +67,6 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
     not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
     dst->setField(0, this->output_ordinal_, accumulated, bit_packed);
     Field<B> output_field_checking = dst->getPackedField(0, this->output_ordinal_);
-
-    std::cout << "input : " << input_field.reveal() << " output : " << output_field_checking.reveal() << endl;
-
 }
 
 template<typename B>
