@@ -18,7 +18,7 @@ SqlInput::SqlInput(std::string db, std::string sql, bool dummy_tag, const SortDe
         Operator<bool>(sort_def), input_query_(sql), db_name_(db), dummy_tagged_(dummy_tag), tuple_limit_(tuple_limit) {
 
     this->start_time_ = clock_start();
-    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+    this->start_gate_cnt_ = this->system_conf_.emp_manager_->andGateCount();
 
     runQuery();
     output_schema_ = output_->getSchema();

@@ -5,6 +5,7 @@
 #include <vector>
 #include <query_table/query_table.h>
 #include <common/defs.h>
+#include <util/system_configuration.h>
 
 using namespace std;
 
@@ -104,6 +105,7 @@ namespace  vaultdb {
 
 
     protected:
+        SystemConfiguration & system_conf_ = SystemConfiguration::getInstance();
         // to be implemented by the operator classes, e.g., sort, filter, et cetera
         virtual QueryTable<B> *runSelf() = 0;
         virtual std::string getOperatorType() const  = 0;

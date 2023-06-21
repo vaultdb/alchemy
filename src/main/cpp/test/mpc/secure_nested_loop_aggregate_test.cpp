@@ -34,7 +34,7 @@ void SecureNestedLoopAggregateTest::runTest(const string &expected_sql,
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
     // set up expected output
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
 
     // run secure query
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1); // actually 2
@@ -42,16 +42,17 @@ void SecureNestedLoopAggregateTest::runTest(const string &expected_sql,
 
 
     std::vector<int32_t> group_bys{0};
-    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 10);
+    NestedLoopAggregate aggregate(input, group_bys, aggregators, 10);
 
-    PlainTable *observed = aggregate->run()->reveal();
+    PlainTable *aggregated = aggregate.run()->reveal();
+    cout << "Aggregated: " << *aggregated << endl;
 
+    Sort sort(aggregated, SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
+    auto observed = sort.run();
 
 
     ASSERT_EQ(*expected, *observed);
-    delete observed;
     delete expected;
-    delete aggregate;
 
 
 
@@ -63,33 +64,34 @@ void SecureNestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, true, 0);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
 
     // configure and run test
-    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
     auto input = new SecureSqlInput(db_name_, query, true, sort_def);
 
 
     std::vector<int32_t> group_bys;
     group_bys.push_back(0);
 
-    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 10);
+    NestedLoopAggregate aggregate(input, group_bys, aggregators, 10);
 
-    PlainTable *observed = aggregate->run()->reveal();
+    PlainTable *aggregated = aggregate.run()->reveal();
+
+    Sort sort(aggregated, SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
+    auto observed = sort.run();
 
 
         ASSERT_EQ(*expected, *observed);
 
         delete expected;
-        delete observed;
-        delete aggregate;
 
 }
 
 
 TEST_F(SecureNestedLoopAggregateTest, test_count) {
     // set up expected output
-    std::string expected_sql = "SELECT l_orderkey, COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1) ";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
     runTest(expected_sql, aggregators);
@@ -98,7 +100,7 @@ TEST_F(SecureNestedLoopAggregateTest, test_count) {
 
 TEST_F(SecureNestedLoopAggregateTest, test_count_no_bit_packing) {
     this->disableBitPacking();
-    std::string expected_sql = "SELECT l_orderkey, COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
     runTest(expected_sql, aggregators);
@@ -108,7 +110,7 @@ TEST_F(SecureNestedLoopAggregateTest, test_count_no_bit_packing) {
 TEST_F(SecureNestedLoopAggregateTest, test_count_dummies) {
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expected_sql = "SELECT l_orderkey,COUNT(*)::BIGINT cnt  FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey,COUNT(*) cnt  FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
     runDummiesTest(expected_sql, aggregators);
@@ -225,6 +227,7 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_sums) {
 
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
     auto input = new SecureSqlInput(db_name_, sql, true, sort_def);
+
 
     auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
 

@@ -26,7 +26,7 @@ SecureTable *SecureSqlInput::runSelf() {
 
     // secret share it
     this->start_time_ = clock_start();
-    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+    this->start_gate_cnt_ =system_conf_.emp_manager_->andGateCount();
 
     output_ = plain_input_->secretShare();
 

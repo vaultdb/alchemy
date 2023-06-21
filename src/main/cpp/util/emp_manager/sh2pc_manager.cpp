@@ -25,12 +25,11 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
         netio_->flush();
     }
 
-    cout << "secret sharing with a netio of " << (size_t) netio_ << endl;
 
     QuerySchema dst_schema = QuerySchema::toSecure(src->getSchema());
 
     auto dst_table =
-           TableFactory<Bit>::getTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, src->storageModel());
+           TableFactory<Bit>::getTable(alice_tuple_cnt + bob_tuple_cnt, dst_schema, src->storageModel(), src->getSortOrder());
 
     if(!src->getSortOrder().empty()) {
         if (party_ == emp::ALICE) {

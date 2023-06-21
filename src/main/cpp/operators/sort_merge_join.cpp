@@ -65,6 +65,10 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     QueryTable<B> *lhs = this->getChild(0)->getOutput();
     QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = this->system_conf_.emp_manager_->andGateCount();
+
+
     QuerySchema lhs_schema = lhs->getSchema();
     QuerySchema rhs_schema = rhs->getSchema();
     QuerySchema out_schema = QuerySchema::concatenate(lhs->getSchema(), rhs->getSchema());

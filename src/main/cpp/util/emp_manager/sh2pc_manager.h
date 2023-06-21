@@ -15,7 +15,6 @@ namespace  vaultdb {
 
         SH2PCManager(string alice_host, int party, int port)  : party_(party) {
             netio_  = new emp::NetIO(party_ == emp::ALICE ? nullptr : alice_host.c_str(), port);
-            cout << "Initialized netio in SH2PCManager at " << (size_t) netio_ << endl;
 
             emp::setup_semi_honest(netio_, party_, 1024 * 16);
         }

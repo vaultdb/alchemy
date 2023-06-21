@@ -142,7 +142,6 @@ namespace vaultdb {
          inline void accumulate(const QueryTable<B> *table, const int & row,  const B &group_by_match) override {
 
             Field<B> incr = Field<B>::If(table->getDummyTag(row), GroupByAggregateImpl<B>::zero_, table->getField(row, GroupByAggregateImpl<B>::aggregate_ordinal_));
-
             running_sum_ = Field<B>::If(group_by_match, running_sum_, GroupByAggregateImpl<B>::zero_);
 
             running_sum_ = running_sum_ + incr;
