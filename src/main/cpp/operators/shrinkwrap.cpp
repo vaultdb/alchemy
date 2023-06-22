@@ -21,7 +21,7 @@ QueryTable<B>*Shrinkwrap<B>::runSelf() {
     SortDefinition src_sort = input->getSortOrder();
 
     this->start_time_ = clock_start();
-    this->start_gate_cnt_ = this->system_conf_.emp_manager_->andGateCount();
+    this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     if(input->getTupleCount() < cardinality_bound_) {
         Operator<B>::output_ =  input->clone();

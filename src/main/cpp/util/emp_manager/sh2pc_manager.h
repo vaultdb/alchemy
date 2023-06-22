@@ -2,6 +2,7 @@
 #define _SH2PC_MANAGER_
 
 #include "emp_manager.h"
+#include <util/system_configuration.h>
 
 #if __has_include("emp-sh2pc/emp-sh2pc.h")
 #include <emp-sh2pc/emp-sh2pc.h>
@@ -17,6 +18,7 @@ namespace  vaultdb {
             netio_  = new emp::NetIO(party_ == emp::ALICE ? nullptr : alice_host.c_str(), port);
 
             emp::setup_semi_honest(netio_, party_, 1024 * 16);
+            SystemConfiguration::getInstance().emp_bit_size_bytes_ = sizeof(emp::block);
         }
 
 

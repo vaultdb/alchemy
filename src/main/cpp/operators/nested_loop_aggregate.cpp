@@ -63,7 +63,7 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     QuerySchema output_schema = this->output_schema_;
 
     this->start_time_ = clock_start();
-    this->start_gate_cnt_ = this->system_conf_.emp_manager_->andGateCount();
+    this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
 
     // use input card to determine how many bits we need for count

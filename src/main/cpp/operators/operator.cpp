@@ -8,7 +8,7 @@ using namespace vaultdb;
 
 template<typename B>
 Operator<B>::Operator(QueryTable<B> *lhs, const SortDefinition & sorted_on)
-: sort_definition_(sorted_on) {
+: sort_definition_(sorted_on), system_conf_(SystemConfiguration::getInstance()) {
     lhs_child_ = new TableInput<B>(lhs);
     output_schema_ = lhs->getSchema(); // copy up child schema by default
 
@@ -18,13 +18,13 @@ Operator<B>::Operator(QueryTable<B> *lhs, const SortDefinition & sorted_on)
 
 template<typename B>
 Operator<B>::Operator(QueryTable<B> *lhs, QueryTable<B> *rhs, const SortDefinition & sorted_on)
-    : sort_definition_(sorted_on), lhs_child_(new TableInput(lhs)), rhs_child_(new TableInput(rhs)) {
+    : sort_definition_(sorted_on), lhs_child_(new TableInput(lhs)), rhs_child_(new TableInput(rhs)), system_conf_(SystemConfiguration::getInstance())  {
 
 }
 
 template<typename B>
 Operator<B>::Operator(Operator *child, const SortDefinition & sorted_on)
-: sort_definition_(sorted_on), lhs_child_(child)  {
+: sort_definition_(sorted_on), lhs_child_(child), system_conf_(SystemConfiguration::getInstance())   {
 
      child->setParent(this);
 
@@ -35,7 +35,8 @@ Operator<B>::Operator(Operator *child, const SortDefinition & sorted_on)
 }
 
 template<typename B>
-Operator<B>::Operator(Operator *lhs, Operator *rhs, const SortDefinition & sorted_on) : sort_definition_(sorted_on),  lhs_child_(lhs), rhs_child_(rhs){
+Operator<B>::Operator(Operator *lhs, Operator *rhs, const SortDefinition & sorted_on)
+     : sort_definition_(sorted_on),  lhs_child_(lhs), rhs_child_(rhs), system_conf_(SystemConfiguration::getInstance())  {
 
     lhs->setParent(this);
     rhs->setParent(this);

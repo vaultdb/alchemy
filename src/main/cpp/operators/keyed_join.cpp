@@ -57,7 +57,7 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
     QueryTable<B> *rhs_table = Operator<B>::getChild(1)->getOutput(); // primary key
 
     this->start_time_ = clock_start();
-    this->start_gate_cnt_ = this->system_conf_.emp_manager_->andGateCount();
+    this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     uint32_t output_tuple_cnt = lhs_table->getTupleCount(); // foreignKeyTable = foreign key
     this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, lhs_table->storageModel(), lhs_table->getSortOrder());

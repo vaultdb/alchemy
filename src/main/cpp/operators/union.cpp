@@ -32,7 +32,7 @@ QueryTable<B> * Union<B>::runSelf() {
     QueryTable<B> *rhs = Operator<B>::getChild(1)->getOutput();
 
     this->start_time_ = clock_start();
-    this->start_gate_cnt_ = this->system_conf_.emp_manager_->andGateCount();
+    this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     assert(lhs->getSchema() == rhs->getSchema()); // union compatible
     assert(lhs->storageModel() == rhs->storageModel());

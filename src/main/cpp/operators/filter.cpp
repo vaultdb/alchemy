@@ -22,7 +22,7 @@ QueryTable<B> *Filter<B>::runSelf() {
     QueryTable<B> *input = Operator<B>::getChild()->getOutput();
 
     this->start_time_ = clock_start();
-    this->start_gate_cnt_ = this->system_conf_.emp_manager_->andGateCount();
+    this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     // deep copy new output, then just modify the dummy tag
     this-> output_ = input->clone();

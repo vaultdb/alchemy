@@ -36,10 +36,12 @@ namespace  vaultdb {
         time_point<high_resolution_clock> start_time_;
         size_t start_gate_cnt_ = 0L;
         double runtime_ = 0.0;
+        SystemConfiguration & system_conf_;
+
 
     public:
 
-        Operator(const SortDefinition & sorted_on = SortDefinition()) : sort_definition_(sorted_on) {
+        Operator(const SortDefinition & sorted_on = SortDefinition()) : sort_definition_(sorted_on), system_conf_(SystemConfiguration::getInstance()) {
 
 
         }
@@ -105,7 +107,6 @@ namespace  vaultdb {
 
 
     protected:
-        SystemConfiguration & system_conf_ = SystemConfiguration::getInstance();
         // to be implemented by the operator classes, e.g., sort, filter, et cetera
         virtual QueryTable<B> *runSelf() = 0;
         virtual std::string getOperatorType() const  = 0;

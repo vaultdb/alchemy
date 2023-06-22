@@ -15,7 +15,7 @@ namespace vaultdb {
     public:
         UnsortedAggregateImpl(const AggregateId & id, const FieldType & type, const int32_t & input_ordinal, const int32_t & output_ordinal);
         virtual void update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst, const int & dst_row, const B & match_found, const B & group_by_match) = 0;
-
+        virtual ~UnsortedAggregateImpl() = default;
 
 
         AggregateId agg_type_;
