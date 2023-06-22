@@ -29,8 +29,6 @@ void EmpBaseTest::SetUp()  {
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db_);
     s.initialize(db_name_, md, storage_model_);
     s.emp_manager_ = manager_;
-
-    cout << "System config at " << (size_t) &s << " has netio at " <<  (size_t) ((SH2PCManager *) s.emp_manager_)->netio_ << endl;
 }
 
 void EmpBaseTest::TearDown() {
