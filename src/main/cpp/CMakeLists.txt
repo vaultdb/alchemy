@@ -61,6 +61,7 @@ set(sources
 	    util/emp_manager/emp_manager.h
 		util/emp_manager/sh2pc_manager.cpp
 		util/emp_manager/zk_manager.cpp
+		util/emp_manager/outsourced_mpc_manager.cpp
 
 		query_table/field/field_type.h
 		query_table/field/field.cpp

@@ -9,8 +9,25 @@
 #include <boost/variant.hpp>
 #include <sstream>
 #include <emp-tool/emp-tool.h>
-#include <emp-zk/emp-zk.h>
 
+#if __has_include("emp-rescu/emp-rescu.h")
+#include "emp-rescu/emp-rescu.h"
+
+namespace  emp {
+    using Integer = Integer_T<OMPCBackend<N>::wire_t>;
+    using Float = Float_T<OMPCBackend<N>::wire_t>;
+    using Bit = Bit_T<OMPCBackend<N>::wire_t>;
+}
+#endif
+
+#if __has_include("emp-sh2pc/emp-sh2pc.h")
+#include <emp-sh2pc/emp-sh2pc.h>
+#endif
+
+
+#if __has_include("emp-zk/emp-zk.h")
+#include <emp-zk/emp-zk.h>
+#endif
 
 
 namespace vaultdb {

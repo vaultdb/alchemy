@@ -63,15 +63,15 @@ namespace  vaultdb {
         }
 
 
-        size_t andGateCount() const { return 0; }
+        size_t andGateCount() const override { return 0; }
 
-        size_t feed(int8_t *labels, int party, const bool *b, int byte_count) {
+        void  feed(int8_t *labels, int party, const bool *b, int byte_count) override  {
             throw;
         }
 
-        void flush() { throw; }
+        void flush() override { throw; }
 
-        ~SH2PCManager() = default;
+        ~ZKManager() = default;
 
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
             throw;

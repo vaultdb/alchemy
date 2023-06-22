@@ -63,7 +63,7 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expected_sql,
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, true,  1);
+    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false,  1);
 
     // configure and run test
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
@@ -89,7 +89,7 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expected_sql,
 
 TEST_F(SecureGroupByAggregateTest, test_count) {
     // set up expected output
-    std::string expected_sql = "SELECT l_orderkey, COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
     runTest(expected_sql, aggregators);
@@ -99,7 +99,7 @@ TEST_F(SecureGroupByAggregateTest, test_count) {
 TEST_F(SecureGroupByAggregateTest, test_count_dummies) {
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
-    std::string expected_sql = "SELECT l_orderkey,COUNT(*)::BIGINT cnt  FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey,COUNT(*) cnt  FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
     runDummiesTest(expected_sql, aggregators);
