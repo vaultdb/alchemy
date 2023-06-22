@@ -297,17 +297,18 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     Operator<B> *rhs  = operators_.at(rhs_id);
 
     Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
-
+    SortDefinition sort_def = lhs->getSortOrder();
+    
     // if fkey designation exists, use this to create keyed join
     // key: foreignKey
     if(join_tree.count("foreignKey") > 0) {
         int foreign_key = join_tree.get_child("foreignKey").template get_value<int>();
-        return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
+        return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
 
     }
 
 
-    return new BasicJoin<B>(lhs, rhs, join_condition);
+    return new BasicJoin<B>(lhs, rhs, join_condition, sort_def);
 
 }
 
