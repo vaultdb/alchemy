@@ -22,104 +22,104 @@ class EmpTest : public EmpBaseTest {
 
 
 //  verify emp configuration for int32s
-// TEST_F(EmpTest, emp_test_int) {
-//
-//
-//    // test encrypting an int from ALICE
-//    int32_t input = FLAGS_party == emp::ALICE ? 5 : 0;
-//    emp::Integer alice_secret_shared = emp::Integer(32, input, emp::ALICE);
-//    int32_t revealed = alice_secret_shared.reveal<int32_t>(emp::PUBLIC);
-//
-//    ASSERT_EQ(5, revealed);
-//
-//
-//    // test encrypting int from BOB
-//    input = FLAGS_party == emp::ALICE ? 0 : 4;
-//    emp::Integer bob_secret_shared = emp::Integer(32, input, emp::BOB);
-//    revealed = bob_secret_shared.reveal<int32_t>(emp::PUBLIC);
-//
-//    ASSERT_EQ(4, revealed);
-//
-//}
+ TEST_F(EmpTest, emp_test_int) {
+
+
+    // test encrypting an int from ALICE
+    int32_t input = FLAGS_party == emp::ALICE ? 5 : 0;
+    emp::Integer alice_secret_shared = emp::Integer(32, input, emp::ALICE);
+    int32_t revealed = alice_secret_shared.reveal<int32_t>(emp::PUBLIC);
+
+    ASSERT_EQ(5, revealed);
+
+
+    // test encrypting int from BOB
+    input = FLAGS_party == emp::ALICE ? 0 : 4;
+    emp::Integer bob_secret_shared = emp::Integer(32, input, emp::BOB);
+    revealed = bob_secret_shared.reveal<int32_t>(emp::PUBLIC);
+
+    ASSERT_EQ(4, revealed);
+
+}
 
 
 
 // basic test to verify emp configuration for strings
-//TEST_F(EmpTest, emp_test_varchar) {
-//
-//    std::string initial_string = "lithely regular deposits. fluffily";
-//
-//    size_t len = 44;
-//    int bit_cnt = len * 8;
-//
-//    while(initial_string.length() != len) {
-//        initial_string += " ";
-//    }
-//
-//    bool *bools = Utilities::bytesToBool((int8_t *) initial_string.c_str(), len);
-//
-//    int send_party = (this->emp_mode_ == EmpMode::SH2PC) ? emp::ALICE : emp::TP;
-//
-//    // encrypting as _sender
-//    emp::Integer secret_shared(bit_cnt, 0L, send_party);
-//
-//    if(FLAGS_party == send_party)
-//        manager_->feed(secret_shared.bits.data(), send_party, bools, bit_cnt);
-//    else
-//        manager_->feed(secret_shared.bits.data(), send_party, nullptr, bit_cnt);
-//
-//    manager_->flush();
-//    delete [] bools;
-//
-//
-//
-//    // the standard reveal method converts this to decimal.  Need to reveal it bitwise
-//    bools = new bool[bit_cnt];
-//
-//    manager_->reveal(bools, PUBLIC, secret_shared.bits.data(), bit_cnt);
-//
-//
-//
-//    vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
-//    decoded_bytes.resize(len + 1);
-//    decoded_bytes[len + 1] = '\0';
-//
-//
-//    std::string decoded_str((char *) decoded_bytes.data());
-//    delete [] bools;
-//
-//
-//    ASSERT_EQ(initial_string, decoded_str);
-//
-//    if(emp_mode_ == EmpMode::OUTSOURCED) {
-//        auto protocol =  (OMPCBackend<N> *) backend;
-//        emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC); // empty for setup
-//
-//        // ceil(bitCount / 128)
-//        OMPCPackedWire *packed = new OMPCPackedWire[TypeUtilities::packedWireCount(bit_cnt)];
-//        protocol->pack(secret_shared.bits.data(), packed, secret_shared.size());
-//        protocol->unpack(unpacked.bits.data(), packed, unpacked.size());
-//
-//        // the standard reveal method converts this to decimal.  Need to reveal it bitwise
-//        bools = new bool[bit_cnt];
-//        protocol->reveal(bools, emp::PUBLIC, unpacked.bits.data(),  bit_cnt);
-//        delete [] packed;
-//
-//        vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
-//        decoded_bytes.resize(len + 1);
-//        decoded_bytes[len+1] = '\0';
-//
-//        std::string decoded_string((char *) decoded_bytes.data());
-//        delete [] bools;
-//
-//        ASSERT_EQ("lithely regular deposits. fluffily          ", decoded_string);
-//
-//
-//    }
-//
-//
-//}
-//
+TEST_F(EmpTest, emp_test_varchar) {
+
+    std::string initial_string = "lithely regular deposits. fluffily";
+
+    size_t len = 44;
+    int bit_cnt = len * 8;
+
+    while(initial_string.length() != len) {
+        initial_string += " ";
+    }
+
+    bool *bools = Utilities::bytesToBool((int8_t *) initial_string.c_str(), len);
+
+    int send_party = (this->emp_mode_ == EmpMode::SH2PC) ? emp::ALICE : emp::TP;
+
+    // encrypting as _sender
+    emp::Integer secret_shared(bit_cnt, 0L, send_party);
+
+    if(FLAGS_party == send_party)
+        manager_->feed(secret_shared.bits.data(), send_party, bools, bit_cnt);
+    else
+        manager_->feed(secret_shared.bits.data(), send_party, nullptr, bit_cnt);
+
+    manager_->flush();
+    delete [] bools;
+
+
+
+    // the standard reveal method converts this to decimal.  Need to reveal it bitwise
+    bools = new bool[bit_cnt];
+
+    manager_->reveal(bools, PUBLIC, secret_shared.bits.data(), bit_cnt);
+
+
+
+    vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
+    decoded_bytes.resize(len + 1);
+    decoded_bytes[len + 1] = '\0';
+
+
+    std::string decoded_str((char *) decoded_bytes.data());
+    delete [] bools;
+
+
+    ASSERT_EQ(initial_string, decoded_str);
+
+    if(emp_mode_ == EmpMode::OUTSOURCED) {
+        auto protocol =  (OMPCBackend<N> *) backend;
+        emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC); // empty for setup
+
+        // ceil(bitCount / 128)
+        OMPCPackedWire *packed = new OMPCPackedWire[TypeUtilities::packedWireCount(bit_cnt)];
+        protocol->pack(secret_shared.bits.data(), packed, secret_shared.size());
+        protocol->unpack(unpacked.bits.data(), packed, unpacked.size());
+
+        // the standard reveal method converts this to decimal.  Need to reveal it bitwise
+        bools = new bool[bit_cnt];
+        protocol->reveal(bools, emp::PUBLIC, unpacked.bits.data(),  bit_cnt);
+        delete [] packed;
+
+        vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
+        decoded_bytes.resize(len + 1);
+        decoded_bytes[len+1] = '\0';
+
+        std::string decoded_string((char *) decoded_bytes.data());
+        delete [] bools;
+
+        ASSERT_EQ("lithely regular deposits. fluffily          ", decoded_string);
+
+
+    }
+
+
+}
+
 
 
 // test encrypting a query table with a single int in EMP
