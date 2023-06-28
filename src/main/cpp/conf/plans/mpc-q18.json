@@ -3,6 +3,7 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
+      "outputFields" : "l_orderkey (#0), l_quantity (#1)",
       "type": [
         {
           "type": "INTEGER",
@@ -22,6 +23,143 @@
     },
     {
       "id": "1",
+      "relOp": "LogicalAggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "group": [
+        0
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            1
+          ],
+          "name": null
+        }
+      ],
+      "inputs": [
+        "0"
+      ]
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalFilter",
+      "condition": {
+        "op": {
+          "name": ">",
+          "kind": "GREATER_THAN",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "literal": 7,
+            "type": {
+              "type": "FLOAT",
+              "nullable": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "fields": [
+        "l_orderkey"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalValues",
+      "outputFields" : "L2.l_orderkey (#0), L2.l_quantity (#1)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "L2.l_orderkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "L2.l_quantity"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "5",
+      "relOp": "LogicalJoin",
+      "joinOn": "L2.l_orderkey = l_orderkey",
+      "operator-algorithm" : "nested-loop-join",
+      "outputFields": "L2.l_orderkey (#0), L2.l_quantity (#1), l_orderkey (#2)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 0,
+      "inputs": [
+        "4",
+        "3"
+      ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalProject",
+      "fields": [
+        "L2.l_orderkey",
+        "L2.l_quantity"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        }
+      ]
+    },
+    {
+      "id": "7",
       "relOp": "LogicalValues",
       "type": [
         {
@@ -51,154 +189,11 @@
       "inputs": []
     },
     {
-      "id": "2",
-      "relOp": "LogicalAggregate",
-      "group": [
-        0
-      ],
-      "aggs": [
-        {
-          "agg": {
-            "name": "SUM",
-            "kind": "SUM",
-            "syntax": "FUNCTION"
-          },
-          "type": {
-            "type": "DECIMAL",
-            "nullable": true,
-            "precision": 19,
-            "scale": 0
-          },
-          "distinct": false,
-          "operands": [
-            1
-          ],
-          "name": null
-        }
-      ],
-      "inputs": [
-        "0"
-      ]
-    },
-    {
-      "id": "3",
-      "relOp": "LogicalFilter",
-      "condition": {
-        "op": {
-          "name": ">",
-          "kind": "GREATER_THAN",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 1,
-            "name": "$1"
-          },
-          {
-            "literal": 7,
-            "type": {
-              "type": "FLOAT",
-              "nullable": false
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": "4",
-      "relOp": "LogicalProject",
-      "fields": [
-        "l_orderkey"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        }
-      ]
-    },
-    {
-      "id": "5",
-      "relOp": "LogicalJoin",
-      "joinCondition": "o_orderkey = l_orderkey",
-      "outputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), l_orderkey (#4)",
-      "condition": {
-        "op": {
-          "name": "=",
-          "kind": "EQUALS",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 4,
-            "name": "$4"
-          }
-        ]
-      },
-      "joinType": "inner",
-      "foreignKey": 1,
-      "inputs": [
-        "1",
-        "4"
-      ]
-    },
-    {
-      "id": "6",
-      "relOp": "LogicalProject",
-      "inputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), l_orderkey (#4)",
-      "fields": [
-        "o_orderkey",
-        "o_custkey",
-        "o_orderdate",
-        "o_totalprice"
-      ],
-      "exprs": [
-        {
-          "input": 0,
-          "name": "$0"
-        },
-        {
-          "input": 1,
-          "name": "$1"
-        },
-        {
-          "input": 3,
-          "name": "$3"
-        },
-        {
-          "input": 2,
-          "name": "$2"
-        }
-      ]
-    },
-    {
-      "id": "7",
-      "relOp": "LogicalValues",
-      "type": [
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "l_orderkey"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "l_quantity"
-        }
-      ],
-      "tuples": [],
-      "inputs": []
-    },
-    {
       "id": "8",
       "relOp": "LogicalJoin",
-      "outputFields": "l_orderkey (#0), l_quantity (#1), o_orderkey (#2), o_custkey (#3), o_orderdate (#4), o_totalprice (#5)",
+      "joinOn": "L2.l_orderkey = o_orderkey",
+      "operator-algorithm" : "nested-loop-join",
+      "outputFields": "L2.l_orderkey (#0), L2.l_quantity (#1), o_orderkey (#2), o_custkey (#3), o_totalprice (#4), o_orderdate (#5)",
       "condition": {
         "op": {
           "name": "=",
@@ -219,12 +214,46 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "7",
-        "6"
+        "6",
+        "7"
       ]
     },
     {
       "id": "9",
+      "relOp": "LogicalProject",
+      "inputFields": "L2.l_orderkey (#0), L2.l_quantity (#1), o_orderkey (#2), o_custkey (#3), o_totalprice (#4), o_orderdate (#5)",
+      "fields": [
+        "o_orderkey",
+        "o_custkey",
+        "o_totalprice",
+        "o_orderdate",
+        "l_quantity"
+      ],
+      "exprs": [
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        }
+      ]
+    },
+    {
+      "id": "10",
       "relOp": "LogicalValues",
       "type": [
         {
@@ -243,9 +272,11 @@
       "inputs": []
     },
     {
-      "id": "10",
+      "id": "11",
       "relOp": "LogicalJoin",
-      "outputFields": "l_orderkey (#0), l_quantity (#1), o_orderkey (#2), o_custkey (#3), o_orderdate (#4), o_totalprice (#5), c_custkey (#6), c_name (#7)",
+      "joinOn": "o_custkey = c_custkey",
+      "operator-algorithm" : "nested-loop-join",
+      "outputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), l_quantity (#4), c_custkey (#5), c_name (#6)",
       "condition": {
         "op": {
           "name": "=",
@@ -254,24 +285,24 @@
         },
         "operands": [
           {
-            "input": 6,
-            "name": "$6"
+            "input": 1,
+            "name": "$1"
           },
           {
-            "input": 3,
-            "name": "$3"
+            "input": 5,
+            "name": "$5"
           }
         ]
       },
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "8",
-        "9"
+        "9",
+        "10"
       ]
     },
     {
-      "id": "11",
+      "id": "12",
       "relOp": "LogicalProject",
       "fields": [
         "c_name",
@@ -283,12 +314,20 @@
       ],
       "exprs": [
         {
-          "input": 7,
-          "name": "$7"
-        },
-        {
           "input": 6,
           "name": "$6"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        },
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 3,
+          "name": "$3"
         },
         {
           "input": 2,
@@ -297,20 +336,13 @@
         {
           "input": 4,
           "name": "$4"
-        },
-        {
-          "input": 5,
-          "name": "$5"
-        },
-        {
-          "input": 1,
-          "name": "$1"
         }
       ]
     },
     {
-      "id": "12",
+      "id": "13",
       "relOp": "LogicalAggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
       "group": [
         0,
         1,
@@ -340,7 +372,7 @@
       ]
     },
     {
-      "id": "13",
+      "id": "14",
       "relOp": "LogicalSort",
       "collation": [
         {

@@ -1,0 +1,437 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "outputFields" : "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_partkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_suppkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_linenumber"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_quantity"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_extendedprice"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_discount"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_tax"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_quantity"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 1,
+          "name": "l_returnflag"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 1,
+          "name": "l_linestatus"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "l_shipdate"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "l_commitdate"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "l_receiptdate"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 25,
+          "name": "l_shipstruct"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 10,
+          "name": "l_shipmode"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 44,
+          "name": "l_comment"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalFilter",
+      "outputFields" : "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15)",
+      "condition": {
+        "op": {
+          "name": "<=",
+          "kind": "LESS_OR_EQUAL_THAN",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "literal": 902102400,
+            "type": {
+              "type": "DATE",
+              "nullable": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalProject",
+      "inputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15)",
+      "fields": [
+        "l_returnflag",
+        "l_linestatus",
+        "l_quantity",
+        "l_extendedprice",
+        "discount",
+        "charge",
+        "l_discount"
+      ],
+      "exprs": [
+        {
+          "input": 8,
+          "name": "$8"
+        },
+        {
+          "input": 9,
+          "name": "$9"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        },
+        {
+          "op": {
+            "name": "*",
+            "kind": "TIMES",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 5,
+              "name": "$5"
+            },
+            {
+              "op": {
+                "name": "-",
+                "kind": "MINUS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "literal": 1,
+                  "type": {
+                    "type": "FLOAT",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 6,
+                  "name": "$6"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": {
+            "name": "*",
+            "kind": "TIMES",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 5,
+                  "name": "$5"
+                },
+                {
+                  "op": {
+                    "name": "-",
+                    "kind": "MINUS",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "literal": 1,
+                      "type": {
+                        "type": "FLOAT",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 6,
+                      "name": "$6"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "+",
+                "kind": "plus",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "literal": 1,
+                  "type": {
+                    "type": "FLOAT",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 7,
+                  "name": "$7"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "input": 6,
+          "name": "$6"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalAggregate",
+      "outputFields": "l_returnflag (#0), l_linestatus (#1), l_quantity (#2), l_extendedprice (#3), discount (#4), charge (#5), l_discount (#6)",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "group": [
+        0,
+        1
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            2
+          ],
+          "name": "sum_qty"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            3
+          ],
+          "name": "sum_base_price"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            4
+          ],
+          "name": "sum_disc_price"
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            5
+          ],
+          "name": "sum_charge"
+        },
+        {
+          "agg": {
+            "name": "AVG",
+            "kind": "AVG",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            2
+          ],
+          "name": "avg_qty"
+        },
+        {
+          "agg": {
+            "name": "AVG",
+            "kind": "AVG",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            3
+          ],
+          "name": "avg_price"
+        },
+        {
+          "agg": {
+            "name": "AVG",
+            "kind": "AVG",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            6
+          ],
+          "name": "avg_disc"
+        },
+        {
+          "agg": {
+            "name": "COUNT",
+            "kind": "COUNT",
+            "syntax": "FUNCTION_STAR"
+          },
+          "type": {
+            "type": "BIGINT",
+            "nullable": false
+          },
+          "distinct": false,
+          "operands": [],
+          "name": "count_order"
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        }
+      ]
+    }
+  ]
+}

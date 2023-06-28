@@ -13,9 +13,11 @@
 #include <operators/secure_sql_input.h>
 #include <operators/zk_sql_input.h>
 #include <operators/sort.h>
+#include <operators/nested_loop_aggregate.h>
 #include <operators/group_by_aggregate.h>
 #include <operators/scalar_aggregate.h>
 #include <operators/keyed_join.h>
+#include <operators/sort_merge_join.h>
 #include <operators/basic_join.h>
 #include <operators/filter.h>
 #include <operators/project.h>
@@ -33,6 +35,28 @@ PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, const in
 {
     std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + plan_name + ".sql";
     std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + plan_name + ".json";
+
+    parseSqlInputs(sql_file);
+    parseSecurePlan(plan_file);
+
+}
+
+template<typename B>
+PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, const int &limit, const bool & isBaseline)
+        :  db_name_(db_name), input_limit_(limit)
+{
+    std::string sql_file = "";
+    std::string plan_file = "";
+    if(isBaseline) {
+        // Baseline ver.
+        sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/baseline/baseline-" + plan_name + ".sql";
+        plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/baseline/baseline-" + plan_name + ".json";
+    }
+    else{
+        // Handcoded ver.
+        sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + plan_name + ".sql";
+        plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + plan_name + ".json";
+    }
 
     parseSqlInputs(sql_file);
     parseSecurePlan(plan_file);
@@ -224,6 +248,7 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
     // parse the aggregators
     std::vector<int32_t> group_by_ordinals;
     vector<ScalarAggregateDefinition> aggregators;
+    int cardBound = -1;
 
     if(aggregate_json.count("group") > 0) {
         ptree group_by = aggregate_json.get_child("group.");
@@ -234,6 +259,11 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
             group_by_ordinals.push_back(ordinal);
         }
     }
+
+    // Parse Cardinality Bound info from JSON
+    if(aggregate_json.count("cardBound") > 0)
+        cardBound = aggregate_json.get_child("cardBound").template get_value<int>();
+
     boost::property_tree::ptree agg_payload = aggregate_json.get_child("aggs");
 
 
@@ -261,18 +291,22 @@ Operator<B> *PlanParser<B>::parseAggregate(const int &operator_id, const boost::
 
 
     if(!group_by_ordinals.empty()) {
-        // if sort not aligned, insert a sort op
-        SortDefinition child_sort = child->getSortOrder();
-        if(!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
-            // insert sort
-            SortDefinition child_sort;
-            for(uint32_t idx : group_by_ordinals) {
-                child_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
+        if(cardBound > 0)
+            return new NestedLoopAggregate<B>(child, group_by_ordinals, aggregators, cardBound);
+        else {
+            // if sort not aligned, insert a sort op
+            SortDefinition child_sort = child->getSortOrder();
+            if (!GroupByAggregate<B>::sortCompatible(child_sort, group_by_ordinals)) {
+                // insert sort
+                SortDefinition child_sort;
+                for (uint32_t idx: group_by_ordinals) {
+                    child_sort.template emplace_back(ColumnSort(idx, SortDirection::ASCENDING));
+                }
+                child = new Sort<B>(child, child_sort);
+                support_ops_.template emplace_back(child);
             }
-            child = new Sort<B>(child, child_sort);
-            support_ops_.template emplace_back(child);
+            return new GroupByAggregate<B>(child, group_by_ordinals, aggregators);
         }
-        return new GroupByAggregate<B>(child, group_by_ordinals, aggregators);
     }
     else {
 
@@ -302,8 +336,12 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     // key: foreignKey
     if(join_tree.count("foreignKey") > 0) {
         int foreign_key = join_tree.get_child("foreignKey").template get_value<int>();
-        return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
 
+        string joinType = join_tree.get_child("operator-algorithm").template get_value<string>();
+        if(joinType == "nested-loop-join")
+            return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition);
+        else
+            return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition);
     }
 
 

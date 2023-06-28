@@ -3,6 +3,7 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
+      "outputFields": "n_name (#0), c_custkey (#1), c_nationkey (#2)",
       "type": [
         {
           "type": "CHAR",
@@ -27,6 +28,7 @@
     {
       "id": "1",
       "relOp": "LogicalValues",
+      "outputFields": "o_orderkey (#0), o_custkey (#1)",
       "type": [
         {
           "type": "INTEGER",
@@ -37,11 +39,6 @@
           "type": "INTEGER",
           "nullable": true,
           "name": "o_custkey"
-        },
-        {
-          "type": "DATE",
-          "nullable": true,
-          "name": "o_orderdate"
         }
       ],
       "tuples": [],
@@ -50,6 +47,8 @@
     {
       "id": "2",
       "relOp": "LogicalJoin",
+      "joinOn" : "c_custkey = o_custkey",
+      "outputFields": "n_name (#0), c_custkey (#1), c_nationkey (#2), o_orderkey (#3), o_custkey (#4)",
       "condition": {
         "op": {
           "name": "=",
@@ -76,7 +75,32 @@
     },
     {
       "id": "3",
+      "relOp": "LogicalProject",
+      "outputFields": "n_name (#0), c_nationkey (#1), o_orderkey (#2)",
+      "fields": [
+        "n_name",
+        "c_nationkey",
+        "o_orderkey"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        }
+      ]
+    },
+    {
+      "id": "4",
       "relOp": "LogicalValues",
+      "outputFields": "l_orderkey (#0), l_suppkey (#1), revenue (#2)",
       "type": [
         {
           "type": "INTEGER",
@@ -93,22 +117,17 @@
           "nullable": true,
           "precision": 19,
           "scale": 0,
-          "name": "l_extendedprice"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "l_discount"
+          "name": "revenue"
         }
       ],
       "tuples": [],
       "inputs": []
     },
     {
-      "id": "4",
+      "id": "5",
       "relOp": "LogicalJoin",
+      "joinOn" : "l_orderkey = o_orderkey",
+      "outputFields": "n_name (#0), c_nationkey (#1), o_orderkey (#2), l_orderkey (#3), l_suppkey (#4), revenue (#5)",
       "condition": {
         "op": {
           "name": "=",
@@ -117,8 +136,8 @@
         },
         "operands": [
           {
-            "input": 6,
-            "name": "$6"
+            "input": 2,
+            "name": "$2"
           },
           {
             "input": 3,
@@ -129,12 +148,42 @@
       "joinType": "inner",
       "foreignKey": 1,
       "inputs": [
-        "2",
-        "3"
+        "3",
+        "4"
       ]
     },
     {
-      "id": "5",
+      "id": "6",
+      "relOp": "LogicalProject",
+      "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3)",
+      "fields": [
+        "n_name",
+        "c_nationkey",
+        "l_suppkey",
+        "revenue"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "outputFields": "s_suppkey (#0), s_nationkey (#1)",
       "relOp": "LogicalValues",
       "type": [
         {
@@ -152,8 +201,10 @@
       "inputs": []
     },
     {
-      "id": "6",
+      "id": "8",
       "relOp": "LogicalJoin",
+      "outputFields": "n_name (#0), c_nationkey (#1), l_suppkey (#2), revenue (#3), s_suppkey (#4), s_nationkey (#5)",
+      "joinOn" : "c_nationkey = s_nationkey AND l_suppkey = s_suppkey",
       "condition": {
         "op": {
           "name": "AND",
@@ -169,12 +220,12 @@
             },
             "operands": [
               {
-                "input": 7,
-                "name": "$7"
+                "input": 1,
+                "name": "$1"
               },
               {
-                "input": 10,
-                "name": "$10"
+                "input": 5,
+                "name": "$5"
               }
             ]
           },
@@ -190,8 +241,8 @@
                 "name": "$2"
               },
               {
-                "input": 11,
-                "name": "$11"
+                "input": 4,
+                "name": "$4"
               }
             ]
           }
@@ -200,16 +251,17 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "4",
-        "5"
+        "6",
+        "7"
       ]
     },
     {
-      "id": "7",
+      "id": "9",
       "relOp": "LogicalProject",
+      "outputFields": "n_name (#0), revenue (#1)",
       "fields": [
         "n_name",
-        "$f1"
+        "revenue"
       ],
       "exprs": [
         {
@@ -217,43 +269,15 @@
           "name": "$0"
         },
         {
-          "op": {
-            "name": "*",
-            "kind": "TIMES",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 8,
-              "name": "$8"
-            },
-            {
-              "op": {
-                "name": "-",
-                "kind": "MINUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "literal": 1,
-                  "type": {
-                    "type": "FLOAT",
-                    "nullable": false
-                  }
-                },
-                {
-                  "input": 9,
-                  "name": "$9"
-                }
-              ]
-            }
-          ]
+          "input": 3,
+          "name": "$3"
         }
       ]
     },
     {
-      "id": "8",
+      "id": "10",
       "relOp": "LogicalAggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
       "group": [
         0
       ],
@@ -279,7 +303,7 @@
       ]
     },
     {
-      "id": "9",
+      "id": "11",
       "relOp": "LogicalSort",
       "collation": [
         {
