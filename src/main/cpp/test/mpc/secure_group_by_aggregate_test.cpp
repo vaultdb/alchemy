@@ -16,6 +16,7 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43440, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_int32(ctrl_port, 65454, "port for managing EMP control flow by passing public values");
 
 
 class SecureGroupByAggregateTest : public EmpBaseTest {

@@ -20,6 +20,7 @@ DEFINE_string(test, "baseline", "testname baseline or handcode");\
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 
 
 

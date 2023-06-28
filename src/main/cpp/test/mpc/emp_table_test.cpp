@@ -5,10 +5,10 @@
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54324, "port for EMP execution");
+DEFINE_int32(port, 54334, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
-DEFINE_int32(ctrl_port, 65442, "port for managing EMP control flow by passing public values");
+DEFINE_int32(ctrl_port, 65428, "port for managing EMP control flow by passing public values");
 
 using namespace vaultdb;
 
@@ -22,7 +22,7 @@ protected:
 
 
 // test encrypting a query table with a single int in EMP
-TEST_F(EmpTableTest, encrypt_table_one_column) {
+TEST_F(EmpTableTest, secret_share_table_one_column) {
 
 
     std::string input_query =  "SELECT l_orderkey FROM lineitem WHERE l_orderkey <= 20 ORDER BY l_orderkey, l_linenumber";
@@ -37,25 +37,16 @@ TEST_F(EmpTableTest, encrypt_table_one_column) {
 
 
 // test encrypting a query table with a single int in EMP
-TEST_F(EmpTableTest, encrypt_table_varchar) {
+TEST_F(EmpTableTest, secret_share_table_varchar) {
 
-    std::string input_query =  "SELECT l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
+    std::string input_query =  "SELECT l_comment FROM lineitem WHERE l_orderkey <= 10 ORDER BY l_orderkey, l_linenumber";
     secretShareAndValidate(input_query);
 
 }
 
 
-//TEST_F(EmpTableTest, tpch_q1_mockup) {
-//    this->disableBitPacking();
-//    string sql = "SELECT  l_returnflag,  l_linestatus,  SUM(l_quantity) as sum_qty, SUM(l_extendedprice) as sum_base_price, SUM(l_extendedprice * (1 - l_discount)) as sum_disc_price,  SUM(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, AVG(l_quantity) as avg_qty,  AVG(l_extendedprice) as avg_price,  AVG(l_discount) as avg_disc,   COUNT(*)::BIGINT as count_order \n"
-//                 "FROM  lineitem \n"
-//                 "WHERE  l_shipdate <= date '1998-08-03' \n"
-//                 "GROUP BY  l_returnflag, l_linestatus \n"
-//                 "ORDER BY  l_returnflag,  l_linestatus";
-//    secretShareAndValidate(sql);
-//}
 
-TEST_F(EmpTableTest, encrypt_table_two_cols) {
+TEST_F(EmpTableTest, secret_share_table_two_cols) {
 
     std::string input_query = "SELECT l_orderkey, l_comment "
                              "FROM lineitem "
@@ -69,8 +60,8 @@ TEST_F(EmpTableTest, encrypt_table_two_cols) {
 
 
 // test more column types
-TEST_F(EmpTableTest, encrypt_table) {
-
+TEST_F(EmpTableTest, secret_share_table) {
+    // int32, varcha
     std::string input_query =  "SELECT l_orderkey, l_comment, l_returnflag, l_discount, "
                                "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
                                "FROM lineitem "
@@ -82,7 +73,7 @@ TEST_F(EmpTableTest, encrypt_table) {
 }
 
 
-TEST_F(EmpTableTest, encrypt_table_dummy_tag) {
+TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
 
 
     std::string input_query = "SELECT l_orderkey, l_comment, l_returnflag, l_discount, "
@@ -100,10 +91,10 @@ TEST_F(EmpTableTest, encrypt_table_dummy_tag) {
 TEST_F(EmpTableTest, bit_packing_test) {
 
 
-    std::string input_query = "SELECT c_custkey, c_nationkey FROM customer WHERE c_custkeu <= 20 ORDER BY (1)";
+    std::string input_query = "SELECT c_custkey, c_nationkey FROM customer WHERE c_custkey <= 20 ORDER BY (1)";
 
     PsqlDataProvider data_provider;
-    PlainTable *input_table = data_provider.getQueryTable(db_name_,
+    PlainTable *input_table = data_provider.getQueryTable(unioned_db_,
                                                           input_query, false);
 
     SecureTable *secret_shared = input_table->secretShare();
