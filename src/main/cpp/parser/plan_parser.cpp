@@ -354,11 +354,16 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     if(join_tree.count("foreignKey") > 0) {
         int foreign_key = join_tree.get_child("foreignKey").template get_value<int>();
 
-        string joinType = join_tree.get_child("operator-algorithm").template get_value<string>();
-        if(joinType == "nested-loop-join")
-            return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
-        else
+        if(join_tree.count("operator-algorithm") > 0) {
+            string joinType = join_tree.get_child("operator-algorithm").template get_value<string>();
+            if (joinType == "sort-merge-join")
+                return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
+
             return new SortMergeJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
+        }
+        else { // if unspecified, use KeyedJoin
+            return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
+        }
     }
 
 
