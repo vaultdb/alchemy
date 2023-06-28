@@ -1,7 +1,7 @@
-#include "sh2pc_manager.h"
+#include "outsourced_mpc_manager.h"
 
-#if __has_include("emp-sh2pc/emp-sh2pc.h")
-#include <emp-sh2pc/emp-sh2pc.h>
+#if __has_include("emp-rescu/emp-rescu.h")
+#include "emp-rescu/emp-rescu.h"
 #include <query_table/query_table.h>
 #include <query_table/table_factory.h>
 #include <util/field_utilities.h>

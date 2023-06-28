@@ -21,48 +21,6 @@ Join<B>::Join(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, 
 
 
 
-// TODO: refactor this to not require discrete tuple
-//template<typename B>
-//void Join<B>::write_left(PlainTuple & dst, const PlainTable *src, const int & idx) {
-//
-//    size_t tuple_size = src->tuple_size_ - 1; // -1 for dummy tag
-//    PlainTuple  p = src->getPlainTuple(idx);
-//    memcpy(dst.getData(), p.getData(), tuple_size);
-//
-//}
-
-//template<typename B>
-//void Join<B>::write_left(SecureTuple & dst, const SecureTable *src, const int & idx) {
-//    size_t write_size = src->tuple_size_ - TypeUtilities::getEmpBitSize(); // - for dummy tag
-//    SecureTuple s = src->getSecureTuple(idx);
-//    memcpy(dst.getData(), s.getData(), write_size );
-//}
-//
-//
-//
-//
-//template<typename B>
-//void Join<B>::write_right(SecureTuple &dst_tuple, const SecureTable *src, const int & idx) {
-//    int write_size = (src->getSchema().size() - 1) * TypeUtilities::getEmpBitSize(); // sans the dummy tag
-//    int write_offset = dst_tuple.schema_->size() - src->getSchema().size(); // bits
-//    Bit *dst =  dst_tuple.getData() + write_offset;
-//
-//    SecureTuple s = src->getSecureTuple(idx);
-//    memcpy(dst, s.getData(), write_size);
-//}
-
-//template<typename B>
-//void Join<B>::write_right(PlainTuple &dst_tuple, const PlainTable *src, const int & idx) {
-//
-//    size_t write_size = src->tuple_size_ - 1; // don't overwrite dummy tag
-//    int8_t *write_ptr = dst_tuple.getData() + (dst_tuple.getSchema()->size()/8 - src->tuple_size_);
-//    PlainTuple  p = src->getPlainTuple(idx);
-//
-//    memcpy(write_ptr, p.getData(), write_size);
-//
-//}
-
-
 template<typename B>
 string Join<B>::getParameters() const {
 

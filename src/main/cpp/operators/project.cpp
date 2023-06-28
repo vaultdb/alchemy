@@ -20,7 +20,7 @@ QueryTable<B> *Project<B>::runSelf() {
     uint32_t tuple_cnt = src_table->getTupleCount();
 
     this->start_time_ = clock_start();
-    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+    this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
     this->output_ = TableFactory<B>::getTable(tuple_cnt, this->output_schema_,  src_table->storageModel(), this->sort_definition_);
 

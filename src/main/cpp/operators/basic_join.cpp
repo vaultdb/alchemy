@@ -19,7 +19,8 @@ QueryTable<B> *BasicJoin<B>::runSelf() {
     B predicate_eval;
 
     this->start_time_ = clock_start();
-    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
+    this->start_gate_cnt_ = this->system_conf_.andGateCount();
+
 
     assert(lhs->isEncrypted() == rhs->isEncrypted()); // only support all plaintext or all MPC
 

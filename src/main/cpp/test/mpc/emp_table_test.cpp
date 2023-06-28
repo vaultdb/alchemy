@@ -26,7 +26,7 @@ TEST_F(EmpTableTest, encrypt_table_one_column) {
 
     std::string input_query =  "SELECT l_orderkey FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
 
-    SortDefinition  sort_definition = DataUtilities::getDefaultSortDefinition(0);
+    SortDefinition  sort_definition = DataUtilities::getDefaultSortDefinition(1);
 
     secretShareAndValidate(input_query, sort_definition);
 

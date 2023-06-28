@@ -19,7 +19,7 @@ namespace vaultdb{
         EmpManager *emp_manager_ = nullptr;
 
         // value to be maintained by EMPManager
-        int emp_int_size_bytes_ = sizeof(emp::Bit);
+        int emp_bit_size_bytes_ = sizeof(emp::Bit);
 
         static SystemConfiguration& getInstance() {
             static SystemConfiguration  instance;
@@ -53,6 +53,9 @@ namespace vaultdb{
             return storage_model_;
         }
 
+        inline size_t andGateCount() const {
+            return (emp_manager_ != nullptr)  ? emp_manager_->andGateCount() : 0L;
+        }
         ~SystemConfiguration() {
             if(emp_manager_ != nullptr) delete emp_manager_;
         }

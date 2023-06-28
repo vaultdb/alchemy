@@ -1,6 +1,8 @@
 #ifndef _ZK_MANAGER_H_
 #define _ZK_MANAGER_H_
 #include "emp_manager.h"
+#include <util/system_configuration.h>
+
 
 #if __has_include("emp-zk/emp-zk.h")
 
@@ -18,7 +20,7 @@ namespace vaultdb {
                 ios_[i] = new BoolIO<NetIO>(new NetIO(party == ALICE ? nullptr
                                         : gen_host.c_str(),port+i), party==ALICE);
             setup_zk_bool<BoolIO<NetIO>>(ios_, threads_, party_);
-
+            SystemConfiguration::getInstance().emp_bit_size_bytes_ = sizeof(emp::block);
         }
 
         size_t andGateCount() const override {
@@ -61,15 +63,15 @@ namespace  vaultdb {
         }
 
 
-        size_t andGateCount() const { return 0; }
+        size_t andGateCount() const override { return 0; }
 
-        size_t feed(int8_t *labels, int party, const bool *b, int byte_count) {
+        void  feed(int8_t *labels, int party, const bool *b, int byte_count) override  {
             throw;
         }
 
-        void flush() { throw; }
+        void flush() override { throw; }
 
-        ~SH2PCManager() = default;
+        ~ZKManager() = default;
 
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
             throw;

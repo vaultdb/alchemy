@@ -17,15 +17,9 @@ namespace  vaultdb {
         Join(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> * predicate, const SortDefinition & sort = SortDefinition());
         ~Join() { if(predicate_ != nullptr) delete predicate_; }
 
-//        static void write_left(PlainTuple & dst, const PlainTable *src, const int & idx);
-//        static void write_left(SecureTuple & dst, const SecureTable *src, const int & idx);
         // if B write is true, then write to the left side of an output tuple with src_tuple
         static void write_left(const B & write, QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
         static void write_left(QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
-
-
-//        static void write_right(PlainTuple & dst, const PlainTable *src, const int & idx);
-//        static void write_right(SecureTuple & dst, const SecureTable *src, const int & idx);
 
 
         static void write_right(const B & write, QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);

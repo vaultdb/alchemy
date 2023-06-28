@@ -62,6 +62,9 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     QuerySchema input_schema = input->getSchema();
     QuerySchema output_schema = this->output_schema_;
 
+    this->start_time_ = clock_start();
+    this->start_gate_cnt_ = this->system_conf_.andGateCount();
+
 
     // use input card to determine how many bits we need for count
     // only needed in secure mode
@@ -107,7 +110,7 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     for(int i = 0; i < input->getTupleCount(); ++i) {
 
         B input_dummy = input->getDummyTag(i);
-        B matched = FieldUtilities::select(input_dummy, B(true), B(false)); // already "matched" if dummy
+        B matched = input_dummy;// already "matched" if dummy
 
         for (int j = 0; j < output_cardinality_; ++j) {
             B group_by_match = groupByMatch(input, i, output, j);

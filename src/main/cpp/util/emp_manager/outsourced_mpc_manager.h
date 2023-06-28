@@ -1,24 +1,24 @@
-#ifndef _SH2PC_MANAGER_
-#define _SH2PC_MANAGER_
+#ifndef _OUTSOURCE_MANAGER_
+#define _OUTSOURCE_MANAGER_
 
 #include "emp_manager.h"
 #include <util/system_configuration.h>
 
-#if __has_include("emp-sh2pc/emp-sh2pc.h")
-#include <emp-sh2pc/emp-sh2pc.h>
+#if __has_include("emp-rescu/emp-rescu.h")
+#include <emp-rescu/emp-rescu.h>
 
 namespace  vaultdb {
-    class SH2PCManager : public EmpManager {
+    class OutsourcedMpcManager : public EmpManager {
 
     public:
         NetIO *netio_;
         int party_;
 
-        SH2PCManager(string alice_host, int party, int port)  : party_(party) {
+        OutsourcedMpcManager(string alice_host, int party, int port)  : party_(party) {
             netio_  = new emp::NetIO(party_ == emp::ALICE ? nullptr : alice_host.c_str(), port);
 
             emp::setup_semi_honest(netio_, party_, 1024 * 16);
-            SystemConfiguration::getInstance().emp_bit_size_bytes_ = sizeof(emp::block);
+            SystemConfiguration::getInstance().emp_bit_size_bytes_ =  sizeof(OMPCPackedWire);
         }
 
 
@@ -33,7 +33,7 @@ namespace  vaultdb {
 
         void flush() override { netio_->flush(); }
 
-        ~SH2PCManager() { delete netio_; }
+        ~OutsourcedMpcManager() { delete netio_; }
 
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override;
 
@@ -51,14 +51,13 @@ namespace  vaultdb {
 
 namespace  vaultdb {
     // placeholder to make this build
-    class SH2PCManager : public EmpManager {
+    class OutsourcedMpcManager : public EmpManager {
 
     public:
 
-        SH2PCManager(string alice_host, int party, int port)  {
+        OutsourcedMpcManager(string alice_host, int party, int port)  {
             throw;
         }
-
 
         size_t andGateCount() const override { return 0; }
 
@@ -66,9 +65,9 @@ namespace  vaultdb {
             throw;
         }
 
-        void flush() override { throw; }
+        void flush()  override{ throw; }
 
-        ~SH2PCManager() = default;
+        ~OutsourcedMpcManager() = default;
 
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
             throw;
@@ -78,4 +77,4 @@ namespace  vaultdb {
 }
 #endif // end if-emp-tool
 
-#endif // end SH2PC_MANAGER_
+#endif // end OUTSOURCE_MANAGER

@@ -13,7 +13,8 @@ namespace vaultdb {
     public:
         ScalarAggregateImpl(const AggregateId & id, const FieldType & type, const int32_t & input_ordinal, const int32_t & output_ordinal);
         virtual void update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst) = 0;
-
+        virtual ~ScalarAggregateImpl() = default;
+        
         AggregateId agg_type_;
         FieldType  field_type_;
         int32_t input_ordinal_;

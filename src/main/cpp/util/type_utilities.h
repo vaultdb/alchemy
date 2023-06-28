@@ -4,6 +4,7 @@
 #include <string>
 
 #include "query_table/field/field.h"
+#include "util/system_configuration.h"
 
 
 // N.B. Do not use namespace std here, it will cause a naming collision in emp
@@ -18,7 +19,7 @@ namespace vaultdb {
         // See FieldType::getPhysicalSize() for physical, allocated size
         static size_t getTypeSize(const FieldType & id);
 
-        static inline size_t getEmpBitSize() { return   sizeof(emp::block); }
+        static inline size_t getEmpBitSize() { return  SystemConfiguration::getInstance().emp_bit_size_bytes_; } // byte size
 
         // when reading data from ascii sources like csv
         // Moved this to FieldFactory
