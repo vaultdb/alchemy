@@ -42,14 +42,14 @@ void EmpBaseTest::SetUp()  {
         string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
         manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
         db_name_ = (FLAGS_party == emp::TP) ? unioned_db_ : empty_db_;
-//        FLAGS_port += N;
-//        FLAGS_ctrl_port += N;
+        FLAGS_port += N;
+        FLAGS_ctrl_port += N;
     }
     else if(_emp_mode_ == EmpMode::SH2PC) {
         manager_ = new SH2PCManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
         db_name_ = (FLAGS_party == emp::ALICE) ? alice_db_ : bob_db_;
         // increment the port for each new test
-//        ++FLAGS_port;
+        ++FLAGS_port;
     }
     else {
         throw std::runtime_error("No EMP backend found.");

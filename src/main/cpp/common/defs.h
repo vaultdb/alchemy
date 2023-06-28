@@ -21,6 +21,8 @@ namespace  emp {
 #else
 namespace emp {
     const static int TP = 10086;
+    const static int N = 3;
+
 }
 #endif
 
