@@ -118,7 +118,6 @@ set(sources
 		expression/visitor/type_inference_visitor.cpp
 		expression/visitor/plain_to_secure_visitor.cpp
 		expression/visitor/type_validation_visitor.cpp
-		expression/visitor/bit_packing_compatibility_visitor.cpp
 		expression/visitor/to_packed_expression_visitor.cpp)
 
 

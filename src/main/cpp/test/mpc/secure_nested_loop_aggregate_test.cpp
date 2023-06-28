@@ -45,7 +45,6 @@ void SecureNestedLoopAggregateTest::runTest(const string &expected_sql,
     NestedLoopAggregate aggregate(input, group_bys, aggregators, 10);
 
     PlainTable *aggregated = aggregate.run()->reveal();
-    cout << "Aggregated: " << *aggregated << endl;
 
     Sort sort(aggregated, SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
     auto observed = sort.run();

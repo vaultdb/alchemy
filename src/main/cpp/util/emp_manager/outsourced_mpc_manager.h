@@ -11,39 +11,68 @@ namespace  vaultdb {
     class OutsourcedMpcManager : public EmpManager {
 
     public:
-        NetIO *netio_;
+        emp::NetIO *tpio_ = nullptr;
+        vector<NetIO *> ios_;
+
+        emp::NetIO *tpio_ctrl_ = nullptr;
+        vector<NetIO *> ios_ctrl_;
         int party_;
 
-        OutsourcedMpcManager(string alice_host, int party, int port)  : party_(party) {
-            netio_  = new emp::NetIO(party_ == emp::ALICE ? nullptr : alice_host.c_str(), port);
-
-            emp::setup_semi_honest(netio_, party_, 1024 * 16);
-            SystemConfiguration::getInstance().emp_bit_size_bytes_ =  sizeof(OMPCPackedWire);
+        OutsourcedMpcManager(string hosts[], int party, int comm_port, int ctrl_port)  : party_(party) {
+            ios_ = emp::setup_netio(tpio_, hosts, comm_port, party_, N);
+            ios_ctrl_ = emp::setup_netio(tpio_ctrl_, hosts, ctrl_port, party_, N);
+            emp::backend = new OMPCBackend<N>(ios_, tpio_, party_);
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            s.emp_bit_size_bytes_  =  sizeof(OMPCPackedWire);
+            s.party_ = party;
         }
 
-
+        // setup for plaintext execution
+        OutsourcedMpcManager() {
+            emp::backend = new ClearPrinter();
+        }
 
         size_t andGateCount() const override {
-           return  emp::CircuitExecution::circ_exec->num_and();
+           return  ((OMPCBackend<N> *) backend)->num_and();
         }
 
-        void  feed(int8_t *labels, int party, const bool *b, int byte_count) override {
-             emp::ProtocolExecution::prot_exec->feed((block *) labels, party, b, byte_count);
+        void  feed(Bit *labels, int party, const bool *b, int byte_count) override {
+            ((OMPCBackend<N> *) backend)->feed((Bit *) labels, party, b, byte_count);
         }
 
-        void flush() override { netio_->flush(); }
+        void flush() override {
+            if(tpio_ != nullptr) tpio_->flush();
 
-        ~OutsourcedMpcManager() { delete netio_; }
+            for(NetIO *io : ios_) {
+                if(io != nullptr) io->flush();
+            }
+        }
+
+        ~OutsourcedMpcManager() {
+            delete emp::backend;
+            if(tpio_ != nullptr) delete_netio(tpio_, ios_, party_);
+            if(tpio_ctrl_ != nullptr) delete_netio(tpio_ctrl_, ios_ctrl_, party_);
+        }
 
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override;
 
-    private:
-        static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
-                               QueryTable<Bit> *dst_table, const size_t &write_offset,
-                               const bool &reverse_read_order);
-        static void secret_share_send(const int &party, const QueryTable<bool> *src_table, QueryTable<Bit> *dst_table,
-                                      const int &write_offset,
-                                      const bool &reverse_read_order);
+        void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) override {
+            ((OMPCBackend<N> *) emp::backend)->reveal(dst,party,src,bit_cnt);
+        }
+
+        string revealToString(const emp::Integer & in, const int & party = PUBLIC)  const override {
+            bool *b = new bool[in.size()];
+            in.reveal(b, party);
+            stringstream s;
+            for(int i = 0; i < in.size(); ++i) {
+                char res =   (b[i]) ? '1' : '0';
+                s << res;
+            }
+
+            delete [] b;
+           return s.str();
+        }
+
     };
 }
 
@@ -55,13 +84,17 @@ namespace  vaultdb {
 
     public:
 
-        OutsourcedMpcManager(string alice_host, int party, int port)  {
+        OutsourcedMpcManager(string hosts[], int party, int comm_port, int ctrl_port) {
+            throw;
+        }
+
+        OutsourcedMpcManager() {
             throw;
         }
 
         size_t andGateCount() const override { return 0; }
 
-        void  feed(int8_t *labels, int party, const bool *b, int byte_count) override  {
+        void  feed(Bit *labels, int party, const bool *b, int bit_cnt) override  {
             throw;
         }
 
@@ -70,6 +103,14 @@ namespace  vaultdb {
         ~OutsourcedMpcManager() = default;
 
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
+            throw;
+        }
+
+        void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) override {
+            throw;
+        }
+
+        string revealToString(const emp::Integer & i, const int & party = PUBLIC)  const override {
             throw;
         }
 

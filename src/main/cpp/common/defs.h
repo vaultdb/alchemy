@@ -18,6 +18,10 @@ namespace  emp {
     using Float = Float_T<OMPCBackend<N>::wire_t>;
     using Bit = Bit_T<OMPCBackend<N>::wire_t>;
 }
+#else
+namespace emp {
+    const static int TP = 10086;
+}
 #endif
 
 #if __has_include("emp-sh2pc/emp-sh2pc.h")
@@ -71,6 +75,14 @@ namespace vaultdb {
     enum class  StorageModel {
         ROW_STORE,
         COLUMN_STORE
+    };
+
+
+    enum class EmpMode {
+        PLAIN,
+        SH2PC,
+        ZK, // ZK only enabled manually during unit test
+        OUTSOURCED
     };
 
 

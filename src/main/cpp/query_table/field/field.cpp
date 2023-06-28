@@ -499,12 +499,12 @@ emp::Integer Field<B>::secretShareString(const string &s, const bool &to_send, c
         std::reverse(input.begin(), input.end());
         bool *bools = Utilities::bytesToBool((int8_t *) input.c_str(), str_length);
 
-        conf.emp_manager_->feed((int8_t *) payload.bits.data(), party, bools,
+        conf.emp_manager_->feed( payload.bits.data(), party, bools,
                                                 string_bit_count);
         delete[] bools;
 
     } else {
-        conf.emp_manager_->feed((int8_t *) payload.bits.data(), party, nullptr,
+        conf.emp_manager_->feed( payload.bits.data(), party, nullptr,
                                                 string_bit_count);
     }
 

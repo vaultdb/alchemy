@@ -13,3 +13,5 @@ vaultdb::SystemConfiguration::getBitPackingSpec(const string &table_name, const 
     } catch(const std::out_of_range& e) {}
     return BitPackingDefinition();
 }
+
+

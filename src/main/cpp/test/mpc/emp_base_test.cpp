@@ -3,29 +3,60 @@
 #include <util/logger.h>
 #include <util/system_configuration.h>
 #include "util/field_utilities.h"
+#include "util/emp_manager/sh2pc_manager.h"
+#include "util/emp_manager/outsourced_mpc_manager.h"
+#include "query_table/secure_tuple.h" // for use in child classes
+#include "query_table/plain_tuple.h"
+
+
+#if __has_include("emp-rescu/emp-rescu.h")
+static EmpMode _emp_mode_ = EmpMode::OUTSOURCED;
+#elif  __has_include("emp-sh2pc/emp-sh2pc.h")
+static EmpMode _emp_mode_ = EmpMode::SH2PC;
+#else
+    static EmpMode _emp_mode_ = EmpMode::PLAIN;
+#endif
+
 
 
 const std::string EmpBaseTest::unioned_db_ = "tpch_unioned_150";
 const std::string EmpBaseTest::alice_db_ = "tpch_alice_150";
 const std::string EmpBaseTest::bob_db_ = "tpch_bob_150";
+const std::string EmpBaseTest::empty_db_ = "tpch_empty";
 
 void EmpBaseTest::SetUp()  {
     assert(FLAGS_storage == "row" || FLAGS_storage == "column");
     storage_model_ = (FLAGS_storage == "row") ? StorageModel::ROW_STORE : StorageModel::COLUMN_STORE;
+    SystemConfiguration & s = SystemConfiguration::getInstance();
+    s.emp_mode_ = _emp_mode_;
+    emp_mode_ = _emp_mode_;
+    s.setStorageModel(storage_model_);
+
 
     Logger::setup(); // write to console
-    string party_name = (FLAGS_party == 1) ? "alice"  : "bob";
-    Logger::setup("vaultdb-" + party_name);
     std::cout << "Received storage flag of " << FLAGS_storage << '\n';
-    std::cout << "Connecting to " << FLAGS_alice_host << " on port " << FLAGS_port << " as " << FLAGS_party << std::endl;
+    std::cout << "Connecting to " << FLAGS_alice_host << " on ports " << FLAGS_port  << ", " << FLAGS_ctrl_port <<  " as " << FLAGS_party << std::endl;
 
-    manager_ = new SH2PCManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
-    db_name_ = (FLAGS_party == emp::ALICE) ? alice_db_ : bob_db_;
+    if(_emp_mode_ == EmpMode::OUTSOURCED) {
+        // host_list = {alice, bob, carol, trusted party}
+        string hosts[] = {FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host, FLAGS_alice_host};
+        manager_ = new OutsourcedMpcManager(hosts, FLAGS_party, FLAGS_port, FLAGS_ctrl_port);
+        db_name_ = (FLAGS_party == emp::TP) ? unioned_db_ : empty_db_;
+//        FLAGS_port += N;
+//        FLAGS_ctrl_port += N;
+    }
+    else if(_emp_mode_ == EmpMode::SH2PC) {
+        manager_ = new SH2PCManager(FLAGS_alice_host, FLAGS_party, FLAGS_port);
+        db_name_ = (FLAGS_party == emp::ALICE) ? alice_db_ : bob_db_;
+        // increment the port for each new test
+//        ++FLAGS_port;
+    }
+    else {
+        throw std::runtime_error("No EMP backend found.");
+    }
 
-    // increment the port for each new test
-    ++FLAGS_port;
+    cout << "Connected!\n";
 
-    SystemConfiguration & s = SystemConfiguration::getInstance();
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db_);
     s.initialize(db_name_, md, storage_model_);
     s.emp_manager_ = manager_;
@@ -33,7 +64,9 @@ void EmpBaseTest::SetUp()  {
 
 void EmpBaseTest::TearDown() {
     manager_->flush();
-    emp::finalize_semi_honest();
+    delete manager_;
+    SystemConfiguration::getInstance().emp_manager_ = nullptr;
+    sleep(0.5);
 }
 
 
