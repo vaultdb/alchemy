@@ -3,20 +3,6 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
-      "outputFields": "c_custkey (#0)",
-      "type": [
-        {
-          "type": "INTEGER",
-          "nullable": false,
-          "name": "c_custkey"
-        }
-      ],
-      "tuples": [],
-      "inputs": []
-    },
-    {
-      "id": "1",
-      "relOp": "LogicalValues",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_orderdate (#2), o_shippriority (#3)",
       "type": [
         {
@@ -38,6 +24,20 @@
           "type": "INTEGER",
           "nullable": true,
           "name": "o_shippriority"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "outputFields": "c_custkey (#0)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "c_custkey"
         }
       ],
       "tuples": [],
@@ -69,8 +69,8 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "1",
-        "0"
+        "0",
+        "1"
       ]
     },
     {

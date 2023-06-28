@@ -3,19 +3,27 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
-      "outputFields": "l_returnflag (#0), l_linestatus (#1), l_quantity (#2), l_extendedprice (#3), discount (#4), charge (#5), l_discount (#6)",
+      "outputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15), discount (#16), charge (#17)",
       "type": [
         {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 1,
-          "name": "l_returnflag"
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_orderkey"
         },
         {
-          "type": "CHAR",
-          "nullable": true,
-          "precision": 1,
-          "name": "l_linestatus"
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_partkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_suppkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_linenumber"
         },
         {
           "type": "DECIMAL",
@@ -36,21 +44,73 @@
           "nullable": true,
           "precision": 19,
           "scale": 0,
-          "name": "$f4"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "$f5"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
           "name": "l_discount"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_tax"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 1,
+          "name": "l_returnflag"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 1,
+          "name": "l_linestatus"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "l_shipdate"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "l_commitdate"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "l_receiptdate"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 25,
+          "name": "l_shipstruct"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 10,
+          "name": "l_shipmode"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 44,
+          "name": "l_comment"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "discount"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "charge"
         }
       ],
       "tuples": [],
@@ -62,8 +122,8 @@
       "outputFields": "l_returnflag (#0),  l_linestatus (#1),  sum_qty (#2), sum_base_price (#3), sum_disc_price (#4),  sum_charge (#5), avg_qty (#6), avg_price (#7), avg_disc (#8), count_order (#9)",
       "operator-algorithm" : "sort-merge-aggregate",
       "group": [
-        0,
-        1
+        8,
+        9
       ],
       "aggs": [
         {
@@ -80,7 +140,7 @@
           },
           "distinct": false,
           "operands": [
-            2
+            4
           ],
           "name": "sum_qty"
         },
@@ -98,7 +158,7 @@
           },
           "distinct": false,
           "operands": [
-            3
+            5
           ],
           "name": "sum_base_price"
         },
@@ -116,7 +176,7 @@
           },
           "distinct": false,
           "operands": [
-            4
+            16
           ],
           "name": "sum_disc_price"
         },
@@ -134,7 +194,7 @@
           },
           "distinct": false,
           "operands": [
-            5
+            17
           ],
           "name": "sum_charge"
         },
@@ -152,7 +212,7 @@
           },
           "distinct": false,
           "operands": [
-            2
+            4
           ],
           "name": "avg_qty"
         },
@@ -170,7 +230,7 @@
           },
           "distinct": false,
           "operands": [
-            3
+            5
           ],
           "name": "avg_price"
         },
@@ -205,6 +265,22 @@
           "distinct": false,
           "operands": [],
           "name": "count_order"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
         }
       ]
     }

@@ -1,0 +1,598 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "outputFields": "p_partkey (#0), ps_supplycost (#1), ps_suppkey (#2), ps_partkey (#3)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "p_partkey"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "ps_supplycost"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "ps_suppkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "ps_partkey"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalValues",
+      "outputFields": "s_suppkey (#0), s_nationkey (#1)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "s_suppkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "s_nationkey"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalJoin",
+      "joinOn" : "ps_suppkey = s_suppkey",
+      "operator-algorithm" : "nested-loop-join",
+      "outputFields": "p_partkey (#0), ps_supplycost (#1), ps_suppkey (#2), ps_partkey (#3), s_suppkey (#4), s_nationkey (#5)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalValues",
+      "outputFields": "nation (#0), n_nationkey (#1)",
+      "type": [
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 25,
+          "name": "nation"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "n_nationkey"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "4",
+      "relOp": "LogicalJoin",
+      "joinOn" : "s_nationkey = n_nationkey",
+      "operator-algorithm" : "nested-loop-join",
+      "outputFields": "p_partkey (#0), ps_supplycost (#1), ps_suppkey (#2), ps_partkey (#3), s_suppkey (#4), s_nationkey (#5), nation (#6), n_nationkey (#7)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 0,
+      "inputs": [
+        "2",
+        "3"
+      ]
+    },
+    {
+      "id": "5",
+      "relOp": "LogicalProject",
+      "outputFields": "p_partkey (#0), ps_supplycost (#1), ps_suppkey (#2), ps_partkey (#3), s_suppkey (#4), nation (#5)",
+      "fields": [
+        "p_partkey",
+        "ps_supplycost",
+        "ps_suppkey",
+        "ps_partkey",
+        "s_suppkey",
+        "nation"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 4,
+          "name": "$4"
+        },
+        {
+          "input": 6,
+          "name": "$6"
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "relOp": "LogicalValues",
+      "outputFields" : "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_partkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_suppkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_linenumber"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_quantity"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_extendedprice"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_discount"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_tax"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "l_quantity"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 1,
+          "name": "l_returnflag"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 1,
+          "name": "l_linestatus"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "l_shipdate"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "l_commitdate"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "l_receiptdate"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 25,
+          "name": "l_shipstruct"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 10,
+          "name": "l_shipmode"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 44,
+          "name": "l_comment"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalJoin",
+      "joinOn" : "ps_suppkey = l_suppkey AND ps_partkey = l_partkey",
+      "operator-algorithm" : "nested-loop-join",
+      "outputFields": "p_partkey (#0), ps_supplycost (#1), ps_suppkey (#2), ps_partkey (#3), s_suppkey (#4), nation (#5), l_orderkey (#6), l_partkey (#7), l_suppkey (#8), l_linenumber (#9), l_quantity (#10), l_extendedprice (#11), l_discount (#12), l_tax (#13), l_returnflag (#14), l_linestatus (#15), l_shipdate (#16), l_commitdate (#17), l_receiptdate (#18), l_shipinstruct (#19), l_shipmode (#20), l_comment (#21)",
+      "condition": {
+        "op": {
+          "name": "AND",
+          "kind": "AND",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 2,
+                "name": "$2"
+              },
+              {
+                "input": 8,
+                "name": "$8"
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 3,
+                "name": "$3"
+              },
+              {
+                "input": 7,
+                "name": "$7"
+              }
+            ]
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 1,
+      "inputs": [
+        "5",
+        "6"
+      ]
+    },
+    {
+      "id": "8",
+      "relOp": "LogicalProject",
+      "outputFields": "l_extendedprice (#0), l_discount (#1), l_quantity (#2), l_orderkey (#3), ps_supplycost (#4), nation (#5)",
+      "fields": [
+        "l_extendedprice",
+        "l_discount",
+        "l_quantity",
+        "l_orderkey",
+        "ps_supplycost",
+        "nation"
+      ],
+      "exprs": [
+        {
+          "input": 11,
+          "name": "$11"
+        },
+        {
+          "input": 12,
+          "name": "$12"
+        },
+        {
+          "input": 10,
+          "name": "$10"
+        },
+        {
+          "input": 6,
+          "name": "$6"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        },
+        {
+          "input": 5,
+          "name": "$5"
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "relOp": "LogicalValues",
+      "outputFields" : "o_orderkey (#0), o_custkey (#1), o_orderstatus (#2), o_totalprice (#3), o_orderdate (#4), o_orderpriority (#5), o_clerk (#6), o_shippriority (#7), o_comment (#8), o_year (#9)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "o_orderkey"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_custkey"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 1,
+          "name": "o_orderstatus"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "o_totalprice"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "o_orderdate"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 15,
+          "name": "o_orderpriority"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 15,
+          "name": "o_clerk"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_shippriority"
+        },
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 79,
+          "name": "o_comment"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_year"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "10",
+      "relOp": "LogicalJoin",
+      "joinOn" : "l_orderkey = o_orderkey",
+      "operator-algorithm" : "nested-loop-join",
+      "outputFields": "l_extendedprice (#0), l_discount (#1), l_quantity (#2), l_orderkey (#3), ps_supplycost (#4), nation (#5), o_orderkey (#6), o_custkey (#7), o_orderstatus (#8), o_totalprice (#9), o_orderdate (#10), o_orderpriority (#11), o_clerk (#12), o_shippriority (#13), o_comment (#14), o_year (#15)",
+      "condition": {
+        "op": {
+          "name": "=",
+          "kind": "EQUALS",
+          "syntax": "BINARY"
+        },
+        "operands": [
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          }
+        ]
+      },
+      "joinType": "inner",
+      "foreignKey": 0,
+      "inputs": [
+        "8",
+        "9"
+      ]
+    },
+    {
+      "id": "11",
+      "relOp": "LogicalProject",
+      "inputFields": "l_extendedprice (#0), l_discount (#1), l_quantity (#2), l_orderkey (#3), ps_supplycost (#4), nation (#5), o_orderkey (#6), o_custkey (#7), o_orderstatus (#8), o_totalprice (#9), o_orderdate (#10), o_orderpriority (#11), o_clerk (#12), o_shippriority (#13), o_comment (#14), o_year (#15)",
+      "amount": "l.l_extendedprice * (1.0 - l.l_discount) - ps.ps_supplycost * l.l_quantity",
+      "fields": [
+        "nation",
+        "o_year",
+        "amount"
+      ],
+      "exprs": [
+        {
+          "input": 5,
+          "name": "$5"
+        },
+        {
+          "input": 15,
+          "name": "$15"
+        },
+        {
+          "op": {
+            "name": "-",
+            "kind": "MINUS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 0,
+                  "name": "$0"
+                },
+                {
+                  "op": {
+                    "name": "-",
+                    "kind": "MINUS",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "literal": 1,
+                      "type": {
+                        "type": "FLOAT",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 1,
+                      "name": "$1"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "*",
+                "kind": "TIMES",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                },
+                {
+                  "input": 2,
+                  "name": "$2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "relOp": "LogicalAggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "inputFields": "nation (#0), o_year (#1), amount (#2)",
+      "group": [
+        0,
+        1
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            2
+          ],
+          "name": "sum_profit"
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        },
+        {
+          "field": 1,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        }
+      ]
+    }
+  ]
+}
