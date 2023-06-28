@@ -19,7 +19,8 @@ namespace vaultdb {
     public:
 
         PlanParser(const string &db_name, std::string plan_name, const int &limit);
-        PlanParser(const string &db_name, std::string plan_name, const int &limit, const bool &isBaseline);
+        PlanParser(const string &db_name, std::string plan_name, const int &limit, const string &experiment_num);
+        PlanParser(const string &db_name, std::string plan_name, const int &limit, const string &experiment_num, const bool &isBaseline);
         PlanParser(const std::string &db_name, const std::string plan_name, bool zk_plan, const int &limit);
 
         Operator<B> *getRoot() const { return root_; }

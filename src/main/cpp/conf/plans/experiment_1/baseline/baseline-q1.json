@@ -3,7 +3,7 @@
     {
       "id": "0",
       "relOp": "LogicalValues",
-      "outputFields" : "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15)",
+      "outputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15), discount (#16), charge (#17)",
       "type": [
         {
           "type": "INTEGER",
@@ -54,13 +54,6 @@
           "name": "l_tax"
         },
         {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "l_quantity"
-        },
-        {
           "type": "CHAR",
           "nullable": true,
           "precision": 1,
@@ -104,6 +97,20 @@
           "nullable": true,
           "precision": 44,
           "name": "l_comment"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "discount"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "charge"
         }
       ],
       "tuples": [],
@@ -111,168 +118,12 @@
     },
     {
       "id": "1",
-      "relOp": "LogicalFilter",
-      "outputFields" : "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15)",
-      "condition": {
-        "op": {
-          "name": "<=",
-          "kind": "LESS_OR_EQUAL_THAN",
-          "syntax": "BINARY"
-        },
-        "operands": [
-          {
-            "input": 10,
-            "name": "$10"
-          },
-          {
-            "literal": 902102400,
-            "type": {
-              "type": "DATE",
-              "nullable": true
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": "2",
-      "relOp": "LogicalProject",
-      "inputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15)",
-      "fields": [
-        "l_returnflag",
-        "l_linestatus",
-        "l_quantity",
-        "l_extendedprice",
-        "discount",
-        "charge",
-        "l_discount"
-      ],
-      "exprs": [
-        {
-          "input": 8,
-          "name": "$8"
-        },
-        {
-          "input": 9,
-          "name": "$9"
-        },
-        {
-          "input": 4,
-          "name": "$4"
-        },
-        {
-          "input": 5,
-          "name": "$5"
-        },
-        {
-          "op": {
-            "name": "*",
-            "kind": "TIMES",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 5,
-              "name": "$5"
-            },
-            {
-              "op": {
-                "name": "-",
-                "kind": "MINUS",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "literal": 1,
-                  "type": {
-                    "type": "FLOAT",
-                    "nullable": false
-                  }
-                },
-                {
-                  "input": 6,
-                  "name": "$6"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "op": {
-            "name": "*",
-            "kind": "TIMES",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "op": {
-                "name": "*",
-                "kind": "TIMES",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "input": 5,
-                  "name": "$5"
-                },
-                {
-                  "op": {
-                    "name": "-",
-                    "kind": "MINUS",
-                    "syntax": "BINARY"
-                  },
-                  "operands": [
-                    {
-                      "literal": 1,
-                      "type": {
-                        "type": "FLOAT",
-                        "nullable": false
-                      }
-                    },
-                    {
-                      "input": 6,
-                      "name": "$6"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "op": {
-                "name": "+",
-                "kind": "plus",
-                "syntax": "BINARY"
-              },
-              "operands": [
-                {
-                  "literal": 1,
-                  "type": {
-                    "type": "FLOAT",
-                    "nullable": false
-                  }
-                },
-                {
-                  "input": 7,
-                  "name": "$7"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "input": 6,
-          "name": "$6"
-        }
-      ]
-    },
-    {
-      "id": "3",
       "relOp": "LogicalAggregate",
-      "outputFields": "l_returnflag (#0), l_linestatus (#1), l_quantity (#2), l_extendedprice (#3), discount (#4), charge (#5), l_discount (#6)",
+      "outputFields": "l_returnflag (#0),  l_linestatus (#1),  sum_qty (#2), sum_base_price (#3), sum_disc_price (#4),  sum_charge (#5), avg_qty (#6), avg_price (#7), avg_disc (#8), count_order (#9)",
       "operator-algorithm" : "sort-merge-aggregate",
       "group": [
-        0,
-        1
+        8,
+        9
       ],
       "aggs": [
         {
@@ -289,7 +140,7 @@
           },
           "distinct": false,
           "operands": [
-            2
+            4
           ],
           "name": "sum_qty"
         },
@@ -307,7 +158,7 @@
           },
           "distinct": false,
           "operands": [
-            3
+            5
           ],
           "name": "sum_base_price"
         },
@@ -325,7 +176,7 @@
           },
           "distinct": false,
           "operands": [
-            4
+            16
           ],
           "name": "sum_disc_price"
         },
@@ -343,7 +194,7 @@
           },
           "distinct": false,
           "operands": [
-            5
+            17
           ],
           "name": "sum_charge"
         },
@@ -361,7 +212,7 @@
           },
           "distinct": false,
           "operands": [
-            2
+            4
           ],
           "name": "avg_qty"
         },
@@ -379,7 +230,7 @@
           },
           "distinct": false,
           "operands": [
-            3
+            5
           ],
           "name": "avg_price"
         },
@@ -418,7 +269,7 @@
       ]
     },
     {
-      "id": "4",
+      "id": "2",
       "relOp": "LogicalSort",
       "collation": [
         {

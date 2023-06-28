@@ -131,7 +131,7 @@
     {
       "id": "4",
       "relOp": "LogicalValues",
-      "outputFields" : "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15)",
+      "outputFields": "l_orderkey (#0), l_partkey (#1), l_suppkey (#2), l_linenumber (#3), l_quantity (#4), l_extendedprice (#5), l_discount (#6), l_tax (#7), l_returnflag (#8), l_linestatus (#9), l_shipdate (#10), l_commitdate (#11), l_receiptdate (#12), l_shipinstruct (#13), l_shipmode (#14), l_comment (#15), discount (#16), charge (#17)",
       "type": [
         {
           "type": "INTEGER",
@@ -180,13 +180,6 @@
           "precision": 19,
           "scale": 0,
           "name": "l_tax"
-        },
-        {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "l_quantity"
         },
         {
           "type": "CHAR",
@@ -357,6 +350,35 @@
     },
     {
       "id": "8",
+      "relOp": "LogicalProject",
+      "outputFields": "o_orderkey (#0), revenue (#1), o_orderdate (#2), o_shippriority (#3)",
+      "fields": [
+        "o_orderkey",
+        "revenue",
+        "o_orderdate",
+        "o_shippriority"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        }
+      ]
+    },
+    {
+      "id": "9",
       "relOp": "LogicalSort",
       "collation": [
         {

@@ -59,8 +59,10 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
-    PlanParser<emp::Bit> parser(local_db, test_name, input_tuple_limit_, true);
+    PlanParser<emp::Bit> parser(local_db, test_name, input_tuple_limit_, "experiment_1", true);
     SecureOperator *root = parser.getRoot();
+
+    std:cout << root->printTree() << endl;
 
     SecureTable *observed = root->run();
 
@@ -99,8 +101,10 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
-    PlanParser<emp::Bit> parser(local_db, test_name, input_tuple_limit_, false);
+    PlanParser<emp::Bit> parser(local_db, test_name, input_tuple_limit_, "experiment_1", false);
     SecureOperator *root = parser.getRoot();
+
+    std:cout << root->printTree() << endl;
 
     SecureTable *observed = root->run();
 
@@ -140,7 +144,6 @@ BaselineComparisonTest::generateExpectedOutputQuery(const int &test_id, const So
 }
 
 
-/*
 TEST_F(BaselineComparisonTest, tpch_q1_baseline) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest_baseline(1, "q1", expected_sort, unioned_db_);
@@ -153,16 +156,17 @@ TEST_F(BaselineComparisonTest, tpch_q1_handcode) {
 }
 
 
+
 TEST_F(BaselineComparisonTest, tpch_q3_baseline) {
 
 
     // dummy_tag (-1), 1 DESC, 2 ASC
     // aka revenue desc,  o.o_orderdate
-    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
-                                 ColumnSort(1, SortDirection::DESCENDING),
+    SortDefinition expected_sort{ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
     runTest_baseline(3, "q3", expected_sort, unioned_db_);
 }
+
 
 TEST_F(BaselineComparisonTest, tpch_q3_handcode) {
 
@@ -174,8 +178,8 @@ TEST_F(BaselineComparisonTest, tpch_q3_handcode) {
                                  ColumnSort(2, SortDirection::ASCENDING)};
     runTest_handcode(3, "q3", expected_sort, unioned_db_);
 }
-*/
 
+/*
 // passes on codd2 in about 2.5 mins
 TEST_F(BaselineComparisonTest, tpch_q5_baseline) {
     //input_tuple_limit_ = 1000;
@@ -238,7 +242,7 @@ TEST_F(BaselineComparisonTest, tpch_q18_handcode) {
 
     runTest_handcode(18, "q18", expected_sort, unioned_db_);
 }
-
+*/
 
 
 int main(int argc, char **argv) {

@@ -42,20 +42,36 @@ PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, const in
 }
 
 template<typename B>
-PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, const int &limit, const bool & isBaseline)
+PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, const int &limit, const string &experiment_num)
         :  db_name_(db_name), input_limit_(limit)
 {
-    std::string sql_file = "";
-    std::string plan_file = "";
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/" + experiment_num + "/";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/" + experiment_num + "/";
+
+    sql_file += "MPC_minimization/queries-" + plan_name + ".sql";
+    plan_file += "MPC_minimization/mpc-" + plan_name + ".json";
+
+    parseSqlInputs(sql_file);
+    parseSecurePlan(plan_file);
+
+}
+
+template<typename B>
+PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, const int &limit, const string &experiment_num, const bool & isBaseline)
+        :  db_name_(db_name), input_limit_(limit)
+{
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/" + experiment_num + "/";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/" + experiment_num + "/";
+
     if(isBaseline) {
         // Baseline ver.
-        sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/baseline/baseline-" + plan_name + ".sql";
-        plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/baseline/baseline-" + plan_name + ".json";
+        sql_file += "baseline/baseline-" + plan_name + ".sql";
+        plan_file += "baseline/baseline-" + plan_name + ".json";
     }
     else{
         // Handcoded ver.
-        sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + plan_name + ".sql";
-        plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + plan_name + ".json";
+        sql_file += "MPC_minimization/queries-" + plan_name + ".sql";
+        plan_file += "MPC_minimization/mpc-" + plan_name + ".json";
     }
 
     parseSqlInputs(sql_file);
