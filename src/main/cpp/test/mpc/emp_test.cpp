@@ -1,18 +1,16 @@
 #include <util/data_utilities.h>
 #include "emp_base_test.h"
-#include "query_table/secure_tuple.h"
-#include "query_table/plain_tuple.h"
 
-#include <emp-zk/emp-zk.h>
 #include <iostream>
 #include "emp-tool/emp-tool.h"
 #include "query_table/table_factory.h"
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54321, "port for EMP execution");
+DEFINE_int32(port, 54325, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_int32(ctrl_port, 65446, "port for managing EMP control flow by passing public values");
 
 using namespace vaultdb;
 
@@ -23,8 +21,7 @@ class EmpTest : public EmpBaseTest {
 
 
 
-//  verify emp configuration for int32s from both ALICE and BOB
-
+//  verify emp configuration for int32s
  TEST_F(EmpTest, emp_test_int) {
 
 
@@ -53,25 +50,23 @@ TEST_F(EmpTest, emp_test_varchar) {
     std::string initial_string = "lithely regular deposits. fluffily";
 
     size_t len = 44;
-    int string_bits = len * 8;
+    int bit_cnt = len * 8;
 
     while(initial_string.length() != len) {
         initial_string += " ";
     }
 
-
-
     bool *bools = Utilities::bytesToBool((int8_t *) initial_string.c_str(), len);
 
-    // encrypting as ALICE
-    emp::Integer aliceSecretShared(string_bits, 0L, emp::ALICE);
+    int send_party = (this->emp_mode_ == EmpMode::SH2PC) ? emp::ALICE : emp::TP;
 
-    if(FLAGS_party == emp::ALICE) {
-        ProtocolExecution::prot_exec->feed((block *)aliceSecretShared.bits.data(), emp::ALICE, bools, string_bits);
-    }
-    else {
-        ProtocolExecution::prot_exec->feed((block *)aliceSecretShared.bits.data(), emp::ALICE, nullptr, string_bits);
-    }
+    // encrypting as _sender
+    emp::Integer secret_shared(bit_cnt, 0L, send_party);
+
+    if(FLAGS_party == send_party)
+        manager_->feed(secret_shared.bits.data(), send_party, bools, bit_cnt);
+    else
+        manager_->feed(secret_shared.bits.data(), send_party, nullptr, bit_cnt);
 
     manager_->flush();
     delete [] bools;
@@ -79,22 +74,48 @@ TEST_F(EmpTest, emp_test_varchar) {
 
 
     // the standard reveal method converts this to decimal.  Need to reveal it bitwise
+    bools = new bool[bit_cnt];
 
-    bools = new bool[string_bits];
-    ProtocolExecution::prot_exec->reveal(bools, emp::PUBLIC, (block *)aliceSecretShared.bits.data(), string_bits);
-
-
-
-    vector<int8_t> decodedBytes =  Utilities::boolsToBytes(bools, string_bits);
-    decodedBytes.resize(len + 1);
-    decodedBytes[len + 1] = '\0';
+    manager_->reveal(bools, PUBLIC, secret_shared.bits.data(), bit_cnt);
 
 
-    std::string decodedString((char *) decodedBytes.data());
+
+    vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
+    decoded_bytes.resize(len + 1);
+    decoded_bytes[len + 1] = '\0';
+
+
+    std::string decoded_str((char *) decoded_bytes.data());
     delete [] bools;
 
 
-    ASSERT_EQ(initial_string, decodedString);
+    ASSERT_EQ(initial_string, decoded_str);
+
+    if(emp_mode_ == EmpMode::OUTSOURCED) {
+        auto protocol =  (OMPCBackend<N> *) backend;
+        emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC); // empty for setup
+
+        // ceil(bitCount / 128)
+        OMPCPackedWire *packed = new OMPCPackedWire[TypeUtilities::packedWireCount(bit_cnt)];
+        protocol->pack(secret_shared.bits.data(), packed, secret_shared.size());
+        protocol->unpack(unpacked.bits.data(), packed, unpacked.size());
+
+        // the standard reveal method converts this to decimal.  Need to reveal it bitwise
+        bools = new bool[bit_cnt];
+        protocol->reveal(bools, emp::PUBLIC, unpacked.bits.data(),  bit_cnt);
+        delete [] packed;
+
+        vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
+        decoded_bytes.resize(len + 1);
+        decoded_bytes[len+1] = '\0';
+
+        std::string decoded_string((char *) decoded_bytes.data());
+        delete [] bools;
+
+        ASSERT_EQ("lithely regular deposits. fluffily          ", decoded_string);
+
+
+    }
 
 
 }
@@ -105,25 +126,35 @@ TEST_F(EmpTest, emp_test_varchar) {
 // Testing absent psql dependency
 TEST_F(EmpTest, secret_share_table_one_column) {
 
-    const uint32_t tuple_cnt = 10;
+    uint32_t in_tuple_cnt = 10;
+    uint32_t out_tuple_cnt = 20;
+    PlainTable *plain;
+
     vector<int32_t> alice_input{1, 1, 1, 1, 1, 1, 2, 3, 3, 3};
     vector<int32_t> bob_input{4, 33, 33, 33, 33, 35, 35, 35, 35, 35};
+    vector<int32_t> all_input(alice_input);
+    all_input.insert(all_input.end(), bob_input.begin(), bob_input.end());
+    int32_t *input;
 
-
-    int32_t *input = (FLAGS_party == emp::ALICE) ? alice_input.data() : bob_input.data();
+    if(SystemConfiguration::getInstance().emp_mode_ == EmpMode::OUTSOURCED) {
+       input = all_input.data();
+       in_tuple_cnt = all_input.size();
+       in_tuple_cnt = (FLAGS_party == TP) ? in_tuple_cnt : 0;
+    }
+    else {
+       input = (FLAGS_party == emp::ALICE) ? alice_input.data() : bob_input.data();
+    }
 
     QuerySchema schema;
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
     schema.initializeFieldOffsets();
 
     // set up expected result by concatenating input tables
-    PlainTable *expected = TableFactory<bool>::getTable(2 * tuple_cnt, schema, storage_model_);
-    std::vector<int32_t> concat = alice_input;
-    concat.insert(concat.end(), bob_input.begin(), bob_input.end());
+    PlainTable *expected = TableFactory<bool>::getTable(out_tuple_cnt, schema, storage_model_);
 
 
-    for(uint32_t i = 0; i < concat.size(); ++i) {
-        Field<bool> val(FieldType::INT, concat[i]);
+    for(uint32_t i = 0; i < all_input.size(); ++i) {
+        Field<bool> val(FieldType::INT, all_input[i]);
         PlainTuple tuple = expected->getPlainTuple(i);
         tuple.setField(0, val);
         tuple.setDummyTag(false);
@@ -131,9 +162,9 @@ TEST_F(EmpTest, secret_share_table_one_column) {
     }
 
 
-    PlainTable *plain = TableFactory<bool>::getTable(tuple_cnt, schema, storage_model_);
+    plain = TableFactory<bool>::getTable(in_tuple_cnt, schema, storage_model_);
 
-    for(uint32_t i = 0; i < tuple_cnt; ++i) {
+    for(uint32_t i = 0; i < in_tuple_cnt; ++i) {
         Field<bool> val(FieldType::INT, input[i]);
         plain->setField(i, 0, val);
         plain->setDummyTag(i, false);
