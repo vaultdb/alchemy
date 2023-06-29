@@ -37,7 +37,6 @@ KeyedJoin<B>::KeyedJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey
 template<typename B>
 QueryTable<B> *KeyedJoin<B>::runSelf() {
 
-
     if(foreign_key_input_ == 0){
         return foreignKeyPrimaryKeyJoin();
     }
@@ -67,8 +66,9 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
     for(uint32_t i = 0; i < lhs_table->getTupleCount(); ++i) {
+
         lhs_dummy_tag = lhs_table->getDummyTag(i);
-        Join<B>::write_left(Join<B>::output_, i, lhs_table, i);
+        Join<B>::write_left(this->output_, i, lhs_table, i);
         dst_dummy_tag = true; // dummy by default, no tuple comparisons yet
 
         for(uint32_t j = 0; j < rhs_table->getTupleCount(); ++j) {
@@ -81,10 +81,9 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
 
             Join<B>::write_right(to_update, Operator<B>::output_, i, rhs_table, j);
-            Operator<B>::output_->setDummyTag(i, dst_dummy_tag);
-
-
         }
+
+        this->output_->setDummyTag(i, dst_dummy_tag);
 
     }
 
@@ -129,12 +128,9 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
 
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
 
-
             Join<B>::write_left(to_update, Operator<B>::output_, i, lhs_table, j);
-            Operator<B>::output_->setDummyTag(i, dst_dummy_tag);
-
         }
-
+        this->output_->setDummyTag(i, dst_dummy_tag);
     }
 
 

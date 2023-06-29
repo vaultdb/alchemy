@@ -8,14 +8,14 @@ template<typename  B>
 Join<B>::Join(Operator<B> *lhs, Operator<B> *rhs,   Expression<B> *predicate, const SortDefinition & sort) : Operator<B>(lhs, rhs, sort), predicate_(predicate) {
     QuerySchema lhs_schema = lhs->getOutputSchema();
     QuerySchema rhs_schema = rhs->getOutputSchema();
-    Operator<B>::output_schema_ = QuerySchema::concatenate(lhs_schema, rhs_schema);
+    this->output_schema_ = QuerySchema::concatenate(lhs_schema, rhs_schema);
 }
 
 template<typename  B>
 Join<B>::Join(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate, const SortDefinition & sort) :  Operator<B>(lhs, rhs, sort), predicate_(predicate) {
     QuerySchema lhs_schema = lhs->getSchema();
     QuerySchema rhs_schema = rhs->getSchema();
-    Operator<B>::output_schema_ = QuerySchema::concatenate(lhs_schema, rhs_schema);
+    this->output_schema_ = QuerySchema::concatenate(lhs_schema, rhs_schema);
 
 }
 

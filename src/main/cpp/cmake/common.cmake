@@ -50,7 +50,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 find_package(Boost REQUIRED COMPONENTS date_time system)
 
 #Compilation flags
-set(CMAKE_C_FLAGS "-pthread   -Wfatal-errors  ")  # -Wall -Wc++17-extensions -Weverything -Wno-padded -Wno-c++98-compat-pedantic -Wno-reserved-id-macro -Wsign-compare -Wno-int-to-pointer-cast
+set(CMAKE_C_FLAGS "-pthread   -Wfatal-errors  ")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}  -fPIC")
 
 #message(STATUS "Target platform: ${CMAKE_SYSTEM_NAME}")
