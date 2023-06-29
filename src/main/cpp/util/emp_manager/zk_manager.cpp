@@ -9,6 +9,8 @@ using namespace vaultdb;
 QueryTable<Bit> *ZKManager::secretShare(const QueryTable<bool> *src) {
 
     size_t alice_tuple_cnt = src->getTupleCount();
+    SystemConfiguration &s = SystemConfiguration::getInstance();
+    int party = s.party_;
 
 
     // reset before we send the counts
@@ -18,10 +20,10 @@ QueryTable<Bit> *ZKManager::secretShare(const QueryTable<bool> *src) {
 
     NetIO *netio = ios_[0]->io;
 
-    if (party_ == ALICE) {
+    if (party == ALICE) {
         netio->send_data(&alice_tuple_cnt, 4);
         netio->flush();
-    } else if (party_ == BOB) {
+    } else if (party == BOB) {
         netio->recv_data(&alice_tuple_cnt, 4);
         netio->flush();
     }
@@ -34,7 +36,7 @@ QueryTable<Bit> *ZKManager::secretShare(const QueryTable<bool> *src) {
     dst_table->setSortOrder(src->getSortOrder());
 
 
-    if (party_ == emp::ALICE) {
+    if (party == emp::ALICE) {
         secret_share_send(emp::ALICE,  (PlainTable *) src, dst_table);
     } else { // bob
         secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table);

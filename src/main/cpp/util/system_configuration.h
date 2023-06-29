@@ -8,7 +8,7 @@
 
 using namespace std;
 
-// warning: do not include emp-based classes like netio here - conflicts with the static, singleton setup
+// warning: do not include emp-based classes like netio here - it conflicts with the static, singleton setup
 // creates mysterious compile-time bugs
 
 namespace vaultdb{
@@ -17,6 +17,8 @@ namespace vaultdb{
     public:
 
         EmpManager *emp_manager_ = nullptr;
+        EmpMode emp_mode_ = EmpMode::PLAIN;
+        int party_;
 
         // value to be maintained by EMPManager
         int emp_bit_size_bytes_ = sizeof(emp::Bit);
@@ -53,15 +55,25 @@ namespace vaultdb{
             return storage_model_;
         }
 
+        inline void setStorageModel(const StorageModel & model) {
+            storage_model_ = model;
+        }
+
         inline size_t andGateCount() const {
             return (emp_manager_ != nullptr)  ? emp_manager_->andGateCount() : 0L;
+        }
+
+        inline void flush() const {
+            if(emp_manager_ != nullptr) emp_manager_->flush();
         }
         ~SystemConfiguration() {
             if(emp_manager_ != nullptr) delete emp_manager_;
         }
 
+
     private:
-        SystemConfiguration() {}
+        SystemConfiguration() {
+        }
         string unioned_db_name_;
         StorageModel storage_model_ = StorageModel::ROW_STORE; // only support one storage model at a time
         std::map<ColumnReference, BitPackingDefinition> bit_packing_;

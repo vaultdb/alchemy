@@ -16,6 +16,7 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43440, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_int32(ctrl_port, 65454, "port for managing EMP control flow by passing public values");
 
 
 class SecureGroupByAggregateTest : public EmpBaseTest {
@@ -283,9 +284,11 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
 }
 
+// Output:
+//Operator #-1 SecureSqlInput ran for 0.441767 seconds,  gate count: 76044 output cardinality: 110, row width=177
+//Operator #-1 GroupByAggregate ran for 1.91893 seconds,  gate count: 2419772 output cardinality: 110, row width=305
 TEST_F(SecureGroupByAggregateTest, tpch_q1) {
 
-    // TODO: was <= 194, reduced owing to floating point drift
     string input_rows = "SELECT * FROM lineitem WHERE l_orderkey <= 100  ORDER BY l_orderkey, l_linenumber";
     string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate

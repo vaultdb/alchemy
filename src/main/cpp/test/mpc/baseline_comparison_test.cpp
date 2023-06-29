@@ -20,6 +20,7 @@ DEFINE_string(test, "baseline", "testname baseline or handcode");\
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 
 
 
@@ -59,7 +60,10 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
-    PlanParser<emp::Bit> parser(local_db, test_name, input_tuple_limit_, "experiment_1", true);
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/" + "baseline/baseline-" + test_name + ".sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/" + "baseline/baseline-" + test_name + ".json";
+
+    PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
     std:cout << root->printTree() << endl;
@@ -96,12 +100,13 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
-    //ASSERT_TRUE(!expected->empty()); // want all tests to produce output
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/queries-q" + test_name + ".sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/mpc-q"  + test_name + ".json";
 
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
 
-    PlanParser<emp::Bit> parser(local_db, test_name, input_tuple_limit_, "experiment_1", false);
+    PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
     std:cout << root->printTree() << endl;

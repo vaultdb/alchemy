@@ -5,16 +5,16 @@
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_int32(port, 54324, "port for EMP execution");
+DEFINE_int32(port, 54334, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
-DEFINE_int32(ctrl_port, 65442, "port for managing EMP control flow by passing public values");
+DEFINE_int32(ctrl_port, 65428, "port for managing EMP control flow by passing public values");
 
 using namespace vaultdb;
 
 class EmpTableTest : public EmpBaseTest {
 protected:
-    void secretShareAndValidate(const std::string & input_query, const SortDefinition & sort = SortDefinition());
+    void secretShareAndValidate(const std::string & sql, const SortDefinition & sort = SortDefinition());
 };
 
 
@@ -22,76 +22,69 @@ protected:
 
 
 // test encrypting a query table with a single int in EMP
-TEST_F(EmpTableTest, encrypt_table_one_column) {
+TEST_F(EmpTableTest, secret_share_table_one_column) {
+
+    std::string sql =  "SELECT l_orderkey FROM lineitem WHERE l_orderkey <= 20 ORDER BY l_orderkey, l_linenumber";
+
+    SortDefinition  collation = DataUtilities::getDefaultSortDefinition(1);
+
+    secretShareAndValidate(sql, collation);
 
 
-    std::string input_query =  "SELECT l_orderkey FROM lineitem WHERE l_orderkey <= 20 ORDER BY l_orderkey, l_linenumber";
-
-    SortDefinition  sort_definition = DataUtilities::getDefaultSortDefinition(1);
-
-    secretShareAndValidate(input_query, sort_definition);
-
-
-
-}
-
-
-// test encrypting a query table with a single int in EMP
-TEST_F(EmpTableTest, encrypt_table_varchar) {
-
-    std::string input_query =  "SELECT l_comment FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
-    secretShareAndValidate(input_query);
 
 }
 
 
-//TEST_F(EmpTableTest, tpch_q1_mockup) {
-//    this->disableBitPacking();
-//    string sql = "SELECT  l_returnflag,  l_linestatus,  SUM(l_quantity) as sum_qty, SUM(l_extendedprice) as sum_base_price, SUM(l_extendedprice * (1 - l_discount)) as sum_disc_price,  SUM(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, AVG(l_quantity) as avg_qty,  AVG(l_extendedprice) as avg_price,  AVG(l_discount) as avg_disc,   COUNT(*)::BIGINT as count_order \n"
-//                 "FROM  lineitem \n"
-//                 "WHERE  l_shipdate <= date '1998-08-03' \n"
-//                 "GROUP BY  l_returnflag, l_linestatus \n"
-//                 "ORDER BY  l_returnflag,  l_linestatus";
-//    secretShareAndValidate(sql);
-//}
+// test secret a query table with a single string in EMP
+// bitonic merge the inputs
+TEST_F(EmpTableTest, secret_share_table_varchar) {
 
-TEST_F(EmpTableTest, encrypt_table_two_cols) {
+    string sql = "SELECT l_orderkey, l_linenumber, l_comment FROM lineitem WHERE l_orderkey <= 20 ORDER BY l_orderkey, l_linenumber";
+    SortDefinition  collation = DataUtilities::getDefaultSortDefinition(2);
 
-    std::string input_query = "SELECT l_orderkey, l_comment "
-                             "FROM lineitem "
-                              "WHERE l_orderkey <= 20 "
-                              "ORDER BY l_orderkey, l_linenumber ";
-    secretShareAndValidate(input_query);
-
+    secretShareAndValidate(sql, collation);
 
 }
 
 
 
 // test more column types
-TEST_F(EmpTableTest, encrypt_table) {
+TEST_F(EmpTableTest, secret_share_table) {
 
-    std::string input_query =  "SELECT l_orderkey, l_comment, l_returnflag, l_discount, "
+    std::string sql =  "SELECT l_orderkey, l_linenumber, l_comment, l_returnflag, l_discount, "
                                "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
                                "FROM lineitem "
                                "WHERE l_orderkey <= 20 "
-                               "ORDER BY l_orderkey ";
-    secretShareAndValidate(input_query);
+                               "ORDER BY l_orderkey, l_linenumber ";
+    secretShareAndValidate(sql, DataUtilities::getDefaultSortDefinition(2));
 
 
 }
 
 
-TEST_F(EmpTableTest, encrypt_table_dummy_tag) {
+TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
 
 
-    std::string input_query = "SELECT l_orderkey, l_comment, l_returnflag, l_discount, "
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_comment, l_returnflag, l_discount, "
                               "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate, "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
                               "l_returnflag <> 'N' AS dummy "  // simulate a filter for l_returnflag = 'N' -- all of the ones that dont match are dummies
                               "FROM lineitem "
                               " WHERE l_orderkey <= 20 "
-                              "ORDER BY l_orderkey ";
-    secretShareAndValidate(input_query);
+                              "ORDER BY l_orderkey, l_linenumber ";
+    SortDefinition  collation = DataUtilities::getDefaultSortDefinition(2);
+    PlainTable *input = DataUtilities::getQueryResults(db_name_, sql, true);
+
+    input->setSortOrder(collation);
+    SecureTable *secret_shared = input->secretShare();
+    PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+
+
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, true);
+    expected->setSortOrder(collation);
+    DataUtilities::removeDummies(expected);
+
+    ASSERT_EQ(*expected, *revealed);
+
 
 
 }
@@ -100,25 +93,27 @@ TEST_F(EmpTableTest, encrypt_table_dummy_tag) {
 TEST_F(EmpTableTest, bit_packing_test) {
 
 
-    std::string input_query = "SELECT c_custkey, c_nationkey FROM customer WHERE c_custkeu <= 20 ORDER BY (1)";
+    std::string sql = "SELECT c_custkey, c_nationkey FROM customer WHERE c_custkey <= 20 ORDER BY (1)";
 
-    PsqlDataProvider data_provider;
-    PlainTable *input_table = data_provider.getQueryTable(db_name_,
-                                                          input_query, false);
 
-    SecureTable *secret_shared = input_table->secretShare();
-    manager_->flush();
+    PlainTable *input = DataUtilities::getQueryResults(db_name_,
+                                                          sql, false);
+    SortDefinition collation = DataUtilities::getDefaultSortDefinition(1);
+    input->setSortOrder(collation);
+
+    SecureTable *secret_shared = input->secretShare();
 
     // c_custkey has 150 distinct vals, should have 8 bits
     ASSERT_EQ(8, secret_shared->getSchema().getField(0).size());
     // c_nationkey has 25 distinct vals, should have 5 bits
     ASSERT_EQ(5, secret_shared->getSchema().getField(1).size());
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, input_query, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
+    expected->setSortOrder(collation);
 
-
+    ASSERT_EQ(secret_shared->getTupleCount(),  expected->getTupleCount());
     // tuple_cnt * (5+8+1 (for dummy tag) )*sizeof(emp::Bit)
-    ASSERT_EQ(expected->getTupleCount()*14 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_);
+    ASSERT_EQ(expected->getTupleCount() * 14 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_);
 
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
@@ -126,36 +121,32 @@ TEST_F(EmpTableTest, bit_packing_test) {
 
     ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
 
-    delete input_table;
+    delete input;
     delete expected;
     delete revealed;
     delete secret_shared;
 
 }
 
-void EmpTableTest::secretShareAndValidate(const std::string & input_query, const SortDefinition & sort) {
+void EmpTableTest::secretShareAndValidate(const std::string & sql, const SortDefinition & sort) {
 
-    PsqlDataProvider dataProvider;
-    PlainTable *input_table = dataProvider.getQueryTable(db_name_,
-                                                         input_query, false);
+//    cout << "DB Name: " << db_name_ << endl;
+    PlainTable *input = DataUtilities::getQueryResults(db_name_, sql, false);
+//    cout << "Local input: " << input->toString() << endl;
 
-    input_table->setSortOrder(sort);
-    SecureTable *secret_shared = input_table->secretShare();
+    input->setSortOrder(sort);
+    SecureTable *secret_shared = input->secretShare();
     manager_->flush();
     PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, input_query, false);
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
+    expected->setSortOrder(sort);
 
-    if(!sort.empty())  {
-        Sort sorter(expected, sort);
-        expected = sorter.run()->clone();
-
-    }
 
     ASSERT_EQ(*expected, *revealed);
 
     delete revealed;
-    delete input_table;
+    delete input;
     delete secret_shared;
     delete expected;
 }

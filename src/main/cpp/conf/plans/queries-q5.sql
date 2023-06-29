@@ -8,12 +8,12 @@ FROM nation) AS t1 ON t0.r_regionkey = t1.n_regionkey
 INNER JOIN (SELECT c_custkey, c_nationkey
 FROM customer) AS t2 ON t1.n_nationkey = t2.c_nationkey
 ORDER BY t2.c_custkey ASC;
--- 1, collation: (0 ASC, 1 ASC, 2 ASC)
+-- 1, collation: (0 ASC, 1 ASC)
 SELECT o_orderkey, o_custkey, NOT (o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01') AS dummy_tag
 FROM orders
 ORDER BY o_orderkey, o_custkey, o_orderdate;
 -- 4, collation: (0 ASC, 1 ASC, 2 ASC)
-SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue,
+SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue
 FROM lineitem
 ORDER BY l_orderkey, l_suppkey, revenue
 -- 7, collation: (0 ASC)

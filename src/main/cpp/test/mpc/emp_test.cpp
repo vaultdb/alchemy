@@ -15,10 +15,48 @@ DEFINE_int32(ctrl_port, 65446, "port for managing EMP control flow by passing pu
 using namespace vaultdb;
 
 class EmpTest : public EmpBaseTest {
+protected:
+    void test_packing(const emp::Integer & input);
 };
 
 
 
+
+
+
+#if __has_include("emp-rescu/emp-rescu.h")
+void EmpTest::test_packing(const emp::Integer & input) {
+    int bit_cnt = input.size();
+            auto protocol =  (OMPCBackend<N> *) backend;
+        emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC); // empty for setup
+
+        // ceil(bitCount / 128)
+        OMPCPackedWire *packed = new OMPCPackedWire[TypeUtilities::packedWireCount(bit_cnt)];
+        protocol->pack(input.bits.data(), packed, secret_shared.size());
+        protocol->unpack(unpacked.bits.data(), packed, unpacked.size());
+
+        // the standard reveal method converts this to decimal.  Need to reveal it bitwise
+        bool *bools = new bool[bit_cnt];
+        protocol->reveal(bools, emp::PUBLIC, unpacked.bits.data(),  bit_cnt);
+        delete [] packed;
+
+        vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
+        decoded_bytes.resize(len + 1);
+        decoded_bytes[len+1] = '\0';
+
+        std::string decoded_string((char *) decoded_bytes.data());
+        delete [] bools;
+
+        ASSERT_EQ("lithely regular deposits. fluffily          ", decoded_string);
+
+
+}
+#else
+void EmpTest::test_packing(const emp::Integer & input) {
+    return; // N/A here
+}
+
+#endif
 
 
 //  verify emp configuration for int32s
@@ -91,32 +129,7 @@ TEST_F(EmpTest, emp_test_varchar) {
 
     ASSERT_EQ(initial_string, decoded_str);
 
-    if(emp_mode_ == EmpMode::OUTSOURCED) {
-        auto protocol =  (OMPCBackend<N> *) backend;
-        emp::Integer unpacked(bit_cnt, 0L, emp::PUBLIC); // empty for setup
-
-        // ceil(bitCount / 128)
-        OMPCPackedWire *packed = new OMPCPackedWire[TypeUtilities::packedWireCount(bit_cnt)];
-        protocol->pack(secret_shared.bits.data(), packed, secret_shared.size());
-        protocol->unpack(unpacked.bits.data(), packed, unpacked.size());
-
-        // the standard reveal method converts this to decimal.  Need to reveal it bitwise
-        bools = new bool[bit_cnt];
-        protocol->reveal(bools, emp::PUBLIC, unpacked.bits.data(),  bit_cnt);
-        delete [] packed;
-
-        vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
-        decoded_bytes.resize(len + 1);
-        decoded_bytes[len+1] = '\0';
-
-        std::string decoded_string((char *) decoded_bytes.data());
-        delete [] bools;
-
-        ASSERT_EQ("lithely regular deposits. fluffily          ", decoded_string);
-
-
-    }
-
+    test_packing(secret_shared);
 
 }
 

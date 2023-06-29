@@ -323,11 +323,8 @@ template<typename B>
 QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_t target_size) {
     QuerySchema schema = input->getSchema();
 
+    SortDefinition sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
 
-    SortDefinition sort_def;
-
-    sort_def.emplace_back(is_new_idx_, SortDirection::ASCENDING);
-    sort_def.emplace_back(weight_idx_, SortDirection::ASCENDING);
     Sort<B> sorted(input, sort_def);
     input = sorted.run();
 

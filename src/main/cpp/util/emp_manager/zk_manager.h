@@ -12,22 +12,29 @@ namespace vaultdb {
     public:
         static const int threads_ = 4;
         BoolIO<NetIO> *ios_[threads_];
-        int party_;
 
 
-        ZKManager(string gen_host, int party, int port) : party_(party) {
+        ZKManager(string gen_host, int party, int port) {
             for(int i = 0; i < threads_; ++i)
                 ios_[i] = new BoolIO<NetIO>(new NetIO(party == ALICE ? nullptr
                                         : gen_host.c_str(),port+i), party==ALICE);
-            setup_zk_bool<BoolIO<NetIO>>(ios_, threads_, party_);
-            SystemConfiguration::getInstance().emp_bit_size_bytes_ = sizeof(emp::block);
+            setup_zk_bool<BoolIO<NetIO>>(ios_, threads_, party);
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            s.emp_bit_size_bytes_ = sizeof(emp::block);
+            s.party_ = party;
         }
+
+        // set up EMP for insecure execution
+        ZKManager()  {
+            setup_plain_prot(false, "");
+        }
+
 
         size_t andGateCount() const override {
             return emp::CircuitExecution::circ_exec->num_and();
         }
 
-        void feed(int8_t *labels, int party, const bool *b, int byte_count) override {
+        void feed(Bit *labels, int party, const bool *b, int byte_count) override {
             emp::ProtocolExecution::prot_exec->feed((block *) labels, party, b, byte_count);
         }
 
@@ -35,13 +42,30 @@ namespace vaultdb {
             ios_[0]->flush();
         }
 
+        bool finalize() {
+            return finalize_zk_bool<BoolIO<NetIO>>();
+        }
+
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override;
 
+        void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) override {
+            ProtocolExecution::prot_exec->reveal(dst, party, (block *) src, bit_cnt);
+        }
+
+        string revealToString(const emp::Integer & i, const int & party = PUBLIC)  const override {
+           return  i.reveal<std::string>(party);
+        }
+
         ~ZKManager() {
-            for(int i = 0; i < threads_; ++i) {
-                delete ios_[i]->io;
-                delete ios_[i];
+            if(ios_[0] != nullptr) {
+                for(int i = 0; i < threads_; ++i) {
+                    delete ios_[i]->io;
+                    delete ios_[i];
+                }
             }
+            else
+                finalize_plain_prot();
+
         }
 
     private:
@@ -62,18 +86,33 @@ namespace  vaultdb {
             throw;
         }
 
+        // set up EMP for insecure execution
+        ZKManager()  { throw; }
 
         size_t andGateCount() const override { return 0; }
 
-        void  feed(int8_t *labels, int party, const bool *b, int byte_count) override  {
+        void  feed(Bit *labels, int party, const bool *b, int byte_count) override  {
             throw;
         }
 
         void flush() override { throw; }
 
+        bool finalize() {
+            return false;
+        }
+
         ~ZKManager() = default;
 
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
+            throw;
+        }
+
+        void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) override {
+           throw;
+        }
+
+
+        string revealToString(const emp::Integer & i, const int & party = PUBLIC)  const override {
             throw;
         }
 

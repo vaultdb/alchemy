@@ -11,31 +11,54 @@ namespace  vaultdb {
     class SH2PCManager : public EmpManager {
 
     public:
-        NetIO *netio_;
+        NetIO *netio_ = nullptr;
         int party_;
 
         SH2PCManager(string alice_host, int party, int port)  : party_(party) {
             netio_  = new emp::NetIO(party_ == emp::ALICE ? nullptr : alice_host.c_str(), port);
 
             emp::setup_semi_honest(netio_, party_, 1024 * 16);
-            SystemConfiguration::getInstance().emp_bit_size_bytes_ = sizeof(emp::block);
+            SystemConfiguration & s = SystemConfiguration::getInstance();
+            s.emp_bit_size_bytes_ = sizeof(emp::block);
+            s.party_ = party;
+
         }
 
-
+        // set up EMP for insecure execution
+        SH2PCManager()  {
+            setup_plain_prot(false, "");
+        }
 
         size_t andGateCount() const override {
            return  emp::CircuitExecution::circ_exec->num_and();
         }
 
-        void  feed(int8_t *labels, int party, const bool *b, int byte_count) override {
+        void  feed(Bit *labels, int party, const bool *b, int byte_count) override {
              emp::ProtocolExecution::prot_exec->feed((block *) labels, party, b, byte_count);
         }
 
         void flush() override { netio_->flush(); }
 
-        ~SH2PCManager() { delete netio_; }
+        ~SH2PCManager() {
+            if(netio_ != nullptr) {
+                emp::finalize_semi_honest();
+                delete netio_;
+            }
+            else {
+                finalize_plain_prot();
+            }
+
+        }
 
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override;
+
+        void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) override {
+            ProtocolExecution::prot_exec->reveal(dst, party, (block *) src, bit_cnt);
+        }
+
+        string revealToString(const emp::Integer & i, const int & party = PUBLIC)  const override {
+           return  i.reveal<std::string>(party);
+        }
 
     private:
         static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
@@ -50,7 +73,7 @@ namespace  vaultdb {
 #else
 
 namespace  vaultdb {
-    // placeholder to make this build
+    // placeholder to make it build when we're in other modes
     class SH2PCManager : public EmpManager {
 
     public:
@@ -59,10 +82,11 @@ namespace  vaultdb {
             throw;
         }
 
+         SH2PCManager()  { throw; }
 
         size_t andGateCount() const override { return 0; }
 
-        void  feed(int8_t *labels, int party, const bool *b, int byte_count) override  {
+        void  feed(Bit *labels, int party, const bool *b, int byte_count) override  {
             throw;
         }
 
@@ -73,6 +97,13 @@ namespace  vaultdb {
         QueryTable<Bit> *secretShare(const QueryTable<bool> *src) override {
             throw;
         }
+
+        void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) override { throw; }
+
+        string revealToString(const emp::Integer & i, const int & party = PUBLIC)  const override {
+            throw;
+        }
+
 
     };
 }

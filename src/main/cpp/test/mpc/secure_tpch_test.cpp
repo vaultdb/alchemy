@@ -19,6 +19,8 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_int32(ctrl_port, 65478, "port for managing EMP control flow by passing public values");
+
 
 class SecureTpcHTest : public EmpBaseTest {
 
@@ -49,7 +51,10 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
 
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
-    PlanParser<emp::Bit> parser(local_db, test_name, input_tuple_limit_);
+    string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + test_name + ".sql";
+    string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
+
+    PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
 
 

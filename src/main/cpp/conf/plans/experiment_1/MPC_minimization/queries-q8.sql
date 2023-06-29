@@ -13,7 +13,6 @@ SELECT s_suppkey, CASE WHEN n_name = 'KENYA' THEN 1.0 ELSE 0.0 END AS nation_che
 FROM supplier JOIN nation ON n_nationkey = s_nationkey
 ORDER BY s_suppkey;
 -- 5, collation: (0 ASC)
-SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) volume
+SELECT l_orderkey, l_suppkey, l_extendedprice * (1.0 - l_discount) volume, NOT p_type = 'LARGE ANODIZED STEEL' AS dummy_tag
 FROM part JOIN lineitem ON p_partkey = l_partkey
-WHERE p_type = 'LARGE ANODIZED STEEL'
 ORDER BY l_orderkey;

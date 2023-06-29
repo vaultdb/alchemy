@@ -1,7 +1,7 @@
 -- 0, collation: (1 ASC, 0 ASC)
-SELECT s_suppkey, n_name AS nation
+SELECT s_suppkey, n_name
 FROM supplier JOIN nation On s_nationkey = n_nationkey
-ORDER BY nation, s_suppkey
+ORDER BY n_name, s_suppkey
 -- 1, collation: (1 ASC, 2 ASC)
 SELECT ps_partkey, ps_suppkey, ps_supplycost
 FROM partsupp JOIN part ON ps_partkey = p_partkey

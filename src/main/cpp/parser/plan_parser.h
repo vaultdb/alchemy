@@ -17,19 +17,17 @@ namespace vaultdb {
     template<typename B>
     class PlanParser {
     public:
+        PlanParser(const string &db_name, const string & sql_file, const string & json_file, const int &limit = -1);
+        // for ZK plans
+        PlanParser(const string &db_name, const string & json_file, const int &limit = -1);
 
-        PlanParser(const string &db_name, std::string plan_name, const int &limit);
-        PlanParser(const string &db_name, std::string plan_name, const int &limit, const string &experiment_num);
-        PlanParser(const string &db_name, std::string plan_name, const int &limit, const string &experiment_num, const bool &isBaseline);
-        PlanParser(const std::string &db_name, const std::string plan_name, bool zk_plan, const int &limit);
 
         Operator<B> *getRoot() const { return root_; }
         Operator<B> *getOperator(const int & op_id);
 
-        static Operator <B> *parse(const string &db_name, const string &plan_name, const int &limit);
-        static Operator<B> *parse(const std::string & db_name, const std::string & plan_name, const StorageModel & model, emp::NetIO * netio, const int & party, const int & limit = -1);
-        static Operator <B> *
-        parse(const string &db_name, const string &plan_name, const bool &zk_plan, const int &limit);
+        static Operator<B> *parse(const std::string & db_name, const string & sql_file, const string & json_file, const int & limit = -1);
+        // for ZK plans
+        static Operator <B> *parse(const string &db_name, const string &json_plan, const int &limit = -1);
 
         static pair<int, SortDefinition> parseSqlHeader(const string & header);
     protected:
@@ -49,7 +47,6 @@ namespace vaultdb {
 
         // operator parsers
         void parseOperator(const int & operator_id, const std::string & op_name, const  boost::property_tree::ptree &pt);
-        // TODO: consider making this a static method in each operator to break this up, or make it a factory
         Operator<B> *parseSort(const int &operator_id, const boost::property_tree::ptree &pt);
         Operator<B> *parseAggregate(const int & operator_id, const boost::property_tree::ptree &pt);
         Operator<B> *parseJoin(const int & operator_id, const boost::property_tree::ptree &pt);
@@ -69,6 +66,11 @@ namespace vaultdb {
 
 
     };
+
+
+
+
+
 }
 
 
