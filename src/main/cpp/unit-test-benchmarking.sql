@@ -22,6 +22,13 @@ UPDATE unit_test SET test_name='tpchQ08Sort' WHERE test_name='tpchQ8Sort';
 UPDATE unit_test SET test_name='tpchQ09Sort' WHERE test_name='tpchQ9Sort';
 UPDATE unit_test SET test_suite='SecureKeyedJoinTest' WHERE test_suite='SecurePkeyFkeyJoinTest';
 
+UPDATE unit_test SET test_name='tpch_q01' WHERE test_name='tpch_q1';
+UPDATE unit_test SET test_name='tpch_q03' WHERE test_name='tpch_q3';
+UPDATE unit_test SET test_name='tpch_q05' WHERE test_name='tpch_q5';
+UPDATE unit_test SET test_name='tpch_q08' WHERE test_name='tpch_q8';
+UPDATE unit_test SET test_name='tpch_q09' WHERE test_name='tpch_q9';
+
+
 SELECT DISTINCT test_suite FROM unit_test ORDER BY test_suite;
 
 
