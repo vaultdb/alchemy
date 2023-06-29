@@ -148,7 +148,7 @@ BaselineComparisonTest::generateExpectedOutputQuery(const int &test_id, const So
     return query;
 }
 
-
+/*
 TEST_F(BaselineComparisonTest, tpch_q1_baseline) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest_baseline(1, "q1", expected_sort, unioned_db_);
@@ -183,8 +183,8 @@ TEST_F(BaselineComparisonTest, tpch_q3_handcode) {
                                  ColumnSort(2, SortDirection::ASCENDING)};
     runTest_handcode(3, "q3", expected_sort, unioned_db_);
 }
+*/
 
-/*
 // passes on codd2 in about 2.5 mins
 TEST_F(BaselineComparisonTest, tpch_q5_baseline) {
     //input_tuple_limit_ = 1000;
@@ -202,7 +202,7 @@ TEST_F(BaselineComparisonTest, tpch_q5_handcode) {
     runTest_handcode(5, "q5", expected_sort, unioned_db_);
 }
 
-
+/*
 TEST_F(BaselineComparisonTest, tpch_q8_baseline) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
