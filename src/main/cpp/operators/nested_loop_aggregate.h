@@ -20,7 +20,7 @@ namespace vaultdb {
         NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
                             const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const int & output_card = 0);
         NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
-                            const vector<ScalarAggregateDefinition> &aggregates, const int output_card);
+                            const vector<ScalarAggregateDefinition> &aggregates, const int output_card = 0);
 
         NestedLoopAggregate(QueryTable<B> *child, const vector<int32_t> &groupBys,
                             const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const int & output_card = 0);
