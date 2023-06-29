@@ -1,0 +1,1990 @@
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- GMP libs: /usr/lib/x86_64-linux-gnu/libgmp.so /usr/lib/x86_64-linux-gnu/libgmpxx.so
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system 
+-- GMP libs: /usr/lib/x86_64-linux-gnu/libgmp.so /usr/lib/x86_64-linux-gnu/libgmpxx.so
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time system program_options 
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time system 
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- Build type: Release
+-- CXX release flags: -pthread   -Wfatal-errors    -fPIC -pthread   -Wfatal-errors   -march=native -maes -mrdseed  -O2
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vaultdb/vaultdb-core-emp-operators/src/main/cpp
+[  0%] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
+[  0%] Building CXX object CMakeFiles/generate_enrich_data.dir/test/support/generate_enrich_data.cpp.o
+[  1%] Linking CXX executable bin/generate_enrich_data
+[  1%] Built target generate_enrich_data
+[  2%] Linking CXX static library ../../../lib/libgtest.a
+[  2%] Built target gtest
+[  3%] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+[  3%] Building CXX object _deps/googletest-build/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o
+[  4%] Linking CXX static library ../../../lib/libgtest_main.a
+[  4%] Built target gtest_main
+[  4%] Linking CXX static library ../../../lib/libgmock.a
+[  4%] Built target gmock
+[  6%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/type_utilities.cpp.o
+[  6%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/data_utilities.cpp.o
+[  6%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/utilities.cpp.o
+[  6%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/field_utilities.cpp.o
+[  6%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/system_configuration.cpp.o
+[  6%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/logger.cpp.o
+[  7%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/emp_manager/sh2pc_manager.cpp.o
+[  7%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/emp_manager/zk_manager.cpp.o
+[  8%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/field/field.cpp.o
+[  8%] Building CXX object CMakeFiles/vaultdb-emp.dir/util/emp_manager/outsourced_mpc_manager.cpp.o
+[  9%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/field/field_factory.cpp.o
+[  9%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/secure_tuple.cpp.o
+[ 11%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_field_desc.cpp.o
+[ 11%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_schema.cpp.o
+[ 11%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/plain_tuple.cpp.o
+[ 11%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_tuple.cpp.o
+[ 11%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/row_table.cpp.o
+[ 12%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/query_table.cpp.o
+[ 12%] Building CXX object CMakeFiles/vaultdb-emp.dir/query_table/column_table.cpp.o
+[ 13%] Building CXX object CMakeFiles/vaultdb-emp.dir/data/psql_data_provider.cpp.o
+[ 14%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/operator.cpp.o
+[ 14%] Building CXX object CMakeFiles/vaultdb-emp.dir/data/csv_reader.cpp.o
+[ 14%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/sql_input.cpp.o
+[ 14%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/zk_sql_input.cpp.o
+[ 16%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/secure_sql_input.cpp.o
+[ 16%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/filter.cpp.o
+[ 16%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/project.cpp.o
+[ 17%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/sort.cpp.o
+[ 17%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/join.cpp.o
+[ 18%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/basic_join.cpp.o
+[ 18%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/keyed_join.cpp.o
+[ 19%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/support/scalar_aggregate_impl.cpp.o
+[ 19%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/scalar_aggregate.cpp.o
+[ 19%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/union.cpp.o
+[ 20%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/group_by_aggregate.cpp.o
+[ 20%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/support/group_by_aggregate_impl.cpp.o
+[ 20%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/shrinkwrap.cpp.o
+[ 21%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/csv_input.cpp.o
+[ 22%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/sort_merge_join.cpp.o
+[ 22%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/nested_loop_aggregate.cpp.o
+[ 23%] Building CXX object CMakeFiles/vaultdb-emp.dir/operators/support/unsorted_aggregate_impl.cpp.o
+[ 23%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/function_expression.cpp.o
+[ 24%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/generic_expression.cpp.o
+[ 24%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/expression_node.cpp.o
+[ 25%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/comparator_expression_nodes.cpp.o
+[ 25%] Building CXX object CMakeFiles/vaultdb-emp.dir/parser/plan_parser.cpp.o
+[ 26%] Building CXX object CMakeFiles/vaultdb-emp.dir/parser/expression_parser.cpp.o
+[ 26%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/expression_factory.cpp.o
+[ 26%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/join_equality_condition_visitor.cpp.o
+[ 27%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/print_expression_visitor.cpp.o
+[ 27%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/type_inference_visitor.cpp.o
+[ 28%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/plain_to_secure_visitor.cpp.o
+[ 28%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/type_validation_visitor.cpp.o
+[ 29%] Building CXX object CMakeFiles/vaultdb-emp.dir/expression/visitor/to_packed_expression_visitor.cpp.o
+[ 29%] Linking CXX shared library libvaultdb-emp.so
+[ 29%] Built target vaultdb-emp
+[ 29%] Building CXX object test/CMakeFiles/field_expression_test.dir/field_expression_test.cpp.o
+[ 29%] Building CXX object test/CMakeFiles/filter_test.dir/plain/plain_base_test.cpp.o
+[ 29%] Building CXX object test/CMakeFiles/csv_reader_test.dir/csv_reader_test.cpp.o
+[ 30%] Building CXX object test/CMakeFiles/filter_test.dir/plain/filter_test.cpp.o
+[ 31%] Building CXX object test/CMakeFiles/project_test.dir/plain/plain_base_test.cpp.o
+[ 32%] Building CXX object test/CMakeFiles/csv_reader_test.dir/plain/plain_base_test.cpp.o
+[ 33%] Building CXX object test/CMakeFiles/field_expression_test.dir/plain/plain_base_test.cpp.o
+[ 34%] Building CXX object test/CMakeFiles/sort_test.dir/plain/sort_test.cpp.o
+[ 34%] Building CXX object test/CMakeFiles/sort_test.dir/plain/plain_base_test.cpp.o
+[ 34%] Building CXX object test/CMakeFiles/keyed_join_test.dir/plain/keyed_join_test.cpp.o
+[ 34%] Building CXX object test/CMakeFiles/project_test.dir/plain/project_test.cpp.o
+[ 35%] Building CXX object test/CMakeFiles/keyed_join_test.dir/plain/plain_base_test.cpp.o
+[ 35%] Building CXX object test/CMakeFiles/basic_join_test.dir/plain/plain_base_test.cpp.o
+[ 36%] Building CXX object test/CMakeFiles/scalar_aggregate_test.dir/plain/plain_base_test.cpp.o
+[ 38%] Building CXX object test/CMakeFiles/basic_join_test.dir/plain/basic_join_test.cpp.o
+[ 38%] Building CXX object test/CMakeFiles/scalar_aggregate_test.dir/plain/scalar_aggregate_test.cpp.o
+[ 38%] Building CXX object test/CMakeFiles/sort_merge_join_test.dir/plain/sort_merge_join_test.cpp.o
+[ 39%] Building CXX object test/CMakeFiles/secret_share_generator_test.dir/secret_share_generator_test.cpp.o
+[ 40%] Building CXX object test/CMakeFiles/nested_loop_aggregate_test.dir/plain/plain_base_test.cpp.o
+[ 40%] Building CXX object test/CMakeFiles/sort_merge_join_test.dir/plain/plain_base_test.cpp.o
+[ 41%] Building CXX object test/CMakeFiles/group_by_aggregate_test.dir/plain/group_by_aggregate_test.cpp.o
+[ 41%] Building CXX object test/CMakeFiles/group_by_aggregate_test.dir/plain/plain_base_test.cpp.o
+[ 41%] Building CXX object test/CMakeFiles/nested_loop_aggregate_test.dir/plain/nested_loop_aggregate_test.cpp.o
+[ 41%] Building CXX object test/CMakeFiles/tpch_test.dir/plain/plain_base_test.cpp.o
+[ 41%] Building CXX object test/CMakeFiles/serialization_test.dir/serialization_test.cpp.o
+[ 42%] Building CXX object test/CMakeFiles/plan_parser_test.dir/plan_parser_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/tpch_test.dir/tpch_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/plan_parser_test.dir/plain/plain_base_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/emp_test.dir/mpc/emp_base_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/serialization_test.dir/plain/plain_base_test.cpp.o
+[ 43%] Building CXX object test/CMakeFiles/secret_share_generator_test.dir/plain/plain_base_test.cpp.o
+[ 44%] Building CXX object test/CMakeFiles/emp_test.dir/mpc/emp_test.cpp.o
+[ 44%] Building CXX object test/CMakeFiles/secure_field_expression_test.dir/mpc/secure_value_expression_test.cpp.o
+[ 44%] Building CXX object test/CMakeFiles/emp_table_test.dir/mpc/emp_table_test.cpp.o
+[ 46%] Building CXX object test/CMakeFiles/serialization_test.dir/__/pilot/src/common/shared_schema.cpp.o
+[ 45%] Building CXX object test/CMakeFiles/secure_field_expression_test.dir/mpc/emp_base_test.cpp.o
+[ 46%] Building CXX object test/CMakeFiles/emp_table_test.dir/mpc/emp_base_test.cpp.o
+[ 47%] Building CXX object test/CMakeFiles/secure_filter_test.dir/mpc/secure_filter_test.cpp.o
+[ 47%] Building CXX object test/CMakeFiles/secure_filter_test.dir/mpc/emp_base_test.cpp.o
+[ 48%] Building CXX object test/CMakeFiles/secure_basic_join_test.dir/mpc/secure_basic_join_test.cpp.o
+[ 48%] Building CXX object test/CMakeFiles/secure_basic_join_test.dir/mpc/emp_base_test.cpp.o
+[ 48%] Building CXX object test/CMakeFiles/secure_sort_test.dir/mpc/secure_sort_test.cpp.o
+[ 49%] Building CXX object test/CMakeFiles/secure_keyed_join_test.dir/mpc/secure_keyed_join_test.cpp.o
+[ 49%] Building CXX object test/CMakeFiles/secure_keyed_join_test.dir/mpc/emp_base_test.cpp.o
+[ 50%] Building CXX object test/CMakeFiles/secure_sort_merge_join_test.dir/mpc/secure_sort_merge_join_test.cpp.o
+[ 50%] Building CXX object test/CMakeFiles/secure_scalar_aggregate_test.dir/mpc/secure_scalar_aggregate_test.cpp.o
+[ 51%] Building CXX object test/CMakeFiles/secure_sort_test.dir/mpc/emp_base_test.cpp.o
+[ 51%] Building CXX object test/CMakeFiles/secure_group_by_aggregate_test.dir/mpc/secure_group_by_aggregate_test.cpp.o
+[ 51%] Building CXX object test/CMakeFiles/secure_sort_merge_join_test.dir/mpc/emp_base_test.cpp.o
+[ 51%] Building CXX object test/CMakeFiles/secure_nested_loop_aggregate_test.dir/mpc/secure_nested_loop_aggregate_test.cpp.o
+[ 51%] Building CXX object test/CMakeFiles/enrich_test.dir/enrich_test.cpp.o
+[ 52%] Building CXX object test/CMakeFiles/enrich_test.dir/support/enrich_test_support.cpp.o
+[ 54%] Building CXX object test/CMakeFiles/secure_group_by_aggregate_test.dir/mpc/emp_base_test.cpp.o
+[ 54%] Building CXX object test/CMakeFiles/secure_scalar_aggregate_test.dir/mpc/emp_base_test.cpp.o
+[ 51%] Building CXX object test/CMakeFiles/secure_nested_loop_aggregate_test.dir/mpc/emp_base_test.cpp.o
+[ 54%] Building CXX object test/CMakeFiles/enrich_test.dir/mpc/emp_base_test.cpp.o
+[ 55%] Building CXX object test/CMakeFiles/baseline_comparison_test.dir/mpc/emp_base_test.cpp.o
+[ 55%] Building CXX object test/CMakeFiles/zk_filter_test.dir/zk/zk_filter_test.cpp.o
+[ 55%] Building CXX object test/CMakeFiles/zk_test.dir/zk/zk_test.cpp.o
+[ 57%] Building CXX object test/CMakeFiles/secure_tpch_test.dir/mpc/secure_tpch_test.cpp.o
+[ 55%] Building CXX object test/CMakeFiles/baseline_comparison_test.dir/mpc/baseline_comparison_test.cpp.o
+[ 58%] Building CXX object test/CMakeFiles/zk_test.dir/zk/zk_base_test.cpp.o
+[ 56%] Building CXX object test/CMakeFiles/zk_filter_test.dir/zk/zk_base_test.cpp.o
+[ 59%] Building CXX object test/CMakeFiles/zk_sort_test.dir/zk/zk_sort_test.cpp.o
+[ 59%] Building CXX object test/CMakeFiles/secure_tpch_test.dir/mpc/emp_base_test.cpp.o
+[ 60%] Building CXX object test/CMakeFiles/zk_keyed_join_test.dir/zk/zk_keyed_join.cpp.o
+[ 61%] Building CXX object test/CMakeFiles/zk_basic_join_test.dir/zk/zk_basic_join_test.cpp.o
+[ 61%] Building CXX object test/CMakeFiles/zk_sort_test.dir/zk/zk_base_test.cpp.o
+[ 61%] Building CXX object test/CMakeFiles/zk_basic_join_test.dir/zk/zk_base_test.cpp.o
+[ 61%] Building CXX object test/CMakeFiles/zk_scalar_aggregate_test.dir/zk/zk_scalar_aggregate_test.cpp.o
+[ 61%] Building CXX object test/CMakeFiles/zk_keyed_join_test.dir/zk/zk_base_test.cpp.o
+[ 62%] Building CXX object test/CMakeFiles/zk_scalar_aggregate_test.dir/zk/zk_base_test.cpp.o
+[ 63%] Building CXX object test/CMakeFiles/zk_group_by_aggregate_test.dir/zk/zk_group_by_aggregate_test.cpp.o
+[ 63%] Building CXX object test/CMakeFiles/zk_group_by_aggregate_test.dir/zk/zk_base_test.cpp.o
+[ 64%] Building CXX object test/CMakeFiles/zk_tpch_test.dir/zk/zk_tpch_test.cpp.o
+[ 64%] Building CXX object pilot/CMakeFiles/secret_share_csv.dir/src/secret_share_csv.cpp.o
+[ 64%] Building CXX object test/CMakeFiles/zk_tpch_test.dir/zk/zk_base_test.cpp.o
+[ 64%] Building CXX object pilot/CMakeFiles/secret_share_from_query.dir/src/secret_share_from_query.cpp.o
+[ 65%] Building CXX object pilot/CMakeFiles/secret_share_csv.dir/src/common/shared_schema.cpp.o
+[ 65%] Building CXX object pilot/CMakeFiles/secret_share_csv.dir/src/common/pilot_utilities.cpp.o
+[ 66%] Building CXX object pilot/CMakeFiles/secret_share_batch_from_query.dir/src/secret_share_batch_from_query.cpp.o
+[ 67%] Building CXX object pilot/CMakeFiles/secret_share_from_query.dir/src/common/pilot_utilities.cpp.o
+[ 67%] Building CXX object pilot/CMakeFiles/secret_share_batch_from_query.dir/src/common/pilot_utilities.cpp.o
+[ 67%] Building CXX object pilot/CMakeFiles/load_tuples_data_partner.dir/src/load_tuples_data_partner.cpp.o
+[ 68%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/run_data_partner.cpp.o
+[ 68%] Building CXX object pilot/CMakeFiles/generate_enrich_data_three_parties.dir/src/generate_enrich_data_three_parties.cpp.o
+[ 69%] Building CXX object pilot/CMakeFiles/load_tuples_data_partner.dir/src/common/union_hybrid_data.cpp.o
+[ 69%] Building CXX object pilot/CMakeFiles/load_tuples_data_partner.dir/src/common/shared_schema.cpp.o
+[ 69%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/common/union_hybrid_data.cpp.o
+[ 69%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/run_data_partner_aggregation.cpp.o
+[ 70%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/common/shared_schema.cpp.o
+[ 70%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/common/pilot_utilities.cpp.o
+[ 70%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/common/shared_schema.cpp.o
+[ 71%] Building CXX object pilot/CMakeFiles/run_data_partner_aggregation.dir/src/common/union_hybrid_data.cpp.o
+[ 72%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/enrich_htn_query.cpp.o
+[ 72%] Building CXX object pilot/CMakeFiles/run_data_partner.dir/src/common/pilot_utilities.cpp.o
+[ 73%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/common/union_hybrid_data.cpp.o
+[ 73%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/run_data_partner_batch.cpp.o
+[ 74%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/common/shared_schema.cpp.o
+[ 74%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/enrich_htn_query.cpp.o
+[ 75%] Building CXX object pilot/CMakeFiles/run_data_partner_batch.dir/src/common/pilot_utilities.cpp.o
+[ 75%] Building CXX object pilot/CMakeFiles/assemble_secret_shares.dir/src/assemble_secret_shares.cpp.o
+[ 75%] Building CXX object pilot/CMakeFiles/assemble_secret_shares.dir/src/common/shared_schema.cpp.o
+[ 75%] Linking CXX executable ../bin/generate_enrich_data_three_parties
+[ 75%] Built target generate_enrich_data_three_parties
+[ 76%] Linking CXX executable ../bin/assemble_secret_shares
+[ 76%] Built target assemble_secret_shares
+[ 77%] Linking CXX executable ../bin/tpch_test
+[ 77%] Linking CXX executable ../bin/field_expression_test
+[ 77%] Linking CXX executable ../bin/serialization_test
+[ 78%] Linking CXX executable ../bin/filter_test
+[ 79%] Linking CXX executable ../bin/plan_parser_test
+[ 79%] Linking CXX executable ../bin/secret_share_generator_test
+[ 79%] Built target tpch_test
+[ 79%] Linking CXX executable ../bin/csv_reader_test
+[ 80%] Linking CXX executable ../bin/secret_share_csv
+[ 80%] Built target field_expression_test
+[ 80%] Built target serialization_test
+[ 80%] Linking CXX executable ../bin/project_test
+[ 80%] Built target filter_test
+[ 80%] Built target plan_parser_test
+[ 80%] Built target secret_share_generator_test
+[ 80%] Linking CXX executable ../bin/sort_test
+[ 80%] Built target csv_reader_test
+[ 80%] Built target secret_share_csv
+[ 81%] Linking CXX executable ../bin/load_tuples_data_partner
+[ 81%] Linking CXX executable ../bin/secret_share_from_query
+[ 81%] Built target project_test
+[ 81%] Linking CXX executable ../bin/scalar_aggregate_test
+[ 81%] Linking CXX executable ../bin/nested_loop_aggregate_test
+[ 81%] Built target sort_test
+[ 81%] Built target load_tuples_data_partner
+[ 81%] Built target secret_share_from_query
+[ 82%] Linking CXX executable ../bin/secret_share_batch_from_query
+[ 82%] Built target scalar_aggregate_test
+[ 82%] Built target nested_loop_aggregate_test
+[ 82%] Built target secret_share_batch_from_query
+[ 82%] Linking CXX executable ../bin/keyed_join_test
+[ 83%] Linking CXX executable ../bin/basic_join_test
+[ 83%] Built target keyed_join_test
+[ 84%] Linking CXX executable ../bin/group_by_aggregate_test
+[ 85%] Linking CXX executable ../bin/secure_sort_merge_join_test
+[ 85%] Built target basic_join_test
+[ 86%] Linking CXX executable ../bin/sort_merge_join_test
+[ 87%] Linking CXX executable ../bin/secure_basic_join_test
+[ 87%] Linking CXX executable ../bin/secure_group_by_aggregate_test
+[ 88%] Linking CXX executable ../bin/secure_nested_loop_aggregate_test
+[ 88%] Linking CXX executable ../bin/run_data_partner_aggregation
+[ 88%] Linking CXX executable ../bin/baseline_comparison_test
+[ 88%] Built target group_by_aggregate_test
+[ 88%] Built target secure_sort_merge_join_test
+[ 88%] Built target sort_merge_join_test
+[ 89%] Linking CXX executable ../bin/emp_test
+[ 90%] Linking CXX executable ../bin/secure_filter_test
+[ 90%] Linking CXX executable ../bin/secure_scalar_aggregate_test
+[ 90%] Linking CXX executable ../bin/secure_sort_test
+[ 90%] Built target secure_basic_join_test
+[ 91%] Linking CXX executable ../bin/secure_tpch_test
+[ 91%] Built target run_data_partner_aggregation
+[ 91%] Linking CXX executable ../bin/secure_field_expression_test
+[ 91%] Built target secure_group_by_aggregate_test
+[ 92%] Linking CXX executable ../bin/emp_table_test
+[ 92%] Built target secure_nested_loop_aggregate_test
+[ 93%] Linking CXX executable ../bin/secure_keyed_join_test
+[ 93%] Built target emp_test
+[ 93%] Built target baseline_comparison_test
+[ 93%] Built target secure_filter_test
+[ 93%] Built target secure_sort_test
+[ 93%] Built target secure_tpch_test
+[ 93%] Built target secure_scalar_aggregate_test
+[ 93%] Built target secure_field_expression_test
+[ 93%] Built target emp_table_test
+[ 93%] Built target secure_keyed_join_test
+[ 94%] Linking CXX executable ../bin/enrich_test
+[ 94%] Built target enrich_test
+[ 95%] Linking CXX executable ../bin/zk_sort_test
+[ 95%] Built target zk_sort_test
+[ 95%] Linking CXX executable ../bin/run_data_partner_batch
+[ 95%] Linking CXX executable ../bin/zk_filter_test
+[ 96%] Linking CXX executable ../bin/run_data_partner
+[ 96%] Built target run_data_partner_batch
+[ 97%] Linking CXX executable ../bin/zk_basic_join_test
+[ 97%] Built target zk_filter_test
+[ 97%] Built target run_data_partner
+[ 97%] Built target zk_basic_join_test
+[ 97%] Linking CXX executable ../bin/zk_test
+[ 97%] Linking CXX executable ../bin/zk_scalar_aggregate_test
+[ 98%] Linking CXX executable ../bin/zk_tpch_test
+[ 98%] Built target zk_test
+[ 98%] Linking CXX executable ../bin/zk_group_by_aggregate_test
+[100%] Linking CXX executable ../bin/zk_keyed_join_test
+[100%] Built target zk_scalar_aggregate_test
+[100%] Built target zk_tpch_test
+[100%] Built target zk_group_by_aggregate_test
+[100%] Built target zk_keyed_join_test
+[  3%] Built target gtest
+[  7%] Built target gtest_main
+[ 10%] Built target gmock
+[100%] Built target vaultdb-emp
+[100%] Built target generate_enrich_data_three_parties
+Finished generating 1000 patients per host!
+DROP TABLE
+CREATE TABLE
+COPY 1000
+COPY 1000
+COPY 1000
+UPDATE 1824
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+CREATE EXTENSION
+ALTER TABLE
+UPDATE 3000
+COPY 1000
+COPY 1000
+COPY 1000
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "enrich_htn_chi" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 1000
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 3
+DROP TABLE
+CREATE TABLE
+INSERT 0 7
+DROP TABLE
+SELECT 1323
+Writing multisite tables!
+preparing for aggregate-only test
+Secret sharing 475 rows.
+Secret sharing 158 rows.
+Setting up semi-join optimization
+Secret sharing 1323 rows.
+Secret sharing 114 rows.
+Secret sharing 97 rows.
+Secret sharing 78 rows.
+Secret sharing 96 rows.
+Secret sharing 92 rows.
+Secret sharing 111 rows.
+Secret sharing 94 rows.
+Secret sharing 112 rows.
+Secret sharing 99 rows.
+Secret sharing 107 rows.
+Secret sharing 441 rows.
+Secret sharing 43 rows.
+Secret sharing 23 rows.
+Secret sharing 29 rows.
+Secret sharing 40 rows.
+Secret sharing 26 rows.
+Secret sharing 40 rows.
+Secret sharing 30 rows.
+Secret sharing 41 rows.
+Secret sharing 27 rows.
+Secret sharing 34 rows.
+Secret sharing 441 rows.
+Secret sharing 1323 rows.
+Secret sharing 882 rows.
+finished generating 100 patients per host!
+You are now connected to database "enrich_htn_test_alice" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_test_bob" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+DROP TABLE
+CREATE TABLE
+COPY 100
+COPY 100
+You are now connected to database "enrich_htn_unioned" as user "vaultdb".
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+DROP TABLE
+CREATE TABLE
+COPY 100
+ALTER TABLE
+UPDATE 100
+COPY 100
+UPDATE 100
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from CsvReaderTest
+[ RUN      ] CsvReaderTest.lineitemTest
+Received storage flag of row
+[       OK ] CsvReaderTest.lineitemTest (218 ms)
+[ RUN      ] CsvReaderTest.quotedStringTest
+Received storage flag of row
+[       OK ] CsvReaderTest.quotedStringTest (205 ms)
+[ RUN      ] CsvReaderTest.customerTest
+Received storage flag of row
+[       OK ] CsvReaderTest.customerTest (190 ms)
+[ RUN      ] CsvReaderTest.ordersTest
+Received storage flag of row
+[       OK ] CsvReaderTest.ordersTest (172 ms)
+[----------] 4 tests from CsvReaderTest (787 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (787 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from FieldExpressionTest
+[ RUN      ] FieldExpressionTest.test_int32
+Received storage flag of row
+[       OK ] FieldExpressionTest.test_int32 (70 ms)
+[ RUN      ] FieldExpressionTest.test_int32_comparator
+Received storage flag of row
+[       OK ] FieldExpressionTest.test_int32_comparator (64 ms)
+[ RUN      ] FieldExpressionTest.test_int32_expr
+Received storage flag of row
+[       OK ] FieldExpressionTest.test_int32_expr (59 ms)
+[ RUN      ] FieldExpressionTest.cmp_swap
+Received storage flag of row
+[       OK ] FieldExpressionTest.cmp_swap (229 ms)
+[----------] 4 tests from FieldExpressionTest (424 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (424 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from FilterTest
+[ RUN      ] FilterTest.test_table_scan
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 100, row width=80
+[       OK ] FilterTest.test_table_scan (155 ms)
+[ RUN      ] FilterTest.test_filter
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 100, row width=80
+Operator #-1 Filter ran for 5e-05 seconds,  gate count: 0 output cardinality: 100, row width=80
+[       OK ] FilterTest.test_filter (167 ms)
+[----------] 2 tests from FilterTest (323 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (323 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ProjectionTest
+[ RUN      ] ProjectionTest.q3Lineitem
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=1112
+Operator #-1 Project ran for 3e-05 seconds,  gate count: 0 output cardinality: 10, row width=136
+[       OK ] ProjectionTest.q3Lineitem (275 ms)
+[----------] 1 test from ProjectionTest (275 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (275 ms total)
+[  PASSED  ] 1 test.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from BasicJoinTest
+[ RUN      ] BasicJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 45, row width=168
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 5, row width=40
+Operator #-1 BasicJoin ran for 0.000795 seconds,  gate count: 0 output cardinality: 225, row width=200
+[       OK ] BasicJoinTest.test_tpch_q3_customer_orders (164 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 206, row width=72
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 45, row width=168
+Operator #-1 BasicJoin ran for 0.066281 seconds,  gate count: 0 output cardinality: 9270, row width=232
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders (342 ms)
+[ RUN      ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 206, row width=72
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 45, row width=168
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 5, row width=40
+Operator #-1 BasicJoin ran for 0.000902 seconds,  gate count: 0 output cardinality: 225, row width=200
+Operator #-1 BasicJoin ran for 0.481797 seconds,  gate count: 0 output cardinality: 46350, row width=264
+[       OK ] BasicJoinTest.test_tpch_q3_lineitem_orders_customer (1241 ms)
+[----------] 3 tests from BasicJoinTest (1748 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (1748 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from KeyedJoinTest
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 101, row width=168
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=40
+Operator #-1 KeyedJoin ran for 0.003315 seconds,  gate count: 0 output cardinality: 101, row width=200
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders (134 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 417, row width=72
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 101, row width=168
+Operator #-1 KeyedJoin ran for 0.197655 seconds,  gate count: 0 output cardinality: 417, row width=232
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders (349 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 417, row width=72
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 101, row width=168
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=40
+Operator #-1 KeyedJoin ran for 0.003506 seconds,  gate count: 0 output cardinality: 101, row width=200
+Operator #-1 KeyedJoin ran for 0.240393 seconds,  gate count: 0 output cardinality: 417, row width=264
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer (410 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=40
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 101, row width=168
+Operator #-1 KeyedJoin ran for 0.000956 seconds,  gate count: 0 output cardinality: 101, row width=200
+[       OK ] KeyedJoinTest.test_tpch_q3_customer_orders_reversed (128 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 101, row width=168
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 417, row width=72
+Operator #-1 KeyedJoin ran for 0.025863 seconds,  gate count: 0 output cardinality: 417, row width=232
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_reversed (161 ms)
+[ RUN      ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=40
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 101, row width=168
+Operator #-1 KeyedJoin ran for 0.001056 seconds,  gate count: 0 output cardinality: 101, row width=200
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 417, row width=72
+Operator #-1 KeyedJoin ran for 0.035224 seconds,  gate count: 0 output cardinality: 417, row width=264
+[       OK ] KeyedJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (231 ms)
+[----------] 6 tests from KeyedJoinTest (1416 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (1416 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SortMergeJoinTest
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 9, row width=40
+Operator #-1 Project ran for 1.9e-05 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 Project ran for 3e-06 seconds,  gate count: 0 output cardinality: 9, row width=40
+Operator #-1 Sort ran for 0.002048 seconds,  gate count: 0 output cardinality: 87, row width=208
+Operator #-1 Sort ran for 0.003681 seconds,  gate count: 0 output cardinality: 87, row width=208
+Operator #-1 Sort ran for 0.000109 seconds,  gate count: 0 output cardinality: 9, row width=272
+Operator #-1 Project ran for 3e-05 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 Project ran for 1e-05 seconds,  gate count: 0 output cardinality: 78, row width=40
+Operator #-1 SortMergeJoin ran for 0.010291 seconds,  gate count: 0 output cardinality: 78, row width=200
+Operator #-1 Sort ran for 0.001927 seconds,  gate count: 0 output cardinality: 78, row width=200
+[       OK ] SortMergeJoinTest.test_tpch_q3_customer_orders (144 ms)
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 Project ran for 3.2e-05 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 Project ran for 1.8e-05 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 Sort ran for 0.022401 seconds,  gate count: 0 output cardinality: 420, row width=208
+Operator #-1 Sort ran for 0.034503 seconds,  gate count: 0 output cardinality: 420, row width=208
+Operator #-1 Sort ran for 0.003485 seconds,  gate count: 0 output cardinality: 78, row width=272
+Operator #-1 Project ran for 5e-05 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 Project ran for 5.6e-05 seconds,  gate count: 0 output cardinality: 342, row width=168
+Operator #-1 SortMergeJoin ran for 0.079171 seconds,  gate count: 0 output cardinality: 342, row width=232
+Operator #-1 Sort ran for 0.015605 seconds,  gate count: 0 output cardinality: 342, row width=232
+[       OK ] SortMergeJoinTest.test_tpch_q3_lineitem_orders (263 ms)
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 9, row width=40
+Operator #-1 Project ran for 1.7e-05 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 Project ran for 3e-06 seconds,  gate count: 0 output cardinality: 9, row width=40
+Operator #-1 Sort ran for 0.001979 seconds,  gate count: 0 output cardinality: 87, row width=208
+Operator #-1 Sort ran for 0.003669 seconds,  gate count: 0 output cardinality: 87, row width=208
+Operator #-1 Sort ran for 0.000125 seconds,  gate count: 0 output cardinality: 9, row width=272
+Operator #-1 Project ran for 3e-05 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 Project ran for 1e-05 seconds,  gate count: 0 output cardinality: 78, row width=40
+Operator #-1 SortMergeJoin ran for 0.010051 seconds,  gate count: 0 output cardinality: 78, row width=200
+Operator #-1 Project ran for 4.8e-05 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 Project ran for 3.4e-05 seconds,  gate count: 0 output cardinality: 78, row width=200
+Operator #-1 Sort ran for 0.023785 seconds,  gate count: 0 output cardinality: 420, row width=240
+Operator #-1 Sort ran for 0.026169 seconds,  gate count: 0 output cardinality: 420, row width=240
+Operator #-1 Sort ran for 0.002433 seconds,  gate count: 0 output cardinality: 78, row width=304
+Operator #-1 Project ran for 2.7e-05 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 Project ran for 6.9e-05 seconds,  gate count: 0 output cardinality: 342, row width=200
+Operator #-1 SortMergeJoin ran for 0.065523 seconds,  gate count: 0 output cardinality: 342, row width=264
+[       OK ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (244 ms)
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_customer_orders_reversed
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 9, row width=40
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 Project ran for 6e-06 seconds,  gate count: 0 output cardinality: 9, row width=40
+Operator #-1 Project ran for 2.8e-05 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 Sort ran for 0.003136 seconds,  gate count: 0 output cardinality: 87, row width=208
+Operator #-1 Sort ran for 0.004021 seconds,  gate count: 0 output cardinality: 87, row width=208
+Operator #-1 Sort ran for 0.000109 seconds,  gate count: 0 output cardinality: 9, row width=272
+Operator #-1 Project ran for 1.1e-05 seconds,  gate count: 0 output cardinality: 78, row width=40
+Operator #-1 Project ran for 2.9e-05 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 SortMergeJoin ran for 0.011911 seconds,  gate count: 0 output cardinality: 78, row width=200
+Operator #-1 Sort ran for 0.003068 seconds,  gate count: 0 output cardinality: 78, row width=200
+[       OK ] SortMergeJoinTest.test_tpch_q3_customer_orders_reversed (166 ms)
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 Project ran for 1.8e-05 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 Project ran for 2.9e-05 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 Sort ran for 0.022297 seconds,  gate count: 0 output cardinality: 420, row width=208
+Operator #-1 Sort ran for 0.032513 seconds,  gate count: 0 output cardinality: 420, row width=208
+Operator #-1 Sort ran for 0.002496 seconds,  gate count: 0 output cardinality: 78, row width=272
+Operator #-1 Project ran for 5.4e-05 seconds,  gate count: 0 output cardinality: 342, row width=168
+Operator #-1 Project ran for 2.9e-05 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 SortMergeJoin ran for 0.070494 seconds,  gate count: 0 output cardinality: 342, row width=232
+Operator #-1 Sort ran for 0.020556 seconds,  gate count: 0 output cardinality: 342, row width=232
+[       OK ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_reversed (256 ms)
+[ RUN      ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 9, row width=40
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 Project ran for 3e-06 seconds,  gate count: 0 output cardinality: 9, row width=40
+Operator #-1 Project ran for 1.6e-05 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 Sort ran for 0.001881 seconds,  gate count: 0 output cardinality: 87, row width=208
+Operator #-1 Sort ran for 0.002832 seconds,  gate count: 0 output cardinality: 87, row width=208
+Operator #-1 Sort ran for 0.000108 seconds,  gate count: 0 output cardinality: 9, row width=272
+Operator #-1 Project ran for 1.1e-05 seconds,  gate count: 0 output cardinality: 78, row width=40
+Operator #-1 Project ran for 2.9e-05 seconds,  gate count: 0 output cardinality: 78, row width=168
+Operator #-1 SortMergeJoin ran for 0.00928 seconds,  gate count: 0 output cardinality: 78, row width=200
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 Project ran for 3.4e-05 seconds,  gate count: 0 output cardinality: 78, row width=200
+Operator #-1 Project ran for 4.8e-05 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 Sort ran for 0.024637 seconds,  gate count: 0 output cardinality: 420, row width=240
+Operator #-1 Sort ran for 0.025931 seconds,  gate count: 0 output cardinality: 420, row width=240
+Operator #-1 Sort ran for 0.002133 seconds,  gate count: 0 output cardinality: 78, row width=304
+Operator #-1 Project ran for 6e-05 seconds,  gate count: 0 output cardinality: 342, row width=200
+Operator #-1 Project ran for 2.6e-05 seconds,  gate count: 0 output cardinality: 342, row width=72
+Operator #-1 SortMergeJoin ran for 0.06617 seconds,  gate count: 0 output cardinality: 342, row width=264
+[       OK ] SortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_reversed (235 ms)
+[----------] 6 tests from SortMergeJoinTest (1311 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (1311 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 8 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 8 tests from SortTest
+[ RUN      ] SortTest.testSingleIntColumn
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=40
+Operator #-1 Sort ran for 7e-05 seconds,  gate count: 0 output cardinality: 10, row width=40
+[       OK ] SortTest.testSingleIntColumn (76 ms)
+[ RUN      ] SortTest.tpchQ1Sort
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=24
+Operator #-1 Sort ran for 8.8e-05 seconds,  gate count: 0 output cardinality: 10, row width=24
+[       OK ] SortTest.tpchQ1Sort (154 ms)
+[ RUN      ] SortTest.tpchQ3Sort
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=168
+Operator #-1 Sort ran for 5.5e-05 seconds,  gate count: 0 output cardinality: 10, row width=168
+Operator #-1 Project ran for 6e-06 seconds,  gate count: 0 output cardinality: 10, row width=104
+[       OK ] SortTest.tpchQ3Sort (112 ms)
+[ RUN      ] SortTest.tpchQ5Sort
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=72
+Operator #-1 Sort ran for 5.4e-05 seconds,  gate count: 0 output cardinality: 10, row width=72
+Operator #-1 Project ran for 4e-06 seconds,  gate count: 0 output cardinality: 10, row width=40
+[       OK ] SortTest.tpchQ5Sort (103 ms)
+[ RUN      ] SortTest.tpchQ8Sort
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=72
+Operator #-1 Sort ran for 8.3e-05 seconds,  gate count: 0 output cardinality: 10, row width=72
+Operator #-1 Project ran for 6e-06 seconds,  gate count: 0 output cardinality: 10, row width=40
+[       OK ] SortTest.tpchQ8Sort (110 ms)
+[ RUN      ] SortTest.tpchQ9Sort
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=272
+Operator #-1 Sort ran for 7.8e-05 seconds,  gate count: 0 output cardinality: 10, row width=272
+Operator #-1 Project ran for 6e-06 seconds,  gate count: 0 output cardinality: 10, row width=240
+[       OK ] SortTest.tpchQ9Sort (162 ms)
+[ RUN      ] SortTest.tpchQ18Sort
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 10, row width=136
+Operator #-1 Sort ran for 5.7e-05 seconds,  gate count: 0 output cardinality: 10, row width=136
+Operator #-1 Project ran for 7e-06 seconds,  gate count: 0 output cardinality: 10, row width=104
+[       OK ] SortTest.tpchQ18Sort (105 ms)
+[ RUN      ] SortTest.sort_and_encrypt_table_one_column
+Received storage flag of row
+Operator #-1 Sort ran for 0.000148 seconds,  gate count: 0 output cardinality: 20, row width=40
+[       OK ] SortTest.sort_and_encrypt_table_one_column (59 ms)
+[----------] 8 tests from SortTest (884 ms total)
+
+[----------] Global test environment tear-down
+[==========] 8 tests from 1 test suite ran. (884 ms total)
+[  PASSED  ] 8 tests.
+[==========] Running 12 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 12 tests from ScalarAggregateTest
+[ RUN      ] ScalarAggregateTest.test_count
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 50, row width=72
+Operator #-1 ScalarAggregate ran for 0.0002 seconds,  gate count: 0 output cardinality: 1, row width=72
+[       OK ] ScalarAggregateTest.test_count (107 ms)
+[ RUN      ] ScalarAggregateTest.test_count_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 54, row width=40
+Operator #-1 ScalarAggregate ran for 0.000111 seconds,  gate count: 0 output cardinality: 1, row width=72
+[       OK ] ScalarAggregateTest.test_count_dummies (85 ms)
+[ RUN      ] ScalarAggregateTest.test_min
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 55, row width=40
+Operator #-1 ScalarAggregate ran for 0.000173 seconds,  gate count: 0 output cardinality: 1, row width=40
+[       OK ] ScalarAggregateTest.test_min (101 ms)
+[ RUN      ] ScalarAggregateTest.test_max
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 55, row width=40
+Operator #-1 ScalarAggregate ran for 0.000129 seconds,  gate count: 0 output cardinality: 1, row width=40
+[       OK ] ScalarAggregateTest.test_max (98 ms)
+[ RUN      ] ScalarAggregateTest.test_sum
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 55, row width=40
+Operator #-1 ScalarAggregate ran for 0.000113 seconds,  gate count: 0 output cardinality: 1, row width=40
+[       OK ] ScalarAggregateTest.test_sum (79 ms)
+[ RUN      ] ScalarAggregateTest.test_sum_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 110, row width=40
+Operator #-1 ScalarAggregate ran for 0.000341 seconds,  gate count: 0 output cardinality: 1, row width=40
+[       OK ] ScalarAggregateTest.test_sum_dummies (106 ms)
+[ RUN      ] ScalarAggregateTest.test_avg
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 55, row width=40
+Operator #-1 ScalarAggregate ran for 6.6e-05 seconds,  gate count: 0 output cardinality: 1, row width=40
+[       OK ] ScalarAggregateTest.test_avg (90 ms)
+[ RUN      ] ScalarAggregateTest.test_avg_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 110, row width=48
+Operator #-1 ScalarAggregate ran for 0.000118 seconds,  gate count: 0 output cardinality: 1, row width=40
+[       OK ] ScalarAggregateTest.test_avg_dummies (93 ms)
+[ RUN      ] ScalarAggregateTest.test_all_sum_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 110, row width=136
+Operator #-1 ScalarAggregate ran for 0.001063 seconds,  gate count: 0 output cardinality: 1, row width=136
+[       OK ] ScalarAggregateTest.test_all_sum_dummies (115 ms)
+[ RUN      ] ScalarAggregateTest.test_all_avg_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 110, row width=104
+Operator #-1 ScalarAggregate ran for 0.000353 seconds,  gate count: 0 output cardinality: 1, row width=104
+[       OK ] ScalarAggregateTest.test_all_avg_dummies (95 ms)
+[ RUN      ] ScalarAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 100, row width=184
+Operator #-1 ScalarAggregate ran for 0.000675 seconds,  gate count: 0 output cardinality: 1, row width=168
+[       OK ] ScalarAggregateTest.test_tpch_q1_avg_cnt (179 ms)
+[ RUN      ] ScalarAggregateTest.test_all_aggs_tpch_q1
+Received storage flag of row
+Operator #-1 SqlInput ran for 1.68808e+09 seconds,  gate count: 0 output cardinality: 110, row width=168
+Operator #-1 ScalarAggregate ran for 0.00257 seconds,  gate count: 0 output cardinality: 1, row width=296
+[       OK ] ScalarAggregateTest.test_all_aggs_tpch_q1 (146 ms)
+[----------] 12 tests from ScalarAggregateTest (1300 ms total)
+
+[----------] Global test environment tear-down
+[==========] 12 tests from 1 test suite ran. (1300 ms total)
+[  PASSED  ] 12 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from GroupByAggregateTest
+[ RUN      ] GroupByAggregateTest.test_count
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.014147 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 GroupByAggregate ran for 6.3e-05 seconds,  gate count: 0 output cardinality: 25, row width=104
+[       OK ] GroupByAggregateTest.test_count (90 ms)
+[ RUN      ] GroupByAggregateTest.test_count_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.013463 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 GroupByAggregate ran for 5e-05 seconds,  gate count: 0 output cardinality: 25, row width=104
+[       OK ] GroupByAggregateTest.test_count_dummies (83 ms)
+[ RUN      ] GroupByAggregateTest.test_sum
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.017447 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 GroupByAggregate ran for 9e-05 seconds,  gate count: 0 output cardinality: 25, row width=72
+[       OK ] GroupByAggregateTest.test_sum (104 ms)
+[ RUN      ] GroupByAggregateTest.test_sum_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.015998 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 GroupByAggregate ran for 7.6e-05 seconds,  gate count: 0 output cardinality: 25, row width=72
+[       OK ] GroupByAggregateTest.test_sum_dummies (114 ms)
+[ RUN      ] GroupByAggregateTest.test_avg
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.015116 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 GroupByAggregate ran for 9.5e-05 seconds,  gate count: 0 output cardinality: 25, row width=72
+[       OK ] GroupByAggregateTest.test_avg (97 ms)
+[ RUN      ] GroupByAggregateTest.test_avg_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.015724 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 GroupByAggregate ran for 8.1e-05 seconds,  gate count: 0 output cardinality: 25, row width=72
+[       OK ] GroupByAggregateTest.test_avg_dummies (89 ms)
+[ RUN      ] GroupByAggregateTest.test_min
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.015209 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 GroupByAggregate ran for 0.000106 seconds,  gate count: 0 output cardinality: 25, row width=72
+[       OK ] GroupByAggregateTest.test_min (87 ms)
+[ RUN      ] GroupByAggregateTest.test_min_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.020603 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 GroupByAggregate ran for 0.000161 seconds,  gate count: 0 output cardinality: 25, row width=72
+[       OK ] GroupByAggregateTest.test_min_dummies (109 ms)
+[ RUN      ] GroupByAggregateTest.test_max
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.019725 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 GroupByAggregate ran for 0.000167 seconds,  gate count: 0 output cardinality: 25, row width=72
+[       OK ] GroupByAggregateTest.test_max (120 ms)
+[ RUN      ] GroupByAggregateTest.test_max_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.018848 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 GroupByAggregate ran for 0.000108 seconds,  gate count: 0 output cardinality: 25, row width=72
+[       OK ] GroupByAggregateTest.test_max_dummies (120 ms)
+[ RUN      ] GroupByAggregateTest.test_tpch_q1_sums
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.07618 seconds,  gate count: 0 output cardinality: 202, row width=184
+Operator #-1 GroupByAggregate ran for 0.002209 seconds,  gate count: 0 output cardinality: 202, row width=152
+[       OK ] GroupByAggregateTest.test_tpch_q1_sums (216 ms)
+[ RUN      ] GroupByAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.090316 seconds,  gate count: 0 output cardinality: 202, row width=184
+Operator #-1 GroupByAggregate ran for 0.00153 seconds,  gate count: 0 output cardinality: 202, row width=184
+[       OK ] GroupByAggregateTest.test_tpch_q1_avg_cnt (220 ms)
+[ RUN      ] GroupByAggregateTest.tpch_q1
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.074219 seconds,  gate count: 0 output cardinality: 202, row width=184
+Operator #-1 GroupByAggregate ran for 0.002445 seconds,  gate count: 0 output cardinality: 202, row width=312
+[       OK ] GroupByAggregateTest.tpch_q1 (227 ms)
+[----------] 13 tests from GroupByAggregateTest (1682 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (1682 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from NestedLoopAggregateTest
+[ RUN      ] NestedLoopAggregateTest.test_count
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.015594 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 NestedLoopAggregate ran for 0.000683 seconds,  gate count: 0 output cardinality: 7, row width=104
+Operator #-1 Sort ran for 4.1e-05 seconds,  gate count: 0 output cardinality: 7, row width=104
+[       OK ] NestedLoopAggregateTest.test_count (93 ms)
+[ RUN      ] NestedLoopAggregateTest.test_count_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.014968 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 NestedLoopAggregate ran for 0.000671 seconds,  gate count: 0 output cardinality: 7, row width=104
+Operator #-1 Sort ran for 3.5e-05 seconds,  gate count: 0 output cardinality: 7, row width=104
+[       OK ] NestedLoopAggregateTest.test_count_dummies (89 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.016175 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 NestedLoopAggregate ran for 0.000604 seconds,  gate count: 0 output cardinality: 7, row width=72
+Operator #-1 Sort ran for 3.2e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] NestedLoopAggregateTest.test_sum (91 ms)
+[ RUN      ] NestedLoopAggregateTest.test_sum_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.016008 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 NestedLoopAggregate ran for 0.000663 seconds,  gate count: 0 output cardinality: 7, row width=72
+Operator #-1 Sort ran for 3.5e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] NestedLoopAggregateTest.test_sum_dummies (93 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.015574 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 NestedLoopAggregate ran for 0.000449 seconds,  gate count: 0 output cardinality: 7, row width=72
+Operator #-1 Sort ran for 3.3e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] NestedLoopAggregateTest.test_avg (87 ms)
+[ RUN      ] NestedLoopAggregateTest.test_avg_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.025283 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 NestedLoopAggregate ran for 0.000737 seconds,  gate count: 0 output cardinality: 7, row width=72
+Operator #-1 Sort ran for 5.5e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] NestedLoopAggregateTest.test_avg_dummies (95 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.02228 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 NestedLoopAggregate ran for 0.000907 seconds,  gate count: 0 output cardinality: 7, row width=72
+Operator #-1 Sort ran for 3.6e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] NestedLoopAggregateTest.test_min (139 ms)
+[ RUN      ] NestedLoopAggregateTest.test_min_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.016665 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 NestedLoopAggregate ran for 0.000815 seconds,  gate count: 0 output cardinality: 7, row width=72
+Operator #-1 Sort ran for 3.3e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] NestedLoopAggregateTest.test_min_dummies (107 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.019016 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 NestedLoopAggregate ran for 0.000829 seconds,  gate count: 0 output cardinality: 7, row width=72
+Operator #-1 Sort ran for 3.4e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] NestedLoopAggregateTest.test_max (98 ms)
+[ RUN      ] NestedLoopAggregateTest.test_max_dummies
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.016251 seconds,  gate count: 0 output cardinality: 25, row width=72
+Operator #-1 NestedLoopAggregate ran for 0.000877 seconds,  gate count: 0 output cardinality: 7, row width=72
+Operator #-1 Sort ran for 3.6e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] NestedLoopAggregateTest.test_max_dummies (94 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_sums
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.081 seconds,  gate count: 0 output cardinality: 202, row width=184
+Operator #-1 NestedLoopAggregate ran for 0.027354 seconds,  gate count: 0 output cardinality: 6, row width=152
+Operator #-1 Sort ran for 6.1e-05 seconds,  gate count: 0 output cardinality: 6, row width=152
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_sums (275 ms)
+[ RUN      ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.068935 seconds,  gate count: 0 output cardinality: 202, row width=184
+Operator #-1 NestedLoopAggregate ran for 0.017697 seconds,  gate count: 0 output cardinality: 6, row width=184
+Operator #-1 Sort ran for 6.2e-05 seconds,  gate count: 0 output cardinality: 6, row width=184
+[       OK ] NestedLoopAggregateTest.test_tpch_q1_avg_cnt (228 ms)
+[ RUN      ] NestedLoopAggregateTest.tpch_q1
+Received storage flag of row
+Operator #-1 SqlInput ran for 0.074286 seconds,  gate count: 0 output cardinality: 202, row width=184
+Operator #-1 NestedLoopAggregate ran for 0.051121 seconds,  gate count: 0 output cardinality: 6, row width=312
+Operator #-1 Sort ran for 5.1e-05 seconds,  gate count: 0 output cardinality: 6, row width=312
+[       OK ] NestedLoopAggregateTest.tpch_q1 (273 ms)
+[----------] 13 tests from NestedLoopAggregateTest (1768 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (1768 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecretShareGeneratorTest
+[ RUN      ] SecretShareGeneratorTest.lineitem_sample
+Received storage flag of row
+[       OK ] SecretShareGeneratorTest.lineitem_sample (118 ms)
+[ RUN      ] SecretShareGeneratorTest.lineitem_dummy_tag_sample
+Received storage flag of row
+[       OK ] SecretShareGeneratorTest.lineitem_dummy_tag_sample (122 ms)
+[----------] 2 tests from SecretShareGeneratorTest (240 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (241 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from SerializationTest
+[ RUN      ] SerializationTest.typesTest
+Received storage flag of row
+[       OK ] SerializationTest.typesTest (163 ms)
+[ RUN      ] SerializationTest.capricorn_test
+Received storage flag of row
+[       OK ] SerializationTest.capricorn_test (69 ms)
+[ RUN      ] SerializationTest.xored_serialization_test
+Received storage flag of row
+[       OK ] SerializationTest.xored_serialization_test (69 ms)
+[ RUN      ] SerializationTest.capricorn_deserialization
+Received storage flag of row
+[       OK ] SerializationTest.capricorn_deserialization (176 ms)
+[----------] 4 tests from SerializationTest (478 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (478 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from PlanParserTest
+[ RUN      ] PlanParserTest.tpch_q01
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q01 (169 ms)
+[ RUN      ] PlanParserTest.tpch_q03
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q03 (121 ms)
+[ RUN      ] PlanParserTest.tpch_q05
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q05 (149 ms)
+[ RUN      ] PlanParserTest.tpch_q08
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q08 (151 ms)
+[ RUN      ] PlanParserTest.tpch_q09
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q09 (207 ms)
+[ RUN      ] PlanParserTest.tpch_q18
+Received storage flag of row
+[       OK ] PlanParserTest.tpch_q18 (175 ms)
+[----------] 6 tests from PlanParserTest (975 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (975 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from TpcHTest
+[ RUN      ] TpcHTest.tpch_q01
+Received storage flag of row
+Operator #0 SqlInput ran for 0.155885 seconds,  gate count: 0 output cardinality: 6005, row width=184
+Operator #1 GroupByAggregate ran for 0.058076 seconds,  gate count: 0 output cardinality: 6005, row width=312
+[       OK ] TpcHTest.tpch_q01 (385 ms)
+[ RUN      ] TpcHTest.tpch_q03
+Received storage flag of row
+Operator #1 SqlInput ran for 0.091507 seconds,  gate count: 0 output cardinality: 1500, row width=168
+Operator #0 SqlInput ran for 0.101743 seconds,  gate count: 0 output cardinality: 150, row width=40
+Operator #2 KeyedJoin ran for 0.636563 seconds,  gate count: 0 output cardinality: 1500, row width=200
+Operator #3 Project ran for 0.000122 seconds,  gate count: 0 output cardinality: 1500, row width=136
+Operator #4 SqlInput ran for 0.689009 seconds,  gate count: 0 output cardinality: 6005, row width=72
+Operator #5 KeyedJoin ran for 2.48127 seconds,  gate count: 0 output cardinality: 6005, row width=200
+Operator #6 Project ran for 0.000592 seconds,  gate count: 0 output cardinality: 6005, row width=168
+Operator #-1 Sort ran for 0.7448 seconds,  gate count: 0 output cardinality: 6005, row width=168
+Operator #7 GroupByAggregate ran for 0.022377 seconds,  gate count: 0 output cardinality: 6005, row width=168
+Operator #8 Sort ran for 0.698791 seconds,  gate count: 0 output cardinality: 10, row width=168
+Operator #9 Project ran for 1e-05 seconds,  gate count: 0 output cardinality: 10, row width=168
+[       OK ] TpcHTest.tpch_q03 (4774 ms)
+[ RUN      ] TpcHTest.tpch_q05
+Received storage flag of row
+Operator #0 SqlInput ran for 0.102435 seconds,  gate count: 0 output cardinality: 27, row width=272
+Operator #1 SqlInput ran for 0.071288 seconds,  gate count: 0 output cardinality: 1500, row width=72
+Operator #2 KeyedJoin ran for 0.015776 seconds,  gate count: 0 output cardinality: 1500, row width=336
+Operator #3 Project ran for 0.000124 seconds,  gate count: 0 output cardinality: 1500, row width=272
+Operator #4 SqlInput ran for 0.070392 seconds,  gate count: 0 output cardinality: 6005, row width=104
+Operator #5 KeyedJoin ran for 2.77639 seconds,  gate count: 0 output cardinality: 6005, row width=368
+Operator #6 Project ran for 0.000609 seconds,  gate count: 0 output cardinality: 6005, row width=304
+Operator #7 SqlInput ran for 2.80899 seconds,  gate count: 0 output cardinality: 1, row width=72
+Operator #8 KeyedJoin ran for 0.020569 seconds,  gate count: 0 output cardinality: 6005, row width=368
+Operator #9 Project ran for 0.000357 seconds,  gate count: 0 output cardinality: 6005, row width=240
+Operator #-1 Sort ran for 0.323689 seconds,  gate count: 0 output cardinality: 6005, row width=240
+Operator #10 GroupByAggregate ran for 0.013016 seconds,  gate count: 0 output cardinality: 6005, row width=240
+Operator #11 Sort ran for 0.232869 seconds,  gate count: 0 output cardinality: 6005, row width=240
+[       OK ] TpcHTest.tpch_q05 (3577 ms)
+[ RUN      ] TpcHTest.tpch_q08
+Received storage flag of row
+Operator #0 SqlInput ran for 0.089712 seconds,  gate count: 0 output cardinality: 29, row width=40
+Operator #1 SqlInput ran for 0.078903 seconds,  gate count: 0 output cardinality: 1500, row width=104
+Operator #2 KeyedJoin ran for 0.016005 seconds,  gate count: 0 output cardinality: 1500, row width=136
+Operator #3 Project ran for 9.1e-05 seconds,  gate count: 0 output cardinality: 1500, row width=72
+Operator #4 SqlInput ran for 0.072992 seconds,  gate count: 0 output cardinality: 6005, row width=104
+Operator #5 SqlInput ran for 0.030482 seconds,  gate count: 0 output cardinality: 10, row width=48
+Operator #6 KeyedJoin ran for 0.171626 seconds,  gate count: 0 output cardinality: 6005, row width=144
+Operator #7 Project ran for 0.005256 seconds,  gate count: 0 output cardinality: 6005, row width=104
+Operator #8 KeyedJoin ran for 2.53779 seconds,  gate count: 0 output cardinality: 6005, row width=168
+Operator #9 Project ran for 0.000487 seconds,  gate count: 0 output cardinality: 6005, row width=104
+Operator #-1 Sort ran for 0.230485 seconds,  gate count: 0 output cardinality: 6005, row width=104
+Operator #10 GroupByAggregate ran for 0.0134 seconds,  gate count: 0 output cardinality: 6005, row width=104
+Operator #11 Project ran for 0.003807 seconds,  gate count: 0 output cardinality: 6005, row width=72
+[       OK ] TpcHTest.tpch_q08 (3146 ms)
+[ RUN      ] TpcHTest.tpch_q09
+Received storage flag of row
+Operator #0 SqlInput ran for 0.143928 seconds,  gate count: 0 output cardinality: 10, row width=240
+Operator #1 SqlInput ran for 0.11497 seconds,  gate count: 0 output cardinality: 56, row width=104
+Operator #2 KeyedJoin ran for 0.000509 seconds,  gate count: 0 output cardinality: 56, row width=336
+Operator #3 Project ran for 1.8e-05 seconds,  gate count: 0 output cardinality: 56, row width=304
+Operator #4 SqlInput ran for 0.094208 seconds,  gate count: 0 output cardinality: 6005, row width=200
+Operator #5 KeyedJoin ran for 0.235302 seconds,  gate count: 0 output cardinality: 6005, row width=496
+Operator #6 Project ran for 0.000951 seconds,  gate count: 0 output cardinality: 6005, row width=368
+Operator #7 SqlInput ran for 0.257244 seconds,  gate count: 0 output cardinality: 1500, row width=72
+Operator #8 KeyedJoin ran for 28.4507 seconds,  gate count: 0 output cardinality: 6005, row width=432
+Operator #9 Project ran for 0.006035 seconds,  gate count: 0 output cardinality: 6005, row width=272
+Operator #-1 Sort ran for 0.563838 seconds,  gate count: 0 output cardinality: 6005, row width=272
+Operator #10 GroupByAggregate ran for 0.019041 seconds,  gate count: 0 output cardinality: 6005, row width=272
+Operator #11 Sort ran for 0.577585 seconds,  gate count: 0 output cardinality: 6005, row width=272
+[       OK ] TpcHTest.tpch_q09 (30098 ms)
+[ RUN      ] TpcHTest.tpch_q18
+Received storage flag of row
+Operator #4 SqlInput ran for 0.086091 seconds,  gate count: 0 output cardinality: 6005, row width=72
+Operator #0 SqlInput ran for 0.117097 seconds,  gate count: 0 output cardinality: 6005, row width=72
+Operator #-1 Sort ran for 0.273357 seconds,  gate count: 0 output cardinality: 6005, row width=72
+Operator #1 GroupByAggregate ran for 0.011185 seconds,  gate count: 0 output cardinality: 6005, row width=72
+Operator #2 Filter ran for 0.006042 seconds,  gate count: 0 output cardinality: 6005, row width=72
+Operator #3 Project ran for 0.000473 seconds,  gate count: 0 output cardinality: 6005, row width=40
+Operator #5 KeyedJoin ran for 66.1716 seconds,  gate count: 0 output cardinality: 6005, row width=104
+Operator #6 Project ran for 0.000353 seconds,  gate count: 0 output cardinality: 6005, row width=72
+Operator #7 SqlInput ran for 66.519 seconds,  gate count: 0 output cardinality: 1500, row width=168
+Operator #8 KeyedJoin ran for 32.9301 seconds,  gate count: 0 output cardinality: 6005, row width=232
+Operator #9 Project ran for 0.00079 seconds,  gate count: 0 output cardinality: 6005, row width=200
+Operator #10 SqlInput ran for 99.4212 seconds,  gate count: 0 output cardinality: 150, row width=240
+Operator #11 KeyedJoin ran for 2.84017 seconds,  gate count: 0 output cardinality: 6005, row width=432
+Operator #12 Project ran for 0.000893 seconds,  gate count: 0 output cardinality: 6005, row width=400
+Operator #-1 Sort ran for 0.495548 seconds,  gate count: 0 output cardinality: 6005, row width=400
+Operator #13 GroupByAggregate ran for 0.037517 seconds,  gate count: 0 output cardinality: 6005, row width=400
+Operator #14 Sort ran for 0.46614 seconds,  gate count: 0 output cardinality: 100, row width=400
+[       OK ] TpcHTest.tpch_q18 (103468 ms)
+[----------] 6 tests from TpcHTest (145451 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (145451 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from EmpTest
+[ RUN      ] EmpTest.emp_test_int
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54325, 65446 as 2
+connected
+Connected!
+[       OK ] EmpTest.emp_test_int (697 ms)
+[ RUN      ] EmpTest.emp_test_varchar
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54326, 65446 as 2
+connected
+Connected!
+[       OK ] EmpTest.emp_test_varchar (188 ms)
+[ RUN      ] EmpTest.secret_share_table_one_column
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54327, 65446 as 2
+connected
+Connected!
+[       OK ] EmpTest.secret_share_table_one_column (194 ms)
+[ RUN      ] EmpTest.sort_and_share_table_one_column
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54328, 65446 as 2
+connected
+Connected!
+[       OK ] EmpTest.sort_and_share_table_one_column (194 ms)
+[----------] 4 tests from EmpTest (1275 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (1275 ms total)
+[  PASSED  ] 4 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from SecureValueExpressionTest
+[ RUN      ] SecureValueExpressionTest.test_value_assignment
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54323, 65482 as 2
+connected
+Connected!
+[       OK ] SecureValueExpressionTest.test_value_assignment (174 ms)
+[ RUN      ] SecureValueExpressionTest.test_string_compare
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54324, 65482 as 2
+connected
+Connected!
+[       OK ] SecureValueExpressionTest.test_string_compare (204 ms)
+[ RUN      ] SecureValueExpressionTest.test_emp_int_math
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54325, 65482 as 2
+connected
+Connected!
+[       OK ] SecureValueExpressionTest.test_emp_int_math (183 ms)
+[ RUN      ] SecureValueExpressionTest.test_millionaires
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54326, 65482 as 2
+connected
+Connected!
+[       OK ] SecureValueExpressionTest.test_millionaires (182 ms)
+[ RUN      ] SecureValueExpressionTest.test_char_comparison
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54327, 65482 as 2
+connected
+Connected!
+[       OK ] SecureValueExpressionTest.test_char_comparison (196 ms)
+[----------] 5 tests from SecureValueExpressionTest (943 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (943 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from EmpTableTest
+[ RUN      ] EmpTableTest.secret_share_table_one_column
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54334, 65428 as 2
+connected
+Connected!
+[       OK ] EmpTableTest.secret_share_table_one_column (235 ms)
+[ RUN      ] EmpTableTest.secret_share_table_varchar
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54335, 65428 as 2
+connected
+Connected!
+[       OK ] EmpTableTest.secret_share_table_varchar (351 ms)
+[ RUN      ] EmpTableTest.secret_share_table
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54336, 65428 as 2
+connected
+Connected!
+[       OK ] EmpTableTest.secret_share_table (596 ms)
+[ RUN      ] EmpTableTest.secret_share_table_dummy_tag
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54337, 65428 as 2
+connected
+Connected!
+[       OK ] EmpTableTest.secret_share_table_dummy_tag (555 ms)
+[ RUN      ] EmpTableTest.bit_packing_test
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54338, 65428 as 2
+connected
+Connected!
+[       OK ] EmpTableTest.bit_packing_test (323 ms)
+[----------] 5 tests from EmpTableTest (2062 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (2062 ms total)
+[  PASSED  ] 5 tests.
+[==========] Running 2 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 2 tests from SecureFilterTest
+[ RUN      ] SecureFilterTest.test_table_scan
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54325, 65454 as 2
+connected
+Connected!
+Operator #-1 Union ran for 2.7e-05 seconds,  gate count: 0 output cardinality: 200, row width=80
+Operator #-1 SecureSqlInput ran for 0.221163 seconds,  gate count: 12400 output cardinality: 200, row width=25
+[       OK ] SecureFilterTest.test_table_scan (583 ms)
+[ RUN      ] SecureFilterTest.test_filter
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54326, 65454 as 2
+connected
+Connected!
+Operator #-1 Union ran for 4.8e-05 seconds,  gate count: 0 output cardinality: 51, row width=80
+Operator #-1 SecureSqlInput ran for 0.270519 seconds,  gate count: 12400 output cardinality: 200, row width=25
+Operator #-1 Filter ran for 0.008433 seconds,  gate count: 12800 output cardinality: 200, row width=25
+[       OK ] SecureFilterTest.test_filter (599 ms)
+[----------] 2 tests from SecureFilterTest (1183 ms total)
+
+[----------] Global test environment tear-down
+[==========] 2 tests from 1 test suite ran. (1183 ms total)
+[  PASSED  ] 2 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortTest
+[ RUN      ] SecureSortTest.tpchQ01Sort
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54333, 65475 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.160761 seconds,  gate count: 0 output cardinality: 25, row width=17
+Operator #-1 Sort ran for 0.006502 seconds,  gate count: 8112 output cardinality: 25, row width=17
+[       OK ] SecureSortTest.tpchQ01Sort (385 ms)
+[ RUN      ] SecureSortTest.tpchQ03Sort
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54334, 65475 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.120959 seconds,  gate count: 2352 output cardinality: 25, row width=75
+Operator #-1 Sort ran for 0.039277 seconds,  gate count: 85984 output cardinality: 25, row width=75
+Operator #-1 Project ran for 3.1e-05 seconds,  gate count: 0 output cardinality: 25, row width=61
+[       OK ] SecureSortTest.tpchQ03Sort (461 ms)
+[ RUN      ] SecureSortTest.tpchQ05Sort
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54335, 65475 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.098281 seconds,  gate count: 776 output cardinality: 25, row width=46
+Operator #-1 Sort ran for 0.031587 seconds,  gate count: 72368 output cardinality: 25, row width=46
+Operator #-1 Project ran for 1.4e-05 seconds,  gate count: 0 output cardinality: 25, row width=33
+[       OK ] SecureSortTest.tpchQ05Sort (386 ms)
+[ RUN      ] SecureSortTest.tpchQ08Sort
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54336, 65475 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.101984 seconds,  gate count: 436 output cardinality: 7, row width=17
+Operator #-1 Sort ran for 0.001189 seconds,  gate count: 1024 output cardinality: 7, row width=17
+[       OK ] SecureSortTest.tpchQ08Sort (262 ms)
+[ RUN      ] SecureSortTest.tpchQ09Sort
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54337, 65475 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.763207 seconds,  gate count: 124000 output cardinality: 2000, row width=217
+Operator #-1 Sort ran for 11.1081 seconds,  gate count: 40779328 output cardinality: 2000, row width=217
+[       OK ] SecureSortTest.tpchQ09Sort (13819 ms)
+[ RUN      ] SecureSortTest.tpchQ18Sort
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54338, 65475 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.091625 seconds,  gate count: 660 output cardinality: 7, row width=74
+Operator #-1 Sort ran for 0.005454 seconds,  gate count: 10096 output cardinality: 7, row width=74
+[       OK ] SecureSortTest.tpchQ18Sort (297 ms)
+[----------] 6 tests from SecureSortTest (15612 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (15612 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureBasicJoinTest
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43443, 65450 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.146865 seconds,  gate count: 1752 output cardinality: 14, row width=51
+Operator #-1 SecureSqlInput ran for 0.00055 seconds,  gate count: 60 output cardinality: 2, row width=9
+Operator #-1 BasicJoin ran for 0.013599 seconds,  gate count: 308 output cardinality: 28, row width=59
+Operator #-1 Sort ran for 0.017764 seconds,  gate count: 36272 output cardinality: 28, row width=59
+[       OK ] SecureBasicJoinTest.test_tpch_q3_customer_orders (360 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43444, 65450 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.161255 seconds,  gate count: 1676 output cardinality: 54, row width=46
+Operator #-1 SecureSqlInput ran for 0.007408 seconds,  gate count: 1748 output cardinality: 14, row width=51
+Operator #-1 BasicJoin ran for 0.031929 seconds,  gate count: 12096 output cardinality: 756, row width=96
+Operator #-1 Sort ran for 3.31513 seconds,  gate count: 12163760 output cardinality: 756, row width=96
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders (3817 ms)
+[ RUN      ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43445, 65450 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.187291 seconds,  gate count: 1676 output cardinality: 54, row width=46
+Operator #-1 SecureSqlInput ran for 0.01031 seconds,  gate count: 1748 output cardinality: 14, row width=51
+Operator #-1 SecureSqlInput ran for 0.000625 seconds,  gate count: 64 output cardinality: 2, row width=9
+Operator #-1 BasicJoin ran for 0.034494 seconds,  gate count: 308 output cardinality: 28, row width=59
+Operator #-1 BasicJoin ran for 0.037536 seconds,  gate count: 24192 output cardinality: 1512, row width=104
+Operator #-1 Sort ran for 8.44506 seconds,  gate count: 30746064 output cardinality: 1512, row width=104
+[       OK ] SecureBasicJoinTest.test_tpch_q3_lineitem_orders_customer (9116 ms)
+[----------] 3 tests from SecureBasicJoinTest (13294 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (13294 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureKeyedJoinTest
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43442, 65458 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.243171 seconds,  gate count: 48328 output cardinality: 78, row width=51
+Operator #-1 SecureSqlInput ran for 0.002186 seconds,  gate count: 656 output cardinality: 9, row width=9
+Operator #-1 KeyedJoin ran for 0.014517 seconds,  gate count: 14040 output cardinality: 78, row width=59
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders (515 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders_no_bit_packing
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43443, 65458 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.213419 seconds,  gate count: 112960 output cardinality: 78, row width=161
+Operator #-1 SecureSqlInput ran for 0.001414 seconds,  gate count: 1288 output cardinality: 9, row width=33
+Operator #-1 KeyedJoin ran for 0.037772 seconds,  gate count: 90556 output cardinality: 78, row width=193
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders_no_bit_packing (461 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43444, 65458 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.215096 seconds,  gate count: 9752 output cardinality: 78, row width=51
+Operator #-1 SecureSqlInput ran for 0.046791 seconds,  gate count: 10600 output cardinality: 342, row width=46
+Operator #-1 KeyedJoin ran for 0.494067 seconds,  gate count: 1787292 output cardinality: 342, row width=96
+Operator #-1 Sort ran for 2.6e-05 seconds,  gate count: 0 output cardinality: 2, row width=232
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders (1031 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_no_bit_packing
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43445, 65458 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.153226 seconds,  gate count: 0 output cardinality: 78, row width=161
+Operator #-1 SecureSqlInput ran for 0.007015 seconds,  gate count: 0 output cardinality: 342, row width=65
+Operator #-1 KeyedJoin ran for 1.87283 seconds,  gate count: 6855732 output cardinality: 342, row width=225
+Operator #-1 Sort ran for 1.8e-05 seconds,  gate count: 0 output cardinality: 2, row width=232
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_no_bit_packing (2310 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43446, 65458 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.221095 seconds,  gate count: 10604 output cardinality: 342, row width=46
+Operator #-1 SecureSqlInput ran for 0.042393 seconds,  gate count: 9748 output cardinality: 78, row width=51
+Operator #-1 SecureSqlInput ran for 0.001831 seconds,  gate count: 280 output cardinality: 9, row width=9
+Operator #-1 KeyedJoin ran for 0.027161 seconds,  gate count: 14040 output cardinality: 78, row width=59
+Operator #-1 KeyedJoin ran for 0.680771 seconds,  gate count: 2000700 output cardinality: 342, row width=104
+Operator #-1 Sort ran for 8e-06 seconds,  gate count: 0 output cardinality: 0, row width=264
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer (1217 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer_no_bit_packing
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43447, 65458 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.176696 seconds,  gate count: 0 output cardinality: 342, row width=65
+Operator #-1 SecureSqlInput ran for 0.006105 seconds,  gate count: 0 output cardinality: 78, row width=161
+Operator #-1 SecureSqlInput ran for 0.003314 seconds,  gate count: 0 output cardinality: 9, row width=33
+Operator #-1 KeyedJoin ran for 0.034775 seconds,  gate count: 90560 output cardinality: 78, row width=193
+Operator #-1 KeyedJoin ran for 2.09631 seconds,  gate count: 7709364 output cardinality: 342, row width=257
+Operator #-1 Sort ran for 9e-06 seconds,  gate count: 0 output cardinality: 0, row width=264
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer_no_bit_packing (2597 ms)
+[----------] 6 tests from SecureKeyedJoinTest (8135 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (8135 ms total)
+[  PASSED  ] 6 tests.
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from SecureSortMergeJoinTest
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43455, 65470 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.137106 seconds,  gate count: 9752 output cardinality: 78, row width=51
+Operator #-1 SecureSqlInput ran for 0.00142 seconds,  gate count: 280 output cardinality: 9, row width=9
+Operator #-1 Project ran for 0.000126 seconds,  gate count: 0 output cardinality: 78, row width=51
+Operator #-1 Project ran for 6e-06 seconds,  gate count: 0 output cardinality: 9, row width=9
+Operator #-1 Sort ran for 0.044949 seconds,  gate count: 104328 output cardinality: 87, row width=84
+Operator #-1 Sort ran for 0.026621 seconds,  gate count: 104328 output cardinality: 87, row width=84
+Operator #-1 Sort ran for 0.002208 seconds,  gate count: 7840 output cardinality: 9, row width=148
+Operator #-1 Project ran for 7.8e-05 seconds,  gate count: 0 output cardinality: 78, row width=51
+Operator #-1 Project ran for 1.1e-05 seconds,  gate count: 0 output cardinality: 78, row width=9
+Operator #-1 SortMergeJoin ran for 0.144694 seconds,  gate count: 472468 output cardinality: 78, row width=59
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders (478 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43456, 65470 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.184272 seconds,  gate count: 9752 output cardinality: 78, row width=51
+Operator #-1 SecureSqlInput ran for 0.051106 seconds,  gate count: 10600 output cardinality: 342, row width=46
+Operator #-1 Project ran for 0.000116 seconds,  gate count: 0 output cardinality: 78, row width=51
+Operator #-1 Project ran for 0.000417 seconds,  gate count: 0 output cardinality: 342, row width=46
+Operator #-1 Sort ran for 0.286605 seconds,  gate count: 995212 output cardinality: 420, row width=84
+Operator #-1 Sort ran for 0.270594 seconds,  gate count: 995212 output cardinality: 420, row width=84
+Operator #-1 Sort ran for 0.06327 seconds,  gate count: 232680 output cardinality: 78, row width=148
+Operator #-1 Project ran for 8.5e-05 seconds,  gate count: 0 output cardinality: 342, row width=51
+Operator #-1 Project ran for 6.4e-05 seconds,  gate count: 0 output cardinality: 342, row width=46
+Operator #-1 SortMergeJoin ran for 0.976815 seconds,  gate count: 3521036 output cardinality: 342, row width=96
+Operator #-1 Sort ran for 2.9e-05 seconds,  gate count: 0 output cardinality: 2, row width=232
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders (1505 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43457, 65470 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.211933 seconds,  gate count: 10604 output cardinality: 342, row width=46
+Operator #-1 SecureSqlInput ran for 0.033137 seconds,  gate count: 9748 output cardinality: 78, row width=51
+Operator #-1 SecureSqlInput ran for 0.001513 seconds,  gate count: 280 output cardinality: 9, row width=9
+Operator #-1 Project ran for 2.8e-05 seconds,  gate count: 0 output cardinality: 78, row width=51
+Operator #-1 Project ran for 3e-06 seconds,  gate count: 0 output cardinality: 9, row width=9
+Operator #-1 Sort ran for 0.046356 seconds,  gate count: 104328 output cardinality: 87, row width=84
+Operator #-1 Sort ran for 0.026353 seconds,  gate count: 104328 output cardinality: 87, row width=84
+Operator #-1 Sort ran for 0.00198 seconds,  gate count: 7840 output cardinality: 9, row width=148
+Operator #-1 Project ran for 3.3e-05 seconds,  gate count: 0 output cardinality: 78, row width=51
+Operator #-1 Project ran for 9e-06 seconds,  gate count: 0 output cardinality: 78, row width=9
+Operator #-1 SortMergeJoin ran for 0.145076 seconds,  gate count: 472468 output cardinality: 78, row width=59
+Operator #-1 Project ran for 7.6e-05 seconds,  gate count: 0 output cardinality: 342, row width=46
+Operator #-1 Project ran for 3.3e-05 seconds,  gate count: 0 output cardinality: 78, row width=59
+Operator #-1 Sort ran for 0.287734 seconds,  gate count: 1062684 output cardinality: 420, row width=92
+Operator #-1 Sort ran for 0.288946 seconds,  gate count: 1062684 output cardinality: 420, row width=92
+Operator #-1 Sort ran for 0.065056 seconds,  gate count: 239328 output cardinality: 78, row width=156
+Operator #-1 Project ran for 7.2e-05 seconds,  gate count: 0 output cardinality: 342, row width=46
+Operator #-1 Project ran for 0.000112 seconds,  gate count: 0 output cardinality: 342, row width=59
+Operator #-1 SortMergeJoin ran for 1.0257 seconds,  gate count: 3768664 output cardinality: 342, row width=104
+Operator #-1 Sort ran for 6e-06 seconds,  gate count: 0 output cardinality: 0, row width=264
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (1666 ms)
+[----------] 3 tests from SecureSortMergeJoinTest (3650 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (3650 ms total)
+[  PASSED  ] 3 tests.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureScalarAggregateTest
+[ RUN      ] SecureScalarAggregateTest.test_count
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54312, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.099304 seconds,  gate count: 1552 output cardinality: 25, row width=17
+Operator #-1 ScalarAggregate ran for 0.000749 seconds,  gate count: 548 output cardinality: 1, row width=6
+[       OK ] SecureScalarAggregateTest.test_count (230 ms)
+[ RUN      ] SecureScalarAggregateTest.test_count_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54313, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.112053 seconds,  gate count: 1552 output cardinality: 25, row width=49
+Operator #-1 ScalarAggregate ran for 0.001041 seconds,  gate count: 548 output cardinality: 1, row width=6
+[       OK ] SecureScalarAggregateTest.test_count_dummies (270 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54314, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.099296 seconds,  gate count: 1552 output cardinality: 25, row width=17
+Operator #-1 ScalarAggregate ran for 0.001159 seconds,  gate count: 448 output cardinality: 1, row width=4
+[       OK ] SecureScalarAggregateTest.test_min (250 ms)
+[ RUN      ] SecureScalarAggregateTest.test_min_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54315, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.127845 seconds,  gate count: 1552 output cardinality: 25, row width=49
+Operator #-1 ScalarAggregate ran for 0.000984 seconds,  gate count: 448 output cardinality: 1, row width=4
+[       OK ] SecureScalarAggregateTest.test_min_dummies (284 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54316, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.096696 seconds,  gate count: 1552 output cardinality: 25, row width=17
+Operator #-1 ScalarAggregate ran for 0.001116 seconds,  gate count: 448 output cardinality: 1, row width=4
+[       OK ] SecureScalarAggregateTest.test_max (247 ms)
+[ RUN      ] SecureScalarAggregateTest.test_max_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54317, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.104752 seconds,  gate count: 1552 output cardinality: 25, row width=49
+Operator #-1 ScalarAggregate ran for 0.001028 seconds,  gate count: 448 output cardinality: 1, row width=4
+[       OK ] SecureScalarAggregateTest.test_max_dummies (259 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54318, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.098929 seconds,  gate count: 1552 output cardinality: 25, row width=17
+Operator #-1 ScalarAggregate ran for 0.002395 seconds,  gate count: 4048 output cardinality: 1, row width=33
+[       OK ] SecureScalarAggregateTest.test_sum (249 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54319, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.104706 seconds,  gate count: 1552 output cardinality: 25, row width=49
+Operator #-1 ScalarAggregate ran for 0.002805 seconds,  gate count: 4048 output cardinality: 1, row width=33
+[       OK ] SecureScalarAggregateTest.test_sum_dummies (257 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54320, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.097057 seconds,  gate count: 1552 output cardinality: 25, row width=17
+Operator #-1 ScalarAggregate ran for 0.016906 seconds,  gate count: 34376 output cardinality: 1, row width=33
+[       OK ] SecureScalarAggregateTest.test_avg (261 ms)
+[ RUN      ] SecureScalarAggregateTest.test_avg_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54321, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.103309 seconds,  gate count: 1552 output cardinality: 25, row width=49
+Operator #-1 ScalarAggregate ran for 0.01674 seconds,  gate count: 34376 output cardinality: 1, row width=33
+[       OK ] SecureScalarAggregateTest.test_avg_dummies (274 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_baseprice_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54322, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.104257 seconds,  gate count: 1552 output cardinality: 25, row width=49
+Operator #-1 ScalarAggregate ran for 0.013755 seconds,  gate count: 26376 output cardinality: 1, row width=33
+[       OK ] SecureScalarAggregateTest.test_sum_baseprice_dummies (276 ms)
+[ RUN      ] SecureScalarAggregateTest.test_sum_lineno_baseprice
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54323, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.108895 seconds,  gate count: 1552 output cardinality: 25, row width=49
+Operator #-1 ScalarAggregate ran for 0.016169 seconds,  gate count: 30424 output cardinality: 1, row width=65
+[       OK ] SecureScalarAggregateTest.test_sum_lineno_baseprice (288 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_sums
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54324, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.163863 seconds,  gate count: 0 output cardinality: 110, row width=177
+Operator #-1 ScalarAggregate ran for 0.136423 seconds,  gate count: 464200 output cardinality: 1, row width=129
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_sums (542 ms)
+[ RUN      ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54325, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.179368 seconds,  gate count: 0 output cardinality: 202, row width=177
+Operator #-1 ScalarAggregate ran for 0.976864 seconds,  gate count: 3551968 output cardinality: 1, row width=105
+[       OK ] SecureScalarAggregateTest.test_tpch_q1_avg_cnt (1418 ms)
+[ RUN      ] SecureScalarAggregateTest.tpch_q1
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 54326, 65466 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.199863 seconds,  gate count: 0 output cardinality: 110, row width=177
+Operator #-1 ScalarAggregate ran for 0.667198 seconds,  gate count: 2398112 output cardinality: 1, row width=232
+[       OK ] SecureScalarAggregateTest.tpch_q1 (1130 ms)
+[----------] 15 tests from SecureScalarAggregateTest (6245 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (6245 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 13 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 13 tests from SecureGroupByAggregateTest
+[ RUN      ] SecureGroupByAggregateTest.test_count
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43440, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.114854 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 GroupByAggregate ran for 0.004034 seconds,  gate count: 8424 output cardinality: 25, row width=78
+[       OK ] SecureGroupByAggregateTest.test_count (265 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_count_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43441, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.105061 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 GroupByAggregate ran for 0.003165 seconds,  gate count: 8424 output cardinality: 25, row width=78
+[       OK ] SecureGroupByAggregateTest.test_count_dummies (263 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43442, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.114151 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 GroupByAggregate ran for 0.004245 seconds,  gate count: 8464 output cardinality: 25, row width=46
+[       OK ] SecureGroupByAggregateTest.test_sum (278 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_sum_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43443, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.104936 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 GroupByAggregate ran for 0.004149 seconds,  gate count: 8464 output cardinality: 25, row width=46
+[       OK ] SecureGroupByAggregateTest.test_sum_dummies (267 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43444, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.105517 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 GroupByAggregate ran for 0.017814 seconds,  gate count: 41076 output cardinality: 25, row width=46
+[       OK ] SecureGroupByAggregateTest.test_avg (283 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_avg_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43445, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.106399 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 GroupByAggregate ran for 0.017983 seconds,  gate count: 41076 output cardinality: 25, row width=46
+[       OK ] SecureGroupByAggregateTest.test_avg_dummies (280 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43446, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.10715 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 GroupByAggregate ran for 0.003443 seconds,  gate count: 5812 output cardinality: 25, row width=46
+[       OK ] SecureGroupByAggregateTest.test_min (272 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_min_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43447, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.106128 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 GroupByAggregate ran for 0.003045 seconds,  gate count: 5812 output cardinality: 25, row width=46
+[       OK ] SecureGroupByAggregateTest.test_min_dummies (276 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43448, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.10563 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 GroupByAggregate ran for 0.002965 seconds,  gate count: 5812 output cardinality: 25, row width=46
+[       OK ] SecureGroupByAggregateTest.test_max (272 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_max_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43449, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.114008 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 GroupByAggregate ran for 0.003478 seconds,  gate count: 5812 output cardinality: 25, row width=46
+[       OK ] SecureGroupByAggregateTest.test_max_dummies (277 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_sums
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43450, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.250967 seconds,  gate count: 76044 output cardinality: 110, row width=177
+Operator #-1 GroupByAggregate ran for 0.124735 seconds,  gate count: 462068 output cardinality: 110, row width=145
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_sums (693 ms)
+[ RUN      ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43451, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.291996 seconds,  gate count: 157408 output cardinality: 202, row width=177
+Operator #-1 GroupByAggregate ran for 0.978749 seconds,  gate count: 3607912 output cardinality: 202, row width=177
+[       OK ] SecureGroupByAggregateTest.test_tpch_q1_avg_cnt (1611 ms)
+[ RUN      ] SecureGroupByAggregateTest.tpch_q1
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43452, 65454 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.266011 seconds,  gate count: 76044 output cardinality: 110, row width=177
+Operator #-1 GroupByAggregate ran for 0.656592 seconds,  gate count: 2419772 output cardinality: 110, row width=305
+[       OK ] SecureGroupByAggregateTest.tpch_q1 (1271 ms)
+[----------] 13 tests from SecureGroupByAggregateTest (6316 ms total)
+
+[----------] Global test environment tear-down
+[==========] 13 tests from 1 test suite ran. (6316 ms total)
+[  PASSED  ] 13 tests.
+[==========] Running 15 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 15 tests from SecureNestedLoopAggregateTest
+[ RUN      ] SecureNestedLoopAggregateTest.test_count
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43440, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.108822 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 NestedLoopAggregate ran for 0.029531 seconds,  gate count: 61252 output cardinality: 10, row width=19
+Operator #-1 Sort ran for 9e-05 seconds,  gate count: 0 output cardinality: 7, row width=104
+[       OK ] SecureNestedLoopAggregateTest.test_count (279 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_no_bit_packing
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43441, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.103812 seconds,  gate count: 7076 output cardinality: 25, row width=65
+Operator #-1 NestedLoopAggregate ran for 0.040013 seconds,  gate count: 112748 output cardinality: 10, row width=97
+Operator #-1 Sort ran for 7.3e-05 seconds,  gate count: 0 output cardinality: 7, row width=104
+[       OK ] SecureNestedLoopAggregateTest.test_count_no_bit_packing (303 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_count_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43442, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.106831 seconds,  gate count: 4628 output cardinality: 25, row width=17
+Operator #-1 NestedLoopAggregate ran for 0.02519 seconds,  gate count: 61252 output cardinality: 10, row width=19
+Operator #-1 Sort ran for 3.6e-05 seconds,  gate count: 0 output cardinality: 4, row width=104
+[       OK ] SecureNestedLoopAggregateTest.test_count_dummies (291 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43443, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.107113 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 NestedLoopAggregate ran for 0.036543 seconds,  gate count: 96252 output cardinality: 10, row width=46
+Operator #-1 Sort ran for 7.6e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] SecureNestedLoopAggregateTest.test_sum (303 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_sum_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43444, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.138306 seconds,  gate count: 4628 output cardinality: 25, row width=17
+Operator #-1 NestedLoopAggregate ran for 0.037742 seconds,  gate count: 96252 output cardinality: 10, row width=46
+Operator #-1 Sort ran for 3.6e-05 seconds,  gate count: 0 output cardinality: 4, row width=72
+[       OK ] SecureNestedLoopAggregateTest.test_sum_dummies (333 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43445, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.106084 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 NestedLoopAggregate ran for 0.11377 seconds,  gate count: 399500 output cardinality: 10, row width=46
+Operator #-1 Sort ran for 6.5e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] SecureNestedLoopAggregateTest.test_avg (379 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_avg_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43446, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.107949 seconds,  gate count: 4628 output cardinality: 25, row width=17
+Operator #-1 NestedLoopAggregate ran for 0.114814 seconds,  gate count: 399500 output cardinality: 10, row width=46
+Operator #-1 Sort ran for 2.8e-05 seconds,  gate count: 0 output cardinality: 4, row width=72
+[       OK ] SecureNestedLoopAggregateTest.test_avg_dummies (372 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43447, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.106154 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 NestedLoopAggregate ran for 0.027748 seconds,  gate count: 60252 output cardinality: 10, row width=17
+Operator #-1 Sort ran for 7.6e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] SecureNestedLoopAggregateTest.test_min (282 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_no_bit_packing
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43448, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.10273 seconds,  gate count: 7076 output cardinality: 25, row width=65
+Operator #-1 NestedLoopAggregate ran for 0.032878 seconds,  gate count: 89000 output cardinality: 10, row width=65
+Operator #-1 Sort ran for 7.3e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] SecureNestedLoopAggregateTest.test_min_no_bit_packing (293 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_min_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43449, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.10715 seconds,  gate count: 4628 output cardinality: 25, row width=17
+Operator #-1 NestedLoopAggregate ran for 0.028009 seconds,  gate count: 60252 output cardinality: 10, row width=17
+Operator #-1 Sort ran for 3.6e-05 seconds,  gate count: 0 output cardinality: 4, row width=72
+[       OK ] SecureNestedLoopAggregateTest.test_min_dummies (291 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43450, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.113598 seconds,  gate count: 4088 output cardinality: 25, row width=17
+Operator #-1 NestedLoopAggregate ran for 0.03104 seconds,  gate count: 60252 output cardinality: 10, row width=17
+Operator #-1 Sort ran for 7.7e-05 seconds,  gate count: 0 output cardinality: 7, row width=72
+[       OK ] SecureNestedLoopAggregateTest.test_max (324 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_max_dummies
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43451, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.10755 seconds,  gate count: 4628 output cardinality: 25, row width=17
+Operator #-1 NestedLoopAggregate ran for 0.031679 seconds,  gate count: 60252 output cardinality: 10, row width=17
+Operator #-1 Sort ran for 3.6e-05 seconds,  gate count: 0 output cardinality: 4, row width=72
+[       OK ] SecureNestedLoopAggregateTest.test_max_dummies (295 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_sums
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43452, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.252535 seconds,  gate count: 76044 output cardinality: 110, row width=177
+Operator #-1 NestedLoopAggregate ran for 0.765521 seconds,  gate count: 2805660 output cardinality: 6, row width=145
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_sums (1328 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43453, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.277024 seconds,  gate count: 157408 output cardinality: 202, row width=177
+Operator #-1 NestedLoopAggregate ran for 5.80532 seconds,  gate count: 21349380 output cardinality: 6, row width=121
+[       OK ] SecureNestedLoopAggregateTest.test_tpch_q1_avg_cnt (6379 ms)
+[ RUN      ] SecureNestedLoopAggregateTest.tpch_q1
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43454, 65462 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 0.239678 seconds,  gate count: 0 output cardinality: 110, row width=177
+Operator #-1 NestedLoopAggregate ran for 3.92687 seconds,  gate count: 14403840 output cardinality: 6, row width=248
+[       OK ] SecureNestedLoopAggregateTest.tpch_q1 (4475 ms)
+[----------] 15 tests from SecureNestedLoopAggregateTest (15936 ms total)
+
+[----------] Global test environment tear-down
+[==========] 15 tests from 1 test suite ran. (15936 ms total)
+[  PASSED  ] 15 tests.
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureTpcHTest
+[ RUN      ] SecureTpcHTest.tpch_q01
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 7654, 65478 as 2
+connected
+Connected!
+Operator #0 SecureSqlInput ran for 0.370767 seconds,  gate count: 251340 output cardinality: 300, row width=177
+Operator #1 GroupByAggregate ran for 1.79924 seconds,  gate count: 6617256 output cardinality: 300, row width=305
+[       OK ] SecureTpcHTest.tpch_q01 (2496 ms)
+[ RUN      ] SecureTpcHTest.tpch_q03
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 7655, 65478 as 2
+connected
+Connected!
+Operator #1 SecureSqlInput ran for 0.772209 seconds,  gate count: 850004 output cardinality: 1000, row width=51
+Operator #0 SecureSqlInput ran for 0.026435 seconds,  gate count: 19588 output cardinality: 150, row width=9
+Operator #2 KeyedJoin ran for 1.36926 seconds,  gate count: 3000000 output cardinality: 1000, row width=59
+Operator #3 Project ran for 0.000307 seconds,  gate count: 0 output cardinality: 1000, row width=43
+Operator #4 SecureSqlInput ran for 0.222879 seconds,  gate count: 405832 output cardinality: 1000, row width=46
+Operator #5 KeyedJoin ran for 16.09 seconds,  gate count: 59000000 output cardinality: 1000, row width=88
+Operator #6 Project ran for 0.0006 seconds,  gate count: 0 output cardinality: 1000, row width=75
+Operator #-1 Sort ran for 1.25391 seconds,  gate count: 4614264 output cardinality: 1000, row width=75
+Operator #7 GroupByAggregate ran for 0.518062 seconds,  gate count: 1905124 output cardinality: 1000, row width=75
+Operator #8 Sort ran for 4.15296 seconds,  gate count: 15272944 output cardinality: 10, row width=75
+Operator #9 Project ran for 1.6e-05 seconds,  gate count: 0 output cardinality: 10, row width=75
+[       OK ] SecureTpcHTest.tpch_q03 (24610 ms)
+[ RUN      ] SecureTpcHTest.tpch_q05
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 7656, 65478 as 2
+connected
+Connected!
+Operator #0 SecureSqlInput ran for 0.238917 seconds,  gate count: 14880 output cardinality: 27, row width=214
+Operator #1 SecureSqlInput ran for 0.156023 seconds,  gate count: 144608 output cardinality: 400, row width=22
+Operator #2 KeyedJoin ran for 0.657877 seconds,  gate count: 2430000 output cardinality: 400, row width=235
+Operator #3 Project ran for 0.001531 seconds,  gate count: 0 output cardinality: 400, row width=219
+Operator #4 SecureSqlInput ran for 0.34741 seconds,  gate count: 888416 output cardinality: 400, row width=50
+Operator #5 KeyedJoin ran for 10.2555 seconds,  gate count: 37600000 output cardinality: 400, row width=268
+Operator #6 Project ran for 0.001135 seconds,  gate count: 0 output cardinality: 400, row width=242
+Operator #7 SecureSqlInput ran for 0.000361 seconds,  gate count: 60 output cardinality: 1, row width=10
+Operator #8 KeyedJoin ran for 0.02175 seconds,  gate count: 44800 output cardinality: 400, row width=251
+Operator #9 Project ran for 0.001118 seconds,  gate count: 0 output cardinality: 400, row width=233
+Operator #-1 Sort ran for 1.43103 seconds,  gate count: 5019040 output cardinality: 400, row width=233
+Operator #10 GroupByAggregate ran for 0.17265 seconds,  gate count: 580576 output cardinality: 400, row width=233
+Operator #11 Sort ran for 1.48858 seconds,  gate count: 5216640 output cardinality: 400, row width=233
+[       OK ] SecureTpcHTest.tpch_q05 (15082 ms)
+[ RUN      ] SecureTpcHTest.tpch_q08
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 7657, 65478 as 2
+connected
+Connected!
+Operator #0 SecureSqlInput ran for 0.17642 seconds,  gate count: 2844 output cardinality: 29, row width=9
+Operator #1 SecureSqlInput ran for 0.325488 seconds,  gate count: 608800 output cardinality: 800, row width=54
+Operator #2 KeyedJoin ran for 0.126135 seconds,  gate count: 464000 output cardinality: 800, row width=62
+Operator #3 Project ran for 0.000161 seconds,  gate count: 0 output cardinality: 800, row width=46
+Operator #4 SecureSqlInput ran for 0.286775 seconds,  gate count: 347840 output cardinality: 800, row width=50
+Operator #5 SecureSqlInput ran for 0.002106 seconds,  gate count: 580 output cardinality: 10, row width=6
+Operator #6 KeyedJoin ran for 0.072999 seconds,  gate count: 104000 output cardinality: 800, row width=55
+Operator #7 Project ran for 0.005318 seconds,  gate count: 25600 output cardinality: 800, row width=78
+Operator #8 KeyedJoin ran for 10.7833 seconds,  gate count: 39680000 output cardinality: 800, row width=123
+Operator #9 Project ran for 0.000446 seconds,  gate count: 0 output cardinality: 800, row width=97
+Operator #-1 Sort ran for 0.865421 seconds,  gate count: 3184368 output cardinality: 800, row width=97
+Operator #10 GroupByAggregate ran for 0.498249 seconds,  gate count: 1832172 output cardinality: 800, row width=97
+Operator #11 Project ran for 0.828529 seconds,  gate count: 3047200 output cardinality: 800, row width=65
+[       OK ] SecureTpcHTest.tpch_q08 (14320 ms)
+[ RUN      ] SecureTpcHTest.tpch_q09
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 7658, 65478 as 2
+connected
+Connected!
+Operator #0 SecureSqlInput ran for 0.228627 seconds,  gate count: 9596 output cardinality: 10, row width=205
+Operator #1 SecureSqlInput ran for 0.038729 seconds,  gate count: 78976 output cardinality: 56, row width=45
+Operator #2 KeyedJoin ran for 0.032039 seconds,  gate count: 118720 output cardinality: 56, row width=249
+Operator #3 Project ran for 0.000117 seconds,  gate count: 0 output cardinality: 56, row width=245
+Operator #4 SecureSqlInput ran for 0.190175 seconds,  gate count: 245020 output cardinality: 300, row width=122
+Operator #5 KeyedJoin ran for 1.19554 seconds,  gate count: 4401600 output cardinality: 300, row width=366
+Operator #6 Project ran for 0.002383 seconds,  gate count: 0 output cardinality: 300, row width=342
+Operator #7 SecureSqlInput ran for 0.07956 seconds,  gate count: 98980 output cardinality: 300, row width=46
+Operator #8 KeyedJoin ran for 1.52004 seconds,  gate count: 5580000 output cardinality: 300, row width=387
+Operator #9 Project ran for 0.743479 seconds,  gate count: 2734200 output cardinality: 300, row width=265
+Operator #-1 Sort ran for 1.06872 seconds,  gate count: 3930348 output cardinality: 300, row width=265
+Operator #10 GroupByAggregate ran for 0.133675 seconds,  gate count: 491588 output cardinality: 300, row width=265
+Operator #11 Sort ran for 1.06869 seconds,  gate count: 3930344 output cardinality: 300, row width=265
+[       OK ] SecureTpcHTest.tpch_q09 (6672 ms)
+[ RUN      ] SecureTpcHTest.tpch_q18
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 7659, 65478 as 2
+connected
+Connected!
+Operator #4 SecureSqlInput ran for 0.51468 seconds,  gate count: 849392 output cardinality: 400, row width=46
+Operator #0 SecureSqlInput ran for 0.287147 seconds,  gate count: 849392 output cardinality: 400, row width=46
+Operator #-1 Sort ran for 0.163322 seconds,  gate count: 600704 output cardinality: 400, row width=46
+Operator #1 GroupByAggregate ran for 0.138225 seconds,  gate count: 508360 output cardinality: 400, row width=46
+Operator #2 Filter ran for 0.023228 seconds,  gate count: 85600 output cardinality: 400, row width=46
+Operator #3 Project ran for 3.6e-05 seconds,  gate count: 0 output cardinality: 400, row width=14
+Operator #5 KeyedJoin ran for 1.64169 seconds,  gate count: 4800000 output cardinality: 400, row width=59
+Operator #6 Project ran for 0.000104 seconds,  gate count: 0 output cardinality: 400, row width=46
+Operator #7 SecureSqlInput ran for 0.185288 seconds,  gate count: 269648 output cardinality: 400, row width=82
+Operator #8 KeyedJoin ran for 4.41287 seconds,  gate count: 15680000 output cardinality: 400, row width=127
+Operator #9 Project ran for 0.000238 seconds,  gate count: 0 output cardinality: 400, row width=114
+Operator #10 SecureSqlInput ran for 0.064802 seconds,  gate count: 122584 output cardinality: 150, row width=209
+Operator #11 KeyedJoin ran for 3.58931 seconds,  gate count: 13200000 output cardinality: 400, row width=322
+Operator #12 Project ran for 0.001583 seconds,  gate count: 0 output cardinality: 400, row width=314
+Operator #-1 Sort ran for 2.69138 seconds,  gate count: 9903712 output cardinality: 400, row width=314
+Operator #13 GroupByAggregate ran for 0.280147 seconds,  gate count: 1031048 output cardinality: 400, row width=314
+Operator #14 Sort ran for 1.7301 seconds,  gate count: 6362720 output cardinality: 100, row width=314
+[       OK ] SecureTpcHTest.tpch_q18 (16050 ms)
+[----------] 6 tests from SecureTpcHTest (79233 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (79233 ms total)
+[  PASSED  ] 6 tests.
