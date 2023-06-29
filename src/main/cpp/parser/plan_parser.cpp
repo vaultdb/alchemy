@@ -28,86 +28,32 @@ using namespace vaultdb;
 using boost::property_tree::ptree;
 
 
-
 template<typename B>
-PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, const int &limit)
-        :  db_name_(db_name), input_limit_(limit)
-{
-    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + plan_name + ".sql";
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + plan_name + ".json";
-
+PlanParser<B>::PlanParser(const string &db_name, const string & sql_file, const string & json_file,
+                          const int &limit) : db_name_(db_name), input_limit_(limit) {
     parseSqlInputs(sql_file);
-    parseSecurePlan(plan_file);
+    parseSecurePlan(json_file);
+}
+
+// for ZK plans
+template<typename B>
+PlanParser<B>::PlanParser(const string &db_name, const string & json_file, const int &limit) : db_name_(db_name), input_limit_(limit), zk_plan_(true) {
+    parseSecurePlan(json_file);
 
 }
 
 template<typename B>
-PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, const int &limit, const string &experiment_num)
-        :  db_name_(db_name), input_limit_(limit)
-{
-    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/" + experiment_num + "/";
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/" + experiment_num + "/";
-
-    sql_file += "MPC_minimization/queries-" + plan_name + ".sql";
-    plan_file += "MPC_minimization/mpc-" + plan_name + ".json";
-
-    parseSqlInputs(sql_file);
-    parseSecurePlan(plan_file);
-
-}
-
-template<typename B>
-PlanParser<B>::PlanParser(const string &db_name, std::string plan_name, const int &limit, const string &experiment_num, const bool & isBaseline)
-        :  db_name_(db_name), input_limit_(limit)
-{
-    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/" + experiment_num + "/";
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/" + experiment_num + "/";
-
-    if(isBaseline) {
-        // Baseline ver.
-        sql_file += "baseline/baseline-" + plan_name + ".sql";
-        plan_file += "baseline/baseline-" + plan_name + ".json";
-    }
-    else{
-        // Handcoded ver.
-        sql_file += "MPC_minimization/queries-" + plan_name + ".sql";
-        plan_file += "MPC_minimization/mpc-" + plan_name + ".json";
-    }
-
-    parseSqlInputs(sql_file);
-    parseSecurePlan(plan_file);
-
-}
-
-// ZK constructor
-template<typename B>
-PlanParser<B>::PlanParser(const std::string &db_name, const std::string plan_name, bool zk_plan, const int &limit)
-        : db_name_(db_name), input_limit_(limit), zk_plan_(true) {
-        std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/zk-" + plan_name + ".json";
-        parseSecurePlan(plan_file);
-
-}
-
-
-template<typename B>
-Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, const int &limit) {
-    PlanParser p(db_name, plan_name, limit);
+Operator<B> *PlanParser<B>::parse(const string &db_name, const string &json_file, const int &limit) {
+    PlanParser p(db_name, json_file, limit);
     return p.getRoot();
 }
 
 template<typename B>
-Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, const StorageModel & model, NetIO * netio, const int & party, const int & limit ) {
-    PlanParser p(db_name, plan_name, limit);
+Operator<B> *PlanParser<B>::parse(const std::string & db_name, const string & sql_file, const string & json_file, const int & limit) {
+    PlanParser p(db_name, sql_file, json_file, limit);
     return p.root_;
 }
 
-template<typename B>
-Operator<B> *PlanParser<B>::parse(const string &db_name, const string &plan_name, const bool &zk_plan,
-                                  const int &limit) {
-
-    PlanParser p(db_name, plan_name, zk_plan, limit);
-    return p.root_;
-}
 
 
 template<typename B>
@@ -121,7 +67,7 @@ void PlanParser<B>::parseSqlInputs(const std::string & sql_file) {
     B has_dummy = false;
     pair<int, SortDefinition> input_parameters; // operator_id, sorting info (if applicable)
 
-    for(vector<std::string>::iterator pos = lines.begin(); pos != lines.end(); ++pos) {
+    for(vector<string>::iterator pos = lines.begin(); pos != lines.end(); ++pos) {
 
         if((*pos).substr(0, 2) == "--") { // starting a new query
             if(init) { // skip the first one
@@ -158,7 +104,7 @@ template<typename B>
 void PlanParser<B>::parseSecurePlan(const string & plan_file) {
     stringstream ss;
     std::vector<std::string> json_lines = DataUtilities::readTextFile(plan_file);
-    for(std::vector<std::string>::iterator pos = json_lines.begin(); pos != json_lines.end(); ++pos)
+    for(vector<string>::iterator pos = json_lines.begin(); pos != json_lines.end(); ++pos)
         ss << *pos << endl;
 
     boost::property_tree::ptree pt;
@@ -180,8 +126,9 @@ void PlanParser<B>::parseSecurePlan(const string & plan_file) {
 
 template<typename B>
 void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name, const ptree & tree) {
+
     Operator<B> *op = nullptr;
-    // TODO: parse schema for add'l validation
+
     if(op_name == "LogicalValues") return; // handled in createInput
     if(op_name == "LogicalSort")   op = parseSort(operator_id, tree);
     if(op_name == "LogicalAggregate")  op = parseAggregate(operator_id, tree);

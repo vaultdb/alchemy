@@ -290,9 +290,11 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
 
 }
 
+// output:
+// Operator #-1 SecureSqlInput ran for 0.251219 seconds,  gate count: 0 output cardinality: 110, row width=177
+//Operator #-1 NestedLoopAggregate ran for 11.5446 seconds,  gate count: 14403840 output cardinality: 6, row width=248
 TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
 
-    // TODO: was <= 194, reduced owing to floating point drift
     string inputTuples = "SELECT * FROM lineitem WHERE l_orderkey <= 100  ORDER BY l_orderkey, l_linenumber";
     string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
@@ -333,8 +335,8 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
             ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
-    auto input = new SecureSqlInput(db_name_, sql, true, sort_def);
+//    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
+    auto input = new SecureSqlInput(db_name_, sql, true);
 
 
     auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);

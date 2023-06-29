@@ -31,7 +31,10 @@ TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefini
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, query, false, 0);
     expected->setSortOrder(expected_sort);
 
-    PlanParser<bool> plan_reader(db_name, test_name, input_tuple_limit_);
+    string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + test_name + ".sql";
+    string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
+
+    PlanParser<bool> plan_reader(db_name_, sql_file, plan_file, input_tuple_limit_);
     PlainOperator *root = plan_reader.getRoot();
 
     PlainTable *observed = root->run();
@@ -44,12 +47,12 @@ TpcHTest::runTest(const int &test_id, const string & test_name, const SortDefini
 }
 
 
-TEST_F(TpcHTest, tpch_q1) {
+TEST_F(TpcHTest, tpch_q01) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, db_name_);
 }
 
-TEST_F(TpcHTest, tpch_q3) {
+TEST_F(TpcHTest, tpch_q03) {
 
     // dummy_tag (-1), 1 DESC, 2 ASC
     // aka revenue desc,  o.o_orderdate
@@ -60,18 +63,18 @@ TEST_F(TpcHTest, tpch_q3) {
 }
 
 //join(join(join(customer, orders), lineitem), supplier)
-TEST_F(TpcHTest, tpch_q5) {
+TEST_F(TpcHTest, tpch_q05) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
     runTest(5, "q5", expected_sort, db_name_);
 }
 
-TEST_F(TpcHTest, tpch_q8) {
+TEST_F(TpcHTest, tpch_q08) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest(8, "q8", expected_sort, db_name_);
 }
 
 // q9 expresssion:   l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity
-TEST_F(TpcHTest, tpch_q9) {
+TEST_F(TpcHTest, tpch_q09) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
     runTest(9, "q9", expected_sort, db_name_);
