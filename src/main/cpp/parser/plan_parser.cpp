@@ -21,7 +21,6 @@
 #include <operators/basic_join.h>
 #include <operators/filter.h>
 #include <operators/project.h>
-#include <operators/join.h>
 #include <parser/expression_parser.h>
 
 using namespace vaultdb;
@@ -335,9 +334,17 @@ Operator<B> *PlanParser<B>::parseProjection(const int &operator_id, const ptree 
     Operator<B> *child = getChildOperator(operator_id, project_tree);
     QuerySchema child_schema = child->getOutputSchema();
 
+    ptree output_fields = project_tree.get_child("fields");
+    vector<string> output_names;
+
+    for (ptree::const_iterator it = output_fields.begin(); it != output_fields.end(); ++it)  {
+        output_names.emplace_back(it->second.data());
+    }
+
+
     ExpressionMapBuilder<B>  builder(child_schema);
     ptree expressions = project_tree.get_child("exprs");
-    uint32_t src_ordinal, dst_ordinal = 0;
+    uint32_t  dst_ordinal = 0;
 
     for (ptree::const_iterator it = expressions.begin(); it != expressions.end(); ++it) {
         Expression<B> *expr = ExpressionParser<B>::parseExpression(it->second, child_schema);
@@ -345,9 +352,19 @@ Operator<B> *PlanParser<B>::parseProjection(const int &operator_id, const ptree 
 
       ++dst_ordinal;
     }
+    Project<B> *p =  new Project<B>(child, builder.getExprs());
+    QuerySchema schema = p->getOutputSchema();
+    // add field names
+    if(output_names.size() == schema.getFieldCount()) {
+        for(int i = 0; i < schema.getFieldCount(); ++i) {
+            QueryFieldDesc f = schema.getField(i);
+            f.setName(f.getTableName(), output_names[i]);
+            schema.putField(f);
+        }
+        p->setSchema(schema);
+    }
 
-    return new Project<B>(child, builder.getExprs());
-
+    return p;
 }
 
 template<typename B>
