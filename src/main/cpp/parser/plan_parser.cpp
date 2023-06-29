@@ -291,12 +291,33 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
     Operator<B> *rhs  = operators_.at(rhs_id);
 
     Expression<B> *join_condition = ExpressionParser<B>::parseExpression(join_condition_tree, lhs->getOutputSchema(), rhs->getOutputSchema());
+
+    // for basic join and keyed join with fkey on lhs:
     SortDefinition sort_def = lhs->getSortOrder();
+
+    // add offset for rhs
+    for(auto pos : rhs->getSortOrder()) {
+        sort_def.emplace_back(ColumnSort(pos.first + lhs->getOutputSchema().getFieldCount(), pos.second));
+    }
 
     // if fkey designation exists, use this to create keyed join
     // key: foreignKey
     if(join_tree.count("foreignKey") > 0) {
         int foreign_key = join_tree.get_child("foreignKey").template get_value<int>();
+
+        if(foreign_key == 1) {
+            // switch sort orders
+            sort_def.clear();
+            // rhs --> lhs
+            for(auto pos : rhs->getSortOrder()) {
+                sort_def.emplace_back(ColumnSort(pos.first + lhs->getOutputSchema().getFieldCount(), pos.second));
+            }
+
+            for(auto pos : lhs->getSortOrder()) {
+                sort_def.emplace_back(pos);
+            }
+
+        }
 
         if(join_tree.count("operator-algorithm") > 0) {
             string joinType = join_tree.get_child("operator-algorithm").template get_value<string>();
@@ -306,7 +327,7 @@ Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_
 
 
         }
-        else { // if unspecified, use KeyedJoin
+        else { // if unspecified but FK, use KeyedJoin
             return new KeyedJoin<B>(lhs, rhs, foreign_key, join_condition, sort_def);
         }
     }
