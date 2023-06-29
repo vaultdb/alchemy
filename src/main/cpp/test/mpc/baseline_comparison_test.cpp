@@ -100,8 +100,8 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
-    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/queries-q" + test_name + ".sql";
-    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/mpc-q"  + test_name + ".json";
+    std::string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/queries-" + test_name + ".sql";
+    std::string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/experiment_1/MPC_minimization/mpc-"  + test_name + ".json";
 
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
@@ -148,7 +148,8 @@ BaselineComparisonTest::generateExpectedOutputQuery(const int &test_id, const So
     return query;
 }
 
-/*
+
+
 TEST_F(BaselineComparisonTest, tpch_q1_baseline) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest_baseline(1, "q1", expected_sort, unioned_db_);
@@ -183,7 +184,7 @@ TEST_F(BaselineComparisonTest, tpch_q3_handcode) {
                                  ColumnSort(2, SortDirection::ASCENDING)};
     runTest_handcode(3, "q3", expected_sort, unioned_db_);
 }
-*/
+
 
 // passes on codd2 in about 2.5 mins
 TEST_F(BaselineComparisonTest, tpch_q5_baseline) {
