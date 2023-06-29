@@ -17,7 +17,14 @@ QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const FieldType &type)
 
 
 QueryFieldDesc::QueryFieldDesc(const QueryFieldDesc &f, const int &  col_num)
-        : field_name_(f.field_name_), table_name_(f.table_name_), string_length_(f.string_length_), type_(f.type_), ordinal_(col_num), field_size_(f.field_size_), bit_packed_size_(f.field_size_), field_min_(f.field_min_), secure_field_min_(f.secure_field_min_) {
+        : field_name_(f.field_name_),
+        table_name_(f.table_name_),
+        string_length_(f.string_length_),
+        type_(f.type_), ordinal_(col_num),
+        field_size_(f.field_size_),
+        bit_packed_size_(f.field_size_),
+        field_min_(f.field_min_),
+        secure_field_min_(f.secure_field_min_) {
 }
 
 QueryFieldDesc::QueryFieldDesc(const int & anOrdinal, const string &n, const string &tab, const FieldType &aType,

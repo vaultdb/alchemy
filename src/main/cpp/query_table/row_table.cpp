@@ -313,7 +313,8 @@ void RowTable<B>::cloneRow(const int &dst_row, const int &dst_col, const QueryTa
 
     int8_t *src_ptr = (int8_t *) (src->tuple_data_.data() + src->tuple_size_ * src_row);
     int8_t *dst_ptr = (int8_t *) (tuple_data_.data() + this->tuple_size_ * dst_row + this->field_offsets_bytes_.at(dst_col));
-    memcpy(dst_ptr, src_ptr, src->tuple_size_ - this->field_sizes_bytes_.at(-1));
+    int write_sz = src->tuple_size_ - src->field_sizes_bytes_.at(-1);
+    memcpy(dst_ptr, src_ptr, write_sz);
 }
 
 template<typename B>

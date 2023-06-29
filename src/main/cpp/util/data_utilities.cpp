@@ -138,11 +138,11 @@ void DataUtilities::removeDummies(PlainTable *table) {
 }
 
 PlainTable *
-DataUtilities::getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
-                                  const int &sortColCount) {
+DataUtilities::getExpectedResults(const string &db_name, const string &sql, const bool &has_dummy_tag,
+                                  const int &sort_col_cnt) {
 
-    PlainTable *expected = DataUtilities::getQueryResults(dbName, sql, hasDummyTag);
-    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(sortColCount);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name, sql, has_dummy_tag);
+    SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(sort_col_cnt);
     expected->setSortOrder(expected_sort);
     return expected;
 }

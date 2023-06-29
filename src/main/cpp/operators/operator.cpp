@@ -53,11 +53,12 @@ QueryTable<B> *Operator<B>::run() {
 
     output_ = runSelf(); // delegated to children
 
-    size_t after_gate_count = emp::CircuitExecution::circ_exec->num_and();
+    size_t after_gate_count =  system_conf_.andGateCount();
     runtime_ = time_from(start_time_);
 
-    std::cout << "Operator #" << this->getOperatorId() << " " << getOperatorType()  << " ran for " << runtime_/1e6 << " seconds, "
+    cout << "Operator #" << this->getOperatorId() << " " << getOperatorType()  << " ran for " << runtime_/1e6 << " seconds, "
         << " gate count: " << after_gate_count - start_gate_cnt_ << " output cardinality: " << output_->getTupleCount() << ", row width=" << output_schema_.size() <<  '\n';
+
     operator_executed_ = true;
     sort_definition_ = output_->getSortOrder(); // update this if needed
 

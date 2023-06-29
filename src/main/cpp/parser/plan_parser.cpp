@@ -282,8 +282,6 @@ template<typename B>
 Operator<B> *PlanParser<B>::parseJoin(const int &operator_id, const ptree &join_tree) {
     boost::property_tree::ptree join_condition_tree = join_tree.get_child("condition");
 
-
-
     ptree input_list = join_tree.get_child("inputs.");
     ptree::const_iterator it = input_list.begin();
     int lhs_id = it->second.get_value<int>();

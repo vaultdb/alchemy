@@ -29,7 +29,7 @@ protected:
 
     // depends on truncate-tpch-set.sql
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
-    string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
+    string  generateExpectedOutputQuery(const int & test_id,  const string &db_name);
 
     int input_tuple_limit_ = 150;
 
@@ -40,11 +40,10 @@ protected:
 void
 SecureTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
-    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, db_name);
+    string expected_query = generateExpectedOutputQuery(test_id, db_name);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
     string local_db = db_name;
     boost::replace_first(local_db, "unioned", party_name.c_str());
-
 
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -68,7 +67,7 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
 }
 
 string
-SecureTpcHTest::generateExpectedOutputQuery(const int &test_id, const SortDefinition &expected_sort, const string &db_name) {
+SecureTpcHTest::generateExpectedOutputQuery(const int &test_id, const string &db_name) {
     string alice_db = db_name;
     string bob_db = db_name;
     boost::replace_first(alice_db, "unioned", "alice");
@@ -79,22 +78,20 @@ SecureTpcHTest::generateExpectedOutputQuery(const int &test_id, const SortDefini
     if(input_tuple_limit_ > 0) {
         query = truncated_tpch_queries[test_id];
         boost::replace_all(query, "$LIMIT", std::to_string(input_tuple_limit_));
-        boost::replace_all(query, "$ALICE_DB", alice_db);
-        boost::replace_all(query, "$BOB_DB", bob_db);
     }
 
     return query;
 }
 
  // passes in ~17 secs on codd2
-TEST_F(SecureTpcHTest, tpch_q1) {
+TEST_F(SecureTpcHTest, tpch_q01) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, unioned_db_);
 }
 
 
  // passes in ~10 mins on codd2
-TEST_F(SecureTpcHTest, tpch_q3) {
+TEST_F(SecureTpcHTest, tpch_q03) {
 
     input_tuple_limit_ = 500;
     // dummy_tag (-1), 1 DESC, 2 ASC
@@ -107,7 +104,7 @@ TEST_F(SecureTpcHTest, tpch_q3) {
 
 
  // passes on codd2 in about 2.5 mins
-TEST_F(SecureTpcHTest, tpch_q5) {
+TEST_F(SecureTpcHTest, tpch_q05) {
     input_tuple_limit_ = 200;
 
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
@@ -115,16 +112,15 @@ TEST_F(SecureTpcHTest, tpch_q5) {
 
 }
 
- // passes in 12 secs on codd2
-TEST_F(SecureTpcHTest, tpch_q8) {
-    input_tuple_limit_ = 200;
+//  passes in 56 secs on codd12
+TEST_F(SecureTpcHTest, tpch_q08) {
+    input_tuple_limit_ = 400;
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest(8, "q8", expected_sort, unioned_db_);
 }
 
-
  // *passes in around ~42 secs on codd2
-TEST_F(SecureTpcHTest, tpch_q9) {
+TEST_F(SecureTpcHTest, tpch_q09) {
     // $0 ASC, $1 DESC
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
     runTest(9, "q9", expected_sort, unioned_db_);
