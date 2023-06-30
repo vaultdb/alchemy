@@ -28,6 +28,8 @@ UPDATE unit_test SET test_name='tpch_q05' WHERE test_name='tpch_q5';
 UPDATE unit_test SET test_name='tpch_q08' WHERE test_name='tpch_q8';
 UPDATE unit_test SET test_name='tpch_q09' WHERE test_name='tpch_q9';
 
+-- delete first test, it is mostly waiting for Alice and Bob to sync up / connect after building
+DELETE FROM unit_test WHERE test_name='emp_test_int' AND test_suite='EmpTest';
 
 SELECT DISTINCT test_suite FROM unit_test ORDER BY test_suite;
 

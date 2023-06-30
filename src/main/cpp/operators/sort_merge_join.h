@@ -59,25 +59,12 @@ namespace  vaultdb {
 
         void initializeAlphas(QueryTable<B> *dst); // update in place
 
-        inline bool joinMatch(QueryTable<bool> *t, int lhs_row, int rhs_row) {
-            // previous alignment step will make join keys in first n columns
-            bool match = true;
-            for(int i = 0; i < join_idxs_.size(); ++i) {
-                match = match & (t->getField(lhs_row, i) == t->getField(rhs_row, i));
-            }
-            return match;
-        }
-
-        inline Bit joinMatch(QueryTable<Bit> *t, int lhs_row, int rhs_row) {
+        inline B joinMatch(QueryTable<B> *t, int lhs_row, int rhs_row) {
             // previous alignment step will make join keys in first n columns
             // this will only invoke bit packed predicate when packing is enabled
-            Bit match = true;
+            B match = true;
             for(int i = 0; i < join_idxs_.size(); ++i) {
-                if(bit_packed_)
-                    match = match & (t->getPackedField(lhs_row, i) == t->getPackedField(rhs_row, i));
-                else
-                    match = match & (t->getField(lhs_row, i) == t->getField(rhs_row, i));
-
+                match = match & (t->getPackedField(lhs_row, i) == t->getPackedField(rhs_row, i));
             }
             return match;
         }
