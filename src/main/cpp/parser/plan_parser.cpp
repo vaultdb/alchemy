@@ -128,12 +128,6 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
 
     Operator<B> *op = nullptr;
 
-    if(operator_id > 1)
-    {
-        Operator<B> *child = getChildOperator(operator_id, tree);
-        QuerySchema child_schema = child->getOutputSchema();
-    }
-
     if(op_name == "LogicalValues") return; // handled in createInput
     if(op_name == "LogicalSort")   op = parseSort(operator_id, tree);
     if(op_name == "LogicalAggregate")  op = parseAggregate(operator_id, tree);

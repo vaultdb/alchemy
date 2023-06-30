@@ -182,13 +182,6 @@
           "name": "l_tax"
         },
         {
-          "type": "DECIMAL",
-          "nullable": true,
-          "precision": 19,
-          "scale": 0,
-          "name": "l_quantity"
-        },
-        {
           "type": "CHAR",
           "nullable": true,
           "precision": 1,

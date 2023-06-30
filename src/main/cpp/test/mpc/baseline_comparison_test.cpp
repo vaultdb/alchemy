@@ -124,6 +124,8 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
     DataUtilities::removeDummies(observed_plain);
 
     ASSERT_EQ(*expected, *observed_plain);
+
+    ASSERT_TRUE(!observed_plain->empty()); // want all tests to produce output
     delete observed_plain;
     delete observed;
     delete expected;
@@ -203,7 +205,7 @@ TEST_F(BaselineComparisonTest, tpch_q5_handcode) {
     runTest_handcode(5, "q5", expected_sort, unioned_db_);
 }
 
-/*
+
 TEST_F(BaselineComparisonTest, tpch_q8_baseline) {
 
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
@@ -248,7 +250,7 @@ TEST_F(BaselineComparisonTest, tpch_q18_handcode) {
 
     runTest_handcode(18, "q18", expected_sort, unioned_db_);
 }
-*/
+
 
 
 int main(int argc, char **argv) {
