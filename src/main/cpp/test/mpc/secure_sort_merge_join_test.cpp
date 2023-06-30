@@ -19,7 +19,7 @@ using namespace vaultdb;
 class SecureSortMergeJoinTest : public EmpBaseTest {
 protected:
 
-    int cutoff_ = 10;
+    int cutoff_ = 100;
 
     const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' c_dummy \n"
                                       "FROM customer  \n"
@@ -68,15 +68,17 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_customer_orders) {
                                                                                       customer_input, 4);
 
     SortMergeJoin join(orders_input, customer_input, predicate);
+    // Join output schema: (#0 encrypted-int32(13) orders.o_orderkey, #1 encrypted-int32(8) orders.o_custkey, #2 encrypted-int64(28) orders.o_orderdate, #3 encrypted-int32(1) orders.o_shippriority, #4 encrypted-int32(8) customer.c_custkey)
+    cout << "Join output schema: " << join.getOutputSchema() << endl;
     PlainTable *observed = join.run()->reveal();
+    Sort sorter(observed, DataUtilities::getDefaultSortDefinition(3));
+    observed = sorter.run();
+
     PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
     expected->setSortOrder(observed->getSortOrder());
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
-    delete observed;
-
-
 
 }
 
@@ -84,6 +86,7 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_customer_orders) {
 TEST_F(SecureSortMergeJoinTest, test_tpch_q3_customer_orders_no_bitpacking) {
 
     this->disableBitPacking();
+
 
     std::string expected_sql = "WITH customer_cte AS (" + customer_sql_ + "), "
                                                                           "orders_cte AS (" + orders_sql_ + ") "
@@ -104,18 +107,18 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_customer_orders_no_bitpacking) {
                                                                                                                        customer_input, 4);
 
     SortMergeJoin join(orders_input, customer_input, predicate);
+    // Join output schema: (#0 encrypted-int32(13) orders.o_orderkey, #1 encrypted-int32(8) orders.o_custkey, #2 encrypted-int64(28) orders.o_orderdate, #3 encrypted-int32(1) orders.o_shippriority, #4 encrypted-int32(8) customer.c_custkey)
     PlainTable *observed = join.run()->reveal();
+    Sort sorter(observed, DataUtilities::getDefaultSortDefinition(3));
+    observed = sorter.run();
+
     PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
     expected->setSortOrder(observed->getSortOrder());
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
-    delete observed;
-
-
 
 }
-
 
 TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 
@@ -123,11 +126,11 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 // get inputs from local oblivious ops
 // first N customers, propagate this constraint up the join tree for the test
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
-                                                                      "lineitem_cte AS (" + lineitem_sql_ + ") "
-                                                                                                            "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue \n"
-                                                                                                            "FROM orders_cte o JOIN lineitem_cte l ON l_orderkey = o_orderkey \n"
-                                                                                                            "WHERE NOT o_dummy AND NOT l_dummy "
-                                                                                                            "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
+                                     "lineitem_cte AS (" + lineitem_sql_ + ") "
+                                     "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue \n"
+                                     "FROM orders_cte o JOIN lineitem_cte l ON l_orderkey = o_orderkey \n"
+                                     "WHERE NOT o_dummy AND NOT l_dummy "
+                                     "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
 
     PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
 
@@ -152,7 +155,6 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders) {
 
     ASSERT_EQ(*expected, *observed);
     delete expected;
-   // delete observed; - covered by sort
 
 }
 
@@ -252,13 +254,13 @@ TEST_F(SecureSortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_no_bitpack
     this->disableBitPacking();
 
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
-                                                                      "lineitem_cte AS (" + lineitem_sql_ + "), \n"
-                                                                                                            "customer_cte AS (" + customer_sql_ + ")\n "
-                                                                                                                                                  "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey \n"
-                                                                                                                                                  "FROM customer_cte JOIN orders_cte ON o_custkey = c_custkey "
-                                                                                                                                                  " JOIN lineitem_cte ON o_orderkey = l_orderkey "
-                                                                                                                                                  " WHERE NOT c_dummy AND NOT o_dummy AND NOT l_dummy "
-                                                                                                                                                  " ORDER BY  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey  \n";
+                                     "lineitem_cte AS (" + lineitem_sql_ + "), \n"
+                                     "customer_cte AS (" + customer_sql_ + ")\n "
+           "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey \n"
+           "FROM customer_cte JOIN orders_cte ON o_custkey = c_custkey "
+           " JOIN lineitem_cte ON o_orderkey = l_orderkey "
+           " WHERE NOT c_dummy AND NOT o_dummy AND NOT l_dummy "
+           " ORDER BY  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey  \n";
 
     PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
 
