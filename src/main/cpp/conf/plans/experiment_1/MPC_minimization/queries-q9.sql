@@ -1,8 +1,8 @@
 -- 0, collation: (1 ASC, 0 ASC)
 SELECT s_suppkey, n_name
-FROM supplier JOIN nation On s_nationkey = n_nationkey
+FROM supplier JOIN nation ON s_nationkey = n_nationkey
 ORDER BY n_name, s_suppkey
--- 1, collation: (1 ASC, 2 ASC)
+-- 1, collation: (1 ASC, 0 ASC)
 SELECT ps_partkey, ps_suppkey, ps_supplycost
 FROM partsupp JOIN part ON ps_partkey = p_partkey
 WHERE p_name LIKE '%yellow%'
