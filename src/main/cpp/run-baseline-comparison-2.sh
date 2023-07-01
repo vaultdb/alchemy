@@ -1,6 +1,6 @@
 #!/bin/bash
 
-executable="./baseline_comparison_test"
+executable="./bin/baseline_comparison_test"
 PARTY=2
 
 echo "Running tests with test=baseline"
