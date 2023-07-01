@@ -15,10 +15,10 @@ PlainField FieldFactory<bool>::getFieldFromString(const FieldType &type, const s
 	  bool boolField;
 	  // handle different formats
 	  if(src == "1" || src == "0"){
-	    boolField = (src == "1") ? true : false;
+	    boolField = (src == "1");
 	  }
 	  else if(src == "t" || src == "f") {
-	    boolField = (src == "t") ? true : false;
+	    boolField = (src == "t");
 	  }
 	  else {
 	    throw std::invalid_argument("Unsupported type for decoding bool from string: " + TypeUtilities::getTypeString(type) + "\n");

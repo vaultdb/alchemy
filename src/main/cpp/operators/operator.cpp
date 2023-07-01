@@ -58,6 +58,7 @@ QueryTable<B> *Operator<B>::run() {
 
     cout << "Operator #" << this->getOperatorId() << " " << getOperatorType()  << " ran for " << runtime_/1e3 << " ms, "
         << " gate count: " << after_gate_count - start_gate_cnt_ << " output cardinality: " << output_->getTupleCount() << ", row width=" << output_schema_.size() <<  '\n';
+//    cout << "      Operator desc: " << this->toString() << endl;
 
     operator_executed_ = true;
     sort_definition_ = output_->getSortOrder(); // update this if needed

@@ -57,8 +57,9 @@ QueryTable<B> *Sort<B>::runSelf() {
 
     // deep copy new output
     Operator<B>::output_ = input->clone();
-
-    bitonicSort(0, Operator<B>::output_->getTupleCount(), true);
+    int counter = 0;
+    bitonicSort(0, Operator<B>::output_->getTupleCount(), true, counter);
+//    cout << "Sorted on " << this->output_->getTupleCount() << " rows, have " << counter << " compare & swap ops."   << endl;
 
     Operator<B>::output_->setSortOrder(Operator<B>::sort_definition_);
 
@@ -102,12 +103,12 @@ QueryTable<B> *Sort<B>::runSelf() {
  **/
 
 template<typename B>
-void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir) {
+void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir,  int & counter) {
     if (cnt > 1) {
         int m = cnt / 2;
-        bitonicSort(lo, m, !dir);
-        bitonicSort(lo + m, cnt - m, dir);
-        bitonicMerge(this->output_, this->sort_definition_, lo, cnt, dir);
+        bitonicSort(lo, m, !dir,   counter);
+        bitonicSort(lo + m, cnt - m, dir, counter);
+        bitonicMerge(this->output_, this->sort_definition_, lo, cnt, dir, counter);
     }
 
 }
@@ -119,21 +120,22 @@ void Sort<B>::bitonicSort(const int &lo, const int &cnt, const bool &dir) {
  * the number of elements is cnt.
  **/
 template<typename B>
-void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &dir) {
+void Sort<B>::bitonicMerge( QueryTable<B> *table, const SortDefinition & sort_def, const int &lo, const int &n, const bool &dir,  int & counter) {
 
     if (n > 1) {
         int m = powerOfTwoLessThan(n);
         for (int i = lo; i < lo + n - m; ++i) {
-//            QueryTuple<B> lhs = table->getTuple(i);
-//            QueryTuple<B> rhs = table->getTuple(i + m);
-
             B to_swap = swapTuples(table, i, i+m, sort_def, dir);
+            int before = SystemConfiguration::getInstance().andGateCount();
             table->compareSwap(to_swap, i, i+m);
-
+            int after = SystemConfiguration::getInstance().andGateCount();
+//            if(table->isEncrypted() && i == 0)
+//                    cout << "For compare and swap over " << table->getSchema().size() << " bits have " << after - before << " AND gates." << endl;
+            ++counter;
         }
 
-        bitonicMerge(table, sort_def, lo, m,  dir);
-        bitonicMerge(table, sort_def, lo + m, n - m, dir);
+        bitonicMerge(table, sort_def, lo, m,  dir, counter);
+        bitonicMerge(table, sort_def, lo + m, n - m, dir, counter);
     }
 }
 
@@ -178,10 +180,13 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
 template<typename B>
 B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int &rhs_idx,
                       const SortDefinition &sort_definition, const bool &dir) {
+
+    auto start_gates =  SystemConfiguration::getInstance().andGateCount();
+
     B swap = false;
     B swap_init = swap;
-
-
+//    size_t gates_1, gates_2, gates_3;
+//    int sort_key_width = 0;
 
     for (size_t i = 0; i < sort_definition.size(); ++i) {
 
@@ -190,6 +195,9 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
         const Field<B> rhs_field = sort_definition[i].first == -1 ? Field<B>(table->getDummyTag(rhs_idx))
                                                                   : table->getPackedField(rhs_idx,sort_definition[i].first);
 
+//        sort_key_width += sort_definition[i].first == -1 ? 1 : table->getSchema().getField(sort_definition[i].first).size();
+//        gates_1 = SystemConfiguration::getInstance().andGateCount();
+
         // true for ascending, false for descending
         bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
 
@@ -197,16 +205,24 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
         if(dir)  // flip the bit
             to_swap = !to_swap;
 
+//        gates_2 = SystemConfiguration::getInstance().andGateCount();
 
         // find first one where not eq, use this to init flag
         swap = FieldUtilities::select(swap_init, swap, to_swap);
+//        gates_3 = SystemConfiguration::getInstance().andGateCount();
+
         swap_init = swap_init | (lhs_field != rhs_field);
+
         if(std::is_same_v<bool, B>) {
             bool bool_init = FieldUtilities::extract_bool(swap_init);
             if(bool_init) break;
         }
     }
 
+//    auto end_gates =  SystemConfiguration::getInstance().andGateCount();
+//    if(table->isEncrypted() && lhs_idx == 0)
+//        cout << "For sort key width: " << sort_key_width << " have " << end_gates - start_gates << " AND gates, measurements: "
+//        << start_gates << ", " << gates_1 << "," << gates_2 << "," << gates_3 << "," << end_gates << endl;
     return swap;
 
 }

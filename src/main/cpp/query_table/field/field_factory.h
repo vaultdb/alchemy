@@ -30,7 +30,7 @@ namespace vaultdb {
         static PlainField getMin(const FieldType & type);
         static PlainField getMax(const FieldType & type);
 
-        static PlainField getInt(const int32_t & src) { return PlainField(FieldType::INT, src); }
+        static PlainField getInt(const int32_t & src, const int &field_bits) { return PlainField(FieldType::INT, src); }
 
     };
 
@@ -48,7 +48,9 @@ namespace vaultdb {
         static SecureField getMin(const FieldType & type);
         static SecureField getMax(const FieldType & type);
 
-        static SecureField getInt(const int32_t & src) { return  SecureField(FieldType::SECURE_INT, emp::Integer(32, src));   }
+        static SecureField getInt(const int32_t & src, const int & field_bits = 32) {
+            return  SecureField(FieldType::SECURE_INT, emp::Integer(field_bits, src));
+        }
 
 
 

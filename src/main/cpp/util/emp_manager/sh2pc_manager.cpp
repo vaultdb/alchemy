@@ -40,7 +40,8 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
             if(alice_tuple_cnt > 0) secret_share_recv(alice_tuple_cnt, emp::ALICE, dst_table, 0, true);
             if(bob_tuple_cnt > 0)  secret_share_send(emp::BOB, src, dst_table, alice_tuple_cnt, false);
         }
-        Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true);
+        int counter = 0;
+        Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true, counter);
     }
     else { // concatenate Alice and Bob
         if (party_ == emp::ALICE) {
