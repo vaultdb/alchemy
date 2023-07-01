@@ -66,14 +66,14 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    if(std::is_same_v<Bit, B> && SystemConfiguration::getInstance().bitPackingEnabled()) {
-        int output_cursor = group_by_.size();
-        for (ScalarAggregateDefinition agg: aggregate_definitions_) {
-            GroupByAggregateImpl<B> *agg_impl = aggregateFactory(agg.type, agg.ordinal,
+    int output_cursor = group_by_.size();
+    for (ScalarAggregateDefinition agg: aggregate_definitions_) {
+        GroupByAggregateImpl<B> *agg_impl = aggregateFactory(agg.type, agg.ordinal,
                                                                  input_schema.getField(agg.ordinal));
 
-            // if an aggregator operates on packed bits (e.g. min/max/count), then copy its output definition from source
-            if (agg.type == AggregateId::MIN || agg.type == AggregateId::MAX) {
+        // if an aggregator operates on packed bits (e.g. min/max/count), then copy its output definition from source
+        if (std::is_same_v<Bit, B> && SystemConfiguration::getInstance().bitPackingEnabled()) {
+            if ((agg.type == AggregateId::MIN || agg.type == AggregateId::MAX)){
                 QueryFieldDesc packed_field(input_schema.getField(agg.ordinal), output_cursor);
                 packed_field.setName("", agg.alias);
 
@@ -86,10 +86,12 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
                 this->output_schema_.putField(packed_field);
             }
 
+        }
+
             aggregators_.push_back(agg_impl);
             ++output_cursor;
         }
-    }
+
 
     if(output_cardinality_ == 0) { // naive case - go full oblivious
         output_cardinality_ = input->getTupleCount();
@@ -125,9 +127,9 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
         matched = true;
         input_dummy_tag = input->getDummyTag(i);
         for(int j = 0; j < group_by_.size(); ++j) {
-            matched = matched & (input->getField(i, group_by_[j]) == output->getField(i-1, j));
+            matched = matched & (input->getPackedField(i, group_by_[j]) == output->getPackedField(i-1, j));
             // initialize output - if input is dummy, copy from predecessor, otherwise copy from input
-            Field<B> dst_group_by = Field<B>::If(input_dummy_tag, output->getField(i-1, j), input->getField(i, group_by_[j]));
+            Field<B> dst_group_by = Field<B>::If(input_dummy_tag, output->getPackedField(i-1, j), input->getPackedField(i, group_by_[j]));
             output->setField(i, j, dst_group_by);
         }
 
