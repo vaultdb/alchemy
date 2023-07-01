@@ -120,9 +120,9 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
             B initialize_group_by = output_dummy & !matched;
 
             for (int k = 0; k < group_by_.size(); ++k) {
-                Field<B> src = input->getField(i, group_by_[k]);
-                Field<B> dst = Field<B>::If(initialize_group_by, src, output->getField(j, k));
-                output->setField(j, k, dst);
+                Field<B> src = input->getPackedField(i, group_by_[k]);
+                Field<B> dst = Field<B>::If(initialize_group_by, src, output->getPackedField(j, k));
+                output->setPackedField(j, k, dst);
             }
 
             for (int k = 0; k < aggregators_.size(); ++k) {
@@ -157,12 +157,12 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
 template<typename B>
 B NestedLoopAggregate<B>::groupByMatch(const QueryTable<B> *src, const int & src_row, const QueryTable<B> *dst, const int & dst_row) const {
 
-    B result = (src->getField(src_row,group_by_[0]) == dst->getField(dst_row,0));
+    B result = (src->getPackedField(src_row,group_by_[0]) == dst->getPackedField(dst_row,0));
     size_t cursor = 1;
 
     while(cursor < group_by_.size()) {
         result = result &
-                 (src->getField(src_row, group_by_[cursor]) == dst->getField(dst_row, cursor));
+                 (src->getPackedField(src_row, group_by_[cursor]) == dst->getPackedField(dst_row, cursor));
         ++cursor;
     }
 

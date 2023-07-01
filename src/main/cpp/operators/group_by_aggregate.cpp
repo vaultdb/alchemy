@@ -130,7 +130,7 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
             matched = matched & (input->getPackedField(i, group_by_[j]) == output->getPackedField(i-1, j));
             // initialize output - if input is dummy, copy from predecessor, otherwise copy from input
             Field<B> dst_group_by = Field<B>::If(input_dummy_tag, output->getPackedField(i-1, j), input->getPackedField(i, group_by_[j]));
-            output->setField(i, j, dst_group_by);
+            output->setPackedField(i, j, dst_group_by);
         }
 
         //  if uninitialized (seen no non-dummies yet), don't create a new group-by bin
