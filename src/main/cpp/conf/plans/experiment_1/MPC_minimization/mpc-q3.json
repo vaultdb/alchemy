@@ -151,17 +151,17 @@
     {
       "id": "6",
       "relOp": "LogicalProject",
-      "outputFields": "o_orderkey (#0), o_orderdate (#1), o_shippriority (#2), revenue (#3)",
+      "outputFields": "l_orderkey (#0), o_orderdate (#1), o_shippriority (#2), revenue (#3)",
       "fields": [
-        "o_orderkey",
+        "l_orderkey",
         "o_orderdate",
         "o_shippriority",
         "revenue"
       ],
       "exprs": [
         {
-          "input": 0,
-          "name": "$0"
+          "input": 3,
+          "name": "$3"
         },
         {
           "input": 1,
