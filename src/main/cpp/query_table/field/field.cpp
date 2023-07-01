@@ -518,7 +518,7 @@ Field<B> Field<B>::If(const B &choice, const Field &l, const Field &r) {
     assert(l.getType() == r.getType());
     assert(l.string_length_ == r.string_length_);
 
-    Value choiceBit(choice);
+    Value choice_bit(choice);
     Value v;
 
 
@@ -528,19 +528,19 @@ Field<B> Field<B>::If(const B &choice, const Field &l, const Field &r) {
         case FieldType::LONG:
         case FieldType::STRING:
         case FieldType::FLOAT:
-            v =  (boost::get<bool>(choiceBit)) ? l.payload_ : r.payload_;
+            v =  (boost::get<bool>(choice_bit)) ? l.payload_ : r.payload_;
             break;
         case FieldType::SECURE_BOOL:
-            v  = emp::If(boost::get<emp::Bit>(choiceBit), boost::get<emp::Bit>(l.payload_), boost::get<emp::Bit>(r.payload_));
+            v  = emp::If(boost::get<emp::Bit>(choice_bit), boost::get<emp::Bit>(l.payload_), boost::get<emp::Bit>(r.payload_));
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
-            v  = emp::If(boost::get<emp::Bit>(choiceBit), boost::get<emp::Integer>(l.payload_), boost::get<emp::Integer>
+            v  = emp::If(boost::get<emp::Bit>(choice_bit), boost::get<emp::Integer>(l.payload_), boost::get<emp::Integer>
                     (r.payload_));
             break;
         case FieldType::SECURE_FLOAT:
-            v  = emp::If(boost::get<emp::Bit>(choiceBit), boost::get<emp::Float>(l.payload_), boost::get<emp::Float>
+            v  = emp::If(boost::get<emp::Bit>(choice_bit), boost::get<emp::Float>(l.payload_), boost::get<emp::Float>
                     (r.payload_));
             break;
         default:
@@ -559,7 +559,7 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
     assert(l.getType() == r.getType());
     assert(l.string_length_ == r.string_length_);
 
-    Value choiceBit = choice;
+    Value choice_bit = choice;
     Value v;
 
     Value tmp;
@@ -574,7 +574,7 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
         case FieldType::LONG:
         case FieldType::STRING:
         case FieldType::FLOAT:
-            if (boost::get<bool>(choiceBit)) {
+            if (boost::get<bool>(choice_bit)) {
                 tmp = l.payload_;
                 l.payload_ = r.payload_;
                 r.payload_ = tmp;
@@ -583,7 +583,7 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
         case FieldType::SECURE_BOOL:
             bl = boost::get<emp::Bit>(l.payload_);
             br = boost::get<emp::Bit>(r.payload_);
-            emp::swap(boost::get<emp::Bit>(choiceBit), bl, br);
+            emp::swap(boost::get<emp::Bit>(choice_bit), bl, br);
             l.payload_ = bl;
             r.payload_ = br;
             break;
@@ -592,14 +592,14 @@ void Field<B>::compareAndSwap(const B & choice, Field & l, Field & r) {
         case FieldType::SECURE_STRING:
             il = boost::get<emp::Integer>(l.payload_);
             ir = boost::get<emp::Integer>(r.payload_);
-            emp::swap(boost::get<emp::Bit>(choiceBit), il, ir);
+            emp::swap(boost::get<emp::Bit>(choice_bit), il, ir);
             l.payload_ = il;
             r.payload_ = ir;
             break;
         case FieldType::SECURE_FLOAT:
             fl = boost::get<emp::Float>(l.payload_);
             fr = boost::get<emp::Float>(r.payload_);
-            emp::swap(boost::get<emp::Bit>(choiceBit), fl, fr);
+            emp::swap(boost::get<emp::Bit>(choice_bit), fl, fr);
             l.payload_ = fl;
             r.payload_ = fr;
             break;

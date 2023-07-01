@@ -30,7 +30,7 @@ namespace vaultdb {
         static PlainField getMin(const FieldType & type);
         static PlainField getMax(const FieldType & type);
 
-        static PlainField getInt(const int32_t & src, const int &field_bits) { return PlainField(FieldType::INT, src); }
+        static PlainField getInt(const int32_t & src, const int &field_bits = 0) { return PlainField(FieldType::INT, src); }
 
     };
 

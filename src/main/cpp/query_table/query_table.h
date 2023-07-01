@@ -114,7 +114,7 @@ namespace  vaultdb {
 
         virtual  void setField(const int  & row, const int & col, const Field<B> & f) = 0;
 
-        virtual  void setField(const int  & row, const int & col, const Field<B> & f, const bool & packed) = 0;
+        virtual  void setPackedField(const int  & row, const int & col, const Field<B> & f) = 0;
 
         virtual B getDummyTag(const int & row)  const = 0;
 

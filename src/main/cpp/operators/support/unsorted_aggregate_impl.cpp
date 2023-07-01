@@ -71,7 +71,7 @@ void UnsortedStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & 
 
     }
 
-     dst->setField(dst_row, UnsortedAggregateImpl<B>::output_ordinal_, accumulated, bit_packed);
+     dst->setPackedField(dst_row, UnsortedAggregateImpl<B>::output_ordinal_, accumulated);
 
 }
 

@@ -66,24 +66,29 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    int output_cursor = group_by_.size();
-    for(ScalarAggregateDefinition agg : aggregate_definitions_) {
-        GroupByAggregateImpl<B> *agg_impl = aggregateFactory(agg.type, agg.ordinal, input_schema.getField(agg.ordinal));
+    if(std::is_same_v<Bit, B> && SystemConfiguration::getInstance().bitPackingEnabled()) {
+        int output_cursor = group_by_.size();
+        for (ScalarAggregateDefinition agg: aggregate_definitions_) {
+            GroupByAggregateImpl<B> *agg_impl = aggregateFactory(agg.type, agg.ordinal,
+                                                                 input_schema.getField(agg.ordinal));
 
-        // if an aggregator operates on packed bits (e.g. min/max/count), then copy its output definition from source
-        if(agg_impl->packedFields()) {
-            QueryFieldDesc packed_field(input_schema.getField(agg.ordinal), output_cursor);
-            packed_field.setName("", agg.alias);
+            // if an aggregator operates on packed bits (e.g. min/max/count), then copy its output definition from source
+            if (agg.type == AggregateId::MIN || agg.type == AggregateId::MAX) {
+                QueryFieldDesc packed_field(input_schema.getField(agg.ordinal), output_cursor);
+                packed_field.setName("", agg.alias);
 
-            if (agg.type == AggregateId::COUNT) {
-                packed_field.initializeFieldSizeWithCardinality(input->getTupleCount());
-                agg_impl->bit_packed_size_ = packed_field.size() + 1; // +1 for sign bit
+                this->output_schema_.putField(packed_field);
             }
 
-            this->output_schema_.putField(packed_field);
+            if (agg.type == AggregateId::COUNT) {
+                QueryFieldDesc packed_field(output_cursor, agg.alias, "", FieldType::SECURE_LONG);
+                packed_field.initializeFieldSizeWithCardinality(input->getTupleCount());
+                this->output_schema_.putField(packed_field);
+            }
+
+            aggregators_.push_back(agg_impl);
+            ++output_cursor;
         }
-        aggregators_.push_back(agg_impl);
-        ++output_cursor;
     }
 
     if(output_cardinality_ == 0) { // naive case - go full oblivious
@@ -108,7 +113,7 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
     // for first row only
     for(GroupByAggregateImpl<B> *aggregator : aggregators_) {
         aggregator->initialize(input); // don't need group_by_match, only for first pass
-        output->setField(0, cursor, aggregator->getResult(), aggregator->packedFields());
+        output->setPackedField(0, cursor, aggregator->getResult());
         ++cursor;
     }
 
@@ -134,7 +139,7 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
 
         for(auto agg : aggregators_) {
             agg->accumulate(input, i, matched);
-            output->setField(i, cursor, agg->getResult(), agg->packedFields());
+            output->setPackedField(i, cursor, agg->getResult());
             ++cursor;
         }
         B out_dummy_tag = output->getDummyTag(i-1) & input_dummy_tag; // both need to be dummies for current cell to remain dummy
@@ -167,7 +172,7 @@ GroupByAggregateImpl<B> *GroupByAggregate<B>::aggregateFactory(const AggregateId
 
     switch (aggregator_type) {
         case AggregateId::COUNT:
-            return new GroupByCountImpl<B>(ordinal, input_type);
+            return new GroupByCountImpl<B>(ordinal, input_type, this->getChild(0)->getOutput()->getTupleCount());
         case AggregateId::SUM:
             return new GroupBySumImpl<B>(ordinal, input_type);
         case AggregateId::AVG:

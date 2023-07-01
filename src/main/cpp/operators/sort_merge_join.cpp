@@ -360,7 +360,7 @@ void SortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
         prev_count = emp::If(no_match, zero, prev_count); // ~ 32 gates
         Integer to_write = emp::If(is_foreign_key, count, prev_count); // ~ 32 gates
 
-        dst->setField(i, alpha_idx_, SecureField(int_field_type_, to_write), true);
+        dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
         prev_table_id = table_id;
         prev_count = emp::If(is_foreign_key, count, prev_count); // carry over previous count, ~ 32 gates
     }
@@ -371,7 +371,7 @@ void SortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
         count = dst->getPackedField(i, alpha_idx_).getValue<Integer>();
         Bit same_group = joinMatch(dst, i, i+1);
         Integer to_write = emp::If(same_group, prev_alpha, count);
-        dst->setField(i, alpha_idx_, SecureField(int_field_type_, to_write), true);
+        dst->setPackedField(i, alpha_idx_, SecureField(int_field_type_, to_write));
         prev_alpha = to_write;
     }
 
@@ -409,7 +409,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
     }
         // fails somewhere in here on A
     int j = Sort<B>::powerOfTwoLessThan(target_size);
-    int weight_width = zero_.template getValue<Integer>().size();
+    int weight_width = (is_secure_ && bit_packed_) ? zero_.template getValue<Integer>().size() : 32;
 
     while(j >= 1) {
         for(int i = target_size - j - 1; i >= 0; i--) {
@@ -534,8 +534,8 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
         Integer weight_int = emp::If(result, zero, s);
         Integer is_new_int = emp::If(result, one, zero);
 
-        intermediate_table->setField(i, weight_idx_, SecureField(weight.getType(), weight_int), true);
-        intermediate_table->setField(i, is_new_idx_, SecureField(is_new.getType(), is_new_int), true);
+        intermediate_table->setPackedField(i, weight_idx_, SecureField(weight.getType(), weight_int));
+        intermediate_table->setPackedField(i, is_new_idx_, SecureField(is_new.getType(), is_new_int));
         intermediate_table->setDummyTag(i, input->getDummyTag(i));
         s = s + cnt;
     }
@@ -561,7 +561,7 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
             dst_table->setField(i, j, SecureField::If(result, tmp.getField(j), dst_table->getField(i, j)));
 
         }
-        dst_table->setField(i, is_new_idx_, zero_, true);
+        dst_table->setPackedField(i, is_new_idx_, zero_);
         dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
     }
 

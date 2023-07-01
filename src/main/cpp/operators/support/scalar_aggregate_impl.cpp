@@ -22,19 +22,18 @@ ScalarStatelessAggregateImpl<B>::ScalarStatelessAggregateImpl(const AggregateId 
 template<typename B>
 void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst) {
 
-    bool bit_packed = dst->getSchema().getField(this->output_ordinal_).bitPacked();
     // input is NOT a dummy AND (output IS a dummy AND !matched)
     B input_dummy = src->getDummyTag(src_row);
     Field<B> input_field;
-    //if(ScalarAggregateImpl<B>::input_ordinal_ >= 0) {
-        input_field = bit_packed ?
-                      src->getPackedField(src_row, this->input_ordinal_) :
-                      src->getField(src_row, this->input_ordinal_);
-    //}
 
-    Field<B> output_field = bit_packed ?
-                            dst->getPackedField(0, this->output_ordinal_) :
-                            dst->getField(0, this->output_ordinal_);
+    if(this->agg_type_ == AggregateId::SUM || this->agg_type_ == AggregateId::AVG) {
+        input_field = src->getField(src_row, this->input_ordinal_);
+    }
+    else {
+        input_field = src->getPackedField(src_row, this->input_ordinal_);
+    }
+
+    Field<B> output_field = dst->getPackedField(0, this->output_ordinal_);
 
     Field<B> one;
     //Field<B> zero = (std::is_same_v<B, Bit>) ? Field<B>(this->field_type_, Integer(this->bit_packed_size_, 0)) : Field<B>(this->field_type_, 0L);
@@ -65,7 +64,7 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
 
     }
     not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
-    dst->setField(0, this->output_ordinal_, accumulated, bit_packed);
+    dst->setPackedField(0, this->output_ordinal_, accumulated);
     Field<B> output_field_checking = dst->getPackedField(0, this->output_ordinal_);
 }
 

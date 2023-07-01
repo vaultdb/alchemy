@@ -63,8 +63,13 @@ namespace  vaultdb {
         }
 
         inline Field<B> getPackedField(const int & row, const int & col) const override {
+
             int8_t *read_ptr = getFieldPtr(row, col);
-            return Field<B> ::deserializePacked(this->schema_.getField(col), read_ptr );
+            if(SystemConfiguration::getInstance().bitPackingEnabled())
+                return Field<B> ::deserializePacked(this->schema_.getField(col), read_ptr );
+
+            return Field<B> ::deserialize(this->schema_.getField(col), read_ptr );
+
         }
 
         inline void setField(const int  & row, const int & col, const Field<B> & f)  override {
@@ -72,12 +77,14 @@ namespace  vaultdb {
             f.serialize(write_ptr, this->schema_.getField(col));
         }
 
-        inline void setField(const int  & row, const int & col, const Field<B> & f, const bool & packed)  override {
+        inline void setPackedField(const int  & row, const int & col, const Field<B> & f)  override {
             int8_t *write_ptr = getFieldPtr(row, col);
-            if(packed)
+            if(SystemConfiguration::getInstance().bitPackingEnabled()) {
                 f.serializePacked(write_ptr, this->schema_.getField(col));
-            else
-                f.serialize(write_ptr, this->schema_.getField(col));
+                return;
+            }
+
+            f.serialize(write_ptr, this->schema_.getField(col));
         }
 
         inline B getDummyTag(const int & row)  const  override{

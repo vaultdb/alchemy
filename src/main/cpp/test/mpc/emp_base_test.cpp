@@ -55,7 +55,6 @@ void EmpBaseTest::SetUp()  {
         throw std::runtime_error("No EMP backend found.");
     }
 
-    cout << "Connected!\n";
 
     BitPackingMetadata md = FieldUtilities::getBitPackingMetadata(unioned_db_);
     s.initialize(db_name_, md, storage_model_);
@@ -66,7 +65,6 @@ void EmpBaseTest::TearDown() {
     manager_->flush();
     delete manager_;
     SystemConfiguration::getInstance().emp_manager_ = nullptr;
-    sleep(0.5);
 }
 
 

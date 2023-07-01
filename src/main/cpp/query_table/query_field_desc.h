@@ -48,7 +48,7 @@ namespace  vaultdb {
 
         QueryFieldDesc(const QueryFieldDesc &f, const int & col_num);
 
-        QueryFieldDesc(const int & anOrdinal, const std::string &n, const std::string &tab, const FieldType &aType, const size_t & stringLength = 0);
+        QueryFieldDesc(const int & ordinal, const std::string &field_name, const std::string &table, const FieldType &type, const size_t & str_len = 0);
 
         inline void setStringLength(size_t len) {   string_length_ = len;
             initializeFieldSize();
