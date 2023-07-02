@@ -17,7 +17,7 @@
     {
       "id": "1",
       "relOp": "LogicalValues",
-      "outputFields": "c_custkey (#0)",
+      "outputFields": "o_orderkey (#0), o_custkey (#1), o_year (#2)",
       "type": [
         {
           "type": "INTEGER",
@@ -134,7 +134,7 @@
     {
       "id": "6",
       "joinOn" : "s_suppkey = l_suppkey",
-      "outputFields": "s_suppkey (#0), nation_check(#1), l_orderkey (#2), l_suppkey (#3), volume (#4)",
+      "outputFields": "s_suppkey (#0), nation_check (#1), l_orderkey (#2), l_suppkey (#3), volume (#4)",
       "operator-algorithm" : "nested-loop-join",
       "relOp": "LogicalJoin",
       "condition": {
@@ -155,7 +155,7 @@
         ]
       },
       "joinType": "inner",
-      "foreignKey": 0,
+      "foreignKey": 1,
       "inputs": [
         "4",
         "5"
@@ -187,7 +187,7 @@
     },
     {
       "id": "8",
-      "joinOn" : "l_orderkey = o_orderkey",
+      "joinOn" : "o_orderkey = l_orderkey",
       "outputFields": "o_year (#0), o_orderkey (#1), nation_check(#2), l_orderkey (#3), volume (#4)",
       "operator-algorithm" : "nested-loop-join",
       "relOp": "LogicalJoin",
@@ -212,12 +212,12 @@
       "foreignKey": 1,
       "inputs": [
         "3",
-          "7"
+        "7"
       ]
     },
     {
       "id": "9",
-      "inputFields": "o_year (#0), o_orderkey (#1), nation_check(#2), l_orderkey (#3), volume (#4)",
+      "inputFields": "o_year (#0), o_orderkey (#1), nation_check (#2), l_orderkey (#3), volume (#4)",
       "outputFields" : "o_year, volume * nation_check::float, volume",
       "relOp": "LogicalProject",
       "fields": [
