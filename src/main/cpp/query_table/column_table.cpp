@@ -32,8 +32,13 @@ ColumnTable<B>::ColumnTable(const size_t &tuple_cnt, const QuerySchema &schema, 
     }
 
     // initialize dummy tags to true
-    memset(column_data_[-1].data(), 1, tuple_cnt * this->field_sizes_bytes_[-1]);
+    B dummy_tag = B(true);
+    B *dummy_tags = (B *) getFieldPtr(0, -1);
 
+    for(int i = 0; i < tuple_cnt; ++i) {
+        *dummy_tags = dummy_tag;
+        ++dummy_tags;
+    }
 }
 
 template <typename B>

@@ -66,21 +66,6 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
 
-    // use input card to determine how many bits we need for count
-    // only needed in secure mode
-    if(std::is_same_v<B, Bit> && SystemConfiguration::getInstance().bitPackingEnabled()) {
-        for (int i = 0; i < aggregate_definitions_.size(); ++i) {
-            auto agg = aggregate_definitions_[i];
-
-            if (agg.type == AggregateId::COUNT) {
-                QueryFieldDesc f = this->output_schema_.getField(group_by_.size() + i);
-                f.initializeFieldSizeWithCardinality(input->getTupleCount());
-                this->output_schema_.putField(f);
-                ((UnsortedStatelessAggregateImpl<B> *) aggregators_[i])->bit_packed_size_ = f.size() + 1; // +1 for sign bit
-            }
-        }
-        this->output_schema_.initializeFieldOffsets();
-    }
 
     if(output_cardinality_ == 0) { // naive case - go full oblivious
         output_cardinality_ = input->getTupleCount();
@@ -91,9 +76,9 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
 
     // one per aggregator, one per output bin
     vector<vector<UnsortedAggregateImpl<B> *> > per_tuple_aggregators;
-    //confirm all output dummyTag as true
+
     for (int i = 0; i < output_cardinality_; ++i) {
-//        this->output_->setDummyTag(i, true);
+
         per_tuple_aggregators.emplace_back(vector<UnsortedAggregateImpl<B> *>());
         vector<UnsortedAggregateImpl<B> *> row_aggregators(aggregators_.size());
         for(int j = 0; j < aggregators_.size(); ++j) {
@@ -103,8 +88,6 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
             per_tuple_aggregators[i].emplace_back(a);
         }
     }
-
-
 
     // create output tuples with managed memory for ease of use
     for(int i = 0; i < input->getTupleCount(); ++i) {
@@ -124,6 +107,7 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
                 Field<B> dst = Field<B>::If(initialize_group_by, src, output->getPackedField(j, k));
                 output->setPackedField(j, k, dst);
             }
+
 
             for (int k = 0; k < aggregators_.size(); ++k) {
                 UnsortedAggregateImpl<B>  *a = per_tuple_aggregators[j][k];
@@ -176,6 +160,8 @@ template<typename B>
 QuerySchema NestedLoopAggregate<B>::generateOutputSchema(const QuerySchema & input_schema) const {
     QuerySchema output_schema;
     size_t i;
+    bool bit_packing = SystemConfiguration::getInstance().bitPackingEnabled();
+    int input_row_cnt = this->getChild(0)->getOutput()->getTupleCount();
 
     for(i = 0; i < group_by_.size(); ++i) {
         QueryFieldDesc srcField = input_schema.getField(group_by_[i]);
@@ -191,8 +177,12 @@ QuerySchema NestedLoopAggregate<B>::generateOutputSchema(const QuerySchema & inp
                              input_schema.getField(agg.ordinal).getType() :
                              (std::is_same_v<B, emp::Bit> ? FieldType::SECURE_LONG : FieldType::LONG);
         QueryFieldDesc f;
-        if(agg.type == AggregateId::MIN || agg.type == AggregateId::MAX && std::is_same_v<B, Bit>) {
+        if((agg.type == AggregateId::MIN || agg.type == AggregateId::MAX) && std::is_same_v<B, Bit> && bit_packing) {
             f = QueryFieldDesc(input_schema.getField(agg.ordinal), i + group_by_.size()); // copy out bit packing info
+        }
+        else if (agg.type == AggregateId::COUNT&& std::is_same_v<B, Bit> && bit_packing) {
+            f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
+            f.initializeFieldSizeWithCardinality(input_row_cnt);
         }
         else {
             f = QueryFieldDesc(i + group_by_.size(), aggregate_definitions_[i].alias, "", agg_type);
@@ -207,7 +197,8 @@ QuerySchema NestedLoopAggregate<B>::generateOutputSchema(const QuerySchema & inp
 
 template<typename B>
 void NestedLoopAggregate<B>::setup() {
-    QuerySchema input_schema = Operator<B>::getChild(0)->getOutputSchema();
+    QuerySchema input_schema = this->getChild(0)->getOutputSchema();
+    int max_cnt = this->getChild(0)->getOutput()->getTupleCount();
     int output_ordinal = group_by_.size();
 
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {
@@ -219,7 +210,7 @@ void NestedLoopAggregate<B>::setup() {
 
         UnsortedAggregateImpl<B> *a = (agg.type == AggregateId::AVG)
                                       ?  (UnsortedAggregateImpl<B> *) new UnsortedAvgImpl<B>(AggregateId::AVG, agg_val_type, agg.ordinal, output_ordinal)
-                                      :  (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, agg_val_type, agg.ordinal, output_ordinal);
+                                      :  (UnsortedAggregateImpl<B> *) new UnsortedStatelessAggregateImpl<B>(agg.type, agg_val_type, agg.ordinal, output_ordinal, max_cnt);
 
         aggregators_.push_back(a);
         ++output_ordinal;

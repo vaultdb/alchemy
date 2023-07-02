@@ -16,7 +16,8 @@ bash  test/support/load-generated-data.sh 100
 ./bin/project_test  --storage=column
 ./bin/basic_join_test --storage=column
 ./bin/keyed_join_test --storage=column
-./bin/sort_merge_join_test --storage=column
+# SMJ for column store is not implemented yet
+#./bin/sort_merge_join_test --storage=column
 ./bin/sort_test --storage=column
 ./bin/scalar_aggregate_test --storage=column
 ./bin/group_by_aggregate_test --storage=column
@@ -34,7 +35,7 @@ bash run-column-store.sh secure_filter_test
 bash run-column-store.sh secure_sort_test 
 bash run-column-store.sh secure_basic_join_test 
 bash run-column-store.sh secure_keyed_join_test 
-bash run-column-store.sh secure_sort_merge_join_test
+#bash run-column-store.sh secure_sort_merge_join_test
 bash run-column-store.sh secure_scalar_aggregate_test
 bash run-column-store.sh secure_group_by_aggregate_test 
 bash run-column-store.sh secure_nested_loop_aggregate_test
