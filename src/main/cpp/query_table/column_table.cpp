@@ -67,23 +67,39 @@ PlainTable *ColumnTable<B>::reveal(const int & party)   {
 
     auto table = (ColumnTable<Bit> *) this;
     QuerySchema dst_schema = QuerySchema::toPlain(this->schema_);
+    SortDefinition collation = table->getSortOrder();
 
-    auto dst_table = new ColumnTable<bool>(this->tuple_cnt_, dst_schema, this->getSortOrder());
+    // if it is not sorted so that the dummies are at the end, sort it now.
+    if(collation.empty() || collation[0].first != -1) {
+        SortDefinition tmp{ColumnSort(-1, SortDirection::ASCENDING)};
+        for(int i = 0; i < collation.size(); ++i) {
+            tmp.emplace_back(collation[i]);
+        }
+        Sort sort(this->clone(), tmp);
+        table = (ColumnTable<Bit> *)  sort.run()->clone();
+    }
 
+    auto dst_table = new ColumnTable<bool>(this->tuple_cnt_, dst_schema, collation);
     int write_cursor = 0;
 
     for(uint32_t i = 0; i < this->tuple_cnt_; ++i)  {
         if(!table->getDummyTag(i).reveal()) { // if real tuple (not a dummy), reveal it
             for(auto col_pos : column_data_) {
                 SecureField s = table->getField(i, col_pos.first);
-                PlainField  p = s.reveal(party);
+                PlainField  p = s.reveal();
                 dst_table->setField(write_cursor, col_pos.first, p);
             }
             ++write_cursor;
         }
+        else {
+            break;
+        }
     }
 
     dst_table->resize(write_cursor);
+    if(table != (ColumnTable<Bit> *) this) // extra sort
+        delete table;
+
     return dst_table;
 
 }
@@ -259,7 +275,7 @@ void ColumnTable<B>::resize(const size_t &cnt) {
 template<typename B>
 PlainTuple ColumnTable<B>::getPlainTuple(size_t idx) const {
     assert(!this->isEncrypted());
-    // TODO: JMR remove this when you can
+
     PlainTuple p(const_cast<QuerySchema *>(&this->schema_));
     PlainTable *t = (PlainTable *) this;
     for(auto pos : this->field_sizes_bytes_) {

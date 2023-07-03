@@ -17,6 +17,7 @@ DEFINE_int32(port, 43440, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65454, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 
 class SecureGroupByAggregateTest : public EmpBaseTest {
@@ -33,8 +34,6 @@ void SecureGroupByAggregateTest::runTest(const string &expected_sql,
     // produces 25 rows
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
-    // set up expected output
-    const PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
 
     // run secure query
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1); // actually 2
@@ -43,19 +42,19 @@ void SecureGroupByAggregateTest::runTest(const string &expected_sql,
 
     std::vector<int32_t> group_bys{0};
     GroupByAggregate aggregate(input, group_bys, aggregators);
+    auto aggregated = aggregate.run();
 
-    PlainTable *aggregated = aggregate.run()->reveal();
+    if(FLAGS_validation) {
+        // set up expected output
+        const PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
 
+        PlainTable *revealed = aggregated->reveal();
+        ASSERT_EQ(*expected, *revealed);
 
-    // need to delete dummies from observed output to compare it to expected
-    DataUtilities::removeDummies(aggregated);
+        delete expected;
+        delete revealed;
 
-    ASSERT_EQ(*expected, *aggregated);
-
-    delete expected;
-    delete aggregated;
-
-
+    }
 }
 
 void SecureGroupByAggregateTest::runDummiesTest(const string &expected_sql,
@@ -64,7 +63,6 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expected_sql,
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false,  1);
 
     // configure and run test
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
@@ -75,15 +73,16 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expected_sql,
 
     GroupByAggregate aggregate(input, groupByCols, aggregators);
 
-    PlainTable *aggregated = aggregate.run()->reveal();
+    auto aggregated = aggregate.run();
 
+    if(FLAGS_validation) {
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false,  1);
+        auto revealed = aggregated->reveal();
+        ASSERT_EQ(*expected, *revealed);
 
-    // need to delete dummies from observed output to compare it to expected
-    DataUtilities::removeDummies(aggregated);
-    ASSERT_EQ(*expected, *aggregated);
-
-    delete expected;
-    delete aggregated;
+        delete expected;
+        delete revealed;
+    }
 
 }
 
@@ -201,8 +200,6 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
                                                          "GROUP BY l_returnflag, l_linestatus "
                                                          "ORDER BY l_returnflag, l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
-
     std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
                                                         ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
@@ -217,16 +214,14 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
    // Sort sort(input, sort_def);
 
     GroupByAggregate aggregate(input, group_bys, aggregators);
-
-    PlainTable *aggregated = aggregate.run()->reveal(PUBLIC);
-
-    // need to delete dummies from observed output to compare it to expected
-    DataUtilities::removeDummies(aggregated);
-
-    ASSERT_EQ(*expected, *aggregated);
-    delete aggregated;
-    delete expected;
-
+    auto aggregated = aggregate.run();
+    if(FLAGS_validation) {
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
+        auto revealed = aggregated->reveal(PUBLIC);
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
 
 }
 
@@ -255,7 +250,6 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
                                                           "order by \n"
                                                           "  l_returnflag, l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -272,15 +266,14 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
 
     GroupByAggregate aggregate(input, groupByCols, aggregators);
 
-    PlainTable *aggregated = aggregate.run()->reveal(PUBLIC);
-
-    // need to delete dummies from observed output to compare it to expected
-    DataUtilities::removeDummies(aggregated);
-
-    ASSERT_EQ(*expected, *aggregated);
-    delete aggregated;
-    delete expected;
-
+    auto aggregated = aggregate.run();
+    if(FLAGS_validation) {
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
+        auto revealed = aggregated->reveal(PUBLIC);
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
 
 }
 
@@ -316,7 +309,6 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
                                                            "  l_returnflag, \n"
                                                            "  l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
 
     std::vector<int32_t> groupByCols{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -337,15 +329,14 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
 
     GroupByAggregate aggregate(input, groupByCols, aggregators);
 
-    PlainTable *aggregated = aggregate.run()->reveal(PUBLIC);
-
-    // need to delete dummies from observed output to compare it to expected
-     DataUtilities::removeDummies(aggregated);
-
-    ASSERT_EQ(*expected, *aggregated);
-    delete aggregated;
-    delete expected;
-
+    auto aggregated = aggregate.run();
+    if(FLAGS_validation) {
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
+        auto revealed = aggregated->reveal(PUBLIC);
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
 }
 
 

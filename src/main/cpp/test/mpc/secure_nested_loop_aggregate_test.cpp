@@ -17,6 +17,7 @@ DEFINE_int32(port, 43440, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65462, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 
 class SecureNestedLoopAggregateTest : public EmpBaseTest {
@@ -33,8 +34,6 @@ void SecureNestedLoopAggregateTest::runTest(const string &expected_sql,
     // produces 25 rows
     std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
-    // set up expected output
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
 
     // run secure query
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1); // actually 2
@@ -43,18 +42,16 @@ void SecureNestedLoopAggregateTest::runTest(const string &expected_sql,
 
     std::vector<int32_t> group_bys{0};
     NestedLoopAggregate aggregate(input, group_bys, aggregators, 10);
+    auto aggregated= aggregate.run();
 
-    PlainTable *aggregated = aggregate.run()->reveal();
+    if(FLAGS_validation) {
+        Sort sort(aggregated->reveal(), SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
+        auto observed = sort.run();
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
 
-    Sort sort(aggregated, SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
-    auto observed = sort.run();
-
-
-    ASSERT_EQ(*expected, *observed);
-    delete expected;
-
-
-
+        ASSERT_EQ(*expected, *observed);
+        delete expected;
+    }
 }
 
 void SecureNestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
@@ -63,7 +60,6 @@ void SecureNestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
 
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
 
     // configure and run test
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
@@ -74,16 +70,16 @@ void SecureNestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
     group_bys.push_back(0);
 
     NestedLoopAggregate aggregate(input, group_bys, aggregators, 10);
+    auto aggregated= aggregate.run();
 
-    PlainTable *aggregated = aggregate.run()->reveal();
-
-    Sort sort(aggregated, SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
-    auto observed = sort.run();
-
+    if(FLAGS_validation) {
+        Sort sort(aggregated->reveal(), SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
+        auto observed = sort.run();
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
 
         ASSERT_EQ(*expected, *observed);
-
         delete expected;
+    }
 
 }
 
@@ -120,8 +116,7 @@ TEST_F(SecureNestedLoopAggregateTest, test_sum) {
     // set up expected outputs
     std::string expected_sql = "SELECT l_orderkey, SUM(l_linenumber)::INTEGER sum_lineno FROM lineitem WHERE l_orderkey <= 10 GROUP BY l_orderkey ORDER BY (1)";
 
-    std::vector<ScalarAggregateDefinition> aggregators;
-    aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
+    std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno")};
     runTest(expected_sql, aggregators);
 
 }
@@ -132,8 +127,7 @@ TEST_F(SecureNestedLoopAggregateTest, test_sum_dummies) {
     std::string query = "SELECT l_orderkey, l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <=10 ORDER BY (1), (2)";
     std::string expected_sql = "SELECT l_orderkey, SUM(l_linenumber)::INTEGER sum_lineno FROM (" + query + ") subquery WHERE  NOT dummy GROUP BY l_orderkey ORDER BY (1)";
 
-    std::vector<ScalarAggregateDefinition> aggregators;
-    aggregators.push_back(ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno"));
+    std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::SUM, "sum_lineno")};
 
     runDummiesTest(expected_sql, aggregators);
 }
@@ -215,7 +209,7 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_sums) {
                                                          "GROUP BY l_returnflag, l_linestatus "
                                                          "ORDER BY l_returnflag, l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 0);
+    auto collation = DataUtilities::getDefaultSortDefinition(2);
 
     std::vector<ScalarAggregateDefinition> aggregators {ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
                                                         ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
@@ -224,19 +218,23 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_sums) {
     std::vector<int32_t> group_bys{0, 1};
 
 
-    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
-    auto input = new SecureSqlInput(db_name_, sql, true, sort_def);
+    auto input = new SecureSqlInput(db_name_, sql, true, collation);
 
 
     auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
+    auto aggregated = aggregate->run();
 
-    PlainTable *observed = aggregate->run()->reveal(PUBLIC);
+    if(FLAGS_validation) {
+        aggregated->setSortOrder(collation);
+        PlainTable *observed = aggregated->reveal(PUBLIC);
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
 
+        ASSERT_EQ(*expected, *observed);
 
-    ASSERT_EQ(*expected, *observed);
+        delete observed;
+        delete expected;
+    }
 
-    delete observed;
-    delete expected;
     delete aggregate;
 
 
@@ -266,7 +264,6 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
                                                           "order by \n"
                                                           "  l_returnflag, l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 0);
 
     std::vector<int32_t> group_bys{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
@@ -279,14 +276,21 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
     auto input = new SecureSqlInput(db_name_, sql, true, sort_def);
 
     auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
+    auto aggregated = aggregate->run();
 
-    PlainTable *observed = aggregate->run()->reveal(PUBLIC);
-
+    if(FLAGS_validation) {
+        aggregated->setSortOrder(sort_def);
+        PlainTable *observed = aggregated->reveal(PUBLIC);
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
 
         ASSERT_EQ(*expected, *observed);
-        delete expected;
+
         delete observed;
-        delete aggregate;
+        delete expected;
+    }
+
+    delete aggregate;
+
 
 }
 
@@ -322,8 +326,6 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
                                                            "  l_returnflag, \n"
                                                            "  l_linestatus";
 
-    PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 0);
-
     std::vector<int32_t> group_bys{0, 1};
     std::vector<ScalarAggregateDefinition> aggregators{
             ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
@@ -335,20 +337,25 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
             ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
-//    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
-    auto input = new SecureSqlInput(db_name_, sql, true);
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
+    auto input = new SecureSqlInput(db_name_, sql, true, sort_def);
 
 
     auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
+    auto aggregated = aggregate->run();
 
-    PlainTable *observed = aggregate->run()->reveal(PUBLIC);
+    if(FLAGS_validation) {
+        aggregated->setSortOrder(sort_def);
+        PlainTable *observed = aggregated->reveal(PUBLIC);
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
 
-    ASSERT_EQ(*expected, *observed);
-    delete expected;
-    delete observed;
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+
     delete aggregate;
-
-
 
 }
 

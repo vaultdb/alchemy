@@ -9,6 +9,7 @@ DEFINE_int32(port, 54334, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65428, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 using namespace vaultdb;
 
@@ -76,16 +77,13 @@ TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
 
     input->setSortOrder(collation);
     SecureTable *secret_shared = input->secretShare();
-    PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
-
-
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, true);
-    expected->setSortOrder(collation);
-    DataUtilities::removeDummies(expected);
-
-    ASSERT_EQ(*expected, *revealed);
-
-
+    if(FLAGS_validation) {
+        PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, true);
+        expected->setSortOrder(collation);
+        DataUtilities::removeDummies(expected);
+        ASSERT_EQ(*expected, *revealed);
+    }
 
 }
 
@@ -115,15 +113,14 @@ TEST_F(EmpTableTest, bit_packing_test) {
     // tuple_cnt * (5+8+1 (for dummy tag) )*sizeof(emp::Bit)
     ASSERT_EQ(expected->getTupleCount() * 14 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_);
 
-    PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
-
-
-
-    ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
+    if(FLAGS_validation) {
+        PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+        ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
+        delete revealed;
+    }
 
     delete input;
     delete expected;
-    delete revealed;
     delete secret_shared;
 
 }
@@ -137,18 +134,19 @@ void EmpTableTest::secretShareAndValidate(const std::string & sql, const SortDef
     input->setSortOrder(sort);
     SecureTable *secret_shared = input->secretShare();
     manager_->flush();
-    PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
-    expected->setSortOrder(sort);
+    if(FLAGS_validation) {
+        PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
+        expected->setSortOrder(sort);
 
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
 
-    ASSERT_EQ(*expected, *revealed);
-
-    delete revealed;
     delete input;
     delete secret_shared;
-    delete expected;
 }
 
 

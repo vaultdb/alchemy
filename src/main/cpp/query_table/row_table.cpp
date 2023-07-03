@@ -55,23 +55,39 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
 
 
     auto table = (RowTable<Bit> *) this;
-    QuerySchema dst_schema = QuerySchema::toPlain(this->schema_);
+    SortDefinition collation = table->getSortOrder();
+    QuerySchema dst_schema = QuerySchema::toPlain(table->getSchema());
 
-    auto dst_table = new RowTable<bool>(this->tuple_cnt_, dst_schema, this->getSortOrder());
+    // if it is not sorted so that the dummies are at the end, sort it now.
+    if(collation.empty() || collation[0].first != -1) {
+        SortDefinition tmp{ColumnSort(-1, SortDirection::ASCENDING)};
+        for(int i = 0; i < collation.size(); ++i) {
+            tmp.emplace_back(collation[i]);
+        }
+        Sort sort(this->clone(), tmp);
+        table = (RowTable<Bit> *)  sort.run()->clone();
+    }
+
+    auto dst_table = new RowTable<bool>(this->tuple_cnt_, dst_schema, collation);
     int write_cursor = 0;
 
 
-    for(uint32_t i = 0; i < this->tuple_cnt_; ++i)  {
+    for(uint32_t i = 0; i < table->tuple_cnt_; ++i)  {
         bool dummy_tag = table->getDummyTag(i).reveal();
         if(!dummy_tag) { // if real tuple (not a dummy), reveal it
-            const SecureTuple tuple(&this->schema_, this->getFieldPtr(i, 0));
-            PlainTuple dst_tuple = tuple.reveal(&dst_schema, party);
+            PlainTuple dst_tuple = table->revealRow(i, dst_schema, party);
             dst_table->putTuple(write_cursor, dst_tuple);
             ++write_cursor;
+        }
+        else {
+             break;
         }
     }
 
     dst_table->resize(write_cursor);
+    if(table != (RowTable<Bit> *) this) // extra sort
+        delete table;
+
     return dst_table;
 
 }
@@ -94,7 +110,6 @@ PlainTable *RowTable<B>::revealInsecure(const int &party) {
             const SecureTuple tuple(&this->schema_, this->getFieldPtr(i, 0));
             PlainTuple dst_tuple = tuple.revealInsecure(&dst_schema, party);
             dst_table->putTuple(i, dst_tuple);
-
     }
     return dst_table;
 

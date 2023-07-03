@@ -157,7 +157,27 @@ namespace  vaultdb {
 
         }
 
-         inline bool empty() const { return tuple_cnt_ == 0; }
+        inline PlainTuple revealRow(const int & row,  QuerySchema & dst_schema, const int & party) const  {
+            if(std::is_same_v<B, bool>) {
+                return getPlainTuple(row);
+            }
+
+            PlainTuple plain(&dst_schema);
+
+            for(int i = 0; i < this->schema_.getFieldCount(); i++) {
+                PlainField p = this->getField(row, i).reveal(party);
+                plain.setField(i, p);
+            }
+            bool dummy_tag = this->getDummyTag(row).reveal(party);
+            plain.setDummyTag(dummy_tag);
+
+
+            return plain;
+        }
+
+
+
+        inline bool empty() const { return tuple_cnt_ == 0; }
          //intentionally giving these different names - not for used in generic (not bool/Bit-specific cases)
         virtual QueryTuple<bool> getPlainTuple(size_t idx) const = 0;
         // hoping to refactor to get rid of getSecureTuple soon.
@@ -182,6 +202,7 @@ namespace  vaultdb {
         virtual void compareSwap(const Bit & swap, const int  & lhs_row, const int & rhs_row) = 0;
 
         virtual StorageModel storageModel() const = 0;
+
 
 
     };

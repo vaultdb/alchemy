@@ -20,6 +20,7 @@ DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65478, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 
 class SecureTpcHTest : public EmpBaseTest {
@@ -50,19 +51,20 @@ SecureTpcHTest::runTest(const int &test_id, const string & test_name, const Sort
 
     ASSERT_TRUE(!expected->empty()); // want all tests to produce output
 
+
     string sql_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/queries-" + test_name + ".sql";
     string plan_file = Utilities::getCurrentWorkingDirectory() + "/conf/plans/mpc-" + test_name + ".json";
 
     PlanParser<Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
+    auto result = root->run();
 
-
-    PlainTable *observed = root->run()->reveal();
-    DataUtilities::removeDummies(observed);
-
-    ASSERT_EQ(*expected, *observed);
-    delete observed;
-    delete expected;
+    if(FLAGS_validation) {
+        PlainTable *observed = result->reveal();
+        ASSERT_EQ(*expected, *observed);
+        delete observed;
+        delete expected;
+    }
 
 }
 

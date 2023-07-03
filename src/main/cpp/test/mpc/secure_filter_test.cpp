@@ -19,6 +19,7 @@ DEFINE_int32(port, 54325, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65454, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 
 class SecureFilterTest : public EmpBaseTest {};
@@ -30,19 +31,22 @@ TEST_F(SecureFilterTest, test_table_scan) {
 
     std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 100";
-    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, sql, storage_model_, false);
-
-    SecureSqlInput input(db_name_, sql, false);
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem WHERE l_orderkey <= 100  ORDER BY (1), (2)";
+    SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 
 
-    PlainTable *revealed = input.run()->reveal(emp::PUBLIC);
+    SecureSqlInput input(db_name_, sql, false, collation);
+    auto scanned = input.run();
+    if(FLAGS_validation) {
+        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
+        expected->setSortOrder(collation);
 
+        PlainTable *revealed = scanned->reveal(emp::PUBLIC);
+        ASSERT_EQ(*expected, *revealed);
+        delete expected;
+        delete revealed;
 
-    ASSERT_EQ(*expected, *revealed);
-
-    delete expected;
-    delete revealed;
+    }
 
 }
 
@@ -54,13 +58,15 @@ TEST_F(SecureFilterTest, test_table_scan) {
 TEST_F(SecureFilterTest, test_filter) {
     std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 100";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem   WHERE l_orderkey <= 100  ORDER BY (1), (2)";
     std::string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input WHERE l_linenumber = 1";
+    SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 
-    PlainTable *expected = DataUtilities::getUnionedResults(alice_db_, bob_db_, expected_sql, storage_model_, false);
 
+    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+    expected->setSortOrder(collation);
 
-   SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false);
+    SecureSqlInput *input = new SecureSqlInput(db_name_, sql, false, collation);
 
     // expression setup
     // filtering for l_linenumber = 1
@@ -73,15 +79,13 @@ TEST_F(SecureFilterTest, test_filter) {
 
 
     Filter<emp::Bit> filter(input, expression);
-
-    PlainTable *revealed = filter.run()->reveal(emp::PUBLIC);
-
-
-        ASSERT_EQ(*expected,  *revealed);
+    auto fiiltered = filter.run();
+    if(FLAGS_validation) {
+        PlainTable *revealed = fiiltered->reveal(emp::PUBLIC);
+        ASSERT_EQ(*expected, *revealed);
         delete expected;
         delete revealed;
-
-
+    }
 }
 
 

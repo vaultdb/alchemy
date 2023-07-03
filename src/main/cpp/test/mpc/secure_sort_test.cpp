@@ -14,6 +14,7 @@ DEFINE_int32(port, 54333, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65475, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 
 using namespace vaultdb;
@@ -73,24 +74,29 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
     string expected_results_sql = "WITH input AS ("
                                   + sql
                                   + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
 
 
     SortDefinition sort_def{
             ColumnSort(0, SortDirection::ASCENDING),
             ColumnSort(1, SortDirection::ASCENDING)
     };
-    expected->setSortOrder(sort_def);
 
     auto input = new SecureSqlInput(db_name_, sql, false);
     Sort<emp::Bit> sort(input, sort_def);
 
-    PlainTable *observed = sort.run()->reveal();
-    ASSERT_EQ(*expected, *observed);
+    auto sorted = sort.run();
+    if(FLAGS_validation) {
+        auto observed = sorted->reveal();
+        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
+        expected->setSortOrder(sort_def);
 
+        ASSERT_EQ(*expected, *observed);
 
-    delete expected;
-    delete observed;
+        delete expected;
+        delete observed;
+
+    }
+
 
 }
 
@@ -100,33 +106,34 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     string expected_result_sql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_result_sql,false);
 
-    SortDefinition sortDefinition{ColumnSort (1, SortDirection::DESCENDING), ColumnSort (3, SortDirection::ASCENDING)};
-
+    SortDefinition sort_def{ColumnSort (1, SortDirection::DESCENDING), ColumnSort (3, SortDirection::ASCENDING)};
 
     auto input= new SecureSqlInput(db_name_, sql, false);
-    auto sort = new Sort<emp::Bit>(input, sortDefinition);
+    auto sort = new Sort<emp::Bit>(input, sort_def);
+    auto sorted = sort->run();
 
+    if(FLAGS_validation) {
 
-    // project it down to $1, $3
-    ExpressionMapBuilder<emp::Bit> builder(sort->getOutputSchema());
-    builder.addMapping(1, 0);
-    builder.addMapping(3, 1);
+        // project it down to $1, $3
+        ExpressionMapBuilder<bool> builder(sort->getOutputSchema());
+        builder.addMapping(1, 0);
+        builder.addMapping(3, 1);
 
-    Project project(sort, builder.getExprs());
+        auto revealed = sorted->reveal();
+        Project project(revealed, builder.getExprs());
 
+        PlainTable *observed = project.run();
+        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_result_sql,false);
 
-    PlainTable *observed = project.run()->reveal();
+        // copy out the projected sort order
+        expected->setSortOrder(observed->getSortOrder());
 
-    // copy out the projected sort order
-    expected->setSortOrder(observed->getSortOrder());
+        ASSERT_EQ(*expected, *observed);
 
+        delete expected;
 
-    ASSERT_EQ(*expected, *observed);
-
-    delete expected;
-    delete observed;
+    }
 
 }
 
@@ -135,33 +142,36 @@ TEST_F(SecureSortTest, tpchQ05Sort) {
 
     string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l WHERE l_orderkey <= 10  ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_results_sql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
 
     SortDefinition sort_definition;
     sort_definition.emplace_back(1, SortDirection::DESCENDING);
 
     auto input = new SecureSqlInput(db_name_, sql, false);
     auto *sort = new Sort<emp::Bit>(input, sort_definition);
+    auto sorted = sort->run();
+    
+    if(FLAGS_validation) {
+        ExpressionMapBuilder<bool> builder(sort->getOutputSchema());
+        builder.addMapping(1, 0);
 
-    ExpressionMapBuilder<emp::Bit> builder(sort->getOutputSchema());
-    builder.addMapping(1, 0);
+        // project it down to $1
+        Project project(sorted->reveal(), builder.getExprs());
 
-    // project it down to $1
-    Project project(sort, builder.getExprs());
+        PlainTable *observed  = project.run();
 
-    PlainTable *observed  = project.run()->reveal();
-
-    // copy out the projected sort order
-    expected->setSortOrder(observed->getSortOrder());
-
-
-    ASSERT_EQ(*expected, *observed);
-
-    delete expected;
-    delete observed;
+        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_results_sql, false);
+        expected->setSortOrder(observed->getSortOrder());
 
 
+        ASSERT_EQ(*expected, *observed);
 
+        delete expected;
+
+
+    }
+
+
+    delete sort;
 }
 
 
@@ -169,24 +179,28 @@ TEST_F(SecureSortTest, tpchQ05Sort) {
 TEST_F(SecureSortTest, tpchQ08Sort) {
 
     string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  WHERE o_orderkey <= 10 ORDER BY o_comment, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
-    string expectedResultSql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
-    PlainTable * expected = DataUtilities::getQueryResults(unioned_db_, expectedResultSql, false);
+    string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
 
-    SortDefinition sortDefinition {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+    SortDefinition sort_def {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
 
 
     auto input = new SecureSqlInput(db_name_, sql, false);
-    auto sort = new Sort<emp::Bit>(input, sortDefinition);
+    auto sort = new Sort<emp::Bit>(input, sort_def);
+    auto sorted = sort->run();
+    if(FLAGS_validation) {
+        PlainTable *observed  = sorted->reveal();
 
-    PlainTable *observed  = sort->run()->reveal();
-
-    // copy out the projected sort order
-    expected->setSortOrder(observed->getSortOrder());
+        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
+        expected->setSortOrder(observed->getSortOrder());
 
         ASSERT_EQ(*expected, *observed);
-        delete sort;
+
         delete observed;
         delete expected;
+
+    }
+
+    delete sort;
 }
 
 
@@ -207,14 +221,14 @@ TEST_F(SecureSortTest, tpchQ09Sort) {
 
     auto input = new SecureSqlInput(db_name_, sql, false);
     Sort sort(input, sort_definition);
+    auto sorted = sort.run();
 
+    if(FLAGS_validation) {
+        PlainTable *observed = sorted->reveal();
+        ASSERT_TRUE(isSorted(observed, sort_definition));
+        delete observed;
+    }
 
-    PlainTable *observed = sort.run()->reveal();
-
-
-    ASSERT_TRUE(isSorted(observed, sort_definition));
-
-    delete observed;
 
 
 
@@ -232,14 +246,14 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
     sort_definition.emplace_back(1, SortDirection::ASCENDING);
 
     auto input = new SecureSqlInput(db_name_, sql, false);
-    Sort<emp::Bit> sort(input, sort_definition);
+    Sort<Bit> sort(input, sort_definition);
+    auto sorted = sort.run();
 
-    PlainTable *observed = sort.run()->reveal();
-
-    ASSERT_TRUE(isSorted(observed, sort_definition));
-
-
-    delete observed;
+    if(FLAGS_validation) {
+        PlainTable *observed = sorted->reveal();
+        ASSERT_TRUE(isSorted(observed, sort_definition));
+        delete observed;
+    }
 
 }
 
