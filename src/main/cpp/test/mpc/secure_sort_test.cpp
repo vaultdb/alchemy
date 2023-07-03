@@ -107,11 +107,10 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
 
     string expected_result_sql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
 
-    SortDefinition sortDefinition{ColumnSort (1, SortDirection::DESCENDING), ColumnSort (3, SortDirection::ASCENDING)};
-
+    SortDefinition sort_def{ColumnSort (1, SortDirection::DESCENDING), ColumnSort (3, SortDirection::ASCENDING)};
 
     auto input= new SecureSqlInput(db_name_, sql, false);
-    auto sort = new Sort<emp::Bit>(input, sortDefinition);
+    auto sort = new Sort<emp::Bit>(input, sort_def);
     auto sorted = sort->run();
 
     if(FLAGS_validation) {
@@ -124,17 +123,16 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
         auto revealed = sorted->reveal();
         Project project(revealed, builder.getExprs());
 
-        PlainTable *observed = project.run()->reveal();
+        PlainTable *observed = project.run();
         PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_result_sql,false);
 
         // copy out the projected sort order
         expected->setSortOrder(observed->getSortOrder());
 
-
         ASSERT_EQ(*expected, *observed);
 
         delete expected;
-        delete observed;
+
     }
 
 }
