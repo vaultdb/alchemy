@@ -88,6 +88,7 @@ package_add_test(enrich_test enrich_test.cpp  support/enrich_test_support.cpp mp
 package_add_test(secure_tpch_test mpc/secure_tpch_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
 package_add_test(baseline_comparison_test mpc/baseline_comparison_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
 package_add_test(secure_bit_packing_test mpc/secure_bit_packing_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
+package_add_test(secure_aggregate_comparison_test mpc/secure_aggregate_comparison_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
 
 #ZK experiments - optional
 package_add_test(zk_test zk/zk_test.cpp zk/zk_base_test.cpp)

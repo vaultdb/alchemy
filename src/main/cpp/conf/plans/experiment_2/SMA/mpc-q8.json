@@ -1,0 +1,120 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "outputFields" : "o_year, volume * nation_check::float, volume",
+      "relOp": "LogicalValues",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "o_year"
+        },
+        {
+          "type": "FLOAT",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "nation_check"
+        },
+        {
+          "type": "FLOAT",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "volume"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalAggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "group": [
+        0
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            1
+          ],
+          "name": null
+        },
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            2
+          ],
+          "name": null
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalProject",
+      "fields": [
+        "o_year",
+        "mkt_share"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "op": {
+            "name": "/",
+            "kind": "DIVIDE",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 2,
+              "name": "$2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 0,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        }
+      ]
+    }
+  ]
+}

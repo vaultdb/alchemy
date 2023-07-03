@@ -1,0 +1,65 @@
+  {
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "outputFields": "n_name (#0), revenue (#1)",
+      "type": [
+        {
+          "type": "CHAR",
+          "nullable": true,
+          "precision": 25,
+          "name": "n_name"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "revenue"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalAggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "group": [
+        0
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            1
+          ],
+          "name": "revenue"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 1,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        }
+      ]
+    }
+  ]
+}

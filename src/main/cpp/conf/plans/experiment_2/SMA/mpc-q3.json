@@ -1,0 +1,116 @@
+{
+  "rels": [
+    {
+      "id": "0",
+      "relOp": "LogicalValues",
+      "outputFields": "l_orderkey (#0), o_orderdate (#1), o_shippriority (#2), revenue (#3)",
+      "type": [
+        {
+          "type": "INTEGER",
+          "nullable": false,
+          "name": "l_orderkey"
+        },
+        {
+          "type": "DATE",
+          "nullable": true,
+          "name": "o_orderdate"
+        },
+        {
+          "type": "INTEGER",
+          "nullable": true,
+          "name": "o_shippriority"
+        },
+        {
+          "type": "DECIMAL",
+          "nullable": true,
+          "precision": 19,
+          "scale": 0,
+          "name": "revenue"
+        }
+      ],
+      "tuples": [],
+      "inputs": []
+    },
+    {
+      "id": "1",
+      "relOp": "LogicalAggregate",
+      "operator-algorithm" : "sort-merge-aggregate",
+      "group": [
+        0,
+        1,
+        2
+      ],
+      "aggs": [
+        {
+          "agg": {
+            "name": "SUM",
+            "kind": "SUM",
+            "syntax": "FUNCTION"
+          },
+          "type": {
+            "type": "DECIMAL",
+            "nullable": true,
+            "precision": 19,
+            "scale": 0
+          },
+          "distinct": false,
+          "operands": [
+            3
+          ],
+          "name": "revenue"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "relOp": "LogicalSort",
+      "collation": [
+        {
+          "field": 3,
+          "direction": "DESCENDING",
+          "nulls": "FIRST"
+        },
+        {
+          "field": 1,
+          "direction": "ASCENDING",
+          "nulls": "LAST"
+        }
+      ],
+      "fetch": {
+        "literal": 10,
+        "type": {
+          "type": "INTEGER",
+          "nullable": false
+        }
+      }
+    },
+    {
+      "id": "3",
+      "relOp": "LogicalProject",
+      "fields": [
+        "l_orderkey",
+        "revenue",
+        "o_orderdate",
+        "o_shippriority"
+      ],
+      "exprs": [
+        {
+          "input": 0,
+          "name": "$0"
+        },
+        {
+          "input": 3,
+          "name": "$3"
+        },
+        {
+          "input": 1,
+          "name": "$1"
+        },
+        {
+          "input": 2,
+          "name": "$2"
+        }
+      ]
+    }
+  ]
+}
