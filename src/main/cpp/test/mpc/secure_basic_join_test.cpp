@@ -12,6 +12,7 @@ DEFINE_int32(port, 43443, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 
 using namespace vaultdb;
@@ -68,18 +69,20 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_customer_orders) {
 
     auto join = new BasicJoin(orders_input, customer_input, predicate);
 
+    auto join_res = join->run();
+    if(FLAGS_validation) {
 
+        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
+        Sort sort(join_res->reveal(), sort_def);
 
-    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
-    Sort<emp::Bit> sort(join, sort_def);
+        PlainTable *observed = sort.run();
+        expected->setSortOrder(sort_def);
 
-   PlainTable *observed = sort.run()->reveal();
-    expected->setSortOrder(sort_def);
+        ASSERT_EQ(*expected, *observed);
+        delete expected;
+    }
 
-    ASSERT_EQ(*expected, *observed);
-    delete expected;
-    delete observed;
-
+    delete join;
 
 }
 
@@ -109,21 +112,21 @@ std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
                                                                                       orders_input, 2);
 
     auto join = new BasicJoin(lineitem_input, orders_input, predicate);
+    auto join_res = join->run();
+    if(FLAGS_validation) {
+        SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(
+                join->getOutputSchema().getFieldCount());
+        Sort sort(join_res->reveal(), sort_def);
+        PlainTable *observed = sort.run();
 
+        expected->setSortOrder(sort_def);
 
+        ASSERT_EQ(*expected, *observed);
 
+        delete expected;
+    }
 
-    SortDefinition  sortDefinition = DataUtilities::getDefaultSortDefinition(join->getOutputSchema().getFieldCount());
-    Sort<emp::Bit> sort(join, sortDefinition);
-    PlainTable *observed = sort.run()->reveal();
-
-    expected->setSortOrder(sortDefinition);
-
-    ASSERT_EQ(*expected, *observed);
-
-    delete expected;
-    delete observed;
-
+    delete join;
 
 }
 
@@ -164,19 +167,18 @@ TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
     auto full_join = new BasicJoin (lineitem_input, customer_orders_join, lineitem_orders_predicate);
-
-
-
-
-    SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(full_join->getOutputSchema().getFieldCount());
-    Sort<emp::Bit> sort(full_join, sort_def);
-    PlainTable *observed = sort.run()->reveal();
-    expected->setSortOrder(sort_def);
+    auto join_res = full_join->run();
+    if(FLAGS_validation) {
+        SortDefinition  sort_def = DataUtilities::getDefaultSortDefinition(full_join->getOutputSchema().getFieldCount());
+        Sort sort(join_res->reveal(), sort_def);
+        PlainTable *observed = sort.run()->reveal();
+        expected->setSortOrder(sort_def);
 
         ASSERT_EQ(*expected, *observed);
         delete expected;
-        delete observed;
+    }
 
+    delete full_join;
 }
 
 

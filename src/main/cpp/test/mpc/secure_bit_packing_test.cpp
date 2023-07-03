@@ -25,6 +25,7 @@ DEFINE_int32(query, 1, "query number");
 DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 class SecureBitPackingTest : public EmpBaseTest {
 

@@ -17,6 +17,7 @@ DEFINE_int32(port, 54323, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 
 class SecureValueExpressionTest : public EmpBaseTest {
@@ -56,9 +57,10 @@ TEST_F(SecureValueExpressionTest, test_string_compare) {
     }
 
     emp::Bit gtEncrypted = (lhsEncrypted > rhsEncrypted);
-    bool gt =  gtEncrypted.reveal();
-    ASSERT_TRUE(gt);
-
+    if(FLAGS_validation) {
+        bool gt =  gtEncrypted.reveal();
+        ASSERT_TRUE(gt);
+    }
 }
 
 
@@ -82,11 +84,10 @@ TEST_F(SecureValueExpressionTest, test_emp_int_math) {
 
 
     SecureField result = (aliceEncryptedValue + bobEncryptedValue) * multiplierValue;
-
-    PlainField revealed = result.reveal(emp::PUBLIC);
-
-    ASSERT_EQ(revealed.getValue<int32_t>(), 19*2);
-
+    if(FLAGS_validation) {
+        PlainField revealed = result.reveal(emp::PUBLIC);
+        ASSERT_EQ(revealed.getValue<int32_t>(), 19 * 2);
+    }
 
 
 }
@@ -109,10 +110,11 @@ TEST_F(SecureValueExpressionTest, test_millionaires) {
 
 
     emp::Bit result = aliceEncryptedValue > bobEncryptedValue;
-    PlainField revealed = result.reveal(emp::PUBLIC);
+    if(FLAGS_validation) {
 
-    ASSERT_EQ(revealed.getValue<bool>(), false);
-
+        PlainField revealed = result.reveal(emp::PUBLIC);
+        ASSERT_EQ(revealed.getValue<bool>(), false);
+    }
 
 }
 

@@ -19,6 +19,7 @@ DEFINE_int32(port, 54325, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65454, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 
 class SecureFilterTest : public EmpBaseTest {};
@@ -33,19 +34,19 @@ TEST_F(SecureFilterTest, test_table_scan) {
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem WHERE l_orderkey <= 100  ORDER BY (1), (2)";
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
-    expected->setSortOrder(collation);
 
     SecureSqlInput input(db_name_, sql, false, collation);
+    auto scanned = input.run();
+    if(FLAGS_validation) {
+        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
+        expected->setSortOrder(collation);
 
+        PlainTable *revealed = scanned->reveal(emp::PUBLIC);
+        ASSERT_EQ(*expected, *revealed);
+        delete expected;
+        delete revealed;
 
-    PlainTable *revealed = input.run()->reveal(emp::PUBLIC);
-
-
-    ASSERT_EQ(*expected, *revealed);
-
-    delete expected;
-    delete revealed;
+    }
 
 }
 
@@ -78,15 +79,13 @@ TEST_F(SecureFilterTest, test_filter) {
 
 
     Filter<emp::Bit> filter(input, expression);
-
-    PlainTable *revealed = filter.run()->reveal(emp::PUBLIC);
-
-
-        ASSERT_EQ(*expected,  *revealed);
+    auto fiiltered = filter.run();
+    if(FLAGS_validation) {
+        PlainTable *revealed = fiiltered->reveal(emp::PUBLIC);
+        ASSERT_EQ(*expected, *revealed);
         delete expected;
         delete revealed;
-
-
+    }
 }
 
 

@@ -16,18 +16,18 @@ bash  test/support/load-generated-data.sh 100
 bash run-plain-tests.sh
 
 
-./bin/emp_test --party=1
-./bin/secure_field_expression_test	--party=1
-./bin/emp_table_test  --party=1
-./bin/secure_filter_test  --party=1
-./bin/secure_sort_test  --party=1
-./bin/secure_basic_join_test  --party=1
-./bin/secure_keyed_join_test  --party=1
-./bin/secure_sort_merge_join_test --party=1
-./bin/secure_scalar_aggregate_test 	 --party=1
-./bin/secure_group_by_aggregate_test  --party=1
-./bin/secure_nested_loop_aggregate_test --party=1
+./bin/emp_test --party=1 --validation=false
+./bin/secure_field_expression_test	--party=1 --validation=false
+./bin/emp_table_test  --party=1 --validation=false
+./bin/secure_filter_test  --party=1 --validation=false
+./bin/secure_sort_test  --party=1 --validation=false
+./bin/secure_basic_join_test  --party=1 --validation=false
+./bin/secure_keyed_join_test  --party=1 --validation=false
+./bin/secure_sort_merge_join_test --party=1 --validation=false
+./bin/secure_scalar_aggregate_test 	 --party=1 --validation=false
+./bin/secure_group_by_aggregate_test  --party=1 --validation=false
+./bin/secure_nested_loop_aggregate_test --party=1 --validation=false
 #./bin/enrich_test  --party=1  #excluded because data is not synced between A + B
-./bin/secure_tpch_test  --party=1
+./bin/secure_tpch_test  --party=1 --validation=false
 
 

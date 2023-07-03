@@ -113,15 +113,14 @@ TEST_F(EmpTableTest, bit_packing_test) {
     // tuple_cnt * (5+8+1 (for dummy tag) )*sizeof(emp::Bit)
     ASSERT_EQ(expected->getTupleCount() * 14 * TypeUtilities::getEmpBitSize(),  secret_shared->getTupleCount() * secret_shared->tuple_size_);
 
-    PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
-
-
-
-    ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
+    if(FLAGS_validation) {
+        PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+        ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
+        delete revealed;
+    }
 
     delete input;
     delete expected;
-    delete revealed;
     delete secret_shared;
 
 }
@@ -135,18 +134,19 @@ void EmpTableTest::secretShareAndValidate(const std::string & sql, const SortDef
     input->setSortOrder(sort);
     SecureTable *secret_shared = input->secretShare();
     manager_->flush();
-    PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
-    expected->setSortOrder(sort);
+    if(FLAGS_validation) {
+        PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, false);
+        expected->setSortOrder(sort);
 
+        ASSERT_EQ(*expected, *revealed);
+        delete revealed;
+        delete expected;
+    }
 
-    ASSERT_EQ(*expected, *revealed);
-
-    delete revealed;
     delete input;
     delete secret_shared;
-    delete expected;
 }
 
 
