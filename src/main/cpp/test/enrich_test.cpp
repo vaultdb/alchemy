@@ -12,12 +12,12 @@
 
 
 PlainTable *EnrichTest::getAgeStrataProjection(PlainTable *input, const bool & is_secret_shared) const {
-    FieldType ageStrataType = is_secret_shared ? FieldType::SECURE_INT : FieldType::INT;
+    FieldType age_strata_type = is_secret_shared ? FieldType::SECURE_INT : FieldType::INT;
 
     ExpressionMapBuilder<bool> builder(input->getSchema());
 
-    Expression<bool> *ageStrataExpression = new FunctionExpression<bool>(&EnrichTestSupport<bool>::projectAgeStrata, &EnrichTestSupport<bool>::projectAgeStrataTable, "age_strata", ageStrataType);
-    builder.addExpression(ageStrataExpression, 2);
+    Expression<bool> *age_strata_expr = new FunctionExpression<bool>(&EnrichTestSupport<bool>::projectAgeStrata, &EnrichTestSupport<bool>::projectAgeStrataTable, "age_strata", age_strata_type);
+    builder.addExpression(age_strata_expr, 2);
 
     for(uint32_t i = 0; i < 7; ++i)
         if(i != 2)
@@ -457,14 +457,16 @@ TEST_F(EnrichTest, testPatientCohort) {
                                     "    HAVING MAX(denom_excl) = 0 \n"
                                     "    ORDER BY p.patid, zip_marker, age_strata, sex, ethnicity, race ) \n"
                                     "  SELECT  zip_marker, age_strata, sex, ethnicity, race, numerator, CASE WHEN cnt > 1 THEN 1 else 0 END AS multisite, (numerator = 1 AND cnt> 1)::INT numerator_multisite \n"
-                                    "  FROM deduplicated";
+                                    "  FROM deduplicated ORDER BY (1), (2), (3), (4), (5), (6), (7)";
 
     SecureTable *pat_cohort = getPatientCohort();
+    // give it a collation w/o sorting on dummy tag to trigger sort in reveal()
+    auto collation = DataUtilities::getDefaultSortDefinition(7);
+    pat_cohort->setSortOrder(collation);
     PlainTable *observed = pat_cohort->reveal();
 
 
-    DataUtilities::removeDummies(observed);
-    validateTable(unioned_enrich_db_, expected_sql, SortDefinition(), observed);
+    validateTable(unioned_enrich_db_, expected_sql, collation, observed);
     delete observed;
 
 }

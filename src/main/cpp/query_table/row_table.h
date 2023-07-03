@@ -145,7 +145,6 @@ namespace  vaultdb {
 
 
 
-
         string getOstringStream() const override;
 
         inline int8_t *getFieldPtr(const int & row, const int & col) const {

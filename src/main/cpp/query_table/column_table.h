@@ -151,7 +151,6 @@ namespace  vaultdb {
         string toString(const bool &show_dummies = false) const override;
         string toString(const size_t &limit, const bool &show_dummies = false) const override;
 
-
     protected:
 
 

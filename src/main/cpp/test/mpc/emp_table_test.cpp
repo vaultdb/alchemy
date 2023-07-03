@@ -9,6 +9,7 @@ DEFINE_int32(port, 54334, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65428, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 using namespace vaultdb;
 
@@ -76,16 +77,13 @@ TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
 
     input->setSortOrder(collation);
     SecureTable *secret_shared = input->secretShare();
-    PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
-
-
-    PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, true);
-    expected->setSortOrder(collation);
-    DataUtilities::removeDummies(expected);
-
-    ASSERT_EQ(*expected, *revealed);
-
-
+    if(FLAGS_validation) {
+        PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+        PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, sql, true);
+        expected->setSortOrder(collation);
+        DataUtilities::removeDummies(expected);
+        ASSERT_EQ(*expected, *revealed);
+    }
 
 }
 

@@ -11,6 +11,7 @@ DEFINE_int32(port, 54325, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65446, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 
 using namespace vaultdb;
 
@@ -36,20 +37,20 @@ void EmpTest::test_packing(const emp::Integer & input) {
         protocol->unpack(unpacked.bits.data(), packed, unpacked.size());
 
         // the standard reveal method converts this to decimal.  Need to reveal it bitwise
-        bool *bools = new bool[bit_cnt];
-        protocol->reveal(bools, emp::PUBLIC, unpacked.bits.data(),  bit_cnt);
-        delete [] packed;
+        if(FLAGS_validation) {
+            bool *bools = new bool[bit_cnt];
+            protocol->reveal(bools, emp::PUBLIC, unpacked.bits.data(),  bit_cnt);
+            delete [] packed;
 
-        vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
-        decoded_bytes.resize(len + 1);
-        decoded_bytes[len+1] = '\0';
+            vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
+            decoded_bytes.resize(len + 1);
+            decoded_bytes[len+1] = '\0';
 
-        std::string decoded_string((char *) decoded_bytes.data());
-        delete [] bools;
+            std::string decoded_string((char *) decoded_bytes.data());
+            delete [] bools;
 
-        ASSERT_EQ("lithely regular deposits. fluffily          ", decoded_string);
-
-
+            ASSERT_EQ("lithely regular deposits. fluffily          ", decoded_string);
+        }
 }
 #else
 void EmpTest::test_packing(const emp::Integer & input) {
@@ -66,17 +67,24 @@ void EmpTest::test_packing(const emp::Integer & input) {
     // test encrypting an int from ALICE
     int32_t input = FLAGS_party == emp::ALICE ? 5 : 0;
     emp::Integer alice_secret_shared = emp::Integer(32, input, emp::ALICE);
-    int32_t revealed = alice_secret_shared.reveal<int32_t>(emp::PUBLIC);
+    int32_t revealed;
 
-    ASSERT_EQ(5, revealed);
+    if(FLAGS_validation){
+        revealed = alice_secret_shared.reveal<int32_t>(emp::PUBLIC);
+        ASSERT_EQ(5, revealed);
+
+    }
 
 
     // test encrypting int from BOB
     input = FLAGS_party == emp::ALICE ? 0 : 4;
     emp::Integer bob_secret_shared = emp::Integer(32, input, emp::BOB);
-    revealed = bob_secret_shared.reveal<int32_t>(emp::PUBLIC);
 
-    ASSERT_EQ(4, revealed);
+    if(FLAGS_validation) {
+        revealed = bob_secret_shared.reveal<int32_t>(emp::PUBLIC);
+        ASSERT_EQ(4, revealed);
+
+    }
 
 }
 
@@ -109,25 +117,19 @@ TEST_F(EmpTest, emp_test_varchar) {
     manager_->flush();
     delete [] bools;
 
+    if(FLAGS_validation) {
 
+        // the standard reveal method converts this to decimal.  Need to reveal it bitwise
+        bools = new bool[bit_cnt];
+        manager_->reveal(bools, PUBLIC, secret_shared.bits.data(), bit_cnt);
 
-    // the standard reveal method converts this to decimal.  Need to reveal it bitwise
-    bools = new bool[bit_cnt];
-
-    manager_->reveal(bools, PUBLIC, secret_shared.bits.data(), bit_cnt);
-
-
-
-    vector<int8_t> decoded_bytes =  Utilities::boolsToBytes(bools, bit_cnt);
-    decoded_bytes.resize(len + 1);
-    decoded_bytes[len + 1] = '\0';
-
-
-    std::string decoded_str((char *) decoded_bytes.data());
-    delete [] bools;
-
-
-    ASSERT_EQ(initial_string, decoded_str);
+        vector<int8_t> decoded_bytes = Utilities::boolsToBytes(bools, bit_cnt);
+        decoded_bytes.resize(len + 1);
+        decoded_bytes[len + 1] = '\0';
+        std::string decoded_str((char *) decoded_bytes.data());
+        delete[] bools;
+        ASSERT_EQ(initial_string, decoded_str);
+    }
 
     test_packing(secret_shared);
 
@@ -161,9 +163,10 @@ TEST_F(EmpTest, secret_share_table_one_column) {
     QuerySchema schema;
     schema.putField(QueryFieldDesc(0, "test", "test_table", FieldType::INT));
     schema.initializeFieldOffsets();
+    auto collation = DataUtilities::getDefaultSortDefinition(1);
 
     // set up expected result by concatenating input tables
-    PlainTable *expected = TableFactory<bool>::getTable(out_tuple_cnt, schema, storage_model_);
+    PlainTable *expected = TableFactory<bool>::getTable(out_tuple_cnt, schema, storage_model_, collation);
 
 
     for(uint32_t i = 0; i < all_input.size(); ++i) {
@@ -175,7 +178,7 @@ TEST_F(EmpTest, secret_share_table_one_column) {
     }
 
 
-    plain = TableFactory<bool>::getTable(in_tuple_cnt, schema, storage_model_);
+    plain = TableFactory<bool>::getTable(in_tuple_cnt, schema, storage_model_, collation);
 
     for(uint32_t i = 0; i < in_tuple_cnt; ++i) {
         Field<bool> val(FieldType::INT, input[i]);
@@ -185,14 +188,15 @@ TEST_F(EmpTest, secret_share_table_one_column) {
 
     SecureTable *secret_shared = plain->secretShare();
 
-    PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+    if(FLAGS_validation) {
+        PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
+        //verify output
+        ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
+        delete revealed;
 
-
-    //verify output
-    ASSERT_EQ(*expected, *revealed) << "Query table was not processed correctly.";
+    }
 
     delete plain;
-    delete revealed;
     delete expected;
     delete secret_shared;
 
@@ -226,30 +230,32 @@ TEST_F(EmpTest, sort_and_share_table_one_column) {
 
     SecureTable *secret_shared = input_table->secretShare();
 
+    if(FLAGS_validation) {
+        PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
 
-    PlainTable *revealed = secret_shared->reveal(emp::PUBLIC);
-
-    // set up expected result
-    std::vector<int32_t> input_tuples = alice_input;
-    input_tuples.insert(input_tuples.end(), bob_input.begin(), bob_input.end());
-    std::sort(input_tuples.begin(), input_tuples.end());
+        // set up expected result
+        std::vector<int32_t> input_tuples = alice_input;
+        input_tuples.insert(input_tuples.end(), bob_input.begin(), bob_input.end());
+        std::sort(input_tuples.begin(), input_tuples.end());
 
 
-    PlainTable *expected_table = TableFactory<bool>::getTable(input_tuples.size(), schema, storage_model_, sort_def);
+        PlainTable *expected_table = TableFactory<bool>::getTable(input_tuples.size(), schema, storage_model_,
+                                                                  sort_def);
 
-    for(uint32_t i = 0; i < input_tuples.size(); ++i) {
-        Field<bool> val(FieldType::INT, input_tuples[i]);
-        expected_table->setField(i, 0, val);
-        expected_table->setDummyTag(i, false);
+        for (uint32_t i = 0; i < input_tuples.size(); ++i) {
+            Field<bool> val(FieldType::INT, input_tuples[i]);
+            expected_table->setField(i, 0, val);
+            expected_table->setDummyTag(i, false);
 
+        }
+
+        //verify output
+        ASSERT_EQ(*expected_table, *revealed) << "Query table was not processed correctly.";
+        delete revealed;
+        delete expected_table;
     }
 
-    //verify output
-    ASSERT_EQ(*expected_table, *revealed) << "Query table was not processed correctly.";
-
     delete secret_shared;
-    delete revealed;
-    delete expected_table;
     delete input_table;
 
 
