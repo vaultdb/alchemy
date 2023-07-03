@@ -63,7 +63,6 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
 
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
 
-
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
     for(uint32_t i = 0; i < lhs_table->getTupleCount(); ++i) {
 
@@ -132,8 +131,6 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
         }
         this->output_->setDummyTag(i, dst_dummy_tag);
     }
-
-
 
     return this->output_;
 

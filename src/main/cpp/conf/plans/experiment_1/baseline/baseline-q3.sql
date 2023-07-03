@@ -1,5 +1,5 @@
 -- 0
-SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD ' AS dummy_tag
+SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag
 FROM customer
 ORDER BY c_custkey
 -- 1

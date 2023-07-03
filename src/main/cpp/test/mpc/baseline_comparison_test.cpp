@@ -34,7 +34,7 @@ protected:
     void runTest_handcode(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
 
-    int input_tuple_limit_ = 150;
+    int input_tuple_limit_ = -1;
 
 };
 
@@ -81,6 +81,8 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
     DataUtilities::removeDummies(observed_plain);
 
     ASSERT_EQ(*expected, *observed_plain);
+
+    ASSERT_TRUE(!observed_plain->empty()); // want all tests to produce output
     delete observed_plain;
     delete observed;
     delete expected;
@@ -170,7 +172,8 @@ TEST_F(BaselineComparisonTest, tpch_q3_baseline) {
 
     // dummy_tag (-1), 1 DESC, 2 ASC
     // aka revenue desc,  o.o_orderdate
-    SortDefinition expected_sort{ColumnSort(1, SortDirection::DESCENDING),
+    SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
+                                 ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
     runTest_baseline(3, "q3", expected_sort, unioned_db_);
 }
@@ -211,6 +214,7 @@ TEST_F(BaselineComparisonTest, tpch_q8_baseline) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     runTest_baseline(8, "q8", expected_sort, unioned_db_);
 }
+
 
 TEST_F(BaselineComparisonTest, tpch_q8_handcode) {
 

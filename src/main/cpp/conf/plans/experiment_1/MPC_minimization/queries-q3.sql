@@ -3,7 +3,7 @@ SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, NOT o_orderdate < DAT
 FROM orders
 ORDER BY o_orderdate, o_shippriority
 -- 1, collation: (0 ASC)
-SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD ' AS dummy_tag
+SELECT c_custkey, NOT c_mktsegment = 'HOUSEHOLD' AS dummy_tag
 FROM customer
 ORDER BY c_custkey
 -- 4, collation: (0 ASC)
