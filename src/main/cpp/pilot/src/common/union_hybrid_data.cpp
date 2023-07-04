@@ -101,13 +101,6 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secretSharesFi
     Integer shared_data = alice ^ bob;
     // remove padding
     shared_data.bits.resize(dst_bit_cnt);
-    //    vector<int8_t>  bits_int(shared_data.size() * TypeUtilities::getEmpBitSize());
-//    // first 8 bits are storage header, reveal them here
-//
-//    *(bits_int.data()) = (int8_t) StorageModel::ROW_STORE;
-//    int8_t *write_ptr = bits_int.data() + 1;
-//    memcpy(write_ptr, (int8_t *) shared_data.bits.data(),  shared_data.size() * TypeUtilities::getEmpBitSize());
-
     SecureTable *shared_table = RowTable<Bit>::deserialize(secure_schema, shared_data.bits);
 
 

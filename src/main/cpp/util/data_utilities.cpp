@@ -101,7 +101,6 @@ vector<int8_t> DataUtilities::readFile(const std::string & filename) {
     std::ifstream input(filename, std::ios::in | std::ios::binary);
     input.read((char *) shares, file_size);
     input.close();
-    cout << "Read " << file_size << " bytes from " << filename << endl;
     return file_bytes;
 
 }

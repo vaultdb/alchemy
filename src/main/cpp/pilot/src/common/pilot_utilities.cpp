@@ -48,8 +48,8 @@ std::string PilotUtilities::getRollupExpectedResultsSql(const std::string &group
 SecureTable *PilotUtilities::rollUpAggregate(SecureTable *input, const int &ordinal)  {
 
     SortDefinition sortDefinition{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(ordinal, SortDirection::ASCENDING)};
-    Sort<Bit> sort(input, sortDefinition);
-    SecureTable *sorted = sort.run();
+    auto sort = new Sort(input->clone(), sortDefinition);
+
 
     std::vector<int32_t> groupByCols{0, ordinal}; // 0 for study_year
     // ordinals 0...4 are group-by cols in input schema
@@ -60,9 +60,9 @@ SecureTable *PilotUtilities::rollUpAggregate(SecureTable *input, const int &ordi
             ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
-    GroupByAggregate rollupStrata(sorted, groupByCols, aggregators );
+    GroupByAggregate rollupStrata(sort, groupByCols, aggregators );
 
-    return rollupStrata.run();
+    return rollupStrata.run()->clone();
 
 
 }
@@ -76,10 +76,12 @@ void PilotUtilities::validateInputTable(const std::string & dbName, const std::s
 
     // sort the inputs
     // ops deleted later using Operator framework
-    Sort sort(testTable, expectedSortDefinition);
+    Sort sort(testTable->clone(), expectedSortDefinition);
     PlainTable *observedTable = sort.run();
     DataUtilities::removeDummies(observedTable);
 
+    cout << "Expected table:  " << *expectedTable << endl;
+    cout << "Observed table:  " << *observedTable << endl;
 
     bool res = (*expectedTable == *observedTable);
     if(!res) {

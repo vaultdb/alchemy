@@ -168,7 +168,7 @@ void EnrichHtnQuery::aggregatePatients(SecureTable *src) {
     // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
     auto aggregator = new GroupByAggregate (sort, groupByCols, aggregators);
     data_cube_ = aggregator->run();
-    cout << "Data cube at " << (size_t) data_cube_ << endl;
+
     if(cardinality_bound_ < data_cube_->getTupleCount()) {
 
         Shrinkwrap wrapper(aggregator, cardinality_bound_);
@@ -177,6 +177,9 @@ void EnrichHtnQuery::aggregatePatients(SecureTable *src) {
         cout << "Runtime for aggregate #2 (data cube): " << (runtime + 0.0) * 1e6 * 1e-9 << " secs."
                           << endl;
     }
+    else
+        data_cube_ = data_cube_->clone();
+
 
 
 }
@@ -223,16 +226,16 @@ SecureTable *EnrichHtnQuery::aggregatePartialPatientCounts( SecureTable *src, co
 void EnrichHtnQuery::unionWithPartialAggregates(vector<SecureTable *> partials) {
     SecureTable *summed_partials = addPartialAggregates(partials);
 
-    Union<emp::Bit> union_op(data_cube_, summed_partials);
-    data_cube_ = union_op.run();
+    auto union_op = new Union(data_cube_, summed_partials);
+    data_cube_ = union_op->run();
 
 
     // basically a rerun of aggregatePatients
     // TODO: clean this up!
 
     // sort it on cols [0,5)
-    Sort sort(data_cube_, DataUtilities::getDefaultSortDefinition(5));
-    SecureTable *sorted = sort.run();
+    auto sort = new Sort(union_op, DataUtilities::getDefaultSortDefinition(5));
+    sort->run();
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
     std::vector<ScalarAggregateDefinition> aggregators {
@@ -245,14 +248,15 @@ void EnrichHtnQuery::unionWithPartialAggregates(vector<SecureTable *> partials) 
 
     // output schema:
     // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-    GroupByAggregate aggregator(sorted, groupByCols, aggregators);
-    data_cube_ = aggregator.run();
-    delete sorted;
+    auto aggregator = new GroupByAggregate(sort, groupByCols, aggregators);
+    data_cube_ = aggregator->run();
 
     if(cardinality_bound_ < data_cube_->getTupleCount()) {
         Shrinkwrap wrapper(data_cube_, cardinality_bound_);
-        data_cube_ = wrapper.run();
+        data_cube_ = wrapper.run()->clone();
     }
+    else
+        data_cube_ = data_cube_->clone();
 
 
 

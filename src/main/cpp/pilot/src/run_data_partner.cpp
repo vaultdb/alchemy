@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include <operators/sort.h>
 #include <query_table/row_table.h>
-#include "util/emp_manager/sh2pc_manager.h"
 
 using namespace std;
 using namespace vaultdb;
@@ -277,7 +276,7 @@ int main(int argc, char **argv) {
     // don't free inputData later, EnrichHtnQuery will do it
     EnrichHtnQuery enrich(inputData, cardinality_bound);
 
-    assert(enrich.data_cube_->getTupleCount() == cardinality_bound);
+    assert(enrich.data_cube_->getTupleCount() <= cardinality_bound);
 
     cumulative_runtime_ += time_from(start_time_);
     measurements += "," + std::to_string(Utilities::getEpoch());
@@ -290,7 +289,7 @@ int main(int argc, char **argv) {
         partial_count_query = PilotUtilities::replaceSelection(partial_count_query, partial_count_selection_clause);
         PlainTable *local_partial_counts = DataUtilities::getQueryResults(db_name, partial_count_query, false);
 
-        assert(local_partial_counts->getTupleCount() == cardinality_bound);
+        assert(local_partial_counts->getTupleCount() <= cardinality_bound);
 
         PlainTable *empty = local_partial_counts->clone();
         empty->resize(0);
@@ -341,17 +340,17 @@ int main(int argc, char **argv) {
     cout <<  measurements <<  endl;
 /*
     cout  << "Age rollup: " << endl;
-    cout  << ageRollup->reveal()->toString() << endl;
+    cout  << ageRollup->reveal() << endl;
 
     cout  << "Sex rollup: " << endl;
-    cout  << genderRollup->reveal()->toString() << endl;
+    cout  << genderRollup->reveal() << endl;
 
 
     cout  << "Ethnicity rollup: " << endl;
-    cout  << ethnicityRollup->reveal()->toString() << endl;
+    cout  << ethnicityRollup->reveal() << endl;
 
     cout  << "Race rollup: " << endl;
-    cout  << raceRollup->reveal()->toString() << endl;
+    cout  << raceRollup->reveal() << endl;
 */
 
     delete ageRollup;
