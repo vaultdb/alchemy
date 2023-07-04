@@ -19,27 +19,27 @@ PlainTable *CsvReader::readCsv(const string &filename, const QuerySchema &schema
 
 
 
-vector<string> CsvReader::split(const string &tupleEntry) {
+vector<string> CsvReader::split(const string &tuple_entry) {
     std::vector<std::string> tokens, result;
-    std::string latestEntry;
-    boost::split(tokens, tupleEntry,boost::is_any_of(","));
+    std::string latest_entry;
+    boost::split(tokens, tuple_entry,boost::is_any_of(","));
 
     // make a pass and merge any strings
     for(size_t i = 0; i < tokens.size(); ++i) {
 
         std::string token = tokens[i];
-        if(token[0] == '"' && latestEntry.empty()) {  // starts with " and the beginning of an entry
-            latestEntry =  token;
+        if(token[0] == '"' && latest_entry.empty()) {  // starts with " and the beginning of an entry
+            latest_entry =  token;
 
         }
-        else if(latestEntry.empty()) {
+        else if(latest_entry.empty()) {
             result.push_back(token);
         }
         else  {
-            latestEntry += "," + token;
+            latest_entry += "," + token;
             if(*(--token.end()) == '"') { // if it is the end of the string
-                result.push_back(latestEntry.substr(1, latestEntry.length() - 2)); // chop off leading and trailing double-quotes
-                latestEntry.clear();
+                result.push_back(latest_entry.substr(1, latest_entry.length() - 2)); // chop off leading and trailing double-quotes
+                latest_entry.clear();
             }
         }
     } // end for

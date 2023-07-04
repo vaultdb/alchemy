@@ -84,11 +84,9 @@ int main(int argc, char **argv) {
     } // end parsing
 
 
-
-
-    setup_plain_prot(false, "");
-
     string selection_query = PilotUtilities::replaceSelection(query, selection_clause);
+
+    PilotUtilities::setupSystemConfiguration();
     PilotUtilities::secretShareFromQuery(db_name, selection_query, dst_root);
 
 }

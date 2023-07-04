@@ -42,8 +42,31 @@ QueryFieldDesc::QueryFieldDesc(const int & anOrdinal, const string &n, const str
 }
 
 
+// spec is of the form "table_name.field_name:field_type"
+// table name is optional
+QueryFieldDesc::QueryFieldDesc(const int & ordinal, const string & field_spec) : ordinal_(ordinal), string_length_(0) {
 
+    auto dot_pos = field_spec.find('.');
+    auto colon_pos = field_spec.find(':');
+    if (dot_pos != string::npos) {
+        assert(dot_pos < colon_pos);
+        table_name_ = field_spec.substr(0, dot_pos);
+        field_name_ = field_spec.substr(dot_pos + 1, colon_pos - dot_pos - 1);
+    } else {
+        field_name_ = field_spec.substr(0, colon_pos);
+    }
 
+    string type_str = field_spec.substr(colon_pos + 1);
+    if(type_str.find('(') != string::npos) {
+        auto open_paren_pos = type_str.find('(');
+        auto close_paren_pos = type_str.find(')');
+        string_length_ = std::stoi(type_str.substr(open_paren_pos + 1, close_paren_pos - open_paren_pos - 1));
+        type_str = type_str.substr(0, open_paren_pos);
+    }
+
+    type_ = TypeUtilities::getTypeFromString(type_str);
+    initializeFieldSize();
+}
 
 
 std::ostream &vaultdb::operator<<(std::ostream &os,  const QueryFieldDesc &desc)  {
@@ -57,6 +80,10 @@ std::ostream &vaultdb::operator<<(std::ostream &os,  const QueryFieldDesc &desc)
         }
     }
 
+    if(desc.getTableName().empty()) {
+        os << " " << desc.getName();
+        return os;
+    }
     os << " " << desc.getTableName() << "." << desc.getName();
     return os;
 }
@@ -88,17 +115,11 @@ bool QueryFieldDesc::operator==(const QueryFieldDesc& other) const {
         return false;
     }
 
-
-
-
-
     if(other.getOrdinal() != other.getOrdinal()) {
-
         return false;
     }
 
     if(other.string_length_ != this->string_length_) {
-
         return false;
     }
 
@@ -167,4 +188,20 @@ bool QueryFieldDesc::bitPacked() const {
      return field_size_ != TypeUtilities::getTypeSize(type_);
 }
 
+
+string QueryFieldDesc::prettyPrint() const {
+    stringstream ss;
+    if(table_name_ != "") {
+        ss << table_name_ << ".";
+    }
+
+    ss << field_name_ << ":";
+
+    ss  << TypeUtilities::getTypeString(type_);
+    if(type_ == FieldType::STRING || type_ == FieldType::SECURE_STRING) {
+        ss << "(" << string_length_ << ")";
+    }
+
+    return ss.str();
+}
 

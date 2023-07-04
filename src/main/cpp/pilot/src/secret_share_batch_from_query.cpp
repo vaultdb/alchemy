@@ -94,8 +94,7 @@ int main(int argc, char **argv) {
     } // end parsing
 
 
-
-    setup_plain_prot(false, "");
+    PilotUtilities::setupSystemConfiguration();
 
 
 
@@ -107,7 +106,6 @@ int main(int argc, char **argv) {
         PilotUtilities::secretShareFromQuery(db_name, batch_query, batch_dst_root);
     }
 
-    finalize_plain_prot();
 
 }
 

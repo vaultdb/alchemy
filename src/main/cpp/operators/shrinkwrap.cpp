@@ -35,8 +35,8 @@ QueryTable<B>*Shrinkwrap<B>::runSelf() {
         dst_sort.push_back(c);
     }
 
-    Sort<B> sort(input, dst_sort);
-    QueryTable<B> *output_ = sort.run();
+    Sort<B> sort(input->clone(), dst_sort);
+    QueryTable<B> *output_ = sort.run()->clone();
 
     output_->resize(cardinality_bound_);
     return output_;

@@ -3,6 +3,7 @@
 #include <operators/group_by_aggregate.h>
 #include <util/data_utilities.h>
 #include <data/csv_reader.h>
+#include "util/emp_manager/sh2pc_manager.h"
 
 using namespace vaultdb;
 
@@ -47,8 +48,8 @@ std::string PilotUtilities::getRollupExpectedResultsSql(const std::string &group
 SecureTable *PilotUtilities::rollUpAggregate(SecureTable *input, const int &ordinal)  {
 
     SortDefinition sortDefinition{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(ordinal, SortDirection::ASCENDING)};
-    Sort<Bit> sort(input, sortDefinition);
-    SecureTable *sorted = sort.run();
+    auto sort = new Sort(input->clone(), sortDefinition);
+
 
     std::vector<int32_t> groupByCols{0, ordinal}; // 0 for study_year
     // ordinals 0...4 are group-by cols in input schema
@@ -59,9 +60,9 @@ SecureTable *PilotUtilities::rollUpAggregate(SecureTable *input, const int &ordi
             ScalarAggregateDefinition(8, AggregateId::SUM, "denominator_multisite")
     };
 
-    GroupByAggregate rollupStrata(sorted, groupByCols, aggregators );
+    GroupByAggregate rollupStrata(sort, groupByCols, aggregators );
 
-    return rollupStrata.run();
+    return rollupStrata.run()->clone();
 
 
 }
@@ -75,10 +76,12 @@ void PilotUtilities::validateInputTable(const std::string & dbName, const std::s
 
     // sort the inputs
     // ops deleted later using Operator framework
-    Sort sort(testTable, expectedSortDefinition);
+    Sort sort(testTable->clone(), expectedSortDefinition);
     PlainTable *observedTable = sort.run();
     DataUtilities::removeDummies(observedTable);
 
+    cout << "Expected table:  " << *expectedTable << endl;
+    cout << "Observed table:  " << *observedTable << endl;
 
     bool res = (*expectedTable == *observedTable);
     if(!res) {
@@ -94,10 +97,11 @@ void
 PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema &plain_schema, const string &dst_root) {
     PlainTable *inputTable = CsvReader::readCsv(src_csv, plain_schema);
     SecretShares shares = inputTable->generateSecretShares();
+    QuerySchema dst_schema = QuerySchema::toSecure(plain_schema);
 
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
     DataUtilities::writeFile(dst_root + ".bob", shares.second);
-
+    DataUtilities::writeFile(dst_root + ".schema",  dst_schema.prettyPrint());
     delete inputTable;
 
 }
@@ -106,16 +110,11 @@ void PilotUtilities::secretShareFromQuery(const string &db_name, const string &q
     PlainTable *table = DataUtilities::getQueryResults(db_name, query, false);
     SecretShares shares = table->generateSecretShares();
 
-    cout << "Secret sharing " << table->getTupleCount() << " rows.\n"; //" tuples from query " << query << " on " << db_name << endl;
-
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
     DataUtilities::writeFile(dst_root + ".bob", shares.second);
 
     string schema_filename = dst_root + ".schema";
-    std::stringstream schema_str;
-    schema_str << table->getSchema() << endl;
-    string schema_desc = schema_str.str();
-    DataUtilities::writeFile(schema_filename, schema_desc);
+    DataUtilities::writeFile(schema_filename, table->getSchema().prettyPrint());
 
     delete table;
 }
@@ -211,4 +210,21 @@ void PilotUtilities::redactCellCounts(SecureTable *input, const int &min_cell_cn
 
     }
 
+}
+
+void PilotUtilities::setupSystemConfiguration(int & party, string & host, int & port) {
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+    conf.emp_mode_ = EmpMode::SH2PC;
+    conf.setStorageModel(StorageModel::ROW_STORE);
+    SH2PCManager *manager = new SH2PCManager(party == ALICE ? "" : host, party, port);
+    conf.emp_manager_ = manager;
+}
+
+void PilotUtilities::setupSystemConfiguration() {
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+    conf.emp_mode_ = EmpMode::SH2PC;
+    conf.setStorageModel(StorageModel::ROW_STORE);
+
+    SH2PCManager *manager = new SH2PCManager();
+    conf.emp_manager_ = manager;
 }

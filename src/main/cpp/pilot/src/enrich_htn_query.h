@@ -19,7 +19,7 @@ namespace  vaultdb {
 
         EnrichHtnQuery() {}; // placeholder
         ~EnrichHtnQuery() {
-            if(data_cube_)
+            if(data_cube_ != nullptr)
                 delete data_cube_;
         }
 

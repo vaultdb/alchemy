@@ -172,32 +172,31 @@ template<typename B>
 SecretShares RowTable<B>::generateSecretShares() const {
     vector<int8_t> serialized = this->serialize();
     int8_t *secrets = serialized.data();
-    size_t sharesSize = serialized.size();
+    size_t share_size_bytes = serialized.size();
 
-    vector<int8_t> aliceShares, bobShares;
-    aliceShares.resize(sharesSize);
-    bobShares.resize(sharesSize);
-    int8_t *alice = aliceShares.data();
-    int8_t *bob = bobShares.data();
+    vector<int8_t> alice_shares, bob_shares;
+    alice_shares.resize(share_size_bytes);
+    bob_shares.resize(share_size_bytes);
+    int8_t *alice = alice_shares.data();
+    int8_t *bob = bob_shares.data();
 
     emp::PRG prg; // initializes with a random seed
 
+    prg.random_data(alice, share_size_bytes);
 
-    prg.random_data(alice, sharesSize);
-
-    for(size_t i = 0; i < sharesSize; ++i) {
+    for(size_t i = 0; i < share_size_bytes; ++i) {
         bob[i] = alice[i] ^ secrets[i];
     }
 
 
-    return SecretShares(aliceShares, bobShares);
+    return SecretShares(alice_shares, bob_shares);
 }
-
 
 
 
 template <typename B>
 RowTable<B> *RowTable<B>::deserialize(const QuerySchema &schema, const vector<int8_t> & table_bytes) {
+
     const int8_t *read_ptr = table_bytes.data();
     assert(*read_ptr == (int8_t) StorageModel::ROW_STORE); // confirm this was encoded for row store
     ++read_ptr;
@@ -210,6 +209,30 @@ RowTable<B> *RowTable<B>::deserialize(const QuerySchema &schema, const vector<in
 
     auto result = new RowTable<B>(tuple_cnt, schema);
     memcpy(result->tuple_data_.data(), read_ptr, table_size);
+
+    return result;
+}
+
+// only for use in SH2PC mode
+template <typename B>
+RowTable<B> *RowTable<B>::deserialize(const QuerySchema &schema, const vector<Bit> & table_bits) {
+
+    // reveal first byte to confirm that we are reading a row store instance
+    const Bit *read_ptr = table_bits.data();
+    Integer i(8, 0, PUBLIC);
+    memcpy(i.bits.data(), read_ptr, 8*TypeUtilities::getEmpBitSize());
+    int storage_model = i.reveal<int>(PUBLIC);
+    assert(storage_model == (int) StorageModel::ROW_STORE); // confirm this was encoded for row store
+    read_ptr += 8;
+
+    uint32_t table_size_bits = table_bits.size() - 8;
+    uint32_t row_size_bits = schema.size();
+    uint32_t tuple_cnt = table_size_bits / row_size_bits;
+
+    assert(table_size_bits % row_size_bits == 0);
+
+    auto result = new RowTable<B>(tuple_cnt, schema);
+    memcpy(result->tuple_data_.data(), read_ptr, table_size_bits * TypeUtilities::getEmpBitSize());
 
     return result;
 

@@ -21,8 +21,6 @@ EnrichHtnQuery::EnrichHtnQuery(SecureTable *input, const size_t & cardinality) :
     cout << "Completed deduplication and exclusion at epoch " << Utilities::getEpoch() << endl;
     aggregatePatients(projected);
 
-    delete filtered;
-    delete projected;
 
 }
 
@@ -38,8 +36,7 @@ SecureTable *EnrichHtnQuery::filterPatients() {
     SortDefinition unionSortDefinition = DataUtilities::getDefaultSortDefinition(6);
 
     // destructor handled within Operator
-    Sort<emp::Bit> sortUnioned(input_table_, unionSortDefinition);
-    SecureTable *sorted = sortUnioned.run();
+    auto  sortUnioned = new Sort(input_table_, unionSortDefinition);
 
     
     // aggregate to deduplicate
@@ -56,12 +53,11 @@ SecureTable *EnrichHtnQuery::filterPatients() {
             ScalarAggregateDefinition(8, AggregateId::MAX, "denom_excl")  // #9
     };
 
-    GroupByAggregate unionedPatients(sorted, groupByCols, aggregators );
-    SecureTable *aggregated = unionedPatients.run();
+    auto unionedPatients = new GroupByAggregate (sortUnioned, groupByCols, aggregators );
+    SecureTable *aggregated = unionedPatients->run();
 
     double runtime = emp::time_from(start_time);
     cout << "Runtime for aggregate #1 (patid): " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
-    delete sorted;
 
     // filter ones with denom_excl = 1
     // *** Filter
@@ -75,15 +71,14 @@ SecureTable *EnrichHtnQuery::filterPatients() {
 
     start_time = emp::clock_start();
 
-    Filter inclusionCohort(aggregated, equality_expr);
+    Filter inclusionCohort(unionedPatients, equality_expr);
 
     SecureTable *output = inclusionCohort.run()->clone();
     runtime = emp::time_from(start_time);
     cout << "Runtime for filter: " <<  (runtime+0.0)*1e6*1e-9 << " secs." << endl;
 
 
-    delete aggregated;
-    return output;
+    return output->clone();
 
 
 
@@ -154,9 +149,8 @@ void EnrichHtnQuery::aggregatePatients(SecureTable *src) {
     auto start_time = emp::clock_start();
 
     // sort it on cols [0,6)
-    Sort sort(src, DataUtilities::getDefaultSortDefinition(5));
-    SecureTable *sorted = sort.run();
-    delete src;
+    auto sort = new Sort(src, DataUtilities::getDefaultSortDefinition(5));
+    SecureTable *sorted = sort->run();
 
     cout << "Finished sort for data cube.\n";
 
@@ -172,18 +166,21 @@ void EnrichHtnQuery::aggregatePatients(SecureTable *src) {
 
     // output schema:
     // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-    GroupByAggregate aggregator(sorted, groupByCols, aggregators);
-    data_cube_ = aggregator.run();
-    delete sorted;
+    auto aggregator = new GroupByAggregate (sort, groupByCols, aggregators);
+    data_cube_ = aggregator->run();
 
     if(cardinality_bound_ < data_cube_->getTupleCount()) {
 
-        Shrinkwrap wrapper(data_cube_, cardinality_bound_);
-        data_cube_ = wrapper.run();
+        Shrinkwrap wrapper(aggregator, cardinality_bound_);
+        data_cube_ = wrapper.run()->clone();
         double runtime = emp::time_from(start_time);
         cout << "Runtime for aggregate #2 (data cube): " << (runtime + 0.0) * 1e6 * 1e-9 << " secs."
                           << endl;
     }
+    else
+        data_cube_ = data_cube_->clone();
+
+
 
 }
 
@@ -194,8 +191,8 @@ SecureTable *EnrichHtnQuery::aggregatePartialPatientCounts( SecureTable *src, co
 
 
     // sort it on cols [0,6)
-    Sort sort(src, DataUtilities::getDefaultSortDefinition(5));
-    SecureTable *sorted = sort.run();
+    auto sort = new Sort(src, DataUtilities::getDefaultSortDefinition(5));
+    SecureTable *sorted = sort->run();
 
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
@@ -209,19 +206,18 @@ SecureTable *EnrichHtnQuery::aggregatePartialPatientCounts( SecureTable *src, co
 
     // output schema:
     // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-    GroupByAggregate aggregator(sorted, groupByCols, aggregators);
-    SecureTable *dst = aggregator.run();
-    delete sorted;
+    auto aggregator = new GroupByAggregate(sort, groupByCols, aggregators);
+    SecureTable *dst = aggregator->run();
 
 
-    Shrinkwrap wrapper(dst, cardinality_bound);
+    Shrinkwrap wrapper(aggregator, cardinality_bound);
     dst = wrapper.run();
     double runtime = emp::time_from(start_time);
 
 
     cout << "Runtime for partial counts rollup: " <<  (runtime+0.0)*1e6*1e-9 << " secs at epoch " <<  Utilities::getEpoch() << endl;
 
-    return dst;
+    return dst->clone();
 
 }
 
@@ -230,16 +226,16 @@ SecureTable *EnrichHtnQuery::aggregatePartialPatientCounts( SecureTable *src, co
 void EnrichHtnQuery::unionWithPartialAggregates(vector<SecureTable *> partials) {
     SecureTable *summed_partials = addPartialAggregates(partials);
 
-    Union<emp::Bit> union_op(data_cube_, summed_partials);
-    data_cube_ = union_op.run();
+    auto union_op = new Union(data_cube_, summed_partials);
+    data_cube_ = union_op->run();
 
 
     // basically a rerun of aggregatePatients
     // TODO: clean this up!
 
     // sort it on cols [0,5)
-    Sort sort(data_cube_, DataUtilities::getDefaultSortDefinition(5));
-    SecureTable *sorted = sort.run();
+    auto sort = new Sort(union_op, DataUtilities::getDefaultSortDefinition(5));
+    sort->run();
 
     std::vector<int32_t> groupByCols{0, 1, 2, 3, 4};
     std::vector<ScalarAggregateDefinition> aggregators {
@@ -252,14 +248,15 @@ void EnrichHtnQuery::unionWithPartialAggregates(vector<SecureTable *> partials) 
 
     // output schema:
     // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6), numerator_multisite (7), denominator_multisite (8)
-    GroupByAggregate aggregator(sorted, groupByCols, aggregators);
-    data_cube_ = aggregator.run();
-    delete sorted;
+    auto aggregator = new GroupByAggregate(sort, groupByCols, aggregators);
+    data_cube_ = aggregator->run();
 
     if(cardinality_bound_ < data_cube_->getTupleCount()) {
         Shrinkwrap wrapper(data_cube_, cardinality_bound_);
-        data_cube_ = wrapper.run();
+        data_cube_ = wrapper.run()->clone();
     }
+    else
+        data_cube_ = data_cube_->clone();
 
 
 

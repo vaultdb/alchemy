@@ -12,7 +12,6 @@
 #include <operators/sort.h>
 #include <query_table/row_table.h>
 
-
 using namespace std;
 using namespace vaultdb;
 using namespace emp;
@@ -30,8 +29,7 @@ int min_cell_count_ = 11;
 // roll up one group-by strata at a time
 // input schema:
 // study_year (0), age_strata (1), sex (2), ethnicity (3) , race (4), numerator_cnt (5), denominator_cnt (6)
-SecureTable *
-runRollup(int idx, string colName, int party, SecureTable *data_cube, const std::string & selection_clause, const string &output_path) {
+SecureTable *runRollup(int idx, string colName, int party, SecureTable *data_cube, const std::string & selection_clause, const string &output_path) {
     auto start_time = emp::clock_start();
     SecureTable *stratified = PilotUtilities::rollUpAggregate(data_cube, idx);
 
@@ -228,13 +226,10 @@ int main(int argc, char **argv) {
 
 
     string output_path = Utilities::getCurrentWorkingDirectory() + "/pilot/secret_shares/xor/";
-    // TODO: parameterize the default logging level
-//    Logger::setup(logfile_prefix);
-//    auto logger = vaultdb_logger::get();
+    PilotUtilities::setupSystemConfiguration(party, host, port);
 
     QuerySchema schema = SharedSchema::getInputSchema();
-    NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
-    setup_semi_honest(netio, party,  port);
+
     cout << "Starting epoch " << Utilities::getEpoch() << endl;
     auto e2e_start_time = emp::clock_start();
 
@@ -247,7 +242,7 @@ int main(int argc, char **argv) {
     // expected order: alice, bob, chi
 
     patient_input_query = PilotUtilities::replaceSelection(patient_input_query, selection_clause);
-    SecureTable *inputData = UnionHybridData::unionHybridData(db_name, patient_input_query, remote_patient_file, netio, party);
+    SecureTable *inputData = UnionHybridData::unionHybridData(db_name, patient_input_query, remote_patient_file);
 
     cumulative_runtime_ = time_from(start_time_);
 
@@ -281,7 +276,7 @@ int main(int argc, char **argv) {
     // don't free inputData later, EnrichHtnQuery will do it
     EnrichHtnQuery enrich(inputData, cardinality_bound);
 
-    assert(enrich.data_cube_->getTupleCount() == cardinality_bound);
+    assert(enrich.data_cube_->getTupleCount() <= cardinality_bound);
 
     cumulative_runtime_ += time_from(start_time_);
     measurements += "," + std::to_string(Utilities::getEpoch());
@@ -294,7 +289,7 @@ int main(int argc, char **argv) {
         partial_count_query = PilotUtilities::replaceSelection(partial_count_query, partial_count_selection_clause);
         PlainTable *local_partial_counts = DataUtilities::getQueryResults(db_name, partial_count_query, false);
 
-        assert(local_partial_counts->getTupleCount() == cardinality_bound);
+        assert(local_partial_counts->getTupleCount() <= cardinality_bound);
 
         PlainTable *empty = local_partial_counts->clone();
         empty->resize(0);
@@ -309,7 +304,7 @@ int main(int argc, char **argv) {
         }
 
 
-        chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain(alice->getSchema()), party);
+        chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain(alice->getSchema()));
 
         std::vector<SecureTable *> partial_aggs { alice, bob, chi};
 
@@ -345,21 +340,18 @@ int main(int argc, char **argv) {
     cout <<  measurements <<  endl;
 /*
     cout  << "Age rollup: " << endl;
-    cout  << ageRollup->reveal()->toString() << endl;
+    cout  << ageRollup->reveal() << endl;
 
     cout  << "Sex rollup: " << endl;
-    cout  << genderRollup->reveal()->toString() << endl;
+    cout  << genderRollup->reveal() << endl;
 
 
     cout  << "Ethnicity rollup: " << endl;
-    cout  << ethnicityRollup->reveal()->toString() << endl;
+    cout  << ethnicityRollup->reveal() << endl;
 
     cout  << "Race rollup: " << endl;
-    cout  << raceRollup->reveal()->toString() << endl;
+    cout  << raceRollup->reveal() << endl;
 */
-    emp::finalize_semi_honest();
-
-    delete netio;
 
     delete ageRollup;
     delete genderRollup;

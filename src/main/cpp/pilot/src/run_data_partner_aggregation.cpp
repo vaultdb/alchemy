@@ -140,10 +140,8 @@ int main(int argc, char **argv) {
     //auto logger = vaultdb_logger::get();
 
 
+    PilotUtilities::setupSystemConfiguration(party, host, port);
 
-
-    NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
-    setup_semi_honest(netio, party,  port);
     uint64_t epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     cout<< "Starting epoch " << epoch << endl;
 
@@ -173,7 +171,7 @@ int main(int argc, char **argv) {
 
 
 
-    chi = UnionHybridData::readSecretSharedInput(secret_share_file, QuerySchema::toPlain(alice->getSchema()), party);
+    chi = UnionHybridData::readSecretSharedInput(secret_share_file, QuerySchema::toPlain(alice->getSchema()));
 
     assert(alice->getTupleCount() == bob->getTupleCount());
     assert(alice->getTupleCount() == chi->getTupleCount());
@@ -243,8 +241,6 @@ int main(int argc, char **argv) {
 
 */
 
-    emp::finalize_semi_honest();
-    delete netio;
     delete ageRollup;
     delete raceRollup;
     delete genderRollup;

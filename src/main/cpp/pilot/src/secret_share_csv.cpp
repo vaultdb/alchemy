@@ -11,21 +11,22 @@ using namespace vaultdb;
 int main(int argc, char **argv) {
     // usage: secret_share_csv <src file> <destination root>
     // paths are relative to $VAULTDB_ROOT/src/main/cpp
-    // e.g., ./bin/secret_share_csv pilot/test/input/chi-patient.csv pilot/test/output/chi-patient
+    // e.g., ./bin/secret_share_csv pilot/test/input/chi-patient.csv pilot/test/input/chi-patient.schema  pilot/test/output/chi-patient
     // writes to pilot/test/output/chi-patient.alice pilot/secret_shares/output/chi-patient.bob
 
-    if (argc < 3) {
-        cout << "usage: secret_share_csv <src file> <destination root>" << endl;
+    if (argc < 4) {
+        cout << "usage: secret_share_csv <src file> <schema file> <destination root>" << endl;
         exit(-1);
     }
 
-    setup_plain_prot(false, "");
-    QuerySchema target_schema = SharedSchema::getInputSchema();
+    PilotUtilities::setupSystemConfiguration();
     string src_csv = argv[1];
-    string dst_root = argv[2];
+    string schema_file = argv[2];
+    string dst_root = argv[3];
+
+    QuerySchema target_schema = QuerySchema::fromFile(schema_file);
     PilotUtilities::secretShareFromCsv(src_csv, target_schema, dst_root);
 
-    finalize_plain_prot();
 
     std::cout << "Success." << std::endl;
 

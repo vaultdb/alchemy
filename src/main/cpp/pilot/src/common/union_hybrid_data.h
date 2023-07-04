@@ -13,22 +13,19 @@ using namespace emp;
 namespace vaultdb {
     class UnionHybridData {
     public:
-        UnionHybridData(const QuerySchema & srcSchema, NetIO *netio, const int & party);
+        UnionHybridData(const QuerySchema & src_schema);
 
         static SecureTable *
-        readLocalInput(const string &localInputFile, const QuerySchema &src_schema, NetIO *netio,
-                       const int &party);
+        readLocalInput(const string &local_input_file, const QuerySchema &src_schema);
 
         static SecureTable *
-        readSecretSharedInput(const string &secretSharesFile, const QuerySchema &plain_schema,
-                              const int &party);
+        readSecretSharedInput(const string &secret_shares_file, const QuerySchema &plain_schema);
 
         SecureTable *getInputTable();
 
-        static SecureTable *unionHybridData(const QuerySchema & schema, const std::string & localInputFile,  const std::string & secretSharesFile, NetIO *aNetIO, const int & party);
+        static SecureTable *unionHybridData(const QuerySchema & schema, const std::string & localInputFile,  const std::string & secretSharesFile);
         static SecureTable *
-        unionHybridData(const string &dbName, const string &inputQuery, const string &secretSharesFile,
-                        NetIO *aNetIO, const int &party);
+        unionHybridData(const string &dbName, const string &inputQuery, const string &secretSharesFile);
 
         ~UnionHybridData() {
             if(input_table_) {
@@ -36,14 +33,14 @@ namespace vaultdb {
             }
         }
     private:
-        int party;
-        NetIO *netio;
-        bool inputTableInit = false;
+//        int party;
+//        NetIO *netio;
+//        bool inputTableInit = false;
 
         SecureTable *input_table_;
 
-        Integer readEncrypted(int8_t *secretSharedBits, const size_t & sizeBytes, // size in bytes
-                              const int & dstParty);
+        Integer readEncrypted(int8_t *secret_shared_bits, const size_t & size_bytes,
+                              const int & dst_party);
 
         // convert all instances of bool and dummy tag to be 1 bool instead of 8 from previous serialization
         static void
