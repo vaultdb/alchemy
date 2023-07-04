@@ -33,7 +33,7 @@ namespace vaultdb {
                           const bool &has_dummy_tag, const size_t & limit = 0);
 
         static PlainTable *
-        getQueryResults(const std::string &dbName, const std::string &sql,  const bool &has_dummy_tag);
+        getQueryResults(const std::string &dbName, const std::string &sql,  const bool &has_dummy_tag = false);
 
         static PlainTable *getExpectedResults(const string &dbName, const string &sql, const bool &hasDummyTag,
                                               const int &sortColCount);

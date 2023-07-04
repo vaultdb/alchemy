@@ -241,8 +241,8 @@ int main(int argc, char **argv) {
 
     EnrichHtnQuery enrich; // empty for now
 
-    auto *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
-    setup_semi_honest(netio, party,  port);
+    PilotUtilities::setupSystemConfiguration(party, host, port);
+
     cout << "Starting epoch " << Utilities::getEpoch() << endl;
     auto e2e_start_time = emp::clock_start();
     SecureTable *partial_counts;
@@ -260,9 +260,7 @@ int main(int argc, char **argv) {
         batch_predicate = PilotUtilities::appendToConjunctivePredicate(selection_clause, "MOD(hash, " + std::to_string(batch_count) + ") = " + std::to_string(batch_id));
         string batch_input_query = PilotUtilities::replaceSelection(patient_input_query,  batch_predicate);
         string batch_input_file = remote_patient_file + "." + std::to_string(batch_id + 1) + "." + party_name;
-        SecureTable *inputData =  UnionHybridData::unionHybridData(db_name, batch_input_query,
-                                                                                         batch_input_file, netio,
-                                                                                         party);
+        SecureTable *inputData =  UnionHybridData::unionHybridData(db_name, batch_input_query,batch_input_file);
         cumulative_runtime_ = time_from(start_time_);
 
 
@@ -333,7 +331,7 @@ int main(int argc, char **argv) {
             bob = local_partial_counts->secretShare();
         }
 
-        chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain((alice->getSchema())), party);
+        chi = UnionHybridData::readSecretSharedInput(remote_patient_partial_count_file, QuerySchema::toPlain((alice->getSchema())));
 
 
         std::vector<SecureTable *> partial_aggs { alice, bob, chi};
@@ -387,9 +385,6 @@ int main(int argc, char **argv) {
 
 */
 
-    emp::finalize_semi_honest();
-
-    delete netio;
 
     delete age;
     delete gender;

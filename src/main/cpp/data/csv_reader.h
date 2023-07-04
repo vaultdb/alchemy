@@ -13,9 +13,9 @@ namespace  vaultdb {
         parseTuple(const std::string &csv_line, const QuerySchema &src_schema, PlainTable *dst,
                    const int &idx);
 
+        static vector<string> split(const string &tuple_entry);
     private:
 
-        static vector<string> split(const string &tupleEntry);
         static QuerySchema convertDatesToLong(const QuerySchema & input_schema);
 
     };

@@ -31,6 +31,11 @@ namespace  vaultdb {
 
         }
 
+        // parse the CSV schema, e.g.,
+        // (field1:INT,field2:float,...,fieldN:varchar(10))
+        // entries can also be of the form (table_name.field_name:TYPE, ...)
+        QuerySchema(const string & schema_spec);
+
         inline int getFieldCount() const {  return fields_.size() - 1;  } // does not include dummy tag
 
 
@@ -41,6 +46,24 @@ namespace  vaultdb {
                 fields_[i] = s.getField(i);
             }
             initializeFieldOffsets();
+        }
+
+        // format inspired by Google BigTable's inline query schema
+        // https://cloud.google.com/bigquery/docs/external-table-definition#use-inline-schema
+        // example:
+        // (id:INT64,name:STRING,age:INT64,weight:FLOAT64,is_active:BOOL,last_updated:TIMESTAMP)
+        inline string prettyPrint() const {
+            stringstream s;
+
+            s << "(";
+            if(getFieldCount() > 0) {
+                s << fields_.at(0).prettyPrint();
+                for (size_t i = 1; i < getFieldCount(); i++) {
+                    s  << ", " << fields_.at(i).prettyPrint();
+                }
+            }
+            s << ")";
+            return s.str();
         }
 
         // returns size in bits
@@ -67,6 +90,8 @@ namespace  vaultdb {
         static QuerySchema toPlain(const QuerySchema &secureSchema);
 
         static QuerySchema concatenate(const QuerySchema & lhs, const QuerySchema & rhs, const bool &append_bool = false);
+
+        static QuerySchema fromFile(const string & filename);
 
         inline bool fieldInitialized(const int & ordinal) { return fields_.find(ordinal) != fields_.end();}
         void initializeFieldOffsets();

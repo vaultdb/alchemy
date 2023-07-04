@@ -24,6 +24,8 @@ namespace  vaultdb {
 
         static const std::string data_cube_sql_,  data_cube_sql_no_dummies_, unioned_db_name_;
         static void redactCellCounts(SecureTable *input, const int & min_cell_cnt);
+        static void setupSystemConfiguration(int & party, string & host, int & port);
+        static void setupSystemConfiguration();
     };
 
 }

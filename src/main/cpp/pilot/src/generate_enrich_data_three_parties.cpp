@@ -110,99 +110,121 @@ int main(int argc, char **argv) {
     }
 
 
-    string targetPath = argv[1];
-    int tupleCount = atoi(argv[2]);
+    string dst_path = argv[1];
+    int tuple_cnt = atoi(argv[2]);
     srand (time(nullptr));
     // maintain a running offset to bob's patient ID with respect to Alice's
     // increments when we generate a non-overlapping patient
-    int bobPatientId = tupleCount;
+    int bob_pat_id = tuple_cnt;
     // do the same thing for chiPatient
-    int chiPatientId = 0;
-
-    targetPath = GenerateEnrichDataThreeParties::getCurrentWorkingDirectory() + "/" + targetPath;
-    std::string alicePatientFilename = targetPath + "/alice-patient.csv";
-    std::string bobPatientFilename = targetPath + "/bob-patient.csv";
-    std::string chiPatientFilename = targetPath + "/chi-patient.csv";
+    int chi_pat_id = 0;
+    string schema_str = "(pat_id:int32, study_year:int32, age_strata:varchar(1), sex:varchar(1),  ethnicity:varchar(1), race:varchar(1), numerator:bool, denominator:bool, denom_excl:bool, site_id:bool)";
 
 
-    std::ofstream alicePatientFile, bobPatientFile, chiPatientFile;
-    alicePatientFile.open(alicePatientFilename.c_str(), ios::out);
+    dst_path = GenerateEnrichDataThreeParties::getCurrentWorkingDirectory() + "/" + dst_path;
+    std::string alice_pat_filename = dst_path + "/alice-patient.csv";
+    std::string bob_pat_filename = dst_path + "/bob-patient.csv";
+    std::string chi_pat_filename = dst_path + "/chi-patient.csv";
 
-    if(!alicePatientFile.is_open() ) {
-        std::cout << "Failed to open alice files: " << alicePatientFilename  << std::endl;
+
+
+
+    std::ofstream alice_pat_file, bob_pat_file, chi_pat_file;
+    alice_pat_file.open(alice_pat_filename.c_str(), ios::out);
+
+    if(!alice_pat_file.is_open() ) {
+        std::cout << "Failed to open alice files: " << alice_pat_filename << std::endl;
         exit(-1);
+    }
+    else {
+        std::ofstream schema_file;
+        schema_file.open(dst_path + "/alice-patient.schema", ios::out);
+        schema_file << schema_str << std::endl;
+        schema_file.close();
     }
 
 
-    bobPatientFile.open(bobPatientFilename, ios::out);
+    bob_pat_file.open(bob_pat_filename, ios::out);
 
-    if(!bobPatientFile.is_open()) {
-        std::cout << "Failed to open bob files: " << bobPatientFilename << std::endl;
+    if(!bob_pat_file.is_open()) {
+        std::cout << "Failed to open bob files: " << bob_pat_filename << std::endl;
         exit(-1);
+    }
+    else {
+        std::ofstream schema_file;
+        schema_file.open(dst_path + "/bob-patient.schema", ios::out);
+        schema_file << schema_str << std::endl;
+        schema_file.close();
     }
 
 
-    chiPatientFile.open(chiPatientFilename, ios::out);
+    chi_pat_file.open(chi_pat_filename, ios::out);
 
-    if(!bobPatientFile.is_open()) {
-        std::cout << "Failed to open chi files: " << chiPatientFilename << std::endl;
+    if(!chi_pat_file.is_open()) {
+        std::cout << "Failed to open chi files: " << chi_pat_filename << std::endl;
         exit(-1);
+    }
+    else {
+        std::ofstream schema_file;
+        schema_file.open(dst_path + "/chi-patient.schema", ios::out);
+        schema_file << schema_str << std::endl;
+        schema_file.close();
     }
 
 
-    int bobTupleCount = 0;
-    int chiTupleCount = 0;
+    int bob_tuple_cnt = 0;
+    int chi_tuple_cnt = 0;
 
     // end setup, generate Alice tuples
-    for(int i = 0; i < tupleCount; ++i) {
+    for(int i = 0; i < tuple_cnt; ++i) {
         TupleSet tupleSet = GenerateEnrichDataThreeParties::generateTuples(i);
-        alicePatientFile << tupleSet.alicePatient.toString() << std::endl;
+        alice_pat_file << tupleSet.alicePatient.toString() << std::endl;
         if(tupleSet.bobPatient.patid != -1) { // overlapping pid
             assert(tupleSet.bobPatient.site_id == 2);
-            bobPatientFile << tupleSet.bobPatient.toString() << std::endl;
-            ++bobTupleCount;
+            bob_pat_file << tupleSet.bobPatient.toString() << std::endl;
+            ++bob_tuple_cnt;
         }
         if(tupleSet.chiPatient.patid != -1) { // overlapping pid
             assert(tupleSet.chiPatient.site_id  == 3);
-            chiPatientFile << tupleSet.chiPatient.toString() << std::endl;
-            ++chiTupleCount;
+            chi_pat_file << tupleSet.chiPatient.toString() << std::endl;
+            ++chi_tuple_cnt;
         }
     }
 
-    alicePatientFile.close();
+    alice_pat_file.close();
 
 
-    while(bobTupleCount < tupleCount) {
-        TupleSet tupleSet = GenerateEnrichDataThreeParties::generateTuples(bobPatientId);
+    while(bob_tuple_cnt < tuple_cnt) {
+        TupleSet tupleSet = GenerateEnrichDataThreeParties::generateTuples(bob_pat_id);
 
-        PatientTuple bobPatient = tupleSet.alicePatient; // reusing earlier logic to guarantee we get a tuple, Alice is correct here.
-        bobPatient.site_id = 2;
-        bobPatientFile << bobPatient.toString() << std::endl;
+        PatientTuple bob_pat = tupleSet.alicePatient; // reusing earlier logic to guarantee we get a tuple, Alice is correct here.
+        bob_pat.site_id = 2;
+        bob_pat_file << bob_pat.toString() << std::endl;
 
         if(tupleSet.chiPatient.patid != -1) { // overlapping pid
             assert(tupleSet.chiPatient.site_id  == 3);
-            chiPatientFile << tupleSet.chiPatient.toString() << std::endl;
-            ++chiTupleCount;
+            chi_pat_file << tupleSet.chiPatient.toString() << std::endl;
+            ++chi_tuple_cnt;
         }
 
-        ++bobTupleCount;
-        ++bobPatientId;
+        ++bob_tuple_cnt;
+        ++bob_pat_id;
     }
 
-    bobPatientFile.close();
+    bob_pat_file.close();
 
-    chiPatientId = bobPatientId;
+    chi_pat_id = bob_pat_id;
 
-    while(chiTupleCount < tupleCount) {
-        PatientTuple chiPatient = GenerateEnrichDataThreeParties::generatePatientTuple(chiPatientId);
+    while(chi_tuple_cnt < tuple_cnt) {
+        PatientTuple chiPatient = GenerateEnrichDataThreeParties::generatePatientTuple(chi_pat_id);
         chiPatient.site_id = 3;
-        chiPatientFile << chiPatient.toString() << std::endl;
-        ++chiTupleCount;
-        ++chiPatientId;
+        chi_pat_file << chiPatient.toString() << std::endl;
+        ++chi_tuple_cnt;
+        ++chi_pat_id;
     }
 
-    chiPatientFile.close();
-    std::cout << "Finished generating " << tupleCount << " patients per host!" << std::endl;
+    chi_pat_file.close();
+    std::cout << "Finished generating " << tuple_cnt << " patients per host!" << std::endl;
 
 }
 

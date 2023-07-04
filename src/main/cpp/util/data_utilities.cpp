@@ -82,27 +82,27 @@ void DataUtilities::writeFile(const string &fileName, const string &contents) {
 
 
 // reads binary file
-vector<int8_t> DataUtilities::readFile(const std::string & fileName) {
+vector<int8_t> DataUtilities::readFile(const std::string & filename) {
     // read in binary and then xor it with other side to secret share it.
     // get file size
     struct stat fileStats;
-    size_t fileSize; // bytes
-    if (stat(fileName.c_str(), &fileStats) == 0) {
-        fileSize = fileStats.st_size;
+    size_t file_size; // bytes
+    if (stat(filename.c_str(), &fileStats) == 0) {
+        file_size = fileStats.st_size;
     }
     else {
-        throw std::invalid_argument("Can't open input file " + fileName + "!");
+        throw std::invalid_argument("Can't open input file " + filename + "!");
     }
 
 
-    std::vector<int8_t> fileBytes;
-    fileBytes.resize(fileSize);
-    int8_t  *shares = fileBytes.data();
-    std::ifstream inputFile(fileName, std::ios::in | std::ios::binary);
-    inputFile.read((char *) shares, fileSize);
-    inputFile.close();
-
-    return fileBytes;
+    std::vector<int8_t> file_bytes;
+    file_bytes.resize(file_size);
+    int8_t  *shares = file_bytes.data();
+    std::ifstream input(filename, std::ios::in | std::ios::binary);
+    input.read((char *) shares, file_size);
+    input.close();
+    cout << "Read " << file_size << " bytes from " << filename << endl;
+    return file_bytes;
 
 }
 

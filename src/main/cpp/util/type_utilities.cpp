@@ -19,16 +19,16 @@
         case FieldType::STRING:
             return std::string("varchar");
         case FieldType::SECURE_INT:
-            return std::string("encrypted-int32");
+            return std::string("shared-int32");
         case FieldType::SECURE_LONG:
-            return std::string("encrypted-int64") ;
+            return std::string("shared-int64") ;
         case FieldType::SECURE_BOOL:
-            return std::string("encrypted-bool" );
+            return std::string("shared-bool" );
         case FieldType::SECURE_FLOAT:
-            return std::string("encrypted-float");
+            return std::string("shared-float");
 
         case FieldType::SECURE_STRING:
-            return std::string("encrypted-varchar");
+            return std::string("shared-varchar");
         default:
             std::string FieldTypeStr = std::to_string((int) fieldType);
             return std::string("unsupported type! " + FieldTypeStr);
@@ -37,6 +37,44 @@
 
 }
 
+FieldType TypeUtilities::getTypeFromString(const string & field_str) {
+     string field_str_lower = field_str;
+    transform(field_str_lower.begin(), field_str_lower.end(), field_str_lower.begin(), ::tolower);
+
+    if(field_str_lower == "bool")
+        return FieldType::BOOL;
+
+    if(field_str_lower == "date")
+        return FieldType::DATE;
+
+    if(field_str_lower == "int32")
+        return FieldType::INT;
+
+    if(field_str_lower == "int64")
+        return FieldType::LONG;
+
+    if(field_str_lower == "float")
+        return FieldType::FLOAT;
+    if(field_str_lower == "varchar")
+        return FieldType::STRING;
+
+    if(field_str_lower == "shared-bool")
+        return FieldType::SECURE_BOOL;
+
+
+    if(field_str_lower == "shared-int32")
+        return FieldType::SECURE_INT;
+
+    if(field_str_lower == "shared-int64")
+        return FieldType::SECURE_LONG;
+
+    if(field_str_lower == "shared-float")
+        return FieldType::SECURE_FLOAT;
+    if(field_str_lower == "shared-varchar")
+        return FieldType::SECURE_STRING;
+
+    throw std::invalid_argument("Unsupported type " + field_str);
+}
 
 // size is in bits
 size_t TypeUtilities::getTypeSize(const FieldType & id) {
@@ -129,4 +167,5 @@ bool TypeUtilities::types_equivalent(const FieldType & lhs, const FieldType & rh
 
      return false;
  }
+
 

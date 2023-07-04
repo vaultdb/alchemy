@@ -3,6 +3,7 @@
 #include <operators/group_by_aggregate.h>
 #include <util/data_utilities.h>
 #include <data/csv_reader.h>
+#include "util/emp_manager/sh2pc_manager.h"
 
 using namespace vaultdb;
 
@@ -94,10 +95,11 @@ void
 PilotUtilities::secretShareFromCsv(const string &src_csv, const QuerySchema &plain_schema, const string &dst_root) {
     PlainTable *inputTable = CsvReader::readCsv(src_csv, plain_schema);
     SecretShares shares = inputTable->generateSecretShares();
+    QuerySchema dst_schema = QuerySchema::toSecure(plain_schema);
 
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
     DataUtilities::writeFile(dst_root + ".bob", shares.second);
-
+    DataUtilities::writeFile(dst_root + ".schema",  dst_schema.prettyPrint());
     delete inputTable;
 
 }
@@ -106,16 +108,11 @@ void PilotUtilities::secretShareFromQuery(const string &db_name, const string &q
     PlainTable *table = DataUtilities::getQueryResults(db_name, query, false);
     SecretShares shares = table->generateSecretShares();
 
-    cout << "Secret sharing " << table->getTupleCount() << " rows.\n"; //" tuples from query " << query << " on " << db_name << endl;
-
     DataUtilities::writeFile(dst_root + ".alice", shares.first);
     DataUtilities::writeFile(dst_root + ".bob", shares.second);
 
     string schema_filename = dst_root + ".schema";
-    std::stringstream schema_str;
-    schema_str << table->getSchema() << endl;
-    string schema_desc = schema_str.str();
-    DataUtilities::writeFile(schema_filename, schema_desc);
+    DataUtilities::writeFile(schema_filename, table->getSchema().prettyPrint());
 
     delete table;
 }
@@ -211,4 +208,21 @@ void PilotUtilities::redactCellCounts(SecureTable *input, const int &min_cell_cn
 
     }
 
+}
+
+void PilotUtilities::setupSystemConfiguration(int & party, string & host, int & port) {
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+    conf.emp_mode_ = EmpMode::SH2PC;
+    conf.setStorageModel(StorageModel::ROW_STORE);
+    SH2PCManager *manager = new SH2PCManager(party == ALICE ? "" : host, party, port);
+    conf.emp_manager_ = manager;
+}
+
+void PilotUtilities::setupSystemConfiguration() {
+    SystemConfiguration & conf = SystemConfiguration::getInstance();
+    conf.emp_mode_ = EmpMode::SH2PC;
+    conf.setStorageModel(StorageModel::ROW_STORE);
+
+    SH2PCManager *manager = new SH2PCManager();
+    conf.emp_manager_ = manager;
 }

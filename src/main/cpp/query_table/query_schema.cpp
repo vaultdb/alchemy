@@ -1,5 +1,7 @@
 #include <iostream>
 #include "query_schema.h"
+#include "data/csv_reader.h"
+#include "util/data_utilities.h"
 
 using namespace vaultdb;
 
@@ -9,11 +11,33 @@ size_t QuerySchema::size() const {
     return tuple_size_;
 }
 
+QuerySchema::QuerySchema(const std::string &schema_spec) {
+    string schema_str = schema_spec;
+    // chop off any trailing whitespace or endlines
+    schema_str.erase(std::remove_if(schema_str.begin(), schema_str.end(), ::isspace), schema_str.end());
+    // chop off parens
+    if(schema_str.at(0) == '(' && schema_str.at(schema_str.length() - 1) == ')') {
+        schema_str = schema_str.substr(1, schema_str.length() - 2);
+    }
+    // delete any spaces
+    schema_str.erase(std::remove_if(schema_str.begin(), schema_str.end(), ::isspace), schema_str.end());
+
+    // split on commas
+    vector<string> tokens = CsvReader::split(schema_str);
+
+    int counter = 0;
+    for(auto token : tokens) {
+        auto f = QueryFieldDesc(counter, token);
+        putField(f);
+        ++counter;
+    }
+    initializeFieldOffsets();
+}
+
 std::ostream &vaultdb::operator<<(std::ostream &os, const QuerySchema &schema) {
     if(schema.getFieldCount() < 1) {  os << "()"; return os;  }
 
     os << "(" << schema.getField(0);
-
 
     for(size_t i = 1; i < schema.getFieldCount(); ++i) {
         os << ", " << schema.getField(i);
@@ -157,6 +181,11 @@ QuerySchema QuerySchema::concatenate(const QuerySchema & lhs, const QuerySchema 
     result.initializeFieldOffsets();
     return result;
 
+}
+
+QuerySchema QuerySchema::fromFile(const std::string &filename) {
+    string schema_str = DataUtilities::readTextFileToString(filename);
+    return QuerySchema(schema_str);
 }
 
 

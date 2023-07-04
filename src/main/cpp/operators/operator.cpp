@@ -66,18 +66,6 @@ QueryTable<B> *Operator<B>::run() {
     if(lhs_child_)     lhs_child_->reset();
     if(rhs_child_)     rhs_child_->reset();
 
-    /*
-    int true_cnt = 0;
-    int false_cnt = 0;
-
-    for(int i =0 ; i< output_->getTupleCount(); i++) {
-        if (FieldUtilities::extract_bool(output_->getDummyTag(i)))
-            true_cnt++;
-        else
-            false_cnt++;
-    }
-    cout << "True : " << true_cnt << " False : " << false_cnt << endl;
-    */
 
     return output_;
 }

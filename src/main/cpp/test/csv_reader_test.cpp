@@ -9,6 +9,9 @@
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 
 
+// set up this test by running:
+// bash test/support/setup-csv.sh
+
 class CsvReaderTest : public PlainBaseTest  {
 protected:
     QueryFieldDesc convertDateField(const QueryFieldDesc & srcField) {
@@ -19,28 +22,22 @@ protected:
 
 
 
+
 TEST_F(CsvReaderTest, lineitemTest) {
 
-    // TODO: syscall the line below to generate the csv
- // generated input file by running:
-  // psql  -t --csv  -c "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50" tpch_unioned_150  > test/support/csv/lineitem.csv
-    std::string inputFile =  current_working_directory_ + "/test/support/csv/lineitem.csv";
+   // generated input file by running:
+    std::string input_csv =  current_working_directory_ + "/test/support/csv/lineitem.csv";
 
 
-    std::string query = "SELECT * FROM lineitem ORDER BY (1), (2)  LIMIT 50";
-    PsqlDataProvider dataProvider;
-    PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
-    
-    
-    QuerySchema csvSchema = expected->getSchema();
-    // substitute longs with dates in the appropriate cols, fields 10, 11, 12
-    csvSchema.putField(convertDateField(csvSchema.getField(10)));
-    csvSchema.putField(convertDateField(csvSchema.getField(11)));
-    csvSchema.putField(convertDateField(csvSchema.getField(12)));
+    std::string sql = "SELECT  l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment FROM lineitem ORDER BY (1), (2)  LIMIT 50";
 
-    PlainTable *observed = CsvReader::readCsv(inputFile, csvSchema);
+    auto expected = DataUtilities::getQueryResults(db_name_, sql);
+    string schema_str = "(lineitem.l_orderkey:int32, lineitem.l_partkey:int32, lineitem.l_suppkey:int32, lineitem.l_linenumber:int32, lineitem.l_quantity:float, lineitem.l_extendedprice:float, lineitem.l_discount:float, lineitem.l_tax:float, lineitem.l_returnflag:varchar(1), lineitem.l_linestatus:varchar(1), lineitem.l_shipdate:date, lineitem.l_commitdate:date, lineitem.l_receiptdate:date, lineitem.l_shipinstruct:varchar(25), lineitem.l_shipmode:varchar(10), lineitem.l_comment:varchar(44))";
+
+    QuerySchema csv_schema(schema_str);
+    PlainTable *observed = CsvReader::readCsv(input_csv, csv_schema);
     observed->setSchema(expected->getSchema()); // switch back from date schema
-    
+
     ASSERT_EQ(*expected, *observed);
 
     delete expected;
@@ -53,7 +50,7 @@ TEST_F(CsvReaderTest, lineitemTest) {
 
 TEST_F(CsvReaderTest, quotedStringTest) {
     // trick is handling ',' character correctly
-    std::string testStr = "16,Customer#000000016,\"cYiaeMLZSMAOQ2 d0W,\",10,20-781-609-3107,4681.03,FURNITURE ,kly silent courts. thinly regular theodolites sleep fluffily after ,0";
+    std::string test_str = "16,Customer#000000016,\"cYiaeMLZSMAOQ2 d0W,\",10,20-781-609-3107,4681.03,FURNITURE ,kly silent courts. thinly regular theodolites sleep fluffily after ,0";
 
 
     // grab customer table for schema:
@@ -63,7 +60,7 @@ TEST_F(CsvReaderTest, quotedStringTest) {
 
     PlainTable *parse_test = expected->clone();
 
-    CsvReader::parseTuple(testStr, expected->getSchema(), parse_test, 15);
+    CsvReader::parseTuple(test_str, expected->getSchema(), parse_test, 15);
 
     QueryTuple expected_tuple = expected->getPlainTuple(15);
     QueryTuple parsed_tuple = parse_test->getPlainTuple(15);
@@ -73,7 +70,6 @@ TEST_F(CsvReaderTest, quotedStringTest) {
 
     // expected:
     // 16 | Customer#000000016 | cYiaeMLZSMAOQ2 d0W,                    |          10 | 20-781-609-3107 |   4681.03 | FURNITURE    | kly silent courts. thinly regular theodolites sleep fluffily after
-    // both appear to be truncating last string
 
     ASSERT_EQ(parsed_tuple, expected_tuple);
     delete expected;
@@ -85,13 +81,16 @@ TEST_F(CsvReaderTest, customerTest) {
     // generated input file by running:
     // psql --csv  -t -c "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50" tpch_unioned  > test/support/csv/customer.csv
 
-    std::string inputFile =  current_working_directory_ +  "/test/support/csv/customer.csv";
-    std::string query = "SELECT * FROM customer ORDER BY (1), (2)  LIMIT 50";
+    std::string input_csv =  current_working_directory_ +  "/test/support/csv/customer.csv";
+    std::string query = "SELECT c_custkey, c_name, c_address, c_nationkey, c_phone, c_acctbal, c_mktsegment, c_comment FROM customer ORDER BY (1), (2)  LIMIT 50";
 
     PsqlDataProvider dataProvider;
     PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
 
-    PlainTable *observed = CsvReader::readCsv(inputFile, expected->getSchema());
+    string schema_str = "(customer.c_custkey:int32, customer.c_name:varchar(25), customer.c_address:varchar(40), customer.c_nationkey:int32, customer.c_phone:varchar(15), customer.c_acctbal:float, customer.c_mktsegment:varchar(10), customer.c_comment:varchar(117))";
+    QuerySchema csv_schema(schema_str);
+
+    PlainTable *observed = CsvReader::readCsv(input_csv, csv_schema);
 
     ASSERT_EQ(*expected, *observed);
 
@@ -104,22 +103,15 @@ TEST_F(CsvReaderTest, customerTest) {
 
 TEST_F(CsvReaderTest, ordersTest) {
 
-    // generated input file by running:
-  
-    // psql  -t --csv  -c "SELECT * FROM orders ORDER BY (1), (2)  LIMIT 50" tpch_unioned_150  > test/support/csv/orders.csv
 
-    std::string inputFile = current_working_directory_ +  "/test/support/csv/orders.csv";
-    std::string query = "SELECT *   FROM orders ORDER BY (1), (2)  LIMIT 50";
+    std::string input_csv = current_working_directory_ +  "/test/support/csv/orders.csv";
+    std::string sql = "SELECT o_orderkey, o_custkey, o_orderstatus, o_totalprice, " +  DataUtilities::queryDatetime("o_orderdate") +  ", o_orderpriority, o_comment  FROM orders ORDER BY (1), (2)  LIMIT 50";
 
-    PsqlDataProvider dataProvider;
-    PlainTable *expected = dataProvider.getQueryTable(db_name_, query);
+    PlainTable *expected = DataUtilities::getQueryResults(db_name_, sql);
 
-    QuerySchema csvSchema = expected->getSchema();
-    // o_orderdate(4) set schema to date
-    csvSchema.putField(convertDateField(csvSchema.getField(4)));
-
-    PlainTable *observed = CsvReader::readCsv(inputFile, csvSchema);
-    observed->setSchema(expected->getSchema());
+    string orders_schema = "(orders.o_orderkey:int32, orders.o_custkey:int32, orders.o_orderstatus:varchar(1), orders.o_totalprice:float, orders.o_orderdate:date, orders.o_orderpriority:varchar(15), orders.o_comment:varchar(79))";
+    QuerySchema csv_schema(orders_schema);
+    PlainTable *observed = CsvReader::readCsv(input_csv, csv_schema);
 
     // RHS || observed is incorrect here.
     ASSERT_EQ(*expected, *observed);

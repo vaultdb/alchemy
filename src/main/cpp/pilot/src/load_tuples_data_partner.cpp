@@ -3,6 +3,7 @@
 #include <util/data_utilities.h>
 #include <operators/sort.h>
 #include "common/union_hybrid_data.h"
+#include "common/pilot_utilities.h"
 #include "util/logger.h"
 using namespace  std;
 using namespace vaultdb;
@@ -55,13 +56,12 @@ int main(int argc, char **argv) {
       secretShareFile = argv[5];
 
     QuerySchema schema = SharedSchema::getInputSchema();
-    NetIO *netio =  new emp::NetIO(party == ALICE ? nullptr : host.c_str(), port);
-    setup_semi_honest(netio, party,  port);
+    PilotUtilities::setupSystemConfiguration(party, host, port);
 
 
     // read inputs from two files, assemble with data of other host as one unioned secret shared table
     // expected order: alice, bob, chi
-    SecureTable *input_data = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile, netio, party);
+    SecureTable *input_data = UnionHybridData::unionHybridData(schema, localInputFile, secretShareFile);
 
     Logger::write("Done unioning!");
     // validate it against the DB for testing
@@ -81,7 +81,6 @@ int main(int argc, char **argv) {
 
     delete input_data; // frees inputData
 
-     emp::finalize_semi_honest();
     double runtime = time_from(startTime);
     Logger::write("Read and validated input on " + std::to_string(party)  + " in "  +    std::to_string((runtime+0.0)*1e6*1e-9) + " ms.");
 

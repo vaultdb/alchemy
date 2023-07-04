@@ -59,16 +59,16 @@ namespace  vaultdb {
 
         inline Field<B> getField(const int  & row, const int & col)  const override {
             int8_t *read_ptr = getFieldPtr(row, col);
-            return Field<B> ::deserialize(this->schema_.getField(col), read_ptr );
+            return Field<B>::deserialize(this->schema_.getField(col), read_ptr );
         }
 
         inline Field<B> getPackedField(const int & row, const int & col) const override {
 
             int8_t *read_ptr = getFieldPtr(row, col);
             if(SystemConfiguration::getInstance().bitPackingEnabled())
-                return Field<B> ::deserializePacked(this->schema_.getField(col), read_ptr );
+                return Field<B>::deserializePacked(this->schema_.getField(col), read_ptr );
 
-            return Field<B> ::deserialize(this->schema_.getField(col), read_ptr );
+            return Field<B>::deserialize(this->schema_.getField(col), read_ptr );
 
         }
 
@@ -109,8 +109,9 @@ namespace  vaultdb {
 
         QueryTable<B> &operator=(const QueryTable<B> &src) override;
 
-
         static RowTable<B> *deserialize(const QuerySchema &schema, const vector<int8_t> &table_bytes);
+
+        static RowTable<B> *deserialize(const QuerySchema &schema, const vector<Bit> &table_bytes);
 
 
         QueryTuple<bool> getPlainTuple(size_t idx) const override;

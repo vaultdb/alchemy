@@ -40,7 +40,8 @@ namespace  vaultdb {
 
         inline  size_t size() const {
             assert(field_size_ > 0);  // if size == 0 then it is an invalid field
-            return field_size_; }
+            return field_size_;
+        }
 
         QueryFieldDesc(const QueryFieldDesc &f) = default;
 
@@ -49,6 +50,7 @@ namespace  vaultdb {
         QueryFieldDesc(const QueryFieldDesc &f, const int & col_num);
 
         QueryFieldDesc(const int & ordinal, const std::string &field_name, const std::string &table, const FieldType &type, const size_t & str_len = 0);
+        QueryFieldDesc(const int & ordinal, const string & field_spec);
 
         inline void setStringLength(size_t len) {   string_length_ = len;
             initializeFieldSize();
@@ -82,6 +84,7 @@ namespace  vaultdb {
             return true;
         }
         void initializeFieldSizeWithCardinality(int cardinality);
+        string prettyPrint() const;
     private:
         void initializeFieldSize();
 
