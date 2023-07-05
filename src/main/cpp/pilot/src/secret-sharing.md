@@ -1,4 +1,4 @@
-## Schema for Secret Sharing CSVs
+## Schema for Secret Sharing CSVs to VaultDB
 VaultDB can accept inline schema definitions for ad-hoc queries.  This is similar to [BigTable's](https://cloud.google.com/bigquery/docs/external-table-definition#use-inline-schema) design.
 
 ### Warmup: Filenames
