@@ -1,0 +1,129 @@
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortMergeJoinTest
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43455, 65470 as 2
+connected
+Connected!
+Join output schema: (#0 encrypted-int32(23) orders.o_orderkey, #1 encrypted-int32(14) orders.o_custkey, #2 encrypted-int64(28) orders.o_orderdate, #3 encrypted-int32 orders.o_shippriority, #4 encrypted-int32(14) customer.c_custkey)
+Operator #-1 SecureSqlInput ran for 36566 ms,  gate count: 12434752 output cardinality: 99478, row width=98
+Operator #-1 SecureSqlInput ran for 1079.27 ms,  gate count: 309968 output cardinality: 9999, row width=15
+Operator #-1 Project ran for 142.342 ms,  gate count: 0 output cardinality: 99478, row width=98
+Operator #-1 Project ran for 2.01 ms,  gate count: 0 output cardinality: 9999, row width=15
+Operator #-1 Sort ran for 359959 ms,  gate count: 1313577412 output cardinality: 109477, row width=131
+Operator #-1 Sort ran for 357537 ms,  gate count: 1313577408 output cardinality: 109477, row width=131
+Operator #-1 Sort ran for 40926.2 ms,  gate count: 148408948 output cardinality: 9999, row width=195
+Operator #-1 Project ran for 289.888 ms,  gate count: 0 output cardinality: 99478, row width=98
+Operator #-1 Project ran for 28.671 ms,  gate count: 0 output cardinality: 99478, row width=15
+Operator #-1 SortMergeJoin ran for 930403 ms,  gate count: 3392704308 output cardinality: 99478, row width=112
+Operator #-1 Sort ran for 704.873 ms,  gate count: 0 output cardinality: 9246, row width=200
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders (996148 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders_no_bitpacking
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43456, 65470 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 2679.69 ms,  gate count: 0 output cardinality: 99478, row width=161
+Operator #-1 SecureSqlInput ran for 60.255 ms,  gate count: 0 output cardinality: 9999, row width=33
+Operator #-1 Project ran for 244.738 ms,  gate count: 0 output cardinality: 99478, row width=161
+Operator #-1 Project ran for 1.689 ms,  gate count: 0 output cardinality: 9999, row width=33
+Operator #-1 Sort ran for 569590 ms,  gate count: 2076553512 output cardinality: 109477, row width=194
+Operator #-1 Sort ran for 571587 ms,  gate count: 2076553512 output cardinality: 109477, row width=194
+Operator #-1 Sort ran for 49807.5 ms,  gate count: 177001500 output cardinality: 9999, row width=258
+Operator #-1 Project ran for 225.139 ms,  gate count: 0 output cardinality: 99478, row width=161
+Operator #-1 Project ran for 53.24 ms,  gate count: 0 output cardinality: 99478, row width=33
+Operator #-1 SortMergeJoin ran for 1.38599e+06 ms,  gate count: 5024385208 output cardinality: 99478, row width=193
+Operator #-1 Sort ran for 919.153 ms,  gate count: 0 output cardinality: 9246, row width=200
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders_no_bitpacking (1418535 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43457, 65470 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 38088.8 ms,  gate count: 12434752 output cardinality: 99478, row width=98
+Operator #-1 SecureSqlInput ran for 48838.8 ms,  gate count: 12319864 output cardinality: 397415, row width=56
+Operator #-1 Project ran for 142.916 ms,  gate count: 0 output cardinality: 99478, row width=98
+Operator #-1 Project ran for 456.027 ms,  gate count: 0 output cardinality: 397415, row width=56
+Operator #-1 Sort ran for 2.36431e+06 ms,  gate count: 8535052884 output cardinality: 496893, row width=131
+Operator #-1 Sort ran for 2.35606e+06 ms,  gate count: 8535052884 output cardinality: 496893, row width=131
+Operator #-1 Sort ran for 634420 ms,  gate count: 2305424232 output cardinality: 99478, row width=195
+Operator #-1 Project ran for 563.325 ms,  gate count: 0 output cardinality: 397415, row width=98
+Operator #-1 Project ran for 334.416 ms,  gate count: 0 output cardinality: 397415, row width=56
+Operator #-1 SortMergeJoin ran for 6.11215e+06 ms,  gate count: 22081341720 output cardinality: 397415, row width=153
+Operator #-1 Sort ran for 1477.22 ms,  gate count: 0 output cardinality: 9965, row width=232
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders (6312626 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_no_bitpacking
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43458, 65470 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 5185.69 ms,  gate count: 0 output cardinality: 99478, row width=161
+Operator #-1 SecureSqlInput ran for 3274.53 ms,  gate count: 0 output cardinality: 397415, row width=65
+Operator #-1 Project ran for 227.111 ms,  gate count: 0 output cardinality: 99478, row width=161
+Operator #-1 Project ran for 597.556 ms,  gate count: 0 output cardinality: 397415, row width=65
+Operator #-1 Sort ran for 3.36622e+06 ms,  gate count: 12179751144 output cardinality: 496893, row width=194
+Operator #-1 Sort ran for 3.36359e+06 ms,  gate count: 12179751144 output cardinality: 496893, row width=194
+Operator #-1 Sort ran for 764402 ms,  gate count: 2749588532 output cardinality: 99478, row width=258
+Operator #-1 Project ran for 884.965 ms,  gate count: 0 output cardinality: 397415, row width=161
+Operator #-1 Project ran for 381.424 ms,  gate count: 0 output cardinality: 397415, row width=65
+Operator #-1 SortMergeJoin ran for 8.35466e+06 ms,  gate count: 30166174736 output cardinality: 397415, row width=225
+Operator #-1 Sort ran for 1432.9 ms,  gate count: 0 output cardinality: 9965, row width=232
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_no_bitpacking (8478656 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43459, 65470 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 50976.1 ms,  gate count: 12319868 output cardinality: 397415, row width=56
+Operator #-1 SecureSqlInput ran for 35100.7 ms,  gate count: 12434748 output cardinality: 99478, row width=98
+Operator #-1 SecureSqlInput ran for 1062.77 ms,  gate count: 309968 output cardinality: 9999, row width=15
+Operator #-1 Project ran for 139.77 ms,  gate count: 0 output cardinality: 99478, row width=98
+Operator #-1 Project ran for 0.935 ms,  gate count: 0 output cardinality: 9999, row width=15
+Operator #-1 Sort ran for 362372 ms,  gate count: 1313577412 output cardinality: 109477, row width=131
+Operator #-1 Sort ran for 368495 ms,  gate count: 1313577412 output cardinality: 109477, row width=131
+Operator #-1 Sort ran for 41986.5 ms,  gate count: 148408952 output cardinality: 9999, row width=195
+Operator #-1 Project ran for 205.498 ms,  gate count: 0 output cardinality: 99478, row width=98
+Operator #-1 Project ran for 20.548 ms,  gate count: 0 output cardinality: 99478, row width=15
+Operator #-1 SortMergeJoin ran for 953168 ms,  gate count: 3392704308 output cardinality: 99478, row width=112
+Operator #-1 Project ran for 572.314 ms,  gate count: 0 output cardinality: 397415, row width=56
+Operator #-1 Project ran for 163.447 ms,  gate count: 0 output cardinality: 99478, row width=112
+Operator #-1 Sort ran for 2.57655e+06 ms,  gate count: 9180948780 output cardinality: 496893, row width=145
+Operator #-1 Sort ran for 2.55917e+06 ms,  gate count: 9180948776 output cardinality: 496893, row width=145
+Operator #-1 Sort ran for 666551 ms,  gate count: 2404127408 output cardinality: 99478, row width=209
+Operator #-1 Project ran for 363.153 ms,  gate count: 0 output cardinality: 397415, row width=56
+Operator #-1 Project ran for 644.951 ms,  gate count: 0 output cardinality: 397415, row width=112
+Operator #-1 SortMergeJoin ran for 6.61613e+06 ms,  gate count: 23669562808 output cardinality: 397415, row width=167
+Operator #-1 Sort ran for 159.976 ms,  gate count: 0 output cardinality: 2084, row width=264
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (7724156 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_no_bitpacking
+Received storage flag of row
+Connecting to 129.105.61.184 on ports 43460, 65470 as 2
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 6315.74 ms,  gate count: 0 output cardinality: 397415, row width=65
+Operator #-1 SecureSqlInput ran for 2018.05 ms,  gate count: 0 output cardinality: 99478, row width=161
+Operator #-1 SecureSqlInput ran for 57.258 ms,  gate count: 0 output cardinality: 9999, row width=33
+Operator #-1 Project ran for 242.173 ms,  gate count: 0 output cardinality: 99478, row width=161
+Operator #-1 Project ran for 3.92 ms,  gate count: 0 output cardinality: 9999, row width=33
+Operator #-1 Sort ran for 571629 ms,  gate count: 2076553512 output cardinality: 109477, row width=194
+Operator #-1 Sort ran for 576572 ms,  gate count: 2076553512 output cardinality: 109477, row width=194
+Operator #-1 Sort ran for 49084.7 ms,  gate count: 177001500 output cardinality: 9999, row width=258
+Operator #-1 Project ran for 391.437 ms,  gate count: 0 output cardinality: 99478, row width=161
+Operator #-1 Project ran for 53.402 ms,  gate count: 0 output cardinality: 99478, row width=33
+Operator #-1 SortMergeJoin ran for 1.39609e+06 ms,  gate count: 5024385208 output cardinality: 99478, row width=193
+Operator #-1 Project ran for 365.706 ms,  gate count: 0 output cardinality: 397415, row width=65
+Operator #-1 Project ran for 266.531 ms,  gate count: 0 output cardinality: 99478, row width=193
+Operator #-1 Sort ran for 3.77409e+06 ms,  gate count: 13656084616 output cardinality: 496893, row width=226
+Operator #-1 Sort ran for 3.75952e+06 ms,  gate count: 13656084616 output cardinality: 496893, row width=226
+Operator #-1 Sort ran for 823345 ms,  gate count: 2975195796 output cardinality: 99478, row width=290
+Operator #-1 Project ran for 381.266 ms,  gate count: 0 output cardinality: 397415, row width=65
+Operator #-1 Project ran for 1044.25 ms,  gate count: 0 output cardinality: 397415, row width=193
+Operator #-1 SortMergeJoin ran for 9.31079e+06 ms,  gate count: 33644014100 output cardinality: 397415, row width=257
+Operator #-1 Sort ran for 147.105 ms,  gate count: 0 output cardinality: 2084, row width=264
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_no_bitpacking (10782077 ms)
+[----------] 6 tests from SecureSortMergeJoinTest (35712200 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (35712200 ms total)
+[  PASSED  ] 6 tests.
