@@ -1,0 +1,545 @@
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureSortMergeJoinTest
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43455, 65470 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 328.649 ms,  gate count: 122376 output cardinality: 979, row width=98
+Operator #-1 SecureSqlInput ran for 10.746 ms,  gate count: 3068 output cardinality: 99, row width=15
+Operator #-1 Project ran for 2.635 ms,  gate count: 0 output cardinality: 979, row width=98
+Operator #-1 Project ran for 0.044 ms,  gate count: 0 output cardinality: 99, row width=15
+Operator #-1 Sort ran for 1318.29 ms,  gate count: 4884584 output cardinality: 1078, row width=131
+Operator #-1 Sort ran for 1325.44 ms,  gate count: 4884580 output cardinality: 1078, row width=131
+Operator #-1 Sort ran for 100.72 ms,  gate count: 385204 output cardinality: 99, row width=195
+Operator #-1 Project ran for 2.701 ms,  gate count: 0 output cardinality: 979, row width=98
+Operator #-1 Project ran for 0.303 ms,  gate count: 0 output cardinality: 979, row width=15
+Operator #-1 SortMergeJoin ran for 3968.97 ms,  gate count: 14528716 output cardinality: 979, row width=112
+Comparing on idx 0 with (43879, 31, 745200000, 0, 31) (dummy=0)
+          !=            (2630562, 5, 741139200, 0, 5) (dummy=0)
+    Failed to match!
+/home/vaultdb/vaultdb-core-emp-operators/src/main/cpp/test/mpc/secure_sort_merge_join_test.cpp:75: Failure
+Expected equality of these values:
+  *expected
+    Which is: (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority, #4 int32 customer.c_custkey) isEncrypted? 0 order by: {}
+(43879, 31, 745200000, 0, 31)
+(52263, 19, 768355200, 0, 19)
+(90019, 19, 751766400, 0, 19)
+(193030, 34, 708048000, 0, 34)
+(233089, 71, 762739200, 0, 71)
+(235779, 31, 767577600, 0, 31)
+(287366, 41, 771984000, 0, 41)
+(322501, 53, 782092800, 0, 53)
+(554115, 34, 718761600, 0, 34)
+(576263, 34, 762566400, 0, 34)
+(663840, 52, 794275200, 0, 52)
+(686918, 23, 714355200, 0, 23)
+(709665, 94, 723772800, 0, 94)
+(714625, 86, 739843200, 0, 86)
+(787105, 31, 770083200, 0, 31)
+(815364, 68, 750470400, 0, 68)
+(827042, 58, 731635200, 0, 58)
+(854375, 23, 748137600, 0, 23)
+(888615, 94, 703814400, 0, 94)
+(890018, 52, 767836800, 0, 52)
+(969474, 41, 714700800, 0, 41)
+(1218950, 86, 762048000, 0, 86)
+(1252005, 34, 695347200, 0, 34)
+(1353314, 52, 701395200, 0, 52)
+(1358113, 35, 697939200, 0, 35)
+(1428645, 19, 715132800, 0, 19)
+(1616512, 94, 713836800, 0, 94)
+(1737250, 23, 781574400, 0, 23)
+(1769315, 86, 749174400, 0, 86)
+(1774689, 10, 742089600, 0, 10)
+(1823424, 34, 695001600, 0, 34)
+(1843907, 23, 719971200, 0, 23)
+(1884806, 94, 697939200, 0, 94)
+(1895491, 31, 729907200, 0, 31)
+(2046658, 34, 707270400, 0, 34)
+(2126688, 10, 745372800, 0, 10)
+(2137510, 71, 750038400, 0, 71)
+(2177348, 34, 756259200, 0, 34)
+(2332928, 31, 781401600, 0, 31)
+(2396803, 58, 748483200, 0, 58)
+(2501219, 86, 750038400, 0, 86)
+(2514754, 19, 765676800, 0, 19)
+(2565058, 94, 738633600, 0, 94)
+(2630562, 5, 741139200, 0, 5)
+(2747429, 52, 709171200, 0, 52)
+(2814946, 94, 706320000, 0, 94)
+(2825158, 71, 787881600, 0, 71)
+(2826500, 23, 777945600, 0, 23)
+(2842599, 35, 777168000, 0, 35)
+(2923650, 31, 761184000, 0, 31)
+(2948996, 71, 706492800, 0, 71)
+(2982693, 58, 737424000, 0, 58)
+(3012964, 23, 740707200, 0, 23)
+(3079554, 94, 777686400, 0, 94)
+(3330881, 35, 792201600, 0, 35)
+(3478503, 34, 695865600, 0, 34)
+(3480546, 53, 701395200, 0, 53)
+(3545637, 52, 700358400, 0, 52)
+(3580034, 10, 710640000, 0, 10)
+(3625088, 86, 759283200, 0, 86)
+(3754946, 94, 731289600, 0, 94)
+(3864070, 35, 738979200, 0, 35)
+(3918433, 41, 746668800, 0, 41)
+(3940897, 34, 701568000, 0, 34)
+(3942656, 10, 713923200, 0, 10)
+(3947046, 19, 742521600, 0, 19)
+(4060806, 94, 736646400, 0, 94)
+(4068167, 86, 719452800, 0, 86)
+(4072832, 94, 766108800, 0, 94)
+(4141668, 10, 796003200, 0, 10)
+(4382212, 58, 754704000, 0, 58)
+(4404676, 31, 695865600, 0, 31)
+(4477568, 58, 763948800, 0, 58)
+(4625152, 34, 749001600, 0, 34)
+(4650021, 71, 704678400, 0, 71)
+(4692995, 31, 765590400, 0, 31)
+(4734019, 94, 696038400, 0, 94)
+(4764547, 94, 762048000, 0, 94)
+(4909280, 31, 748828800, 0, 31)
+(4966627, 38, 729907200, 0, 38)
+(4968129, 38, 774489600, 0, 38)
+(5003109, 38, 773366400, 0, 38)
+(5080485, 94, 720662400, 0, 94)
+(5104326, 35, 725932800, 0, 35)
+(5112389, 52, 697852800, 0, 52)
+(5214082, 86, 714960000, 0, 86)
+(5237284, 94, 756086400, 0, 94)
+(5247654, 52, 748483200, 0, 52)
+(5279264, 31, 746582400, 0, 31)
+(5433765, 34, 736646400, 0, 34)
+(5496389, 68, 760320000, 0, 68)
+(5749952, 23, 776822400, 0, 23)
+(5790119, 86, 738115200, 0, 86)
+(5803201, 71, 715564800, 0, 71)
+(5876613, 19, 702777600, 0, 19)
+(5917185, 94, 773020800, 0, 94)
+(5926656, 71, 734140800, 0, 71)
+(5975365, 19, 707097600, 0, 19)
+
+  *observed
+    Which is: (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority, #4 int32 customer.c_custkey) isEncrypted? 0 order by: {}
+(2630562, 5, 741139200, 0, 5)
+(3580034, 10, 710640000, 0, 10)
+(4141668, 10, 796003200, 0, 10)
+(1774689, 10, 742089600, 0, 10)
+(3942656, 10, 713923200, 0, 10)
+(2126688, 10, 745372800, 0, 10)
+(52263, 19, 768355200, 0, 19)
+(90019, 19, 751766400, 0, 19)
+(5876613, 19, 702777600, 0, 19)
+(2514754, 19, 765676800, 0, 19)
+(3947046, 19, 742521600, 0, 19)
+(5975365, 19, 707097600, 0, 19)
+(1428645, 19, 715132800, 0, 19)
+(1737250, 23, 781574400, 0, 23)
+(1843907, 23, 719971200, 0, 23)
+(2826500, 23, 777945600, 0, 23)
+(5749952, 23, 776822400, 0, 23)
+(854375, 23, 748137600, 0, 23)
+(3012964, 23, 740707200, 0, 23)
+(686918, 23, 714355200, 0, 23)
+(2923650, 31, 761184000, 0, 31)
+(4692995, 31, 765590400, 0, 31)
+(43879, 31, 745200000, 0, 31)
+(1895491, 31, 729907200, 0, 31)
+(5279264, 31, 746582400, 0, 31)
+(4909280, 31, 748828800, 0, 31)
+(787105, 31, 770083200, 0, 31)
+(235779, 31, 767577600, 0, 31)
+(4404676, 31, 695865600, 0, 31)
+(2332928, 31, 781401600, 0, 31)
+(2046658, 34, 707270400, 0, 34)
+(5433765, 34, 736646400, 0, 34)
+(193030, 34, 708048000, 0, 34)
+(576263, 34, 762566400, 0, 34)
+(1252005, 34, 695347200, 0, 34)
+(4625152, 34, 749001600, 0, 34)
+(1823424, 34, 695001600, 0, 34)
+(3940897, 34, 701568000, 0, 34)
+(2177348, 34, 756259200, 0, 34)
+(554115, 34, 718761600, 0, 34)
+(3478503, 34, 695865600, 0, 34)
+(3864070, 35, 738979200, 0, 35)
+(3330881, 35, 792201600, 0, 35)
+(5104326, 35, 725932800, 0, 35)
+(2842599, 35, 777168000, 0, 35)
+(1358113, 35, 697939200, 0, 35)
+(5003109, 38, 773366400, 0, 38)
+(4968129, 38, 774489600, 0, 38)
+(4966627, 38, 729907200, 0, 38)
+(287366, 41, 771984000, 0, 41)
+(969474, 41, 714700800, 0, 41)
+(3918433, 41, 746668800, 0, 41)
+(5247654, 52, 748483200, 0, 52)
+(2747429, 52, 709171200, 0, 52)
+(5112389, 52, 697852800, 0, 52)
+(890018, 52, 767836800, 0, 52)
+(3545637, 52, 700358400, 0, 52)
+(663840, 52, 794275200, 0, 52)
+(1353314, 52, 701395200, 0, 52)
+(3480546, 53, 701395200, 0, 53)
+(322501, 53, 782092800, 0, 53)
+(2396803, 58, 748483200, 0, 58)
+(4477568, 58, 763948800, 0, 58)
+(4382212, 58, 754704000, 0, 58)
+(827042, 58, 731635200, 0, 58)
+(2982693, 58, 737424000, 0, 58)
+(5496389, 68, 760320000, 0, 68)
+(815364, 68, 750470400, 0, 68)
+(233089, 71, 762739200, 0, 71)
+(2948996, 71, 706492800, 0, 71)
+(5803201, 71, 715564800, 0, 71)
+(5926656, 71, 734140800, 0, 71)
+(2825158, 71, 787881600, 0, 71)
+(4650021, 71, 704678400, 0, 71)
+(2137510, 71, 750038400, 0, 71)
+(5790119, 86, 738115200, 0, 86)
+(3625088, 86, 759283200, 0, 86)
+(5214082, 86, 714960000, 0, 86)
+(1769315, 86, 749174400, 0, 86)
+(1218950, 86, 762048000, 0, 86)
+(2501219, 86, 750038400, 0, 86)
+(714625, 86, 739843200, 0, 86)
+(4068167, 86, 719452800, 0, 86)
+(1616512, 94, 713836800, 0, 94)
+(5917185, 94, 773020800, 0, 94)
+(888615, 94, 703814400, 0, 94)
+(709665, 94, 723772800, 0, 94)
+(2814946, 94, 706320000, 0, 94)
+(1884806, 94, 697939200, 0, 94)
+(5080485, 94, 720662400, 0, 94)
+(3754946, 94, 731289600, 0, 94)
+(2565058, 94, 738633600, 0, 94)
+(4764547, 94, 762048000, 0, 94)
+(4060806, 94, 736646400, 0, 94)
+(3079554, 94, 777686400, 0, 94)
+(4734019, 94, 696038400, 0, 94)
+(4072832, 94, 766108800, 0, 94)
+(5237284, 94, 756086400, 0, 94)
+
+[  FAILED  ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders (5674 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders_no_bitpacking
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43456, 65470 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 30.81 ms,  gate count: 0 output cardinality: 979, row width=161
+Operator #-1 SecureSqlInput ran for 0.961 ms,  gate count: 0 output cardinality: 99, row width=33
+Operator #-1 Project ran for 3.939 ms,  gate count: 0 output cardinality: 979, row width=161
+Operator #-1 Project ran for 0.028 ms,  gate count: 0 output cardinality: 99, row width=33
+Operator #-1 Sort ran for 2089.98 ms,  gate count: 7721736 output cardinality: 1078, row width=194
+Operator #-1 Sort ran for 2091.3 ms,  gate count: 7721736 output cardinality: 1078, row width=194
+Operator #-1 Sort ran for 124.109 ms,  gate count: 459420 output cardinality: 99, row width=258
+Operator #-1 Project ran for 1.931 ms,  gate count: 0 output cardinality: 979, row width=161
+Operator #-1 Project ran for 0.302 ms,  gate count: 0 output cardinality: 979, row width=33
+Operator #-1 SortMergeJoin ran for 5654.1 ms,  gate count: 20754976 output cardinality: 979, row width=193
+Comparing on idx 0 with (43879, 31, 745200000, 0, 31) (dummy=0)
+          !=            (2630562, 5, 741139200, 0, 5) (dummy=0)
+    Failed to match!
+/home/vaultdb/vaultdb-core-emp-operators/src/main/cpp/test/mpc/secure_sort_merge_join_test.cpp:111: Failure
+Expected equality of these values:
+  *expected
+    Which is: (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority, #4 int32 customer.c_custkey) isEncrypted? 0 order by: {}
+(43879, 31, 745200000, 0, 31)
+(52263, 19, 768355200, 0, 19)
+(90019, 19, 751766400, 0, 19)
+(193030, 34, 708048000, 0, 34)
+(233089, 71, 762739200, 0, 71)
+(235779, 31, 767577600, 0, 31)
+(287366, 41, 771984000, 0, 41)
+(322501, 53, 782092800, 0, 53)
+(554115, 34, 718761600, 0, 34)
+(576263, 34, 762566400, 0, 34)
+(663840, 52, 794275200, 0, 52)
+(686918, 23, 714355200, 0, 23)
+(709665, 94, 723772800, 0, 94)
+(714625, 86, 739843200, 0, 86)
+(787105, 31, 770083200, 0, 31)
+(815364, 68, 750470400, 0, 68)
+(827042, 58, 731635200, 0, 58)
+(854375, 23, 748137600, 0, 23)
+(888615, 94, 703814400, 0, 94)
+(890018, 52, 767836800, 0, 52)
+(969474, 41, 714700800, 0, 41)
+(1218950, 86, 762048000, 0, 86)
+(1252005, 34, 695347200, 0, 34)
+(1353314, 52, 701395200, 0, 52)
+(1358113, 35, 697939200, 0, 35)
+(1428645, 19, 715132800, 0, 19)
+(1616512, 94, 713836800, 0, 94)
+(1737250, 23, 781574400, 0, 23)
+(1769315, 86, 749174400, 0, 86)
+(1774689, 10, 742089600, 0, 10)
+(1823424, 34, 695001600, 0, 34)
+(1843907, 23, 719971200, 0, 23)
+(1884806, 94, 697939200, 0, 94)
+(1895491, 31, 729907200, 0, 31)
+(2046658, 34, 707270400, 0, 34)
+(2126688, 10, 745372800, 0, 10)
+(2137510, 71, 750038400, 0, 71)
+(2177348, 34, 756259200, 0, 34)
+(2332928, 31, 781401600, 0, 31)
+(2396803, 58, 748483200, 0, 58)
+(2501219, 86, 750038400, 0, 86)
+(2514754, 19, 765676800, 0, 19)
+(2565058, 94, 738633600, 0, 94)
+(2630562, 5, 741139200, 0, 5)
+(2747429, 52, 709171200, 0, 52)
+(2814946, 94, 706320000, 0, 94)
+(2825158, 71, 787881600, 0, 71)
+(2826500, 23, 777945600, 0, 23)
+(2842599, 35, 777168000, 0, 35)
+(2923650, 31, 761184000, 0, 31)
+(2948996, 71, 706492800, 0, 71)
+(2982693, 58, 737424000, 0, 58)
+(3012964, 23, 740707200, 0, 23)
+(3079554, 94, 777686400, 0, 94)
+(3330881, 35, 792201600, 0, 35)
+(3478503, 34, 695865600, 0, 34)
+(3480546, 53, 701395200, 0, 53)
+(3545637, 52, 700358400, 0, 52)
+(3580034, 10, 710640000, 0, 10)
+(3625088, 86, 759283200, 0, 86)
+(3754946, 94, 731289600, 0, 94)
+(3864070, 35, 738979200, 0, 35)
+(3918433, 41, 746668800, 0, 41)
+(3940897, 34, 701568000, 0, 34)
+(3942656, 10, 713923200, 0, 10)
+(3947046, 19, 742521600, 0, 19)
+(4060806, 94, 736646400, 0, 94)
+(4068167, 86, 719452800, 0, 86)
+(4072832, 94, 766108800, 0, 94)
+(4141668, 10, 796003200, 0, 10)
+(4382212, 58, 754704000, 0, 58)
+(4404676, 31, 695865600, 0, 31)
+(4477568, 58, 763948800, 0, 58)
+(4625152, 34, 749001600, 0, 34)
+(4650021, 71, 704678400, 0, 71)
+(4692995, 31, 765590400, 0, 31)
+(4734019, 94, 696038400, 0, 94)
+(4764547, 94, 762048000, 0, 94)
+(4909280, 31, 748828800, 0, 31)
+(4966627, 38, 729907200, 0, 38)
+(4968129, 38, 774489600, 0, 38)
+(5003109, 38, 773366400, 0, 38)
+(5080485, 94, 720662400, 0, 94)
+(5104326, 35, 725932800, 0, 35)
+(5112389, 52, 697852800, 0, 52)
+(5214082, 86, 714960000, 0, 86)
+(5237284, 94, 756086400, 0, 94)
+(5247654, 52, 748483200, 0, 52)
+(5279264, 31, 746582400, 0, 31)
+(5433765, 34, 736646400, 0, 34)
+(5496389, 68, 760320000, 0, 68)
+(5749952, 23, 776822400, 0, 23)
+(5790119, 86, 738115200, 0, 86)
+(5803201, 71, 715564800, 0, 71)
+(5876613, 19, 702777600, 0, 19)
+(5917185, 94, 773020800, 0, 94)
+(5926656, 71, 734140800, 0, 71)
+(5975365, 19, 707097600, 0, 19)
+
+  *observed
+    Which is: (#0 int32 orders.o_orderkey, #1 int32 orders.o_custkey, #2 int64 orders.o_orderdate, #3 int32 orders.o_shippriority, #4 int32 customer.c_custkey) isEncrypted? 0 order by: {}
+(2630562, 5, 741139200, 0, 5)
+(3580034, 10, 710640000, 0, 10)
+(4141668, 10, 796003200, 0, 10)
+(1774689, 10, 742089600, 0, 10)
+(3942656, 10, 713923200, 0, 10)
+(2126688, 10, 745372800, 0, 10)
+(52263, 19, 768355200, 0, 19)
+(90019, 19, 751766400, 0, 19)
+(5876613, 19, 702777600, 0, 19)
+(2514754, 19, 765676800, 0, 19)
+(3947046, 19, 742521600, 0, 19)
+(5975365, 19, 707097600, 0, 19)
+(1428645, 19, 715132800, 0, 19)
+(1737250, 23, 781574400, 0, 23)
+(1843907, 23, 719971200, 0, 23)
+(2826500, 23, 777945600, 0, 23)
+(5749952, 23, 776822400, 0, 23)
+(854375, 23, 748137600, 0, 23)
+(3012964, 23, 740707200, 0, 23)
+(686918, 23, 714355200, 0, 23)
+(2923650, 31, 761184000, 0, 31)
+(4692995, 31, 765590400, 0, 31)
+(43879, 31, 745200000, 0, 31)
+(1895491, 31, 729907200, 0, 31)
+(5279264, 31, 746582400, 0, 31)
+(4909280, 31, 748828800, 0, 31)
+(787105, 31, 770083200, 0, 31)
+(235779, 31, 767577600, 0, 31)
+(4404676, 31, 695865600, 0, 31)
+(2332928, 31, 781401600, 0, 31)
+(2046658, 34, 707270400, 0, 34)
+(5433765, 34, 736646400, 0, 34)
+(193030, 34, 708048000, 0, 34)
+(576263, 34, 762566400, 0, 34)
+(1252005, 34, 695347200, 0, 34)
+(4625152, 34, 749001600, 0, 34)
+(1823424, 34, 695001600, 0, 34)
+(3940897, 34, 701568000, 0, 34)
+(2177348, 34, 756259200, 0, 34)
+(554115, 34, 718761600, 0, 34)
+(3478503, 34, 695865600, 0, 34)
+(3864070, 35, 738979200, 0, 35)
+(3330881, 35, 792201600, 0, 35)
+(5104326, 35, 725932800, 0, 35)
+(2842599, 35, 777168000, 0, 35)
+(1358113, 35, 697939200, 0, 35)
+(5003109, 38, 773366400, 0, 38)
+(4968129, 38, 774489600, 0, 38)
+(4966627, 38, 729907200, 0, 38)
+(287366, 41, 771984000, 0, 41)
+(969474, 41, 714700800, 0, 41)
+(3918433, 41, 746668800, 0, 41)
+(5247654, 52, 748483200, 0, 52)
+(2747429, 52, 709171200, 0, 52)
+(5112389, 52, 697852800, 0, 52)
+(890018, 52, 767836800, 0, 52)
+(3545637, 52, 700358400, 0, 52)
+(663840, 52, 794275200, 0, 52)
+(1353314, 52, 701395200, 0, 52)
+(3480546, 53, 701395200, 0, 53)
+(322501, 53, 782092800, 0, 53)
+(2396803, 58, 748483200, 0, 58)
+(4477568, 58, 763948800, 0, 58)
+(4382212, 58, 754704000, 0, 58)
+(827042, 58, 731635200, 0, 58)
+(2982693, 58, 737424000, 0, 58)
+(5496389, 68, 760320000, 0, 68)
+(815364, 68, 750470400, 0, 68)
+(233089, 71, 762739200, 0, 71)
+(2948996, 71, 706492800, 0, 71)
+(5803201, 71, 715564800, 0, 71)
+(5926656, 71, 734140800, 0, 71)
+(2825158, 71, 787881600, 0, 71)
+(4650021, 71, 704678400, 0, 71)
+(2137510, 71, 750038400, 0, 71)
+(5790119, 86, 738115200, 0, 86)
+(3625088, 86, 759283200, 0, 86)
+(5214082, 86, 714960000, 0, 86)
+(1769315, 86, 749174400, 0, 86)
+(1218950, 86, 762048000, 0, 86)
+(2501219, 86, 750038400, 0, 86)
+(714625, 86, 739843200, 0, 86)
+(4068167, 86, 719452800, 0, 86)
+(1616512, 94, 713836800, 0, 94)
+(5917185, 94, 773020800, 0, 94)
+(888615, 94, 703814400, 0, 94)
+(709665, 94, 723772800, 0, 94)
+(2814946, 94, 706320000, 0, 94)
+(1884806, 94, 697939200, 0, 94)
+(5080485, 94, 720662400, 0, 94)
+(3754946, 94, 731289600, 0, 94)
+(2565058, 94, 738633600, 0, 94)
+(4764547, 94, 762048000, 0, 94)
+(4060806, 94, 736646400, 0, 94)
+(3079554, 94, 777686400, 0, 94)
+(4734019, 94, 696038400, 0, 94)
+(4072832, 94, 766108800, 0, 94)
+(5237284, 94, 756086400, 0, 94)
+
+[  FAILED  ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders_no_bitpacking (6302 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43457, 65470 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 309.902 ms,  gate count: 122376 output cardinality: 979, row width=98
+Operator #-1 SecureSqlInput ran for 447.876 ms,  gate count: 122452 output cardinality: 3950, row width=56
+Operator #-1 Project ran for 1.192 ms,  gate count: 0 output cardinality: 979, row width=98
+Operator #-1 Project ran for 2.789 ms,  gate count: 0 output cardinality: 3950, row width=56
+Operator #-1 Sort ran for 10329.3 ms,  gate count: 35367372 output cardinality: 4929, row width=131
+Operator #-1 Sort ran for 10196.4 ms,  gate count: 35367376 output cardinality: 4929, row width=131
+Operator #-1 Sort ran for 2316.91 ms,  gate count: 8520312 output cardinality: 979, row width=195
+Operator #-1 Project ran for 4.588 ms,  gate count: 0 output cardinality: 3950, row width=98
+Operator #-1 Project ran for 2.634 ms,  gate count: 0 output cardinality: 3950, row width=56
+Operator #-1 SortMergeJoin ran for 28595.5 ms,  gate count: 99298236 output cardinality: 3950, row width=153
+Operator #-1 Sort ran for 7.137 ms,  gate count: 0 output cardinality: 82, row width=232
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders (30890 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_no_bitpacking
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43458, 65470 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 45.105 ms,  gate count: 0 output cardinality: 979, row width=161
+Operator #-1 SecureSqlInput ran for 67.425 ms,  gate count: 0 output cardinality: 3950, row width=65
+Operator #-1 Project ran for 3.192 ms,  gate count: 0 output cardinality: 979, row width=161
+Operator #-1 Project ran for 5.161 ms,  gate count: 0 output cardinality: 3950, row width=65
+Operator #-1 Sort ran for 13861.4 ms,  gate count: 50470200 output cardinality: 4929, row width=194
+Operator #-1 Sort ran for 13895.8 ms,  gate count: 50470200 output cardinality: 4929, row width=194
+Operator #-1 Sort ran for 2764.39 ms,  gate count: 10161840 output cardinality: 979, row width=258
+Operator #-1 Project ran for 4.006 ms,  gate count: 0 output cardinality: 3950, row width=161
+Operator #-1 Project ran for 1.722 ms,  gate count: 0 output cardinality: 3950, row width=65
+Operator #-1 SortMergeJoin ran for 36924.9 ms,  gate count: 133576052 output cardinality: 3950, row width=225
+Operator #-1 Sort ran for 7.01 ms,  gate count: 0 output cardinality: 82, row width=232
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_no_bitpacking (38459 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43459, 65470 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 435.265 ms,  gate count: 122452 output cardinality: 3950, row width=56
+Operator #-1 SecureSqlInput ran for 342.751 ms,  gate count: 122376 output cardinality: 979, row width=98
+Operator #-1 SecureSqlInput ran for 12.275 ms,  gate count: 3068 output cardinality: 99, row width=15
+Operator #-1 Project ran for 2.61 ms,  gate count: 0 output cardinality: 979, row width=98
+Operator #-1 Project ran for 0.021 ms,  gate count: 0 output cardinality: 99, row width=15
+Operator #-1 Sort ran for 1322.72 ms,  gate count: 4884584 output cardinality: 1078, row width=131
+Operator #-1 Sort ran for 1326.77 ms,  gate count: 4884584 output cardinality: 1078, row width=131
+Operator #-1 Sort ran for 109.906 ms,  gate count: 385208 output cardinality: 99, row width=195
+Operator #-1 Project ran for 1.591 ms,  gate count: 0 output cardinality: 979, row width=98
+Operator #-1 Project ran for 0.194 ms,  gate count: 0 output cardinality: 979, row width=15
+Operator #-1 SortMergeJoin ran for 3952.69 ms,  gate count: 14528716 output cardinality: 979, row width=112
+Operator #-1 Project ran for 1.279 ms,  gate count: 0 output cardinality: 3950, row width=56
+Operator #-1 Project ran for 0.694 ms,  gate count: 0 output cardinality: 979, row width=112
+Operator #-1 Sort ran for 10352.5 ms,  gate count: 38043824 output cardinality: 4929, row width=145
+Operator #-1 Sort ran for 10468.1 ms,  gate count: 38043824 output cardinality: 4929, row width=145
+Operator #-1 Sort ran for 2417.06 ms,  gate count: 8885096 output cardinality: 979, row width=209
+Operator #-1 Project ran for 1.754 ms,  gate count: 0 output cardinality: 3950, row width=56
+Operator #-1 Project ran for 6.756 ms,  gate count: 0 output cardinality: 3950, row width=112
+Operator #-1 SortMergeJoin ran for 29152.9 ms,  gate count: 106609692 output cardinality: 3950, row width=167
+Operator #-1 Sort ran for 0.145 ms,  gate count: 0 output cardinality: 8, row width=264
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer (34912 ms)
+[ RUN      ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_no_bitpacking
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43460, 65470 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 72.878 ms,  gate count: 0 output cardinality: 3950, row width=65
+Operator #-1 SecureSqlInput ran for 44.599 ms,  gate count: 0 output cardinality: 979, row width=161
+Operator #-1 SecureSqlInput ran for 1.027 ms,  gate count: 0 output cardinality: 99, row width=33
+Operator #-1 Project ran for 4.119 ms,  gate count: 0 output cardinality: 979, row width=161
+Operator #-1 Project ran for 0.024 ms,  gate count: 0 output cardinality: 99, row width=33
+Operator #-1 Sort ran for 2093.34 ms,  gate count: 7721736 output cardinality: 1078, row width=194
+Operator #-1 Sort ran for 2095.68 ms,  gate count: 7721736 output cardinality: 1078, row width=194
+Operator #-1 Sort ran for 123.049 ms,  gate count: 459420 output cardinality: 99, row width=258
+Operator #-1 Project ran for 2.449 ms,  gate count: 0 output cardinality: 979, row width=161
+Operator #-1 Project ran for 0.313 ms,  gate count: 0 output cardinality: 979, row width=33
+Operator #-1 SortMergeJoin ran for 5652.37 ms,  gate count: 20754976 output cardinality: 979, row width=193
+Operator #-1 Project ran for 1.462 ms,  gate count: 0 output cardinality: 3950, row width=65
+Operator #-1 Project ran for 1.125 ms,  gate count: 0 output cardinality: 979, row width=193
+Operator #-1 Sort ran for 15415.8 ms,  gate count: 56587800 output cardinality: 4929, row width=226
+Operator #-1 Sort ran for 15716.7 ms,  gate count: 56587800 output cardinality: 4929, row width=226
+Operator #-1 Sort ran for 2990.5 ms,  gate count: 10995632 output cardinality: 979, row width=290
+Operator #-1 Project ran for 3.122 ms,  gate count: 0 output cardinality: 3950, row width=65
+Operator #-1 Project ran for 8.188 ms,  gate count: 0 output cardinality: 3950, row width=193
+Operator #-1 SortMergeJoin ran for 41074.4 ms,  gate count: 148773400 output cardinality: 3950, row width=257
+Operator #-1 Sort ran for 0.141 ms,  gate count: 0 output cardinality: 8, row width=264
+[       OK ] SecureSortMergeJoinTest.test_tpch_q3_lineitem_orders_customer_no_bitpacking (47976 ms)
+[----------] 6 tests from SecureSortMergeJoinTest (164216 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (164216 ms total)
+[  PASSED  ] 4 tests.
+[  FAILED  ] 2 tests, listed below:
+[  FAILED  ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders
+[  FAILED  ] SecureSortMergeJoinTest.test_tpch_q3_customer_orders_no_bitpacking
+
+ 2 FAILED TESTS
