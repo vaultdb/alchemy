@@ -1,0 +1,70 @@
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureKeyedJoinTest
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43442, 65458 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 8810.5 ms,  gate count: 20703184 output cardinality: 9869, row width=98
+Operator #-1 SecureSqlInput ran for 187.519 ms,  gate count: 262396 output cardinality: 999, row width=15
+Operator #-1 KeyedJoin ran for 91751.7 ms,  gate count: 315492192 output cardinality: 9869, row width=112
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders (104889 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders_no_bit_packing
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43443, 65458 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 8689.96 ms,  gate count: 31113116 output cardinality: 9869, row width=161
+Operator #-1 SecureSqlInput ran for 147.943 ms,  gate count: 487476 output cardinality: 999, row width=33
+Operator #-1 KeyedJoin ran for 351725 ms,  gate count: 1271827900 output cardinality: 9869, row width=193
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders_no_bit_packing (363389 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43444, 65458 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 3587.41 ms,  gate count: 1233628 output cardinality: 9869, row width=98
+Operator #-1 SecureSqlInput ran for 4748.82 ms,  gate count: 1226016 output cardinality: 39549, row width=56
+Operator #-1 KeyedJoin ran for 1.32262e+07 ms,  gate count: 48398326044 output cardinality: 39549, row width=153
+Operator #-1 Sort ran for 125.435 ms,  gate count: 0 output cardinality: 1077, row width=232
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders (13248263 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_no_bit_packing
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43445, 65458 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 215.158 ms,  gate count: 0 output cardinality: 9869, row width=161
+Operator #-1 SecureSqlInput ran for 509.649 ms,  gate count: 0 output cardinality: 39549, row width=65
+Operator #-1 KeyedJoin ran for 2.74228e+07 ms,  gate count: 100309433820 output cardinality: 39549, row width=225
+Operator #-1 Sort ran for 122.621 ms,  gate count: 0 output cardinality: 1077, row width=232
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_no_bit_packing (27437178 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43446, 65458 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 4922.79 ms,  gate count: 1226020 output cardinality: 39549, row width=56
+Operator #-1 SecureSqlInput ran for 3599.41 ms,  gate count: 1233624 output cardinality: 9869, row width=98
+Operator #-1 SecureSqlInput ran for 113.957 ms,  gate count: 30972 output cardinality: 999, row width=15
+Operator #-1 KeyedJoin ran for 89364.8 ms,  gate count: 315492192 output cardinality: 9869, row width=112
+Operator #-1 KeyedJoin ran for 1.48461e+07 ms,  gate count: 53862653176 output cardinality: 39549, row width=167
+Operator #-1 Sort ran for 14.537 ms,  gate count: 0 output cardinality: 221, row width=264
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer (14953234 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer_no_bit_packing
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43447, 65458 as 1
+connected
+Connected!
+Operator #-1 SecureSqlInput ran for 425.395 ms,  gate count: 0 output cardinality: 39549, row width=65
+Operator #-1 SecureSqlInput ran for 283.956 ms,  gate count: 0 output cardinality: 9869, row width=161
+Operator #-1 SecureSqlInput ran for 7.594 ms,  gate count: 0 output cardinality: 999, row width=33
+Operator #-1 KeyedJoin ran for 358153 ms,  gate count: 1271827900 output cardinality: 9869, row width=193
+Operator #-1 KeyedJoin ran for 3.11384e+07 ms,  gate count: 112799324408 output cardinality: 39549, row width=257
+Operator #-1 Sort ran for 14.053 ms,  gate count: 0 output cardinality: 221, row width=264
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders_customer_no_bit_packing (31506251 ms)
+[----------] 6 tests from SecureKeyedJoinTest (87613208 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (87613209 ms total)
+[  PASSED  ] 6 tests.

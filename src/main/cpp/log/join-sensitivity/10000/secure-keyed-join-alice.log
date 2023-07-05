@@ -1,0 +1,22 @@
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from SecureKeyedJoinTest
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43442, 65458 as 1
+connected
+Operator #-1 SecureSqlInput ran for 107191 ms,  gate count: 260585144 output cardinality: 99478, row width=98
+Operator #-1 SecureSqlInput ran for 2010.88 ms,  gate count: 3346172 output cardinality: 9999, row width=15
+Operator #-1 KeyedJoin ran for 9.05775e+06 ms,  gate count: 31829776704 output cardinality: 99478, row width=112
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders (9196166 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_customer_orders_no_bit_packing
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43443, 65458 as 1
+connected
+Operator #-1 SecureSqlInput ran for 188313 ms,  gate count: 649570152 output cardinality: 99478, row width=161
+Operator #-1 SecureSqlInput ran for 3066.53 ms,  gate count: 10400600 output cardinality: 9999, row width=33
+Operator #-1 KeyedJoin ran for 3.57641e+07 ms,  gate count: 128313787336 output cardinality: 99478, row width=193
+[       OK ] SecureKeyedJoinTest.test_tpch_q3_customer_orders_no_bit_packing (35983040 ms)
+[ RUN      ] SecureKeyedJoinTest.test_tpch_q3_lineitem_orders
+Received storage flag of row
+Connecting to 127.0.0.1 on ports 43444, 65458 as 1
