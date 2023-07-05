@@ -10,7 +10,7 @@ namespace  vaultdb {
     public:
         static std::string getRollupExpectedResultsSql(const std::string &groupByColName, const std::string & selection);
         static SecureTable *rollUpAggregate( SecureTable *input, const int &ordinal);
-        static void validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition,  PlainTable *testTable);
+        static void validateTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, PlainTable *testTable);
         static void secretShareFromCsv(const string &src_file, const QuerySchema &plain_schema, const string &dst_root);
         static void secretShareFromQuery(const std::string & db_name, const std::string & query, const std::string & dst_root);
         static std::string appendToConjunctivePredicate(const std::string & base, const std::string & to_append);
@@ -21,6 +21,8 @@ namespace  vaultdb {
         static std::string parseYearSelection(const std::string & input_year);
         // study length in years
         static int getStudyLength(const std::string study_year);
+
+        static QueryTable<Bit> *filterRollup(QueryTable<Bit> * input);
 
         static const std::string data_cube_sql_,  data_cube_sql_no_dummies_, unioned_db_name_;
         static void redactCellCounts(SecureTable *input, const int & min_cell_cnt);

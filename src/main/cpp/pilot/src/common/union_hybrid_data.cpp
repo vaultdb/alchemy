@@ -79,7 +79,8 @@ SecureTable *UnionHybridData::readSecretSharedInput(const string &secretSharesFi
     bool *dst_bools = new bool[dst_bit_alloc];
     assert(dst_bools != nullptr);
 
-    plain_to_secure_bits(src_bools, dst_bools, plain_schema, secure_schema, tuple_cnt);
+    memcpy(dst_bools, src_bools, 8); // copy over storage model header
+    plain_to_secure_bits(src_bools+8, dst_bools+8, plain_schema, secure_schema, tuple_cnt);
 
     delete [] src_bools;
 

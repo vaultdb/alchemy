@@ -26,11 +26,19 @@ QuerySchema::QuerySchema(const std::string &schema_spec) {
     vector<string> tokens = CsvReader::split(schema_str);
 
     int counter = 0;
+    int last_field = tokens.size() - 1;
+
     for(auto token : tokens) {
         auto f = QueryFieldDesc(counter, token);
+        if(counter == last_field && f.getName() == "dummy_tag") {
+            // do not add dummy tag
+            assert(f.getType() == FieldType::BOOL || f.getType() == FieldType::SECURE_BOOL);
+            break;
+        }
         putField(f);
         ++counter;
     }
+    // dummy tag's place is deterministic, will be added in initializeFieldOffsets()
     initializeFieldOffsets();
 }
 
