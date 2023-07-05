@@ -54,7 +54,7 @@ You can check out an example of this schema parsing facility in [secret_share_cs
 
   The running example with a dummy tag column:
   ```
-  (study_year:int32, ..., denom_excl:bool, dummy_tag:bool)```
+  (study_year:int32, ..., denom_excl:bool, dummy_tag:bool)
 ```
 
 
