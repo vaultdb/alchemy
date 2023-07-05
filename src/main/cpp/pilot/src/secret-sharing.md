@@ -18,11 +18,15 @@ VaultDB can parse ad-hoc schemas for use in query processing with the following 
 
 For example, the pilot's plaintext schema for patients was:
 
-```(study_year:int32, pat_id:int32, age_strata:varchar(1), sex:varchar(1),  ethnicity:varchar(1), race:varchar(1), numerator:bool, denom_excl:bool)```
+```
+(study_year:int32, pat_id:int32, age_strata:varchar(1), sex:varchar(1),  ethnicity:varchar(1), race:varchar(1), numerator:bool, denom_excl:bool)
+```
 
 If your input is secret-shared elsewhere (i.e., it has the suffix `.alice` or `.bob`), then the input types should have the prefix `shared-`.  Thus our Enrich secret shares will have this schema:
 
-```(study_year:shared-int32, pat_id:shared-int32, age_strata:shared-varchar(1), sex:shared-varchar(1),  ethnicity:shared-varchar(1), race:shared-varchar(1), numerator:shared-bool, denom_excl:shared-bool)```
+```
+(study_year:shared-int32, pat_id:shared-int32, age_strata:shared-varchar(1), sex:shared-varchar(1),  ethnicity:shared-varchar(1), race:shared-varchar(1), numerator:shared-bool, denom_excl:shared-bool)
+```
 
 Supported Types:
 * `bool`
