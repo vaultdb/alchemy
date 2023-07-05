@@ -1,7 +1,7 @@
 --
 -- PostgreSQL database dump
 --
-
+DROP TABLE IF EXISTS bit_packing;
 -- Dumped from database version 15.2 (Homebrew)
 -- Dumped by pg_dump version 15.2 (Homebrew)
 
