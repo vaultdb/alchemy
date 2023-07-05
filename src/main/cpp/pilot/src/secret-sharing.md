@@ -44,7 +44,7 @@ All inputs to VaultDB are byte-aligned.  For example, if you send a `shared-bool
 All row entries must be of the same security level.  It will not run if some columns are `shared` and others are not.  For example, this schema will get rejected:
 ```(study_year:shared-int32, pat_id:int32,...```
 
-You can check out an example of this schema parsing facility in [secret_share_csv](https://github.com/vaultdb/vaultdb-core/blob/emp-operators/src/main/cpp/pilot/src/secret_share_csv.cpp).  We also demo it in the [`CSVReader` unit test](https://github.com/vaultdb/vaultdb-core/blob/emp-operators/src/main/cpp/test/csv_reader_test.cpp).
+You can check out an example of this schema parsing facility in [secret_share_csv](https://github.com/vaultdb/vaultdb-core/blob/emp-operators/src/main/cpp/pilot/src/secret_share_csv.cpp).  We also demo it in the [CSVReader unit test](https://github.com/vaultdb/vaultdb-core/blob/emp-operators/src/main/cpp/test/csv_reader_test.cpp).
 
   #### Dummy Tags
 
