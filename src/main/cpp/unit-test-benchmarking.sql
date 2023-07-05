@@ -33,7 +33,7 @@ DELETE FROM unit_test WHERE test_name='emp_test_int' AND test_suite='EmpTest';
 
 SELECT DISTINCT test_suite FROM unit_test ORDER BY test_suite;
 
-# disregard known anomaly
+-- disregard known anomaly
 DELETE FROM unit_test WHERE test_suite='SecureKeyedJoinTest' AND test_time::DATE='2023-06-14'::DATE AND runtime_ms > 100000;
 
 
