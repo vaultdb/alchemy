@@ -35,10 +35,8 @@ SecureTable *runRollup(int idx, string colName, int party, SecureTable *data_cub
     if(!TESTBED)
         PilotUtilities::redactCellCounts(stratified, min_cell_count_);
 
-    cout << "***Rollup results: " << *stratified->reveal() << endl;
 
     stratified = PilotUtilities::filterRollup(stratified);
-    cout << "***Rollup results after filtering: " << *stratified->reveal() << endl;
     std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
 
     std::string suffix = (party == emp::ALICE) ? "alice" : "bob";
