@@ -11,7 +11,7 @@ When sending one of these files (CSV or .alice/bob) please accompany it with a `
 ### Schema Format
 
 
-VaultDB can parse ad-hoc schemas for use in query processing.  It accepts schemas in the form:
+VaultDB can parse ad-hoc schemas for use in query processing with the following format:
 ```
 (col1_name:col1_type,col2_name:col2_type,...,colN_name:colN:type)
 ```
