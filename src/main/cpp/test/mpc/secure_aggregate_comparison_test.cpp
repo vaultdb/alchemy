@@ -188,9 +188,9 @@ TEST_F(SecureAggregateComparisonTest, tpch_q1_NLA) {
     string unioned_db_name = "tpch_unioned";
     controlBitPacking(unioned_db_name);
     string local_db_name = (FLAGS_party == ALICE) ? "tpch_alice" : "tpch_bob";
-
-    std::cout << unioned_db_name << " " << local_db_name << "\n";
     int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
     string input_rows = "SELECT * FROM lineitem WHERE l_orderkey IN (SELECT o_orderkey FROM orders WHERE o_custkey <= " + std::to_string(cutoff) + ") ORDER BY l_orderkey, l_linenumber";
     string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                  " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
@@ -259,10 +259,10 @@ TEST_F(SecureAggregateComparisonTest, tpch_q1_SMA) {
     string unioned_db_name = "tpch_unioned";
     controlBitPacking(unioned_db_name);
     string local_db_name = (FLAGS_party == ALICE) ? "tpch_alice" : "tpch_bob";
-
-    std::cout << unioned_db_name << " " << local_db_name << "\n";
-
     int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+
     string input_rows = "SELECT * FROM lineitem WHERE l_orderkey IN (SELECT o_orderkey FROM orders WHERE o_custkey <= " + std::to_string(cutoff) + ") ORDER BY l_orderkey, l_linenumber";
     string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                  " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
@@ -327,9 +327,10 @@ TEST_F(SecureAggregateComparisonTest, tpch_q5_NLA) {
     string unioned_db_name = "tpch_unioned";
     controlBitPacking(unioned_db_name);
     string local_db_name = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
-
-    std::cout << unioned_db_name << " " << local_db_name << "\n";
     int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+
     string sql = "SELECT n.n_name, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_nationkey = s.s_nationkey  AND o.o_orderdate >= date '1993-01-01' AND o.o_orderdate < date '1994-01-01') AS dummy_tag\n"
                  "                 FROM  customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"
                  "                     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
@@ -380,9 +381,10 @@ TEST_F(SecureAggregateComparisonTest, tpch_q5_SMA) {
     string unioned_db_name = "tpch_unioned";
     controlBitPacking(unioned_db_name);
     string local_db_name = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
-
-    std::cout << unioned_db_name << " " << local_db_name << "\n";
     int cutoff = FLAGS_cutoff;
+    
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+
     string sql = "SELECT n.n_name, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_nationkey = s.s_nationkey  AND o.o_orderdate >= date '1993-01-01' AND o.o_orderdate < date '1994-01-01') AS dummy_tag\n"
                  "                 FROM  customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"
                  "                     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
