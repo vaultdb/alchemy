@@ -1,5 +1,5 @@
 ## Schema for Secret Sharing CSVs to VaultDB
-VaultDB can accept inline schema definitions for ad-hoc queries.  This is similar to [BigTable's](https://cloud.google.com/bigquery/docs/external-table-definition#use-inline-schema) design.
+VaultDB can accept inline schema definitions for ad-hoc queries.  This is inspired by [BigTable's](https://cloud.google.com/bigquery/docs/external-table-definition#use-inline-schema) design.
 
 ### Warmup: Filenames
 If you are providing the engine a plaintext CSV, such as one from a full-stack data partner (who runs the MPC protocols), the engine will expect a file with the suffix ".csv" and an additional file with the extension ".schema".  For example in our ENRICH pilot, we would have `enrich-patients.csv` and `enrich-patients.schema`.
