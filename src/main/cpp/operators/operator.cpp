@@ -56,8 +56,9 @@ QueryTable<B> *Operator<B>::run() {
     size_t after_gate_count =  system_conf_.andGateCount();
     runtime_ = time_from(start_time_);
 
-    cout << "Operator #" << this->getOperatorId() << " " << getOperatorType()  << " ran for " << runtime_/1e3 << " ms, "
-        << " gate count: " << after_gate_count - start_gate_cnt_ << " output cardinality: " << output_->getTupleCount() << ", row width=" << output_schema_.size() <<  '\n';
+    if(std::is_same_v<B, Bit>)
+        cout << "Operator #" << this->getOperatorId() << " " << getOperatorType()  << " ran for " << runtime_/1e3 << " ms, "
+            << " gate count: " << after_gate_count - start_gate_cnt_ << " output cardinality: " << output_->getTupleCount() << ", row width=" << output_schema_.size() <<  '\n';
 //    cout << "      Operator desc: " << this->toString() << endl;
 
     operator_executed_ = true;
