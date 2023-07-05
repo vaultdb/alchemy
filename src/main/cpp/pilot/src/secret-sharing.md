@@ -61,6 +61,17 @@ The running example with a dummy tag column:
   ***Limitations***: The dummy tag must always be the last column of input.  Also, it must always be a bool and the bool must be compatible with the security level of the other row entries.
 
 
+### OK, but what does this look like in bits?
+
+Say we have our running example schema:
+```(study_year:shared-int32, pat_id:shared-int32, age_strata:shared-varchar(1), sex:shared-varchar(1),  ethnicity:shared-varchar(1), race:shared-varchar(1), numerator:shared-bool, denom_excl:shared-bool)```
+
+and we receive an input row: `(2018, 1, 6, M, N, 3, true, true, false)`. In binary, we'd expect our input to be this:
+```
+01000111 11100000 00000000 00000000 10000000 00000000 00000000 00000000 01101100 10110010 01110010 11001100 10000000 10000000 00000000
+```
+In other words, 2018 will be `01000111 11100000 00000000 00000000`, the patient ID will be `10000000 00000000 00000000 00000000` and so on.  Note that our bools are byte-aligned - e.g., we represent `true` as `10000000`.  
+
 
 
   
