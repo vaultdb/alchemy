@@ -44,15 +44,24 @@ All inputs to VaultDB are byte-aligned.  For example, if you send a `shared-bool
 All row entries must be of the same security level.  It will not run if some columns are `shared` and others are not.  For example, this schema will get rejected:
 ```(study_year:shared-int32, pat_id:int32,...```
 
-  ### Dummy Tags
+For column names, you can optionally give them table names too - separated with a period.  For example, if you give us the column name `patient.patient_id` then the engine will parse this as having a table name of patient and a column name of patient_id.  Keeping track of this provenance - the relationship between the common data model / schema and the CSVs can be helpful for debugging.
 
-  In some circumstances, the data partner may wish to pad their inputs.  For example, if they provide partially aggregated data (like counting the patients in each strata locally) they may wish to pad their results to the full domain (all strata).  The engine has a reserved word to denote that the last column is our dummy tag. If you name your last column `dummy_tag` then the engine will treat this as tombstone for the row and disregard any rows that have it set to `true` in its computation.  Of course, it skips the dummies obliviously.
+***Code in action***: You can check out an example of this schema parsing facility in [secret_share_csv](https://github.com/vaultdb/vaultdb-core/blob/emp-operators/src/main/cpp/pilot/src/secret_share_csv.cpp).  We also demo it in the [CSVReader unit test](https://github.com/vaultdb/vaultdb-core/blob/emp-operators/src/main/cpp/test/csv_reader_test.cpp).
+
+  #### Dummy Tags
+
+Sometimes a data partner may wish to pad their inputs.  For example, if they provide partially aggregated data (like counting the patients in each strata locally) they may wish to pad their results to the full domain (all strata).  The engine has a reserved word to denote that the last column is our dummy tag. If you name your last column `dummy_tag` then the engine will treat this as tombstone for the row and disregard any rows that have it set to `true` in its computation.  Of course, it skips the dummies obliviously.
+
+
+The running example with a dummy tag column:
+  ```
+  (study_year:int32, ..., denom_excl:bool, dummy_tag:bool)
+```
 
   ***Limitations***: The dummy tag must always be the last column of input.  Also, it must always be a bool and the bool must be compatible with the security level of the other row entries.
 
-  The running example with a dummy tag column:
-  ```
-  (study_year:int32, pat_id:int32, age_strata:varchar(1), sex:varchar(1),  ethnicity:varchar(1), race:varchar(1), numerator:bool, denom_excl:bool, dummy_tag:bool)```
-```
+
+
+
   
   
