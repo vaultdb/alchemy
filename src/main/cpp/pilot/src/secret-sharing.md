@@ -1,4 +1,4 @@
-## Schema for Secret Sharing CSVs
+## Schema for Secret Sharing CSVs to VaultDB
 VaultDB can accept inline schema definitions for ad-hoc queries.  This is similar to [BigTable's](https://cloud.google.com/bigquery/docs/external-table-definition#use-inline-schema) design.
 
 ### Warmup: Filenames
@@ -11,18 +11,22 @@ When sending one of these files (CSV or .alice/bob) please accompany it with a `
 ### Schema Format
 
 
-VaultDB can parse ad-hoc schemas for use in query processing.  It accepts schemas in the form:
+VaultDB can parse ad-hoc schemas for use in query processing with the following format:
 ```
 (col1_name:col1_type,col2_name:col2_type,...,colN_name:colN:type)
 ```
 
 For example, the pilot's plaintext schema for patients was:
 
-```(study_year:int32, pat_id:int32, age_strata:varchar(1), sex:varchar(1),  ethnicity:varchar(1), race:varchar(1), numerator:bool, denom_excl:bool)```
+```
+(study_year:int32, pat_id:int32, age_strata:varchar(1), sex:varchar(1),  ethnicity:varchar(1), race:varchar(1), numerator:bool, denom_excl:bool)
+```
 
 If your input is secret-shared elsewhere (i.e., it has the suffix `.alice` or `.bob`), then the input types should have the prefix `shared-`.  Thus our Enrich secret shares will have this schema:
 
-```(study_year:shared-int32, pat_id:shared-int32, age_strata:shared-varchar(1), sex:shared-varchar(1),  ethnicity:shared-varchar(1), race:shared-varchar(1), numerator:shared-bool, denom_excl:shared-bool)```
+```
+(study_year:shared-int32, pat_id:shared-int32, age_strata:shared-varchar(1), sex:shared-varchar(1),  ethnicity:shared-varchar(1), race:shared-varchar(1), numerator:shared-bool, denom_excl:shared-bool)
+```
 
 Supported Types:
 * `bool`
@@ -60,6 +64,17 @@ The running example with a dummy tag column:
 
   ***Limitations***: The dummy tag must always be the last column of input.  Also, it must always be a bool and the bool must be compatible with the security level of the other row entries.
 
+
+### OK, but what does this look like in bits?
+
+Say we have our running example schema:
+```(study_year:shared-int32, pat_id:shared-int32, age_strata:shared-varchar(1), sex:shared-varchar(1),  ethnicity:shared-varchar(1), race:shared-varchar(1), numerator:shared-bool, denom_excl:shared-bool)```
+
+and we receive an input row: `(2018, 1, 6, M, N, 3, true, true, false)`. In binary, we'd expect our input to be this:
+```
+01000111 11100000 00000000 00000000 10000000 00000000 00000000 00000000 01101100 10110010 01110010 11001100 10000000 10000000 00000000
+```
+In other words, 2018 will be `01000111 11100000 00000000 00000000`, the patient ID will be `10000000 00000000 00000000 00000000` and so on.  Note that our bools are byte-aligned - e.g., we represent `true` as `10000000`.  
 
 
 
