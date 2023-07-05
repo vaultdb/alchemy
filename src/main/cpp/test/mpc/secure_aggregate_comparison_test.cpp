@@ -53,6 +53,13 @@ SecureAggregateComparisonTest::runTest_SMA(const int &test_id, const string & te
     string local_db = db_name;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
+    std::cout << "Setting : " ;
+    if(FLAGS_bitpacking == "packed")
+        std::cout << " Bit Packed, " << db_name << ",  cutoff : " << cutoff_ << std::endl;
+    else
+        std::cout<< " Non Bit Packed, " << db_name << ",  cutoff : " << cutoff_ << std::endl;
+
+
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
@@ -63,6 +70,8 @@ SecureAggregateComparisonTest::runTest_SMA(const int &test_id, const string & te
 
     PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
+
+    std:cout << root->printTree() << endl;
 
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
@@ -100,6 +109,12 @@ SecureAggregateComparisonTest::runTest_NLA(const int &test_id, const string & te
     string local_db = db_name;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
+    std::cout << "Setting : " ;
+    if(FLAGS_bitpacking == "packed")
+        std::cout << " Bit Packed, " << db_name << ",  cutoff : " << cutoff_ << std::endl;
+    else
+        std::cout<< " Non Bit Packed, " << db_name << ",  cutoff : " << cutoff_ << std::endl;
+
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
 
@@ -108,6 +123,8 @@ SecureAggregateComparisonTest::runTest_NLA(const int &test_id, const string & te
 
     PlanParser<emp::Bit> parser(local_db, sql_file, plan_file, input_tuple_limit_);
     SecureOperator *root = parser.getRoot();
+
+    std:cout << root->printTree() << endl;
 
     time_point<high_resolution_clock> startTime = clock_start();
     clock_t secureStartClock = clock();
