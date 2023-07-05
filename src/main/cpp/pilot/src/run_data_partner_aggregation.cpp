@@ -78,7 +78,7 @@ runRollup(int idx, string colName, int party, SecureTable  *data_cube, const str
 
         string query = getRollupExpectedResultsSql(colName);
         query = PilotUtilities::replaceSelection(query, selection_clause);
-        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
+        PilotUtilities::validateTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
 
         // write it out
         string csv, schema;
@@ -210,7 +210,8 @@ int main(int argc, char **argv) {
     if(TESTBED) {
         PlainTable *revealed = data_cube->reveal();
         SortDefinition patientSortDef = DataUtilities::getDefaultSortDefinition(5);
-        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, partial_aggregate_query, patientSortDef, revealed);
+        PilotUtilities::validateTable(PilotUtilities::unioned_db_name_, partial_aggregate_query, patientSortDef,
+                                      revealed);
         delete revealed;
     }
 

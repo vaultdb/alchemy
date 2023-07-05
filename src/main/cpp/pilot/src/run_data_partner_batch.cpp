@@ -52,7 +52,7 @@ runRollup(int idx, string colName, int party, SecureTable *data_cube, const std:
         DataUtilities::removeDummies(revealed);
 
         string query = PilotUtilities::getRollupExpectedResultsSql(colName, selection_clause);
-        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
+        PilotUtilities::validateTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
 
         // write it out
         string csv, schema;
@@ -272,7 +272,7 @@ int main(int argc, char **argv) {
             string query =  DataUtilities::readTextFileToString("pilot/queries/patient.sql");
             query = PilotUtilities::replaceSelection(query, batch_predicate);
 
-            PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patientSortDef, revealed);
+            PilotUtilities::validateTable(PilotUtilities::unioned_db_name_, query, patientSortDef, revealed);
             delete revealed;
         }
 
@@ -346,7 +346,7 @@ int main(int argc, char **argv) {
         PlainTable *revealed = enrich.data_cube_->reveal();
         SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(5);
         string query = PilotUtilities::replaceSelection(PilotUtilities::data_cube_sql_no_dummies_, selection_clause);
-        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, cube_sort_def, revealed);
+        PilotUtilities::validateTable(PilotUtilities::unioned_db_name_, query, cube_sort_def, revealed);
         delete revealed;
     }
 

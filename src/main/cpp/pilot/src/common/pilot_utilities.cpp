@@ -4,6 +4,7 @@
 #include <util/data_utilities.h>
 #include <data/csv_reader.h>
 #include "util/emp_manager/sh2pc_manager.h"
+#include "operators/filter.h"
 
 using namespace vaultdb;
 
@@ -68,7 +69,7 @@ SecureTable *PilotUtilities::rollUpAggregate(SecureTable *input, const int &ordi
 }
 
 
-void PilotUtilities::validateInputTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition,  PlainTable *testTable)  {
+void PilotUtilities::validateTable(const std::string & dbName, const std::string & sql, const SortDefinition  & expectedSortDefinition, PlainTable *testTable)  {
 
 
     PlainTable *expectedTable = DataUtilities::getQueryResults(dbName, sql, false);
@@ -79,9 +80,6 @@ void PilotUtilities::validateInputTable(const std::string & dbName, const std::s
     Sort sort(testTable->clone(), expectedSortDefinition);
     PlainTable *observedTable = sort.run();
     DataUtilities::removeDummies(observedTable);
-
-    cout << "Expected table:  " << *expectedTable << endl;
-    cout << "Observed table:  " << *observedTable << endl;
 
     bool res = (*expectedTable == *observedTable);
     if(!res) {
@@ -227,4 +225,32 @@ void PilotUtilities::setupSystemConfiguration() {
 
     SH2PCManager *manager = new SH2PCManager();
     conf.emp_manager_ = manager;
+}
+
+// Schema:
+QueryTable<Bit> *PilotUtilities::filterRollup(QueryTable<Bit> * input) {
+    InputReference<Bit> field_2(2, input->getSchema());
+    InputReference<Bit> field_3(3, input->getSchema());
+    InputReference<Bit> field_4(4, input->getSchema());
+    InputReference<Bit> field_5(5, input->getSchema());
+
+    Integer zero(32, 0, PUBLIC);
+    LiteralNode<Bit> zero_2(Field<Bit>(FieldType::SECURE_INT, zero));
+    LiteralNode<Bit> zero_3(Field<Bit>(FieldType::SECURE_INT, zero));
+    LiteralNode<Bit> zero_4(Field<Bit>(FieldType::SECURE_INT, zero));
+    LiteralNode<Bit> zero_5(Field<Bit>(FieldType::SECURE_INT, zero));
+
+    NotEqualNode<Bit> neq_2(&field_2, &zero_2);
+    NotEqualNode<Bit> neq_3(&field_3, &zero_3);
+    NotEqualNode<Bit> neq_4(&field_4, &zero_4);
+    NotEqualNode<Bit> neq_5(&field_5, &zero_5);
+
+    OrNode<Bit> or_0(&neq_2, &neq_3);
+    OrNode<Bit> or_1(&neq_4, &neq_5);
+    OrNode<Bit> or_2(&or_0, &or_1);
+
+    GenericExpression<Bit> *expression = new GenericExpression<Bit>(&or_2, "predicate", FieldType::SECURE_BOOL);
+    Filter<Bit> filter(input, expression);
+
+    return filter.run()->clone();
 }

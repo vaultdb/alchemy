@@ -17,7 +17,7 @@ using namespace vaultdb;
 using namespace emp;
 namespace po = boost::program_options;
 
-#define TESTBED 0
+#define TESTBED 1
 
 
 auto start_time_ = emp::clock_start();
@@ -32,9 +32,13 @@ int min_cell_count_ = 11;
 SecureTable *runRollup(int idx, string colName, int party, SecureTable *data_cube, const std::string & selection_clause, const string &output_path) {
     auto start_time = emp::clock_start();
     SecureTable *stratified = PilotUtilities::rollUpAggregate(data_cube, idx);
+    if(!TESTBED)
+        PilotUtilities::redactCellCounts(stratified, min_cell_count_);
 
-    PilotUtilities::redactCellCounts(stratified, min_cell_count_);
+    cout << "***Rollup results: " << *stratified->reveal() << endl;
 
+    stratified = PilotUtilities::filterRollup(stratified);
+    cout << "***Rollup results after filtering: " << *stratified->reveal() << endl;
     std::vector<int8_t> results = stratified->reveal(emp::XOR)->serialize();
 
     std::string suffix = (party == emp::ALICE) ? "alice" : "bob";
@@ -46,10 +50,9 @@ SecureTable *runRollup(int idx, string colName, int party, SecureTable *data_cub
         SortDefinition orderBy = DataUtilities::getDefaultSortDefinition(2);
 
         PlainTable *revealed = stratified->reveal();
-        DataUtilities::removeDummies(revealed);
 
         string query = PilotUtilities::getRollupExpectedResultsSql(colName, selection_clause);
-        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
+        PilotUtilities::validateTable(PilotUtilities::unioned_db_name_, query, orderBy, revealed);
 
         // write it out
         string csv, schema;
@@ -258,11 +261,7 @@ int main(int argc, char **argv) {
         string query =  DataUtilities::readTextFileToString("pilot/queries/patient.sql");
         query = PilotUtilities::replaceSelection(query, selection_clause);
 
-
-
-        PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, patient_sort_def, revealed);
-        delete revealed;
-
+        PilotUtilities::validateTable(PilotUtilities::unioned_db_name_, query, patient_sort_def, revealed);
     }
 
 
@@ -315,7 +314,7 @@ int main(int argc, char **argv) {
             SortDefinition cube_sort_def = DataUtilities::getDefaultSortDefinition(5);
 
             string query = PilotUtilities::replaceSelection(PilotUtilities::data_cube_sql_, partial_count_selection_clause);
-            PilotUtilities::validateInputTable(PilotUtilities::unioned_db_name_, query, cube_sort_def, revealed);
+            PilotUtilities::validateTable(PilotUtilities::unioned_db_name_, query, cube_sort_def, revealed);
             delete revealed;
         }
 
@@ -337,8 +336,8 @@ int main(int argc, char **argv) {
     cout << "Ending epoch " << Utilities::getEpoch() << endl;
     cout <<  "Test completed on " << party_name << " in " <<    (runtime+0.0)*1e6*1e-9 << " secs." <<  endl;
     cout << measurements << endl;
-    cout <<  measurements <<  endl;
-/*
+
+    /*
     cout  << "Age rollup: " << endl;
     cout  << ageRollup->reveal() << endl;
 
