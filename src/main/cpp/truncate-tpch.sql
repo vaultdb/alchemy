@@ -22,8 +22,9 @@ END::numeric AS "cutoff";
 DROP DATABASE IF EXISTS :target_db;
 CREATE DATABASE :target_db  WITH TEMPLATE tpch_unioned;
 \c :target_db
-\i 'truncate-tpch-tables.sql'
+\i 'truncate-limit-tpch-tables.sql'
 SELECT truncate_tables(:cutoff);
+\i 'set-constraints.sql'
 
 
 -- now do alice and bob
@@ -31,12 +32,15 @@ SELECT truncate_tables(:cutoff);
 DROP DATABASE IF EXISTS :target_db;
 CREATE DATABASE :target_db  WITH TEMPLATE tpch_alice;
 \c :target_db
+\i 'truncate-limit-tpch-tables.sql'
 SELECT truncate_tables(:cutoff);
-
+\i 'set-constraints.sql'
 
 
 \set target_db 'tpch_bob_':cutoff
 DROP DATABASE IF EXISTS :target_db;
 CREATE DATABASE :target_db  WITH TEMPLATE tpch_bob;
 \c :target_db
+\i 'truncate-limit-tpch-tables.sql'
 SELECT truncate_tables(:cutoff);
+\i 'set-constraints.sql'

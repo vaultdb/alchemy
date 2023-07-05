@@ -1,17 +1,8 @@
-\set cutoff 1000
+\set cutoff 900
 \i truncate-tpch.sql
 
-\set cutoff 250
+\set cutoff 750
 \i truncate-tpch.sql
 
-\set cutoff 100
-\i truncate-tpch.sql
-
-\set cutoff 50
-\i truncate-tpch.sql
-
-\set cutoff 25
-\i truncate-tpch.sql
-
-\set cutoff 10
+\set cutoff 600
 \i truncate-tpch.sql
