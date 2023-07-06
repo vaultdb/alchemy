@@ -47,12 +47,13 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
 
     this->disableBitPacking();
 
+    cout << "Expected DB : " << FLAGS_dbname;
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_dbname);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
     string local_db = FLAGS_dbname;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
-    cout << local_db << " : Non-Bit Packed" << endl;
+    cout << " Observed DB : "<< local_db << " - Non-Bit Packed" << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -79,6 +80,18 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
     cout << "Baseline : \n";
     cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
 
+    /*
+    PlainTable *observed_plain = observed->reveal();
+    DataUtilities::removeDummies(observed_plain);
+
+    ASSERT_EQ(*expected, *observed_plain);
+
+    ASSERT_TRUE(!observed_plain->empty()); // want all tests to produce output
+    delete observed_plain;
+    delete observed;
+    delete expected;
+     */
+
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
         DataUtilities::removeDummies(observed);
@@ -96,12 +109,13 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
 
     this->disableBitPacking();
 
+    cout << "Expected DB : " << FLAGS_dbname;
     string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_dbname);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
     string local_db = FLAGS_dbname;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
-    cout << local_db << " : Non-Bit Packed" << endl;
+    cout << " Observed DB : "<< local_db << " - Non-Bit Packed" << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -125,6 +139,16 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
 
     cout << "Handcode : \n";
     cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
+
+    /*
+    PlainTable *observed_plain = observed->reveal();
+    DataUtilities::removeDummies(observed_plain);
+    ASSERT_EQ(*expected, *observed_plain);
+    ASSERT_TRUE(!observed_plain->empty()); // want all tests to produce output
+    delete observed_plain;
+    delete observed;
+    delete expected;
+     */
 
     if(FLAGS_validation) {
         PlainTable *observed = result->reveal();
