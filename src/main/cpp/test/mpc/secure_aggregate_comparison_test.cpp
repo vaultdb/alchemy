@@ -28,6 +28,7 @@ DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing pu
 DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_int32(cutoff, 10, "cutoff for Operator Comparison");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
 class SecureAggregateComparisonTest : public EmpBaseTest {
@@ -541,5 +542,6 @@ int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
+	::testing::GTEST_FLAG(filter)=FLAGS_filter;
     return RUN_ALL_TESTS();
 }

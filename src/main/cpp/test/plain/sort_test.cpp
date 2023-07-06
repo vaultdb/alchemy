@@ -5,6 +5,7 @@
 #include "query_table/table_factory.h"
 
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 class SortTest : public PlainBaseTest {};
 
@@ -282,6 +283,7 @@ int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
+	::testing::GTEST_FLAG(filter)=FLAGS_filter;
     return RUN_ALL_TESTS();
 }
 

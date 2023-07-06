@@ -258,7 +258,16 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 
 }
 
+TEST_F(SecureSortTest, customerSort) {
+	string sql = "SELECT * FROM customer WHERE c_custkey <= 100 ORDER BY c_custkey";
 
+	SortDefinition sort_definition;
+	sort_definition.emplace_back(0, SortDirection::ASCENDING);
+
+	auto input = new SecureSqlInput(db_name_, sql, false);
+	Sort<Bit> sort(input, sort_definition);
+	auto sorted = sort.run();
+}
 
 
 int main(int argc, char **argv) {

@@ -7,6 +7,7 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54322, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
 class EmpTestMultipleStarts : public ::testing::Test {
@@ -256,5 +257,6 @@ int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
+	::testing::GTEST_FLAG(filter)=FLAGS_filter;
     return RUN_ALL_TESTS();
 }

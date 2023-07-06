@@ -10,7 +10,7 @@
 #include <util/emp_manager/emp_manager.h>
 
 DECLARE_string(storage); // row || column
-
+DECLARE_string(filter);
 
 using namespace vaultdb;
 using namespace emp;
