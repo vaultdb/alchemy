@@ -232,7 +232,6 @@ TEST_F(SecureAggregateComparisonTest, tpch_q1_NLA) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
     auto input = new SecureSqlInput(local_db_name, sql, true);
 
-
     auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
     auto aggregated = aggregate->run();
 
