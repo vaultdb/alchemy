@@ -20,7 +20,7 @@ using namespace vaultdb;
 class SecureSortMergeJoinTest : public EmpBaseTest {
 protected:
 
-    int cutoff_ = 10;
+    int cutoff_ = 100;
 
     const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' c_dummy \n"
                                       "FROM customer  \n"
