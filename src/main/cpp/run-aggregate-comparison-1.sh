@@ -13,15 +13,9 @@ log_file="AggregateComparison_${date}.log"
 
 for cutoff in "${cutoff_values[@]}"
 do
-    echo "Running tests with test=baseline" >> "$log_file"
+    echo "Running tests with Bit Packed" >> "$log_file"
     $executable --party=$PARTY --cutoff=$cutoff --bitpacking="packed" >> "$log_file"
 
-    echo "Running tests with test=handcode" >> "$log_file"
-    $executable --party=$PARTY --cutoff=$cutoff --bitpacking="packed" >> "$log_file"
-
-    echo "Running tests with test=baseline" >> "$log_file"
-    $executable --party=$PARTY --cutoff=$cutoff --bitpacking="non" >> "$log_file"
-
-    echo "Running tests with test=handcode" >> "$log_file"
-    $executable --party=$PARTY --cutoff=$cutoff --bitpacking="non" >> "$log_file"
+    echo "Running tests with Non Bit Packed" >> "$log_file"
+        $executable --party=$PARTY --cutoff=$cutoff --bitpacking="non" >> "$log_file"
 done
