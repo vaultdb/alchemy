@@ -11,6 +11,8 @@ DECLARE_int32(port);
 DECLARE_int32(ctrl_port);
 DECLARE_string(alice_host);
 DECLARE_string(storage); // row || column
+DECLARE_string(filter); //run only the tests with names matching this regex.
+						//run ./{binary_name} --gtest_list_tests to get all unit test names
 
 
 using namespace vaultdb;
