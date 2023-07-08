@@ -16,11 +16,13 @@ using namespace vaultdb;
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
-DEFINE_string(test, "baseline", "testname baseline or handcode");\
 DEFINE_int32(port, 7654, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
+DEFINE_string(dbname, "tpch_unioned_150", "db name for baseline comparison test");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
 
@@ -46,11 +48,13 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
 
     this->disableBitPacking();
 
-    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, db_name);
+    cout << "Expected DB : " << FLAGS_dbname;
+    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_dbname);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    string local_db = db_name;
+    string local_db = FLAGS_dbname;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
+    cout << " Observed DB : "<< local_db << " - Non-Bit Packed" << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -68,7 +72,7 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
 
     std:cout << root->printTree() << endl;
 
-    SecureTable *observed = root->run();
+    SecureTable *result = root->run();
 
     double secureClockTicks = (double) (clock() - secureStartClock);
     double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
@@ -77,6 +81,7 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
     cout << "Baseline : \n";
     cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
 
+    /*
     PlainTable *observed_plain = observed->reveal();
     DataUtilities::removeDummies(observed_plain);
 
@@ -86,6 +91,18 @@ BaselineComparisonTest::runTest_baseline(const int &test_id, const string & test
     delete observed_plain;
     delete observed;
     delete expected;
+     */
+
+    if(FLAGS_validation) {
+        PlainTable *observed = result->reveal();
+        DataUtilities::removeDummies(observed);
+
+        ASSERT_EQ(*expected, *observed);
+        ASSERT_TRUE(!observed->empty()); // want all tests to produce output
+
+        delete observed;
+        delete expected;
+    }
 }
 
 void
@@ -93,11 +110,13 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
 
     this->disableBitPacking();
 
-    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, db_name);
+    cout << "Expected DB : " << FLAGS_dbname;
+    string expected_query = generateExpectedOutputQuery(test_id, expected_sort, FLAGS_dbname);
     string party_name = FLAGS_party == emp::ALICE ? "alice" : "bob";
-    string local_db = db_name;
+    string local_db = FLAGS_dbname;
     boost::replace_first(local_db, "unioned", party_name.c_str());
 
+    cout << " Observed DB : "<< local_db << " - Non-Bit Packed" << endl;
 
     PlainTable *expected = DataUtilities::getExpectedResults(db_name, expected_query, false, 0);
     expected->setSortOrder(expected_sort);
@@ -113,7 +132,7 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
 
     std:cout << root->printTree() << endl;
 
-    SecureTable *observed = root->run();
+    SecureTable *result = root->run();
 
     double secureClockTicks = (double) (clock() - secureStartClock);
     double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
@@ -122,15 +141,26 @@ BaselineComparisonTest::runTest_handcode(const int &test_id, const string & test
     cout << "Handcode : \n";
     cout << "Time: " << duration << " sec, CPU clock ticks: " << secureClockTicks << ",CPU clock ticks per second: " << secureClockTicksPerSecond << "\n";
 
+    /*
     PlainTable *observed_plain = observed->reveal();
     DataUtilities::removeDummies(observed_plain);
-
     ASSERT_EQ(*expected, *observed_plain);
-
     ASSERT_TRUE(!observed_plain->empty()); // want all tests to produce output
     delete observed_plain;
     delete observed;
     delete expected;
+     */
+
+    if(FLAGS_validation) {
+        PlainTable *observed = result->reveal();
+        DataUtilities::removeDummies(observed);
+
+        ASSERT_EQ(*expected, *observed);
+        ASSERT_TRUE(!observed->empty()); // want all tests to produce output
+
+        delete observed;
+        delete expected;
+    }
 }
 
 string
@@ -261,5 +291,6 @@ int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
+	::testing::GTEST_FLAG(filter)=FLAGS_filter;
     return RUN_ALL_TESTS();
 }

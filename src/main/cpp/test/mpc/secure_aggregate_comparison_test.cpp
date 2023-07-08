@@ -8,6 +8,11 @@
 #include <test/support/tpch_queries.h>
 #include <boost/algorithm/string/replace.hpp>
 #include <parser/plan_parser.h>
+#include <operators/secure_sql_input.h>
+#include <operators/sort.h>
+#include <operators/group_by_aggregate.h>
+#include <operators/nested_loop_aggregate.h>
+
 
 
 using namespace emp;
@@ -21,6 +26,9 @@ DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
+DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
+DEFINE_int32(cutoff, 10, "cutoff for Operator Comparison");
+DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 
 class SecureAggregateComparisonTest : public EmpBaseTest {
@@ -28,9 +36,10 @@ class SecureAggregateComparisonTest : public EmpBaseTest {
 protected:
 
     // depends on truncate-tpch-set.sql
-    void runTest_SMA(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
-    void runTest_NLA(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
-    string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
+    void controlBitPacking(const string &db_name);
+    //void runTest_SMA(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
+    //void runTest_NLA(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
+    //string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
 
     int cutoff_ = 100;
     int input_tuple_limit_ = -1;
@@ -40,6 +49,7 @@ protected:
 // most of these runs are not meaningful for diffing the results because they produce no tuples - joins are too sparse.
 // This isn't relevant to the parser so work on this elsewhere.
 
+/*
 void
 SecureAggregateComparisonTest::runTest_SMA(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 
@@ -161,9 +171,270 @@ SecureAggregateComparisonTest::generateExpectedOutputQuery(const int &test_id, c
 
     return query;
 }
+*/
+void
+SecureAggregateComparisonTest::controlBitPacking(const string &db_name) {
+    if(FLAGS_bitpacking == "packed") {
+        this->initializeBitPacking(db_name);
+        std::cout << "Bit Packed - DB : " << db_name << "\n";
+    }
+    else {
+        this->disableBitPacking();
+        std::cout << "Non Bit Packed" << "\n";
+    }
+}
+
+TEST_F(SecureAggregateComparisonTest, tpch_q1_NLA) {
+
+    string unioned_db_name = "tpch_unioned";
+    controlBitPacking(unioned_db_name);
+    string local_db_name = (FLAGS_party == ALICE) ? "tpch_alice" : "tpch_bob";
+    int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+    string input_rows = "SELECT * FROM lineitem WHERE l_orderkey IN (SELECT o_orderkey FROM orders WHERE o_custkey <= " + std::to_string(cutoff) + ") ORDER BY l_orderkey, l_linenumber";
+    string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                 " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                 " FROM (" + input_rows + ") selection \n"
+                                          " ORDER BY l_returnflag, l_linestatus";
+
+    string expected_sql =  "select \n"
+                           "  l_returnflag, \n"
+                           "  l_linestatus, \n"
+                           "  sum(l_quantity) as sum_qty, \n"
+                           "  sum(l_extendedprice) as sum_base_price, \n"
+                           "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, \n"
+                           "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, \n"
+                           "  avg(l_quantity) as avg_qty, \n"
+                           "  avg(l_extendedprice) as avg_price, \n"
+                           "  avg(l_discount) as avg_disc, \n"
+                           "  count(*)::BIGINT as count_order \n"
+                           "from (" + input_rows + ") input "
+                                                   " where  l_shipdate <= date '1998-08-03'  "
+                                                   "group by \n"
+                                                   "  l_returnflag, \n"
+                                                   "  l_linestatus \n"
+                                                   " \n"
+                                                   "order by \n"
+                                                   "  l_returnflag, \n"
+                                                   "  l_linestatus";
+
+    std::vector<int32_t> group_bys{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+            ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
+
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
+    auto input = new SecureSqlInput(local_db_name, sql, true);
+
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
+    auto aggregated = aggregate->run();
+
+    if(FLAGS_validation) {
+        aggregated->setSortOrder(sort_def);
+        PlainTable *observed = aggregated->reveal(PUBLIC);
+
+        //auto sort = new Sort(observed, sort_def);
+        //observed = sort->run();
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_name, expected_sql, false, 2);
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+
+    delete aggregate;
+
+}
+
+TEST_F(SecureAggregateComparisonTest, tpch_q1_SMA) {
+
+    string unioned_db_name = "tpch_unioned";
+    controlBitPacking(unioned_db_name);
+    string local_db_name = (FLAGS_party == ALICE) ? "tpch_alice" : "tpch_bob";
+    int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+
+    string input_rows = "SELECT * FROM lineitem WHERE l_orderkey IN (SELECT o_orderkey FROM orders WHERE o_custkey <= " + std::to_string(cutoff) + ") ORDER BY l_orderkey, l_linenumber";
+    string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
+                 " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
+                 " FROM (" + input_rows + ") selection \n"
+                                          " ORDER BY l_returnflag, l_linestatus";
+
+    string expected_sql =  "select \n"
+                           "  l_returnflag, \n"
+                           "  l_linestatus, \n"
+                           "  sum(l_quantity) as sum_qty, \n"
+                           "  sum(l_extendedprice) as sum_base_price, \n"
+                           "  sum(l_extendedprice * (1 - l_discount)) as sum_disc_price, \n"
+                           "  sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge, \n"
+                           "  avg(l_quantity) as avg_qty, \n"
+                           "  avg(l_extendedprice) as avg_price, \n"
+                           "  avg(l_discount) as avg_disc, \n"
+                           "  count(*)::BIGINT as count_order \n"
+                           "from (" + input_rows + ") input "
+                                                   " where  l_shipdate <= date '1998-08-03'  "
+                                                   "group by \n"
+                                                   "  l_returnflag, \n"
+                                                   "  l_linestatus \n"
+                                                   " \n"
+                                                   "order by \n"
+                                                   "  l_returnflag, \n"
+                                                   "  l_linestatus";
 
 
+    std::vector<int32_t> groupByCols{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_qty"),
+            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "sum_base_price"),
+            ScalarAggregateDefinition(5, vaultdb::AggregateId::SUM, "sum_disc_price"),
+            ScalarAggregateDefinition(6, vaultdb::AggregateId::SUM, "sum_charge"),
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::AVG, "avg_qty"),
+            ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
+            ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
+            ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
 
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
+    auto input = new SecureSqlInput(local_db_name, sql, true);
+    auto sort = new Sort(input, sort_def);
+    // sort alice + bob inputs after union
+    // Sort sort(&input, sort_def);
+
+    GroupByAggregate aggregate(sort, groupByCols, aggregators);
+
+    auto aggregated = aggregate.run();
+    if(FLAGS_validation) {
+
+        PlainTable *observed = aggregated->reveal(PUBLIC);
+
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_name, expected_sql, false, 2);
+        ASSERT_EQ(*expected, *observed);
+        delete observed;
+        delete expected;
+    }
+}
+
+TEST_F(SecureAggregateComparisonTest, tpch_q5_NLA) {
+
+    string unioned_db_name = "tpch_unioned";
+    controlBitPacking(unioned_db_name);
+    string local_db_name = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
+    int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+
+    string sql = "SELECT n.n_name, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_nationkey = s.s_nationkey  AND o.o_orderdate >= date '1993-01-01' AND o.o_orderdate < date '1994-01-01') AS dummy_tag\n"
+                 "                 FROM  customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"
+                 "                     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
+                 "                     JOIN supplier s ON l.l_suppkey = s.s_suppkey\n"
+                 "                     JOIN nation n ON s.s_nationkey = n.n_nationkey\n"
+                 "                     JOIN region r ON n.n_regionkey = r.r_regionkey\n"
+                 "                WHERE r.r_name = 'EUROPE' AND c_custkey < " + std::to_string(cutoff) + " ORDER BY n.n_name";
+
+
+    string expected_sql =  "SELECT n.n_name, SUM(l.l_extendedprice * (1 - l.l_discount)) as revenue\n"
+                           " FROM  customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"
+                           "     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
+                           "     JOIN supplier s ON l.l_suppkey = s.s_suppkey\n"
+                           "     JOIN nation n ON s.s_nationkey = n.n_nationkey\n"
+                           "     JOIN region r ON n.n_regionkey = r.r_regionkey\n"
+                           "WHERE c.c_nationkey = s.s_nationkey  AND r.r_name = 'EUROPE' AND o.o_orderdate >= date '1993-01-01' AND o.o_orderdate < date '1994-01-01' AND c_custkey < " + std::to_string(cutoff) +
+                           " GROUP BY   n.n_name\n"
+                           " ORDER BY n.n_name";
+
+    std::vector<int32_t> group_bys{0};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(1, vaultdb::AggregateId::SUM, "revenue")};
+
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
+    auto input = new SecureSqlInput(local_db_name, sql, true);
+
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 5);
+    auto aggregated = aggregate->run();
+
+    if(FLAGS_validation) {
+        aggregated->setSortOrder(sort_def);
+        PlainTable *observed = aggregated->reveal(PUBLIC);
+
+        //auto sort = new Sort(observed, sort_def);
+        //observed = sort->run();
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_name, expected_sql, false, 1);
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+
+    delete aggregate;
+
+}
+TEST_F(SecureAggregateComparisonTest, tpch_q5_SMA) {
+    string unioned_db_name = "tpch_unioned";
+    controlBitPacking(unioned_db_name);
+    string local_db_name = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
+    int cutoff = FLAGS_cutoff;
+    
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+
+    string sql = "SELECT n.n_name, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_nationkey = s.s_nationkey  AND o.o_orderdate >= date '1993-01-01' AND o.o_orderdate < date '1994-01-01') AS dummy_tag\n"
+                 "                 FROM  customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"
+                 "                     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
+                 "                     JOIN supplier s ON l.l_suppkey = s.s_suppkey\n"
+                 "                     JOIN nation n ON s.s_nationkey = n.n_nationkey\n"
+                 "                     JOIN region r ON n.n_regionkey = r.r_regionkey\n"
+                 "                WHERE r.r_name = 'EUROPE' AND c_custkey < " + std::to_string(cutoff) + " ORDER BY n.n_name";
+
+
+    string expected_sql =  "SELECT n.n_name, SUM(l.l_extendedprice * (1 - l.l_discount)) as revenue\n"
+                           " FROM  customer c JOIN orders o ON c.c_custkey = o.o_custkey\n"
+                           "     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
+                           "     JOIN supplier s ON l.l_suppkey = s.s_suppkey\n"
+                           "     JOIN nation n ON s.s_nationkey = n.n_nationkey\n"
+                           "     JOIN region r ON n.n_regionkey = r.r_regionkey\n"
+                           "WHERE c.c_nationkey = s.s_nationkey  AND r.r_name = 'EUROPE' AND o.o_orderdate >= date '1993-01-01' AND o.o_orderdate < date '1994-01-01' AND c_custkey < " + std::to_string(cutoff) +
+                           " GROUP BY   n.n_name\n"
+                           " ORDER BY n.n_name";
+
+    std::vector<int32_t> group_bys{0};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(1, vaultdb::AggregateId::SUM, "revenue")};
+
+    SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(1);
+    auto input = new SecureSqlInput(local_db_name, sql, true);
+    auto sort = new Sort(input, sort_def);
+
+    auto aggregate = new GroupByAggregate(sort, group_bys, aggregators);
+    auto aggregated = aggregate->run();
+
+    if(FLAGS_validation) {
+        aggregated->setSortOrder(sort_def);
+        PlainTable *observed = aggregated->reveal(PUBLIC);
+
+        //auto sort = new Sort(observed, sort_def);
+        //observed = sort->run();
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_name, expected_sql, false, 1);
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+
+    delete aggregate;
+
+}
+
+
+/*
 TEST_F(SecureAggregateComparisonTest, tpch_q1_SMA) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest_SMA(1, "q1", expected_sort, unioned_db_);
@@ -264,12 +535,13 @@ TEST_F(SecureAggregateComparisonTest, tpch_q18_NLA) {
 
     runTest_NLA(18, "q18", expected_sort, unioned_db_);
 }
-
+*/
 
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     gflags::ParseCommandLineFlags(&argc, &argv, false);
 
+	::testing::GTEST_FLAG(filter)=FLAGS_filter;
     return RUN_ALL_TESTS();
 }

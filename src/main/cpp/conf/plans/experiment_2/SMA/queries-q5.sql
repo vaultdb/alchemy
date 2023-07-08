@@ -6,3 +6,4 @@ SELECT n.n_name, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_nat
                      JOIN nation n ON s.s_nationkey = n.n_nationkey
                      JOIN region r ON n.n_regionkey = r.r_regionkey
                 WHERE r.r_name = 'EUROPE' AND c_custkey < 100
+ORDER BY n.n_name
