@@ -30,11 +30,13 @@ SELECT truncate_tables(:cutoff);
 DROP DATABASE IF EXISTS :party_db;
 CREATE DATABASE :party_db  WITH TEMPLATE :target_db;
 \c :party_db
-\i '../../../conf/workload/tpch/select-alice.sql'
+\i 'select-alice.sql'
+SELECT split_tables_alice();
 
 
 \set party_db 'tpch_bob_':cutoff
 DROP DATABASE IF EXISTS :party_db;
 CREATE DATABASE :party_db  WITH TEMPLATE :target_db;
 \c :party_db
-\i '../../../conf/workload/tpch/select-alice.sql'
+\i 'select-bob.sql'
+SELECT split_tables_bob();

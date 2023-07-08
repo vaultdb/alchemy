@@ -229,7 +229,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q1_NLA) {
             ScalarAggregateDefinition(3, vaultdb::AggregateId::AVG, "avg_price"),
             ScalarAggregateDefinition(4, vaultdb::AggregateId::AVG, "avg_disc"),
             ScalarAggregateDefinition(-1, vaultdb::AggregateId::COUNT, "count_order")};
-
+    
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
     auto input = new SecureSqlInput(local_db_name, sql, true);
 
