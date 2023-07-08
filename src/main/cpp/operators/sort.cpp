@@ -189,21 +189,19 @@ B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int 
 //    int sort_key_width = 0;
 
     for (size_t i = 0; i < sort_definition.size(); ++i) {
+        const Field<B> lhs_field = table->getPackedField(lhs_idx,sort_definition[i].first);
+        const Field<B> rhs_field = table->getPackedField(rhs_idx,sort_definition[i].first);
 
-        const Field<B> lhs_field = sort_definition[i].first == -1 ? Field<B>(table->getDummyTag(lhs_idx))
-                                                                  : table->getPackedField(lhs_idx, sort_definition[i].first);
-        const Field<B> rhs_field = sort_definition[i].first == -1 ? Field<B>(table->getDummyTag(rhs_idx))
-                                                                  : table->getPackedField(rhs_idx,sort_definition[i].first);
 
 //        sort_key_width += sort_definition[i].first == -1 ? 1 : table->getSchema().getField(sort_definition[i].first).size();
 //        gates_1 = SystemConfiguration::getInstance().andGateCount();
 
         // true for ascending, false for descending
         bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
+	if(dir) asc = !asc;
 
         B to_swap =  (lhs_field < rhs_field) == asc;
-        if(dir)  // flip the bit
-            to_swap = !to_swap;
+
 
 //        gates_2 = SystemConfiguration::getInstance().andGateCount();
 
