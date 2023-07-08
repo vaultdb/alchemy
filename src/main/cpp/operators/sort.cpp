@@ -180,52 +180,28 @@ B Sort<B>::swapTuples(const QueryTuple<B> & lhs, const QueryTuple<B> & rhs, cons
 template<typename B>
 B Sort<B>::swapTuples(const QueryTable<B> *table, const int &lhs_idx, const int &rhs_idx,
                       const SortDefinition &sort_definition, const bool &dir) {
-
-    auto start_gates =  SystemConfiguration::getInstance().andGateCount();
-
     B swap = false;
-    B swap_init = swap;
-//    size_t gates_1, gates_2, gates_3;
-//    int sort_key_width = 0;
+    B not_init = true;
+
 
     for (size_t i = 0; i < sort_definition.size(); ++i) {
 
-        const Field<B> lhs_field = sort_definition[i].first == -1 ? Field<B>(table->getDummyTag(lhs_idx))
-                                                                  : table->getPackedField(lhs_idx, sort_definition[i].first);
-        const Field<B> rhs_field = sort_definition[i].first == -1 ? Field<B>(table->getDummyTag(rhs_idx))
-                                                                  : table->getPackedField(rhs_idx,sort_definition[i].first);
-
-//        sort_key_width += sort_definition[i].first == -1 ? 1 : table->getSchema().getField(sort_definition[i].first).size();
-//        gates_1 = SystemConfiguration::getInstance().andGateCount();
-
-        // true for ascending, false for descending
-        bool asc = (sort_definition[i].second == SortDirection::ASCENDING);
+        const Field<B> lhs_field = table->getPackedField(lhs_idx,sort_definition[i].first);
+        const Field<B> rhs_field = table->getPackedField(rhs_idx,sort_definition[i].first);
+        B eq = (lhs_field == rhs_field);
+        B asc = (sort_definition[i].second == SortDirection::ASCENDING);
+        if(dir)
+            asc = !asc;
 
         B to_swap =  (lhs_field < rhs_field) == asc;
-        if(dir)  // flip the bit
-            to_swap = !to_swap;
-
-//        gates_2 = SystemConfiguration::getInstance().andGateCount();
-
-        // find first one where not eq, use this to init flag
-        swap = FieldUtilities::select(swap_init, swap, to_swap);
-//        gates_3 = SystemConfiguration::getInstance().andGateCount();
-
-        swap_init = swap_init | (lhs_field != rhs_field);
-
-        if(std::is_same_v<bool, B>) {
-            bool bool_init = FieldUtilities::extract_bool(swap_init);
-            if(bool_init) break;
-        }
+        swap = FieldUtilities::select(not_init, to_swap, swap);
+        not_init = not_init & eq;
     }
 
-//    auto end_gates =  SystemConfiguration::getInstance().andGateCount();
-//    if(table->isEncrypted() && lhs_idx == 0)
-//        cout << "For sort key width: " << sort_key_width << " have " << end_gates - start_gates << " AND gates, measurements: "
-//        << start_gates << ", " << gates_1 << "," << gates_2 << "," << gates_3 << "," << end_gates << endl;
     return swap;
 
 }
+
 
 
 template<typename B>
