@@ -47,6 +47,7 @@ size_t OperatorCostModel::basicJoinCost(const BasicJoin<Bit> *join) {
 }
 
 size_t OperatorCostModel::keyedJoinCost(const KeyedJoin<Bit> *join) {
+
     return 0;
 }
 
@@ -63,7 +64,10 @@ size_t OperatorCostModel::nestedLoopAggregateCost(const NestedLoopAggregate<Bit>
 }
 
 size_t OperatorCostModel::sortCost(const Sort<Bit> *sort) {
-    return 0;
+    size_t rows = sort->getOutputCardinality();
+    size_t compare_and_swap_cnt = log2(rows) * (log2(rows) + 1)/2*(rows/2);
+    size_t comparison_cost = 0; // TODO
+    size_t swap_cost = sort->getOutputSchema().size();
 }
 
 size_t OperatorCostModel::shrinkwrapCost(const Shrinkwrap<Bit> *shrinkwrap) {
