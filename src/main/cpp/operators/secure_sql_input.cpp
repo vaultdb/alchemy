@@ -45,6 +45,8 @@ void SecureSqlInput::runQuery() {
 
     plain_input_ = dataProvider.getQueryTable(db_name_, input_query_, has_dummy_tag_);
     plain_input_->setSortOrder(getSortOrder());
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+    this->output_cardinality_ = manager->getTableCardinality(plain_input_->getTupleCount());
 
 }
 

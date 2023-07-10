@@ -117,6 +117,7 @@ QueryTable<B> *ScalarAggregate<B>::runSelf() {
 template<typename B>
 void  ScalarAggregate<B>::setup() {
     QuerySchema input_schema = Operator<B>::getChild(0)->getOutputSchema();
+    this->output_cardinality_ = 1;
 
     int output_ordinal = 0;
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {

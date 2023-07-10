@@ -25,7 +25,7 @@ namespace  vaultdb {
         static void write_right(const B & write, QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
         static void write_right(QueryTable<B> *dst, const int & dst_idx, const QueryTable<B> *src, const int & src_idx);
 
-
+        Expression<B> *getPredicate() const { return predicate_; }
 
 
     protected:

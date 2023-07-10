@@ -6,11 +6,14 @@ using namespace vaultdb;
 template<typename B>
 Shrinkwrap<B>::Shrinkwrap(Operator<B> *child, const size_t &output_cardinality) : Operator<B>(child, child->getSortOrder()), cardinality_bound_(output_cardinality){
     assert(cardinality_bound_ > 0); // check initialization
+    this->output_cardinality_ = cardinality_bound_;
 }
 
 template<typename B>
 Shrinkwrap<B>::Shrinkwrap( QueryTable<B>*input, const size_t &output_cardinality)  : Operator<B>(input), cardinality_bound_(output_cardinality) {
     assert(cardinality_bound_ > 0); // check initialization
+    this->output_cardinality_ = cardinality_bound_;
+
 }
 
 

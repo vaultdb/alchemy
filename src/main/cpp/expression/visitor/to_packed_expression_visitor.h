@@ -68,9 +68,6 @@ namespace  vaultdb {
         // expressions are of the form (<field> <op> <literal>) or (<field> <op> <field>)
         // anything more complicated will change domain/range, so don't bother
         pair<ExpressionNode<B> *, ExpressionNode<B> * > visitBinaryExpression(ExpressionNode<B> *expr) {
-//            std::cout << "LHS: " << expr->lhs_->toString() << ", RHS: " << expr->rhs_->toString() << std::endl;
-//            std::cout << "storage compatible? " << QueryFieldDesc::storageCompatible(expr->lhs_->output_schema_, expr->rhs_->output_schema_)
-//            << " bit packed? " << expr->lhs_->output_schema_.bitPacked() << std::endl;
 
             pair<ExpressionNode<B> *, ExpressionNode<B> * > result;
             if(expr->lhs_->kind() == ExpressionKind::LITERAL  && inputRef(expr->rhs_)) {

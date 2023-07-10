@@ -118,7 +118,11 @@ set(sources
 		expression/visitor/type_inference_visitor.cpp
 		expression/visitor/plain_to_secure_visitor.cpp
 		expression/visitor/type_validation_visitor.cpp
-		expression/visitor/to_packed_expression_visitor.cpp)
+		expression/visitor/to_packed_expression_visitor.cpp
+
+		opt/plan_cost_model.h
+		opt/operator_cost_model.cpp
+		opt/expression_cost_model.cpp)
 
 
 

@@ -9,6 +9,26 @@
 
 using namespace vaultdb;
 
+size_t SH2PCManager::getTableCardinality(const int &local_cardinality) {
+    int alice_tuple_cnt = local_cardinality;
+    int bob_tuple_cnt = local_cardinality;
+    if (party_ == ALICE) {
+        netio_->send_data(&alice_tuple_cnt, 4);
+        netio_->flush();
+        netio_->recv_data(&bob_tuple_cnt, 4);
+        netio_->flush();
+    } else if (party_ == BOB) {
+        netio_->recv_data(&alice_tuple_cnt, 4);
+        netio_->flush();
+        netio_->send_data(&bob_tuple_cnt, 4);
+        netio_->flush();
+    }
+
+    return alice_tuple_cnt + bob_tuple_cnt;
+
+}
+
+
 QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
     size_t alice_tuple_cnt =  src->getTupleCount();
     size_t bob_tuple_cnt = alice_tuple_cnt;

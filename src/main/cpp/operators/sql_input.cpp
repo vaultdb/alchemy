@@ -10,6 +10,7 @@ SqlInput::SqlInput(std::string db, std::string sql, bool dummy_tag)
   :  Operator<bool>(), input_query_(sql), db_name_(db), dummy_tagged_(dummy_tag), tuple_limit_(0) {
     runQuery();
     output_schema_ = output_->getSchema();
+    this->output_cardinality_ = this->output_->getTupleCount();
 
 }
 
@@ -22,6 +23,7 @@ SqlInput::SqlInput(std::string db, std::string sql, bool dummy_tag, const SortDe
 
     runQuery();
     output_schema_ = output_->getSchema();
+    this->output_cardinality_ = this->output_->getTupleCount();
 }
 
 

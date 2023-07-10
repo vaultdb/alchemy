@@ -20,6 +20,7 @@ namespace vaultdb {
 
         virtual void reveal(bool *dst, const int & party, Bit *src, const int & bit_cnt) = 0;
         virtual string revealToString(const emp::Integer & i, const int & party = PUBLIC)  const = 0;
+        virtual size_t getTableCardinality(const int & local_cardinality) = 0;
         virtual ~EmpManager() {}
 
     };

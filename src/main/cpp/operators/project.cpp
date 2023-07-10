@@ -53,6 +53,7 @@ void Project<B>::setup() {
     Operator<B> *child = Operator<B>::getChild();
     SortDefinition src_sort_order = child->getSortOrder();
     QuerySchema src_schema = child->getOutputSchema();
+    this->output_cardinality_ = child->getOutputCardinality();
 
     assert(expressions_.size() > 0);
 
