@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 project (vaultdb-emp)
 set(NAME "vaultdb-emp")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(cmake/common.cmake)
 
