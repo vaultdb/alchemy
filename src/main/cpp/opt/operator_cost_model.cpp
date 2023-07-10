@@ -47,8 +47,22 @@ size_t OperatorCostModel::basicJoinCost(const BasicJoin<Bit> *join) {
 }
 
 size_t OperatorCostModel::keyedJoinCost(const KeyedJoin<Bit> *join) {
+    Expression<Bit> *predicate = join->getPredicate();
+    assert(predicate->exprClass() == ExpressionClass::GENERIC);
+    ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
 
-    return 0;
+    SecureOperator *lhs = join->getChild(0);
+    SecureOperator *rhs = join->getChild(1);
+
+    size_t swap_cost = (join->foreignKeyChild() == 0) ? lhs->getOutputSchema().size() : rhs->getOutputSchema().size();
+    swap_cost -= 1; // don't swap dummy tag - this is handled separately
+
+    size_t predicate_cost = ExpressionCostModel<Bit>(root, join->getOutputSchema()).cost();
+    size_t tuple_comparison_cnt = lhs->getOutputCardinality() *  rhs->getOutputCardinality();
+
+    size_t tuple_comparison_cost = predicate_cost + swap_cost + 4; // 4 for bookkeeping on dummy tag
+    return tuple_comparison_cnt * tuple_comparison_cost;
+
 }
 
 size_t OperatorCostModel::sortMergeJoinCost(const SortMergeJoin<Bit> *join) {
@@ -108,13 +122,15 @@ size_t OperatorCostModel::projectCost(const Project<Bit> *project) {
 }
 
 size_t OperatorCostModel::scalarAggregateCost(const ScalarAggregate<Bit> *aggregate) {
-    return 0;
+     throw; // Not yet implemented
 }
 
+// just concat, zero gates
 size_t OperatorCostModel::unionCost(const Union<Bit> *union_op) {
     return 0;
 }
 
+// zero gates, only commitment protocol
 size_t OperatorCostModel::zkSqlInputCost(const ZkSqlInput *input) {
     return 0;
 }
