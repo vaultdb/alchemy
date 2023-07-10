@@ -95,7 +95,7 @@ size_t OperatorCostModel::unionCost(const Union<Bit> *union_op) {
     return 0;
 }
 
-size_t OperatorCostModel::zkSqlInputCost(const ZkSqlInput<Bit> *input) {
+size_t OperatorCostModel::zkSqlInputCost(const ZkSqlInput *input) {
     return 0;
 }
 
