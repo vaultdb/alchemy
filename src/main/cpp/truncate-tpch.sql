@@ -18,29 +18,25 @@ END::numeric AS "cutoff";
 \set target_db 'tpch_unioned_':cutoff
 
 
-
 DROP DATABASE IF EXISTS :target_db;
 CREATE DATABASE :target_db  WITH TEMPLATE tpch_unioned;
 \c :target_db
 \i 'truncate-limit-tpch-tables.sql'
 SELECT truncate_tables(:cutoff);
-\i 'set-constraints.sql'
 
 
 -- now do alice and bob
-\set target_db 'tpch_alice_':cutoff
-DROP DATABASE IF EXISTS :target_db;
-CREATE DATABASE :target_db  WITH TEMPLATE tpch_alice;
-\c :target_db
-\i 'truncate-limit-tpch-tables.sql'
-SELECT truncate_tables(:cutoff);
-\i 'set-constraints.sql'
+\set party_db 'tpch_alice_':cutoff
+DROP DATABASE IF EXISTS :party_db;
+CREATE DATABASE :party_db  WITH TEMPLATE :target_db;
+\c :party_db
+\i 'select-alice.sql'
+SELECT split_tables_alice();
 
 
-\set target_db 'tpch_bob_':cutoff
-DROP DATABASE IF EXISTS :target_db;
-CREATE DATABASE :target_db  WITH TEMPLATE tpch_bob;
-\c :target_db
-\i 'truncate-limit-tpch-tables.sql'
-SELECT truncate_tables(:cutoff);
-\i 'set-constraints.sql'
+\set party_db 'tpch_bob_':cutoff
+DROP DATABASE IF EXISTS :party_db;
+CREATE DATABASE :party_db  WITH TEMPLATE :target_db;
+\c :party_db
+\i 'select-bob.sql'
+SELECT split_tables_bob();
