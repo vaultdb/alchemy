@@ -64,10 +64,26 @@ size_t OperatorCostModel::nestedLoopAggregateCost(const NestedLoopAggregate<Bit>
 }
 
 size_t OperatorCostModel::sortCost(const Sort<Bit> *sort) {
-    size_t rows = sort->getOutputCardinality();
-    size_t compare_and_swap_cnt = log2(rows) * (log2(rows) + 1)/2*(rows/2);
-    size_t comparison_cost = 0; // TODO
+    size_t n = sort->getOutputCardinality();
+    float rounds = log2(n);
+    float stages = (rounds * (rounds + 1))/2.0;
+
+    float comparisons_per_stage = n / 2.0;
+    float comparison_cnt = stages * comparisons_per_stage;
+
+
+    QuerySchema table_schema = sort->getOutputSchema();
+    // each comparison consists of an equality, a <, and a handful of ANDs
+    float comparison_cost = 0;
+
+    for(auto col_sort : sort->getSortOrder()) {
+          QueryFieldDesc f = table_schema.getField(col_sort.first);
+          comparison_cost += 2 * ExpressionCostModel<Bit>::getComparisonCost(f);
+          comparison_cost += 2; // bookkeeping overhead.  Bit::select (+1), & (+1)
+    }
+
     size_t swap_cost = sort->getOutputSchema().size();
+    return comparison_cnt * (comparison_cost + swap_cost);
 }
 
 size_t OperatorCostModel::shrinkwrapCost(const Shrinkwrap<Bit> *shrinkwrap) {

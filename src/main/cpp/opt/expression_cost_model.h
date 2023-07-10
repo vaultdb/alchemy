@@ -6,6 +6,7 @@
 
 #include "expression/visitor/expression_visitor.h"
 #include "query_table/query_schema.h"
+#include <map>
 
 namespace vaultdb {
     // relies on TypeValidationVisitor in PlanParser to have already run
@@ -49,12 +50,12 @@ namespace vaultdb {
         }
 
         void visit(EqualNode<B>  & node) override {
-          eq(*((ExpressionNode<B> *) &node));
+          comparison(*((ExpressionNode<B> *) &node));
         }
 
         void visit(NotEqualNode<B>  & node) override {
             // same cost as for ==, with free NOT gate
-            eq(*((ExpressionNode<B> *) &node));
+            comparison(*((ExpressionNode<B> *) &node));
         }
 
         void visit(LessThanNode<B>  & node) override {
@@ -82,6 +83,31 @@ namespace vaultdb {
         void visit(CaseNode<B>  & node) override;
 
         size_t cost() const { return cumulative_cost_; }
+
+        static const size_t float_comparison_gates_ = 212;
+
+
+
+        // >=, >, <=, <, ==, !=
+        static size_t getComparisonCost(QueryFieldDesc & schema) {
+            if(schema.bitPacked()) {
+                return schema.size() + 1; // +1 for sign bit
+            }
+
+            switch(schema.getType()) {
+                case FieldType::SECURE_INT:
+                case FieldType::SECURE_LONG:
+                case FieldType::SECURE_STRING:
+                case FieldType::SECURE_BOOL:
+                    return schema.size();
+                case FieldType::SECURE_FLOAT:
+                    return float_comparison_gates_;
+                default:
+                    throw;
+
+            }
+        }
+
     private:
         QuerySchema input_schema_;
         QueryFieldDesc last_field_desc_;
@@ -90,8 +116,6 @@ namespace vaultdb {
         size_t sumChildCosts(ExpressionNode<B> & node);
 
         void add_subtract(ExpressionNode<B> & node);
-
-        size_t eq(ExpressionNode<B> & node);
 
         void comparison(ExpressionNode<B> & node);
 

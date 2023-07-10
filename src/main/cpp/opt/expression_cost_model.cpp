@@ -7,6 +7,7 @@
 
 
 using namespace vaultdb;
+
 template<typename B>
 void ExpressionCostModel<B>::visit(InputReference<B> &node) {
     last_field_desc_ = input_schema_.getField(node.read_idx_);
@@ -27,9 +28,7 @@ void ExpressionCostModel<B>::visit(LiteralNode<B> &node) {
 
 template<typename B>
 void ExpressionCostModel<B>::visit(NotNode<B> &node) {
-    node.lhs_->accept(this);
-    size_t child_cost = cumulative_cost_;
-    cumulative_cost_ = child_cost; // 0, NOT gates computed locally
+    node.lhs_->accept(this);// NOT gates computed locally
 }
 
 
@@ -150,42 +149,6 @@ void ExpressionCostModel<B>::add_subtract(ExpressionNode<B> &node) {
 
 }
 
-
-template<typename B>
-size_t ExpressionCostModel<B>::eq(ExpressionNode<B> &node) {
-    node.lhs_->accept(this);
-    size_t left_cost = cumulative_cost_;
-    QueryFieldDesc left_field_desc = last_field_desc_;
-
-    node.rhs_->accept(this);
-    size_t right_cost = cumulative_cost_;
-    QueryFieldDesc right_field_desc = last_field_desc_;
-    cumulative_cost_ = left_cost + right_cost;
-
-    assert(left_field_desc.getType() == right_field_desc.getType());
-
-    int field_size = TypeUtilities::getTypeSize(left_field_desc.getType());
-    if(right_field_desc.bitPacked() || left_field_desc.bitPacked()) {
-        field_size = min(left_field_desc.size(), right_field_desc.size()) + 1; // +1 for sign bit
-    }
-
-    switch(left_field_desc.getType()) {
-        case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-            cumulative_cost_ += field_size;
-            break;
-        case FieldType::SECURE_FLOAT:
-            cumulative_cost_ += 212;
-            break;
-        default:
-            throw; // all others not supported
-    }
-    return cumulative_cost_;
-}
-
-
-
-
 template<typename B>
 void ExpressionCostModel<B>::comparison(ExpressionNode<B> &node) {
     // float: 213
@@ -213,7 +176,7 @@ void ExpressionCostModel<B>::comparison(ExpressionNode<B> &node) {
             cumulative_cost_ += field_size;
             break;
         case FieldType::SECURE_FLOAT:
-            cumulative_cost_ += 213;
+            cumulative_cost_ += float_comparison_gates_;
             break;
         default:
             throw; // all others not supported

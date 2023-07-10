@@ -65,10 +65,8 @@ namespace  vaultdb {
         inline Field<B> getPackedField(const int & row, const int & col) const override {
 
             int8_t *read_ptr = getFieldPtr(row, col);
-            if(SystemConfiguration::getInstance().bitPackingEnabled())
-                return Field<B>::deserializePacked(this->schema_.getField(col), read_ptr );
-
-            return Field<B>::deserialize(this->schema_.getField(col), read_ptr );
+            // defaults to regular serialization if bit packing is disabled
+            return Field<B>::deserializePacked(this->schema_.getField(col), read_ptr );
 
         }
 
