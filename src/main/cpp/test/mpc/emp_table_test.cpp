@@ -53,7 +53,7 @@ TEST_F(EmpTableTest, secret_share_table_varchar) {
 TEST_F(EmpTableTest, secret_share_table) {
 
     std::string sql =  "SELECT l_orderkey, l_linenumber, l_comment, l_returnflag, l_discount, "
-                               "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
+                               "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate "  // handle timestamps by converting them to longs using SQL
                                "FROM lineitem "
                                "WHERE l_orderkey <= 20 "
                                "ORDER BY l_orderkey, l_linenumber ";
@@ -67,7 +67,7 @@ TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
 
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_comment, l_returnflag, l_discount, "
-                              "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate, "  // handle timestamps by converting them to longs using SQL - "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate,
+                              "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate, "  // handle timestamps by converting them to longs using SQL
                               "l_returnflag <> 'N' AS dummy "  // simulate a filter for l_returnflag = 'N' -- all of the ones that dont match are dummies
                               "FROM lineitem "
                               " WHERE l_orderkey <= 20 "

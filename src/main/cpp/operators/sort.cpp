@@ -71,7 +71,8 @@ QueryTable<B> *Sort<B>::runSelf() {
 
     float comparisons_per_stage = n / 2.0;
     float total_comparisons = stages * comparisons_per_stage;
-    cout << "Estimated comparisons: " << total_comparisons << ", actual comparisons: " << counter << endl;
+    float relative_error = fabs(total_comparisons - counter)/counter;
+    cout << "Estimated row comparisons: " << total_comparisons << ", actual comparisons: " << counter << ", relative error: " << relative_error <<  endl;
 
     Operator<B>::output_->setSortOrder(Operator<B>::sort_definition_);
 
