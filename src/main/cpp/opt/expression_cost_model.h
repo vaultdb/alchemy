@@ -25,21 +25,21 @@ namespace vaultdb {
         void visit(LiteralNode<B>  & node) override;
 
         void visit(AndNode<B>  & node) override {
-            cumulative_cost_ = sumChildCosts(&node)  + 1; // +1 for AND gate
+            cumulative_cost_ = sumChildCosts( (vaultdb::ExpressionNode<B> *) &node)  + 1; // +1 for AND gate
         }
 
         void visit(OrNode<B>  & node) override {
-            cumulative_cost_ = sumChildCosts(&node) + 1; // +1 for OR gate
+            cumulative_cost_ = sumChildCosts((vaultdb::ExpressionNode<B> *) &node) + 1; // +1 for OR gate
         }
 
         void visit(NotNode<B>  & node) override;
 
         void visit(PlusNode<B>  & node) override {
-            add_subtract(&node);
+            add_subtract((vaultdb::ExpressionNode<emp::Bit> *) &node);
         }
 
         void visit(MinusNode<B>  & node) override {
-            add_subtract(&node);
+            add_subtract((vaultdb::ExpressionNode<emp::Bit> *) &node);
         }
 
         void visit(TimesNode<B>  & node) override;
