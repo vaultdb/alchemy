@@ -37,8 +37,9 @@ namespace vaultdb {
         //        static size_t zkSqlInputCost(const ZkSqlInput *input);
 
 
-
-
+    private:
+        static size_t compareSwapCost(const QuerySchema & schema, const SortDefinition  & sort, const int & tuple_cnt);
+        static size_t sortCost(const QuerySchema & schema, const SortDefinition  & sort, const int & tuple_cnt);
 
         };
 

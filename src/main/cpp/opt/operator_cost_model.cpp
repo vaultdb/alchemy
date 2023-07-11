@@ -48,7 +48,11 @@ size_t vaultdb::OperatorCostModel::secureSqlInputCost(const SecureSqlInput *inpu
     if(input->getSortOrder().empty())
         return 0;
 
-    throw std::invalid_argument("SecureSqlInput bitonic merge not yet implemented!");
+    float n = input->getOutputCardinality();
+    float comparisons = n * log2(n);
+    size_t c_and_s_cost = compareSwapCost(input->getOutputSchema(), input->getSortOrder(), n);
+    return c_and_s_cost * (size_t) comparisons;
+    return comparisons * c_and_s_cost;
 }
 
 size_t OperatorCostModel::basicJoinCost(const BasicJoin<Bit> *join) {
@@ -100,25 +104,10 @@ size_t OperatorCostModel::nestedLoopAggregateCost(const NestedLoopAggregate<Bit>
 
 size_t OperatorCostModel::sortCost(const Sort<Bit> *sort) {
     size_t n = sort->getOutputCardinality();
-    float rounds = log2(n);
-    float stages = (rounds * (rounds + 1))/2.0;
-
-    float comparisons_per_stage = n / 2.0;
-    float comparison_cnt = stages * comparisons_per_stage;
-
-
     QuerySchema table_schema = sort->getOutputSchema();
-    // each comparison consists of an equality, a <, and a handful of ANDs
-    float comparison_cost = 0;
+    auto sort_def = sort->getSortOrder();
+    return sortCost(table_schema, sort_def, n);
 
-    for(auto col_sort : sort->getSortOrder()) {
-          QueryFieldDesc f = table_schema.getField(col_sort.first);
-          comparison_cost += 2 * ExpressionCostModel<Bit>::getComparisonCost(f);
-          comparison_cost += 2; // bookkeeping overhead.  Bit::select (+1), & (+1)
-    }
-
-    size_t swap_cost = sort->getOutputSchema().size();
-    return comparison_cnt * (comparison_cost + swap_cost);
 }
 
 size_t OperatorCostModel::shrinkwrapCost(const Shrinkwrap<Bit> *shrinkwrap) {
@@ -126,6 +115,8 @@ size_t OperatorCostModel::shrinkwrapCost(const Shrinkwrap<Bit> *shrinkwrap) {
     if(child->getOutputCardinality() < shrinkwrap->getOutputCardinality()) {
         return 0;
     }
+
+    // re-derive sort cost, this is a shortcut to avoid creating a dummy table for sort with correct N
 
     SortDefinition  sort_def;
     SortDefinition  dst_sort;
@@ -161,5 +152,31 @@ size_t OperatorCostModel::scalarAggregateCost(const ScalarAggregate<Bit> *aggreg
      throw; // Not yet implemented
 }
 
+size_t OperatorCostModel::compareSwapCost(const QuerySchema &schema, const SortDefinition &sort, const int &tuple_cnt) {
+    float comparison_cost = 0;
 
+    for(auto col_sort : sort) {
+        QueryFieldDesc f = schema.getField(col_sort.first);
+        comparison_cost += 2 * ExpressionCostModel<Bit>::getComparisonCost(f);
+        comparison_cost += 2; // bookkeeping overhead.  Bit::select (+1), & (+1)
+    }
+
+    size_t swap_cost = schema.size();
+    return comparison_cost + swap_cost;
+}
+
+
+
+size_t OperatorCostModel::sortCost(const QuerySchema &schema, const SortDefinition &sort, const int &n) {
+    float rounds = log2(n);
+    float stages = (rounds * (rounds + 1))/2.0;
+
+    float comparisons_per_stage = n / 2.0;
+    float comparison_cnt = stages * comparisons_per_stage;
+
+
+    // each comparison consists of an equality, a <, and a handful of ANDs
+    size_t c_and_s_cost = compareSwapCost(schema, sort, n);
+    return comparison_cnt * c_and_s_cost;
+}
 
