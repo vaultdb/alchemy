@@ -87,7 +87,7 @@ size_t OperatorCostModel::keyedJoinCost(const KeyedJoin<Bit> *join) {
 }
 
 size_t OperatorCostModel::sortMergeJoinCost(const SortMergeJoin<Bit> *join) {
-
+    return 0;
 }
 
 // only count GroupByAggregate cost, sort cost is accounted for in Sort operator
