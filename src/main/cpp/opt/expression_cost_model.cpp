@@ -109,21 +109,21 @@ void ExpressionCostModel<B>::visit(CaseNode<B> &node) {
 }
 
 template<typename B>
-size_t ExpressionCostModel<B>::sumChildCosts(ExpressionNode<B> &node) {
-    node.lhs_->accept(this);
+size_t ExpressionCostModel<B>::sumChildCosts(ExpressionNode<B> *node) {
+    node->lhs_->accept(this);
     size_t left_cost = cumulative_cost_;
-    node.rhs_->accept(this);
+    node->rhs_->accept(this);
     size_t right_cost = cumulative_cost_;
     return left_cost + right_cost;
 }
 
 template<typename B>
-void ExpressionCostModel<B>::add_subtract(ExpressionNode<B> &node) {
-    node.lhs_->accept(this);
+void ExpressionCostModel<B>::add_subtract(ExpressionNode<B> *node) {
+    node->lhs_->accept(this);
     size_t left_cost = cumulative_cost_;
     QueryFieldDesc left_field_desc = last_field_desc_;
 
-    node.rhs_->accept(this);
+    node->rhs_->accept(this);
     size_t right_cost = cumulative_cost_;
     QueryFieldDesc right_field_desc = last_field_desc_;
 
@@ -150,15 +150,15 @@ void ExpressionCostModel<B>::add_subtract(ExpressionNode<B> &node) {
 }
 
 template<typename B>
-void ExpressionCostModel<B>::comparison(ExpressionNode<B> &node) {
+void ExpressionCostModel<B>::comparison(ExpressionNode<B> *node) {
     // float: 213
     // intN: N gates
 
-    node.lhs_->accept(this);
+    node->lhs_->accept(this);
     size_t left_cost = cumulative_cost_;
     QueryFieldDesc left_field_desc = last_field_desc_;
 
-    node.rhs_->accept(this);
+    node->rhs_->accept(this);
     size_t right_cost = cumulative_cost_;
     QueryFieldDesc right_field_desc = last_field_desc_;
     cumulative_cost_ = left_cost + right_cost;

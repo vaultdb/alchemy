@@ -25,21 +25,21 @@ namespace vaultdb {
         void visit(LiteralNode<B>  & node) override;
 
         void visit(AndNode<B>  & node) override {
-            cumulative_cost_ = sumChildCosts(*((ExpressionNode<B> *) &node))  + 1; // +1 for AND gate
+            cumulative_cost_ = sumChildCosts(&node)  + 1; // +1 for AND gate
         }
 
         void visit(OrNode<B>  & node) override {
-            cumulative_cost_ = sumChildCosts(*((ExpressionNode<B> *) &node)) + 1; // +1 for OR gate
+            cumulative_cost_ = sumChildCosts(&node) + 1; // +1 for OR gate
         }
 
         void visit(NotNode<B>  & node) override;
 
         void visit(PlusNode<B>  & node) override {
-            add_subtract(*((ExpressionNode<B> *) &node));
+            add_subtract(&node);
         }
 
         void visit(MinusNode<B>  & node) override {
-            add_subtract(*((ExpressionNode<B> *) &node));
+            add_subtract(&node);
         }
 
         void visit(TimesNode<B>  & node) override;
@@ -50,28 +50,28 @@ namespace vaultdb {
         }
 
         void visit(EqualNode<B>  & node) override {
-          comparison(*((ExpressionNode<B> *) &node));
+          comparison(&node);
         }
 
         void visit(NotEqualNode<B>  & node) override {
             // same cost as for ==, with free NOT gate
-            comparison(*((ExpressionNode<B> *) &node));
+            comparison(&node);
         }
 
         void visit(LessThanNode<B>  & node) override {
-         comparison(*((ExpressionNode<B> *) &node));
+         comparison(&node);
         }
 
         void visit(GreaterThanEqNode<B>  & node) override {
-            comparison(*((ExpressionNode<B> *) &node));
+            comparison(&node);
         }
         // same as >=
         void visit(GreaterThanNode<B>  & node) override {
-            comparison(*((ExpressionNode<B> *) &node));
+            comparison(&node);
         }
         // same as >=
         void visit(LessThanEqNode<B>  & node) override {
-            comparison(*((ExpressionNode<B> *) &node));
+            comparison(&node);
 
         }
 
@@ -113,11 +113,11 @@ namespace vaultdb {
         QueryFieldDesc last_field_desc_;
         size_t cumulative_cost_ = 0L;
 
-        size_t sumChildCosts(ExpressionNode<B> & node);
+        size_t sumChildCosts(ExpressionNode<B> *node);
 
-        void add_subtract(ExpressionNode<B> & node);
+        void add_subtract(ExpressionNode<B> *node);
 
-        void comparison(ExpressionNode<B> & node);
+        void comparison(ExpressionNode<B> *node);
 
     };
 

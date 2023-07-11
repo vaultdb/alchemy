@@ -5,6 +5,7 @@
 #include <test/mpc/emp_base_test.h>
 #include <operators/keyed_join.h>
 #include "util/field_utilities.h"
+#include "opt/operator_cost_model.h"
 
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43442, "port for EMP execution");
@@ -71,6 +72,11 @@ void SecureKeyedJoinTest::runCustomerOrdersTest() {
     KeyedJoin join(orders_input, customer_input, predicate);
     auto joined = join.run();
 
+    size_t cost = OperatorCostModel::operatorCost((SecureOperator *) &join);
+    float relative_error = (float) (cost - join.getGateCount()) / (float) cost;
+
+    cout << "Cost estimate: " << cost << ", observed cost=" << join.getGateCount() << " relative error=" << relative_error << endl;
+
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
         PlainTable *observed = joined->reveal();
@@ -79,6 +85,7 @@ void SecureKeyedJoinTest::runCustomerOrdersTest() {
         ASSERT_EQ(*expected, *observed);
         delete expected;
         delete observed;
+
 
     }
 
@@ -106,6 +113,12 @@ void SecureKeyedJoinTest::runLineitemOrdersTest() {
     // test pkey-fkey join
     KeyedJoin join(orders_input, lineitem_input, 1, predicate);
     auto joined = join.run();
+
+    size_t cost = OperatorCostModel::operatorCost((SecureOperator *) &join);
+    float relative_error = (float) (cost - join.getGateCount()) / (float) cost;
+    cout << "Cost estimate: " << cost << ", observed cost=" << join.getGateCount() << " relative error=" << relative_error << endl;
+
+
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
         PlainTable *observed = joined->reveal();
@@ -123,13 +136,13 @@ void SecureKeyedJoinTest::runLineitemOrdersTest() {
 
 void SecureKeyedJoinTest::runLineitemOrdersCustomerTest() {
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
-                                                                      "lineitem_cte AS (" + lineitem_sql_ + "), \n"
-                                                                                                            "customer_cte AS (" + customer_sql_ + ")\n "
-                                                                                                                                                  "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey \n"
-                                                                                                                                                  "FROM customer_cte JOIN orders_cte ON o_custkey = c_custkey "
-                                                                                                                                                  " JOIN lineitem_cte ON o_orderkey = l_orderkey "
-                                                                                                                                                  " WHERE NOT c_dummy AND NOT o_dummy AND NOT l_dummy "
-                                                                                                                                                  " ORDER BY  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey  \n";
+                                     "lineitem_cte AS (" + lineitem_sql_ + "), \n"
+                                     "customer_cte AS (" + customer_sql_ + ")\n "
+                               "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey \n"
+                               "FROM customer_cte JOIN orders_cte ON o_custkey = c_custkey "
+                               " JOIN lineitem_cte ON o_orderkey = l_orderkey "
+                               " WHERE NOT c_dummy AND NOT o_dummy AND NOT l_dummy "
+                               " ORDER BY  l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey  \n";
 
     auto customer_input = new SecureSqlInput(db_name_, customer_sql_, true);
     auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true);
@@ -155,6 +168,17 @@ void SecureKeyedJoinTest::runLineitemOrdersCustomerTest() {
 
     auto col_join = new KeyedJoin(lineitem_input, co_join, lineitem_orders_predicate);
     auto joined = col_join->run();
+
+    size_t cost = OperatorCostModel::operatorCost((SecureOperator *) co_join);
+    size_t gate_cnt = co_join->getGateCount();
+    cout << "CO join cost estimate: " << cost << ", observed cost=" << co_join->getGateCount() << " relative error: " << ((float) cost - gate_cnt) / (float) gate_cnt <<   endl;
+
+     cost = OperatorCostModel::operatorCost((SecureOperator *) col_join);
+     gate_cnt = col_join->getGateCount();
+
+    cout << "COL cost estimate: " << cost << ", observed cost=" << col_join->getGateCount() << " relative error: " << ((float) cost - gate_cnt) / (float)  gate_cnt <<   endl;
+
+
 
     if(FLAGS_validation) {
         PlainTable *observed = col_join->run()->reveal();
