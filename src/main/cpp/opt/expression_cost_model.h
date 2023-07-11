@@ -35,11 +35,11 @@ namespace vaultdb {
         void visit(NotNode<B>  & node) override;
 
         void visit(PlusNode<B>  & node) override {
-            add_subtract((vaultdb::ExpressionNode<emp::Bit> *) &node);
+            add_subtract((vaultdb::ExpressionNode<B> *) &node);
         }
 
         void visit(MinusNode<B>  & node) override {
-            add_subtract((vaultdb::ExpressionNode<emp::Bit> *) &node);
+            add_subtract((vaultdb::ExpressionNode<B> *) &node);
         }
 
         void visit(TimesNode<B>  & node) override;

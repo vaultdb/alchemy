@@ -167,20 +167,12 @@ void ExpressionCostModel<B>::comparison(ExpressionNode<B> *node) {
 
     int field_size = TypeUtilities::getTypeSize(left_field_desc.getType());
     if(right_field_desc.bitPacked() || left_field_desc.bitPacked()) {
-        field_size = min(left_field_desc.size(), right_field_desc.size()) + 1;
+        size_t field_size = min(left_field_desc.size(), right_field_desc.size()) + 1;
+        cumulative_cost_ += field_size;
+        return;
     }
 
-    switch(left_field_desc.getType()) {
-        case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-            cumulative_cost_ += field_size;
-            break;
-        case FieldType::SECURE_FLOAT:
-            cumulative_cost_ += float_comparison_gates_;
-            break;
-        default:
-            throw; // all others not supported
-    }
+   cumulative_cost_ +=  getComparisonCost(left_field_desc); // both field descs are the same
 
 }
 
