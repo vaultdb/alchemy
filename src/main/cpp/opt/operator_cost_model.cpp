@@ -117,17 +117,7 @@ size_t OperatorCostModel::shrinkwrapCost(const Shrinkwrap<Bit> *shrinkwrap) {
     }
 
     // re-derive sort cost, this is a shortcut to avoid creating a dummy table for sort with correct N
-
-    SortDefinition  sort_def;
-    SortDefinition  dst_sort;
-    dst_sort.push_back(ColumnSort(-1, SortDirection::ASCENDING));  // not-dummies go first
-    for(ColumnSort c : child->getSortOrder()) {
-        dst_sort.push_back(c);
-    }
-
-    SecureTable *dummy_table = new RowTable<Bit>(0, child->getOutputSchema());
-    Sort<Bit> dummy_sort(dummy_table, dst_sort);
-    return sortCost(&dummy_sort);
+    return sortCost(shrinkwrap->getOutputSchema(), shrinkwrap->getSortOrder(), shrinkwrap->getOutputCardinality());
 
 }
 
