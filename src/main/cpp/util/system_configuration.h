@@ -65,7 +65,6 @@ namespace vaultdb{
         }
 
         inline size_t andGateCount() const {
-            flush(); // this is temporary.  TODO: DELETE THIS
             return (emp_manager_ != nullptr)  ? emp_manager_->andGateCount() : 0L;
         }
 
