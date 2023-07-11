@@ -1,5 +1,6 @@
 #include "opt/operator_cost_model.h"
 #include "opt/expression_cost_model.h"
+#include "query_table/row_table.h"
 #include <expression/generic_expression.h>
 
 
@@ -11,7 +12,23 @@ size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
         return filterCost((Filter<Bit> *) op);
     else if(operator_type == "SecureSqlInput")
         return secureSqlInputCost((SecureSqlInput *) op);
-    else
+    else if(operator_type == "KeyedJoin")
+        return keyedJoinCost((KeyedJoin<Bit> *) op);
+    else if(operator_type == "BasicJoin")
+        return basicJoinCost((BasicJoin<Bit> *) op);
+    else if(operator_type == "Shrinkwrap")
+        return shrinkwrapCost((Shrinkwrap<Bit> *) op);
+    else if(operator_type == "Project")
+        return projectCost((Project<Bit> *) op);
+    else if(operator_type == "SortMergeJoin")
+        return sortMergeJoinCost((SortMergeJoin<Bit> *) op);
+    else if(operator_type == "GroupByAggregate")
+        return groupByAggregateCost((GroupByAggregate<Bit> *) op);
+    else if(operator_type == "NestedLoopAggregate")
+        return nestedLoopAggregateCost((NestedLoopAggregate<Bit> *) op);
+    else if(operator_type == "ScalarAggregate")
+        return scalarAggregateCost((ScalarAggregate<Bit> *) op);
+
     return 0;
 }
 size_t vaultdb::OperatorCostModel::filterCost(const vaultdb::Filter<Bit> *filter) {
@@ -66,11 +83,15 @@ size_t OperatorCostModel::keyedJoinCost(const KeyedJoin<Bit> *join) {
 }
 
 size_t OperatorCostModel::sortMergeJoinCost(const SortMergeJoin<Bit> *join) {
-    return 0;
+
 }
 
+// only count GroupByAggregate cost, sort cost is accounted for in Sort operator
+// Sort is sometimes pushed out of MPC, thus separate accounting
 size_t OperatorCostModel::groupByAggregateCost(const GroupByAggregate<Bit> *aggregate) {
-    return 0;
+    size_t n = aggregate->getOutputCardinality();
+
+    throw;
 }
 
 size_t OperatorCostModel::nestedLoopAggregateCost(const NestedLoopAggregate<Bit> *aggregate) {
@@ -101,7 +122,22 @@ size_t OperatorCostModel::sortCost(const Sort<Bit> *sort) {
 }
 
 size_t OperatorCostModel::shrinkwrapCost(const Shrinkwrap<Bit> *shrinkwrap) {
-    return 0;
+    auto child = shrinkwrap->getChild(0);
+    if(child->getOutputCardinality() < shrinkwrap->getOutputCardinality()) {
+        return 0;
+    }
+
+    SortDefinition  sort_def;
+    SortDefinition  dst_sort;
+    dst_sort.push_back(ColumnSort(-1, SortDirection::ASCENDING));  // not-dummies go first
+    for(ColumnSort c : child->getSortOrder()) {
+        dst_sort.push_back(c);
+    }
+
+    SecureTable *dummy_table = new RowTable<Bit>(0, child->getOutputSchema());
+    Sort<Bit> dummy_sort(dummy_table, dst_sort);
+    return sortCost(&dummy_sort);
+
 }
 
 size_t OperatorCostModel::projectCost(const Project<Bit> *project) {
@@ -125,14 +161,5 @@ size_t OperatorCostModel::scalarAggregateCost(const ScalarAggregate<Bit> *aggreg
      throw; // Not yet implemented
 }
 
-// just concat, zero gates
-size_t OperatorCostModel::unionCost(const Union<Bit> *union_op) {
-    return 0;
-}
-
-// zero gates, only commitment protocol
-size_t OperatorCostModel::zkSqlInputCost(const ZkSqlInput *input) {
-    return 0;
-}
 
 

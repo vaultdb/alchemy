@@ -121,7 +121,7 @@ set(sources
 		expression/visitor/type_validation_visitor.cpp
 		expression/visitor/to_packed_expression_visitor.cpp
 
-		opt/plan_cost_model.h
+		opt/plan_cost.h
 		opt/operator_cost_model.cpp
 		opt/expression_cost_model.cpp)
 

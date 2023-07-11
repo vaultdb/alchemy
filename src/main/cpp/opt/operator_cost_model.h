@@ -31,8 +31,10 @@ namespace vaultdb {
         static size_t sortCost(const Sort<Bit> *sort);
         static size_t shrinkwrapCost(const Shrinkwrap<Bit> *shrinkwrap);
         static size_t scalarAggregateCost(const ScalarAggregate<Bit> *aggregate);
-        static size_t unionCost(const Union<Bit> *union_op);
-        static size_t zkSqlInputCost(const ZkSqlInput *input);
+
+        // these ones cost zero gates:
+        //        static size_t unionCost(const Union<Bit> *union_op);
+        //        static size_t zkSqlInputCost(const ZkSqlInput *input);
 
 
 

@@ -19,6 +19,7 @@ namespace  vaultdb {
         KeyedJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, const int & fkey, Expression<B> *predicate, const SortDefinition & sort = SortDefinition());
 
         ~KeyedJoin() = default;
+        int foreignKeyChild() const { return foreign_key_input_; }
 
     protected:
         QueryTable<B> *runSelf() override;

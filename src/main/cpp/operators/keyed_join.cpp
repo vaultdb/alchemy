@@ -68,25 +68,20 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
     this->output_ = TableFactory<B>::getTable(output_tuple_cnt, this->output_schema_, lhs_table->storageModel(), lhs_table->getSortOrder());
 
     B selected, to_update, lhs_dummy_tag, rhs_dummy_tag, dst_dummy_tag;
-
     // each foreignKeyTable tuple can have at most one match from primaryKeyTable relation
     for(uint32_t i = 0; i < lhs_table->getTupleCount(); ++i) {
 
         lhs_dummy_tag = lhs_table->getDummyTag(i);
         Join<B>::write_left(this->output_, i, lhs_table, i);
-        dst_dummy_tag = true; // dummy by default, no tuple comparisons yet
+        dst_dummy_tag = true; // dummy by default, no matches found yet
 
         for(uint32_t j = 0; j < rhs_table->getTupleCount(); ++j) {
             rhs_dummy_tag = rhs_table->getDummyTag(j);
-
             selected = Join<B>::predicate_->call(lhs_table, i, rhs_table, j).template getValue<B>();
-
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
-
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
-
             Join<B>::write_right(to_update, Operator<B>::output_, i, rhs_table, j);
-        }
+       }
 
         this->output_->setDummyTag(i, dst_dummy_tag);
 
@@ -122,18 +117,14 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
         Join<B>::write_right(Operator<B>::output_, i, rhs_table, i);
         dst_dummy_tag = B(true); // no comparisons yet, so it is a dummy by default
 
-
         for(uint32_t j = 0; j < lhs_table->getTupleCount(); ++j) {
             lhs_dummy_tag = lhs_table->getDummyTag(j);
-
-
             selected = Join<B>::predicate_->call(lhs_table, j, rhs_table, i).template getValue<B>();
-
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
 
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
-
             Join<B>::write_left(to_update, Operator<B>::output_, i, lhs_table, j);
+
         }
         this->output_->setDummyTag(i, dst_dummy_tag);
     }

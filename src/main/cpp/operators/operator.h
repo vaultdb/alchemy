@@ -33,9 +33,9 @@ namespace  vaultdb {
         QueryTable<B> *output_ = nullptr;
         SortDefinition sort_definition_; // start out with empty sort
         QuerySchema output_schema_;
-        time_point<high_resolution_clock> start_time_;
-        size_t start_gate_cnt_ = 0L;
-        double runtime_ = 0.0;
+        time_point<high_resolution_clock> start_time_, end_time_;
+        size_t start_gate_cnt_ = 0L, gate_cnt_ = 0L;
+        double runtime_ms_ = 0.0;
         SystemConfiguration & system_conf_;
 
 
@@ -62,6 +62,8 @@ namespace  vaultdb {
         QueryTable<B>  *run();
         std::string printTree() const;
         std::string toString() const;
+        size_t getGateCount() const { return gate_cnt_; }
+        double getRuntimeMs() const { return runtime_ms_; }
         inline int getOperatorId() const {     return operator_id_; }
         inline void setOperatorId(int op_id) { operator_id_ = op_id; }
         inline QueryTable<B> *getOutput() {
