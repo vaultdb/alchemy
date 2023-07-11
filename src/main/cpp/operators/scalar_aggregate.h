@@ -1,7 +1,7 @@
 #ifndef _SCALAR_AGGREGATE_H
 #define _SCALAR_AGGREGATE_H
 
-
+#include <expression/generic_expression.h>
 #include <operators/support/aggregate_id.h>
 #include <operators/support/scalar_aggregate_impl.h>
 #include "operator.h"
@@ -23,9 +23,13 @@ namespace vaultdb {
             for(auto agg : aggregators_) {
                 delete agg;
             }
+            if(predicate_ != nullptr) delete predicate_;
         }
+        Expression<B> *getPredicate() const { return predicate_; }
 
     protected:
+        Expression<B>  *predicate_;
+
         QueryTable<B> *runSelf() override;
         string getOperatorType() const override;
         string getParameters() const override;
