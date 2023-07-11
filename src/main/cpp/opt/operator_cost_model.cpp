@@ -159,16 +159,38 @@ size_t OperatorCostModel::projectCost(const Project<Bit> *project) {
 }
 
 size_t OperatorCostModel::scalarAggregateCost(const ScalarAggregate<Bit> *aggregate) {
+    QuerySchema input_schema = aggregate->getChild()->getOutputSchema();
     // ScalarAggregate : Without GroupBy Clause,
     // Cost : Input_Row_Count * Agg_Cost_Per_Row(=per_row_cost)
+    auto agg_defs = aggregate->aggregate_definitions_;
+    size_t per_row_cost = 0L;
 
-    Expression<Bit> *predicate = aggregate->getPredicate();
-    assert(predicate->exprClass() == ExpressionClass::GENERIC);
-    ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
+    for(auto agg_def : agg_defs) {
+        int ordinal = agg_def.ordinal;
+        QueryFieldDesc f = input_schema.getField(ordinal);
+        AggregateId agg_type = agg_def.type;
+        size_t conditional_write;
+        size_t compare_cost;
+        size_t aggregator_cost;
 
-    ExpressionCostModel<Bit> cost_model(root, aggregate->getOutputSchema());
-    size_t per_row_cost = cost_model.cost();
-    size_t row_count = aggregate->getOutputCardinality();
+        switch(agg_type) {
+            case AggregateId::MIN: {
+                //      accumulated = Field<B>::If(to_initialize, input_field, output_field);
+                conditional_write = f.size() + 1;
+                //            accumulated = Field<B>::If(to_accumulate & (input_field < output_field), input_field, accumulated);
+                compare_cost = ExpressionCostModel<Bit>::getComparisonCost(f);
+                aggregator_cost = compare_cost + conditional_write + 1;
+                break;
+            }
+            default:
+                aggregator_cost = 0;
+
+        }
+        per_row_cost += aggregator_cost;
+
+    }
+
+    size_t row_count = aggregate->getChild()->getOutputCardinality();
     return per_row_cost * row_count;
 }
 

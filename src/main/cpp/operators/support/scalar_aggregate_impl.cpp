@@ -21,7 +21,7 @@ ScalarStatelessAggregateImpl<B>::ScalarStatelessAggregateImpl(const AggregateId 
 
 template<typename B>
 void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst) {
-
+    auto init_gates = SystemConfiguration::getInstance().andGateCount();
     // input is NOT a dummy AND (output IS a dummy AND !matched)
     B input_dummy = src->getDummyTag(src_row);
     Field<B> input_field;
@@ -36,12 +36,13 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
     Field<B> output_field = dst->getPackedField(0, this->output_ordinal_);
 
     Field<B> one;
-    //Field<B> zero = (std::is_same_v<B, Bit>) ? Field<B>(this->field_type_, Integer(this->bit_packed_size_, 0)) : Field<B>(this->field_type_, 0L);
     Field<B> accumulated;
 
     B to_accumulate = (!input_dummy) & (!not_initialized);
     B to_initialize = (!input_dummy) & not_initialized;
 
+    auto end_setup = SystemConfiguration::getInstance().andGateCount() - init_gates;
+    cout << "Setup gates: " << end_setup;
     switch(ScalarAggregateImpl<B>::agg_type_) {
         case AggregateId::AVG:
             throw; // should use specialized UnsortedAvgImpl for this
@@ -50,10 +51,18 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
             accumulated = Field<B>::If(to_initialize, one, output_field);
             accumulated = Field<B>::If(to_accumulate, accumulated + one, accumulated);
             break;
-        case AggregateId::MIN:
+        case AggregateId::MIN: {
+            auto start_gates = SystemConfiguration::getInstance().andGateCount();
             accumulated = Field<B>::If(to_initialize, input_field, output_field);
-            accumulated = Field<B>::If(to_accumulate & (input_field < output_field), input_field, accumulated);
+            auto step1 = SystemConfiguration::getInstance().andGateCount() - start_gates;
+            B selected = to_accumulate & (input_field < output_field);
+            auto step2 = SystemConfiguration::getInstance().andGateCount() - start_gates - step1;
+            accumulated = Field<B>::If(selected, input_field, accumulated);
+            auto step3 = SystemConfiguration::getInstance().andGateCount() - start_gates - step1 - step2;
+            cout << ", Step 1: " << step1 << " Step 2: " << step2 << " Step 3: " << step3;
+            end_setup += step1 + step2 + step3;
             break;
+        }
         case AggregateId::MAX:
             accumulated = Field<B>::If(to_initialize, input_field, output_field);
             accumulated = Field<B>::If(to_accumulate & (input_field > output_field), input_field, accumulated);
@@ -63,7 +72,11 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
             accumulated = Field<B>::If(to_accumulate, accumulated + input_field, accumulated);
 
     }
+    auto last_gates = SystemConfiguration::getInstance().andGateCount();
     not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
+    auto last_last_gates = SystemConfiguration::getInstance().andGateCount() - last_gates;
+    cout << ", last gates: " << last_last_gates << " total gates: " << last_last_gates + end_setup << endl;
+
     dst->setPackedField(0, this->output_ordinal_, accumulated);
     Field<B> output_field_checking = dst->getPackedField(0, this->output_ordinal_);
 }

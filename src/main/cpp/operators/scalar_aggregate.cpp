@@ -51,17 +51,10 @@ QueryTable<B> *ScalarAggregate<B>::runSelf() {
     QueryTable<B> *output = this->output_;
 
     for(size_t i = 0; i < input->getTupleCount(); ++i) {
-        B input_dummy = input->getDummyTag(i);
-
         for(ScalarAggregateImpl<B> *aggregator : aggregators_) {
             aggregator->update(input, i, output);
         }
     }
-
-//    for(size_t i = 0; i < aggregators_.size(); ++i) {
-//        Field f = aggregators_[i]->getResult();
-//        Operator<B>::output_->setField(0, i, f);
-//    }
 
     // dummy tag is always false in our setting, e.g., if we count a set of nulls/dummies, then our count is zero_ - not dummy
     output->setDummyTag(0, false);

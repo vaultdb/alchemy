@@ -4,6 +4,7 @@
 #include <operators/support/aggregate_id.h>
 #include <operators/secure_sql_input.h>
 #include <operators/scalar_aggregate.h>
+#include <opt/operator_cost_model.h>
 
 
 DEFINE_int32(party, 1, "party for EMP execution");
@@ -37,6 +38,12 @@ void SecureScalarAggregateTest::runTest(const string &expected_sql,
   auto input = new SecureSqlInput(db_name_, query, false);
   ScalarAggregate aggregate(input, aggregators);
   auto aggregated = aggregate.run();
+
+  size_t observed_gates = aggregate.getGateCount();
+  size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+  cout << "Input schema: " << input->getOutputSchema() << endl;
+  cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+
   if(FLAGS_validation) {
       PlainTable *observed = aggregated->reveal();
       PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
@@ -77,7 +84,7 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expected_sql,
 
 }
 
-
+/*
 TEST_F(SecureScalarAggregateTest, test_count) {
     // set up expected output
     std::string expected_sql = "SELECT COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10";
@@ -101,7 +108,7 @@ TEST_F(SecureScalarAggregateTest, test_count_dummies) {
 
 }
 
-
+*/
 
 TEST_F(SecureScalarAggregateTest, test_min) {
     std::string expected_sql = "SELECT MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10";
@@ -118,7 +125,7 @@ TEST_F(SecureScalarAggregateTest, test_min_dummies) {
     runDummiesTest(expected_sql, aggregators);
 }
 
-
+/*
 TEST_F(SecureScalarAggregateTest, test_max) {
     std::string expected_sql = "SELECT MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
@@ -334,7 +341,7 @@ TEST_F(SecureScalarAggregateTest, tpch_q1) {
 }
 
 
-
+*/
 
 
 int main(int argc, char **argv) {

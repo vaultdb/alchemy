@@ -23,12 +23,9 @@ namespace vaultdb {
             for(auto agg : aggregators_) {
                 delete agg;
             }
-            if(predicate_ != nullptr) delete predicate_;
         }
-        Expression<B> *getPredicate() const { return predicate_; }
 
     protected:
-        Expression<B>  *predicate_;
 
         QueryTable<B> *runSelf() override;
         string getOperatorType() const override;
