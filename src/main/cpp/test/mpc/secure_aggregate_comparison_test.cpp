@@ -184,6 +184,7 @@ SecureAggregateComparisonTest::controlBitPacking(const string &db_name) {
     }
 }
 
+/*
 TEST_F(SecureAggregateComparisonTest, tpch_q1_NLA) {
 
     string unioned_db_name = "tpch_unioned";
@@ -434,8 +435,322 @@ TEST_F(SecureAggregateComparisonTest, tpch_q5_SMA) {
     delete aggregate;
 
 }
+*/
+
+TEST_F(SecureAggregateComparisonTest, tpch_q9_SMA) {
+    string unioned_db_name = "tpch_unioned";
+    controlBitPacking(unioned_db_name);
+    string local_db_name = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
+    int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+
+    string sql = "WITH order_years AS (\n"
+                          "                     SELECT extract(year from o_orderdate)::INT as o_year, o.o_orderkey\n"
+                          "                     FROM orders o),\n"
+                          "                     yellow_parts AS (\n"
+                          "                         SELECT p_partkey\n"
+                          "                 FROM part\n"
+                          "                 WHERE p_name like '%yellow%'),\n"
+                          "                     profit AS (\n"
+                          "                         select\n"
+                          "                       n_name,\n"
+                          "                         o_year,\n"
+                          "                          l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity as amount\n"
+                          "                      from\n"
+                          "                        yellow_parts p,\n"
+                          "                          supplier s,\n"
+                          "                          lineitem l,\n"
+                          "                          partsupp ps,\n"
+                          "                          order_years o,\n"
+                          "                          nation n\n"
+                          "                    where\n"
+                          "                      s.s_suppkey = l.l_suppkey\n"
+                          "                      and ps.ps_suppkey = l.l_suppkey\n"
+                          "                      and ps.ps_partkey = l.l_partkey\n"
+                          "                      and p.p_partkey = l.l_partkey\n"
+                          "                      and o.o_orderkey = l.l_orderkey\n"
+                          "                      and s.s_nationkey = n.n_nationkey\n"
+                          "                      and l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <" + std::to_string(cutoff) + "))\n"
+                          "                 select\n"
+                          "                  n_name,\n"
+                          "                  o_year,\n"
+                          "                  amount\n"
+                          "                 from profit";
+    string expected_sql = "WITH order_years AS (\n"
+                 "                     SELECT extract(year from o_orderdate)::INT as o_year, o.o_orderkey\n"
+                 "                     FROM orders o),\n"
+                 "                     yellow_parts AS (\n"
+                 "                         SELECT p_partkey\n"
+                 "                 FROM part\n"
+                 "                 WHERE p_name like '%yellow%'),\n"
+                 "                     profit AS (\n"
+                 "                         select\n"
+                 "                       n_name,\n"
+                 "                         o_year,\n"
+                 "                          l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity as amount\n"
+                 "                      from\n"
+                 "                        yellow_parts p,\n"
+                 "                          supplier s,\n"
+                 "                          lineitem l,\n"
+                 "                          partsupp ps,\n"
+                 "                          order_years o,\n"
+                 "                          nation n\n"
+                 "                    where\n"
+                 "                      s.s_suppkey = l.l_suppkey\n"
+                 "                      and ps.ps_suppkey = l.l_suppkey\n"
+                 "                      and ps.ps_partkey = l.l_partkey\n"
+                 "                      and p.p_partkey = l.l_partkey\n"
+                 "                      and o.o_orderkey = l.l_orderkey\n"
+                 "                      and s.s_nationkey = n.n_nationkey\n"
+                 "                      and l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <" + std::to_string(cutoff) + "))\n"
+                                                                                                                                       "                 select\n"
+                                                                                                                                       "                  n_name,\n"
+                                                                                                                                       "                  o_year,\n"
+                                                                                                                                       "                  sum(amount) as sum_profit\n"
+                                                                                                                                       "                 from profit\n"
+                                                                                                                                       "GROUP BY n_name, o_year\n"
+                                                                                                                                       "ORDER BY n_name, o_year desc";
+    std::vector<int32_t> group_bys{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_profit")};
+
+    SortDefinition  sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+    auto input = new SecureSqlInput(local_db_name, sql, false);
+    auto sort = new Sort(input, sort_def);
+
+    auto aggregate = new GroupByAggregate(sort, group_bys, aggregators);
+    auto aggregated = aggregate->run();
+
+    if(FLAGS_validation) {
+        aggregated->setSortOrder(sort_def);
+        PlainTable *observed = aggregated->reveal(PUBLIC);
+
+        //auto sort = new Sort(observed, sort_def);
+        //observed = sort->run();
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_name, expected_sql, false, 0);
+        expected->setSortOrder(sort_def);
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+
+    delete aggregate;
+
+}
+
+TEST_F(SecureAggregateComparisonTest, tpch_q9_NLA) {
+    string unioned_db_name = "tpch_unioned";
+    controlBitPacking(unioned_db_name);
+    string local_db_name = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
+    int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+
+    string sql = "WITH order_years AS (\n"
+                 "                     SELECT extract(year from o_orderdate)::INT as o_year, o.o_orderkey\n"
+                 "                     FROM orders o),\n"
+                 "                     yellow_parts AS (\n"
+                 "                         SELECT p_partkey\n"
+                 "                 FROM part\n"
+                 "                 WHERE p_name like '%yellow%'),\n"
+                 "                     profit AS (\n"
+                 "                         select\n"
+                 "                       n_name,\n"
+                 "                         o_year,\n"
+                 "                          l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity as amount\n"
+                 "                      from\n"
+                 "                        yellow_parts p,\n"
+                 "                          supplier s,\n"
+                 "                          lineitem l,\n"
+                 "                          partsupp ps,\n"
+                 "                          order_years o,\n"
+                 "                          nation n\n"
+                 "                    where\n"
+                 "                      s.s_suppkey = l.l_suppkey\n"
+                 "                      and ps.ps_suppkey = l.l_suppkey\n"
+                 "                      and ps.ps_partkey = l.l_partkey\n"
+                 "                      and p.p_partkey = l.l_partkey\n"
+                 "                      and o.o_orderkey = l.l_orderkey\n"
+                 "                      and s.s_nationkey = n.n_nationkey\n"
+                 "                      and l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <" + std::to_string(cutoff) + "))\n"
+                                                                                                                                       "                 select\n"
+                                                                                                                                       "                  n_name,\n"
+                                                                                                                                       "                  o_year,\n"
+                                                                                                                                       "                  amount\n"
+                                                                                                                                       "                 from profit";
+    string expected_sql = "WITH order_years AS (\n"
+                          "                     SELECT extract(year from o_orderdate)::INT as o_year, o.o_orderkey\n"
+                          "                     FROM orders o),\n"
+                          "                     yellow_parts AS (\n"
+                          "                         SELECT p_partkey\n"
+                          "                 FROM part\n"
+                          "                 WHERE p_name like '%yellow%'),\n"
+                          "                     profit AS (\n"
+                          "                         select\n"
+                          "                       n_name,\n"
+                          "                         o_year,\n"
+                          "                          l.l_extendedprice * (1 - l.l_discount) - ps.ps_supplycost * l.l_quantity as amount\n"
+                          "                      from\n"
+                          "                        yellow_parts p,\n"
+                          "                          supplier s,\n"
+                          "                          lineitem l,\n"
+                          "                          partsupp ps,\n"
+                          "                          order_years o,\n"
+                          "                          nation n\n"
+                          "                    where\n"
+                          "                      s.s_suppkey = l.l_suppkey\n"
+                          "                      and ps.ps_suppkey = l.l_suppkey\n"
+                          "                      and ps.ps_partkey = l.l_partkey\n"
+                          "                      and p.p_partkey = l.l_partkey\n"
+                          "                      and o.o_orderkey = l.l_orderkey\n"
+                          "                      and s.s_nationkey = n.n_nationkey\n"
+                          "                      and l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <" + std::to_string(cutoff) + "))\n"
+                                                                                                                                                "                 select\n"
+                                                                                                                                                "                  n_name,\n"
+                                                                                                                                                "                  o_year,\n"
+                                                                                                                                                "                  sum(amount) as sum_profit\n"
+                                                                                                                                                "                 from profit\n"
+                                                                                                                                                "GROUP BY n_name, o_year\n"
+                                                                                                                                                "ORDER BY n_name, o_year desc";
+    std::vector<int32_t> group_bys{0, 1};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(2, vaultdb::AggregateId::SUM, "sum_profit")};
+
+    SortDefinition  sort_def{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
+    auto input = new SecureSqlInput(local_db_name, sql, false);
+    auto sort = new Sort(input, sort_def);
+
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 175);
+    auto aggregated = aggregate->run();
+
+    if(FLAGS_validation) {
+        aggregated->setSortOrder(sort_def);
+        PlainTable *observed = aggregated->reveal(PUBLIC);
+
+        //auto sort = new Sort(observed, sort_def);
+        //observed = sort->run();
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_name, expected_sql, false, 0);
+        expected->setSortOrder(sort_def);
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+
+    delete aggregate;
+
+}
 
 
+/*
+TEST_F(SecureAggregateComparisonTest, tpch_q3_SMA) {
+    string unioned_db_name = "tpch_unioned";
+    controlBitPacking(unioned_db_name);
+    string local_db_name = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
+    int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+
+    string sql = "SELECT o_orderkey, o_orderdate, o_shippriority, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_mktsegment = 'HOUSEHOLD'  AND o.o_orderdate < date '1995-03-25' AND l.l_shipdate > date '1995-03-25') AS dummy_tag\n"
+                 " FROM customer c JOIN orders o ON  c.c_custkey = o.o_custkey\n"
+                 "                     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
+                 "                 WHERE c_custkey < " + std::to_string(cutoff) + "\n";
+
+    string expected_sql = "SELECT o_orderkey, o_orderdate, o_shippriority, SUM(l.l_extendedprice * (1 - l.l_discount)) as revenue\n"
+                          " FROM customer c JOIN orders o ON  c.c_custkey = o.o_custkey\n"
+                          "                     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
+    "                 WHERE c_custkey < " + std::to_string(cutoff) + "\n"
+                                                                     "AND c.c_mktsegment = 'HOUSEHOLD'  AND o.o_orderdate < date '1995-03-25' AND l.l_shipdate > date '1995-03-25'\n"
+                                                                     "GROUP BY o_orderkey, o_orderdate, o_shippriority\n"
+                                                                     "ORDER BY revenue DESC, o_orderdate";                                                                                                                                       "ORDER BY n_name, o_year desc";
+    std::vector<int32_t> group_bys{0, 1, 2};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "revenue")};
+
+    SortDefinition  sort_def{ColumnSort(0, SortDirection::ASCENDING),
+                             ColumnSort(1, SortDirection::ASCENDING),
+                             ColumnSort(2, SortDirection::ASCENDING)};
+    auto input = new SecureSqlInput(local_db_name, sql, true);
+    auto sort = new Sort(input, sort_def);
+
+    auto aggregate = new GroupByAggregate(sort, group_bys, aggregators);
+    auto aggregated = aggregate->run();
+
+    if(FLAGS_validation) {
+        aggregated->setSortOrder(sort_def);
+        PlainTable *observed = aggregated->reveal(PUBLIC);
+
+        //auto sort = new Sort(observed, sort_def);
+        //observed = sort->run();
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_name, expected_sql, false, 0);
+        expected->setSortOrder(sort_def);
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+
+    delete aggregate;
+
+}
+
+TEST_F(SecureAggregateComparisonTest, tpch_q3_NLA) {
+    string unioned_db_name = "tpch_unioned";
+    controlBitPacking(unioned_db_name);
+    string local_db_name = (FLAGS_party == ALICE) ? "tpch_unioned" : "tpch_empty";
+    int cutoff = FLAGS_cutoff;
+
+    std::cout << "Expected : " << unioned_db_name << " Observed : " << local_db_name << " cutoff : " << std::to_string(cutoff) << "\n";
+
+    string sql = "SELECT o_orderkey, o_orderdate, o_shippriority, l.l_extendedprice * (1 - l.l_discount) as revenue, NOT (c.c_mktsegment = 'HOUSEHOLD'  AND o.o_orderdate < date '1995-03-25' AND l.l_shipdate > date '1995-03-25') AS dummy_tag\n"
+                 " FROM customer c JOIN orders o ON  c.c_custkey = o.o_custkey\n"
+                 "                     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
+                 "                 WHERE c_custkey < " + std::to_string(cutoff) + "\n";
+
+    string expected_sql = "SELECT o_orderkey, o_orderdate, o_shippriority, SUM(l.l_extendedprice * (1 - l.l_discount)) as revenue\n"
+                          " FROM customer c JOIN orders o ON  c.c_custkey = o.o_custkey\n"
+                          "                     JOIN lineitem l ON l.l_orderkey = o.o_orderkey\n"
+                          "                 WHERE c_custkey < " + std::to_string(cutoff) + "\n"
+                                                                                           "AND c.c_mktsegment = 'HOUSEHOLD'  AND o.o_orderdate < date '1995-03-25' AND l.l_shipdate > date '1995-03-25'\n"
+                                                                                           "GROUP BY o_orderkey, o_orderdate, o_shippriority\n"
+                                                                                           "ORDER BY revenue DESC, o_orderdate";                                                                                                                                       "ORDER BY n_name, o_year desc";
+    std::vector<int32_t> group_bys{0, 1, 2};
+    std::vector<ScalarAggregateDefinition> aggregators{
+            ScalarAggregateDefinition(3, vaultdb::AggregateId::SUM, "revenue")};
+
+    SortDefinition  sort_def{ColumnSort(0, SortDirection::ASCENDING),
+                             ColumnSort(1, SortDirection::ASCENDING),
+                             ColumnSort(2, SortDirection::ASCENDING)};
+    auto input = new SecureSqlInput(local_db_name, sql, true);
+    auto sort = new Sort(input, sort_def);
+
+    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 150000);
+    auto aggregated = aggregate->run();
+
+    if(FLAGS_validation) {
+        aggregated->setSortOrder(sort_def);
+        PlainTable *observed = aggregated->reveal(PUBLIC);
+
+        //auto sort = new Sort(observed, sort_def);
+        //observed = sort->run();
+        PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_name, expected_sql, false, 0);
+        expected->setSortOrder(sort_def);
+
+        ASSERT_EQ(*expected, *observed);
+
+        delete observed;
+        delete expected;
+    }
+
+    delete aggregate;
+
+}
+*/
 /*
 TEST_F(SecureAggregateComparisonTest, tpch_q1_SMA) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);

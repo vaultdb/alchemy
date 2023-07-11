@@ -28,7 +28,7 @@ namespace vaultdb {
         NestedLoopAggregate(QueryTable<B>  *child, const vector<int32_t> &groupBys,
                             const vector<ScalarAggregateDefinition> &aggregates, const int & output_card = 0);
         ~NestedLoopAggregate(){
-        if(predicate_ != nullptr) delete predicate_;
+            //if(predicate_ != nullptr) delete predicate_;
         }
         Expression<B> *getPredicate() const { return predicate_; }
 

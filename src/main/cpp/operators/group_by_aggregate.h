@@ -32,7 +32,7 @@ namespace vaultdb {
             for(size_t i = 0; i < aggregators_.size(); ++i) {
                 delete aggregators_[i];
             }
-            if(predicate_ != nullptr) delete predicate_;
+            //if(predicate_ != nullptr) delete predicate_;
         }
         static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs);
         Expression<B> *getPredicate() const { return predicate_; }
