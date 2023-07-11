@@ -1,7 +1,7 @@
 #ifndef _GROUP_BY_AGGREGATE_H
 #define _GROUP_BY_AGGREGATE_H
 
-
+#include <expression/generic_expression.h>
 #include <operators/support/aggregate_id.h>
 #include <operators/support/group_by_aggregate_impl.h>
 #include "operator.h"
@@ -32,10 +32,14 @@ namespace vaultdb {
             for(size_t i = 0; i < aggregators_.size(); ++i) {
                 delete aggregators_[i];
             }
+            //if(predicate_ != nullptr) delete predicate_;
         }
         static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs);
+        Expression<B> *getPredicate() const { return predicate_; }
 
     protected:
+        Expression<B>  *predicate_;
+
         QueryTable<B> *runSelf() override;
         string getOperatorType() const override;
         string getParameters() const override;

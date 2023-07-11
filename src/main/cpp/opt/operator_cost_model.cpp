@@ -93,13 +93,33 @@ size_t OperatorCostModel::sortMergeJoinCost(const SortMergeJoin<Bit> *join) {
 // only count GroupByAggregate cost, sort cost is accounted for in Sort operator
 // Sort is sometimes pushed out of MPC, thus separate accounting
 size_t OperatorCostModel::groupByAggregateCost(const GroupByAggregate<Bit> *aggregate) {
-    size_t n = aggregate->getOutputCardinality();
+    // Cost : Sort_Cost + Input_Row_Count * Agg_Cost_Per_Row(=per_row_cost)
 
-    throw;
+    size_t input_row_count = aggregate->getOutputCardinality();
+    Expression<Bit> *predicate = aggregate->getPredicate();
+    assert(predicate->exprClass() == ExpressionClass::GENERIC);
+    ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
+
+    size_t sort_cost = sortCost(aggregate->getOutputSchema(), aggregate->getSortOrder(), input_row_count);
+
+    ExpressionCostModel<Bit> cost_model(root, aggregate->getOutputSchema());
+    size_t per_row_cost = cost_model.cost();
+
+    return sort_cost + per_row_cost * input_row_count;
 }
 
 size_t OperatorCostModel::nestedLoopAggregateCost(const NestedLoopAggregate<Bit> *aggregate) {
-    return 0;
+    // Cost : Input_Row_Count * Output_Cardinality * Agg_Cost_Per_Row(=per_row_cost)
+
+    Expression<Bit> *predicate = aggregate->getPredicate();
+    assert(predicate->exprClass() == ExpressionClass::GENERIC);
+    ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
+
+    ExpressionCostModel<Bit> cost_model(root, aggregate->getOutputSchema());
+    size_t per_row_cost = cost_model.cost();
+    size_t input_row_count = aggregate->getChild()->getOutputCardinality();
+    size_t output_cardinality = aggregate->getOutputCardinality();
+    return per_row_cost * input_row_count * output_cardinality;
 }
 
 size_t OperatorCostModel::sortCost(const Sort<Bit> *sort) {
@@ -139,7 +159,17 @@ size_t OperatorCostModel::projectCost(const Project<Bit> *project) {
 }
 
 size_t OperatorCostModel::scalarAggregateCost(const ScalarAggregate<Bit> *aggregate) {
-     throw; // Not yet implemented
+    // ScalarAggregate : Without GroupBy Clause,
+    // Cost : Input_Row_Count * Agg_Cost_Per_Row(=per_row_cost)
+
+    Expression<Bit> *predicate = aggregate->getPredicate();
+    assert(predicate->exprClass() == ExpressionClass::GENERIC);
+    ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
+
+    ExpressionCostModel<Bit> cost_model(root, aggregate->getOutputSchema());
+    size_t per_row_cost = cost_model.cost();
+    size_t row_count = aggregate->getOutputCardinality();
+    return per_row_cost * row_count;
 }
 
 size_t OperatorCostModel::compareSwapCost(const QuerySchema &schema, const SortDefinition &sort, const int &tuple_cnt) {

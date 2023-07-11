@@ -64,7 +64,6 @@ namespace  vaultdb {
 
         // recurses first, then invokes runSelf method
         QueryTable<B>  *run();
-        QueryTable<B>  *run(bool isTrueCardinalityTest);
         std::string printTree() const;
         std::string toString() const;
         size_t getGateCount() const { return gate_cnt_; }

@@ -142,6 +142,14 @@
     },
     {
       "id": "6",
+      "relOp": "ShrinkWrap",
+      "output_cardinality": 5968,
+      "inputs": [
+        "5"
+      ]
+    },
+    {
+      "id": "7",
       "relOp": "LogicalProject",
       "fields": [
         "L2.l_orderkey",
@@ -159,7 +167,7 @@
       ]
     },
     {
-      "id": "7",
+      "id": "8",
       "relOp": "LogicalValues",
       "type": [
         {
@@ -189,7 +197,7 @@
       "inputs": []
     },
     {
-      "id": "8",
+      "id": "9",
       "relOp": "LogicalJoin",
       "joinOn": "L2.l_orderkey = o_orderkey",
       "operator-algorithm" : "nested-loop-join",
@@ -214,12 +222,20 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "6",
-        "7"
+        "7",
+        "8"
       ]
     },
     {
-      "id": "9",
+      "id": "10",
+      "relOp": "ShrinkWrap",
+      "output_cardinality": 5968,
+      "inputs": [
+        "9"
+      ]
+    },
+    {
+      "id": "11",
       "relOp": "LogicalProject",
       "inputFields": "L2.l_orderkey (#0), L2.l_quantity (#1), o_orderkey (#2), o_custkey (#3), o_totalprice (#4), o_orderdate (#5)",
       "fields": [
@@ -253,7 +269,7 @@
       ]
     },
     {
-      "id": "10",
+      "id": "12",
       "relOp": "LogicalValues",
       "type": [
         {
@@ -272,7 +288,7 @@
       "inputs": []
     },
     {
-      "id": "11",
+      "id": "13",
       "relOp": "LogicalJoin",
       "joinOn": "o_custkey = c_custkey",
       "operator-algorithm" : "nested-loop-join",
@@ -297,12 +313,20 @@
       "joinType": "inner",
       "foreignKey": 0,
       "inputs": [
-        "9",
-        "10"
+        "11",
+        "12"
       ]
     },
     {
-      "id": "12",
+      "id": "14",
+      "relOp": "ShrinkWrap",
+      "output_cardinality": 5968,
+      "inputs": [
+        "13"
+      ]
+    },
+    {
+      "id": "15",
       "relOp": "LogicalProject",
       "fields": [
         "c_name",
@@ -340,7 +364,7 @@
       ]
     },
     {
-      "id": "13",
+      "id": "16",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
       "group": [
@@ -372,7 +396,7 @@
       ]
     },
     {
-      "id": "14",
+      "id": "17",
       "relOp": "LogicalSort",
       "collation": [
         {

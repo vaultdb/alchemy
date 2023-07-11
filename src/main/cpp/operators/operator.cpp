@@ -71,34 +71,6 @@ QueryTable<B> *Operator<B>::run() {
     return output_;
 }
 
-template<typename B>
-QueryTable<B> *Operator<B>::run(bool isTrueCardinalityTest) {
-    if (operator_executed_) // prevent duplicate executions of operator
-        return output_;
-
-    output_ = runSelf(); // delegated to children
-
-    size_t after_gate_count =  system_conf_.andGateCount();
-    runtime_ms_ = time_from(start_time_);
-
-    if(std::is_same_v<B, Bit>)
-        cout << "Operator #" << this->getOperatorId() << " " << getOperatorType()  << " ran for " << runtime_ms_/1e3 << " ms, "
-             << " gate count: " << after_gate_count - start_gate_cnt_ << " output cardinality: " << output_->getTupleCount() << ", row width=" << output_schema_.size() <<  '\n';
-//    cout << "      Operator desc: " << this->toString() << endl;
-
-    operator_executed_ = true;
-    sort_definition_ = output_->getSortOrder(); // update this if needed
-    auto observed = output_->reveal();
-    DataUtilities::removeDummies(observed);
-
-
-    if(lhs_child_)     lhs_child_->reset();
-    if(rhs_child_)     rhs_child_->reset();
-
-
-    return output_;
-}
-
 
 template<typename B>
 std::string Operator<B>::printTree() const {

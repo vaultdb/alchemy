@@ -13,11 +13,11 @@ SELECT o_orderkey, o_custkey
 FROM orders
 WHERE o_orderdate >= DATE '1993-01-01' AND o_orderdate < DATE '1994-01-01'
 ORDER BY o_orderkey, o_custkey;
--- 4, collation: (0 ASC, 1 ASC, 2 DESC)
+-- 5, collation: (0 ASC, 1 ASC, 2 DESC)
 SELECT l_orderkey, l_suppkey, l_extendedprice * (1 - l_discount) AS revenue
 FROM lineitem
 ORDER BY l_orderkey, l_suppkey, revenue DESC
--- 7, collation: (1 ASC, 0 ASC)
+-- 9, collation: (1 ASC, 0 ASC)
 SELECT t2.s_suppkey, t2.s_nationkey
 FROM (SELECT r_regionkey, r_name
 FROM region

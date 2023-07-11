@@ -2,6 +2,7 @@
 #define _NESTED_LOOP_AGGREGATE_H
 
 
+#include <expression/generic_expression.h>
 #include <operators/support/aggregate_id.h>
 #include <operators/support/unsorted_aggregate_impl.h>
 #include "operator.h"
@@ -26,10 +27,15 @@ namespace vaultdb {
 
         NestedLoopAggregate(QueryTable<B>  *child, const vector<int32_t> &groupBys,
                             const vector<ScalarAggregateDefinition> &aggregates, const int & output_card = 0);
-        ~NestedLoopAggregate() = default;
+        ~NestedLoopAggregate(){
+            //if(predicate_ != nullptr) delete predicate_;
+        }
+        Expression<B> *getPredicate() const { return predicate_; }
 
     protected:
         string OperatorType;
+        Expression<B>  *predicate_;
+
         QueryTable<B> *runSelf() override;
         string getOperatorType() const override;
         string getParameters() const override;
