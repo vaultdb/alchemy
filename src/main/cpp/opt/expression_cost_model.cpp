@@ -129,23 +129,14 @@ void ExpressionCostModel<B>::add_subtract(ExpressionNode<B> *node) {
 
     assert(left_field_desc.getType() == right_field_desc.getType());
     // take min, literals to be converted to Packed during TypeValidationVisitor
-    int field_size = TypeUtilities::getTypeSize(left_field_desc.getType());
+    int field_size = left_field_desc.size();
     if(right_field_desc.bitPacked() || left_field_desc.bitPacked()) {
-        field_size = min(left_field_desc.size(), right_field_desc.size()) + 1; // +1 for sign bit
+//        field_size = min(left_field_desc.size(), right_field_desc.size()) + 1; // +1 for sign bit
+        cumulative_cost_ += field_size;
+        return;
     }
 
-    cumulative_cost_ = left_cost + right_cost;
-    switch(left_field_desc.getType()) {
-        case FieldType::SECURE_INT:
-        case FieldType::SECURE_LONG:
-            cumulative_cost_ += (field_size - 1); //  integer addition
-            break;
-        case FieldType::SECURE_FLOAT:
-            cumulative_cost_ += 986; //  float addition
-            break;
-        default:
-            throw; // all others not supported
-    }
+    cumulative_cost_ = left_cost + right_cost + getAddSubtractionCost(left_field_desc);
 
 }
 

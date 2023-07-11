@@ -108,6 +108,26 @@ namespace vaultdb {
             }
         }
 
+       inline size_t getAddSubtractionCost(const QueryFieldDesc & field) {
+           int field_size = field.size();
+           if(field.bitPacked()) {
+               field_size += 1; // +1 for sign bit
+           }
+
+           switch(field.getType()) {
+               case FieldType::SECURE_INT:
+               case FieldType::SECURE_LONG:
+                   return (field_size - 1); //  integer addition
+                   break;
+               case FieldType::SECURE_FLOAT:
+                   return 986; //  float addition
+                   break;
+               default:
+                   throw; // all others not supported
+           }
+
+       }
+
     private:
         QuerySchema input_schema_;
         QueryFieldDesc last_field_desc_;
