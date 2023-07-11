@@ -75,6 +75,14 @@
     },
     {
       "id": "3",
+      "relOp": "ShrinkWrap",
+      "output_cardinality": 140,
+      "inputs": [
+        "2"
+      ]
+    },
+    {
+      "id": "4",
       "relOp": "LogicalProject",
       "outputFields": "o_orderkey (#0), o_orderdate (#1), o_shippriority (#2)",
       "fields": [
@@ -98,7 +106,7 @@
       ]
     },
     {
-      "id": "4",
+      "id": "5",
       "relOp": "LogicalValues",
       "outputFields": "l_orderkey (#0), revenue (#1)",
       "type": [
@@ -119,7 +127,7 @@
       "inputs": []
     },
     {
-      "id": "5",
+      "id": "6",
       "relOp": "LogicalJoin",
       "joinOn" : "o_orderkey = l_orderkey",
       "outputFields": "o_orderkey (#0), o_orderdate (#1), o_shippriority (#2), l_orderkey (#3), revenue (#4)",
@@ -144,12 +152,20 @@
       "joinType": "inner",
       "foreignKey": 1,
       "inputs": [
-        "3",
-        "4"
+        "4",
+        "5"
       ]
     },
     {
-      "id": "6",
+      "id": "7",
+      "relOp": "ShrinkWrap",
+      "output_cardinality": 38,
+      "inputs": [
+        "6"
+      ]
+    },
+    {
+      "id": "8",
       "relOp": "LogicalProject",
       "outputFields": "l_orderkey (#0), o_orderdate (#1), o_shippriority (#2), revenue (#3)",
       "fields": [
@@ -178,7 +194,7 @@
       ]
     },
     {
-      "id": "7",
+      "id": "9",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
       "group": [
@@ -208,7 +224,7 @@
       ]
     },
     {
-      "id": "8",
+      "id": "10",
       "relOp": "LogicalSort",
       "collation": [
         {
@@ -231,7 +247,7 @@
       }
     },
     {
-      "id": "9",
+      "id": "11",
       "relOp": "LogicalProject",
       "fields": [
         "l_orderkey",

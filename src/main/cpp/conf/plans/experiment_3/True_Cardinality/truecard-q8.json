@@ -70,6 +70,14 @@
     },
     {
       "id": "3",
+      "relOp": "ShrinkWrap",
+      "output_cardinality": 89,
+      "inputs": [
+        "2"
+      ]
+    },
+    {
+      "id": "4",
       "relOp": "LogicalProject",
       "outputFields": "o_year (#0), o_orderkey (#1)",
       "fields": [
@@ -88,7 +96,7 @@
       ]
     },
     {
-      "id": "4",
+      "id": "5",
       "relOp": "LogicalValues",
       "outputFields": "s_suppkey (#0), nation_check (#1)",
       "type": [
@@ -107,7 +115,7 @@
       "inputs": []
     },
     {
-      "id": "5",
+      "id": "6",
       "relOp": "LogicalValues",
       "type": [
         {
@@ -132,7 +140,7 @@
       "inputs": []
     },
     {
-      "id": "6",
+      "id": "7",
       "joinOn" : "s_suppkey = l_suppkey",
       "outputFields": "s_suppkey (#0), nation_check (#1), l_orderkey (#2), l_suppkey (#3), volume (#4)",
       "operator-algorithm" : "nested-loop-join",
@@ -157,12 +165,20 @@
       "joinType": "inner",
       "foreignKey": 1,
       "inputs": [
-        "4",
-        "5"
+        "5",
+        "6"
       ]
     },
     {
-      "id": "7",
+      "id": "8",
+      "relOp": "ShrinkWrap",
+      "output_cardinality": 59,
+      "inputs": [
+        "7"
+      ]
+    },
+    {
+      "id": "9",
       "relOp": "LogicalProject",
       "outputFields": "nation_check(#0), l_orderkey (#1), volume (#2)",
       "fields": [
@@ -186,7 +202,7 @@
       ]
     },
     {
-      "id": "8",
+      "id": "10",
       "joinOn" : "o_orderkey = l_orderkey",
       "outputFields": "o_year (#0), o_orderkey (#1), nation_check(#2), l_orderkey (#3), volume (#4)",
       "operator-algorithm" : "nested-loop-join",
@@ -211,12 +227,20 @@
       "joinType": "inner",
       "foreignKey": 1,
       "inputs": [
-        "3",
-        "7"
+        "4",
+        "9"
       ]
     },
     {
-      "id": "9",
+      "id": "11",
+      "relOp": "ShrinkWrap",
+      "output_cardinality": 6,
+      "inputs": [
+        "10"
+      ]
+    },
+    {
+      "id": "12",
       "inputFields": "o_year (#0), o_orderkey (#1), nation_check (#2), l_orderkey (#3), volume (#4)",
       "outputFields" : "o_year, volume * nation_check::float, volume",
       "relOp": "LogicalProject",
@@ -254,7 +278,7 @@
       ]
     },
     {
-      "id": "10",
+      "id": "13",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
       "group": [
@@ -300,7 +324,7 @@
       ]
     },
     {
-      "id": "11",
+      "id": "14",
       "relOp": "LogicalProject",
       "fields": [
         "o_year",
@@ -331,7 +355,7 @@
       ]
     },
     {
-      "id": "12",
+      "id": "15",
       "relOp": "LogicalSort",
       "collation": [
         {

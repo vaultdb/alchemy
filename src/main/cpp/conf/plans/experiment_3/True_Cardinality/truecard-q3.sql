@@ -8,7 +8,7 @@ SELECT c_custkey
 FROM customer
 WHERE c_mktsegment = 'HOUSEHOLD'
 ORDER BY c_custkey
--- 4, collation: (0 ASC)
+-- 5, collation: (0 ASC)
 SELECT l_orderkey, l_extendedprice * (1 - l_discount) AS revenue
 FROM lineitem
 WHERE l_shipdate > DATE '1995-03-25'
