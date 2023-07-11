@@ -10,18 +10,19 @@
 
 using namespace vaultdb;
 
+// lhs assumed to be fkey
 template<typename B>
-SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs,  Expression<B> *predicate,
-                                const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort) {
-
+SortMergeJoin<B>::SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key,  Expression<B> *predicate,
+                                const SortDefinition &sort) : Join<B>(foreign_key, primary_key, predicate, sort) {
+    this->output_cardinality_ = foreign_key->getOutputCardinality();
     setup();
 }
 
 
 template<typename B>
-SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs,Expression<B> *predicate,
-                                const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort) {
-
+SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *primary_key, Expression<B> *predicate,
+                                const SortDefinition &sort)  : Join<B>(foreign_key, primary_key, predicate, sort) {
+    this->output_cardinality_ = foreign_key->getTupleCount();
     setup();
 }
 
@@ -31,6 +32,7 @@ SortMergeJoin<B>::SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & 
                                 const SortDefinition &sort) : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey != 0) {
 
     assert(fkey == 0 || fkey == 1);
+    this->output_cardinality_ = (fkey == 0) ? lhs->getOutputCardinality() : rhs->getOutputCardinality();
     setup();
 }
 
@@ -40,6 +42,7 @@ SortMergeJoin<B>::SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const in
               const SortDefinition &sort)  : Join<B>(lhs, rhs, predicate, sort), foreign_key_input_(fkey != 0) {
 
     assert(fkey == 0 || fkey == 1);
+    this->output_cardinality_ = (fkey == 0) ? lhs->getTupleCount() : rhs->getTupleCount();
     setup();
 }
 

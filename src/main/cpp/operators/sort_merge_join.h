@@ -8,7 +8,6 @@
 #include <query_table/secure_tuple.h>
 
 // TODOs:
-// delete alpha2
 // reduce counts to log(fkey_length) bits
 
 namespace  vaultdb {
@@ -17,9 +16,10 @@ namespace  vaultdb {
 		public Join<B> {
 	public:
 
-        SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, Expression<B> *predicate,
+        SortMergeJoin(Operator<B> *foreign_key, Operator<B> *primary_key, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
-        SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, Expression<B> *predicate,
+
+        SortMergeJoin(QueryTable<B> *foreign_key, QueryTable<B> *prkmary_key, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
         SortMergeJoin(Operator<B> *lhs, Operator<B> *rhs, const int & fkey, Expression<B> *predicate,

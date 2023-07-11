@@ -5,6 +5,10 @@ ZkSqlInput::ZkSqlInput(string db, string sql, bool dummy_tag,  const size_t &inp
 
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
+
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+    this->output_cardinality_ = manager->getTableCardinality(plain_input_->getTupleCount());
+
 }
 
 ZkSqlInput::ZkSqlInput(const string &db, const string &sql, const bool &dummy_tag,
@@ -14,11 +18,13 @@ ZkSqlInput::ZkSqlInput(const string &db, const string &sql, const bool &dummy_ta
     runQuery();
     output_schema_ = QuerySchema::toSecure(plain_input_->getSchema());
 
+    EmpManager *manager = SystemConfiguration::getInstance().emp_manager_;
+    this->output_cardinality_ = manager->getTableCardinality(plain_input_->getTupleCount());
 }
 
 
 SecureTable *ZkSqlInput::runSelf() {
-    // secret share it
+    // commit it
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 

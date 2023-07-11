@@ -12,14 +12,13 @@ namespace vaultdb {
         Shrinkwrap(Operator<B> *child, const size_t & output_cardinality);
         Shrinkwrap(QueryTable<B>*input, const size_t & output_cardinality);
         ~Shrinkwrap() = default;
+
     protected:
-        QueryTable<B>*runSelf()  override;
-        string getOperatorType() const override;
-        string getParameters() const override;
+        QueryTable<B>* runSelf()  override;
+        string getOperatorType() const override {     return "Shrinkwrap"; }
+        string getParameters() const override {  return "cardinality_bound=" + std::to_string(this->output_cardinality_); }
 
 
-    private:
-        size_t cardinality_bound_;
     };
 
 

@@ -60,6 +60,8 @@ namespace  vaultdb {
            return  i.reveal<std::string>(party);
         }
 
+        size_t getTableCardinality(const int & local_cardinality) override;
+
     private:
         static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
                                QueryTable<Bit> *dst_table, const size_t &write_offset,
@@ -104,6 +106,9 @@ namespace  vaultdb {
             throw;
         }
 
+        size_t getTableCardinality(const int & local_cardinality) override {
+            throw;
+        }
 
     };
 }

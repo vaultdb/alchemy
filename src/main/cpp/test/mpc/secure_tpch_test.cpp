@@ -37,8 +37,6 @@ protected:
 
 };
 
-// most of these runs are not meaningful for diffing the results because they produce no tuples - joins are too sparse.
-// This isn't relevant to the parser so work on this elsewhere.
 void
 SecureTpcHTest::runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name) {
 

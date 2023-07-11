@@ -18,8 +18,9 @@ NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int
                                             const SortDefinition &sort,
                                             const int & output_card) : Operator<B>(child, sort),
                                                                        aggregate_definitions_(aggregates),
-                                                                       group_by_(groupBys), output_cardinality_(output_card)
+                                                                       group_by_(groupBys)
 {
+    this->output_cardinality_ = output_card;
     setup();
 }
 
@@ -29,8 +30,10 @@ NestedLoopAggregate<B>::NestedLoopAggregate(Operator<B> *child, const vector<int
                                             const vector<ScalarAggregateDefinition> &aggregates,
                                             const int output_card) : Operator<B>(child, SortDefinition()),
                                                                      aggregate_definitions_(aggregates),
-                                                                     group_by_(groupBys), output_cardinality_(output_card) {
-    output_cardinality_ = output_card;
+                                                                     group_by_(groupBys) {
+
+
+    this->output_cardinality_ = output_card;
     setup();
 }
 
@@ -40,8 +43,9 @@ NestedLoopAggregate<B>::NestedLoopAggregate(QueryTable<B> *child, const vector<i
                                             const SortDefinition &sort,
                                             const int & output_card) : Operator<B>(child, sort),
                                                                        aggregate_definitions_(aggregates),
-                                                                       group_by_(groupBys), output_cardinality_(output_card) {
+                                                                       group_by_(groupBys) {
 
+    this->output_cardinality_ = output_card;
     setup();
 }
 
@@ -50,7 +54,9 @@ NestedLoopAggregate<B>::NestedLoopAggregate(QueryTable<B> *child, const vector<i
                                             const vector<ScalarAggregateDefinition> &aggregates,
                                             const int & output_card) : Operator<B>(child, SortDefinition()),
                                                                        aggregate_definitions_(aggregates),
-                                                                       group_by_(groupBys), output_cardinality_(output_card) {
+                                                                       group_by_(groupBys) {
+
+    this->output_cardinality_ = output_card;
 
     setup();
 }
@@ -67,17 +73,14 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
 
 
 
-    if(output_cardinality_ == 0) { // naive case - go full oblivious
-        output_cardinality_ = input->getTupleCount();
-    }
 
-    this->output_ = TableFactory<B>::getTable(output_cardinality_, Operator<B>::output_schema_, input->storageModel());
+    this->output_ = TableFactory<B>::getTable(this->output_cardinality_, Operator<B>::output_schema_, input->storageModel());
     QueryTable<B> *output = this->output_;
 
     // one per aggregator, one per output bin
     vector<vector<UnsortedAggregateImpl<B> *> > per_tuple_aggregators;
 
-    for (int i = 0; i < output_cardinality_; ++i) {
+    for (int i = 0; i < this->output_cardinality_; ++i) {
 
         per_tuple_aggregators.emplace_back(vector<UnsortedAggregateImpl<B> *>());
         vector<UnsortedAggregateImpl<B> *> row_aggregators(aggregators_.size());
@@ -95,7 +98,7 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         B input_dummy = input->getDummyTag(i);
         B matched = input_dummy;// already "matched" if dummy
 
-        for (int j = 0; j < output_cardinality_; ++j) {
+        for (int j = 0; j < this->output_cardinality_; ++j) {
             B group_by_match = groupByMatch(input, i, output, j);
             B output_dummy = output->getDummyTag(j);
 
@@ -200,6 +203,11 @@ void NestedLoopAggregate<B>::setup() {
     QuerySchema input_schema = this->getChild(0)->getOutputSchema();
     int max_cnt = this->getChild(0)->getOutput()->getTupleCount();
     int output_ordinal = group_by_.size();
+
+
+    if(this->output_cardinality_ == 0) { // naive case - go full oblivious
+        this->output_cardinality_ = this->getChild(0)->getOutputCardinality();
+    }
 
     for(ScalarAggregateDefinition agg : aggregate_definitions_) {
         // for most aggs the output type is the same as the input type

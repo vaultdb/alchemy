@@ -68,6 +68,8 @@ namespace vaultdb {
 
         }
 
+        size_t getTableCardinality(const int & local_cardinality) override;
+
     private:
         static void secret_share_send(const int &party, const QueryTable<bool> *src_table, QueryTable<Bit> *dst_table);
         static void secret_share_recv(const size_t &tuple_count, const int &dst_party,
@@ -116,6 +118,9 @@ namespace  vaultdb {
             throw;
         }
 
+        size_t getTableCardinality(const int & local_cardinality) override {
+            throw;
+        }
     };
 }
 #endif // end if-emp-tool

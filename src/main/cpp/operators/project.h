@@ -40,6 +40,8 @@ namespace vaultdb {
 
         QueryTable<B> *runSelf() override;
 
+        std::map<uint32_t, Expression<B> * > getExpressions() const { return expressions_; }
+        std::vector<uint32_t> getExpressionsToExec() const { return exprs_to_exec_; }
 
     private:
         void setup();

@@ -6,11 +6,15 @@ using namespace vaultdb;
 
 template<typename B>
 BasicJoin<B>::BasicJoin(Operator<B> *lhs, Operator<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort)
-        : Join<B>(lhs, rhs, predicate, sort) {}
+        : Join<B>(lhs, rhs, predicate, sort) {
+            this->output_cardinality_ = lhs->getOutputCardinality() * rhs->getOutputCardinality();
+        }
 
 template<typename B>
 BasicJoin<B>::BasicJoin(QueryTable<B> *lhs, QueryTable<B> *rhs,  Expression<B> *predicate, const SortDefinition & sort)
-        : Join<B>(lhs, rhs, predicate, sort) {}
+        : Join<B>(lhs, rhs, predicate, sort) {
+            this->output_cardinality_ = lhs->getTupleCount() * rhs->getTupleCount();
+        }
 
 template<typename B>
 QueryTable<B> *BasicJoin<B>::runSelf() {

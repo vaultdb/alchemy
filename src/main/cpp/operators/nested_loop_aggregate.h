@@ -15,7 +15,6 @@ namespace vaultdb {
         std::vector<int32_t> group_by_;
 
         vector<UnsortedAggregateImpl<B> *> aggregators_;
-        int output_cardinality_ = 0;
 
         NestedLoopAggregate(Operator<B> *child, const vector<int32_t> &groupBys,
                             const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const int & output_card = 0);

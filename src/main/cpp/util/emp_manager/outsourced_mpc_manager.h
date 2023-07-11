@@ -73,6 +73,8 @@ namespace  vaultdb {
            return s.str();
         }
 
+        size_t getTableCardinality(const int & local_cardinality) override;
+
     };
 }
 
@@ -111,6 +113,10 @@ namespace  vaultdb {
         }
 
         string revealToString(const emp::Integer & i, const int & party = PUBLIC)  const override {
+            throw;
+        }
+
+        size_t getTableCardinality(const int & local_cardinality) override {
             throw;
         }
 

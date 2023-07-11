@@ -99,7 +99,6 @@ void SecureKeyedJoinTest::runLineitemOrdersTest() {
     auto lineitem_input = new SecureSqlInput(db_name_, lineitem_sql_, true);
     auto orders_input = new SecureSqlInput(db_name_, orders_sql_, true);
 
-
     // join output schema:
     //  o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue,
     Expression<emp::Bit> * predicate = FieldUtilities::getEqualityPredicate<emp::Bit>(orders_input, 0,

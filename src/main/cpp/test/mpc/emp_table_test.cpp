@@ -1,4 +1,3 @@
-#include <data/psql_data_provider.h>
 #include <test/mpc/emp_base_test.h>
 #include <util/data_utilities.h>
 #include <operators/sort.h>

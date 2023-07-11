@@ -8,17 +8,17 @@ namespace  vaultdb {
 
     template<typename B>
     class Filter : public Operator<B> {
+        public:
+            Expression<B> *predicate_ = nullptr;
 
-        Expression<B> *predicate_ = nullptr;
 
-    public:
-        Filter(Operator<B> *child, Expression<B> *predicate);
+            Filter(Operator<B> *child, Expression<B> *predicate);
 
-        Filter(QueryTable<B> *child, Expression<B> *predicate);
+            Filter(QueryTable<B> *child, Expression<B> *predicate);
 
-        virtual ~Filter() {
-            if(predicate_ != nullptr) delete predicate_;
-        }
+            virtual ~Filter() {
+                 if(predicate_ != nullptr) delete predicate_;
+            }
 
 
     protected:

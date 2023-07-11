@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 project (vaultdb-emp)
 set(NAME "vaultdb-emp")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(cmake/common.cmake)
 
@@ -118,7 +119,11 @@ set(sources
 		expression/visitor/type_inference_visitor.cpp
 		expression/visitor/plain_to_secure_visitor.cpp
 		expression/visitor/type_validation_visitor.cpp
-		expression/visitor/to_packed_expression_visitor.cpp)
+		expression/visitor/to_packed_expression_visitor.cpp
+
+		opt/plan_cost.h
+		opt/operator_cost_model.cpp
+		opt/expression_cost_model.cpp)
 
 
 

@@ -9,6 +9,24 @@
 
 using namespace vaultdb;
 
+size_t OutsourcedMpcManager::getTableCardinality(const int & local_cardinality)  {
+      int tuple_cnt = src->getTupleCount();
+
+    if(party_ == emp::TP) {
+        for(int i = 0; i < emp::N; ++i) {
+            ios_ctrl_[i]->send_data(&tuple_cnt, 4);
+            ios_ctrl_[i]->flush();
+        }
+
+    }
+    else {
+        tpio_ctrl_->recv_data(&tuple_cnt, 4);
+        tpio_ctrl_->flush();
+    }
+
+    return tuple_cnt;
+}
+
 QueryTable<Bit> *OutsourcedMpcManager::secretShare(const QueryTable<bool> *src) {
     int tuple_cnt = src->getTupleCount();
 

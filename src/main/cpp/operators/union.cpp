@@ -9,8 +9,9 @@ Union<B>::Union(Operator<B> *lhs, Operator<B> *rhs) : Operator<B>(lhs, rhs) {
     if(lhs == nullptr || rhs == nullptr) {
         throw std::invalid_argument("Union can't take in null child operators!");
     }
-    Operator<B>::sort_definition_.clear(); // union will change collation
-    Operator<B>::output_schema_ = lhs->getOutputSchema();
+    this->sort_definition_.clear(); // union will change collation
+    this->output_schema_ = lhs->getOutputSchema();
+    this->output_cardinality_ = lhs->getOutputCardinality() + rhs->getOutputCardinality();
 }
 
 template<typename B>
@@ -18,8 +19,9 @@ Union<B>::Union(QueryTable<B> *lhs, QueryTable<B> *rhs) : Operator<B>(lhs, rhs) 
     if(lhs == nullptr || rhs == nullptr) {
         throw std::invalid_argument("Union can't take in null tables!");
     }
-    Operator<B>::output_schema_  = lhs->getSchema();
-    Operator<B>::sort_definition_.clear();
+    this->output_schema_  = lhs->getSchema();
+    this->sort_definition_.clear();
+    this->output_cardinality_ = lhs->getTupleCount() + rhs->getTupleCount();
 
 }
 
@@ -28,8 +30,8 @@ Union<B>::Union(QueryTable<B> *lhs, QueryTable<B> *rhs) : Operator<B>(lhs, rhs) 
 
 template<typename B>
 QueryTable<B> * Union<B>::runSelf() {
-    QueryTable<B> *lhs = Operator<B>::getChild(0)->getOutput();
-    QueryTable<B> *rhs = Operator<B>::getChild(1)->getOutput();
+    QueryTable<B> *lhs = this->getChild(0)->getOutput();
+    QueryTable<B> *rhs = this->getChild(1)->getOutput();
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();

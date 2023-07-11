@@ -10,11 +10,13 @@ using namespace vaultdb;
 template<typename B>
 Filter<B>::Filter(Operator<B> *child, Expression<B> *predicate) :
      Operator<B>(child, child->getSortOrder()), predicate_(predicate) {
+         this->output_cardinality_ = child->getOutputCardinality();
      }
 
 template<typename B>
 Filter<B>::Filter(QueryTable<B> *child, Expression<B> *predicate) :
      Operator<B>(child, child->getSortOrder()), predicate_(predicate) {
+         this->output_cardinality_ = child->getTupleCount();
      }
 
 template<typename B>

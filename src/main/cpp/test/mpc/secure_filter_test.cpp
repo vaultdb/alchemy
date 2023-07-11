@@ -30,8 +30,6 @@ class SecureFilterTest : public EmpBaseTest {};
 
 TEST_F(SecureFilterTest, test_table_scan) {
 
-    std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
-
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem WHERE l_orderkey <= 100  ORDER BY (1), (2)";
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 
@@ -57,7 +55,6 @@ TEST_F(SecureFilterTest, test_table_scan) {
 // Testing for selecting l_linenumber=1
 
 TEST_F(SecureFilterTest, test_filter) {
-    std::string db_name_ =  FLAGS_party == emp::ALICE ? alice_db_ : bob_db_;
 
     std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem   WHERE l_orderkey <= 100  ORDER BY (1), (2)";
     std::string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input WHERE l_linenumber = 1";

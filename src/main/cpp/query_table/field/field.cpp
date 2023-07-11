@@ -217,7 +217,6 @@ B Field<B>::operator>=(const Field &r) const {
         case FieldType::SECURE_STRING:
             li = boost::get<emp::Integer>(payload_);
             ri = boost::get<emp::Integer>(r.payload_);
-
             v = (li >= ri);
             return boost::get<B>(v);
         case FieldType::SECURE_FLOAT:

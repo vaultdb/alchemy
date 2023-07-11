@@ -33,9 +33,9 @@ namespace  vaultdb {
         QueryTable<B> *output_ = nullptr;
         SortDefinition sort_definition_; // start out with empty sort
         QuerySchema output_schema_;
-        time_point<high_resolution_clock> start_time_;
-        size_t start_gate_cnt_ = 0L;
-        double runtime_ = 0.0;
+        time_point<high_resolution_clock> start_time_, end_time_;
+        size_t start_gate_cnt_ = 0L, gate_cnt_ = 0L;
+        double runtime_ms_ = 0.0;
         SystemConfiguration & system_conf_;
 
 
@@ -61,11 +61,14 @@ namespace  vaultdb {
 //        QueryTable<B> sortByDummyTag(QueryTable<B> & table);
 //        QueryTable<B> shrinkwrapToTrueCardinality(QueryTable<B> & table, bool isSorted);
 //
+
         // recurses first, then invokes runSelf method
         QueryTable<B>  *run();
         QueryTable<B>  *run(bool isTrueCardinalityTest);
         std::string printTree() const;
         std::string toString() const;
+        size_t getGateCount() const { return gate_cnt_; }
+        double getRuntimeMs() const { return runtime_ms_; }
         inline int getOperatorId() const {     return operator_id_; }
         inline void setOperatorId(int op_id) { operator_id_ = op_id; }
         inline QueryTable<B> *getOutput() {
@@ -76,6 +79,7 @@ namespace  vaultdb {
 
 
         }
+        virtual std::string getOperatorType() const  = 0;
 
         inline Operator * getParent() const { return parent_; }
 
@@ -108,12 +112,13 @@ namespace  vaultdb {
 
         QuerySchema getOutputSchema() const { return output_schema_; }
         void setSchema(QuerySchema newSchema) { output_schema_.setSchema(newSchema); }
+        size_t getOutputCardinality() const { return output_cardinality_; }
 
 
     protected:
         // to be implemented by the operator classes, e.g., sort, filter, et cetera
         virtual QueryTable<B> *runSelf() = 0;
-        virtual std::string getOperatorType() const  = 0;
+
         virtual std::string getParameters() const = 0;
         inline void reset() {
             if(output_ != nullptr) {
@@ -125,6 +130,8 @@ namespace  vaultdb {
         }
 
         bool operator_executed_ = false; // set when runSelf() executed once
+        size_t output_cardinality_ = 0L;
+
 
     private:
         std::string printHelper(const std::string & prefix) const;
@@ -139,14 +146,15 @@ namespace  vaultdb {
     public:
         TableInput(QueryTable<B>  *input) {
 
-            Operator<B>::output_ = input; // point to input table
-            Operator<B>::output_schema_ = input->getSchema();
-            Operator<B>::sort_definition_ = Operator<B>::output_->getSortOrder();
-            Operator<B>::operator_executed_ = true;
+           this->output_ = input; // point to input table
+            this->output_schema_ = input->getSchema();
+            this->sort_definition_ = Operator<B>::output_->getSortOrder();
+            this->operator_executed_ = true;
+            this->output_cardinality_ = input->getTupleCount();
         }
 
         QueryTable<B> *runSelf() override {
-            return  Operator<B>::output_;
+            return  this->output_;
         }
 
         virtual ~TableInput() = default;

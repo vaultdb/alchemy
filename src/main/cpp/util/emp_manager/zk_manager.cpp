@@ -6,6 +6,28 @@
 #if __has_include("emp-zk/emp-zk.h")
 using namespace vaultdb;
 
+size_t ZKManager::getTableCardinality(const int &local_cardinality) {
+    size_t alice_tuple_cnt = local_cardinality;
+    SystemConfiguration &s = SystemConfiguration::getInstance();
+    int party = s.party_;
+
+
+   this->flush();
+
+    NetIO *netio = ios_[0]->io;
+
+    if (party == ALICE) {
+        netio->send_data(&alice_tuple_cnt, 4);
+        netio->flush();
+    } else if (party == BOB) {
+        netio->recv_data(&alice_tuple_cnt, 4);
+        netio->flush();
+    }
+
+    return alice_tuple_cnt;
+
+}
+
 QueryTable<Bit> *ZKManager::secretShare(const QueryTable<bool> *src) {
 
     size_t alice_tuple_cnt = src->getTupleCount();
@@ -74,6 +96,7 @@ ZKManager::secret_share_send(const int &party,const PlainTable *src_table, Secur
     }
 
 }
+
 
 
 #endif

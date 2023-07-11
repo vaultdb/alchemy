@@ -1,0 +1,46 @@
+#ifndef _OPERATOR_COST_MODEL_
+#define _OPERATOR_COST_MODEL_
+#include <operators/operator.h>
+
+#include "operators/basic_join.h"
+#include "operators/filter.h"
+#include "operators/group_by_aggregate.h"
+#include "operators/keyed_join.h"
+#include "operators/nested_loop_aggregate.h"
+#include "operators/project.h"
+#include "operators/secure_sql_input.h"
+#include "operators/sort.h"
+#include "operators/sort_merge_join.h"
+#include "operators/scalar_aggregate.h"
+#include "operators/shrinkwrap.h"
+#include "operators/union.h"
+#include "operators/zk_sql_input.h"
+
+namespace vaultdb {
+    class OperatorCostModel {
+    public:
+        static size_t operatorCost(const SecureOperator *op);
+        static size_t filterCost(const Filter<Bit>  *filter);
+        static size_t secureSqlInputCost(const SecureSqlInput *input);
+        static size_t projectCost(const Project<Bit> *project);
+        static size_t basicJoinCost(const BasicJoin<Bit> *join);
+        static size_t keyedJoinCost(const KeyedJoin<Bit> *join);
+        static size_t sortMergeJoinCost(const SortMergeJoin<Bit> *join);
+        static size_t groupByAggregateCost(const GroupByAggregate<Bit> *aggregate);
+        static size_t nestedLoopAggregateCost(const NestedLoopAggregate<Bit> *aggregate);
+        static size_t sortCost(const Sort<Bit> *sort);
+        static size_t shrinkwrapCost(const Shrinkwrap<Bit> *shrinkwrap);
+        static size_t scalarAggregateCost(const ScalarAggregate<Bit> *aggregate);
+
+        // these ones cost zero gates:
+        //        static size_t unionCost(const Union<Bit> *union_op);
+        //        static size_t zkSqlInputCost(const ZkSqlInput *input);
+
+
+
+
+
+        };
+
+}
+#endif
