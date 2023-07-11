@@ -57,9 +57,13 @@ namespace  vaultdb {
 
         Operator(Operator *child, const SortDefinition & sorted_on = SortDefinition());
         Operator(Operator *lhs, Operator *rhs, const SortDefinition & sorted_on = SortDefinition());
-        
+
+//        QueryTable<B> sortByDummyTag(QueryTable<B> & table);
+//        QueryTable<B> shrinkwrapToTrueCardinality(QueryTable<B> & table, bool isSorted);
+//
         // recurses first, then invokes runSelf method
         QueryTable<B>  *run();
+        QueryTable<B>  *run(bool isTrueCardinalityTest);
         std::string printTree() const;
         std::string toString() const;
         inline int getOperatorId() const {     return operator_id_; }
