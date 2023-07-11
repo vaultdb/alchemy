@@ -28,6 +28,8 @@ namespace  vaultdb {
         SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
+		QuerySchema getAugmentedSchema();
+
     protected:
         QueryTable<B> *runSelf() override;
         inline std::string getOperatorType() const override {
@@ -49,6 +51,9 @@ namespace  vaultdb {
         QuerySchema lhs_projected_schema_, rhs_projected_schema_; // cache the schema of the smaller input relation
         bool bit_packed_ = false;
         long max_intermediate_cardinality_ = 0;
+		QueryTable<B> *lhs_prime;
+		QueryTable<B> *rhs_prime;
+		Field<B> table_id_field;
         pair<QueryTable<B> *, QueryTable<B> *> augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs);
         QueryTable<B> *obliviousDistribute(QueryTable<B> *input, size_t target_size);
         QueryTable<B> *obliviousExpand(QueryTable<B> *input, bool is_lhs);

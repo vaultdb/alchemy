@@ -2,7 +2,7 @@
 #include "opt/expression_cost_model.h"
 #include "query_table/row_table.h"
 #include <expression/generic_expression.h>
-
+#include "expression/visitor/join_equality_condition_visitor.h"
 
 using namespace vaultdb;
 
@@ -86,8 +86,45 @@ size_t OperatorCostModel::keyedJoinCost(const KeyedJoin<Bit> *join) {
 
 }
 
-size_t OperatorCostModel::sortMergeJoinCost(const SortMergeJoin<Bit> *join) {
-    return 0;
+size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
+	size_t cost = 0;
+
+	Operator<Bit>* lhs = join->getChild(0);
+	Operator<Bit>* rhs = join->getChild(1);
+	QuerySchema augmented_schema = join->getAugmentedSchema();
+
+	auto p = (GenericExpression<Bit>*) join->getPredicate();
+	JoinEqualityConditionVisitor<Bit> join_visitor(p->root_);
+	vector<pair<uint32_t, uint32_t> > join_idxs_  = join_visitor.getEqualities();
+	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(join_idxs_.size());
+
+	size_t table_id_idx_ = augmented_schema.getFieldCount() - 1;
+	sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
+
+	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
+
+	sort_def.clear();
+    sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
+    for(int i = 0; i < join_idxs_.size(); ++i) {
+        sort_def.emplace_back(i, SortDirection::ASCENDING);
+    }
+
+	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
+
+	QueryFieldDesc weight(augmented_schema.getFieldCount(), "weight", "", FieldType::SECURE_INT);
+    augmented_schema.putField(weight);
+    QueryFieldDesc is_new(augmented_schema.getFieldCount(), "is_new", "", FieldType::SECURE_INT);
+    augmented_schema.putField(is_new);
+    augmented_schema.initializeFieldOffsets();
+
+	size_t is_new_idx_ = augmented_schema.getFieldCount() - 1;
+    size_t weight_idx_ = augmented_schema.getFieldCount() - 2;
+
+	SortDefinition second_sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
+
+	cost += 2 * sortCost(augmented_schema, second_sort_def, join->getOutputCardinality());
+	
+    return cost;
 }
 
 // only count GroupByAggregate cost, sort cost is accounted for in Sort operator
