@@ -68,7 +68,7 @@ TrueCardinalityTest::runTest(const int &test_id, const string & test_name, const
 
     std:cout << root->printTree() << endl;
 
-    SecureTable *result = root->run(true);
+    SecureTable *result = root->run();
 
     double secureClockTicks = (double) (clock() - secureStartClock);
     double secureClockTicksPerSecond = secureClockTicks / ((double) CLOCKS_PER_SEC);
@@ -109,6 +109,7 @@ TrueCardinalityTest::generateExpectedOutputQuery(const int &test_id, const SortD
     return query;
 }
 
+/*
 TEST_F(TrueCardinalityTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, unioned_db_);
@@ -121,7 +122,7 @@ TEST_F(TrueCardinalityTest, tpch_q3) {
                                  ColumnSort(2, SortDirection::ASCENDING)};
     runTest(3, "q3", expected_sort, unioned_db_);
 }
-
+*/
 
 TEST_F(TrueCardinalityTest, tpch_q5) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};

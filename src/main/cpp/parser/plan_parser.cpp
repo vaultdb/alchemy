@@ -22,6 +22,7 @@
 #include <operators/filter.h>
 #include <operators/project.h>
 #include <parser/expression_parser.h>
+#include <operators/shrinkwrap.h>
 
 using namespace vaultdb;
 using boost::property_tree::ptree;
@@ -135,6 +136,7 @@ void PlanParser<B>::parseOperator(const int &operator_id, const string &op_name,
     if(op_name == "LogicalProject")  op = parseProjection(operator_id, tree);
     if(op_name == "LogicalFilter")  op = parseFilter(operator_id, tree);
     if(op_name == "JdbcTableScan")  op = parseSeqScan(operator_id, tree);
+    if(op_name == "ShrinkWrap")  op = parseShrinkwrap(operator_id, tree);
 
     if(op != nullptr) {
         operators_[operator_id] = op;
@@ -395,6 +397,20 @@ Operator<B> *PlanParser<B>::parseSeqScan(const int & operator_id, const boost::p
     string sql = "SELECT * FROM " + table_name + " ORDER BY (1), (2), (3) ";
     return createInputOperator(sql, SortDefinition(), B(false), false);
 }
+
+template<typename B>
+Operator<B> *PlanParser<B>::parseShrinkwrap(const int & operator_id, const boost::property_tree::ptree &pt) {
+
+    ptree input_list = pt.get_child("inputs.");
+    ptree::const_iterator it = input_list.begin();
+    int op_id = it->second.get_value<int>();
+    Operator<B> *op = operators_.at(op_id);
+
+    size_t output_cardinality = pt.get_child("output_cardinality").template get_value<int>();
+
+    return new Shrinkwrap<B>(op->getOutput(), output_cardinality);
+}
+
 
 
 

@@ -53,6 +53,7 @@ namespace vaultdb {
         Operator<B> *parseFilter(const int & operator_id, const boost::property_tree::ptree &pt);
         Operator<B> *parseProjection(const int & operator_id, const boost::property_tree::ptree &project_tree);
         Operator<B> *parseSeqScan(const int & operator_id, const boost::property_tree::ptree &seq_scan_tree);
+        Operator<B> *parseShrinkwrap(const int & operator_id, const boost::property_tree::ptree &pt);
 
         // faux template specialization
         Operator<bool> *createInputOperator(const string &sql, const SortDefinition &collation, const bool &has_dummy_tag, const bool & plain_has_dummy_tag);
