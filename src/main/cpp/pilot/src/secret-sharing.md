@@ -76,7 +76,6 @@ and we receive an input row: `(2018, 1, 6, M, N, 3, true, true, false)`. In bina
 ```
 In other words, 2018 will be `01000111 11100000 00000000 00000000`, the patient ID will be `10000000 00000000 00000000 00000000` and so on.  Note that our bools are byte-aligned - e.g., we represent `true` as `10000000`.  
 
-
-
+Each table should have its first byte be 0 as a header. This denotes a row store.
   
   
