@@ -121,11 +121,9 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
     output->setDummyTag(0, input->getDummyTag(0));
     B true_lit = true;
     B matched, input_dummy_tag;
-    auto init_gates = SystemConfiguration::getInstance().andGateCount();
-    cout << "Set up Cost : " << init_gates - this->start_gate_cnt_ ;
+
 
     for(int i = 1; i < input->getTupleCount(); ++i) {
-        auto before_group_by_cost = SystemConfiguration::getInstance().andGateCount();
         matched = true;
         input_dummy_tag = input->getDummyTag(i);
         for(int j = 0; j < group_by_.size(); ++j) {
@@ -135,15 +133,9 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
             output->setPackedField(i, j, dst_group_by);
         }
 
-        auto group_by_cost = SystemConfiguration::getInstance().andGateCount();
-        cout << ", group_by_cost : " << group_by_cost - before_group_by_cost ;
-
         //  if uninitialized (seen no non-dummies yet), don't create a new group-by bin
         //  if input a dummy also leave group-by bin boundaries as-is
         matched = matched |  output->getDummyTag(i-1) | input_dummy_tag;
-
-        auto matched_cost = SystemConfiguration::getInstance().andGateCount();
-        cout << ", matched_cost : " << matched_cost - group_by_cost ;
 
         cursor = group_by_.size();
 
@@ -151,8 +143,6 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
             agg->accumulate(input, i, matched);
             output->setPackedField(i, cursor, agg->getResult());
             ++cursor;
-            auto accumulate_cost = SystemConfiguration::getInstance().andGateCount();
-            cout << ", accumulate_cost : " << accumulate_cost - matched_cost ;
         }
         B out_dummy_tag = output->getDummyTag(i-1) & input_dummy_tag; // both need to be dummies for current cell to remain dummy
         output->setDummyTag(i, out_dummy_tag);
@@ -160,8 +150,6 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
         // if matched, replace previous with current, set old dummy tag to true
         out_dummy_tag = FieldUtilities::select(matched, true_lit, output->getDummyTag(i-1));
         output->setDummyTag(i-1, out_dummy_tag);
-        auto output_setting_cost = SystemConfiguration::getInstance().andGateCount();
-        cout << ", output_setting_cost : " << output_setting_cost - matched_cost << endl ;
     }
 
 

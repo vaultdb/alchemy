@@ -83,43 +83,26 @@ ScalarAvgImpl<B>::ScalarAvgImpl(const AggregateId & id, const FieldType & type, 
 
 template<typename B>
 void ScalarAvgImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst){
-    auto init_gates = SystemConfiguration::getInstance().andGateCount();
     B input_dummy = src->getDummyTag(src_row);
     Field<B> input_field = src->getField(src_row, this->input_ordinal_);
 
     B to_accumulate = (!input_dummy) & (!not_initialized);
-    auto to_accumulate_gate = SystemConfiguration::getInstance().andGateCount() - init_gates;
     B to_initialize = (!input_dummy) & not_initialized;
-    auto to_initialize_gate = SystemConfiguration::getInstance().andGateCount() - init_gates - to_accumulate_gate;
 
     B to_write = to_accumulate | to_initialize;
-    auto to_write_gate = SystemConfiguration::getInstance().andGateCount() - init_gates - to_accumulate_gate - to_initialize_gate;
 
     Field<B> one = FieldFactory<B>::getOne(ScalarAggregateImpl<B>::field_type_);
 
-    auto end_setup = SystemConfiguration::getInstance().andGateCount() - init_gates - to_accumulate_gate - to_initialize_gate - to_write_gate;
-    cout << "To accumulate : " << to_accumulate_gate << ", To initialize : " << to_initialize_gate << ", To write : " << to_write_gate << ", Setup gates: " << end_setup;
-
-    auto before_step = SystemConfiguration::getInstance().andGateCount();
     // if initialize or accumulate, add 1 to count and add input_field to running sum
     tuple_count_ = Field<B>::If(to_write, tuple_count_ + one, tuple_count_);
-    auto step1 = SystemConfiguration::getInstance().andGateCount() - before_step;
 
     running_sum_ = Field<B>::If(to_write, running_sum_ + input_field, running_sum_);
-    auto step2 = SystemConfiguration::getInstance().andGateCount() - before_step - step1;
 
     Field<B> output_field = running_sum_ / tuple_count_;
-    auto step3 = SystemConfiguration::getInstance().andGateCount() - before_step - step1 - step2;
 
     not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
-    auto step4 = SystemConfiguration::getInstance().andGateCount() - before_step - step1 - step2 - step3;
 
     dst->setField(0, ScalarAggregateImpl<B>::output_ordinal_, output_field);
-    auto step5 = SystemConfiguration::getInstance().andGateCount() - before_step - step1 - step2 - step3 - step4;
-
-    cout << ", Step 1: " << step1 << " Step 2: " << step2 << ", Step 3: " << step3 << ", Step 4: " << step4 << ", Step 5: " << step5;
-    end_setup += step1 + step2 + step3 + step4 + step5;
-    cout << ", Total : " << end_setup << endl;
 }
 
 template class vaultdb::ScalarAggregateImpl<bool>;
