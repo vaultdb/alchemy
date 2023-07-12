@@ -3,6 +3,8 @@
 #include "util/logger.h"
 #include "sort.h"
 #include <ctime>
+#include "opt/operator_cost_model.h"
+#include <cmath>
 
 
 using namespace vaultdb;
@@ -56,10 +58,19 @@ QueryTable<B> *Operator<B>::run() {
     end_time_ = high_resolution_clock::now();
     runtime_ms_ = time_from(start_time_)/1e3;
 
-    if(std::is_same_v<B, Bit>)
-        cout << "Operator #" << this->getOperatorId() << " " << getOperatorType()  << " ran for " <<  runtime_ms_ << " ms, "
-            << " gate count: " << gate_cnt_ << " output cardinality: " << output_->getTupleCount() << ", row width=" << output_schema_.size() <<  '\n';
-//    cout << "      Operator desc: " << this->toString() << endl;
+    if(std::is_same_v<B, Bit>) {
+        cout << "Operator #" << this->getOperatorId() << " " << getOperatorType() << " ran for " << runtime_ms_
+             << " ms, "
+             << " gate count: " << gate_cnt_ << " output cardinality: " << output_->getTupleCount() << ", row width="
+             << output_schema_.size() << '\n';
+
+        if (gate_cnt_ != 0) {
+        size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
+        cout << "Estimated cost: " << estimated_gates << ", Observed gates: " << gate_cnt_ << ", Error rate(%) : "
+             << std::fabs(estimated_gates - gate_cnt_) / gate_cnt_ * 100 << endl;
+        }
+        //cout << "      Operator desc: " << this->toString() << endl;
+    }
 
     operator_executed_ = true;
     sort_definition_ = output_->getSortOrder(); // update this if needed
