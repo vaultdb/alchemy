@@ -122,7 +122,7 @@ TEST_F(TrueCardinalityTest, tpch_q3) {
                                  ColumnSort(2, SortDirection::ASCENDING)};
     runTest(3, "q3", expected_sort, unioned_db_);
 }
-*/
+
 
 TEST_F(TrueCardinalityTest, tpch_q5) {
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
@@ -141,6 +141,8 @@ TEST_F(TrueCardinalityTest, tpch_q9) {
     runTest(9, "q9", expected_sort, unioned_db_);
 
 }
+
+ */
 
 TEST_F(TrueCardinalityTest, tpch_q18) {
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),

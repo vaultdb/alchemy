@@ -21,7 +21,6 @@ ScalarStatelessAggregateImpl<B>::ScalarStatelessAggregateImpl(const AggregateId 
 
 template<typename B>
 void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst) {
-    auto init_gates = SystemConfiguration::getInstance().andGateCount();
     // input is NOT a dummy AND (output IS a dummy AND !matched)
     B input_dummy = src->getDummyTag(src_row);
     Field<B> input_field;
@@ -41,41 +40,34 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
     B to_accumulate = (!input_dummy) & (!not_initialized);
     B to_initialize = (!input_dummy) & not_initialized;
 
-    auto end_setup = SystemConfiguration::getInstance().andGateCount() - init_gates;
-    cout << "Setup gates: " << end_setup;
     switch(ScalarAggregateImpl<B>::agg_type_) {
         case AggregateId::AVG:
             throw; // should use specialized UnsortedAvgImpl for this
-        case AggregateId::COUNT:
-            one = (TypeUtilities::isEncrypted(this->field_type_)) ? Field<B>(this->field_type_, Integer(this->bit_packed_size_, 1)) : Field<B>(this->field_type_, (int64_t) 1);
+        case AggregateId::COUNT: {
+            one = (TypeUtilities::isEncrypted(this->field_type_)) ? Field<B>(this->field_type_,
+                                                                             Integer(this->bit_packed_size_, 1))
+                                                                  : Field<B>(this->field_type_, (int64_t) 1);
             accumulated = Field<B>::If(to_initialize, one, output_field);
             accumulated = Field<B>::If(to_accumulate, accumulated + one, accumulated);
             break;
+        }
         case AggregateId::MIN: {
-            auto start_gates = SystemConfiguration::getInstance().andGateCount();
             accumulated = Field<B>::If(to_initialize, input_field, output_field);
-            auto step1 = SystemConfiguration::getInstance().andGateCount() - start_gates;
             B selected = to_accumulate & (input_field < output_field);
-            auto step2 = SystemConfiguration::getInstance().andGateCount() - start_gates - step1;
             accumulated = Field<B>::If(selected, input_field, accumulated);
-            auto step3 = SystemConfiguration::getInstance().andGateCount() - start_gates - step1 - step2;
-            cout << ", Step 1: " << step1 << " Step 2: " << step2 << " Step 3: " << step3;
-            end_setup += step1 + step2 + step3;
             break;
         }
         case AggregateId::MAX:
             accumulated = Field<B>::If(to_initialize, input_field, output_field);
             accumulated = Field<B>::If(to_accumulate & (input_field > output_field), input_field, accumulated);
             break;
-        case AggregateId::SUM:
+        case AggregateId::SUM: {
             accumulated = Field<B>::If(to_initialize, input_field, output_field);
             accumulated = Field<B>::If(to_accumulate, accumulated + input_field, accumulated);
+        }
 
     }
-    auto last_gates = SystemConfiguration::getInstance().andGateCount();
     not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
-    auto last_last_gates = SystemConfiguration::getInstance().andGateCount() - last_gates;
-    cout << ", last gates: " << last_last_gates << " total gates: " << last_last_gates + end_setup << endl;
 
     dst->setPackedField(0, this->output_ordinal_, accumulated);
     Field<B> output_field_checking = dst->getPackedField(0, this->output_ordinal_);
@@ -91,22 +83,43 @@ ScalarAvgImpl<B>::ScalarAvgImpl(const AggregateId & id, const FieldType & type, 
 
 template<typename B>
 void ScalarAvgImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst){
+    auto init_gates = SystemConfiguration::getInstance().andGateCount();
     B input_dummy = src->getDummyTag(src_row);
     Field<B> input_field = src->getField(src_row, this->input_ordinal_);
 
     B to_accumulate = (!input_dummy) & (!not_initialized);
+    auto to_accumulate_gate = SystemConfiguration::getInstance().andGateCount() - init_gates;
     B to_initialize = (!input_dummy) & not_initialized;
+    auto to_initialize_gate = SystemConfiguration::getInstance().andGateCount() - init_gates - to_accumulate_gate;
 
     B to_write = to_accumulate | to_initialize;
+    auto to_write_gate = SystemConfiguration::getInstance().andGateCount() - init_gates - to_accumulate_gate - to_initialize_gate;
+
     Field<B> one = FieldFactory<B>::getOne(ScalarAggregateImpl<B>::field_type_);
 
+    auto end_setup = SystemConfiguration::getInstance().andGateCount() - init_gates - to_accumulate_gate - to_initialize_gate - to_write_gate;
+    cout << "To accumulate : " << to_accumulate_gate << ", To initialize : " << to_initialize_gate << ", To write : " << to_write_gate << ", Setup gates: " << end_setup;
+
+    auto before_step = SystemConfiguration::getInstance().andGateCount();
     // if initialize or accumulate, add 1 to count and add input_field to running sum
     tuple_count_ = Field<B>::If(to_write, tuple_count_ + one, tuple_count_);
+    auto step1 = SystemConfiguration::getInstance().andGateCount() - before_step;
+
     running_sum_ = Field<B>::If(to_write, running_sum_ + input_field, running_sum_);
+    auto step2 = SystemConfiguration::getInstance().andGateCount() - before_step - step1;
 
     Field<B> output_field = running_sum_ / tuple_count_;
+    auto step3 = SystemConfiguration::getInstance().andGateCount() - before_step - step1 - step2;
+
     not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
+    auto step4 = SystemConfiguration::getInstance().andGateCount() - before_step - step1 - step2 - step3;
+
     dst->setField(0, ScalarAggregateImpl<B>::output_ordinal_, output_field);
+    auto step5 = SystemConfiguration::getInstance().andGateCount() - before_step - step1 - step2 - step3 - step4;
+
+    cout << ", Step 1: " << step1 << " Step 2: " << step2 << ", Step 3: " << step3 << ", Step 4: " << step4 << ", Step 5: " << step5;
+    end_setup += step1 + step2 + step3 + step4 + step5;
+    cout << ", Total : " << end_setup << endl;
 }
 
 template class vaultdb::ScalarAggregateImpl<bool>;
@@ -115,181 +128,3 @@ template class vaultdb::ScalarStatelessAggregateImpl<bool>;
 template class vaultdb::ScalarStatelessAggregateImpl<emp::Bit>;
 template class vaultdb::ScalarAvgImpl<bool>;
 template class vaultdb::ScalarAvgImpl<emp::Bit>;
-
-//template<typename B>
-//ScalarCountImpl<B>::ScalarCountImpl(const uint32_t &ordinal, const QueryFieldDesc & def) : ScalarAggregateImpl<B>(ordinal, def) {
-//    // initialize as long for count regardless of input ordinal
-//
-//    ScalarAggregateImpl<B>::type_ =
-//            (TypeUtilities::isEncrypted(def.getType())) ? FieldType::SECURE_LONG : FieldType::LONG;
-//
-//    ScalarAggregateImpl<B>::zero_ = FieldFactory<B>::getZero(ScalarAggregateImpl<B>::type_);
-//    ScalarAggregateImpl<B>::one_ = FieldFactory<B>::getOne(ScalarAggregateImpl<B>::type_);
-//    running_count_ = ScalarAggregateImpl<B>::zero_;
-//
-//
-//}
-//
-//template<typename B>
-//void ScalarCountImpl<B>::accumulate(const QueryTuple<B> &tuple) {
-//    running_count_ = Field<B>::If(tuple.getDummyTag(), running_count_, running_count_ + ScalarAggregateImpl<B>::one_);
-//}
-//
-//template<typename B>
-//void ScalarCountImpl<B>::accumulate(const QueryTable<B> *table, const int &row) {
-//    running_count_ = Field<B>::If(table->getDummyTag(row), running_count_, running_count_ + ScalarAggregateImpl<B>::one_);
-//
-//}
-//
-//template<typename B>
-// Field<B> ScalarCountImpl<B>::getResult() const {
-//    return running_count_;
-//}
-//
-//
-//
-//template<typename B>
-//void ScalarSumImpl<B>::accumulate(const QueryTuple<B> &tuple) {
-//    Field<B> agg_input = tuple.getField(ScalarAggregateImpl<B>::ordinal_);
-//    running_sum_ = Field<B>::If(tuple.getDummyTag(), running_sum_, running_sum_ + agg_input);
-//
-//}
-//
-//template<typename B>
-//void ScalarSumImpl<B>::accumulate(const QueryTable<B> *table, const int &row) {
-//    Field<B> agg_input = table->getField(row,ScalarAggregateImpl<B>::ordinal_);
-//    running_sum_ = Field<B>::If(table->getDummyTag(row), running_sum_, running_sum_ + agg_input);
-//
-//}
-//
-//template<typename B>
-// Field<B> ScalarSumImpl<B>::getResult() const {
-//    // extend this to a LONG to keep with PostgreSQL convention
-//   // if(running_sum_.getType() == FieldType::INT || running_sum_.getType() == FieldType::SECURE_INT)
-//    //    return FieldFactory<B>::toLong(running_sum_);
-//
-//    return running_sum_;
-//}
-//
-//template<typename B>
-//FieldType ScalarSumImpl<B>::getType() const {
-//    return ScalarAggregateImpl<B>::type_;
-//
-//}
-//
-//
-//template<typename B>
-//ScalarMinImpl<B>::ScalarMinImpl(const uint32_t &ordinal, const QueryFieldDesc & def):ScalarAggregateImpl<B>(ordinal, def) {
-////    if(def.size() != TypeUtilities::getTypeSize(def.getType())) { // if we are dealing with bit packing, has to be int or long
-////            emp::Integer t(def.size(), 0, PUBLIC);
-////            emp::Bit *b = t.bits.data();
-////            emp::Bit tr(1, PUBLIC);
-////            for(int i = 0; i < def.size(); ++i) {
-////                   *b = tr; // set to max
-////                   ++b;
-////            }
-////        running_min_ = Field<B>(def.getType(), t, 0);
-////    }
-////    else
-//        running_min_ = FieldFactory<B>::getMax(def.getType());
-//
-//}
-//
-//template<typename B>
-//void ScalarMinImpl<B>::accumulate(const QueryTuple<B> &tuple) {
-//    Field<B> agg_input = tuple.getField(ScalarAggregateImpl<B>::ordinal_);
-//    running_min_ = Field<B>::If((agg_input >= running_min_) | tuple.getDummyTag(), running_min_, agg_input);
-//
-//}
-//
-//template<typename B>
-//void ScalarMinImpl<B>::accumulate(const QueryTable<B> *table, const int &row) {
-//    Field<B> agg_input = table->getField(row, ScalarAggregateImpl<B>::ordinal_);
-//    running_min_ = Field<B>::If((agg_input >= running_min_) | table->getDummyTag(row), running_min_, agg_input);
-//}
-//
-//template<typename B>
-// Field<B> ScalarMinImpl<B>::getResult() const {
-//    return running_min_;
-//}
-//
-//
-//template<typename B>
-//ScalarMaxImpl<B>::ScalarMaxImpl(const uint32_t &ordinal, const QueryFieldDesc & def):ScalarAggregateImpl<B>(ordinal, def) {
-//
-////    if(def.size() != TypeUtilities::getTypeSize(def.getType())) { // if we are dealing with bit packing, has to be int or long
-////        emp::Integer t(def.size(), 0, PUBLIC);
-////        running_max_ = Field<B>(def.getType(), t, 0);
-////    }
-////    else
-//        running_max_ = FieldFactory<B>::getMin(def.getType());
-//}
-//
-//template<typename B>
-//void ScalarMaxImpl<B>::accumulate(const QueryTuple<B> &tuple) {
-//    Field<B> agg_input = tuple.getField(ScalarAggregateImpl<B>::ordinal_);
-//    running_max_ = Field<B>::If((agg_input <= running_max_) | tuple.getDummyTag(), running_max_, agg_input);
-//
-//}
-//
-//template<typename B>
-//void ScalarMaxImpl<B>::accumulate(const QueryTable<B> *table, const int &row) {
-//    Field<B> agg_input = table->getField(row, ScalarAggregateImpl<B>::ordinal_);
-//    running_max_ = Field<B>::If((agg_input <= running_max_) | table->getDummyTag(row), running_max_, agg_input);
-//}
-//
-//
-//template<typename B>
-// Field<B> ScalarMaxImpl<B>::getResult() const {
-//    return running_max_;
-//}
-//
-//
-//template<typename B>
-//ScalarAvgImpl<B>::ScalarAvgImpl(const uint32_t &ordinal, const QueryFieldDesc & def) :  ScalarAggregateImpl<B>(ordinal, def) {
-//    ScalarAggregateImpl<B>::column_def_.setSize(TypeUtilities::getTypeSize(ScalarAggregateImpl<B>::type_)); // reset bit packing for this
-//    running_sum_ = ScalarAggregateImpl<B>::zero_;
-//    running_count_ = ScalarAggregateImpl<B>::zero_;
-//
-//}
-//
-//template<typename B>
-//void ScalarAvgImpl<B>::accumulate(const QueryTuple<B> &tuple) {
-//    Field<B> agg_input = tuple.getField(ScalarAggregateImpl<B>::ordinal_);
-//    running_sum_ = Field<B>::If(tuple.getDummyTag(), running_sum_, running_sum_ + agg_input);
-//    running_count_ = Field<B>::If(tuple.getDummyTag(), running_count_, running_count_ + ScalarAggregateImpl<B>::one_);
-//
-//}
-//
-//template<typename B>
-//void ScalarAvgImpl<B>::accumulate(const QueryTable<B> *table, const int &row) {
-//
-//    Field<B> agg_input = table->getField(row,ScalarAggregateImpl<B>::ordinal_);
-//    B dummy_tag = table->getDummyTag(row);
-//    running_sum_ = Field<B>::If(dummy_tag, running_sum_, running_sum_ + agg_input);
-//    running_count_ = Field<B>::If(dummy_tag, running_count_, running_count_ + ScalarAggregateImpl<B>::one_);
-//
-//}
-//
-//template<typename B>
-// Field<B> ScalarAvgImpl<B>::getResult() const {
-//    return running_sum_ / running_count_;
-//
-//}
-//
-//
-//
-//template class vaultdb::ScalarCountImpl<bool>;
-//template class vaultdb::ScalarCountImpl<emp::Bit>;
-//
-//template class vaultdb::ScalarSumImpl<bool>;
-//template class vaultdb::ScalarSumImpl<emp::Bit>;
-//
-//template class vaultdb::ScalarMinImpl<bool>;
-//template class vaultdb::ScalarMinImpl<emp::Bit>;
-//
-//template class vaultdb::ScalarMaxImpl<bool>;
-//template class vaultdb::ScalarMaxImpl<emp::Bit>;
-//
-//template class vaultdb::ScalarAvgImpl<bool>;
-//template class vaultdb::ScalarAvgImpl<emp::Bit>;

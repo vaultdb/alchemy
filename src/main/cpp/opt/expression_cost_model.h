@@ -108,7 +108,7 @@ namespace vaultdb {
             }
         }
 
-       inline size_t getAddSubtractionCost(const QueryFieldDesc & field) {
+       inline static size_t getAddSubtractionCost(const QueryFieldDesc & field) {
            int field_size = field.size();
            if(field.bitPacked()) {
                field_size += 1; // +1 for sign bit
