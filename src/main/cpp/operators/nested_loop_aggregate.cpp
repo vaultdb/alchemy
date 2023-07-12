@@ -99,23 +99,33 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
         B matched = input_dummy;// already "matched" if dummy
 
         for (int j = 0; j < this->output_cardinality_; ++j) {
+            auto before_output_cost = SystemConfiguration::getInstance().andGateCount();
             B group_by_match = groupByMatch(input, i, output, j);
+            auto group_by_match_cost = SystemConfiguration::getInstance().andGateCount();
+            cout << "group_by_match_cost : " << group_by_match_cost - before_output_cost ;
+
             B output_dummy = output->getDummyTag(j);
 
             // if output is dummy and no match so far, then initialize group-by cols
             B initialize_group_by = output_dummy & !matched;
+            auto initialize_group_by_cost = SystemConfiguration::getInstance().andGateCount();
+            cout << ", initialize_group_by_cost : " << initialize_group_by_cost - group_by_match_cost ;
 
             for (int k = 0; k < group_by_.size(); ++k) {
                 Field<B> src = input->getPackedField(i, group_by_[k]);
                 Field<B> dst = Field<B>::If(initialize_group_by, src, output->getPackedField(j, k));
                 output->setPackedField(j, k, dst);
             }
+            auto dst_setting_cost = SystemConfiguration::getInstance().andGateCount();
+            cout << ", dst_setting_cost : " << dst_setting_cost - initialize_group_by_cost ;
 
 
             for (int k = 0; k < aggregators_.size(); ++k) {
                 UnsortedAggregateImpl<B>  *a = per_tuple_aggregators[j][k];
                 a->update(input, i, output, j,matched, group_by_match);
             } // end aggregators
+            auto update_cost = SystemConfiguration::getInstance().andGateCount();
+            cout << ", update_cost : " << update_cost - dst_setting_cost << endl;
 
 
             // if group-by match or output_dummy, then matched = true

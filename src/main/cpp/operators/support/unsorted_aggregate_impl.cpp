@@ -71,7 +71,6 @@ void UnsortedStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & 
         case AggregateId::SUM:
             accumulated = Field<B>::If(to_initialize, input_field, output_field);
             accumulated = Field<B>::If(to_accumulate, accumulated + input_field, accumulated);
-
     }
 
      dst->setPackedField(dst_row, this->output_ordinal_, accumulated);

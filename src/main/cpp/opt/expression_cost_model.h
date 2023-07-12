@@ -128,6 +128,27 @@ namespace vaultdb {
 
        }
 
+        inline static size_t getDivisionCost(const QueryFieldDesc & field) {
+            int field_size = field.size();
+            if(field.bitPacked()) {
+                field_size += 1; // +1 for sign bit
+            }
+
+            switch(field.getType()) {
+                case FieldType::SECURE_INT:
+                    return 1212;
+                case FieldType::SECURE_LONG:
+                    return 4476;
+                    break;
+                case FieldType::SECURE_FLOAT:
+                    return 3809;
+                    break;
+                default:
+                    throw; // all others not supported
+            }
+
+        }
+
     private:
         QuerySchema input_schema_;
         QueryFieldDesc last_field_desc_;
