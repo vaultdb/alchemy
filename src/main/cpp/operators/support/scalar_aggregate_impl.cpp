@@ -21,6 +21,7 @@ ScalarStatelessAggregateImpl<B>::ScalarStatelessAggregateImpl(const AggregateId 
 
 template<typename B>
 void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTable<B> * dst) {
+
     // input is NOT a dummy AND (output IS a dummy AND !matched)
     B input_dummy = src->getDummyTag(src_row);
     Field<B> input_field;
@@ -43,32 +44,25 @@ void ScalarStatelessAggregateImpl<B>::update(QueryTable<B> *src,  const int & sr
     switch(ScalarAggregateImpl<B>::agg_type_) {
         case AggregateId::AVG:
             throw; // should use specialized UnsortedAvgImpl for this
-        case AggregateId::COUNT: {
-            one = (TypeUtilities::isEncrypted(this->field_type_)) ? Field<B>(this->field_type_,
-                                                                             Integer(this->bit_packed_size_, 1))
-                                                                  : Field<B>(this->field_type_, (int64_t) 1);
+        case AggregateId::COUNT:
+            one = (TypeUtilities::isEncrypted(this->field_type_)) ? Field<B>(this->field_type_, Integer(this->bit_packed_size_, 1)) : Field<B>(this->field_type_, (int64_t) 1);
             accumulated = Field<B>::If(to_initialize, one, output_field);
             accumulated = Field<B>::If(to_accumulate, accumulated + one, accumulated);
             break;
-        }
-        case AggregateId::MIN: {
+        case AggregateId::MIN:
             accumulated = Field<B>::If(to_initialize, input_field, output_field);
-            B selected = to_accumulate & (input_field < output_field);
-            accumulated = Field<B>::If(selected, input_field, accumulated);
+            accumulated = Field<B>::If(to_accumulate & (input_field < output_field), input_field, accumulated);
             break;
-        }
         case AggregateId::MAX:
             accumulated = Field<B>::If(to_initialize, input_field, output_field);
             accumulated = Field<B>::If(to_accumulate & (input_field > output_field), input_field, accumulated);
             break;
-        case AggregateId::SUM: {
+        case AggregateId::SUM:
             accumulated = Field<B>::If(to_initialize, input_field, output_field);
             accumulated = Field<B>::If(to_accumulate, accumulated + input_field, accumulated);
-        }
 
     }
     not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
-
     dst->setPackedField(0, this->output_ordinal_, accumulated);
     Field<B> output_field_checking = dst->getPackedField(0, this->output_ordinal_);
 }
@@ -90,18 +84,14 @@ void ScalarAvgImpl<B>::update(QueryTable<B> *src,  const int & src_row,  QueryTa
     B to_initialize = (!input_dummy) & not_initialized;
 
     B to_write = to_accumulate | to_initialize;
-
     Field<B> one = FieldFactory<B>::getOne(ScalarAggregateImpl<B>::field_type_);
 
     // if initialize or accumulate, add 1 to count and add input_field to running sum
     tuple_count_ = Field<B>::If(to_write, tuple_count_ + one, tuple_count_);
-
     running_sum_ = Field<B>::If(to_write, running_sum_ + input_field, running_sum_);
 
     Field<B> output_field = running_sum_ / tuple_count_;
-
     not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
-
     dst->setField(0, ScalarAggregateImpl<B>::output_ordinal_, output_field);
 }
 

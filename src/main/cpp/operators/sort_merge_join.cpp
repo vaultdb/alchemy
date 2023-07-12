@@ -69,6 +69,7 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
+	size_t gate_count = this->start_gate_cnt_;
 
     max_intermediate_cardinality_ =  lhs->getTupleCount() + rhs->getTupleCount();
     if(is_secure_ && bit_packed_) {
@@ -86,6 +87,9 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
     foreign_key_cardinality_ = foreign_key_input_ ? rhs->getTupleCount() : lhs->getTupleCount();
 
 	pair<QueryTable<B> *, QueryTable<B> *> augmented =  augmentTables(lhs, rhs);
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "After augment: " << gate_count - this->start_gate_cnt_ << "\n";
+
     QueryTable<B> *s1, *s2;
     // lhs is FK
     if(!foreign_key_input_) {
@@ -99,6 +103,8 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
         delete augmented.first;
         s2 = augmented.second;
     }
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "After expand: " << gate_count - this->start_gate_cnt_ << "\n";
 
     this->output_ = TableFactory<B>::getTable(foreign_key_cardinality_, out_schema, storage_model_);
 
@@ -106,6 +112,8 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 
     QueryTable<B> *lhs_reverted = revertProjection(s1, lhs_field_mapping_, true);
     QueryTable<B> *rhs_reverted = revertProjection(s2, rhs_field_mapping_, false);
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "After revert projection: " << gate_count - this->start_gate_cnt_ << "\n";
 
     delete s1;
     delete s2;
@@ -115,6 +123,8 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
         this->output_->cloneRow(i, lhs_field_cnt, rhs_reverted, i);
         this->output_->setDummyTag(i, lhs_reverted->getDummyTag(i) | rhs_reverted->getDummyTag(i));
     }
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "After write output: " << gate_count - this->start_gate_cnt_ << "\n";
 
     delete lhs_reverted;
     delete rhs_reverted;
@@ -124,35 +134,22 @@ QueryTable<B> *SortMergeJoin<B>::runSelf() {
 }
 
 template<typename B>
-pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
-    assert(lhs->storageModel() == rhs->storageModel());
-    storage_model_ = lhs->storageModel();
-    // cout << "Augment tables, start AND gates: " << this->system_conf_.andGateCount() << endl;
 
-    // only support row store for now - col store won't easily "stripe" the bits of the smaller relation over different schema
-    assert(storage_model_ == StorageModel::ROW_STORE);
-
-    vector<int> lhs_keys, rhs_keys;
+QuerySchema SortMergeJoin<B>::getAugmentedSchema() {
+	QueryTable<B> * lhs = this->getChild(0)->getOutput();
+	QueryTable<B> * rhs = this->getChild(1)->getOutput();
+	vector<int> lhs_keys, rhs_keys;
 
     for(auto key_pair : join_idxs_) {
         // visitor always outputs lhs, rhs
         lhs_keys.emplace_back(key_pair.first);
         rhs_keys.emplace_back(key_pair.second - lhs->getSchema().getFieldCount());
     }
+	lhs_prime = projectSortKeyToFirstAttr(lhs, lhs_keys, true);
+	rhs_prime = projectSortKeyToFirstAttr(rhs, rhs_keys, false);
 
-
-    // after projection have:
-    // <join keys> <table_id> <payload> <alpha1> <alpha2>
-    // if it is the smaller one, alphas go to the end - they were written earlier, but
-    // the ones we're going to use as alphas are simply not initialized.
-    QueryTable<B> *lhs_prime = projectSortKeyToFirstAttr(lhs, lhs_keys, true);
-    QueryTable<B> *rhs_prime = projectSortKeyToFirstAttr(rhs, rhs_keys, false);
-
-
-    // set up extended schema
-    QuerySchema augmented_schema = (lhs_smaller_) ?  rhs_prime->getSchema() : lhs_prime->getSchema();
-
-    Field<B> table_id_field;
+	QuerySchema augmented_schema = (lhs_smaller_) ? rhs_prime->getSchema() : lhs_prime->getSchema();	
+	
     if(!is_secure_) {
         QueryFieldDesc alpha(augmented_schema.getFieldCount(), "alpha", "", int_field_type_, 0);
         augmented_schema.putField(alpha);
@@ -171,11 +168,30 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
         table_id_field = Field<B>( FieldType::SECURE_BOOL, Bit(true));
     }
 
-    augmented_schema.initializeFieldOffsets();
+    augmented_schema.initializeFieldOffsets();	
 
-    table_id_idx_ = augmented_schema.getFieldCount() - 1;
-    alpha_idx_ = augmented_schema.getFieldCount() - 2; // 2nd to last field
+	return augmented_schema;
 
+}
+
+template<typename B>
+pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTable<B> *lhs, QueryTable<B> *rhs) {
+    assert(lhs->storageModel() == rhs->storageModel());
+    storage_model_ = lhs->storageModel();
+    // cout << "Augment tables, start AND gates: " << this->system_conf_.andGateCount() << endl;
+
+    // only support row store for now - col store won't easily "stripe" the bits of the smaller relation over different schema
+    assert(storage_model_ == StorageModel::ROW_STORE);
+
+	size_t gate_count = this->system_conf_.andGateCount();
+	size_t start_gate_count = this->system_conf_.andGateCount();
+
+    // set up extended schema
+    QuerySchema augmented_schema = getAugmentedSchema();
+
+	table_id_idx_ = augmented_schema.getFieldCount() - 1;
+    alpha_idx_ = augmented_schema.getFieldCount() - 2;
+ 
     int output_cursor = 0;
     QueryTable<B> *unioned = TableFactory<B>::getTable(lhs->getTupleCount() + rhs->getTupleCount(), augmented_schema, storage_model_);
     for(int i = 0; i < lhs_prime->getTupleCount(); ++i) {
@@ -191,6 +207,10 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
         unioned->setField(output_cursor, table_id_idx_, table_id_field);
         ++output_cursor;
     }
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "Union tables: " << gate_count - start_gate_count << "\n";
+
+	start_gate_count = this->system_conf_.andGateCount();
 
     delete lhs_prime;
     delete rhs_prime;
@@ -236,6 +256,8 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     }
     output.first = s1;
     output.second = s2;
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "Split tables: " << gate_count - start_gate_count << "\n";
 
     return output;
 }
@@ -251,9 +273,7 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
         if(is_lhs) { lhs_field_mapping_[write_cursor] = key; }
         else { rhs_field_mapping_[write_cursor] = key; }
         ++write_cursor;
-    }
-
-
+    }	
 
     for(int i = 0; i < src->getSchema().getFieldCount(); ++i) {
         if(std::find(join_cols.begin(), join_cols.end(),i) == join_cols.end()) {
@@ -273,8 +293,9 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
 }
 
 template<typename B>
-void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
-    // cout << "initialize alphas start gates: " << this->system_conf_.andGateCount() << endl;
+void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {	
+	size_t start_gate_count = this->system_conf_.andGateCount();
+	size_t gate_count = this->system_conf_.andGateCount();
 	Field<B> prev_alpha = zero_;
 
     B prev_table_id =  dst->getField(0, table_id_idx_).template getValue<B>();
@@ -308,7 +329,7 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
         prev_count = Field<B>::If(is_foreign_key, count, prev_count); // carry over previous count, ~ 32 gates
     }
 
-	 prev_alpha = dst->getField(dst->getTupleCount()-1, alpha_idx_);
+	prev_alpha = dst->getField(dst->getTupleCount()-1, alpha_idx_);
 
     for (int i = dst->getTupleCount() - 2; i >= 0; i--) {
         count = dst->getField(i, alpha_idx_);
@@ -317,8 +338,9 @@ void SortMergeJoin<B>::initializeAlphas(QueryTable<B> *dst) {
      	prev_alpha = dst->getField(i, alpha_idx_);
 
     }
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "Initialize alphas: " << gate_count - start_gate_count << "\n";
 
-    // cout << "initialize alphas end gates: " << this->system_conf_.andGateCount() << endl;
 
 }
 
@@ -330,6 +352,8 @@ void SortMergeJoin<bool>::initializeAlphasPacked(PlainTable *dst) {
 
 template<>
 void SortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
+	size_t start_gate_count = this->system_conf_.andGateCount();
+	size_t gate_count = this->system_conf_.andGateCount();
     // cout << "initialize alphas start gates: " << this->system_conf_.andGateCount() << endl;
     Integer prev_alpha = zero_.getValue<Integer>();
 
@@ -379,6 +403,8 @@ void SortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
     }
 
     // cout << "initialize alphas end gates: " << this->system_conf_.andGateCount() << endl;
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "Initialize alphas (packed): " << gate_count - start_gate_count << "\n";
 
 }
 
@@ -388,12 +414,17 @@ void SortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_t target_size) {
+	size_t start_gate_count = this->system_conf_.andGateCount();
+	size_t gate_count = this->system_conf_.andGateCount();
     QuerySchema schema = input->getSchema();
 
     SortDefinition sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
     Sort<B> sorted(input, sort_def);
     input = sorted.run();
     // cout << "oblivious distribute ended sort with " << this->system_conf_.andGateCount() << " gates" << endl;
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "Sort in oblivious distribute: " << gate_count - start_gate_count << "\n";
+	start_gate_count = this->system_conf_.andGateCount();
 
     QueryTable<B> *dst_table = TableFactory<B>::getTable(target_size, schema, storage_model_);
 
@@ -410,6 +441,9 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
         dst_table->setField(i, is_new_idx_, one_);
         dst_table->setField(i, table_id_idx_, table_idx);
     }
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "Initialize is_new: " << gate_count - start_gate_count << "\n";
+	start_gate_count = this->system_conf_.andGateCount();
         // fails somewhere in here on A
     int j = Sort<B>::powerOfTwoLessThan(target_size);
     int weight_width = (is_secure_ && bit_packed_) ? zero_.template getValue<Integer>().size() : 32;
@@ -424,6 +458,8 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
         }
         j = j/2;
     }
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "Oblivious distribute (distribute step only): " << gate_count - start_gate_count << "\n";
 
     return dst_table;
 
@@ -432,6 +468,8 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
 
 template<typename B>
 QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_lhs) {
+	size_t start_gate_count = this->system_conf_.andGateCount();
+	size_t gate_count = this->system_conf_.andGateCount();
 
     if(is_secure_ && bit_packed_) return obliviousExpandPacked(input, is_lhs);
 
@@ -450,6 +488,9 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
     is_new_idx_ = schema.getFieldCount() - 1;
     weight_idx_ = schema.getFieldCount() - 2;
 
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "Initialize weight and is_new: " << gate_count - start_gate_count << "\n";
+	start_gate_count = this->system_conf_.andGateCount();
 
     bool table_id = !(is_lhs);
     // should always be false
@@ -472,6 +513,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
 
     QueryTable<B> *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
     // cout << "Exited obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
+	start_gate_count = this->system_conf_.andGateCount();
 
     schema = dst_table->getSchema();
 
@@ -495,6 +537,9 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
     }
 
     // cout << "Ending obliviousExpand with and gates: " << this->system_conf_.andGateCount() << endl;
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "Oblivious expand (not counting obliviousDistribute): " << gate_count - start_gate_count << "\n";
+
 
     return dst_table;
 }
@@ -502,6 +547,8 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
 template<>
 SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool is_lhs) {
 
+	size_t start_gate_count = this->system_conf_.andGateCount();
+	size_t gate_count = this->system_conf_.andGateCount();
     // cout << "Starting initialize  in obliviousExpandPacked with and gates: " << this->system_conf_.andGateCount() << endl;
 
     QuerySchema schema = input->getSchema();
@@ -519,6 +566,9 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
     is_new_idx_ = schema.getFieldCount() - 1;
     weight_idx_ = schema.getFieldCount() - 2;
 
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "Initialize weight and is_new: " << gate_count - start_gate_count << "\n";
+	start_gate_count = this->system_conf_.andGateCount();
 
     bool table_id = !(is_lhs);
     // should always be false
@@ -547,10 +597,12 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
     SecureTable *dst_table = obliviousDistribute(intermediate_table, foreign_key_cardinality_);
     // cout << "Exited obliviousDistribute with and gate count: " << this->system_conf_.andGateCount() << endl;
 
+	start_gate_count = this->system_conf_.andGateCount();
+
     schema = dst_table->getSchema();
 
     SecureTuple tmp(&schema);
-
+	
     tmp.setField(is_new_idx_, one_);
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
@@ -568,6 +620,8 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
         dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
     }
 
+	gate_count = this->system_conf_.andGateCount();
+	std::cout << "Oblivious expand (packed, not counting obliviousDistribute): " << gate_count - start_gate_count << "\n";
     // cout << "Ending obliviousExpand with and gates: " << this->system_conf_.andGateCount() << endl;
 
     return dst_table;
