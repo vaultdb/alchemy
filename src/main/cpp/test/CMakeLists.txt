@@ -92,6 +92,7 @@ package_add_test(secure_aggregate_comparison_test mpc/secure_aggregate_compariso
 package_add_test(true_cardinality_test mpc/true_cardinality_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
 package_add_test(expression_cost_model_test mpc/expression_cost_model_test.cpp mpc/emp_base_test.h mpc/emp_base_test.cpp)
 package_add_test(plan_cost_test mpc/plan_cost_test.cpp  mpc/emp_base_test.h mpc/emp_base_test.cpp)
+package_add_test(fully_optimized_test mpc/fully_optimized_test.cpp  mpc/emp_base_test.h mpc/emp_base_test.cpp)
 
 
 #ZK experiments - optional
