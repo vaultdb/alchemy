@@ -32,8 +32,6 @@ namespace vaultdb {
         string getParameters() const override;
 
     private:
-//        ScalarAggregateImpl <B> * aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-//                                                   const QueryFieldDesc &def) const;
         void setup();
     };
 

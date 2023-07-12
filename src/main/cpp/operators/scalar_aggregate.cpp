@@ -60,52 +60,9 @@ QueryTable<B> *ScalarAggregate<B>::runSelf() {
     output->setDummyTag(0, false);
 
     return output;
-//    QueryTable<B> *input = Operator<B>::getChild()->getOutput();
-//
-//    this->start_time_ = clock_start();
-//    this->start_gate_cnt_ = emp::CircuitExecution::circ_exec->num_and();
-//
-//    Operator<B>::output_ = TableFactory<B>::getTable(1, Operator<B>::output_schema_, input->storageModel());
-//
-//
-//    for(size_t i = 0; i < input->getTupleCount(); ++i) {
-//        for(ScalarAggregateImpl<B> *aggregator : aggregators_) {
-//            aggregator->accumulate(input, i);
-//        }
-//
-//    }
-//
-//    for(size_t i = 0; i < aggregators_.size(); ++i) {
-//        Field f = aggregators_[i]->getResult();
-//        Operator<B>::output_->setField(0, i, f);
-//    }
-//
-//    // dummy tag is always false in our setting, e.g., if we count a set of nulls/dummies, then our count is zero_ - not dummy
-//    Operator<B>::output_->setDummyTag(0, false);
-//
-//
-//    return this->output_;
 }
 
 
-//template<typename B>
-//ScalarAggregateImpl<B> * ScalarAggregate<B>::aggregateFactory(const AggregateId &aggregateType, const uint32_t &ordinal,
-//                                                              const QueryFieldDesc &def) const {
-//    switch (aggregateType) {
-//        case AggregateId::COUNT:
-//            return  new ScalarCountImpl<B>(ordinal, def);
-//        case AggregateId::SUM:
-//            return new ScalarSumImpl<B>(ordinal, def);
-//        case AggregateId::AVG:
-//            return new ScalarAvgImpl<B>(ordinal, def);
-//        case AggregateId::MIN:
-//            return new ScalarMinImpl<B>(ordinal, def);
-//        case AggregateId::MAX:
-//            return new ScalarMaxImpl<B>(ordinal, def);
-//        default:
-//            throw std::invalid_argument("Not yet implemented!");
-//    };
-//}
 
 template<typename B>
 void  ScalarAggregate<B>::setup() {
@@ -128,14 +85,6 @@ void  ScalarAggregate<B>::setup() {
     }
 
 
-
-
-    // max and min have the same type as their source column
-    // avg, count, sum need to be "stock" types like int32 at least for now
-//    for(ScalarAggregateDefinition agg : aggregate_definitions_) {
-//
-//        aggregators_.push_back(aggregateFactory(agg.type, agg.ordinal, input_schema.getField(agg.ordinal)));
-//    }
 
 
     this->output_schema_ = QuerySchema(); // reset it
