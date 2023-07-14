@@ -12,6 +12,8 @@ size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
         return filterCost((Filter<Bit> *) op);
     else if(operator_type == "SecureSqlInput")
         return secureSqlInputCost((SecureSqlInput *) op);
+	else if(operator_type == "Sort")
+		return sortCost((Sort<Bit> *) op);
     else if(operator_type == "KeyedJoin")
         return keyedJoinCost((KeyedJoin<Bit> *) op);
     else if(operator_type == "BasicJoin")
@@ -93,6 +95,7 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 	Operator<Bit>* rhs = join->getChild(1);
 	QuerySchema augmented_schema = join->getAugmentedSchema();
 
+	//first we have the cost of two sorts from augmentTables
 	auto p = (GenericExpression<Bit>*) join->getPredicate();
 	JoinEqualityConditionVisitor<Bit> join_visitor(p->root_);
 	vector<pair<uint32_t, uint32_t> > join_idxs_  = join_visitor.getEqualities();
@@ -101,7 +104,7 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 	size_t table_id_idx_ = augmented_schema.getFieldCount() - 1;
 	sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
 
-	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
+	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());	
 
 	sort_def.clear();
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
@@ -109,8 +112,9 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
         sort_def.emplace_back(i, SortDirection::ASCENDING);
     }
 
-	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
+	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());	
 
+	//next we have the cost of the sort from obliviousDistribute
 	QueryFieldDesc weight(augmented_schema.getFieldCount(), "weight", "", FieldType::SECURE_INT);
     augmented_schema.putField(weight);
     QueryFieldDesc is_new(augmented_schema.getFieldCount(), "is_new", "", FieldType::SECURE_INT);
@@ -122,7 +126,9 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 
 	SortDefinition second_sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
 
-	cost += 2 * sortCost(augmented_schema, second_sort_def, join->getOutputCardinality());
+	std::cout << "running cost (second sort): " << cost << "\n";
+	cost += sortCost(augmented_schema, second_sort_def, rhs->getOutputCardinality());
+	//TODO: find a good way to model the cost of the distribute step from obliviousDistribute
 	
     return cost;
 }
