@@ -180,7 +180,8 @@
     {
       "id": "7",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "sort-merge-aggregate",
+      "operator-algorithm" : "nested-loop-aggregate",
+      "cardBound" : 24000,
       "group": [
         0,
         1,

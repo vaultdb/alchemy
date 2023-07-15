@@ -256,7 +256,8 @@
     {
       "id": "10",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "sort-merge-aggregate",
+      "operator-algorithm" : "nested-loop-aggregate",
+      "cardBound" : 7,
       "group": [
         0
       ],

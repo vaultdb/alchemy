@@ -24,7 +24,7 @@
     {
       "id": "1",
       "relOp": "LogicalAggregate",
-      "operator-algorithm" : "sort-merge-aggregate",
+      "operator-algorithm" : "nested-loop-aggregate",
       "group": [
         0
       ],
@@ -343,6 +343,7 @@
       "id": "13",
       "relOp": "LogicalAggregate",
       "operator-algorithm" : "sort-merge-aggregate",
+      "cardBound" : 24000,
       "group": [
         0,
         1,

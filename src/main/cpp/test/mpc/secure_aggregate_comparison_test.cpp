@@ -184,7 +184,7 @@ SecureAggregateComparisonTest::controlBitPacking(const string &db_name) {
     }
 }
 
-/*
+
 TEST_F(SecureAggregateComparisonTest, tpch_q1_NLA) {
 
     string unioned_db_name = "tpch_unioned";
@@ -435,7 +435,7 @@ TEST_F(SecureAggregateComparisonTest, tpch_q5_SMA) {
     delete aggregate;
 
 }
-*/
+
 
 TEST_F(SecureAggregateComparisonTest, tpch_q9_SMA) {
     string unioned_db_name = "tpch_unioned";
