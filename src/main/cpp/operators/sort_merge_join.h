@@ -45,7 +45,7 @@ namespace  vaultdb {
         int foreign_key_cardinality_ = 0; // public bound on output size
         bool lhs_smaller_ = true;
         Field<B> zero_, one_;
-        FieldType int_field_type_;
+        FieldType int_field_type_, bool_field_type_;
         bool is_secure_;
         map<int, int> rhs_field_mapping_; // temp --> original
         map<int, int> lhs_field_mapping_; // temp --> original

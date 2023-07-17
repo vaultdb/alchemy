@@ -51,6 +51,7 @@ template<typename B>
 void SortMergeJoin<B>::setup() {
     is_secure_ = std::is_same_v<B, emp::Bit>;
     int_field_type_ = is_secure_ ? FieldType::SECURE_INT : FieldType::INT;
+    bool_field_type_ = is_secure_ ? FieldType::SECURE_BOOL : FieldType::BOOL;
 
     auto p = (GenericExpression<B> *) this->predicate_;
     JoinEqualityConditionVisitor<B> join_visitor(p->root_);
@@ -408,12 +409,13 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
 
 
     Field<B> table_idx = input->getField(0, table_id_idx_);
+    Field<B> one_b(bool_field_type_, B(true));
 
     for(int i = input->getTupleCount(); i < target_size; i++) {
-        dst_table->setField(i, is_new_idx_, one_);
+        dst_table->setField(i, is_new_idx_, one_b);
         dst_table->setField(i, table_id_idx_, table_idx);
     }
-        // fails somewhere in here on A
+
     int j = Sort<B>::powerOfTwoLessThan(target_size);
     int weight_width = (is_secure_ && bit_packed_) ? zero_.template getValue<Integer>().size() : 32;
 
@@ -444,7 +446,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
 
     QueryFieldDesc weight(schema.getFieldCount(), "weight", "", int_field_type_);
     schema.putField(weight);
-    QueryFieldDesc is_new(schema.getFieldCount(), "is_new", "", int_field_type_);
+    QueryFieldDesc is_new(schema.getFieldCount(), "is_new", "", bool_field_type_);
     schema.putField(is_new);
     schema.initializeFieldOffsets();
 
@@ -453,11 +455,8 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
     is_new_idx_ = schema.getFieldCount() - 1;
     weight_idx_ = schema.getFieldCount() - 2;
 
-    bool table_id = !(is_lhs);
-    // should always be false
-    bool is_foreign_key = (table_id == foreign_key_input_);
-
     Field<B> s = one_;
+    Field<B> one_b(bool_field_type_, B(true)), zero_b(bool_field_type_, B(false));
 
     for(int i = 0; i < input->getTupleCount(); i++) {
         intermediate_table->cloneRow(i, 0, input, i);
@@ -466,7 +465,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
         intermediate_table->setField(i, weight_idx_,
                                      Field<B>::If(result, zero_, s));
         intermediate_table->setField(i, is_new_idx_,
-                                     Field<B>::If(result, one_, zero_));
+                                     Field<B>::If(result, one_b,  zero_b));
         intermediate_table->setDummyTag(i, input->getDummyTag(i));
 		s = s + cnt;
     }	
@@ -479,16 +478,15 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
 
     QueryTuple<B> tmp(&schema);
 
-    tmp.setField(is_new_idx_, one_);
+    tmp.setField(is_new_idx_, one_b);
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
 
-        B result = (dst_table->getField(i, is_new_idx_) == one_);
-
+        B result = (dst_table->getField(i, is_new_idx_) == one_b);
         tmp.setDummyTag(FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
 
         for(int j = 0; j < schema.getFieldCount(); j++) {
-            dst_table->setField(i, is_new_idx_, zero_);
+            dst_table->setField(i, is_new_idx_, zero_b);
             Field<B> to_write = Field<B>::If(result, tmp.getPackedField(j), dst_table->getPackedField(i, j));
             tmp.setPackedField(j, to_write);
             dst_table->setPackedField(i, j, to_write);
@@ -513,8 +511,7 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
     QueryFieldDesc weight(schema.getFieldCount(), "weight", "", int_field_type_);
     weight.initializeFieldSizeWithCardinality(max_intermediate_cardinality_);
     schema.putField(weight);
-    QueryFieldDesc is_new(schema.getFieldCount(), "is_new", "", int_field_type_);
-    is_new.initializeFieldSizeWithCardinality(max_intermediate_cardinality_);
+    QueryFieldDesc is_new(schema.getFieldCount(), "is_new", "", bool_field_type_);
     schema.putField(is_new);
     schema.initializeFieldOffsets();
 
@@ -530,6 +527,9 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
 
     Integer zero = zero_.getValue<Integer>();
     Integer one = one_.getValue<Integer>();
+    Bit one_b(true), zero_b(false);
+//    SecureField one_b(bool_field_type_, true), zero_b(bool_field_type_, false);
+
     Integer s = one;
     Integer cnt;
 
@@ -539,10 +539,10 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
         Bit result = (cnt == zero);
 
         Integer weight_int = emp::If(result, zero, s);
-        Integer is_new_int = emp::If(result, one, zero);
+        Bit is_new_bit = emp::If(result, one_b, zero_b);
 
         intermediate_table->setPackedField(i, weight_idx_, SecureField(weight.getType(), weight_int));
-        intermediate_table->setPackedField(i, is_new_idx_, SecureField(is_new.getType(), is_new_int));
+        intermediate_table->setField(i, is_new_idx_, SecureField(bool_field_type_, is_new_bit));
         intermediate_table->setDummyTag(i, input->getDummyTag(i));
         s = s + cnt;
     }
@@ -555,11 +555,11 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
 
     SecureTuple tmp(&schema);
 	
-    tmp.setField(is_new_idx_, one_);
+    tmp.setField(is_new_idx_, SecureField(bool_field_type_, one_b));
 
     for(int i = 0; i < foreign_key_cardinality_; i++) {
-
-        Bit result = (dst_table->getPackedField(i, is_new_idx_).getValue<Integer>() == one);
+        Bit is_new_bit = dst_table->getField(i, is_new_idx_).getValue<Bit>();
+        Bit result = (is_new_bit == one_b);
 
         tmp.setDummyTag(FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
 
@@ -569,7 +569,7 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
             dst_table->setPackedField(i, j, to_write);
 
         }
-        dst_table->setPackedField(i, is_new_idx_, zero_);
+        dst_table->setPackedField(i, is_new_idx_, SecureField(bool_field_type_, zero_b));
         dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
     }
 

@@ -56,7 +56,7 @@ QueryTable<B> *Sort<B>::runSelf() {
     this->start_time_ = clock_start();
     this->start_gate_cnt_ = this->system_conf_.andGateCount();
 
-    cout << "Sorting on " << DataUtilities::printSortDefinition(this->sort_definition_) << endl;
+//    cout << "Sorting on " << DataUtilities::printSortDefinition(this->sort_definition_) << endl;
     // deep copy new output
     Operator<B>::output_ = input->clone();
     int counter = 0;
