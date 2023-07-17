@@ -54,7 +54,6 @@ size_t vaultdb::OperatorCostModel::secureSqlInputCost(const SecureSqlInput *inpu
     float comparisons = n * log2(n);
     size_t c_and_s_cost = compareSwapCost(input->getOutputSchema(), input->getSortOrder(), n);
     return c_and_s_cost * (size_t) comparisons;
-    return comparisons * c_and_s_cost;
 }
 
 size_t OperatorCostModel::basicJoinCost(const BasicJoin<Bit> *join) {
