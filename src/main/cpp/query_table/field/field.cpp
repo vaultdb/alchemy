@@ -383,7 +383,7 @@ void Field<B>::serialize(int8_t *dst, const QueryFieldDesc &schema) const {
         case FieldType::SECURE_LONG:
         case FieldType::SECURE_STRING:
             si = boost::get<emp::Integer>(payload_);
-            if(schema.getFieldMin() != 0) {
+            if(schema.bitPacked() && schema.getFieldMin() != 0) {
                 si = si - schema.getSecureFieldMin();
             }
             memcpy(dst, (int8_t *) si.bits.data(), schema.size() * TypeUtilities::getEmpBitSize());
@@ -534,10 +534,12 @@ Field<B> Field<B>::If(const B &choice, const Field &l, const Field &r) {
             break;
         case FieldType::SECURE_INT:
         case FieldType::SECURE_LONG:
-        case FieldType::SECURE_STRING:
-            v  = emp::If(boost::get<emp::Bit>(choice_bit), boost::get<emp::Integer>(l.payload_), boost::get<emp::Integer>
-                    (r.payload_));
+        case FieldType::SECURE_STRING: {
+            emp::Integer lhs =  boost::get<emp::Integer>(l.payload_);
+            emp::Integer rhs =  boost::get<emp::Integer>(r.payload_);
+            v = emp::If(choice, lhs, rhs);
             break;
+        }
         case FieldType::SECURE_FLOAT:
             v  = emp::If(boost::get<emp::Bit>(choice_bit), boost::get<emp::Float>(l.payload_), boost::get<emp::Float>
                     (r.payload_));

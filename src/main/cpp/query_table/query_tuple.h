@@ -32,6 +32,7 @@ namespace vaultdb {
         Field<B> operator[](const int32_t & idx ) { throw; }
         Field<B> operator[](const int32_t & idx ) const {throw; }
         void setField(const size_t & idx, const Field<B> & field) { throw; }
+        void setPackedField(const size_t & idx, const Field<B> & field) { throw; }
         Field<B> getField(const int & ordinal) const { throw; }
         Field<B> getPackedField(const int & ordinal) const { throw; }
         void setDummyTag(const bool & b) { throw; }

@@ -62,6 +62,13 @@ QueryTable<Bit> *SH2PCManager::secretShare(const QueryTable<bool> *src) {
         }
         int counter = 0;
         Sort<emp::Bit>::bitonicMerge(dst_table, dst_table->getSortOrder(), 0, dst_table->getTupleCount(), true, counter);
+        float n = dst_table->getTupleCount();
+        float rounds = log2(dst_table->getTupleCount());
+
+        float comparisons_per_stage = n /2;
+        float total_comparisons = rounds * comparisons_per_stage;
+        float relative_error = fabs(total_comparisons - counter)/counter;
+        cout << "Estimated comparisons: " << total_comparisons << ", observed=" << counter << ", relative error=" << relative_error << endl;
     }
     else { // concatenate Alice and Bob
         if (party_ == emp::ALICE) {

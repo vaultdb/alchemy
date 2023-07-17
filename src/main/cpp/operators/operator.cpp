@@ -58,16 +58,16 @@ QueryTable<B> *Operator<B>::run() {
     end_time_ = high_resolution_clock::now();
     runtime_ms_ = time_from(start_time_)/1e3;
 
-    if(std::is_same_v<B, Bit>) {
+    if(std::is_same_v<B, Bit> && this->getOperatorId() >= -1) {
         cout << "Operator #" << this->getOperatorId() << " " << getOperatorType() << " ran for " << runtime_ms_
              << " ms, "
-             << " gate count: " << gate_cnt_ << " output cardinality: " << output_->getTupleCount() << ", row width="
+             << "gate count: " << gate_cnt_ << " output cardinality: " << output_->getTupleCount() << ", row width="
              << output_schema_.size() << '\n';
 
-        if (gate_cnt_ != 0) {
+        if (gate_cnt_ > 0) {
         size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
         cout << "Estimated cost: " << estimated_gates << ", Observed gates: " << gate_cnt_ << ", Error rate(%) : "
-             << std::fabs(estimated_gates - gate_cnt_) / gate_cnt_ * 100 << endl;
+             << std::fabs(estimated_gates - gate_cnt_) / (float) gate_cnt_ * 100.0 << endl;
         }
         //cout << "      Operator desc: " << this->toString() << endl;
     }

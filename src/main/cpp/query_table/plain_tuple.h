@@ -53,6 +53,7 @@ namespace  vaultdb {
         }
 
         void setField(const int &idx, const PlainField &f);
+        void setPackedField(const int &idx, const PlainField &f) { setField(idx, f); } // no bit packing for plaintext
 
         inline void setDummyTag(const bool & b) {
             size_t dummy_tag_size = sizeof(bool);

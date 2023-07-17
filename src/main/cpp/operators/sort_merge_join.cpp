@@ -205,6 +205,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     SortDirection dir = (foreign_key_input_) ? SortDirection::DESCENDING : SortDirection::ASCENDING;
     sort_def.emplace_back(table_id_idx_, dir);
     Sort<B> sorter(unioned, sort_def);
+    sorter.setOperatorId(-2);
 
 
     QueryTable<B> *sorted = sorter.run()->clone();
@@ -220,6 +221,7 @@ pair<QueryTable<B> *, QueryTable<B> *>  SortMergeJoin<B>::augmentTables(QueryTab
     }
 
     Sort<B> sort_by_table_id(sorted, sort_def);
+    sort_by_table_id.setOperatorId(-2);
     QueryTable<B> *sort_table = sort_by_table_id.run();
 
     pair<QueryTable<B> *, QueryTable<B> *> output;
@@ -268,6 +270,7 @@ QueryTable<B> *SortMergeJoin<B>::projectSortKeyToFirstAttr(QueryTable<B> *src, v
     }
 
     Project<B> projection(src->clone(), builder.getExprs());
+    projection.setOperatorId(-2);
 
     if(is_lhs)  lhs_projected_schema_ = projection.getOutputSchema();
     else rhs_projected_schema_ = projection.getOutputSchema();
@@ -392,6 +395,7 @@ QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_
 
     SortDefinition sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
     Sort<B> sorted(input, sort_def);
+    sorted.setOperatorId(-2);
     input = sorted.run();
 
     QueryTable<B> *dst_table = TableFactory<B>::getTable(target_size, schema, storage_model_);
@@ -486,9 +490,8 @@ QueryTable<B> *SortMergeJoin<B>::obliviousExpand(QueryTable<B> *input, bool is_l
         for(int j = 0; j < schema.getFieldCount(); j++) {
             dst_table->setField(i, is_new_idx_, zero_);
             Field<B> to_write = Field<B>::If(result, tmp.getPackedField(j), dst_table->getPackedField(i, j));
-
-            tmp.setField(j, to_write);
-            dst_table->setField(i, j, to_write);
+            tmp.setPackedField(j, to_write);
+            dst_table->setPackedField(i, j, to_write);
 
         }
         dst_table->setDummyTag(i, FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
@@ -561,8 +564,9 @@ SecureTable *SortMergeJoin<Bit>::obliviousExpandPacked(SecureTable *input, bool 
         tmp.setDummyTag(FieldUtilities::select(result, tmp.getDummyTag(), dst_table->getDummyTag(i)));
 
         for(int j = 0; j < schema.getFieldCount(); j++) {
-            tmp.setField(j, SecureField::If(result, tmp.getField(j), dst_table->getField(i, j)));
-            dst_table->setField(i, j, SecureField::If(result, tmp.getField(j), dst_table->getField(i, j)));
+            SecureField to_write = SecureField::If(result, tmp.getPackedField(j), dst_table->getPackedField(i, j));
+            tmp.setPackedField(j, to_write);
+            dst_table->setPackedField(i, j, to_write);
 
         }
         dst_table->setPackedField(i, is_new_idx_, zero_);
@@ -656,6 +660,7 @@ QueryTable<B> *SortMergeJoin<B>::revertProjection(QueryTable<B> *s, const map<in
     }
 
     Project<B> projection(src->clone(), builder.getExprs());
+    projection.setOperatorId(-2);
     return projection.run()->clone();
 
 }

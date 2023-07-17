@@ -74,6 +74,14 @@ namespace vaultdb {
 
         }
 
+        inline void setPackedField(const int &idx, const SecureField &f) {
+            size_t field_offset = schema_->getFieldOffset(idx);
+            int8_t *write_pos = (int8_t *) (fields_ + field_offset);
+
+            f.serializePacked(write_pos, schema_->getField(idx));
+
+        }
+
         inline void setDummyTag(const emp::Bit & d) {
             const emp::Bit *dst = fields_ + schema_->getFieldOffset(-1);
             std::memcpy((int8_t *) dst, (int8_t *) &(d.bit), TypeUtilities::getEmpBitSize());
