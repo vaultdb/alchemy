@@ -9,6 +9,7 @@
 #include <query_table/secure_tuple.h>
 #include <expression/comparator_expression_nodes.h>
 #include "expression/generic_expression.h"
+#include "opt/operator_cost_model.h"
 
 using namespace emp;
 using namespace vaultdb;
@@ -68,9 +69,8 @@ TEST_F(SecureFilterTest, test_filter) {
 
     // expression setup
     // filtering for l_linenumber = 1
-
-    InputReference<emp::Bit> read_field(1, input->getOutputSchema());
-    Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
+    PackedInputReference<emp::Bit> read_field(1, input->getOutputSchema());
+    Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(4, 0));
     LiteralNode<emp::Bit> constant_input(one);
     EqualNode<emp::Bit> equality_check((ExpressionNode<emp::Bit> *) &read_field, (ExpressionNode<emp::Bit> *) &constant_input);
     Expression<emp::Bit> *expression = new GenericExpression<emp::Bit>(&equality_check, "predicate", FieldType::SECURE_BOOL);
@@ -78,6 +78,7 @@ TEST_F(SecureFilterTest, test_filter) {
 
     Filter<emp::Bit> filter(input, expression);
     auto fiiltered = filter.run();
+
     if(FLAGS_validation) {
         PlainTable *revealed = fiiltered->reveal(emp::PUBLIC);
         ASSERT_EQ(*expected, *revealed);
