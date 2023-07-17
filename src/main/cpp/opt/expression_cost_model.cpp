@@ -151,7 +151,10 @@ void ExpressionCostModel<B>::comparison(ExpressionNode<B> *node) {
 
     node->rhs_->accept(this);
     size_t right_cost = cumulative_cost_;
-    last_field_desc_ = node->rhs_->output_schema_;
+
+    // Only do this if Join
+    if(node->rhs_->output_schema_.getType() != FieldType::INVALID)
+        last_field_desc_ = node->rhs_->output_schema_;
     QueryFieldDesc right_field_desc = last_field_desc_;
     cumulative_cost_ = left_cost + right_cost;
 

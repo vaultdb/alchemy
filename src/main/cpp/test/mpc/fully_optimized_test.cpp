@@ -102,6 +102,7 @@ FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDe
     return query;
 }
 
+
 TEST_F(FullyOptimizedTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, unioned_db_);
