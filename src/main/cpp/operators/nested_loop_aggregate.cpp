@@ -100,6 +100,7 @@ QueryTable<B> *NestedLoopAggregate<B>::runSelf() {
 
         for (int j = 0; j < this->output_cardinality_; ++j) {
             B group_by_match = groupByMatch(input, i, output, j);
+
             B output_dummy = output->getDummyTag(j);
 
             // if output is dummy and no match so far, then initialize group-by cols

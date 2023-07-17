@@ -12,6 +12,8 @@ size_t OperatorCostModel::operatorCost(const SecureOperator *op) {
         return filterCost((Filter<Bit> *) op);
     else if(operator_type == "SecureSqlInput")
         return secureSqlInputCost((SecureSqlInput *) op);
+	else if(operator_type == "Sort")
+		return sortCost((Sort<Bit> *) op);
     else if(operator_type == "KeyedJoin")
         return keyedJoinCost((KeyedJoin<Bit> *) op);
     else if(operator_type == "BasicJoin")
@@ -52,7 +54,6 @@ size_t vaultdb::OperatorCostModel::secureSqlInputCost(const SecureSqlInput *inpu
     float comparisons = n * log2(n);
     size_t c_and_s_cost = compareSwapCost(input->getOutputSchema(), input->getSortOrder(), n);
     return c_and_s_cost * (size_t) comparisons;
-    return comparisons * c_and_s_cost;
 }
 
 size_t OperatorCostModel::basicJoinCost(const BasicJoin<Bit> *join) {
@@ -93,6 +94,7 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 	Operator<Bit>* rhs = join->getChild(1);
 	QuerySchema augmented_schema = join->getAugmentedSchema();
 
+	//first we have the cost of two sorts from augmentTables
 	auto p = (GenericExpression<Bit>*) join->getPredicate();
 	JoinEqualityConditionVisitor<Bit> join_visitor(p->root_);
 	vector<pair<uint32_t, uint32_t> > join_idxs_  = join_visitor.getEqualities();
@@ -101,7 +103,7 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 	size_t table_id_idx_ = augmented_schema.getFieldCount() - 1;
 	sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
 
-	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
+	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());	
 
 	sort_def.clear();
     sort_def.emplace_back(table_id_idx_, SortDirection::ASCENDING);
@@ -109,8 +111,9 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
         sort_def.emplace_back(i, SortDirection::ASCENDING);
     }
 
-	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());
+	cost += sortCost(augmented_schema, sort_def, lhs->getOutputCardinality() + rhs->getOutputCardinality());	
 
+	//next we have the cost of the sort from obliviousDistribute
 	QueryFieldDesc weight(augmented_schema.getFieldCount(), "weight", "", FieldType::SECURE_INT);
     augmented_schema.putField(weight);
     QueryFieldDesc is_new(augmented_schema.getFieldCount(), "is_new", "", FieldType::SECURE_INT);
@@ -122,7 +125,9 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 
 	SortDefinition second_sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
 
-	cost += 2 * sortCost(augmented_schema, second_sort_def, join->getOutputCardinality());
+	std::cout << "running cost (second sort): " << cost << "\n";
+	cost += sortCost(augmented_schema, second_sort_def, rhs->getOutputCardinality());
+	//TODO: find a good way to model the cost of the distribute step from obliviousDistribute
 	
     return cost;
 }
@@ -131,31 +136,166 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 // Sort is sometimes pushed out of MPC, thus separate accounting
 size_t OperatorCostModel::groupByAggregateCost(const GroupByAggregate<Bit> *aggregate) {
     // Cost : Sort_Cost + Input_Row_Count * Agg_Cost_Per_Row(=per_row_cost)
+    QuerySchema input_schema = aggregate->getChild()->getOutputSchema();
+    QuerySchema output_schema = aggregate->getOutputSchema();
 
-    size_t input_row_count = aggregate->getOutputCardinality();
-    Expression<Bit> *predicate = aggregate->getPredicate();
-    assert(predicate->exprClass() == ExpressionClass::GENERIC);
-    ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
+    size_t input_row_count = aggregate->getChild()->getOutputCardinality();
 
-    size_t sort_cost = sortCost(aggregate->getOutputSchema(), aggregate->getSortOrder(), input_row_count);
+    auto group_by_defs = aggregate->group_by_;
+    size_t group_by_cost = 0L;
+    for(auto group_by : group_by_defs) {
+        QueryFieldDesc f = input_schema.getField(group_by);
+        group_by_cost += 2 *( f.size() + f.bitPacked());
+    }
+    group_by_cost += 4;
 
-    ExpressionCostModel<Bit> cost_model(root, aggregate->getOutputSchema());
-    size_t per_row_cost = cost_model.cost();
+    int output_ordinal = group_by_defs.size();
+    // ScalarAggregate : Without GroupBy Clause,
+    // Cost : Input_Row_Count * Agg_Cost_Per_Row(=per_row_cost)
+    auto agg_defs = aggregate->aggregate_definitions_;
+    size_t per_row_cost = 0L;
 
-    return sort_cost + per_row_cost * input_row_count;
+    for(auto agg_def : agg_defs) {
+        int ordinal = agg_def.ordinal;
+        QueryFieldDesc f = input_schema.getField(ordinal);
+        AggregateId agg_type = agg_def.type;
+
+        size_t conditional_write;
+        size_t initialize_cost;
+        size_t aggregator_cost;
+
+        switch(agg_type) {
+            case AggregateId::MIN:
+            case AggregateId::MAX: {
+                conditional_write = f.size() + f.bitPacked();
+
+                initialize_cost = f.size() + f.bitPacked();
+
+                size_t compare_cost = ExpressionCostModel<Bit>::getComparisonCost(f) + 2;
+                aggregator_cost = group_by_cost + conditional_write + initialize_cost + compare_cost + 4;
+                break;
+            }
+            case AggregateId::COUNT: {
+                QueryFieldDesc f_output = output_schema.getField(output_ordinal);
+                conditional_write = f_output.size() + f_output.bitPacked();
+
+                initialize_cost = f_output.size() + f_output.bitPacked();
+
+                size_t add_subtraction_cost = ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                aggregator_cost = group_by_cost + initialize_cost + add_subtraction_cost;
+                break;
+            }
+            case AggregateId::SUM: {
+                QueryFieldDesc f_output = output_schema.getField(output_ordinal);
+                conditional_write = f_output.size() + f_output.bitPacked();
+
+                initialize_cost = 2 * (f_output.size() + f_output.bitPacked());
+                size_t add_subtraction_cost = ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                aggregator_cost = group_by_cost + conditional_write + initialize_cost + add_subtraction_cost;
+                break;
+            }
+            case AggregateId::AVG: {
+                QueryFieldDesc f_output = output_schema.getField(output_ordinal);
+
+                conditional_write = f_output.size() + f_output.bitPacked();
+                size_t count_cost = f_output.size() + f_output.bitPacked() + ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                size_t sum_cost = f_output.size() + f_output.bitPacked() + ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                size_t divide_cost = ExpressionCostModel<Bit>::getDivisionCost(f_output);
+                aggregator_cost = group_by_cost + conditional_write + count_cost + sum_cost + divide_cost;
+                break;
+            }
+            default:
+                aggregator_cost = 0;
+
+        }
+        per_row_cost += aggregator_cost;
+
+        ++output_ordinal;
+    }
+
+    return per_row_cost * input_row_count;
 }
 
 size_t OperatorCostModel::nestedLoopAggregateCost(const NestedLoopAggregate<Bit> *aggregate) {
     // Cost : Input_Row_Count * Output_Cardinality * Agg_Cost_Per_Row(=per_row_cost)
 
-    Expression<Bit> *predicate = aggregate->getPredicate();
-    assert(predicate->exprClass() == ExpressionClass::GENERIC);
-    ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
+    QuerySchema input_schema = aggregate->getChild()->getOutputSchema();
+    QuerySchema output_schema = aggregate->getOutputSchema();
 
-    ExpressionCostModel<Bit> cost_model(root, aggregate->getOutputSchema());
-    size_t per_row_cost = cost_model.cost();
     size_t input_row_count = aggregate->getChild()->getOutputCardinality();
     size_t output_cardinality = aggregate->getOutputCardinality();
+
+    auto group_by_defs = aggregate->group_by_;
+    size_t group_by_cost = 0L;
+    for(auto group_by : group_by_defs) {
+        QueryFieldDesc f = input_schema.getField(group_by);
+        group_by_cost += 2 *( f.size() + f.bitPacked());
+    }
+    group_by_cost += 4;
+
+    int output_ordinal = group_by_defs.size();
+    // ScalarAggregate : Without GroupBy Clause,
+    // Cost : Input_Row_Count * Agg_Cost_Per_Row(=per_row_cost)
+    auto agg_defs = aggregate->aggregate_definitions_;
+    size_t per_row_cost = 0L;
+
+    for(auto agg_def : agg_defs) {
+        int ordinal = agg_def.ordinal;
+        QueryFieldDesc f = input_schema.getField(ordinal);
+        AggregateId agg_type = agg_def.type;
+
+        size_t conditional_write;
+        size_t initialize_cost;
+        size_t aggregator_cost;
+
+        switch(agg_type) {
+            case AggregateId::MIN:
+            case AggregateId::MAX: {
+                conditional_write = f.size() + f.bitPacked();
+
+                initialize_cost = f.size() + f.bitPacked();
+
+                size_t compare_cost = ExpressionCostModel<Bit>::getComparisonCost(f) + 2;
+                aggregator_cost = group_by_cost + conditional_write + initialize_cost + compare_cost + 4;
+                break;
+            }
+            case AggregateId::COUNT: {
+                QueryFieldDesc f_output = output_schema.getField(output_ordinal);
+                conditional_write = f_output.size() + f_output.bitPacked();
+
+                initialize_cost = f_output.size() + f_output.bitPacked();
+                size_t add_subtraction_cost = ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                aggregator_cost = group_by_cost + conditional_write + initialize_cost + add_subtraction_cost;
+                break;
+            }
+            case AggregateId::SUM: {
+                QueryFieldDesc f_output = output_schema.getField(output_ordinal);
+                conditional_write = f_output.size() + f_output.bitPacked();
+
+                initialize_cost = 2 * (f_output.size() + f_output.bitPacked());
+                size_t add_subtraction_cost = ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                aggregator_cost = group_by_cost + 2 * conditional_write + initialize_cost + add_subtraction_cost;
+                break;
+            }
+            case AggregateId::AVG: {
+                QueryFieldDesc f_output = output_schema.getField(output_ordinal);
+
+                conditional_write = f_output.size() + f_output.bitPacked();
+                size_t count_cost = f_output.size() + f_output.bitPacked() + ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                size_t sum_cost = f_output.size() + f_output.bitPacked() + ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                size_t divide_cost = ExpressionCostModel<Bit>::getDivisionCost(f_output);
+                aggregator_cost = group_by_cost + conditional_write + count_cost + sum_cost + divide_cost;
+                break;
+            }
+            default:
+                aggregator_cost = 0;
+
+        }
+        per_row_cost += aggregator_cost;
+
+        ++output_ordinal;
+    }
+
     return per_row_cost * input_row_count * output_cardinality;
 }
 
@@ -197,6 +337,8 @@ size_t OperatorCostModel::projectCost(const Project<Bit> *project) {
 
 size_t OperatorCostModel::scalarAggregateCost(const ScalarAggregate<Bit> *aggregate) {
     QuerySchema input_schema = aggregate->getChild()->getOutputSchema();
+    QuerySchema output_schema = aggregate->getOutputSchema();
+    int agg_idx = 0;
     // ScalarAggregate : Without GroupBy Clause,
     // Cost : Input_Row_Count * Agg_Cost_Per_Row(=per_row_cost)
     auto agg_defs = aggregate->aggregate_definitions_;
@@ -206,25 +348,86 @@ size_t OperatorCostModel::scalarAggregateCost(const ScalarAggregate<Bit> *aggreg
         int ordinal = agg_def.ordinal;
         QueryFieldDesc f = input_schema.getField(ordinal);
         AggregateId agg_type = agg_def.type;
+
+        /* condition_write in scalar_aggregate_impl.cpp :
+         * to_accumulate = (!input_dummy) & (!not_initialized);
+         * B to_initialize = (!input_dummy) & not_initialized;
+        */
         size_t conditional_write;
-        size_t compare_cost;
+        size_t initialize_cost;
         size_t aggregator_cost;
 
         switch(agg_type) {
-            case AggregateId::MIN: {
-                //      accumulated = Field<B>::If(to_initialize, input_field, output_field);
-                conditional_write = f.size() + 1;
-                //            accumulated = Field<B>::If(to_accumulate & (input_field < output_field), input_field, accumulated);
-                compare_cost = ExpressionCostModel<Bit>::getComparisonCost(f);
-                aggregator_cost = compare_cost + conditional_write + 1;
+            case AggregateId::MIN:
+            case AggregateId::MAX: {
+                conditional_write = f.size() + f.bitPacked();
+                /* initialize_cost in scalar_aggregate_impl.cpp
+                 * accumulated = Field<B>::If(to_initialize, input_field, output_field);
+                */
+                initialize_cost = f.size() + f.bitPacked();
+
+                /* compare_cost in scalar_aggregate_impl.cpp
+                 * IN MIN
+                 * accumulated = Field<B>::If(to_accumulate & (input_field < output_field), input_field, accumulated);
+                 * In MAX
+                 * accumulated = Field<B>::If(to_accumulate & (input_field > output_field), input_field, accumulated);
+                */
+                size_t compare_cost = ExpressionCostModel<Bit>::getComparisonCost(f) + 2;
+                aggregator_cost = conditional_write + initialize_cost + compare_cost;
+                break;
+            }
+            case AggregateId::COUNT: {
+                QueryFieldDesc f_output = output_schema.getField(agg_idx);
+                conditional_write = f_output.size() + f_output.bitPacked();
+
+                /* initialize_cost in scalar_aggregate_impl.cpp
+                 * accumulated = Field<B>::If(to_initialize, one, output_field);
+                */
+                initialize_cost = f_output.size() + f_output.bitPacked();
+
+                /* add_subtraction_cost in scalar_aggregate_impl.cpp
+                 * accumulated = Field<B>::If(to_accumulate, accumulated + one, accumulated);
+                */
+                size_t add_subtraction_cost = ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                aggregator_cost = conditional_write + initialize_cost + add_subtraction_cost;
+                break;
+            }
+            case AggregateId::SUM: {
+                QueryFieldDesc f_output = output_schema.getField(agg_idx);
+                conditional_write = f_output.size() + f_output.bitPacked();
+
+                /* initialize_cost in scalar_aggregate_impl.cpp
+                 * accumulated = Field<B>::If(to_initialize, input_field, output_field);
+                */
+                initialize_cost = 2 * (f_output.size() + f_output.bitPacked());
+
+                /* add_subtraction_cost in scalar_aggregate_impl.cpp
+                 * accumulated = Field<B>::If(to_accumulate, accumulated + input_field, accumulated);
+                */
+                size_t add_subtraction_cost = ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                aggregator_cost = conditional_write + initialize_cost + add_subtraction_cost;
+                break;
+            }
+            case AggregateId::AVG: {
+                QueryFieldDesc f_output = output_schema.getField(agg_idx);
+
+                conditional_write = f_output.size() + f_output.bitPacked();
+                size_t count_cost = f_output.size() + f_output.bitPacked() + ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                size_t sum_cost = f_output.size() + f_output.bitPacked() + ExpressionCostModel<Bit>::getAddSubtractionCost(f_output);
+                size_t divide_cost = ExpressionCostModel<Bit>::getDivisionCost(f_output);
+                aggregator_cost = conditional_write + count_cost + sum_cost + divide_cost;
                 break;
             }
             default:
                 aggregator_cost = 0;
 
         }
+        // not_initialized = (to_initialize & !not_initialized) | (to_accumulate & not_initialized);
+        aggregator_cost += 4;
+
         per_row_cost += aggregator_cost;
 
+        ++agg_idx;
     }
 
     size_t row_count = aggregate->getChild()->getOutputCardinality();

@@ -122,6 +122,7 @@ QueryTable<B> *GroupByAggregate<B>::runSelf() {
     B true_lit = true;
     B matched, input_dummy_tag;
 
+
     for(int i = 1; i < input->getTupleCount(); ++i) {
         matched = true;
         input_dummy_tag = input->getDummyTag(i);

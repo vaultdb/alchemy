@@ -8,6 +8,7 @@
 #include <test/mpc/emp_base_test.h>
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
+#include <opt/operator_cost_model.h>
 
 using namespace emp;
 using namespace vaultdb;
@@ -45,6 +46,11 @@ void SecureNestedLoopAggregateTest::runTest(const string &expected_sql,
     NestedLoopAggregate aggregate(input, group_bys, aggregators, 10);
     auto aggregated= aggregate.run();
 
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+
     if(FLAGS_validation) {
         Sort sort(aggregated->reveal(), SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
         auto observed = sort.run();
@@ -72,6 +78,11 @@ void SecureNestedLoopAggregateTest::runDummiesTest(const string &expected_sql,
 
     NestedLoopAggregate aggregate(input, group_bys, aggregators, 10);
     auto aggregated= aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
         Sort sort(aggregated->reveal(), SortDefinition{ColumnSort {0, SortDirection::ASCENDING}});
@@ -222,8 +233,13 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_sums) {
     auto input = new SecureSqlInput(db_name_, sql, true, collation);
 
 
-    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
-    auto aggregated = aggregate->run();
+    NestedLoopAggregate aggregate(input, group_bys, aggregators, 6);
+    auto aggregated = aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
         aggregated->setSortOrder(collation);
@@ -236,7 +252,7 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_sums) {
         delete expected;
     }
 
-    delete aggregate;
+    //delete aggregate;
 
 
 
@@ -276,8 +292,13 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
     SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(2);
     auto input = new SecureSqlInput(db_name_, sql, true, sort_def);
 
-    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
-    auto aggregated = aggregate->run();
+    NestedLoopAggregate aggregate(input, group_bys, aggregators, 6);
+    auto aggregated = aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
         aggregated->setSortOrder(sort_def);
@@ -290,7 +311,7 @@ TEST_F(SecureNestedLoopAggregateTest, test_tpch_q1_avg_cnt) {
         delete expected;
     }
 
-    delete aggregate;
+    //delete aggregate;
 
 
 }
@@ -342,8 +363,14 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
     auto input = new SecureSqlInput(db_name_, sql, true, sort_def);
 
 
-    auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
-    auto aggregated = aggregate->run();
+    //auto aggregate = new NestedLoopAggregate(input, group_bys, aggregators, 6);
+    NestedLoopAggregate aggregate(input, group_bys, aggregators, 6);
+    auto aggregated = aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
         aggregated->setSortOrder(sort_def);
@@ -356,7 +383,7 @@ TEST_F(SecureNestedLoopAggregateTest, tpch_q1) {
         delete expected;
     }
 
-    delete aggregate;
+    //delete aggregate;
 
 }
 

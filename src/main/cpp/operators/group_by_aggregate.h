@@ -10,14 +10,14 @@ namespace vaultdb {
     template<typename B>
     class GroupByAggregate : public Operator<B> {
 
-        std::vector<ScalarAggregateDefinition> aggregate_definitions_;
-        std::vector<int32_t> group_by_;
-
         vector<GroupByAggregateImpl<B> *> aggregators_;
       // truncated output not yet implemented.  Placeholder member variable below
          size_t output_cardinality_ = 0; 
 
     public:
+        std::vector<ScalarAggregateDefinition> aggregate_definitions_;
+        std::vector<int32_t> group_by_;
+
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
                          const vector<ScalarAggregateDefinition> &aggregates, const SortDefinition & sort, const size_t & output_card = 0);
         GroupByAggregate(Operator<B> *child, const vector<int32_t> &group_bys,
@@ -32,14 +32,10 @@ namespace vaultdb {
             for(size_t i = 0; i < aggregators_.size(); ++i) {
                 delete aggregators_[i];
             }
-            //if(predicate_ != nullptr) delete predicate_;
         }
         static bool sortCompatible(const SortDefinition & lhs, const vector<int32_t> &group_by_idxs);
-        Expression<B> *getPredicate() const { return predicate_; }
 
     protected:
-        Expression<B>  *predicate_;
-
         QueryTable<B> *runSelf() override;
         string getOperatorType() const override;
         string getParameters() const override;

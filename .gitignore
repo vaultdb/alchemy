@@ -24,3 +24,5 @@ run-alice.sh
 run-bob.sh
 src/main/java/org/smcql/compiler/emp/generated/*
 src/main/java/org/smcql/codegen/smc/compiler/emp/*
+src/main/cpp/compile_commands.json
+src/main/cpp/.cache/*

@@ -70,6 +70,12 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expected_sql,
   ScalarAggregate aggregate(input, aggregators);
   
   auto aggregated = aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+
     if(FLAGS_validation) {
         PlainTable *observed = aggregated->reveal();
         PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
@@ -84,7 +90,7 @@ void SecureScalarAggregateTest::runDummiesTest(const string &expected_sql,
 
 }
 
-/*
+
 TEST_F(SecureScalarAggregateTest, test_count) {
     // set up expected output
     std::string expected_sql = "SELECT COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= 10";
@@ -108,7 +114,7 @@ TEST_F(SecureScalarAggregateTest, test_count_dummies) {
 
 }
 
-*/
+
 
 TEST_F(SecureScalarAggregateTest, test_min) {
     std::string expected_sql = "SELECT MIN(l_linenumber) min_lineno FROM lineitem WHERE l_orderkey <= 10";
@@ -125,7 +131,7 @@ TEST_F(SecureScalarAggregateTest, test_min_dummies) {
     runDummiesTest(expected_sql, aggregators);
 }
 
-/*
+
 TEST_F(SecureScalarAggregateTest, test_max) {
     std::string expected_sql = "SELECT MAX(l_linenumber) max_lineno FROM lineitem WHERE l_orderkey <= 10";
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(1, AggregateId::MAX, "max_lineno")};
@@ -241,6 +247,12 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_sums) {
   ScalarAggregate aggregate(input, aggregators);
 
   auto aggregated = aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+
   if(FLAGS_validation) {
       auto observed = aggregated->reveal();
       PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
@@ -280,6 +292,11 @@ TEST_F(SecureScalarAggregateTest, test_tpch_q1_avg_cnt) {
   // sort alice + bob inputs after union
   ScalarAggregate aggregate(input, aggregators);
    auto aggregated = aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
     if(FLAGS_validation) {
         auto observed = aggregated->reveal();
         PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
@@ -328,6 +345,11 @@ TEST_F(SecureScalarAggregateTest, tpch_q1) {
     ScalarAggregate aggregate(input, aggregators);
 
     auto aggregated = aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
     if(FLAGS_validation) {
         auto observed = aggregated->reveal();
         PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql, false);
@@ -341,7 +363,7 @@ TEST_F(SecureScalarAggregateTest, tpch_q1) {
 }
 
 
-*/
+
 
 
 int main(int argc, char **argv) {

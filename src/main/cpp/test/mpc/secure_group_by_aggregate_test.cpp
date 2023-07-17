@@ -8,6 +8,7 @@
 #include <test/mpc/emp_base_test.h>
 #include <operators/secure_sql_input.h>
 #include <operators/sort.h>
+#include <opt/operator_cost_model.h>
 
 using namespace emp;
 using namespace vaultdb;
@@ -45,6 +46,11 @@ void SecureGroupByAggregateTest::runTest(const string &expected_sql,
     GroupByAggregate aggregate(input, group_bys, aggregators);
     auto aggregated = aggregate.run();
 
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+
     if(FLAGS_validation) {
         // set up expected output
         const PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 1);
@@ -75,6 +81,11 @@ void SecureGroupByAggregateTest::runDummiesTest(const string &expected_sql,
     GroupByAggregate aggregate(input, groupByCols, aggregators);
 
     auto aggregated = aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
 
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false,  1);
@@ -216,6 +227,12 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_sums) {
 
     GroupByAggregate aggregate(input, group_bys, aggregators);
     auto aggregated = aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
         auto revealed = aggregated->reveal(PUBLIC);
@@ -268,6 +285,12 @@ TEST_F(SecureGroupByAggregateTest, test_tpch_q1_avg_cnt) {
     GroupByAggregate aggregate(input, groupByCols, aggregators);
 
     auto aggregated = aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
         auto revealed = aggregated->reveal(PUBLIC);
@@ -331,6 +354,12 @@ TEST_F(SecureGroupByAggregateTest, tpch_q1) {
     GroupByAggregate aggregate(input, groupByCols, aggregators);
 
     auto aggregated = aggregate.run();
+
+    size_t observed_gates = aggregate.getGateCount();
+    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) &aggregate);
+    cout << "Input schema: " << input->getOutputSchema() << endl;
+    cout << "Estimated cost: " << estimated_gates << " observed gates: " << observed_gates << endl;
+
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getExpectedResults(unioned_db_, expected_sql, false, 2);
         auto revealed = aggregated->reveal(PUBLIC);
