@@ -38,7 +38,7 @@ size_t vaultdb::OperatorCostModel::filterCost(const vaultdb::Filter<Bit> *filter
     ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
 
     ExpressionCostModel<Bit> cost_model(root, filter->getOutputSchema());
-    size_t per_row_cost = cost_model.cost();
+    size_t per_row_cost = cost_model.cost() + 1; // +1 \dummy tag eval
     size_t row_count = filter->getOutputCardinality();
     return per_row_cost * row_count;
 
