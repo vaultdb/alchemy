@@ -125,9 +125,24 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 
 	SortDefinition second_sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
 
-	std::cout << "running cost (second sort): " << cost << "\n";
-	cost += sortCost(augmented_schema, second_sort_def, rhs->getOutputCardinality());
-	//TODO: find a good way to model the cost of the distribute step from obliviousDistribute
+	cost += sortCost(augmented_schema, second_sort_def, (join->foreignKeyChild() == 0) ? rhs->getOutputCardinality() : lhs->getOutputCardinality());
+
+	//obliviousDistribute
+	size_t n = join->getOutputCardinality();
+	float comparisons = n * log2(n);
+    size_t c_and_s_cost = compareSwapCost(augmented_schema, second_sort_def, n);
+    cost += c_and_s_cost * (size_t) comparisons;
+	
+	//cost of conditional write step from obliviousExpand
+	InputReference<Bit> read_field(is_new_idx_, augmented_schema);
+	Field<Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
+	LiteralNode<Bit> constant_input(one);
+	EqualNode equality_check((ExpressionNode<Bit> *) &read_field, (ExpressionNode<Bit> *) &constant_input);
+
+	ExpressionCostModel<Bit> model(&equality_check, augmented_schema);
+	auto if_cost = model.cost();
+
+	cost += n * (if_cost + augmented_schema.size() + 2);
 	
     return cost;
 }

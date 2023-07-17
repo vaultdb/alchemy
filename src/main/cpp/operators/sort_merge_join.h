@@ -28,6 +28,7 @@ namespace  vaultdb {
         SortMergeJoin(QueryTable<B> *lhs, QueryTable<B> *rhs, const int & fkey, Expression<B> *predicate,
                       const SortDefinition &sort = SortDefinition());
 
+		int foreignKeyChild() const { return foreign_key_input_; }
 		QuerySchema getAugmentedSchema();
 
     protected:
