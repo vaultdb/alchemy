@@ -344,10 +344,11 @@ size_t OperatorCostModel::projectCost(const Project<Bit> *project) {
     QuerySchema input_schema = project->getChild(0)->getOutputSchema();
     for(auto pos : exec_exprs) {
         Expression<Bit> *expression = exprs[pos];
-        assert(expression->exprClass() == ExpressionClass::GENERIC);
-        ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) expression)->root_;
-        ExpressionCostModel<Bit> cost_model(root, input_schema);
-        row_cost += cost_model.cost();
+        if(expression->exprClass() == ExpressionClass::GENERIC) {
+            ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) expression)->root_;
+            ExpressionCostModel<Bit> cost_model(root, input_schema);
+            row_cost += cost_model.cost();
+        } // all other expression types not yet implemented, set aside for now
     }
 
     size_t row_count = project->getOutputCardinality();
