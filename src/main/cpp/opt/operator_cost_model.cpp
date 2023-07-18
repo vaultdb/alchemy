@@ -72,19 +72,17 @@ size_t OperatorCostModel::keyedJoinCost(const KeyedJoin<Bit> *join) {
     Expression<Bit> *predicate = join->getPredicate();
     assert(predicate->exprClass() == ExpressionClass::GENERIC);
     ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
+    size_t predicate_cost = ExpressionCostModel<Bit>(root, join->getOutputSchema()).cost();
 
     SecureOperator *lhs = join->getChild(0);
     SecureOperator *rhs = join->getChild(1);
 
-    size_t swap_cost = (join->foreignKeyChild() == 0) ? lhs->getOutputSchema().size() : rhs->getOutputSchema().size();
+    size_t swap_cost = (join->foreignKeyChild() == 0) ? rhs->getOutputSchema().size() : lhs->getOutputSchema().size();
     swap_cost -= 1; // don't swap dummy tag - this is handled separately
 
-    size_t predicate_cost = ExpressionCostModel<Bit>(root, join->getOutputSchema()).cost();
     size_t tuple_comparison_cnt = lhs->getOutputCardinality() *  rhs->getOutputCardinality();
-
-    size_t tuple_comparison_cost = predicate_cost + swap_cost + 4; // 4 for bookkeeping on dummy tag
+    size_t tuple_comparison_cost = predicate_cost + swap_cost + 3; // 3 for bookkeeping on dummy tag
     return tuple_comparison_cnt * tuple_comparison_cost;
-
 }
 
 size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {

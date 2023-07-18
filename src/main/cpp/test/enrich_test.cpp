@@ -159,9 +159,7 @@ SecureTable *EnrichTest::getPatientCohort() {
     ExpressionMapBuilder<emp::Bit> builder(inclusionCohort->getSchema());
     for(uint32_t i = 1; i < 7; ++i)
         builder.addMapping(i, i-1);
-
-
-
+    
 /*    ProjectionMappingSet mappingSet{
             // zip_marker
             ProjectionMapping(1, 0),

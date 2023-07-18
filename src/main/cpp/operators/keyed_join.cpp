@@ -78,6 +78,7 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
         for(uint32_t j = 0; j < rhs_table->getTupleCount(); ++j) {
             rhs_dummy_tag = rhs_table->getDummyTag(j);
             selected = Join<B>::predicate_->call(lhs_table, i, rhs_table, j).template getValue<B>();
+
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
             Join<B>::write_right(to_update, Operator<B>::output_, i, rhs_table, j);
@@ -86,6 +87,7 @@ QueryTable<B> *KeyedJoin<B>::foreignKeyPrimaryKeyJoin() {
         this->output_->setDummyTag(i, dst_dummy_tag);
 
     }
+
 
     return this->output_;
 
@@ -121,7 +123,6 @@ QueryTable<B> *KeyedJoin<B>::primaryKeyForeignKeyJoin() {
             lhs_dummy_tag = lhs_table->getDummyTag(j);
             selected = Join<B>::predicate_->call(lhs_table, j, rhs_table, i).template getValue<B>();
             to_update = selected & (!lhs_dummy_tag) & (!rhs_dummy_tag);
-
             dst_dummy_tag = FieldUtilities::select(to_update, false, dst_dummy_tag);
             Join<B>::write_left(to_update, Operator<B>::output_, i, lhs_table, j);
 

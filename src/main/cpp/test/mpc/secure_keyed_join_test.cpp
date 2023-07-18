@@ -72,10 +72,6 @@ void SecureKeyedJoinTest::runCustomerOrdersTest() {
     KeyedJoin join(orders_input, customer_input, predicate);
     auto joined = join.run();
 
-    size_t cost = OperatorCostModel::operatorCost((SecureOperator *) &join);
-    float relative_error = (float) (cost - join.getGateCount()) / (float) cost;
-
-    cout << "Cost estimate: " << cost << ", observed cost=" << join.getGateCount() << " relative error=" << relative_error << endl;
 
     if(FLAGS_validation) {
         PlainTable *expected = DataUtilities::getQueryResults(unioned_db_, expected_sql,  false);
@@ -113,10 +109,6 @@ void SecureKeyedJoinTest::runLineitemOrdersTest() {
     // test pkey-fkey join
     KeyedJoin join(orders_input, lineitem_input, 1, predicate);
     auto joined = join.run();
-
-    size_t cost = OperatorCostModel::operatorCost((SecureOperator *) &join);
-    float relative_error = (float) (cost - join.getGateCount()) / (float) cost;
-    cout << "Cost estimate: " << cost << ", observed cost=" << join.getGateCount() << " relative error=" << relative_error << endl;
 
 
     if(FLAGS_validation) {
@@ -169,17 +161,6 @@ void SecureKeyedJoinTest::runLineitemOrdersCustomerTest() {
     auto col_join = new KeyedJoin(lineitem_input, co_join, lineitem_orders_predicate);
     auto joined = col_join->run();
 
-    size_t cost = OperatorCostModel::operatorCost((SecureOperator *) co_join);
-    size_t gate_cnt = co_join->getGateCount();
-    cout << "CO join cost estimate: " << cost << ", observed cost=" << co_join->getGateCount() << " relative error: " << ((float) cost - gate_cnt) / (float) gate_cnt <<   endl;
-
-     cost = OperatorCostModel::operatorCost((SecureOperator *) col_join);
-     gate_cnt = col_join->getGateCount();
-
-    cout << "COL cost estimate: " << cost << ", observed cost=" << col_join->getGateCount() << " relative error: " << ((float) cost - gate_cnt) / (float)  gate_cnt <<   endl;
-
-
-
     if(FLAGS_validation) {
         PlainTable *observed = col_join->run()->reveal();
         SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);
@@ -218,7 +199,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_no_bit_packing) {
 
     this->disableBitPacking();
     runLineitemOrdersTest();
-
 }
 
 
@@ -226,7 +206,6 @@ TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_no_bit_packing) {
 // compose C-O-L join
 TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer) {
         runLineitemOrdersCustomerTest();
-
 }
 
 TEST_F(SecureKeyedJoinTest, test_tpch_q3_lineitem_orders_customer_no_bit_packing) {

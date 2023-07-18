@@ -65,6 +65,7 @@ PlainTable *RowTable<B>::reveal(const int & party)   {
             tmp.emplace_back(collation[i]);
         }
         Sort sort(this->clone(), tmp);
+        sort.setOperatorId(-2); // don't print as part of query stats
         table = (RowTable<Bit> *)  sort.run()->clone();
     }
 
