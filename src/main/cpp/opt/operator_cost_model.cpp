@@ -462,6 +462,7 @@ size_t OperatorCostModel::compareSwapCost(const QuerySchema &schema, const SortD
         comparison_cost += 2; // bookkeeping overhead.  Bit::select (+1), & (+1)
     }
 
+    // Add swap_cost as row width. Needs to change whole row. 
     size_t swap_cost = schema.size();
     return comparison_cost + swap_cost;
 }
