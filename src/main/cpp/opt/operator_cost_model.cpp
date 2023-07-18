@@ -129,9 +129,13 @@ size_t OperatorCostModel::sortMergeJoinCost(SortMergeJoin<Bit> *join) {
 
 	//obliviousDistribute
 	size_t n = join->getOutputCardinality();
-	float comparisons = n * log2(n);
+	float inner_loop = Sort<Bit>::powerOfTwoLessThan(n);
+	float outer_loop = log2(inner_loop);
+	 
+	float comparisons = outer_loop * inner_loop;
     size_t c_and_s_cost = compareSwapCost(augmented_schema, second_sort_def, n);
-    cost += c_and_s_cost * (size_t) comparisons;
+	size_t distribute_cost = c_and_s_cost * (size_t) comparisons; 
+    cost += distribute_cost;
 	
 	//cost of conditional write step from obliviousExpand
 	InputReference<Bit> read_field(is_new_idx_, augmented_schema);
