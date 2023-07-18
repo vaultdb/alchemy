@@ -67,7 +67,7 @@ QueryTable<B> *Operator<B>::run() {
         if (gate_cnt_ > 0) {
         size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
         cout << "Estimated cost: " << estimated_gates << ", Observed gates: " << gate_cnt_ << ", Error rate(%) : "
-             << std::fabs(estimated_gates - gate_cnt_) / (float) gate_cnt_ * 100.0 << endl;
+             << std::fabs(((float) estimated_gates) - ((float) gate_cnt_)) / (float) gate_cnt_ * 100.0 << endl;
         }
         //cout << "      Operator desc: " << this->toString() << endl;
     }
