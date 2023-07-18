@@ -6,6 +6,7 @@
 #include <expression/expression_node.h>
 #include <expression/math_expression_nodes.h>
 
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
@@ -30,7 +31,7 @@ GenericExpression<bool> *getRevenueExpression(const QuerySchema &input) {
 
 // variant of Q3 expressions
 TEST_F(ProjectionTest, q3Lineitem) {
-    std::string sql = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 10";
+    std::string sql = "SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(FLAGS_cutoff);
     std::string expected_sql = "SELECT l_orderkey, " + DataUtilities::queryDatetime("l_shipdate") + ",  l_extendedprice * (1 - l_discount) revenue FROM (" + sql + ") src ";
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);

@@ -4,30 +4,29 @@
 #include <operators/sort_merge_join.h>
 #include <operators/sort.h>
 
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 class SortMergeJoinTest :  public PlainBaseTest  {
 
 protected:
-
-
-    int cutoff_ = 10;
+ 
 
     const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' c_dummy \n"
                                       "FROM customer  \n"
-                                      "WHERE c_custkey < " + std::to_string(cutoff_) +
+                                      "WHERE c_custkey <= " + std::to_string(FLAGS_cutoff) +
                                       " ORDER BY c_custkey";
 
 
     const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' o_dummy \n"
                                     "FROM orders \n"
-                                    "WHERE o_custkey <  " + std::to_string(cutoff_) +
+                                    "WHERE o_custkey <=  " + std::to_string(FLAGS_cutoff) +
                                     " ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' l_dummy \n"
                                       "FROM lineitem \n"
-                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < " + std::to_string(cutoff_) + ")  \n"
+                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= " + std::to_string(FLAGS_cutoff) + ")  \n"
                                                                                                                                           " ORDER BY l_orderkey, revenue ";
 
 
@@ -116,14 +115,15 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
-                                     "lineitem_cte AS (" + lineitem_sql_ + "), \n"
-                                     "customer_cte AS (" + customer_sql_ + "),\n "
-                                     "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (o_dummy OR l_dummy OR c_dummy) dummy \n"
-                                     "FROM lineitem_cte, orders_cte, customer_cte  \n"
-                                     "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
-                                          "SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, dummy \n"
-                                          "FROM cross_product \n"
-                                          "WHERE matched";
+									"lineitem_cte AS (" + lineitem_sql_ + "), \n"
+                                    "customer_cte AS (" + customer_sql_ + "),\n "
+                                    "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (o_dummy OR l_dummy OR c_dummy) dummy \n"
+                                    "FROM lineitem_cte, orders_cte, customer_cte  \n"
+                                    "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
+									"SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey, dummy \n"
+                                    "FROM cross_product \n"
+                                    "WHERE matched \n"
+									"ORDER BY l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey";
 
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
@@ -147,16 +147,21 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
 
 
-    SortMergeJoin full_join(lineitem_input, customer_orders_join, 0, lineitem_orders_predicate);
+    auto *full_join = new SortMergeJoin(lineitem_input, customer_orders_join, 0, lineitem_orders_predicate);
 
 
-    PlainTable *observed = full_join.run();
+    PlainTable *observed = full_join->run();
+	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);
+    Sort<bool> observed_sort(observed, sort_def);
+    observed = observed_sort.run();
+
+    //observed->setSortOrder(expected->getSortOrder());
 
 
     ASSERT_EQ(*expected, *observed);
 
     delete expected;
-
+	delete full_join;
 
 }
 
@@ -238,14 +243,15 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
 
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
-                                                                         "lineitem_cte AS (" + lineitem_sql_ + "), \n"
-                                                                                                             "customer_cte AS (" + customer_sql_ + "),\n "
-                                                                                                                                                 "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (o_dummy OR l_dummy OR c_dummy) dummy \n"
-                                                                                                                                                 "FROM lineitem_cte, orders_cte, customer_cte  \n"
-                                                                                                                                                 "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
-                                                                                                                                                 "SELECT c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority,  l_orderkey, revenue, dummy \n"
-                                                                                                                                                 "FROM cross_product \n"
-                                                                                                                                                 "WHERE matched";
+									"lineitem_cte AS (" + lineitem_sql_ + "), \n"
+                                    "customer_cte AS (" + customer_sql_ + "),\n "
+                                    "cross_product AS (SELECT l_orderkey, revenue, o_orderkey, o_custkey, o_orderdate, o_shippriority, c_custkey,  (o_orderkey=l_orderkey AND c_custkey = o_custkey) matched, (o_dummy OR l_dummy OR c_dummy) dummy \n"
+                                    "FROM lineitem_cte, orders_cte, customer_cte  \n"
+                                    "ORDER BY l_orderkey, revenue, o_orderdate, o_shippriority) \n"
+                                    "SELECT c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority,  l_orderkey, revenue, dummy \n"
+                                    "FROM cross_product \n"
+                                    "WHERE matched \n"
+									"ORDER BY c_custkey, o_orderkey, o_custkey, o_orderdate, o_shippriority, l_orderkey, revenue";
 
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, true);
@@ -274,6 +280,11 @@ TEST_F(SortMergeJoinTest, test_tpch_q3_lineitem_orders_customer_reversed) {
 
 
     PlainTable *observed = full_join->run();
+	SortDefinition sort_def = DataUtilities::getDefaultSortDefinition(7);
+    Sort<bool> observed_sort(observed, sort_def);
+    observed = observed_sort.run();
+
+    expected->setSortOrder(observed->getSortOrder());
 
 
     ASSERT_EQ(*expected, *observed);

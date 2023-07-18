@@ -10,6 +10,7 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43442, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65458, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -19,23 +20,20 @@ using namespace vaultdb;
 
 class SecureKeyedJoinTest : public EmpBaseTest {
 protected:
-
-    int cutoff_ = 10;
-
     const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' c_dummy \n"
                                       "FROM customer  \n"
-                                      "WHERE c_custkey < " + std::to_string(cutoff_) +
+                                      "WHERE c_custkey < " + std::to_string(FLAGS_cutoff) +
                                       " ORDER BY c_custkey";
 
 
     const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' o_dummy \n"
                                     "FROM orders \n"
-                                    "WHERE o_custkey <  " + std::to_string(cutoff_) +
+                                    "WHERE o_custkey <  " + std::to_string(FLAGS_cutoff) +
                                     " ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' l_dummy \n"
                                       "FROM lineitem \n"
-                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < " + std::to_string(cutoff_) + ")  \n"
+                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < " + std::to_string(FLAGS_cutoff) + ")  \n"
                                                                                                                                           " ORDER BY l_orderkey, revenue ";
 
 

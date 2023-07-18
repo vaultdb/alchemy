@@ -10,4 +10,4 @@ then
    exit 0 
 fi
 
-./$1 --party=1
+./$1 --flagfile=flagfiles/alice.flags 

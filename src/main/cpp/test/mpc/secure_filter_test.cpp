@@ -18,6 +18,7 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54325, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65454, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -31,7 +32,7 @@ class SecureFilterTest : public EmpBaseTest {};
 
 TEST_F(SecureFilterTest, test_table_scan) {
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem WHERE l_orderkey <= 100  ORDER BY (1), (2)";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY (1), (2)";
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 
 
@@ -57,7 +58,7 @@ TEST_F(SecureFilterTest, test_table_scan) {
 
 TEST_F(SecureFilterTest, test_filter) {
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem   WHERE l_orderkey <= 100  ORDER BY (1), (2)";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem   WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY (1), (2)";
     std::string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input WHERE l_linenumber = 1";
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 

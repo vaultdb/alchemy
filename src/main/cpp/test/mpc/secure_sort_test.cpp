@@ -12,6 +12,7 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54333, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65475, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -71,7 +72,7 @@ bool SecureSortTest::isSorted(const PlainTable *table, const SortDefinition & so
 
 TEST_F(SecureSortTest, tpchQ01Sort) {
 
-    string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_results_sql = "WITH input AS ("
                                   + sql
                                   + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
@@ -104,7 +105,7 @@ TEST_F(SecureSortTest, tpchQ01Sort) {
 
 TEST_F(SecureSortTest, tpchQ03Sort) {
 
-    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= 10 ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
 
     string expected_result_sql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate") + " FROM input ORDER BY revenue DESC, o_orderdate";
 
@@ -141,7 +142,7 @@ TEST_F(SecureSortTest, tpchQ03Sort) {
 
 TEST_F(SecureSortTest, tpchQ05Sort) {
 
-    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l WHERE l_orderkey <= 10  ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_results_sql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
 
     SortDefinition sort_definition;
@@ -179,7 +180,7 @@ TEST_F(SecureSortTest, tpchQ05Sort) {
 
 TEST_F(SecureSortTest, tpchQ08Sort) {
 
-    string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  WHERE o_orderkey <= 10 ORDER BY o_comment, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  WHERE o_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY o_comment, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
 
     SortDefinition sort_def {ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
@@ -211,7 +212,7 @@ TEST_F(SecureSortTest, tpchQ09Sort) {
     std::string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
                       "  JOIN nation on n_nationkey = s_nationkey"
-                      " ORDER BY l_comment LIMIT 1000"; //  order by to ensure order is reproducible and not sorted on the sort cols
+                      " ORDER BY l_comment LIMIT " + std::to_string(FLAGS_cutoff); //  order by to ensure order is reproducible and not sorted on the sort cols
 
 
 
@@ -238,7 +239,7 @@ TEST_F(SecureSortTest, tpchQ09Sort) {
 // 18
 TEST_F(SecureSortTest, tpchQ18Sort) {
 
-    string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders WHERE o_orderkey <= 10 "
+    string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders WHERE o_orderkey <= " + std::to_string(FLAGS_cutoff) + " "
                  " ORDER BY o_comment, o_custkey, o_orderkey"; // order by to ensure order is reproducible and not sorted on the sort cols
 
 
@@ -259,7 +260,7 @@ TEST_F(SecureSortTest, tpchQ18Sort) {
 }
 
 TEST_F(SecureSortTest, customerSort) {
-	string sql = "SELECT * FROM customer WHERE c_custkey <= 100 ORDER BY c_custkey";
+	string sql = "SELECT * FROM customer WHERE c_custkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY c_custkey";
 
 	SortDefinition sort_definition;
 	sort_definition.emplace_back(0, SortDirection::ASCENDING);

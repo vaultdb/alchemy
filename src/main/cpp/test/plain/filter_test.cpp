@@ -6,6 +6,7 @@
 #include <expression/comparator_expression_nodes.h>
 #include "plain_base_test.h"
 
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
@@ -18,7 +19,7 @@ class FilterTest :  public PlainBaseTest  { };
 
 TEST_F(FilterTest, test_table_scan) {
 
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 100";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT " + std::to_string(FLAGS_cutoff);
 
     SqlInput input(db_name_, sql, false);
 
@@ -35,7 +36,7 @@ TEST_F(FilterTest, test_table_scan) {
 
 
 TEST_F(FilterTest, test_filter) {
-    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT 100";
+    std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem ORDER BY (1), (2) LIMIT " + std::to_string(FLAGS_cutoff);
     std::string expected_sql = "WITH input AS (" + sql + ") SELECT *, l_linenumber<>1 dummy FROM input";
 
 

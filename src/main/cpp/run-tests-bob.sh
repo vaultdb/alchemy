@@ -20,16 +20,16 @@ bash run-plain-tests.sh
 
 
 ALICE_HOST=$1
-./bin/emp_test --party=2 --alice_host=$ALICE_HOST --validation=false
-./bin/secure_field_expression_test  --party=2 --alice_host=$ALICE_HOST --validation=false
-./bin/emp_table_test  --party=2 --alice_host=$ALICE_HOST --validation=false
-./bin/secure_filter_test  --party=2 --alice_host=$ALICE_HOST --validation=false
-./bin/secure_sort_test  --party=2 --alice_host=$ALICE_HOST --validation=false
-./bin/secure_basic_join_test  --party=2 --alice_host=$ALICE_HOST --validation=false
-./bin/secure_keyed_join_test  --party=2 --alice_host=$ALICE_HOST --validation=false
-./bin/secure_sort_merge_join_test --party=2 --alice_host=$ALICE_HOST --validation=false
-./bin/secure_scalar_aggregate_test   --party=2 --alice_host=$ALICE_HOST --validation=false
-./bin/secure_group_by_aggregate_test  --party=2 --alice_host=$ALICE_HOST --validation=false
-./bin/secure_nested_loop_aggregate_test --party=2 --alice_host=$ALICE_HOST --validation=false
+./bin/emp_test --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/secure_field_expression_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/emp_table_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/secure_filter_test --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/secure_sort_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/secure_basic_join_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/secure_keyed_join_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/secure_sort_merge_join_test --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/secure_scalar_aggregate_test   --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/secure_group_by_aggregate_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
+./bin/secure_nested_loop_aggregate_test --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false
 #./bin/enrich_test  --party=2 --alice_host=$ALICE_HOST # excluded because data is not synced between A + B
-./bin/secure_tpch_test  --party=2 --alice_host=$ALICE_HOST --validation=false
+./bin/secure_tpch_test  --flagfile=flagfiles/bob.flags --alice_host=$ALICE_HOST --validation=false

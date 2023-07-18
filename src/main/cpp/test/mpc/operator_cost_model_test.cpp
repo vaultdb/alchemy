@@ -11,6 +11,7 @@ using namespace vaultdb;
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54325, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -18,27 +19,25 @@ DEFINE_string(filter, "*", "run only the tests passing this filter");
 
 class OperatorCostModelTest : public EmpBaseTest {
 protected:
-	int cutoff_ = 10;
-
     const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' c_dummy \n"
                                       "FROM customer  \n"
-                                      "WHERE c_custkey < " + std::to_string(cutoff_) +
+                                      "WHERE c_custkey < " + std::to_string(FLAGS_cutoff) +
                                       " ORDER BY c_custkey";
 
 
     const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' o_dummy \n"
                                     "FROM orders \n"
-                                    "WHERE o_custkey <  " + std::to_string(cutoff_) +
+                                    "WHERE o_custkey <  " + std::to_string(FLAGS_cutoff) +
                                     " ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' l_dummy \n"
                                       "FROM lineitem \n"
-                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < " + std::to_string(cutoff_) + ")  \n"
+                                      "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < " + std::to_string(FLAGS_cutoff) + ")  \n"
                                                                                                                                           " ORDER BY l_orderkey, revenue ";
 };
 
 TEST_F(OperatorCostModelTest, test_table_scan) {
-	std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem WHERE l_orderkey <= " + std::to_string(cutoff_) + " ORDER BY (1), (2)";
+	std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 
     SecureSqlInput input(db_name_, sql, false, collation); 	
@@ -68,7 +67,7 @@ TEST_F(OperatorCostModelTest, test_table_scan) {
 }
 
 TEST_F(OperatorCostModelTest, test_filter) {
-	std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem   WHERE l_orderkey <= " + std::to_string(cutoff_) + "  ORDER BY (1), (2)";
+		std::string sql = "SELECT l_orderkey, l_linenumber, l_linestatus  FROM lineitem   WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY (1), (2)";
     std::string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input WHERE l_linenumber = 1";
     SortDefinition collation = DataUtilities::getDefaultSortDefinition(2);
 
@@ -81,12 +80,12 @@ TEST_F(OperatorCostModelTest, test_filter) {
     // expression setup
     // filtering for l_linenumber = 1
 
-    InputReference<emp::Bit> read_field(1, input->getOutputSchema());
-    Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(32, 1));
+    PackedInputReference<emp::Bit> read_field(1, input->getOutputSchema());
+    Field<emp::Bit> one(FieldType::SECURE_INT, emp::Integer(4, 0));
     LiteralNode<emp::Bit> constant_input(one);
     EqualNode<emp::Bit> equality_check((ExpressionNode<emp::Bit> *) &read_field, (ExpressionNode<emp::Bit> *) &constant_input);
     Expression<emp::Bit> *expression = new GenericExpression<emp::Bit>(&equality_check, "predicate", FieldType::SECURE_BOOL);
-
+	std::cout << input->getOutputSchema() << "\n";
 
     Filter<emp::Bit> filter(input, expression);
 
@@ -96,7 +95,7 @@ TEST_F(OperatorCostModelTest, test_filter) {
     auto cost = OperatorCostModel::operatorCost(&filter);
 
 	size_t end_gates = manager_->andGateCount();
-    auto gate_cnt = end_gates - start_gates;
+    auto gate_cnt = filter.getGateCount();
 
 	std::cout << "Predicted cost: " << cost << "\n";
 	std::cout << "Observed cost: " << gate_cnt << "\n";
@@ -107,12 +106,12 @@ TEST_F(OperatorCostModelTest, test_filter) {
         delete expected;
         delete revealed;
     }
-
+	//std::cout << SystemConfiguration::getInstance().bitPackingEnabled() << "\n";
 }
 
 TEST_F(OperatorCostModelTest, test_sort) { //from tpchQ01Sort
 
-	string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= " + std::to_string(cutoff_) + " ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
+	string sql = "SELECT l_returnflag, l_linestatus FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_comment"; // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_results_sql = "WITH input AS ("
                                   + sql
                                   + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
@@ -301,10 +300,10 @@ TEST_F(OperatorCostModelTest, test_sort_merge_join) {
 
 TEST_F(OperatorCostModelTest, test_scalar_aggregate) { //from test_count
     // set up expected output
-    std::string expected_sql = "SELECT COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= " + std::to_string(cutoff_);
+    std::string expected_sql = "SELECT COUNT(*)::BIGINT cnt FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
-    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <= " + std::to_string(cutoff_) + " ORDER BY (1), (2)";
+    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
 
 
 
@@ -338,10 +337,10 @@ TEST_F(OperatorCostModelTest, test_scalar_aggregate) { //from test_count
 
 TEST_F(OperatorCostModelTest, test_group_by_aggregate) {
     // set up expected output
-    std::string expected_sql = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= " + std::to_string(cutoff_) + " GROUP BY l_orderkey ORDER BY (1)";
+    std::string expected_sql = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) +" GROUP BY l_orderkey ORDER BY (1)";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
-    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <= " + std::to_string(cutoff_) + " ORDER BY (1), (2)";
+    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
 
 
     // run secure query
@@ -381,10 +380,10 @@ TEST_F(OperatorCostModelTest, test_group_by_aggregate) {
 
 TEST_F(OperatorCostModelTest, test_nested_loop_aggregate) {
     // set up expected output
-    std::string expected_sql = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= " + std::to_string(cutoff_) + " GROUP BY l_orderkey ORDER BY (1) ";
+    std::string expected_sql = "SELECT l_orderkey, COUNT(*) cnt FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " GROUP BY l_orderkey ORDER BY (1) ";
 
     std::vector<ScalarAggregateDefinition> aggregators{ScalarAggregateDefinition(-1, AggregateId::COUNT, "cnt")};
-    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <= " + std::to_string(cutoff_) + " ORDER BY (1), (2)";
+    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
 
 
     // run secure query
@@ -393,7 +392,7 @@ TEST_F(OperatorCostModelTest, test_nested_loop_aggregate) {
 
 
     std::vector<int32_t> group_bys{0};
-    NestedLoopAggregate aggregate(input, group_bys, aggregators, cutoff_);
+    NestedLoopAggregate aggregate(input, group_bys, aggregators, FLAGS_cutoff);
 
 	size_t start_gates = manager_->andGateCount();
 

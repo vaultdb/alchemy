@@ -5,6 +5,7 @@
 #include "util/field_utilities.h"
 #include <gflags/gflags.h>
 
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
@@ -20,17 +21,17 @@ protected:
 
     const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy "
                                     "FROM customer  "
-                                    "WHERE c_custkey <= 5 "
+                                    "WHERE c_custkey <= " + std::to_string(FLAGS_cutoff) + " "
                                     "ORDER BY c_custkey ";
 
     const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy "
                                   "FROM orders "
-                                  "WHERE o_custkey <= 5 "
+                                  "WHERE o_custkey <= " + std::to_string(FLAGS_cutoff) + " "
                                   "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority ";
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy "
                                     "FROM lineitem "
-                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= 5)  "
+                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= " + std::to_string(FLAGS_cutoff) + ")  "
                                     "ORDER BY l_orderkey, revenue ";
 };
 

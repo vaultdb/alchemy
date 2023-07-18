@@ -12,38 +12,38 @@ bash  test/support/load-generated-data.sh 100
 # optional:
 #  bash run-pilot-test.sh
 
-./bin/csv_reader_test --storage=column
-./bin/field_expression_test --storage=column
-./bin/filter_test  --storage=column
-./bin/project_test  --storage=column
-./bin/basic_join_test --storage=column
-./bin/keyed_join_test --storage=column
-./bin/sort_merge_join_test --storage=column
-./bin/sort_test --storage=column
-./bin/scalar_aggregate_test --storage=column
-./bin/group_by_aggregate_test --storage=column
-./bin/nested_loop_aggregate_test --storage=column
-./bin/secret_share_generator_test --storage=column
+./bin/csv_reader_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/field_expression_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/filter_tes --flagfile=flagfiles/plain.flags --storage=column
+./bin/project_test--flagfile=flagfiles/plain.flags --storage=column
+./bin/basic_join_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/keyed_join_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/sort_merge_join_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/sort_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/scalar_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/group_by_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/nested_loop_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/secret_share_generator_test --flagfile=flagfiles/plain.flags --storage=column
 #this test depends on pilot testbed                                                                                                                                                                                                                  
-./bin/serialization_test --storage=column
-./bin/plan_parser_test --storage=column
-./bin/tpch_test --storage=column
+./bin/serialization_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/plan_parser_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/tpch_test --flagfile=flagfiles/plain.flags --storage=column
 
 
 
 
-./bin/emp_test --party=1 --storage=column
-./bin/secure_field_expression_test	--party=1 --storage=column
-./bin/emp_table_test  --party=1 --storage=column
-./bin/secure_filter_test  --party=1 --storage=column
-./bin/secure_sort_test  --party=1 --storage=column
-./bin/secure_basic_join_test  --party=1 --storage=column
-./bin/secure_keyed_join_test  --party=1 --storage=column
-./bin/secure_sort_merge_join_test --party=1 --storage=column
-./bin/secure_scalar_aggregate_test 	 --party=1 --storage=column
-./bin/secure_group_by_aggregate_test  --party=1 --storage=column
-./bin/secure_nested_loop_aggregate_test --party=1 --storage=column
+./bin/emp_test --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_field_expression_test	--flagfile=flagfiles/alice.flags --storage=column
+./bin/emp_table_test  --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_filter_test  --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_sort_test  --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_basic_join_test  --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_keyed_join_test  --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_sort_merge_join_test --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_scalar_aggregate_test 	 --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_group_by_aggregate_test  --flagfile=flagfiles/alice.flags --storage=column
+./bin/secure_nested_loop_aggregate_test --flagfile=flagfiles/alice.flags --storage=column
 #./bin/enrich_test  --party=1 --storage=column  #excluded because data is not synced between A + B
-./bin/secure_tpch_test  --party=1 --storage=column
+./bin/secure_tpch_test  --flagfile=flagfiles/alice.flags --storage=column
 
 

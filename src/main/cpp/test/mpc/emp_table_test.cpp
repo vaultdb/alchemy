@@ -6,6 +6,7 @@
 DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 54334, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "alice hostname for execution");
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_int32(ctrl_port, 65428, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
@@ -25,7 +26,7 @@ protected:
 // test encrypting a query table with a single int in EMP
 TEST_F(EmpTableTest, secret_share_table_one_column) {
 
-    std::string sql =  "SELECT l_orderkey FROM lineitem WHERE l_orderkey <= 20 ORDER BY l_orderkey, l_linenumber";
+    std::string sql =  "SELECT l_orderkey FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_orderkey, l_linenumber";
 
     SortDefinition  collation = DataUtilities::getDefaultSortDefinition(1);
 
@@ -40,7 +41,7 @@ TEST_F(EmpTableTest, secret_share_table_one_column) {
 // bitonic merge the inputs
 TEST_F(EmpTableTest, secret_share_table_varchar) {
 
-    string sql = "SELECT l_orderkey, l_linenumber, l_comment FROM lineitem WHERE l_orderkey <= 20 ORDER BY l_orderkey, l_linenumber";
+    string sql = "SELECT l_orderkey, l_linenumber, l_comment FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY l_orderkey, l_linenumber";
     SortDefinition  collation = DataUtilities::getDefaultSortDefinition(2);
 
     secretShareAndValidate(sql, collation);
@@ -55,7 +56,7 @@ TEST_F(EmpTableTest, secret_share_table) {
     std::string sql =  "SELECT l_orderkey, l_linenumber, l_comment, l_returnflag, l_discount, "
                                "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate "  // handle timestamps by converting them to longs using SQL
                                "FROM lineitem "
-                               "WHERE l_orderkey <= 20 "
+                               "WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " "
                                "ORDER BY l_orderkey, l_linenumber ";
     secretShareAndValidate(sql, DataUtilities::getDefaultSortDefinition(2));
 
@@ -70,7 +71,7 @@ TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
                               "CAST(EXTRACT(EPOCH FROM l_commitdate) AS BIGINT) AS l_commitdate, "  // handle timestamps by converting them to longs using SQL
                               "l_returnflag <> 'N' AS dummy "  // simulate a filter for l_returnflag = 'N' -- all of the ones that dont match are dummies
                               "FROM lineitem "
-                              " WHERE l_orderkey <= 20 "
+                              " WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " "
                               "ORDER BY l_orderkey, l_linenumber ";
     SortDefinition  collation = DataUtilities::getDefaultSortDefinition(2);
     PlainTable *input = DataUtilities::getQueryResults(db_name_, sql, true);
@@ -91,7 +92,7 @@ TEST_F(EmpTableTest, secret_share_table_dummy_tag) {
 TEST_F(EmpTableTest, bit_packing_test) {
 
 
-    std::string sql = "SELECT c_custkey, c_nationkey FROM customer WHERE c_custkey <= 20 ORDER BY (1)";
+    std::string sql = "SELECT c_custkey, c_nationkey FROM customer WHERE c_custkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY (1)";
 
 
     PlainTable *input = DataUtilities::getQueryResults(db_name_,

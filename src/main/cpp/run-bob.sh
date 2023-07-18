@@ -10,4 +10,4 @@ then
    exit 0 
 fi
 
-./$1 --party=2 --alice_host=$2
+./$1 --flagfile=flagfiles/bob.flags --alice_host=$2

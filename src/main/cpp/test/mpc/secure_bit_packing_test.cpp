@@ -24,6 +24,7 @@ DEFINE_string(alice_host, "127.0.0.1", "alice hostname for EMP execution");
 DEFINE_int32(query, 1, "query number");
 DEFINE_string(bitpacking, "packed", "bit packed or non-bit packed");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65482, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
@@ -37,7 +38,7 @@ protected:
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
 
-    int input_tuple_limit_ = 150;
+    int input_tuple_limit_ = FLAGS_cutoff;
 };
 
 void

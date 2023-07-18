@@ -4,6 +4,7 @@
 #include <operators/project.h>
 #include "query_table/table_factory.h"
 
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
@@ -12,7 +13,7 @@ class SortTest : public PlainBaseTest {};
 
 TEST_F(SortTest, testSingleIntColumn) {
 
-    string sql = "SELECT c_custkey FROM customer ORDER BY c_address, c_custkey LIMIT 10";  // c_address "randomizes" the order
+    string sql = "SELECT c_custkey FROM customer ORDER BY c_address, c_custkey LIMIT " + std::to_string(FLAGS_cutoff);  // c_address "randomizes" the order
     string expected_sql = "SELECT c_custkey FROM (" + sql + ") subquery ORDER BY c_custkey";
 
 
@@ -31,7 +32,7 @@ TEST_F(SortTest, testSingleIntColumn) {
 
 
 TEST_F(SortTest, tpchQ1Sort) {
-    string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment, l_orderkey  LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_returnflag, l_linestatus FROM lineitem ORDER BY l_comment, l_orderkey  LIMIT " + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_sql = "WITH input AS (" + sql + ") SELECT * FROM input ORDER BY l_returnflag, l_linestatus";
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
@@ -57,7 +58,7 @@ TEST_F(SortTest, tpchQ1Sort) {
 TEST_F(SortTest, tpchQ3Sort) {
     // casting revenue to float for these trials
     // TODO: set up discrete testbed to deal with floating point errors
-    string sql = "SELECT l_orderkey, (l.l_extendedprice * (1 - l.l_discount))::INT revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_orderkey, (l.l_extendedprice * (1 - l.l_discount))::INT revenue, o.o_shippriority, o_orderdate FROM lineitem l JOIN orders o ON l_orderkey = o_orderkey ORDER BY  l_comment, l_orderkey LIMIT " + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
 
     string expected_sql = "WITH input AS (" + sql + ") SELECT revenue, " + DataUtilities::queryDatetime("o_orderdate")  + " FROM input ORDER BY revenue DESC, o_orderdate";
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
@@ -93,7 +94,7 @@ TEST_F(SortTest, tpchQ3Sort) {
 
 TEST_F(SortTest, tpchQ5Sort) {
 
-    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT l_orderkey, l.l_extendedprice * (1 - l.l_discount) revenue FROM lineitem l  ORDER BY  l_comment, l_orderkey LIMIT " + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_sql = "WITH input AS (" + sql + ") SELECT revenue FROM input ORDER BY revenue DESC";
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
@@ -125,7 +126,7 @@ TEST_F(SortTest, tpchQ5Sort) {
 
 TEST_F(SortTest, tpchQ8Sort) {
 
-    string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  ORDER BY o_comment, o_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+    string sql = "SELECT  o_orderyear, o_orderkey FROM orders o  ORDER BY o_comment, o_orderkey LIMIT " + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_sql = "WITH input AS (" + sql + ") SELECT o_orderyear FROM input ORDER BY o_orderyear, o_orderkey DESC";  // orderkey DESC needed to align with psql's layout
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
 
@@ -156,7 +157,7 @@ TEST_F(SortTest, tpchQ9Sort) {
     string sql = "SELECT o_orderyear, o_orderkey, n_name FROM orders o JOIN lineitem l ON o_orderkey = l_orderkey"
                       "  JOIN supplier s ON s_suppkey = l_suppkey"
                       "  JOIN nation on n_nationkey = s_nationkey"
-                      " ORDER BY  l_comment, l_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the sort cols
+                      " ORDER BY  l_comment, l_orderkey LIMIT " + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the sort cols
     string expected_sql = "WITH input AS (" + sql + ") SELECT n_name, o_orderyear FROM input ORDER BY n_name, o_orderyear DESC";
 
     PlainTable *expected = DataUtilities::getQueryResults(db_name_, expected_sql, false);
@@ -195,7 +196,7 @@ TEST_F(SortTest, tpchQ18Sort) {
     // Q3 has the same program logic, but it succeeds.  Why?
     // both have 10 values.
     string sql = "SELECT o_orderkey, o_orderdate, o_totalprice FROM orders"
-                      " ORDER BY o_clerk, o_custkey, o_orderkey LIMIT 10"; // order by to ensure order is reproducible and not sorted on the to-sort cols
+                      " ORDER BY o_clerk, o_custkey, o_orderkey LIMIT " + std::to_string(FLAGS_cutoff); // order by to ensure order is reproducible and not sorted on the to-sort cols
     string expected_sql = "WITH input AS (" + sql + ") "
                     "SELECT o_totalprice, " + DataUtilities::queryDatetime("o_orderdate") + "  FROM input "
                     "ORDER BY o_totalprice DESC, o_orderdate ASC";

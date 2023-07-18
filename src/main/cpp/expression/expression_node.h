@@ -182,8 +182,8 @@ namespace vaultdb {
             assert(binary_mode_);
             return (read_lhs_) ?
                    lhs->getPackedField(lhs_row, read_idx_) :
-                   rhs->getPackedField(rhs_row, read_idx_);
-        }
+                   rhs->getPackedField(rhs_row, read_idx_);        
+		}
 
 
         ExpressionKind kind() const override {     return ExpressionKind::PACKED_INPUT_REF;  }

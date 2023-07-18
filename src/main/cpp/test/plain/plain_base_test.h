@@ -9,6 +9,7 @@
 #include "common/defs.h"
 #include <util/emp_manager/emp_manager.h>
 
+DECLARE_int32(cutoff);
 DECLARE_string(storage); // row || column
 DECLARE_string(filter);
 

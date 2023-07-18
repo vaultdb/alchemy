@@ -10,23 +10,23 @@ bash pilot/test/generate-and-load-test-data.sh 1000
 bash  test/support/load-generated-data.sh 100
 
 
-./bin/csv_reader_test --storage=column
-./bin/field_expression_test --storage=column
-./bin/filter_test  --storage=column
-./bin/project_test  --storage=column
-./bin/basic_join_test --storage=column
-./bin/keyed_join_test --storage=column
+./bin/csv_reader_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/field_expression_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/filter_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/project_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/basic_join_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/keyed_join_test --flagfile=flagfiles/plain.flags --storage=column
 # SMJ for column store is not implemented yet
 #./bin/sort_merge_join_test --storage=column
-./bin/sort_test --storage=column
-./bin/scalar_aggregate_test --storage=column
-./bin/group_by_aggregate_test --storage=column
-./bin/nested_loop_aggregate_test --storage=column
-./bin/secret_share_generator_test --storage=column
+./bin/sort_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/scalar_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/group_by_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/nested_loop_aggregate_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/secret_share_generator_test --flagfile=flagfiles/plain.flags --storage=column
 #this test depends on pilot testbed
-./bin/serialization_test --storage=column
-./bin/plan_parser_test --storage=column
-./bin/tpch_test --storage=column
+./bin/serialization_test  --flagfile=flagfiles/plain.flags --storage=column
+./bin/plan_parser_test --flagfile=flagfiles/plain.flags --storage=column
+./bin/tpch_test --flagfile=flagfiles/plain.flags --storage=column
 
 bash run-column-store.sh emp_test 
 bash run-column-store.sh secure_field_expression_test  

@@ -3,6 +3,7 @@
 #include <operators/support/aggregate_id.h>
 #include <operators/scalar_aggregate.h>
 
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
 
@@ -11,7 +12,7 @@ class ScalarAggregateTest : public PlainBaseTest { };
 
 // should just count to 50
 TEST_F(ScalarAggregateTest, test_count) {
-    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem ORDER BY (1)  LIMIT 50";
+    std::string query = "SELECT l_orderkey, l_linenumber FROM lineitem ORDER BY (1)  LIMIT " + std::to_string(FLAGS_cutoff);
     std::string expected_sql = "SELECT COUNT(*)::BIGINT FROM (" + query + ") q";
 
     auto input = new SqlInput(db_name_, query, false);
@@ -32,7 +33,7 @@ TEST_F(ScalarAggregateTest, test_count) {
 
 
 TEST_F(ScalarAggregateTest, test_count_dummies) {
-    std::string query = "SELECT l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem ORDER BY l_orderkey, l_linenumber  LIMIT 54";
+    std::string query = "SELECT l_extendedprice, l_shipinstruct <> 'NONE' AS dummy  FROM lineitem ORDER BY l_orderkey, l_linenumber  LIMIT " + std::to_string(FLAGS_cutoff);
 
     // set up the expected results:
     std::string expected_sql = "SELECT COUNT(*)::BIGINT cnt FROM (" + query + ") selection WHERE NOT dummy";
@@ -59,7 +60,7 @@ TEST_F(ScalarAggregateTest, test_count_dummies) {
 
 
 TEST_F(ScalarAggregateTest, test_min) {
-    std::string query =  "SELECT l_quantity FROM lineitem WHERE l_orderkey <= 50";
+    std::string query =  "SELECT l_quantity FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
 
     // set up the expected results:
     std::string expected_sql = "WITH input AS (" + query + ") SELECT MIN(l_quantity) min_quantity FROM input";
@@ -82,7 +83,7 @@ TEST_F(ScalarAggregateTest, test_min) {
 
 
 TEST_F(ScalarAggregateTest, test_max) {
-    std::string query =  "SELECT l_tax FROM lineitem WHERE l_orderkey <= 50";
+    std::string query =  "SELECT l_tax FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
 
     // set up the expected results:
     std::string expected_sql = "WITH input AS (" + query + ") SELECT MAX(l_tax) max_tax FROM input";
@@ -106,7 +107,7 @@ TEST_F(ScalarAggregateTest, test_max) {
 
 
 TEST_F(ScalarAggregateTest, test_sum) {
-  std::string query =  "SELECT l_quantity FROM lineitem WHERE l_orderkey <= 50";
+  std::string query =  "SELECT l_quantity FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
 
   // set up the expected results:
   std::string expected_sql = "WITH input AS (" + query + ") SELECT SUM(l_quantity) sum_qty FROM input";
@@ -130,7 +131,7 @@ TEST_F(ScalarAggregateTest, test_sum) {
 }
 
 TEST_F(ScalarAggregateTest, test_sum_dummies) {
-  std::string query =  "SELECT l_extendedprice, l_shipinstruct <> 'NONE' AS dummy FROM lineitem WHERE l_orderkey <= 100";
+  std::string query =  "SELECT l_extendedprice, l_shipinstruct <> 'NONE' AS dummy FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
 
   // set up the expected results:
   std::string expected_sql = "SELECT SUM(l_extendedprice) sum_base_price FROM (" + query + ") selection WHERE NOT dummy";
@@ -154,7 +155,7 @@ TEST_F(ScalarAggregateTest, test_sum_dummies) {
 
 TEST_F(ScalarAggregateTest, test_avg) {
 
-    std::string query =  "SELECT l_linenumber FROM lineitem WHERE l_orderkey <= 50  ORDER BY (1)";
+    std::string query =  "SELECT l_linenumber FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + "  ORDER BY (1)";
 
   // set up the expected results:
     std::string expected_sql = "SELECT FLOOR(AVG(l_linenumber))::INT avg_lno  FROM (" + query + ") q";
@@ -177,7 +178,7 @@ TEST_F(ScalarAggregateTest, test_avg) {
 
 
 TEST_F(ScalarAggregateTest, test_avg_dummies) {
-    std::string query = "SELECT l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <= 100 ORDER BY (1), (2)";
+    std::string query = "SELECT l_linenumber,  l_shipinstruct <> 'NONE' AS dummy  FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff) + " ORDER BY (1), (2)";
 
 
   // set up the expected results:
@@ -202,7 +203,7 @@ TEST_F(ScalarAggregateTest, test_all_sum_dummies) {
                       "l_extendedprice * (1 - l_discount) l_discprice, "
                       "l_extendedprice * (1 - l_discount) * (1 + l_tax) l_charge, "
                       "l_shipinstruct <> 'NONE' AS dummy "
-                      "FROM lineitem WHERE l_orderkey <= 100 ";
+                      "FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
 
   // Ordinals:
   // l_quantity, #0
@@ -245,7 +246,7 @@ TEST_F(ScalarAggregateTest, test_all_sum_dummies) {
 TEST_F(ScalarAggregateTest, test_all_avg_dummies) {
   std::string query =  "SELECT l_quantity, l_extendedprice, l_discount, "
                        "l_shipinstruct <> 'NONE' AS dummy "
-                       "FROM lineitem WHERE l_orderkey <= 100 ";
+                       "FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
 
   // set up the expected results:
   std::string expected_sql = "SELECT AVG(l_quantity) avg_qty, "
@@ -273,7 +274,7 @@ TEST_F(ScalarAggregateTest, test_tpch_q1_avg_cnt) {
 
     string sql = "SELECT l_returnflag, l_linestatus, l_quantity, l_extendedprice,  l_discount, l_extendedprice * (1 - l_discount) AS disc_price, l_extendedprice * (1 - l_discount) * (1 + l_tax) AS charge, \n"
                         " l_shipdate > date '1998-08-03' AS dummy\n"  // produces true when it is a dummy, reverses the logic of the sort predicate
-                        " FROM (SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT 100) selection";
+                        " FROM (SELECT * FROM lineitem ORDER BY l_orderkey, l_linenumber LIMIT " + std::to_string(FLAGS_cutoff) + ") selection";
 
     string expected_sql =  "select \n"
                                   "  avg(l_quantity) as avg_qty, \n"
@@ -308,7 +309,7 @@ TEST_F(ScalarAggregateTest, test_all_aggs_tpch_q1) {
                        "l_extendedprice * (1 - l_discount) l_discprice, "
                        "l_extendedprice * (1 - l_discount) * (1 + l_tax) l_charge, "
                        "l_shipinstruct <> 'NONE' AS dummy "
-                       "FROM lineitem WHERE l_orderkey <= 100 ";
+                       "FROM lineitem WHERE l_orderkey <= " + std::to_string(FLAGS_cutoff);
 
   // Ordinals:
   // l_quantity, #0

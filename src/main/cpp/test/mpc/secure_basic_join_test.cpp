@@ -11,6 +11,7 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43443, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
+DEFINE_int32(cutoff, 100, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
@@ -25,17 +26,17 @@ protected:
 
     const std::string customer_sql_ = "SELECT c_custkey, c_mktsegment <> 'HOUSEHOLD' cdummy \n"
                                            "FROM customer  \n"
-                                           "WHERE c_custkey < 3 \n"
+                                           "WHERE c_custkey <= " + std::to_string(FLAGS_cutoff) + " \n"
                                            "ORDER BY c_custkey";
 
     const std::string orders_sql_ = "SELECT o_orderkey, o_custkey, o_orderdate, o_shippriority, o_orderdate >= date '1995-03-25' odummy \n"
                                   "FROM orders \n"
-                                  "WHERE o_custkey < 3 \n"
+                                  "WHERE o_custkey <= " + std::to_string(FLAGS_cutoff) + " \n"
                                   "ORDER BY o_orderkey, o_custkey, o_orderdate, o_shippriority";
 
     const std::string lineitem_sql_ = "SELECT  l_orderkey, l_extendedprice * (1 - l_discount) revenue, l_shipdate <= date '1995-03-25' ldummy \n"
                                     "FROM lineitem \n"
-                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey < 3)  \n"
+                                    "WHERE l_orderkey IN (SELECT o_orderkey FROM orders where o_custkey <= " + std::to_string(FLAGS_cutoff) + ")  \n"
                                     "ORDER BY l_orderkey, revenue ";
 
 

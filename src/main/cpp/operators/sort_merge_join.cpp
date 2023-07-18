@@ -391,7 +391,7 @@ void SortMergeJoin<Bit>::initializeAlphasPacked(SecureTable *dst) {
 
 
 template<typename B>
-QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_t target_size) {
+QueryTable<B> *SortMergeJoin<B>::obliviousDistribute(QueryTable<B> *input, size_t target_size) {	
     QuerySchema schema = input->getSchema();
 
     SortDefinition sort_def{ ColumnSort(is_new_idx_, SortDirection::ASCENDING), ColumnSort(weight_idx_, SortDirection::ASCENDING)};
