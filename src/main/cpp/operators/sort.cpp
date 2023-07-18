@@ -62,16 +62,16 @@ QueryTable<B> *Sort<B>::runSelf() {
     int counter = 0;
     int n = this->output_->getTupleCount();
     bitonicSort(0, this->output_->getTupleCount(), true, counter);
-    auto end_gates = this->system_conf_.andGateCount();
-    auto total_gates = end_gates - this->start_gate_cnt_;
+//    auto end_gates = this->system_conf_.andGateCount();
+//    auto total_gates = end_gates - this->start_gate_cnt_;
 //    cout << "Sorted on " << this->output_->getTupleCount() << " rows, have " << counter << " compare & swap ops in " << total_gates << " gates."   << endl;
 
-    float rounds = log2(n);
-    float stages = (rounds * (rounds + 1))/2.0;
+//    float rounds = log2(n);
+//    float stages = (rounds * (rounds + 1))/2.0;
 
-    float comparisons_per_stage = n / 2.0;
-    float total_comparisons = stages * comparisons_per_stage;
-    float relative_error = fabs(total_comparisons - counter)/counter;
+//    float comparisons_per_stage = n / 2.0;
+//    float total_comparisons = stages * comparisons_per_stage;
+//    float relative_error = fabs(total_comparisons - counter)/counter;
 //    cout << "Estimated row comparisons: " << total_comparisons << ", actual comparisons: " << counter << ", relative error: " << relative_error <<  endl;
 
     Operator<B>::output_->setSortOrder(Operator<B>::sort_definition_);
