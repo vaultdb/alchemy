@@ -916,20 +916,24 @@ Field<B> Field<B>::deserialize(const QueryFieldDesc &desc, const int8_t *src) {
             // add one more bit for two's complement
             emp::Integer payload(desc.size() + desc.bitPacked(), 0);
             memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
-
-            payload.resize(32);
-            emp::Integer unpacked(32, desc.getFieldMin(), PUBLIC); // secure_int = 32 bits
-            unpacked = unpacked + payload;
-            return Field<B>(type, unpacked);
+            if(desc.bitPacked()) {
+                payload.resize(32);
+                emp::Integer unpacked(32, desc.getFieldMin(), PUBLIC); // secure_int = 32 bits
+                unpacked = unpacked + payload;
+                return Field<B>(type, unpacked);
+            }
+            return Field<B>(type, payload);
         }
         case FieldType::SECURE_LONG: {
             emp::Integer payload(desc.size() + desc.bitPacked(), 0);
             memcpy(payload.bits.data(), src, desc.size()*TypeUtilities::getEmpBitSize());
-            payload.resize(64);
-            emp::Integer unpacked(64, desc.getFieldMin(), PUBLIC); // secure_long = 64 bits
-            unpacked = unpacked + payload;
-
-            return Field<B>(type, unpacked);
+            if(desc.bitPacked()) {
+                payload.resize(64);
+                emp::Integer unpacked(64, desc.getFieldMin(), PUBLIC); // secure_long = 64 bits
+                unpacked = unpacked + payload;
+                return Field<B>(type, unpacked);
+            }
+            return Field<B>(type, payload);
         }
         case FieldType::SECURE_FLOAT: {
             emp::Float v(0, emp::PUBLIC);
