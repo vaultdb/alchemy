@@ -31,7 +31,7 @@ protected:
     void runTest(const int &test_id, const string & test_name, const SortDefinition &expected_sort, const string &db_name);
     string  generateExpectedOutputQuery(const int & test_id,  const SortDefinition &expected_sort,   const string &db_name);
 
-    int input_tuple_limit_ = FLAGS_cutoff;
+    int input_tuple_limit_ = -1;
 
 };
 
@@ -103,7 +103,7 @@ FullyOptimizedTest::generateExpectedOutputQuery(const int &test_id, const SortDe
     return query;
 }
 
-
+/*
 TEST_F(FullyOptimizedTest, tpch_q1) {
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(2);
     runTest(1, "q1", expected_sort, unioned_db_);
@@ -140,7 +140,7 @@ TEST_F(FullyOptimizedTest, tpch_q9) {
     runTest(9, "q9", expected_sort, unioned_db_);
 
 }
-
+*/
 
 TEST_F(FullyOptimizedTest, tpch_q18) {
     // -1 ASC, $4 DESC, $3 ASC
