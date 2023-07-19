@@ -115,10 +115,10 @@ std::string Operator<B>::toString() const {
         ss << "(" << params << ") ";
 
     ss << ": " <<  output_schema_ <<    " order by: " << DataUtilities::printSortDefinition(sort_definition_);
-
-    size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
-    ss << " Estimated cost: " << estimated_gates;
-
+    if(std::is_same_v<B, Bit>) {
+        size_t estimated_gates = OperatorCostModel::operatorCost((SecureOperator *) this);
+        ss << " Estimated cost: " << estimated_gates;
+    }
     return ss.str();
 
 }
