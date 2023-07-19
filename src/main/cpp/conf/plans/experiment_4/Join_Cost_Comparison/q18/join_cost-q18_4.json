@@ -114,7 +114,7 @@
       "id": "5",
       "relOp": "LogicalJoin",
       "joinOn": "L2.l_orderkey = l_orderkey",
-      "operator-algorithm": "sort-merge-join",
+      "operator-algorithm": "nested-loop-join",
       "outputFields": "L2.l_orderkey (#0), L2.l_quantity (#1), l_orderkey (#2)",
       "condition": {
         "op": {
@@ -192,7 +192,7 @@
       "id": "8",
       "relOp": "LogicalJoin",
       "joinOn": "L2.l_orderkey = o_orderkey",
-      "operator-algorithm": "sort-merge-join",
+      "operator-algorithm": "nested-loop-join",
       "outputFields": "L2.l_orderkey (#0), L2.l_quantity (#1), o_orderkey (#2), o_custkey (#3), o_totalprice (#4), o_orderdate (#5)",
       "condition": {
         "op": {
@@ -275,7 +275,7 @@
       "id": "11",
       "relOp": "LogicalJoin",
       "joinOn": "o_custkey = c_custkey",
-      "operator-algorithm": "nested-loop-join",
+      "operator-algorithm": "sort-merge-join",
       "outputFields": "o_orderkey (#0), o_custkey (#1), o_totalprice (#2), o_orderdate (#3), l_quantity (#4), c_custkey (#5), c_name (#6)",
       "condition": {
         "op": {

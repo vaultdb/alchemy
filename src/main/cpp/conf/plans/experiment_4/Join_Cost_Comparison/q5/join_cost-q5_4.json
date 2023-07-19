@@ -72,7 +72,7 @@
         "0",
         "1"
       ],
-      "operator-algorithm": "sort-merge-join"
+      "operator-algorithm": "nested-loop-join"
     },
     {
       "id": "3",
@@ -152,7 +152,7 @@
         "3",
         "4"
       ],
-      "operator-algorithm": "sort-merge-join"
+      "operator-algorithm": "nested-loop-join"
     },
     {
       "id": "6",
@@ -256,7 +256,7 @@
         "6",
         "7"
       ],
-      "operator-algorithm": "nested-loop-join"
+      "operator-algorithm": "sort-merge-join"
     },
     {
       "id": "9",

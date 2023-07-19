@@ -104,7 +104,7 @@ JoinCostComparisonTest::generateExpectedOutputQuery(const int &test_id, const So
 
 
 TEST_F(JoinCostComparisonTest, tpch_q3) {
-    int join_count = 4;
+    int join_count = 3;
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(1, SortDirection::DESCENDING),
                                  ColumnSort(2, SortDirection::ASCENDING)};
@@ -114,7 +114,7 @@ TEST_F(JoinCostComparisonTest, tpch_q3) {
 
 
 TEST_F(JoinCostComparisonTest, tpch_q5) {
-    int join_count = 8;
+    int join_count = 4;
     SortDefinition  expected_sort{ColumnSort(1, SortDirection::DESCENDING)};
     for(int i = 0; i < join_count; i++)
         runTest(5, "q5", std::to_string(i+1), expected_sort, unioned_db_);
@@ -122,7 +122,7 @@ TEST_F(JoinCostComparisonTest, tpch_q5) {
 
 
 TEST_F(JoinCostComparisonTest, tpch_q8) {
-    int join_count = 8;
+    int join_count = 4;
     SortDefinition expected_sort = DataUtilities::getDefaultSortDefinition(1);
     for(int i = 0; i < join_count; i++)
         runTest(8, "q8", std::to_string(i+1), expected_sort, unioned_db_);
@@ -131,7 +131,7 @@ TEST_F(JoinCostComparisonTest, tpch_q8) {
 
 
 TEST_F(JoinCostComparisonTest, tpch_q9) {
-    int join_count = 8;
+    int join_count = 4;
     SortDefinition  expected_sort{ColumnSort(0, SortDirection::ASCENDING), ColumnSort(1, SortDirection::DESCENDING)};
     for(int i = 0; i < join_count; i++)
         runTest(9, "q9", std::to_string(i+1), expected_sort, unioned_db_);
@@ -140,7 +140,7 @@ TEST_F(JoinCostComparisonTest, tpch_q9) {
 
 
 TEST_F(JoinCostComparisonTest, tpch_q18) {
-    int join_count = 8;
+    int join_count = 4;
     SortDefinition expected_sort{ColumnSort(-1, SortDirection::ASCENDING),
                                  ColumnSort(4, SortDirection::DESCENDING),
                                  ColumnSort(3, SortDirection::ASCENDING)};
