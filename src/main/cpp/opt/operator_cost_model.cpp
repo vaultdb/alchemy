@@ -70,7 +70,7 @@ size_t OperatorCostModel::basicJoinCost(const BasicJoin<Bit> *join) {
     ExpressionNode<Bit> *root = ((GenericExpression<Bit> *) predicate)->root_;
 
     ExpressionCostModel<Bit> cost_model(root, join->getOutputSchema());
-    size_t per_row_cost = cost_model.cost();
+    size_t per_row_cost = cost_model.cost() + 3; // +3 for bookkeeping on dummy tag
     size_t row_count = join->getOutputCardinality();
     return per_row_cost * row_count;
 
