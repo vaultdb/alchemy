@@ -72,7 +72,7 @@
         "0",
         "1"
       ],
-      "operator-algorithm": "sorted-merge-join"
+      "operator-algorithm": "sort-merge-join"
     },
     {
       "id": "3",
@@ -152,7 +152,7 @@
         "3",
         "4"
       ],
-      "operator-algorithm": "sorted-merge-join"
+      "operator-algorithm": "sort-merge-join"
     },
     {
       "id": "6",
@@ -281,7 +281,6 @@
       "id": "10",
       "relOp": "LogicalAggregate",
       "operator-algorithm": "nested-loop-aggregate",
-      "cardBound": 5,
       "group": [
         0
       ],

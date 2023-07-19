@@ -123,7 +123,7 @@
       "relOp": "LogicalJoin",
       "joinOn": "o_orderkey = l_orderkey",
       "outputFields": "o_orderkey (#0), o_orderdate (#1), o_shippriority (#2), l_orderkey (#3), revenue (#4)",
-      "operator-algorithm": "sorted-merge-join",
+      "operator-algorithm": "sort-merge-join",
       "condition": {
         "op": {
           "name": "=",

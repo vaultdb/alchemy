@@ -189,7 +189,7 @@
       "id": "8",
       "joinOn": "o_orderkey = l_orderkey",
       "outputFields": "o_year (#0), o_orderkey (#1), nation_check(#2), l_orderkey (#3), volume (#4)",
-      "operator-algorithm": "sorted-merge-join",
+      "operator-algorithm": "sort-merge-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {

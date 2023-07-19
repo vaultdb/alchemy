@@ -135,7 +135,7 @@
       "id": "6",
       "joinOn": "s_suppkey = l_suppkey",
       "outputFields": "s_suppkey (#0), nation_check (#1), l_orderkey (#2), l_suppkey (#3), volume (#4)",
-      "operator-algorithm": "sorted-merge-join",
+      "operator-algorithm": "sort-merge-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {

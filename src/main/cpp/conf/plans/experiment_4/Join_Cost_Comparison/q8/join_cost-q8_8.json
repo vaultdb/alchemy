@@ -41,7 +41,7 @@
     {
       "id": "2",
       "outputFields": "c_custkey (#0), o_orderkey (#1), o_custkey (#2), o_year (#3)",
-      "operator-algorithm": "sorted-merge-join",
+      "operator-algorithm": "sort-merge-join",
       "joinOn": "c_custkey = o_custkey",
       "relOp": "LogicalJoin",
       "condition": {
@@ -135,7 +135,7 @@
       "id": "6",
       "joinOn": "s_suppkey = l_suppkey",
       "outputFields": "s_suppkey (#0), nation_check (#1), l_orderkey (#2), l_suppkey (#3), volume (#4)",
-      "operator-algorithm": "sorted-merge-join",
+      "operator-algorithm": "sort-merge-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
@@ -189,7 +189,7 @@
       "id": "8",
       "joinOn": "o_orderkey = l_orderkey",
       "outputFields": "o_year (#0), o_orderkey (#1), nation_check(#2), l_orderkey (#3), volume (#4)",
-      "operator-algorithm": "sorted-merge-join",
+      "operator-algorithm": "sort-merge-join",
       "relOp": "LogicalJoin",
       "condition": {
         "op": {
