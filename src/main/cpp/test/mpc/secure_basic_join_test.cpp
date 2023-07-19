@@ -11,7 +11,7 @@ DEFINE_int32(party, 1, "party for EMP execution");
 DEFINE_int32(port, 43443, "port for EMP execution");
 DEFINE_string(alice_host, "127.0.0.1", "hostname for execution");
 DEFINE_string(storage, "row", "storage model for tables (row or column)");
-DEFINE_int32(cutoff, 100, "limit clause for queries");
+DEFINE_int32(cutoff, 25, "limit clause for queries");
 DEFINE_int32(ctrl_port, 65450, "port for managing EMP control flow by passing public values");
 DEFINE_bool(validation, true, "run reveal for validation, turn this off for benchmarking experiments (default true)");
 DEFINE_string(filter, "*", "run only the tests passing this filter");
@@ -134,7 +134,6 @@ std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), \n"
 
 
 
-// compose C-O-L join should produce one output tuple, order ID 210945
 TEST_F(SecureBasicJoinTest, test_tpch_q3_lineitem_orders_customer) {
 
     std::string expected_sql = "WITH orders_cte AS (" + orders_sql_ + "), "
